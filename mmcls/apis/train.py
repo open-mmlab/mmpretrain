@@ -8,7 +8,7 @@ from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import DistSamplerSeedHook, Runner
 
 from mmcls.core import (DistEvalHook, DistOptimizerHook, EvalHook,
-                             Fp16OptimizerHook, build_optimizer)
+                        Fp16OptimizerHook, build_optimizer)
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.utils import get_root_logger
 
