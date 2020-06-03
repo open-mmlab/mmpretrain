@@ -3,7 +3,7 @@ import logging
 import torch.nn as nn
 import torch.utils.checkpoint as cp
 
-from ..runner import load_checkpoint
+# from ..runner import load_checkpoint
 from .base_backbone import BaseBackbone
 from .weight_init import constant_init, kaiming_init
 
@@ -20,11 +20,11 @@ def conv3x3(in_planes, out_planes, stride=1, dilation=1):
         bias=False)
 
 
-def conv_1x1_bn(inp, oup, act=nn.ReLU6):
+def conv_1x1_bn(inp, oup, activation=nn.ReLU6):
     return nn.Sequential(
         nn.Conv2d(inp, oup, 1, 1, 0, bias=False),
         nn.BatchNorm2d(oup),
-        act(inplace=True)
+        activation(inplace=True)
     )
 
 
@@ -38,11 +38,6 @@ class ConvBNReLU(nn.Sequential):
                  activation=nn.ReLU6):
         padding = (kernel_size - 1) // 2
 
-        try:
-            self.activation = activation(inplace=True)
-        except RuntimeWarning('inplace is not allowed to use'):
-            self.activation = activation()
-
         super(ConvBNReLU, self).__init__(
             nn.Conv2d(in_planes,
                       out_planes,
@@ -52,7 +47,7 @@ class ConvBNReLU(nn.Sequential):
                       groups=groups,
                       bias=False),
             nn.BatchNorm2d(out_planes),
-            self.activation
+            activation(inplace=True)
         )
 
 
@@ -122,20 +117,21 @@ def make_inverted_res_layer(block,
                             num_blocks,
                             stride=1,
                             expand_ratio=6,
-                            activation_type=nn.ReLU6,
+                            activation=nn.ReLU6,
                             with_cp=False):
     layers = []
     for i in range(num_blocks):
         if i == 0:
             layers.append(block(inplanes, planes, stride,
                                 expand_ratio=expand_ratio,
-                                activation=activation_type,
+                                activation=activation,
                                 with_cp=with_cp))
         else:
             layers.append(block(inplanes, planes, 1,
                                 expand_ratio=expand_ratio,
-                                activation=activation_type,
+                                activation=activation,
                                 with_cp=with_cp))
+        inplanes = planes
     return nn.Sequential(*layers)
 
 
@@ -165,23 +161,20 @@ class MobileNetv2(BaseBackbone):
                  with_cp=False):
         super(MobileNetv2, self).__init__()
         block = InvertedResidual
-
-        inverted_residual_setting = {
-            # lager_index: [expand_ratio, out_channel, n, stide]
-            0: [1, 16, 1, 1],
-            1: [6, 24, 2, 2],
-            2: [6, 32, 3, 2],
-            3: [6, 64, 4, 2],
-            4: [6, 96, 3, 1],
-            5: [6, 160, 3, 2],
-            6: [6, 320, 1, 1]
-        }
+        # expand_ratio, out_channel, n, stride
+        inverted_residual_setting = [
+            [1, 16, 1, 1],
+            [6, 24, 2, 2],
+            [6, 32, 3, 2],
+            [6, 64, 4, 2],
+            [6, 96, 3, 1],
+            [6, 160, 3, 2],
+            [6, 320, 1, 1]
+        ]
         self.widen_factor = widen_factor
-        self.activation_type = activation
-        try:
-            self.activation = activation(inplace=True)
-        except RuntimeWarning('inplace is not allowed to use'):
-            self.activation = activation()
+        if isinstance(activation, str):
+            activation = eval(activation)
+        self.activation = activation(inplace=True)
 
         self.out_indices = out_indices
         self.frozen_stages = frozen_stages
@@ -191,11 +184,13 @@ class MobileNetv2(BaseBackbone):
 
         self.inplanes = 32
         self.inplanes = _make_divisible(self.inplanes * widen_factor, 8)
-        self.conv1 = conv3x3(3, self.inplanes, stride=2)
 
+        self.conv1 = conv3x3(3, self.inplanes, stride=2)
+        self.bn1 = nn.BatchNorm2d(self.inplanes)
         self.inverted_res_layers = []
-        for i, later_cfg in enumerate(inverted_residual_setting):
-            t, c, n, s = later_cfg
+
+        for i, layer_cfg in enumerate(inverted_residual_setting):
+            t, c, n, s = layer_cfg
             planes = _make_divisible(c * widen_factor, 8)
             inverted_res_layer = make_inverted_res_layer(
                 block,
@@ -204,7 +199,7 @@ class MobileNetv2(BaseBackbone):
                 num_blocks=n,
                 stride=s,
                 expand_ratio=t,
-                activation_type=self.activation_type,
+                activation=activation,
                 with_cp=self.with_cp)
             self.inplanes = planes
             layer_name = 'layer{}'.format(i + 1)
@@ -214,7 +209,9 @@ class MobileNetv2(BaseBackbone):
         self.out_channel = 1280
         self.out_channel = int(self.out_channel * widen_factor) \
             if widen_factor > 1.0 else self.out_channel
-        self.conv1_bn = conv_1x1_bn(self.inplanes, self.out_channel)
+
+        self.conv_last = nn.Conv2d(self.inplanes,  self.out_channel, 1, 1, 0, bias=False)
+        self.bn_last = nn.BatchNorm2d(self.out_channel)
 
         self.feat_dim = self.out_channel
 
@@ -233,7 +230,6 @@ class MobileNetv2(BaseBackbone):
 
     def forward(self, x):
         x = self.conv1(x)
-        x = self.bn1(x)
         x = self.activation(x)
 
         outs = []
@@ -243,7 +239,10 @@ class MobileNetv2(BaseBackbone):
             if i in self.out_indices:
                 outs.append(x)
 
-        x = self.conv1_bn(x)
+        x = self.conv_last(x)
+        x = self.bn_last(x)
+        x = self.activation(x)
+
         outs.append(x)
 
         if len(outs) == 1:
