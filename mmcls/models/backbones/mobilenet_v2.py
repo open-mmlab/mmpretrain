@@ -3,7 +3,7 @@ import logging
 import torch.nn as nn
 import torch.utils.checkpoint as cp
 
-# from ..runner import load_checkpoint
+from ..runner import load_checkpoint
 from .base_backbone import BaseBackbone
 from .weight_init import constant_init, kaiming_init
 
@@ -210,7 +210,9 @@ class MobileNetv2(BaseBackbone):
         self.out_channel = int(self.out_channel * widen_factor) \
             if widen_factor > 1.0 else self.out_channel
 
-        self.conv_last = nn.Conv2d(self.inplanes,  self.out_channel, 1, 1, 0, bias=False)
+        self.conv_last = nn.Conv2d(self.inplanes,
+                                   self.out_channel,
+                                   1, 1, 0, bias=False)
         self.bn_last = nn.BatchNorm2d(self.out_channel)
 
         self.feat_dim = self.out_channel

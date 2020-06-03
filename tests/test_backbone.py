@@ -1,8 +1,5 @@
-import pytest
 import torch
 import torch.nn as nn
-from torch.nn.modules import AvgPool2d, GroupNorm
-from torch.nn.modules.batchnorm import _BatchNorm
 
 from mmcls.models.backbones import MobileNetv2
 
