@@ -10,7 +10,7 @@ from mmcls.models.backbones.mobilenet_v2 import InvertedResidual
 
 def is_block(modules):
     """Check if is ResNet building block."""
-    if isinstance(modules, (InvertedResidual,)):
+    if isinstance(modules, (InvertedResidual, )):
         return True
     return False
 
@@ -35,40 +35,30 @@ def test_mobilenetv2_invertedresidual():
 
     with pytest.raises(AssertionError):
         # stride must be in [1, 2]
-        InvertedResidual(64, 16,
-                         stride=3, expand_ratio=6)
+        InvertedResidual(64, 16, stride=3, expand_ratio=6)
 
     # Test InvertedResidual with checkpoint forward, stride=1
-    block = InvertedResidual(64, 16,
-                             stride=1,
-                             expand_ratio=6)
+    block = InvertedResidual(64, 16, stride=1, expand_ratio=6)
     x = torch.randn(1, 64, 56, 56)
     x_out = block(x)
     assert x_out.shape == torch.Size([1, 16, 56, 56])
 
     # Test InvertedResidual with checkpoint forward, stride=2
-    block = InvertedResidual(64, 16,
-                             stride=2,
-                             expand_ratio=6)
+    block = InvertedResidual(64, 16, stride=2, expand_ratio=6)
     x = torch.randn(1, 64, 56, 56)
     x_out = block(x)
     assert x_out.shape == torch.Size([1, 16, 28, 28])
 
     # Test InvertedResidual with checkpoint forward
-    block = InvertedResidual(64, 16,
-                             stride=1,
-                             expand_ratio=6,
-                             with_cp=True)
+    block = InvertedResidual(64, 16, stride=1, expand_ratio=6, with_cp=True)
     assert block.with_cp
     x = torch.randn(1, 64, 56, 56)
     x_out = block(x)
     assert x_out.shape == torch.Size([1, 16, 56, 56])
 
     # Test InvertedResidual with activation=nn.ReLU
-    block = InvertedResidual(64, 16,
-                             stride=1,
-                             expand_ratio=6,
-                             activation=nn.ReLU)
+    block = InvertedResidual(
+        64, 16, stride=1, expand_ratio=6, activation=nn.ReLU)
     x = torch.randn(1, 64, 56, 56)
     x_out = block(x)
     assert x_out.shape == torch.Size([1, 16, 56, 56])
@@ -193,8 +183,8 @@ def test_mobilenetv2_backbone():
     assert feat[6].shape == torch.Size([1, 320, 7, 7])
 
     # Test MobileNetv2 with layers 1, 3, 5 out forward
-    model = MobileNetv2(widen_factor=1.0, activation=nn.ReLU6,
-                        out_indices=(0, 2, 4))
+    model = MobileNetv2(
+        widen_factor=1.0, activation=nn.ReLU6, out_indices=(0, 2, 4))
     model.init_weights()
     model.train()
 
@@ -206,8 +196,7 @@ def test_mobilenetv2_backbone():
     assert feat[2].shape == torch.Size([1, 96, 14, 14])
 
     # Test MobileNetv2 with checkpoint forward
-    model = MobileNetv2(widen_factor=1.0, activation=nn.ReLU6,
-                        with_cp=True)
+    model = MobileNetv2(widen_factor=1.0, activation=nn.ReLU6, with_cp=True)
     for m in model.modules():
         if is_block(m):
             assert m.with_cp
