@@ -2,8 +2,8 @@ import logging
 
 import torch.nn as nn
 import torch.utils.checkpoint as cp
-
-from ..runner import load_checkpoint
+from mmcv.runner import load_checkpoint
+t
 from .base_backbone import BaseBackbone
 from .weight_init import constant_init, kaiming_init
 
@@ -154,7 +154,7 @@ class MobileNetv2(BaseBackbone):
     def __init__(self,
                  widen_factor=1.,
                  activation=nn.ReLU6,
-                 out_indices=(0, 1, 2, 3, 4, 5, 6),
+                 out_indices=(0, 1, 2, 3, 4, 5, 6, 7),
                  frozen_stages=-1,
                  bn_eval=True,
                  bn_frozen=False,
@@ -177,6 +177,7 @@ class MobileNetv2(BaseBackbone):
         self.activation = activation(inplace=True)
 
         self.out_indices = out_indices
+        assert frozen_stages <= 7
         self.frozen_stages = frozen_stages
         self.bn_eval = bn_eval
         self.bn_frozen = bn_frozen
