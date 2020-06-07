@@ -2,8 +2,8 @@ import logging
 
 import torch.nn as nn
 import torch.utils.checkpoint as cp
+from mmcv.runner import load_checkpoint
 
-from ..runner import load_checkpoint
 from .base_backbone import BaseBackbone
 from .weight_init import constant_init, kaiming_init
 
@@ -22,13 +22,12 @@ def conv3x3(in_planes, out_planes, stride=1, dilation=1):
 
 def conv_1x1_bn(inp, oup, activation=nn.ReLU6):
     return nn.Sequential(
-        nn.Conv2d(inp, oup, 1, 1, 0, bias=False),
-        nn.BatchNorm2d(oup),
-        activation(inplace=True)
-    )
+        nn.Conv2d(inp, oup, 1, 1, 0, bias=False), nn.BatchNorm2d(oup),
+        activation(inplace=True))
 
 
 class ConvBNReLU(nn.Sequential):
+
     def __init__(self,
                  in_planes,
                  out_planes,
@@ -39,16 +38,15 @@ class ConvBNReLU(nn.Sequential):
         padding = (kernel_size - 1) // 2
 
         super(ConvBNReLU, self).__init__(
-            nn.Conv2d(in_planes,
-                      out_planes,
-                      kernel_size,
-                      stride,
-                      padding,
-                      groups=groups,
-                      bias=False),
-            nn.BatchNorm2d(out_planes),
-            activation(inplace=True)
-        )
+            nn.Conv2d(
+                in_planes,
+                out_planes,
+                kernel_size,
+                stride,
+                padding,
+                groups=groups,
+                bias=False), nn.BatchNorm2d(out_planes),
+            activation(inplace=True))
 
 
 def _make_divisible(v, divisor, min_value=None):
@@ -62,6 +60,7 @@ def _make_divisible(v, divisor, min_value=None):
 
 
 class InvertedResidual(nn.Module):
+
     def __init__(self,
                  inplanes,
                  outplanes,
@@ -79,17 +78,18 @@ class InvertedResidual(nn.Module):
         layers = []
         if expand_ratio != 1:
             # pw
-            layers.append(ConvBNReLU(inplanes,
-                                     hidden_dim,
-                                     kernel_size=1,
-                                     activation=activation))
+            layers.append(
+                ConvBNReLU(
+                    inplanes, hidden_dim, kernel_size=1,
+                    activation=activation))
         layers.extend([
             # dw
-            ConvBNReLU(hidden_dim,
-                       hidden_dim,
-                       stride=stride,
-                       groups=hidden_dim,
-                       activation=activation),
+            ConvBNReLU(
+                hidden_dim,
+                hidden_dim,
+                stride=stride,
+                groups=hidden_dim,
+                activation=activation),
             # pw-linear
             nn.Conv2d(hidden_dim, outplanes, 1, 1, 0, bias=False),
             nn.BatchNorm2d(outplanes),
@@ -97,6 +97,7 @@ class InvertedResidual(nn.Module):
         self.conv = nn.Sequential(*layers)
 
     def forward(self, x):
+
         def _inner_forward(x):
             if self.use_res_connect:
                 return x + self.conv(x)
@@ -122,15 +123,23 @@ def make_inverted_res_layer(block,
     layers = []
     for i in range(num_blocks):
         if i == 0:
-            layers.append(block(inplanes, planes, stride,
-                                expand_ratio=expand_ratio,
-                                activation=activation,
-                                with_cp=with_cp))
+            layers.append(
+                block(
+                    inplanes,
+                    planes,
+                    stride,
+                    expand_ratio=expand_ratio,
+                    activation=activation,
+                    with_cp=with_cp))
         else:
-            layers.append(block(inplanes, planes, 1,
-                                expand_ratio=expand_ratio,
-                                activation=activation,
-                                with_cp=with_cp))
+            layers.append(
+                block(
+                    inplanes,
+                    planes,
+                    1,
+                    expand_ratio=expand_ratio,
+                    activation=activation,
+                    with_cp=with_cp))
         inplanes = planes
     return nn.Sequential(*layers)
 
@@ -154,7 +163,7 @@ class MobileNetv2(BaseBackbone):
     def __init__(self,
                  widen_factor=1.,
                  activation=nn.ReLU6,
-                 out_indices=(0, 1, 2, 3, 4, 5, 6),
+                 out_indices=(0, 1, 2, 3, 4, 5, 6, 7),
                  frozen_stages=-1,
                  bn_eval=True,
                  bn_frozen=False,
@@ -162,21 +171,17 @@ class MobileNetv2(BaseBackbone):
         super(MobileNetv2, self).__init__()
         block = InvertedResidual
         # expand_ratio, out_channel, n, stride
-        inverted_residual_setting = [
-            [1, 16, 1, 1],
-            [6, 24, 2, 2],
-            [6, 32, 3, 2],
-            [6, 64, 4, 2],
-            [6, 96, 3, 1],
-            [6, 160, 3, 2],
-            [6, 320, 1, 1]
-        ]
+        inverted_residual_setting = [[1, 16, 1, 1], [6, 24, 2,
+                                                     2], [6, 32, 3, 2],
+                                     [6, 64, 4, 2], [6, 96, 3, 1],
+                                     [6, 160, 3, 2], [6, 320, 1, 1]]
         self.widen_factor = widen_factor
         if isinstance(activation, str):
             activation = eval(activation)
         self.activation = activation(inplace=True)
 
         self.out_indices = out_indices
+        assert frozen_stages <= 7
         self.frozen_stages = frozen_stages
         self.bn_eval = bn_eval
         self.bn_frozen = bn_frozen
@@ -210,9 +215,8 @@ class MobileNetv2(BaseBackbone):
         self.out_channel = int(self.out_channel * widen_factor) \
             if widen_factor > 1.0 else self.out_channel
 
-        self.conv_last = nn.Conv2d(self.inplanes,
-                                   self.out_channel,
-                                   1, 1, 0, bias=False)
+        self.conv_last = nn.Conv2d(
+            self.inplanes, self.out_channel, 1, 1, 0, bias=False)
         self.bn_last = nn.BatchNorm2d(self.out_channel)
 
         self.feat_dim = self.out_channel
