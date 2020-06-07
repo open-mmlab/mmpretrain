@@ -3,26 +3,22 @@ import logging
 import torch
 import torch.nn as nn
 import torch.utils.checkpoint as cp
+from mmcv.runner import load_checkpoint
 
-from ..runner import load_checkpoint
 from .base_backbone import BaseBackbone
 from .weight_init import constant_init, kaiming_init
 
 
 def conv_bn(inp, oup, stride):
     return nn.Sequential(
-        nn.Conv2d(inp, oup, 3, stride, 1, bias=False),
-        nn.BatchNorm2d(oup),
-        nn.ReLU(inplace=True)
-    )
+        nn.Conv2d(inp, oup, 3, stride, 1, bias=False), nn.BatchNorm2d(oup),
+        nn.ReLU(inplace=True))
 
 
 def conv_1x1_bn(inp, oup):
     return nn.Sequential(
-        nn.Conv2d(inp, oup, 1, 1, 0, bias=False),
-        nn.BatchNorm2d(oup),
-        nn.ReLU(inplace=True)
-    )
+        nn.Conv2d(inp, oup, 1, 1, 0, bias=False), nn.BatchNorm2d(oup),
+        nn.ReLU(inplace=True))
 
 
 def channel_shuffle(x, groups):
@@ -55,10 +51,11 @@ def _make_divisible(v, divisor, min_value=None):
 
 
 class InvertedResidual(nn.Module):
+
     def __init__(self, inp, oup, stride, with_cp=False):
         super(InvertedResidual, self).__init__()
 
-        if not (1 <= stride <= 3):
+        if not (1 <= stride <= 2):
             raise ValueError('illegal stride value')
         self.stride = stride
         self.with_cp = with_cp
@@ -68,11 +65,16 @@ class InvertedResidual(nn.Module):
 
         if self.stride > 1:
             self.branch1 = nn.Sequential(
-                self.depthwise_conv(inp, inp, kernel_size=3,
-                                    stride=self.stride, padding=1),
+                self.depthwise_conv(
+                    inp, inp, kernel_size=3, stride=self.stride, padding=1),
                 nn.BatchNorm2d(inp),
-                nn.Conv2d(inp, branch_features, kernel_size=1,
-                          stride=1, padding=0, bias=False),
+                nn.Conv2d(
+                    inp,
+                    branch_features,
+                    kernel_size=1,
+                    stride=1,
+                    padding=0,
+                    bias=False),
                 nn.BatchNorm2d(branch_features),
                 nn.ReLU(inplace=True),
             )
@@ -80,26 +82,40 @@ class InvertedResidual(nn.Module):
             self.branch1 = nn.Sequential()
 
         self.branch2 = nn.Sequential(
-            nn.Conv2d(inp if (self.stride > 1) else branch_features,
-                      branch_features, kernel_size=1,
-                      stride=1, padding=0, bias=False),
+            nn.Conv2d(
+                inp if (self.stride > 1) else branch_features,
+                branch_features,
+                kernel_size=1,
+                stride=1,
+                padding=0,
+                bias=False),
             nn.BatchNorm2d(branch_features),
             nn.ReLU(inplace=True),
-            self.depthwise_conv(branch_features, branch_features,
-                                kernel_size=3, stride=self.stride, padding=1),
+            self.depthwise_conv(
+                branch_features,
+                branch_features,
+                kernel_size=3,
+                stride=self.stride,
+                padding=1),
             nn.BatchNorm2d(branch_features),
-            nn.Conv2d(branch_features, branch_features,
-                      kernel_size=1, stride=1, padding=0, bias=False),
+            nn.Conv2d(
+                branch_features,
+                branch_features,
+                kernel_size=1,
+                stride=1,
+                padding=0,
+                bias=False),
             nn.BatchNorm2d(branch_features),
             nn.ReLU(inplace=True),
         )
 
     @staticmethod
     def depthwise_conv(i, o, kernel_size, stride=1, padding=0, bias=False):
-        return nn.Conv2d(i, o, kernel_size, stride,
-                         padding, bias=bias, groups=i)
+        return nn.Conv2d(
+            i, o, kernel_size, stride, padding, bias=bias, groups=i)
 
     def forward(self, x):
+
         def _inner_forward(x):
             if self.stride == 1:
                 x1, x2 = x.chunk(2, dim=1)
@@ -165,18 +181,16 @@ class ShuffleNetv2(BaseBackbone):
         elif widen_factor == 2.0:
             channels = [244, 488, 976, 2048]
         else:
-            raise ValueError(
-                """{} groups is not supported for
+            raise ValueError("""{} groups is not supported for
                 1x1 Grouped Convolutions""".format(groups))
-        channels = [_make_divisible(ch * widen_factor, 8) for ch in channels]
 
         self.inplanes = channels[0]
         self.conv1 = conv_bn(3, self.inplanes, 2)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
-        self.layer2 = self._make_layer(channels[1], blocks[0], with_cp=with_cp)
-        self.layer3 = self._make_layer(channels[2], blocks[1], with_cp=with_cp)
-        self.layer4 = self._make_layer(channels[3], blocks[2], with_cp=with_cp)
+        self.layer1 = self._make_layer(channels[1], blocks[0], with_cp=with_cp)
+        self.layer2 = self._make_layer(channels[2], blocks[1], with_cp=with_cp)
+        self.layer3 = self._make_layer(channels[3], blocks[2], with_cp=with_cp)
 
         self.conv_out = conv_1x1_bn(self.inplanes, channels[-1])
 
@@ -193,21 +207,17 @@ class ShuffleNetv2(BaseBackbone):
         else:
             raise TypeError('pretrained must be a str or None')
 
-    def _make_layer(self,
-                    outplanes,
-                    blocks,
-                    with_cp):
+    def _make_layer(self, outplanes, blocks, with_cp):
         layers = []
         for i in range(blocks):
             if i == 0:
                 layers.append(
-                    InvertedResidual(self.inplanes, outplanes,
-                                     stride=2, with_cp=with_cp))
+                    InvertedResidual(
+                        self.inplanes, outplanes, stride=2, with_cp=with_cp))
             else:
                 layers.append(
-                    InvertedResidual(self.inplanes, outplanes,
-                                     stride=1, with_cp=with_cp)
-                )
+                    InvertedResidual(
+                        self.inplanes, outplanes, stride=1, with_cp=with_cp))
             self.inplanes = outplanes
 
         return nn.Sequential(*layers)
@@ -217,6 +227,7 @@ class ShuffleNetv2(BaseBackbone):
         x = self.maxpool(x)
 
         outs = []
+        x = self.layer1(x)
         if 0 in self.out_indices:
             outs.append(x)
         x = self.layer2(x)
@@ -224,9 +235,6 @@ class ShuffleNetv2(BaseBackbone):
             outs.append(x)
         x = self.layer3(x)
         if 2 in self.out_indices:
-            outs.append(x)
-        x = self.layer4(x)
-        if 3 in self.out_indices:
             outs.append(x)
 
         x = self.conv_out(x)

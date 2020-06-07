@@ -3,13 +3,13 @@ import torch
 from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from mmcls.models.backbones import ShuffleNetv1
-from mmcls.models.backbones.shufflenet_v1 import ShuffleUnit
+from mmcls.models.backbones import ShuffleNetv2
+from mmcls.models.backbones.shufflenet_v2 import InvertedResidual
 
 
 def is_block(modules):
     """Check if is ResNet building block."""
-    if isinstance(modules, (ShuffleUnit, )):
+    if isinstance(modules, (InvertedResidual, )):
         return True
     return False
 
@@ -30,55 +30,44 @@ def check_norm_state(modules, train_state):
     return True
 
 
-def test_shufflenetv1_shuffleuint():
+def test_shufflenetv2_invertedresidual():
 
     with pytest.raises(ValueError):
-        # combine must be in ['add', 'concat']
-        ShuffleUnit(24, 16, groups=3, first_block=True, combine='test')
-
-    with pytest.raises(ValueError):
-        # in_channels must be divisible by groups
-        ShuffleUnit(64, 64, groups=3, first_block=True, combine='add')
+        # stride must be in [1, 2]
+        InvertedResidual(24, 16, stride=3)
 
     with pytest.raises(AssertionError):
-        # inplanes must be equal tp = outplanes when combine='add'
-        ShuffleUnit(64, 24, groups=3, first_block=True, combine='add')
+        # when stride==1, 16 == branch_features << 1
+        InvertedResidual(24, 64, stride=1)
 
-    # Test ShuffleUnit with combine='add'
-    block = ShuffleUnit(24, 24, groups=3, first_block=True, combine='add')
+    # Test InvertedResidual forward
+    block = InvertedResidual(24, 64, stride=2)
     x = torch.randn(1, 24, 56, 56)
     x_out = block(x)
-    assert x_out.shape == torch.Size([1, 24, 56, 56])
+    assert x_out.shape == torch.Size([1, 64, 28, 28])
 
-    # Test ShuffleUnit with combine='concat'
-    block = ShuffleUnit(24, 240, groups=3, first_block=True, combine='concat')
-    x = torch.randn(1, 24, 56, 56)
-    x_out = block(x)
-    assert x_out.shape == torch.Size([1, 240, 28, 28])
-
-    # Test ShuffleUnit with checkpoint forward
-    block = ShuffleUnit(
-        24, 24, groups=3, first_block=True, combine='add', with_cp=True)
+    # Test InvertedResidual with checkpoint forward
+    block = InvertedResidual(24, 24, stride=1, with_cp=True)
     x = torch.randn(1, 24, 56, 56)
     x_out = block(x)
     assert x_out.shape == torch.Size([1, 24, 56, 56])
 
 
-def test_shufflenetv1_backbone():
+def test_ShuffleNetv2_backbone():
 
     with pytest.raises(ValueError):
-        # groups must in [1, 2, 3, 4, 8]
-        ShuffleNetv1(groups=10)
+        # groups must in 0.5, 1.0, 1.5, 2.0]
+        ShuffleNetv2(widen_factor=3.0)
 
-    # Test ShuffleNetv1 norm state
-    model = ShuffleNetv1()
+    # Test ShuffleNetv2 norm state
+    model = ShuffleNetv2()
     model.init_weights()
     model.train()
     assert check_norm_state(model.modules(), False)
 
-    # Test ShuffleNetv1 with first stage frozen
+    # Test ShuffleNetv2 with first stage frozen
     frozen_stages = 1
-    model = ShuffleNetv1(frozen_stages=frozen_stages)
+    model = ShuffleNetv2(frozen_stages=frozen_stages)
     model.init_weights()
     model.train()
     for layer in [model.conv1]:
@@ -92,8 +81,8 @@ def test_shufflenetv1_backbone():
         for param in layer.parameters():
             assert param.requires_grad is False
 
-    # Test ShuffleNetv1 with bn frozen
-    model = ShuffleNetv1(bn_frozen=True)
+    # Test ShuffleNetv2 with bn frozen
+    model = ShuffleNetv2(bn_frozen=True)
     model.init_weights()
     model.train()
 
@@ -106,8 +95,8 @@ def test_shufflenetv1_backbone():
                 for params in mod.parameters():
                     params.requires_grad = False
 
-    # Test ShuffleNetv1 forward with groups=3
-    model = ShuffleNetv1(groups=3)
+    # Test ShuffleNetv2 forward with widen_factor=1.0
+    model = ShuffleNetv2(widen_factor=1.0)
     model.init_weights()
     model.train()
 
@@ -118,13 +107,13 @@ def test_shufflenetv1_backbone():
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
     assert len(feat) == 4
-    assert feat[0].shape == torch.Size([1, 240, 28, 28])
-    assert feat[1].shape == torch.Size([1, 480, 14, 14])
-    assert feat[2].shape == torch.Size([1, 960, 7, 7])
-    assert feat[3].shape == torch.Size([1, 960, 7, 7])
+    assert feat[0].shape == torch.Size([1, 232, 28, 28])
+    assert feat[1].shape == torch.Size([1, 464, 14, 14])
+    assert feat[2].shape == torch.Size([1, 1024, 7, 7])
+    assert feat[3].shape == torch.Size([1, 1024, 7, 7])
 
-    # Test ShuffleNetv1 forward with layers 1, 2 forward
-    model = ShuffleNetv1(groups=3, out_indices=(1, 2))
+    # Test ShuffleNetv2 forward with layers 1 2 forward
+    model = ShuffleNetv2(widen_factor=1.0, out_indices=(1, 2))
     model.init_weights()
     model.train()
 
@@ -135,12 +124,11 @@ def test_shufflenetv1_backbone():
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
     assert len(feat) == 3
-    assert feat[0].shape == torch.Size([1, 480, 14, 14])
-    assert feat[1].shape == torch.Size([1, 960, 7, 7])
-    assert feat[2].shape == torch.Size([1, 960, 7, 7])
+    assert feat[0].shape == torch.Size([1, 464, 14, 14])
+    assert feat[1].shape == torch.Size([1, 1024, 7, 7])
 
-    # Test ShuffleNetv1 forward with checkpoint forward
-    model = ShuffleNetv1(groups=3, with_cp=True)
+    # Test ShuffleNetv2 forward with checkpoint forward
+    model = ShuffleNetv2(widen_factor=1.0, with_cp=True)
     model.init_weights()
     model.train()
 
@@ -151,7 +139,7 @@ def test_shufflenetv1_backbone():
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
     assert len(feat) == 4
-    assert feat[0].shape == torch.Size([1, 240, 28, 28])
-    assert feat[1].shape == torch.Size([1, 480, 14, 14])
-    assert feat[2].shape == torch.Size([1, 960, 7, 7])
-    assert feat[3].shape == torch.Size([1, 960, 7, 7])
+    assert feat[0].shape == torch.Size([1, 232, 28, 28])
+    assert feat[1].shape == torch.Size([1, 464, 14, 14])
+    assert feat[2].shape == torch.Size([1, 1024, 7, 7])
+    assert feat[3].shape == torch.Size([1, 1024, 7, 7])

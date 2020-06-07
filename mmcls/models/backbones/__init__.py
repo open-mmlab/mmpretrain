@@ -1,3 +1,3 @@
-from .shufflenet_v1 import ShuffleNetv1
+from .shufflenet_v2 import ShuffleNetv2
 
-__all__ = ['ShuffleNetv1']
+__all__ = ['ShuffleNetv2']
