@@ -1,5 +1,3 @@
-from .mobilenet_v2 import MobileNetv2
+from .shufflenet_v1 import ShuffleNetv1
 
-__all__ = [
-    'MobileNetv2',
-]
+__all__ = ['ShuffleNetv1']

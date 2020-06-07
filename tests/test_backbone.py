@@ -1,16 +1,15 @@
 import pytest
 import torch
-import torch.nn as nn
 from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from mmcls.models.backbones import MobileNetv2
-from mmcls.models.backbones.mobilenet_v2 import InvertedResidual
+from mmcls.models.backbones import ShuffleNetv1
+from mmcls.models.backbones.shufflenet_v1 import ShuffleUnit
 
 
 def is_block(modules):
     """Check if is ResNet building block."""
-    if isinstance(modules, (InvertedResidual, )):
+    if isinstance(modules, (ShuffleUnit, )):
         return True
     return False
 
@@ -31,62 +30,58 @@ def check_norm_state(modules, train_state):
     return True
 
 
-def test_mobilenetv2_invertedresidual():
+def test_shufflenetv1_shuffleuint():
+
+    with pytest.raises(ValueError):
+        # combine must be in ['add', 'concat']
+        ShuffleUnit(24, 16, groups=3, first_block=True, combine='test')
+
+    with pytest.raises(ValueError):
+        # in_channels must be divisible by groups
+        ShuffleUnit(64, 64, groups=3, first_block=True, combine='add')
 
     with pytest.raises(AssertionError):
-        # stride must be in [1, 2]
-        InvertedResidual(64, 16, stride=3, expand_ratio=6)
+        # inplanes must be equal tp = outplanes when combine='add'
+        ShuffleUnit(64, 24, groups=3, first_block=True, combine='add')
 
-    # Test InvertedResidual with checkpoint forward, stride=1
-    block = InvertedResidual(64, 16, stride=1, expand_ratio=6)
-    x = torch.randn(1, 64, 56, 56)
+    # Test ShuffleUnit with combine='add'
+    block = ShuffleUnit(24, 24, groups=3, first_block=True, combine='add')
+    x = torch.randn(1, 24, 56, 56)
     x_out = block(x)
-    assert x_out.shape == torch.Size([1, 16, 56, 56])
+    assert x_out.shape == torch.Size([1, 24, 56, 56])
 
-    # Test InvertedResidual with checkpoint forward, stride=2
-    block = InvertedResidual(64, 16, stride=2, expand_ratio=6)
-    x = torch.randn(1, 64, 56, 56)
+    # Test ShuffleUnit with combine='concat'
+    block = ShuffleUnit(24, 240, groups=3, first_block=True, combine='concat')
+    x = torch.randn(1, 24, 56, 56)
     x_out = block(x)
-    assert x_out.shape == torch.Size([1, 16, 28, 28])
+    assert x_out.shape == torch.Size([1, 240, 28, 28])
 
-    # Test InvertedResidual with checkpoint forward
-    block = InvertedResidual(64, 16, stride=1, expand_ratio=6, with_cp=True)
-    assert block.with_cp
-    x = torch.randn(1, 64, 56, 56)
+    # Test ShuffleUnit with checkpoint forward
+    block = ShuffleUnit(
+        24, 24, groups=3, first_block=True, combine='add', with_cp=True)
+    x = torch.randn(1, 24, 56, 56)
     x_out = block(x)
-    assert x_out.shape == torch.Size([1, 16, 56, 56])
-
-    # Test InvertedResidual with activation=nn.ReLU
-    block = InvertedResidual(
-        64, 16, stride=1, expand_ratio=6, activation=nn.ReLU)
-    x = torch.randn(1, 64, 56, 56)
-    x_out = block(x)
-    assert x_out.shape == torch.Size([1, 16, 56, 56])
+    assert x_out.shape == torch.Size([1, 24, 56, 56])
 
 
-def test_mobilenetv2_backbone():
-    with pytest.raises(TypeError):
-        # pretrained must be a string path
-        model = MobileNetv2()
-        model.init_weights(pretrained=0)
+def test_shufflenetv1_backbone():
 
-    with pytest.raises(AssertionError):
-        # frozen_stages must less than 7
-        MobileNetv2(frozen_stages=8)
+    with pytest.raises(ValueError):
+        # groups must in [1, 2, 3, 4, 8]
+        ShuffleNetv1(groups=10)
 
-    # Test MobileNetv2
-    model = MobileNetv2()
+    # Test ShuffleNetv1 norm state
+    model = ShuffleNetv1()
     model.init_weights()
     model.train()
     assert check_norm_state(model.modules(), False)
 
-    # Test MobileNetv2 with first stage frozen
+    # Test ShuffleNetv1 with first stage frozen
     frozen_stages = 1
-    model = MobileNetv2(frozen_stages=frozen_stages)
+    model = ShuffleNetv1(frozen_stages=frozen_stages)
     model.init_weights()
     model.train()
-    assert model.bn1.training is False
-    for layer in [model.conv1, model.bn1]:
+    for layer in [model.conv1]:
         for param in layer.parameters():
             assert param.requires_grad is False
     for i in range(1, frozen_stages + 1):
@@ -97,13 +92,12 @@ def test_mobilenetv2_backbone():
         for param in layer.parameters():
             assert param.requires_grad is False
 
-    # Test MobileNetv2 with bn frozen
-    model = MobileNetv2(bn_frozen=True)
+    # Test ShuffleNetv1 with bn frozen
+    model = ShuffleNetv1(bn_frozen=True)
     model.init_weights()
     model.train()
-    assert model.bn1.training is False
 
-    for i in range(1, 8):
+    for i in range(1, 4):
         layer = getattr(model, f'layer{i}')
 
         for mod in layer.modules():
@@ -112,85 +106,52 @@ def test_mobilenetv2_backbone():
                 for params in mod.parameters():
                     params.requires_grad = False
 
-    # Test MobileNetv2 forward with widen_factor=1.0
-    model = MobileNetv2(widen_factor=1.0, activation=nn.ReLU6)
+    # Test ShuffleNetv1 forward with groups=3
+    model = ShuffleNetv1(groups=3)
     model.init_weights()
     model.train()
 
-    imgs = torch.randn(1, 3, 224, 224)
-    feat = model(imgs)
-    assert len(feat) == 8
-    assert feat[0].shape == torch.Size([1, 16, 112, 112])
-    assert feat[1].shape == torch.Size([1, 24, 56, 56])
-    assert feat[2].shape == torch.Size([1, 32, 28, 28])
-    assert feat[3].shape == torch.Size([1, 64, 14, 14])
-    assert feat[4].shape == torch.Size([1, 96, 14, 14])
-    assert feat[5].shape == torch.Size([1, 160, 7, 7])
-    assert feat[6].shape == torch.Size([1, 320, 7, 7])
-
-    # Test MobileNetv2 forward with activation=nn.ReLU
-    model = MobileNetv2(widen_factor=1.0, activation=nn.ReLU)
-    model.init_weights()
-    model.train()
-
-    imgs = torch.randn(1, 3, 224, 224)
-    feat = model(imgs)
-    assert len(feat) == 8
-    assert feat[0].shape == torch.Size([1, 16, 112, 112])
-    assert feat[1].shape == torch.Size([1, 24, 56, 56])
-    assert feat[2].shape == torch.Size([1, 32, 28, 28])
-    assert feat[3].shape == torch.Size([1, 64, 14, 14])
-    assert feat[4].shape == torch.Size([1, 96, 14, 14])
-    assert feat[5].shape == torch.Size([1, 160, 7, 7])
-    assert feat[6].shape == torch.Size([1, 320, 7, 7])
-
-    # Test MobileNetv2 with BatchNorm forward
-    model = MobileNetv2(widen_factor=1.0, activation=nn.ReLU6)
     for m in model.modules():
         if is_norm(m):
             assert isinstance(m, _BatchNorm)
-    model.init_weights()
-    model.train()
-
-    imgs = torch.randn(1, 3, 224, 224)
-    feat = model(imgs)
-    assert len(feat) == 8
-    assert feat[0].shape == torch.Size([1, 16, 112, 112])
-    assert feat[1].shape == torch.Size([1, 24, 56, 56])
-    assert feat[2].shape == torch.Size([1, 32, 28, 28])
-    assert feat[3].shape == torch.Size([1, 64, 14, 14])
-    assert feat[4].shape == torch.Size([1, 96, 14, 14])
-    assert feat[5].shape == torch.Size([1, 160, 7, 7])
-    assert feat[6].shape == torch.Size([1, 320, 7, 7])
-
-    # Test MobileNetv2 with layers 1, 3, 5 out forward
-    model = MobileNetv2(
-        widen_factor=1.0, activation=nn.ReLU6, out_indices=(0, 2, 4))
-    model.init_weights()
-    model.train()
 
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
     assert len(feat) == 4
-    assert feat[0].shape == torch.Size([1, 16, 112, 112])
-    assert feat[1].shape == torch.Size([1, 32, 28, 28])
-    assert feat[2].shape == torch.Size([1, 96, 14, 14])
+    assert feat[0].shape == torch.Size([1, 240, 28, 28])
+    assert feat[1].shape == torch.Size([1, 480, 14, 14])
+    assert feat[2].shape == torch.Size([1, 960, 7, 7])
+    assert feat[3].shape == torch.Size([1, 960, 7, 7])
 
-    # Test MobileNetv2 with checkpoint forward
-    model = MobileNetv2(widen_factor=1.0, activation=nn.ReLU6, with_cp=True)
-    for m in model.modules():
-        if is_block(m):
-            assert m.with_cp
+    # Test ShuffleNetv1 forward with layers 1, 2 forward
+    model = ShuffleNetv1(groups=3, out_indices=(1, 2))
     model.init_weights()
     model.train()
 
+    for m in model.modules():
+        if is_norm(m):
+            assert isinstance(m, _BatchNorm)
+
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
-    assert len(feat) == 8
-    assert feat[0].shape == torch.Size([1, 16, 112, 112])
-    assert feat[1].shape == torch.Size([1, 24, 56, 56])
-    assert feat[2].shape == torch.Size([1, 32, 28, 28])
-    assert feat[3].shape == torch.Size([1, 64, 14, 14])
-    assert feat[4].shape == torch.Size([1, 96, 14, 14])
-    assert feat[5].shape == torch.Size([1, 160, 7, 7])
-    assert feat[6].shape == torch.Size([1, 320, 7, 7])
+    assert len(feat) == 3
+    assert feat[0].shape == torch.Size([1, 480, 14, 14])
+    assert feat[1].shape == torch.Size([1, 960, 7, 7])
+    assert feat[2].shape == torch.Size([1, 960, 7, 7])
+
+    # Test ShuffleNetv1 forward with checkpoint forward
+    model = ShuffleNetv1(groups=3, with_cp=True)
+    model.init_weights()
+    model.train()
+
+    for m in model.modules():
+        if is_norm(m):
+            assert isinstance(m, _BatchNorm)
+
+    imgs = torch.randn(1, 3, 224, 224)
+    feat = model(imgs)
+    assert len(feat) == 4
+    assert feat[0].shape == torch.Size([1, 240, 28, 28])
+    assert feat[1].shape == torch.Size([1, 480, 14, 14])
+    assert feat[2].shape == torch.Size([1, 960, 7, 7])
+    assert feat[3].shape == torch.Size([1, 960, 7, 7])

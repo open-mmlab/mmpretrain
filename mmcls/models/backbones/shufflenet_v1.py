@@ -4,8 +4,8 @@ from collections import OrderedDict
 import torch
 import torch.nn as nn
 import torch.utils.checkpoint as cp
+from mmcv.runner import load_checkpoint
 
-from ..runner import load_checkpoint
 from .base_backbone import BaseBackbone
 from .weight_init import constant_init, kaiming_init
 
@@ -28,12 +28,7 @@ def conv1x1(inplanes, planes, groups=1):
     - Normal pointwise convolution when groups == 1
     - Grouped pointwise convolution when groups > 1
     """
-    return nn.Conv2d(
-        inplanes,
-        planes,
-        kernel_size=1,
-        groups=groups,
-        stride=1)
+    return nn.Conv2d(inplanes, planes, kernel_size=1, groups=groups, stride=1)
 
 
 def channel_shuffle(x, groups):
@@ -65,8 +60,8 @@ def _make_divisible(v, divisor, min_value=None):
     return new_v
 
 
-# noinspection PyShadowingNames,PyShadowingNames
 class ShuffleUnit(nn.Module):
+
     def __init__(self,
                  inplanes,
                  planes,
@@ -96,20 +91,24 @@ class ShuffleUnit(nn.Module):
                              "Only \"add\" and \"concat\" are "
                              "supported".format(self.combine))
 
+        if combine == 'add':
+            assert inplanes == planes, \
+                'inplanes must be equal to outplanes when combine is add'
+
         self.first_1x1_groups = self.groups if first_block else 1
         self.g_conv_1x1_compress = self._make_grouped_conv1x1(
             self.inplanes,
             self.bottleneck_channels,
             self.first_1x1_groups,
             batch_norm=True,
-            relu=True
-        )
+            relu=True)
 
-        self.depthwise_conv3x3 = conv3x3(self.bottleneck_channels,
-                                         self.bottleneck_channels,
-                                         stride=self.depthwise_stride,
-                                         groups=self.bottleneck_channels)
-        self.nn.BatchNorm2d_after_depthwise = \
+        self.depthwise_conv3x3 = conv3x3(
+            self.bottleneck_channels,
+            self.bottleneck_channels,
+            stride=self.depthwise_stride,
+            groups=self.bottleneck_channels)
+        self.bn_after_depthwise = \
             nn.BatchNorm2d(self.bottleneck_channels)
 
         self.g_conv_1x1_expand = \
@@ -132,8 +131,11 @@ class ShuffleUnit(nn.Module):
         return torch.cat((x, out), 1)
 
     @staticmethod
-    def _make_grouped_conv1x1(inplanes, planes, groups,
-                              batch_norm=True, relu=False):
+    def _make_grouped_conv1x1(inplanes,
+                              planes,
+                              groups,
+                              batch_norm=True,
+                              relu=False):
 
         modules = OrderedDict()
 
@@ -150,6 +152,7 @@ class ShuffleUnit(nn.Module):
             return conv
 
     def forward(self, x):
+
         def _inner_forward(x):
             residual = x
 
@@ -159,7 +162,7 @@ class ShuffleUnit(nn.Module):
             out = self.g_conv_1x1_compress(x)
             out = channel_shuffle(out, self.groups)
             out = self.depthwise_conv3x3(out)
-            out = self.nn.BatchNorm2d_after_depthwise(out)
+            out = self.bn_after_depthwise(out)
             out = self.g_conv_1x1_expand(out)
 
             out = self._combine_func(residual, out)
@@ -230,10 +233,10 @@ class ShuffleNetv1(BaseBackbone):
         self.conv1 = conv3x3(3, self.inplanes, stride=2)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
-        self.layer2 = self._make_layer(channels[0], blocks[0],
-                                       first_block=False, with_cp=with_cp)
-        self.layer3 = self._make_layer(channels[1], blocks[1], with_cp=with_cp)
-        self.layer4 = self._make_layer(channels[2], blocks[2], with_cp=with_cp)
+        self.layer1 = self._make_layer(
+            channels[0], blocks[0], first_block=False, with_cp=with_cp)
+        self.layer2 = self._make_layer(channels[1], blocks[1], with_cp=with_cp)
+        self.layer3 = self._make_layer(channels[2], blocks[2], with_cp=with_cp)
 
     def init_weights(self, pretrained=None):
         if isinstance(pretrained, str):
@@ -248,25 +251,27 @@ class ShuffleNetv1(BaseBackbone):
         else:
             raise TypeError('pretrained must be a str or None')
 
-    def _make_layer(self,
-                    outplanes,
-                    blocks,
-                    first_block=True,
-                    with_cp=False):
+    def _make_layer(self, outplanes, blocks, first_block=True, with_cp=False):
         layers = []
         for i in range(blocks):
             if i == 0:
-                layers.append(ShuffleUnit(self.inplanes, outplanes,
-                                          groups=self.groups,
-                                          first_block=first_block,
-                                          combine='concat',
-                                          with_cp=with_cp))
+                layers.append(
+                    ShuffleUnit(
+                        self.inplanes,
+                        outplanes,
+                        groups=self.groups,
+                        first_block=first_block,
+                        combine='concat',
+                        with_cp=with_cp))
             else:
-                layers.append(ShuffleUnit(self.inplanes, outplanes,
-                                          groups=self.groups,
-                                          first_block=True,
-                                          combine='add',
-                                          with_cp=with_cp))
+                layers.append(
+                    ShuffleUnit(
+                        self.inplanes,
+                        outplanes,
+                        groups=self.groups,
+                        first_block=True,
+                        combine='add',
+                        with_cp=with_cp))
             self.inplanes = outplanes
 
         return nn.Sequential(*layers)
@@ -274,7 +279,9 @@ class ShuffleNetv1(BaseBackbone):
     def forward(self, x):
         x = self.conv1(x)
         x = self.maxpool(x)
+
         outs = []
+        x = self.layer1(x)
         if 0 in self.out_indices:
             outs.append(x)
         x = self.layer2(x)
@@ -283,9 +290,8 @@ class ShuffleNetv1(BaseBackbone):
         x = self.layer3(x)
         if 2 in self.out_indices:
             outs.append(x)
-        x = self.layer4(x)
-        if 3 in self.out_indices:
-            outs.append(x)
+
+        outs.append(x)
 
         if len(outs) == 1:
             return outs[0]
