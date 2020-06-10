@@ -37,7 +37,7 @@ def test_shufflenetv1_shuffleuint():
         ShuffleUnit(24, 16, groups=3, first_block=True, combine='test')
 
     with pytest.raises(ValueError):
-        # in_channels must be divisible by groups
+        # inplanes must be divisible by groups
         ShuffleUnit(64, 64, groups=3, first_block=True, combine='add')
 
     with pytest.raises(AssertionError):
@@ -65,6 +65,14 @@ def test_shufflenetv1_shuffleuint():
 
 
 def test_shufflenetv1_backbone():
+
+    with pytest.raises(ValueError):
+        # frozen_stages must in [-1, 1, 2, 3]
+        ShuffleNetv1(frozen_stages=10)
+
+    with pytest.raises(ValueError):
+        # the item in out_indices must in [0, 1, 2, 3]
+        ShuffleNetv1(out_indices=[5])
 
     with pytest.raises(ValueError):
         # groups must in [1, 2, 3, 4, 8]
