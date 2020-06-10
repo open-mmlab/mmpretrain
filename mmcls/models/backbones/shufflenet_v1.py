@@ -1,9 +1,9 @@
 import logging
-from collections import OrderedDict
 
 import torch
 import torch.nn as nn
 import torch.utils.checkpoint as cp
+from mmcv.cnn.bricks import ConvModule
 from mmcv.cnn.weight_init import constant_init, kaiming_init
 from mmcv.runner import load_checkpoint
 
@@ -156,12 +156,11 @@ class ShuffleUnit(nn.Module):
                              f'Only "add" and "concat" are supported.')
 
         self.first_1x1_groups = self.groups if first_block else 1
-        self.g_conv_1x1_compress = self._make_grouped_conv1x1(
-            self.inplanes,
-            self.bottleneck_channels,
-            self.first_1x1_groups,
-            batch_norm=True,
-            relu=True)
+        self.g_conv_1x1_compress = ConvModule(
+            in_channels=self.inplanes,
+            out_channels=self.bottleneck_channels,
+            kernel_size=1,
+            groups=self.first_1x1_groups)
 
         self.depthwise_conv3x3 = conv3x3(
             self.bottleneck_channels,
@@ -171,12 +170,12 @@ class ShuffleUnit(nn.Module):
 
         self.bn_after_depthwise = nn.BatchNorm2d(self.bottleneck_channels)
 
-        self.g_conv_1x1_expand = self._make_grouped_conv1x1(
-            self.bottleneck_channels,
-            self.planes,
-            self.groups,
-            batch_norm=True,
-            relu=False)
+        self.g_conv_1x1_expand = ConvModule(
+            in_channels=self.bottleneck_channels,
+            out_channels=self.planes,
+            kernel_size=1,
+            groups=self.groups,
+            act_cfg=None)
 
         self.avgpool = nn.AvgPool2d(kernel_size=3, stride=2, padding=1)
         self.relu = nn.ReLU(inplace=True)
@@ -190,27 +189,6 @@ class ShuffleUnit(nn.Module):
     def _concat(x, out):
         # concatenate along channel axis
         return torch.cat((x, out), 1)
-
-    @staticmethod
-    def _make_grouped_conv1x1(inplanes,
-                              planes,
-                              groups,
-                              batch_norm=True,
-                              relu=False):
-
-        modules = OrderedDict()
-
-        conv = conv1x1(inplanes, planes, groups=groups)
-        modules['conv1x1'] = conv
-
-        if batch_norm:
-            modules['batch_norm'] = nn.BatchNorm2d(planes)
-        if relu:
-            modules['relu'] = nn.ReLU()
-        if len(modules) > 1:
-            return nn.Sequential(modules)
-        else:
-            return conv
 
     def forward(self, x):
 
