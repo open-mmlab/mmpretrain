@@ -3,7 +3,7 @@ import logging
 import torch
 import torch.nn as nn
 import torch.utils.checkpoint as cp
-from mmcv.cnn import (ConvModule, build_conv_layer, build_activation_layer,
+from mmcv.cnn import (ConvModule, build_activation_layer, build_conv_layer,
                       constant_init, kaiming_init)
 from mmcv.runner import load_checkpoint
 from torch.nn.modules.batchnorm import _BatchNorm
@@ -185,7 +185,6 @@ class ShuffleUnit(nn.Module):
         else:
             out = _inner_forward(x)
 
-
         return out
 
 
@@ -273,8 +272,8 @@ class ShuffleNetv1(BaseBackbone):
 
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
-        self.layer1 = self._make_layer(channels[0], blocks[0],
-                                       first_block=False)
+        self.layer1 = self._make_layer(
+            channels[0], blocks[0], first_block=False)
         self.layer2 = self._make_layer(channels[1], blocks[1])
         self.layer3 = self._make_layer(channels[2], blocks[2])
 
