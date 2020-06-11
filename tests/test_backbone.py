@@ -118,9 +118,8 @@ def test_shufflenetv1_backbone():
     assert feat[3].shape == torch.Size([1, 960, 7, 7])
 
     # Test ShuffleNetv1 forward with GroupNorm forward
-    model = ShuffleNetv1(groups=3,
-                         norm_cfg=dict(type='GN', num_groups=2,
-                                       requires_grad=True))
+    model = ShuffleNetv1(
+        groups=3, norm_cfg=dict(type='GN', num_groups=2, requires_grad=True))
     model.init_weights()
     model.train()
 
