@@ -67,11 +67,11 @@ def test_shufflenetv1_shuffleuint():
 def test_shufflenetv1_backbone():
 
     with pytest.raises(ValueError):
-        # frozen_stages must in [-1, 1, 2, 3]
+        # frozen_stages must in range(-1, 4)
         ShuffleNetv1(frozen_stages=10)
 
     with pytest.raises(ValueError):
-        # the item in out_indices must in [0, 1, 2, 3]
+        # the item in out_indices must in range(0, 4)
         ShuffleNetv1(out_indices=[5])
 
     with pytest.raises(ValueError):
@@ -100,20 +100,6 @@ def test_shufflenetv1_backbone():
         for param in layer.parameters():
             assert param.requires_grad is False
 
-    # Test ShuffleNetv1 with bn frozen
-    model = ShuffleNetv1(bn_frozen=True)
-    model.init_weights()
-    model.train()
-
-    for i in range(1, 4):
-        layer = getattr(model, f'layer{i}')
-
-        for mod in layer.modules():
-            if isinstance(mod, _BatchNorm):
-                assert mod.training is False
-                for params in mod.parameters():
-                    params.requires_grad = False
-
     # Test ShuffleNetv1 forward with groups=3
     model = ShuffleNetv1(groups=3)
     model.init_weights()
@@ -122,6 +108,25 @@ def test_shufflenetv1_backbone():
     for m in model.modules():
         if is_norm(m):
             assert isinstance(m, _BatchNorm)
+
+    imgs = torch.randn(1, 3, 224, 224)
+    feat = model(imgs)
+    assert len(feat) == 4
+    assert feat[0].shape == torch.Size([1, 240, 28, 28])
+    assert feat[1].shape == torch.Size([1, 480, 14, 14])
+    assert feat[2].shape == torch.Size([1, 960, 7, 7])
+    assert feat[3].shape == torch.Size([1, 960, 7, 7])
+
+    # Test ShuffleNetv1 forward with GroupNorm forward
+    model = ShuffleNetv1(groups=3,
+                         norm_cfg=dict(type='GN', num_groups=2,
+                                       requires_grad=True))
+    model.init_weights()
+    model.train()
+
+    for m in model.modules():
+        if is_norm(m):
+            assert isinstance(m, GroupNorm)
 
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
