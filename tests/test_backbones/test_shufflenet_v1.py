@@ -48,20 +48,20 @@ def test_shufflenetv1_shuffleuint():
     block = ShuffleUnit(24, 24, groups=3, first_block=True, combine='add')
     x = torch.randn(1, 24, 56, 56)
     x_out = block(x)
-    assert x_out.shape == torch.Size([1, 24, 56, 56])
+    assert x_out.shape == torch.Size((1, 24, 56, 56))
 
     # Test ShuffleUnit with combine='concat'
     block = ShuffleUnit(24, 240, groups=3, first_block=True, combine='concat')
     x = torch.randn(1, 24, 56, 56)
     x_out = block(x)
-    assert x_out.shape == torch.Size([1, 240, 28, 28])
+    assert x_out.shape == torch.Size((1, 240, 28, 28))
 
     # Test ShuffleUnit with checkpoint forward
     block = ShuffleUnit(
         24, 24, groups=3, first_block=True, combine='add', with_cp=True)
     x = torch.randn(1, 24, 56, 56)
     x_out = block(x)
-    assert x_out.shape == torch.Size([1, 24, 56, 56])
+    assert x_out.shape == torch.Size((1, 24, 56, 56))
 
 
 def test_shufflenetv1_backbone():
@@ -112,10 +112,10 @@ def test_shufflenetv1_backbone():
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
     assert len(feat) == 4
-    assert feat[0].shape == torch.Size([1, 240, 28, 28])
-    assert feat[1].shape == torch.Size([1, 480, 14, 14])
-    assert feat[2].shape == torch.Size([1, 960, 7, 7])
-    assert feat[3].shape == torch.Size([1, 960, 7, 7])
+    assert feat[0].shape == torch.Size((1, 240, 28, 28))
+    assert feat[1].shape == torch.Size((1, 480, 14, 14))
+    assert feat[2].shape == torch.Size((1, 960, 7, 7))
+    assert feat[3].shape == torch.Size((1, 960, 7, 7))
 
     # Test ShuffleNetv1 forward with GroupNorm forward
     model = ShuffleNetv1(
@@ -130,10 +130,10 @@ def test_shufflenetv1_backbone():
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
     assert len(feat) == 4
-    assert feat[0].shape == torch.Size([1, 240, 28, 28])
-    assert feat[1].shape == torch.Size([1, 480, 14, 14])
-    assert feat[2].shape == torch.Size([1, 960, 7, 7])
-    assert feat[3].shape == torch.Size([1, 960, 7, 7])
+    assert feat[0].shape == torch.Size((1, 240, 28, 28))
+    assert feat[1].shape == torch.Size((1, 480, 14, 14))
+    assert feat[2].shape == torch.Size((1, 960, 7, 7))
+    assert feat[3].shape == torch.Size((1, 960, 7, 7))
 
     # Test ShuffleNetv1 forward with layers 1, 2 forward
     model = ShuffleNetv1(groups=3, out_indices=(1, 2))
@@ -147,9 +147,9 @@ def test_shufflenetv1_backbone():
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
     assert len(feat) == 3
-    assert feat[0].shape == torch.Size([1, 480, 14, 14])
-    assert feat[1].shape == torch.Size([1, 960, 7, 7])
-    assert feat[2].shape == torch.Size([1, 960, 7, 7])
+    assert feat[0].shape == torch.Size((1, 480, 14, 14))
+    assert feat[1].shape == torch.Size((1, 960, 7, 7))
+    assert feat[2].shape == torch.Size((1, 960, 7, 7))
 
     # Test ShuffleNetv1 forward with checkpoint forward
     model = ShuffleNetv1(groups=3, with_cp=True)
@@ -163,7 +163,7 @@ def test_shufflenetv1_backbone():
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
     assert len(feat) == 4
-    assert feat[0].shape == torch.Size([1, 240, 28, 28])
-    assert feat[1].shape == torch.Size([1, 480, 14, 14])
-    assert feat[2].shape == torch.Size([1, 960, 7, 7])
-    assert feat[3].shape == torch.Size([1, 960, 7, 7])
+    assert feat[0].shape == torch.Size((1, 240, 28, 28))
+    assert feat[1].shape == torch.Size((1, 480, 14, 14))
+    assert feat[2].shape == torch.Size((1, 960, 7, 7))
+    assert feat[3].shape == torch.Size((1, 960, 7, 7))

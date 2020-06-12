@@ -12,23 +12,23 @@ from .base_backbone import BaseBackbone
 
 
 def channel_shuffle(x, groups):
-    """ Channel Shuffle operation
+    """ Channel Shuffle operation.
 
-    This function enable cross-group information flow for multiple group
-        convolution layers.
+    This function enables cross-group information flow for multiple group
+    convolution layers.
 
     Args:
-        x: The input tensor.
+        x (Tensor): The input tensor.
         groups (int): The number of groups to divide the input tensor
             in channel dimension.
 
     Returns:
-        x: The output tensor after channel shuffle operation.
-
+        Tensor: The output tensor after channel shuffle operation.
     """
+
     batchsize, num_channels, height, width = x.size()
-    assert (num_channels % groups == 0), 'num_channels should ' \
-                                         'be divisible by groups'
+    assert (num_channels % groups == 0), ('num_channels should be '
+                                          'divisible by groups')
     channels_per_group = num_channels // groups
 
     x = x.view(batchsize, groups, channels_per_group, height, width)
@@ -39,7 +39,7 @@ def channel_shuffle(x, groups):
 
 
 def _make_divisible(v, divisor, min_value=None):
-    """ Make divisible function
+    """ Make divisible function.
 
     This function ensures that all layers have a channel number that is
         divisible by divisor.
@@ -50,8 +50,9 @@ def _make_divisible(v, divisor, min_value=None):
         min_value (int, optional): the minimum value of the output channel.
 
     Returns:
-        new_v (int): The modified output channel number
+        int: The modified output channel number
     """
+
     if min_value is None:
         min_value = divisor
     new_v = max(min_value, int(v + divisor / 2) // divisor * divisor)
@@ -85,7 +86,7 @@ class ShuffleUnit(nn.Module):
             will save some memory while slowing down the training speed.
 
     Returns:
-        out: output tensor
+        Tensor: output tensor
     """
 
     def __init__(self,
@@ -110,8 +111,8 @@ class ShuffleUnit(nn.Module):
         if self.combine == 'add':
             self.depthwise_stride = 1
             self._combine_func = self._add
-            assert inplanes == planes, 'inplanes must be equal to ' \
-                                       'planes when combine is add.'
+            assert inplanes == planes, ('inplanes must be equal to '
+                                        'planes when combine is add.')
         elif self.combine == 'concat':
             self.depthwise_stride = 2
             self._combine_func = self._concat
@@ -244,15 +245,15 @@ class ShuffleNetv1(BaseBackbone):
         self.with_cp = with_cp
 
         if groups == 1:
-            channels = [144, 288, 576]
+            channels = (144, 288, 576)
         elif groups == 2:
-            channels = [200, 400, 800]
+            channels = (200, 400, 800)
         elif groups == 3:
-            channels = [240, 480, 960]
+            channels = (240, 480, 960)
         elif groups == 4:
-            channels = [272, 544, 1088]
+            channels = (272, 544, 1088)
         elif groups == 8:
-            channels = [384, 768, 1536]
+            channels = (384, 768, 1536)
         else:
             raise ValueError(f'{groups} groups is not supported for 1x1 '
                              f'Grouped Convolutions')
@@ -300,8 +301,10 @@ class ShuffleNetv1(BaseBackbone):
             first_block (bool, optional): Whether is the first ShuffleUnit of a
                 sequential ShuffleUnits. If True, use the grouped 1x1
                 convolution.
-        Returns: a Module consisting of n sequential ShuffleUnits.
+        Returns:
+            Module: a module consisting of n sequential ShuffleUnits.
         """
+
         layers = []
         for i in range(blocks):
             first_block = first_block if i == 0 else True
