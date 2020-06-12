@@ -28,7 +28,7 @@ test:
     - pip install pillow==6.2.2
     - pip install -e .
     - python -c "import mmcls; print(mmcls.__version__)"
-    # - echo "Start testing..."
-    # - pip install pytest coverage
-    # - coverage run --source mmcls -m pytest tests/
-    # - coverage report -m
+    - echo "Start testing..."
+    - pip install pytest coverage
+    - coverage run --source mmcls -m pytest tests/
+    - coverage report -m
