@@ -86,7 +86,7 @@ class ShuffleUnit(nn.Module):
             will save some memory while slowing down the training speed.
 
     Returns:
-        Tensor: output tensor
+        Tensor: The output tensor.
     """
 
     def __init__(self,
@@ -291,17 +291,16 @@ class ShuffleNetv1(BaseBackbone):
             raise TypeError('pretrained must be a str or None')
 
     def _make_layer(self, outplanes, blocks, first_block=True):
-        """ Stack n bottleneck modules where n is inferred from the depth of
-            the network.
+        """ Stack ShuffleUnit blocks to make a layer.
 
         Args:
-            outplanes: number of output channels
-            blocks: number of blocks to be built
+            outplanes: Number of output channels.
+            blocks: Number of blocks to be built.
             first_block (bool, optional): Whether is the first ShuffleUnit of a
                 sequential ShuffleUnits. If True, use the grouped 1x1
                 convolution.
         Returns:
-            Module: a module consisting of n sequential ShuffleUnits.
+            Module: A module consisting of several ShuffleUnit blocks.
         """
 
         layers = []
