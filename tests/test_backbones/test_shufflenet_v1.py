@@ -221,14 +221,14 @@ def test_shufflenetv1_backbone():
         if is_norm(m):
             assert isinstance(m, _BatchNorm)
 
-    imgs = torch.randn(1, 3, 224,  224)
+    imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
     assert len(feat) == 2
     assert feat[0].shape == torch.Size((1, 480, 14, 14))
     assert feat[1].shape == torch.Size((1, 960, 7, 7))
 
     # Test ShuffleNetv1 forward with layers 2 forward
-    model = ShuffleNetv1(groups=3, out_indices=(2,))
+    model = ShuffleNetv1(groups=3, out_indices=(2, ))
     model.init_weights()
     model.train()
 
