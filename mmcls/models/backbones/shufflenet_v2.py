@@ -247,7 +247,6 @@ class ShuffleNetv2(BaseBackbone):
             layer_name = f'layer{i + 1}'
             self.add_module(layer_name, layer)
             self.layers.append(layer_name)
-            self.inplanes = channels[i]
 
         output_channels = channels[-1]
         self.conv2 = ConvModule(
