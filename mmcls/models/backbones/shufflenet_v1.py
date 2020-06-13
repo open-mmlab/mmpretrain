@@ -1,11 +1,8 @@
-import logging
-
 import torch
 import torch.nn as nn
 import torch.utils.checkpoint as cp
 from mmcv.cnn import (ConvModule, build_activation_layer, build_conv_layer,
                       constant_init, kaiming_init)
-from mmcv.runner import load_checkpoint
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from .base_backbone import BaseBackbone
@@ -38,15 +35,15 @@ def channel_shuffle(x, groups):
     return x
 
 
-def _make_divisible(v, divisor, min_value=None):
+def make_divisible(value, divisor, min_value=None):
     """ Make divisible function.
 
     This function ensures that all layers have a channel number that is
         divisible by divisor.
 
     Args:
-        v (int): The original channel number
-        divisor (int): The divisor to fully divide the channel number
+        value (int): The original channel number.
+        divisor (int): The divisor to fully divide the channel number.
         min_value (int, optional): the minimum value of the output channel.
 
     Returns:
@@ -55,11 +52,11 @@ def _make_divisible(v, divisor, min_value=None):
 
     if min_value is None:
         min_value = divisor
-    new_v = max(min_value, int(v + divisor / 2) // divisor * divisor)
+    new_value = max(min_value, int(value + divisor / 2) // divisor * divisor)
     # Make sure that round down does not go down by more than 10%.
-    if new_v < 0.9 * v:
-        new_v += divisor
-    return new_v
+    if new_value < 0.9 * value:
+        new_value += divisor
+    return new_value
 
 
 class ShuffleUnit(nn.Module):
@@ -79,7 +76,8 @@ class ShuffleUnit(nn.Module):
             branches.
         conv_cfg (dict): Config dict for convolution layer. Default: None,
             which means using conv2d.
-        norm_cfg (dict): Config dict for normalization layer. Default: None.
+        norm_cfg (dict): Config dict for normalization layer.
+            Default: dict(type='BN').
         act_cfg (dict): Config dict for activation layer.
             Default: dict(type='ReLU').
         with_cp (bool, optional): Use checkpoint or not. Using checkpoint
@@ -96,7 +94,7 @@ class ShuffleUnit(nn.Module):
                  first_block=True,
                  combine='add',
                  conv_cfg=None,
-                 norm_cfg=None,
+                 norm_cfg=dict(type='BN'),
                  act_cfg=dict(type='ReLU'),
                  with_cp=False):
         super(ShuffleUnit, self).__init__()
@@ -203,7 +201,8 @@ class ShuffleNetv1(BaseBackbone):
             not freezing any parameters.
         conv_cfg (dict): Config dict for convolution layer. Default: None,
             which means using conv2d.
-        norm_cfg (dict): Config dict for normalization layer. Default: None.
+        norm_cfg (dict): Config dict for normalization layer.
+            Default: dict(type='BN').
         act_cfg (dict): Config dict for activation layer.
             Default: dict(type='ReLU').
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
@@ -219,12 +218,12 @@ class ShuffleNetv1(BaseBackbone):
                  out_indices=(0, 1, 2, 3),
                  frozen_stages=-1,
                  conv_cfg=None,
-                 norm_cfg=None,
+                 norm_cfg=dict(type='BN'),
                  act_cfg=dict(type='ReLU'),
                  norm_eval=True,
                  with_cp=False):
         super(ShuffleNetv1, self).__init__()
-        blocks = [3, 7, 3]
+        self.stage_blocks = [3, 7, 3]
         self.groups = groups
 
         for indice in out_indices:
@@ -257,7 +256,7 @@ class ShuffleNetv1(BaseBackbone):
             raise ValueError(f'{groups} groups is not supported for 1x1 '
                              f'Grouped Convolutions')
 
-        channels = [_make_divisible(ch * widen_factor, 8) for ch in channels]
+        channels = [make_divisible(ch * widen_factor, 8) for ch in channels]
 
         self.inplanes = int(24 * widen_factor)
 
@@ -272,78 +271,13 @@ class ShuffleNetv1(BaseBackbone):
 
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
-        self.layer1 = self._make_layer(
-            channels[0], blocks[0], first_block=False)
-        self.layer2 = self._make_layer(channels[1], blocks[1])
-        self.layer3 = self._make_layer(channels[2], blocks[2])
-
-    def init_weights(self, pretrained=None):
-        if isinstance(pretrained, str):
-            logger = logging.getLogger()
-            load_checkpoint(self, pretrained, strict=False, logger=logger)
-        elif pretrained is None:
-            for m in self.modules():
-                if isinstance(m, nn.Conv2d):
-                    kaiming_init(m)
-                elif isinstance(m, nn.BatchNorm2d):
-                    constant_init(m, 1)
-        else:
-            raise TypeError('pretrained must be a str or None')
-
-    def _make_layer(self, outplanes, blocks, first_block=True):
-        """ Stack ShuffleUnit blocks to make a layer.
-
-        Args:
-            outplanes: Number of output channels.
-            blocks: Number of blocks to be built.
-            first_block (bool, optional): Whether is the first ShuffleUnit of a
-                sequential ShuffleUnits. If True, use the grouped 1x1
-                convolution.
-        Returns:
-            Module: A module consisting of several ShuffleUnit blocks.
-        """
-
-        layers = []
-        for i in range(blocks):
-            first_block = first_block if i == 0 else True
-            combine_mode = 'concat' if i == 0 else 'add'
-            layers.append(
-                ShuffleUnit(
-                    self.inplanes,
-                    outplanes,
-                    groups=self.groups,
-                    first_block=first_block,
-                    combine=combine_mode,
-                    conv_cfg=self.conv_cfg,
-                    norm_cfg=self.norm_cfg,
-                    act_cfg=self.act_cfg,
-                    with_cp=self.with_cp))
-
-            self.inplanes = outplanes
-
-        return nn.Sequential(*layers)
-
-    def forward(self, x):
-        x = self.conv1(x)
-        x = self.maxpool(x)
-
-        outs = []
-        x = self.layer1(x)
-        if 0 in self.out_indices:
-            outs.append(x)
-        x = self.layer2(x)
-        if 1 in self.out_indices:
-            outs.append(x)
-        x = self.layer3(x)
-        if 2 in self.out_indices:
-            outs.append(x)
-
-        outs.append(x)
-
-        if len(outs) == 1:
-            return outs[0]
-        else:
-            return tuple(outs)
+        self.layers = []
+        for i, num_blocks in enumerate(self.stage_blocks):
+            first_block = False if i == 0 else True
+            layer = self.make_layer(channels[i], num_blocks, first_block)
+            layer_name = f'layer{i + 1}'
+            self.add_module(layer_name, layer)
+            self.layers.append(layer_name)
 
     def _freeze_stages(self):
         if self.frozen_stages >= 0:
@@ -354,6 +288,61 @@ class ShuffleNetv1(BaseBackbone):
             layer.eval()
             for param in layer.parameters():
                 param.requires_grad = False
+
+    def init_weights(self, pretrained=None):
+        if pretrained is None:
+            for m in self.modules():
+                if isinstance(m, nn.Conv2d):
+                    kaiming_init(m)
+                elif isinstance(m, (_BatchNorm, nn.GroupNorm)):
+                    constant_init(m, 1)
+        else:
+            raise TypeError('pretrained must be a str or None')
+
+    def make_layer(self, planes, num_blocks, first_block=True):
+        """ Stack ShuffleUnit blocks to make a layer.
+
+        Args:
+            planes (int): planes of block.
+            num_blocks (int): number of blocks.
+            first_block (bool, optional): Whether is the first ShuffleUnit of a
+                sequential ShuffleUnits. If True, use the grouped 1x1
+                convolution.
+        """
+        layers = []
+        for i in range(num_blocks):
+            first_block = first_block if i == 0 else True
+            combine_mode = 'concat' if i == 0 else 'add'
+            layers.append(
+                ShuffleUnit(
+                    self.inplanes,
+                    planes,
+                    groups=self.groups,
+                    first_block=first_block,
+                    combine=combine_mode,
+                    conv_cfg=self.conv_cfg,
+                    norm_cfg=self.norm_cfg,
+                    act_cfg=self.act_cfg,
+                    with_cp=self.with_cp))
+            self.inplanes = planes
+
+        return nn.Sequential(*layers)
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.maxpool(x)
+
+        outs = []
+        for i, layer_name in enumerate(self.layers):
+            layer = getattr(self, layer_name)
+            x = layer(x)
+            if i in self.out_indices:
+                outs.append(x)
+
+        if len(outs) == 1:
+            return outs[0]
+        else:
+            return tuple(outs)
 
     def train(self, mode=True):
         super(ShuffleNetv1, self).train(mode)
