@@ -71,9 +71,6 @@ class InvertedResidual(nn.Module):
             Default: dict(type='BN').
         act_cfg (dict): Config dict for activation layer.
             Default: dict(type='ReLU').
-        norm_eval (bool): Whether to set norm layers to eval mode, namely,
-            freeze running stats (mean and var). Note: Effect on Batch Norm
-            and its variants only. Default: True.
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
             memory while slowing down the training speed. Default: False.
 
@@ -192,7 +189,7 @@ class ShuffleNetv2(BaseBackbone):
             Default: dict(type='ReLU').
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm
-            and its variants only. Default: True.
+            and its variants only. Default: False.
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
             memory while slowing down the training speed. Default: False.
     """
@@ -205,7 +202,7 @@ class ShuffleNetv2(BaseBackbone):
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
                  act_cfg=dict(type='ReLU'),
-                 norm_eval=True,
+                 norm_eval=False,
                  with_cp=False):
         super(ShuffleNetv2, self).__init__()
         self.stage_blocks = [4, 8, 4]
