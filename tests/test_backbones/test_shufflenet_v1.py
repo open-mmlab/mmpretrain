@@ -97,7 +97,7 @@ def test_shufflenetv1_backbone():
     model = ShuffleNetv1()
     model.init_weights()
     model.train()
-    assert check_norm_state(model.modules(), False)
+    assert check_norm_state(model.modules(), True)
 
     # Test ShuffleNetv1 with first stage frozen
     frozen_stages = 1

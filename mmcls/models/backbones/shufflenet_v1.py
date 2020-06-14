@@ -193,12 +193,13 @@ class ShuffleNetv1(BaseBackbone):
     Args:
         groups (int, optional): The number of groups to be used in grouped 1x1
             convolutions in each ShuffleUnit. Default is 3 for best performance
-            according to original paper.
+            according to original paper. Default: 3.
         widen_factor (float, optional): Width multiplier - adjusts number of
-            channels in each layer by this amount. Default is 1.0.
+            channels in each layer by this amount. Default: 1.0.
         out_indices (Sequence[int]): Output from which stages.
-        frozen_stages (int): Stages to be frozen (all param fixed). -1 means
-            not freezing any parameters.
+            Default: (0, 1, 2, 3)
+        frozen_stages (int): Stages to be frozen (all param fixed).
+            Default: -1, which means not freezing any parameters.
         conv_cfg (dict): Config dict for convolution layer. Default: None,
             which means using conv2d.
         norm_cfg (dict): Config dict for normalization layer.
@@ -207,9 +208,9 @@ class ShuffleNetv1(BaseBackbone):
             Default: dict(type='ReLU').
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm
-            and its variants only.
+            and its variants only. Default: False.
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
-            memory while slowing down the training speed.
+            memory while slowing down the training speed. Default: False.
     """
 
     def __init__(self,
@@ -220,7 +221,7 @@ class ShuffleNetv1(BaseBackbone):
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
                  act_cfg=dict(type='ReLU'),
-                 norm_eval=True,
+                 norm_eval=False,
                  with_cp=False):
         super(ShuffleNetv1, self).__init__()
         self.stage_blocks = [3, 7, 3]
