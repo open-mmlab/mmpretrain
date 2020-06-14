@@ -9,6 +9,26 @@ from .base_backbone import BaseBackbone
 
 
 class BasicBlock(nn.Module):
+    """BasicBlock for ResNet.
+
+    Args:
+        inplanes (int): inplanes of block.
+        planes (int): planes of block.
+        stride (int): stride of the block. Default: 1
+        dilation (int): dilation of convolution. Default: 1
+        downsample (nn.Module): downsample operation on identity branch.
+            Default: None
+        style (str): `pytorch` or `caffe`. If set to "pytorch", the stride-two
+            layer is the 3x3 conv layer, otherwise the stride-two layer is
+            the first 1x1 conv layer.
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+            memory while slowing down the training speed.
+        conv_cfg (dict): dictionary to construct and config conv layer.
+            Default: None
+        norm_cfg (dict): dictionary to construct and config norm layer.
+            Default: dict(type='BN')
+    """
+
     expansion = 1
 
     def __init__(self,
@@ -84,6 +104,26 @@ class BasicBlock(nn.Module):
 
 
 class Bottleneck(nn.Module):
+    """Bottleneck block for ResNet.
+
+    Args:
+        inplanes (int): inplanes of block.
+        planes (int): planes of block.
+        stride (int): stride of the block. Default: 1
+        dilation (int): dilation of convolution. Default: 1
+        downsample (nn.Module): downsample operation on identity branch.
+            Default: None
+        style (str): `pytorch` or `caffe`. If set to "pytorch", the stride-two
+            layer is the 3x3 conv layer, otherwise the stride-two layer is
+            the first 1x1 conv layer.
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+            memory while slowing down the training speed.
+        conv_cfg (dict): dictionary to construct and config conv layer.
+            Default: None
+        norm_cfg (dict): dictionary to construct and config norm layer.
+            Default: dict(type='BN')
+    """
+
     expansion = 4
 
     def __init__(self,
@@ -96,10 +136,6 @@ class Bottleneck(nn.Module):
                  with_cp=False,
                  conv_cfg=None,
                  norm_cfg=dict(type='BN')):
-        """Bottleneck block for ResNet.
-        If style is "pytorch", the stride-two layer is the 3x3 conv layer,
-        if it is "caffe", the stride-two layer is the first 1x1 conv layer.
-        """
         super(Bottleneck, self).__init__()
         assert style in ['pytorch', 'caffe']
 
