@@ -111,8 +111,8 @@ class ShuffleUnit(nn.Module):
         if self.combine == 'add':
             self.depthwise_stride = 1
             self._combine_func = self._add
-            assert inplanes == planes, ('inplanes must be equal to '
-                                        'planes when combine is add')
+            assert inplanes == planes, (
+                'inplanes must be equal to planes when combine is add')
         elif self.combine == 'concat':
             self.depthwise_stride = 2
             self._combine_func = self._concat
@@ -273,20 +273,18 @@ class ShuffleNetv1(BaseBackbone):
 
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
-        self.layers = []
+        self.layers = nn.ModuleList()
         for i, num_blocks in enumerate(self.stage_blocks):
             first_block = False if i == 0 else True
             layer = self.make_layer(channels[i], num_blocks, first_block)
-            layer_name = f'layer{i + 1}'
-            self.add_module(layer_name, layer)
-            self.layers.append(layer_name)
+            self.layers.append(layer)
 
     def _freeze_stages(self):
         if self.frozen_stages >= 0:
             for param in self.conv1.parameters():
                 param.requires_grad = False
-        for i in range(1, self.frozen_stages + 1):
-            layer = getattr(self, f'layer{i}')
+        for i in range(self.frozen_stages):
+            layer = self.layers[i]
             layer.eval()
             for param in layer.parameters():
                 param.requires_grad = False
@@ -336,8 +334,7 @@ class ShuffleNetv1(BaseBackbone):
         x = self.maxpool(x)
 
         outs = []
-        for i, layer_name in enumerate(self.layers):
-            layer = getattr(self, layer_name)
+        for i, layer in enumerate(self.layers):
             x = layer(x)
             if i in self.out_indices:
                 outs.append(x)
