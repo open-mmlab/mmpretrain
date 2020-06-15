@@ -5,58 +5,8 @@ from mmcv.cnn import (ConvModule, build_activation_layer, build_conv_layer,
                       constant_init, kaiming_init)
 from torch.nn.modules.batchnorm import _BatchNorm
 
+from mmcls.models.utils import channel_shuffle, make_divisible
 from .base_backbone import BaseBackbone
-
-
-def channel_shuffle(x, groups):
-    """ Channel Shuffle operation.
-
-    This function enables cross-group information flow for multiple groups
-    convolution layers.
-
-    Args:
-        x (Tensor): The input tensor.
-        groups (int): The number of groups to divide the input tensor
-            in the channel dimension.
-
-    Returns:
-        Tensor: The output tensor after channel shuffle operation.
-    """
-
-    batchsize, num_channels, height, width = x.size()
-    assert (num_channels % groups == 0), ('num_channels should be '
-                                          'divisible by groups')
-    channels_per_group = num_channels // groups
-
-    x = x.view(batchsize, groups, channels_per_group, height, width)
-    x = torch.transpose(x, 1, 2).contiguous()
-    x = x.view(batchsize, -1, height, width)
-
-    return x
-
-
-def make_divisible(value, divisor, min_value=None):
-    """ Make divisible function.
-
-    This function ensures that all layers have a channel number that is
-    divisible by divisor.
-
-    Args:
-        value (int): The original channel number.
-        divisor (int): The divisor to fully divide the channel number.
-        min_value (int, optional): the minimum value of the output channel.
-
-    Returns:
-        int: The modified output channel number
-    """
-
-    if min_value is None:
-        min_value = divisor
-    new_value = max(min_value, int(value + divisor / 2) // divisor * divisor)
-    # Make sure that round down does not go down by more than 10%.
-    if new_value < 0.9 * value:
-        new_value += divisor
-    return new_value
 
 
 class ShuffleUnit(nn.Module):

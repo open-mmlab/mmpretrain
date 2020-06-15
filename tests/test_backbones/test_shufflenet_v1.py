@@ -4,7 +4,7 @@ from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from mmcls.models.backbones import ShuffleNetv1
-from mmcls.models.backbones.shufflenet_v1 import ShuffleUnit, make_divisible
+from mmcls.models.backbones.shufflenet_v1 import ShuffleUnit
 
 
 def is_block(modules):
@@ -28,14 +28,6 @@ def check_norm_state(modules, train_state):
             if mod.training != train_state:
                 return False
     return True
-
-
-def test_make_divisible():
-    # test min_value is None
-    make_divisible(34, 8, None)
-
-    # test new_value < 0.9 * value
-    make_divisible(10, 8, None)
 
 
 def test_shufflenetv1_shuffleuint():
