@@ -112,14 +112,14 @@ class ShuffleUnit(nn.Module):
             self.depthwise_stride = 1
             self._combine_func = self._add
             assert inplanes == planes, ('inplanes must be equal to '
-                                        'planes when combine is add.')
+                                        'planes when combine is add')
         elif self.combine == 'concat':
             self.depthwise_stride = 2
             self._combine_func = self._concat
             self.planes -= self.inplanes
         else:
             raise ValueError(f'Cannot combine tensors with {self.combine}. '
-                             'Only "add" and "concat" are supported.')
+                             'Only "add" and "concat" are supported')
 
         self.first_1x1_groups = self.groups if first_block else 1
         self.g_conv_1x1_compress = ConvModule(
