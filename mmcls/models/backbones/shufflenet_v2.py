@@ -10,13 +10,13 @@ from .base_backbone import BaseBackbone
 def channel_shuffle(x, groups):
     """ Channel Shuffle operation.
 
-    This function enables cross-group information flow for multiple group
+    This function enables cross-group information flow for multiple groups
     convolution layers.
 
     Args:
         x (Tensor): The input tensor.
         groups (int): The number of groups to divide the input tensor
-            in channel dimension.
+            in the channel dimension.
 
     Returns:
         Tensor: The output tensor after channel shuffle operation.
@@ -38,7 +38,7 @@ def make_divisible(value, divisor, min_value=None):
     """ Make divisible function.
 
     This function ensures that all layers have a channel number that is
-        divisible by divisor.
+    divisible by divisor.
 
     Args:
         value (int): The original channel number.
@@ -93,15 +93,15 @@ class InvertedResidual(nn.Module):
         branch_features = planes // 2
         if self.stride == 1:
             assert inplanes == branch_features * 2, (f'inplanes ({inplanes}) '
-                                                     f'should equal to '
-                                                     f'branch_features * 2 '
+                                                     'should equal to '
+                                                     'branch_features * 2 '
                                                      f'({branch_features * 2})'
-                                                     f' when stride is 1')
+                                                     ' when stride is 1')
 
         if inplanes != branch_features * 2:
             assert self.stride != 1, (f'stride ({self.stride}) should not '
-                                      f'equal 1 when inplanes != '
-                                      f'branch_features * 2')
+                                      'equal 1 when inplanes != '
+                                      'branch_features * 2')
 
         if self.stride > 1:
             self.branch1 = nn.Sequential(
@@ -183,7 +183,7 @@ class ShuffleNetv2(BaseBackbone):
     Args:
         groups (int): The number of groups to be used in grouped 1x1
             convolutions in each InvertedResidual. Default: 3.
-        widen_factor (float): Width multiplier - adjusts number of
+        widen_factor (float): Width multiplier - adjusts the number of
             channels in each layer by this amount. Default: 1.0.
         out_indices (Sequence[int]): Output from which stages.
             Default: (0, 1, 2, 3).
@@ -270,7 +270,7 @@ class ShuffleNetv2(BaseBackbone):
         """ Stack blocks to make a layer.
 
         Args:
-            planes (int): planes of block.
+            planes (int): planes of the block.
             num_blocks (int): number of blocks.
         """
         layers = []
