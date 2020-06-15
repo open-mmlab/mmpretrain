@@ -50,7 +50,11 @@ def test_make_divisible():
 def test_shufflenetv2_invertedresidual():
 
     with pytest.raises(AssertionError):
-        # when stride==1, 16 == branch_features << 1
+        # when stride==1, inplanes should be equal to planes // 2 * 2
+        InvertedResidual(24, 32, stride=1)
+
+    with pytest.raises(AssertionError):
+        # when inplanes !=  planes // 2 * 2, stride should not be equal to 1.
         InvertedResidual(24, 32, stride=1)
 
     # Test InvertedResidual forward

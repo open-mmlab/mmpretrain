@@ -43,7 +43,7 @@ def make_divisible(value, divisor, min_value=None):
     Args:
         value (int): The original channel number.
         divisor (int): The divisor to fully divide the channel number.
-        min_value (int, optional): the minimum value of the output channel.
+        min_value (int, optional): The minimum value of the output channel.
 
     Returns:
         int: The modified output channel number
@@ -64,7 +64,7 @@ class InvertedResidual(nn.Module):
     Args:
         inplanes (int): The input channels of the block.
         planes (int): The output channels of the block.
-        stride (int): stride of the 3x3 convolution layer. Default: 1
+        stride (int): Stride of the 3x3 convolution layer. Default: 1
         conv_cfg (dict): Config dict for convolution layer.
             Default: None, which means using conv2d.
         norm_cfg (dict): Config dict for normalization layer.
@@ -91,7 +91,17 @@ class InvertedResidual(nn.Module):
         self.with_cp = with_cp
 
         branch_features = planes // 2
-        assert (self.stride != 1) or (inplanes == branch_features << 1)
+        if self.stride == 1:
+            assert inplanes == branch_features * 2, (f'inplanes ({inplanes}) '
+                                                     f'should equal to '
+                                                     f'branch_features * 2 '
+                                                     f'({branch_features * 2})'
+                                                     f' when stride is 1')
+
+        if inplanes != branch_features * 2:
+            assert self.stride != 1, (f'stride ({self.stride}) should not '
+                                      f'equal 1 when inplanes != '
+                                      f'branch_features * 2')
 
         if self.stride > 1:
             self.branch1 = nn.Sequential(
@@ -115,8 +125,6 @@ class InvertedResidual(nn.Module):
                     norm_cfg=norm_cfg,
                     act_cfg=act_cfg),
             )
-        else:
-            self.branch1 = nn.Sequential()
 
         self.branch2 = nn.Sequential(
             ConvModule(
@@ -151,11 +159,11 @@ class InvertedResidual(nn.Module):
     def forward(self, x):
 
         def _inner_forward(x):
-            if self.stride == 1:
+            if self.stride > 1:
+                out = torch.cat((self.branch1(x), self.branch2(x)), dim=1)
+            else:
                 x1, x2 = x.chunk(2, dim=1)
                 out = torch.cat((x1, self.branch2(x2)), dim=1)
-            else:
-                out = torch.cat((self.branch1(x), self.branch2(x)), dim=1)
 
             out = channel_shuffle(out, 2)
 
@@ -174,7 +182,7 @@ class ShuffleNetv2(BaseBackbone):
 
     Args:
         groups (int): The number of groups to be used in grouped 1x1
-            convolutions in each ShuffleUnit. Default: 3.
+            convolutions in each InvertedResidual. Default: 3.
         widen_factor (float): Width multiplier - adjusts number of
             channels in each layer by this amount. Default: 1.0.
         out_indices (Sequence[int]): Output from which stages.
@@ -226,8 +234,8 @@ class ShuffleNetv2(BaseBackbone):
         elif widen_factor == 2.0:
             channels = [244, 488, 976, 2048]
         else:
-            raise ValueError(f'widen_factor must in [0.5, 1.0, 1.5, 2.0]. '
-                             f'But received {widen_factor}.')
+            raise ValueError('widen_factor must be in [0.5, 1.0, 1.5, 2.0]. '
+                             f'But received {widen_factor}')
 
         self.inplanes = 24
         self.conv1 = ConvModule(
@@ -283,9 +291,8 @@ class ShuffleNetv2(BaseBackbone):
 
     def _freeze_stages(self):
         if self.frozen_stages >= 0:
-            for m in [self.conv1]:
-                for param in m.parameters():
-                    param.requires_grad = False
+            for param in self.conv1.parameters():
+                param.requires_grad = False
 
         for i in range(1, self.frozen_stages + 1):
             m = getattr(self, f'layer{i}')
@@ -301,7 +308,8 @@ class ShuffleNetv2(BaseBackbone):
                 elif isinstance(m, (_BatchNorm, nn.GroupNorm)):
                     constant_init(m, 1)
         else:
-            raise TypeError('pretrained must be a str or None')
+            raise TypeError('pretrained must be a str or None. But received '
+                            f'{type(pretrained)}')
 
     def forward(self, x):
         x = self.conv1(x)
