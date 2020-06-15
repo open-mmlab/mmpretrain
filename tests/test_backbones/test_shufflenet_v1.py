@@ -37,6 +37,10 @@ def test_shufflenetv1_shuffleuint():
         ShuffleUnit(24, 16, groups=3, first_block=True, combine='test')
 
     with pytest.raises(AssertionError):
+        # inplanes must be divisible by groups
+        ShuffleUnit(64, 64, groups=3, first_block=True, combine='add')
+
+    with pytest.raises(AssertionError):
         # inplanes must be equal tp = outplanes when combine='add'
         ShuffleUnit(64, 24, groups=4, first_block=True, combine='add')
 
