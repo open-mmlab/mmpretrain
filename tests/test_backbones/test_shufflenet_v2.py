@@ -75,11 +75,11 @@ def test_shufflenetv2_invertedresidual():
 def test_shufflenetv2_backbone():
 
     with pytest.raises(ValueError):
-        # groups must in 0.5, 1.0, 1.5, 2.0]
+        # groups must be in 0.5, 1.0, 1.5, 2.0]
         ShuffleNetv2(widen_factor=3.0)
 
     with pytest.raises(AssertionError):
-        # frozen_stages must in [0, 1, 2]
+        # frozen_stages must be in [0, 1, 2]
         ShuffleNetv2(widen_factor=3.0, frozen_stages=3)
 
     with pytest.raises(TypeError):
