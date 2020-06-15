@@ -4,9 +4,7 @@ from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from mmcls.models.backbones import ShuffleNetv2
-from mmcls.models.backbones.shufflenet_v2 import (InvertedResidual,
-                                                  channel_shuffle,
-                                                  make_divisible)
+from mmcls.models.backbones.shufflenet_v2 import InvertedResidual
 
 
 def is_block(modules):
@@ -30,21 +28,6 @@ def check_norm_state(modules, train_state):
             if mod.training != train_state:
                 return False
     return True
-
-
-def test_channel_shuffle():
-    x = torch.randn(1, 24, 56, 56)
-    with pytest.raises(AssertionError):
-        # num_channels should be divisible by groups
-        channel_shuffle(x, 7)
-
-
-def test_make_divisible():
-    # test min_value is None
-    make_divisible(34, 8, None)
-
-    # test new_value < 0.9 * value
-    make_divisible(10, 8, None)
 
 
 def test_shufflenetv2_invertedresidual():
