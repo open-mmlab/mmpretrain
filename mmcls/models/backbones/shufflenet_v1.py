@@ -39,7 +39,7 @@ def make_divisible(value, divisor, min_value=None):
     """ Make divisible function.
 
     This function ensures that all layers have a channel number that is
-        divisible by divisor.
+    divisible by divisor.
 
     Args:
         value (int): The original channel number.
@@ -69,11 +69,12 @@ class ShuffleUnit(nn.Module):
         inplanes (int): The input channels of the ShuffleUnit.
         planes (int): The output channels of the ShuffleUnit.
         groups (int, optional): The number of groups to be used in grouped 1x1
-            convolutions in each ShuffleUnit.
+            convolutions in each ShuffleUnit. Default: 3
         first_block (bool, optional): Whether is the first ShuffleUnit of a
-            sequential ShuffleUnits. If True, use the grouped 1x1 convolution.
+            sequential ShuffleUnits. Default: True, which means using the
+            grouped 1x1 convolution.
         combine (str, optional): The ways to combine the input and output
-            branches.
+            branches. Default: 'add'.
         conv_cfg (dict): Config dict for convolution layer. Default: None,
             which means using conv2d.
         norm_cfg (dict): Config dict for normalization layer.
@@ -82,6 +83,7 @@ class ShuffleUnit(nn.Module):
             Default: dict(type='ReLU').
         with_cp (bool, optional): Use checkpoint or not. Using checkpoint
             will save some memory while slowing down the training speed.
+            Default: False.
 
     Returns:
         Tensor: The output tensor.
@@ -117,7 +119,7 @@ class ShuffleUnit(nn.Module):
             self.planes -= self.inplanes
         else:
             raise ValueError(f'Cannot combine tensors with {self.combine}. '
-                             f'Only "add" and "concat" are supported.')
+                             'Only "add" and "concat" are supported.')
 
         self.first_1x1_groups = self.groups if first_block else 1
         self.g_conv_1x1_compress = ConvModule(
@@ -229,11 +231,11 @@ class ShuffleNetv1(BaseBackbone):
 
         for indice in out_indices:
             if indice not in range(0, 4):
-                raise ValueError(f'the item in out_indices must in '
+                raise ValueError('the item in out_indices must in '
                                  f'range(0, 4). But received {indice}')
 
         if frozen_stages not in range(-1, 4):
-            raise ValueError(f'frozen_stages must in range(-1, 4). '
+            raise ValueError('frozen_stages must in range(-1, 4). '
                              f'But received {frozen_stages}')
         self.out_indices = out_indices
         self.frozen_stages = frozen_stages
@@ -255,7 +257,7 @@ class ShuffleNetv1(BaseBackbone):
             channels = (384, 768, 1536)
         else:
             raise ValueError(f'{groups} groups is not supported for 1x1 '
-                             f'Grouped Convolutions')
+                             'Grouped Convolutions')
 
         channels = [make_divisible(ch * widen_factor, 8) for ch in channels]
 
@@ -298,7 +300,8 @@ class ShuffleNetv1(BaseBackbone):
                 elif isinstance(m, (_BatchNorm, nn.GroupNorm)):
                     constant_init(m, 1)
         else:
-            raise TypeError('pretrained must be a str or None')
+            raise TypeError('pretrained must be a str or None. But received '
+                            f'{type(pretrained)}')
 
     def make_layer(self, planes, num_blocks, first_block=True):
         """ Stack ShuffleUnit blocks to make a layer.
@@ -307,8 +310,8 @@ class ShuffleNetv1(BaseBackbone):
             planes (int): planes of block.
             num_blocks (int): number of blocks.
             first_block (bool, optional): Whether is the first ShuffleUnit of a
-                sequential ShuffleUnits. If True, use the grouped 1x1
-                convolution.
+                sequential ShuffleUnits. Default: True, which means usingf the
+                grouped 1x1 convolution.
         """
         layers = []
         for i in range(num_blocks):
