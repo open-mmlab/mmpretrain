@@ -98,11 +98,10 @@ def test_shufflenetv2_backbone():
     model = ShuffleNetv2(frozen_stages=frozen_stages)
     model.init_weights()
     model.train()
-    for layer in [model.conv1]:
-        for param in layer.parameters():
-            assert param.requires_grad is False
-    for i in range(1, frozen_stages + 1):
-        layer = getattr(model, f'layer{i}')
+    for param in model.conv1.parameters():
+        assert param.requires_grad is False
+    for i in range(0, frozen_stages):
+        layer = model.layers[i]
         for mod in layer.modules():
             if isinstance(mod, _BatchNorm):
                 assert mod.training is False

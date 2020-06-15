@@ -92,16 +92,14 @@ class InvertedResidual(nn.Module):
 
         branch_features = planes // 2
         if self.stride == 1:
-            assert inplanes == branch_features * 2, (f'inplanes ({inplanes}) '
-                                                     'should equal to '
-                                                     'branch_features * 2 '
-                                                     f'({branch_features * 2})'
-                                                     ' when stride is 1')
+            assert inplanes == branch_features * 2, (
+                f'inplanes ({inplanes}) should equal to branch_features * 2 '
+                f'({branch_features * 2}) when stride is 1')
 
         if inplanes != branch_features * 2:
-            assert self.stride != 1, (f'stride ({self.stride}) should not '
-                                      'equal 1 when inplanes != '
-                                      'branch_features * 2')
+            assert self.stride != 1, (
+                f'stride ({self.stride}) should not equal 1 when '
+                f'inplanes != branch_features * 2')
 
         if self.stride > 1:
             self.branch1 = nn.Sequential(
@@ -250,12 +248,10 @@ class ShuffleNetv2(BaseBackbone):
 
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
-        self.layers = []
+        self.layers = nn.ModuleList()
         for i, num_blocks in enumerate(self.stage_blocks):
             layer = self._make_layer(channels[i], num_blocks)
-            layer_name = f'layer{i + 1}'
-            self.add_module(layer_name, layer)
-            self.layers.append(layer_name)
+            self.layers.append(layer)
 
         output_channels = channels[-1]
         self.conv2 = ConvModule(
@@ -294,8 +290,8 @@ class ShuffleNetv2(BaseBackbone):
             for param in self.conv1.parameters():
                 param.requires_grad = False
 
-        for i in range(1, self.frozen_stages + 1):
-            m = getattr(self, f'layer{i}')
+        for i in range(self.frozen_stages):
+            m = self.layers[i]
             m.eval()
             for param in m.parameters():
                 param.requires_grad = False
@@ -316,8 +312,7 @@ class ShuffleNetv2(BaseBackbone):
         x = self.maxpool(x)
 
         outs = []
-        for i, layer_name in enumerate(self.layers):
-            layer = getattr(self, layer_name)
+        for i, layer in enumerate(self.layers):
             x = layer(x)
             if i in self.out_indices:
                 outs.append(x)
