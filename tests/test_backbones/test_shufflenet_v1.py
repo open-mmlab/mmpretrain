@@ -77,15 +77,15 @@ def test_shufflenetv1_shuffleuint():
 def test_shufflenetv1_backbone():
 
     with pytest.raises(ValueError):
-        # frozen_stages must in range(-1, 4)
+        # frozen_stages must be in  range(-1, 4)
         ShuffleNetv1(frozen_stages=10)
 
     with pytest.raises(ValueError):
-        # the item in out_indices must in range(0, 4)
+        # the item in out_indices must be in  range(0, 4)
         ShuffleNetv1(out_indices=[5])
 
     with pytest.raises(ValueError):
-        # groups must in [1, 2, 3, 4, 8]
+        # groups must be in  [1, 2, 3, 4, 8]
         ShuffleNetv1(groups=10)
 
     with pytest.raises(TypeError):

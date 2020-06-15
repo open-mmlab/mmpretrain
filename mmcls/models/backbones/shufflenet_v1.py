@@ -234,7 +234,7 @@ class ShuffleNetv1(BaseBackbone):
                                  f'range(0, 4). But received {indice}')
 
         if frozen_stages not in range(-1, 4):
-            raise ValueError('frozen_stages must in range(-1, 4). '
+            raise ValueError('frozen_stages must be in range(-1, 4). '
                              f'But received {frozen_stages}')
         self.out_indices = out_indices
         self.frozen_stages = frozen_stages
