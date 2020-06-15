@@ -11,13 +11,13 @@ from .base_backbone import BaseBackbone
 def channel_shuffle(x, groups):
     """ Channel Shuffle operation.
 
-    This function enables cross-group information flow for multiple group
+    This function enables cross-group information flow for multiple groups
     convolution layers.
 
     Args:
         x (Tensor): The input tensor.
         groups (int): The number of groups to divide the input tensor
-            in channel dimension.
+            in the channel dimension.
 
     Returns:
         Tensor: The output tensor after channel shuffle operation.
@@ -70,7 +70,7 @@ class ShuffleUnit(nn.Module):
         planes (int): The output channels of the ShuffleUnit.
         groups (int, optional): The number of groups to be used in grouped 1x1
             convolutions in each ShuffleUnit. Default: 3
-        first_block (bool, optional): Whether is the first ShuffleUnit of a
+        first_block (bool, optional): Whether it is the first ShuffleUnit of a
             sequential ShuffleUnits. Default: True, which means using the
             grouped 1x1 convolution.
         combine (str, optional): The ways to combine the input and output
@@ -194,10 +194,9 @@ class ShuffleNetv1(BaseBackbone):
 
     Args:
         groups (int, optional): The number of groups to be used in grouped 1x1
-            convolutions in each ShuffleUnit. Default is 3 for best performance
-            according to original paper. Default: 3.
-        widen_factor (float, optional): Width multiplier - adjusts number of
-            channels in each layer by this amount. Default: 1.0.
+            convolutions in each ShuffleUnit. Default: 3.
+        widen_factor (float, optional): Width multiplier - adjusts the number
+            of channels in each layer by this amount. Default: 1.0.
         out_indices (Sequence[int]): Output from which stages.
             Default: (0, 1, 2, 3)
         frozen_stages (int): Stages to be frozen (all param fixed).
@@ -307,10 +306,10 @@ class ShuffleNetv1(BaseBackbone):
         """ Stack ShuffleUnit blocks to make a layer.
 
         Args:
-            planes (int): planes of block.
-            num_blocks (int): number of blocks.
+            planes (int): Planes of the block.
+            num_blocks (int): Number of blocks.
             first_block (bool, optional): Whether is the first ShuffleUnit of a
-                sequential ShuffleUnits. Default: True, which means usingf the
+                sequential ShuffleUnits. Default: True, which means using the
                 grouped 1x1 convolution.
         """
         layers = []
