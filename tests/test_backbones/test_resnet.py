@@ -1,7 +1,7 @@
 import pytest
 import torch
+from mmcv.utils.parrots_wrapper import _BatchNorm
 from torch.nn.modules import AvgPool2d
-from torch.nn.modules.batchnorm import _BatchNorm
 
 from mmcls.models.backbones import ResNet, ResNetV1d
 from mmcls.models.backbones.resnet import BasicBlock, Bottleneck, ResLayer
