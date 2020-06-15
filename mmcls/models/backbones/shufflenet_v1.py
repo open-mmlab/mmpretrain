@@ -220,7 +220,6 @@ class ShuffleNetv1(BaseBackbone):
             stride=2,
             padding=1,
             bias=False)
-
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
 
         self.layers = nn.ModuleList()

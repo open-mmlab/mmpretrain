@@ -36,13 +36,9 @@ def test_shufflenetv1_shuffleuint():
         # combine must be in ['add', 'concat']
         ShuffleUnit(24, 16, groups=3, first_block=True, combine='test')
 
-    with pytest.raises(ValueError):
-        # inplanes must be divisible by groups
-        ShuffleUnit(64, 64, groups=3, first_block=True, combine='add')
-
     with pytest.raises(AssertionError):
         # inplanes must be equal tp = outplanes when combine='add'
-        ShuffleUnit(64, 24, groups=3, first_block=True, combine='add')
+        ShuffleUnit(64, 24, groups=4, first_block=True, combine='add')
 
     # Test ShuffleUnit with combine='add'
     block = ShuffleUnit(24, 24, groups=3, first_block=True, combine='add')
