@@ -4,7 +4,7 @@ from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from mmcls.models.backbones import ShuffleNetv1
-from mmcls.models.backbones.shufflenet_v1 import ShuffleUnit, make_divisible
+from mmcls.models.backbones.shufflenet_v1 import ShuffleUnit
 
 
 def is_block(modules):
@@ -30,27 +30,15 @@ def check_norm_state(modules, train_state):
     return True
 
 
-def test_make_divisible():
-    # test min_value is None
-    make_divisible(34, 8, None)
-
-    # test new_value < 0.9 * value
-    make_divisible(10, 8, None)
-
-
 def test_shufflenetv1_shuffleuint():
 
     with pytest.raises(ValueError):
         # combine must be in ['add', 'concat']
         ShuffleUnit(24, 16, groups=3, first_block=True, combine='test')
 
-    with pytest.raises(ValueError):
-        # inplanes must be divisible by groups
-        ShuffleUnit(64, 64, groups=3, first_block=True, combine='add')
-
     with pytest.raises(AssertionError):
         # inplanes must be equal tp = outplanes when combine='add'
-        ShuffleUnit(64, 24, groups=3, first_block=True, combine='add')
+        ShuffleUnit(64, 24, groups=4, first_block=True, combine='add')
 
     # Test ShuffleUnit with combine='add'
     block = ShuffleUnit(24, 24, groups=3, first_block=True, combine='add')
@@ -104,11 +92,10 @@ def test_shufflenetv1_backbone():
     model = ShuffleNetv1(frozen_stages=frozen_stages)
     model.init_weights()
     model.train()
-    for layer in [model.conv1]:
-        for param in layer.parameters():
-            assert param.requires_grad is False
-    for i in range(1, frozen_stages + 1):
-        layer = getattr(model, f'layer{i}')
+    for param in model.conv1.parameters():
+        assert param.requires_grad is False
+    for i in range(frozen_stages):
+        layer = model.layers[i]
         for mod in layer.modules():
             if isinstance(mod, _BatchNorm):
                 assert mod.training is False
