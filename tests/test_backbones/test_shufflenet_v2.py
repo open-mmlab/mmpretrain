@@ -3,7 +3,7 @@ import torch
 from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from mmcls.models.backbones import ShuffleNetv2
+from mmcls.models.backbones import ShuffleNetV2
 from mmcls.models.backbones.shufflenet_v2 import InvertedResidual
 
 
@@ -59,26 +59,26 @@ def test_shufflenetv2_backbone():
 
     with pytest.raises(ValueError):
         # groups must be in 0.5, 1.0, 1.5, 2.0]
-        ShuffleNetv2(widen_factor=3.0)
+        ShuffleNetV2(widen_factor=3.0)
 
     with pytest.raises(AssertionError):
         # frozen_stages must be in [0, 1, 2]
-        ShuffleNetv2(widen_factor=3.0, frozen_stages=3)
+        ShuffleNetV2(widen_factor=3.0, frozen_stages=3)
 
     with pytest.raises(TypeError):
         # pretrained must be str or None
-        model = ShuffleNetv2()
+        model = ShuffleNetV2()
         model.init_weights(pretrained=1)
 
-    # Test ShuffleNetv2 norm state
-    model = ShuffleNetv2()
+    # Test ShuffleNetV2 norm state
+    model = ShuffleNetV2()
     model.init_weights()
     model.train()
     assert check_norm_state(model.modules(), True)
 
-    # Test ShuffleNetv2 with first stage frozen
+    # Test ShuffleNetV2 with first stage frozen
     frozen_stages = 1
-    model = ShuffleNetv2(frozen_stages=frozen_stages)
+    model = ShuffleNetV2(frozen_stages=frozen_stages)
     model.init_weights()
     model.train()
     for param in model.conv1.parameters():
@@ -91,15 +91,15 @@ def test_shufflenetv2_backbone():
         for param in layer.parameters():
             assert param.requires_grad is False
 
-    # Test ShuffleNetv2 with norm_eval
-    model = ShuffleNetv2(norm_eval=True)
+    # Test ShuffleNetV2 with norm_eval
+    model = ShuffleNetV2(norm_eval=True)
     model.init_weights()
     model.train()
 
     assert check_norm_state(model.modules(), False)
 
-    # Test ShuffleNetv2 forward with widen_factor=0.5
-    model = ShuffleNetv2(widen_factor=0.5)
+    # Test ShuffleNetV2 forward with widen_factor=0.5
+    model = ShuffleNetV2(widen_factor=0.5)
     model.init_weights()
     model.train()
 
@@ -114,8 +114,8 @@ def test_shufflenetv2_backbone():
     assert feat[1].shape == torch.Size((1, 96, 14, 14))
     assert feat[2].shape == torch.Size((1, 192, 7, 7))
 
-    # Test ShuffleNetv2 forward with widen_factor=1.0
-    model = ShuffleNetv2(widen_factor=1.0)
+    # Test ShuffleNetV2 forward with widen_factor=1.0
+    model = ShuffleNetV2(widen_factor=1.0)
     model.init_weights()
     model.train()
 
@@ -130,8 +130,8 @@ def test_shufflenetv2_backbone():
     assert feat[1].shape == torch.Size((1, 232, 14, 14))
     assert feat[2].shape == torch.Size((1, 464, 7, 7))
 
-    # Test ShuffleNetv2 forward with widen_factor=1.5
-    model = ShuffleNetv2(widen_factor=1.5)
+    # Test ShuffleNetV2 forward with widen_factor=1.5
+    model = ShuffleNetV2(widen_factor=1.5)
     model.init_weights()
     model.train()
 
@@ -146,8 +146,8 @@ def test_shufflenetv2_backbone():
     assert feat[1].shape == torch.Size((1, 352, 14, 14))
     assert feat[2].shape == torch.Size((1, 704, 7, 7))
 
-    # Test ShuffleNetv2 forward with widen_factor=2.0
-    model = ShuffleNetv2(widen_factor=2.0)
+    # Test ShuffleNetV2 forward with widen_factor=2.0
+    model = ShuffleNetV2(widen_factor=2.0)
     model.init_weights()
     model.train()
 
@@ -162,8 +162,8 @@ def test_shufflenetv2_backbone():
     assert feat[1].shape == torch.Size((1, 488, 14, 14))
     assert feat[2].shape == torch.Size((1, 976, 7, 7))
 
-    # Test ShuffleNetv2 forward with layers 3 forward
-    model = ShuffleNetv2(widen_factor=1.0, out_indices=(2, ))
+    # Test ShuffleNetV2 forward with layers 3 forward
+    model = ShuffleNetV2(widen_factor=1.0, out_indices=(2, ))
     model.init_weights()
     model.train()
 
@@ -176,8 +176,8 @@ def test_shufflenetv2_backbone():
     assert isinstance(feat, torch.Tensor)
     assert feat.shape == torch.Size((1, 464, 7, 7))
 
-    # Test ShuffleNetv2 forward with layers 1 2 forward
-    model = ShuffleNetv2(widen_factor=1.0, out_indices=(1, 2))
+    # Test ShuffleNetV2 forward with layers 1 2 forward
+    model = ShuffleNetV2(widen_factor=1.0, out_indices=(1, 2))
     model.init_weights()
     model.train()
 
@@ -191,8 +191,8 @@ def test_shufflenetv2_backbone():
     assert feat[0].shape == torch.Size((1, 232, 14, 14))
     assert feat[1].shape == torch.Size((1, 464, 7, 7))
 
-    # Test ShuffleNetv2 forward with checkpoint forward
-    model = ShuffleNetv2(widen_factor=1.0, with_cp=True)
+    # Test ShuffleNetV2 forward with checkpoint forward
+    model = ShuffleNetV2(widen_factor=1.0, with_cp=True)
     for m in model.modules():
         if is_block(m):
             assert m.with_cp

@@ -3,7 +3,7 @@ import torch
 from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from mmcls.models.backbones import ShuffleNetv1
+from mmcls.models.backbones import ShuffleNetV1
 from mmcls.models.backbones.shufflenet_v1 import ShuffleUnit
 
 
@@ -66,30 +66,30 @@ def test_shufflenetv1_backbone():
 
     with pytest.raises(ValueError):
         # frozen_stages must be in  range(-1, 4)
-        ShuffleNetv1(frozen_stages=10)
+        ShuffleNetV1(frozen_stages=10)
 
     with pytest.raises(ValueError):
         # the item in out_indices must be in  range(0, 4)
-        ShuffleNetv1(out_indices=[5])
+        ShuffleNetV1(out_indices=[5])
 
     with pytest.raises(ValueError):
         # groups must be in  [1, 2, 3, 4, 8]
-        ShuffleNetv1(groups=10)
+        ShuffleNetV1(groups=10)
 
     with pytest.raises(TypeError):
         # pretrained must be str or None
-        model = ShuffleNetv1()
+        model = ShuffleNetV1()
         model.init_weights(pretrained=1)
 
-    # Test ShuffleNetv1 norm state
-    model = ShuffleNetv1()
+    # Test ShuffleNetV1 norm state
+    model = ShuffleNetV1()
     model.init_weights()
     model.train()
     assert check_norm_state(model.modules(), True)
 
-    # Test ShuffleNetv1 with first stage frozen
+    # Test ShuffleNetV1 with first stage frozen
     frozen_stages = 1
-    model = ShuffleNetv1(frozen_stages=frozen_stages)
+    model = ShuffleNetV1(frozen_stages=frozen_stages)
     model.init_weights()
     model.train()
     for param in model.conv1.parameters():
@@ -102,8 +102,8 @@ def test_shufflenetv1_backbone():
         for param in layer.parameters():
             assert param.requires_grad is False
 
-    # Test ShuffleNetv1 forward with groups=1
-    model = ShuffleNetv1(groups=1)
+    # Test ShuffleNetV1 forward with groups=1
+    model = ShuffleNetV1(groups=1)
     model.init_weights()
     model.train()
 
@@ -118,8 +118,8 @@ def test_shufflenetv1_backbone():
     assert feat[1].shape == torch.Size((1, 288, 14, 14))
     assert feat[2].shape == torch.Size((1, 576, 7, 7))
 
-    # Test ShuffleNetv1 forward with groups=2
-    model = ShuffleNetv1(groups=2)
+    # Test ShuffleNetV1 forward with groups=2
+    model = ShuffleNetV1(groups=2)
     model.init_weights()
     model.train()
 
@@ -134,8 +134,8 @@ def test_shufflenetv1_backbone():
     assert feat[1].shape == torch.Size((1, 400, 14, 14))
     assert feat[2].shape == torch.Size((1, 800, 7, 7))
 
-    # Test ShuffleNetv1 forward with groups=3
-    model = ShuffleNetv1(groups=3)
+    # Test ShuffleNetV1 forward with groups=3
+    model = ShuffleNetV1(groups=3)
     model.init_weights()
     model.train()
 
@@ -150,8 +150,8 @@ def test_shufflenetv1_backbone():
     assert feat[1].shape == torch.Size((1, 480, 14, 14))
     assert feat[2].shape == torch.Size((1, 960, 7, 7))
 
-    # Test ShuffleNetv1 forward with groups=4
-    model = ShuffleNetv1(groups=4)
+    # Test ShuffleNetV1 forward with groups=4
+    model = ShuffleNetV1(groups=4)
     model.init_weights()
     model.train()
 
@@ -166,8 +166,8 @@ def test_shufflenetv1_backbone():
     assert feat[1].shape == torch.Size((1, 544, 14, 14))
     assert feat[2].shape == torch.Size((1, 1088, 7, 7))
 
-    # Test ShuffleNetv1 forward with groups=8
-    model = ShuffleNetv1(groups=8)
+    # Test ShuffleNetV1 forward with groups=8
+    model = ShuffleNetV1(groups=8)
     model.init_weights()
     model.train()
 
@@ -182,8 +182,8 @@ def test_shufflenetv1_backbone():
     assert feat[1].shape == torch.Size((1, 768, 14, 14))
     assert feat[2].shape == torch.Size((1, 1536, 7, 7))
 
-    # Test ShuffleNetv1 forward with GroupNorm forward
-    model = ShuffleNetv1(
+    # Test ShuffleNetV1 forward with GroupNorm forward
+    model = ShuffleNetV1(
         groups=3, norm_cfg=dict(type='GN', num_groups=2, requires_grad=True))
     model.init_weights()
     model.train()
@@ -199,8 +199,8 @@ def test_shufflenetv1_backbone():
     assert feat[1].shape == torch.Size((1, 480, 14, 14))
     assert feat[2].shape == torch.Size((1, 960, 7, 7))
 
-    # Test ShuffleNetv1 forward with layers 1, 2 forward
-    model = ShuffleNetv1(groups=3, out_indices=(1, 2))
+    # Test ShuffleNetV1 forward with layers 1, 2 forward
+    model = ShuffleNetV1(groups=3, out_indices=(1, 2))
     model.init_weights()
     model.train()
 
@@ -214,8 +214,8 @@ def test_shufflenetv1_backbone():
     assert feat[0].shape == torch.Size((1, 480, 14, 14))
     assert feat[1].shape == torch.Size((1, 960, 7, 7))
 
-    # Test ShuffleNetv1 forward with layers 2 forward
-    model = ShuffleNetv1(groups=3, out_indices=(2, ))
+    # Test ShuffleNetV1 forward with layers 2 forward
+    model = ShuffleNetV1(groups=3, out_indices=(2, ))
     model.init_weights()
     model.train()
 
@@ -228,14 +228,14 @@ def test_shufflenetv1_backbone():
     assert isinstance(feat, torch.Tensor)
     assert feat.shape == torch.Size((1, 960, 7, 7))
 
-    # Test ShuffleNetv1 forward with checkpoint forward
-    model = ShuffleNetv1(groups=3, with_cp=True)
+    # Test ShuffleNetV1 forward with checkpoint forward
+    model = ShuffleNetV1(groups=3, with_cp=True)
     for m in model.modules():
         if is_block(m):
             assert m.with_cp
 
-    # Test ShuffleNetv1 with norm_eval
-    model = ShuffleNetv1(norm_eval=True)
+    # Test ShuffleNetV1 with norm_eval
+    model = ShuffleNetV1(norm_eval=True)
     model.init_weights()
     model.train()
 
