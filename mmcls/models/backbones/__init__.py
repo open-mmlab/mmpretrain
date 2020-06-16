@@ -1,13 +1,10 @@
+from .mobilenet_v2 import MobileNetV2
 from .resnet import ResNet, ResNetV1d
 from .resnext import ResNeXt
-from .shufflenet_v1 import ShuffleNetv1
-from .shufflenet_v2 import ShuffleNetv2
+from .shufflenet_v1 import ShuffleNetV1
+from .shufflenet_v2 import ShuffleNetV2
 
 __all__ = [
-    'ResNet',
-    'ResNeXt',
-    'ResNetV1d',
-    'ResNetV1d',
-    'ShuffleNetv1',
-    'ShuffleNetv2',
+    'ResNet', 'ResNeXt', 'ResNetV1d', 'ResNetV1d', 'ShuffleNetV1',
+    'ShuffleNetV2', 'MobileNetV2'
 ]

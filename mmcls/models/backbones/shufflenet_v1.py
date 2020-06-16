@@ -6,6 +6,7 @@ from mmcv.cnn import (ConvModule, build_activation_layer, build_conv_layer,
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from mmcls.models.utils import channel_shuffle, make_divisible
+from ..builder import BACKBONES
 from .base_backbone import BaseBackbone
 
 
@@ -139,8 +140,9 @@ class ShuffleUnit(nn.Module):
         return out
 
 
-class ShuffleNetv1(BaseBackbone):
-    """ShuffleNetv1 backbone.
+@BACKBONES.register_module()
+class ShuffleNetV1(BaseBackbone):
+    """ShuffleNetV1 backbone.
 
     Args:
         groups (int, optional): The number of groups to be used in grouped 1x1
@@ -174,7 +176,7 @@ class ShuffleNetv1(BaseBackbone):
                  act_cfg=dict(type='ReLU'),
                  norm_eval=False,
                  with_cp=False):
-        super(ShuffleNetv1, self).__init__()
+        super(ShuffleNetV1, self).__init__()
         self.stage_blocks = [3, 7, 3]
         self.groups = groups
 
@@ -294,7 +296,7 @@ class ShuffleNetv1(BaseBackbone):
             return tuple(outs)
 
     def train(self, mode=True):
-        super(ShuffleNetv1, self).train(mode)
+        super(ShuffleNetV1, self).train(mode)
         self._freeze_stages()
         if mode and self.norm_eval:
             for m in self.modules():

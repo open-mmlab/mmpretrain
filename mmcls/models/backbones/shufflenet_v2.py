@@ -5,6 +5,7 @@ from mmcv.cnn import ConvModule, constant_init, kaiming_init
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from mmcls.models.utils import channel_shuffle
+from ..builder import BACKBONES
 from .base_backbone import BaseBackbone
 
 
@@ -125,8 +126,9 @@ class InvertedResidual(nn.Module):
         return out
 
 
-class ShuffleNetv2(BaseBackbone):
-    """ShuffleNetv2 backbone.
+@BACKBONES.register_module()
+class ShuffleNetV2(BaseBackbone):
+    """ShuffleNetV2 backbone.
 
     Args:
         groups (int): The number of groups to be used in grouped 1x1
@@ -160,7 +162,7 @@ class ShuffleNetv2(BaseBackbone):
                  act_cfg=dict(type='ReLU'),
                  norm_eval=False,
                  with_cp=False):
-        super(ShuffleNetv2, self).__init__()
+        super(ShuffleNetV2, self).__init__()
         self.stage_blocks = [4, 8, 4]
         self.groups = groups
         self.out_indices = out_indices
@@ -273,7 +275,7 @@ class ShuffleNetv2(BaseBackbone):
             return tuple(outs)
 
     def train(self, mode=True):
-        super(ShuffleNetv2, self).train(mode)
+        super(ShuffleNetV2, self).train(mode)
         self._freeze_stages()
         if mode and self.norm_eval:
             for m in self.modules():
