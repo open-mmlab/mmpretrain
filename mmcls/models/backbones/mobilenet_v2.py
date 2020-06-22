@@ -53,9 +53,7 @@ class InvertedResidual(nn.Module):
                 ConvModule(
                     in_channels=inplanes,
                     out_channels=hidden_dim,
-                    kernel_size=3,
-                    stride=1,
-                    padding=1,
+                    kernel_size=1,
                     conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
                     act_cfg=act_cfg))
@@ -74,8 +72,6 @@ class InvertedResidual(nn.Module):
                 in_channels=hidden_dim,
                 out_channels=planes,
                 kernel_size=1,
-                stride=1,
-                padding=0,
                 conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
                 act_cfg=None)
