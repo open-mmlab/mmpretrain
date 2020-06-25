@@ -5,17 +5,18 @@ class SELayer(nn.Module):
     """Squeeze-and-Excitation Module.
 
     Args:
-        inplanes (int): The input channels of the SEBottleneck block.
-        ratio (int): Squeeze ratio in SELayer. Default: 16
+        channels (int): The input (and output) channels of the SE layer.
+        ratio (int): Squeeze ratio in SELayer, the intermediate channel will be
+            ``int(channels/ratio)``. Default: 16.
     """
 
-    def __init__(self, inplanes, ratio=16):
+    def __init__(self, channels, ratio=16):
         super(SELayer, self).__init__()
         self.global_avgpool = nn.AdaptiveAvgPool2d(1)
         self.conv1 = nn.Conv2d(
-            inplanes, int(inplanes / ratio), kernel_size=1, stride=1)
+            channels, int(channels / ratio), kernel_size=1, stride=1)
         self.conv2 = nn.Conv2d(
-            int(inplanes / ratio), inplanes, kernel_size=1, stride=1)
+            int(channels / ratio), channels, kernel_size=1, stride=1)
         self.relu = nn.ReLU(inplace=True)
         self.sigmoid = nn.Sigmoid()
 

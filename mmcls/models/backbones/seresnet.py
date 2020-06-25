@@ -9,15 +9,14 @@ class SEBottleneck(Bottleneck):
     """SEBottleneck block for SEResNet.
 
     Args:
-        inplanes (int): The input channels of the SEBottleneck block.
-        planes (int): The output channel base of the SEBottleneck block.
+        in_channels (int): The input channels of the SEBottleneck block.
+        out_channels (int): The output channel of the SEBottleneck block.
         se_ratio (int): Squeeze ratio in SELayer. Default: 16
     """
-    expansion = 4
 
-    def __init__(self, inplanes, planes, se_ratio=16, **kwargs):
-        super(SEBottleneck, self).__init__(inplanes, planes, **kwargs)
-        self.se_layer = SELayer(planes * self.expansion, ratio=se_ratio)
+    def __init__(self, in_channels, out_channels, se_ratio=16, **kwargs):
+        super(SEBottleneck, self).__init__(in_channels, out_channels, **kwargs)
+        self.se_layer = SELayer(out_channels, ratio=se_ratio)
 
     def forward(self, x):
 
@@ -58,31 +57,41 @@ class SEBottleneck(Bottleneck):
 class SEResNet(ResNet):
     """SEResNet backbone.
 
+    Please refer to the `paper <https://arxiv.org/abs/1709.01507>`_ for
+    details.
+
     Args:
-        depth (int): Depth of seresnet, from {50, 101, 152}.
-        in_channels (int): Number of input image channels. Normally 3.
-        base_channels (int): Number of base channels of hidden layer.
-        num_stages (int): Resnet stages, normally 4.
+        depth (int): Network depth, from {50, 101, 152}.
+        se_ratio (int): Squeeze ratio in SELayer. Default: 16.
+        in_channels (int): Number of input image channels. Default: 3.
+        stem_channels (int): Output channels of the stem layer. Default: 64.
+        num_stages (int): Stages of the network. Default: 4.
         strides (Sequence[int]): Strides of the first block of each stage.
+            Default: ``(1, 2, 2, 2)``.
         dilations (Sequence[int]): Dilation of each stage.
-        out_indices (Sequence[int]): Output from which stages.
-        se_ratio (int): Squeeze ratio in SELayer. Default: 16
+            Default: ``(1, 1, 1, 1)``.
+        out_indices (Sequence[int]): Output from which stages. If only one
+            stage is specified, a single tensor (feature map) is returned,
+            otherwise multiple stages are specified, a tuple of tensors will
+            be returned. Default: ``(3, )``.
         style (str): `pytorch` or `caffe`. If set to "pytorch", the stride-two
             layer is the 3x3 conv layer, otherwise the stride-two layer is
             the first 1x1 conv layer.
-        deep_stem (bool): Replace 7x7 conv in input stem with 3 3x3 conv
+        deep_stem (bool): Replace 7x7 conv in input stem with 3 3x3 conv.
+            Default: False.
         avg_down (bool): Use AvgPool instead of stride conv when
-            downsampling in the bottleneck.
+            downsampling in the bottleneck. Default: False.
         frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
-            -1 means not freezing any parameters.
-        norm_cfg (dict): Dictionary to construct and config norm layer.
+            -1 means not freezing any parameters. Default: -1.
+        conv_cfg (dict | None): The config dict for conv layers. Default: None.
+        norm_cfg (dict): The config dict for norm layers.
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm
-            and its variants only.
+            and its variants only. Default: False.
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
-            memory while slowing down the training speed.
+            memory while slowing down the training speed. Default: False.
         zero_init_residual (bool): Whether to use zero init for last norm layer
-            in resblocks to let them behave as identity.
+            in resblocks to let them behave as identity. Default: True.
 
     Example:
         >>> from mmcls.models import SEResNet
@@ -107,7 +116,7 @@ class SEResNet(ResNet):
 
     def __init__(self, depth, se_ratio=16, **kwargs):
         if depth not in self.arch_settings:
-            raise KeyError(f'invalid depth {depth} for resnet')
+            raise KeyError(f'invalid depth {depth} for SEResNet')
         self.se_ratio = se_ratio
         super(SEResNet, self).__init__(depth, **kwargs)
 

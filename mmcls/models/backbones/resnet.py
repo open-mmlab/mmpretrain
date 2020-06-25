@@ -1,7 +1,7 @@
 import torch.nn as nn
 import torch.utils.checkpoint as cp
-from mmcv.cnn import (build_conv_layer, build_norm_layer, constant_init,
-                      kaiming_init)
+from mmcv.cnn import (ConvModule, build_conv_layer, build_norm_layer,
+                      constant_init, kaiming_init)
 from mmcv.utils.parrots_wrapper import _BatchNorm
 
 from ..builder import BACKBONES
@@ -12,15 +12,17 @@ class BasicBlock(nn.Module):
     """BasicBlock for ResNet.
 
     Args:
-        inplanes (int): inplanes of block.
-        planes (int): planes of block.
+        in_channels (int): Input channels of this block.
+        out_channels (int): Output channels of this block.
+        expansion (int): The ratio of ``out_channels/mid_channels`` where
+            ``mid_channels`` is the output channels of conv1. This is a
+            reserved argument in BasicBlock and should always be 1. Default: 1.
         stride (int): stride of the block. Default: 1
         dilation (int): dilation of convolution. Default: 1
         downsample (nn.Module): downsample operation on identity branch.
-            Default: None
-        style (str): `pytorch` or `caffe`. If set to "pytorch", the stride-two
-            layer is the 3x3 conv layer, otherwise the stride-two layer is
-            the first 1x1 conv layer.
+            Default: None.
+        style (str): `pytorch` or `caffe`. It is unused and reserved for
+            unified API with Bottleneck.
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
             memory while slowing down the training speed.
         conv_cfg (dict): dictionary to construct and config conv layer.
@@ -29,11 +31,10 @@ class BasicBlock(nn.Module):
             Default: dict(type='BN')
     """
 
-    expansion = 1
-
     def __init__(self,
-                 inplanes,
-                 planes,
+                 in_channels,
+                 out_channels,
+                 expansion=1,
                  stride=1,
                  dilation=1,
                  downsample=None,
@@ -42,14 +43,28 @@ class BasicBlock(nn.Module):
                  conv_cfg=None,
                  norm_cfg=dict(type='BN')):
         super(BasicBlock, self).__init__()
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.expansion = expansion
+        assert self.expansion == 1
+        assert out_channels % expansion == 0
+        self.mid_channels = out_channels // expansion
+        self.stride = stride
+        self.dilation = dilation
+        self.style = style
+        self.with_cp = with_cp
+        self.conv_cfg = conv_cfg
+        self.norm_cfg = norm_cfg
 
-        self.norm1_name, norm1 = build_norm_layer(norm_cfg, planes, postfix=1)
-        self.norm2_name, norm2 = build_norm_layer(norm_cfg, planes, postfix=2)
+        self.norm1_name, norm1 = build_norm_layer(
+            norm_cfg, self.mid_channels, postfix=1)
+        self.norm2_name, norm2 = build_norm_layer(
+            norm_cfg, out_channels, postfix=2)
 
         self.conv1 = build_conv_layer(
             conv_cfg,
-            inplanes,
-            planes,
+            in_channels,
+            self.mid_channels,
             3,
             stride=stride,
             padding=dilation,
@@ -57,14 +72,16 @@ class BasicBlock(nn.Module):
             bias=False)
         self.add_module(self.norm1_name, norm1)
         self.conv2 = build_conv_layer(
-            conv_cfg, planes, planes, 3, padding=1, bias=False)
+            conv_cfg,
+            self.mid_channels,
+            out_channels,
+            3,
+            padding=1,
+            bias=False)
         self.add_module(self.norm2_name, norm2)
 
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
-        self.stride = stride
-        self.dilation = dilation
-        self.with_cp = with_cp
 
     @property
     def norm1(self):
@@ -107,15 +124,17 @@ class Bottleneck(nn.Module):
     """Bottleneck block for ResNet.
 
     Args:
-        inplanes (int): inplanes of block.
-        planes (int): planes of block.
+        in_channels (int): Input channels of this block.
+        out_channels (int): Output channels of this block.
+        expansion (int): The ratio of ``out_channels/mid_channels`` where
+            ``mid_channels`` is the input/output channels of conv2. Default: 4.
         stride (int): stride of the block. Default: 1
         dilation (int): dilation of convolution. Default: 1
         downsample (nn.Module): downsample operation on identity branch.
-            Default: None
-        style (str): `pytorch` or `caffe`. If set to "pytorch", the stride-two
-            layer is the 3x3 conv layer, otherwise the stride-two layer is
-            the first 1x1 conv layer.
+            Default: None.
+        style (str): ``"pytorch"`` or ``"caffe"``. If set to "pytorch", the
+            stride-two layer is the 3x3 conv layer, otherwise the stride-two
+            layer is the first 1x1 conv layer. Default: "pytorch".
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
             memory while slowing down the training speed.
         conv_cfg (dict): dictionary to construct and config conv layer.
@@ -124,11 +143,10 @@ class Bottleneck(nn.Module):
             Default: dict(type='BN')
     """
 
-    expansion = 4
-
     def __init__(self,
-                 inplanes,
-                 planes,
+                 in_channels,
+                 out_channels,
+                 expansion=4,
                  stride=1,
                  dilation=1,
                  downsample=None,
@@ -139,8 +157,11 @@ class Bottleneck(nn.Module):
         super(Bottleneck, self).__init__()
         assert style in ['pytorch', 'caffe']
 
-        self.inplanes = inplanes
-        self.planes = planes
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.expansion = expansion
+        assert out_channels % expansion == 0
+        self.mid_channels = out_channels // expansion
         self.stride = stride
         self.dilation = dilation
         self.style = style
@@ -155,23 +176,25 @@ class Bottleneck(nn.Module):
             self.conv1_stride = stride
             self.conv2_stride = 1
 
-        self.norm1_name, norm1 = build_norm_layer(norm_cfg, planes, postfix=1)
-        self.norm2_name, norm2 = build_norm_layer(norm_cfg, planes, postfix=2)
+        self.norm1_name, norm1 = build_norm_layer(
+            norm_cfg, self.mid_channels, postfix=1)
+        self.norm2_name, norm2 = build_norm_layer(
+            norm_cfg, self.mid_channels, postfix=2)
         self.norm3_name, norm3 = build_norm_layer(
-            norm_cfg, planes * self.expansion, postfix=3)
+            norm_cfg, out_channels, postfix=3)
 
         self.conv1 = build_conv_layer(
             conv_cfg,
-            inplanes,
-            planes,
+            in_channels,
+            self.mid_channels,
             kernel_size=1,
             stride=self.conv1_stride,
             bias=False)
         self.add_module(self.norm1_name, norm1)
         self.conv2 = build_conv_layer(
             conv_cfg,
-            planes,
-            planes,
+            self.mid_channels,
+            self.mid_channels,
             kernel_size=3,
             stride=self.conv2_stride,
             padding=dilation,
@@ -181,8 +204,8 @@ class Bottleneck(nn.Module):
         self.add_module(self.norm2_name, norm2)
         self.conv3 = build_conv_layer(
             conv_cfg,
-            planes,
-            planes * self.expansion,
+            self.mid_channels,
+            out_channels,
             kernel_size=1,
             bias=False)
         self.add_module(self.norm3_name, norm3)
@@ -235,15 +258,55 @@ class Bottleneck(nn.Module):
         return out
 
 
+def get_expansion(block, expansion=None):
+    """Get the expansion of a residual block.
+
+    The block expansion will be obtained by the following order:
+
+    1. If ``expansion`` is given, just return it.
+    2. If ``block`` has the attribute ``expansion``, then return
+       ``block.expansion``.
+    3. Return the default value according the the block type:
+       1 for ``BasicBlock`` and 4 for ``Bottleneck``.
+
+    Args:
+        block (class): The block class.
+        expansion (int | None): The given expansion ratio.
+
+    Returns:
+        int: The expansion of the block.
+    """
+    if isinstance(expansion, int):
+        assert expansion > 0
+    elif expansion is None:
+        if hasattr(block, 'expansion'):
+            expansion = block.expansion
+        elif issubclass(block, BasicBlock):
+            expansion = 1
+        elif issubclass(block, Bottleneck):
+            expansion = 4
+        else:
+            raise TypeError(f'expansion is not specified for {block.__name__}')
+    else:
+        raise TypeError('expansion must be an integer or None')
+
+    return expansion
+
+
 class ResLayer(nn.Sequential):
     """ResLayer to build ResNet style backbone.
 
     Args:
-        block (nn.Module): block used to build ResLayer.
-        inplanes (int): inplanes of block.
-        planes (int): planes of block.
-        num_blocks (int): number of blocks.
-        stride (int): stride of the first block. Default: 1
+        block (nn.Module): Residual block used to build ResLayer.
+        num_blocks (int): Number of blocks.
+        in_channels (int): Input channels of this block.
+        out_channels (int): Output channels of this block.
+        expansion (int, optional): The expansion for BasicBlock/Bottleneck.
+            If not specified, it will firstly be obtained via
+            ``block.expansion``. If the block has no attribute "expansion",
+            the following default values will be used: 1 for BasicBlock and
+            4 for Bottleneck. Default: None.
+        stride (int): stride of the first block. Default: 1.
         avg_down (bool): Use AvgPool instead of stride conv when
             downsampling in the bottleneck. Default: False
         conv_cfg (dict): dictionary to construct and config conv layer.
@@ -254,18 +317,20 @@ class ResLayer(nn.Sequential):
 
     def __init__(self,
                  block,
-                 inplanes,
-                 planes,
                  num_blocks,
+                 in_channels,
+                 out_channels,
+                 expansion=None,
                  stride=1,
                  avg_down=False,
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
                  **kwargs):
         self.block = block
+        self.expansion = get_expansion(block, expansion)
 
         downsample = None
-        if stride != 1 or inplanes != planes * block.expansion:
+        if stride != 1 or in_channels != out_channels:
             downsample = []
             conv_stride = stride
             if avg_down and stride != 1:
@@ -279,31 +344,33 @@ class ResLayer(nn.Sequential):
             downsample.extend([
                 build_conv_layer(
                     conv_cfg,
-                    inplanes,
-                    planes * block.expansion,
+                    in_channels,
+                    out_channels,
                     kernel_size=1,
                     stride=conv_stride,
                     bias=False),
-                build_norm_layer(norm_cfg, planes * block.expansion)[1]
+                build_norm_layer(norm_cfg, out_channels)[1]
             ])
             downsample = nn.Sequential(*downsample)
 
         layers = []
         layers.append(
             block(
-                inplanes=inplanes,
-                planes=planes,
+                in_channels=in_channels,
+                out_channels=out_channels,
+                expansion=self.expansion,
                 stride=stride,
                 downsample=downsample,
                 conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
                 **kwargs))
-        inplanes = planes * block.expansion
+        in_channels = out_channels
         for i in range(1, num_blocks):
             layers.append(
                 block(
-                    inplanes=inplanes,
-                    planes=planes,
+                    in_channels=in_channels,
+                    out_channels=out_channels,
+                    expansion=self.expansion,
                     stride=1,
                     conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
@@ -315,30 +382,41 @@ class ResLayer(nn.Sequential):
 class ResNet(BaseBackbone):
     """ResNet backbone.
 
+    Please refer to the `paper <https://arxiv.org/abs/1512.03385>`_ for
+    details.
+
     Args:
-        depth (int): Depth of resnet, from {18, 34, 50, 101, 152}.
-        in_channels (int): Number of input image channels. Normally 3.
-        base_channels (int): Number of base channels of hidden layer.
-        num_stages (int): Resnet stages, normally 4.
+        depth (int): Network depth, from {18, 34, 50, 101, 152}.
+        in_channels (int): Number of input image channels. Default: 3.
+        stem_channels (int): Output channels of the stem layer. Default: 64.
+        base_channels (int): Middle channels of the first stage. Default: 64.
+        num_stages (int): Stages of the network. Default: 4.
         strides (Sequence[int]): Strides of the first block of each stage.
+            Default: ``(1, 2, 2, 2)``.
         dilations (Sequence[int]): Dilation of each stage.
-        out_indices (Sequence[int]): Output from which stages.
+            Default: ``(1, 1, 1, 1)``.
+        out_indices (Sequence[int]): Output from which stages. If only one
+            stage is specified, a single tensor (feature map) is returned,
+            otherwise multiple stages are specified, a tuple of tensors will
+            be returned. Default: ``(3, )``.
         style (str): `pytorch` or `caffe`. If set to "pytorch", the stride-two
             layer is the 3x3 conv layer, otherwise the stride-two layer is
             the first 1x1 conv layer.
-        deep_stem (bool): Replace 7x7 conv in input stem with 3 3x3 conv
+        deep_stem (bool): Replace 7x7 conv in input stem with 3 3x3 conv.
+            Default: False.
         avg_down (bool): Use AvgPool instead of stride conv when
-            downsampling in the bottleneck.
+            downsampling in the bottleneck. Default: False.
         frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
-            -1 means not freezing any parameters.
-        norm_cfg (dict): Dictionary to construct and config norm layer.
+            -1 means not freezing any parameters. Default: -1.
+        conv_cfg (dict | None): The config dict for conv layers. Default: None.
+        norm_cfg (dict): The config dict for norm layers.
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm
-            and its variants only.
+            and its variants only. Default: False.
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
-            memory while slowing down the training speed.
+            memory while slowing down the training speed. Default: False.
         zero_init_residual (bool): Whether to use zero init for last norm layer
-            in resblocks to let them behave as identity.
+            in resblocks to let them behave as identity. Default: True.
 
     Example:
         >>> from mmcls.models import ResNet
@@ -366,7 +444,9 @@ class ResNet(BaseBackbone):
     def __init__(self,
                  depth,
                  in_channels=3,
+                 stem_channels=64,
                  base_channels=64,
+                 expansion=None,
                  num_stages=4,
                  strides=(1, 2, 2, 2),
                  dilations=(1, 1, 1, 1),
@@ -384,6 +464,7 @@ class ResNet(BaseBackbone):
         if depth not in self.arch_settings:
             raise KeyError(f'invalid depth {depth} for resnet')
         self.depth = depth
+        self.stem_channels = stem_channels
         self.base_channels = base_channels
         self.num_stages = num_stages
         assert num_stages >= 1 and num_stages <= 4
@@ -403,20 +484,22 @@ class ResNet(BaseBackbone):
         self.zero_init_residual = zero_init_residual
         self.block, stage_blocks = self.arch_settings[depth]
         self.stage_blocks = stage_blocks[:num_stages]
-        self.inplanes = base_channels
+        self.expansion = get_expansion(self.block, expansion)
 
-        self._make_stem_layer(in_channels, base_channels)
+        self._make_stem_layer(in_channels, stem_channels)
 
         self.res_layers = []
+        _in_channels = stem_channels
+        _out_channels = base_channels * self.expansion
         for i, num_blocks in enumerate(self.stage_blocks):
             stride = strides[i]
             dilation = dilations[i]
-            planes = base_channels * 2**i
             res_layer = self.make_res_layer(
                 block=self.block,
-                inplanes=self.inplanes,
-                planes=planes,
                 num_blocks=num_blocks,
+                in_channels=_in_channels,
+                out_channels=_out_channels,
+                expansion=self.expansion,
                 stride=stride,
                 dilation=dilation,
                 style=self.style,
@@ -424,15 +507,15 @@ class ResNet(BaseBackbone):
                 with_cp=with_cp,
                 conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg)
-            self.inplanes = planes * self.block.expansion
+            _in_channels = _out_channels
+            _out_channels *= 2
             layer_name = f'layer{i + 1}'
             self.add_module(layer_name, res_layer)
             self.res_layers.append(layer_name)
 
         self._freeze_stages()
 
-        self.feat_dim = self.block.expansion * base_channels * 2**(
-            len(self.stage_blocks) - 1)
+        self.feat_dim = res_layer[-1].out_channels
 
     def make_res_layer(self, **kwargs):
         return ResLayer(**kwargs)
@@ -441,50 +524,47 @@ class ResNet(BaseBackbone):
     def norm1(self):
         return getattr(self, self.norm1_name)
 
-    def _make_stem_layer(self, in_channels, base_channels):
+    def _make_stem_layer(self, in_channels, stem_channels):
         if self.deep_stem:
             self.stem = nn.Sequential(
-                build_conv_layer(
-                    self.conv_cfg,
+                ConvModule(
                     in_channels,
-                    base_channels // 2,
+                    stem_channels // 2,
                     kernel_size=3,
                     stride=2,
                     padding=1,
-                    bias=False),
-                build_norm_layer(self.norm_cfg, base_channels // 2)[1],
-                nn.ReLU(inplace=True),
-                build_conv_layer(
-                    self.conv_cfg,
-                    base_channels // 2,
-                    base_channels // 2,
+                    conv_cfg=self.conv_cfg,
+                    norm_cfg=self.norm_cfg,
+                    inplace=True),
+                ConvModule(
+                    stem_channels // 2,
+                    stem_channels // 2,
                     kernel_size=3,
                     stride=1,
                     padding=1,
-                    bias=False),
-                build_norm_layer(self.norm_cfg, base_channels // 2)[1],
-                nn.ReLU(inplace=True),
-                build_conv_layer(
-                    self.conv_cfg,
-                    base_channels // 2,
-                    base_channels,
+                    conv_cfg=self.conv_cfg,
+                    norm_cfg=self.norm_cfg,
+                    inplace=True),
+                ConvModule(
+                    stem_channels // 2,
+                    stem_channels,
                     kernel_size=3,
                     stride=1,
                     padding=1,
-                    bias=False),
-                build_norm_layer(self.norm_cfg, base_channels)[1],
-                nn.ReLU(inplace=True))
+                    conv_cfg=self.conv_cfg,
+                    norm_cfg=self.norm_cfg,
+                    inplace=True))
         else:
             self.conv1 = build_conv_layer(
                 self.conv_cfg,
                 in_channels,
-                base_channels,
+                stem_channels,
                 kernel_size=7,
                 stride=2,
                 padding=3,
                 bias=False)
             self.norm1_name, norm1 = build_norm_layer(
-                self.norm_cfg, base_channels, postfix=1)
+                self.norm_cfg, stem_channels, postfix=1)
             self.add_module(self.norm1_name, norm1)
             self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)

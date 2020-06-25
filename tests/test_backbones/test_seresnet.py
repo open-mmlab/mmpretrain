@@ -8,20 +8,6 @@ from mmcls.models.backbones.resnet import ResLayer
 from mmcls.models.backbones.seresnet import SEBottleneck, SELayer
 
 
-def is_block(modules):
-    """Check if is ResNet building block."""
-    if isinstance(modules, (SEBottleneck, )):
-        return True
-    return False
-
-
-def is_norm(modules):
-    """Check if is one of the norms."""
-    if isinstance(modules, (_BatchNorm, )):
-        return True
-    return False
-
-
 def all_zeros(modules):
     """Check if the weight(and bias) is all zero."""
     weight_zero = torch.equal(modules.weight.data,
@@ -44,7 +30,7 @@ def check_norm_state(modules, train_state):
     return True
 
 
-def test_serenet_selayer():
+def test_selayer():
     # Test selayer forward
     layer = SELayer(64)
     x = torch.randn(1, 64, 56, 56)
@@ -58,37 +44,37 @@ def test_serenet_selayer():
     assert x_out.shape == torch.Size([1, 64, 56, 56])
 
 
-def test_seresnet_bottleneckse():
+def test_bottleneck():
 
     with pytest.raises(AssertionError):
         # Style must be in ['pytorch', 'caffe']
         SEBottleneck(64, 64, style='tensorflow')
 
     # Test SEBottleneck with checkpoint forward
-    block = SEBottleneck(64, 16, with_cp=True)
+    block = SEBottleneck(64, 64, with_cp=True)
     assert block.with_cp
     x = torch.randn(1, 64, 56, 56)
     x_out = block(x)
     assert x_out.shape == torch.Size([1, 64, 56, 56])
 
     # Test Bottleneck style
-    block = SEBottleneck(64, 64, stride=2, style='pytorch')
+    block = SEBottleneck(64, 256, stride=2, style='pytorch')
     assert block.conv1.stride == (1, 1)
     assert block.conv2.stride == (2, 2)
-    block = SEBottleneck(64, 64, stride=2, style='caffe')
+    block = SEBottleneck(64, 256, stride=2, style='caffe')
     assert block.conv1.stride == (2, 2)
     assert block.conv2.stride == (1, 1)
 
     # Test Bottleneck forward
-    block = SEBottleneck(64, 16)
+    block = SEBottleneck(64, 64)
     x = torch.randn(1, 64, 56, 56)
     x_out = block(x)
     assert x_out.shape == torch.Size([1, 64, 56, 56])
 
 
-def test_seresnet_res_layer():
+def test_res_layer():
     # Test ResLayer of 3 Bottleneck w\o downsample
-    layer = ResLayer(SEBottleneck, 64, 16, 3, se_ratio=16)
+    layer = ResLayer(SEBottleneck, 3, 64, 64, se_ratio=16)
     assert len(layer) == 3
     assert layer[0].conv1.in_channels == 64
     assert layer[0].conv1.out_channels == 16
@@ -102,7 +88,7 @@ def test_seresnet_res_layer():
     assert x_out.shape == torch.Size([1, 64, 56, 56])
 
     # Test ResLayer of 3 SEBottleneck with downsample
-    layer = ResLayer(SEBottleneck, 64, 64, 3, se_ratio=16)
+    layer = ResLayer(SEBottleneck, 3, 64, 256, se_ratio=16)
     assert layer[0].downsample[0].out_channels == 256
     for i in range(1, len(layer)):
         assert layer[i].downsample is None
@@ -111,7 +97,7 @@ def test_seresnet_res_layer():
     assert x_out.shape == torch.Size([1, 256, 56, 56])
 
     # Test ResLayer of 3 SEBottleneck with stride=2
-    layer = ResLayer(SEBottleneck, 64, 64, 3, stride=2, se_ratio=8)
+    layer = ResLayer(SEBottleneck, 3, 64, 256, stride=2, se_ratio=8)
     assert layer[0].downsample[0].out_channels == 256
     assert layer[0].downsample[0].stride == (2, 2)
     for i in range(1, len(layer)):
@@ -122,7 +108,7 @@ def test_seresnet_res_layer():
 
     # Test ResLayer of 3 SEBottleneck with stride=2 and average downsample
     layer = ResLayer(
-        SEBottleneck, 64, 64, 3, stride=2, avg_down=True, se_ratio=8)
+        SEBottleneck, 3, 64, 256, stride=2, avg_down=True, se_ratio=8)
     assert isinstance(layer[0].downsample[0], AvgPool2d)
     assert layer[0].downsample[1].out_channels == 256
     assert layer[0].downsample[1].stride == (1, 1)
@@ -133,7 +119,7 @@ def test_seresnet_res_layer():
     assert x_out.shape == torch.Size([1, 256, 28, 28])
 
 
-def test_seresnet_backbone():
+def test_seresnet():
     """Test resnet backbone"""
     with pytest.raises(KeyError):
         # SEResNet depth should be in [50, 101, 152]
@@ -191,9 +177,6 @@ def test_seresnet_backbone():
 
     # Test SEResNet50 with BatchNorm forward
     model = SEResNet(50, out_indices=(0, 1, 2, 3))
-    for m in model.modules():
-        if is_norm(m):
-            assert isinstance(m, _BatchNorm)
     model.init_weights()
     model.train()
 
@@ -229,7 +212,7 @@ def test_seresnet_backbone():
     # Test SEResNet50 with checkpoint forward
     model = SEResNet(50, out_indices=(0, 1, 2, 3), with_cp=True)
     for m in model.modules():
-        if is_block(m):
+        if isinstance(m, SEBottleneck):
             assert m.with_cp
     model.init_weights()
     model.train()
