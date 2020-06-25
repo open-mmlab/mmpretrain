@@ -5,42 +5,35 @@ from mmcls.models.backbones import ResNeXt
 from mmcls.models.backbones.resnext import Bottleneck as BottleneckX
 
 
-def is_block(modules):
-    """Check if is ResNeXt building block."""
-    if isinstance(modules, (BottleneckX)):
-        return True
-    return False
-
-
-def test_resnext_bottleneck():
+def test_bottleneck():
     with pytest.raises(AssertionError):
         # Style must be in ['pytorch', 'caffe']
-        BottleneckX(64, 64, groups=32, base_width=4, style='tensorflow')
+        BottleneckX(64, 64, groups=32, width_per_group=4, style='tensorflow')
 
     # Test ResNeXt Bottleneck structure
     block = BottleneckX(
-        64, 64, groups=32, base_width=4, stride=2, style='pytorch')
+        64, 256, groups=32, width_per_group=4, stride=2, style='pytorch')
     assert block.conv2.stride == (2, 2)
     assert block.conv2.groups == 32
     assert block.conv2.out_channels == 128
 
     # Test ResNeXt Bottleneck forward
-    block = BottleneckX(64, 16, groups=32, base_width=4)
+    block = BottleneckX(64, 64, base_channels=16, groups=32, width_per_group=4)
     x = torch.randn(1, 64, 56, 56)
     x_out = block(x)
     assert x_out.shape == torch.Size([1, 64, 56, 56])
 
 
-def test_resnext_backbone():
+def test_resnext():
     with pytest.raises(KeyError):
         # ResNeXt depth should be in [50, 101, 152]
         ResNeXt(depth=18)
 
-    # Test ResNeXt with group 32, base_width 4
+    # Test ResNeXt with group 32, width_per_group 4
     model = ResNeXt(
-        depth=50, groups=32, base_width=4, out_indices=(0, 1, 2, 3))
+        depth=50, groups=32, width_per_group=4, out_indices=(0, 1, 2, 3))
     for m in model.modules():
-        if is_block(m):
+        if isinstance(m, BottleneckX):
             assert m.conv2.groups == 32
     model.init_weights()
     model.train()
@@ -53,10 +46,10 @@ def test_resnext_backbone():
     assert feat[2].shape == torch.Size([1, 1024, 14, 14])
     assert feat[3].shape == torch.Size([1, 2048, 7, 7])
 
-    # Test ResNeXt with group 32, base_width 4 and layers 3 out forward
-    model = ResNeXt(depth=50, groups=32, base_width=4, out_indices=(3, ))
+    # Test ResNeXt with group 32, width_per_group 4 and layers 3 out forward
+    model = ResNeXt(depth=50, groups=32, width_per_group=4, out_indices=(3, ))
     for m in model.modules():
-        if is_block(m):
+        if isinstance(m, BottleneckX):
             assert m.conv2.groups == 32
     model.init_weights()
     model.train()

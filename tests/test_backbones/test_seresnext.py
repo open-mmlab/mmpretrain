@@ -5,42 +5,35 @@ from mmcls.models.backbones import SEResNeXt
 from mmcls.models.backbones.seresnext import SEBottleneck as SEBottleneckX
 
 
-def is_block(modules):
-    """Check if is SEResNeXt building block."""
-    if isinstance(modules, (SEBottleneckX)):
-        return True
-    return False
-
-
-def test_seresnext_bottleneck():
+def test_bottleneck():
     with pytest.raises(AssertionError):
         # Style must be in ['pytorch', 'caffe']
-        SEBottleneckX(64, 64, groups=32, base_width=4, style='tensorflow')
+        SEBottleneckX(64, 64, groups=32, width_per_group=4, style='tensorflow')
 
     # Test SEResNeXt Bottleneck structure
     block = SEBottleneckX(
-        64, 64, groups=32, base_width=4, stride=2, style='pytorch')
+        64, 256, groups=32, width_per_group=4, stride=2, style='pytorch')
     assert block.conv2.stride == (2, 2)
     assert block.conv2.groups == 32
     assert block.conv2.out_channels == 128
 
     # Test SEResNeXt Bottleneck forward
-    block = SEBottleneckX(64, 16, groups=32, base_width=4)
+    block = SEBottleneckX(64, 64, groups=32, width_per_group=4)
     x = torch.randn(1, 64, 56, 56)
     x_out = block(x)
     assert x_out.shape == torch.Size([1, 64, 56, 56])
 
 
-def test_seresnext_backbone():
+def test_seresnext():
     with pytest.raises(KeyError):
         # SEResNeXt depth should be in [50, 101, 152]
         SEResNeXt(depth=18)
 
-    # Test SEResNeXt with group 32, base_width 4
+    # Test SEResNeXt with group 32, width_per_group 4
     model = SEResNeXt(
-        depth=50, groups=32, base_width=4, out_indices=(0, 1, 2, 3))
+        depth=50, groups=32, width_per_group=4, out_indices=(0, 1, 2, 3))
     for m in model.modules():
-        if is_block(m):
+        if isinstance(m, SEBottleneckX):
             assert m.conv2.groups == 32
     model.init_weights()
     model.train()
@@ -53,10 +46,11 @@ def test_seresnext_backbone():
     assert feat[2].shape == torch.Size([1, 1024, 14, 14])
     assert feat[3].shape == torch.Size([1, 2048, 7, 7])
 
-    # Test SEResNeXt with group 32, base_width 4 and layers 3 out forward
-    model = SEResNeXt(depth=50, groups=32, base_width=4, out_indices=(3, ))
+    # Test SEResNeXt with group 32, width_per_group 4 and layers 3 out forward
+    model = SEResNeXt(
+        depth=50, groups=32, width_per_group=4, out_indices=(3, ))
     for m in model.modules():
-        if is_block(m):
+        if isinstance(m, SEBottleneckX):
             assert m.conv2.groups == 32
     model.init_weights()
     model.train()
