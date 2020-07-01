@@ -23,12 +23,16 @@ PIPELINES = Registry('pipeline')
 
 
 def build_dataset(cfg, default_args=None):
-    from .dataset_wrappers import ConcatDataset, RepeatDataset
+    from .dataset_wrappers import (ConcatDataset, RepeatDataset,
+                                   ClassBalancedDataset)
     if isinstance(cfg, (list, tuple)):
         dataset = ConcatDataset([build_dataset(c, default_args) for c in cfg])
     elif cfg['type'] == 'RepeatDataset':
         dataset = RepeatDataset(
             build_dataset(cfg['dataset'], default_args), cfg['times'])
+    elif cfg['type'] == 'ClassBalancedDataset':
+        dataset = ClassBalancedDataset(
+            build_dataset(cfg['dataset'], default_args), cfg['oversample_thr'])
     else:
         dataset = build_from_cfg(cfg, DATASETS, default_args)
 
@@ -85,6 +89,7 @@ def build_dataloader(dataset,
         sampler=sampler,
         num_workers=num_workers,
         collate_fn=partial(collate, samples_per_gpu=samples_per_gpu),
+        pin_memory=False,
         shuffle=shuffle,
         worker_init_fn=init_fn,
         **kwargs)
