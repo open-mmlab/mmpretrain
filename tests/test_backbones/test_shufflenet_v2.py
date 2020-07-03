@@ -33,11 +33,12 @@ def check_norm_state(modules, train_state):
 def test_shufflenetv2_invertedresidual():
 
     with pytest.raises(AssertionError):
-        # when stride==1, inplanes should be equal to planes // 2 * 2
+        # when stride==1, in_channels should be equal to out_channels // 2 * 2
         InvertedResidual(24, 32, stride=1)
 
     with pytest.raises(AssertionError):
-        # when inplanes !=  planes // 2 * 2, stride should not be equal to 1.
+        # when in_channels !=  out_channels // 2 * 2, stride should not be
+        # equal to 1.
         InvertedResidual(24, 32, stride=1)
 
     # Test InvertedResidual forward
@@ -109,7 +110,7 @@ def test_shufflenetv2_backbone():
 
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
-    assert len(feat) == 3
+    assert len(feat) == 4
     assert feat[0].shape == torch.Size((1, 48, 28, 28))
     assert feat[1].shape == torch.Size((1, 96, 14, 14))
     assert feat[2].shape == torch.Size((1, 192, 7, 7))
@@ -125,7 +126,7 @@ def test_shufflenetv2_backbone():
 
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
-    assert len(feat) == 3
+    assert len(feat) == 4
     assert feat[0].shape == torch.Size((1, 116, 28, 28))
     assert feat[1].shape == torch.Size((1, 232, 14, 14))
     assert feat[2].shape == torch.Size((1, 464, 7, 7))
@@ -141,7 +142,7 @@ def test_shufflenetv2_backbone():
 
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
-    assert len(feat) == 3
+    assert len(feat) == 4
     assert feat[0].shape == torch.Size((1, 176, 28, 28))
     assert feat[1].shape == torch.Size((1, 352, 14, 14))
     assert feat[2].shape == torch.Size((1, 704, 7, 7))
@@ -157,7 +158,7 @@ def test_shufflenetv2_backbone():
 
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
-    assert len(feat) == 3
+    assert len(feat) == 4
     assert feat[0].shape == torch.Size((1, 244, 28, 28))
     assert feat[1].shape == torch.Size((1, 488, 14, 14))
     assert feat[2].shape == torch.Size((1, 976, 7, 7))
