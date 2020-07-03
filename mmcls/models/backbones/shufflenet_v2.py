@@ -1,7 +1,10 @@
+import logging
+
 import torch
 import torch.nn as nn
 import torch.utils.checkpoint as cp
 from mmcv.cnn import ConvModule, constant_init, kaiming_init
+from mmcv.runner import load_checkpoint
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from mmcls.models.utils import channel_shuffle
@@ -13,8 +16,8 @@ class InvertedResidual(nn.Module):
     """InvertedResidual block for ShuffleNetV2 backbone.
 
     Args:
-        inplanes (int): The input channels of the block.
-        planes (int): The output channels of the block.
+        in_channels (int): The input channels of the block.
+        out_channels (int): The output channels of the block.
         stride (int): Stride of the 3x3 convolution layer. Default: 1
         conv_cfg (dict): Config dict for convolution layer.
             Default: None, which means using conv2d.
@@ -30,8 +33,8 @@ class InvertedResidual(nn.Module):
     """
 
     def __init__(self,
-                 inplanes,
-                 planes,
+                 in_channels,
+                 out_channels,
                  stride=1,
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
@@ -41,31 +44,32 @@ class InvertedResidual(nn.Module):
         self.stride = stride
         self.with_cp = with_cp
 
-        branch_features = planes // 2
+        branch_features = out_channels // 2
         if self.stride == 1:
-            assert inplanes == branch_features * 2, (
-                f'inplanes ({inplanes}) should equal to branch_features * 2 '
-                f'({branch_features * 2}) when stride is 1')
+            assert in_channels == branch_features * 2, (
+                f'in_channels ({in_channels}) should equal to '
+                f'branch_features * 2 ({branch_features * 2}) '
+                'when stride is 1')
 
-        if inplanes != branch_features * 2:
+        if in_channels != branch_features * 2:
             assert self.stride != 1, (
                 f'stride ({self.stride}) should not equal 1 when '
-                f'inplanes != branch_features * 2')
+                f'in_channels != branch_features * 2')
 
         if self.stride > 1:
             self.branch1 = nn.Sequential(
                 ConvModule(
-                    inplanes,
-                    inplanes,
+                    in_channels,
+                    in_channels,
                     kernel_size=3,
                     stride=self.stride,
                     padding=1,
-                    groups=inplanes,
+                    groups=in_channels,
                     conv_cfg=conv_cfg,
                     norm_cfg=norm_cfg,
                     act_cfg=None),
                 ConvModule(
-                    inplanes,
+                    in_channels,
                     branch_features,
                     kernel_size=1,
                     stride=1,
@@ -77,7 +81,7 @@ class InvertedResidual(nn.Module):
 
         self.branch2 = nn.Sequential(
             ConvModule(
-                inplanes if (self.stride > 1) else branch_features,
+                in_channels if (self.stride > 1) else branch_features,
                 branch_features,
                 kernel_size=1,
                 stride=1,
@@ -131,8 +135,6 @@ class ShuffleNetV2(BaseBackbone):
     """ShuffleNetV2 backbone.
 
     Args:
-        groups (int): The number of groups to be used in grouped 1x1
-            convolutions in each InvertedResidual. Default: 3.
         widen_factor (float): Width multiplier - adjusts the number of
             channels in each layer by this amount. Default: 1.0.
         out_indices (Sequence[int]): Output from which stages.
@@ -153,9 +155,8 @@ class ShuffleNetV2(BaseBackbone):
     """
 
     def __init__(self,
-                 groups=3,
                  widen_factor=1.0,
-                 out_indices=(0, 1, 2),
+                 out_indices=(0, 1, 2, 3),
                  frozen_stages=-1,
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
@@ -164,9 +165,8 @@ class ShuffleNetV2(BaseBackbone):
                  with_cp=False):
         super(ShuffleNetV2, self).__init__()
         self.stage_blocks = [4, 8, 4]
-        self.groups = groups
         self.out_indices = out_indices
-        assert max(out_indices) < len(self.stage_blocks)
+        assert max(out_indices) < len(self.stage_blocks) + 1
         self.frozen_stages = frozen_stages
         assert frozen_stages < len(self.stage_blocks)
         self.conv_cfg = conv_cfg
@@ -187,10 +187,10 @@ class ShuffleNetV2(BaseBackbone):
             raise ValueError('widen_factor must be in [0.5, 1.0, 1.5, 2.0]. '
                              f'But received {widen_factor}')
 
-        self.inplanes = 24
+        self.in_channels = 24
         self.conv1 = ConvModule(
             in_channels=3,
-            out_channels=self.inplanes,
+            out_channels=self.in_channels,
             kernel_size=3,
             stride=2,
             padding=1,
@@ -207,18 +207,18 @@ class ShuffleNetV2(BaseBackbone):
 
         output_channels = channels[-1]
         self.conv2 = ConvModule(
-            in_channels=self.inplanes,
+            in_channels=self.in_channels,
             out_channels=output_channels,
             kernel_size=1,
             conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
             act_cfg=act_cfg)
 
-    def _make_layer(self, planes, num_blocks):
+    def _make_layer(self, out_channels, num_blocks):
         """ Stack blocks to make a layer.
 
         Args:
-            planes (int): planes of the block.
+            out_channels (int): out_channels of the block.
             num_blocks (int): number of blocks.
         """
         layers = []
@@ -226,14 +226,14 @@ class ShuffleNetV2(BaseBackbone):
             stride = 2 if i == 0 else 1
             layers.append(
                 InvertedResidual(
-                    inplanes=self.inplanes,
-                    planes=planes,
+                    in_channels=self.in_channels,
+                    out_channels=out_channels,
                     stride=stride,
                     conv_cfg=self.conv_cfg,
                     norm_cfg=self.norm_cfg,
                     act_cfg=self.act_cfg,
                     with_cp=self.with_cp))
-            self.inplanes = planes
+            self.in_channels = out_channels
 
         return nn.Sequential(*layers)
 
@@ -249,6 +249,9 @@ class ShuffleNetV2(BaseBackbone):
                 param.requires_grad = False
 
     def init_weights(self, pretrained=None):
+        if isinstance(pretrained, str):
+            logger = logging.getLogger()
+            load_checkpoint(self, pretrained, strict=False, logger=logger)
         if pretrained is None:
             for m in self.modules():
                 if isinstance(m, nn.Conv2d):
@@ -268,6 +271,10 @@ class ShuffleNetV2(BaseBackbone):
             x = layer(x)
             if i in self.out_indices:
                 outs.append(x)
+        x = self.conv2(x)
+
+        if 3 in self.out_indices:
+            outs.append(x)
 
         if len(outs) == 1:
             return outs[0]
