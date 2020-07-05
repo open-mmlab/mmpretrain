@@ -1,6 +1,9 @@
+import logging
+
 import torch.nn as nn
 import torch.utils.checkpoint as cp
 from mmcv.cnn import ConvModule, constant_init, kaiming_init
+from mmcv.runner import load_checkpoint
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from mmcls.models.utils import make_divisible
@@ -12,8 +15,8 @@ class InvertedResidual(nn.Module):
     """InvertedResidual block for MobileNetV2.
 
     Args:
-        inplanes (int): The input channels of the InvertedResidual block.
-        planes (int): The output channels of the InvertedResidual block.
+        in_channels (int): The input channels of the InvertedResidual block.
+        out_channels (int): The output channels of the InvertedResidual block.
         stride (int): Stride of the middle (first) 3x3 convolution.
         expand_ratio (int): adjusts number of channels of the hidden layer
             in InvertedResidual by this amount.
@@ -31,8 +34,8 @@ class InvertedResidual(nn.Module):
     """
 
     def __init__(self,
-                 inplanes,
-                 planes,
+                 in_channels,
+                 out_channels,
                  stride,
                  expand_ratio,
                  conv_cfg=None,
@@ -44,14 +47,14 @@ class InvertedResidual(nn.Module):
         assert stride in [1, 2], f'stride must in [1, 2]. ' \
             f'But received {stride}.'
         self.with_cp = with_cp
-        self.use_res_connect = self.stride == 1 and inplanes == planes
-        hidden_dim = int(round(inplanes * expand_ratio))
+        self.use_res_connect = self.stride == 1 and in_channels == out_channels
+        hidden_dim = int(round(in_channels * expand_ratio))
 
         layers = []
         if expand_ratio != 1:
             layers.append(
                 ConvModule(
-                    in_channels=inplanes,
+                    in_channels=in_channels,
                     out_channels=hidden_dim,
                     kernel_size=1,
                     conv_cfg=conv_cfg,
@@ -70,7 +73,7 @@ class InvertedResidual(nn.Module):
                 act_cfg=act_cfg),
             ConvModule(
                 in_channels=hidden_dim,
-                out_channels=planes,
+                out_channels=out_channels,
                 kernel_size=1,
                 conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
@@ -146,11 +149,11 @@ class MobileNetV2(BaseBackbone):
         self.norm_eval = norm_eval
         self.with_cp = with_cp
 
-        self.inplanes = make_divisible(32 * widen_factor, 8)
+        self.in_channels = make_divisible(32 * widen_factor, 8)
 
         self.conv1 = ConvModule(
             in_channels=3,
-            out_channels=self.inplanes,
+            out_channels=self.in_channels,
             kernel_size=3,
             stride=2,
             padding=1,
@@ -162,9 +165,9 @@ class MobileNetV2(BaseBackbone):
 
         for i, layer_cfg in enumerate(self.arch_settings):
             expand_ratio, channel, num_blocks, stride = layer_cfg
-            planes = make_divisible(channel * widen_factor, 8)
+            out_channels = make_divisible(channel * widen_factor, 8)
             inverted_res_layer = self.make_layer(
-                planes=planes,
+                out_channels=out_channels,
                 num_blocks=num_blocks,
                 stride=stride,
                 expand_ratio=expand_ratio)
@@ -178,7 +181,7 @@ class MobileNetV2(BaseBackbone):
             self.out_channel = 1280
 
         self.conv2 = ConvModule(
-            in_channels=self.inplanes,
+            in_channels=self.in_channels,
             out_channels=self.out_channel,
             kernel_size=1,
             stride=1,
@@ -187,11 +190,11 @@ class MobileNetV2(BaseBackbone):
             norm_cfg=self.norm_cfg,
             act_cfg=self.act_cfg)
 
-    def make_layer(self, planes, num_blocks, stride, expand_ratio):
+    def make_layer(self, out_channels, num_blocks, stride, expand_ratio):
         """ Stack InvertedResidual blocks to build a layer for MobileNetV2.
 
         Args:
-            planes (int): planes of block.
+            out_channels (int): out_channels of block.
             num_blocks (int): number of blocks.
             stride (int): stride of the first block. Default: 1
             expand_ratio (int): Expand the number of channels of the
@@ -203,20 +206,23 @@ class MobileNetV2(BaseBackbone):
                 stride = 1
             layers.append(
                 InvertedResidual(
-                    self.inplanes,
-                    planes,
+                    self.in_channels,
+                    out_channels,
                     stride,
                     expand_ratio=expand_ratio,
                     conv_cfg=self.conv_cfg,
                     norm_cfg=self.norm_cfg,
                     act_cfg=self.act_cfg,
                     with_cp=self.with_cp))
-            self.inplanes = planes
+            self.in_channels = out_channels
 
         return nn.Sequential(*layers)
 
     def init_weights(self, pretrained=None):
-        if pretrained is None:
+        if isinstance(pretrained, str):
+            logger = logging.getLogger()
+            load_checkpoint(self, pretrained, strict=False, logger=logger)
+        elif pretrained is None:
             for m in self.modules():
                 if isinstance(m, nn.Conv2d):
                     kaiming_init(m)
