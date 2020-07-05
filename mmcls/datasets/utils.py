@@ -3,9 +3,12 @@ import hashlib
 import os
 import os.path
 import tarfile
+import urllib.error
+import urllib.request
 import zipfile
+from functools import partial
 
-from tqdm import tqdm
+import mmcv
 
 __all__ = ['rm_suffix', 'check_integrity', 'download_and_extract_archive']
 
@@ -18,15 +21,16 @@ def rm_suffix(s, suffix=None):
 
 
 def gen_bar_updater():
-    pbar = tqdm(total=None)
 
-    def bar_update(count, block_size, total_size):
-        if pbar.total is None and total_size:
-            pbar.total = total_size
+    def bar_update(count, block_size, total_size, pbar):
+        if pbar is None and total_size:
+            pbar = mmcv.ProgressBar(total_size)
         progress_bytes = count * block_size
-        pbar.update(progress_bytes - pbar.n)
+        for _ in range(progress_bytes):
+            pbar.update()
 
-    return bar_update
+    _bar_update = partial(bar_update, pbar=None)
+    return _bar_update
 
 
 def calculate_md5(fpath, chunk_size=1024 * 1024):
@@ -60,8 +64,6 @@ def download_url(url, root, filename=None, md5=None):
         md5 (str | None): MD5 checksum of the download.
             If md5 is None, download without md5 check.
     """
-    import urllib
-
     root = os.path.expanduser(root)
     if not filename:
         filename = os.path.basename(url)
