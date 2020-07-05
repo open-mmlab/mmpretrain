@@ -11,8 +11,7 @@ import pytest
 
 from mmcls.datasets import (DATASETS, BaseDataset, ClassBalancedDataset,
                             ConcatDataset, RepeatDataset)
-from mmcls.datasets.utils import (check_integrity,
-                                  download_and_extract_archive, rm_suffix)
+from mmcls.datasets.utils import check_integrity, rm_suffix
 
 
 @pytest.mark.parametrize(
@@ -113,10 +112,3 @@ def test_dataset_utils():
     tmp_file = tempfile.NamedTemporaryFile()
     assert check_integrity(tmp_file.name, md5=None)
     assert not check_integrity(tmp_file.name, md5=2333)
-
-    # test download_and_extract_archive
-    url = 'http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz'
-    md5 = 'd53e105ee54ea40749a09fcbcd1e9432'
-    tmp_dir = tempfile.TemporaryDirectory()
-    download_and_extract_archive(
-        url, download_root=tmp_dir.name, md5=md5, remove_finished=True)
