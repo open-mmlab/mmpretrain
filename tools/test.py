@@ -2,6 +2,7 @@ import argparse
 import os
 
 import mmcv
+import numpy as np
 import torch
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import get_dist_info, init_dist, load_checkpoint
@@ -9,7 +10,7 @@ from mmcv.runner import get_dist_info, init_dist, load_checkpoint
 from mmcls.apis import multi_gpu_test, single_gpu_test
 from mmcls.core import wrap_fp16_model
 from mmcls.datasets import build_dataloader, build_dataset
-from mmcls.models import build_model
+from mmcls.models import build_classifier
 
 
 def parse_args():
@@ -58,17 +59,17 @@ def main():
         init_dist(args.launcher, **cfg.dist_params)
 
     # build the dataloader
-    # TODO: support multiple images per gpu (only minor changes are needed)
     dataset = build_dataset(cfg.data.test)
     data_loader = build_dataloader(
         dataset,
-        imgs_per_gpu=1,
+        samples_per_gpu=cfg.data.samples_per_gpu,
         workers_per_gpu=cfg.data.workers_per_gpu,
         dist=distributed,
-        shuffle=False)
+        shuffle=False,
+        round_up=False)
 
     # build the model and load checkpoint
-    model = build_model(cfg.model, train_cfg=None, test_cfg=cfg.test_cfg)
+    model = build_classifier(cfg.model)
     fp16_cfg = cfg.get('fp16', None)
     if fp16_cfg is not None:
         wrap_fp16_model(model)
@@ -86,6 +87,19 @@ def main():
                                  args.gpu_collect)
 
     rank, _ = get_dist_info()
+    if rank == 0:
+        nums = []
+        results = {}
+        for output in outputs:
+            nums.append(output['num_samples'].item())
+            for topk, v in output['accuracy'].items():
+                if topk not in results:
+                    results[topk] = []
+                results[topk].append(v.item())
+        assert sum(nums) == len(dataset)
+        for topk, accs in results.items():
+            avg_acc = np.average(accs, weights=nums)
+            print(f'\n{topk} accuracy: {avg_acc:.2f}')
     if args.out and rank == 0:
         print(f'\nwriting results to {args.out}')
         mmcv.dump(outputs, args.out)

@@ -12,7 +12,7 @@ from mmcv.runner import init_dist
 from mmcls import __version__
 from mmcls.apis import set_random_seed, train_model
 from mmcls.datasets import build_dataset
-from mmcls.models import build_model
+from mmcls.models import build_classifier
 from mmcls.utils import collect_env, get_root_logger
 
 
@@ -128,8 +128,7 @@ def main():
     cfg.seed = args.seed
     meta['seed'] = args.seed
 
-    model = build_model(
-        cfg.model, train_cfg=cfg.train_cfg, test_cfg=cfg.test_cfg)
+    model = build_classifier(cfg.model)
 
     datasets = [build_dataset(cfg.data.train)]
     if len(cfg.workflow) == 2:
@@ -144,7 +143,6 @@ def main():
             config=cfg.pretty_text,
             CLASSES=datasets[0].CLASSES)
     # add an attribute for visualization convenience
-    model.CLASSES = datasets[0].CLASSES
     train_model(
         model,
         datasets,

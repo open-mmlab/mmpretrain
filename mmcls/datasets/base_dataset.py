@@ -20,6 +20,8 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         test_mode (bool): in train mode or test mode
     """
 
+    CLASSES = None
+
     def __init__(self, data_prefix, pipeline, ann_file=None, test_mode=False):
         super(BaseDataset, self).__init__()
 
@@ -70,6 +72,7 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
                     if topk not in eval_results:
                         eval_results[topk] = []
                     eval_results[topk].append(v.item())
+            assert sum(nums) == len(self.data_infos)
             for topk, accs in eval_results.items():
                 eval_results[topk] = np.average(accs, weights=nums)
         return eval_results

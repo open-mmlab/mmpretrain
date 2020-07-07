@@ -45,6 +45,7 @@ def build_dataloader(dataset,
                      num_gpus=1,
                      dist=True,
                      shuffle=True,
+                     round_up=True,
                      seed=None,
                      **kwargs):
     """Build PyTorch DataLoader.
@@ -62,6 +63,8 @@ def build_dataloader(dataset,
         dist (bool): Distributed training/test or not. Default: True.
         shuffle (bool): Whether to shuffle the data at every epoch.
             Default: True.
+        round_up (bool): Whether to round up the length of dataset by adding
+            extra samples to make it evenly divisible. Default: True.
         kwargs: any keyword argument to be used to initialize DataLoader
 
     Returns:
@@ -70,7 +73,7 @@ def build_dataloader(dataset,
     rank, world_size = get_dist_info()
     if dist:
         sampler = DistributedSampler(
-            dataset, world_size, rank, shuffle=shuffle)
+            dataset, world_size, rank, shuffle=shuffle, round_up=round_up)
         shuffle = False
         batch_size = samples_per_gpu
         num_workers = workers_per_gpu
