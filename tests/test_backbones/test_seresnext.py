@@ -13,12 +13,24 @@ def test_bottleneck():
     # Test SEResNeXt Bottleneck structure
     block = SEBottleneckX(
         64, 256, groups=32, width_per_group=4, stride=2, style='pytorch')
+    assert block.width_per_group == 4
     assert block.conv2.stride == (2, 2)
     assert block.conv2.groups == 32
     assert block.conv2.out_channels == 128
+    assert block.conv2.out_channels == block.mid_channels
+
+    # Test SEResNeXt Bottleneck structure (groups=1)
+    block = SEBottleneckX(
+        64, 256, groups=1, width_per_group=4, stride=2, style='pytorch')
+    assert block.conv2.stride == (2, 2)
+    assert block.conv2.groups == 1
+    assert block.conv2.out_channels == 64
+    assert block.mid_channels == 64
+    assert block.conv2.out_channels == block.mid_channels
 
     # Test SEResNeXt Bottleneck forward
-    block = SEBottleneckX(64, 64, groups=32, width_per_group=4)
+    block = SEBottleneckX(
+        64, 64, base_channels=16, groups=32, width_per_group=4)
     x = torch.randn(1, 64, 56, 56)
     x_out = block(x)
     assert x_out.shape == torch.Size([1, 64, 56, 56])
