@@ -4,9 +4,19 @@ from torch.utils.data import DistributedSampler as _DistributedSampler
 
 class DistributedSampler(_DistributedSampler):
 
-    def __init__(self, dataset, num_replicas=None, rank=None, shuffle=True):
+    def __init__(self,
+                 dataset,
+                 num_replicas=None,
+                 rank=None,
+                 shuffle=True,
+                 round_up=True):
         super().__init__(dataset, num_replicas=num_replicas, rank=rank)
         self.shuffle = shuffle
+        self.round_up = round_up
+        if self.round_up:
+            self.total_size = self.num_samples * self.num_replicas
+        else:
+            self.total_size = len(self.dataset)
 
     def __iter__(self):
         # deterministically shuffle based on epoch
@@ -18,11 +28,13 @@ class DistributedSampler(_DistributedSampler):
             indices = torch.arange(len(self.dataset)).tolist()
 
         # add extra samples to make it evenly divisible
-        indices += indices[:(self.total_size - len(indices))]
+        if self.round_up:
+            indices += indices[:(self.total_size - len(indices))]
         assert len(indices) == self.total_size
 
         # subsample
         indices = indices[self.rank:self.total_size:self.num_replicas]
-        assert len(indices) == self.num_samples
+        if self.round_up:
+            assert len(indices) == self.num_samples
 
         return iter(indices)

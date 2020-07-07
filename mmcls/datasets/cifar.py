@@ -75,7 +75,7 @@ class CIFAR10(BaseDataset):
         data_infos = []
         for img, gt_label in zip(self.imgs, self.gt_labels):
             gt_label = np.array(gt_label, dtype=np.int64)
-            info = {'img': img, 'gt_labels': gt_label}
+            info = {'img': img, 'gt_label': gt_label}
             data_infos.append(info)
         return data_infos
 
@@ -88,10 +88,10 @@ class CIFAR10(BaseDataset):
                 ' You can use download=True to download it')
         with open(path, 'rb') as infile:
             data = pickle.load(infile, encoding='latin1')
-            self.classes = data[self.meta['key']]
+            self.CLASSES = data[self.meta['key']]
         self.class_to_idx = {
             _class: i
-            for i, _class in enumerate(self.classes)
+            for i, _class in enumerate(self.CLASSES)
         }
 
     def _check_integrity(self):

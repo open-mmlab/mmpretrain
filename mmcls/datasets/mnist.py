@@ -30,14 +30,14 @@ class MNIST(BaseDataset):
         ('t10k-labels-idx1-ubyte.gz', 'ec29112dd5afa0611ce80d1b7f02629c')
     }
 
-    classes = [
+    CLASSES = [
         '0 - zero', '1 - one', '2 - two', '3 - three', '4 - four', '5 - five',
         '6 - six', '7 - seven', '8 - eight', '9 - nine'
     ]
 
     @property
     def class_to_idx(self):
-        return {_class: i for i, _class in enumerate(self.classes)}
+        return {_class: i for i, _class in enumerate(self.CLASSES)}
 
     def load_annotations(self):
         train_image_file = osp.join(
@@ -67,7 +67,7 @@ class MNIST(BaseDataset):
         data_infos = []
         for img, gt_label in zip(imgs, gt_labels):
             gt_label = np.array(gt_label, dtype=np.int64)
-            info = {'img': img.numpy(), 'gt_labels': gt_label}
+            info = {'img': img.numpy(), 'gt_label': gt_label}
             data_infos.append(info)
         return data_infos
 
@@ -102,7 +102,7 @@ class FashionMNIST(MNIST):
         'test_label_file':
         ('t10k-labels-idx1-ubyte.gz', 'bb300cfdad3c16e7a12a480ee83cd310')
     }
-    classes = [
+    CLASSES = [
         'T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat', 'Sandal',
         'Shirt', 'Sneaker', 'Bag', 'Ankle boot'
     ]
