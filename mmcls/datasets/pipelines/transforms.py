@@ -1,88 +1,95 @@
 import mmcv
 import numpy as np
-from torchvision import transforms
 
 from ..builder import PIPELINES
 
 
 @PIPELINES.register_module()
-class RandomCrop(transforms.RandomCrop):
-    """
+class Resize(object):
+    """Resize images.
+
+    Args:
+        size (int | tuple): Images scales for resizing (h, w).
+        interpolation (str): Interpolation method, accepted values are
+            "nearest", "bilinear", "bicubic", "area", "lanczos".
+            More details can be found in `mmcv.image.geometric`.
     """
 
-    def __init__(self, *args, **kwargs):
-        super(RandomCrop, self).__init__(*args, **kwargs)
+    def __init__(self, size, interpolation='bilinear'):
+        assert isinstance(size, int) or (isinstance(size, tuple)
+                                         and len(size) == 2)
+        if isinstance(size, int):
+            size = (size, size)
+        assert size[0] > 0 and size[1] > 0
+        assert interpolation in ("nearest", "bilinear", "bicubic", "area",
+                                 "lanczos")
+
+        self.height = size[0]
+        self.width = size[1]
+        self.size = size
+        self.interpolation = interpolation
+
+    def _resize_img(self, results):
+        for key in results.get('img_fields', ['img']):
+            img = mmcv.imresize(
+                results[key],
+                size=(self.width, self.height),
+                interpolation=self.interpolation,
+                return_scale=False)
+            results[key] = img
+            results['img_shape'] = img.shape
 
     def __call__(self, results):
-        results['img'] = super(RandomCrop, self).__call__(results['img'])
+        self._resize_img(results)
         return results
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += f'(size={self.size}, '
+        repr_str += f'interpolation={self.interpolation})'
+        return repr_str
 
 
 @PIPELINES.register_module()
-class RandomResizedCrop(transforms.RandomResizedCrop):
-    """
+class CenterCrop(object):
+    """Center crop the image.
+
+    Args:
+        crop_size (int | tuple): Expected size after cropping, (h, w).
+
+    Notes:
+        If the image is smaller than the crop size, return the original image
     """
 
-    def __init__(self, *args, **kwargs):
-        super(RandomResizedCrop, self).__init__(*args, **kwargs)
+    def __init__(self, crop_size):
+        assert isinstance(crop_size, int) or (isinstance(crop_size, tuple)
+                                              and len(crop_size) == 2)
+        if isinstance(crop_size, int):
+            crop_size = (crop_size, crop_size)
+        assert crop_size[0] > 0 and crop_size[1] > 0
+        self.crop_size = crop_size
 
     def __call__(self, results):
-        results['img'] = super(RandomResizedCrop,
-                               self).__call__(results['img'])
+        crop_height, crop_width = self.crop_size[0], self.crop_size[1]
+        for key in results.get('img_fields', ['img']):
+            img = results[key]
+            img_height, img_width, _ = img.shape
+
+            y1 = max(0, int(round((img_height - crop_height) / 2.)))
+            x1 = max(0, int(round((img_width - crop_width) / 2.)))
+            y2 = min(img_height, y1 + crop_height) - 1
+            x2 = min(img_width, x1 + crop_width) - 1
+
+            # crop the image
+            img = mmcv.imcrop(img, bboxes=np.array([x1, y1, x2, y2]))
+            img_shape = img.shape
+            results[key] = img
+        results['img_shape'] = img_shape
+
         return results
 
-
-@PIPELINES.register_module()
-class RandomHorizontalFlip(transforms.RandomHorizontalFlip):
-    """
-    """
-
-    def __init__(self, *args, **kwargs):
-        super(RandomHorizontalFlip, self).__init__(*args, **kwargs)
-
-    def __call__(self, results):
-        results['img'] = super(RandomHorizontalFlip,
-                               self).__call__(results['img'])
-        return results
-
-
-@PIPELINES.register_module()
-class Resize(transforms.Resize):
-    """
-    """
-
-    def __init__(self, *args, **kwargs):
-        super(Resize, self).__init__(*args, **kwargs)
-
-    def __call__(self, results):
-        results['img'] = super(Resize, self).__call__(results['img'])
-        return results
-
-
-@PIPELINES.register_module()
-class CenterCrop(transforms.CenterCrop):
-    """
-    """
-
-    def __init__(self, *args, **kwargs):
-        super(CenterCrop, self).__init__(*args, **kwargs)
-
-    def __call__(self, results):
-        results['img'] = super(CenterCrop, self).__call__(results['img'])
-        return results
-
-
-@PIPELINES.register_module()
-class ColorJitter(transforms.ColorJitter):
-    """
-    """
-
-    def __init__(self, *args, **kwargs):
-        super(ColorJitter, self).__init__(*args, **kwargs)
-
-    def __call__(self, results):
-        results['img'] = super(ColorJitter, self).__call__(results['img'])
-        return results
+    def __repr__(self):
+        return self.__class__.__name__ + f'(crop_size={self.crop_size})'
 
 
 @PIPELINES.register_module()
@@ -111,5 +118,7 @@ class Normalize(object):
 
     def __repr__(self):
         repr_str = self.__class__.__name__
-        repr_str += f'(mean={self.mean}, std={self.std}, to_rgb={self.to_rgb})'
+        repr_str += f'(mean={list(self.mean)}, '
+        repr_str += f'std={list(self.std)}, '
+        repr_str += f'to_rgb={self.to_rgb})'
         return repr_str
