@@ -33,21 +33,21 @@ def test_mobilenetv3_backbone():
         # arch must in [small, big]
         MobileNetv3(arch='others')
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         # frozen_stages must less than 12 when arch is small
         MobileNetv3(arch='small', frozen_stages=12)
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         # frozen_stages must less than 16 when arch is big
         MobileNetv3(arch='big', frozen_stages=16)
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         # max out_indices must less than 11 when arch is small
-        MobileNetv3(arch='small', out_indices=(11))
+        MobileNetv3(arch='small', out_indices=(11, ))
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         # max out_indices must less than 15 when arch is big
-        MobileNetv3(arch='big', out_indices=(15))
+        MobileNetv3(arch='big', out_indices=(15, ))
 
     # Test MobileNetv3
     model = MobileNetv3()
@@ -70,7 +70,7 @@ def test_mobilenetv3_backbone():
             assert param.requires_grad is False
 
     # Test MobileNetv3 with norm eval
-    model = MobileNetv3(norm_eval=True)
+    model = MobileNetv3(norm_eval=True, out_indices=range(0, 11))
     model.init_weights()
     model.train()
     assert check_norm_state(model.modules(), False)
@@ -147,7 +147,7 @@ def test_mobilenetv3_backbone():
     assert feat[14].shape == torch.Size([1, 160, 7, 7])
 
     # Test MobileNetv3 forward with big arch
-    model = MobileNetv3(arch='big', out_indices=(0))
+    model = MobileNetv3(arch='big', out_indices=(0, ))
     model.init_weights()
     model.train()
 

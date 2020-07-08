@@ -89,7 +89,7 @@ def test_shufflenetv1_backbone():
 
     # Test ShuffleNetV1 with first stage frozen
     frozen_stages = 1
-    model = ShuffleNetV1(frozen_stages=frozen_stages)
+    model = ShuffleNetV1(frozen_stages=frozen_stages, out_indices=(0, 1, 2))
     model.init_weights()
     model.train()
     for param in model.conv1.parameters():
@@ -103,7 +103,7 @@ def test_shufflenetv1_backbone():
             assert param.requires_grad is False
 
     # Test ShuffleNetV1 forward with groups=1
-    model = ShuffleNetV1(groups=1)
+    model = ShuffleNetV1(groups=1, out_indices=(0, 1, 2))
     model.init_weights()
     model.train()
 
@@ -119,7 +119,7 @@ def test_shufflenetv1_backbone():
     assert feat[2].shape == torch.Size((1, 576, 7, 7))
 
     # Test ShuffleNetV1 forward with groups=2
-    model = ShuffleNetV1(groups=2)
+    model = ShuffleNetV1(groups=2, out_indices=(0, 1, 2))
     model.init_weights()
     model.train()
 
@@ -135,7 +135,7 @@ def test_shufflenetv1_backbone():
     assert feat[2].shape == torch.Size((1, 800, 7, 7))
 
     # Test ShuffleNetV1 forward with groups=3
-    model = ShuffleNetV1(groups=3)
+    model = ShuffleNetV1(groups=3, out_indices=(0, 1, 2))
     model.init_weights()
     model.train()
 
@@ -151,7 +151,7 @@ def test_shufflenetv1_backbone():
     assert feat[2].shape == torch.Size((1, 960, 7, 7))
 
     # Test ShuffleNetV1 forward with groups=4
-    model = ShuffleNetV1(groups=4)
+    model = ShuffleNetV1(groups=4, out_indices=(0, 1, 2))
     model.init_weights()
     model.train()
 
@@ -167,7 +167,7 @@ def test_shufflenetv1_backbone():
     assert feat[2].shape == torch.Size((1, 1088, 7, 7))
 
     # Test ShuffleNetV1 forward with groups=8
-    model = ShuffleNetV1(groups=8)
+    model = ShuffleNetV1(groups=8, out_indices=(0, 1, 2))
     model.init_weights()
     model.train()
 
@@ -184,7 +184,9 @@ def test_shufflenetv1_backbone():
 
     # Test ShuffleNetV1 forward with GroupNorm forward
     model = ShuffleNetV1(
-        groups=3, norm_cfg=dict(type='GN', num_groups=2, requires_grad=True))
+        groups=3,
+        norm_cfg=dict(type='GN', num_groups=2, requires_grad=True),
+        out_indices=(0, 1, 2))
     model.init_weights()
     model.train()
 
