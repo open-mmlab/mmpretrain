@@ -80,12 +80,12 @@ def test_mobilenetv2_backbone():
         model = MobileNetV2()
         model.init_weights(pretrained=0)
 
-    with pytest.raises(AssertionError):
-        # frozen_stages must less than 7
+    with pytest.raises(ValueError):
+        # frozen_stages must in range(1, 8)
         MobileNetV2(frozen_stages=8)
 
-    with pytest.raises(AssertionError):
-        # the max value in out_indices must less than 7
+    with pytest.raises(ValueError):
+        # tout_indices in range(-1, 8)
         MobileNetV2(out_indices=[8])
 
     # Test MobileNetV2 with first stage frozen
@@ -113,7 +113,7 @@ def test_mobilenetv2_backbone():
     assert check_norm_state(model.modules(), False)
 
     # Test MobileNetV2 forward with widen_factor=1.0
-    model = MobileNetV2(widen_factor=1.0, out_indices=range(0, 7))
+    model = MobileNetV2(widen_factor=1.0, out_indices=range(0, 8))
     model.init_weights()
     model.train()
 
@@ -121,7 +121,7 @@ def test_mobilenetv2_backbone():
 
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
-    assert len(feat) == 7
+    assert len(feat) == 8
     assert feat[0].shape == torch.Size((1, 16, 112, 112))
     assert feat[1].shape == torch.Size((1, 24, 56, 56))
     assert feat[2].shape == torch.Size((1, 32, 28, 28))
@@ -129,6 +129,7 @@ def test_mobilenetv2_backbone():
     assert feat[4].shape == torch.Size((1, 96, 14, 14))
     assert feat[5].shape == torch.Size((1, 160, 7, 7))
     assert feat[6].shape == torch.Size((1, 320, 7, 7))
+    assert feat[7].shape == torch.Size((1, 1280, 7, 7))
 
     # Test MobileNetV2 forward with widen_factor=0.5
     model = MobileNetV2(widen_factor=0.5, out_indices=range(0, 7))
@@ -147,7 +148,7 @@ def test_mobilenetv2_backbone():
     assert feat[6].shape == torch.Size((1, 160, 7, 7))
 
     # Test MobileNetV2 forward with widen_factor=2.0
-    model = MobileNetV2(widen_factor=2.0, out_indices=None)
+    model = MobileNetV2(widen_factor=2.0)
     model.init_weights()
     model.train()
 
@@ -156,7 +157,7 @@ def test_mobilenetv2_backbone():
     assert feat.shape == torch.Size((1, 2560, 7, 7))
 
     # Test MobileNetV2 forward with out_indices=None
-    model = MobileNetV2(widen_factor=1.0, out_indices=None)
+    model = MobileNetV2(widen_factor=1.0)
     model.init_weights()
     model.train()
 

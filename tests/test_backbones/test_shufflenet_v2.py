@@ -62,9 +62,13 @@ def test_shufflenetv2_backbone():
         # groups must be in 0.5, 1.0, 1.5, 2.0]
         ShuffleNetV2(widen_factor=3.0)
 
-    with pytest.raises(AssertionError):
-        # frozen_stages must be in [0, 1, 2]
-        ShuffleNetV2(widen_factor=3.0, frozen_stages=3)
+    with pytest.raises(ValueError):
+        # frozen_stages must be in [0, 1, 2, 3]
+        ShuffleNetV2(widen_factor=1.0, frozen_stages=4)
+
+    with pytest.raises(ValueError):
+        # out_indices must be in [0, 1, 2, 3]
+        ShuffleNetV2(widen_factor=1.0, out_indices=(4, ))
 
     with pytest.raises(TypeError):
         # pretrained must be str or None
@@ -100,7 +104,7 @@ def test_shufflenetv2_backbone():
     assert check_norm_state(model.modules(), False)
 
     # Test ShuffleNetV2 forward with widen_factor=0.5
-    model = ShuffleNetV2(widen_factor=0.5)
+    model = ShuffleNetV2(widen_factor=0.5, out_indices=(0, 1, 2, 3))
     model.init_weights()
     model.train()
 
@@ -116,7 +120,7 @@ def test_shufflenetv2_backbone():
     assert feat[2].shape == torch.Size((1, 192, 7, 7))
 
     # Test ShuffleNetV2 forward with widen_factor=1.0
-    model = ShuffleNetV2(widen_factor=1.0)
+    model = ShuffleNetV2(widen_factor=1.0, out_indices=(0, 1, 2, 3))
     model.init_weights()
     model.train()
 
@@ -132,7 +136,7 @@ def test_shufflenetv2_backbone():
     assert feat[2].shape == torch.Size((1, 464, 7, 7))
 
     # Test ShuffleNetV2 forward with widen_factor=1.5
-    model = ShuffleNetV2(widen_factor=1.5)
+    model = ShuffleNetV2(widen_factor=1.5, out_indices=(0, 1, 2, 3))
     model.init_weights()
     model.train()
 
@@ -148,7 +152,7 @@ def test_shufflenetv2_backbone():
     assert feat[2].shape == torch.Size((1, 704, 7, 7))
 
     # Test ShuffleNetV2 forward with widen_factor=2.0
-    model = ShuffleNetV2(widen_factor=2.0)
+    model = ShuffleNetV2(widen_factor=2.0, out_indices=(0, 1, 2, 3))
     model.init_weights()
     model.train()
 

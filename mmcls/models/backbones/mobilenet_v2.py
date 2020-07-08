@@ -105,7 +105,7 @@ class MobileNetV2(BaseBackbone):
         widen_factor (float): Width multiplier, multiply number of
             channels in each layer by this amount. Default: 1.0.
         out_indices (None or Sequence[int]): Output from which stages.
-            Default: None
+            Default: (7, ).
         frozen_stages (int): Stages to be frozen (all param fixed).
             Default: -1, which means not freezing any parameters.
         conv_cfg (dict): Config dict for convolution layer.
@@ -129,7 +129,7 @@ class MobileNetV2(BaseBackbone):
 
     def __init__(self,
                  widen_factor=1.,
-                 out_indices=None,
+                 out_indices=(7, ),
                  frozen_stages=-1,
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
@@ -139,10 +139,16 @@ class MobileNetV2(BaseBackbone):
         super(MobileNetV2, self).__init__()
         self.widen_factor = widen_factor
         self.out_indices = out_indices
-        if out_indices is not None:
-            assert max(out_indices) < len(self.arch_settings)
+        for index in out_indices:
+            if index not in range(0, 8):
+                raise ValueError('the item in out_indices must in '
+                                 f'range(0, 8). But received {index}')
+
+        if frozen_stages not in range(-1, 8):
+            raise ValueError('frozen_stages must be in range(-1, 8). '
+                             f'But received {frozen_stages}')
+        self.out_indices = out_indices
         self.frozen_stages = frozen_stages
-        assert frozen_stages < len(self.arch_settings)
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
         self.act_cfg = act_cfg
@@ -161,7 +167,7 @@ class MobileNetV2(BaseBackbone):
             norm_cfg=self.norm_cfg,
             act_cfg=self.act_cfg)
 
-        self.inverted_res_layers = []
+        self.layers = []
 
         for i, layer_cfg in enumerate(self.arch_settings):
             expand_ratio, channel, num_blocks, stride = layer_cfg
@@ -173,14 +179,14 @@ class MobileNetV2(BaseBackbone):
                 expand_ratio=expand_ratio)
             layer_name = f'layer{i + 1}'
             self.add_module(layer_name, inverted_res_layer)
-            self.inverted_res_layers.append(layer_name)
+            self.layers.append(layer_name)
 
         if widen_factor > 1.0:
             self.out_channel = int(1280 * widen_factor)
         else:
             self.out_channel = 1280
 
-        self.conv2 = ConvModule(
+        layer = ConvModule(
             in_channels=self.in_channels,
             out_channels=self.out_channel,
             kernel_size=1,
@@ -189,6 +195,8 @@ class MobileNetV2(BaseBackbone):
             conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
             act_cfg=self.act_cfg)
+        self.add_module('conv2', layer)
+        self.layers.append('conv2')
 
     def make_layer(self, out_channels, num_blocks, stride, expand_ratio):
         """ Stack InvertedResidual blocks to build a layer for MobileNetV2.
@@ -235,16 +243,14 @@ class MobileNetV2(BaseBackbone):
         x = self.conv1(x)
 
         outs = []
-        for i, layer_name in enumerate(self.inverted_res_layers):
-            inverted_res_layer = getattr(self, layer_name)
-            x = inverted_res_layer(x)
-            if self.out_indices is not None and i in self.out_indices:
+        for i, layer_name in enumerate(self.layers):
+            layer = getattr(self, layer_name)
+            x = layer(x)
+            if i in self.out_indices:
                 outs.append(x)
 
-        x = self.conv2(x)
-
-        if self.out_indices is None:
-            return x
+        if len(outs) == 1:
+            return outs[0]
         else:
             return tuple(outs)
 

@@ -22,7 +22,7 @@ class MobileNetv3(BaseBackbone):
         norm_cfg (dict): Config dict for normalization layer.
             Default: dict(type='BN').
         out_indices (None or Sequence[int]): Output from which stages.
-            Default: None, which means output tensors from final stage.
+            Default: (10, ), which means output tensors from final stage.
         frozen_stages (int): Stages to be frozen (all param fixed).
             Defualt: -1, which means not freezing any parameters.
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
@@ -67,20 +67,24 @@ class MobileNetv3(BaseBackbone):
                  arch='small',
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
-                 out_indices=None,
+                 out_indices=(10, ),
                  frozen_stages=-1,
                  norm_eval=False,
                  with_cp=False):
         super(MobileNetv3, self).__init__()
         assert arch in self.arch_settings
-        if out_indices is None:
-            out_indices = []
-        assert isinstance(out_indices, (int, tuple, list))
-        if isinstance(out_indices, int):
-            out_indices = [out_indices]
-        assert frozen_stages <= len(self.arch_settings[arch])
-        if len(out_indices):
-            assert max(out_indices) < len(self.arch_settings[arch])
+        for index in out_indices:
+            if index not in range(0, len(self.arch_settings[arch])):
+                raise ValueError('the item in out_indices must in '
+                                 f'range(0, {len(self.arch_settings[arch])}). '
+                                 f'But received {index}')
+
+        if frozen_stages not in range(-1, len(self.arch_settings[arch])):
+            raise ValueError('frozen_stages must be in range(-1, '
+                             f'{len(self.arch_settings[arch])}). '
+                             f'But received {frozen_stages}')
+        self.out_indices = out_indices
+        self.frozen_stages = frozen_stages
         self.arch = arch
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
@@ -158,9 +162,7 @@ class MobileNetv3(BaseBackbone):
             if i in self.out_indices:
                 outs.append(x)
 
-        if len(outs) == 0:
-            return x
-        elif len(outs) == 1:
+        if len(outs) == 1:
             return outs[0]
         else:
             return tuple(outs)
