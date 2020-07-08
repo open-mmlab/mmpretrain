@@ -1,2 +1,2 @@
-mmcv-nightly
+mmcv
 numpy
