@@ -281,6 +281,48 @@ class RandomGrayscale(object):
 
 
 @PIPELINES.register_module()
+class RandomFlip(object):
+    """Flip the image randomly.
+
+    Flip the image randomly based on flip probaility and flip direction.
+
+    Args:
+        flip_prob (float): probability of the image being flipped. Default: 0.5
+        direction (str, optional): The flipping direction. Options are
+            'horizontal' and 'vertical'. Default: 'horizontal'.
+    """
+
+    def __init__(self, flip_prob=0.5, direction='horizontal'):
+        assert 0 <= flip_prob <= 1
+        assert direction in ['horizontal', 'vertical']
+        self.flip_prob = flip_prob
+        self.direction = direction
+
+    def __call__(self, results):
+        """Call function to flip image.
+
+        Args:
+            results (dict): Result dict from loading pipeline.
+
+        Returns:
+            dict: Flipped results, 'flip', 'flip_direction' keys are added into
+                result dict.
+        """
+        flip = True if np.random.rand() < self.flip_prob else False
+        results['flip'] = flip
+        results['flip_direction'] = self.direction
+        if results['flip']:
+            # flip image
+            for key in results.get('img_fields', ['img']):
+                results[key] = mmcv.imflip(
+                    results[key], direction=results['flip_direction'])
+        return results
+
+    def __repr__(self):
+        return self.__class__.__name__ + f'(flip_prob={self.flip_prob})'
+
+
+@PIPELINES.register_module()
 class Resize(object):
     """Resize images.
 
