@@ -668,3 +668,80 @@ def test_randomgrayscale():
     img_pil = composed_transform(in_img_pil)
     assert_array_equal(np.array(img_pil), np.array(in_img_pil))
     assert np.array(img_pil).shape == (10, 10)
+
+
+def test_randomflip():
+    # test assertion if flip probability is smaller than 0
+    with pytest.raises(AssertionError):
+        transform = dict(type='RandomFlip', flip_prob=-1)
+        build_from_cfg(transform, PIPELINES)
+
+    # test assertion if flip probability is larger than 1
+    with pytest.raises(AssertionError):
+        transform = dict(type='RandomFlip', flip_prob=2)
+        build_from_cfg(transform, PIPELINES)
+
+    # test assertion if direction is not horizontal and vertical
+    with pytest.raises(AssertionError):
+        transform = dict(type='RandomFlip', direction='random')
+        build_from_cfg(transform, PIPELINES)
+
+    # test assertion if direction is not lowercase
+    with pytest.raises(AssertionError):
+        transform = dict(type='RandomFlip', direction='Horizontal')
+        build_from_cfg(transform, PIPELINES)
+
+    # read test image
+    results = dict()
+    img = mmcv.imread(
+        osp.join(osp.dirname(__file__), '../data/color.jpg'), 'color')
+    original_img = copy.deepcopy(img)
+    results['img'] = img
+    results['img2'] = copy.deepcopy(img)
+    results['img_shape'] = img.shape
+    results['ori_shape'] = img.shape
+    results['img_fields'] = ['img', 'img2']
+
+    def reset_results(results, original_img):
+        results['img'] = copy.deepcopy(original_img)
+        results['img2'] = copy.deepcopy(original_img)
+        results['img_shape'] = original_img.shape
+        results['ori_shape'] = original_img.shape
+        return results
+
+    # test RandomFlip when flip_prob is 0
+    transform = dict(type='RandomFlip', flip_prob=0)
+    flip_module = build_from_cfg(transform, PIPELINES)
+    results = flip_module(results)
+    assert np.equal(results['img'], original_img).all()
+    assert np.equal(results['img'], results['img2']).all()
+
+    # test RandomFlip when flip_prob is 1
+    transform = dict(type='RandomFlip', flip_prob=1)
+    flip_module = build_from_cfg(transform, PIPELINES)
+    results = flip_module(results)
+    assert np.equal(results['img'], results['img2']).all()
+
+    # compare hotizontal flip with torchvision
+    transform = dict(type='RandomFlip', flip_prob=1, direction='horizontal')
+    flip_module = build_from_cfg(transform, PIPELINES)
+    results = reset_results(results, original_img)
+    results = flip_module(results)
+    flip_module = transforms.RandomHorizontalFlip(p=1)
+    pil_img = Image.fromarray(original_img)
+    flipped_img = flip_module(pil_img)
+    flipped_img = np.array(flipped_img)
+    assert np.equal(results['img'], results['img2']).all()
+    assert np.equal(results['img'], flipped_img).all()
+
+    # compare vertical flip with torchvision
+    transform = dict(type='RandomFlip', flip_prob=1, direction='vertical')
+    flip_module = build_from_cfg(transform, PIPELINES)
+    results = reset_results(results, original_img)
+    results = flip_module(results)
+    flip_module = transforms.RandomVerticalFlip(p=1)
+    pil_img = Image.fromarray(original_img)
+    flipped_img = flip_module(pil_img)
+    flipped_img = np.array(flipped_img)
+    assert np.equal(results['img'], results['img2']).all()
+    assert np.equal(results['img'], flipped_img).all()

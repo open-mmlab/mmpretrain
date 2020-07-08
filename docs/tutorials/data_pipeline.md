@@ -52,7 +52,7 @@ At the end of the pipeline, we use `Collect` to only retain the necessary items 
 - update: img, img_shape
 
 `RandomFlip`
-- add: flip
+- add: flip, flip_direction
 - update: img
 
 
