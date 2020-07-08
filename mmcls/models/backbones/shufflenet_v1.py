@@ -177,7 +177,7 @@ class ShuffleNetV1(BaseBackbone):
                  norm_eval=False,
                  with_cp=False):
         super(ShuffleNetV1, self).__init__()
-        self.stage_blocks = [3, 7, 3]
+        self.stage_blocks = [4, 8, 4]
         self.groups = groups
 
         for indice in out_indices:
