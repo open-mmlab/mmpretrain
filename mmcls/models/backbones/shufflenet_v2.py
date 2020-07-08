@@ -156,7 +156,7 @@ class ShuffleNetV2(BaseBackbone):
 
     def __init__(self,
                  widen_factor=1.0,
-                 out_indices=(0, 1, 2, 3),
+                 out_indices=(3, ),
                  frozen_stages=-1,
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
@@ -165,10 +165,16 @@ class ShuffleNetV2(BaseBackbone):
                  with_cp=False):
         super(ShuffleNetV2, self).__init__()
         self.stage_blocks = [4, 8, 4]
+        for index in out_indices:
+            if index not in range(0, 4):
+                raise ValueError('the item in out_indices must in '
+                                 f'range(0, 4). But received {index}')
+
+        if frozen_stages not in range(-1, 4):
+            raise ValueError('frozen_stages must be in range(-1, 4). '
+                             f'But received {frozen_stages}')
         self.out_indices = out_indices
-        assert max(out_indices) < len(self.stage_blocks) + 1
         self.frozen_stages = frozen_stages
-        assert frozen_stages < len(self.stage_blocks)
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
         self.act_cfg = act_cfg
@@ -206,13 +212,14 @@ class ShuffleNetV2(BaseBackbone):
             self.layers.append(layer)
 
         output_channels = channels[-1]
-        self.conv2 = ConvModule(
-            in_channels=self.in_channels,
-            out_channels=output_channels,
-            kernel_size=1,
-            conv_cfg=conv_cfg,
-            norm_cfg=norm_cfg,
-            act_cfg=act_cfg)
+        self.layers.append(
+            ConvModule(
+                in_channels=self.in_channels,
+                out_channels=output_channels,
+                kernel_size=1,
+                conv_cfg=conv_cfg,
+                norm_cfg=norm_cfg,
+                act_cfg=act_cfg))
 
     def _make_layer(self, out_channels, num_blocks):
         """ Stack blocks to make a layer.
@@ -252,7 +259,7 @@ class ShuffleNetV2(BaseBackbone):
         if isinstance(pretrained, str):
             logger = logging.getLogger()
             load_checkpoint(self, pretrained, strict=False, logger=logger)
-        if pretrained is None:
+        elif pretrained is None:
             for m in self.modules():
                 if isinstance(m, nn.Conv2d):
                     kaiming_init(m)
@@ -271,10 +278,6 @@ class ShuffleNetV2(BaseBackbone):
             x = layer(x)
             if i in self.out_indices:
                 outs.append(x)
-        x = self.conv2(x)
-
-        if 3 in self.out_indices:
-            outs.append(x)
 
         if len(outs) == 1:
             return outs[0]
