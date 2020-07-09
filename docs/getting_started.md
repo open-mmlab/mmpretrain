@@ -28,7 +28,7 @@ mmclassification
 
 ```
 
-For ImageNet, it has multiple versions, but the most commonly used on is [ILSVRC 2012](http://www.image-net.org/challenges/LSVRC/2012/). It can be accessed with the following steps.
+For ImageNet, it has multiple versions, but the most commonly used one is [ILSVRC 2012](http://www.image-net.org/challenges/LSVRC/2012/). It can be accessed with the following steps.
 1. Register an account and login to the [download page](http://www.image-net.org/download-images).
 2. Find download links for ILSVRC2012 and download the following two files
     - ILSVRC2012_img_train.tar (~138GB)
@@ -181,6 +181,24 @@ Params: 25.56 M
 (1) FLOPs are related to the input shape while parameters are not. The default input shape is (1, 3, 224, 224).
 (2) Some operators are not counted into FLOPs like GN and custom operators. Refer to [`mmcv.cnn.get_model_complexity_info()`](https://github.com/open-mmlab/mmcv/blob/master/mmcv/cnn/utils/flops_counter.py) for details.
 
+### Publish a model
+
+Before you upload a model to AWS, you may want to
+(1) convert model weights to CPU tensors, (2) delete the optimizer states and
+(3) compute the hash of the checkpoint file and append the hash id to the filename.
+
+```shell
+python tools/publish_model.py ${INPUT_FILENAME} ${OUTPUT_FILENAME}
+```
+
+E.g.,
+
+```shell
+python tools/publish_model.py work_dirs/resnet50/latest.pth imagenet_resnet50_20200708.pth
+```
+
+The final output filename will be `imagenet_resnet50_20200708-{hash id}.pth`.
+
 ## Tutorials
 
-Currently, we provide five tutorials for users to [finetune models](tutorials/finetune.md), [add new dataset](tutorials/new_dataset.md), [design data pipeline](tutorials/data_pipeline.md), [add new modules](tutorials/new_modules.md) and [training tricks](tutorials/training_tricks.md).
+Currently, we provide five tutorials for users to [finetune models](tutorials/finetune.md), [add new dataset](tutorials/new_dataset.md), [design data pipeline](tutorials/data_pipeline.md) and [add new modules](tutorials/new_modules.md).
