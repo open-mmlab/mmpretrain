@@ -4,7 +4,7 @@
 
 Following typical conventions, we use `Dataset` and `DataLoader` for data loading
 with multiple workers. `Dataset` returns a dict of data items corresponding to
-the arguments of models' forward method.
+the arguments of models forward method.
 
 The data preparation pipeline and the dataset is decomposed. Usually a dataset
 defines how to process the annotations and a data pipeline defines all the steps to prepare a data dict.
@@ -35,6 +35,22 @@ test_pipeline = [
     dict(type='Collect', keys=['img', 'gt_label'])
 ]
 ```
+
+By fault, `LoadImageFromFile` loads images from disk but it may lead to IO bottleneck for efficient small models.
+Various backends are supported by mmcv to accelerate this process. For example, if the training machines have setup
+[memcached](https://memcached.org/), we can revise the config as follows.
+```
+memcached_root = '/mnt/xxx/memcached_client/'
+train_pipeline = [
+    dict(
+        type='LoadImageFromFile',
+        file_client_args=dict(
+            backend='memcached',
+            server_list_cfg=osp.join(memcached_root, 'server_list.conf'),
+            client_cfg=osp.join(memcached_root, 'client.conf'))),
+]
+```
+More supported backends can be found in [mmcv.fileio.FileClient](https://github.com/open-mmlab/mmcv/blob/master/mmcv/fileio/file_client.py).
 
 For each operation, we list the related dict fields that are added/updated/removed.
 At the end of the pipeline, we use `Collect` to only retain the necessary items for forward computation.
