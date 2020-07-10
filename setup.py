@@ -91,8 +91,11 @@ if __name__ == '__main__':
     setup(
         name='mmcls',
         version=get_version(),
-        description='A template for pytorch projects.',
+        description='OpenMMLab Image Classification Toolbox and Benchmark',
         long_description=readme(),
+        author='OpenMMLab',
+        author_email='yangleidev@gmail.com',
+        keywords='computer vision, image classification',
         packages=find_packages(exclude=('configs', 'tools', 'demo')),
         package_data={'mmcls.ops': ['*/*.so']},
         classifiers=[
