@@ -1,11 +1,12 @@
-import cv2
-import mmcv
 import subprocess
 import sys
-import torch
-import torchvision
 from collections import defaultdict
 from os import path as osp
+
+import cv2
+import mmcv
+import torch
+import torchvision
 
 import mmcls
 

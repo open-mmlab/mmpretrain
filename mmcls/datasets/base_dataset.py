@@ -1,6 +1,7 @@
 import copy
-import numpy as np
 from abc import ABCMeta, abstractmethod
+
+import numpy as np
 from torch.utils.data import Dataset
 
 from .pipelines import Compose

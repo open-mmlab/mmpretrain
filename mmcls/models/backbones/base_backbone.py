@@ -1,5 +1,6 @@
 import logging
 from abc import ABCMeta, abstractmethod
+
 from mmcv.runner import load_checkpoint
 from torch import nn as nn
 

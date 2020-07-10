@@ -1,13 +1,14 @@
 import copy
+import random
+from os import path as osp
+
 import mmcv
 import numpy as np
 import pytest
-import random
 import torch
 import torchvision
 from mmcv.utils import build_from_cfg
 from numpy.testing import assert_array_almost_equal, assert_array_equal
-from os import path as osp
 from PIL import Image
 from torchvision import transforms
 

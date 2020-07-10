@@ -1,6 +1,7 @@
 import copy
-import numpy as np
 from os import path as osp
+
+import numpy as np
 
 from mmcls.datasets.pipelines import LoadImageFromFile
 

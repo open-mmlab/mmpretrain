@@ -1,12 +1,13 @@
 import bisect
 import math
-import numpy as np
-import pytest
 import random
 import string
 import tempfile
 from collections import defaultdict
 from unittest.mock import MagicMock, patch
+
+import numpy as np
+import pytest
 
 from mmcls.datasets import (DATASETS, BaseDataset, ClassBalancedDataset,
                             ConcatDataset, RepeatDataset)

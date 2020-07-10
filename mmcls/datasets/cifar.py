@@ -1,7 +1,8 @@
-import numpy as np
 import os
 import os.path
 import pickle
+
+import numpy as np
 
 from .base_dataset import BaseDataset
 from .builder import DATASETS

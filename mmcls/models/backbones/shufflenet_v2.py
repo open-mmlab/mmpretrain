@@ -1,4 +1,5 @@
 import logging
+
 import torch
 from mmcv.cnn import ConvModule, constant_init, normal_init
 from mmcv.runner import load_checkpoint
