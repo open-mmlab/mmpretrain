@@ -1,5 +1,5 @@
+import torch.nn as nn
 from mmcv.utils import Registry, build_from_cfg
-from torch import nn as nn
 
 BACKBONES = Registry('backbone')
 CLASSIFIERS = Registry('classifier')

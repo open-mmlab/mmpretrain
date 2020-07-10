@@ -1,4 +1,4 @@
-from torch import nn as nn
+import torch.nn as nn
 
 
 def accuracy(pred, target, topk=1):

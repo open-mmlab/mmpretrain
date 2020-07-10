@@ -1,6 +1,6 @@
 import copy
+import os.path as osp
 import random
-from os import path as osp
 
 import mmcv
 import numpy as np
@@ -12,9 +12,9 @@ from numpy.testing import assert_array_almost_equal, assert_array_equal
 from PIL import Image
 from torchvision import transforms
 
+import mmcls.datasets.pipelines.transforms as mmcls_transforms
 from mmcls.datasets.builder import PIPELINES
 from mmcls.datasets.pipelines import Compose
-from mmcls.datasets.pipelines import transforms as mmcls_transforms
 
 
 def test_resize():

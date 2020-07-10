@@ -1,6 +1,6 @@
 import torch
-from torch import nn as nn
-from torch.nn import functional as F
+import torch.nn as nn
+import torch.nn.functional as F
 
 from ..builder import LOSSES
 from .utils import weight_reduce_loss

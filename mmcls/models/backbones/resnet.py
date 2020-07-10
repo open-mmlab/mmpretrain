@@ -1,8 +1,8 @@
+import torch.nn as nn
+import torch.utils.checkpoint as cp
 from mmcv.cnn import (ConvModule, build_conv_layer, build_norm_layer,
                       constant_init, kaiming_init)
 from mmcv.utils.parrots_wrapper import _BatchNorm
-from torch import nn as nn
-from torch.utils import checkpoint as cp
 
 from ..builder import BACKBONES
 from .base_backbone import BaseBackbone

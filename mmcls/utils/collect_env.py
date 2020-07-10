@@ -1,7 +1,7 @@
+import os.path as osp
 import subprocess
 import sys
 from collections import defaultdict
-from os import path as osp
 
 import cv2
 import mmcv

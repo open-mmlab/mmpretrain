@@ -1,4 +1,4 @@
-from torch import nn as nn
+import torch.nn as nn
 
 from ..builder import BACKBONES
 from .base_backbone import BaseBackbone

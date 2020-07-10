@@ -2,9 +2,9 @@ from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 
 import torch
+import torch.distributed as dist
+import torch.nn as nn
 from mmcv.utils import print_log
-from torch import distributed as dist
-from torch import nn as nn
 
 
 class BaseClassifier(nn.Module, metaclass=ABCMeta):

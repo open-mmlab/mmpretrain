@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
-from torch import nn as nn
+import torch.nn as nn
 
 
 class BaseHead(nn.Module, metaclass=ABCMeta):

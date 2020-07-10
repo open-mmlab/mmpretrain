@@ -1,4 +1,4 @@
-from os import path as osp
+import os.path as osp
 
 import mmcv
 import numpy as np

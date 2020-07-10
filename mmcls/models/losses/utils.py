@@ -1,6 +1,6 @@
 import functools
 
-from torch.nn import functional as F
+import torch.nn.functional as F
 
 
 def reduce_loss(loss, reduction):
