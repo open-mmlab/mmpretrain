@@ -1,20 +1,19 @@
 import copy
-import os.path as osp
-import random
-
 import mmcv
 import numpy as np
 import pytest
+import random
 import torch
 import torchvision
 from mmcv.utils import build_from_cfg
 from numpy.testing import assert_array_almost_equal, assert_array_equal
+from os import path as osp
 from PIL import Image
 from torchvision import transforms
 
-import mmcls.datasets.pipelines.transforms as mmcls_transforms
 from mmcls.datasets.builder import PIPELINES
 from mmcls.datasets.pipelines import Compose
+from mmcls.datasets.pipelines import transforms as mmcls_transforms
 
 
 def test_resize():

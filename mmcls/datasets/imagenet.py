@@ -1,6 +1,5 @@
-import os
-
 import numpy as np
+import os
 
 from .base_dataset import BaseDataset
 from .builder import DATASETS

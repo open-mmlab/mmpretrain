@@ -1,8 +1,7 @@
 import math
-import random
-
 import mmcv
 import numpy as np
+import random
 
 from ..builder import PIPELINES
 

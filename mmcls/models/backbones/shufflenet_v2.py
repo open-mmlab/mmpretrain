@@ -1,11 +1,10 @@
 import logging
-
 import torch
-import torch.nn as nn
-import torch.utils.checkpoint as cp
 from mmcv.cnn import ConvModule, constant_init, normal_init
 from mmcv.runner import load_checkpoint
+from torch import nn as nn
 from torch.nn.modules.batchnorm import _BatchNorm
+from torch.utils import checkpoint as cp
 
 from mmcls.models.utils import channel_shuffle
 from ..builder import BACKBONES

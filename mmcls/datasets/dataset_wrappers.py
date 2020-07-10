@@ -1,8 +1,7 @@
 import bisect
 import math
-from collections import defaultdict
-
 import numpy as np
+from collections import defaultdict
 from torch.utils.data.dataset import ConcatDataset as _ConcatDataset
 
 from .builder import DATASETS

@@ -1,6 +1,6 @@
-import torch.nn as nn
-import torch.utils.checkpoint as cp
 from mmcv.cnn import ConvModule
+from torch import nn as nn
+from torch.utils import checkpoint as cp
 
 from .se_layer import SELayer
 

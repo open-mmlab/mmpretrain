@@ -1,5 +1,4 @@
 import argparse
-
 from mmcv import Config
 from mmcv.cnn.utils import get_model_complexity_info
 

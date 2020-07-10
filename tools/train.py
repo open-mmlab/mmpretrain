@@ -1,13 +1,12 @@
 import argparse
 import copy
-import os
-import os.path as osp
-import time
-
 import mmcv
+import os
+import time
 import torch
 from mmcv import Config, DictAction
 from mmcv.runner import init_dist
+from os import path as osp
 
 from mmcls import __version__
 from mmcls.apis import set_random_seed, train_model

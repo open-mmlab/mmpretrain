@@ -1,7 +1,6 @@
-import os.path as osp
-
 import mmcv
 import numpy as np
+from os import path as osp
 
 from ..builder import PIPELINES
 

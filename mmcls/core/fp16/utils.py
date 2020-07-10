@@ -1,7 +1,6 @@
-from collections import abc
-
 import numpy as np
 import torch
+from collections import abc
 
 
 def cast_tensor_type(inputs, src_type, dst_type):

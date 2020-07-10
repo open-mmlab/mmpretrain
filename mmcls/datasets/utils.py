@@ -1,5 +1,6 @@
 import gzip
 import hashlib
+import mmcv
 import os
 import os.path
 import tarfile
@@ -7,8 +8,6 @@ import urllib.error
 import urllib.request
 import zipfile
 from functools import partial
-
-import mmcv
 
 __all__ = ['rm_suffix', 'check_integrity', 'download_and_extract_archive']
 

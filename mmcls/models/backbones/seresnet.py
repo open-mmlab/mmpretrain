@@ -1,4 +1,4 @@
-import torch.utils.checkpoint as cp
+from torch.utils import checkpoint as cp
 
 from ..builder import BACKBONES
 from ..utils.se_layer import SELayer

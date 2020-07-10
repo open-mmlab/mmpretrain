@@ -1,8 +1,7 @@
-from collections.abc import Sequence
-
 import mmcv
 import numpy as np
 import torch
+from collections.abc import Sequence
 from PIL import Image
 
 from ..builder import PIPELINES

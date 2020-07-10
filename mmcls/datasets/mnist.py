@@ -1,9 +1,8 @@
 import codecs
-import os
-import os.path as osp
-
 import numpy as np
+import os
 import torch
+from os import path as osp
 
 from .base_dataset import BaseDataset
 from .builder import DATASETS

@@ -1,7 +1,6 @@
 import functools
-from inspect import getfullargspec
-
 import torch
+from inspect import getfullargspec
 
 from .utils import cast_tensor_type
 

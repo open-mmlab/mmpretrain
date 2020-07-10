@@ -1,8 +1,8 @@
 import pytest
 import torch
-import torch.nn as nn
 from mmcv.cnn import ConvModule
 from mmcv.utils.parrots_wrapper import _BatchNorm
+from torch import nn as nn
 
 from mmcls.models.backbones import ResNet, ResNetV1d
 from mmcls.models.backbones.resnet import (BasicBlock, Bottleneck, ResLayer,

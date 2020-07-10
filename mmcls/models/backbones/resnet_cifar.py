@@ -1,5 +1,5 @@
-import torch.nn as nn
 from mmcv.cnn import build_conv_layer, build_norm_layer
+from torch import nn as nn
 
 from ..builder import BACKBONES
 from .resnet import ResNet

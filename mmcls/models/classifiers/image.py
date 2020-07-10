@@ -1,4 +1,4 @@
-import torch.nn as nn
+from torch import nn as nn
 
 from ..builder import CLASSIFIERS, build_backbone, build_head, build_neck
 from .base import BaseClassifier

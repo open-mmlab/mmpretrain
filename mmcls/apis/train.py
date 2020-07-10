@@ -1,6 +1,5 @@
-import random
-
 import numpy as np
+import random
 import torch
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import DistSamplerSeedHook, EpochBasedRunner, build_optimizer

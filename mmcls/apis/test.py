@@ -1,13 +1,12 @@
-import os.path as osp
+import mmcv
 import pickle
 import shutil
 import tempfile
 import time
-
-import mmcv
 import torch
-import torch.distributed as dist
 from mmcv.runner import get_dist_info
+from os import path as osp
+from torch import distributed as dist
 
 
 def single_gpu_test(model, data_loader, show=False, out_dir=None):

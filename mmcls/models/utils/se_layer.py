@@ -1,6 +1,6 @@
 import mmcv
-import torch.nn as nn
 from mmcv.cnn import ConvModule
+from torch import nn as nn
 
 
 class SELayer(nn.Module):
