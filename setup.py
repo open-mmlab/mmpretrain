@@ -79,13 +79,6 @@ def get_version():
     return locals()['__version__']
 
 
-def get_requirements(filename='requirements.txt'):
-    here = os.path.dirname(os.path.realpath(__file__))
-    with open(os.path.join(here, filename), 'r') as f:
-        requires = [line.replace('\n', '') for line in f.readlines()]
-    return requires
-
-
 if __name__ == '__main__':
     write_version_py()
     setup(
@@ -111,5 +104,13 @@ if __name__ == '__main__':
         license='Apache License 2.0',
         setup_requires=['pytest-runner', 'cython', 'numpy'],
         tests_require=['pytest', 'xdoctest'],
-        install_requires=get_requirements(),
+        setup_requires=parse_requirements('requirements/build.txt'),
+        tests_require=parse_requirements('requirements/tests.txt'),
+        install_requires=parse_requirements('requirements/runtime.txt'),
+        extras_require={
+            'all': parse_requirements('requirements.txt'),
+            'tests': parse_requirements('requirements/tests.txt'),
+            'build': parse_requirements('requirements/build.txt'),
+            'optional': parse_requirements('requirements/optional.txt'),
+        },
         zip_safe=False)
