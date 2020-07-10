@@ -96,6 +96,7 @@ if __name__ == '__main__':
         author='OpenMMLab',
         author_email='yangleidev@gmail.com',
         keywords='computer vision, image classification',
+        url='https://github.com/open-mmlab/mmclassification',
         packages=find_packages(exclude=('configs', 'tools', 'demo')),
         package_data={'mmcls.ops': ['*/*.so']},
         classifiers=[
