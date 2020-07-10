@@ -21,9 +21,9 @@ jobs:
       - name: Lint with flake8
         run: flake8 .
       - name: Lint with isort
-        run: isort --recursive --check-only --diff mmcls/ tests/ examples/
+        run: isort --recursive --check-only --diff mmcls/ tools/ configs/ tests/
       - name: Format python codes with yapf
-        run: yapf -r -d mmcls/ tests/ examples/
+        run: yapf -r -d mmcls/ tools/ configs/ tests/
 
   build:
     env:
