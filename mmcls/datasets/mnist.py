@@ -117,7 +117,7 @@ def open_maybe_compressed_file(path):
        Decompression occurs when argument `path` is a string
        and ends with '.gz' or '.xz'.
     """
-    if not isinstance(path, torch._six.string_classes):
+    if not isinstance(path, str):
         return path
     if path.endswith('.gz'):
         import gzip
