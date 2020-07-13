@@ -4,8 +4,17 @@
 
 ## Introduction
 
+[![Build Status](https://github.com/open-mmlab/mmclassification/workflows/build/badge.svg)](https://github.com/open-mmlab/mmclassification/actions)
+[![Documentation Status](https://readthedocs.org/projects/mmclassification/badge/?version=latest)](https://mmclassification.readthedocs.io/en/latest/?badge=latest)
+[![codecov](https://codecov.io/gh/open-mmlab/mmclassification/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmclassification)
+[![license](https://img.shields.io/github/license/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/blob/master/LICENSE)
+
+Documentation: https://mmclassification.readthedocs.io/en/latest/
+
 MMClassification is an open source image classification toolbox based on PyTorch. It is
-a part of the OpenMMLab project developed by [Multimedia Laboratory, CUHK](http://mmlab.ie.cuhk.edu.hk/).
+a part of the [OpenMMLab](https://open-mmlab.github.io/) project.
+
+![demo](https://user-images.githubusercontent.com/9102141/87268895-3e0d0780-c4fe-11ea-849e-6140b7e0d4de.gif)
 
 ### Major features
 
@@ -13,7 +22,6 @@ a part of the OpenMMLab project developed by [Multimedia Laboratory, CUHK](http:
 - Bag of training tricks
 - Large-scale training configs
 - High efficiency and extensibility
-
 
 ## License
 
@@ -38,16 +46,14 @@ Supported backbones:
 
 Please refer to [install.md](docs/install.md) for installation and dataset preparation.
 
-
-## Get Started
+## Getting Started
 
 Please see [getting_started.md](docs/getting_started.md) for the basic usage of MMClassification. There are also tutorials for [finetuning models](docs/tutorials/finetune.md), [adding new dataset](docs/tutorials/new_dataset.md), [designing data pipeline](docs/tutorials/data_pipeline.md), and [adding new modules](docs/tutorials/new_modules.md).
 
-
 ## Contributing
+
 We appreciate all contributions to improve MMClassification.
 Please refer to [CONTRUBUTING.md](CONTRIBUTING.md) for the contributing guideline.
-
 
 ## Acknowledgement
 
