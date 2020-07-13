@@ -2,17 +2,17 @@
   <img src="resources/mmcls-logo.png" width="600"/>
 </div>
 
-## Introduction
-
 [![Build Status](https://github.com/open-mmlab/mmclassification/workflows/build/badge.svg)](https://github.com/open-mmlab/mmclassification/actions)
 [![Documentation Status](https://readthedocs.org/projects/mmclassification/badge/?version=latest)](https://mmclassification.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/open-mmlab/mmclassification/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmclassification)
 [![license](https://img.shields.io/github/license/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/blob/master/LICENSE)
 
-Documentation: https://mmclassification.readthedocs.io/en/latest/
+## Introduction
 
 MMClassification is an open source image classification toolbox based on PyTorch. It is
 a part of the [OpenMMLab](https://open-mmlab.github.io/) project.
+
+Documentation: https://mmclassification.readthedocs.io/en/latest/
 
 ![demo](https://user-images.githubusercontent.com/9102141/87268895-3e0d0780-c4fe-11ea-849e-6140b7e0d4de.gif)
 
