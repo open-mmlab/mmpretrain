@@ -45,7 +45,7 @@ Assume we are going to implement a `Filelist` dataset, which takes filelists for
 000002.jpg 1
 ```
 
-We can create a new dataset in `mmdet/datasets/filelist.py` to load the data.
+We can create a new dataset in `mmcls/datasets/filelist.py` to load the data.
 
 ```python
 import mmcv
@@ -85,7 +85,7 @@ dataset_A_train = dict(
 
 ## Customize datasets by mixing dataset
 
-MMDetection also supports to mix dataset for training.
+MMClassification also supports to mix dataset for training.
 Currently it supports to concat and repeat datasets.
 
 ### Repeat dataset
