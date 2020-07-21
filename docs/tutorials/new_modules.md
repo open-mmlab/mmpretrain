@@ -93,7 +93,7 @@ To add a new neck, we mainly implement the `forward` function, which applies som
             return outs
     ```
 
-2. Import the module in `mmdet/models/necks/__init__.py`.
+2. Import the module in `mmcls/models/necks/__init__.py`.
 
     ```python
     from .gap import GlobalAveragePooling
@@ -151,7 +151,7 @@ To implement a new head, basically we need to implement `forward_train`, which t
     ```
 
 
-2. Import the module in `mmdet/models/heads/__init__.py`.
+2. Import the module in `mmcls/models/heads/__init__.py`.
 
     ```python
     from .linear_head import LinearClsHead
