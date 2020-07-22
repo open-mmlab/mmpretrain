@@ -2,13 +2,11 @@ import gzip
 import hashlib
 import os
 import os.path
+import shutil
 import tarfile
 import urllib.error
 import urllib.request
 import zipfile
-from functools import partial
-
-import mmcv
 
 __all__ = ['rm_suffix', 'check_integrity', 'download_and_extract_archive']
 
@@ -18,19 +16,6 @@ def rm_suffix(s, suffix=None):
         return s[:s.rfind('.')]
     else:
         return s[:s.rfind(suffix)]
-
-
-def gen_bar_updater():
-
-    def bar_update(count, block_size, total_size, pbar):
-        if pbar is None and total_size:
-            pbar = mmcv.ProgressBar(total_size)
-        progress_bytes = count * block_size
-        for _ in range(progress_bytes):
-            pbar.update()
-
-    _bar_update = partial(bar_update, pbar=None)
-    return _bar_update
 
 
 def calculate_md5(fpath, chunk_size=1024 * 1024):
@@ -53,6 +38,11 @@ def check_integrity(fpath, md5=None):
     return check_md5(fpath, md5)
 
 
+def download_url_to_file(url, fpath):
+    with urllib.request.urlopen(url) as resp, open(fpath, 'wb') as of:
+        shutil.copyfileobj(resp, of)
+
+
 def download_url(url, root, filename=None, md5=None):
     """Download a file from a url and place it in root.
 
@@ -71,21 +61,18 @@ def download_url(url, root, filename=None, md5=None):
 
     os.makedirs(root, exist_ok=True)
 
-    # check if file is already present locally
     if check_integrity(fpath, md5):
         print(f'Using downloaded and verified file: {fpath}')
-    else:  # download the file
+    else:
         try:
-            print('Downloading ' + url + ' to ' + fpath)
-            urllib.request.urlretrieve(
-                url, fpath, reporthook=gen_bar_updater())
+            print(f'Downloading {url} to {fpath}')
+            download_url_to_file(url, fpath)
         except (urllib.error.URLError, IOError) as e:
             if url[:5] == 'https':
                 url = url.replace('https:', 'http:')
                 print('Failed download. Trying https -> http instead.'
                       f' Downloading {url} to {fpath}')
-                urllib.request.urlretrieve(
-                    url, fpath, reporthook=gen_bar_updater())
+                download_url_to_file(url, fpath)
             else:
                 raise e
         # check integrity of downloaded file
