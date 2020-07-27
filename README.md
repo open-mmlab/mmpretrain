@@ -59,23 +59,3 @@ Please refer to [CONTRUBUTING.md](.github/CONTRIBUTING.md) for the contributing 
 
 MMClassification is an open source project that is contributed by researchers and engineers from various colleges and companies. We appreciate all the contributors who implement their methods or add new features, as well as users who give valuable feedbacks.
 We wish that the toolbox and benchmark could serve the growing research community by providing a flexible toolkit to reimplement existing methods and develop their own new detectors.
-
-Many thanks to Wenwei Zhang ([@ZwwWayne](https://github.com/ZwwWayne)), Jiarui Xu ([@xvjiarui](https://github.com/xvjiarui)), Xintao Wang ([@xinntao](https://github.com/xinntao)) and Zhizhong Li ([@innerlee](https://github.com/innerlee)) for their valuable advices and discussions.
-
-## Citation
-
-If you use this toolbox or benchmark in your research, please cite this project.
-
-```
-@misc{mmclassification,
-  author =       {Yang, Lei and Li, Xiaojie and Lou, Zan and Yang, Mingmin and
-                  Wang, Fei and Qian, Chen and Chen, Kai and Lin, Dahua},
-  title =        {{MMClassification}},
-  howpublished = {\url{https://github.com/open-mmlab/mmclassification}},
-  year =         {2020}
-}
-```
-
-## Contact
-
-This repo is currently maintained by Lei Yang ([@yl-1993](http://github.com/yl-1993)), Xiaojie Li ([@xiaojieli0903](https://github.com/xiaojieli0903)) and Kai Chen ([@hellock](http://github.com/hellock)).
