@@ -69,17 +69,16 @@ class LoadImage(object):
         return results
 
 
-def inference_model(model, img):
+def inference_image(model, img):
     """Inference image(s) with the classifier.
 
     Args:
         model (nn.Module): The loaded classifier.
-        imgs (str/ndarray or list[str/ndarray]): Either image files or loaded
-            images.
+        img (str/ndarray): The image filename.
 
     Returns:
-        If imgs is a str, a generator will be returned, otherwise return the
-        detection results directly.
+        result (dict): The classification results that contains
+            `class_name`, `pred_label` and `pred_score`.
     """
     cfg = model.cfg
     device = next(model.parameters()).device  # model device
