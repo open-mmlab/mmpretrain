@@ -337,25 +337,39 @@ class Resize(object):
         assert isinstance(size, int) or (isinstance(size, tuple)
                                          and len(size) == 2)
         if isinstance(size, int):
-            size = (size, size)
-        assert size[0] > 0 and size[1] > 0
+            assert size > 0
+        else:
+            assert size[0] > 0 and size[1] > 0
         assert interpolation in ("nearest", "bilinear", "bicubic", "area",
                                  "lanczos")
 
-        self.height = size[0]
-        self.width = size[1]
         self.size = size
         self.interpolation = interpolation
 
     def _resize_img(self, results):
         for key in results.get('img_fields', ['img']):
-            img = mmcv.imresize(
-                results[key],
-                size=(self.width, self.height),
-                interpolation=self.interpolation,
-                return_scale=False)
-            results[key] = img
-            results['img_shape'] = img.shape
+            img = results[key]
+            ignore_resize = False
+            if isinstance(self.size, int):
+                h, w = img.shape[:2]
+                if (w <= h and w == self.size) or (h <= w and h == self.size):
+                    ignore_resize = True
+                if w < h:
+                    width = self.size
+                    height = int(self.size * h / w)
+                else:
+                    height = self.size
+                    width = int(self.size * w / h)
+            else:
+                height, width = self.size
+            if not ignore_resize:
+                img = mmcv.imresize(
+                    img,
+                    size=(width, height),
+                    interpolation=self.interpolation,
+                    return_scale=False)
+                results[key] = img
+                results['img_shape'] = img.shape
 
     def __call__(self, results):
         self._resize_img(results)
