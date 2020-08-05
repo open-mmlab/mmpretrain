@@ -71,7 +71,7 @@ def test_resize():
     resize_module = build_from_cfg(transform, PIPELINES)
     results = resize_module(results)
     assert np.equal(results['img'], results['img2']).all()
-    assert results['img_shape'] == (224, 224, 3)
+    assert results['img_shape'] == (224, 298, 3)
 
     # test resize when size is tuple
     transform = dict(type='Resize', size=(224, 224), interpolation='bilinear')
