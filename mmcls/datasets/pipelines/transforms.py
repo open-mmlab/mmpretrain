@@ -328,6 +328,7 @@ class Resize(object):
 
     Args:
         size (int | tuple): Images scales for resizing (h, w).
+            When size is int, the short edge of an image is resized to `size`.
         interpolation (str): Interpolation method, accepted values are
             "nearest", "bilinear", "bicubic", "area", "lanczos".
             More details can be found in `mmcv.image.geometric`.
