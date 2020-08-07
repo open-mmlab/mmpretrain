@@ -140,13 +140,16 @@ class RandomResizedCrop(object):
         interpolation (str): Interpolation method, accepted values are
             'nearest', 'bilinear', 'bicubic', 'area', 'lanczos'. Default:
             'bilinear'.
+        backend (str): The image resize backend type, accpeted values are
+            `cv2` and `pillow`. Default: `cv2`.
     """
 
     def __init__(self,
                  size,
                  scale=(0.08, 1.0),
                  ratio=(3. / 4., 4. / 3.),
-                 interpolation='bilinear'):
+                 interpolation='bilinear',
+                 backend='cv2'):
         if isinstance(size, (tuple, list)):
             self.size = size
         else:
@@ -154,10 +157,14 @@ class RandomResizedCrop(object):
         if (scale[0] > scale[1]) or (ratio[0] > ratio[1]):
             raise ValueError("range should be of kind (min, max). "
                              f"But received {scale}")
+        if backend not in ['cv2', 'pillow']:
+            raise ValueError(f'backend: {backend} is not supported for resize.'
+                             'Supported backends are "cv2", "pillow"')
 
         self.interpolation = interpolation
         self.scale = scale
         self.ratio = ratio
+        self.backend = backend
 
     @staticmethod
     def get_params(img, scale, ratio):
@@ -225,7 +232,10 @@ class RandomResizedCrop(object):
                     xmin + target_height - 1
                 ]))
             results[key] = mmcv.imresize(
-                img, tuple(self.size[::-1]), interpolation=self.interpolation)
+                img,
+                tuple(self.size[::-1]),
+                interpolation=self.interpolation,
+                backend=self.backend)
         return results
 
     def __repr__(self):
@@ -332,9 +342,11 @@ class Resize(object):
         interpolation (str): Interpolation method, accepted values are
             "nearest", "bilinear", "bicubic", "area", "lanczos".
             More details can be found in `mmcv.image.geometric`.
+        backend (str): The image resize backend type, accpeted values are
+            `cv2` and `pillow`. Default: `cv2`.
     """
 
-    def __init__(self, size, interpolation='bilinear'):
+    def __init__(self, size, interpolation='bilinear', backend='cv2'):
         assert isinstance(size, int) or (isinstance(size, tuple)
                                          and len(size) == 2)
         if isinstance(size, int):
@@ -343,9 +355,13 @@ class Resize(object):
             assert size[0] > 0 and size[1] > 0
         assert interpolation in ("nearest", "bilinear", "bicubic", "area",
                                  "lanczos")
+        if backend not in ['cv2', 'pillow']:
+            raise ValueError(f'backend: {backend} is not supported for resize.'
+                             'Supported backends are "cv2", "pillow"')
 
         self.size = size
         self.interpolation = interpolation
+        self.backend = backend
 
     def _resize_img(self, results):
         for key in results.get('img_fields', ['img']):
@@ -368,7 +384,8 @@ class Resize(object):
                     img,
                     size=(width, height),
                     interpolation=self.interpolation,
-                    return_scale=False)
+                    return_scale=False,
+                    backend=self.backend)
                 results[key] = img
                 results['img_shape'] = img.shape
 
