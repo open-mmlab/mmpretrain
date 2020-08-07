@@ -338,7 +338,12 @@ class Resize(object):
 
     Args:
         size (int | tuple): Images scales for resizing (h, w).
-            When size is int, the short edge of an image is resized to `size`.
+            When size is int, the default behavior is to resize an image
+            to (size, size). When size is tuple and the second value is -1,
+            the short edge of an image is resized to its first value.
+            For example, when size is 224, the image is resized to 224x224.
+            When size is (224, -1), the short edge is resized to 224 and the
+            other edge is computed based on the short edge.
         interpolation (str): Interpolation method, accepted values are
             "nearest", "bilinear", "bicubic", "area", "lanczos".
             More details can be found in `mmcv.image.geometric`.
@@ -349,10 +354,14 @@ class Resize(object):
     def __init__(self, size, interpolation='bilinear', backend='cv2'):
         assert isinstance(size, int) or (isinstance(size, tuple)
                                          and len(size) == 2)
+        self.resize_short_edge = False
         if isinstance(size, int):
             assert size > 0
+            size = (size, size)
         else:
-            assert size[0] > 0 and size[1] > 0
+            assert size[0] > 0 and (size[1] > 0 or size[1] == -1)
+            if size[1] == -1:
+                self.resize_short_edge = True
         assert interpolation in ("nearest", "bilinear", "bicubic", "area",
                                  "lanczos")
         if backend not in ['cv2', 'pillow']:
@@ -367,16 +376,17 @@ class Resize(object):
         for key in results.get('img_fields', ['img']):
             img = results[key]
             ignore_resize = False
-            if isinstance(self.size, int):
+            if self.resize_short_edge:
                 h, w = img.shape[:2]
-                if (w <= h and w == self.size) or (h <= w and h == self.size):
+                short_edge = self.size[0]
+                if (w <= h and w == short_edge) or (h <= w and h == short_edge):
                     ignore_resize = True
                 if w < h:
-                    width = self.size
-                    height = int(self.size * h / w)
+                    width = short_edge
+                    height = int(short_edge * h / w)
                 else:
-                    height = self.size
-                    width = int(self.size * w / h)
+                    height = short_edge
+                    width = int(short_edge * w / h)
             else:
                 height, width = self.size
             if not ignore_resize:
