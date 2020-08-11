@@ -69,7 +69,7 @@ class LoadImage(object):
         return results
 
 
-def inference_image(model, img):
+def inference_model(model, img):
     """Inference image(s) with the classifier.
 
     Args:

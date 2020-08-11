@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 
-from mmcls.apis import inference_image, init_model
+from mmcls.apis import inference_model, init_model
 
 
 def main():
@@ -15,7 +15,7 @@ def main():
     # build the model from a config file and a checkpoint file
     model = init_model(args.config, args.checkpoint, device=args.device)
     # test a single image
-    result = inference_image(model, args.img)
+    result = inference_model(model, args.img)
     # print result on terminal
     print(result)
 
