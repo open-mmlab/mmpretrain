@@ -1,5 +1,6 @@
 import argparse
 import os
+from collections import defaultdict
 
 import mmcv
 import numpy as np
@@ -7,7 +8,7 @@ import torch
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import get_dist_info, init_dist, load_checkpoint
 
-from mmcls.apis import multi_gpu_inference, single_gpu_inference
+from mmcls.apis import multi_gpu_test, single_gpu_test
 from mmcls.core import wrap_fp16_model
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.models import build_classifier
@@ -15,7 +16,7 @@ from mmcls.models import build_classifier
 
 def parse_args():
     parser = argparse.ArgumentParser(description='mmcls inference model')
-    parser.add_argument('config', help='test config file path')
+    parser.add_argument('config', help='inference config file path')
     parser.add_argument('checkpoint', help='checkpoint file')
     parser.add_argument('--out', help='output result file')
     parser.add_argument(
@@ -71,29 +72,21 @@ def main():
 
     if not distributed:
         model = MMDataParallel(model, device_ids=[0])
-        outputs = single_gpu_inference(model, data_loader)
+        outputs = single_gpu_test(model, data_loader, inference=True)
     else:
         model = MMDistributedDataParallel(
             model.cuda(),
             device_ids=[torch.cuda.current_device()],
             broadcast_buffers=False)
-        outputs = multi_gpu_inference(model, data_loader, args.tmpdir,
-                                      args.gpu_collect)
+        outputs = multi_gpu_test(model, data_loader, args.tmpdir,
+                                      args.gpu_collect, inference=True)
 
     rank, _ = get_dist_info()
     if rank == 0:
-        nums = []
-        results = {}
+        results = defaultdict(list)
         for output in outputs:
-            nums.append(output['num_samples'].item())
-            for topk, v in output['accuracy'].items():
-                if topk not in results:
-                    results[topk] = []
-                results[topk].append(v.item())
-        assert sum(nums) == len(dataset)
-        for topk, accs in results.items():
-            avg_acc = np.average(accs, weights=nums)
-            print(f'\n{topk} accuracy: {avg_acc:.2f}')
+            for key, val in output.items():
+                results[key].extend(list(val.cpu().numpy()))
     if args.out and rank == 0:
         print(f'\nwriting results to {args.out}')
         mmcv.dump(outputs, args.out)
