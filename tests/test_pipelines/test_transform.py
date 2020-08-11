@@ -23,9 +23,15 @@ def test_resize():
         transform = dict(type='Resize', size=-1)
         build_from_cfg(transform, PIPELINES)
 
-    # test assertion if size is tuple but one value is smaller than 0
+    # test assertion if size is tuple but the second value is smaller than 0
+    # and the second value is not equal to -1
     with pytest.raises(AssertionError):
-        transform = dict(type='Resize', size=(224, -1))
+        transform = dict(type='Resize', size=(224, -2))
+        build_from_cfg(transform, PIPELINES)
+
+    # test assertion if size is tuple but the first value is smaller than 0
+    with pytest.raises(AssertionError):
+        transform = dict(type='Resize', size=(-1, 224))
         build_from_cfg(transform, PIPELINES)
 
     # test assertion if size is tuple and len(size) < 2
@@ -64,6 +70,7 @@ def test_resize():
         results['img2'] = copy.deepcopy(original_img)
         results['img_shape'] = original_img.shape
         results['ori_shape'] = original_img.shape
+        results['img_fields'] = ['img', 'img2']
         return results
 
     # test resize when size is int
@@ -72,6 +79,14 @@ def test_resize():
     results = resize_module(results)
     assert np.equal(results['img'], results['img2']).all()
     assert results['img_shape'] == (224, 224, 3)
+
+    # test resize when size is tuple and the second value is -1
+    transform = dict(type='Resize', size=(224, -1), interpolation='bilinear')
+    resize_module = build_from_cfg(transform, PIPELINES)
+    results = reset_results(results, original_img)
+    results = resize_module(results)
+    assert np.equal(results['img'], results['img2']).all()
+    assert results['img_shape'] == (224, 298, 3)
 
     # test resize when size is tuple
     transform = dict(type='Resize', size=(224, 224), interpolation='bilinear')
@@ -100,6 +115,26 @@ def test_resize():
     results = resize_module(results)
     assert np.equal(results['img'], results['img2']).all()
     assert results['img_shape'] == (img_height * 2, img_width * 2, 3)
+
+    # test resize with different backends
+    transform_cv2 = dict(
+        type='Resize',
+        size=(224, 256),
+        interpolation='bilinear',
+        backend='cv2')
+    transform_pil = dict(
+        type='Resize',
+        size=(224, 256),
+        interpolation='bilinear',
+        backend='pillow')
+    resize_module_cv2 = build_from_cfg(transform_cv2, PIPELINES)
+    resize_module_pil = build_from_cfg(transform_pil, PIPELINES)
+    results = reset_results(results, original_img)
+    results['img_fields'] = ['img']
+    results_cv2 = resize_module_cv2(results)
+    results['img_fields'] = ['img2']
+    results_pil = resize_module_pil(results)
+    assert np.allclose(results_cv2['img'], results_pil['img2'], atol=45)
 
     # compare results with torchvision
     transform = dict(type='Resize', size=(224, 224), interpolation='area')
