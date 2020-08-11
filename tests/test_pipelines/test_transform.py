@@ -23,9 +23,15 @@ def test_resize():
         transform = dict(type='Resize', size=-1)
         build_from_cfg(transform, PIPELINES)
 
-    # test assertion if size is tuple but one value is smaller than 0
+    # test assertion if size is tuple but the second value is smaller than 0
+    # and the second value is not equal to -1
     with pytest.raises(AssertionError):
-        transform = dict(type='Resize', size=(224, -1))
+        transform = dict(type='Resize', size=(224, -2))
+        build_from_cfg(transform, PIPELINES)
+
+    # test assertion if size is tuple but the first value is smaller than 0
+    with pytest.raises(AssertionError):
+        transform = dict(type='Resize', size=(-1, 224))
         build_from_cfg(transform, PIPELINES)
 
     # test assertion if size is tuple and len(size) < 2
@@ -73,6 +79,14 @@ def test_resize():
     results = resize_module(results)
     assert np.equal(results['img'], results['img2']).all()
     assert results['img_shape'] == (224, 224, 3)
+
+    # test resize when size is tuple and the second value is -1
+    transform = dict(type='Resize', size=(224, -1), interpolation='bilinear')
+    resize_module = build_from_cfg(transform, PIPELINES)
+    results = reset_results(results, original_img)
+    results = resize_module(results)
+    assert np.equal(results['img'], results['img2']).all()
+    assert results['img_shape'] == (224, 298, 3)
 
     # test resize when size is tuple
     transform = dict(type='Resize', size=(224, 224), interpolation='bilinear')
