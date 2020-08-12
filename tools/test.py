@@ -96,7 +96,7 @@ def main():
             print(f'\n{topk} accuracy: {avg_acc:.2f}')
     if args.out and rank == 0:
         print(f'\nwriting results to {args.out}')
-        mmcv.dump(outputs, args.out)
+        mmcv.dump(results, args.out)
 
 
 if __name__ == '__main__':
