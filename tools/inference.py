@@ -7,7 +7,7 @@ import torch
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import get_dist_info, init_dist, load_checkpoint
 
-from mmcls.apis import multi_gpu_test, single_gpu_test
+from mmcls.apis import multi_gpu_test, remove_keys, single_gpu_test
 from mmcls.core import wrap_fp16_model
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.models import build_classifier
@@ -53,6 +53,7 @@ def main():
         init_dist(args.launcher, **cfg.dist_params)
 
     # build the dataloader
+    remove_keys(cfg.data.test.pipeline, keys=['gt_label'])
     dataset = build_dataset(cfg.data.test)
     data_loader = build_dataloader(
         dataset,

@@ -5,7 +5,7 @@ import torch
 from mmcv.parallel import collate, scatter
 from mmcv.runner import load_checkpoint
 
-from mmcls.datasets.pipelines import Collect, Compose
+from mmcls.datasets.pipelines import Compose
 from mmcls.models import build_classifier
 
 
@@ -69,6 +69,14 @@ class LoadImage(object):
         return results
 
 
+def remove_keys(pipeline, key_name='keys', keys=['gt_label']):
+    for i, transform in enumerate(pipeline):
+        if key_name not in transform:
+            continue
+        pipeline[i][key_name] = list(set(transform[key_name]) - set(keys))
+    return pipeline
+
+
 def inference_model(model, img):
     """Inference image(s) with the classifier.
 
@@ -83,9 +91,7 @@ def inference_model(model, img):
     cfg = model.cfg
     device = next(model.parameters()).device  # model device
     # build the data pipeline
-    test_pipeline = [LoadImage()] + cfg.data.test.pipeline[1:-2] + [
-        Collect(keys=['img'])
-    ]
+    test_pipeline = [LoadImage()] + remove_keys(cfg.data.test.pipeline[1:])
     test_pipeline = Compose(test_pipeline)
     # prepare data
     data = dict(img=img)
