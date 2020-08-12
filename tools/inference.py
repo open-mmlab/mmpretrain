@@ -3,7 +3,6 @@ import os
 from collections import defaultdict
 
 import mmcv
-import numpy as np
 import torch
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import get_dist_info, init_dist, load_checkpoint
@@ -78,8 +77,8 @@ def main():
             model.cuda(),
             device_ids=[torch.cuda.current_device()],
             broadcast_buffers=False)
-        outputs = multi_gpu_test(model, data_loader, args.tmpdir,
-                                      args.gpu_collect, inference=True)
+        outputs = multi_gpu_test(
+            model, data_loader, args.tmpdir, args.gpu_collect, inference=True)
 
     rank, _ = get_dist_info()
     if rank == 0:
