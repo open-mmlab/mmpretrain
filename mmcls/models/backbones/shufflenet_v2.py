@@ -14,6 +14,7 @@ from .base_backbone import BaseBackbone
 
 class InvertedResidual(nn.Module):
     """InvertedResidual block for ShuffleNetV2 backbone.
+
     Args:
         in_channels (int): The input channels of the block.
         out_channels (int): The output channels of the block.
@@ -26,6 +27,7 @@ class InvertedResidual(nn.Module):
             Default: dict(type='ReLU').
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
             memory while slowing down the training speed. Default: False.
+
     Returns:
         Tensor: The output tensor.
     """
@@ -131,6 +133,7 @@ class InvertedResidual(nn.Module):
 @BACKBONES.register_module()
 class ShuffleNetV2(BaseBackbone):
     """ShuffleNetV2 backbone.
+
     Args:
         widen_factor (float): Width multiplier - adjusts the number of
             channels in each layer by this amount. Default: 1.0.
@@ -220,6 +223,7 @@ class ShuffleNetV2(BaseBackbone):
 
     def _make_layer(self, out_channels, num_blocks):
         """ Stack blocks to make a layer.
+
         Args:
             out_channels (int): out_channels of the block.
             num_blocks (int): number of blocks.
