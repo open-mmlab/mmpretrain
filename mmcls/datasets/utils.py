@@ -45,6 +45,7 @@ def download_url_to_file(url, fpath):
 
 def download_url(url, root, filename=None, md5=None):
     """Download a file from a url and place it in root.
+
     Args:
         url (str): URL to download file from.
         root (str): Directory to place downloaded file in.
