@@ -4,7 +4,7 @@ optimizer = dict(
 optimizer_config = dict(grad_clip=None)
 # learning policy
 lr_config = dict(
-    policy='CosineAnealing',
+    policy='CosineAnnealing',
     min_lr=0,
     warmup='linear',
     warmup_iters=2500,
