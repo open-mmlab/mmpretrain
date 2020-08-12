@@ -8,7 +8,7 @@ from .base_backbone import BaseBackbone
 class AlexNet(BaseBackbone):
     """`AlexNet <https://en.wikipedia.org/wiki/AlexNet>`_ backbone.
 
-    The input for AlexNet is a 256x256 RGB image.
+    The input for AlexNet is a 224x224 RGB image.
 
     Args:
         num_classes (int): number of classes for classification.
