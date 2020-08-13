@@ -16,9 +16,9 @@ def convert_conv1(model_key, model_weight, state_dict, converted_names):
 
 def convert_conv5(model_key, model_weight, state_dict, converted_names):
     if model_key.find('features.18.0') >= 0:
-        new_key = model_key.replace('features.18.0', 'backbone.layer7.conv')
+        new_key = model_key.replace('features.18.0', 'backbone.conv2.conv')
     else:
-        new_key = model_key.replace('features.18.1', 'backbone.layer7.bn')
+        new_key = model_key.replace('features.18.1', 'backbone.conv2.bn')
     state_dict[new_key] = model_weight
     converted_names.add(model_key)
     print(f'Convert {model_key} to {new_key}')
