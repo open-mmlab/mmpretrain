@@ -13,7 +13,6 @@ class GlobalAveragePooling(nn.Module):
     when the tensor has a batch dimension of size 1, which can lead to
     unexpected errors.
     """
-
     def __init__(self):
         super(GlobalAveragePooling, self).__init__()
         self.gap = nn.AdaptiveAvgPool2d((1, 1))
@@ -24,8 +23,7 @@ class GlobalAveragePooling(nn.Module):
     def forward(self, inputs):
         if isinstance(inputs, tuple):
             outs = tuple([self.gap(x) for x in inputs])
-            outs = tuple(
-                [torch.flatten(out, start_dim=1) for out, x in zip(outs, inputs)])
+            outs = tuple([torch.flatten(out, start_dim=1) for out in outs])
         elif isinstance(inputs, torch.Tensor):
             outs = self.gap(inputs)
             outs = torch.flatten(outs, start_dim=1)
