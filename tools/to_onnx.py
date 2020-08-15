@@ -46,11 +46,11 @@ def main():
         print('load checkpoint...')
         load_checkpoint(model, args.in_file, map_location='cpu')
 
-    if hasattr(model, 'extract_feat'):
-        model.forward = model.extract_feat
+    if hasattr(model, 'forward_test'):
+        model.forward = model.forward_test
     else:
         raise NotImplementedError(
-            'FLOPs counter is currently not currently supported with {}'.
+            'onnx exportor is currently not currently supported with {}'.
             format(model.__class__.__name__))
 
     data_np = np.random.randn(*input_shape).astype(np.float32)

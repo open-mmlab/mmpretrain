@@ -41,3 +41,6 @@ class LinearClsHead(ClsHead):
         cls_score = self.fc(x)
         losses = self.loss(cls_score, gt_label)
         return losses
+
+    def simple_test(self, x):
+        return self.fc(x)
