@@ -25,10 +25,10 @@ class GlobalAveragePooling(nn.Module):
         if isinstance(inputs, tuple):
             outs = tuple([self.gap(x) for x in inputs])
             outs = tuple(
-                [out.view(x.size(0), -1) for out, x in zip(outs, inputs)])
+                [torch.flatten(out, start_dim=1) for out, x in zip(outs, inputs)])
         elif isinstance(inputs, torch.Tensor):
             outs = self.gap(inputs)
-            outs = outs.view(inputs.size(0), -1)
+            outs = torch.flatten(outs, start_dim=1)
         else:
             raise TypeError('neck inputs should be tuple or torch.tensor')
         return outs
