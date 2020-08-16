@@ -44,3 +44,6 @@ class ClsHead(BaseHead):
     def forward_train(self, cls_score, gt_label):
         losses = self.loss(cls_score, gt_label)
         return losses
+
+    def simple_test(self, cls_score):
+        return cls_score

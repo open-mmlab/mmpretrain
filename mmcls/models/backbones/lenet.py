@@ -8,14 +8,13 @@ from .base_backbone import BaseBackbone
 class LeNet5(BaseBackbone):
     """`LeNet5 <https://en.wikipedia.org/wiki/LeNet>`_ backbone.
 
-    The input for LeNet-5 is a 32×32 grayscale image.
+    The input for LeNet-5 is a 32脳32 grayscale image.
 
     Args:
         num_classes (int): number of classes for classification.
             The default value is -1, which uses the backbone as
             a feature extractor without the top classifier.
     """
-
     def __init__(self, num_classes=-1):
         super(LeNet5, self).__init__()
         self.num_classes = num_classes
@@ -36,6 +35,6 @@ class LeNet5(BaseBackbone):
 
         x = self.features(x)
         if self.num_classes > 0:
-            x = self.classifier(x.squeeze())
+            x = self.classifier(x.flatten(1))
 
         return x
