@@ -8,6 +8,14 @@ The ResNet family models below are trained by standard data augmentations, i.e.,
 
 |         Model         | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Download |
 |:---------------------:|:---------:|:--------:|:---------:|:---------:|:--------:|
+| VGG-11 | 132.86 | 7.63 | 69.03 | 88.63 | [model]()* |
+| VGG-13 | 133.05 | 11.34 | 69.93 | 89.26 | [model]()*|
+| VGG-16 | 138.36 | 15.5 | 71.59 | 90.39 | [model]()*|
+| VGG-19 | 143.67 | 19.67 | 72.38 | 90.88 | [model]()*|
+| VGG-11-BN | 132.87 | 7.64 | 70.37 | 89.81 | [model]()*|
+| VGG-13-BN | 133.05 | 11.36 | 71.55 | 90.37 | [model]()*|
+| VGG-16-BN | 138.37 | 15.53 | 73.36 | 91.5 | [model]()*|
+| VGG-19-BN | 143.68 | 19.7 | 74.24 | 91.84 | [model]()*|
 | ResNet-18             | 11.69     | 1.82     | 70.07 | 89.44 | [model](https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/resnet18_batch256_20200708-34ab8f90.pth) &#124; [log](https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/resnet18_batch256_20200708-34ab8f90.log.json) |
 | ResNet-34             | 21.8      | 3.68     | 73.85 | 91.53 | [model](https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/resnet34_batch256_20200708-32ffb4f7.pth) &#124; [log](https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/resnet34_batch256_20200708-32ffb4f7.log.json) |
 | ResNet-50             | 25.56     | 4.12     | 76.55 | 93.15 | [model](https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/resnet50_batch256_20200708-cfb998bf.pth) &#124; [log](https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/resnet50_batch256_20200708-cfb998bf.log.json) |
