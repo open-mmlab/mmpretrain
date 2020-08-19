@@ -20,13 +20,13 @@ def make_vgg_layer(inplanes,
                    planes,
                    num_blocks,
                    dilation=1,
-                   with_bn=False,
+                   with_norm=False,
                    ceil_mode=False):
     layers = []
     for _ in range(num_blocks):
         layers.append(conv3x3(inplanes, planes, dilation))
-        if with_bn:
-            layers.append(_BatchNorm(planes))
+        if with_norm:
+            layers.append(nn.BatchNorm2d(planes))
         layers.append(nn.ReLU(inplace=True))
         inplanes = planes
     layers.append(nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=ceil_mode))
@@ -40,17 +40,26 @@ class VGG(BaseBackbone):
 
     Args:
         depth (int): Depth of vgg, from {11, 13, 16, 19}.
-        with_bn (bool): Use BatchNorm or not.
+        with_norm (bool): Use BatchNorm or not.
         num_classes (int): number of classes for classification.
         num_stages (int): VGG stages, normally 5.
         dilations (Sequence[int]): Dilation of each stage.
-        out_indices (Sequence[int]): Output from which stages.
+        out_indices (Sequence[int]): Output from which stages. If only one
+            stage is specified, a single tensor (feature map) is returned,
+            otherwise multiple stages are specified, a tuple of tensors will
+            be returned. When it is None, the default behavior depends on
+            whether num_classes is specified. If num_classes <= 0, the default
+            value is (4, ), outputing the last feature map before classifier.
+            If num_classes > 0, the default value is (5, ), outputing the
+            classification score. Default: None.
         frozen_stages (int): Stages to be frozen (all param fixed). -1 means
             not freezing any parameters.
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm
             and its variants only. Default: False.
-        bn_frozen (bool): Whether to freeze weight and bias of BN layers.
+        ceil_mode (bool): Whether to use ceil_mode of MaxPool. Default: False.
+        with_last_pool (bool): Whether to keep the last pooling before
+            classifier. Default: True.
     """
 
     arch_settings = {
@@ -62,15 +71,14 @@ class VGG(BaseBackbone):
 
     def __init__(self,
                  depth,
-                 with_bn=False,
+                 with_norm=False,
                  num_classes=-1,
                  num_stages=5,
                  dilations=(1, 1, 1, 1, 1),
-                 out_indices=(4, ),
+                 out_indices=None,
                  frozen_stages=-1,
                  conv_cfg=None,
                  norm_eval=False,
-                 bn_frozen=False,
                  ceil_mode=False,
                  with_last_pool=True):
         super(VGG, self).__init__()
@@ -80,20 +88,22 @@ class VGG(BaseBackbone):
         stage_blocks = self.arch_settings[depth]
         self.stage_blocks = stage_blocks[:num_stages]
         assert len(dilations) == num_stages
-        assert max(out_indices) <= num_stages
 
         self.num_classes = num_classes
-        self.out_indices = out_indices
         self.frozen_stages = frozen_stages
         self.norm_eval = norm_eval
-        self.bn_frozen = bn_frozen
+
+        if out_indices is None:
+            out_indices = (5, ) if num_classes > 0 else (4, )
+        assert max(out_indices) <= num_stages
+        self.out_indices = out_indices
 
         self.inplanes = 3
         start_idx = 0
         vgg_layers = []
         self.range_sub_modules = []
         for i, num_blocks in enumerate(self.stage_blocks):
-            num_modules = num_blocks * (2 + with_bn) + 1
+            num_modules = num_blocks * (2 + with_norm) + 1
             end_idx = start_idx + num_modules
             dilation = dilations[i]
             planes = 64 * 2**i if i < 4 else 512
@@ -102,7 +112,7 @@ class VGG(BaseBackbone):
                 planes,
                 num_blocks,
                 dilation=dilation,
-                with_bn=with_bn,
+                with_norm=with_norm,
                 ceil_mode=ceil_mode)
             vgg_layers.extend(vgg_layer)
             self.inplanes = planes
