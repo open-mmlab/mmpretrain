@@ -27,3 +27,17 @@ The ResNet family models below are trained by standard data augmentations, i.e.,
 | MobileNet V2          | 3.5       | 0.319    | 71.86 | 90.42 | [model](https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/mobilenet_v2_batch256_20200708-3b2dc3af.pth) &#124; [log](https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/mobilenet_v2_batch256_20200708-3b2dc3af.log.json) |
 
 Models with * are converted from other repos, others are trained by ourselves.
+
+
+## CIFAR10
+
+|         Model         | Params(M) | Flops(G) | Top-1 (%) | Download |
+|:---------------------:|:---------:|:--------:|:---------:|:--------:|
+| ResNet-18-b128x1 | 11.17 | 0.56 | | [model]() &#124; [log]() |
+| ResNet-34-b128x1 | 21.28 | 1.16 | | [model]() &#124; [log]() |
+| ResNet-50-b128x1 | 23.52 | 1.31 | | [model]() &#124; [log]() |
+| ResNet-18-b16x8 | 11.17 | 0.56 | 94.72 | [model]() &#124; [log]() |
+| ResNet-34-b16x8 | 21.28 | 1.16 | | [model]() &#124; [log]() |
+| ResNet-50-b16x8 | 23.52 | 1.31 | | [model]() &#124; [log]() |
+| ResNet-101-b16x8 | 42.51 | 2.52 | 95.66 | [model]() &#124; [log]() |
+| ResNet-152-b16x8 | 58.16 | 3.74 | 95.96 | [model]() &#124; [log]() |
