@@ -33,11 +33,8 @@ Models with * are converted from other repos, others are trained by ourselves.
 
 |         Model         | Params(M) | Flops(G) | Top-1 (%) | Download |
 |:---------------------:|:---------:|:--------:|:---------:|:--------:|
-| ResNet-18-b128x1 | 11.17 | 0.56 | | [model]() &#124; [log]() |
-| ResNet-34-b128x1 | 21.28 | 1.16 | | [model]() &#124; [log]() |
-| ResNet-50-b128x1 | 23.52 | 1.31 | | [model]() &#124; [log]() |
-| ResNet-18-b16x8 | 11.17 | 0.56 | 94.72 | [model]() &#124; [log]() |
-| ResNet-34-b16x8 | 21.28 | 1.16 | | [model]() &#124; [log]() |
-| ResNet-50-b16x8 | 23.52 | 1.31 | | [model]() &#124; [log]() |
-| ResNet-101-b16x8 | 42.51 | 2.52 | 95.66 | [model]() &#124; [log]() |
-| ResNet-152-b16x8 | 58.16 | 3.74 | 95.96 | [model]() &#124; [log]() |
+| ResNet-18-b16x8 | 11.17 | 0.56 | 94.72 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/cifar10/resnet18_b16x8_20200823-f906fa4e.pth) &#124; [log](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/cifar10/resnet18_b16x8_20200823-f906fa4e.log.json) |
+| ResNet-34-b16x8 | 21.28 | 1.16 | 95.34 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/cifar10/resnet34_b16x8_20200823-52d5d832.pth) &#124; [log](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/cifar10/resnet34_b16x8_20200823-52d5d832.log.json) |
+| ResNet-50-b16x8 | 23.52 | 1.31 | 95.36 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/cifar10/resnet50_b16x8_20200823-882aa7b1.pth) &#124; [log](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/cifar10/resnet50_b16x8_20200823-882aa7b1.log.json) |
+| ResNet-101-b16x8 | 42.51 | 2.52 | 95.66 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/cifar10/resnet101_b16x8_20200823-d9501bbc.pth) &#124; [log](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/cifar10/resnet101_b16x8_20200823-d9501bbc.log.json) |
+| ResNet-152-b16x8 | 58.16 | 3.74 | 95.96 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/cifar10/resnet152_b16x8_20200823-ad4d5d0c.pth) &#124; [log](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/cifar10/resnet152_b16x8_20200823-ad4d5d0c.log.json) |
