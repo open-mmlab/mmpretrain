@@ -17,14 +17,14 @@ class MobileNetv3(BaseBackbone):
     Args:
         arch (str): Architechture of mobilnetv3, from {small, big}.
             Default: small.
-        conv_cfg (dict): Config dict for convolution layer.
-            Default: None, which means using conv2d.
-        norm_cfg (dict): Config dict for normalization layer.
-            Default: dict(type='BN').
         out_indices (None or Sequence[int]): Output from which stages.
             Default: (10, ), which means output tensors from final stage.
         frozen_stages (int): Stages to be frozen (all param fixed).
             Defualt: -1, which means not freezing any parameters.
+        conv_cfg (dict): Config dict for convolution layer.
+            Default: None, which means using conv2d.
+        act_cfg (dict): Config dict for activation layer.
+            Default: dict(type='ReLU6').
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm
             and its variants only. Default: False.
@@ -67,29 +67,30 @@ class MobileNetv3(BaseBackbone):
                  arch='small',
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
+                 act_cfg=dict(type='ReLU6'),
                  out_indices=(10, ),
                  frozen_stages=-1,
                  norm_eval=False,
                  with_cp=False):
         super(MobileNetv3, self).__init__()
         assert arch in self.arch_settings
+        self.arch = arch
+        self.arch_setting = self.arch_settings[self.arch]
         for index in out_indices:
-            if index not in range(0, len(self.arch_settings[arch])):
+            if index not in range(0, len(self.arch_setting)):
                 raise ValueError('the item in out_indices must in '
-                                 f'range(0, {len(self.arch_settings[arch])}). '
+                                 f'range(0, {len(self.arch_setting)}). '
                                  f'But received {index}')
 
-        if frozen_stages not in range(-1, len(self.arch_settings[arch])):
+        if frozen_stages not in range(-1, len(self.arch_setting)):
             raise ValueError('frozen_stages must be in range(-1, '
-                             f'{len(self.arch_settings[arch])}). '
+                             f'{len(self.arch_setting)}). '
                              f'But received {frozen_stages}')
         self.out_indices = out_indices
         self.frozen_stages = frozen_stages
-        self.arch = arch
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
-        self.out_indices = out_indices
-        self.frozen_stages = frozen_stages
+        self.act_cfg = act_cfg
         self.norm_eval = norm_eval
         self.with_cp = with_cp
 
@@ -105,12 +106,10 @@ class MobileNetv3(BaseBackbone):
             act_cfg=dict(type='HSwish'))
 
         self.layers = self._make_layer()
-        self.feat_dim = self.arch_settings[arch][-1][2]
 
     def _make_layer(self):
         layers = []
-        layer_setting = self.arch_settings[self.arch]
-        for i, params in enumerate(layer_setting):
+        for i, params in enumerate(self.arch_setting):
             (kernel_size, mid_channels, out_channels, with_se, act,
              stride) = params
             if with_se:
@@ -120,7 +119,6 @@ class MobileNetv3(BaseBackbone):
                     act_cfg=(dict(type='ReLU'), dict(type='HSigmoid')))
             else:
                 se_cfg = None
-
             layer = InvertedResidual(
                 in_channels=self.in_channels,
                 out_channels=out_channels,
@@ -128,7 +126,7 @@ class MobileNetv3(BaseBackbone):
                 kernel_size=kernel_size,
                 stride=stride,
                 se_cfg=se_cfg,
-                with_expand_conv=True,
+                with_residual=True,
                 conv_cfg=self.conv_cfg,
                 norm_cfg=self.norm_cfg,
                 act_cfg=dict(type=act),

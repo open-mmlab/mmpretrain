@@ -3,8 +3,8 @@ import torch
 from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from mmcls.models.utils import (InvertedResidual, SELayer, channel_shuffle,
-                                make_divisible)
+from mmcls.models.utils import (EdgeResidual, InvertedResidual, SELayer,
+                                channel_shuffle, make_divisible)
 
 
 def is_norm(modules):
@@ -67,14 +67,22 @@ def test_inverted_residual():
     x = torch.randn(1, 16, 56, 56)
     x_out = block(x)
     assert getattr(block, 'se', None) is None
-    assert block.with_res_shortcut
+    assert block.with_residual
+    assert x_out.shape == torch.Size((1, 16, 56, 56))
+
+    # Test InvertedResidual forward, stride=1, with_residual=False
+    block = InvertedResidual(16, 16, 32, stride=1, with_residual=False)
+    x = torch.randn(1, 16, 56, 56)
+    x_out = block(x)
+    assert getattr(block, 'se', None) is None
+    assert not block.with_residual
     assert x_out.shape == torch.Size((1, 16, 56, 56))
 
     # Test InvertedResidual forward, stride=2
     block = InvertedResidual(16, 16, 32, stride=2)
     x = torch.randn(1, 16, 56, 56)
     x_out = block(x)
-    assert not block.with_res_shortcut
+    assert not block.with_residual
     assert x_out.shape == torch.Size((1, 16, 28, 28))
 
     # Test InvertedResidual forward with se layer
@@ -110,6 +118,71 @@ def test_inverted_residual():
 
     # Test InvertedResidual forward with checkpoint
     block = InvertedResidual(16, 16, 32, with_cp=True)
+    x = torch.randn(1, 16, 56, 56)
+    x_out = block(x)
+    assert block.with_cp
+    assert x_out.shape == torch.Size((1, 16, 56, 56))
+
+
+def test_edge_residual():
+
+    with pytest.raises(AssertionError):
+        # stride must be in [1, 2]
+        EdgeResidual(16, 16, 32, stride=3)
+
+    with pytest.raises(AssertionError):
+        # se_cfg must be None or dict
+        EdgeResidual(16, 16, 32, se_cfg=list())
+
+    # Test EdgeResidual forward, stride=1
+    block = EdgeResidual(16, 16, 32, stride=1)
+    x = torch.randn(1, 16, 56, 56)
+    x_out = block(x)
+    assert getattr(block, 'se', None) is None
+    assert block.with_residual
+    assert x_out.shape == torch.Size((1, 16, 56, 56))
+
+    # Test EdgeResidual forward, stride=1, with_residual=False
+    block = EdgeResidual(16, 16, 32, stride=1, with_residual=False)
+    x = torch.randn(1, 16, 56, 56)
+    x_out = block(x)
+    assert getattr(block, 'se', None) is None
+    assert not block.with_residual
+    assert x_out.shape == torch.Size((1, 16, 56, 56))
+
+    # Test EdgeResidual forward, stride=2
+    block = EdgeResidual(16, 16, 32, stride=2)
+    x = torch.randn(1, 16, 56, 56)
+    x_out = block(x)
+    assert not block.with_residual
+    assert x_out.shape == torch.Size((1, 16, 28, 28))
+
+    # Test EdgeResidual forward with se layer
+    se_cfg = dict(channels=32)
+    block = EdgeResidual(16, 16, 32, stride=1, se_cfg=se_cfg)
+    x = torch.randn(1, 16, 56, 56)
+    x_out = block(x)
+    assert isinstance(block.se, SELayer)
+    assert x_out.shape == torch.Size((1, 16, 56, 56))
+
+    # Test EdgeResidual forward with GroupNorm
+    block = EdgeResidual(
+        16, 16, 32, norm_cfg=dict(type='GN', num_groups=2))
+    x = torch.randn(1, 16, 56, 56)
+    x_out = block(x)
+    for m in block.modules():
+        if is_norm(m):
+            assert isinstance(m, GroupNorm)
+    assert x_out.shape == torch.Size((1, 16, 56, 56))
+
+    # Test EdgeResidual forward with HSigmoid
+    block = EdgeResidual(16, 16, 32, act_cfg=dict(type='HSigmoid'))
+    x = torch.randn(1, 16, 56, 56)
+    x_out = block(x)
+    assert x_out.shape == torch.Size((1, 16, 56, 56))
+
+    # Test EdgeResidual forward with checkpoint
+    block = EdgeResidual(16, 16, 32, with_cp=True)
     x = torch.randn(1, 16, 56, 56)
     x_out = block(x)
     assert block.with_cp

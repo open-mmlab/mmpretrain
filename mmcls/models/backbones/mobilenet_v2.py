@@ -123,9 +123,13 @@ class MobileNetV2(BaseBackbone):
 
     # Parameters to build layers. 4 parameters are needed to construct a
     # layer, from left to right: expand_ratio, channel, num_blocks, stride.
-    arch_settings = [[1, 16, 1, 1], [6, 24, 2, 2], [6, 32, 3, 2],
-                     [6, 64, 4, 2], [6, 96, 3, 1], [6, 160, 3, 2],
-                     [6, 320, 1, 1]]
+    arch_setting = [[1, 16, 1, 1],
+                    [6, 24, 2, 2],
+                    [6, 32, 3, 2],
+                    [6, 64, 4, 2],
+                    [6, 96, 3, 1],
+                    [6, 160, 3, 2],
+                    [6, 320, 1, 1]]  # yapf: disable
 
     def __init__(self,
                  widen_factor=1.,
@@ -137,8 +141,6 @@ class MobileNetV2(BaseBackbone):
                  norm_eval=False,
                  with_cp=False):
         super(MobileNetV2, self).__init__()
-        self.widen_factor = widen_factor
-        self.out_indices = out_indices
         for index in out_indices:
             if index not in range(0, 8):
                 raise ValueError('the item in out_indices must in '
@@ -169,7 +171,7 @@ class MobileNetV2(BaseBackbone):
 
         self.layers = []
 
-        for i, layer_cfg in enumerate(self.arch_settings):
+        for i, layer_cfg in enumerate(self.arch_setting):
             expand_ratio, channel, num_blocks, stride = layer_cfg
             out_channels = make_divisible(channel * widen_factor, 8)
             inverted_res_layer = self.make_layer(
