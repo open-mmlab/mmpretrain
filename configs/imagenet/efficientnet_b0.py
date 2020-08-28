@@ -2,7 +2,7 @@
 model = dict(
     type='ImageClassifier',
     backbone=dict(type='EfficientNet',
-                  arch='em',
+                  arch='es',
                   conv_cfg=dict(type='Conv2dSamePadding'),
                   norm_cfg=dict(type='BN', eps=1e-3)
                   ),

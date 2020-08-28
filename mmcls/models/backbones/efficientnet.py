@@ -14,6 +14,9 @@ from .base_backbone import BaseBackbone
 
 
 def model_scaling(layer_setting, arch_setting):
+    """Scaling operation to the layer's parameters according to the
+        arch_setting.
+    """
     new_layer_setting = copy.deepcopy(layer_setting)
     for layer_cfg in new_layer_setting:
         for block_cfg in layer_cfg:
@@ -54,6 +57,27 @@ def model_scaling(layer_setting, arch_setting):
 
 @BACKBONES.register_module()
 class EfficientNet(BaseBackbone):
+    """EfficientNet backbone.
+
+    Args:
+        arch (str): Architecture of efficientnet. Default: b0.
+        out_indices (Sequence[int]): Output from which stages.
+            Default: (0, 1, 2, 3).
+        frozen_stages (int): Stages to be frozen (all param fixed).
+            Default: -1, which means not freezing any parameters.
+        conv_cfg (dict): Config dict for convolution layer.
+            Default: None, which means using conv2d.
+        norm_cfg (dict): Config dict for normalization layer.
+            Default: dict(type='BN').
+        act_cfg (dict): Config dict for activation layer.
+            Default: dict(type='ReLU').
+        norm_eval (bool): Whether to set norm layers to eval mode, namely,
+            freeze running stats (mean and var). Note: Effect on Batch Norm
+            and its variants only. Default: False.
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+            memory while slowing down the training speed. Default: False.
+    """
+
     # Parameters to build layers.
     # 'b' represents the architecture of normal EfficientNet family includes
     # 'b0', 'b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'b8'.
