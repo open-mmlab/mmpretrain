@@ -15,8 +15,7 @@ from .base_backbone import BaseBackbone
 
 def model_scaling(layer_setting, arch_setting):
     """Scaling operation to the layer's parameters according to the
-        arch_setting.
-    """
+    arch_setting."""
     new_layer_setting = copy.deepcopy(layer_setting)
     for layer_cfg in new_layer_setting:
         for block_cfg in layer_cfg:
@@ -235,9 +234,7 @@ class EfficientNet(BaseBackbone):
                     else:
                         with_residual = True
                     mid_channels = int(self.in_channels * expand_ratio)
-                    if se_ratio == 0:
-                        se_cfg = None
-                    else:
+                    if se_cfg is not None:
                         se_cfg = dict(
                             channels=mid_channels,
                             base_channels=self.in_channels,
