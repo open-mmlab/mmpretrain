@@ -186,7 +186,7 @@ class EdgeResidual(nn.Module):
             padding=0,
             conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
-            act_cfg=act_cfg)
+            act_cfg=None)
 
     def forward(self, x):
 
