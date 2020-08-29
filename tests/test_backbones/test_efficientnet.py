@@ -4,7 +4,6 @@ from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from mmcls.models.backbones import EfficientNet
-from mmcls.models.utils import EdgeResidual, InvertedResidual
 
 
 def is_norm(modules):
@@ -46,9 +45,7 @@ def test_efficientnet_backbone():
 
     # Test EfficientNet with first stage frozen
     frozen_stages = 7
-    model = EfficientNet(
-        arch='b0',
-        frozen_stages=frozen_stages)
+    model = EfficientNet(arch='b0', frozen_stages=frozen_stages)
     model.init_weights()
     model.train()
     for i in range(frozen_stages):
@@ -67,9 +64,7 @@ def test_efficientnet_backbone():
 
     # Test EfficientNet forward with 'b0' arch
     out_channels = [32, 16, 24, 40, 112, 320, 1280]
-    model = EfficientNet(
-        arch='b0',
-        out_indices=(0, 1, 2, 3, 4, 5, 6))
+    model = EfficientNet(arch='b0', out_indices=(0, 1, 2, 3, 4, 5, 6))
     model.init_weights()
     model.train()
 
@@ -109,9 +104,7 @@ def test_efficientnet_backbone():
 
     # Test EfficientNet forward with 'es' arch
     out_channels = [32, 24, 32, 48, 144, 192, 1280]
-    model = EfficientNet(
-        arch='es',
-        out_indices=(0, 1, 2, 3, 4, 5, 6))
+    model = EfficientNet(arch='es', out_indices=(0, 1, 2, 3, 4, 5, 6))
     model.init_weights()
     model.train()
 

@@ -58,8 +58,8 @@ def test_inverted_residual():
         InvertedResidual(16, 16, 32, se_cfg=list())
 
     with pytest.raises(AssertionError):
-        # in_channeld and out_channels must be the same if
-        # with_expand_conv is False
+        # in_channels and out_channels must be the same if with_expand_conv
+        # is False
         InvertedResidual(16, 16, 32, with_expand_conv=False)
 
     # Test InvertedResidual forward, stride=1
@@ -166,8 +166,7 @@ def test_edge_residual():
     assert x_out.shape == torch.Size((1, 16, 56, 56))
 
     # Test EdgeResidual forward with GroupNorm
-    block = EdgeResidual(
-        16, 16, 32, norm_cfg=dict(type='GN', num_groups=2))
+    block = EdgeResidual(16, 16, 32, norm_cfg=dict(type='GN', num_groups=2))
     x = torch.randn(1, 16, 56, 56)
     x_out = block(x)
     for m in block.modules():

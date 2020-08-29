@@ -17,6 +17,9 @@ class InvertedResidual(nn.Module):
         stride (int): The stride of the depthwise convolution. Default: 1.
         se_cfg (dict): Config dict for se layer. Defaul: None, which means no
             se layer.
+        with_expand_conv (bool): Use expand conv or not. If set False,
+            mid_channels must be the same with in_channels.
+            Default: True.
         with_residual (bool): Use residual connection. Default: True.
         conv_cfg (dict): Config dict for convolution layer. Default: None,
             which means using conv2d.
@@ -39,6 +42,7 @@ class InvertedResidual(nn.Module):
                  kernel_size=3,
                  stride=1,
                  se_cfg=None,
+                 with_expand_conv=True,
                  with_residual=True,
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
@@ -48,16 +52,16 @@ class InvertedResidual(nn.Module):
         assert stride in [1, 2]
         self.with_cp = with_cp
         self.with_se = se_cfg is not None
+        self.with_expand_conv = with_expand_conv
+        if not self.with_expand_conv:
+            assert mid_channels == in_channels
         self.with_residual = (
             stride == 1 and in_channels == out_channels and with_residual)
-
         if self.with_se:
             assert isinstance(se_cfg, dict)
-        self.with_expand_conv = True if (
-                mid_channels != in_channels) else False
 
         if self.with_expand_conv:
-            self.conv1 = ConvModule(
+            self.expand_conv = ConvModule(
                 in_channels=in_channels,
                 out_channels=mid_channels,
                 kernel_size=1,
@@ -66,7 +70,7 @@ class InvertedResidual(nn.Module):
                 conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
                 act_cfg=act_cfg)
-        self.conv2 = ConvModule(
+        self.depthwise_conv = ConvModule(
             in_channels=mid_channels,
             out_channels=mid_channels,
             kernel_size=kernel_size,
@@ -78,7 +82,7 @@ class InvertedResidual(nn.Module):
             act_cfg=act_cfg)
         if self.with_se:
             self.se = SELayer(**se_cfg)
-        self.conv3 = ConvModule(
+        self.linear_conv = ConvModule(
             in_channels=mid_channels,
             out_channels=out_channels,
             kernel_size=1,
@@ -86,7 +90,7 @@ class InvertedResidual(nn.Module):
             padding=0,
             conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
-            act_cfg=None)
+            act_cfg=act_cfg)
 
     def forward(self, x):
 
@@ -94,14 +98,14 @@ class InvertedResidual(nn.Module):
             out = x
 
             if self.with_expand_conv:
-                out = self.conv1(out)
+                out = self.expand_conv(out)
 
-            out = self.conv2(out)
+            out = self.depthwise_conv(out)
 
             if self.with_se:
                 out = self.se(out)
 
-            out = self.conv3(out)
+            out = self.linear_conv(out)
 
             if self.with_residual:
                 return x + out
