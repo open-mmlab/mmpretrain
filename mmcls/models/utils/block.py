@@ -53,7 +53,7 @@ class InvertedResidual(nn.Module):
         self.with_cp = with_cp
         self.with_se = se_cfg is not None
         self.with_expand_conv = (
-                mid_channels != in_channels and with_expand_conv)
+            mid_channels != in_channels and with_expand_conv)
         if not self.with_expand_conv:
             assert mid_channels == in_channels
         self.with_residual = (
