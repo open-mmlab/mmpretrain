@@ -52,7 +52,8 @@ class InvertedResidual(nn.Module):
         assert stride in [1, 2]
         self.with_cp = with_cp
         self.with_se = se_cfg is not None
-        self.with_expand_conv = with_expand_conv
+        self.with_expand_conv = (
+                mid_channels != in_channels and with_expand_conv)
         if not self.with_expand_conv:
             assert mid_channels == in_channels
         self.with_residual = (
@@ -61,7 +62,7 @@ class InvertedResidual(nn.Module):
             assert isinstance(se_cfg, dict)
 
         if self.with_expand_conv:
-            self.expand_conv = ConvModule(
+            self.conv1 = ConvModule(
                 in_channels=in_channels,
                 out_channels=mid_channels,
                 kernel_size=1,
@@ -70,7 +71,7 @@ class InvertedResidual(nn.Module):
                 conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
                 act_cfg=act_cfg)
-        self.depthwise_conv = ConvModule(
+        self.conv2 = ConvModule(
             in_channels=mid_channels,
             out_channels=mid_channels,
             kernel_size=kernel_size,
@@ -82,7 +83,7 @@ class InvertedResidual(nn.Module):
             act_cfg=act_cfg)
         if self.with_se:
             self.se = SELayer(**se_cfg)
-        self.linear_conv = ConvModule(
+        self.conv3 = ConvModule(
             in_channels=mid_channels,
             out_channels=out_channels,
             kernel_size=1,
@@ -90,7 +91,7 @@ class InvertedResidual(nn.Module):
             padding=0,
             conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
-            act_cfg=act_cfg)
+            act_cfg=None)
 
     def forward(self, x):
 
@@ -98,14 +99,14 @@ class InvertedResidual(nn.Module):
             out = x
 
             if self.with_expand_conv:
-                out = self.expand_conv(out)
+                out = self.conv1(out)
 
-            out = self.depthwise_conv(out)
+            out = self.conv2(out)
 
             if self.with_se:
                 out = self.se(out)
 
-            out = self.linear_conv(out)
+            out = self.conv3(out)
 
             if self.with_residual:
                 return x + out
