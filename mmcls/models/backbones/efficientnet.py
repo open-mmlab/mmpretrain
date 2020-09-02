@@ -61,7 +61,7 @@ class EfficientNet(BaseBackbone):
     Args:
         arch (str): Architecture of efficientnet. Default: b0.
         out_indices (Sequence[int]): Output from which stages.
-            Default: (0, 1, 2, 3).
+            Default: (6, ).
         frozen_stages (int): Stages to be frozen (all param fixed).
             Default: -1, which means not freezing any parameters.
         conv_cfg (dict): Config dict for convolution layer.
