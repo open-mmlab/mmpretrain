@@ -22,9 +22,35 @@ The ResNet family models below are trained by standard data augmentations, i.e.,
 | ResNeXt-32x4d-152     | 59.95     | 11.8     | 79.06 | 94.47 | [model](https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/resnext152_32x4d_batch256_20200708-aab5034c.pth) &#124; [log](https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/resnext152_32x4d_batch256_20200708-aab5034c.log.json) |
 | SE-ResNet-50          | 28.09     | 4.13     | 77.74 | 93.84 | [model](https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/se-resnet50_batch256_20200804-ae206104.pth) &#124; [log](https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/se-resnet50_batch256_20200708-657b3c36.log.json) |
 | SE-ResNet-101         | 49.33     | 7.86     | 78.26 | 94.07 | [model](https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/se-resnet101_batch256_20200804-ba5b51d4.pth) &#124; [log](https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/se-resnet101_batch256_20200708-038a4d04.log.json) |
-| ShuffleNetV1 1.0x (group=3)   | 1.87      | 0.146    | 68.13 | 87.81 | [model](https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/shufflenet_v1_batch1024_20200804-5d6cec73.pth) &#124; [log](https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/shufflenet_v1_batch1024_20200804-5d6cec73.log.json) |
+| ShuffleNetV1 1.0x (group=3)| 1.87 | 0.146    | 68.13 | 87.81 | [model](https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/shufflenet_v1_batch1024_20200804-5d6cec73.pth) &#124; [log](https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/shufflenet_v1_batch1024_20200804-5d6cec73.log.json) |
 | ShuffleNetV2 1.0x     | 2.28      | 0.149    | 69.55 | 88.92 | [model](https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/shufflenet_v2_batch1024_20200812-5bf4721e.pth) &#124; [log](https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/shufflenet_v2_batch1024_20200804-8860eec9.log.json) |
 | MobileNet V2          | 3.5       | 0.319    | 71.86 | 90.42 | [model](https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/mobilenet_v2_batch256_20200708-3b2dc3af.pth) &#124; [log](https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/mobilenet_v2_batch256_20200708-3b2dc3af.log.json) |
+| EfficientNet_b0               | 5.29 | 0.02   | 76.53 | 93.01 | [model]() &#124; - |
+| EfficientNet_b0 (AutoAugment) | 5.29 | 0.02  | 76.84 | 93.23 | [model]() &#124; - |
+| EfficientNet_b0 (AdvProp + AA)| 5.29 | 0.02  | 77.10 | 93.26 | [model]() &#124; - |
+| EfficientNet_b1               | 7.7  | 0.03  | 78.54 | 94.10 | [model]() &#124; - |
+| EfficientNet_b1 (AutoAugment) | 7.79 | 0.03  | 78.84 | 94.19 | [model]() &#124; - |
+| EfficientNet_b1 (AdvProp + AA)| 7.79 | 0.03  | 79.27 | 94.31 | [model]() &#124; - |
+| EfficientNet_b2               | 9.11 | 0.03  | 79.60 | 94.73 | [model]() &#124; - |
+| EfficientNet_b2 (AutoAugment) | 9.1  | 0.03  | 80.07 | 94.90 | [model]() &#124; - |
+| EfficientNet_b2 (AdvProp + AA)| 9.1  | 0.03  | 80.30 | 95.03 | [model]() &#124; - |
+| EfficientNet_b3               | 12.23| 0.06  | 80.97 | 95.28 | [model]() &#124; - |
+| EfficientNet_b3 (AutoAugment) | 12.23| 0.06  | 81.61 | 95.68 | [model]() &#124; - |
+| EfficientNet_b3 (AdvProp + AA)| 12.23| 0.06  | 81.77 | 95.60 | [model]() &#124; - |
+| EfficientNet_b4               | 19.34| 0.12  | 82.68 | 96.25 | [model]() &#124; - |
+| EfficientNet_b4 (AutoAugment) | 19.34| 0.12  | 83.03 | 96.35 | [model]() &#124; - |
+| EfficientNet_b4 (AdvProp + AA)| 19.34| 0.12  | 83.12 | 96.41 | [model]() &#124; - |
+| EfficientNet_b5               | 30.39| 0.24  | 83.29 | 96.56 | [model]() &#124; - |
+| EfficientNet_b5 (AutoAugment) | 30.39| 0.24  | 83.83 | 96.80 | [model]() &#124; - |
+| EfficientNet_b5 (AdvProp + AA)| 30.39| 0.24  | 84.34 | 97.00 | [model]() &#124; - |
+| EfficientNet_b6 (AutoAugment) | 43.04| 0.41  | 84.14 | 96.95 | [model]() &#124; - |
+| EfficientNet_b6 (AdvProp + AA)| 43.04| 0.41  | 84.84 | 97.20 | [model]() &#124; - |
+| EfficientNet_b7 (AutoAugment) | 66.35| 0.72  | 84.58 | 97.00 | [model]() &#124; - |
+| EfficientNet_b7 (RandAugment) | 66.35| 0.72  | 84.93 | 97.24 | [model]() &#124; - |
+| EfficientNet_b7 (AdvProp + AA)| 66.35| 0.72  | 85.25 | 97.29 | [model]() &#124; - |
+| EfficientNet_b8 (AdvProp + AA)| 87.41| 1.09  | 85.36 | 97.36 | [model]() &#124; - |
+| EfficientNet_edgetpu_S        | 5.44 | 0.03  | 77.28 | 93.61 | [model]() &#124; - |
+| EfficientNet_edgetpu_M        | 6.9  | 0.05  | 78.70 | 94.33 | [model]() &#124; - |
 
 Models with * are converted from other repos, others are trained by ourselves.
 
