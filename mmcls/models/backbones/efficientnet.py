@@ -83,7 +83,7 @@ class EfficientNet(BaseBackbone):
     # 'e' represents the architecture of EfficientNet-EdgeTPU including 'es',
     # 'em', 'el'.
     # 9 parameters are needed to construct a layer, From left to right:
-    # kernel_size, out_channel, se_ratio, act, stride, expand_ratio,
+    # kernel_size, out_channel, se_ratio, use_swish, stride, expand_ratio,
     # block_type.
     layer_settings = {
         'b': [[[3, 32, 0, 1, 2, 0, -1]],
@@ -130,20 +130,20 @@ class EfficientNet(BaseBackbone):
 
     # Parameters to build different kinds of architecture.
     # From left to right: scaling factor for width, scaling factor for depth,
-    # resolution, dropout ratio.
+    # resolution.
     arch_settings = {
-        'b0': (1.0, 1.0, 224, 0.2),
-        'b1': (1.0, 1.1, 240, 0.2),
-        'b2': (1.1, 1.2, 260, 0.3),
-        'b3': (1.2, 1.4, 300, 0.3),
-        'b4': (1.4, 1.8, 380, 0.4),
-        'b5': (1.6, 2.2, 456, 0.4),
-        'b6': (1.8, 2.6, 528, 0.5),
-        'b7': (2.0, 3.1, 600, 0.5),
-        'b8': (2.2, 3.6, 672, 0.5),
-        'es': (1.0, 1.0, 224, 0.2),
-        'em': (1.0, 1.1, 240, 0.2),
-        'el': (1.2, 1.4, 300, 0.3)
+        'b0': (1.0, 1.0, 224),
+        'b1': (1.0, 1.1, 240),
+        'b2': (1.1, 1.2, 260),
+        'b3': (1.2, 1.4, 300),
+        'b4': (1.4, 1.8, 380),
+        'b5': (1.6, 2.2, 456),
+        'b6': (1.8, 2.6, 528),
+        'b7': (2.0, 3.1, 600),
+        'b8': (2.2, 3.6, 672),
+        'es': (1.0, 1.0, 224),
+        'em': (1.0, 1.1, 240),
+        'el': (1.2, 1.4, 300)
     }
 
     def __init__(self,
@@ -179,34 +179,34 @@ class EfficientNet(BaseBackbone):
 
         self.layer_setting = model_scaling(self.layer_setting,
                                            self.arch_setting)
-        self.dropout_rate = self.arch_setting[3]
-        self.in_channels = make_divisible(self.layer_setting[0][0][1], 8)
-        self.out_channels = self.layer_setting[-1][-1][1]
-
+        block_cfg_0 = self.layer_setting[0][0]
+        block_cfg_last = self.layer_setting[-1][0]
+        self.in_channels = make_divisible(block_cfg_0[1], 8)
+        self.out_channels = block_cfg_last[1]
         self.layers = nn.ModuleList()
         self.layers.append(
             ConvModule(
                 in_channels=3,
                 out_channels=self.in_channels,
-                kernel_size=self.layer_setting[0][0][0],
-                stride=self.layer_setting[0][0][4],
-                padding=self.layer_setting[0][0][0] // 2,
+                kernel_size=block_cfg_0[0],
+                stride=block_cfg_0[4],
+                padding=block_cfg_0[0] // 2,
                 conv_cfg=self.conv_cfg,
                 norm_cfg=self.norm_cfg,
-                act_cfg=(self.act_cfg if self.layer_setting[0][0][3] else dict(
+                act_cfg=(self.act_cfg if block_cfg_0[3] else dict(
                     type='ReLU'))))
         self.make_layer()
         self.layers.append(
             ConvModule(
                 in_channels=self.in_channels,
                 out_channels=self.out_channels,
-                kernel_size=self.layer_setting[-1][-1][0],
-                stride=self.layer_setting[-1][-1][4],
-                padding=self.layer_setting[-1][-1][0] // 2,
+                kernel_size=block_cfg_last[0],
+                stride=block_cfg_last[4],
+                padding=block_cfg_last[0] // 2,
                 conv_cfg=self.conv_cfg,
                 norm_cfg=self.norm_cfg,
-                act_cfg=(self.act_cfg if self.layer_setting[-1][-1][3] else
-                         dict(type='ReLU'))))
+                act_cfg=(self.act_cfg if block_cfg_last[3] else dict(
+                    type='ReLU'))))
 
     def make_layer(self):
         for layer_cfg in self.layer_setting[1:-1]:
