@@ -436,7 +436,8 @@ class CenterCrop(object):
         crop_height, crop_width = self.crop_size[0], self.crop_size[1]
         for key in results.get('img_fields', ['img']):
             img = results[key]
-            img_height, img_width, _ = img.shape
+            # img.shape has length 2 for grayscale, length 3 for color
+            img_height, img_width = img.shape[:2]
 
             y1 = max(0, int(round((img_height - crop_height) / 2.)))
             x1 = max(0, int(round((img_width - crop_width) / 2.)))

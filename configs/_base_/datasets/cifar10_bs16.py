@@ -19,7 +19,7 @@ test_pipeline = [
     dict(type='Collect', keys=['img', 'gt_label'])
 ]
 data = dict(
-    samples_per_gpu=128,
+    samples_per_gpu=16,
     workers_per_gpu=2,
     train=dict(
         type=dataset_type, data_prefix='data/cifar10',

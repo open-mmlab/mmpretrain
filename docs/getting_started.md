@@ -103,7 +103,7 @@ Assume that you have already downloaded the checkpoints to the directory `checkp
 Test ResNet-50 on ImageNet validation and evaluate the top-1 and top-5.
 
 ```shell
-python tools/test.py configs/imagenet/resnet50_batch256.py \
+python tools/test.py configs/imagenet/resnet50_b32x8.py \
     checkpoints/xxx.pth
 ```
 
