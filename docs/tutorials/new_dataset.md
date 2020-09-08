@@ -22,7 +22,7 @@ imagenet
 │   │   ├── ...
 ```
 
-For validation, we provide a annotation list. Each line of the list contrains a filename and its corresponding ground-truth labels. The format is as follows:
+For validation, we provide a annotation list. Each line of the list contrains a filename and its corresponding. The format is as follows:
 
 ```
 ILSVRC2012_val_00000001.JPEG 65
@@ -31,6 +31,8 @@ ILSVRC2012_val_00000003.JPEG 230
 ILSVRC2012_val_00000004.JPEG 809
 ILSVRC2012_val_00000005.JPEG 516
 ```
+
+Note: The value of ground-truth labels should fall in range `[0, num_classes - 1]`.
 
 ### An example of customized dataset
 
