@@ -43,10 +43,9 @@ class LinearClsHead(ClsHead):
         cls_score = self.fc(img)
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
-        scores = F.softmax(cls_score, dim=1) if cls_score is not None else None
-        pred_score, pred_label = scores.topk(1, dim=1)
-        results = {'pred_label': pred_label, 'pred_score': pred_score}
-        return results
+        pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
+        pred = list(pred.cpu().numpy())
+        return pred
 
     def forward_train(self, x, gt_label):
         cls_score = self.fc(x)
