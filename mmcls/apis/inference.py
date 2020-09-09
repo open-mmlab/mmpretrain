@@ -1,8 +1,8 @@
 import warnings
 
 import mmcv
-import torch
 import numpy as np
+import torch
 from mmcv.parallel import collate, scatter
 from mmcv.runner import load_checkpoint
 
