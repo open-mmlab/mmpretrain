@@ -25,32 +25,32 @@ The ResNet family models below are trained by standard data augmentations, i.e.,
 | ShuffleNetV1 1.0x (group=3)| 1.87 | 0.146    | 68.13 | 87.81 | [model](https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/shufflenet_v1_batch1024_20200804-5d6cec73.pth) &#124; [log](https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/shufflenet_v1_batch1024_20200804-5d6cec73.log.json) |
 | ShuffleNetV2 1.0x     | 2.28      | 0.149    | 69.55 | 88.92 | [model](https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/shufflenet_v2_batch1024_20200812-5bf4721e.pth) &#124; [log](https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/shufflenet_v2_batch1024_20200804-8860eec9.log.json) |
 | MobileNet V2          | 3.5       | 0.319    | 71.86 | 90.42 | [model](https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/mobilenet_v2_batch256_20200708-3b2dc3af.pth) &#124; [log](https://openmmlab.oss-accelerate.aliyuncs.com/mmclassification/v0/imagenet/mobilenet_v2_batch256_20200708-3b2dc3af.log.json) |
-| EfficientNet_b0               | 5.29 | 0.02   | 76.53 | 93.01 | [model]() &#124; - |
-| EfficientNet_b0 (AutoAugment) | 5.29 | 0.02  | 76.84 | 93.23 | [model]() &#124; - |
-| EfficientNet_b0 (AdvProp + AA)| 5.29 | 0.02  | 77.10 | 93.26 | [model]() &#124; - |
-| EfficientNet_b1               | 7.7  | 0.03  | 78.54 | 94.10 | [model]() &#124; - |
-| EfficientNet_b1 (AutoAugment) | 7.79 | 0.03  | 78.84 | 94.19 | [model]() &#124; - |
-| EfficientNet_b1 (AdvProp + AA)| 7.79 | 0.03  | 79.27 | 94.31 | [model]() &#124; - |
-| EfficientNet_b2               | 9.11 | 0.03  | 79.60 | 94.73 | [model]() &#124; - |
-| EfficientNet_b2 (AutoAugment) | 9.1  | 0.03  | 80.07 | 94.90 | [model]() &#124; - |
-| EfficientNet_b2 (AdvProp + AA)| 9.1  | 0.03  | 80.30 | 95.03 | [model]() &#124; - |
-| EfficientNet_b3               | 12.23| 0.06  | 80.97 | 95.28 | [model]() &#124; - |
-| EfficientNet_b3 (AutoAugment) | 12.23| 0.06  | 81.61 | 95.68 | [model]() &#124; - |
-| EfficientNet_b3 (AdvProp + AA)| 12.23| 0.06  | 81.77 | 95.60 | [model]() &#124; - |
-| EfficientNet_b4               | 19.34| 0.12  | 82.68 | 96.25 | [model]() &#124; - |
-| EfficientNet_b4 (AutoAugment) | 19.34| 0.12  | 83.03 | 96.35 | [model]() &#124; - |
-| EfficientNet_b4 (AdvProp + AA)| 19.34| 0.12  | 83.12 | 96.41 | [model]() &#124; - |
-| EfficientNet_b5               | 30.39| 0.24  | 83.29 | 96.56 | [model]() &#124; - |
-| EfficientNet_b5 (AutoAugment) | 30.39| 0.24  | 83.83 | 96.80 | [model]() &#124; - |
-| EfficientNet_b5 (AdvProp + AA)| 30.39| 0.24  | 84.34 | 97.00 | [model]() &#124; - |
-| EfficientNet_b6 (AutoAugment) | 43.04| 0.41  | 84.14 | 96.95 | [model]() &#124; - |
-| EfficientNet_b6 (AdvProp + AA)| 43.04| 0.41  | 84.84 | 97.20 | [model]() &#124; - |
-| EfficientNet_b7 (AutoAugment) | 66.35| 0.72  | 84.58 | 97.00 | [model]() &#124; - |
-| EfficientNet_b7 (RandAugment) | 66.35| 0.72  | 84.93 | 97.24 | [model]() &#124; - |
-| EfficientNet_b7 (AdvProp + AA)| 66.35| 0.72  | 85.25 | 97.29 | [model]() &#124; - |
-| EfficientNet_b8 (AdvProp + AA)| 87.41| 1.09  | 85.36 | 97.36 | [model]() &#124; - |
-| EfficientNet_edgetpu_S        | 5.44 | 0.03  | 77.28 | 93.61 | [model]() &#124; - |
-| EfficientNet_edgetpu_M        | 6.9  | 0.05  | 78.70 | 94.33 | [model]() &#124; - |
+| EfficientNet_b0               | 5.29 | 0.02  | 76.53 | 93.01 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/imagenet/efficientnet_b0_20200902-fbd07c93.pth) &#124; - |
+| EfficientNet_b0 (AutoAugment) | 5.29 | 0.02  | 76.84 | 93.23 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/imagenet/efficientnet_b0_autoaugment_20200902-bc21d1cb.pth) &#124; - |
+| EfficientNet_b0 (AdvProp + AA)| 5.29 | 0.02  | 77.10 | 93.26 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/imagenet/efficientnet_b0_advprob_20200902-71f75f44.pth) &#124; - |
+| EfficientNet_b1               | 7.79 | 0.03  | 78.54 | 94.10 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/imagenet/efficientnet_b1_20200902-c43b8538.pth) &#124; - |
+| EfficientNet_b1 (AutoAugment) | 7.79 | 0.03  | 78.84 | 94.19 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/imagenet/efficientnet_b1_autoaugment_20200902-6057bf77.pth) &#124; - |
+| EfficientNet_b1 (AdvProp + AA)| 7.79 | 0.03  | 79.27 | 94.31 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/imagenet/efficientnet_b1_advprob_20200902-7b910c4e.pth) &#124; - |
+| EfficientNet_b2               | 9.11 | 0.03  | 79.60 | 94.73 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/imagenet/efficientnet_b2_20200902-28d2d19a.pth) &#124; - |
+| EfficientNet_b2 (AutoAugment) | 9.11 | 0.03  | 80.07 | 94.90 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/imagenet/efficientnet_b2_autoaugment_20200902-755b5570.pth) &#124; - |
+| EfficientNet_b2 (AdvProp + AA)| 9.11 | 0.03  | 80.30 | 95.03 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/imagenet/efficientnet_b2_advprob_20200902-92aae5db.pth) &#124; - |
+| EfficientNet_b3               | 12.23| 0.06  | 80.97 | 95.28 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/imagenet/efficientnet_b3_20200902-6b3b50db.pth) &#124; - |
+| EfficientNet_b3 (AutoAugment) | 12.23| 0.06  | 81.61 | 95.68 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/imagenet/efficientnet_b3_autoaugment_20200902-98895895.pth) &#124; - |
+| EfficientNet_b3 (AdvProp + AA)| 12.23| 0.06  | 81.77 | 95.60 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/imagenet/efficientnet_b3_advprob_20200902-2e57aa32.pth) &#124; - |
+| EfficientNet_b4               | 19.34| 0.12  | 82.68 | 96.25 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/imagenet/efficientnet_b4_20200902-6e724d3d.pth) &#124; - |
+| EfficientNet_b4 (AutoAugment) | 19.34| 0.12  | 83.03 | 96.35 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/imagenet/efficientnet_b4_autoaugment_20200902-cb07b99a.pth) &#124; - |
+| EfficientNet_b4 (AdvProp + AA)| 19.34| 0.12  | 83.12 | 96.41 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/imagenet/efficientnet_b4_advprob_20200902-d2a17db9.pth) &#124; - |
+| EfficientNet_b5               | 30.39| 0.24  | 83.29 | 96.56 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/imagenet/efficientnet_b5_20200902-bfd0f1db.pth) &#124; - |
+| EfficientNet_b5 (RandAugment) | 30.39| 0.24  | 83.83 | 96.80 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/imagenet/efficientnet_b5_randaugment_20200902-ea4db767.pth) &#124; - |
+| EfficientNet_b5 (AdvProp + AA)| 30.39| 0.24  | 84.34 | 97.00 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/imagenet/efficientnet_b5_advprob_20200902-27015836.pth) &#124; - |
+| EfficientNet_b6 (AutoAugment) | 43.04| 0.41  | 84.14 | 96.95 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/imagenet/efficientnet_b6_autoaugment_20200902-e751721d.pth) &#124; - |
+| EfficientNet_b6 (AdvProp + AA)| 43.04| 0.41  | 84.84 | 97.20 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/imagenet/efficientnet_b6_advprob_20200902-38908102.pth) &#124; - |
+| EfficientNet_b7 (AutoAugment) | 66.35| 0.72  | 84.58 | 97.00 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/imagenet/efficientnet_b7_autoaugment_20200902-848069e8.pth) &#124; - |
+| EfficientNet_b7 (RandAugment) | 66.35| 0.72  | 84.93 | 97.24 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/imagenet/efficientnet_b7_randaugment_20200902-584f1258.pth) &#124; - |
+| EfficientNet_b7 (AdvProp + AA)| 66.35| 0.72  | 85.25 | 97.29 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/imagenet/efficientnet_b7_advprob_20200902-2269887d.pth) &#124; - |
+| EfficientNet_b8 (AdvProp + AA)| 87.41| 1.09  | 85.36 | 97.36 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/imagenet/efficientnet_b8_advprob_20200902-7673a8bf.pth) &#124; - |
+| EfficientNet_edgetpu_S        | 5.44 | 0.03  | 77.28 | 93.61 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/imagenet/efficientnet_es_20200902-81a6b8fc.pth) &#124; - |
+| EfficientNet_edgetpu_M        | 6.9  | 0.05  | 78.70 | 94.33 | [model](https://openmmlab.oss-cn-hangzhou.aliyuncs.com/mmclassification/v0/imagenet/efficientnet_em_20200902-d9c295bc.pth) &#124; - |
 
 Models with * are converted from other repos, others are trained by ourselves.
 

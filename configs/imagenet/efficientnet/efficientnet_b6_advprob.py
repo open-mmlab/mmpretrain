@@ -4,7 +4,7 @@ model = dict(
     backbone=dict(
         type='EfficientNet',
         arch='b6',
-        conv_cfg=dict(type='Conv2dSamePadding'),
+        conv_cfg=dict(type='Conv2dAdaptivePadding'),
         norm_cfg=dict(type='BN', eps=1e-3)),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
