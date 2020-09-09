@@ -23,11 +23,13 @@ class MobileNetv3(BaseBackbone):
             Defualt: -1, which means not freezing any parameters.
         conv_cfg (dict): Config dict for convolution layer.
             Default: None, which means using conv2d.
+        norm_cfg (dict): Config dict for normalization layer.
+            Default: dict(type='BN').
+        act_cfg (dict): Config dict for activation layer.
+            Default: dict(type='ReLU6').
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm
             and its variants only. Default: False.
-        act_cfg (dict): Config dict for activation layer.
-            Default: dict(type='ReLU6').
         with_cp (bool): Use checkpoint or not. Using checkpoint will save
             some memory while slowing down the training speed.
             Defualt: False.
