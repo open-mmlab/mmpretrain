@@ -2,6 +2,7 @@ import warnings
 
 import mmcv
 import torch
+import numpy as np
 from mmcv.parallel import collate, scatter
 from mmcv.runner import load_checkpoint
 
@@ -70,14 +71,6 @@ class LoadImage(object):
         return results
 
 
-def remove_keys(pipeline, key_name='keys', keys=['gt_label']):
-    for i, transform in enumerate(pipeline):
-        if key_name not in transform:
-            continue
-        pipeline[i][key_name] = list(set(transform[key_name]) - set(keys))
-    return pipeline
-
-
 def inference_model(model, img):
     """Inference image(s) with the classifier.
 
@@ -92,7 +85,7 @@ def inference_model(model, img):
     cfg = model.cfg
     device = next(model.parameters()).device  # model device
     # build the data pipeline
-    test_pipeline = [LoadImage()] + remove_keys(cfg.data.test.pipeline[1:])
+    test_pipeline = [LoadImage()] + cfg.data.test.pipeline[1:]
     test_pipeline = Compose(test_pipeline)
     # prepare data
     data = dict(img=img)
@@ -104,6 +97,9 @@ def inference_model(model, img):
 
     # forward the model
     with torch.no_grad():
-        result = model(return_loss=False, **data)
+        scores = model(return_loss=False, **data)
+        pred_score = np.max(scores, axis=1)[0]
+        pred_label = np.argmax(scores, axis=1)[0]
+        result = {'pred_label': pred_label, 'pred_score': pred_score}
     result['class_name'] = model.CLASSES[result['pred_label']]
     return result
