@@ -90,8 +90,10 @@ def main():
                 print(f'\n{topk} accuracy: {acc:.2f}')
         else:
             scores = np.vstack(outputs)
-            results['pred_score'] = np.max(scores, axis=1)
-            results['pred_label'] = np.argmax(scores, axis=1)
+            results = {
+                'pred_score': np.max(scores, axis=1),
+                'pred_label': np.argmax(scores, axis=1)
+            }
     if args.out and rank == 0:
         print(f'\nwriting results to {args.out}')
         mmcv.dump(results, args.out)

@@ -31,7 +31,6 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         self.test_mode = test_mode
         self.pipeline = Compose(pipeline)
         self.data_infos = self.load_annotations()
-        self.gt_labels = self.get_gt_labels()
 
     @abstractmethod
     def load_annotations(self):
@@ -78,8 +77,9 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         if metric == 'accuracy':
             topk = metric_options.get('topk')
             results = np.vstack(results)
+            gt_labels = self.get_gt_labels()
             num_imgs = len(results)
-            assert len(self.gt_labels) == num_imgs
-            acc = accuracy(results, self.gt_labels, topk)
+            assert len(gt_labels) == num_imgs
+            acc = accuracy(results, gt_labels, topk)
             eval_results = {f'top-{k}': a.item() for k, a in zip(topk, acc)}
         return eval_results
