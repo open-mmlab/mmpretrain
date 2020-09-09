@@ -19,6 +19,8 @@ def parse_args():
     parser.add_argument('checkpoint', help='checkpoint file')
     parser.add_argument('--out', help='output result file')
     parser.add_argument(
+        '--metric', type=str, default='accuracy', help='evaluation metric')
+    parser.add_argument(
         '--gpu_collect',
         action='store_true',
         help='whether to use gpu to collect results')
@@ -82,18 +84,14 @@ def main():
 
     rank, _ = get_dist_info()
     if rank == 0:
-        nums = []
-        results = {}
-        for output in outputs:
-            nums.append(output['num_samples'].item())
-            for topk, v in output['accuracy'].items():
-                if topk not in results:
-                    results[topk] = []
-                results[topk].append(v.item())
-        assert sum(nums) == len(dataset)
-        for topk, accs in results.items():
-            avg_acc = np.average(accs, weights=nums)
-            print(f'\n{topk} accuracy: {avg_acc:.2f}')
+        if args.metric != '':
+            results = dataset.evaluate(outputs, args.metric)
+            for topk, acc in results.items():
+                print(f'\n{topk} accuracy: {acc:.2f}')
+        else:
+            scores = np.vstack(outputs)
+            results['pred_score'] = np.max(scores, axis=1)
+            results['pred_label'] = np.argmax(scores, axis=1)
     if args.out and rank == 0:
         print(f'\nwriting results to {args.out}')
         mmcv.dump(results, args.out)
