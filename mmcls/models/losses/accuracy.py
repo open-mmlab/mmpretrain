@@ -1,12 +1,41 @@
+import numpy as np
+import torch
 import torch.nn as nn
+
+
+def accuracy_numpy(pred, target, topk):
+    res = []
+    maxk = max(topk)
+    num = pred.shape[0]
+    pred_label = pred.argsort(axis=1)[:, -maxk:][:, ::-1]
+
+    for k in topk:
+        correct_k = np.logical_or.reduce(
+            pred_label[:, :k] == target.reshape(-1, 1), axis=1)
+        res.append(correct_k.sum() * 100. / num)
+    return res
+
+
+def accuracy_torch(pred, target, topk=1):
+    res = []
+    maxk = max(topk)
+    num = pred.size(0)
+    _, pred_label = pred.topk(maxk, dim=1)
+    pred_label = pred_label.t()
+    correct = pred_label.eq(target.view(1, -1).expand_as(pred_label))
+
+    for k in topk:
+        correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
+        res.append(correct_k.mul_(100. / num))
+    return res
 
 
 def accuracy(pred, target, topk=1):
     """Calculate accuracy according to the prediction and target
 
     Args:
-        pred (torch.Tensor): The model prediction.
-        target (torch.Tensor): The target of each prediction
+        pred (torch.Tensor | np.array): The model prediction.
+        target (torch.Tensor | np.array): The target of each prediction
         topk (int | tuple[int], optional): If the predictions in ``topk``
             matches the target, the predictions will be regarded as
             correct ones. Defaults to 1.
@@ -25,15 +54,14 @@ def accuracy(pred, target, topk=1):
     else:
         return_single = False
 
-    maxk = max(topk)
-    _, pred_label = pred.topk(maxk, dim=1)
-    pred_label = pred_label.t()
-    correct = pred_label.eq(target.view(1, -1).expand_as(pred_label))
+    if isinstance(pred, torch.Tensor) and isinstance(target, torch.Tensor):
+        res = accuracy_torch(pred, target, topk)
+    elif isinstance(pred, np.ndarray) and isinstance(target, np.ndarray):
+        res = accuracy_numpy(pred, target, topk)
+    else:
+        raise TypeError('pred and target should both be'
+                        'torch.Tensor or np.ndarray')
 
-    res = []
-    for k in topk:
-        correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
-        res.append(correct_k.mul_(100.0 / pred.size(0)))
     return res[0] if return_single else res
 
 
