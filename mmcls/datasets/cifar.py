@@ -18,8 +18,8 @@ class CIFAR10(BaseDataset):
     """
 
     base_folder = 'cifar-10-batches-py'
-    url = "https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz"
-    filename = "cifar-10-python.tar.gz"
+    url = 'https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz'
+    filename = 'cifar-10-python.tar.gz'
     tgz_md5 = 'c58f30108f718f92721af3b95e74349a'
     train_list = [
         ['data_batch_1', 'c99cafc152244af753f735de768cd75f'],
@@ -110,8 +110,8 @@ class CIFAR100(CIFAR10):
     """
 
     base_folder = 'cifar-100-python'
-    url = "https://www.cs.toronto.edu/~kriz/cifar-100-python.tar.gz"
-    filename = "cifar-100-python.tar.gz"
+    url = 'https://www.cs.toronto.edu/~kriz/cifar-100-python.tar.gz'
+    filename = 'cifar-100-python.tar.gz'
     tgz_md5 = 'eb9058c3a382ffc7106e4002c42a8d85'
     train_list = [
         ['train', '16019d7e3df5f24257cddd939b257f8d'],

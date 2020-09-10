@@ -64,7 +64,7 @@ Optional arguments:
 
 Examples:
 
-Assume that you have already downloaded the checkpoints to the directory `checkpoints/`. 
+Assume that you have already downloaded the checkpoints to the directory `checkpoints/`.
 Test ResNet-50 on ImageNet validation and evaluate the top-1 and top-5.
 
 ```shell
