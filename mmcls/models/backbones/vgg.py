@@ -1,34 +1,34 @@
 import torch.nn as nn
-from mmcv.cnn import constant_init, kaiming_init, normal_init
+from mmcv.cnn import ConvModule, constant_init, kaiming_init, normal_init
 from mmcv.utils.parrots_wrapper import _BatchNorm
 
 from ..builder import BACKBONES
 from .base_backbone import BaseBackbone
 
 
-def conv3x3(in_planes, out_planes, dilation=1):
-    """3x3 convolution with padding."""
-    return nn.Conv2d(
-        in_planes,
-        out_planes,
-        kernel_size=3,
-        padding=dilation,
-        dilation=dilation)
-
-
-def make_vgg_layer(inplanes,
-                   planes,
+def make_vgg_layer(in_channels,
+                   out_channels,
                    num_blocks,
+                   conv_cfg=None,
+                   norm_cfg=None,
+                   act_cfg=dict(type='ReLU'),
                    dilation=1,
                    with_norm=False,
                    ceil_mode=False):
     layers = []
     for _ in range(num_blocks):
-        layers.append(conv3x3(inplanes, planes, dilation))
-        if with_norm:
-            layers.append(nn.BatchNorm2d(planes))
-        layers.append(nn.ReLU(inplace=True))
-        inplanes = planes
+        layer = ConvModule(
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=3,
+            dilation=dilation,
+            padding=dilation,
+            bias=True,
+            conv_cfg=conv_cfg,
+            norm_cfg=norm_cfg,
+            act_cfg=act_cfg)
+        layers.append(layer)
+        in_channels = out_channels
     layers.append(nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=ceil_mode))
 
     return layers
@@ -71,13 +71,14 @@ class VGG(BaseBackbone):
 
     def __init__(self,
                  depth,
-                 with_norm=False,
                  num_classes=-1,
                  num_stages=5,
                  dilations=(1, 1, 1, 1, 1),
                  out_indices=None,
                  frozen_stages=-1,
                  conv_cfg=None,
+                 norm_cfg=None,
+                 act_cfg=dict(type='ReLU'),
                  norm_eval=False,
                  ceil_mode=False,
                  with_last_pool=True):
@@ -92,30 +93,34 @@ class VGG(BaseBackbone):
         self.num_classes = num_classes
         self.frozen_stages = frozen_stages
         self.norm_eval = norm_eval
+        with_norm = norm_cfg is not None
 
         if out_indices is None:
             out_indices = (5, ) if num_classes > 0 else (4, )
         assert max(out_indices) <= num_stages
         self.out_indices = out_indices
 
-        self.inplanes = 3
+        self.in_channels = 3
         start_idx = 0
         vgg_layers = []
         self.range_sub_modules = []
         for i, num_blocks in enumerate(self.stage_blocks):
-            num_modules = num_blocks * (2 + with_norm) + 1
+            num_modules = num_blocks + 1
             end_idx = start_idx + num_modules
             dilation = dilations[i]
-            planes = 64 * 2**i if i < 4 else 512
+            out_channels = 64 * 2**i if i < 4 else 512
             vgg_layer = make_vgg_layer(
-                self.inplanes,
-                planes,
+                self.in_channels,
+                out_channels,
                 num_blocks,
+                conv_cfg=conv_cfg,
+                norm_cfg=norm_cfg,
+                act_cfg=act_cfg,
                 dilation=dilation,
                 with_norm=with_norm,
                 ceil_mode=ceil_mode)
             vgg_layers.extend(vgg_layer)
-            self.inplanes = planes
+            self.in_channels = out_channels
             self.range_sub_modules.append([start_idx, end_idx])
             start_idx = end_idx
         if not with_last_pool:
