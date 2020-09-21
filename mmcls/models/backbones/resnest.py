@@ -10,7 +10,7 @@ from .resnet import ResLayer, ResNetV1d
 
 
 class RSoftmax(nn.Module):
-    """Radix Softmax module in ``SplAtConv2d``.
+    """Radix Softmax module in ``SplitAttentionConv2d``.
 
         radix (int): Radix of input.
         groups (int): Groups of input.
@@ -32,7 +32,7 @@ class RSoftmax(nn.Module):
         return x
 
 
-class SplAtConv2d(nn.Module):
+class SplitAttentionConv2d(nn.Module):
     """Split-Attention Conv2d.
 
     Args:
@@ -44,7 +44,8 @@ class SplAtConv2d(nn.Module):
         dilation (int | tuple[int]): Same as nn.Conv2d.
         groups (int): Same as nn.Conv2d.
         radix (int): Radix of SpltAtConv2d. Default: 2
-        reduction_factor (int): Reduction factor of SplAtConv2d. Default: 4.
+        reduction_factor (int): Reduction factor of SplitAttentionConv2d.
+            Default: 4.
         conv_cfg (dict): Config dict for convolution layer. Default: None,
             which means using conv2d.
         norm_cfg (dict): Config dict for normalization layer. Default: None.
@@ -62,7 +63,7 @@ class SplAtConv2d(nn.Module):
                  reduction_factor=4,
                  conv_cfg=None,
                  norm_cfg=dict(type='BN')):
-        super(SplAtConv2d, self).__init__()
+        super(SplitAttentionConv2d, self).__init__()
         inter_channels = max(in_channels * radix // reduction_factor, 32)
         self.radix = radix
         self.groups = groups
@@ -105,8 +106,8 @@ class SplAtConv2d(nn.Module):
 
         batch, rchannel = x.shape[:2]
         if self.radix > 1:
-            splited = torch.split(x, rchannel // self.radix, dim=1)
-            gap = sum(splited)
+            splits = x.view(batch, self.radix, -1, *x.shape[2:])
+            gap = splits.sum(dim=1)
         else:
             gap = x
         gap = F.adaptive_avg_pool2d(gap, 1)
@@ -119,8 +120,8 @@ class SplAtConv2d(nn.Module):
         atten = self.rsoftmax(atten).view(batch, -1, 1, 1)
 
         if self.radix > 1:
-            attens = torch.split(atten, rchannel // self.radix, dim=1)
-            out = sum([att * split for (att, split) in zip(attens, splited)])
+            attens = atten.view(batch, self.radix, -1, *atten.shape[2:])
+            out = torch.sum(attens * splits, dim=1)
         else:
             out = atten * x
         return out.contiguous()
@@ -137,7 +138,8 @@ class Bottleneck(_Bottleneck):
             ``groups=64, width_per_group=4`` and 32x8d indicates
             ``groups=32, width_per_group=8``.
         radix (int): Radix of SpltAtConv2d. Default: 2
-        reduction_factor (int): Reduction factor of SplAtConv2d. Default: 4.
+        reduction_factor (int): Reduction factor of SplitAttentionConv2d.
+            Default: 4.
         avg_down_stride (bool): Whether to use average pool for stride in
             Bottleneck. Default: True.
         stride (int): stride of the block. Default: 1
@@ -193,7 +195,7 @@ class Bottleneck(_Bottleneck):
             stride=self.conv1_stride,
             bias=False)
         self.add_module(self.norm1_name, norm1)
-        self.conv2 = SplAtConv2d(
+        self.conv2 = SplitAttentionConv2d(
             self.mid_channels,
             self.mid_channels,
             kernel_size=3,
@@ -265,7 +267,8 @@ class ResNeSt(ResNetV1d):
         width_per_group (int): Width per group of conv2 in Bottleneck.
             Default: 4.
         radix (int): Radix of SpltAtConv2d. Default: 2
-        reduction_factor (int): Reduction factor of SplAtConv2d. Default: 4.
+        reduction_factor (int): Reduction factor of SplitAttentionConv2d.
+            Default: 4.
         avg_down_stride (bool): Whether to use average pool for stride in
             Bottleneck. Default: True.
         in_channels (int): Number of input image channels. Default: 3.

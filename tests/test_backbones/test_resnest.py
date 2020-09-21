@@ -14,7 +14,7 @@ def test_bottleneck():
     block = BottleneckS(
         64, 256, radix=2, reduction_factor=4, stride=2, style='pytorch')
     assert block.avd_layer.stride == 2
-    assert block.conv2.channels == 128
+    assert block.conv2.channels == 64
 
     # Test ResNeSt Bottleneck forward
     block = BottleneckS(64, 64, radix=2, reduction_factor=4)
