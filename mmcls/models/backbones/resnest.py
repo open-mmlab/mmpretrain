@@ -35,6 +35,7 @@ class RSoftmax(nn.Module):
 class SplAtConv2d(nn.Module):
     """Split-Attention Conv2d.
 
+    Args:
         in_channels (int): Same as nn.Conv2d.
         out_channels (int): Same as nn.Conv2d.
         kernel_size (int | tuple[int]): Same as nn.Conv2d.
