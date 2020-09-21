@@ -12,6 +12,7 @@ from .resnet import ResLayer, ResNetV1d
 class RSoftmax(nn.Module):
     """Radix Softmax module in ``SplitAttentionConv2d``.
 
+    Args:
         radix (int): Radix of input.
         groups (int): Groups of input.
     """
@@ -306,7 +307,8 @@ class ResNeSt(ResNetV1d):
         50: (Bottleneck, (3, 4, 6, 3)),
         101: (Bottleneck, (3, 4, 23, 3)),
         152: (Bottleneck, (3, 8, 36, 3)),
-        200: (Bottleneck, (3, 24, 36, 3))
+        200: (Bottleneck, (3, 24, 36, 3)),
+        269: (Bottleneck, (3, 30, 48, 8))
     }
 
     def __init__(self,
