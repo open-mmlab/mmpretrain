@@ -499,10 +499,12 @@ class Normalize(object):
 @PIPELINES.register_module()
 class Albu(object):
     """Albumentation augmentation.
+
     Adds custom transformations from Albumentations library.
     Please, visit `https://albumentations.readthedocs.io`
     to get more information.
     An example of ``transforms`` is as followed:
+
     .. code-block::
         [
             dict(
@@ -526,6 +528,7 @@ class Albu(object):
                 ],
                 p=0.1),
         ]
+
     Args:
         transforms (list[dict]): A list of albu transformations
         keymap (dict): Contains {'input key':'albumentation-style key'}
