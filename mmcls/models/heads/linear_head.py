@@ -47,7 +47,7 @@ class LinearClsHead(ClsHead):
         pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
         if torch.onnx.is_in_onnx_export():
             return pred
-        pred = list(pred.cpu().numpy())
+        pred = list(pred.detach().cpu().numpy())
         return pred
 
     def forward_train(self, x, gt_label):
