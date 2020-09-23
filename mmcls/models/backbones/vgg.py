@@ -62,6 +62,10 @@ class VGG(BaseBackbone):
             classifier. Default: True.
     """
 
+    # Parameters to build layers. Each element specifies the number of conv in
+    # each stage. For example, VGG11 contains 11 layers with learnable
+    # parameters. 11 is computed as 11 = (1 + 1 + 2 + 2 + 2) + 3,
+    # where 3 indicates the last three fully-connected layers.
     arch_settings = {
         11: (1, 1, 2, 2, 2),
         13: (2, 2, 2, 2, 2),
