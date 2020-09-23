@@ -32,6 +32,8 @@ ILSVRC2012_val_00000004.JPEG 809
 ILSVRC2012_val_00000005.JPEG 516
 ```
 
+Note: The value of ground-truth labels should fall in range `[0, num_classes - 1]`.
+
 ### An example of customized dataset
 
 You can write a new Dataset class inherited from `BaseDataset`, and overwrite `load_annotations(self)`,

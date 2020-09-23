@@ -19,11 +19,7 @@ def parse_args():
     parser.add_argument('checkpoint', help='checkpoint file')
     parser.add_argument('--out', help='output result file')
     parser.add_argument(
-        '--eval',
-        type=str,
-        nargs='+',
-        choices=['proposal', 'proposal_fast', 'bbox', 'segm', 'keypoints'],
-        help='eval types')
+        '--eval', type=str, nargs='+', choices=['accuracy'], help='eval types')
     parser.add_argument(
         '--gpu_collect',
         action='store_true',

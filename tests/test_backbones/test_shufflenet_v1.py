@@ -37,7 +37,7 @@ def test_shufflenetv1_shuffleuint():
         ShuffleUnit(24, 16, groups=3, first_block=True, combine='test')
 
     with pytest.raises(AssertionError):
-        # inplanes must be equal tp = outplanes when combine='add'
+        # in_channels must be equal tp = outplanes when combine='add'
         ShuffleUnit(64, 24, groups=4, first_block=True, combine='add')
 
     # Test ShuffleUnit with combine='add'
