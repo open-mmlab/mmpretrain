@@ -94,6 +94,13 @@ def main():
                 'pred_score': np.max(scores, axis=1),
                 'pred_label': np.argmax(scores, axis=1)
             }
+            if not args.out:
+                pred_score = results['pred_score'][0]
+                pred_label = results['pred_label'][0]
+                print(
+                    '\nthe predicted result for the first element is '
+                    f'(pred_score={pred_score:.2f}, pred_label={pred_label}).'
+                    ' Specify --out to save all results to files.')
     if args.out and rank == 0:
         print(f'\nwriting results to {args.out}')
         mmcv.dump(results, args.out)
