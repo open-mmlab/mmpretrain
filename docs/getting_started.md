@@ -34,6 +34,7 @@ For ImageNet, it has multiple versions, but the most commonly used one is [ILSVR
     - ILSVRC2012_img_train.tar (~138GB)
     - ILSVRC2012_img_val.tar (~6.3GB)
 3. Untar the downloaded files
+4. Download meta data using this [script](https://github.com/BVLC/caffe/blob/master/data/ilsvrc12/get_ilsvrc_aux.sh)
 
 For MNIST, CIFAR10 and CIFAR100, the datasets will be downloaded and unzipped automatically if they are not found.
 
