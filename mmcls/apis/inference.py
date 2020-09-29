@@ -6,7 +6,6 @@ import torch
 from mmcv.parallel import collate, scatter
 from mmcv.runner import load_checkpoint
 
-from mmcls.core import get_classes
 from mmcls.datasets.pipelines import Compose
 from mmcls.models import build_classifier
 
@@ -36,10 +35,11 @@ def init_model(config, checkpoint=None, device='cuda:0'):
         if 'CLASSES' in checkpoint['meta']:
             model.CLASSES = checkpoint['meta']['CLASSES']
         else:
+            from mmcls.datasets import ImageNet
             warnings.simplefilter('once')
             warnings.warn('Class names are not saved in the checkpoint\'s '
                           'meta data, use imagenet by default.')
-            model.CLASSES = get_classes('imagenet')
+            model.CLASSES = ImageNet.CLASSES
     model.cfg = config  # save the config in the model for convenience
     model.to(device)
     model.eval()
