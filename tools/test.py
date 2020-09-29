@@ -1,5 +1,6 @@
 import argparse
 import os
+import warnings
 
 import mmcv
 import numpy as np
@@ -69,7 +70,7 @@ def main():
     fp16_cfg = cfg.get('fp16', None)
     if fp16_cfg is not None:
         wrap_fp16_model(model)
-    _ = load_checkpoint(model, args.checkpoint, map_location='cpu')
+    checkpoint = load_checkpoint(model, args.checkpoint, map_location='cpu')
 
     if not distributed:
         model = MMDataParallel(model, device_ids=[0])
@@ -90,17 +91,28 @@ def main():
                 print(f'\n{topk} accuracy: {acc:.2f}')
         else:
             scores = np.vstack(outputs)
+            pred_score = np.max(scores, axis=1)
+            pred_label = np.argmax(scores, axis=1)
+            if 'CLASSES' in checkpoint['meta']:
+                CLASSES = checkpoint['meta']['CLASSES']
+            else:
+                from mmcls.datasets import ImageNet
+                warnings.simplefilter('once')
+                warnings.warn('Class names are not saved in the checkpoint\'s '
+                              'meta data, use imagenet by default.')
+                CLASSES = ImageNet.CLASSES
+            pred_class = [CLASSES[lb] for lb in pred_label]
             results = {
-                'pred_score': np.max(scores, axis=1),
-                'pred_label': np.argmax(scores, axis=1)
+                'pred_score': pred_score,
+                'pred_label': pred_label,
+                'pred_class': pred_class
             }
             if not args.out:
-                pred_score = results['pred_score'][0]
-                pred_label = results['pred_label'][0]
-                print(
-                    '\nthe predicted result for the first element is '
-                    f'(pred_score={pred_score:.2f}, pred_label={pred_label}).'
-                    ' Specify --out to save all results to files.')
+                print('\nthe predicted result for the first element is '
+                      f'pred_score = {pred_score[0]:.2f}, '
+                      f'pred_label = {pred_label[0]} '
+                      f'and pred_class = {pred_class[0]}. '
+                      'Specify --out to save all results to files.')
     if args.out and rank == 0:
         print(f'\nwriting results to {args.out}')
         mmcv.dump(results, args.out)
