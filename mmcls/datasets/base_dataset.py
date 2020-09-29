@@ -36,6 +36,10 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
     def load_annotations(self):
         pass
 
+    @property
+    def class_to_idx(self):
+        return {_class: i for i, _class in enumerate(self.CLASSES)}
+
     def get_gt_labels(self):
         gt_labels = np.array([data['gt_label'] for data in self.data_infos])
         return gt_labels
