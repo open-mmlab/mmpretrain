@@ -23,18 +23,53 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
 
     CLASSES = None
 
-    def __init__(self, data_prefix, pipeline, ann_file=None, test_mode=False):
+    def __init__(self, data_prefix, pipeline, ann_file=None, test_mode=False, classes=None):
         super(BaseDataset, self).__init__()
 
         self.ann_file = ann_file
         self.data_prefix = data_prefix
         self.test_mode = test_mode
         self.pipeline = Compose(pipeline)
+        self.original_idx_to_subset_idx = None
+        self.CLASSES = self.get_classes(classes)
         self.data_infos = self.load_annotations()
 
+        if self.cusoriginal_idx_to_subset_idx is not None:
+            self.data_infos = self.get_subset_by_classes()
+        
     @abstractmethod
     def load_annotations(self):
         pass
+
+    def get_classes(self, classes):
+        if classes is None:
+            return self.CLASSES
+
+        if isinstance(classes, str):
+            # take it as a file path
+            class_names = mmcv.list_from_file(classes)
+        elif isinstance(classes, (tuple, list)):
+            class_names = classes
+        else:
+            raise ValueError(f'Unsupported type {type(classes)} of classes.')
+        
+        if self.CLASSES is not None:
+            # Uses subset of CLASSES
+            self.original_idx_to_subset_idx = {
+                self.CLASSES.index(x): n for n, x in enumerate(classes)
+            }
+
+        return class_names
+
+    def get_subset_by_classes(self):
+        new_data_infos = []
+        for data in self.data_infos:
+            if data['gt_label'] not in self.original_idx_to_subset_idx:
+                continue
+            else:
+                data['gt_label'] = self.original_idx_to_subset_idx[data['gt_label']]
+                new_data_infos.append(data)
+        return new_data_infos
 
     @property
     def class_to_idx(self):
