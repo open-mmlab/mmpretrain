@@ -42,7 +42,42 @@ For using custom datasets, please refer to [Tutorials 2: Adding New Dataset](tut
 
 ## Inference with pretrained models
 
-We provide testing scripts to evaluate a whole dataset (ImageNet, etc.).
+We provide scripts to inference a single image, inference a dataset and test a dataset (e.g., ImageNet).
+
+### Inference a single image
+
+```shell
+python demo/image_demo.py ${IMAGE_FILE} ${CONFIG_FILE} ${CHECKPOINT_FILE}
+```
+
+### Inference a dataset
+
+- single GPU
+- single node multiple GPU
+- multiple node
+
+You can use the following commands to infer a dataset.
+
+```shell
+# single-gpu inference
+python tools/inference.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--out ${RESULT_FILE}]
+
+# multi-gpu inference
+./tools/dist_inference.sh ${CONFIG_FILE} ${CHECKPOINT_FILE} ${GPU_NUM} [--out ${RESULT_FILE}]
+```
+
+Optional arguments:
+- `RESULT_FILE`: Filename of the output results in pickle format. If not specified, the results will not be saved to a file.
+
+Examples:
+
+Assume that you have already downloaded the checkpoints to the directory `checkpoints/`.
+Infer ResNet-50 on ImageNet validation set to get predicted labels and their corresponding predicted scores.
+
+```shell
+python tools/inference.py configs/imagenet/resnet50_batch256.py \
+    checkpoints/xxx.pth
+```
 
 ### Test a dataset
 

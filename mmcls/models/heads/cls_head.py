@@ -38,7 +38,6 @@ class ClsHead(BaseHead):
         assert len(acc) == len(self.topk)
         losses['loss'] = loss
         losses['accuracy'] = {f'top-{k}': a for k, a in zip(self.topk, acc)}
-        losses['num_samples'] = loss.new(1).fill_(num_samples)
         return losses
 
     def forward_train(self, cls_score, gt_label):
