@@ -44,8 +44,6 @@ def multi_gpu_test(model, data_loader, tmpdir=None, gpu_collect=False):
         tmpdir (str): Path of directory to save the temporary results from
             different gpus under cpu mode.
         gpu_collect (bool): Option to use either gpu or cpu to collect results.
-        inference (bool): Option to get predicted labels and scores for each
-            image rather than evalutation results. Default: False.
 
     Returns:
         list: The prediction results.
