@@ -1,6 +1,7 @@
 import copy
 from abc import ABCMeta, abstractmethod
 
+import mmcv
 import numpy as np
 from torch.utils.data import Dataset
 
@@ -23,7 +24,12 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
 
     CLASSES = None
 
-    def __init__(self, data_prefix, pipeline, ann_file=None, test_mode=False, classes=None):
+    def __init__(self,
+                 data_prefix,
+                 pipeline,
+                 ann_file=None,
+                 test_mode=False,
+                 classes=None):
         super(BaseDataset, self).__init__()
 
         self.ann_file = ann_file
@@ -34,9 +40,9 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         self.CLASSES = self.get_classes(classes)
         self.data_infos = self.load_annotations()
 
-        if self.cusoriginal_idx_to_subset_idx is not None:
+        if self.original_idx_to_subset_idx is not None:
             self.data_infos = self.get_subset_by_classes()
-        
+
     @abstractmethod
     def load_annotations(self):
         pass
@@ -52,11 +58,12 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
             class_names = classes
         else:
             raise ValueError(f'Unsupported type {type(classes)} of classes.')
-        
+
         if self.CLASSES is not None:
             # Uses subset of CLASSES
             self.original_idx_to_subset_idx = {
-                self.CLASSES.index(x): n for n, x in enumerate(classes)
+                self.CLASSES.index(x): n
+                for n, x in enumerate(classes)
             }
 
         return class_names
@@ -67,7 +74,8 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
             if data['gt_label'] not in self.original_idx_to_subset_idx:
                 continue
             else:
-                data['gt_label'] = self.original_idx_to_subset_idx[data['gt_label']]
+                data['gt_label'] = self.original_idx_to_subset_idx[
+                    data['gt_label']]
                 new_data_infos.append(data)
         return new_data_infos
 
