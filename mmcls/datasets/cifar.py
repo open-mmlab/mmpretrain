@@ -32,11 +32,18 @@ class CIFAR10(BaseDataset):
     test_list = [
         ['test_batch', '40351d587109b95175f43aff81a1287e'],
     ]
-    meta = {
-        'filename': 'batches.meta',
-        'key': 'label_names',
-        'md5': '5ff9c542aee3614f3951f8cda6e48888',
-    }
+    CLASSES = [
+        'airplane',
+        'automobile',
+        'bird',
+        'cat',
+        'deer',
+        'dog',
+        'frog',
+        'horse',
+        'ship',
+        'truck'
+    ]
 
     def load_annotations(self):
 
@@ -79,17 +86,6 @@ class CIFAR10(BaseDataset):
             data_infos.append(info)
         return data_infos
 
-    def _load_meta(self):
-        path = os.path.join(self.data_prefix, self.base_folder,
-                            self.meta['filename'])
-        if not check_integrity(path, self.meta['md5']):
-            raise RuntimeError(
-                'Dataset metadata file not found or corrupted.' +
-                ' You can use download=True to download it')
-        with open(path, 'rb') as infile:
-            data = pickle.load(infile, encoding='latin1')
-            self.CLASSES = data[self.meta['key']]
-
     def _check_integrity(self):
         root = self.data_prefix
         for fentry in (self.train_list + self.test_list):
@@ -116,8 +112,106 @@ class CIFAR100(CIFAR10):
     test_list = [
         ['test', 'f0ef6b0ae62326f3e7ffdfab6717acfc'],
     ]
-    meta = {
-        'filename': 'meta',
-        'key': 'fine_label_names',
-        'md5': '7973b15100ade9c7d40fb424638fde48',
-    }
+
+    CLASSES = [
+        "apple",
+        "aquarium_fish",
+        "baby",
+        "bear",
+        "beaver",
+        "bed",
+        "bee",
+        "beetle",
+        "bicycle",
+        "bottle",
+        "bowl",
+        "boy",
+        "bridge",
+        "bus",
+        "butterfly",
+        "camel",
+        "can",
+        "castle",
+        "caterpillar",
+        "cattle",
+        "chair",
+        "chimpanzee",
+        "clock",
+        "cloud",
+        "cockroach",
+        "couch",
+        "crab",
+        "crocodile",
+        "cup",
+        "dinosaur",
+        "dolphin",
+        "elephant",
+        "flatfish",
+        "forest",
+        "fox",
+        "girl",
+        "hamster",
+        "house",
+        "kangaroo",
+        "keyboard",
+        "lamp",
+        "lawn_mower",
+        "leopard",
+        "lion",
+        "lizard",
+        "lobster",
+        "man",
+        "maple_tree",
+        "motorcycle",
+        "mountain",
+        "mouse",
+        "mushroom",
+        "oak_tree",
+        "orange",
+        "orchid",
+        "otter",
+        "palm_tree",
+        "pear",
+        "pickup_truck",
+        "pine_tree",
+        "plain",
+        "plate",
+        "poppy",
+        "porcupine",
+        "possum",
+        "rabbit",
+        "raccoon",
+        "ray",
+        "road",
+        "rocket",
+        "rose",
+        "sea",
+        "seal",
+        "shark",
+        "shrew",
+        "skunk",
+        "skyscraper",
+        "snail",
+        "snake",
+        "spider",
+        "squirrel",
+        "streetcar",
+        "sunflower",
+        "sweet_pepper",
+        "table",
+        "tank",
+        "telephone",
+        "television",
+        "tiger",
+        "tractor",
+        "train",
+        "trout",
+        "tulip",
+        "turtle",
+        "wardrobe",
+        "whale",
+        "willow_tree",
+        "wolf",
+        "woman",
+        "worm"
+    ]
