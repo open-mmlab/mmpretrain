@@ -21,9 +21,8 @@ class LinearClsHead(ClsHead):
     def __init__(self,
                  num_classes,
                  in_channels,
-                 loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
-                 topk=(1, )):
-        super(LinearClsHead, self).__init__(loss=loss, topk=topk)
+                 loss=dict(type='CrossEntropyLoss', loss_weight=1.0)):
+        super(LinearClsHead, self).__init__(loss=loss)
         self.in_channels = in_channels
         self.num_classes = num_classes
 
