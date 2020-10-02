@@ -1,2 +1,2 @@
-mmcv
+mmcv>=1.1.4
 numpy

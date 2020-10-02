@@ -75,8 +75,8 @@ optimizer_config = dict(grad_clip=None)
 lr_config = dict(
     policy='step',
     step=[15])
-total_epochs = 20
-log_config = dict(interval=100)
+ runner = dict(type='EpochBasedRunner', max_epochs=200)
+ log_config = dict(interval=100)
 ```
 
 ## Use pre-trained model
