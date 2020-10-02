@@ -75,7 +75,7 @@ def train_model(model,
     if cfg.get('runner') is None:
         cfg.runner = {
             'type': 'EpochBasedRunner',
-            'max_iters': cfg.total_epochs
+            'max_epochs': cfg.total_epochs
         }
         warnings.warn(
             'config is now expected to have a `runner` section, '
