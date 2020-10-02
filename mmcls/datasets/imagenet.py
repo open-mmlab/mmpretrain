@@ -1,9 +1,7 @@
 import os
 
-import numpy as np
-
-from .imagefolder import ImageFolderDataset
 from .builder import DATASETS
+from .imagefolder import ImageFolderDataset
 
 
 def find_folders(root):
@@ -1037,4 +1035,6 @@ class ImageNet(ImageFolderDataset):
 
     @property
     def folder_to_idx(self):
+        # names in self.CLASSES don't correspond to the names
+        # of the folders
         return find_folders(self.data_prefix)
