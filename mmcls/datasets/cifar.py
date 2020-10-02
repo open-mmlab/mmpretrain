@@ -69,8 +69,6 @@ class CIFAR10(BaseDataset):
         self.imgs = np.vstack(self.imgs).reshape(-1, 3, 32, 32)
         self.imgs = self.imgs.transpose((0, 2, 3, 1))  # convert to HWC
 
-        self._load_meta()
-
         data_infos = []
         for img, gt_label in zip(self.imgs, self.gt_labels):
             gt_label = np.array(gt_label, dtype=np.int64)
