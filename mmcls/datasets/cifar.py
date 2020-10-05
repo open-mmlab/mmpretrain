@@ -89,10 +89,6 @@ class CIFAR10(BaseDataset):
         with open(path, 'rb') as infile:
             data = pickle.load(infile, encoding='latin1')
             self.CLASSES = data[self.meta['key']]
-        self.class_to_idx = {
-            _class: i
-            for i, _class in enumerate(self.CLASSES)
-        }
 
     def _check_integrity(self):
         root = self.data_prefix

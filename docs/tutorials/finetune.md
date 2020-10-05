@@ -59,8 +59,7 @@ train_pipeline = [
     dict(type='Resize', size=224)
     dict(type='Normalize', **img_norm_cfg),
     dict(type='ImageToTensor', keys=['img']),
-    dict(type='ToTensor', keys=['gt_label']),
-    dict(type='Collect', keys=['img', 'gt_label'])
+    dict(type='Collect', keys=['img'])
  ]
 ```
 

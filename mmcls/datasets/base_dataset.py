@@ -4,6 +4,7 @@ from abc import ABCMeta, abstractmethod
 import numpy as np
 from torch.utils.data import Dataset
 
+from mmcls.models.losses import accuracy
 from .pipelines import Compose
 
 
@@ -35,6 +36,14 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
     def load_annotations(self):
         pass
 
+    @property
+    def class_to_idx(self):
+        return {_class: i for i, _class in enumerate(self.CLASSES)}
+
+    def get_gt_labels(self):
+        gt_labels = np.array([data['gt_label'] for data in self.data_infos])
+        return gt_labels
+
     def prepare_data(self, idx):
         results = copy.deepcopy(self.data_infos[idx])
         return self.pipeline(results)
@@ -45,7 +54,11 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
     def __getitem__(self, idx):
         return self.prepare_data(idx)
 
-    def evaluate(self, results, metric='accuracy', logger=None):
+    def evaluate(self,
+                 results,
+                 metric='accuracy',
+                 metric_options={'topk': (1, 5)},
+                 logger=None):
         """Evaluate the dataset.
 
         Args:
@@ -63,16 +76,14 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         allowed_metrics = ['accuracy']
         if metric not in allowed_metrics:
             raise KeyError(f'metric {metric} is not supported')
+
         eval_results = {}
         if metric == 'accuracy':
-            nums = []
-            for result in results:
-                nums.append(result['num_samples'].item())
-                for topk, v in result['accuracy'].items():
-                    if topk not in eval_results:
-                        eval_results[topk] = []
-                    eval_results[topk].append(v.item())
-            assert sum(nums) == len(self.data_infos)
-            for topk, accs in eval_results.items():
-                eval_results[topk] = np.average(accs, weights=nums)
+            topk = metric_options.get('topk')
+            results = np.vstack(results)
+            gt_labels = self.get_gt_labels()
+            num_imgs = len(results)
+            assert len(gt_labels) == num_imgs
+            acc = accuracy(results, gt_labels, topk)
+            eval_results = {f'top-{k}': a.item() for k, a in zip(topk, acc)}
         return eval_results
