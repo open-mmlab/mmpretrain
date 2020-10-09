@@ -1,5 +1,6 @@
 import argparse
 import os
+import warnings
 
 import mmcv
 import numpy as np
@@ -19,11 +20,7 @@ def parse_args():
     parser.add_argument('checkpoint', help='checkpoint file')
     parser.add_argument('--out', help='output result file')
     parser.add_argument(
-        '--eval',
-        type=str,
-        nargs='+',
-        choices=['proposal', 'proposal_fast', 'bbox', 'segm', 'keypoints'],
-        help='eval types')
+        '--metric', type=str, default='accuracy', help='evaluation metric')
     parser.add_argument(
         '--gpu_collect',
         action='store_true',
@@ -73,7 +70,7 @@ def main():
     fp16_cfg = cfg.get('fp16', None)
     if fp16_cfg is not None:
         wrap_fp16_model(model)
-    _ = load_checkpoint(model, args.checkpoint, map_location='cpu')
+    checkpoint = load_checkpoint(model, args.checkpoint, map_location='cpu')
 
     if not distributed:
         model = MMDataParallel(model, device_ids=[0])
@@ -88,21 +85,37 @@ def main():
 
     rank, _ = get_dist_info()
     if rank == 0:
-        nums = []
-        results = {}
-        for output in outputs:
-            nums.append(output['num_samples'].item())
-            for topk, v in output['accuracy'].items():
-                if topk not in results:
-                    results[topk] = []
-                results[topk].append(v.item())
-        assert sum(nums) == len(dataset)
-        for topk, accs in results.items():
-            avg_acc = np.average(accs, weights=nums)
-            print(f'\n{topk} accuracy: {avg_acc:.2f}')
+        if args.metric != '':
+            results = dataset.evaluate(outputs, args.metric)
+            for topk, acc in results.items():
+                print(f'\n{topk} accuracy: {acc:.2f}')
+        else:
+            scores = np.vstack(outputs)
+            pred_score = np.max(scores, axis=1)
+            pred_label = np.argmax(scores, axis=1)
+            if 'CLASSES' in checkpoint['meta']:
+                CLASSES = checkpoint['meta']['CLASSES']
+            else:
+                from mmcls.datasets import ImageNet
+                warnings.simplefilter('once')
+                warnings.warn('Class names are not saved in the checkpoint\'s '
+                              'meta data, use imagenet by default.')
+                CLASSES = ImageNet.CLASSES
+            pred_class = [CLASSES[lb] for lb in pred_label]
+            results = {
+                'pred_score': pred_score,
+                'pred_label': pred_label,
+                'pred_class': pred_class
+            }
+            if not args.out:
+                print('\nthe predicted result for the first element is '
+                      f'pred_score = {pred_score[0]:.2f}, '
+                      f'pred_label = {pred_label[0]} '
+                      f'and pred_class = {pred_class[0]}. '
+                      'Specify --out to save all results to files.')
     if args.out and rank == 0:
         print(f'\nwriting results to {args.out}')
-        mmcv.dump(outputs, args.out)
+        mmcv.dump(results, args.out)
 
 
 if __name__ == '__main__':

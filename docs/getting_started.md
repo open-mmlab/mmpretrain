@@ -34,6 +34,7 @@ For ImageNet, it has multiple versions, but the most commonly used one is [ILSVR
     - ILSVRC2012_img_train.tar (~138GB)
     - ILSVRC2012_img_val.tar (~6.3GB)
 3. Untar the downloaded files
+4. Download meta data using this [script](https://github.com/BVLC/caffe/blob/master/data/ilsvrc12/get_ilsvrc_aux.sh)
 
 For MNIST, CIFAR10 and CIFAR100, the datasets will be downloaded and unzipped automatically if they are not found.
 
@@ -41,7 +42,42 @@ For using custom datasets, please refer to [Tutorials 2: Adding New Dataset](tut
 
 ## Inference with pretrained models
 
-We provide testing scripts to evaluate a whole dataset (ImageNet, etc.).
+We provide scripts to inference a single image, inference a dataset and test a dataset (e.g., ImageNet).
+
+### Inference a single image
+
+```shell
+python demo/image_demo.py ${IMAGE_FILE} ${CONFIG_FILE} ${CHECKPOINT_FILE}
+```
+
+### Inference a dataset
+
+- single GPU
+- single node multiple GPU
+- multiple node
+
+You can use the following commands to infer a dataset.
+
+```shell
+# single-gpu inference
+python tools/inference.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--out ${RESULT_FILE}]
+
+# multi-gpu inference
+./tools/dist_inference.sh ${CONFIG_FILE} ${CHECKPOINT_FILE} ${GPU_NUM} [--out ${RESULT_FILE}]
+```
+
+Optional arguments:
+- `RESULT_FILE`: Filename of the output results in pickle format. If not specified, the results will not be saved to a file.
+
+Examples:
+
+Assume that you have already downloaded the checkpoints to the directory `checkpoints/`.
+Infer ResNet-50 on ImageNet validation set to get predicted labels and their corresponding predicted scores.
+
+```shell
+python tools/inference.py configs/imagenet/resnet50_batch256.py \
+    checkpoints/xxx.pth
+```
 
 ### Test a dataset
 
@@ -64,7 +100,7 @@ Optional arguments:
 
 Examples:
 
-Assume that you have already downloaded the checkpoints to the directory `checkpoints/`. 
+Assume that you have already downloaded the checkpoints to the directory `checkpoints/`.
 Test ResNet-50 on ImageNet validation and evaluate the top-1 and top-5.
 
 ```shell

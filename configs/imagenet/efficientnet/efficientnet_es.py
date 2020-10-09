@@ -15,8 +15,6 @@ model = dict(
         topk=(1, 5),
     ))
 
-# dataset settings
-dataset_type = 'ImageNet'
 img_norm_cfg = dict(
     mean=[127.5, 127.5, 127.5], std=[127.5, 127.5, 127.5], to_rgb=True)
 train_pipeline = [
@@ -41,6 +39,9 @@ test_pipeline = [
     dict(type='ToTensor', keys=['gt_label']),
     dict(type='Collect', keys=['img', 'gt_label'])
 ]
+
+# dataset settings
+dataset_type = 'ImageNet'
 data = dict(
     samples_per_gpu=32,
     workers_per_gpu=2,

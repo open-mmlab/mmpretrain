@@ -17,7 +17,7 @@ def single_gpu_test(model, data_loader, show=False, out_dir=None):
     prog_bar = mmcv.ProgressBar(len(dataset))
     for i, data in enumerate(data_loader):
         with torch.no_grad():
-            result = model(return_loss=True, **data)
+            result = model(return_loss=False, **data)
         results.append(result)
 
         if show or out_dir:
@@ -57,8 +57,11 @@ def multi_gpu_test(model, data_loader, tmpdir=None, gpu_collect=False):
     time.sleep(2)  # This line can prevent deadlock problem in some cases.
     for i, data in enumerate(data_loader):
         with torch.no_grad():
-            result = model(return_loss=True, **data)
-        results.append(result)
+            result = model(return_loss=False, **data)
+        if isinstance(result, list):
+            results.extend(result)
+        else:
+            results.append(result)
 
         if rank == 0:
             batch_size = data['img'].size(0)
