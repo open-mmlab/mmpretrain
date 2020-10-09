@@ -17,5 +17,5 @@ from .vgg import VGG
 __all__ = [
     'LeNet5', 'AlexNet', 'VGG', 'RegNet', 'ResNet', 'ResNeXt', 'ResNetV1d',
     'ResNeSt', 'ResNet_CIFAR', 'SEResNet', 'SEResNeXt', 'ShuffleNetV1',
-    'ShuffleNetV2', 'MobileNetV2', 'MobileNetv3'
+    'ShuffleNetV2', 'MobileNetV2', 'MobileNetv3', 'EfficientNet'
 ]
