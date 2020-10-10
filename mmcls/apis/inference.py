@@ -1,5 +1,6 @@
 import warnings
 
+import matplotlib.pyplot as plt
 import mmcv
 import numpy as np
 import torch
@@ -74,6 +75,23 @@ def inference_model(model, img):
         scores = model(return_loss=False, **data)
         pred_score = np.max(scores, axis=1)[0]
         pred_label = np.argmax(scores, axis=1)[0]
-        result = {'pred_label': pred_label, 'pred_score': pred_score}
-    result['class_name'] = model.CLASSES[result['pred_label']]
+        result = {'pred_label': pred_label, 'pred_score': float(pred_score)}
+    result['pred_class'] = model.CLASSES[result['pred_label']]
     return result
+
+
+def show_result_pyplot(model, img, result, fig_size=(15, 10)):
+    """Visualize the classification results on the image.
+
+    Args:
+        model (nn.Module): The loaded classifier.
+        img (str or np.ndarray): Image filename or loaded image.
+        result (list): The classification result.
+        fig_size (tuple): Figure size of the pyplot figure.
+    """
+    if hasattr(model, 'module'):
+        model = model.module
+    img = model.show_result(img, result, show=False)
+    plt.figure(figsize=fig_size)
+    plt.imshow(mmcv.bgr2rgb(img))
+    plt.show()
