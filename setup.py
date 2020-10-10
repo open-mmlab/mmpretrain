@@ -114,8 +114,4 @@ setup(
     setup_requires=['pytest-runner'],
     tests_require=parse_requirements('requirements/tests.txt'),
     install_requires=parse_requirements('requirements/runtime.txt'),
-    extras_require={
-        'all': parse_requirements('requirements.txt'),
-        'tests': parse_requirements('requirements/tests.txt')
-    },
     zip_safe=False)
