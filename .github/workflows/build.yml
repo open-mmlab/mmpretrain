@@ -41,12 +41,12 @@ jobs:
           - torch: 1.5.0+cpu
             torchvision: 0.6.0+cpu
           - torch: 1.6.0+cpu
-            torchvision: 0.8.0+cpu
+            torchvision: 0.7.0+cpu
           - torch: 1.6.0+cpu
-            torchvision: 0.8.0+cpu
+            torchvision: 0.7.0+cpu
             python-version: 3.6
           - torch: 1.6.0+cpu
-            torchvision: 0.8.0+cpu
+            torchvision: 0.7.0+cpu
             python-version: 3.8
 
     steps:
