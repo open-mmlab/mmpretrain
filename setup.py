@@ -95,6 +95,7 @@ setup(
     version=get_version(),
     description='OpenMMLab Image Classification Toolbox and Benchmark',
     long_description=readme(),
+    long_description_content_type='text/markdown',
     author='OpenMMLab',
     author_email='openmmlab@gmail.com',
     keywords='computer vision, image classification',
