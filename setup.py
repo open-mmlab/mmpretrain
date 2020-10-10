@@ -100,7 +100,6 @@ setup(
     keywords='computer vision, image classification',
     url='https://github.com/open-mmlab/mmclassification',
     packages=find_packages(exclude=('configs', 'tools', 'demo')),
-    package_data={'mmcls.ops': ['*/*.so']},
     classifiers=[
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: Apache Software License',
@@ -109,6 +108,7 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
     ],
     license='Apache License 2.0',
     setup_requires=parse_requirements('requirements/build.txt'),
