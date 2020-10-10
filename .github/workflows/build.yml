@@ -23,7 +23,7 @@ jobs:
       - name: Check docstring
         run: |
           pip install interrogate
-          interrogate -v --ignore-init-method --ignore-module --ignore-nested-functions --exclude mmseg/ops --ignore-regex "__repr__" --fail-under 80 mmseg
+          interrogate -v --ignore-init-method --ignore-module --ignore-nested-functions --exclude mmcls/ops --ignore-regex "__repr__" --fail-under 80 mmcls
 
   build:
     runs-on: ubuntu-latest
