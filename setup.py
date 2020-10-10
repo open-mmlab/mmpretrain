@@ -96,7 +96,7 @@ setup(
     description='OpenMMLab Image Classification Toolbox and Benchmark',
     long_description=readme(),
     author='OpenMMLab',
-    author_email='yangleidev@gmail.com',
+    author_email='openmmlab@gmail.com',
     keywords='computer vision, image classification',
     url='https://github.com/open-mmlab/mmclassification',
     packages=find_packages(exclude=('configs', 'tools', 'demo')),
