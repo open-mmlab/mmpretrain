@@ -12,7 +12,7 @@ class EvalHook(Hook):
         interval (int): Evaluation interval (by epochs). Default: 1.
     """
 
-    def __init__(self, dataloader, interval=1, by_epoch=False, **eval_kwargs):
+    def __init__(self, dataloader, interval=1, by_epoch=True, **eval_kwargs):
         if not isinstance(dataloader, DataLoader):
             raise TypeError('dataloader must be a pytorch DataLoader, but got'
                             f' {type(dataloader)}')
@@ -60,7 +60,7 @@ class DistEvalHook(EvalHook):
                  dataloader,
                  interval=1,
                  gpu_collect=False,
-                 by_epoch=False,
+                 by_epoch=True,
                  **eval_kwargs):
         if not isinstance(dataloader, DataLoader):
             raise TypeError('dataloader must be a pytorch DataLoader, but got '
