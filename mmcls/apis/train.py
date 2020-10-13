@@ -79,7 +79,7 @@ def train_model(model,
         }
         warnings.warn(
             'config is now expected to have a `runner` section, '
-            'please set `runner` in your config.', DeprecationWarning)
+            'please set `runner` in your config.', UserWarning)
 
     runner = build_runner(
         cfg.runner,
