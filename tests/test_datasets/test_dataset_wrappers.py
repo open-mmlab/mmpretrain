@@ -1,46 +1,26 @@
 import bisect
 import math
-import random
-import string
-import tempfile
 from collections import defaultdict
-from unittest.mock import MagicMock, patch
+from unittest import mock
 
 import numpy as np
-import pytest
 
-from mmcls.datasets import (DATASETS, BaseDataset, ClassBalancedDataset,
-                            ConcatDataset, RepeatDataset)
-from mmcls.datasets.utils import check_integrity, rm_suffix
+from mmcls.datasets import (BaseDataset, ClassBalancedDataset, ConcatDataset,
+                            RepeatDataset)
 
 
-@pytest.mark.parametrize(
-    'dataset_name',
-    ['MNIST', 'FashionMNIST', 'CIFAR10', 'CIFAR100', 'ImageNet'])
-def test_datasets_override_default(dataset_name):
-    dataset_class = DATASETS.get(dataset_name)
-    dataset_class.load_annotations = MagicMock()
-
-    # Test default behavior
-    dataset = dataset_class(data_prefix='', pipeline=[])
-
-    assert dataset.data_prefix == ''
-    assert not dataset.test_mode
-    assert dataset.ann_file is None
-
-
-@patch.multiple(BaseDataset, __abstractmethods__=set())
+@mock.patch.multiple(BaseDataset, __abstractmethods__=set())
 def test_dataset_wrapper():
-    BaseDataset.__getitem__ = MagicMock(side_effect=lambda idx: idx)
+    BaseDataset.__getitem__ = mock.MagicMock(side_effect=lambda idx: idx)
     dataset_a = BaseDataset(data_prefix='', pipeline=[], test_mode=True)
     len_a = 10
     cat_ids_list_a = [
         np.random.randint(0, 80, num).tolist()
         for num in np.random.randint(1, 20, len_a)
     ]
-    dataset_a.data_infos = MagicMock()
+    dataset_a.data_infos = mock.MagicMock()
     dataset_a.data_infos.__len__.return_value = len_a
-    dataset_a.get_cat_ids = MagicMock(
+    dataset_a.get_cat_ids = mock.MagicMock(
         side_effect=lambda idx: cat_ids_list_a[idx])
     dataset_b = BaseDataset(data_prefix='', pipeline=[], test_mode=True)
     len_b = 20
@@ -48,9 +28,9 @@ def test_dataset_wrapper():
         np.random.randint(0, 80, num).tolist()
         for num in np.random.randint(1, 20, len_b)
     ]
-    dataset_b.data_infos = MagicMock()
+    dataset_b.data_infos = mock.MagicMock()
     dataset_b.data_infos.__len__.return_value = len_b
-    dataset_b.get_cat_ids = MagicMock(
+    dataset_b.get_cat_ids = mock.MagicMock(
         side_effect=lambda idx: cat_ids_list_b[idx])
 
     concat_dataset = ConcatDataset([dataset_a, dataset_b])
@@ -96,19 +76,3 @@ def test_dataset_wrapper():
     for idx in np.random.randint(0, len(repeat_factor_dataset), 3):
         assert repeat_factor_dataset[idx] == bisect.bisect_right(
             repeat_factors_cumsum, idx)
-
-
-def test_dataset_utils():
-    # test rm_suffix
-    assert rm_suffix('a.jpg') == 'a'
-    assert rm_suffix('a.bak.jpg') == 'a.bak'
-    assert rm_suffix('a.bak.jpg', suffix='.jpg') == 'a.bak'
-    assert rm_suffix('a.bak.jpg', suffix='.bak.jpg') == 'a'
-
-    # test check_integrity
-    rand_file = ''.join(random.sample(string.ascii_letters, 10))
-    assert not check_integrity(rand_file, md5=None)
-    assert not check_integrity(rand_file, md5=2333)
-    tmp_file = tempfile.NamedTemporaryFile()
-    assert check_integrity(tmp_file.name, md5=None)
-    assert not check_integrity(tmp_file.name, md5=2333)

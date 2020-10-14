@@ -59,6 +59,9 @@ class ImageFolderDataset(BaseDataset):
         return self.class_to_idx
 
     def load_annotations(self):
+        if self.CLASSES is None:
+            raise ValueError('`classes` must be specified in config file.')
+
         if self.ann_file is None:
             samples = get_samples(
                 self.data_prefix,

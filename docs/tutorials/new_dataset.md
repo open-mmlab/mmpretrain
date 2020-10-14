@@ -4,37 +4,65 @@
 
 ### Reorganize dataset to existing format
 
-The simplest way is to convert your dataset to existing dataset formats (ImageNet).
+The simplest way is to convert your dataset to existing dataset formats (i.e. ImageFolderDataset) and use it in your config file.
 
-For training, it differentiates classes by folders. The directory of training data is as follows:
+The ImageFolderDataset can differentiate classes by folders. The directory of an example training data is as follows:
+
 ```
-imagenet
+images
 ├── ...
 ├── train
-│   ├── n01440764
-│   │   ├── n01440764_10026.JPEG
-│   │   ├── n01440764_10027.JPEG
+│   ├── class_0
+│   │   ├── class_0_10026.JPEG
+│   │   ├── class_0_10027.JPEG
 │   │   ├── ...
 │   ├── ...
-│   ├── n15075141
-│   │   ├── n15075141_999.JPEG
-│   │   ├── n15075141_9993.JPEG
+│   ├── class_N
+│   │   ├── class_N_999.JPEG
+│   │   ├── class_N_9993.JPEG
 │   │   ├── ...
 ```
 
-For validation, we provide a annotation list. Each line of the list contrains a filename and its corresponding ground-truth labels. The format is as follows:
+> If the name of a folder is not specified in the `classes` argument of the config file, that folder will be skipped.
+> This allows to train with a subset of the classes in an existing dataset.
+
+Additionally, you can provide an annotation list. Each line of the list contrains a filename and its corresponding ground-truth labels. The format is as follows:
 
 ```
-ILSVRC2012_val_00000001.JPEG 65
-ILSVRC2012_val_00000002.JPEG 970
-ILSVRC2012_val_00000003.JPEG 230
-ILSVRC2012_val_00000004.JPEG 809
-ILSVRC2012_val_00000005.JPEG 516
+class_0_10300.JPEG 0
+class_2_10123.JPEG 2
+class_1_1273.JPEG 1
+class_N_91273.JPEG N
 ```
 
-Note: The value of ground-truth labels should fall in range `[0, num_classes - 1]`.
+> The files are expected to be located at the path resulting from joining `data_prefix` and each filename. The filenames can contain parent folders.
 
-### An example of customized dataset
+> The value of ground-truth labels should fall in range `[0, num_classes - 1]`.
+
+Once you have your data reorganized in one of these formats, you can use it in your config file as follows:
+
+```python
+# No annotation list
+dataset_A_train = dict(
+    type='ImageFolderDataset',
+    data_prefix='images/train',
+    classes=('class_0', 'class_1', 'class_N'),
+    pipeline=train_pipeline
+)
+```
+
+```python
+# With annotation list
+dataset_A_val = dict(
+    type='ImageFolderDataset',
+    data_prefix='images/val',
+    classes=('class_0', 'class_1', 'class_N'),
+    ann_file='image_list.txt',
+    pipeline=val_pipeline
+)
+```
+
+## Customize by creating a custom Dataset class.
 
 You can write a new Dataset class inherited from `BaseDataset`, and overwrite `load_annotations(self)`,
 like [CIFAR10](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/datasets/cifar.py) and [ImageNet](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/datasets/imagenet.py).
