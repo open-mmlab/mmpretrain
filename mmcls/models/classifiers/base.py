@@ -1,9 +1,13 @@
+import warnings
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 
+import cv2
+import mmcv
 import torch
 import torch.distributed as dist
 import torch.nn as nn
+from mmcv import color_val
 from mmcv.utils import print_log
 
 
@@ -155,3 +159,60 @@ class BaseClassifier(nn.Module, metaclass=ABCMeta):
             loss=loss, log_vars=log_vars, num_samples=len(data['img'].data))
 
         return outputs
+
+    def show_result(self,
+                    img,
+                    result,
+                    text_color='green',
+                    font_scale=0.5,
+                    row_width=20,
+                    show=False,
+                    win_name='',
+                    wait_time=0,
+                    out_file=None):
+        """Draw `result` over `img`.
+
+        Args:
+            img (str or Tensor): The image to be displayed.
+            result (Tensor): The classification results to draw over `img`.
+            text_color (str or tuple or :obj:`Color`): Color of texts.
+            font_scale (float): Font scales of texts.
+            row_width (int): width between each row of results on the image.
+            show (bool): Whether to show the image.
+                Default: False.
+            win_name (str): The window name.
+            wait_time (int): Value of waitKey param.
+                Default: 0.
+            out_file (str or None): The filename to write the image.
+                Default: None.
+
+        Returns:
+            img (Tensor): Only if not `show` or `out_file`
+        """
+        img = mmcv.imread(img)
+        img = img.copy()
+
+        # write results on left-top of the image
+        x, y = 0, row_width
+        text_color = color_val(text_color)
+        for k, v in result.items():
+            if isinstance(v, float):
+                v = f'{v:.2f}'
+            label_text = f'{k}: {v}'
+            cv2.putText(img, label_text, (x, y), cv2.FONT_HERSHEY_COMPLEX,
+                        font_scale, text_color)
+            y += row_width
+
+        # if out_file specified, do not show image in window
+        if out_file is not None:
+            show = False
+
+        if show:
+            mmcv.imshow(img, win_name, wait_time)
+        if out_file is not None:
+            mmcv.imwrite(img, out_file)
+
+        if not (show or out_file):
+            warnings.warn('show==False and out_file is not specified, only '
+                          'result image will be returned')
+            return img
