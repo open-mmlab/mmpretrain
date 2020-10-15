@@ -49,7 +49,7 @@ def test_iter_eval_hook():
                 num_worker=0,
                 shuffle=False)
         ]
-        EvalHook(data_loader)
+        EvalHook(data_loader, by_epoch=False)
 
     test_dataset = ExampleDataset()
     test_dataset.evaluate = MagicMock(return_value=dict(test='success'))
@@ -63,7 +63,7 @@ def test_iter_eval_hook():
 
     # test EvalHook
     with tempfile.TemporaryDirectory() as tmpdir:
-        eval_hook = EvalHook(data_loader)
+        eval_hook = EvalHook(data_loader, by_epoch=False)
         runner = mmcv.runner.IterBasedRunner(
             model=model,
             optimizer=optimizer,
@@ -71,7 +71,7 @@ def test_iter_eval_hook():
             logger=logging.getLogger(),
             max_iters=1)
         runner.register_hook(eval_hook)
-        runner.run([loader], [('train', 1)])
+        runner.run([loader], [('train', 1)], 1)
         test_dataset.evaluate.assert_called_with([torch.tensor([1])],
                                                  logger=runner.logger)
 
@@ -131,7 +131,7 @@ def test_dist_eval_hook():
                 num_worker=0,
                 shuffle=False)
         ]
-        DistEvalHook(data_loader)
+        DistEvalHook(data_loader, by_epoch=False)
 
     test_dataset = ExampleDataset()
     test_dataset.evaluate = MagicMock(return_value=dict(test='success'))
@@ -145,7 +145,7 @@ def test_dist_eval_hook():
 
     # test DistEvalHook
     with tempfile.TemporaryDirectory() as tmpdir:
-        eval_hook = DistEvalHook(data_loader)
+        eval_hook = DistEvalHook(data_loader, by_epoch=False)
         runner = mmcv.runner.IterBasedRunner(
             model=model,
             optimizer=optimizer,
