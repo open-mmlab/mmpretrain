@@ -4,7 +4,7 @@
 
 - Python 3.6+
 - PyTorch 1.3+
-- [mmcv](https://github.com/open-mmlab/mmcv)
+- [mmcv](https://github.com/open-mmlab/mmcv) 1.1.4+
 
 
 ### Install mmclassification
