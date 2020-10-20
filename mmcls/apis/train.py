@@ -105,7 +105,7 @@ def train_model(model,
             workers_per_gpu=cfg.data.workers_per_gpu,
             dist=distributed,
             shuffle=False,
-            round_up=False)
+            round_up=True)
         eval_cfg = cfg.get('evaluation', {})
         eval_hook = DistEvalHook if distributed else EvalHook
         runner.register_hook(eval_hook(val_dataloader, **eval_cfg))
