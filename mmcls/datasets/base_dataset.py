@@ -68,7 +68,7 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
                 except ValueError:
                     raise ValueError(
                         f'class {x} not found in original dataset.CLASSES '
-                        '{self.CLASSES}. If you wan to overwrite classes '
+                        f'{self.CLASSES}. If you wan to overwrite classes '
                         'without a subset you have to create a custom Dataset'
                         ' class or use the generic `ImageFolderDataset`')
                 self.original_idx_to_subset_idx[original_idx] = n
