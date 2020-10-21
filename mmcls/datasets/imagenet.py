@@ -29,7 +29,6 @@ class ImageNet(ImageFolderDataset):
     https://github.com/pytorch/vision/blob/master/torchvision/datasets/imagenet.py  # noqa: E501
     """
 
-    USE_CLASSES_AS_FOLDERS = False
     CLASSES = [
         'tench, Tinca tinca',
         'goldfish, Carassius auratus',
