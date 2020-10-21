@@ -57,7 +57,7 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         elif isinstance(classes, (tuple, list)):
             class_names = classes
         else:
-            raise ValueError(f'Unsupported type {type(classes)} of classes.')
+            raise TypeError(f'Unsupported type {type(classes)} of classes.')
 
         if self.CLASSES is not None:
             # Uses subset of CLASSES

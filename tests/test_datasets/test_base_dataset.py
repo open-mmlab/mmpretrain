@@ -47,7 +47,13 @@ def test_custom_classes_provided_as_str(tmp_path):
 
 
 @mock.patch.multiple(BaseDataset, __abstractmethods__=set())
-def test_custom_classes_subset(tmp_path):
+def test_custom_classes_provided_with_wrong_type(tmp_path):
+    with pytest.raises(TypeError, match='Unsupported type'):
+        BaseDataset(data_prefix='', pipeline=[], classes={'foo': 0, 'bar': 1})
+
+
+@mock.patch.multiple(BaseDataset, __abstractmethods__=set())
+def test_custom_classes_subset():
     with mock.patch.object(
             BaseDataset, 'CLASSES', new=('class_0', 'class_1', 'class_2')):
         with mock.patch.object(
