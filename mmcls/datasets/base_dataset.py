@@ -61,10 +61,17 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
 
         if self.CLASSES is not None:
             # Uses subset of CLASSES
-            self.original_idx_to_subset_idx = {
-                self.CLASSES.index(x): n
-                for n, x in enumerate(classes)
-            }
+            self.original_idx_to_subset_idx = {}
+            for n, x in enumerate(classes):
+                try:
+                    original_idx = self.CLASSES.index(x)
+                except ValueError:
+                    raise ValueError(
+                        f'class {x} not found in original dataset.CLASSES '
+                        '{self.CLASSES}. If you wan to overwrite classes '
+                        'without a subset you have to create a custom Dataset'
+                        ' class or use the generic `ImageFolderDataset`')
+                self.original_idx_to_subset_idx[original_idx] = n
 
         return class_names
 

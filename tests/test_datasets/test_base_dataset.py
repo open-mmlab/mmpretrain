@@ -52,26 +52,48 @@ def test_custom_classes_provided_with_wrong_type(tmp_path):
         BaseDataset(data_prefix='', pipeline=[], classes={'foo': 0, 'bar': 1})
 
 
-@mock.patch.multiple(BaseDataset, __abstractmethods__=set())
-def test_custom_classes_subset():
+@pytest.mark.parametrize('dataset_name', [
+    'MNIST',
+    'FashionMNIST',
+    'CIFAR10',
+    'CIFAR100',
+    'ImageNet',
+])
+def test_custom_classes_subset_of_predefined_datasets(dataset_name):
+    dataset_class = DATASETS.get(dataset_name)
+    class_0 = dataset_class.CLASSES[0]
+    class_2 = dataset_class.CLASSES[2]
     with mock.patch.object(
-            BaseDataset, 'CLASSES', new=('class_0', 'class_1', 'class_2')):
-        with mock.patch.object(
-                BaseDataset,
-                'load_annotations',
-                return_value=[{
-                    'gt_label': 0
-                }, {
-                    'gt_label': 1,
-                    'filtered': True
-                }, {
-                    'gt_label': 2
-                }]):
-            dataset = BaseDataset(
-                data_prefix='', pipeline=[], classes=('class_0', 'class_2'))
-            assert dataset.CLASSES == ('class_0', 'class_2')
-            assert dataset.original_idx_to_subset_idx == {0: 0, 2: 1}
-            # original {"gt_label": 1} is filtered
-            # original {"gt_label": 2} is converted to {"gt_label": 1}
-            assert dataset.data_infos == [{'gt_label': 0}, {'gt_label': 1}]
-            assert dataset.class_to_idx == {'class_0': 0, 'class_2': 1}
+            dataset_class,
+            'load_annotations',
+            return_value=[{
+                'gt_label': 0
+            }, {
+                'gt_label': 1,
+                'filtered': True
+            }, {
+                'gt_label': 2
+            }]):
+        dataset = dataset_class(
+            data_prefix='', pipeline=[], classes=(class_0, class_2))
+        assert dataset.CLASSES == (class_0, class_2)
+        assert dataset.original_idx_to_subset_idx == {0: 0, 2: 1}
+        # original {"gt_label": 1} is filtered
+        # original {"gt_label": 2} is converted to {"gt_label": 1}
+        assert dataset.data_infos == [{'gt_label': 0}, {'gt_label': 1}]
+        assert dataset.class_to_idx == {class_0: 0, class_2: 1}
+
+
+@pytest.mark.parametrize('dataset_name', [
+    'MNIST',
+    'FashionMNIST',
+    'CIFAR10',
+    'CIFAR100',
+    'ImageNet',
+])
+def test_custom_classes_invalid_overwrite(dataset_name):
+    dataset_class = DATASETS.get(dataset_name)
+    with pytest.raises(
+            ValueError, match='not found in original dataset.CLASSES'):
+        dataset_class(
+            data_prefix='', pipeline=[], classes=('invalid_0', 'invalid_1'))
