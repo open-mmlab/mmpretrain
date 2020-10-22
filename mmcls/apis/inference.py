@@ -7,7 +7,7 @@ import torch
 from mmcv.parallel import collate, scatter
 from mmcv.runner import load_checkpoint
 
-from mmcls.datasets.pipelines import Compose
+from mmcls.datasets.pipelines import Compose, LoadImageFromFile
 from mmcls.models import build_classifier
 
 
@@ -64,6 +64,8 @@ def inference_model(model, img):
     test_pipeline = Compose(cfg.data.test.pipeline)
     # prepare data
     data = dict(img_info=dict(filename=img), img_prefix=None)
+    test_load = LoadImageFromFile()
+    data = test_load(data)
     data = test_pipeline(data)
     data = collate([data], samples_per_gpu=1)
     if next(model.parameters()).is_cuda:
