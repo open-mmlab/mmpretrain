@@ -74,7 +74,7 @@ class IdtLmdbDataExporter(object):
                 except StopIteration:
                     break
 
-                logger.info("extracting image...")
+                # logger.info("extracting image...")
                 with ThreadPoolExecutor() as executor:
                     results.extend(executor.map(self._extract_once, items))
 
@@ -91,6 +91,7 @@ class IdtLmdbDataExporter(object):
             self.save_to_lmdb(idx, lmdb_db, results)
             self.save_total(lmdb_db, idx)
             del results[:]
+            
 
     def save_to_lmdb(self, start_idx: int, lmdb_db, results):
         """
@@ -105,6 +106,7 @@ class IdtLmdbDataExporter(object):
                 txn.put(str(start_idx).encode(), img_key)
                 txn.put(img_key, img_byte)
                 start_idx += 1
+            txn.commit()
 
     def save_total(self, lmdb_db, total: int):
         """
@@ -119,6 +121,7 @@ class IdtLmdbDataExporter(object):
             for item_class in self.class_num_dict.keys():
                 txn.put(f"class#{item_class}".encode(), str(
                     self.class_num_dict[item_class]).encode())
+            txn.commit()
 
     def _extract_once(self, item) -> Tuple[bytes, bytes]:
         full_path = item[-1]
