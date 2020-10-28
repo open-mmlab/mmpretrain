@@ -105,7 +105,6 @@ venv.bak/
 .mypy_cache/
 
 # custom
-data
 .vscode
 .idea
 *.pkl
@@ -115,3 +114,9 @@ work_dirs/
 
 # Pytorch
 *.pth
+
+# lmdb
+*.mdb
+
+# lst file
+*.lst
