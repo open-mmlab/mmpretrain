@@ -12,8 +12,6 @@ from loguru import logger
 logger.add("./lmdb.log", level="INFO")
 _10TB = 10 * (1 << 40)
 
-# Item = namedtuple("Item", ("label_id", "label_idx", "label_name"))
-
 
 class IdtLmdbDataExporter(object):
     """
@@ -21,7 +19,11 @@ class IdtLmdbDataExporter(object):
     """
     label_pattern = re.compile("/.*/.*?(\d+)$")
 
-    def __init__(self, target_path, output_path=None, shape=(256, 256), batch_size=100):
+    def __init__(self,
+                 target_path,
+                 output_path=None,
+                 shape=(256, 256),
+                 batch_size=100):
         """
             target_path: list 路径(由cfim2rec.py生成的list文件)
             output_path: lmdb输出路径
@@ -37,8 +39,10 @@ class IdtLmdbDataExporter(object):
 
         # list文件列表
         self.files = [
-            os.path.join(target_path, fname) for fname in os.listdir(target_path)
-            if os.path.isfile(os.path.join(target_path, fname)) and fname.endswith(".lst")
+            os.path.join(target_path, fname)
+            for fname in os.listdir(target_path)
+            if os.path.isfile(os.path.join(target_path, fname))
+            and fname.endswith(".lst")
         ]
         # self.files = ["./rec-test/val.lst"]
 
@@ -56,7 +60,6 @@ class IdtLmdbDataExporter(object):
         for file_lst in self.files:
             idx = 0
             logger.info(f'Creating lmdb file from {file_lst}')
-            file_name = os.path.basename(file_lst).split('.')[0]
 
             iter_file_lst = self.read_list(file_lst)
             while True:
@@ -83,7 +86,6 @@ class IdtLmdbDataExporter(object):
             self.save_to_lmdb(idx, results)
             self.save_total(idx)
             del results[:]
-            
 
     def save_to_lmdb(self, start_idx: int, results):
         """
@@ -107,8 +109,8 @@ class IdtLmdbDataExporter(object):
             txn.put("total".encode(), str(total).encode())
             txn.put("class_num".encode(), str(class_num).encode())
             for item_class in self.class_num_dict.keys():
-                txn.put(f"class#{item_class}".encode(), str(
-                    self.class_num_dict[item_class]).encode())
+                txn.put(f"class#{item_class}".encode(),
+                        str(self.class_num_dict[item_class]).encode())
 
     def _extract_once(self, item) -> Tuple[bytes, bytes]:
         full_path = item[-1]
@@ -142,7 +144,13 @@ class IdtLmdbDataExporter(object):
             left = int(diff / 2)
             right = diff - left
         fimg = cv2.copyMakeBorder(
-            img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=[0, 0, 0])
+            img,
+            top,
+            bottom,
+            left,
+            right,
+            cv2.BORDER_CONSTANT,
+            value=[0, 0, 0])
         rimg = cv2.resize(fimg, self.shape, interpolation=cv2.INTER_AREA)
         return rimg
 
@@ -156,7 +164,9 @@ class IdtLmdbDataExporter(object):
                 line_len = len(line)
                 if line_len < 3:
                     logger.warning(
-                        'lst should at least has three parts, but only has %s parts for %s' % (line_len, line))
+                        'lst should at least has three parts, '
+                        'but only has %s parts for %s'
+                        % (line_len, line))
                     continue
 
                 item = (int(line[0]), float(line[1]), line[2])

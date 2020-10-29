@@ -8,10 +8,13 @@ import click
 @click.command()
 def main(img_dir: str, output_lst: str):
     if img_dir.startswith('.'):
-        raise('请用绝对路径赋值img_dir变量')
+        raise ('请用绝对路径赋值img_dir变量')
+
     lst_str, img_num = '', 0
+
     for label, item_class in enumerate(os.listdir(img_dir)):
-        print('preprocess class {} for all imgs {}'.format(item_class, img_num))
+        print('preprocess class {} for all imgs {}'.format(
+            item_class, img_num))
         class_path = '{}/{}'.format(img_dir, item_class)
         for item_img in os.listdir(class_path):
             abs_img_path = os.path.join(class_path, item_img)

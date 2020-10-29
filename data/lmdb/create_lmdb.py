@@ -11,13 +11,15 @@ from mmcls.datasets.persistences.persist_lmdb import IdtLmdbDataExporter
 def main(list_path: str, output_path: str, log_level: str, batch_size: int):
     import sys
     from loguru import logger
-    exporter = IdtLmdbDataExporter(list_path, output_path, shape=(256, 256), batch_size=batch_size)
-    logger.configure(**{"handlers": [
-        {
-            "sink": sys.stdout,
-            "level": log_level.upper(),
-        },
-    ]})
+    exporter = IdtLmdbDataExporter(
+        list_path, output_path, shape=(256, 256), batch_size=batch_size)
+    logger.configure(
+        **{"handlers": [
+            {
+                "sink": sys.stdout,
+                "level": log_level.upper(),
+            },
+        ]})
     exporter.export()
 
 
