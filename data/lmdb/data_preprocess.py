@@ -6,7 +6,7 @@ import click
 @click.option("-i", "img_dir", required=True, help="图片文件夹路径")
 @click.option("-o", "output_lst", required=True, help="lst文件输出路径")
 @click.command()
-def main(img_dir:str, output_lst:str):
+def main(img_dir: str, output_lst: str):
     if img_dir.startswith('.'):
         raise('请用绝对路径赋值img_dir变量')
     lst_str, img_num = '', 0
@@ -19,8 +19,9 @@ def main(img_dir:str, output_lst:str):
                 continue
             lst_str += '{}\t{}\t{}\n'.format(img_num, label, abs_img_path)
             img_num += 1
-    
+
     open(output_lst, 'w').write(lst_str)
+
 
 if __name__ == "__main__":
     main()

@@ -1,4 +1,3 @@
-import sys
 import os
 import re
 import time
@@ -8,7 +7,6 @@ from concurrent.futures import ThreadPoolExecutor
 
 import lmdb
 import cv2
-import click
 from loguru import logger
 
 logger.add("./lmdb.log", level="INFO")

@@ -1,4 +1,3 @@
-import mmcv
 import lmdb
 import numpy as np
 
@@ -28,7 +27,7 @@ class LMDBDataset(BaseDataset):
             key = key.decode()
             if '###' not in key:
                 continue
-            
+
             label = float(key.split('###')[-1])
             data_infos.append({'img_info': {'filename': key},
                                'gt_label': np.array(label, dtype=np.int64),
