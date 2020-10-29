@@ -59,11 +59,6 @@ class IdtLmdbDataExporter(object):
             idx = 0
             logger.info(f'Creating lmdb file from {file_lst}')
             file_name = os.path.basename(file_lst).split('.')[0]
-            db_name = "val" if "val" in file_name else "train"
-
-            # create lmdb
-            db_name = db_name.encode()
-            lmdb_db = self.lmdb_env.open_db(db_name)
 
             iter_file_lst = self.read_list(file_lst)
             while True:
@@ -74,12 +69,11 @@ class IdtLmdbDataExporter(object):
                 except StopIteration:
                     break
 
-                # logger.info("extracting image...")
                 with ThreadPoolExecutor() as executor:
                     results.extend(executor.map(self._extract_once, items))
 
                 if len(results) >= self.batch_size:
-                    self.save_to_lmdb(idx, lmdb_db, results)
+                    self.save_to_lmdb(idx, results)
                     idx += self.batch_size
                     et = time.time()
                     logger.info(f"time: {(et-st)}(s)  count: {idx}")
@@ -88,17 +82,16 @@ class IdtLmdbDataExporter(object):
 
             et = time.time()
             logger.info(f"time: {(et-st)}(s)  count: {idx}")
-            self.save_to_lmdb(idx, lmdb_db, results)
-            self.save_total(lmdb_db, idx)
+            self.save_to_lmdb(idx, results)
+            self.save_total(idx)
             del results[:]
             
 
-    def save_to_lmdb(self, start_idx: int, lmdb_db, results):
+    def save_to_lmdb(self, start_idx: int, results):
         """
         结果持久化到lmdb
         """
-        logger.info(f"persist to lmdb db: {lmdb_db}")
-        with self.lmdb_env.begin(write=True, db=lmdb_db) as txn:
+        with self.lmdb_env.begin(write=True) as txn:
             while results:
                 img_key, img_byte = results.pop()
                 if img_key is None or img_byte is None:
@@ -106,22 +99,18 @@ class IdtLmdbDataExporter(object):
                 txn.put(str(start_idx).encode(), img_key)
                 txn.put(img_key, img_byte)
                 start_idx += 1
-            txn.commit()
 
-    def save_total(self, lmdb_db, total: int):
+    def save_total(self, total: int):
         """
         持久化总记录
         """
-        logger.info(f"total for db {lmdb_db}: {total}")
         class_num = len(self.class_num_dict.keys())
-        logger.info(f"class_num for db {lmdb_db}: {class_num}")
-        with self.lmdb_env.begin(write=True, buffers=True, db=lmdb_db) as txn:
+        with self.lmdb_env.begin(write=True, buffers=True) as txn:
             txn.put("total".encode(), str(total).encode())
             txn.put("class_num".encode(), str(class_num).encode())
             for item_class in self.class_num_dict.keys():
                 txn.put(f"class#{item_class}".encode(), str(
                     self.class_num_dict[item_class]).encode())
-            txn.commit()
 
     def _extract_once(self, item) -> Tuple[bytes, bytes]:
         full_path = item[-1]
