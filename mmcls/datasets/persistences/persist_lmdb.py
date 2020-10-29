@@ -17,7 +17,7 @@ class IdtLmdbDataExporter(object):
     """
     用于将小文件导出对应的lmdb文件
     """
-    label_pattern = re.compile("/.*/.*?(\d+)$")
+    label_pattern = re.compile(r"/.*/.*?(\d+)$")
 
     def __init__(self,
                  target_path,
@@ -163,10 +163,9 @@ class IdtLmdbDataExporter(object):
                 line = [i.strip() for i in line.strip().split('\t')]
                 line_len = len(line)
                 if line_len < 3:
-                    logger.warning(
-                        'lst should at least has three parts, '
-                        'but only has %s parts for %s'
-                        % (line_len, line))
+                    logger.warning('lst should at least has three parts, '
+                                   'but only has %s parts for %s' %
+                                   (line_len, line))
                     continue
 
                 item = (int(line[0]), float(line[1]), line[2])
