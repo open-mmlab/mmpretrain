@@ -3,8 +3,8 @@ import cv2
 import click
 
 
-@click.option("-i", "img_dir", required=True, help="图片文件夹路径")
-@click.option("-o", "output_lst", required=True, help="lst文件输出路径")
+@click.option('-i', 'img_dir', required=True, help='图片文件夹路径')
+@click.option('-o', 'output_lst', required=True, help='lst文件输出路径')
 @click.command()
 def main(img_dir: str, output_lst: str):
     if img_dir.startswith('.'):
@@ -26,5 +26,5 @@ def main(img_dir: str, output_lst: str):
     open(output_lst, 'w').write(lst_str)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

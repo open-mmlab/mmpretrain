@@ -9,7 +9,7 @@ import lmdb
 import cv2
 from loguru import logger
 
-logger.add("./lmdb.log", level="INFO")
+logger.add('./lmdb.log', level='INFO')
 _10TB = 10 * (1 << 40)
 
 
@@ -17,7 +17,7 @@ class IdtLmdbDataExporter(object):
     """
     用于将小文件导出对应的lmdb文件
     """
-    label_pattern = re.compile(r"/.*/.*?(\d+)$")
+    label_pattern = re.compile(r'/.*/.*?(\d+)$')
 
     def __init__(self,
                  target_path,
@@ -35,16 +35,16 @@ class IdtLmdbDataExporter(object):
         self.class_num_dict = dict()
 
         if not os.path.exists(target_path):
-            raise Exception(f"{target_path} is not exists!")
+            raise Exception(f'{target_path} is not exists!')
 
         # list文件列表
         self.files = [
             os.path.join(target_path, fname)
             for fname in os.listdir(target_path)
             if os.path.isfile(os.path.join(target_path, fname))
-            and fname.endswith(".lst")
+            and fname.endswith('.lst')
         ]
-        # self.files = ["./rec-test/val.lst"]
+        # self.files = ['./rec-test/val.lst']
 
         if not os.path.exists(output_path):
             os.makedirs(output_path)
@@ -77,12 +77,12 @@ class IdtLmdbDataExporter(object):
                     self.save_to_lmdb(idx, results)
                     idx += self.batch_size
                     et = time.time()
-                    logger.info(f"time: {(et-st)}(s)  count: {idx}")
+                    logger.info(f'time: {(et-st)}(s)  count: {idx}')
                     st = time.time()
                     del results[:]
 
             et = time.time()
-            logger.info(f"time: {(et-st)}(s)  count: {idx}")
+            logger.info(f'time: {(et-st)}(s)  count: {idx}')
             self.save_to_lmdb(idx, results)
             self.save_total(idx)
             del results[:]
@@ -106,15 +106,15 @@ class IdtLmdbDataExporter(object):
         """
         class_num = len(self.class_num_dict.keys())
         with self.lmdb_env.begin(write=True, buffers=True) as txn:
-            txn.put("total".encode(), str(total).encode())
-            txn.put("class_num".encode(), str(class_num).encode())
+            txn.put('total'.encode(), str(total).encode())
+            txn.put('class_num'.encode(), str(class_num).encode())
             for item_class in self.class_num_dict.keys():
-                txn.put(f"class#{item_class}".encode(),
+                txn.put(f'class#{item_class}'.encode(),
                         str(self.class_num_dict[item_class]).encode())
 
     def _extract_once(self, item) -> Tuple[bytes, bytes]:
         full_path = item[-1]
-        imageKey = "###".join(map(str, item[:-1]))
+        imageKey = '###'.join(map(str, item[:-1]))
 
         label = item[-2]
         if label in self.class_num_dict.keys():
@@ -127,8 +127,8 @@ class IdtLmdbDataExporter(object):
             return None, None
         if img.shape != self.shape:
             img = self.fillImg(img)
-        _, img_byte = cv2.imencode(".jpg", img)
-        logger.debug(f"{imageKey} for {full_path}")
+        _, img_byte = cv2.imencode('.jpg', img)
+        logger.debug(f'{imageKey} for {full_path}')
         return (imageKey.encode(), img_byte.tobytes())
 
     def fillImg(self, img):

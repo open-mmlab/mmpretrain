@@ -115,8 +115,6 @@ work_dirs/
 # Pytorch
 *.pth
 
-# lmdb
+# lmdb and lst
 *.mdb
-
-# lst file
 *.lst
