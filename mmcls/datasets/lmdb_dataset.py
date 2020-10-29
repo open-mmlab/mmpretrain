@@ -7,7 +7,7 @@ from .base_dataset import BaseDataset
 
 
 @DATASETS.register_module()
-class MyDataset(BaseDataset):
+class LMDBDataset(BaseDataset):
 
     def read_txt(self):
         data_infos = []
