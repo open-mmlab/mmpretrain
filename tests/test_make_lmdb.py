@@ -8,7 +8,7 @@ from mmcls.datasets.persistences.persist_lmdb import LmdbDataExporter
 
 
 def test_lmdb_exporter(img_dir='tests/data/make_lmdb',
-                       output_path='data/lmdb/train.lmdb'):
+                       output_path='tests/data/test.lmdb'):
     exporter = LmdbDataExporter(img_dir=img_dir, output_path=output_path)
 
     assert exporter.img_dir is not None
@@ -30,7 +30,7 @@ def test_lmdb_exporter(img_dir='tests/data/make_lmdb',
     assert os.path.exists(exporter.output_path)
 
 
-def test_read_lmdb(ann_file='data/lmdb/train.lmdb'):
+def test_read_lmdb(ann_file='tests/data/test.lmdb'):
     env = lmdb.open(ann_file)
     txn = env.begin(write=False)
     for key, imgs in txn.cursor():
