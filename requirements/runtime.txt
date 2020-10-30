@@ -1,3 +1,4 @@
+lmdb
 matplotlib
 mmcv
 numpy

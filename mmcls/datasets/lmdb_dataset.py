@@ -1,23 +1,15 @@
+import glob
+import os
+
 import lmdb
 import numpy as np
 
-from .builder import DATASETS
 from .base_dataset import BaseDataset
+from .builder import DATASETS
 
 
 @DATASETS.register_module()
 class LMDBDataset(BaseDataset):
-
-    def read_txt(self):
-        data_infos = []
-        with open(self.ann_file) as f:
-            samples = [x.strip().split(' ') for x in f.readlines()]
-            for filename, gt_label in samples:
-                info = {'img_prefix': self.data_prefix}
-                info['img_info'] = {'filename': filename}
-                info['gt_label'] = np.array(gt_label, dtype=np.int64)
-                data_infos.append(info)
-            return data_infos
 
     def read_lmdb(self):
         data_infos = []
@@ -29,15 +21,24 @@ class LMDBDataset(BaseDataset):
                 continue
 
             label = float(key.split('###')[-1])
-            data_infos.append({'img_info': {'filename': key},
-                               'gt_label': np.array(label, dtype=np.int64),
-                               'img_prefix': None})
+            data_infos.append({
+                'img_info': {
+                    'filename': key
+                },
+                'gt_label': np.array(label, dtype=np.int64),
+                'img_prefix': None
+            })
         return data_infos
 
     def load_annotations(self):
         assert isinstance(self.ann_file, str)
 
-        if self.ann_file.endswith('lmdb'):
+        if os.path.isdir(self.ann_file):
+            mdb_list = glob.glob(os.path.join(self.ann_file, '*.mdb'))
+            if len(mdb_list) == 0:
+                raise Exception(f'no mdb file in {self.ann_file}.')
+            if len(mdb_list) != 2:
+                raise Exception('num of mdb files must be 2.')
             return self.read_lmdb()
         else:
-            return self.read_txt()
+            raise Exception('ann_file path is not an lmdb folder.')

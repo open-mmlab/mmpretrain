@@ -4,9 +4,9 @@ from .cifar import CIFAR10, CIFAR100
 from .dataset_wrappers import (ClassBalancedDataset, ConcatDataset,
                                RepeatDataset)
 from .imagenet import ImageNet
+from .lmdb_dataset import LMDBDataset
 from .mnist import MNIST, FashionMNIST
 from .samplers import DistributedSampler
-from .lmdb_dataset import LMDBDataset
 
 __all__ = [
     'BaseDataset', 'ImageNet', 'CIFAR10', 'CIFAR100', 'MNIST', 'FashionMNIST',
