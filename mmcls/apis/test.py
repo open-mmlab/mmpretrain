@@ -7,6 +7,7 @@ import time
 import mmcv
 import torch
 import torch.distributed as dist
+from mmcv.image import tensor2imgs
 from mmcv.runner import get_dist_info
 
 
@@ -18,10 +19,34 @@ def single_gpu_test(model, data_loader, show=False, out_dir=None):
     for i, data in enumerate(data_loader):
         with torch.no_grad():
             result = model(return_loss=False, **data)
-        results.append(result)
+
+        batch_size = len(result)
+        results.extend(result)
 
         if show or out_dir:
-            pass  # TODO
+            if batch_size == 1 and isinstance(data['img'][0], torch.Tensor):
+                img_tensor = data['img'][0]
+            else:
+                img_tensor = data['img'][0].data[0]
+
+            img_metas = data['img_metas'][0].data[0]
+            imgs = tensor2imgs(img_tensor, **img_metas[0]['img_norm_cfg'])
+            assert len(imgs) == len(img_metas)
+
+            for i, (img, img_meta) in enumerate(zip(imgs, img_metas)):
+                h, w, _ = img_meta['img_shape']
+                img_show = img[:h, :w, :]
+
+                ori_h, ori_w = img_meta['ori_shape'][:-1]
+                img_show = mmcv.imresize(img_show, (ori_w, ori_h))
+
+                if out_dir:
+                    out_file = osp.join(out_dir, img_meta['ori_filename'])
+                else:
+                    out_file = None
+
+                model.module.show_result(
+                    img_show, result[i], show=show, out_file=out_file)
 
         batch_size = data['img'].size(0)
         for _ in range(batch_size):
