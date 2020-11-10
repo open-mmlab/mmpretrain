@@ -21,12 +21,33 @@ def test_datasets_override_default(dataset_name):
     dataset_class = DATASETS.get(dataset_name)
     dataset_class.load_annotations = MagicMock()
 
+    original_classes = dataset_class.CLASSES
+
+    # Test setting classes as a tuple
+    dataset = dataset_class(
+        data_prefix='', pipeline=[], classes=('bus', 'car'), test_mode=True)
+    assert dataset.CLASSES != original_classes
+    assert dataset.CLASSES == ('bus', 'car')
+
+    # Test setting classes as a list
+    dataset = dataset_class(
+        data_prefix='', pipeline=[], classes=['bus', 'car'], test_mode=True)
+    assert dataset.CLASSES != original_classes
+    assert dataset.CLASSES == ['bus', 'car']
+
+    # Test overriding not a subset
+    dataset = dataset_class(
+        data_prefix='', pipeline=[], classes=['foo'], test_mode=True)
+    assert dataset.CLASSES != original_classes
+    assert dataset.CLASSES == ['foo']
+
     # Test default behavior
     dataset = dataset_class(data_prefix='', pipeline=[])
 
     assert dataset.data_prefix == ''
     assert not dataset.test_mode
     assert dataset.ann_file is None
+    assert dataset.CLASSES == original_classes
 
 
 @patch.multiple(BaseDataset, __abstractmethods__=set())
