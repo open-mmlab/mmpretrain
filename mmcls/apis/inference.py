@@ -52,7 +52,7 @@ def inference_model(model, img):
 
     Args:
         model (nn.Module): The loaded classifier.
-        img (str/ndarray): The image filename.
+        img (str/ndarray): The image filename or loaded image.
 
     Returns:
         result (dict): The classification results that contains
@@ -61,9 +61,13 @@ def inference_model(model, img):
     cfg = model.cfg
     device = next(model.parameters()).device  # model device
     # build the data pipeline
-    test_pipeline = Compose(cfg.data.test.pipeline)
-    # prepare data
-    data = dict(img_info=dict(filename=img), img_prefix=None)
+    if isinstance(img, str):
+        test_pipeline = Compose(cfg.data.test.pipeline)
+        # prepare data
+        data = dict(img_info=dict(filename=img), img_prefix=None)
+    else:
+        test_pipeline = Compose(cfg.data.test.pipeline[1:])
+        data = dict(img=img)
     data = test_pipeline(data)
     data = collate([data], samples_per_gpu=1)
     if next(model.parameters()).is_cuda:
