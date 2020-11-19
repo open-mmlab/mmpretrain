@@ -62,12 +62,14 @@ def inference_model(model, img):
     device = next(model.parameters()).device  # model device
     # build the data pipeline
     if isinstance(img, str):
-        test_pipeline = Compose(cfg.data.test.pipeline)
-        # prepare data
+        if cfg.data.test.pipeline[0]['type'] != 'LoadImageFromFile':
+            cfg.data.test.pipeline.insert(0, dict(type='LoadImageFromFile'))
         data = dict(img_info=dict(filename=img), img_prefix=None)
     else:
-        test_pipeline = Compose(cfg.data.test.pipeline[1:])
+        if cfg.data.test.pipeline[0]['type'] == 'LoadImageFromFile':
+            cfg.data.test.pipeline.pop(0)
         data = dict(img=img)
+    test_pipeline = Compose(cfg.data.test.pipeline)
     data = test_pipeline(data)
     data = collate([data], samples_per_gpu=1)
     if next(model.parameters()).is_cuda:
