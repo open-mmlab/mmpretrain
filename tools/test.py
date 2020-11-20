@@ -5,6 +5,7 @@ import warnings
 import mmcv
 import numpy as np
 import torch
+from mmcv import DictAction
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import get_dist_info, init_dist, load_checkpoint
 
@@ -27,6 +28,12 @@ def parse_args():
         help='whether to use gpu to collect results')
     parser.add_argument('--tmpdir', help='tmp dir for writing some results')
     parser.add_argument(
+        '--options',
+        nargs='+',
+        action=DictAction,
+        help='override some settings in the used config, the key-value pair '
+        'in xxx=yyy format will be merged into config file.')
+    parser.add_argument(
         '--launcher',
         choices=['none', 'pytorch', 'slurm', 'mpi'],
         default='none',
@@ -42,6 +49,8 @@ def main():
     args = parse_args()
 
     cfg = mmcv.Config.fromfile(args.config)
+    if args.options is not None:
+        cfg.merge_from_dict(args.options)
     # set cudnn_benchmark
     if cfg.get('cudnn_benchmark', False):
         torch.backends.cudnn.benchmark = True
