@@ -5,7 +5,7 @@ import mmcv
 import numpy as np
 from torch.utils.data import Dataset
 
-from mmcls.models.losses import accuracy
+from mmcls.models.losses import accuracy, f_1, precision, recall
 from .pipelines import Compose
 
 
@@ -127,20 +127,31 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         Returns:
             dict: evaluation results
         """
-        if not isinstance(metric, str):
-            assert len(metric) == 1
-            metric = metric[0]
-        allowed_metrics = ['accuracy']
-        if metric not in allowed_metrics:
-            raise KeyError(f'metric {metric} is not supported')
-
+        if isinstance(metric, str):
+            metrics = [metric]
+        else:
+            metrics = metric
+        allowed_metrics = ['accuracy', 'precision', 'recall', 'f_1']
         eval_results = {}
-        if metric == 'accuracy':
-            topk = metric_options.get('topk')
+        for metric in metrics:
+            if metric not in allowed_metrics:
+                raise KeyError(f'metric {metric} is not supported.')
             results = np.vstack(results)
             gt_labels = self.get_gt_labels()
             num_imgs = len(results)
             assert len(gt_labels) == num_imgs
-            acc = accuracy(results, gt_labels, topk)
-            eval_results = {f'top-{k}': a.item() for k, a in zip(topk, acc)}
+            if metric == 'accuracy':
+                topk = metric_options.get('topk')
+                acc = accuracy(results, gt_labels, topk)
+                eval_result = {f'top-{k}': a.item() for k, a in zip(topk, acc)}
+            elif metric == 'precision':
+                precision_value = precision(results, gt_labels)
+                eval_result = {'precision': precision_value}
+            elif metric == 'recall':
+                recall_value = recall(results, gt_labels)
+                eval_result = {'recall': recall_value}
+            elif metric == 'f_1':
+                f_1_value = f_1(results, gt_labels)
+                eval_result = {'f_1': f_1_value}
+            eval_results.update(eval_result)
         return eval_results

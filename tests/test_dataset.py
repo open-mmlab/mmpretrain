@@ -62,6 +62,19 @@ def test_datasets_override_default(dataset_name):
 
 
 @patch.multiple(BaseDataset, __abstractmethods__=set())
+def test_dataset_evaluation():
+    dataset = BaseDataset(data_prefix='', pipeline=[], test_mode=True)
+    dataset.data_infos = [dict(gt_label=0), dict(gt_label=1)]
+    fake_results = np.array([[1, 0], [0, 1]])
+    eval_results = dataset.evaluate(
+        fake_results, metric=['precision', 'recall', 'f_1'])
+    # assert eval_results['accuracy'] == 1
+    assert eval_results['precision'] == 100.0
+    assert eval_results['recall'] == 100.0
+    assert eval_results['f_1'] == 100.0
+
+
+@patch.multiple(BaseDataset, __abstractmethods__=set())
 def test_dataset_wrapper():
     BaseDataset.CLASSES = ('foo', 'bar')
     BaseDataset.__getitem__ = MagicMock(side_effect=lambda idx: idx)
