@@ -23,6 +23,7 @@ def plot(
     append=False,
     finish=True,
     legendloc='lower right',
+    ext='png',
 ):
     xs = np.array(xs, dtype=np.float)
     ys = np.array(ys, dtype=np.float)
@@ -58,7 +59,7 @@ def plot(
         plt.title(f"{label} accuracy on {dsname} / {xlabel}")
         plt.xlabel(xlabel)
         plt.ylabel("Accuracy")
-        plt.savefig(f"{dsname}-{xlabel}-{label}.svg")
+        plt.savefig(f"{dsname}-{xlabel}-{label}.{ext}")
 
 
 def main():
