@@ -68,7 +68,6 @@ def test_dataset_evaluation():
     fake_results = np.array([[1, 0], [0, 1]])
     eval_results = dataset.evaluate(
         fake_results, metric=['precision', 'recall', 'f_1'])
-    # assert eval_results['accuracy'] == 1
     assert eval_results['precision'] == 100.0
     assert eval_results['recall'] == 100.0
     assert eval_results['f_1'] == 100.0
