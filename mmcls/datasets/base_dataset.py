@@ -5,7 +5,7 @@ import mmcv
 import numpy as np
 from torch.utils.data import Dataset
 
-from mmcls.models.losses import accuracy, f_1, precision, recall
+from mmcls.models.losses import accuracy, f1_score, precision, recall
 from .pipelines import Compose
 
 
@@ -131,7 +131,7 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
             metrics = [metric]
         else:
             metrics = metric
-        allowed_metrics = ['accuracy', 'precision', 'recall', 'f_1']
+        allowed_metrics = ['accuracy', 'precision', 'recall', 'f1_score']
         eval_results = {}
         for metric in metrics:
             if metric not in allowed_metrics:
@@ -150,8 +150,8 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
             elif metric == 'recall':
                 recall_value = recall(results, gt_labels)
                 eval_result = {'recall': recall_value}
-            elif metric == 'f_1':
-                f_1_value = f_1(results, gt_labels)
-                eval_result = {'f_1': f_1_value}
+            elif metric == 'f1_score':
+                f1_score_value = f1_score(results, gt_labels)
+                eval_result = {'f1_score': f1_score_value}
             eval_results.update(eval_result)
         return eval_results

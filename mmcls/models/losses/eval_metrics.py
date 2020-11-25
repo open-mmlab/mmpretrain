@@ -43,10 +43,9 @@ def precision(pred, target):
     else:
         raise TypeError('pred and target should both be'
                         'torch.Tensor or np.ndarray')
-
     with torch.no_grad():
-        res = confusion_matrix.diag() / confusion_matrix.sum(1)
-        res = torch.where(torch.isnan(res), torch.full_like(res, 0), res)
+        res = confusion_matrix.diag() / torch.clamp(
+            confusion_matrix.sum(1), min=1)
         res = res.mean().item() * 100
     return res
 
@@ -70,13 +69,13 @@ def recall(pred, target):
                         'torch.Tensor or np.ndarray')
 
     with torch.no_grad():
-        res = confusion_matrix.diag() / confusion_matrix.sum(0)
-        res = torch.where(torch.isnan(res), torch.full_like(res, 0), res)
+        res = confusion_matrix.diag() / torch.clamp(
+            confusion_matrix.sum(0), min=1)
         res = res.mean().item() * 100
     return res
 
 
-def f_1(pred, target):
+def f1_score(pred, target):
     """Calculate macro-averaged F1 score according to the prediction and target
 
     Args:
@@ -95,13 +94,12 @@ def f_1(pred, target):
                         'torch.Tensor or np.ndarray')
 
     with torch.no_grad():
-        precision = confusion_matrix.diag() / confusion_matrix.sum(1)
-        precision = torch.where(
-            torch.isnan(precision), torch.full_like(precision, 0), precision)
-        recall = confusion_matrix.diag() / confusion_matrix.sum(0)
-        recall = torch.where(
-            torch.isnan(recall), torch.full_like(recall, 0), recall)
-        res = 2 * precision * recall / (precision + recall)
+        precision = confusion_matrix.diag() / torch.clamp(
+            confusion_matrix.sum(1), min=1)
+        recall = confusion_matrix.diag() / torch.clamp(
+            confusion_matrix.sum(0), min=1)
+        res = 2 * precision * recall / torch.clamp(
+            precision + recall, min=1e-20)
         res = torch.where(torch.isnan(res), torch.full_like(res, 0), res)
         res = res.mean().item() * 100
     return res
