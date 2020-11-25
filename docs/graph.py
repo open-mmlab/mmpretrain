@@ -8,23 +8,21 @@ from collections import namedtuple
 import matplotlib as mpl
 
 
-def plot(
-    xs,
-    ys,
-    ss,
-    s_scale,
-    ann,
-    label,
-    xlabel,
-    dsname,
-    xlim,
-    ylim,
-    fontsize,
-    append=False,
-    finish=True,
-    legendloc='lower right',
-    ext='png',
-):
+def plot(xs,
+         ys,
+         ss,
+         s_scale,
+         ann,
+         label,
+         xlabel,
+         dsname,
+         xlim,
+         ylim,
+         fontsize,
+         append=False,
+         finish=True,
+         legendloc='lower right',
+         ext='png'):
     xs = np.array(xs, dtype=np.float)
     ys = np.array(ys, dtype=np.float)
     ss = np.array(ss, dtype=np.float) * s_scale
