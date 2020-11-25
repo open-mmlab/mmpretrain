@@ -11,7 +11,7 @@ from mmcls.datasets.pipelines import Compose
 from mmcls.models import build_classifier
 
 
-def init_model(config, checkpoint=None, device='cuda:0'):
+def init_model(config, checkpoint=None, device='cuda:0', options=None):
     """Initialize a classifier from config file.
 
     Args:
@@ -19,6 +19,7 @@ def init_model(config, checkpoint=None, device='cuda:0'):
             object.
         checkpoint (str, optional): Checkpoint path. If left as None, the model
             will not load any weights.
+        options (dict): Options to override some settings in the used config.
 
     Returns:
         nn.Module: The constructed classifier.
@@ -28,6 +29,8 @@ def init_model(config, checkpoint=None, device='cuda:0'):
     elif not isinstance(config, mmcv.Config):
         raise TypeError('config must be a filename or Config object, '
                         f'but got {type(config)}')
+    if options is not None:
+        config.merge_from_dict(options)
     config.model.pretrained = None
     model = build_classifier(config.model)
     if checkpoint is not None:
