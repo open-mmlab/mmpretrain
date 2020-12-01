@@ -25,7 +25,7 @@ def accuracy_torch(pred, target, topk=1):
     correct = pred_label.eq(target.view(1, -1).expand_as(pred_label))
 
     for k in topk:
-        correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
+        correct_k = correct[:k].reshape(-1).float().sum(0, keepdim=True)
         res.append(correct_k.mul_(100. / num))
     return res
 
