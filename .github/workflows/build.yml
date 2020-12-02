@@ -63,12 +63,6 @@ jobs:
       - name: Install mmcls dependencies
         run: |
           pip install -r requirements.txt
-      - name: Lint with flake8
-        run: flake8 .
-      - name: Lint with isort
-        run: isort --recursive --check-only --diff mmcls/ tools/ configs/ tests/
-      - name: Format python codes with yapf
-        run: yapf -r -d mmcls/ tools/ configs/ tests/
       - name: Build and install
         run: |
           rm -rf .eggs
