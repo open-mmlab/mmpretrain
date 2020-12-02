@@ -5,7 +5,6 @@
 ImageNet has multiple versions, but the most commonly used one is [ILSVRC 2012](http://www.image-net.org/challenges/LSVRC/2012/).
 The ResNet family models below are trained by standard data augmentations, i.e., RandomResizedCrop, RandomHorizontalFlip and Normalize.
 
-
 |         Model         | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
 |:---------------------:|:---------:|:--------:|:---------:|:---------:|:---------:|:--------:|
 | VGG-11 | 132.86 | 7.63 | 69.03 | 88.63 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/imagenet/vgg11.py) | [model](https://download.openmmlab.com/mmclassification/v0/imagenet/vgg11-01ecd97e.pth)* |
@@ -39,7 +38,6 @@ The ResNet family models below are trained by standard data augmentations, i.e.,
 | MobileNet V2          | 3.5       | 0.319    | 71.86 | 90.42 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/imagenet/mobilenet_v2_b32x8.py) | [model](https://download.openmmlab.com/mmclassification/v0/imagenet/mobilenet_v2_batch256_20200708-3b2dc3af.pth) &#124; [log](https://download.openmmlab.com/mmclassification/v0/imagenet/mobilenet_v2_batch256_20200708-3b2dc3af.log.json) |
 
 Models with * are converted from other repos, others are trained by ourselves.
-
 
 ## CIFAR10
 
