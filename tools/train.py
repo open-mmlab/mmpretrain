@@ -87,10 +87,6 @@ def main():
     else:
         cfg.gpu_ids = range(1) if args.gpus is None else range(args.gpus)
 
-    if args.autoscale_lr:
-        # apply the linear scaling rule (https://arxiv.org/abs/1706.02677)
-        cfg.optimizer['lr'] = cfg.optimizer['lr'] * len(cfg.gpu_ids) / 8
-
     # init distributed env first, since logger depends on the dist info.
     if args.launcher == 'none':
         distributed = False
@@ -99,6 +95,10 @@ def main():
         init_dist(args.launcher, **cfg.dist_params)
         _, world_size = get_dist_info()
         cfg.gpu_ids = range(world_size)
+
+    if args.autoscale_lr:
+        # apply the linear scaling rule (https://arxiv.org/abs/1706.02677)
+        cfg.optimizer['lr'] = cfg.optimizer['lr'] * len(cfg.gpu_ids) / 8
 
     # create work_dir
     mmcv.mkdir_or_exist(osp.abspath(cfg.work_dir))
