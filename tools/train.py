@@ -51,10 +51,6 @@ def parse_args():
         default='none',
         help='job launcher')
     parser.add_argument('--local_rank', type=int, default=0)
-    parser.add_argument(
-        '--autoscale-lr',
-        action='store_true',
-        help='automatically scale lr with the number of gpus')
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
@@ -95,10 +91,6 @@ def main():
         init_dist(args.launcher, **cfg.dist_params)
         _, world_size = get_dist_info()
         cfg.gpu_ids = range(world_size)
-
-    if args.autoscale_lr:
-        # apply the linear scaling rule (https://arxiv.org/abs/1706.02677)
-        cfg.optimizer['lr'] = cfg.optimizer['lr'] * len(cfg.gpu_ids) / 8
 
     # create work_dir
     mmcv.mkdir_or_exist(osp.abspath(cfg.work_dir))
