@@ -34,7 +34,7 @@ def precision(pred, target):
     confusion_matrix = calculate_confusion_matrix(pred, target)
     with torch.no_grad():
         res = confusion_matrix.diag() / torch.clamp(
-            confusion_matrix.sum(1), min=1)
+            confusion_matrix.sum(0), min=1)
         res = res.mean().item() * 100
     return res
 
@@ -52,7 +52,7 @@ def recall(pred, target):
     confusion_matrix = calculate_confusion_matrix(pred, target)
     with torch.no_grad():
         res = confusion_matrix.diag() / torch.clamp(
-            confusion_matrix.sum(0), min=1)
+            confusion_matrix.sum(1), min=1)
         res = res.mean().item() * 100
     return res
 
