@@ -21,12 +21,66 @@ def test_datasets_override_default(dataset_name):
     dataset_class = DATASETS.get(dataset_name)
     dataset_class.load_annotations = MagicMock()
 
+    original_classes = dataset_class.CLASSES
+
+    # Test setting classes as a tuple
+    dataset = dataset_class(
+        data_prefix='', pipeline=[], classes=('bus', 'car'), test_mode=True)
+    assert dataset.CLASSES != original_classes
+    assert dataset.CLASSES == ('bus', 'car')
+
+    # Test setting classes as a list
+    dataset = dataset_class(
+        data_prefix='', pipeline=[], classes=['bus', 'car'], test_mode=True)
+    assert dataset.CLASSES != original_classes
+    assert dataset.CLASSES == ['bus', 'car']
+
+    # Test setting classes through a file
+    tmp_file = tempfile.NamedTemporaryFile()
+    with open(tmp_file.name, 'w') as f:
+        f.write('bus\ncar\n')
+    dataset = dataset_class(
+        data_prefix='', pipeline=[], classes=tmp_file.name, test_mode=True)
+    tmp_file.close()
+
+    assert dataset.CLASSES != original_classes
+    assert dataset.CLASSES == ['bus', 'car']
+
+    # Test overriding not a subset
+    dataset = dataset_class(
+        data_prefix='', pipeline=[], classes=['foo'], test_mode=True)
+    assert dataset.CLASSES != original_classes
+    assert dataset.CLASSES == ['foo']
+
     # Test default behavior
     dataset = dataset_class(data_prefix='', pipeline=[])
 
     assert dataset.data_prefix == ''
     assert not dataset.test_mode
     assert dataset.ann_file is None
+    assert dataset.CLASSES == original_classes
+
+
+@patch.multiple(BaseDataset, __abstractmethods__=set())
+def test_dataset_evaluation():
+    dataset = BaseDataset(data_prefix='', pipeline=[], test_mode=True)
+    dataset.data_infos = [
+        dict(gt_label=0),
+        dict(gt_label=1),
+        dict(gt_label=2),
+        dict(gt_label=1),
+        dict(gt_label=0)
+    ]
+    fake_results = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1], [0, 0, 1],
+                             [0, 0, 1]])
+    eval_results = dataset.evaluate(
+        fake_results, metric=['precision', 'recall', 'f1_score'])
+    assert eval_results['precision'] == pytest.approx(
+        (1 + 1 + 1 / 3) / 3 * 100.0)
+    assert eval_results['recall'] == pytest.approx(
+        (1 / 2 + 1 / 2 + 1) / 3 * 100.0)
+    assert eval_results['f1_score'] == pytest.approx(
+        (2 / 3 + 2 / 3 + 1 / 2) / 3 * 100.0)
 
 
 @patch.multiple(BaseDataset, __abstractmethods__=set())
