@@ -106,7 +106,9 @@ def collect_results_cpu(result_part, size, tmpdir=None):
         part_list = []
         for i in range(world_size):
             part_file = osp.join(tmpdir, f'part_{i}.pkl')
-            part_list.append(mmcv.load(part_file))
+            part_result = mmcv.load(part_file)
+            if part_result:
+                part_list.append(part_result)
         # sort the results
         ordered_results = []
         for res in zip(*part_list):
@@ -140,8 +142,9 @@ def collect_results_gpu(result_part, size):
     if rank == 0:
         part_list = []
         for recv, shape in zip(part_recv_list, shape_list):
-            part_list.append(
-                pickle.loads(recv[:shape[0]].cpu().numpy().tobytes()))
+            part_result = pickle.loads(recv[:shape[0]].cpu().numpy().tobytes())
+            if part_result:
+                part_list.append(part_result)
         # sort the results
         ordered_results = []
         for res in zip(*part_list):
