@@ -6,6 +6,7 @@ Welcome to MMClassification's documentation!
 
    install.md
    getting_started.md
+   modelzoo_statistics.md
    model_zoo.md
    tutorials/finetune.md
    tutorials/new_dataset.md
