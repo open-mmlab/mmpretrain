@@ -21,4 +21,4 @@
 
 |         Model         | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
 |:---------------------:|:---------:|:--------:|:---------:|:---------:|:---------:|:--------:|
-| MobileNet V2          | 3.5       | 0.319    | 71.86 | 90.42 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/imagenet/mobilenet_v2_b32x8.py) | [model](https://download.openmmlab.com/mmclassification/v0/imagenet/mobilenet_v2_batch256_20200708-3b2dc3af.pth) &#124; [log](https://download.openmmlab.com/mmclassification/v0/imagenet/mobilenet_v2_batch256_20200708-3b2dc3af.log.json) |
+| MobileNet V2          | 3.5       | 0.319    | 71.86 | 90.42 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v2/mobilenet_v2_batch256_imagenet_20200708-3b2dc3af.pth) &#124; [log](https://download.openmmlab.com/mmclassification/v0/mobilenet_v2/mobilenet_v2_batch256_imagenet_20200708-3b2dc3af.log.json) |
