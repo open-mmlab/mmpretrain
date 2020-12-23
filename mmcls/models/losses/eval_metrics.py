@@ -17,7 +17,8 @@ def calculate_confusion_matrix(pred, target):
     assert len(pred_label) == len(target_label)
     confusion_matrix = torch.zeros(num_classes, num_classes)
     with torch.no_grad():
-        confusion_matrix[target_label.long(), pred_label.long()] += 1
+        for t, p in zip(target_label, pred_label):
+            confusion_matrix[t.long(), p.long()] += 1
     return confusion_matrix
 
 
