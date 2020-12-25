@@ -38,9 +38,13 @@ def mAP(pred, target, difficult_examples=True):
 
     Args:
         pred (torch.Tensor | np.ndarray): The model prediction.
-        target (torch.Tensor | np.ndarray): The target of each prediction, in
-            which -1 stands for negative examples, 0 stands for difficult
-            examples and 1 stand for positive examples.
+        target (torch.Tensor | np.ndarray): The target of each prediction. If
+            difficult_examples is set as True, 1 stands for positive examples,
+            0 stands for difficult examples and -1 stands for negative
+            examples. Otherwise, 1 stands for positive examples and 0 stands
+            for negative examples.
+        difficult_examples (bool): Whether dataset contains difficult_examples.
+            Defaults to True.
 
     Returns:
         float: A single float as mAP value.
