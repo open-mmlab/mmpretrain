@@ -33,7 +33,7 @@ def average_precision(pred, target):
     return ap
 
 
-def mAP(pred, target):
+def mAP(pred, target, difficult_examples=True):
     """ Calculate the mean average precision with respect of classes
 
     Args:
@@ -53,9 +53,11 @@ def mAP(pred, target):
                         'np.ndarray')
 
     assert pred.shape == target.shape
-    num_labels = pred.shape[1]
-    ap = np.zeros(num_labels)
-    for k in range(num_labels):
+    num_classes = pred.shape[1]
+    if not difficult_examples:
+        target[target == 0] = -1
+    ap = np.zeros(num_classes)
+    for k in range(num_classes):
         ap[k] = average_precision(pred[:, k], target[:, k])
     mean_ap = ap.mean() * 100.0
     return mean_ap
