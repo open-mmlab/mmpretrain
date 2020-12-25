@@ -5,8 +5,8 @@ from mmcls.core import mAP
 
 
 def test_mAP():
-    target = torch.Tensor([[1, 1, -1, 0], [-1, 1, -1, 0], [-1, 0, 1, 0],
-                           [1, -1, -1, 0]])
+    target = torch.Tensor([[1, 1, -1, 0], [1, 1, -1, 0], [-1, 0, 1, 0],
+                           [-1, 1, -1, 0]])
     pred = torch.Tensor([[0.9, 0.8, 0.3, 0.2], [0.1, 0.2, 0.2, 0.1],
                          [0.7, 0.5, 0.9, 0.3], [0.8, 0.1, 0.1, 0.2]])
 
@@ -20,4 +20,13 @@ def test_mAP():
         target_shorter = target[:-1]
         _ = mAP(pred, target_shorter)
 
-    assert mAP(pred, target) == pytest.approx(74.99999)
+    assert mAP(pred, target) == pytest.approx(68.75, rel=1e-2)
+
+    target_no_difficult = torch.Tensor([[1, 1, 0, 0], [0, 1, 0, 0],
+                                        [0, 0, 1, 0], [1, 0, 0, 0]])
+    target_with_difficult = torch.Tensor([[1, 1, -1, -1], [-1, 1, -1, -1],
+                                          [-1, -1, 1, -1], [1, -1, -1, -1]])
+    assert mAP(pred, target_no_difficult, difficult_examples=False) \
+        == mAP(pred, target_with_difficult)
+    assert mAP(pred, target_no_difficult, difficult_examples=False) \
+        == pytest.approx(70.83, rel=1e-2)
