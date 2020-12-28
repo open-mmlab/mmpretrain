@@ -6,7 +6,7 @@
 - PyTorch 1.3+
 - [mmcv](https://github.com/open-mmlab/mmcv) 1.1.4+
 
-### Install mmclassification
+### Install MMClassification
 
 a. Create a conda virtual environment and activate it.
 
