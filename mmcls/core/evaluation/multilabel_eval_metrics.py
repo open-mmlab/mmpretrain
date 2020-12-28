@@ -10,10 +10,12 @@ def average_performance(pred, target, thrs=None, k=None):
         stands for recall and F1 stands for F1-score
 
     Args:
-        pred (torch.Tensor | np.ndarray): The model prediction.
-        target (torch.Tensor | np.ndarray): The target of each prediction, in
-            which 1 stands for positive examples and both -1 and 0 stand for
-            negative examples.
+        pred (torch.Tensor | np.ndarray): The model prediction with shape
+            (N, C), where C is the number of classes.
+        target (torch.Tensor | np.ndarray): The target of each prediction with
+            shape (N, C), where C is the number of classes. 1 stands for
+            positive examples, 0 stands for negative examples and -1 stands for
+            difficult examples.
         thrs (float): The confidence threshold. Defaults to None.
         k (int): Top-k performance. Note that if thrs and k are both given, k
             will be ignored. Defaults to None.

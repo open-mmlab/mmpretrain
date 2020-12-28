@@ -6,8 +6,10 @@ def average_precision(pred, target):
     """ Calculate the average precision for a single class
 
     Args:
-        pred (np.ndarray): The model prediction.
-        target (np.ndarray): The target of each prediction.
+        pred (np.ndarray): The model prediction with shape (N, C), where C is
+            the number of classes.
+        target (np.ndarray): The target of each prediction with shape (N, C),
+            where C is the number of classes.
 
     Returns:
         float: a single float as average precision value.
@@ -24,7 +26,7 @@ def average_precision(pred, target):
     total_p = tp[-1]
 
     # count not difficult examples
-    pn_inds = sort_target != 0
+    pn_inds = sort_target != -1
     pn = np.cumsum(pn_inds)
 
     tp[np.logical_not(p_inds)] = 0
@@ -33,18 +35,16 @@ def average_precision(pred, target):
     return ap
 
 
-def mAP(pred, target, difficult_examples=True):
+def mAP(pred, target):
     """ Calculate the mean average precision with respect of classes
 
     Args:
-        pred (torch.Tensor | np.ndarray): The model prediction.
-        target (torch.Tensor | np.ndarray): The target of each prediction. If
-            difficult_examples is set as True, 1 stands for positive examples,
-            0 stands for difficult examples and -1 stands for negative
-            examples. Otherwise, 1 stands for positive examples and 0 stands
-            for negative examples.
-        difficult_examples (bool): Whether dataset contains difficult_examples.
-            Defaults to True.
+        pred (torch.Tensor | np.ndarray): The model prediction with shape
+            (N, C), where C is the number of classes.
+        target (torch.Tensor | np.ndarray): The target of each prediction with
+            shape (N, C), where C is the number of classes. 1 stands for
+            positive examples, 0 stands for negative examples and -1 stands for
+            difficult examples.
 
     Returns:
         float: A single float as mAP value.
@@ -58,8 +58,6 @@ def mAP(pred, target, difficult_examples=True):
 
     assert pred.shape == target.shape
     num_classes = pred.shape[1]
-    if not difficult_examples:
-        target[target == 0] = -1
     ap = np.zeros(num_classes)
     for k in range(num_classes):
         ap[k] = average_precision(pred[:, k], target[:, k])
