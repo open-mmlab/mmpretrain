@@ -65,6 +65,10 @@ jobs:
         run: |
           rm -rf .eggs
           pip install -e . -U
+      # temporary solution until new version of mmcv is avaliable
+      - name: Install pytest
+        run: |
+          pip install pytest
       - name: Run unittests and generate coverage report
         run: |
           coverage run --branch --source mmcls -m pytest tests/
