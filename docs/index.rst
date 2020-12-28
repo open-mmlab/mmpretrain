@@ -13,7 +13,7 @@ Welcome to MMClassification's documentation!
    :maxdepth: 2
    :caption: Model zoo
 
-   model_zoo.md
+   modelzoo_statistics.md
 
 
 .. toctree::
