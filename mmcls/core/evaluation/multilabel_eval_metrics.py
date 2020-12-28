@@ -16,31 +16,31 @@ def average_performance(pred, target, thrs=None, k=None):
             negative examples.
         thrs (float): The confidence threshold. Defaults to None.
         k (int): Top-k performance. Note that if thrs and k are both given, k
-            will be ignored if thrs is given. Defaults to None.
+            will be ignored. Defaults to None.
 
     Returns:
         tuple: (CP, CR, CF1, OP, OR, OF1)
     """
-    if thrs is None and k is None:
-        thrs = 0.5
-        warnings.warn('Neither thrs and k is given, set thrs as 0.5 by '
-                      'default.')
-    elif thrs is not None and k is not None:
-        warnings.warn('Both thrs and k are given, use threshold in favor of '
-                      'top-k')
     if isinstance(pred, torch.Tensor) and isinstance(target, torch.Tensor):
         pred = pred.numpy()
         target = target.numpy()
     elif not (isinstance(pred, np.ndarray) and isinstance(target, np.ndarray)):
         raise TypeError('pred and target should both be torch.Tensor or'
                         'np.ndarray')
+    if thrs is None and k is None:
+        thrs = 0.5
+        warnings.warn('Neither thrs nor k is given, set thrs as 0.5 by '
+                      'default.')
+    elif thrs is not None and k is not None:
+        warnings.warn('Both thrs and k are given, use threshold in favor of '
+                      'top-k.')
 
     assert pred.shape == target.shape
 
     eps = np.finfo(np.float32).eps
     target[target == -1] = 0
     if thrs is not None:
-        # a label is predicted positive if the cofidence if greater than thrs
+        # a label is predicted positive if the confidence is no lower than thrs
         p_inds = pred >= thrs
 
     else:
