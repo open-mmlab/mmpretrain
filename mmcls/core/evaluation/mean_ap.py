@@ -6,10 +6,8 @@ def average_precision(pred, target):
     """ Calculate the average precision for a single class
 
     Args:
-        pred (np.ndarray): The model prediction with shape (N, C), where C is
-            the number of classes.
-        target (np.ndarray): The target of each prediction with shape (N, C),
-            where C is the number of classes.
+        pred (np.ndarray): The model prediction with shape (N, ).
+        target (np.ndarray): The target of each prediction with shape (N, ).
 
     Returns:
         float: a single float as average precision value.
@@ -30,8 +28,8 @@ def average_precision(pred, target):
     pn = np.cumsum(pn_inds)
 
     tp[np.logical_not(p_inds)] = 0
-    precision = tp / (pn + eps)
-    ap = np.sum(precision) / (total_p + eps)
+    precision = tp / np.maximum(pn, eps)
+    ap = np.sum(precision) / np.maximum(total_p, eps)
     return ap
 
 

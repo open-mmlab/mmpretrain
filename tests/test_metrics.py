@@ -45,11 +45,11 @@ def test_average_performance():
         _ = average_performance(pred, target_shorter)
 
     assert average_performance(pred, target) == average_performance(
-        pred, target, thrs=0.5)
-    assert average_performance(pred, target, thrs=0.5, k=2) \
-        == average_performance(pred, target, thrs=0.5)
+        pred, target, thr=0.5)
+    assert average_performance(pred, target, thr=0.5, k=2) \
+        == average_performance(pred, target, thr=0.5)
     assert average_performance(
-        pred, target, thrs=0.3) == pytest.approx(
+        pred, target, thr=0.3) == pytest.approx(
             (31.25, 43.75, 36.46, 33.33, 42.86, 37.50), rel=1e-2)
     assert average_performance(
         pred, target, k=2) == pytest.approx(
