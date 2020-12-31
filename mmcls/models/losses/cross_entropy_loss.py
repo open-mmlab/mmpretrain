@@ -39,7 +39,6 @@ def binary_cross_entropy(pred,
     Returns:
         torch.Tensor: The calculated loss
     """
-    # would they be any different?
     assert pred.dim() == label.dim()
 
     loss = F.binary_cross_entropy_with_logits(pred, label, reduction='none')
