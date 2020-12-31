@@ -8,13 +8,13 @@
 #### New Features
 
 - Remove installation of MMCV from requirements. (#90)
-- Add more evaluation metrics: precision, recall and F-1 score. (#93)
-- Allow overriding configs through input argument when testing and inferencing. (#91 & #96)
+- Add 3 evaluation metrics: precision, recall and F-1 score. (#93)
+- Allow config override during testing and inference with `--options`. (#91 & #96)
 
 #### Bug Fixes
 
-- Add `CLASSES` in dataset wrappers. (#66)
-- Fix `round_up` parameter in evaluation during training. (#69)
+- Add missing `CLASSES` argument to dataset wrappers. (#66)
+- Fix slurm evaluation error during training. (#69)
 - Resolve error caused by shape in `Accuracy`. (#104)
 - Fix bug caused by extremely insufficient data in distributed sampler.(#108)
 - Fix bug in `gpu_ids` in distributed training. (#107)
@@ -22,10 +22,10 @@
 
 #### Improvements
 
-- Use `build runner` to enable more flexible use of runners. (#54)
-- Support get category id method in `BaseDataset`. (#72)
-- Allow overriding `CLASSES` when initializing `BaseDataset`. (#85)
-- Allow input image as ndarray when inferencing. (#87)
+- Use `build_runner` to make runners more flexible. (#54)
+- Support to get category ids in `BaseDataset`. (#72)
+- Allow `CLASSES` override during `BaseDateset` initialization. (#85)
+- Allow input image as ndarray during inference. (#87)
 - Optimize MNIST config. (#98)
 - Add config links in model zoo documentation. (#99)
 - Use functions from MMCV to collect environment. (#103)
