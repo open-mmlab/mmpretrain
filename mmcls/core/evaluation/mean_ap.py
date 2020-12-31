@@ -3,7 +3,9 @@ import torch
 
 
 def average_precision(pred, target):
-    """ Calculate the average precision for a single class
+    r""" Calculate the average precision for a single class, following the
+    convention in `Asymmetric Loss For Multi-Label Classification
+    <https://arxiv.org/abs/2009.14119>`_.
 
     AP summarizes a precision-recall curve as the weighted mean of maximum
     precisions obtained for any r'>r, where r is the recall:
