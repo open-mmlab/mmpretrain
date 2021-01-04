@@ -19,11 +19,11 @@ def test_asymmetric_loss():
     loss = build_loss(loss_cfg)
     assert torch.allclose(loss(cls_score, label), torch.tensor(3.80845))
 
-    # test focal_loss with weight
+    # test asymmetric_loss with weight
     assert torch.allclose(
         loss(cls_score, label, weight=weight), torch.tensor(3.80845 / 2))
 
-    # test focal_loss without clip
+    # test asymmetric_loss without clip
     loss_cfg = dict(
         type='AsymmetricLoss',
         gamma_pos=1.0,

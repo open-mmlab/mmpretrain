@@ -45,9 +45,9 @@ def asymmetric_loss(pred,
         pt = (1 - pred_sigmoid +
               clip).clamp(max=1) * (1 - target) + pred_sigmoid * target
     else:
-        pt = (1 - pred_sigmoid) * target + pred_sigmoid * (1 - target)
-    asymmetric_weight = ((1 - pt) * target).pow(gamma_pos) + \
-        ((1 - pt) * (1 - target)).pow(gamma_neg)
+        pt = (1 - pred_sigmoid) * (1 - target) + pred_sigmoid * target
+    asymmetric_weight = (1 - pt).pow(gamma_pos * target + gamma_neg *
+                                     (1 - target))
     loss = -torch.log(pt.clamp(min=eps)) * asymmetric_weight
     loss = loss.sum(dim=1)
     loss = weight_reduce_loss(loss, weight, reduction, avg_factor)
