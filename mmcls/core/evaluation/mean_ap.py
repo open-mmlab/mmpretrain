@@ -63,8 +63,8 @@ def mAP(pred, target):
         raise TypeError('pred and target should both be torch.Tensor or'
                         'np.ndarray')
 
-    # pred and target should be in the same shape
-    assert pred.shape == target.shape
+    assert pred.shape == \
+        target.shape, 'pred and target should be in the same shape.'
     num_classes = pred.shape[1]
     ap = np.zeros(num_classes)
     for k in range(num_classes):
