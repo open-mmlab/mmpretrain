@@ -43,19 +43,19 @@ def average_performance(pred, target, thr=None, k=None):
     target[target == -1] = 0
     if thr is not None:
         # a label is predicted positive if the confidence is no lower than thr
-        p_inds = pred >= thr
+        pos_inds = pred >= thr
 
     else:
         # top-k labels will be predicted positive for any example
         sort_inds = np.argsort(-pred, axis=1)
         sort_inds_ = sort_inds[:, :k]
         inds = np.indices(sort_inds_.shape)
-        p_inds = np.zeros_like(pred)
-        p_inds[inds[0], sort_inds_] = 1
+        pos_inds = np.zeros_like(pred)
+        pos_inds[inds[0], sort_inds_] = 1
 
-    tp = (p_inds * target) == 1
-    fp = (p_inds * (1 - target)) == 1
-    fn = ((1 - p_inds) * target) == 1
+    tp = (pos_inds * target) == 1
+    fp = (pos_inds * (1 - target)) == 1
+    fn = ((1 - pos_inds) * target) == 1
 
     precision_class = tp.sum(axis=0) / np.maximum(
         tp.sum(axis=0) + fp.sum(axis=0), eps)
