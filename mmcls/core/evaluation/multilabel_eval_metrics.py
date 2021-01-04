@@ -37,6 +37,7 @@ def average_performance(pred, target, thr=None, k=None):
         warnings.warn('Both thr and k are given, use threshold in favor of '
                       'top-k.')
 
+    # pred and target should be in the same shape
     assert pred.shape == target.shape
 
     eps = np.finfo(np.float32).eps
