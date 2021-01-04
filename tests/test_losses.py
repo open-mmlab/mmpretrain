@@ -16,7 +16,7 @@ def test_focal_loss():
         reduction='mean',
         loss_weight=1.0)
     loss = build_loss(loss_cfg)
-    assert torch.allclose(loss(cls_score, label), torch.tensor(0.8522))
+    assert torch.allclose(loss(cls_score, label), torch.tensor(2.5566))
     # test focal_loss with weight
     assert torch.allclose(
-        loss(cls_score, label, weight=weight), torch.tensor(0.8522 / 2))
+        loss(cls_score, label, weight=weight), torch.tensor(2.5566 / 2))
