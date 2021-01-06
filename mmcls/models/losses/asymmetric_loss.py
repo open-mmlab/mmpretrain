@@ -56,6 +56,19 @@ def asymmetric_loss(pred,
 
 @LOSSES.register_module()
 class AsymmetricLoss(nn.Module):
+    """asymmetric loss
+
+    Args:
+        gamma_pos (float, optional): positive focusing parameter.
+            Defaults to 0.0.
+        gamma_neg (float, optional): Negative focusing parameter. We
+            usually set gamma_neg > gamma_pos. Defaults to 4.0.
+        clip (float, optional): Probability margin. Defaults to 0.05.
+        reduction (str, optional): The method used to reduce the loss into
+            a scalar. Options are "none", "mean" and "sum". Defaults to
+            'mean'.
+        loss_weight (float, optional): Weight of loss. Defaults to 1.0.
+        """
 
     def __init__(self,
                  gamma_pos=0.0,
@@ -63,19 +76,6 @@ class AsymmetricLoss(nn.Module):
                  clip=0.05,
                  reduction='mean',
                  loss_weight=1.0):
-        """asymmetric loss
-
-        Args:
-            gamma_pos (float, optional): positive focusing parameter.
-                Defaults to 0.0.
-            gamma_neg (float, optional): Negative focusing parameter. We
-                usually set gamma_neg > gamma_pos. Defaults to 4.0.
-            clip (float, optional): Probability margin. Defaults to 0.05.
-            reduction (str, optional): The method used to reduce the loss into
-                a scalar. Options are "none", "mean" and "sum". Defaults to
-                'mean'.
-            loss_weight (float, optional): Weight of loss. Defaults to 1.0.
-        """
         super(AsymmetricLoss, self).__init__()
         self.gamma_pos = gamma_pos
         self.gamma_neg = gamma_neg
