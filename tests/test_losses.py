@@ -17,11 +17,11 @@ def test_asymmetric_loss():
         reduction='mean',
         loss_weight=1.0)
     loss = build_loss(loss_cfg)
-    assert torch.allclose(loss(cls_score, label), torch.tensor(3.80845))
+    assert torch.allclose(loss(cls_score, label), torch.tensor(3.80845 / 3))
 
     # test asymmetric_loss with weight
     assert torch.allclose(
-        loss(cls_score, label, weight=weight), torch.tensor(3.80845 / 2))
+        loss(cls_score, label, weight=weight), torch.tensor(3.80845 / 6))
 
     # test asymmetric_loss without clip
     loss_cfg = dict(
@@ -32,4 +32,4 @@ def test_asymmetric_loss():
         reduction='mean',
         loss_weight=1.0)
     loss = build_loss(loss_cfg)
-    assert torch.allclose(loss(cls_score, label), torch.tensor(5.1186))
+    assert torch.allclose(loss(cls_score, label), torch.tensor(5.1186 / 3))
