@@ -54,18 +54,18 @@ def binary_cross_entropy(pred,
 
 @LOSSES.register_module()
 class CrossEntropyLoss(nn.Module):
+    """Cross entropy loss
+
+    Args:
+        use_sigmoid (bool, optional): Whether the prediction uses sigmoid
+            of softmax. Defaults to False.
+        reduction (str, optional): The method used to reduce the loss.
+        Options are "none", "mean" and "sum". Defaults to 'mean'.
+        loss_weight (float, optional):  Weight of the loss.
+            Defaults to 1.0.
+    """
 
     def __init__(self, use_sigmoid=False, reduction='mean', loss_weight=1.0):
-        """Cross entropy loss
-
-        Args:
-            use_sigmoid (bool, optional): Whether the prediction uses sigmoid
-                of softmax. Defaults to False.
-            reduction (str, optional): The method used to reduce the loss.
-            Options are "none", "mean" and "sum". Defaults to 'mean'.
-            loss_weight (float, optional):  Weight of the loss.
-                Defaults to 1.0.
-        """
         super(CrossEntropyLoss, self).__init__()
         self.use_sigmoid = use_sigmoid
         self.reduction = reduction
