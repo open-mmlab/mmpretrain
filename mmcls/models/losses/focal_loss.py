@@ -12,7 +12,7 @@ def sigmoid_focal_loss(pred,
                        alpha=0.25,
                        reduction='mean',
                        avg_factor=None):
-    """Focal loss
+    """Sigmoid focal loss
 
     Args:
         pred (torch.Tensor): The prediction with shape (N, C), C is the
@@ -48,23 +48,24 @@ def sigmoid_focal_loss(pred,
 
 @LOSSES.register_module()
 class FocalLoss(nn.Module):
+    """Focal loss
+
+    Args:
+        gamma (float, optional): Focusing parameter in focal loss.
+            Defaults to 2.0.
+        alpha (float, optional): The parameter in balanced form of focal
+            loss. Defaults to 0.25.
+        reduction (str, optional): The method used to reduce the loss into
+            a scalar. Options are "none" and "mean". Defaults to 'mean'.
+        loss_weight (float, optional): Weight of loss. Defaults to 1.0.
+    """
 
     def __init__(self,
                  gamma=2.0,
                  alpha=0.25,
                  reduction='mean',
                  loss_weight=1.0):
-        """Focal loss
 
-        Args:
-            gamma (float, optional): Focusing parameter in focal loss.
-                Defaults to 2.0.
-            alpha (float, optional): The parameter in balanced form of focal
-                loss. Defaults to 0.25.
-            reduction (str, optional): The method used to reduce the loss into
-                a scalar. Options are "none" and "mean". Defaults to 'mean'.
-            loss_weight (float, optional): Weight of loss. Defaults to 1.0.
-        """
         super(FocalLoss, self).__init__()
         self.gamma = gamma
         self.alpha = alpha
@@ -78,6 +79,21 @@ class FocalLoss(nn.Module):
                 avg_factor=None,
                 reduction_override=None):
         """Sigmoid focal loss
+
+        Args:
+            pred (torch.Tensor): The prediction with shape (N, C), C is the
+                number of classes.
+            target (torch.Tensor): The ground truth label of the prediction
+                with shape (N, C), C is the number of classes.
+            weight (torch.Tensor, optional): Sample-wise loss weight.
+            avg_factor (int, optional): Average factor that is used to average
+            the loss. Defaults to None.
+            reduction_override (str, optional): The method used to reduce the
+                loss into a scalar. Options are "none", "mean" and "sum".
+                Defaults to 'mean'.
+
+        Returns:
+            torch.Tensor: Loss.
         """
         assert reduction_override in (None, 'none', 'mean', 'sum')
         reduction = (
