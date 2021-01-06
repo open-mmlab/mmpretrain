@@ -26,10 +26,8 @@ def binary_cross_entropy(pred,
     """Calculate the binary CrossEntropy loss with logits.
 
     Args:
-        pred (torch.Tensor): The prediction with shape (N, C), where C is the
-            number of classes.
-        label (torch.Tensor): The learning label with shape (N, C), where C is
-            the number of classes.
+        pred (torch.Tensor): The prediction with shape (N, *).
+        label (torch.Tensor): The learning label with shape (N, *).
         weight (torch.Tensor, optional): Weight of loss. Defaults to None.
         reduction (str, optional): The method used to reduce the loss.
             Options are "none", "mean" and "sum". Defaults to 'mean'.
@@ -42,7 +40,6 @@ def binary_cross_entropy(pred,
     assert pred.dim() == label.dim()
 
     loss = F.binary_cross_entropy_with_logits(pred, label, reduction='none')
-    loss = loss.sum(dim=1)
 
     # apply weights and do the reduction
     if weight is not None:
