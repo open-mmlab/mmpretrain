@@ -15,10 +15,9 @@ def sigmoid_focal_loss(pred,
     """Sigmoid focal loss
 
     Args:
-        pred (torch.Tensor): The prediction with shape (N, C), C is the
-            number of classes.
+        pred (torch.Tensor): The prediction with shape (N, *).
         target (torch.Tensor): The ground truth label of the prediction with
-            shape (N, C), C is the number of classes.
+            shape (N, *).
         weight (torch.Tensor, optional): Sample-wise loss weight.
         gamma (float, optional): The gamma for calculating the modulating
             factor. Defaults to 2.0.
@@ -41,7 +40,6 @@ def sigmoid_focal_loss(pred,
                     (1 - target)) * pt.pow(gamma)
     loss = F.binary_cross_entropy_with_logits(
         pred, target, reduction='none') * focal_weight
-    loss = loss.sum(dim=1)
     loss = weight_reduce_loss(loss, weight, reduction, avg_factor)
     return loss
 
@@ -81,10 +79,9 @@ class FocalLoss(nn.Module):
         """Sigmoid focal loss
 
         Args:
-            pred (torch.Tensor): The prediction with shape (N, C), C is the
-                number of classes.
+            pred (torch.Tensor): The prediction with shape (N, *).
             target (torch.Tensor): The ground truth label of the prediction
-                with shape (N, C), C is the number of classes.
+                with shape (N, *).
             weight (torch.Tensor, optional): Sample-wise loss weight.
             avg_factor (int, optional): Average factor that is used to average
             the loss. Defaults to None.
