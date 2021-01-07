@@ -25,8 +25,9 @@ def asymmetric_loss(pred,
         gamma_neg (float, optional): Negative focusing parameter. We usually
             set gamma_neg > gamma_pos. Defaults to 4.0.
         clip (float, optional): Probability margin. Defaults to 0.05.
-        reduction (str, optional): The method used to reduce the loss into
-            a scalar. Options are "none", "mean" and "sum". Defaults to 'mean'.
+        reduction (str, optional): The method used to reduce the loss.
+            Options are "none", "mean" and "sum". If reduction is 'none' , loss
+             is same shape as pred and label. Defaults to 'mean'.
         avg_factor (int, optional): Average factor that is used to average
             the loss. Defaults to None.
 
@@ -63,8 +64,7 @@ class AsymmetricLoss(nn.Module):
             usually set gamma_neg > gamma_pos. Defaults to 4.0.
         clip (float, optional): Probability margin. Defaults to 0.05.
         reduction (str, optional): The method used to reduce the loss into
-            a scalar. Options are "none", "mean" and "sum". Defaults to
-            'mean'.
+            a scalar.
         loss_weight (float, optional): Weight of loss. Defaults to 1.0.
         """
 
