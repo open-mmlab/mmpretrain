@@ -23,8 +23,9 @@ def sigmoid_focal_loss(pred,
             factor. Defaults to 2.0.
         alpha (float, optional): A balanced form for Focal Loss.
             Defaults to 0.25.
-        reduction (str, optional): The method used to reduce the loss into
-            a scalar. Options are "none", "mean" and "sum". Defaults to 'mean'.
+        reduction (str, optional): The method used to reduce the loss.
+            Options are "none", "mean" and "sum". If reduction is 'none' , loss
+             is same shape as pred and label. Defaults to 'mean'.
         avg_factor (int, optional): Average factor that is used to average
             the loss. Defaults to None.
 
