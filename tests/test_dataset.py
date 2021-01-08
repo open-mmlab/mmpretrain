@@ -10,28 +10,49 @@ import numpy as np
 import pytest
 
 from mmcls.datasets import (DATASETS, BaseDataset, ClassBalancedDataset,
-                            ConcatDataset, RepeatDataset)
+                            ConcatDataset, MultiLabelDataset, RepeatDataset)
 from mmcls.datasets.utils import check_integrity, rm_suffix
 
 
 @pytest.mark.parametrize(
     'dataset_name',
-    ['MNIST', 'FashionMNIST', 'CIFAR10', 'CIFAR100', 'ImageNet'])
+    ['MNIST', 'FashionMNIST', 'CIFAR10', 'CIFAR100', 'ImageNet', 'VOC'])
 def test_datasets_override_default(dataset_name):
     dataset_class = DATASETS.get(dataset_name)
     dataset_class.load_annotations = MagicMock()
 
     original_classes = dataset_class.CLASSES
 
+    # Test VOC year
+    if dataset_name == 'VOC':
+        dataset = dataset_class(
+            data_prefix='VOC2007',
+            pipeline=[],
+            classes=('bus', 'car'),
+            test_mode=True)
+        assert dataset.year == 2007
+        with pytest.raises(ValueError):
+            dataset = dataset_class(
+                data_prefix='VOC',
+                pipeline=[],
+                classes=('bus', 'car'),
+                test_mode=True)
+
     # Test setting classes as a tuple
     dataset = dataset_class(
-        data_prefix='', pipeline=[], classes=('bus', 'car'), test_mode=True)
+        data_prefix='VOC2007' if dataset_name == 'VOC' else '',
+        pipeline=[],
+        classes=('bus', 'car'),
+        test_mode=True)
     assert dataset.CLASSES != original_classes
     assert dataset.CLASSES == ('bus', 'car')
 
     # Test setting classes as a list
     dataset = dataset_class(
-        data_prefix='', pipeline=[], classes=['bus', 'car'], test_mode=True)
+        data_prefix='VOC2007' if dataset_name == 'VOC' else '',
+        pipeline=[],
+        classes=['bus', 'car'],
+        test_mode=True)
     assert dataset.CLASSES != original_classes
     assert dataset.CLASSES == ['bus', 'car']
 
@@ -40,7 +61,10 @@ def test_datasets_override_default(dataset_name):
     with open(tmp_file.name, 'w') as f:
         f.write('bus\ncar\n')
     dataset = dataset_class(
-        data_prefix='', pipeline=[], classes=tmp_file.name, test_mode=True)
+        data_prefix='VOC2007' if dataset_name == 'VOC' else '',
+        pipeline=[],
+        classes=tmp_file.name,
+        test_mode=True)
     tmp_file.close()
 
     assert dataset.CLASSES != original_classes
@@ -48,21 +72,30 @@ def test_datasets_override_default(dataset_name):
 
     # Test overriding not a subset
     dataset = dataset_class(
-        data_prefix='', pipeline=[], classes=['foo'], test_mode=True)
+        data_prefix='VOC2007' if dataset_name == 'VOC' else '',
+        pipeline=[],
+        classes=['foo'],
+        test_mode=True)
     assert dataset.CLASSES != original_classes
     assert dataset.CLASSES == ['foo']
 
     # Test default behavior
-    dataset = dataset_class(data_prefix='', pipeline=[])
+    dataset = dataset_class(
+        data_prefix='VOC2007' if dataset_name == 'VOC' else '', pipeline=[])
 
-    assert dataset.data_prefix == ''
+    if dataset_name == 'VOC':
+        assert dataset.data_prefix == 'VOC2007'
+    else:
+        assert dataset.data_prefix == ''
     assert not dataset.test_mode
     assert dataset.ann_file is None
     assert dataset.CLASSES == original_classes
 
 
+@patch.multiple(MultiLabelDataset, __abstractmethods__=set())
 @patch.multiple(BaseDataset, __abstractmethods__=set())
 def test_dataset_evaluation():
+    # test multi-class single-label evaluation
     dataset = BaseDataset(data_prefix='', pipeline=[], test_mode=True)
     dataset.data_infos = [
         dict(gt_label=0),
@@ -82,6 +115,37 @@ def test_dataset_evaluation():
         (2 / 3 + 1 / 2 + 1) / 3 * 100.0)
     assert eval_results['f1_score'] == pytest.approx(
         (4 / 5 + 2 / 3 + 1 / 2) / 3 * 100.0)
+
+    # test multi-label evalutation
+    dataset = MultiLabelDataset(data_prefix='', pipeline=[], test_mode=True)
+    dataset.data_infos = [
+        dict(gt_label=[1, 1, 0, -1]),
+        dict(gt_label=[1, 1, 0, -1]),
+        dict(gt_label=[0, -1, 1, -1]),
+        dict(gt_label=[0, 1, 0, -1]),
+        dict(gt_label=[0, 1, 0, -1]),
+    ]
+    fake_results = np.array([[0.9, 0.8, 0.3, 0.2], [0.1, 0.2, 0.2, 0.1],
+                             [0.7, 0.5, 0.9, 0.3], [0.8, 0.1, 0.1, 0.2],
+                             [0.8, 0.1, 0.1, 0.2]])
+
+    # the metric must be valid
+    with pytest.raises(KeyError):
+        metric = 'coverage'
+        dataset.evaluate(fake_results, metric=metric)
+    # only one metric
+    metric = 'mAP'
+    eval_results = dataset.evaluate(fake_results, metric=metric)
+    assert 'mAP' in eval_results.keys()
+    assert 'CP' not in eval_results.keys()
+
+    # multiple metrics
+    metric = ['mAP', 'CR', 'OF1']
+    eval_results = dataset.evaluate(fake_results, metric=metric)
+    assert 'mAP' in eval_results.keys()
+    assert 'CR' in eval_results.keys()
+    assert 'OF1' in eval_results.keys()
+    assert 'CF1' not in eval_results.keys()
 
 
 @patch.multiple(BaseDataset, __abstractmethods__=set())
