@@ -19,7 +19,7 @@ def sigmoid_focal_loss(pred,
         target (torch.Tensor): The ground truth label of the prediction with
             shape (N, *).
         weight (torch.Tensor, optional): Sample-wise loss weight with shape
-            (N, *). Dafaults to None.
+            (N, ). Dafaults to None.
         gamma (float, optional): The gamma for calculating the modulating
             factor. Defaults to 2.0.
         alpha (float, optional): A balanced form for Focal Loss.
@@ -42,6 +42,11 @@ def sigmoid_focal_loss(pred,
                     (1 - target)) * pt.pow(gamma)
     loss = F.binary_cross_entropy_with_logits(
         pred, target, reduction='none') * focal_weight
+    if weight is not None:
+        assert weight.dim() == 1
+        weight = weight.float()
+        if pred.dim() > 1:
+            weight = weight.reshape(-1, 1)
     loss = weight_reduce_loss(loss, weight, reduction, avg_factor)
     return loss
 
