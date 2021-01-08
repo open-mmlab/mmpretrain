@@ -18,7 +18,8 @@ def sigmoid_focal_loss(pred,
         pred (torch.Tensor): The prediction with shape (N, *).
         target (torch.Tensor): The ground truth label of the prediction with
             shape (N, *).
-        weight (torch.Tensor, optional): Sample-wise loss weight.
+        weight (torch.Tensor, optional): Sample-wise loss weight with shape
+            (N, *). Dafaults to None.
         gamma (float, optional): The gamma for calculating the modulating
             factor. Defaults to 2.0.
         alpha (float, optional): A balanced form for Focal Loss.
@@ -83,7 +84,8 @@ class FocalLoss(nn.Module):
             pred (torch.Tensor): The prediction with shape (N, *).
             target (torch.Tensor): The ground truth label of the prediction
                 with shape (N, *).
-            weight (torch.Tensor, optional): Sample-wise loss weight.
+            weight (torch.Tensor, optional): Sample-wise loss weight with shape
+            (N, *). Dafaults to None.
             avg_factor (int, optional): Average factor that is used to average
             the loss. Defaults to None.
             reduction_override (str, optional): The method used to reduce the
