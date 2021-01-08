@@ -39,12 +39,12 @@ class VOC(MultiLabelDataset):
                                 f'{img_id}.xml')
             tree = ET.parse(xml_path)
             root = tree.getroot()
-            # need shape info?
             labels = []
             labels_difficult = []
             for obj in root.findall('object'):
                 label_name = obj.find('name').text
                 # in case customized dataset has wrong labels
+                # or CLASSES has been override.
                 if label_name not in self.CLASSES:
                     continue
                 label = self.class_to_idx[label_name]
