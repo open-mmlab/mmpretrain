@@ -19,7 +19,8 @@ def asymmetric_loss(pred,
         pred (torch.Tensor): The prediction with shape (N, *).
         target (torch.Tensor): The ground truth label of the prediction with
             shape (N, *).
-        weight (torch.Tensor, optional): Sample-wise loss weight.
+        weight (torch.Tensor, optional): Sample-wise loss weight with shape
+            (N, *). Dafaults to None.
         gamma_pos (float, optional): positive focusing parameter.
             Defaults to 0.0.
         gamma_neg (float, optional): Negative focusing parameter. We usually
