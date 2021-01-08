@@ -28,7 +28,8 @@ def binary_cross_entropy(pred,
     Args:
         pred (torch.Tensor): The prediction with shape (N, *).
         label (torch.Tensor): The learning label with shape (N, *).
-        weight (torch.Tensor, optional): Weight of loss. Defaults to None.
+        weight (torch.Tensor, optional): Weight of loss with shape (N, *).
+            Defaults to None.
         reduction (str, optional): The method used to reduce the loss.
             Options are "none", "mean" and "sum". If reduction is 'none' , loss
              is same shape as pred and label. Defaults to 'mean'.

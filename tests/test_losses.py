@@ -20,7 +20,7 @@ def test_cross_entropy_loss():
     # test bce_loss
     cls_score = torch.Tensor([[100, -100], [100, -100]])
     label = torch.Tensor([[1, 0], [0, 1]])
-    weight = torch.Tensor([0.5, 0.5])
+    weight = torch.Tensor([[0.5], [0.5]])
 
     loss_cfg = dict(
         type='CrossEntropyLoss',
