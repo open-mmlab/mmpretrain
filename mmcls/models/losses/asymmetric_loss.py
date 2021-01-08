@@ -20,7 +20,7 @@ def asymmetric_loss(pred,
         target (torch.Tensor): The ground truth label of the prediction with
             shape (N, *).
         weight (torch.Tensor, optional): Sample-wise loss weight with shape
-            (N, *). Dafaults to None.
+            (N, ). Dafaults to None.
         gamma_pos (float, optional): positive focusing parameter.
             Defaults to 0.0.
         gamma_neg (float, optional): Negative focusing parameter. We usually
@@ -50,6 +50,11 @@ def asymmetric_loss(pred,
     asymmetric_weight = (1 - pt).pow(gamma_pos * target + gamma_neg *
                                      (1 - target))
     loss = -torch.log(pt.clamp(min=eps)) * asymmetric_weight
+    if weight is not None:
+        assert weight.dim() == 1
+        weight = weight.float()
+        if pred.dim() > 1:
+            weight = weight.reshape(-1, 1)
     loss = weight_reduce_loss(loss, weight, reduction, avg_factor)
     return loss
 

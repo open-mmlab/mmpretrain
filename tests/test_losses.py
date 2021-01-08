@@ -7,7 +7,7 @@ def test_asymmetric_loss():
     # test asymmetric_loss
     cls_score = torch.Tensor([[5, -5, 0], [5, -5, 0]])
     label = torch.Tensor([[1, 0, 1], [0, 1, 0]])
-    weight = torch.tensor([[0.5], [0.5]])
+    weight = torch.tensor([0.5, 0.5])
 
     loss_cfg = dict(
         type='AsymmetricLoss',
