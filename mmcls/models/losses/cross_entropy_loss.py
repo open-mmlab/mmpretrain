@@ -6,6 +6,20 @@ from .utils import weight_reduce_loss
 
 
 def cross_entropy(pred, label, weight=None, reduction='mean', avg_factor=None):
+    """Calculate the CrossEntropy loss.
+
+    Args:
+        pred (torch.Tensor): The prediction with shape (N, C), C is the number
+            of classes.
+        label (torch.Tensor): The learning label of the prediction.
+        weight (torch.Tensor, optional): Sample-wise loss weight.
+        reduction (str, optional): The method used to reduce the loss.
+        avg_factor (int, optional): Average factor that is used to average
+            the loss. Defaults to None.
+        class_weight (list[float], optional): The weight for each class.
+    Returns:
+        torch.Tensor: The calculated loss
+    """
     # element-wise losses
     loss = F.cross_entropy(pred, label, reduction='none')
 
