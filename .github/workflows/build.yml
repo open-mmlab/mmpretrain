@@ -54,10 +54,6 @@ jobs:
         if: ${{matrix.torchvision < 0.5}}
       - name: Install PyTorch
         run: pip install --use-deprecated=legacy-resolver torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
-      # temporary solution until new version of mmcv is avaliable
-      - name: Install pytest
-        run: |
-          pip install pytest
       - name: Install MMCV
         run: |
           pip install --use-deprecated=legacy-resolver mmcv-full==latest+torch${{matrix.torch}} -f https://download.openmmlab.com/mmcv/dist/index.html
