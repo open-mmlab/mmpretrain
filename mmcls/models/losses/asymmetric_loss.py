@@ -15,6 +15,9 @@ def asymmetric_loss(pred,
                     avg_factor=None):
     """asymmetric loss
 
+    Please refer to the `paper <https://arxiv.org/abs/2009.14119>`_ for
+    details.
+
     Args:
         pred (torch.Tensor): The prediction with shape (N, *).
         target (torch.Tensor): The ground truth label of the prediction with
