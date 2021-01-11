@@ -34,7 +34,7 @@ def test_asymmetric_loss():
     loss = build_loss(loss_cfg)
     assert torch.allclose(loss(cls_score, label), torch.tensor(5.1186 / 3))
 
-    
+
 def test_cross_entropy_loss():
 
     # test ce_loss

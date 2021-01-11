@@ -9,7 +9,7 @@ from .utils import reduce_loss, weight_reduce_loss, weighted_loss
 
 __all__ = [
     'accuracy', 'Accuracy', 'asymmetric_loss', 'AsymmetricLoss',
-    'cross_entropy', 'binary_cross_entropy', 'CrossEntropyLoss', 'reduce_loss', 
-    'weight_reduce_loss', 'label_smooth', 'LabelSmoothLoss', 'weighted_loss', 
+    'cross_entropy', 'binary_cross_entropy', 'CrossEntropyLoss', 'reduce_loss',
+    'weight_reduce_loss', 'label_smooth', 'LabelSmoothLoss', 'weighted_loss',
     'precision', 'recall', 'f1_score', 'FocalLoss', 'sigmoid_focal_loss'
 ]
