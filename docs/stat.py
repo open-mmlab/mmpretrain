@@ -20,12 +20,14 @@ for f in files:
 
     title = content.split('\n')[0].replace('# ', '')
 
-    titles.append(title)
-
     ckpts = set(x.lower().strip()
                 for x in re.findall(r'\[model\]\((https?.*)\)', content))
 
+    if len(ckpts) == 0:
+        continue
+
     num_ckpts += len(ckpts)
+    titles.append(title)
 
     statsmsg = f"""
 \t* [{title}]({url}) ({len(ckpts)} ckpts)
@@ -37,7 +39,7 @@ msglist = '\n'.join(x for _, _, x in stats)
 modelzoo = f"""
 # Model Zoo Statistics
 
-* Number of papers: {len(titles)}
+* Number of papers: {len(set(titles))}
 * Number of checkpoints: {num_ckpts}
 {msglist}
 """
