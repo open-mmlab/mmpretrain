@@ -2,6 +2,8 @@
 
 ## Introduction
 
+[BACKBONE]
+
 ```latex
 @inproceedings{xie2017aggregated,
   title={Aggregated residual transformations for deep neural networks},
