@@ -20,7 +20,6 @@ for f in files:
 
     title = content.split('\n')[0].replace('# ', '')
 
-
     ckpts = set(x.lower().strip()
                 for x in re.findall(r'\[model\]\((https?.*)\)', content))
 
