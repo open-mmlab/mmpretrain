@@ -2,6 +2,8 @@
 
 ## Introduction
 
+[BACKBONE]
+
 ```latex
 @inproceedings{ma2018shufflenet,
   title={Shufflenet v2: Practical guidelines for efficient cnn architecture design},
