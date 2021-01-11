@@ -36,8 +36,8 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         self.data_prefix = data_prefix
         self.test_mode = test_mode
         self.pipeline = Compose(pipeline)
-        self.data_infos = self.load_annotations()
         self.CLASSES = self.get_classes(classes)
+        self.data_infos = self.load_annotations()
 
     @abstractmethod
     def load_annotations(self):
@@ -133,13 +133,13 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
             metrics = metric
         allowed_metrics = ['accuracy', 'precision', 'recall', 'f1_score']
         eval_results = {}
+        results = np.vstack(results)
+        gt_labels = self.get_gt_labels()
+        num_imgs = len(results)
+        assert len(gt_labels) == num_imgs
         for metric in metrics:
             if metric not in allowed_metrics:
                 raise KeyError(f'metric {metric} is not supported.')
-            results = np.vstack(results)
-            gt_labels = self.get_gt_labels()
-            num_imgs = len(results)
-            assert len(gt_labels) == num_imgs
             if metric == 'accuracy':
                 topk = metric_options.get('topk')
                 acc = accuracy(results, gt_labels, topk)
