@@ -33,7 +33,7 @@ def test_cross_entropy_loss():
     assert torch.allclose(
         loss(cls_score, label, weight=weight), torch.tensor(25.))
 
-    
+
 def test_focal_loss():
     # test focal_loss
     cls_score = torch.Tensor([[5, -5, 0], [5, -5, 0]])
