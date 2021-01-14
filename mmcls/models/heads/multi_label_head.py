@@ -2,7 +2,6 @@ import torch
 import torch.nn.functional as F
 
 from ..builder import HEADS, build_loss
-from ..losses import MAP
 from .base_head import BaseHead
 
 
@@ -26,7 +25,6 @@ class MultiLabelClsHead(BaseHead):
         assert isinstance(loss, dict)
 
         self.compute_loss = build_loss(loss)
-        self.compute_mAP = MAP()
 
     def loss(self, cls_score, gt_label):
         gt_label = gt_label.type_as(cls_score)
@@ -37,10 +35,7 @@ class MultiLabelClsHead(BaseHead):
         _gt_label = torch.abs(gt_label)
         # compute loss
         loss = self.compute_loss(cls_score, _gt_label, avg_factor=num_samples)
-        # compute mAP
-        mAP = self.compute_mAP(cls_score, gt_label)
         losses['loss'] = loss
-        losses['mAP'] = torch.tensor(mAP)
         return losses
 
     def forward_train(self, cls_score, gt_label):
