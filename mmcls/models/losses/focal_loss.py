@@ -20,13 +20,12 @@ def sigmoid_focal_loss(pred,
             shape (N, *).
         weight (torch.Tensor, optional): Sample-wise loss weight with shape
             (N, ). Dafaults to None.
-        gamma (float, optional): The gamma for calculating the modulating
-            factor. Defaults to 2.0.
-        alpha (float, optional): A balanced form for Focal Loss.
-            Defaults to 0.25.
-        reduction (str, optional): The method used to reduce the loss.
-            Options are "none", "mean" and "sum". If reduction is 'none' , loss
-             is same shape as pred and label. Defaults to 'mean'.
+        gamma (float): The gamma for calculating the modulating factor.
+            Defaults to 2.0.
+        alpha (float): A balanced form for Focal Loss. Defaults to 0.25.
+        reduction (str): The method used to reduce the loss.
+            Options are "none", "mean" and "sum". If reduction is 'none' ,
+            loss is same shape as pred and label. Defaults to 'mean'.
         avg_factor (int, optional): Average factor that is used to average
             the loss. Defaults to None.
 
@@ -56,13 +55,13 @@ class FocalLoss(nn.Module):
     """Focal loss
 
     Args:
-        gamma (float, optional): Focusing parameter in focal loss.
+        gamma (float): Focusing parameter in focal loss.
             Defaults to 2.0.
-        alpha (float, optional): The parameter in balanced form of focal
+        alpha (float): The parameter in balanced form of focal
             loss. Defaults to 0.25.
-        reduction (str, optional): The method used to reduce the loss into
+        reduction (str): The method used to reduce the loss into
             a scalar. Options are "none" and "mean". Defaults to 'mean'.
-        loss_weight (float, optional): Weight of loss. Defaults to 1.0.
+        loss_weight (float): Weight of loss. Defaults to 1.0.
     """
 
     def __init__(self,
@@ -93,8 +92,8 @@ class FocalLoss(nn.Module):
             (N, *). Dafaults to None.
             avg_factor (int, optional): Average factor that is used to average
             the loss. Defaults to None.
-            reduction_override (str, optional): The method used to reduce the
-                loss into a scalar. Options are "none", "mean" and "sum".
+            reduction_override (str): The method used to reduce the loss into
+                a scalar. Options are "none", "mean" and "sum".
                 Defaults to 'mean'.
 
         Returns:

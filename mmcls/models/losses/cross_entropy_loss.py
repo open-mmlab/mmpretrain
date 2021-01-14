@@ -13,10 +13,10 @@ def cross_entropy(pred, label, weight=None, reduction='mean', avg_factor=None):
             of classes.
         label (torch.Tensor): The learning label of the prediction.
         weight (torch.Tensor, optional): Sample-wise loss weight.
-        reduction (str, optional): The method used to reduce the loss.
+        reduction (str): The method used to reduce the loss.
         avg_factor (int, optional): Average factor that is used to average
             the loss. Defaults to None.
-        class_weight (list[float], optional): The weight for each class.
+
     Returns:
         torch.Tensor: The calculated loss
     """
@@ -44,7 +44,7 @@ def binary_cross_entropy(pred,
         label (torch.Tensor): The learning label with shape (N, *).
         weight (torch.Tensor, optional): Element-wise weight of loss with shape
              (N, ). Defaults to None.
-        reduction (str, optional): The method used to reduce the loss.
+        reduction (str): The method used to reduce the loss.
             Options are "none", "mean" and "sum". If reduction is 'none' , loss
              is same shape as pred and label. Defaults to 'mean'.
         avg_factor (int, optional): Average factor that is used to average
@@ -73,12 +73,11 @@ class CrossEntropyLoss(nn.Module):
     """Cross entropy loss
 
     Args:
-        use_sigmoid (bool, optional): Whether the prediction uses sigmoid
+        use_sigmoid (bool): Whether the prediction uses sigmoid
             of softmax. Defaults to False.
-        reduction (str, optional): The method used to reduce the loss.
-        Options are "none", "mean" and "sum". Defaults to 'mean'.
-        loss_weight (float, optional):  Weight of the loss.
-            Defaults to 1.0.
+        reduction (str): The method used to reduce the loss.
+            Options are "none", "mean" and "sum". Defaults to 'mean'.
+        loss_weight (float):  Weight of the loss. Defaults to 1.0.
     """
 
     def __init__(self, use_sigmoid=False, reduction='mean', loss_weight=1.0):

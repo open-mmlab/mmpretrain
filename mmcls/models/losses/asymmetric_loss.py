@@ -24,12 +24,11 @@ def asymmetric_loss(pred,
             shape (N, *).
         weight (torch.Tensor, optional): Sample-wise loss weight with shape
             (N, ). Dafaults to None.
-        gamma_pos (float, optional): positive focusing parameter.
-            Defaults to 0.0.
-        gamma_neg (float, optional): Negative focusing parameter. We usually
-            set gamma_neg > gamma_pos. Defaults to 4.0.
+        gamma_pos (float): positive focusing parameter. Defaults to 0.0.
+        gamma_neg (float): Negative focusing parameter. We usually set
+            gamma_neg > gamma_pos. Defaults to 4.0.
         clip (float, optional): Probability margin. Defaults to 0.05.
-        reduction (str, optional): The method used to reduce the loss.
+        reduction (str): The method used to reduce the loss.
             Options are "none", "mean" and "sum". If reduction is 'none' , loss
              is same shape as pred and label. Defaults to 'mean'.
         avg_factor (int, optional): Average factor that is used to average
@@ -67,14 +66,14 @@ class AsymmetricLoss(nn.Module):
     """asymmetric loss
 
     Args:
-        gamma_pos (float, optional): positive focusing parameter.
+        gamma_pos (float): positive focusing parameter.
             Defaults to 0.0.
-        gamma_neg (float, optional): Negative focusing parameter. We
+        gamma_neg (float): Negative focusing parameter. We
             usually set gamma_neg > gamma_pos. Defaults to 4.0.
         clip (float, optional): Probability margin. Defaults to 0.05.
-        reduction (str, optional): The method used to reduce the loss into
+        reduction (str): The method used to reduce the loss into
             a scalar.
-        loss_weight (float, optional): Weight of loss. Defaults to 1.0.
+        loss_weight (float): Weight of loss. Defaults to 1.0.
         """
 
     def __init__(self,
