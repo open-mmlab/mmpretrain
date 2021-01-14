@@ -29,8 +29,8 @@ class ShuffleUnit(nn.Module):
             grouped 1x1 convolution.
         combine (str): The ways to combine the input and output
             branches. Default: 'add'.
-        conv_cfg (dict): Config dict for convolution layer. Default: None,
-            which means using conv2d.
+        conv_cfg (dict, optional): Config dict for convolution layer.
+            Default: None, which means using conv2d.
         norm_cfg (dict): Config dict for normalization layer.
             Default: dict(type='BN').
         act_cfg (dict): Config dict for activation layer.
@@ -162,8 +162,8 @@ class ShuffleNetV1(BaseBackbone):
             Default: (2, )
         frozen_stages (int): Stages to be frozen (all param fixed).
             Default: -1, which means not freezing any parameters.
-        conv_cfg (dict): Config dict for convolution layer. Default: None,
-            which means using conv2d.
+        conv_cfg (dict, optional): Config dict for convolution layer.
+            Default: None, which means using conv2d.
         norm_cfg (dict): Config dict for normalization layer.
             Default: dict(type='BN').
         act_cfg (dict): Config dict for activation layer.

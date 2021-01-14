@@ -17,7 +17,7 @@ class MobileNetv3(BaseBackbone):
     Args:
         arch (str): Architechture of mobilnetv3, from {small, big}.
             Default: small.
-        conv_cfg (dict): Config dict for convolution layer.
+        conv_cfg (dict, optional): Config dict for convolution layer.
             Default: None, which means using conv2d.
         norm_cfg (dict): Config dict for normalization layer.
             Default: dict(type='BN').

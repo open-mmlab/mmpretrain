@@ -50,7 +50,7 @@ class DistEvalHook(EvalHook):
     Args:
         dataloader (DataLoader): A PyTorch dataloader.
         interval (int): Evaluation interval (by epochs). Default: 1.
-        tmpdir (str | None): Temporary directory to save the results of all
+        tmpdir (str, optional): Temporary directory to save the results of all
             processes. Default: None.
         gpu_collect (bool): Whether to use gpu or cpu to collect results.
             Default: False.
