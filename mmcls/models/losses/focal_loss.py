@@ -92,9 +92,9 @@ class FocalLoss(nn.Module):
             (N, *). Dafaults to None.
             avg_factor (int, optional): Average factor that is used to average
             the loss. Defaults to None.
-            reduction_override (str): The method used to reduce the loss into
-                a scalar. Options are "none", "mean" and "sum".
-                Defaults to 'mean'.
+            reduction_override (str, optional): The method used to reduce the
+                loss into a scalar. Options are "none", "mean" and "sum".
+                Defaults to None.
 
         Returns:
             torch.Tensor: Loss.
