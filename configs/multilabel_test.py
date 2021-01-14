@@ -67,7 +67,7 @@ log_config = dict(
 load_from = 'https://download.openmmlab.com/mmclassification/v0/vgg/vgg16_imagenet-91b6d117.pth'  # noqa
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.001 / 8, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=0.001, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=None)
 # learning policy
 lr_config = dict(policy='step', step=[20, 40, 60, 80])
