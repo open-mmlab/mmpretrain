@@ -2,7 +2,7 @@
 
 ## Introduction
 
-[BACKBONE]
+[ALGORITHM]
 
 ```latex
 @inproceedings{xie2017aggregated,

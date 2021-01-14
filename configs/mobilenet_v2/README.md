@@ -2,7 +2,7 @@
 
 ## Introduction
 
-[BACKBONE]
+[ALGORITHM]
 
 ```latex
 @INPROCEEDINGS{8578572,
