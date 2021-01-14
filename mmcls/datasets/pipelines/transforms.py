@@ -306,7 +306,7 @@ class RandomFlip(object):
 
     Args:
         flip_prob (float): probability of the image being flipped. Default: 0.5
-        direction (str, optional): The flipping direction. Options are
+        direction (str): The flipping direction. Options are
             'horizontal' and 'vertical'. Default: 'horizontal'.
     """
 

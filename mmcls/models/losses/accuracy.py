@@ -36,7 +36,7 @@ def accuracy(pred, target, topk=1):
     Args:
         pred (torch.Tensor | np.array): The model prediction.
         target (torch.Tensor | np.array): The target of each prediction
-        topk (int | tuple[int], optional): If the predictions in ``topk``
+        topk (int | tuple[int]): If the predictions in ``topk``
             matches the target, the predictions will be regarded as
             correct ones. Defaults to 1.
 
@@ -71,7 +71,7 @@ class Accuracy(nn.Module):
         """Module to calculate the accuracy
 
         Args:
-            topk (tuple, optional): The criterion used to calculate the
+            topk (tuple): The criterion used to calculate the
                 accuracy. Defaults to (1,).
         """
         super().__init__()
