@@ -53,8 +53,7 @@ class MultiLabelDataset(BaseDataset):
         if 'mAP' in metrics:
             mAP_value = mAP(results, gt_labels)
             eval_results['mAP'] = mAP_value
-            metrics.remove('mAP')
-        if len(metrics) != 0:
+        if len(set(metrics) - {'mAP'}) != 0:
             performance_keys = ['CP', 'CR', 'CF1', 'OP', 'OR', 'OF1']
             performance_values = average_performance(results, gt_labels,
                                                      **eval_kwargs)
