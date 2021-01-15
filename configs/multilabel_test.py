@@ -9,7 +9,7 @@ img_norm_cfg = dict(
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     # dict(type='RandomResizedCrop', size=224),
-    # some paper use 448 for some reason?
+    # note that size is 384
     dict(type='Resize', size=(224, 224)),
     dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
     dict(type='Normalize', **img_norm_cfg),
@@ -25,7 +25,8 @@ test_pipeline = [
     dict(type='Collect', keys=['img'])
 ]
 data = dict(
-    samples_per_gpu=32,
+    # bs=16
+    samples_per_gpu=16,
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
@@ -43,12 +44,15 @@ data = dict(
         data_prefix='data/VOCdevkit/VOC2007/',
         ann_file='data/VOCdevkit/VOC2007/ImageSets/Main/test.txt',
         pipeline=test_pipeline))
+# choose top 3 label
 evaluation = dict(
-    interval=1, metric=['mAP', 'CP', 'OP', 'CR', 'OR', 'CF1', 'OF1'])
+    interval=1, metric=['mAP', 'CP', 'OP', 'CR', 'OR', 'CF1', 'OF1'], k=3)
 
 # model
 
 model = dict(
+    pretrained=\
+    'https://download.openmmlab.com/mmclassification/v0/vgg/vgg16_imagenet-91b6d117.pth',  # noqa
     type='ImageClassifier',
     backbone=dict(type='VGG', depth=16, num_classes=20),
     neck=None,
@@ -64,11 +68,18 @@ log_config = dict(
         # dict(type='TensorboardLoggerHook')
     ])
 
-load_from = 'https://download.openmmlab.com/mmclassification/v0/vgg/vgg16_imagenet-91b6d117.pth'  # noqa
+# load_from = 'https://download.openmmlab.com/mmclassification/v0/vgg/vgg16_imagenet-91b6d117.pth'  # noqa
 
 # optimizer
-optimizer = dict(type='SGD', lr=0.001, momentum=0.9, weight_decay=0.0001)
+# no weight decay was used
+# mmcv does not support scale momentum
+optimizer = dict(
+    type='SGD',
+    lr=0.01 / 8,
+    momentum=0.9,
+    weight_decay=0,
+    paramwise_cfg=dict(custom_keys={'.backbone.classifier': dict(lr_mult=10)}))
 optimizer_config = dict(grad_clip=None)
 # learning policy
-lr_config = dict(policy='step', step=[20, 40, 60, 80])
-runner = dict(type='EpochBasedRunner', max_epochs=100)
+lr_config = dict(policy='step', step=20, gamma=0.1)
+runner = dict(type='EpochBasedRunner', max_epochs=40)
