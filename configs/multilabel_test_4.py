@@ -9,7 +9,7 @@ img_norm_cfg = dict(
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     # dict(type='RandomResizedCrop', size=224),
-    # note that size is 384
+    # note that original size is 384
     dict(type='Resize', size=(224, 224)),
     dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
     dict(type='Normalize', **img_norm_cfg),
@@ -51,8 +51,6 @@ evaluation = dict(
 # model
 
 model = dict(
-    pretrained=\
-    'https://download.openmmlab.com/mmclassification/v0/vgg/vgg16_imagenet-91b6d117.pth',  # noqa
     type='ImageClassifier',
     backbone=dict(type='VGG', depth=16, num_classes=20),
     neck=None,
@@ -68,18 +66,18 @@ log_config = dict(
         # dict(type='TensorboardLoggerHook')
     ])
 
-# load_from = 'https://download.openmmlab.com/mmclassification/v0/vgg/vgg16_imagenet-91b6d117.pth'  # noqa
+load_from = 'https://download.openmmlab.com/mmclassification/v0/vgg/vgg16_imagenet-91b6d117.pth'  # noqa
 
 # optimizer
 # no weight decay was used
 # mmcv does not support scale momentum
 optimizer = dict(
     type='SGD',
-    lr=0.01 / 8,
+    lr=0.001,
     momentum=0.9,
     weight_decay=0,
     paramwise_cfg=dict(custom_keys={'.backbone.classifier': dict(lr_mult=10)}))
 optimizer_config = dict(grad_clip=None)
 # learning policy
-lr_config = dict(policy='step', step=20, gamma=0.1)
+lr_config = dict(policy='step', step=[10, 20, 30], gamma=0.1)
 runner = dict(type='EpochBasedRunner', max_epochs=40)
