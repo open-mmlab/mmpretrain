@@ -11,7 +11,6 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description='MMCls evaluate prediction success/fail')
     parser.add_argument('config', help='test config file path')
-    parser.add_argument('checkpoint', help='checkpoint file')
     parser.add_argument('result', help='test result json/pkl file')
     parser.add_argument('--out-dir', help='dir to store output files')
     parser.add_argument(
