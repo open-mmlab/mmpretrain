@@ -3,6 +3,16 @@ import torch
 
 
 def calculate_confusion_matrix(pred, target):
+    """Calculate confusion matrix according to the prediction and target.
+
+    Args:
+        pred (torch.Tensor | np.array): The model prediction.
+        target (torch.Tensor | np.array): The target of each prediction.
+
+    Returns:
+        torch.Tensor: Confusion matrix with shape (C, C), where C is the number
+             of classes.
+    """
     if isinstance(pred, np.ndarray) and isinstance(target, np.ndarray):
         pred = torch.from_numpy(pred)
         target = torch.from_numpy(target)
