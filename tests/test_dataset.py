@@ -127,6 +127,26 @@ def test_dataset_evaluation():
     assert eval_results['f1_score'].shape == (3, )
     assert eval_results['support'].shape == (3, )
 
+    # the average method must be valid
+    with pytest.raises(ValueError):
+        eval_results = dataset.evaluate(
+            fake_results,
+            metric='precision',
+            metric_options={'average': 'micro'})
+    with pytest.raises(ValueError):
+        eval_results = dataset.evaluate(
+            fake_results, metric='recall', metric_options={'average': 'micro'})
+    with pytest.raises(ValueError):
+        eval_results = dataset.evaluate(
+            fake_results,
+            metric='f1_score',
+            metric_options={'average': 'micro'})
+    with pytest.raises(ValueError):
+        eval_results = dataset.evaluate(
+            fake_results,
+            metric='support',
+            metric_options={'average': 'micro'})
+
     # test multi-label evalutation
     dataset = MultiLabelDataset(data_prefix='', pipeline=[], test_mode=True)
     dataset.data_infos = [
