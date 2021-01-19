@@ -108,13 +108,24 @@ def test_dataset_evaluation():
     fake_results = np.array([[1, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1],
                              [0, 0, 1], [0, 0, 1]])
     eval_results = dataset.evaluate(
-        fake_results, metric=['precision', 'recall', 'f1_score'])
+        fake_results, metric=['precision', 'recall', 'f1_score', 'support'])
     assert eval_results['precision'] == pytest.approx(
         (1 + 1 + 1 / 3) / 3 * 100.0)
     assert eval_results['recall'] == pytest.approx(
         (2 / 3 + 1 / 2 + 1) / 3 * 100.0)
     assert eval_results['f1_score'] == pytest.approx(
         (4 / 5 + 2 / 3 + 1 / 2) / 3 * 100.0)
+    assert eval_results['support'] == 6
+
+    # test evaluation results for classes
+    eval_results = dataset.evaluate(
+        fake_results,
+        metric=['precision', 'recall', 'f1_score', 'support'],
+        metric_options={'average': 'none'})
+    assert eval_results['precision'].shape == (3, )
+    assert eval_results['recall'].shape == (3, )
+    assert eval_results['f1_score'].shape == (3, )
+    assert eval_results['support'].shape == (3, )
 
     # test multi-label evalutation
     dataset = MultiLabelDataset(data_prefix='', pipeline=[], test_mode=True)
