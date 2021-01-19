@@ -28,7 +28,7 @@ def precision(pred, target, average='macro'):
     Args:
         pred (torch.Tensor | np.array): The model prediction.
         target (torch.Tensor | np.array): The target of each prediction.
-        average (str, optional): The type of averaging performed on the result.
+        average (str): The type of averaging performed on the result.
             Options are 'macro' and 'none'. Defaults to 'macro'.
 
     Returns:
@@ -38,7 +38,7 @@ def precision(pred, target, average='macro'):
     with torch.no_grad():
         res = confusion_matrix.diag() / torch.clamp(
             confusion_matrix.sum(0), min=1) * 100
-        if average is None or average == 'macro':
+        if average == 'macro':
             res = res.mean().numpy()
         elif average == 'none':
             res = res.numpy()
@@ -53,7 +53,7 @@ def recall(pred, target, average='macro'):
     Args:
         pred (torch.Tensor | np.array): The model prediction.
         target (torch.Tensor | np.array): The target of each prediction.
-        average (str, optional): The type of averaging performed on the result.
+        average (str): The type of averaging performed on the result.
             Options are 'macro' and 'none'. Defaults to 'macro'.
 
     Returns:
@@ -63,7 +63,7 @@ def recall(pred, target, average='macro'):
     with torch.no_grad():
         res = confusion_matrix.diag() / torch.clamp(
             confusion_matrix.sum(1), min=1) * 100
-        if average is None or average == 'macro':
+        if average == 'macro':
             res = res.mean().numpy()
         elif average == 'none':
             res = res.numpy()
@@ -78,7 +78,7 @@ def f1_score(pred, target, average='macro'):
     Args:
         pred (torch.Tensor | np.array): The model prediction.
         target (torch.Tensor | np.array): The target of each prediction.
-        average (str, optional): The type of averaging performed on the result.
+        average (str): The type of averaging performed on the result.
             Options are 'macro' and 'none'. Defaults to 'macro'.
 
     Returns:
@@ -93,7 +93,7 @@ def f1_score(pred, target, average='macro'):
         res = 2 * precision * recall / torch.clamp(
             precision + recall, min=1e-20) * 100
         res = torch.where(torch.isnan(res), torch.full_like(res, 0), res)
-        if average is None or average == 'macro':
+        if average == 'macro':
             res = res.mean().numpy()
         elif average == 'none':
             res = res.numpy()
@@ -109,7 +109,7 @@ def support(pred, target, average='macro'):
     Args:
         pred (torch.Tensor | np.array): The model prediction.
         target (torch.Tensor | np.array): The target of each prediction.
-        average (str, optional): The type of reduction performed on the result.
+        average (str): The type of reduction performed on the result.
             Options are 'macro' and 'none'. 'macro' gives the sum and 'none'
             gives class-wise results. Defaults to 'macro'.
 
@@ -119,7 +119,7 @@ def support(pred, target, average='macro'):
     confusion_matrix = calculate_confusion_matrix(pred, target)
     with torch.no_grad():
         res = confusion_matrix.sum(1)
-        if average is None or average == 'macro':
+        if average == 'macro':
             res = res.sum().numpy()
         elif average == 'none':
             res = res.numpy()
