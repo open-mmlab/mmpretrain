@@ -103,13 +103,15 @@ def f1_score(pred, target, average='macro'):
 
 
 def support(pred, target, average='macro'):
-    """Calculate support according to the prediction and target.
+    """Calculate the total number of occurrences of each label according to
+        the prediction and target.
 
     Args:
         pred (torch.Tensor | np.array): The model prediction.
         target (torch.Tensor | np.array): The target of each prediction.
-        average (str, optional): The type of averaging performed on the result.
-            Options are 'macro' and 'none'. Defaults to 'macro'.
+        average (str, optional): The type of reduction performed on the result.
+            Options are 'macro' and 'none'. 'macro' gives the sum and 'none'
+            gives class-wise results. Defaults to 'macro'.
 
     Returns:
         np.array: Support with shape determined by average.
