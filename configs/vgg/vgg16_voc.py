@@ -1,5 +1,5 @@
 _base_ = [
-    '../_base_/models/vgg16.py', '../_base_/datasets/vgg_bs16.py',
+    '../_base_/models/vgg16.py', '../_base_/datasets/voc_bs16.py',
     '../_base_/default_runtime.py'
 ]
 
