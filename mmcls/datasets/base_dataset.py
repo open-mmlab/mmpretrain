@@ -147,7 +147,8 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
                 raise KeyError(f'metric {metric} is not supported.')
             if metric == 'accuracy':
                 topk = metric_options.get('topk')
-                acc = accuracy(results, gt_labels, topk)
+                acc = accuracy(
+                    results, gt_labels, topk, thr=metric_options.get('thr'))
                 eval_result = {f'top-{k}': a.item() for k, a in zip(topk, acc)}
             elif metric == 'precision':
                 precision_value = precision(
