@@ -146,7 +146,7 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
             if metric not in allowed_metrics:
                 raise KeyError(f'metric {metric} is not supported.')
             if metric == 'accuracy':
-                topk = metric_options.get('topk')
+                topk = metric_options.get('topk', (1, 5))
                 acc = accuracy(
                     results, gt_labels, topk, thr=metric_options.get('thr'))
                 eval_result = {f'top-{k}': a.item() for k, a in zip(topk, acc)}
@@ -154,19 +154,22 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
                 precision_value = precision(
                     results,
                     gt_labels,
-                    average=metric_options.get('average', 'macro'))
+                    average=metric_options.get('average', 'macro'),
+                    thr=metric_options.get('thr'))
                 eval_result = {'precision': precision_value}
             elif metric == 'recall':
                 recall_value = recall(
                     results,
                     gt_labels,
-                    average=metric_options.get('average', 'macro'))
+                    average=metric_options.get('average', 'macro'),
+                    thr=metric_options.get('thr'))
                 eval_result = {'recall': recall_value}
             elif metric == 'f1_score':
                 f1_score_value = f1_score(
                     results,
                     gt_labels,
-                    average=metric_options.get('average', 'macro'))
+                    average=metric_options.get('average', 'macro'),
+                    thr=metric_options.get('thr'))
                 eval_result = {'f1_score': f1_score_value}
             elif metric == 'support':
                 support_value = support(

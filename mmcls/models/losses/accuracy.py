@@ -49,10 +49,10 @@ def accuracy(pred, target, topk=1, thr=None):
             this threshold are considered incorrect. Default to None.
 
     Returns:
-        float | tuple[float]: If the input ``topk`` is a single integer,
+        float | list[float]: If the input ``topk`` is a single integer,
             the function will return a single float as accuracy. If
             ``topk`` is a tuple containing multiple integers, the
-            function will return a tuple containing accuracies of
+            function will return a list containing accuracies of
             each ``topk`` number.
     """
     assert isinstance(topk, (int, tuple))
@@ -96,6 +96,6 @@ class Accuracy(nn.Module):
             target (torch.Tensor): Target for each prediction.
 
         Returns:
-            tuple[float]: The accuracies under different topk criterions.
+            list[float]: The accuracies under different topk criterions.
         """
         return accuracy(pred, target, self.topk, self.thr)

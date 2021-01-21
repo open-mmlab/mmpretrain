@@ -105,10 +105,11 @@ def test_dataset_evaluation():
         dict(gt_label=1),
         dict(gt_label=0)
     ]
-    fake_results = np.array([[1, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1],
-                             [0, 0, 1], [0, 0, 1]])
+    fake_results = np.array([[0.7, 0, 0.3], [0.5, 0.2, 0.3], [0.4, 0.5, 0.1],
+                             [0, 0, 1], [0, 0, 1], [0, 0, 1]])
     eval_results = dataset.evaluate(
-        fake_results, metric=['precision', 'recall', 'f1_score', 'support'])
+        fake_results,
+        metric=['precision', 'recall', 'f1_score', 'support', 'accuracy'])
     assert eval_results['precision'] == pytest.approx(
         (1 + 1 + 1 / 3) / 3 * 100.0)
     assert eval_results['recall'] == pytest.approx(
@@ -116,6 +117,19 @@ def test_dataset_evaluation():
     assert eval_results['f1_score'] == pytest.approx(
         (4 / 5 + 2 / 3 + 1 / 2) / 3 * 100.0)
     assert eval_results['support'] == 6
+    assert eval_results['top-1'] == pytest.approx(4 / 6 * 100)
+
+    # test thr
+    eval_results = dataset.evaluate(
+        fake_results,
+        metric=['precision', 'recall', 'f1_score', 'accuracy'],
+        metric_options={'thr': 0.6})
+    assert eval_results['precision'] == pytest.approx(
+        (1 + 0 + 1 / 3) / 3 * 100.0)
+    assert eval_results['recall'] == pytest.approx((1 / 3 + 0 + 1) / 3 * 100.0)
+    assert eval_results['f1_score'] == pytest.approx(
+        (1 / 2 + 0 + 1 / 2) / 3 * 100.0)
+    assert eval_results['top-1'] == pytest.approx(2 / 6 * 100)
 
     # test evaluation results for classes
     eval_results = dataset.evaluate(
