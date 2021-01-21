@@ -1,7 +1,4 @@
-_base_ = [
-    '../_base_/models/vgg16.py', '../_base_/datasets/voc_bs16.py',
-    '../_base_/default_runtime.py'
-]
+_base_ = ['../_base_/datasets/voc_bs16.py', '../_base_/default_runtime.py']
 
 # use different head for multilabel task
 model = dict(
