@@ -48,7 +48,7 @@ def precision_recall_f1(pred, target, average='macro', thr=None):
             are considered negative. Default to None.
 
     Returns:
-        float | np.array: precision, recall, f1 score.
+        float | np.array: Precision, recall, f1 score.
             The function returns a single float if the average is set to macro,
             or a np.array with shape C if the average is set to none.
     """
@@ -100,7 +100,7 @@ def precision(pred, target, average='macro', thr=None):
             are considered negative. Default to None.
 
     Returns:
-        float | np.array: precision, recall, f1 score.
+        float | np.array: Precision.
             The function returns a single float if the average is set to macro,
             or a np.array with shape C if the average is set to none.
     """
@@ -121,7 +121,7 @@ def recall(pred, target, average='macro', thr=None):
             are considered negative. Default to None.
 
     Returns:
-        float | np.array: precision, recall, f1 score.
+        float | np.array: Recall.
             The function returns a single float if the average is set to macro,
             or a np.array with shape C if the average is set to none.
     """
@@ -142,7 +142,7 @@ def f1_score(pred, target, average='macro', thr=None):
             are considered negative. Default to None.
 
     Returns:
-        float | np.array: precision, recall, f1 score.
+        float | np.array: F1 score.
             The function returns a single float if the average is set to macro,
             or a np.array with shape C if the average is set to none.
     """
@@ -163,7 +163,7 @@ def support(pred, target, average='macro'):
             gives class-wise results. Defaults to 'macro'.
 
     Returns:
-        int | np.array: precision, recall, f1 score.
+        int | np.array: Support.
             The function returns a single int if the average is set to macro,
             or a np.array with shape C if the average is set to none.
     """
