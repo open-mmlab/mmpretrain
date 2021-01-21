@@ -58,8 +58,8 @@ def precision_recall_f1(pred, target, average='macro', thr=None):
         raise ValueError(f'Unsupport type of averaging {average}.')
 
     if isinstance(pred, torch.Tensor) and isinstance(target, torch.Tensor):
-        pred = pred.detach().cpu().numpy()
-        target = target.detach().cpu().numpy()
+        pred = pred.numpy()
+        target = target.numpy()
     elif not (isinstance(pred, np.ndarray) and isinstance(target, np.ndarray)):
         raise TypeError('pred and target should both be'
                         'torch.Tensor or np.ndarray')
