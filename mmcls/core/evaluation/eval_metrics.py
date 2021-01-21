@@ -14,13 +14,14 @@ def calculate_confusion_matrix(pred, target):
         torch.Tensor: Confusion matrix with shape (C, C), where C is the number
              of classes.
     """
-    if isinstance(pred, np.ndarray) and isinstance(target, np.ndarray):
+
+    if isinstance(pred, np.ndarray):
         pred = torch.from_numpy(pred)
+    if isinstance(target, np.ndarray):
         target = torch.from_numpy(target)
-    elif not (isinstance(pred, torch.Tensor)
-              and isinstance(target, torch.Tensor)):
-        raise TypeError('pred and target should both be'
-                        'torch.Tensor or np.ndarray')
+    assert (isinstance(pred, torch.Tensor)
+            and isinstance(target, torch.Tensor)), (
+                'pred and target should be torch.Tensor or np.ndarray')
 
     num_classes = pred.size(1)
     _, pred_label = pred.topk(1, dim=1)
@@ -57,12 +58,12 @@ def precision_recall_f1(pred, target, average='macro', thr=None):
     if average not in allowed_average:
         raise ValueError(f'Unsupport type of averaging {average}.')
 
-    if isinstance(pred, torch.Tensor) and isinstance(target, torch.Tensor):
+    if isinstance(pred, torch.Tensor):
         pred = pred.numpy()
+    if isinstance(target, torch.Tensor):
         target = target.numpy()
-    elif not (isinstance(pred, np.ndarray) and isinstance(target, np.ndarray)):
-        raise TypeError('pred and target should both be'
-                        'torch.Tensor or np.ndarray')
+    assert (isinstance(pred, np.ndarray) and isinstance(target, np.ndarray)),\
+        ('pred and target should be torch.Tensor or np.ndarray')
 
     label = np.indices(pred.shape)[1]
     pred_label = np.argsort(pred, axis=1)[:, -1]
@@ -83,6 +84,8 @@ def precision_recall_f1(pred, target, average='macro', thr=None):
         precision = float(precision.mean())
         recall = float(recall.mean())
         f1_score = float(f1_score.mean())
+    else:
+        pass
 
     return precision, recall, f1_score
 
