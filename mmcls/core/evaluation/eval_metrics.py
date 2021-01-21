@@ -163,15 +163,15 @@ def support(pred, target, average='macro'):
             gives class-wise results. Defaults to 'macro'.
 
     Returns:
-        int | np.array: Support.
-            The function returns a single int if the average is set to macro,
+        float | np.array: Support.
+            The function returns a single float if the average is set to macro,
             or a np.array with shape C if the average is set to none.
     """
     confusion_matrix = calculate_confusion_matrix(pred, target)
     with torch.no_grad():
         res = confusion_matrix.sum(1)
         if average == 'macro':
-            res = int(res.sum().numpy())
+            res = float(res.sum().numpy())
         elif average == 'none':
             res = res.numpy()
         else:
