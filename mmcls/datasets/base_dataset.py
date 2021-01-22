@@ -5,7 +5,7 @@ import mmcv
 import numpy as np
 from torch.utils.data import Dataset
 
-from mmcls.core.evaluation import f1_score, precision, recall, support
+from mmcls.core.evaluation import precision_recall_f1, support
 from mmcls.models.losses import accuracy
 from .pipelines import Compose
 
@@ -141,41 +141,37 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         results = np.vstack(results)
         gt_labels = self.get_gt_labels()
         num_imgs = len(results)
-        assert len(gt_labels) == num_imgs
-        for metric in metrics:
-            if metric not in allowed_metrics:
-                raise KeyError(f'metric {metric} is not supported.')
-            if metric == 'accuracy':
-                topk = metric_options.get('topk', (1, 5))
-                acc = accuracy(
-                    results, gt_labels, topk, thr=metric_options.get('thr'))
-                eval_result = {f'top-{k}': a.item() for k, a in zip(topk, acc)}
-            elif metric == 'precision':
-                precision_value = precision(
-                    results,
-                    gt_labels,
-                    average_mode=metric_options.get('average_mode', 'macro'),
-                    thr=metric_options.get('thr'))
-                eval_result = {'precision': precision_value}
-            elif metric == 'recall':
-                recall_value = recall(
-                    results,
-                    gt_labels,
-                    average_mode=metric_options.get('average_mode', 'macro'),
-                    thr=metric_options.get('thr'))
-                eval_result = {'recall': recall_value}
-            elif metric == 'f1_score':
-                f1_score_value = f1_score(
-                    results,
-                    gt_labels,
-                    average_mode=metric_options.get('average_mode', 'macro'),
-                    thr=metric_options.get('thr'))
-                eval_result = {'f1_score': f1_score_value}
-            elif metric == 'support':
-                support_value = support(
-                    results,
-                    gt_labels,
-                    average_mode=metric_options.get('average_mode', 'macro'))
-                eval_result = {'support': support_value}
-            eval_results.update(eval_result)
+        assert len(gt_labels) == num_imgs, 'dataset testing results should '\
+            'be of the same length as gt_labels.'
+
+        invalid_metrics = set(metrics) - set(allowed_metrics)
+        if len(invalid_metrics) != 0:
+            raise ValueError(f'metirc {invalid_metrics} is not supported.')
+
+        if 'accuracy' in metrics:
+            topk = metric_options.get('topk', (1, 5))
+            acc = accuracy(
+                results, gt_labels, topk, thr=metric_options.get('thr'))
+            eval_results.update(
+                {f'top-{k}': a.item()
+                 for k, a in zip(topk, acc)})
+
+        if 'support' in metrics:
+            support_value = support(
+                results,
+                gt_labels,
+                average_mode=metric_options.get('average_mode', 'macro'))
+            eval_results['support'] = support_value
+
+        precision_recall_f1_keys = ['precision', 'recall', 'f1_score']
+        if len(set(metrics) & set(precision_recall_f1_keys)) != 0:
+            precision_recall_f1_values = precision_recall_f1(
+                results,
+                gt_labels,
+                average_mode=metric_options.get('average_mode', 'macro'),
+                thr=metric_options.get('thr'))
+            eval_results.update(
+                dict(
+                    zip(precision_recall_f1_keys, precision_recall_f1_values)))
+
         return eval_results
