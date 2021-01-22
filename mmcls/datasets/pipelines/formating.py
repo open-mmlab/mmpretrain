@@ -122,8 +122,7 @@ class Collect(object):
         return data
 
     def __repr__(self):
-        return self.__class__.__name__ + \
-            f'(keys={self.keys}, meta_keys={self.meta_keys})'
+        return self.__class__.__name__ + f'(keys={self.keys})'
 
 
 @PIPELINES.register_module()
