@@ -170,8 +170,9 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
                 gt_labels,
                 average_mode=metric_options.get('average_mode', 'macro'),
                 thr=metric_options.get('thr'))
-            eval_results.update(
-                dict(
-                    zip(precision_recall_f1_keys, precision_recall_f1_values)))
+            for k, v in zip(precision_recall_f1_keys,
+                            precision_recall_f1_values):
+                if k in metrics:
+                    eval_results[k] = v
 
         return eval_results
