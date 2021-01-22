@@ -135,31 +135,33 @@ def test_dataset_evaluation():
     eval_results = dataset.evaluate(
         fake_results,
         metric=['precision', 'recall', 'f1_score', 'support'],
-        metric_options={'average': 'none'})
+        metric_options={'average_mode': 'none'})
     assert eval_results['precision'].shape == (3, )
     assert eval_results['recall'].shape == (3, )
     assert eval_results['f1_score'].shape == (3, )
     assert eval_results['support'].shape == (3, )
 
-    # the average method must be valid
+    # the average_mode method must be valid
     with pytest.raises(ValueError):
         eval_results = dataset.evaluate(
             fake_results,
             metric='precision',
-            metric_options={'average': 'micro'})
+            metric_options={'average_mode': 'micro'})
     with pytest.raises(ValueError):
         eval_results = dataset.evaluate(
-            fake_results, metric='recall', metric_options={'average': 'micro'})
+            fake_results,
+            metric='recall',
+            metric_options={'average_mode': 'micro'})
     with pytest.raises(ValueError):
         eval_results = dataset.evaluate(
             fake_results,
             metric='f1_score',
-            metric_options={'average': 'micro'})
+            metric_options={'average_mode': 'micro'})
     with pytest.raises(ValueError):
         eval_results = dataset.evaluate(
             fake_results,
             metric='support',
-            metric_options={'average': 'micro'})
+            metric_options={'average_mode': 'micro'})
 
     # test multi-label evalutation
     dataset = MultiLabelDataset(data_prefix='', pipeline=[], test_mode=True)

@@ -124,7 +124,7 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
             metric (str | list[str]): Metrics to be evaluated.
                 Default value is `accuracy`.
             metric_options (dict): Options for calculating metrics. Allowed
-                keys are 'topk' and 'average'.
+                keys are 'topk' and 'average_mode'.
             logger (logging.Logger | None | str): Logger used for printing
                 related information during evaluation. Default: None.
         Returns:
@@ -154,28 +154,28 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
                 precision_value = precision(
                     results,
                     gt_labels,
-                    average=metric_options.get('average', 'macro'),
+                    average_mode=metric_options.get('average_mode', 'macro'),
                     thr=metric_options.get('thr'))
                 eval_result = {'precision': precision_value}
             elif metric == 'recall':
                 recall_value = recall(
                     results,
                     gt_labels,
-                    average=metric_options.get('average', 'macro'),
+                    average_mode=metric_options.get('average_mode', 'macro'),
                     thr=metric_options.get('thr'))
                 eval_result = {'recall': recall_value}
             elif metric == 'f1_score':
                 f1_score_value = f1_score(
                     results,
                     gt_labels,
-                    average=metric_options.get('average', 'macro'),
+                    average_mode=metric_options.get('average_mode', 'macro'),
                     thr=metric_options.get('thr'))
                 eval_result = {'f1_score': f1_score_value}
             elif metric == 'support':
                 support_value = support(
                     results,
                     gt_labels,
-                    average=metric_options.get('average', 'macro'))
+                    average_mode=metric_options.get('average_mode', 'macro'))
                 eval_result = {'support': support_value}
             eval_results.update(eval_result)
         return eval_results

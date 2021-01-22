@@ -67,8 +67,9 @@ def accuracy(pred, target, topk=1, thr=None):
     elif isinstance(pred, np.ndarray) and isinstance(target, np.ndarray):
         res = accuracy_numpy(pred, target, topk, thr)
     else:
-        raise TypeError('pred and target should both be'
-                        'torch.Tensor or np.ndarray')
+        raise TypeError(
+            f'pred and target should both be torch.Tensor or np.ndarray, '
+            f'but got {type(pred)} and {type(target)}.')
 
     return res[0] if return_single else res
 
