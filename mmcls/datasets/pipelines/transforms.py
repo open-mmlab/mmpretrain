@@ -85,8 +85,8 @@ class RandomCrop(object):
         if width == target_width and height == target_height:
             return 0, 0, height, width
 
-        xmin = random.randint(0, height - target_height)
-        ymin = random.randint(0, width - target_width)
+        ymin = random.randint(0, height - target_height)
+        xmin = random.randint(0, width - target_width)
         return xmin, ymin, target_height, target_width
 
     def __call__(self, results):
@@ -121,7 +121,12 @@ class RandomCrop(object):
             xmin, ymin, height, width = self.get_params(img, self.size)
             results[key] = mmcv.imcrop(
                 img,
-                np.array([ymin, xmin, ymin + width - 1, xmin + height - 1]))
+                np.array([
+                    xmin,
+                    ymin,
+                    xmin + width - 1,
+                    ymin + height - 1,
+                ]))
         return results
 
     def __repr__(self):
@@ -202,8 +207,8 @@ class RandomResizedCrop(object):
             target_height = int(round(math.sqrt(target_area / aspect_ratio)))
 
             if 0 < target_width <= width and 0 < target_height <= height:
-                xmin = random.randint(0, height - target_height)
-                ymin = random.randint(0, width - target_width)
+                ymin = random.randint(0, height - target_height)
+                xmin = random.randint(0, width - target_width)
                 return xmin, ymin, target_height, target_width
 
         # Fallback to central crop
@@ -217,8 +222,8 @@ class RandomResizedCrop(object):
         else:  # whole image
             target_width = width
             target_height = height
-        xmin = (height - target_height) // 2
-        ymin = (width - target_width) // 2
+        ymin = (height - target_height) // 2
+        xmin = (width - target_width) // 2
         return xmin, ymin, target_height, target_width
 
     def __call__(self, results):
@@ -236,8 +241,8 @@ class RandomResizedCrop(object):
             img = mmcv.imcrop(
                 img,
                 np.array([
-                    ymin, xmin, ymin + target_width - 1,
-                    xmin + target_height - 1
+                    xmin, ymin, xmin + target_width - 1,
+                    ymin + target_height - 1
                 ]))
             results[key] = mmcv.imresize(
                 img,
