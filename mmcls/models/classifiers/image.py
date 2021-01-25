@@ -46,8 +46,10 @@ class ImageClassifier(BaseClassifier):
             img (Tensor): of shape (N, C, H, W) encoding input images.
                 Typically these should be mean centered and std scaled.
 
-            gt_label (Tensor): of shape (N, 1) encoding the ground-truth label
-                of input images.
+            gt_label (Tensor): It should be of shape (N, 1) encoding the
+                ground-truth label of input images for single label task. It
+                shoulf be of shape (N, C) encoding the ground-truth label
+                of input images for multi-labels task.
 
         Returns:
             dict[str, Tensor]: a dictionary of loss components
