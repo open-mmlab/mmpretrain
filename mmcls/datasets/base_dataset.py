@@ -124,7 +124,7 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
             metric (str | list[str]): Metrics to be evaluated.
                 Default value is `accuracy`.
             metric_options (dict): Options for calculating metrics. Allowed
-                keys are 'topk' and 'average_mode'.
+                keys are 'topk', 'thrs' and 'average_mode'.
             logger (logging.Logger | None | str): Logger used for printing
                 related information during evaluation. Default: None.
         Returns:
@@ -148,31 +148,48 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         if len(invalid_metrics) != 0:
             raise ValueError(f'metirc {invalid_metrics} is not supported.')
 
+        topk = metric_options.get('topk', (1, 5))
+        thrs = metric_options.get('thr')
+        average_mode = metric_options.get('average_mode', 'macro')
+
         if 'accuracy' in metrics:
-            topk = metric_options.get('topk', (1, 5))
-            acc = accuracy(
-                results, gt_labels, topk, thr=metric_options.get('thr'))
-            eval_results.update(
-                {f'top-{k}': a.item()
-                 for k, a in zip(topk, acc)})
+            acc = accuracy(results, gt_labels, topk=topk, thrs=thrs)
+            if isinstance(topk, tuple):
+                eval_results_ = {
+                    f'accuracy_top-{k}': a
+                    for k, a in zip(topk, acc)
+                }
+            else:
+                eval_results_ = {'accuracy': acc}
+            if isinstance(thrs, tuple):
+                for key, values in eval_results_.items():
+                    eval_results.update({
+                        f'{key}_thr_{thr:.2f}': value.item()
+                        for thr, value in zip(thrs, values)
+                    })
+            else:
+                eval_results.update(
+                    {k: v.item()
+                     for k, v in eval_results_.items()})
 
         if 'support' in metrics:
             support_value = support(
-                results,
-                gt_labels,
-                average_mode=metric_options.get('average_mode', 'macro'))
+                results, gt_labels, average_mode=average_mode)
             eval_results['support'] = support_value
 
         precision_recall_f1_keys = ['precision', 'recall', 'f1_score']
         if len(set(metrics) & set(precision_recall_f1_keys)) != 0:
             precision_recall_f1_values = precision_recall_f1(
-                results,
-                gt_labels,
-                average_mode=metric_options.get('average_mode', 'macro'),
-                thr=metric_options.get('thr'))
-            for k, v in zip(precision_recall_f1_keys,
-                            precision_recall_f1_values):
-                if k in metrics:
-                    eval_results[k] = v
+                results, gt_labels, average_mode=average_mode, thrs=thrs)
+            for key, values in zip(precision_recall_f1_keys,
+                                   precision_recall_f1_values):
+                if key in metrics:
+                    if isinstance(thrs, tuple):
+                        eval_results.update({
+                            f'{key}_thr_{thr:.2f}': value
+                            for thr, value in zip(thrs, values)
+                        })
+                    else:
+                        eval_results[key] = values
 
         return eval_results

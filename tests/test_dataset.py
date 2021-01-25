@@ -109,7 +109,8 @@ def test_dataset_evaluation():
                              [0, 0, 1], [0, 0, 1], [0, 0, 1]])
     eval_results = dataset.evaluate(
         fake_results,
-        metric=['precision', 'recall', 'f1_score', 'support', 'accuracy'])
+        metric=['precision', 'recall', 'f1_score', 'support', 'accuracy'],
+        metric_options={'topk': 1})
     assert eval_results['precision'] == pytest.approx(
         (1 + 1 + 1 / 3) / 3 * 100.0)
     assert eval_results['recall'] == pytest.approx(
@@ -117,19 +118,61 @@ def test_dataset_evaluation():
     assert eval_results['f1_score'] == pytest.approx(
         (4 / 5 + 2 / 3 + 1 / 2) / 3 * 100.0)
     assert eval_results['support'] == 6
-    assert eval_results['top-1'] == pytest.approx(4 / 6 * 100)
+    assert eval_results['accuracy'] == pytest.approx(4 / 6 * 100)
 
     # test thr
     eval_results = dataset.evaluate(
         fake_results,
         metric=['precision', 'recall', 'f1_score', 'accuracy'],
-        metric_options={'thr': 0.6})
+        metric_options={
+            'thr': 0.6,
+            'topk': 1
+        })
     assert eval_results['precision'] == pytest.approx(
         (1 + 0 + 1 / 3) / 3 * 100.0)
     assert eval_results['recall'] == pytest.approx((1 / 3 + 0 + 1) / 3 * 100.0)
     assert eval_results['f1_score'] == pytest.approx(
         (1 / 2 + 0 + 1 / 2) / 3 * 100.0)
-    assert eval_results['top-1'] == pytest.approx(2 / 6 * 100)
+    assert eval_results['accuracy'] == pytest.approx(2 / 6 * 100)
+
+    # test topk and thr as tuple
+    eval_results = dataset.evaluate(
+        fake_results,
+        metric=['precision', 'recall', 'f1_score', 'accuracy'],
+        metric_options={
+            'thr': (0.5, 0.6),
+            'topk': (1, 2)
+        })
+    assert {
+        'precision_thr_0.50', 'precision_thr_0.60', 'recall_thr_0.50',
+        'recall_thr_0.60', 'f1_score_thr_0.50', 'f1_score_thr_0.60',
+        'accuracy_top-1_thr_0.50', 'accuracy_top-1_thr_0.60',
+        'accuracy_top-2_thr_0.50', 'accuracy_top-2_thr_0.60'
+    } == eval_results.keys()
+    assert type(eval_results['precision_thr_0.50']) == float
+    assert type(eval_results['recall_thr_0.50']) == float
+    assert type(eval_results['f1_score_thr_0.50']) == float
+    assert type(eval_results['accuracy_top-1_thr_0.50']) == float
+
+    eval_results = dataset.evaluate(
+        fake_results,
+        metric='accuracy',
+        metric_options={
+            'thr': 0.5,
+            'topk': (1, 2)
+        })
+    assert {'accuracy_top-1', 'accuracy_top-2'} == eval_results.keys()
+    assert type(eval_results['accuracy_top-1']) == float
+
+    eval_results = dataset.evaluate(
+        fake_results,
+        metric='accuracy',
+        metric_options={
+            'thr': (0.5, 0.6),
+            'topk': 1
+        })
+    assert {'accuracy_thr_0.50', 'accuracy_thr_0.60'} == eval_results.keys()
+    assert type(eval_results['accuracy_thr_0.50']) == float
 
     # test evaluation results for classes
     eval_results = dataset.evaluate(
