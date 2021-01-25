@@ -8,6 +8,7 @@ from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
+import torch
 
 from mmcls.datasets import (DATASETS, BaseDataset, ClassBalancedDataset,
                             ConcatDataset, MultiLabelDataset, RepeatDataset)
@@ -105,10 +106,12 @@ def test_dataset_evaluation():
         dict(gt_label=1),
         dict(gt_label=0)
     ]
-    fake_results = np.array([[1, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1],
-                             [0, 0, 1], [0, 0, 1]])
+    fake_results = np.array([[0.7, 0, 0.3], [0.5, 0.2, 0.3], [0.4, 0.5, 0.1],
+                             [0, 0, 1], [0, 0, 1], [0, 0, 1]])
     eval_results = dataset.evaluate(
-        fake_results, metric=['precision', 'recall', 'f1_score', 'support'])
+        fake_results,
+        metric=['precision', 'recall', 'f1_score', 'support', 'accuracy'],
+        metric_options={'topk': 1})
     assert eval_results['precision'] == pytest.approx(
         (1 + 1 + 1 / 3) / 3 * 100.0)
     assert eval_results['recall'] == pytest.approx(
@@ -116,36 +119,114 @@ def test_dataset_evaluation():
     assert eval_results['f1_score'] == pytest.approx(
         (4 / 5 + 2 / 3 + 1 / 2) / 3 * 100.0)
     assert eval_results['support'] == 6
+    assert eval_results['accuracy'] == pytest.approx(4 / 6 * 100)
+
+    # test input as tensor
+    fake_results_tensor = torch.from_numpy(fake_results)
+    eval_results_ = dataset.evaluate(
+        fake_results_tensor,
+        metric=['precision', 'recall', 'f1_score', 'support', 'accuracy'],
+        metric_options={'topk': 1})
+    assert eval_results_ == eval_results
+
+    # test thr
+    eval_results = dataset.evaluate(
+        fake_results,
+        metric=['precision', 'recall', 'f1_score', 'accuracy'],
+        metric_options={
+            'thrs': 0.6,
+            'topk': 1
+        })
+    assert eval_results['precision'] == pytest.approx(
+        (1 + 0 + 1 / 3) / 3 * 100.0)
+    assert eval_results['recall'] == pytest.approx((1 / 3 + 0 + 1) / 3 * 100.0)
+    assert eval_results['f1_score'] == pytest.approx(
+        (1 / 2 + 0 + 1 / 2) / 3 * 100.0)
+    assert eval_results['accuracy'] == pytest.approx(2 / 6 * 100)
+    # thrs must be a float, tuple or None
+    with pytest.raises(TypeError):
+        eval_results = dataset.evaluate(
+            fake_results,
+            metric=['precision', 'recall', 'f1_score', 'accuracy'],
+            metric_options={
+                'thrs': 'thr',
+                'topk': 1
+            })
+
+    # test topk and thr as tuple
+    eval_results = dataset.evaluate(
+        fake_results,
+        metric=['precision', 'recall', 'f1_score', 'accuracy'],
+        metric_options={
+            'thrs': (0.5, 0.6),
+            'topk': (1, 2)
+        })
+    assert {
+        'precision_thr_0.50', 'precision_thr_0.60', 'recall_thr_0.50',
+        'recall_thr_0.60', 'f1_score_thr_0.50', 'f1_score_thr_0.60',
+        'accuracy_top-1_thr_0.50', 'accuracy_top-1_thr_0.60',
+        'accuracy_top-2_thr_0.50', 'accuracy_top-2_thr_0.60'
+    } == eval_results.keys()
+    assert type(eval_results['precision_thr_0.50']) == float
+    assert type(eval_results['recall_thr_0.50']) == float
+    assert type(eval_results['f1_score_thr_0.50']) == float
+    assert type(eval_results['accuracy_top-1_thr_0.50']) == float
+
+    eval_results = dataset.evaluate(
+        fake_results,
+        metric='accuracy',
+        metric_options={
+            'thrs': 0.5,
+            'topk': (1, 2)
+        })
+    assert {'accuracy_top-1', 'accuracy_top-2'} == eval_results.keys()
+    assert type(eval_results['accuracy_top-1']) == float
+
+    eval_results = dataset.evaluate(
+        fake_results,
+        metric='accuracy',
+        metric_options={
+            'thrs': (0.5, 0.6),
+            'topk': 1
+        })
+    assert {'accuracy_thr_0.50', 'accuracy_thr_0.60'} == eval_results.keys()
+    assert type(eval_results['accuracy_thr_0.50']) == float
 
     # test evaluation results for classes
     eval_results = dataset.evaluate(
         fake_results,
         metric=['precision', 'recall', 'f1_score', 'support'],
-        metric_options={'average': 'none'})
+        metric_options={'average_mode': 'none'})
     assert eval_results['precision'].shape == (3, )
     assert eval_results['recall'].shape == (3, )
     assert eval_results['f1_score'].shape == (3, )
     assert eval_results['support'].shape == (3, )
 
-    # the average method must be valid
+    # the average_mode method must be valid
     with pytest.raises(ValueError):
         eval_results = dataset.evaluate(
             fake_results,
             metric='precision',
-            metric_options={'average': 'micro'})
+            metric_options={'average_mode': 'micro'})
     with pytest.raises(ValueError):
         eval_results = dataset.evaluate(
-            fake_results, metric='recall', metric_options={'average': 'micro'})
+            fake_results,
+            metric='recall',
+            metric_options={'average_mode': 'micro'})
     with pytest.raises(ValueError):
         eval_results = dataset.evaluate(
             fake_results,
             metric='f1_score',
-            metric_options={'average': 'micro'})
+            metric_options={'average_mode': 'micro'})
     with pytest.raises(ValueError):
         eval_results = dataset.evaluate(
             fake_results,
             metric='support',
-            metric_options={'average': 'micro'})
+            metric_options={'average_mode': 'micro'})
+
+    # the metric must be valid for the dataset
+    with pytest.raises(ValueError):
+        eval_results = dataset.evaluate(fake_results, metric='map')
 
     # test multi-label evalutation
     dataset = MultiLabelDataset(data_prefix='', pipeline=[], test_mode=True)
