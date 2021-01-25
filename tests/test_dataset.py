@@ -8,6 +8,7 @@ from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
+import torch
 
 from mmcls.datasets import (DATASETS, BaseDataset, ClassBalancedDataset,
                             ConcatDataset, MultiLabelDataset, RepeatDataset)
@@ -120,12 +121,20 @@ def test_dataset_evaluation():
     assert eval_results['support'] == 6
     assert eval_results['accuracy'] == pytest.approx(4 / 6 * 100)
 
+    # test input as tensor
+    fake_results_tensor = torch.from_numpy(fake_results)
+    eval_results_ = dataset.evaluate(
+        fake_results_tensor,
+        metric=['precision', 'recall', 'f1_score', 'support', 'accuracy'],
+        metric_options={'topk': 1})
+    assert eval_results_ == eval_results
+
     # test thr
     eval_results = dataset.evaluate(
         fake_results,
         metric=['precision', 'recall', 'f1_score', 'accuracy'],
         metric_options={
-            'thr': 0.6,
+            'thrs': 0.6,
             'topk': 1
         })
     assert eval_results['precision'] == pytest.approx(
@@ -134,13 +143,22 @@ def test_dataset_evaluation():
     assert eval_results['f1_score'] == pytest.approx(
         (1 / 2 + 0 + 1 / 2) / 3 * 100.0)
     assert eval_results['accuracy'] == pytest.approx(2 / 6 * 100)
+    # thrs must be a float, tuple or None
+    with pytest.raises(TypeError):
+        eval_results = dataset.evaluate(
+            fake_results,
+            metric=['precision', 'recall', 'f1_score', 'accuracy'],
+            metric_options={
+                'thrs': 'thr',
+                'topk': 1
+            })
 
     # test topk and thr as tuple
     eval_results = dataset.evaluate(
         fake_results,
         metric=['precision', 'recall', 'f1_score', 'accuracy'],
         metric_options={
-            'thr': (0.5, 0.6),
+            'thrs': (0.5, 0.6),
             'topk': (1, 2)
         })
     assert {
@@ -158,7 +176,7 @@ def test_dataset_evaluation():
         fake_results,
         metric='accuracy',
         metric_options={
-            'thr': 0.5,
+            'thrs': 0.5,
             'topk': (1, 2)
         })
     assert {'accuracy_top-1', 'accuracy_top-2'} == eval_results.keys()
@@ -168,7 +186,7 @@ def test_dataset_evaluation():
         fake_results,
         metric='accuracy',
         metric_options={
-            'thr': (0.5, 0.6),
+            'thrs': (0.5, 0.6),
             'topk': 1
         })
     assert {'accuracy_thr_0.50', 'accuracy_thr_0.60'} == eval_results.keys()
@@ -205,6 +223,10 @@ def test_dataset_evaluation():
             fake_results,
             metric='support',
             metric_options={'average_mode': 'micro'})
+
+    # the metric must be valid for the dataset
+    with pytest.raises(ValueError):
+        eval_results = dataset.evaluate(fake_results, metric='map')
 
     # test multi-label evalutation
     dataset = MultiLabelDataset(data_prefix='', pipeline=[], test_mode=True)

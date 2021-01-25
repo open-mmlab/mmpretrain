@@ -149,7 +149,7 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
             raise ValueError(f'metirc {invalid_metrics} is not supported.')
 
         topk = metric_options.get('topk', (1, 5))
-        thrs = metric_options.get('thr')
+        thrs = metric_options.get('thrs')
         average_mode = metric_options.get('average_mode', 'macro')
 
         if 'accuracy' in metrics:
