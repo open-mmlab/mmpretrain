@@ -242,7 +242,7 @@ def test_dataset_evaluation():
                              [0.8, 0.1, 0.1, 0.2]])
 
     # the metric must be valid
-    with pytest.raises(KeyError):
+    with pytest.raises(ValueError):
         metric = 'coverage'
         dataset.evaluate(fake_results, metric=metric)
     # only one metric

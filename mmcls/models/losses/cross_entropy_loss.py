@@ -11,7 +11,7 @@ def cross_entropy(pred, label, weight=None, reduction='mean', avg_factor=None):
     Args:
         pred (torch.Tensor): The prediction with shape (N, C), C is the number
             of classes.
-        label (torch.Tensor): The learning label of the prediction.
+        label (torch.Tensor): The gt label of the prediction.
         weight (torch.Tensor, optional): Sample-wise loss weight.
         reduction (str): The method used to reduce the loss.
         avg_factor (int, optional): Average factor that is used to average
@@ -41,7 +41,7 @@ def binary_cross_entropy(pred,
 
     Args:
         pred (torch.Tensor): The prediction with shape (N, *).
-        label (torch.Tensor): The learning label with shape (N, *).
+        label (torch.Tensor): The gt label with shape (N, *).
         weight (torch.Tensor, optional): Element-wise weight of loss with shape
              (N, ). Defaults to None.
         reduction (str): The method used to reduce the loss.
