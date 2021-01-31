@@ -21,7 +21,7 @@ def parse_args():
     parser.add_argument('checkpoint', help='checkpoint file')
     parser.add_argument('--out', help='output result file')
     parser.add_argument(
-        '--metric',
+        '--metrics',
         type=str,
         nargs='+',
         help='evaluation metrics, which depends on the dataset, e.g., '
@@ -100,12 +100,12 @@ def main():
 
     rank, _ = get_dist_info()
     if rank == 0:
-        if args.metric:
-            results = dataset.evaluate(outputs, args.metric)
+        if args.metrics:
+            results = dataset.evaluate(outputs, args.metrics)
             for k, v in results.items():
                 print(f'\n{k} : {v:.2f}')
         else:
-            warnings.warn('Evaluation metric is not specified.')
+            warnings.warn('Evaluation metrics are not specified.')
             scores = np.vstack(outputs)
             pred_score = np.max(scores, axis=1)
             pred_label = np.argmax(scores, axis=1)
