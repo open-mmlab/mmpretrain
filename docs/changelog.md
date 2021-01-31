@@ -1,9 +1,43 @@
 ## Changelog
 
+### v0.8.0(31/1/2021)
+
+- Support multi-label task.
+- Support more flexible metrics settings.
+- Fix bugs.
+
+#### New Features
+
+- Add evaluation metrics: mAP, CP, CR, CF1, OP, OR, OF1 for multi-label task. (#123)
+- Add BCE loss for multi-label task. (#130)
+- Add focal loss for multi-label task. (#131)
+- Support PASCAL VOC 2007 dataset for multi-label task. (#134)
+- Add asymmetric loss for multi-label task. (#132)
+- Add analyze_results.py to select images for success/fail demonstration. (#142)
+- Support support and class-wise evaluation results. (#143)
+- Add thresholds in eval_metrics. (#146)
+- Add heads and a baseline config for multilabel task. (#145)
+
+#### Bug Fixes
+
+- Fix bug in VGG weight_init. (#140)
+- Fix bug in 2 ResNet configs. (#147)
+- Fix bug in RandomCrop and RandomResizedCrop. (#151)
+- Fix bug in Collect. (#149 & #152)
+
+#### Improvements
+
+- Remove the models with 0 checkpoint and ignore the repeated papers when counting papers to gain more accurate model statistics. (#135)
+- Add tags in README.md. (#137)
+- Fix optional issues in docstring. (#138)
+- Update stat.py to classify papers. (#139)
+- Update README.md. (#150)
+- Fix test.py to support more evaluation metrics. (#155)
+
 ### v0.7.0(31/12/2020)
 
-- Add more evaluation metrics
-- Fix bugs
+- Add more evaluation metrics.
+- Fix bugs.
 
 #### New Features
 
