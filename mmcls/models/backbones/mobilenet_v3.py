@@ -67,49 +67,50 @@ class MobileNetv3(BaseBackbone):
                  arch='small',
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
-                 out_indices=(10, ),
+                 out_indices=(-1,),
                  frozen_stages=-1,
                  norm_eval=False,
                  with_cp=False):
         super(MobileNetv3, self).__init__()
         assert arch in self.arch_settings
-        for index in out_indices:
-            if index not in range(0, len(self.arch_settings[arch])):
+        for order, index in enumerate(out_indices):
+            if index not in range(-1, len(self.arch_settings[arch]) + 2):
                 raise ValueError('the item in out_indices must in '
-                                 f'range(0, {len(self.arch_settings[arch])}). '
+                                 f'range(-1, {len(self.arch_settings[arch]) + 2}). '
                                  f'But received {index}')
 
-        if frozen_stages not in range(-1, len(self.arch_settings[arch])):
+        if frozen_stages not in range(-1, len(self.arch_settings[arch]) + 2):
             raise ValueError('frozen_stages must be in range(-1, '
-                             f'{len(self.arch_settings[arch])}). '
+                             f'{len(self.arch_settings[arch]) + 2}). '
                              f'But received {frozen_stages}')
-        self.out_indices = out_indices
-        self.frozen_stages = frozen_stages
         self.arch = arch
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
-        self.out_indices = out_indices
+        self.out_indices = tuple([i if i != -1 else len(self.arch_settings[arch]) + 1 for i in out_indices])
         self.frozen_stages = frozen_stages
         self.norm_eval = norm_eval
         self.with_cp = with_cp
 
-        self.in_channels = 16
-        self.conv1 = ConvModule(
-            in_channels=3,
-            out_channels=self.in_channels,
-            kernel_size=3,
-            stride=2,
-            padding=1,
-            conv_cfg=conv_cfg,
-            norm_cfg=norm_cfg,
-            act_cfg=dict(type='HSwish'))
-
         self.layers = self._make_layer()
-        self.feat_dim = self.arch_settings[arch][-1][2]
+        self.feat_dim = self.arch_settings[arch][-1][1]
 
     def _make_layer(self):
         layers = []
         layer_setting = self.arch_settings[self.arch]
+        in_channels = 16
+
+        layer = ConvModule(
+            in_channels=3,
+            out_channels=in_channels,
+            kernel_size=3,
+            stride=2,
+            padding=1,
+            conv_cfg=self.conv_cfg,
+            norm_cfg=self.norm_cfg,
+            act_cfg=dict(type='HSwish'))
+        self.add_module('layer0', layer)
+        layers.append('layer0')
+
         for i, params in enumerate(layer_setting):
             (kernel_size, mid_channels, out_channels, with_se, act,
              stride) = params
@@ -122,7 +123,7 @@ class MobileNetv3(BaseBackbone):
                 se_cfg = None
 
             layer = InvertedResidual(
-                in_channels=self.in_channels,
+                in_channels=in_channels,
                 out_channels=out_channels,
                 mid_channels=mid_channels,
                 kernel_size=kernel_size,
@@ -133,10 +134,26 @@ class MobileNetv3(BaseBackbone):
                 norm_cfg=self.norm_cfg,
                 act_cfg=dict(type=act),
                 with_cp=self.with_cp)
-            self.in_channels = out_channels
+            in_channels = out_channels
             layer_name = 'layer{}'.format(i + 1)
             self.add_module(layer_name, layer)
             layers.append(layer_name)
+        
+        # Build the last layer before pooling
+        # TODO: No dilation
+        layer = ConvModule(
+            in_channels=in_channels,
+            out_channels=576 if self.arch == 'small' else 960,
+            kernel_size=1,
+            stride=1,
+            padding=0,
+            conv_cfg=self.conv_cfg,
+            norm_cfg=self.norm_cfg,
+            act_cfg=dict(type='HSwish'))
+        layer_name = 'layer{}'.format(len(layer_setting) + 1)
+        self.add_module(layer_name, layer)
+        layers.append(layer_name)
+
         return layers
 
     def init_weights(self, pretrained=None):
@@ -153,8 +170,6 @@ class MobileNetv3(BaseBackbone):
             raise TypeError('pretrained must be a str or None')
 
     def forward(self, x):
-        x = self.conv1(x)
-
         outs = []
         for i, layer_name in enumerate(self.layers):
             layer = getattr(self, layer_name)
@@ -168,10 +183,7 @@ class MobileNetv3(BaseBackbone):
             return tuple(outs)
 
     def _freeze_stages(self):
-        if self.frozen_stages >= 0:
-            for param in self.conv1.parameters():
-                param.requires_grad = False
-        for i in range(1, self.frozen_stages + 1):
+        for i in range(0, self.frozen_stages + 1):
             layer = getattr(self, f'layer{i}')
             layer.eval()
             for param in layer.parameters():
