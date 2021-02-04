@@ -40,6 +40,14 @@ def parse_args():
         help='override some settings in the used config, the key-value pair '
         'in xxx=yyy format will be merged into config file.')
     parser.add_argument(
+        '--metric-options',
+        nargs='+',
+        action=DictAction,
+        default={},
+        help='custom options for evaluation, the key-value pair in xxx=yyy '
+        'format will be parsed as a dict metric_options for dataset.evaluate()'
+        ' function.')
+    parser.add_argument(
         '--launcher',
         choices=['none', 'pytorch', 'slurm', 'mpi'],
         default='none',
@@ -101,7 +109,8 @@ def main():
     rank, _ = get_dist_info()
     if rank == 0:
         if args.metrics:
-            results = dataset.evaluate(outputs, args.metrics)
+            results = dataset.evaluate(outputs, args.metrics,
+                                       args.metric_options)
             for k, v in results.items():
                 print(f'\n{k} : {v:.2f}')
         else:

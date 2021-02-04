@@ -115,7 +115,7 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
     def evaluate(self,
                  results,
                  metric='accuracy',
-                 metric_options={'topk': (1, 5)},
+                 metric_options=None,
                  logger=None):
         """Evaluate the dataset.
 
@@ -130,6 +130,8 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         Returns:
             dict: evaluation results
         """
+        if metric_options is None:
+            metric_options = {'topk': (1, 5)}
         if isinstance(metric, str):
             metrics = [metric]
         else:
