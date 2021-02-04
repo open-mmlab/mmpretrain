@@ -11,8 +11,8 @@ from .base_backbone import BaseBackbone
 
 
 @BACKBONES.register_module()
-class MobileNetv3(BaseBackbone):
-    """MobileNetv3 backbone.
+class MobileNetV3(BaseBackbone):
+    """ MobileNetV3 backbone
 
     Args:
         arch (str): Architechture of mobilnetv3, from {small, big}.
@@ -67,17 +67,18 @@ class MobileNetv3(BaseBackbone):
                  arch='small',
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
-                 out_indices=(-1,),
+                 out_indices=(-1, ),
                  frozen_stages=-1,
                  norm_eval=False,
                  with_cp=False):
-        super(MobileNetv3, self).__init__()
+        super(MobileNetV3, self).__init__()
         assert arch in self.arch_settings
         for order, index in enumerate(out_indices):
             if index not in range(-1, len(self.arch_settings[arch]) + 2):
-                raise ValueError('the item in out_indices must in '
-                                 f'range(-1, {len(self.arch_settings[arch]) + 2}). '
-                                 f'But received {index}')
+                raise ValueError(
+                    'the item in out_indices must in '
+                    f'range(-1, {len(self.arch_settings[arch]) + 2}). '
+                    f'But received {index}')
 
         if frozen_stages not in range(-1, len(self.arch_settings[arch]) + 2):
             raise ValueError('frozen_stages must be in range(-1, '
@@ -86,7 +87,10 @@ class MobileNetv3(BaseBackbone):
         self.arch = arch
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
-        self.out_indices = tuple([i if i != -1 else len(self.arch_settings[arch]) + 1 for i in out_indices])
+        self.out_indices = tuple([
+            i if i != -1 else len(self.arch_settings[arch]) + 1
+            for i in out_indices
+        ])
         self.frozen_stages = frozen_stages
         self.norm_eval = norm_eval
         self.with_cp = with_cp
@@ -138,7 +142,7 @@ class MobileNetv3(BaseBackbone):
             layer_name = 'layer{}'.format(i + 1)
             self.add_module(layer_name, layer)
             layers.append(layer_name)
-        
+
         # Build the last layer before pooling
         # TODO: No dilation
         layer = ConvModule(
@@ -190,7 +194,7 @@ class MobileNetv3(BaseBackbone):
                 param.requires_grad = False
 
     def train(self, mode=True):
-        super(MobileNetv3, self).train(mode)
+        super(MobileNetV3, self).train(mode)
         self._freeze_stages()
         if mode and self.norm_eval:
             for m in self.modules():

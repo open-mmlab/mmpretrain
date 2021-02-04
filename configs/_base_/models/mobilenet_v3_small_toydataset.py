@@ -1,7 +1,7 @@
 # model settings
 model = dict(
     type='ImageClassifier',
-    backbone=dict(type='MobileNetv3', arch='small'),
+    backbone=dict(type='MobileNetV3', arch='small'),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
         type='ConvClsHead',
@@ -9,5 +9,4 @@ model = dict(
         in_channels=576,
         mid_channels=1280,
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
-        topk=(1)
-    ))
+        topk=(1)))
