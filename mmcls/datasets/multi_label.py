@@ -36,10 +36,10 @@ class MultiLabelDataset(BaseDataset):
             metric (str | list[str]): Metrics to be evaluated.
                 Default value is 'mAP'. Options are 'mAP', 'CP', 'CR', 'CF1',
                 'OP', 'OR' and 'OF1'.
-            metric_options (dict): Options for calculating metrics. Allowed
-                keys are 'k' and 'thr'.
-            logger (logging.Logger | None | str): Logger used for printing
-                related information during evaluation. Default: None.
+            metric_options (dict, optional): Options for calculating metrics.
+                Allowed keys are 'k' and 'thr'. Defaults to None
+            logger (logging.Logger | str, optional): Logger used for printing
+                related information during evaluation. Defaults to None.
             deprecated_kwargs (dict): Used for containing deprecated arguments.
 
         Returns:
