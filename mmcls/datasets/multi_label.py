@@ -67,7 +67,7 @@ class MultiLabelDataset(BaseDataset):
 
         invalid_metrics = set(metrics) - set(allowed_metrics)
         if len(invalid_metrics) != 0:
-            raise ValueError(f'metirc {invalid_metrics} is not supported.')
+            raise ValueError(f'metric {invalid_metrics} is not supported.')
 
         if 'mAP' in metrics:
             mAP_value = mAP(results, gt_labels)
