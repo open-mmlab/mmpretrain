@@ -32,6 +32,38 @@ def cross_entropy(pred, label, weight=None, reduction='mean', avg_factor=None):
     return loss
 
 
+def soft_cross_entropy(pred,
+                       label,
+                       weight=None,
+                       reduction='mean',
+                       avg_factor=None):
+    """Calculate the Soft CrossEntropy loss. The label can be float.
+
+    Args:
+        pred (torch.Tensor): The prediction with shape (N, C), C is the number
+            of classes.
+        label (torch.Tensor): The gt label of the prediction with shape (N, C).
+            When using "mixup", the label can be float.
+        weight (torch.Tensor, optional): Sample-wise loss weight.
+        reduction (str): The method used to reduce the loss.
+        avg_factor (int, optional): Average factor that is used to average
+            the loss. Defaults to None.
+
+    Returns:
+        torch.Tensor: The calculated loss
+    """
+    # element-wise losses
+    loss = -label * F.log_softmax(pred, dim=-1)
+
+    # apply weights and do the reduction
+    if weight is not None:
+        weight = weight.float()
+    loss = weight_reduce_loss(
+        loss, weight=weight, reduction=reduction, avg_factor=avg_factor)
+
+    return loss
+
+
 def binary_cross_entropy(pred,
                          label,
                          weight=None,
@@ -75,19 +107,28 @@ class CrossEntropyLoss(nn.Module):
     Args:
         use_sigmoid (bool): Whether the prediction uses sigmoid
             of softmax. Defaults to False.
+        use_soft (bool): Whether to use the soft version of CrossEntropyLoss.
+            Defaults to False.
         reduction (str): The method used to reduce the loss.
             Options are "none", "mean" and "sum". Defaults to 'mean'.
         loss_weight (float):  Weight of the loss. Defaults to 1.0.
     """
 
-    def __init__(self, use_sigmoid=False, reduction='mean', loss_weight=1.0):
+    def __init__(self,
+                 use_sigmoid=False,
+                 use_soft=False,
+                 reduction='mean',
+                 loss_weight=1.0):
         super(CrossEntropyLoss, self).__init__()
         self.use_sigmoid = use_sigmoid
+        self.use_soft = use_soft
         self.reduction = reduction
         self.loss_weight = loss_weight
 
         if self.use_sigmoid:
             self.cls_criterion = binary_cross_entropy
+        elif self.use_soft:
+            self.cls_criterion = soft_cross_entropy
         else:
             self.cls_criterion = cross_entropy
 
