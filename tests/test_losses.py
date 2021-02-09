@@ -65,6 +65,22 @@ def test_cross_entropy_loss():
     assert torch.allclose(
         loss(cls_score, label, weight=weight), torch.tensor(25.))
 
+    # test soft_ce_loss
+    cls_score = torch.Tensor([[100, -100]])
+    label = torch.Tensor([[1, 0], [0, 1]])
+    weight = torch.tensor(0.5)
+
+    loss_cfg = dict(
+        type='CrossEntropyLoss',
+        use_soft=True,
+        reduction='mean',
+        loss_weight=1.0)
+    loss = build_loss(loss_cfg)
+    assert torch.allclose(loss(cls_score, label), torch.tensor(200.))
+    # test soft_ce_loss with weight
+    assert torch.allclose(
+        loss(cls_score, label, weight=weight), torch.tensor(100.))
+
 
 def test_focal_loss():
     # test focal_loss
