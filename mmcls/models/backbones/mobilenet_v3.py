@@ -122,7 +122,13 @@ class MobileNetV3(BaseBackbone):
                 se_cfg = dict(
                     channels=mid_channels,
                     ratio=4,
-                    act_cfg=(dict(type='ReLU'), dict(type='HSigmoid')))
+                    act_cfg=(dict(type='ReLU'),
+                             dict(
+                                 type='HSigmoid',
+                                 bias=3,
+                                 divisor=6,
+                                 min_value=0,
+                                 max_value=1)))
             else:
                 se_cfg = None
 
