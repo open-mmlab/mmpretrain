@@ -1,6 +1,6 @@
 import torch.nn as nn
 import torch.utils.checkpoint as cp
-from mmcv.cnn import ConvModule
+from mmcv.cnn import ConvModule, build_activation_layer
 
 from .se_layer import SELayer
 
@@ -76,9 +76,10 @@ class InvertedResidual(nn.Module):
             groups=mid_channels,
             conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
-            act_cfg=act_cfg)
+            act_cfg=None)
         if self.with_se:
             self.se = SELayer(**se_cfg)
+        self.activate = build_activation_layer(act_cfg)
         self.linear_conv = ConvModule(
             in_channels=mid_channels,
             out_channels=out_channels,
@@ -87,7 +88,7 @@ class InvertedResidual(nn.Module):
             padding=0,
             conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
-            act_cfg=act_cfg)
+            act_cfg=None)
 
     def forward(self, x):
 
@@ -101,6 +102,8 @@ class InvertedResidual(nn.Module):
 
             if self.with_se:
                 out = self.se(out)
+
+            out = self.activate(out)
 
             out = self.linear_conv(out)
 

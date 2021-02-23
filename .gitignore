@@ -113,6 +113,7 @@ data
 *.log.json
 work_dirs/
 ./configs/_base_/datasets/toydataset.py
+./demo/mbn3_demo.py
 
 # Pytorch
 *.pth
