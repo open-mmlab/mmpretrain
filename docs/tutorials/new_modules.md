@@ -150,7 +150,6 @@ To implement a new head, basically we need to implement `forward_train`, which t
 
     ```
 
-
 2. Import the module in `mmcls/models/heads/__init__.py`.
 
     ```python
@@ -161,25 +160,25 @@ To implement a new head, basically we need to implement `forward_train`, which t
 
 Together with the added GlobalAveragePooling neck, an entire config for a model is as follows.
 
-    ```python
-    model = dict(
-        type='ImageClassifier',
-        backbone=dict(
-            type='ResNet',
-            depth=50,
-            num_stages=4,
-            out_indices=(3, ),
-            style='pytorch'),
-        neck=dict(type='GlobalAveragePooling'),
-        head=dict(
-            type='LinearClsHead',
-            num_classes=1000,
-            in_channels=2048,
-            loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
-            topk=(1, 5),
-        ))
+```python
+model = dict(
+    type='ImageClassifier',
+    backbone=dict(
+        type='ResNet',
+        depth=50,
+        num_stages=4,
+        out_indices=(3, ),
+        style='pytorch'),
+    neck=dict(type='GlobalAveragePooling'),
+    head=dict(
+        type='LinearClsHead',
+        num_classes=1000,
+        in_channels=2048,
+        loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
+        topk=(1, 5),
+    ))
 
-    ```
+```
 
 ### Add new loss
 
@@ -188,6 +187,7 @@ In addition, it is helpful to leverage the decorator `weighted_loss` to weight t
 Assuming that we want to mimic a probablistic distribution generated from anther classification model, we implement a L1Loss to fulfil the purpose as below.
 
 1. Create a new file in `mmcls/models/losses/l1_loss.py`.
+
     ```python
     import torch
     import torch.nn as nn
@@ -224,11 +224,13 @@ Assuming that we want to mimic a probablistic distribution generated from anther
     ```
 
 2. Import the module in `mmcls/models/losses/__init__.py`.
+
     ```python
     from .l1_loss import L1Loss, l1_loss
     ```
 
 3. Modify loss field in the config.
+
     ```python
     loss=dict(type='L1Loss', loss_weight=1.0))
     ```

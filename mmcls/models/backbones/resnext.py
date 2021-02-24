@@ -17,13 +17,13 @@ class Bottleneck(_Bottleneck):
             ``groups=32, width_per_group=8``.
         stride (int): stride of the block. Default: 1
         dilation (int): dilation of convolution. Default: 1
-        downsample (nn.Module): downsample operation on identity branch.
-            Default: None
+        downsample (nn.Module, optional): downsample operation on identity
+            branch. Default: None
         style (str): `pytorch` or `caffe`. If set to "pytorch", the stride-two
             layer is the 3x3 conv layer, otherwise the stride-two layer is
             the first 1x1 conv layer.
-        conv_cfg (dict): dictionary to construct and config conv layer.
-            Default: None
+        conv_cfg (dict, optional): dictionary to construct and config conv
+            layer. Default: None
         norm_cfg (dict): dictionary to construct and config norm layer.
             Default: dict(type='BN')
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some

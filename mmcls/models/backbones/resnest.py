@@ -47,9 +47,10 @@ class SplitAttentionConv2d(nn.Module):
         radix (int): Radix of SpltAtConv2d. Default: 2
         reduction_factor (int): Reduction factor of SplitAttentionConv2d.
             Default: 4.
-        conv_cfg (dict): Config dict for convolution layer. Default: None,
-            which means using conv2d.
-        norm_cfg (dict): Config dict for normalization layer. Default: None.
+        conv_cfg (dict, optional): Config dict for convolution layer.
+            Default: None, which means using conv2d.
+        norm_cfg (dict, optional): Config dict for normalization layer.
+            Default: None.
     """
 
     def __init__(self,
@@ -145,13 +146,13 @@ class Bottleneck(_Bottleneck):
             Bottleneck. Default: True.
         stride (int): stride of the block. Default: 1
         dilation (int): dilation of convolution. Default: 1
-        downsample (nn.Module): downsample operation on identity branch.
-            Default: None
+        downsample (nn.Module, optional): downsample operation on identity
+            branch. Default: None
         style (str): `pytorch` or `caffe`. If set to "pytorch", the stride-two
             layer is the 3x3 conv layer, otherwise the stride-two layer is
             the first 1x1 conv layer.
-        conv_cfg (dict): dictionary to construct and config conv layer.
-            Default: None
+        conv_cfg (dict, optional): dictionary to construct and config conv
+            layer. Default: None
         norm_cfg (dict): dictionary to construct and config norm layer.
             Default: dict(type='BN')
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some

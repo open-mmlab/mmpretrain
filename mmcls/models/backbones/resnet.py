@@ -19,14 +19,14 @@ class BasicBlock(nn.Module):
             reserved argument in BasicBlock and should always be 1. Default: 1.
         stride (int): stride of the block. Default: 1
         dilation (int): dilation of convolution. Default: 1
-        downsample (nn.Module): downsample operation on identity branch.
-            Default: None.
+        downsample (nn.Module, optional): downsample operation on identity
+            branch. Default: None.
         style (str): `pytorch` or `caffe`. It is unused and reserved for
             unified API with Bottleneck.
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
             memory while slowing down the training speed.
-        conv_cfg (dict): dictionary to construct and config conv layer.
-            Default: None
+        conv_cfg (dict, optional): dictionary to construct and config conv
+            layer. Default: None
         norm_cfg (dict): dictionary to construct and config norm layer.
             Default: dict(type='BN')
     """
@@ -130,15 +130,15 @@ class Bottleneck(nn.Module):
             ``mid_channels`` is the input/output channels of conv2. Default: 4.
         stride (int): stride of the block. Default: 1
         dilation (int): dilation of convolution. Default: 1
-        downsample (nn.Module): downsample operation on identity branch.
-            Default: None.
+        downsample (nn.Module, optional): downsample operation on identity
+            branch. Default: None.
         style (str): ``"pytorch"`` or ``"caffe"``. If set to "pytorch", the
             stride-two layer is the 3x3 conv layer, otherwise the stride-two
             layer is the first 1x1 conv layer. Default: "pytorch".
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
             memory while slowing down the training speed.
-        conv_cfg (dict): dictionary to construct and config conv layer.
-            Default: None
+        conv_cfg (dict, optional): dictionary to construct and config conv
+            layer. Default: None
         norm_cfg (dict): dictionary to construct and config norm layer.
             Default: dict(type='BN')
     """
@@ -309,8 +309,8 @@ class ResLayer(nn.Sequential):
         stride (int): stride of the first block. Default: 1.
         avg_down (bool): Use AvgPool instead of stride conv when
             downsampling in the bottleneck. Default: False
-        conv_cfg (dict): dictionary to construct and config conv layer.
-            Default: None
+        conv_cfg (dict, optional): dictionary to construct and config conv
+            layer. Default: None
         norm_cfg (dict): dictionary to construct and config norm layer.
             Default: dict(type='BN')
     """

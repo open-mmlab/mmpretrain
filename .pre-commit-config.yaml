@@ -25,3 +25,8 @@ repos:
       - id: double-quote-string-fixer
       - id: fix-encoding-pragma
         args: ["--remove"]
+  - repo: https://github.com/jumanjihouse/pre-commit-hooks
+    rev: 2.1.4
+    hooks:
+      - id: markdownlint
+        args: ["-r", "~MD002,~MD013,~MD024,~MD029,~MD033,~MD034,~MD036"]
