@@ -21,7 +21,13 @@ def parse_args():
     parser.add_argument('checkpoint', help='checkpoint file')
     parser.add_argument('--out', help='output result file')
     parser.add_argument(
-        '--metric', type=str, default='accuracy', help='evaluation metric')
+        '--metrics',
+        type=str,
+        nargs='+',
+        help='evaluation metrics, which depends on the dataset, e.g., '
+        '"accuracy", "precision", "recall", "f1_score", "support" for single '
+        'label dataset, and "mAP", "CP", "CR", "CF1", "OP", "OR", "OF1" for '
+        'multi-label dataset')
     parser.add_argument(
         '--gpu_collect',
         action='store_true',
@@ -33,6 +39,14 @@ def parse_args():
         action=DictAction,
         help='override some settings in the used config, the key-value pair '
         'in xxx=yyy format will be merged into config file.')
+    parser.add_argument(
+        '--metric-options',
+        nargs='+',
+        action=DictAction,
+        default={},
+        help='custom options for evaluation, the key-value pair in xxx=yyy '
+        'format will be parsed as a dict metric_options for dataset.evaluate()'
+        ' function.')
     parser.add_argument(
         '--launcher',
         choices=['none', 'pytorch', 'slurm', 'mpi'],
@@ -94,11 +108,13 @@ def main():
 
     rank, _ = get_dist_info()
     if rank == 0:
-        if args.metric != '':
-            results = dataset.evaluate(outputs, args.metric)
-            for topk, acc in results.items():
-                print(f'\n{topk} accuracy: {acc:.2f}')
+        if args.metrics:
+            results = dataset.evaluate(outputs, args.metrics,
+                                       args.metric_options)
+            for k, v in results.items():
+                print(f'\n{k} : {v:.2f}')
         else:
+            warnings.warn('Evaluation metrics are not specified.')
             scores = np.vstack(outputs)
             pred_score = np.max(scores, axis=1)
             pred_label = np.argmax(scores, axis=1)

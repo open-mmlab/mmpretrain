@@ -5,7 +5,8 @@ import mmcv
 import numpy as np
 from torch.utils.data import Dataset
 
-from mmcls.models.losses import accuracy, f1_score, precision, recall
+from mmcls.core.evaluation import precision_recall_f1, support
+from mmcls.models.losses import accuracy
 from .pipelines import Compose
 
 
@@ -36,8 +37,8 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         self.data_prefix = data_prefix
         self.test_mode = test_mode
         self.pipeline = Compose(pipeline)
-        self.data_infos = self.load_annotations()
         self.CLASSES = self.get_classes(classes)
+        self.data_infos = self.load_annotations()
 
     @abstractmethod
     def load_annotations(self):
@@ -114,7 +115,7 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
     def evaluate(self,
                  results,
                  metric='accuracy',
-                 metric_options={'topk': (1, 5)},
+                 metric_options=None,
                  logger=None):
         """Evaluate the dataset.
 
@@ -122,36 +123,76 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
             results (list): Testing results of the dataset.
             metric (str | list[str]): Metrics to be evaluated.
                 Default value is `accuracy`.
-            logger (logging.Logger | None | str): Logger used for printing
-                related information during evaluation. Default: None.
+            metric_options (dict, optional): Options for calculating metrics.
+                Allowed keys are 'topk', 'thrs' and 'average_mode'.
+                Defaults to None.
+            logger (logging.Logger | str, optional): Logger used for printing
+                related information during evaluation. Defaults to None.
         Returns:
             dict: evaluation results
         """
+        if metric_options is None:
+            metric_options = {'topk': (1, 5)}
         if isinstance(metric, str):
             metrics = [metric]
         else:
             metrics = metric
-        allowed_metrics = ['accuracy', 'precision', 'recall', 'f1_score']
+        allowed_metrics = [
+            'accuracy', 'precision', 'recall', 'f1_score', 'support'
+        ]
         eval_results = {}
-        for metric in metrics:
-            if metric not in allowed_metrics:
-                raise KeyError(f'metric {metric} is not supported.')
-            results = np.vstack(results)
-            gt_labels = self.get_gt_labels()
-            num_imgs = len(results)
-            assert len(gt_labels) == num_imgs
-            if metric == 'accuracy':
-                topk = metric_options.get('topk')
-                acc = accuracy(results, gt_labels, topk)
-                eval_result = {f'top-{k}': a.item() for k, a in zip(topk, acc)}
-            elif metric == 'precision':
-                precision_value = precision(results, gt_labels)
-                eval_result = {'precision': precision_value}
-            elif metric == 'recall':
-                recall_value = recall(results, gt_labels)
-                eval_result = {'recall': recall_value}
-            elif metric == 'f1_score':
-                f1_score_value = f1_score(results, gt_labels)
-                eval_result = {'f1_score': f1_score_value}
-            eval_results.update(eval_result)
+        results = np.vstack(results)
+        gt_labels = self.get_gt_labels()
+        num_imgs = len(results)
+        assert len(gt_labels) == num_imgs, 'dataset testing results should '\
+            'be of the same length as gt_labels.'
+
+        invalid_metrics = set(metrics) - set(allowed_metrics)
+        if len(invalid_metrics) != 0:
+            raise ValueError(f'metirc {invalid_metrics} is not supported.')
+
+        topk = metric_options.get('topk', (1, 5))
+        thrs = metric_options.get('thrs')
+        average_mode = metric_options.get('average_mode', 'macro')
+
+        if 'accuracy' in metrics:
+            acc = accuracy(results, gt_labels, topk=topk, thrs=thrs)
+            if isinstance(topk, tuple):
+                eval_results_ = {
+                    f'accuracy_top-{k}': a
+                    for k, a in zip(topk, acc)
+                }
+            else:
+                eval_results_ = {'accuracy': acc}
+            if isinstance(thrs, tuple):
+                for key, values in eval_results_.items():
+                    eval_results.update({
+                        f'{key}_thr_{thr:.2f}': value.item()
+                        for thr, value in zip(thrs, values)
+                    })
+            else:
+                eval_results.update(
+                    {k: v.item()
+                     for k, v in eval_results_.items()})
+
+        if 'support' in metrics:
+            support_value = support(
+                results, gt_labels, average_mode=average_mode)
+            eval_results['support'] = support_value
+
+        precision_recall_f1_keys = ['precision', 'recall', 'f1_score']
+        if len(set(metrics) & set(precision_recall_f1_keys)) != 0:
+            precision_recall_f1_values = precision_recall_f1(
+                results, gt_labels, average_mode=average_mode, thrs=thrs)
+            for key, values in zip(precision_recall_f1_keys,
+                                   precision_recall_f1_values):
+                if key in metrics:
+                    if isinstance(thrs, tuple):
+                        eval_results.update({
+                            f'{key}_thr_{thr:.2f}': value
+                            for thr, value in zip(thrs, values)
+                        })
+                    else:
+                        eval_results[key] = values
+
         return eval_results

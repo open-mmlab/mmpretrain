@@ -44,14 +44,14 @@ class VGG(BaseBackbone):
         num_classes (int): number of classes for classification.
         num_stages (int): VGG stages, normally 5.
         dilations (Sequence[int]): Dilation of each stage.
-        out_indices (Sequence[int]): Output from which stages. If only one
-            stage is specified, a single tensor (feature map) is returned,
-            otherwise multiple stages are specified, a tuple of tensors will
-            be returned. When it is None, the default behavior depends on
-            whether num_classes is specified. If num_classes <= 0, the default
-            value is (4, ), outputing the last feature map before classifier.
-            If num_classes > 0, the default value is (5, ), outputing the
-            classification score. Default: None.
+        out_indices (Sequence[int], optional): Output from which stages.
+            If only one stage is specified, a single tensor (feature map) is
+            returned, otherwise multiple stages are specified, a tuple of
+            tensors will be returned. When it is None, the default behavior
+            depends on whether num_classes is specified. If num_classes <= 0,
+            the default value is (4, ), outputing the last feature map before
+            classifier. If num_classes > 0, the default value is (5, ),
+            outputing the classification score. Default: None.
         frozen_stages (int): Stages to be frozen (all param fixed). -1 means
             not freezing any parameters.
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
@@ -154,8 +154,6 @@ class VGG(BaseBackbone):
                     constant_init(m, 1)
                 elif isinstance(m, nn.Linear):
                     normal_init(m, std=0.01)
-        else:
-            raise TypeError('pretrained must be a str or None')
 
     def forward(self, x):
         outs = []

@@ -19,7 +19,7 @@ class InvertedResidual(nn.Module):
         in_channels (int): The input channels of the block.
         out_channels (int): The output channels of the block.
         stride (int): Stride of the 3x3 convolution layer. Default: 1
-        conv_cfg (dict): Config dict for convolution layer.
+        conv_cfg (dict, optional): Config dict for convolution layer.
             Default: None, which means using conv2d.
         norm_cfg (dict): Config dict for normalization layer.
             Default: dict(type='BN').
@@ -141,7 +141,7 @@ class ShuffleNetV2(BaseBackbone):
             Default: (0, 1, 2, 3).
         frozen_stages (int): Stages to be frozen (all param fixed).
             Default: -1, which means not freezing any parameters.
-        conv_cfg (dict): Config dict for convolution layer.
+        conv_cfg (dict, optional): Config dict for convolution layer.
             Default: None, which means using conv2d.
         norm_cfg (dict): Config dict for normalization layer.
             Default: dict(type='BN').
