@@ -5,13 +5,20 @@ import tempfile
 import time
 
 import mmcv
+import numpy as np
 import torch
 import torch.distributed as dist
 from mmcv.image import tensor2imgs
 from mmcv.runner import get_dist_info
 
 
-def single_gpu_test(model, data_loader, show=False, out_dir=None):
+def single_gpu_test(model,
+                    data_loader,
+                    show=False,
+                    out_dir=None,
+                    text_color='green',
+                    font_scale=0.5,
+                    row_width=20):
     model.eval()
     results = []
     dataset = data_loader.dataset
@@ -24,13 +31,13 @@ def single_gpu_test(model, data_loader, show=False, out_dir=None):
         results.extend(result)
 
         if show or out_dir:
-            if batch_size == 1 and isinstance(data['img'][0], torch.Tensor):
-                img_tensor = data['img'][0]
-            else:
-                img_tensor = data['img'][0].data[0]
+            scores = np.vstack(result)
+            pred_score = np.max(scores, axis=1)
+            pred_label = np.argmax(scores, axis=1)
+            pred_class = [model.CLASSES[lb] for lb in pred_label]
 
-            img_metas = data['img_metas'][0].data[0]
-            imgs = tensor2imgs(img_tensor, **img_metas[0]['img_norm_cfg'])
+            img_metas = data['img_metas'].data[0]
+            imgs = tensor2imgs(data['img'], **img_metas[0]['img_norm_cfg'])
             assert len(imgs) == len(img_metas)
 
             for i, (img, img_meta) in enumerate(zip(imgs, img_metas)):
@@ -45,8 +52,19 @@ def single_gpu_test(model, data_loader, show=False, out_dir=None):
                 else:
                     out_file = None
 
+                result_show = {
+                    'pred_score': pred_score[i],
+                    'pred_label': pred_label[i],
+                    'pred_class': pred_class[i]
+                }
                 model.module.show_result(
-                    img_show, result[i], show=show, out_file=out_file)
+                    img_show,
+                    result_show,
+                    show=show,
+                    out_file=out_file,
+                    text_color=text_color,
+                    font_scale=font_scale,
+                    row_width=row_width)
 
         batch_size = data['img'].size(0)
         for _ in range(batch_size):
