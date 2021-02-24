@@ -16,9 +16,7 @@ def single_gpu_test(model,
                     data_loader,
                     show=False,
                     out_dir=None,
-                    text_color='green',
-                    font_scale=0.5,
-                    row_width=20):
+                    **show_kwargs):
     model.eval()
     results = []
     dataset = data_loader.dataset
@@ -62,9 +60,7 @@ def single_gpu_test(model,
                     result_show,
                     show=show,
                     out_file=out_file,
-                    text_color=text_color,
-                    font_scale=font_scale,
-                    row_width=row_width)
+                    **show_kwargs)
 
         batch_size = data['img'].size(0)
         for _ in range(batch_size):
