@@ -21,6 +21,7 @@ class ConcatDataset(_ConcatDataset):
 
     def __init__(self, datasets):
         super(ConcatDataset, self).__init__(datasets)
+        self.CLASSES = datasets[0].CLASSES
 
     def get_cat_ids(self, idx):
         if idx < 0:
@@ -53,6 +54,7 @@ class RepeatDataset(object):
     def __init__(self, dataset, times):
         self.dataset = dataset
         self.times = times
+        self.CLASSES = dataset.CLASSES
 
         self._ori_len = len(self.dataset)
 
@@ -104,6 +106,7 @@ class ClassBalancedDataset(object):
     def __init__(self, dataset, oversample_thr):
         self.dataset = dataset
         self.oversample_thr = oversample_thr
+        self.CLASSES = dataset.CLASSES
 
         repeat_factors = self._get_repeat_factors(dataset, oversample_thr)
         repeat_indices = []

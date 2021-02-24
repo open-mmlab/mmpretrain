@@ -11,6 +11,7 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
+import subprocess
 import sys
 
 sys.path.insert(0, os.path.abspath('..'))
@@ -20,10 +21,17 @@ sys.path.insert(0, os.path.abspath('..'))
 project = 'MMClassification'
 copyright = '2020, OpenMMLab'
 author = 'MMClassification Authors'
+version_file = '../mmcls/version.py'
+
+
+def get_version():
+    with open(version_file, 'r') as f:
+        exec(compile(f.read(), version_file, 'exec'))
+    return locals()['__version__']
+
 
 # The full version, including alpha/beta/rc tags
-with open('../mmcls/VERSION', 'r') as f:
-    release = f.read().strip()
+release = get_version()
 
 # -- General configuration ---------------------------------------------------
 
@@ -65,3 +73,11 @@ html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
 master_doc = 'index'
+
+
+def builder_inited_handler(app):
+    subprocess.run(['./stat.py'])
+
+
+def setup(app):
+    app.connect('builder-inited', builder_inited_handler)
