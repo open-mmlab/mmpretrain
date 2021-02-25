@@ -18,6 +18,7 @@ class TestLoading(object):
         transform = LoadImageFromFile()
         results = transform(copy.deepcopy(results))
         assert results['filename'] == osp.join(self.data_prefix, 'color.jpg')
+        assert results['ori_filename'] == 'color.jpg'
         assert results['img'].shape == (300, 400, 3)
         assert results['img'].dtype == np.uint8
         assert results['img_shape'] == (300, 400, 3)
