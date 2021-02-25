@@ -1,14 +1,21 @@
 import torch.nn as nn
 
 from ..builder import CLASSIFIERS, build_backbone, build_head, build_neck
+from ..utils import BatchMixupLayer
 from .base import BaseClassifier
 
 
 @CLASSIFIERS.register_module()
 class ImageClassifier(BaseClassifier):
 
-    def __init__(self, backbone, neck=None, head=None, pretrained=None):
+    def __init__(self,
+                 backbone,
+                 neck=None,
+                 head=None,
+                 pretrained=None,
+                 train_cfg=None):
         super(ImageClassifier, self).__init__()
+
         self.backbone = build_backbone(backbone)
 
         if neck is not None:
@@ -16,6 +23,11 @@ class ImageClassifier(BaseClassifier):
 
         if head is not None:
             self.head = build_head(head)
+
+        self.mixup = None
+        if train_cfg is not None:
+            mixup_cfg = train_cfg.get('mixup', None)
+            self.mixup = BatchMixupLayer(**mixup_cfg)
 
         self.init_weights(pretrained=pretrained)
 
@@ -54,6 +66,9 @@ class ImageClassifier(BaseClassifier):
         Returns:
             dict[str, Tensor]: a dictionary of loss components
         """
+        if self.mixup is not None:
+            img, gt_label = self.mixup(img, gt_label)
+
         x = self.extract_feat(img)
 
         losses = dict()
