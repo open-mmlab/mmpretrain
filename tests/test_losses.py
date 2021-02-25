@@ -1,3 +1,4 @@
+import pytest
 import torch
 
 from mmcls.models import build_loss
@@ -36,6 +37,11 @@ def test_asymmetric_loss():
 
 
 def test_cross_entropy_loss():
+    with pytest.raises(AssertionError):
+        # use_sigmoid and use_soft could not be set simultaneously
+        loss_cfg = dict(
+            type='CrossEntropyLoss', use_sigmoid=True, use_soft=True)
+        loss = build_loss(loss_cfg)
 
     # test ce_loss
     cls_score = torch.Tensor([[100, -100]])
