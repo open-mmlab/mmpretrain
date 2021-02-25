@@ -8,7 +8,8 @@ from mmcls.datasets.builder import PIPELINES
 
 
 def construct_toy_data():
-    img = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]], dtype=np.uint8)
+    img = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]],
+                   dtype=np.uint8)
     img = np.stack([img, img, img], axis=-1)
     results = dict()
     # image
@@ -67,7 +68,8 @@ def test_shear():
         type='Shear', magnitude=1, pad_val=0, prob=1., random_negative_prob=0.)
     pipeline = build_from_cfg(transform, PIPELINES)
     results = pipeline(results)
-    sheared_img = np.array([[1, 2, 3], [0, 4, 5], [0, 0, 7]], dtype=np.uint8)
+    sheared_img = np.array([[1, 2, 3, 4], [0, 5, 6, 7], [0, 0, 9, 10]],
+                           dtype=np.uint8)
     sheared_img = np.stack([sheared_img, sheared_img, sheared_img], axis=-1)
     assert (results['img'] == sheared_img).all()
     assert (results['img'] == results['img2']).all()
@@ -83,7 +85,8 @@ def test_shear():
         random_negative_prob=0.)
     pipeline = build_from_cfg(transform, PIPELINES)
     results = pipeline(results)
-    sheared_img = np.array([[1, 5, 9], [4, 8, 0], [7, 0, 0]], dtype=np.uint8)
+    sheared_img = np.array([[1, 6, 11, 0], [5, 10, 0, 0], [9, 0, 0, 0]],
+                           dtype=np.uint8)
     sheared_img = np.stack([sheared_img, sheared_img, sheared_img], axis=-1)
     assert (results['img'] == sheared_img).all()
 
@@ -98,6 +101,7 @@ def test_shear():
         random_negative_prob=1.)
     pipeline = build_from_cfg(transform, PIPELINES)
     results = pipeline(results)
-    sheared_img = np.array([[1, 5, 9], [4, 8, 0], [7, 0, 0]], dtype=np.uint8)
+    sheared_img = np.array([[1, 6, 11, 0], [5, 10, 0, 0], [9, 0, 0, 0]],
+                           dtype=np.uint8)
     sheared_img = np.stack([sheared_img, sheared_img, sheared_img], axis=-1)
     assert (results['img'] == sheared_img).all()
