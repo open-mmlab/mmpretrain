@@ -23,6 +23,7 @@ class SELayer(nn.Module):
     def __init__(self,
                  channels,
                  ratio=16,
+                 bias='auto',
                  conv_cfg=None,
                  act_cfg=(dict(type='ReLU'), dict(type='Sigmoid'))):
         super(SELayer, self).__init__()
@@ -36,6 +37,7 @@ class SELayer(nn.Module):
             out_channels=int(channels / ratio),
             kernel_size=1,
             stride=1,
+            bias=bias,
             conv_cfg=conv_cfg,
             act_cfg=act_cfg[0])
         self.conv2 = ConvModule(
@@ -43,6 +45,7 @@ class SELayer(nn.Module):
             out_channels=channels,
             kernel_size=1,
             stride=1,
+            bias=bias,
             conv_cfg=conv_cfg,
             act_cfg=act_cfg[1])
 
