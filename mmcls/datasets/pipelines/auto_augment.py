@@ -78,9 +78,9 @@ class Shear(object):
     def __repr__(self):
         repr_str = self.__class__.__name__
         repr_str += f'(magnitude={self.magnitude}, '
-        repr_str += f'(pad_val={self.pad_val}, '
-        repr_str += f'(prob={self.prob}, '
-        repr_str += f'(direction={self.direction}, '
-        repr_str += f'(random_negative_prob={self.random_negative_prob}, '
+        repr_str += f'pad_val={self.pad_val}, '
+        repr_str += f'prob={self.prob}, '
+        repr_str += f'direction={self.direction}, '
+        repr_str += f'random_negative_prob={self.random_negative_prob}, '
         repr_str += f'interpolation={self.interpolation})'
         return repr_str
