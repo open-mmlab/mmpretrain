@@ -21,7 +21,7 @@ class Shear(object):
         prob (float): The probability for performing Shear therefore should be
             in range [0, 1]. Defaults to 0.5.
         direction (str): The shearing direction. Options are 'horizontal' and
-            'vertical'. Default: 'horizontal'.
+            'vertical'. Defaults to 'horizontal'.
         random_negative_prob (float): The probability that turns the magnitude
             negative, which should be in range [0,1]. Defaults to 0.5.
         interpolation (str): Interpolation method. Options are 'nearest',
