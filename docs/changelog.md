@@ -3,12 +3,14 @@
 ### v0.9.0(1/3/2021)
 
 - Implement mixup trick.
+- Add a new tool to create TensorRT engine from ONNX, run inference and verify outputs in Python.
 
 #### New Features
 
 - Implement mixup and provide configs of training ResNet50 using mixup. (#160)
 - Add `Shear` pipeline for data augmentation. (#163)
 - Add `Translate` pipeline for data augmentation. (#165)
+- Add `tools/onnx2tensorrt.py` as a tool to create TensorRT engine from ONNX, run inference and verify outputs in Python. (#153)
 
 #### Improvements
 
