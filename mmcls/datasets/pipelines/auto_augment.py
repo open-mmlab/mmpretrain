@@ -168,3 +168,93 @@ class Translate(object):
         repr_str += f'random_negative_prob={self.random_negative_prob}, '
         repr_str += f'interpolation={self.interpolation})'
         return repr_str
+
+
+@PIPELINES.register_module()
+class Rotate(object):
+    """Rotate images.
+
+    Args:
+        angle (float): The angle used for rotate. Positive values stand for
+            clockwise rotation.
+        center (tuple[float], optional): Center point (w, h) of the rotation in
+             the source image. If None, the center of the image will be used.
+            defaults to None.
+        scale (float): Isotropic scale factor. Defaults to 1.0.
+        pad_val (int, tuple[int]): Pixel pad_val value for constant fill. If a
+            tuple of length 3, it is used to pad_val R, G, B channels
+            respectively. Defaults to 128.
+        prob (float): The probability for performing Rotate therefore should be
+            in range [0, 1]. Defaults to 0.5.
+        random_negative_prob (float): The probability that turns the angle
+            negative, which should be in range [0,1]. Defaults to 0.5.
+        interpolation (str): Interpolation method. Options are 'nearest',
+            'bilinear', 'bicubic', 'area', 'lanczos'. Defaults to 'nearest'.
+    """
+
+    def __init__(self,
+                 angle,
+                 center=None,
+                 scale=1.0,
+                 pad_val=128,
+                 prob=0.5,
+                 random_negative_prob=0.5,
+                 interpolation='nearest'):
+        assert isinstance(angle, float), 'The angle type must be float, but ' \
+            f'got {type(angle)} instead.'
+        if isinstance(center, tuple):
+            assert len(center) == 2, 'center as a tuple must have 2 ' \
+                f'elements, got {len(center)} elements instead.'
+        else:
+            assert center is None, 'The center type' \
+                f'must be tuple or None, got {type(center)} instead.'
+        assert isinstance(scale, float), 'the scale type must be float, but ' \
+            f'got {type(scale)} instead.'
+        if isinstance(pad_val, int):
+            pad_val = tuple([pad_val] * 3)
+        elif isinstance(pad_val, tuple):
+            assert len(pad_val) == 3, 'pad_val as a tuple must have 3 ' \
+                f'elements, got {len(pad_val)} instead.'
+            assert all(isinstance(i, int) for i in pad_val), 'pad_val as a '\
+                'tuple must got elements of int type.'
+        else:
+            raise TypeError('pad_val must be int or tuple with 3 elements.')
+        assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
+            f'got {prob} instead.'
+        assert 0 <= random_negative_prob <= 1.0, 'The random_negative_prob ' \
+            f'should be in range [0,1], got {random_negative_prob} instead.'
+
+        self.angle = angle
+        self.center = center
+        self.scale = scale
+        self.pad_val = pad_val
+        self.prob = prob
+        self.random_negative_prob = random_negative_prob
+        self.interpolation = interpolation
+
+    def __call__(self, results):
+        if np.random.rand() > self.prob:
+            return results
+        angle = random_negative(self.angle, self.random_negative_prob)
+        for key in results.get('img_fields', ['img']):
+            img = results[key]
+            img_rotated = mmcv.imrotate(
+                img,
+                angle,
+                center=self.center,
+                scale=self.scale,
+                border_value=self.pad_val,
+                interpolation=self.interpolation)
+            results[key] = img_rotated.astype(img.dtype)
+        return results
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += f'(angle={self.angle}, '
+        repr_str += f'center={self.center}, '
+        repr_str += f'scale={self.scale}, '
+        repr_str += f'pad_val={self.pad_val}, '
+        repr_str += f'prob={self.prob}, '
+        repr_str += f'random_negative_prob={self.random_negative_prob}, '
+        repr_str += f'interpolation={self.interpolation})'
+        return repr_str
