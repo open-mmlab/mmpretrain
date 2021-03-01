@@ -1,4 +1,4 @@
-from .auto_augment import Shear, Translate
+from .auto_augment import Invert, Shear, Translate
 from .compose import Compose
 from .formating import (Collect, ImageToTensor, ToNumpy, ToPIL, ToTensor,
                         Transpose, to_tensor)
@@ -10,5 +10,5 @@ __all__ = [
     'Compose', 'to_tensor', 'ToTensor', 'ImageToTensor', 'ToPIL', 'ToNumpy',
     'Transpose', 'Collect', 'LoadImageFromFile', 'Resize', 'CenterCrop',
     'RandomFlip', 'Normalize', 'RandomCrop', 'RandomResizedCrop',
-    'RandomGrayscale', 'Shear', 'Translate'
+    'RandomGrayscale', 'Shear', 'Translate', 'Invert'
 ]

@@ -89,6 +89,7 @@ class Shear(object):
 @PIPELINES.register_module()
 class Translate(object):
     """Translate images.
+
     Args:
         magnitude (int | float): The magnitude used for translate. Note that
             the offset is calculated by magnitude * size in the corresponding
@@ -167,4 +168,34 @@ class Translate(object):
         repr_str += f'direction={self.direction}, '
         repr_str += f'random_negative_prob={self.random_negative_prob}, '
         repr_str += f'interpolation={self.interpolation})'
+        return repr_str
+
+
+@PIPELINES.register_module()
+class Invert(object):
+    """Invert images.
+
+    Args:
+        prob (float): The probability for performing invert therefore should
+             be in range [0, 1]. Defaults to 0.5.
+    """
+
+    def __init__(self, prob=0.5):
+        assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
+            f'got {prob} instead.'
+
+        self.prob = prob
+
+    def __call__(self, results):
+        if np.random.rand() > self.prob:
+            return results
+        for key in results.get('img_fields', ['img']):
+            img = results[key]
+            img_inverted = mmcv.iminvert(img)
+            results[key] = img_inverted.astype(img.dtype)
+        return results
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += f'(prob={self.prob})'
         return repr_str
