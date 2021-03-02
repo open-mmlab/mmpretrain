@@ -308,3 +308,30 @@ def test_rotate():
     rotated_img = np.stack([rotated_img, rotated_img, rotated_img], axis=-1)
     assert (results['img'] == rotated_img).all()
     assert (results['img'] == results['img2']).all()
+
+
+def test_invert():
+    # test assertion for invalid value of prob
+    with pytest.raises(AssertionError):
+        transform = dict(type='Invert', prob=100)
+        build_from_cfg(transform, PIPELINES)
+
+    # test case when prob=0, therefore no invert
+    results = construct_toy_data()
+    transform = dict(type='Invert', prob=0.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    assert (results['img'] == results['ori_img']).all()
+
+    # test case when prob=1
+    results = construct_toy_data()
+    transform = dict(type='Invert', prob=1.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    inverted_img = np.array(
+        [[254, 253, 252, 251], [250, 249, 248, 247], [246, 245, 244, 243]],
+        dtype=np.uint8)
+    inverted_img = np.stack([inverted_img, inverted_img, inverted_img],
+                            axis=-1)
+    assert (results['img'] == inverted_img).all()
+    assert (results['img'] == results['img2']).all()
