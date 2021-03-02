@@ -1,5 +1,6 @@
 import copy
 
+import mmcv
 import numpy as np
 import pytest
 from mmcv.utils import build_from_cfg
@@ -9,6 +10,21 @@ from mmcls.datasets.builder import PIPELINES
 
 def construct_toy_data():
     img = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]],
+                   dtype=np.uint8)
+    img = np.stack([img, img, img], axis=-1)
+    results = dict()
+    # image
+    results['ori_img'] = img
+    results['img'] = img
+    results['img2'] = copy.deepcopy(img)
+    results['img_shape'] = img.shape
+    results['ori_shape'] = img.shape
+    results['img_fields'] = ['img', 'img2']
+    return results
+
+
+def construct_toy_data_photometric():
+    img = np.array([[0, 128, 255], [1, 127, 254], [2, 129, 253]],
                    dtype=np.uint8)
     img = np.stack([img, img, img], axis=-1)
     results = dict()
@@ -307,4 +323,68 @@ def test_rotate():
                            dtype=np.uint8)
     rotated_img = np.stack([rotated_img, rotated_img, rotated_img], axis=-1)
     assert (results['img'] == rotated_img).all()
+    assert (results['img'] == results['img2']).all()
+
+
+def test_color_transform():
+    # test assertion for invalid type of magnitude
+    with pytest.raises(AssertionError):
+        transform = dict(type='ColorTransform', magnitude=None)
+        build_from_cfg(transform, PIPELINES)
+
+    # test assertion for invalid value of prob
+    with pytest.raises(AssertionError):
+        transform = dict(type='ColorTransform', magnitude=0.5, prob=100)
+        build_from_cfg(transform, PIPELINES)
+
+    # test assertion for invalid value of random_negative_prob
+    with pytest.raises(AssertionError):
+        transform = dict(
+            type='ColorTransform', magnitude=0.5, random_negative_prob=100)
+        build_from_cfg(transform, PIPELINES)
+
+    # test case when magnitude=0, therefore no color transform
+    results = construct_toy_data_photometric()
+    transform = dict(type='ColorTransform', magnitude=0., prob=1.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    assert (results['img'] == results['ori_img']).all()
+
+    # test case when prob=0, therefore no color transform
+    results = construct_toy_data_photometric()
+    transform = dict(type='ColorTransform', magnitude=1., prob=0.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    assert (results['img'] == results['ori_img']).all()
+
+    # test case when magnitude=1, therefore got gray img
+    results = construct_toy_data_photometric()
+    transform = dict(type='ColorTransform', magnitude=1., prob=1.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    img_gray = mmcv.bgr2gray(results['ori_img'])
+    img_gray = np.stack([img_gray, img_gray, img_gray], axis=-1)
+    assert (results['img'] == img_gray).all()
+
+    # test case when magnitude=0.5
+    results = construct_toy_data_photometric()
+    transform = dict(type='ColorTransform', magnitude=.5, prob=1.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    img_r = np.round(
+        np.clip((results['ori_img'] * 0.5 + img_gray * 0.5), 0,
+                255)).astype(results['ori_img'].dtype)
+    assert (results['img'] == img_r).all()
+    assert (results['img'] == results['img2']).all()
+
+    # test case when magnitude=0.3, random_negative_prob=1
+    results = construct_toy_data_photometric()
+    transform = dict(
+        type='ColorTransform', magnitude=.3, prob=1., random_negative_prob=1.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    img_r = np.round(
+        np.clip((results['ori_img'] * 0.7 + img_gray * 0.3), 0,
+                255)).astype(results['ori_img'].dtype)
+    assert (results['img'] == img_r).all()
     assert (results['img'] == results['img2']).all()
