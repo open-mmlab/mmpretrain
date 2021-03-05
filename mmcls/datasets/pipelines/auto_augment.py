@@ -291,9 +291,7 @@ class Invert(object):
         return repr_str
 
 
-PIPELINES.register_module()
-
-
+@PIPELINES.register_module()
 class ColorTransform(object):
     """Adjust the color balance of images.
 
