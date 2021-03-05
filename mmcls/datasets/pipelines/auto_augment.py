@@ -264,6 +264,7 @@ class Rotate(object):
 @PIPELINES.register_module()
 class Invert(object):
     """Invert images.
+
     Args:
         prob (float): The probability for performing invert therefore should
              be in range [0, 1]. Defaults to 0.5.
@@ -295,6 +296,7 @@ PIPELINES.register_module()
 
 class ColorTransform(object):
     """Adjust the color balance of images.
+
     Args:
         magnitude (int | float): The magnitude used for color transform. A
             positive magnitude would enhance the color and a negative magnitude
