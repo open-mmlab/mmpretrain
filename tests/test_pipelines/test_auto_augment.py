@@ -384,9 +384,10 @@ def test_color_transform():
     results = pipeline(results)
     assert (results['img'] == results['ori_img']).all()
 
-    # test case when magnitude=1, therefore got gray img
+    # test case when magnitude=-1, therefore got gray img
     results = construct_toy_data_photometric()
-    transform = dict(type='ColorTransform', magnitude=1., prob=1.)
+    transform = dict(
+        type='ColorTransform', magnitude=-1., prob=1., random_negative_prob=0)
     pipeline = build_from_cfg(transform, PIPELINES)
     results = pipeline(results)
     img_gray = mmcv.bgr2gray(results['ori_img'])
@@ -395,7 +396,8 @@ def test_color_transform():
 
     # test case when magnitude=0.5
     results = construct_toy_data_photometric()
-    transform = dict(type='ColorTransform', magnitude=.5, prob=1.)
+    transform = dict(
+        type='ColorTransform', magnitude=.5, prob=1., random_negative_prob=0)
     pipeline = build_from_cfg(transform, PIPELINES)
     results = pipeline(results)
     img_r = np.round(
