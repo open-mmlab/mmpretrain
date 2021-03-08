@@ -1,17 +1,16 @@
+from itertools import repeat
+
 import torch
 import torch.nn as nn
-from mmcv.cnn import build_norm_layer, build_conv_layer
+from mmcv.cnn import build_conv_layer, build_norm_layer
 
 from ..builder import BACKBONES
 from ..utils import FFN
-
 from .base_backbone import BaseBackbone
 
 # import torch.utils.checkpoint as cp
 # from mmcv.cnn import (ConvModule, build_conv_layer, build_norm_layer,
 #   constant_init, kaiming_init)
-
-from itertools import repeat
 
 
 # TODO:
@@ -45,7 +44,8 @@ class MultiheadAttention(nn.Module):
         super(MultiheadAttention, self).__init__()
         self.num_heads = num_heads
         self.head_dim = embed_dims // num_heads
-        assert self.head_dim * num_heads == self.embed_dim, \
+        self.embed_dims = embed_dims
+        assert self.head_dim * num_heads == embed_dims, \
             'embed_dim must be divisible by num_heads'
 
         self.scale = self.head_dim**-0.5
@@ -157,8 +157,8 @@ class PatchEmbed(nn.Module):
             if len(img_size) == 1:
                 img_size = tuple(repeat(img_size[0], 2))
             assert len(img_size) == 2, \
-                f"The size of image should have length 1 or 2, " \
-                f"but got {len(img_size)}"
+                f'The size of image should have length 1 or 2, ' \
+                f'but got {len(img_size)}'
 
         self.img_size = img_size
         self.patch_size = tuple(repeat(patch_size, 2))
@@ -167,7 +167,7 @@ class PatchEmbed(nn.Module):
             self.img_size[0] // self.patch_size[0])
         assert num_patches * self.patch_size[0] * self.patch_size[1] == \
                self.img_size[0] * self.img_size[1], \
-            "The image size H*W must be divisible by patch size"
+               'The image size H*W must be divisible by patch size'
         self.num_patches = num_patches
 
         self.projection = build_conv_layer(
@@ -181,7 +181,8 @@ class PatchEmbed(nn.Module):
         B, C, H, W = x.shape
         # FIXME look at relaxing size constraints
         assert H == self.img_size[0] and W == self.img_size[1], \
-            f"Input image size ({H}*{W}) doesn't match model ({self.img_size[0]}*{self.img_size[1]})."
+            f"Input image size ({H}*{W}) doesn't " \
+            f'match model ({self.img_size[0]}*{self.img_size[1]}).'
         # The output size is (B, N, D), where N=H*W/P/P, D is embid_dim
         x = self.projection(x).flatten(2).transpose(1, 2)
         return x
@@ -191,6 +192,7 @@ class HybridEmbed(PatchEmbed):
     """ CNN Feature Map Embedding.
         Extract feature map from CNN, flatten, project to embedding dim.
     """
+
     def __init__(self,
                  backbone,
                  img_size=224,
@@ -205,20 +207,25 @@ class HybridEmbed(PatchEmbed):
             if len(img_size) == 1:
                 img_size = tuple(repeat(img_size[0], 2))
             assert len(img_size) == 2, \
-                f"The size of image should have length 1 or 2, " \
-                f"but got {len(img_size)}"
+                f'The size of image should have length 1 or 2, ' \
+                f'but got {len(img_size)}'
 
         # Get the output dim of the backbone
         with torch.no_grad():
-            # FIXME this is hacky, but most reliable way of determining the exact dim of the output feature
-            # map for all networks, the feature metadata has reliable channel and stride info, but using
-            # stride to calc feature dim requires info about padding of each stage that isn't captured.
+            # FIXME this is hacky, but most reliable way of
+            # determining the exact dim of the output feature
+            # map for all networks, the feature metadata has
+            # reliable channel and stride info, but using
+            # stride to calc feature dim requires info about
+            # padding of each stage that isn't captured.
             training = backbone.training
             if training:
                 backbone.eval()
-            o = self.backbone(torch.zeros(1, in_channels, img_size[0], img_size[1]))
+            o = self.backbone(
+                torch.zeros(1, in_channels, img_size[0], img_size[1]))
             if isinstance(o, (list, tuple)):
-                o = o[-1]  # last feature if backbone outputs list/tuple of features
+                # last feature if backbone outputs list/tuple of features
+                o = o[-1]
             feature_size = o.shape[-2:]
             feature_dim = o.shape[1]
             backbone.train(training)
@@ -233,7 +240,8 @@ class HybridEmbed(PatchEmbed):
     def forward(self, x):
         x = self.backbone(x)
         if isinstance(x, (list, tuple)):
-            x = x[-1]  # last feature if backbone outputs list/tuple of features
+            x = x[
+                -1]  # last feature if backbone outputs list/tuple of features
         x = self.projection(x).flatten(2).transpose(1, 2)
         return x
 
@@ -242,7 +250,8 @@ class HybridEmbed(PatchEmbed):
 class VisionTransformer(BaseBackbone):
     """ Vision Transformer
 
-    A PyTorch impl of : `An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale`  -
+    A PyTorch impl of : `An Image is Worth 16x16 Words:
+    Transformers for Image Recognition at Scale`  -
         https://arxiv.org/abs/2010.11929
 
     Args:
@@ -256,11 +265,14 @@ class VisionTransformer(BaseBackbone):
         mlp_ratio (int): ratio of mlp hidden dim to embedding dim
         qkv_bias (bool): enable bias for qkv if True
         qk_scale (float): override default qk scale of head_dim ** -0.5 if set
-                representation_size (Optional[int]): enable and set representation layer (pre-logits) to this value if set
+                representation_size (Optional[int]): enable and set
+                representation
+                layer (pre-logits) to this value if set
                 drop_rate (float): dropout rate
                 attn_drop_rate (float): attention dropout rate
                 drop_path_rate (float): stochastic depth rate
-                hybrid_backbone (nn.Module): CNN backbone to use in-place of PatchEmbed module
+                hybrid_backbone (nn.Module): CNN backbone to use in-place of
+                PatchEmbed module
                 norm_layer: (nn.Module): normalization layer
     """
 
@@ -278,36 +290,42 @@ class VisionTransformer(BaseBackbone):
                  hybrid_backbone=None,
                  norm_cfg=dict(type='LN'),
                  act_cfg=dict(type='GELU'),
-                 num_fcs=2
-                 ):
+                 num_fcs=2):
         super(VisionTransformer, self).__init__()
         self.embed_dim = embed_dim
 
         if hybrid_backbone is not None:
             self.patch_embed = HybridEmbed(
-                hybrid_backbone, img_size=img_size, in_channels=in_channels, embed_dim=embed_dim)
+                hybrid_backbone,
+                img_size=img_size,
+                in_channels=in_channels,
+                embed_dim=embed_dim)
         else:
             self.patch_embed = PatchEmbed(
-                img_size=img_size, patch_size=patch_size, in_channels=in_channels, embed_dim=embed_dim)
+                img_size=img_size,
+                patch_size=patch_size,
+                in_channels=in_channels,
+                embed_dim=embed_dim)
         num_patches = self.patch_embed.num_patches
 
         self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
-        self.pos_embed = nn.Parameter(torch.zeros(1, num_patches + 1, embed_dim))
+        self.pos_embed = nn.Parameter(
+            torch.zeros(1, num_patches + 1, embed_dim))
         self.drop_after_pos = nn.Dropout(p=drop_rate)
 
         self.layers = nn.ModuleList()
         for _ in range(num_layers):
             self.layers.append(
-                TransformerEncoderLayer(embed_dim, num_heads,
-                                        feedforward_channels,
-                                        qkv_bias=qkv_bias,
-                                        attn_drop=attn_drop_rate,
-                                        proj_drop=drop_rate,
-                                        act_cfg=act_cfg,
-                                        norm_cfg=norm_cfg,
-                                        num_fcs=num_fcs
-                                        )
-            )
+                TransformerEncoderLayer(
+                    embed_dim,
+                    num_heads,
+                    feedforward_channels,
+                    qkv_bias=qkv_bias,
+                    attn_drop=attn_drop_rate,
+                    proj_drop=drop_rate,
+                    act_cfg=act_cfg,
+                    norm_cfg=norm_cfg,
+                    num_fcs=num_fcs))
 
         self.norm1_name, norm1 = build_norm_layer(
             norm_cfg, embed_dim, postfix=1)
@@ -338,7 +356,8 @@ class VisionTransformer(BaseBackbone):
         B = x.shape[0]
         x = self.patch_embed(x)
 
-        cls_tokens = self.cls_token.expand(B, -1, -1)  # stole cls_tokens impl from Phil Wang, thanks
+        cls_tokens = self.cls_token.expand(
+            B, -1, -1)  # stole cls_tokens impl from Phil Wang, thanks
         x = torch.cat((cls_tokens, x), dim=1)
         x = x + self.pos_embed
         x = self.drop_after_pos(x)
@@ -346,5 +365,5 @@ class VisionTransformer(BaseBackbone):
         for layer in self.layers:
             x = layer(x)
 
-        x = self.norm(x)[:, 0]
+        x = self.norm1(x)[:, 0]
         return x

@@ -14,7 +14,7 @@ class FFN(nn.Module):
         dropout (float, optional): Probability of an element to be
             zeroed. Default 0.0.
         add_residual (bool, optional): Add resudual connection.
-            Defaults to True.
+            Defaults to False.
     """
 
     def __init__(self,
@@ -23,7 +23,7 @@ class FFN(nn.Module):
                  num_fcs=2,
                  act_cfg=dict(type='ReLU', inplace=True),
                  dropout=0.0,
-                 add_residual=True):
+                 add_residual=False):
         super(FFN, self).__init__()
         assert num_fcs >= 2, 'num_fcs should be no less ' \
             f'than 2. got {num_fcs}.'
@@ -32,6 +32,8 @@ class FFN(nn.Module):
         self.num_fcs = num_fcs
         self.act_cfg = act_cfg
         self.dropout = dropout
+        # TODO:
+        # self.activate = nn.GELU()
         self.activate = build_activation_layer(act_cfg)
 
         layers = nn.ModuleList()
