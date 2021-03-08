@@ -22,6 +22,21 @@ def construct_toy_data():
     return results
 
 
+def construct_toy_data_photometric():
+    img = np.array([[0, 128, 255], [1, 127, 254], [2, 129, 253]],
+                   dtype=np.uint8)
+    img = np.stack([img, img, img], axis=-1)
+    results = dict()
+    # image
+    results['ori_img'] = img
+    results['img'] = img
+    results['img2'] = copy.deepcopy(img)
+    results['img_shape'] = img.shape
+    results['ori_shape'] = img.shape
+    results['img_fields'] = ['img', 'img2']
+    return results
+
+
 def test_shear():
     # test assertion for invalid type of magnitude
     with pytest.raises(AssertionError):
@@ -334,4 +349,99 @@ def test_invert():
     inverted_img = np.stack([inverted_img, inverted_img, inverted_img],
                             axis=-1)
     assert (results['img'] == inverted_img).all()
+    assert (results['img'] == results['img2']).all()
+
+
+def test_solarize():
+    # test assertion for invalid type of thr
+    with pytest.raises(AssertionError):
+        transform = dict(type='Solarize', thr=(1, 2))
+        build_from_cfg(transform, PIPELINES)
+
+    # test case when prob=0, therefore no solarize
+    results = construct_toy_data_photometric()
+    transform = dict(type='Solarize', thr=128, prob=0.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    assert (results['img'] == results['ori_img']).all()
+
+    # test case when thr=256, therefore no solarize
+    results = construct_toy_data_photometric()
+    transform = dict(type='Solarize', thr=256, prob=1.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    assert (results['img'] == results['ori_img']).all()
+
+    # test case when thr=128
+    results = construct_toy_data_photometric()
+    transform = dict(type='Solarize', thr=128, prob=1.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    img_solarized = np.array([[0, 127, 0], [1, 127, 1], [2, 126, 2]],
+                             dtype=np.uint8)
+    img_solarized = np.stack([img_solarized, img_solarized, img_solarized],
+                             axis=-1)
+    assert (results['img'] == img_solarized).all()
+    assert (results['img'] == results['img2']).all()
+
+    # test case when thr=100
+    results = construct_toy_data_photometric()
+    transform = dict(type='Solarize', thr=100, prob=1.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    img_solarized = np.array([[0, 127, 0], [1, 128, 1], [2, 126, 2]],
+                             dtype=np.uint8)
+    img_solarized = np.stack([img_solarized, img_solarized, img_solarized],
+                             axis=-1)
+    assert (results['img'] == img_solarized).all()
+    assert (results['img'] == results['img2']).all()
+
+
+def test_posterize():
+    # test assertion for invalid type of bits
+    with pytest.raises(AssertionError):
+        transform = dict(type='Posterize', bits=4.5)
+        build_from_cfg(transform, PIPELINES)
+
+    # test assertion for invalid value of bits
+    with pytest.raises(AssertionError):
+        transform = dict(type='Posterize', bits=10)
+        build_from_cfg(transform, PIPELINES)
+
+    # test case when prob=0, therefore no posterize
+    results = construct_toy_data_photometric()
+    transform = dict(type='Posterize', bits=4, prob=0.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    assert (results['img'] == results['ori_img']).all()
+
+    # test case when bits=8, therefore no solarize
+    results = construct_toy_data_photometric()
+    transform = dict(type='Posterize', bits=8, prob=1.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    assert (results['img'] == results['ori_img']).all()
+
+    # test case when bits=1
+    results = construct_toy_data_photometric()
+    transform = dict(type='Posterize', bits=1, prob=1.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    img_posterized = np.array([[0, 128, 128], [0, 0, 128], [0, 128, 128]],
+                              dtype=np.uint8)
+    img_posterized = np.stack([img_posterized, img_posterized, img_posterized],
+                              axis=-1)
+    assert (results['img'] == img_posterized).all()
+    assert (results['img'] == results['img2']).all()
+
+    # test case when bits=3
+    results = construct_toy_data_photometric()
+    transform = dict(type='Posterize', bits=3, prob=1.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    img_posterized = np.array([[0, 128, 224], [0, 96, 224], [0, 128, 224]],
+                              dtype=np.uint8)
+    img_posterized = np.stack([img_posterized, img_posterized, img_posterized],
+                              axis=-1)
+    assert (results['img'] == img_posterized).all()
     assert (results['img'] == results['img2']).all()
