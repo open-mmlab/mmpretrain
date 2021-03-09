@@ -264,6 +264,7 @@ class Rotate(object):
 @PIPELINES.register_module()
 class Invert(object):
     """Invert images.
+
     Args:
         prob (float): The probability for performing invert therefore should
              be in range [0, 1]. Defaults to 0.5.
@@ -287,4 +288,48 @@ class Invert(object):
     def __repr__(self):
         repr_str = self.__class__.__name__
         repr_str += f'(prob={self.prob})'
+        return repr_str
+
+
+@PIPELINES.register_module()
+class ColorTransform(object):
+    """Adjust the color balance of images.
+
+    Args:
+        magnitude (int | float): The magnitude used for color transform. A
+            positive magnitude would enhance the color and a negative magnitude
+             would make the image grayer. A magnitude=0 gives the origin img.
+        prob (float): The probability for performing ColorTransform therefore
+            should be in range [0, 1]. Defaults to 0.5.
+        random_negative_prob (float): The probability that turns the magnitude
+            negative, which should be in range [0,1]. Defaults to 0.5.
+    """
+
+    def __init__(self, magnitude, prob=0.5, random_negative_prob=0.5):
+        assert isinstance(magnitude, (int, float)), 'The magnitude type must '\
+            f'be int or float, but got {type(magnitude)} instead.'
+        assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
+            f'got {prob} instead.'
+        assert 0 <= random_negative_prob <= 1.0, 'The random_negative_prob ' \
+            f'should be in range [0,1], got {random_negative_prob} instead.'
+
+        self.magnitude = magnitude
+        self.prob = prob
+        self.random_negative_prob = random_negative_prob
+
+    def __call__(self, results):
+        if np.random.rand() > self.prob:
+            return results
+        magnitude = random_negative(self.magnitude, self.random_negative_prob)
+        for key in results.get('img_fields', ['img']):
+            img = results[key]
+            img_color_adjusted = mmcv.adjust_color(img, alpha=1 + magnitude)
+            results[key] = img_color_adjusted.astype(img.dtype)
+        return results
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += f'(magnitude={self.magnitude}, '
+        repr_str += f'prob={self.prob}, '
+        repr_str += f'random_negative_prob={self.random_negative_prob})'
         return repr_str
