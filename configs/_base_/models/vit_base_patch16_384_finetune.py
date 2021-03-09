@@ -13,7 +13,7 @@ model = dict(
         drop_rate=0.1),
     neck=None,
     head=dict(
-        type='LinearClsHead',
+        type='VisionTransformerClsHead',
         num_classes=1000,
         in_channels=768,
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
