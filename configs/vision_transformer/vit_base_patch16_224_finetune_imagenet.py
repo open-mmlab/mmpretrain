@@ -4,3 +4,6 @@ _base_ = [
     '../_base_/schedules/imagenet_bs256_epochstep.py',
     '../_base_/default_runtime.py'
 ]
+
+img_norm_cfg = dict(
+    mean=[127.5, 127.5, 127.5], std=[127.5, 127.5, 127.5], to_rgb=True)

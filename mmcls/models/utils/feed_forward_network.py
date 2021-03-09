@@ -1,5 +1,6 @@
 import torch.nn as nn
-from mmcv.cnn import build_activation_layer
+
+# from mmcv.cnn import build_activation_layer
 
 
 class FFN(nn.Module):
@@ -33,8 +34,8 @@ class FFN(nn.Module):
         self.act_cfg = act_cfg
         self.dropout = dropout
         # TODO:
-        # self.activate = nn.GELU()
-        self.activate = build_activation_layer(act_cfg)
+        self.activate = nn.GELU()
+        # self.activate = build_activation_layer(act_cfg)
 
         layers = nn.ModuleList()
         in_channels = embed_dims
