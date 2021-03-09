@@ -264,6 +264,7 @@ class Rotate(object):
 @PIPELINES.register_module()
 class Invert(object):
     """Invert images.
+
     Args:
         prob (float): The probability for performing invert therefore should
              be in range [0, 1]. Defaults to 0.5.
@@ -291,73 +292,44 @@ class Invert(object):
 
 
 @PIPELINES.register_module()
-class Solarize(object):
-    """Solarize an image (invert all pixel values above a threshold).
+class ColorTransform(object):
+    """Adjust the color balance of images.
 
     Args:
-        thr (int | float): The threshold above which the pixels value will be
-            inverted.
-        prob (float): The probability for solarizing therefore should be in
-            range [0, 1]. Defaults to 0.5.
+        magnitude (int | float): The magnitude used for color transform. A
+            positive magnitude would enhance the color and a negative magnitude
+             would make the image grayer. A magnitude=0 gives the origin img.
+        prob (float): The probability for performing ColorTransform therefore
+            should be in range [0, 1]. Defaults to 0.5.
+        random_negative_prob (float): The probability that turns the magnitude
+            negative, which should be in range [0,1]. Defaults to 0.5.
     """
 
-    def __init__(self, thr, prob=0.5):
-        assert isinstance(thr, (int, float)), 'The thr type must '\
-            f'be int or float, but got {type(thr)} instead.'
+    def __init__(self, magnitude, prob=0.5, random_negative_prob=0.5):
+        assert isinstance(magnitude, (int, float)), 'The magnitude type must '\
+            f'be int or float, but got {type(magnitude)} instead.'
         assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
             f'got {prob} instead.'
+        assert 0 <= random_negative_prob <= 1.0, 'The random_negative_prob ' \
+            f'should be in range [0,1], got {random_negative_prob} instead.'
 
-        self.thr = thr
+        self.magnitude = magnitude
         self.prob = prob
+        self.random_negative_prob = random_negative_prob
 
     def __call__(self, results):
         if np.random.rand() > self.prob:
             return results
+        magnitude = random_negative(self.magnitude, self.random_negative_prob)
         for key in results.get('img_fields', ['img']):
             img = results[key]
-            img_solarized = mmcv.solarize(img, thr=self.thr)
-            results[key] = img_solarized.astype(img.dtype)
+            img_color_adjusted = mmcv.adjust_color(img, alpha=1 + magnitude)
+            results[key] = img_color_adjusted.astype(img.dtype)
         return results
 
     def __repr__(self):
         repr_str = self.__class__.__name__
-        repr_str += f'(thr={self.thr}, '
-        repr_str += f'prob={self.prob})'
-        return repr_str
-
-
-@PIPELINES.register_module()
-class Posterize(object):
-    """Posterize an image (reduce the number of bits for each color channel).
-
-    Args:
-        bits (int): Number of bits for each pixel in the output img, which
-            should be less or equal to 8.
-        prob (float): The probability for posterizing therefore should be in
-            range [0, 1]. Defaults to 0.5.
-    """
-
-    def __init__(self, bits, prob=0.5):
-        assert isinstance(bits, int), 'The bits type must be int, '\
-            f'but got {type(bits)} instead.'
-        assert bits <= 8, f'The bits must be less than 8, got {bits} instead.'
-        assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
-            f'got {prob} instead.'
-
-        self.bits = bits
-        self.prob = prob
-
-    def __call__(self, results):
-        if np.random.rand() > self.prob:
-            return results
-        for key in results.get('img_fields', ['img']):
-            img = results[key]
-            img_posterized = mmcv.posterize(img, bits=self.bits)
-            results[key] = img_posterized.astype(img.dtype)
-        return results
-
-    def __repr__(self):
-        repr_str = self.__class__.__name__
-        repr_str += f'(bits={self.bits}, '
-        repr_str += f'prob={self.prob})'
+        repr_str += f'(magnitude={self.magnitude}, '
+        repr_str += f'prob={self.prob}, '
+        repr_str += f'random_negative_prob={self.random_negative_prob})'
         return repr_str
