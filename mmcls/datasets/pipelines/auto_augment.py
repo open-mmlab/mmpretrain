@@ -333,3 +333,74 @@ class ColorTransform(object):
         repr_str += f'prob={self.prob}, '
         repr_str += f'random_negative_prob={self.random_negative_prob})'
         return repr_str
+
+
+@PIPELINES.register_module()
+class Solarize(object):
+    """Solarize an image (invert all pixel values above a threshold).
+    Args:
+        thr (int | float): The threshold above which the pixels value will be
+            inverted.
+        prob (float): The probability for solarizing therefore should be in
+            range [0, 1]. Defaults to 0.5.
+    """
+
+    def __init__(self, thr, prob=0.5):
+        assert isinstance(thr, (int, float)), 'The thr type must '\
+            f'be int or float, but got {type(thr)} instead.'
+        assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
+            f'got {prob} instead.'
+
+        self.thr = thr
+        self.prob = prob
+
+    def __call__(self, results):
+        if np.random.rand() > self.prob:
+            return results
+        for key in results.get('img_fields', ['img']):
+            img = results[key]
+            img_solarized = mmcv.solarize(img, thr=self.thr)
+            results[key] = img_solarized.astype(img.dtype)
+        return results
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += f'(thr={self.thr}, '
+        repr_str += f'prob={self.prob})'
+        return repr_str
+
+
+@PIPELINES.register_module()
+class Posterize(object):
+    """Posterize an image (reduce the number of bits for each color channel).
+    Args:
+        bits (int): Number of bits for each pixel in the output img, which
+            should be less or equal to 8.
+        prob (float): The probability for posterizing therefore should be in
+            range [0, 1]. Defaults to 0.5.
+    """
+
+    def __init__(self, bits, prob=0.5):
+        assert isinstance(bits, int), 'The bits type must be int, '\
+            f'but got {type(bits)} instead.'
+        assert bits <= 8, f'The bits must be less than 8, got {bits} instead.'
+        assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
+            f'got {prob} instead.'
+
+        self.bits = bits
+        self.prob = prob
+
+    def __call__(self, results):
+        if np.random.rand() > self.prob:
+            return results
+        for key in results.get('img_fields', ['img']):
+            img = results[key]
+            img_posterized = mmcv.posterize(img, bits=self.bits)
+            results[key] = img_posterized.astype(img.dtype)
+        return results
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += f'(bits={self.bits}, '
+        repr_str += f'prob={self.prob})'
+        return repr_str
