@@ -1,4 +1,5 @@
-from .auto_augment import ColorTransform, Invert, Rotate, Shear, Translate
+from .auto_augment import (ColorTransform, Invert, Posterize, Rotate, Shear,
+                           Solarize, Translate)
 from .compose import Compose
 from .formating import (Collect, ImageToTensor, ToNumpy, ToPIL, ToTensor,
                         Transpose, to_tensor)
@@ -11,5 +12,5 @@ __all__ = [
     'Transpose', 'Collect', 'LoadImageFromFile', 'Resize', 'CenterCrop',
     'RandomFlip', 'Normalize', 'RandomCrop', 'RandomResizedCrop',
     'RandomGrayscale', 'Shear', 'Translate', 'Rotate', 'Invert',
-    'ColorTransform'
+    'ColorTransform', 'Solarize', 'Posterize'
 ]
