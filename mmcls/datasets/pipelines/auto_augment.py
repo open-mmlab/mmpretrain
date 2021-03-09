@@ -331,7 +331,8 @@ class Posterize(object):
     """Posterize an image (reduce the number of bits for each color channel).
 
     Args:
-        bits (int): Number of bits for each pixel in the output img.
+        bits (int): Number of bits for each pixel in the output img, which
+            should be less or equal to 8.
         prob (float): The probability for posterizing therefore should be in
             range [0, 1]. Defaults to 0.5.
     """
