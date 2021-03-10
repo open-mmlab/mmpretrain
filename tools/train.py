@@ -15,6 +15,9 @@ from mmcls.datasets import build_dataset
 from mmcls.models import build_classifier
 from mmcls.utils import collect_env, get_root_logger
 
+# debug
+# from mmcv.runner import save_checkpoint
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a model')
@@ -123,6 +126,7 @@ def main():
     meta['seed'] = args.seed
 
     model = build_classifier(cfg.model)
+    # save_checkpoint(model, 'template_384_nnM.pth')
 
     datasets = [build_dataset(cfg.data.train)]
     if len(cfg.workflow) == 2:
