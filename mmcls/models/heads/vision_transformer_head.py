@@ -54,9 +54,7 @@ class VisionTransformerClsHead(ClsHead):
         if hasattr(self.layers, 'pre_logits'):
             # Lecun norm
             kaiming_init(
-                self.layers.pre_logits.weight,
-                mode='fan_in',
-                nonlinearity='Linear')
+                self.layers.pre_logits, mode='fan_in', nonlinearity='linear')
         constant_init(self.layers.head, 0)
 
     def simple_test(self, img):

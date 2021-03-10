@@ -2,14 +2,10 @@ from itertools import repeat
 
 import torch
 import torch.nn as nn
-from mmcv.cnn import build_conv_layer, build_norm_layer
+from mmcv.cnn import build_conv_layer, build_norm_layer, kaiming_init
 
 from ..builder import BACKBONES
 from .base_backbone import BaseBackbone
-
-# import torch.utils.checkpoint as cp
-# from mmcv.cnn import (ConvModule, build_conv_layer, build_norm_layer,
-#   constant_init, kaiming_init)
 
 
 class FFN(nn.Module):
@@ -31,9 +27,9 @@ class FFN(nn.Module):
                  embed_dims,
                  feedforward_channels,
                  num_fcs=2,
-                 act_cfg=dict(type='ReLU', inplace=True),
+                 act_cfg=dict(type='GELU'),
                  dropout=0.0,
-                 add_residual=False):
+                 add_residual=True):
         super(FFN, self).__init__()
         assert num_fcs >= 2, 'num_fcs should be no less ' \
             f'than 2. got {num_fcs}.'
@@ -41,7 +37,6 @@ class FFN(nn.Module):
         self.feedforward_channels = feedforward_channels
         self.num_fcs = num_fcs
         self.act_cfg = act_cfg
-        self.dropout = dropout
         # TODO:
         self.activate = nn.GELU()
         # self.activate = build_activation_layer(act_cfg)
@@ -58,12 +53,14 @@ class FFN(nn.Module):
         self.layers = nn.Sequential(*layers)
         self.dropout = nn.Dropout(dropout)
         self.add_residual = add_residual
-        # self.init_weights()
+        self.init_weights()
 
     def init_weights(self):
         for m in self.modules():
             if isinstance(m, nn.Linear):
+                # xavier_init(m, distribution='uniform')
                 nn.init.xavier_normal_(m.weight)
+                # Bias init is different from our API
                 nn.init.normal_(m.bias, std=1e-6)
 
     def forward(self, x, residual=None):
@@ -87,63 +84,86 @@ class FFN(nn.Module):
         return repr_str
 
 
-# TODO:
-# MultiheadAttention: attention mask?
 class MultiheadAttention(nn.Module):
-    """MultiheadAttention module.
-
-    The main difference between nn.MultiheadAttention and ours is that the
-    torch implementation doesn't have drop-out after the final linear layer,
-    which is needed by VisionTransformer.
-
+    """A warpper for torch.nn.MultiheadAttention.
+    This module implements MultiheadAttention with residual connection,
+    and positional encoding used in DETR is also passed as input.
     Args:
-        embed_dims (int): The embedding dimensions, i.e. 'd_model' mentioned
-            in the paper.
-        num_heads (int): Number of head. Default: 8.
-        qkv_bias (bool): Whether the qkv projections have bias.
-            Default: False.
-        attn_drop (float): The drop-out rate after the attention operation.
-            Default: 0.0.
-        proj_drop (float): The drop-out rate after the linear projection.
-            Default: 0.0.
-
+        embed_dims (int): The embedding dimension.
+        num_heads (int): Parallel attention heads. Same as
+            `nn.MultiheadAttention`.
+        dropout (float): A Dropout layer on attn_output_weights. Default 0.0.
     """
 
-    def __init__(self,
-                 embed_dims,
-                 num_heads=8,
-                 qkv_bias=False,
-                 attn_drop=0.,
-                 proj_drop=0.):
+    def __init__(self, embed_dims, num_heads, attn_drop=0.0, proj_drop=0.0):
         super(MultiheadAttention, self).__init__()
-        self.num_heads = num_heads
-        self.head_dim = embed_dims // num_heads
+        assert embed_dims % num_heads == 0, 'embed_dims must be ' \
+            f'divisible by num_heads. got {embed_dims} and {num_heads}.'
         self.embed_dims = embed_dims
-        assert self.head_dim * num_heads == embed_dims, \
-            'embed_dim must be divisible by num_heads'
+        self.num_heads = num_heads
+        self.attn = nn.MultiheadAttention(embed_dims, num_heads, attn_drop)
+        self.dropout = nn.Dropout(proj_drop)
 
-        self.scale = self.head_dim**-0.5
+    def forward(self,
+                x,
+                key=None,
+                value=None,
+                residual=None,
+                query_pos=None,
+                key_pos=None,
+                attn_mask=None,
+                key_padding_mask=None):
+        """Forward function for `MultiheadAttention`.
+        Args:
+            x (Tensor): The input query with shape [num_query, bs,
+                embed_dims]. Same in `nn.MultiheadAttention.forward`.
+            key (Tensor): The key tensor with shape [num_key, bs,
+                embed_dims]. Same in `nn.MultiheadAttention.forward`.
+                Default None. If None, the `query` will be used.
+            value (Tensor): The value tensor with same shape as `key`.
+                Same in `nn.MultiheadAttention.forward`. Default None.
+                If None, the `key` will be used.
+            residual (Tensor): The tensor used for addition, with the
+                same shape as `x`. Default None. If None, `x` will be used.
+            query_pos (Tensor): The positional encoding for query, with
+                the same shape as `x`. Default None. If not None, it will
+                be added to `x` before forward function.
+            key_pos (Tensor): The positional encoding for `key`, with the
+                same shape as `key`. Default None. If not None, it will
+                be added to `key` before forward function. If None, and
+                `query_pos` has the same shape as `key`, then `query_pos`
+                will be used for `key_pos`.
+            attn_mask (Tensor): ByteTensor mask with shape [num_query,
+                num_key]. Same in `nn.MultiheadAttention.forward`.
+                Default None.
+            key_padding_mask (Tensor): ByteTensor with shape [bs, num_key].
+                Same in `nn.MultiheadAttention.forward`. Default None.
+        Returns:
+            Tensor: forwarded results with shape [num_query, bs, embed_dims].
+        """
+        query = x
+        if key is None:
+            key = query
+        if value is None:
+            value = key
+        if residual is None:
+            residual = x
+        if key_pos is None:
+            if query_pos is not None and key is not None:
+                if query_pos.shape == key.shape:
+                    key_pos = query_pos
+        if query_pos is not None:
+            query = query + query_pos
+        if key_pos is not None:
+            key = key + key_pos
+        out = self.attn(
+            query,
+            key,
+            value=value,
+            attn_mask=attn_mask,
+            key_padding_mask=key_padding_mask)[0]
 
-        self.qkv = nn.Linear(embed_dims, embed_dims * 3, bias=qkv_bias)
-        self.attn_drop = nn.Dropout(attn_drop)
-        self.proj = nn.Linear(embed_dims, embed_dims)
-        self.proj_drop = nn.Dropout(proj_drop)
-
-    def forward(self, x):
-        B, N, C = x.shape
-        qkv = self.qkv(x).reshape(B, N, 3, self.num_heads,
-                                  C // self.num_heads).permute(2, 0, 3, 1, 4)
-        q, k, v = qkv[0], qkv[1], qkv[
-            2]  # make torchscript happy (cannot use tensor as tuple)
-
-        attn = (q @ k.transpose(-2, -1)) * self.scale
-        attn = attn.softmax(dim=-1)
-        attn = self.attn_drop(attn)
-
-        x = (attn @ v).transpose(1, 2).reshape(B, N, C)
-        x = self.proj(x)
-        x = self.proj_drop(x)
-        return x
+        return residual + self.dropout(out)
 
 
 class TransformerEncoderLayer(nn.Module):
@@ -182,7 +202,6 @@ class TransformerEncoderLayer(nn.Module):
         self.attn = MultiheadAttention(
             embed_dims,
             num_heads=num_heads,
-            qkv_bias=qkv_bias,
             attn_drop=attn_drop,
             proj_drop=proj_drop)
 
@@ -201,8 +220,8 @@ class TransformerEncoderLayer(nn.Module):
         return getattr(self, self.norm2_name)
 
     def forward(self, x):
-        x = x + self.attn(self.norm1(x))
-        x = x + self.mlp(self.norm2(x))
+        x = self.attn(self.norm1(x), residual=x)
+        x = self.mlp(self.norm2(x), residual=x)
         return x
 
 
@@ -250,6 +269,12 @@ class PatchEmbed(nn.Module):
             embed_dim,
             kernel_size=patch_size,
             stride=patch_size)
+
+        self.init_weights()
+
+    def init_weights(self):
+        # Lecun norm
+        kaiming_init(self.projection, mode='fan_in', nonlinearity='linear')
 
     def forward(self, x):
         B, C, H, W = x.shape
@@ -405,19 +430,12 @@ class VisionTransformer(BaseBackbone):
             norm_cfg, embed_dim, postfix=1)
         self.add_module(self.norm1_name, norm1)
 
-        # TODO: init
-        nn.init.trunc_normal_(self.pos_embed, std=.02)
-        nn.init.trunc_normal_(self.cls_token, std=.02)
-        self.apply(self._init_weights)
+        self.init_weights()
 
-    def _init_weights(self, m):
-        if isinstance(m, nn.Linear):
-            nn.init.trunc_normal_(m.weight, std=.02)
-            if isinstance(m, nn.Linear) and m.bias is not None:
-                nn.init.constant_(m.bias, 0)
-        elif isinstance(m, nn.LayerNorm):
-            nn.init.constant_(m.bias, 0)
-            nn.init.constant_(m.weight, 1.0)
+    def init_weights(self, pretrained=None):
+        super(VisionTransformer, self).init_weights(pretrained)
+        if pretrained is None:
+            nn.init.normal_(self.pos_embed, std=0.02)
 
     @property
     def norm1(self):
