@@ -326,6 +326,34 @@ def test_rotate():
     assert (results['img'] == results['img2']).all()
 
 
+def test_auto_contrast():
+    # test assertion for invalid value of prob
+    with pytest.raises(AssertionError):
+        transform = dict(type='AutoContrast', prob=100)
+        build_from_cfg(transform, PIPELINES)
+
+    # test case when prob=0, therefore no auto_contrast
+    results = construct_toy_data()
+    transform = dict(type='AutoContrast', prob=0.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    assert (results['img'] == results['ori_img']).all()
+
+    # test case when prob=1
+    results = construct_toy_data()
+    transform = dict(type='AutoContrast', prob=1.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    auto_contrasted_img = np.array(
+        [[0, 23, 46, 69], [92, 115, 139, 162], [185, 208, 231, 255]],
+        dtype=np.uint8)
+    auto_contrasted_img = np.stack(
+        [auto_contrasted_img, auto_contrasted_img, auto_contrasted_img],
+        axis=-1)
+    assert (results['img'] == auto_contrasted_img).all()
+    assert (results['img'] == results['img2']).all()
+
+
 def test_invert():
     # test assertion for invalid value of prob
     with pytest.raises(AssertionError):
@@ -353,70 +381,37 @@ def test_invert():
     assert (results['img'] == results['img2']).all()
 
 
-def test_color_transform():
-    # test assertion for invalid type of magnitude
-    with pytest.raises(AssertionError):
-        transform = dict(type='ColorTransform', magnitude=None)
-        build_from_cfg(transform, PIPELINES)
+def test_equalize(nb_rand_test=100):
+
+    def _imequalize(img):
+        # equalize the image using PIL.ImageOps.equalize
+        from PIL import ImageOps, Image
+        img = Image.fromarray(img)
+        equalized_img = np.asarray(ImageOps.equalize(img))
+        return equalized_img
 
     # test assertion for invalid value of prob
     with pytest.raises(AssertionError):
-        transform = dict(type='ColorTransform', magnitude=0.5, prob=100)
+        transform = dict(type='Equalize', prob=100)
         build_from_cfg(transform, PIPELINES)
 
-    # test assertion for invalid value of random_negative_prob
-    with pytest.raises(AssertionError):
-        transform = dict(
-            type='ColorTransform', magnitude=0.5, random_negative_prob=100)
-        build_from_cfg(transform, PIPELINES)
-
-    # test case when magnitude=0, therefore no color transform
-    results = construct_toy_data_photometric()
-    transform = dict(type='ColorTransform', magnitude=0., prob=1.)
+    # test case when prob=0, therefore no equalize
+    results = construct_toy_data()
+    transform = dict(type='Equalize', prob=0.)
     pipeline = build_from_cfg(transform, PIPELINES)
     results = pipeline(results)
     assert (results['img'] == results['ori_img']).all()
 
-    # test case when prob=0, therefore no color transform
-    results = construct_toy_data_photometric()
-    transform = dict(type='ColorTransform', magnitude=1., prob=0.)
+    # test case when prob=1 with randomly sampled image.
+    results = construct_toy_data()
+    transform = dict(type='Equalize', prob=1.)
     pipeline = build_from_cfg(transform, PIPELINES)
-    results = pipeline(results)
-    assert (results['img'] == results['ori_img']).all()
-
-    # test case when magnitude=-1, therefore got gray img
-    results = construct_toy_data_photometric()
-    transform = dict(
-        type='ColorTransform', magnitude=-1., prob=1., random_negative_prob=0)
-    pipeline = build_from_cfg(transform, PIPELINES)
-    results = pipeline(results)
-    img_gray = mmcv.bgr2gray(results['ori_img'])
-    img_gray = np.stack([img_gray, img_gray, img_gray], axis=-1)
-    assert (results['img'] == img_gray).all()
-
-    # test case when magnitude=0.5
-    results = construct_toy_data_photometric()
-    transform = dict(
-        type='ColorTransform', magnitude=.5, prob=1., random_negative_prob=0)
-    pipeline = build_from_cfg(transform, PIPELINES)
-    results = pipeline(results)
-    img_r = np.round(
-        np.clip((results['ori_img'] * 0.5 + img_gray * 0.5), 0,
-                255)).astype(results['ori_img'].dtype)
-    assert (results['img'] == img_r).all()
-    assert (results['img'] == results['img2']).all()
-
-    # test case when magnitude=0.3, random_negative_prob=1
-    results = construct_toy_data_photometric()
-    transform = dict(
-        type='ColorTransform', magnitude=.3, prob=1., random_negative_prob=1.)
-    pipeline = build_from_cfg(transform, PIPELINES)
-    results = pipeline(results)
-    img_r = np.round(
-        np.clip((results['ori_img'] * 0.7 + img_gray * 0.3), 0,
-                255)).astype(results['ori_img'].dtype)
-    assert (results['img'] == img_r).all()
-    assert (results['img'] == results['img2']).all()
+    for _ in range(nb_rand_test):
+        img = np.clip(np.random.normal(0, 1, (1000, 1200, 3)) * 260, 0,
+                      255).astype(np.uint8)
+        results['img'] = img
+        results = pipeline(copy.deepcopy(results))
+        assert (results['img'] == _imequalize(img)).all()
 
 
 def test_solarize():
@@ -512,3 +507,259 @@ def test_posterize():
                               axis=-1)
     assert (results['img'] == img_posterized).all()
     assert (results['img'] == results['img2']).all()
+
+
+def test_contrast(nb_rand_test=100):
+
+    def _adjust_contrast(img, factor):
+        from PIL.ImageEnhance import Contrast
+        from PIL import Image
+        # Image.fromarray defaultly supports RGB, not BGR.
+        # convert from BGR to RGB
+        img = Image.fromarray(img[..., ::-1], mode='RGB')
+        contrasted_img = Contrast(img).enhance(factor)
+        # convert from RGB to BGR
+        return np.asarray(contrasted_img)[..., ::-1]
+
+    # test assertion for invalid type of magnitude
+    with pytest.raises(AssertionError):
+        transform = dict(type='Contrast', magnitude=None)
+        build_from_cfg(transform, PIPELINES)
+
+    # test assertion for invalid value of prob
+    with pytest.raises(AssertionError):
+        transform = dict(type='Contrast', magnitude=0.5, prob=100)
+        build_from_cfg(transform, PIPELINES)
+
+    # test assertion for invalid value of random_negative_prob
+    with pytest.raises(AssertionError):
+        transform = dict(
+            type='Contrast', magnitude=0.5, random_negative_prob=100)
+        build_from_cfg(transform, PIPELINES)
+
+    # test case when magnitude=0, therefore no adjusting contrast
+    results = construct_toy_data_photometric()
+    transform = dict(type='Contrast', magnitude=0., prob=1.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    assert (results['img'] == results['ori_img']).all()
+
+    # test case when prob=0, therefore no adjusting contrast
+    results = construct_toy_data_photometric()
+    transform = dict(type='Contrast', magnitude=1., prob=0.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    assert (results['img'] == results['ori_img']).all()
+
+    # test case when prob=1 with randomly sampled image.
+    results = construct_toy_data()
+    for _ in range(nb_rand_test):
+        magnitude = np.random.uniform() * np.random.choice([-1, 1])
+        transform = dict(
+            type='Contrast',
+            magnitude=magnitude,
+            prob=1.,
+            random_negative_prob=0.)
+        pipeline = build_from_cfg(transform, PIPELINES)
+        img = np.clip(np.random.uniform(0, 1, (1200, 1000, 3)) * 260, 0,
+                      255).astype(np.uint8)
+        results['img'] = img
+        results = pipeline(copy.deepcopy(results))
+        # Note the gap (less_equal 1) between PIL.ImageEnhance.Contrast
+        # and mmcv.adjust_contrast comes from the gap that converts from
+        # a color image to gray image using mmcv or PIL.
+        np.testing.assert_allclose(
+            results['img'],
+            _adjust_contrast(img, 1 + magnitude),
+            rtol=0,
+            atol=1)
+
+
+def test_color_transform():
+    # test assertion for invalid type of magnitude
+    with pytest.raises(AssertionError):
+        transform = dict(type='ColorTransform', magnitude=None)
+        build_from_cfg(transform, PIPELINES)
+
+    # test assertion for invalid value of prob
+    with pytest.raises(AssertionError):
+        transform = dict(type='ColorTransform', magnitude=0.5, prob=100)
+        build_from_cfg(transform, PIPELINES)
+
+    # test assertion for invalid value of random_negative_prob
+    with pytest.raises(AssertionError):
+        transform = dict(
+            type='ColorTransform', magnitude=0.5, random_negative_prob=100)
+        build_from_cfg(transform, PIPELINES)
+
+    # test case when magnitude=0, therefore no color transform
+    results = construct_toy_data_photometric()
+    transform = dict(type='ColorTransform', magnitude=0., prob=1.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    assert (results['img'] == results['ori_img']).all()
+
+    # test case when prob=0, therefore no color transform
+    results = construct_toy_data_photometric()
+    transform = dict(type='ColorTransform', magnitude=1., prob=0.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    assert (results['img'] == results['ori_img']).all()
+
+    # test case when magnitude=-1, therefore got gray img
+    results = construct_toy_data_photometric()
+    transform = dict(
+        type='ColorTransform', magnitude=-1., prob=1., random_negative_prob=0)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    img_gray = mmcv.bgr2gray(results['ori_img'])
+    img_gray = np.stack([img_gray, img_gray, img_gray], axis=-1)
+    assert (results['img'] == img_gray).all()
+
+    # test case when magnitude=0.5
+    results = construct_toy_data_photometric()
+    transform = dict(
+        type='ColorTransform', magnitude=.5, prob=1., random_negative_prob=0)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    img_r = np.round(
+        np.clip((results['ori_img'] * 0.5 + img_gray * 0.5), 0,
+                255)).astype(results['ori_img'].dtype)
+    assert (results['img'] == img_r).all()
+    assert (results['img'] == results['img2']).all()
+
+    # test case when magnitude=0.3, random_negative_prob=1
+    results = construct_toy_data_photometric()
+    transform = dict(
+        type='ColorTransform', magnitude=.3, prob=1., random_negative_prob=1.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    img_r = np.round(
+        np.clip((results['ori_img'] * 0.7 + img_gray * 0.3), 0,
+                255)).astype(results['ori_img'].dtype)
+    assert (results['img'] == img_r).all()
+    assert (results['img'] == results['img2']).all()
+
+
+def test_brightness(nb_rand_test=100):
+
+    def _adjust_brightness(img, factor):
+        # adjust the brightness of image using
+        # PIL.ImageEnhance.Brightness
+        from PIL.ImageEnhance import Brightness
+        from PIL import Image
+        img = Image.fromarray(img)
+        brightened_img = Brightness(img).enhance(factor)
+        return np.asarray(brightened_img)
+
+    # test assertion for invalid type of magnitude
+    with pytest.raises(AssertionError):
+        transform = dict(type='Brightness', magnitude=None)
+        build_from_cfg(transform, PIPELINES)
+
+    # test assertion for invalid value of prob
+    with pytest.raises(AssertionError):
+        transform = dict(type='Brightness', magnitude=0.5, prob=100)
+        build_from_cfg(transform, PIPELINES)
+
+    # test assertion for invalid value of random_negative_prob
+    with pytest.raises(AssertionError):
+        transform = dict(
+            type='Brightness', magnitude=0.5, random_negative_prob=100)
+        build_from_cfg(transform, PIPELINES)
+
+    # test case when magnitude=0, therefore no adjusting brightness
+    results = construct_toy_data_photometric()
+    transform = dict(type='Brightness', magnitude=0., prob=1.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    assert (results['img'] == results['ori_img']).all()
+
+    # test case when prob=0, therefore no adjusting brightness
+    results = construct_toy_data_photometric()
+    transform = dict(type='Brightness', magnitude=1., prob=0.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    assert (results['img'] == results['ori_img']).all()
+
+    # test case when prob=1 with randomly sampled image.
+    results = construct_toy_data()
+    for _ in range(nb_rand_test):
+        magnitude = np.random.uniform() * np.random.choice([-1, 1])
+        transform = dict(
+            type='Brightness',
+            magnitude=magnitude,
+            prob=1.,
+            random_negative_prob=0.)
+        pipeline = build_from_cfg(transform, PIPELINES)
+        img = np.clip(np.random.uniform(0, 1, (1200, 1000, 3)) * 260, 0,
+                      255).astype(np.uint8)
+        results['img'] = img
+        results = pipeline(copy.deepcopy(results))
+        np.testing.assert_allclose(
+            results['img'],
+            _adjust_brightness(img, 1 + magnitude),
+            rtol=0,
+            atol=1)
+
+
+def test_sharpness(nb_rand_test=100):
+
+    def _adjust_sharpness(img, factor):
+        # adjust the sharpness of image using
+        # PIL.ImageEnhance.Sharpness
+        from PIL.ImageEnhance import Sharpness
+        from PIL import Image
+        img = Image.fromarray(img)
+        sharpened_img = Sharpness(img).enhance(factor)
+        return np.asarray(sharpened_img)
+
+    # test assertion for invalid type of magnitude
+    with pytest.raises(AssertionError):
+        transform = dict(type='Sharpness', magnitude=None)
+        build_from_cfg(transform, PIPELINES)
+
+    # test assertion for invalid value of prob
+    with pytest.raises(AssertionError):
+        transform = dict(type='Sharpness', magnitude=0.5, prob=100)
+        build_from_cfg(transform, PIPELINES)
+
+    # test assertion for invalid value of random_negative_prob
+    with pytest.raises(AssertionError):
+        transform = dict(
+            type='Sharpness', magnitude=0.5, random_negative_prob=100)
+        build_from_cfg(transform, PIPELINES)
+
+    # test case when magnitude=0, therefore no adjusting sharpness
+    results = construct_toy_data_photometric()
+    transform = dict(type='Sharpness', magnitude=0., prob=1.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    assert (results['img'] == results['ori_img']).all()
+
+    # test case when prob=0, therefore no adjusting sharpness
+    results = construct_toy_data_photometric()
+    transform = dict(type='Sharpness', magnitude=1., prob=0.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    assert (results['img'] == results['ori_img']).all()
+
+    # test case when prob=1 with randomly sampled image.
+    results = construct_toy_data()
+    for _ in range(nb_rand_test):
+        magnitude = np.random.uniform() * np.random.choice([-1, 1])
+        transform = dict(
+            type='Sharpness',
+            magnitude=magnitude,
+            prob=1.,
+            random_negative_prob=0.)
+        pipeline = build_from_cfg(transform, PIPELINES)
+        img = np.clip(np.random.uniform(0, 1, (1200, 1000, 3)) * 260, 0,
+                      255).astype(np.uint8)
+        results['img'] = img
+        results = pipeline(copy.deepcopy(results))
+        np.testing.assert_allclose(
+            results['img'][1:-1, 1:-1],
+            _adjust_sharpness(img, 1 + magnitude)[1:-1, 1:-1],
+            rtol=0,
+            atol=1)
