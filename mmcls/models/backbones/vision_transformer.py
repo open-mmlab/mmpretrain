@@ -220,7 +220,12 @@ class TransformerEncoderLayer(nn.Module):
         return getattr(self, self.norm2_name)
 
     def forward(self, x):
-        x = self.attn(self.norm1(x), residual=x)
+        norm_x = self.norm1(x)
+        x = x.permute(1, 0, 2)
+        norm_x = norm_x.permute(1, 0, 2)
+
+        x = self.attn(norm_x, residual=x)
+        x = x.permute(1, 0, 2)
         x = self.mlp(self.norm2(x), residual=x)
         return x
 
