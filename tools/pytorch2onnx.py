@@ -65,18 +65,19 @@ def pytorch2onnx(model,
 
     # replace original forward function
     origin_forward = model.forward
-    model.forward = partial(model.forward, return_loss=False)
+    model.forward = partial(model.forward, img_metas={}, return_loss=False)
     register_extra_symbolics(opset_version)
 
     # support dynamic shape export
     if dynamic_shape:
         dynamic_axes = {
             'input': {
+                0: 'batch',
                 2: 'width',
                 3: 'height'
             },
             'labels': {
-                0: 'num_img'
+                0: 'batch'
             }
         }
     else:
@@ -87,7 +88,7 @@ def pytorch2onnx(model,
             model, (img_list, ),
             output_file,
             input_names=['input'],
-            output_names=['labels'],
+            output_names=['probs'],
             export_params=True,
             keep_initializers_as_inputs=True,
             dynamic_axes=dynamic_axes,
@@ -111,7 +112,7 @@ def pytorch2onnx(model,
 
         # check the numerical value
         # get pytorch output
-        pytorch_result = model(img_list, return_loss=False)[0]
+        pytorch_result = model(img_list, img_metas={}, return_loss=False)[0]
 
         # get onnx output
         input_all = [node.name for node in onnx_model.graph.input]
@@ -147,7 +148,8 @@ def parse_args():
     parser.add_argument(
         '--dynamic-shape',
         action='store_true',
-        help='export dynamic onnx graph')
+        help='Whether to export ONNX with dynamic \
+            input shape. Defaults to False.')
     args = parser.parse_args()
     return args
 
