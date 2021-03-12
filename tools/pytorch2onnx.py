@@ -76,7 +76,7 @@ def pytorch2onnx(model,
                 2: 'width',
                 3: 'height'
             },
-            'labels': {
+            'probs': {
                 0: 'batch'
             }
         }
@@ -105,8 +105,9 @@ def pytorch2onnx(model,
 
         # test the dynamic model
         if dynamic_shape:
-            dynamic_test_inputs = _demo_mm_inputs((1, 3, 512, 512),
-                                                  model.head.num_classes)
+            dynamic_test_inputs = _demo_mm_inputs(
+                (input_shape[0], input_shape[1], input_shape[2] * 2,
+                 input_shape[3] * 2), model.head.num_classes)
             imgs = dynamic_test_inputs.pop('imgs')
             img_list = [img[None, :] for img in imgs]
 
@@ -148,8 +149,8 @@ def parse_args():
     parser.add_argument(
         '--dynamic-shape',
         action='store_true',
-        help='Whether to export ONNX with dynamic \
-            input shape. Defaults to False.')
+        help='Whether to export ONNX with dynamic input shape. \
+            Defaults to False.')
     args = parser.parse_args()
     return args
 
