@@ -1,3 +1,4 @@
+# Refer to ClassyVision. In this implementation, label smoothing is not used.
 _base_ = [
     '../_base_/models/vit_base_patch16_224_pretrain.py',
     '../_base_/datasets/imagenet_bs64_pil_resize.py',

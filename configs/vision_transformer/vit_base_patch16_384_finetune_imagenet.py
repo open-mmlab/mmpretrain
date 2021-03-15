@@ -1,3 +1,4 @@
+# Refer to pytorch-image-models
 _base_ = [
     '../_base_/models/vit_base_patch16_384_finetune.py',
     '../_base_/datasets/imagenet_bs32_pil_resize.py',

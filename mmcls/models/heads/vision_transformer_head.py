@@ -17,7 +17,14 @@ class VisionTransformerClsHead(ClsHead):
         num_classes (int): Number of categories excluding the background
             category.
         in_channels (int): Number of channels in the input feature map.
+        hidden_dim (int): Number of the dimensions for hidden layer. Only
+            available during pre-training. Default None.
+        act_cfg (dict): The activation config. Only available during
+            pre-training. Defalut Tanh.
         loss (dict): Config of classification loss.
+        topk (int | tuple): Top-k accuracy.
+        cal_acc (bool): Whether to calculate accuracy during training.
+            If mixup is used, this should be False. Default False.
     """  # noqa: W605
 
     def __init__(self,
@@ -53,6 +60,7 @@ class VisionTransformerClsHead(ClsHead):
         self.layers = nn.Sequential(OrderedDict(layers))
 
     def init_weights(self):
+        # Modified from ClassyVision
         if hasattr(self.layers, 'pre_logits'):
             # Lecun norm
             kaiming_init(

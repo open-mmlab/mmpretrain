@@ -8,8 +8,10 @@ from ..builder import BACKBONES
 from .base_backbone import BaseBackbone
 
 
+# Modified from mmdet
 class FFN(nn.Module):
     """Implements feed-forward networks (FFNs) with residual connection.
+
     Args:
         embed_dims (int): The feature dimension. Same as
             `MultiheadAttention`.
@@ -37,7 +39,7 @@ class FFN(nn.Module):
         self.feedforward_channels = feedforward_channels
         self.num_fcs = num_fcs
         self.act_cfg = act_cfg
-        # TODO:
+        # TODO: wait for the new version of mmcv
         self.activate = nn.GELU()
         # self.activate = build_activation_layer(act_cfg)
 
@@ -59,8 +61,11 @@ class FFN(nn.Module):
         for m in self.modules():
             if isinstance(m, nn.Linear):
                 # xavier_init(m, distribution='uniform')
-                nn.init.xavier_normal_(m.weight)
+
                 # Bias init is different from our API
+                # therefore initialize them separately
+                # The initialization is sync with ClassyVision
+                nn.init.xavier_normal_(m.weight)
                 nn.init.normal_(m.bias, std=1e-6)
 
     def forward(self, x, residual=None):
@@ -84,15 +89,17 @@ class FFN(nn.Module):
         return repr_str
 
 
+# Modified from mmdet
 class MultiheadAttention(nn.Module):
     """A warpper for torch.nn.MultiheadAttention.
-    This module implements MultiheadAttention with residual connection,
-    and positional encoding used in DETR is also passed as input.
+    This module implements MultiheadAttention with residual connection.
+
     Args:
         embed_dims (int): The embedding dimension.
         num_heads (int): Parallel attention heads. Same as
             `nn.MultiheadAttention`.
-        dropout (float): A Dropout layer on attn_output_weights. Default 0.0.
+        attn_drop (float): A Dropout layer on attn_output_weights. Default 0.0.
+        proj_drop (float): The drop out rate after attention. Default 0.0.
     """
 
     def __init__(self, embed_dims, num_heads, attn_drop=0.0, proj_drop=0.0):
@@ -166,6 +173,7 @@ class MultiheadAttention(nn.Module):
         return residual + self.dropout(out)
 
 
+# Modified from mmdet
 class TransformerEncoderLayer(nn.Module):
     """Implements one encoder layer in Vision Transformer.
 
@@ -173,8 +181,7 @@ class TransformerEncoderLayer(nn.Module):
         embed_dims (int): The feature dimension. Same as `FFN`.
         num_heads (int): Parallel attention heads.
         feedforward_channels (int): The hidden dimension for FFNs.
-        qkv_bias (bool): Whether to add bias in qkv. Default False.
-        attn_drop (float): The drop out rate after attention layer.
+        attn_drop (float): The drop out rate for attention layer.
             Default 0.0.
         proj_drop (float): Probability of an element to be zeroed
             after the feed forward layer. Default 0.0.
@@ -189,7 +196,6 @@ class TransformerEncoderLayer(nn.Module):
                  embed_dims,
                  num_heads,
                  feedforward_channels,
-                 qkv_bias=False,
                  attn_drop=0.,
                  proj_drop=0.,
                  act_cfg=dict(type='GELU'),
@@ -221,15 +227,21 @@ class TransformerEncoderLayer(nn.Module):
 
     def forward(self, x):
         norm_x = self.norm1(x)
+        # Reason for permute: as the shape of input from pretrained weight
+        # from pytorch-image-models is [batch_size, num_query, embed_dim],
+        # but the one from nn.MultiheadAttention is
+        # [num_querym batch_size, embed_dim]
         x = x.permute(1, 0, 2)
         norm_x = norm_x.permute(1, 0, 2)
-
         x = self.attn(norm_x, residual=x)
+        # Convert the shape back to [batch_size, num_query, embed_dim] in
+        # order to make use of the pretrained weight
         x = x.permute(1, 0, 2)
         x = self.mlp(self.norm2(x), residual=x)
         return x
 
 
+# Modified from pytorch-image-models
 class PatchEmbed(nn.Module):
     """ Image to Patch Embedding.
 
@@ -268,6 +280,7 @@ class PatchEmbed(nn.Module):
                'The image size H*W must be divisible by patch size'
         self.num_patches = num_patches
 
+        # Use conv layer to embed
         self.projection = build_conv_layer(
             conv_cfg,
             in_channels,
@@ -278,7 +291,7 @@ class PatchEmbed(nn.Module):
         self.init_weights()
 
     def init_weights(self):
-        # Lecun norm
+        # Lecun norm from ClassyVision
         kaiming_init(self.projection, mode='fan_in', nonlinearity='linear')
 
     def forward(self, x):
@@ -292,6 +305,7 @@ class PatchEmbed(nn.Module):
         return x
 
 
+# Modified from pytorch-image-models
 class HybridEmbed(PatchEmbed):
     """ CNN Feature Map Embedding.
         Extract feature map from CNN, flatten, project to embedding dim.
@@ -314,7 +328,7 @@ class HybridEmbed(PatchEmbed):
                 f'The size of image should have length 1 or 2, ' \
                 f'but got {len(img_size)}'
 
-        # Get the output dim of the backbone
+        # TODO: Get the output dim of the backbone
         with torch.no_grad():
             # FIXME this is hacky, but most reliable way of
             # determining the exact dim of the output feature
@@ -350,6 +364,7 @@ class HybridEmbed(PatchEmbed):
         return x
 
 
+# Modified from pytorch-image-models and mmdet
 @BACKBONES.register_module()
 class VisionTransformer(BaseBackbone):
     """ Vision Transformer
@@ -359,25 +374,25 @@ class VisionTransformer(BaseBackbone):
         https://arxiv.org/abs/2010.11929
 
     Args:
-        img_size (int, tuple): input image size
-        patch_size (int, tuple): patch size
-        in_channels (int): number of input channels
-        num_classes (int): number of classes for classification head
-        embed_dim (int): embedding dimension
-        num_layers (int): depth of transformer
-        num_heads (int): number of attention heads
-        mlp_ratio (int): ratio of mlp hidden dim to embedding dim
-        qkv_bias (bool): enable bias for qkv if True
-        qk_scale (float): override default qk scale of head_dim ** -0.5 if set
-                representation_size (Optional[int]): enable and set
-                representation
-                layer (pre-logits) to this value if set
-                drop_rate (float): dropout rate
-                attn_drop_rate (float): attention dropout rate
-                drop_path_rate (float): stochastic depth rate
-                hybrid_backbone (nn.Module): CNN backbone to use in-place of
-                PatchEmbed module
-                norm_layer: (nn.Module): normalization layer
+        num_layers (int): Depth of transformer
+        embed_dim (int): Embedding dimension
+        num_heads (int): Number of attention heads
+        img_size (int | tuple): Input image size
+        patch_size (int | tuple): The patch size
+        in_channels (int): Number of input channels
+        feedforward_channels (int): The hidden dimension for FFNs.
+        drop_rate (float): Probability of an element to be zeroed.
+            Default 0.0.
+        attn_drop (float): The drop out rate for attention layer.
+            Default 0.0.
+        hybrid_backbone (nn.Module): CNN backbone to use in-place of
+            PatchEmbed module. Default None.
+        norm_cfg
+        norm_cfg (dict): Config dict for normalization layer. Default
+            layer normalization.
+        act_cfg (dict): The activation config for FFNs. Defalut GELU.
+        num_fcs (int): The number of fully-connected layers for FFNs.
+            Default 2.
     """
 
     def __init__(self,
@@ -390,7 +405,6 @@ class VisionTransformer(BaseBackbone):
                  feedforward_channels,
                  drop_rate=0.,
                  attn_drop_rate=0.,
-                 qkv_bias=True,
                  hybrid_backbone=None,
                  norm_cfg=dict(type='LN'),
                  act_cfg=dict(type='GELU'),
@@ -424,7 +438,6 @@ class VisionTransformer(BaseBackbone):
                     embed_dim,
                     num_heads,
                     feedforward_channels,
-                    qkv_bias=qkv_bias,
                     attn_drop=attn_drop_rate,
                     proj_drop=drop_rate,
                     act_cfg=act_cfg,
@@ -440,6 +453,7 @@ class VisionTransformer(BaseBackbone):
     def init_weights(self, pretrained=None):
         super(VisionTransformer, self).init_weights(pretrained)
         if pretrained is None:
+            # Modified from ClassyVision
             nn.init.normal_(self.pos_embed, std=0.02)
 
     @property
