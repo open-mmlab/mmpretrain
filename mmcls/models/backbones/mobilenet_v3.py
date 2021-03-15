@@ -67,17 +67,17 @@ class MobileNetV3(BaseBackbone):
                  arch='small',
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
-                 out_indices=(-1, ),
+                 out_indices=(12, ),
                  frozen_stages=-1,
                  norm_eval=False,
                  with_cp=False):
         super(MobileNetV3, self).__init__()
         assert arch in self.arch_settings
         for order, index in enumerate(out_indices):
-            if index not in range(-1, len(self.arch_settings[arch]) + 2):
+            if index not in range(0, len(self.arch_settings[arch]) + 2):
                 raise ValueError(
                     'the item in out_indices must in '
-                    f'range(-1, {len(self.arch_settings[arch]) + 2}). '
+                    f'range(0, {len(self.arch_settings[arch]) + 2}). '
                     f'But received {index}')
 
         if frozen_stages not in range(-1, len(self.arch_settings[arch]) + 2):
@@ -87,10 +87,7 @@ class MobileNetV3(BaseBackbone):
         self.arch = arch
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
-        self.out_indices = tuple([
-            i if i != -1 else len(self.arch_settings[arch]) + 1
-            for i in out_indices
-        ])
+        self.out_indices = out_indices
         self.frozen_stages = frozen_stages
         self.norm_eval = norm_eval
         self.with_cp = with_cp
