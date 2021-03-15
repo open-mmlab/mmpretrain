@@ -126,7 +126,7 @@ def main():
     meta['seed'] = args.seed
 
     model = build_classifier(cfg.model)
-    # save_checkpoint(model, 'template_384_nnM.pth')
+    # save_checkpoint(model, 'template_large_384_nnM.pth')
 
     datasets = [build_dataset(cfg.data.train)]
     if len(cfg.workflow) == 2:
