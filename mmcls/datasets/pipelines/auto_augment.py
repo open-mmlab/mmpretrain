@@ -1,12 +1,155 @@
+import copy
+
 import mmcv
 import numpy as np
 
 from ..builder import PIPELINES
+from .compose import Compose
 
 
 def random_negative(value, random_negative_prob):
     """Randomly negate value based on random_negative_prob."""
     return -value if np.random.rand() < random_negative_prob else value
+
+
+@PIPELINES.register_module()
+class AutoAugment(object):
+
+    def __init__(self, policies):
+        if isinstance(policies, str):
+            if policies == 'ImageNetPolicy':
+                policies = [
+                    [
+                        dict(type='Posterize', bits=4, prob=0.4),
+                        dict(type='Rotate', angle=30., prob=0.6)
+                    ],
+                    [
+                        dict(type='Solarize', thr=256 / 9 * 4, prob=0.6),
+                        dict(type='AutoContrast', prob=0.5)
+                    ],
+                    [
+                        dict(type='Equalize', prob=0.8),
+                        dict(type='Equalize', prob=0.6)
+                    ],
+                    [
+                        dict(type='Posterize', bits=5, prob=0.6),
+                        dict(type='Posterize', bits=5, prob=0.6)
+                    ],
+                    [
+                        dict(type='Equalize', prob=0.4),
+                        dict(type='Solarize', thr=256 / 9 * 5, prob=0.2)
+                    ],
+                    [
+                        dict(type='Equalize', prob=0.4),
+                        dict(type='Rotate', angle=30 / 9 * 8, prob=0.8)
+                    ],
+                    [
+                        dict(type='Solarize', thr=256 / 9 * 6, prob=0.6),
+                        dict(type='Equalize', prob=0.6)
+                    ],
+                    [
+                        dict(type='Posterize', bits=6, prob=0.8),
+                        dict(type='Equalize', prob=1.)
+                    ],
+                    [
+                        dict(type='Rotate', angle=10., prob=0.2),
+                        dict(type='Solarize', thr=256 / 9, prob=0.6)
+                    ],
+                    [
+                        dict(type='Equalize', prob=0.6),
+                        dict(type='Posterize', bits=5, prob=0.6)
+                    ],
+                    [
+                        dict(type='Rotate', angle=30 / 9 * 8, prob=0.8),
+                        dict(type='ColorTransform', magnitude=0., prob=0.4)
+                    ],
+                    [
+                        dict(type='Rotate', angle=30., prob=0.4),
+                        dict(type='Equalize', prob=0.6)
+                    ],
+                    [
+                        dict(type='Equalize', prob=0.0),
+                        dict(type='Equalize', prob=0.8)
+                    ],
+                    [
+                        dict(type='Invert', prob=0.6),
+                        dict(type='Equalize', prob=1.)
+                    ],
+                    [
+                        dict(type='ColorTransform', magnitude=0.4, prob=0.6),
+                        dict(type='Contrast', magnitude=0.8, prob=1.)
+                    ],
+                    [
+                        dict(type='Rotate', angle=30 / 9 * 8, prob=0.8),
+                        dict(type='ColorTransform', magnitude=0.2, prob=1.)
+                    ],
+                    [
+                        dict(type='ColorTransform', magnitude=0.8, prob=0.8),
+                        dict(type='Solarize', thr=256 / 9 * 2, prob=0.8)
+                    ],
+                    [
+                        dict(type='Sharpness', magnitude=0.7, prob=0.4),
+                        dict(type='Invert', prob=0.6)
+                    ],
+                    [
+                        dict(
+                            type='Shear',
+                            magnitude=0.3 / 9 * 5,
+                            prob=0.6,
+                            direction='horizontal'),
+                        dict(type='Equalize', prob=1.)
+                    ],
+                    [
+                        dict(type='ColorTransform', magnitude=0., prob=0.4),
+                        dict(type='Equalize', prob=0.6)
+                    ],
+                    [
+                        dict(type='Equalize', prob=0.4),
+                        dict(type='Solarize', thr=256 / 9 * 5, prob=0.2)
+                    ],
+                    [
+                        dict(type='Solarize', thr=256 / 9 * 4, prob=0.6),
+                        dict(type='AutoContrast', prob=0.6)
+                    ],
+                    [
+                        dict(type='Invert', prob=0.6),
+                        dict(type='Equalize', prob=1.)
+                    ],
+                    [
+                        dict(type='ColorTransform', magnitude=0.4, prob=0.6),
+                        dict(type='Contrast', magnitude=0.8, prob=1.)
+                    ],
+                    [
+                        dict(type='Equalize', prob=0.8),
+                        dict(type='Equalize', prob=0.6)
+                    ],
+                ]
+            elif policies == 'Cifar10Policy':
+                # TODO fill this part
+                pass
+            else:
+                raise ValueError(f'Unsupported policy name {policies}.')
+        assert isinstance(policies, list) and len(policies) > 0, \
+            'Policies must be a non-empty list.'
+        for policy in policies:
+            assert isinstance(policy, list) and len(policy) > 0, \
+                'Each policy in policies must be a non-empty list.'
+            for augment in policy:
+                assert isinstance(augment, dict) and 'type' in augment, \
+                    'Each specific augmentation must be a dict with key' \
+                    ' "type".'
+
+        self.policies = copy.deepcopy(policies)
+        self.sub_policy = [Compose(policy) for policy in self.policies]
+
+    def __call__(self, results):
+        sub_policy = np.random.choice(self.sub_policy)
+        return sub_policy(results)
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += f'(policies={self.policies})'
+        return repr_str
 
 
 @PIPELINES.register_module()
