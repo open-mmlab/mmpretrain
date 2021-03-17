@@ -6,10 +6,17 @@ import torch
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import DistSamplerSeedHook, build_optimizer, build_runner
 
-from mmcls.core import (DistEvalHook, DistOptimizerHook, EvalHook,
-                        Fp16OptimizerHook)
+from mmcls.core import DistEvalHook, DistOptimizerHook, EvalHook
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.utils import get_root_logger
+
+# TODO import optimizer hook from mmcv and delete them from mmcls
+try:
+    from mmcv.runner import Fp16OptimizerHook
+except ImportError:
+    warnings.warn('FP16OptimizerHook from mmcls will be deprecated.'
+                  'Please install mmcv>=1.1.4.')
+    from mmcls.core import Fp16OptimizerHook
 
 
 def set_random_seed(seed, deterministic=False):

@@ -10,9 +10,16 @@ from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import get_dist_info, init_dist, load_checkpoint
 
 from mmcls.apis import multi_gpu_test, single_gpu_test
-from mmcls.core import wrap_fp16_model
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.models import build_classifier
+
+# TODO import `wrap_fp16_model` from mmcv and delete them from mmcls
+try:
+    from mmcv.runner import wrap_fp16_model
+except ImportError:
+    warnings.warn('wrap_fp16_model from mmcls will be deprecated.'
+                  'Please install mmcv>=1.1.4.')
+    from mmcls.core import wrap_fp16_model
 
 
 def parse_args():
