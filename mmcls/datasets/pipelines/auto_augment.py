@@ -14,121 +14,19 @@ def random_negative(value, random_negative_prob):
 
 @PIPELINES.register_module()
 class AutoAugment(object):
+    """Auto augmentation.
+    This data augmentation is proposed in `AutoAugment: Learning Augmentation
+    Policies from Data <https://arxiv.org/abs/1805.09501>`_.
+
+    Args:
+        policies (list[list[dict]]): The policies of auto augmentation. Each
+            policy in ``policies`` is a specific augmentation policy, and is
+            composed by several augmentations (dict). When AutoAugment is
+            called, a random policy in ``policies`` will be selected to
+            augment images.
+    """
 
     def __init__(self, policies):
-        if isinstance(policies, str):
-            if policies == 'ImageNetPolicy':
-                policies = [
-                    [
-                        dict(type='Posterize', bits=4, prob=0.4),
-                        dict(type='Rotate', angle=30., prob=0.6)
-                    ],
-                    [
-                        dict(type='Solarize', thr=256 / 9 * 4, prob=0.6),
-                        dict(type='AutoContrast', prob=0.5)
-                    ],
-                    [
-                        dict(type='Equalize', prob=0.8),
-                        dict(type='Equalize', prob=0.6)
-                    ],
-                    [
-                        dict(type='Posterize', bits=5, prob=0.6),
-                        dict(type='Posterize', bits=5, prob=0.6)
-                    ],
-                    [
-                        dict(type='Equalize', prob=0.4),
-                        dict(type='Solarize', thr=256 / 9 * 5, prob=0.2)
-                    ],
-                    [
-                        dict(type='Equalize', prob=0.4),
-                        dict(type='Rotate', angle=30 / 9 * 8, prob=0.8)
-                    ],
-                    [
-                        dict(type='Solarize', thr=256 / 9 * 6, prob=0.6),
-                        dict(type='Equalize', prob=0.6)
-                    ],
-                    [
-                        dict(type='Posterize', bits=6, prob=0.8),
-                        dict(type='Equalize', prob=1.)
-                    ],
-                    [
-                        dict(type='Rotate', angle=10., prob=0.2),
-                        dict(type='Solarize', thr=256 / 9, prob=0.6)
-                    ],
-                    [
-                        dict(type='Equalize', prob=0.6),
-                        dict(type='Posterize', bits=5, prob=0.6)
-                    ],
-                    [
-                        dict(type='Rotate', angle=30 / 9 * 8, prob=0.8),
-                        dict(type='ColorTransform', magnitude=0., prob=0.4)
-                    ],
-                    [
-                        dict(type='Rotate', angle=30., prob=0.4),
-                        dict(type='Equalize', prob=0.6)
-                    ],
-                    [
-                        dict(type='Equalize', prob=0.0),
-                        dict(type='Equalize', prob=0.8)
-                    ],
-                    [
-                        dict(type='Invert', prob=0.6),
-                        dict(type='Equalize', prob=1.)
-                    ],
-                    [
-                        dict(type='ColorTransform', magnitude=0.4, prob=0.6),
-                        dict(type='Contrast', magnitude=0.8, prob=1.)
-                    ],
-                    [
-                        dict(type='Rotate', angle=30 / 9 * 8, prob=0.8),
-                        dict(type='ColorTransform', magnitude=0.2, prob=1.)
-                    ],
-                    [
-                        dict(type='ColorTransform', magnitude=0.8, prob=0.8),
-                        dict(type='Solarize', thr=256 / 9 * 2, prob=0.8)
-                    ],
-                    [
-                        dict(type='Sharpness', magnitude=0.7, prob=0.4),
-                        dict(type='Invert', prob=0.6)
-                    ],
-                    [
-                        dict(
-                            type='Shear',
-                            magnitude=0.3 / 9 * 5,
-                            prob=0.6,
-                            direction='horizontal'),
-                        dict(type='Equalize', prob=1.)
-                    ],
-                    [
-                        dict(type='ColorTransform', magnitude=0., prob=0.4),
-                        dict(type='Equalize', prob=0.6)
-                    ],
-                    [
-                        dict(type='Equalize', prob=0.4),
-                        dict(type='Solarize', thr=256 / 9 * 5, prob=0.2)
-                    ],
-                    [
-                        dict(type='Solarize', thr=256 / 9 * 4, prob=0.6),
-                        dict(type='AutoContrast', prob=0.6)
-                    ],
-                    [
-                        dict(type='Invert', prob=0.6),
-                        dict(type='Equalize', prob=1.)
-                    ],
-                    [
-                        dict(type='ColorTransform', magnitude=0.4, prob=0.6),
-                        dict(type='Contrast', magnitude=0.8, prob=1.)
-                    ],
-                    [
-                        dict(type='Equalize', prob=0.8),
-                        dict(type='Equalize', prob=0.6)
-                    ],
-                ]
-            elif policies == 'Cifar10Policy':
-                # TODO fill this part
-                pass
-            else:
-                raise ValueError(f'Unsupported policy name {policies}.')
         assert isinstance(policies, list) and len(policies) > 0, \
             'Policies must be a non-empty list.'
         for policy in policies:

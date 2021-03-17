@@ -1,6 +1,7 @@
-from .auto_augment import (AutoContrast, Brightness, ColorTransform, Contrast,
-                           Equalize, Invert, Posterize, Rotate, Sharpness,
-                           Shear, Solarize, Translate)
+from .auto_augment import (AutoAugment, AutoContrast, Brightness,
+                           ColorTransform, Contrast, Equalize, Invert,
+                           Posterize, Rotate, Sharpness, Shear, Solarize,
+                           Translate)
 from .compose import Compose
 from .formating import (Collect, ImageToTensor, ToNumpy, ToPIL, ToTensor,
                         Transpose, to_tensor)
@@ -14,5 +15,5 @@ __all__ = [
     'RandomFlip', 'Normalize', 'RandomCrop', 'RandomResizedCrop',
     'RandomGrayscale', 'Shear', 'Translate', 'Rotate', 'Invert',
     'ColorTransform', 'Solarize', 'Posterize', 'AutoContrast', 'Equalize',
-    'Contrast', 'Brightness', 'Sharpness'
+    'Contrast', 'Brightness', 'Sharpness', 'AutoAugment'
 ]

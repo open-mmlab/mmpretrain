@@ -122,6 +122,14 @@ def test_shear():
     sheared_img = np.stack([sheared_img, sheared_img, sheared_img], axis=-1)
     assert (results['img'] == sheared_img).all()
 
+    # test auto aug with shear
+    results = construct_toy_data()
+    policies = [[transform]]
+    autoaug = dict(type='AutoAugment', policies=policies)
+    pipeline = build_from_cfg(autoaug, PIPELINES)
+    results = pipeline(results)
+    assert (results['img'] == sheared_img).all()
+
 
 def test_translate():
     # test assertion for invalid type of magnitude
