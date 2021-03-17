@@ -14,7 +14,7 @@ from mmcls.utils import get_root_logger
 try:
     from mmcv.runner import Fp16OptimizerHook
 except ImportError:
-    warnings.warn('FP16OptimizerHook will be deprecated.'
+    warnings.warn('FP16OptimizerHook from mmcls will be deprecated.'
                   'Please install mmcv>=1.1.4.')
     from mmcls.core import Fp16OptimizerHook
 
