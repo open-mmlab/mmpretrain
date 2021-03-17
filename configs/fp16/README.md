@@ -12,9 +12,3 @@
   year={2017}
 }
 ```
-
-## Results and Models
-
-| Model | Mem (GB) | Inf time (fps) | Top-1 (%) | Top-5 (%) | Config | Download |
-|:-----:|:--------:|:--------------:|:---------:|:---------:|:------:|:--------:|
-| ResNet-50 |      |            |    |        |[config]() | [model]() &#124; [log]() |
