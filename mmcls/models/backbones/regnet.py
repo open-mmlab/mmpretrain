@@ -215,7 +215,7 @@ class RegNet(ResNet):
             width_slope ([float]): Slope of the quantized linear function
             width_parameter ([int]): Parameter used to quantize the width.
             depth ([int]): Depth of the backbone.
-            divisor (int, optional): The divisor of channels. Defaults to 8.
+            divisor (int): The divisor of channels. Defaults to 8.
 
         Returns:
             list, int: return a list of widths of each stage and the number of

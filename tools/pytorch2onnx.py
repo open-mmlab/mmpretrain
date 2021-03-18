@@ -37,6 +37,7 @@ def _demo_mm_inputs(input_shape, num_classes):
 def pytorch2onnx(model,
                  input_shape,
                  opset_version=11,
+                 dynamic_shape=False,
                  show=False,
                  output_file='tmp.onnx',
                  verify=False):
@@ -64,15 +65,33 @@ def pytorch2onnx(model,
 
     # replace original forward function
     origin_forward = model.forward
-    model.forward = partial(model.forward, return_loss=False)
-
+    model.forward = partial(model.forward, img_metas={}, return_loss=False)
     register_extra_symbolics(opset_version)
+
+    # support dynamic shape export
+    if dynamic_shape:
+        dynamic_axes = {
+            'input': {
+                0: 'batch',
+                2: 'width',
+                3: 'height'
+            },
+            'probs': {
+                0: 'batch'
+            }
+        }
+    else:
+        dynamic_axes = {}
+
     with torch.no_grad():
         torch.onnx.export(
             model, (img_list, ),
             output_file,
+            input_names=['input'],
+            output_names=['probs'],
             export_params=True,
             keep_initializers_as_inputs=True,
+            dynamic_axes=dynamic_axes,
             verbose=show,
             opset_version=opset_version)
         print(f'Successfully exported ONNX model: {output_file}')
@@ -84,9 +103,17 @@ def pytorch2onnx(model,
         onnx_model = onnx.load(output_file)
         onnx.checker.check_model(onnx_model)
 
+        # test the dynamic model
+        if dynamic_shape:
+            dynamic_test_inputs = _demo_mm_inputs(
+                (input_shape[0], input_shape[1], input_shape[2] * 2,
+                 input_shape[3] * 2), model.head.num_classes)
+            imgs = dynamic_test_inputs.pop('imgs')
+            img_list = [img[None, :] for img in imgs]
+
         # check the numerical value
         # get pytorch output
-        pytorch_result = model(img_list, return_loss=False)[0]
+        pytorch_result = model(img_list, img_metas={}, return_loss=False)[0]
 
         # get onnx output
         input_all = [node.name for node in onnx_model.graph.input]
@@ -119,6 +146,11 @@ def parse_args():
         nargs='+',
         default=[224, 224],
         help='input image size')
+    parser.add_argument(
+        '--dynamic-shape',
+        action='store_true',
+        help='Whether to export ONNX with dynamic input shape. \
+            Defaults to False.')
     args = parser.parse_args()
     return args
 
@@ -151,5 +183,6 @@ if __name__ == '__main__':
         input_shape,
         opset_version=args.opset_version,
         show=args.show,
+        dynamic_shape=args.dynamic_shape,
         output_file=args.output_file,
         verify=args.verify)

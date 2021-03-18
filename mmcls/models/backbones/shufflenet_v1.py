@@ -22,20 +22,20 @@ class ShuffleUnit(nn.Module):
     Args:
         in_channels (int): The input channels of the ShuffleUnit.
         out_channels (int): The output channels of the ShuffleUnit.
-        groups (int, optional): The number of groups to be used in grouped 1x1
+        groups (int): The number of groups to be used in grouped 1x1
             convolutions in each ShuffleUnit. Default: 3
-        first_block (bool, optional): Whether it is the first ShuffleUnit of a
+        first_block (bool): Whether it is the first ShuffleUnit of a
             sequential ShuffleUnits. Default: False, which means not using the
             grouped 1x1 convolution.
-        combine (str, optional): The ways to combine the input and output
+        combine (str): The ways to combine the input and output
             branches. Default: 'add'.
-        conv_cfg (dict): Config dict for convolution layer. Default: None,
-            which means using conv2d.
+        conv_cfg (dict, optional): Config dict for convolution layer.
+            Default: None, which means using conv2d.
         norm_cfg (dict): Config dict for normalization layer.
             Default: dict(type='BN').
         act_cfg (dict): Config dict for activation layer.
             Default: dict(type='ReLU').
-        with_cp (bool, optional): Use checkpoint or not. Using checkpoint
+        with_cp (bool): Use checkpoint or not. Using checkpoint
             will save some memory while slowing down the training speed.
             Default: False.
 
@@ -154,16 +154,16 @@ class ShuffleNetV1(BaseBackbone):
     """ShuffleNetV1 backbone.
 
     Args:
-        groups (int, optional): The number of groups to be used in grouped 1x1
+        groups (int): The number of groups to be used in grouped 1x1
             convolutions in each ShuffleUnit. Default: 3.
-        widen_factor (float, optional): Width multiplier - adjusts the number
+        widen_factor (float): Width multiplier - adjusts the number
             of channels in each layer by this amount. Default: 1.0.
         out_indices (Sequence[int]): Output from which stages.
             Default: (2, )
         frozen_stages (int): Stages to be frozen (all param fixed).
             Default: -1, which means not freezing any parameters.
-        conv_cfg (dict): Config dict for convolution layer. Default: None,
-            which means using conv2d.
+        conv_cfg (dict, optional): Config dict for convolution layer.
+            Default: None, which means using conv2d.
         norm_cfg (dict): Config dict for normalization layer.
             Default: dict(type='BN').
         act_cfg (dict): Config dict for activation layer.
@@ -276,7 +276,7 @@ class ShuffleNetV1(BaseBackbone):
         Args:
             out_channels (int): out_channels of the block.
             num_blocks (int): Number of blocks.
-            first_block (bool, optional): Whether is the first ShuffleUnit of a
+            first_block (bool): Whether is the first ShuffleUnit of a
                 sequential ShuffleUnits. Default: False, which means not using
                 the grouped 1x1 convolution.
         """

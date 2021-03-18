@@ -17,6 +17,10 @@ class MobileNetv3(BaseBackbone):
     Args:
         arch (str): Architechture of mobilnetv3, from {small, big}.
             Default: small.
+        conv_cfg (dict, optional): Config dict for convolution layer.
+            Default: None, which means using conv2d.
+        norm_cfg (dict): Config dict for normalization layer.
+            Default: dict(type='BN').
         out_indices (None or Sequence[int]): Output from which stages.
             Default: (10, ), which means output tensors from final stage.
         frozen_stages (int): Stages to be frozen (all param fixed).

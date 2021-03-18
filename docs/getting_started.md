@@ -29,6 +29,7 @@ mmclassification
 ```
 
 For ImageNet, it has multiple versions, but the most commonly used one is [ILSVRC 2012](http://www.image-net.org/challenges/LSVRC/2012/). It can be accessed with the following steps.
+
 1. Register an account and login to the [download page](http://www.image-net.org/download-images).
 2. Find download links for ILSVRC2012 and download the following two files
     - ILSVRC2012_img_train.tar (~138GB)
@@ -67,6 +68,7 @@ python tools/inference.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--out ${RESULT_FILE
 ```
 
 Optional arguments:
+
 - `RESULT_FILE`: Filename of the output results in pickle format. If not specified, the results will not be saved to a file.
 
 Examples:
@@ -96,6 +98,7 @@ python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--out ${RESULT_FILE}]
 ```
 
 Optional arguments:
+
 - `RESULT_FILE`: Filename of the output results in pickle format. If not specified, the results will not be saved to a file.
 
 Examples:
@@ -117,6 +120,7 @@ All outputs (log files and checkpoints) will be saved to the working directory,
 which is specified by `work_dir` in the config file.
 
 By default we evaluate the model on the validation set after each epoch, you can change the evaluation interval by adding the interval argument in the training config.
+
 ```python
 evaluation = dict(interval=12)  # This evaluate the model per 12 epoch.
 ```
@@ -174,11 +178,13 @@ CUDA_VISIBLE_DEVICES=4,5,6,7 PORT=29501 ./tools/dist_train.sh ${CONFIG_FILE} 4
 If you use launch training jobs with Slurm, you need to modify the config files (usually the 6th line from the bottom in config files) to set different communication ports.
 
 In `config1.py`,
+
 ```python
 dist_params = dict(backend='nccl', port=29500)
 ```
 
 In `config2.py`,
+
 ```python
 dist_params = dict(backend='nccl', port=29501)
 ```

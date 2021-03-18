@@ -27,11 +27,17 @@ Documentation: https://mmclassification.readthedocs.io/en/latest/
 
 This project is released under the [Apache 2.0 license](LICENSE).
 
+## Changelog
+
+v0.9.0 was released in 1/3/2021.
+Please refer to [changelog.md](docs/changelog.md) for details and release history.
+
 ## Benchmark and model zoo
 
 Results and models are available in the [model zoo](docs/model_zoo.md).
 
 Supported backbones:
+
 - [x] ResNet
 - [x] ResNeXt
 - [x] SE-ResNet

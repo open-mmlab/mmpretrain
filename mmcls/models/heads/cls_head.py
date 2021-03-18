@@ -1,3 +1,6 @@
+import torch
+import torch.nn.functional as F
+
 from mmcls.models.losses import Accuracy
 from ..builder import HEADS, build_loss
 from .base_head import BaseHead
@@ -43,3 +46,13 @@ class ClsHead(BaseHead):
     def forward_train(self, cls_score, gt_label):
         losses = self.loss(cls_score, gt_label)
         return losses
+
+    def simple_test(self, cls_score):
+        """Test without augmentation."""
+        if isinstance(cls_score, list):
+            cls_score = sum(cls_score) / float(len(cls_score))
+        pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
+        if torch.onnx.is_in_onnx_export():
+            return pred
+        pred = list(pred.detach().cpu().numpy())
+        return pred

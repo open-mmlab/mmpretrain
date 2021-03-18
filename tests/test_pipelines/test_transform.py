@@ -584,7 +584,7 @@ def test_randomresizedcrop():
     kwargs = dict(
         size=(ori_img.shape[0], ori_img.shape[1]),
         scale=(1.0, 2.0),
-        ratio=(2, 3))
+        ratio=(2., 3.))
     random.seed(seed)
     np.random.seed(seed)
     aug = []
@@ -610,7 +610,7 @@ def test_randomresizedcrop():
     kwargs = dict(
         size=(ori_img.shape[0], ori_img.shape[1]),
         scale=(1.0, 2.0),
-        ratio=(3. / 4, 1))
+        ratio=(3. / 4., 1))
     random.seed(seed)
     np.random.seed(seed)
     aug = []
