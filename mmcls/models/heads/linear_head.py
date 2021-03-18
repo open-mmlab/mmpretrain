@@ -1,4 +1,6 @@
+import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from mmcv.cnn import normal_init
 
 from ..builder import HEADS
@@ -36,6 +38,17 @@ class LinearClsHead(ClsHead):
 
     def init_weights(self):
         normal_init(self.fc, mean=0, std=0.01, bias=0)
+
+    def simple_test(self, img):
+        """Test without augmentation."""
+        cls_score = self.fc(img)
+        if isinstance(cls_score, list):
+            cls_score = sum(cls_score) / float(len(cls_score))
+        pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
+        if torch.onnx.is_in_onnx_export():
+            return pred
+        pred = list(pred.detach().cpu().numpy())
+        return pred
 
     def forward_train(self, x, gt_label):
         cls_score = self.fc(x)

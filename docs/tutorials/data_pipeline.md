@@ -13,6 +13,7 @@ A pipeline consists of a sequence of operations. Each operation takes a dict as 
 The operations are categorized into data loading, pre-processing and formatting.
 
 Here is an pipeline example for ResNet-50 training on ImageNet.
+
 ```python
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
@@ -31,14 +32,14 @@ test_pipeline = [
     dict(type='CenterCrop', crop_size=224),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='ImageToTensor', keys=['img']),
-    dict(type='ToTensor', keys=['gt_label']),
-    dict(type='Collect', keys=['img', 'gt_label'])
+    dict(type='Collect', keys=['img'])
 ]
 ```
 
 By fault, `LoadImageFromFile` loads images from disk but it may lead to IO bottleneck for efficient small models.
 Various backends are supported by mmcv to accelerate this process. For example, if the training machines have setup
 [memcached](https://memcached.org/), we can revise the config as follows.
+
 ```
 memcached_root = '/mnt/xxx/memcached_client/'
 train_pipeline = [
@@ -50,6 +51,7 @@ train_pipeline = [
             client_cfg=osp.join(memcached_root, 'client.conf'))),
 ]
 ```
+
 More supported backends can be found in [mmcv.fileio.FileClient](https://github.com/open-mmlab/mmcv/blob/master/mmcv/fileio/file_client.py).
 
 For each operation, we list the related dict fields that are added/updated/removed.
@@ -58,39 +60,46 @@ At the end of the pipeline, we use `Collect` to only retain the necessary items 
 ### Data loading
 
 `LoadImageFromFile`
-- add: img, img_shape, ori_shape
 
+- add: img, img_shape, ori_shape
 
 ### Pre-processing
 
 `Resize`
+
 - add: scale, scale_idx, pad_shape, scale_factor, keep_ratio
 - update: img, img_shape
 
 `RandomFlip`
+
 - add: flip, flip_direction
 - update: img
 
-
 `RandomCrop`
+
 - update: img, pad_shape
 
 `Normalize`
+
 - add: img_norm_cfg
 - update: img
 
 ### Formatting
 
 `ToTensor`
+
 - update: specified by `keys`.
 
 `ImageToTensor`
+
 - update: specified by `keys`.
 
 `Transpose`
+
 - update: specified by `keys`.
 
 `Collect`
+
 - remove: all other keys except for those specified by `keys`
 
 ## Extend and use custom pipelines

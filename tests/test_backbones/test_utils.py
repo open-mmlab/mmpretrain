@@ -3,8 +3,8 @@ import torch
 from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from mmcls.models.utils import (InvertedResidual, SELayer, channel_shuffle,
-                                make_divisible)
+from mmcls.models.utils import (BatchMixupLayer, InvertedResidual, SELayer,
+                                channel_shuffle, make_divisible)
 
 
 def is_norm(modules):
@@ -114,3 +114,16 @@ def test_inverted_residual():
     x_out = block(x)
     assert block.with_cp
     assert x_out.shape == torch.Size((1, 16, 56, 56))
+
+
+def test_mixup():
+
+    # Test mixup
+    alpha = 0.2
+    num_classes = 10
+    img = torch.randn(16, 3, 32, 32)
+    label = torch.randint(0, 10, (16, ))
+    mixup_layer = BatchMixupLayer(alpha, num_classes)
+    mixed_img, mixed_label = mixup_layer(img, label)
+    assert mixed_img.shape == torch.Size((16, 3, 32, 32))
+    assert mixed_label.shape == torch.Size((16, num_classes))

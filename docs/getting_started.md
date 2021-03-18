@@ -29,11 +29,13 @@ mmclassification
 ```
 
 For ImageNet, it has multiple versions, but the most commonly used one is [ILSVRC 2012](http://www.image-net.org/challenges/LSVRC/2012/). It can be accessed with the following steps.
+
 1. Register an account and login to the [download page](http://www.image-net.org/download-images).
 2. Find download links for ILSVRC2012 and download the following two files
     - ILSVRC2012_img_train.tar (~138GB)
     - ILSVRC2012_img_val.tar (~6.3GB)
 3. Untar the downloaded files
+4. Download meta data using this [script](https://github.com/BVLC/caffe/blob/master/data/ilsvrc12/get_ilsvrc_aux.sh)
 
 For MNIST, CIFAR10 and CIFAR100, the datasets will be downloaded and unzipped automatically if they are not found.
 
@@ -41,7 +43,43 @@ For using custom datasets, please refer to [Tutorials 2: Adding New Dataset](tut
 
 ## Inference with pretrained models
 
-We provide testing scripts to evaluate a whole dataset (ImageNet, etc.).
+We provide scripts to inference a single image, inference a dataset and test a dataset (e.g., ImageNet).
+
+### Inference a single image
+
+```shell
+python demo/image_demo.py ${IMAGE_FILE} ${CONFIG_FILE} ${CHECKPOINT_FILE}
+```
+
+### Inference a dataset
+
+- single GPU
+- single node multiple GPU
+- multiple node
+
+You can use the following commands to infer a dataset.
+
+```shell
+# single-gpu inference
+python tools/inference.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--out ${RESULT_FILE}]
+
+# multi-gpu inference
+./tools/dist_inference.sh ${CONFIG_FILE} ${CHECKPOINT_FILE} ${GPU_NUM} [--out ${RESULT_FILE}]
+```
+
+Optional arguments:
+
+- `RESULT_FILE`: Filename of the output results in pickle format. If not specified, the results will not be saved to a file.
+
+Examples:
+
+Assume that you have already downloaded the checkpoints to the directory `checkpoints/`.
+Infer ResNet-50 on ImageNet validation set to get predicted labels and their corresponding predicted scores.
+
+```shell
+python tools/inference.py configs/imagenet/resnet50_batch256.py \
+    checkpoints/xxx.pth
+```
 
 ### Test a dataset
 
@@ -60,11 +98,12 @@ python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--out ${RESULT_FILE}]
 ```
 
 Optional arguments:
+
 - `RESULT_FILE`: Filename of the output results in pickle format. If not specified, the results will not be saved to a file.
 
 Examples:
 
-Assume that you have already downloaded the checkpoints to the directory `checkpoints/`. 
+Assume that you have already downloaded the checkpoints to the directory `checkpoints/`.
 Test ResNet-50 on ImageNet validation and evaluate the top-1 and top-5.
 
 ```shell
@@ -81,6 +120,7 @@ All outputs (log files and checkpoints) will be saved to the working directory,
 which is specified by `work_dir` in the config file.
 
 By default we evaluate the model on the validation set after each epoch, you can change the evaluation interval by adding the interval argument in the training config.
+
 ```python
 evaluation = dict(interval=12)  # This evaluate the model per 12 epoch.
 ```
@@ -138,11 +178,13 @@ CUDA_VISIBLE_DEVICES=4,5,6,7 PORT=29501 ./tools/dist_train.sh ${CONFIG_FILE} 4
 If you use launch training jobs with Slurm, you need to modify the config files (usually the 6th line from the bottom in config files) to set different communication ports.
 
 In `config1.py`,
+
 ```python
 dist_params = dict(backend='nccl', port=29500)
 ```
 
 In `config2.py`,
+
 ```python
 dist_params = dict(backend='nccl', port=29501)
 ```

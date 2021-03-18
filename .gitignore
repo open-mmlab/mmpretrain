@@ -105,7 +105,6 @@ venv.bak/
 .mypy_cache/
 
 # custom
-mmcls/version.py
 data
 .vscode
 .idea

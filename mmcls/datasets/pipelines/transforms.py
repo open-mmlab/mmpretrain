@@ -1,3 +1,4 @@
+import inspect
 import math
 import random
 
@@ -5,6 +6,13 @@ import mmcv
 import numpy as np
 
 from ..builder import PIPELINES
+
+try:
+    import albumentations
+    from albumentations import Compose
+except ImportError:
+    albumentations = None
+    Compose = None
 
 
 @PIPELINES.register_module()
@@ -77,8 +85,8 @@ class RandomCrop(object):
         if width == target_width and height == target_height:
             return 0, 0, height, width
 
-        xmin = random.randint(0, height - target_height)
-        ymin = random.randint(0, width - target_width)
+        ymin = random.randint(0, height - target_height)
+        xmin = random.randint(0, width - target_width)
         return xmin, ymin, target_height, target_width
 
     def __call__(self, results):
@@ -113,7 +121,12 @@ class RandomCrop(object):
             xmin, ymin, height, width = self.get_params(img, self.size)
             results[key] = mmcv.imcrop(
                 img,
-                np.array([ymin, xmin, ymin + width - 1, xmin + height - 1]))
+                np.array([
+                    xmin,
+                    ymin,
+                    xmin + width - 1,
+                    ymin + height - 1,
+                ]))
         return results
 
     def __repr__(self):
@@ -155,8 +168,8 @@ class RandomResizedCrop(object):
         else:
             self.size = (size, size)
         if (scale[0] > scale[1]) or (ratio[0] > ratio[1]):
-            raise ValueError("range should be of kind (min, max). "
-                             f"But received {scale}")
+            raise ValueError('range should be of kind (min, max). '
+                             f'But received {scale}')
         if backend not in ['cv2', 'pillow']:
             raise ValueError(f'backend: {backend} is not supported for resize.'
                              'Supported backends are "cv2", "pillow"')
@@ -194,8 +207,8 @@ class RandomResizedCrop(object):
             target_height = int(round(math.sqrt(target_area / aspect_ratio)))
 
             if 0 < target_width <= width and 0 < target_height <= height:
-                xmin = random.randint(0, height - target_height)
-                ymin = random.randint(0, width - target_width)
+                ymin = random.randint(0, height - target_height)
+                xmin = random.randint(0, width - target_width)
                 return xmin, ymin, target_height, target_width
 
         # Fallback to central crop
@@ -209,8 +222,8 @@ class RandomResizedCrop(object):
         else:  # whole image
             target_width = width
             target_height = height
-        xmin = (height - target_height) // 2
-        ymin = (width - target_width) // 2
+        ymin = (height - target_height) // 2
+        xmin = (width - target_width) // 2
         return xmin, ymin, target_height, target_width
 
     def __call__(self, results):
@@ -228,8 +241,8 @@ class RandomResizedCrop(object):
             img = mmcv.imcrop(
                 img,
                 np.array([
-                    ymin, xmin, ymin + target_width - 1,
-                    xmin + target_height - 1
+                    xmin, ymin, xmin + target_width - 1,
+                    ymin + target_height - 1
                 ]))
             results[key] = mmcv.imresize(
                 img,
@@ -298,7 +311,7 @@ class RandomFlip(object):
 
     Args:
         flip_prob (float): probability of the image being flipped. Default: 0.5
-        direction (str, optional): The flipping direction. Options are
+        direction (str): The flipping direction. Options are
             'horizontal' and 'vertical'. Default: 'horizontal'.
     """
 
@@ -363,8 +376,8 @@ class Resize(object):
             assert size[0] > 0 and (size[1] > 0 or size[1] == -1)
             if size[1] == -1:
                 self.resize_w_short_side = True
-        assert interpolation in ("nearest", "bilinear", "bicubic", "area",
-                                 "lanczos")
+        assert interpolation in ('nearest', 'bilinear', 'bicubic', 'area',
+                                 'lanczos')
         if backend not in ['cv2', 'pillow']:
             raise ValueError(f'backend: {backend} is not supported for resize.'
                              'Supported backends are "cv2", "pillow"')
@@ -436,7 +449,8 @@ class CenterCrop(object):
         crop_height, crop_width = self.crop_size[0], self.crop_size[1]
         for key in results.get('img_fields', ['img']):
             img = results[key]
-            img_height, img_width, _ = img.shape
+            # img.shape has length 2 for grayscale, length 3 for color
+            img_height, img_width = img.shape[:2]
 
             y1 = max(0, int(round((img_height - crop_height) / 2.)))
             x1 = max(0, int(round((img_width - crop_width) / 2.)))
@@ -484,4 +498,132 @@ class Normalize(object):
         repr_str += f'(mean={list(self.mean)}, '
         repr_str += f'std={list(self.std)}, '
         repr_str += f'to_rgb={self.to_rgb})'
+        return repr_str
+
+
+@PIPELINES.register_module()
+class Albu(object):
+    """Albumentation augmentation.
+
+    Adds custom transformations from Albumentations library.
+    Please, visit `https://albumentations.readthedocs.io`
+    to get more information.
+    An example of ``transforms`` is as followed:
+
+    .. code-block::
+        [
+            dict(
+                type='ShiftScaleRotate',
+                shift_limit=0.0625,
+                scale_limit=0.0,
+                rotate_limit=0,
+                interpolation=1,
+                p=0.5),
+            dict(
+                type='RandomBrightnessContrast',
+                brightness_limit=[0.1, 0.3],
+                contrast_limit=[0.1, 0.3],
+                p=0.2),
+            dict(type='ChannelShuffle', p=0.1),
+            dict(
+                type='OneOf',
+                transforms=[
+                    dict(type='Blur', blur_limit=3, p=1.0),
+                    dict(type='MedianBlur', blur_limit=3, p=1.0)
+                ],
+                p=0.1),
+        ]
+
+    Args:
+        transforms (list[dict]): A list of albu transformations
+        keymap (dict): Contains {'input key':'albumentation-style key'}
+    """
+
+    def __init__(self, transforms, keymap=None, update_pad_shape=False):
+        if Compose is None:
+            raise RuntimeError('albumentations is not installed')
+
+        self.transforms = transforms
+        self.filter_lost_elements = False
+        self.update_pad_shape = update_pad_shape
+
+        self.aug = Compose([self.albu_builder(t) for t in self.transforms])
+
+        if not keymap:
+            self.keymap_to_albu = {
+                'img': 'image',
+            }
+        else:
+            self.keymap_to_albu = keymap
+        self.keymap_back = {v: k for k, v in self.keymap_to_albu.items()}
+
+    def albu_builder(self, cfg):
+        """Import a module from albumentations.
+        It inherits some of :func:`build_from_cfg` logic.
+        Args:
+            cfg (dict): Config dict. It should at least contain the key "type".
+        Returns:
+            obj: The constructed object.
+        """
+
+        assert isinstance(cfg, dict) and 'type' in cfg
+        args = cfg.copy()
+
+        obj_type = args.pop('type')
+        if mmcv.is_str(obj_type):
+            if albumentations is None:
+                raise RuntimeError('albumentations is not installed')
+            obj_cls = getattr(albumentations, obj_type)
+        elif inspect.isclass(obj_type):
+            obj_cls = obj_type
+        else:
+            raise TypeError(
+                f'type must be a str or valid type, but got {type(obj_type)}')
+
+        if 'transforms' in args:
+            args['transforms'] = [
+                self.albu_builder(transform)
+                for transform in args['transforms']
+            ]
+
+        return obj_cls(**args)
+
+    @staticmethod
+    def mapper(d, keymap):
+        """Dictionary mapper. Renames keys according to keymap provided.
+        Args:
+            d (dict): old dict
+            keymap (dict): {'old_key':'new_key'}
+        Returns:
+            dict: new dict.
+        """
+
+        updated_dict = {}
+        for k, v in zip(d.keys(), d.values()):
+            new_k = keymap.get(k, k)
+            updated_dict[new_k] = d[k]
+        return updated_dict
+
+    def __call__(self, results):
+        # dict to albumentations format
+        results = self.mapper(results, self.keymap_to_albu)
+
+        results = self.aug(**results)
+
+        if 'gt_labels' in results:
+            if isinstance(results['gt_labels'], list):
+                results['gt_labels'] = np.array(results['gt_labels'])
+            results['gt_labels'] = results['gt_labels'].astype(np.int64)
+
+        # back to the original format
+        results = self.mapper(results, self.keymap_back)
+
+        # update final shape
+        if self.update_pad_shape:
+            results['pad_shape'] = results['img'].shape
+
+        return results
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__ + f'(transforms={self.transforms})'
         return repr_str

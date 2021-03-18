@@ -1,7 +1,7 @@
-_base_ = ['./resnet50_imagenet_bs256.py']
+_base_ = ['./resnet50_batch2048_warmup.py']
 model = dict(
     head=dict(
-        type='LinearHead',
+        type='LinearClsHead',
         num_classes=1000,
         in_channels=2048,
         loss=dict(

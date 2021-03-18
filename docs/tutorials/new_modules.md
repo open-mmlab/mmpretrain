@@ -27,9 +27,9 @@ from .resnet import ResNet
 class ResNet_CIFAR(ResNet):
 
     """ResNet backbone for CIFAR.
-    
+
     short description of the backbone
-    
+
     Args:
         depth(int): Network depth, from {18, 34, 50, 101, 152}.
         ...
@@ -45,7 +45,7 @@ class ResNet_CIFAR(ResNet):
 
     def init_weights(self, pretrained=None):
         pass  # override ResNet init_weights if necessary
-        
+
     def train(self, mode=True):
         pass   # override ResNet train if necessary
 ```
@@ -77,7 +77,7 @@ To add a new neck, we mainly implement the `forward` function, which applies som
 
     ```python
     import torch.nn as nn
-    
+
     from ..builder import NECKS
 
     @NECKS.register_module()
@@ -117,11 +117,11 @@ To implement a new head, basically we need to implement `forward_train`, which t
     ```python
     from ..builder import HEADS
     from .cls_head import ClsHead
-     
-     
+
+
     @HEADS.register_module()
     class LinearClsHead(ClsHead):
-     
+
         def __init__(self,
                   num_classes,
                   in_channels,
@@ -130,26 +130,25 @@ To implement a new head, basically we need to implement `forward_train`, which t
             super(LinearClsHead, self).__init__(loss=loss, topk=topk)
             self.in_channels = in_channels
             self.num_classes = num_classes
-            
+
             if self.num_classes <= 0:
                 raise ValueError(
                     f'num_classes={num_classes} must be a positive integer')
-            
+
             self._init_layers()
-        
+
         def _init_layers(self):
             self.fc = nn.Linear(self.in_channels, self.num_classes)
-        
+
         def init_weights(self):
             normal_init(self.fc, mean=0, std=0.01, bias=0)
-        
+
         def forward_train(self, x, gt_label):
             cls_score = self.fc(x)
             losses = self.loss(cls_score, gt_label)
             return losses
-    
-    ```
 
+    ```
 
 2. Import the module in `mmcls/models/heads/__init__.py`.
 
@@ -161,54 +160,55 @@ To implement a new head, basically we need to implement `forward_train`, which t
 
 Together with the added GlobalAveragePooling neck, an entire config for a model is as follows.
 
-    ```python
-    model = dict(
-        type='ImageClassifier',
-        backbone=dict(
-            type='ResNet',
-            depth=50,
-            num_stages=4,
-            out_indices=(3, ),
-            style='pytorch'),
-        neck=dict(type='GlobalAveragePooling'),
-        head=dict(
-            type='LinearClsHead',
-            num_classes=1000,
-            in_channels=2048,
-            loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
-            topk=(1, 5),
-        ))
-         
-    ```
+```python
+model = dict(
+    type='ImageClassifier',
+    backbone=dict(
+        type='ResNet',
+        depth=50,
+        num_stages=4,
+        out_indices=(3, ),
+        style='pytorch'),
+    neck=dict(type='GlobalAveragePooling'),
+    head=dict(
+        type='LinearClsHead',
+        num_classes=1000,
+        in_channels=2048,
+        loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
+        topk=(1, 5),
+    ))
+
+```
 
 ### Add new loss
 
 To add a new loss function, we mainly implement the `forward` function in the loss module.
 In addition, it is helpful to leverage the decorator `weighted_loss` to weight the loss for each element.
-Assuming that we want to mimic a probablistic distribution generated from anther classification model, we implement a L1Loss to fulfil the purpose as below. 
+Assuming that we want to mimic a probablistic distribution generated from anther classification model, we implement a L1Loss to fulfil the purpose as below.
 
 1. Create a new file in `mmcls/models/losses/l1_loss.py`.
+
     ```python
     import torch
     import torch.nn as nn
-    
+
     from ..builder import LOSSES
     from .utils import weighted_loss
-    
+
     @weighted_loss
     def l1_loss(pred, target):
         assert pred.size() == target.size() and target.numel() > 0
         loss = torch.abs(pred - target)
         return loss
-    
+
     @LOSSES.register_module()
     class L1Loss(nn.Module):
-    
+
         def __init__(self, reduction='mean', loss_weight=1.0):
             super(L1Loss, self).__init__()
             self.reduction = reduction
             self.loss_weight = loss_weight
-    
+
         def forward(self,
                     pred,
                     target,
@@ -224,11 +224,13 @@ Assuming that we want to mimic a probablistic distribution generated from anther
     ```
 
 2. Import the module in `mmcls/models/losses/__init__.py`.
+
     ```python
     from .l1_loss import L1Loss, l1_loss
     ```
 
 3. Modify loss field in the config.
+
     ```python
     loss=dict(type='L1Loss', loss_weight=1.0))
     ```
