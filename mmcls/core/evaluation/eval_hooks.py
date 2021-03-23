@@ -4,15 +4,8 @@ import warnings
 from mmcv.runner import Hook
 from torch.utils.data import DataLoader
 
-try:
-    from mmcv.runner import EvalHook, DistEvalHook  # noqa: F811
-except ImportError:
-    warnings.warn(
-        'DeprecationWarning: EvalHook and DistEvalHook in mmcls will be  '
-        'deprecated, please install mmcv through master branch.')
 
-
-class EvalHook(Hook):  # noqa: F811
+class EvalHook(Hook):
     """Evaluation hook.
 
     Args:
@@ -21,6 +14,9 @@ class EvalHook(Hook):  # noqa: F811
     """
 
     def __init__(self, dataloader, interval=1, by_epoch=True, **eval_kwargs):
+        warnings.warn(
+            'DeprecationWarning: EvalHook and DistEvalHook in mmcls will be '
+            'deprecated, please install mmcv through master branch.')
         if not isinstance(dataloader, DataLoader):
             raise TypeError('dataloader must be a pytorch DataLoader, but got'
                             f' {type(dataloader)}')
@@ -52,7 +48,7 @@ class EvalHook(Hook):  # noqa: F811
         runner.log_buffer.ready = True
 
 
-class DistEvalHook(EvalHook):  # noqa: F811
+class DistEvalHook(EvalHook):
     """Distributed evaluation hook.
 
     Args:
@@ -70,6 +66,9 @@ class DistEvalHook(EvalHook):  # noqa: F811
                  gpu_collect=False,
                  by_epoch=True,
                  **eval_kwargs):
+        warnings.warn(
+            'DeprecationWarning: EvalHook and DistEvalHook in mmcls will be '
+            'deprecated, please install mmcv through master branch.')
         if not isinstance(dataloader, DataLoader):
             raise TypeError('dataloader must be a pytorch DataLoader, but got '
                             f'{type(dataloader)}')
