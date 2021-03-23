@@ -6,16 +6,25 @@ import torch
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import DistSamplerSeedHook, build_optimizer, build_runner
 
-from mmcls.core import DistEvalHook, DistOptimizerHook, EvalHook
+from mmcls.core import DistOptimizerHook
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.utils import get_root_logger
+
+# TODO import eval hooks from mmcv and delete them from mmcls
+try:
+    from mmcv.runner.hooks import EvalHook, DistEvalHook
+except ImportError:
+    warnings.warn('DeprecationWarning: EvalHook and DistEvalHook from mmcls '
+                  'will be deprecated.'
+                  'Please install mmcv through master branch.')
+    from mmcls.core import EvalHook, DistEvalHook
 
 # TODO import optimizer hook from mmcv and delete them from mmcls
 try:
     from mmcv.runner import Fp16OptimizerHook
 except ImportError:
-    warnings.warn('FP16OptimizerHook from mmcls will be deprecated.'
-                  'Please install mmcv>=1.1.4.')
+    warnings.warn('DeprecationWarning: FP16OptimizerHook from mmcls will be '
+                  'deprecated. Please install mmcv>=1.1.4.')
     from mmcls.core import Fp16OptimizerHook
 
 

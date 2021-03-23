@@ -1,10 +1,18 @@
 import os.path as osp
+import warnings
 
 from mmcv.runner import Hook
 from torch.utils.data import DataLoader
 
+try:
+    from mmcv.runner import EvalHook, DistEvalHook  # noqa: F811
+except ImportError:
+    warnings.warn(
+        'DeprecationWarning: EvalHook and DistEvalHook in mmcls will be  '
+        'deprecated, please install mmcv through master branch.')
 
-class EvalHook(Hook):
+
+class EvalHook(Hook):  # noqa: F811
     """Evaluation hook.
 
     Args:
@@ -44,7 +52,7 @@ class EvalHook(Hook):
         runner.log_buffer.ready = True
 
 
-class DistEvalHook(EvalHook):
+class DistEvalHook(EvalHook):  # noqa: F811
     """Distributed evaluation hook.
 
     Args:
