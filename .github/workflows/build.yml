@@ -56,7 +56,7 @@ jobs:
         run: pip install --use-deprecated=legacy-resolver torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu  -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install MMCV
         run: |
-          pip install --use-deprecated=legacy-resolver mmcv-full==latest -f https://download.openmmlab.com/mmcv/dist/cpu/torch${{matrix.torch}}/index.html
+          pip install --use-deprecated=legacy-resolver mmcv-full -f https://download.openmmlab.com/mmcv/dist/cpu/torch${{matrix.torch}}/index.html
           python -c 'import mmcv; print(mmcv.__version__)'
       - name: Install mmcls dependencies
         run: |
