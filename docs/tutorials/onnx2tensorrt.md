@@ -18,7 +18,7 @@
 
 1. Please refer to [install.md](https://github.com/open-mmlab/mmclassification/blob/master/docs/install.md) for installation of MMCV and MMClassification from source.
 2. Please refer to [ONNXRuntime in mmcv](https://mmcv.readthedocs.io/en/latest/onnxruntime_op.html) and [TensorRT plugin in mmcv](https://github.com/open-mmlab/mmcv/blob/master/docs/tensorrt_plugin.md) to install `mmcv-full` with ONNXRuntime custom ops and TensorRT plugins.
-3. Use our tool [pytorch2onnx](https://github.com/open-mmlab/mmclassification/tree/master/docs/tutorials/pytorch2onnx.md) to convert the model from PyTorch to ONNX.
+3. Use our tool [pytorch2onnx.md](./pytorch2onnx.md) to convert the model from PyTorch to ONNX.
 
 ### Usage
 
