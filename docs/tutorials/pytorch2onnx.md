@@ -16,11 +16,11 @@
 
 ### Prerequisite
 
-1. Please refer to [get_started.md](../get_started.md) for installation of MMCV and MMClassification.
+1. Please refer to [install.md](https://github.com/open-mmlab/mmclassification/blob/master/docs/install.md) for installation of MMCV and MMClassification.
 2. Install onnx and onnxruntime
 
   ```shell
-  pip install onnx onnxruntime
+  pip install onnx onnxruntime==1.5.1
   ```
 
 ### Usage
@@ -32,7 +32,7 @@ python tools/pytorch2onnx.py \
     --output-file ${OUTPUT_FILE} \
     --shape ${IMAGE_SHAPE} \
     --opset-version ${OPSET_VERSION} \
-    --dynamic_shape \
+    --dynamic-shape \
     --show \
     --verify \
 ```
@@ -44,7 +44,7 @@ Description of all arguments:
 - `--output-file`: The path of output ONNX model. If not specified, it will be set to `tmp.onnx`.
 - `--shape`: The height and width of input tensor to the model. If not specified, it will be set to `224 224`.
 - `--opset-version` : The opset version of ONNX. If not specified, it will be set to `11`.
-- `--dynamic_shape` : Determines whether to export ONNX with dynamic input shape.  If not specified, it will be set to `False`.
+- `--dynamic-shape` : Determines whether to export ONNX with dynamic input shape.  If not specified, it will be set to `False`.
 - `--show`: Determines whether to print the architecture of the exported model. If not specified, it will be set to `False`.
 - `--verify`: Determines whether to verify the correctness of an exported model. If not specified, it will be set to `False`.
 
@@ -55,7 +55,7 @@ python tools/pytorch2onnx.py \
     configs/resnet/resnet18_b16x8_cifar10.py \
     --checkpoint checkpoints/resnet/resnet18_b16x8_cifar10.pth \
     --output-file checkpoints/resnet/resnet18_b16x8_cifar10.onnx \
-    --dynamic_shape \
+    --dynamic-shape \
     --show \
     --verify \
 ```
