@@ -16,7 +16,7 @@
 
 ### Prerequisite
 
-1. Please refer to [install.md](https://github.com/open-mmlab/mmclassification/blob/master/docs/install.md) for installation of MMCV and MMClassification.
+1. Please refer to [install](https://mmclassification.readthedocs.io/en/latest/install.html#install-mmclassification) for installation of MMClassification.
 2. Install onnx and onnxruntime
 
   ```shell
@@ -80,7 +80,6 @@ Notes:
 ## Reminders
 
 - If you meet any problem with the listed models above, please create an issue and it would be taken care of soon. For models not included in the list, please try to dig a little deeper and debug a little bit more and hopefully solve them by yourself.
-- Because this feature is experimental and may change fast, please always try with the latest `mmcv` and `mmclassification`.
 
 ## FAQs
 

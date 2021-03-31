@@ -16,7 +16,7 @@
 
 ### Prerequisite
 
-1. Please refer to [install.md](https://github.com/open-mmlab/mmclassification/blob/master/docs/install.md) for installation of MMCV and MMClassification from source.
+1. Please refer to [install.md](https://mmclassification.readthedocs.io/en/latest/install.html#install-mmclassification) for installation of MMClassification from source.
 2. Use our tool [pytorch2onnx.md](./pytorch2onnx.md) to convert the model from PyTorch to ONNX.
 
 ### Usage
@@ -70,7 +70,6 @@ Notes:
 ## Reminders
 
 - If you meet any problem with the listed models above, please create an issue and it would be taken care of soon. For models not included in the list, we may not provide much help here due to the limited resources. Please try to dig a little deeper and debug by yourself.
-- Because this feature is experimental and may change fast, please always try with the latest `mmcv` and `mmclassification`.
 
 ## FAQs
 
