@@ -34,6 +34,8 @@ Welcome to MMClassification's documentation!
    tutorials/new_dataset.md
    tutorials/data_pipeline.md
    tutorials/new_modules.md
+   tutorials/pytorch2onnx.md
+   tutorials/onnx2tensorrt.md
 
 
 .. toctree::
