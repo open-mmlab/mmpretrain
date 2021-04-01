@@ -1,5 +1,30 @@
 ## Changelog
 
+### v0.10.0(1/4/2021)
+
+- Support AutoAugmentation
+- Add tutorials for installation and usage.
+
+#### New Features
+
+- Add `Rotate` pipeline for data augmentation. (#167)
+- Add `Invert` pipeline for data augmentation. (#168)
+- Add `Color` pipeline for data augmentation. (#171)
+- Add `Solarize` and `Posterize` pipeline for data augmentation. (#172)
+- Support fp16 training. (#178)
+- Add tutorials for installation and basic usage of MMClassification.(#176)
+- Support `AutoAugmentation`, `AutoContrast`, `Equalize`, `Contrast`, `Brightness` and `Sharpness` pipelines for data augmentation. (#179)
+
+#### Improvements
+
+- Support dynamic shape export to onnx. (#175)
+- Release training configs and update model zoo for fp16 (#184)
+- Use MMCV's EvalHook in MMClassification (#182)
+
+#### Bug Fixes
+
+- Fix wrong naming in vgg config (#181)
+
 ### v0.9.0(1/3/2021)
 
 - Implement mixup trick.
