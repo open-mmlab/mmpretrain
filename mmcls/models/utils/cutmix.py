@@ -4,6 +4,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
+
 class BaseCutMixLayer(object, metaclass=ABCMeta):
     """Base class for CutMixLayer"""
 
@@ -13,6 +14,7 @@ class BaseCutMixLayer(object, metaclass=ABCMeta):
     @abstractmethod
     def cutmix(self, imgs, gt_label):
         pass
+
 
 class BatchCutMixLayer(BaseCutMixLayer):
     """CutMix layer for batch CutMix.
@@ -58,11 +60,14 @@ class BatchCutMixLayer(BaseCutMixLayer):
             lam = np.random.beta(self.alpha, self.alpha)
             batch_size = img.size(0)
             index = torch.randperm(batch_size)
-            one_hot_gt_label = F.one_hot(gt_label, num_classes=self.num_classes)
+            one_hot_gt_label = F.one_hot(
+                gt_label, num_classes=self.num_classes)
             bbx1, bby1, bbx2, bby2 = self.rand_bbox(img.size(), lam)
-            img[:, :, bbx1:bbx2, bby1:bby2] = img[index, :, bbx1:bbx2, bby1:bby2]
+            img[:, :, bbx1:bbx2, bby1:bby2] = \
+                img[index, :, bbx1:bbx2, bby1:bby2]
             # adjust lambda to exactly match pixel ratio
-            lam = 1 - ((bbx2 - bbx1) * (bby2 - bby1) / (img.size(-1) * img.size(-2)))
+            lam = 1 - ((bbx2 - bbx1) * (bby2 - bby1)
+                       / (img.size(-1) * img.size(-2)))
             mixed_gt_label = lam * one_hot_gt_label + (
                     1 - lam) * one_hot_gt_label[index, :]
             return img, mixed_gt_label

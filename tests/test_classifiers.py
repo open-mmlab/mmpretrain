@@ -29,6 +29,7 @@ def test_image_classifier():
     losses = img_classifier.forward_train(imgs, label)
     assert losses['loss'].item() > 0
 
+
 def test_image_classifier_with_cutmix():
     # Test cutmix in ImageClassifier
     model_cfg = dict(
@@ -43,9 +44,12 @@ def test_image_classifier_with_cutmix():
             type='MultiLabelLinearClsHead',
             num_classes=10,
             in_channels=2048,
-            loss=dict(type='CrossEntropyLoss', loss_weight=1.0,
+            loss=dict(type='CrossEntropyLoss',
+                      loss_weight=1.0,
                       use_soft=True)),
-        train_cfg=dict(cutmix=dict(alpha=1.0, num_classes=10, cutmix_prob=1.0)))
+        train_cfg=dict(cutmix=dict(alpha=1.0,
+                                   num_classes=10,
+                                   cutmix_prob=1.0)))
     img_classifier = ImageClassifier(**model_cfg)
     img_classifier.init_weights()
     imgs = torch.randn(16, 3, 32, 32)
