@@ -6,8 +6,9 @@ from .compose import Compose
 from .formating import (Collect, ImageToTensor, ToNumpy, ToPIL, ToTensor,
                         Transpose, to_tensor)
 from .loading import LoadImageFromFile
-from .transforms import (CenterCrop, RandomCrop, RandomFlip, RandomGrayscale,
-                         RandomResizedCrop, Resize)
+from .transforms import (CenterCrop, ColorJitter, Lighting, RandomCrop,
+                         RandomFlip, RandomGrayscale, RandomResizedCrop,
+                         Resize)
 
 __all__ = [
     'Compose', 'to_tensor', 'ToTensor', 'ImageToTensor', 'ToPIL', 'ToNumpy',
@@ -15,5 +16,6 @@ __all__ = [
     'RandomFlip', 'Normalize', 'RandomCrop', 'RandomResizedCrop',
     'RandomGrayscale', 'Shear', 'Translate', 'Rotate', 'Invert',
     'ColorTransform', 'Solarize', 'Posterize', 'AutoContrast', 'Equalize',
-    'Contrast', 'Brightness', 'Sharpness', 'AutoAugment'
+    'Contrast', 'Brightness', 'Sharpness', 'AutoAugment', 'Lighting',
+    'ColorJitter'
 ]

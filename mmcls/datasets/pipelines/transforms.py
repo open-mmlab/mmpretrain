@@ -6,13 +6,12 @@ import mmcv
 import numpy as np
 
 from ..builder import PIPELINES
+from .compose import Compose
 
 try:
     import albumentations
-    from albumentations import Compose
 except ImportError:
     albumentations = None
-    Compose = None
 
 
 @PIPELINES.register_module()
@@ -502,6 +501,107 @@ class Normalize(object):
 
 
 @PIPELINES.register_module()
+class ColorJitter(object):
+    """Randomly change the brightness, contrast and saturation of an image.
+
+    Args:
+        brightness (float): How much to jitter brightness.
+            brightness_factor is chosen uniformly from
+            [max(0, 1 - brightness), 1 + brightness].
+        contrast (float): How much to jitter contrast.
+            contrast_factor is chosen uniformly from
+            [max(0, 1 - contrast), 1 + contrast].
+        saturation (float): How much to jitter saturation.
+            saturation_factor is chosen uniformly from
+            [max(0, 1 - saturation), 1 + saturation].
+    """
+
+    def __init__(self, brightness, contrast, saturation):
+        self.brightness = brightness
+        self.contrast = contrast
+        self.saturation = saturation
+
+    def __call__(self, results):
+        brightness_factor = random.uniform(0, self.brightness)
+        contrast_factor = random.uniform(0, self.contrast)
+        saturation_factor = random.uniform(0, self.saturation)
+        color_jitter_transforms = [
+            dict(
+                type='Brightness',
+                magnitude=brightness_factor,
+                prob=1.,
+                random_negative_prob=0.5),
+            dict(
+                type='Contrast',
+                magnitude=contrast_factor,
+                prob=1.,
+                random_negative_prob=0.5),
+            dict(
+                type='ColorTransform',
+                magnitude=saturation_factor,
+                prob=1.,
+                random_negative_prob=0.5)
+        ]
+        random.shuffle(color_jitter_transforms)
+        transform = Compose(color_jitter_transforms)
+        return transform(results)
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += f'(brightness={self.brightness}, '
+        repr_str += f'contrast={self.contrast}, '
+        repr_str += f'saturation={self.saturation})'
+        return repr_str
+
+
+@PIPELINES.register_module()
+class Lighting(object):
+    """Adjust images lighting using AlexNet-style PCA jitter.
+
+    Args:
+        eigval (list): the eigenvalue of the convariance matrix of pixel
+            values, respectively.
+        eigvec (list[list]): the eigenvector of the convariance matrix of pixel
+            values, respectively.
+        alphastd (float): The standard deviation for distribution of alpha.
+            Dafaults to 0.1
+        to_rgb (bool): Whether to convert img to rgb.
+    """
+
+    def __init__(self, eigval, eigvec, alphastd=0.1, to_rgb=True):
+        assert isinstance(eigval, list), \
+            f'eigval must be of type list, got {type(eigval)} instead.'
+        assert isinstance(eigvec, list), \
+            f'eigvec must be of type list, got {type(eigvec)} instead.'
+        for vec in eigvec:
+            assert isinstance(vec, list) and len(vec) == len(eigvec[0]), \
+                'eigvec must contains lists with equal length.'
+        self.eigval = np.array(eigval)
+        self.eigvec = np.array(eigvec)
+        self.alphastd = alphastd
+        self.to_rgb = to_rgb
+
+    def __call__(self, results):
+        for key in results.get('img_fields', ['img']):
+            img = results[key]
+            results[key] = mmcv.adjust_lighting(
+                img,
+                self.eigval,
+                self.eigvec,
+                alphastd=self.alphastd,
+                to_rgb=self.to_rgb)
+        return results
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += f'(eigval={self.eigval.tolist()}, '
+        repr_str += f'eigvec={self.eigvec.tolist()}, '
+        repr_str += f'alphastd={self.alphastd}, '
+        repr_str += f'to_rgb={self.to_rgb})'
+        return repr_str
+
+
+@PIPELINES.register_module()
 class Albu(object):
     """Albumentation augmentation.
 
@@ -540,8 +640,10 @@ class Albu(object):
     """
 
     def __init__(self, transforms, keymap=None, update_pad_shape=False):
-        if Compose is None:
+        if albumentations is None:
             raise RuntimeError('albumentations is not installed')
+        else:
+            from albumentations import Compose
 
         self.transforms = transforms
         self.filter_lost_elements = False
