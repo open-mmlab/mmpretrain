@@ -640,7 +640,10 @@ class Albu(object):
     """
 
     def __init__(self, transforms, keymap=None, update_pad_shape=False):
-        from albumentations import Compose
+        if albumentations is None:
+            raise RuntimeError('albumentations is not installed')
+        else:
+            from albumentations import Compose
 
         self.transforms = transforms
         self.filter_lost_elements = False
