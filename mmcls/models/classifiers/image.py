@@ -1,7 +1,7 @@
 import torch.nn as nn
 
 from ..builder import CLASSIFIERS, build_backbone, build_head, build_neck
-from ..utils import BatchMixupLayer
+from ..utils import BatchMixupLayer, BatchCutMixLayer
 from .base import BaseClassifier
 
 
@@ -27,7 +27,13 @@ class ImageClassifier(BaseClassifier):
         self.mixup = None
         if train_cfg is not None:
             mixup_cfg = train_cfg.get('mixup', None)
-            self.mixup = BatchMixupLayer(**mixup_cfg)
+            cutmix_cfg = train_cfg.get('cutmix', None)
+            assert mixup_cfg is None or cutmix_cfg is None, \
+                "Mixup and CutMix can not be used together"
+            if mixup_cfg is not None:
+                self.mixup = BatchMixupLayer(**mixup_cfg)
+            if cutmix_cfg is not None:
+                self.cutmix = BatchCutMixLayer(**cutmix_cfg)
 
         self.init_weights(pretrained=pretrained)
 
@@ -68,6 +74,9 @@ class ImageClassifier(BaseClassifier):
         """
         if self.mixup is not None:
             img, gt_label = self.mixup(img, gt_label)
+
+        if self.cutmix is not None:
+            img, gt_label = self.cutmix(img, gt_label)
 
         x = self.extract_feat(img)
 
