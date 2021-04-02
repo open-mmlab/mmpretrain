@@ -115,7 +115,7 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
     def evaluate(self,
                  results,
                  metric='accuracy',
-                 metric_options={'topk': (1, 5)},
+                 metric_options=None,
                  logger=None):
         """Evaluate the dataset.
 
@@ -123,13 +123,16 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
             results (list): Testing results of the dataset.
             metric (str | list[str]): Metrics to be evaluated.
                 Default value is `accuracy`.
-            metric_options (dict): Options for calculating metrics. Allowed
-                keys are 'topk', 'thrs' and 'average_mode'.
-            logger (logging.Logger | None | str): Logger used for printing
-                related information during evaluation. Default: None.
+            metric_options (dict, optional): Options for calculating metrics.
+                Allowed keys are 'topk', 'thrs' and 'average_mode'.
+                Defaults to None.
+            logger (logging.Logger | str, optional): Logger used for printing
+                related information during evaluation. Defaults to None.
         Returns:
             dict: evaluation results
         """
+        if metric_options is None:
+            metric_options = {'topk': (1, 5)}
         if isinstance(metric, str):
             metrics = [metric]
         else:

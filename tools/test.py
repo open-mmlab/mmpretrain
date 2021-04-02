@@ -10,9 +10,16 @@ from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import get_dist_info, init_dist, load_checkpoint
 
 from mmcls.apis import multi_gpu_test, single_gpu_test
-from mmcls.core import wrap_fp16_model
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.models import build_classifier
+
+# TODO import `wrap_fp16_model` from mmcv and delete them from mmcls
+try:
+    from mmcv.runner import wrap_fp16_model
+except ImportError:
+    warnings.warn('wrap_fp16_model from mmcls will be deprecated.'
+                  'Please install mmcv>=1.1.4.')
+    from mmcls.core import wrap_fp16_model
 
 
 def parse_args():
@@ -28,6 +35,9 @@ def parse_args():
         '"accuracy", "precision", "recall", "f1_score", "support" for single '
         'label dataset, and "mAP", "CP", "CR", "CF1", "OP", "OR", "OF1" for '
         'multi-label dataset')
+    parser.add_argument('--show', action='store_true', help='show results')
+    parser.add_argument(
+        '--show-dir', help='directory where painted images will be saved')
     parser.add_argument(
         '--gpu_collect',
         action='store_true',
@@ -39,6 +49,20 @@ def parse_args():
         action=DictAction,
         help='override some settings in the used config, the key-value pair '
         'in xxx=yyy format will be merged into config file.')
+    parser.add_argument(
+        '--metric-options',
+        nargs='+',
+        action=DictAction,
+        default={},
+        help='custom options for evaluation, the key-value pair in xxx=yyy '
+        'format will be parsed as a dict metric_options for dataset.evaluate()'
+        ' function.')
+    parser.add_argument(
+        '--show-options',
+        nargs='+',
+        action=DictAction,
+        help='custom options for show_result. key-value pair in xxx=yyy.'
+        'Check available options in `model.show_result`.')
     parser.add_argument(
         '--launcher',
         choices=['none', 'pytorch', 'slurm', 'mpi'],
@@ -87,9 +111,21 @@ def main():
         wrap_fp16_model(model)
     checkpoint = load_checkpoint(model, args.checkpoint, map_location='cpu')
 
+    if 'CLASSES' in checkpoint['meta']:
+        CLASSES = checkpoint['meta']['CLASSES']
+    else:
+        from mmcls.datasets import ImageNet
+        warnings.simplefilter('once')
+        warnings.warn('Class names are not saved in the checkpoint\'s '
+                      'meta data, use imagenet by default.')
+        CLASSES = ImageNet.CLASSES
+
     if not distributed:
         model = MMDataParallel(model, device_ids=[0])
-        outputs = single_gpu_test(model, data_loader)
+        model.CLASSES = CLASSES
+        show_kwargs = {} if args.show_options is None else args.show_options
+        outputs = single_gpu_test(model, data_loader, args.show, args.show_dir,
+                                  **show_kwargs)
     else:
         model = MMDistributedDataParallel(
             model.cuda(),
@@ -101,7 +137,8 @@ def main():
     rank, _ = get_dist_info()
     if rank == 0:
         if args.metrics:
-            results = dataset.evaluate(outputs, args.metrics)
+            results = dataset.evaluate(outputs, args.metrics,
+                                       args.metric_options)
             for k, v in results.items():
                 print(f'\n{k} : {v:.2f}')
         else:
@@ -109,14 +146,6 @@ def main():
             scores = np.vstack(outputs)
             pred_score = np.max(scores, axis=1)
             pred_label = np.argmax(scores, axis=1)
-            if 'CLASSES' in checkpoint['meta']:
-                CLASSES = checkpoint['meta']['CLASSES']
-            else:
-                from mmcls.datasets import ImageNet
-                warnings.simplefilter('once')
-                warnings.warn('Class names are not saved in the checkpoint\'s '
-                              'meta data, use imagenet by default.')
-                CLASSES = ImageNet.CLASSES
             pred_class = [CLASSES[lb] for lb in pred_label]
             results = {
                 'pred_score': pred_score,

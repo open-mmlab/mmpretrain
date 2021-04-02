@@ -1,4 +1,5 @@
 import os.path as osp
+import warnings
 
 from mmcv.runner import Hook
 from torch.utils.data import DataLoader
@@ -13,6 +14,9 @@ class EvalHook(Hook):
     """
 
     def __init__(self, dataloader, interval=1, by_epoch=True, **eval_kwargs):
+        warnings.warn(
+            'DeprecationWarning: EvalHook and DistEvalHook in mmcls will be '
+            'deprecated, please install mmcv through master branch.')
         if not isinstance(dataloader, DataLoader):
             raise TypeError('dataloader must be a pytorch DataLoader, but got'
                             f' {type(dataloader)}')
@@ -62,6 +66,9 @@ class DistEvalHook(EvalHook):
                  gpu_collect=False,
                  by_epoch=True,
                  **eval_kwargs):
+        warnings.warn(
+            'DeprecationWarning: EvalHook and DistEvalHook in mmcls will be '
+            'deprecated, please install mmcv through master branch.')
         if not isinstance(dataloader, DataLoader):
             raise TypeError('dataloader must be a pytorch DataLoader, but got '
                             f'{type(dataloader)}')

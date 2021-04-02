@@ -1,5 +1,51 @@
 ## Changelog
 
+### v0.10.0(1/4/2021)
+
+- Support AutoAugmentation
+- Add tutorials for installation and usage.
+
+#### New Features
+
+- Add `Rotate` pipeline for data augmentation. (#167)
+- Add `Invert` pipeline for data augmentation. (#168)
+- Add `Color` pipeline for data augmentation. (#171)
+- Add `Solarize` and `Posterize` pipeline for data augmentation. (#172)
+- Support fp16 training. (#178)
+- Add tutorials for installation and basic usage of MMClassification.(#176)
+- Support `AutoAugmentation`, `AutoContrast`, `Equalize`, `Contrast`, `Brightness` and `Sharpness` pipelines for data augmentation. (#179)
+
+#### Improvements
+
+- Support dynamic shape export to onnx. (#175)
+- Release training configs and update model zoo for fp16 (#184)
+- Use MMCV's EvalHook in MMClassification (#182)
+
+#### Bug Fixes
+
+- Fix wrong naming in vgg config (#181)
+
+### v0.9.0(1/3/2021)
+
+- Implement mixup trick.
+- Add a new tool to create TensorRT engine from ONNX, run inference and verify outputs in Python.
+
+#### New Features
+
+- Implement mixup and provide configs of training ResNet50 using mixup. (#160)
+- Add `Shear` pipeline for data augmentation. (#163)
+- Add `Translate` pipeline for data augmentation. (#165)
+- Add `tools/onnx2tensorrt.py` as a tool to create TensorRT engine from ONNX, run inference and verify outputs in Python. (#153)
+
+#### Improvements
+
+- Add `--eval-options` in `tools/test.py` to support eval options override, matching the behavior of other open-mmlab projects. (#158)
+- Support showing and saving painted results in `mmcls.apis.test` and `tools/test.py`, matching the behavior of other open-mmlab projects. (#162)
+
+#### Bug Fixes
+
+- Fix configs for VGG, replace checkpoints converted from other repos with the ones trained by ourselves and upload the missing logs in the model zoo. (#161)
+
 ### v0.8.0(31/1/2021)
 
 - Support multi-label task.
