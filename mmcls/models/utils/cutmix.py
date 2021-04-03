@@ -21,7 +21,7 @@ class BatchCutMixLayer(BaseCutMixLayer):
     Args:
         alpha (float): Parameters for Beta distribution.
         num_classes (int): The number of classes.
-        cutmix_prob (float): CutMix probability.
+        cutmix_prob (float): CutMix probability. It should be in range [0, 1]
     """
 
     def __init__(self, alpha, num_classes, cutmix_prob):
