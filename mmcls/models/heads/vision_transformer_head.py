@@ -32,10 +32,8 @@ class VisionTransformerClsHead(ClsHead):
                  hidden_dim=None,
                  act_cfg=dict(type='Tanh'),
                  loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
-                 topk=(1, ),
-                 cal_acc=False):
-        super(VisionTransformerClsHead, self).__init__(
-            loss=loss, topk=topk, cal_acc=cal_acc)
+                 topk=(1, )):
+        super(VisionTransformerClsHead, self).__init__(loss=loss, topk=topk)
         self.in_channels = in_channels
         self.num_classes = num_classes
         self.hidden_dim = hidden_dim
