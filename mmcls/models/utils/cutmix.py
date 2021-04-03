@@ -66,8 +66,8 @@ class BatchCutMixLayer(BaseCutMixLayer):
             img[:, :, bbx1:bbx2, bby1:bby2] = \
                 img[index, :, bbx1:bbx2, bby1:bby2]
             # adjust lambda to exactly match pixel ratio
-            lam = 1 - ((bbx2 - bbx1) * (bby2 - bby1)
-                       / (img.size(-1) * img.size(-2)))
+            lam = 1 - ((bbx2 - bbx1) * (bby2 - bby1) /
+                       (img.size(-1) * img.size(-2)))
             mixed_gt_label = lam * one_hot_gt_label + (
                     1 - lam) * one_hot_gt_label[index, :]
             return img, mixed_gt_label
