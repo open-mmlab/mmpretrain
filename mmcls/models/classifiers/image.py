@@ -29,7 +29,7 @@ class ImageClassifier(BaseClassifier):
             mixup_cfg = train_cfg.get('mixup', None)
             cutmix_cfg = train_cfg.get('cutmix', None)
             assert mixup_cfg is None or cutmix_cfg is None, \
-                "Mixup and CutMix can not be used together"
+                'Mixup and CutMix can not be used together'
             if mixup_cfg is not None:
                 self.mixup = BatchMixupLayer(**mixup_cfg)
             else:
