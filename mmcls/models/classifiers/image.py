@@ -59,6 +59,7 @@ class ImageClassifier(BaseClassifier):
 
     def forward_train(self, img, gt_label, **kwargs):
         """Forward computation during training.
+
         Args:
             img (Tensor): of shape (N, C, H, W) encoding input images.
                 Typically these should be mean centered and std scaled.
