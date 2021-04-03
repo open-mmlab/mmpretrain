@@ -1,8 +1,8 @@
 from .channel_shuffle import channel_shuffle
+from .cutmix import BatchCutMixLayer
 from .inverted_residual import InvertedResidual
 from .make_divisible import make_divisible
 from .mixup import BatchMixupLayer
-from .cutmix import BatchCutMixLayer
 from .se_layer import SELayer
 
 __all__ = [
