@@ -28,3 +28,36 @@ def test_image_classifier():
 
     losses = img_classifier.forward_train(imgs, label)
     assert losses['loss'].item() > 0
+
+
+def test_image_classifier_vit():
+
+    model_cfg = dict(
+        backbone=dict(
+            type='VisionTransformer',
+            num_layers=12,
+            embed_dim=768,
+            num_heads=12,
+            img_size=224,
+            patch_size=16,
+            in_channels=3,
+            feedforward_channels=3072,
+            drop_rate=0.1,
+            attn_drop_rate=0.),
+        neck=None,
+        head=dict(
+            type='VisionTransformerClsHead',
+            num_classes=1000,
+            in_channels=768,
+            hidden_dim=3072,
+            loss=dict(type='CrossEntropyLoss', loss_weight=1.0, use_soft=True),
+            topk=(1, 5),
+        ),
+        train_cfg=dict(mixup=dict(alpha=0.2, num_classes=1000)))
+    img_classifier = ImageClassifier(**model_cfg)
+    img_classifier.init_weights()
+    imgs = torch.randn(16, 3, 224, 224)
+    label = torch.randint(0, 1000, (16, ))
+
+    losses = img_classifier.forward_train(imgs, label)
+    assert losses['loss'].item() > 0
