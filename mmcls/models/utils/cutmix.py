@@ -18,6 +18,7 @@ class BaseCutMixLayer(object, metaclass=ABCMeta):
 
 class BatchCutMixLayer(BaseCutMixLayer):
     """CutMix layer for batch CutMix.
+
     Args:
         alpha (float): Parameters for Beta distribution. Positive(>0).
         num_classes (int): The number of classes.
