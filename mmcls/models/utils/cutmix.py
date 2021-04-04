@@ -19,7 +19,7 @@ class BaseCutMixLayer(object, metaclass=ABCMeta):
 class BatchCutMixLayer(BaseCutMixLayer):
     """CutMix layer for batch CutMix.
     Args:
-        alpha (float): Parameters for Beta distribution.
+        alpha (float): Parameters for Beta distribution. Positive(>0).
         num_classes (int): The number of classes.
         cutmix_prob (float): CutMix probability. It should be in range [0, 1]
     """
@@ -27,7 +27,7 @@ class BatchCutMixLayer(BaseCutMixLayer):
     def __init__(self, alpha, num_classes, cutmix_prob):
         super(BatchCutMixLayer, self).__init__()
 
-        assert isinstance(alpha, float)
+        assert isinstance(alpha, float) and alpha > 0
         assert isinstance(num_classes, int)
         assert isinstance(cutmix_prob, float) and 0.0 <= cutmix_prob <= 1.0
 
@@ -55,7 +55,7 @@ class BatchCutMixLayer(BaseCutMixLayer):
 
     def cutmix(self, img, gt_label):
         r = np.random.rand(1)
-        if self.alpha > 0 and r < self.cutmix_prob:
+        if r < self.cutmix_prob:
             lam = np.random.beta(self.alpha, self.alpha)
             batch_size = img.size(0)
             index = torch.randperm(batch_size)
@@ -71,7 +71,9 @@ class BatchCutMixLayer(BaseCutMixLayer):
                 1 - lam) * one_hot_gt_label[index, :]
             return img, mixed_gt_label
         else:
-            return img, gt_label
+            one_hot_gt_label = F.one_hot(
+                gt_label, num_classes=self.num_classes)
+            return img, one_hot_gt_label
 
     def __call__(self, img, gt_label):
         return self.cutmix(img, gt_label)
