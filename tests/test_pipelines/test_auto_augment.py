@@ -691,11 +691,6 @@ def test_solarize_add():
 
 
 def test_posterize():
-    # test assertion for invalid type of bits
-    with pytest.raises(AssertionError):
-        transform = dict(type='Posterize', bits=4.5)
-        build_from_cfg(transform, PIPELINES)
-
     # test assertion for invalid value of bits
     with pytest.raises(AssertionError):
         transform = dict(type='Posterize', bits=10)
