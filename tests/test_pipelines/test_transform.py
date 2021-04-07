@@ -782,6 +782,96 @@ def test_randomflip():
     assert np.equal(results['img'], flipped_img).all()
 
 
+def test_color_jitter():
+    # read test image
+    results = dict()
+    img = mmcv.imread(
+        osp.join(osp.dirname(__file__), '../data/color.jpg'), 'color')
+    original_img = copy.deepcopy(img)
+    results['img'] = img
+    results['img2'] = copy.deepcopy(img)
+    results['img_shape'] = img.shape
+    results['ori_shape'] = img.shape
+    results['img_fields'] = ['img', 'img2']
+
+    def reset_results(results, original_img):
+        results['img'] = copy.deepcopy(original_img)
+        results['img2'] = copy.deepcopy(original_img)
+        results['img_shape'] = original_img.shape
+        results['ori_shape'] = original_img.shape
+        return results
+
+    transform = dict(
+        type='ColorJitter', brightness=0., contrast=0., saturation=0.)
+    colorjitter_module = build_from_cfg(transform, PIPELINES)
+    results = colorjitter_module(results)
+    assert np.equal(results['img'], original_img).all()
+    assert np.equal(results['img'], results['img2']).all()
+
+    results = reset_results(results, original_img)
+    transform = dict(
+        type='ColorJitter', brightness=0.3, contrast=0.3, saturation=0.3)
+    colorjitter_module = build_from_cfg(transform, PIPELINES)
+    results = colorjitter_module(results)
+    assert not np.equal(results['img'], original_img).all()
+
+
+def test_lighting():
+    # test assertion if eigval or eigvec is wrong type or length
+    with pytest.raises(AssertionError):
+        transform = dict(type='Lighting', eigval=1, eigvec=[[1, 0, 0]])
+        build_from_cfg(transform, PIPELINES)
+    with pytest.raises(AssertionError):
+        transform = dict(type='Lighting', eigval=[1], eigvec=[1, 0, 0])
+        build_from_cfg(transform, PIPELINES)
+    with pytest.raises(AssertionError):
+        transform = dict(
+            type='Lighting', eigval=[1, 2], eigvec=[[1, 0, 0], [0, 1]])
+        build_from_cfg(transform, PIPELINES)
+
+    # read test image
+    results = dict()
+    img = mmcv.imread(
+        osp.join(osp.dirname(__file__), '../data/color.jpg'), 'color')
+    original_img = copy.deepcopy(img)
+    results['img'] = img
+    results['img2'] = copy.deepcopy(img)
+    results['img_shape'] = img.shape
+    results['ori_shape'] = img.shape
+    results['img_fields'] = ['img', 'img2']
+
+    def reset_results(results, original_img):
+        results['img'] = copy.deepcopy(original_img)
+        results['img2'] = copy.deepcopy(original_img)
+        results['img_shape'] = original_img.shape
+        results['ori_shape'] = original_img.shape
+        return results
+
+    eigval = [0.2175, 0.0188, 0.0045]
+    eigvec = [[-0.5675, 0.7192, 0.4009], [-0.5808, -0.0045, -0.8140],
+              [-0.5836, -0.6948, 0.4203]]
+    transform = dict(type='Lighting', eigval=eigval, eigvec=eigvec)
+    lightening_module = build_from_cfg(transform, PIPELINES)
+    results = lightening_module(results)
+    assert not np.equal(results['img'], results['img2']).all()
+    assert results['img'].dtype == float
+    assert results['img2'].dtype == float
+
+    results = reset_results(results, original_img)
+    transform = dict(
+        type='Lighting',
+        eigval=eigval,
+        eigvec=eigvec,
+        alphastd=0.,
+        to_rgb=False)
+    lightening_module = build_from_cfg(transform, PIPELINES)
+    results = lightening_module(results)
+    assert np.equal(results['img'], original_img).all()
+    assert np.equal(results['img'], results['img2']).all()
+    assert results['img'].dtype == float
+    assert results['img2'].dtype == float
+
+
 def test_albu_transform():
     results = dict(
         img_prefix=osp.join(osp.dirname(__file__), '../data'),
