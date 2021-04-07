@@ -15,14 +15,11 @@ class LabelSmoothCrossEntropyLoss(CrossEntropyLoss):
         positive targets for a given sample before applying label smoothing.
 
         Args:
-            reduction: specifies reduction to apply to the output
             smoothing_param: value to be added to each target entry
+            reduction: specifies reduction to apply to the output
         """
 
-    def __init__(self,
-                 reduction='mean',
-                 smoothing_param=None,
-                 loss_weight=1.0):
+    def __init__(self, smoothing_param, reduction='mean', loss_weight=1.0):
         super(LabelSmoothCrossEntropyLoss, self).__init__(
             use_sigmoid=False,
             use_soft=True,
