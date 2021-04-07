@@ -114,7 +114,7 @@ train_pipeline = [
     dict(type='RandomResizedCrop', size=224),
     dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
     dict(type='ColorJitter', brightness=0.4, contrast=0.4, saturation=0.4),
-    dict(tyoe='Lighting', **img_lighting_cfg),
+    dict(type='Lighting', **img_lighting_cfg),
     dict(
         type='Normalize',
         mean=[123.675, 116.28, 103.53],
