@@ -767,8 +767,9 @@ class Cutout(object):
     """Cutout images.
 
     Args:
-        shape (int | tuple(int)): Expected cutout shape (h, w). If given as a
-            int, the value will be used for both h and w.
+        shape (int | float | tuple(int | float)): Expected cutout shape (h, w).
+            If given as a single value, the value will be used for
+            both h and w.
         pad_val (int, tuple[int]): Pixel pad_val value for constant fill. If
             it is a tuple, it must have the same length with the image
             channels. Defaults to 128.
@@ -777,8 +778,8 @@ class Cutout(object):
     """
 
     def __init__(self, shape, pad_val=128, prob=0.5):
-        assert isinstance(shape, (int, tuple)), 'shape must be of type int ' \
-            f'or tuple, got {type(shape)} instead'
+        assert isinstance(shape, (int, float, tuple)), 'shape must be of ' \
+            f'type int, float or tuple, got {type(shape)} instead'
         assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
             f'got {prob} instead.'
 

@@ -995,7 +995,7 @@ def test_cutout():
 
     # test assertion for invalid type of shape
     with pytest.raises(AssertionError):
-        transform = dict(type='Cutout', shape=2.5)
+        transform = dict(type='Cutout', shape=None)
         build_from_cfg(transform, PIPELINES)
 
     # test assertion for invalid value of prob
