@@ -12,5 +12,9 @@ model = dict(
         type='MultiLabelLinearClsHead',
         num_classes=1000,
         in_channels=2048,
-        loss=dict(type='CrossEntropyLoss', loss_weight=1.0, use_soft=True)))
+        loss=dict(
+            type='LabelSmoothCrossEntropyLoss',
+            loss_weight=1.0,
+            smoothing_param=0.1,
+            reduction='mean')))
 train_cfg = dict(mixup=dict(alpha=0.2, num_classes=1000))
