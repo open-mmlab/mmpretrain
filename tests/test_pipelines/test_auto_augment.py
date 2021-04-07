@@ -994,7 +994,7 @@ def test_sharpness(nb_rand_test=100):
 def test_cutout():
 
     # test assertion for invalid type of shape
-    with pytest.raises(AssertionError):
+    with pytest.raises(TypeError):
         transform = dict(type='Cutout', shape=None)
         build_from_cfg(transform, PIPELINES)
 

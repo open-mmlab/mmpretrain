@@ -778,8 +778,14 @@ class Cutout(object):
     """
 
     def __init__(self, shape, pad_val=128, prob=0.5):
-        assert isinstance(shape, (int, float, tuple)), 'shape must be of ' \
-            f'type int, float or tuple, got {type(shape)} instead'
+        if isinstance(shape, float):
+            shape = int(shape)
+        elif isinstance(shape, tuple):
+            shape = tuple(int(i) for i in shape)
+        elif not isinstance(shape, int):
+            raise TypeError(
+                'shape must be of '
+                f'type int, float or tuple, got {type(shape)} instead')
         assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
             f'got {prob} instead.'
 
