@@ -553,20 +553,18 @@ class Posterize(object):
     """Posterize images (reduce the number of bits for each color channel).
 
     Args:
-        bits (int): Number of bits for each pixel in the output img, which
-            should be less or equal to 8.
+        bits (int | float): Number of bits for each pixel in the output img,
+            which should be less or equal to 8.
         prob (float): The probability for posterizing therefore should be in
             range [0, 1]. Defaults to 0.5.
     """
 
     def __init__(self, bits, prob=0.5):
-        assert isinstance(bits, int), 'The bits type must be int, '\
-            f'but got {type(bits)} instead.'
         assert bits <= 8, f'The bits must be less than 8, got {bits} instead.'
         assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
             f'got {prob} instead.'
 
-        self.bits = bits
+        self.bits = int(bits)
         self.prob = prob
 
     def __call__(self, results):
