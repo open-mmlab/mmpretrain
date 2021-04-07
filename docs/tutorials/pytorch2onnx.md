@@ -67,14 +67,14 @@ python tools/pytorch2onnx.py \
 
 The table below lists the models that are guaranteed to be exportable to ONNX and runnable in ONNX Runtime.
 
-|    Model     |                            Config                            | Dynamic Shape | Note |
-| :----------: | :----------------------------------------------------------: | :-----------: | ---- |
-| MobileNetV2  |    `configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py`     |       Y       |      |
-|    ResNet    |          `configs/resnet/resnet18_b16x8_cifar10.py`          |       Y       |      |
-|   ResNeXt    |     `configs/resnext/resnext50_32x4d_b32x8_imagenet.py`      |       Y       |      |
-|  SE-ResNet   |       `configs/seresnet/seresnet50_b32x8_imagenet.py`        |       Y       |      |
-| ShuffleNetV1 | `configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py` |       Y       |      |
-| ShuffleNetV2 | `configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py` |       Y       |      |
+|    Model     |                            Config                            | Batch Infer | Dynamic Shape | Note |
+| :----------: | :----------------------------------------------------------: | :---------: | :-----------: | ---- |
+| MobileNetV2  |    `configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py`     |      N      |       Y       |      |
+|    ResNet    |          `configs/resnet/resnet18_b16x8_cifar10.py`          |      N      |       Y       |      |
+|   ResNeXt    |     `configs/resnext/resnext50_32x4d_b32x8_imagenet.py`      |      N      |       Y       |      |
+|  SE-ResNet   |       `configs/seresnet/seresnet50_b32x8_imagenet.py`        |      N      |       Y       |      |
+| ShuffleNetV1 | `configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py` |      N      |       Y       |      |
+| ShuffleNetV2 | `configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py` |      N      |       Y       |      |
 
 Notes:
 
