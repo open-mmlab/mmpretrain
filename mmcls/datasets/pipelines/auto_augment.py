@@ -93,6 +93,10 @@ class RandAugment(object):
             assert isinstance(policy, dict) and 'type' in policy, \
                 'Each policy must be a dict with key "type".'
 
+        assert num_policies > 0, 'num_policies must be greater than 0.'
+        assert magnitude_level >= 0, 'magnitude_level must be no less than 0.'
+        assert total_level > 0, 'total_level must be greater than 0.'
+
         self.num_policies = num_policies
         self.magnitude_level = magnitude_level
         self.total_level = total_level

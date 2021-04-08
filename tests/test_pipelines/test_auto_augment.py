@@ -63,6 +63,13 @@ def test_rand_augment():
             num_policies=1.5,
             magnitude_level=12)
         build_from_cfg(transform, PIPELINES)
+    with pytest.raises(AssertionError):
+        transform = dict(
+            type='RandAugment',
+            policies=policies,
+            num_policies=-1,
+            magnitude_level=12)
+        build_from_cfg(transform, PIPELINES)
     # test assertion for magnitude_level
     with pytest.raises(AssertionError):
         transform = dict(
@@ -70,6 +77,13 @@ def test_rand_augment():
             policies=policies,
             num_policies=1,
             magnitude_level=None)
+        build_from_cfg(transform, PIPELINES)
+    with pytest.raises(AssertionError):
+        transform = dict(
+            type='RandAugment',
+            policies=policies,
+            num_policies=1,
+            magnitude_level=-1)
         build_from_cfg(transform, PIPELINES)
     # test assertion for total_level
     with pytest.raises(AssertionError):
@@ -79,6 +93,14 @@ def test_rand_augment():
             num_policies=1,
             magnitude_level=12,
             total_level=None)
+        build_from_cfg(transform, PIPELINES)
+    with pytest.raises(AssertionError):
+        transform = dict(
+            type='RandAugment',
+            policies=policies,
+            num_policies=1,
+            magnitude_level=12,
+            total_level=-30)
         build_from_cfg(transform, PIPELINES)
     # test assertion for policies
     with pytest.raises(AssertionError):
@@ -115,17 +137,6 @@ def test_rand_augment():
             num_policies=2,
             magnitude_level=12)
         build_from_cfg(transform, PIPELINES)
-
-    # test case where num_policies = 0 therefore no augment
-    results = construct_toy_data()
-    transform = dict(
-        type='RandAugment',
-        policies=policies,
-        num_policies=0,
-        magnitude_level=12)
-    pipeline = build_from_cfg(transform, PIPELINES)
-    results = pipeline(results)
-    assert (results['img'] == results['ori_img']).all()
 
     # test case where num_policies = 1
     random.seed(1)
