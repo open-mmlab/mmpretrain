@@ -535,8 +535,9 @@ class SolarizeAdd(object):
             return results
         for key in results.get('img_fields', ['img']):
             img = results[key]
-            img_solarized = img = np.where(
-                img < self.thr, np.minimum(img + self.magnitude, 255), img)
+            img_solarized = np.where(img < self.thr,
+                                     np.minimum(img + self.magnitude, 255),
+                                     img)
             results[key] = img_solarized.astype(img.dtype)
         return results
 
