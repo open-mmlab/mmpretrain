@@ -9,13 +9,13 @@ from .utils import convert_to_one_hot
 class LabelSmoothLoss(CrossEntropyLoss):
     """Intializer for the label smoothed cross entropy loss.
         This decreases gap between output scores and encourages generalization.
-        Targets provided to forward can be one-hot like vectors (NxC) or class
+        Labels provided to forward can be one-hot like vectors (NxC) or class
         indices (Nx1).
-        This normalizes the targets to a sum of 1 based on the total count of
+        This normalizes the labels to a sum of 1 based on the total count of
         positive targets for a given sample before applying label smoothing.
 
         Args:
-            smoothing_param: value to be added to each target entry
+            label_smooth_val: value to be added to each target entry
             reduction: specifies reduction to apply to the output
         """
 
