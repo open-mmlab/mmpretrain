@@ -113,9 +113,9 @@ def test_label_smooth_loss():
     label = torch.tensor([0])
 
     loss_cfg = dict(
-        type='LabelSmoothCrossEntropyLoss',
+        type='LabelSmoothLoss',
         reduction='mean',
-        smoothing_param=0.1,
+        label_smooth_val=0.1,
         loss_weight=1.0)
     loss = build_loss(loss_cfg)
     assert loss(cls_score, label) - 0.2179 <= 0.0001
@@ -126,9 +126,9 @@ def test_label_smooth_loss():
     weight = torch.tensor([0.5, 0.5])
 
     loss_cfg = dict(
-        type='LabelSmoothCrossEntropyLoss',
+        type='LabelSmoothLoss',
         reduction='mean',
-        smoothing_param=0.1,
+        label_smooth_val=0.1,
         loss_weight=1.0)
     loss = build_loss(loss_cfg)
     assert torch.allclose(

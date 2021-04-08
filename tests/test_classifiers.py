@@ -45,8 +45,7 @@ def test_image_classifier_with_label_smooth_loss():
             type='MultiLabelLinearClsHead',
             num_classes=10,
             in_channels=2048,
-            loss=dict(type='LabelSmoothCrossEntropyLoss',
-                      smoothing_param=0.1)),
+            loss=dict(type='LabelSmoothLoss', label_smooth_val=0.1)),
         train_cfg=dict(mixup=dict(alpha=1.0, num_classes=10)))
     img_classifier = ImageClassifier(**model_cfg)
     img_classifier.init_weights()
