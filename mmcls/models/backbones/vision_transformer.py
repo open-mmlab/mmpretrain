@@ -2,7 +2,8 @@ from itertools import repeat
 
 import torch
 import torch.nn as nn
-from mmcv.cnn import build_conv_layer, build_norm_layer, kaiming_init
+from mmcv.cnn import (build_activation_layer, build_conv_layer,
+                      build_norm_layer, kaiming_init)
 
 from ..builder import BACKBONES
 from .base_backbone import BaseBackbone
@@ -38,9 +39,7 @@ class FFN(nn.Module):
         self.feedforward_channels = feedforward_channels
         self.num_fcs = num_fcs
         self.act_cfg = act_cfg
-        # TODO: wait for the new version of mmcv
-        self.activate = nn.GELU()
-        # self.activate = build_activation_layer(act_cfg)
+        self.activate = build_activation_layer(act_cfg)
 
         layers = nn.ModuleList()
         in_channels = embed_dims
@@ -227,7 +226,7 @@ class TransformerEncoderLayer(nn.Module):
         # Reason for permute: as the shape of input from pretrained weight
         # from pytorch-image-models is [batch_size, num_query, embed_dim],
         # but the one from nn.MultiheadAttention is
-        # [num_querym batch_size, embed_dim]
+        # [num_query, batch_size, embed_dim]
         x = x.permute(1, 0, 2)
         norm_x = norm_x.permute(1, 0, 2)
         x = self.attn(norm_x, residual=x)
