@@ -16,8 +16,8 @@ class LabelSmoothLoss(CrossEntropyLoss):
     positive targets for a given sample before applying label smoothing.
 
     Args:
-        label_smooth_val (float): value to be added to each target entry
-        num_classes (int): the number of classes. Defaults to None.
+        label_smooth_val (float): Value to be added to each target entry
+        num_classes (int, optional): Number of classes. Defaults to None.
         reduction (str): The method used to reduce the loss.
             Options are "none", "mean" and "sum". Defaults to 'mean'.
         loss_weight (float):  Weight of the loss. Defaults to 1.0.
