@@ -8,16 +8,20 @@ from .utils import convert_to_one_hot
 @LOSSES.register_module()
 class LabelSmoothLoss(CrossEntropyLoss):
     """Intializer for the label smoothed cross entropy loss.
-        This decreases gap between output scores and encourages generalization.
-        Labels provided to forward can be one-hot like vectors (NxC) or class
-        indices (Nx1).
-        This normalizes the labels to a sum of 1 based on the total count of
-        positive targets for a given sample before applying label smoothing.
 
-        Args:
-            label_smooth_val: value to be added to each target entry
-            reduction: specifies reduction to apply to the output
-        """
+    This decreases gap between output scores and encourages generalization.
+    Labels provided to forward can be one-hot like vectors (NxC) or class
+    indices (Nx1).
+    This normalizes the labels to a sum of 1 based on the total count of
+    positive targets for a given sample before applying label smoothing.
+
+    Args:
+        label_smooth_val (float): value to be added to each target entry
+        num_classes (int): the number of classes. Defaults to None.
+        reduction (str): The method used to reduce the loss.
+            Options are "none", "mean" and "sum". Defaults to 'mean'.
+        loss_weight (float):  Weight of the loss. Defaults to 1.0.
+    """
 
     def __init__(self,
                  label_smooth_val,
@@ -78,8 +82,9 @@ class LabelSmoothLoss(CrossEntropyLoss):
         one_hot_like_label = self.generate_one_hot_like_label(label=label)
         assert (
             one_hot_like_label.shape == cls_score.shape
-        ), 'LabelSmoothingCrossEntropyLoss requires output and ' \
-           'target to be same size'
+        ), f'LabelSmoothingCrossEntropyLoss requires output and target ' \
+           f'to be same shape, but got output.shape: {cls_score.shape}' \
+           f'and target.shape: {one_hot_like_label.shape}'
         smoothed_label = self.smooth_label(
             one_hot_like_label=one_hot_like_label)
         return super(LabelSmoothLoss, self).forward(
