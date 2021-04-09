@@ -3,8 +3,9 @@ import torch
 from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from mmcls.models.utils import (BatchMixupLayer, InvertedResidual, SELayer,
-                                channel_shuffle, make_divisible)
+from mmcls.models.utils import (BatchMixupLayer, EdgeResidual,
+                                InvertedResidual, SELayer, channel_shuffle,
+                                make_divisible)
 
 
 def is_norm(modules):
@@ -186,6 +187,7 @@ def test_edge_residual():
     x_out = block(x)
     assert block.with_cp
     assert x_out.shape == torch.Size((1, 16, 56, 56))
+
 
 def test_mixup():
 
