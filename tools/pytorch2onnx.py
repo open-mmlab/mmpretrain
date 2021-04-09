@@ -40,6 +40,7 @@ def pytorch2onnx(model,
                  dynamic_shape=False,
                  show=False,
                  output_file='tmp.onnx',
+                 do_simplify=False,
                  verify=False):
     """Export Pytorch model to ONNX model and verify the outputs are same
     between Pytorch and ONNX.
@@ -97,6 +98,30 @@ def pytorch2onnx(model,
         print(f'Successfully exported ONNX model: {output_file}')
     model.forward = origin_forward
 
+    if do_simplify:
+        from mmcv import digit_version
+        import onnxsim
+
+        min_required_version = '0.3.0'
+        assert digit_version(mmcv.__version__) >= digit_version(
+            min_required_version
+        ), f'Requires to install onnx-simplify>={min_required_version}'
+
+        if dynamic_axes:
+            input_shape = (input_shape[0], input_shape[1], input_shape[2] * 2,
+                           input_shape[3] * 2)
+        else:
+            input_shape = (input_shape[0], input_shape[1], input_shape[2],
+                           input_shape[3])
+        imgs = _demo_mm_inputs(input_shape, model.head.num_classes).pop('imgs')
+        input_dic = {'input': imgs.detach().cpu().numpy()}
+        input_shape_dic = {'input': list(input_shape)}
+
+        onnxsim.simplify(
+            output_file,
+            input_shapes=input_shape_dic,
+            input_data=input_dic,
+            dynamic_input_shape=dynamic_shape)
     if verify:
         # check by onnx
         import onnx
@@ -140,6 +165,10 @@ def parse_args():
         '--verify', action='store_true', help='verify the onnx model')
     parser.add_argument('--output-file', type=str, default='tmp.onnx')
     parser.add_argument('--opset-version', type=int, default=11)
+    parser.add_argument(
+        '--simplify',
+        action='store_true',
+        help='Whether to simplify onnx model.')
     parser.add_argument(
         '--shape',
         type=int,
@@ -185,4 +214,5 @@ if __name__ == '__main__':
         show=args.show,
         dynamic_shape=args.dynamic_shape,
         output_file=args.output_file,
+        do_simplify=args.simplify,
         verify=args.verify)

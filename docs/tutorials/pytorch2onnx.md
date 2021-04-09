@@ -34,6 +34,7 @@ python tools/pytorch2onnx.py \
     --opset-version ${OPSET_VERSION} \
     --dynamic-shape \
     --show \
+    --simplify \
     --verify \
 ```
 
@@ -46,6 +47,7 @@ Description of all arguments:
 - `--opset-version` : The opset version of ONNX. If not specified, it will be set to `11`.
 - `--dynamic-shape` : Determines whether to export ONNX with dynamic input shape.  If not specified, it will be set to `False`.
 - `--show`: Determines whether to print the architecture of the exported model. If not specified, it will be set to `False`.
+- `--simplify`: Determines whether to simplify the exported ONNX model. If not specified, it will be set to `False`.
 - `--verify`: Determines whether to verify the correctness of an exported model. If not specified, it will be set to `False`.
 
 Example:
@@ -57,6 +59,7 @@ python tools/pytorch2onnx.py \
     --output-file checkpoints/resnet/resnet18_b16x8_cifar10.onnx \
     --dynamic-shape \
     --show \
+    --simplify \
     --verify \
 ```
 
@@ -64,14 +67,14 @@ python tools/pytorch2onnx.py \
 
 The table below lists the models that are guaranteed to be exportable to ONNX and runnable in ONNX Runtime.
 
-|    Model     |                            Config                            | Note |
-| :----------: | :----------------------------------------------------------: | :--: |
-| MobileNetV2  |    `configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py`     |      |
-|    ResNet    |          `configs/resnet/resnet18_b16x8_cifar10.py`          |      |
-|   ResNeXt    |     `configs/resnext/resnext50_32x4d_b32x8_imagenet.py`      |      |
-|  SE-ResNet   |       `configs/seresnet/seresnet50_b32x8_imagenet.py`        |      |
-| ShuffleNetV1 | `configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py` |      |
-| ShuffleNetV2 | `configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py` |      |
+|    Model     |                            Config                            | Batch Inference | Dynamic Shape | Note |
+| :----------: | :----------------------------------------------------------: | :-------------: | :-----------: | ---- |
+| MobileNetV2  |    `configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py`     |        Y        |       Y       |      |
+|    ResNet    |          `configs/resnet/resnet18_b16x8_cifar10.py`          |        Y        |       Y       |      |
+|   ResNeXt    |     `configs/resnext/resnext50_32x4d_b32x8_imagenet.py`      |        Y        |       Y       |      |
+|  SE-ResNet   |       `configs/seresnet/seresnet50_b32x8_imagenet.py`        |        Y        |       Y       |      |
+| ShuffleNetV1 | `configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py` |        Y        |       Y       |      |
+| ShuffleNetV2 | `configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py` |        Y        |       Y       |      |
 
 Notes:
 
