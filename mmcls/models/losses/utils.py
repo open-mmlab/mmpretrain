@@ -100,9 +100,16 @@ def weighted_loss(loss_func):
 
 
 def convert_to_one_hot(targets: torch.Tensor, classes) -> torch.Tensor:
-    """
-    This function converts target class indices to one-hot vectors,
+    """This function converts target class indices to one-hot vectors,
     given the number of classes.
+
+    Args:
+        targets (Tensor): The ground truth label of the prediction
+                with shape (N, 1)
+        classes (int): the number of classes.
+
+    Returns:
+        Tensor: Processed loss values.
     """
     assert (torch.max(targets).item() <
             classes), 'Class Index must be less than number of classes'
