@@ -14,8 +14,8 @@ class ClsHead(BaseHead):
         loss (dict): Config of classification loss.
         topk (int | tuple): Top-k accuracy.
         cal_acc (bool): Whether to calculate accuracy during training.
-                If you use Mixup/CutMix or something like that during training,
-                it is not reasonable to calculate accuracy. Defaults to True.
+            If you use Mixup/CutMix or something like that during training,
+            it is not reasonable to calculate accuracy. Defaults to True.
     """  # noqa: W605
 
     def __init__(self,
