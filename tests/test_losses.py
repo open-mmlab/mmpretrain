@@ -82,10 +82,10 @@ def test_cross_entropy_loss():
         reduction='mean',
         loss_weight=1.0)
     loss = build_loss(loss_cfg)
-    assert torch.allclose(loss(cls_score, label), torch.tensor(50.))
+    assert torch.allclose(loss(cls_score, label), torch.tensor(100.))
     # test soft_ce_loss with weight
     assert torch.allclose(
-        loss(cls_score, label, weight=weight), torch.tensor(25.))
+        loss(cls_score, label, weight=weight), torch.tensor(50.))
 
 
 def test_focal_loss():
@@ -105,3 +105,32 @@ def test_focal_loss():
     # test focal_loss with weight
     assert torch.allclose(
         loss(cls_score, label, weight=weight), torch.tensor(0.8522 / 2))
+
+
+def test_label_smooth_loss():
+    # test label smooth loss
+    cls_score = torch.tensor([[1., -1.]])
+    label = torch.tensor([0])
+
+    loss_cfg = dict(
+        type='LabelSmoothLoss',
+        reduction='mean',
+        label_smooth_val=0.1,
+        loss_weight=1.0)
+    loss = build_loss(loss_cfg)
+    assert loss(cls_score, label) - 0.2179 <= 0.0001
+
+    # test label smooth loss with weight
+    cls_score = torch.tensor([[1., -1.], [1., -1.]])
+    label = torch.tensor([0, 1])
+    weight = torch.tensor([0.5, 0.5])
+
+    loss_cfg = dict(
+        type='LabelSmoothLoss',
+        reduction='mean',
+        label_smooth_val=0.1,
+        loss_weight=1.0)
+    loss = build_loss(loss_cfg)
+    assert torch.allclose(
+        loss(cls_score, label, weight=weight),
+        loss(cls_score, label) / 2)
