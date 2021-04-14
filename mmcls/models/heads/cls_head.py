@@ -13,6 +13,9 @@ class ClsHead(BaseHead):
     Args:
         loss (dict): Config of classification loss.
         topk (int | tuple): Top-k accuracy.
+        cal_acc (bool): Whether to calculate accuracy during training.
+            If you use Mixup/CutMix or something like that during training,
+            it is not reasonable to calculate accuracy. Defaults to True.
     """  # noqa: W605
 
     def __init__(self,
@@ -47,7 +50,6 @@ class ClsHead(BaseHead):
                 for k, a in zip(self.topk, acc)
             }
         losses['loss'] = loss
-        # losses['accuracy'] = {f'top-{k}': a for k, a in zip(self.topk, acc)}
         return losses
 
     def forward_train(self, cls_score, gt_label):

@@ -1,4 +1,5 @@
 import copy
+import random
 
 import mmcv
 import numpy as np
@@ -36,6 +37,189 @@ def construct_toy_data_photometric():
     results['ori_shape'] = img.shape
     results['img_fields'] = ['img', 'img2']
     return results
+
+
+def test_rand_augment():
+    policies = [
+        dict(
+            type='Translate',
+            magnitude_key='magnitude',
+            magnitude_range=(0, 1),
+            pad_val=128,
+            prob=1.,
+            direction='horizontal'),
+        dict(type='Invert', prob=1.),
+        dict(
+            type='Rotate',
+            magnitude_key='angle',
+            magnitude_range=(0, 30),
+            prob=0.)
+    ]
+    # test assertion for num_policies
+    with pytest.raises(AssertionError):
+        transform = dict(
+            type='RandAugment',
+            policies=policies,
+            num_policies=1.5,
+            magnitude_level=12)
+        build_from_cfg(transform, PIPELINES)
+    with pytest.raises(AssertionError):
+        transform = dict(
+            type='RandAugment',
+            policies=policies,
+            num_policies=-1,
+            magnitude_level=12)
+        build_from_cfg(transform, PIPELINES)
+    # test assertion for magnitude_level
+    with pytest.raises(AssertionError):
+        transform = dict(
+            type='RandAugment',
+            policies=policies,
+            num_policies=1,
+            magnitude_level=None)
+        build_from_cfg(transform, PIPELINES)
+    with pytest.raises(AssertionError):
+        transform = dict(
+            type='RandAugment',
+            policies=policies,
+            num_policies=1,
+            magnitude_level=-1)
+        build_from_cfg(transform, PIPELINES)
+    # test assertion for total_level
+    with pytest.raises(AssertionError):
+        transform = dict(
+            type='RandAugment',
+            policies=policies,
+            num_policies=1,
+            magnitude_level=12,
+            total_level=None)
+        build_from_cfg(transform, PIPELINES)
+    with pytest.raises(AssertionError):
+        transform = dict(
+            type='RandAugment',
+            policies=policies,
+            num_policies=1,
+            magnitude_level=12,
+            total_level=-30)
+        build_from_cfg(transform, PIPELINES)
+    # test assertion for policies
+    with pytest.raises(AssertionError):
+        transform = dict(
+            type='RandAugment',
+            policies=[],
+            num_policies=2,
+            magnitude_level=12)
+        build_from_cfg(transform, PIPELINES)
+    with pytest.raises(AssertionError):
+        invalid_policies = copy.deepcopy(policies)
+        invalid_policies.append(('Wrong_policy'))
+        transform = dict(
+            type='RandAugment',
+            policies=invalid_policies,
+            num_policies=2,
+            magnitude_level=12)
+        build_from_cfg(transform, PIPELINES)
+    with pytest.raises(AssertionError):
+        invalid_policies = copy.deepcopy(policies)
+        invalid_policies[2].pop('type')
+        transform = dict(
+            type='RandAugment',
+            policies=invalid_policies,
+            num_policies=2,
+            magnitude_level=12)
+        build_from_cfg(transform, PIPELINES)
+    with pytest.raises(KeyError):
+        invalid_policies = copy.deepcopy(policies)
+        invalid_policies[2].pop('magnitude_range')
+        transform = dict(
+            type='RandAugment',
+            policies=invalid_policies,
+            num_policies=2,
+            magnitude_level=12)
+        build_from_cfg(transform, PIPELINES)
+
+    # test case where num_policies = 1
+    random.seed(1)
+    np.random.seed(0)
+    results = construct_toy_data()
+    transform = dict(
+        type='RandAugment',
+        policies=policies,
+        num_policies=1,
+        magnitude_level=12)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    # apply translate
+    img_augmented = np.array(
+        [[128, 128, 1, 2], [128, 128, 5, 6], [128, 128, 9, 10]],
+        dtype=np.uint8)
+    img_augmented = np.stack([img_augmented, img_augmented, img_augmented],
+                             axis=-1)
+    assert (results['img'] == img_augmented).all()
+
+    results = construct_toy_data()
+    transform = dict(
+        type='RandAugment',
+        policies=policies,
+        num_policies=1,
+        magnitude_level=12)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    # apply rotation with prob=0.
+    assert (results['img'] == results['ori_img']).all()
+
+    # test case where num_policies = 2
+    random.seed(0)
+    np.random.seed(0)
+    results = construct_toy_data()
+    transform = dict(
+        type='RandAugment',
+        policies=policies,
+        num_policies=2,
+        magnitude_level=12)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    # apply rotate and rotate with prob=0
+    assert (results['img'] == results['ori_img']).all()
+
+    results = construct_toy_data()
+    transform = dict(
+        type='RandAugment',
+        policies=policies,
+        num_policies=2,
+        magnitude_level=12)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    # apply invert and translate
+    img_augmented = np.array(
+        [[252, 251, 128, 128], [248, 247, 128, 128], [244, 243, 128, 128]],
+        dtype=np.uint8)
+    img_augmented = np.stack([img_augmented, img_augmented, img_augmented],
+                             axis=-1)
+    assert (results['img'] == img_augmented).all()
+
+    results = construct_toy_data()
+    transform = dict(
+        type='RandAugment',
+        policies=policies,
+        num_policies=2,
+        magnitude_level=0)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    # apply invert and invert
+    assert (results['img'] == results['ori_img']).all()
+
+    # test case where magnitude_level = 0
+    results = construct_toy_data()
+    transform = dict(
+        type='RandAugment',
+        policies=policies,
+        num_policies=2,
+        magnitude_level=0)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    # apply rotate and translate
+    assert (results['img'] == results['ori_img']).all()
 
 
 def test_shear():
@@ -467,12 +651,57 @@ def test_solarize():
     assert (results['img'] == results['img2']).all()
 
 
-def test_posterize():
-    # test assertion for invalid type of bits
+def test_solarize_add():
+    # test assertion for invalid type of magnitude
     with pytest.raises(AssertionError):
-        transform = dict(type='Posterize', bits=4.5)
+        transform = dict(type='SolarizeAdd', magnitude=(1, 2))
         build_from_cfg(transform, PIPELINES)
 
+    # test assertion for invalid type of thr
+    with pytest.raises(AssertionError):
+        transform = dict(type='SolarizeAdd', magnitude=100, thr=(1, 2))
+        build_from_cfg(transform, PIPELINES)
+
+    # test case when prob=0, therefore no solarize
+    results = construct_toy_data_photometric()
+    transform = dict(type='SolarizeAdd', magnitude=100, thr=128, prob=0.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    assert (results['img'] == results['ori_img']).all()
+
+    # test case when thr=0, therefore no solarize
+    results = construct_toy_data_photometric()
+    transform = dict(type='SolarizeAdd', magnitude=100, thr=0, prob=1.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    assert (results['img'] == results['ori_img']).all()
+
+    # test case when thr=128, magnitude=100
+    results = construct_toy_data_photometric()
+    transform = dict(type='SolarizeAdd', magnitude=100, thr=128, prob=1.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    img_solarized = np.array(
+        [[100, 128, 255], [101, 227, 254], [102, 129, 253]], dtype=np.uint8)
+    img_solarized = np.stack([img_solarized, img_solarized, img_solarized],
+                             axis=-1)
+    assert (results['img'] == img_solarized).all()
+    assert (results['img'] == results['img2']).all()
+
+    # test case when thr=100, magnitude=50
+    results = construct_toy_data_photometric()
+    transform = dict(type='SolarizeAdd', magnitude=50, thr=100, prob=1.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    img_solarized = np.array([[50, 128, 255], [51, 127, 254], [52, 129, 253]],
+                             dtype=np.uint8)
+    img_solarized = np.stack([img_solarized, img_solarized, img_solarized],
+                             axis=-1)
+    assert (results['img'] == img_solarized).all()
+    assert (results['img'] == results['img2']).all()
+
+
+def test_posterize():
     # test assertion for invalid value of bits
     with pytest.raises(AssertionError):
         transform = dict(type='Posterize', bits=10)
@@ -771,3 +1000,59 @@ def test_sharpness(nb_rand_test=100):
             _adjust_sharpness(img, 1 + magnitude)[1:-1, 1:-1],
             rtol=0,
             atol=1)
+
+
+def test_cutout():
+
+    # test assertion for invalid type of shape
+    with pytest.raises(TypeError):
+        transform = dict(type='Cutout', shape=None)
+        build_from_cfg(transform, PIPELINES)
+
+    # test assertion for invalid value of prob
+    with pytest.raises(AssertionError):
+        transform = dict(type='Cutout', shape=1, prob=100)
+        build_from_cfg(transform, PIPELINES)
+
+    # test case when prob=0, therefore no cutout
+    results = construct_toy_data()
+    transform = dict(type='Cutout', shape=2, prob=0.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    assert (results['img'] == results['ori_img']).all()
+
+    # test case when shape=0, therefore no cutout
+    results = construct_toy_data()
+    transform = dict(type='Cutout', shape=0, prob=1.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    assert (results['img'] == results['ori_img']).all()
+
+    # test case when shape=6, therefore the whole img has been cut
+    results = construct_toy_data()
+    transform = dict(type='Cutout', shape=6, prob=1.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    assert (results['img'] == np.ones_like(results['ori_img']) * 128).all()
+
+    # test case when shape is int
+    np.random.seed(0)
+    results = construct_toy_data()
+    transform = dict(type='Cutout', shape=1, prob=1.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    img_cutout = np.array([[1, 2, 3, 4], [5, 128, 7, 8], [9, 10, 11, 12]],
+                          dtype=np.uint8)
+    img_cutout = np.stack([img_cutout, img_cutout, img_cutout], axis=-1)
+    assert (results['img'] == img_cutout).all()
+
+    # test case when shape is tuple
+    np.random.seed(0)
+    results = construct_toy_data()
+    transform = dict(type='Cutout', shape=(1, 2), pad_val=0, prob=1.)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    img_cutout = np.array([[1, 2, 3, 4], [5, 0, 0, 8], [9, 10, 11, 12]],
+                          dtype=np.uint8)
+    img_cutout = np.stack([img_cutout, img_cutout, img_cutout], axis=-1)
+    assert (results['img'] == img_cutout).all()

@@ -1,4 +1,5 @@
 import copy
+import random
 
 import mmcv
 import numpy as np
@@ -41,12 +42,93 @@ class AutoAugment(object):
         self.sub_policy = [Compose(policy) for policy in self.policies]
 
     def __call__(self, results):
-        sub_policy = np.random.choice(self.sub_policy)
+        sub_policy = random.choice(self.sub_policy)
         return sub_policy(results)
 
     def __repr__(self):
         repr_str = self.__class__.__name__
         repr_str += f'(policies={self.policies})'
+        return repr_str
+
+
+@PIPELINES.register_module()
+class RandAugment(object):
+    """Random augmentation.
+    This data augmentation is proposed in `RandAugment: Practical automated
+    data augmentation with a reduced search space
+    <https://arxiv.org/abs/1909.13719>`_.
+
+    Args:
+        policies (list[dict]): The policies of random augmentation. Each
+            policy in ``policies`` is one specific augmentation policy (dict).
+            The policy shall at least have key `type`, indicating the type of
+            augmentation. For those which have magnitude, (given to the fact
+            they are named differently in different augmentation, )
+            `magnitude_key` and `magnitude_range` shall be the magnitude
+            argument (str) and the range of magnitude (tuple in the format or
+            (minval, maxval)), respectively.
+        num_policies (int): Number of policies to select from policies each
+            time.
+        magnitude_level (int | float): Magnitude level for all the augmentation
+            selected.
+        total_level (int | float): Total level for the magnitude. Defaults to
+            30.
+    """
+
+    def __init__(self,
+                 policies,
+                 num_policies,
+                 magnitude_level,
+                 total_level=30):
+        assert isinstance(num_policies, int), 'Number of policies must be ' \
+            f'of int type, got {type(num_policies)} instead.'
+        assert isinstance(magnitude_level, (int, float)), \
+            'Magnitude level must be of int or float type, ' \
+            f'got {type(magnitude_level)} instead.'
+        assert isinstance(total_level, (int, float)),  'Total level must be ' \
+            f'of int or float type, got {type(total_level)} instead.'
+        assert isinstance(policies, list) and len(policies) > 0, \
+            'Policies must be a non-empty list.'
+        for policy in policies:
+            assert isinstance(policy, dict) and 'type' in policy, \
+                'Each policy must be a dict with key "type".'
+
+        assert num_policies > 0, 'num_policies must be greater than 0.'
+        assert magnitude_level >= 0, 'magnitude_level must be no less than 0.'
+        assert total_level > 0, 'total_level must be greater than 0.'
+
+        self.num_policies = num_policies
+        self.magnitude_level = magnitude_level
+        self.total_level = total_level
+        self.policies = self._process_policies(policies)
+
+    def _process_policies(self, policies):
+        processed_policies = []
+        for policy in policies:
+            processed_policy = copy.deepcopy(policy)
+            magnitude_key = processed_policy.pop('magnitude_key', None)
+            if magnitude_key is not None:
+                minval, maxval = processed_policy.pop('magnitude_range')
+                magnitude_value = (float(self.magnitude_level) /
+                                   self.total_level) * float(maxval -
+                                                             minval) + minval
+                processed_policy.update({magnitude_key: magnitude_value})
+            processed_policies.append(processed_policy)
+        return processed_policies
+
+    def __call__(self, results):
+        if self.num_policies == 0:
+            return results
+        sub_policy = random.choices(self.policies, k=self.num_policies)
+        sub_policy = Compose(sub_policy)
+        return sub_policy(results)
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += f'(policies={self.policies}, '
+        repr_str += f'num_policies={self.num_policies}, '
+        repr_str += f'magnitude_level={self.magnitude_level}, '
+        repr_str += f'total_level={self.total_level})'
         return repr_str
 
 
@@ -429,24 +511,65 @@ class Solarize(object):
 
 
 @PIPELINES.register_module()
+class SolarizeAdd(object):
+    """SolarizeAdd images (add a certain value to pixels below a threshold).
+
+    Args:
+        magnitude (int | float): The value to be added to pixels below the thr.
+        thr (int | float): The threshold below which the pixels value will be
+            adjusted.
+        prob (float): The probability for solarizing therefore should be in
+            range [0, 1]. Defaults to 0.5.
+    """
+
+    def __init__(self, magnitude, thr=128, prob=0.5):
+        assert isinstance(magnitude, (int, float)), 'The thr magnitude must '\
+            f'be int or float, but got {type(magnitude)} instead.'
+        assert isinstance(thr, (int, float)), 'The thr type must '\
+            f'be int or float, but got {type(thr)} instead.'
+        assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
+            f'got {prob} instead.'
+
+        self.magnitude = magnitude
+        self.thr = thr
+        self.prob = prob
+
+    def __call__(self, results):
+        if np.random.rand() > self.prob:
+            return results
+        for key in results.get('img_fields', ['img']):
+            img = results[key]
+            img_solarized = np.where(img < self.thr,
+                                     np.minimum(img + self.magnitude, 255),
+                                     img)
+            results[key] = img_solarized.astype(img.dtype)
+        return results
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += f'(magnitude={self.magnitude}, '
+        repr_str += f'thr={self.thr}, '
+        repr_str += f'prob={self.prob})'
+        return repr_str
+
+
+@PIPELINES.register_module()
 class Posterize(object):
     """Posterize images (reduce the number of bits for each color channel).
 
     Args:
-        bits (int): Number of bits for each pixel in the output img, which
-            should be less or equal to 8.
+        bits (int | float): Number of bits for each pixel in the output img,
+            which should be less or equal to 8.
         prob (float): The probability for posterizing therefore should be in
             range [0, 1]. Defaults to 0.5.
     """
 
     def __init__(self, bits, prob=0.5):
-        assert isinstance(bits, int), 'The bits type must be int, '\
-            f'but got {type(bits)} instead.'
         assert bits <= 8, f'The bits must be less than 8, got {bits} instead.'
         assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
             f'got {prob} instead.'
 
-        self.bits = bits
+        self.bits = int(bits)
         self.prob = prob
 
     def __call__(self, results):
@@ -641,4 +764,52 @@ class Sharpness(object):
         repr_str += f'(magnitude={self.magnitude}, '
         repr_str += f'prob={self.prob}, '
         repr_str += f'random_negative_prob={self.random_negative_prob})'
+        return repr_str
+
+
+@PIPELINES.register_module()
+class Cutout(object):
+    """Cutout images.
+
+    Args:
+        shape (int | float | tuple(int | float)): Expected cutout shape (h, w).
+            If given as a single value, the value will be used for
+            both h and w.
+        pad_val (int, tuple[int]): Pixel pad_val value for constant fill. If
+            it is a tuple, it must have the same length with the image
+            channels. Defaults to 128.
+        prob (float): The probability for performing cutout therefore should
+            be in range [0, 1]. Defaults to 0.5.
+    """
+
+    def __init__(self, shape, pad_val=128, prob=0.5):
+        if isinstance(shape, float):
+            shape = int(shape)
+        elif isinstance(shape, tuple):
+            shape = tuple(int(i) for i in shape)
+        elif not isinstance(shape, int):
+            raise TypeError(
+                'shape must be of '
+                f'type int, float or tuple, got {type(shape)} instead')
+        assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
+            f'got {prob} instead.'
+
+        self.shape = shape
+        self.pad_val = pad_val
+        self.prob = prob
+
+    def __call__(self, results):
+        if np.random.rand() > self.prob:
+            return results
+        for key in results.get('img_fields', ['img']):
+            img = results[key]
+            img_cutout = mmcv.cutout(img, self.shape, pad_val=self.pad_val)
+            results[key] = img_cutout.astype(img.dtype)
+        return results
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += f'(shape={self.shape}, '
+        repr_str += f'pad_val={self.pad_val}, '
+        repr_str += f'prob={self.prob})'
         return repr_str

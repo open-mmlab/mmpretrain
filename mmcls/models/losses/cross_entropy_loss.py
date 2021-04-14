@@ -54,6 +54,7 @@ def soft_cross_entropy(pred,
     """
     # element-wise losses
     loss = -label * F.log_softmax(pred, dim=-1)
+    loss = loss.sum(dim=-1)
 
     # apply weights and do the reduction
     if weight is not None:
