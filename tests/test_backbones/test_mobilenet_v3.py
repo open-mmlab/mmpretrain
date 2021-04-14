@@ -145,7 +145,7 @@ def test_mobilenetv3_backbone():
     assert feat[10].shape == torch.Size([1, 80, 14, 14])
     assert feat[11].shape == torch.Size([1, 112, 14, 14])
     assert feat[12].shape == torch.Size([1, 112, 14, 14])
-    assert feat[13].shape == torch.Size([1, 160, 14, 14])
+    assert feat[13].shape == torch.Size([1, 160, 7, 7])
     assert feat[14].shape == torch.Size([1, 160, 7, 7])
     assert feat[15].shape == torch.Size([1, 160, 7, 7])
     assert feat[16].shape == torch.Size([1, 960, 7, 7])

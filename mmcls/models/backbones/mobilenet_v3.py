@@ -58,8 +58,8 @@ class MobileNetV3(BaseBackbone):
                 [3, 184, 80, False, 'HSwish', 1],
                 [3, 480, 112, True, 'HSwish', 1],
                 [3, 672, 112, True, 'HSwish', 1],
-                [5, 672, 160, True, 'HSwish', 1],
                 [5, 672, 160, True, 'HSwish', 2],
+                [5, 960, 160, True, 'HSwish', 1],
                 [5, 960, 160, True, 'HSwish', 1]]
     }  # yapf: disable
 
