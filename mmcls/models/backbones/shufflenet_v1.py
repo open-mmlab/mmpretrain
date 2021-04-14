@@ -271,7 +271,7 @@ class ShuffleNetV1(BaseBackbone):
                             f'{type(pretrained)}')
 
     def make_layer(self, out_channels, num_blocks, first_block=False):
-        """ Stack ShuffleUnit blocks to make a layer.
+        """Stack ShuffleUnit blocks to make a layer.
 
         Args:
             out_channels (int): out_channels of the block.

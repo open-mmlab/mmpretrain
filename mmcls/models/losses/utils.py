@@ -100,8 +100,8 @@ def weighted_loss(loss_func):
 
 
 def convert_to_one_hot(targets: torch.Tensor, classes) -> torch.Tensor:
-    """This function converts target class indices to one-hot vectors,
-    given the number of classes.
+    """This function converts target class indices to one-hot vectors, given
+    the number of classes.
 
     Args:
         targets (Tensor): The ground truth label of the prediction

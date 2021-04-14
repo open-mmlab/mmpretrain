@@ -84,8 +84,7 @@ class MNIST(BaseDataset):
 @DATASETS.register_module()
 class FashionMNIST(MNIST):
     """`Fashion-MNIST <https://github.com/zalandoresearch/fashion-mnist>`_
-        Dataset.
-    """
+    Dataset."""
 
     resource_prefix = 'http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/'  # noqa: E501
     resources = {
@@ -110,8 +109,9 @@ def get_int(b):
 
 def open_maybe_compressed_file(path):
     """Return a file object that possibly decompresses 'path' on the fly.
-       Decompression occurs when argument `path` is a string
-       and ends with '.gz' or '.xz'.
+
+    Decompression occurs when argument `path` is a string and ends with '.gz'
+    or '.xz'.
     """
     if not isinstance(path, str):
         return path
@@ -125,9 +125,10 @@ def open_maybe_compressed_file(path):
 
 
 def read_sn3_pascalvincent_tensor(path, strict=True):
-    """Read a SN3 file in "Pascal Vincent" format
-       (Lush file 'libidx/idx-io.lsh').
-       Argument may be a filename, compressed filename, or file object.
+    """Read a SN3 file in "Pascal Vincent" format (Lush file 'libidx/idx-
+    io.lsh').
+
+    Argument may be a filename, compressed filename, or file object.
     """
     # typemap
     if not hasattr(read_sn3_pascalvincent_tensor, 'typemap'):

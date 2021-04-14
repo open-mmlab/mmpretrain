@@ -15,9 +15,10 @@ def random_negative(value, random_negative_prob):
 
 @PIPELINES.register_module()
 class AutoAugment(object):
-    """Auto augmentation.
-    This data augmentation is proposed in `AutoAugment: Learning Augmentation
-    Policies from Data <https://arxiv.org/abs/1805.09501>`_.
+    """Auto augmentation. This data augmentation is proposed in `AutoAugment:
+    Learning Augmentation Policies from Data.
+
+    <https://arxiv.org/abs/1805.09501>`_.
 
     Args:
         policies (list[list[dict]]): The policies of auto augmentation. Each
@@ -53,9 +54,9 @@ class AutoAugment(object):
 
 @PIPELINES.register_module()
 class RandAugment(object):
-    """Random augmentation.
-    This data augmentation is proposed in `RandAugment: Practical automated
-    data augmentation with a reduced search space
+    """Random augmentation. This data augmentation is proposed in `RandAugment:
+    Practical automated data augmentation with a reduced search space.
+
     <https://arxiv.org/abs/1909.13719>`_.
 
     Args:

@@ -15,7 +15,6 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
         num_classes (int): Number of categories.
         in_channels (int): Number of channels in the input feature map.
         loss (dict): Config of classification loss.
-
     """
 
     def __init__(self,

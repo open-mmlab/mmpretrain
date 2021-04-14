@@ -38,10 +38,8 @@ class LabelSmoothLoss(CrossEntropyLoss):
         self._eps = np.finfo(np.float32).eps
 
     def generate_one_hot_like_label(self, label):
-        """
-        This function takes one-hot or index label vectors and computes
-        one-hot like label vectors (float)
-        """
+        """This function takes one-hot or index label vectors and computes one-
+        hot like label vectors (float)"""
         label_shape_list = list(label.size())
         # check if targets are inputted as class integers
         if len(label_shape_list) == 1 or (len(label_shape_list) == 2
@@ -50,11 +48,9 @@ class LabelSmoothLoss(CrossEntropyLoss):
         return label.float()
 
     def smooth_label(self, one_hot_like_label):
-        """
-        This function takes one-hot like target vectors and
-        computes smoothed target vectors (normalized)
-        according to the loss's smoothing parameter
-        """
+        """This function takes one-hot like target vectors and computes
+        smoothed target vectors (normalized) according to the loss's smoothing
+        parameter."""
         assert self.num_classes > 0
         one_hot_like_label /= self._eps + one_hot_like_label.sum(
             dim=1, keepdim=True)

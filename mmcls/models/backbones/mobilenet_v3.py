@@ -12,7 +12,7 @@ from .base_backbone import BaseBackbone
 
 @BACKBONES.register_module()
 class MobileNetv3(BaseBackbone):
-    """ MobileNetv3 backbone
+    """MobileNetv3 backbone.
 
     Args:
         arch (str): Architechture of mobilnetv3, from {small, big}.
