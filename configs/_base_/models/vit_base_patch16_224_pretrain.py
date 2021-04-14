@@ -18,7 +18,7 @@ model = dict(
         num_classes=1000,
         in_channels=768,
         hidden_dim=3072,
-        loss=dict(type='CrossEntropyLoss', loss_weight=1.0, use_soft=True),
+        loss=dict(type='LabelSmoothLoss', label_smooth_val=0.1),
         topk=(1, 5),
     ),
     train_cfg=dict(mixup=dict(alpha=0.2, num_classes=1000)))
