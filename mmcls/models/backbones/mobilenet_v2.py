@@ -199,7 +199,7 @@ class MobileNetV2(BaseBackbone):
         self.layers.append('conv2')
 
     def make_layer(self, out_channels, num_blocks, stride, expand_ratio):
-        """ Stack InvertedResidual blocks to build a layer for MobileNetV2.
+        """Stack InvertedResidual blocks to build a layer for MobileNetV2.
 
         Args:
             out_channels (int): out_channels of block.

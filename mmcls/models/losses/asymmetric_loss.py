@@ -13,7 +13,7 @@ def asymmetric_loss(pred,
                     clip=0.05,
                     reduction='mean',
                     avg_factor=None):
-    """asymmetric loss
+    """asymmetric loss.
 
     Please refer to the `paper <https://arxiv.org/abs/2009.14119>`_ for
     details.
@@ -63,7 +63,7 @@ def asymmetric_loss(pred,
 
 @LOSSES.register_module()
 class AsymmetricLoss(nn.Module):
-    """asymmetric loss
+    """asymmetric loss.
 
     Args:
         gamma_pos (float): positive focusing parameter.
@@ -74,7 +74,7 @@ class AsymmetricLoss(nn.Module):
         reduction (str): The method used to reduce the loss into
             a scalar.
         loss_weight (float): Weight of loss. Defaults to 1.0.
-        """
+    """
 
     def __init__(self,
                  gamma_pos=0.0,
@@ -95,8 +95,7 @@ class AsymmetricLoss(nn.Module):
                 weight=None,
                 avg_factor=None,
                 reduction_override=None):
-        """asymmetric loss
-        """
+        """asymmetric loss."""
         assert reduction_override in (None, 'none', 'mean', 'sum')
         reduction = (
             reduction_override if reduction_override else self.reduction)

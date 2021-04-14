@@ -5,6 +5,7 @@ __version__ = '0.10.0'
 
 def parse_version_info(version_str):
     """Parse a version string into a tuple.
+
     Args:
         version_str (str): The version string.
     Returns:

@@ -7,8 +7,7 @@ from .base_dataset import BaseDataset
 
 
 class MultiLabelDataset(BaseDataset):
-    """ Multi-label Dataset.
-    """
+    """Multi-label Dataset."""
 
     def get_cat_ids(self, idx):
         """Get category ids by index.

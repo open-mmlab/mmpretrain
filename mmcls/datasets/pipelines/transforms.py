@@ -272,7 +272,6 @@ class RandomGrayscale(object):
             - If input image is 1 channel: grayscale version is 1 channel.
             - If input image is 3 channel: grayscale version is 3 channel
                 with r == g == b.
-
     """
 
     def __init__(self, gray_prob=0.1):
@@ -661,6 +660,7 @@ class Albu(object):
 
     def albu_builder(self, cfg):
         """Import a module from albumentations.
+
         It inherits some of :func:`build_from_cfg` logic.
         Args:
             cfg (dict): Config dict. It should at least contain the key "type".
@@ -692,7 +692,9 @@ class Albu(object):
 
     @staticmethod
     def mapper(d, keymap):
-        """Dictionary mapper. Renames keys according to keymap provided.
+        """Dictionary mapper.
+
+        Renames keys according to keymap provided.
         Args:
             d (dict): old dict
             keymap (dict): {'old_key':'new_key'}
