@@ -103,7 +103,7 @@ def binary_cross_entropy(pred,
 
 @LOSSES.register_module()
 class CrossEntropyLoss(nn.Module):
-    """Cross entropy loss
+    """Cross entropy loss.
 
     Args:
         use_sigmoid (bool): Whether the prediction uses sigmoid

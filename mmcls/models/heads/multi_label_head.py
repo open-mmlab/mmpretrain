@@ -11,7 +11,6 @@ class MultiLabelClsHead(BaseHead):
 
     Args:
         loss (dict): Config of classification loss.
-
     """
 
     def __init__(self,

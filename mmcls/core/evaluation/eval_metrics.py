@@ -38,7 +38,7 @@ def calculate_confusion_matrix(pred, target):
 
 def precision_recall_f1(pred, target, average_mode='macro', thrs=None):
     """Calculate precision, recall and f1 score according to the prediction and
-         target.
+    target.
 
     Args:
         pred (torch.Tensor | np.array): The model prediction with shape (N, C).
@@ -204,8 +204,8 @@ def f1_score(pred, target, average_mode='macro', thrs=None):
 
 
 def support(pred, target, average_mode='macro'):
-    """Calculate the total number of occurrences of each label according to
-        the prediction and target.
+    """Calculate the total number of occurrences of each label according to the
+    prediction and target.
 
     Args:
         pred (torch.Tensor | np.array): The model prediction with shape (N, C).

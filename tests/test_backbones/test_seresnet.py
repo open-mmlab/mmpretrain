@@ -120,7 +120,7 @@ def test_res_layer():
 
 
 def test_seresnet():
-    """Test resnet backbone"""
+    """Test resnet backbone."""
     with pytest.raises(KeyError):
         # SEResNet depth should be in [50, 101, 152]
         SEResNet(20)

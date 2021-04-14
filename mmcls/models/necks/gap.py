@@ -8,10 +8,9 @@ from ..builder import NECKS
 class GlobalAveragePooling(nn.Module):
     """Global Average Pooling neck.
 
-    Note that we use `view` to remove extra channel after pooling.
-    We do not use `squeeze` as it will also remove the batch dimension
-    when the tensor has a batch dimension of size 1, which can lead to
-    unexpected errors.
+    Note that we use `view` to remove extra channel after pooling. We do not
+    use `squeeze` as it will also remove the batch dimension when the tensor
+    has a batch dimension of size 1, which can lead to unexpected errors.
     """
 
     def __init__(self):

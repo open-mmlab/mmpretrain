@@ -20,7 +20,7 @@ except ImportError:
 
 
 class BaseClassifier(nn.Module, metaclass=ABCMeta):
-    """Base class for classifiers"""
+    """Base class for classifiers."""
 
     def __init__(self):
         super(BaseClassifier, self).__init__()
@@ -81,13 +81,14 @@ class BaseClassifier(nn.Module, metaclass=ABCMeta):
 
     @auto_fp16(apply_to=('img', ))
     def forward(self, img, return_loss=True, **kwargs):
-        """
-        Calls either forward_train or forward_test depending on whether
-        return_loss=True. Note this setting will change the expected inputs.
-        When `return_loss=True`, img and img_meta are single-nested (i.e.
-        Tensor and List[dict]), and when `resturn_loss=False`, img and img_meta
-        should be double nested (i.e.  List[Tensor], List[List[dict]]), with
-        the outer list indicating test time augmentations.
+        """Calls either forward_train or forward_test depending on whether
+        return_loss=True.
+
+        Note this setting will change the expected inputs. When
+        `return_loss=True`, img and img_meta are single-nested (i.e. Tensor and
+        List[dict]), and when `resturn_loss=False`, img and img_meta should be
+        double nested (i.e.  List[Tensor], List[List[dict]]), with the outer
+        list indicating test time augmentations.
         """
         if return_loss:
             return self.forward_train(img, **kwargs)

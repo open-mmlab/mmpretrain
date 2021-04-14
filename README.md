@@ -10,7 +10,7 @@
 ## Introduction
 
 MMClassification is an open source image classification toolbox based on PyTorch. It is
-a part of the [OpenMMLab](https://open-mmlab.github.io/) project.
+a part of the [OpenMMLab](https://openmmlab.com/) project.
 
 Documentation: https://mmclassification.readthedocs.io/en/latest/
 

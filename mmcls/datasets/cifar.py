@@ -102,8 +102,7 @@ class CIFAR10(BaseDataset):
 
 @DATASETS.register_module()
 class CIFAR100(CIFAR10):
-    """`CIFAR100 <https://www.cs.toronto.edu/~kriz/cifar.html>`_ Dataset.
-    """
+    """`CIFAR100 <https://www.cs.toronto.edu/~kriz/cifar.html>`_ Dataset."""
 
     base_folder = 'cifar-100-python'
     url = 'https://www.cs.toronto.edu/~kriz/cifar-100-python.tar.gz'

@@ -106,8 +106,7 @@ class ToNumpy(object):
 
 @PIPELINES.register_module()
 class Collect(object):
-    """
-    Collect data from the loader relevant to the specific task.
+    """Collect data from the loader relevant to the specific task.
 
     This is usually the last stage of the data loader pipeline. Typically keys
     is set to some subset of "img" and "gt_label".

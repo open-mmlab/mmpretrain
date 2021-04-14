@@ -12,7 +12,7 @@ def sigmoid_focal_loss(pred,
                        alpha=0.25,
                        reduction='mean',
                        avg_factor=None):
-    """Sigmoid focal loss
+    """Sigmoid focal loss.
 
     Args:
         pred (torch.Tensor): The prediction with shape (N, *).
@@ -52,7 +52,7 @@ def sigmoid_focal_loss(pred,
 
 @LOSSES.register_module()
 class FocalLoss(nn.Module):
-    """Focal loss
+    """Focal loss.
 
     Args:
         gamma (float): Focusing parameter in focal loss.
@@ -82,7 +82,7 @@ class FocalLoss(nn.Module):
                 weight=None,
                 avg_factor=None,
                 reduction_override=None):
-        """Sigmoid focal loss
+        """Sigmoid focal loss.
 
         Args:
             pred (torch.Tensor): The prediction with shape (N, *).

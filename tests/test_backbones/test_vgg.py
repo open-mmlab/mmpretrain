@@ -15,7 +15,7 @@ def check_norm_state(modules, train_state):
 
 
 def test_vgg():
-    """Test VGG backbone"""
+    """Test VGG backbone."""
     with pytest.raises(KeyError):
         # VGG depth should be in [11, 13, 16, 19]
         VGG(18)

@@ -8,17 +8,15 @@ from mmcv.runner import load_checkpoint
 class BaseBackbone(nn.Module, metaclass=ABCMeta):
     """Base backbone.
 
-    This class defines the basic functions of a backbone.
-    Any backbone that inherits this class should at least
-    define its own `forward` function.
-
+    This class defines the basic functions of a backbone. Any backbone that
+    inherits this class should at least define its own `forward` function.
     """
 
     def __init__(self):
         super(BaseBackbone, self).__init__()
 
     def init_weights(self, pretrained=None):
-        """Init backbone weights
+        """Init backbone weights.
 
         Args:
             pretrained (str | None): If pretrained is a string, then it
@@ -38,7 +36,7 @@ class BaseBackbone(nn.Module, metaclass=ABCMeta):
 
     @abstractmethod
     def forward(self, x):
-        """Forward computation
+        """Forward computation.
 
         Args:
             x (tensor | tuple[tensor]): x could be a Torch.tensor or a tuple of
@@ -47,7 +45,7 @@ class BaseBackbone(nn.Module, metaclass=ABCMeta):
         pass
 
     def train(self, mode=True):
-        """Set module status before forward computation
+        """Set module status before forward computation.
 
         Args:
             mode (bool): Whether it is train_mode or test_mode

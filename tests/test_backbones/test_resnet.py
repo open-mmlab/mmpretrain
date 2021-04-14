@@ -371,7 +371,7 @@ def test_bottleneck_reslayer():
 
 
 def test_resnet():
-    """Test resnet backbone"""
+    """Test resnet backbone."""
     with pytest.raises(KeyError):
         # ResNet depth should be in [18, 34, 50, 101, 152]
         ResNet(20)

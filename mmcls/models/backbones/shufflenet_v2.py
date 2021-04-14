@@ -222,7 +222,7 @@ class ShuffleNetV2(BaseBackbone):
                 act_cfg=act_cfg))
 
     def _make_layer(self, out_channels, num_blocks):
-        """ Stack blocks to make a layer.
+        """Stack blocks to make a layer.
 
         Args:
             out_channels (int): out_channels of the block.
