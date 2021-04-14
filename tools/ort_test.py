@@ -94,7 +94,6 @@ def main():
                         data['img'][i].unsqueeze(0).detach().numpy()
                     })[0]
                 outputs.append(result[i])
-        break
     if args.metrics:
         results = dataset.evaluate(outputs, args.metrics, args.metric_options)
         for k, v in results.items():
