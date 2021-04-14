@@ -1,5 +1,5 @@
 # checkpoint saving
-checkpoint_config = dict(interval=10)
+checkpoint_config = dict(interval=1)
 # yapf:disable
 log_config = dict(
     interval=100,
@@ -11,5 +11,5 @@ log_config = dict(
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 load_from = None
-resume_from = 'train_vitb_16/epoch_261.pth'
+resume_from = None
 workflow = [('train', 1)]
