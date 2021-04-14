@@ -26,6 +26,12 @@
 | ResNet-101-b16x8 | 42.51 | 2.52 | 95.66 | | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet101_b16x8_cifar10.py) | [model](https://download.openmmlab.com/mmclassification/v0/resnet/resnet101_b16x8_cifar10_20200823-d9501bbc.pth) &#124; [log](https://download.openmmlab.com/mmclassification/v0/resnet/resnet101_b16x8_cifar10_20200823-d9501bbc.log.json) |
 | ResNet-152-b16x8 | 58.16 | 3.74 | 95.96 | | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet152_b16x8_cifar10.py) | [model](https://download.openmmlab.com/mmclassification/v0/resnet/resnet152_b16x8_cifar10_20200823-ad4d5d0c.pth) &#124; [log](https://download.openmmlab.com/mmclassification/v0/resnet/resnet152_b16x8_cifar10_20200823-ad4d5d0c.log.json) |
 
+## Cifar100
+
+|         Model         | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
+|:---------------------:|:---------:|:--------:|:---------:|:---------:|:---------:|:--------:|
+| ResNet-50-b16x8 | 23.71 | 1.31 | 80.51 | 95.27 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet50_b16x8_cifar100.py) | [model](https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_batch256_cifar100_20210410-37f13c16.pth) &#124; [log](https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_batch256_cifar100_20210410-37f13c16.log.json) |
+
 ### ImageNet
 
 |         Model         | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
