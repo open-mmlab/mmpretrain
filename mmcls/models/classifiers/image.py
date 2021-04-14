@@ -1,7 +1,7 @@
 import torch.nn as nn
 
 from ..builder import CLASSIFIERS, build_backbone, build_head, build_neck
-from ..utils import BatchMixupLayer
+from ..utils import BatchCutMixLayer, BatchMixupLayer
 from .base import BaseClassifier
 
 
@@ -24,10 +24,16 @@ class ImageClassifier(BaseClassifier):
         if head is not None:
             self.head = build_head(head)
 
-        self.mixup = None
+        self.mixup, self.cutmix = None, None
         if train_cfg is not None:
             mixup_cfg = train_cfg.get('mixup', None)
-            self.mixup = BatchMixupLayer(**mixup_cfg)
+            cutmix_cfg = train_cfg.get('cutmix', None)
+            assert mixup_cfg is None or cutmix_cfg is None, \
+                'Mixup and CutMix can not be set simultaneously.'
+            if mixup_cfg is not None:
+                self.mixup = BatchMixupLayer(**mixup_cfg)
+            if cutmix_cfg is not None:
+                self.cutmix = BatchCutMixLayer(**cutmix_cfg)
 
         self.init_weights(pretrained=pretrained)
 
@@ -56,17 +62,18 @@ class ImageClassifier(BaseClassifier):
         Args:
             img (Tensor): of shape (N, C, H, W) encoding input images.
                 Typically these should be mean centered and std scaled.
-
             gt_label (Tensor): It should be of shape (N, 1) encoding the
                 ground-truth label of input images for single label task. It
                 shoulf be of shape (N, C) encoding the ground-truth label
                 of input images for multi-labels task.
-
         Returns:
             dict[str, Tensor]: a dictionary of loss components
         """
         if self.mixup is not None:
             img, gt_label = self.mixup(img, gt_label)
+
+        if self.cutmix is not None:
+            img, gt_label = self.cutmix(img, gt_label)
 
         x = self.extract_feat(img)
 
