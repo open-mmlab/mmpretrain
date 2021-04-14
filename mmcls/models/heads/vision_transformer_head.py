@@ -12,6 +12,7 @@ from .cls_head import ClsHead
 @HEADS.register_module()
 class VisionTransformerClsHead(ClsHead):
     """Vision Transformer classifier head.
+
     Args:
         num_classes (int): Number of categories excluding the background
             category.

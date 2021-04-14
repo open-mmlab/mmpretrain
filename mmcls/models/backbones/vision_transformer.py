@@ -12,6 +12,7 @@ from .base_backbone import BaseBackbone
 # Modified from mmdet
 class FFN(nn.Module):
     """Implements feed-forward networks (FFNs) with residual connection.
+
     Args:
         embed_dims (int): The feature dimension. Same as
             `MultiheadAttention`.
@@ -90,6 +91,7 @@ class FFN(nn.Module):
 # Modified from mmdet
 class MultiheadAttention(nn.Module):
     """A warpper for torch.nn.MultiheadAttention.
+
     This module implements MultiheadAttention with residual connection.
     Args:
         embed_dims (int): The embedding dimension.
@@ -118,6 +120,7 @@ class MultiheadAttention(nn.Module):
                 attn_mask=None,
                 key_padding_mask=None):
         """Forward function for `MultiheadAttention`.
+
         Args:
             x (Tensor): The input query with shape [num_query, bs,
                 embed_dims]. Same in `nn.MultiheadAttention.forward`.
@@ -173,6 +176,7 @@ class MultiheadAttention(nn.Module):
 # Modified from mmdet
 class TransformerEncoderLayer(nn.Module):
     """Implements one encoder layer in Vision Transformer.
+
     Args:
         embed_dims (int): The feature dimension. Same as `FFN`.
         num_heads (int): Parallel attention heads.
@@ -239,7 +243,8 @@ class TransformerEncoderLayer(nn.Module):
 
 # Modified from pytorch-image-models
 class PatchEmbed(nn.Module):
-    """ Image to Patch Embedding.
+    """Image to Patch Embedding.
+
     Args:
         img_size (int | tuple): The size of input image.
         patch_size (int): The size of one patch
@@ -302,8 +307,9 @@ class PatchEmbed(nn.Module):
 
 # Modified from pytorch-image-models
 class HybridEmbed(PatchEmbed):
-    """ CNN Feature Map Embedding.
-        Extract feature map from CNN, flatten, project to embedding dim.
+    """CNN Feature Map Embedding.
+
+    Extract feature map from CNN, flatten, project to embedding dim.
     """
 
     def __init__(self,
