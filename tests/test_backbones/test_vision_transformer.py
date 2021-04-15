@@ -5,9 +5,6 @@ from torch.nn.modules.batchnorm import _BatchNorm
 
 from mmcls.models.backbones import VisionTransformer
 
-# from mmcls.models.backbones.vision_transformer import
-# FFN, MultiheadAttention, TransformerEncoderLayer
-
 
 def is_norm(modules):
     """Check if is one of the norms."""
