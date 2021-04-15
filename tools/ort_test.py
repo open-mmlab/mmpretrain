@@ -44,8 +44,8 @@ class ORTModel(nn.Module):
             data(dict): a dict containing images data and image meta data.
 
         Return:
-            output(List[np.array]): a list of np.array, the dimension
-                of np.array is the number of CLASSES.
+            output(List[np.array]): a list of np.array, the dimension of
+                np.array is the number of CLASSES.
         """
         retsults = []
         if self.batch_infer:
