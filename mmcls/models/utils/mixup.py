@@ -6,7 +6,7 @@ from torch.distributions.beta import Beta
 
 
 class BaseMixupLayer(object, metaclass=ABCMeta):
-    """Base class for MixupLayer"""
+    """Base class for MixupLayer."""
 
     def __init__(self):
         super(BaseMixupLayer, self).__init__()

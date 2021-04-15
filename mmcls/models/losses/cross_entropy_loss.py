@@ -54,6 +54,7 @@ def soft_cross_entropy(pred,
     """
     # element-wise losses
     loss = -label * F.log_softmax(pred, dim=-1)
+    loss = loss.sum(dim=-1)
 
     # apply weights and do the reduction
     if weight is not None:
@@ -102,7 +103,7 @@ def binary_cross_entropy(pred,
 
 @LOSSES.register_module()
 class CrossEntropyLoss(nn.Module):
-    """Cross entropy loss
+    """Cross entropy loss.
 
     Args:
         use_sigmoid (bool): Whether the prediction uses sigmoid

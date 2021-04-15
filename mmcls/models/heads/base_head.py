@@ -4,9 +4,7 @@ import torch.nn as nn
 
 
 class BaseHead(nn.Module, metaclass=ABCMeta):
-    """Base head.
-
-    """
+    """Base head."""
 
     def __init__(self):
         super(BaseHead, self).__init__()

@@ -273,7 +273,7 @@ class RegNet(ResNet):
         return widths, groups
 
     def get_stages_from_blocks(self, widths):
-        """Gets widths/stage_blocks of network at each stage
+        """Gets widths/stage_blocks of network at each stage.
 
         Args:
             widths (list[int]): Width in each stage.

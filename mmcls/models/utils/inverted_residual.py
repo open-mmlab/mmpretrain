@@ -6,7 +6,7 @@ from .se_layer import SELayer
 
 
 class InvertedResidual(nn.Module):
-    """Inverted Residual Block
+    """Inverted Residual Block.
 
     Args:
         in_channels (int): The input channels of this Module.
@@ -31,7 +31,6 @@ class InvertedResidual(nn.Module):
 
     Returns:
         Tensor: The output tensor.
-
     """
 
     def __init__(self,

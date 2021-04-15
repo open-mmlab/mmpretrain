@@ -634,13 +634,13 @@ class ResNet(BaseBackbone):
 
 @BACKBONES.register_module()
 class ResNetV1d(ResNet):
-    """ResNetV1d variant described in
-    `Bag of Tricks <https://arxiv.org/pdf/1812.01187.pdf>`_.
+    """ResNetV1d variant described in `Bag of Tricks.
 
-    Compared with default ResNet(ResNetV1b), ResNetV1d replaces the 7x7 conv
-    in the input stem with three 3x3 convs. And in the downsampling block,
-    a 2x2 avg_pool with stride 2 is added before conv, whose stride is
-    changed to 1.
+    <https://arxiv.org/pdf/1812.01187.pdf>`_.
+
+    Compared with default ResNet(ResNetV1b), ResNetV1d replaces the 7x7 conv in
+    the input stem with three 3x3 convs. And in the downsampling block, a 2x2
+    avg_pool with stride 2 is added before conv, whose stride is changed to 1.
     """
 
     def __init__(self, **kwargs):
