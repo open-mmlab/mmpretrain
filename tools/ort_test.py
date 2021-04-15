@@ -45,7 +45,7 @@ class ORTModel(nn.Module):
 
         Return:
             output(List[np.array]): a list of np.array, the dimension
-            of np.array is the number of CLASSES.
+                of np.array is the number of CLASSES.
         """
         retsults = []
         if self.batch_infer:
