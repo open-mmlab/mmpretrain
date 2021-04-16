@@ -6,6 +6,7 @@ from mmcv.cnn import (build_activation_layer, build_conv_layer,
                       build_norm_layer, kaiming_init)
 
 from ..builder import BACKBONES
+from ..utils import to_2tuple
 from .base_backbone import BaseBackbone
 
 
@@ -305,8 +306,7 @@ class PatchEmbed(nn.Module):
         return x
 
 
-# Modified from pytorch-image-models
-class HybridEmbed(PatchEmbed):
+class HybridEmbed(nn.Module):
     """CNN Feature Map Embedding.
 
     Extract feature map from CNN, flatten, project to embedding dim.
@@ -315,52 +315,65 @@ class HybridEmbed(PatchEmbed):
     def __init__(self,
                  backbone,
                  img_size=224,
+                 feature_size=None,
                  in_channels=3,
                  embed_dim=768,
                  conv_cfg=None):
+        super().__init__()
         assert isinstance(backbone, nn.Module)
-        self.backbone = backbone
         if isinstance(img_size, int):
-            img_size = tuple(repeat(img_size, 2))
+            img_size = to_2tuple(img_size)
         elif isinstance(img_size, tuple):
             if len(img_size) == 1:
-                img_size = tuple(repeat(img_size[0], 2))
+                img_size = to_2tuple(img_size[0])
             assert len(img_size) == 2, \
                 f'The size of image should have length 1 or 2, ' \
                 f'but got {len(img_size)}'
 
-        # TODO: Get the output dim of the backbone
-        with torch.no_grad():
-            # FIXME this is hacky, but most reliable way of
-            # determining the exact dim of the output feature
-            # map for all networks, the feature metadata has
-            # reliable channel and stride info, but using
-            # stride to calc feature dim requires info about
-            # padding of each stage that isn't captured.
-            training = backbone.training
-            if training:
-                backbone.eval()
-            o = self.backbone(
-                torch.zeros(1, in_channels, img_size[0], img_size[1]))
-            if isinstance(o, (list, tuple)):
-                # last feature if backbone outputs list/tuple of features
-                o = o[-1]
-            feature_size = o.shape[-2:]
-            feature_dim = o.shape[1]
-            backbone.train(training)
+        self.img_size = img_size
+        self.backbone = backbone
+        if feature_size is None:
+            with torch.no_grad():
+                # FIXME this is hacky, but most reliable way of
+                #  determining the exact dim of the output feature
+                #  map for all networks, the feature metadata has
+                #  reliable channel and stride info, but using
+                #  stride to calc feature dim requires info about padding of
+                #  each stage that isn't captured.
+                training = backbone.training
+                if training:
+                    backbone.eval()
+                o = self.backbone(
+                    torch.zeros(1, in_channels, img_size[0], img_size[1]))
+                if isinstance(o, (list, tuple)):
+                    # last feature if backbone outputs list/tuple of features
+                    o = o[-1]
+                feature_size = o.shape[-2:]
+                feature_dim = o.shape[1]
+                backbone.train(training)
+        else:
+            feature_size = to_2tuple(feature_size)
+            if hasattr(self.backbone, 'feature_info'):
+                feature_dim = self.backbone.feature_info.channels()[-1]
+            else:
+                feature_dim = self.backbone.num_features
+        self.num_patches = feature_size[0] * feature_size[1]
 
-        super(HybridEmbed, self).__init__(
-            img_size=feature_size,
-            patch_size=1,
-            in_channels=feature_dim,
-            embed_dim=embed_dim,
-            conv_cfg=conv_cfg)
+        # Use conv layer to embed
+        self.projection = build_conv_layer(
+            conv_cfg, feature_dim, embed_dim, kernel_size=1, stride=1)
+
+        self.init_weights()
+
+    def init_weights(self):
+        # Lecun norm from ClassyVision
+        kaiming_init(self.projection, mode='fan_in', nonlinearity='linear')
 
     def forward(self, x):
         x = self.backbone(x)
         if isinstance(x, (list, tuple)):
-            x = x[
-                -1]  # last feature if backbone outputs list/tuple of features
+            # last feature if backbone outputs list/tuple of features
+            x = x[-1]
         x = self.projection(x).flatten(2).transpose(1, 2)
         return x
 
