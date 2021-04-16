@@ -1,5 +1,3 @@
-from itertools import repeat
-
 import torch
 import torch.nn as nn
 from mmcv.cnn import (build_activation_layer, build_conv_layer,
@@ -263,16 +261,18 @@ class PatchEmbed(nn.Module):
                  conv_cfg=None):
         super(PatchEmbed, self).__init__()
         if isinstance(img_size, int):
-            img_size = tuple(repeat(img_size, 2))
+            img_size = to_2tuple(img_size)
+            # img_size = tuple(repeat(img_size, 2))
         elif isinstance(img_size, tuple):
             if len(img_size) == 1:
-                img_size = tuple(repeat(img_size[0], 2))
+                img_size = to_2tuple(img_size[0])
+                # img_size = tuple(repeat(img_size[0], 2))
             assert len(img_size) == 2, \
                 f'The size of image should have length 1 or 2, ' \
                 f'but got {len(img_size)}'
 
         self.img_size = img_size
-        self.patch_size = tuple(repeat(patch_size, 2))
+        self.patch_size = to_2tuple(patch_size)
 
         num_patches = (self.img_size[1] // self.patch_size[1]) * (
             self.img_size[0] // self.patch_size[0])
