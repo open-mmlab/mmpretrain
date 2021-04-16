@@ -80,6 +80,21 @@ Notes:
 
 - *All models above are tested with Pytorch==1.6.0*
 
+## The ONNX Model's Accuracy in Dataset
+
+### ImageNet
+
+ImageNet has multiple versions, but the most commonly used one is [ILSVRC 2012](http://www.image-net.org/challenges/LSVRC/2012/).
+
+|     Model     | Top-1 | Top-5 |
+| :-----------: | :---: | :---: |
+|   Resnet-50   | 76.49 | 93.22 |
+|  Resnext-50   | 77.15 | 93.36 |
+| SE-Resnet-50  | 77.74 | 93.84 |
+| Shufflenet_v1 | 68.13 | 87.81 |
+| Shufflenet_v2 | 69.55 | 88.92 |
+|   MobileNet   | 71.86 | 90.42 |
+
 ## Reminders
 
 - If you meet any problem with the listed models above, please create an issue and it would be taken care of soon. For models not included in the list, please try to dig a little deeper and debug a little bit more and hopefully solve them by yourself.
