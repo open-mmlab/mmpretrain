@@ -8,7 +8,6 @@ from ..utils import to_2tuple
 from .base_backbone import BaseBackbone
 
 
-# Modified from mmdet
 class FFN(nn.Module):
     """Implements feed-forward networks (FFNs) with residual connection.
 
@@ -87,7 +86,6 @@ class FFN(nn.Module):
         return repr_str
 
 
-# Modified from mmdet
 class MultiheadAttention(nn.Module):
     """A warpper for torch.nn.MultiheadAttention.
 
@@ -172,7 +170,6 @@ class MultiheadAttention(nn.Module):
         return residual + self.dropout(out)
 
 
-# Modified from mmdet
 class TransformerEncoderLayer(nn.Module):
     """Implements one encoder layer in Vision Transformer.
 
@@ -240,7 +237,6 @@ class TransformerEncoderLayer(nn.Module):
         return x
 
 
-# Modified from pytorch-image-models
 class PatchEmbed(nn.Module):
     """Image to Patch Embedding.
 
@@ -262,11 +258,9 @@ class PatchEmbed(nn.Module):
         super(PatchEmbed, self).__init__()
         if isinstance(img_size, int):
             img_size = to_2tuple(img_size)
-            # img_size = tuple(repeat(img_size, 2))
         elif isinstance(img_size, tuple):
             if len(img_size) == 1:
                 img_size = to_2tuple(img_size[0])
-                # img_size = tuple(repeat(img_size[0], 2))
             assert len(img_size) == 2, \
                 f'The size of image should have length 1 or 2, ' \
                 f'but got {len(img_size)}'
@@ -378,7 +372,6 @@ class HybridEmbed(nn.Module):
         return x
 
 
-# Modified from pytorch-image-models and mmdet
 @BACKBONES.register_module()
 class VisionTransformer(BaseBackbone):
     """ Vision Transformer
