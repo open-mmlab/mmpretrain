@@ -1,17 +1,17 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmcv.cnn import ConvModule, kaiming_init, normal_init
+from mmcv.cnn import ConvModule, normal_init
 
 from ..builder import HEADS
 from .cls_head import ClsHead
 
 
-# TODO: 
-# ConvClsHead in heads/__init__.py, configs/_base_/models/mobilenetv3xxx.py 
+# TODO:
+# ConvClsHead in heads/__init__.py, configs/_base_/models/mobilenetv3xxx.py
 @HEADS.register_module()
 class ConvClsHead(ClsHead):
-    """Convolution classifier head for MobileNetV3. 
+    """Convolution classifier head for MobileNetV3.
 
     Args:
         num_classes (int): Number of categories excluding the background
@@ -27,6 +27,7 @@ class ConvClsHead(ClsHead):
                  num_classes,
                  in_channels,
                  mid_channels,
+                 dropout_rate=0,
                  conv_cfg=None,
                  loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
                  topk=(1, )):
@@ -34,6 +35,7 @@ class ConvClsHead(ClsHead):
         self.num_classes = num_classes
         self.in_channels = in_channels
         self.mid_channels = mid_channels
+        self.dropout_rate = dropout_rate
         self.conv_cfg = conv_cfg
         # TODO: add 'act_cfg‘？
 
@@ -54,6 +56,7 @@ class ConvClsHead(ClsHead):
             norm_cfg=None,
             act_cfg=dict(type='HSwish'))
         self.fc = nn.Linear(self.mid_channels, self.num_classes)
+        self.dropout = nn.Dropout(p=self.dropout_rate)
 
     def init_weights(self):
         # self.conv is automatically initialized inside ConvModule
@@ -78,6 +81,7 @@ class ConvClsHead(ClsHead):
         x = x.view(x.size(0), x.size(1), 1, 1)
         conv_feat = self.conv(x)
         conv_feat = conv_feat.view(conv_feat.size(0), -1)
+        cls_score = self.dropout(conv_feat)
         cls_score = self.fc(conv_feat)
         losses = self.loss(cls_score, gt_label)
         return losses
