@@ -36,7 +36,7 @@ class ONNXRuntimeClassifier(BaseClassifier):
 
     def forward_test(self, imgs, img_metas, **kwargs):
         assert ort.get_device() == 'GPU', \
-            ('The dataset accuracy verification defaultly uses GPU'
+            ('The dataset accuracy verification defaultly uses GPU '
                 'for inference. Please install the onnxruntime-gpu model.')
         input_data = imgs
         batch_size = imgs.shape[0]
