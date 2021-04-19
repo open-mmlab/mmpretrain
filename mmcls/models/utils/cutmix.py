@@ -6,7 +6,7 @@ import torch.nn.functional as F
 
 
 class BaseCutMixLayer(object, metaclass=ABCMeta):
-    """Base class for CutMixLayer"""
+    """Base class for CutMixLayer."""
 
     def __init__(self):
         super(BaseCutMixLayer, self).__init__()
