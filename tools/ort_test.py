@@ -17,7 +17,6 @@ class ONNXRuntimeClassifier(BaseClassifier):
 
     def __init__(self, onnx_file, class_names, device_id):
         super(ONNXRuntimeClassifier, self).__init__()
-        # check if the input number is coorect.
         sess = ort.InferenceSession(onnx_file)
 
         self.sess = sess
@@ -125,7 +124,6 @@ def main():
 
     if args.metrics:
         results = dataset.evaluate(outputs, args.metrics, args.metric_options)
-
         for k, v in results.items():
             print(f'\n{k} : {v:.2f}')
     else:
