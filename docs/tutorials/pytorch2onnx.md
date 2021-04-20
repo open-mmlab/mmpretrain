@@ -122,42 +122,42 @@ ImageNet has multiple versions, but the most commonly used one is [ILSVRC 2012](
 </tr>
 <tr>
 <td>ResNet</td>
-<td>configs/resnet/resnet50_b32x8_imagenet.py</td>
+<td>resnet50_b32x8_imagenet.py</td>
 <td>Top 1 / 5</td>
 <td>76.55 / 93.15</td>
 <td>76.49 / 93.22</td>
 </tr>
 <tr>
 <td>ResNeXt</td>
-<td>configs/resnext/resnext50_32x4d_b32x8_imagenet.py</td>
+<td>resnext50_32x4d_b32x8_imagenet.py</td>
 <td>Top 1 / 5</td>
 <td>77.92 / 93.74</td>
 <td>77.15 / 93.36</td>
 </tr>
 <tr>
 <td>SE-ResNet</td>
-<td>configs/seresnet/seresnet50_b32x8_imagenet.py</td>
+<td>seresnet50_b32x8_imagenet.py</td>
 <td>Top 1 / 5</td>
 <td>77.74 / 93.84</td>
 <td>77.74 / 93.84</td>
 </tr>
 <tr>
 <td>ShuffleNetV1</td>
-<td>configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py</td>
+<td>shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py</td>
 <td>Top 1 / 5</td>
 <td>68.13 / 87.81</td>
 <td>68.13 / 87.81</td>
 </tr>
 <tr>
 <td>ShuffleNetV2</td>
-<td>configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py</td>
+<td>shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py</td>
 <td>Top 1 / 5</td>
 <td>69.55 / 88.92</td>
 <td>69.55 / 88.92</td>
 </tr>
 <tr>
 <td>MobileNetV2</td>
-<td>configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py</td>
+<td>mobilenet_v2_b32x8_imagenet.py</td>
 <td>Top 1 / 5</td>
 <td>71.86 / 90.42</td>
 <td>71.86 / 90.42</td>
