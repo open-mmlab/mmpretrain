@@ -32,7 +32,7 @@
 ### Usage
 
 ```bash
-python tools/pytorch2onnx.py \
+python tools/deployment/pytorch2onnx.py \
     ${CONFIG_FILE} \
     --checkpoint ${CHECKPOINT_FILE} \
     --output-file ${OUTPUT_FILE} \
@@ -59,7 +59,7 @@ python tools/pytorch2onnx.py \
 Example:
 
 ```bash
-python tools/pytorch2onnx.py \
+python tools/deployment/pytorch2onnx.py \
     configs/resnet/resnet18_b16x8_cifar10.py \
     --checkpoint checkpoints/resnet/resnet18_b16x8_cifar10.pth \
     --output-file checkpoints/resnet/resnet18_b16x8_cifar10.onnx \
@@ -84,7 +84,7 @@ We prepare a tool `tools/ort_test.py` to evaluate ONNX models with ONNX Runtime 
 ### Usage
 
 ```bash
-python tools/ort_test.py \
+python tools/deployment/test.py \
     ${CONFIG_FILE} \
     ${ONNX_FILE} \
     --out ${OUTPUT_FILE} \
@@ -112,14 +112,60 @@ python tools/ort_test.py \
 
 ImageNet has multiple versions, but the most commonly used one is [ILSVRC 2012](http://www.image-net.org/challenges/LSVRC/2012/).
 
-|    Model     |                            config                            | PyTorch Top1 / Top5 | ONNXRuntime Top-1 / Top-5 |
-| :----------: | :----------------------------------------------------------: | :-----------------: | :-----------------------: |
-|    ResNet    | [resnet50_b32x8_imagenet.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnet/resnet50_b32x8_imagenet.py) |    76.55 / 93.15    |       76.49 / 93.22       |
-|   ResNeXt    | [resnext50_32x4d_b32x8_imagenet.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnext/resnext50_32x4d_b32x8_imagenet.py) |    77.92 / 93.74    |       77.15 / 93.36       |
-|  SE-ResNet   | [seresnet50_b32x8_imagenet.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/seresnet/seresnet50_b32x8_imagenet.py) |    77.74 / 93.84    |       77.74 / 93.84       |
-| ShuffleNetV1 | [shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py) |    68.13 / 87.81    |       68.13 / 87.81       |
-| ShuffleNetV2 | [shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py) |    69.55 / 88.92    |       69.55 / 88.92       |
-| MobileNetV2  | [mobilenet_v2_b32x8_imagenet.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py) |    71.86 / 90.42    |       71.86 / 90.42       |
+<table>
+ <tr>
+  <th>Model</th>
+  <th>Config</th>
+  <th>Metric</th>
+  <th>PyTorch</th>
+  <th>ONNX Runtime</th>
+ </tr>
+ <tr>
+  <td>ResNet</td>
+  <td>configs/resnet/resnet50_b32x8_imagenet.py</td>
+  <td>Top 1 / 5</td>
+  <td>76.55 / 93.15</td>
+  <td>76.49 / 93.22</td>
+ </tr>
+ <tr>
+  <td>ResNeXt</td>
+  <td>configs/resnext/resnext50_32x4d_b32x8_imagenet.py</td>
+  <td>Top 1 / 5</td>
+  <td>77.92 / 93.74</td>
+  <td>77.15 / 93.36</td>
+ </tr>
+ <tr>
+  <td>SE-ResNet</td>
+  <td>configs/seresnet/seresnet50_b32x8_imagenet.py</td>
+  <td>Top 1 / 5</td>
+  <td>77.74 / 93.84</td>
+  <td>77.74 / 93.84</td>
+ </tr>
+ <tr>
+  <td>ShuffleNetV1</td>
+  <td>configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py</td>
+  <td>Top 1 / 5</td>
+  <td>68.13 / 87.81</td>
+  <td>68.13 / 87.81</td>
+ </tr>
+ <tr>
+  <td>ShuffleNetV2</td>
+  <td>configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py</td>
+  <td>Top 1 / 5</td>
+  <td>69.55 / 88.92</td>
+  <td>69.55 / 88.92</td>
+ </tr>
+ <tr>
+  <td>MobileNetV2</td>
+  <td>configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py</td>
+  <td>Top 1 / 5</td>
+  <td>71.86 / 90.42</td>
+  <td>71.86 / 90.42</td>
+ </tr>
+ <tr>
+  <td></td>
+ </tr>
+</table>
 
 ## List of supported models exportable to ONNX
 
