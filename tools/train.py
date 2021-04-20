@@ -27,6 +27,7 @@ def parse_args():
         action='store_true',
         help='whether not to evaluate the checkpoint during training')
     group_gpus = parser.add_mutually_exclusive_group()
+    group_gpus.add_argument('--device', help='device used for training')
     group_gpus.add_argument(
         '--gpus',
         type=int,
@@ -144,6 +145,7 @@ def main():
         distributed=distributed,
         validate=(not args.no_validate),
         timestamp=timestamp,
+        device='cpu' if args.device == 'cpu' else 'cuda',
         meta=meta)
 
 
