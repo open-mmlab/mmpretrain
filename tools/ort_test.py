@@ -3,61 +3,12 @@ import warnings
 
 import mmcv
 import numpy as np
-import onnxruntime as ort
 from mmcv import DictAction
 from mmcv.parallel import MMDataParallel
 
 from mmcls.apis import single_gpu_test
+from mmcls.core.export.test import ONNXRuntimeClassifier
 from mmcls.datasets import build_dataloader, build_dataset
-from mmcls.models.classifiers import BaseClassifier
-
-
-class ONNXRuntimeClassifier(BaseClassifier):
-    """Wrapper for classifier's inference with ONNXRuntime."""
-
-    def __init__(self, onnx_file, class_names, device_id):
-        super(ONNXRuntimeClassifier, self).__init__()
-        sess = ort.InferenceSession(onnx_file)
-
-        self.sess = sess
-        self.CLASSES = class_names
-        self.device_id = device_id
-        self.io_binding = sess.io_binding()
-        self.output_names = [_.name for _ in sess.get_outputs()]
-
-    def simple_test(self, img, img_metas, **kwargs):
-        raise NotImplementedError('This method is not implemented.')
-
-    def extract_feat(self, imgs):
-        raise NotImplementedError('This method is not implemented.')
-
-    def forward_train(self, imgs, **kwargs):
-        raise NotImplementedError('This method is not implemented.')
-
-    def forward_test(self, imgs, img_metas, **kwargs):
-        assert ort.get_device() == 'GPU', \
-            ('The dataset accuracy verification defaultly uses GPU '
-                'for inference. Please install the onnxruntime-gpu model.')
-        input_data = imgs
-        batch_size = imgs.shape[0]
-        # set io binding for inputs/outputs
-        self.io_binding.bind_input(
-            name='input',
-            device_type='cuda',
-            device_id=self.device_id,
-            element_type=np.float32,
-            shape=list(imgs.shape),
-            buffer_ptr=input_data.data_ptr())
-        for name in self.output_names:
-            self.io_binding.bind_output(name)
-        # run session to get outputs
-        self.sess.run_with_iobinding(self.io_binding)
-        result = self.io_binding.copy_outputs_to_cpu()[0]
-
-        results = []
-        for i in range(batch_size):
-            results.append(result[i])
-        return results
 
 
 def parse_args():
