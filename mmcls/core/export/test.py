@@ -17,7 +17,6 @@ class ONNXRuntimeClassifier(BaseClassifier):
         if is_cuda_available:
             providers.append('CUDAExecutionProvider')
             options.append({'device_id': device_id})
-
         sess.set_providers(providers, options)
 
         self.sess = sess
@@ -38,7 +37,6 @@ class ONNXRuntimeClassifier(BaseClassifier):
 
     def forward_test(self, imgs, img_metas, **kwargs):
         input_data = imgs
-        batch_size = imgs.shape[0]
         # set io binding for inputs/outputs
         if self.is_cuda_available:
             self.io_binding.bind_input(
@@ -55,9 +53,5 @@ class ONNXRuntimeClassifier(BaseClassifier):
             self.io_binding.bind_output(name)
         # run session to get outputs
         self.sess.run_with_iobinding(self.io_binding)
-        result = self.io_binding.copy_outputs_to_cpu()[0]
-
-        results = []
-        for i in range(batch_size):
-            results.append(result[i])
-        return results
+        results = self.io_binding.copy_outputs_to_cpu()[0]
+        return list(results)

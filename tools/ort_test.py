@@ -7,14 +7,14 @@ from mmcv import DictAction
 from mmcv.parallel import MMDataParallel
 
 from mmcls.apis import single_gpu_test
-from mmcls.core.export.test import ONNXRuntimeClassifier
+from mmcls.core.export import ONNXRuntimeClassifier
 from mmcls.datasets import build_dataloader, build_dataset
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description='Use Dataset to Verify Model Accuracy.')
-    parser.add_argument('config', help='test config file path')
+        description='Test (and eval) an ONNX model using ONNXRuntime.')
+    parser.add_argument('config', help='model config file')
     parser.add_argument('model', help='filename of the input ONNX model')
     parser.add_argument(
         '--out', type=str, help='output result file in pickle format')
