@@ -114,12 +114,12 @@ ImageNet has multiple versions, but the most commonly used one is [ILSVRC 2012](
 
 |    Model     |                            config                            | PyTorch Top1 / Top5 | ONNXRuntime Top-1 / Top-5 |
 | :----------: | :----------------------------------------------------------: | :-----------------: | :-----------------------: |
-|    ResNet    | [resnet50_b32x8_imagenet.py](configs/resnet/resnet50_b32x8_imagenet.py) |    76.55 / 93.15    |       76.49 / 93.22       |
-|   ResNeXt    | [resnext50_32x4d_b32x8_imagenet.py](configs/resnext/resnext50_32x4d_b32x8_imagenet.py) |    77.92 / 93.74    |       77.15 / 93.36       |
-|  SE-ResNet   | [seresnet50_b32x8_imagenet.py](configs/seresnet/seresnet50_b32x8_imagenet.py) |    77.74 / 93.84    |       77.74 / 93.84       |
-| ShuffleNetV1 | [shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py](configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py) |    68.13 / 87.81    |       68.13 / 87.81       |
-| ShuffleNetV2 | [shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py](configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py) |    69.55 / 88.92    |       69.55 / 88.92       |
-| MobileNetV2  | [mobilenet_v2_b32x8_imagenet.py](configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py) |    71.86 / 90.42    |       71.86 / 90.42       |
+|    ResNet    | [resnet50_b32x8_imagenet.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnet/resnet50_b32x8_imagenet.py) |    76.55 / 93.15    |       76.49 / 93.22       |
+|   ResNeXt    | [resnext50_32x4d_b32x8_imagenet.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnext/resnext50_32x4d_b32x8_imagenet.py) |    77.92 / 93.74    |       77.15 / 93.36       |
+|  SE-ResNet   | [seresnet50_b32x8_imagenet.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/seresnet/seresnet50_b32x8_imagenet.py) |    77.74 / 93.84    |       77.74 / 93.84       |
+| ShuffleNetV1 | [shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py) |    68.13 / 87.81    |       68.13 / 87.81       |
+| ShuffleNetV2 | [shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py) |    69.55 / 88.92    |       69.55 / 88.92       |
+| MobileNetV2  | [mobilenet_v2_b32x8_imagenet.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py) |    71.86 / 90.42    |       71.86 / 90.42       |
 
 ## List of supported models exportable to ONNX
 
@@ -127,12 +127,12 @@ The table below lists the models that are guaranteed to be exportable to ONNX an
 
 |    Model     |                            Config                            | Batch Inference | Dynamic Shape | Note |
 | :----------: | :----------------------------------------------------------: | :-------------: | :-----------: | ---- |
-| MobileNetV2  | [mobilenet_v2_b32x8_imagenet.py](configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py) |        Y        |       Y       |      |
-|    ResNet    | [resnet18_b16x8_cifar10.py](configs/resnet/resnet18_b16x8_cifar10.py) |        Y        |       Y       |      |
-|   ResNeXt    | [resnext50_32x4d_b32x8_imagenet.py](configs/resnext/resnext50_32x4d_b32x8_imagenet.py) |        Y        |       Y       |      |
-|  SE-ResNet   | [seresnet50_b32x8_imagenet.py](configs/seresnet/seresnet50_b32x8_imagenet.py) |        Y        |       Y       |      |
-| ShuffleNetV1 | [shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py](configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py) |        Y        |       Y       |      |
-| ShuffleNetV2 | [shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py](configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py) |        Y        |       Y       |      |
+| MobileNetV2  | [mobilenet_v2_b32x8_imagenet.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py) |        Y        |       Y       |      |
+|    ResNet    | [resnet18_b16x8_cifar10.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnet/resnet18_b16x8_cifar10.py) |        Y        |       Y       |      |
+|   ResNeXt    | [resnext50_32x4d_b32x8_imagenet.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnext/resnext50_32x4d_b32x8_imagenet.py) |        Y        |       Y       |      |
+|  SE-ResNet   | [seresnet50_b32x8_imagenet.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/seresnet/seresnet50_b32x8_imagenet.py) |        Y        |       Y       |      |
+| ShuffleNetV1 | [shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py) |        Y        |       Y       |      |
+| ShuffleNetV2 | [shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py) |        Y        |       Y       |      |
 
 Notes:
 
