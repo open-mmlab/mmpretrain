@@ -20,8 +20,7 @@ policies = [
         magnitude_range=(0, 30),
         pad_val=0,
         prob=0.5,
-        random_negative_prob=0.5,
-        interpolation='bicubic'),
+        random_negative_prob=0.5),
     dict(
         type='Posterize',
         magnitude_key='bits',
@@ -116,7 +115,7 @@ train_pipeline = [
         policies=policies,
         num_policies=2,
         magnitude_level=12),
-    dict(type='RandomResizedCrop', size=224),
+    dict(type='RandomResizedCrop', size=224, backend='pillow'),
     dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
     dict(type='ColorJitter', brightness=0.4, contrast=0.4, saturation=0.4),
     dict(type='Lighting', **img_lighting_cfg),
@@ -137,7 +136,7 @@ test_pipeline = [
             server_list_cfg=  # noqa
             '/mnt/lustre/share/memcached_client/server_list.conf',  # noqa
             client_cfg='/mnt/lustre/share/memcached_client/client.conf')),
-    dict(type='Resize', size=(256, -1)),
+    dict(type='Resize', size=(256, -1), backend='pillow'),
     dict(type='CenterCrop', crop_size=224),
     dict(
         type='Normalize',
@@ -178,23 +177,25 @@ model = dict(
         style='pytorch'),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
-        type='MultiLabelLinearClsHead',
+        type='LinearClsHead',
         num_classes=1000,
         in_channels=2048,
         loss=dict(
             type='LabelSmoothLoss',
-            loss_weight=1.0,
             label_smooth_val=0.1,
-            reduction='mean')))
+            num_classes=1000,
+            reduction='mean',
+            loss_weight=1.0),
+        topk=(1, 5)))
 train_cfg = dict(mixup=dict(alpha=0.2, num_classes=1000))
 
-# batch_size = 4096 8x8gpus
+# batch_size = 2048 4x8gpus
 # optimizer
 optimizer = dict(
     type='SGD',
-    lr=1.6,
+    lr=0.8,
     momentum=0.9,
-    weight_decay=0.0001,
+    weight_decay=1e-4,
     paramwise_cfg=dict(bias_decay_mult=0., norm_decay_mult=0.))
 optimizer_config = dict(grad_clip=None)
 # learning policy
@@ -203,7 +204,7 @@ lr_config = dict(
     min_lr=0,
     warmup='linear',
     warmup_iters=5,
-    warmup_ratio=0.001,
+    warmup_ratio=1e-6,
     warmup_by_epoch=True)
 runner = dict(type='EpochBasedRunner', max_epochs=270)
 
@@ -212,4 +213,5 @@ log_config = dict(
     hooks=[
         dict(type='TextLoggerHook'),
         # dict(type='TensorboardLoggerHook')
+        dict(type='PaviloggerHook')
     ])

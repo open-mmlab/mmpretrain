@@ -111,11 +111,11 @@ train_pipeline = [
             server_list_cfg=  # noqa
             '/mnt/lustre/share/memcached_client/server_list.conf',  # noqa
             client_cfg='/mnt/lustre/share/memcached_client/client.conf')),
-    dict(
-        type='RandAugment',
-        policies=policies,
-        num_policies=2,
-        magnitude_level=12),
+    # dict(
+    #     type='RandAugment',
+    #     policies=policies,
+    #     num_policies=2,
+    #     magnitude_level=12),
     dict(type='RandomResizedCrop', size=224),
     dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
     dict(type='ColorJitter', brightness=0.4, contrast=0.4, saturation=0.4),
