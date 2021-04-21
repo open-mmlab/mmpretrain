@@ -38,16 +38,16 @@ class ONNXRuntimeClassifier(BaseClassifier):
     def forward_test(self, imgs, img_metas, **kwargs):
         input_data = imgs
         # set io binding for inputs/outputs
-        if self.is_cuda_available:
-            self.io_binding.bind_input(
-                name='input',
-                device_type='cuda',
-                device_id=self.device_id,
-                element_type=np.float32,
-                shape=list(imgs.shape),
-                buffer_ptr=input_data.data_ptr())
-        else:
-            self.io_binding.bind_cpu_input('input', input_data.cpu().numpy())
+        device_type = 'cuda' if self.is_cuda_available else 'cpu'
+        if not self.is_cuda_available:
+            input_data = input_data.cpu()
+        self.io_binding.bind_input(
+            name='input',
+            device_type=device_type,
+            device_id=self.device_id,
+            element_type=np.float32,
+            shape=input_data.shape,
+            buffer_ptr=input_data.data_ptr())
 
         for name in self.output_names:
             self.io_binding.bind_output(name)
