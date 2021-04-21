@@ -24,13 +24,12 @@ class BaseBackbone(BaseModule, metaclass=ABCMeta):
                 checkpoint. If pretrained is None, then it follows default
                 initializer or customized initializer in subclasses.
         """
-        super(BaseBackbone, self).init_weights()
         if isinstance(pretrained, str):
             logger = logging.getLogger()
             load_checkpoint(self, pretrained, strict=False, logger=logger)
         elif pretrained is None:
             # use default initializer or customized initializer in subclasses
-            pass
+            super(BaseBackbone, self).init_weights()
         else:
             raise TypeError('pretrained must be a str or None.'
                             f' But received {type(pretrained)}.')
