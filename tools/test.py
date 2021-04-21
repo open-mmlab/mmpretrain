@@ -111,7 +111,7 @@ def main():
         wrap_fp16_model(model)
     checkpoint = load_checkpoint(model, args.checkpoint, map_location='cpu')
 
-    if 'CLASSES' in checkpoint['meta']:
+    if 'CLASSES' in checkpoint.get('meta', {}):
         CLASSES = checkpoint['meta']['CLASSES']
     else:
         from mmcls.datasets import ImageNet
