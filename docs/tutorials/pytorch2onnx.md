@@ -71,7 +71,7 @@ python tools/deployment/pytorch2onnx.py \
 
 ## How to evaluate ONNX models with ONNX Runtime
 
-We prepare a tool `tools/ort_test.py` to evaluate ONNX models with ONNX Runtime backend.
+We prepare a tool `tools/deployment/ort_test.py` to evaluate ONNX models with ONNX Runtime backend.
 
 ### Prerequisite
 
@@ -108,9 +108,7 @@ python tools/deployment/test.py \
 
 ### Results and Models
 
-### ImageNet
-
-ImageNet has multiple versions, but the most commonly used one is [ILSVRC 2012](http://www.image-net.org/challenges/LSVRC/2012/).
+This part selects ImageNet for onnxruntime verification. ImageNet has multiple versions, but the most commonly used one is [ILSVRC 2012](http://www.image-net.org/challenges/LSVRC/2012/).
 
 <table>
 <tr>
