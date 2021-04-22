@@ -152,13 +152,6 @@ class PatchEmbed(BaseModule):
             kernel_size=patch_size,
             stride=patch_size)
 
-    #
-    #     self.init_weights()
-    #
-    # def init_weights(self):
-    #     # Lecun norm from ClassyVision
-    #     kaiming_init(self.projection, mode='fan_in', nonlinearity='linear')
-
     def forward(self, x):
         B, C, H, W = x.shape
         # FIXME look at relaxing size constraints
@@ -227,13 +220,6 @@ class HybridEmbed(BaseModule):
         # Use conv layer to embed
         self.projection = build_conv_layer(
             conv_cfg, feature_dim, embed_dim, kernel_size=1, stride=1)
-
-    #
-    #     self.init_weights()
-    #
-    # def init_weights(self):
-    #     # Lecun norm from ClassyVision
-    #     kaiming_init(self.projection, mode='fan_in', nonlinearity='linear')
 
     def forward(self, x):
         x = self.backbone(x)
@@ -307,9 +293,9 @@ class VisionTransformer(BaseBackbone):
 
         self.encoder = build_transformer_layer_sequence(encoder)
 
-        self.norm1_name, norm1 = build_norm_layer(
-            norm_cfg, embed_dim, postfix=1)
-        self.add_module(self.norm1_name, norm1)
+        # self.norm1_name, norm1 = build_norm_layer(
+        #     norm_cfg, embed_dim, postfix=1)
+        # self.add_module(self.norm1_name, norm1)
 
     def init_weights(self, pretrained=None):
         super(VisionTransformer, self).init_weights(pretrained)
@@ -333,8 +319,7 @@ class VisionTransformer(BaseBackbone):
         x = self.drop_after_pos(x)
 
         x = self.encoder(query=x, key=None, value=None)
-        # for layer in self.layers:
-        #     x = layer(x)
 
-        x = self.norm1(x)[:, 0]
-        return x
+        # x = self.norm1(x)[:, 0]
+
+        return x[:, 0]
