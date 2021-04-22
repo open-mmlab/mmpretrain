@@ -68,10 +68,11 @@ def test_vit_backbone():
     # Test ViT base model with input size of 224
     # and patch size of 16
     model = VisionTransformer(**cfg)
-    # print(model)
+    print(model)
     model.init_weights()
-    print(model.encoder.layers[0].ffns[0]._is_init)
-    print(model.encoder.layers[0].ffns[0].layers[0][0].bias.std())
+    # print(model.encoder.layers[0].ffns[0]._is_init)
+    # print(model.encoder.layers[0].ffns[0].layers[0][0].bias.std())
+    print(model.state_dict().keys())
     model.train()
 
     assert check_norm_state(model.modules(), True)
