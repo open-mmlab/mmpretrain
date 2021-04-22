@@ -56,6 +56,19 @@ Please refer to [install.md](docs/install.md) for installation and dataset prepa
 
 Please see [getting_started.md](docs/getting_started.md) for the basic usage of MMClassification. There are also tutorials for [finetuning models](docs/tutorials/finetune.md), [adding new dataset](docs/tutorials/new_dataset.md), [designing data pipeline](docs/tutorials/data_pipeline.md), and [adding new modules](docs/tutorials/new_modules.md).
 
+## Citation
+
+If you find this project useful in your research, please consider cite:
+
+```BibTeX
+@misc{2020mmclassification,
+    title={OpenMMLab's Image Classification Toolbox and Benchmark},
+    author={MMClassification Contributors},
+    howpublished = {\url{https://github.com/open-mmlab/mmclassification}},
+    year={2020}
+}
+```
+
 ## Contributing
 
 We appreciate all contributions to improve MMClassification.
@@ -78,3 +91,4 @@ We wish that the toolbox and benchmark could serve the growing research communit
 - [MMPose](https://github.com/open-mmlab/mmpose): OpenMMLab pose estimation toolbox and benchmark.
 - [MMEditing](https://github.com/open-mmlab/mmediting): OpenMMLab image and video editing toolbox.
 - [MMOCR](https://github.com/open-mmlab/mmocr): OpenMMLab toolbox for text detection, recognition and understanding.
+- [MMGeneration](https://github.com/open-mmlab/mmgeneration): A powerful toolkit for generative models.
