@@ -42,7 +42,7 @@ def test_vit_backbone():
             type='TransformerEncoder',
             num_layers=12,
             transformerlayers=dict(
-                type='TransformerEncoderLayer',
+                type='VitTransformerEncoderLayer',
                 attn_cfgs=[
                     dict(
                         type='MultiheadAttention',
@@ -52,13 +52,26 @@ def test_vit_backbone():
                 ],
                 feedforward_channels=3072,
                 ffn_dropout=0.1,
-                operation_order=('norm', 'self_attn', 'norm', 'ffn'))))
+                operation_order=('norm', 'self_attn', 'norm', 'ffn')),
+            init_cfg=[
+                dict(type='Xavier', layer='Linear', distribution='normal')
+            ]),
+        init_cfg=[
+            dict(
+                type='Kaiming',
+                layer='Conv2d',
+                mode='fan_in',
+                nonlinearity='linear')
+        ])
     cfg = Config(model)
 
     # Test ViT base model with input size of 224
     # and patch size of 16
     model = VisionTransformer(**cfg)
+    # print(model)
     model.init_weights()
+    print(model.encoder.layers[0].ffns[0]._is_init)
+    print(model.encoder.layers[0].ffns[0].layers[0][0].bias.std())
     model.train()
 
     assert check_norm_state(model.modules(), True)

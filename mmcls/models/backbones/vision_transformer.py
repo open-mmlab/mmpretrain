@@ -1,11 +1,12 @@
 import torch
 import torch.nn as nn
-from mmcv.cnn import build_conv_layer, build_norm_layer, kaiming_init
+from mmcv.cnn import build_conv_layer, build_norm_layer
 from mmcv.cnn.bricks.registry import (TRANSFORMER_LAYER,
                                       TRANSFORMER_LAYER_SEQUENCE)
 from mmcv.cnn.bricks.transformer import (BaseTransformerLayer,
                                          TransformerLayerSequence,
                                          build_transformer_layer_sequence)
+from mmcv.runner.base_module import BaseModule
 
 from ..builder import BACKBONES
 from ..utils import to_2tuple
@@ -13,7 +14,7 @@ from .base_backbone import BaseBackbone
 
 
 @TRANSFORMER_LAYER.register_module()
-class TransformerEncoderLayer(BaseTransformerLayer):
+class VitTransformerEncoderLayer(BaseTransformerLayer):
     """Implements encoder layer in DETR transformer.
 
     Args:
@@ -43,7 +44,7 @@ class TransformerEncoderLayer(BaseTransformerLayer):
                  norm_cfg=dict(type='LN'),
                  ffn_num_fcs=2,
                  **kwargs):
-        super(TransformerEncoderLayer, self).__init__(
+        super(VitTransformerEncoderLayer, self).__init__(
             attn_cfgs=attn_cfgs,
             feedforward_channels=feedforward_channels,
             operation_order=operation_order,
@@ -54,6 +55,14 @@ class TransformerEncoderLayer(BaseTransformerLayer):
             **kwargs)
         assert len(self.operation_order) == 4
         assert set(self.operation_order) == set(['self_attn', 'norm', 'ffn'])
+
+    def init_weights(self):
+        super(VitTransformerEncoderLayer, self).init_weights()
+        for ffn in self.ffns:
+            for m in ffn.modules():
+                if isinstance(m, nn.Linear):
+                    nn.init.xavier_normal_(m.weight)
+                    nn.init.normal_(m.bias, std=1e-6)
 
 
 @TRANSFORMER_LAYER_SEQUENCE.register_module()
@@ -94,7 +103,7 @@ class TransformerEncoder(TransformerLayerSequence):
 
 
 # Modified from pytorch-image-models
-class PatchEmbed(nn.Module):
+class PatchEmbed(BaseModule):
     """Image to Patch Embedding.
 
     Args:
@@ -111,8 +120,9 @@ class PatchEmbed(nn.Module):
                  patch_size=16,
                  in_channels=3,
                  embed_dim=768,
-                 conv_cfg=None):
-        super(PatchEmbed, self).__init__()
+                 conv_cfg=None,
+                 init_cfg=None):
+        super(PatchEmbed, self).__init__(init_cfg)
         if isinstance(img_size, int):
             img_size = to_2tuple(img_size)
             # img_size = tuple(repeat(img_size, 2))
@@ -142,11 +152,12 @@ class PatchEmbed(nn.Module):
             kernel_size=patch_size,
             stride=patch_size)
 
-        self.init_weights()
-
-    def init_weights(self):
-        # Lecun norm from ClassyVision
-        kaiming_init(self.projection, mode='fan_in', nonlinearity='linear')
+    #
+    #     self.init_weights()
+    #
+    # def init_weights(self):
+    #     # Lecun norm from ClassyVision
+    #     kaiming_init(self.projection, mode='fan_in', nonlinearity='linear')
 
     def forward(self, x):
         B, C, H, W = x.shape
@@ -159,7 +170,7 @@ class PatchEmbed(nn.Module):
         return x
 
 
-class HybridEmbed(nn.Module):
+class HybridEmbed(BaseModule):
     """CNN Feature Map Embedding.
 
     Extract feature map from CNN, flatten, project to embedding dim.
@@ -171,8 +182,9 @@ class HybridEmbed(nn.Module):
                  feature_size=None,
                  in_channels=3,
                  embed_dim=768,
-                 conv_cfg=None):
-        super().__init__()
+                 conv_cfg=None,
+                 init_cfg=None):
+        super(HybridEmbed).__init__(init_cfg)
         assert isinstance(backbone, nn.Module)
         if isinstance(img_size, int):
             img_size = to_2tuple(img_size)
@@ -216,11 +228,12 @@ class HybridEmbed(nn.Module):
         self.projection = build_conv_layer(
             conv_cfg, feature_dim, embed_dim, kernel_size=1, stride=1)
 
-        self.init_weights()
-
-    def init_weights(self):
-        # Lecun norm from ClassyVision
-        kaiming_init(self.projection, mode='fan_in', nonlinearity='linear')
+    #
+    #     self.init_weights()
+    #
+    # def init_weights(self):
+    #     # Lecun norm from ClassyVision
+    #     kaiming_init(self.projection, mode='fan_in', nonlinearity='linear')
 
     def forward(self, x):
         x = self.backbone(x)
@@ -268,8 +281,9 @@ class VisionTransformer(BaseBackbone):
                  drop_rate=0.,
                  hybrid_backbone=None,
                  norm_cfg=dict(type='LN'),
-                 encoder=None):
-        super(VisionTransformer, self).__init__()
+                 encoder=None,
+                 init_cfg=None):
+        super(VisionTransformer, self).__init__(init_cfg)
         self.embed_dim = embed_dim
 
         if hybrid_backbone is not None:
@@ -297,10 +311,9 @@ class VisionTransformer(BaseBackbone):
             norm_cfg, embed_dim, postfix=1)
         self.add_module(self.norm1_name, norm1)
 
-        self.init_weights()
-
     def init_weights(self, pretrained=None):
         super(VisionTransformer, self).init_weights(pretrained)
+
         if pretrained is None:
             # Modified from ClassyVision
             nn.init.normal_(self.pos_embed, std=0.02)
@@ -308,10 +321,6 @@ class VisionTransformer(BaseBackbone):
     @property
     def norm1(self):
         return getattr(self, self.norm1_name)
-
-    @torch.jit.ignore
-    def no_weight_decay(self):
-        return {'pos_embed', 'cls_token'}
 
     def forward(self, x):
         B = x.shape[0]
