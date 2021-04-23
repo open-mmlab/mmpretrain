@@ -73,7 +73,7 @@ python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--metrics ${METRICS}] [-
 可选参数：
 
 - `RESULT_FILE`：输出结果的文件名。如果未指定，结果将不会保存到文件中。支持json, yaml, pickle格式。
-- `METRICS`：数据集测试指标，如 accuracy, precision, recall 等
+- `METRICS`：数据集测试指标，如准确率(accuracy), 精确率(precision), 召回率(recall)等
 
 例子:
 
@@ -94,7 +94,7 @@ MMClassification 使用 `MMDistributedDataParallel` 进行分布式训练，使�
 默认情况下，MMClassification 在每个周期后会在验证集上评估模型，可以通过在训练配置中修改 `interval` 参数来更改评估间隔
 
 ```python
-evaluation = dict(interval=12)  # This evaluate the model per 12 epoch.
+evaluation = dict(interval=12)  # 每进行12轮训练后评估一次模型
 ```
 
 ### 使用单个 GPU 进行训练
@@ -152,7 +152,7 @@ CUDA_VISIBLE_DEVICES=4,5,6,7 PORT=29501 ./tools/dist_train.sh ${CONFIG_FILE} 4
 dist_params = dict(backend='nccl', port=29500)
 ```
 
-In `config2.py`,
+在 `config2.py` 中，
 
 ```python
 dist_params = dict(backend='nccl', port=29501)
