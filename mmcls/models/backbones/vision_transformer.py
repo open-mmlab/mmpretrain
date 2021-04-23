@@ -15,7 +15,7 @@ from .base_backbone import BaseBackbone
 
 @TRANSFORMER_LAYER.register_module()
 class VitTransformerEncoderLayer(BaseTransformerLayer):
-    """Implements encoder layer in DETR transformer.
+    """Implements encoder layer in Vit transformer.
 
     Args:
         attn_cfgs (list[`mmcv.ConfigDict`] | list[dict] | dict )):
@@ -67,7 +67,7 @@ class VitTransformerEncoderLayer(BaseTransformerLayer):
 
 @TRANSFORMER_LAYER_SEQUENCE.register_module()
 class TransformerEncoder(TransformerLayerSequence):
-    """TransformerEncoder of DETR.
+    """TransformerEncoder of Vit.
 
     Args:
         coder_norm_cfg (dict): Config of last normalization layer. Default：
@@ -125,11 +125,9 @@ class PatchEmbed(BaseModule):
         super(PatchEmbed, self).__init__(init_cfg)
         if isinstance(img_size, int):
             img_size = to_2tuple(img_size)
-            # img_size = tuple(repeat(img_size, 2))
         elif isinstance(img_size, tuple):
             if len(img_size) == 1:
                 img_size = to_2tuple(img_size[0])
-                # img_size = tuple(repeat(img_size[0], 2))
             assert len(img_size) == 2, \
                 f'The size of image should have length 1 or 2, ' \
                 f'but got {len(img_size)}'
@@ -266,7 +264,6 @@ class VisionTransformer(BaseBackbone):
                  in_channels=3,
                  drop_rate=0.,
                  hybrid_backbone=None,
-                 norm_cfg=dict(type='LN'),
                  encoder=None,
                  init_cfg=None):
         super(VisionTransformer, self).__init__(init_cfg)
@@ -293,20 +290,12 @@ class VisionTransformer(BaseBackbone):
 
         self.encoder = build_transformer_layer_sequence(encoder)
 
-        # self.norm1_name, norm1 = build_norm_layer(
-        #     norm_cfg, embed_dim, postfix=1)
-        # self.add_module(self.norm1_name, norm1)
-
     def init_weights(self, pretrained=None):
-        super(VisionTransformer, self).init_weights(pretrained)
+        super(VisionTransformer, self).init_weights()
 
         if pretrained is None:
             # Modified from ClassyVision
             nn.init.normal_(self.pos_embed, std=0.02)
-
-    @property
-    def norm1(self):
-        return getattr(self, self.norm1_name)
 
     def forward(self, x):
         B = x.shape[0]
@@ -319,7 +308,5 @@ class VisionTransformer(BaseBackbone):
         x = self.drop_after_pos(x)
 
         x = self.encoder(query=x, key=None, value=None)
-
-        # x = self.norm1(x)[:, 0]
 
         return x[:, 0]
