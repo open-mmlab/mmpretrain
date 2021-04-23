@@ -131,7 +131,16 @@ def main():
 
     imgs = torch.ones(1, 3, 384, 384)
     # label = torch.randint(0, 1000, (1, ))
-    print(backbone(imgs))
+    x = imgs
+    B = x.shape[0]
+    x = backbone.patch_embed(x)
+
+    cls_tokens = backbone.cls_token.expand(
+        B, -1, -1)  # stole cls_tokens impl from Phil Wang, thanks
+    x = torch.cat((cls_tokens, x), dim=1)
+    x = x + backbone.pos_embed
+    x = backbone.drop_after_pos(x)
+    print(x)
     # model.forward_train(imgs, label)
     # writer.add_graph(model, imgs)  # 计算图可视化
     # writer.close()
