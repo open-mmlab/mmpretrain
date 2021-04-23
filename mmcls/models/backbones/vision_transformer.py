@@ -306,7 +306,9 @@ class VisionTransformer(BaseBackbone):
         x = torch.cat((cls_tokens, x), dim=1)
         x = x + self.pos_embed
         x = self.drop_after_pos(x)
+        x = x.permute(1, 0, 2)
 
         x = self.encoder(query=x, key=None, value=None)
+        x = x.permute(1, 0, 2)
 
         return x[:, 0]
