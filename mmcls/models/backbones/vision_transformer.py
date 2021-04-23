@@ -306,9 +306,14 @@ class VisionTransformer(BaseBackbone):
         x = torch.cat((cls_tokens, x), dim=1)
         x = x + self.pos_embed
         x = self.drop_after_pos(x)
-        x = x.permute(1, 0, 2)
 
+        # Reason for permute:
+        # as the shape of input x is [batch_size, num_query, embed_dim],
+        # but the one from nn.MultiheadAttention is
+        # [num_query, batch_size, embed_dim]
+        x = x.permute(1, 0, 2)
         x = self.encoder(query=x, key=None, value=None)
+        # Convert the shape back to [batch_size, num_query, embed_dim]
         x = x.permute(1, 0, 2)
 
         return x[:, 0]
