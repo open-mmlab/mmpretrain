@@ -3,7 +3,6 @@ import os
 import warnings
 
 import mmcv
-import torch
 from mmcv import DictAction
 from mmcv.runner import load_checkpoint
 
@@ -129,9 +128,9 @@ def main():
     # model.eval()
     # print(model.training)
 
-    imgs = torch.ones(1, 3, 384, 384)
+    # imgs = torch.ones(1, 3, 384, 384)
     # label = torch.randint(0, 1000, (1, ))
-    print(backbone(imgs))
+    print(backbone.cls_token)
     # model.forward_train(imgs, label)
     # writer.add_graph(model, imgs)  # 计算图可视化
     # writer.close()
