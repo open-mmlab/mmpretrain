@@ -3,7 +3,7 @@ import os
 import warnings
 
 import mmcv
-import torch
+# import torch
 from mmcv import DictAction
 from mmcv.runner import load_checkpoint
 
@@ -87,9 +87,9 @@ def main():
     print(len(checkpoint))
     model.eval()
     print(model.training)
-    backbone = model.backbone
-
-    imgs = torch.ones(1, 3, 384, 384)
+    # backbone = model.backbone
+    #
+    # imgs = torch.ones(1, 3, 384, 384)
     # label = torch.randint(0, 1000, (1, ))
     # x = imgs
     # B = x.shape[0]
@@ -101,7 +101,7 @@ def main():
     # x = x + backbone.pos_embed
     # x = backbone.drop_after_pos(x)
     # x = backbone.layers[0](x)
-    print(backbone(imgs))
+    # print(model.simple_test(imgs))
 
 
 if __name__ == '__main__':
