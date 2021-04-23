@@ -4,10 +4,10 @@ model = dict(
     backbone=dict(
         type='VisionTransformer',
         embed_dim=768,
-        img_size=224,
+        img_size=384,
         patch_size=16,
         in_channels=3,
-        drop_rate=0.,
+        drop_rate=0.1,
         hybrid_backbone=None,
         norm_cfg=dict(type='LN'),
         encoder=dict(
