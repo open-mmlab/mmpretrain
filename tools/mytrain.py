@@ -3,6 +3,7 @@ import os
 import warnings
 
 import mmcv
+import torch
 from mmcv import DictAction
 from mmcv.runner import load_checkpoint
 
@@ -88,49 +89,20 @@ def main():
     print(model.training)
     backbone = model.backbone
 
-    # model = dict(
-    #     embed_dim=768,
-    #     img_size=224,
-    #     patch_size=16,
-    #     in_channels=3,
-    #     drop_rate=0.,
-    #     hybrid_backbone=None,
-    #     encoder=dict(
-    #         type='TransformerEncoder',
-    #         num_layers=12,
-    #         transformerlayers=dict(
-    #             type='VitTransformerEncoderLayer',
-    #             attn_cfgs=[
-    #                 dict(
-    #                     type='MultiheadAttention',
-    #                     embed_dims=768,
-    #                     num_heads=12,
-    #                     dropout=0.1)
-    #             ],
-    #             feedforward_channels=3072,
-    #             ffn_dropout=0.1,
-    #             operation_order=('norm', 'self_attn', 'norm', 'ffn')),
-    #         init_cfg=[
-    #             dict(type='Xavier', layer='Linear', distribution='normal')
-    #         ]),
-    #     init_cfg=[
-    #         dict(
-    #             type='Kaiming',
-    #             layer='Conv2d',
-    #             mode='fan_in',
-    #             nonlinearity='linear')
-    #     ])
-    # cfg = mmcv.Config(model)
-    #
-    # # Test ViT base model with input size of 224
-    # # and patch size of 16
-    # model = VisionTransformer(**cfg)
-    # model.eval()
-    # print(model.training)
-
-    # imgs = torch.ones(1, 3, 384, 384)
+    imgs = torch.ones(1, 3, 384, 384)
     # label = torch.randint(0, 1000, (1, ))
-    print(backbone.cls_token)
+    x = imgs
+    B = x.shape[0]
+    x = backbone.patch_embed(x)
+
+    cls_tokens = backbone.cls_token.expand(
+        B, -1, -1)  # stole cls_tokens impl from Phil Wang, thanks
+    x = torch.cat((cls_tokens, x), dim=1)
+    x = x + backbone.pos_embed
+    x = backbone.drop_after_pos(x)
+    x = backbone.encoder.layers[0](x, None, None)
+    print(x)
+
     # model.forward_train(imgs, label)
     # writer.add_graph(model, imgs)  # 计算图可视化
     # writer.close()
