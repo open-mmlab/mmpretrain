@@ -9,7 +9,6 @@ model = dict(
         in_channels=3,
         drop_rate=0.,
         hybrid_backbone=None,
-        norm_cfg=dict(type='LN'),
         encoder=dict(
             type='TransformerEncoder',
             num_layers=12,
