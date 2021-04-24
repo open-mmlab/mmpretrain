@@ -12,7 +12,7 @@ class BaseBackbone(BaseModule, metaclass=ABCMeta):
     inherits this class should at least define its own `forward` function.
     """
 
-    def __init__(self, init_cfg):
+    def __init__(self, init_cfg=None):
         super(BaseBackbone, self).__init__(init_cfg)
 
     def init_weights(self, pretrained=None):
