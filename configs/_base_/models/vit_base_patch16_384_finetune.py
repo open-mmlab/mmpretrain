@@ -19,9 +19,8 @@ model = dict(
                         type='MultiheadAttention',
                         embed_dims=768,
                         num_heads=12,
-                        # FIXME dropout should be replaced with
-                        #  attn_drop and proj_drop
-                        dropout=0.1)
+                        attn_drop=0.,
+                        proj_drop=0.1)
                 ],
                 feedforward_channels=3072,
                 ffn_dropout=0.1,
