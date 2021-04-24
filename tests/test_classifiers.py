@@ -97,7 +97,7 @@ def test_image_classifier_vit():
             drop_rate=0.,
             hybrid_backbone=None,
             encoder=dict(
-                type='TransformerEncoder',
+                type='VitTransformerEncoder',
                 num_layers=12,
                 transformerlayers=dict(
                     type='VitTransformerEncoderLayer',

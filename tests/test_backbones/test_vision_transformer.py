@@ -38,7 +38,7 @@ def test_vit_backbone():
         drop_rate=0.,
         hybrid_backbone=None,
         encoder=dict(
-            type='TransformerEncoder',
+            type='VitTransformerEncoder',
             num_layers=12,
             transformerlayers=dict(
                 type='VitTransformerEncoderLayer',
@@ -91,7 +91,7 @@ def test_vit_hybrid_backbone():
         drop_rate=0.,
         hybrid_backbone=backbone,
         encoder=dict(
-            type='TransformerEncoder',
+            type='VitTransformerEncoder',
             num_layers=12,
             transformerlayers=dict(
                 type='VitTransformerEncoderLayer',
