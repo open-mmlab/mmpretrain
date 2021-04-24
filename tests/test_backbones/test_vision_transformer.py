@@ -47,7 +47,8 @@ def test_vit_backbone():
                         type='MultiheadAttention',
                         embed_dims=768,
                         num_heads=12,
-                        dropout=0.1)
+                        attn_drop=0.,
+                        proj_drop=0.1)
                 ],
                 feedforward_channels=3072,
                 ffn_dropout=0.1,
@@ -100,7 +101,8 @@ def test_vit_hybrid_backbone():
                         type='MultiheadAttention',
                         embed_dims=768,
                         num_heads=12,
-                        dropout=0.1)
+                        attn_drop=0.,
+                        proj_drop=0.1)
                 ],
                 feedforward_channels=3072,
                 ffn_dropout=0.1,
