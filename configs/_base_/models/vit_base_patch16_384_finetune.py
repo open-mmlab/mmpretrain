@@ -24,10 +24,7 @@ model = dict(
                 ],
                 feedforward_channels=3072,
                 ffn_dropout=0.1,
-                operation_order=('norm', 'self_attn', 'norm', 'ffn')),
-            init_cfg=[
-                dict(type='Xavier', layer='Linear', distribution='normal')
-            ]),
+                operation_order=('norm', 'self_attn', 'norm', 'ffn'))),
         init_cfg=[
             dict(
                 type='Kaiming',
