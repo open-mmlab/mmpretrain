@@ -56,6 +56,9 @@ class VitTransformerEncoderLayer(BaseTransformerLayer):
         assert len(self.operation_order) == 4
         assert set(self.operation_order) == set(['self_attn', 'norm', 'ffn'])
 
+    # TODO: wait for the new version of mmcv, the current mmcv does not
+    #  support initializing a layer with weights according to xavier_normal_
+    #  and bias according to normal_
     def init_weights(self):
         super(VitTransformerEncoderLayer, self).init_weights()
         for ffn in self.ffns:
@@ -66,7 +69,7 @@ class VitTransformerEncoderLayer(BaseTransformerLayer):
 
 
 @TRANSFORMER_LAYER_SEQUENCE.register_module()
-class TransformerEncoder(TransformerLayerSequence):
+class VitTransformerEncoder(TransformerLayerSequence):
     """TransformerEncoder of Vit.
 
     Args:
@@ -80,7 +83,7 @@ class TransformerEncoder(TransformerLayerSequence):
             coder_norm_cfg=dict(type='LN'),
             **kwargs,
     ):
-        super(TransformerEncoder, self).__init__(*args, **kwargs)
+        super(VitTransformerEncoder, self).__init__(*args, **kwargs)
         if coder_norm_cfg is not None:
             self.coder_norm = build_norm_layer(
                 coder_norm_cfg, self.embed_dims)[1] if self.pre_norm else None
@@ -96,7 +99,7 @@ class TransformerEncoder(TransformerLayerSequence):
         Returns:
             Tensor: forwarded results with shape [num_query, bs, embed_dims].
         """
-        x = super(TransformerEncoder, self).forward(*args, **kwargs)
+        x = super(VitTransformerEncoder, self).forward(*args, **kwargs)
         if self.coder_norm is not None:
             x = self.coder_norm(x)
         return x
@@ -111,7 +114,9 @@ class PatchEmbed(BaseModule):
         patch_size (int): The size of one patch
         in_channels (int): The num of input channels.
         embed_dim (int): The dimensions of embedding.
-        conv_cfg (dict | None): The config dict for conv layers.
+        conv_cfg (dict, optional): The config dict for conv layers.
+            Default: None.
+        init_cfg (`mmcv.ConfigDict`, optional): The Config for initialization.
             Default: None.
     """
 
@@ -161,6 +166,7 @@ class PatchEmbed(BaseModule):
         return x
 
 
+# Modified from pytorch-image-models
 class HybridEmbed(BaseModule):
     """CNN Feature Map Embedding.
 
@@ -175,7 +181,7 @@ class HybridEmbed(BaseModule):
                  embed_dim=768,
                  conv_cfg=None,
                  init_cfg=None):
-        super(HybridEmbed).__init__(init_cfg)
+        super(HybridEmbed, self).__init__(init_cfg)
         assert isinstance(backbone, nn.Module)
         if isinstance(img_size, int):
             img_size = to_2tuple(img_size)
@@ -228,7 +234,6 @@ class HybridEmbed(BaseModule):
         return x
 
 
-# Modified from pytorch-image-models and mmdet
 @BACKBONES.register_module()
 class VisionTransformer(BaseBackbone):
     """ Vision Transformer
@@ -236,25 +241,17 @@ class VisionTransformer(BaseBackbone):
     Transformers for Image Recognition at Scale`  -
         https://arxiv.org/abs/2010.11929
     Args:
-        num_layers (int): Depth of transformer
         embed_dim (int): Embedding dimension
-        num_heads (int): Number of attention heads
         img_size (int | tuple): Input image size
         patch_size (int | tuple): The patch size
         in_channels (int): Number of input channels
         feedforward_channels (int): The hidden dimension for FFNs.
         drop_rate (float): Probability of an element to be zeroed.
             Default 0.0.
-        attn_drop (float): The drop out rate for attention layer.
-            Default 0.0.
-        hybrid_backbone (nn.Module): CNN backbone to use in-place of
+        hybrid_backbone (nn.Module, optional): CNN backbone to use in-place of
             PatchEmbed module. Default None.
-        norm_cfg
-        norm_cfg (dict): Config dict for normalization layer. Default
-            layer normalization.
-        act_cfg (dict): The activation config for FFNs. Defalut GELU.
-        num_fcs (int): The number of fully-connected layers for FFNs.
-            Default 2.
+        encoder (`mmcv.ConfigDict` | Dict): Config of TransformerEncoder
+        init_cfg (dict, optional): Initialization config dict.
     """
 
     def __init__(self,
@@ -264,7 +261,12 @@ class VisionTransformer(BaseBackbone):
                  in_channels=3,
                  drop_rate=0.,
                  hybrid_backbone=None,
-                 encoder=None,
+                 encoder=dict(
+                     type='VitTransformerEncoder',
+                     transformerlayers=None,
+                     num_encoder_layers=12,
+                     coder_norm_cfg=None,
+                 ),
                  init_cfg=None):
         super(VisionTransformer, self).__init__(init_cfg)
         self.embed_dim = embed_dim
