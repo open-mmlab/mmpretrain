@@ -1,4 +1,5 @@
 import torch
+from mmcv import Config
 
 from mmcls.models.classifiers import ImageClassifier
 
@@ -89,29 +90,62 @@ def test_image_classifier_vit():
     model_cfg = dict(
         backbone=dict(
             type='VisionTransformer',
-            num_layers=12,
             embed_dim=768,
-            num_heads=12,
             img_size=224,
             patch_size=16,
             in_channels=3,
-            feedforward_channels=3072,
-            drop_rate=0.1,
-            attn_drop_rate=0.),
+            drop_rate=0.,
+            hybrid_backbone=None,
+            encoder=dict(
+                type='TransformerEncoder',
+                num_layers=12,
+                transformerlayers=dict(
+                    type='VitTransformerEncoderLayer',
+                    attn_cfgs=[
+                        dict(
+                            type='MultiheadAttention',
+                            embed_dims=768,
+                            num_heads=12,
+                            dropout=0.1)
+                    ],
+                    feedforward_channels=3072,
+                    ffn_dropout=0.1,
+                    operation_order=('norm', 'self_attn', 'norm', 'ffn'))),
+            init_cfg=[
+                dict(
+                    type='Kaiming',
+                    layer='Conv2d',
+                    mode='fan_in',
+                    nonlinearity='linear'),
+                dict(
+                    type='Pretrained',
+                    checkpoint='../checkpoints/vit_base_patch16_224.pth',
+                    prefix='backbone.')
+            ]),
         neck=None,
         head=dict(
             type='VisionTransformerClsHead',
             num_classes=1000,
             in_channels=768,
             hidden_dim=3072,
-            loss=dict(type='CrossEntropyLoss', loss_weight=1.0, use_soft=True),
+            loss=dict(type='LabelSmoothLoss', label_smooth_val=0.1),
             topk=(1, 5),
         ),
         train_cfg=dict(mixup=dict(alpha=0.2, num_classes=1000)))
+
+    model_cfg = Config(model_cfg)
     img_classifier = ImageClassifier(**model_cfg)
     img_classifier.init_weights()
-    imgs = torch.randn(16, 3, 224, 224)
-    label = torch.randint(0, 1000, (16, ))
+
+    # test initializing weights of a sub-module
+    # with the specific part of a pretrained model by using 'prefix'
+    checkpoint = torch.load(
+        '../checkpoints/vit_base_patch16_224.pth', map_location='cpu')
+    assert (checkpoint['state_dict']['backbone.cls_token'] ==
+            img_classifier.state_dict()['backbone.cls_token']).all()
+
+    imgs = torch.randn(1, 3, 224, 224)
+    label = torch.randint(0, 1000, (1, ))
 
     losses = img_classifier.forward_train(imgs, label)
     assert losses['loss'].item() > 0
