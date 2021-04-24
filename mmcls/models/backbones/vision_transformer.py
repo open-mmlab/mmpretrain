@@ -291,7 +291,7 @@ class VisionTransformer(BaseBackbone):
         self.encoder = build_transformer_layer_sequence(encoder)
 
     def init_weights(self, pretrained=None):
-        super(VisionTransformer, self).init_weights()
+        super(VisionTransformer, self).init_weights(pretrained)
 
         if pretrained is None:
             # Modified from ClassyVision
