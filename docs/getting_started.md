@@ -51,7 +51,7 @@ We provide scripts to inference a single image, inference a dataset and test a d
 python demo/image_demo.py ${IMAGE_FILE} ${CONFIG_FILE} ${CHECKPOINT_FILE}
 ```
 
-### Inference a dataset
+### Inference and test a dataset
 
 - single GPU
 - single node multiple GPU
@@ -60,16 +60,20 @@ python demo/image_demo.py ${IMAGE_FILE} ${CONFIG_FILE} ${CHECKPOINT_FILE}
 You can use the following commands to infer a dataset.
 
 ```shell
-# single-gpu inference
-python tools/inference.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--out ${RESULT_FILE}]
+# single-gpu
+python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--metrics ${METRICS}] [--out ${RESULT_FILE}]
 
-# multi-gpu inference
-./tools/dist_inference.sh ${CONFIG_FILE} ${CHECKPOINT_FILE} ${GPU_NUM} [--out ${RESULT_FILE}]
+# multi-gpu
+./tools/dist_test.sh ${CONFIG_FILE} ${CHECKPOINT_FILE} ${GPU_NUM} [--metrics ${METRICS}] [--out ${RESULT_FILE}]
+
+# multi-node in slurm environment
+python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--metrics ${METRICS}] [--out ${RESULT_FILE}] --launcher slurm
 ```
 
 Optional arguments:
 
-- `RESULT_FILE`: Filename of the output results in pickle format. If not specified, the results will not be saved to a file.
+- `RESULT_FILE`: Filename of the output results. If not specified, the results will not be saved to a file. Support formats include json, yaml and pickle.
+- `METRICS`：Items to be evaluated on the results, like accuracy, precision, recall, etc.
 
 Examples:
 
@@ -77,38 +81,7 @@ Assume that you have already downloaded the checkpoints to the directory `checkp
 Infer ResNet-50 on ImageNet validation set to get predicted labels and their corresponding predicted scores.
 
 ```shell
-python tools/inference.py configs/imagenet/resnet50_batch256.py \
-    checkpoints/xxx.pth
-```
-
-### Test a dataset
-
-- single GPU
-- single node multiple GPU
-- multiple node
-
-You can use the following commands to test a dataset.
-
-```shell
-# single-gpu testing
-python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--out ${RESULT_FILE}]
-
-# multi-gpu testing
-./tools/dist_test.sh ${CONFIG_FILE} ${CHECKPOINT_FILE} ${GPU_NUM} [--out ${RESULT_FILE}]
-```
-
-Optional arguments:
-
-- `RESULT_FILE`: Filename of the output results in pickle format. If not specified, the results will not be saved to a file.
-
-Examples:
-
-Assume that you have already downloaded the checkpoints to the directory `checkpoints/`.
-Test ResNet-50 on ImageNet validation and evaluate the top-1 and top-5.
-
-```shell
-python tools/test.py configs/imagenet/resnet50_b32x8.py \
-    checkpoints/xxx.pth
+python tools/test.py configs/imagenet/resnet50_batch256.py checkpoints/xxx.pth --out result.pkl
 ```
 
 ## Train a model
@@ -226,7 +199,8 @@ Params: 25.56 M
 ### Publish a model
 
 Before you upload a model to AWS, you may want to
-(1) convert model weights to CPU tensors, (2) delete the optimizer states and
+(1) convert model weights to CPU tensors
+(2) delete the optimizer states
 (3) compute the hash of the checkpoint file and append the hash id to the filename.
 
 ```shell
@@ -243,4 +217,9 @@ The final output filename will be `imagenet_resnet50_20200708-{hash id}.pth`.
 
 ## Tutorials
 
-Currently, we provide five tutorials for users to [finetune models](tutorials/finetune.md), [add new dataset](tutorials/new_dataset.md), [design data pipeline](tutorials/data_pipeline.md) and [add new modules](tutorials/new_modules.md).
+Currently, we provide five tutorials for users.
+
+- [finetune models](tutorials/finetune.md)
+- [add new dataset](tutorials/new_dataset.md)
+- [design data pipeline](tutorials/data_pipeline.md)
+- [add new modules](tutorials/new_modules.md).
