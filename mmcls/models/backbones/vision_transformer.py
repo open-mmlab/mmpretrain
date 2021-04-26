@@ -114,6 +114,7 @@ class PatchEmbed(BaseModule):
         patch_size (int): The size of one patch
         in_channels (int): The num of input channels.
         embed_dim (int): The dimensions of embedding.
+        norm_cfg (dict, optional): Config dict for normalization layer.
         conv_cfg (dict, optional): The config dict for conv layers.
             Default: None.
         init_cfg (`mmcv.ConfigDict`, optional): The Config for initialization.
@@ -125,6 +126,7 @@ class PatchEmbed(BaseModule):
                  patch_size=16,
                  in_channels=3,
                  embed_dim=768,
+                 norm_cfg=None,
                  conv_cfg=None,
                  init_cfg=None):
         super(PatchEmbed, self).__init__(init_cfg)
@@ -140,11 +142,13 @@ class PatchEmbed(BaseModule):
         self.img_size = img_size
         self.patch_size = to_2tuple(patch_size)
 
-        num_patches = (self.img_size[1] // self.patch_size[1]) * (
-            self.img_size[0] // self.patch_size[0])
+        patches_resolution = [img_size[0] // self.patch_size[0],
+                              img_size[1] // self.patch_size[1]]
+        num_patches = patches_resolution[0] * patches_resolution[1]
         assert num_patches * self.patch_size[0] * self.patch_size[1] == \
                self.img_size[0] * self.img_size[1], \
                'The image size H*W must be divisible by patch size'
+        self.patches_resolution = patches_resolution
         self.num_patches = num_patches
 
         # Use conv layer to embed
@@ -155,6 +159,11 @@ class PatchEmbed(BaseModule):
             kernel_size=patch_size,
             stride=patch_size)
 
+        if norm_cfg is not None:
+            self.norm = build_norm_layer(norm_cfg, self.embed_dims)[1]
+        else:
+            self.norm = None
+
     def forward(self, x):
         B, C, H, W = x.shape
         # FIXME look at relaxing size constraints
@@ -163,6 +172,8 @@ class PatchEmbed(BaseModule):
             f'match model ({self.img_size[0]}*{self.img_size[1]}).'
         # The output size is (B, N, D), where N=H*W/P/P, D is embid_dim
         x = self.projection(x).flatten(2).transpose(1, 2)
+        if self.norm is not None:
+            x = self.norm(x)
         return x
 
 
