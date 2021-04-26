@@ -66,7 +66,7 @@ class MobileNetV3(BaseBackbone):
     def __init__(self,
                  arch='small',
                  conv_cfg=None,
-                 norm_cfg=dict(type='BN'),
+                 norm_cfg=dict(type='BN', eps=0.001, momentum=0.01),
                  out_indices=(12, ),
                  frozen_stages=-1,
                  norm_eval=False,
@@ -119,7 +119,6 @@ class MobileNetV3(BaseBackbone):
                 se_cfg = dict(
                     channels=mid_channels,
                     ratio=4,
-                    bias=False,
                     act_cfg=(dict(type='ReLU'),
                              dict(
                                  type='HSigmoid',
@@ -137,7 +136,6 @@ class MobileNetV3(BaseBackbone):
                 kernel_size=kernel_size,
                 stride=stride,
                 se_cfg=se_cfg,
-                with_expand_conv=True,
                 conv_cfg=self.conv_cfg,
                 norm_cfg=self.norm_cfg,
                 act_cfg=dict(type=act),

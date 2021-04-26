@@ -17,9 +17,6 @@ class InvertedResidual(nn.Module):
         stride (int): The stride of the depthwise convolution. Default: 1.
         se_cfg (dict): Config dict for se layer. Defaul: None, which means no
             se layer.
-        with_expand_conv (bool): Use expand conv or not. If set False,
-            mid_channels must be the same with in_channels.
-            Default: True.
         conv_cfg (dict): Config dict for convolution layer. Default: None,
             which means using conv2d.
         norm_cfg (dict): Config dict for normalization layer.
@@ -41,7 +38,6 @@ class InvertedResidual(nn.Module):
                  kernel_size=3,
                  stride=1,
                  se_cfg=None,
-                 with_expand_conv=True,
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
                  act_cfg=dict(type='ReLU'),
@@ -51,12 +47,10 @@ class InvertedResidual(nn.Module):
         assert stride in [1, 2]
         self.with_cp = with_cp
         self.with_se = se_cfg is not None
-        self.with_expand_conv = with_expand_conv
+        self.with_expand_conv = (mid_channels != in_channels)
 
         if self.with_se:
             assert isinstance(se_cfg, dict)
-        if not self.with_expand_conv:
-            assert mid_channels == in_channels
 
         if self.with_expand_conv:
             self.expand_conv = ConvModule(
@@ -77,10 +71,9 @@ class InvertedResidual(nn.Module):
             groups=mid_channels,
             conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
-            act_cfg=None)
+            act_cfg=act_cfg)
         if self.with_se:
             self.se = SELayer(**se_cfg)
-        self.activate = build_activation_layer(act_cfg)
         self.linear_conv = ConvModule(
             in_channels=mid_channels,
             out_channels=out_channels,
@@ -103,8 +96,6 @@ class InvertedResidual(nn.Module):
 
             if self.with_se:
                 out = self.se(out)
-
-            out = self.activate(out)
 
             out = self.linear_conv(out)
 
