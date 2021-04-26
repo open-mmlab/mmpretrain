@@ -160,9 +160,6 @@ This part selects ImageNet for onnxruntime verification. ImageNet has multiple v
 <td>71.86 / 90.42</td>
 <td>71.86 / 90.42</td>
 </tr>
-<tr>
-<td></td>
-</tr>
 </table>
 
 ## List of supported models exportable to ONNX
