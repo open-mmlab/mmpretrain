@@ -88,7 +88,7 @@ class RandomCrop(object):
 
         ymin = random.randint(0, height - target_height)
         xmin = random.randint(0, width - target_width)
-        return xmin, ymin, target_height, target_width
+        return ymin, xmin, target_height, target_width
 
     def __call__(self, results):
         """
@@ -119,7 +119,7 @@ class RandomCrop(object):
                     pad_val=self.pad_val,
                     padding_mode=self.padding_mode)
 
-            xmin, ymin, height, width = self.get_params(img, self.size)
+            ymin, xmin, height, width = self.get_params(img, self.size)
             results[key] = mmcv.imcrop(
                 img,
                 np.array([
@@ -170,7 +170,7 @@ class RandomResizedCrop(object):
             self.size = (size, size)
         if (scale[0] > scale[1]) or (ratio[0] > ratio[1]):
             raise ValueError('range should be of kind (min, max). '
-                             f'But received {scale}')
+                             f'But received scale {scale} and rato {ratio}.')
         if backend not in ['cv2', 'pillow']:
             raise ValueError(f'backend: {backend} is not supported for resize.'
                              'Supported backends are "cv2", "pillow"')
@@ -225,7 +225,7 @@ class RandomResizedCrop(object):
             target_height = height
         ymin = (height - target_height) // 2
         xmin = (width - target_width) // 2
-        return xmin, ymin, target_height, target_width
+        return ymin, xmin, target_height, target_width
 
     def __call__(self, results):
         """
@@ -237,7 +237,7 @@ class RandomResizedCrop(object):
         """
         for key in results.get('img_fields', ['img']):
             img = results[key]
-            xmin, ymin, target_height, target_width = self.get_params(
+            ymin, xmin, target_height, target_width = self.get_params(
                 img, self.scale, self.ratio)
             img = mmcv.imcrop(
                 img,
@@ -258,6 +258,123 @@ class RandomResizedCrop(object):
         format_string += f', ratio={tuple(round(r, 4) for r in self.ratio)}'
         format_string += f', interpolation={self.interpolation})'
         return format_string
+
+
+# https://github.com/kakaobrain/fast-autoaugment/blob/master/FastAutoAugment/data.py # noqa
+@PIPELINES.register_module()
+class ERandomCrop:
+
+    def __init__(self,
+                 size,
+                 scale=(0.1, 1.0),
+                 ratio=(3. / 4, 4. / 3),
+                 min_covered=0.1,
+                 max_attempts=10,
+                 interpolation='bilinear',
+                 backend='cv2'):
+        assert isinstance(size, int)
+        assert 0 < scale[0] <= scale[1]
+        assert 0 < ratio[0] <= ratio[1]
+        assert min_covered > 0, 'min_covered should be larger than 0'
+        assert isinstance(max_attempts, int) and max_attempts >= 1
+        assert interpolation in ('nearest', 'bilinear', 'bicubic', 'area',
+                                 'lanczos')
+        if backend not in ['cv2', 'pillow']:
+            raise ValueError(f'backend: {backend} is not supported for resize.'
+                             'Supported backends are "cv2", "pillow"')
+
+        self.size = size
+        self.scale = scale
+        self.ratio = ratio
+        self.min_covered = min_covered
+        self.max_attempts = max_attempts
+        self.interpolation = interpolation
+        self.backend = backend
+
+    def get_params(self, img, scale, ratio, min_covered, max_attempts=10):
+        height, width = img.shape[:2]
+        area = height * width
+        min_target_area = scale[0] * area
+        max_target_area = scale[1] * area
+
+        for _ in range(max_attempts):
+            aspect_ratio = random.uniform(*ratio)
+            min_target_height = int(
+                round(math.sqrt(min_target_area / aspect_ratio)))
+            max_target_height = int(
+                round(math.sqrt(max_target_area / aspect_ratio)))
+
+            if max_target_height * aspect_ratio > width:
+                max_target_height = int((width + 0.5 - 1e-7) / aspect_ratio)
+                if max_target_height * aspect_ratio > width:
+                    max_target_height -= 1
+
+            max_target_height = min(max_target_height, height)
+            min_target_height = min(max_target_height, min_target_height)
+
+            target_height = int(
+                round(random.uniform(min_target_height, max_target_height)))
+            target_width = int(round(target_height * aspect_ratio))
+            target_area = target_height * target_width
+
+            if target_area < min_target_area or target_area > max_target_area:
+                continue
+            if target_width > width or target_height > height:
+                continue
+            if target_area < min_covered * area:
+                continue
+            if target_height == height and target_width == width:
+                break
+
+            ymin = random.randint(0, height - target_height)
+            xmin = random.randint(0, width - target_width)
+            ymax = ymin + target_height - 1
+            xmax = xmin + target_width - 1
+
+            return ymin, xmin, ymax, xmax
+
+        # Fallback to central crop
+        img_short = min(height, width)
+        crop_size = float(self.size) / (self.size + 32) * img_short
+
+        ymin = max(0, int(round(height - crop_size) / 2.))
+        xmin = max(0, int(round(width - crop_size) / 2.))
+        ymax = min(height, ymin + crop_size) - 1
+        xmax = min(width, xmin + crop_size) - 1
+
+        return ymin, xmin, ymax, xmax
+
+    def __call__(self, results):
+        for key in results.get('img_fields', ['img']):
+            img = results[key]
+            ymin, xmin, ymax, xmax = self.get_params(img, self.scale,
+                                                     self.ratio,
+                                                     self.min_covered,
+                                                     self.max_attempts)
+
+            # crop the image
+            img = mmcv.imcrop(img, bboxes=np.array([xmin, ymin, xmax, ymax]))
+            results[key] = img
+
+        # apply resize
+        resize_transform = [
+            dict(
+                type='Resize',
+                size=self.size,
+                interpolation=self.interpolation,
+                backend=self.backend)
+        ]
+        resize_transform = Compose(resize_transform)
+        return resize_transform(results)
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__ + f'(size={self.size}'
+        repr_str += f', scale={tuple(round(s, 4) for s in self.scale)}'
+        repr_str += f', ratio={tuple(round(r, 4) for r in self.ratio)}'
+        repr_str += f', min_covered={self.min_covered}'
+        repr_str += f', max_attempts={self.max_attempts}'
+        repr_str += f', interpolation={self.interpolation})'
+        return repr_str
 
 
 @PIPELINES.register_module()
@@ -603,6 +720,67 @@ class CenterCrop(object):
 
     def __repr__(self):
         return self.__class__.__name__ + f'(crop_size={self.crop_size})'
+
+
+@PIPELINES.register_module()
+# https://github.com/zhanghang1989/PyTorch-Encoding/blob/master/encoding/transforms/transforms.py
+class ECenterCrop:
+    """Crop the given PIL Image and resize it to desired size.
+
+    Args:
+        img (PIL Image): Image to be cropped. (0,0) denotes the top left corner
+            of the image.
+        output_size (sequence or int): (height, width) of the crop box. If int,
+            it is used for both directions
+    Returns:
+        PIL Image: Cropped image.
+    """
+
+    def __init__(self, size, interpolation='bilinear', backend='cv2'):
+        assert isinstance(size, int) or (isinstance(size, tuple)
+                                         and len(size) == 2)
+        self.size = size
+        assert interpolation in ('nearest', 'bilinear', 'bicubic', 'area',
+                                 'lanczos')
+        if backend not in ['cv2', 'pillow']:
+            raise ValueError(f'backend: {backend} is not supported for resize.'
+                             'Supported backends are "cv2", "pillow"')
+
+        self.interpolation = interpolation
+        self.backend = backend
+
+    def __call__(self, results):
+        for key in results.get('img_fields', ['img']):
+            img = results[key]
+            img_height, img_width = img.shape[:2]
+            img_short = min(img_height, img_width)
+
+            crop_size = float(self.size) / (self.size + 32) * img_short
+            ymin = max(0, int(round(img_height - crop_size) / 2.))
+            xmin = max(0, int(round(img_width - crop_size) / 2.))
+            ymax = min(img_height, ymin + crop_size) - 1
+            xmax = min(img_width, xmin + crop_size) - 1
+
+            # crop the image
+            img = mmcv.imcrop(img, bboxes=np.array([xmin, ymin, xmax, ymax]))
+            results[key] = img
+
+        # apply resize
+        resize_transform = [
+            dict(
+                type='Resize',
+                size=self.size,
+                interpolation=self.interpolation,
+                backend=self.backend)
+        ]
+        resize_transform = Compose(resize_transform)
+        return resize_transform(results)
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += f'(size={self.size}, '
+        repr_str += f'interpolation={self.interpolation})'
+        return repr_str
 
 
 @PIPELINES.register_module()
