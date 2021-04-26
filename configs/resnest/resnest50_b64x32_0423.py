@@ -103,13 +103,7 @@ policies = [
         interpolation='bicubic')
 ]
 train_pipeline = [
-    dict(
-        type='LoadImageFromFile',
-        file_client_args=dict(
-            backend='memcached',
-            server_list_cfg=  # noqa
-            '/mnt/lustre/share/memcached_client/server_list.conf',  # noqa
-            client_cfg='/mnt/lustre/share/memcached_client/client.conf')),
+    dict(type='LoadImageFromFile'),
     dict(
         type='RandAugment',
         policies=policies,
@@ -129,13 +123,7 @@ train_pipeline = [
     dict(type='Collect', keys=['img', 'gt_label'])
 ]
 test_pipeline = [
-    dict(
-        type='LoadImageFromFile',
-        file_client_args=dict(
-            backend='memcached',
-            server_list_cfg=  # noqa
-            '/mnt/lustre/share/memcached_client/server_list.conf',  # noqa
-            client_cfg='/mnt/lustre/share/memcached_client/client.conf')),
+    dict(type='LoadImageFromFile'),
     dict(type='Resize', size=(256, -1), backend='pillow'),
     dict(type='CenterCrop', crop_size=224),
     dict(
