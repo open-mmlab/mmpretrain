@@ -6,6 +6,8 @@ Collections:
         - SGD with Momentum
         - Weight Decay
       Training Resources: 8x Xp GPUs
+      Epochs: 100
+      Batch Size: 256
       Architecture:
         - VGG
     Paper: https://arxiv.org/abs/1409.1556
