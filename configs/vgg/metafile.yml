@@ -1,0 +1,134 @@
+Collections:
+  - Name: VGG
+    Metadata:
+      Training Data: ImageNet
+      Training Techniques:
+        - SGD with Momentum
+        - Weight Decay
+      Training Resources: 8x 1080 GPUs
+      Architecture:
+        - Shufflenet V2
+    Paper: https://openaccess.thecvf.com/content_ECCV_2018/papers/Ningning_Light-weight_CNN_Architecture_ECCV_2018_paper.pdf
+    README: configs/vgg/README.md
+
+Models:
+- Config: configs/vgg/vgg11_imagenet.py
+  In Collection: ''
+  Metadata:
+    FLOPs: 7.63 G
+    Parameters: 132.86 M
+    Training Data: ''
+    Training Resources: ''
+  Name: VGG-11
+  Results:
+  - Dataset: ''
+    Metrics:
+      Top 1 Accuracy: 69.03
+      Top 5 Accuracy: 88.63
+    Task: Image Classification
+  Weights: https://download.openmmlab.com/mmclassification/v0/vgg/vgg11_imagenet-01ecd97e.pth
+- Config: configs/vgg/vgg13_imagenet.py
+  In Collection: ''
+  Metadata:
+    FLOPs: 11.34 G
+    Parameters: 133.05 M
+    Training Data: ''
+    Training Resources: ''
+  Name: VGG-13
+  Results:
+  - Dataset: ''
+    Metrics:
+      Top 1 Accuracy: 69.93
+      Top 5 Accuracy: 89.26
+    Task: Image Classification
+  Weights: https://download.openmmlab.com/mmclassification/v0/vgg/vgg13_imagenet-9ad3945d.pth
+- Config: configs/vgg/vgg16_imagenet.py
+  In Collection: ''
+  Metadata:
+    FLOPs: 15.5 G
+    Parameters: 138.36 M
+    Training Data: ''
+    Training Resources: ''
+  Name: VGG-16
+  Results:
+  - Dataset: ''
+    Metrics:
+      Top 1 Accuracy: 71.59
+      Top 5 Accuracy: 90.39
+    Task: Image Classification
+  Weights: https://download.openmmlab.com/mmclassification/v0/vgg/vgg16_imagenet-91b6d117.pth
+- Config: configs/vgg/vgg19_imagenet.py
+  In Collection: ''
+  Metadata:
+    FLOPs: 19.67 G
+    Parameters: 143.67 M
+    Training Data: ''
+    Training Resources: ''
+  Name: VGG-19
+  Results:
+  - Dataset: ''
+    Metrics:
+      Top 1 Accuracy: 72.38
+      Top 5 Accuracy: 90.88
+    Task: Image Classification
+  Weights: https://download.openmmlab.com/mmclassification/v0/vgg/vgg19_imagenet-fee352a8.pth
+- Config: configs/vgg/vgg11bn_imagenet.py
+  In Collection: ''
+  Metadata:
+    FLOPs: 7.64 G
+    Parameters: 132.87 M
+    Training Data: ''
+    Training Resources: ''
+  Name: VGG-11-BN
+  Results:
+  - Dataset: ''
+    Metrics:
+      Top 1 Accuracy: 70.37
+      Top 5 Accuracy: 89.81
+    Task: Image Classification
+  Weights: https://download.openmmlab.com/mmclassification/v0/vgg/vgg11_bn_imagenet-6fbbbf3f.pth
+- Config: configs/vgg/vgg13bn_imagenet.py
+  In Collection: ''
+  Metadata:
+    FLOPs: 11.36 G
+    Parameters: 133.05 M
+    Training Data: ''
+    Training Resources: ''
+  Name: VGG-13-BN
+  Results:
+  - Dataset: ''
+    Metrics:
+      Top 1 Accuracy: 71.55
+      Top 5 Accuracy: 90.37
+    Task: Image Classification
+  Weights: https://download.openmmlab.com/mmclassification/v0/vgg/vgg13_bn_imagenet-4b5f9390.pth
+- Config: configs/vgg/vgg16_imagenet.py
+  In Collection: ''
+  Metadata:
+    FLOPs: 15.53 G
+    Parameters: 138.37 M
+    Training Data: ''
+    Training Resources: ''
+  Name: VGG-16-BN
+  Results:
+  - Dataset: ''
+    Metrics:
+      Top 1 Accuracy: 73.36
+      Top 5 Accuracy: 91.5
+    Task: Image Classification
+  Weights: https://download.openmmlab.com/mmclassification/v0/vgg/vgg16_bn_imagenet-3ac6d8fd.pth
+- Config: configs/vgg/vgg19bn_imagenet.py
+  In Collection: ''
+  Metadata:
+    FLOPs: 19.7 G
+    Parameters: 143.68 M
+    Training Data: ''
+    Training Resources: ''
+  Name: VGG-19-BN
+  Results:
+  - Dataset: ''
+    Metrics:
+      Top 1 Accuracy: 74.24
+      Top 5 Accuracy: 91.84
+    Task: Image Classification
+  Weights: https://download.openmmlab.com/mmclassification/v0/vgg/vgg19_bn_imagenet-7c058385.pth

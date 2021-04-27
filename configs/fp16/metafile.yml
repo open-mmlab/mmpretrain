@@ -1,0 +1,16 @@
+Models:
+- Config: '4'
+  In Collection: ''
+  Metadata:
+    FLOPs: 4.12 G
+    Parameters: 25.56 M
+    Training Data: ''
+    Training Resources: ''
+  Name: ResNet-50
+  Results:
+  - Dataset: ''
+    Metrics:
+      Top 1 Accuracy: 1.9
+      Top 5 Accuracy: 76.32
+    Task: Image Classification
+  Weights: (https://github.com/open-mmlab/mmclassification/blob/master/configs/fp16/resnet50_b32x8_fp16_imagenet.py

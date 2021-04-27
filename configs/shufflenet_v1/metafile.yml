@@ -1,0 +1,28 @@
+Collections:
+  - Name: Shufflenet V1
+    Metadata:
+      Training Data: ImageNet
+      Training Techniques:
+        - SGD with Momentum
+        - Weight Decay
+        - No BN decay
+      Training Resources: 8x 1080 GPUs
+      Architecture:
+        - Shufflenet V1
+    Paper: https://openaccess.thecvf.com/content_cvpr_2018/html/Zhang_ShuffleNet_An_Extremely_CVPR_2018_paper.html
+    README: configs/shufflenet_v1/README.md
+
+Models:
+- Config: configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py
+  In Collection: Shufflenet V1
+  Metadata:
+    FLOPs: 0.146 G
+    Parameters: 1.87 M
+  Name: ShuffleNetV1 1.0x (group=3)
+  Results:
+  - Dataset: ImageNet
+    Metrics:
+      Top 1 Accuracy: 68.13
+      Top 5 Accuracy: 87.81
+    Task: Image Classification
+  Weights: https://download.openmmlab.com/mmclassification/v0/shufflenet_v1/shufflenet_v1_batch1024_imagenet_20200804-5d6cec73.pth
