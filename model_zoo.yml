@@ -1,0 +1,10 @@
+Import:
+  - configs/fp16/metafile.yml
+  - configs/mobilenet_v2/metafile.yml
+  - configs/resnet/metafile.yml
+  - configs/resnext/metafile.yml
+  - configs/seresnet/metafile.yml
+  - configs/seresnext/metafile.yml
+  - configs/shufflenet_v1/metafile.yml
+  - configs/shufflenet_v2/metafile.yml
+  - configs/vgg/metafile.yml
