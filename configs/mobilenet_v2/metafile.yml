@@ -1,0 +1,29 @@
+Collections:
+  - Name: MobileNet V2
+    Metadata:
+      Training Data: ImageNet
+      Training Techniques:
+        - SGD with Momentum
+        - Weight Decay
+      Training Resources: 8x V100 GPUs
+      Epochs: 300
+      Batch Size: 256
+      Architecture:
+        - MobileNet V2
+    Paper: https://arxiv.org/abs/1801.04381
+    README: configs/mobilenet_v2/README.md
+
+Models:
+- Config: configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py
+  In Collection: MobileNet V2
+  Metadata:
+    FLOPs: 319000000
+    Parameters: 3500000
+  Name: mobilenet_v2_b32x8_imagenet
+  Results:
+  - Dataset: ImageNet
+    Metrics:
+      Top 1 Accuracy: 71.86
+      Top 5 Accuracy: 90.42
+    Task: Image Classification
+  Weights: https://download.openmmlab.com/mmclassification/v0/mobilenet_v2/mobilenet_v2_batch256_imagenet_20200708-3b2dc3af.pth
