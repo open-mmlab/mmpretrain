@@ -19,13 +19,13 @@ Models:
   Metadata:
     FLOPs: 0.56 G
     Parameters: 11.17 M
-    Training Data: Cifar-10
+    Training Data: CIFAR-10
     Training Resources: 8x 1080 GPUs
     Epochs: 200
     Batch Size: 128
-  Name: ResNet-18-b16x8
+  Name: resnet18_b16x8_cifar10
   Results:
-  - Dataset: Cifar-10
+  - Dataset: CIFAR-10
     Metrics:
       Top 1 Accuracy: 94.72
     Task: Image Classification
@@ -35,13 +35,13 @@ Models:
   Metadata:
     FLOPs: 1.16 G
     Parameters: 21.28 M
-    Training Data: Cifar-10
+    Training Data: CIFAR-10
     Training Resources: 8x 1080 GPUs
     Epochs: 200
     Batch Size: 128
-  Name: ResNet-34-b16x8
+  Name: resnet34_b16x8_cifar10
   Results:
-  - Dataset: Cifar-10
+  - Dataset: CIFAR-10
     Metrics:
       Top 1 Accuracy: 95.34
     Task: Image Classification
@@ -51,13 +51,13 @@ Models:
   Metadata:
     FLOPs: 1.31 G
     Parameters: 23.52 M
-    Training Data: Cifar-10
+    Training Data: CIFAR-10
     Training Resources: 8x 1080 GPUs
     Epochs: 200
     Batch Size: 128
-  Name: ResNet-50-b16x8
+  Name: resnet50_b16x8_cifar10
   Results:
-  - Dataset: Cifar-10
+  - Dataset: CIFAR-10
     Metrics:
       Top 1 Accuracy: 95.36
     Task: Image Classification
@@ -67,13 +67,13 @@ Models:
   Metadata:
     FLOPs: 2.52 G
     Parameters: 42.51 M
-    Training Data: Cifar-10
+    Training Data: CIFAR-10
     Training Resources: 8x 1080 GPUs
     Epochs: 200
     Batch Size: 128
-  Name: ResNet-101-b16x8
+  Name: resnet101_b16x8_cifar10
   Results:
-  - Dataset: Cifar-10
+  - Dataset: CIFAR-10
     Metrics:
       Top 1 Accuracy: 95.66
     Task: Image Classification
@@ -83,13 +83,13 @@ Models:
   Metadata:
     FLOPs: 3.74 G
     Parameters: 58.16 M
-    Training Data: Cifar-10
+    Training Data: CIFAR-10
     Training Resources: 8x 1080 GPUs
     Epochs: 200
     Batch Size: 128
-  Name: ResNet-152-b16x8
+  Name: resnet152_b16x8_cifar10
   Results:
-  - Dataset: Cifar-10
+  - Dataset: CIFAR-10
     Metrics:
       Top 1 Accuracy: 95.96
     Task: Image Classification
@@ -99,13 +99,13 @@ Models:
   Metadata:
     FLOPs: 1.31 G
     Parameters: 23.71 M
-    Training Data: Cifar-100
+    Training Data: CIFAR-100
     Training Resources: 8x 1080 GPUs
     Epochs: 200
     Batch Size: 128
-  Name: ResNet-50-b16x8
+  Name: resnet50_b16x8_cifar100
   Results:
-  - Dataset: Cifar-100
+  - Dataset: CIFAR-100
     Metrics:
       Top 1 Accuracy: 80.51
       Top 5 Accuracy: 95.27
@@ -116,7 +116,7 @@ Models:
   Metadata:
     FLOPs: 1.82 G
     Parameters: 11.69 M
-  Name: ResNet-18
+  Name: resnet18_b32x8_imagenet
   Results:
   - Dataset: ImageNet
     Metrics:
@@ -129,7 +129,7 @@ Models:
   Metadata:
     FLOPs: 3.68 G
     Parameters: 21.8 M
-  Name: ResNet-34
+  Name: resnet34_b32x8_imagenet
   Results:
   - Dataset: ImageNet
     Metrics:
@@ -142,7 +142,7 @@ Models:
   Metadata:
     FLOPs: 4.12 G
     Parameters: 25.56 M
-  Name: ResNet-50
+  Name: resnet50_b32x8_imagenet
   Results:
   - Dataset: ImageNet
     Metrics:
@@ -155,7 +155,7 @@ Models:
   Metadata:
     FLOPs: 7.85 G
     Parameters: 44.55 M
-  Name: ResNet-101
+  Name: resnet101_b32x8_imagenet
   Results:
   - Dataset: ImageNet
     Metrics:
@@ -168,7 +168,7 @@ Models:
   Metadata:
     FLOPs: 11.58 G
     Parameters: 60.19 M
-  Name: ResNet-152
+  Name: resnet152_b32x8_imagenet
   Results:
   - Dataset: ImageNet
     Metrics:
@@ -181,7 +181,7 @@ Models:
   Metadata:
     FLOPs: 4.36 G
     Parameters: 25.58 M
-  Name: ResNetV1D-50
+  Name: resnetv1d50_b32x8_imagenet
   Results:
   - Dataset: ImageNet
     Metrics:
@@ -194,7 +194,7 @@ Models:
   Metadata:
     FLOPs: 8.09 G
     Parameters: 44.57 M
-  Name: ResNetV1D-101
+  Name: resnetv1d101_b32x8_imagenet
   Results:
   - Dataset: ImageNet
     Metrics:
@@ -207,7 +207,7 @@ Models:
   Metadata:
     FLOPs: 11.82 G
     Parameters: 60.21 M
-  Name: ResNetV1D-152
+  Name: resnetv1d152_b32x8_imagenet
   Results:
   - Dataset: ImageNet
     Metrics:

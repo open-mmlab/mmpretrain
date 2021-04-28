@@ -19,7 +19,7 @@ Models:
   Metadata:
     FLOPs: 7.63 G
     Parameters: 132.86 M
-  Name: VGG-11
+  Name: vgg11_b32x8_imagenet
   Results:
   - Dataset: ImageNet
     Metrics:
@@ -32,7 +32,7 @@ Models:
   Metadata:
     FLOPs: 11.34 G
     Parameters: 133.05 M
-  Name: VGG-13
+  Name: vgg13_b32x8_imagenet
   Results:
   - Dataset: ImageNet
     Metrics:
@@ -45,7 +45,7 @@ Models:
   Metadata:
     FLOPs: 15.5 G
     Parameters: 138.36 M
-  Name: VGG-16
+  Name: vgg16_b32x8_imagenet
   Results:
   - Dataset: ImageNet
     Metrics:
@@ -58,7 +58,7 @@ Models:
   Metadata:
     FLOPs: 19.67 G
     Parameters: 143.67 M
-  Name: VGG-19
+  Name: vgg19_b32x8_imagenet
   Results:
   - Dataset: ImageNet
     Metrics:
@@ -71,7 +71,7 @@ Models:
   Metadata:
     FLOPs: 7.64 G
     Parameters: 132.87 M
-  Name: VGG-11-BN
+  Name: vgg11bn_b32x8_imagenet
   Results:
   - Dataset: ImageNet
     Metrics:
@@ -84,7 +84,7 @@ Models:
   Metadata:
     FLOPs: 11.36 G
     Parameters: 133.05 M
-  Name: VGG-13-BN
+  Name: vgg13bn_b32x8_imagenet
   Results:
   - Dataset: ImageNet
     Metrics:
@@ -97,7 +97,7 @@ Models:
   Metadata:
     FLOPs: 15.53 G
     Parameters: 138.37 M
-  Name: VGG-16-BN
+  Name: vgg16_b32x8_imagenet
   Results:
   - Dataset: ImageNet
     Metrics:
@@ -110,7 +110,7 @@ Models:
   Metadata:
     FLOPs: 19.7 G
     Parameters: 143.68 M
-  Name: VGG-19-BN
+  Name: vgg19bn_b32x8_imagenet
   Results:
   - Dataset: ImageNet
     Metrics:

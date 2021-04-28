@@ -20,7 +20,7 @@ Models:
   Metadata:
     FLOPs: 0.149 G
     Parameters: 2.28 M
-  Name: ShuffleNetV2 1.0x
+  Name: shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet
   Results:
   - Dataset: ImageNet
     Metrics:

@@ -19,7 +19,7 @@ Models:
   Metadata:
     FLOPs: 4.27 G
     Parameters: 25.03 M
-  Name: ResNeXt-32x4d-50
+  Name: resnext50_32x4d_b32x8_imagenet
   Results:
   - Dataset: ImageNet
     Metrics:
@@ -32,7 +32,7 @@ Models:
   Metadata:
     FLOPs: 8.03 G
     Parameters: 44.18 M
-  Name: ResNeXt-32x4d-101
+  Name: resnext101_32x4d_b32x8_imagenet
   Results:
   - Dataset: ImageNet
     Metrics:
@@ -45,7 +45,7 @@ Models:
   Metadata:
     FLOPs: 16.5 G
     Parameters: 88.79 M
-  Name: ResNeXt-32x8d-101
+  Name: resnext101_32x8d_b32x8_imagenet
   Results:
   - Dataset: ImageNet
     Metrics:
@@ -58,7 +58,7 @@ Models:
   Metadata:
     FLOPs: 11.8 G
     Parameters: 59.95 M
-  Name: ResNeXt-32x4d-152
+  Name: resnext152_32x4d_b32x8_imagenet
   Results:
   - Dataset: ImageNet
     Metrics:

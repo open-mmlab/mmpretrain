@@ -19,7 +19,7 @@ Models:
   Metadata:
     FLOPs: 4.13 G
     Parameters: 28.09 M
-  Name: SE-ResNet-50
+  Name: seresnet50_b32x8_imagenet
   Results:
   - Dataset: ImageNet
     Metrics:
@@ -32,7 +32,7 @@ Models:
   Metadata:
     FLOPs: 7.86 G
     Parameters: 49.33 M
-  Name: SE-ResNet-101
+  Name: seresnet101_b32x8_imagenet
   Results:
   - Dataset: ImageNet
     Metrics:
