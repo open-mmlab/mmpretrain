@@ -142,8 +142,10 @@ class PatchEmbed(BaseModule):
         self.img_size = img_size
         self.patch_size = to_2tuple(patch_size)
 
-        patches_resolution = [img_size[0] // self.patch_size[0],
-                              img_size[1] // self.patch_size[1]]
+        patches_resolution = [
+            img_size[0] // self.patch_size[0],
+            img_size[1] // self.patch_size[1]
+        ]
         num_patches = patches_resolution[0] * patches_resolution[1]
         assert num_patches * self.patch_size[0] * self.patch_size[1] == \
                self.img_size[0] * self.img_size[1], \
@@ -172,8 +174,10 @@ class PatchEmbed(BaseModule):
             f'match model ({self.img_size[0]}*{self.img_size[1]}).'
         # The output size is (B, N, D), where N=H*W/P/P, D is embid_dim
         x = self.projection(x).flatten(2).transpose(1, 2)
+
         if self.norm is not None:
             x = self.norm(x)
+
         return x
 
 
