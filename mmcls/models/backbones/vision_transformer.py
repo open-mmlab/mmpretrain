@@ -465,10 +465,6 @@ class VisionTransformer(BaseBackbone):
     def norm1(self):
         return getattr(self, self.norm1_name)
 
-    @torch.jit.ignore
-    def no_weight_decay(self):
-        return {'pos_embed', 'cls_token'}
-
     def forward(self, x):
         B = x.shape[0]
         x = self.patch_embed(x)
