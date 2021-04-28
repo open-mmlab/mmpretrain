@@ -1,16 +1,47 @@
 # model settings
 model = dict(
     type='ImageClassifier',
+    # backbone=dict(
+    #     type='VisionTransformer',
+    #     num_layers=12,
+    #     embed_dim=768,
+    #     num_heads=12,
+    #     img_size=384,
+    #     patch_size=32,
+    #     in_channels=3,
+    #     feedforward_channels=3072,
+    #     drop_rate=0.1),
     backbone=dict(
         type='VisionTransformer',
-        num_layers=12,
         embed_dim=768,
-        num_heads=12,
         img_size=384,
         patch_size=32,
         in_channels=3,
-        feedforward_channels=3072,
-        drop_rate=0.1),
+        drop_rate=0.1,
+        hybrid_backbone=None,
+        encoder=dict(
+            type='VitTransformerEncoder',
+            num_layers=12,
+            transformerlayers=dict(
+                type='VitTransformerEncoderLayer',
+                attn_cfgs=[
+                    dict(
+                        type='MultiheadAttention',
+                        embed_dims=768,
+                        num_heads=12,
+                        attn_drop=0.,
+                        proj_drop=0.1)
+                ],
+                feedforward_channels=3072,
+                ffn_dropout=0.1,
+                operation_order=('norm', 'self_attn', 'norm', 'ffn'))),
+        init_cfg=[
+            dict(
+                type='Kaiming',
+                layer='Conv2d',
+                mode='fan_in',
+                nonlinearity='linear')
+        ]),
     neck=None,
     head=dict(
         type='VisionTransformerClsHead',
