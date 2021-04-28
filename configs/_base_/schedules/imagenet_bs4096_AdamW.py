@@ -1,6 +1,8 @@
 # optimizer
 optimizer = dict(type='AdamW', lr=0.003, weight_decay=0.3)
 optimizer_config = dict(grad_clip=dict(max_norm=1.0))
+
+# specific to vit pretrain
 paramwise_cfg = dict(
     custom_keys={
         '.backbone.cls_token': dict(decay_mult=0.0),
