@@ -1,0 +1,30 @@
+Collections:
+  - Name: FP16
+    Metadata:
+      Training Data: ImageNet
+      Training Resources: 8x V100 GPUs
+      Training Techniques:
+        - SGD with Momentum
+        - Weight Decay
+        - Mixed Precision Training
+    Paper: https://arxiv.org/abs/1710.03740
+    README: configs/fp16/README.md
+
+Models:
+- Config: configs/fp16/resnet50_b32x8_fp16_dynamic_imagenet.py
+  In Collection: FP16
+  Metadata:
+    FLOPs: 4120000000
+    Parameters: 25560000
+    Epochs: 100
+    Batch Size: 256
+    Architecture:
+      - ResNet
+  Name: resnet50_b32x8_fp16_dynamic_imagenet
+  Results:
+  - Dataset: ImageNet
+    Metrics:
+      Top 1 Accuracy: 76.32
+      Top 5 Accuracy: 93.04
+    Task: Image Classification
+  Weights: https://download.openmmlab.com/mmclassification/v0/fp16/resnet50_batch256_fp16_imagenet_20210320-b3964210.pth
