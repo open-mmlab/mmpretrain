@@ -5,11 +5,11 @@ import torch
 import torch.nn as nn
 from mmcv import ConfigDict
 from mmcv.cnn import Linear, build_activation_layer, build_norm_layer
+from mmcv.cnn.bricks.registry import (ATTENTION, POSITIONAL_ENCODING,
+                                      TRANSFORMER_LAYER,
+                                      TRANSFORMER_LAYER_SEQUENCE)
 from mmcv.runner.base_module import BaseModule, ModuleList, Sequential
 from mmcv.utils import build_from_cfg
-
-from .registry import (ATTENTION, POSITIONAL_ENCODING, TRANSFORMER_LAYER,
-                       TRANSFORMER_LAYER_SEQUENCE)
 
 
 def build_positional_encoding(cfg, default_args=None):
