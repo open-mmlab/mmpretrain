@@ -18,8 +18,8 @@ Models:
 - Config: configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py
   In Collection: Shufflenet V1
   Metadata:
-    FLOPs: 0.146 G
-    Parameters: 1.87 M
+    FLOPs: 146000000
+    Parameters: 1870000
   Name: shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet
   Results:
   - Dataset: ImageNet

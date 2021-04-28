@@ -17,8 +17,8 @@ Models:
 - Config: configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py
   In Collection: MobileNet V2
   Metadata:
-    FLOPs: 0.319 G
-    Parameters: 3.5 M
+    FLOPs: 319000000
+    Parameters: 3500000
   Name: mobilenet_v2_b32x8_imagenet
   Results:
   - Dataset: ImageNet

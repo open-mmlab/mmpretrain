@@ -17,8 +17,8 @@ Models:
 - Config: configs/seresnet50/seresnet50_b32x8_imagenet.py
   In Collection: SEResNet
   Metadata:
-    FLOPs: 4.13 G
-    Parameters: 28.09 M
+    FLOPs: 4130000000
+    Parameters: 28090000
   Name: seresnet50_b32x8_imagenet
   Results:
   - Dataset: ImageNet
@@ -30,8 +30,8 @@ Models:
 - Config: configs/seresnet101/seresnet101_b32x8_imagenet.py
   In Collection: SEResNet
   Metadata:
-    FLOPs: 7.86 G
-    Parameters: 49.33 M
+    FLOPs: 7860000000
+    Parameters: 49330000
   Name: seresnet101_b32x8_imagenet
   Results:
   - Dataset: ImageNet

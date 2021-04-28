@@ -17,8 +17,8 @@ Models:
 - Config: configs/resnext/resnext50_32x4d_b32x8_imagenet.py
   In Collection: ResNeXt
   Metadata:
-    FLOPs: 4.27 G
-    Parameters: 25.03 M
+    FLOPs: 4270000000
+    Parameters: 25030000
   Name: resnext50_32x4d_b32x8_imagenet
   Results:
   - Dataset: ImageNet
@@ -30,8 +30,8 @@ Models:
 - Config: configs/resnext/resnext101_32x4d_b32x8_imagenet.py
   In Collection: ResNeXt
   Metadata:
-    FLOPs: 8.03 G
-    Parameters: 44.18 M
+    FLOPs: 8030000000
+    Parameters: 44180000
   Name: resnext101_32x4d_b32x8_imagenet
   Results:
   - Dataset: ImageNet
@@ -43,8 +43,8 @@ Models:
 - Config: configs/resnext/resnext101_32x8d_b32x8_imagenet.py
   In Collection: ResNeXt
   Metadata:
-    FLOPs: 16.5 G
-    Parameters: 88.79 M
+    FLOPs: 16500000000
+    Parameters: 88790000
   Name: resnext101_32x8d_b32x8_imagenet
   Results:
   - Dataset: ImageNet
@@ -56,8 +56,8 @@ Models:
 - Config: configs/resnext/resnext152_32x4d_b32x8_imagenet.py
   In Collection: ResNeXt
   Metadata:
-    FLOPs: 11.8 G
-    Parameters: 59.95 M
+    FLOPs: 11800000000
+    Parameters: 59950000
   Name: resnext152_32x4d_b32x8_imagenet
   Results:
   - Dataset: ImageNet

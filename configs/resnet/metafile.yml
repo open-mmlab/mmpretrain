@@ -17,8 +17,8 @@ Models:
 - Config: configs/resnet/resnet18_b16x8_cifar10.py
   In Collection: ResNet
   Metadata:
-    FLOPs: 0.56 G
-    Parameters: 11.17 M
+    FLOPs: 560000000
+    Parameters: 11170000
     Training Data: CIFAR-10
     Training Resources: 8x 1080 GPUs
     Epochs: 200
@@ -33,8 +33,8 @@ Models:
 - Config: configs/resnet/resnet34_b16x8_cifar10.py
   In Collection: ResNet
   Metadata:
-    FLOPs: 1.16 G
-    Parameters: 21.28 M
+    FLOPs: 1160000000
+    Parameters: 21280000
     Training Data: CIFAR-10
     Training Resources: 8x 1080 GPUs
     Epochs: 200
@@ -49,8 +49,8 @@ Models:
 - Config: configs/resnet/resnet50_b16x8_cifar10.py
   In Collection: ResNet
   Metadata:
-    FLOPs: 1.31 G
-    Parameters: 23.52 M
+    FLOPs: 1310000000
+    Parameters: 23520000
     Training Data: CIFAR-10
     Training Resources: 8x 1080 GPUs
     Epochs: 200
@@ -65,8 +65,8 @@ Models:
 - Config: configs/resnet/resnet101_b16x8_cifar10.py
   In Collection: ResNet
   Metadata:
-    FLOPs: 2.52 G
-    Parameters: 42.51 M
+    FLOPs: 2520000000
+    Parameters: 42510000
     Training Data: CIFAR-10
     Training Resources: 8x 1080 GPUs
     Epochs: 200
@@ -81,8 +81,8 @@ Models:
 - Config: configs/resnet/resnet152_b16x8_cifar10.py
   In Collection: ResNet
   Metadata:
-    FLOPs: 3.74 G
-    Parameters: 58.16 M
+    FLOPs: 3740000000
+    Parameters: 58160000
     Training Data: CIFAR-10
     Training Resources: 8x 1080 GPUs
     Epochs: 200
@@ -97,8 +97,8 @@ Models:
 - Config: configs/resnet/resnet50_b16x8_cifar100.py
   In Collection: ResNet
   Metadata:
-    FLOPs: 1.31 G
-    Parameters: 23.71 M
+    FLOPs: 1310000000
+    Parameters: 23710000
     Training Data: CIFAR-100
     Training Resources: 8x 1080 GPUs
     Epochs: 200
@@ -114,8 +114,8 @@ Models:
 - Config: configs/resnet/resnet18_b32x8_imagenet.py
   In Collection: ResNet
   Metadata:
-    FLOPs: 1.82 G
-    Parameters: 11.69 M
+    FLOPs: 1820000000
+    Parameters: 11690000
   Name: resnet18_b32x8_imagenet
   Results:
   - Dataset: ImageNet
@@ -127,8 +127,8 @@ Models:
 - Config: configs/resnet/resnet34_b32x8_imagenet.py
   In Collection: ResNet
   Metadata:
-    FLOPs: 3.68 G
-    Parameters: 21.8 M
+    FLOPs: 3680000000
+    Parameters: 2180000
   Name: resnet34_b32x8_imagenet
   Results:
   - Dataset: ImageNet
@@ -140,8 +140,8 @@ Models:
 - Config: configs/resnet/resnet50_b32x8_imagenet.py
   In Collection: ResNet
   Metadata:
-    FLOPs: 4.12 G
-    Parameters: 25.56 M
+    FLOPs: 4120000000
+    Parameters: 25560000
   Name: resnet50_b32x8_imagenet
   Results:
   - Dataset: ImageNet
@@ -153,8 +153,8 @@ Models:
 - Config: configs/resnet/resnet101_b32x8_imagenet.py
   In Collection: ResNet
   Metadata:
-    FLOPs: 7.85 G
-    Parameters: 44.55 M
+    FLOPs: 7850000000
+    Parameters: 44550000
   Name: resnet101_b32x8_imagenet
   Results:
   - Dataset: ImageNet
@@ -166,8 +166,8 @@ Models:
 - Config: configs/resnet/resnet152_b32x8_imagenet.py
   In Collection: ResNet
   Metadata:
-    FLOPs: 11.58 G
-    Parameters: 60.19 M
+    FLOPs: 11580000000
+    Parameters: 60190000
   Name: resnet152_b32x8_imagenet
   Results:
   - Dataset: ImageNet
@@ -179,8 +179,8 @@ Models:
 - Config: configs/resnet/resnetv1d50_b32x8_imagenet.py
   In Collection: ResNet
   Metadata:
-    FLOPs: 4.36 G
-    Parameters: 25.58 M
+    FLOPs: 4360000000
+    Parameters: 25580000
   Name: resnetv1d50_b32x8_imagenet
   Results:
   - Dataset: ImageNet
@@ -192,8 +192,8 @@ Models:
 - Config: configs/resnet/resnetv1d101_b32x8_imagenet.py
   In Collection: ResNet
   Metadata:
-    FLOPs: 8.09 G
-    Parameters: 44.57 M
+    FLOPs: 8090000000
+    Parameters: 44570000
   Name: resnetv1d101_b32x8_imagenet
   Results:
   - Dataset: ImageNet
@@ -205,8 +205,8 @@ Models:
 - Config: configs/resnet/resnetv1d152_b32x8_imagenet.py
   In Collection: ResNet
   Metadata:
-    FLOPs: 11.82 G
-    Parameters: 60.21 M
+    FLOPs: 11820000000
+    Parameters: 60210000
   Name: resnetv1d152_b32x8_imagenet
   Results:
   - Dataset: ImageNet

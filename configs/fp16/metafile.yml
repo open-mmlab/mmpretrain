@@ -14,8 +14,8 @@ Models:
 - Config: configs/fp16/resnet50_b32x8_fp16_dynamic_imagenet.py
   In Collection: FP16
   Metadata:
-    FLOPs: 4.12 G
-    Parameters: 25.56 M
+    FLOPs: 4120000000
+    Parameters: 25560000
     Epochs: 100
     Batch Size: 256
     Architecture:
