@@ -9,7 +9,7 @@ Collections:
       Epochs: 140
       Batch Size: 256
       Architecture:
-        - ResNeXt
+        - ResNet
     Paper: https://openaccess.thecvf.com/content_cvpr_2018/html/Hu_Squeeze-and-Excitation_Networks_CVPR_2018_paper.html
     README: configs/seresnet/README.md
 
