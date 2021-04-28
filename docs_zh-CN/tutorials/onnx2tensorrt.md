@@ -43,7 +43,7 @@ Description of all arguments:
 Example:
 
 ```bash
-python tools/deployment/onnx2tensorrt.py \
+python tools/onnx2tensorrt.py \
     checkpoints/resnet/resnet18_b16x8_cifar10.onnx \
     --trt-file checkpoints/resnet/resnet18_b16x8_cifar10.trt \
     --shape 224 224 \
