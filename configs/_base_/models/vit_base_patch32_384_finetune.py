@@ -1,16 +1,6 @@
 # model settings
 model = dict(
     type='ImageClassifier',
-    # backbone=dict(
-    #     type='VisionTransformer',
-    #     num_layers=12,
-    #     embed_dim=768,
-    #     num_heads=12,
-    #     img_size=384,
-    #     patch_size=32,
-    #     in_channels=3,
-    #     feedforward_channels=3072,
-    #     drop_rate=0.1),
     backbone=dict(
         type='VisionTransformer',
         embed_dim=768,
