@@ -3,11 +3,13 @@ import torch.nn as nn
 from mmcv.cnn import build_conv_layer, build_norm_layer
 from mmcv.cnn.bricks.registry import (TRANSFORMER_LAYER,
                                       TRANSFORMER_LAYER_SEQUENCE)
+from mmcv.cnn.bricks.transformer import (BaseTransformerLayer,
+                                         TransformerLayerSequence,
+                                         build_transformer_layer_sequence)
 from mmcv.runner.base_module import BaseModule
 
 from ..builder import BACKBONES
-from ..utils import (BaseTransformerLayer, TransformerLayerSequence,
-                     build_transformer_layer_sequence, to_2tuple)
+from ..utils import to_2tuple
 from .base_backbone import BaseBackbone
 
 
