@@ -101,6 +101,7 @@ setup(
     keywords='computer vision, image classification',
     url='https://github.com/open-mmlab/mmclassification',
     packages=find_packages(exclude=('configs', 'tools', 'demo')),
+    include_package_data=True,
     classifiers=[
         'Development Status :: 4 - Beta',
         'License :: OSI Approved :: Apache Software License',
