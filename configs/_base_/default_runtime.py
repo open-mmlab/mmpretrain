@@ -8,8 +8,6 @@ log_config = dict(
         # dict(type='TensorboardLoggerHook')
     ])
 # yapf:enable
-# You can register your own hooks like this
-# custom_hooks=[dict(type='EMAHook')]
 
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
