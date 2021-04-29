@@ -1,0 +1,30 @@
+Collections:
+  - Name: Shufflenet V2
+    Metadata:
+      Training Data: ImageNet
+      Training Techniques:
+        - SGD with Momentum
+        - Weight Decay
+        - No BN decay
+      Training Resources: 8x 1080 GPUs
+      Epochs: 300
+      Batch Size: 1024
+      Architecture:
+        - Shufflenet V2
+    Paper: https://openaccess.thecvf.com/content_ECCV_2018/papers/Ningning_Light-weight_CNN_Architecture_ECCV_2018_paper.pdf
+    README: configs/shufflenet_v2/README.md
+
+Models:
+- Config: configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py
+  In Collection: Shufflenet V2
+  Metadata:
+    FLOPs: 149000000
+    Parameters: 2280000
+  Name: shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet
+  Results:
+  - Dataset: ImageNet
+    Metrics:
+      Top 1 Accuracy: 69.55
+      Top 5 Accuracy: 88.92
+    Task: Image Classification
+  Weights: https://download.openmmlab.com/mmclassification/v0/shufflenet_v2/shufflenet_v2_batch1024_imagenet_20200812-5bf4721e.pth

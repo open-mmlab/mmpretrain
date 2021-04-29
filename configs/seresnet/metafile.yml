@@ -1,0 +1,42 @@
+Collections:
+  - Name: SEResNet
+    Metadata:
+      Training Data: ImageNet
+      Training Techniques:
+        - SGD with Momentum
+        - Weight Decay
+      Training Resources: 8x V100 GPUs
+      Epochs: 140
+      Batch Size: 256
+      Architecture:
+        - ResNet
+    Paper: https://openaccess.thecvf.com/content_cvpr_2018/html/Hu_Squeeze-and-Excitation_Networks_CVPR_2018_paper.html
+    README: configs/seresnet/README.md
+
+Models:
+- Config: configs/seresnet50/seresnet50_b32x8_imagenet.py
+  In Collection: SEResNet
+  Metadata:
+    FLOPs: 4130000000
+    Parameters: 28090000
+  Name: seresnet50_b32x8_imagenet
+  Results:
+  - Dataset: ImageNet
+    Metrics:
+      Top 1 Accuracy: 77.74
+      Top 5 Accuracy: 93.84
+    Task: Image Classification
+  Weights: https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet50_batch256_imagenet_20200804-ae206104.pth
+- Config: configs/seresnet101/seresnet101_b32x8_imagenet.py
+  In Collection: SEResNet
+  Metadata:
+    FLOPs: 7860000000
+    Parameters: 49330000
+  Name: seresnet101_b32x8_imagenet
+  Results:
+  - Dataset: ImageNet
+    Metrics:
+      Top 1 Accuracy: 78.26
+      Top 5 Accuracy: 94.07
+    Task: Image Classification
+  Weights: https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet101_batch256_imagenet_20200804-ba5b51d4.pth
