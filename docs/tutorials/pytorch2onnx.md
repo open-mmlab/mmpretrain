@@ -110,56 +110,56 @@ python tools/deployment/test.py \
 
 This part selects ImageNet for onnxruntime verification. ImageNet has multiple versions, but the most commonly used one is [ILSVRC 2012](http://www.image-net.org/challenges/LSVRC/2012/).
 
-<table>
-<tr>
-<th>Model</th>
-<th>Config</th>
-<th>Metric</th>
-<th>PyTorch</th>
-<th>ONNX Runtime</th>
-</tr>
-<tr>
-<td>ResNet</td>
-<td>resnet50_b32x8_imagenet.py</td>
-<td>Top 1 / 5</td>
-<td>76.55 / 93.15</td>
-<td>76.49 / 93.22</td>
-</tr>
-<tr>
-<td>ResNeXt</td>
-<td>resnext50_32x4d_b32x8_imagenet.py</td>
-<td>Top 1 / 5</td>
-<td>77.83 / 93.65</td>
-<td>77.83 / 93.65</td>
-</tr>
-<tr>
-<td>SE-ResNet</td>
-<td>seresnet50_b32x8_imagenet.py</td>
-<td>Top 1 / 5</td>
-<td>77.74 / 93.84</td>
-<td>77.74 / 93.84</td>
-</tr>
-<tr>
-<td>ShuffleNetV1</td>
-<td>shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py</td>
-<td>Top 1 / 5</td>
-<td>68.13 / 87.81</td>
-<td>68.13 / 87.81</td>
-</tr>
-<tr>
-<td>ShuffleNetV2</td>
-<td>shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py</td>
-<td>Top 1 / 5</td>
-<td>69.55 / 88.92</td>
-<td>69.55 / 88.92</td>
-</tr>
-<tr>
-<td>MobileNetV2</td>
-<td>mobilenet_v2_b32x8_imagenet.py</td>
-<td>Top 1 / 5</td>
-<td>71.86 / 90.42</td>
-<td>71.86 / 90.42</td>
-</tr>
+<table border="1" class="docutils">
+  <tr>
+    <th align="center">Model</th>
+    <th align="center">Config</th>
+    <th align="center">Metric</th>
+    <th align="center">PyTorch</th>
+    <th align="center">ONNXRuntime</th>
+  </tr>
+  <tr>
+    <td align="center">ResNet</td>
+    <td align="center"><code>resnet50_b32x8_imagenet.py</code></td>
+    <td align="center">Top 1 / 5</td>
+    <td align="center">76.55 / 93.15</td>
+    <td align="center">76.49 / 93.22</td>
+  </tr>
+  <tr>
+    <td align="center">ResNeXt</td>
+    <td align="center"><code>resnext50_32x4d_b32x8_imagenet.py</code></td>
+    <td align="center">Top 1 / 5</td>
+    <td align="center">77.83 / 93.65</td>
+    <td align="center">77.83 / 93.65</td>
+  </tr>
+  <tr>
+    <td align="center">SE-ResNet</td>
+    <td align="center"><code>seresnet50_b32x8_imagenet.py</code></td>
+    <td align="center">Top 1 / 5</td>
+    <td align="center">77.74 / 93.84</td>
+    <td align="center">77.74 / 93.84</td>
+  </tr>
+  <tr>
+    <td align="center">ShuffleNetV1</td>
+    <td align="center"><code>shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py</code></td>
+    <td align="center">Top 1 / 5</td>
+    <td align="center">68.13 / 87.81</td>
+    <td align="center">68.13 / 87.81</td>
+  </tr>
+  <tr>
+    <td align="center">ShuffleNetV2</td>
+    <td align="center"><code>shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py</code></td>
+    <td align="center">Top 1 / 5</td>
+    <td align="center">69.55 / 88.92</td>
+    <td align="center">69.55 / 88.92</td>
+  </tr>
+  <tr>
+    <td align="center">MobileNetV2</td>
+    <td align="center"><code>mobilenet_v2_b32x8_imagenet.py</code></td>
+    <td align="center">Top 1 / 5</td>
+    <td align="center">71.86 / 90.42</td>
+    <td align="center">71.86 / 90.42</td>
+  </tr>
 </table>
 
 ## List of supported models exportable to ONNX
