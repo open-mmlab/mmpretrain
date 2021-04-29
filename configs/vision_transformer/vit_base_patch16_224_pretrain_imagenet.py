@@ -1,7 +1,7 @@
 _base_ = [
     '../_base_/models/vit_base_patch16_224_pretrain.py',
-    '../_base_/datasets/imagenet_bs32_pil_resize.py',
-    '../_base_/schedules/imagenet_bs2048_AdamW.py',
+    '../_base_/datasets/imagenet_bs64_pil_resize.py',
+    '../_base_/schedules/imagenet_bs4096_AdamW.py',
     '../_base_/default_runtime.py'
 ]
 
@@ -123,7 +123,7 @@ test_pipeline = [
     dict(type='Collect', keys=['img'])
 ]
 data = dict(
-    samples_per_gpu=32,
+    samples_per_gpu=64,
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
