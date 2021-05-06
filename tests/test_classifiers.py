@@ -107,11 +107,18 @@ def test_image_classifier_vit():
                             embed_dims=768,
                             num_heads=12,
                             attn_drop=0.,
-                            proj_drop=0.1)
+                            dropout_layer=dict(type='DropOut', drop_prob=0.1))
                     ],
-                    feedforward_channels=3072,
-                    ffn_dropout=0.1,
-                    operation_order=('norm', 'self_attn', 'norm', 'ffn'))),
+                    ffn_cfgs=dict(
+                        embed_dims=768,
+                        feedforward_channels=3072,
+                        num_fcs=2,
+                        ffn_drop=0.1,
+                        act_cfg=dict(type='GELU')),
+                    operation_order=('norm', 'self_attn', 'norm', 'ffn')),
+                init_cfg=[
+                    dict(type='Xavier', layer='Linear', distribution='normal')
+                ]),
             init_cfg=[
                 dict(
                     type='Kaiming',

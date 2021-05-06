@@ -23,13 +23,8 @@ class VitTransformerEncoderLayer(BaseTransformerLayer):
         act_cfg (dict): The activation config for FFNs.
     """
 
-    def __init__(self,
-                 *args,
-                 ffn_dropout=0.0,
-                 act_cfg=dict(type='GELU'),
-                 **kwargs):
-        super(VitTransformerEncoderLayer, self).__init__(
-            *args, ffn_dropout=ffn_dropout, act_cfg=act_cfg, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(VitTransformerEncoderLayer, self).__init__(*args, **kwargs)
         assert len(self.operation_order) == 4
         assert set(self.operation_order) == set(['self_attn', 'norm', 'ffn'])
 
