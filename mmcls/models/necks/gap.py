@@ -13,9 +13,16 @@ class GlobalAveragePooling(nn.Module):
     has a batch dimension of size 1, which can lead to unexpected errors.
     """
 
-    def __init__(self):
+    def __init__(self, mode='2d'):
         super(GlobalAveragePooling, self).__init__()
-        self.gap = nn.AdaptiveAvgPool2d((1, 1))
+        if mode == '1d':
+            self.gap = nn.AdaptiveAvgPool1d(1)
+        elif mode == '2d':
+            self.gap = nn.AdaptiveAvgPool2d((1, 1))
+        elif mode == '3d':
+            self.gap = nn.AdaptiveAvgPool3d((1, 1, 1))
+        else:
+            raise NotImplementedError('Only support mode 1d, 2d and 3d')
 
     def init_weights(self):
         pass
