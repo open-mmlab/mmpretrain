@@ -93,7 +93,7 @@ def test_vit_hybrid_backbone():
         img_size=224,
         patch_size=16,
         in_channels=3,
-        drop_rate=0.,
+        drop_rate=0.1,
         hybrid_backbone=backbone,
         encoder=dict(
             type='VitTransformerEncoder',
