@@ -15,13 +15,7 @@ from .base_backbone import BaseBackbone
 
 @TRANSFORMER_LAYER.register_module()
 class VitTransformerEncoderLayer(BaseTransformerLayer):
-    """Implements encoder layer in Vit transformer.
-
-    Args:
-        ffn_dropout (float): Probability of an element to be zeroed
-            in ffn. Default 0.0.
-        act_cfg (dict): The activation config for FFNs.
-    """
+    """Implements encoder layer in Vit transformer."""
 
     def __init__(self, *args, **kwargs):
         super(VitTransformerEncoderLayer, self).__init__(*args, **kwargs)
@@ -229,7 +223,6 @@ class VisionTransformer(BaseBackbone):
         img_size (int | tuple): Input image size
         patch_size (int | tuple): The patch size
         in_channels (int): Number of input channels
-        feedforward_channels (int): The hidden dimension for FFNs.
         drop_rate (float): Probability of an element to be zeroed.
             Default 0.0.
         hybrid_backbone (nn.Module, optional): CNN backbone to use in-place of
@@ -287,8 +280,8 @@ class VisionTransformer(BaseBackbone):
         B = x.shape[0]
         x = self.patch_embed(x)
 
-        cls_tokens = self.cls_token.expand(
-            B, -1, -1)  # stole cls_tokens impl from Phil Wang, thanks
+        # stole cls_tokens impl from Phil Wang, thanks
+        cls_tokens = self.cls_token.expand(B, -1, -1)
         x = torch.cat((cls_tokens, x), dim=1)
         x = x + self.pos_embed
         x = self.drop_after_pos(x)
