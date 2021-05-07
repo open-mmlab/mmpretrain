@@ -241,7 +241,7 @@ class VisionTransformer(BaseBackbone):
                  encoder=dict(
                      type='VitTransformerEncoder',
                      transformerlayers=None,
-                     num_encoder_layers=12,
+                     num_layers=12,
                      coder_norm_cfg=None,
                  ),
                  init_cfg=None):
