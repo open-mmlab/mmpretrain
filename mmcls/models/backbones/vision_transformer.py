@@ -125,7 +125,7 @@ class PatchEmbed(BaseModule):
             stride=patch_size)
 
         if norm_cfg is not None:
-            self.norm = build_norm_layer(norm_cfg, self.embed_dims)[1]
+            self.norm = build_norm_layer(norm_cfg, embed_dim)[1]
         else:
             self.norm = None
 
