@@ -1,5 +1,44 @@
 ## Changelog
 
+### v0.11.0(1/5/2021)
+
+- Support cutmix trick. (#198)
+- Support random augmentation. (#201)
+- Add `tools/deployment/test.py` as a ONNX runtime test tool. (#212)
+- Support ViT backbone and add training configs for ViT on ImageNet. (#214)
+- Add Chinese `README.md` and some Chinese tutorials. (#221)
+
+#### New Features
+
+- Support cutmix trick. (#198)
+- Add `simplify` option in `pytorch2onnx.py`. (#200)
+- Support random augmentation. (#201)
+- Add config and checkpoint for training ResNet on CIFAR-100. (#208)
+- Add `tools/deployment/test.py` as a ONNX runtime test tool. (#212)
+- Support ViT backbone and add training configs for ViT on ImageNet. (#214)
+- Add finetuning configs for ViT on ImageNet. (#217)
+- Add `device` option to support training on CPU. (#219)
+- Add Chinese `README.md` and some Chinese tutorials. (#221)
+- Add `metafile.yml` in configs to support interaction with paper with code(PWC) and MMCLI. (#225)
+- Upload configs and converted checkpoints for ViT fintuning on ImageNet. (#230)
+
+#### Improvements
+
+- Fix `LabelSmoothLoss` so that label smoothing and mixup could be enabled at the same time. (#203)
+- Add `cal_acc` option in `ClsHead`. (#206)
+- Check `CLASSES` in checkpoint to avoid unexpected key error. (#207)
+- Check mmcv version when importing mmcls to ensure compatibility. (#209)
+- Update `CONTRIBUTING.md` to align with that in MMCV. (#210)
+- Change tags to html comments in configs README.md. (#226)
+- Clean codes in ViT backbone. (#227)
+- Reformat `pytorch2onnx.md` tutorial. (#229)
+- Update `setup.py` to support MMCLI. (#232)
+
+#### Bug Fixes
+
+- Fix missing `cutmix_prob` in ViT configs. (#220)
+- Fix backend for resize in ResNeXt configs. (#222)
+
 ### v0.10.0(1/4/2021)
 
 - Support AutoAugmentation

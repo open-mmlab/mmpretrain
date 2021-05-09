@@ -11,6 +11,7 @@ The compatible MMClassification and MMCV versions are as below. Please install t
 | MMClassification version |    MMCV version     |
 |:-------------------:|:-------------------:|
 | master              | mmcv>=1.3.0         |
+| 0.11.0              | mmcv>=1.3.0         |
 | 0.10.0              | mmcv>=1.3.0         |
 | 0.9.0               | mmcv>=1.1.4         |
 | 0.8.0               | mmcv>=1.1.4         |

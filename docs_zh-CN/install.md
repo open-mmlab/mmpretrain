@@ -11,6 +11,7 @@ MMClassification 和 MMCV 的适配关系如下，请安装正确版本的 MMCV 
 | MMClassification 版本 |  MMCV 版本  |
 |:---------------------:|:-----------:|
 |        master         | mmcv>=1.3.0 |
+|        0.11.0         | mmcv>=1.3.0 |
 |        0.10.0         | mmcv>=1.3.0 |
 |         0.9.0         | mmcv>=1.1.4 |
 |         0.8.0         | mmcv>=1.1.4 |

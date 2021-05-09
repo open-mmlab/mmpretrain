@@ -1,0 +1,6 @@
+include mmcls/model_zoo.yml
+include mmcls/configs/*/*.py
+include mmcls/configs/*/*.yml
+include mmcls/tools/*.py
+include mmcls/tools/*.sh
+include mmcls/tools/*/*.py
