@@ -15,7 +15,7 @@ def test_cls_head():
     assert losses['loss'].item() > 0
 
     # test ClsHead with cal_acc=True
-    head = ClsHead(cal_acc=False)
+    head = ClsHead(cal_acc=True)
     fake_cls_score = torch.rand(4, 3)
     fake_gt_label = torch.randint(0, 2, (4, ))
 
