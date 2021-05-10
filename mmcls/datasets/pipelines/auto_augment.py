@@ -76,8 +76,11 @@ class RandAugment(object):
         total_level (int | float): Total level for the magnitude. Defaults to
             30.
         magnitude_std (Number | str): Deviation of magnitude noise applied.
-            If positive number, magnitude is moved as normal distribution.
-            If str "inf", magnitude is moved as uniform distribution.
+            If positive number, magnitude is sampled from normal distribution
+                (mean=magnitude, std=magnitude_std).
+            If 0 or negative number, magnitude remains unchanged.
+            If str "inf", magnitude is sampled from uniform distribution
+                (range=[min, magnitude]).
 
     Note:
         `magnitude_std` will introduce some randomness to policy, modified by
