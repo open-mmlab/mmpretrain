@@ -1,19 +1,19 @@
-# Tutorial 1: Finetuning Models
+# 教程 1：如何微调模型
 
-Classification models pre-trained on the ImageNet dataset has been demonstrated to be effective for other datasets and other downstream tasks.
-This tutorial provides instruction for users to use the models provided in the [Model Zoo](../model_zoo.md) for other datasets to obtain better performance.
+已经证明，在 ImageNet 数据集上预先训练的分类模型对于其他数据集和其他下游任务有很好的效果。
 
-There are two steps to finetune a model on a new dataset.
+该教程提供了如何将 [Model Zoo](../model_zoo.md) 中提供的预训练模型用于其他数据集，已获得更好的效果。
 
-- Add support for the new dataset following [Tutorial 2: Adding New Dataset](new_dataset.md).
-- Modify the configs as will be discussed in this tutorial.
+在新数据集上微调模型分为两步：
 
-Take the finetuning on CIFAR10 Dataset as an example, the users need to modify five parts in the config.
+- 按照 [教程 2：如何增加新数据集](new_dataset.md) 添加对新数据集的支持。
+- 按照本教程中讨论的内容修改配置文件
 
-## Inherit base configs
+以 CIFAR10 数据集的微调为例，用户需要修改配置文件中的五个部分。
 
-To reuse the common parts among different configs, we support inheriting configs from multiple existing configs. To finetune a ResNet-50 model, the new config needs to inherit
-`_base_/models/resnet50.py` to build the basic structure of the model. To use the CIFAR10 Dataset, the new config can also simply inherit `_base_/datasets/cifar10.py`. For runtime settings such as training schedules, the new config needs to inherit `_base_/default_runtime.py`.
+## 继承基础配置
+
+为了重用不同配置之间的通用部分，我们支持从多个现有配置中继承配置。要微调 ResNet-50 模型，新配置需要继承 `_base_/models/resnet50.py` 来搭建模型的基本结构。为了使用 CIFAR10 数据集，新的配置文件可以直接继承 `_base_/datasets/cifar10.py`。而为了保留运行相关设置，比如训练调整器，新的配置文件需要继承 `_base_/default_runtime.py`。
 
 ```python
 _base_ = [
@@ -22,11 +22,11 @@ _base_ = [
 ]
 ```
 
-Besides, users can also choose to write the whole contents rather than use inheritance, e.g. `configs/mnist/lenet5.py`.
+除此之外，用户也可以直接编写完整的配置文件，而不是使用继承，例如 `configs/mnist/lenet5.py`。
 
-## Modify head
+## 修改分类头
 
-Then the new config needs to modify the head according to the class numbers of the new datasets. By only changing `num_classes` in the head, the weights of the pre-trained models are mostly reused except the final prediction head.
+接下来，新的配置文件需要按照新数据集的类别数目来修改分类头的配置。只需要修改分类头中的 `num_classes` 设置，除了最终分类头之外的绝大部分预训练模型权重都会被重用。
 
 ```python
 _base_ = ['./resnet50.py']
@@ -40,10 +40,9 @@ model = dict(
     ))
 ```
 
-## Modify dataset
+## 修改数据集
 
-The users may also need to prepare the dataset and write the configs about dataset. We currently support MNIST, CIFAR and ImageNet Dataset.
-For fintuning on CIFAR10, its original input size is 32 and thus we should resize it to 224, to fit the input size of models pretrained on ImageNet.
+用户可能还需要准备数据集并编写有关数据集的配置。我们目前支持 MNIST，CIFAR 和 ImageNet 数据集。为了在 CIFAR10 数据集上进行微调，考虑到其原始输入大小为 32，而在 ImageNet 上预训练模型的输入大小为 224，因此我们应将其大小调整为 224。
 
 ```python
 _base_ = ['./cifar10.py']
@@ -68,16 +67,15 @@ train_pipeline = [
  ]
 ```
 
-## Modify training schedule
+## 修改训练调整设置
 
-The finetuning hyperparameters vary from the default schedule. It usually requires smaller learning rate and less training epochs.
+用于微调任务的超参数与默认配置不同，通常只需要较小的学习率和较少的训练时间。
 
 ```python
-# optimizer
-# lr is set for a batch size of 128
+# 用于批大小为 128 的优化器学习率
 optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=None)
-# learning policy
+# 学习策略
 lr_config = dict(
     policy='step',
     step=[15])
@@ -85,9 +83,9 @@ runner = dict(type='EpochBasedRunner', max_epochs=200)
 log_config = dict(interval=100)
 ```
 
-## Use pre-trained model
+## 使用预训练模型
 
-To use the pre-trained model, the new config add the link of pre-trained models in the `load_from`. The users might need to download the model weights before training to avoid the download time during training.
+为了使用预先训练的模型，新的配置文件中需要使用 `load_from` 添加预训练模型权重文件的链接。而为了避免训练过程中自动下载的耗时，用户可以在训练之前下载模型权重文件，并配置本地路径。
 
 ```python
 load_from = 'https://s3.ap-northeast-2.amazonaws.com/open-mmlab/mmclassification/models/tbd.pth'  # noqa
