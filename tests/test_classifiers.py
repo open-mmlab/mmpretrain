@@ -110,8 +110,8 @@ def test_image_classifier_vit():
         train_cfg=dict(mixup=dict(alpha=0.2, num_classes=1000)))
     img_classifier = ImageClassifier(**model_cfg)
     img_classifier.init_weights()
-    imgs = torch.randn(16, 3, 224, 224)
-    label = torch.randint(0, 1000, (16, ))
+    imgs = torch.randn(3, 3, 224, 224)
+    label = torch.randint(0, 1000, (3, ))
 
     losses = img_classifier.forward_train(imgs, label)
     assert losses['loss'].item() > 0
