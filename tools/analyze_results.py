@@ -18,7 +18,7 @@ def parse_args():
         '--topk',
         default=20,
         type=int,
-        help='Number of images to select for sucess/fail')
+        help='Number of images to select for success/fail')
     parser.add_argument(
         '--options',
         nargs='+',
