@@ -442,7 +442,7 @@ class RandomErasing(object):
     def __call__(self, results):
         """
         Args:
-            img (ndarray): Image to be cropped.
+            img (ndarray): Image to be randomly erased.
         """
         for key in results.get('img_fields', ['img']):
             if np.random.rand() > self.erase_prob:
@@ -473,7 +473,8 @@ class RandomErasing(object):
         repr_str += f'max_area_ratio={self.max_area_ratio}, '
         repr_str += f'aspect_range={self.aspect_range}, '
         repr_str += f'mode={self.mode}, '
-        repr_str += f'fill_const={self.fill_const})'
+        repr_str += f'fill_color={self.fill_color}, '
+        repr_str += f'fill_std={self.fill_std})'
         return repr_str
 
 
