@@ -15,15 +15,10 @@ class LinearClsHead(ClsHead):
         num_classes (int): Number of categories excluding the background
             category.
         in_channels (int): Number of channels in the input feature map.
-        loss (dict): Config of classification loss.
-    """  # noqa: W605
+    """
 
-    def __init__(self,
-                 num_classes,
-                 in_channels,
-                 loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
-                 topk=(1, )):
-        super(LinearClsHead, self).__init__(loss=loss, topk=topk)
+    def __init__(self, num_classes, in_channels, *args, **kwargs):
+        super(LinearClsHead, self).__init__(*args, **kwargs)
         self.in_channels = in_channels
         self.num_classes = num_classes
 

@@ -59,7 +59,7 @@ from .base_dataset import BaseDataset
 
 
 @DATASETS.register_module()
-class MyDataset(BaseDataset):
+class Filelist(BaseDataset):
 
     def load_annotations(self):
         assert isinstance(self.ann_file, str)
@@ -76,10 +76,22 @@ class MyDataset(BaseDataset):
 
 ```
 
+And add this dataset class in `mmcls/datasets/__init__.py`
+
+```python
+from .base_dataset import BaseDataset
+...
+from .filelist import Filelist
+
+__all__ = [
+    'BaseDataset', ... ,'Filelist'
+]
+```
+
 Then in the config, to use `Filelist` you can modify the config as the following
 
 ```python
-dataset_A_train = dict(
+train = dict(
     type='Filelist',
     ann_file = 'image_list.txt',
     pipeline=train_pipeline
