@@ -510,18 +510,23 @@ class Solarize(object):
 
     Args:
         thr (int | float): The threshold above which the pixels value will be
-            inverted.
+            inverted when incresing is set to False.
         prob (float): The probability for solarizing therefore should be in
             range [0, 1]. Defaults to 0.5.
+        increasing (bool): When setting to True, the meaning of thr is 
+            8 - actual thr.
     """
 
-    def __init__(self, thr, prob=0.5):
+    def __init__(self, thr, prob=0.5, increasing=False):
         assert isinstance(thr, (int, float)), 'The thr type must '\
             f'be int or float, but got {type(thr)} instead.'
         assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
             f'got {prob} instead.'
 
-        self.thr = thr
+        if increasing:
+            self.thr = 256 - thr
+        else:
+            self.thr = thr
         self.prob = prob
 
     def __call__(self, results):
@@ -588,18 +593,23 @@ class Posterize(object):
     """Posterize images (reduce the number of bits for each color channel).
 
     Args:
-        bits (int | float): Number of bits for each pixel in the output img,
-            which should be less or equal to 8.
+        bits (int | float): Number of bits for each pixel in the output img 
+            when increasing is False, which should be less or equal to 8.
         prob (float): The probability for posterizing therefore should be in
             range [0, 1]. Defaults to 0.5.
+        increasing (bool): When setting to True, the meaning of bits is 
+            8 - actual number of bits.
     """
 
-    def __init__(self, bits, prob=0.5):
+    def __init__(self, bits, prob=0.5, increasing=False):
         assert bits <= 8, f'The bits must be less than 8, got {bits} instead.'
         assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
             f'got {prob} instead.'
 
-        self.bits = int(bits)
+        if increasing:
+            self.bits = 8 - int(bits)
+        else:
+            self.bits = int(bits)
         self.prob = prob
 
     def __call__(self, results):
