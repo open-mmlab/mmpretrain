@@ -67,8 +67,9 @@ class RandAugment(object):
             augmentation. For those which have magnitude, (given to the fact
             they are named differently in different augmentation, )
             `magnitude_key` and `magnitude_range` shall be the magnitude
-            argument (str) and the range of magnitude (tuple in the format or
-            (minval, maxval)), respectively.
+            argument (str) and the range of magnitude (tuple in the format of
+            (val1, val2)), respectively. Note that val1 is not necessarily
+            less than val2.
         num_policies (int): Number of policies to select from policies each
             time.
         magnitude_level (int | float): Magnitude level for all the augmentation
@@ -85,6 +86,10 @@ class RandAugment(object):
     Note:
         `magnitude_std` will introduce some randomness to policy, modified by
         https://github.com/rwightman/pytorch-image-models
+        When magnitude_std=0, we calculate the magnitude as follows:
+
+        .. math::
+            magnitude = magnitude_level / total_level * (val2 - val1) + val1
     """
 
     def __init__(self,
@@ -130,18 +135,20 @@ class RandAugment(object):
             processed_policy = copy.deepcopy(policy)
             magnitude_key = processed_policy.pop('magnitude_key', None)
             if magnitude_key is not None:
-                minval, maxval = processed_policy.pop('magnitude_range')
+                val1, val2 = processed_policy.pop('magnitude_range')
                 magnitude_value = (self.magnitude_level / self.total_level
-                                   ) * float(maxval - minval) + minval
+                                   ) * float(val2 - val1) + val1
 
                 # if magnitude_std is positive number or 'inf', move
                 # magnitude_value randomly.
+                maxval = max(val1, val2)
+                minval = min(val1, val2)
                 if self.magnitude_std == 'inf':
                     magnitude_value = random.uniform(minval, magnitude_value)
                 elif self.magnitude_std > 0:
                     magnitude_value = random.gauss(magnitude_value,
                                                    self.magnitude_std)
-                    magnitude_value = min(maxval, max(0, magnitude_value))
+                    magnitude_value = min(maxval, max(minval, magnitude_value))
                 processed_policy.update({magnitude_key: magnitude_value})
             processed_policies.append(processed_policy)
         return processed_policies
