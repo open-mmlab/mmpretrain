@@ -727,18 +727,6 @@ def test_solarize():
     assert (results['img'] == img_solarized).all()
     assert (results['img'] == results['img2']).all()
 
-    # test case when thr=156
-    results = construct_toy_data_photometric()
-    transform = dict(type='Solarize', thr=156, prob=1., increasing=True)
-    pipeline = build_from_cfg(transform, PIPELINES)
-    results = pipeline(results)
-    img_solarized = np.array([[0, 127, 0], [1, 128, 1], [2, 126, 2]],
-                             dtype=np.uint8)
-    img_solarized = np.stack([img_solarized, img_solarized, img_solarized],
-                             axis=-1)
-    assert (results['img'] == img_solarized).all()
-    assert (results['img'] == results['img2']).all()
-
 
 def test_solarize_add():
     # test assertion for invalid type of magnitude
@@ -825,18 +813,6 @@ def test_posterize():
     # test case when bits=3
     results = construct_toy_data_photometric()
     transform = dict(type='Posterize', bits=3, prob=1.)
-    pipeline = build_from_cfg(transform, PIPELINES)
-    results = pipeline(results)
-    img_posterized = np.array([[0, 128, 224], [0, 96, 224], [0, 128, 224]],
-                              dtype=np.uint8)
-    img_posterized = np.stack([img_posterized, img_posterized, img_posterized],
-                              axis=-1)
-    assert (results['img'] == img_posterized).all()
-    assert (results['img'] == results['img2']).all()
-
-    # test case when bits=5, incresing= True
-    results = construct_toy_data_photometric()
-    transform = dict(type='Posterize', bits=5, prob=1., increasing=True)
     pipeline = build_from_cfg(transform, PIPELINES)
     results = pipeline(results)
     img_posterized = np.array([[0, 128, 224], [0, 96, 224], [0, 128, 224]],
