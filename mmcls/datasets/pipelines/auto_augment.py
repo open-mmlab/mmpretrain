@@ -513,7 +513,7 @@ class Solarize(object):
             inverted when incresing is set to False.
         prob (float): The probability for solarizing therefore should be in
             range [0, 1]. Defaults to 0.5.
-        increasing (bool): When setting to True, the meaning of thr is 
+        increasing (bool): When setting to True, the meaning of thr is
             8 - actual thr.
     """
 
@@ -593,11 +593,11 @@ class Posterize(object):
     """Posterize images (reduce the number of bits for each color channel).
 
     Args:
-        bits (int | float): Number of bits for each pixel in the output img 
+        bits (int | float): Number of bits for each pixel in the output img
             when increasing is False, which should be less or equal to 8.
         prob (float): The probability for posterizing therefore should be in
             range [0, 1]. Defaults to 0.5.
-        increasing (bool): When setting to True, the meaning of bits is 
+        increasing (bool): When setting to True, the meaning of bits is
             8 - actual number of bits.
     """
 
