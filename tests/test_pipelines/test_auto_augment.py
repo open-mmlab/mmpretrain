@@ -185,6 +185,34 @@ def test_rand_augment():
     # apply rotation with prob=0.
     assert (results['img'] == results['ori_img']).all()
 
+    # test case where magnitude_range is reversed
+    random.seed(1)
+    np.random.seed(0)
+    results = construct_toy_data()
+    reversed_policies = [
+        dict(
+            type='Translate',
+            magnitude_key='magnitude',
+            magnitude_range=(1, 0),
+            pad_val=128,
+            prob=1.,
+            direction='horizontal'),
+        dict(type='Invert', prob=1.),
+        dict(
+            type='Rotate',
+            magnitude_key='angle',
+            magnitude_range=(30, 0),
+            prob=0.)
+    ]
+    transform = dict(
+        type='RandAugment',
+        policies=reversed_policies,
+        num_policies=1,
+        magnitude_level=30)
+    pipeline = build_from_cfg(transform, PIPELINES)
+    results = pipeline(results)
+    assert (results['img'] == results['ori_img']).all()
+
     # test case where num_policies = 2
     random.seed(0)
     np.random.seed(0)
