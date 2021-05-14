@@ -11,6 +11,73 @@ class BaseCutMixLayer(object, metaclass=ABCMeta):
     def __init__(self):
         super(BaseCutMixLayer, self).__init__()
 
+    def rand_bbox_minmax(self, img_shape, minmax, count=None):
+        """Min-Max CutMix bounding-box Inspired by Darknet cutmix impl,
+        generates a random rectangular bbox based on min/max percent values
+        applied to each dimension of the input image.
+
+        Typical defaults for minmax are usually in the  .2-.3 for min and
+        .8-.9 range for max.
+
+        Args:
+            img_shape (tuple): Image shape as tuple
+            minmax (tuple or list): Min and max bbox ratios
+                (as percent of image size)
+            count (int, optional): Number of bbox to generate. Default to None
+        """
+        assert len(minmax) == 2
+        img_h, img_w = img_shape[-2:]
+        cut_h = np.random.randint(
+            int(img_h * minmax[0]), int(img_h * minmax[1]), size=count)
+        cut_w = np.random.randint(
+            int(img_w * minmax[0]), int(img_w * minmax[1]), size=count)
+        yl = np.random.randint(0, img_h - cut_h, size=count)
+        xl = np.random.randint(0, img_w - cut_w, size=count)
+        yu = yl + cut_h
+        xu = xl + cut_w
+        return yl, yu, xl, xu
+
+    def rand_bbox(self, img_shape, lam, margin=0., count=None):
+        """Standard CutMix bounding-box Generates a random square bbox based on
+        lambda value. This impl includes support for enforcing a border margin
+        as percent of bbox dimensions.
+
+        Args:
+            img_shape (tuple): Image shape as tuple
+            lam (float): Cutmix lambda value
+            margin (float): Percentage of bbox dimension to enforce as margin
+                (reduce amount of box outside image). Default to 0.
+            count (int, optional): Number of bbox to generate. Default to None
+        """
+        ratio = np.sqrt(1 - lam)
+        img_h, img_w = img_shape[-2:]
+        cut_h, cut_w = int(img_h * ratio), int(img_w * ratio)
+        margin_y, margin_x = int(margin * cut_h), int(margin * cut_w)
+        cy = np.random.randint(0 + margin_y, img_h - margin_y, size=count)
+        cx = np.random.randint(0 + margin_x, img_w - margin_x, size=count)
+        yl = np.clip(cy - cut_h // 2, 0, img_h)
+        yh = np.clip(cy + cut_h // 2, 0, img_h)
+        xl = np.clip(cx - cut_w // 2, 0, img_w)
+        xh = np.clip(cx + cut_w // 2, 0, img_w)
+        return yl, yh, xl, xh
+
+    def cutmix_bbox_and_lam(self,
+                            img_shape,
+                            lam,
+                            ratio_minmax=None,
+                            correct_lam=True,
+                            count=None):
+        """Generate bbox and apply lambda correction."""
+        if ratio_minmax is not None:
+            yl, yu, xl, xu = self.rand_bbox_minmax(
+                img_shape, ratio_minmax, count=count)
+        else:
+            yl, yu, xl, xu = self.rand_bbox(img_shape, lam, count=count)
+        if correct_lam or ratio_minmax is not None:
+            bbox_area = (yu - yl) * (xu - xl)
+            lam = 1. - bbox_area / float(img_shape[-2] * img_shape[-1])
+        return (yl, yu, xl, xu), lam
+
     @abstractmethod
     def cutmix(self, imgs, gt_label):
         pass
@@ -22,10 +89,20 @@ class BatchCutMixLayer(BaseCutMixLayer):
     Args:
         alpha (float): Parameters for Beta distribution. Positive(>0).
         num_classes (int): The number of classes.
-        cutmix_prob (float): CutMix probability. It should be in range [0, 1]
+        cutmix_prob (float): CutMix probability. It should be in range [0, 1].
+            Default to 1.0
+        cutmix_minmax (List[float], optional): cutmix min/max image ratio,
+            cutmix is active and uses this vs alpha if not None.
+        correct_lam (bool): apply lambda correction when cutmix bbox
+            clipped by image borders. Default to True
     """
 
-    def __init__(self, alpha, num_classes, cutmix_prob):
+    def __init__(self,
+                 alpha,
+                 num_classes,
+                 cutmix_prob=1.0,
+                 cutmix_minmax=None,
+                 correct_lam=True):
         super(BatchCutMixLayer, self).__init__()
 
         assert isinstance(alpha, float) and alpha > 0
@@ -35,45 +112,28 @@ class BatchCutMixLayer(BaseCutMixLayer):
         self.alpha = alpha
         self.num_classes = num_classes
         self.cutmix_prob = cutmix_prob
-
-    def rand_bbox(self, size, lam):
-        W = size[2]
-        H = size[3]
-        cut_rat = np.sqrt(1. - lam)
-        cut_w = np.int(W * cut_rat)
-        cut_h = np.int(H * cut_rat)
-
-        # uniform
-        cx = np.random.randint(W)
-        cy = np.random.randint(H)
-
-        bbx1 = np.clip(cx - cut_w // 2, 0, W)
-        bby1 = np.clip(cy - cut_h // 2, 0, H)
-        bbx2 = np.clip(cx + cut_w // 2, 0, W)
-        bby2 = np.clip(cy + cut_h // 2, 0, H)
-
-        return bbx1, bby1, bbx2, bby2
+        self.cutmix_minmax = cutmix_minmax
+        self.correct_lam = correct_lam
 
     def cutmix(self, img, gt_label):
+        one_hot_gt_label = F.one_hot(gt_label, num_classes=self.num_classes)
         r = np.random.rand(1)
         if r < self.cutmix_prob:
             lam = np.random.beta(self.alpha, self.alpha)
             batch_size = img.size(0)
             index = torch.randperm(batch_size)
-            one_hot_gt_label = F.one_hot(
-                gt_label, num_classes=self.num_classes)
-            bbx1, bby1, bbx2, bby2 = self.rand_bbox(img.size(), lam)
-            img[:, :, bbx1:bbx2, bby1:bby2] = \
-                img[index, :, bbx1:bbx2, bby1:bby2]
-            # adjust lambda to exactly match pixel ratio
-            lam = 1 - ((bbx2 - bbx1) * (bby2 - bby1) /
-                       (img.size(-1) * img.size(-2)))
+
+            (bby1, bby2, bbx1, bbx2), lam = self.cutmix_bbox_and_lam(
+                img.shape,
+                lam,
+                ratio_minmax=self.cutmix_minmax,
+                correct_lam=self.correct_lam)
+            img[:, :, bby1:bby2, bbx1:bbx2] = \
+                img[index, :, bby1:bby2, bbx1:bbx2]
             mixed_gt_label = lam * one_hot_gt_label + (
                 1 - lam) * one_hot_gt_label[index, :]
             return img, mixed_gt_label
         else:
-            one_hot_gt_label = F.one_hot(
-                gt_label, num_classes=self.num_classes)
             return img, one_hot_gt_label
 
     def __call__(self, img, gt_label):
