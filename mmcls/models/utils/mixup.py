@@ -22,10 +22,11 @@ class BatchMixupLayer(BaseMixupLayer):
     Args:
         alpha (float): Parameters for Beta distribution.
         num_classes (int): The number of classes.
-        mixup_prob (float): MixUp probability. It should be in range [0, 1]
+        mixup_prob (float): MixUp probability. It should be in range [0, 1].
+            Default to 1.0
     """
 
-    def __init__(self, alpha, num_classes, mixup_prob):
+    def __init__(self, alpha, num_classes, mixup_prob=1.0):
         super(BatchMixupLayer, self).__init__()
 
         assert isinstance(alpha, float) and alpha > 0
