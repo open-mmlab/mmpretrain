@@ -69,7 +69,6 @@ class CutMixUp(object):
                                       self.correct_lam)
         if self.mixup_alpha > 0. and self.cutmix_alpha > 0.:
             use_cutmix = np.random.rand() < self.switch_prob
-            print(use_cutmix)
             img, gt_label = cutmix(img, gt_label) if use_cutmix else \
                 mixup(img, gt_label)
         elif self.mixup_alpha > 0.:
