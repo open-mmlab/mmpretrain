@@ -1,4 +1,3 @@
-import pytest
 import torch
 from mmcv import Config
 from torch.nn.modules import GroupNorm
@@ -25,17 +24,12 @@ def check_norm_state(modules, train_state):
 
 def test_vit_backbone():
 
-    with pytest.raises(TypeError):
-        # pretrained must be a string path
-        model = VisionTransformer()
-        model.init_weights(pretrained=0)
-
     model = dict(
         embed_dim=768,
         img_size=224,
         patch_size=16,
         in_channels=3,
-        drop_rate=0.,
+        drop_rate=0.1,
         hybrid_backbone=None,
         encoder=dict(
             type='VitTransformerEncoder',
@@ -48,7 +42,8 @@ def test_vit_backbone():
                         embed_dims=768,
                         num_heads=12,
                         attn_drop=0.,
-                        dropout_layer=dict(type='DropOut', drop_prob=0.1))
+                        proj_drop=0.1,
+                        batch_first=True)
                 ],
                 ffn_cfgs=dict(
                     embed_dims=768,
@@ -56,7 +51,8 @@ def test_vit_backbone():
                     num_fcs=2,
                     ffn_drop=0.1,
                     act_cfg=dict(type='GELU')),
-                operation_order=('norm', 'self_attn', 'norm', 'ffn')),
+                operation_order=('norm', 'self_attn', 'norm', 'ffn'),
+                batch_first=True),
             init_cfg=[
                 dict(type='Xavier', layer='Linear', distribution='normal')
             ]),

@@ -107,7 +107,8 @@ def test_image_classifier_vit():
                             embed_dims=768,
                             num_heads=12,
                             attn_drop=0.,
-                            dropout_layer=dict(type='DropOut', drop_prob=0.1))
+                            proj_drop=0.1,
+                            batch_first=True)
                     ],
                     ffn_cfgs=dict(
                         embed_dims=768,
@@ -115,7 +116,8 @@ def test_image_classifier_vit():
                         num_fcs=2,
                         ffn_drop=0.1,
                         act_cfg=dict(type='GELU')),
-                    operation_order=('norm', 'self_attn', 'norm', 'ffn')),
+                    operation_order=('norm', 'self_attn', 'norm', 'ffn'),
+                    batch_first=True),
                 init_cfg=[
                     dict(type='Xavier', layer='Linear', distribution='normal')
                 ]),
@@ -127,7 +129,7 @@ def test_image_classifier_vit():
                     nonlinearity='linear'),
                 dict(
                     type='Pretrained',
-                    checkpoint='../checkpoints/vit_base_patch16_224.pth',
+                    checkpoint='../checkpoints/vit/vit_base_patch16_224.pth',
                     prefix='backbone.')
             ]),
         neck=None,
@@ -148,7 +150,7 @@ def test_image_classifier_vit():
     # test initializing weights of a sub-module
     # with the specific part of a pretrained model by using 'prefix'
     checkpoint = torch.load(
-        '../checkpoints/vit_base_patch16_224.pth', map_location='cpu')
+        '../checkpoints/vit/vit_base_patch16_224.pth', map_location='cpu')
     assert (checkpoint['state_dict']['backbone.cls_token'] ==
             img_classifier.state_dict()['backbone.cls_token']).all()
 
