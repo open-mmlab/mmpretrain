@@ -15,13 +15,13 @@ class ClsHead(BaseHead):
         topk (int | tuple): Top-k accuracy.
         cal_acc (bool): Whether to calculate accuracy during training.
             If you use Mixup/CutMix or something like that during training,
-            it is not reasonable to calculate accuracy. Defaults to True.
-    """  # noqa: W605
+            it is not reasonable to calculate accuracy. Defaults to False.
+    """
 
     def __init__(self,
                  loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
                  topk=(1, ),
-                 cal_acc=True):
+                 cal_acc=False):
         super(ClsHead, self).__init__()
 
         assert isinstance(loss, dict)

@@ -81,11 +81,11 @@ def test_mobilenetv2_backbone():
         model.init_weights(pretrained=0)
 
     with pytest.raises(ValueError):
-        # frozen_stages must in range(1, 8)
+        # frozen_stages must in range(-1, 8)
         MobileNetV2(frozen_stages=8)
 
     with pytest.raises(ValueError):
-        # tout_indices in range(-1, 8)
+        # out_indices in range(0, 8)
         MobileNetV2(out_indices=[8])
 
     # Test MobileNetV2 with first stage frozen
@@ -182,7 +182,7 @@ def test_mobilenetv2_backbone():
     assert feat[5].shape == torch.Size((1, 160, 7, 7))
     assert feat[6].shape == torch.Size((1, 320, 7, 7))
 
-    # Test MobileNetV2 with GroupNorm forward
+    # Test MobileNetV2 with BatchNorm forward
     model = MobileNetV2(widen_factor=1.0, out_indices=range(0, 7))
     for m in model.modules():
         if is_norm(m):
@@ -201,7 +201,7 @@ def test_mobilenetv2_backbone():
     assert feat[5].shape == torch.Size((1, 160, 7, 7))
     assert feat[6].shape == torch.Size((1, 320, 7, 7))
 
-    # Test MobileNetV2 with BatchNorm forward
+    # Test MobileNetV2 with GroupNorm forward
     model = MobileNetV2(
         widen_factor=1.0,
         norm_cfg=dict(type='GN', num_groups=2, requires_grad=True),
