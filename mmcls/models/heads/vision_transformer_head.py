@@ -21,22 +21,16 @@ class VisionTransformerClsHead(ClsHead):
             available during pre-training. Default None.
         act_cfg (dict): The activation config. Only available during
             pre-training. Defalut Tanh.
-        loss (dict): Config of classification loss.
-        topk (int | tuple): Top-k accuracy.
-        cal_acc (bool): Whether to calculate accuracy during training.
-            If mixup is used, this should be False. Default False.
-    """  # noqa: W605
+    """
 
     def __init__(self,
                  num_classes,
                  in_channels,
                  hidden_dim=None,
                  act_cfg=dict(type='Tanh'),
-                 loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
-                 topk=(1, ),
-                 cal_acc=False):
-        super(VisionTransformerClsHead, self).__init__(
-            loss=loss, topk=topk, cal_acc=cal_acc)
+                 *args,
+                 **kwargs):
+        super(VisionTransformerClsHead, self).__init__(*args, **kwargs)
         self.in_channels = in_channels
         self.num_classes = num_classes
         self.hidden_dim = hidden_dim
