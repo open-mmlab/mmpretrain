@@ -11,11 +11,22 @@ class GlobalAveragePooling(nn.Module):
     Note that we use `view` to remove extra channel after pooling. We do not
     use `squeeze` as it will also remove the batch dimension when the tensor
     has a batch dimension of size 1, which can lead to unexpected errors.
+
+    Args:
+        dim (int): Dimensions of each sample channel, can be one of {1, 2, 3}.
+            Default: 2
     """
 
-    def __init__(self):
+    def __init__(self, dim=2):
         super(GlobalAveragePooling, self).__init__()
-        self.gap = nn.AdaptiveAvgPool2d((1, 1))
+        assert dim in [1, 2, 3], 'GlobalAveragePooling dim only support ' \
+            f'{1, 2, 3}, get {dim} instead.'
+        if dim == 1:
+            self.gap = nn.AdaptiveAvgPool1d(1)
+        elif dim == 2:
+            self.gap = nn.AdaptiveAvgPool2d((1, 1))
+        else:
+            self.gap = nn.AdaptiveAvgPool3d((1, 1, 1))
 
     def init_weights(self):
         pass
