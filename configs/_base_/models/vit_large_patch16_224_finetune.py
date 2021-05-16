@@ -20,7 +20,8 @@ model = dict(
                         embed_dims=1024,
                         num_heads=16,
                         attn_drop=0.,
-                        dropout_layer=dict(type='DropOut', drop_prob=0.1))
+                        proj_drop=0.1,
+                        batch_first=True)
                 ],
                 ffn_cfgs=dict(
                     embed_dims=1024,
@@ -28,7 +29,8 @@ model = dict(
                     num_fcs=2,
                     ffn_drop=0.1,
                     act_cfg=dict(type='GELU')),
-                operation_order=('norm', 'self_attn', 'norm', 'ffn'))),
+                operation_order=('norm', 'self_attn', 'norm', 'ffn'),
+                batch_first=True)),
         init_cfg=[
             dict(
                 type='Kaiming',
