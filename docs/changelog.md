@@ -2,7 +2,7 @@
 
 ### v0.11.1(17/5/2021)
 
--
+- Refine `new_dataset.md` and add Chinese translation of `finture.md`, `new_dataset.md`. (#243)
 
 #### New Features
 
