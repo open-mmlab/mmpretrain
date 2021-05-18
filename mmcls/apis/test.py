@@ -1,7 +1,6 @@
 import os.path as osp
 import pickle
 import shutil
-import tempfile
 import time
 
 import mmcv
@@ -115,31 +114,14 @@ def multi_gpu_test(model, data_loader, tmpdir=None, gpu_collect=False):
     return results
 
 
-def collect_results_cpu(result_part, size, tmpdir=None):
+def collect_results_cpu(result_part, size, tmpdir='.dist_test_mmcls'):
     rank, world_size = get_dist_info()
-    # create a tmp dir if it is not specified
-    if tmpdir is None:
-        MAX_LEN = 512
-        # 32 is whitespace
-        dir_tensor = torch.full((MAX_LEN, ),
-                                32,
-                                dtype=torch.uint8,
-                                device='cuda')
-        if rank == 0:
-            mmcv.mkdir_or_exist('.dist_test')
-            tmpdir = tempfile.mkdtemp(dir='.dist_test')
-            tmpdir = torch.tensor(
-                bytearray(tmpdir.encode()), dtype=torch.uint8, device='cuda')
-            dir_tensor[:len(tmpdir)] = tmpdir
-        dist.broadcast(dir_tensor, 0)
-        tmpdir = dir_tensor.cpu().numpy().tobytes().decode().rstrip()
-    else:
-        if rank == 0:
-            if osp.exists(tmpdir):
-                raise OSError((f'The tmpdir {tmpdir} already exists.',
-                               ' Since tmpdir will be deleted after testing,',
-                               ' please make sure you specify an empty one.'))
-            mmcv.mkdir_or_exist(tmpdir)
+    if rank == 0:
+        if tmpdir != '.dist_test_mmcls' and osp.exists(tmpdir):
+            raise OSError((f'The tmpdir {tmpdir} already exists.',
+                           ' Since tmpdir will be deleted after testing,',
+                           ' please make sure you specify an empty one.'))
+        mmcv.mkdir_or_exist(tmpdir)
     # dump the part result to the dir
     mmcv.dump(result_part, osp.join(tmpdir, f'part_{rank}.pkl'))
     dist.barrier()
