@@ -350,7 +350,6 @@ class RandomErasing(object):
     """Randomly selects a rectangle region in an image and erase pixels.
 
     Args:
-
         erase_prob (float): Probability that image will be randomly erased.
             Default: 0.5
         min_area_ratio (float): Minimum erased area / input image area
@@ -358,7 +357,7 @@ class RandomErasing(object):
         max_area_ratio (float): Maximum erased area / input image area
             Default: 0.4
         aspect_range (sequence | float): Aspect ratio range of erased area.
-            if float, use (aspect_ratio, 1/aspect_ratio)
+            if float, it will be converted to (aspect_ratio, 1/aspect_ratio)
             Default: (3/10, 10/3)
         mode (str): Fill method in erased area, can be:
             - 'const' (default): All pixels are assign with the same value.
@@ -369,6 +368,7 @@ class RandomErasing(object):
             erased area with random color from normal distribution
             (mean=fill_color, std=fill_std); If not set, fill erased area with
             random color from uniform distribution (0~255)
+            Default: None
 
     Note:
         See https://arxiv.org/pdf/1708.04896.pdf
@@ -442,7 +442,10 @@ class RandomErasing(object):
     def __call__(self, results):
         """
         Args:
-            img (ndarray): Image to be randomly erased.
+            results (dict): Results dict from pipeline
+
+        Returns:
+            dict: Results after the transformation.
         """
         for key in results.get('img_fields', ['img']):
             if np.random.rand() > self.erase_prob:

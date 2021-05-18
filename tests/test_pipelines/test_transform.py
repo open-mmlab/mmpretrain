@@ -834,6 +834,30 @@ def test_random_erasing():
         cfg = dict(type='RandomErasing', mode='unknown')
         build_from_cfg(cfg, PIPELINES)
 
+    # test fill_std assertion
+    with pytest.raises(AssertionError):
+        cfg = dict(type='RandomErasing', fill_std='unknown')
+        build_from_cfg(cfg, PIPELINES)
+
+    # test implicit conversion of aspect_range
+    cfg = dict(type='RandomErasing', aspect_range=0.5)
+    random_erasing = build_from_cfg(cfg, PIPELINES)
+    assert random_erasing.aspect_range == (0.5, 2.)
+
+    cfg = dict(type='RandomErasing', aspect_range=2.)
+    random_erasing = build_from_cfg(cfg, PIPELINES)
+    assert random_erasing.aspect_range == (0.5, 2.)
+
+    # test implicit conversion of fill_color
+    cfg = dict(type='RandomErasing', fill_color=15)
+    random_erasing = build_from_cfg(cfg, PIPELINES)
+    assert random_erasing.fill_color == [15, 15, 15]
+
+    # test implicit conversion of fill_std
+    cfg = dict(type='RandomErasing', fill_std=0.5)
+    random_erasing = build_from_cfg(cfg, PIPELINES)
+    assert random_erasing.fill_std == [0.5, 0.5, 0.5]
+
     # test when erase_prob=0.
     results = construct_toy_data()
     cfg = dict(
