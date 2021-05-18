@@ -24,7 +24,7 @@ test_pipeline = [
 ]
 data = dict(
     samples_per_gpu=128,
-    workers_per_gpu=2,
+    workers_per_gpu=8,
     train=dict(
         type=dataset_type,
         data_prefix='data/imagenet/train',
@@ -40,4 +40,4 @@ data = dict(
         data_prefix='data/imagenet/val',
         ann_file='data/imagenet/meta/val.txt',
         pipeline=test_pipeline))
-evaluation = dict(interval=1, metric='accuracy')
+evaluation = dict(interval=10, metric='accuracy')

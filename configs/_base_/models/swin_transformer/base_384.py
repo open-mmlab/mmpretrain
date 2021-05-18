@@ -1,4 +1,5 @@
 # model settings
+# Only for evaluation
 model = dict(
     type='ImageClassifier',
     backbone=dict(
