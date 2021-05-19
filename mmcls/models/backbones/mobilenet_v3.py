@@ -1,7 +1,7 @@
 import logging
 
 import torch.nn as nn
-from mmcv.cnn import ConvModule, constant_init, kaiming_init
+from mmcv.cnn import ConvModule, constant_init, kaiming_init, normal_init
 from mmcv.runner import load_checkpoint
 from torch.nn.modules.batchnorm import _BatchNorm
 
@@ -12,7 +12,7 @@ from .base_backbone import BaseBackbone
 
 @BACKBONES.register_module()
 class MobileNetV3(BaseBackbone):
-    """ MobileNetV3 backbone
+    """MobileNetV3 backbone.
 
     Args:
         arch (str): Architechture of mobilnetv3, from {small, large}.
@@ -169,9 +169,16 @@ class MobileNetV3(BaseBackbone):
         elif pretrained is None:
             for m in self.modules():
                 if isinstance(m, nn.Conv2d):
-                    kaiming_init(m)
+                    kaiming_init(
+                        m,
+                        mode='fan_out',
+                        nonlinearity='leaky_relu',
+                        bias=0.,
+                    )
+                if isinstance(m, nn.Linear):
+                    normal_init(m, 0, 0.01, bias=0.)
                 elif isinstance(m, nn.BatchNorm2d):
-                    constant_init(m, 1)
+                    constant_init(m, 1, bias=0.)
         else:
             raise TypeError('pretrained must be a str or None')
 
