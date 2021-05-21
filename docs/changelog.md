@@ -1,6 +1,6 @@
 ## Changelog
 
-### v0.11.1(17/5/2021)
+### v0.11.1(21/5/2021)
 
 - Refine `new_dataset.md` and add Chinese translation of `finture.md`, `new_dataset.md`. (#243)
 
@@ -20,7 +20,7 @@
 
 - Fix typo in `analyze_results.py`. (#237)
 - Fix typo in unittests. (#238)
-- Check if specified tmpdir exists when testing to avoid deleting existing data. (#242)
+- Check if specified tmpdir exists when testing to avoid deleting existing data. (#242 & #258)
 - Add missing config files in `MANIFEST.in`. (#250 & #255)
 - Use temporary directory under shared directory to collect results to avoid unavailability of temporary directory for multi-node testing. (#251)
 
