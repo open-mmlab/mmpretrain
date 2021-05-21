@@ -30,7 +30,7 @@ data = dict(
         type=dataset_type, data_prefix='data/mnist', pipeline=train_pipeline),
     val=dict(
         type=dataset_type, data_prefix='data/mnist', pipeline=test_pipeline),
-    test = dict(
+    test=dict(
         type=dataset_type, data_prefix='data/mnist', pipeline=test_pipeline))
 evaluation = dict(
     interval=5, metric='accuracy', metric_options={'topk': (1, )})
