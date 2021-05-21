@@ -92,6 +92,11 @@ def multi_gpu_test(model, data_loader, tmpdir=None, gpu_collect=False):
     dataset = data_loader.dataset
     rank, world_size = get_dist_info()
     if rank == 0:
+        # Check if tmpdir is valid for cpu_collect
+        if (not gpu_collect) and (tmpdir is not None and osp.exists(tmpdir)):
+            raise OSError((f'The tmpdir {tmpdir} already exists.',
+                           ' Since tmpdir will be deleted after testing,',
+                           ' please make sure you specify an empty one.'))
         prog_bar = mmcv.ProgressBar(len(dataset))
     time.sleep(2)  # This line can prevent deadlock problem in some cases.
     for i, data in enumerate(data_loader):
@@ -134,10 +139,6 @@ def collect_results_cpu(result_part, size, tmpdir=None):
         dist.broadcast(dir_tensor, 0)
         tmpdir = dir_tensor.cpu().numpy().tobytes().decode().rstrip()
     else:
-        if osp.exist(tmpdir):
-            raise OSError((f'The tmpdir {tmpdir} already exists.',
-                           ' Since tmpdir will be deleted after testing,',
-                           ' please make sure you specify an empty one.'))
         mmcv.mkdir_or_exist(tmpdir)
     # dump the part result to the dir
     mmcv.dump(result_part, osp.join(tmpdir, f'part_{rank}.pkl'))
