@@ -26,13 +26,12 @@ class ImageClassifier(BaseClassifier):
         if head is not None:
             self.head = build_head(head)
 
-        self.cutmixup = None
+        self.cutmixup, self.mixup, self.cutmix = None, None, None
         if train_cfg is not None:
             cutmixup_cfg = train_cfg.get('cutmixup', None)
             if cutmixup_cfg is not None:
                 self.cutmixup = CutMixUp(**cutmixup_cfg)
             else:
-                self.mixup, self.cutmix = None, None
                 mixup_cfg = train_cfg.get('mixup', None)
                 cutmix_cfg = train_cfg.get('cutmix', None)
                 assert mixup_cfg is None or cutmix_cfg is None, \
