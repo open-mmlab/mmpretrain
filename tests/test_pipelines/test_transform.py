@@ -17,6 +17,19 @@ from mmcls.datasets.builder import PIPELINES
 from mmcls.datasets.pipelines import Compose
 
 
+def construct_toy_data():
+    img = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]],
+                   dtype=np.uint8)
+    img = np.stack([img, img, img], axis=-1)
+    results = dict()
+    # image
+    results['ori_img'] = img
+    results['img'] = copy.deepcopy(img)
+    results['ori_shape'] = img.shape
+    results['img_shape'] = img.shape
+    return results
+
+
 def test_resize():
     # test assertion if size is smaller than 0
     with pytest.raises(AssertionError):
@@ -780,6 +793,126 @@ def test_randomflip():
     flipped_img = np.array(flipped_img)
     assert np.equal(results['img'], results['img2']).all()
     assert np.equal(results['img'], flipped_img).all()
+
+
+def test_random_erasing():
+    # test erase_prob assertion
+    with pytest.raises(AssertionError):
+        cfg = dict(type='RandomErasing', erase_prob=-1.)
+        build_from_cfg(cfg, PIPELINES)
+    with pytest.raises(AssertionError):
+        cfg = dict(type='RandomErasing', erase_prob=1)
+        build_from_cfg(cfg, PIPELINES)
+
+    # test area_ratio assertion
+    with pytest.raises(AssertionError):
+        cfg = dict(type='RandomErasing', min_area_ratio=-1.)
+        build_from_cfg(cfg, PIPELINES)
+    with pytest.raises(AssertionError):
+        cfg = dict(type='RandomErasing', max_area_ratio=1)
+        build_from_cfg(cfg, PIPELINES)
+    with pytest.raises(AssertionError):
+        # min_area_ratio should be smaller than max_area_ratio
+        cfg = dict(
+            type='RandomErasing', min_area_ratio=0.6, max_area_ratio=0.4)
+        build_from_cfg(cfg, PIPELINES)
+
+    # test aspect_range assertion
+    with pytest.raises(AssertionError):
+        cfg = dict(type='RandomErasing', aspect_range='str')
+        build_from_cfg(cfg, PIPELINES)
+    with pytest.raises(AssertionError):
+        cfg = dict(type='RandomErasing', aspect_range=-1)
+        build_from_cfg(cfg, PIPELINES)
+    with pytest.raises(AssertionError):
+        # In aspect_range (min, max), min should be smaller than max.
+        cfg = dict(type='RandomErasing', aspect_range=[1.6, 0.6])
+        build_from_cfg(cfg, PIPELINES)
+
+    # test mode assertion
+    with pytest.raises(AssertionError):
+        cfg = dict(type='RandomErasing', mode='unknown')
+        build_from_cfg(cfg, PIPELINES)
+
+    # test fill_std assertion
+    with pytest.raises(AssertionError):
+        cfg = dict(type='RandomErasing', fill_std='unknown')
+        build_from_cfg(cfg, PIPELINES)
+
+    # test implicit conversion of aspect_range
+    cfg = dict(type='RandomErasing', aspect_range=0.5)
+    random_erasing = build_from_cfg(cfg, PIPELINES)
+    assert random_erasing.aspect_range == (0.5, 2.)
+
+    cfg = dict(type='RandomErasing', aspect_range=2.)
+    random_erasing = build_from_cfg(cfg, PIPELINES)
+    assert random_erasing.aspect_range == (0.5, 2.)
+
+    # test implicit conversion of fill_color
+    cfg = dict(type='RandomErasing', fill_color=15)
+    random_erasing = build_from_cfg(cfg, PIPELINES)
+    assert random_erasing.fill_color == [15, 15, 15]
+
+    # test implicit conversion of fill_std
+    cfg = dict(type='RandomErasing', fill_std=0.5)
+    random_erasing = build_from_cfg(cfg, PIPELINES)
+    assert random_erasing.fill_std == [0.5, 0.5, 0.5]
+
+    # test when erase_prob=0.
+    results = construct_toy_data()
+    cfg = dict(
+        type='RandomErasing',
+        erase_prob=0.,
+        mode='const',
+        fill_color=(255, 255, 255))
+    random_erasing = build_from_cfg(cfg, PIPELINES)
+    results = random_erasing(results)
+    np.testing.assert_array_equal(results['img'], results['ori_img'])
+
+    # test mode 'const'
+    random.seed(0)
+    np.random.seed(0)
+    results = construct_toy_data()
+    cfg = dict(
+        type='RandomErasing',
+        erase_prob=1.,
+        mode='const',
+        fill_color=(255, 255, 255))
+    random_erasing = build_from_cfg(cfg, PIPELINES)
+    results = random_erasing(results)
+
+    expect_out = np.array([[1, 255, 3, 4], [5, 255, 7, 8], [9, 10, 11, 12]],
+                          dtype=np.uint8)
+    expect_out = np.stack([expect_out] * 3, axis=-1)
+    np.testing.assert_array_equal(results['img'], expect_out)
+
+    # test mode 'rand' with normal distribution
+    random.seed(0)
+    np.random.seed(0)
+    results = construct_toy_data()
+    cfg = dict(type='RandomErasing', erase_prob=1., mode='rand')
+    random_erasing = build_from_cfg(cfg, PIPELINES)
+    results = random_erasing(results)
+
+    expect_out = results['ori_img']
+    expect_out[:2, 1] = [[159, 98, 76], [14, 69, 122]]
+    np.testing.assert_array_equal(results['img'], expect_out)
+
+    # test mode 'rand' with uniform distribution
+    random.seed(0)
+    np.random.seed(0)
+    results = construct_toy_data()
+    cfg = dict(
+        type='RandomErasing',
+        erase_prob=1.,
+        mode='rand',
+        fill_std=(10, 255, 0))
+    random_erasing = build_from_cfg(cfg, PIPELINES)
+    results = random_erasing(results)
+
+    expect_out = results['ori_img']
+    expect_out[:2, 1] = [[113, 255, 128], [126, 83, 128]]
+    np.testing.assert_array_equal(results['img'], expect_out)
 
 
 def test_color_jitter():
