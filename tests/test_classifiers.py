@@ -111,6 +111,7 @@ def test_image_classifier_vit():
                             batch_first=True)
                     ],
                     ffn_cfgs=dict(
+                        type='FFN',
                         embed_dims=768,
                         feedforward_channels=3072,
                         num_fcs=2,

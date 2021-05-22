@@ -24,6 +24,7 @@ model = dict(
                         batch_first=True)
                 ],
                 ffn_cfgs=dict(
+                    type='FFN',
                     embed_dims=1024,
                     feedforward_channels=4096,
                     num_fcs=2,

@@ -46,6 +46,7 @@ def test_vit_backbone():
                         batch_first=True)
                 ],
                 ffn_cfgs=dict(
+                    type='FFN',
                     embed_dims=768,
                     feedforward_channels=3072,
                     num_fcs=2,
@@ -105,6 +106,7 @@ def test_vit_hybrid_backbone():
                         dropout_layer=dict(type='DropOut', drop_prob=0.1))
                 ],
                 ffn_cfgs=dict(
+                    type='FFN',
                     embed_dims=768,
                     feedforward_channels=3072,
                     num_fcs=2,
