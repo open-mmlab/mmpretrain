@@ -1,5 +1,29 @@
 ## Changelog
 
+### v0.11.1(21/5/2021)
+
+- Refine `new_dataset.md` and add Chinese translation of `finture.md`, `new_dataset.md`. (#243)
+
+#### New Features
+
+- Add `dim` argument for `GlobalAveragePooling`. (#236)
+- Add random noise to `RandAugment` magnitude. (#240)
+- Refine `new_dataset.md` and add Chinese translation of `finture.md`, `new_dataset.md`. (#243)
+
+#### Improvements
+
+- Refactor arguments passing for Heads. (#239)
+- Allow more flexible `magnitude_range` in `RandAugment`. (#249)
+- Inherits MMCV registry so that in the future OpenMMLab repos like MMDet and MMSeg could directly use the backbones supported in MMCls. (#252)
+
+#### Bug Fixes
+
+- Fix typo in `analyze_results.py`. (#237)
+- Fix typo in unittests. (#238)
+- Check if specified tmpdir exists when testing to avoid deleting existing data. (#242 & #258)
+- Add missing config files in `MANIFEST.in`. (#250 & #255)
+- Use temporary directory under shared directory to collect results to avoid unavailability of temporary directory for multi-node testing. (#251)
+
 ### v0.11.0(1/5/2021)
 
 - Support cutmix trick. (#198)
