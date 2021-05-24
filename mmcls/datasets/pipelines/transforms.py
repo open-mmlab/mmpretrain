@@ -618,7 +618,7 @@ class Resize(object):
             `cv2` and `pillow`. Default: `cv2`.
     """
 
-    def __init__(self, size, interpolation='bilinear', backend='cv2'):
+    def __init__(self, size, interpolation='bicubic', backend='cv2'):
         assert isinstance(size, int) or (isinstance(size, tuple)
                                          and len(size) == 2)
         self.resize_w_short_side = False
@@ -736,7 +736,7 @@ class ECenterCrop:
         PIL Image: Cropped image.
     """
 
-    def __init__(self, size, interpolation='bilinear', backend='cv2'):
+    def __init__(self, size, interpolation='bicubic', backend='cv2'):
         assert isinstance(size, int) or (isinstance(size, tuple)
                                          and len(size) == 2)
         self.size = size
