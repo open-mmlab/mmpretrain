@@ -5,7 +5,7 @@ model = dict(
         type='SwinTransformer', arch='tiny', img_size=224, drop_path_rate=0.2),
     neck=dict(type='GlobalAveragePooling', dim=1),
     head=dict(
-        type='LinearClsHead',
+        type='SwinLinearClsHead',
         num_classes=1000,
         in_channels=768,
         loss=dict(type='CrossEntropyLoss', use_soft=True),
