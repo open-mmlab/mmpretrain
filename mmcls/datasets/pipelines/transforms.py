@@ -265,6 +265,9 @@ class RandomResizedCrop(object):
 class ERandomCrop(object):
     """Crop the given Image at a random location following the EfficientNet
     style.
+    The main differences between ERandomCrop and RandomResizedCrop are:
+    1. ERandomCrop is less likely to generate very small crops.
+    2. The fallback central crop differs.
 
     Args:
         size (int): Desired output size of the crop.
@@ -740,10 +743,12 @@ class CenterCrop(object):
         return self.__class__.__name__ + f'(crop_size={self.crop_size})'
 
 
-@PIPELINES.register_module()
 # https://github.com/kakaobrain/fast-autoaugment/blob/master/FastAutoAugment/data.py
+@PIPELINES.register_module()
 class ECenterCrop(object):
-    """Center crop the image. following the EfficientNet style.
+    """Center crop the image. following the EfficientNet style. It first crops
+    the image in the center using a crop size calculated out of the given size
+    and then resize the cropped image to the given size.
 
     Args:
         size (int): Desired output size of the crop.
