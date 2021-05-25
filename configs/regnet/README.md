@@ -29,7 +29,7 @@ The pre-trained modles are converted from [model zoo of pycls](https://github.co
 | RegNetX-3.2GF         |   15.3    |   3.21   |   78.26   |   94.20   | [model](https://download.openmmlab.com/mmclassification/v0/regnet/convert/RegNetX-3.2GF-82c43fd5.pth)|
 | RegNetX-4.0GF         |   22.12   |   4.0    |   78.72   |   94.22   | [model](https://download.openmmlab.com/mmclassification/v0/regnet/convert/RegNetX-4.0GF-ef8bb32c.pth)|
 | RegNetX-6.4GF         |   26.21   |   6.51   |   79.22   |   94.61   | [model](https://download.openmmlab.com/mmclassification/v0/regnet/convert/RegNetX-6.4GF-6888c0ea.pth)|
-| RegNetX-8.0GF         |   39.57   |   8.03   |   79.31   |   97.57   | [model](https://download.openmmlab.com/mmclassification/v0/regnet/convert/RegNetX-8.0GF-cb4c77ec.pth)|
+| RegNetX-8.0GF         |   39.57   |   8.03   |   79.31   |   94.57   | [model](https://download.openmmlab.com/mmclassification/v0/regnet/convert/RegNetX-8.0GF-cb4c77ec.pth)|
 | RegNetX-12GF          |   46.11   |   12.15  |   79.91   |   94.78   | [model](https://download.openmmlab.com/mmclassification/v0/regnet/convert/RegNetX-12GF-0574538f.pth)|
 
 ## Results and models
