@@ -278,6 +278,51 @@ def test_center_crop():
     assert np.equal(results['img'], cropped_img).all()
 
 
+def test_e_center_crop():
+    # test assertion if size is tuple
+    with pytest.raises(AssertionError):
+        transform = dict(type='ECenterCrop', size=(224, 224))
+        build_from_cfg(transform, PIPELINES)
+
+    # test repr
+    transform = dict(type='ECenterCrop', size=224)
+    center_crop_module = build_from_cfg(transform, PIPELINES)
+    print(center_crop_module)
+
+    # read test image
+    results = dict()
+    img = mmcv.imread(
+        osp.join(osp.dirname(__file__), '../data/color.jpg'), 'color')
+    original_img = copy.deepcopy(img)
+    results['img'] = img
+    results['img2'] = copy.deepcopy(img)
+    results['img_shape'] = img.shape
+    results['ori_shape'] = img.shape
+    results['img_fields'] = ['img', 'img2']
+
+    def reset_results(results, original_img):
+        results['img'] = copy.deepcopy(original_img)
+        results['img2'] = copy.deepcopy(original_img)
+        results['img_shape'] = original_img.shape
+        results['ori_shape'] = original_img.shape
+        return results
+
+    # test CenterCrop when size = 224
+    transform = dict(type='ECenterCrop', size=224)
+    center_crop_module = build_from_cfg(transform, PIPELINES)
+    results = center_crop_module(results)
+    assert np.equal(results['img'], results['img2']).all()
+    assert results['img_shape'] == (224, 224, 3)
+
+    # test CenterCrop when crop_size is larger than img.shape
+    transform = dict(type='ECenterCrop', size=600)
+    center_crop_module = build_from_cfg(transform, PIPELINES)
+    results = reset_results(results, original_img)
+    results = center_crop_module(results)
+    assert np.equal(results['img'], results['img2']).all()
+    assert results['img_shape'] == (600, 600, 3)
+
+
 def test_normalize():
     img_norm_cfg = dict(
         mean=[123.675, 116.28, 103.53],
@@ -483,16 +528,16 @@ def test_randomresizedcrop():
         results['img'] = ori_img
         composed_transform(results)['img']
 
-        # test when ratio is not of kind (min, max)
-        with pytest.raises(ValueError):
-            kwargs = dict(
-                size=(200, 300), scale=(0.08, 1.0), ratio=(4. / 3., 3. / 4.))
-            aug = []
-            aug.extend([mmcls_transforms.RandomResizedCrop(**kwargs)])
-            composed_transform = Compose(aug)
-            results = dict()
-            results['img'] = ori_img
-            composed_transform(results)['img']
+    # test when ratio is not of kind (min, max)
+    with pytest.raises(ValueError):
+        kwargs = dict(
+            size=(200, 300), scale=(0.08, 1.0), ratio=(4. / 3., 3. / 4.))
+        aug = []
+        aug.extend([mmcls_transforms.RandomResizedCrop(**kwargs)])
+        composed_transform = Compose(aug)
+        results = dict()
+        results['img'] = ori_img
+        composed_transform(results)['img']
 
     # test crop size is int
     kwargs = dict(size=200, scale=(0.08, 1.0), ratio=(3. / 4., 4. / 3.))
@@ -659,6 +704,86 @@ def test_randomresizedcrop():
         results['img'] = ori_img
         img = composed_transform(results)['img']
         assert img.shape == (600, 700, 3)
+
+
+def test_e_resized_crop():
+    ori_img = mmcv.imread(
+        osp.join(osp.dirname(__file__), '../data/color.jpg'), 'color')
+
+    seed = random.randint(0, 100)
+
+    # test when scale is not of kind (min, max)
+    with pytest.raises(AssertionError):
+        kwargs = dict(size=200, scale=(1.0, 0.1), ratio=(3. / 4., 4. / 3.))
+        aug = []
+        aug.extend([mmcls_transforms.ERandomCrop(**kwargs)])
+        composed_transform = Compose(aug)
+        results = dict()
+        results['img'] = ori_img
+        composed_transform(results)
+
+    # test when ratio is not of kind (min, max)
+    with pytest.raises(AssertionError):
+        kwargs = dict(size=200, scale=(0.1, 1.0), ratio=(4. / 3., 3. / 4.))
+        aug = []
+        aug.extend([mmcls_transforms.ERandomCrop(**kwargs)])
+        composed_transform = Compose(aug)
+        results = dict()
+        results['img'] = ori_img
+        composed_transform(results)
+
+    # test when size is of wrong type
+    with pytest.raises(AssertionError):
+        kwargs = dict(size=200.1)
+        aug = []
+        aug.extend([mmcls_transforms.ERandomCrop(**kwargs)])
+        composed_transform = Compose(aug)
+        results = dict()
+        results['img'] = ori_img
+        composed_transform(results)
+
+    random.seed(seed)
+    np.random.seed(seed)
+    kwargs = dict(size=200, scale=(0.1, 1.0), ratio=(3. / 4, 4. / 3))
+    aug = []
+    aug.extend([mmcls_transforms.ERandomCrop(**kwargs)])
+    composed_transform = Compose(aug)
+    # test __repr__()
+    print(composed_transform)
+
+    # test crop size < image size
+    kwargs = dict(size=200, scale=(0.1, 1.0), ratio=(3. / 4., 4. / 3.))
+    results = dict()
+    results['img'] = ori_img
+    img = composed_transform(results)['img']
+    assert np.array(img).shape == (200, 200, 3)
+
+    # test crop size > image size
+    kwargs = dict(size=600, scale=(0.1, 1.0), ratio=(3. / 4., 4. / 3.))
+    random.seed(seed)
+    np.random.seed(seed)
+    aug = []
+    aug.extend([mmcls_transforms.ERandomCrop(**kwargs)])
+    composed_transform = Compose(aug)
+    results = dict()
+    results['img'] = ori_img
+    img = composed_transform(results)['img']
+    assert np.array(img).shape == (600, 600, 3)
+
+    # test different interpolation types
+    for mode in ['nearest', 'bilinear', 'bicubic', 'area', 'lanczos']:
+        kwargs = dict(
+            size=300,
+            scale=(0.08, 1.0),
+            ratio=(3. / 4., 4. / 3.),
+            interpolation=mode)
+        aug = []
+        aug.extend([mmcls_transforms.ERandomCrop(**kwargs)])
+        composed_transform = Compose(aug)
+        results = dict()
+        results['img'] = ori_img
+        img = composed_transform(results)['img']
+        assert img.shape == (300, 300, 3)
 
 
 def test_randomgrayscale():

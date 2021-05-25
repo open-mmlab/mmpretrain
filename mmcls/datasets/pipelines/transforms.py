@@ -278,7 +278,7 @@ class ERandomCrop:
             Central Crop. Defaults to 10.
         interpolation (str): Interpolation method, accepted values are
             'nearest', 'bilinear', 'bicubic', 'area', 'lanczos'. Defaults to
-            'bilinear'.
+            'bicubic'.
         backend (str): The image resize backend type, accpeted values are
             `cv2` and `pillow`. Default: `cv2`.
     """
@@ -310,7 +310,8 @@ class ERandomCrop:
         self.interpolation = interpolation
         self.backend = backend
 
-    def get_params(self, img, scale, ratio, min_covered, max_attempts=10):
+    @staticmethod
+    def get_params(img, size, scale, ratio, min_covered, max_attempts=10):
         height, width = img.shape[:2]
         area = height * width
         min_target_area = scale[0] * area
@@ -354,7 +355,7 @@ class ERandomCrop:
 
         # Fallback to central crop
         img_short = min(height, width)
-        crop_size = float(self.size) / (self.size + 32) * img_short
+        crop_size = float(size) / (size + 32) * img_short
 
         ymin = max(0, int(round(height - crop_size) / 2.))
         xmin = max(0, int(round(width - crop_size) / 2.))
@@ -366,8 +367,8 @@ class ERandomCrop:
     def __call__(self, results):
         for key in results.get('img_fields', ['img']):
             img = results[key]
-            ymin, xmin, ymax, xmax = self.get_params(img, self.scale,
-                                                     self.ratio,
+            ymin, xmin, ymax, xmax = self.get_params(img, self.size,
+                                                     self.scale, self.ratio,
                                                      self.min_covered,
                                                      self.max_attempts)
             # crop the image
@@ -742,20 +743,19 @@ class CenterCrop(object):
 @PIPELINES.register_module()
 # https://github.com/kakaobrain/fast-autoaugment/blob/master/FastAutoAugment/data.py
 class ECenterCrop:
-    """Center crop the image.
+    """Center crop the image. following the EfficientNet style.
 
     Args:
-        img (PIL Image): Image to be cropped. (0,0) denotes the top left corner
-            of the image.
-        output_size (sequence or int): (height, width) of the crop box. If int,
-            it is used for both directions
-    Returns:
-        PIL Image: Cropped image.
+        size (int): Desired output size of the crop.
+        interpolation (str): Interpolation method, accepted values are
+            'nearest', 'bilinear', 'bicubic', 'area', 'lanczos'. Defaults to
+            'bicubic'.
+        backend (str): The image resize backend type, accpeted values are
+            `cv2` and `pillow`. Default: `cv2`.
     """
 
     def __init__(self, size, interpolation='bicubic', backend='cv2'):
-        assert isinstance(size, int) or (isinstance(size, tuple)
-                                         and len(size) == 2)
+        assert isinstance(size, int)
         self.size = size
         assert interpolation in ('nearest', 'bilinear', 'bicubic', 'area',
                                  'lanczos')
