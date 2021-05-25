@@ -262,7 +262,7 @@ class RandomResizedCrop(object):
 
 # https://github.com/kakaobrain/fast-autoaugment/blob/master/FastAutoAugment/data.py # noqa
 @PIPELINES.register_module()
-class ERandomCrop:
+class ERandomCrop(object):
     """Crop the given Image at a random location following the EfficientNet
     style.
 
@@ -742,7 +742,7 @@ class CenterCrop(object):
 
 @PIPELINES.register_module()
 # https://github.com/kakaobrain/fast-autoaugment/blob/master/FastAutoAugment/data.py
-class ECenterCrop:
+class ECenterCrop(object):
     """Center crop the image. following the EfficientNet style.
 
     Args:
