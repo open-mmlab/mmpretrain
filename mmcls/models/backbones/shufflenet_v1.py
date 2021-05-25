@@ -184,8 +184,9 @@ class ShuffleNetV1(BaseBackbone):
                  norm_cfg=dict(type='BN'),
                  act_cfg=dict(type='ReLU'),
                  norm_eval=False,
-                 with_cp=False):
-        super(ShuffleNetV1, self).__init__()
+                 with_cp=False,
+                 init_cfg=None):
+        super(ShuffleNetV1, self).__init__(init_cfg)
         self.stage_blocks = [4, 8, 4]
         self.groups = groups
 
@@ -250,25 +251,27 @@ class ShuffleNetV1(BaseBackbone):
             for param in layer.parameters():
                 param.requires_grad = False
 
-    def init_weights(self, pretrained=None):
-        if isinstance(pretrained, str):
-            logger = logging.getLogger()
-            load_checkpoint(self, pretrained, strict=False, logger=logger)
-        elif pretrained is None:
-            for name, m in self.named_modules():
-                if isinstance(m, nn.Conv2d):
-                    if 'conv1' in name:
-                        normal_init(m, mean=0, std=0.01)
-                    else:
-                        normal_init(m, mean=0, std=1.0 / m.weight.shape[1])
-                elif isinstance(m, (_BatchNorm, nn.GroupNorm)):
-                    constant_init(m.weight, val=1, bias=0.0001)
-                    if isinstance(m, _BatchNorm):
-                        if m.running_mean is not None:
-                            nn.init.constant_(m.running_mean, 0)
-        else:
-            raise TypeError('pretrained must be a str or None. But received '
-                            f'{type(pretrained)}')
+    # def init_weights(self, pretrained=None):
+    def init_weights(self):
+        super(ShuffleNetV1, self).init_weights()
+        # if isinstance(pretrained, str):
+        #     logger = logging.getLogger()
+        #     load_checkpoint(self, pretrained, strict=False, logger=logger)
+        # elif pretrained is None:
+        for name, m in self.named_modules():
+            if isinstance(m, nn.Conv2d):
+                if 'conv1' in name:
+                    normal_init(m, mean=0, std=0.01)
+                else:
+                    normal_init(m, mean=0, std=1.0 / m.weight.shape[1])
+            elif isinstance(m, (_BatchNorm, nn.GroupNorm)):
+                constant_init(m.weight, val=1, bias=0.0001)
+                if isinstance(m, _BatchNorm):
+                    if m.running_mean is not None:
+                        nn.init.constant_(m.running_mean, 0)
+        # else:
+        #     raise TypeError('pretrained must be a str or None. But received '
+        #                     f'{type(pretrained)}')
 
     def make_layer(self, out_channels, num_blocks, first_block=False):
         """Stack ShuffleUnit blocks to make a layer.

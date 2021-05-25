@@ -1,3 +1,4 @@
+from numpy.core import overrides
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -19,6 +20,13 @@ class LinearClsHead(ClsHead):
 
     def __init__(self, num_classes, in_channels, *args, **kwargs):
         super(LinearClsHead, self).__init__(*args, **kwargs)
+        self.init_cfg = dict(
+            type='Normal',
+            mean=0.,
+            std=0.01,
+            bias=0.,
+            override=dict(name='fc'))
+
         self.in_channels = in_channels
         self.num_classes = num_classes
 
@@ -31,8 +39,8 @@ class LinearClsHead(ClsHead):
     def _init_layers(self):
         self.fc = nn.Linear(self.in_channels, self.num_classes)
 
-    def init_weights(self):
-        normal_init(self.fc, mean=0, std=0.01, bias=0)
+    # def init_weights(self):
+    #     normal_init(self.fc, mean=0, std=0.01, bias=0)
 
     def simple_test(self, img):
         """Test without augmentation."""
