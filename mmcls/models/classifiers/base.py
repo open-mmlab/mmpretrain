@@ -6,10 +6,8 @@ import cv2
 import mmcv
 import torch
 import torch.distributed as dist
-import torch.nn as nn
 from mmcv import color_val
 from mmcv.runner import BaseModule
-from mmcv.utils import print_log
 
 # TODO import `auto_fp16` from mmcv and delete them from mmcls
 try:

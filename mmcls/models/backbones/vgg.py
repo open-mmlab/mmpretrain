@@ -1,5 +1,5 @@
 import torch.nn as nn
-from mmcv.cnn import ConvModule, constant_init, kaiming_init, normal_init
+from mmcv.cnn import ConvModule
 from mmcv.utils.parrots_wrapper import _BatchNorm
 
 from ..builder import BACKBONES
@@ -88,7 +88,7 @@ class VGG(BaseBackbone):
                  with_last_pool=True,
                  init_cfg=[
                      dict(type='Kaiming', layer=['Conv2d']),
-                     dict(type='Constant', layer=['_BatchNorm']),
+                     dict(type='Constant', val=1., layer=['_BatchNorm']),
                      dict(type='Normal', std=0.01, layer=['Linear'])
                  ]):
         super(VGG, self).__init__(init_cfg)

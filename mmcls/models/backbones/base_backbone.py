@@ -1,8 +1,6 @@
-import logging
 from abc import ABCMeta, abstractmethod
 
-import torch.nn as nn
-from mmcv.runner import BaseModule, load_checkpoint
+from mmcv.runner import BaseModule
 
 
 class BaseBackbone(BaseModule, metaclass=ABCMeta):

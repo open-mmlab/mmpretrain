@@ -1,7 +1,5 @@
 import warnings
 
-import torch.nn as nn
-
 from ..builder import CLASSIFIERS, build_backbone, build_head, build_neck
 from ..utils import BatchCutMixLayer, BatchMixupLayer
 from .base import BaseClassifier

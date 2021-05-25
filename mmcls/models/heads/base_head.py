@@ -1,7 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
 from mmcv.runner import BaseModule
-import torch.nn as nn
 
 
 class BaseHead(BaseModule, metaclass=ABCMeta):

@@ -1,8 +1,6 @@
-from numpy.core import overrides
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmcv.cnn import normal_init
 
 from ..builder import HEADS
 from .cls_head import ClsHead
