@@ -263,6 +263,25 @@ class RandomResizedCrop(object):
 # https://github.com/kakaobrain/fast-autoaugment/blob/master/FastAutoAugment/data.py # noqa
 @PIPELINES.register_module()
 class ERandomCrop:
+    """Crop the given Image at a random location following the EfficientNet
+    style.
+
+    Args:
+        size (int): Desired output size of the crop.
+        scale (Sequence[Number]): Range of the random size of the cropped image
+             compared to the original image. Defaults to (0.1, 1.0).
+        ratio (tuple): Range of the random aspect ratio of the cropped image
+            compared to the original image. Defaults to (3. / 4., 4. / 3.).
+        min_covered (Number): Minimum ratio of the cropped area to the original
+             area. Defaults to 0.1.
+        max_attempts (int): Maxinum number of attempts before falling back to
+            Central Crop. Defaults to 10.
+        interpolation (str): Interpolation method, accepted values are
+            'nearest', 'bilinear', 'bicubic', 'area', 'lanczos'. Defaults to
+            'bilinear'.
+        backend (str): The image resize backend type, accpeted values are
+            `cv2` and `pillow`. Default: `cv2`.
+    """
 
     def __init__(self,
                  size,
@@ -270,7 +289,7 @@ class ERandomCrop:
                  ratio=(3. / 4, 4. / 3),
                  min_covered=0.1,
                  max_attempts=10,
-                 interpolation='bilinear',
+                 interpolation='bicubic',
                  backend='cv2'):
         assert isinstance(size, int)
         assert 0 < scale[0] <= scale[1]
@@ -351,11 +370,9 @@ class ERandomCrop:
                                                      self.ratio,
                                                      self.min_covered,
                                                      self.max_attempts)
-
             # crop the image
             img = mmcv.imcrop(img, bboxes=np.array([xmin, ymin, xmax, ymax]))
             results[key] = img
-
         # apply resize
         resize_transform = [
             dict(
@@ -618,7 +635,7 @@ class Resize(object):
             `cv2` and `pillow`. Default: `cv2`.
     """
 
-    def __init__(self, size, interpolation='bicubic', backend='cv2'):
+    def __init__(self, size, interpolation='bilinear', backend='cv2'):
         assert isinstance(size, int) or (isinstance(size, tuple)
                                          and len(size) == 2)
         self.resize_w_short_side = False
@@ -723,9 +740,9 @@ class CenterCrop(object):
 
 
 @PIPELINES.register_module()
-# https://github.com/zhanghang1989/PyTorch-Encoding/blob/master/encoding/transforms/transforms.py
+# https://github.com/kakaobrain/fast-autoaugment/blob/master/FastAutoAugment/data.py
 class ECenterCrop:
-    """Crop the given PIL Image and resize it to desired size.
+    """Center crop the image.
 
     Args:
         img (PIL Image): Image to be cropped. (0,0) denotes the top left corner
