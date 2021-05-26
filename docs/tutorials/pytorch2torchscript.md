@@ -48,7 +48,7 @@ Notes:
 
 ## Reminders
 
-- If you meet any problem with the models in this repo, please create an issue and it would be taken care of soon. 
+- If you meet any problem with the models in this repo, please create an issue and it would be taken care of soon.
 
 ## FAQs
 

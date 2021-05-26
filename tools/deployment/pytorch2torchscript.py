@@ -1,15 +1,16 @@
 import argparse
 from functools import partial
 
-import torch
 import mmcv
-from torch import nn
 import numpy as np
+import torch
 from mmcv.runner import load_checkpoint
+from torch import nn
 
 from mmcls.models import build_classifier
 
 torch.manual_seed(3)
+
 
 def _demo_mm_inputs(input_shape: tuple, num_classes: int):
     """Create a superset of inputs needed to run test or train batches.
@@ -32,11 +33,9 @@ def _demo_mm_inputs(input_shape: tuple, num_classes: int):
     return mm_inputs
 
 
-def pytorch2torchscript(model: nn.Module,
-                 input_shape: tuple,
-                 output_file: str,
-                 verify: bool):
-    """Export Pytorch model to TorchScript model through torch.jit.trace and 
+def pytorch2torchscript(model: nn.Module, input_shape: tuple, output_file: str,
+                        verify: bool):
+    """Export Pytorch model to TorchScript model through torch.jit.trace and
     verify the outputs are same between Pytorch and TorchScript.
 
     Args:
@@ -46,7 +45,7 @@ def pytorch2torchscript(model: nn.Module,
         show (bool): Whether print the computation graph. Default: False.
         output_file (string): The path to where we store the output TorchScript model.
             Default: `tmp.pt`.
-        verify (bool): Whether compare the outputs between Pytorch and TorchScript 
+        verify (bool): Whether compare the outputs between Pytorch and TorchScript
             through loading generated output_file.
             Default: False.
     """
@@ -61,7 +60,7 @@ def pytorch2torchscript(model: nn.Module,
     # replace original forward function
     origin_forward = model.forward
     model.forward = partial(model.forward, img_metas={}, return_loss=False)
-    
+
     with torch.no_grad():
         trace_model = torch.jit.trace(model, img_list[0])
         trace_model.save(output_file)
@@ -85,11 +84,15 @@ def pytorch2torchscript(model: nn.Module,
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Convert MMCls to TorchScript')
+    parser = argparse.ArgumentParser(
+        description='Convert MMCls to TorchScript')
     parser.add_argument('config', help='test config file path')
     parser.add_argument('--checkpoint', help='checkpoint file', type=str)
     parser.add_argument(
-        '--verify', action='store_true', help='verify the TorchScript model', default=False)
+        '--verify',
+        action='store_true',
+        help='verify the TorchScript model',
+        default=False)
     parser.add_argument('--output-file', type=str, default='tmp.pt')
     parser.add_argument(
         '--shape',
