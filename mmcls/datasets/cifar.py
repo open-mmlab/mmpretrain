@@ -42,7 +42,7 @@ class CIFAR10(BaseDataset):
 
     def load_annotations(self):
 
-        rank, _ = get_dist_info
+        rank, _ = get_dist_info()
 
         if rank == 0 and not self._check_integrity():
             download_and_extract_archive(
@@ -52,7 +52,8 @@ class CIFAR10(BaseDataset):
                 md5=self.tgz_md5)
 
         dist.barrier()
-        assert self._check_integrity(), 'Please download the dataset manually.'
+        assert self._check_integrity(), \
+            f'Please download the dataset manually through {self.url}.'
 
         if not self.test_mode:
             downloaded_list = self.train_list
