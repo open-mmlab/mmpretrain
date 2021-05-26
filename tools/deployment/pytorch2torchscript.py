@@ -43,11 +43,10 @@ def pytorch2torchscript(model: nn.Module, input_shape: tuple, output_file: str,
         input_shape (tuple): Use this input shape to construct
             the corresponding dummy input and execute the model.
         show (bool): Whether print the computation graph. Default: False.
-        output_file (string): The path to where we store the output TorchScript model.
-            Default: `tmp.pt`.
-        verify (bool): Whether compare the outputs between Pytorch and TorchScript
-            through loading generated output_file.
-            Default: False.
+        output_file (string): The path to where we store the output \
+            TorchScript model.
+        verify (bool): Whether compare the outputs between Pytorch \
+            and TorchScript through loading generated output_file.
     """
     model.cpu().eval()
 
