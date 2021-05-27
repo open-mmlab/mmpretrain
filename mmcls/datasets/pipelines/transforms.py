@@ -144,44 +144,71 @@ class RandomResizedCrop(object):
     is made. This crop is finally resized to given size.
 
     Args:
-        size (sequence or int): Desired output size of the crop. If size is an
+        size (sequence | int): Desired output size of the crop. If size is an
             int instead of sequence like (h, w), a square crop (size, size) is
             made.
         scale (tuple): Range of the random size of the cropped image compared
-            to the original image. Default: (0.08, 1.0).
+            to the original image. Defaults to (0.08, 1.0).
         ratio (tuple): Range of the random aspect ratio of the cropped image
-            compared to the original image. Default: (3. / 4., 4. / 3.).
+            compared to the original image. Defaults to (3. / 4., 4. / 3.).
+        max_attempts (int): Maxinum number of attempts before falling back to
+            Central Crop. Defaults to 10.
+        efficientnet_style (bool): Whether to use efficientnet style Random
+            ResizedCrop. Defaults to False.
+        min_covered (Number): Minimum ratio of the cropped area to the original
+             area. Only valid if efficientnet_style is true. Defaults to 0.1.
+        crop_padding (int): The crop padding parameter in efficientnet style
+            center crop. Only valid if efficientnet_style is true.
+            Defaults to 32.
         interpolation (str): Interpolation method, accepted values are
-            'nearest', 'bilinear', 'bicubic', 'area', 'lanczos'. Default:
+            'nearest', 'bilinear', 'bicubic', 'area', 'lanczos'. Defaults to
             'bilinear'.
         backend (str): The image resize backend type, accpeted values are
-            `cv2` and `pillow`. Default: `cv2`.
+            `cv2` and `pillow`. Defaults to `cv2`.
     """
 
     def __init__(self,
                  size,
                  scale=(0.08, 1.0),
                  ratio=(3. / 4., 4. / 3.),
+                 max_attempts=10,
+                 efficientnet_style=False,
+                 min_covered=0.1,
+                 crop_padding=32,
                  interpolation='bilinear',
                  backend='cv2'):
-        if isinstance(size, (tuple, list)):
-            self.size = size
-        else:
+        if efficientnet_style:
+            assert isinstance(size, int)
             self.size = (size, size)
+            assert crop_padding >= 0
+        else:
+            if isinstance(size, (tuple, list)):
+                self.size = size
+            else:
+                self.size = (size, size)
         if (scale[0] > scale[1]) or (ratio[0] > ratio[1]):
             raise ValueError('range should be of kind (min, max). '
                              f'But received scale {scale} and rato {ratio}.')
+        assert min_covered >= 0, 'min_covered should be no less than 0.'
+        assert isinstance(max_attempts, int) and max_attempts >= 0, \
+            'max_attempts mush be of typle int and no less than 0.'
+        assert interpolation in ('nearest', 'bilinear', 'bicubic', 'area',
+                                 'lanczos')
         if backend not in ['cv2', 'pillow']:
             raise ValueError(f'backend: {backend} is not supported for resize.'
                              'Supported backends are "cv2", "pillow"')
 
-        self.interpolation = interpolation
         self.scale = scale
         self.ratio = ratio
+        self.max_attempts = max_attempts
+        self.efficientnet_style = efficientnet_style
+        self.min_covered = min_covered
+        self.crop_padding = crop_padding
+        self.interpolation = interpolation
         self.backend = backend
 
     @staticmethod
-    def get_params(img, scale, ratio):
+    def get_params(img, scale, ratio, max_attempts=10):
         """Get parameters for ``crop`` for a random sized crop.
 
         Args:
@@ -190,16 +217,18 @@ class RandomResizedCrop(object):
                 compared to the original image size.
             ratio (tuple): Range of the random aspect ratio of the cropped
                 image compared to the original image area.
+            max_attempts (int): Maxinum number of attempts before falling back
+                to central crop. Defaults to 10.
 
         Returns:
-            tuple: Params (xmin, ymin, target_height, target_width) to be
-                passed to ``crop`` for a random sized crop.
+            tuple: Params (ymin, xmin, ymax, xmax) to be passed to `crop` for
+                a random sized crop.
         """
         height = img.shape[0]
         width = img.shape[1]
         area = height * width
 
-        for _ in range(10):
+        for _ in range(max_attempts):
             target_area = random.uniform(*scale) * area
             log_ratio = (math.log(ratio[0]), math.log(ratio[1]))
             aspect_ratio = math.exp(random.uniform(*log_ratio))
@@ -210,6 +239,8 @@ class RandomResizedCrop(object):
             if 0 < target_width <= width and 0 < target_height <= height:
                 ymin = random.randint(0, height - target_height)
                 xmin = random.randint(0, width - target_width)
+                ymax = ymin + target_height - 1
+                xmax = xmin + target_width - 1
                 return xmin, ymin, target_height, target_width
 
         # Fallback to central crop
@@ -225,96 +256,41 @@ class RandomResizedCrop(object):
             target_height = height
         ymin = (height - target_height) // 2
         xmin = (width - target_width) // 2
-        return ymin, xmin, target_height, target_width
+        ymax = ymin + target_height - 1
+        xmax = xmin + target_width - 1
+        return ymin, xmin, ymax, xmax
 
-    def __call__(self, results):
-        """
+    # https://github.com/kakaobrain/fast-autoaugment/blob/master/FastAutoAugment/data.py # noqa
+    @staticmethod
+    def get_params_efficientnet_style(img,
+                                      size,
+                                      scale,
+                                      ratio,
+                                      max_attempts=10,
+                                      min_covered=0.1,
+                                      crop_padding=32):
+        """Get parameters for ``crop`` for a random sized crop in efficientnet
+        style.
+
         Args:
-            img (ndarray): Image to be cropped and resized.
+            img (ndarray): Image to be cropped.
+            size (sequence): Desired output size of the crop.
+            scale (tuple): Range of the random size of the cropped image
+                compared to the original image size.
+            ratio (tuple): Range of the random aspect ratio of the cropped
+                image compared to the original image area.
+            max_attempts (int): Maxinum number of attempts before falling back
+                to central crop. Defaults to 10.
+            min_covered (Number): Minimum ratio of the cropped area to the
+                original area. Only valid if efficientnet_style is true.
+                Defaults to 0.1.
+            crop_padding (int): The crop padding parameter in efficientnet
+                style center crop. Defaults to 32.
 
         Returns:
-            ndarray: Randomly cropped and resized image.
+            tuple: Params (ymin, xmin, ymax, xmax) to be passed to `crop` for
+                a random sized crop.
         """
-        for key in results.get('img_fields', ['img']):
-            img = results[key]
-            ymin, xmin, target_height, target_width = self.get_params(
-                img, self.scale, self.ratio)
-            img = mmcv.imcrop(
-                img,
-                np.array([
-                    xmin, ymin, xmin + target_width - 1,
-                    ymin + target_height - 1
-                ]))
-            results[key] = mmcv.imresize(
-                img,
-                tuple(self.size[::-1]),
-                interpolation=self.interpolation,
-                backend=self.backend)
-        return results
-
-    def __repr__(self):
-        format_string = self.__class__.__name__ + f'(size={self.size}'
-        format_string += f', scale={tuple(round(s, 4) for s in self.scale)}'
-        format_string += f', ratio={tuple(round(r, 4) for r in self.ratio)}'
-        format_string += f', interpolation={self.interpolation})'
-        return format_string
-
-
-# https://github.com/kakaobrain/fast-autoaugment/blob/master/FastAutoAugment/data.py # noqa
-@PIPELINES.register_module()
-class ERandomCrop(object):
-    """Crop the given Image at a random location following the EfficientNet
-    style.
-    The main differences between ERandomCrop and RandomResizedCrop are:
-    1. ERandomCrop is less likely to generate very small crops.
-    2. The fallback central crop differs.
-
-    Args:
-        size (int): Desired output size of the crop.
-        scale (Sequence[Number]): Range of the random size of the cropped image
-             compared to the original image. Defaults to (0.1, 1.0).
-        ratio (tuple): Range of the random aspect ratio of the cropped image
-            compared to the original image. Defaults to (3. / 4., 4. / 3.).
-        min_covered (Number): Minimum ratio of the cropped area to the original
-             area. Defaults to 0.1.
-        max_attempts (int): Maxinum number of attempts before falling back to
-            Central Crop. Defaults to 10.
-        interpolation (str): Interpolation method, accepted values are
-            'nearest', 'bilinear', 'bicubic', 'area', 'lanczos'. Defaults to
-            'bicubic'.
-        backend (str): The image resize backend type, accpeted values are
-            `cv2` and `pillow`. Default: `cv2`.
-    """
-
-    def __init__(self,
-                 size,
-                 scale=(0.1, 1.0),
-                 ratio=(3. / 4, 4. / 3),
-                 min_covered=0.1,
-                 max_attempts=10,
-                 interpolation='bicubic',
-                 backend='cv2'):
-        assert isinstance(size, int)
-        assert 0 < scale[0] <= scale[1]
-        assert 0 < ratio[0] <= ratio[1]
-        assert min_covered > 0, 'min_covered should be larger than 0'
-        assert isinstance(max_attempts, int) and max_attempts >= 1
-        assert interpolation in ('nearest', 'bilinear', 'bicubic', 'area',
-                                 'lanczos')
-        if backend not in ['cv2', 'pillow']:
-            raise ValueError(f'backend: {backend} is not supported for resize.'
-                             'Supported backends are "cv2", "pillow"')
-
-        self.size = size
-        self.scale = scale
-        self.ratio = ratio
-        self.min_covered = min_covered
-        self.max_attempts = max_attempts
-        self.interpolation = interpolation
-        self.backend = backend
-
-    @staticmethod
-    def get_params(img, size, scale, ratio, min_covered, max_attempts=10):
         height, width = img.shape[:2]
         area = height * width
         min_target_area = scale[0] * area
@@ -358,10 +334,10 @@ class ERandomCrop(object):
 
         # Fallback to central crop
         img_short = min(height, width)
-        crop_size = float(size) / (size + 32) * img_short
+        crop_size = size[0] / (size[0] + crop_padding) * img_short
 
-        ymin = max(0, int(round(height - crop_size) / 2.))
-        xmin = max(0, int(round(width - crop_size) / 2.))
+        ymin = max(0, int(round((height - crop_size) / 2.)))
+        xmin = max(0, int(round((width - crop_size) / 2.)))
         ymax = min(height, ymin + crop_size) - 1
         xmax = min(width, xmin + crop_size) - 1
 
@@ -370,31 +346,42 @@ class ERandomCrop(object):
     def __call__(self, results):
         for key in results.get('img_fields', ['img']):
             img = results[key]
-            ymin, xmin, ymax, xmax = self.get_params(img, self.size,
-                                                     self.scale, self.ratio,
-                                                     self.min_covered,
-                                                     self.max_attempts)
-            # crop the image
+            if self.efficientnet_style:
+                get_params_func = self.get_params_efficientnet_style
+                get_params_args = dict(
+                    img=img,
+                    size=self.size,
+                    scale=self.scale,
+                    ratio=self.ratio,
+                    max_attempts=self.max_attempts,
+                    min_covered=self.min_covered,
+                    crop_padding=self.crop_padding)
+            else:
+                get_params_func = self.get_params
+                get_params_args = dict(
+                    img=img,
+                    scale=self.scale,
+                    ratio=self.ratio,
+                    max_attempts=self.max_attempts)
+            ymin, xmin, ymax, xmax = get_params_func(**get_params_args)
             img = mmcv.imcrop(img, bboxes=np.array([xmin, ymin, xmax, ymax]))
-            results[key] = img
-        # apply resize
-        resize_transform = [
-            dict(
-                type='Resize',
-                size=self.size,
+            results[key] = mmcv.imresize(
+                img,
+                tuple(self.size[::-1]),
                 interpolation=self.interpolation,
                 backend=self.backend)
-        ]
-        resize_transform = Compose(resize_transform)
-        return resize_transform(results)
+        return results
 
     def __repr__(self):
         repr_str = self.__class__.__name__ + f'(size={self.size}'
         repr_str += f', scale={tuple(round(s, 4) for s in self.scale)}'
         repr_str += f', ratio={tuple(round(r, 4) for r in self.ratio)}'
-        repr_str += f', min_covered={self.min_covered}'
         repr_str += f', max_attempts={self.max_attempts}'
-        repr_str += f', interpolation={self.interpolation})'
+        repr_str += f', efficientnet_style={self.efficientnet_style}'
+        repr_str += f', min_covered={self.min_covered}'
+        repr_str += f', crop_padding={self.crop_padding}'
+        repr_str += f', interpolation={self.interpolation}'
+        repr_str += f', backend={self.backend})'
         return repr_str
 
 
@@ -702,22 +689,38 @@ class Resize(object):
 
 @PIPELINES.register_module()
 class CenterCrop(object):
-    """Center crop the image.
+    r"""Center crop the image.
 
     Args:
-        crop_size (int | tuple): Expected size after cropping, (h, w).
+        crop_size (int | tuple): Expected size after cropping with the format
+            of (h, w) if efficientnet_style is set to False.
+        efficientnet_style (bool): Whether to use efficientnet style center
+            crop. Defaults to False.
+        crop_padding (int): The crop padding parameter in efficientnet style
+            center crop.
 
     Notes:
-        If the image is smaller than the crop size, return the original image
+        If the image is smaller than the crop size, return the original image.
+        If efficientnet_style is set to True, the outputsize will be:
+
+        .. math::
+        output\_size = crop\_size / (crop\_size + crop\_padding) * short\_edge
+
     """
 
-    def __init__(self, crop_size):
-        assert isinstance(crop_size, int) or (isinstance(crop_size, tuple)
-                                              and len(crop_size) == 2)
+    def __init__(self, crop_size, efficientnet_style=False, crop_padding=32):
+        if efficientnet_style:
+            assert isinstance(crop_size, int)
+            assert crop_padding >= 0
+        else:
+            assert isinstance(crop_size, int) or (isinstance(crop_size, tuple)
+                                                  and len(crop_size) == 2)
         if isinstance(crop_size, int):
             crop_size = (crop_size, crop_size)
         assert crop_size[0] > 0 and crop_size[1] > 0
         self.crop_size = crop_size
+        self.efficientnet_style = efficientnet_style
+        self.crop_padding = crop_padding
 
     def __call__(self, results):
         crop_height, crop_width = self.crop_size[0], self.crop_size[1]
@@ -725,6 +728,14 @@ class CenterCrop(object):
             img = results[key]
             # img.shape has length 2 for grayscale, length 3 for color
             img_height, img_width = img.shape[:2]
+
+            # https://github.com/tensorflow/tpu/blob/master/models/official/efficientnet/preprocessing.py#L118 # noqa
+            if self.efficientnet_style:
+                img_short = min(img_height, img_width)
+                crop_height = crop_height / (crop_height +
+                                             self.crop_padding) * img_short
+                crop_width = crop_width / (crop_width +
+                                           self.crop_padding) * img_short
 
             y1 = max(0, int(round((img_height - crop_height) / 2.)))
             x1 = max(0, int(round((img_width - crop_width) / 2.)))
@@ -740,68 +751,9 @@ class CenterCrop(object):
         return results
 
     def __repr__(self):
-        return self.__class__.__name__ + f'(crop_size={self.crop_size})'
-
-
-# https://github.com/kakaobrain/fast-autoaugment/blob/master/FastAutoAugment/data.py
-@PIPELINES.register_module()
-class ECenterCrop(object):
-    """Center crop the image. following the EfficientNet style. It first crops
-    the image in the center using a crop size calculated out of the given size
-    and then resize the cropped image to the given size.
-
-    Args:
-        size (int): Desired output size of the crop.
-        interpolation (str): Interpolation method, accepted values are
-            'nearest', 'bilinear', 'bicubic', 'area', 'lanczos'. Defaults to
-            'bicubic'.
-        backend (str): The image resize backend type, accpeted values are
-            `cv2` and `pillow`. Default: `cv2`.
-    """
-
-    def __init__(self, size, interpolation='bicubic', backend='cv2'):
-        assert isinstance(size, int)
-        self.size = size
-        assert interpolation in ('nearest', 'bilinear', 'bicubic', 'area',
-                                 'lanczos')
-        if backend not in ['cv2', 'pillow']:
-            raise ValueError(f'backend: {backend} is not supported for resize.'
-                             'Supported backends are "cv2", "pillow"')
-
-        self.interpolation = interpolation
-        self.backend = backend
-
-    def __call__(self, results):
-        for key in results.get('img_fields', ['img']):
-            img = results[key]
-            img_height, img_width = img.shape[:2]
-            img_short = min(img_height, img_width)
-
-            crop_size = float(self.size) / (self.size + 32) * img_short
-            ymin = max(0, int(round(img_height - crop_size) / 2.))
-            xmin = max(0, int(round(img_width - crop_size) / 2.))
-            ymax = min(img_height, ymin + crop_size) - 1
-            xmax = min(img_width, xmin + crop_size) - 1
-
-            # crop the image
-            img = mmcv.imcrop(img, bboxes=np.array([xmin, ymin, xmax, ymax]))
-            results[key] = img
-
-        # apply resize
-        resize_transform = [
-            dict(
-                type='Resize',
-                size=self.size,
-                interpolation=self.interpolation,
-                backend=self.backend)
-        ]
-        resize_transform = Compose(resize_transform)
-        return resize_transform(results)
-
-    def __repr__(self):
-        repr_str = self.__class__.__name__
-        repr_str += f'(size={self.size}, '
-        repr_str += f'interpolation={self.interpolation})'
+        repr_str = self.__class__.__name__ + f'(crop_size={self.crop_size}'
+        repr_str += f', efficientnet_style={self.efficientnet_style}'
+        repr_str += f', crop_padding={self.crop_padding})'
         return repr_str
 
 

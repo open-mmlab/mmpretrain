@@ -185,6 +185,24 @@ def test_center_crop():
         transform = dict(type='CenterCrop', crop_size=(224, 224, 3))
         build_from_cfg(transform, PIPELINES)
 
+    # test assertion if efficientnet is True and crop_size is tuple
+    with pytest.raises(AssertionError):
+        transform = dict(
+            type='CenterCrop',
+            crop_size=(224, 224),
+            efficientnet_style=True,
+        )
+        build_from_cfg(transform, PIPELINES)
+
+    # test assertion if efficientnet is True and crop_padding is negative
+    with pytest.raises(AssertionError):
+        transform = dict(
+            type='CenterCrop',
+            crop_size=224,
+            efficientnet_style=True,
+            crop_padding=-1)
+        build_from_cfg(transform, PIPELINES)
+
     # test repr
     transform = dict(type='CenterCrop', crop_size=224)
     center_crop_module = build_from_cfg(transform, PIPELINES)
@@ -214,6 +232,20 @@ def test_center_crop():
     results = center_crop_module(results)
     assert np.equal(results['img'], results['img2']).all()
     assert results['img_shape'] == (224, 224, 3)
+
+    # test CenterCrop when size is int and efficientnet_style is True
+    # and crop_padding=0
+    transform = dict(
+        type='CenterCrop',
+        crop_size=224,
+        efficientnet_style=True,
+        crop_padding=0)
+    center_crop_module = build_from_cfg(transform, PIPELINES)
+    results = reset_results(results, original_img)
+    results = center_crop_module(results)
+    assert np.equal(results['img'], results['img2']).all()
+    short_edge = min(*results['ori_shape'][:2])
+    assert results['img_shape'] == (short_edge, short_edge, 3)
 
     # test CenterCrop when size is tuple
     transform = dict(type='CenterCrop', crop_size=(224, 224))
@@ -276,51 +308,6 @@ def test_center_crop():
     cropped_img = np.array(cropped_img)
     assert np.equal(results['img'], results['img2']).all()
     assert np.equal(results['img'], cropped_img).all()
-
-
-def test_e_center_crop():
-    # test assertion if size is tuple
-    with pytest.raises(AssertionError):
-        transform = dict(type='ECenterCrop', size=(224, 224))
-        build_from_cfg(transform, PIPELINES)
-
-    # test repr
-    transform = dict(type='ECenterCrop', size=224)
-    center_crop_module = build_from_cfg(transform, PIPELINES)
-    print(center_crop_module)
-
-    # read test image
-    results = dict()
-    img = mmcv.imread(
-        osp.join(osp.dirname(__file__), '../data/color.jpg'), 'color')
-    original_img = copy.deepcopy(img)
-    results['img'] = img
-    results['img2'] = copy.deepcopy(img)
-    results['img_shape'] = img.shape
-    results['ori_shape'] = img.shape
-    results['img_fields'] = ['img', 'img2']
-
-    def reset_results(results, original_img):
-        results['img'] = copy.deepcopy(original_img)
-        results['img2'] = copy.deepcopy(original_img)
-        results['img_shape'] = original_img.shape
-        results['ori_shape'] = original_img.shape
-        return results
-
-    # test CenterCrop when size = 224
-    transform = dict(type='ECenterCrop', size=224)
-    center_crop_module = build_from_cfg(transform, PIPELINES)
-    results = center_crop_module(results)
-    assert np.equal(results['img'], results['img2']).all()
-    assert results['img_shape'] == (224, 224, 3)
-
-    # test CenterCrop when crop_size is larger than img.shape
-    transform = dict(type='ECenterCrop', size=600)
-    center_crop_module = build_from_cfg(transform, PIPELINES)
-    results = reset_results(results, original_img)
-    results = center_crop_module(results)
-    assert np.equal(results['img'], results['img2']).all()
-    assert results['img_shape'] == (600, 600, 3)
 
 
 def test_normalize():
@@ -539,6 +526,16 @@ def test_randomresizedcrop():
         results['img'] = ori_img
         composed_transform(results)['img']
 
+    # test when efficientnet_style is True and crop_padding < 0
+    with pytest.raises(AssertionError):
+        kwargs = dict(size=200, efficientnet_style=True, crop_padding=-1)
+        aug = []
+        aug.extend([mmcls_transforms.RandomResizedCrop(**kwargs)])
+        composed_transform = Compose(aug)
+        results = dict()
+        results['img'] = ori_img
+        composed_transform(results)['img']
+
     # test crop size is int
     kwargs = dict(size=200, scale=(0.08, 1.0), ratio=(3. / 4., 4. / 3.))
     random.seed(seed)
@@ -553,6 +550,7 @@ def test_randomresizedcrop():
     aug = []
     aug.extend([mmcls_transforms.RandomResizedCrop(**kwargs)])
     composed_transform = Compose(aug)
+
     # test __repr__()
     print(composed_transform)
     results = dict()
@@ -587,6 +585,22 @@ def test_randomresizedcrop():
     nonzero_transform = len((img - np.array(baseline)[:, :, ::-1]).nonzero())
     assert nonzero == nonzero_transform
 
+    # test crop size < image size when efficientnet_style = True
+    kwargs = dict(
+        size=200,
+        scale=(0.08, 1.0),
+        ratio=(3. / 4., 4. / 3.),
+        efficientnet_style=True)
+    random.seed(seed)
+    np.random.seed(seed)
+    aug = []
+    aug.extend([mmcls_transforms.RandomResizedCrop(**kwargs)])
+    composed_transform = Compose(aug)
+    results = dict()
+    results['img'] = ori_img
+    img = composed_transform(results)['img']
+    assert img.shape == (200, 200, 3)
+
     # test crop size > image size
     kwargs = dict(size=(600, 700), scale=(0.08, 1.0), ratio=(3. / 4., 4. / 3.))
     random.seed(seed)
@@ -609,6 +623,22 @@ def test_randomresizedcrop():
     nonzero = len((ori_img - np.array(ori_img_pil)[:, :, ::-1]).nonzero())
     nonzero_transform = len((img - np.array(baseline)[:, :, ::-1]).nonzero())
     assert nonzero == nonzero_transform
+
+    # test crop size < image size when efficientnet_style = True
+    kwargs = dict(
+        size=600,
+        scale=(0.08, 1.0),
+        ratio=(3. / 4., 4. / 3.),
+        efficientnet_style=True)
+    random.seed(seed)
+    np.random.seed(seed)
+    aug = []
+    aug.extend([mmcls_transforms.RandomResizedCrop(**kwargs)])
+    composed_transform = Compose(aug)
+    results = dict()
+    results['img'] = ori_img
+    img = composed_transform(results)['img']
+    assert img.shape == (600, 600, 3)
 
     # test cropping the whole image
     kwargs = dict(
@@ -690,6 +720,70 @@ def test_randomresizedcrop():
     nonzero_transform = len((img - np.array(baseline)[:, :, ::-1]).nonzero())
     assert nonzero == nonzero_transform
 
+    # test central crop when max_attempts = 0 and efficientnet_style = True
+    kwargs = dict(
+        size=200,
+        scale=(0.08, 1.0),
+        ratio=(3. / 4., 4. / 3.),
+        efficientnet_style=True,
+        max_attempts=0,
+        crop_padding=32)
+    random.seed(seed)
+    np.random.seed(seed)
+    aug = []
+    aug.extend([mmcls_transforms.RandomResizedCrop(**kwargs)])
+    composed_transform = Compose(aug)
+    results = dict()
+    results['img'] = ori_img
+    img = composed_transform(results)['img']
+
+    kwargs = dict(crop_size=200, efficientnet_style=True, crop_padding=32)
+    resize_kwargs = dict(size=200)
+    random.seed(seed)
+    np.random.seed(seed)
+    aug = []
+    aug.extend([mmcls_transforms.CenterCrop(**kwargs)])
+    aug.extend([mmcls_transforms.Resize(**resize_kwargs)])
+    composed_transform = Compose(aug)
+    results = dict()
+    results['img'] = ori_img
+    baseline = composed_transform(results)['img']
+
+    assert img.shape == baseline.shape
+    assert np.equal(img, baseline).all()
+
+    # test central crop when max_attempts = 0 and efficientnet_style = True
+    kwargs = dict(
+        size=200,
+        scale=(0.08, 1.0),
+        ratio=(3. / 4., 4. / 3.),
+        efficientnet_style=True,
+        max_attempts=100,
+        min_covered=1)
+    random.seed(seed)
+    np.random.seed(seed)
+    aug = []
+    aug.extend([mmcls_transforms.RandomResizedCrop(**kwargs)])
+    composed_transform = Compose(aug)
+    results = dict()
+    results['img'] = ori_img
+    img = composed_transform(results)['img']
+
+    kwargs = dict(crop_size=200, efficientnet_style=True, crop_padding=32)
+    resize_kwargs = dict(size=200)
+    random.seed(seed)
+    np.random.seed(seed)
+    aug = []
+    aug.extend([mmcls_transforms.CenterCrop(**kwargs)])
+    aug.extend([mmcls_transforms.Resize(**resize_kwargs)])
+    composed_transform = Compose(aug)
+    results = dict()
+    results['img'] = ori_img
+    baseline = composed_transform(results)['img']
+
+    assert img.shape == baseline.shape
+    assert np.equal(img, baseline).all()
+
     # test different interpolation types
     for mode in ['nearest', 'bilinear', 'bicubic', 'area', 'lanczos']:
         kwargs = dict(
@@ -704,86 +798,6 @@ def test_randomresizedcrop():
         results['img'] = ori_img
         img = composed_transform(results)['img']
         assert img.shape == (600, 700, 3)
-
-
-def test_e_resized_crop():
-    ori_img = mmcv.imread(
-        osp.join(osp.dirname(__file__), '../data/color.jpg'), 'color')
-
-    seed = random.randint(0, 100)
-
-    # test when scale is not of kind (min, max)
-    with pytest.raises(AssertionError):
-        kwargs = dict(size=200, scale=(1.0, 0.1), ratio=(3. / 4., 4. / 3.))
-        aug = []
-        aug.extend([mmcls_transforms.ERandomCrop(**kwargs)])
-        composed_transform = Compose(aug)
-        results = dict()
-        results['img'] = ori_img
-        composed_transform(results)
-
-    # test when ratio is not of kind (min, max)
-    with pytest.raises(AssertionError):
-        kwargs = dict(size=200, scale=(0.1, 1.0), ratio=(4. / 3., 3. / 4.))
-        aug = []
-        aug.extend([mmcls_transforms.ERandomCrop(**kwargs)])
-        composed_transform = Compose(aug)
-        results = dict()
-        results['img'] = ori_img
-        composed_transform(results)
-
-    # test when size is of wrong type
-    with pytest.raises(AssertionError):
-        kwargs = dict(size=200.1)
-        aug = []
-        aug.extend([mmcls_transforms.ERandomCrop(**kwargs)])
-        composed_transform = Compose(aug)
-        results = dict()
-        results['img'] = ori_img
-        composed_transform(results)
-
-    random.seed(seed)
-    np.random.seed(seed)
-    kwargs = dict(size=200, scale=(0.1, 1.0), ratio=(3. / 4, 4. / 3))
-    aug = []
-    aug.extend([mmcls_transforms.ERandomCrop(**kwargs)])
-    composed_transform = Compose(aug)
-    # test __repr__()
-    print(composed_transform)
-
-    # test crop size < image size
-    kwargs = dict(size=200, scale=(0.1, 1.0), ratio=(3. / 4., 4. / 3.))
-    results = dict()
-    results['img'] = ori_img
-    img = composed_transform(results)['img']
-    assert np.array(img).shape == (200, 200, 3)
-
-    # test crop size > image size
-    kwargs = dict(size=600, scale=(0.1, 1.0), ratio=(3. / 4., 4. / 3.))
-    random.seed(seed)
-    np.random.seed(seed)
-    aug = []
-    aug.extend([mmcls_transforms.ERandomCrop(**kwargs)])
-    composed_transform = Compose(aug)
-    results = dict()
-    results['img'] = ori_img
-    img = composed_transform(results)['img']
-    assert np.array(img).shape == (600, 600, 3)
-
-    # test different interpolation types
-    for mode in ['nearest', 'bilinear', 'bicubic', 'area', 'lanczos']:
-        kwargs = dict(
-            size=300,
-            scale=(0.08, 1.0),
-            ratio=(3. / 4., 4. / 3.),
-            interpolation=mode)
-        aug = []
-        aug.extend([mmcls_transforms.ERandomCrop(**kwargs)])
-        composed_transform = Compose(aug)
-        results = dict()
-        results['img'] = ori_img
-        img = composed_transform(results)['img']
-        assert img.shape == (300, 300, 3)
 
 
 def test_randomgrayscale():
