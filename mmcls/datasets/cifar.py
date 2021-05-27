@@ -54,6 +54,7 @@ class CIFAR10(BaseDataset):
         if world_size > 1:
             dist.barrier()
             assert self._check_integrity(), \
+                'Shared storage seems unavailable. ' \
                 f'Please download the dataset manually through {self.url}.'
 
         if not self.test_mode:

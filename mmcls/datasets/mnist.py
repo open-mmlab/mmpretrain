@@ -58,8 +58,8 @@ class MNIST(BaseDataset):
             assert osp.exists(train_image_file) and osp.exists(
                 train_label_file) and osp.exists(
                     test_image_file) and osp.exists(test_label_file), \
-                f'Please download dataset manually ' \
-                f'through {self.resource_prefix}.'
+                'Shared storage seems unavailable. Please download dataset ' \
+                f'manually through {self.resource_prefix}.'
 
         train_set = (read_image_file(train_image_file),
                      read_label_file(train_label_file))
