@@ -13,8 +13,12 @@ from .base_backbone import BaseBackbone
 
 class PatchMerging(BaseModule):
 
-    def __init__(self, input_resolution, embed_dims, norm_cfg=dict(type='LN')):
-        super().__init__()
+    def __init__(self,
+                 input_resolution,
+                 embed_dims,
+                 norm_cfg=dict(type='LN'),
+                 init_cfg=None):
+        super().__init__(init_cfg)
         self.input_resolution = input_resolution
         self.embed_dims = embed_dims
         self.reduction = nn.Linear(4 * embed_dims, 2 * embed_dims, bias=False)
@@ -146,9 +150,10 @@ class WindowMSA(BaseModule):
                  qkv_bias=True,
                  qk_scale=None,
                  attn_drop=0.,
-                 proj_drop=0.):
+                 proj_drop=0.,
+                 init_cfg=None):
 
-        super().__init__()
+        super().__init__(init_cfg)
         self.embed_dims = embed_dims
         self.window_size = window_size  # Wh, Ww
         self.num_heads = num_heads
@@ -243,8 +248,9 @@ class ShiftWindowMSA(BaseModule):
                  qk_scale=None,
                  attn_drop=0,
                  proj_drop=0,
-                 dropout_layer=dict(type='DropPath', drop_prob=0.)):
-        super().__init__()
+                 dropout_layer=dict(type='DropPath', drop_prob=0.),
+                 init_cfg=None):
+        super().__init__(init_cfg)
 
         self.w_msa = WindowMSA(embed_dims, to_2tuple(window_size), num_heads,
                                qkv_bias, qk_scale, attn_drop, proj_drop)
