@@ -1,27 +1,19 @@
-import mmcv.runner.base_module as mmbase
 import torch
 import torch.nn as nn
 from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.conv import build_conv_layer
-from mmcv.cnn.bricks.registry import (ATTENTION, TRANSFORMER_LAYER,
-                                      TRANSFORMER_LAYER_SEQUENCE)
-from mmcv.cnn.bricks.transformer import (BaseTransformerLayer,
-                                         TransformerLayerSequence,
-                                         build_dropout,
-                                         build_transformer_layer_sequence)
-from mmcv.utils import ConfigDict
+from mmcv.cnn.bricks.registry import ATTENTION
+from mmcv.cnn.bricks.transformer import FFN, build_dropout
+from mmcv.runner.base_module import BaseModule, ModuleList
 
 from ..builder import BACKBONES
 from ..utils import to_2tuple
 from .base_backbone import BaseBackbone
 
 
-class PatchMerging(mmbase.BaseModule):
+class PatchMerging(BaseModule):
 
-    def __init__(self,
-                 input_resolution,
-                 embed_dims,
-                 norm_cfg=ConfigDict(type='LN')):
+    def __init__(self, input_resolution, embed_dims, norm_cfg=dict(type='LN')):
         super().__init__()
         self.input_resolution = input_resolution
         self.embed_dims = embed_dims
@@ -54,7 +46,7 @@ class PatchMerging(mmbase.BaseModule):
         return x
 
 
-class PatchEmbed(mmbase.BaseModule):
+class PatchEmbed(BaseModule):
     """Image to Patch Embedding.
 
     Args:
@@ -65,7 +57,7 @@ class PatchEmbed(mmbase.BaseModule):
         norm_cfg (dict, optional): Config dict for normalization layer.
         conv_cfg (dict, optional): The config dict for conv layers.
             Default: None.
-        init_cfg (`mmcv.ConfigDict`, optional): The Config for initialization.
+        init_cfg (`mmcv.dict`, optional): The Config for initialization.
             Default: None.
     """
 
@@ -74,7 +66,7 @@ class PatchEmbed(mmbase.BaseModule):
                  patch_size=16,
                  in_channels=3,
                  embed_dims=768,
-                 norm_cfg=ConfigDict(type='LN'),
+                 norm_cfg=dict(type='LN'),
                  conv_cfg=None,
                  init_cfg=None):
         super(PatchEmbed, self).__init__(init_cfg)
@@ -115,7 +107,7 @@ class PatchEmbed(mmbase.BaseModule):
             self.norm = None
 
     def forward(self, x):
-        B, C, H, W = x.shape
+        _, _, H, W = x.shape
         # FIXME look at relaxing size constraints
         assert H == self.img_size[0] and W == self.img_size[1], \
             f"Input image size ({H}*{W}) doesn't " \
@@ -130,7 +122,7 @@ class PatchEmbed(mmbase.BaseModule):
 
 
 @ATTENTION.register_module()
-class WindowMSA(mmbase.BaseModule):
+class WindowMSA(BaseModule):
     """Window based multi-head self attention (W-MSA) module with relative
     position bias.
 
@@ -239,7 +231,7 @@ class WindowMSA(mmbase.BaseModule):
 
 
 @ATTENTION.register_module()
-class ShiftWindowMSA(mmbase.BaseModule):
+class ShiftWindowMSA(BaseModule):
 
     def __init__(self,
                  embed_dims,
@@ -251,8 +243,7 @@ class ShiftWindowMSA(mmbase.BaseModule):
                  qk_scale=None,
                  attn_drop=0,
                  proj_drop=0,
-                 dropout_layer=ConfigDict(type='DropPath', drop_prob=0.),
-                 batch_first=True):  # TODO: Add assert or impl batch_first
+                 dropout_layer=dict(type='DropPath', drop_prob=0.)):
         super().__init__()
 
         self.w_msa = WindowMSA(embed_dims, to_2tuple(window_size), num_heads,
@@ -367,8 +358,7 @@ class ShiftWindowMSA(mmbase.BaseModule):
         return windows
 
 
-@TRANSFORMER_LAYER.register_module()
-class SwinBlock(BaseTransformerLayer):
+class SwinBlock(BaseModule):
 
     def __init__(self,
                  embed_dims,
@@ -378,21 +368,24 @@ class SwinBlock(BaseTransformerLayer):
                  shift=False,
                  mlp_ratio=4.,
                  drop_path=0.,
-                 attn_cfgs=ConfigDict(),
-                 ffn_cfgs=ConfigDict(),
-                 act_cfg=ConfigDict(type='GELU'),
-                 norm_cfg=ConfigDict(type='LN'),
+                 attn_cfgs=dict(),
+                 ffn_cfgs=dict(),
+                 act_cfg=dict(type='GELU'),
+                 norm_cfg=dict(type='LN'),
                  init_cfg=None):
 
-        _attn_cfgs = ConfigDict({
-            'type': 'ShiftWindowMSA',
+        super(SwinBlock, self).__init__(init_cfg)
+
+        _attn_cfgs = {
             'embed_dims': embed_dims,
             'num_heads': num_heads,
             'input_resolution': input_resolution,
             'shift_size': window_size // 2 if shift else 0,
             'window_size': window_size,
             **attn_cfgs
-        })
+        }
+        self.norm1 = build_norm_layer(norm_cfg, embed_dims)[1]
+        self.attn = ShiftWindowMSA(**_attn_cfgs)
 
         _ffn_cfgs = {
             'embed_dims': embed_dims,
@@ -403,17 +396,21 @@ class SwinBlock(BaseTransformerLayer):
             'act_cfg': act_cfg,
             **ffn_cfgs
         }
+        self.norm2 = build_norm_layer(norm_cfg, embed_dims)[1]
+        self.ffn = FFN(**_ffn_cfgs)
 
-        super().__init__(
-            operation_order=['norm', 'self_attn', 'norm', 'ffn'],
-            attn_cfgs=_attn_cfgs,
-            ffn_cfgs=_ffn_cfgs,
-            norm_cfg=norm_cfg,
-            init_cfg=init_cfg)
+    def forward(self, x):
+        residual = x
+        x = self.norm1(x)
+        x = self.attn(x, residual=residual)
+
+        residual = x
+        x = self.norm2(x)
+        x = self.ffn(x, residual=residual)
+        return x
 
 
-@TRANSFORMER_LAYER_SEQUENCE.register_module()
-class SwinBlockSequence(TransformerLayerSequence):
+class SwinBlockSequence(BaseModule):
 
     def __init__(self,
                  embed_dims,
@@ -422,8 +419,10 @@ class SwinBlockSequence(TransformerLayerSequence):
                  num_heads,
                  downsample=None,
                  drop_path=0.,
-                 norm_cfg=ConfigDict(type='LN'),
-                 block_cfg=ConfigDict()):
+                 norm_cfg=dict(type='LN'),
+                 block_cfg=dict(),
+                 init_cfg=None):
+        super().__init__(init_cfg)
 
         if not isinstance(drop_path, list):
             drop_path = [drop_path] * depth
@@ -431,19 +430,18 @@ class SwinBlockSequence(TransformerLayerSequence):
         if not isinstance(block_cfg, list):
             block_cfg = [block_cfg] * depth
 
-        _block_cfgs = []
+        self.blocks = ModuleList()
         for i in range(depth):
-            _block_cfgs.append({
-                'type': 'SwinBlock',
+            _block_cfg = {
                 'embed_dims': embed_dims,
                 'input_resolution': input_resolution,
                 'num_heads': num_heads,
                 'shift': False if i % 2 == 0 else True,
                 'drop_path': drop_path[i],
                 **block_cfg[i]
-            })
-
-        super().__init__(_block_cfgs, depth)
+            }
+            block = SwinBlock(**_block_cfg)
+            self.blocks.append(block)
 
         if downsample:
             self.downsample = PatchMerging(
@@ -451,11 +449,13 @@ class SwinBlockSequence(TransformerLayerSequence):
         else:
             self.downsample = None
 
-    def forward(self, *args, **kwargs):
-        x = super().forward(*args, **kwargs)
+    def forward(self, query):
+        for block in self.blocks:
+            query = block(query)
+
         if self.downsample:
-            x = self.downsample(x)
-        return x
+            query = self.downsample(query)
+        return query
 
 
 @BACKBONES.register_module()
@@ -514,9 +514,9 @@ class SwinTransformer(BaseBackbone):
                  drop_rate=0.,
                  drop_path_rate=0.1,
                  ape=False,
-                 norm_cfg=ConfigDict(type='LN'),
-                 stage_cfg=ConfigDict(),
-                 patch_cfg=ConfigDict(),
+                 norm_cfg=dict(type='LN'),
+                 stage_cfg=dict(),
+                 patch_cfg=dict(),
                  init_cfg=None):
         super(SwinTransformer, self).__init__(init_cfg)
 
@@ -538,7 +538,7 @@ class SwinTransformer(BaseBackbone):
         self.ape = ape
         self.num_features = int(self.embed_dims * 2**(self.num_layers - 1))
 
-        _patch_cfg = ConfigDict(
+        _patch_cfg = dict(
             img_size=img_size,
             in_channels=in_channels,
             embed_dims=self.embed_dims,
@@ -561,13 +561,13 @@ class SwinTransformer(BaseBackbone):
             x.item() for x in torch.linspace(0, drop_path_rate, total_depth)
         ]  # stochastic depth decay rule
 
-        self.stages = mmbase.ModuleList()
+        self.stages = ModuleList()
         scale_factor = 1
         for i, (depth,
                 num_heads) in enumerate(zip(self.depths, self.num_heads)):
             downsample = True if i < self.num_layers - 1 else False
             input_resolution = [i // scale_factor for i in patches_resolution]
-            cfg = {
+            _stage_cfg = {
                 'embed_dims': self.embed_dims * scale_factor,
                 'depth': depth,
                 'num_heads': num_heads,
@@ -577,9 +577,8 @@ class SwinTransformer(BaseBackbone):
                 **stage_cfg
             }
 
-            block_sequence = build_transformer_layer_sequence(
-                cfg, ConfigDict(type='SwinBlockSequence'))
-            self.stages.append(block_sequence)
+            stage = SwinBlockSequence(**_stage_cfg)
+            self.stages.append(stage)
 
             dpr = dpr[depth:]
             if downsample:
@@ -615,7 +614,7 @@ class SwinTransformer(BaseBackbone):
         x = self.drop_after_pos(x)
 
         for stage in self.stages:
-            x = stage(x, key=None, value=None)
+            x = stage(x)
 
         x = self.norm(x) if self.norm else x
 
