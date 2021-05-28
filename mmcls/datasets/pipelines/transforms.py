@@ -311,19 +311,18 @@ class RandomResizedCrop(object):
             max_target_height = min(max_target_height, height)
             min_target_height = min(max_target_height, min_target_height)
 
+            # slightly differs from tf inplementation
             target_height = int(
                 round(random.uniform(min_target_height, max_target_height)))
             target_width = int(round(target_height * aspect_ratio))
             target_area = target_height * target_width
 
-            if target_area < min_target_area or target_area > max_target_area:
+            # slight differs from tf. In tf, if target_area > max_target_area,
+            # area will be recalculated
+            if (target_area < min_target_area or target_area > max_target_area
+                    or target_width > width or target_height > height
+                    or target_area < min_covered * area):
                 continue
-            if target_width > width or target_height > height:
-                continue
-            if target_area < min_covered * area:
-                continue
-            if target_height == height and target_width == width:
-                break
 
             ymin = random.randint(0, height - target_height)
             xmin = random.randint(0, width - target_width)
@@ -701,7 +700,7 @@ class CenterCrop(object):
             32.
         interpolation (str): Interpolation method, accepted values are
             'nearest', 'bilinear', 'bicubic', 'area', 'lanczos'. Only valid if
-             efficientnet style is True.Defaults to 'bilinear'.
+             efficientnet style is True. Defaults to 'bilinear'.
         backend (str): The image resize backend type, accpeted values are
             `cv2` and `pillow`. Only valid if efficientnet style is True.
             Defaults to `cv2`.
