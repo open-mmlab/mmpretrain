@@ -693,25 +693,48 @@ class CenterCrop(object):
 
     Args:
         crop_size (int | tuple): Expected size after cropping with the format
-            of (h, w) if efficientnet_style is set to False.
+            of (h, w).
         efficientnet_style (bool): Whether to use efficientnet style center
             crop. Defaults to False.
         crop_padding (int): The crop padding parameter in efficientnet style
-            center crop.
+            center crop. Only valid if efficientnet style is True. Defaults to
+            32.
+        interpolation (str): Interpolation method, accepted values are
+            'nearest', 'bilinear', 'bicubic', 'area', 'lanczos'. Only valid if
+             efficientnet style is True.Defaults to 'bilinear'.
+        backend (str): The image resize backend type, accpeted values are
+            `cv2` and `pillow`. Only valid if efficientnet style is True.
+            Defaults to `cv2`.
+
 
     Notes:
         If the image is smaller than the crop size, return the original image.
-        If efficientnet_style is set to True, the outputsize will be:
+        If efficientnet_style is set to False, the pipeline would be a simple
+        center crop using the crop_size.
+        If efficientnet_style is set to True, the pipeline will be to first to
+        perform the center crop with the crop_size_ as:
 
         .. math::
-        output\_size = crop\_size / (crop\_size + crop\_padding) * short\_edge
+        crop\_size\_ = crop\_size / (crop\_size + crop\_padding) * short\_edge
 
+        And then the pipeline resizes the img to the input crop size.
     """
 
-    def __init__(self, crop_size, efficientnet_style=False, crop_padding=32):
+    def __init__(self,
+                 crop_size,
+                 efficientnet_style=False,
+                 crop_padding=32,
+                 interpolation='bilinear',
+                 backend='cv2'):
         if efficientnet_style:
             assert isinstance(crop_size, int)
             assert crop_padding >= 0
+            assert interpolation in ('nearest', 'bilinear', 'bicubic', 'area',
+                                     'lanczos')
+            if backend not in ['cv2', 'pillow']:
+                raise ValueError(
+                    f'backend: {backend} is not supported for '
+                    'resize. Supported backends are "cv2", "pillow"')
         else:
             assert isinstance(crop_size, int) or (isinstance(crop_size, tuple)
                                                   and len(crop_size) == 2)
@@ -721,6 +744,8 @@ class CenterCrop(object):
         self.crop_size = crop_size
         self.efficientnet_style = efficientnet_style
         self.crop_padding = crop_padding
+        self.interpolation = interpolation
+        self.backend = backend
 
     def __call__(self, results):
         crop_height, crop_width = self.crop_size[0], self.crop_size[1]
@@ -744,6 +769,13 @@ class CenterCrop(object):
 
             # crop the image
             img = mmcv.imcrop(img, bboxes=np.array([x1, y1, x2, y2]))
+
+            if self.efficientnet_style:
+                img = mmcv.imresize(
+                    img,
+                    tuple(self.crop_size[::-1]),
+                    interpolation=self.interpolation,
+                    backend=self.backend)
             img_shape = img.shape
             results[key] = img
         results['img_shape'] = img_shape
@@ -753,7 +785,9 @@ class CenterCrop(object):
     def __repr__(self):
         repr_str = self.__class__.__name__ + f'(crop_size={self.crop_size}'
         repr_str += f', efficientnet_style={self.efficientnet_style}'
-        repr_str += f', crop_padding={self.crop_padding})'
+        repr_str += f', crop_padding={self.crop_padding}'
+        repr_str += f', interpolation={self.interpolation}'
+        repr_str += f', backend={self.backend})'
         return repr_str
 
 

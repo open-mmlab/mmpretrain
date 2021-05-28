@@ -194,6 +194,15 @@ def test_center_crop():
         )
         build_from_cfg(transform, PIPELINES)
 
+    # test assertion if efficientnet is True and interpolation is invalid
+    with pytest.raises(AssertionError):
+        transform = dict(
+            type='CenterCrop',
+            crop_size=224,
+            efficientnet_style=True,
+            interpolation='2333')
+        build_from_cfg(transform, PIPELINES)
+
     # test assertion if efficientnet is True and crop_padding is negative
     with pytest.raises(AssertionError):
         transform = dict(
@@ -244,8 +253,18 @@ def test_center_crop():
     results = reset_results(results, original_img)
     results = center_crop_module(results)
     assert np.equal(results['img'], results['img2']).all()
+    assert results['img_shape'] == (224, 224, 3)
+    results_img = copy.deepcopy(results['img'])
+
     short_edge = min(*results['ori_shape'][:2])
-    assert results['img_shape'] == (short_edge, short_edge, 3)
+    transform = dict(type='CenterCrop', crop_size=short_edge)
+    baseline_center_crop_module = build_from_cfg(transform, PIPELINES)
+    transform = dict(type='Resize', size=224)
+    baseline_resize_module = build_from_cfg(transform, PIPELINES)
+    results = reset_results(results, original_img)
+    results = baseline_center_crop_module(results)
+    results = baseline_resize_module(results)
+    assert np.equal(results['img'], results_img).all()
 
     # test CenterCrop when size is tuple
     transform = dict(type='CenterCrop', crop_size=(224, 224))
