@@ -1,4 +1,9 @@
-_base_ = ['./efficientnet_b0_b32x8_imagenet.py']
+_base_ = [
+    '../_base_/models/efficientnet_b0.py',
+    '../_base_/datasets/imagenet_bs32.py',
+    '../_base_/schedules/imagenet_bs256.py',
+    '../_base_/default_runtime.py',
+]
 
 # dataset settings
 dataset_type = 'ImageNet'
@@ -8,10 +13,9 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='RandomResizedCrop',
-        size=224,
+        size=380,
         efficientnet_style=True,
-        interpolation='bicubic',
-        backend='pillow'),
+        interpolation='bicubic'),
     dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='ImageToTensor', keys=['img']),
@@ -22,10 +26,9 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='CenterCrop',
-        crop_size=224,
+        crop_size=380,
         efficientnet_style=True,
-        interpolation='bicubic',
-        backend='pillow'),
+        interpolation='bicubic'),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='ImageToTensor', keys=['img']),
     dict(type='Collect', keys=['img'])

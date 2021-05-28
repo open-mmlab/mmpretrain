@@ -13,7 +13,7 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='RandomResizedCrop',
-        size=224,
+        size=672,
         efficientnet_style=True,
         interpolation='bicubic'),
     dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
@@ -26,7 +26,7 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='CenterCrop',
-        crop_size=224,
+        crop_size=672,
         efficientnet_style=True,
         interpolation='bicubic'),
     dict(type='Normalize', **img_norm_cfg),

@@ -1,5 +1,5 @@
 _base_ = [
-    '../_base_/models/efficientnet_b0.py',
+    '../_base_/models/efficientnet_b1.py',
     '../_base_/datasets/imagenet_bs32.py',
     '../_base_/schedules/imagenet_bs256.py',
     '../_base_/default_runtime.py',
@@ -13,7 +13,7 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='RandomResizedCrop',
-        size=224,
+        size=240,
         efficientnet_style=True,
         interpolation='bicubic'),
     dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
@@ -26,7 +26,7 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='CenterCrop',
-        crop_size=224,
+        crop_size=240,
         efficientnet_style=True,
         interpolation='bicubic'),
     dict(type='Normalize', **img_norm_cfg),
