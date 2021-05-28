@@ -26,6 +26,7 @@ class PatchMerging(mmbase.BaseModule):
         self.input_resolution = input_resolution
         self.embed_dims = embed_dims
         self.reduction = nn.Linear(4 * embed_dims, 2 * embed_dims, bias=False)
+        self.sampler = nn.Unfold(kernel_size=(2, 2), stride=2)
         if norm_cfg is not None:
             self.norm = build_norm_layer(norm_cfg, 4 * embed_dims)[1]
         else:
@@ -40,14 +41,12 @@ class PatchMerging(mmbase.BaseModule):
         assert L == H * W, 'input feature has wrong size'
         assert H % 2 == 0 and W % 2 == 0, f'x size ({H}*{W}) are not even.'
 
-        x = x.view(B, H, W, C)
+        x = x.view(B, H, W, C).permute([0, 3, 1, 2])  # B, C, H, W
 
-        x0 = x[:, 0::2, 0::2, :]  # B H/2 W/2 C
-        x1 = x[:, 1::2, 0::2, :]  # B H/2 W/2 C
-        x2 = x[:, 0::2, 1::2, :]  # B H/2 W/2 C
-        x3 = x[:, 1::2, 1::2, :]  # B H/2 W/2 C
-        x = torch.cat([x0, x1, x2, x3], -1)  # B H/2 W/2 4*C
-        x = x.view(B, -1, 4 * C)  # B H/2*W/2 4*C
+        # Use nn.Unfold to merge patch. About 25% faster than original method,
+        # but need to modify pretrained model for compatibility
+        x = self.sampler(x)  # B, 4*C, H/2*W/2
+        x = x.transpose(1, 2)  # B, H/2*W/2, 4*C
 
         x = self.norm(x) if self.norm else x
         x = self.reduction(x)
