@@ -1,7 +1,4 @@
-_base_ = [
-    '../_base_/models/efficientnet_b0.py',
-    '../_base_/datasets/imagenet_bs32.py'
-]
+_base_ = ['./efficientnet_b0_b32x8_imagenet.py']
 
 # dataset settings
 dataset_type = 'ImageNet'
