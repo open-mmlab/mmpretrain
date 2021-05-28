@@ -4,6 +4,8 @@ from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.conv import build_conv_layer
 from mmcv.cnn.bricks.registry import ATTENTION
 from mmcv.cnn.bricks.transformer import FFN, build_dropout
+from mmcv.cnn.utils import constant_init, trunc_normal_init
+from mmcv.cnn.utils.weight_init import trunc_normal_
 from mmcv.runner.base_module import BaseModule, ModuleList
 
 from ..builder import BACKBONES
@@ -183,8 +185,7 @@ class WindowMSA(BaseModule):
     def init_weights(self):
         super(WindowMSA, self).init_weights()
 
-        # FIXME: trunc_normal_ is added after pt1.8, use previous version
-        nn.init.trunc_normal_(self.relative_position_bias_table, std=0.02)
+        trunc_normal_(self.relative_position_bias_table, std=0.02)
 
     def forward(self, x, mask=None):
         """
@@ -599,19 +600,15 @@ class SwinTransformer(BaseBackbone):
         super().init_weights(pretrained)
 
         if pretrained is None and self.ape:
-            # FIXME: trunc_normal_ is added after pt1.8, use previous version
-            nn.init.trunc_normal_(self.absolute_pos_embed, std=0.02)
+            trunc_normal_(self.absolute_pos_embed, std=0.02)
         # FIXME: temporary init method, replace it with init_cfg
         self.apply(self._init_weights)
 
     def _init_weights(self, m):
         if isinstance(m, nn.Linear):
-            nn.init.trunc_normal_(m.weight, std=.02)
-            if isinstance(m, nn.Linear) and m.bias is not None:
-                nn.init.constant_(m.bias, 0)
+            trunc_normal_init(m, std=.02, bias=0.)
         elif isinstance(m, nn.LayerNorm):
-            nn.init.constant_(m.bias, 0)
-            nn.init.constant_(m.weight, 1.0)
+            constant_init(m, val=1., bias=0.)
 
     def forward(self, x):
         x = self.patch_embed(x)
