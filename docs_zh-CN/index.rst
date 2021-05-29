@@ -1,4 +1,4 @@
-Welcome to MMClassification's documentation!
+欢迎来到 MMClassification 中文教程！
 ==========================================
 
 You can switch between Chinese and English documents in the lower-left corner of the layout.
@@ -7,7 +7,7 @@ You can switch between Chinese and English documents in the lower-left corner of
 
 .. toctree::
    :maxdepth: 2
-   :caption: Get Started
+   :caption: 开始你的第一步
 
    install.md
    getting_started.md
@@ -15,14 +15,14 @@ You can switch between Chinese and English documents in the lower-left corner of
 
 .. toctree::
    :maxdepth: 2
-   :caption: Model zoo
+   :caption: 模型库
 
    modelzoo_statistics.md
 
 
 .. toctree::
    :maxdepth: 2
-   :caption: Tutorials
+   :caption: 教程
 
    tutorials/finetune.md
    tutorials/new_dataset.md
@@ -32,20 +32,20 @@ You can switch between Chinese and English documents in the lower-left corner of
 
 .. toctree::
    :maxdepth: 2
-   :caption: Useful Tools and Scripts
+   :caption: 实用工具
 
    tutorials/pytorch2onnx.md
    tutorials/onnx2tensorrt.md
 
 
 .. toctree::
-   :caption: Language Switch
+   :caption: 语言切换
 
    switch_language.md
 
 
 
-Indices and tables
+索引与表格
 ==================
 
 * :ref:`genindex`

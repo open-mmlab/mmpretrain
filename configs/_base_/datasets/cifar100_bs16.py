@@ -25,8 +25,12 @@ data = dict(
         data_prefix='data/cifar100',
         pipeline=train_pipeline),
     val=dict(
-        type=dataset_type, data_prefix='data/cifar100',
-        pipeline=test_pipeline),
+        type=dataset_type,
+        data_prefix='data/cifar100',
+        pipeline=test_pipeline,
+        test_mode=True),
     test=dict(
-        type=dataset_type, data_prefix='data/cifar100',
-        pipeline=test_pipeline))
+        type=dataset_type,
+        data_prefix='data/cifar100',
+        pipeline=test_pipeline,
+        test_mode=True))
