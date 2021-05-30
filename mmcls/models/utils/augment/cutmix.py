@@ -4,15 +4,14 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
+from .base_augment import BaseAugment
 
-class BaseCutMixLayer(object, metaclass=ABCMeta):
+
+class BaseCutMixLayer(BaseAugment, metaclass=ABCMeta):
     """Base class for CutMixLayer.
 
     Args:
         alpha (float): Parameters for Beta distribution. Positive(>0).
-        num_classes (int): The number of classes.
-        prob (float): CutMix probability. It should be in range [0, 1].
-            Default to 0.5
         cutmix_minmax (List[float], optional): cutmix min/max image ratio,
             cutmix is active and uses this vs alpha if not None.
         correct_lam (bool): apply lambda correction when cutmix bbox
@@ -21,19 +20,15 @@ class BaseCutMixLayer(object, metaclass=ABCMeta):
 
     def __init__(self,
                  alpha,
-                 num_classes,
-                 prob=0.5,
                  cutmix_minmax=None,
-                 correct_lam=True):
-        super(BaseCutMixLayer, self).__init__()
+                 correct_lam=True,
+                 *args,
+                 **kwargs):
+        super(BaseCutMixLayer, self).__init__(*args, **kwargs)
 
         assert isinstance(alpha, float) and alpha > 0
-        assert isinstance(num_classes, int)
-        assert isinstance(prob, float) and 0.0 <= prob <= 1.0
 
         self.alpha = alpha
-        self.num_classes = num_classes
-        self.prob = prob
         self.cutmix_minmax = cutmix_minmax
         self.correct_lam = correct_lam
 

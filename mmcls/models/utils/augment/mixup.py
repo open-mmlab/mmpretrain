@@ -4,27 +4,21 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
+from .base_augment import BaseAugment
 
-class BaseMixupLayer(object, metaclass=ABCMeta):
+
+class BaseMixupLayer(BaseAugment, metaclass=ABCMeta):
     """Base class for MixupLayer.
 
     Args:
         alpha (float): Parameters for Beta distribution.
-        num_classes (int): The number of classes.
-        prob (float): MixUp probability. It should be in range [0, 1].
-            Default to 0.5
     """
 
-    def __init__(self, alpha, num_classes, prob=0.5):
-        super(BaseMixupLayer, self).__init__()
+    def __init__(self, alpha, *args, **kwargs):
+        super(BaseMixupLayer, self).__init__(*args, **kwargs)
 
         assert isinstance(alpha, float) and alpha > 0
-        assert isinstance(num_classes, int)
-        assert isinstance(prob, float) and 0.0 <= prob <= 1.0
-
         self.alpha = alpha
-        self.num_classes = num_classes
-        self.mixup_prob = prob
 
     @abstractmethod
     def mixup(self, imgs, gt_label):
