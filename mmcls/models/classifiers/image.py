@@ -1,9 +1,7 @@
-import warnings
-
 import torch.nn as nn
 
 from ..builder import CLASSIFIERS, build_backbone, build_head, build_neck
-from ..utils import BatchCutMixLayer, BatchMixupLayer, CutMixUp
+from ..utils.augment import Augments
 from .base import BaseClassifier
 
 
@@ -26,25 +24,31 @@ class ImageClassifier(BaseClassifier):
         if head is not None:
             self.head = build_head(head)
 
-        self.cutmixup, self.mixup, self.cutmix = None, None, None
+        self.augments = None
         if train_cfg is not None:
-            cutmixup_cfg = train_cfg.get('cutmixup', None)
-            if cutmixup_cfg is not None:
-                self.cutmixup = CutMixUp(**cutmixup_cfg)
-            else:
-                mixup_cfg = train_cfg.get('mixup', None)
-                cutmix_cfg = train_cfg.get('cutmix', None)
-                assert mixup_cfg is None or cutmix_cfg is None, \
-                    'If mixup and cutmix are set simultaneously,' \
-                    'use cutmixup instead.'
-                if mixup_cfg is not None:
-                    warnings.warn('The mixup attribute will be deprecated.'
-                                  'Please use cutmixup instead.')
-                    self.mixup = BatchMixupLayer(**mixup_cfg)
-                if cutmix_cfg is not None:
-                    warnings.warn('The cutmix attribute will be deprecated.'
-                                  'Please use cutmixup instead.')
-                    self.cutmix = BatchCutMixLayer(**cutmix_cfg)
+            augments_cfg = train_cfg.get('augments', None)
+            if augments_cfg is not None:
+                self.augments = Augments(augments_cfg)
+
+        # self.cutmixup, self.mixup, self.cutmix = None, None, None
+        # if train_cfg is not None:
+        #     cutmixup_cfg = train_cfg.get('cutmixup', None)
+        #     if cutmixup_cfg is not None:
+        #         self.cutmixup = CutMixUp(**cutmixup_cfg)
+        #     else:
+        #         mixup_cfg = train_cfg.get('mixup', None)
+        #         cutmix_cfg = train_cfg.get('cutmix', None)
+        #         assert mixup_cfg is None or cutmix_cfg is None, \
+        #             'If mixup and cutmix are set simultaneously,' \
+        #             'use cutmixup instead.'
+        #         if mixup_cfg is not None:
+        #             warnings.warn('The mixup attribute will be deprecated.'
+        #                           'Please use cutmixup instead.')
+        #             self.mixup = BatchMixupLayer(**mixup_cfg)
+        #         if cutmix_cfg is not None:
+        #             warnings.warn('The cutmix attribute will be deprecated.'
+        #                           'Please use cutmixup instead.')
+        #             self.cutmix = BatchCutMixLayer(**cutmix_cfg)
 
         self.init_weights(pretrained=pretrained)
 
@@ -80,14 +84,16 @@ class ImageClassifier(BaseClassifier):
         Returns:
             dict[str, Tensor]: a dictionary of loss components
         """
-        if self.cutmixup is not None:
-            img, gt_label = self.cutmixup(img, gt_label)
-        elif self.mixup is not None:
-            img, gt_label = self.mixup(img, gt_label)
-        elif self.cutmix is not None:
-            img, gt_label = self.cutmix(img, gt_label)
-        else:
-            pass
+        # if self.cutmixup is not None:
+        #     img, gt_label = self.cutmixup(img, gt_label)
+        # elif self.mixup is not None:
+        #     img, gt_label = self.mixup(img, gt_label)
+        # elif self.cutmix is not None:
+        #     img, gt_label = self.cutmix(img, gt_label)
+        # else:
+        #     pass
+        if self.augments is not None:
+            img, gt_label = self.augments(img, gt_label)
 
         x = self.extract_feat(img)
 

@@ -20,7 +20,9 @@ def test_image_classifier():
             in_channels=2048,
             loss=dict(type='CrossEntropyLoss', loss_weight=1.0,
                       use_soft=True)),
-        train_cfg=dict(cutmixup=dict(mixup_alpha=1.0, num_classes=10)))
+        train_cfg=dict(
+            augments=dict(
+                type='BatchMixup', alpha=1., num_classes=10, prob=1.)))
     img_classifier = ImageClassifier(**model_cfg)
     img_classifier.init_weights()
     imgs = torch.randn(16, 3, 32, 32)
@@ -47,7 +49,9 @@ def test_image_classifier_with_cutmix():
             in_channels=2048,
             loss=dict(type='CrossEntropyLoss', loss_weight=1.0,
                       use_soft=True)),
-        train_cfg=dict(cutmixup=dict(cutmix_alpha=1.0, num_classes=10)))
+        train_cfg=dict(
+            augments=dict(
+                type='BatchCutMix', alpha=1., num_classes=10, prob=1.)))
     img_classifier = ImageClassifier(**model_cfg)
     img_classifier.init_weights()
     imgs = torch.randn(16, 3, 32, 32)
@@ -57,7 +61,7 @@ def test_image_classifier_with_cutmix():
     assert losses['loss'].item() > 0
 
 
-def test_image_classifier_with_cutmixup():
+def test_image_classifier_with_augments():
 
     imgs = torch.randn(16, 3, 32, 32)
     label = torch.randint(0, 10, (16, ))
@@ -77,16 +81,11 @@ def test_image_classifier_with_cutmixup():
             in_channels=2048,
             loss=dict(type='CrossEntropyLoss', loss_weight=1.0,
                       use_soft=True)),
-        train_cfg=dict(
-            cutmixup=dict(cutmix_alpha=1.0, mixup_alpha=0.2, num_classes=10)))
-    img_classifier = ImageClassifier(**model_cfg)
-    img_classifier.init_weights()
-
-    losses = img_classifier.forward_train(imgs, label)
-    assert losses['loss'].item() > 0
-
-    # Test cutmix in ImageClassifier
-    model_cfg['train_cfg'] = dict(cutmix=dict(alpha=1.0, num_classes=10))
+        train_cfg=dict(augments=[
+            dict(type='BatchCutMix', alpha=1., num_classes=10, prob=0.5),
+            dict(type='BatchMixup', alpha=1., num_classes=10, prob=0.3),
+            dict(type='Identity', num_classes=10, prob=0.2)
+        ]))
     img_classifier = ImageClassifier(**model_cfg)
     img_classifier.init_weights()
 
@@ -95,15 +94,12 @@ def test_image_classifier_with_cutmixup():
 
     # Test cutmix with cutmix_minmax in ImageClassifier
     model_cfg['train_cfg'] = dict(
-        cutmix=dict(alpha=1.0, num_classes=10, cutmix_minmax=[0.2, 0.8]))
-    img_classifier = ImageClassifier(**model_cfg)
-    img_classifier.init_weights()
-
-    losses = img_classifier.forward_train(imgs, label)
-    assert losses['loss'].item() > 0
-
-    # Test mixup in ImageClassifier
-    model_cfg['train_cfg'] = dict(mixup=dict(alpha=1.0, num_classes=10))
+        augments=dict(
+            type='BatchCutMix',
+            alpha=1.,
+            num_classes=10,
+            prob=1.,
+            cutmix_minmax=[0.2, 0.8]))
     img_classifier = ImageClassifier(**model_cfg)
     img_classifier.init_weights()
 
@@ -132,6 +128,14 @@ def test_image_classifier_with_cutmixup():
     losses = img_classifier.forward_train(imgs, label)
     assert losses['loss'].item() > 0
 
+    # Test not using cutmix and mixup in ImageClassifier
+    model_cfg['train_cfg'] = dict(augments=None)
+    img_classifier = ImageClassifier(**model_cfg)
+    img_classifier.init_weights()
+
+    losses = img_classifier.forward_train(imgs, label)
+    assert losses['loss'].item() > 0
+
 
 def test_image_classifier_with_label_smooth_loss():
 
@@ -149,7 +153,9 @@ def test_image_classifier_with_label_smooth_loss():
             num_classes=10,
             in_channels=2048,
             loss=dict(type='LabelSmoothLoss', label_smooth_val=0.1)),
-        train_cfg=dict(cutmixup=dict(mixup_alpha=1.0, num_classes=10)))
+        train_cfg=dict(
+            augments=dict(
+                type='BatchMixup', alpha=1., num_classes=10, prob=1.)))
     img_classifier = ImageClassifier(**model_cfg)
     img_classifier.init_weights()
     imgs = torch.randn(16, 3, 32, 32)
@@ -182,7 +188,9 @@ def test_image_classifier_vit():
             loss=dict(type='CrossEntropyLoss', loss_weight=1.0, use_soft=True),
             topk=(1, 5),
         ),
-        train_cfg=dict(cutmixup=dict(mixup_alpha=0.2)))
+        train_cfg=dict(
+            augments=dict(
+                type='BatchMixup', alpha=0.2, num_classes=1000, prob=1.)))
     img_classifier = ImageClassifier(**model_cfg)
     img_classifier.init_weights()
     imgs = torch.randn(2, 3, 224, 224)
