@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from .base_augment import BaseAugment
+from .augment import BaseAugment
 from .builder import AUGMENT
 
 
