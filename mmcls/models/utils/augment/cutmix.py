@@ -6,10 +6,36 @@ import torch.nn.functional as F
 
 
 class BaseCutMixLayer(object, metaclass=ABCMeta):
-    """Base class for CutMixLayer."""
+    """Base class for CutMixLayer.
 
-    def __init__(self):
+    Args:
+        alpha (float): Parameters for Beta distribution. Positive(>0).
+        num_classes (int): The number of classes.
+        prob (float): CutMix probability. It should be in range [0, 1].
+            Default to 0.5
+        cutmix_minmax (List[float], optional): cutmix min/max image ratio,
+            cutmix is active and uses this vs alpha if not None.
+        correct_lam (bool): apply lambda correction when cutmix bbox
+            clipped by image borders. Default to True
+    """
+
+    def __init__(self,
+                 alpha,
+                 num_classes,
+                 prob=0.5,
+                 cutmix_minmax=None,
+                 correct_lam=True):
         super(BaseCutMixLayer, self).__init__()
+
+        assert isinstance(alpha, float) and alpha > 0
+        assert isinstance(num_classes, int)
+        assert isinstance(prob, float) and 0.0 <= prob <= 1.0
+
+        self.alpha = alpha
+        self.num_classes = num_classes
+        self.prob = prob
+        self.cutmix_minmax = cutmix_minmax
+        self.correct_lam = correct_lam
 
     def rand_bbox_minmax(self, img_shape, minmax, count=None):
         """Min-Max CutMix bounding-box Inspired by Darknet cutmix impl,
@@ -84,57 +110,31 @@ class BaseCutMixLayer(object, metaclass=ABCMeta):
 
 
 class BatchCutMixLayer(BaseCutMixLayer):
-    """CutMix layer for batch CutMix.
+    """CutMix layer for batch CutMix."""
 
-    Args:
-        alpha (float): Parameters for Beta distribution. Positive(>0).
-        num_classes (int): The number of classes.
-        cutmix_prob (float): CutMix probability. It should be in range [0, 1].
-            Default to 1.0
-        cutmix_minmax (List[float], optional): cutmix min/max image ratio,
-            cutmix is active and uses this vs alpha if not None.
-        correct_lam (bool): apply lambda correction when cutmix bbox
-            clipped by image borders. Default to True
-    """
-
-    def __init__(self,
-                 alpha,
-                 num_classes,
-                 cutmix_prob=1.0,
-                 cutmix_minmax=None,
-                 correct_lam=True):
-        super(BatchCutMixLayer, self).__init__()
-
-        assert isinstance(alpha, float) and alpha > 0
-        assert isinstance(num_classes, int)
-        assert isinstance(cutmix_prob, float) and 0.0 <= cutmix_prob <= 1.0
-
-        self.alpha = alpha
-        self.num_classes = num_classes
-        self.cutmix_prob = cutmix_prob
-        self.cutmix_minmax = cutmix_minmax
-        self.correct_lam = correct_lam
+    def __init__(self, *args, **kwargs):
+        super(BatchCutMixLayer, self).__init__(*args, **kwargs)
 
     def cutmix(self, img, gt_label):
         one_hot_gt_label = F.one_hot(gt_label, num_classes=self.num_classes)
-        r = np.random.rand(1)
-        if r < self.cutmix_prob:
-            lam = np.random.beta(self.alpha, self.alpha)
-            batch_size = img.size(0)
-            index = torch.randperm(batch_size)
+        # r = np.random.rand(1)
+        # if r < self.cutmix_prob:
+        lam = np.random.beta(self.alpha, self.alpha)
+        batch_size = img.size(0)
+        index = torch.randperm(batch_size)
 
-            (bby1, bby2, bbx1, bbx2), lam = self.cutmix_bbox_and_lam(
-                img.shape,
-                lam,
-                ratio_minmax=self.cutmix_minmax,
-                correct_lam=self.correct_lam)
-            img[:, :, bby1:bby2, bbx1:bbx2] = \
-                img[index, :, bby1:bby2, bbx1:bbx2]
-            mixed_gt_label = lam * one_hot_gt_label + (
-                1 - lam) * one_hot_gt_label[index, :]
-            return img, mixed_gt_label
-        else:
-            return img, one_hot_gt_label
+        (bby1, bby2, bbx1, bbx2), lam = self.cutmix_bbox_and_lam(
+            img.shape,
+            lam,
+            ratio_minmax=self.cutmix_minmax,
+            correct_lam=self.correct_lam)
+        img[:, :, bby1:bby2, bbx1:bbx2] = \
+            img[index, :, bby1:bby2, bbx1:bbx2]
+        mixed_gt_label = lam * one_hot_gt_label + (
+            1 - lam) * one_hot_gt_label[index, :]
+        return img, mixed_gt_label
+        # else:
+        #     return img, one_hot_gt_label
 
     def __call__(self, img, gt_label):
         return self.cutmix(img, gt_label)
