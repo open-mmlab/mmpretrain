@@ -14,7 +14,7 @@ class BaseCutMixLayer(object, metaclass=ABCMeta):
         alpha (float): Parameters for Beta distribution. Positive(>0).
         num_classes (int): The number of classes.
         prob (float): MixUp probability. It should be in range [0, 1].
-            Default to 0.5
+            Default to 1.0
         cutmix_minmax (List[float], optional): cutmix min/max image ratio,
             cutmix is active and uses this vs alpha if not None.
         correct_lam (bool): apply lambda correction when cutmix bbox
@@ -24,7 +24,7 @@ class BaseCutMixLayer(object, metaclass=ABCMeta):
     def __init__(self,
                  alpha,
                  num_classes,
-                 prob=0.5,
+                 prob=1.0,
                  cutmix_minmax=None,
                  correct_lam=True):
         super(BaseCutMixLayer, self).__init__()
