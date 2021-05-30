@@ -5,6 +5,7 @@ import torch
 import torch.nn.functional as F
 
 from .base_augment import BaseAugment
+from .builder import AUGMENT
 
 
 class BaseMixupLayer(BaseAugment, metaclass=ABCMeta):
@@ -25,6 +26,7 @@ class BaseMixupLayer(BaseAugment, metaclass=ABCMeta):
         pass
 
 
+@AUGMENT.register_module(name='BatchMixup')
 class BatchMixupLayer(BaseMixupLayer):
     """Mixup layer for batch mixup."""
 

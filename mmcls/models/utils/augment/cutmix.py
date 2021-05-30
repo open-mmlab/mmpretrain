@@ -5,6 +5,7 @@ import torch
 import torch.nn.functional as F
 
 from .base_augment import BaseAugment
+from .builder import AUGMENT
 
 
 class BaseCutMixLayer(BaseAugment, metaclass=ABCMeta):
@@ -104,6 +105,7 @@ class BaseCutMixLayer(BaseAugment, metaclass=ABCMeta):
         pass
 
 
+@AUGMENT.register_module(name='BatchCutMix')
 class BatchCutMixLayer(BaseCutMixLayer):
     """CutMix layer for batch CutMix."""
 
