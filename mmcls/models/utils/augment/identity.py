@@ -3,9 +3,8 @@ import torch.nn.functional as F
 from .base_augment import BaseAugment
 from .builder import AUGMENT
 
-AUGMENT.register_module(name='Identity')
 
-
+@AUGMENT.register_module(name='Identity')
 class Identity(BaseAugment):
 
     def __init__(self, *args, **kwargs):
