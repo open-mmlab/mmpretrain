@@ -20,10 +20,11 @@ optimizer_config = dict(grad_clip=dict(max_norm=5.0))
 # learning policy
 lr_config = dict(
     policy='CosineAnnealing',
+    by_epoch=False,
     min_lr_ratio=1e-2,
     warmup='linear',
     warmup_ratio=1e-3,
-    warmup_iters=20,
-    warmup_by_epoch=True)
+    warmup_iters=20 * 1252,
+    warmup_by_epoch=False)
 
 runner = dict(type='EpochBasedRunner', max_epochs=300)

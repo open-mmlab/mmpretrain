@@ -17,4 +17,4 @@ model = dict(
             prob=1.0,
             switch_prob=0.5,
             mode='batch',
-            label_smoothing=0.2)))
+            label_smoothing=0.1)))
