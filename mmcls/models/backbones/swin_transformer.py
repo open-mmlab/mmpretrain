@@ -65,7 +65,7 @@ class PatchEmbed(BaseModule):
         norm_cfg (dict, optional): Config dict for normalization layer.
         conv_cfg (dict, optional): The config dict for conv layers.
             Default: None.
-        init_cfg (`mmcv.dict`, optional): The Config for initialization.
+        init_cfg (dict, optional): The Config for initialization.
             Default: None.
     """
 
@@ -116,7 +116,6 @@ class PatchEmbed(BaseModule):
 
     def forward(self, x):
         _, _, H, W = x.shape
-        # FIXME look at relaxing size constraints
         assert H == self.img_size[0] and W == self.img_size[1], \
             f"Input image size ({H}*{W}) doesn't " \
             f'match model ({self.img_size[0]}*{self.img_size[1]}).'
@@ -145,6 +144,8 @@ class WindowMSA(BaseModule):
         attn_drop (float, optional): Dropout ratio of attention weight.
             Default: 0.0
         proj_drop (float, optional): Dropout ratio of output. Default: 0.0
+        init_cfg (dict, optional): The Config for initialization.
+            Default: None.
     """
 
     def __init__(self,
@@ -293,7 +294,6 @@ class ShiftWindowMSA(BaseModule):
             attn_mask = attn_mask.masked_fill(attn_mask != 0,
                                               float(-100.0)).masked_fill(
                                                   attn_mask == 0, float(0.0))
-            # TODO: what -100 means?
         else:
             attn_mask = None
 
@@ -488,13 +488,14 @@ class SwinTransformer(BaseBackbone):
             Default: 0
         drop_path_rate (float): Stochastic depth rate.
             Default: 0.1
-        ape (bool): If True, add absolute position embedding to the patch
-            embedding. Default: False
-        norm_cfg(dict, optional): Config dict for normalization layer at end of
-            backone. Default: dict(type='LN')
-        stage_cfg(dict, optional): Extra config dict for stages.
-        patch_cfg(dict, optional): Extra config dict for patch embedding.
-        init_cfg(dict, optional): Extra config dict for model initialization.
+        use_abs_pos_embed (bool): If True, add absolute position embedding to
+            the patch embedding. Default: False
+        norm_cfg (dict, optional): Config dict for normalization layer at end
+            of backone. Default: dict(type='LN')
+        stage_cfg (dict, optional): Extra config dict for stages.
+        patch_cfg (dict, optional): Extra config dict for patch embedding.
+        init_cfg (dict, optional): The Config for initialization.
+            Default: None.
     """
     arch_zoo = {
         #     depth num_heads downsample
@@ -522,7 +523,7 @@ class SwinTransformer(BaseBackbone):
                  in_channels=3,
                  drop_rate=0.,
                  drop_path_rate=0.1,
-                 ape=False,
+                 use_abs_pos_embed=False,
                  norm_cfg=dict(type='LN'),
                  stage_cfg=dict(),
                  patch_cfg=dict(),
@@ -544,7 +545,7 @@ class SwinTransformer(BaseBackbone):
         self.depths = self.arch_settings['depths']
         self.num_heads = self.arch_settings['num_heads']
         self.num_layers = len(self.depths)
-        self.ape = ape
+        self.use_abs_pos_embed = use_abs_pos_embed
         self.num_features = int(self.embed_dims * 2**(self.num_layers - 1))
 
         _patch_cfg = dict(
@@ -558,7 +559,7 @@ class SwinTransformer(BaseBackbone):
         patches_resolution = self.patch_embed.patches_resolution
         self.patches_resolution = patches_resolution
 
-        if self.ape:
+        if self.use_abs_pos_embed:
             self.absolute_pos_embed = nn.Parameter(
                 torch.zeros(1, num_patches, self.embed_dims))
 
@@ -601,10 +602,11 @@ class SwinTransformer(BaseBackbone):
     def init_weights(self, pretrained=None):
         super().init_weights(pretrained)
 
-        if pretrained is None and self.ape:
-            trunc_normal_(self.absolute_pos_embed, std=0.02)
-        # FIXME: temporary init method, replace it with init_cfg
-        self.apply(self._init_weights)
+        if pretrained is None:
+            # FIXME: temporary init method, replace it with init_cfg
+            self.apply(self._init_weights)
+            if self.use_abs_pos_embed:
+                trunc_normal_(self.absolute_pos_embed, std=0.02)
 
     def _init_weights(self, m):
         if isinstance(m, nn.Linear):
@@ -614,7 +616,7 @@ class SwinTransformer(BaseBackbone):
 
     def forward(self, x):
         x = self.patch_embed(x)
-        if self.ape:
+        if self.use_abs_pos_embed:
             x = x + self.absolute_pos_embed
         x = self.drop_after_pos(x)
 
