@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import torch
 import torch.nn as nn
 from mmcv.cnn import build_norm_layer
@@ -432,10 +434,10 @@ class SwinBlockSequence(BaseModule):
         super().__init__(init_cfg)
 
         if not isinstance(drop_path, list):
-            drop_path = [drop_path] * depth
+            drop_path = [deepcopy(drop_path) for _ in range(depth)]
 
         if not isinstance(block_cfg, list):
-            block_cfg = [block_cfg] * depth
+            block_cfg = [deepcopy(block_cfg) for _ in range(depth)]
 
         self.blocks = ModuleList()
         for i in range(depth):
