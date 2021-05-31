@@ -2,10 +2,10 @@ import argparse
 from functools import partial
 
 import mmcv
-import torch
-from torch import nn
 import numpy as np
+import torch
 from mmcv.runner import load_checkpoint
+from torch import nn
 
 from mmcls.models import build_classifier
 
@@ -14,6 +14,7 @@ torch.manual_seed(3)
 
 def _demo_mm_inputs(input_shape: tuple, num_classes: int):
     """Create a superset of inputs needed to run test or train batches.
+
     Args:
         input_shape (tuple):
             input batch dimensions
@@ -36,6 +37,7 @@ def pytorch2torchscript(model: nn.Module, input_shape: tuple, output_file: str,
                         verify: bool):
     """Export Pytorch model to TorchScript model through torch.jit.trace and
     verify the outputs are same between Pytorch and TorchScript.
+
     Args:
         model (nn.Module): Pytorch model we want to export.
         input_shape (tuple): Use this input shape to construct
