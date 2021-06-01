@@ -134,10 +134,10 @@ This part selects ImageNet for onnxruntime verification. ImageNet has multiple v
     <td align="center">ResNeXt</td>
     <td align="center"><code>resnext50_32x4d_b32x8_imagenet.py</code></td>
     <td align="center">Top 1 / 5</td>
-    <td align="center">77.83 / 93.65</td>
-    <td align="center">77.83 / 93.65</td>
-    <td align="center">77.83 / 93.65</td>
-    <td align="center">77.82 / 93.65</td>
+    <td align="center">77.90 / 93.66</td>
+    <td align="center">77.90 / 93.66</td>
+    <td align="center">77.90 / 93.66</td>
+    <td align="center">77.89 / 93.65</td>
   </tr>
   <tr>
     <td align="center">SE-ResNet</td>
