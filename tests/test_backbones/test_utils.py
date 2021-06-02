@@ -138,9 +138,9 @@ def test_augments():
 
     # Test cutmixup
     augments_cfg = [
-        dict(type='BatchCutMix', alpha=1., num_classes=10, prob=1.),
-        dict(type='BatchMixup', alpha=1., num_classes=10, prob=0.6),
-        dict(type='Identity', num_classes=10, prob=0.4)
+        dict(type='BatchCutMix', alpha=1., num_classes=10, prob=0.5),
+        dict(type='BatchMixup', alpha=1., num_classes=10, prob=0.3),
+        dict(type='Identity', num_classes=10, prob=0.2)
     ]
     augs = Augments(augments_cfg)
     imgs = torch.randn(16, 3, 32, 32)
