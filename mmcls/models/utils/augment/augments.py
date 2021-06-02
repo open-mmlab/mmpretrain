@@ -11,23 +11,20 @@ class Augments:
     We implement some data augment methods, such as mixup, cutmix.
     Example:
         >>> augments_cfg = [
-                dict(type='BatchCutMix', alpha=1., num_classes=10, prob=1.),
-                dict(type='BatchMixup', alpha=1., num_classes=10, prob=0.6),
-                dict(type='Identity', num_classes=10, prob=0.4)
+                dict(type='BatchCutMix', alpha=1., num_classes=10, prob=0.5),
+                dict(type='BatchMixup', alpha=1., num_classes=10, prob=0.3),
+                dict(type='Identity', num_classes=10, prob=0.2)
             ]
         >>> augments = Augments(augments_cfg)
         >>> imgs = torch.randn(16, 3, 32, 32)
         >>> label = torch.randint(0, 10, (16, ))
         >>> imgs, label = augments(imgs, label)
 
-    To decide which augmentation within OneOf block is used
+    To decide which augmentation within Augments block is used
     the following rule is applied.
-    We normalize all probabilities within augments_cfg to one. After this
-    we pick augmentation based on the normalized probabilities. In the example
-    above BatchCutMix has probability 1.0, BatchMixup probability 0.6 and
-    Identity probability 0.4. After normalization, they become 0.5, 0.3
-    and 0.2. Which means that we decide if we should use BatchCutMix with
-    probability 0.5, BatchMixup 0.3 and Identity otherwise 0.2.
+    We pick augmentation based on the probabilities. In the example above,
+    we decide if we should use BatchCutMix with probability 0.5,
+    BatchMixup 0.3 and Identity otherwise 0.2.
 
     Args:
         augments_cfg (list[`mmcv.ConfigDict`] | obj:`mmcv.ConfigDict`):
@@ -41,9 +38,10 @@ class Augments:
             augments_cfg = [augments_cfg]
 
         self.augments = [build_augment(cfg) for cfg in augments_cfg]
-        augments_ps = [aug.prob for aug in self.augments]
-        s = sum(augments_ps)
-        self.augments_ps = [a / s for a in augments_ps]
+        self.augments_ps = [aug.prob for aug in self.augments]
+        assert sum(self.augments_ps) == 1.0,\
+            'The sum of augmentation probabilities should equal to 1,' \
+            ' but got {:.2f}'.format(sum(self.augments_ps))
 
     def __call__(self, img, gt_label):
         if self.augments:
