@@ -72,10 +72,10 @@ python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--metrics ${METRICS}] [-
 
 可选参数：
 
-- `RESULT_FILE`：输出结果的文件名。如果未指定，结果将不会保存到文件中。支持json, yaml, pickle格式。
-- `METRICS`：数据集测试指标，如准确率(accuracy), 精确率(precision), 召回率(recall)等
+- `RESULT_FILE`：输出结果的文件名。如果未指定，结果将不会保存到文件中。支持 json, yaml, pickle 格式。
+- `METRICS`：数据集测试指标，如准确率 (accuracy), 精确率 (precision), 召回率 (recall) 等
 
-例子:
+例子：
 
 假定用户将下载的模型权重文件放置在 `checkpoints/` 目录下。
 
@@ -94,7 +94,7 @@ MMClassification 使用 `MMDistributedDataParallel` 进行分布式训练，使�
 默认情况下，MMClassification 在每个周期后会在验证集上评估模型，可以通过在训练配置中修改 `interval` 参数来更改评估间隔
 
 ```python
-evaluation = dict(interval=12)  # 每进行12轮训练后评估一次模型
+evaluation = dict(interval=12)  # 每进行 12 轮训练后评估一次模型
 ```
 
 ### 使用单个 GPU 进行训练
@@ -113,7 +113,7 @@ python tools/train.py ${CONFIG_FILE} [optional arguments]
 
 可选参数为：
 
-- `--no-validate` (**不建议**): 默认情况下，程序将会在训练期间的每 k (默认为 1) 个周期进行一次验证。要禁用这一功能，使用 `--no-validate`
+- `--no-validate` (**不建议**): 默认情况下，程序将会在训练期间的每 k （默认为 1) 个周期进行一次验证。要禁用这一功能，使用 `--no-validate`
 - `--work-dir ${WORK_DIR}`：覆盖配置文件中指定的工作目录。
 - `--resume-from ${CHECKPOINT_FILE}`：从以前的模型权重文件恢复训练。
 
@@ -214,7 +214,7 @@ python tools/publish_model.py work_dirs/resnet50/latest.pth imagenet_resnet50_20
 
 ## 详细教程
 
-目前, MMClassification 提供以下几种更详细的教程：
+目前，MMClassification 提供以下几种更详细的教程：
 
 - [如何微调模型](tutorials/finetune.md)
 - [如何增加新数据集](tutorials/new_dataset.md)
