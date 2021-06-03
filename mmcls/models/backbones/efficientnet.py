@@ -16,11 +16,13 @@ from .base_backbone import BaseBackbone
 def model_scaling(layer_setting, arch_setting):
     """Scaling operation to the layer's parameters according to the
     arch_setting."""
+    # scale width
     new_layer_setting = copy.deepcopy(layer_setting)
     for layer_cfg in new_layer_setting:
         for block_cfg in layer_cfg:
             block_cfg[1] = make_divisible(block_cfg[1] * arch_setting[0], 8)
 
+    # scale depth
     split_layer_setting = [new_layer_setting[0]]
     for layer_cfg in new_layer_setting[1:-1]:
         tmp_index = [0]
@@ -59,22 +61,22 @@ class EfficientNet(BaseBackbone):
     """EfficientNet backbone.
 
     Args:
-        arch (str): Architecture of efficientnet. Default: b0.
+        arch (str): Architecture of efficientnet. Defaults to b0.
         out_indices (Sequence[int]): Output from which stages.
-            Default: (6, ).
+            Defaults to (6, ).
         frozen_stages (int): Stages to be frozen (all param fixed).
-            Default: -1, which means not freezing any parameters.
+            Defaults to -1, which means not freezing any parameters.
         conv_cfg (dict): Config dict for convolution layer.
-            Default: None, which means using conv2d.
+            Defaults to None, which means using conv2d.
         norm_cfg (dict): Config dict for normalization layer.
-            Default: dict(type='BN').
+            Defaults to dict(type='BN').
         act_cfg (dict): Config dict for activation layer.
-            Default: dict(type='ReLU').
+            Defaults to dict(type='Swish').
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm
-            and its variants only. Default: False.
+            and its variants only. Defaults to False.
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
-            memory while slowing down the training speed. Default: False.
+            memory while slowing down the training speed. Defaults to False.
     """
 
     # Parameters to build layers.
