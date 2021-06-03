@@ -1,8 +1,32 @@
 ## Changelog
 
+### v0.12.0(3/6/2021)
+
+- Finish adding Chinese tutorials and build Chinese documentation on readthedocs.
+- Update ResNeXt checkpoints and ResNet checkpoints on CIFAR.
+
+#### New Features
+
+- Improve and add Chinese translation of `data_pipeline.md` and `new_modules.md`. (#265)
+- Build Chinese translation on readthedocs. (#267)
+- Add an argument efficientnet_style to `RandomResizedCrop` and `CenterCrop`. (#268)
+
+#### Improvements
+
+- Only allow directory operation when rank==0 when testing. (#258)
+- Fix typo in `base_head`. (#274)
+- Update ResNeXt checkpoints. (#283)
+
+#### Bug Fixes
+
+- Add attribute `data.test` in MNIST configs. (#264)
+- Download CIFAR/MNIST dataset only on rank 0. (#273)
+- Fix MMCV version compatibility. (#276)
+- Fix CIFAR color channels bug and update checkpoints in model zoo. (#280)
+
 ### v0.11.1(21/5/2021)
 
-- Refine `new_dataset.md` and add Chinese translation of `finture.md`, `new_dataset.md`. (#243)
+- Refine `new_dataset.md` and add Chinese translation of `finture.md`, `new_dataset.md`.
 
 #### New Features
 
@@ -26,11 +50,11 @@
 
 ### v0.11.0(1/5/2021)
 
-- Support cutmix trick. (#198)
-- Support random augmentation. (#201)
-- Add `tools/deployment/test.py` as a ONNX runtime test tool. (#212)
-- Support ViT backbone and add training configs for ViT on ImageNet. (#214)
-- Add Chinese `README.md` and some Chinese tutorials. (#221)
+- Support cutmix trick.
+- Support random augmentation.
+- Add `tools/deployment/test.py` as a ONNX runtime test tool.
+- Support ViT backbone and add training configs for ViT on ImageNet.
+- Add Chinese `README.md` and some Chinese tutorials.
 
 #### New Features
 
