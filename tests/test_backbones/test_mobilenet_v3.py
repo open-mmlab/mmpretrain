@@ -30,7 +30,7 @@ def test_mobilenetv3_backbone():
         model.init_weights(pretrained=0)
 
     with pytest.raises(AssertionError):
-        # arch must in [small, big]
+        # arch must in [small, large]
         MobileNetV3(arch='others')
 
     with pytest.raises(ValueError):
@@ -38,16 +38,16 @@ def test_mobilenetv3_backbone():
         MobileNetV3(arch='small', frozen_stages=13)
 
     with pytest.raises(ValueError):
-        # frozen_stages must less than 17 when arch is big
-        MobileNetV3(arch='big', frozen_stages=17)
+        # frozen_stages must less than 17 when arch is large
+        MobileNetV3(arch='large', frozen_stages=17)
 
     with pytest.raises(ValueError):
         # max out_indices must less than 13 when arch is small
         MobileNetV3(arch='small', out_indices=(13, ))
 
     with pytest.raises(ValueError):
-        # max out_indices must less than 17 when arch is big
-        MobileNetV3(arch='big', out_indices=(17, ))
+        # max out_indices must less than 17 when arch is large
+        MobileNetV3(arch='large', out_indices=(17, ))
 
     # Test MobileNetV3
     model = MobileNetV3()
@@ -122,9 +122,9 @@ def test_mobilenetv3_backbone():
     assert feat[11].shape == torch.Size([1, 96, 7, 7])
     assert feat[12].shape == torch.Size([1, 576, 7, 7])
 
-    # Test MobileNetV3 forward with big arch
+    # Test MobileNetV3 forward with large arch
     model = MobileNetV3(
-        arch='big',
+        arch='large',
         out_indices=(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16))
     model.init_weights()
     model.train()
@@ -150,8 +150,8 @@ def test_mobilenetv3_backbone():
     assert feat[15].shape == torch.Size([1, 160, 7, 7])
     assert feat[16].shape == torch.Size([1, 960, 7, 7])
 
-    # Test MobileNetV3 forward with big arch
-    model = MobileNetV3(arch='big', out_indices=(0, ))
+    # Test MobileNetV3 forward with large arch
+    model = MobileNetV3(arch='large', out_indices=(0, ))
     model.init_weights()
     model.train()
 

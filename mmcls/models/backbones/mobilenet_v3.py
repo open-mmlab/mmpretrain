@@ -15,7 +15,7 @@ class MobileNetV3(BaseBackbone):
     """ MobileNetV3 backbone
 
     Args:
-        arch (str): Architechture of mobilnetv3, from {small, big}.
+        arch (str): Architechture of mobilnetv3, from {small, large}.
             Default: small.
         conv_cfg (dict, optional): Config dict for convolution layer.
             Default: None, which means using conv2d.
@@ -46,21 +46,21 @@ class MobileNetV3(BaseBackbone):
                   [5, 288, 96, True, 'HSwish', 2],
                   [5, 576, 96, True, 'HSwish', 1],
                   [5, 576, 96, True, 'HSwish', 1]],
-        'big': [[3, 16, 16, False, 'ReLU', 1],
-                [3, 64, 24, False, 'ReLU', 2],
-                [3, 72, 24, False, 'ReLU', 1],
-                [5, 72, 40, True, 'ReLU', 2],
-                [5, 120, 40, True, 'ReLU', 1],
-                [5, 120, 40, True, 'ReLU', 1],
-                [3, 240, 80, False, 'HSwish', 2],
-                [3, 200, 80, False, 'HSwish', 1],
-                [3, 184, 80, False, 'HSwish', 1],
-                [3, 184, 80, False, 'HSwish', 1],
-                [3, 480, 112, True, 'HSwish', 1],
-                [3, 672, 112, True, 'HSwish', 1],
-                [5, 672, 160, True, 'HSwish', 2],
-                [5, 960, 160, True, 'HSwish', 1],
-                [5, 960, 160, True, 'HSwish', 1]]
+        'large': [[3, 16, 16, False, 'ReLU', 1],
+                  [3, 64, 24, False, 'ReLU', 2],
+                  [3, 72, 24, False, 'ReLU', 1],
+                  [5, 72, 40, True, 'ReLU', 2],
+                  [5, 120, 40, True, 'ReLU', 1],
+                  [5, 120, 40, True, 'ReLU', 1],
+                  [3, 240, 80, False, 'HSwish', 2],
+                  [3, 200, 80, False, 'HSwish', 1],
+                  [3, 184, 80, False, 'HSwish', 1],
+                  [3, 184, 80, False, 'HSwish', 1],
+                  [3, 480, 112, True, 'HSwish', 1],
+                  [3, 672, 112, True, 'HSwish', 1],
+                  [5, 672, 160, True, 'HSwish', 2],
+                  [5, 960, 160, True, 'HSwish', 1],
+                  [5, 960, 160, True, 'HSwish', 1]]
     }  # yapf: disable
 
     def __init__(self,
