@@ -22,7 +22,7 @@ class MobileNetV3(BaseBackbone):
         norm_cfg (dict): Config dict for normalization layer.
             Default: dict(type='BN').
         out_indices (None or Sequence[int]): Output from which stages.
-            Default: (10, ), which means output tensors from final stage.
+            Default: None, which means output tensors from final stage.
         frozen_stages (int): Stages to be frozen (all param fixed).
             Defualt: -1, which means not freezing any parameters.
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
@@ -67,12 +67,14 @@ class MobileNetV3(BaseBackbone):
                  arch='small',
                  conv_cfg=None,
                  norm_cfg=dict(type='BN', eps=0.001, momentum=0.01),
-                 out_indices=(12, ),
+                 out_indices=None,
                  frozen_stages=-1,
                  norm_eval=False,
                  with_cp=False):
         super(MobileNetV3, self).__init__()
         assert arch in self.arch_settings
+        if out_indices is None:
+            out_indices = (12, ) if arch == 'small' else (16, )
         for order, index in enumerate(out_indices):
             if index not in range(0, len(self.arch_settings[arch]) + 2):
                 raise ValueError(
