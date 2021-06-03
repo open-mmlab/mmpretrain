@@ -36,7 +36,7 @@ MMClassification是一款基于PyTorch的开源图像分类工具箱，是 [Open
 
 ## 基准测试及模型库
 
-相关结果和模型可在 [model zoo](docs_zh-CN/model_zoo.md) 中获得
+相关结果和模型可在 [model zoo](docs/model_zoo.md) 中获得
 
 支持的主干网络：
 
