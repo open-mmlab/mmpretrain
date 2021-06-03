@@ -1,6 +1,6 @@
 import torch.nn as nn
 import torch.utils.checkpoint as cp
-from mmcv.cnn import ConvModule, build_activation_layer
+from mmcv.cnn import ConvModule
 
 from .se_layer import SELayer
 
