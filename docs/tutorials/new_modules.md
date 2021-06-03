@@ -35,25 +35,46 @@ class ResNet_CIFAR(ResNet):
         ...
     """
 
-    def __init__(self, depth, **kwargs):
-        super(ResNet_CIFAR, self).__init__(depth, **kwargs)  # call ResNet init
-        pass # other specific initialization
+    def __init__(self, depth, deep_stem, **kwargs):
+        # call ResNet init
+        super(ResNet_CIFAR, self).__init__(depth, deep_stem=deep_stem, **kwargs)
+        # other specific initialization
+        assert not self.deep_stem, 'ResNet_CIFAR do not support deep_stem'
+
+    def _make_stem_layer(self, in_channels, base_channels):
+        # override ResNet method to modify the network structure
+        self.conv1 = build_conv_layer(
+            self.conv_cfg,
+            in_channels,
+            base_channels,
+            kernel_size=3,
+            stride=1,
+            padding=1,
+            bias=False)
+        self.norm1_name, norm1 = build_norm_layer(
+            self.norm_cfg, base_channels, postfix=1)
+        self.add_module(self.norm1_name, norm1)
+        self.relu = nn.ReLU(inplace=True)
 
     def forward(self, x):  # should return a tuple
-        # implementation is ignored
-        pass
+        pass  # implementation is ignored
 
     def init_weights(self, pretrained=None):
         pass  # override ResNet init_weights if necessary
 
     def train(self, mode=True):
-        pass   # override ResNet train if necessary
+        pass  # override ResNet train if necessary
 ```
 
 2. Import the module in `mmcls/models/backbones/__init__.py`.
 
 ```python
+...
 from .resnet_cifar import ResNet_CIFAR
+
+__all__ = [
+    ..., 'ResNet_CIFAR'
+]
 ```
 
 3. Use it in your config file.
@@ -96,7 +117,12 @@ To add a new neck, we mainly implement the `forward` function, which applies som
 2. Import the module in `mmcls/models/necks/__init__.py`.
 
     ```python
+    ...
     from .gap import GlobalAveragePooling
+
+    __all__ = [
+        ..., 'GlobalAveragePooling'
+    ]
     ```
 
 3. Modify the config file.
@@ -153,7 +179,12 @@ To implement a new head, basically we need to implement `forward_train`, which t
 2. Import the module in `mmcls/models/heads/__init__.py`.
 
     ```python
+    ...
     from .linear_head import LinearClsHead
+
+    __all__ = [
+        ..., 'LinearClsHead'
+    ]
     ```
 
 3. Modify the config file.
@@ -184,7 +215,7 @@ model = dict(
 
 To add a new loss function, we mainly implement the `forward` function in the loss module.
 In addition, it is helpful to leverage the decorator `weighted_loss` to weight the loss for each element.
-Assuming that we want to mimic a probablistic distribution generated from anther classification model, we implement a L1Loss to fulfil the purpose as below.
+Assuming that we want to mimic a probablistic distribution generated from another classification model, we implement a L1Loss to fulfil the purpose as below.
 
 1. Create a new file in `mmcls/models/losses/l1_loss.py`.
 
@@ -226,7 +257,12 @@ Assuming that we want to mimic a probablistic distribution generated from anther
 2. Import the module in `mmcls/models/losses/__init__.py`.
 
     ```python
+    ...
     from .l1_loss import L1Loss, l1_loss
+
+    __all__ = [
+        ..., 'L1Loss', 'l1_loss'
+    ]
     ```
 
 3. Modify loss field in the config.

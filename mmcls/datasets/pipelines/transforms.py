@@ -241,7 +241,7 @@ class RandomResizedCrop(object):
                 xmin = random.randint(0, width - target_width)
                 ymax = ymin + target_height - 1
                 xmax = xmin + target_width - 1
-                return xmin, ymin, target_height, target_width
+                return ymin, xmin, ymax, xmax
 
         # Fallback to central crop
         in_ratio = float(width) / float(height)

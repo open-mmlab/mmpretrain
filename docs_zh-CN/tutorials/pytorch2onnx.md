@@ -1,4 +1,4 @@
-# Tutorial 5: Pytorch to ONNX (Experimental)
+# Pytorch to ONNX (Experimental)
 
 <!-- TOC -->
 
