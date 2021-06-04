@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 import torch
 
@@ -69,6 +71,17 @@ def test_stacked_linear_cls_head():
 
     losses = head.forward_train(fake_img, fake_gt_label)
     assert losses['loss'].item() > 0
+
+    # test simple test
+    pred = head.simple_test(fake_img)
+    assert len(pred) == 4
+
+    # test simple test in tracing
+    p = patch('torch.onnx.is_in_onnx_export', lambda: True)
+    p.start()
+    pred = head.simple_test(fake_img)
+    assert pred.shape == torch.Size((4, 3))
+    p.stop()
 
     # test forward with full function
     head = StackedLinearClsHead(
