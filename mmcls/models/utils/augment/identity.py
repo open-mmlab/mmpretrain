@@ -5,7 +5,7 @@ from .builder import AUGMENT
 
 @AUGMENT.register_module(name='Identity')
 class Identity(object):
-    """Change gt_label to one_hot encoding and keep img the same.
+    """Change gt_label to one_hot encoding and keep img as the same.
 
     Args:
         num_classes (int): The number of classes.
