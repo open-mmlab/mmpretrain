@@ -31,6 +31,16 @@ def test_image_classifier():
     losses = img_classifier.forward_train(imgs, label)
     assert losses['loss'].item() > 0
 
+    # Considering BC-breaking
+    model_cfg['train_cfg'] = dict(mixup=dict(alpha=1.0, num_classes=10))
+    img_classifier = ImageClassifier(**model_cfg)
+    img_classifier.init_weights()
+    imgs = torch.randn(16, 3, 32, 32)
+    label = torch.randint(0, 10, (16, ))
+
+    losses = img_classifier.forward_train(imgs, label)
+    assert losses['loss'].item() > 0
+
 
 def test_image_classifier_with_cutmix():
 
@@ -52,6 +62,17 @@ def test_image_classifier_with_cutmix():
         train_cfg=dict(
             augments=dict(
                 type='BatchCutMix', alpha=1., num_classes=10, prob=1.)))
+    img_classifier = ImageClassifier(**model_cfg)
+    img_classifier.init_weights()
+    imgs = torch.randn(16, 3, 32, 32)
+    label = torch.randint(0, 10, (16, ))
+
+    losses = img_classifier.forward_train(imgs, label)
+    assert losses['loss'].item() > 0
+
+    # Considering BC-breaking
+    model_cfg['train_cfg'] = dict(
+        cutmix=dict(alpha=1.0, num_classes=10, cutmix_prob=1.0))
     img_classifier = ImageClassifier(**model_cfg)
     img_classifier.init_weights()
     imgs = torch.randn(16, 3, 32, 32)
