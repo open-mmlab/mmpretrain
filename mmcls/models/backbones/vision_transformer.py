@@ -1,11 +1,8 @@
 import torch
 import torch.nn as nn
 from mmcv.cnn import build_conv_layer, build_norm_layer
-from mmcv.cnn.bricks.registry import (TRANSFORMER_LAYER,
-                                      TRANSFORMER_LAYER_SEQUENCE)
-from mmcv.cnn.bricks.transformer import (BaseTransformerLayer,
-                                         TransformerLayerSequence,
-                                         build_transformer_layer_sequence)
+from mmcv.cnn.bricks.transformer import (build_attention,
+                                         build_feedforward_network)
 from mmcv.runner.base_module import BaseModule
 
 from ..builder import BACKBONES
@@ -13,58 +10,74 @@ from ..utils import to_2tuple
 from .base_backbone import BaseBackbone
 
 
-@TRANSFORMER_LAYER.register_module()
-class VitTransformerEncoderLayer(BaseTransformerLayer):
-    """Implements encoder layer in Vit transformer."""
+class TransformerEncoderLayer(BaseModule):
 
-    def __init__(self, *args, **kwargs):
-        super(VitTransformerEncoderLayer, self).__init__(*args, **kwargs)
-        assert len(self.operation_order) == 4
-        assert set(self.operation_order) == set(['self_attn', 'norm', 'ffn'])
+    def __init__(self,
+                 embed_dims,
+                 num_heads,
+                 feedforward_channels,
+                 drop_rate=0.,
+                 attn_drop_rate=0.,
+                 num_fcs=2,
+                 qkv_bias=True,
+                 act_cfg=dict(type='GELU'),
+                 norm_cfg=dict(type='LN'),
+                 batch_first=False,
+                 init_cfg=None):
+        super(TransformerEncoderLayer, self).__init__(init_cfg=init_cfg)
+
+        _attn_cfgs = dict(
+            type='MultiheadAttention',
+            embed_dims=embed_dims,
+            num_heads=num_heads,
+            attn_drop=attn_drop_rate,
+            proj_drop=drop_rate,
+            dropout_layer=dict(type='DropOut', drop_prob=drop_rate),
+            batch_first=batch_first,
+            bias=qkv_bias)
+
+        _ffn_cfgs = dict(
+            type='FFN',
+            embed_dims=embed_dims,
+            feedforward_channels=feedforward_channels,
+            num_fcs=num_fcs,
+            ffn_drop=drop_rate,
+            dropout_layer=dict(type='DropOut', drop_prob=drop_rate),
+            act_cfg=act_cfg)
+
+        self.embed_dims = embed_dims
+        self.batch_first = batch_first
+
+        self.norm1_name, norm1 = build_norm_layer(
+            norm_cfg, self.embed_dims, postfix=1)
+        self.add_module(self.norm1_name, norm1)
+
+        self.attn = build_attention(_attn_cfgs)
+
+        self.norm2_name, norm2 = build_norm_layer(
+            norm_cfg, self.embed_dims, postfix=2)
+        self.add_module(self.norm2_name, norm2)
+
+        self.ffn = build_feedforward_network(_ffn_cfgs)
+
+    @property
+    def norm1(self):
+        return getattr(self, self.norm1_name)
+
+    @property
+    def norm2(self):
+        return getattr(self, self.norm2_name)
 
     def init_weights(self):
-        super(VitTransformerEncoderLayer, self).init_weights()
-        for ffn in self.ffns:
-            for m in ffn.modules():
-                if isinstance(m, nn.Linear):
-                    nn.init.xavier_normal_(m.weight)
-                    nn.init.normal_(m.bias, std=1e-6)
+        super(TransformerEncoderLayer, self).init_weights()
+        for m in self.ffn.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.xavier_normal_(m.weight)
+                nn.init.normal_(m.bias, std=1e-6)
 
-
-@TRANSFORMER_LAYER_SEQUENCE.register_module()
-class VitTransformerEncoder(TransformerLayerSequence):
-    """TransformerEncoder of Vit.
-
-    Args:
-        coder_norm_cfg (dict): Config of last normalization layer. Default：
-            `LN`. Only used when `self.pre_norm` is `True`
-    """
-
-    def __init__(
-            self,
-            *args,
-            coder_norm_cfg=dict(type='LN'),
-            **kwargs,
-    ):
-        super(VitTransformerEncoder, self).__init__(*args, **kwargs)
-        if coder_norm_cfg is not None:
-            self.coder_norm = build_norm_layer(
-                coder_norm_cfg, self.embed_dims)[1] if self.pre_norm else None
-        else:
-            assert not self.pre_norm, f'Use prenorm in ' \
-                                      f'{self.__class__.__name__},' \
-                                      f'Please specify coder_norm_cfg'
-            self.coder_norm = None
-
-    def forward(self, *args, **kwargs):
-        """Forward function for `TransformerCoder`.
-
-        Returns:
-            Tensor: forwarded results with shape [num_query, bs, embed_dims].
-        """
-        x = super(VitTransformerEncoder, self).forward(*args, **kwargs)
-        if self.coder_norm is not None:
-            x = self.coder_norm(x)
+    def forward(self, x):
+        x = self.attn(self.norm1(x), residual=x)
+        x = self.ffn(self.norm2(x), residual=x)
         return x
 
 
@@ -230,44 +243,102 @@ class VisionTransformer(BaseBackbone):
         encoder (`mmcv.ConfigDict` | Dict): Config of TransformerEncoder
         init_cfg (dict, optional): Initialization config dict.
     """
+    arch_zoo = {
+        **dict.fromkeys(
+            ['s', 'small'], {
+                'embed_dims': 768,
+                'num_layers': 8,
+                'num_heads': 8,
+                'feedforward_channels': 768 * 3,
+                'qkv_bias': False
+            }),
+        **dict.fromkeys(
+            ['b', 'base'], {
+                'embed_dims': 768,
+                'num_layers': 12,
+                'num_heads': 12,
+                'feedforward_channels': 3072
+            }),
+        **dict.fromkeys(
+            ['l', 'large'], {
+                'embed_dims': 1024,
+                'num_layers': 24,
+                'num_heads': 16,
+                'feedforward_channels': 4096
+            }),
+    }
 
     def __init__(self,
-                 embed_dim=768,
+                 arch='b',
                  img_size=224,
                  patch_size=16,
                  in_channels=3,
                  drop_rate=0.,
+                 attn_drop_rate=0.,
                  hybrid_backbone=None,
-                 encoder=dict(
-                     type='VitTransformerEncoder',
-                     transformerlayers=None,
-                     num_layers=12,
-                     coder_norm_cfg=None,
-                 ),
+                 norm_cfg=dict(type='LN'),
+                 act_cfg=dict(type='GELU'),
+                 num_fcs=2,
                  init_cfg=None):
         super(VisionTransformer, self).__init__(init_cfg)
-        self.embed_dim = embed_dim
+
+        arch = arch.lower()
+        if isinstance(arch, str):
+            assert arch in set(self.arch_zoo), \
+                f'Arch {arch} is not in default archs {set(self.arch_zoo)}'
+            self.arch_settings = self.arch_zoo[arch]
+        else:
+            essential_keys = {
+                'embed_dims', 'num_layers', 'num_heads', 'feedforward_channels'
+            }
+            assert isinstance(arch, dict) and set(arch) == essential_keys, \
+                f'Custom arch needs a dict with keys {essential_keys}'
+            self.arch_settings = arch
+
+        self.embed_dims = self.arch_settings['embed_dims']
 
         if hybrid_backbone is not None:
             self.patch_embed = HybridEmbed(
                 hybrid_backbone,
                 img_size=img_size,
                 in_channels=in_channels,
-                embed_dim=embed_dim)
+                embed_dim=self.embed_dims)
         else:
             self.patch_embed = PatchEmbed(
                 img_size=img_size,
                 patch_size=patch_size,
                 in_channels=in_channels,
-                embed_dim=embed_dim)
+                embed_dim=self.embed_dims)
         num_patches = self.patch_embed.num_patches
 
-        self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
+        self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dims))
         self.pos_embed = nn.Parameter(
-            torch.zeros(1, num_patches + 1, embed_dim))
+            torch.zeros(1, num_patches + 1, self.embed_dims))
         self.drop_after_pos = nn.Dropout(p=drop_rate)
 
-        self.encoder = build_transformer_layer_sequence(encoder)
+        self.layers = nn.ModuleList()
+        for _ in range(self.arch_settings['num_layers']):
+            self.layers.append(
+                TransformerEncoderLayer(
+                    self.embed_dims,
+                    self.arch_settings['num_heads'],
+                    self.arch_settings['feedforward_channels'],
+                    attn_drop_rate=attn_drop_rate,
+                    drop_rate=drop_rate,
+                    num_fcs=num_fcs,
+                    qkv_bias=True if 'qkv_bias' not in self.arch_settings else
+                    self.arch_settings['qkv_bias'],
+                    act_cfg=act_cfg,
+                    norm_cfg=norm_cfg,
+                    batch_first=True))
+
+        self.norm1_name, norm1 = build_norm_layer(
+            norm_cfg, self.embed_dims, postfix=1)
+        self.add_module(self.norm1_name, norm1)
+
+    @property
+    def norm1(self):
+        return getattr(self, self.norm1_name)
 
     def init_weights(self, pretrained=None):
         super(VisionTransformer, self).init_weights(pretrained)
@@ -286,6 +357,9 @@ class VisionTransformer(BaseBackbone):
         x = x + self.pos_embed
         x = self.drop_after_pos(x)
 
-        x = self.encoder(query=x, key=None, value=None)
+        for layer in self.layers:
+            x = layer(x)
 
-        return x[:, 0]
+        x = self.norm1(x)[:, 0]
+
+        return x
