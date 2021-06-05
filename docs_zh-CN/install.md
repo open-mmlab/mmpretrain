@@ -10,8 +10,9 @@ MMClassification 和 MMCV 的适配关系如下，请安装正确版本的 MMCV 
 
 | MMClassification 版本 |  MMCV 版本  |
 |:---------------------:|:-----------:|
-|        master         | mmcv>=1.3.0, <=1.5.0 |
-|        0.11.1         | mmcv>=1.3.0, <=1.5.0 |
+|        master         | mmcv>=1.3.1, <=1.5.0 |
+|        0.12.0         | mmcv>=1.3.1, <=1.5.0 |
+|        0.11.1         | mmcv>=1.3.1, <=1.5.0 |
 |        0.11.0         | mmcv>=1.3.0 |
 |        0.10.0         | mmcv>=1.3.0 |
 |         0.9.0         | mmcv>=1.1.4 |
@@ -21,14 +22,14 @@ MMClassification 和 MMCV 的适配关系如下，请安装正确版本的 MMCV 
 
 ### 安装 MMClassification 步骤
 
-a. 创建conda虚拟环境，并激活
+a. 创建 conda 虚拟环境，并激活
 
 ```shell
 conda create -n open-mmlab python=3.7 -y
 conda activate open-mmlab
 ```
 
-b. 按照 [官方指南](https://pytorch.org/) 安装PyTorch和TorchVision，如:
+b. 按照 [官方指南](https://pytorch.org/) 安装 PyTorch 和 TorchVision，如：
 
 ```shell
 conda install pytorch torchvision -c pytorch
@@ -68,7 +69,7 @@ pip install -e .  # or "python setup.py develop"
 
 提示：
 
-1. 按照以上步骤，MMClassification 是以 `dev` 模式安装的，任何本地的代码修改都可以直接生效，无需重新安装（除非提交了一些commit，并且希望提升版本号）
+1. 按照以上步骤，MMClassification 是以 `dev` 模式安装的，任何本地的代码修改都可以直接生效，无需重新安装（除非提交了一些 commit，并且希望提升版本号）
 
 2. 如果希望使用 `opencv-python-headless` 而不是 `opencv-python`，可以在安装 [mmcv](https://github.com/open-mmlab/mmcv) 之前提前安装。
 
