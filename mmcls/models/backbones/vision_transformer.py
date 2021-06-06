@@ -1,8 +1,7 @@
 import torch
 import torch.nn as nn
 from mmcv.cnn import build_conv_layer, build_norm_layer
-from mmcv.cnn.bricks.transformer import (build_attention,
-                                         build_feedforward_network)
+from mmcv.cnn.bricks.transformer import FFN, MultiheadAttention
 from mmcv.runner.base_module import BaseModule, ModuleList
 
 from ..builder import BACKBONES
@@ -46,8 +45,14 @@ class TransformerEncoderLayer(BaseModule):
                  init_cfg=None):
         super(TransformerEncoderLayer, self).__init__(init_cfg=init_cfg)
 
-        _attn_cfgs = dict(
-            type='MultiheadAttention',
+        self.embed_dims = embed_dims
+        self.batch_first = batch_first
+
+        self.norm1_name, norm1 = build_norm_layer(
+            norm_cfg, self.embed_dims, postfix=1)
+        self.add_module(self.norm1_name, norm1)
+
+        self.attn = MultiheadAttention(
             embed_dims=embed_dims,
             num_heads=num_heads,
             attn_drop=attn_drop_rate,
@@ -56,29 +61,17 @@ class TransformerEncoderLayer(BaseModule):
             batch_first=batch_first,
             bias=qkv_bias)
 
-        _ffn_cfgs = dict(
-            type='FFN',
+        self.norm2_name, norm2 = build_norm_layer(
+            norm_cfg, self.embed_dims, postfix=2)
+        self.add_module(self.norm2_name, norm2)
+
+        self.ffn = FFN(
             embed_dims=embed_dims,
             feedforward_channels=feedforward_channels,
             num_fcs=num_fcs,
             ffn_drop=drop_rate,
             dropout_layer=None,
             act_cfg=act_cfg)
-
-        self.embed_dims = embed_dims
-        self.batch_first = batch_first
-
-        self.norm1_name, norm1 = build_norm_layer(
-            norm_cfg, self.embed_dims, postfix=1)
-        self.add_module(self.norm1_name, norm1)
-
-        self.attn = build_attention(_attn_cfgs)
-
-        self.norm2_name, norm2 = build_norm_layer(
-            norm_cfg, self.embed_dims, postfix=2)
-        self.add_module(self.norm2_name, norm2)
-
-        self.ffn = build_feedforward_network(_ffn_cfgs)
 
     @property
     def norm1(self):
