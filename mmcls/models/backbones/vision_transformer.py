@@ -3,7 +3,7 @@ import torch.nn as nn
 from mmcv.cnn import build_conv_layer, build_norm_layer
 from mmcv.cnn.bricks.transformer import (build_attention,
                                          build_feedforward_network)
-from mmcv.runner.base_module import BaseModule
+from mmcv.runner.base_module import BaseModule, ModuleList
 
 from ..builder import BACKBONES
 from ..utils import to_2tuple
@@ -316,7 +316,7 @@ class VisionTransformer(BaseBackbone):
             torch.zeros(1, num_patches + 1, self.embed_dims))
         self.drop_after_pos = nn.Dropout(p=drop_rate)
 
-        self.layers = nn.ModuleList()
+        self.layers = ModuleList()
         for _ in range(self.arch_settings['num_layers']):
             self.layers.append(
                 TransformerEncoderLayer(
