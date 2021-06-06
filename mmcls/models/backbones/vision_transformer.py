@@ -11,6 +11,26 @@ from .base_backbone import BaseBackbone
 
 
 class TransformerEncoderLayer(BaseModule):
+    """Implements one encoder layer in Vision Transformer.
+
+    Args:
+        embed_dims (int): The feature dimension
+        num_heads (int): Parallel attention heads
+        feedforward_channels (int): The hidden dimension for FFNs
+        drop_rate (float): Probability of an element to be zeroed
+            after the feed forward layer. Default 0.0
+        attn_drop_rate (float): The drop out rate for attention layer.
+            Default 0.0
+        num_fcs (int): The number of fully-connected layers for FFNs. Default 2
+        qkv_bias (bool): enable bias for qkv if True. Default True
+        act_cfg (dict): The activation config for FFNs. Defalut GELU
+        norm_cfg (dict): Config dict for normalization layer. Default
+            layer normalization
+        batch_first (bool): Key, Query and Value are shape of
+            (batch, n, embed_dim)
+            or (n, batch, embed_dim). Default to False.
+        init_cfg (dict, optional): Initialization config dict
+    """
 
     def __init__(self,
                  embed_dims,
@@ -32,7 +52,7 @@ class TransformerEncoderLayer(BaseModule):
             num_heads=num_heads,
             attn_drop=attn_drop_rate,
             proj_drop=drop_rate,
-            dropout_layer=dict(type='DropOut', drop_prob=drop_rate),
+            dropout_layer=None,
             batch_first=batch_first,
             bias=qkv_bias)
 
@@ -42,7 +62,7 @@ class TransformerEncoderLayer(BaseModule):
             feedforward_channels=feedforward_channels,
             num_fcs=num_fcs,
             ffn_drop=drop_rate,
-            dropout_layer=dict(type='DropOut', drop_prob=drop_rate),
+            dropout_layer=None,
             act_cfg=act_cfg)
 
         self.embed_dims = embed_dims
@@ -227,21 +247,30 @@ class HybridEmbed(BaseModule):
 
 @BACKBONES.register_module()
 class VisionTransformer(BaseBackbone):
-    """ Vision Transformer
-    A PyTorch impl of : `An Image is Worth 16x16 Words:
+    """Vision Transformer.
+
+    A PyTorch implement of : `An Image is Worth 16x16 Words:
     Transformers for Image Recognition at Scale`  -
         https://arxiv.org/abs/2010.11929
+
     Args:
-        embed_dim (int): Embedding dimension
+        arch (str | dict): Vision Transformer architecture
+            Default: 'b'
         img_size (int | tuple): Input image size
         patch_size (int | tuple): The patch size
         in_channels (int): Number of input channels
         drop_rate (float): Probability of an element to be zeroed.
-            Default 0.0.
+            Default 0.0
+        attn_drop_rate (float): The drop out rate for attention layer.
+            Default 0.0
         hybrid_backbone (nn.Module, optional): CNN backbone to use in-place of
-            PatchEmbed module. Default None.
-        encoder (`mmcv.ConfigDict` | Dict): Config of TransformerEncoder
-        init_cfg (dict, optional): Initialization config dict.
+            PatchEmbed module. Default None
+        norm_cfg (dict): Config dict for normalization layer. Default
+            layer normalization
+        act_cfg (dict): The activation config for FFNs. Defalut GELU
+        num_fcs (int): The number of fully-connected layers for FFNs.
+            Default 2
+        init_cfg (dict, optional): Initialization config dict
     """
     arch_zoo = {
         **dict.fromkeys(
