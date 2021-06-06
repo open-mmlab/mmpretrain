@@ -10,5 +10,5 @@ class BaseHead(BaseModule, metaclass=ABCMeta):
         super(BaseHead, self).__init__(init_cfg=init_cfg)
 
     @abstractmethod
-    def forward_train(self, x, gt_label, **kwargss):
+    def forward_train(self, x, gt_label, **kwargs):
         pass

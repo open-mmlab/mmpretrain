@@ -11,9 +11,9 @@
 
 ## Introduction
 
-MMClassification是一款基于PyTorch的开源图像分类工具箱，是 [OpenMMLab](https://openmmlab.com/) 项目的成员之一
+MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [OpenMMLab](https://openmmlab.com/) 项目的成员之一
 
-参考文档: https://mmclassification.readthedocs.io/en/latest/
+参考文档：https://mmclassification.readthedocs.io/en/latest/
 
 ![demo](https://user-images.githubusercontent.com/9102141/87268895-3e0d0780-c4fe-11ea-849e-6140b7e0d4de.gif)
 
@@ -30,13 +30,13 @@ MMClassification是一款基于PyTorch的开源图像分类工具箱，是 [Open
 
 ## 更新日志
 
-2021/5/21 发布了 v0.11.1 版本
+2021/6/3 发布了 v0.12.0 版本
 
 发布历史和更新细节请参考 [更新日志](docs/changelog.md)
 
 ## 基准测试及模型库
 
-相关结果和模型可在 [model zoo](docs_zh-CN/model_zoo.md) 中获得
+相关结果和模型可在 [model zoo](docs/model_zoo.md) 中获得
 
 支持的主干网络：
 
@@ -72,7 +72,7 @@ MMClassification 是一款由不同学校和公司共同贡献的开源项目。
 
 - [MMCV](https://github.com/open-mmlab/mmcv): OpenMMLab 计算机视觉基础库
 - [MMDetection](https://github.com/open-mmlab/mmdetection): OpenMMLab 检测工具箱与测试基准
-- [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): OpenMMLab 新一代通用3D目标检测平台
+- [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): OpenMMLab 新一代通用 3D 目标检测平台
 - [MMSegmentation](https://github.com/open-mmlab/mmsegmentation): OpenMMLab 语义分割工具箱与测试基准
 - [MMAction2](https://github.com/open-mmlab/mmaction2): OpenMMLab 新一代视频理解工具箱与测试基准
 - [MMTracking](https://github.com/open-mmlab/mmtracking): OpenMMLab 一体化视频目标感知平台

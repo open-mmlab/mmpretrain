@@ -4,6 +4,8 @@ import os.path as osp
 
 import numpy as np
 import torch
+import torch.distributed as dist
+from mmcv.runner import get_dist_info, master_only
 
 from .base_dataset import BaseDataset
 from .builder import DATASETS
@@ -50,6 +52,15 @@ class MNIST(BaseDataset):
                     test_image_file) or not osp.exists(test_label_file):
             self.download()
 
+        _, world_size = get_dist_info()
+        if world_size > 1:
+            dist.barrier()
+            assert osp.exists(train_image_file) and osp.exists(
+                train_label_file) and osp.exists(
+                    test_image_file) and osp.exists(test_label_file), \
+                'Shared storage seems unavailable. Please download dataset ' \
+                f'manually through {self.resource_prefix}.'
+
         train_set = (read_image_file(train_image_file),
                      read_label_file(train_label_file))
         test_set = (read_image_file(test_image_file),
@@ -67,6 +78,7 @@ class MNIST(BaseDataset):
             data_infos.append(info)
         return data_infos
 
+    @master_only
     def download(self):
         os.makedirs(self.data_prefix, exist_ok=True)
 
