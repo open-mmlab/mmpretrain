@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import build_activation_layer, constant_init, kaiming_init
+from mmcv.runner import Sequential
 
 from ..builder import HEADS
 from .cls_head import ClsHead
@@ -51,9 +52,10 @@ class VisionTransformerClsHead(ClsHead):
                 ('act', build_activation_layer(self.act_cfg)),
                 ('head', nn.Linear(self.hidden_dim, self.num_classes)),
             ]
-        self.layers = nn.Sequential(OrderedDict(layers))
+        self.layers = Sequential(OrderedDict(layers))
 
     def init_weights(self):
+        super(VisionTransformerClsHead, self).init_weights()
         # Modified from ClassyVision
         if hasattr(self.layers, 'pre_logits'):
             # Lecun norm

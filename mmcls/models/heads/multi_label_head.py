@@ -18,8 +18,9 @@ class MultiLabelClsHead(BaseHead):
                      type='CrossEntropyLoss',
                      use_sigmoid=True,
                      reduction='mean',
-                     loss_weight=1.0)):
-        super(MultiLabelClsHead, self).__init__()
+                     loss_weight=1.0),
+                 init_cfg=None):
+        super(MultiLabelClsHead, self).__init__(init_cfg=init_cfg)
 
         assert isinstance(loss, dict)
 
