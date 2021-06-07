@@ -87,6 +87,7 @@ We prepare a tool `tools/deployment/test.py` to evaluate ONNX models with ONNXRu
 python tools/deployment/test.py \
     ${CONFIG_FILE} \
     ${ONNX_FILE} \
+    --backend ${BACKEND} \
     --out ${OUTPUT_FILE} \
     --metrics ${EVALUATION_METRICS} \
     --metric-options ${EVALUATION_OPTIONS} \

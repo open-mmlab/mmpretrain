@@ -28,6 +28,7 @@ python tools/deployment/onnx2tensorrt.py \
     --shape ${IMAGE_SHAPE} \
     --max-batch-size ${MAX_BATCH_SIZE} \
     --workspace-size ${WORKSPACE_SIZE} \
+    --fp16 \
     --show \
     --verify \
 ```
