@@ -1,18 +1,17 @@
-# Tutorial 3: Custom Data Pipelines
+# 教程 3：如何设计数据处理流程
 
-## Design of Data pipelines
+## 设计数据流水线
 
-Following typical conventions, we use `Dataset` and `DataLoader` for data loading
-with multiple workers. `Dataset` returns a dict of data items corresponding to
-the arguments of models forward method.
+按照典型的用法，我们通过 `Dataset` 和 `DataLoader` 来使用多个 worker 进行数据加
+载。对 `Dataset` 的索引操作将返回一个与模型的 `forward` 方法的参数相对应的字典。
 
-The data preparation pipeline and the dataset is decomposed. Usually a dataset
-defines how to process the annotations and a data pipeline defines all the steps to prepare a data dict.
-A pipeline consists of a sequence of operations. Each operation takes a dict as input and also output a dict for the next transform.
+数据流水线和数据集在这里是解耦的。通常，数据集定义如何处理标注文件，而数据流水
+线定义所有准备数据字典的步骤。流水线由一系列操作组成。每个操作都将一个字典作为
+输入，并输出一个字典。
 
-The operations are categorized into data loading, pre-processing and formatting.
+这些操作分为数据加载，预处理和格式化。
 
-Here is an pipeline example for ResNet-50 training on ImageNet.
+这里使用 ResNet-50 在 ImageNet 数据集上的数据流水线作为示例。
 
 ```python
 img_norm_cfg = dict(
@@ -36,9 +35,19 @@ test_pipeline = [
 ]
 ```
 
-By fault, `LoadImageFromFile` loads images from disk but it may lead to IO bottleneck for efficient small models.
-Various backends are supported by mmcv to accelerate this process. For example, if the training machines have setup
-[memcached](https://memcached.org/), we can revise the config as follows.
+对于每个操作，我们列出了添加、更新、删除的相关字典字段。在流水线的最后，我们使
+用 `Collect` 仅保留进行模型 `forward` 方法所需的项。
+
+### 数据加载
+
+`LoadImageFromFile` - 从文件中加载图像
+
+- 添加：img, img_shape, ori_shape
+
+默认情况下，`LoadImageFromFile` 将会直接从硬盘加载图像，但对于一些效率较高、规
+模较小的模型，这可能会导致 IO 瓶颈。MMCV 支持多种数据加载后端来加速这一过程。例
+如，如果训练设备上配置了 [memcached](https://memcached.org/)，那么我们按照如下
+方式修改配置文件。
 
 ```
 memcached_root = '/mnt/xxx/memcached_client/'
@@ -52,59 +61,48 @@ train_pipeline = [
 ]
 ```
 
-More supported backends can be found in [mmcv.fileio.FileClient](https://github.com/open-mmlab/mmcv/blob/master/mmcv/fileio/file_client.py).
+更多支持的数据加载后端，可以参见 [mmcv.fileio.FileClient](https://github.com/open-mmlab/mmcv/blob/master/mmcv/fileio/file_client.py)。
 
-For each operation, we list the related dict fields that are added/updated/removed.
-At the end of the pipeline, we use `Collect` to only retain the necessary items for forward computation.
+### 预处理
 
-### Data loading
+`Resize` - 缩放图像尺寸
 
-`LoadImageFromFile`
+- 添加：scale, scale_idx, pad_shape, scale_factor, keep_ratio
+- 更新：img, img_shape
 
-- add: img, img_shape, ori_shape
+`RandomFlip` - 随机翻转图像
 
-### Pre-processing
+- 添加：flip, flip_direction
+- 更新：img
 
-`Resize`
+`RandomCrop` - 随机裁剪图像
 
-- add: scale, scale_idx, pad_shape, scale_factor, keep_ratio
-- update: img, img_shape
+- 更新：img, pad_shape
 
-`RandomFlip`
+`Normalize` - 图像数据归一化
 
-- add: flip, flip_direction
-- update: img
+- 添加：img_norm_cfg
+- 更新：img
 
-`RandomCrop`
+### 格式化
 
-- update: img, pad_shape
+`ToTensor` - 转换（标签）数据至 `torch.Tensor`
 
-`Normalize`
+- 更新：根据参数 `keys` 指定
 
-- add: img_norm_cfg
-- update: img
+`ImageToTensor` - 转换图像数据至 `torch.Tensor`
 
-### Formatting
+- 更新：根据参数 `keys` 指定
 
-`ToTensor`
+`Collect` - 保留指定键值
 
-- update: specified by `keys`.
+- 删除：除了参数 `keys` 指定以外的所有键值对
 
-`ImageToTensor`
+## 扩展及使用自定义流水线
 
-- update: specified by `keys`.
-
-`Transpose`
-
-- update: specified by `keys`.
-
-`Collect`
-
-- remove: all other keys except for those specified by `keys`
-
-## Extend and use custom pipelines
-
-1. Write a new pipeline in any file, e.g., `my_pipeline.py`. It takes a dict as input and return a dict.
+1. 编写一个新的数据处理操作，并放置在 `mmcls/datasets/pipelines/` 目录下的任何
+   一个文件中，例如 `my_pipeline.py`。这个类需要重载 `__call__` 方法，接受一个
+   字典作为输入，并返回一个字典。
 
     ```python
     from mmcls.datasets import PIPELINES
@@ -113,18 +111,22 @@ At the end of the pipeline, we use `Collect` to only retain the necessary items 
     class MyTransform(object):
 
         def __call__(self, results):
-            results['dummy'] = True
-            # apply transforms on results['img']
+            # 对 results['img'] 进行变换操作
             return results
     ```
 
-2. Import the new class.
+2. 在 `mmcls/datasets/pipelines/__init__.py` 中导入这个新的类。
 
     ```python
+    ...
     from .my_pipeline import MyTransform
+
+    __all__ = [
+        ..., 'MyTransform'
+    ]
     ```
 
-3. Use it in config files.
+3. 在数据流水线的配置中添加这一操作。
 
     ```python
     img_norm_cfg = dict(

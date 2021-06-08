@@ -3,7 +3,7 @@ dataset_type = 'CIFAR10'
 img_norm_cfg = dict(
     mean=[125.307, 122.961, 113.8575],
     std=[51.5865, 50.847, 51.255],
-    to_rgb=True)
+    to_rgb=False)
 train_pipeline = [
     dict(type='RandomCrop', size=32, padding=4),
     dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
@@ -24,6 +24,12 @@ data = dict(
         type=dataset_type, data_prefix='data/cifar10',
         pipeline=train_pipeline),
     val=dict(
-        type=dataset_type, data_prefix='data/cifar10', pipeline=test_pipeline),
+        type=dataset_type,
+        data_prefix='data/cifar10',
+        pipeline=test_pipeline,
+        test_mode=True),
     test=dict(
-        type=dataset_type, data_prefix='data/cifar10', pipeline=test_pipeline))
+        type=dataset_type,
+        data_prefix='data/cifar10',
+        pipeline=test_pipeline,
+        test_mode=True))
