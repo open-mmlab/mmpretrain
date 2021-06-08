@@ -1,4 +1,3 @@
-from mmcv.runner.dist_utils import _init_dist_pytorch
 import pytest
 import torch
 import torch.nn as nn
