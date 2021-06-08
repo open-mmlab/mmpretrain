@@ -408,7 +408,7 @@ def test_resnet():
     model = ResNet(
         depth=50,
         norm_eval=True,
-        _init_cfg=dict(type='Pretrained', checkpoint='torchvision://resnet50'))
+        init_cfg=dict(type='Pretrained', checkpoint='torchvision://resnet50'))
     model.init_weights()
     model.train()
     assert check_norm_state(model.modules(), False)
