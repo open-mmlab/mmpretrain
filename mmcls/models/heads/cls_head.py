@@ -21,8 +21,9 @@ class ClsHead(BaseHead):
     def __init__(self,
                  loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
                  topk=(1, ),
-                 cal_acc=False):
-        super(ClsHead, self).__init__()
+                 cal_acc=False,
+                 init_cfg=None):
+        super(ClsHead, self).__init__(init_cfg=init_cfg)
 
         assert isinstance(loss, dict)
         assert isinstance(topk, (int, tuple))

@@ -1,16 +1,16 @@
 from abc import ABCMeta, abstractmethod
 
-import torch.nn as nn
+from mmcv.runner import BaseModule
 
 
-class BaseHead(nn.Module, metaclass=ABCMeta):
+class BaseHead(BaseModule, metaclass=ABCMeta):
     """Base head."""
 
-    def __init__(self):
-        super(BaseHead, self).__init__()
+    def __init__(self, init_cfg=None):
+        super(BaseHead, self).__init__(init_cfg)
 
-    def init_weights(self):
-        pass
+    # def init_weights(self):
+    #     pass
 
     @abstractmethod
     def forward_train(self, x, gt_label, **kwargs):
