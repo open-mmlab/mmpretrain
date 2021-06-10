@@ -36,7 +36,8 @@ class LabelSmoothLoss(nn.Module):
         .. math::
         (1-\epsilon)\delta_{k, y} + \frac{\epsilon}{K}
 
-        where epsilon is the `label_smooth_val` and the K is num_classes.
+        where epsilon is the `label_smooth_val`, K is the num_classes and
+        delta(k,y) is Dirac delta, which equals 1 for k=y and 0 otherwise.
 
         if the mode is "classy_vision", this will use the same label smooth
         method as the facebookresearch/ClassyVision repo as:
