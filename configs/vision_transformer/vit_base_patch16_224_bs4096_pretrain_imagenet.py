@@ -104,7 +104,14 @@ dataset_type = 'ImageNet'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
-    dict(type='LoadImageFromFile'),
+    dict(
+        type='LoadImageFromFile',
+        file_client_args=dict(
+            backend='memcached',
+            server_list_cfg='/mnt/lustre/share/memcached_client'
+            '/server_list.conf',
+            client_cfg='/mnt/lustre/share/memcached_client/client.conf',
+            sys_path='/mnt/lustre/share/pymc/py3')),
     dict(type='RandomResizedCrop', size=224),
     dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
     dict(type='AutoAugment', policies=policies),
@@ -124,7 +131,7 @@ test_pipeline = [
 ]
 data = dict(
     samples_per_gpu=64,
-    workers_per_gpu=2,
+    workers_per_gpu=4,
     train=dict(
         type=dataset_type,
         data_prefix='data/imagenet/train',
