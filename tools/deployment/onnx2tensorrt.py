@@ -24,8 +24,7 @@ def onnx2tensorrt(onnx_file,
         trt_file (str): Filename of the output TensorRT engine file.
         input_shape (list[int]): Input shape of the model.
             eg [1, 3, 224, 224].
-        max_shape (list[int]): Max input shape of the model.
-            eg [32, 3, 224, 224].
+        max_batch_size (int): Max batch size of the model.
         verify (bool, optional): Whether to verify the converted model.
             Defaults to False.
         workspace_size (int, optional): Maximium workspace of GPU.
