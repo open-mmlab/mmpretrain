@@ -1,8 +1,4 @@
-import logging
-
-import torch.nn as nn
-from mmcv.cnn import ConvModule, constant_init, kaiming_init
-from mmcv.runner import load_checkpoint
+from mmcv.cnn import ConvModule
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from ..builder import BACKBONES
@@ -70,8 +66,12 @@ class MobileNetv3(BaseBackbone):
                  out_indices=(10, ),
                  frozen_stages=-1,
                  norm_eval=False,
-                 with_cp=False):
-        super(MobileNetv3, self).__init__()
+                 with_cp=False,
+                 init_cfg=[
+                     dict(type='Kaiming', layer=['Conv2d']),
+                     dict(type='Constant', val=1, layer=['BatchNorm2d'])
+                 ]):
+        super(MobileNetv3, self).__init__(init_cfg)
         assert arch in self.arch_settings
         for index in out_indices:
             if index not in range(0, len(self.arch_settings[arch])):
@@ -139,18 +139,18 @@ class MobileNetv3(BaseBackbone):
             layers.append(layer_name)
         return layers
 
-    def init_weights(self, pretrained=None):
-        if isinstance(pretrained, str):
-            logger = logging.getLogger()
-            load_checkpoint(self, pretrained, strict=False, logger=logger)
-        elif pretrained is None:
-            for m in self.modules():
-                if isinstance(m, nn.Conv2d):
-                    kaiming_init(m)
-                elif isinstance(m, nn.BatchNorm2d):
-                    constant_init(m, 1)
-        else:
-            raise TypeError('pretrained must be a str or None')
+    # def init_weights(self, pretrained=None):
+    #     if isinstance(pretrained, str):
+    #         logger = logging.getLogger()
+    #         load_checkpoint(self, pretrained, strict=False, logger=logger)
+    #     elif pretrained is None:
+    #         for m in self.modules():
+    #             if isinstance(m, nn.Conv2d):
+    #                 kaiming_init(m)
+    #             elif isinstance(m, nn.BatchNorm2d):
+    #                 constant_init(m, 1)
+    #     else:
+    #         raise TypeError('pretrained must be a str or None')
 
     def forward(self, x):
         x = self.conv1(x)
