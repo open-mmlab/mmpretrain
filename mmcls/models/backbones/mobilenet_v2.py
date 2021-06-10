@@ -135,8 +135,15 @@ class MobileNetV2(BaseBackbone):
                  norm_cfg=dict(type='BN'),
                  act_cfg=dict(type='ReLU6'),
                  norm_eval=False,
-                 with_cp=False):
-        super(MobileNetV2, self).__init__()
+                 with_cp=False,
+                 init_cfg=[
+                     dict(type='Kaiming', layer=['Conv2d']),
+                     dict(
+                         type='Constant',
+                         val=1,
+                         layer=['_BatchNorm', 'GroupNorm'])
+                 ]):
+        super(MobileNetV2, self).__init__(init_cfg)
         self.widen_factor = widen_factor
         self.out_indices = out_indices
         for index in out_indices:

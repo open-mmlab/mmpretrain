@@ -1,4 +1,4 @@
-# Tutorial 6: ONNX to TensorRT (Experimental)
+# ONNX to TensorRT (Experimental)
 
 <!-- TOC -->
 

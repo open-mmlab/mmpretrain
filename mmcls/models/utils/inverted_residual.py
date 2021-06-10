@@ -1,11 +1,12 @@
-import torch.nn as nn
 import torch.utils.checkpoint as cp
 from mmcv.cnn import ConvModule
+from mmcv.runner import BaseModule
 
 from .se_layer import SELayer
 
 
-class InvertedResidual(nn.Module):
+# class InvertedResidual(nn.Module):
+class InvertedResidual(BaseModule):
     """Inverted Residual Block.
 
     Args:
@@ -44,8 +45,9 @@ class InvertedResidual(nn.Module):
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
                  act_cfg=dict(type='ReLU'),
-                 with_cp=False):
-        super(InvertedResidual, self).__init__()
+                 with_cp=False,
+                 init_cfg=None):
+        super(InvertedResidual, self).__init__(init_cfg)
         self.with_res_shortcut = (stride == 1 and in_channels == out_channels)
         assert stride in [1, 2]
         self.with_cp = with_cp

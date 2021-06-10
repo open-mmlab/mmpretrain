@@ -24,8 +24,15 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
                      type='CrossEntropyLoss',
                      use_sigmoid=True,
                      reduction='mean',
-                     loss_weight=1.0)):
-        super(MultiLabelLinearClsHead, self).__init__(loss=loss)
+                     loss_weight=1.0),
+                 init_cfg=dict(
+                     type='Normal',
+                     mean=0.,
+                     std=0.01,
+                     bias=0.,
+                     override=dict(name='fc'))):
+        super(MultiLabelLinearClsHead, self).__init__(
+            loss=loss, init_cfg=init_cfg)
 
         if num_classes <= 0:
             raise ValueError(
