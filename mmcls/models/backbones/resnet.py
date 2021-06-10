@@ -597,12 +597,6 @@ class ResNet(BaseBackbone):
     # def init_weights(self, pretrained=None):
     def init_weights(self):
         super(ResNet, self).init_weights()
-        # if pretrained is None:
-        #     for m in self.modules():
-        #         if isinstance(m, nn.Conv2d):
-        #             kaiming_init(m)
-        #         elif isinstance(m, (_BatchNorm, nn.GroupNorm)):
-        #             constant_init(m, 1)
 
         if self.zero_init_residual:
             for m in self.modules():

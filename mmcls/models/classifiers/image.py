@@ -41,20 +41,6 @@ class ImageClassifier(BaseClassifier):
             if cutmix_cfg is not None:
                 self.cutmix = BatchCutMixLayer(**cutmix_cfg)
 
-        # self.init_weights(pretrained=pretrained)
-
-    # def init_weights(self, pretrained=None):
-    #     super(ImageClassifier, self).init_weights(pretrained)
-    #     self.backbone.init_weights(pretrained=pretrained)
-    #     if self.with_neck:
-    #         if isinstance(self.neck, nn.Sequential):
-    #             for m in self.neck:
-    #                 m.init_weights()
-    #         else:
-    #             self.neck.init_weights()
-    #     if self.with_head:
-    #         self.head.init_weights()
-
     def extract_feat(self, img):
         """Directly extract features from the backbone + neck."""
         x = self.backbone(img)
