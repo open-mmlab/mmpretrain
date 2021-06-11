@@ -1,10 +1,7 @@
-import logging
-
 import torch
 import torch.nn as nn
 import torch.utils.checkpoint as cp
 from mmcv.cnn import ConvModule, constant_init, normal_init
-from mmcv.runner import load_checkpoint
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from mmcls.models.utils import channel_shuffle
@@ -162,8 +159,9 @@ class ShuffleNetV2(BaseBackbone):
                  norm_cfg=dict(type='BN'),
                  act_cfg=dict(type='ReLU'),
                  norm_eval=False,
-                 with_cp=False):
-        super(ShuffleNetV2, self).__init__()
+                 with_cp=False,
+                 init_cfg=None):
+        super(ShuffleNetV2, self).__init__(init_cfg)
         self.stage_blocks = [4, 8, 4]
         for index in out_indices:
             if index not in range(0, 4):
@@ -255,25 +253,27 @@ class ShuffleNetV2(BaseBackbone):
             for param in m.parameters():
                 param.requires_grad = False
 
-    def init_weights(self, pretrained=None):
-        if isinstance(pretrained, str):
-            logger = logging.getLogger()
-            load_checkpoint(self, pretrained, strict=False, logger=logger)
-        elif pretrained is None:
-            for name, m in self.named_modules():
-                if isinstance(m, nn.Conv2d):
-                    if 'conv1' in name:
-                        normal_init(m, mean=0, std=0.01)
-                    else:
-                        normal_init(m, mean=0, std=1.0 / m.weight.shape[1])
-                elif isinstance(m, (_BatchNorm, nn.GroupNorm)):
-                    constant_init(m.weight, val=1, bias=0.0001)
-                    if isinstance(m, _BatchNorm):
-                        if m.running_mean is not None:
-                            nn.init.constant_(m.running_mean, 0)
-        else:
-            raise TypeError('pretrained must be a str or None. But received '
-                            f'{type(pretrained)}')
+    # def init_weights(self, pretrained=None):
+    # if isinstance(pretrained, str):
+    #     logger = logging.getLogger()
+    #     load_checkpoint(self, pretrained, strict=False, logger=logger)
+    # elif pretrained is None:
+    def init_weighs(self):
+        super(ShuffleNetV2, self).init_weights()
+        for name, m in self.named_modules():
+            if isinstance(m, nn.Conv2d):
+                if 'conv1' in name:
+                    normal_init(m, mean=0, std=0.01)
+                else:
+                    normal_init(m, mean=0, std=1.0 / m.weight.shape[1])
+            elif isinstance(m, (_BatchNorm, nn.GroupNorm)):
+                constant_init(m.weight, val=1, bias=0.0001)
+                if isinstance(m, _BatchNorm):
+                    if m.running_mean is not None:
+                        nn.init.constant_(m.running_mean, 0)
+        # else:
+        #     raise TypeError('pretrained must be a str or None. But received '
+        #                     f'{type(pretrained)}')
 
     def forward(self, x):
         x = self.conv1(x)
