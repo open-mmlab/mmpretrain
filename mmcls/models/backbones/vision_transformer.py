@@ -362,12 +362,11 @@ class VisionTransformer(BaseBackbone):
     def norm1(self):
         return getattr(self, self.norm1_name)
 
-    def init_weights(self, pretrained=None):
-        super(VisionTransformer, self).init_weights(pretrained)
+    def init_weights(self):
+        super(VisionTransformer, self).init_weights()
 
-        if pretrained is None:
-            # Modified from ClassyVision
-            nn.init.normal_(self.pos_embed, std=0.02)
+        # Modified from ClassyVision
+        nn.init.normal_(self.pos_embed, std=0.02)
 
     def forward(self, x):
         B = x.shape[0]
