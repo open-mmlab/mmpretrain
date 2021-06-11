@@ -1,4 +1,6 @@
+import os
 import argparse
+import os.path as osp
 from functools import partial
 
 import mmcv
@@ -25,7 +27,7 @@ def _demo_mm_inputs(input_shape: tuple, num_classes: int):
     rng = np.random.RandomState(0)
     imgs = rng.rand(*input_shape)
     gt_labels = rng.randint(
-        low=0, high=num_classes - 1, size=(N, 1)).astype(np.uint8)
+        low=0, high=num_classes, size=(N, 1)).astype(np.uint8)
     mm_inputs = {
         'imgs': torch.FloatTensor(imgs).requires_grad_(False),
         'gt_labels': torch.LongTensor(gt_labels),
@@ -43,9 +45,9 @@ def pytorch2torchscript(model: nn.Module, input_shape: tuple, output_file: str,
         input_shape (tuple): Use this input shape to construct
             the corresponding dummy input and execute the model.
         show (bool): Whether print the computation graph. Default: False.
-        output_file (string): The path to where we store the output \
+        output_file (string): The path to where we store the output
             TorchScript model.
-        verify (bool): Whether compare the outputs between Pytorch \
+        verify (bool): Whether compare the outputs between Pytorch
             and TorchScript through loading generated output_file.
     """
     model.cpu().eval()
@@ -62,6 +64,9 @@ def pytorch2torchscript(model: nn.Module, input_shape: tuple, output_file: str,
 
     with torch.no_grad():
         trace_model = torch.jit.trace(model, img_list[0])
+        save_dir, _ = osp.split(output_file)
+        if save_dir:
+            os.makedirs(save_dir, exist_ok=True)
         trace_model.save(output_file)
         print(f'Successfully exported TorchScript model: {output_file}')
     model.forward = origin_forward
