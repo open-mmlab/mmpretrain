@@ -96,13 +96,14 @@ def main():
 
     # build the dataloader
     dataset = build_dataset(cfg.data.test)
+    # the extra round_up data will be removed during gpu/cpu collect
     data_loader = build_dataloader(
         dataset,
         samples_per_gpu=cfg.data.samples_per_gpu,
         workers_per_gpu=cfg.data.workers_per_gpu,
         dist=distributed,
         shuffle=False,
-        round_up=False)
+        round_up=True)
 
     # build the model and load checkpoint
     model = build_classifier(cfg.model)
