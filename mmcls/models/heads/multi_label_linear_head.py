@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmcv.cnn import normal_init
 
 from ..builder import HEADS
 from .multi_label_head import MultiLabelClsHead
@@ -44,9 +43,6 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
 
     def _init_layers(self):
         self.fc = nn.Linear(self.in_channels, self.num_classes)
-
-    def init_weights(self):
-        normal_init(self.fc, mean=0, std=0.01, bias=0)
 
     def forward_train(self, x, gt_label):
         gt_label = gt_label.type_as(x)

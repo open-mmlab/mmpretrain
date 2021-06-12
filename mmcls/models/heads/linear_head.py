@@ -37,9 +37,6 @@ class LinearClsHead(ClsHead):
     def _init_layers(self):
         self.fc = nn.Linear(self.in_channels, self.num_classes)
 
-    # def init_weights(self):
-    #     normal_init(self.fc, mean=0, std=0.01, bias=0)
-
     def simple_test(self, img):
         """Test without augmentation."""
         cls_score = self.fc(img)

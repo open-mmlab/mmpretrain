@@ -54,6 +54,7 @@ class VisionTransformerClsHead(ClsHead):
         self.layers = nn.Sequential(OrderedDict(layers))
 
     def init_weights(self):
+        super(VisionTransformerClsHead, self).init_weights()
         # Modified from ClassyVision
         if hasattr(self.layers, 'pre_logits'):
             # Lecun norm
