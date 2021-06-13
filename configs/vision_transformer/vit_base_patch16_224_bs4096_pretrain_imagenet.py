@@ -1,10 +1,41 @@
-_base_ = [
-    '../_base_/models/vit_base_patch16_224_pretrain.py',
-    '../_base_/datasets/imagenet_bs64_pil_resize.py',
-    '../_base_/schedules/imagenet_bs4096_AdamW.py',
-    '../_base_/default_runtime.py'
-]
+# _base_ = [
+#     '../_base_/models/vit_base_patch16_224_pretrain.py',
+#     '../_base_/datasets/imagenet_bs64_pil_resize.py',
+#     '../_base_/schedules/imagenet_bs4096_AdamW.py',
+#     '../_base_/default_runtime.py'
+# ]
 
+# model settings
+model = dict(
+    type='ImageClassifier',
+    backbone=dict(
+        type='VisionTransformer',
+        arch='b',
+        img_size=224,
+        patch_size=16,
+        in_channels=3,
+        drop_rate=0.1,
+        attn_drop_rate=0.,
+        hybrid_backbone=None,
+        init_cfg=[
+            dict(
+                type='Kaiming',
+                layer='Conv2d',
+                mode='fan_in',
+                nonlinearity='linear')
+        ]),
+    neck=None,
+    head=dict(
+        type='VisionTransformerClsHead',
+        num_classes=1000,
+        in_channels=768,
+        hidden_dim=3072,
+        loss=dict(type='LabelSmoothLoss', label_smooth_val=0.1),
+        topk=(1, 5),
+    ),
+    train_cfg=dict(mixup=dict(alpha=0.2, num_classes=1000)))
+
+# dataset settings
 policies = [
     [
         dict(type='Posterize', bits=4, prob=0.4),
@@ -148,3 +179,43 @@ data = dict(
         ann_file='data/imagenet/meta/val.txt',
         pipeline=test_pipeline))
 evaluation = dict(interval=1, metric='accuracy')
+
+# optimizer
+optimizer = dict(type='AdamW', lr=0.003, weight_decay=0.3)
+optimizer_config = dict(grad_clip=dict(max_norm=1.0))
+# fp16 settings
+fp16 = dict(loss_scale='dynamic')
+
+# specific to vit pretrain
+paramwise_cfg = dict(
+    custom_keys={
+        '.backbone.cls_token': dict(decay_mult=0.0),
+        '.backbone.pos_embed': dict(decay_mult=0.0)
+    })
+# learning policy
+lr_config = dict(
+    policy='CosineAnnealing',
+    min_lr=0,
+    by_epoch=False,
+    warmup='linear',
+    warmup_by_epoch=False,
+    warmup_iters=10000,
+    warmup_ratio=1e-4)
+runner = dict(type='EpochBasedRunner', max_epochs=300)
+
+# checkpoint saving
+checkpoint_config = dict(interval=10)
+# yapf:disable
+log_config = dict(
+    interval=100,
+    hooks=[
+        dict(type='TextLoggerHook'),
+        # dict(type='TensorboardLoggerHook')
+    ])
+# yapf:enable
+
+dist_params = dict(backend='nccl')
+log_level = 'INFO'
+load_from = 'checkpoints/vit/vit_base_patch16_224_origin.pth'
+resume_from = None
+workflow = [('train', 1)]
