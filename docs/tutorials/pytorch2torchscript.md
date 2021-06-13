@@ -5,7 +5,7 @@
 - [Tutorial 5: Pytorch to TorchScript (Experimental)](#tutorial-5-pytorch-to-torchscript-experimental)
   - [How to convert models from Pytorch to TorchScript](#how-to-convert-models-from-pytorch-to-torchscript)
     - [Usage](#usage)
-    - [Description of all arguments:](#description-of-all-arguments)
+    - [Description of all arguments](#description-of-all-arguments)
   - [Reminders](#reminders)
   - [FAQs](#faqs)
 
@@ -24,7 +24,7 @@ python tools/deployment/pytorch2torchscript.py \
     --verify \
 ```
 
-### Description of all arguments:
+### Description of all arguments
 
 - `config` : The path of a model config file.
 - `--checkpoint` : The path of a model checkpoint file.
