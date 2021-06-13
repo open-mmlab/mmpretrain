@@ -1,9 +1,11 @@
+import math
 from collections import OrderedDict
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmcv.cnn import build_activation_layer, constant_init, kaiming_init
+from mmcv.cnn import build_activation_layer, constant_init
+from mmcv.cnn.utils.weight_init import trunc_normal_
 from mmcv.runner import Sequential
 
 from ..builder import HEADS
@@ -59,8 +61,9 @@ class VisionTransformerClsHead(ClsHead):
         # Modified from ClassyVision
         if hasattr(self.layers, 'pre_logits'):
             # Lecun norm
-            kaiming_init(
-                self.layers.pre_logits, mode='fan_in', nonlinearity='linear')
+            trunc_normal_(
+                self.layers.pre_logits.weight,
+                std=math.sqrt(1 / self.layers.pre_logits.in_features))
         constant_init(self.layers.head, 0)
 
     def simple_test(self, img):
