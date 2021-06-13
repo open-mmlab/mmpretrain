@@ -1,5 +1,5 @@
-import os
 import argparse
+import os
 import os.path as osp
 from functools import partial
 
