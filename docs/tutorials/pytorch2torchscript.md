@@ -5,7 +5,7 @@
 - [Tutorial 5: Pytorch to TorchScript (Experimental)](#tutorial-5-pytorch-to-torchscript-experimental)
   - [How to convert models from Pytorch to TorchScript](#how-to-convert-models-from-pytorch-to-torchscript)
     - [Usage](#usage)
-    - [Description of all arguments](#description-of-all-arguments)
+    - [Description of all arguments:](#description-of-all-arguments)
   - [Reminders](#reminders)
   - [FAQs](#faqs)
 
@@ -48,6 +48,7 @@ Notes:
 
 ## Reminders
 
+- For torch.jit.is_tracing() is only supported after v1.6. For users with pytorch 1.3-1.5, we suggest early returning tensors manually.
 - If you meet any problem with the models in this repo, please create an issue and it would be taken care of soon.
 
 ## FAQs

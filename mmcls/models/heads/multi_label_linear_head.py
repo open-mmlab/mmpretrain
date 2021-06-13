@@ -56,7 +56,9 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
         pred = F.sigmoid(cls_score) if cls_score is not None else None
-        if torch.onnx.is_in_onnx_export() or torch.jit.is_tracing():
+
+        is_tracing = hasattr(torch.jit, 'is_tracing') and torch.jit.is_tracing()
+        if torch.onnx.is_in_onnx_export() or is_tracing:
             return pred
         pred = list(pred.detach().cpu().numpy())
         return pred
