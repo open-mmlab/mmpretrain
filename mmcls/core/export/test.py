@@ -1,5 +1,8 @@
+import warnings
+
 import numpy as np
 import onnxruntime as ort
+import torch
 
 from mmcls.models.classifiers import BaseClassifier
 
@@ -54,4 +57,39 @@ class ONNXRuntimeClassifier(BaseClassifier):
         # run session to get outputs
         self.sess.run_with_iobinding(self.io_binding)
         results = self.io_binding.copy_outputs_to_cpu()[0]
+        return list(results)
+
+
+class TensorRTClassifier(BaseClassifier):
+
+    def __init__(self, trt_file, class_names, device_id):
+        super(TensorRTClassifier, self).__init__()
+        from mmcv.tensorrt import TRTWraper, load_tensorrt_plugin
+        try:
+            load_tensorrt_plugin()
+        except (ImportError, ModuleNotFoundError):
+            warnings.warn('If input model has custom op from mmcv, \
+                you may have to build mmcv with TensorRT from source.')
+        model = TRTWraper(
+            trt_file, input_names=['input'], output_names=['probs'])
+
+        self.model = model
+        self.device_id = device_id
+        self.CLASSES = class_names
+
+    def simple_test(self, img, img_metas, **kwargs):
+        raise NotImplementedError('This method is not implemented.')
+
+    def extract_feat(self, imgs):
+        raise NotImplementedError('This method is not implemented.')
+
+    def forward_train(self, imgs, **kwargs):
+        raise NotImplementedError('This method is not implemented.')
+
+    def forward_test(self, imgs, img_metas, **kwargs):
+        input_data = imgs
+        with torch.cuda.device(self.device_id), torch.no_grad():
+            results = self.model({'input': input_data})['probs']
+        results = results.detach().cpu().numpy()
+
         return list(results)

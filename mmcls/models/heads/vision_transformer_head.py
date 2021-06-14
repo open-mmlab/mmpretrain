@@ -54,6 +54,7 @@ class VisionTransformerClsHead(ClsHead):
         self.layers = nn.Sequential(OrderedDict(layers))
 
     def init_weights(self):
+        super(VisionTransformerClsHead, self).init_weights()
         # Modified from ClassyVision
         if hasattr(self.layers, 'pre_logits'):
             # Lecun norm
@@ -67,7 +68,7 @@ class VisionTransformerClsHead(ClsHead):
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
         pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
-        if torch.onnx.is_in_onnx_export():
+        if torch.onnx.is_in_onnx_export() or torch.jit.is_tracing():
             return pred
         pred = list(pred.detach().cpu().numpy())
         return pred

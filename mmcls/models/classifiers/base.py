@@ -56,10 +56,6 @@ class BaseClassifier(BaseModule, metaclass=ABCMeta):
     def simple_test(self, img, **kwargs):
         pass
 
-    # def init_weights(self, pretrained=None):
-    #     if pretrained is not None:
-    #         print_log(f'load model from: {pretrained}', logger='root')
-
     def forward_test(self, imgs, **kwargs):
         """
         Args:

@@ -149,17 +149,6 @@ class VGG(BaseBackbone):
                 nn.Linear(4096, num_classes),
             )
 
-    # def init_weights(self, pretrained=None):
-    #     super(VGG, self).init_weights(pretrained)
-    #     if pretrained is None:
-    #         for m in self.modules():
-    #             if isinstance(m, nn.Conv2d):
-    #                 kaiming_init(m)
-    #             elif isinstance(m, _BatchNorm):
-    #                 constant_init(m, 1)
-    #             elif isinstance(m, nn.Linear):
-    #                 normal_init(m, std=0.01)
-
     def forward(self, x):
         outs = []
         vgg_layers = getattr(self, self.module_name)

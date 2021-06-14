@@ -37,16 +37,13 @@ class LinearClsHead(ClsHead):
     def _init_layers(self):
         self.fc = nn.Linear(self.in_channels, self.num_classes)
 
-    # def init_weights(self):
-    #     normal_init(self.fc, mean=0, std=0.01, bias=0)
-
     def simple_test(self, img):
         """Test without augmentation."""
         cls_score = self.fc(img)
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
         pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
-        if torch.onnx.is_in_onnx_export():
+        if torch.onnx.is_in_onnx_export() or torch.jit.is_tracing():
             return pred
         pred = list(pred.detach().cpu().numpy())
         return pred

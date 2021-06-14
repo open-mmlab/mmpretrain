@@ -87,7 +87,7 @@ def train_model(model,
             model = MMDataParallel(
                 model.cuda(cfg.gpu_ids[0]), device_ids=cfg.gpu_ids)
         elif device == 'cpu':
-            model = MMDataParallel(model.cpu())
+            model = model.cpu()
         else:
             raise ValueError(F'unsupported device name {device}.')
 

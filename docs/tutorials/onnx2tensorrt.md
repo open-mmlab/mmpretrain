@@ -26,7 +26,9 @@ python tools/deployment/onnx2tensorrt.py \
     ${MODEL} \
     --trt-file ${TRT_FILE} \
     --shape ${IMAGE_SHAPE} \
-    --workspace-size {WORKSPACE_SIZE} \
+    --max-batch-size ${MAX_BATCH_SIZE} \
+    --workspace-size ${WORKSPACE_SIZE} \
+    --fp16 \
     --show \
     --verify \
 ```
@@ -36,6 +38,8 @@ Description of all arguments:
 - `model` : The path of an ONNX model file.
 - `--trt-file`: The Path of output TensorRT engine file. If not specified, it will be set to `tmp.trt`.
 - `--shape`: The height and width of model input. If not specified, it will be set to `224 224`.
+- `--max-batch-size`: The max batch size of TensorRT model, should not be less than 1.
+- `--fp16`: Enable fp16 mode.
 - `--workspace-size` : The required GPU workspace size in GiB to build TensorRT engine. If not specified, it will be set to `1` GiB.
 - `--show`: Determines whether to show the outputs of the model. If not specified, it will be set to `False`.
 - `--verify`: Determines whether to verify the correctness of models between ONNXRuntime and TensorRT. If not specified, it will be set to `False`.
@@ -55,11 +59,11 @@ python tools/deployment/onnx2tensorrt.py \
 
 The table below lists the models that are guaranteed to be convertable to TensorRT.
 
-|    Model     |                            Config                            | Status |
-| :----------: | :----------------------------------------------------------: | :----: |
-| MobileNetV2  |    `configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py`     |   Y    |
-|    ResNet    |          `configs/resnet/resnet18_b16x8_cifar10.py`          |   Y    |
-|   ResNeXt    |     `configs/resnext/resnext50_32x4d_b32x8_imagenet.py`      |   Y    |
+|    Model     |                                    Config                                    | Status |
+| :----------: | :--------------------------------------------------------------------------: | :----: |
+| MobileNetV2  |            `configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py`             |   Y    |
+|    ResNet    |                  `configs/resnet/resnet18_b16x8_cifar10.py`                  |   Y    |
+|   ResNeXt    |             `configs/resnext/resnext50_32x4d_b32x8_imagenet.py`              |   Y    |
 | ShuffleNetV1 | `configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py` |   Y    |
 | ShuffleNetV2 | `configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py` |   Y    |
 

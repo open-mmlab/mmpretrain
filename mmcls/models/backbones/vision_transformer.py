@@ -457,8 +457,6 @@ class VisionTransformer(BaseBackbone):
 
     def init_weights(self):
         super(VisionTransformer, self).init_weights()
-        # if pretrained is None:
-        #     # Modified from ClassyVision
         nn.init.normal_(self.pos_embed, std=0.02)
 
     @property
