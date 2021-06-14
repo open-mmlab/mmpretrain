@@ -24,7 +24,7 @@ python tools/deployment/pytorch2torchscript.py \
     --verify \
 ```
 
-### Description of all arguments:
+### Description of all arguments
 
 - `config` : The path of a model config file.
 - `--checkpoint` : The path of a model checkpoint file.
@@ -48,6 +48,7 @@ Notes:
 
 ## Reminders
 
+- For torch.jit.is_tracing() is only supported after v1.6. For users with pytorch v1.3-v1.5, we suggest early returning tensors manually.
 - If you meet any problem with the models in this repo, please create an issue and it would be taken care of soon.
 
 ## FAQs
