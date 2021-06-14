@@ -16,14 +16,18 @@ class LinearClsHead(ClsHead):
         in_channels (int): Number of channels in the input feature map.
     """
 
-    def __init__(self, num_classes, in_channels, *args, **kwargs):
-        super(LinearClsHead, self).__init__(*args, **kwargs)
-        self.init_cfg = dict(
-            type='Normal',
-            mean=0.,
-            std=0.01,
-            bias=0.,
-            override=dict(name='fc'))
+    def __init__(self,
+                 num_classes,
+                 in_channels,
+                 init_cfg=dict(
+                     type='Normal',
+                     mean=0.,
+                     std=0.01,
+                     bias=0.,
+                     override=dict(name='fc')),
+                 *args,
+                 **kwargs):
+        super(LinearClsHead, self).__init__(init_cfg=init_cfg, *args, **kwargs)
 
         self.in_channels = in_channels
         self.num_classes = num_classes
