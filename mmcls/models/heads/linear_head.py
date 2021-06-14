@@ -19,14 +19,11 @@ class LinearClsHead(ClsHead):
     def __init__(self,
                  num_classes,
                  in_channels,
-                 init_cfg=dict(
-                     type='Normal',
-                     mean=0.,
-                     std=0.01,
-                     bias=0.,
-                     override=dict(name='fc')),
+                 init_cfg=None,
                  *args,
                  **kwargs):
+        init_cfg = init_cfg or dict(
+            mean=0., std=0.01, bias=0., override=dict(name='fc'))
         super(LinearClsHead, self).__init__(init_cfg=init_cfg, *args, **kwargs)
 
         self.in_channels = in_channels
