@@ -96,17 +96,14 @@ def test_image_classifier_vit():
             in_channels=3,
             drop_rate=0.1,
             attn_drop_rate=0.,
+            drop_path_rate=0.,
             hybrid_backbone=None,
             init_cfg=[
                 dict(
                     type='Kaiming',
                     layer='Conv2d',
                     mode='fan_in',
-                    nonlinearity='linear'),
-                # dict(
-                #     type='Pretrained',
-                #     checkpoint='../checkpoints/vit/vit_base_patch16_224.pth',
-                #     prefix='backbone.')
+                    nonlinearity='linear')
             ]),
         neck=None,
         head=dict(
@@ -122,13 +119,6 @@ def test_image_classifier_vit():
     model_cfg = Config(model_cfg)
     img_classifier = ImageClassifier(**model_cfg)
     img_classifier.init_weights()
-
-    # test initializing weights of a sub-module
-    # with the specific part of a pretrained model by using 'prefix'
-    # checkpoint = torch.load(
-    #     '../checkpoints/vit/vit_base_patch16_224.pth', map_location='cpu')
-    # assert (checkpoint['state_dict']['backbone.cls_token'] ==
-    #         img_classifier.state_dict()['backbone.cls_token']).all()
 
     imgs = torch.randn(1, 3, 224, 224)
     label = torch.randint(0, 1000, (1, ))
