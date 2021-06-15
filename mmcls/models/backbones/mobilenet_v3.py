@@ -72,7 +72,7 @@ class MobileNetV3(BaseBackbone):
                          type='Kaiming',
                          layer=['Conv2d'],
                          nonlinearity='leaky_relu'),
-                     dict(type='Normal', layers=['Linear'], std=0.01),
+                     dict(type='Normal', layer=['Linear'], std=0.01),
                      dict(type='Constant', layer=['BatchNorm2d'], val=1)
                  ]):
         super(MobileNetV3, self).__init__(init_cfg)
