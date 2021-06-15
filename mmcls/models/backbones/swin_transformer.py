@@ -391,6 +391,7 @@ class SwinBlock(BaseModule):
             'input_resolution': input_resolution,
             'shift_size': window_size // 2 if shift else 0,
             'window_size': window_size,
+            'dropout_layer': dict(type='DropPath', drop_prob=drop_path),
             **attn_cfgs
         }
         self.norm1 = build_norm_layer(norm_cfg, embed_dims)[1]
