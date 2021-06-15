@@ -69,6 +69,11 @@ def parse_args():
         default='none',
         help='job launcher')
     parser.add_argument('--local_rank', type=int, default=0)
+    parser.add_argument(
+        '--device',
+        choices=['cpu', 'cuda'],
+        default='cuda',
+        help='device used for testing')
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
@@ -96,13 +101,14 @@ def main():
 
     # build the dataloader
     dataset = build_dataset(cfg.data.test)
+    # the extra round_up data will be removed during gpu/cpu collect
     data_loader = build_dataloader(
         dataset,
         samples_per_gpu=cfg.data.samples_per_gpu,
         workers_per_gpu=cfg.data.workers_per_gpu,
         dist=distributed,
         shuffle=False,
-        round_up=False)
+        round_up=True)
 
     # build the model and load checkpoint
     model = build_classifier(cfg.model)
@@ -121,7 +127,10 @@ def main():
         CLASSES = ImageNet.CLASSES
 
     if not distributed:
-        model = MMDataParallel(model, device_ids=[0])
+        if args.device == 'cpu':
+            model = model.cpu()
+        else:
+            model = MMDataParallel(model, device_ids=[0])
         model.CLASSES = CLASSES
         show_kwargs = {} if args.show_options is None else args.show_options
         outputs = single_gpu_test(model, data_loader, args.show, args.show_dir,

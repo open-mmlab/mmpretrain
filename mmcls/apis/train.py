@@ -87,7 +87,7 @@ def train_model(model,
             model = MMDataParallel(
                 model.cuda(cfg.gpu_ids[0]), device_ids=cfg.gpu_ids)
         elif device == 'cpu':
-            model = MMDataParallel(model.cpu())
+            model = model.cpu()
         else:
             raise ValueError(F'unsupported device name {device}.')
 
@@ -127,9 +127,13 @@ def train_model(model,
         optimizer_config = cfg.optimizer_config
 
     # register hooks
-    runner.register_training_hooks(cfg.lr_config, optimizer_config,
-                                   cfg.checkpoint_config, cfg.log_config,
-                                   cfg.get('momentum_config', None))
+    runner.register_training_hooks(
+        cfg.lr_config,
+        optimizer_config,
+        cfg.checkpoint_config,
+        cfg.log_config,
+        cfg.get('momentum_config', None),
+        custom_hooks_config=cfg.get('custom_hooks', None))
     if distributed:
         runner.register_hook(DistSamplerSeedHook())
 

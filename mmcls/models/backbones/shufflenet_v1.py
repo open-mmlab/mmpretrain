@@ -248,13 +248,8 @@ class ShuffleNetV1(BaseBackbone):
             for param in layer.parameters():
                 param.requires_grad = False
 
-    # def init_weights(self, pretrained=None):
     def init_weights(self):
         super(ShuffleNetV1, self).init_weights()
-        # if isinstance(pretrained, str):
-        #     logger = logging.getLogger()
-        #     load_checkpoint(self, pretrained, strict=False, logger=logger)
-        # elif pretrained is None:
         for name, m in self.named_modules():
             if isinstance(m, nn.Conv2d):
                 if 'conv1' in name:
@@ -266,9 +261,6 @@ class ShuffleNetV1(BaseBackbone):
                 if isinstance(m, _BatchNorm):
                     if m.running_mean is not None:
                         nn.init.constant_(m.running_mean, 0)
-        # else:
-        #     raise TypeError('pretrained must be a str or None. But received '
-        #                     f'{type(pretrained)}')
 
     def make_layer(self, out_channels, num_blocks, first_block=False):
         """Stack ShuffleUnit blocks to make a layer.

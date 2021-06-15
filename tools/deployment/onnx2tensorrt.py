@@ -13,6 +13,8 @@ def get_GiB(x: int):
 def onnx2tensorrt(onnx_file,
                   trt_file,
                   input_shape,
+                  max_batch_size,
+                  fp16_mode=False,
                   verify=False,
                   workspace_size=1):
     """Create tensorrt engine from onnx model.
@@ -22,6 +24,7 @@ def onnx2tensorrt(onnx_file,
         trt_file (str): Filename of the output TensorRT engine file.
         input_shape (list[int]): Input shape of the model.
             eg [1, 3, 224, 224].
+        max_batch_size (int): Max batch size of the model.
         verify (bool, optional): Whether to verify the converted model.
             Defaults to False.
         workspace_size (int, optional): Maximium workspace of GPU.
@@ -32,12 +35,14 @@ def onnx2tensorrt(onnx_file,
 
     onnx_model = onnx.load(onnx_file)
     # create trt engine and wraper
-    opt_shape_dict = {'input': [input_shape, input_shape, input_shape]}
+    assert max_batch_size >= 1
+    max_shape = [max_batch_size] + list(input_shape[1:])
+    opt_shape_dict = {'input': [input_shape, input_shape, max_shape]}
     max_workspace_size = get_GiB(workspace_size)
     trt_engine = onnx2trt(
         onnx_model,
         opt_shape_dict,
-        fp16_mode=False,
+        fp16_mode=fp16_mode,
         max_workspace_size=max_workspace_size)
     save_dir, _ = osp.split(trt_file)
     if save_dir:
@@ -100,6 +105,12 @@ def parse_args():
         default=[224, 224],
         help='Input size of the model')
     parser.add_argument(
+        '--max-batch-size',
+        type=int,
+        default=1,
+        help='Maximum batch size of TensorRT model.')
+    parser.add_argument('--fp16', action='store_true', help='Enable fp16 mode')
+    parser.add_argument(
         '--workspace-size',
         type=int,
         default=1,
@@ -124,5 +135,7 @@ if __name__ == '__main__':
         args.model,
         args.trt_file,
         input_shape,
+        args.max_batch_size,
+        fp16_mode=args.fp16,
         verify=args.verify,
         workspace_size=args.workspace_size)
