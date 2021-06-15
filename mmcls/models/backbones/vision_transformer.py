@@ -20,6 +20,7 @@ class TransformerEncoderLayer(BaseModule):
             after the feed forward layer. Default 0.0
         attn_drop_rate (float): The drop out rate for attention layer.
             Default 0.0
+        drop_path_rate (float): stochastic depth rate. Default 0.0
         num_fcs (int): The number of fully-connected layers for FFNs. Default 2
         qkv_bias (bool): enable bias for qkv if True. Default True
         act_cfg (dict): The activation config for FFNs. Defalut GELU
@@ -257,6 +258,7 @@ class VisionTransformer(BaseBackbone):
             Default 0.0
         attn_drop_rate (float): The drop out rate for attention layer.
             Default 0.0
+        drop_path_rate (float): stochastic depth rate. Default 0.0
         hybrid_backbone (nn.Module, optional): CNN backbone to use in-place of
             PatchEmbed module. Default None
         norm_cfg (dict): Config dict for normalization layer. Default
