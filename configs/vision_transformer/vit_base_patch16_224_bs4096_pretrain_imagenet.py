@@ -1,10 +1,3 @@
-# _base_ = [
-#     '../_base_/models/vit_base_patch16_224_pretrain.py',
-#     '../_base_/datasets/imagenet_bs64_pil_resize.py',
-#     '../_base_/schedules/imagenet_bs4096_AdamW.py',
-#     '../_base_/default_runtime.py'
-# ]
-
 # model settings
 model = dict(
     type='ImageClassifier',
@@ -135,14 +128,7 @@ dataset_type = 'ImageNet'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
-    dict(
-        type='LoadImageFromFile',
-        file_client_args=dict(
-            backend='memcached',
-            server_list_cfg='/mnt/lustre/share/memcached_client'
-            '/server_list.conf',
-            client_cfg='/mnt/lustre/share/memcached_client/client.conf',
-            sys_path='/mnt/lustre/share/pymc/py3')),
+    dict(type='LoadImageFromFile'),
     dict(type='RandomResizedCrop', size=224),
     dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
     dict(type='AutoAugment', policies=policies),
@@ -216,6 +202,6 @@ log_config = dict(
 
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
-load_from = 'checkpoints/vit/vit_base_patch16_224_origin.pth'
+load_from = None
 resume_from = None
 workflow = [('train', 1)]
