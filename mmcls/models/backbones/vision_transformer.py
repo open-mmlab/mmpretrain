@@ -37,6 +37,7 @@ class TransformerEncoderLayer(BaseModule):
                  feedforward_channels,
                  drop_rate=0.,
                  attn_drop_rate=0.,
+                 drop_path_rate=0.,
                  num_fcs=2,
                  qkv_bias=True,
                  act_cfg=dict(type='GELU'),
@@ -57,7 +58,7 @@ class TransformerEncoderLayer(BaseModule):
             num_heads=num_heads,
             attn_drop=attn_drop_rate,
             proj_drop=drop_rate,
-            dropout_layer=None,
+            dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
             batch_first=batch_first,
             bias=qkv_bias)
 
@@ -70,7 +71,7 @@ class TransformerEncoderLayer(BaseModule):
             feedforward_channels=feedforward_channels,
             num_fcs=num_fcs,
             ffn_drop=drop_rate,
-            dropout_layer=None,
+            dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
             act_cfg=act_cfg)
 
     @property
@@ -89,8 +90,8 @@ class TransformerEncoderLayer(BaseModule):
                 nn.init.normal_(m.bias, std=1e-6)
 
     def forward(self, x):
-        x = self.attn(self.norm1(x), residual=x)
-        x = self.ffn(self.norm2(x), residual=x)
+        x = self.attn(self.norm1(x), identity=x)
+        x = self.ffn(self.norm2(x), identity=x)
         return x
 
 
@@ -297,6 +298,7 @@ class VisionTransformer(BaseBackbone):
                  in_channels=3,
                  drop_rate=0.,
                  attn_drop_rate=0.,
+                 drop_path_rate=0.,
                  hybrid_backbone=None,
                  norm_cfg=dict(type='LN'),
                  act_cfg=dict(type='GELU'),
@@ -338,8 +340,12 @@ class VisionTransformer(BaseBackbone):
             torch.zeros(1, num_patches + 1, self.embed_dims))
         self.drop_after_pos = nn.Dropout(p=drop_rate)
 
+        dpr = [
+            x.item() for x in torch.linspace(0, drop_path_rate,
+                                             self.arch_settings['num_layers'])
+        ]  # stochastic depth decay rule
         self.layers = ModuleList()
-        for _ in range(self.arch_settings['num_layers']):
+        for i in range(self.arch_settings['num_layers']):
             self.layers.append(
                 TransformerEncoderLayer(
                     self.embed_dims,
@@ -347,6 +353,7 @@ class VisionTransformer(BaseBackbone):
                     self.arch_settings['feedforward_channels'],
                     attn_drop_rate=attn_drop_rate,
                     drop_rate=drop_rate,
+                    drop_path_rate=dpr[i],
                     num_fcs=num_fcs,
                     qkv_bias=True if 'qkv_bias' not in self.arch_settings else
                     self.arch_settings['qkv_bias'],
@@ -364,7 +371,6 @@ class VisionTransformer(BaseBackbone):
 
     def init_weights(self):
         super(VisionTransformer, self).init_weights()
-
         # Modified from ClassyVision
         nn.init.normal_(self.pos_embed, std=0.02)
 
