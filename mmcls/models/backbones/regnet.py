@@ -97,8 +97,9 @@ class RegNet(ResNet):
                  norm_cfg=dict(type='BN', requires_grad=True),
                  norm_eval=False,
                  with_cp=False,
-                 zero_init_residual=True):
-        super(ResNet, self).__init__()
+                 zero_init_residual=True,
+                 init_cfg=None):
+        super(ResNet, self).__init__(init_cfg)
 
         # Generate RegNet parameters first
         if isinstance(arch, str):

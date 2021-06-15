@@ -26,7 +26,7 @@ def _demo_mm_inputs(input_shape, num_classes):
     rng = np.random.RandomState(0)
     imgs = rng.rand(*input_shape)
     gt_labels = rng.randint(
-        low=0, high=num_classes - 1, size=(N, 1)).astype(np.uint8)
+        low=0, high=num_classes, size=(N, 1)).astype(np.uint8)
     mm_inputs = {
         'imgs': torch.FloatTensor(imgs).requires_grad_(True),
         'gt_labels': torch.LongTensor(gt_labels),

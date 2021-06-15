@@ -18,8 +18,9 @@ class MultiLabelClsHead(BaseHead):
                      type='CrossEntropyLoss',
                      use_sigmoid=True,
                      reduction='mean',
-                     loss_weight=1.0)):
-        super(MultiLabelClsHead, self).__init__()
+                     loss_weight=1.0),
+                 init_cfg=None):
+        super(MultiLabelClsHead, self).__init__(init_cfg=init_cfg)
 
         assert isinstance(loss, dict)
 
@@ -46,7 +47,9 @@ class MultiLabelClsHead(BaseHead):
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
         pred = F.sigmoid(cls_score) if cls_score is not None else None
-        if torch.onnx.is_in_onnx_export():
+
+        on_trace = hasattr(torch.jit, 'is_tracing') and torch.jit.is_tracing()
+        if torch.onnx.is_in_onnx_export() or on_trace:
             return pred
         pred = list(pred.detach().cpu().numpy())
         return pred

@@ -6,9 +6,8 @@ import cv2
 import mmcv
 import torch
 import torch.distributed as dist
-import torch.nn as nn
 from mmcv import color_val
-from mmcv.utils import print_log
+from mmcv.runner import BaseModule
 
 # TODO import `auto_fp16` from mmcv and delete them from mmcls
 try:
@@ -19,11 +18,11 @@ except ImportError:
     from mmcls.core import auto_fp16
 
 
-class BaseClassifier(nn.Module, metaclass=ABCMeta):
+class BaseClassifier(BaseModule, metaclass=ABCMeta):
     """Base class for classifiers."""
 
-    def __init__(self):
-        super(BaseClassifier, self).__init__()
+    def __init__(self, init_cfg=None):
+        super(BaseClassifier, self).__init__(init_cfg)
         self.fp16_enabled = False
 
     @property
@@ -56,10 +55,6 @@ class BaseClassifier(nn.Module, metaclass=ABCMeta):
     @abstractmethod
     def simple_test(self, img, **kwargs):
         pass
-
-    def init_weights(self, pretrained=None):
-        if pretrained is not None:
-            print_log(f'load model from: {pretrained}', logger='root')
 
     def forward_test(self, imgs, **kwargs):
         """

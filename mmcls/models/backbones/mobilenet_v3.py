@@ -1,8 +1,4 @@
-import logging
-
-import torch.nn as nn
-from mmcv.cnn import ConvModule, constant_init, kaiming_init, normal_init
-from mmcv.runner import load_checkpoint
+from mmcv.cnn import ConvModule
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from ..builder import BACKBONES
@@ -70,8 +66,16 @@ class MobileNetV3(BaseBackbone):
                  out_indices=None,
                  frozen_stages=-1,
                  norm_eval=False,
-                 with_cp=False):
-        super(MobileNetV3, self).__init__()
+                 with_cp=False,
+                 init_cfg=[
+                     dict(
+                         type='Kaiming',
+                         layer=['Conv2d'],
+                         nonlinearity='leaky_relu'),
+                     dict(type='Normal', layers=['Linear'], std=0.01),
+                     dict(type='Constant', layer=['BatchNorm2d'], val=1)
+                 ]):
+        super(MobileNetV3, self).__init__(init_cfg)
         assert arch in self.arch_settings
         if out_indices is None:
             out_indices = (12, ) if arch == 'small' else (16, )
@@ -163,26 +167,6 @@ class MobileNetV3(BaseBackbone):
         layers.append(layer_name)
 
         return layers
-
-    def init_weights(self, pretrained=None):
-        if isinstance(pretrained, str):
-            logger = logging.getLogger()
-            load_checkpoint(self, pretrained, strict=False, logger=logger)
-        elif pretrained is None:
-            for m in self.modules():
-                if isinstance(m, nn.Conv2d):
-                    kaiming_init(
-                        m,
-                        mode='fan_out',
-                        nonlinearity='leaky_relu',
-                        bias=0.,
-                    )
-                if isinstance(m, nn.Linear):
-                    normal_init(m, 0, 0.01, bias=0.)
-                elif isinstance(m, nn.BatchNorm2d):
-                    constant_init(m, 1, bias=0.)
-        else:
-            raise TypeError('pretrained must be a str or None')
 
     def forward(self, x):
         outs = []

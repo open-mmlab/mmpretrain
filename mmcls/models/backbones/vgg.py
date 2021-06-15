@@ -1,5 +1,5 @@
 import torch.nn as nn
-from mmcv.cnn import ConvModule, constant_init, kaiming_init, normal_init
+from mmcv.cnn import ConvModule
 from mmcv.utils.parrots_wrapper import _BatchNorm
 
 from ..builder import BACKBONES
@@ -85,8 +85,13 @@ class VGG(BaseBackbone):
                  act_cfg=dict(type='ReLU'),
                  norm_eval=False,
                  ceil_mode=False,
-                 with_last_pool=True):
-        super(VGG, self).__init__()
+                 with_last_pool=True,
+                 init_cfg=[
+                     dict(type='Kaiming', layer=['Conv2d']),
+                     dict(type='Constant', val=1., layer=['_BatchNorm']),
+                     dict(type='Normal', std=0.01, layer=['Linear'])
+                 ]):
+        super(VGG, self).__init__(init_cfg)
         if depth not in self.arch_settings:
             raise KeyError(f'invalid depth {depth} for vgg')
         assert num_stages >= 1 and num_stages <= 5
@@ -143,17 +148,6 @@ class VGG(BaseBackbone):
                 nn.Dropout(),
                 nn.Linear(4096, num_classes),
             )
-
-    def init_weights(self, pretrained=None):
-        super(VGG, self).init_weights(pretrained)
-        if pretrained is None:
-            for m in self.modules():
-                if isinstance(m, nn.Conv2d):
-                    kaiming_init(m)
-                elif isinstance(m, _BatchNorm):
-                    constant_init(m, 1)
-                elif isinstance(m, nn.Linear):
-                    normal_init(m, std=0.01)
 
     def forward(self, x):
         outs = []
