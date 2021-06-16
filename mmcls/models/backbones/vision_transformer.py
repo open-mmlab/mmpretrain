@@ -27,8 +27,8 @@ class TransformerEncoderLayer(BaseModule):
         norm_cfg (dict): Config dict for normalization layer. Default
             layer normalization
         batch_first (bool): Key, Query and Value are shape of
-            (batch, n, embed_dim)
-            or (n, batch, embed_dim). Default to False.
+            (batch, n, embed_dim) or (n, batch, embed_dim).
+            (batch, n, embed_dim) is common case in CV.  Default to False.
         init_cfg (dict, optional): Initialization config dict
     """
 
