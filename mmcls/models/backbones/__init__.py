@@ -11,11 +11,13 @@ from .seresnet import SEResNet
 from .seresnext import SEResNeXt
 from .shufflenet_v1 import ShuffleNetV1
 from .shufflenet_v2 import ShuffleNetV2
+from .t2t_vit import T2T_ViT
 from .vgg import VGG
 from .vision_transformer import VisionTransformer
 
 __all__ = [
     'LeNet5', 'AlexNet', 'VGG', 'RegNet', 'ResNet', 'ResNeXt', 'ResNetV1d',
     'ResNeSt', 'ResNet_CIFAR', 'SEResNet', 'SEResNeXt', 'ShuffleNetV1',
-    'ShuffleNetV2', 'MobileNetV2', 'MobileNetv3', 'VisionTransformer'
+    'ShuffleNetV2', 'MobileNetV2', 'MobileNetv3', 'VisionTransformer',
+    'T2T_ViT'
 ]
