@@ -28,7 +28,7 @@ class TransformerEncoderLayer(BaseModule):
             layer normalization
         batch_first (bool): Key, Query and Value are shape of
             (batch, n, embed_dim) or (n, batch, embed_dim).
-            (batch, n, embed_dim) is common case in CV.  Default to False.
+            (batch, n, embed_dim) is common case in CV.  Default to False
         init_cfg (dict, optional): Initialization config dict
     """
 
@@ -101,15 +101,15 @@ class PatchEmbed(BaseModule):
     """Image to Patch Embedding.
 
     Args:
-        img_size (int | tuple): The size of input image.
+        img_size (int | tuple): The size of input image
         patch_size (int): The size of one patch
-        in_channels (int): The num of input channels.
-        embed_dim (int): The dimensions of embedding.
-        norm_cfg (dict, optional): Config dict for normalization layer.
-        conv_cfg (dict, optional): The config dict for conv layers.
-            Default: None.
+        in_channels (int): The num of input channels
+        embed_dim (int): The dimensions of embedding
+        norm_cfg (dict, optional): Config dict for normalization layer
+        conv_cfg (dict, optional): The config dict for conv layers
+            Default: None
         init_cfg (`mmcv.ConfigDict`, optional): The Config for initialization.
-            Default: None.
+            Default: None
     """
 
     def __init__(self,
@@ -177,6 +177,17 @@ class HybridEmbed(BaseModule):
     """CNN Feature Map Embedding.
 
     Extract feature map from CNN, flatten, project to embedding dim.
+
+    Args:
+        backbone (nn.Module): CNN backbone
+        img_size (int | tuple): The size of input image
+        feature_size (int | tuple, optional): Size of feature map
+        in_channels (int): The num of input channels
+        embed_dim (int): The dimensions of embedding
+        conv_cfg (dict, optional): The config dict for conv layers.
+            Default: None
+        init_cfg (`mmcv.ConfigDict`, optional): The Config for initialization.
+            Default: None
     """
 
     def __init__(self,
