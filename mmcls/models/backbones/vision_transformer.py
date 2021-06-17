@@ -27,8 +27,8 @@ class TransformerEncoderLayer(BaseModule):
         norm_cfg (dict): Config dict for normalization layer. Default
             layer normalization
         batch_first (bool): Key, Query and Value are shape of
-            (batch, n, embed_dim) or (n, batch, embed_dim).
-            (batch, n, embed_dim) is common case in CV.  Default to False.
+            (batch, n, embed_dims) or (n, batch, embed_dims).
+            (batch, n, embed_dims) is common case in CV.  Default to False.
         init_cfg (dict, optional): Initialization config dict
     """
 
@@ -96,6 +96,85 @@ class TransformerEncoderLayer(BaseModule):
         return x
 
 
+class PatchEmbed_v2(BaseModule):
+    """Image to Patch Embedding V2.
+
+    We use a conv layer to implement PatchEmbed.
+
+    Args:
+        img_size (int | tuple): The size of input image. Default: 224
+        in_channels (int): The num of input channels. Default: 3
+        embed_dims (int): The dimensions of embedding. Default: 768
+        kernal_size (int | tuple): Size of the convolving kernel. Default: 16
+        stride (int | tuple): Stride of the convolution. Default: 16
+        padding (int | tuple): Padding added to all four sides of
+            the input. Default: 0
+        dilation (int | tuple): Spacing between kernel elements. Default: 1
+        norm_cfg (dict, optional): Config dict for normalization layer.
+        conv_cfg (dict, optional): The config dict for conv layers.
+            Default: None.
+        init_cfg (`mmcv.ConfigDict`, optional): The Config for initialization.
+            Default: None.
+    """
+
+    def __init__(self,
+                 img_size=224,
+                 in_channels=3,
+                 embed_dims=768,
+                 kernal_size=16,
+                 stride=16,
+                 padding=0,
+                 dilation=1,
+                 norm_cfg=None,
+                 conv_cfg=None,
+                 init_cfg=None):
+        super(PatchEmbed_v2, self).__init__(init_cfg)
+
+        self.img_size = to_2tuple(img_size)
+        self.embed_dims = embed_dims
+        kernal_size = to_2tuple(kernal_size)
+        stride = to_2tuple(stride)
+        padding = to_2tuple(padding)
+        dilation = to_2tuple(dilation)
+
+        patches_resolution = [
+            (self.img_size[i] + 2 * padding[i] - kernal_size[i]) // stride[i] +
+            1 for i in range(2)
+        ]
+        num_patches = patches_resolution[0] * patches_resolution[1]
+        self.patches_resolution = patches_resolution
+        self.num_patches = num_patches
+
+        # Use conv layer to embed
+        self.projection = build_conv_layer(
+            conv_cfg,
+            in_channels,
+            embed_dims,
+            kernel_size=kernal_size,
+            stride=stride,
+            padding=padding,
+            dilation=dilation)
+
+        if norm_cfg is not None:
+            self.norm = build_norm_layer(norm_cfg, embed_dims)[1]
+        else:
+            self.norm = None
+
+    def forward(self, x):
+        B, C, H, W = x.shape
+        # FIXME look at relaxing size constraints
+        assert H == self.img_size[0] and W == self.img_size[1], \
+            f"Input image size ({H}*{W}) doesn't " \
+            f'match model ({self.img_size[0]}*{self.img_size[1]}).'
+        # The output size is (B, N, D), where N=H*W/P/P, D is embid_dim
+        x = self.projection(x).flatten(2).transpose(1, 2)
+
+        if self.norm is not None:
+            x = self.norm(x)
+
+        return x
+
+
 # Modified from pytorch-image-models
 class PatchEmbed(BaseModule):
     """Image to Patch Embedding.
@@ -104,7 +183,7 @@ class PatchEmbed(BaseModule):
         img_size (int | tuple): The size of input image.
         patch_size (int): The size of one patch
         in_channels (int): The num of input channels.
-        embed_dim (int): The dimensions of embedding.
+        embed_dims (int): The dimensions of embedding.
         norm_cfg (dict, optional): Config dict for normalization layer.
         conv_cfg (dict, optional): The config dict for conv layers.
             Default: None.
@@ -116,7 +195,7 @@ class PatchEmbed(BaseModule):
                  img_size=224,
                  patch_size=16,
                  in_channels=3,
-                 embed_dim=768,
+                 embed_dims=768,
                  norm_cfg=None,
                  conv_cfg=None,
                  init_cfg=None):
@@ -148,12 +227,12 @@ class PatchEmbed(BaseModule):
         self.projection = build_conv_layer(
             conv_cfg,
             in_channels,
-            embed_dim,
+            embed_dims,
             kernel_size=patch_size,
             stride=patch_size)
 
         if norm_cfg is not None:
-            self.norm = build_norm_layer(norm_cfg, embed_dim)[1]
+            self.norm = build_norm_layer(norm_cfg, embed_dims)[1]
         else:
             self.norm = None
 
@@ -184,7 +263,7 @@ class HybridEmbed(BaseModule):
                  img_size=224,
                  feature_size=None,
                  in_channels=3,
-                 embed_dim=768,
+                 embed_dims=768,
                  conv_cfg=None,
                  init_cfg=None):
         super(HybridEmbed, self).__init__(init_cfg)
@@ -229,7 +308,7 @@ class HybridEmbed(BaseModule):
 
         # Use conv layer to embed
         self.projection = build_conv_layer(
-            conv_cfg, feature_dim, embed_dim, kernel_size=1, stride=1)
+            conv_cfg, feature_dim, embed_dims, kernel_size=1, stride=1)
 
     def forward(self, x):
         x = self.backbone(x)
@@ -255,17 +334,17 @@ class VisionTransformer(BaseBackbone):
         patch_size (int | tuple): The patch size
         in_channels (int): Number of input channels
         drop_rate (float): Probability of an element to be zeroed.
-            Default 0.0
+            Default: 0.0
         attn_drop_rate (float): The drop out rate for attention layer.
-            Default 0.0
+            Default: 0.0
         drop_path_rate (float): stochastic depth rate. Default 0.0
         hybrid_backbone (nn.Module, optional): CNN backbone to use in-place of
-            PatchEmbed module. Default None
-        norm_cfg (dict): Config dict for normalization layer. Default
+            PatchEmbed module. Default: None
+        norm_cfg (dict): Config dict for normalization layer. Default:
             layer normalization
-        act_cfg (dict): The activation config for FFNs. Defalut GELU
+        act_cfg (dict): The activation config for FFNs. Defalut: GELU
         num_fcs (int): The number of fully-connected layers for FFNs.
-            Default 2
+            Default: 2
         init_cfg (dict, optional): Initialization config dict
     """
     arch_zoo = {
@@ -328,13 +407,14 @@ class VisionTransformer(BaseBackbone):
                 hybrid_backbone,
                 img_size=img_size,
                 in_channels=in_channels,
-                embed_dim=self.embed_dims)
+                embed_dims=self.embed_dims)
         else:
-            self.patch_embed = PatchEmbed(
+            self.patch_embed = PatchEmbed_v2(
                 img_size=img_size,
-                patch_size=patch_size,
                 in_channels=in_channels,
-                embed_dim=self.embed_dims)
+                embed_dims=self.embed_dims,
+                kernal_size=patch_size,
+                stride=patch_size)
         num_patches = self.patch_embed.num_patches
 
         self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dims))
