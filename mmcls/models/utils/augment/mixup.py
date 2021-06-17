@@ -42,8 +42,6 @@ class BatchMixupLayer(BaseMixupLayer):
 
     def mixup(self, img, gt_label):
         one_hot_gt_label = F.one_hot(gt_label, num_classes=self.num_classes)
-        # r = np.random.rand(1)
-        # if r < self.mixup_prob:
         lam = np.random.beta(self.alpha, self.alpha)
         batch_size = img.size(0)
         index = torch.randperm(batch_size)
@@ -51,9 +49,8 @@ class BatchMixupLayer(BaseMixupLayer):
         mixed_img = lam * img + (1 - lam) * img[index, :]
         mixed_gt_label = lam * one_hot_gt_label + (
             1 - lam) * one_hot_gt_label[index, :]
+
         return mixed_img, mixed_gt_label
-        # else:
-        #     return img, one_hot_gt_label
 
     def __call__(self, img, gt_label):
         return self.mixup(img, gt_label)
