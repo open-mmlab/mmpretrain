@@ -1,9 +1,11 @@
 import mmcv
 import torch.nn as nn
 from mmcv.cnn import ConvModule
+from mmcv.runner import BaseModule
 
 
-class SELayer(nn.Module):
+# class SELayer(nn.Module):
+class SELayer(BaseModule):
     """Squeeze-and-Excitation Module.
 
     Args:
@@ -24,8 +26,9 @@ class SELayer(nn.Module):
                  channels,
                  ratio=16,
                  conv_cfg=None,
-                 act_cfg=(dict(type='ReLU'), dict(type='Sigmoid'))):
-        super(SELayer, self).__init__()
+                 act_cfg=(dict(type='ReLU'), dict(type='Sigmoid')),
+                 init_cfg=None):
+        super(SELayer, self).__init__(init_cfg)
         if isinstance(act_cfg, dict):
             act_cfg = (act_cfg, act_cfg)
         assert len(act_cfg) == 2

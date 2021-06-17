@@ -108,17 +108,88 @@ def test_focal_loss():
 
 
 def test_label_smooth_loss():
-    # test label smooth loss
+    # test label_smooth_val assertion
+    with pytest.raises(AssertionError):
+        loss_cfg = dict(type='LabelSmoothLoss', label_smooth_val=1.0)
+        build_loss(loss_cfg)
+
+    with pytest.raises(AssertionError):
+        loss_cfg = dict(type='LabelSmoothLoss', label_smooth_val='str')
+        build_loss(loss_cfg)
+
+    # test reduction assertion
+    with pytest.raises(AssertionError):
+        loss_cfg = dict(
+            type='LabelSmoothLoss', label_smooth_val=0.1, reduction='unknown')
+        build_loss(loss_cfg)
+
+    # test mode assertion
+    with pytest.raises(AssertionError):
+        loss_cfg = dict(
+            type='LabelSmoothLoss', label_smooth_val=0.1, mode='unknown')
+        build_loss(loss_cfg)
+
+    # test original mode label smooth loss
     cls_score = torch.tensor([[1., -1.]])
     label = torch.tensor([0])
 
     loss_cfg = dict(
         type='LabelSmoothLoss',
-        reduction='mean',
         label_smooth_val=0.1,
+        mode='original',
+        reduction='mean',
         loss_weight=1.0)
     loss = build_loss(loss_cfg)
-    assert loss(cls_score, label) - 0.2179 <= 0.0001
+    correct = 0.2269  # from timm
+    assert loss(cls_score, label) - correct <= 0.0001
+
+    # test classy_vision mode label smooth loss
+    loss_cfg = dict(
+        type='LabelSmoothLoss',
+        label_smooth_val=0.1,
+        mode='classy_vision',
+        reduction='mean',
+        loss_weight=1.0)
+    loss = build_loss(loss_cfg)
+    correct = 0.2178  # from ClassyVision
+    assert loss(cls_score, label) - correct <= 0.0001
+
+    # test multi_label mode label smooth loss
+    cls_score = torch.tensor([[1., -1., 1]])
+    label = torch.tensor([[1, 0, 1]])
+
+    loss_cfg = dict(
+        type='LabelSmoothLoss',
+        label_smooth_val=0.1,
+        mode='multi_label',
+        reduction='mean',
+        loss_weight=1.0)
+    loss = build_loss(loss_cfg)
+    smooth_label = torch.tensor([[0.9, 0.1, 0.9]])
+    correct = torch.binary_cross_entropy_with_logits(cls_score,
+                                                     smooth_label).mean()
+    assert torch.allclose(loss(cls_score, label), correct)
+
+    # test label linear combination smooth loss
+    cls_score = torch.tensor([[1., -1., 0.]])
+    label1 = torch.tensor([[1., 0., 0.]])
+    label2 = torch.tensor([[0., 0., 1.]])
+    label_mix = label1 * 0.6 + label2 * 0.4
+
+    loss_cfg = dict(
+        type='LabelSmoothLoss',
+        label_smooth_val=0.1,
+        mode='original',
+        reduction='mean',
+        num_classes=3,
+        loss_weight=1.0)
+    loss = build_loss(loss_cfg)
+    smooth_label1 = loss.original_smooth_label(label1)
+    smooth_label2 = loss.original_smooth_label(label2)
+    label_smooth_mix = smooth_label1 * 0.6 + smooth_label2 * 0.4
+    correct = (-torch.log_softmax(cls_score, -1) * label_smooth_mix).sum()
+
+    assert loss(cls_score, label_mix) - correct <= 0.0001
 
     # test label smooth loss with weight
     cls_score = torch.tensor([[1., -1.], [1., -1.]])

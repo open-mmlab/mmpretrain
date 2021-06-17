@@ -21,8 +21,9 @@ class ClsHead(BaseHead):
     def __init__(self,
                  loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
                  topk=(1, ),
-                 cal_acc=False):
-        super(ClsHead, self).__init__()
+                 cal_acc=False,
+                 init_cfg=None):
+        super(ClsHead, self).__init__(init_cfg=init_cfg)
 
         assert isinstance(loss, dict)
         assert isinstance(topk, (int, tuple))
@@ -61,7 +62,9 @@ class ClsHead(BaseHead):
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
         pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
-        if torch.onnx.is_in_onnx_export():
+
+        on_trace = hasattr(torch.jit, 'is_tracing') and torch.jit.is_tracing()
+        if torch.onnx.is_in_onnx_export() or on_trace:
             return pred
         pred = list(pred.detach().cpu().numpy())
         return pred

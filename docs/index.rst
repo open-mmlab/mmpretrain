@@ -1,6 +1,10 @@
 Welcome to MMClassification's documentation!
 ==========================================
 
+You can switch between Chinese and English documents in the lower-left corner of the layout.
+
+您可以在页面左下角切换中英文文档。
+
 .. toctree::
    :maxdepth: 2
    :caption: Get Started
@@ -18,29 +22,27 @@ Welcome to MMClassification's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Dataset Preparation
-
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Quick Run
-
-
-.. toctree::
-   :maxdepth: 2
    :caption: Tutorials
 
    tutorials/finetune.md
    tutorials/new_dataset.md
    tutorials/data_pipeline.md
    tutorials/new_modules.md
-   tutorials/pytorch2onnx.md
-   tutorials/onnx2tensorrt.md
 
 
 .. toctree::
    :maxdepth: 2
    :caption: Useful Tools and Scripts
+
+   tutorials/pytorch2onnx.md
+   tutorials/onnx2tensorrt.md
+
+
+.. toctree::
+   :caption: Language Switch
+
+   switch_language.md
+
 
 
 Indices and tables

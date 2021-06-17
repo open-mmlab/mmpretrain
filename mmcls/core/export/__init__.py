@@ -1,3 +1,3 @@
-from .test import ONNXRuntimeClassifier
+from .test import ONNXRuntimeClassifier, TensorRTClassifier
 
-__all__ = ['ONNXRuntimeClassifier']
+__all__ = ['ONNXRuntimeClassifier', 'TensorRTClassifier']

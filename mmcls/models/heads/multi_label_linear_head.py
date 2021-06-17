@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmcv.cnn import normal_init
 
 from ..builder import HEADS
 from .multi_label_head import MultiLabelClsHead
@@ -24,8 +23,15 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
                      type='CrossEntropyLoss',
                      use_sigmoid=True,
                      reduction='mean',
-                     loss_weight=1.0)):
-        super(MultiLabelLinearClsHead, self).__init__(loss=loss)
+                     loss_weight=1.0),
+                 init_cfg=dict(
+                     type='Normal',
+                     mean=0.,
+                     std=0.01,
+                     bias=0.,
+                     override=dict(name='fc'))):
+        super(MultiLabelLinearClsHead, self).__init__(
+            loss=loss, init_cfg=init_cfg)
 
         if num_classes <= 0:
             raise ValueError(
@@ -37,9 +43,6 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
 
     def _init_layers(self):
         self.fc = nn.Linear(self.in_channels, self.num_classes)
-
-    def init_weights(self):
-        normal_init(self.fc, mean=0, std=0.01, bias=0)
 
     def forward_train(self, x, gt_label):
         gt_label = gt_label.type_as(x)
@@ -53,7 +56,9 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
         pred = F.sigmoid(cls_score) if cls_score is not None else None
-        if torch.onnx.is_in_onnx_export():
+
+        on_trace = hasattr(torch.jit, 'is_tracing') and torch.jit.is_tracing()
+        if torch.onnx.is_in_onnx_export() or on_trace:
             return pred
         pred = list(pred.detach().cpu().numpy())
         return pred

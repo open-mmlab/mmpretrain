@@ -153,8 +153,11 @@ def test_seresnet():
     assert check_norm_state(model.modules(), False)
 
     # Test SEResNet50 with torchvision pretrained weight
-    model = SEResNet(depth=50, norm_eval=True)
-    model.init_weights('torchvision://resnet50')
+    model = SEResNet(
+        depth=50,
+        norm_eval=True,
+        init_cfg=dict(type='Pretrained', checkpoint='torchvision://resnet50'))
+    model.init_weights()
     model.train()
     assert check_norm_state(model.modules(), False)
 
