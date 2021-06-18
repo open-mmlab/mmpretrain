@@ -322,13 +322,11 @@ class ShiftWindowMSA(BaseModule):
 
         self.register_buffer('attn_mask', attn_mask)
 
-    def forward(self, query, key=None, value=None, residual=None, **kwargs):
+    def forward(self, query, key=None, value=None, **kwargs):
         if key is None:
             key = query
         if value is None:
             value = key
-        if residual is None:
-            residual = query
 
         H, W = self.input_resolution
         B, L, C = query.shape
@@ -368,7 +366,7 @@ class ShiftWindowMSA(BaseModule):
             x = shifted_x
         x = x.view(B, H * W, C)
 
-        x = residual + self.drop(x)
+        x = self.drop(x)
         return x
 
     def window_reverse(self, windows):
@@ -433,13 +431,14 @@ class SwinBlock(BaseModule):
         self.ffn = FFN(**_ffn_cfgs)
 
     def forward(self, x):
-        residual = x
+        identity = x
         x = self.norm1(x)
-        x = self.attn(x, residual=residual)
+        x = self.attn(x)
+        x = x + identity
 
-        residual = x
+        identity = x
         x = self.norm2(x)
-        x = self.ffn(x, residual=residual)
+        x = self.ffn(x, identity=identity)
         return x
 
 
