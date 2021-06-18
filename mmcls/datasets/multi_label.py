@@ -1,6 +1,8 @@
+import copy
 import warnings
 
 import numpy as np
+import torch
 
 from mmcls.core import average_performance, mAP
 from .base_dataset import BaseDataset
@@ -9,6 +11,15 @@ from .base_dataset import BaseDataset
 class MultiLabelDataset(BaseDataset):
     """Multi-label Dataset."""
 
+    def get_gt_labels(self):
+        """Get all ground-truth labels (categories).
+
+        Returns:
+            torch.Tensor: ground truth labels for all images.
+        """
+
+        return self.data_infos['all_gt_labels']
+
     def get_cat_ids(self, idx):
         """Get category ids by index.
 
@@ -16,11 +27,21 @@ class MultiLabelDataset(BaseDataset):
             idx (int): Index of data.
 
         Returns:
-            np.ndarray: Image categories of specified index.
+            torch.Tensor: Image categories of specified index.
         """
-        gt_labels = self.data_infos[idx]['gt_label']
-        cat_ids = np.where(gt_labels == 1)[0]
+        gt_label_index = self.data_infos['samples'][idx]['gt_label_index']
+        gt_label = self.data_infos['all_gt_labels'][gt_label_index]
+        cat_ids = torch.where(gt_label == 1)[0]
         return cat_ids
+
+    def prepare_data(self, idx):
+        results = copy.deepcopy(self.data_infos['samples'][idx])
+        gt_label_index = results.pop('gt_label_index')
+        results['gt_label'] = self.data_infos['all_gt_labels'][gt_label_index]
+        return self.pipeline(results)
+
+    def __len__(self):
+        return len(self.data_infos['samples'])
 
     def evaluate(self,
                  results,
@@ -59,7 +80,7 @@ class MultiLabelDataset(BaseDataset):
         allowed_metrics = ['mAP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1']
         eval_results = {}
         results = np.vstack(results)
-        gt_labels = self.get_gt_labels()
+        gt_labels = self.get_gt_labels().numpy()
         num_imgs = len(results)
         assert len(gt_labels) == num_imgs, 'dataset testing results should '\
             'be of the same length as gt_labels.'
