@@ -19,18 +19,42 @@ class PatchMerging(BaseModule):
 
     def __init__(self,
                  input_resolution,
-                 embed_dims,
+                 in_channels,
+                 out_channels,
+                 kernel_size=2,
+                 stride=2,
+                 padding=0,
+                 dilation=1,
+                 bias=False,
                  norm_cfg=dict(type='LN'),
                  init_cfg=None):
         super().__init__(init_cfg)
+        H, W = input_resolution
         self.input_resolution = input_resolution
-        self.embed_dims = embed_dims
-        self.reduction = nn.Linear(4 * embed_dims, 2 * embed_dims, bias=False)
-        self.sampler = nn.Unfold(kernel_size=(2, 2), stride=2)
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+
+        kernel_size = to_2tuple(kernel_size)
+        stride = to_2tuple(stride)
+        padding = to_2tuple(padding)
+        dilation = to_2tuple(dilation)
+        self.sampler = nn.Unfold(kernel_size, dilation, padding, stride)
+
+        sample_dim = kernel_size[0] * kernel_size[1] * in_channels
+
         if norm_cfg is not None:
-            self.norm = build_norm_layer(norm_cfg, 4 * embed_dims)[1]
+            self.norm = build_norm_layer(norm_cfg, sample_dim)[1]
         else:
             self.norm = None
+
+        self.reduction = nn.Linear(sample_dim, out_channels, bias=bias)
+
+        # See https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html
+        H_out = (H + 2 * padding[0] - dilation[0] *
+                 (kernel_size[0] - 1) - 1) // stride[0] + 1
+        W_out = (W + 2 * padding[1] - dilation[1] *
+                 (kernel_size[1] - 1) - 1) // stride[1] + 1
+        self.output_resolution = (H_out, W_out)
 
     def forward(self, x):
         """
@@ -39,7 +63,6 @@ class PatchMerging(BaseModule):
         H, W = self.input_resolution
         B, L, C = x.shape
         assert L == H * W, 'input feature has wrong size'
-        assert H % 2 == 0 and W % 2 == 0, f'x size ({H}*{W}) are not even.'
 
         x = x.view(B, H, W, C).permute([0, 3, 1, 2])  # B, C, H, W
 
@@ -455,7 +478,10 @@ class SwinBlockSequence(BaseModule):
 
         if downsample:
             self.downsample = PatchMerging(
-                input_resolution, embed_dims=embed_dims, norm_cfg=norm_cfg)
+                input_resolution,
+                in_channels=embed_dims,
+                out_channels=2 * embed_dims,
+                norm_cfg=norm_cfg)
         else:
             self.downsample = None
 
@@ -573,13 +599,13 @@ class SwinTransformer(BaseBackbone):
         ]  # stochastic depth decay rule
 
         self.stages = ModuleList()
-        scale_factor = 1
+        embed_dims = self.embed_dims
+        input_resolution = patches_resolution
         for i, (depth,
                 num_heads) in enumerate(zip(self.depths, self.num_heads)):
             downsample = True if i < self.num_layers - 1 else False
-            input_resolution = [i // scale_factor for i in patches_resolution]
             _stage_cfg = {
-                'embed_dims': self.embed_dims * scale_factor,
+                'embed_dims': embed_dims,
                 'depth': depth,
                 'num_heads': num_heads,
                 'downsample': downsample,
@@ -593,7 +619,8 @@ class SwinTransformer(BaseBackbone):
 
             dpr = dpr[depth:]
             if downsample:
-                scale_factor *= 2
+                embed_dims = stage.downsample.out_channels
+                input_resolution = stage.downsample.output_resolution
 
         if norm_cfg is not None:
             self.norm = build_norm_layer(norm_cfg, self.num_features)[1]
