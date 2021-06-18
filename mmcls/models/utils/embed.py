@@ -149,14 +149,8 @@ class HybridEmbed(BaseModule):
 
         # Use conv layer to embed
         conv_cfg = conv_cfg or dict(
-            type='Conv2d',
-            in_channels=feature_dim,
-            out_channels=embed_dims,
-            kernel_size=1,
-            stride=1,
-            padding=0,
-            dilation=1)
-        self.projection = build_conv_layer(conv_cfg)
+            type='Conv2d', kernel_size=1, stride=1, padding=0, dilation=1)
+        self.projection = build_conv_layer(conv_cfg, feature_dim, embed_dims)
 
     def forward(self, x):
         x = self.backbone(x)
