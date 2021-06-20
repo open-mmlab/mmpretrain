@@ -21,4 +21,6 @@ model = dict(
         loss=dict(type='LabelSmoothLoss', label_smooth_val=0.1),
         topk=(1, 5),
     ),
-    train_cfg=dict(mixup=dict(alpha=0.2, num_classes=1000)))
+    train_cfg=dict(
+        augments=dict(type='BatchMixup', alpha=0.2, num_classes=1000,
+                      prob=1.)))
