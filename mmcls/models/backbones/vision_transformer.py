@@ -1,7 +1,10 @@
+import math
+
 import torch
 import torch.nn as nn
 from mmcv.cnn import build_conv_layer, build_norm_layer
 from mmcv.cnn.bricks.transformer import FFN, MultiheadAttention
+from mmcv.cnn.utils.weight_init import trunc_normal_
 from mmcv.runner.base_module import BaseModule, ModuleList
 
 from ..builder import BACKBONES
@@ -93,6 +96,7 @@ class TransformerEncoderLayer(BaseModule):
     def forward(self, x):
         x = self.attn(self.norm1(x), identity=x)
         x = self.ffn(self.norm2(x), identity=x)
+
         return x
 
 
@@ -156,6 +160,12 @@ class PatchEmbed(BaseModule):
             self.norm = build_norm_layer(norm_cfg, embed_dim)[1]
         else:
             self.norm = None
+
+    def init_weights(self):
+        super(PatchEmbed, self).init_weights()
+        fan_in = self.projection.in_channels * self.projection.kernel_size[0] \
+            * self.projection.kernel_size[1]
+        trunc_normal_(self.projection.weight, std=math.sqrt(1 / fan_in))
 
     def forward(self, x):
         B, C, H, W = x.shape
