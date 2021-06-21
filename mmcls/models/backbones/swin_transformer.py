@@ -527,7 +527,7 @@ class SwinBlockSequence(BaseModule):
 @BACKBONES.register_module()
 class SwinTransformer(BaseBackbone):
     """ Swin Transformer
-    A PyTorch impl of : `Swin Transformer:
+    A PyTorch implement of : `Swin Transformer:
     Hierarchical Vision Transformer using Shifted Windows`  -
         https://arxiv.org/abs/2103.14030
 
@@ -536,25 +536,27 @@ class SwinTransformer(BaseBackbone):
 
     Args:
         arch (str | dict): Swin Transformer architecture
-            Default: 'T'
+            Defaults to 'T'.
         img_size (int | tuple): The size of input image.
-            Default: 224
+            Defaults to 224.
         in_channels (int): The num of input channels.
-            Default: 3
+            Defaults to 3.
         drop_rate (float): Dropout rate.
-            Default: 0
+            Defaults to 0.
         drop_path_rate (float): Stochastic depth rate.
-            Default: 0.1
+            Defaults to 0.1.
         use_abs_pos_embed (bool): If True, add absolute position embedding to
             the patch embedding. Defaults to False.
         auto_pad (bool): If True, auto pad feature map to fit window_size.
             Defaults to False.
         norm_cfg (dict, optional): Config dict for normalization layer at end
-            of backone. Default: dict(type='LN')
+            of backone. Defaults to dict(type='LN')
         stage_cfg (dict, optional): Extra config dict for stages.
+            Defaults to None.
         patch_cfg (dict, optional): Extra config dict for patch embedding.
+            Defaults to None.
         init_cfg (dict, optional): The Config for initialization.
-            Default: None.
+            Defaults to None.
     """
     arch_zoo = {
         #     depth num_heads downsample
