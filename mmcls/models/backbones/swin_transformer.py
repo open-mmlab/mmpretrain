@@ -2,6 +2,7 @@ from copy import deepcopy
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.conv import build_conv_layer
 from mmcv.cnn.bricks.registry import ATTENTION
@@ -276,11 +277,9 @@ class ShiftWindowMSA(BaseModule):
                  attn_drop=0,
                  proj_drop=0,
                  dropout_layer=dict(type='DropPath', drop_prob=0.),
+                 auto_pad=False,
                  init_cfg=None):
         super().__init__(init_cfg)
-
-        self.w_msa = WindowMSA(embed_dims, to_2tuple(window_size), num_heads,
-                               qkv_bias, qk_scale, attn_drop, proj_drop)
 
         self.embed_dims = embed_dims
         self.input_resolution = input_resolution
@@ -291,12 +290,34 @@ class ShiftWindowMSA(BaseModule):
             self.shift_size = 0
             self.window_size = min(self.input_resolution)
 
+        self.w_msa = WindowMSA(embed_dims, to_2tuple(self.window_size),
+                               num_heads, qkv_bias, qk_scale, attn_drop,
+                               proj_drop)
+
         self.drop = build_dropout(dropout_layer)
+
+        H, W = self.input_resolution
+        # Handle auto padding
+        self.auto_pad = auto_pad
+        if self.auto_pad:
+            self.pad_r = (self.window_size -
+                          W % self.window_size) % self.window_size
+            self.pad_b = (self.window_size -
+                          H % self.window_size) % self.window_size
+            dummy = torch.empty((1, H, W, 1))  # 1 H W 1
+            dummy = F.pad(dummy, (0, 0, 0, self.pad_r, 0, self.pad_b))
+            _, self.H_pad, self.W_pad, _ = dummy.shape
+        else:
+            H_pad, W_pad = self.input_resolution
+            assert H_pad % self.window_size == 0 and W_pad % self.window_size,\
+                f'input_resolution({self.input_resolution}) is not divisible '\
+                f'by window_size({self.window_size}). Please check feature '\
+                f'map shape or set `auto_pad=True`.'
+            self.H_pad, self.W_pad = H_pad, W_pad
 
         if self.shift_size > 0:
             # calculate attention mask for SW-MSA
-            H, W = self.input_resolution
-            img_mask = torch.zeros((1, H, W, 1))  # 1 H W 1
+            img_mask = torch.zeros((1, self.H_pad, self.W_pad, 1))  # 1 H W 1
             h_slices = (slice(0, -self.window_size),
                         slice(-self.window_size,
                               -self.shift_size), slice(-self.shift_size, None))
@@ -333,6 +354,9 @@ class ShiftWindowMSA(BaseModule):
         assert L == H * W, 'input feature has wrong size'
         query = query.view(B, H, W, C)
 
+        if self.pad_r or self.pad_b:
+            query = F.pad(query, (0, 0, 0, self.pad_r, 0, self.pad_b))
+
         # cyclic shift
         if self.shift_size > 0:
             shifted_query = torch.roll(
@@ -355,7 +379,7 @@ class ShiftWindowMSA(BaseModule):
                                          self.window_size, C)
 
         # B H' W' C
-        shifted_x = self.window_reverse(attn_windows)
+        shifted_x = self.window_reverse(attn_windows, self.H_pad, self.W_pad)
         # reverse cyclic shift
         if self.shift_size > 0:
             x = torch.roll(
@@ -364,13 +388,16 @@ class ShiftWindowMSA(BaseModule):
                 dims=(1, 2))
         else:
             x = shifted_x
+
+        if self.auto_pad and self.pad_r or self.pad_b:
+            x = x[:, :H, :W, :].contiguous()
+
         x = x.view(B, H * W, C)
 
         x = self.drop(x)
         return x
 
-    def window_reverse(self, windows):
-        H, W = self.input_resolution
+    def window_reverse(self, windows, H, W):
         window_size = self.window_size
         B = int(windows.shape[0] / (H * W / window_size / window_size))
         x = windows.view(B, H // window_size, W // window_size, window_size,
@@ -402,6 +429,7 @@ class SwinBlock(BaseModule):
                  ffn_cfgs=dict(),
                  act_cfg=dict(type='GELU'),
                  norm_cfg=dict(type='LN'),
+                 auto_pad=False,
                  init_cfg=None):
 
         super(SwinBlock, self).__init__(init_cfg)
@@ -413,6 +441,7 @@ class SwinBlock(BaseModule):
             'shift_size': window_size // 2 if shift else 0,
             'window_size': window_size,
             'dropout_layer': dict(type='DropPath', drop_prob=drop_path),
+            'auto_pad': auto_pad,
             **attn_cfgs
         }
         self.norm1 = build_norm_layer(norm_cfg, embed_dims)[1]
@@ -453,6 +482,7 @@ class SwinBlockSequence(BaseModule):
                  drop_path=0.,
                  norm_cfg=dict(type='LN'),
                  block_cfg=dict(),
+                 auto_pad=False,
                  init_cfg=None):
         super().__init__(init_cfg)
 
@@ -470,6 +500,7 @@ class SwinBlockSequence(BaseModule):
                 'num_heads': num_heads,
                 'shift': False if i % 2 == 0 else True,
                 'drop_path': drop_path[i],
+                'auto_pad': auto_pad,
                 **block_cfg[i]
             }
             block = SwinBlock(**_block_cfg)
@@ -515,7 +546,9 @@ class SwinTransformer(BaseBackbone):
         drop_path_rate (float): Stochastic depth rate.
             Default: 0.1
         use_abs_pos_embed (bool): If True, add absolute position embedding to
-            the patch embedding. Default: False
+            the patch embedding. Defaults to False.
+        auto_pad (bool): If True, auto pad feature map to fit window_size.
+            Defaults to False.
         norm_cfg (dict, optional): Config dict for normalization layer at end
             of backone. Default: dict(type='LN')
         stage_cfg (dict, optional): Extra config dict for stages.
@@ -550,6 +583,7 @@ class SwinTransformer(BaseBackbone):
                  drop_rate=0.,
                  drop_path_rate=0.1,
                  use_abs_pos_embed=False,
+                 auto_pad=False,
                  norm_cfg=dict(type='LN'),
                  stage_cfg=dict(),
                  patch_cfg=dict(),
@@ -572,6 +606,7 @@ class SwinTransformer(BaseBackbone):
         self.num_heads = self.arch_settings['num_heads']
         self.num_layers = len(self.depths)
         self.use_abs_pos_embed = use_abs_pos_embed
+        self.auto_pad = auto_pad
         self.num_features = int(self.embed_dims * 2**(self.num_layers - 1))
 
         _patch_cfg = dict(
@@ -610,6 +645,7 @@ class SwinTransformer(BaseBackbone):
                 'downsample': downsample,
                 'input_resolution': input_resolution,
                 'drop_path': dpr[:depth],
+                'auto_pad': auto_pad,
                 **stage_cfg
             }
 
