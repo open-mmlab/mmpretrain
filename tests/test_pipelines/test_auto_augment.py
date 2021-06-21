@@ -145,7 +145,7 @@ def test_rand_augment():
             num_policies=2,
             magnitude_level=12)
         build_from_cfg(transform, PIPELINES)
-    with pytest.raises(KeyError):
+    with pytest.raises(AssertionError):
         invalid_policies = copy.deepcopy(policies)
         invalid_policies[2].pop('magnitude_range')
         transform = dict(
@@ -267,8 +267,8 @@ def test_rand_augment():
     assert (results['img'] == results['ori_img']).all()
 
     # test case where magnitude_std = "inf"
-    random.seed(0)
-    np.random.seed(0)
+    random.seed(3)
+    np.random.seed(3)
     results = construct_toy_data()
     transform = dict(
         type='RandAugment',
@@ -277,18 +277,18 @@ def test_rand_augment():
         magnitude_level=12,
         magnitude_std='inf')
     pipeline = build_from_cfg(transform, PIPELINES)
-    # apply invert and translate (magnitude=0.3378)
+    # apply invert and translate (magnitude=0.148)
     results = pipeline(results)
     img_augmented = np.array(
-        [[128, 254, 253, 252], [128, 250, 249, 248], [128, 246, 245, 244]],
+        [[127, 254, 253, 252], [127, 250, 249, 248], [127, 246, 245, 244]],
         dtype=np.uint8)
     img_augmented = np.stack([img_augmented, img_augmented, img_augmented],
                              axis=-1)
     np.testing.assert_array_equal(results['img'], img_augmented)
 
     # test case where magnitude_std = 0.5
-    random.seed(0)
-    np.random.seed(0)
+    random.seed(3)
+    np.random.seed(3)
     results = construct_toy_data()
     transform = dict(
         type='RandAugment',
@@ -297,10 +297,10 @@ def test_rand_augment():
         magnitude_level=12,
         magnitude_std=0.5)
     pipeline = build_from_cfg(transform, PIPELINES)
-    # apply invert and translate (magnitude=0.8709)
+    # apply invert and translate (magnitude=0.384)
     results = pipeline(results)
     img_augmented = np.array(
-        [[128, 128, 128, 254], [128, 128, 128, 250], [128, 128, 128, 246]],
+        [[127, 127, 254, 253], [127, 127, 250, 249], [127, 127, 246, 245]],
         dtype=np.uint8)
     img_augmented = np.stack([img_augmented, img_augmented, img_augmented],
                              axis=-1)

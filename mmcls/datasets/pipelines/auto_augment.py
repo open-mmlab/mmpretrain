@@ -1,6 +1,7 @@
 import copy
 import random
 from numbers import Number
+from typing import Sequence
 
 import mmcv
 import numpy as np
@@ -107,9 +108,6 @@ class RandAugment(object):
             f'of int or float type, got {type(total_level)} instead.'
         assert isinstance(policies, list) and len(policies) > 0, \
             'Policies must be a non-empty list.'
-        for policy in policies:
-            assert isinstance(policy, dict) and 'type' in policy, \
-                'Each policy must be a dict with key "type".'
 
         assert isinstance(magnitude_std, (Number, str)), \
             'Magnitude std must be of number or str type, ' \
@@ -127,7 +125,24 @@ class RandAugment(object):
         self.magnitude_level = magnitude_level
         self.magnitude_std = magnitude_std
         self.total_level = total_level
-        self.policies = self._process_policies(policies)
+        self.policies = policies
+        self._check_policies(self.policies)
+
+    def _check_policies(self, policies):
+        for policy in policies:
+            assert isinstance(policy, dict) and 'type' in policy, \
+                'Each policy must be a dict with key "type".'
+            type_name = policy['type']
+
+            magnitude_key = policy.get('magnitude_key', None)
+            if magnitude_key is not None:
+                assert 'magnitude_range' in policy, \
+                    f'RandAugment policy {type_name} needs `magnitude_range`.'
+                magnitude_range = policy['magnitude_range']
+                assert (isinstance(magnitude_range, Sequence)
+                        and len(magnitude_range) == 2), \
+                    f'`magnitude_range` of RandAugment policy {type_name} ' \
+                    f'should be a Sequence with two numbers.'
 
     def _process_policies(self, policies):
         processed_policies = []
@@ -135,21 +150,20 @@ class RandAugment(object):
             processed_policy = copy.deepcopy(policy)
             magnitude_key = processed_policy.pop('magnitude_key', None)
             if magnitude_key is not None:
-                val1, val2 = processed_policy.pop('magnitude_range')
-                magnitude_value = (self.magnitude_level / self.total_level
-                                   ) * float(val2 - val1) + val1
-
+                magnitude = self.magnitude_level
                 # if magnitude_std is positive number or 'inf', move
                 # magnitude_value randomly.
-                maxval = max(val1, val2)
-                minval = min(val1, val2)
                 if self.magnitude_std == 'inf':
-                    magnitude_value = random.uniform(minval, magnitude_value)
+                    magnitude = random.uniform(0, magnitude)
                 elif self.magnitude_std > 0:
-                    magnitude_value = random.gauss(magnitude_value,
-                                                   self.magnitude_std)
-                    magnitude_value = min(maxval, max(minval, magnitude_value))
-                processed_policy.update({magnitude_key: magnitude_value})
+                    magnitude = random.gauss(magnitude, self.magnitude_std)
+                    magnitude = min(self.total_level, max(0, magnitude))
+
+                val1, val2 = processed_policy.pop('magnitude_range')
+                magnitude = (magnitude / self.total_level) * (val2 -
+                                                              val1) + val1
+
+                processed_policy.update({magnitude_key: magnitude})
             processed_policies.append(processed_policy)
         return processed_policies
 
@@ -157,6 +171,7 @@ class RandAugment(object):
         if self.num_policies == 0:
             return results
         sub_policy = random.choices(self.policies, k=self.num_policies)
+        sub_policy = self._process_policies(sub_policy)
         sub_policy = Compose(sub_policy)
         return sub_policy(results)
 
