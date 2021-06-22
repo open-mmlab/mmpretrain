@@ -168,6 +168,7 @@ class ShuffleNetV2(BaseBackbone):
                 raise ValueError('the item in out_indices must in '
                                  f'range(0, 4). But received {index}')
 
+        self.init_cfg = init_cfg
         if frozen_stages not in range(-1, 4):
             raise ValueError('frozen_stages must be in range(-1, 4). '
                              f'But received {frozen_stages}')
@@ -253,19 +254,21 @@ class ShuffleNetV2(BaseBackbone):
             for param in m.parameters():
                 param.requires_grad = False
 
-    def init_weighs(self):
-        super(ShuffleNetV2, self).init_weights()
-        for name, m in self.named_modules():
-            if isinstance(m, nn.Conv2d):
-                if 'conv1' in name:
-                    normal_init(m, mean=0, std=0.01)
-                else:
-                    normal_init(m, mean=0, std=1.0 / m.weight.shape[1])
-            elif isinstance(m, (_BatchNorm, nn.GroupNorm)):
-                constant_init(m.weight, val=1, bias=0.0001)
-                if isinstance(m, _BatchNorm):
-                    if m.running_mean is not None:
-                        nn.init.constant_(m.running_mean, 0)
+    def init_weights(self):
+        if self.init_cfg:
+            super(ShuffleNetV2, self).init_weights(self.init_cfg)
+        else:
+            for name, m in self.named_modules():
+                if isinstance(m, nn.Conv2d):
+                    if 'conv1' in name:
+                        normal_init(m, mean=0, std=0.01)
+                    else:
+                        normal_init(m, mean=0, std=1.0 / m.weight.shape[1])
+                elif isinstance(m, (_BatchNorm, nn.GroupNorm)):
+                    constant_init(m.weight, val=1, bias=0.0001)
+                    if isinstance(m, _BatchNorm):
+                        if m.running_mean is not None:
+                            nn.init.constant_(m.running_mean, 0)
 
     def forward(self, x):
         x = self.conv1(x)
