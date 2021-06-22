@@ -344,12 +344,7 @@ class ShiftWindowMSA(BaseModule):
 
         self.register_buffer('attn_mask', attn_mask)
 
-    def forward(self, query, key=None, value=None, **kwargs):
-        if key is None:
-            key = query
-        if value is None:
-            value = key
-
+    def forward(self, query, **kwargs):
         H, W = self.input_resolution
         B, L, C = query.shape
         assert L == H * W, 'input feature has wrong size'
