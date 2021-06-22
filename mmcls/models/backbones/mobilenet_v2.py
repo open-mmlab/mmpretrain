@@ -3,7 +3,7 @@ import logging
 import torch.nn as nn
 import torch.utils.checkpoint as cp
 from mmcv.cnn import ConvModule, constant_init, kaiming_init
-from mmcv.runner import load_checkpoint
+from mmcv.runner import load_checkpoint, BaseModule
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from mmcls.models.utils import make_divisible
@@ -11,7 +11,7 @@ from ..builder import BACKBONES
 from .base_backbone import BaseBackbone
 
 
-class InvertedResidual(nn.Module):
+class InvertedResidual(BaseModule):
     """InvertedResidual block for MobileNetV2.
 
     Args:
@@ -41,8 +41,9 @@ class InvertedResidual(nn.Module):
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
                  act_cfg=dict(type='ReLU6'),
-                 with_cp=False):
-        super(InvertedResidual, self).__init__()
+                 with_cp=False,
+                 init_cfg=None):
+        super(InvertedResidual, self).__init__(init_cfg)
         self.stride = stride
         assert stride in [1, 2], f'stride must in [1, 2]. ' \
             f'But received {stride}.'

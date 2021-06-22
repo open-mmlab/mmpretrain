@@ -9,7 +9,7 @@ from ..builder import BACKBONES
 from .base_backbone import BaseBackbone
 
 
-class InvertedResidual(nn.Module):
+class InvertedResidual(BaseModule):
     """InvertedResidual block for ShuffleNetV2 backbone.
 
     Args:
