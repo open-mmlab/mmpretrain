@@ -4,7 +4,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import build_norm_layer
-from mmcv.cnn.bricks.conv import build_conv_layer
 from mmcv.cnn.bricks.registry import ATTENTION
 from mmcv.cnn.bricks.transformer import FFN, build_dropout
 from mmcv.cnn.utils import constant_init, trunc_normal_init
@@ -12,144 +11,8 @@ from mmcv.cnn.utils.weight_init import trunc_normal_
 from mmcv.runner.base_module import BaseModule, ModuleList
 
 from ..builder import BACKBONES
-from ..utils import to_2tuple
+from ..utils import PatchEmbed, PatchMerging, to_2tuple
 from .base_backbone import BaseBackbone
-
-
-class PatchMerging(BaseModule):
-
-    def __init__(self,
-                 input_resolution,
-                 in_channels,
-                 out_channels,
-                 kernel_size=2,
-                 stride=2,
-                 padding=0,
-                 dilation=1,
-                 bias=False,
-                 norm_cfg=dict(type='LN'),
-                 init_cfg=None):
-        super().__init__(init_cfg)
-        H, W = input_resolution
-        self.input_resolution = input_resolution
-        self.in_channels = in_channels
-        self.out_channels = out_channels
-
-        kernel_size = to_2tuple(kernel_size)
-        stride = to_2tuple(stride)
-        padding = to_2tuple(padding)
-        dilation = to_2tuple(dilation)
-        self.sampler = nn.Unfold(kernel_size, dilation, padding, stride)
-
-        sample_dim = kernel_size[0] * kernel_size[1] * in_channels
-
-        if norm_cfg is not None:
-            self.norm = build_norm_layer(norm_cfg, sample_dim)[1]
-        else:
-            self.norm = None
-
-        self.reduction = nn.Linear(sample_dim, out_channels, bias=bias)
-
-        # See https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html
-        H_out = (H + 2 * padding[0] - dilation[0] *
-                 (kernel_size[0] - 1) - 1) // stride[0] + 1
-        W_out = (W + 2 * padding[1] - dilation[1] *
-                 (kernel_size[1] - 1) - 1) // stride[1] + 1
-        self.output_resolution = (H_out, W_out)
-
-    def forward(self, x):
-        """
-        x: B, H*W, C
-        """
-        H, W = self.input_resolution
-        B, L, C = x.shape
-        assert L == H * W, 'input feature has wrong size'
-
-        x = x.view(B, H, W, C).permute([0, 3, 1, 2])  # B, C, H, W
-
-        # Use nn.Unfold to merge patch. About 25% faster than original method,
-        # but need to modify pretrained model for compatibility
-        x = self.sampler(x)  # B, 4*C, H/2*W/2
-        x = x.transpose(1, 2)  # B, H/2*W/2, 4*C
-
-        x = self.norm(x) if self.norm else x
-        x = self.reduction(x)
-
-        return x
-
-
-class PatchEmbed(BaseModule):
-    """Image to Patch Embedding.
-
-    Args:
-        img_size (int | tuple): The size of input image.
-        patch_size (int): The size of one patch
-        in_channels (int): The num of input channels.
-        embed_dims (int): The dimensions of embedding.
-        norm_cfg (dict, optional): Config dict for normalization layer.
-        conv_cfg (dict, optional): The config dict for conv layers.
-            Default: None.
-        init_cfg (dict, optional): The Config for initialization.
-            Default: None.
-    """
-
-    def __init__(self,
-                 img_size=224,
-                 patch_size=16,
-                 in_channels=3,
-                 embed_dims=768,
-                 norm_cfg=dict(type='LN'),
-                 conv_cfg=None,
-                 init_cfg=None):
-        super(PatchEmbed, self).__init__(init_cfg)
-        if isinstance(img_size, int):
-            img_size = to_2tuple(img_size)
-        elif isinstance(img_size, tuple):
-            if len(img_size) == 1:
-                img_size = to_2tuple(img_size[0])
-            assert len(img_size) == 2, \
-                f'The size of image should have length 1 or 2, ' \
-                f'but got {len(img_size)}'
-
-        self.img_size = img_size
-        self.patch_size = to_2tuple(patch_size)
-
-        patches_resolution = [
-            img_size[0] // self.patch_size[0],
-            img_size[1] // self.patch_size[1]
-        ]
-        num_patches = patches_resolution[0] * patches_resolution[1]
-        assert num_patches * self.patch_size[0] * self.patch_size[1] == \
-               self.img_size[0] * self.img_size[1], \
-               'The image size H*W must be divisible by patch size'
-        self.patches_resolution = patches_resolution
-        self.num_patches = num_patches
-
-        # Use conv layer to embed
-        self.projection = build_conv_layer(
-            conv_cfg,
-            in_channels,
-            embed_dims,
-            kernel_size=patch_size,
-            stride=patch_size)
-
-        if norm_cfg is not None:
-            self.norm = build_norm_layer(norm_cfg, embed_dims)[1]
-        else:
-            self.norm = None
-
-    def forward(self, x):
-        _, _, H, W = x.shape
-        assert H == self.img_size[0] and W == self.img_size[1], \
-            f"Input image size ({H}*{W}) doesn't " \
-            f'match model ({self.img_size[0]}*{self.img_size[1]}).'
-        # The output size is (B, N, D), where N=H*W/P/P, D is embid_dim
-        x = self.projection(x).flatten(2).transpose(1, 2)
-
-        if self.norm is not None:
-            x = self.norm(x)
-
-        return x
 
 
 @ATTENTION.register_module()
@@ -611,7 +474,9 @@ class SwinTransformer(BaseBackbone):
             img_size=img_size,
             in_channels=in_channels,
             embed_dims=self.embed_dims,
-            patch_size=4,
+            conv_cfg=dict(
+                type='Conv2d', kernel_size=4, stride=4, padding=0, dilation=1),
+            norm_cfg=dict(type='LN'),
             **patch_cfg)
         self.patch_embed = PatchEmbed(**_patch_cfg)
         num_patches = self.patch_embed.num_patches
