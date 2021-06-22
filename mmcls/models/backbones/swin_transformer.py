@@ -309,11 +309,12 @@ class ShiftWindowMSA(BaseModule):
             _, self.H_pad, self.W_pad, _ = dummy.shape
         else:
             H_pad, W_pad = self.input_resolution
-            assert H_pad % self.window_size == 0 and W_pad % self.window_size,\
+            assert H_pad % self.window_size + W_pad % self.window_size == 0,\
                 f'input_resolution({self.input_resolution}) is not divisible '\
                 f'by window_size({self.window_size}). Please check feature '\
                 f'map shape or set `auto_pad=True`.'
             self.H_pad, self.W_pad = H_pad, W_pad
+            self.pad_r, self.pad_b = 0, 0
 
         if self.shift_size > 0:
             # calculate attention mask for SW-MSA
