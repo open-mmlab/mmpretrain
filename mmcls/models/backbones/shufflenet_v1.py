@@ -3,8 +3,8 @@ import torch.nn as nn
 import torch.utils.checkpoint as cp
 from mmcv.cnn import (ConvModule, build_activation_layer, constant_init,
                       normal_init)
-from torch.nn.modules.batchnorm import _BatchNorm
 from mmcv.runner import BaseModule
+from torch.nn.modules.batchnorm import _BatchNorm
 
 from mmcls.models.utils import channel_shuffle, make_divisible
 from ..builder import BACKBONES
