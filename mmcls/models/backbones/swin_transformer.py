@@ -6,7 +6,6 @@ import torch.nn.functional as F
 from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.registry import ATTENTION
 from mmcv.cnn.bricks.transformer import FFN, build_dropout
-from mmcv.cnn.utils import constant_init, trunc_normal_init
 from mmcv.cnn.utils.weight_init import trunc_normal_
 from mmcv.runner.base_module import BaseModule, ModuleList
 
@@ -525,20 +524,11 @@ class SwinTransformer(BaseBackbone):
         else:
             self.norm = None
 
-    def init_weights(self, pretrained=None):
-        super().init_weights(pretrained)
+    def init_weights(self):
+        super(SwinTransformer, self).init_weights()
 
-        if pretrained is None:
-            # FIXME: temporary init method, replace it with init_cfg
-            self.apply(self._init_weights)
-            if self.use_abs_pos_embed:
-                trunc_normal_(self.absolute_pos_embed, std=0.02)
-
-    def _init_weights(self, m):
-        if isinstance(m, nn.Linear):
-            trunc_normal_init(m, std=.02, bias=0.)
-        elif isinstance(m, nn.LayerNorm):
-            constant_init(m, val=1., bias=0.)
+        if self.use_abs_pos_embed:
+            trunc_normal_(self.absolute_pos_embed, std=0.02)
 
     def forward(self, x):
         x = self.patch_embed(x)
