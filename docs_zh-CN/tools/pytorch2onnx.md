@@ -1,29 +1,29 @@
-# Pytorch to ONNX (Experimental)
+# Pytorch 转 ONNX （试验性的）
 
 <!-- TOC -->
 
-- [Tutorial 5: Pytorch to ONNX (Experimental)](#tutorial-5-pytorch-to-onnx-experimental)
-  - [How to convert models from Pytorch to ONNX](#how-to-convert-models-from-pytorch-to-onnx)
-    - [Prerequisite](#prerequisite)
-    - [Usage](#usage)
-  - [List of supported models exportable to ONNX](#list-of-supported-models-exportable-to-onnx)
-  - [Reminders](#reminders)
-  - [FAQs](#faqs)
+- [Pytorch 转 ONNX （试验性的）](#pytorch-onnx)
+  - [如何将模型从 PyTorch 转换到 ONNX](#id1)
+    - [准备工作](#id2)
+    - [使用方法](#id3)
+  - [支持导出至 ONNX 的模型列表](#onnx)
+  - [提示](#id4)
+  - [常见问题](#id5)
 
 <!-- TOC -->
 
-## How to convert models from Pytorch to ONNX
+## 如何将模型从 PyTorch 转换到 ONNX
 
-### Prerequisite
+### 准备工作
 
-1. Please refer to [install](https://mmclassification.readthedocs.io/en/latest/install.html#install-mmclassification) for installation of MMClassification.
-2. Install onnx and onnxruntime
+1. 请参照 [install.md](https://mmclassification.readthedocs.io/en/latest/install.html#install-mmclassification) 从源码安装 MMClassification。
+2. 安装 onnx 和 onnxruntime。
 
   ```shell
   pip install onnx onnxruntime==1.5.1
   ```
 
-### Usage
+### 使用方法
 
 ```bash
 python tools/pytorch2onnx.py \
@@ -38,19 +38,19 @@ python tools/pytorch2onnx.py \
     --verify \
 ```
 
-Description of all arguments:
+所有参数的说明：
 
-- `config` : The path of a model config file.
-- `--checkpoint` : The path of a model checkpoint file.
-- `--output-file`: The path of output ONNX model. If not specified, it will be set to `tmp.onnx`.
-- `--shape`: The height and width of input tensor to the model. If not specified, it will be set to `224 224`.
-- `--opset-version` : The opset version of ONNX. If not specified, it will be set to `11`.
-- `--dynamic-shape` : Determines whether to export ONNX with dynamic input shape.  If not specified, it will be set to `False`.
-- `--show`: Determines whether to print the architecture of the exported model. If not specified, it will be set to `False`.
-- `--simplify`: Determines whether to simplify the exported ONNX model. If not specified, it will be set to `False`.
-- `--verify`: Determines whether to verify the correctness of an exported model. If not specified, it will be set to `False`.
+- `config` : 模型配置文件的路径。
+- `--checkpoint` : 模型权重文件的路径。
+- `--output-file`: ONNX 模型的输出路径。如果没有指定，默认为 `tmp.onnx`。
+- `--shape`: 模型输入的高度和宽度。如果没有指定，默认为 `224 224`。
+- `--opset-version` : ONNX 的 opset 版本。如果没有指定，默认为 `11`。
+- `--dynamic-shape` : 是否以动态输入尺寸导出 ONNX。 如果没有指定，默认为 `False`。
+- `--show`: 是否打印导出模型的架构。如果没有指定，默认为 `False`。
+- `--simplify`: 是否精简导出的 ONNX 模型。如果没有指定，默认为 `False`。
+- `--verify`: 是否验证导出模型的正确性。如果没有指定，默认为`False`。
 
-Example:
+示例：
 
 ```bash
 python tools/pytorch2onnx.py \
@@ -63,27 +63,27 @@ python tools/pytorch2onnx.py \
     --verify \
 ```
 
-## List of supported models exportable to ONNX
+## 支持导出至 ONNX 的模型列表
 
-The table below lists the models that are guaranteed to be exportable to ONNX and runnable in ONNX Runtime.
+下表列出了保证可导出至 ONNX，并在 ONNX Runtime 中运行的模型。
 
-|    Model     |                            Config                            | Batch Inference | Dynamic Shape | Note |
-| :----------: | :----------------------------------------------------------: | :-------------: | :-----------: | ---- |
-| MobileNetV2  |    `configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py`     |        Y        |       Y       |      |
-|    ResNet    |          `configs/resnet/resnet18_b16x8_cifar10.py`          |        Y        |       Y       |      |
-|   ResNeXt    |     `configs/resnext/resnext50_32x4d_b32x8_imagenet.py`      |        Y        |       Y       |      |
-|  SE-ResNet   |       `configs/seresnet/seresnet50_b32x8_imagenet.py`        |        Y        |       Y       |      |
+|     模型     |                               配置文件                                       |     批推理      |  动态输入尺寸 | 备注 |
+| :----------: | :--------------------------------------------------------------------------: | :-------------: | :-----------: | ---- |
+| MobileNetV2  |    `configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py`                     |        Y        |       Y       |      |
+|    ResNet    |          `configs/resnet/resnet18_b16x8_cifar10.py`                          |        Y        |       Y       |      |
+|   ResNeXt    |     `configs/resnext/resnext50_32x4d_b32x8_imagenet.py`                      |        Y        |       Y       |      |
+|  SE-ResNet   |       `configs/seresnet/seresnet50_b32x8_imagenet.py`                        |        Y        |       Y       |      |
 | ShuffleNetV1 | `configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py` |        Y        |       Y       |      |
 | ShuffleNetV2 | `configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py` |        Y        |       Y       |      |
 
-Notes:
+注：
 
-- *All models above are tested with Pytorch==1.6.0*
+- *以上所有模型转换测试基于 Pytorch==1.6.0 进行*
 
-## Reminders
+## 提示
 
-- If you meet any problem with the listed models above, please create an issue and it would be taken care of soon. For models not included in the list, please try to dig a little deeper and debug a little bit more and hopefully solve them by yourself.
+- 如果你在上述模型的转换中遇到问题，请在 GitHub 中创建一个 issue，我们会尽快处理。未在上表中列出的模型，由于资源限制，我们可能无法提供很多帮助，如果遇到问题，请尝试自行解决。
 
-## FAQs
+## 常见问题
 
-- None
+- 无

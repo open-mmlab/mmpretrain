@@ -1,25 +1,25 @@
-# ONNX to TensorRT (Experimental)
+# ONNX 转 TensorRT（试验性的）
 
 <!-- TOC -->
 
-- [Tutorial 6: ONNX to TensorRT (Experimental)](#tutorial-6-onnx-to-tensorrt-experimental)
-  - [How to convert models from ONNX to TensorRT](#how-to-convert-models-from-onnx-to-tensorrt)
-    - [Prerequisite](#prerequisite)
-    - [Usage](#usage)
-  - [List of supported models convertable to TensorRT](#list-of-supported-models-convertable-to-tensorrt)
-  - [Reminders](#reminders)
-  - [FAQs](#faqs)
+- [ONNX 转 TensorRT（试验性的）](#onnx-tensorrt)
+  - [如何将模型从 ONNX 转换到 TensorRT](#id1)
+    - [准备工作](#id2)
+    - [使用方法](#id3)
+  - [支持转换至 TensorRT 的模型列表](#tensorrt)
+  - [提示](#id4)
+  - [常见问题](#id5)
 
 <!-- TOC -->
 
-## How to convert models from ONNX to TensorRT
+## 如何将模型从 ONNX 转换到 TensorRT
 
-### Prerequisite
+### 准备工作
 
-1. Please refer to [install.md](https://mmclassification.readthedocs.io/en/latest/install.html#install-mmclassification) for installation of MMClassification from source.
-2. Use our tool [pytorch2onnx.md](./pytorch2onnx.md) to convert the model from PyTorch to ONNX.
+1. 请参照 [install.md](https://mmclassification.readthedocs.io/en/latest/install.html#install-mmclassification) 从源码安装 MMClassification。
+2. 使用我们的工具 [pytorch2onnx.md](./pytorch2onnx.md) 将 PyTorch 模型转换至 ONNX。
 
-### Usage
+### 使用方法
 
 ```bash
 python tools/deployment/onnx2tensorrt.py \
@@ -31,16 +31,16 @@ python tools/deployment/onnx2tensorrt.py \
     --verify \
 ```
 
-Description of all arguments:
+所有参数的说明：
 
-- `model` : The path of an ONNX model file.
-- `--trt-file`: The Path of output TensorRT engine file. If not specified, it will be set to `tmp.trt`.
-- `--shape`: The height and width of model input. If not specified, it will be set to `224 224`.
-- `--workspace-size` : The required GPU workspace size in GiB to build TensorRT engine. If not specified, it will be set to `1` GiB.
-- `--show`: Determines whether to show the outputs of the model. If not specified, it will be set to `False`.
-- `--verify`: Determines whether to verify the correctness of models between ONNXRuntime and TensorRT. If not specified, it will be set to `False`.
+- `model` : ONNX 模型的路径。
+- `--trt-file`: TensorRT 引擎文件的输出路径。如果没有指定，默认为 `tmp.trt`。
+- `--shape`: 模型输入的高度和宽度。如果没有指定，默认为 `224 224`。
+- `--workspace-size` : 构建 TensorRT 引擎所需要的 GPU 空间大小，单位为 GiB。如果没有指定，默认为 `1` GiB。
+- `--show`: 是否展示模型的输出。如果没有指定，默认为 `False`。
+- `--verify`: 是否使用 ONNXRuntime 和 TensorRT 验证模型转换的正确性。如果没有指定，默认为`False`。
 
-Example:
+示例：
 
 ```bash
 python tools/onnx2tensorrt.py \
@@ -51,26 +51,26 @@ python tools/onnx2tensorrt.py \
     --verify \
 ```
 
-## List of supported models convertable to TensorRT
+## 支持转换至 TensorRT 的模型列表
 
-The table below lists the models that are guaranteed to be convertable to TensorRT.
+下表列出了保证可转换为 TensorRT 的模型。
 
-|    Model     |                            Config                            | Status |
-| :----------: | :----------------------------------------------------------: | :----: |
-| MobileNetV2  |    `configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py`     |   Y    |
-|    ResNet    |          `configs/resnet/resnet18_b16x8_cifar10.py`          |   Y    |
-|   ResNeXt    |     `configs/resnext/resnext50_32x4d_b32x8_imagenet.py`      |   Y    |
+|     模型     |                                    配置文件                                  |  状态  |
+| :----------: | :--------------------------------------------------------------------------: | :----: |
+| MobileNetV2  |    `configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py`                     |   Y    |
+|    ResNet    |          `configs/resnet/resnet18_b16x8_cifar10.py`                          |   Y    |
+|   ResNeXt    |     `configs/resnext/resnext50_32x4d_b32x8_imagenet.py`                      |   Y    |
 | ShuffleNetV1 | `configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py` |   Y    |
 | ShuffleNetV2 | `configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py` |   Y    |
 
-Notes:
+注：
 
-- *All models above are tested with Pytorch==1.6.0 and TensorRT-7.2.1.6.Ubuntu-16.04.x86_64-gnu.cuda-10.2.cudnn8.0*
+- *以上所有模型转换测试基于 Pytorch==1.6.0 和 TensorRT-7.2.1.6.Ubuntu-16.04.x86_64-gnu.cuda-10.2.cudnn8.0 进行*
 
-## Reminders
+## 提示
 
-- If you meet any problem with the listed models above, please create an issue and it would be taken care of soon. For models not included in the list, we may not provide much help here due to the limited resources. Please try to dig a little deeper and debug by yourself.
+- 如果你在上述模型的转换中遇到问题，请在 GitHub 中创建一个 issue，我们会尽快处理。未在上表中列出的模型，由于资源限制，我们可能无法提供很多帮助，如果遇到问题，请尝试自行解决。
 
-## FAQs
+## 常见问题
 
-- None
+- 无
