@@ -1,6 +1,5 @@
 import logging
 import tempfile
-import warnings
 from unittest.mock import MagicMock, patch
 
 import mmcv.runner
@@ -8,20 +7,10 @@ import pytest
 import torch
 import torch.nn as nn
 from mmcv.runner import obj_from_dict
+from mmcv.runner.hooks import DistEvalHook, EvalHook
 from torch.utils.data import DataLoader, Dataset
 
 from mmcls.apis import single_gpu_test
-
-# TODO import eval hooks from mmcv and delete them from mmcls
-try:
-    from mmcv.runner.hooks import EvalHook, DistEvalHook
-    use_mmcv_hook = True
-except ImportError:
-    warnings.warn('DeprecationWarning: EvalHook and DistEvalHook from mmcls '
-                  'will be deprecated.'
-                  'Please install mmcv through master branch.')
-    from mmcls.core import EvalHook, DistEvalHook
-    use_mmcv_hook = False
 
 
 class ExampleDataset(Dataset):
@@ -156,9 +145,8 @@ def test_dist_eval_hook():
 
     # test DistEvalHook
     with tempfile.TemporaryDirectory() as tmpdir:
-        if use_mmcv_hook:
-            p = patch('mmcv.engine.multi_gpu_test', multi_gpu_test)
-            p.start()
+        p = patch('mmcv.engine.multi_gpu_test', multi_gpu_test)
+        p.start()
         eval_hook = DistEvalHook(data_loader, by_epoch=False)
         runner = mmcv.runner.IterBasedRunner(
             model=model,
@@ -170,8 +158,7 @@ def test_dist_eval_hook():
         runner.run([loader], [('train', 1)])
         test_dataset.evaluate.assert_called_with([torch.tensor([1])],
                                                  logger=runner.logger)
-        if use_mmcv_hook:
-            p.stop()
+        p.stop()
 
 
 @patch('mmcls.apis.multi_gpu_test', multi_gpu_test)
@@ -200,9 +187,8 @@ def test_dist_eval_hook_epoch():
 
     # test DistEvalHook
     with tempfile.TemporaryDirectory() as tmpdir:
-        if use_mmcv_hook:
-            p = patch('mmcv.engine.multi_gpu_test', multi_gpu_test)
-            p.start()
+        p = patch('mmcv.engine.multi_gpu_test', multi_gpu_test)
+        p.start()
         eval_hook = DistEvalHook(data_loader, by_epoch=True, interval=2)
         runner = mmcv.runner.EpochBasedRunner(
             model=model,
@@ -214,5 +200,4 @@ def test_dist_eval_hook_epoch():
         runner.run([loader], [('train', 1)])
         test_dataset.evaluate.assert_called_with([torch.tensor([1])],
                                                  logger=runner.logger)
-        if use_mmcv_hook:
-            p.stop()
+        p.stop()
