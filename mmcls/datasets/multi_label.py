@@ -1,5 +1,3 @@
-import warnings
-
 import numpy as np
 
 from mmcls.core import average_performance, mAP
@@ -26,8 +24,7 @@ class MultiLabelDataset(BaseDataset):
                  results,
                  metric='mAP',
                  metric_options=None,
-                 logger=None,
-                 **deprecated_kwargs):
+                 logger=None):
         """Evaluate the dataset.
 
         Args:
@@ -39,18 +36,12 @@ class MultiLabelDataset(BaseDataset):
                 Allowed keys are 'k' and 'thr'. Defaults to None
             logger (logging.Logger | str, optional): Logger used for printing
                 related information during evaluation. Defaults to None.
-            deprecated_kwargs (dict): Used for containing deprecated arguments.
 
         Returns:
             dict: evaluation results
         """
         if metric_options is None:
             metric_options = {'thr': 0.5}
-
-        if deprecated_kwargs != {}:
-            warnings.warn('Option arguments for metrics has been changed to '
-                          '`metric_options`.')
-            metric_options = {**deprecated_kwargs}
 
         if isinstance(metric, str):
             metrics = [metric]
