@@ -64,6 +64,7 @@ class VisionTransformerClsHead(ClsHead):
             trunc_normal_(
                 self.layers.pre_logits.weight,
                 std=math.sqrt(1 / self.layers.pre_logits.in_features))
+            nn.init.zeros_(self.layers.pre_logits.bias)
         constant_init(self.layers.head, 0)
 
     def simple_test(self, img):
