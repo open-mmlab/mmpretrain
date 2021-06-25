@@ -90,7 +90,7 @@ class TransformerEncoderLayer(BaseModule):
         super(TransformerEncoderLayer, self).init_weights()
         for m in self.ffn.modules():
             if isinstance(m, nn.Linear):
-                nn.init.xavier_normal_(m.weight)
+                nn.init.xavier_uniform_(m.weight)
                 nn.init.normal_(m.bias, std=1e-6)
 
     def forward(self, x):
