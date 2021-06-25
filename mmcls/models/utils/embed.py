@@ -43,9 +43,11 @@ class PatchEmbed(BaseModule):
         self.embed_dims = embed_dims
 
         # Use conv layer to embed
-        conv_cfg = conv_cfg or dict(
+        conv_cfg = conv_cfg or dict()
+        _conv_cfg = dict(
             type='Conv2d', kernel_size=16, stride=16, padding=0, dilation=1)
-        self.projection = build_conv_layer(conv_cfg, in_channels, embed_dims)
+        _conv_cfg.update(conv_cfg)
+        self.projection = build_conv_layer(_conv_cfg, in_channels, embed_dims)
 
         with torch.no_grad():
             # FIXME this is hacky, but the most simple way to calculate
@@ -148,9 +150,11 @@ class HybridEmbed(BaseModule):
         self.num_patches = feature_size[0] * feature_size[1]
 
         # Use conv layer to embed
-        conv_cfg = conv_cfg or dict(
+        conv_cfg = conv_cfg or dict()
+        _conv_cfg = dict(
             type='Conv2d', kernel_size=1, stride=1, padding=0, dilation=1)
-        self.projection = build_conv_layer(conv_cfg, feature_dim, embed_dims)
+        _conv_cfg.update(conv_cfg)
+        self.projection = build_conv_layer(_conv_cfg, feature_dim, embed_dims)
 
     def forward(self, x):
         x = self.backbone(x)

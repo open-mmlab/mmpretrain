@@ -153,8 +153,7 @@ def test_embed():
     assert img.shape == torch.Size((1, 196, 768))
 
     # Test PatchEmbed with stride = 8
-    conv_cfg = dict(
-        type='Conv2d', kernel_size=16, stride=8, padding=0, dilation=1)
+    conv_cfg = dict(kernel_size=16, stride=8)
     patch_embed = PatchEmbed(conv_cfg=conv_cfg)
     img = torch.randn(1, 3, 224, 224)
     img = patch_embed(img)
