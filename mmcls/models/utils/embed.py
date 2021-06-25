@@ -49,19 +49,18 @@ class PatchEmbed(BaseModule):
         _conv_cfg.update(conv_cfg)
         self.projection = build_conv_layer(_conv_cfg, in_channels, embed_dims)
 
-        with torch.no_grad():
-            # FIXME this is hacky, but the most simple way to calculate
-            #  how many patches a input image is splited to. As the padding
-            #  attribute in conv_cfg can be a string such as "same",
-            #  it is complicated to calculate by formula
-            o = self.projection(
-                torch.zeros(1, in_channels, self.img_size[0],
-                            self.img_size[1]))
-            patches_resolution = o.shape[-2:]
-            num_patches = patches_resolution[0] * patches_resolution[1]
+        # Calculate how many patches a input image is splited to.
+        h_out = (self.img_size[0] + 2 * self.projection.padding[0] -
+                 self.projection.dilation[0] *
+                 (self.projection.kernel_size[0] - 1) -
+                 1) // self.projection.stride[0] + 1
+        w_out = (self.img_size[1] + 2 * self.projection.padding[1] -
+                 self.projection.dilation[1] *
+                 (self.projection.kernel_size[1] - 1) -
+                 1) // self.projection.stride[1] + 1
 
-        self.patches_resolution = patches_resolution
-        self.num_patches = num_patches
+        self.patches_resolution = (h_out, w_out)
+        self.num_patches = h_out * w_out
 
         if norm_cfg is not None:
             self.norm = build_norm_layer(norm_cfg, embed_dims)[1]
