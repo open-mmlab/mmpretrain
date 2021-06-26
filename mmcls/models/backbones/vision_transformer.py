@@ -96,7 +96,6 @@ class TransformerEncoderLayer(BaseModule):
     def forward(self, x):
         x = self.attn(self.norm1(x), identity=x)
         x = self.ffn(self.norm2(x), identity=x)
-
         return x
 
 
@@ -323,7 +322,7 @@ class VisionTransformer(BaseBackbone):
                  attn_drop_rate=0.,
                  drop_path_rate=0.,
                  hybrid_backbone=None,
-                 norm_cfg=dict(type='LN'),
+                 norm_cfg=dict(type='LN', eps=1e-6),
                  act_cfg=dict(type='GELU'),
                  num_fcs=2,
                  init_cfg=None):
