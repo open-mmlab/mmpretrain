@@ -1,3 +1,4 @@
+# Only for evaluation
 _base_ = [
     '../_base_/models/swin_transformer/large_384.py',
     '../_base_/datasets/imagenet_bs128_swin_384.py',
