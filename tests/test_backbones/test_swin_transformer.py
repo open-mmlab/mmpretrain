@@ -118,7 +118,7 @@ def test_swin_transformer():
     assert model.stages[3].blocks[0].attn.pad_r == expect_w - input_w
 
     # Test small with auto_pad = False
-    with pytest.raises('AssertionError'):
+    with pytest.raises(AssertionError):
         model = SwinTransformer(
             arch='small',
             auto_pad=False,

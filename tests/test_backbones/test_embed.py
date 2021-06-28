@@ -13,16 +13,16 @@ def test_patch_merging():
         input_resolution=(56, 56), in_channels=16, expansion_ratio=2)
     downsample = PatchMerging(**settings)
 
+    # test forward with wrong dims
+    with pytest.raises(AssertionError):
+        inputs = torch.rand((1, 16, 56 * 56))
+        downsample(inputs)
+
     # test patch merging forward
     inputs = torch.rand((1, 56 * 56, 16))
     out = downsample(inputs)
     assert downsample.output_resolution == (28, 28)
     assert out.shape == (1, 28 * 28, 32)
-
-    # test forward with wrong dims
-    with pytest.raises(AssertionError):
-        inputs = torch.rand((1, 16, 56 * 56))
-        downsample(inputs)
 
     # test different kernel_size in each direction
     downsample = PatchMerging(kernel_size=(2, 3), **settings)
@@ -52,5 +52,5 @@ def test_patch_merging():
     # test dilation
     downsample = PatchMerging(kernel_size=6, dilation=2, **settings)
     out = downsample(inputs)
-    assert downsample.sampler.dilation == (3, 3)
+    assert downsample.sampler.dilation == (2, 2)
     assert out.shape == (1, cal_unfold_dim(56, 6, 6, dilation=2)**2, 32)
