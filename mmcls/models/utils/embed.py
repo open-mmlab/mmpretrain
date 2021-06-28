@@ -170,7 +170,8 @@ class PatchMerging(BaseModule):
     Args:
         input_resolution (tuple): The size of input patch resolution.
         in_channels (int): The num of input channels.
-        out_channels (int): The num of output channels.
+        expansion_ratio (Number): Expansion ratio of output channels. The num
+            of output channels is equal to int(expansion_ratio * in_channels).
         kernel_size (int | tuple, optional): the kernel size in the unfold
             layer. Defaults to 2.
         stride (int | tuple, optional): the stride of the sliding blocks in the
@@ -190,7 +191,7 @@ class PatchMerging(BaseModule):
     def __init__(self,
                  input_resolution,
                  in_channels,
-                 out_channels,
+                 expansion_ratio,
                  kernel_size=2,
                  stride=None,
                  padding=0,
@@ -202,7 +203,7 @@ class PatchMerging(BaseModule):
         H, W = input_resolution
         self.input_resolution = input_resolution
         self.in_channels = in_channels
-        self.out_channels = out_channels
+        self.out_channels = int(expansion_ratio * in_channels)
 
         if stride is None:
             stride = kernel_size
@@ -219,7 +220,7 @@ class PatchMerging(BaseModule):
         else:
             self.norm = None
 
-        self.reduction = nn.Linear(sample_dim, out_channels, bias=bias)
+        self.reduction = nn.Linear(sample_dim, self.out_channels, bias=bias)
 
         # See https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html
         H_out = (H + 2 * padding[0] - dilation[0] *
