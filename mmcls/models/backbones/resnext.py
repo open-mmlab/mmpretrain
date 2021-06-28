@@ -1,6 +1,8 @@
+import torch.utils.checkpoint as cp
 from mmcv.cnn import build_conv_layer, build_norm_layer
 
 from ..builder import BACKBONES
+from ..utils.se_layer import SELayer
 from .resnet import Bottleneck as _Bottleneck
 from .resnet import ResLayer, ResNet
 
@@ -36,6 +38,7 @@ class Bottleneck(_Bottleneck):
                  base_channels=64,
                  groups=32,
                  width_per_group=4,
+                 has_se=False,
                  **kwargs):
         super(Bottleneck, self).__init__(in_channels, out_channels, **kwargs)
         self.groups = groups
@@ -64,6 +67,7 @@ class Bottleneck(_Bottleneck):
             stride=self.conv1_stride,
             bias=False)
         self.add_module(self.norm1_name, norm1)
+
         self.conv2 = build_conv_layer(
             self.conv_cfg,
             self.mid_channels,
@@ -74,8 +78,17 @@ class Bottleneck(_Bottleneck):
             dilation=self.dilation,
             groups=groups,
             bias=False)
-
         self.add_module(self.norm2_name, norm2)
+
+        if has_se:
+            self.se = SELayer(
+                self.mid_channels,
+                ratio=4,
+                base_channels=in_channels,
+                bias=True)
+        else:
+            self.se = None
+
         self.conv3 = build_conv_layer(
             self.conv_cfg,
             self.mid_channels,
@@ -83,6 +96,41 @@ class Bottleneck(_Bottleneck):
             kernel_size=1,
             bias=False)
         self.add_module(self.norm3_name, norm3)
+
+    def forward(self, x):
+
+        def _inner_forward(x):
+            identity = x
+
+            out = self.conv1(x)
+            out = self.norm1(out)
+            out = self.relu(out)
+
+            out = self.conv2(out)
+            out = self.norm2(out)
+            out = self.relu(out)
+
+            if self.se is not None:
+                out = self.se(out)
+
+            out = self.conv3(out)
+            out = self.norm3(out)
+
+            if self.downsample is not None:
+                identity = self.downsample(x)
+
+            out += identity
+
+            return out
+
+        if self.with_cp and x.requires_grad:
+            out = cp.checkpoint(_inner_forward, x)
+        else:
+            out = _inner_forward(x)
+
+        out = self.relu(out)
+
+        return out
 
 
 @BACKBONES.register_module()
