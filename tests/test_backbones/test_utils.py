@@ -57,10 +57,9 @@ def test_inverted_residual():
         # se_cfg must be None or dict
         InvertedResidual(16, 16, 32, se_cfg=list())
 
-    with pytest.raises(AssertionError):
-        # in_channeld and out_channels must be the same if
-        # with_expand_conv is False
-        InvertedResidual(16, 16, 32, with_expand_conv=False)
+    # Add expand conv if in_channels and mid_channels is not the same
+    assert InvertedResidual(32, 16, 32).with_expand_conv is False
+    assert InvertedResidual(16, 16, 32).with_expand_conv is True
 
     # Test InvertedResidual forward, stride=1
     block = InvertedResidual(16, 16, 32, stride=1)
@@ -85,8 +84,8 @@ def test_inverted_residual():
     assert isinstance(block.se, SELayer)
     assert x_out.shape == torch.Size((1, 16, 56, 56))
 
-    # Test InvertedResidual forward, with_expand_conv=False
-    block = InvertedResidual(32, 16, 32, with_expand_conv=False)
+    # Test InvertedResidual forward without expand conv
+    block = InvertedResidual(32, 16, 32)
     x = torch.randn(1, 32, 56, 56)
     x_out = block(x)
     assert getattr(block, 'expand_conv', None) is None

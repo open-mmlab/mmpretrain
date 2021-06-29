@@ -7,18 +7,18 @@ from .base_backbone import BaseBackbone
 
 
 @BACKBONES.register_module()
-class MobileNetv3(BaseBackbone):
-    """MobileNetv3 backbone.
+class MobileNetV3(BaseBackbone):
+    """MobileNetV3 backbone.
 
     Args:
-        arch (str): Architechture of mobilnetv3, from {small, big}.
+        arch (str): Architechture of mobilnetv3, from {small, large}.
             Default: small.
         conv_cfg (dict, optional): Config dict for convolution layer.
             Default: None, which means using conv2d.
         norm_cfg (dict): Config dict for normalization layer.
             Default: dict(type='BN').
         out_indices (None or Sequence[int]): Output from which stages.
-            Default: (10, ), which means output tensors from final stage.
+            Default: None, which means output tensors from final stage.
         frozen_stages (int): Stages to be frozen (all param fixed).
             Defualt: -1, which means not freezing any parameters.
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
@@ -42,49 +42,54 @@ class MobileNetv3(BaseBackbone):
                   [5, 288, 96, True, 'HSwish', 2],
                   [5, 576, 96, True, 'HSwish', 1],
                   [5, 576, 96, True, 'HSwish', 1]],
-        'big': [[3, 16, 16, False, 'ReLU', 1],
-                [3, 64, 24, False, 'ReLU', 2],
-                [3, 72, 24, False, 'ReLU', 1],
-                [5, 72, 40, True, 'ReLU', 2],
-                [5, 120, 40, True, 'ReLU', 1],
-                [5, 120, 40, True, 'ReLU', 1],
-                [3, 240, 80, False, 'HSwish', 2],
-                [3, 200, 80, False, 'HSwish', 1],
-                [3, 184, 80, False, 'HSwish', 1],
-                [3, 184, 80, False, 'HSwish', 1],
-                [3, 480, 112, True, 'HSwish', 1],
-                [3, 672, 112, True, 'HSwish', 1],
-                [5, 672, 160, True, 'HSwish', 1],
-                [5, 672, 160, True, 'HSwish', 2],
-                [5, 960, 160, True, 'HSwish', 1]]
+        'large': [[3, 16, 16, False, 'ReLU', 1],
+                  [3, 64, 24, False, 'ReLU', 2],
+                  [3, 72, 24, False, 'ReLU', 1],
+                  [5, 72, 40, True, 'ReLU', 2],
+                  [5, 120, 40, True, 'ReLU', 1],
+                  [5, 120, 40, True, 'ReLU', 1],
+                  [3, 240, 80, False, 'HSwish', 2],
+                  [3, 200, 80, False, 'HSwish', 1],
+                  [3, 184, 80, False, 'HSwish', 1],
+                  [3, 184, 80, False, 'HSwish', 1],
+                  [3, 480, 112, True, 'HSwish', 1],
+                  [3, 672, 112, True, 'HSwish', 1],
+                  [5, 672, 160, True, 'HSwish', 2],
+                  [5, 960, 160, True, 'HSwish', 1],
+                  [5, 960, 160, True, 'HSwish', 1]]
     }  # yapf: disable
 
     def __init__(self,
                  arch='small',
                  conv_cfg=None,
-                 norm_cfg=dict(type='BN'),
-                 out_indices=(10, ),
+                 norm_cfg=dict(type='BN', eps=0.001, momentum=0.01),
+                 out_indices=None,
                  frozen_stages=-1,
                  norm_eval=False,
                  with_cp=False,
                  init_cfg=[
-                     dict(type='Kaiming', layer=['Conv2d']),
-                     dict(type='Constant', val=1, layer=['BatchNorm2d'])
+                     dict(
+                         type='Kaiming',
+                         layer=['Conv2d'],
+                         nonlinearity='leaky_relu'),
+                     dict(type='Normal', layer=['Linear'], std=0.01),
+                     dict(type='Constant', layer=['BatchNorm2d'], val=1)
                  ]):
-        super(MobileNetv3, self).__init__(init_cfg)
+        super(MobileNetV3, self).__init__(init_cfg)
         assert arch in self.arch_settings
-        for index in out_indices:
-            if index not in range(0, len(self.arch_settings[arch])):
-                raise ValueError('the item in out_indices must in '
-                                 f'range(0, {len(self.arch_settings[arch])}). '
-                                 f'But received {index}')
+        if out_indices is None:
+            out_indices = (12, ) if arch == 'small' else (16, )
+        for order, index in enumerate(out_indices):
+            if index not in range(0, len(self.arch_settings[arch]) + 2):
+                raise ValueError(
+                    'the item in out_indices must in '
+                    f'range(0, {len(self.arch_settings[arch]) + 2}). '
+                    f'But received {index}')
 
-        if frozen_stages not in range(-1, len(self.arch_settings[arch])):
+        if frozen_stages not in range(-1, len(self.arch_settings[arch]) + 2):
             raise ValueError('frozen_stages must be in range(-1, '
-                             f'{len(self.arch_settings[arch])}). '
+                             f'{len(self.arch_settings[arch]) + 2}). '
                              f'But received {frozen_stages}')
-        self.out_indices = out_indices
-        self.frozen_stages = frozen_stages
         self.arch = arch
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
@@ -93,23 +98,26 @@ class MobileNetv3(BaseBackbone):
         self.norm_eval = norm_eval
         self.with_cp = with_cp
 
-        self.in_channels = 16
-        self.conv1 = ConvModule(
-            in_channels=3,
-            out_channels=self.in_channels,
-            kernel_size=3,
-            stride=2,
-            padding=1,
-            conv_cfg=conv_cfg,
-            norm_cfg=norm_cfg,
-            act_cfg=dict(type='HSwish'))
-
         self.layers = self._make_layer()
-        self.feat_dim = self.arch_settings[arch][-1][2]
+        self.feat_dim = self.arch_settings[arch][-1][1]
 
     def _make_layer(self):
         layers = []
         layer_setting = self.arch_settings[self.arch]
+        in_channels = 16
+
+        layer = ConvModule(
+            in_channels=3,
+            out_channels=in_channels,
+            kernel_size=3,
+            stride=2,
+            padding=1,
+            conv_cfg=self.conv_cfg,
+            norm_cfg=self.norm_cfg,
+            act_cfg=dict(type='HSwish'))
+        self.add_module('layer0', layer)
+        layers.append('layer0')
+
         for i, params in enumerate(layer_setting):
             (kernel_size, mid_channels, out_channels, with_se, act,
              stride) = params
@@ -117,31 +125,50 @@ class MobileNetv3(BaseBackbone):
                 se_cfg = dict(
                     channels=mid_channels,
                     ratio=4,
-                    act_cfg=(dict(type='ReLU'), dict(type='HSigmoid')))
+                    act_cfg=(dict(type='ReLU'),
+                             dict(
+                                 type='HSigmoid',
+                                 bias=3,
+                                 divisor=6,
+                                 min_value=0,
+                                 max_value=1)))
             else:
                 se_cfg = None
 
             layer = InvertedResidual(
-                in_channels=self.in_channels,
+                in_channels=in_channels,
                 out_channels=out_channels,
                 mid_channels=mid_channels,
                 kernel_size=kernel_size,
                 stride=stride,
                 se_cfg=se_cfg,
-                with_expand_conv=True,
                 conv_cfg=self.conv_cfg,
                 norm_cfg=self.norm_cfg,
                 act_cfg=dict(type=act),
                 with_cp=self.with_cp)
-            self.in_channels = out_channels
+            in_channels = out_channels
             layer_name = 'layer{}'.format(i + 1)
             self.add_module(layer_name, layer)
             layers.append(layer_name)
+
+        # Build the last layer before pooling
+        # TODO: No dilation
+        layer = ConvModule(
+            in_channels=in_channels,
+            out_channels=576 if self.arch == 'small' else 960,
+            kernel_size=1,
+            stride=1,
+            padding=0,
+            conv_cfg=self.conv_cfg,
+            norm_cfg=self.norm_cfg,
+            act_cfg=dict(type='HSwish'))
+        layer_name = 'layer{}'.format(len(layer_setting) + 1)
+        self.add_module(layer_name, layer)
+        layers.append(layer_name)
+
         return layers
 
     def forward(self, x):
-        x = self.conv1(x)
-
         outs = []
         for i, layer_name in enumerate(self.layers):
             layer = getattr(self, layer_name)
@@ -155,17 +182,14 @@ class MobileNetv3(BaseBackbone):
             return tuple(outs)
 
     def _freeze_stages(self):
-        if self.frozen_stages >= 0:
-            for param in self.conv1.parameters():
-                param.requires_grad = False
-        for i in range(1, self.frozen_stages + 1):
+        for i in range(0, self.frozen_stages + 1):
             layer = getattr(self, f'layer{i}')
             layer.eval()
             for param in layer.parameters():
                 param.requires_grad = False
 
     def train(self, mode=True):
-        super(MobileNetv3, self).train(mode)
+        super(MobileNetV3, self).train(mode)
         self._freeze_stages()
         if mode and self.norm_eval:
             for m in self.modules():
