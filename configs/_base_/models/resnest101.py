@@ -13,6 +13,12 @@ model = dict(
         type='LinearClsHead',
         num_classes=1000,
         in_channels=2048,
-        loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
+        loss=dict(
+            type='LabelSmoothLoss',
+            label_smooth_val=0.1,
+            num_classes=1000,
+            reduction='mean',
+            loss_weight=1.0),
         topk=(1, 5),
-    ))
+        cal_acc=False))
+train_cfg = dict(mixup=dict(alpha=0.2, num_classes=1000))
