@@ -37,8 +37,9 @@ class InvertedResidual(BaseModule):
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
                  act_cfg=dict(type='ReLU'),
-                 with_cp=False):
-        super(InvertedResidual, self).__init__()
+                 with_cp=False,
+                 init_cfg=None):
+        super(InvertedResidual, self).__init__(init_cfg)
         self.stride = stride
         self.with_cp = with_cp
 
@@ -169,7 +170,6 @@ class ShuffleNetV2(BaseBackbone):
                 raise ValueError('the item in out_indices must in '
                                  f'range(0, 4). But received {index}')
 
-        self.init_cfg = init_cfg
         if frozen_stages not in range(-1, 4):
             raise ValueError('frozen_stages must be in range(-1, 4). '
                              f'But received {frozen_stages}')
@@ -256,20 +256,24 @@ class ShuffleNetV2(BaseBackbone):
                 param.requires_grad = False
 
     def init_weights(self):
-        if self.init_cfg:
-            super(ShuffleNetV2, self).init_weights(self.init_cfg)
-        else:
-            for name, m in self.named_modules():
-                if isinstance(m, nn.Conv2d):
-                    if 'conv1' in name:
-                        normal_init(m, mean=0, std=0.01)
-                    else:
-                        normal_init(m, mean=0, std=1.0 / m.weight.shape[1])
-                elif isinstance(m, (_BatchNorm, nn.GroupNorm)):
-                    constant_init(m.weight, val=1, bias=0.0001)
-                    if isinstance(m, _BatchNorm):
-                        if m.running_mean is not None:
-                            nn.init.constant_(m.running_mean, 0)
+        super(ShuffleNetV2, self).init_weights()
+
+        if (isinstance(self.init_cfg, dict)
+                and self.init_cfg['type'] == 'Pretrained'):
+            # Suppress default init if use pretrained model.
+            return
+
+        for name, m in self.named_modules():
+            if isinstance(m, nn.Conv2d):
+                if 'conv1' in name:
+                    normal_init(m, mean=0, std=0.01)
+                else:
+                    normal_init(m, mean=0, std=1.0 / m.weight.shape[1])
+            elif isinstance(m, (_BatchNorm, nn.GroupNorm)):
+                constant_init(m.weight, val=1, bias=0.0001)
+                if isinstance(m, _BatchNorm):
+                    if m.running_mean is not None:
+                        nn.init.constant_(m.running_mean, 0)
 
     def forward(self, x):
         x = self.conv1(x)

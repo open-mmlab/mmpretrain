@@ -232,19 +232,6 @@ class MobileNetV2(BaseBackbone):
 
         return nn.Sequential(*layers)
 
-    # def init_weights(self, pretrained=None):
-    #     if isinstance(pretrained, str):
-    #         logger = logging.getLogger()
-    #         load_checkpoint(self, pretrained, strict=False, logger=logger)
-    #     elif pretrained is None:
-    #         for m in self.modules():
-    #             if isinstance(m, nn.Conv2d):
-    #                 kaiming_init(m)
-    #             elif isinstance(m, (_BatchNorm, nn.GroupNorm)):
-    #                 constant_init(m, 1)
-    #     else:
-    #         raise TypeError('pretrained must be a str or None')
-
     def forward(self, x):
         x = self.conv1(x)
 
