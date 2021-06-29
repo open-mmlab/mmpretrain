@@ -53,9 +53,8 @@ class WindowMSA(BaseModule):
 
         # About 2x faster than original impl
         Wh, Ww = self.window_size
-        rel_index_coords_h = self.double_step_seq(2 * Ww - 1, Wh, 1, Wh)
-        rel_index_coords_w = self.double_step_seq(2 * Wh - 1, Ww, 1, Ww)
-        rel_position_index = rel_index_coords_h + rel_index_coords_w.T
+        rel_index_coords = self.double_step_seq(2 * Ww - 1, Wh, 1, Ww)
+        rel_position_index = rel_index_coords + rel_index_coords.T
         rel_position_index = rel_position_index.flip(1).contiguous()
         self.register_buffer('relative_position_index', rel_position_index)
 
