@@ -9,7 +9,6 @@ from mmcv.runner.base_module import BaseModule
 from .helpers import to_2tuple
 
 
-@ATTENTION.register_module()
 class WindowMSA(BaseModule):
     """Window based multi-head self-attention (W-MSA) module with relative
     position bias.
@@ -130,7 +129,7 @@ class ShiftWindowMSA(BaseModule):
         num_heads (int): Number of attention heads.
         window_size (int): The height and width of the window.
         shift_size (int, optional): The shift step of each window towards
-            right-bottom, defaults to 0.
+            right-bottom. If zero, act as regular window-msa. Defaults to 0.
         qkv_bias (bool, optional): If True, add a learnable bias to q, k, v.
             Default: True
         qk_scale (float | None, optional): Override default qk scale of
