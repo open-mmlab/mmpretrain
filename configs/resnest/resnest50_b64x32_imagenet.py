@@ -1,6 +1,4 @@
-_base_ = [
-    '../_base_/models/resnest50.py', '../_base_/default_runtime.py'
-]
+_base_ = ['../_base_/models/resnest50.py', '../_base_/default_runtime.py']
 
 # dataset settings
 dataset_type = 'ImageNet'
