@@ -7,7 +7,7 @@ from .helpers import to_2tuple
 
 
 class PatchEmbed(BaseModule):
-    """Image to Patch Embedding V2.
+    """Image to Patch Embedding.
 
     We use a conv layer to implement PatchEmbed.
     Args:
@@ -15,10 +15,11 @@ class PatchEmbed(BaseModule):
         in_channels (int): The num of input channels. Default: 3
         embed_dims (int): The dimensions of embedding. Default: 768
         norm_cfg (dict, optional): Config dict for normalization layer.
+            Default: None
         conv_cfg (dict, optional): The config dict for conv layers.
-            Default: None.
+            Default: None
         init_cfg (`mmcv.ConfigDict`, optional): The Config for initialization.
-            Default: None.
+            Default: None
     """
 
     def __init__(self,
@@ -65,7 +66,6 @@ class PatchEmbed(BaseModule):
 
     def forward(self, x):
         B, C, H, W = x.shape
-        # FIXME look at relaxing size constraints
         assert H == self.img_size[0] and W == self.img_size[1], \
             f"Input image size ({H}*{W}) doesn't " \
             f'match model ({self.img_size[0]}*{self.img_size[1]}).'
