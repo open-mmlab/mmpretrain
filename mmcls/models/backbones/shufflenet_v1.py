@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.utils.checkpoint as cp
 from mmcv.cnn import (ConvModule, build_activation_layer, constant_init,
                       normal_init)
+from mmcv.runner import BaseModule
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from mmcls.models.utils import channel_shuffle, make_divisible
@@ -10,7 +11,7 @@ from ..builder import BACKBONES
 from .base_backbone import BaseBackbone
 
 
-class ShuffleUnit(nn.Module):
+class ShuffleUnit(BaseModule):
     """ShuffleUnit block.
 
     ShuffleNet unit with pointwise group convolution (GConv) and channel
@@ -184,6 +185,7 @@ class ShuffleNetV1(BaseBackbone):
                  with_cp=False,
                  init_cfg=None):
         super(ShuffleNetV1, self).__init__(init_cfg)
+        self.init_cfg = init_cfg
         self.stage_blocks = [4, 8, 4]
         self.groups = groups
 
@@ -250,6 +252,12 @@ class ShuffleNetV1(BaseBackbone):
 
     def init_weights(self):
         super(ShuffleNetV1, self).init_weights()
+
+        if (isinstance(self.init_cfg, dict)
+                and self.init_cfg['type'] == 'Pretrained'):
+            # Suppress default init if use pretrained model.
+            return
+
         for name, m in self.named_modules():
             if isinstance(m, nn.Conv2d):
                 if 'conv1' in name:
