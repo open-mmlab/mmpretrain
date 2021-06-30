@@ -1,8 +1,8 @@
-# Tutorial 5: Pytorch to TorchScript (Experimental)
+# Pytorch to TorchScript (Experimental)
 
 <!-- TOC -->
 
-- [Tutorial 5: Pytorch to TorchScript (Experimental)](#tutorial-5-pytorch-to-torchscript-experimental)
+- [Pytorch to TorchScript (Experimental)](#pytorch-to-torchscript-experimental)
   - [How to convert models from Pytorch to TorchScript](#how-to-convert-models-from-pytorch-to-torchscript)
     - [Usage](#usage)
     - [Description of all arguments](#description-of-all-arguments)
@@ -44,7 +44,7 @@ python tools/deployment/pytorch2onnx.py \
 
 Notes:
 
-- *All models above are tested with Pytorch==1.8.1*
+- *All models are tested with Pytorch==1.8.1*
 
 ## Reminders
 

@@ -2,7 +2,7 @@
 
 <!-- TOC -->
 
-- [Tutorial 6: ONNX to TensorRT (Experimental)](#tutorial-6-onnx-to-tensorrt-experimental)
+- [ONNX to TensorRT (Experimental)](#onnx-to-tensorrt-experimental)
   - [How to convert models from ONNX to TensorRT](#how-to-convert-models-from-onnx-to-tensorrt)
     - [Prerequisite](#prerequisite)
     - [Usage](#usage)

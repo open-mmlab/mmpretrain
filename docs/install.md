@@ -55,14 +55,36 @@ conda install pytorch=1.3.1 cudatoolkit=9.2 torchvision=0.4.2 -c pytorch
 If you build PyTorch from source instead of installing the prebuilt pacakge,
 you can use more CUDA versions such as 9.0.
 
-c. Clone the mmclassification repository.
+c. Install MMClassification repository.
+
+#### Release version
+
+We recommend you to install MMClassification with [MIM](https://github.com/open-mmlab/mim).
+
+```shell
+pip install git+https://github.com/open-mmlab/mim.git
+mim install mmcls
+```
+
+MIM can automatically install OpenMMLab projects and their requirements,
+and it can also help us to train, parameter search and pretrain model download.
+
+Or, you can install MMClassification with pip:
+
+```shell
+pip install mmcls
+```
+
+#### Develop version
+
+First, clone the MMClassification repository.
 
 ```shell
 git clone https://github.com/open-mmlab/mmclassification.git
 cd mmclassification
 ```
 
-d. Install build requirements and then install mmclassification.
+And then, install build requirements and install MMClassification.
 
 ```shell
 pip install -e .  # or "python setup.py develop"
@@ -70,7 +92,7 @@ pip install -e .  # or "python setup.py develop"
 
 Note:
 
-1. Following the above instructions, mmclassification is installed on `dev` mode, any local modifications made to the code will take effect without the need to reinstall it (unless you submit some commits and want to update the version number).
+1. Following the above instructions, MMClassification is installed on `dev` mode, any local modifications made to the code will take effect without the need to reinstall it (unless you submit some commits and want to update the version number).
 
 2. If you would like to use `opencv-python-headless` instead of `opencv-python`,
 
