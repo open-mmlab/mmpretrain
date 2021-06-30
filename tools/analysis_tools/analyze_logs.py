@@ -8,6 +8,7 @@ import seaborn as sns
 
 
 def cal_train_time(log_dicts, args):
+    """Compute the average time per training iteration."""
     for i, log_dict in enumerate(log_dicts):
         print(f'{"-" * 5}Analyze train time of {args.json_logs[i]}{"-" * 5}')
         all_times = []
@@ -31,6 +32,7 @@ def cal_train_time(log_dicts, args):
 
 
 def plot_curve(log_dicts, args):
+    """Plot train metric-iter graph."""
     if args.backend is not None:
         plt.switch_backend(args.backend)
     sns.set_style(args.style)
