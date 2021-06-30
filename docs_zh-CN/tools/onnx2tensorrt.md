@@ -16,7 +16,7 @@
 
 ### 准备工作
 
-1. 请参照 [install.md](https://mmclassification.readthedocs.io/en/latest/install.html#install-mmclassification) 从源码安装 MMClassification。
+1. 请参照 [安装指南](https://mmclassification.readthedocs.io/zh_CN/latest/install.html#mmclassification) 从源码安装 MMClassification。
 2. 使用我们的工具 [pytorch2onnx.md](./pytorch2onnx.md) 将 PyTorch 模型转换至 ONNX。
 
 ### 使用方法
@@ -34,7 +34,7 @@ python tools/deployment/onnx2tensorrt.py \
 所有参数的说明：
 
 - `model` : ONNX 模型的路径。
-- `--trt-file`: TensorRT 引擎文件的输出路径。如果没有指定，默认为 `tmp.trt`。
+- `--trt-file`: TensorRT 引擎文件的输出路径。如果没有指定，默认为当前脚本执行路径下的 `tmp.trt`。
 - `--shape`: 模型输入的高度和宽度。如果没有指定，默认为 `224 224`。
 - `--workspace-size` : 构建 TensorRT 引擎所需要的 GPU 空间大小，单位为 GiB。如果没有指定，默认为 `1` GiB。
 - `--show`: 是否展示模型的输出。如果没有指定，默认为 `False`。
@@ -43,7 +43,7 @@ python tools/deployment/onnx2tensorrt.py \
 示例：
 
 ```bash
-python tools/onnx2tensorrt.py \
+python tools/deployment/onnx2tensorrt.py \
     checkpoints/resnet/resnet18_b16x8_cifar10.onnx \
     --trt-file checkpoints/resnet/resnet18_b16x8_cifar10.trt \
     --shape 224 224 \

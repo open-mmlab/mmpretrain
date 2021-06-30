@@ -27,7 +27,7 @@ python tools/deployment/pytorch2torchscript.py \
 
 - `config` : 模型配置文件的路径。
 - `--checkpoint` : 模型权重文件的路径。
-- `--output-file`: TorchScript 模型的输出路径。如果没有指定，默认为 `tmp.pt`。
+- `--output-file`: TorchScript 模型的输出路径。如果没有指定，默认为当前脚本执行路径下的 `tmp.pt`。
 - `--shape`: 模型输入的高度和宽度。如果没有指定，默认为 `224 224`。
 - `--verify`: 是否验证导出模型的正确性。如果没有指定，默认为`False`。
 

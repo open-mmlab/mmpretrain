@@ -16,7 +16,7 @@
 
 ### 准备工作
 
-1. 请参照 [install.md](https://mmclassification.readthedocs.io/en/latest/install.html#install-mmclassification) 从源码安装 MMClassification。
+1. 请参照 [安装指南](https://mmclassification.readthedocs.io/zh_CN/latest/install.html#mmclassification) 从源码安装 MMClassification。
 2. 安装 onnx 和 onnxruntime。
 
   ```shell
@@ -26,7 +26,7 @@
 ### 使用方法
 
 ```bash
-python tools/pytorch2onnx.py \
+python tools/deployment/pytorch2onnx.py \
     ${CONFIG_FILE} \
     --checkpoint ${CHECKPOINT_FILE} \
     --output-file ${OUTPUT_FILE} \
@@ -42,7 +42,7 @@ python tools/pytorch2onnx.py \
 
 - `config` : 模型配置文件的路径。
 - `--checkpoint` : 模型权重文件的路径。
-- `--output-file`: ONNX 模型的输出路径。如果没有指定，默认为 `tmp.onnx`。
+- `--output-file`: ONNX 模型的输出路径。如果没有指定，默认为当前脚本执行路径下的 `tmp.onnx`。
 - `--shape`: 模型输入的高度和宽度。如果没有指定，默认为 `224 224`。
 - `--opset-version` : ONNX 的 opset 版本。如果没有指定，默认为 `11`。
 - `--dynamic-shape` : 是否以动态输入尺寸导出 ONNX。 如果没有指定，默认为 `False`。
@@ -53,7 +53,7 @@ python tools/pytorch2onnx.py \
 示例：
 
 ```bash
-python tools/pytorch2onnx.py \
+python tools/deployment/pytorch2onnx.py \
     configs/resnet/resnet18_b16x8_cifar10.py \
     --checkpoint checkpoints/resnet/resnet18_b16x8_cifar10.pth \
     --output-file checkpoints/resnet/resnet18_b16x8_cifar10.onnx \
