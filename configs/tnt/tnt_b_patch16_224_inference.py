@@ -31,8 +31,7 @@ model = dict(
         loss=dict(
             type='LabelSmoothLoss', label_smooth_val=0.1, mode='original'),
         topk=(1, 5),
-        init_cfg=dict(type='TruncNormal', layer='Linear', std=.02)),
-    train_cfg=dict(mixup=dict(alpha=0.2, num_classes=1000)))
+        init_cfg=dict(type='TruncNormal', layer='Linear', std=.02)))
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
