@@ -219,3 +219,45 @@ def test_image_classifier_vit():
 
     losses = img_classifier.forward_train(imgs, label)
     assert losses['loss'].item() > 0
+
+
+def test_image_classifier_tnt():
+
+    model_cfg = dict(
+        backbone=dict(
+            type='TNT',
+            arch='b',
+            img_size=224,
+            patch_size=16,
+            in_channels=3,
+            ffn_ratio=4,
+            qkv_bias=False,
+            drop_rate=0.,
+            attn_drop_rate=0.,
+            drop_path_rate=0.1,
+            first_stride=4,
+            num_fcs=2,
+            init_cfg=[
+                dict(type='TruncNormal', layer='Linear', std=.02),
+                dict(type='Constant', layer='LayerNorm', val=1., bias=0.)
+            ]),
+        neck=None,
+        head=dict(
+            type='LinearClsHead',
+            num_classes=1000,
+            in_channels=640,
+            loss=dict(
+                type='LabelSmoothLoss', label_smooth_val=0.1, mode='original'),
+            topk=(1, 5),
+            init_cfg=dict(type='TruncNormal', layer='Linear', std=.02)),
+        train_cfg=dict(
+            augments=dict(
+                type='BatchMixup', alpha=0.2, num_classes=1000, prob=1.)))
+
+    img_classifier = ImageClassifier(**model_cfg)
+    img_classifier.init_weights()
+    imgs = torch.randn(2, 3, 224, 224)
+    label = torch.randint(0, 1000, (2, ))
+
+    losses = img_classifier.forward_train(imgs, label)
+    assert losses['loss'].item() > 0
