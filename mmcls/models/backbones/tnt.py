@@ -67,8 +67,7 @@ class TnTLayer(BaseModule):
             attn_drop=attn_drop_rate,
             proj_drop=drop_rate,
             dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
-            batch_first=batch_first,
-            bias=qkv_bias)
+            batch_first=batch_first)
 
         self.norm_ffn_in = build_norm_layer(norm_cfg, inner_dims)[1]
         self.ffn_in = FFN(
@@ -91,8 +90,7 @@ class TnTLayer(BaseModule):
             attn_drop=attn_drop_rate,
             proj_drop=drop_rate,
             dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
-            batch_first=batch_first,
-            bias=qkv_bias)
+            batch_first=batch_first)
 
         self.norm_ffn_out = build_norm_layer(norm_cfg, embed_dims)[1]
         self.ffn_out = FFN(
@@ -102,6 +100,10 @@ class TnTLayer(BaseModule):
             ffn_drop=drop_rate,
             dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
             act_cfg=act_cfg)
+
+        if not qkv_bias:
+            self.attn_in.attn.in_proj_bias = None
+            self.attn_out.attn.in_proj_bias = None
 
     def forward(self, pixel_embed, patch_embed):
         # inner
