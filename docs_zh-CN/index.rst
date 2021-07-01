@@ -34,8 +34,10 @@ You can switch between Chinese and English documents in the lower-left corner of
    :maxdepth: 2
    :caption: 实用工具
 
-   tutorials/pytorch2onnx.md
-   tutorials/onnx2tensorrt.md
+   tools/pytorch2onnx.md
+   tools/onnx2tensorrt.md
+   tools/pytorch2torchscript.md
+   tools/model_serving.md
 
 
 .. toctree::
