@@ -3,8 +3,10 @@ import torch
 from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from mmcls.models.utils import (Augments, InvertedResidual, SELayer,
-                                channel_shuffle, make_divisible)
+from mmcls.models.backbones import VGG
+from mmcls.models.utils import (Augments, HybridEmbed, InvertedResidual,
+                                PatchEmbed, SELayer, channel_shuffle,
+                                make_divisible)
 
 
 def is_norm(modules):
@@ -161,3 +163,27 @@ def test_augments():
     mixed_imgs, mixed_labels = augs(imgs, labels)
     assert mixed_imgs.shape == torch.Size((4, 3, 32, 32))
     assert mixed_labels.shape == torch.Size((4, 10))
+
+
+def test_embed():
+
+    # Test PatchEmbed
+    patch_embed = PatchEmbed()
+    img = torch.randn(1, 3, 224, 224)
+    img = patch_embed(img)
+    assert img.shape == torch.Size((1, 196, 768))
+
+    # Test PatchEmbed with stride = 8
+    conv_cfg = dict(kernel_size=16, stride=8)
+    patch_embed = PatchEmbed(conv_cfg=conv_cfg)
+    img = torch.randn(1, 3, 224, 224)
+    img = patch_embed(img)
+    assert img.shape == torch.Size((1, 729, 768))
+
+    # Test VGG11 HybridEmbed
+    backbone = VGG(11, norm_eval=True)
+    backbone.init_weights()
+    patch_embed = HybridEmbed(backbone)
+    img = torch.randn(1, 3, 224, 224)
+    img = patch_embed(img)
+    assert img.shape == torch.Size((1, 49, 768))

@@ -1,9 +1,7 @@
-import logging
-
 import torch.nn as nn
 import torch.utils.checkpoint as cp
-from mmcv.cnn import ConvModule, constant_init, kaiming_init
-from mmcv.runner import load_checkpoint
+from mmcv.cnn import ConvModule
+from mmcv.runner import BaseModule
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from mmcls.models.utils import make_divisible
@@ -11,7 +9,7 @@ from ..builder import BACKBONES
 from .base_backbone import BaseBackbone
 
 
-class InvertedResidual(nn.Module):
+class InvertedResidual(BaseModule):
     """InvertedResidual block for MobileNetV2.
 
     Args:
@@ -41,8 +39,9 @@ class InvertedResidual(nn.Module):
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
                  act_cfg=dict(type='ReLU6'),
-                 with_cp=False):
-        super(InvertedResidual, self).__init__()
+                 with_cp=False,
+                 init_cfg=None):
+        super(InvertedResidual, self).__init__(init_cfg)
         self.stride = stride
         assert stride in [1, 2], f'stride must in [1, 2]. ' \
             f'But received {stride}.'
@@ -232,19 +231,6 @@ class MobileNetV2(BaseBackbone):
             self.in_channels = out_channels
 
         return nn.Sequential(*layers)
-
-    def init_weights(self, pretrained=None):
-        if isinstance(pretrained, str):
-            logger = logging.getLogger()
-            load_checkpoint(self, pretrained, strict=False, logger=logger)
-        elif pretrained is None:
-            for m in self.modules():
-                if isinstance(m, nn.Conv2d):
-                    kaiming_init(m)
-                elif isinstance(m, (_BatchNorm, nn.GroupNorm)):
-                    constant_init(m, 1)
-        else:
-            raise TypeError('pretrained must be a str or None')
 
     def forward(self, x):
         x = self.conv1(x)

@@ -14,20 +14,16 @@ class LinearClsHead(ClsHead):
         num_classes (int): Number of categories excluding the background
             category.
         in_channels (int): Number of channels in the input feature map.
+        init_cfg (dict | optional): The extra init config of layers.
+            Defaults to use dict(type='Normal', layer='Linear', std=0.01).
     """
 
     def __init__(self,
                  num_classes,
                  in_channels,
-                 init_cfg=None,
+                 init_cfg=dict(type='Normal', layer='Linear', std=0.01),
                  *args,
                  **kwargs):
-        init_cfg = init_cfg or dict(
-            type='Normal',
-            mean=0.,
-            std=0.01,
-            bias=0.,
-            override=dict(name='fc'))
         super(LinearClsHead, self).__init__(init_cfg=init_cfg, *args, **kwargs)
 
         self.in_channels = in_channels
@@ -37,9 +33,6 @@ class LinearClsHead(ClsHead):
             raise ValueError(
                 f'num_classes={num_classes} must be a positive integer')
 
-        self._init_layers()
-
-    def _init_layers(self):
         self.fc = nn.Linear(self.in_channels, self.num_classes)
 
     def simple_test(self, img):

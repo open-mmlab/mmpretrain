@@ -2,7 +2,7 @@
 
 <!-- TOC -->
 
-- [Tutorial 5: Pytorch to ONNX (Experimental)](#tutorial-5-pytorch-to-onnx-experimental)
+- [Pytorch to ONNX (Experimental)](#pytorch-to-onnx-experimental)
   - [How to convert models from Pytorch to ONNX](#how-to-convert-models-from-pytorch-to-onnx)
     - [Prerequisite](#prerequisite)
     - [Usage](#usage)
