@@ -95,7 +95,7 @@ class TnTLayer(BaseModule):
         self.norm_ffn_out = build_norm_layer(norm_cfg, embed_dims)[1]
         self.ffn_out = FFN(
             embed_dims=embed_dims,
-            feedforward_channels=inner_dims * ffn_ratio,
+            feedforward_channels=embed_dims * ffn_ratio,
             num_fcs=num_fcs,
             ffn_drop=drop_rate,
             dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
