@@ -159,3 +159,92 @@ class HybridEmbed(BaseModule):
             x = x[-1]
         x = self.projection(x).flatten(2).transpose(1, 2)
         return x
+
+
+class PatchMerging(BaseModule):
+    """Merge patch feature map.
+
+    This layer use nn.Unfold to group feature map by kernel_size, and use norm
+    and linear layer to embed grouped feature map.
+
+    Args:
+        input_resolution (tuple): The size of input patch resolution.
+        in_channels (int): The num of input channels.
+        expansion_ratio (Number): Expansion ratio of output channels. The num
+            of output channels is equal to int(expansion_ratio * in_channels).
+        kernel_size (int | tuple, optional): the kernel size in the unfold
+            layer. Defaults to 2.
+        stride (int | tuple, optional): the stride of the sliding blocks in the
+            unfold layer. Defaults to be equal with kernel_size.
+        padding (int | tuple, optional): zero padding width in the unfold
+            layer. Defaults to 0.
+        dilation (int | tuple, optional): dilation parameter in the unfold
+            layer. Defaults to 1.
+        bias (bool, optional): Whether to add bias in linear layer or not.
+            Defaults to False.
+        norm_cfg (dict, optional): Config dict for normalization layer.
+            Defaults to dict(type='LN').
+        init_cfg (dict, optional): The extra config for initialization.
+            Defaults to None.
+    """
+
+    def __init__(self,
+                 input_resolution,
+                 in_channels,
+                 expansion_ratio,
+                 kernel_size=2,
+                 stride=None,
+                 padding=0,
+                 dilation=1,
+                 bias=False,
+                 norm_cfg=dict(type='LN'),
+                 init_cfg=None):
+        super().__init__(init_cfg)
+        H, W = input_resolution
+        self.input_resolution = input_resolution
+        self.in_channels = in_channels
+        self.out_channels = int(expansion_ratio * in_channels)
+
+        if stride is None:
+            stride = kernel_size
+        kernel_size = to_2tuple(kernel_size)
+        stride = to_2tuple(stride)
+        padding = to_2tuple(padding)
+        dilation = to_2tuple(dilation)
+        self.sampler = nn.Unfold(kernel_size, dilation, padding, stride)
+
+        sample_dim = kernel_size[0] * kernel_size[1] * in_channels
+
+        if norm_cfg is not None:
+            self.norm = build_norm_layer(norm_cfg, sample_dim)[1]
+        else:
+            self.norm = None
+
+        self.reduction = nn.Linear(sample_dim, self.out_channels, bias=bias)
+
+        # See https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html
+        H_out = (H + 2 * padding[0] - dilation[0] *
+                 (kernel_size[0] - 1) - 1) // stride[0] + 1
+        W_out = (W + 2 * padding[1] - dilation[1] *
+                 (kernel_size[1] - 1) - 1) // stride[1] + 1
+        self.output_resolution = (H_out, W_out)
+
+    def forward(self, x):
+        """
+        x: B, H*W, C
+        """
+        H, W = self.input_resolution
+        B, L, C = x.shape
+        assert L == H * W, 'input feature has wrong size'
+
+        x = x.view(B, H, W, C).permute([0, 3, 1, 2])  # B, C, H, W
+
+        # Use nn.Unfold to merge patch. About 25% faster than original method,
+        # but need to modify pretrained model for compatibility
+        x = self.sampler(x)  # B, 4*C, H/2*W/2
+        x = x.transpose(1, 2)  # B, H/2*W/2, 4*C
+
+        x = self.norm(x) if self.norm else x
+        x = self.reduction(x)
+
+        return x

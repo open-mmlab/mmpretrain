@@ -49,6 +49,7 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 - [x] ShuffleNetV2
 - [x] MobileNetV2
 - [x] MobileNetV3
+- [x] Swin-Transformer
 
 ## 安装
 
