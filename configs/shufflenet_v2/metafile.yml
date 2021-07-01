@@ -1,7 +1,7 @@
 Collections:
   - Name: Shufflenet V2
     Metadata:
-      Training Data: ImageNet
+      Training Data: ImageNet-1k
       Training Techniques:
         - SGD with Momentum
         - Weight Decay
@@ -21,7 +21,7 @@ Models:
       Parameters: 2280000
     In Collection: Shufflenet V2
     Results:
-      - Dataset: ImageNet
+      - Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 69.55
           Top 5 Accuracy: 88.92

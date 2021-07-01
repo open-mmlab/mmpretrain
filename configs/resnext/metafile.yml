@@ -20,7 +20,7 @@ Models:
       Parameters: 25030000
     In Collection: ResNeXt
     Results:
-      - Dataset: ImageNet
+      - Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 77.92
           Top 5 Accuracy: 93.74
@@ -33,7 +33,7 @@ Models:
       Parameters: 44180000
     In Collection: ResNeXt
     Results:
-      - Dataset: ImageNet
+      - Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 78.7
           Top 5 Accuracy: 94.34
@@ -46,7 +46,7 @@ Models:
       Parameters: 88790000
     In Collection: ResNeXt
     Results:
-      - Dataset: ImageNet
+      - Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 79.22
           Top 5 Accuracy: 94.52
@@ -59,7 +59,7 @@ Models:
       Parameters: 59950000
     In Collection: ResNeXt
     Results:
-      - Dataset: ImageNet
+      - Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 79.06
           Top 5 Accuracy: 94.47

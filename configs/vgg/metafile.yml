@@ -1,7 +1,7 @@
 Collections:
   - Name: VGG
     Metadata:
-      Training Data: ImageNet
+      Training Data: ImageNet-1k
       Training Techniques:
         - SGD with Momentum
         - Weight Decay
@@ -20,7 +20,7 @@ Models:
       Parameters: 132860000
     In Collection: VGG
     Results:
-      - Dataset: ImageNet
+      - Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 68.75
           Top 5 Accuracy: 88.87
@@ -33,7 +33,7 @@ Models:
       Parameters: 133050000
     In Collection: VGG
     Results:
-      - Dataset: ImageNet
+      - Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 70.02
           Top 5 Accuracy: 89.46
@@ -46,7 +46,7 @@ Models:
       Parameters: 138360000
     In Collection: VGG
     Results:
-      - Dataset: ImageNet
+      - Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 71.62
           Top 5 Accuracy: 90.49
@@ -59,7 +59,7 @@ Models:
       Parameters: 143670000
     In Collection: VGG
     Results:
-      - Dataset: ImageNet
+      - Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 72.41
           Top 5 Accuracy: 90.8
@@ -72,7 +72,7 @@ Models:
       Parameters: 132870000
     In Collection: VGG
     Results:
-      - Dataset: ImageNet
+      - Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 70.75
           Top 5 Accuracy: 90.12
@@ -85,7 +85,7 @@ Models:
       Parameters: 133050000
     In Collection: VGG
     Results:
-      - Dataset: ImageNet
+      - Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 72.15
           Top 5 Accuracy: 90.71
@@ -98,7 +98,7 @@ Models:
       Parameters: 138370000
     In Collection: VGG
     Results:
-      - Dataset: ImageNet
+      - Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 73.72
           Top 5 Accuracy: 91.68
@@ -111,7 +111,7 @@ Models:
       Parameters: 143680000
     In Collection: VGG
     Results:
-      - Dataset: ImageNet
+      - Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 74.7
           Top 5 Accuracy: 92.24
