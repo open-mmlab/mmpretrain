@@ -1,7 +1,7 @@
 Collections:
   - Name: Shufflenet V1
     Metadata:
-      Training Data: ImageNet
+      Training Data: ImageNet-1k
       Training Techniques:
         - SGD with Momentum
         - Weight Decay
@@ -15,16 +15,16 @@ Collections:
     README: configs/shufflenet_v1/README.md
 
 Models:
-- Config: configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py
-  In Collection: Shufflenet V1
-  Metadata:
-    FLOPs: 146000000
-    Parameters: 1870000
-  Name: shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet
-  Results:
-  - Dataset: ImageNet
-    Metrics:
-      Top 1 Accuracy: 68.13
-      Top 5 Accuracy: 87.81
-    Task: Image Classification
-  Weights: https://download.openmmlab.com/mmclassification/v0/shufflenet_v1/shufflenet_v1_batch1024_imagenet_20200804-5d6cec73.pth
+  - Name: shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet
+    Metadata:
+      FLOPs: 146000000
+      Parameters: 1870000
+    In Collection: Shufflenet V1
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 68.13
+          Top 5 Accuracy: 87.81
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/shufflenet_v1/shufflenet_v1_batch1024_imagenet_20200804-5d6cec73.pth
+    Config: configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py

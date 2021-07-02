@@ -1,0 +1,42 @@
+Collections:
+  - Name: MobileNet V3
+    Metadata:
+      Training Data: ImageNet-1k
+      Training Techniques:
+        - RMSprop with Momentum
+        - Weight Decay
+      Training Resources: 8x V100 GPUs
+      Epochs: 600
+      Batch Size: 1024
+      Architecture:
+        - MobileNet V3
+    Paper: https://arxiv.org/abs/1905.02244
+    README: configs/mobilenet_v3/README.md
+
+Models:
+  - Name: mobilenet_v3_small_imagenet
+    Metadata:
+      FLOPs: 60000000
+      Parameters: 2540000
+    In Collection: MobileNet V3
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 67.66
+          Top 5 Accuracy: 87.41
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_small-8427ecf0.pth
+    Config: configs/mobilenet_v3/mobilenet_v3_small_imagenet.py
+  - Name: mobilenet_v3_large_imagenet
+    Metadata:
+      FLOPs: 230000000
+      Parameters: 5480000
+    In Collection: MobileNet V3
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 74.04
+          Top 5 Accuracy: 91.34
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_large-3ea3c186.pth
+    Config: configs/mobilenet_v3/mobilenet_v3_large_imagenet.py
