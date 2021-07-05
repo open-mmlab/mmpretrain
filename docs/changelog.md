@@ -1,5 +1,35 @@
 ## Changelog
 
+### v0.13.0(3/7/2021)
+
+- Support Swin-Transformer backbone and add training configs for Swin-Transformer on ImageNet.
+
+#### New Features
+
+- Support Swin-Transformer backbone and add training configs for Swin-Transformer on ImageNet. (#271)
+- Add pretained model of RegNetX. (#269)
+- Support adding custom hooks in config file. (#305)
+- Improve and add Chinese translation of `CONTRIBUTING.md` and all tools tutorials. (#320)
+- Dump config before training. (#282)
+- Add torchscript and torchserve deployment tools. (#279, #284)
+
+#### Improvements
+
+- Improve test tools and add some new tools. (#322)
+- Correct MobilenetV3 backbone structure and add pretained models. (#291)
+- Refactor `PatchEmbed` and `HybridEmbed` as independent components. (#330)
+- Refactor mixup and cutmix as `Augments` to support more funtions. (#278)
+- Refactor weights initialization method. (#270, #318, #319)
+- Refactor `LabelSmoothLoss` to support multiple calculation formulas. (#285)
+
+#### Bug Fixes
+
+- Fix bug for CPU training. (#286)
+- Fix missing test data when `num_imgs` can not be evenly divided by `num_gpus`. (#299)
+- Fix build compatible with pytorch v1.3-1.5. (#301)
+- Fix `magnitude_std` bug in `RandAugment`. (#309)
+- Fix bug when `samples_per_gpu` is 1. (#311)
+
 ### v0.12.0(3/6/2021)
 
 - Finish adding Chinese tutorials and build Chinese documentation on readthedocs.
