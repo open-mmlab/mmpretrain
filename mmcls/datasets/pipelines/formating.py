@@ -115,13 +115,14 @@ class Collect(object):
         keys (Sequence[str]): Keys of results to be collected in ``data``.
         meta_keys (Sequence[str], optional): Meta keys to be converted to
             ``mmcv.DataContainer`` and collected in ``data[img_metas]``.
-            Default: ``('filename', 'ori_shape', 'img_shape', 'flip',
-            'flip_direction', 'img_norm_cfg')``
+            Default: ('filename', 'ori_shape', 'img_shape', 'flip',
+            'flip_direction', 'img_norm_cfg')
 
     Returns:
         dict: The result dict contains the following keys
-                - keys in``self.keys``
-                - ``img_metas`` if avaliable
+
+            - keys in ``self.keys``
+            - ``img_metas`` if avaliable
     """
 
     def __init__(self,
