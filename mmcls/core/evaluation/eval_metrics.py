@@ -1,3 +1,5 @@
+from numbers import Number
+
 import numpy as np
 import torch
 
@@ -36,7 +38,7 @@ def calculate_confusion_matrix(pred, target):
     return confusion_matrix
 
 
-def precision_recall_f1(pred, target, average_mode='macro', thrs=None):
+def precision_recall_f1(pred, target, average_mode='macro', thrs=0.):
     """Calculate precision, recall and f1 score according to the prediction and
     target.
 
@@ -49,8 +51,8 @@ def precision_recall_f1(pred, target, average_mode='macro', thrs=None):
             class are returned. If 'macro', calculate metrics for each class,
             and find their unweighted mean.
             Defaults to 'macro'.
-        thrs (float | tuple[float], optional): Predictions with scores under
-            the thresholds are considered negative. Default to None.
+        thrs (Number | tuple[Number], optional): Predictions with scores under
+            the thresholds are considered negative. Default to 0.
 
     Returns:
         float | np.array | list[float | np.array]: Precision, recall, f1 score.
@@ -74,16 +76,14 @@ def precision_recall_f1(pred, target, average_mode='macro', thrs=None):
         (f'pred and target should be torch.Tensor or np.ndarray, '
          f'but got {type(pred)} and {type(target)}.')
 
-    if thrs is None:
-        thrs = 0.0
-    if isinstance(thrs, float):
+    if isinstance(thrs, Number):
         thrs = (thrs, )
         return_single = True
     elif isinstance(thrs, tuple):
         return_single = False
     else:
         raise TypeError(
-            f'thrs should be float or tuple, but got {type(thrs)}.')
+            f'thrs should be a number or tuple, but got {type(thrs)}.')
 
     label = np.indices(pred.shape)[1]
     pred_label = np.argsort(pred, axis=1)[:, -1]
@@ -119,7 +119,7 @@ def precision_recall_f1(pred, target, average_mode='macro', thrs=None):
         return precisions, recalls, f1_scores
 
 
-def precision(pred, target, average_mode='macro', thrs=None):
+def precision(pred, target, average_mode='macro', thrs=0.):
     """Calculate precision according to the prediction and target.
 
     Args:
@@ -131,8 +131,8 @@ def precision(pred, target, average_mode='macro', thrs=None):
             class are returned. If 'macro', calculate metrics for each class,
             and find their unweighted mean.
             Defaults to 'macro'.
-        thrs (float | tuple[float], optional): Predictions with scores under
-            the thresholds are considered negative. Default to None.
+        thrs (Number | tuple[Number], optional): Predictions with scores under
+            the thresholds are considered negative. Default to 0.
 
     Returns:
          float | np.array | list[float | np.array]: Precision.
@@ -147,7 +147,7 @@ def precision(pred, target, average_mode='macro', thrs=None):
     return precisions
 
 
-def recall(pred, target, average_mode='macro', thrs=None):
+def recall(pred, target, average_mode='macro', thrs=0.):
     """Calculate recall according to the prediction and target.
 
     Args:
@@ -159,8 +159,8 @@ def recall(pred, target, average_mode='macro', thrs=None):
             class are returned. If 'macro', calculate metrics for each class,
             and find their unweighted mean.
             Defaults to 'macro'.
-        thrs (float | tuple[float], optional): Predictions with scores under
-            the thresholds are considered negative. Default to None.
+        thrs (Number | tuple[Number], optional): Predictions with scores under
+            the thresholds are considered negative. Default to 0.
 
     Returns:
          float | np.array | list[float | np.array]: Recall.
@@ -175,7 +175,7 @@ def recall(pred, target, average_mode='macro', thrs=None):
     return recalls
 
 
-def f1_score(pred, target, average_mode='macro', thrs=None):
+def f1_score(pred, target, average_mode='macro', thrs=0.):
     """Calculate F1 score according to the prediction and target.
 
     Args:
@@ -187,8 +187,8 @@ def f1_score(pred, target, average_mode='macro', thrs=None):
             class are returned. If 'macro', calculate metrics for each class,
             and find their unweighted mean.
             Defaults to 'macro'.
-        thrs (float | tuple[float], optional): Predictions with scores under
-            the thresholds are considered negative. Default to None.
+        thrs (Number | tuple[Number], optional): Predictions with scores under
+            the thresholds are considered negative. Default to 0.
 
     Returns:
          float | np.array | list[float | np.array]: F1 score.

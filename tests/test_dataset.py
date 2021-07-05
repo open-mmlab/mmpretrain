@@ -143,7 +143,7 @@ def test_dataset_evaluation():
     assert eval_results['f1_score'] == pytest.approx(
         (1 / 2 + 0 + 1 / 2) / 3 * 100.0)
     assert eval_results['accuracy'] == pytest.approx(2 / 6 * 100)
-    # thrs must be a float, tuple or None
+    # thrs must be a number, tuple or None
     with pytest.raises(TypeError):
         eval_results = dataset.evaluate(
             fake_results,
