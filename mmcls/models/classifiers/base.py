@@ -178,8 +178,8 @@ class BaseClassifier(BaseModule, metaclass=ABCMeta):
         """Draw `result` over `img`.
 
         Args:
-            img (str or Tensor): The image to be displayed.
-            result (Tensor): The classification results to draw over `img`.
+            img (str or ndarray): The image to be displayed.
+            result (dict): The classification results to draw over `img`.
             text_color (str or tuple or :obj:`Color`): Color of texts.
             font_scale (float): Font scales of texts.
             row_width (int): width between each row of results on the image.
@@ -192,7 +192,7 @@ class BaseClassifier(BaseModule, metaclass=ABCMeta):
                 Default: None.
 
         Returns:
-            img (Tensor): Only if not `show` or `out_file`
+            img (ndarray): Only if not `show` or `out_file`
         """
         img = mmcv.imread(img)
         img = img.copy()
