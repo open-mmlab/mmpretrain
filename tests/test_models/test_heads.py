@@ -47,12 +47,10 @@ def test_linear_head():
     pred = head.simple_test(fake_features)
     assert isinstance(pred, list) and len(pred) == 4
 
-    p = patch('torch.onnx.is_in_onnx_export', lambda: True)
-    p.start()
-    head = LinearClsHead(10, 100)
-    pred = head.simple_test(fake_features)
-    assert pred.shape == (4, 10)
-    p.stop()
+    with patch('torch.onnx.is_in_onnx_export', return_value=True):
+        head = LinearClsHead(10, 100)
+        pred = head.simple_test(fake_features)
+        assert pred.shape == (4, 10)
 
 
 def test_multilabel_head():
@@ -98,11 +96,9 @@ def test_stacked_linear_cls_head():
     assert len(pred) == 4
 
     # test simple test in tracing
-    p = patch('torch.onnx.is_in_onnx_export', lambda: True)
-    p.start()
-    pred = head.simple_test(fake_img)
-    assert pred.shape == torch.Size((4, 3))
-    p.stop()
+    with patch('torch.onnx.is_in_onnx_export', return_value=True):
+        pred = head.simple_test(fake_img)
+        assert pred.shape == torch.Size((4, 3))
 
     # test forward with full function
     head = StackedLinearClsHead(
@@ -145,12 +141,10 @@ def test_vit_head():
     pred = head.simple_test(fake_features)
     assert isinstance(pred, list) and len(pred) == 4
 
-    p = patch('torch.onnx.is_in_onnx_export', lambda: True)
-    p.start()
-    head = VisionTransformerClsHead(10, 100, hidden_dim=20)
-    pred = head.simple_test(fake_features)
-    assert pred.shape == (4, 10)
-    p.stop()
+    with patch('torch.onnx.is_in_onnx_export', return_value=True):
+        head = VisionTransformerClsHead(10, 100, hidden_dim=20)
+        pred = head.simple_test(fake_features)
+        assert pred.shape == (4, 10)
 
     # test assertion
     with pytest.raises(ValueError):

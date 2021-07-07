@@ -89,11 +89,10 @@ def test_image_classifier():
             with open(out_path, 'w') as f:
                 f.write('test')
 
-        p = patch('mmcv.imshow', save_show)
-        p.start()
-        model.show_result(img, result, show=True, win_name='img', wait_time=5)
-        assert osp.exists(osp.join(tmpdir, 'img_5'))
-        p.stop()
+        with patch('mmcv.imshow', save_show):
+            model.show_result(
+                img, result, show=True, win_name='img', wait_time=5)
+            assert osp.exists(osp.join(tmpdir, 'img_5'))
 
 
 def test_image_classifier_with_mixup():
