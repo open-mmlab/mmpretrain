@@ -1,6 +1,20 @@
 import collections.abc
 from itertools import repeat
 
+import torch
+
+
+def is_tracing() -> bool:
+    if hasattr(torch.jit, 'is_tracing'):
+        on_trace = torch.jit.is_tracing()
+        # In PyTorch 1.6, torch.jit.is_tracing has a bug.
+        # Refers to https://github.com/pytorch/pytorch/issues/42448
+        if isinstance(on_trace, bool):
+            return on_trace
+        else:
+            return torch._C._is_tracing()
+    return False
+
 
 # From PyTorch internals
 def _ntuple(n):
