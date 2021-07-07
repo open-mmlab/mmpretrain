@@ -1,11 +1,13 @@
 import collections.abc
+import warnings
+from distutils.version import LooseVersion
 from itertools import repeat
 
 import torch
 
 
 def is_tracing() -> bool:
-    if hasattr(torch.jit, 'is_tracing'):
+    if LooseVersion(torch.__version__) >= LooseVersion('1.6.0'):
         on_trace = torch.jit.is_tracing()
         # In PyTorch 1.6, torch.jit.is_tracing has a bug.
         # Refers to https://github.com/pytorch/pytorch/issues/42448
@@ -13,7 +15,12 @@ def is_tracing() -> bool:
             return on_trace
         else:
             return torch._C._is_tracing()
-    return False
+    else:
+        warnings.warn(
+            'torch.jit.is_tracing is only supported after v1.6.0. '
+            'Therefore is_tracing returns False automatically. Please '
+            'set on_trace manually if you are using trace.', UserWarning)
+        return False
 
 
 # From PyTorch internals
