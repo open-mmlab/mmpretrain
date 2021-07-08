@@ -1,11 +1,37 @@
 import pytest
 import torch
 
-from mmcls.models.utils import PatchMerging
+from mmcls.models.backbones import VGG
+from mmcls.models.utils import HybridEmbed, PatchEmbed, PatchMerging
 
 
 def cal_unfold_dim(dim, kernel_size, stride, padding=0, dilation=1):
     return (dim + 2 * padding - dilation * (kernel_size - 1) - 1) // stride + 1
+
+
+def test_patch_embed():
+    # Test PatchEmbed
+    patch_embed = PatchEmbed()
+    img = torch.randn(1, 3, 224, 224)
+    img = patch_embed(img)
+    assert img.shape == torch.Size((1, 196, 768))
+
+    # Test PatchEmbed with stride = 8
+    conv_cfg = dict(kernel_size=16, stride=8)
+    patch_embed = PatchEmbed(conv_cfg=conv_cfg)
+    img = torch.randn(1, 3, 224, 224)
+    img = patch_embed(img)
+    assert img.shape == torch.Size((1, 729, 768))
+
+
+def test_hybrid_embed():
+    # Test VGG11 HybridEmbed
+    backbone = VGG(11, norm_eval=True)
+    backbone.init_weights()
+    patch_embed = HybridEmbed(backbone)
+    img = torch.randn(1, 3, 224, 224)
+    img = patch_embed(img)
+    assert img.shape == torch.Size((1, 49, 768))
 
 
 def test_patch_merging():
