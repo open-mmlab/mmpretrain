@@ -1,3 +1,4 @@
+import warnings
 from collections import OrderedDict
 
 import torch.distributed as dist
@@ -44,6 +45,8 @@ def allreduce_grads(params, coalesce=True, bucket_size_mb=-1):
 class DistOptimizerHook(OptimizerHook):
 
     def __init__(self, grad_clip=None, coalesce=True, bucket_size_mb=-1):
+        warnings.warn('"DistOptimizerHook" is deprecated, please switch to'
+                      '"mmcls.runner.OptimizerHook".')
         self.grad_clip = grad_clip
         self.coalesce = coalesce
         self.bucket_size_mb = bucket_size_mb
