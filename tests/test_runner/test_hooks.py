@@ -2,6 +2,7 @@ import logging
 import shutil
 import tempfile
 
+import pytest
 import torch
 import torch.nn as nn
 from mmcv.runner import RUNNERS
@@ -55,6 +56,16 @@ def build_toy_runner(config=dict()):
 
 def test_optimizer_hook():
     # test accumulation_step
+
+    # test assertion
+    with pytest.raises(AssertionError):
+        # accumulation_step only accepts int
+        OptimizerHook(accumulation_step='str')
+
+    with pytest.raises(AssertionError):
+        # accumulation_step only accepts positive number
+        OptimizerHook(accumulation_step=-1)
+
     # optimize with accumulation_step
     loader_1 = DataLoader(torch.ones((6, 3)), batch_size=1)
     runner_1 = build_toy_runner()
@@ -80,6 +91,16 @@ def test_optimizer_hook():
 
 def test_fp16_optimzier_hook():
     # test accumulation_step
+
+    # test assertion
+    with pytest.raises(AssertionError):
+        # accumulation_step only accepts int
+        OptimizerHook(accumulation_step='str')
+
+    with pytest.raises(AssertionError):
+        # accumulation_step only accepts positive number
+        OptimizerHook(accumulation_step=-1)
+
     # optimize with accumulation_step
     loader_1 = DataLoader(torch.ones((6, 3)).cuda(), batch_size=1)
     runner_1 = build_toy_runner()

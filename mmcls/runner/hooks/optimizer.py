@@ -11,9 +11,32 @@ from .builder import HOOKS
 
 @HOOKS.register_module()
 class OptimizerHook(_OptimizerHook):
+    """Optimizer Hook implements accumulation step.
+
+    Args:
+        grad_clip (dict, optional): Parameters passed to
+            `torch.nn.utils.clip_grad_norm_`, and if None, disable grad clip.
+            Defaults to None.
+        accumulation_step (int, optional): Num of gradient accumulation steps.
+            The optimizer will step every `accumulation_step` iters.
+            Defaults to 1.
+
+    Examples:
+        >>> # Use accumulation_step to simulate a large batch size
+        >>> # It is helpful when the hardware cannot handle a large batch size.
+        >>> loader = DataLoader(data, batch_size=64)
+        >>> optimizer_hook = OptimizerHook(accumulation_step=4)
+        >>> # equals to
+        >>> loader = DataLoader(data, batch_size=256)
+        >>> optimizer_hook = OptimizerHook(accumulation_step=1)
+    """
 
     def __init__(self, grad_clip=None, accumulation_step=1, *args, **kwargs):
         super(OptimizerHook, self).__init__(grad_clip, *args, **kwargs)
+        assert isinstance(accumulation_step, int) and accumulation_step > 0, \
+            f'accumulation_step only accepts positive int, but got ' \
+            f'{type(accumulation_step)} instead.'
+
         self.accumulation_step = accumulation_step
 
     def after_train_iter(self, runner):
@@ -86,6 +109,10 @@ if (TORCH_VERSION != 'parrots'
                 distributed=distributed,
                 *args,
                 **kwargs)
+            assert (isinstance(accumulation_step, int)
+                    and accumulation_step > 0), \
+                f'accumulation_step only accepts positive int, but got ' \
+                f'{type(accumulation_step)} instead.'
             self.accumulation_step = accumulation_step
 
         def after_train_iter(self, runner):
@@ -172,6 +199,11 @@ else:
                 distributed=distributed,
                 *args,
                 **kwargs)
+            assert (isinstance(accumulation_step, int)
+                    and accumulation_step > 0), \
+                f'accumulation_step only accepts positive int, but got ' \
+                f'{type(accumulation_step)} instead.'
+
             self.accumulation_step = accumulation_step
 
         def after_train_iter(self, runner):
