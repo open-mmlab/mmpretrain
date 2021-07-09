@@ -7,15 +7,7 @@ import mmcv
 import torch
 import torch.distributed as dist
 from mmcv import color_val
-from mmcv.runner import BaseModule
-
-# TODO import `auto_fp16` from mmcv and delete them from mmcls
-try:
-    from mmcv.runner import auto_fp16
-except ImportError:
-    warnings.warn('auto_fp16 from mmcls will be deprecated.'
-                  'Please install mmcv>=1.1.4.')
-    from mmcls.core import auto_fp16
+from mmcv.runner import BaseModule, auto_fp16
 
 
 class BaseClassifier(BaseModule, metaclass=ABCMeta):
