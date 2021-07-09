@@ -89,6 +89,8 @@ def test_optimizer_hook():
     shutil.rmtree(runner_2.work_dir)
 
 
+@pytest.mark.skipif(
+    not torch.cuda.is_available(), reason='requires CUDA support')
 def test_fp16_optimzier_hook():
     # test accumulation_step
 
