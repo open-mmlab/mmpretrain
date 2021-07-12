@@ -7,7 +7,7 @@ from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import DistSamplerSeedHook, build_optimizer, build_runner
 
 from mmcls.datasets import build_dataloader, build_dataset
-from mmcls.runner.hooks import Fp16OptimizerHook, OptimizerHook
+from mmcls.runner import HOOKS
 from mmcls.utils import get_root_logger
 
 # TODO import eval hooks from mmcv and delete them from mmcls
@@ -108,15 +108,17 @@ def train_model(model,
     # an ugly walkaround to make the .log and .log.json filenames the same
     runner.timestamp = timestamp
 
+    optimizer_config = cfg.optimizer_config
     # fp16 setting
     fp16_cfg = cfg.get('fp16', None)
     if fp16_cfg is not None:
-        optimizer_config = Fp16OptimizerHook(
-            **cfg.optimizer_config, **fp16_cfg, distributed=distributed)
-    elif distributed and 'type' not in cfg.optimizer_config:
-        optimizer_config = OptimizerHook(**cfg.optimizer_config)
+        optimizer_config.update(fp16_cfg)
+        optimizer_config['type'] = 'Fp16OptimizerHook'
+        optimizer_config['distributed'] = distributed
     else:
-        optimizer_config = cfg.optimizer_config
+        optimizer_config.setdefault('type', 'OptimizerHook')
+
+    optimizer_config = HOOKS.build(optimizer_config)
 
     # register hooks
     runner.register_training_hooks(
