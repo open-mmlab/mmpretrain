@@ -594,9 +594,13 @@ class ResNet(BaseBackbone):
             for param in m.parameters():
                 param.requires_grad = False
 
-    # def init_weights(self, pretrained=None):
     def init_weights(self):
         super(ResNet, self).init_weights()
+
+        if (isinstance(self.init_cfg, dict)
+                and self.init_cfg['type'] == 'Pretrained'):
+            # Suppress zero_init_residual if use pretrained model.
+            return
 
         if self.zero_init_residual:
             for m in self.modules():

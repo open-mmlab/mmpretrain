@@ -9,6 +9,7 @@ from mmcv.cnn.utils.weight_init import trunc_normal_
 from mmcv.runner import Sequential
 
 from ..builder import HEADS
+from ..utils import is_tracing
 from .cls_head import ClsHead
 
 
@@ -74,7 +75,7 @@ class VisionTransformerClsHead(ClsHead):
             cls_score = sum(cls_score) / float(len(cls_score))
         pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
 
-        on_trace = hasattr(torch.jit, 'is_tracing') and torch.jit.is_tracing()
+        on_trace = is_tracing()
         if torch.onnx.is_in_onnx_export() or on_trace:
             return pred
         pred = list(pred.detach().cpu().numpy())

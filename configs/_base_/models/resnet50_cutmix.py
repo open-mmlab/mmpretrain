@@ -13,4 +13,6 @@ model = dict(
         num_classes=1000,
         in_channels=2048,
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0, use_soft=True)),
-    train_cfg=dict(cutmix=dict(alpha=1.0, num_classes=1000, cutmix_prob=1.0)))
+    train_cfg=dict(
+        augments=dict(
+            type='BatchCutMix', alpha=1.0, num_classes=1000, prob=1.0)))

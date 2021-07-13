@@ -49,6 +49,7 @@ Supported backbones:
 - [x] ShuffleNetV2
 - [x] MobileNetV2
 - [x] MobileNetV3
+- [x] Swin-Transformer
 
 ## Installation
 

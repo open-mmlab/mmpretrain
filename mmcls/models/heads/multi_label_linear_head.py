@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from ..builder import HEADS
+from ..utils import is_tracing
 from .multi_label_head import MultiLabelClsHead
 
 
@@ -14,6 +15,8 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
         num_classes (int): Number of categories.
         in_channels (int): Number of channels in the input feature map.
         loss (dict): Config of classification loss.
+        init_cfg (dict | optional): The extra init config of layers.
+            Defaults to use dict(type='Normal', layer='Linear', std=0.01).
     """
 
     def __init__(self,
@@ -24,12 +27,7 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
                      use_sigmoid=True,
                      reduction='mean',
                      loss_weight=1.0),
-                 init_cfg=dict(
-                     type='Normal',
-                     mean=0.,
-                     std=0.01,
-                     bias=0.,
-                     override=dict(name='fc'))):
+                 init_cfg=dict(type='Normal', layer='Linear', std=0.01)):
         super(MultiLabelLinearClsHead, self).__init__(
             loss=loss, init_cfg=init_cfg)
 
@@ -39,9 +37,7 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
 
         self.in_channels = in_channels
         self.num_classes = num_classes
-        self._init_layers()
 
-    def _init_layers(self):
         self.fc = nn.Linear(self.in_channels, self.num_classes)
 
     def forward_train(self, x, gt_label):
@@ -57,7 +53,7 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
             cls_score = sum(cls_score) / float(len(cls_score))
         pred = F.sigmoid(cls_score) if cls_score is not None else None
 
-        on_trace = hasattr(torch.jit, 'is_tracing') and torch.jit.is_tracing()
+        on_trace = is_tracing()
         if torch.onnx.is_in_onnx_export() or on_trace:
             return pred
         pred = list(pred.detach().cpu().numpy())
