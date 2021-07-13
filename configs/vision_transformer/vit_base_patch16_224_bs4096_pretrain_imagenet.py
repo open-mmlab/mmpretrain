@@ -9,14 +9,7 @@ model = dict(
         in_channels=3,
         drop_rate=0.1,
         attn_drop_rate=0.,
-        hybrid_backbone=None,
-        init_cfg=[
-            dict(
-                type='Kaiming',
-                layer='Conv2d',
-                mode='fan_in',
-                nonlinearity='linear')
-        ]),
+        hybrid_backbone=None),
     neck=None,
     head=dict(
         type='VisionTransformerClsHead',
@@ -173,19 +166,19 @@ optimizer_config = dict(grad_clip=dict(max_norm=1.0))
 fp16 = dict(loss_scale='dynamic')
 
 # specific to vit pretrain
-paramwise_cfg = dict(
-    custom_keys={
-        '.backbone.cls_token': dict(decay_mult=0.0),
-        '.backbone.pos_embed': dict(decay_mult=0.0)
-    })
+# paramwise_cfg = dict(
+#     custom_keys={
+#         '.backbone.cls_token': dict(decay_mult=0.0),
+#         '.backbone.pos_embed': dict(decay_mult=0.0)
+#     })
 # learning policy
 lr_config = dict(
     policy='CosineAnnealing',
     min_lr=0,
     by_epoch=False,
     warmup='linear',
-    warmup_by_epoch=False,
-    warmup_iters=10000,
+    warmup_by_epoch=True,
+    warmup_iters=30,
     warmup_ratio=1e-4)
 runner = dict(type='EpochBasedRunner', max_epochs=300)
 
