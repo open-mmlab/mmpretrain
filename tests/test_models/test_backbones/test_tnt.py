@@ -32,11 +32,11 @@ def test_tnt_backbone():
 
     # Test tnt with embed_dims=768
     arch = {
-        'embed_dims': 768,
-        'inner_dims': 48,
+        'embed_dims_outer': 768,
+        'embed_dims_inner': 48,
         'num_layers': 12,
-        'num_heads_out': 6,
-        'num_heads_in': 4
+        'num_heads_outer': 6,
+        'num_heads_inner': 4
     }
     model = TNT(arch=arch)
     model.init_weights()
