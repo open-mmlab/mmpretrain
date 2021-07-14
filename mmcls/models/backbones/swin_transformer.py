@@ -134,7 +134,7 @@ class SwinBlockSequence(BaseModule):
             drop_paths = [drop_paths] * depth
 
         if not isinstance(block_cfgs, Sequence):
-            block_cfg = [deepcopy(block_cfgs) for _ in range(depth)]
+            block_cfgs = [deepcopy(block_cfgs) for _ in range(depth)]
 
         self.blocks = ModuleList()
         for i in range(depth):
@@ -145,7 +145,7 @@ class SwinBlockSequence(BaseModule):
                 'shift': False if i % 2 == 0 else True,
                 'drop_path': drop_paths[i],
                 'auto_pad': auto_pad,
-                **block_cfg[i]
+                **block_cfgs[i]
             }
             block = SwinBlock(**_block_cfg)
             self.blocks.append(block)
@@ -175,8 +175,8 @@ class SwinBlockSequence(BaseModule):
 class SwinTransformer(BaseBackbone):
     """ Swin Transformer
     A PyTorch implement of : `Swin Transformer:
-    Hierarchical Vision Transformer using Shifted Windows`  -
-        https://arxiv.org/abs/2103.14030
+    Hierarchical Vision Transformer using Shifted Windows
+    <https://arxiv.org/abs/2103.14030>`_
 
     Inspiration from
     https://github.com/microsoft/Swin-Transformer

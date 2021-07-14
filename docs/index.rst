@@ -1,5 +1,5 @@
 Welcome to MMClassification's documentation!
-==========================================
+============================================
 
 You can switch between Chinese and English documents in the lower-left corner of the layout.
 
@@ -38,6 +38,12 @@ You can switch between Chinese and English documents in the lower-left corner of
    tools/onnx2tensorrt.md
    tools/pytorch2torchscript.md
    tools/model_serving.md
+
+
+.. toctree::
+   :caption: API Reference
+
+   api.rst
 
 
 .. toctree::

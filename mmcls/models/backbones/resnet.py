@@ -382,7 +382,7 @@ class ResLayer(nn.Sequential):
 class ResNet(BaseBackbone):
     """ResNet backbone.
 
-    Please refer to the `paper <https://arxiv.org/abs/1512.03385>`_ for
+    Please refer to the `paper <https://arxiv.org/abs/1512.03385>`__ for
     details.
 
     Args:
@@ -640,8 +640,9 @@ class ResNet(BaseBackbone):
 
 @BACKBONES.register_module()
 class ResNetV1d(ResNet):
-    """ResNetV1d variant described in `Bag of Tricks.
+    """ResNetV1d backbone.
 
+    This variant is described in `Bag of Tricks.
     <https://arxiv.org/pdf/1812.01187.pdf>`_.
 
     Compared with default ResNet(ResNetV1b), ResNetV1d replaces the 7x7 conv in

@@ -41,6 +41,12 @@ You can switch between Chinese and English documents in the lower-left corner of
 
 
 .. toctree::
+   :caption: API 参考文档
+
+   api.rst
+
+
+.. toctree::
    :caption: 语言切换
 
    switch_language.md

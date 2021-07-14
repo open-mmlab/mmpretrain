@@ -17,8 +17,8 @@ class MNIST(BaseDataset):
     """`MNIST <http://yann.lecun.com/exdb/mnist/>`_ Dataset.
 
     This implementation is modified from
-    https://github.com/pytorch/vision/blob/master/torchvision/datasets/mnist.py  # noqa: E501
-    """
+    https://github.com/pytorch/vision/blob/master/torchvision/datasets/mnist.py
+    """  # noqa: E501
 
     resource_prefix = 'http://yann.lecun.com/exdb/mnist/'
     resources = {

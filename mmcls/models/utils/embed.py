@@ -10,6 +10,7 @@ class PatchEmbed(BaseModule):
     """Image to Patch Embedding.
 
     We use a conv layer to implement PatchEmbed.
+
     Args:
         img_size (int | tuple): The size of input image. Default: 224
         in_channels (int): The num of input channels. Default: 3
@@ -84,6 +85,7 @@ class HybridEmbed(BaseModule):
 
     Extract feature map from CNN, flatten,
     project to embedding dim.
+
     Args:
         backbone (nn.Module): CNN backbone
         img_size (int | tuple): The size of input image. Default: 224
