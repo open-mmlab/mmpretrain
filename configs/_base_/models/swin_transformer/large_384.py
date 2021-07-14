@@ -6,7 +6,7 @@ model = dict(
         type='SwinTransformer',
         arch='large',
         img_size=384,
-        stage_cfg=dict(block_cfg=dict(window_size=12))),
+        stage_cfgs=dict(block_cfgs=dict(window_size=12))),
     neck=dict(type='GlobalAveragePooling', dim=1),
     head=dict(
         type='LinearClsHead',
