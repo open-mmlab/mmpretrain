@@ -70,7 +70,7 @@ def test_resize():
     # read test image
     results = dict()
     img = mmcv.imread(
-        osp.join(osp.dirname(__file__), '../data/color.jpg'), 'color')
+        osp.join(osp.dirname(__file__), '../../data/color.jpg'), 'color')
     original_img = copy.deepcopy(img)
     results['img'] = img
     results['img2'] = copy.deepcopy(img)
@@ -220,7 +220,7 @@ def test_center_crop():
     # read test image
     results = dict()
     img = mmcv.imread(
-        osp.join(osp.dirname(__file__), '../data/color.jpg'), 'color')
+        osp.join(osp.dirname(__file__), '../../data/color.jpg'), 'color')
     original_img = copy.deepcopy(img)
     results['img'] = img
     results['img2'] = copy.deepcopy(img)
@@ -343,7 +343,7 @@ def test_normalize():
     # read data
     results = dict()
     img = mmcv.imread(
-        osp.join(osp.dirname(__file__), '../data/color.jpg'), 'color')
+        osp.join(osp.dirname(__file__), '../../data/color.jpg'), 'color')
     original_img = copy.deepcopy(img)
     results['img'] = img
     results['img2'] = copy.deepcopy(img)
@@ -371,9 +371,9 @@ def test_normalize():
 
 def test_randomcrop():
     ori_img = mmcv.imread(
-        osp.join(osp.dirname(__file__), '../data/color.jpg'), 'color')
+        osp.join(osp.dirname(__file__), '../../data/color.jpg'), 'color')
     ori_img_pil = Image.open(
-        osp.join(osp.dirname(__file__), '../data/color.jpg'))
+        osp.join(osp.dirname(__file__), '../../data/color.jpg'))
     seed = random.randint(0, 100)
 
     # test crop size is int
@@ -517,9 +517,9 @@ def test_randomcrop():
 
 def test_randomresizedcrop():
     ori_img = mmcv.imread(
-        osp.join(osp.dirname(__file__), '../data/color.jpg'), 'color')
+        osp.join(osp.dirname(__file__), '../../data/color.jpg'), 'color')
     ori_img_pil = Image.open(
-        osp.join(osp.dirname(__file__), '../data/color.jpg'))
+        osp.join(osp.dirname(__file__), '../../data/color.jpg'))
 
     seed = random.randint(0, 100)
 
@@ -900,7 +900,7 @@ def test_randomflip():
     # read test image
     results = dict()
     img = mmcv.imread(
-        osp.join(osp.dirname(__file__), '../data/color.jpg'), 'color')
+        osp.join(osp.dirname(__file__), '../../data/color.jpg'), 'color')
     original_img = copy.deepcopy(img)
     results['img'] = img
     results['img2'] = copy.deepcopy(img)
@@ -1077,7 +1077,7 @@ def test_color_jitter():
     # read test image
     results = dict()
     img = mmcv.imread(
-        osp.join(osp.dirname(__file__), '../data/color.jpg'), 'color')
+        osp.join(osp.dirname(__file__), '../../data/color.jpg'), 'color')
     original_img = copy.deepcopy(img)
     results['img'] = img
     results['img2'] = copy.deepcopy(img)
@@ -1123,7 +1123,7 @@ def test_lighting():
     # read test image
     results = dict()
     img = mmcv.imread(
-        osp.join(osp.dirname(__file__), '../data/color.jpg'), 'color')
+        osp.join(osp.dirname(__file__), '../../data/color.jpg'), 'color')
     original_img = copy.deepcopy(img)
     results['img'] = img
     results['img2'] = copy.deepcopy(img)
@@ -1165,7 +1165,7 @@ def test_lighting():
 
 def test_albu_transform():
     results = dict(
-        img_prefix=osp.join(osp.dirname(__file__), '../data'),
+        img_prefix=osp.join(osp.dirname(__file__), '../../data'),
         img_info=dict(filename='color.jpg'))
 
     # Define simple pipeline

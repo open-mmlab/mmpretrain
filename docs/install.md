@@ -8,17 +8,22 @@
 
 The compatible MMClassification and MMCV versions are as below. Please install the correct version of MMCV to avoid installation issues.
 
-| MMClassification version |    MMCV version     |
-|:-------------------:|:-------------------:|
-| master              | mmcv>=1.3.1, <=1.5.0 |
-| 0.12.0              | mmcv>=1.3.1, <=1.5.0 |
-| 0.11.1              | mmcv>=1.3.1, <=1.5.0 |
-| 0.11.0              | mmcv>=1.3.0         |
-| 0.10.0              | mmcv>=1.3.0         |
-| 0.9.0               | mmcv>=1.1.4         |
-| 0.8.0               | mmcv>=1.1.4         |
-| 0.7.0               | mmcv>=1.1.4         |
-| 0.6.0               | mmcv>=1.1.4         |
+| MMClassification version |     MMCV version     |
+|:------------------------:|:--------------------:|
+| master                   | mmcv>=1.3.8, <=1.5.0 |
+| 0.13.0                   | mmcv>=1.3.8, <=1.5.0 |
+| 0.12.0                   | mmcv>=1.3.1, <=1.5.0 |
+| 0.11.1                   | mmcv>=1.3.1, <=1.5.0 |
+| 0.11.0                   | mmcv>=1.3.0          |
+| 0.10.0                   | mmcv>=1.3.0          |
+| 0.9.0                    | mmcv>=1.1.4          |
+| 0.8.0                    | mmcv>=1.1.4          |
+| 0.7.0                    | mmcv>=1.1.4          |
+| 0.6.0                    | mmcv>=1.1.4          |
+
+Note: Since the `master` branch is under frequent development, the `mmcv`
+version dependency may be inaccurate. If you encounter problems when using
+the `master` branch, please try to update `mmcv` to the latest version.
 
 ### Install MMClassification
 
