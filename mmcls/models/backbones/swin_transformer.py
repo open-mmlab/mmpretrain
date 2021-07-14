@@ -175,8 +175,8 @@ class SwinBlockSequence(BaseModule):
 class SwinTransformer(BaseBackbone):
     """ Swin Transformer
     A PyTorch implement of : `Swin Transformer:
-    Hierarchical Vision Transformer using Shifted Windows`  -
-        https://arxiv.org/abs/2103.14030
+    Hierarchical Vision Transformer using Shifted Windows
+    <https://arxiv.org/abs/2103.14030>`_
 
     Inspiration from
     https://github.com/microsoft/Swin-Transformer

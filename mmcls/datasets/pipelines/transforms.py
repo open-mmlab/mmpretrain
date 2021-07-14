@@ -36,18 +36,19 @@ class RandomCrop(object):
         pad_val (Number | Sequence[Number]): Pixel pad_val value for constant
             fill. If a tuple of length 3, it is used to pad_val R, G, B
             channels respectively. Default: 0.
-        padding_mode (str): Type of padding. Should be: constant, edge,
-            reflect or symmetric. Default: constant.
-            -constant: Pads with a constant value, this value is specified
+        padding_mode (str): Type of padding. Defaults to "constant". Should
+            be one of the following:
+
+            - constant: Pads with a constant value, this value is specified \
                 with pad_val.
-            -edge: pads with the last value at the edge of the image.
-            -reflect: Pads with reflection of image without repeating the
-                last value on the edge. For example, padding [1, 2, 3, 4]
-                with 2 elements on both sides in reflect mode will result
+            - edge: pads with the last value at the edge of the image.
+            - reflect: Pads with reflection of image without repeating the \
+                last value on the edge. For example, padding [1, 2, 3, 4] \
+                with 2 elements on both sides in reflect mode will result \
                 in [3, 2, 1, 2, 3, 4, 3, 2].
-            -symmetric: Pads with reflection of image repeating the last
-                value on the edge. For example, padding [1, 2, 3, 4] with
-                2 elements on both sides in symmetric mode will result in
+            - symmetric: Pads with reflection of image repeating the last \
+                value on the edge. For example, padding [1, 2, 3, 4] with \
+                2 elements on both sides in symmetric mode will result in \
                 [2, 1, 1, 2, 3, 4, 4, 3].
     """
 
@@ -393,11 +394,12 @@ class RandomGrayscale(object):
             grayscale. Default: 0.1.
 
     Returns:
-        ndarray: Grayscale version of the input image with probability
-            gray_prob and unchanged with probability (1-gray_prob).
-            - If input image is 1 channel: grayscale version is 1 channel.
-            - If input image is 3 channel: grayscale version is 3 channel
-                with r == g == b.
+        ndarray: Image after randomly grayscale transform.
+
+    Notes:
+        - If input image is 1 channel: grayscale version is 1 channel.
+        - If input image is 3 channel: grayscale version is 3 channel
+          with r == g == b.
     """
 
     def __init__(self, gray_prob=0.1):
@@ -484,20 +486,24 @@ class RandomErasing(object):
             if float, it will be converted to (aspect_ratio, 1/aspect_ratio)
             Default: (3/10, 10/3)
         mode (str): Fill method in erased area, can be:
-            - 'const' (default): All pixels are assign with the same value.
-            - 'rand': each pixel is assigned with a random value in [0, 255]
+
+            - const (default): All pixels are assign with the same value.
+            - rand: each pixel is assigned with a random value in [0, 255]
+
         fill_color (sequence | Number): Base color filled in erased area.
-            Default: (128, 128, 128)
-        fill_std (sequence | Number, optional): If set and mode='rand', fill
-            erased area with random color from normal distribution
+            Defaults to (128, 128, 128).
+        fill_std (sequence | Number, optional): If set and ``mode`` is 'rand',
+            fill erased area with random color from normal distribution
             (mean=fill_color, std=fill_std); If not set, fill erased area with
-            random color from uniform distribution (0~255)
-            Default: None
+            random color from uniform distribution (0~255). Defaults to None.
 
     Note:
-        See https://arxiv.org/pdf/1708.04896.pdf
+        See `Random Erasing Data Augmentation
+        <https://arxiv.org/pdf/1708.04896.pdf>`_
+
         This paper provided 4 modes: RE-R, RE-M, RE-0, RE-255, and use RE-M as
-        default.
+        default. The config of these 4 modes are:
+
         - RE-R: RandomErasing(mode='rand')
         - RE-M: RandomErasing(mode='const', fill_color=(123.67, 116.3, 103.5))
         - RE-0: RandomErasing(mode='const', fill_color=0)
@@ -700,21 +706,23 @@ class CenterCrop(object):
             32.
         interpolation (str): Interpolation method, accepted values are
             'nearest', 'bilinear', 'bicubic', 'area', 'lanczos'. Only valid if
-             efficientnet style is True. Defaults to 'bilinear'.
+            ``efficientnet_style`` is True. Defaults to 'bilinear'.
         backend (str): The image resize backend type, accpeted values are
             `cv2` and `pillow`. Only valid if efficientnet style is True.
             Defaults to `cv2`.
 
 
     Notes:
-        If the image is smaller than the crop size, return the original image.
-        If efficientnet_style is set to False, the pipeline would be a simple
-        center crop using the crop_size.
-        If efficientnet_style is set to True, the pipeline will be to first to
-        perform the center crop with the crop_size_ as:
+        - If the image is smaller than the crop size, return the original
+          image.
+        - If efficientnet_style is set to False, the pipeline would be a simple
+          center crop using the crop_size.
+        - If efficientnet_style is set to True, the pipeline will be to first
+          to perform the center crop with the ``crop_size_`` as:
 
         .. math::
-        crop\_size\_ = crop\_size / (crop\_size + crop\_padding) * short\_edge
+            \text{crop_size_} = \frac{\text{crop_size}}{\text{crop_size} +
+            \text{crop_padding}} \times \text{short_edge}
 
         And then the pipeline resizes the img to the input crop size.
     """

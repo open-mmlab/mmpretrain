@@ -16,8 +16,8 @@ class CIFAR10(BaseDataset):
     """`CIFAR10 <https://www.cs.toronto.edu/~kriz/cifar.html>`_ Dataset.
 
     This implementation is modified from
-    https://github.com/pytorch/vision/blob/master/torchvision/datasets/cifar.py  # noqa: E501
-    """
+    https://github.com/pytorch/vision/blob/master/torchvision/datasets/cifar.py
+    """  # noqa: E501
 
     base_folder = 'cifar-10-batches-py'
     url = 'https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz'

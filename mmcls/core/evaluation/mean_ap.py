@@ -3,13 +3,13 @@ import torch
 
 
 def average_precision(pred, target):
-    """Calculate the average precision for a single class.
+    r"""Calculate the average precision for a single class.
 
     AP summarizes a precision-recall curve as the weighted mean of maximum
     precisions obtained for any r'>r, where r is the recall:
 
-    ..math::
-        \\text{AP} = \\sum_n (R_n - R_{n-1}) P_n
+    .. math::
+        \text{AP} = \sum_n (R_n - R_{n-1}) P_n
 
     Note that no approximation is involved since the curve is piecewise
     constant.
