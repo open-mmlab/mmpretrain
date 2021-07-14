@@ -1,6 +1,6 @@
 _base_ = [
     '../_base_/models/tnt_s_patch16_224.py',
-    '../_base_/datasets/imagenet_bs64_pil_resize.py',
+    '../_base_/datasets/imagenet_bs32_pil_resize.py',
     '../_base_/default_runtime.py'
 ]
 
@@ -23,3 +23,16 @@ test_pipeline = [
 dataset_type = 'ImageNet'
 data = dict(
     samples_per_gpu=32, workers_per_gpu=4, test=dict(pipeline=test_pipeline))
+
+# optimizer
+optimizer = dict(type='AdamW', lr=1e-3, weight_decay=0.05)
+optimizer_config = dict(grad_clip=None)
+
+lr_config = dict(
+    policy='CosineAnnealing',
+    min_lr=0,
+    warmup_by_epoch=True,
+    warmup='linear',
+    warmup_iters=5,
+    warmup_ratio=1e-3)
+runner = dict(type='EpochBasedRunner', max_epochs=300)
