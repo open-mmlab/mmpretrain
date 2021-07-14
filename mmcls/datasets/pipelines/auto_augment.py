@@ -17,10 +17,10 @@ def random_negative(value, random_negative_prob):
 
 @PIPELINES.register_module()
 class AutoAugment(object):
-    """Auto augmentation. This data augmentation is proposed in `AutoAugment:
-    Learning Augmentation Policies from Data.
+    """Auto augmentation.
 
-    <https://arxiv.org/abs/1805.09501>`_.
+    This data augmentation is proposed in `AutoAugment: Learning Augmentation
+    Policies from Data <https://arxiv.org/abs/1805.09501>`_.
 
     Args:
         policies (list[list[dict]]): The policies of auto augmentation. Each
@@ -56,9 +56,10 @@ class AutoAugment(object):
 
 @PIPELINES.register_module()
 class RandAugment(object):
-    """Random augmentation. This data augmentation is proposed in `RandAugment:
-    Practical automated data augmentation with a reduced search space.
+    r"""Random augmentation.
 
+    This data augmentation is proposed in `RandAugment: Practical automated
+    data augmentation with a reduced search space
     <https://arxiv.org/abs/1909.13719>`_.
 
     Args:
@@ -78,19 +79,23 @@ class RandAugment(object):
         total_level (int | float): Total level for the magnitude. Defaults to
             30.
         magnitude_std (Number | str): Deviation of magnitude noise applied.
-            If positive number, magnitude is sampled from normal distribution
-                (mean=magnitude, std=magnitude_std).
-            If 0 or negative number, magnitude remains unchanged.
-            If str "inf", magnitude is sampled from uniform distribution
-                (range=[min, magnitude]).
+
+            - If positive number, magnitude is sampled from normal distribution
+              (mean=magnitude, std=magnitude_std).
+            - If 0 or negative number, magnitude remains unchanged.
+            - If str "inf", magnitude is sampled from uniform distribution
+              (range=[min, magnitude]).
 
     Note:
         `magnitude_std` will introduce some randomness to policy, modified by
-        https://github.com/rwightman/pytorch-image-models
+        https://github.com/rwightman/pytorch-image-models.
+
         When magnitude_std=0, we calculate the magnitude as follows:
 
         .. math::
-            magnitude = magnitude_level / total_level * (val2 - val1) + val1
+            \text{magnitude} = \frac{\text{magnitude_level}}
+            {\text{total_level}} \times (\text{val2} - \text{val1})
+            + \text{val1}
     """
 
     def __init__(self,
@@ -269,7 +274,7 @@ class Translate(object):
         magnitude (int | float): The magnitude used for translate. Note that
             the offset is calculated by magnitude * size in the corresponding
             direction. With a magnitude of 1, the whole image will be moved out
-             of the range.
+            of the range.
         pad_val (int, tuple[int]): Pixel pad_val value for constant fill. If a
             tuple of length 3, it is used to pad_val R, G, B channels
             respectively. Defaults to 128.
@@ -354,8 +359,8 @@ class Rotate(object):
         angle (float): The angle used for rotate. Positive values stand for
             clockwise rotation.
         center (tuple[float], optional): Center point (w, h) of the rotation in
-             the source image. If None, the center of the image will be used.
-            defaults to None.
+            the source image. If None, the center of the image will be used.
+            Defaults to None.
         scale (float): Isotropic scale factor. Defaults to 1.0.
         pad_val (int, tuple[int]): Pixel pad_val value for constant fill. If a
             tuple of length 3, it is used to pad_val R, G, B channels
@@ -692,7 +697,7 @@ class ColorTransform(object):
     Args:
         magnitude (int | float): The magnitude used for color transform. A
             positive magnitude would enhance the color and a negative magnitude
-             would make the image grayer. A magnitude=0 gives the origin img.
+            would make the image grayer. A magnitude=0 gives the origin img.
         prob (float): The probability for performing ColorTransform therefore
             should be in range [0, 1]. Defaults to 0.5.
         random_negative_prob (float): The probability that turns the magnitude

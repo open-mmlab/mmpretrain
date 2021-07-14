@@ -89,6 +89,7 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
     @classmethod
     def get_classes(cls, classes=None):
         """Get class names of current dataset.
+
         Args:
             classes (Sequence[str] | str | None): If classes is None, use
                 default CLASSES defined by builtin dataset. If classes is a

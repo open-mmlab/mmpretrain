@@ -79,13 +79,11 @@ def accuracy(pred, target, topk=1, thrs=0.):
             the thresholds are considered negative. Default to 0.
 
     Returns:
-        float | list[float] | list[list[float]]: If the input ``topk`` is a
-            single integer, the function will return a single float or a list
-            depending on whether ``thrs`` is a single float. If the input
-            ``topk`` is a tuple, the function will return a list of results
-            of accuracies of each ``topk`` number. That is to say, as long as
-            ``topk`` is a tuple, the returned list shall be of the same length
-            as topk.
+        float | list[float] | list[list[float]]: Accuracy
+            - float: If both ``topk`` and ``thrs`` is a single value.
+            - list[float]: If one of ``topk`` or ``thrs`` is a tuple.
+            - list[list[float]]: If both ``topk`` and ``thrs`` is a tuple. \
+                And the first dim is ``topk``, the second dim is ``thrs``.
     """
     assert isinstance(topk, (int, tuple))
     if isinstance(topk, int):

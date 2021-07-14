@@ -68,8 +68,8 @@ class ImageNet(BaseDataset):
     """`ImageNet <http://www.image-net.org>`_ Dataset.
 
     This implementation is modified from
-    https://github.com/pytorch/vision/blob/master/torchvision/datasets/imagenet.py  # noqa: E501
-    """
+    https://github.com/pytorch/vision/blob/master/torchvision/datasets/imagenet.py
+    """  # noqa: E501
 
     IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif')
     CLASSES = [

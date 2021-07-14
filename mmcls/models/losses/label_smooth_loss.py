@@ -11,8 +11,9 @@ from .utils import convert_to_one_hot
 @LOSSES.register_module()
 class LabelSmoothLoss(nn.Module):
     r"""Intializer for the label smoothed cross entropy loss.
-    Refers to `Rethinking the Inception Architecture for Computer Vision` -
-        https://arxiv.org/abs/1512.00567
+
+    Refers to `Rethinking the Inception Architecture for Computer Vision
+    <https://arxiv.org/abs/1512.00567>`_
 
     This decreases gap between output scores and encourages generalization.
     Labels provided to forward can be one-hot like vectors (NxC) or class
@@ -34,7 +35,7 @@ class LabelSmoothLoss(nn.Module):
         as the original paper as:
 
         .. math::
-        (1-\epsilon)\delta_{k, y} + \frac{\epsilon}{K}
+            (1-\epsilon)\delta_{k, y} + \frac{\epsilon}{K}
 
         where epsilon is the `label_smooth_val`, K is the num_classes and
         delta(k,y) is Dirac delta, which equals 1 for k=y and 0 otherwise.
@@ -43,13 +44,13 @@ class LabelSmoothLoss(nn.Module):
         method as the facebookresearch/ClassyVision repo as:
 
         .. math::
-        \frac{\delta_{k, y} + \epsilon/K}{1+\epsilon}
+            \frac{\delta_{k, y} + \epsilon/K}{1+\epsilon}
 
         if the mode is "multi_label", this will accept labels from multi-label
         task and smoothing them as:
 
         .. math::
-        (1-2\epsilon)\delta_{k, y} + \epsilon
+            (1-2\epsilon)\delta_{k, y} + \epsilon
     """
 
     def __init__(self,
@@ -124,6 +125,23 @@ class LabelSmoothLoss(nn.Module):
                 avg_factor=None,
                 reduction_override=None,
                 **kwargs):
+        r"""Label smooth loss.
+
+        Args:
+            pred (torch.Tensor): The prediction with shape (N, \*).
+            label (torch.Tensor): The ground truth label of the prediction
+                with shape (N, \*).
+            weight (torch.Tensor, optional): Sample-wise loss weight with shape
+                (N, \*). Dafaults to None.
+            avg_factor (int, optional): Average factor that is used to average
+                the loss. Defaults to None.
+            reduction_override (str, optional): The method used to reduce the
+                loss into a scalar. Options are "none", "mean" and "sum".
+                Defaults to None.
+
+        Returns:
+            torch.Tensor: Loss.
+        """
         if self.num_classes is not None:
             assert self.num_classes == cls_score.shape[1], \
                 f'num_classes should equal to cls_score.shape[1], ' \

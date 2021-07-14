@@ -71,28 +71,37 @@ class RepeatDataset(object):
 # Modified from https://github.com/facebookresearch/detectron2/blob/41d475b75a230221e21d9cac5d69655e3415e3a4/detectron2/data/samplers/distributed_sampler.py#L57 # noqa
 @DATASETS.register_module()
 class ClassBalancedDataset(object):
-    """A wrapper of repeated dataset with repeat factor.
+    r"""A wrapper of repeated dataset with repeat factor.
 
     Suitable for training on class imbalanced datasets like LVIS. Following
-    the sampling strategy in [1], in each epoch, an image may appear multiple
+    the sampling strategy in [#1]_, in each epoch, an image may appear multiple
     times based on its "repeat factor".
+
     The repeat factor for an image is a function of the frequency the rarest
     category labeled in that image. The "frequency of category c" in [0, 1]
     is defined by the fraction of images in the training set (without repeats)
     in which category c appears.
-    The dataset needs to instantiate :func:`self.get_cat_ids(idx)` to support
+
+    The dataset needs to implement :func:`self.get_cat_ids` to support
     ClassBalancedDataset.
+
     The repeat factor is computed as followed.
-    1. For each category c, compute the fraction # of images
-        that contain it: f(c)
-    2. For each category c, compute the category-level repeat factor:
-        r(c) = max(1, sqrt(t/f(c)))
-    3. For each image I and its labels L(I), compute the image-level repeat
-    factor:
-        r(I) = max_{c in L(I)} r(c)
+
+    1. For each category c, compute the fraction :math:`f(c)` of images that
+       contain it.
+    2. For each category c, compute the category-level repeat factor
+
+        .. math::
+            r(c) = \max(1, \sqrt{\frac{t}{f(c)}})
+
+    3. For each image I and its labels :math:`L(I)`, compute the image-level
+       repeat factor
+
+        .. math::
+            r(I) = \max_{c \in L(I)} r(c)
 
     References:
-        .. [1]  https://arxiv.org/pdf/1908.03195.pdf
+        .. [#1]  https://arxiv.org/pdf/1908.03195.pdf
 
     Args:
         dataset (:obj:`CustomDataset`): The dataset to be repeated.
