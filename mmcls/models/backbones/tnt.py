@@ -12,17 +12,12 @@ from ..utils import to_2tuple
 from .base_backbone import BaseBackbone
 
 
-class TnTLayer(BaseModule):
-    """Implement one encoder layer in Transformer in Transformer.
+class TransformerBlock(BaseModule):
+    """Implement a transformer block in TnTLayer.
 
     Args:
-        inner_dims (int): The feature dimension in inner transformer block
-        embed_dims (int): The feature dimension in outer transformer block
-        num_pixel (int): The pixel number in target patch transformed with
-            a linear projection in inner transformer
-        num_heads_out (int): Parallel attention heads in outer transformer.
-        num_heads_in (int): Parallel attention heads in inner transformer.
-            Default: 4
+        embed_dims (int): The feature dimension
+        num_heads (int): Parallel attention heads
         ffn_ratio (int): A ratio to calculate the hidden_dims in ffn layer.
             Default: 4
         drop_rate (float): Probability of an element to be zeroed
@@ -38,15 +33,12 @@ class TnTLayer(BaseModule):
         batch_first (bool): Key, Query and Value are shape of
             (batch, n, embed_dim) or (n, batch, embed_dim).
             (batch, n, embed_dim) is common case in CV.  Default to False
-        init_cfg (dict, optional): Initialization config dict
+        init_cfg (dict, optional): Initialization config dict. Default to None
     """
 
     def __init__(self,
-                 inner_dims,
                  embed_dims,
-                 num_pixel,
-                 num_heads_out,
-                 num_heads_in=4,
+                 num_heads,
                  ffn_ratio=4,
                  drop_rate=0.,
                  attn_drop_rate=0.,
@@ -57,43 +49,19 @@ class TnTLayer(BaseModule):
                  norm_cfg=dict(type='LN'),
                  batch_first=True,
                  init_cfg=None):
-        super(TnTLayer, self).__init__(init_cfg=init_cfg)
+        super(TransformerBlock, self).__init__(init_cfg=init_cfg)
 
-        # Inner transformer
-        self.norm_in = build_norm_layer(norm_cfg, inner_dims)[1]
-        self.attn_in = MultiheadAttention(
-            embed_dims=inner_dims,
-            num_heads=num_heads_in,
-            attn_drop=attn_drop_rate,
-            proj_drop=drop_rate,
-            dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
-            batch_first=batch_first)
-
-        self.norm_ffn_in = build_norm_layer(norm_cfg, inner_dims)[1]
-        self.ffn_in = FFN(
-            embed_dims=inner_dims,
-            feedforward_channels=inner_dims * ffn_ratio,
-            num_fcs=num_fcs,
-            ffn_drop=drop_rate,
-            dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
-            act_cfg=act_cfg)
-
-        self.norm_proj = build_norm_layer(norm_cfg, inner_dims)[1]
-        self.projection = nn.Linear(
-            inner_dims * num_pixel, embed_dims, bias=True)
-
-        # Outer transformer
-        self.norm_out = build_norm_layer(norm_cfg, embed_dims)[1]
-        self.attn_out = MultiheadAttention(
+        self.norm_attn = build_norm_layer(norm_cfg, embed_dims)[1]
+        self.attn = MultiheadAttention(
             embed_dims=embed_dims,
-            num_heads=num_heads_out,
+            num_heads=num_heads,
             attn_drop=attn_drop_rate,
             proj_drop=drop_rate,
             dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
             batch_first=batch_first)
 
-        self.norm_ffn_out = build_norm_layer(norm_cfg, embed_dims)[1]
-        self.ffn_out = FFN(
+        self.norm_ffn = build_norm_layer(norm_cfg, embed_dims)[1]
+        self.ffn = FFN(
             embed_dims=embed_dims,
             feedforward_channels=embed_dims * ffn_ratio,
             num_fcs=num_fcs,
@@ -102,24 +70,67 @@ class TnTLayer(BaseModule):
             act_cfg=act_cfg)
 
         if not qkv_bias:
-            self.attn_in.attn.in_proj_bias = None
-            self.attn_out.attn.in_proj_bias = None
+            self.attn.attn.in_proj_bias = None
+
+    def forward(self, x):
+        x = self.attn(self.norm_attn(x), identity=x)
+        x = self.ffn(self.norm_ffn(x), identity=x)
+        return x
+
+
+class TnTLayer(BaseModule):
+    """Implement one encoder layer in Transformer in Transformer.
+
+    Args:
+        embed_dims_inner (int): Feature dimension in inner transformer block
+        embed_dims_outer (int): Feature dimension in outer transformer block
+        num_pixel (int): The pixel number in target patch transformed with
+            a linear projection in inner transformer
+        num_heads_outer (int): Parallel attention heads in outer transformer.
+        num_heads_inner (int): Parallel attention heads in inner transformer.
+            Default: 4
+        norm_cfg (dict): Config dict for normalization layer. Default
+            layer normalization
+        init_cfg (dict, optional): Initialization config dict. Default to None
+    """
+
+    def __init__(self,
+                 embed_dims_inner,
+                 embed_dims_outer,
+                 num_pixel,
+                 num_heads_outer,
+                 num_heads_inner=4,
+                 norm_cfg=dict(type='LN'),
+                 init_cfg=None,
+                 *args,
+                 **kwargs):
+        super(TnTLayer, self).__init__(init_cfg=init_cfg)
+
+        self.inner_block = TransformerBlock(
+            embed_dims_inner,
+            num_heads_inner,
+            norm_cfg=norm_cfg,
+            *args,
+            **kwargs)
+
+        self.norm_proj = build_norm_layer(norm_cfg, embed_dims_inner)[1]
+        self.projection = nn.Linear(
+            embed_dims_inner * num_pixel, embed_dims_outer, bias=True)
+
+        self.outer_block = TransformerBlock(
+            embed_dims_outer,
+            num_heads_outer,
+            norm_cfg=norm_cfg,
+            *args,
+            **kwargs)
 
     def forward(self, pixel_embed, patch_embed):
-        # inner
-        pixel_embed = self.attn_in(
-            self.norm_in(pixel_embed), identity=pixel_embed)
-        pixel_embed = self.ffn_in(
-            self.norm_ffn_in(pixel_embed), identity=pixel_embed)
+        pixel_embed = self.inner_block(pixel_embed)
 
-        # outer
         B, N, C = patch_embed.size()
         patch_embed[:, 1:] = patch_embed[:, 1:] + self.projection(
             self.norm_proj(pixel_embed).reshape(B, N - 1, -1))
-        patch_embed = self.attn_out(
-            self.norm_out(patch_embed), identity=patch_embed)
-        patch_embed = self.ffn_out(
-            self.norm_ffn_out(patch_embed), identity=patch_embed)
+        patch_embed = self.outer_block(patch_embed)
 
         return pixel_embed, patch_embed
 
@@ -131,8 +142,8 @@ class PixelEmbed(BaseModule):
         img_size (int | tuple): The size of input image
         patch_size (int): The size of one patch
         in_channels (int): The num of input channels
-        inner_dims (int): The num of channels of the target patch transformed
-            with a linear projection in inner transformer
+        embed_dims_inner (int): The num of channels of the target patch
+            transformed with a linear projection in inner transformer
         stride (int): The stride of the conv2d layer. We use a conv2d layer
             and a unfold layer to implement image to pixel embedding.
         init_cfg (dict, optional): Initialization config dict
@@ -142,7 +153,7 @@ class PixelEmbed(BaseModule):
                  img_size=224,
                  patch_size=16,
                  in_channels=3,
-                 inner_dims=48,
+                 embed_dims_inner=48,
                  stride=4,
                  init_cfg=None):
         super(PixelEmbed, self).__init__(init_cfg=init_cfg)
@@ -157,14 +168,14 @@ class PixelEmbed(BaseModule):
 
         self.img_size = img_size
         self.num_patches = num_patches
-        self.inner_dims = inner_dims
+        self.embed_dims_inner = embed_dims_inner
 
         new_patch_size = [math.ceil(ps / stride) for ps in patch_size]
         self.new_patch_size = new_patch_size
 
         self.proj = nn.Conv2d(
             in_channels,
-            self.inner_dims,
+            self.embed_dims_inner,
             kernel_size=7,
             padding=3,
             stride=stride)
@@ -178,18 +189,25 @@ class PixelEmbed(BaseModule):
             f'({self.img_size[0]}*{self.img_size[1]}).'
         x = self.proj(x)
         x = self.unfold(x)
-        x = x.transpose(1, 2).reshape(B * self.num_patches, self.inner_dims,
-                                      self.new_patch_size[0],
-                                      self.new_patch_size[1])
+        x = x.transpose(1,
+                        2).reshape(B * self.num_patches, self.embed_dims_inner,
+                                   self.new_patch_size[0],
+                                   self.new_patch_size[1])
         x = x + pixel_pos
-        x = x.reshape(B * self.num_patches, self.inner_dims,
+        x = x.reshape(B * self.num_patches, self.embed_dims_inner,
                       -1).transpose(1, 2)
         return x
 
 
 @BACKBONES.register_module()
 class TNT(BaseBackbone):
-    """ Transformer in Transformer - https://arxiv.org/abs/2103.00112
+    """ Transformer in Transformer
+    A PyTorch implement of : `Transformer in Transformer
+    <https://arxiv.org/abs/2103.00112>`_
+
+    Inspiration from
+    https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/tnt.py
+
     Args:
         arch (str | dict): Vision Transformer architecture
             Default: 'b'
@@ -215,19 +233,19 @@ class TNT(BaseBackbone):
     arch_zoo = {
         **dict.fromkeys(
             ['s', 'small'], {
-                'embed_dims': 384,
-                'inner_dims': 24,
+                'embed_dims_outer': 384,
+                'embed_dims_inner': 24,
                 'num_layers': 12,
-                'num_heads_out': 6,
-                'num_heads_in': 4
+                'num_heads_outer': 6,
+                'num_heads_inner': 4
             }),
         **dict.fromkeys(
             ['b', 'base'], {
-                'embed_dims': 640,
-                'inner_dims': 40,
+                'embed_dims_outer': 640,
+                'embed_dims_inner': 40,
                 'num_layers': 12,
-                'num_heads_out': 10,
-                'num_heads_in': 4
+                'num_heads_outer': 10,
+                'num_heads_inner': 4
             })
     }
 
@@ -258,41 +276,43 @@ class TNT(BaseBackbone):
             self.arch_settings = self.arch_zoo[arch]
         else:
             essential_keys = {
-                'embed_dims', 'inner_dims', 'num_layers', 'num_heads_in',
-                'num_heads_out'
+                'embed_dims_outer', 'embed_dims_inner', 'num_layers',
+                'num_heads_inner', 'num_heads_outer'
             }
             assert isinstance(arch, dict) and set(arch) == essential_keys, \
                 f'Custom arch needs a dict with keys {essential_keys}'
             self.arch_settings = arch
 
-        self.embed_dims = self.arch_settings['embed_dims']
-        self.inner_dims = self.arch_settings['inner_dims']
+        # embed_dims for consistency with other models
+        self.embed_dims = self.embed_dims_outer = \
+            self.arch_settings['embed_dims_outer']
+        self.embed_dims_inner = self.arch_settings['embed_dims_inner']
         self.num_layers = self.arch_settings['num_layers']
-        self.num_heads_out = self.arch_settings['num_heads_out']
-        self.num_heads_in = self.arch_settings['num_heads_in']
+        self.num_heads_outer = self.arch_settings['num_heads_outer']
+        self.num_heads_inner = self.arch_settings['num_heads_inner']
 
         self.pixel_embed = PixelEmbed(
             img_size=img_size,
             patch_size=patch_size,
             in_channels=in_channels,
-            inner_dims=self.inner_dims,
+            embed_dims_inner=self.embed_dims_inner,
             stride=first_stride)
         num_patches = self.pixel_embed.num_patches
         self.num_patches = num_patches
         new_patch_size = self.pixel_embed.new_patch_size
         num_pixel = new_patch_size[0] * new_patch_size[1]
 
-        self.norm1_proj = build_norm_layer(norm_cfg,
-                                           num_pixel * self.inner_dims)[1]
-        self.projection = nn.Linear(num_pixel * self.inner_dims,
-                                    self.embed_dims)
-        self.norm2_proj = build_norm_layer(norm_cfg, self.embed_dims)[1]
+        self.norm1_proj = build_norm_layer(norm_cfg, num_pixel *
+                                           self.embed_dims_inner)[1]
+        self.projection = nn.Linear(num_pixel * self.embed_dims_inner,
+                                    self.embed_dims_outer)
+        self.norm2_proj = build_norm_layer(norm_cfg, self.embed_dims_outer)[1]
 
-        self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dims))
+        self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dims_outer))
         self.patch_pos = nn.Parameter(
-            torch.zeros(1, num_patches + 1, self.embed_dims))
+            torch.zeros(1, num_patches + 1, self.embed_dims_outer))
         self.pixel_pos = nn.Parameter(
-            torch.zeros(1, self.inner_dims, new_patch_size[0],
+            torch.zeros(1, self.embed_dims_inner, new_patch_size[0],
                         new_patch_size[1]))
         self.drop_after_pos = nn.Dropout(p=drop_rate)
 
@@ -304,12 +324,12 @@ class TNT(BaseBackbone):
         for i in range(self.num_layers):
             self.layers.append(
                 TnTLayer(
-                    self.inner_dims,
-                    self.embed_dims,
+                    self.embed_dims_inner,
+                    self.embed_dims_outer,
                     num_pixel,
                     ffn_ratio=ffn_ratio,
-                    num_heads_out=self.num_heads_out,
-                    num_heads_in=self.num_heads_in,
+                    num_heads_outer=self.num_heads_outer,
+                    num_heads_inner=self.num_heads_inner,
                     drop_rate=drop_rate,
                     attn_drop_rate=attn_drop_rate,
                     drop_path_rate=dpr[i],
@@ -319,7 +339,7 @@ class TNT(BaseBackbone):
                     norm_cfg=norm_cfg,
                     batch_first=True))
 
-        self.norm = build_norm_layer(norm_cfg, self.embed_dims)[1]
+        self.norm = build_norm_layer(norm_cfg, self.embed_dims_outer)[1]
 
         trunc_normal_(self.cls_token, std=.02)
         trunc_normal_(self.patch_pos, std=.02)
