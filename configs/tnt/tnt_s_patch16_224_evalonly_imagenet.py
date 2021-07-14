@@ -1,3 +1,4 @@
+# accuracy_top-1 : 81.52 accuracy_top-5 : 95.73
 _base_ = [
     '../_base_/models/tnt_s_patch16_224.py',
     '../_base_/datasets/imagenet_bs32_pil_resize.py',
