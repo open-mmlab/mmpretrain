@@ -64,7 +64,7 @@ Models:
           Top 1 Accuracy: 72.41
           Top 5 Accuracy: 90.8
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/vgg/vgg19_bn_batch256_imagenet_20210208-da620c4f.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/vgg/vgg19_batch256_imagenet_20210208-e6920e4a.pth
     Config: configs/vgg/vgg19_b32x8_imagenet.py
   - Name: vgg11bn_b32x8_imagenet
     Metadata:
