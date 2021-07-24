@@ -1091,7 +1091,7 @@ class ImageNet(BaseDataset):
             self.folder_to_idx = folder_to_idx
         elif isinstance(self.ann_file, str):
             with open(self.ann_file) as f:
-                samples = [x.strip().split(' ') for x in f.readlines()]
+                samples = [x.strip().rsplit(' ', 1) for x in f.readlines()]
         else:
             raise TypeError('ann_file must be a str or None')
         self.samples = samples
