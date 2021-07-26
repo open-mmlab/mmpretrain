@@ -23,7 +23,7 @@ class ShuffleUnit(BaseModule):
         groups (int): The number of groups to be used in grouped 1x1
             convolutions in each ShuffleUnit. Default: 3
         first_block (bool): Whether it is the first ShuffleUnit of a
-            sequential ShuffleUnits. Default: False, which means not using the
+            sequential ShuffleUnits. Default: True, which means not using the
             grouped 1x1 convolution.
         combine (str): The ways to combine the input and output
             branches. Default: 'add'.
@@ -45,7 +45,7 @@ class ShuffleUnit(BaseModule):
                  in_channels,
                  out_channels,
                  groups=3,
-                 first_block=False,
+                 first_block=True,
                  combine='add',
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
