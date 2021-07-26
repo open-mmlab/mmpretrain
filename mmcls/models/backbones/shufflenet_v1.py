@@ -45,7 +45,7 @@ class ShuffleUnit(BaseModule):
                  in_channels,
                  out_channels,
                  groups=3,
-                 first_block=True,
+                 first_block=False,
                  combine='add',
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
