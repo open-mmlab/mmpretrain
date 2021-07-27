@@ -1,4 +1,3 @@
 include mmcls/.mim/model-index.yml
 recursive-include mmcls/.mim/configs *.py *.yml
 recursive-include mmcls/.mim/tools *.py *.sh
-recursive-include mmcls/.mim/demo *.py
