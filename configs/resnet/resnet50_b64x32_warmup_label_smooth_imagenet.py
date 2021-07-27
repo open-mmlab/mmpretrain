@@ -1,4 +1,4 @@
-_base_ = ['./resnet50_batch2048_warmup.py']
+_base_ = ['./resnet50_b64x32_warmup_imagenet.py']
 model = dict(
     head=dict(
         type='LinearClsHead',
