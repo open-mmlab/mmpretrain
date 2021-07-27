@@ -98,7 +98,7 @@ pip install -e .  # 或者 "python setup.py develop"
 
 2. 如果希望使用 `opencv-python-headless` 而不是 `opencv-python`，可以在安装 [mmcv](https://github.com/open-mmlab/mmcv) 之前提前安装。
 
-### 利用 Docker 镜像安装 MMClassification
+#### 利用 Docker 镜像安装 MMClassification
 
 MMClassification 提供 [Dockerfile](/docker/Dockerfile) ，可以通过以下命令创建 docker 镜像。
 
