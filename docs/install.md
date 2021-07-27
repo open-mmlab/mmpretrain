@@ -103,6 +103,23 @@ Note:
 
 you can install it before installing [mmcv](https://github.com/open-mmlab/mmcv).
 
+#### Another option: Docker Image
+
+We provide a [Dockerfile](/docker/Dockerfile) to build an image.
+
+```shell
+# build an image with PyTorch 1.6.0, CUDA 10.1, CUDNN 7.
+docker build -f ./docker/Dockerfile --rm -t mmcls:torch1.6.0-cuda10.1-cudnn7 .
+```
+
+**Important:** Make sure you've installed the [nvidia-container-toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker).
+
+Run a container built from mmcls image with command:
+
+```shell
+docker run --gpus all --shm-size=8g -it -v {DATA_DIR}:/workspace/mmclassification/data mmcls:torch1.6.0-cuda10.1-cudnn7 /bin/bash
+```
+
 ### Using multiple MMClassification versions
 
 The train and test scripts already modify the `PYTHONPATH` to ensure the script use the MMClassification in the current directory.
