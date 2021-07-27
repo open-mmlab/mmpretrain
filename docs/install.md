@@ -103,7 +103,7 @@ Note:
 
 you can install it before installing [mmcv](https://github.com/open-mmlab/mmcv).
 
-## Another option: Docker Image
+### Another option: Docker Image
 
 We provide a [Dockerfile](/docker/Dockerfile) to build an image.
 
