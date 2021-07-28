@@ -82,47 +82,46 @@ class TnTLayer(BaseModule):
     """Implement one encoder layer in Transformer in Transformer.
 
     Args:
-        embed_dims_inner (int): Feature dimension in inner transformer block
-        embed_dims_outer (int): Feature dimension in outer transformer block
         num_pixel (int): The pixel number in target patch transformed with
             a linear projection in inner transformer
-        num_heads_outer (int): Parallel attention heads in outer transformer.
+        embed_dims_inner (int): Feature dimension in inner transformer block
+        embed_dims_outer (int): Feature dimension in outer transformer block
         num_heads_inner (int): Parallel attention heads in inner transformer.
-            Default: 4
+        num_heads_outer (int): Parallel attention heads in outer transformer.
+        inner_block_cfg (dict): Extra config of inner transformer block.
+            Defaults to empty dict.
+        outer_block_cfg (dict): Extra config of outer transformer block.
+            Defaults to empty dict.
         norm_cfg (dict): Config dict for normalization layer. Default
             layer normalization
         init_cfg (dict, optional): Initialization config dict. Default to None
     """
 
     def __init__(self,
+                 num_pixel,
                  embed_dims_inner,
                  embed_dims_outer,
-                 num_pixel,
+                 num_heads_inner,
                  num_heads_outer,
-                 num_heads_inner=4,
+                 inner_block_cfg=dict(),
+                 outer_block_cfg=dict(),
                  norm_cfg=dict(type='LN'),
-                 init_cfg=None,
-                 *args,
-                 **kwargs):
+                 init_cfg=None):
         super(TnTLayer, self).__init__(init_cfg=init_cfg)
 
         self.inner_block = TransformerBlock(
-            embed_dims_inner,
-            num_heads_inner,
-            norm_cfg=norm_cfg,
-            *args,
-            **kwargs)
+            embed_dims=embed_dims_inner,
+            num_heads=num_heads_inner,
+            **inner_block_cfg)
 
         self.norm_proj = build_norm_layer(norm_cfg, embed_dims_inner)[1]
         self.projection = nn.Linear(
             embed_dims_inner * num_pixel, embed_dims_outer, bias=True)
 
         self.outer_block = TransformerBlock(
-            embed_dims_outer,
-            num_heads_outer,
-            norm_cfg=norm_cfg,
-            *args,
-            **kwargs)
+            embed_dims=embed_dims_outer,
+            num_heads=num_heads_outer,
+            **outer_block_cfg)
 
     def forward(self, pixel_embed, patch_embed):
         pixel_embed = self.inner_block(pixel_embed)
@@ -283,13 +282,13 @@ class TNT(BaseBackbone):
                 f'Custom arch needs a dict with keys {essential_keys}'
             self.arch_settings = arch
 
-        # embed_dims for consistency with other models
-        self.embed_dims = self.embed_dims_outer = \
-            self.arch_settings['embed_dims_outer']
         self.embed_dims_inner = self.arch_settings['embed_dims_inner']
+        self.embed_dims_outer = self.arch_settings['embed_dims_outer']
+        # embed_dims for consistency with other models
+        self.embed_dims = self.embed_dims_outer
         self.num_layers = self.arch_settings['num_layers']
-        self.num_heads_outer = self.arch_settings['num_heads_outer']
         self.num_heads_inner = self.arch_settings['num_heads_inner']
+        self.num_heads_outer = self.arch_settings['num_heads_outer']
 
         self.pixel_embed = PixelEmbed(
             img_size=img_size,
@@ -322,22 +321,25 @@ class TNT(BaseBackbone):
         ]  # stochastic depth decay rule
         self.layers = ModuleList()
         for i in range(self.num_layers):
+            block_cfg = dict(
+                ffn_ratio=ffn_ratio,
+                drop_rate=drop_rate,
+                attn_drop_rate=attn_drop_rate,
+                drop_path_rate=dpr[i],
+                num_fcs=num_fcs,
+                qkv_bias=qkv_bias,
+                norm_cfg=norm_cfg,
+                batch_first=True)
             self.layers.append(
                 TnTLayer(
-                    self.embed_dims_inner,
-                    self.embed_dims_outer,
-                    num_pixel,
-                    ffn_ratio=ffn_ratio,
-                    num_heads_outer=self.num_heads_outer,
+                    num_pixel=num_pixel,
+                    embed_dims_inner=self.embed_dims_inner,
+                    embed_dims_outer=self.embed_dims_outer,
                     num_heads_inner=self.num_heads_inner,
-                    drop_rate=drop_rate,
-                    attn_drop_rate=attn_drop_rate,
-                    drop_path_rate=dpr[i],
-                    num_fcs=num_fcs,
-                    qkv_bias=qkv_bias,
-                    act_cfg=act_cfg,
-                    norm_cfg=norm_cfg,
-                    batch_first=True))
+                    num_heads_outer=self.num_heads_outer,
+                    inner_block_cfg=block_cfg,
+                    outer_block_cfg=block_cfg,
+                    norm_cfg=norm_cfg))
 
         self.norm = build_norm_layer(norm_cfg, self.embed_dims_outer)[1]
 
