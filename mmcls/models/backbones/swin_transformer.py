@@ -270,14 +270,14 @@ class SwinTransformer(BaseBackbone):
         self.use_abs_pos_embed = use_abs_pos_embed
         self.auto_pad = auto_pad
 
-        _patch_cfg = dict(
-            img_size=img_size,
-            in_channels=in_channels,
-            embed_dims=self.embed_dims,
-            conv_cfg=dict(
-                type='Conv2d', kernel_size=4, stride=4, padding=0, dilation=1),
-            norm_cfg=dict(type='LN'),
-            **patch_cfg)
+        _patch_cfg = {
+            'img_size': img_size,
+            'in_channels': in_channels,
+            'embed_dims': self.embed_dims,
+            'conv_cfg': dict(type='Conv2d', kernel_size=4, stride=4),
+            'norm_cfg': dict(type='LN'),
+            **patch_cfg
+        }
         self.patch_embed = PatchEmbed(**_patch_cfg)
         num_patches = self.patch_embed.num_patches
         patches_resolution = self.patch_embed.patches_resolution
