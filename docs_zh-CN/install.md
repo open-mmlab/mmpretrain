@@ -98,6 +98,23 @@ pip install -e .  # 或者 "python setup.py develop"
 
 2. 如果希望使用 `opencv-python-headless` 而不是 `opencv-python`，可以在安装 [mmcv](https://github.com/open-mmlab/mmcv) 之前提前安装。
 
+#### 利用 Docker 镜像安装 MMClassification
+
+MMClassification 提供 [Dockerfile](/docker/Dockerfile) ，可以通过以下命令创建 docker 镜像。
+
+```shell
+# 创建基于 PyTorch 1.6.0, CUDA 10.1, CUDNN 7 的镜像。
+docker build -f ./docker/Dockerfile --rm -t mmcls:torch1.6.0-cuda10.1-cudnn7 .
+```
+
+**注意:** 确保已经安装了 [nvidia-container-toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker).
+
+运行一个基于上述镜像的容器:
+
+```shell
+docker run --gpus all --shm-size=8g -it -v {DATA_DIR}:/workspace/mmclassification/data mmcls:torch1.6.0-cuda10.1-cudnn7 /bin/bash
+```
+
 ### 在多个 MMClassification 版本下进行开发
 
 MMClassification 的训练和测试脚本已经修改了 `PYTHONPATH` 变量，以确保其能够运行当前目录下的 MMClassification。

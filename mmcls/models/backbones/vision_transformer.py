@@ -455,8 +455,6 @@ class VisionTransformer(BaseBackbone):
             norm_cfg, embed_dim, postfix=1)
         self.add_module(self.norm1_name, norm1)
 
-        self.init_weights()
-
     def init_weights(self):
         super(VisionTransformer, self).init_weights()
         nn.init.normal_(self.pos_embed, std=0.02)
