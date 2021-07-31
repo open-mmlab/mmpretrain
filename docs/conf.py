@@ -75,9 +75,10 @@ html_theme = 'sphinx_rtd_theme'
 master_doc = 'index'
 
 latex_elements = {
-# Additional stuff for the LaTeX preamble.
-#'preamble': '',
-'preamble': r'''
+    # Additional stuff for the LaTeX preamble.
+    # 'preamble': '',
+    'preamble':
+    r'''
 \hypersetup{unicode=true}
 \usepackage{CJKutf8}
 \DeclareUnicodeCharacter{00A0}{\nobreakspace}
@@ -94,6 +95,7 @@ latex_elements = {
 \AtEndDocument{\end{CJK}}
 ''',
 }
+
 
 def builder_inited_handler(app):
     subprocess.run(['./stat.py'])
