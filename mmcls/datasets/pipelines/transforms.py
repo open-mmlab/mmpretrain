@@ -721,8 +721,8 @@ class CenterCrop(object):
           to perform the center crop with the ``crop_size_`` as:
 
         .. math::
-            \text{crop_size_} = \frac{\text{crop_size}}{\text{crop_size} +
-            \text{crop_padding}} \times \text{short_edge}
+            \text{crop\_size\_} = \frac{\text{crop\_size}}{\text{crop\_size} +
+            \text{crop\_padding}} \times \text{short\_edge}
 
         And then the pipeline resizes the img to the input crop size.
     """
