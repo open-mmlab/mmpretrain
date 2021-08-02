@@ -15,8 +15,8 @@ from .shufflenet_v1 import ShuffleNetV1
 from .shufflenet_v2 import ShuffleNetV2
 from .swin_transformer import SwinTransformer
 from .timm_backbone import TIMMBackbone
-from .tnt import TNT
 from .t2t_vit import T2T_ViT
+from .tnt import TNT
 from .vgg import VGG
 from .vision_transformer import VisionTransformer
 
