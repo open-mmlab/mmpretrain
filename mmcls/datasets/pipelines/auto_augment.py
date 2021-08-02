@@ -1,5 +1,6 @@
 import copy
 import random
+from math import ceil
 from numbers import Number
 from typing import Sequence
 
@@ -626,7 +627,8 @@ class Posterize(object):
         assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
             f'got {prob} instead.'
 
-        self.bits = int(bits)
+        # To align timm version, we need to round up to integer here.
+        self.bits = ceil(bits)
         self.prob = prob
 
     def __call__(self, results):
