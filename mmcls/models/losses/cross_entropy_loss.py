@@ -30,7 +30,7 @@ def cross_entropy(pred,
     # element-wise losses
     loss = F.cross_entropy(pred, label, weight=class_weight, reduction='none')
 
-    # apply weights and do the reductions
+    # apply weights and do the reduction
     if weight is not None:
         weight = weight.float()
     loss = weight_reduce_loss(
