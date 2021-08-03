@@ -95,12 +95,10 @@ def test_cross_entropy_loss():
         loss_weight=1.0,
         class_weight=class_weight)
     loss = build_loss(loss_cfg)
-    assert torch.allclose(loss(cls_score, label),
-                          torch.tensor(176.667)), loss(cls_score, label)
+    assert torch.allclose(loss(cls_score, label), torch.tensor(176.667))
     # test bce_loss with weight
     assert torch.allclose(
-        loss(cls_score, label, weight=weight), torch.tensor(74.333)), loss(
-            cls_score, label, weight=weight)
+        loss(cls_score, label, weight=weight), torch.tensor(74.333))
 
     # test soft_ce_loss
     cls_score = torch.Tensor([[100, -100]])
