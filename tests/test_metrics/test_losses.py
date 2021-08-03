@@ -106,7 +106,7 @@ def test_cross_entropy_loss():
     cls_score = torch.Tensor([[100, -100]])
     label = torch.Tensor([[1, 0], [0, 1]])
     weight = torch.tensor(0.5)
-    class_weight = torch.tensor([1, 1])
+    class_weight = torch.tensor(0.25)
 
     # test soft ce_loss without class weight
     loss_cfg = dict(
@@ -128,10 +128,10 @@ def test_cross_entropy_loss():
         loss_weight=1.0,
         class_weight=class_weight)
     loss = build_loss(loss_cfg)
-    assert torch.allclose(loss(cls_score, label), torch.tensor(100.))
+    assert torch.allclose(loss(cls_score, label), torch.tensor(25.))
     # test soft_ce_loss with weight
     assert torch.allclose(
-        loss(cls_score, label, weight=weight), torch.tensor(50.))
+        loss(cls_score, label, weight=weight), torch.tensor(12.5))
 
 
 def test_focal_loss():

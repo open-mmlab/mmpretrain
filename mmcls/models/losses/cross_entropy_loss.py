@@ -22,7 +22,7 @@ def cross_entropy(pred,
         avg_factor (int, optional): Average factor that is used to average
             the loss. Defaults to None.
         class_weight (list[float], optional): The weight for each class with
-            shape (N, C), C is the number of classes. Default None.
+            shape (C), C is the number of classes. Default None.
 
     Returns:
         torch.Tensor: The calculated loss
@@ -57,16 +57,19 @@ def soft_cross_entropy(pred,
         avg_factor (int, optional): Average factor that is used to average
             the loss. Defaults to None.
         class_weight (list[float], optional): The weight for each class with
-            shape (N, C), C is the number of classes. Default None.
+            shape (C), C is the number of classes. Default None.
 
     Returns:
         torch.Tensor: The calculated loss
     """
     # element-wise losses
     loss = -label * F.log_softmax(pred, dim=-1)
+    print('----> : ', pred.shape, loss.shape)
+    print('----> : ', loss)
     if class_weight is not None:
         loss *= class_weight
     loss = loss.sum(dim=-1)
+    print('====> : ', loss)
 
     # apply weights and do the reduction
     if weight is not None:
@@ -96,7 +99,7 @@ def binary_cross_entropy(pred,
         avg_factor (int, optional): Average factor that is used to average
             the loss. Defaults to None.
         class_weight (list[float], optional): The weight for each class with
-            shape (N, C), C is the number of classes. Default None.
+            shape (C), C is the number of classes. Default None.
 
     Returns:
         torch.Tensor: The calculated loss
@@ -130,7 +133,7 @@ class CrossEntropyLoss(nn.Module):
             Options are "none", "mean" and "sum". Defaults to 'mean'.
         loss_weight (float):  Weight of the loss. Defaults to 1.0.
         class_weight (list[float], optional): The weight for each class with
-            shape (N, C), C is the number of classes. Default None.
+            shape (C), C is the number of classes. Default None.
     """
 
     def __init__(self,
