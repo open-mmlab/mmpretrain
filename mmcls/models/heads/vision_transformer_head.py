@@ -1,9 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import math
 from collections import OrderedDict
 
 import torch.nn as nn
 import torch.nn.functional as F
-from mmcv.cnn import build_activation_layer, constant_init, kaiming_init
+from mmcv.cnn import build_activation_layer, constant_init
+from mmcv.cnn.utils.weight_init import trunc_normal_
+from mmcv.runner import Sequential
 
 from ..builder import HEADS
 from .cls_head import ClsHead
@@ -51,15 +54,17 @@ class VisionTransformerClsHead(ClsHead):
                 ('act', build_activation_layer(self.act_cfg)),
                 ('head', nn.Linear(self.hidden_dim, self.num_classes)),
             ]
-        self.layers = nn.Sequential(OrderedDict(layers))
+        self.layers = Sequential(OrderedDict(layers))
 
     def init_weights(self):
         super(VisionTransformerClsHead, self).init_weights()
         # Modified from ClassyVision
         if hasattr(self.layers, 'pre_logits'):
             # Lecun norm
-            kaiming_init(
-                self.layers.pre_logits, mode='fan_in', nonlinearity='linear')
+            trunc_normal_(
+                self.layers.pre_logits.weight,
+                std=math.sqrt(1 / self.layers.pre_logits.in_features))
+            nn.init.zeros_(self.layers.pre_logits.bias)
         constant_init(self.layers.head, 0)
 
     def simple_test(self, img):
