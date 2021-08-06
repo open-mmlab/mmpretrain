@@ -6,7 +6,7 @@ import torch
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import DistSamplerSeedHook, build_optimizer, build_runner
 
-from mmcls.core import DistOptimizerHook
+from mmcls.core import DistOptimizerHook, PreciseBNHook
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.utils import get_root_logger
 
@@ -136,6 +136,12 @@ def train_model(model,
         custom_hooks_config=cfg.get('custom_hooks', None))
     if distributed:
         runner.register_hook(DistSamplerSeedHook())
+
+    # precise bn setting
+    if cfg.get('precise_bn', False):
+        precise_bn_hook = PreciseBNHook(data_loaders[0],
+                                        **cfg.get('precise_bn'))
+        runner.register_hook(precise_bn_hook)
 
     # register eval hooks
     if validate:
