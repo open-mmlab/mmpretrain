@@ -49,11 +49,8 @@ def get_samples(root, folder_to_idx, extensions):
     """
     samples = []
     root = os.path.expanduser(root)
-    for folder_name in sorted(os.listdir(root)):
+    for folder_name in sorted(list(folder_to_idx.keys())):
         _dir = os.path.join(root, folder_name)
-        if not os.path.isdir(_dir):
-            continue
-
         for _, _, fns in sorted(os.walk(_dir)):
             for fn in sorted(fns):
                 if has_file_allowed_extension(fn, extensions):
