@@ -141,7 +141,7 @@ def train_model(model,
     if cfg.get('precise_bn', False):
         precise_bn_hook = PreciseBNHook(data_loaders[0],
                                         **cfg.get('precise_bn'))
-        runner.register_hook(precise_bn_hook)
+        runner.register_hook(precise_bn_hook, priority='ABOVE_NORMAL')
 
     # register eval hooks
     if validate:
