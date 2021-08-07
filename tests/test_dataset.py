@@ -230,15 +230,13 @@ def test_dataset_evaluation():
 
     # test multi-label evalutation
     dataset = MultiLabelDataset(data_prefix='', pipeline=[], test_mode=True)
-    dataset.data_infos = dict(
-        all_gt_labels=torch.tensor([
-            [1, 1, 0, -1],
-            [1, 1, 0, -1],
-            [0, -1, 1, -1],
-            [0, 1, 0, -1],
-            [0, 1, 0, -1]
-        ], dtype=torch.int8)
-    )
+    dataset.data_infos = [
+        dict(gt_label=[1, 1, 0, -1]),
+        dict(gt_label=[1, 1, 0, -1]),
+        dict(gt_label=[0, -1, 1, -1]),
+        dict(gt_label=[0, 1, 0, -1]),
+        dict(gt_label=[0, 1, 0, -1]),
+    ]
     fake_results = np.array([[0.9, 0.8, 0.3, 0.2], [0.1, 0.2, 0.2, 0.1],
                              [0.7, 0.5, 0.9, 0.3], [0.8, 0.1, 0.1, 0.2],
                              [0.8, 0.1, 0.1, 0.2]])
