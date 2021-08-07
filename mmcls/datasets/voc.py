@@ -31,10 +31,10 @@ class VOC(MultiLabelDataset):
             list[dict]: Annotation info from XML file.
         """
         samples = []
-        all_gt_labels = []
-        sample_cnt = 0
         img_ids = mmcv.list_from_file(self.ann_file)
-        for img_id in img_ids:
+        all_gt_labels = torch.zeros(len(img_ids), len(self.CLASSES),
+                                    dtype=torch.int8)
+        for index, img_id in enumerate(img_ids):
             filename = f'JPEGImages/{img_id}.jpg'
             xml_path = osp.join(self.data_prefix, 'Annotations',
                                 f'{img_id}.xml')
@@ -55,26 +55,16 @@ class VOC(MultiLabelDataset):
                 else:
                     labels.append(label)
 
-            gt_label = torch.zeros(len(self.CLASSES), dtype=torch.int8)
             # The order cannot be swapped for the case where multiple objects
             # of the same kind exist and some are difficult.
-            gt_label[labels_difficult] = -1
-            gt_label[labels] = 1
-            all_gt_labels.append(gt_label)
+            all_gt_labels[index, labels_difficult] = -1
+            all_gt_labels[index, labels] = 1
 
             sample = dict(
                 img_prefix=self.data_prefix,
                 img_info=dict(filename=filename),
-                gt_label_index=sample_cnt)
+                gt_label_index=index)
             samples.append(sample)
-            sample_cnt += 1
-
-        # Stack tensors to accelerate copying to shared memory,
-        # also avoid being limited by max number of file descriptors.
-        # If there is a way to know total sample number from the beginning,
-        # we'd better pre-allocate memory of the whole tensor instead of
-        # stacking a list of tensors.
-        all_gt_labels = torch.stack(all_gt_labels)
 
         data_infos = dict(
             all_gt_labels=all_gt_labels,
