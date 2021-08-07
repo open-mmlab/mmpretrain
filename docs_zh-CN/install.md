@@ -8,17 +8,22 @@
 
 MMClassification 和 MMCV 的适配关系如下，请安装正确版本的 MMCV 以避免安装问题
 
-| MMClassification 版本 |  MMCV 版本  |
-|:---------------------:|:-----------:|
-|        master         | mmcv>=1.3.1, <=1.5.0 |
+| MMClassification 版本 |       MMCV 版本      |
+|:---------------------:|:--------------------:|
+|        master         | mmcv>=1.3.8, <=1.5.0 |
+|        0.14.0         | mmcv>=1.3.8, <=1.5.0 |
+|        0.13.0         | mmcv>=1.3.8, <=1.5.0 |
 |        0.12.0         | mmcv>=1.3.1, <=1.5.0 |
 |        0.11.1         | mmcv>=1.3.1, <=1.5.0 |
-|        0.11.0         | mmcv>=1.3.0 |
-|        0.10.0         | mmcv>=1.3.0 |
-|         0.9.0         | mmcv>=1.1.4 |
-|         0.8.0         | mmcv>=1.1.4 |
-|         0.7.0         | mmcv>=1.1.4 |
-|         0.6.0         | mmcv>=1.1.4 |
+|        0.11.0         | mmcv>=1.3.0          |
+|        0.10.0         | mmcv>=1.3.0          |
+|         0.9.0         | mmcv>=1.1.4          |
+|         0.8.0         | mmcv>=1.1.4          |
+|         0.7.0         | mmcv>=1.1.4          |
+|         0.6.0         | mmcv>=1.1.4          |
+
+提示：由于 `master` 分支处于频繁开发中，`mmcv` 版本依赖可能不准确。如果您在使用
+`master` 分支时遇到问题，请尝试更新 `mmcv` 到最新版。
 
 ### 安装 MMClassification 步骤
 
@@ -54,17 +59,38 @@ conda install pytorch=1.3.1 cudatoolkit=9.2 torchvision=0.4.2 -c pytorch
 
 如果 PyTorch 是由源码进行编译安装（而非直接下载预编译好的安装包），则可以使用更多的 CUDA 版本（如 9.0 版本）。
 
-c. 克隆 mmclassification 库
+c. 安装 MMClassification 库
+
+#### 稳定版本
+
+我们推荐使用 [MIM](https://github.com/open-mmlab/mim) 进行 MMClassification 的安装。
+
+```shell
+pip install git+https://github.com/open-mmlab/mim.git
+mim install mmcls
+```
+
+MIM 工具可以自动安装 OpenMMLab 旗下的各个项目及其依赖，同时可以协助进行训练、调参和预训练模型下载等。
+
+或者，可以直接通过 pip 进行 MMClassification 的安装：
+
+```shell
+pip install mmcls
+```
+
+#### 开发版本
+
+首先，克隆最新的 MMClassification 仓库：
 
 ```shell
 git clone https://github.com/open-mmlab/mmclassification.git
 cd mmclassification
 ```
 
-d. 安装依赖包和 MMClassification
+之后，安装依赖包和 MMClassification：
 
 ```shell
-pip install -e .  # or "python setup.py develop"
+pip install -e .  # 或者 "python setup.py develop"
 ```
 
 提示：
@@ -72,6 +98,23 @@ pip install -e .  # or "python setup.py develop"
 1. 按照以上步骤，MMClassification 是以 `dev` 模式安装的，任何本地的代码修改都可以直接生效，无需重新安装（除非提交了一些 commit，并且希望提升版本号）
 
 2. 如果希望使用 `opencv-python-headless` 而不是 `opencv-python`，可以在安装 [mmcv](https://github.com/open-mmlab/mmcv) 之前提前安装。
+
+#### 利用 Docker 镜像安装 MMClassification
+
+MMClassification 提供 [Dockerfile](/docker/Dockerfile) ，可以通过以下命令创建 docker 镜像。
+
+```shell
+# 创建基于 PyTorch 1.6.0, CUDA 10.1, CUDNN 7 的镜像。
+docker build -f ./docker/Dockerfile --rm -t mmcls:torch1.6.0-cuda10.1-cudnn7 .
+```
+
+**注意：** 确保已经安装了 [nvidia-container-toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker).
+
+运行一个基于上述镜像的容器：
+
+```shell
+docker run --gpus all --shm-size=8g -it -v {DATA_DIR}:/workspace/mmclassification/data mmcls:torch1.6.0-cuda10.1-cudnn7 /bin/bash
+```
 
 ### 在多个 MMClassification 版本下进行开发
 

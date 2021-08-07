@@ -1,6 +1,7 @@
 import copy
 import random
 from numbers import Number
+from typing import Sequence
 
 import mmcv
 import numpy as np
@@ -16,10 +17,10 @@ def random_negative(value, random_negative_prob):
 
 @PIPELINES.register_module()
 class AutoAugment(object):
-    """Auto augmentation. This data augmentation is proposed in `AutoAugment:
-    Learning Augmentation Policies from Data.
+    """Auto augmentation.
 
-    <https://arxiv.org/abs/1805.09501>`_.
+    This data augmentation is proposed in `AutoAugment: Learning Augmentation
+    Policies from Data <https://arxiv.org/abs/1805.09501>`_.
 
     Args:
         policies (list[list[dict]]): The policies of auto augmentation. Each
@@ -55,9 +56,10 @@ class AutoAugment(object):
 
 @PIPELINES.register_module()
 class RandAugment(object):
-    """Random augmentation. This data augmentation is proposed in `RandAugment:
-    Practical automated data augmentation with a reduced search space.
+    r"""Random augmentation.
 
+    This data augmentation is proposed in `RandAugment: Practical automated
+    data augmentation with a reduced search space
     <https://arxiv.org/abs/1909.13719>`_.
 
     Args:
@@ -77,19 +79,23 @@ class RandAugment(object):
         total_level (int | float): Total level for the magnitude. Defaults to
             30.
         magnitude_std (Number | str): Deviation of magnitude noise applied.
-            If positive number, magnitude is sampled from normal distribution
-                (mean=magnitude, std=magnitude_std).
-            If 0 or negative number, magnitude remains unchanged.
-            If str "inf", magnitude is sampled from uniform distribution
-                (range=[min, magnitude]).
+
+            - If positive number, magnitude is sampled from normal distribution
+              (mean=magnitude, std=magnitude_std).
+            - If 0 or negative number, magnitude remains unchanged.
+            - If str "inf", magnitude is sampled from uniform distribution
+              (range=[min, magnitude]).
 
     Note:
         `magnitude_std` will introduce some randomness to policy, modified by
-        https://github.com/rwightman/pytorch-image-models
+        https://github.com/rwightman/pytorch-image-models.
+
         When magnitude_std=0, we calculate the magnitude as follows:
 
         .. math::
-            magnitude = magnitude_level / total_level * (val2 - val1) + val1
+            \text{magnitude} = \frac{\text{magnitude\_level}}
+            {\text{total\_level}} \times (\text{val2} - \text{val1})
+            + \text{val1}
     """
 
     def __init__(self,
@@ -107,9 +113,6 @@ class RandAugment(object):
             f'of int or float type, got {type(total_level)} instead.'
         assert isinstance(policies, list) and len(policies) > 0, \
             'Policies must be a non-empty list.'
-        for policy in policies:
-            assert isinstance(policy, dict) and 'type' in policy, \
-                'Each policy must be a dict with key "type".'
 
         assert isinstance(magnitude_std, (Number, str)), \
             'Magnitude std must be of number or str type, ' \
@@ -127,7 +130,24 @@ class RandAugment(object):
         self.magnitude_level = magnitude_level
         self.magnitude_std = magnitude_std
         self.total_level = total_level
-        self.policies = self._process_policies(policies)
+        self.policies = policies
+        self._check_policies(self.policies)
+
+    def _check_policies(self, policies):
+        for policy in policies:
+            assert isinstance(policy, dict) and 'type' in policy, \
+                'Each policy must be a dict with key "type".'
+            type_name = policy['type']
+
+            magnitude_key = policy.get('magnitude_key', None)
+            if magnitude_key is not None:
+                assert 'magnitude_range' in policy, \
+                    f'RandAugment policy {type_name} needs `magnitude_range`.'
+                magnitude_range = policy['magnitude_range']
+                assert (isinstance(magnitude_range, Sequence)
+                        and len(magnitude_range) == 2), \
+                    f'`magnitude_range` of RandAugment policy {type_name} ' \
+                    f'should be a Sequence with two numbers.'
 
     def _process_policies(self, policies):
         processed_policies = []
@@ -135,21 +155,20 @@ class RandAugment(object):
             processed_policy = copy.deepcopy(policy)
             magnitude_key = processed_policy.pop('magnitude_key', None)
             if magnitude_key is not None:
-                val1, val2 = processed_policy.pop('magnitude_range')
-                magnitude_value = (self.magnitude_level / self.total_level
-                                   ) * float(val2 - val1) + val1
-
+                magnitude = self.magnitude_level
                 # if magnitude_std is positive number or 'inf', move
                 # magnitude_value randomly.
-                maxval = max(val1, val2)
-                minval = min(val1, val2)
                 if self.magnitude_std == 'inf':
-                    magnitude_value = random.uniform(minval, magnitude_value)
+                    magnitude = random.uniform(0, magnitude)
                 elif self.magnitude_std > 0:
-                    magnitude_value = random.gauss(magnitude_value,
-                                                   self.magnitude_std)
-                    magnitude_value = min(maxval, max(minval, magnitude_value))
-                processed_policy.update({magnitude_key: magnitude_value})
+                    magnitude = random.gauss(magnitude, self.magnitude_std)
+                    magnitude = min(self.total_level, max(0, magnitude))
+
+                val1, val2 = processed_policy.pop('magnitude_range')
+                magnitude = (magnitude / self.total_level) * (val2 -
+                                                              val1) + val1
+
+                processed_policy.update({magnitude_key: magnitude})
             processed_policies.append(processed_policy)
         return processed_policies
 
@@ -157,6 +176,7 @@ class RandAugment(object):
         if self.num_policies == 0:
             return results
         sub_policy = random.choices(self.policies, k=self.num_policies)
+        sub_policy = self._process_policies(sub_policy)
         sub_policy = Compose(sub_policy)
         return sub_policy(results)
 
@@ -254,7 +274,7 @@ class Translate(object):
         magnitude (int | float): The magnitude used for translate. Note that
             the offset is calculated by magnitude * size in the corresponding
             direction. With a magnitude of 1, the whole image will be moved out
-             of the range.
+            of the range.
         pad_val (int, tuple[int]): Pixel pad_val value for constant fill. If a
             tuple of length 3, it is used to pad_val R, G, B channels
             respectively. Defaults to 128.
@@ -339,8 +359,8 @@ class Rotate(object):
         angle (float): The angle used for rotate. Positive values stand for
             clockwise rotation.
         center (tuple[float], optional): Center point (w, h) of the rotation in
-             the source image. If None, the center of the image will be used.
-            defaults to None.
+            the source image. If None, the center of the image will be used.
+            Defaults to None.
         scale (float): Isotropic scale factor. Defaults to 1.0.
         pad_val (int, tuple[int]): Pixel pad_val value for constant fill. If a
             tuple of length 3, it is used to pad_val R, G, B channels
@@ -677,7 +697,7 @@ class ColorTransform(object):
     Args:
         magnitude (int | float): The magnitude used for color transform. A
             positive magnitude would enhance the color and a negative magnitude
-             would make the image grayer. A magnitude=0 gives the origin img.
+            would make the image grayer. A magnitude=0 gives the origin img.
         prob (float): The probability for performing ColorTransform therefore
             should be in range [0, 1]. Defaults to 0.5.
         random_negative_prob (float): The probability that turns the magnitude

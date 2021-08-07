@@ -1,5 +1,68 @@
 ## Changelog
 
+### v0.14.0(4/8/2021)
+
+#### Highlights
+- Add transformer-in-transformer backbone and pretrain checkpoints, refers to [the paper](https://arxiv.org/abs/2103.00112).
+- Add Chinese colab tutorial.
+- Provide dockerfile to build mmcls dev docker image.
+
+#### New Features
+
+- Add transformer in transformer backbone and pretrain checkpoints. ([#339](https://github.com/open-mmlab/mmclassification/pull/339))
+- Support mim, welcome to use mim to manage your mmcls project. ([#376](https://github.com/open-mmlab/mmclassification/pull/376))
+- Add Dockerfile. ([#365](https://github.com/open-mmlab/mmclassification/pull/365))
+- Add ResNeSt configs. ([#332](https://github.com/open-mmlab/mmclassification/pull/332))
+
+#### Improvements
+
+- Use the `presistent_works` option if available, to accelerate training. ([#349](https://github.com/open-mmlab/mmclassification/pull/349))
+- Add Chinese ipynb tutorial. ([#306](https://github.com/open-mmlab/mmclassification/pull/306))
+- Refactor unit tests. ([#321](https://github.com/open-mmlab/mmclassification/pull/321))
+- Support to test mmdet inference with mmcls backbone. ([#343](https://github.com/open-mmlab/mmclassification/pull/343))
+- Use zero as default value of `thrs` in metrics. ([#341](https://github.com/open-mmlab/mmclassification/pull/341))
+
+#### Bug Fixes
+
+- Fix ImageNet dataset annotation file parse bug. ([#370](https://github.com/open-mmlab/mmclassification/pull/370))
+- Fix docstring typo and init bug in ShuffleNetV1. ([#374](https://github.com/open-mmlab/mmclassification/pull/374))
+- Use local ATTENTION registry to avoid conflict with other repositories. ([#376](https://github.com/open-mmlab/mmclassification/pull/375))
+- Fix swin transformer config bug. ([#355](https://github.com/open-mmlab/mmclassification/pull/355))
+- Fix `patch_cfg` argument bug in SwinTransformer. ([#368](https://github.com/open-mmlab/mmclassification/pull/368))
+- Fix duplicate `init_weights` call in ViT init function. ([#373](https://github.com/open-mmlab/mmclassification/pull/373))
+- Fix broken `_base_` link in a resnet config. ([#361](https://github.com/open-mmlab/mmclassification/pull/361))
+- Fix vgg-19 model link missing. ([#363](https://github.com/open-mmlab/mmclassification/pull/363))
+
+### v0.13.0(3/7/2021)
+
+- Support Swin-Transformer backbone and add training configs for Swin-Transformer on ImageNet.
+
+#### New Features
+
+- Support Swin-Transformer backbone and add training configs for Swin-Transformer on ImageNet. (#271)
+- Add pretained model of RegNetX. (#269)
+- Support adding custom hooks in config file. (#305)
+- Improve and add Chinese translation of `CONTRIBUTING.md` and all tools tutorials. (#320)
+- Dump config before training. (#282)
+- Add torchscript and torchserve deployment tools. (#279, #284)
+
+#### Improvements
+
+- Improve test tools and add some new tools. (#322)
+- Correct MobilenetV3 backbone structure and add pretained models. (#291)
+- Refactor `PatchEmbed` and `HybridEmbed` as independent components. (#330)
+- Refactor mixup and cutmix as `Augments` to support more funtions. (#278)
+- Refactor weights initialization method. (#270, #318, #319)
+- Refactor `LabelSmoothLoss` to support multiple calculation formulas. (#285)
+
+#### Bug Fixes
+
+- Fix bug for CPU training. (#286)
+- Fix missing test data when `num_imgs` can not be evenly divided by `num_gpus`. (#299)
+- Fix build compatible with pytorch v1.3-1.5. (#301)
+- Fix `magnitude_std` bug in `RandAugment`. (#309)
+- Fix bug when `samples_per_gpu` is 1. (#311)
+
 ### v0.12.0(3/6/2021)
 
 - Finish adding Chinese tutorials and build Chinese documentation on readthedocs.

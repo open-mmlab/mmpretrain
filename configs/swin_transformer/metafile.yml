@@ -1,0 +1,67 @@
+Collections:
+  - Name: Swin-Transformer
+    Metadata:
+      Training Data: ImageNet
+      Training Techniques:
+        - AdamW
+        - Weight Decay
+      Training Resources: 16x V100 GPUs
+      Epochs: 300
+      Batch Size: 1024
+      Architecture:
+        - Shift Window Multihead Self Attention
+    Paper: https://arxiv.org/pdf/2103.14030.pdf
+    README: configs/swin_transformer/README.md
+
+Models:
+- Config: configs/swin_transformer/swin_tiny_224_b16x64_300e_imagenet.py
+  In Collection: Swin-Transformer
+  Metadata:
+    FLOPs: 4360000000
+    Parameters: 28290000
+    Training Data: ImageNet
+    Training Resources: 16x 1080 GPUs
+    Epochs: 300
+    Batch Size: 1024
+  Name: swin_tiny_224_imagenet
+  Results:
+  - Dataset: ImageNet
+    Metrics:
+      Top 1 Accuracy: 81.18
+      Top 5 Accuracy: 95.61
+    Task: Image Classification
+  Weights: https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_tiny_224_b16x64_300e_imagenet_20210616_090925-66df6be6.pth
+- Config: configs/swin_transformer/swin_small_224_b16x64_300e_imagenet.py
+  In Collection: Swin-Transformer
+  Metadata:
+    FLOPs: 8520000000
+    Parameters: 48610000
+    Training Data: ImageNet
+    Training Resources: 16x 1080 GPUs
+    Epochs: 300
+    Batch Size: 1024
+  Name: swin_small_224_imagenet
+  Results:
+  - Dataset: ImageNet
+    Metrics:
+      Top 1 Accuracy: 83.02
+      Top 5 Accuracy: 96.29
+    Task: Image Classification
+  Weights: https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_small_224_b16x64_300e_imagenet_20210615_110219-7f9d988b.pth
+- Config: configs/swin_transformer/swin_base_224_b16x64_300e_imagenet.py
+  In Collection: Swin-Transformer
+  Metadata:
+    FLOPs: 15140000000
+    Parameters: 87770000
+    Training Data: ImageNet
+    Training Resources: 16x 1080 GPUs
+    Epochs: 300
+    Batch Size: 1024
+  Name: swin_base_224_imagenet
+  Results:
+  - Dataset: ImageNet
+    Metrics:
+      Top 1 Accuracy: 83.36
+      Top 5 Accuracy: 96.44
+    Task: Image Classification
+  Weights: https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_base_224_b16x64_300e_imagenet_20210616_190742-93230b0d.pth

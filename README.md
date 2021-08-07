@@ -31,7 +31,7 @@ This project is released under the [Apache 2.0 license](LICENSE).
 
 ## Changelog
 
-v0.12.0 was released in 3/6/2021.
+v0.14.0 was released in 4/8/2021.
 Please refer to [changelog.md](docs/changelog.md) for details and release history.
 
 ## Benchmark and model zoo
@@ -49,6 +49,7 @@ Supported backbones:
 - [x] ShuffleNetV2
 - [x] MobileNetV2
 - [x] MobileNetV3
+- [x] Swin-Transformer
 
 ## Installation
 
@@ -84,6 +85,7 @@ We wish that the toolbox and benchmark could serve the growing research communit
 ## Projects in OpenMMLab
 
 - [MMCV](https://github.com/open-mmlab/mmcv): OpenMMLab foundational library for computer vision.
+- [MIM](https://github.com/open-mmlab/mim): MIM Installs OpenMMLab Packages.
 - [MMClassification](https://github.com/open-mmlab/mmclassification): OpenMMLab image classification toolbox and benchmark.
 - [MMDetection](https://github.com/open-mmlab/mmdetection): OpenMMLab detection toolbox and benchmark.
 - [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): OpenMMLab's next-generation platform for general 3D object detection.

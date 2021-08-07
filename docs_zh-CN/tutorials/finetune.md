@@ -2,7 +2,7 @@
 
 已经证明，在 ImageNet 数据集上预先训练的分类模型对于其他数据集和其他下游任务有很好的效果。
 
-该教程提供了如何将 [Model Zoo](../model_zoo.md) 中提供的预训练模型用于其他数据集，已获得更好的效果。
+该教程提供了如何将 [Model Zoo](https://github.com/open-mmlab/mmclassification/blob/master/docs/model_zoo.md) 中提供的预训练模型用于其他数据集，已获得更好的效果。
 
 在新数据集上微调模型分为两步：
 

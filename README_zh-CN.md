@@ -30,7 +30,7 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 
 ## 更新日志
 
-2021/6/3 发布了 v0.12.0 版本
+2021/8/4 发布了 v0.14.0 版本
 
 发布历史和更新细节请参考 [更新日志](docs/changelog.md)
 
@@ -49,6 +49,7 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 - [x] ShuffleNetV2
 - [x] MobileNetV2
 - [x] MobileNetV3
+- [x] Swin-Transformer
 
 ## 安装
 
@@ -60,7 +61,7 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 
 ## 参与贡献
 
-我们非常欢迎任何有助于提升 MMClassification 的贡献，请参考 [贡献指南](.github/CONTRIBUTING.md) 来了解如何参与贡献。
+我们非常欢迎任何有助于提升 MMClassification 的贡献，请参考 [贡献指南](.github/CONTRIBUTING-zh_CN.md) 来了解如何参与贡献。
 
 ## 致谢
 
@@ -71,6 +72,7 @@ MMClassification 是一款由不同学校和公司共同贡献的开源项目。
 ## OpenMMLab 的其他项目
 
 - [MMCV](https://github.com/open-mmlab/mmcv): OpenMMLab 计算机视觉基础库
+- [MIM](https://github.com/open-mmlab/mim): MIM 是 OpenMMlab 项目、算法、模型的统一入口
 - [MMDetection](https://github.com/open-mmlab/mmdetection): OpenMMLab 检测工具箱与测试基准
 - [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): OpenMMLab 新一代通用 3D 目标检测平台
 - [MMSegmentation](https://github.com/open-mmlab/mmsegmentation): OpenMMLab 语义分割工具箱与测试基准
@@ -83,7 +85,7 @@ MMClassification 是一款由不同学校和公司共同贡献的开源项目。
 
 ## 欢迎加入 OpenMMLab 社区
 
-扫描下方的二维码可关注 OpenMMLab 团队的 [知乎官方账号](https://www.zhihu.com/people/openmmlab)，加入 OpenMMLab 团队的 [官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=aCvMxdr3)
+扫描下方的二维码可关注 OpenMMLab 团队的 [知乎官方账号](https://www.zhihu.com/people/openmmlab)，加入 OpenMMLab 团队的 [官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=GJP18SjI)
 
 <div align="center">
 <img src="/docs/imgs/zhihu_qrcode.jpg" height="400" />  <img src="/docs/imgs/qq_group_qrcode.jpg" height="400" />

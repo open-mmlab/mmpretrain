@@ -382,7 +382,7 @@ class ResLayer(nn.Sequential):
 class ResNet(BaseBackbone):
     """ResNet backbone.
 
-    Please refer to the `paper <https://arxiv.org/abs/1512.03385>`_ for
+    Please refer to the `paper <https://arxiv.org/abs/1512.03385>`__ for
     details.
 
     Args:
@@ -594,9 +594,13 @@ class ResNet(BaseBackbone):
             for param in m.parameters():
                 param.requires_grad = False
 
-    # def init_weights(self, pretrained=None):
     def init_weights(self):
         super(ResNet, self).init_weights()
+
+        if (isinstance(self.init_cfg, dict)
+                and self.init_cfg['type'] == 'Pretrained'):
+            # Suppress zero_init_residual if use pretrained model.
+            return
 
         if self.zero_init_residual:
             for m in self.modules():
@@ -636,8 +640,9 @@ class ResNet(BaseBackbone):
 
 @BACKBONES.register_module()
 class ResNetV1d(ResNet):
-    """ResNetV1d variant described in `Bag of Tricks.
+    """ResNetV1d backbone.
 
+    This variant is described in `Bag of Tricks.
     <https://arxiv.org/pdf/1812.01187.pdf>`_.
 
     Compared with default ResNet(ResNetV1b), ResNetV1d replaces the 7x7 conv in

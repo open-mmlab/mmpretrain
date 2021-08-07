@@ -1,19 +1,19 @@
+from numbers import Number
+
 import numpy as np
 import torch
 import torch.nn as nn
 
 
-def accuracy_numpy(pred, target, topk=1, thrs=None):
-    if thrs is None:
-        thrs = 0.0
-    if isinstance(thrs, float):
+def accuracy_numpy(pred, target, topk=1, thrs=0.):
+    if isinstance(thrs, Number):
         thrs = (thrs, )
         res_single = True
     elif isinstance(thrs, tuple):
         res_single = False
     else:
         raise TypeError(
-            f'thrs should be float or tuple, but got {type(thrs)}.')
+            f'thrs should be a number or tuple, but got {type(thrs)}.')
 
     res = []
     maxk = max(topk)
@@ -36,17 +36,15 @@ def accuracy_numpy(pred, target, topk=1, thrs=None):
     return res
 
 
-def accuracy_torch(pred, target, topk=1, thrs=None):
-    if thrs is None:
-        thrs = 0.0
-    if isinstance(thrs, float):
+def accuracy_torch(pred, target, topk=1, thrs=0.):
+    if isinstance(thrs, Number):
         thrs = (thrs, )
         res_single = True
     elif isinstance(thrs, tuple):
         res_single = False
     else:
         raise TypeError(
-            f'thrs should be float or tuple, but got {type(thrs)}.')
+            f'thrs should be a number or tuple, but got {type(thrs)}.')
 
     res = []
     maxk = max(topk)
@@ -68,7 +66,7 @@ def accuracy_torch(pred, target, topk=1, thrs=None):
     return res
 
 
-def accuracy(pred, target, topk=1, thrs=None):
+def accuracy(pred, target, topk=1, thrs=0.):
     """Calculate accuracy according to the prediction and target.
 
     Args:
@@ -77,18 +75,15 @@ def accuracy(pred, target, topk=1, thrs=None):
         topk (int | tuple[int]): If the predictions in ``topk``
             matches the target, the predictions will be regarded as
             correct ones. Defaults to 1.
-        thrs (float, optional): thrs (float | tuple[float], optional):
-            Predictions with scores under the thresholds are considered
-            negative. Default to None.
+        thrs (Number | tuple[Number], optional): Predictions with scores under
+            the thresholds are considered negative. Default to 0.
 
     Returns:
-        float | list[float] | list[list[float]]: If the input ``topk`` is a
-            single integer, the function will return a single float or a list
-            depending on whether ``thrs`` is a single float. If the input
-            ``topk`` is a tuple, the function will return a list of results
-            of accuracies of each ``topk`` number. That is to say, as long as
-            ``topk`` is a tuple, the returned list shall be of the same length
-            as topk.
+        float | list[float] | list[list[float]]: Accuracy
+            - float: If both ``topk`` and ``thrs`` is a single value.
+            - list[float]: If one of ``topk`` or ``thrs`` is a tuple.
+            - list[list[float]]: If both ``topk`` and ``thrs`` is a tuple. \
+                And the first dim is ``topk``, the second dim is ``thrs``.
     """
     assert isinstance(topk, (int, tuple))
     if isinstance(topk, int):

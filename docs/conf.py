@@ -46,7 +46,7 @@ extensions = [
     'sphinx_markdown_tables',
 ]
 
-autodoc_mock_imports = ['mmcls.version']
+autodoc_mock_imports = ['matplotlib', 'mmcls.version', 'mmcv.ops']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -70,9 +70,31 @@ html_theme = 'sphinx_rtd_theme'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+# html_static_path = ['_static']
 
 master_doc = 'index'
+
+latex_elements = {
+    # Additional stuff for the LaTeX preamble.
+    # 'preamble': '',
+    'preamble':
+    r'''
+\hypersetup{unicode=true}
+\usepackage{CJKutf8}
+\DeclareUnicodeCharacter{00A0}{\nobreakspace}
+\DeclareUnicodeCharacter{2203}{\ensuremath{\exists}}
+\DeclareUnicodeCharacter{2200}{\ensuremath{\forall}}
+\DeclareUnicodeCharacter{2286}{\ensuremath{\subseteq}}
+\DeclareUnicodeCharacter{2713}{x}
+\DeclareUnicodeCharacter{27FA}{\ensuremath{\Longleftrightarrow}}
+\DeclareUnicodeCharacter{221A}{\ensuremath{\sqrt{}}}
+\DeclareUnicodeCharacter{221B}{\ensuremath{\sqrt[3]{}}}
+\DeclareUnicodeCharacter{2295}{\ensuremath{\oplus}}
+\DeclareUnicodeCharacter{2297}{\ensuremath{\otimes}}
+\begin{CJK}{UTF8}{gbsn}
+\AtEndDocument{\end{CJK}}
+''',
+}
 
 
 def builder_inited_handler(app):

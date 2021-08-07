@@ -219,8 +219,9 @@ class RegNet(ResNet):
             divisor (int): The divisor of channels. Defaults to 8.
 
         Returns:
-            list, int: return a list of widths of each stage and the number of
-                stages
+            tuple: tuple containing:
+                - list: Widths of each stage.
+                - int: The number of stages.
         """
         assert width_slope >= 0
         assert initial_width > 0

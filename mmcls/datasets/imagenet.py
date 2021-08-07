@@ -49,11 +49,8 @@ def get_samples(root, folder_to_idx, extensions):
     """
     samples = []
     root = os.path.expanduser(root)
-    for folder_name in sorted(os.listdir(root)):
+    for folder_name in sorted(list(folder_to_idx.keys())):
         _dir = os.path.join(root, folder_name)
-        if not os.path.isdir(_dir):
-            continue
-
         for _, _, fns in sorted(os.walk(_dir)):
             for fn in sorted(fns):
                 if has_file_allowed_extension(fn, extensions):
@@ -68,8 +65,8 @@ class ImageNet(BaseDataset):
     """`ImageNet <http://www.image-net.org>`_ Dataset.
 
     This implementation is modified from
-    https://github.com/pytorch/vision/blob/master/torchvision/datasets/imagenet.py  # noqa: E501
-    """
+    https://github.com/pytorch/vision/blob/master/torchvision/datasets/imagenet.py
+    """  # noqa: E501
 
     IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif')
     CLASSES = [
@@ -1091,7 +1088,7 @@ class ImageNet(BaseDataset):
             self.folder_to_idx = folder_to_idx
         elif isinstance(self.ann_file, str):
             with open(self.ann_file) as f:
-                samples = [x.strip().split(' ') for x in f.readlines()]
+                samples = [x.strip().rsplit(' ', 1) for x in f.readlines()]
         else:
             raise TypeError('ann_file must be a str or None')
         self.samples = samples

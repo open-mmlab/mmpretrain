@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.utils.checkpoint as cp
 from mmcv.cnn import (ConvModule, build_activation_layer, constant_init,
                       normal_init)
+from mmcv.runner import BaseModule
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from mmcls.models.utils import channel_shuffle, make_divisible
@@ -10,7 +11,7 @@ from ..builder import BACKBONES
 from .base_backbone import BaseBackbone
 
 
-class ShuffleUnit(nn.Module):
+class ShuffleUnit(BaseModule):
     """ShuffleUnit block.
 
     ShuffleNet unit with pointwise group convolution (GConv) and channel
@@ -22,7 +23,7 @@ class ShuffleUnit(nn.Module):
         groups (int): The number of groups to be used in grouped 1x1
             convolutions in each ShuffleUnit. Default: 3
         first_block (bool): Whether it is the first ShuffleUnit of a
-            sequential ShuffleUnits. Default: False, which means not using the
+            sequential ShuffleUnits. Default: True, which means not using the
             grouped 1x1 convolution.
         combine (str): The ways to combine the input and output
             branches. Default: 'add'.
@@ -184,6 +185,7 @@ class ShuffleNetV1(BaseBackbone):
                  with_cp=False,
                  init_cfg=None):
         super(ShuffleNetV1, self).__init__(init_cfg)
+        self.init_cfg = init_cfg
         self.stage_blocks = [4, 8, 4]
         self.groups = groups
 
@@ -250,6 +252,12 @@ class ShuffleNetV1(BaseBackbone):
 
     def init_weights(self):
         super(ShuffleNetV1, self).init_weights()
+
+        if (isinstance(self.init_cfg, dict)
+                and self.init_cfg['type'] == 'Pretrained'):
+            # Suppress default init if use pretrained model.
+            return
+
         for name, m in self.named_modules():
             if isinstance(m, nn.Conv2d):
                 if 'conv1' in name:
@@ -257,7 +265,7 @@ class ShuffleNetV1(BaseBackbone):
                 else:
                     normal_init(m, mean=0, std=1.0 / m.weight.shape[1])
             elif isinstance(m, (_BatchNorm, nn.GroupNorm)):
-                constant_init(m.weight, val=1, bias=0.0001)
+                constant_init(m, val=1, bias=0.0001)
                 if isinstance(m, _BatchNorm):
                     if m.running_mean is not None:
                         nn.init.constant_(m.running_mean, 0)
@@ -269,7 +277,7 @@ class ShuffleNetV1(BaseBackbone):
             out_channels (int): out_channels of the block.
             num_blocks (int): Number of blocks.
             first_block (bool): Whether is the first ShuffleUnit of a
-                sequential ShuffleUnits. Default: False, which means not using
+                sequential ShuffleUnits. Default: False, which means using
                 the grouped 1x1 convolution.
         """
         layers = []

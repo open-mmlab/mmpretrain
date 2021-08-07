@@ -89,6 +89,7 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
     @classmethod
     def get_classes(cls, classes=None):
         """Get class names of current dataset.
+
         Args:
             classes (Sequence[str] | str | None): If classes is None, use
                 default CLASSES defined by builtin dataset. If classes is a
@@ -156,7 +157,10 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         average_mode = metric_options.get('average_mode', 'macro')
 
         if 'accuracy' in metrics:
-            acc = accuracy(results, gt_labels, topk=topk, thrs=thrs)
+            if thrs is not None:
+                acc = accuracy(results, gt_labels, topk=topk, thrs=thrs)
+            else:
+                acc = accuracy(results, gt_labels, topk=topk)
             if isinstance(topk, tuple):
                 eval_results_ = {
                     f'accuracy_top-{k}': a
@@ -182,8 +186,12 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
 
         precision_recall_f1_keys = ['precision', 'recall', 'f1_score']
         if len(set(metrics) & set(precision_recall_f1_keys)) != 0:
-            precision_recall_f1_values = precision_recall_f1(
-                results, gt_labels, average_mode=average_mode, thrs=thrs)
+            if thrs is not None:
+                precision_recall_f1_values = precision_recall_f1(
+                    results, gt_labels, average_mode=average_mode, thrs=thrs)
+            else:
+                precision_recall_f1_values = precision_recall_f1(
+                    results, gt_labels, average_mode=average_mode)
             for key, values in zip(precision_recall_f1_keys,
                                    precision_recall_f1_values):
                 if key in metrics:
