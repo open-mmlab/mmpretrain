@@ -1,3 +1,4 @@
+import copy
 import os.path as osp
 import xml.etree.ElementTree as ET
 
@@ -23,6 +24,38 @@ class VOC(MultiLabelDataset):
             self.year = 2007
         else:
             raise ValueError('Cannot infer dataset year from img_prefix.')
+
+    def get_gt_labels(self):
+        """Get all ground-truth labels (categories).
+
+        Returns:
+            torch.Tensor: ground truth labels for all images.
+        """
+
+        return self.data_infos['all_gt_labels'].numpy()
+
+    def get_cat_ids(self, idx):
+        """Get category ids by index.
+
+        Args:
+            idx (int): Index of data.
+
+        Returns:
+            torch.Tensor: Image categories of specified index.
+        """
+        gt_label_index = self.data_infos['samples'][idx]['gt_label_index']
+        gt_label = self.data_infos['all_gt_labels'][gt_label_index]
+        cat_ids = torch.where(gt_label == 1)[0]
+        return cat_ids
+
+    def __len__(self):
+        return len(self.data_infos['samples'])
+
+    def prepare_data(self, idx):
+        results = copy.deepcopy(self.data_infos['samples'][idx])
+        gt_label_index = results.pop('gt_label_index')
+        results['gt_label'] = self.data_infos['all_gt_labels'][gt_label_index]
+        return self.pipeline(results)
 
     def load_annotations(self):
         """Load annotations.
