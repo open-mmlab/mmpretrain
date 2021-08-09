@@ -5,4 +5,4 @@ _base_ = [
 ]
 
 # precise bn
-precise_bn = dict(num_iters=200, interval=1)
+precise_bn = dict(num_items=8192, interval=1)

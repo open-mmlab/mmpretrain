@@ -58,12 +58,12 @@ def scaled_all_reduce(tensors, NUM_GPUS):
 
 @torch.no_grad()
 def update_bn_stats(model,
-                    loaders,    
+                    loaders,
                     NUM_GPUS,
                     NUM_SAMPLES_PRECISE=8192,
                     logger=None):
     """Computes precise BN stats on training data.
-    
+
     the actual num_items is :
       int(NUM_SAMPLES_PRECISE / batch_size / NUM_GPUS) * batch_size * NUM_GPUS
 
@@ -74,7 +74,6 @@ def update_bn_stats(model,
         num_items (int): Number of iterations to update the bn stats.
             Default: 8192.
         logger : the logger.
-    
     """
 
     if is_parallel_module(model):
@@ -144,13 +143,14 @@ class PreciseBNHook(Hook):
     """
 
     def __init__(self, dataloaders, num_gpus, num_items=8192, interval=1):
-        assert len(dataloaders) >= 0, "dataloaders is empty..."
+        assert len(dataloaders) >= 0, 'dataloaders is empty...'
         if not isinstance(dataloaders, list):
-            raise TypeError('dataloaders must be a List ,but got', 
+            raise TypeError('dataloaders must be a List ,but got',
                             f' {type(dataloaders)}')
         if not isinstance(dataloaders[0], DataLoader):
-            raise TypeError('dataloaders must be a Pytorch Dataloader ,but got', 
-                            f' {type(dataloaders)}')
+            raise TypeError(
+                'dataloaders must be a Pytorch Dataloader ,but got',
+                f' {type(dataloaders)}')
         self.dataloaders = dataloaders
         self.interval = interval
         self.num_items = num_items
@@ -169,7 +169,7 @@ class PreciseBNHook(Hook):
                 self.num_items,
                 self.BUM_GPUS,
                 logger=runner.logger)
-            print_log('Finish Precise BN, BN stats updated..', 
-                    logger=runner.logger)
+            print_log(
+                'Finish Precise BN, BN stats updated..', logger=runner.logger)
             # sleep to avoid possible deadlock
             time.sleep(2.)
