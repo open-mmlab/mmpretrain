@@ -1,17 +1,13 @@
-# Adapted from https://github.com/facebookresearch/fvcore/blob/master/fvcore/nn/precise_bn.py  # noqa: E501
+# Adapted from https://github.com/facebookresearch/pycls/blob/f8cd962737e33ce9e19b3083a33551da95c2d9c0/pycls/core/net.py  # noqa: E501
 # Original licence: Copyright (c) 2019 Facebook, Inc under the Apache License 2.0  # noqa: E501
 
 import logging
 import time
 
-import mmcv
 import torch
 from mmcv.parallel import MMDistributedDataParallel
 from mmcv.runner import Hook
 from mmcv.utils import print_log
-from torch.nn import GroupNorm
-from torch.nn.modules.batchnorm import _BatchNorm
-from torch.nn.modules.instancenorm import _InstanceNorm
 from torch.nn.parallel import DataParallel, DistributedDataParallel
 from torch.utils.data import DataLoader
 
@@ -35,39 +31,50 @@ def is_parallel_module(module):
         return False
 
 
-@torch.no_grad()
-def update_bn_stats(model, data_loader, num_iters=200, logger=None):
-    """Recompute and update the batch norm stats to make them more precise.
+def scaled_all_reduce(tensors, NUM_GPUS):
+    """Performs the scaled all_reduce operation on the provided tensors.
 
-    During
-    training both BN stats and the weight are changing after every iteration,
-    so the running average can not precisely reflect the actual stats of the
-    current model.
-    In this function, the BN stats are recomputed with fixed weights, to make
-    the running average more precise. Specifically, it computes the true
-    average of per-batch mean/variance instead of the running average.
-    Args:
-        model (nn.Module): The model whose bn stats will be recomputed.
-        data_loader (iterator): The DataLoader iterator.
-        num_iters (int): number of iterations to compute the stats.
-        logger (:obj:`logging.Logger` | None): Logger for logging.
-            Default: None.
+    The input tensors are modified in-place. Currently supports only the sum
+    reduction operator. The reduced values are scaled by the inverse size of
+    the process group (equivalent to cfg.NUM_GPUS).
     """
+    # There is no need for reduction in the single-proc case
+    if NUM_GPUS == 1:
+        return tensors
+    # Queue the reductions
+    reductions = []
+    for tensor in tensors:
+        reduction = torch.distributed.all_reduce(tensor, async_op=True)
+        reductions.append(reduction)
+    # Wait for reductions to finish
+    for reduction in reductions:
+        reduction.wait()
+    # Scale the results
+    for tensor in tensors:
+        tensor.mul_(1.0 / NUM_GPUS)
+    return tensors
 
-    model.train()
 
-    assert len(data_loader) >= num_iters, (
-        f'length of dataloader {len(data_loader)} must be greater than '
-        f'iteration number {num_iters}')
+@torch.no_grad()
+def update_bn_stats(model,
+                    loaders,
+                    NUM_SAMPLES_PRECISE,
+                    NUM_GPUS,
+                    logger=None):
+    """Computes precise BN stats on training data."""
 
     if is_parallel_module(model):
         parallel_module = model
         model = model.module
     else:
         parallel_module = model
-    # Finds all the bn layers with training=True.
+
+    # Compute the number of minibatches to use
+    num_iter = int(NUM_SAMPLES_PRECISE / loaders.batch_size / NUM_GPUS)
+    num_iter = min(num_iter, sum([len(loader) for loader in loaders]))
+    # Retrieve the BN layers
     bn_layers = [
-        m for m in model.modules() if m.training and isinstance(m, _BatchNorm)
+        m for m in model.modules() if isinstance(m, torch.nn.BatchNorm2d)
     ]
 
     if len(bn_layers) == 0:
@@ -75,81 +82,71 @@ def update_bn_stats(model, data_loader, num_iters=200, logger=None):
         return
     print_log(f'{len(bn_layers)} BN found', logger=logger)
 
-    # Finds all the other norm layers with training=True.
-    for m in model.modules():
-        if m.training and isinstance(m, (_InstanceNorm, GroupNorm)):
-            print_log(
-                'IN/GN stats will be updated like training.',
-                logger=logger,
-                level=logging.WARNING)
-
-    # In order to make the running stats only reflect the current batch, the
-    # momentum is disabled.
-    # bn.running_mean = (1 - momentum) * bn.running_mean + momentum *
-    # batch_mean
-    # Setting the momentum to 1.0 to compute the stats without momentum.
-    momentum_actual = [bn.momentum for bn in bn_layers]  # pyre-ignore
+    # Initialize BN stats storage for computing
+    # mean(mean(batch)) and mean(var(batch))
+    running_means = [torch.zeros_like(bn.running_mean) for bn in bn_layers]
+    running_vars = [torch.zeros_like(bn.running_var) for bn in bn_layers]
+    # Remember momentum values
+    momentums = [bn.momentum for bn in bn_layers]
+    # Set momentum to 1.0 to compute BN stats that reflect the current batch
     for bn in bn_layers:
         bn.momentum = 1.0
-
-    # Note that running_var actually means "running average of variance"
-    running_mean = [torch.zeros_like(bn.running_mean) for bn in bn_layers]
-    running_var = [torch.zeros_like(bn.running_var) for bn in bn_layers]
-
-    finish_before_loader = False
-    prog_bar = mmcv.ProgressBar(len(data_loader))
-    for ind, data in enumerate(data_loader):
-        with torch.no_grad():
-            parallel_module(**data, return_loss=False)
-        prog_bar.update()
-        for i, bn in enumerate(bn_layers):
-            # Accumulates the bn stats.
-            running_mean[i] += (bn.running_mean - running_mean[i]) / (ind + 1)
-            # running var is actually
-            running_var[i] += (bn.running_var - running_var[i]) / (ind + 1)
-
-        if (ind + 1) >= num_iters:
-            finish_before_loader = True
+    # Average the BN stats for each BN layer over the batches
+    count = 0
+    finish = False
+    for loader in loaders:
+        for data in loader:
+            parallel_module(**data)
+            for i, bn in enumerate(bn_layers):
+                running_means[i] += bn.running_mean / num_iter
+                running_vars[i] += bn.running_var / num_iter
+            count += 1
+            if count >= num_iter:
+                finish = True
+                break
+        if finish:
             break
-    assert finish_before_loader, 'Dataloader stopped before ' \
-                                 f'iteration {num_iters}'
-
+    # Sync BN stats across GPUs (no reduction if 1 GPU used)
+    running_means = scaled_all_reduce(running_means, NUM_GPUS)
+    running_vars = scaled_all_reduce(running_vars, NUM_GPUS)
+    # Set BN stats and restore original momentum values
     for i, bn in enumerate(bn_layers):
-        # Sets the precise bn stats.
-        bn.running_mean = running_mean[i]
-        bn.running_var = running_var[i]
-        bn.momentum = momentum_actual[i]
+        bn.running_mean = running_means[i]
+        bn.running_var = running_vars[i]
+        bn.momentum = momentums[i]
 
 
 class PreciseBNHook(Hook):
     """Precise BN hook.
 
     Attributes:
-        dataloader (DataLoader): A PyTorch dataloader.
-        num_iters (int): Number of iterations to update the bn stats.
-            Default: 200.
+        dataloaders (DataLoader): A List of PyTorch dataloader.
+        num_items (int): Number of iterations to update the bn stats.
+            Default: 8192.
         interval (int): Perform precise bn interval (by epochs). Default: 1.
     """
 
-    def __init__(self, dataloader, num_iters=200, interval=1):
-        if not isinstance(dataloader, DataLoader):
+    def __init__(self, dataloaders, num_gpus, num_items=8192, interval=1):
+        if not isinstance(dataloaders, DataLoader):
             raise TypeError('dataloader must be a pytorch DataLoader, but got'
-                            f' {type(dataloader)}')
-        self.dataloader = dataloader
+                            f' {type(dataloaders)}')
+        self.dataloaders = dataloaders
         self.interval = interval
-        self.num_iters = num_iters
+        self.num_items = num_items
+        self.BUM_GPUS = num_gpus
 
     def after_train_epoch(self, runner):
         if self.every_n_epochs(runner, self.interval):
             # sleep to avoid possible deadlock
             time.sleep(2.)
             print_log(
-                f'Running Precise BN for {self.num_iters} iterations',
+                f'Running Precise BN for {self.num_items} iterations',
                 logger=runner.logger)
             update_bn_stats(
                 runner.model,
-                self.dataloader,
-                self.num_iters,
+                self.dataloaders,
+                self.num_items,
+                self.BUM_GPUS,
                 logger=runner.logger)
             print_log('BN stats updated', logger=runner.logger)
             # sleep to avoid possible deadlock

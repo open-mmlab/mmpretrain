@@ -139,7 +139,7 @@ def train_model(model,
 
     # precise bn setting
     if cfg.get('precise_bn', False):
-        precise_bn_hook = PreciseBNHook(data_loaders[0],
+        precise_bn_hook = PreciseBNHook(data_loaders, len(cfg.gpu_ids),
                                         **cfg.get('precise_bn'))
         runner.register_hook(precise_bn_hook, priority='ABOVE_NORMAL')
 
