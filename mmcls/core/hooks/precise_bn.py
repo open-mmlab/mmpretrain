@@ -4,6 +4,7 @@
 import logging
 import time
 
+import mmcv
 import torch
 from mmcv.parallel import MMDistributedDataParallel
 from mmcv.runner import Hook
@@ -36,7 +37,7 @@ def scaled_all_reduce(tensors, NUM_GPUS):
 
     The input tensors are modified in-place. Currently supports only the sum
     reduction operator. The reduced values are scaled by the inverse size of
-    the process group (equivalent to cfg.NUM_GPUS).
+    the process group .
     """
     # There is no need for reduction in the single-proc case
     if NUM_GPUS == 1:
@@ -57,11 +58,24 @@ def scaled_all_reduce(tensors, NUM_GPUS):
 
 @torch.no_grad()
 def update_bn_stats(model,
-                    loaders,
-                    NUM_SAMPLES_PRECISE,
+                    loaders,    
                     NUM_GPUS,
+                    NUM_SAMPLES_PRECISE=8192,
                     logger=None):
-    """Computes precise BN stats on training data."""
+    """Computes precise BN stats on training data.
+    
+    the actual num_items is :
+      int(NUM_SAMPLES_PRECISE / batch_size / NUM_GPUS) * batch_size * NUM_GPUS
+
+    Attributes:
+        model (): A pytorch NN model.
+        loaders (List[DataLoader]): A List of PyTorch dataloader.
+        num_gpus (int): Number of GPUs of whole exp.
+        num_items (int): Number of iterations to update the bn stats.
+            Default: 8192.
+        logger : the logger.
+    
+    """
 
     if is_parallel_module(model):
         parallel_module = model
@@ -70,7 +84,7 @@ def update_bn_stats(model,
         parallel_module = model
 
     # Compute the number of minibatches to use
-    num_iter = int(NUM_SAMPLES_PRECISE / loaders.batch_size / NUM_GPUS)
+    num_iter = int(NUM_SAMPLES_PRECISE / loaders[0].batch_size / NUM_GPUS)
     num_iter = min(num_iter, sum([len(loader) for loader in loaders]))
     # Retrieve the BN layers
     bn_layers = [
@@ -92,6 +106,7 @@ def update_bn_stats(model,
     for bn in bn_layers:
         bn.momentum = 1.0
     # Average the BN stats for each BN layer over the batches
+    prog_bar = mmcv.ProgressBar(num_iter)
     count = 0
     finish = False
     for loader in loaders:
@@ -101,6 +116,7 @@ def update_bn_stats(model,
                 running_means[i] += bn.running_mean / num_iter
                 running_vars[i] += bn.running_var / num_iter
             count += 1
+            prog_bar.update()
             if count >= num_iter:
                 finish = True
                 break
@@ -121,14 +137,19 @@ class PreciseBNHook(Hook):
 
     Attributes:
         dataloaders (DataLoader): A List of PyTorch dataloader.
+        num_gpus (int): Number of GPUs of whole exp.
         num_items (int): Number of iterations to update the bn stats.
             Default: 8192.
         interval (int): Perform precise bn interval (by epochs). Default: 1.
     """
 
     def __init__(self, dataloaders, num_gpus, num_items=8192, interval=1):
-        if not isinstance(dataloaders, DataLoader):
-            raise TypeError('dataloader must be a pytorch DataLoader, but got'
+        assert len(dataloaders) >= 0, "dataloaders is empty..."
+        if not isinstance(dataloaders, list):
+            raise TypeError('dataloaders must be a List ,but got', 
+                            f' {type(dataloaders)}')
+        if not isinstance(dataloaders[0], DataLoader):
+            raise TypeError('dataloaders must be a Pytorch Dataloader ,but got', 
                             f' {type(dataloaders)}')
         self.dataloaders = dataloaders
         self.interval = interval
@@ -140,7 +161,7 @@ class PreciseBNHook(Hook):
             # sleep to avoid possible deadlock
             time.sleep(2.)
             print_log(
-                f'Running Precise BN for {self.num_items} iterations',
+                f'Running Precise BN for {self.num_items} items...',
                 logger=runner.logger)
             update_bn_stats(
                 runner.model,
@@ -148,6 +169,7 @@ class PreciseBNHook(Hook):
                 self.num_items,
                 self.BUM_GPUS,
                 logger=runner.logger)
-            print_log('BN stats updated', logger=runner.logger)
+            print_log('Finish Precise BN, BN stats updated..', 
+                    logger=runner.logger)
             # sleep to avoid possible deadlock
             time.sleep(2.)
