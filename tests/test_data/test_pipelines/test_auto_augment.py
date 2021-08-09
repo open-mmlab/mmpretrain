@@ -781,7 +781,7 @@ def test_equalize(nb_rand_test=100):
     transform = dict(type='Equalize', prob=1.)
     pipeline = build_from_cfg(transform, PIPELINES)
     for _ in range(nb_rand_test):
-        img = np.clip(np.random.normal(0, 1, (1000, 1200, 3)) * 260, 0,
+        img = np.clip(np.random.normal(0, 1, (256, 256, 3)) * 260, 0,
                       255).astype(np.uint8)
         results['img'] = img
         results = pipeline(copy.deepcopy(results))
@@ -980,7 +980,7 @@ def test_contrast(nb_rand_test=100):
             prob=1.,
             random_negative_prob=0.)
         pipeline = build_from_cfg(transform, PIPELINES)
-        img = np.clip(np.random.uniform(0, 1, (1200, 1000, 3)) * 260, 0,
+        img = np.clip(np.random.uniform(0, 1, (256, 256, 3)) * 260, 0,
                       255).astype(np.uint8)
         results['img'] = img
         results = pipeline(copy.deepcopy(results))
@@ -1111,7 +1111,7 @@ def test_brightness(nb_rand_test=100):
             prob=1.,
             random_negative_prob=0.)
         pipeline = build_from_cfg(transform, PIPELINES)
-        img = np.clip(np.random.uniform(0, 1, (1200, 1000, 3)) * 260, 0,
+        img = np.clip(np.random.uniform(0, 1, (256, 256, 3)) * 260, 0,
                       255).astype(np.uint8)
         results['img'] = img
         results = pipeline(copy.deepcopy(results))
@@ -1173,7 +1173,7 @@ def test_sharpness(nb_rand_test=100):
             prob=1.,
             random_negative_prob=0.)
         pipeline = build_from_cfg(transform, PIPELINES)
-        img = np.clip(np.random.uniform(0, 1, (1200, 1000, 3)) * 260, 0,
+        img = np.clip(np.random.uniform(0, 1, (256, 256, 3)) * 260, 0,
                       255).astype(np.uint8)
         results['img'] = img
         results = pipeline(copy.deepcopy(results))
