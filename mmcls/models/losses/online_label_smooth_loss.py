@@ -1,13 +1,14 @@
 r"""
-This is an implementation of online label smooth (OLS) loss from: `Delving Deep into Label Smoothing`
+This is an implementation of online label smooth (OLS)
+loss from: `Delving Deep into Label Smoothing`
 """
 
 import torch
-from torch import nn
 import torch.nn.functional as F
+from mmcv.runner import HOOKS, Hook
+from torch import nn
 from torch.nn.parallel.distributed import DistributedDataParallel
 
-from mmcv.runner import Hook, HOOKS
 from ..builder import LOSSES
 
 
@@ -21,6 +22,7 @@ class OnlineLabelSmoothLoss(nn.Module):
         num_classes (int): the number of classes for classfication task.
         lambda_ols (float): the weight factor for soft label loss.
     """
+
     def __init__(self, origin_loss, num_classes, lambda_ols=0.5):
         super(OnlineLabelSmoothLoss, self).__init__()
 
@@ -29,14 +31,17 @@ class OnlineLabelSmoothLoss(nn.Module):
         self.num_classes = num_classes
         self.lambda_ols = lambda_ols
 
-        self.soft_labels = torch.zeros(num_classes, num_classes, dtype=torch.float32).cuda()
+        self.soft_labels = torch.zeros(
+            num_classes, num_classes, dtype=torch.float32).cuda()
         self.soft_labels[:, :] = 1. / num_classes
         self.soft_labels.requires_grad = False
         self.reset_label_accumulator()
 
     def reset_label_accumulator(self):
-        self.soft_labels_update = torch.zeros(self.num_classes, self.num_classes, dtype=torch.float32).cuda()
-        self.correct_labels_cnt = torch.zeros(self.num_classes, dtype=torch.float32).cuda()
+        self.soft_labels_update = torch.zeros(
+            self.num_classes, self.num_classes, dtype=torch.float32).cuda()
+        self.correct_labels_cnt = torch.zeros(
+            self.num_classes, dtype=torch.float32).cuda()
         self.soft_labels_update.requires_grad = False
         self.correct_labels_cnt.requires_grad = False
 
@@ -45,7 +50,8 @@ class OnlineLabelSmoothLoss(nn.Module):
             if self.correct_labels_cnt[class_idx].max() < 0.5:
                 self.soft_labels[class_idx] = 1. / self.num_classes
             else:
-                self.soft_labels[class_idx] = self.soft_labels_update[class_idx] / self.correct_labels_cnt[class_idx]
+                self.soft_labels[class_idx] = self.soft_labels_update[
+                    class_idx] / self.correct_labels_cnt[class_idx]
         self.reset_label_accumulator()
 
     def update_soft_label(self, input, target):
@@ -76,16 +82,17 @@ class OnlineLabelSmoothLoss(nn.Module):
 
 @HOOKS.register_module()
 class OLSHook(Hook):
-    r"""
-    OLS is implemented in the form of custom hook. To activate OLS, please add the following cfg:
-    ``` python
-    custom_hooks = dict(
-        type='OLSHook',
-        priority='NORMAL',
-        lambda_ols=0.5,
-    )
-    ```
+    r""" OLS is implemented in the form of custom hook.
+         To activate OLS, please add the following cfg:
+         ``` python
+        custom_hooks = dict(
+            type='OLSHook',
+            priority='NORMAL',
+            lambda_ols=0.5,
+        )
+        ```
     """
+
     def __init__(self, lambda_ols=0.5):
         self.lambda_ols = lambda_ols
         self.ols_loss = None

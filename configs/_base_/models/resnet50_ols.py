@@ -15,8 +15,4 @@ model = dict(
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
         topk=(1, 5),
     ))
-custom_hooks = dict(
-    type='OLSHook',
-    priority='NORMAL',
-    lambda_ols=0.5
-)
+custom_hooks = dict(type='OLSHook', priority='NORMAL', lambda_ols=0.5)
