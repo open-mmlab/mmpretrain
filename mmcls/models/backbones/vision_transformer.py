@@ -115,6 +115,8 @@ class VisionTransformer(BaseBackbone):
         drop_path_rate (float): stochastic depth rate. Default 0.0
         norm_cfg (dict): Config dict for normalization layer. Default
             layer normalization
+        output_cls_token (bool): Whether output the cls_token. If set True,
+            `with_cls_token` must be True. Default: True.
         patch_cfg (dict): TODO
         layer_cfg (dict): TODO
         init_cfg (dict, optional): Initialization config dict
@@ -151,6 +153,7 @@ class VisionTransformer(BaseBackbone):
                  drop_rate=0.,
                  drop_path_rate=0.,
                  norm_cfg=dict(type='LN', eps=1e-6),
+                 output_cls_token=True,
                  patch_cfg=dict(),
                  layer_cfg=dict(),
                  init_cfg=None):
@@ -181,6 +184,7 @@ class VisionTransformer(BaseBackbone):
         self.patch_embed = PatchEmbed(**_patch_cfg)
         num_patches = self.patch_embed.num_patches
 
+        self.output_cls_token = output_cls_token
         self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dims))
         self.pos_embed = nn.Parameter(
             torch.zeros(1, num_patches + 1, self.embed_dims))
@@ -222,6 +226,7 @@ class VisionTransformer(BaseBackbone):
     def forward(self, x):
         B = x.shape[0]
         x = self.patch_embed(x)
+        patch_resolution = self.patch_embed.patches_resolution
 
         # stole cls_tokens impl from Phil Wang, thanks
         cls_tokens = self.cls_token.expand(B, -1, -1)
@@ -232,6 +237,15 @@ class VisionTransformer(BaseBackbone):
         for layer in self.layers:
             x = layer(x)
 
-        x = self.norm1(x)[:, 0]
+        x = self.norm1(x)
 
-        return x
+        B, _, C = x.shape
+        patch_token = x[:, 1:].reshape(B, *patch_resolution, C)
+        cls_token = x[:, 0]
+
+        if self.output_cls_token:
+            out = [patch_token, cls_token]
+        else:
+            out = patch_token
+
+        return (out, )

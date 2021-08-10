@@ -67,9 +67,11 @@ class VisionTransformerClsHead(ClsHead):
             nn.init.zeros_(self.layers.pre_logits.bias)
         constant_init(self.layers.head, 0)
 
-    def simple_test(self, img):
+    def simple_test(self, x):
         """Test without augmentation."""
-        cls_score = self.layers(img)
+        x = x[-1]
+        _, cls_token = x
+        cls_score = self.layers(cls_token)
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
         pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
@@ -77,6 +79,8 @@ class VisionTransformerClsHead(ClsHead):
         return self.post_process(pred)
 
     def forward_train(self, x, gt_label):
-        cls_score = self.layers(x)
+        x = x[-1]
+        _, cls_token = x
+        cls_score = self.layers(cls_token)
         losses = self.loss(cls_score, gt_label)
         return losses
