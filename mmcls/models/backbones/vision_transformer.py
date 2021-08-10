@@ -159,8 +159,8 @@ class VisionTransformer(BaseBackbone):
                  init_cfg=None):
         super(VisionTransformer, self).__init__(init_cfg)
 
-        arch = arch.lower()
         if isinstance(arch, str):
+            arch = arch.lower()
             assert arch in set(self.arch_zoo), \
                 f'Arch {arch} is not in default archs {set(self.arch_zoo)}'
             self.arch_settings = self.arch_zoo[arch]

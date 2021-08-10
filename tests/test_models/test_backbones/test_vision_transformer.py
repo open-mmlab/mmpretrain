@@ -1,6 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from copy import deepcopy
+
+import pytest
 import torch
-from mmcv import Config
 from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 
@@ -25,14 +27,11 @@ def check_norm_state(modules, train_state):
 
 def test_vit_backbone():
 
-    model = dict(
+    cfg_ori = dict(
         arch='b',
         img_size=224,
         patch_size=16,
-        in_channels=3,
         drop_rate=0.1,
-        attn_drop_rate=0.,
-        hybrid_backbone=None,
         init_cfg=[
             dict(
                 type='Kaiming',
@@ -40,16 +39,45 @@ def test_vit_backbone():
                 mode='fan_in',
                 nonlinearity='linear')
         ])
-    cfg = Config(model)
+
+    with pytest.raises(AssertionError):
+        # test invalid arch
+        cfg = deepcopy(cfg_ori)
+        cfg['arch'] = 'unknown'
+        VisionTransformer(**cfg)
+
+    with pytest.raises(AssertionError):
+        # test arch without essential keys
+        cfg = deepcopy(cfg_ori)
+        cfg['arch'] = {
+            'num_layers': 24,
+            'num_heads': 16,
+            'feedforward_channels': 4096
+        }
+        VisionTransformer(**cfg)
 
     # Test ViT base model with input size of 224
     # and patch size of 16
-    model = VisionTransformer(**cfg)
+    model = VisionTransformer(**cfg_ori)
     model.init_weights()
     model.train()
 
     assert check_norm_state(model.modules(), True)
 
     imgs = torch.randn(3, 3, 224, 224)
-    feat = model(imgs)
-    assert feat.shape == torch.Size((3, 768))
+    patch_token, cls_token = model(imgs)[-1]
+    assert cls_token.shape == (3, 768)
+    assert patch_token.shape == (3, 14, 14, 768)
+
+    # Test custom arch ViT without output cls token
+    cfg = deepcopy(cfg_ori)
+    cfg['arch'] = {
+        'embed_dims': 128,
+        'num_layers': 24,
+        'num_heads': 16,
+        'feedforward_channels': 1024
+    }
+    cfg['output_cls_token'] = False
+    model = VisionTransformer(**cfg)
+    patch_token = model(imgs)[-1]
+    assert patch_token.shape == (3, 14, 14, 128)
