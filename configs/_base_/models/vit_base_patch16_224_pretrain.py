@@ -6,10 +6,7 @@ model = dict(
         arch='b',
         img_size=224,
         patch_size=16,
-        in_channels=3,
         drop_rate=0.1,
-        attn_drop_rate=0.,
-        hybrid_backbone=None,
         init_cfg=[
             dict(
                 type='Kaiming',
