@@ -7,7 +7,7 @@ from mmcv.runner import EpochBasedRunner, build_optimizer
 from mmcv.utils import get_logger
 from torch.utils.data import DataLoader, Dataset
 
-from mmcls.core import PreciseBNHook
+from mmcls.runner import PreciseBNHook
 
 
 class ExampleDataset(Dataset):

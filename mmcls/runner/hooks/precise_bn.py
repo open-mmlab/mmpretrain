@@ -149,7 +149,7 @@ class PreciseBNHook(Hook):
     def __init__(self, dataloaders, num_items=8192, interval=1):
         assert len(dataloaders) > 0, 'dataloaders is empty...'
         if not isinstance(dataloaders, list):
-            raise TypeError('dataloaders must be a List ,but got',
+            raise TypeError('dataloaders must be a List,but got',
                             f' {type(dataloaders)}')
         if not isinstance(dataloaders[0], DataLoader):
             raise TypeError(

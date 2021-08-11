@@ -6,8 +6,9 @@ import torch
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import DistSamplerSeedHook, build_optimizer, build_runner
 
-from mmcls.core import DistOptimizerHook, PreciseBNHook
+from mmcls.core import DistOptimizerHook
 from mmcls.datasets import build_dataloader, build_dataset
+from mmcls.runner import PreciseBNHook
 from mmcls.utils import get_root_logger
 
 # TODO import eval hooks from mmcv and delete them from mmcls

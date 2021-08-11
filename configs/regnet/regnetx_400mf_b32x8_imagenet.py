@@ -1,36 +1,23 @@
 _base_ = [
     '../_base_/models/regnet/regnetx_400mf.py',
     '../_base_/datasets/imagenet_bs32.py',
-    '../_base_/schedules/imagenet_bs1024_warmup_coslr.py',
-    '../_base_/default_runtime.py'
+    '../_base_/schedules/imagenet_bs256.py', '../_base_/default_runtime.py'
 ]
-
-# precise bn
-precise_bn = dict(num_items=8192, interval=1)
 
 # dataset settings
 dataset_type = 'ImageNet'
 
-# normalization params
-NORM_MEAN = [103.53, 116.28, 123.675]
-NORM_STD = [57.375, 57.12, 58.395]
-
-# lighting params
-EIGVAL = [0.2175, 0.0188, 0.0045]
-EIGVEC = [[-0.5675, 0.7192, 0.4009], [-0.5808, -0.0045, -0.814],
-          [-0.5836, -0.6948, 0.4203]]
+img_norm_cfg = dict(
+    # The mean and std are used in PyCls when training RegNets
+    mean=[103.53, 116.28, 123.675],
+    std=[57.375, 57.12, 58.395],
+    to_rgb=False)
 
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='RandomResizedCrop', size=224),
     dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
-    dict(
-        type='Lighting',
-        eigval=EIGVAL,
-        eigvec=EIGVEC,
-        alphastd=25.5,
-        to_rgb=True),
-    dict(type='Normalize', mean=NORM_MEAN, std=NORM_STD, to_rgb=True),
+    dict(type='Normalize', **img_norm_cfg),
     dict(type='ImageToTensor', keys=['img']),
     dict(type='ToTensor', keys=['gt_label']),
     dict(type='Collect', keys=['img', 'gt_label'])
@@ -39,13 +26,13 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='Resize', size=(256, -1)),
     dict(type='CenterCrop', crop_size=224),
-    dict(type='Normalize', mean=NORM_MEAN, std=NORM_STD, to_rgb=False),
+    dict(type='Normalize', **img_norm_cfg),
     dict(type='ImageToTensor', keys=['img']),
     dict(type='Collect', keys=['img'])
 ]
 data = dict(
-    samples_per_gpu=128,
-    workers_per_gpu=4,
+    samples_per_gpu=32,
+    workers_per_gpu=2,
     train=dict(
         type=dataset_type,
         data_prefix='data/imagenet/train',
