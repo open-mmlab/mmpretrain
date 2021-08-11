@@ -1,4 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Sequence
+
+import numpy as np
 import torch
 import torch.nn as nn
 from mmcv.cnn import build_norm_layer
@@ -110,13 +113,17 @@ class VisionTransformer(BaseBackbone):
             Default: 'b'
         img_size (int | tuple): Input image size
         patch_size (int | tuple): The patch size
+        out_indices (Sequence | int): Output from which stages.
+            Defaults to -1, means the last stage.
         drop_rate (float): Probability of an element to be zeroed.
-            Default 0.0
-        drop_path_rate (float): stochastic depth rate. Default 0.0
-        norm_cfg (dict): Config dict for normalization layer. Default
-            layer normalization
+            Defaults to 0.
+        drop_path_rate (float): stochastic depth rate. Defaults to 0.
+        norm_cfg (dict): Config dict for normalization layer. Defaults to
+            dict(type='LN')
+        final_norm (bool): Whether to add a additional layer to normalize
+            final feature map. Defaults to True.
         output_cls_token (bool): Whether output the cls_token. If set True,
-            `with_cls_token` must be True. Default: True.
+            `with_cls_token` must be True. Defaults to True.
         patch_cfg (dict): TODO
         layer_cfg (dict): TODO
         init_cfg (dict, optional): Initialization config dict
@@ -150,9 +157,11 @@ class VisionTransformer(BaseBackbone):
                  arch='b',
                  img_size=224,
                  patch_size=16,
+                 out_indices=-1,
                  drop_rate=0.,
                  drop_path_rate=0.,
                  norm_cfg=dict(type='LN', eps=1e-6),
+                 final_norm=True,
                  output_cls_token=True,
                  patch_cfg=dict(),
                  layer_cfg=dict(),
@@ -173,7 +182,9 @@ class VisionTransformer(BaseBackbone):
             self.arch_settings = arch
 
         self.embed_dims = self.arch_settings['embed_dims']
+        self.num_layers = self.arch_settings['num_layers']
 
+        # Set patch embedding
         _patch_cfg = dict(
             img_size=img_size,
             embed_dims=self.embed_dims,
@@ -184,16 +195,28 @@ class VisionTransformer(BaseBackbone):
         self.patch_embed = PatchEmbed(**_patch_cfg)
         num_patches = self.patch_embed.num_patches
 
+        # Set cls token
         self.output_cls_token = output_cls_token
         self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dims))
+
+        # Set position embedding
         self.pos_embed = nn.Parameter(
             torch.zeros(1, num_patches + 1, self.embed_dims))
         self.drop_after_pos = nn.Dropout(p=drop_rate)
 
-        dpr = [
-            x.item() for x in torch.linspace(0, drop_path_rate,
-                                             self.arch_settings['num_layers'])
-        ]  # stochastic depth decay rule
+        if isinstance(out_indices, int):
+            out_indices = [out_indices]
+        assert isinstance(out_indices, Sequence), \
+            f'"out_indices" must by a sequence or int, ' \
+            f'get {type(out_indices)} instead.'
+        for i, index in enumerate(out_indices):
+            if index < 0:
+                out_indices[i] = self.num_layers + index
+                assert out_indices[i] >= 0, f'Invalid out_indices {index}'
+        self.out_indices = out_indices
+
+        # stochastic depth decay rule
+        dpr = np.linspace(0, drop_path_rate, self.arch_settings['num_layers'])
 
         self.layers = ModuleList()
         for i in range(self.arch_settings['num_layers']):
@@ -210,9 +233,11 @@ class VisionTransformer(BaseBackbone):
             _layer_cfg.update(layer_cfg)
             self.layers.append(TransformerEncoderLayer(**_layer_cfg))
 
-        self.norm1_name, norm1 = build_norm_layer(
-            norm_cfg, self.embed_dims, postfix=1)
-        self.add_module(self.norm1_name, norm1)
+        self.final_norm = final_norm
+        if final_norm:
+            self.norm1_name, norm1 = build_norm_layer(
+                norm_cfg, self.embed_dims, postfix=1)
+            self.add_module(self.norm1_name, norm1)
 
     @property
     def norm1(self):
@@ -234,18 +259,22 @@ class VisionTransformer(BaseBackbone):
         x = x + self.pos_embed
         x = self.drop_after_pos(x)
 
-        for layer in self.layers:
+        outs = []
+        for i, layer in enumerate(self.layers):
             x = layer(x)
 
-        x = self.norm1(x)
+            if i == len(self.layers) - 1 and self.final_norm:
+                x = self.norm1(x)
 
-        B, _, C = x.shape
-        patch_token = x[:, 1:].reshape(B, *patch_resolution, C)
-        cls_token = x[:, 0]
+            if i in self.out_indices:
+                B, _, C = x.shape
+                patch_token = x[:, 1:].reshape(B, *patch_resolution, C)
+                patch_token = patch_token.permute(0, 3, 1, 2)
+                cls_token = x[:, 0]
+                if self.output_cls_token:
+                    out = [patch_token, cls_token]
+                else:
+                    out = patch_token
+                outs.append(out)
 
-        if self.output_cls_token:
-            out = [patch_token, cls_token]
-        else:
-            out = patch_token
-
-        return (out, )
+        return tuple(outs)

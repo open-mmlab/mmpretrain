@@ -67,7 +67,7 @@ def test_vit_backbone():
     imgs = torch.randn(3, 3, 224, 224)
     patch_token, cls_token = model(imgs)[-1]
     assert cls_token.shape == (3, 768)
-    assert patch_token.shape == (3, 14, 14, 768)
+    assert patch_token.shape == (3, 768, 14, 14)
 
     # Test custom arch ViT without output cls token
     cfg = deepcopy(cfg_ori)
@@ -80,4 +80,12 @@ def test_vit_backbone():
     cfg['output_cls_token'] = False
     model = VisionTransformer(**cfg)
     patch_token = model(imgs)[-1]
-    assert patch_token.shape == (3, 14, 14, 128)
+    assert patch_token.shape == (3, 128, 14, 14)
+
+    # Test ViT with multi out indices
+    cfg = deepcopy(cfg_ori)
+    cfg['out_indices'] = [-3, -2, -1]
+    model = VisionTransformer(**cfg)
+    for out in model(imgs):
+        assert out[0].shape == (3, 768, 14, 14)
+        assert out[1].shape == (3, 768)
