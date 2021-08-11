@@ -56,4 +56,4 @@ assert (mmcv_version >= digit_version(mmcv_minimum_version)
     f'MMCV=={mmcv.__version__} is used but incompatible. ' \
     f'Please install mmcv>={mmcv_minimum_version}, <={mmcv_maximum_version}.'
 
-__all__ = ['__version__']
+__all__ = ['__version__', 'digit_version']
