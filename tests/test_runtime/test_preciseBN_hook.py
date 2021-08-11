@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import torch
 import torch.nn as nn
-from mmcv.parallel import MMDistributedDataParallel
+from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import EpochBasedRunner, build_optimizer
 from mmcv.utils import get_logger
 from torch.utils.data import DataLoader, Dataset
@@ -94,9 +94,18 @@ class NoBNExampleModel(ExampleModel):
 
 def test_precise_bn():
     with pytest.raises(TypeError):
-        # `data_loader` must be a Pytorch DataLoader
+        # dataloaders must be a List,but got str
         test_dataset = ExampleModel()
-        PreciseBNHook('data_loader')
+        loader = DataLoader(test_dataset, batch_size=2)
+        loaders = [loader]
+        PreciseBNHook('loaders')
+
+    with pytest.raises(TypeError):
+        # dataloaders must be a list of Pytorch Dataloaders ,
+        # but got torch.Dataset
+        test_dataset = ExampleModel()
+        loaders = [test_dataset]
+        PreciseBNHook(loaders)
 
     optimizer_cfg = dict(
         type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
@@ -105,15 +114,13 @@ def test_precise_bn():
     loader = DataLoader(test_dataset, batch_size=2)
     model = ExampleModel()
     optimizer = build_optimizer(model, optimizer_cfg)
-
     logger = get_logger('precise_bn')
     runner = EpochBasedRunner(
         model=model, batch_processor=None, optimizer=optimizer, logger=logger)
-    data_loaders = []
 
     with pytest.raises(AssertionError):
         # data_loaders must be larger than 0
-        # iters
+        data_loaders = []
         precise_bn_hook = PreciseBNHook(data_loaders, num_items=5)
         runner.register_hook(precise_bn_hook)
         runner.run(data_loaders, [('train', 1)], 1)
@@ -125,6 +132,19 @@ def test_precise_bn():
     precise_bn_hook = PreciseBNHook(loaders, num_items=4)
     assert precise_bn_hook.num_items == 4
     assert precise_bn_hook.interval == 1
+    runner = EpochBasedRunner(
+        model=model, batch_processor=None, optimizer=optimizer, logger=logger)
+    runner.register_hook(precise_bn_hook)
+    runner.run(loaders, [('train', 1)], 1)
+
+    # test DP model
+    test_bigger_dataset = BiggerDataset()
+    loader = DataLoader(test_bigger_dataset, batch_size=2)
+    loaders = [loader]
+    precise_bn_hook = PreciseBNHook(loaders, num_items=4)
+    assert precise_bn_hook.num_items == 4
+    assert precise_bn_hook.interval == 1
+    model = MMDataParallel(model)
     runner = EpochBasedRunner(
         model=model, batch_processor=None, optimizer=optimizer, logger=logger)
     runner.register_hook(precise_bn_hook)
