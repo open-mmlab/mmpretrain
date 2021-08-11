@@ -84,7 +84,9 @@ def update_bn_stats(model, loaders, NUM_SAMPLES_PRECISE=8192, logger=None):
     num_iter = min(num_iter, sum([len(loader) for loader in loaders]))
     # Retrieve the BN layers
     bn_layers = [
-        m for m in model.modules() if isinstance(m, torch.nn.BatchNorm2d)
+        m for m in model.modules()
+        if isinstance(m, (torch.nn.BatchNorm2d, torch.nn.BatchNorm1d,
+                          torch.nn.BatchNorm3d))
     ]
 
     if len(bn_layers) == 0:
@@ -145,7 +147,7 @@ class PreciseBNHook(Hook):
     """
 
     def __init__(self, dataloaders, num_items=8192, interval=1):
-        assert len(dataloaders) >= 0, 'dataloaders is empty...'
+        assert len(dataloaders) > 0, 'dataloaders is empty...'
         if not isinstance(dataloaders, list):
             raise TypeError('dataloaders must be a List ,but got',
                             f' {type(dataloaders)}')
