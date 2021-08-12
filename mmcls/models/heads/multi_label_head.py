@@ -49,6 +49,9 @@ class MultiLabelClsHead(BaseHead):
             cls_score = sum(cls_score) / float(len(cls_score))
         pred = F.sigmoid(cls_score) if cls_score is not None else None
 
+        return self.post_process(pred)
+
+    def post_process(self, pred):
         on_trace = is_tracing()
         if torch.onnx.is_in_onnx_export() or on_trace:
             return pred
