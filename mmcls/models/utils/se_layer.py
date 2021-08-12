@@ -22,6 +22,9 @@ class SELayer(BaseModule):
             activation layer will be configurated by the first dict and the
             second activation layer will be configurated by the second dict.
             Default: (dict(type='ReLU'), dict(type='Sigmoid'))
+        base_channels (None or int): The base channel number to calculate the
+            channel number of the middle feature maps. Default: None, which
+            means using `channels` to be the `base_channels`.
     """
 
     def __init__(self,
@@ -29,6 +32,7 @@ class SELayer(BaseModule):
                  ratio=16,
                  bias='auto',
                  conv_cfg=None,
+                 base_channels=None,
                  act_cfg=(dict(type='ReLU'), dict(type='Sigmoid')),
                  init_cfg=None):
         super(SELayer, self).__init__(init_cfg)
@@ -37,7 +41,12 @@ class SELayer(BaseModule):
         assert len(act_cfg) == 2
         assert mmcv.is_tuple_of(act_cfg, dict)
         self.global_avgpool = nn.AdaptiveAvgPool2d(1)
-        squeeze_channels = make_divisible(channels // ratio, 8)
+        if base_channels is None:
+            squeeze_channels = make_divisible(channels // ratio, 8)
+        else:
+            assert isinstance(base_channels, int)
+            assert base_channels > 0
+            squeeze_channels = max(1, round(base_channels / ratio))
         self.conv1 = ConvModule(
             in_channels=channels,
             out_channels=squeeze_channels,
