@@ -2,7 +2,6 @@
 # Original licence: Copyright (c) 2019 Facebook, Inc under the Apache License 2.0  # noqa: E501
 
 import logging
-import time
 
 import mmcv
 import torch
@@ -161,8 +160,6 @@ class PreciseBNHook(Hook):
 
     def after_train_epoch(self, runner):
         if self.every_n_epochs(runner, self.interval):
-            # sleep to avoid possible deadlock
-            time.sleep(1.)
             print_log(
                 f'Running Precise BN for {self.num_items} items...',
                 logger=runner.logger)
@@ -173,5 +170,3 @@ class PreciseBNHook(Hook):
                 logger=runner.logger)
             print_log(
                 'Finish Precise BN, BN stats updated..', logger=runner.logger)
-            # sleep to avoid possible deadlock
-            time.sleep(1.)
