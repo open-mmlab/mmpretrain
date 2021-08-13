@@ -1,12 +1,10 @@
 from collections import OrderedDict
 
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import build_activation_layer, constant_init, kaiming_init
 
 from ..builder import HEADS
-from ..utils import is_tracing
 from .cls_head import ClsHead
 
 
@@ -70,11 +68,7 @@ class VisionTransformerClsHead(ClsHead):
             cls_score = sum(cls_score) / float(len(cls_score))
         pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
 
-        on_trace = is_tracing()
-        if torch.onnx.is_in_onnx_export() or on_trace:
-            return pred
-        pred = list(pred.detach().cpu().numpy())
-        return pred
+        return self.post_process(pred)
 
     def forward_train(self, x, gt_label):
         cls_score = self.layers(x)
