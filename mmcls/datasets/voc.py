@@ -1,8 +1,9 @@
+import copy
 import os.path as osp
 import xml.etree.ElementTree as ET
 
 import mmcv
-import numpy as np
+import torch
 
 from .builder import DATASETS
 from .multi_label import MultiLabelDataset
@@ -24,15 +25,49 @@ class VOC(MultiLabelDataset):
         else:
             raise ValueError('Cannot infer dataset year from img_prefix.')
 
+    def get_gt_labels(self):
+        """Get all ground-truth labels (categories).
+
+        Returns:
+            torch.Tensor: ground truth labels for all images.
+        """
+
+        return self.data_infos['all_gt_labels'].numpy()
+
+    def get_cat_ids(self, idx):
+        """Get category ids by index.
+
+        Args:
+            idx (int): Index of data.
+
+        Returns:
+            torch.Tensor: Image categories of specified index.
+        """
+        gt_label_index = self.data_infos['samples'][idx]['gt_label_index']
+        gt_label = self.data_infos['all_gt_labels'][gt_label_index]
+        cat_ids = torch.where(gt_label == 1)[0]
+        return cat_ids
+
+    def __len__(self):
+        return len(self.data_infos['samples'])
+
+    def prepare_data(self, idx):
+        results = copy.deepcopy(self.data_infos['samples'][idx])
+        gt_label_index = results.pop('gt_label_index')
+        results['gt_label'] = self.data_infos['all_gt_labels'][gt_label_index]
+        return self.pipeline(results)
+
     def load_annotations(self):
         """Load annotations.
 
         Returns:
             list[dict]: Annotation info from XML file.
         """
-        data_infos = []
+        samples = []
         img_ids = mmcv.list_from_file(self.ann_file)
-        for img_id in img_ids:
+        all_gt_labels = torch.zeros(len(img_ids), len(self.CLASSES),
+                                    dtype=torch.int8)
+        for index, img_id in enumerate(img_ids):
             filename = f'JPEGImages/{img_id}.jpg'
             xml_path = osp.join(self.data_prefix, 'Annotations',
                                 f'{img_id}.xml')
@@ -53,16 +88,19 @@ class VOC(MultiLabelDataset):
                 else:
                     labels.append(label)
 
-            gt_label = np.zeros(len(self.CLASSES))
             # The order cannot be swapped for the case where multiple objects
             # of the same kind exist and some are difficult.
-            gt_label[labels_difficult] = -1
-            gt_label[labels] = 1
+            all_gt_labels[index, labels_difficult] = -1
+            all_gt_labels[index, labels] = 1
 
-            info = dict(
+            sample = dict(
                 img_prefix=self.data_prefix,
                 img_info=dict(filename=filename),
-                gt_label=gt_label.astype(np.int8))
-            data_infos.append(info)
+                gt_label_index=index)
+            samples.append(sample)
 
+        data_infos = dict(
+            all_gt_labels=all_gt_labels,
+            samples=samples
+        )
         return data_infos
