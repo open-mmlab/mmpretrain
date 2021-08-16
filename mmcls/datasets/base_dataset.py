@@ -150,7 +150,7 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
 
         invalid_metrics = set(metrics) - set(allowed_metrics)
         if len(invalid_metrics) != 0:
-            raise ValueError(f'metirc {invalid_metrics} is not supported.')
+            raise ValueError(f'metric {invalid_metrics} is not supported.')
 
         topk = metric_options.get('topk', (1, 5))
         thrs = metric_options.get('thrs')
