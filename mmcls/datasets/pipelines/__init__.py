@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from .auto_augment import (AutoAugment, AutoContrast, Brightness,
                            ColorTransform, Contrast, Cutout, Equalize, Invert,
                            Posterize, RandAugment, Rotate, Sharpness, Shear,

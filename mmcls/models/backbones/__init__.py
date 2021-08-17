@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from .alexnet import AlexNet
 from .lenet import LeNet5
 from .mobilenet_v2 import MobileNetV2
