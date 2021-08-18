@@ -6,17 +6,20 @@ from mmcv.runner import BaseModule
 from .make_divisible import make_divisible
 
 
-# class SELayer(nn.Module):
 class SELayer(BaseModule):
     """Squeeze-and-Excitation Module.
 
     Args:
         channels (int): The input (and output) channels of the SE layer.
-        ratio (int): Squeeze ratio in SELayer, the intermediate channel will be
-            ``int(channels/ratio)``. Default: 16.
-        base_channels (None or int): The base channel number to calculate the
-            channel number of the middle feature maps. Default: None, which
-            means using `channels` to be the `base_channels`.
+        squeeze_channels (None or int): The intermediate channel number of
+            the SEModule. Default: None,which means using value of
+            ``make_divisible(channels // ratio, divisor)``.else just use the
+            squeeze_channels as the intermediate channel number.
+        ratio (int): Squeeze ratio in SELayer, the intermediate channel will
+            be ``make_divisible(channels // ratio, divisor)``. Only used when
+            squeeze_channels is None.Default: 16.
+        divisor(int): The divisor to fully divide the channel number.Only used
+            when squeeze_channels is None.Default: 8.
         conv_cfg (None or dict): Config dict for convolution layer.
             Default: None, which means using conv2d.
         act_cfg (dict or Sequence[dict]): Config dict for activation layer.
@@ -29,8 +32,9 @@ class SELayer(BaseModule):
 
     def __init__(self,
                  channels,
+                 squeeze_channels=None,
                  ratio=16,
-                 base_channels=None,
+                 divisor=8,
                  bias='auto',
                  conv_cfg=None,
                  act_cfg=(dict(type='ReLU'), dict(type='Sigmoid')),
@@ -41,12 +45,10 @@ class SELayer(BaseModule):
         assert len(act_cfg) == 2
         assert mmcv.is_tuple_of(act_cfg, dict)
         self.global_avgpool = nn.AdaptiveAvgPool2d(1)
-        if base_channels is None:
-            squeeze_channels = make_divisible(channels // ratio, 8)
-        else:
-            assert isinstance(base_channels, int)
-            assert base_channels > 0
-            squeeze_channels = max(1, round(base_channels / ratio))
+        if squeeze_channels is None:
+            squeeze_channels = make_divisible(channels // ratio, divisor)
+        assert isinstance(squeeze_channels, int)
+        assert squeeze_channels > 0, 'squeeze_channels of SE must > 0'
         self.conv1 = ConvModule(
             in_channels=channels,
             out_channels=squeeze_channels,
