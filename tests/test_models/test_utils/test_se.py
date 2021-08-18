@@ -16,11 +16,11 @@ def is_norm(modules):
 def test_se():
     with pytest.raises(AssertionError):
         # base_channels must be a number
-        SELayer(16, base_channels='32')
+        SELayer(16, squeeze_channels='32')
 
     with pytest.raises(AssertionError):
         # base_channels must be None or a number larger than 0
-        SELayer(16, base_channels=-1)
+        SELayer(16, squeeze_channels=-1)
 
     with pytest.raises(AssertionError):
         # act_cfg must be two dict tuple
@@ -50,11 +50,18 @@ def test_se():
     assert se.conv2.in_channels == 16
     assert output.shape == torch.Size((1, 54, 76, 103))
 
+    se = SELayer(54, ratio=4, divisor=2)
+    output = se(input)
+    assert se.conv1.out_channels == 14
+    assert se.conv2.in_channels == 14
+    assert output.shape == torch.Size((1, 54, 76, 103))
+
     input = torch.randn((4, 128, 56, 56))
     se = SELayer(
         128,
-        base_channels=100,
-        ratio=4,
+        squeeze_channels=25,
+        ratio=4,  # Not used
+        divisor=8,  # Not used
         act_cfg=(dict(type='ReLU'), dict(type='HSigmoid')))
     output = se(input)
     assert se.conv1.out_channels == 25
