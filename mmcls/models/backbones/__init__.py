@@ -4,6 +4,7 @@ from .lenet import LeNet5
 from .mobilenet_v2 import MobileNetV2
 from .mobilenet_v3 import MobileNetV3
 from .regnet import RegNet
+from .repvgg import RepVGG
 from .resnest import ResNeSt
 from .resnet import ResNet, ResNetV1d
 from .resnet_cifar import ResNet_CIFAR
@@ -16,7 +17,6 @@ from .swin_transformer import SwinTransformer
 from .tnt import TNT
 from .vgg import VGG
 from .vision_transformer import VisionTransformer
-from .repvgg import RepVGG
 
 __all__ = [
     'LeNet5', 'AlexNet', 'VGG', 'RegNet', 'ResNet', 'ResNeXt', 'ResNetV1d',
