@@ -3,13 +3,10 @@ model = dict(
     type='ImageClassifier',
     backbone=dict(
         type='VisionTransformer',
-        arch='b',
-        img_size=384,
-        patch_size=32,
-        in_channels=3,
+        arch='l',
+        img_size=224,
+        patch_size=16,
         drop_rate=0.1,
-        attn_drop_rate=0.,
-        hybrid_backbone=None,
         init_cfg=[
             dict(
                 type='Kaiming',
@@ -21,7 +18,7 @@ model = dict(
     head=dict(
         type='VisionTransformerClsHead',
         num_classes=1000,
-        in_channels=768,
+        in_channels=1024,
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
         topk=(1, 5),
     ))

@@ -4,12 +4,9 @@ model = dict(
     backbone=dict(
         type='VisionTransformer',
         arch='b',
-        img_size=384,
+        img_size=224,
         patch_size=16,
-        in_channels=3,
         drop_rate=0.1,
-        attn_drop_rate=0.,
-        hybrid_backbone=None,
         init_cfg=[
             dict(
                 type='Kaiming',
@@ -23,5 +20,4 @@ model = dict(
         num_classes=1000,
         in_channels=768,
         loss=dict(type='LabelSmoothLoss', label_smooth_val=0.1),
-        topk=(1, 5),
     ))
