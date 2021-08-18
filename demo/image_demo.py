@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from argparse import ArgumentParser
 
 from mmcls.apis import inference_model, init_model, show_result_pyplot
