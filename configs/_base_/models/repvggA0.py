@@ -1,5 +1,3 @@
-custom_imports = dict(imports=['RepVGG.repvgg'], allow_failed_imports=False)
-
 model = dict(
     type='ImageClassifier',
     backbone=dict(
