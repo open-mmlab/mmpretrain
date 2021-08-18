@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from .accuracy import Accuracy, accuracy
 from .asymmetric_loss import AsymmetricLoss, asymmetric_loss
 from .cross_entropy_loss import (CrossEntropyLoss, binary_cross_entropy,
