@@ -7,6 +7,7 @@ from mmcv.utils.parrots_wrapper import _BatchNorm
 from torch import nn
 
 from ..builder import BACKBONES
+from ..utils.se_layer import SELayer
 from .base_backbone import BaseBackbone
 
 
@@ -22,6 +23,8 @@ class RepVGGBlock(BaseModule):
         groups (int): Groups of the 3x3 and 1x1 convolution layer. Default: 1.
         padding_mode (str): Padding mode of the 3x3 convolution layer.
             Default: 'zeros'.
+        se_cfg (None or dict): The configuration of the se module.
+            Default: None.
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
             memory while slowing down the training speed. Default: False.
         conv_cfg (dict, optional): Config dict for convolution layer.
@@ -44,6 +47,7 @@ class RepVGGBlock(BaseModule):
                  dilation=1,
                  groups=1,
                  padding_mode='zeros',
+                 se_cfg=None,
                  with_cp=False,
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
@@ -58,6 +62,7 @@ class RepVGGBlock(BaseModule):
         self.padding = padding
         self.dilation = dilation
         self.groups = groups
+        self.se_cfg = se_cfg
         self.with_cp = with_cp
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
@@ -85,6 +90,9 @@ class RepVGGBlock(BaseModule):
                 padding=padding,
             )
             self.branch_1x1 = self.create_conv_bn(kernel_size=1)
+
+        if se_cfg is not None:
+            self.se_layer = SELayer(**se_cfg)
 
         self.act = build_activation_layer(act_cfg)
 
@@ -127,11 +135,19 @@ class RepVGGBlock(BaseModule):
         else:
             out = _inner_forward(x)
 
+        if self.se_cfg is not None:
+            out = self.se_layer(out)
+
         out = self.act(out)
 
         return out
 
     def switch_to_deploy(self):
+        """Switch the model structure from training mode to deployment mode.
+
+        Returns:
+            None
+        """
         if self.deploy:
             return
         assert self.norm_cfg['type'] == 'BN', \
@@ -158,6 +174,12 @@ class RepVGGBlock(BaseModule):
         self.__delattr__('branch_identity')
 
     def reparameterize(self):
+        """Fuse the parameters in all branches of repvgg.
+
+        Returns:
+            (Weight, bias) (tuple): Parameters after fusion of all branches.
+                the first element is the weight and the second is the bias.
+        """
         weight_3x3, bias_3x3 = self._fuse_conv_bn(self.branch_3x3)
         weight_1x1, bias_1x1 = self._fuse_conv_bn(self.branch_1x1)
         weight_1x1 = F.pad(weight_1x1, [1, 1, 1, 1])
@@ -168,6 +190,17 @@ class RepVGGBlock(BaseModule):
                 bias_3x3 + bias_1x1 + bias_identity)
 
     def _fuse_conv_bn(self, branch):
+        """Fuse the parameters of conv and bn in one branch of repvgg.
+
+        Args:
+            branch (None, nn.Sequential or nn.BatchNorm2d): A branch
+                in repvggblock.
+
+        Returns:
+            (weight, bias) (tuple): The parameters obtained after
+                fusing the parameters of conv and bn in one branch.
+                The first element is the weight and the second is the bias.
+        """
         if branch is None:
             return 0, 0
 
@@ -214,6 +247,9 @@ class RepVGG(BaseBackbone):
         out_indices (Sequence[int]): Output from which stages.
         strides (Sequence[int]): Strides of the first block of each stage.
         dilations (Sequence[int]): Dilation of each stage.
+        se_cfg (None or dict): The configuration of the se module.
+            Default: None.
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
         frozen_stages (int): Stages to be frozen (all param fixed). -1 means
             not freezing any parameters. Default: -1.
         conv_cfg (dict | None): The config dict for conv layers. Default: None.
@@ -318,6 +354,7 @@ class RepVGG(BaseBackbone):
                  out_indices=(3, ),
                  strides=(2, 2, 2, 2),
                  dilations=(1, 1, 1, 1),
+                 se_cfg=None,
                  frozen_stages=-1,
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
@@ -349,12 +386,15 @@ class RepVGG(BaseBackbone):
         if arch['group_idx'] is not None:
             assert max(arch['group_idx'].keys()) <= sum(arch['num_blocks'])
 
+        assert se_cfg is None or isinstance(se_cfg, dict)
+
         self.arch = arch
         self.in_channels = in_channels
         self.base_channels = base_channels
         self.out_indices = out_indices
         self.strides = strides
         self.dilations = dilations
+        self.se_cfg = se_cfg
         self.deploy = deploy
         self.frozen_stages = frozen_stages
         self.conv_cfg = conv_cfg
@@ -369,6 +409,7 @@ class RepVGG(BaseBackbone):
             self.in_channels,
             channels,
             stride=2,
+            se_cfg=se_cfg,
             with_cp=with_cp,
             conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
@@ -386,7 +427,7 @@ class RepVGG(BaseBackbone):
 
             stage, next_create_block_idx = self._make_stage(
                 channels, out_channels, num_blocks, stride, dilation,
-                next_create_block_idx, init_cfg)
+                next_create_block_idx, se_cfg, init_cfg)
             stage_name = f'stage_{i + 1}'
             self.add_module(stage_name, stage)
             self.stages.append(stage_name)
@@ -394,7 +435,7 @@ class RepVGG(BaseBackbone):
             channels = out_channels
 
     def _make_stage(self, in_channels, out_channels, num_blocks, stride,
-                    dilation, next_create_block_idx, init_cfg):
+                    dilation, next_create_block_idx, se_cfg, init_cfg):
         strides = [stride] + [1] * (num_blocks - 1)
         dilations = [dilation] * num_blocks
 
@@ -411,6 +452,7 @@ class RepVGG(BaseBackbone):
                     padding=dilations[i],
                     dilation=dilations[i],
                     groups=groups,
+                    se_cfg=se_cfg,
                     with_cp=self.with_cp,
                     conv_cfg=self.conv_cfg,
                     norm_cfg=self.norm_cfg,
