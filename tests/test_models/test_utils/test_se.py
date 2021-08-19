@@ -29,6 +29,7 @@ def test_se():
             act_cfg=(dict(type='ReLU'), dict(type='Sigmoid'),
                      dict(type='ReLU')))
 
+    # Test SELayer forward, channels=64
     input = torch.randn((4, 64, 112, 112))
     se = SELayer(64)
     output = se(input)
@@ -36,6 +37,7 @@ def test_se():
     assert se.conv2.in_channels == 8
     assert output.shape == torch.Size((4, 64, 112, 112))
 
+    # Test SELayer forward, ratio=4
     input = torch.randn((4, 128, 112, 112))
     se = SELayer(128, ratio=4)
     output = se(input)
@@ -43,6 +45,8 @@ def test_se():
     assert se.conv2.in_channels == 32
     assert output.shape == torch.Size((4, 128, 112, 112))
 
+    # Test SELayer forward, channels=54, ratio=4
+    # channels cannot be divisible by ratio
     input = torch.randn((1, 54, 76, 103))
     se = SELayer(54, ratio=4)
     output = se(input)
@@ -50,18 +54,39 @@ def test_se():
     assert se.conv2.in_channels == 16
     assert output.shape == torch.Size((1, 54, 76, 103))
 
+    # Test SELayer forward, divisor=2
     se = SELayer(54, ratio=4, divisor=2)
     output = se(input)
     assert se.conv1.out_channels == 14
     assert se.conv2.in_channels == 14
     assert output.shape == torch.Size((1, 54, 76, 103))
 
+    # Test SELayer forward, squeeze_channels=25
+    input = torch.randn((1, 128, 56, 56))
+    se = SELayer(128, squeeze_channels=25)
+    output = se(input)
+    assert se.conv1.out_channels == 25
+    assert se.conv2.in_channels == 25
+    assert output.shape == torch.Size((1, 128, 56, 56))
+
+    # Test SELayer forward, not used ratio and divisor
+    input = torch.randn((1, 128, 56, 56))
+    se = SELayer(
+        128,
+        squeeze_channels=13,
+        ratio=4,
+        divisor=8,
+    )
+    output = se(input)
+    assert se.conv1.out_channels == 13
+    assert se.conv2.in_channels == 13
+    assert output.shape == torch.Size((1, 128, 56, 56))
+
+    # Test SELayer with HSigmoid activate layer
     input = torch.randn((4, 128, 56, 56))
     se = SELayer(
         128,
         squeeze_channels=25,
-        ratio=4,  # Not used
-        divisor=8,  # Not used
         act_cfg=(dict(type='ReLU'), dict(type='HSigmoid')))
     output = se(input)
     assert se.conv1.out_channels == 25
