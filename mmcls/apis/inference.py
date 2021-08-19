@@ -1,6 +1,5 @@
 import warnings
 
-import matplotlib.pyplot as plt
 import mmcv
 import numpy as np
 import torch
@@ -89,7 +88,7 @@ def inference_model(model, img):
     return result
 
 
-def show_result_pyplot(model, img, result, fig_size=(15, 10)):
+def show_result_pyplot(model, img, result, fig_size=(15, 10), wait_time=0):
     """Visualize the classification results on the image.
 
     Args:
@@ -100,7 +99,5 @@ def show_result_pyplot(model, img, result, fig_size=(15, 10)):
     """
     if hasattr(model, 'module'):
         model = model.module
-    img = model.show_result(img, result, show=False)
-    plt.figure(figsize=fig_size)
-    plt.imshow(mmcv.bgr2rgb(img))
-    plt.show()
+    model.show_result(
+        img, result, show=True, fig_size=fig_size, wait_time=wait_time)
