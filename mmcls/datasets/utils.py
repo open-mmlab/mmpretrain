@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import gzip
 import hashlib
 import os

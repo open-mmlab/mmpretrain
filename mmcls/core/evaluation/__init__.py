@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from .eval_hooks import DistEvalHook, EvalHook
 from .eval_metrics import (calculate_confusion_matrix, f1_score, precision,
                            precision_recall_f1, recall, support)
