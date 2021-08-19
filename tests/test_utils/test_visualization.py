@@ -3,7 +3,7 @@ import os
 import os.path as osp
 import shutil
 import tempfile
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import mmcv
 import numpy as np
@@ -17,7 +17,7 @@ def test_color():
     assert vis.color_val_matplotlib('green') == (0., 1., 0.)
     assert vis.color_val_matplotlib((1, 2, 3)) == (3 / 255, 2 / 255, 1 / 255)
     assert vis.color_val_matplotlib(100) == (100 / 255, 100 / 255, 100 / 255)
-    assert vis.color_val_matplotlib(np.zeros(3, dtype=np.int)) == (0., 0., 0.)
+    assert vis.color_val_matplotlib(np.zeros(3, dtype=int)) == (0., 0., 0.)
     # forbid white color
     with pytest.raises(TypeError):
         vis.color_val_matplotlib([255, 255, 255])
@@ -76,5 +76,15 @@ def test_imshow_cls_results():
 
         vis.imshow_cls_result(image, result, show=True, wait_time=0)
         assert osp.exists(osp.join(tmp_dir, 'args'))
+
+    # test adaptive dpi
+    def mock_fig_manager():
+        fig_manager = Mock()
+        fig_manager.window.winfo_screenheight = Mock(return_value=1440)
+        return fig_manager
+
+    with patch('matplotlib.pyplot.get_current_fig_manager',
+               mock_fig_manager), patch('matplotlib.pyplot.show'):
+        vis.imshow_cls_result(image, result, show=True)
 
     shutil.rmtree(tmp_dir)

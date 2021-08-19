@@ -37,7 +37,8 @@ def imshow_cls_result(img,
     width, height = img.shape[1], img.shape[0]
     img = np.ascontiguousarray(img)
 
-    fig = plt.figure(win_name, frameon=False, figsize=fig_size)
+    # A proper dpi for image save with default font size.
+    fig = plt.figure(win_name, frameon=False, figsize=fig_size, dpi=36)
     plt.title(win_name)
     canvas = fig.canvas
     dpi = fig.get_dpi()
@@ -81,6 +82,15 @@ def imshow_cls_result(img,
     img = mmcv.rgb2bgr(img)
 
     if show:
+        # Matplotlib will adjust text size depends on window size and image
+        # aspect ratio. It's hard to get, so here we set an adaptive dpi
+        # according to screen height. 20 here is an empirical parameter.
+        fig_manager = plt.get_current_fig_manager()
+        if hasattr(fig_manager, 'window'):
+            # Figure manager doesn't have window if no screen.
+            screen_dpi = fig_manager.window.winfo_screenheight() // 20
+            fig.set_dpi(screen_dpi)
+
         # We do not use cv2 for display because in some cases, opencv will
         # conflict with Qt, it will output a warning: Current thread
         # is not the object's thread. You can refer to
