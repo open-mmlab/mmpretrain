@@ -19,5 +19,7 @@ model = dict(
         type='VisionTransformerClsHead',
         num_classes=1000,
         in_channels=768,
-        loss=dict(type='LabelSmoothLoss', label_smooth_val=0.1),
+        loss=dict(
+            type='LabelSmoothLoss', label_smooth_val=0.1,
+            mode='classy_vision'),
     ))

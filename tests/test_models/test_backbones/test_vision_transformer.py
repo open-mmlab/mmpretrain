@@ -1,8 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import math
+import os
+import tempfile
 from copy import deepcopy
 
 import pytest
 import torch
+import torch.nn.functional as F
 from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 
@@ -89,3 +93,70 @@ def test_vit_backbone():
     for out in model(imgs):
         assert out[0].shape == (3, 768, 14, 14)
         assert out[1].shape == (3, 768)
+
+
+def timm_resize_pos_embed(posemb, posemb_new, num_tokens=1, gs_new=()):
+    # Timm version pos embed resize function.
+    # Refers to https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/vision_transformer.py # noqa:E501
+    ntok_new = posemb_new.shape[1]
+    if num_tokens:
+        posemb_tok, posemb_grid = posemb[:, :num_tokens], posemb[0,
+                                                                 num_tokens:]
+        ntok_new -= num_tokens
+    else:
+        posemb_tok, posemb_grid = posemb[:, :0], posemb[0]
+    gs_old = int(math.sqrt(len(posemb_grid)))
+    if not len(gs_new):  # backwards compatibility
+        gs_new = [int(math.sqrt(ntok_new))] * 2
+    assert len(gs_new) >= 2
+    posemb_grid = posemb_grid.reshape(1, gs_old, gs_old,
+                                      -1).permute(0, 3, 1, 2)
+    posemb_grid = F.interpolate(
+        posemb_grid, size=gs_new, mode='bicubic', align_corners=False)
+    posemb_grid = posemb_grid.permute(0, 2, 3,
+                                      1).reshape(1, gs_new[0] * gs_new[1], -1)
+    posemb = torch.cat([posemb_tok, posemb_grid], dim=1)
+    return posemb
+
+
+def test_vit_weight_init():
+    # test weight init cfg
+    pretrain_cfg = dict(
+        arch='b',
+        img_size=224,
+        patch_size=16,
+        init_cfg=[dict(type='Constant', val=1., layer='Conv2d')])
+    pretrain_model = VisionTransformer(**pretrain_cfg)
+    pretrain_model.init_weights()
+    assert torch.allclose(pretrain_model.patch_embed.projection.weight,
+                          torch.tensor(1.))
+    assert pretrain_model.pos_embed.abs().sum() > 0
+
+    pos_embed_weight = pretrain_model.pos_embed.detach()
+    tmpdir = tempfile.gettempdir()
+    checkpoint = os.path.join(tmpdir, 'test.pth')
+    torch.save(pretrain_model.state_dict(), checkpoint)
+
+    # test load checkpoint
+    finetune_cfg = dict(
+        arch='b',
+        img_size=224,
+        patch_size=16,
+        init_cfg=dict(type='Pretrained', checkpoint=checkpoint))
+    finetune_model = VisionTransformer(**finetune_cfg)
+    finetune_model.init_weights()
+    assert torch.allclose(finetune_model.pos_embed, pos_embed_weight)
+
+    # test load checkpoint with different img_size
+    finetune_cfg = dict(
+        arch='b',
+        img_size=384,
+        patch_size=16,
+        init_cfg=dict(type='Pretrained', checkpoint=checkpoint))
+    finetune_model = VisionTransformer(**finetune_cfg)
+    finetune_model.init_weights()
+    resized_pos_embed = timm_resize_pos_embed(pos_embed_weight,
+                                              finetune_model.pos_embed)
+    assert torch.allclose(finetune_model.pos_embed, resized_pos_embed)
+
+    os.remove(checkpoint)
