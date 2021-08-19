@@ -92,7 +92,11 @@ class RepVGGBlock(BaseModule):
             self.branch_1x1 = self.create_conv_bn(kernel_size=1)
 
         if se_cfg is not None:
-            self.se_layer = SELayer(**se_cfg)
+            if 'init_cfg' in se_cfg.keys():
+                self.se_layer = SELayer(channels=out_channels, **se_cfg)
+            else:
+                self.se_layer = SELayer(
+                    channels=out_channels, init_cfg=init_cfg, **se_cfg)
 
         self.act = build_activation_layer(act_cfg)
 

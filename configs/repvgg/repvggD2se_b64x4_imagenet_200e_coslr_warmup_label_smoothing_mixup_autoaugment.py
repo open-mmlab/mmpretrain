@@ -1,14 +1,7 @@
 _base_ = './repvggA0_b64x4_imagenet.py'
 
 model = dict(
-    backbone=dict(
-        arch='D2se',
-        plugins=[
-            dict(
-                cfg=dict(type='SEPlugin', ratio=16),
-                stages=(True, True, True, True, True),
-                position='before_act')
-        ]),
+    backbone=dict(arch='D2se', se_cfg=dict(ratio=16)),
     head=dict(
         type='LinearClsHead',
         num_classes=1000,
