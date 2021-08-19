@@ -1,7 +1,7 @@
 _base_ = './repvggA0_b64x4_imagenet.py'
 
 model = dict(
-    backbone=dict(arch='D2se', se_cfg=dict(ratio=16)),
+    backbone=dict(arch='D2se', se_cfg=dict(ratio=10, divisor=1)),
     head=dict(
         type='LinearClsHead',
         num_classes=1000,
