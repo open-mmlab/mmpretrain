@@ -142,3 +142,7 @@ More supported backends can be found in [mmcv.fileio.FileClient](https://github.
         dict(type='Collect', keys=['img', 'gt_label'])
     ]
     ```
+
+## Pipeline visualization
+
+After designing data pipelines, you can use the [visualization tool](../tools/visualization.md) provided by `mmcls` to view the specific effects.
