@@ -59,7 +59,7 @@ Description of all arguments：
 
 Notice:
 
-When only `--original` is specified, the original pictures will displayed;When only `--transform` is specified, the transformed pictures will be displayed; When `--original` and `--transform` are specified, the pictures stitched together by original pictures and transformed pictures will be displayed; Specify at least one of `--original` and `--transform`, otherwise an error will be reported;  
+When only `--original` is specified, the original pictures will displayed;When only `--transform` is specified, the transformed pictures will be displayed; When `--original` and `--transform` are specified, the pictures stitched together by original pictures and transformed pictures will be displayed; Specify at least one of `--original` and `--transform`, otherwise an error will be reported;
 
 Examples：
 
@@ -69,7 +69,7 @@ Examples：
 
 2. Visualize 10 comparison pictures stitched together by original pictures and transformed pictures in the ImageNet training set and save them in the default `tmp` folder：
 
-`python ./tools/misc/vis_imagenet.py configs/swin_transformer/swin_base_224_b16x64_300e_imagenet.py --original --transform --number 10` 
+`python ./tools/misc/vis_imagenet.py configs/swin_transformer/swin_base_224_b16x64_300e_imagenet.py --original --transform --number 10`
 
 ## FAQs
 

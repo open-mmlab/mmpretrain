@@ -59,7 +59,7 @@ python tools/misc/vis_pipeline.py \
 
 注意：
 
-当只指定`--original`时，显示原始图片;当只指定`--transform`时，显示预处理后图片；当指定`--original`与`--transform`时，显示原始图片与预处理后图片合并图;`--original` 与 `--transform`至少指定一个，不然会报错；  
+当只指定`--original`时，显示原始图片;当只指定`--transform`时，显示预处理后图片；当指定`--original`与`--transform`时，显示原始图片与预处理后图片合并图;`--original` 与 `--transform`至少指定一个，不然会报错；
 
 示例：
 1. 可视化ImageNet训练集的100张原始图片，并以弹窗形式显示：

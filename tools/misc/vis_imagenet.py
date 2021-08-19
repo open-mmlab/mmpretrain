@@ -25,13 +25,15 @@ def parse_args():
         '--output-dir',
         default='tmp',
         type=str,
-        help=' Only use when "show" is False, if there is no display interface, you can save it.')
+        help='Only use when "show" is False, if there is no display'
+        'interface, you can save it.')
     parser.add_argument(
         '--phase',
         default='train',
         type=str,
         choices=['train', 'test', 'val'],
-        help='which phase of dataset to brower, accept "train" or "test" or "val".')
+        help='which phase of dataset to brower, accept "train" or '
+        '"test" or "val".')
     parser.add_argument(
         '--number',
         type=int,
@@ -57,7 +59,8 @@ def parse_args():
         '--bgr2rgb',
         default=False,
         action='store_true',
-        help='to transform a BGR image to a RGB image, transformed image may be in BGR channel order')
+        help='to transform a BGR image to a RGB image, since transformed'
+        ' images may be displayed in BGR channel order')
     parser.add_argument(
         '--cfg-options',
         nargs='+',
@@ -91,7 +94,7 @@ def retrieve_data_cfg(config_path, skip_type, cfg_options, phase):
 
 
 def put_text(img, texts, text_color=(0, 0, 255), font_scale=0.6, row_width=20):
-    ''' write the label info on the image'''
+    """write the label info on the image."""
     x, y = 0, int(row_width * 0.75)
     for text in texts:
         cv2.putText(img, text, (x, y), cv2.FONT_HERSHEY_COMPLEX, font_scale,
@@ -101,29 +104,30 @@ def put_text(img, texts, text_color=(0, 0, 255), font_scale=0.6, row_width=20):
 
 
 def put_img(board, img, center):
-    ''' put a image into a big board image.'''
+    """put a image into a big board image."""
     center_x, center_y = center
     img_h, img_w, _ = img.shape
     board_h, board_w, _ = board.shape
     xmin, ymin = int(center_x - img_w // 2), int(center_y - img_h // 2)
-    assert xmin >= 0 and ymin >= 0, "Cannot exceed the border"
-    assert (ymin + img_h) <= board_h, "Cannot exceed the border"
-    assert (xmin + img_w) <= board_w, "Cannot exceed the border"
+    assert xmin >= 0 and ymin >= 0, 'Cannot exceed the border'
+    assert (ymin + img_h) <= board_h, 'Cannot exceed the border'
+    assert (xmin + img_w) <= board_w, 'Cannot exceed the border'
     board[ymin:ymin + img_h, xmin:xmin + img_w, :] = img
     return board
 
 
 def concat(left_img, right_img):
-    ''' Concat two images into a single big one.
-        accept two diffenert shape images. 
-    '''
+    """Concat two images into a single big one.
+
+    accept two diffenert shape images.
+    """
     left_h, left_w, _ = left_img.shape
     right_h, right_w, _ = right_img.shape
     # create a big board to contain images
     board_h = int(max(left_h, right_h) * 1.1)
     board_w = int(max(left_w, right_w) * 1.1)
     board = np.ones([board_h, 2 * board_w, 3], np.uint8) * 255
-    
+
     put_img(board, left_img, (int(board_w // 2), int(board_h // 2)))
     put_img(board, right_img, (int(board_w // 2) + board_w, int(board_h // 2)))
     return board
@@ -131,7 +135,8 @@ def concat(left_img, right_img):
 
 def main():
     args = parse_args()
-    cfg = retrieve_data_cfg(args.config, args.skip_type, args.cfg_options, args.phase)
+    cfg = retrieve_data_cfg(args.config, args.skip_type, args.cfg_options,
+                            args.phase)
     dataset = build_dataset(cfg.data[args.phase])
     class_names = dataset.CLASSES
 
@@ -154,11 +159,11 @@ def main():
             if args.bgr2rgb:
                 trans_image = mmcv.bgr2rgb(trans_image)
             trans_image = put_text(trans_image, labels)
-  
-        # display original images if args.original is True
-        # display tranformed images if args.transform is True
-        # display concat images if both args.original and args.transform is True
-        # else raise Error
+
+        # display original images if args.original is True;
+        # display tranformed images if args.transform is True;
+        # display concat images if both args.original and args.transform
+        # are True; else raise Error
         if args.original and args.transform:
             image = concat(src_image, trans_image)
         elif args.original and not args.transform:

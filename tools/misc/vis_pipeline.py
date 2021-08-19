@@ -12,8 +12,7 @@ from mmcls.datasets.builder import build_dataset
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(
-        description='visualize dataset')
+    parser = argparse.ArgumentParser(description='visualize dataset')
     parser.add_argument('config', help='train config file path')
     parser.add_argument(
         '--skip-type',
@@ -25,13 +24,15 @@ def parse_args():
         '--output-dir',
         default='tmp',
         type=str,
-        help='Only use when "--show" is False, if there is no display interface, you can save it.')
+        help='Only use when "--show" is False, if there is no display'
+        ' interface, you can save it.')
     parser.add_argument(
         '--phase',
         default='train',
         type=str,
         choices=['train', 'test', 'val'],
-        help='which phase of dataset to brower, accept "train" or "test" or "val".')
+        help='which phase of dataset to brower, accept "train" or'
+        ' "test" or "val".')
     parser.add_argument(
         '--number',
         type=int,
@@ -47,7 +48,8 @@ def parse_args():
         '--bgr2rgb',
         default=False,
         action='store_true',
-        help='to transform a "bgr" image to a "rgb" image, (some pipeline transform will change the channel order).')
+        help='to transform a BGR image to a RGB image, since transformed'
+        ' images may be displayed in BGR channel order')
     parser.add_argument(
         '--cfg-options',
         nargs='+',
@@ -81,7 +83,7 @@ def retrieve_data_cfg(config_path, skip_type, cfg_options, phase):
 
 
 def put_text(img, texts, text_color=(0, 0, 255), font_scale=0.6, row_width=20):
-    ''' write the label info on the image'''
+    """write the label info on the image."""
     x, y = 0, int(row_width * 0.75)
     for text in texts:
         cv2.putText(img, text, (x, y), cv2.FONT_HERSHEY_COMPLEX, font_scale,
@@ -89,9 +91,11 @@ def put_text(img, texts, text_color=(0, 0, 255), font_scale=0.6, row_width=20):
         y += row_width
     return img
 
+
 def main():
     args = parse_args()
-    cfg = retrieve_data_cfg(args.config, args.skip_type, args.cfg_options, args.phase)
+    cfg = retrieve_data_cfg(args.config, args.skip_type, args.cfg_options,
+                            args.phase)
     dataset = build_dataset(cfg.data[args.phase])
     class_names = dataset.CLASSES
 
@@ -102,8 +106,8 @@ def main():
         try:
             src_path = item['filename']
             filename = Path(src_path).name
-        except:
-            filename = "{}.jpg".format(i)
+        except KeyError:
+            filename = '{}.jpg'.format(i)
         dist_path = os.path.join(args.output_dir, filename)
         labels = [
             label.strip() for label in class_names[item['gt_label']].split(',')
@@ -114,14 +118,13 @@ def main():
         if args.bgr2rgb:
             trans_image = mmcv.bgr2rgb(trans_image)
 
-
         # Only display the label on the image when pictures are large enough
         h, w, _ = trans_image.shape
         if h >= 160 and w >= 160:
             trans_image = put_text(trans_image, labels)
 
         if args.show:
-            print( labels )
+            print(labels)
             mmcv.imshow(trans_image)
         else:
             mmcv.imwrite(trans_image, dist_path, auto_mkdir=True)
