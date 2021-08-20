@@ -10,6 +10,7 @@ import numpy as np
 from ..builder import PIPELINES
 from .compose import Compose
 
+# Default hyperparameters for all Ops
 _HPARAMS_DEFAULT = dict(pad_val=128)
 
 
@@ -18,7 +19,18 @@ def random_negative(value, random_negative_prob):
     return -value if np.random.rand() < random_negative_prob else value
 
 
-def merge_hparams(policy, hparams):
+def merge_hparams(policy: dict, hparams: dict):
+    """Merge hyperparameters into policy config.
+
+    Only merge partial hyperparameters required of the policy.
+
+    Args:
+        policy (dict): Original policy config dict.
+        hparams (dict): Hyperparameters need to be merged.
+
+    Returns:
+        dict: Policy config dict after adding ``hparams``.
+    """
     op = PIPELINES.get(policy['type'])
     assert op is not None, f'Invalid policy type "{policy["type"]}".'
     for key, value in hparams.items():
