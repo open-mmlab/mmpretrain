@@ -1,3 +1,4 @@
+# Refers to `_RAND_INCREASING_TRANSFORMS` in pytorch-image-models
 rand_increasing_policies = [
     dict(type='AutoContrast'),
     dict(type='Equalize'),

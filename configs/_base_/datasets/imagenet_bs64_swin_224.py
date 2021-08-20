@@ -1,4 +1,4 @@
-_base_ = ['./pipeline/rand_aug.py']
+_base_ = ['./pipelines/rand_aug.py']
 
 # dataset settings
 dataset_type = 'ImageNet'
