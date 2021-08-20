@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from mmdet.models import build_detector
 
 from mmcls.models import (MobileNetV2, MobileNetV3, RegNet, ResNeSt, ResNet,
