@@ -13,8 +13,8 @@ from mmcls.datasets.builder import build_dataset
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description='Browse a ImageNet Style Dataset')
-    parser.add_argument('config', help='train config file path')
+        description='Visualize a ImageNet Style Dataset')
+    parser.add_argument('config', help='config file path')
     parser.add_argument(
         '--skip-type',
         type=str,
@@ -25,42 +25,40 @@ def parse_args():
         '--output-dir',
         default='tmp',
         type=str,
-        help='Only use when "show" is False, if there is no display'
-        'interface, you can save it.')
+        help='folder to save pictures, only used when "--show" is False')
     parser.add_argument(
         '--phase',
         default='train',
         type=str,
         choices=['train', 'test', 'val'],
-        help='which phase of dataset to brower, accept "train" or '
+        help='phase of dataset to visualize, only accept "train", '
         '"test" or "val".')
     parser.add_argument(
         '--number',
         type=int,
         default=-1,
-        help='number of images to show;'
-        ' if number less than 0, show all the images in dataset')
+        help='number of images in dataset to display; '
+        'if the number is less than 0, show all the images in dataset')
     parser.add_argument(
         '--original',
         default=False,
         action='store_true',
-        help='Whether to visualize the original image')
+        help='whether to visualize the original images')
     parser.add_argument(
         '--transform',
         default=False,
         action='store_true',
-        help='Whether to visualize the transformed image')
+        help='whether to visualize the transformed images')
     parser.add_argument(
         '--show',
         default=False,
         action='store_true',
-        help='Whether to display a visual image')
+        help='whether to display images in pop-up windows')
     parser.add_argument(
         '--bgr2rgb',
         default=False,
         action='store_true',
-        help='to transform a BGR image to a RGB image, since transformed'
-        ' images may be displayed in BGR channel order')
+        help='transform the color channel order of images')
     parser.add_argument(
         '--cfg-options',
         nargs='+',
@@ -94,7 +92,7 @@ def retrieve_data_cfg(config_path, skip_type, cfg_options, phase):
 
 
 def put_text(img, texts, text_color=(0, 0, 255), font_scale=0.6, row_width=20):
-    """write the label info on the image."""
+    """write the label info on the pictures."""
     x, y = 0, int(row_width * 0.75)
     for text in texts:
         cv2.putText(img, text, (x, y), cv2.FONT_HERSHEY_COMPLEX, font_scale,
@@ -104,7 +102,7 @@ def put_text(img, texts, text_color=(0, 0, 255), font_scale=0.6, row_width=20):
 
 
 def put_img(board, img, center):
-    """put a image into a big board image."""
+    """put a image into a big board image with the anchor center."""
     center_x, center_y = center
     img_h, img_w, _ = img.shape
     board_h, board_w, _ = board.shape
@@ -117,7 +115,7 @@ def put_img(board, img, center):
 
 
 def concat(left_img, right_img):
-    """Concat two images into a single big one.
+    """Concat two pictures into a single big picture.
 
     accept two diffenert shape images.
     """

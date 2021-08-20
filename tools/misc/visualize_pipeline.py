@@ -12,8 +12,8 @@ from mmcls.datasets.builder import build_dataset
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='visualize dataset')
-    parser.add_argument('config', help='train config file path')
+    parser = argparse.ArgumentParser(description='Visualize a dataset')
+    parser.add_argument('config', help='config file path')
     parser.add_argument(
         '--skip-type',
         type=str,
@@ -24,32 +24,30 @@ def parse_args():
         '--output-dir',
         default='tmp',
         type=str,
-        help='Only use when "--show" is False, if there is no display'
-        ' interface, you can save it.')
+        help='folder to save pictures, only used when "--show" is False')
     parser.add_argument(
         '--phase',
         default='train',
         type=str,
         choices=['train', 'test', 'val'],
-        help='which phase of dataset to brower, accept "train" or'
-        ' "test" or "val".')
+        help='phase of dataset to visualize, only accept "train", '
+        '"test" or "val".')
     parser.add_argument(
         '--number',
         type=int,
         default=-1,
-        help='number of images to show;'
-        ' if number less than 0, show all the images in dataset')
+        help='number of images in dataset to display; '
+        'if the number is less than 0, show all the images in dataset')
     parser.add_argument(
         '--show',
         default=False,
         action='store_true',
-        help='Whether to display a visual image')
+        help='whether to display images in pop-up windows')
     parser.add_argument(
         '--bgr2rgb',
         default=False,
         action='store_true',
-        help='to transform a BGR image to a RGB image, since transformed'
-        ' images may be displayed in BGR channel order')
+        help='flip the color channel order of images')
     parser.add_argument(
         '--cfg-options',
         nargs='+',
@@ -83,7 +81,7 @@ def retrieve_data_cfg(config_path, skip_type, cfg_options, phase):
 
 
 def put_text(img, texts, text_color=(0, 0, 255), font_scale=0.6, row_width=20):
-    """write the label info on the image."""
+    """write the label info on the pictures."""
     x, y = 0, int(row_width * 0.75)
     for text in texts:
         cv2.putText(img, text, (x, y), cv2.FONT_HERSHEY_COMPLEX, font_scale,
@@ -102,7 +100,7 @@ def main():
     number = min(args.number,
                  len(dataset)) if args.number >= 0 else len(dataset)
     for i, item in enumerate(itertools.islice(dataset, number)):
-        # some dataset do not have filename, such as minist, cifar
+        # some datasets do not have filename, such as minist, cifar
         try:
             src_path = item['filename']
             filename = Path(src_path).name
@@ -118,7 +116,7 @@ def main():
         if args.bgr2rgb:
             trans_image = mmcv.bgr2rgb(trans_image)
 
-        # Only display the label on the image when pictures are large enough
+        # Only display the label on the picture when pictures are large enough
         h, w, _ = trans_image.shape
         if h >= 160 and w >= 160:
             trans_image = put_text(trans_image, labels)
