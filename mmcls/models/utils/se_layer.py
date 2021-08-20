@@ -18,9 +18,9 @@ class SELayer(BaseModule):
         ratio (int): Squeeze ratio in SELayer, the intermediate channel will
             be ``make_divisible(channels // ratio, divisor)``. Only used when
             ``squeeze_channels`` is None. Default: 16.
-        divisor(int): the divisor to true divide the channel number. Only
+        divisor(int): The divisor to true divide the channel number. Only
             used when ``squeeze_channels`` is None. Default: 8.
-        conv_cfg (None or dict): Config dict for convolution layer.Default:
+        conv_cfg (None or dict): Config dict for convolution layer. Default:
             None, which means using conv2d.
         act_cfg (dict or Sequence[dict]): Config dict for activation layer.
             If act_cfg is a dict, two activation layers will be configurated
