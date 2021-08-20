@@ -24,9 +24,9 @@ The pre-trained models are converted from [model zoo of Google Research](https:/
 
 |   Model    | Params(M) |  Flops(G) | Download |
 |:----------:|:---------:|:---------:|:--------:|
-|  ViT-B16\* |   86.86   |   33.03   | [model](https://download.openmmlab.com/mmclassification/v0/vit/pretrain/vit-base-p16_in21k-pre-3rdparty_20210819-a806ca8c.pth)|
-|  ViT-B32\* |   88.30   |    8.56   | [model](https://download.openmmlab.com/mmclassification/v0/vit/pretrain/vit-base-p32_in21k-pre-3rdparty_20210820-03d86b2c.pth)|
-|  ViT-L16\* |  304.72   |  116.68   | [model](https://download.openmmlab.com/mmclassification/v0/vit/pretrain/vit-large-p16_in21k-pre-3rdparty_20210819-06a74e31.pth)|
+|  ViT-B16\* |   86.86   |   33.03   | [model](https://download.openmmlab.com/mmclassification/v0/vit/pretrain/vit-base-p16_in21k-pre-3rdparty_20210820-37e7e71c.pth)|
+|  ViT-B32\* |   88.30   |    8.56   | [model](https://download.openmmlab.com/mmclassification/v0/vit/pretrain/vit-base-p32_in21k-pre-3rdparty_20210820-bf66d859.pth)|
+|  ViT-L16\* |  304.72   |  116.68   | [model](https://download.openmmlab.com/mmclassification/v0/vit/pretrain/vit-large-p16_in21k-pre-3rdparty_20210820-831bb8ba.pth)|
 
 *Models with \* are converted from other repos.*
 
