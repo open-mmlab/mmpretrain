@@ -1,10 +1,7 @@
-_base_ = './repvggA0_b64x4_imagenet.py'
+_base_ = [
+    '../_base_/models/repvggA0.py', '../_base_/datasets/imagenet_bs64.py',
+    '../_base_/schedules/imagenet_bs256_coslr.py',
+    '../_base_/default_runtime.py'
+]
 
-lr_config = dict(
-    _delete_=True,
-    policy='CosineAnnealing',
-    min_lr=0,
-    warmup='linear',
-    warmup_iters=2500,
-    warmup_ratio=0.25)
 runner = dict(max_epochs=120)
