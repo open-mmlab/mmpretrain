@@ -15,9 +15,14 @@
 }
 ```
 
+The training step of Vision Transformers is divided into two steps. The first
+step is training the model on a large dataset, like ImageNet-21k, and get the
+pretrain model. And the second step is training the model on the target dataset,
+like ImageNet-1k, and get the finetune model. Here, we provide both pretrain
+models and finetune models.
+
 ## Pretrain model
 
-The training step
 The pre-trained models are converted from [model zoo of Google Research](https://github.com/google-research/vision_transformer#available-vit-models).
 
 ### ImageNet 21k
@@ -33,7 +38,7 @@ The pre-trained models are converted from [model zoo of Google Research](https:/
 
 ## Finetune model
 
-The pre-trained models are converted from [model zoo of Google Research](https://github.com/google-research/vision_transformer#available-vit-models).
+The finetune models are converted from [model zoo of Google Research](https://github.com/google-research/vision_transformer#available-vit-models).
 
 ### ImageNet 1k
 |    Model   |  Pretrain    | resolution  | Params(M) |  Flops(G) | Top-1 (%) | Top-5 (%) |   Config   | Download |
