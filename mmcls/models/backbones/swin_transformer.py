@@ -137,6 +137,8 @@ class SwinBlockSequence(BaseModule):
         if not isinstance(block_cfgs, Sequence):
             block_cfgs = [deepcopy(block_cfgs) for _ in range(depth)]
 
+        self.embed_dims = embed_dims
+        self.input_resolution = input_resolution
         self.blocks = ModuleList()
         for i in range(depth):
             _block_cfg = {
@@ -170,6 +172,20 @@ class SwinBlockSequence(BaseModule):
         if self.downsample:
             x = self.downsample(x)
         return x
+
+    @property
+    def out_resolution(self):
+        if self.downsample:
+            return self.downsample.output_resolution
+        else:
+            return self.input_resolution
+
+    @property
+    def out_channels(self):
+        if self.downsample:
+            return self.downsample.out_channels
+        else:
+            return self.embed_dims
 
 
 @BACKBONES.register_module()
@@ -239,12 +255,15 @@ class SwinTransformer(BaseBackbone):
                          'num_heads':  [6, 12, 24, 48]}),
     }  # yapf: disable
 
+    _version = 2
+
     def __init__(self,
                  arch='T',
                  img_size=224,
                  in_channels=3,
                  drop_rate=0.,
                  drop_path_rate=0.1,
+                 out_indices=(3, ),
                  use_abs_pos_embed=False,
                  auto_pad=False,
                  norm_cfg=dict(type='LN'),
@@ -268,6 +287,7 @@ class SwinTransformer(BaseBackbone):
         self.depths = self.arch_settings['depths']
         self.num_heads = self.arch_settings['num_heads']
         self.num_layers = len(self.depths)
+        self.out_indices = out_indices
         self.use_abs_pos_embed = use_abs_pos_embed
         self.auto_pad = auto_pad
 
@@ -321,17 +341,24 @@ class SwinTransformer(BaseBackbone):
             self.stages.append(stage)
 
             dpr = dpr[depth:]
-            if downsample:
-                embed_dims = stage.downsample.out_channels
-                input_resolution = stage.downsample.output_resolution
+            embed_dims = stage.out_channels
+            input_resolution = stage.out_resolution
 
-        if norm_cfg is not None:
-            self.norm = build_norm_layer(norm_cfg, embed_dims)[1]
-        else:
-            self.norm = None
+        for i in out_indices:
+            if norm_cfg is not None:
+                norm_layer = build_norm_layer(norm_cfg, embed_dims)[1]
+            else:
+                norm_layer = nn.Identity()
+
+            self.add_module(f'norm{i}', norm_layer)
 
     def init_weights(self):
         super(SwinTransformer, self).init_weights()
+
+        if (isinstance(self.init_cfg, dict)
+                and self.init_cfg['type'] == 'Pretrained'):
+            # Suppress default init if use pretrained model.
+            return
 
         if self.use_abs_pos_embed:
             trunc_normal_(self.absolute_pos_embed, std=0.02)
@@ -342,9 +369,33 @@ class SwinTransformer(BaseBackbone):
             x = x + self.absolute_pos_embed
         x = self.drop_after_pos(x)
 
-        for stage in self.stages:
+        outs = []
+        for i, stage in enumerate(self.stages):
             x = stage(x)
+            if i in self.out_indices:
+                norm_layer = getattr(self, f'norm{i}')
+                out = norm_layer(x)
+                out = out.view(-1, *stage.out_resolution,
+                               stage.out_channels).permute(0, 3, 1,
+                                                           2).contiguous()
+                outs.append(out)
 
-        x = self.norm(x) if self.norm else x
+        return tuple(outs)
 
-        return x.transpose(1, 2)
+    def _load_from_state_dict(self, state_dict, prefix, local_metadata, *args,
+                              **kwargs):
+        """load checkpoints."""
+        # Names of some parameters in has been changed.
+        version = local_metadata.get('version', None)
+        if (version is None
+                or version < 2) and self.__class__ is SwinTransformer:
+            final_stage_num = len(self.stages) - 1
+            state_dict_keys = list(state_dict.keys())
+            for k in state_dict_keys:
+                if k.startswith('norm.') or k.startswith('backbone.norm.'):
+                    convert_key = k.replace('norm.', f'norm{final_stage_num}.')
+                    state_dict[convert_key] = state_dict[k]
+                    del state_dict[k]
+
+        super()._load_from_state_dict(state_dict, prefix, local_metadata,
+                                      *args, **kwargs)
