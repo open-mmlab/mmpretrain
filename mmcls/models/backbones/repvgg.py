@@ -56,6 +56,8 @@ class RepVGGBlock(BaseModule):
                  init_cfg=None):
         super(RepVGGBlock, self).__init__(init_cfg)
 
+        assert se_cfg is None or isinstance(se_cfg, dict)
+
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.stride = stride
@@ -83,7 +85,8 @@ class RepVGGBlock(BaseModule):
                 padding_mode=padding_mode)
         else:
             self.branch_identity = build_norm_layer(norm_cfg, in_channels)[1] \
-                if out_channels == in_channels and stride == 1 else None
+                if out_channels == in_channels and stride == 1 and \
+                padding == dilation else None
             self.branch_3x3 = self.create_conv_bn(
                 kernel_size=3,
                 dilation=dilation,
@@ -266,8 +269,6 @@ class RepVGG(BaseBackbone):
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm
             and its variants only. Default: False.
-        zero_init_residual (bool): Whether to use zero init for last norm layer
-            in resblocks to let them behave as identity. Default: True.
         init_cfg (dict or list[dict], optional): Initialization config dict.
             Default: None
     """
@@ -280,30 +281,15 @@ class RepVGG(BaseBackbone):
 
     arch_settings = {
         'A0':
-        dict(
-            num_blocks=[2, 4, 14, 1],
-            width_factor=[0.75, 0.75, 0.75, 2.5],
-            group_idx=None),
+        dict(num_blocks=[2, 4, 14, 1], width_factor=[0.75, 0.75, 0.75, 2.5]),
         'A1':
-        dict(
-            num_blocks=[2, 4, 14, 1],
-            width_factor=[1, 1, 1, 2.5],
-            group_idx=None),
+        dict(num_blocks=[2, 4, 14, 1], width_factor=[1, 1, 1, 2.5]),
         'A2':
-        dict(
-            num_blocks=[2, 4, 14, 1],
-            width_factor=[1.5, 1.5, 1.5, 2.75],
-            group_idx=None),
+        dict(num_blocks=[2, 4, 14, 1], width_factor=[1.5, 1.5, 1.5, 2.75]),
         'B0':
-        dict(
-            num_blocks=[4, 6, 16, 1],
-            width_factor=[1, 1, 1, 2.5],
-            group_idx=None),
+        dict(num_blocks=[4, 6, 16, 1], width_factor=[1, 1, 1, 2.5]),
         'B1':
-        dict(
-            num_blocks=[4, 6, 16, 1],
-            width_factor=[2, 2, 2, 4],
-            group_idx=None),
+        dict(num_blocks=[4, 6, 16, 1], width_factor=[2, 2, 2, 4]),
         'B1g2':
         dict(
             num_blocks=[4, 6, 16, 1],
@@ -315,10 +301,7 @@ class RepVGG(BaseBackbone):
             width_factor=[2, 2, 2, 4],
             group_idx=g4_map),
         'B2':
-        dict(
-            num_blocks=[4, 6, 16, 1],
-            width_factor=[2.5, 2.5, 2.5, 5],
-            group_idx=None),
+        dict(num_blocks=[4, 6, 16, 1], width_factor=[2.5, 2.5, 2.5, 5]),
         'B2g2':
         dict(
             num_blocks=[4, 6, 16, 1],
@@ -330,10 +313,7 @@ class RepVGG(BaseBackbone):
             width_factor=[2.5, 2.5, 2.5, 5],
             group_idx=g4_map),
         'B3':
-        dict(
-            num_blocks=[4, 6, 16, 1],
-            width_factor=[3, 3, 3, 5],
-            group_idx=None),
+        dict(num_blocks=[4, 6, 16, 1], width_factor=[3, 3, 3, 5]),
         'B3g2':
         dict(
             num_blocks=[4, 6, 16, 1],
@@ -345,10 +325,7 @@ class RepVGG(BaseBackbone):
             width_factor=[3, 3, 3, 5],
             group_idx=g4_map),
         'D2se':
-        dict(
-            num_blocks=[8, 14, 24, 1],
-            width_factor=[2.5, 2.5, 2.5, 5],
-            group_idx=None)
+        dict(num_blocks=[8, 14, 24, 1], width_factor=[2.5, 2.5, 2.5, 5])
     }
 
     def __init__(self,
@@ -366,7 +343,6 @@ class RepVGG(BaseBackbone):
                  with_cp=False,
                  deploy=False,
                  norm_eval=False,
-                 zero_init_residual=True,
                  init_cfg=[
                      dict(type='Kaiming', layer=['Conv2d']),
                      dict(
@@ -387,10 +363,8 @@ class RepVGG(BaseBackbone):
         assert len(arch['num_blocks']) == len(
             arch['width_factor']) == len(strides) == len(dilations)
         assert max(out_indices) < len(arch['num_blocks'])
-        if arch['group_idx'] is not None:
+        if 'group_idx' in arch.keys():
             assert max(arch['group_idx'].keys()) <= sum(arch['num_blocks'])
-
-        assert se_cfg is None or isinstance(se_cfg, dict)
 
         self.arch = arch
         self.in_channels = in_channels
@@ -406,7 +380,6 @@ class RepVGG(BaseBackbone):
         self.act_cfg = act_cfg
         self.with_cp = with_cp
         self.norm_eval = norm_eval
-        self.zero_init_residual = zero_init_residual
 
         channels = min(64, int(base_channels * self.arch['width_factor'][0]))
         self.stage_0 = RepVGGBlock(
@@ -447,7 +420,7 @@ class RepVGG(BaseBackbone):
         for i in range(num_blocks):
             groups = self.arch['group_idx'].get(
                 next_create_block_idx,
-                1) if self.arch['group_idx'] is not None else 1
+                1) if 'group_idx' in self.arch.keys() else 1
             blocks.append(
                 RepVGGBlock(
                     in_channels,
