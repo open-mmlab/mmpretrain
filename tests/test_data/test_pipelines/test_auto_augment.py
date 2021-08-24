@@ -40,6 +40,47 @@ def construct_toy_data_photometric():
     return results
 
 
+def test_auto_augment():
+    policies = [[
+        dict(type='Posterize', bits=4, prob=0.4),
+        dict(type='Rotate', angle=30., prob=0.6)
+    ]]
+
+    # test assertion for policies
+    with pytest.raises(AssertionError):
+        # policies shouldn't be empty
+        transform = dict(type='AutoAugment', policies=[])
+        build_from_cfg(transform, PIPELINES)
+    with pytest.raises(AssertionError):
+        # policy should have type
+        invalid_policies = copy.deepcopy(policies)
+        invalid_policies[0][0].pop('type')
+        transform = dict(type='AutoAugment', policies=invalid_policies)
+        build_from_cfg(transform, PIPELINES)
+    with pytest.raises(AssertionError):
+        # sub policy should be a non-empty list
+        invalid_policies = copy.deepcopy(policies)
+        invalid_policies[0] = []
+        transform = dict(type='AutoAugment', policies=invalid_policies)
+        build_from_cfg(transform, PIPELINES)
+    with pytest.raises(AssertionError):
+        # policy should be valid in PIPELINES registry.
+        invalid_policies = copy.deepcopy(policies)
+        invalid_policies.append([dict(type='Wrong_policy')])
+        transform = dict(type='AutoAugment', policies=invalid_policies)
+        build_from_cfg(transform, PIPELINES)
+
+    # test hparams
+    transform = dict(
+        type='AutoAugment',
+        policies=policies,
+        hparams=dict(pad_val=15, interpolation='nearest'))
+    pipeline = build_from_cfg(transform, PIPELINES)
+    # use hparams if not set in policies config
+    assert pipeline.policies[0][1]['pad_val'] == 15
+    assert pipeline.policies[0][1]['interpolation'] == 'nearest'
+
+
 def test_rand_augment():
     policies = [
         dict(
@@ -48,12 +89,13 @@ def test_rand_augment():
             magnitude_range=(0, 1),
             pad_val=128,
             prob=1.,
-            direction='horizontal'),
+            direction='horizontal',
+            interpolation='nearest'),
         dict(type='Invert', prob=1.),
         dict(
             type='Rotate',
             magnitude_key='angle',
-            magnitude_range=(0, 30),
+            magnitude_range=(0, 90),
             prob=0.)
     ]
     # test assertion for num_policies
@@ -131,6 +173,15 @@ def test_rand_augment():
     with pytest.raises(AssertionError):
         invalid_policies = copy.deepcopy(policies)
         invalid_policies.append(('Wrong_policy'))
+        transform = dict(
+            type='RandAugment',
+            policies=invalid_policies,
+            num_policies=2,
+            magnitude_level=12)
+        build_from_cfg(transform, PIPELINES)
+    with pytest.raises(AssertionError):
+        invalid_policies = copy.deepcopy(policies)
+        invalid_policies.append(dict(type='Wrong_policy'))
         transform = dict(
             type='RandAugment',
             policies=invalid_policies,
@@ -326,6 +377,32 @@ def test_rand_augment():
     img_augmented = np.stack([img_augmented, img_augmented, img_augmented],
                              axis=-1)
     np.testing.assert_array_equal(results['img'], img_augmented)
+
+    # test hparams
+    random.seed(8)
+    np.random.seed(0)
+    results = construct_toy_data()
+    policies[2]['prob'] = 1.0
+    transform = dict(
+        type='RandAugment',
+        policies=policies,
+        num_policies=2,
+        magnitude_level=12,
+        magnitude_std=-1,
+        hparams=dict(pad_val=15, interpolation='nearest'))
+    pipeline = build_from_cfg(transform, PIPELINES)
+    # apply translate (magnitude=0.4) and rotate (angle=36)
+    results = pipeline(results)
+    img_augmented = np.array(
+        [[128, 128, 128, 15], [128, 128, 5, 2], [15, 9, 9, 6]], dtype=np.uint8)
+    img_augmented = np.stack([img_augmented, img_augmented, img_augmented],
+                             axis=-1)
+    np.testing.assert_array_equal(results['img'], img_augmented)
+    # hparams won't override setting in policies config
+    assert pipeline.policies[0]['pad_val'] == 128
+    # use hparams if not set in policies config
+    assert pipeline.policies[2]['pad_val'] == 15
+    assert pipeline.policies[2]['interpolation'] == 'nearest'
 
 
 def test_shear():
@@ -705,7 +782,7 @@ def test_equalize(nb_rand_test=100):
     transform = dict(type='Equalize', prob=1.)
     pipeline = build_from_cfg(transform, PIPELINES)
     for _ in range(nb_rand_test):
-        img = np.clip(np.random.normal(0, 1, (1000, 1200, 3)) * 260, 0,
+        img = np.clip(np.random.normal(0, 1, (256, 256, 3)) * 260, 0,
                       255).astype(np.uint8)
         results['img'] = img
         results = pipeline(copy.deepcopy(results))
@@ -904,7 +981,7 @@ def test_contrast(nb_rand_test=100):
             prob=1.,
             random_negative_prob=0.)
         pipeline = build_from_cfg(transform, PIPELINES)
-        img = np.clip(np.random.uniform(0, 1, (1200, 1000, 3)) * 260, 0,
+        img = np.clip(np.random.uniform(0, 1, (256, 256, 3)) * 260, 0,
                       255).astype(np.uint8)
         results['img'] = img
         results = pipeline(copy.deepcopy(results))
@@ -1035,7 +1112,7 @@ def test_brightness(nb_rand_test=100):
             prob=1.,
             random_negative_prob=0.)
         pipeline = build_from_cfg(transform, PIPELINES)
-        img = np.clip(np.random.uniform(0, 1, (1200, 1000, 3)) * 260, 0,
+        img = np.clip(np.random.uniform(0, 1, (256, 256, 3)) * 260, 0,
                       255).astype(np.uint8)
         results['img'] = img
         results = pipeline(copy.deepcopy(results))
@@ -1097,7 +1174,7 @@ def test_sharpness(nb_rand_test=100):
             prob=1.,
             random_negative_prob=0.)
         pipeline = build_from_cfg(transform, PIPELINES)
-        img = np.clip(np.random.uniform(0, 1, (1200, 1000, 3)) * 260, 0,
+        img = np.clip(np.random.uniform(0, 1, (256, 256, 3)) * 260, 0,
                       255).astype(np.uint8)
         results['img'] = img
         results = pipeline(copy.deepcopy(results))
