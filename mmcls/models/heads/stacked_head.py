@@ -114,9 +114,11 @@ class StackedLinearClsHead(ClsHead):
     def init_weights(self):
         self.layers.init_weights()
 
-    def simple_test(self, img):
+    def simple_test(self, x):
         """Test without augmentation."""
-        cls_score = img
+        if isinstance(x, tuple):
+            x = x[-1]
+        cls_score = x
         for layer in self.layers:
             cls_score = layer(cls_score)
         if isinstance(cls_score, list):
@@ -126,6 +128,8 @@ class StackedLinearClsHead(ClsHead):
         return self.post_process(pred)
 
     def forward_train(self, x, gt_label):
+        if isinstance(x, tuple):
+            x = x[-1]
         cls_score = x
         for layer in self.layers:
             cls_score = layer(cls_score)
