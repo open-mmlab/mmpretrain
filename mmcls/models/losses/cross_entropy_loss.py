@@ -103,7 +103,7 @@ def binary_cross_entropy(pred,
         torch.Tensor: The calculated loss
     """
     assert pred.dim() == label.dim()
-    # Ensure that the size of class_weight is consistent with pred and label to 
+    # Ensure that the size of class_weight is consistent with pred and label to
     # avoid automatic boracast,
     if class_weight is not None:
         N = pred.size()[0]
