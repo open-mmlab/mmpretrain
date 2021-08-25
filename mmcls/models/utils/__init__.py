@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from .attention import ShiftWindowMSA
 from .augment.augments import Augments
 from .channel_shuffle import channel_shuffle

@@ -10,8 +10,9 @@ MMClassification 和 MMCV 的适配关系如下，请安装正确版本的 MMCV 
 
 | MMClassification 版本 |       MMCV 版本      |
 |:---------------------:|:--------------------:|
-|        master         | mmcv>=1.3.6, <=1.5.0 |
-|        0.13.0         | mmcv>=1.3.6, <=1.5.0 |
+|        master         | mmcv>=1.3.8, <=1.5.0 |
+|        0.14.0         | mmcv>=1.3.8, <=1.5.0 |
+|        0.13.0         | mmcv>=1.3.8, <=1.5.0 |
 |        0.12.0         | mmcv>=1.3.1, <=1.5.0 |
 |        0.11.1         | mmcv>=1.3.1, <=1.5.0 |
 |        0.11.0         | mmcv>=1.3.0          |
@@ -107,9 +108,9 @@ MMClassification 提供 [Dockerfile](/docker/Dockerfile) ，可以通过以下�
 docker build -f ./docker/Dockerfile --rm -t mmcls:torch1.6.0-cuda10.1-cudnn7 .
 ```
 
-**注意:** 确保已经安装了 [nvidia-container-toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker).
+**注意：** 确保已经安装了 [nvidia-container-toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker).
 
-运行一个基于上述镜像的容器:
+运行一个基于上述镜像的容器：
 
 ```shell
 docker run --gpus all --shm-size=8g -it -v {DATA_DIR}:/workspace/mmclassification/data mmcls:torch1.6.0-cuda10.1-cudnn7 /bin/bash
