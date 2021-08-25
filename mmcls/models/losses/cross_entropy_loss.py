@@ -22,7 +22,7 @@ def cross_entropy(pred,
         reduction (str): The method used to reduce the loss.
         avg_factor (int, optional): Average factor that is used to average
             the loss. Defaults to None.
-        class_weight (list[float], optional): The weight for each class with
+        class_weight (torch.Tensor, optional): The weight for each class with
             shape (C), C is the number of classes. Default None.
 
     Returns:
@@ -57,7 +57,7 @@ def soft_cross_entropy(pred,
         reduction (str): The method used to reduce the loss.
         avg_factor (int, optional): Average factor that is used to average
             the loss. Defaults to None.
-        class_weight (list[float], optional): The weight for each class with
+        class_weight (torch.Tensor, optional): The weight for each class with
             shape (C), C is the number of classes. Default None.
 
     Returns:
@@ -96,14 +96,18 @@ def binary_cross_entropy(pred,
             is same shape as pred and label. Defaults to 'mean'.
         avg_factor (int, optional): Average factor that is used to average
             the loss. Defaults to None.
-        class_weight (list[float], optional): The weight for each class with
+        class_weight (torch.Tensor, optional): The weight for each class with
             shape (C), C is the number of classes. Default None.
 
     Returns:
         torch.Tensor: The calculated loss
     """
     assert pred.dim() == label.dim()
-
+    # Ensure that the size of class_weight is consistent with pred and label to 
+    # avoid automatic boracast,
+    if class_weight is not None:
+        N = pred.size()[0]
+        class_weight = class_weight.repeat(N, 1)
     loss = F.binary_cross_entropy_with_logits(
         pred, label, weight=class_weight, reduction='none')
 
@@ -130,7 +134,7 @@ class CrossEntropyLoss(nn.Module):
         reduction (str): The method used to reduce the loss.
             Options are "none", "mean" and "sum". Defaults to 'mean'.
         loss_weight (float):  Weight of the loss. Defaults to 1.0.
-        class_weight (list[float], optional): The weight for each class with
+        class_weight (torch.Tensor, optional): The weight for each class with
             shape (C), C is the number of classes. Default None.
     """
 
