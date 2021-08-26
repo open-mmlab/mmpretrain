@@ -96,6 +96,9 @@ def show_result_pyplot(model, img, result, fig_size=(15, 10), wait_time=0):
         img (str or np.ndarray): Image filename or loaded image.
         result (list): The classification result.
         fig_size (tuple): Figure size of the pyplot figure.
+            Defaults to (15, 10).
+        wait_time (int): How many seconds to display the image.
+            Defaults to 0.
     """
     if hasattr(model, 'module'):
         model = model.module

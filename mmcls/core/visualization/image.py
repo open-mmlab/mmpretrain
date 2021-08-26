@@ -43,7 +43,7 @@ def imshow_infos(img,
         win_name (str): The image title. Defaults to ''
         show (bool): Whether to show the image. Defaults to True.
         fig_size (tuple): Image show figure size. Defaults to (15, 10).
-        wait_time (int): Show time of image display.
+        wait_time (int): How many seconds to display the image. Defaults to 0.
         out_file (Optional[str]): The filename to write the image.
             Defaults to None.
 

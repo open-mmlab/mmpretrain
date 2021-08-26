@@ -188,8 +188,8 @@ class BaseClassifier(BaseModule, metaclass=ABCMeta):
                 Default: False.
             fig_size (tuple): Image show figure size. Defaults to (15, 10).
             win_name (str): The window name.
-            wait_time (int): Value of waitKey param.
-                Default: 0.
+            wait_time (int): How many seconds to display the image.
+                Defaults to 0.
             out_file (str or None): The filename to write the image.
                 Default: None.
 
