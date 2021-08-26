@@ -50,6 +50,8 @@ def imshow_infos(img,
     Returns:
         np.ndarray: The image with extra infomations.
     """
+    img = mmcv.imread(img).astype(np.uint8)
+
     x, y = 3, row_width // 2
     text_color = color_val_matplotlib(text_color)
 
