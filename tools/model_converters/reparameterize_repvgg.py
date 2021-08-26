@@ -7,11 +7,8 @@ from torch.nn.modules.batchnorm import BatchNorm2d
 from mmcls.apis import init_model
 
 
-def convert_repvggblock_param(config_path,
-                              checkpoint_path,
-                              save_path,
-                              device='cuda'):
-    model = init_model(config_path, checkpoint=checkpoint_path, device=device)
+def convert_repvggblock_param(config_path, checkpoint_path, save_path):
+    model = init_model(config_path, checkpoint=checkpoint_path)
 
     print('Converting...')
 
@@ -41,10 +38,6 @@ def main():
     parser.add_argument(
         'save_path',
         help='The path where the converted checkpoint file is stored.')
-    parser.add_argument(
-        '--device',
-        default='cuda',
-        help='The device to which the model is loaded.')
     args = parser.parse_args()
 
     save_path = Path(args.save_path)
@@ -53,11 +46,8 @@ def main():
         exit()
     save_path.parent.mkdir(parents=True, exist_ok=True)
 
-    convert_repvggblock_param(
-        args.config_path,
-        args.checkpoint_path,
-        args.save_path,
-        device=args.device)
+    convert_repvggblock_param(args.config_path, args.checkpoint_path,
+                              args.save_path)
 
 
 if __name__ == '__main__':
