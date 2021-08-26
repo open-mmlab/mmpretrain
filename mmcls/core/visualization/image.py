@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import mmcv
 import numpy as np
 
+# A small value
 EPS = 1e-2
 
 
@@ -10,7 +11,7 @@ def color_val_matplotlib(color):
     tuples,
 
     Args:
-        color (:obj:`Color`/str/tuple/int/ndarray): Color inputs
+        color (:obj:`mmcv.Color`/str/tuple/int/ndarray): Color inputs
 
     Returns:
         tuple[float]: A tuple of 3 normalized floats indicating RGB channels.
@@ -20,16 +21,35 @@ def color_val_matplotlib(color):
     return tuple(color)
 
 
-def imshow_cls_result(img,
-                      result,
-                      text_color='white',
-                      font_size=26,
-                      row_width=20,
-                      win_name='',
-                      show=True,
-                      fig_size=(15, 10),
-                      wait_time=0,
-                      out_file=None):
+def imshow_infos(img,
+                 infos,
+                 text_color='white',
+                 font_size=26,
+                 row_width=20,
+                 win_name='',
+                 show=True,
+                 fig_size=(15, 10),
+                 wait_time=0,
+                 out_file=None):
+    """Show image with extra infomation.
+
+    Args:
+        img (str | ndarray): The image to be displayed.
+        infos (dict): Extra infos to display in the image.
+        text_color (:obj:`mmcv.Color`/str/tuple/int/ndarray): Extra infos
+            display color. Defaults to 'white'.
+        font_size (int): Extra infos display font size. Defaults to 26.
+        row_width (int): width between each row of results on the image.
+        win_name (str): The image title. Defaults to ''
+        show (bool): Whether to show the image. Defaults to True.
+        fig_size (tuple): Image show figure size. Defaults to (15, 10).
+        wait_time (int): Show time of image display.
+        out_file (Optional[str]): The filename to write the image.
+            Defaults to None.
+
+    Returns:
+        np.ndarray: The image with extra infomations.
+    """
     x, y = 3, row_width // 2
     text_color = color_val_matplotlib(text_color)
 
@@ -51,7 +71,7 @@ def imshow_cls_result(img,
     ax = plt.gca()
     ax.axis('off')
 
-    for k, v in result.items():
+    for k, v in infos.items():
         if isinstance(v, float):
             v = f'{v:.2f}'
         label_text = f'{k}: {v}'

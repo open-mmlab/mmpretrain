@@ -29,13 +29,13 @@ def test_color():
         vis.color_val_matplotlib((0, 0, 500))
 
 
-def test_imshow_cls_results():
-    tmp_dir = osp.join(tempfile.gettempdir(), 'cls_results_image')
+def test_imshow_infos():
+    tmp_dir = osp.join(tempfile.gettempdir(), 'infos_image')
     tmp_filename = osp.join(tmp_dir, 'image.jpg')
 
     image = np.ones((10, 10, 3), np.uint8)
     result = {'pred_label': 1, 'pred_class': 'bird', 'pred_score': 0.98}
-    out_image = vis.imshow_cls_result(
+    out_image = vis.imshow_infos(
         image, result, out_file=tmp_filename, show=False)
     assert osp.isfile(tmp_filename)
     assert image.shape == out_image.shape
@@ -45,7 +45,7 @@ def test_imshow_cls_results():
     # test grayscale images
     image = np.ones((10, 10), np.uint8)
     result = {'pred_label': 1, 'pred_class': 'bird', 'pred_score': 0.98}
-    out_image = vis.imshow_cls_result(
+    out_image = vis.imshow_infos(
         image, result, out_file=tmp_filename, show=False)
     assert osp.isfile(tmp_filename)
     assert image.shape == out_image.shape[:2]
@@ -70,11 +70,11 @@ def test_imshow_cls_results():
 
     with patch('matplotlib.pyplot.show', save_args), \
             patch('matplotlib.pyplot.pause', save_args):
-        vis.imshow_cls_result(image, result, show=True, wait_time=5)
+        vis.imshow_infos(image, result, show=True, wait_time=5)
         assert osp.exists(osp.join(tmp_dir, 'args_block-False'))
         assert osp.exists(osp.join(tmp_dir, 'args_5'))
 
-        vis.imshow_cls_result(image, result, show=True, wait_time=0)
+        vis.imshow_infos(image, result, show=True, wait_time=0)
         assert osp.exists(osp.join(tmp_dir, 'args'))
 
     # test adaptive dpi
@@ -85,6 +85,6 @@ def test_imshow_cls_results():
 
     with patch('matplotlib.pyplot.get_current_fig_manager',
                mock_fig_manager), patch('matplotlib.pyplot.show'):
-        vis.imshow_cls_result(image, result, show=True)
+        vis.imshow_infos(image, result, show=True)
 
     shutil.rmtree(tmp_dir)

@@ -1,3 +1,3 @@
-from .image import color_val_matplotlib, imshow_cls_result
+from .image import color_val_matplotlib, imshow_infos
 
-__all__ = ['imshow_cls_result', 'color_val_matplotlib']
+__all__ = ['imshow_infos', 'color_val_matplotlib']
