@@ -175,8 +175,7 @@ class CrossEntropyLoss(nn.Module):
             reduction_override if reduction_override else self.reduction)
 
         if self.class_weight is not None:
-            class_weight = torch.tensor(
-                self.class_weight, device=cls_score.device)
+            class_weight = cls_score.new_tensor(self.class_weight)
         else:
             class_weight = None
 
