@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -134,7 +135,7 @@ class CrossEntropyLoss(nn.Module):
         reduction (str): The method used to reduce the loss.
             Options are "none", "mean" and "sum". Defaults to 'mean'.
         loss_weight (float):  Weight of the loss. Defaults to 1.0.
-        class_weight (torch.Tensor, optional): The weight for each class with
+        class_weight (List[float], optional): The weight for each class with
             shape (C), C is the number of classes. Default None.
     """
 
@@ -174,7 +175,7 @@ class CrossEntropyLoss(nn.Module):
             reduction_override if reduction_override else self.reduction)
 
         if self.class_weight is not None:
-            class_weight = cls_score.new_tensor(
+            class_weight = torch.tensor(
                 self.class_weight, device=cls_score.device)
         else:
             class_weight = None
