@@ -2,6 +2,7 @@ import argparse
 import os
 import os.path as osp
 from collections import OrderedDict
+from datetime import datetime
 from pathlib import Path
 
 import mmcv
@@ -51,9 +52,15 @@ def parse_args():
         choices=['NONE', 'BEGIN', 'END', 'FAIL', 'REQUEUE', 'ALL'],
         help='Mail address to watch test status.')
     parser.add_argument(
+        '--quotatype',
+        default=None,
+        choices=['reserved', 'auto', 'spot'],
+        help='Quota type, only available for phoenix-slurm>=0.2')
+    parser.add_argument(
         '--summary',
         action='store_true',
         help='Summarize benchmark test results.')
+    parser.add_argument('--save', action='store_true', help='Save the summary')
 
     args = parser.parse_args()
     return args
@@ -81,18 +88,24 @@ def create_test_job_batch(commands, model_info, args, port, script_name):
     else:
         mail_cfg = ''
 
+    if args.quotatype is not None:
+        quota_cfg = f'#SBATCH --quotatype {args.quotatype}\n'
+    else:
+        quota_cfg = ''
+
     launcher = 'none' if args.local else 'slurm'
+    runner = 'python' if args.local else 'srun python'
 
     job_script = (f'#!/bin/bash\n'
                   f'#SBATCH --output {work_dir}/job.%j.out\n'
                   f'#SBATCH --partition={args.partition}\n'
                   f'#SBATCH --job-name {job_name}\n'
                   f'#SBATCH --gres=gpu:8\n'
-                  f'{mail_cfg}'
+                  f'{mail_cfg}{quota_cfg}'
                   f'#SBATCH --ntasks-per-node=8\n'
                   f'#SBATCH --ntasks=8\n'
                   f'#SBATCH --cpus-per-task=5\n\n'
-                  f'python -u {script_name} {config} {checkpoint} '
+                  f'{runner} -u {script_name} {config} {checkpoint} '
                   f'--out={work_dir / "result.pkl"} --metrics accuracy '
                   f'--cfg-option dist_params.port={port} '
                   f'--launcher={launcher}\n')
@@ -171,6 +184,9 @@ def save_summary(summary_data, models_map, work_dir):
     file.write('| ' + ' | '.join(headers) + ' |\n')
     file.write('|:' + ':|:'.join(['---'] * len(headers)) + ':|\n')
     for model_name, summary in summary_data.items():
+        if len(summary) == 0:
+            # Skip models without results
+            continue
         row = [model_name]
         if 'Top 1 Accuracy' in summary:
             metric = summary['Top 1 Accuracy']
@@ -198,10 +214,13 @@ def show_summary(summary_data):
     for metric in METRICS_MAP:
         table.add_column(f'{metric} (expect)')
         table.add_column(f'{metric}')
+    table.add_column('Date')
 
     def set_color(value, expect):
-        if value >= expect - 0.01:
+        if value > expect + 0.01:
             return 'green'
+        elif value >= expect - 0.01:
+            return 'white'
         else:
             return 'red'
 
@@ -217,6 +236,10 @@ def show_summary(summary_data):
                 row.append(f'[{color}]{result:.2f}[/{color}]')
             else:
                 row.extend([''] * 2)
+        if 'date' in summary:
+            row.append(summary['date'])
+        else:
+            row.append('')
         table.add_row(*row)
 
     console.print(table)
@@ -242,14 +265,16 @@ def summary(args):
         # Skip if not found result file.
         result_file = work_dir / model_name / 'result.pkl'
         if not result_file.exists():
+            summary_data[model_name] = {}
             continue
 
         results = mmcv.load(result_file)
+        date = datetime.fromtimestamp(result_file.lstat().st_mtime)
 
         expect_metrics = model_info.Results[0].Metrics
 
         # extract metrics
-        summary = {}
+        summary = {'date': date.strftime('%Y-%m-%d')}
         for key_yml, key_res in METRICS_MAP.items():
             if key_yml in expect_metrics:
                 assert key_res in results, \
@@ -261,7 +286,8 @@ def summary(args):
         summary_data[model_name] = summary
 
     show_summary(summary_data)
-    save_summary(summary_data, models, work_dir)
+    if args.save:
+        save_summary(summary_data, models, work_dir)
 
 
 def main():

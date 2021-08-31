@@ -50,9 +50,18 @@ def parse_args():
         choices=['NONE', 'BEGIN', 'END', 'FAIL', 'REQUEUE', 'ALL'],
         help='Mail address to watch train status.')
     parser.add_argument(
+        '--quotatype',
+        default=None,
+        choices=['reserved', 'auto', 'spot'],
+        help='Quota type, only available for phoenix-slurm>=0.2')
+    parser.add_argument(
         '--summary',
         action='store_true',
         help='Summarize benchmark train results.')
+    parser.add_argument(
+        '--save',
+        action='store_true',
+        help='Save the summary and archive log files.')
 
     args = parser.parse_args()
     return args
@@ -79,19 +88,26 @@ def create_train_job_batch(commands, model_info, args, port, script_name):
     else:
         mail_cfg = ''
 
+    if args.quotatype is not None:
+        quota_cfg = f'#SBATCH --quotatype {args.quotatype}\n'
+    else:
+        quota_cfg = ''
+
     launcher = 'none' if args.local else 'slurm'
+    runner = 'python' if args.local else 'srun python'
 
     job_script = (f'#!/bin/bash\n'
                   f'#SBATCH --output {work_dir}/job.%j.out\n'
                   f'#SBATCH --partition={args.partition}\n'
                   f'#SBATCH --job-name {job_name}\n'
                   f'#SBATCH --gres=gpu:8\n'
-                  f'{mail_cfg}'
+                  f'{mail_cfg}{quota_cfg}'
                   f'#SBATCH --ntasks-per-node=8\n'
                   f'#SBATCH --ntasks={gpus}\n'
                   f'#SBATCH --cpus-per-task=5\n\n'
-                  f'python -u {script_name} {config} --work_dir={work_dir} '
-                  f'--cfg-option dist_params.port={port} '
+                  f'{runner} -u {script_name} {config} '
+                  f'--work_dir={work_dir} --cfg-option '
+                  f'dist_params.port={port} '
                   f'checkpoint_config.max_keep_ckpts=10 '
                   f'--launcher={launcher}\n')
 
@@ -169,6 +185,9 @@ def save_summary(summary_data, models_map, work_dir):
     file.write('| ' + ' | '.join(headers) + ' |\n')
     file.write('|:' + ':|:'.join(['---'] * len(headers)) + ':|\n')
     for model_name, summary in summary_data.items():
+        if len(summary) == 0:
+            # Skip models without results
+            continue
         row = [model_name]
         if 'Top 1 Accuracy' in summary:
             metric = summary['Top 1 Accuracy']
@@ -228,8 +247,6 @@ def show_summary(summary_data):
                 row.append(f'[{last_color}]{last:.2f}[/{last_color}]')
                 row.append(
                     f'[{best_color}]{best:.2f}[/{best_color}] ({best_epoch})')
-            else:
-                row.extend([''] * 3)
         table.add_row(*row)
 
     console.print(table)
@@ -250,6 +267,7 @@ def summary(args):
 
         # Skip if not found any log file.
         if model_name not in dir_map:
+            summary_data[model_name] = {}
             continue
         sub_dir = dir_map[model_name]
         log_files = list(sub_dir.glob('*.log.json'))
@@ -290,7 +308,8 @@ def summary(args):
         summary_data[model_name] = summary
 
     show_summary(summary_data)
-    save_summary(summary_data, models, work_dir)
+    if args.save:
+        save_summary(summary_data, models, work_dir)
 
 
 def main():

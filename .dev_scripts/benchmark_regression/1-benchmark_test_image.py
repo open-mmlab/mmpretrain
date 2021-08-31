@@ -1,15 +1,23 @@
 import logging
-import os.path as osp
 from argparse import ArgumentParser
 from pathlib import Path
+from time import time
 from typing import OrderedDict
 
+import numpy as np
+import torch
 from mmcv import Config
+from mmcv.parallel import collate, scatter
+from rich.console import Console
+from rich.table import Table
 
-from mmcls.apis import inference_model, init_model, show_result_pyplot
+from mmcls.apis import init_model
+from mmcls.core.visualization.image import imshow_infos
 from mmcls.datasets.imagenet import ImageNet
+from mmcls.datasets.pipelines import Compose
 from mmcls.utils import get_root_logger
 
+console = Console()
 MMCLS_ROOT = Path(__file__).absolute().parents[2]
 
 CIFAR10_CLASSES = [
@@ -48,7 +56,7 @@ def parse_args():
         '--checkpoint-root',
         help='Checkpoint file root path. If set, load checkpoint before test.')
     parser.add_argument('--img', default='demo/demo.JPEG', help='Image file')
-    parser.add_argument('--model-name', help='model name to inference')
+    parser.add_argument('--models', nargs='+', help='models name to inference')
     parser.add_argument('--show', action='store_true', help='show results')
     parser.add_argument(
         '--wait-time',
@@ -56,29 +64,84 @@ def parse_args():
         default=1,
         help='the interval of show (s), 0 is block')
     parser.add_argument(
-        '--device', default='cuda:0', help='Device used for inference')
+        '--inference-time',
+        action='store_true',
+        help='Test inference time by run 10 times for each model.')
     parser.add_argument(
-        '--log-level',
-        default='error',
-        choices=['info', 'error'],
-        help='log level')
+        '--device', default='cuda:0', help='Device used for inference')
     args = parser.parse_args()
     return args
 
 
-def inference(config_name, checkpoint, classes, args, logger=None):
-    cfg = Config.fromfile(config_name)
+def inference(config_file, checkpoint, classes, args):
+    cfg = Config.fromfile(config_file)
 
     model = init_model(cfg, checkpoint, device=args.device)
     model.CLASSES = classes
-    # test a single image
-    result = inference_model(model, args.img)
-    result['model'] = config_name.stem
 
-    # show the results
-    if args.show:
-        show_result_pyplot(model, args.img, result, wait_time=args.wait_time)
+    # build the data pipeline
+    if cfg.data.test.pipeline[0]['type'] != 'LoadImageFromFile':
+        cfg.data.test.pipeline.insert(0, dict(type='LoadImageFromFile'))
+    if cfg.data.test.type in ['CIFAR10', 'CIFAR100']:
+        # The image shape of CIFAR is (32, 32, 3)
+        cfg.data.test.pipeline.insert(1, dict(type='Resize', size=32))
+
+    data = dict(img_info=dict(filename=args.img), img_prefix=None)
+
+    test_pipeline = Compose(cfg.data.test.pipeline)
+    data = test_pipeline(data)
+    resolution = tuple(data['img'].shape[1:])
+    data = collate([data], samples_per_gpu=1)
+    if next(model.parameters()).is_cuda:
+        # scatter to specified GPU
+        data = scatter(data, [args.device])[0]
+
+    # forward the model
+    result = {'resolution': resolution}
+    with torch.no_grad():
+        if args.inference_time:
+            time_record = []
+            for _ in range(10):
+                start = time()
+                scores = model(return_loss=False, **data)
+                time_record.append((time() - start) * 1000)
+            result['time_mean'] = np.mean(time_record[1:-1])
+            result['time_std'] = np.std(time_record[1:-1])
+        else:
+            scores = model(return_loss=False, **data)
+
+        pred_score = np.max(scores, axis=1)[0]
+        pred_label = np.argmax(scores, axis=1)[0]
+        result['pred_label'] = pred_label
+        result['pred_score'] = float(pred_score)
+    result['pred_class'] = model.CLASSES[result['pred_label']]
+
+    result['model'] = config_file.stem
+
     return result
+
+
+def show_summary(summary_data):
+    table = Table(title='Validation Benchmark Regression Summary')
+    table.add_column('Model')
+    table.add_column('Validation')
+    table.add_column('Resolution (h, w)')
+    table.add_column('Inference Time (std) (ms/im)')
+
+    for model_name, summary in summary_data.items():
+        row = [model_name]
+        valid = summary['valid']
+        color = 'green' if valid == 'PASS' else 'red'
+        row.append(f'[{color}]{valid}[/{color}]')
+        if valid == 'PASS':
+            row.append(str(summary['resolution']))
+            if 'time_mean' in summary:
+                time_mean = f"{summary['time_mean']:.2f}"
+                time_std = f"{summary['time_std']:.2f}"
+                row.append(f'{time_mean}\t({time_std})'.expandtabs(8))
+        table.add_row(*row)
+
+    console.print(table)
 
 
 # Sample test whether the inference code is correct
@@ -90,57 +153,43 @@ def main(args):
         metafile = Config.fromfile(MMCLS_ROOT / file)
         models.update({model.Name: model for model in metafile.Models})
 
-    # test single model
-    if args.model_name:
-        assert args.model_name in models, \
-            f'Cannot find model "{args.model_name}".' \
-            'Please select from: \n' + '\n'.join(models.keys())
-        model_info = models[args.model_name]
-        config_name = model_info.Config
-        dataset = model_info.get('Dataset', 'ImageNet-1k')
-        http_prefix = 'https://download.openmmlab.com/mmclassification/'
-        if args.checkpoint_root is not None:
-            checkpoint = osp.join(args.checkpoint_root,
-                                  model_info.Weights[len(http_prefix):])
-        else:
-            checkpoint = None
-        print(f'Processing: {config_name}', flush=True)
-        # build the model from a config file and a checkpoint file
-        inference(MMCLS_ROOT / config_name, checkpoint, classes_map[dataset],
-                  args)
-        print(f'Complete: {config_name}')
-        return
-
-    # test all model
-    log_level = {
-        'debug': logging.DEBUG,
-        'info': logging.INFO,
-        'error': logging.ERROR
-    }[args.log_level]
     logger = get_root_logger(
-        log_file='benchmark_test_image.log', log_level=log_level)
+        log_file='benchmark_test_image.log', log_level=logging.INFO)
 
-    for model_key in models:
-        model_info = models[model_key]
-        logger.info(f'Processing: {model_info.Config}')
-        if log_level == logging.ERROR:
-            print(f'Processing: {model_info.Config}')
-        config_name = model_info.Config
+    summary_data = {}
+    for model_name, model_info in models.items():
+
+        if args.models and model_name not in args.models:
+            continue
+
+        config = Path(model_info.Config)
+        assert config.exists(), f'{model_name}: {config} not found.'
+
+        logger.info(f'Processing: {model_name}')
+
         http_prefix = 'https://download.openmmlab.com/mmclassification/'
-        dataset = model_info.get('Dataset', 'ImageNet-1k')
+        dataset = model_info.Results[0]['Dataset']
         if args.checkpoint_root is not None:
-            checkpoint = osp.join(args.checkpoint_root,
-                                  model_info.Weights[len(http_prefix):])
+            root = Path(args.checkpoint_root)
+            checkpoint = root / model_info.Weights[len(http_prefix):]
         else:
             checkpoint = None
+
         try:
             # build the model from a config file and a checkpoint file
-            result = inference(MMCLS_ROOT / config_name, checkpoint,
-                               classes_map[dataset], args, logger)
+            result = inference(MMCLS_ROOT / config, checkpoint,
+                               classes_map[dataset], args)
+            result['valid'] = 'PASS'
         except Exception as e:
-            logger.error(f'{config_name} " : {repr(e)}')
-        else:
-            logger.info(f'{config_name} " : {result}')
+            logger.error(f'"{config}" : {repr(e)}')
+            result = {'valid': 'FAIL'}
+
+        summary_data[model_name] = result
+        # show the results
+        if args.show:
+            imshow_infos(args.img, result, wait_time=args.wait_time)
+
+    show_summary(summary_data)
 
 
 if __name__ == '__main__':
