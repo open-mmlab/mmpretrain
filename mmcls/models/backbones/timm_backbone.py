@@ -1,5 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import timm
+try:
+    import timm
+except ImportError:
+    timm = None
 
 from ..builder import BACKBONES
 from .base_backbone import BaseBackbone
@@ -29,6 +32,8 @@ class TIMMBackbone(BaseBackbone):
         init_cfg=None,
         **kwargs,
     ):
+        if timm is None:
+            raise RuntimeError('timm is not installed')
         super(TIMMBackbone, self).__init__(init_cfg)
         self.timm_model = timm.create_model(
             model_name=model_name,
