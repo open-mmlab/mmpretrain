@@ -2,7 +2,6 @@
 import os.path as osp
 import tempfile
 from copy import deepcopy
-from unittest.mock import patch
 
 import numpy as np
 import pytest
@@ -84,16 +83,6 @@ def test_image_classifier():
         out_file = osp.join(tmpdir, 'out.png')
         model.show_result(img, result, out_file=out_file)
         assert osp.exists(out_file)
-
-        def save_show(_, *args):
-            out_path = osp.join(tmpdir, '_'.join([str(arg) for arg in args]))
-            with open(out_path, 'w') as f:
-                f.write('test')
-
-        with patch('mmcv.imshow', save_show):
-            model.show_result(
-                img, result, show=True, win_name='img', wait_time=5)
-            assert osp.exists(osp.join(tmpdir, 'img_5'))
 
 
 def test_image_classifier_with_mixup():
