@@ -151,7 +151,7 @@ if __name__ == '__main__':
         description='OpenMMLab Image Classification Toolbox and Benchmark',
         long_description=readme(),
         long_description_content_type='text/markdown',
-        author='OpenMMLab',
+        author='MMClassification Contributors',
         author_email='openmmlab@gmail.com',
         keywords='computer vision, image classification',
         url='https://github.com/open-mmlab/mmclassification',
