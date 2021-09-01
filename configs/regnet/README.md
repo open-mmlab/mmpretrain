@@ -15,11 +15,11 @@
 }
 ```
 
-## Pretrain model
+## Pretrain models
 
 The pre-trained modles are converted from [model zoo of pycls](https://github.com/facebookresearch/pycls/blob/master/MODEL_ZOO.md).
 
-### ImageNet
+### ImageNet Result
 
 |         Model         | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Download |
 |:---------------------:|:---------:|:--------:|:---------:|:---------:|:--------:|
