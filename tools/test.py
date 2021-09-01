@@ -40,16 +40,27 @@ def parse_args():
     parser.add_argument(
         '--show-dir', help='directory where painted images will be saved')
     parser.add_argument(
-        '--gpu_collect',
+        '--gpu-collect',
         action='store_true',
         help='whether to use gpu to collect results')
     parser.add_argument('--tmpdir', help='tmp dir for writing some results')
+    parser.add_argument(
+        '--cfg-options',
+        nargs='+',
+        action=DictAction,
+        help='override some settings in the used config, the key-value pair '
+        'in xxx=yyy format will be merged into config file. If the value to '
+        'be overwritten is a list, it should be like key="[a,b]" or key=a,b '
+        'It also allows nested list/tuple values, e.g. key="[(a,b),(c,d)]" '
+        'Note that the quotation marks are necessary and that no white space '
+        'is allowed.')
     parser.add_argument(
         '--options',
         nargs='+',
         action=DictAction,
         help='override some settings in the used config, the key-value pair '
-        'in xxx=yyy format will be merged into config file.')
+        'in xxx=yyy format will be merged into config file (deprecate), '
+        'change to --cfg-options instead.')
     parser.add_argument(
         '--metric-options',
         nargs='+',
@@ -78,6 +89,15 @@ def parse_args():
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
+
+    if args.options and args.cfg_options:
+        raise ValueError(
+            '--options and --cfg-options cannot be both '
+            'specified, --options is deprecated in favor of --cfg-options')
+    if args.options:
+        warnings.warn('--options is deprecated in favor of --cfg-options')
+        args.cfg_options = args.options
+
     return args
 
 
@@ -85,8 +105,8 @@ def main():
     args = parse_args()
 
     cfg = mmcv.Config.fromfile(args.config)
-    if args.options is not None:
-        cfg.merge_from_dict(args.options)
+    if args.cfg_options is not None:
+        cfg.merge_from_dict(args.cfg_options)
     # set cudnn_benchmark
     if cfg.get('cudnn_benchmark', False):
         torch.backends.cudnn.benchmark = True
