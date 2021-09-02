@@ -124,4 +124,17 @@ class ImageClassifier(BaseClassifier):
     def simple_test(self, img, img_metas):
         """Test without augmentation."""
         x = self.extract_feat(img)
-        return self.head.simple_test(x)
+
+        try:
+            res = self.head.simple_test(x)
+        except TypeError as e:
+            if 'not tuple' in str(e) and self.return_tuple:
+                return TypeError(
+                    'Seems the head cannot handle tuple input. We have '
+                    'changed all backbones\' output to a tuple. Please '
+                    'update your custom head\'s forward function. '
+                    'Temporarily, you can set "return_tuple=False" in '
+                    'your backbone config to disable this feature.')
+            raise e
+
+        return res
