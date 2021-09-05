@@ -191,7 +191,7 @@ class RepVGGBlock(BaseModule):
         """
         weight_3x3, bias_3x3 = self._fuse_one_branch(self.branch_3x3)
         weight_1x1, bias_1x1 = self._fuse_one_branch(self.branch_1x1)
-        weight_1x1 = F.pad(weight_1x1, [1, 1, 1, 1])
+        weight_1x1 = F.pad(weight_1x1, [1, 1, 1, 1], value=0)
         weight_identity, bias_identity = self._fuse_one_branch(
             self.branch_norm)
 
