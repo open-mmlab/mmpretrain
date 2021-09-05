@@ -100,6 +100,8 @@ class RepVGGBlock(BaseModule):
             else:
                 self.se_layer = SELayer(
                     channels=out_channels, init_cfg=init_cfg, **se_cfg)
+        else:
+            self.se_layer = None
 
         self.act = build_activation_layer(act_cfg)
 
@@ -283,7 +285,7 @@ class RepVGG(BaseBackbone):
         arch (str | dict): The parameter of RepVGG
             - num_blocks (Sequence[int]): Number of blocks in each stage.
             - width_factor (Sequence[float]): Width deflator in each stage.
-            - group_layer_idx (dict | None): RepVGG Block that declares
+            - group_layer_map (dict | None): RepVGG Block that declares
                 the need to apply group convolution.
             - se_cfg (dict | None): Se Layer config
         in_channels (int): Number of input image channels. Default: 3.
@@ -326,79 +328,79 @@ class RepVGG(BaseBackbone):
         dict(
             num_blocks=[2, 4, 14, 1],
             width_factor=[1, 1, 1, 2.5],
-            group_layer_idx=None,
+            group_layer_map=None,
             se_cfg=None),
         'A2':
         dict(
             num_blocks=[2, 4, 14, 1],
             width_factor=[1.5, 1.5, 1.5, 2.75],
-            group_layer_idx=None,
+            group_layer_map=None,
             se_cfg=None),
         'B0':
         dict(
             num_blocks=[4, 6, 16, 1],
             width_factor=[1, 1, 1, 2.5],
-            group_layer_idx=None,
+            group_layer_map=None,
             se_cfg=None),
         'B1':
         dict(
             num_blocks=[4, 6, 16, 1],
             width_factor=[2, 2, 2, 4],
-            group_layer_idx=None,
+            group_layer_map=None,
             se_cfg=None),
         'B1g2':
         dict(
             num_blocks=[4, 6, 16, 1],
             width_factor=[2, 2, 2, 4],
-            group_layer_idx=g2_layer_map,
+            group_layer_map=g2_layer_map,
             se_cfg=None),
         'B1g4':
         dict(
             num_blocks=[4, 6, 16, 1],
             width_factor=[2, 2, 2, 4],
-            group_layer_idx=g4_layer_map,
+            group_layer_map=g4_layer_map,
             se_cfg=None),
         'B2':
         dict(
             num_blocks=[4, 6, 16, 1],
             width_factor=[2.5, 2.5, 2.5, 5],
-            group_layer_idx=None,
+            group_layer_map=None,
             se_cfg=None),
         'B2g2':
         dict(
             num_blocks=[4, 6, 16, 1],
             width_factor=[2.5, 2.5, 2.5, 5],
-            group_layer_idx=g2_layer_map,
+            group_layer_map=g2_layer_map,
             se_cfg=None),
         'B2g4':
         dict(
             num_blocks=[4, 6, 16, 1],
             width_factor=[2.5, 2.5, 2.5, 5],
-            group_layer_idx=g4_layer_map,
+            group_layer_map=g4_layer_map,
             se_cfg=None),
         'B3':
         dict(
             num_blocks=[4, 6, 16, 1],
             width_factor=[3, 3, 3, 5],
-            group_layer_idx=None,
+            group_layer_map=None,
             se_cfg=None),
         'B3g2':
         dict(
             num_blocks=[4, 6, 16, 1],
             width_factor=[3, 3, 3, 5],
-            group_layer_idx=g2_layer_map,
+            group_layer_map=g2_layer_map,
             se_cfg=None),
         'B3g4':
         dict(
             num_blocks=[4, 6, 16, 1],
             width_factor=[3, 3, 3, 5],
-            group_layer_idx=g4_layer_map,
+            group_layer_map=g4_layer_map,
             se_cfg=None),
         'D2se':
         dict(
             num_blocks=[8, 14, 24, 1],
             width_factor=[2.5, 2.5, 2.5, 5],
-            group_layer_idx=None,
+            group_layer_map=None,
             se_cfg=dict(ratio=10, divisor=1))
     }
 
@@ -436,8 +438,8 @@ class RepVGG(BaseBackbone):
         assert len(arch['num_blocks']) == len(
             arch['width_factor']) == len(strides) == len(dilations)
         assert max(out_indices) < len(arch['num_blocks'])
-        if arch['group_layer_idx'] is not None:
-            assert max(arch['group_layer_idx'].keys()) <= sum(
+        if arch['group_layer_map'] is not None:
+            assert max(arch['group_layer_map'].keys()) <= sum(
                 arch['num_blocks'])
 
         if arch['se_cfg'] is not None:
@@ -494,9 +496,9 @@ class RepVGG(BaseBackbone):
 
         blocks = []
         for i in range(num_blocks):
-            groups = self.arch['group_layer_idx'].get(
+            groups = self.arch['group_layer_map'].get(
                 next_create_block_idx,
-                1) if self.arch['group_layer_idx'] is not None else 1
+                1) if self.arch['group_layer_map'] is not None else 1
             blocks.append(
                 RepVGGBlock(
                     in_channels,
