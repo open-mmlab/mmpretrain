@@ -95,7 +95,7 @@ def parse_requirements(fname='requirements.txt', with_version=True):
     return packages
 
 
-def add_mim_extention():
+def add_mim_extension():
     """Add extra files that are required to support MIM into the package.
 
     These files will be added by creating a symlink to the originals if the
@@ -144,14 +144,14 @@ def add_mim_extention():
 
 
 if __name__ == '__main__':
-    add_mim_extention()
+    add_mim_extension()
     setup(
         name='mmcls',
         version=get_version(),
         description='OpenMMLab Image Classification Toolbox and Benchmark',
         long_description=readme(),
         long_description_content_type='text/markdown',
-        author='OpenMMLab',
+        author='MMClassification Contributors',
         author_email='openmmlab@gmail.com',
         keywords='computer vision, image classification',
         url='https://github.com/open-mmlab/mmclassification',
@@ -166,6 +166,7 @@ if __name__ == '__main__':
             'Programming Language :: Python :: 3.6',
             'Programming Language :: Python :: 3.7',
             'Programming Language :: Python :: 3.8',
+            'Programming Language :: Python :: 3.9',
         ],
         license='Apache License 2.0',
         tests_require=parse_requirements('requirements/tests.txt'),

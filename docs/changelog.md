@@ -1,5 +1,35 @@
 ## Changelog
 
+### v0.15.0(31/8/2021)
+
+#### Highlights
+- Support `hparams` argument in `AutoAugment` and `RandAugment` to provide hyperparameters for sub-policies.
+- Support custom squeeze channels in `SELayer`.
+- Support classwise weight in losses.
+
+#### New Features
+
+- Add `hparams` argument in `AutoAugment` and `RandAugment` and some other improvement. ([#398](https://github.com/open-mmlab/mmclassification/pull/398))
+- Support classwise weight in losses. ([#388](https://github.com/open-mmlab/mmclassification/pull/388))
+- Enhence `SELayer` to support custom squeeze channels. ([#417](https://github.com/open-mmlab/mmclassification/pull/417))
+
+#### Code Refactor
+
+- Better result visualization. ([#419](https://github.com/open-mmlab/mmclassification/pull/419))
+- Use `post_process` function to handle pred result processing. ([#390](https://github.com/open-mmlab/mmclassification/pull/390))
+- Update `digit_version` function. ([#402](https://github.com/open-mmlab/mmclassification/pull/402))
+- Avoid albumentations to install both opencv and opencv-headless. ([#397](https://github.com/open-mmlab/mmclassification/pull/397))
+- Avoid unnecessary listdir when building ImageNet. ([#396](https://github.com/open-mmlab/mmclassification/pull/396))
+- Use dynamic mmcv download link in TorchServe dockerfile. ([#387](https://github.com/open-mmlab/mmclassification/pull/387))
+
+#### Docs Improvement
+
+- Add readme of some algorithms and update meta yml. ([#418](https://github.com/open-mmlab/mmclassification/pull/418))
+- Add Copyright information. ([#413](https://github.com/open-mmlab/mmclassification/pull/413))
+- Fix typo 'metirc'. ([#411](https://github.com/open-mmlab/mmclassification/pull/411))
+- Update QQ group QR code. ([#393](https://github.com/open-mmlab/mmclassification/pull/393))
+- Add PR template and modify issue template. ([#380](https://github.com/open-mmlab/mmclassification/pull/380))
+
 ### v0.14.0(4/8/2021)
 
 #### Highlights

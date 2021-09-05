@@ -1,63 +1,9 @@
+_base_ = ['./pipelines/rand_aug.py']
+
 # dataset settings
 dataset_type = 'ImageNet'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
-
-policies = [
-    dict(type='AutoContrast'),
-    dict(type='Equalize'),
-    dict(type='Invert'),
-    dict(
-        type='Rotate',
-        interpolation='bicubic',
-        magnitude_key='angle',
-        pad_val=tuple([round(x) for x in img_norm_cfg['mean'][::-1]]),
-        magnitude_range=(0, 30)),
-    dict(type='Posterize', magnitude_key='bits', magnitude_range=(4, 0)),
-    dict(type='Solarize', magnitude_key='thr', magnitude_range=(256, 0)),
-    dict(
-        type='SolarizeAdd',
-        magnitude_key='magnitude',
-        magnitude_range=(0, 110)),
-    dict(
-        type='ColorTransform',
-        magnitude_key='magnitude',
-        magnitude_range=(0, 0.9)),
-    dict(type='Contrast', magnitude_key='magnitude', magnitude_range=(0, 0.9)),
-    dict(
-        type='Brightness', magnitude_key='magnitude',
-        magnitude_range=(0, 0.9)),
-    dict(
-        type='Sharpness', magnitude_key='magnitude', magnitude_range=(0, 0.9)),
-    dict(
-        type='Shear',
-        interpolation='bicubic',
-        magnitude_key='magnitude',
-        magnitude_range=(0, 0.3),
-        pad_val=tuple([round(x) for x in img_norm_cfg['mean'][::-1]]),
-        direction='horizontal'),
-    dict(
-        type='Shear',
-        interpolation='bicubic',
-        magnitude_key='magnitude',
-        magnitude_range=(0, 0.3),
-        pad_val=tuple([round(x) for x in img_norm_cfg['mean'][::-1]]),
-        direction='vertical'),
-    dict(
-        type='Translate',
-        interpolation='bicubic',
-        magnitude_key='magnitude',
-        magnitude_range=(0, 0.45),
-        pad_val=tuple([round(x) for x in img_norm_cfg['mean'][::-1]]),
-        direction='horizontal'),
-    dict(
-        type='Translate',
-        interpolation='bicubic',
-        magnitude_key='magnitude',
-        magnitude_range=(0, 0.45),
-        pad_val=tuple([round(x) for x in img_norm_cfg['mean'][::-1]]),
-        direction='vertical')
-]
 
 train_pipeline = [
     dict(type='LoadImageFromFile'),
@@ -69,11 +15,14 @@ train_pipeline = [
     dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
     dict(
         type='RandAugment',
-        policies=policies,
+        policies={{_base_.rand_increasing_policies}},
         num_policies=2,
         total_level=10,
         magnitude_level=9,
-        magnitude_std=0.5),
+        magnitude_std=0.5,
+        hparams=dict(
+            pad_val=[round(x) for x in img_norm_cfg['mean'][::-1]],
+            interpolation='bicubic')),
     dict(
         type='RandomErasing',
         erase_prob=0.25,
