@@ -283,8 +283,9 @@ class RepVGG(BaseBackbone):
         arch (str | dict): The parameter of RepVGG
             - num_blocks (Sequence[int]): Number of blocks in each stage.
             - width_factor (Sequence[float]): Width deflator in each stage.
-            - group_idx (dict | optional): RepVGG Block that declares
+            - group_layer_idx (dict | None): RepVGG Block that declares
                 the need to apply group convolution.
+            - se_cfg (dict | None): Se Layer config
         in_channels (int): Number of input image channels. Default: 3.
         base_channels (int): Base channels of RepVGG backbone, work
             with width_factor together.
@@ -310,59 +311,95 @@ class RepVGG(BaseBackbone):
             Default: None
     """
 
-    optional_groupwise_layers = [
-        2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26
-    ]
-    g2_map = {layer: 2 for layer in optional_groupwise_layers}
-    g4_map = {layer: 4 for layer in optional_groupwise_layers}
+    groupwise_layers = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26]
+    g2_layer_map = {layer: 2 for layer in groupwise_layers}
+    g4_layer_map = {layer: 4 for layer in groupwise_layers}
 
     arch_settings = {
         'A0':
-        dict(num_blocks=[2, 4, 14, 1], width_factor=[0.75, 0.75, 0.75, 2.5]),
+        dict(
+            num_blocks=[2, 4, 14, 1],
+            width_factor=[0.75, 0.75, 0.75, 2.5],
+            group_layer_map=None,
+            se_cfg=None),
         'A1':
-        dict(num_blocks=[2, 4, 14, 1], width_factor=[1, 1, 1, 2.5]),
+        dict(
+            num_blocks=[2, 4, 14, 1],
+            width_factor=[1, 1, 1, 2.5],
+            group_layer_idx=None,
+            se_cfg=None),
         'A2':
-        dict(num_blocks=[2, 4, 14, 1], width_factor=[1.5, 1.5, 1.5, 2.75]),
+        dict(
+            num_blocks=[2, 4, 14, 1],
+            width_factor=[1.5, 1.5, 1.5, 2.75],
+            group_layer_idx=None,
+            se_cfg=None),
         'B0':
-        dict(num_blocks=[4, 6, 16, 1], width_factor=[1, 1, 1, 2.5]),
+        dict(
+            num_blocks=[4, 6, 16, 1],
+            width_factor=[1, 1, 1, 2.5],
+            group_layer_idx=None,
+            se_cfg=None),
         'B1':
-        dict(num_blocks=[4, 6, 16, 1], width_factor=[2, 2, 2, 4]),
+        dict(
+            num_blocks=[4, 6, 16, 1],
+            width_factor=[2, 2, 2, 4],
+            group_layer_idx=None,
+            se_cfg=None),
         'B1g2':
         dict(
             num_blocks=[4, 6, 16, 1],
             width_factor=[2, 2, 2, 4],
-            group_idx=g2_map),
+            group_layer_idx=g2_layer_map,
+            se_cfg=None),
         'B1g4':
         dict(
             num_blocks=[4, 6, 16, 1],
             width_factor=[2, 2, 2, 4],
-            group_idx=g4_map),
+            group_layer_idx=g4_layer_map,
+            se_cfg=None),
         'B2':
-        dict(num_blocks=[4, 6, 16, 1], width_factor=[2.5, 2.5, 2.5, 5]),
+        dict(
+            num_blocks=[4, 6, 16, 1],
+            width_factor=[2.5, 2.5, 2.5, 5],
+            group_layer_idx=None,
+            se_cfg=None),
         'B2g2':
         dict(
             num_blocks=[4, 6, 16, 1],
             width_factor=[2.5, 2.5, 2.5, 5],
-            group_idx=g2_map),
+            group_layer_idx=g2_layer_map,
+            se_cfg=None),
         'B2g4':
         dict(
             num_blocks=[4, 6, 16, 1],
             width_factor=[2.5, 2.5, 2.5, 5],
-            group_idx=g4_map),
+            group_layer_idx=g4_layer_map,
+            se_cfg=None),
         'B3':
-        dict(num_blocks=[4, 6, 16, 1], width_factor=[3, 3, 3, 5]),
+        dict(
+            num_blocks=[4, 6, 16, 1],
+            width_factor=[3, 3, 3, 5],
+            group_layer_idx=None,
+            se_cfg=None),
         'B3g2':
         dict(
             num_blocks=[4, 6, 16, 1],
             width_factor=[3, 3, 3, 5],
-            group_idx=g2_map),
+            group_layer_idx=g2_layer_map,
+            se_cfg=None),
         'B3g4':
         dict(
             num_blocks=[4, 6, 16, 1],
             width_factor=[3, 3, 3, 5],
-            group_idx=g4_map),
+            group_layer_idx=g4_layer_map,
+            se_cfg=None),
         'D2se':
-        dict(num_blocks=[8, 14, 24, 1], width_factor=[2.5, 2.5, 2.5, 5])
+        dict(
+            num_blocks=[8, 14, 24, 1],
+            width_factor=[2.5, 2.5, 2.5, 5],
+            group_layer_idx=None,
+            se_cfg=dict(ratio=10, divisor=1))
     }
 
     def __init__(self,
@@ -372,7 +409,6 @@ class RepVGG(BaseBackbone):
                  out_indices=(3, ),
                  strides=(2, 2, 2, 2),
                  dilations=(1, 1, 1, 1),
-                 se_cfg=None,
                  frozen_stages=-1,
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
@@ -400,8 +436,12 @@ class RepVGG(BaseBackbone):
         assert len(arch['num_blocks']) == len(
             arch['width_factor']) == len(strides) == len(dilations)
         assert max(out_indices) < len(arch['num_blocks'])
-        if 'group_idx' in arch.keys():
-            assert max(arch['group_idx'].keys()) <= sum(arch['num_blocks'])
+        if arch['group_layer_idx'] is not None:
+            assert max(arch['group_layer_idx'].keys()) <= sum(
+                arch['num_blocks'])
+
+        if arch['se_cfg'] is not None:
+            assert isinstance(arch['se_cfg'], dict)
 
         self.arch = arch
         self.in_channels = in_channels
@@ -409,7 +449,6 @@ class RepVGG(BaseBackbone):
         self.out_indices = out_indices
         self.strides = strides
         self.dilations = dilations
-        self.se_cfg = se_cfg
         self.deploy = deploy
         self.frozen_stages = frozen_stages
         self.conv_cfg = conv_cfg
@@ -423,7 +462,7 @@ class RepVGG(BaseBackbone):
             self.in_channels,
             channels,
             stride=2,
-            se_cfg=se_cfg,
+            se_cfg=arch['se_cfg'],
             with_cp=with_cp,
             conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
@@ -441,7 +480,7 @@ class RepVGG(BaseBackbone):
 
             stage, next_create_block_idx = self._make_stage(
                 channels, out_channels, num_blocks, stride, dilation,
-                next_create_block_idx, se_cfg, init_cfg)
+                next_create_block_idx, init_cfg)
             stage_name = f'stage_{i + 1}'
             self.add_module(stage_name, stage)
             self.stages.append(stage_name)
@@ -449,15 +488,15 @@ class RepVGG(BaseBackbone):
             channels = out_channels
 
     def _make_stage(self, in_channels, out_channels, num_blocks, stride,
-                    dilation, next_create_block_idx, se_cfg, init_cfg):
+                    dilation, next_create_block_idx, init_cfg):
         strides = [stride] + [1] * (num_blocks - 1)
         dilations = [dilation] * num_blocks
 
         blocks = []
         for i in range(num_blocks):
-            groups = self.arch['group_idx'].get(
+            groups = self.arch['group_layer_idx'].get(
                 next_create_block_idx,
-                1) if 'group_idx' in self.arch.keys() else 1
+                1) if self.arch['group_layer_idx'] is not None else 1
             blocks.append(
                 RepVGGBlock(
                     in_channels,
@@ -466,7 +505,7 @@ class RepVGG(BaseBackbone):
                     padding=dilations[i],
                     dilation=dilations[i],
                     groups=groups,
-                    se_cfg=se_cfg,
+                    se_cfg=self.arch['se_cfg'],
                     with_cp=self.with_cp,
                     conv_cfg=self.conv_cfg,
                     norm_cfg=self.norm_cfg,
