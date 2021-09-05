@@ -84,7 +84,7 @@ class RepVGGBlock(BaseModule):
                 bias=True,
                 padding_mode=padding_mode)
         else:
-            self.branch_identity = build_norm_layer(norm_cfg, in_channels)[1] \
+            self.branch_norm = build_norm_layer(norm_cfg, in_channels)[1] \
                 if out_channels == in_channels and stride == 1 and \
                 padding == dilation else None
             self.branch_3x3 = self.create_conv_bn(
@@ -129,21 +129,23 @@ class RepVGGBlock(BaseModule):
             if self.deploy:
                 return self.branch_reparam(inputs)
 
-            if self.branch_identity is None:
-                identity_out = 0
+            if self.branch_norm is None:
+                branch_norm_out = 0
             else:
-                identity_out = self.branch_identity(inputs)
+                branch_norm_out = self.branch_norm(inputs)
 
-            return self.branch_3x3(inputs) + self.branch_1x1(
-                inputs) + identity_out
+            inner_out = self.branch_3x3(inputs) + self.branch_1x1(
+                inputs) + branch_norm_out
+
+            if self.se_cfg is not None:
+                inner_out = self.se_layer(inner_out)
+
+            return inner_out
 
         if self.with_cp and x.requires_grad:
             out = cp.checkpoint(_inner_forward, x)
         else:
             out = _inner_forward(x)
-
-        if self.se_cfg is not None:
-            out = self.se_layer(out)
 
         out = self.act(out)
 
@@ -181,22 +183,22 @@ class RepVGGBlock(BaseModule):
         self.__delattr__('branch_identity')
 
     def reparameterize(self):
-        """Fuse the parameters in all branches of repvgg.
+        """Fuse all the parameters of all branchs.
 
         Returns:
             (Weight, bias) (tuple): Parameters after fusion of all branches.
                 the first element is the weight and the second is the bias.
         """
-        weight_3x3, bias_3x3 = self._fuse_conv_bn(self.branch_3x3)
-        weight_1x1, bias_1x1 = self._fuse_conv_bn(self.branch_1x1)
+        weight_3x3, bias_3x3 = self._fuse_one_branch(self.branch_3x3)
+        weight_1x1, bias_1x1 = self._fuse_one_branch(self.branch_1x1)
         weight_1x1 = F.pad(weight_1x1, [1, 1, 1, 1])
-        weight_identity, bias_identity = self._fuse_conv_bn(
-            self.branch_identity)
+        weight_identity, bias_identity = self._fuse_one_branch(
+            self.branch_norm)
 
         return (weight_3x3 + weight_1x1 + weight_identity,
                 bias_3x3 + bias_1x1 + bias_identity)
 
-    def _fuse_conv_bn(self, branch):
+    def _fuse_one_branch(self, branch):
         """Fuse the parameters of conv and bn in one branch of repvgg.
 
         Args:
@@ -212,24 +214,59 @@ class RepVGGBlock(BaseModule):
             return 0, 0
 
         if isinstance(branch, nn.Sequential):
-            conv_weight = branch.conv.weight
-            running_mean = branch.norm.running_mean
-            running_var = branch.norm.running_var
-            gamma = branch.norm.weight
-            beta = branch.norm.bias
-            eps = branch.norm.eps
+            return self._fuse_conv_bn(branch)
         else:
-            input_dim = self.in_channels // self.groups
-            conv_weight = torch.zeros((self.in_channels, input_dim, 3, 3),
-                                      dtype=branch.weight.dtype)
-            for i in range(self.in_channels):
-                conv_weight[i, i % input_dim, 1, 1] = 1
-            conv_weight = conv_weight.to(branch.weight.device)
-            running_mean = branch.running_mean
-            running_var = branch.running_var
-            gamma = branch.weight
-            beta = branch.bias
-            eps = branch.eps
+            return self._fuse_norm(branch)
+
+    @staticmethod
+    def _fuse_conv_bn(self, branch):
+        """Fuse the parameters in a branch with a conv and bn.
+
+        Args:
+            branch (None, nn.Sequential or nn.BatchNorm2d): A branch
+                with conv and bn in repvggblock.
+
+        Returns:
+            (weight, bias) (tuple): The parameters obtained after
+                fusing the parameters of conv and bn in one branch.
+                The first element is the weight and the second is the bias.
+        """
+        conv_weight = branch.conv.weight
+        running_mean = branch.norm.running_mean
+        running_var = branch.norm.running_var
+        gamma = branch.norm.weight
+        beta = branch.norm.bias
+        eps = branch.norm.eps
+
+        std = (running_var + eps).sqrt()
+        fused_weight = (gamma / std).reshape(-1, 1, 1, 1) * conv_weight
+        fused_bias = -running_mean * gamma / std + beta
+
+        return fused_weight, fused_bias
+
+    def _fuse_norm(self, branch):
+        """Fuse the parameters in a branch with a conv and bn.
+
+        Args:
+            branch (None, nn.Sequential or nn.BatchNorm2d): A branch
+                only with bn in repvggblock.
+
+        Returns:
+            (weight, bias) (tuple): The parameters obtained after
+                fusing the parameters of conv and bn in one branch.
+                The first element is the weight and the second is the bias.
+        """
+        input_dim = self.in_channels // self.groups
+        conv_weight = torch.zeros((self.in_channels, input_dim, 3, 3),
+                                  dtype=branch.weight.dtype)
+        for i in range(self.in_channels):
+            conv_weight[i, i % input_dim, 1, 1] = 1
+        conv_weight = conv_weight.to(branch.weight.device)
+        running_mean = branch.running_mean
+        running_var = branch.running_var
+        gamma = branch.weight
+        beta = branch.bias
+        eps = branch.eps
 
         std = (running_var + eps).sqrt()
         fused_weight = (gamma / std).reshape(-1, 1, 1, 1) * conv_weight

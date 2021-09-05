@@ -36,7 +36,7 @@ def test_repvgg_repvggblock():
     block = RepVGGBlock(48, 96, stride=1)
     x = torch.randn(1, 48, 56, 56)
     x_out = block(x)
-    assert block.branch_identity is None
+    assert block.branch_norm is None
     assert block.se_cfg is None
     assert x_out.shape == torch.Size((1, 96, 56, 56))
     block.switch_to_deploy()
@@ -48,7 +48,7 @@ def test_repvgg_repvggblock():
     block = RepVGGBlock(48, 48, stride=1)
     x = torch.randn(1, 48, 56, 56)
     x_out = block(x)
-    assert isinstance(block.branch_identity, nn.BatchNorm2d)
+    assert isinstance(block.branch_norm, nn.BatchNorm2d)
     assert x_out.shape == torch.Size((1, 48, 56, 56))
     block.switch_to_deploy()
     block.deploy = True
@@ -59,14 +59,14 @@ def test_repvgg_repvggblock():
     block = RepVGGBlock(48, 48, stride=2)
     x = torch.randn(1, 48, 56, 56)
     x_out = block(x)
-    assert block.branch_identity is None
+    assert block.branch_norm is None
     assert x_out.shape == torch.Size((1, 48, 28, 28))
 
     # Test RepVGGBlock with padding == dilation == 2
     block = RepVGGBlock(48, 48, stride=1, padding=2, dilation=2)
     x = torch.randn(1, 48, 56, 56)
     x_out = block(x)
-    assert isinstance(block.branch_identity, nn.BatchNorm2d)
+    assert isinstance(block.branch_norm, nn.BatchNorm2d)
     assert x_out.shape == torch.Size((1, 48, 56, 56))
 
     # Test RepVGGBlock with groups = 2
