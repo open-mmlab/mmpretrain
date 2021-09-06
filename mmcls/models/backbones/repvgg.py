@@ -1,3 +1,4 @@
+from re import S
 import torch
 import torch.nn.functional as F
 import torch.utils.checkpoint as cp
@@ -549,3 +550,11 @@ class RepVGG(BaseBackbone):
             for m in self.modules():
                 if isinstance(m, _BatchNorm):
                     m.eval()
+
+    def switch_to_deploy(self):
+        self.stem.switch_to_deploy()
+        for stage_name in self.stages:
+            stage = getattr(self, stage_name)
+            for module in stage:
+                module.switch_to_deploy()
+        self.deploy = True

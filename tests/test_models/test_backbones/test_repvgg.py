@@ -1,9 +1,12 @@
 import pytest
 import torch
+import os
+import tempfile
+
 from torch import nn
 from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
-
+from mmcv.runner import load_checkpoint, save_checkpoint
 from mmcls.models.backbones import RepVGG
 from mmcls.models.backbones.repvgg import RepVGGBlock
 from mmcls.models.utils import SELayer
@@ -39,14 +42,17 @@ def test_repvgg_repvggblock():
     x_out_not_deploy = block(x)
     assert block.branch_norm is None
     assert not hasattr(block, 'branch_reparam')
+    assert hasattr(block, "branch_1x1")
+    assert hasattr(block, "branch_3x3")
+    assert hasattr(block, "branch_norm")
     assert block.se_cfg is None
     assert x_out_not_deploy.shape == torch.Size((1, 10, 16, 16))
     block.switch_to_deploy()
-    block.deploy = True
+    assert block.deploy is True
     x_out_deploy = block(x)
     assert x_out_deploy.shape == torch.Size((1, 10, 16, 16))
     assert torch.allclose(
-        x_out_not_deploy, x_out_deploy, atol=1e10 - 8, rtol=1e10 - 5)
+        x_out_not_deploy, x_out_deploy, atol=1e-6, rtol=1e-5)
 
     # Test RepVGGBlock with in_channels == out_channels, stride = 1
     block = RepVGGBlock(12, 12, stride=1)
@@ -57,11 +63,11 @@ def test_repvgg_repvggblock():
     assert not hasattr(block, 'branch_reparam')
     assert x_out_not_deploy.shape == torch.Size((1, 12, 8, 8))
     block.switch_to_deploy()
-    block.deploy = True
+    assert block.deploy is True
     x_out_deploy = block(x)
     assert x_out_deploy.shape == torch.Size((1, 12, 8, 8))
     assert torch.allclose(
-        x_out_not_deploy, x_out_deploy, atol=1e10 - 8, rtol=1e10 - 5)
+        x_out_not_deploy, x_out_deploy, atol=1e-6, rtol=1e-5)
 
     # Test RepVGGBlock with in_channels == out_channels, stride = 2
     block = RepVGGBlock(16, 16, stride=2)
@@ -70,11 +76,11 @@ def test_repvgg_repvggblock():
     assert block.branch_norm is None
     assert x_out_not_deploy.shape == torch.Size((1, 16, 4, 4))
     block.switch_to_deploy()
-    block.deploy = True
+    assert block.deploy is True
     x_out_deploy = block(x)
     assert x_out_deploy.shape == torch.Size((1, 16, 4, 4))
     assert torch.allclose(
-        x_out_not_deploy, x_out_deploy, atol=1e10 - 8, rtol=1e10 - 5)
+        x_out_not_deploy, x_out_deploy, atol=1e-6, rtol=1e-5)
 
     # Test RepVGGBlock with padding == dilation == 2
     block = RepVGGBlock(14, 14, stride=1, padding=2, dilation=2)
@@ -87,7 +93,7 @@ def test_repvgg_repvggblock():
     x_out_deploy = block(x)
     assert x_out_deploy.shape == torch.Size((1, 14, 16, 16))
     assert torch.allclose(
-        x_out_not_deploy, x_out_deploy, atol=1e10 - 8, rtol=1e10 - 5)
+        x_out_not_deploy, x_out_deploy, atol=1e-6, rtol=1e-5)
 
     # Test RepVGGBlock with groups = 2
     block = RepVGGBlock(4, 4, stride=1, groups=2)
@@ -99,7 +105,7 @@ def test_repvgg_repvggblock():
     x_out_deploy = block(x)
     assert x_out_deploy.shape == torch.Size((1, 4, 5, 6))
     assert torch.allclose(
-        x_out_not_deploy, x_out_deploy, atol=1e10 - 8, rtol=1e10 - 5)
+        x_out_not_deploy, x_out_deploy, atol=1e-6, rtol=1e-5)
 
     # Test RepVGGBlock with se
     se_cfg = dict(ratio=10, divisor=1)
@@ -114,7 +120,7 @@ def test_repvgg_repvggblock():
     x_out_deploy = block(x)
     assert x_out_deploy.shape == torch.Size((1, 8, 5, 5))
     assert torch.allclose(
-        x_out_not_deploy, x_out_deploy, atol=1e10 - 8, rtol=1e10 - 5)
+        x_out_not_deploy, x_out_deploy, atol=1e-6, rtol=1e-5)
 
     # Test RepVGGBlock with checkpoint forward
     block = RepVGGBlock(24, 24, stride=1, with_cp=True)
@@ -185,7 +191,7 @@ def test_repvgg_backbone():
     model = RepVGG('A0', frozen_stages=frozen_stages)
     model.init_weights()
     model.train()
-    for param in model.stage_0.parameters():
+    for param in model.stem.parameters():
         assert param.requires_grad is False
     for i in range(0, frozen_stages):
         stage_name = model.stages[i]
@@ -275,3 +281,27 @@ def test_repvgg_backbone():
             (1, model_test_setting['out_sizes'][2], 14, 14))
         assert feat[3].shape == torch.Size(
             (1, model_test_setting['out_sizes'][3], 7, 7))
+
+
+def test_repvgg_deploy():
+    model = RepVGG('A0', out_indices=(0, 1, 2, 3))
+    model.eval()
+
+    # Test ouput before and after deploy
+    inputs = torch.randn((1, 3, 224, 224))
+    outputs_before_deploy = model(inputs)
+    model.switch_to_deploy()
+    outputs_after_deploy = model(inputs)
+
+    for features_before_deploy, features_after_deploy in zip(outputs_before_deploy, outputs_after_deploy):
+        assert torch.allclose(features_before_deploy, features_after_deploy, atol=1e-4, rtol=1e-4)
+
+    # Test deploy model load from checkpoint
+    ckpt_path = os.path.join(tempfile.gettempdir(), 'ckpt.pth')
+    save_checkpoint(model, ckpt_path)
+    model_deploy = RepVGG('A0', out_indices=(0, 1, 2, 3), deploy=True)
+    load_checkpoint(model_deploy, ckpt_path, strict=True)
+    outputs_load = model(inputs)
+    for features_after_deploy, features_load in zip(outputs_after_deploy, outputs_load):
+        assert torch.allclose(features_after_deploy, features_load)
+
