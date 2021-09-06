@@ -14,14 +14,16 @@ def convert(src, dst):
         splited_key = key.split('.')
         splited_key = ['norm' if i == 'bn' else i for i in splited_key]
         splited_key = [
-            'branch_identity' if i == 'rbr_identity' else i
-            for i in splited_key
+            'branch_norm' if i == 'rbr_identity' else i for i in splited_key
         ]
         splited_key = [
             'branch_1x1' if i == 'rbr_1x1' else i for i in splited_key
         ]
         splited_key = [
             'branch_3x3' if i == 'rbr_dense' else i for i in splited_key
+        ]
+        splited_key = [
+            'backbone.stem' if i[:6] == 'stage0' else i for i in splited_key
         ]
         splited_key = [
             'backbone.stage_' + i[5] if i[:5] == 'stage' else i

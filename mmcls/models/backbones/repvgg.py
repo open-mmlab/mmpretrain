@@ -458,7 +458,7 @@ class RepVGG(BaseBackbone):
         self.norm_eval = norm_eval
 
         channels = min(64, int(base_channels * self.arch['width_factor'][0]))
-        self.stage_0 = RepVGGBlock(
+        self.stem = RepVGGBlock(
             self.in_channels,
             channels,
             stride=2,
@@ -518,7 +518,7 @@ class RepVGG(BaseBackbone):
         return nn.Sequential(*blocks), next_create_block_idx
 
     def forward(self, x):
-        x = self.stage_0(x)
+        x = self.stem(x)
         outs = []
         for i, stage_name in enumerate(self.stages):
             stage = getattr(self, stage_name)
@@ -532,8 +532,12 @@ class RepVGG(BaseBackbone):
             return tuple(outs)
 
     def _freeze_stages(self):
-        for i in range(self.frozen_stages + 1):
-            stage = getattr(self, f'stage_{i}')
+        if self.frozen_stages >= 0:
+            self.stem.eval()
+            for param in self.stem.parameters():
+                param.requires_grad = False
+        for i in range(self.frozen_stages):
+            stage = getattr(self, f'stage_{i+1}')
             stage.eval()
             for param in stage.parameters():
                 param.requires_grad = False
@@ -545,11 +549,3 @@ class RepVGG(BaseBackbone):
             for m in self.modules():
                 if isinstance(m, _BatchNorm):
                     m.eval()
-
-    def switch_to_deploy(self):
-        for module in self.modules():
-            if hasattr(module, 'switch_to_deploy'):
-                assert isinstance(module.branch_3x3.norm, _BatchNorm), \
-                    'The normalization method in RepVGGBlock needs to ' \
-                    'be BatchNorm2d.'
-                module.switch_to_deploy()
