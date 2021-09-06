@@ -33,73 +33,105 @@ def is_repvgg_block(modules):
 
 def test_repvgg_repvggblock():
     # Test RepVGGBlock with in_channels != out_channels, stride = 1
-    block = RepVGGBlock(48, 96, stride=1)
-    x = torch.randn(1, 48, 56, 56)
-    x_out = block(x)
+    block = RepVGGBlock(5, 10, stride=1)
+    block.eval()
+    x = torch.randn(1, 5, 16, 16)
+    x_out_not_deploy = block(x)
     assert block.branch_norm is None
+    assert not hasattr(block, 'branch_reparam')
     assert block.se_cfg is None
-    assert x_out.shape == torch.Size((1, 96, 56, 56))
+    assert x_out_not_deploy.shape == torch.Size((1, 10, 16, 16))
     block.switch_to_deploy()
     block.deploy = True
-    x_out = block(x)
-    assert x_out.shape == torch.Size((1, 96, 56, 56))
+    x_out_deploy = block(x)
+    assert x_out_deploy.shape == torch.Size((1, 10, 16, 16))
+    assert torch.allclose(
+        x_out_not_deploy, x_out_deploy, atol=1e10 - 8, rtol=1e10 - 5)
 
     # Test RepVGGBlock with in_channels == out_channels, stride = 1
-    block = RepVGGBlock(48, 48, stride=1)
-    x = torch.randn(1, 48, 56, 56)
-    x_out = block(x)
+    block = RepVGGBlock(12, 12, stride=1)
+    block.eval()
+    x = torch.randn(1, 12, 8, 8)
+    x_out_not_deploy = block(x)
     assert isinstance(block.branch_norm, nn.BatchNorm2d)
-    assert x_out.shape == torch.Size((1, 48, 56, 56))
+    assert not hasattr(block, 'branch_reparam')
+    assert x_out_not_deploy.shape == torch.Size((1, 12, 8, 8))
     block.switch_to_deploy()
     block.deploy = True
-    x_out = block(x)
-    assert x_out.shape == torch.Size((1, 48, 56, 56))
+    x_out_deploy = block(x)
+    assert x_out_deploy.shape == torch.Size((1, 12, 8, 8))
+    assert torch.allclose(
+        x_out_not_deploy, x_out_deploy, atol=1e10 - 8, rtol=1e10 - 5)
 
     # Test RepVGGBlock with in_channels == out_channels, stride = 2
-    block = RepVGGBlock(48, 48, stride=2)
-    x = torch.randn(1, 48, 56, 56)
-    x_out = block(x)
+    block = RepVGGBlock(16, 16, stride=2)
+    x = torch.randn(1, 16, 8, 8)
+    x_out_not_deploy = block(x)
     assert block.branch_norm is None
-    assert x_out.shape == torch.Size((1, 48, 28, 28))
+    assert x_out_not_deploy.shape == torch.Size((1, 16, 4, 4))
+    block.switch_to_deploy()
+    block.deploy = True
+    x_out_deploy = block(x)
+    assert x_out_deploy.shape == torch.Size((1, 16, 4, 4))
+    assert torch.allclose(
+        x_out_not_deploy, x_out_deploy, atol=1e10 - 8, rtol=1e10 - 5)
 
     # Test RepVGGBlock with padding == dilation == 2
-    block = RepVGGBlock(48, 48, stride=1, padding=2, dilation=2)
-    x = torch.randn(1, 48, 56, 56)
-    x_out = block(x)
+    block = RepVGGBlock(14, 14, stride=1, padding=2, dilation=2)
+    x = torch.randn(1, 14, 16, 16)
+    x_out_not_deploy = block(x)
     assert isinstance(block.branch_norm, nn.BatchNorm2d)
-    assert x_out.shape == torch.Size((1, 48, 56, 56))
+    assert x_out_not_deploy.shape == torch.Size((1, 14, 16, 16))
+    block.switch_to_deploy()
+    block.deploy = True
+    x_out_deploy = block(x)
+    assert x_out_deploy.shape == torch.Size((1, 14, 16, 16))
+    assert torch.allclose(
+        x_out_not_deploy, x_out_deploy, atol=1e10 - 8, rtol=1e10 - 5)
 
     # Test RepVGGBlock with groups = 2
-    block = RepVGGBlock(48, 48, stride=1, groups=2)
-    x = torch.randn(1, 48, 56, 56)
-    x_out = block(x)
-    assert block.branch_3x3.conv.weight.data.shape == torch.Size(
-        (48, 24, 3, 3))
-    assert x_out.shape == torch.Size((1, 48, 56, 56))
+    block = RepVGGBlock(4, 4, stride=1, groups=2)
+    x = torch.randn(1, 4, 5, 6)
+    x_out_not_deploy = block(x)
+    assert x_out_not_deploy.shape == torch.Size((1, 4, 5, 6))
+    block.switch_to_deploy()
+    block.deploy = True
+    x_out_deploy = block(x)
+    assert x_out_deploy.shape == torch.Size((1, 4, 5, 6))
+    assert torch.allclose(
+        x_out_not_deploy, x_out_deploy, atol=1e10 - 8, rtol=1e10 - 5)
 
     # Test RepVGGBlock with se
     se_cfg = dict(ratio=10, divisor=1)
-    block = RepVGGBlock(40, 40, stride=1, se_cfg=se_cfg)
-    x = torch.randn(1, 40, 56, 56)
-    x_out = block(x)
+    block = RepVGGBlock(8, 8, stride=1, se_cfg=se_cfg)
+    block.eval()
+    x = torch.randn(1, 8, 5, 5)
+    x_out_not_deploy = block(x)
     assert isinstance(block.se_layer, SELayer)
-    assert x_out.shape == torch.Size((1, 40, 56, 56))
-    assert block.se_layer.conv1.conv.weight.data.shape == torch.Size(
-        (4, 40, 1, 1))
+    assert x_out_not_deploy.shape == torch.Size((1, 8, 5, 5))
+    block.switch_to_deploy()
+    block.deploy = True
+    x_out_deploy = block(x)
+    assert x_out_deploy.shape == torch.Size((1, 8, 5, 5))
+    assert torch.allclose(
+        x_out_not_deploy, x_out_deploy, atol=1e10 - 8, rtol=1e10 - 5)
 
     # Test RepVGGBlock with checkpoint forward
-    block = RepVGGBlock(48, 48, stride=1, with_cp=True)
+    block = RepVGGBlock(24, 24, stride=1, with_cp=True)
     assert block.with_cp
-    x = torch.randn(1, 48, 56, 56)
+    x = torch.randn(1, 24, 7, 7)
     x_out = block(x)
-    assert x_out.shape == torch.Size((1, 48, 56, 56))
+    assert x_out.shape == torch.Size((1, 24, 7, 7))
 
     # Test RepVGGBlock with deploy == True
-    block = RepVGGBlock(48, 48, stride=1, deploy=True)
+    block = RepVGGBlock(8, 8, stride=1, deploy=True)
     assert isinstance(block.branch_reparam, nn.Conv2d)
-    x = torch.randn(1, 48, 56, 56)
+    assert not hasattr(block, 'branch_3x3')
+    assert not hasattr(block, 'branch_1x1')
+    assert not hasattr(block, 'branch_norm')
+    x = torch.randn(1, 8, 16, 16)
     x_out = block(x)
-    assert x_out.shape == torch.Size((1, 48, 56, 56))
+    assert x_out.shape == torch.Size((1, 8, 16, 16))
 
 
 def test_repvgg_backbone():
@@ -122,9 +154,11 @@ def test_repvgg_backbone():
         arch = dict(num_blocks=[2, 4, 14, 1], width_factor=[0.75, 0.75, 0.75])
         RepVGG(arch=arch)
 
+    # len(strides) must equal to 4
     with pytest.raises(AssertionError):
         RepVGG('A0', strides=(1, 1, 1))
 
+    # len(dilations) must equal to 4
     with pytest.raises(AssertionError):
         RepVGG('A0', strides=(1, 1, 1, 1), dilations=(1, 1, 2))
 
@@ -185,6 +219,20 @@ def test_repvgg_backbone():
     assert feat[2].shape == torch.Size((1, 192, 14, 14))
     assert feat[3].shape == torch.Size((1, 1280, 7, 7))
 
+    # Test RepVGG forward with layer 3 forward
+    model = RepVGG('A0', out_indices=(3, ))
+    model.init_weights()
+    model.train()
+
+    for m in model.modules():
+        if is_norm(m):
+            assert isinstance(m, _BatchNorm)
+
+    imgs = torch.randn(1, 3, 224, 224)
+    feat = model(imgs)
+    assert isinstance(feat, torch.Tensor)
+    assert feat.shape == torch.Size((1, 1280, 7, 7))
+
     # Test RepVGG forward
     model_test_settings = [
         dict(model_name='A0', out_sizes=(48, 96, 192, 1280)),
@@ -200,10 +248,14 @@ def test_repvgg_backbone():
         dict(model_name='B3', out_sizes=(192, 384, 768, 2560)),
         dict(model_name='B3g2', out_sizes=(192, 384, 768, 2560)),
         dict(model_name='B3g4', out_sizes=(192, 384, 768, 2560)),
+        dict(model_name='D2se', out_sizes=(160, 320, 640, 2560))
     ]
 
+    choose_models = ['A1', 'B0', 'B1g2', 'B2', 'B3g2', 'D2se']
     # Test RepVGG model
     for model_test_setting in model_test_settings:
+        if model_test_setting['model_name'] not in choose_models:
+            continue
         model = RepVGG(
             model_test_setting['model_name'], out_indices=(0, 1, 2, 3))
         model.init_weights()
@@ -223,67 +275,3 @@ def test_repvgg_backbone():
             (1, model_test_setting['out_sizes'][2], 14, 14))
         assert feat[3].shape == torch.Size(
             (1, model_test_setting['out_sizes'][3], 7, 7))
-
-        # Test RepVGG forward with arch='D2se'
-        se_cfg = dict(ratio=10, divisor=1)
-        model = RepVGG('D2se', out_indices=(0, 1, 2, 3), se_cfg=se_cfg)
-        model.init_weights()
-        model.train()
-
-        for m in model.modules():
-            if is_norm(m):
-                assert isinstance(m, _BatchNorm)
-
-        imgs = torch.randn(1, 3, 224, 224)
-        feat = model(imgs)
-        assert len(feat) == 4
-        assert feat[0].shape == torch.Size((1, 160, 56, 56))
-        assert feat[1].shape == torch.Size((1, 320, 28, 28))
-        assert feat[2].shape == torch.Size((1, 640, 14, 14))
-        assert feat[3].shape == torch.Size((1, 2560, 7, 7))
-
-    # Test RepVGG forward with layer 3 forward
-    model = RepVGG('A0', out_indices=(3, ))
-    model.init_weights()
-    model.train()
-
-    for m in model.modules():
-        if is_norm(m):
-            assert isinstance(m, _BatchNorm)
-
-    imgs = torch.randn(1, 3, 224, 224)
-    feat = model(imgs)
-    assert isinstance(feat, torch.Tensor)
-    assert feat.shape == torch.Size((1, 1280, 7, 7))
-
-    # Test RepVGG forward with layer 1 2 forward
-    model = RepVGG('A0', out_indices=(1, 2))
-    model.init_weights()
-    model.train()
-
-    for m in model.modules():
-        if is_norm(m):
-            assert isinstance(m, _BatchNorm)
-
-    imgs = torch.randn(1, 3, 224, 224)
-    feat = model(imgs)
-    assert len(feat) == 2
-    assert feat[0].shape == torch.Size((1, 96, 28, 28))
-    assert feat[1].shape == torch.Size((1, 192, 14, 14))
-
-    # Test RepVGG with deploy=True
-    model = RepVGG('A0', out_indices=(1, 2), deploy=True)
-    model.init_weights()
-    model.train()
-
-    for m in model.modules():
-        if is_norm(m):
-            assert isinstance(m, _BatchNorm)
-        if is_repvgg_block(m):
-            assert isinstance(m.branch_reparam, nn.Conv2d)
-
-    imgs = torch.randn(1, 3, 224, 224)
-    feat = model(imgs)
-    assert len(feat) == 2
-    assert feat[0].shape == torch.Size((1, 96, 28, 28))
-    assert feat[1].shape == torch.Size((1, 192, 14, 14))

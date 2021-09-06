@@ -182,7 +182,9 @@ class RepVGGBlock(BaseModule):
             param.detach_()
         self.__delattr__('branch_3x3')
         self.__delattr__('branch_1x1')
-        self.__delattr__('branch_identity')
+        self.__delattr__('branch_norm')
+
+        self.deploy = True
 
     def reparameterize(self):
         """Fuse all the parameters of all branchs.
@@ -194,11 +196,10 @@ class RepVGGBlock(BaseModule):
         weight_3x3, bias_3x3 = self._fuse_one_branch(self.branch_3x3)
         weight_1x1, bias_1x1 = self._fuse_one_branch(self.branch_1x1)
         weight_1x1 = F.pad(weight_1x1, [1, 1, 1, 1], value=0)
-        weight_identity, bias_identity = self._fuse_one_branch(
-            self.branch_norm)
+        weight_norm, bias_norm = self._fuse_one_branch(self.branch_norm)
 
-        return (weight_3x3 + weight_1x1 + weight_identity,
-                bias_3x3 + bias_1x1 + bias_identity)
+        return (weight_3x3 + weight_1x1 + weight_norm,
+                bias_3x3 + bias_1x1 + bias_norm)
 
     def _fuse_one_branch(self, branch):
         """Fuse the parameters of conv and bn in one branch of repvgg.
@@ -220,7 +221,6 @@ class RepVGGBlock(BaseModule):
         else:
             return self._fuse_norm(branch)
 
-    @staticmethod
     def _fuse_conv_bn(self, branch):
         """Fuse the parameters in a branch with a conv and bn.
 
@@ -294,8 +294,6 @@ class RepVGG(BaseBackbone):
         out_indices (Sequence[int]): Output from which stages.
         strides (Sequence[int]): Strides of the first block of each stage.
         dilations (Sequence[int]): Dilation of each stage.
-        se_cfg (None or dict): The configuration of the se module.
-            Default: None.
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
         frozen_stages (int): Stages to be frozen (all param fixed). -1 means
             not freezing any parameters. Default: -1.
@@ -547,3 +545,11 @@ class RepVGG(BaseBackbone):
             for m in self.modules():
                 if isinstance(m, _BatchNorm):
                     m.eval()
+
+    def switch_to_deploy(self):
+        for module in self.modules():
+            if hasattr(module, 'switch_to_deploy'):
+                assert isinstance(module.branch_3x3.norm, _BatchNorm), \
+                    'The normalization method in RepVGGBlock needs to ' \
+                    'be BatchNorm2d.'
+                module.switch_to_deploy()
