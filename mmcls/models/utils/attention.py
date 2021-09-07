@@ -180,10 +180,8 @@ class ShiftWindowMSA(BaseModule):
         # Handle auto padding
         self.auto_pad = auto_pad
         if self.auto_pad:
-            self.pad_r = (self.window_size -
-                          W % self.window_size) % self.window_size
-            self.pad_b = (self.window_size -
-                          H % self.window_size) % self.window_size
+            self.pad_r = self.window_size - W % self.window_size
+            self.pad_b = self.window_size - H % self.window_size
             self.H_pad = H + self.pad_b
             self.W_pad = W + self.pad_r
         else:
