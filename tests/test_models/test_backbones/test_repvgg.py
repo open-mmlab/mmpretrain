@@ -207,6 +207,20 @@ def test_repvgg_backbone():
     assert isinstance(feat, torch.Tensor)
     assert feat.shape == torch.Size((1, 1280, 7, 7))
 
+    # Test RepVGG forward with layer 3 forward
+    model = RepVGG('A0', out_indices=(3, ))
+    model.init_weights()
+    model.train()
+
+    for m in model.modules():
+        if is_norm(m):
+            assert isinstance(m, _BatchNorm)
+
+    imgs = torch.randn(1, 3, 224, 224)
+    feat = model(imgs)
+    assert isinstance(feat, torch.Tensor)
+    assert feat.shape == torch.Size((1, 1280, 7, 7))
+
     # Test RepVGG forward
     model_test_settings = [
         dict(model_name='A0', out_sizes=(48, 96, 192, 1280)),
@@ -269,17 +283,18 @@ def test_repvgg_backbone():
 
 
 def test_repvgg_load():
+    # Test ouput before and load from deploy checkpoint
     model = RepVGG('A1', out_indices=(0, 1, 2, 3))
-    model_deploy = RepVGG('A1', out_indices=(0, 1, 2, 3), deploy=True)
-    ckpt_path = os.path.join(tempfile.gettempdir(), 'ckpt.pth')
     inputs = torch.randn((1, 3, 224, 224))
+    ckpt_path = os.path.join(tempfile.gettempdir(), 'ckpt.pth')
     model.switch_to_deploy()
     model.eval()
-
-    # Test ouput before and load from deploy checkpoint
     outputs = model(inputs)
+
+    model_deploy = RepVGG('A1', out_indices=(0, 1, 2, 3), deploy=True)
     save_checkpoint(model, ckpt_path)
     load_checkpoint(model_deploy, ckpt_path, strict=True)
+
     outputs_load = model_deploy(inputs)
     for feat, feat_load in zip(outputs, outputs_load):
         assert torch.allclose(feat, feat_load)

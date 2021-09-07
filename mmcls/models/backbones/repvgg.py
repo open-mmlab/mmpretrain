@@ -2,9 +2,8 @@ import torch
 import torch.nn.functional as F
 import torch.utils.checkpoint as cp
 from mmcv.cnn import build_activation_layer, build_conv_layer, build_norm_layer
-from mmcv.runner import BaseModule
+from mmcv.runner import BaseModule, Sequential
 from mmcv.utils.parrots_wrapper import _BatchNorm
-from torch import nn
 
 from ..builder import BACKBONES
 from ..utils.se_layer import SELayer
@@ -84,9 +83,12 @@ class RepVGGBlock(BaseModule):
                 bias=True,
                 padding_mode=padding_mode)
         else:
-            self.branch_norm = build_norm_layer(norm_cfg, in_channels)[1] \
-                if out_channels == in_channels and stride == 1 and \
-                padding == dilation else None
+            if out_channels == in_channels and stride == 1 and \
+                    padding == dilation:
+                self.branch_norm = build_norm_layer(norm_cfg, in_channels)[1]
+            else:
+                self.branch_norm = None
+
             self.branch_3x3 = self.create_conv_bn(
                 kernel_size=3,
                 dilation=dilation,
@@ -95,18 +97,14 @@ class RepVGGBlock(BaseModule):
             self.branch_1x1 = self.create_conv_bn(kernel_size=1)
 
         if se_cfg is not None:
-            if 'init_cfg' in se_cfg.keys():
-                self.se_layer = SELayer(channels=out_channels, **se_cfg)
-            else:
-                self.se_layer = SELayer(
-                    channels=out_channels, init_cfg=init_cfg, **se_cfg)
+            self.se_layer = SELayer(channels=out_channels, **se_cfg)
         else:
             self.se_layer = None
 
         self.act = build_activation_layer(act_cfg)
 
     def create_conv_bn(self, kernel_size, dilation=1, padding=0):
-        result = nn.Sequential()
+        result = Sequential()
         result.add_module(
             'conv',
             build_conv_layer(
@@ -193,40 +191,24 @@ class RepVGGBlock(BaseModule):
             (Weight, bias) (tuple): Parameters after fusion of all branches.
                 the first element is the weight and the second is the bias.
         """
-        weight_3x3, bias_3x3 = self._fuse_one_branch(self.branch_3x3)
-        weight_1x1, bias_1x1 = self._fuse_one_branch(self.branch_1x1)
+        weight_3x3, bias_3x3 = self._fuse_conv_bn(self.branch_3x3)
+        weight_1x1, bias_1x1 = self._fuse_conv_bn(self.branch_1x1)
+        # pad a conv1x1 weight to a conv3x3 weight
         weight_1x1 = F.pad(weight_1x1, [1, 1, 1, 1], value=0)
-        weight_norm, bias_norm = self._fuse_one_branch(self.branch_norm)
+
+        weight_norm, bias_norm = 0, 0
+        if self.branch_norm:
+            tmp_conv_bn = self._norm_to_conv3x3(self.branch_norm)
+            weight_norm, bias_norm = self._fuse_conv_bn(tmp_conv_bn)
 
         return (weight_3x3 + weight_1x1 + weight_norm,
                 bias_3x3 + bias_1x1 + bias_norm)
-
-    def _fuse_one_branch(self, branch):
-        """Fuse the parameters of conv and bn in one branch of repvgg.
-
-        Args:
-            branch (None, nn.Sequential or nn.BatchNorm2d): A branch
-                in repvggblock.
-
-        Returns:
-            (weight, bias) (tuple): The parameters obtained after
-                fusing the parameters of conv and bn in one branch.
-                The first element is the weight and the second is the bias.
-        """
-        if branch is None:
-            return 0, 0
-
-        if isinstance(branch, nn.Sequential):
-            return self._fuse_conv_bn(branch)
-        else:
-            return self._fuse_norm(branch)
 
     def _fuse_conv_bn(self, branch):
         """Fuse the parameters in a branch with a conv and bn.
 
         Args:
-            branch (None, nn.Sequential or nn.BatchNorm2d): A branch
-                with conv and bn in repvggblock.
+            branch (Sequential): A branch with conv and bn in repvggblock.
 
         Returns:
             (weight, bias) (tuple): The parameters obtained after
@@ -246,35 +228,29 @@ class RepVGGBlock(BaseModule):
 
         return fused_weight, fused_bias
 
-    def _fuse_norm(self, branch):
-        """Fuse the parameters in a branch with a conv and bn.
+    def _norm_to_conv3x3(self, branch_nrom):
+        """Convert a norm to a conv3x3-bn Sequential.refer to the paper:
+        RepVGG: Making VGG-style ConvNets Great Again.
 
         Args:
-            branch (None, nn.Sequential or nn.BatchNorm2d): A branch
-                only with bn in repvggblock.
+            branch (nn.BatchNorm2d): A branch only with bn in repvggblock.
 
         Returns:
-            (weight, bias) (tuple): The parameters obtained after
-                fusing the parameters of conv and bn in one branch.
-                The first element is the weight and the second is the bias.
+            tmp_conv3x3 (Sequential): a sequential with conv3x3 and bn.
         """
         input_dim = self.in_channels // self.groups
         conv_weight = torch.zeros((self.in_channels, input_dim, 3, 3),
-                                  dtype=branch.weight.dtype)
+                                  dtype=branch_nrom.weight.dtype)
+
         for i in range(self.in_channels):
             conv_weight[i, i % input_dim, 1, 1] = 1
-        conv_weight = conv_weight.to(branch.weight.device)
-        running_mean = branch.running_mean
-        running_var = branch.running_var
-        gamma = branch.weight
-        beta = branch.bias
-        eps = branch.eps
+        conv_weight = conv_weight.to(branch_nrom.weight.device)
 
-        std = (running_var + eps).sqrt()
-        fused_weight = (gamma / std).reshape(-1, 1, 1, 1) * conv_weight
-        fused_bias = -running_mean * gamma / std + beta
+        tmp_conv3x3 = self.create_conv_bn(kernel_size=3)
+        tmp_conv3x3.conv.weight.data = conv_weight
+        tmp_conv3x3.bn = branch_nrom
 
-        return fused_weight, fused_bias
+        return tmp_conv3x3
 
 
 @BACKBONES.register_module()
@@ -515,7 +491,7 @@ class RepVGG(BaseBackbone):
             in_channels = out_channels
             next_create_block_idx += 1
 
-        return nn.Sequential(*blocks), next_create_block_idx
+        return Sequential(*blocks), next_create_block_idx
 
     def forward(self, x):
         x = self.stem(x)
