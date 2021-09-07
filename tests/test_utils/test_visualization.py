@@ -5,6 +5,7 @@ import shutil
 import tempfile
 from unittest.mock import Mock, patch
 
+import matplotlib.pyplot as plt
 import mmcv
 import numpy as np
 import pytest
@@ -72,3 +73,37 @@ def test_imshow_infos():
         assert osp.exists(osp.join(tmp_dir, '1_0'))
 
     shutil.rmtree(tmp_dir)
+
+
+@patch(
+    'matplotlib.blocking_input.BlockingInput.__call__',
+    return_value=[Mock(key=' ')])
+def test_context_manager(mock_blocking_input):
+    # test show multiple images with the same figure.
+    images = [
+        np.random.randint(0, 255, (100, 100, 3), np.uint8) for _ in range(5)
+    ]
+    result = {'pred_label': 1, 'pred_class': 'bird', 'pred_score': 0.98}
+
+    with vis.ImshowInfosContextManager() as manager:
+        fig_show = manager.fig_show
+        fig_save = manager.fig_save
+        for image in images:
+            out_image = manager.put_img_infos(image, result, show=True)
+            assert image.shape == out_image.shape
+            assert not np.allclose(image, out_image)
+            assert fig_show is manager.fig_show
+            assert fig_save is manager.fig_save
+
+    # test rebuild figure if user destroyed it.
+    with vis.ImshowInfosContextManager() as manager:
+        fig_save = manager.fig_save
+        for image in images:
+            fig_show = manager.fig_show
+            plt.close(manager.fig_show)
+
+            out_image = manager.put_img_infos(image, result, show=True)
+            assert image.shape == out_image.shape
+            assert not np.allclose(image, out_image)
+            assert not (fig_show is manager.fig_show)
+            assert fig_save is manager.fig_save
