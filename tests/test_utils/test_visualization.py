@@ -30,7 +30,7 @@ def test_color():
 
 
 def test_imshow_infos():
-    tmp_dir = osp.join(tempfile.gettempdir(), 'infos_image')
+    tmp_dir = osp.join(tempfile.gettempdir(), 'image_infos')
     tmp_filename = osp.join(tmp_dir, 'image.jpg')
 
     image = np.ones((10, 10, 3), np.uint8)
@@ -55,36 +55,20 @@ def test_imshow_infos():
     image = np.ones((10, 10, 3), np.uint8)
     result = {'pred_label': 1, 'pred_class': 'bird', 'pred_score': 0.98}
 
-    def save_args(*args, **kwargs):
-        args_list = ['args']
-        args_list += [
-            str(arg) for arg in args if isinstance(arg, (str, bool, int))
-        ]
-        args_list += [
-            f'{k}-{v}' for k, v in kwargs.items()
-            if isinstance(v, (str, bool, int))
-        ]
-        out_path = osp.join(tmp_dir, '_'.join(args_list))
+    def mock_blocking_input(self, n=1, timeout=30):
+        keypress = Mock()
+        keypress.key = ' '
+        out_path = osp.join(tmp_dir, '_'.join([str(n), str(timeout)]))
         with open(out_path, 'w') as f:
             f.write('test')
+        return [keypress]
 
-    with patch('matplotlib.pyplot.show', save_args), \
-            patch('matplotlib.pyplot.pause', save_args):
+    with patch('matplotlib.blocking_input.BlockingInput.__call__',
+               mock_blocking_input):
         vis.imshow_infos(image, result, show=True, wait_time=5)
-        assert osp.exists(osp.join(tmp_dir, 'args_block-False'))
-        assert osp.exists(osp.join(tmp_dir, 'args_5'))
+        assert osp.exists(osp.join(tmp_dir, '1_5'))
 
         vis.imshow_infos(image, result, show=True, wait_time=0)
-        assert osp.exists(osp.join(tmp_dir, 'args'))
-
-    # test adaptive dpi
-    def mock_fig_manager():
-        fig_manager = Mock()
-        fig_manager.window.winfo_screenheight = Mock(return_value=1440)
-        return fig_manager
-
-    with patch('matplotlib.pyplot.get_current_fig_manager',
-               mock_fig_manager), patch('matplotlib.pyplot.show'):
-        vis.imshow_infos(image, result, show=True)
+        assert osp.exists(osp.join(tmp_dir, '1_0'))
 
     shutil.rmtree(tmp_dir)
