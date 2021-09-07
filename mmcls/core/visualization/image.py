@@ -23,23 +23,32 @@ def color_val_matplotlib(color):
     return tuple(color)
 
 
-class BaseImshowContextManager:
+class BaseFigureContextManager:
     """Context Manager to reuse matplotlib figure.
 
+    Provide figures for saving and for showing to support different settings.
+
     Args:
-        fig_size (tuple[int]): Size of the figure to show image.
+        axis (bool): Whether to show the axis lines.
+        fig_save_cfg (dict): Keyword parameters of figure for saving.
+            Defaults to empty dict.
+        fig_show_cfg (dict): Keyword parameters of figure for showing.
+            Defaults to empty dict.
     """
 
-    def __init__(self, fig_size=(15, 10)) -> None:
+    def __init__(self, axis=False, fig_save_cfg={}, fig_show_cfg={}) -> None:
         # Because save and show need different figure size
         # We set two figure and axes to handle save and show
         self.fig_save: plt.Figure = None
+        self.fig_save_cfg = fig_save_cfg
         self.ax_save: plt.Axes = None
+
         self.fig_show: plt.Figure = None
+        self.fig_show_cfg = fig_show_cfg
         self.ax_show: plt.Axes = None
         self.blocking_input: BlockingInput = None
 
-        self.fig_size = fig_size
+        self.axis = axis
 
     def __enter__(self):
         self._initialize_fig_save()
@@ -47,10 +56,8 @@ class BaseImshowContextManager:
         return self
 
     def _initialize_fig_save(self):
-        # A proper dpi for image save with default font size.
-        fig = plt.figure(frameon=False, dpi=36)
+        fig = plt.figure(**self.fig_save_cfg)
         ax = fig.add_subplot()
-        ax.axis('off')
 
         # remove white edges by set subplot margin
         fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
@@ -59,9 +66,8 @@ class BaseImshowContextManager:
 
     def _initialize_fig_show(self):
         # fig_save will be resized to image size, only fig_show needs fig_size.
-        fig = plt.figure(frameon=False, figsize=self.fig_size)
+        fig = plt.figure(**self.fig_show_cfg)
         ax = fig.add_subplot()
-        ax.axis('off')
 
         # remove white edges by set subplot margin
         fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
@@ -83,9 +89,9 @@ class BaseImshowContextManager:
 
         # Clear all axes
         self.ax_save.cla()
-        self.ax_save.axis('off')
+        self.ax_save.axis(self.axis)
         self.ax_show.cla()
-        self.ax_show.axis('off')
+        self.ax_show.axis(self.axis)
 
     def wait_continue(self, timeout=0):
         while True:
@@ -100,8 +106,19 @@ class BaseImshowContextManager:
                 break
 
 
-class ImshowInfosContextManager(BaseImshowContextManager):
-    """Context Manager to reuse matplotlib figure and put infos on images."""
+class ImshowInfosContextManager(BaseFigureContextManager):
+    """Context Manager to reuse matplotlib figure and put infos on images.
+
+    Args:
+        fig_size (tuple[int]): Size of the figure to show image.
+    """
+
+    def __init__(self, fig_size=(15, 10)):
+        super().__init__(
+            axis=False,
+            # A proper dpi for image save with default font size.
+            fig_save_cfg=dict(frameon=False, dpi=36),
+            fig_show_cfg=dict(frameon=False, figsize=fig_size))
 
     def _put_text(self, ax, text, x, y, text_color, font_size):
         ax.text(
