@@ -230,7 +230,7 @@ class RepVGGBlock(BaseModule):
 
     def _norm_to_conv3x3(self, branch_nrom):
         """Convert a norm to a conv3x3-bn Sequential.refer to the paper:
-        RepVGG: Making VGG-style ConvNets Great Again.
+        RepVGG: Making VGG-style ConvNets Great Again
 
         Args:
             branch (nn.BatchNorm2d): A branch only with bn in repvggblock.
