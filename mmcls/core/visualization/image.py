@@ -26,7 +26,8 @@ def color_val_matplotlib(color):
 class BaseFigureContextManager:
     """Context Manager to reuse matplotlib figure.
 
-    Provide figures for saving and for showing to support different settings.
+    It provides a figure for saving and a figure for showing to support
+    different settings.
 
     Args:
         axis (bool): Whether to show the axis lines.
@@ -111,6 +112,20 @@ class ImshowInfosContextManager(BaseFigureContextManager):
 
     Args:
         fig_size (tuple[int]): Size of the figure to show image.
+
+    Examples:
+        >>> import mmcv
+        >>> from mmcls.core import visualization as vis
+        >>> img1 = mmcv.imread("./1.png")
+        >>> info1 = {'class': 'cat', 'label': 0}
+        >>> img2 = mmcv.imread("./2.png")
+        >>> info2 = {'class': 'dog', 'label': 1}
+        >>> with vis.ImshowInfosContextManager() as manager:
+        ...     # Show img1
+        ...     manager.put_img_infos(img1, info1)
+        ...     # Show img2 on the same figure and save output image.
+        ...     manager.put_img_infos(
+        ...         img2, info2, out_file='./2_out.png')
     """
 
     def __init__(self, fig_size=(15, 10)):
