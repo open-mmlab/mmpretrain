@@ -109,16 +109,11 @@ def test_repvgg_repvggblock():
     # Test RepVGGBlock with se
     se_cfg = dict(ratio=4, divisor=1)
     block = RepVGGBlock(18, 18, stride=1, se_cfg=se_cfg)
-    block.eval()
+    block.train()
     x = torch.randn(1, 18, 5, 5)
     x_out_not_deploy = block(x)
     assert isinstance(block.se_layer, SELayer)
     assert x_out_not_deploy.shape == torch.Size((1, 18, 5, 5))
-    block.switch_to_deploy()
-    assert block.deploy is True
-    x_out_deploy = block(x)
-    assert x_out_deploy.shape == torch.Size((1, 18, 5, 5))
-    assert torch.allclose(x_out_not_deploy, x_out_deploy, atol=1e-6, rtol=1e-5)
 
     # Test RepVGGBlock with checkpoint forward
     block = RepVGGBlock(24, 24, stride=1, with_cp=True)
@@ -180,14 +175,12 @@ def test_repvgg_backbone():
 
     # Test RepVGG norm state
     model = RepVGG('A0')
-    model.init_weights()
     model.train()
     assert check_norm_state(model.modules(), True)
 
     # Test RepVGG with first stage frozen
     frozen_stages = 1
     model = RepVGG('A0', frozen_stages=frozen_stages)
-    model.init_weights()
     model.train()
     for param in model.stem.parameters():
         assert param.requires_grad is False
@@ -202,35 +195,12 @@ def test_repvgg_backbone():
 
     # Test RepVGG with norm_eval
     model = RepVGG('A0', norm_eval=True)
-    model.init_weights()
     model.train()
     assert check_norm_state(model.modules(), False)
 
-    # Test RepVGG forward with arch='A0'
-    model = RepVGG('A0', out_indices=(0, 1, 2, 3))
-    model.init_weights()
-    model.train()
-
-    for m in model.modules():
-        if is_norm(m):
-            assert isinstance(m, _BatchNorm)
-
-    imgs = torch.randn(1, 3, 224, 224)
-    feat = model(imgs)
-    assert len(feat) == 4
-    assert feat[0].shape == torch.Size((1, 48, 56, 56))
-    assert feat[1].shape == torch.Size((1, 96, 28, 28))
-    assert feat[2].shape == torch.Size((1, 192, 14, 14))
-    assert feat[3].shape == torch.Size((1, 1280, 7, 7))
-
     # Test RepVGG forward with layer 3 forward
     model = RepVGG('A0', out_indices=(3, ))
-    model.init_weights()
     model.train()
-
-    for m in model.modules():
-        if is_norm(m):
-            assert isinstance(m, _BatchNorm)
 
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
@@ -255,20 +225,21 @@ def test_repvgg_backbone():
         dict(model_name='D2se', out_sizes=(160, 320, 640, 2560))
     ]
 
-    choose_models = ['A1', 'B0', 'B1g2', 'B2', 'B3g2', 'D2se']
-    # Test RepVGG model
+    choose_models = ['A0', 'B1', 'B1g2', 'D2se']
+    # Test RepVGG model forward
     for model_test_setting in model_test_settings:
         if model_test_setting['model_name'] not in choose_models:
             continue
         model = RepVGG(
             model_test_setting['model_name'], out_indices=(0, 1, 2, 3))
         model.init_weights()
-        model.train()
 
+        # Test Norm
         for m in model.modules():
             if is_norm(m):
                 assert isinstance(m, _BatchNorm)
 
+        model.train()
         imgs = torch.randn(1, 3, 224, 224)
         feat = model(imgs)
         assert feat[0].shape == torch.Size(
@@ -280,31 +251,35 @@ def test_repvgg_backbone():
         assert feat[3].shape == torch.Size(
             (1, model_test_setting['out_sizes'][3], 7, 7))
 
+        # Test eval of "train" mode and "deploy" mode
+        gap = nn.AdaptiveAvgPool2d(output_size=(1))
+        fc = nn.Linear(model_test_setting['out_sizes'][3], 10)
+        model.eval()
+        feat = model(imgs)
+        pred = fc(gap(feat[3]).flatten(1))
+        model.switch_to_deploy()
+        for m in model.modules():
+            if isinstance(m, RepVGGBlock):
+                assert m.deploy is True
+        feat_deploy = model(imgs)
+        pred_deploy = fc(gap(feat_deploy[3]).flatten(1))
+        for i in range(4):
+            torch.allclose(feat[i], feat_deploy[i])
+        torch.allclose(pred, pred_deploy)
 
-def test_repvgg_deploy():
-    model = RepVGG('A0', out_indices=(0, 1, 2, 3))
+
+def test_repvgg_load():
+    model = RepVGG('A1', out_indices=(0, 1, 2, 3))
+    model_deploy = RepVGG('A1', out_indices=(0, 1, 2, 3), deploy=True)
+    ckpt_path = os.path.join(tempfile.gettempdir(), 'ckpt.pth')
+    inputs = torch.randn((1, 3, 224, 224))
+    model.switch_to_deploy()
     model.eval()
 
-    # Test ouput before and after deploy
-    inputs = torch.randn((1, 3, 224, 224))
-    outputs_before_deploy = model(inputs)
-    model.switch_to_deploy()
-    outputs_after_deploy = model(inputs)
-
-    for features_before_deploy, features_after_deploy in zip(
-            outputs_before_deploy, outputs_after_deploy):
-        assert torch.allclose(
-            features_before_deploy,
-            features_after_deploy,
-            atol=1e-4,
-            rtol=1e-4)
-
-    # Test deploy model load from checkpoint
-    ckpt_path = os.path.join(tempfile.gettempdir(), 'ckpt.pth')
+    # Test ouput before and load from deploy checkpoint
+    outputs = model(inputs)
     save_checkpoint(model, ckpt_path)
-    model_deploy = RepVGG('A0', out_indices=(0, 1, 2, 3), deploy=True)
     load_checkpoint(model_deploy, ckpt_path, strict=True)
-    outputs_load = model(inputs)
-    for features_after_deploy, features_load in zip(outputs_after_deploy,
-                                                    outputs_load):
-        assert torch.allclose(features_after_deploy, features_load)
+    outputs_load = model_deploy(inputs)
+    for feat, feat_load in zip(outputs, outputs_load):
+        assert torch.allclose(feat, feat_load)
