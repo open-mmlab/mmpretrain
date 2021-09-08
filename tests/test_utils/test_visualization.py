@@ -67,9 +67,6 @@ def test_imshow_infos():
     with patch('matplotlib.blocking_input.BlockingInput.__call__',
                mock_blocking_input):
         vis.imshow_infos(image, result, show=True, wait_time=5)
-        assert osp.exists(osp.join(tmp_dir, '1_5'))
-
-        vis.imshow_infos(image, result, show=True, wait_time=0)
         assert osp.exists(osp.join(tmp_dir, '1_0'))
 
     shutil.rmtree(tmp_dir)
