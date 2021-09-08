@@ -2,27 +2,18 @@ import argparse
 from pathlib import Path
 
 import torch
-from torch.nn.modules.batchnorm import BatchNorm2d
 
 from mmcls.apis import init_model
 
 
 def convert_repvggblock_param(config_path, checkpoint_path, save_path):
     model = init_model(config_path, checkpoint=checkpoint_path)
-
     print('Converting...')
 
-    for module in model.modules():
-        if hasattr(module, 'switch_to_deploy'):
-            assert isinstance(module.branch_3x3.norm, BatchNorm2d), \
-                'The normalization method in RepVGGBlock needs to ' \
-                'be BatchNorm2d.'
-            module.switch_to_deploy()
-
+    model.backbone.switch_to_deploy()
     torch.save(model.state_dict(), save_path)
 
-    print('Done!')
-
+    print('Done! Save at path "{}"'.format(save_path))
 
 def main():
     parser = argparse.ArgumentParser(

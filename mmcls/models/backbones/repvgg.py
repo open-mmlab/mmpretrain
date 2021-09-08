@@ -104,8 +104,8 @@ class RepVGGBlock(BaseModule):
         self.act = build_activation_layer(act_cfg)
 
     def create_conv_bn(self, kernel_size, dilation=1, padding=0):
-        result = Sequential()
-        result.add_module(
+        conv_bn = Sequential()
+        conv_bn.add_module(
             'conv',
             build_conv_layer(
                 self.conv_cfg,
@@ -117,11 +117,11 @@ class RepVGGBlock(BaseModule):
                 padding=padding,
                 groups=self.groups,
                 bias=False))
-        result.add_module(
+        conv_bn.add_module(
             'norm',
             build_norm_layer(self.norm_cfg, num_features=self.out_channels)[1])
 
-        return result
+        return conv_bn
 
     def forward(self, x):
 
@@ -165,13 +165,13 @@ class RepVGGBlock(BaseModule):
         reparam_weight, reparam_bias = self.reparameterize()
         self.branch_reparam = build_conv_layer(
             self.conv_cfg,
-            self.branch_3x3.conv.in_channels,
-            self.branch_3x3.conv.out_channels,
+            self.in_channels,
+            self.out_channels,
             kernel_size=3,
-            stride=self.branch_3x3.conv.stride,
-            padding=self.branch_3x3.conv.padding,
-            dilation=self.branch_3x3.conv.dilation,
-            groups=self.branch_3x3.conv.groups,
+            stride=self.stride,
+            padding=self.padding,
+            dilation=self.dilation,
+            groups=self.groups,
             bias=True)
         self.branch_reparam.weight.data = reparam_weight
         self.branch_reparam.bias.data = reparam_bias
@@ -215,6 +215,8 @@ class RepVGGBlock(BaseModule):
                 fusing the parameters of conv and bn in one branch.
                 The first element is the weight and the second is the bias.
         """
+        if branch is None:
+            return 0, 0
         conv_weight = branch.conv.weight
         running_mean = branch.norm.running_mean
         running_var = branch.norm.running_var
@@ -248,8 +250,7 @@ class RepVGGBlock(BaseModule):
 
         tmp_conv3x3 = self.create_conv_bn(kernel_size=3)
         tmp_conv3x3.conv.weight.data = conv_weight
-        tmp_conv3x3.bn = branch_nrom
-
+        tmp_conv3x3.norm = branch_nrom
         return tmp_conv3x3
 
 
@@ -375,7 +376,7 @@ class RepVGG(BaseBackbone):
             num_blocks=[8, 14, 24, 1],
             width_factor=[2.5, 2.5, 2.5, 5],
             group_layer_map=None,
-            se_cfg=dict(ratio=10, divisor=1))
+            se_cfg=dict(ratio=16, divisor=1))
     }
 
     def __init__(self,
