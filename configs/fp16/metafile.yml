@@ -29,7 +29,7 @@ Models:
       - Task: Image Classification
         Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 76.32
-          Top 5 Accuracy: 93.04
+          Top 1 Accuracy: 76.30
+          Top 5 Accuracy: 93.07
     Weights: https://download.openmmlab.com/mmclassification/v0/fp16/resnet50_batch256_fp16_imagenet_20210320-b3964210.pth
     Config: configs/fp16/resnet50_b32x8_fp16_dynamic_imagenet.py
