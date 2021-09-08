@@ -1,3 +1,5 @@
+from threading import Timer
+
 import matplotlib.pyplot as plt
 import mmcv
 import numpy as np
@@ -75,13 +77,19 @@ class BaseFigureContextManager:
 
         self.fig_show, self.ax_show = fig, ax
         self.blocking_input = BlockingInput(
-            self.fig_show,
-            eventslist=('button_press_event', 'key_press_event',
-                        'close_event'))
+            self.fig_show, eventslist=('key_press_event', 'close_event'))
 
     def __exit__(self, exc_type, exc_value, traceback):
         plt.close(self.fig_save)
         plt.close(self.fig_show)
+
+        try:
+            # In matplotlib>=3.4.0, with TkAgg, plt.close will destroy
+            # window after idle, need to update manually.
+            # Refers to https://github.com/matplotlib/matplotlib/blob/v3.4.x/lib/matplotlib/backends/_backend_tk.py#L470 # noqa: E501
+            self.fig_show.canvas.manager.window.update()
+        except AttributeError:
+            pass
 
     def prepare(self):
         # If users force to destroy the window, rebuild fig_show.
@@ -95,16 +103,24 @@ class BaseFigureContextManager:
         self.ax_show.axis(self.axis)
 
     def wait_continue(self, timeout=0):
+        # In matplotlib==3.4.x, with TkAgg, official timeout api of
+        # start_event_loop cannot work properly. Use a Timer to directly stop
+        # event loop.
+        if timeout > 0:
+            timer = Timer(timeout, self.fig_show.canvas.stop_event_loop)
+            timer.start()
         while True:
             # Disable matplotlib default hotkey to close figure.
             with plt.rc_context({'keymap.quit': []}):
-                key_press = self.blocking_input(n=1, timeout=timeout)
+                key_press = self.blocking_input(n=1, timeout=0)
 
             # Timeout or figure is closed or press space or press 'q'
             if len(key_press) == 0 or isinstance(
                     key_press[0],
                     CloseEvent) or key_press[0].key in ['q', ' ']:
                 break
+        if timeout > 0:
+            timer.cancel()
 
 
 class ImshowInfosContextManager(BaseFigureContextManager):
