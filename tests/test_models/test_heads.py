@@ -9,71 +9,72 @@ from mmcls.models.heads import (ClsHead, LinearClsHead, MultiLabelClsHead,
                                 VisionTransformerClsHead)
 
 
-def test_cls_head():
+@pytest.mark.parametrize('feat', [torch.rand(4, 3), (torch.rand(4, 3), )])
+def test_cls_head(feat):
 
     # test ClsHead with cal_acc=False
     head = ClsHead()
-    fake_cls_score = torch.rand(4, 3)
     fake_gt_label = torch.randint(0, 2, (4, ))
 
-    losses = head.loss(fake_cls_score, fake_gt_label)
+    losses = head.forward_train(feat, fake_gt_label)
     assert losses['loss'].item() > 0
 
     # test ClsHead with cal_acc=True
     head = ClsHead(cal_acc=True)
-    fake_cls_score = torch.rand(4, 3)
+    feat = torch.rand(4, 3)
     fake_gt_label = torch.randint(0, 2, (4, ))
 
-    losses = head.loss(fake_cls_score, fake_gt_label)
+    losses = head.forward_train(feat, fake_gt_label)
     assert losses['loss'].item() > 0
 
 
-def test_linear_head():
+@pytest.mark.parametrize('feat', [torch.rand(4, 3), (torch.rand(4, 3), )])
+def test_linear_head(feat):
 
-    fake_features = torch.rand(4, 100)
     fake_gt_label = torch.randint(0, 10, (4, ))
 
     # test LinearClsHead forward
-    head = LinearClsHead(10, 100)
-    losses = head.forward_train(fake_features, fake_gt_label)
+    head = LinearClsHead(10, 3)
+    losses = head.forward_train(feat, fake_gt_label)
     assert losses['loss'].item() > 0
 
     # test init weights
-    head = LinearClsHead(10, 100)
+    head = LinearClsHead(10, 3)
     head.init_weights()
     assert abs(head.fc.weight).sum() > 0
 
     # test simple_test
-    head = LinearClsHead(10, 100)
-    pred = head.simple_test(fake_features)
+    head = LinearClsHead(10, 3)
+    pred = head.simple_test(feat)
     assert isinstance(pred, list) and len(pred) == 4
 
     with patch('torch.onnx.is_in_onnx_export', return_value=True):
-        head = LinearClsHead(10, 100)
-        pred = head.simple_test(fake_features)
+        head = LinearClsHead(10, 3)
+        pred = head.simple_test(feat)
         assert pred.shape == (4, 10)
 
 
-def test_multilabel_head():
+@pytest.mark.parametrize('feat', [torch.rand(4, 3), (torch.rand(4, 3), )])
+def test_multilabel_head(feat):
     head = MultiLabelClsHead()
-    fake_cls_score = torch.rand(4, 3)
     fake_gt_label = torch.randint(0, 2, (4, 3))
 
-    losses = head.loss(fake_cls_score, fake_gt_label)
+    losses = head.forward_train(feat, fake_gt_label)
     assert losses['loss'].item() > 0
 
 
-def test_multilabel_linear_head():
+@pytest.mark.parametrize('feat', [torch.rand(4, 5), (torch.rand(4, 5), )])
+def test_multilabel_linear_head(feat):
     head = MultiLabelLinearClsHead(3, 5)
-    fake_cls_score = torch.rand(4, 3)
     fake_gt_label = torch.randint(0, 2, (4, 3))
 
     head.init_weights()
-    losses = head.loss(fake_cls_score, fake_gt_label)
+    losses = head.forward_train(feat, fake_gt_label)
     assert losses['loss'].item() > 0
 
 
-def test_stacked_linear_cls_head():
+@pytest.mark.parametrize('feat', [torch.rand(4, 5), (torch.rand(4, 5), )])
+def test_stacked_linear_cls_head(feat):
     # test assertion
     with pytest.raises(AssertionError):
         StackedLinearClsHead(num_classes=3, in_channels=5, mid_channels=10)
@@ -81,7 +82,6 @@ def test_stacked_linear_cls_head():
     with pytest.raises(AssertionError):
         StackedLinearClsHead(num_classes=-1, in_channels=5, mid_channels=[10])
 
-    fake_img = torch.rand(4, 5)  # B, channel
     fake_gt_label = torch.randint(0, 2, (4, ))  # B, num_classes
 
     # test forward with default setting
@@ -89,16 +89,16 @@ def test_stacked_linear_cls_head():
         num_classes=3, in_channels=5, mid_channels=[10])
     head.init_weights()
 
-    losses = head.forward_train(fake_img, fake_gt_label)
+    losses = head.forward_train(feat, fake_gt_label)
     assert losses['loss'].item() > 0
 
     # test simple test
-    pred = head.simple_test(fake_img)
+    pred = head.simple_test(feat)
     assert len(pred) == 4
 
     # test simple test in tracing
     with patch('torch.onnx.is_in_onnx_export', return_value=True):
-        pred = head.simple_test(fake_img)
+        pred = head.simple_test(feat)
         assert pred.shape == torch.Size((4, 3))
 
     # test forward with full function
@@ -111,7 +111,7 @@ def test_stacked_linear_cls_head():
         act_cfg=dict(type='HSwish'))
     head.init_weights()
 
-    losses = head.forward_train(fake_img, fake_gt_label)
+    losses = head.forward_train(feat, fake_gt_label)
     assert losses['loss'].item() > 0
 
 

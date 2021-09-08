@@ -475,7 +475,8 @@ def test_resnet():
 
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
-    assert feat.shape == (1, 2048, 7, 7)
+    assert len(feat) == 1
+    assert feat[0].shape == (1, 2048, 7, 7)
 
     # Test ResNet50 with checkpoint forward
     model = ResNet(50, out_indices=(0, 1, 2, 3), with_cp=True)

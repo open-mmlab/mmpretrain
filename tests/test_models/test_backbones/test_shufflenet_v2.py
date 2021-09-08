@@ -179,8 +179,9 @@ def test_shufflenetv2_backbone():
 
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
-    assert isinstance(feat, torch.Tensor)
-    assert feat.shape == torch.Size((1, 464, 7, 7))
+    assert len(feat) == 1
+    assert isinstance(feat[0], torch.Tensor)
+    assert feat[0].shape == torch.Size((1, 464, 7, 7))
 
     # Test ShuffleNetV2 forward with layers 1 2 forward
     model = ShuffleNetV2(widen_factor=1.0, out_indices=(1, 2))

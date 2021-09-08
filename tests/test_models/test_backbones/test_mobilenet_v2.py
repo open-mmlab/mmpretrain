@@ -155,7 +155,8 @@ def test_mobilenetv2_backbone():
 
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
-    assert feat.shape == torch.Size((1, 2560, 7, 7))
+    assert len(feat) == 1
+    assert feat[0].shape == torch.Size((1, 2560, 7, 7))
 
     # Test MobileNetV2 forward with out_indices=None
     model = MobileNetV2(widen_factor=1.0)
@@ -164,7 +165,8 @@ def test_mobilenetv2_backbone():
 
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
-    assert feat.shape == torch.Size((1, 1280, 7, 7))
+    assert len(feat) == 1
+    assert feat[0].shape == torch.Size((1, 1280, 7, 7))
 
     # Test MobileNetV2 forward with dict(type='ReLU')
     model = MobileNetV2(

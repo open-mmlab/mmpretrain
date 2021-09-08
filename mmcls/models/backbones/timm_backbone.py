@@ -54,4 +54,4 @@ class TIMMBackbone(BaseBackbone):
 
     def forward(self, x):
         features = self.timm_model.forward_features(x)
-        return features
+        return (features, )

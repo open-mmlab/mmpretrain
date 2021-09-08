@@ -24,7 +24,14 @@ class ImageClassifier(BaseClassifier):
                 key, please consider using init_cfg')
             self.init_cfg = dict(type='Pretrained', checkpoint=pretrained)
 
+        return_tuple = backbone.pop('return_tuple', True)
         self.backbone = build_backbone(backbone)
+        if return_tuple is False:
+            warnings.warn(
+                'The `return_tuple` is a temporary arg, we will force to '
+                'return tuple in the future. Please handle tuple in your '
+                'custom neck or head.', DeprecationWarning)
+        self.return_tuple = return_tuple
 
         if neck is not None:
             self.neck = build_neck(neck)
@@ -64,6 +71,17 @@ class ImageClassifier(BaseClassifier):
     def extract_feat(self, img):
         """Directly extract features from the backbone + neck."""
         x = self.backbone(img)
+        if self.return_tuple:
+            if not isinstance(x, tuple):
+                x = (x, )
+                warnings.simplefilter('once')
+                warnings.warn(
+                    'We will force all backbones to return a tuple in the '
+                    'future. Please check your backbone and wrap the output '
+                    'as a tuple.', DeprecationWarning)
+        else:
+            if isinstance(x, tuple):
+                x = x[-1]
         if self.with_neck:
             x = self.neck(x)
         return x
@@ -87,7 +105,18 @@ class ImageClassifier(BaseClassifier):
         x = self.extract_feat(img)
 
         losses = dict()
-        loss = self.head.forward_train(x, gt_label)
+        try:
+            loss = self.head.forward_train(x, gt_label)
+        except TypeError as e:
+            if 'not tuple' in str(e) and self.return_tuple:
+                return TypeError(
+                    'Seems the head cannot handle tuple input. We have '
+                    'changed all backbones\' output to a tuple. Please '
+                    'update your custom head\'s forward function. '
+                    'Temporarily, you can set "return_tuple=False" in '
+                    'your backbone config to disable this feature.')
+            raise e
+
         losses.update(loss)
 
         return losses
@@ -95,7 +124,17 @@ class ImageClassifier(BaseClassifier):
     def simple_test(self, img, img_metas):
         """Test without augmentation."""
         x = self.extract_feat(img)
-        x_dims = len(x.shape)
-        if x_dims == 1:
-            x.unsqueeze_(0)
-        return self.head.simple_test(x)
+
+        try:
+            res = self.head.simple_test(x)
+        except TypeError as e:
+            if 'not tuple' in str(e) and self.return_tuple:
+                return TypeError(
+                    'Seems the head cannot handle tuple input. We have '
+                    'changed all backbones\' output to a tuple. Please '
+                    'update your custom head\'s forward function. '
+                    'Temporarily, you can set "return_tuple=False" in '
+                    'your backbone config to disable this feature.')
+            raise e
+
+        return res
