@@ -8,3 +8,4 @@ Import:
   - configs/shufflenet_v2/metafile.yml
   - configs/swin_transformer/metafile.yml
   - configs/vgg/metafile.yml
+  - configs/tnt/metafile.yml
