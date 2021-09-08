@@ -10,8 +10,13 @@ Collections:
       Batch Size: 256
       Architecture:
         - ResNeXt
-    Paper: https://openaccess.thecvf.com/content_cvpr_2017/html/Xie_Aggregated_Residual_Transformations_CVPR_2017_paper.html
+    Paper:
+      URL: https://openaccess.thecvf.com/content_cvpr_2017/html/Xie_Aggregated_Residual_Transformations_CVPR_2017_paper.html
+      Title: "Aggregated Residual Transformations for Deep Neural Networks"
     README: configs/resnext/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.15.0/mmcls/models/backbones/resnext.py#L90
+      Version: v0.15.0
 
 Models:
   - Name: resnext50_32x4d_b32x8_imagenet

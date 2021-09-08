@@ -10,8 +10,13 @@ Collections:
       Batch Size: 256
       Architecture:
         - VGG
-    Paper: https://arxiv.org/abs/1409.1556
+    Paper:
+      URL: https://arxiv.org/abs/1409.1556
+      Title: "Very Deep Convolutional Networks for Large-Scale Image"
     README: configs/vgg/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.15.0/mmcls/models/backbones/vgg.py#L39
+      Version: v0.15.0
 
 Models:
   - Name: vgg11_b32x8_imagenet

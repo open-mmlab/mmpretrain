@@ -11,8 +11,13 @@ Collections:
       Batch Size: 1024
       Architecture:
         - Shufflenet V2
-    Paper: https://openaccess.thecvf.com/content_ECCV_2018/papers/Ningning_Light-weight_CNN_Architecture_ECCV_2018_paper.pdf
+    Paper:
+      URL: https://openaccess.thecvf.com/content_ECCV_2018/papers/Ningning_Light-weight_CNN_Architecture_ECCV_2018_paper.pdf
+      Title: "ShuffleNet V2: Practical Guidelines for Efficient CNN Architecture Design"
     README: configs/shufflenet_v2/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.15.0/mmcls/models/backbones/shufflenet_v2.py#L134
+      Version: v0.15.0
 
 Models:
   - Name: shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet
