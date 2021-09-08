@@ -67,6 +67,13 @@ def save_imgs(result_dir, folder_name, results, model):
 def main():
     args = parse_args()
 
+    # load test results
+    outputs = mmcv.load(args.result)
+    assert ('pred_score' in outputs and 'pred_class' in outputs
+            and 'pred_label' in outputs), \
+        'No "pred_label", "pred_score" or "pred_class" in result file, ' \
+        'please set "--out-items" in test.py'
+
     cfg = mmcv.Config.fromfile(args.config)
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
@@ -86,8 +93,6 @@ def main():
     gt_labels = list(dataset.get_gt_labels())
     gt_classes = [dataset.CLASSES[x] for x in gt_labels]
 
-    # load test results
-    outputs = mmcv.load(args.result)
     outputs['filename'] = filenames
     outputs['gt_label'] = gt_labels
     outputs['gt_class'] = gt_classes
