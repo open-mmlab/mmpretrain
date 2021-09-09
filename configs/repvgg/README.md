@@ -28,3 +28,15 @@
 |  RepVGG-B3  |  200   | 123.09 (train) \| 110.96 (deploy) | 29.17 (train) \| 26.22 (deploy) |   80.52   |   95.26   | [config (train)](https://github.com/open-mmlab/mmclassification/blob/master/configs/repvgg/repvggB3_b64x4_imagenet_200e_coslr_warmup_label_smoothing_mixup_autoaugment.py) \|[config (deploy)](https://github.com/open-mmlab/mmclassification/blob/master/configs/repvgg/deploy/repvggB3_b64x4_imagenet_200e_coslr_warmup_label_smoothing_mixup_autoaugment_deploy.py) | [model (train)](https://download.openmmlab.com/mmclassification/v0/repvgg/repvggB3_3rdparty_4xb64_autoaug-lbs-mixup-coslr-200e_in-1k_20210909-dda968bf.pth) |
 | RepVGG-B3g4 |  200   |  83.83 (train) \| 75.63 (deploy)  | 17.9 (train) \| 16.08 (deploy)  |   80.22   |   95.10   | [config (train)](https://github.com/open-mmlab/mmclassification/blob/master/configs/repvgg/repvggB3g4_b64x4_imagenet_200e_coslr_warmup_label_smoothing_mixup_autoaugment.py) \|[config (deploy)](https://github.com/open-mmlab/mmclassification/blob/master/configs/repvgg/deploy/repvggB3g4_b64x4_imagenet_200e_coslr_warmup_label_smoothing_mixup_autoaugment_deploy.py) | [model (train)](https://download.openmmlab.com/mmclassification/v0/repvgg/repvggB3g4_3rdparty_4xb64_autoaug-lbs-mixup-coslr-200e_in-1k_20210909-4e54846a.pth) |
 | RepVGG-D2se |  200   |  133.33 (train) \| 120.39 (deploy)  | 36.56 (train) \| 32.85 (deploy)  |   81.81   |   95.94   | [config (train)](https://github.com/open-mmlab/mmclassification/blob/master/configs/repvgg/repvggD2se_b64x4_imagenet_200e_coslr_warmup_label_smoothing_mixup_autoaugment.py) \|[config (deploy)](https://github.com/open-mmlab/mmclassification/blob/master/configs/repvgg/deploy/repvggD2se_b64x4_imagenet_200e_coslr_warmup_label_smoothing_mixup_autoaugment_deploy.py) | [model (train)](https://download.openmmlab.com/mmclassification/v0/repvgg/repvggD2se_3rdparty_4xb64_autoaug-lbs-mixup-coslr-200e_in-1k_20210909-cf3139b7.pth) |
+
+## Reparameterize RepVGG
+
+Use the reparameterize tool to get a more efficient model, which not only has fewer parameters but also less calculations.
+
+```bash
+python ./tools/convert_models/reparameterize_repvgg.py ${CFG_PATH} ${SRC_CKPT_PATH} ${TARGET_CKPT_PATH}
+```
+
+`${CFG_PATH}` is the config file, `${SRC_CKPT_PATH}` is the source chenpoint file, `${TARGET_CKPT_PATH}` is the target deploy weight file path.
+
+To use reparameterized repvgg weight, the config file must switch to [the deploy config files](./configs/repvgg/deploy).

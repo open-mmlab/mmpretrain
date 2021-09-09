@@ -7,7 +7,7 @@ Collections:
       Architecture:
         - re-parameterization Convolution
         - VGG-style Neural Network
-    Paper: 
+    Paper:
         URL: https://arxiv.org/abs/2101.03697
         Title: 'RepVGG: Making VGG-style ConvNets Great Again'
     README: configs/repvgg/README.md
@@ -217,4 +217,3 @@ Models:
     Converted From:
       Weights: https://drive.google.com/drive/folders/1Avome4KvNp0Lqh2QwhXO6L5URQjzCjUq
       Code: https://github.com/DingXiaoH/RepVGG/blob/9f272318abfc47a2b702cd0e916fca8d25d683e7/repvgg.py#L250
-  
