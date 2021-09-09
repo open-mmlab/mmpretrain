@@ -1,0 +1,220 @@
+Collections:
+  - Name: RepVGG
+    Metadata:
+      Training Data: ImageNet
+      Epochs: 200
+      Batch Size: 256
+      Architecture:
+        - re-parameterization Convolution
+        - VGG-style Neural Network
+    Paper: 
+        URL: https://arxiv.org/abs/2101.03697
+        Title: 'RepVGG: Making VGG-style ConvNets Great Again'
+    README: configs/repvgg/README.md
+
+Models:
+  - Name: repvggA0_4xb64-coslr-120e_in-1k
+    In Collection: Repvgg
+    Config: configs/repvgg/repvggA0_4xb64-coslr-120e_in-1k.py
+    Metadata:
+      FLOPs: 1.52 G
+      Parameters: 9.11 M
+      Training Data: ImageNet
+    Results:
+    - Dataset: ImageNet
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 72.41
+        Top 5 Accuracy: 90.50
+    Weights: https://download.openmmlab.com/mmclassification/v0/repvgg/repvggA0_3rdparty_4xb64-coslr-120e_in-1k_20210909-883ab98c.pth
+    Converted From:
+      Weights: https://drive.google.com/drive/folders/1Avome4KvNp0Lqh2QwhXO6L5URQjzCjUq
+      Code: https://github.com/DingXiaoH/RepVGG/blob/9f272318abfc47a2b702cd0e916fca8d25d683e7/repvgg.py#L196
+  - Name: repvggA1_4xb64-coslr-120e_in-1k
+    In Collection: Repvgg
+    Config: configs/repvgg/repvggA1_4xb64-coslr-120e_in-1k.py
+    Metadata:
+      FLOPs: 2.64 G
+      Parameters: 14.09 M
+      Training Data: ImageNet
+    Results:
+    - Dataset: ImageNet
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 74.47
+        Top 5 Accuracy: 91.85
+    Weights: https://download.openmmlab.com/mmclassification/v0/repvgg/repvggA1_3rdparty_4xb64-coslr-120e_in-1k_20210909-24003a24.pth
+    Converted From:
+      Weights: https://drive.google.com/drive/folders/1Avome4KvNp0Lqh2QwhXO6L5URQjzCjUq
+      Code: https://github.com/DingXiaoH/RepVGG/blob/9f272318abfc47a2b702cd0e916fca8d25d683e7/repvgg.py#L200
+  - Name: repvggA2_4xb64-coslr-120e_in-1k
+    In Collection: Repvgg
+    Config: configs/repvgg/repvggA2_4xb64-coslr-120e_in-1k.py
+    Metadata:
+      FLOPs: 28.21 G
+      Parameters: 5.7 M
+      Training Data: ImageNet
+    Results:
+    - Dataset: ImageNet
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 76.48
+        Top 5 Accuracy: 93.01
+    Weights: https://download.openmmlab.com/mmclassification/v0/repvgg/repvggA2_4xb64-coslr-120e_in-1k.py /usr/share/repvgg/repvggA2_3rdparty_4xb64-coslr-120e_in-1k_20210909-97d7695a.pth
+    Converted From:
+      Weights: https://drive.google.com/drive/folders/1Avome4KvNp0Lqh2QwhXO6L5URQjzCjUq
+      Code: https://github.com/DingXiaoH/RepVGG/blob/9f272318abfc47a2b702cd0e916fca8d25d683e7/repvgg.py#L204
+  - Name: repvggB0_4xb64-coslr-120e_in-1k
+    In Collection: Repvgg
+    Config: configs/repvgg/repvggB0_4xb64-coslr-120e_in-1k.py
+    Metadata:
+      FLOPs: 15.82 G
+      Parameters: 3.42 M
+      Training Data: ImageNet
+    Results:
+    - Dataset: ImageNet
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 75.14
+        Top 5 Accuracy: 92.42
+    Weights: https://download.openmmlab.com/mmclassification/v0/repvgg/repvggB0_3rdparty_4xb64-coslr-120e_in-1k_20210909-446375f4.pth
+    Converted From:
+      Weights: https://drive.google.com/drive/folders/1Avome4KvNp0Lqh2QwhXO6L5URQjzCjUq
+      Code: https://github.com/DingXiaoH/RepVGG/blob/9f272318abfc47a2b702cd0e916fca8d25d683e7/repvgg.py#L208
+  - Name: repvggB1_4xb64-coslr-120e_in-1k
+    In Collection: Repvgg
+    Config: configs/repvgg/repvggB1_4xb64-coslr-120e_in-1k.py
+    Metadata:
+      FLOPs: 57.42 G
+      Parameters: 13.16 M
+      Training Data: ImageNet
+    Results:
+    - Dataset: ImageNet
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 78.37
+        Top 5 Accuracy: 94.11
+    Weights: https://download.openmmlab.com/mmclassification/v0/repvgg/repvggB1_3rdparty_4xb64-coslr-120e_in-1k_20210909-750cdf67.pth
+    Converted From:
+      Weights: https://drive.google.com/drive/folders/1Avome4KvNp0Lqh2QwhXO6L5URQjzCjUq
+      Code: https://github.com/DingXiaoH/RepVGG/blob/9f272318abfc47a2b702cd0e916fca8d25d683e7/repvgg.py#L212
+  - Name: repvggB1g2_4xb64-coslr-120e_in-1k
+    In Collection: Repvgg
+    Config: configs/repvgg/repvggB1g2_4xb64-coslr-120e_in-1k
+    Metadata:
+      FLOPs: 45.78 G
+      Parameters: 9.82 M
+      Training Data: ImageNet
+    Results:
+    - Dataset: ImageNet
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 77.79
+        Top 5 Accuracy: 93.88
+    Weights: https://download.openmmlab.com/mmclassification/v0/repvgg/repvggB1g2_3rdparty_4xb64-coslr-120e_in-1k_20210909-344f6422.pth
+    Converted From:
+      Weights: https://drive.google.com/drive/folders/1Avome4KvNp0Lqh2QwhXO6L5URQjzCjUq
+      Code: https://github.com/DingXiaoH/RepVGG/blob/9f272318abfc47a2b702cd0e916fca8d25d683e7/repvgg.py#L216
+  - Name: repvggB1g4_4xb64-coslr-120e_in-1k
+    In Collection: Repvgg
+    Config: configs/repvgg/repvggA1_4xb64-coslr-120e_in-1k.py
+    Metadata:
+      FLOPs: 39.97 G
+      Parameters: 8.15 M
+      Training Data: ImageNet
+    Results:
+    - Dataset: ImageNet
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 77.58
+        Top 5 Accuracy: 93.84
+    Weights: https://download.openmmlab.com/mmclassification/v0/repvgg/repvggB1g4_3rdparty_4xb64-coslr-120e_in-1k_20210909-d4c1a642.pth
+    Converted From:
+      Weights: https://drive.google.com/drive/folders/1Avome4KvNp0Lqh2QwhXO6L5URQjzCjUq
+      Code: https://github.com/DingXiaoH/RepVGG/blob/9f272318abfc47a2b702cd0e916fca8d25d683e7/repvgg.py#L220
+  - Name: repvggB2_4xb64-coslr-120e_in-1k
+    In Collection: Repvgg
+    Config: configs/repvgg/repvggB2_4xb64-coslr-120e_in-1k
+    Metadata:
+      FLOPs: 89.02 G
+      Parameters: 20.42 M
+      Training Data: ImageNet
+    Results:
+    - Dataset: ImageNet
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 78.78
+        Top 5 Accuracy: 94.42
+    Weights: https://download.openmmlab.com/mmclassification/v0/repvgg/repvggB2_3rdparty_4xb64-coslr-120e_in-1k_20210909-bd6b937c.pth
+    Converted From:
+      Weights: https://drive.google.com/drive/folders/1Avome4KvNp0Lqh2QwhXO6L5URQjzCjUq
+      Code: https://github.com/DingXiaoH/RepVGG/blob/9f272318abfc47a2b702cd0e916fca8d25d683e7/repvgg.py#L225
+  - Name: repvggB2g4_4xb64_autoaug-lbs-mixup-coslr-200e_in-1k
+    In Collection: Repvgg
+    Config: configs/repvgg/repvggB2g4_4xb64_autoaug-lbs-mixup-coslr-200e_in-1k.py
+    Metadata:
+      FLOPs: 61.76 G
+      Parameters: 12.63 M
+      Training Data: ImageNet
+    Results:
+    - Dataset: ImageNet
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 79.38
+        Top 5 Accuracy: 94.68
+    Weights: https://download.openmmlab.com/mmclassification/v0/repvgg/repvggB2g4_3rdparty_4xb64_autoaug-lbs-mixup-coslr-200e_in-1k_20210909-7b7955f0.pth
+    Converted From:
+      Weights: https://drive.google.com/drive/folders/1Avome4KvNp0Lqh2QwhXO6L5URQjzCjUq
+      Code: https://github.com/DingXiaoH/RepVGG/blob/9f272318abfc47a2b702cd0e916fca8d25d683e7/repvgg.py#L229
+  - Name: repvggB3_4xb64_autoaug-lbs-mixup-coslr-200e_in-1k
+    In Collection: Repvgg
+    Config: configs/repvgg/repvggB3_4xb64_autoaug-lbs-mixup-coslr-200e_in-1k.py
+    Metadata:
+      FLOPs: 123.09 G
+      Parameters: 29.17 M
+      Training Data: ImageNet
+    Results:
+    - Dataset: ImageNet
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 80.52
+        Top 5 Accuracy: 95.26
+    Weights: https://download.openmmlab.com/mmclassification/v0/repvgg/repvggB3_3rdparty_4xb64_autoaug-lbs-mixup-coslr-200e_in-1k_20210909-dda968bf.pth
+    Converted From:
+      Weights: https://drive.google.com/drive/folders/1Avome4KvNp0Lqh2QwhXO6L5URQjzCjUq
+      Code: https://github.com/DingXiaoH/RepVGG/blob/9f272318abfc47a2b702cd0e916fca8d25d683e7/repvgg.py#L238
+  - Name: repvggB3g4_4xb64_autoaug-lbs-mixup-coslr-200e_in-1k
+    In Collection: Repvgg
+    Config: configs/repvgg/repvggB3g4_4xb64_autoaug-lbs-mixup-coslr-200e_in-1k.py
+    Metadata:
+      FLOPs: 83.83 G
+      Parameters: 17.9 M
+      Training Data: ImageNet
+    Results:
+    - Dataset: ImageNet
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 80.22
+        Top 5 Accuracy: 95.10
+    Weights: https://download.openmmlab.com/mmclassification/v0/repvgg/repvggB3g4_3rdparty_4xb64_autoaug-lbs-mixup-coslr-200e_in-1k_20210909-4e54846a.pth
+    Converted From:
+      Weights: https://drive.google.com/drive/folders/1Avome4KvNp0Lqh2QwhXO6L5URQjzCjUq
+      Code: https://github.com/DingXiaoH/RepVGG/blob/9f272318abfc47a2b702cd0e916fca8d25d683e7/repvgg.py#L238
+  - Name: repvggD2se_4xb64_autoaug-lbs-mixup-coslr-200e_in-1k
+    In Collection: Repvgg
+    Config: configs/repvgg/repvggD2se_4xb64_autoaug-lbs-mixup-coslr-200e_in-1k.py
+    Metadata:
+      FLOPs: 133.33 G
+      Parameters: 36.56 M
+      Training Data: ImageNet
+    Results:
+    - Dataset: ImageNet
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 81.81
+        Top 5 Accuracy: 95.94
+    Weights: https://download.openmmlab.com/mmclassification/v0/repvgg/repvggD2se_3rdparty_4xb64_autoaug-lbs-mixup-coslr-200e_in-1k_20210909-cf3139b7.pth
+    Converted From:
+      Weights: https://drive.google.com/drive/folders/1Avome4KvNp0Lqh2QwhXO6L5URQjzCjUq
+      Code: https://github.com/DingXiaoH/RepVGG/blob/9f272318abfc47a2b702cd0e916fca8d25d683e7/repvgg.py#L250
+  

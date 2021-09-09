@@ -15,6 +15,7 @@ def convert_repvggblock_param(config_path, checkpoint_path, save_path):
 
     print('Done! Save at path "{}"'.format(save_path))
 
+
 def main():
     parser = argparse.ArgumentParser(
         description='Convert the parameters of the repvgg block '
