@@ -47,7 +47,7 @@ def main():
     out_dir = os.path.dirname(args.out_file)
     if not os.path.exists(out_dir):
         raise ValueError(f'Directory {out_dir} does not exist, '
-                         'please generate it manually')
+                         'please generate it manually.')
     process_checkpoint(args.in_file, args.out_file)
 
 
