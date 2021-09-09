@@ -25,9 +25,10 @@ class TransformerEncoderLayer(BaseModule):
         feedforward_channels (int): The hidden dimension for FFNs
         drop_rate (float): Probability of an element to be zeroed
             after the feed forward layer. Default 0.0
-        attn_drop_rate (float): The drop out rate for attention layer.
+        attn_drop_rate (float): The drop out rate for attention output weights.
             Default 0.0
-        drop_path_rate (float): stochastic depth rate. Default 0.0
+        drop_path_rate (float): Stochastic depth rate. The drop path layer will
+            be added before adding the shortcut in attention. Default 0.0
         num_fcs (int): The number of fully-connected layers for FFNs. Default 2
         qkv_bias (bool): enable bias for qkv if True. Default True
         act_cfg (dict): The activation config for FFNs. Defalut GELU
