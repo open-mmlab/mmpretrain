@@ -119,16 +119,16 @@ def pytorch2onnx(model,
         input_dic = {'input': imgs.detach().cpu().numpy()}
         input_shape_dic = {'input': list(input_shape)}
 
-        model_opt, check_ok =onnxsim.simplify(
+        model_opt, check_ok = onnxsim.simplify(
            output_file,
-           input_shapes=input_shape_dic,
-           input_data=input_dic,
-           dynamic_input_shape=dynamic_export)
+           input_shapes = input_shape_dic,
+           input_data = input_dic,
+           dynamic_input_shape = dynamic_export)
         if check_ok:
             onnx.save(model_opt, output_file)
             print(f'Successfully simplified ONNX model: {output_file}')
         else:
-            print(f'Failed to simplify ONNX model, the simplified model could not be validated.')
+            print('Failed to simplify ONNX model.')
     if verify:
         # check by onnx
         import onnx
