@@ -1,8 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
+import datetime
+import os
 import subprocess
 
 import torch
+from mmcv import digit_version
 
 
 def parse_args():
@@ -21,18 +24,30 @@ def process_checkpoint(in_file, out_file):
         del checkpoint['optimizer']
     # if it is necessary to remove some sensitive data in checkpoint['meta'],
     # add the code here.
-    torch.save(checkpoint, out_file)
+    if digit_version(torch.__version__) >= digit_version('1.6'):
+        torch.save(checkpoint, out_file, _use_new_zipfile_serialization=False)
+    else:
+        torch.save(checkpoint, out_file)
+
     sha = subprocess.check_output(['sha256sum', out_file]).decode()
     if out_file.endswith('.pth'):
         out_file_name = out_file[:-4]
     else:
         out_file_name = out_file
-    final_file = out_file_name + f'-{sha[:8]}.pth'
+
+    current_date = datetime.datetime.now().strftime('%Y%m%d')
+    final_file = out_file_name + f'_{current_date}-{sha[:8]}.pth'
     subprocess.Popen(['mv', out_file, final_file])
+
+    print(f'Successfully generated the publish-ckpt as {final_file}.')
 
 
 def main():
     args = parse_args()
+    out_dir = os.path.dirname(args.out_file)
+    if not os.path.exists(out_dir):
+        raise ValueError(f'Directory {out_dir} does not exist, '
+                         'please generate it manually.')
     process_checkpoint(args.in_file, args.out_file)
 
 
