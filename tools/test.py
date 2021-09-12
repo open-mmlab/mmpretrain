@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
+from numbers import Number
 import os
 import warnings
 
@@ -175,7 +176,11 @@ def main():
                                             args.metric_options)
             results.update(eval_results)
             for k, v in eval_results.items():
-                print(f'\n{k} : {v:.2f}')
+                if args.metric_options is not None and not isinstance(v, Number):
+                    v = [round(out, 2) for out in v.tolist()]
+                else:
+                    v = round(v, 2)
+                print(f'\n{k} : {v}')
         if args.out:
             scores = np.vstack(outputs)
             pred_score = np.max(scores, axis=1)
