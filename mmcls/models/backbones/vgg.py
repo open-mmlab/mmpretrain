@@ -163,10 +163,8 @@ class VGG(BaseBackbone):
             x = x.view(x.size(0), -1)
             x = self.classifier(x)
             outs.append(x)
-        if len(outs) == 1:
-            return outs[0]
-        else:
-            return tuple(outs)
+
+        return tuple(outs)
 
     def _freeze_stages(self):
         vgg_layers = getattr(self, self.module_name)

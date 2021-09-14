@@ -35,9 +35,11 @@ class LinearClsHead(ClsHead):
 
         self.fc = nn.Linear(self.in_channels, self.num_classes)
 
-    def simple_test(self, img):
+    def simple_test(self, x):
         """Test without augmentation."""
-        cls_score = self.fc(img)
+        if isinstance(x, tuple):
+            x = x[-1]
+        cls_score = self.fc(x)
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
         pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
@@ -45,6 +47,8 @@ class LinearClsHead(ClsHead):
         return self.post_process(pred)
 
     def forward_train(self, x, gt_label):
+        if isinstance(x, tuple):
+            x = x[-1]
         cls_score = self.fc(x)
         losses = self.loss(cls_score, gt_label)
         return losses

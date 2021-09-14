@@ -102,6 +102,7 @@ def pytorch2onnx(model,
     if do_simplify:
         from mmcv import digit_version
         import onnxsim
+        import onnx
 
         min_required_version = '0.3.0'
         assert digit_version(mmcv.__version__) >= digit_version(
@@ -118,11 +119,16 @@ def pytorch2onnx(model,
         input_dic = {'input': imgs.detach().cpu().numpy()}
         input_shape_dic = {'input': list(input_shape)}
 
-        onnxsim.simplify(
+        model_opt, check_ok = onnxsim.simplify(
             output_file,
             input_shapes=input_shape_dic,
             input_data=input_dic,
             dynamic_input_shape=dynamic_export)
+        if check_ok:
+            onnx.save(model_opt, output_file)
+            print(f'Successfully simplified ONNX model: {output_file}')
+        else:
+            print('Failed to simplify ONNX model.')
     if verify:
         # check by onnx
         import onnx

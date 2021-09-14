@@ -39,4 +39,4 @@ class LeNet5(BaseBackbone):
         if self.num_classes > 0:
             x = self.classifier(x.squeeze())
 
-        return x
+        return (x, )

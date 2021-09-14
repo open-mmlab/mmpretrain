@@ -158,7 +158,8 @@ def test_mobilenetv3_backbone():
 
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
-    assert feat.shape == torch.Size([1, 16, 112, 112])
+    assert len(feat) == 1
+    assert feat[0].shape == torch.Size([1, 16, 112, 112])
 
     # Test MobileNetV3 with checkpoint forward
     model = MobileNetV3(with_cp=True)
@@ -170,4 +171,5 @@ def test_mobilenetv3_backbone():
 
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
-    assert feat.shape == torch.Size([1, 576, 7, 7])
+    assert len(feat) == 1
+    assert feat[0].shape == torch.Size([1, 576, 7, 7])

@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "OpenMMLab's Image Classification Toolbox and Benchmark"
+authors:
+  - name: "MMClassification Contributors"
+version: 0.15.0
+date-released: 2020-07-09
+repository-code: "https://github.com/open-mmlab/mmclassification"
+license: Apache-2.0
