@@ -3,15 +3,13 @@
 <!-- TOC -->
 
 - [可视化](#可视化)
-  - [通用数据流水线可视化](#通用数据流水线可视化)
+  - [数据流水线可视化](#数据流水线可视化)
     - [使用方法](#使用方法)
-  - [ImageNet 数据流水线可视化](#imageNet-数据流水线可视化)
-    - [增强功能](#增强功能)
   - [常见问题](#常见问题)
 
 <!-- TOC -->
 
-## 通用数据流水线可视化
+## 数据流水线可视化
 
 ### 使用方法
 
@@ -21,54 +19,46 @@ python tools/misc/vis_pipeline.py \
     --output-dir ${OUTPUT_DIR} \
     --phase ${DATASET_PHASE} \
     --number ${BUNBER_IMAGES_DISPLAY} \
-    --skip-type ${SKIP_TRANSFORM_TYPE}
+    --skip-type ${SKIP_TRANSFORM_TYPE} \
+    --mode ${DISPLAY_MODE}\
     --show \
     --bgr2rgb \
+    --original-display-shape ${RESIZE_ORIGINAL_SIZE}
 ```
 
-所有参数的说明：
+**所有参数的说明**：
 
 - `config` : 模型配置文件的路径。
-- `--output-dir`: 保存图片文件夹,仅当`--show`为``False``时有效，如果没有指定，默认为 `tmp`。
-- `--phase`: 可视化数据集的阶段，只能为`['train', 'val', 'test']`之一，默认为 `train`。
-- `--number`: 可视化样本数量。如果没有指定，默认为`-1`，表示整个数据集。
+- `--output-dir`: 保存图片文件夹，如果没有指定，默认为 `''`,表示不保存。
+- `--phase`: 可视化数据集的阶段，只能为 `[train, val, test]` 之一，默认为 `train`。
+- `--number`: 可视化样本数量。如果没有指定，默认为 `-1`，表示整个数据集。
 - `--skip-type`: 预设跳过的数据流水线过程。如果没有指定，默认为 `['ToTensor', 'Normalize', 'ImageToTensor', 'Collect']`。
-- `--show`: 是否将预处理后的图片以弹窗形式展示。如果没有指定，默认为 `False` ,表示保存图片至文件夹。
+- `--mode`: 可视化的模式，只能为 `[original, pipeline, concat]` 之一，如果没有指定，默认为 `pipeline`。
+- `--show`: 是否将预处理后的图片以弹窗形式展示。如果没有指定，默认为 `False`。
 - `--bgr2rgb`: 是否将图片的颜色通道翻转。如果没有指定，默认为 `False`。
+- `--original-display-shape`: 原图的放缩大小，如果没有指定，默认为 `''`,表示该表大小。如果需要指定，按照格式 `'W*H'`，例如 `'224*224'`。
 
-示例：
+**注意**：
 
-1. 可视化Cifar100验证集的所有图片，保存在文件夹 `vis_cifar100_val` 下:
+1. 如果不指定`--mode`，默认设置为`pipeline`，获取预处理后的图片；如果`--mode`设置为`original`，则获取原始图片； 如果`--mode`设置为`concat`，则获取原始图片和预处理后图片拼接的图片。
 
-`python ./tools/misc/vis_pipeline.py ./configs/resnet/resnet50_b16x8_cifar100.py --phase val --output-dir vis_cifar100_val`
+2. 如果可视化时原图尺寸太小或太大，可以使用`--original-display-shape`改变形状，记得在值周围加上`'`或`"`。如果可视化时预处理后图像尺寸太小或太大, 可以修改配置文件中的数据流水线以更改形状。
 
-2. 可视化ImageNet训练集的100张图片，并以弹窗形式显示：
+3. 如果图片太小，标签信息将不显示。
 
-`python ./tools/misc/vis_pipeline.py ./configs/resnet/resnet50_b32x8_imagenet.py --number 100 --show`
+**示例**：
 
-## ImageNet 数据流水线可视化
+1. 可视化 `ImageNet` 训练集的所有经过预处理的图片，并以弹窗形式显示：
 
-在通用数据流水线可视化的基础上增加可视化原始图片、原图与预处理后图片对比图的功能。
+`python ./tools/visualizations/vis_pipeline.py ./configs/resnet/resnet50_b32x8_imagenet.py --show`
 
-### 增强功能
+2. 可视化 `ImageNet` 训练集的10张原始图片与预处理后图片对比图，保存在`test`文件夹下：
 
-所增加参数的说明：
+`python ./tools/visualizations/vis_pipeline.py configs/swin_transformer/swin_base_224_b16x64_300e_imagenet.py --phase test --output-dir test --mode 'concat' --number 10 --output-dir test`
 
-- `--original`: 是否可视化原始图片。如果没有指定，默认为 `False`。
-- `--transform`: 是否预处理后图片。如果没有指定，默认为 `False`。
+3. 可视化 `CIFAR100` 验证集中的100张原始图片，将图片调整为`224*224`并显示并保存：
 
-注意：
-
-当只指定`--original`时，显示原始图片;当只指定`--transform`时，显示预处理后图片；当指定`--original`与`--transform`时，显示原始图片与预处理后图片合并图;`--original` 与 `--transform`至少指定一个，不然会报错；
-
-示例：
-1. 可视化ImageNet训练集的100张原始图片，并以弹窗形式显示：
-
-`python ./tools/misc/vis_imagenet.py ./configs/resnet/resnet50_b32x8_imagenet.py --original --number 100 --show`
-
-2. 可视化ImageNet训练集的10张原始图片与预处理后图片对比图，保存在tmp文件夹下：
-
-`python ./tools/misc/vis_imagenet.py configs/swin_transformer/swin_base_224_b16x64_300e_imagenet.py --original --transform --number 10`
+`python ./tools/visualizations/vis_pipeline.py configs/resnet/resnet50_b16x8_cifar100.py --phase val --output-dir val --mode original --number 100 --output-dir val --original-display-shape '224*224' --show`
 
 ## 常见问题
 
