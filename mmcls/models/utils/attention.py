@@ -311,8 +311,8 @@ class MultiheadAttention(BaseModule):
         self.num_heads = num_heads
         self.v_shortcut = v_shortcut
 
-        head_dim = embed_dims // num_heads
-        self.scale = head_dim**-0.5
+        self.head_dims = embed_dims // num_heads
+        self.scale = self.head_dims**-0.5
 
         self.qkv = nn.Linear(self.input_dims, embed_dims * 3, bias=qkv_bias)
         self.attn_drop = nn.Dropout(attn_drop)
@@ -322,16 +322,16 @@ class MultiheadAttention(BaseModule):
         self.out_drop = DROPOUT_LAYERS.build(dropout_layer)
 
     def forward(self, x):
-        B, N, C = x.shape
+        B, N, _ = x.shape
         qkv = self.qkv(x).reshape(B, N, 3, self.num_heads,
-                                  C // self.num_heads).permute(2, 0, 3, 1, 4)
+                                  self.head_dims).permute(2, 0, 3, 1, 4)
         q, k, v = qkv[0], qkv[1], qkv[2]
 
         attn = (q @ k.transpose(-2, -1)) * self.scale
         attn = attn.softmax(dim=-1)
         attn = self.attn_drop(attn)
 
-        x = (attn @ v).transpose(1, 2).reshape(B, N, C)
+        x = (attn @ v).transpose(1, 2).reshape(B, N, self.embed_dims)
         x = self.proj(x)
         x = self.out_drop(self.proj_drop(x))
 
