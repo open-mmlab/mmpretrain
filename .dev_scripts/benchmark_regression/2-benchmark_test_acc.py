@@ -107,6 +107,7 @@ def create_test_job_batch(commands, model_info, args, port, script_name):
                   f'#SBATCH --cpus-per-task=5\n\n'
                   f'{runner} -u {script_name} {config} {checkpoint} '
                   f'--out={work_dir / "result.pkl"} --metrics accuracy '
+                  f'--out-items=none '
                   f'--cfg-option dist_params.port={port} '
                   f'--launcher={launcher}\n')
 
