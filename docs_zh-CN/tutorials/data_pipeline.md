@@ -145,4 +145,4 @@ train_pipeline = [
 
 ## 流水线可视化
 
-设计好数据流水线后，可以使用`mmcls`提供的[可视化工具](../tools/visualization.md)查看具体的效果。
+设计好数据流水线后，可以使用[可视化工具](../tools/visualization.md)查看具体的效果。

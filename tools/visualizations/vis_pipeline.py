@@ -23,7 +23,7 @@ def parse_args():
         type=str,
         nargs='*',
         default=['ToTensor', 'Normalize', 'ImageToTensor', 'Collect'],
-        help='the pipelines to skip when visualization')
+        help='the pipelines to skip when visualizing')
     parser.add_argument(
         '--output-dir',
         default='',
@@ -34,15 +34,14 @@ def parse_args():
         default='train',
         type=str,
         choices=['train', 'test', 'val'],
-        help='phase of dataset to visualize, only accept "train", '
-        '"test" or "val".')
+        help='phase of dataset to visualize, accept "train" "test" and "val".')
     parser.add_argument(
         '--number',
         type=int,
-        default=sys.maxint,
+        default=sys.maxsize,
         help='number of images selected to visualize, must bigger than 0. if '
         'the number is bigger than length of dataset, show all the images in '
-        'dataset; defalut maxint, means to show all images in  dateset')
+        'dataset; defalut "sys.maxsize".')
     parser.add_argument(
         '--mode',
         default='pipeline',
@@ -56,17 +55,22 @@ def parse_args():
         '--show',
         default=False,
         action='store_true',
-        help='whether to display images in pop-up windows')
+        help='whether to display images in pop-up window')
+    parser.add_argument(
+        '--adaptive',
+        default=True,
+        action='store_false',
+        help='whether to adaptive resize images when the images are too large '
+        'or too small.')
     parser.add_argument(
         '--bgr2rgb',
         default=False,
         action='store_true',
-        help='flip the color channel order of images, eg. from "RBG" to "BGR".'
-    )
+        help='flip the color channel order of images')
     parser.add_argument(
-        '--original-resize-shape',
-        default='',
-        help='the resolution of original pictures to resize, eg. "224*224".')
+        '--window-size',
+        default='12*7',
+        help='size of the window to display images')
     parser.add_argument(
         '--cfg-options',
         nargs='+',
@@ -81,15 +85,17 @@ def parse_args():
         '--show-options',
         nargs='+',
         action=DictAction,
-        help='custom options for show_result. key-value pair in xxx=yyy.'
-        'Check available options in `model.show_result`.')
+        help='custom options for display. key-value pair in xxx=yyy. options '
+        'in `mmcls.core.visualization.ImshowInfosContextManager.put_img_infos`'
+    )
     args = parser.parse_args()
 
     assert args.number > 0, "'args.number' must be larger than zero."
-    if args.original_resize_shape != '':
-        assert re.match(r'\d+\*\d+', args.original_resize_shape), \
-            "'original_resize_shape' should like 'W*H'"
-
+    if args.window_size != '':
+        assert re.match(r'\d+\*\d+', args.window_size), \
+            "'window-size' must be in fromat 'W*H'."
+    if args.show_options is None:
+        args.show_options = {}
     return args
 
 
@@ -144,66 +150,79 @@ def concat(left_img, right_img):
     diffenert shapes."""
     left_h, left_w, _ = left_img.shape
     right_h, right_w, _ = right_img.shape
-    # create a big board to contain images whith shape  (board_h, board_w * 2)
+    # create a big board to contain images whith shape (board_h, board_w*2+10)
     board_h, board_w = max(left_h, right_h), max(left_w, right_w)
-    board = np.ones([board_h, 2 * board_w, 3], np.uint8) * 255
+    board = np.ones([board_h, 2 * board_w + 10, 3], np.uint8) * 255
 
     put_img(board, left_img, (int(board_w // 2), int(board_h // 2)))
-    put_img(board, right_img, (int(board_w // 2) + board_w, int(board_h // 2)))
+    put_img(board, right_img,
+            (int(board_w // 2) + board_w + 5, int(board_h // 2)))
     return board
 
 
-def resize(image, resize_shape):
-    """resize image to resize_shape."""
-    resize_w, resize_h, *_ = resize_shape.split('*')
-    resize_h, resize_w = int(resize_h), int(resize_w)
-    image = mmcv.imresize(image, (resize_w, resize_h))
+def adaptive_size(mode, image):
+    """rescale image if image is too small to put text like cifra."""
+    image_h, image_w, *_ = image.shape
+    image_w = image_w // 2 if mode == 'concat' else image_w
+    if image_h < 200 or image_w < 200:
+        image = mmcv.imrescale(image, max(200 / image_h, 200 / image_h))
+    if image_h > 800 or image_w > 800:
+        image = mmcv.imrescale(image, min(800 / image_h, 800 / image_w))
+    return image
+
+
+def get_display_img(item, pipeline, mode, bgr2rgb):
+    src_image = item['img'].copy()
+    # get transformed picture
+    if mode in ['pipeline', 'concat']:
+        item = pipeline(item)
+        trans_image = item['img']
+        trans_image = np.ascontiguousarray(trans_image, dtype=np.uint8)
+        if bgr2rgb:
+            trans_image = mmcv.bgr2rgb(trans_image)
+
+    if mode == 'concat':
+        image = concat(src_image, trans_image)
+    elif mode == 'original':
+        image = src_image
+    elif mode == 'pipeline':
+        image = trans_image
     return image
 
 
 def main():
     args = parse_args()
+    wind_w, wind_h = args.window_size.split('*')
+    wind_w, wind_h = int(wind_w), int(wind_h)
     cfg = retrieve_data_cfg(args.config, args.skip_type, args.cfg_options,
                             args.phase)
+
     dataset, pipeline = build_dataset_pipeline(cfg, args.phase)
-    class_names = dataset.CLASSES
+    CLASSES = dataset.CLASSES
     display_number = min(args.number, len(dataset))
 
-    with vis.ImshowInfosContextManager() as manager:
+    with vis.ImshowInfosContextManager(fig_size=(wind_w, wind_h)) as manager:
         for i, item in enumerate(itertools.islice(dataset, display_number)):
+            image = get_display_img(item, pipeline, args.mode, args.bgr2rgb)
+            if args.adaptive:
+                image = adaptive_size(args.mode, image)
+
             # some datasets do not have filename, such as minist, cifar
             # save image if args.output_dir is not None
             src_path = item.get('filename', '{}.jpg'.format(i))
-            filename = Path(src_path).name
-            dist_path = os.path.join(args.output_dir,
-                                     filename) if args.output_dir else None
+            dist_path = os.path.join(
+                args.output_dir,
+                Path(src_path).name) if args.output_dir else None
 
-            label = class_names[item['gt_label']]
-            infos = dict(label=label)
+            infos = dict(label=CLASSES[item['gt_label']])
 
-            # get src picture
-            if args.mode in ['original', 'concat']:
-                src_image = item['img'].copy()
-                if args.original_resize_shape:
-                    src_image = resize(src_image, args.original_resize_shape)
-            # get transformed picture
-            if args.mode in ['pipeline', 'concat']:
-                item = pipeline(item)
-                trans_image = item['img']
-                trans_image = np.ascontiguousarray(trans_image, dtype=np.uint8)
-                if args.bgr2rgb:
-                    trans_image = mmcv.bgr2rgb(trans_image)
-
-            if args.mode == 'concat':
-                image = concat(src_image, trans_image)
-            elif args.mode == 'original':
-                image = src_image
-            elif args.mode == 'pipeline':
-                image = trans_image
-
-            if args.show:
-                manager.put_img_infos(image, infos, dist_path,
-                                      args.show_options)
+            manager.put_img_infos(
+                image,
+                infos,
+                font_size=20,
+                out_file=dist_path,
+                show=args.show,
+                **args.show_options)
 
 
 if __name__ == '__main__':

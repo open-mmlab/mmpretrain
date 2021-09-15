@@ -145,4 +145,4 @@ More supported backends can be found in [mmcv.fileio.FileClient](https://github.
 
 ## Pipeline visualization
 
-After designing data pipelines, you can use the [visualization tools](../tools/visualization.md) provided by `mmcls` to view the effects.
+After designing data pipelines, you can use the [visualization tools](../tools/visualization.md) to view the performance.
