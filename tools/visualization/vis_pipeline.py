@@ -6,9 +6,10 @@ import sys
 from pathlib import Path
 
 import mmcv
-from mmcls.core import visualization as vis
 import numpy as np
 from mmcv import Config, DictAction
+
+from mmcls.core import visualization as vis
 from mmcls.datasets.builder import build_dataset
 from mmcls.datasets.pipelines import Compose
 
@@ -24,9 +25,9 @@ def parse_args():
         default=['ToTensor', 'Normalize', 'ImageToTensor', 'Collect'],
         help='the pipelines to skip when visualization')
     parser.add_argument(
-        '--output-dir', 
-        default='', 
-        type=str, 
+        '--output-dir',
+        default='',
+        type=str,
         help='folder to save output pictures')
     parser.add_argument(
         '--phase',
@@ -47,10 +48,10 @@ def parse_args():
         default='pipeline',
         type=str,
         choices=['original', 'pipeline', 'concat'],
-        help='display mode, to display original pictures or transformed'
-        ' picture or comparison pictures. "original" means show images from disk'
-        '; "pipeline" means to show images after pipeline; "concat" means show '
-        'images Stitched by "original" and "pipeline" images.')
+        help='display mode; display original pictures or transformed pictures'
+        ' or comparison pictures. "original" means show images load from disk;'
+        ' "pipeline" means to show images after pipeline; "concat" means show '
+        'images stitched by "original" and "pipeline" images.')
     parser.add_argument(
         '--show',
         default=False,
@@ -60,11 +61,12 @@ def parse_args():
         '--bgr2rgb',
         default=False,
         action='store_true',
-        help='flip the color channel order of images, eg. from "RBG" to "BGR".')
+        help='flip the color channel order of images, eg. from "RBG" to "BGR".'
+    )
     parser.add_argument(
-        '--original-display-shape',
+        '--original-resize-shape',
         default='',
-        help='the resolution of original pictures to display, eg. "224*224".')
+        help='the resolution of original pictures to resize, eg. "224*224".')
     parser.add_argument(
         '--cfg-options',
         nargs='+',
@@ -75,12 +77,18 @@ def parse_args():
         'It also allows nested list/tuple values, e.g. key="[(a,b),(c,d)]" '
         'Note that the quotation marks are necessary and that no white space '
         'is allowed.')
+    parser.add_argument(
+        '--show-options',
+        nargs='+',
+        action=DictAction,
+        help='custom options for show_result. key-value pair in xxx=yyy.'
+        'Check available options in `model.show_result`.')
     args = parser.parse_args()
 
-    assert args.number > 0, f"'args.number' must bigger than zero."
-    if args.original_display_shape != '':
-        assert re.match(r'\d+\*\d+', args.original_display_shape), \
-            "'original_display_shape' should like 'W*H'"
+    assert args.number > 0, "'args.number' must be larger than zero."
+    if args.original_resize_shape != '':
+        assert re.match(r'\d+\*\d+', args.original_resize_shape), \
+            "'original_resize_shape' should like 'W*H'"
 
     return args
 
@@ -102,8 +110,13 @@ def retrieve_data_cfg(config_path, skip_type, cfg_options, phase):
 
     return cfg
 
+
 def build_dataset_pipeline(cfg, phase):
-    ''' build dataset and pipeline from config.'''
+    """build dataset and pipeline from config.
+
+    Separate the pipeline except 'LoadImageFromFile' step if
+    'LoadImageFromFile' in the pipeline.
+    """
     data_cfg = cfg.data[phase]
     loadimage_pipeline = []
     if len(data_cfg.pipeline
@@ -115,28 +128,23 @@ def build_dataset_pipeline(cfg, phase):
     pipeline = Compose(origin_pipeline)
 
     return dataset, pipeline
-    
+
 
 def put_img(board, img, center):
     """put a image into a big board image with the anchor center."""
     center_x, center_y = center
     img_h, img_w, _ = img.shape
-    board_h, board_w, _ = board.shape
     xmin, ymin = int(center_x - img_w // 2), int(center_y - img_h // 2)
-    assert xmin >= 0 and ymin >= 0, 'Cannot exceed the border'
-    assert (ymin + img_h) <= board_h, 'Cannot exceed the border'
-    assert (xmin + img_w) <= board_w, 'Cannot exceed the border'
     board[ymin:ymin + img_h, xmin:xmin + img_w, :] = img
     return board
 
 
 def concat(left_img, right_img):
-    """Concat two pictures into a single big picture.
-    accept two diffenert shape images.
-    """
+    """Concat two pictures into a single big picture, accepts two images with
+    diffenert shapes."""
     left_h, left_w, _ = left_img.shape
     right_h, right_w, _ = right_img.shape
-    # create a big board to contain images
+    # create a big board to contain images whith shape  (board_h, board_w * 2)
     board_h, board_w = max(left_h, right_h), max(left_w, right_w)
     board = np.ones([board_h, 2 * board_w, 3], np.uint8) * 255
 
@@ -159,7 +167,7 @@ def main():
                             args.phase)
     dataset, pipeline = build_dataset_pipeline(cfg, args.phase)
     class_names = dataset.CLASSES
-    display_number = min(args.number, len(dataset)) 
+    display_number = min(args.number, len(dataset))
 
     with vis.ImshowInfosContextManager() as manager:
         for i, item in enumerate(itertools.islice(dataset, display_number)):
@@ -167,15 +175,18 @@ def main():
             # save image if args.output_dir is not None
             src_path = item.get('filename', '{}.jpg'.format(i))
             filename = Path(src_path).name
-            dist_path = os.path.join(args.output_dir, filename) if args.output_dir else None
+            dist_path = os.path.join(args.output_dir,
+                                     filename) if args.output_dir else None
 
             label = class_names[item['gt_label']]
-            infos = {"label" : label}
+            infos = dict(label=label)
 
+            # get src picture
             if args.mode in ['original', 'concat']:
                 src_image = item['img'].copy()
-                if args.original_display_shape:
-                    src_image = resize(src_image, args.original_display_shape)
+                if args.original_resize_shape:
+                    src_image = resize(src_image, args.original_resize_shape)
+            # get transformed picture
             if args.mode in ['pipeline', 'concat']:
                 item = pipeline(item)
                 trans_image = item['img']
@@ -183,9 +194,6 @@ def main():
                 if args.bgr2rgb:
                     trans_image = mmcv.bgr2rgb(trans_image)
 
-            # display original images if args.original is True; display tranformed
-            # images if args.transform is True; display concat images if both
-            # args.original and args.transform are True
             if args.mode == 'concat':
                 image = concat(src_image, trans_image)
             elif args.mode == 'original':
@@ -194,7 +202,8 @@ def main():
                 image = trans_image
 
             if args.show:
-                manager.put_img_infos(image, infos, dist_path)
+                manager.put_img_infos(image, infos, dist_path,
+                                      args.show_options)
 
 
 if __name__ == '__main__':
