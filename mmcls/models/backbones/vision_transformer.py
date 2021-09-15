@@ -7,12 +7,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import build_norm_layer
-from mmcv.cnn.bricks.transformer import FFN, MultiheadAttention
+from mmcv.cnn.bricks.transformer import FFN
 from mmcv.runner.base_module import BaseModule, ModuleList
 
 from mmcls.utils import get_root_logger
 from ..builder import BACKBONES
-from ..utils import PatchEmbed, to_2tuple
+from ..utils import MultiheadAttention, PatchEmbed, to_2tuple
 from .base_backbone import BaseBackbone
 
 
@@ -24,20 +24,19 @@ class TransformerEncoderLayer(BaseModule):
         num_heads (int): Parallel attention heads
         feedforward_channels (int): The hidden dimension for FFNs
         drop_rate (float): Probability of an element to be zeroed
-            after the feed forward layer. Default 0.0
+            after the feed forward layer. Defaults to 0.
         attn_drop_rate (float): The drop out rate for attention output weights.
-            Default 0.0
-        drop_path_rate (float): Stochastic depth rate. The drop path layer will
-            be added before adding the shortcut in attention. Default 0.0
-        num_fcs (int): The number of fully-connected layers for FFNs. Default 2
-        qkv_bias (bool): enable bias for qkv if True. Default True
-        act_cfg (dict): The activation config for FFNs. Defalut GELU
-        norm_cfg (dict): Config dict for normalization layer. Default
-            layer normalization
-        batch_first (bool): Key, Query and Value are shape of
-            (batch, n, embed_dim) or (n, batch, embed_dim).
-            (batch, n, embed_dim) is common case in CV.  Default to False
-        init_cfg (dict, optional): Initialization config dict
+            Defaults to 0.
+        drop_path_rate (float): Stochastic depth rate. Defaults to 0.
+        num_fcs (int): The number of fully-connected layers for FFNs.
+            Defaults to 2.
+        qkv_bias (bool): enable bias for qkv if True. Defaults to True.
+        act_cfg (dict): The activation config for FFNs.
+            Defaluts to ``dict(type='GELU')``.
+        norm_cfg (dict): Config dict for normalization layer.
+            Defaults to ``dict(type='LN')``.
+        init_cfg (dict, optional): Initialization config dict.
+            Defaults to None.
     """
 
     def __init__(self,
@@ -51,12 +50,10 @@ class TransformerEncoderLayer(BaseModule):
                  qkv_bias=True,
                  act_cfg=dict(type='GELU'),
                  norm_cfg=dict(type='LN'),
-                 batch_first=False,
                  init_cfg=None):
         super(TransformerEncoderLayer, self).__init__(init_cfg=init_cfg)
 
         self.embed_dims = embed_dims
-        self.batch_first = batch_first
 
         self.norm1_name, norm1 = build_norm_layer(
             norm_cfg, self.embed_dims, postfix=1)
@@ -68,8 +65,7 @@ class TransformerEncoderLayer(BaseModule):
             attn_drop=attn_drop_rate,
             proj_drop=drop_rate,
             dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
-            batch_first=batch_first,
-            bias=qkv_bias)
+            qkv_bias=qkv_bias)
 
         self.norm2_name, norm2 = build_norm_layer(
             norm_cfg, self.embed_dims, postfix=2)
@@ -99,7 +95,7 @@ class TransformerEncoderLayer(BaseModule):
                 nn.init.normal_(m.bias, std=1e-6)
 
     def forward(self, x):
-        x = self.attn(self.norm1(x), identity=x)
+        x = x + self.attn(self.norm1(x))
         x = self.ffn(self.norm2(x), identity=x)
         return x
 
@@ -237,8 +233,7 @@ class VisionTransformer(BaseBackbone):
                 drop_rate=drop_rate,
                 drop_path_rate=dpr[i],
                 qkv_bias=self.arch_settings.get('qkv_bias', True),
-                norm_cfg=norm_cfg,
-                batch_first=True)
+                norm_cfg=norm_cfg)
             _layer_cfg.update(layer_cfg)
             self.layers.append(TransformerEncoderLayer(**_layer_cfg))
 

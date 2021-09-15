@@ -1,5 +1,5 @@
 _base_ = [
-    'pipeline/auto_aug.py',
+    'pipelines/auto_aug.py',
 ]
 
 # dataset settings

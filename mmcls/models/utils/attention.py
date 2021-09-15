@@ -2,6 +2,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from mmcv.cnn.bricks.registry import DROPOUT_LAYERS
 from mmcv.cnn.bricks.transformer import build_dropout
 from mmcv.cnn.utils.weight_init import trunc_normal_
 from mmcv.runner.base_module import BaseModule
@@ -288,3 +289,52 @@ class ShiftWindowMSA(BaseModule):
         windows = x.permute(0, 1, 3, 2, 4, 5).contiguous()
         windows = windows.view(-1, window_size, window_size, C)
         return windows
+
+
+class MultiheadAttention(BaseModule):
+
+    def __init__(self,
+                 embed_dims,
+                 num_heads,
+                 input_dims=None,
+                 attn_drop=0.,
+                 proj_drop=0.,
+                 dropout_layer=dict(type='Dropout', drop_prob=0.),
+                 qkv_bias=True,
+                 proj_bias=True,
+                 v_shortcut=False,
+                 init_cfg=None):
+        super(MultiheadAttention, self).__init__(init_cfg=init_cfg)
+
+        self.input_dims = input_dims or embed_dims
+        self.embed_dims = embed_dims
+        self.num_heads = num_heads
+        self.v_shortcut = v_shortcut
+
+        head_dim = embed_dims // num_heads
+        self.scale = head_dim**-0.5
+
+        self.qkv = nn.Linear(self.input_dims, embed_dims * 3, bias=qkv_bias)
+        self.attn_drop = nn.Dropout(attn_drop)
+        self.proj = nn.Linear(embed_dims, embed_dims, bias=proj_bias)
+        self.proj_drop = nn.Dropout(proj_drop)
+
+        self.out_drop = DROPOUT_LAYERS.build(dropout_layer)
+
+    def forward(self, x):
+        B, N, C = x.shape
+        qkv = self.qkv(x).reshape(B, N, 3, self.num_heads,
+                                  C // self.num_heads).permute(2, 0, 3, 1, 4)
+        q, k, v = qkv[0], qkv[1], qkv[2]
+
+        attn = (q @ k.transpose(-2, -1)) * self.scale
+        attn = attn.softmax(dim=-1)
+        attn = self.attn_drop(attn)
+
+        x = (attn @ v).transpose(1, 2).reshape(B, N, C)
+        x = self.proj(x)
+        x = self.out_drop(self.proj_drop(x))
+
+        if self.v_shortcut:
+            x = v.squeeze(1) + x
+        return x
