@@ -57,11 +57,19 @@ def parse_args():
         action='store_true',
         help='whether to display images in pop-up window')
     parser.add_argument(
-        '--adaptive',
-        default=True,
-        action='store_false',
-        help='whether to adaptive resize images when the images are too large '
-        'or too small.')
+        '--adaptive', default=False, action='store_true', help='')
+    parser.add_argument(
+        '--min-edge-length',
+        default=200,
+        type=int,
+        help='min edge length when saveing a visualization image, used when '
+        '"--adaptive" is true.')
+    parser.add_argument(
+        '--max-edge-length',
+        default=1000,
+        type=int,
+        help='max edge length when saveing a visualization image, used when '
+        '"--adaptive" is true.')
     parser.add_argument(
         '--bgr2rgb',
         default=False,
@@ -160,18 +168,25 @@ def concat(left_img, right_img):
     return board
 
 
-def adaptive_size(mode, image):
+def adaptive_size(mode, image, min_edge_length, max_edge_length):
     """rescale image if image is too small to put text like cifra."""
+    assert min_edge_length >= 0 and max_edge_length >= 0
+    assert max_edge_length >= min_edge_length
+
     image_h, image_w, *_ = image.shape
     image_w = image_w // 2 if mode == 'concat' else image_w
-    if image_h < 200 or image_w < 200:
-        image = mmcv.imrescale(image, max(200 / image_h, 200 / image_h))
-    if image_h > 800 or image_w > 800:
-        image = mmcv.imrescale(image, min(800 / image_h, 800 / image_w))
+
+    if image_h < min_edge_length or image_w < min_edge_length:
+        image = mmcv.imrescale(
+            image, min(min_edge_length / image_h, min_edge_length / image_h))
+    if image_h > 1000 or image_w > 1000:
+        image = mmcv.imrescale(
+            image, max(max_edge_length / image_h, max_edge_length / image_w))
     return image
 
 
 def get_display_img(item, pipeline, mode, bgr2rgb):
+    """get image to display."""
     src_image = item['img'].copy()
     # get transformed picture
     if mode in ['pipeline', 'concat']:
@@ -205,14 +220,15 @@ def main():
         for i, item in enumerate(itertools.islice(dataset, display_number)):
             image = get_display_img(item, pipeline, args.mode, args.bgr2rgb)
             if args.adaptive:
-                image = adaptive_size(args.mode, image)
+                image = adaptive_size(args.mode, image, args.min_edge_length,
+                                      args.max_edge_length)
 
-            # some datasets do not have filename, such as minist, cifar
-            # save image if args.output_dir is not None
-            src_path = item.get('filename', '{}.jpg'.format(i))
-            dist_path = os.path.join(
-                args.output_dir,
-                Path(src_path).name) if args.output_dir else None
+            # dist_path is None default, menas not save picture
+            dist_path = None
+            if args.output_dir:
+                # some datasets do not have filename, such as minist, cifar
+                src_path = item.get('filename', '{}.jpg'.format(i))
+                dist_path = os.path.join(args.output_dir, Path(src_path).name)
 
             infos = dict(label=CLASSES[item['gt_label']])
 
