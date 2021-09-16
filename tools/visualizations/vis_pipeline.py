@@ -156,15 +156,16 @@ def put_img(board, img, center):
 def concat(left_img, right_img):
     """Concat two pictures into a single big picture, accepts two images with
     diffenert shapes."""
+    GAP = 10
     left_h, left_w, _ = left_img.shape
     right_h, right_w, _ = right_img.shape
     # create a big board to contain images whith shape (board_h, board_w*2+10)
     board_h, board_w = max(left_h, right_h), max(left_w, right_w)
-    board = np.ones([board_h, 2 * board_w + 10, 3], np.uint8) * 255
+    board = np.ones([board_h, 2 * board_w + GAP, 3], np.uint8) * 255
 
     put_img(board, left_img, (int(board_w // 2), int(board_h // 2)))
     put_img(board, right_img,
-            (int(board_w // 2) + board_w + 5, int(board_h // 2)))
+            (int(board_w // 2) + board_w + GAP // 2, int(board_h // 2)))
     return board
 
 
@@ -179,7 +180,7 @@ def adaptive_size(mode, image, min_edge_length, max_edge_length):
     if image_h < min_edge_length or image_w < min_edge_length:
         image = mmcv.imrescale(
             image, min(min_edge_length / image_h, min_edge_length / image_h))
-    if image_h > 1000 or image_w > 1000:
+    if image_h > max_edge_length or image_w > max_edge_length:
         image = mmcv.imrescale(
             image, max(max_edge_length / image_h, max_edge_length / image_w))
     return image
@@ -223,7 +224,7 @@ def main():
                 image = adaptive_size(args.mode, image, args.min_edge_length,
                                       args.max_edge_length)
 
-            # dist_path is None default, menas not save picture
+            # dist_path is None default, menas not save pictures
             dist_path = None
             if args.output_dir:
                 # some datasets do not have filename, such as minist, cifar
