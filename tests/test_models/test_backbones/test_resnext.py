@@ -57,4 +57,5 @@ def test_resnext():
 
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
-    assert feat.shape == torch.Size([1, 2048, 7, 7])
+    assert len(feat) == 1
+    assert feat[0].shape == torch.Size([1, 2048, 7, 7])

@@ -7,7 +7,7 @@ model = dict(
         arch='large',
         img_size=384,
         stage_cfgs=dict(block_cfgs=dict(window_size=12))),
-    neck=dict(type='GlobalAveragePooling', dim=1),
+    neck=dict(type='GlobalAveragePooling'),
     head=dict(
         type='LinearClsHead',
         num_classes=1000,

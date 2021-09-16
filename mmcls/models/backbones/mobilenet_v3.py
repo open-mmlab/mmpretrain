@@ -177,10 +177,7 @@ class MobileNetV3(BaseBackbone):
             if i in self.out_indices:
                 outs.append(x)
 
-        if len(outs) == 1:
-            return outs[0]
-        else:
-            return tuple(outs)
+        return tuple(outs)
 
     def _freeze_stages(self):
         for i in range(0, self.frozen_stages + 1):

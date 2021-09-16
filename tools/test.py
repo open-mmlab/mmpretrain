@@ -28,6 +28,17 @@ def parse_args():
     parser.add_argument('config', help='test config file path')
     parser.add_argument('checkpoint', help='checkpoint file')
     parser.add_argument('--out', help='output result file')
+    out_options = ['class_scores', 'pred_score', 'pred_label', 'pred_class']
+    parser.add_argument(
+        '--out-items',
+        nargs='+',
+        default=['all'],
+        choices=out_options + ['none', 'all'],
+        help='Besides metrics, what items will be included in the output '
+        f'result file. You can choose some of ({", ".join(out_options)}), '
+        'or use "all" to include all above, or use "none" to disable all of '
+        'above. Defaults to output all.',
+        metavar='')
     parser.add_argument(
         '--metrics',
         type=str,
@@ -177,16 +188,22 @@ def main():
             for k, v in eval_results.items():
                 print(f'\n{k} : {v:.2f}')
         if args.out:
-            scores = np.vstack(outputs)
-            pred_score = np.max(scores, axis=1)
-            pred_label = np.argmax(scores, axis=1)
-            pred_class = [CLASSES[lb] for lb in pred_label]
-            results.update({
-                'class_scores': scores,
-                'pred_score': pred_score,
-                'pred_label': pred_label,
-                'pred_class': pred_class
-            })
+            if 'none' not in args.out_items:
+                scores = np.vstack(outputs)
+                pred_score = np.max(scores, axis=1)
+                pred_label = np.argmax(scores, axis=1)
+                pred_class = [CLASSES[lb] for lb in pred_label]
+                res_items = {
+                    'class_scores': scores,
+                    'pred_score': pred_score,
+                    'pred_label': pred_label,
+                    'pred_class': pred_class
+                }
+                if 'all' in args.out_items:
+                    results.update(res_items)
+                else:
+                    for key in args.out_items:
+                        results[key] = res_items[key]
             print(f'\ndumping results to {args.out}')
             mmcv.dump(results, args.out)
 

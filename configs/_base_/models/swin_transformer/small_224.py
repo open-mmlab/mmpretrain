@@ -4,7 +4,7 @@ model = dict(
     backbone=dict(
         type='SwinTransformer', arch='small', img_size=224,
         drop_path_rate=0.3),
-    neck=dict(type='GlobalAveragePooling', dim=1),
+    neck=dict(type='GlobalAveragePooling'),
     head=dict(
         type='LinearClsHead',
         num_classes=1000,

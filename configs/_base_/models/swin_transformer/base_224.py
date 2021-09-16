@@ -3,7 +3,7 @@ model = dict(
     type='ImageClassifier',
     backbone=dict(
         type='SwinTransformer', arch='base', img_size=224, drop_path_rate=0.5),
-    neck=dict(type='GlobalAveragePooling', dim=1),
+    neck=dict(type='GlobalAveragePooling'),
     head=dict(
         type='LinearClsHead',
         num_classes=1000,
