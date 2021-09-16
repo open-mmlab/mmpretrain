@@ -32,17 +32,17 @@ python tools/visualizations/vis_pipeline.py \
 **Description of all arguments**：
 
 - `config` : The path of a model config file.
-- `--output-dir`: The path of output visualizd images. If not specified, it will be set to `''`, means not to save.
+- `--output-dir`: The output path for visualizd images. If not specified, it will be set to `''`, means not to save.
 - `--phase`: Phase of visualizing dataset，must be one of `[train, val, test]`. If not specified, it will be set to `train`.
-- `--number`: The number of samples to visualize. If not specified, it will be set to be `sys.maxsize`.
-- `--skip-type`: The pipeline process to be skipped. If not specified, it will be set to `['ToTensor', 'Normalize', 'ImageToTensor', 'Collect']`.
-- `--mode`: The display mode. can be one of `[original, pipeline, concat]`. If not specified, it will be set to `pipeline`.
-- `--show`: Whether to display preprocessed pictures in pop-up windows. If not specified, it will be set to `False`.
-- `--adaptive`: Whether to automatically adjust the size of the visual image. If not specified, the default is `False`.
+- `--number`: The number of samples to visualize. If not specified, it will be set to `sys.maxsize`.
+- `--skip-type`: The pipelines to be skipped. If not specified, it will be set to `['ToTensor', 'Normalize', 'ImageToTensor', 'Collect']`.
+- `--mode`: The display mode, can be one of `[original, pipeline, concat]`. If not specified, it will be set to `pipeline`.
+- `--show`: Whether to display pictures in pop-up windows. If not specified, it will be set to `False`.
+- `--adaptive`: Whether to automatically adjust the size of the visualization images. If not specified, it will be set to `False`.
 - `--min-edge-length`: The minium edge length, used when `--adaptivethe` is `True`. When any side of the picture is smaller than `${MIN-EDGE-LENGTH}`, the picture will be enlarged while keeping the aspect ratio unchanged, and the short side will be aligned to `${MIN-EDGE-LENGTH}`. If not specified, it will be set to 200.
 - `--max-edge-length`: The maxium edge length, used when `--adaptivethe` is `True`. When any side of the picture is larger than `${MAX-EDGE-LENGTH}`, the picture will be reduced while keeping the aspect ratio unchanged, and the long side will be aligned to `${MAX-EDGE-LENGTH}`. If not specified, it will be set to 1000.
 - `--bgr2rgb`: Whether to flip the color channel order of images. If not specified, it will be set to `False`.
-- `--window-size`: The shape of display window. If not specified, it will be set to `12*7`, If used, it must be in format `'W*H'`.
+- `--window-size`: The shape of display window. If not specified, it will be set to `12*7`. If used, it must be in format `'W*H'`.
 
 **Notice**:
 

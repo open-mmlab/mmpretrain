@@ -57,18 +57,21 @@ def parse_args():
         action='store_true',
         help='whether to display images in pop-up window')
     parser.add_argument(
-        '--adaptive', default=False, action='store_true', help='')
+        '--adaptive',
+        default=False,
+        action='store_true',
+        help='whether to automatically adjust the visualization image size')
     parser.add_argument(
         '--min-edge-length',
         default=200,
         type=int,
-        help='min edge length when saveing a visualization image, used when '
+        help='the min edge length when visualizing images, used when '
         '"--adaptive" is true.')
     parser.add_argument(
         '--max-edge-length',
         default=1000,
         type=int,
-        help='max edge length when saveing a visualization image, used when '
+        help='the max edge length when visualizing images, used when '
         '"--adaptive" is true.')
     parser.add_argument(
         '--bgr2rgb',
@@ -224,10 +227,10 @@ def main():
                 image = adaptive_size(args.mode, image, args.min_edge_length,
                                       args.max_edge_length)
 
-            # dist_path is None default, menas not save pictures
+            # dist_path is None as default, menas not save pictures
             dist_path = None
             if args.output_dir:
-                # some datasets do not have filename, such as minist, cifar
+                # some datasets do not have filename, such as cifar, use id
                 src_path = item.get('filename', '{}.jpg'.format(i))
                 dist_path = os.path.join(args.output_dir, Path(src_path).name)
 
