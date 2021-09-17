@@ -200,15 +200,6 @@ def test_repvgg_backbone():
 
     # Test RepVGG forward with layer 3 forward
     model = RepVGG('A0', out_indices=(3, ))
-    model.train()
-
-    imgs = torch.randn(1, 3, 224, 224)
-    feat = model(imgs)
-    assert isinstance(feat, torch.Tensor)
-    assert feat.shape == torch.Size((1, 1280, 7, 7))
-
-    # Test RepVGG forward with layer 3 forward
-    model = RepVGG('A0', out_indices=(3, ))
     model.init_weights()
     model.train()
 
@@ -218,8 +209,10 @@ def test_repvgg_backbone():
 
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
-    assert isinstance(feat, torch.Tensor)
-    assert feat.shape == torch.Size((1, 1280, 7, 7))
+    assert isinstance(feat, tuple)
+    assert len(feat) == 1
+    assert isinstance(feat[0], torch.Tensor)
+    assert feat[0].shape == torch.Size((1, 1280, 7, 7))
 
     # Test RepVGG forward
     model_test_settings = [
