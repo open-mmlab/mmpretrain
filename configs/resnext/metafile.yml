@@ -10,8 +10,13 @@ Collections:
       Batch Size: 256
       Architecture:
         - ResNeXt
-    Paper: https://openaccess.thecvf.com/content_cvpr_2017/html/Xie_Aggregated_Residual_Transformations_CVPR_2017_paper.html
+    Paper:
+      URL: https://openaccess.thecvf.com/content_cvpr_2017/html/Xie_Aggregated_Residual_Transformations_CVPR_2017_paper.html
+      Title: "Aggregated Residual Transformations for Deep Neural Networks"
     README: configs/resnext/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.15.0/mmcls/models/backbones/resnext.py#L90
+      Version: v0.15.0
 
 Models:
   - Name: resnext50_32x4d_b32x8_imagenet
@@ -22,10 +27,10 @@ Models:
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 77.92
-          Top 5 Accuracy: 93.74
+          Top 1 Accuracy: 77.90
+          Top 5 Accuracy: 93.66
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/resnext/resnext50_32x4d_batch256_imagenet_20200708-c07adbb7.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/resnext/resnext50_32x4d_b32x8_imagenet_20210429-56066e27.pth
     Config: configs/resnext/resnext50_32x4d_b32x8_imagenet.py
   - Name: resnext101_32x4d_b32x8_imagenet
     Metadata:
@@ -35,10 +40,10 @@ Models:
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 78.7
-          Top 5 Accuracy: 94.34
+          Top 1 Accuracy: 78.61
+          Top 5 Accuracy: 94.17
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/resnext/resnext101_32x4d_batch256_imagenet_20200708-87f2d1c9.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/resnext/resnext101_32x4d_b32x8_imagenet_20210506-e0fa3dd5.pth
     Config: configs/resnext/resnext101_32x4d_b32x8_imagenet.py
   - Name: resnext101_32x8d_b32x8_imagenet
     Metadata:
@@ -48,10 +53,10 @@ Models:
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 79.22
-          Top 5 Accuracy: 94.52
+          Top 1 Accuracy: 79.27
+          Top 5 Accuracy: 94.58
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/resnext/resnext101_32x8d_batch256_imagenet_20200708-1ec34aa7.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/resnext/resnext101_32x8d_b32x8_imagenet_20210506-23a247d5.pth
     Config: configs/resnext/resnext101_32x8d_b32x8_imagenet.py
   - Name: resnext152_32x4d_b32x8_imagenet
     Metadata:
@@ -61,8 +66,8 @@ Models:
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 79.06
-          Top 5 Accuracy: 94.47
+          Top 1 Accuracy: 78.88
+          Top 5 Accuracy: 94.33
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/resnext/resnext152_32x4d_batch256_imagenet_20200708-aab5034c.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/resnext/resnext152_32x4d_b32x8_imagenet_20210524-927787be.pth
     Config: configs/resnext/resnext152_32x4d_b32x8_imagenet.py

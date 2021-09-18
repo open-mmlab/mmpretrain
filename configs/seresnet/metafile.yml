@@ -10,8 +10,13 @@ Collections:
       Batch Size: 256
       Architecture:
         - ResNet
-    Paper: https://openaccess.thecvf.com/content_cvpr_2018/html/Hu_Squeeze-and-Excitation_Networks_CVPR_2018_paper.html
+    Paper:
+      URL: https://openaccess.thecvf.com/content_cvpr_2018/html/Hu_Squeeze-and-Excitation_Networks_CVPR_2018_paper.html
+      Title: "Squeeze-and-Excitation Networks"
     README: configs/seresnet/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.15.0/mmcls/models/backbones/seresnet.py#L58
+      Version: v0.15.0
 
 Models:
   - Name: seresnet50_b32x8_imagenet

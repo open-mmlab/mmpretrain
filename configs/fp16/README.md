@@ -17,4 +17,4 @@
 
 |         Model         | Params(M) | Flops(G) | Mem (GB) | Top-1 (%) | Top-5 (%) | Config | Download |
 |:---------------------:|:---------:|:--------:|:---------:|:---------:|:---------:| :---------:|:--------:|
-| ResNet-50             | 25.56     | 4.12     |    1.9    |76.32 | 93.04 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/fp16/resnet50_b32x8_fp16_imagenet.py) | [model](https://download.openmmlab.com/mmclassification/v0/fp16/resnet50_batch256_fp16_imagenet_20210320-b3964210.pth) &#124; [log](https://download.openmmlab.com/mmclassification/v0/fp16/resnet50_batch256_fp16_imagenet_20210320-b3964210.log.json) |
+| ResNet-50             | 25.56     | 4.12     |    1.9    |76.30 | 93.07 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/fp16/resnet50_b32x8_fp16_imagenet.py) | [model](https://download.openmmlab.com/mmclassification/v0/fp16/resnet50_batch256_fp16_imagenet_20210320-b3964210.pth) &#124; [log](https://download.openmmlab.com/mmclassification/v0/fp16/resnet50_batch256_fp16_imagenet_20210320-b3964210.log.json) |
