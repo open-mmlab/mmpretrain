@@ -193,7 +193,7 @@ class RandomResizedCrop(object):
                              f'But received scale {scale} and rato {ratio}.')
         assert min_covered >= 0, 'min_covered should be no less than 0.'
         assert isinstance(max_attempts, int) and max_attempts >= 0, \
-            'max_attempts mush be of typle int and no less than 0.'
+            'max_attempts mush be int and no less than 0.'
         assert interpolation in ('nearest', 'bilinear', 'bicubic', 'area',
                                  'lanczos')
         if backend not in ['cv2', 'pillow']:
