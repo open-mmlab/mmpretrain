@@ -1,6 +1,6 @@
-## Installation
+# Installation
 
-### Requirements
+## Requirements
 
 - Python 3.6+
 - PyTorch 1.3+
@@ -27,7 +27,7 @@ Note: Since the `master` branch is under frequent development, the `mmcv`
 version dependency may be inaccurate. If you encounter problems when using
 the `master` branch, please try to update `mmcv` to the latest version.
 
-### Install MMClassification
+## Install MMClassification
 
 a. Create a conda virtual environment and activate it.
 
@@ -64,7 +64,7 @@ you can use more CUDA versions such as 9.0.
 
 c. Install MMClassification repository.
 
-#### Release version
+### Release version
 
 We recommend you to install MMClassification with [MIM](https://github.com/open-mmlab/mim).
 
@@ -82,7 +82,7 @@ Or, you can install MMClassification with pip:
 pip install mmcls
 ```
 
-#### Develop version
+### Develop version
 
 First, clone the MMClassification repository.
 
@@ -105,9 +105,9 @@ Note:
 
 you can install it before installing [mmcv](https://github.com/open-mmlab/mmcv).
 
-#### Another option: Docker Image
+### Another option: Docker Image
 
-We provide a [Dockerfile](/docker/Dockerfile) to build an image.
+We provide a [Dockerfile](https://github.com/open-mmlab/mmclassification/blob/master/docker/Dockerfile) to build an image.
 
 ```shell
 # build an image with PyTorch 1.6.0, CUDA 10.1, CUDNN 7.
@@ -122,7 +122,7 @@ Run a container built from mmcls image with command:
 docker run --gpus all --shm-size=8g -it -v {DATA_DIR}:/workspace/mmclassification/data mmcls:torch1.6.0-cuda10.1-cudnn7 /bin/bash
 ```
 
-### Using multiple MMClassification versions
+## Using multiple MMClassification versions
 
 The train and test scripts already modify the `PYTHONPATH` to ensure the script use the MMClassification in the current directory.
 
