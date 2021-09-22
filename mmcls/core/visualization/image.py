@@ -1,5 +1,6 @@
 from threading import Timer
 
+import matplotlib
 import matplotlib.pyplot as plt
 import mmcv
 import numpy as np
@@ -40,6 +41,8 @@ class BaseFigureContextManager:
     """
 
     def __init__(self, axis=False, fig_save_cfg={}, fig_show_cfg={}) -> None:
+        self.is_inline = 'inline' in matplotlib.get_backend()
+
         # Because save and show need different figure size
         # We set two figure and axes to handle save and show
         self.fig_save: plt.Figure = None
@@ -54,8 +57,12 @@ class BaseFigureContextManager:
         self.axis = axis
 
     def __enter__(self):
-        self._initialize_fig_save()
-        self._initialize_fig_show()
+        if not self.is_inline:
+            # If use inline backend, we cannot control which figure to show,
+            # so disable the interactive fig_show, and put the initialization
+            # of fig_save to `prepare` function.
+            self._initialize_fig_save()
+            self._initialize_fig_show()
         return self
 
     def _initialize_fig_save(self):
@@ -80,6 +87,11 @@ class BaseFigureContextManager:
             self.fig_show, eventslist=('key_press_event', 'close_event'))
 
     def __exit__(self, exc_type, exc_value, traceback):
+        if self.is_inline:
+            # If use inline backend, whether to close figure depends on if
+            # users want to show the image.
+            return
+
         plt.close(self.fig_save)
         plt.close(self.fig_show)
 
@@ -92,6 +104,13 @@ class BaseFigureContextManager:
             pass
 
     def prepare(self):
+        if self.is_inline:
+            # if use inline backend, just rebuild the fig_save.
+            self._initialize_fig_save()
+            self.ax_save.cla()
+            self.ax_save.axis(self.axis)
+            return
+
         # If users force to destroy the window, rebuild fig_show.
         if not plt.fignum_exists(self.fig_show.number):
             self._initialize_fig_show()
@@ -103,6 +122,10 @@ class BaseFigureContextManager:
         self.ax_show.axis(self.axis)
 
     def wait_continue(self, timeout=0):
+        if self.is_inline:
+            # If use inline backend, interactive input and timeout is no use.
+            return
+
         # In matplotlib==3.4.x, with TkAgg, official timeout api of
         # start_event_loop cannot work properly. Use a Timer to directly stop
         # event loop.
@@ -220,7 +243,7 @@ class ImshowInfosContextManager(BaseFigureContextManager):
             label_text = f'{k}: {v}'
             self._put_text(self.ax_save, label_text, x, y, text_color,
                            font_size)
-            if show:
+            if show and not self.is_inline:
                 self._put_text(self.ax_show, label_text, x, y, text_color,
                                font_size)
             y += row_width
@@ -236,7 +259,7 @@ class ImshowInfosContextManager(BaseFigureContextManager):
         if out_file is not None:
             mmcv.imwrite(img_save, out_file)
 
-        if show:
+        if show and not self.is_inline:
             # Reserve some space for the tip.
             self.ax_show.set_title(win_name)
             self.ax_show.set_ylim(height + 20)
@@ -252,6 +275,10 @@ class ImshowInfosContextManager(BaseFigureContextManager):
             self.fig_show.canvas.draw()
 
             self.wait_continue(timeout=wait_time)
+        elif (not show) and self.is_inline:
+            # If use inline backend, we use fig_save to show the image
+            # So we need to close it if users don't want to show.
+            plt.close(self.fig_save)
 
         return img_save
 
