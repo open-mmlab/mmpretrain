@@ -121,7 +121,7 @@ class ImageClassifier(BaseClassifier):
 
         return losses
 
-    def simple_test(self, img, img_metas=None):
+    def simple_test(self, img, img_metas):
         """Test without augmentation."""
         x = self.extract_feat(img)
 
