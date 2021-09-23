@@ -1,104 +1,96 @@
-sub_policy_0 = [
-    dict(type='Posterize', bits=8, prob=0.4),
-    dict(type='Rotate', angle=9., prob=0.6)
-]
-sub_policy_1 = [
-    dict(type='Solarize', thr=5, prob=0.6),
-    dict(type='AutoContrast', prob=0.6)
-]
-sub_policy_2 = [
-    dict(type='Equalize', prob=0.8),
-    dict(type='Equalize', prob=0.6)
-]
-sub_policy_3 = [
-    dict(type='Posterize', bits=7, prob=0.6),
-    dict(type='Posterize', bits=6, prob=0.6)
-]
-sub_policy_4 = [
-    dict(type='Equalize', prob=0.4),
-    dict(type='Solarize', thr=4, prob=0.2)
-]
-sub_policy_5 = [
-    dict(type='Equalize', prob=0.4),
-    dict(type='Rotate', angle=8., prob=0.8)
-]
-sub_policy_6 = [
-    dict(type='Solarize', thr=3, prob=0.6),
-    dict(type='Equalize', prob=0.6)
-]
-sub_policy_7 = [
-    dict(type='Posterize', bits=5, prob=0.8),
-    dict(type='Equalize', prob=1.0)
-]
-sub_policy_8 = [
-    dict(type='Rotate', angle=3., prob=0.2),
-    dict(type='Solarize', thr=8, prob=0.6)
-]
-sub_policy_9 = [
-    dict(type='Equalize', prob=0.6),
-    dict(type='Posterize', bits=6, prob=0.4)
-]
-sub_policy_10 = [
-    dict(type='Rotate', angle=8., prob=0.8),
-    dict(type='ColorTransform', magnitude=0, prob=0.4)
-]
-sub_policy_11 = [
-    dict(type='Rotate', angle=9., prob=0.4),
-    dict(type='Equalize', prob=0.6)
-]
-sub_policy_12 = [
-    dict(type='Equalize', prob=0.0),
-    dict(type='Equalize', prob=0.8)
-]
-sub_policy_13 = [
-    dict(type='Invert', prob=0.6),
-    dict(type='Equalize', prob=1.0)
-]
-sub_policy_14 = [
-    dict(type='ColorTransform', magnitude=4, prob=0.6),
-    dict(type='Contrast', magnitude=8, prob=1.0)
-]
-sub_policy_15 = [
-    dict(type='Rotate', angle=8., prob=0.8),
-    dict(type='ColorTransform', magnitude=2, prob=1.0)
-]
-sub_policy_16 = [
-    dict(type='ColorTransform', magnitude=8, prob=0.8),
-    dict(type='Solarize', thr=7, prob=0.8)
-]
-sub_policy_17 = [
-    dict(type='Sharpness', magnitude=7, prob=0.4),
-    dict(type='Invert', prob=0.6)
-]
-sub_policy_18 = [
-    dict(type='Shear', magnitude=5, prob=0.6),
-    dict(type='Equalize', prob=1.0)
-]
-sub_policy_19 = [
-    dict(type='ColorTransform', magnitude=0, prob=0.4),
-    dict(type='Equalize', prob=0.6)
-]
-sub_policy_20 = [
-    dict(type='Equalize', prob=0.4),
-    dict(type='Solarize', thr=4, prob=0.2)
-]
-sub_policy_21 = [
-    dict(type='Solarize', thr=5, prob=0.6),
-    dict(type='AutoContrast', prob=0.6)
-]
-sub_policy_22 = [
-    dict(type='Invert', prob=0.6),
-    dict(type='Equalize', prob=1.0)
-]
-sub_policy_23 = [
-    dict(type='ColorTransform', magnitude=4, prob=0.6),
-    dict(type='Contrast', magnitude=8, prob=1.0)
-]
-
-auto_increasing_policies = [
-    sub_policy_0, sub_policy_1, sub_policy_2, sub_policy_3, sub_policy_4,
-    sub_policy_5, sub_policy_6, sub_policy_7, sub_policy_8, sub_policy_9,
-    sub_policy_10, sub_policy_11, sub_policy_12, sub_policy_13, sub_policy_14,
-    sub_policy_15, sub_policy_16, sub_policy_17, sub_policy_18, sub_policy_19,
-    sub_policy_20, sub_policy_21, sub_policy_22, sub_policy_23
+# Policy for ImageNet, refers to
+# https://github.com/DeepVoltaire/AutoAugment/blame/master/autoaugment.py
+policy_imagenet = [
+    [
+        dict(type='Posterize', bits=4, prob=0.4),
+        dict(type='Rotate', angle=30., prob=0.6)
+    ],
+    [
+        dict(type='Solarize', thr=256 / 9 * 4, prob=0.6),
+        dict(type='AutoContrast', prob=0.6)
+    ],
+    [dict(type='Equalize', prob=0.8),
+     dict(type='Equalize', prob=0.6)],
+    [
+        dict(type='Posterize', bits=5, prob=0.6),
+        dict(type='Posterize', bits=5, prob=0.6)
+    ],
+    [
+        dict(type='Equalize', prob=0.4),
+        dict(type='Solarize', thr=256 / 9 * 5, prob=0.2)
+    ],
+    [
+        dict(type='Equalize', prob=0.4),
+        dict(type='Rotate', angle=30 / 9 * 8, prob=0.8)
+    ],
+    [
+        dict(type='Solarize', thr=256 / 9 * 6, prob=0.6),
+        dict(type='Equalize', prob=0.6)
+    ],
+    [dict(type='Posterize', bits=6, prob=0.8),
+     dict(type='Equalize', prob=1.)],
+    [
+        dict(type='Rotate', angle=10., prob=0.2),
+        dict(type='Solarize', thr=256 / 9, prob=0.6)
+    ],
+    [
+        dict(type='Equalize', prob=0.6),
+        dict(type='Posterize', bits=5, prob=0.4)
+    ],
+    [
+        dict(type='Rotate', angle=30 / 9 * 8, prob=0.8),
+        dict(type='ColorTransform', magnitude=0., prob=0.4)
+    ],
+    [
+        dict(type='Rotate', angle=30., prob=0.4),
+        dict(type='Equalize', prob=0.6)
+    ],
+    [dict(type='Equalize', prob=0.0),
+     dict(type='Equalize', prob=0.8)],
+    [dict(type='Invert', prob=0.6),
+     dict(type='Equalize', prob=1.)],
+    [
+        dict(type='ColorTransform', magnitude=0.4, prob=0.6),
+        dict(type='Contrast', magnitude=0.8, prob=1.)
+    ],
+    [
+        dict(type='Rotate', angle=30 / 9 * 8, prob=0.8),
+        dict(type='ColorTransform', magnitude=0.2, prob=1.)
+    ],
+    [
+        dict(type='ColorTransform', magnitude=0.8, prob=0.8),
+        dict(type='Solarize', thr=256 / 9 * 2, prob=0.8)
+    ],
+    [
+        dict(type='Sharpness', magnitude=0.7, prob=0.4),
+        dict(type='Invert', prob=0.6)
+    ],
+    [
+        dict(
+            type='Shear',
+            magnitude=0.3 / 9 * 5,
+            prob=0.6,
+            direction='horizontal'),
+        dict(type='Equalize', prob=1.)
+    ],
+    [
+        dict(type='ColorTransform', magnitude=0., prob=0.4),
+        dict(type='Equalize', prob=0.6)
+    ],
+    [
+        dict(type='Equalize', prob=0.4),
+        dict(type='Solarize', thr=256 / 9 * 5, prob=0.2)
+    ],
+    [
+        dict(type='Solarize', thr=256 / 9 * 4, prob=0.6),
+        dict(type='AutoContrast', prob=0.6)
+    ],
+    [dict(type='Invert', prob=0.6),
+     dict(type='Equalize', prob=1.)],
+    [
+        dict(type='ColorTransform', magnitude=0.4, prob=0.6),
+        dict(type='Contrast', magnitude=0.8, prob=1.)
+    ],
+    [dict(type='Equalize', prob=0.8),
+     dict(type='Equalize', prob=0.6)],
 ]
