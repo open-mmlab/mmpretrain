@@ -364,4 +364,4 @@ class TNT(BaseBackbone):
             pixel_embed, patch_embed = layer(pixel_embed, patch_embed)
 
         patch_embed = self.norm(patch_embed)
-        return patch_embed[:, 0]
+        return (patch_embed[:, 0], )

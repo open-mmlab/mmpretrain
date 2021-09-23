@@ -7,8 +7,13 @@ Collections:
         - Weight Decay
         - Mixed Precision Training
       Training Resources: 8x V100 GPUs
-    Paper: https://arxiv.org/abs/1710.03740
+    Paper:
+      URL: https://arxiv.org/abs/1710.03740
+      Title: Mixed Precision Training
     README: configs/fp16/README.md
+    Code:
+      URI: https://github.com/open-mmlab/mmclassification/blob/a41cb2fa938d957101cc446e271486206188bf5b/mmcls/core/fp16/hooks.py#L13
+      Version: v0.15.0
 
 Models:
   - Name: resnet50_b32x8_fp16_dynamic_imagenet
@@ -24,7 +29,7 @@ Models:
       - Task: Image Classification
         Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 76.32
-          Top 5 Accuracy: 93.04
+          Top 1 Accuracy: 76.30
+          Top 5 Accuracy: 93.07
     Weights: https://download.openmmlab.com/mmclassification/v0/fp16/resnet50_batch256_fp16_imagenet_20210320-b3964210.pth
     Config: configs/fp16/resnet50_b32x8_fp16_dynamic_imagenet.py

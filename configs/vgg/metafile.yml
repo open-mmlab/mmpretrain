@@ -10,8 +10,13 @@ Collections:
       Batch Size: 256
       Architecture:
         - VGG
-    Paper: https://arxiv.org/abs/1409.1556
+    Paper:
+      URL: https://arxiv.org/abs/1409.1556
+      Title: "Very Deep Convolutional Networks for Large-Scale Image"
     README: configs/vgg/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.15.0/mmcls/models/backbones/vgg.py#L39
+      Version: v0.15.0
 
 Models:
   - Name: vgg11_b32x8_imagenet
@@ -74,8 +79,8 @@ Models:
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 70.75
-          Top 5 Accuracy: 90.12
+          Top 1 Accuracy: 70.67
+          Top 5 Accuracy: 90.16
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/vgg/vgg11_bn_batch256_imagenet_20210207-f244902c.pth
     Config: configs/vgg/vgg11bn_b32x8_imagenet.py
@@ -87,12 +92,12 @@ Models:
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 72.15
-          Top 5 Accuracy: 90.71
+          Top 1 Accuracy: 72.12
+          Top 5 Accuracy: 90.66
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/vgg/vgg13_bn_batch256_imagenet_20210207-1a8b7864.pth
     Config: configs/vgg/vgg13bn_b32x8_imagenet.py
-  - Name: vgg16_b32x8_imagenet
+  - Name: vgg16bn_b32x8_imagenet
     Metadata:
       FLOPs: 15530000000
       Parameters: 138370000
@@ -100,11 +105,11 @@ Models:
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 73.72
-          Top 5 Accuracy: 91.68
+          Top 1 Accuracy: 73.74
+          Top 5 Accuracy: 91.66
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/vgg/vgg16_bn_batch256_imagenet_20210208-7e55cd29.pth
-    Config: configs/vgg/vgg16_b32x8_imagenet.py
+    Config: configs/vgg/vgg16bn_b32x8_imagenet.py
   - Name: vgg19bn_b32x8_imagenet
     Metadata:
       FLOPs: 19700000000
@@ -113,8 +118,8 @@ Models:
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 74.7
-          Top 5 Accuracy: 92.24
+          Top 1 Accuracy: 74.68
+          Top 5 Accuracy: 92.27
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/vgg/vgg19_bn_batch256_imagenet_20210208-da620c4f.pth
     Config: configs/vgg/vgg19bn_b32x8_imagenet.py
