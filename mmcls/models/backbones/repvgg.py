@@ -178,9 +178,9 @@ class RepVGGBlock(BaseModule):
 
         for param in self.parameters():
             param.detach_()
-        self.__delattr__('branch_3x3')
-        self.__delattr__('branch_1x1')
-        self.__delattr__('branch_norm')
+        delattr(self, 'branch_3x3')
+        delattr(self, 'branch_1x1')
+        delattr(self, 'branch_norm')
 
         self.deploy = True
 
