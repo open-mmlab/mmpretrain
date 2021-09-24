@@ -182,8 +182,6 @@ def main():
                     v = round(v, 2)
                 else:
                     raise ValueError(f'Unsupport metric type: {type(v)}')
-                else:
-                    v = round(v, 2)
                 print(f'\n{k} : {v}')
         if args.out:
             scores = np.vstack(outputs)
