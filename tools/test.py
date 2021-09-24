@@ -176,8 +176,12 @@ def main():
                                             args.metric_options)
             results.update(eval_results)
             for k, v in eval_results.items():
-                if args.metric_options is not None and not isinstance(v, Number):
-                    v = [round(out, 2) for out in v.tolist()]
+                if isinstance(v, np.ndarray):
+                    v = [round(out, 2), for out in v.tolist()]
+                elif isinstance(v, Number):
+                    v = round(v, 2)
+                else:
+                    raise ValueError(f'Unsupport metric type: {type(v)}')
                 else:
                     v = round(v, 2)
                 print(f'\n{k} : {v}')
