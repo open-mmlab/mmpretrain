@@ -1,8 +1,7 @@
 Collections:
   - Name: RepVGG
     Metadata:
-      Training Data: ImageNet
-      Epochs: 200
+      Training Data: ImageNet-1k
       Batch Size: 256
       Architecture:
         - re-parameterization Convolution
@@ -19,9 +18,8 @@ Models:
     Metadata:
       FLOPs: 1520000000
       Parameters: 9110000
-      Training Data: ImageNet
     Results:
-    - Dataset: ImageNet
+    - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
         Top 1 Accuracy: 72.41
@@ -36,9 +34,8 @@ Models:
     Metadata:
       FLOPs: 2640000000
       Parameters: 14090000
-      Training Data: ImageNet
     Results:
-    - Dataset: ImageNet
+    - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
         Top 1 Accuracy: 74.47
@@ -53,9 +50,8 @@ Models:
     Metadata:
       FLOPs: 28210000000
       Parameters: 5700000
-      Training Data: ImageNet
     Results:
-    - Dataset: ImageNet
+    - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
         Top 1 Accuracy: 76.48
@@ -70,9 +66,8 @@ Models:
     Metadata:
       FLOPs: 15820000000
       Parameters: 3420000
-      Training Data: ImageNet
     Results:
-    - Dataset: ImageNet
+    - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
         Top 1 Accuracy: 75.14
@@ -87,9 +82,8 @@ Models:
     Metadata:
       FLOPs: 57420000000
       Parameters: 13160000
-      Training Data: ImageNet
     Results:
-    - Dataset: ImageNet
+    - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
         Top 1 Accuracy: 78.37
@@ -104,9 +98,8 @@ Models:
     Metadata:
       FLOPs: 45780000000
       Parameters: 9820000
-      Training Data: ImageNet
     Results:
-    - Dataset: ImageNet
+    - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
         Top 1 Accuracy: 77.79
@@ -121,9 +114,8 @@ Models:
     Metadata:
       FLOPs: 39970000000
       Parameters: 8150000
-      Training Data: ImageNet
     Results:
-    - Dataset: ImageNet
+    - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
         Top 1 Accuracy: 77.58
@@ -138,9 +130,8 @@ Models:
     Metadata:
       FLOPs: 89020000000
       Parameters: 20420000
-      Training Data: ImageNet
     Results:
-    - Dataset: ImageNet
+    - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
         Top 1 Accuracy: 78.78
@@ -155,9 +146,8 @@ Models:
     Metadata:
       FLOPs: 61760000000
       Parameters: 12630000
-      Training Data: ImageNet
     Results:
-    - Dataset: ImageNet
+    - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
         Top 1 Accuracy: 79.38
@@ -172,9 +162,8 @@ Models:
     Metadata:
       FLOPs: 123090000000
       Parameters: 29170000
-      Training Data: ImageNet
     Results:
-    - Dataset: ImageNet
+    - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
         Top 1 Accuracy: 80.52
@@ -189,9 +178,8 @@ Models:
     Metadata:
       FLOPs: 83830000000
       Parameters: 17900000
-      Training Data: ImageNet
     Results:
-    - Dataset: ImageNet
+    - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
         Top 1 Accuracy: 80.22
@@ -201,14 +189,13 @@ Models:
       Weights: https://drive.google.com/drive/folders/1Avome4KvNp0Lqh2QwhXO6L5URQjzCjUq
       Code: https://github.com/DingXiaoH/RepVGG/blob/9f272318abfc47a2b702cd0e916fca8d25d683e7/repvgg.py#L238
   - Name: repvggD2se_4xb64_autoaug-lbs-mixup-coslr-200e_in-1k
-    In Collection: Repvgg
+    In Collection: RepVGG
     Config: configs/repvgg/repvggD2se_4xb64_autoaug-lbs-mixup-coslr-200e_in-1k.py
     Metadata:
       FLOPs: 133330000000
       Parameters: 36560000
-      Training Data: ImageNet
     Results:
-    - Dataset: ImageNet
+    - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
         Top 1 Accuracy: 81.81
