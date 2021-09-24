@@ -177,7 +177,7 @@ def main():
             results.update(eval_results)
             for k, v in eval_results.items():
                 if isinstance(v, np.ndarray):
-                    v = [round(out, 2), for out in v.tolist()]
+                    v = [round(out, 2) for out in v.tolist()]
                 elif isinstance(v, Number):
                     v = round(v, 2)
                 else:
