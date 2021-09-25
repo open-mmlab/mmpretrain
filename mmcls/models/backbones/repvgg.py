@@ -83,6 +83,8 @@ class RepVGGBlock(BaseModule):
                 bias=True,
                 padding_mode=padding_mode)
         else:
+            # judge if input shape and output shape are the same, use norm if
+            # the shape is true, otherwise None
             if out_channels == in_channels and stride == 1 and \
                     padding == dilation:
                 self.branch_norm = build_norm_layer(norm_cfg, in_channels)[1]
@@ -232,7 +234,7 @@ class RepVGGBlock(BaseModule):
 
     def _norm_to_conv3x3(self, branch_nrom):
         """Convert a norm to a conv3x3-bn Sequential.refer to the paper:
-        RepVGG: Making VGG-style ConvNets Great Again
+        RepVGG: Making VGG-style ConvNets Great Again for more detail
 
         Args:
             branch (nn.BatchNorm2d): A branch only with bn in repvggblock.
