@@ -83,8 +83,8 @@ class RepVGGBlock(BaseModule):
                 bias=True,
                 padding_mode=padding_mode)
         else:
-            # judge if input shape and output shape are the same, use norm if
-            # the shape is true, otherwise None
+            # judge if input shape and output shape are the same.
+            # If true, add a normalized identity shortcut.
             if out_channels == in_channels and stride == 1 and \
                     padding == dilation:
                 self.branch_norm = build_norm_layer(norm_cfg, in_channels)[1]
