@@ -154,11 +154,7 @@ class RepVGGBlock(BaseModule):
         return out
 
     def switch_to_deploy(self):
-        """Switch the model structure from training mode to deployment mode.
-
-        Returns:
-            None
-        """
+        """Switch the model structure from training mode to deployment mode."""
         if self.deploy:
             return
         assert self.norm_cfg['type'] == 'BN', \
@@ -190,8 +186,9 @@ class RepVGGBlock(BaseModule):
         """Fuse all the parameters of all branchs.
 
         Returns:
-            (Weight, bias) (tuple): Parameters after fusion of all branches.
-                the first element is the weight and the second is the bias.
+            tuple[torch.Tensor, torch.Tensor]: Parameters after fusion of all
+                branches. the first element is the weights and the second is
+                the bias.
         """
         weight_3x3, bias_3x3 = self._fuse_conv_bn(self.branch_3x3)
         weight_1x1, bias_1x1 = self._fuse_conv_bn(self.branch_1x1)
@@ -210,10 +207,10 @@ class RepVGGBlock(BaseModule):
         """Fuse the parameters in a branch with a conv and bn.
 
         Args:
-            branch (Sequential): A branch with conv and bn in repvggblock.
+            branch (mmcv.runner.Sequential): A branch with conv and bn.
 
         Returns:
-            (weight, bias) (tuple): The parameters obtained after
+            tuple[torch.Tensor, torch.Tensor]: The parameters obtained after
                 fusing the parameters of conv and bn in one branch.
                 The first element is the weight and the second is the bias.
         """
@@ -233,14 +230,14 @@ class RepVGGBlock(BaseModule):
         return fused_weight, fused_bias
 
     def _norm_to_conv3x3(self, branch_nrom):
-        """Convert a norm to a conv3x3-bn Sequential.refer to the paper:
-        RepVGG: Making VGG-style ConvNets Great Again for more detail
+        """Convert a norm layer to a conv3x3-bn sequence.
 
         Args:
-            branch (nn.BatchNorm2d): A branch only with bn in repvggblock.
+            branch (nn.BatchNorm2d): A branch only with bn in the block.
 
         Returns:
-            tmp_conv3x3 (Sequential): a sequential with conv3x3 and bn.
+            tmp_conv3x3 (mmcv.runner.Sequential): a sequential with conv3x3 and
+                bn.
         """
         input_dim = self.in_channels // self.groups
         conv_weight = torch.zeros((self.in_channels, input_dim, 3, 3),
@@ -260,6 +257,9 @@ class RepVGGBlock(BaseModule):
 class RepVGG(BaseBackbone):
     """RepVGG backbone.
 
+    A PyTorch impl of : `RepVGG: Making VGG-style ConvNets Great Again
+    <https://arxiv.org/abs/2101.03697>`_
+
     Args:
         arch (str | dict): The parameter of RepVGG
             - num_blocks (Sequence[int]): Number of blocks in each stage.
@@ -269,16 +269,19 @@ class RepVGG(BaseBackbone):
             - se_cfg (dict | None): Se Layer config
         in_channels (int): Number of input image channels. Default: 3.
         base_channels (int): Base channels of RepVGG backbone, work
-            with width_factor together.
-        out_indices (Sequence[int]): Output from which stages.
+            with width_factor together. Default: 64.
+        out_indices (Sequence[int]): Output from which stages. Default: (3, ).
         strides (Sequence[int]): Strides of the first block of each stage.
+            Default: (2, 2, 2, 2).
         dilations (Sequence[int]): Dilation of each stage.
-        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+            Default: (1, 1, 1, 1).
         frozen_stages (int): Stages to be frozen (all param fixed). -1 means
             not freezing any parameters. Default: -1.
         conv_cfg (dict | None): The config dict for conv layers. Default: None.
         norm_cfg (dict): The config dict for norm layers.
+            Default: dict(type='BN').
         act_cfg (dict): Config dict for activation layer.
+            Default: dict(type='ReLU').
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
             memory while slowing down the training speed. Default: False.
         deploy (bool): Whether to switch the model structure to deployment
@@ -287,7 +290,6 @@ class RepVGG(BaseBackbone):
             freeze running stats (mean and var). Note: Effect on Batch Norm
             and its variants only. Default: False.
         init_cfg (dict or list[dict], optional): Initialization config dict.
-            Default: None
     """
 
     groupwise_layers = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26]
