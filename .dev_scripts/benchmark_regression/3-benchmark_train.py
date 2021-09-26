@@ -106,7 +106,7 @@ def create_train_job_batch(commands, model_info, args, port, script_name):
                   f'#SBATCH --ntasks={gpus}\n'
                   f'#SBATCH --cpus-per-task=5\n\n'
                   f'{runner} -u {script_name} {config} '
-                  f'--work_dir={work_dir} --cfg-option '
+                  f'--work-dir={work_dir} --cfg-option '
                   f'dist_params.port={port} '
                   f'checkpoint_config.max_keep_ckpts=10 '
                   f'--launcher={launcher}\n')
