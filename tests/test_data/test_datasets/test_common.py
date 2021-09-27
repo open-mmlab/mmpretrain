@@ -9,9 +9,10 @@ import torch
 from mmcls.datasets import DATASETS, BaseDataset, MultiLabelDataset
 
 
-@pytest.mark.parametrize(
-    'dataset_name',
-    ['MNIST', 'FashionMNIST', 'CIFAR10', 'CIFAR100', 'ImageNet', 'VOC'])
+@pytest.mark.parametrize('dataset_name', [
+    'MNIST', 'FashionMNIST', 'CIFAR10', 'CIFAR100', 'ImageNet', 'VOC',
+    'ImageNet21k'
+])
 def test_datasets_override_default(dataset_name):
     dataset_class = DATASETS.get(dataset_name)
     dataset_class.load_annotations = MagicMock()
