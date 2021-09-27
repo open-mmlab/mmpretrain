@@ -1,439 +1,334 @@
-import copy
+# Copyright (c) OpenMMLab. All rights reserved.
+from copy import deepcopy
+from typing import Sequence
 
 import numpy as np
 import torch
 import torch.nn as nn
-from mmcv import ConfigDict
 from mmcv.cnn import build_norm_layer
-from mmcv.cnn.bricks import DropPath
-from mmcv.cnn.bricks.registry import (ATTENTION, POSITIONAL_ENCODING,
-                                      TRANSFORMER_LAYER,
-                                      TRANSFORMER_LAYER_SEQUENCE)
-from mmcv.cnn.bricks.transformer import (BaseTransformerLayer,
-                                         TransformerLayerSequence,
-                                         build_dropout,
-                                         build_positional_encoding,
-                                         build_transformer_layer,
-                                         build_transformer_layer_sequence)
+from mmcv.cnn.bricks.transformer import FFN
 from mmcv.cnn.utils.weight_init import trunc_normal_
 from mmcv.runner.base_module import BaseModule, ModuleList
 
 from ..builder import BACKBONES
+from ..utils import MultiheadAttention
 from .base_backbone import BaseBackbone
 
 
-@ATTENTION.register_module()
-class T2TModuleAttention(BaseModule):
-    """MultiHead self-attention in Tokens-to-Token module.
+class T2TTransformerLayer(BaseModule):
+    """Transformer Layer for T2T_ViT.
+
+    Comparing with :obj:`TransformerEncoderLayer` in ViT, it uses
 
     Args:
-        in_dim (int): Dimension of input tokens.
-        embed_dims (int): Embedding dimension
-        num_heads (int): Parallel attention heads. Same as
-            `nn.MultiheadAttention`.
-        qkv_bias (bool): Add bias as qkv Linear module parameter.
-            Default: False.
-        qk_scale (float, optional): scale of the dot products. Default: None.
-        attn_drop (float): A Dropout layer on attn output weights.
-            Default: 0.0.
-        proj_drop (float): A Dropout layer on out. Default: 0.0.
+        embed_dims (int): The feature dimension
+        num_heads (int): Parallel attention heads
+        feedforward_channels (int): The hidden dimension for FFNs
+        input_dims (int, optional): The input token dimension
+        drop_rate (float): Probability of an element to be zeroed
+            after the feed forward layer. Defaults to 0.
+        attn_drop_rate (float): The drop out rate for attention output weights.
+            Defaults to 0.
+        drop_path_rate (float): Stochastic depth rate. Defaults to 0.
+        num_fcs (int): The number of fully-connected layers for FFNs.
+            Defaults to 2.
+        qkv_bias (bool): enable bias for qkv if True. Defaults to True.
+        act_cfg (dict): The activation config for FFNs.
+            Defaluts to ``dict(type='GELU')``.
+        norm_cfg (dict): Config dict for normalization layer.
+            Defaults to ``dict(type='LN')``.
         init_cfg (dict, optional): Initialization config dict.
-        batch_first (bool): Key, Query and Value are shape of
-            (batch, n, embed_dim) or (n, batch, embed_dim). Add batch_first
-            to synchronize with MultiheadAttention in transformer.py mmcv.
-            batch_first should be True in T2TModuleAttention.
-    """
-
-    def __init__(self,
-                 in_dim,
-                 embed_dims,
-                 num_heads=8,
-                 qkv_bias=False,
-                 qk_scale=None,
-                 attn_drop=0.,
-                 proj_drop=0.,
-                 init_cfg=None,
-                 batch_first=True):
-        super(T2TModuleAttention, self).__init__(init_cfg)
-        assert batch_first is True, \
-            'batch_first should be True when using T2TModuleAttention'
-        self.batch_first = batch_first
-        self.embed_dims = embed_dims
-        self.num_heads = num_heads
-        head_dim = in_dim // num_heads
-        self.scale = qk_scale or head_dim**-0.5
-
-        self.qkv = nn.Linear(in_dim, embed_dims * 3, bias=qkv_bias)
-        self.attn_drop = nn.Dropout(attn_drop)
-        self.proj = nn.Linear(embed_dims, embed_dims)
-        self.proj_drop = nn.Dropout(proj_drop)
-
-    def forward(self, query, key, value, *args, **kwargs):
-        assert \
-            (query is key or torch.equal(query, key)) and \
-            (key is value or torch.equal(key, value)), \
-            'In self-attn, query == key == value should be satistied.'
-        B, N, C = query.shape
-
-        qkv = self.qkv(query).reshape(B, N, 3, self.num_heads,
-                                      self.embed_dims).permute(2, 0, 3, 1, 4)
-        q, k, v = qkv[0], qkv[1], qkv[2]
-
-        attn = (q @ k.transpose(-2, -1)) * self.scale
-        attn = attn.softmax(dim=-1)
-        attn = self.attn_drop(attn)
-
-        x = (attn @ v).transpose(1, 2).reshape(B, N, self.embed_dims)
-        x = self.proj(x)
-        x = self.proj_drop(x)
-
-        # skip connection
-        # because the original x has different size with current x,
-        # use v to do skip connection
-        x = v.squeeze(1) + x
-
-        return x
-
-
-@ATTENTION.register_module()
-class T2TBlockAttention(BaseModule):
-    """MultiHead self-attention in T2T-ViT backbone.
-
-    Args:
-        embed_dims (int): Embedding dimension
-        num_heads (int): Parallel attention heads. Same as
-            `nn.MultiheadAttention`.
-        qkv_bias (bool): Add bias as qkv Linear module parameter.
-            Default: False.
-        qk_scale (float, optional): scale of the dot products. Default: None.
-        attn_drop (float): A Dropout layer on attn output weights.
-            Default: 0.0.
-        proj_drop (float): A Dropout layer on out. Default: 0.0.
-        dropout_layer (dict): The dropout_layer used when adding the shortcut.
-        init_cfg (dict, optional): Initialization config dict.
-        batch_first (bool): Key, Query and Value are shape of
-            (batch, n, embed_dim) or (n, batch, embed_dim). Add batch_first
-            to synchronize with MultiheadAttention in transformer.py mmcv.
-            batch_first should be True in T2TBlockAttention.
+            Defaults to None.
     """
 
     def __init__(self,
                  embed_dims,
-                 num_heads=8,
+                 num_heads,
+                 feedforward_channels,
+                 input_dims=None,
+                 drop_rate=0.,
+                 attn_drop_rate=0.,
+                 drop_path_rate=0.,
+                 num_fcs=2,
                  qkv_bias=False,
                  qk_scale=None,
-                 attn_drop=0.,
-                 proj_drop=0.,
-                 dropout_layer=dict(type='DropPath', drop_prob=0.),
-                 init_cfg=None,
-                 batch_first=True):
-        super(T2TBlockAttention, self).__init__(init_cfg)
-        assert batch_first is True, \
-            'batch_first should be True when using T2TBlockAttention'
-        self.batch_first = batch_first
-        self.embed_dims = embed_dims
-        self.num_heads = num_heads
-        head_dim = embed_dims // num_heads
-
-        self.scale = qk_scale or head_dim**-0.5
-
-        self.qkv = nn.Linear(embed_dims, embed_dims * 3, bias=qkv_bias)
-        self.attn_drop = nn.Dropout(attn_drop)
-        self.proj = nn.Linear(embed_dims, embed_dims)
-        self.proj_drop = nn.Dropout(proj_drop)
-
-        self.dropout_layer = build_dropout(
-            dropout_layer) if dropout_layer else nn.Identity()
-        self.init_cfg = init_cfg
-
-    def forward(self, query, key, value, residual=None, *args, **kwargs):
-        assert \
-            (query is key or torch.equal(query, key)) and \
-            (key is value or torch.equal(key, value)), \
-            'In self-attn, query == key == value should be satistied.'
-
-        if residual is None:
-            residual = query
-
-        B, N, C = query.shape
-        qkv = self.qkv(query).reshape(B, N, 3, self.num_heads,
-                                      C // self.num_heads).permute(
-                                          2, 0, 3, 1, 4)
-
-        q, k, v = qkv[0], qkv[1], qkv[2]
-
-        attn = (q @ k.transpose(-2, -1)) * self.scale
-        attn = attn.softmax(dim=-1)
-        attn = self.attn_drop(attn)
-
-        out = (attn @ v).transpose(1, 2).reshape(B, N, C)
-        out = self.proj(out)
-        out = self.proj_drop(out)
-
-        return residual + self.dropout_layer(out)
-
-
-@TRANSFORMER_LAYER.register_module()
-class TokenTransformerLayer(BaseTransformerLayer):
-    """Tokens-to-token Transformer Layer."""
-
-    def __init__(self,
+                 act_cfg=dict(type='GELU'),
                  norm_cfg=dict(type='LN'),
-                 attn_cfgs=None,
-                 *args,
-                 **kwargs):
-        super(TokenTransformerLayer, self).__init__(
-            attn_cfgs=attn_cfgs, *args, **kwargs)
+                 init_cfg=None):
+        super(T2TTransformerLayer, self).__init__(init_cfg=init_cfg)
 
-        self.norms = ModuleList()
-        num_norms = self.operation_order.count('norm')
-        for i in range(num_norms):
-            if i == 0:
-                self.norms.append(
-                    build_norm_layer(norm_cfg, attn_cfgs['in_dim'])[1])
-            else:
-                self.norms.append(
-                    build_norm_layer(norm_cfg, attn_cfgs['embed_dims'])[1])
+        self.v_shortcut = True if input_dims is not None else False
+        input_dims = input_dims or embed_dims
 
-    def forward(self, *args, **kwargs):
-        x = super(TokenTransformerLayer, self).forward(*args, **kwargs)
+        self.norm1_name, norm1 = build_norm_layer(
+            norm_cfg, input_dims, postfix=1)
+        self.add_module(self.norm1_name, norm1)
+
+        self.attn = MultiheadAttention(
+            input_dims=input_dims,
+            embed_dims=embed_dims,
+            num_heads=num_heads,
+            attn_drop=attn_drop_rate,
+            proj_drop=drop_rate,
+            dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
+            qkv_bias=qkv_bias,
+            qk_scale=qk_scale or (input_dims // num_heads)**-0.5,
+            v_shortcut=self.v_shortcut)
+
+        self.norm2_name, norm2 = build_norm_layer(
+            norm_cfg, embed_dims, postfix=2)
+        self.add_module(self.norm2_name, norm2)
+
+        self.ffn = FFN(
+            embed_dims=embed_dims,
+            feedforward_channels=feedforward_channels,
+            num_fcs=num_fcs,
+            ffn_drop=drop_rate,
+            dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
+            act_cfg=act_cfg)
+
+    @property
+    def norm1(self):
+        return getattr(self, self.norm1_name)
+
+    @property
+    def norm2(self):
+        return getattr(self, self.norm2_name)
+
+    def forward(self, x):
+        if self.v_shortcut:
+            x = self.attn(self.norm1(x))
+        else:
+            x = x + self.attn(self.norm1(x))
+        x = self.ffn(self.norm2(x), identity=x)
         return x
 
 
-class T2T_module(BaseModule):
+class T2TModule(BaseModule):
     """Tokens-to-Token module.
 
-    A layer-wise “Tokens-to-Token module” (T2T_module) to model the local
-    structure information of images and reduce the length of tokens
-    progressively.
+    "Tokens-to-Token module" (T2T Module) can model the local structure
+    information of images and reduce the length of tokens progressively.
+
     Args:
         img_size (int): Input image size
-        tokens_type (str): Transformer type used in T2T_module,
-            transformer or performer.
-        in_chans (int): Number of input channels
-        embed_dim (int): Embedding dimension
-        token_dim (int): Tokens dimension in T2TModuleAttention.
-            To overcome the limitations, in T2T module, the channel dimension
-            of T2T layer is set small (32 or 64) to reduce MACs
-        init_cfg (dict, optional): Initialization config dict.
+        in_channels (int): Number of input channels
+        embed_dims (int): Embedding dimension
+        token_dims (int): Tokens dimension in T2TModuleAttention.
+        use_performer (bool): If True, use Performer version self-attention to
+            adopt regular self-attention. Defaults to False.
+        init_cfg (dict, optional): The extra config for initialization.
+            Default: None.
+
+    Notes:
+        Usually, ``token_dim`` is set as a small value (32 or 64) to reduce
+        MACs
     """
 
-    def __init__(self,
-                 img_size=224,
-                 tokens_type='transformer',
-                 in_chans=3,
-                 embed_dim=768,
-                 token_dim=64,
-                 init_cfg=None):
-        super(T2T_module, self).__init__(init_cfg)
+    def __init__(
+        self,
+        img_size=224,
+        in_channels=3,
+        embed_dims=384,
+        token_dims=64,
+        use_performer=False,
+        init_cfg=None,
+    ):
+        super(T2TModule, self).__init__(init_cfg)
 
-        self.embed_dim = embed_dim
+        self.embed_dims = embed_dims
 
-        if tokens_type == 'transformer':
-            print('adopt transformer encoder for tokens-to-token')
-            self.soft_split0 = nn.Unfold(
-                kernel_size=(7, 7), stride=(4, 4), padding=(2, 2))
-            self.soft_split1 = nn.Unfold(
-                kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
-            self.soft_split2 = nn.Unfold(
-                kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+        self.soft_split0 = nn.Unfold(
+            kernel_size=(7, 7), stride=(4, 4), padding=(2, 2))
+        self.soft_split1 = nn.Unfold(
+            kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
+        self.soft_split2 = nn.Unfold(
+            kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
 
-            tokentransformer_layer1 = dict(
-                type='TokenTransformerLayer',
-                attn_cfgs=ConfigDict(
-                    type='T2TModuleAttention',
-                    in_dim=in_chans * 7 * 7,
-                    embed_dims=token_dim,
-                    num_heads=1),
-                ffn_cfgs=dict(
-                    type='FFN',
-                    embed_dims=token_dim,
-                    feedforward_channels=token_dim,
-                    num_fcs=2,
-                    act_cfg=dict(type='GELU'),
-                    dropout_layer=dict(type='DropPath', drop_prob=0.)),
-                operation_order=('norm', 'self_attn', 'norm', 'ffn'),
-                batch_first=True)
-            self.attention1 = build_transformer_layer(tokentransformer_layer1)
-            tokentransformer_layer2 = copy.deepcopy(tokentransformer_layer1)
-            tokentransformer_layer2['attn_cfgs']['in_dim'] = token_dim * 3 * 3
-            self.attention2 = build_transformer_layer(tokentransformer_layer2)
+        if not use_performer:
+            self.attention1 = T2TTransformerLayer(
+                input_dims=in_channels * 7 * 7,
+                embed_dims=token_dims,
+                num_heads=1,
+                feedforward_channels=token_dims)
 
-            self.project = nn.Linear(token_dim * 3 * 3, embed_dim)
+            self.attention2 = T2TTransformerLayer(
+                input_dims=token_dims * 3 * 3,
+                embed_dims=token_dims,
+                num_heads=1,
+                feedforward_channels=token_dims)
+
+            self.project = nn.Linear(token_dims * 3 * 3, embed_dims)
+        else:
+            raise NotImplementedError("Performer hasn't been implemented.")
 
         # there are 3 soft split, stride are 4,2,2 seperately
-        self.num_patches = (img_size // (4 * 2 * 2)) * (
-            img_size // (4 * 2 * 2))
+        self.num_patches = (img_size // (4 * 2 * 2))**2
 
     def forward(self, x):
         # step0: soft split
         x = self.soft_split0(x).transpose(1, 2)
 
-        # iteration1: re-structurization/reconstruction
-        x = self.attention1(query=x, key=None, value=None)
-        B, new_HW, C = x.shape
-        x = x.transpose(1, 2).reshape(B, C, int(np.sqrt(new_HW)),
-                                      int(np.sqrt(new_HW)))
-        # iteration1: soft split
-        x = self.soft_split1(x).transpose(1, 2)
+        for step in [1, 2]:
+            # re-structurization/reconstruction
+            attn = getattr(self, f'attention{step}')
+            x = attn(x).transpose(1, 2)
+            B, C, new_HW = x.shape
+            x = x.reshape(B, C, int(np.sqrt(new_HW)), int(np.sqrt(new_HW)))
 
-        # iteration2: re-structurization/reconstruction
-        x = self.attention2(query=x, key=None, value=None)
-        B, new_HW, C = x.shape
-        x = x.transpose(1, 2).reshape(B, C, int(np.sqrt(new_HW)),
-                                      int(np.sqrt(new_HW)))
-        # iteration2: soft split
-        x = self.soft_split2(x).transpose(1, 2)
+            # soft split
+            soft_split = getattr(self, f'soft_split{step}')
+            x = soft_split(x).transpose(1, 2)
 
         # final tokens
         x = self.project(x)
-
         return x
 
 
-@TRANSFORMER_LAYER.register_module()
-class T2TTransformerEncoderLayer(BaseTransformerLayer):
-    """Implements transformer layer in T2T-ViT backbone."""
+def get_sinusoid_encoding(n_position, embed_dims):
 
-    def __init__(self, *args, **kwargs):
-        super(T2TTransformerEncoderLayer, self).__init__(*args, **kwargs)
-        assert len(self.operation_order) == 4
-        assert set(self.operation_order) == set(['self_attn', 'norm', 'ffn'])
-
-
-@TRANSFORMER_LAYER_SEQUENCE.register_module()
-class T2TTransformerEncoder(TransformerLayerSequence):
-    """Transformer layers of T2T-ViT backbone.
-
-    Args:
-        coder_norm_cfg (dict): Config of last normalization layer. Default：
-            `LN`. Only used when `self.pre_norm` is `True`
-        drop_path_rate (float): Drop path probability of a drop path layer.
-            The drop path probabilities in encoder layers are evenly spaced
-            from 0 to drop_path_rate, inclusive. Default: 0.0
-    """
-
-    def __init__(
-            self,
-            coder_norm_cfg=dict(type='LN'),
-            drop_path_rate=0.,
-            *args,
-            **kwargs,
-    ):
-        super(T2TTransformerEncoder, self).__init__(*args, **kwargs)
-        if coder_norm_cfg is not None:
-            self.coder_norm = build_norm_layer(
-                coder_norm_cfg, self.embed_dims)[1] if self.pre_norm else None
-        else:
-            assert not self.pre_norm, f'Use prenorm in ' \
-                                      f'{self.__class__.__name__},' \
-                                      f'Please specify coder_norm_cfg'
-            self.coder_norm = None
-
-        self.drop_path_rate = drop_path_rate
-        self.set_droppath_rate()
-
-    def set_droppath_rate(self):
-        dpr = [
-            x.item()
-            for x in torch.linspace(0, self.drop_path_rate, self.num_layers)
+    def get_position_angle_vec(position):
+        return [
+            position / np.power(10000, 2 * (i // 2) / embed_dims)
+            for i in range(embed_dims)
         ]
-        for i, layer in enumerate(self.layers):
-            for module in layer.modules():
-                if isinstance(module, DropPath):
-                    module.drop_prob = dpr[i]
 
-    def forward(self, *args, **kwargs):
-        """Forward function for `TransformerCoder`.
+    sinusoid_table = np.array(
+        [get_position_angle_vec(pos) for pos in range(n_position)])
+    sinusoid_table[:, 0::2] = np.sin(sinusoid_table[:, 0::2])  # dim 2i
+    sinusoid_table[:, 1::2] = np.cos(sinusoid_table[:, 1::2])  # dim 2i+1
 
-        Returns:
-            Tensor: forwarded results with shape [num_query, bs, embed_dims].
-        """
-        x = super(T2TTransformerEncoder, self).forward(*args, **kwargs)
-        if self.coder_norm is not None:
-            x = self.coder_norm(x)
-        return x
-
-
-@POSITIONAL_ENCODING.register_module()
-class SinusoidEncoding(object):
-
-    def __init__(self):
-        super(SinusoidEncoding, self).__init__()
-
-    def __call__(self, n_position, d_hid):
-
-        def get_position_angle_vec(position):
-            return [
-                position / np.power(10000, 2 * (hid_j // 2) / d_hid)
-                for hid_j in range(d_hid)
-            ]
-
-        sinusoid_table = np.array(
-            [get_position_angle_vec(pos_i) for pos_i in range(n_position)])
-        sinusoid_table[:, 0::2] = np.sin(sinusoid_table[:, 0::2])  # dim 2i
-        sinusoid_table[:, 1::2] = np.cos(sinusoid_table[:, 1::2])  # dim 2i+1
-
-        return torch.FloatTensor(sinusoid_table).unsqueeze(0)
+    return torch.FloatTensor(sinusoid_table).unsqueeze(0)
 
 
 @BACKBONES.register_module()
 class T2T_ViT(BaseBackbone):
-    """Tokens-to-Token Vision Transformers (T2T-ViT)
+    """Tokens-to-Token Vision Transformer (T2T-ViT)
 
     A PyTorch impl of : `Tokens-to-Token ViT: Training Vision Transformers
     from Scratch on ImageNet` - https://arxiv.org/abs/2101.11986
 
     Args:
-        t2t_module (dict): Config of Tokens-to-Token module
-        encoder (dict): Config of T2T-ViT backbone
-        drop_rate (float): Probability of an element to be zeroed. Default 0.0.
-        init_cfg (dict, optional): Initialization config dict.
+        t2t_cfg (dict): Config of Tokens-to-Token module
+        drop_rate (float): Dropout rate after position embedding.
+            Defaults to 0.
+        num_layers (int): Num of transformer layers in encoder.
+        out_indices (Sequence | int): Output from which stages.
+            Defaults to -1, means the last stage.
+        layer_cfgs (Sequence | dict): Configs of each transformer layer in
+            encoder. Defaults to an empty dict.
+        drop_path_rate (float): stochastic depth rate. Defaults to 0.
+        norm_cfg (dict): Config dict for normalization layer. Defaults to
+            dict(type='LN')
+        final_norm (bool): Whether to add a additional layer to normalize
+            final feature map. Defaults to True.
+        output_cls_token (bool): Whether output the cls_token. If set True,
+            `with_cls_token` must be True. Defaults to True.
+        init_cfg (dict, optional): The Config for initialization.
+            Defaults to None.
     """
 
     def __init__(self,
-                 t2t_module=dict(
-                     img_size=224,
-                     tokens_type='transformer',
-                     in_chans=3,
-                     embed_dim=768,
-                     token_dim=64),
-                 encoder=dict(
-                     type='T2TTransformerEncoder',
-                     transformerlayers=None,
-                     num_layers=12,
-                     coder_norm_cfg=None,
-                     drop_path_rate=0.),
+                 t2t_cfg=dict(),
                  drop_rate=0.,
+                 num_layers=14,
+                 out_indices=-1,
+                 layer_cfgs=dict(),
+                 drop_path_rate=0.,
+                 norm_cfg=dict(type='LN'),
+                 final_norm=True,
+                 output_cls_token=True,
                  init_cfg=None):
         super(T2T_ViT, self).__init__(init_cfg)
 
-        self.tokens_to_token = T2T_module(**t2t_module)
+        # Token-to-Token Module
+        self.tokens_to_token = T2TModule(**t2t_cfg)
         num_patches = self.tokens_to_token.num_patches
-        embed_dim = self.tokens_to_token.embed_dim
+        embed_dims = self.tokens_to_token.embed_dims
 
-        self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
-        sinusoid_encoding = build_positional_encoding(
-            dict(type='SinusoidEncoding'))
-        self.pos_embed = nn.Parameter(
-            data=sinusoid_encoding(
-                n_position=num_patches + 1, d_hid=embed_dim),
-            requires_grad=False)
-        self.pos_drop = nn.Dropout(p=drop_rate)
+        # Class token
+        self.output_cls_token = output_cls_token
+        self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dims))
 
-        self.encoder = build_transformer_layer_sequence(encoder)
+        # Position Embedding
+        sinusoid_table = get_sinusoid_encoding(num_patches + 1, embed_dims)
+        self.register_buffer('pos_embed', sinusoid_table)
+        self.drop_after_pos = nn.Dropout(p=drop_rate)
+
+        if isinstance(out_indices, int):
+            out_indices = [out_indices]
+        assert isinstance(out_indices, Sequence), \
+            f'"out_indices" must by a sequence or int, ' \
+            f'get {type(out_indices)} instead.'
+        for i, index in enumerate(out_indices):
+            if index < 0:
+                out_indices[i] = num_layers + index
+                assert out_indices[i] >= 0, f'Invalid out_indices {index}'
+        self.out_indices = out_indices
+
+        dpr = [x for x in np.linspace(0, drop_path_rate, num_layers)]
+        self.encoder = ModuleList()
+        for i in range(num_layers):
+            if isinstance(layer_cfgs, Sequence):
+                layer_cfg = layer_cfgs[i]
+            else:
+                layer_cfg = deepcopy(layer_cfgs)
+            layer_cfg = {
+                'embed_dims': embed_dims,
+                'num_heads': 6,
+                'feedforward_channels': 3 * embed_dims,
+                'drop_path_rate': dpr[i],
+                'qkv_bias': False,
+                'norm_cfg': norm_cfg,
+                **layer_cfg
+            }
+
+            layer = T2TTransformerLayer(**layer_cfg)
+            self.encoder.append(layer)
+
+        self.final_norm = final_norm
+        if final_norm:
+            self.norm = build_norm_layer(norm_cfg, embed_dims)[1]
+        else:
+            self.norm = nn.Identity()
+
+    def init_weights(self):
+        super().init_weights()
+
+        if (isinstance(self.init_cfg, dict)
+                and self.init_cfg['type'] == 'Pretrained'):
+            # Suppress custom init if use pretrained model.
+            return
 
         trunc_normal_(self.cls_token, std=.02)
 
     def forward(self, x):
         B = x.shape[0]
         x = self.tokens_to_token(x)
+        num_patches = self.tokens_to_token.num_patches
+        patch_resolution = [int(np.sqrt(num_patches))] * 2
 
         cls_tokens = self.cls_token.expand(B, -1, -1)
         x = torch.cat((cls_tokens, x), dim=1)
         x = x + self.pos_embed
-        x = self.pos_drop(x)
+        x = self.drop_after_pos(x)
 
-        x = self.encoder(query=x, key=None, value=None)
+        outs = []
+        for i, layer in enumerate(self.encoder):
+            x = layer(x)
 
-        return x[:, 0]
+            if i == len(self.encoder) - 1 and self.final_norm:
+                x = self.norm(x)
+
+            if i in self.out_indices:
+                B, _, C = x.shape
+                patch_token = x[:, 1:].reshape(B, *patch_resolution, C)
+                patch_token = patch_token.permute(0, 3, 1, 2)
+                cls_token = x[:, 0]
+                if self.output_cls_token:
+                    out = [patch_token, cls_token]
+                else:
+                    out = patch_token
+                outs.append(out)
+
+        return tuple(outs)
