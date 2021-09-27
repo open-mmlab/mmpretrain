@@ -3,8 +3,8 @@ model = dict(
     backbone=dict(
         type='Res2Net',
         depth=50,
-        scales=8,
-        base_width=14,
+        scales=2,
+        base_width=48,
         deep_stem=False,
         avg_down=False,
     ),
