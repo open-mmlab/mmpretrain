@@ -48,7 +48,7 @@ class Bottle2neck(_Bottleneck):
             bias=False)
         self.add_module(self.norm1_name, norm1)
 
-        if stage_type == 'stage' and self.conv2_stride != 1:
+        if stage_type == 'stage':
             self.pool = nn.AvgPool2d(
                 kernel_size=3, stride=self.conv2_stride, padding=1)
         convs = []
@@ -107,9 +107,9 @@ class Bottle2neck(_Bottleneck):
                 sp = self.relu(self.bns[i](sp))
                 out = torch.cat((out, sp), 1)
 
-            if self.stage_type == 'normal' or self.conv2_stride == 1:
+            if self.stage_type == 'normal' and self.scales != 1:
                 out = torch.cat((out, spx[self.scales - 1]), 1)
-            elif self.stage_type == 'stage':
+            elif self.stage_type == 'stage' and self.scales != 1:
                 out = torch.cat((out, self.pool(spx[self.scales - 1])), 1)
 
             out = self.conv3(out)
