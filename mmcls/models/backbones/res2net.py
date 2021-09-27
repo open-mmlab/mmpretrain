@@ -142,7 +142,7 @@ class Res2Layer(Sequential):
         num_blocks (int): number of blocks.
         stride (int): stride of the first block. Default: 1
         avg_down (bool): Use AvgPool instead of stride conv when
-            downsampling in the bottle2neck. Default: False
+            downsampling in the bottle2neck. Defaults to True.
         conv_cfg (dict): dictionary to construct and config conv layer.
             Default: None
         norm_cfg (dict): dictionary to construct and config norm layer.
@@ -167,21 +167,33 @@ class Res2Layer(Sequential):
 
         downsample = None
         if stride != 1 or in_channels != out_channels:
-            downsample = nn.Sequential(
-                nn.AvgPool2d(
-                    kernel_size=stride,
-                    stride=stride,
-                    ceil_mode=True,
-                    count_include_pad=False),
-                build_conv_layer(
-                    conv_cfg,
-                    in_channels,
-                    out_channels,
-                    kernel_size=1,
-                    stride=1,
-                    bias=False),
-                build_norm_layer(norm_cfg, out_channels)[1],
-            )
+            if avg_down:
+                downsample = nn.Sequential(
+                    nn.AvgPool2d(
+                        kernel_size=stride,
+                        stride=stride,
+                        ceil_mode=True,
+                        count_include_pad=False),
+                    build_conv_layer(
+                        conv_cfg,
+                        in_channels,
+                        out_channels,
+                        kernel_size=1,
+                        stride=1,
+                        bias=False),
+                    build_norm_layer(norm_cfg, out_channels)[1],
+                )
+            else:
+                downsample = nn.Sequential(
+                    build_conv_layer(
+                        conv_cfg,
+                        in_channels,
+                        out_channels,
+                        kernel_size=1,
+                        stride=stride,
+                        bias=False),
+                    build_norm_layer(norm_cfg, out_channels)[1],
+                )
 
         layers = []
         layers.append(
@@ -229,7 +241,7 @@ class Res2Net(ResNet):
             the first 1x1 conv layer.
         deep_stem (bool): Replace 7x7 conv in input stem with 3 3x3 conv
         avg_down (bool): Use AvgPool instead of stride conv when
-            downsampling in the bottle2neck.
+            downsampling in the bottle2neck. Defaults to True.
         frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
             -1 means not freezing any parameters.
         norm_cfg (dict): Dictionary to construct and config norm layer.
@@ -275,9 +287,9 @@ class Res2Net(ResNet):
         self.scales = scales
         self.base_width = base_width
         super(Res2Net, self).__init__(
-            style='pytorch',
-            deep_stem=True,
-            avg_down=True,
+            style=style,
+            deep_stem=deep_stem,
+            avg_down=avg_down,
             init_cfg=init_cfg,
             **kwargs)
 
