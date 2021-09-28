@@ -125,10 +125,12 @@ class VisionTransformer(BaseBackbone):
         output_cls_token (bool): Whether output the cls_token. If set True,
             `with_cls_token` must be True. Defaults to True.
         interpolate_mode (str): Select the interpolate mode for position
-            embeding vector resize. Default: bicubic.
-        patch_cfg (dict): TODO
-        layer_cfg (dict): TODO
-        init_cfg (dict, optional): Initialization config dict
+            embeding vector resize. Defaults to "bicubic".
+        patch_cfg (dict): Configs of patch embeding. Defaults to an empty dict.
+        layer_cfgs (Sequence | dict): Configs of each transformer layer in
+            encoder. Defaults to an empty dict.
+        init_cfg (dict, optional): Initialization config dict.
+            Defaults to None.
     """
     arch_zoo = {
         **dict.fromkeys(
@@ -167,7 +169,7 @@ class VisionTransformer(BaseBackbone):
                  output_cls_token=True,
                  interpolate_mode='bicubic',
                  patch_cfg=dict(),
-                 layer_cfg=dict(),
+                 layer_cfgs=dict(),
                  init_cfg=None):
         super(VisionTransformer, self).__init__(init_cfg)
 
@@ -224,7 +226,9 @@ class VisionTransformer(BaseBackbone):
         dpr = np.linspace(0, drop_path_rate, self.arch_settings['num_layers'])
 
         self.layers = ModuleList()
-        for i in range(self.arch_settings['num_layers']):
+        if isinstance(layer_cfgs, dict):
+            layer_cfgs = [layer_cfgs] * self.num_layers
+        for i in range(self.num_layers):
             _layer_cfg = dict(
                 embed_dims=self.embed_dims,
                 num_heads=self.arch_settings['num_heads'],
@@ -234,7 +238,7 @@ class VisionTransformer(BaseBackbone):
                 drop_path_rate=dpr[i],
                 qkv_bias=self.arch_settings.get('qkv_bias', True),
                 norm_cfg=norm_cfg)
-            _layer_cfg.update(layer_cfg)
+            _layer_cfg.update(layer_cfgs[i])
             self.layers.append(TransformerEncoderLayer(**_layer_cfg))
 
         self.final_norm = final_norm
