@@ -1,6 +1,7 @@
 import argparse
 import os
 import os.path as osp
+import re
 from collections import OrderedDict
 from datetime import datetime
 from pathlib import Path
@@ -137,7 +138,11 @@ def test(args):
 
     commands = []
     if args.models:
-        filter_models = {k: v for k, v in models.items() if k in args.models}
+        patterns = [re.compile(pattern) for pattern in args.models]
+        filter_models = {}
+        for k, v in models.items():
+            if any([re.match(pattern, k) for pattern in patterns]):
+                filter_models[k] = v
         if len(filter_models) == 0:
             print('No model found, please specify models in:')
             print('\n'.join(models.keys()))
@@ -257,11 +262,20 @@ def summary(args):
 
     work_dir = Path(args.work_dir)
 
+    if args.models:
+        patterns = [re.compile(pattern) for pattern in args.models]
+        filter_models = {}
+        for k, v in models.items():
+            if any([re.match(pattern, k) for pattern in patterns]):
+                filter_models[k] = v
+        if len(filter_models) == 0:
+            print('No model found, please specify models in:')
+            print('\n'.join(models.keys()))
+            return
+        models = filter_models
+
     summary_data = {}
     for model_name, model_info in models.items():
-
-        if args.models and model_name not in args.models:
-            continue
 
         # Skip if not found result file.
         result_file = work_dir / model_name / 'result.pkl'

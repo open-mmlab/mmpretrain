@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 import os.path as osp
+import re
 from datetime import datetime
 from pathlib import Path
 from zipfile import ZipFile
@@ -132,7 +133,11 @@ def train(args):
 
     commands = []
     if args.models:
-        filter_models = {k: v for k, v in models.items() if k in args.models}
+        patterns = [re.compile(pattern) for pattern in args.models]
+        filter_models = {}
+        for k, v in models.items():
+            if any([re.match(pattern, k) for pattern in patterns]):
+                filter_models[k] = v
         if len(filter_models) == 0:
             print('No model found, please specify models in:')
             print('\n'.join(models.keys()))
@@ -259,11 +264,20 @@ def summary(args):
     work_dir = Path(args.work_dir)
     dir_map = {p.name: p for p in work_dir.iterdir() if p.is_dir()}
 
+    if args.models:
+        patterns = [re.compile(pattern) for pattern in args.models]
+        filter_models = {}
+        for k, v in models.items():
+            if any([re.match(pattern, k) for pattern in patterns]):
+                filter_models[k] = v
+        if len(filter_models) == 0:
+            print('No model found, please specify models in:')
+            print('\n'.join(models.keys()))
+            return
+        models = filter_models
+
     summary_data = {}
     for model_name, model_info in models.items():
-
-        if args.models and model_name not in args.models:
-            continue
 
         # Skip if not found any log file.
         if model_name not in dir_map:

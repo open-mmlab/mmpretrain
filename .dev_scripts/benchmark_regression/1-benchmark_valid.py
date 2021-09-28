@@ -1,4 +1,5 @@
 import logging
+import re
 from argparse import ArgumentParser
 from pathlib import Path
 from time import time
@@ -156,11 +157,20 @@ def main(args):
     logger = get_root_logger(
         log_file='benchmark_test_image.log', log_level=logging.INFO)
 
+    if args.models:
+        patterns = [re.compile(pattern) for pattern in args.models]
+        filter_models = {}
+        for k, v in models.items():
+            if any([re.match(pattern, k) for pattern in patterns]):
+                filter_models[k] = v
+        if len(filter_models) == 0:
+            print('No model found, please specify models in:')
+            print('\n'.join(models.keys()))
+            return
+        models = filter_models
+
     summary_data = {}
     for model_name, model_info in models.items():
-
-        if args.models and model_name not in args.models:
-            continue
 
         config = Path(model_info.Config)
         assert config.exists(), f'{model_name}: {config} not found.'
