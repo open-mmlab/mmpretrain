@@ -49,6 +49,10 @@ MMClassification 提供了一些脚本用于进行单张图像的推理、数据
 
 ```shell
 python demo/image_demo.py ${IMAGE_FILE} ${CONFIG_FILE} ${CHECKPOINT_FILE}
+
+# Example
+python demo/image_demo.py demo/demo.JPEG configs/resnet/resnet50_b32x8_imagenet.py \
+  https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb32_in1k_20210831-ea4938fc.pth
 ```
 
 ### 数据集的推理与测试
@@ -82,7 +86,9 @@ python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--metrics ${METRICS}] [-
 在 ImageNet 验证集上，使用 ResNet-50 进行推理并获得预测标签及其对应的预测得分。
 
 ```shell
-python tools/test.py configs/imagenet/resnet50_batch256.py checkpoints/xxx.pth --out result.pkl
+python tools/test.py configs/resnet/resnet50_b16x8_cifar10.py \
+  https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_b16x8_cifar10_20210528-f54bfad9.pth \
+  --out result.pkl
 ```
 
 ## 模型训练
@@ -187,30 +193,30 @@ Params: 25.56 M
 ==============================
 ```
 
-
-**注意**：此工具仍处于试验阶段，我们不保证该数字正确无误。您最好将结果用于简单比较，但在技术报告或论文中采用该结果之前，请仔细检查。
-
+```{warning}
+此工具仍处于试验阶段，我们不保证该数字正确无误。您最好将结果用于简单比较，但在技术报告或论文中采用该结果之前，请仔细检查。
 - FLOPs 与输入的尺寸有关，而参数量与输入尺寸无关。默认输入尺寸为 (1, 3, 224, 224)
 - 一些运算不会被计入 FLOPs 的统计中，例如 GN 和自定义运算。详细信息请参考 [`mmcv.cnn.get_model_complexity_info()`](https://github.com/open-mmlab/mmcv/blob/master/mmcv/cnn/utils/flops_counter.py)
+```
 
 ### 模型发布
 
-在上传模型至 AWS 之前，也许会需要
-- 转换模型权重至 CPU 张量
-- 删除优化器状态
-- 计算模型权重文件的哈希值，并添加至文件名之后
+在发布模型之前，你也许会需要
+1. 转换模型权重至 CPU 张量
+2. 删除优化器状态
+3. 计算模型权重文件的哈希值，并添加至文件名之后
 
 ```shell
-python tools/publish_model.py ${INPUT_FILENAME} ${OUTPUT_FILENAME}
+python tools/convert_models/publish_model.py ${INPUT_FILENAME} ${OUTPUT_FILENAME}
 ```
 
 例如：
 
 ```shell
-python tools/publish_model.py work_dirs/resnet50/latest.pth imagenet_resnet50_20200708.pth
+python tools/convert_models/publish_model.py work_dirs/resnet50/latest.pth imagenet_resnet50.pth
 ```
 
-最终输出的文件名将会是 `imagenet_resnet50_20200708-{hash id}.pth`
+最终输出的文件名将会是 `imagenet_resnet50_{date}-{hash id}.pth`
 
 ## 详细教程
 

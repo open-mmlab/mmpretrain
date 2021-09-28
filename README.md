@@ -75,7 +75,7 @@ If you find this project useful in your research, please consider cite:
 ## Contributing
 
 We appreciate all contributions to improve MMClassification.
-Please refer to [CONTRUBUTING.md](.github/CONTRIBUTING.md) for the contributing guideline.
+Please refer to [CONTRUBUTING.md](docs/community/CONTRIBUTING.md) for the contributing guideline.
 
 ## Acknowledgement
 

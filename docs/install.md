@@ -23,9 +23,11 @@ The compatible MMClassification and MMCV versions are as below. Please install t
 | 0.7.0                    | mmcv>=1.1.4          |
 | 0.6.0                    | mmcv>=1.1.4          |
 
-Note: Since the `master` branch is under frequent development, the `mmcv`
+```{note}
+Since the `master` branch is under frequent development, the `mmcv`
 version dependency may be inaccurate. If you encounter problems when using
 the `master` branch, please try to update `mmcv` to the latest version.
+```
 
 ## Install MMClassification
 
@@ -42,8 +44,11 @@ b. Install PyTorch and torchvision following the [official instructions](https:/
 conda install pytorch torchvision -c pytorch
 ```
 
-Note: Make sure that your compilation CUDA version and runtime CUDA version match.
-You can check the supported CUDA version for precompiled packages on the [PyTorch website](https://pytorch.org/).
+```{note}
+Make sure that your compilation CUDA version and runtime CUDA version match.
+You can check the supported CUDA version for precompiled packages on the
+[PyTorch website](https://pytorch.org/).
+```
 
 `E.g.1` If you have CUDA 10.1 installed under `/usr/local/cuda` and would like to install
 PyTorch 1.5, you need to install the prebuilt PyTorch with CUDA 10.1.
@@ -97,13 +102,12 @@ And then, install build requirements and install MMClassification.
 pip install -e .  # or "python setup.py develop"
 ```
 
-Note:
-
-1. Following the above instructions, MMClassification is installed on `dev` mode, any local modifications made to the code will take effect without the need to reinstall it (unless you submit some commits and want to update the version number).
-
-2. If you would like to use `opencv-python-headless` instead of `opencv-python`,
-
-you can install it before installing [mmcv](https://github.com/open-mmlab/mmcv).
+```{note}
+Following above instructions, MMClassification is installed on `dev` mode,
+any local modifications made to the code will take effect without the need to
+reinstall it (unless you submit some commits and want to update the version
+number).
+```
 
 ### Another option: Docker Image
 
@@ -114,7 +118,9 @@ We provide a [Dockerfile](https://github.com/open-mmlab/mmclassification/blob/ma
 docker build -f ./docker/Dockerfile --rm -t mmcls:torch1.6.0-cuda10.1-cudnn7 .
 ```
 
-**Important:** Make sure you've installed the [nvidia-container-toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker).
+```{important}
+Make sure you've installed the [nvidia-container-toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker).
+```
 
 Run a container built from mmcls image with command:
 

@@ -18,6 +18,7 @@ You can switch between Chinese and English documents in the lower-left corner of
    :caption: 模型库
 
    modelzoo_statistics.md
+   model_zoo.md
 
 
 .. toctree::
@@ -38,6 +39,13 @@ You can switch between Chinese and English documents in the lower-left corner of
    tools/onnx2tensorrt.md
    tools/pytorch2torchscript.md
    tools/model_serving.md
+
+
+.. toctree::
+   :maxdepth: 1
+   :caption: 社区
+
+   community/CONTRIBUTING.md
 
 
 .. toctree::
