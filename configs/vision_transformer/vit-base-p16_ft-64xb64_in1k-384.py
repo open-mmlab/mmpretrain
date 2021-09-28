@@ -1,8 +1,7 @@
-# Refer to pytorch-image-models
 _base_ = [
-    '../_base_/models/vit-base-p32.py',
-    '../_base_/datasets/imagenet_bs32_pil_resize.py',
-    '../_base_/schedules/imagenet_bs256_epochstep.py',
+    '../_base_/models/vit-base-p16.py',
+    '../_base_/datasets/imagenet_bs64_pil_resize_autoaug.py',
+    '../_base_/schedules/imagenet_bs4096_AdamW.py',
     '../_base_/default_runtime.py'
 ]
 
@@ -31,4 +30,7 @@ test_pipeline = [
 ]
 
 data = dict(
-    train=dict(pipeline=train_pipeline), test=dict(pipeline=test_pipeline))
+    train=dict(pipeline=train_pipeline),
+    val=dict(pipeline=test_pipeline),
+    test=dict(pipeline=test_pipeline),
+)
