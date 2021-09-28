@@ -18,13 +18,15 @@ from .base_backbone import BaseBackbone
 class T2TTransformerLayer(BaseModule):
     """Transformer Layer for T2T_ViT.
 
-    Comparing with :obj:`TransformerEncoderLayer` in ViT, it uses
+    Comparing with :obj:`TransformerEncoderLayer` in ViT, it supports
+    different ``input_dims`` and ``embed_dims``.
 
     Args:
-        embed_dims (int): The feature dimension
-        num_heads (int): Parallel attention heads
+        embed_dims (int): The feature dimension.
+        num_heads (int): Parallel attention heads.
         feedforward_channels (int): The hidden dimension for FFNs
-        input_dims (int, optional): The input token dimension
+        input_dims (int, optional): The input token dimension.
+            Defaults to None.
         drop_rate (float): Probability of an element to be zeroed
             after the feed forward layer. Defaults to 0.
         attn_drop_rate (float): The drop out rate for attention output weights.
@@ -33,12 +35,20 @@ class T2TTransformerLayer(BaseModule):
         num_fcs (int): The number of fully-connected layers for FFNs.
             Defaults to 2.
         qkv_bias (bool): enable bias for qkv if True. Defaults to True.
+        qk_scale (float, optional): Override default qk scale of
+            ``(input_dims // num_heads) ** -0.5`` if set. Defaults to None.
         act_cfg (dict): The activation config for FFNs.
             Defaluts to ``dict(type='GELU')``.
         norm_cfg (dict): Config dict for normalization layer.
             Defaults to ``dict(type='LN')``.
         init_cfg (dict, optional): Initialization config dict.
             Defaults to None.
+
+    Notes:
+        In general, ``qk_scale`` should be ``head_dims ** -0.5``, i.e.
+        ``(embed_dims // num_heads) ** -0.5``. However, in the official
+        code, it uses ``(input_dims // num_heads) ** -0.5``, so here we
+        keep the same with the official implementation.
     """
 
     def __init__(self,
@@ -206,24 +216,25 @@ class T2T_ViT(BaseBackbone):
     """Tokens-to-Token Vision Transformer (T2T-ViT)
 
     A PyTorch impl of : `Tokens-to-Token ViT: Training Vision Transformers
-    from Scratch on ImageNet` - https://arxiv.org/abs/2101.11986
+    from Scratch on ImageNet<https://arxiv.org/abs/2101.11986>`_
 
     Args:
-        t2t_cfg (dict): Config of Tokens-to-Token module
+        t2t_cfg (dict): Config of Tokens-to-Token module.
         drop_rate (float): Dropout rate after position embedding.
             Defaults to 0.
         num_layers (int): Num of transformer layers in encoder.
+            Defaults to 14.
         out_indices (Sequence | int): Output from which stages.
             Defaults to -1, means the last stage.
         layer_cfgs (Sequence | dict): Configs of each transformer layer in
             encoder. Defaults to an empty dict.
         drop_path_rate (float): stochastic depth rate. Defaults to 0.
         norm_cfg (dict): Config dict for normalization layer. Defaults to
-            dict(type='LN')
+            ``dict(type='LN')``.
         final_norm (bool): Whether to add a additional layer to normalize
             final feature map. Defaults to True.
-        output_cls_token (bool): Whether output the cls_token. If set True,
-            `with_cls_token` must be True. Defaults to True.
+        output_cls_token (bool): Whether output the cls_token.
+            Defaults to True.
         init_cfg (dict, optional): The Config for initialization.
             Defaults to None.
     """
