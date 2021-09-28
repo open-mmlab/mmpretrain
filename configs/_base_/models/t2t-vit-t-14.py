@@ -24,7 +24,7 @@ model = dict(
         ]),
     neck=None,
     head=dict(
-        type='LinearClsHead',
+        type='VisionTransformerClsHead',
         num_classes=1000,
         in_channels=embed_dims,
         loss=dict(
