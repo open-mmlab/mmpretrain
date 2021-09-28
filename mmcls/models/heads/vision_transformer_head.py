@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 import torch.nn as nn
 import torch.nn.functional as F
-from mmcv.cnn import build_activation_layer, constant_init
+from mmcv.cnn import build_activation_layer
 from mmcv.cnn.utils.weight_init import trunc_normal_
 from mmcv.runner import Sequential
 
@@ -31,9 +31,11 @@ class VisionTransformerClsHead(ClsHead):
                  in_channels,
                  hidden_dim=None,
                  act_cfg=dict(type='Tanh'),
+                 init_cfg=dict(type='Constant', layer='Linear', val=0),
                  *args,
                  **kwargs):
-        super(VisionTransformerClsHead, self).__init__(*args, **kwargs)
+        super(VisionTransformerClsHead, self).__init__(
+            init_cfg=init_cfg, *args, **kwargs)
         self.in_channels = in_channels
         self.num_classes = num_classes
         self.hidden_dim = hidden_dim
@@ -65,7 +67,6 @@ class VisionTransformerClsHead(ClsHead):
                 self.layers.pre_logits.weight,
                 std=math.sqrt(1 / self.layers.pre_logits.in_features))
             nn.init.zeros_(self.layers.pre_logits.bias)
-        constant_init(self.layers.head, 0)
 
     def simple_test(self, x):
         """Test without augmentation."""
