@@ -105,8 +105,8 @@ class VisionTransformer(BaseBackbone):
     """Vision Transformer.
 
     A PyTorch implement of : `An Image is Worth 16x16 Words:
-    Transformers for Image Recognition at Scale`  -
-        https://arxiv.org/abs/2010.11929
+    Transformers for Image Recognition at
+    Scale<https://arxiv.org/abs/2010.11929>`_
 
     Args:
         arch (str | dict): Vision Transformer architecture
@@ -118,8 +118,8 @@ class VisionTransformer(BaseBackbone):
         drop_rate (float): Probability of an element to be zeroed.
             Defaults to 0.
         drop_path_rate (float): stochastic depth rate. Defaults to 0.
-        norm_cfg (dict): Config dict for normalization layer. Defaults to
-            dict(type='LN')
+        norm_cfg (dict): Config dict for normalization layer.
+            Defaults to ``dict(type='LN')``.
         final_norm (bool): Whether to add a additional layer to normalize
             final feature map. Defaults to True.
         output_cls_token (bool): Whether output the cls_token. If set True,
