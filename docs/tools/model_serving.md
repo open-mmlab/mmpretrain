@@ -40,16 +40,32 @@ mmcls-serve:latest
 ## 4. Test deployment
 
 ```shell
-curl -O https://raw.githubusercontent.com/pytorch/serve/master/docs/images/3dogs.jpg
-curl http://127.0.0.1:8080/predictions/${MODEL_NAME} -T 3dogs.jpg
+curl http://127.0.0.1:8080/predictions/${MODEL_NAME} -T demo/demo.JPEG
 ```
 
 You should obtain a response similar to:
 
 ```json
 {
-  "pred_label": 245,
-  "pred_score": 0.5536593794822693,
-  "pred_class": "French bulldog"
+  "pred_label": 58,
+  "pred_score": 0.38102269172668457,
+  "pred_class": "water snake"
 }
+```
+
+And you can use `test_torchserver.py` to compare result of TorchServe and PyTorch, and visualize them.
+
+```shell
+python tools/deployment/test_torchserver.py ${IMAGE_FILE} ${CONFIG_FILE} ${CHECKPOINT_FILE} ${MODEL_NAME}
+[--inference-addr ${INFERENCE_ADDR}] [--device ${DEVICE}] [--score-thr ${SCORE_THR}]
+```
+
+Example:
+
+```shell
+python tools/deployment/test_torchserver.py \
+  demo/demo.JPEG \
+  configs/resnet/resnet18_b32x8_imagenet.py \
+  checkpoints/resnet18_8xb32_in1k_20210831-fbbb1da6.pth \
+  resnet18_in1k
 ```
