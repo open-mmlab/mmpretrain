@@ -23,11 +23,7 @@ class Bottle2neck(_Bottleneck):
                  base_channels=64,
                  stage_type='normal',
                  **kwargs):
-        """Bottle2neck block for Res2Net.
-
-        If style is "pytorch", the stride-two layer is the 3x3 conv layer, if
-        it is "caffe", the stride-two layer is the first 1x1 conv layer.
-        """
+        """Bottle2neck block for Res2Net."""
         super(Bottle2neck, self).__init__(in_channels, out_channels, **kwargs)
         assert scales > 1, 'Res2Net degenerates to ResNet when scales = 1.'
 
@@ -227,41 +223,52 @@ class Res2Layer(Sequential):
 class Res2Net(ResNet):
     """Res2Net backbone.
 
+    A PyTorch implement of : `Res2Net: A New Multi-scale Backbone
+    Architecture <https://arxiv.org/pdf/1904.01169.pdf>`_
+
     Args:
-        scales (int): Scales used in Res2Net. Default: 4
-        base_width (int): Basic width of each scale. Default: 26
-        depth (int): Depth of res2net, from {50, 101, 152}.
-        in_channels (int): Number of input image channels. Default: 3.
-        num_stages (int): Res2net stages. Default: 4.
+        depth (int): Depth of Res2Net, choose from {50, 101, 152}.
+        scales (int): Scales used in Res2Net. Defaults to 4.
+        base_width (int): Basic width of each scale. Defaults to 26.
+        in_channels (int): Number of input image channels. Defaults to 3.
+        num_stages (int): Number of Res2Net stages. Defaults to 4.
         strides (Sequence[int]): Strides of the first block of each stage.
+            Defaults to ``(1, 2, 2, 2)``.
         dilations (Sequence[int]): Dilation of each stage.
+            Defaults to ``(1, 1, 1, 1)``.
         out_indices (Sequence[int]): Output from which stages.
-        style (str): `pytorch` or `caffe`. If set to "pytorch", the stride-two
+            Defaults to ``(3, )``.
+        style (str): "pytorch" or "caffe". If set to "pytorch", the stride-two
             layer is the 3x3 conv layer, otherwise the stride-two layer is
-            the first 1x1 conv layer.
-        deep_stem (bool): Replace 7x7 conv in input stem with 3 3x3 conv
+            the first 1x1 conv layer. Defaults to "pytorch".
+        deep_stem (bool): Replace 7x7 conv in input stem with 3 3x3 conv.
+            Defaults to True.
         avg_down (bool): Use AvgPool instead of stride conv when
             downsampling in the bottle2neck. Defaults to True.
         frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
-            -1 means not freezing any parameters.
+            -1 means not freezing any parameters. Defaults to -1.
         norm_cfg (dict): Dictionary to construct and config norm layer.
+            Defaults to ``dict(type='BN', requires_grad=True)``.
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm
-            and its variants only.
+            and its variants only. Defaults to False.
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
-            memory while slowing down the training speed.
+            memory while slowing down the training speed. Defaults to False.
         zero_init_residual (bool): Whether to use zero init for last norm layer
-            in resblocks to let them behave as identity.
+            in resblocks to let them behave as identity. Defaults to True.
         init_cfg (dict or list[dict], optional): Initialization config dict.
-            Default: None
+            Defaults to None.
 
     Example:
-        >>> from mmdet.models import Res2Net
+        >>> from mmcls.models import Res2Net
         >>> import torch
-        >>> self = Res2Net(depth=50, scales=4, base_width=26)
-        >>> self.eval()
+        >>> model = Res2Net(depth=50,
+        ...                 scales=4,
+        ...                 base_width=26,
+        ...                 out_indices=(0, 1, 2, 3))
+        >>> model.eval()
         >>> inputs = torch.rand(1, 3, 32, 32)
-        >>> level_outputs = self.forward(inputs)
+        >>> level_outputs = model.forward(inputs)
         >>> for level_out in level_outputs:
         ...     print(tuple(level_out.shape))
         (1, 256, 8, 8)
