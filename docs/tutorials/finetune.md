@@ -35,7 +35,8 @@ _base_ = [
 ]
 ```
 
-Besides, you can also choose to write the whole contents rather than use inheritance, like `configs/mnist/lenet5.py`.
+Besides, you can also choose to write the whole contents rather than use inheritance,
+like [`configs/lenet/lenet5_mnist.py`](https://github.com/open-mmlab/mmclassification/blob/master/configs/lenet/lenet5_mnist.py).
 
 ## Modify model
 
@@ -65,10 +66,36 @@ model = dict(
 )
 ```
 
-```{note}
+```{tip}
 Here we only need to set the part of configs we want to modify, because the
 inherited configs will be merged and get the entire configs.
 ```
+
+Sometimes, we want to freeze the first several layers' parameters of the
+backbone, that will help the network to keep ability to extract low-level
+information learnt from pre-trained model. In MMClassification, you can simply
+specify how many layers to freeze by `frozen_stages` argument. For example, to
+freeze the first two layers' parameters, just use the following config:
+
+```python
+model = dict(
+    backbone=dict(
+        frozen_stages=2,
+        init_cfg=dict(
+            type='Pretrained',
+            checkpoint='https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb32_in1k_20210831-ea4938fc.pth',
+            prefix='backbone',
+        )),
+    head=dict(num_classes=10),
+)
+```
+
+```{note}
+Not all backbones support the `frozen_stages` argument by now. Please check
+[the docs](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.backbones)
+to confirm if your backbone supports it.
+```
+
 
 ## Modify dataset
 
@@ -133,6 +160,7 @@ _base_ = [
 # Model config
 model = dict(
     backbone=dict(
+        frozen_stages=2,
         init_cfg=dict(
             type='Pretrained',
             checkpoint='https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb32_in1k_20210831-ea4938fc.pth',

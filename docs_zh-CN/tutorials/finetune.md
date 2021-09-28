@@ -31,7 +31,8 @@ _base_ = [
 ]
 ```
 
-除此之外，你也可以不使用继承，直接编写完整的配置文件，例如 `configs/mnist/lenet5.py`。
+除此之外，你也可以不使用继承，直接编写完整的配置文件，例如
+[`configs/lenet/lenet5_mnist.py`](https://github.com/open-mmlab/mmclassification/blob/master/configs/lenet/lenet5_mnist.py)。
 
 ## 修改模型
 
@@ -58,8 +59,32 @@ model = dict(
 )
 ```
 
-```{note}
+```{tip}
 这里我们只需要设定我们想要修改的部分配置，其他配置将会自动从我们的父配置文件中获取。
+```
+
+另外，有时我们在进行微调时会希望冻结主干网络前面几层的参数，这么做有助于在后续
+训练中，保持网络从预训练权重中获得的提取低阶特征的能力。在 MMClassification 中，
+这一功能可以通过简单的一个 `frozen_stages` 参数来实现。比如我们需要冻结前两层网
+络的参数，只需要在上面的配置中添加一行：
+
+```python
+model = dict(
+    backbone=dict(
+        frozen_stages=2,
+        init_cfg=dict(
+            type='Pretrained',
+            checkpoint='https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb32_in1k_20210831-ea4938fc.pth',
+            prefix='backbone',
+        )),
+    head=dict(num_classes=10),
+)
+```
+
+```{note}
+目前还不是所有的网络都支持 `frozen_stages` 参数，在使用之前，请先检查
+[文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.backbones)
+以确认你所使用的主干网络是否支持。
 ```
 
 ## 修改数据集
@@ -123,6 +148,7 @@ _base_ = [
 # 模型设置
 model = dict(
     backbone=dict(
+        frozen_stages=2,
         init_cfg=dict(
             type='Pretrained',
             checkpoint='https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb32_in1k_20210831-ea4938fc.pth',
