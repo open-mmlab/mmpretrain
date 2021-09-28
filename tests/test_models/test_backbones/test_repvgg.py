@@ -52,7 +52,7 @@ def test_repvgg_repvggblock():
     assert block.deploy is True
     x_out_deploy = block(x)
     assert x_out_deploy.shape == torch.Size((1, 10, 16, 16))
-    assert torch.allclose(x_out_not_deploy, x_out_deploy, atol=1e-6, rtol=1e-5)
+    assert torch.allclose(x_out_not_deploy, x_out_deploy, atol=1e-5, rtol=1e-4)
 
     # Test RepVGGBlock with in_channels == out_channels, stride = 1
     block = RepVGGBlock(12, 12, stride=1)
@@ -66,7 +66,7 @@ def test_repvgg_repvggblock():
     assert block.deploy is True
     x_out_deploy = block(x)
     assert x_out_deploy.shape == torch.Size((1, 12, 8, 8))
-    assert torch.allclose(x_out_not_deploy, x_out_deploy, atol=1e-6, rtol=1e-5)
+    assert torch.allclose(x_out_not_deploy, x_out_deploy, atol=1e-5, rtol=1e-4)
 
     # Test RepVGGBlock with in_channels == out_channels, stride = 2
     block = RepVGGBlock(16, 16, stride=2)
@@ -79,7 +79,7 @@ def test_repvgg_repvggblock():
     assert block.deploy is True
     x_out_deploy = block(x)
     assert x_out_deploy.shape == torch.Size((1, 16, 4, 4))
-    assert torch.allclose(x_out_not_deploy, x_out_deploy, atol=1e-6, rtol=1e-5)
+    assert torch.allclose(x_out_not_deploy, x_out_deploy, atol=1e-5, rtol=1e-4)
 
     # Test RepVGGBlock with padding == dilation == 2
     block = RepVGGBlock(14, 14, stride=1, padding=2, dilation=2)
@@ -92,7 +92,7 @@ def test_repvgg_repvggblock():
     assert block.deploy is True
     x_out_deploy = block(x)
     assert x_out_deploy.shape == torch.Size((1, 14, 16, 16))
-    assert torch.allclose(x_out_not_deploy, x_out_deploy, atol=1e-6, rtol=1e-5)
+    assert torch.allclose(x_out_not_deploy, x_out_deploy, atol=1e-5, rtol=1e-4)
 
     # Test RepVGGBlock with groups = 2
     block = RepVGGBlock(4, 4, stride=1, groups=2)
@@ -104,7 +104,7 @@ def test_repvgg_repvggblock():
     assert block.deploy is True
     x_out_deploy = block(x)
     assert x_out_deploy.shape == torch.Size((1, 4, 5, 6))
-    assert torch.allclose(x_out_not_deploy, x_out_deploy, atol=1e-6, rtol=1e-5)
+    assert torch.allclose(x_out_not_deploy, x_out_deploy, atol=1e-5, rtol=1e-4)
 
     # Test RepVGGBlock with se
     se_cfg = dict(ratio=4, divisor=1)
