@@ -187,7 +187,7 @@ def main(args):
 
         try:
             # build the model from a config file and a checkpoint file
-            result = inference(MMCLS_ROOT / config, checkpoint,
+            result = inference(MMCLS_ROOT / config, str(checkpoint),
                                classes_map[dataset], args)
             result['valid'] = 'PASS'
         except Exception as e:
