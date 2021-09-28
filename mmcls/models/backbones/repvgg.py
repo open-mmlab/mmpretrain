@@ -261,11 +261,13 @@ class RepVGG(BaseBackbone):
     <https://arxiv.org/abs/2101.03697>`_
 
     Args:
-        arch (str | dict): The parameter of RepVGG
+        arch (str | dict): The parameter of RepVGG.
+            If it's a dict, it should contain the following keys:
+
             - num_blocks (Sequence[int]): Number of blocks in each stage.
             - width_factor (Sequence[float]): Width deflator in each stage.
             - group_layer_map (dict | None): RepVGG Block that declares
-                the need to apply group convolution.
+              the need to apply group convolution.
             - se_cfg (dict | None): Se Layer config
         in_channels (int): Number of input image channels. Default: 3.
         base_channels (int): Base channels of RepVGG backbone, work
