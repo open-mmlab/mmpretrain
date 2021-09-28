@@ -4,8 +4,8 @@ from .auto_augment import (AutoAugment, AutoContrast, Brightness,
                            Posterize, RandAugment, Rotate, Sharpness, Shear,
                            Solarize, SolarizeAdd, Translate)
 from .compose import Compose
-from .formating import (Collect, ImageToTensor, ToNumpy, ToPIL, ToTensor,
-                        Transpose, to_tensor)
+from .formatting import (Collect, ImageToTensor, ToNumpy, ToPIL, ToTensor,
+                         Transpose, to_tensor)
 from .loading import LoadImageFromFile
 from .transforms import (CenterCrop, ColorJitter, Lighting, RandomCrop,
                          RandomErasing, RandomFlip, RandomGrayscale,

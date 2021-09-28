@@ -123,7 +123,7 @@ class Collect(object):
         dict: The result dict contains the following keys
 
             - keys in ``self.keys``
-            - ``img_metas`` if avaliable
+            - ``img_metas`` if available
     """
 
     def __init__(self,

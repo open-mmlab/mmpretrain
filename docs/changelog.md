@@ -48,7 +48,7 @@
 
 - Add `hparams` argument in `AutoAugment` and `RandAugment` and some other improvement. ([#398](https://github.com/open-mmlab/mmclassification/pull/398))
 - Support classwise weight in losses. ([#388](https://github.com/open-mmlab/mmclassification/pull/388))
-- Enhence `SELayer` to support custom squeeze channels. ([#417](https://github.com/open-mmlab/mmclassification/pull/417))
+- Enhance `SELayer` to support custom squeeze channels. ([#417](https://github.com/open-mmlab/mmclassification/pull/417))
 
 ### Code Refactor
 
@@ -118,7 +118,7 @@
 - Improve test tools and add some new tools. (#322)
 - Correct MobilenetV3 backbone structure and add pretained models. (#291)
 - Refactor `PatchEmbed` and `HybridEmbed` as independent components. (#330)
-- Refactor mixup and cutmix as `Augments` to support more funtions. (#278)
+- Refactor mixup and cutmix as `Augments` to support more functions. (#278)
 - Refactor weights initialization method. (#270, #318, #319)
 - Refactor `LabelSmoothLoss` to support multiple calculation formulas. (#285)
 

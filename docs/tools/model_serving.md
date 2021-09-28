@@ -44,7 +44,7 @@ curl -O https://raw.githubusercontent.com/pytorch/serve/master/docs/images/3dogs
 curl http://127.0.0.1:8080/predictions/${MODEL_NAME} -T 3dogs.jpg
 ```
 
-You should obtain a respose similar to:
+You should obtain a response similar to:
 
 ```json
 {
