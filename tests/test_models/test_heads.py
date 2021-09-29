@@ -6,7 +6,7 @@ import torch
 
 from mmcls.models.heads import (ClsHead, LinearClsHead, MultiLabelClsHead,
                                 MultiLabelLinearClsHead, StackedLinearClsHead,
-                                VisionTransformerClsHead)
+                                VisionTransformerClsHead, AngularPenaltyHead)
 
 
 @pytest.mark.parametrize('feat', [torch.rand(4, 3), (torch.rand(4, 3), )])
@@ -45,6 +45,31 @@ def test_linear_head(feat):
 
     # test simple_test
     head = LinearClsHead(10, 3)
+    pred = head.simple_test(feat)
+    assert isinstance(pred, list) and len(pred) == 4
+
+    with patch('torch.onnx.is_in_onnx_export', return_value=True):
+        head = LinearClsHead(10, 3)
+        pred = head.simple_test(feat)
+        assert pred.shape == (4, 10)
+
+
+@pytest.mark.parametrize('feat', [torch.rand(4, 3), (torch.rand(4, 3), )])
+def test_angular_penalty_head(feat):
+    fake_gt_label = torch.randint(0, 10, (4,))
+
+    # test AngularPenaltyHead forward
+    head = AngularPenaltyHead(10, 3)
+    losses = head.forward_train(feat, fake_gt_label)
+    assert losses['loss'].item() > 0
+
+    # test init weights
+    head = AngularPenaltyHead(10, 3)
+    head.init_weights()
+    assert abs(head.fc.weight).sum() > 0
+
+    # test simple_test
+    head = AngularPenaltyHead(10, 3)
     pred = head.simple_test(feat)
     assert isinstance(pred, list) and len(pred) == 4
 
