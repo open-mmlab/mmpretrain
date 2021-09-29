@@ -22,6 +22,7 @@ class LinearClsHead(ClsHead):
                  num_classes,
                  in_channels,
                  init_cfg=dict(type='Normal', layer='Linear', std=0.01),
+                 fc_bias=True,
                  *args,
                  **kwargs):
         super(LinearClsHead, self).__init__(init_cfg=init_cfg, *args, **kwargs)
@@ -33,7 +34,7 @@ class LinearClsHead(ClsHead):
             raise ValueError(
                 f'num_classes={num_classes} must be a positive integer')
 
-        self.fc = nn.Linear(self.in_channels, self.num_classes)
+        self.fc = nn.Linear(self.in_channels, self.num_classes, bias=fc_bias)
 
     def simple_test(self, x):
         """Test without augmentation."""
