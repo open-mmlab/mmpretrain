@@ -1,8 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
-from numbers import Number
 import os
 import warnings
+from numbers import Number
 
 import mmcv
 import numpy as np
