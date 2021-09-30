@@ -1,5 +1,42 @@
 # Changelog
 
+## v0.16.0(30/8/2021)
+
+### Highlights
+
+- We have improved compatibility with downstream repositories like MMDetection and MMSegmentation. We will add some examples about how to use our backbones in MMDetection.
+- Add RepVGG backbone and checkpoints. Welcome to use it!
+- Add timm backbones wrapper, now you can simply use backbones of pytorch-image-models in MMClassification!
+
+### New Features
+
+- Add RepVGG backbone and checkpoints. ([#414](https://github.com/open-mmlab/mmclassification/pull/414))
+- Add timm backbones wrapper. ([#427](https://github.com/open-mmlab/mmclassification/pull/427))
+
+### Improvements
+
+- Fix TnT compatibility and verbose warning. ([#436](https://github.com/open-mmlab/mmclassification/pull/436))
+- Support setting `--out-items` in `tools/test.py`.  ([#437](https://github.com/open-mmlab/mmclassification/pull/437))
+- Add datetime info and saving model using torch<1.6 format. ([#439](https://github.com/open-mmlab/mmclassification/pull/439))
+- Improve downstream repositories compatibility. ([#421](https://github.com/open-mmlab/mmclassification/pull/421))
+- Rename the option `--options` to `--cfg-options` in some tools. ([#425](https://github.com/open-mmlab/mmclassification/pull/425))
+- Add PyTorch 1.9 and Python 3.9 build workflow, and remove some CI. ([#422](https://github.com/open-mmlab/mmclassification/pull/422))
+
+### Bug Fixes
+
+- Fix format error in `test.py` when metric returns `np.ndarray`. ([#441](https://github.com/open-mmlab/mmclassification/pull/441))
+- Fix `publish_model` bug if no parent of `out_file`. ([#463](https://github.com/open-mmlab/mmclassification/pull/463))
+- Fix num_classes bug in pytorch2onnx.py. ([#458](https://github.com/open-mmlab/mmclassification/pull/458))
+- Fix missing runtime requirement `packaging`. ([#459](https://github.com/open-mmlab/mmclassification/pull/459))
+- Fix saving simplified model bug in ONNX export tool. ([#438](https://github.com/open-mmlab/mmclassification/pull/438))
+
+### Docs Update
+
+- Update `getting_started.md` and `install.md`. And rewrite `finetune.md`. ([#466](https://github.com/open-mmlab/mmclassification/pull/466))
+- Use PyTorch style docs theme. ([#457](https://github.com/open-mmlab/mmclassification/pull/457))
+- Update metafile and Readme. ([#435](https://github.com/open-mmlab/mmclassification/pull/435))
+- Add `CITATION.cff`. ([#428](https://github.com/open-mmlab/mmclassification/pull/428))
+
 ## v0.15.0(31/8/2021)
 
 ### Highlights

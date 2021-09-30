@@ -3,7 +3,7 @@
 ## 安装依赖包
 
 - Python 3.6+
-- PyTorch 1.3+
+- PyTorch 1.5+
 - [MMCV](https://github.com/open-mmlab/mmcv)
 
 MMClassification 和 MMCV 的适配关系如下，请安装正确版本的 MMCV 以避免安装问题
@@ -11,6 +11,7 @@ MMClassification 和 MMCV 的适配关系如下，请安装正确版本的 MMCV 
 | MMClassification 版本 |       MMCV 版本      |
 |:---------------------:|:--------------------:|
 |        master         | mmcv>=1.3.8, <=1.5.0 |
+|        0.16.0         | mmcv>=1.3.8, <=1.5.0 |
 |        0.15.0         | mmcv>=1.3.8, <=1.5.0 |
 |        0.14.0         | mmcv>=1.3.8, <=1.5.0 |
 |        0.13.0         | mmcv>=1.3.8, <=1.5.0 |

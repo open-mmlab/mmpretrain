@@ -3,7 +3,7 @@
 ## Requirements
 
 - Python 3.6+
-- PyTorch 1.3+
+- PyTorch 1.5+
 - [MMCV](https://github.com/open-mmlab/mmcv)
 
 The compatible MMClassification and MMCV versions are as below. Please install the correct version of MMCV to avoid installation issues.
@@ -11,6 +11,8 @@ The compatible MMClassification and MMCV versions are as below. Please install t
 | MMClassification version |     MMCV version     |
 |:------------------------:|:--------------------:|
 | master                   | mmcv>=1.3.8, <=1.5.0 |
+| 0.16.0                   | mmcv>=1.3.8, <=1.5.0 |
+| 0.15.0                   | mmcv>=1.3.8, <=1.5.0 |
 | 0.15.0                   | mmcv>=1.3.8, <=1.5.0 |
 | 0.14.0                   | mmcv>=1.3.8, <=1.5.0 |
 | 0.13.0                   | mmcv>=1.3.8, <=1.5.0 |

@@ -6,9 +6,12 @@ Collections:
         - re-parameterization Convolution
         - VGG-style Neural Network
     Paper:
-        URL: https://arxiv.org/abs/2101.03697
-        Title: 'RepVGG: Making VGG-style ConvNets Great Again'
+      URL: https://arxiv.org/abs/2101.03697
+      Title: 'RepVGG: Making VGG-style ConvNets Great Again'
     README: configs/repvgg/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.16.0/mmcls/models/backbones/repvgg.py#L257
+      Version: v0.16.0
 
 Models:
   - Name: repvgg-A0_4xb64-coslr-120e_in1k
