@@ -44,26 +44,38 @@ python tools/visualizations/vis_pipeline.py \
 - `--bgr2rgb`: Whether to flip the color channel order of images. If not specified, it will be set to `False`.
 - `--window-size`: The shape of display window. If not specified, it will be set to `12*7`. If used, it must be in format `'W*H'`.
 
-```{note} Note
+```{note}
 
 1. If the `--mode` not specified, it will be set to `pipeline` as default, get the transformed pictures; if the `--mode` set to `original`, get the original pictures; if the `--mode` set to `concat`, get the pictures stitched together by original pictures and transformed pictures.
 
-2. When `--adaptive` is set to `True`, images that are too large or too small will be automatically adjusted; `--min-edge-length` and `--max-edge-length` affect in this process.
+2. When `--adaptive` is set to `True`, images that are too large or too small will be automatically adjusted, `--min-edge-length` and `--max-edge-length` affect in this process.
 ```
 
 **Examples**：
 
 1. Visualizing all the transformed pictures of the `ImageNet` training set and display them in pop-up windows：
 
-`python ./tools/visualizations/vis_pipeline.py ./configs/resnet/resnet50_b32x8_imagenet.py --show --adaptive`
+```{python}
+
+python ./tools/visualizations/vis_pipeline.py ./configs/resnet/resnet50_b32x8_imagenet.py --show --adaptive
+
+```
 
 2. Visualizing 10 comparison pictures in the `ImageNet` train set and save them in the `./tmp` folder：
 
-`python ./tools/visualizations/vis_pipeline.py configs/swin_transformer/swin_base_224_b16x64_300e_imagenet.py --phase train --output-dir tmp --mode concat --number 10 --adaptive`
+```{python}
+
+python ./tools/visualizations/vis_pipeline.py configs/swin_transformer/swin_base_224_b16x64_300e_imagenet.py --phase train --output-dir tmp --mode concat --number 10 --adaptive
+
+```
 
 3. Visualizing 100 original pictures in the `CIFAR100` val set, then display and save them in the `./tmp` folder：
 
-`python ./tools/visualizations/vis_pipeline.py configs/resnet/resnet50_b16x8_cifar100.py --phase val --output-dir tmp --mode original --number 100  --show --adaptive`
+```{python}
+
+python ./tools/visualizations/vis_pipeline.py configs/resnet/resnet50_b16x8_cifar100.py --phase val --output-dir tmp --mode original --number 100  --show --adaptive
+
+```
 
 ## FAQs
 

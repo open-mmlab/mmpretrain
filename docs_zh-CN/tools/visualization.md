@@ -44,11 +44,11 @@ python tools/visualizations/vis_pipeline.py \
 - `--bgr2rgb`: 是否将图片的颜色通道翻转。如果没有指定，默认为 `False`。
 - `--window-size`: 可视化窗口大小，如果没有指定，默认为 `12*7`。如果需要指定，按照格式 `'W*H'`。
 
-```{note} 注意
+```{note}
 
 1. 如果不指定 `--mode`，默认设置为 `pipeline`，获取预处理后的图片；如果 `--mode` 设置为 `original`，则获取原始图片； 如果  `--mode` 设置为 `concat`，则获取原始图片和预处理后图片拼接的图片。
 
-2. `--adaptive` 为 `True` 时，会自动的调整尺寸过大和过小的图片；`--min-edge-length` 与 `--max-edge-length` 在此过程有效。
+2. `--adaptive` 为 `True` 时，会自动的调整尺寸过大和过小的图片，`--min-edge-length` 与 `--max-edge-length` 在此过程有效。
 
 ```
 
@@ -56,15 +56,27 @@ python tools/visualizations/vis_pipeline.py \
 
 1. 可视化 `ImageNet` 训练集的所有经过预处理的图片，并以弹窗形式显示：
 
-`python ./tools/visualizations/vis_pipeline.py ./configs/resnet/resnet50_b32x8_imagenet.py --show --adaptive`
+```{python}
+
+python ./tools/visualizations/vis_pipeline.py ./configs/resnet/resnet50_b32x8_imagenet.py --show --adaptive
+
+```
 
 2. 可视化 `ImageNet` 训练集的10张原始图片与预处理后图片对比图，保存在 `./tmp` 文件夹下：
 
-`python ./tools/visualizations/vis_pipeline.py configs/swin_transformer/swin_base_224_b16x64_300e_imagenet.py --phase train --output-dir tmp --mode concat --number 10 --adaptive`
+```{python}
+
+python ./tools/visualizations/vis_pipeline.py configs/swin_transformer/swin_base_224_b16x64_300e_imagenet.py --phase train --output-dir tmp --mode concat --number 10 --adaptive
+
+```
 
 3. 可视化 `CIFAR100` 验证集中的100张原始图片，显示并保存在 `./tmp` 文件夹下：
 
-`python ./tools/visualizations/vis_pipeline.py configs/resnet/resnet50_b16x8_cifar100.py --phase val --output-dir tmp --mode original --number 100 --show --adaptive`
+```{python}
+
+python ./tools/visualizations/vis_pipeline.py configs/resnet/resnet50_b16x8_cifar100.py --phase val --output-dir tmp --mode original --number 100 --show --adaptive
+
+```
 
 ## 常见问题
 
