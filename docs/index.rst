@@ -15,20 +15,15 @@ You can switch between Chinese and English documents in the lower-left corner of
 
 .. toctree::
    :maxdepth: 1
-   :caption: Model zoo
-
-   modelzoo_statistics.md
-   model_zoo.md
-
-
-.. toctree::
-   :maxdepth: 1
    :caption: Tutorials
 
    tutorials/finetune.md
    tutorials/new_dataset.md
    tutorials/data_pipeline.md
    tutorials/new_modules.md
+
+
+.. include:: _model_zoo.rst
 
 
 .. toctree::
