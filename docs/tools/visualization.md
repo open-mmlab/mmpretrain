@@ -55,19 +55,19 @@ python tools/visualizations/vis_pipeline.py \
 
 1. Visualizing all the transformed pictures of the `ImageNet` training set and display them in pop-up windows：
 
-```{python}
+```shell
 python ./tools/visualizations/vis_pipeline.py ./configs/resnet/resnet50_b32x8_imagenet.py --show --adaptive
 ```
 
 2. Visualizing 10 comparison pictures in the `ImageNet` train set and save them in the `./tmp` folder：
 
-```{python}
+```shell
 python ./tools/visualizations/vis_pipeline.py configs/swin_transformer/swin_base_224_b16x64_300e_imagenet.py --phase train --output-dir tmp --mode concat --number 10 --adaptive
 ```
 
 3. Visualizing 100 original pictures in the `CIFAR100` val set, then display and save them in the `./tmp` folder：
 
-```{python}
+```shell
 python ./tools/visualizations/vis_pipeline.py configs/resnet/resnet50_b16x8_cifar100.py --phase val --output-dir tmp --mode original --number 100  --show --adaptive
 ```
 
