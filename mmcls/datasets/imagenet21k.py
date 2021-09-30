@@ -1,17 +1,28 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
 import os
+import warnings
 
 import numpy as np
+from mmcv.utils import scandir
 
 from .base_dataset import BaseDataset
 from .builder import DATASETS
-from .imagenet import find_folders, has_file_allowed_extension
+from .imagenet import find_folders
 
 
 @DATASETS.register_module()
 class ImageNet21k(BaseDataset):
     """ImageNet21k Dataset.
+
+    Since the dataset ImageNet21k is extremely big, cantains 21k+ classes
+    and 1.4B files. This class has improved the following points on the
+    basis of the class `ImageNet`, in order to save memory usage and time
+     required :
+
+        - Delete the samples attribute
+        - Modify setting `info` from `load_annotations` to
+          `prepare_data`
 
     Args:
     data_prefix (str): the prefix of data path
@@ -34,16 +45,24 @@ class ImageNet21k(BaseDataset):
                  pipeline,
                  classes=None,
                  ann_file=None,
-                 multi_lable=False,
+                 multi_label=False,
                  recursion_subdir=False,
                  test_mode=False):
-        self.multi_lable = multi_lable
+        self.multi_lable = multi_label
         self.recursion_subdir = recursion_subdir
         super(ImageNet21k, self).__init__(data_prefix, pipeline, classes,
                                           ann_file, test_mode)
+        if self.multi_label:
+            raise NotImplementedError()
 
     def prepare_data(self, idx):
         results = copy.deepcopy(self.data_infos[idx])
+        if isinstance(results, str):
+            class_id = 0
+            results = {
+                'img_info': dict(filename=results),
+                'gt_label': np.array(class_id, dtype=np.int64)
+            }
         results['img_prefix'] = self.data_prefix
         return self.pipeline(results)
 
@@ -71,27 +90,14 @@ class ImageNet21k(BaseDataset):
         recursion_subdir is true."""
         _dir = os.path.join(root, folder_name)
         infos_pre_class = []
-        for item in os.scandir(_dir):
-            if item.is_file() and has_file_allowed_extension(
-                    item.name, self.IMG_EXTENSIONS):
-                path = os.path.join(folder_name, item.name)
-                info = {
-                    'img_info': dict(filename=path),
-                    'gt_label': np.array(class_id, dtype=np.int64)
-                }
-                infos_pre_class.append(info)
-            elif self.recursion_subdir and item.is_dir(
-            ) and not item.name.startswith('.'):
-                sub_folder_name = os.path.join(folder_name, item.name)
-                infos_pre_class.extend(
-                    self._find_allowed_files(root, sub_folder_name, class_id))
+        for path in scandir(_dir, self.IMG_EXTENSIONS, self.recursion_subdir):
+            infos_pre_class.append(path)
 
         return infos_pre_class
 
     def _load_annotations_from_dir(self):
         """load annotations from self.data_prefix directory."""
-        data_infos = []
-        empty_classes = []
+        data_infos, empty_classes = [], []
         folder_to_idx = find_folders(self.data_prefix)
         self.folder_to_idx = folder_to_idx
         root = os.path.expanduser(self.data_prefix)
@@ -106,7 +112,7 @@ class ImageNet21k(BaseDataset):
                 f"{', '.join(sorted(empty_classes))}"
             msg += 'Supported extensions are: ' + \
                 f"{', '.join(self.IMG_EXTENSIONS)}."
-            raise FileNotFoundError(msg)
+            warnings(msg)
 
         return data_infos
 
@@ -117,9 +123,9 @@ class ImageNet21k(BaseDataset):
             for line in f.readlines():
                 if line == '':
                     continue
-                filename, gt_label = line.strip().rsplit(' ', 1)
+                filepath, gt_label = line.strip().rsplit(' ', 1)
                 info = {
-                    'img_info': dict(filename=filename),
+                    'img_info': dict(filename=filepath),
                     'gt_label': np.array(gt_label, dtype=np.int64)
                 }
                 data_infos.append(info)

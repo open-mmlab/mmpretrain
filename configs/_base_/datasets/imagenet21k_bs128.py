@@ -20,24 +20,24 @@ test_pipeline = [
     dict(type='Collect', keys=['img'])
 ]
 data = dict(
-    samples_per_gpu=12,
+    samples_per_gpu=128,
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
-        data_prefix='data/imagenet22k/train',
+        data_prefix='data/imagenet21k/train',
         pipeline=train_pipeline,
         recursion_subdir=True),
     val=dict(
         type=dataset_type,
-        data_prefix='data/imagenet22k/val',
-        ann_file='data/imagenet22k/meta/val.txt',
+        data_prefix='data/imagenet21k/val',
+        ann_file='data/imagenet21k/meta/val.txt',
         pipeline=test_pipeline,
         recursion_subdir=True),
     test=dict(
         # replace `data/val` with `data/test` for standard test
         type=dataset_type,
-        data_prefix='data/imagenet22k/val',
-        ann_file='data/imagenet22k/meta/val.txt',
+        data_prefix='data/imagenet21k/val',
+        ann_file='data/imagenet21k/meta/val.txt',
         pipeline=test_pipeline,
         recursion_subdir=True))
 evaluation = dict(interval=1, metric='accuracy')
