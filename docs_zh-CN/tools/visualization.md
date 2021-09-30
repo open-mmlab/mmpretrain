@@ -44,7 +44,7 @@ python tools/visualizations/vis_pipeline.py \
 - `--bgr2rgb`: 是否将图片的颜色通道翻转。如果没有指定，默认为 `False`。
 - `--window-size`: 可视化窗口大小，如果没有指定，默认为 `12*7`。如果需要指定，按照格式 `'W*H'`。
 
-```{admonition}
+```{note} 注意
 
 1. 如果不指定 `--mode`，默认设置为 `pipeline`，获取预处理后的图片；如果 `--mode` 设置为 `original`，则获取原始图片； 如果  `--mode` 设置为 `concat`，则获取原始图片和预处理后图片拼接的图片。
 
