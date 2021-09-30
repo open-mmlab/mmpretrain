@@ -11,7 +11,7 @@
 ### New Features
 
 - Add RepVGG backbone and checkpoints. ([#414](https://github.com/open-mmlab/mmclassification/pull/414))
-- timm backbones wrapper. ([#427](https://github.com/open-mmlab/mmclassification/pull/427))
+- Add timm backbones wrapper. ([#427](https://github.com/open-mmlab/mmclassification/pull/427))
 
 ### Improvements
 
@@ -19,7 +19,7 @@
 - Support setting `--out-items` in `tools/test.py`.  ([#437](https://github.com/open-mmlab/mmclassification/pull/437))
 - Add datetime info and saving model using torch<1.6 format. ([#439](https://github.com/open-mmlab/mmclassification/pull/439))
 - Improve downstream repositories compatibility. ([#421](https://github.com/open-mmlab/mmclassification/pull/421))
-- Rename the option `--options` in some tools to `--cfg-options`. ([#425](https://github.com/open-mmlab/mmclassification/pull/425))
+- Rename the option `--options` to `--cfg-options` in some tools. ([#425](https://github.com/open-mmlab/mmclassification/pull/425))
 - Add PyTorch 1.9 and Python 3.9 build workflow, and remove some CI. ([#422](https://github.com/open-mmlab/mmclassification/pull/422))
 
 ### Bug Fixes
@@ -28,11 +28,11 @@
 - Fix `publish_model` bug if no parent of `out_file`. ([#463](https://github.com/open-mmlab/mmclassification/pull/463))
 - Fix num_classes bug in pytorch2onnx.py. ([#458](https://github.com/open-mmlab/mmclassification/pull/458))
 - Fix missing runtime requirement `packaging`. ([#459](https://github.com/open-mmlab/mmclassification/pull/459))
-- Fix simplified model saving in ONNX export tool. ([#438](https://github.com/open-mmlab/mmclassification/pull/438))
+- Fix saving simplified model bug in ONNX export tool. ([#438](https://github.com/open-mmlab/mmclassification/pull/438))
 
 ### Docs Update
 
-- Update `getting_started.md` and `install.md` and rewrite `finetune.md`. ([#466](https://github.com/open-mmlab/mmclassification/pull/466))
+- Update `getting_started.md` and `install.md`. And rewrite `finetune.md`. ([#466](https://github.com/open-mmlab/mmclassification/pull/466))
 - Use PyTorch style docs theme. ([#457](https://github.com/open-mmlab/mmclassification/pull/457))
 - Update metafile and Readme. ([#435](https://github.com/open-mmlab/mmclassification/pull/435))
 - Add `CITATION.cff`. ([#428](https://github.com/open-mmlab/mmclassification/pull/428))
