@@ -10,106 +10,106 @@ Collections:
       Batch Size: 256
       Architecture:
         - ResNet
-    Paper: https://openaccess.thecvf.com/content_cvpr_2016/html/He_Deep_Residual_Learning_CVPR_2016_paper.html
+    Paper:
+      URL: https://openaccess.thecvf.com/content_cvpr_2016/html/He_Deep_Residual_Learning_CVPR_2016_paper.html
+      Title: "Deep Residual Learning for Image Recognition"
     README: configs/resnet/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.15.0/mmcls/models/backbones/resnet.py#L383
+      Version: v0.15.0
+  - Name: ResNet-CIFAR
+    Metadata:
+      Training Data: CIFAR-10
+      Training Techniques:
+        - SGD with Momentum
+        - Weight Decay
+      Training Resources: 8x 1080 GPUs
+      Epochs: 200
+      Batch Size: 128
+      Architecture:
+        - ResNet
+    Paper:
+      URL: https://openaccess.thecvf.com/content_cvpr_2016/html/He_Deep_Residual_Learning_CVPR_2016_paper.html
+      Title: "Deep Residual Learning for Image Recognition"
+    README: configs/resnet/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.15.0/mmcls/models/backbones/resnet_cifar.py#L10
+      Version: v0.15.0
 
 Models:
   - Name: resnet18_b16x8_cifar10
     Metadata:
       FLOPs: 560000000
       Parameters: 11170000
-      Training Data: CIFAR-10
-      Training Resources: 8x 1080 GPUs
-      Epochs: 200
-      Batch Size: 128
-    In Collection: ResNet
+    In Collection: ResNet-CIFAR
     Results:
       - Dataset: CIFAR-10
         Metrics:
-          Top 1 Accuracy: 94.72
+          Top 1 Accuracy: 94.82
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_b16x8_cifar10_20200823-f906fa4e.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_b16x8_cifar10_20210528-bd6371c8.pth
     Config: configs/resnet/resnet18_b16x8_cifar10.py
   - Name: resnet34_b16x8_cifar10
     Metadata:
       FLOPs: 1160000000
       Parameters: 21280000
-      Training Data: CIFAR-10
-      Training Resources: 8x 1080 GPUs
-      Epochs: 200
-      Batch Size: 128
-    In Collection: ResNet
+    In Collection: ResNet-CIFAR
     Results:
       - Dataset: CIFAR-10
         Metrics:
           Top 1 Accuracy: 95.34
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet34_b16x8_cifar10_20200823-52d5d832.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet34_b16x8_cifar10_20210528-a8aa36a6.pth
     Config: configs/resnet/resnet34_b16x8_cifar10.py
   - Name: resnet50_b16x8_cifar10
     Metadata:
       FLOPs: 1310000000
       Parameters: 23520000
-      Training Data: CIFAR-10
-      Training Resources: 8x 1080 GPUs
-      Epochs: 200
-      Batch Size: 128
-    In Collection: ResNet
+    In Collection: ResNet-CIFAR
     Results:
       - Dataset: CIFAR-10
         Metrics:
-          Top 1 Accuracy: 95.36
+          Top 1 Accuracy: 95.55
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_b16x8_cifar10_20200823-882aa7b1.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_b16x8_cifar10_20210528-f54bfad9.pth
     Config: configs/resnet/resnet50_b16x8_cifar10.py
   - Name: resnet101_b16x8_cifar10
     Metadata:
       FLOPs: 2520000000
       Parameters: 42510000
-      Training Data: CIFAR-10
-      Training Resources: 8x 1080 GPUs
-      Epochs: 200
-      Batch Size: 128
-    In Collection: ResNet
+    In Collection: ResNet-CIFAR
     Results:
       - Dataset: CIFAR-10
         Metrics:
-          Top 1 Accuracy: 95.66
+          Top 1 Accuracy: 95.58
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet101_b16x8_cifar10_20200823-d9501bbc.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet101_b16x8_cifar10_20210528-2d29e936.pth
     Config: configs/resnet/resnet101_b16x8_cifar10.py
   - Name: resnet152_b16x8_cifar10
     Metadata:
       FLOPs: 3740000000
       Parameters: 58160000
-      Training Data: CIFAR-10
-      Training Resources: 8x 1080 GPUs
-      Epochs: 200
-      Batch Size: 128
-    In Collection: ResNet
+    In Collection: ResNet-CIFAR
     Results:
       - Dataset: CIFAR-10
         Metrics:
-          Top 1 Accuracy: 95.96
+          Top 1 Accuracy: 95.76
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet152_b16x8_cifar10_20200823-ad4d5d0c.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet152_b16x8_cifar10_20210528-3e8e9178.pth
     Config: configs/resnet/resnet152_b16x8_cifar10.py
   - Name: resnet50_b16x8_cifar100
     Metadata:
       FLOPs: 1310000000
       Parameters: 23710000
       Training Data: CIFAR-100
-      Training Resources: 8x 1080 GPUs
-      Epochs: 200
-      Batch Size: 128
-    In Collection: ResNet
+    In Collection: ResNet-CIFAR
     Results:
       - Dataset: CIFAR-100
         Metrics:
-          Top 1 Accuracy: 80.51
-          Top 5 Accuracy: 95.27
+          Top 1 Accuracy: 79.90
+          Top 5 Accuracy: 95.19
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_batch256_cifar100_20210410-37f13c16.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_b16x8_cifar100_20210528-67b58a1b.pth
     Config: configs/resnet/resnet50_b16x8_cifar100.py
   - Name: resnet18_b32x8_imagenet
     Metadata:
@@ -119,10 +119,10 @@ Models:
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 70.07
-          Top 5 Accuracy: 89.44
+          Top 1 Accuracy: 69.90
+          Top 5 Accuracy: 89.43
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_batch256_imagenet_20200708-34ab8f90.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth
     Config: configs/resnet/resnet18_b32x8_imagenet.py
   - Name: resnet34_b32x8_imagenet
     Metadata:
@@ -132,10 +132,10 @@ Models:
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 73.85
-          Top 5 Accuracy: 91.53
+          Top 1 Accuracy: 73.62
+          Top 5 Accuracy: 91.59
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet34_batch256_imagenet_20200708-32ffb4f7.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet34_8xb32_in1k_20210831-f257d4e6.pth
     Config: configs/resnet/resnet34_b32x8_imagenet.py
   - Name: resnet50_b32x8_imagenet
     Metadata:
@@ -146,9 +146,9 @@ Models:
       - Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 76.55
-          Top 5 Accuracy: 93.15
+          Top 5 Accuracy: 93.06
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_batch256_imagenet_20200708-cfb998bf.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb32_in1k_20210831-ea4938fc.pth
     Config: configs/resnet/resnet50_b32x8_imagenet.py
   - Name: resnet101_b32x8_imagenet
     Metadata:
@@ -158,10 +158,10 @@ Models:
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 78.18
-          Top 5 Accuracy: 94.03
+          Top 1 Accuracy: 77.97
+          Top 5 Accuracy: 94.06
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet101_batch256_imagenet_20200708-753f3608.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet101_8xb32_in1k_20210831-539c63f8.pth
     Config: configs/resnet/resnet101_b32x8_imagenet.py
   - Name: resnet152_b32x8_imagenet
     Metadata:
@@ -171,10 +171,10 @@ Models:
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 78.63
-          Top 5 Accuracy: 94.16
+          Top 1 Accuracy: 78.48
+          Top 5 Accuracy: 94.13
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet152_batch256_imagenet_20200708-ec25b1f9.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet152_8xb32_in1k_20210901-4d7582fa.pth
     Config: configs/resnet/resnet152_b32x8_imagenet.py
   - Name: resnetv1d50_b32x8_imagenet
     Metadata:
@@ -184,10 +184,10 @@ Models:
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 77.4
-          Top 5 Accuracy: 93.66
+          Top 1 Accuracy: 77.54
+          Top 5 Accuracy: 93.57
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnetv1d50_batch256_imagenet_20200708-1ad0ce94.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnetv1d50_b32x8_imagenet_20210531-db14775a.pth
     Config: configs/resnet/resnetv1d50_b32x8_imagenet.py
   - Name: resnetv1d101_b32x8_imagenet
     Metadata:
@@ -197,10 +197,10 @@ Models:
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 78.85
-          Top 5 Accuracy: 94.38
+          Top 1 Accuracy: 78.93
+          Top 5 Accuracy: 94.48
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnetv1d101_batch256_imagenet_20200708-9cb302ef.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnetv1d101_b32x8_imagenet_20210531-6e13bcd3.pth
     Config: configs/resnet/resnetv1d101_b32x8_imagenet.py
   - Name: resnetv1d152_b32x8_imagenet
     Metadata:
@@ -210,8 +210,8 @@ Models:
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 79.35
-          Top 5 Accuracy: 94.61
+          Top 1 Accuracy: 79.41
+          Top 5 Accuracy: 94.70
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnetv1d152_batch256_imagenet_20200708-e79cb6a2.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnetv1d152_b32x8_imagenet_20210531-278cf22a.pth
     Config: configs/resnet/resnetv1d152_b32x8_imagenet.py

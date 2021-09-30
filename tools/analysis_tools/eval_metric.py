@@ -41,6 +41,10 @@ def parse_args():
 def main():
     args = parse_args()
 
+    outputs = mmcv.load(args.pkl_results)
+    assert 'class_scores' in outputs, \
+        'No "class_scores" in result file, please set "--out-items" in test.py'
+
     cfg = Config.fromfile(args.config)
     assert args.metrics, (
         'Please specify at least one metric the argument "--metrics".')
@@ -54,7 +58,6 @@ def main():
     cfg.data.test.test_mode = True
 
     dataset = build_dataset(cfg.data.test)
-    outputs = mmcv.load(args.pkl_results)
     pred_score = outputs['class_scores']
 
     kwargs = {} if args.eval_options is None else args.eval_options

@@ -6,6 +6,8 @@ from ..builder import CLASSIFIERS, build_backbone, build_head, build_neck
 from ..utils.augment import Augments
 from .base import BaseClassifier
 
+warnings.simplefilter('once')
+
 
 @CLASSIFIERS.register_module()
 class ImageClassifier(BaseClassifier):
@@ -74,7 +76,6 @@ class ImageClassifier(BaseClassifier):
         if self.return_tuple:
             if not isinstance(x, tuple):
                 x = (x, )
-                warnings.simplefilter('once')
                 warnings.warn(
                     'We will force all backbones to return a tuple in the '
                     'future. Please check your backbone and wrap the output '

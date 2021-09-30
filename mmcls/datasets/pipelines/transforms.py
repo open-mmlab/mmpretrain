@@ -165,7 +165,7 @@ class RandomResizedCrop(object):
         interpolation (str): Interpolation method, accepted values are
             'nearest', 'bilinear', 'bicubic', 'area', 'lanczos'. Defaults to
             'bilinear'.
-        backend (str): The image resize backend type, accpeted values are
+        backend (str): The image resize backend type, accepted values are
             `cv2` and `pillow`. Defaults to `cv2`.
     """
 
@@ -193,7 +193,7 @@ class RandomResizedCrop(object):
                              f'But received scale {scale} and rato {ratio}.')
         assert min_covered >= 0, 'min_covered should be no less than 0.'
         assert isinstance(max_attempts, int) and max_attempts >= 0, \
-            'max_attempts mush be of typle int and no less than 0.'
+            'max_attempts mush be int and no less than 0.'
         assert interpolation in ('nearest', 'bilinear', 'bicubic', 'area',
                                  'lanczos')
         if backend not in ['cv2', 'pillow']:
@@ -628,7 +628,7 @@ class Resize(object):
         interpolation (str): Interpolation method, accepted values are
             "nearest", "bilinear", "bicubic", "area", "lanczos".
             More details can be found in `mmcv.image.geometric`.
-        backend (str): The image resize backend type, accpeted values are
+        backend (str): The image resize backend type, accepted values are
             `cv2` and `pillow`. Default: `cv2`.
     """
 
@@ -708,7 +708,7 @@ class CenterCrop(object):
         interpolation (str): Interpolation method, accepted values are
             'nearest', 'bilinear', 'bicubic', 'area', 'lanczos'. Only valid if
             ``efficientnet_style`` is True. Defaults to 'bilinear'.
-        backend (str): The image resize backend type, accpeted values are
+        backend (str): The image resize backend type, accepted values are
             `cv2` and `pillow`. Only valid if efficientnet style is True.
             Defaults to `cv2`.
 

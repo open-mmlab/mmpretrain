@@ -11,8 +11,13 @@ Collections:
       Batch Size: 1024
       Architecture:
         - Shufflenet V1
-    Paper: https://openaccess.thecvf.com/content_cvpr_2018/html/Zhang_ShuffleNet_An_Extremely_CVPR_2018_paper.html
+    Paper:
+      URL: https://openaccess.thecvf.com/content_cvpr_2018/html/Zhang_ShuffleNet_An_Extremely_CVPR_2018_paper.html
+      Title: "ShuffleNet: An Extremely Efficient Convolutional Neural Network for Mobile Devices"
     README: configs/shufflenet_v1/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.15.0/mmcls/models/backbones/shufflenet_v1.py#L152
+      Version: v0.15.0
 
 Models:
   - Name: shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet

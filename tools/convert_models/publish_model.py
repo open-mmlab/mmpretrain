@@ -1,8 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 import datetime
-import os
 import subprocess
+from pathlib import Path
 
 import torch
 from mmcv import digit_version
@@ -44,8 +44,8 @@ def process_checkpoint(in_file, out_file):
 
 def main():
     args = parse_args()
-    out_dir = os.path.dirname(args.out_file)
-    if not os.path.exists(out_dir):
+    out_dir = Path(args.out_file).parent
+    if not out_dir.exists():
         raise ValueError(f'Directory {out_dir} does not exist, '
                          'please generate it manually.')
     process_checkpoint(args.in_file, args.out_file)
