@@ -23,8 +23,8 @@ python tools/visualizations/vis_pipeline.py \
     --mode ${DISPLAY_MODE} \
     --show \
     --adaptive \
-    --min-edge-length ${MIN-EDGE-LENGTH} \
-    --max-edge-length ${MAX-EDGE-LENGTH} \
+    --min-edge-length ${MIN_EDGE_LENGTH} \
+    --max-edge-length ${MAX_EDGE_LENGTH} \
     --bgr2rgb \
     --window-size ${WINDOW_SIZE}
 ```
@@ -40,15 +40,16 @@ python tools/visualizations/vis_pipeline.py \
 - `--show`: Whether to display pictures in pop-up windows. If not specified, it will be set to `False`.
 - `--adaptive`: Whether to automatically adjust the size of the visualization images. If not specified, it will be set to `False`.
 - `--min-edge-length`: The minium edge length, used when `--adaptivethe` is `True`. When any side of the picture is smaller than `${MIN-EDGE-LENGTH}`, the picture will be enlarged while keeping the aspect ratio unchanged, and the short side will be aligned to `${MIN-EDGE-LENGTH}`. If not specified, it will be set to 200.
-- `--max-edge-length`: The maxium edge length, used when `--adaptivethe` is `True`. When any side of the picture is larger than `${MAX-EDGE-LENGTH}`, the picture will be reduced while keeping the aspect ratio unchanged, and the long side will be aligned to `${MAX-EDGE-LENGTH}`. If not specified, it will be set to 1000.
+- `--max-edge-length`: The maxium edge length, used when `--adaptivethe` is `True`. When any side of the picture is larger than `${MAX_EDGE_LENGTH}`, the picture will be reduced while keeping the aspect ratio unchanged, and the long side will be aligned to `${MAX_EDGE_LENGTH}`. If not specified, it will be set to 1000.
 - `--bgr2rgb`: Whether to flip the color channel order of images. If not specified, it will be set to `False`.
 - `--window-size`: The shape of display window. If not specified, it will be set to `12*7`. If used, it must be in format `'W*H'`.
 
-**Notice**:
+```{admonition}
 
 1. If the `--mode` not specified, it will be set to `pipeline` as default, get the transformed pictures; if the `--mode` set to `original`, get the original pictures; if the `--mode` set to `concat`, get the pictures stitched together by original pictures and transformed pictures.
 
 2. When `--adaptive` is set to `True`, images that are too large or too small will be automatically adjusted; `--min-edge-length` and `--max-edge-length` affect in this process.
+```
 
 **Examples**：
 
