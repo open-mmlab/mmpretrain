@@ -5,7 +5,7 @@ from .auto_augment import (AutoAugment, AutoContrast, Brightness,
                            Solarize, SolarizeAdd, Translate)
 from .compose import Compose
 from .formating import (Collect, ImageToTensor, ToNumpy, ToPIL, ToTensor,
-                        Transpose, to_tensor, LabelToOneHot)
+                        Transpose, to_tensor)
 from .loading import (LoadImageFromFile, LoadAnnotations)
 from .transforms import (CenterCrop, ColorJitter, Lighting, RandomCrop,
                          RandomErasing, RandomFlip, RandomGrayscale,
@@ -20,5 +20,5 @@ __all__ = [
     'ColorTransform', 'Solarize', 'Posterize', 'AutoContrast', 'Equalize',
     'Contrast', 'Brightness', 'Sharpness', 'AutoAugment', 'SolarizeAdd',
     'Cutout', 'RandAugment', 'Lighting', 'ColorJitter', 'RandomErasing',
-    'LoadAnnotations', 'CropBoundingBox', 'SwapChannels', 'LabelToOneHot'
+    'LoadAnnotations', 'CropBoundingBox', 'SwapChannels'
 ]
