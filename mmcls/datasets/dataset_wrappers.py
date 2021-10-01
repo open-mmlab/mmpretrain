@@ -37,6 +37,30 @@ class ConcatDataset(_ConcatDataset):
             sample_idx = idx - self.cumulative_sizes[dataset_idx - 1]
         return self.datasets[dataset_idx].get_cat_ids(sample_idx)
 
+    def evaluate(self, results, **kwargs):
+        all_results = dict()
+        current_i = 0
+        for dataset in self.datasets:
+            last_i = current_i + len(dataset)
+            dataset_results = results[current_i:last_i]
+            result = dataset.evaluate(dataset_results, **kwargs)
+            all_results[dataset.ann_file] = result
+            current_i = last_i - 1
+
+        accumulated_results = dict()
+        for result in all_results.values():
+            for k, v in result.items():
+                if k in accumulated_results:
+                    accumulated_results[k] += [v]
+                else:
+                    accumulated_results[k] = [v]
+
+        for k in accumulated_results.keys():
+            accumulated_results[k] = np.mean(accumulated_results[k])
+
+        all_results.update(accumulated_results)
+        return all_results
+
 
 @DATASETS.register_module()
 class RepeatDataset(object):

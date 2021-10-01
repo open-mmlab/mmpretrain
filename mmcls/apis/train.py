@@ -140,7 +140,7 @@ def train_model(model,
 
     # register eval hooks
     if validate:
-        val_dataset = build_dataset(cfg.data.val, dict(test_mode=True))
+        val_dataset = build_dataset(cfg.data.val)
         val_dataloader = build_dataloader(
             val_dataset,
             samples_per_gpu=cfg.data.samples_per_gpu,
