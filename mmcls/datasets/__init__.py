@@ -2,6 +2,7 @@
 from .base_dataset import BaseDataset
 from .builder import DATASETS, PIPELINES, build_dataloader, build_dataset
 from .cifar import CIFAR10, CIFAR100
+from .detection_conversion import (OpenBrandDataset, XMLDataset)
 from .dataset_wrappers import (ClassBalancedDataset, ConcatDataset,
                                RepeatDataset)
 from .imagenet import ImageNet
@@ -15,5 +16,6 @@ __all__ = [
     'BaseDataset', 'ImageNet', 'CIFAR10', 'CIFAR100', 'MNIST', 'FashionMNIST',
     'VOC', 'MultiLabelDataset', 'build_dataloader', 'build_dataset', 'Compose',
     'DistributedSampler', 'ConcatDataset', 'RepeatDataset',
-    'ClassBalancedDataset', 'DATASETS', 'PIPELINES', 'LogoDataset'
+    'ClassBalancedDataset', 'DATASETS', 'PIPELINES', 'LogoDataset',
+    'OpenBrandDataset', 'XMLDataset'
 ]
