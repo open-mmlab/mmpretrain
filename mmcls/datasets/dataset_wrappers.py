@@ -40,11 +40,15 @@ class ConcatDataset(_ConcatDataset):
     def evaluate(self, results, **kwargs):
         all_results = dict()
         current_i = 0
-        for dataset in self.datasets:
+        for dataset_id, dataset in enumerate(self.datasets):
             last_i = current_i + len(dataset)
             dataset_results = results[current_i:last_i]
             result = dataset.evaluate(dataset_results, **kwargs)
-            all_results[dataset.ann_file] = result
+            if isinstance(dataset, ConcatDataset):
+                result = [r for r in result if not isinstance(r, dict)]
+                all_results[f'concat_{dataset_id}'] = result
+            else:
+                all_results[dataset.ann_file] = result
             current_i = last_i - 1
 
         accumulated_results = dict()
