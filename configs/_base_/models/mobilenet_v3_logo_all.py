@@ -3,6 +3,7 @@ num_classes = 3793
 
 model = dict(
     type='ImageClassifier',
+    pretrained='/home/ubuntu/checkpoints/mobilenet_v3_small-047dcff4.pth',
     backbone=dict(type='MobileNetV3', arch='small'),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(

@@ -23,7 +23,7 @@ _base_ = [
 ]
 
 data = dict(
-    samples_per_gpu=4,
+    samples_per_gpu=128,
     workers_per_gpu=2,
 )
 evaluation = dict(interval=2, metric='accuracy')
