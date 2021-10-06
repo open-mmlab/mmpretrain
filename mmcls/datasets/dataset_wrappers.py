@@ -45,7 +45,9 @@ class ConcatDataset(_ConcatDataset):
             dataset_results = results[current_i:last_i]
             result = dataset.evaluate(dataset_results, **kwargs)
             if isinstance(dataset, ConcatDataset):
-                result = [r for r in result if not isinstance(r, dict)]
+                result = {k: v
+                          for k, v in result.items()
+                          if not isinstance(v, dict)}
                 all_results[f'concat_{dataset_id}'] = result
             else:
                 all_results[dataset.ann_file] = result
