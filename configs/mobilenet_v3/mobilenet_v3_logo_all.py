@@ -26,7 +26,7 @@ data = dict(
     samples_per_gpu=128,
     workers_per_gpu=8,
 )
-evaluation = dict(interval=5, metric='accuracy')
+evaluation = dict(interval=5, metric=['accuracy', 'crossentropy'])
 
 # optimizer
 optimizer = dict(
