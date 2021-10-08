@@ -34,9 +34,9 @@ python tools/visualizations/vis_pipeline.py \
 - `config` : 模型配置文件的路径。
 - `--output-dir`: 保存图片文件夹，如果没有指定，默认为 `''`,表示不保存。
 - `--phase`: 可视化数据集的阶段，只能为 `[train, val, test]` 之一，默认为 `train`。
-- `--number`: 可视化样本数量。如果没有指定，默认为 `sys.maxint`。
+- `--number`: 可视化样本数量。如果没有指定，默认展示数据集的所有图片。
 - `--skip-type`: 预设跳过的数据流水线过程。如果没有指定，默认为 `['ToTensor', 'Normalize', 'ImageToTensor', 'Collect']`。
-- `--mode`: 可视化的模式，只能为 `[original, pipeline, concat]` 之一，如果没有指定，默认为 `pipeline`。
+- `--mode`: 可视化的模式，只能为 `[original, pipeline, concat]` 之一，如果没有指定，默认为 `concat`。
 - `--show`: 是否将可视化图片以弹窗形式展示。如果没有指定，默认为 `False`。
 - `--adaptive`: 是否自动调节可视化图片的大小。如果没有指定，默认为 `False`。
 - `--min-edge-length`: 最短边长度，在 `--adaptivethe` 为 `True` 时有效。 当图片任意边小于 `${MIN_EDGE_LENGTH}` 时，会保持长宽比不变放大图片，短边对齐至 `${MIN_EDGE_LENGTH}`，默认为200。
@@ -57,13 +57,13 @@ python tools/visualizations/vis_pipeline.py \
 1. 可视化 `ImageNet` 训练集的所有经过预处理的图片，并以弹窗形式显示：
 
 ```shell
-python ./tools/visualizations/vis_pipeline.py ./configs/resnet/resnet50_b32x8_imagenet.py --show --adaptive
+python ./tools/visualizations/vis_pipeline.py ./configs/resnet/resnet50_b32x8_imagenet.py --show --mode pipeline
 ```
 
 2. 可视化 `ImageNet` 训练集的10张原始图片与预处理后图片对比图，保存在 `./tmp` 文件夹下：
 
 ```shell
-python ./tools/visualizations/vis_pipeline.py configs/swin_transformer/swin_base_224_b16x64_300e_imagenet.py --phase train --output-dir tmp --mode concat --number 10 --adaptive
+python ./tools/visualizations/vis_pipeline.py configs/swin_transformer/swin_base_224_b16x64_300e_imagenet.py --phase train --output-dir tmp --number 10 --adaptive
 ```
 
 3. 可视化 `CIFAR100` 验证集中的100张原始图片，显示并保存在 `./tmp` 文件夹下：

@@ -34,9 +34,9 @@ python tools/visualizations/vis_pipeline.py \
 - `config` : The path of a model config file.
 - `--output-dir`: The output path for visualizd images. If not specified, it will be set to `''`, means not to save.
 - `--phase`: Phase of visualizing dataset，must be one of `[train, val, test]`. If not specified, it will be set to `train`.
-- `--number`: The number of samples to visualize. If not specified, it will be set to `sys.maxsize`.
+- `--number`: The number of samples to visualize. If not specified, display all images in dataset.
 - `--skip-type`: The pipelines to be skipped. If not specified, it will be set to `['ToTensor', 'Normalize', 'ImageToTensor', 'Collect']`.
-- `--mode`: The display mode, can be one of `[original, pipeline, concat]`. If not specified, it will be set to `pipeline`.
+- `--mode`: The display mode, can be one of `[original, pipeline, concat]`. If not specified, it will be set to `concat`.
 - `--show`: Whether to display pictures in pop-up windows. If not specified, it will be set to `False`.
 - `--adaptive`: Whether to automatically adjust the size of the visualization images. If not specified, it will be set to `False`.
 - `--min-edge-length`: The minium edge length, used when `--adaptivethe` is `True`. When any side of the picture is smaller than `${MIN_EDGE_LENGTH}`, the picture will be enlarged while keeping the aspect ratio unchanged, and the short side will be aligned to `${MIN_EDGE_LENGTH}`. If not specified, it will be set to 200.
@@ -56,13 +56,13 @@ python tools/visualizations/vis_pipeline.py \
 1. Visualizing all the transformed pictures of the `ImageNet` training set and display them in pop-up windows：
 
 ```shell
-python ./tools/visualizations/vis_pipeline.py ./configs/resnet/resnet50_b32x8_imagenet.py --show --adaptive
+python ./tools/visualizations/vis_pipeline.py ./configs/resnet/resnet50_b32x8_imagenet.py --show --mode pipeline
 ```
 
 2. Visualizing 10 comparison pictures in the `ImageNet` train set and save them in the `./tmp` folder：
 
 ```shell
-python ./tools/visualizations/vis_pipeline.py configs/swin_transformer/swin_base_224_b16x64_300e_imagenet.py --phase train --output-dir tmp --mode concat --number 10 --adaptive
+python ./tools/visualizations/vis_pipeline.py configs/swin_transformer/swin_base_224_b16x64_300e_imagenet.py --phase train --output-dir tmp --number 10 --adaptive
 ```
 
 3. Visualizing 100 original pictures in the `CIFAR100` val set, then display and save them in the `./tmp` folder：

@@ -28,34 +28,35 @@ def parse_args():
         '--output-dir',
         default='',
         type=str,
-        help='folder to save output pictures')
+        help='folder to save output pictures, if not set, do not save in dir.')
     parser.add_argument(
         '--phase',
         default='train',
         type=str,
         choices=['train', 'test', 'val'],
-        help='phase of dataset to visualize, accept "train" "test" and "val".')
+        help='phase of dataset to visualize, accept "train" "test" and "val".'
+        ' Default train.')
     parser.add_argument(
         '--number',
         type=int,
         default=sys.maxsize,
         help='number of images selected to visualize, must bigger than 0. if '
         'the number is bigger than length of dataset, show all the images in '
-        'dataset; defalut "sys.maxsize".')
+        'dataset; defalut "sys.maxsize", show all images in dataset')
     parser.add_argument(
         '--mode',
-        default='pipeline',
+        default='concat',
         type=str,
         choices=['original', 'pipeline', 'concat'],
         help='display mode; display original pictures or transformed pictures'
         ' or comparison pictures. "original" means show images load from disk;'
         ' "pipeline" means to show images after pipeline; "concat" means show '
-        'images stitched by "original" and "pipeline" images.')
+        'images stitched by "original" and "pipeline" images. Default concat.')
     parser.add_argument(
         '--show',
         default=False,
         action='store_true',
-        help='whether to display images in pop-up window')
+        help='whether to display images in pop-up window. Default False.')
     parser.add_argument(
         '--adaptive',
         default=False,
@@ -66,13 +67,13 @@ def parse_args():
         default=200,
         type=int,
         help='the min edge length when visualizing images, used when '
-        '"--adaptive" is true.')
+        '"--adaptive" is true. Default 200.')
     parser.add_argument(
         '--max-edge-length',
         default=1000,
         type=int,
         help='the max edge length when visualizing images, used when '
-        '"--adaptive" is true.')
+        '"--adaptive" is true. Default 1000.')
     parser.add_argument(
         '--bgr2rgb',
         default=False,
@@ -81,7 +82,7 @@ def parse_args():
     parser.add_argument(
         '--window-size',
         default='12*7',
-        help='size of the window to display images')
+        help='size of the window to display images, in format of "$W*$H".')
     parser.add_argument(
         '--cfg-options',
         nargs='+',
