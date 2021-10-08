@@ -7,7 +7,7 @@ from pathlib import Path
 
 import mmcv
 import numpy as np
-from mmcv import Config, DictAction
+from mmcv import Config, DictAction, ProgressBar
 
 from mmcls.core import visualization as vis
 from mmcls.datasets.builder import build_dataset
@@ -28,7 +28,7 @@ def parse_args():
         '--output-dir',
         default='',
         type=str,
-        help='folder to save output pictures, if not set, do not save in dir.')
+        help='folder to save output pictures, if not set, do not save.')
     parser.add_argument(
         '--phase',
         default='train',
@@ -106,6 +106,10 @@ def parse_args():
     if args.window_size != '':
         assert re.match(r'\d+\*\d+', args.window_size), \
             "'window-size' must be in fromat 'W*H'."
+    if args.output_dir == '' and args.show:
+        raise ValueError("if 'args.output-dir' is '' and args.show is True, "
+                         'nothing will happen when the program running.')
+
     if args.show_options is None:
         args.show_options = {}
     return args
@@ -220,6 +224,7 @@ def main():
     dataset, pipeline = build_dataset_pipeline(cfg, args.phase)
     CLASSES = dataset.CLASSES
     display_number = min(args.number, len(dataset))
+    progressBar = ProgressBar(display_number)
 
     with vis.ImshowInfosContextManager(fig_size=(wind_w, wind_h)) as manager:
         for i, item in enumerate(itertools.islice(dataset, display_number)):
@@ -244,6 +249,8 @@ def main():
                 out_file=dist_path,
                 show=args.show,
                 **args.show_options)
+
+            progressBar.update()
 
 
 if __name__ == '__main__':
