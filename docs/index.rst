@@ -6,7 +6,7 @@ You can switch between Chinese and English documents in the lower-left corner of
 您可以在页面左下角切换中英文文档。
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Get Started
 
    install.md
@@ -14,14 +14,15 @@ You can switch between Chinese and English documents in the lower-left corner of
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Model zoo
 
    modelzoo_statistics.md
+   model_zoo.md
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Tutorials
 
    tutorials/finetune.md
@@ -31,13 +32,20 @@ You can switch between Chinese and English documents in the lower-left corner of
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Useful Tools and Scripts
 
    tools/pytorch2onnx.md
    tools/onnx2tensorrt.md
    tools/pytorch2torchscript.md
    tools/model_serving.md
+
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Community
+
+   community/CONTRIBUTING.md
 
 
 .. toctree::

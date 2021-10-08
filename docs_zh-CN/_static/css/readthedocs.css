@@ -1,0 +1,10 @@
+.header-logo {
+    background-image: url("../image/mmcls-logo.png");
+    background-size: 204px 40px;
+    height: 40px;
+    width: 204px;
+}
+
+pre {
+    white-space: pre;
+}
