@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import copy
 import os
 import warnings
 
@@ -9,6 +8,14 @@ from mmcv.utils import scandir
 from .base_dataset import BaseDataset
 from .builder import DATASETS
 from .imagenet import find_folders
+
+
+class Data_item():
+    __slots__ = ['path', 'gt_label']
+
+    def __init__(self, path, gt_label):
+        self.path = path
+        self.gt_label = gt_label
 
 
 @DATASETS.register_module()
@@ -21,8 +28,10 @@ class ImageNet21k(BaseDataset):
      required :
 
         - Delete the samples attribute
-        - Modify setting `info` from `load_annotations` to
-          `prepare_data`
+        - using 'slots' create a Data_item tp replace dict
+        - Modify setting `info` dict from function `load_annotations` to
+          function `prepare_data`
+        - using int instead of np.array(..., np.int64)
 
     Args:
     data_prefix (str): the prefix of data path
@@ -37,7 +46,8 @@ class ImageNet21k(BaseDataset):
         are meet the conditions in the folder under category directory.
     """
 
-    IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif')
+    IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif',
+                      '.JPEG')
     CLASSES = None
 
     def __init__(self,
@@ -48,22 +58,21 @@ class ImageNet21k(BaseDataset):
                  multi_label=False,
                  recursion_subdir=False,
                  test_mode=False):
-        self.multi_lable = multi_label
         self.recursion_subdir = recursion_subdir
         super(ImageNet21k, self).__init__(data_prefix, pipeline, classes,
                                           ann_file, test_mode)
-        if self.multi_label:
+        self.multi_lable = multi_label
+        if multi_label:
             raise NotImplementedError()
 
     def prepare_data(self, idx):
-        results = copy.deepcopy(self.data_infos[idx])
-        if isinstance(results, str):
-            class_id = 0
-            results = {
-                'img_info': dict(filename=results),
-                'gt_label': np.array(class_id, dtype=np.int64)
-            }
-        results['img_prefix'] = self.data_prefix
+        info = self.data_infos[idx]
+
+        results = {
+            'img_prefix': self.data_prefix,
+            'img_info': dict(filename=info.path),
+            'gt_label': np.array(info.gt_label, dtype=np.int64)
+        }
         return self.pipeline(results)
 
     def load_annotations(self):
@@ -80,19 +89,20 @@ class ImageNet21k(BaseDataset):
             msg += f'{self.ann_file}. ' if self.ann_file \
                 else f'{self.data_prefix}. '
             msg += 'Supported extensions are: ' + \
-                {', '.join(self.IMG_EXTENSIONS)}
+                ', '.join(self.IMG_EXTENSIONS)
             raise RuntimeError(msg)
 
         return data_infos
 
-    def _find_allowed_files(self, root, folder_name, class_id):
+    def _find_allowed_files(self, root, folder_name):
         """find all the allowed files in a folder, including sub folder if
         recursion_subdir is true."""
         _dir = os.path.join(root, folder_name)
         infos_pre_class = []
         for path in scandir(_dir, self.IMG_EXTENSIONS, self.recursion_subdir):
-            infos_pre_class.append(path)
-
+            path = os.path.join(folder_name, path)
+            item = Data_item(path, self.folder_to_idx[folder_name])
+            infos_pre_class.append(item)
         return infos_pre_class
 
     def _load_annotations_from_dir(self):
@@ -101,8 +111,8 @@ class ImageNet21k(BaseDataset):
         folder_to_idx = find_folders(self.data_prefix)
         self.folder_to_idx = folder_to_idx
         root = os.path.expanduser(self.data_prefix)
-        for folder_name, idx in folder_to_idx.items():
-            infos_pre_class = self._find_allowed_files(root, folder_name, idx)
+        for folder_name in folder_to_idx.keys():
+            infos_pre_class = self._find_allowed_files(root, folder_name)
             if len(infos_pre_class) == 0:
                 empty_classes.append(folder_name)
             data_infos.extend(infos_pre_class)
@@ -112,7 +122,7 @@ class ImageNet21k(BaseDataset):
                 f"{', '.join(sorted(empty_classes))}"
             msg += 'Supported extensions are: ' + \
                 f"{', '.join(self.IMG_EXTENSIONS)}."
-            warnings(msg)
+            warnings.warn(msg)
 
         return data_infos
 
@@ -124,10 +134,7 @@ class ImageNet21k(BaseDataset):
                 if line == '':
                     continue
                 filepath, gt_label = line.strip().rsplit(' ', 1)
-                info = {
-                    'img_info': dict(filename=filepath),
-                    'gt_label': np.array(gt_label, dtype=np.int64)
-                }
+                info = Data_item(filepath, int(gt_label))
                 data_infos.append(info)
 
         return data_infos
