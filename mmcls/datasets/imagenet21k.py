@@ -10,7 +10,7 @@ from .builder import DATASETS
 from .imagenet import find_folders
 
 
-class Data_item():
+class ImageInfo():
     __slots__ = ['path', 'gt_label']
 
     def __init__(self, path, gt_label):
@@ -101,7 +101,7 @@ class ImageNet21k(BaseDataset):
         infos_pre_class = []
         for path in scandir(_dir, self.IMG_EXTENSIONS, self.recursion_subdir):
             path = os.path.join(folder_name, path)
-            item = Data_item(path, self.folder_to_idx[folder_name])
+            item = ImageInfo(path, self.folder_to_idx[folder_name])
             infos_pre_class.append(item)
         return infos_pre_class
 
@@ -134,7 +134,7 @@ class ImageNet21k(BaseDataset):
                 if line == '':
                     continue
                 filepath, gt_label = line.strip().rsplit(' ', 1)
-                info = Data_item(filepath, int(gt_label))
+                info = ImageInfo(filepath, int(gt_label))
                 data_infos.append(info)
 
         return data_infos
