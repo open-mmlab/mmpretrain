@@ -21,8 +21,10 @@ optimizer_config = dict(grad_clip=None)
 # FIXME: lr in the first 300 epochs conforms to the CosineAnnealing and
 # the lr in the last 10 epoch equals to min_lr
 lr_config = dict(
-    policy='CosineAnnealing',
+    policy='CosineAnnealingCooldown',
     min_lr=1e-5,
+    cool_down_time=10,
+    cool_down_ratio=0.1,
     by_epoch=True,
     warmup_by_epoch=True,
     warmup='linear',
