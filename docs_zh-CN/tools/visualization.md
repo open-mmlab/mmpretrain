@@ -60,7 +60,7 @@ python tools/visualizations/vis_pipeline.py \
 python ./tools/visualizations/vis_pipeline.py ./configs/resnet/resnet50_b32x8_imagenet.py --show --mode pipeline
 ```
 
-![pipeline](../../docs/imgs/pipeline.png)
+![pipeline](../../docs/imgs/pipeline.JPEG)
 
 2. 可视化 `ImageNet` 训练集的10张原始图片与预处理后图片对比图，保存在 `./tmp` 文件夹下：
 
@@ -68,7 +68,7 @@ python ./tools/visualizations/vis_pipeline.py ./configs/resnet/resnet50_b32x8_im
 python ./tools/visualizations/vis_pipeline.py configs/swin_transformer/swin_base_224_b16x64_300e_imagenet.py --phase train --output-dir tmp --number 10 --adaptive
 ```
 
-![concat](../../docs/imgs/concat.png)
+![concat](../../docs/imgs/concat.JPEG)
 
 3. 可视化 `CIFAR100` 验证集中的100张原始图片，显示并保存在 `./tmp` 文件夹下：
 
@@ -76,7 +76,7 @@ python ./tools/visualizations/vis_pipeline.py configs/swin_transformer/swin_base
 python ./tools/visualizations/vis_pipeline.py configs/resnet/resnet50_b16x8_cifar100.py --phase val --output-dir tmp --mode original --number 100 --show --adaptive
 ```
 
-![original](../../docs/imgs/original.png)
+![original](../../docs/imgs/original.JPEG)
 
 ## 常见问题
 
