@@ -73,7 +73,7 @@ python ./tools/visualizations/vis_pipeline.py configs/swin_transformer/swin_base
 3. 可视化 `CIFAR100` 验证集中的100张原始图片，显示并保存在 `./tmp` 文件夹下：
 
 ```shell
-python ./tools/visualizations/vis_pipeline.py configs/resnet/resnet50_b16x8_cifar100.py --phase val --output-dir tmp --mode original --number 100 --show --adaptive
+python ./tools/visualizations/vis_pipeline.py configs/resnet/resnet50_b16x8_cifar100.py --phase val --output-dir tmp --mode original --number 100 --show --adaptive --bgr2rgb
 ```
 
 ![original](../../docs/imgs/original.JPEG)

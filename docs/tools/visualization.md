@@ -72,7 +72,7 @@ python ./tools/visualizations/vis_pipeline.py configs/swin_transformer/swin_base
 3. Visualizing 100 original pictures in the `CIFAR100` val set, then display and save them in the `./tmp` folder：
 
 ```shell
-python ./tools/visualizations/vis_pipeline.py configs/resnet/resnet50_b16x8_cifar100.py --phase val --output-dir tmp --mode original --number 100  --show --adaptive
+python ./tools/visualizations/vis_pipeline.py configs/resnet/resnet50_b16x8_cifar100.py --phase val --output-dir tmp --mode original --number 100  --show --adaptive --bgr2rgb
 ```
 
 ![original](../imgs/original.JPEG)

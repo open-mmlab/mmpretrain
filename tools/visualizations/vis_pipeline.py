@@ -196,14 +196,14 @@ def adaptive_size(mode, image, min_edge_length, max_edge_length):
 
 def get_display_img(item, pipeline, mode, bgr2rgb):
     """get image to display."""
+    if bgr2rgb:
+        item['img'] = mmcv.bgr2rgb(item['img'])
     src_image = item['img'].copy()
     # get transformed picture
     if mode in ['pipeline', 'concat']:
         item = pipeline(item)
         trans_image = item['img']
         trans_image = np.ascontiguousarray(trans_image, dtype=np.uint8)
-        if bgr2rgb:
-            trans_image = mmcv.bgr2rgb(trans_image)
 
     if mode == 'concat':
         image = concat(src_image, trans_image)
