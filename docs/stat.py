@@ -67,10 +67,12 @@ for f in files:
 \t* [{papertype}] [{title}]({copy}) ({len(ckpts)} ckpts)
 """
     stats.append(
-        dict(paper=paper, ckpts=ckpts, statsmsg=statsmsg, abbr=abbr, copy=copy))
+        dict(
+            paper=paper, ckpts=ckpts, statsmsg=statsmsg, abbr=abbr, copy=copy))
 
-allpapers = func.reduce(lambda a, b: a.union(b), [stat["paper"] for stat in stats])
-msglist = '\n'.join(stat["statsmsg"] for stat in stats)
+allpapers = func.reduce(lambda a, b: a.union(b),
+                        [stat['paper'] for stat in stats])
+msglist = '\n'.join(stat['statsmsg'] for stat in stats)
 
 papertypes, papercounts = np.unique([t for t, _ in allpapers],
                                     return_counts=True)
