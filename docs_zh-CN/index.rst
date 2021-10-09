@@ -52,8 +52,8 @@ You can switch between Chinese and English documents in the lower-left corner of
 .. toctree::
    :caption: 语言切换
 
-   switch_language.md
-
+   English <https://mmclassification.readthedocs.io/en/latest/>
+   简体中文 <https://mmclassification.readthedocs.io/zh_CN/latest/>
 
 
 索引与表格
