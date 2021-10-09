@@ -58,7 +58,7 @@ python tools/visualizations/vis_pipeline.py \
 python ./tools/visualizations/vis_pipeline.py ./configs/resnet/resnet50_b32x8_imagenet.py --show --mode pipeline
 ```
 
-<div align=center><img src="../../docs/_static/image/pipeline.JPEG" style=" width: auto; height: 40%; "></div>
+<div align=center><img src="../_static/image/pipeline.JPEG" style=" width: auto; height: 40%; "></div>
 
 2. Visualizing 10 comparison pictures in the `ImageNet` train set and save them in the `./tmp` folder：
 
@@ -66,7 +66,7 @@ python ./tools/visualizations/vis_pipeline.py ./configs/resnet/resnet50_b32x8_im
 python ./tools/visualizations/vis_pipeline.py configs/swin_transformer/swin_base_224_b16x64_300e_imagenet.py --phase train --output-dir tmp --number 10 --adaptive
 ```
 
-<div align=center><img src="../../docs/_static/image/concat.JPEG" style=" width: auto; height: 40%; "></div>
+<div align=center><img src="../_static/image/concat.JPEG" style=" width: auto; height: 40%; "></div>
 
 3. Visualizing 100 original pictures in the `CIFAR100` val set, then display and save them in the `./tmp` folder：
 
@@ -74,7 +74,7 @@ python ./tools/visualizations/vis_pipeline.py configs/swin_transformer/swin_base
 python ./tools/visualizations/vis_pipeline.py configs/resnet/resnet50_b16x8_cifar100.py --phase val --output-dir tmp --mode original --number 100  --show --adaptive --bgr2rgb
 ```
 
-<div align=center><img src="../../docs/_static/image/original.JPEG" style=" width: auto; height: 40%; "></div>
+<div align=center><img src="../_static/image/original.JPEG" style=" width: auto; height: 40%; "></div>
 
 ## FAQs
 
