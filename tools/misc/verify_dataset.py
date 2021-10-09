@@ -14,12 +14,19 @@ from mmcls.datasets.pipelines import Compose
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Verify Dataset')
-    parser.add_argument('config', help='train config file path')
+    parser.add_argument('config', help='config file path')
     parser.add_argument(
-        '--log_file',
+        '--out-path',
         type=str,
         default='./broken_files.log',
-        help='log the broken files files')
+        help='output path of all the broken files. If the specified path '
+        'already exists, delete the previous file ')
+    parser.add_argument(
+        '--phase',
+        default='train',
+        type=str,
+        choices=['train', 'test', 'val'],
+        help='phase of dataset to visualize, accept "train" "test" and "val".')
     parser.add_argument(
         '--num-process', type=int, default=1, help='number of process to use')
     parser.add_argument(
@@ -33,7 +40,7 @@ def parse_args():
         'Note that the quotation marks are necessary and that no white space '
         'is allowed.')
     args = parser.parse_args()
-    assert args.log_file is not None
+    assert args.out_path is not None
     assert args.num_process > 0
     return args
 
@@ -41,13 +48,13 @@ def parse_args():
 class Dataset_vaild():
     """the dataset tool class to check if all file are broken."""
 
-    def __init__(self, dataset_cfg, log_file_path, single_process=True):
+    def __init__(self, dataset_cfg, log_file_path, phase, single_process=True):
         super(Dataset_vaild, self).__init__()
         # keep only LoadImageFromFile pipeline
-        dataset_cfg.data.train.pipeline = []
+        dataset_cfg.data[phase].pipeline = []
         LoadImageFromFile_pipeline = [dict(type='LoadImageFromFile')]
         pipeline = Compose(LoadImageFromFile_pipeline)
-        dataset = build_dataset(dataset_cfg.data.train)
+        dataset = build_dataset(dataset_cfg.data[phase])
 
         self.loadFile_pipeline = pipeline
         self.dataset = dataset
@@ -106,22 +113,22 @@ def main():
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
 
-    # touch log file to save broken files list.
-    log_file_path = Path(args.log_file)
-    if not log_file_path.parent.exists():
-        raise Exception('log_file dir not found.')
-    if log_file_path.exists():
-        os.remove(log_file_path)
-    log_file_path.touch()
+    # touch output file to save broken files list.
+    output_path = Path(args.out_path)
+    if not output_path.parent.exists():
+        raise Exception('log_file parent directory not found.')
+    if output_path.exists():
+        os.remove(output_path)
+    output_path.touch()
 
     # do vaild
     single_process = args.num_process == 1
     dataset_vaild = Dataset_vaild(
-        cfg, log_file_path, single_process=single_process)
+        cfg, output_path, args.phase, single_process=single_process)
     with Pool(args.num_process) as p:
         p.map(dataset_vaild.vaild_idx, list(range(len(dataset_vaild))))
 
-    print_info(log_file_path)
+    print_info(output_path)
 
 
 if __name__ == '__main__':
