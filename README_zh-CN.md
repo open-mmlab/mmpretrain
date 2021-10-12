@@ -30,7 +30,7 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 
 ## 更新日志
 
-2021/8/31 发布了 v0.15.0 版本
+2021/9/30 发布了 v0.16.0 版本
 
 发布历史和更新细节请参考 [更新日志](docs/changelog.md)
 
@@ -61,7 +61,7 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 
 ## 参与贡献
 
-我们非常欢迎任何有助于提升 MMClassification 的贡献，请参考 [贡献指南](.github/CONTRIBUTING-zh_CN.md) 来了解如何参与贡献。
+我们非常欢迎任何有助于提升 MMClassification 的贡献，请参考 [贡献指南](docs_zh-CN/community/CONTRIBUTING.md) 来了解如何参与贡献。
 
 ## 致谢
 

@@ -12,7 +12,7 @@ Collections:
       Title: Mixed Precision Training
     README: configs/fp16/README.md
     Code:
-      URI: https://github.com/open-mmlab/mmclassification/blob/a41cb2fa938d957101cc446e271486206188bf5b/mmcls/core/fp16/hooks.py#L13
+      URL: https://github.com/open-mmlab/mmclassification/blob/a41cb2fa938d957101cc446e271486206188bf5b/mmcls/core/fp16/hooks.py#L13
       Version: v0.15.0
 
 Models:

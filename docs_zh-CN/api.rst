@@ -1,6 +1,3 @@
-API Reference
-=============
-
 mmcls.apis
 -------------
 .. automodule:: mmcls.apis

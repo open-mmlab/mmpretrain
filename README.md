@@ -31,7 +31,7 @@ This project is released under the [Apache 2.0 license](LICENSE).
 
 ## Changelog
 
-v0.15.0 was released in 31/8/2021.
+v0.16.0 was released in 30/9/2021.
 Please refer to [changelog.md](docs/changelog.md) for details and release history.
 
 ## Benchmark and model zoo
@@ -75,7 +75,7 @@ If you find this project useful in your research, please consider cite:
 ## Contributing
 
 We appreciate all contributions to improve MMClassification.
-Please refer to [CONTRUBUTING.md](.github/CONTRIBUTING.md) for the contributing guideline.
+Please refer to [CONTRUBUTING.md](docs/community/CONTRIBUTING.md) for the contributing guideline.
 
 ## Acknowledgement
 
