@@ -39,7 +39,6 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         self.pipeline = Compose(pipeline)
         self.CLASSES = self.get_classes(classes)
         self.data_infos = self.load_annotations()
-        print(self.data_infos)
 
     @abstractmethod
     def load_annotations(self):
