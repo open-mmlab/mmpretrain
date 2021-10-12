@@ -47,27 +47,26 @@ class ImageNet21k(BaseDataset):
     """
 
     IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif',
-                      '.JPEG')
+                      '.JPEG', '.JPG')
     CLASSES = None
 
     def __init__(self,
                  data_prefix,
-                 pipeline,
+                 pipeline=[],
                  classes=None,
                  ann_file=None,
                  multi_label=False,
                  recursion_subdir=False,
                  test_mode=False):
         self.recursion_subdir = recursion_subdir
+        if multi_label:
+            raise NotImplementedError('Multi_label have not be implemented.')
+        self.multi_lable = multi_label
         super(ImageNet21k, self).__init__(data_prefix, pipeline, classes,
                                           ann_file, test_mode)
-        self.multi_lable = multi_label
-        if multi_label:
-            raise NotImplementedError()
 
     def prepare_data(self, idx):
         info = self.data_infos[idx]
-
         results = {
             'img_prefix': self.data_prefix,
             'img_info': dict(filename=info.path),
@@ -119,7 +118,7 @@ class ImageNet21k(BaseDataset):
 
         if len(empty_classes) != 0:
             msg = 'Found no valid file for the classes ' + \
-                f"{', '.join(sorted(empty_classes))}"
+                f"{', '.join(sorted(empty_classes))} "
             msg += 'Supported extensions are: ' + \
                 f"{', '.join(self.IMG_EXTENSIONS)}."
             warnings.warn(msg)

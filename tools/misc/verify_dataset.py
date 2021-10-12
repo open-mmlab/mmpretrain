@@ -18,7 +18,7 @@ def parse_args():
     parser.add_argument(
         '--out-path',
         type=str,
-        default='./broken_files.log',
+        default='brokenfiles.log',
         help='output path of all the broken files. If the specified path '
         'already exists, delete the previous file ')
     parser.add_argument(
