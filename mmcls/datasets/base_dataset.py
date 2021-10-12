@@ -33,13 +33,13 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
                  ann_file=None,
                  test_mode=False):
         super(BaseDataset, self).__init__()
-
         self.ann_file = ann_file
         self.data_prefix = data_prefix
         self.test_mode = test_mode
         self.pipeline = Compose(pipeline)
         self.CLASSES = self.get_classes(classes)
         self.data_infos = self.load_annotations()
+        print(self.data_infos)
 
     @abstractmethod
     def load_annotations(self):

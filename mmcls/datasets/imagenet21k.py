@@ -11,6 +11,8 @@ from .imagenet import find_folders
 
 
 class ImageInfo():
+    """class to  store image info, using slots will save memory than using
+    dict."""
     __slots__ = ['path', 'gt_label']
 
     def __init__(self, path, gt_label):
@@ -58,6 +60,7 @@ class ImageNet21k(BaseDataset):
                  multi_label=False,
                  recursion_subdir=False,
                  test_mode=False):
+        print(ann_file)
         self.recursion_subdir = recursion_subdir
         if multi_label:
             raise NotImplementedError('Multi_label have not be implemented.')
@@ -76,11 +79,15 @@ class ImageNet21k(BaseDataset):
 
     def load_annotations(self):
         """load dataset annotations."""
+        print(self.ann_file)
         if self.ann_file is None:
+            print('++' * 40)
             data_infos = self._load_annotations_from_dir()
         elif isinstance(self.ann_file, str):
+            print('<<' * 40)
             data_infos = self._load_annotations_from_file()
         else:
+            print('>>' * 40)
             raise TypeError('ann_file must be a str or None')
 
         if len(data_infos) == 0:

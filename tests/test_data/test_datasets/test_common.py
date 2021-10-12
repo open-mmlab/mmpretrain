@@ -16,6 +16,7 @@ from mmcls.datasets import (DATASETS, BaseDataset, ImageNet21k,
 ])
 def test_datasets_override_default(dataset_name):
     dataset_class = DATASETS.get(dataset_name)
+    load_annotations_f = dataset_class.load_annotations
     dataset_class.load_annotations = MagicMock()
 
     original_classes = dataset_class.CLASSES
@@ -83,6 +84,8 @@ def test_datasets_override_default(dataset_name):
     assert not dataset.test_mode
     assert dataset.ann_file is None
     assert dataset.CLASSES == original_classes
+
+    dataset_class.load_annotations = load_annotations_f
 
 
 @patch.multiple(MultiLabelDataset, __abstractmethods__=set())
@@ -265,7 +268,8 @@ def test_dataset_imagenet21k():
     with pytest.raises(TypeError):
         # ann_file must be a string or None
         dataset_cfg = base_dataset_cfg.copy()
-        dataset_cfg.update({'ann_file': True})
+        ann_file = {'path': 'tests/data/dataset/ann.txt'}
+        dataset_cfg.update({'ann_file': ann_file})
         dataset = ImageNet21k(**dataset_cfg)
 
     # test with recursion_subdir is True
