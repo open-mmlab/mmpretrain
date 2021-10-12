@@ -18,7 +18,7 @@ def parse_args():
     parser.add_argument(
         '--out-path',
         type=str,
-        default='./broken_files.log',
+        default='brokenfiles.log',
         help='output path of all the broken files. If the specified path '
         'already exists, delete the previous file ')
     parser.add_argument(
@@ -48,7 +48,7 @@ def parse_args():
 class Dataset_vaild():
     """the dataset tool class to check if all file are broken."""
 
-    def __init__(self, dataset_cfg, log_file_path, phase, single_process=True):
+    def __init__(self, dataset_cfg, log_file_path, phase):
         super(Dataset_vaild, self).__init__()
         # keep only LoadImageFromFile pipeline
         dataset_cfg.data[phase].pipeline = []
@@ -65,7 +65,6 @@ class Dataset_vaild():
         self.intervals = 100 if self.task_num > 100000 else 5
         # check number files everytime to print some someting
         self.print_intervals = self.task_num // self.intervals
-        self.single_process = single_process
         self.start = time.time()
 
     def vaild_idx(self, idx):
@@ -75,14 +74,16 @@ class Dataset_vaild():
             files_pre_second = idx // time_spend
             print(f'[{precent}%]\t| {idx} pictures, consumes {time_spend} '
                   f'seconds, around {files_pre_second} files pre second.')
+
+        item = self.dataset[idx]
         try:
-            item = self.dataset[idx]
             item = self.loadFile_pipeline(item)
         except Exception:
             with open(self.log_file_path, 'a') as f:
                 # add file lock to prevent multi-process writing errors
                 fcntl.flock(f.fileno(), fcntl.LOCK_EX)
-                filepath = item['img_prefix'] + item['img_info']['filename']
+                filepath = os.path.join(item['img_prefix'],
+                                        item['img_info']['filename'])
                 f.write(filepath + '\n')
                 print(f'{filepath} cannot be read correctly, please check it.')
                 # Release files lock automatic using with
@@ -122,9 +123,7 @@ def main():
     output_path.touch()
 
     # do vaild
-    single_process = args.num_process == 1
-    dataset_vaild = Dataset_vaild(
-        cfg, output_path, args.phase, single_process=single_process)
+    dataset_vaild = Dataset_vaild(cfg, output_path, args.phase)
     with Pool(args.num_process) as p:
         p.map(dataset_vaild.vaild_idx, list(range(len(dataset_vaild))))
 
