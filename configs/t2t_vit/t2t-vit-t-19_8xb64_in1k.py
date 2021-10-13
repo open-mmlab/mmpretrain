@@ -1,6 +1,6 @@
 _base_ = [
-    '../_base_/models/t2t-vit-t-24.py',
-    '../_base_/datasets/imagenet_bs128_t2t_224.py',
+    '../_base_/models/t2t-vit-t-19.py',
+    '../_base_/datasets/imagenet_bs64_t2t_224.py',
     '../_base_/default_runtime.py',
 ]
 
@@ -11,8 +11,8 @@ paramwise_cfg = dict(
 )
 optimizer = dict(
     type='AdamW',
-    lr=0.001,
-    weight_decay=0.05,
+    lr=5e-4,
+    weight_decay=0.065,
     paramwise_cfg=paramwise_cfg,
 )
 optimizer_config = dict(grad_clip=None)
@@ -26,6 +26,6 @@ lr_config = dict(
     by_epoch=True,
     warmup_by_epoch=True,
     warmup='linear',
-    warmup_iters=5,
-    warmup_ratio=1e-3)
+    warmup_iters=10,
+    warmup_ratio=1e-6)
 runner = dict(type='EpochBasedRunner', max_epochs=310)
