@@ -276,7 +276,7 @@ def test_repvgg_backbone():
 
 
 def test_repvgg_load():
-    # Test ouput before and load from deploy checkpoint
+    # Test output before and load from deploy checkpoint
     model = RepVGG('A1', out_indices=(0, 1, 2, 3))
     inputs = torch.randn((1, 3, 224, 224))
     ckpt_path = os.path.join(tempfile.gettempdir(), 'ckpt.pth')
