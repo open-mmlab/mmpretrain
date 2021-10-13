@@ -172,7 +172,7 @@ class T2TModule(BaseModule):
         else:
             raise NotImplementedError("Performer hasn't been implemented.")
 
-        # there are 3 soft split, stride are 4,2,2 seperately
+        # there are 3 soft split, stride are 4,2,2 separately
         self.num_patches = (img_size // (4 * 2 * 2))**2
 
     def forward(self, x):
