@@ -62,7 +62,13 @@ class OpenBrandDataset(BaseDataset):
 
         self.coco = COCO(self.ann_file)
         self.cat_ids = self.coco.get_cat_ids(cat_names=self.CLASSES)
-        self.cat2label = {cat_id: i for i, cat_id in enumerate(self.cat_ids)}
+        self.cat2label = {cat: i for i, cat in enumerate(self.CLASSES)}
+        self.cat2label.update(
+            {
+                ('OB', coco_cat['id']): self.cat2label[coco_cat['name']]
+                for coco_cat in self.coco.cats.values()
+            }
+        )
         self.img_ids = self.coco.get_img_ids()
         data_infos = []
         for i in self.img_ids:
@@ -184,7 +190,7 @@ class OpenBrandDataset(BaseDataset):
             else:
                 gt_bboxes.append(bbox)
                 cat_id = ann['category_id']
-                gt_labels.append(self.cat2label[cat_id])
+                gt_labels.append(self.cat2label[('OB', cat_id)])
                 gt_masks_ann.append(ann['segmentation'])
 
         if gt_bboxes:
