@@ -1,4 +1,5 @@
 # Backpropagation Applied to Handwritten Zip Code Recognition
+<!-- {LeNet} -->
 
 ## Introduction
 

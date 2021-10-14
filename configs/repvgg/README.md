@@ -1,4 +1,5 @@
 # Repvgg: Making vgg-style convnets great again
+<!-- {RepVGG} -->
 
 ## Introduction
 
@@ -43,7 +44,7 @@ python ./tools/convert_models/reparameterize_repvgg.py ${CFG_PATH} ${SRC_CKPT_PA
 
 `${CFG_PATH}` is the config file, `${SRC_CKPT_PATH}` is the source chenpoint file, `${TARGET_CKPT_PATH}` is the target deploy weight file path.
 
-To use reparameterized repvgg weight, the config file must switch to [the deploy config files](./configs/repvgg/deploy) as below:
+To use reparameterized repvgg weight, the config file must switch to [the deploy config files](./deploy) as below:
 
 ```bash
 python ./tools/test.py ${RapVGG_Deploy_CFG} ${CHECK_POINT}
