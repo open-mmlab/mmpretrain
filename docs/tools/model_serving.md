@@ -10,7 +10,19 @@ python tools/deployment/mmcls2torchserve.py ${CONFIG_FILE} ${CHECKPOINT_FILE} \
 --model-name ${MODEL_NAME}
 ```
 
-**Note**: ${MODEL_STORE} needs to be an absolute path to a folder.
+```{note}
+${MODEL_STORE} needs to be an absolute path to a folder.
+```
+
+Example:
+
+```shell
+python tools/deployment/mmcls2torchserve.py \
+  configs/resnet/resnet18_b32x8_imagenet.py \
+  checkpoints/resnet18_8xb32_in1k_20210831-fbbb1da6.pth \
+  --output-folder ./checkpoints \
+  --model-name resnet18_in1k
+```
 
 ## 2. Build `mmcls-serve` docker image
 
@@ -31,8 +43,12 @@ docker run --rm \
 --cpus 8 \
 --gpus device=0 \
 -p8080:8080 -p8081:8081 -p8082:8082 \
---mount type=bind,source=$MODEL_STORE,target=/home/model-server/model-store \
+--mount type=bind,source=`realpath ./checkpoints`,target=/home/model-server/model-store \
 mmcls-serve:latest
+```
+
+```{note}
+`realpath ./checkpoints` points to the absolute path of "./checkpoints", and you can replace it with the absolute path where you store torchserve models.
 ```
 
 [Read the docs](https://github.com/pytorch/serve/blob/master/docs/rest_api.md) about the Inference (8080), Management (8081) and Metrics (8082) APis
@@ -57,7 +73,7 @@ And you can use `test_torchserver.py` to compare result of TorchServe and PyTorc
 
 ```shell
 python tools/deployment/test_torchserver.py ${IMAGE_FILE} ${CONFIG_FILE} ${CHECKPOINT_FILE} ${MODEL_NAME}
-[--inference-addr ${INFERENCE_ADDR}] [--device ${DEVICE}] [--score-thr ${SCORE_THR}]
+[--inference-addr ${INFERENCE_ADDR}] [--device ${DEVICE}]
 ```
 
 Example:

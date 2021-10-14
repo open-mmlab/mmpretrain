@@ -36,6 +36,7 @@ def main(args):
     show_result_pyplot(model, args.img, server_result, title='server_result')
 
     assert np.allclose(model_result['pred_score'], server_result['pred_score'])
+    print('Test complete, the results of PyTorch and TorchServe are the same.')
 
 
 if __name__ == '__main__':
