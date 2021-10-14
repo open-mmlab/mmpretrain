@@ -154,7 +154,9 @@ def train_model(model,
         runner.register_hook(eval_hook(val_dataloader, **eval_cfg))
 
     if cfg.resume_from:
+        torch.cuda.empty_cache()
         runner.resume(cfg.resume_from)
+        torch.cuda.empty_cache()
     elif cfg.load_from:
         runner.load_checkpoint(cfg.load_from)
     runner.run(data_loaders, cfg.workflow)
