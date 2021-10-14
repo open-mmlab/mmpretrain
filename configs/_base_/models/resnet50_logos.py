@@ -9,8 +9,8 @@ model = dict(
         style='pytorch'),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
-        type='AngularPenaltyHead',
+        type='LinearClsHead',  #'AngularPenaltyHead',
         num_classes=3731,
         in_channels=2048,
-        topk=(1, 5),
+        loss=dict(type='CrossEntropyLoss', loss_weight=1.0),  #
     ))
