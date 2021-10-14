@@ -24,7 +24,7 @@ _base_ = [
 
 data = dict(
     samples_per_gpu=516,
-    workers_per_gpu=4,
+    workers_per_gpu=8,
 )
 evaluation = dict(interval=1, metric=['accuracy', 'crossentropy'])
 optimizer = dict(type='SGD', lr=0.4, momentum=0.9, weight_decay=0.0001)
