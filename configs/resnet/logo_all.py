@@ -33,5 +33,5 @@ optimizer_config = dict(grad_clip=None)
 lr_config = dict(policy='step', step=[30, 60, 90])
 runner = dict(type='EpochBasedRunner', max_epochs=100)
 
-work_dir = "/tmp/train_checkpoints/"
+work_dir = "/home/ubuntu/train_checkpoints/resnet_all"
 
