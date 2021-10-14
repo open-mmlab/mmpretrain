@@ -19,7 +19,7 @@ test_pipeline = [
     dict(type='Collect', keys=['img'])
 ]
 
-home = '/home/cgarriga/'
+home = '/home/ubuntu/'
 data = dict(
     samples_per_gpu=192,
     workers_per_gpu=1,
