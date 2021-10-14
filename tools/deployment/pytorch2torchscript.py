@@ -131,7 +131,7 @@ if __name__ == '__main__':
     if args.checkpoint:
         load_checkpoint(classifier, args.checkpoint, map_location='cpu')
 
-    # conver model to TorchScript file
+    # convert model to TorchScript file
     pytorch2torchscript(
         classifier,
         input_shape,

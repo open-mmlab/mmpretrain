@@ -358,7 +358,7 @@ def test_rand_augment():
                              axis=-1)
     np.testing.assert_array_equal(results['img'], img_augmented)
 
-    # test case where magnitude_std is negtive
+    # test case where magnitude_std is negative
     random.seed(3)
     np.random.seed(0)
     results = construct_toy_data()
@@ -602,7 +602,7 @@ def test_rotate():
         transform = dict(type='Rotate', angle=90., center=0)
         build_from_cfg(transform, PIPELINES)
 
-    # test assertion for invalid lenth of center
+    # test assertion for invalid length of center
     with pytest.raises(AssertionError):
         transform = dict(type='Rotate', angle=90., center=(0, ))
         build_from_cfg(transform, PIPELINES)

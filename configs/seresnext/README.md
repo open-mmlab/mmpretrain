@@ -1,4 +1,5 @@
 # Squeeze-and-Excitation Networks
+<!-- {SE-ResNeXt} -->
 
 ## Introduction
 

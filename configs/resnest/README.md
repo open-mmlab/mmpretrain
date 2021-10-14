@@ -1,4 +1,5 @@
 # ResNeSt: Split-Attention Networks
+<!-- {ResNeSt} -->
 
 ## Introduction
 
