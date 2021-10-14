@@ -2,7 +2,7 @@
 
 MMCls 使用 `python` 文件作为配置文件。其配置文件系统的设计将模块化与继承整合进来，方便用户进行各种实验。所有配置文件都放置在 `$MMCls/configs` 文件夹下，主要包含 `_base_` 原始配置文件夹 以及 `resnet`, `swin_transformer`，`vision_transformer` 等诸多算法文件夹。
 
-可以使用工具 `python tools/misc/print_config.py /PATH/TO/CONFIG` 命令来查看完整的配置信息，从而方便检查所对应的配置文件。
+可以使用工具 ```python tools/misc/print_config.py /PATH/TO/CONFIG``` 命令来查看完整的配置信息，从而方便检查所对应的配置文件。
 
 <!-- TOC -->
 
@@ -20,7 +20,7 @@ MMCls 使用 `python` 文件作为配置文件。其配置文件系统的设计�
 
 ## 配置文件命名规则
 
-MMCls 按照以下风格进行配置文件命名，代码库的贡献者需要遵循相同的命名规则。文件名总体分为四部分：算法信息，模块信息，训练信息和数据信息。逻辑上属于不同部分的单词之间用下划线'_'连接，同一部分有多个单词用短横线'-'连接。
+MMCls 按照以下风格进行配置文件命名，代码库的贡献者需要遵循相同的命名规则。文件名总体分为四部分：算法信息，模块信息，训练信息和数据信息。逻辑上属于不同部分的单词之间用下划线 `'_'` 连接，同一部分有多个单词用短横线 `'-'` 连接。
 
 ```
 {model info}_{module info}_{training info}_{data info}.py
@@ -44,7 +44,7 @@ MMCls 按照以下风格进行配置文件命名，代码库的贡献者需要�
 - `in21k-pre-3rd-party` : 表示 `ImageNet21k` 上预训练的，来自其他仓库的模型
 
 ### 训练信息
-训练策略的一些设置，包括 训练类型，batch size, lr schedule，数据增强以及特殊的损失函数等等,比如：
+训练策略的一些设置，包括 训练类型，`batch size`, `lr schedule`，数据增强以及特殊的损失函数等等,比如:
 Batch size 信息：
 - 格式为`{gpu x batch_per_gpu}`, 如 `8xb32`
 
@@ -52,10 +52,9 @@ Batch size 信息：
 - `ft` : Finetune config，用于微调的配置文件
 - `pt` : Pretrain config，用于预训练的配置文件
 
-训练策略信息，训练策略以复现配置文件为基础，此基础不必标注训练策略。但如果在此基础上进行改进，则需注明训练策略，例：
-  按照应用点位顺序排列，如：`{pipeline aug}-{train aug}-{loss trick}-{scheduler}-{epochs}`
-- `coslr-200e` : 使用 cosine scheduler, 训练200个 epoch
-- `autoaug-mixup-lbs-coslr-50e` : 使用了autoaug、mixup、label smooth、cosine scheduler, 训练了50个 epoch
+训练策略信息，训练策略以复现配置文件为基础，此基础不必标注训练策略。但如果在此基础上进行改进，则需注明训练策略，按照应用点位顺序排列，如：`{pipeline aug}-{train aug}-{loss trick}-{scheduler}-{epochs}`
+- `coslr-200e` : 使用 cosine scheduler, 训练 200 个 epoch
+- `autoaug-mixup-lbs-coslr-50e` : 使用了 `autoaug`、`mixup`、`label smooth`、`cosine scheduler`, 训练了50个 epoch
 
 ### 数据信息
 - `in1k` : `ImageNet1k` 数据集
@@ -87,7 +86,7 @@ repvgg-D2se_deploy_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py
 许多方法都可以方便地通过组合这些组件进行实现，如 ResNet、Swin_Transformer、 ViT、 RepVGG 等。
 其中，通过 `_base_` 下组件来构建的配置被称为 _原始配置_（_primitive_）。
 
-为了帮助用户对 MMCls 检测系统中的完整配置和模块有一个基本的了解，我们对使用 [ResNet50 原始配置文件](../../configs/resnet/resnet50_b32x8_imagenet.py)作为案例进行说明以及注释每一行含义。更详细的用法和各个模块对应的替代方案，请参考 API 文档。
+为了帮助用户对 MMCls 检测系统中的完整配置和模块有一个基本的了解，我们使用 [ResNet50 原始配置文件](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet50_b32x8_imagenet.py) 作为案例进行说明并注释每一行含义。更详细的用法和各个模块对应的替代方案，请参考 API 文档。
 
 ```python
 _base_ = [
@@ -98,7 +97,7 @@ _base_ = [
 ]
 ```
 
-下面对这四个部分分别进行说明，还是以[ResNet50 原始配置文件](../../configs/resnet/resnet50_b32x8_imagenet.py)中的配置信息作为案例。
+下面对这四个部分分别进行说明，还是以上述 ResNet50 原始配置文件作为案例。
 
 ### 模型
 
@@ -191,10 +190,10 @@ evaluation = dict(       # evaluation hook 的配置
 
 ### 训练策略
 主要包含 优化器设置、 `optimizer hook` 设置、学习率策略和 `runner`设置：
-- `optimizer` : 优化器设置信息, 支持 `pytorch` 所有的优化器，参考相关[MMCV代码及文档](https://mmcv.readthedocs.io/en/latest/_modules/mmcv/runner/optimizer/default_constructor.html#DefaultOptimizerConstructor)
-- `optimizer_config` : `optimizer hook` 的配置文件,如设置梯度限制，参考相关[MMCV代码及文档](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/optimizer.py#L8)
-- `lr_config` : 学习率策略，支持 `CosineAnnealing`, `step`, `warmup` 等等，参考相关[MMCV代码及文档](https://mmcv.readthedocs.io/en/latest/_modules/mmcv/runner/hooks/lr_updater.html#LrUpdaterHook)
-- `runner` : 有关 `runner` 可以参考 `MMCV` 对于 [`runner` 介绍文档](https://mmcv.readthedocs.io/en/latest/understand_mmcv/runner.html)。
+- `optimizer` : 优化器设置信息, 支持 `pytorch` 所有的优化器，参考相关 [mmcv](https://mmcv.readthedocs.io/en/latest/_modules/mmcv/runner/optimizer/default_constructor.html#DefaultOptimizerConstructor) 文档
+- `optimizer_config` : `optimizer hook` 的配置文件,如设置梯度限制，参考相关 [mmcv](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/optimizer.py#L8) 代码
+- `lr_config` : 学习率策略，支持 `CosineAnnealing`, `step`, `warmup` 等等，参考相关 [mmcv](https://mmcv.readthedocs.io/en/latest/_modules/mmcv/runner/hooks/lr_updater.html#LrUpdaterHook) 文档
+- `runner` : 有关 `runner` 可以参考 `mmcv` 对于 [`runner`](https://mmcv.readthedocs.io/en/latest/understand_mmcv/runner.html) 介绍文档
 ```python
 # 用于构建优化器的配置文件。支持 PyTorch 中的所有优化器，同时它们的参数与 PyTorch 里的优化器参数一致。
 optimizer = dict(type='SGD',         # 优化器类型
@@ -303,7 +302,7 @@ lr_config = dict(
 )
 ```
 
-这时在构建优化器策略时会报 "get unexcepected keywoord 'step'" 错, 原配置信息 lr_config 的 `'step'` 被保留下来了，需要加入 `_delete_=True` 去忽略基础配置文件里的 `lr_config` 域内容：
+这时在构建优化器策略时会报 "get unexcepected keywoord 'step'" 错, 基础配置文件 lr_config 的域信息 `'step'` 被保留下来了，需要加入 `_delete_=True` 去忽略基础配置文件里的 `lr_config` 域内容：
 
 ```python
 _base_ = '../../configs/resnet/resnet50_b32x8_imagenet.py'
@@ -323,7 +322,7 @@ lr_config = dict(
 
 有时，您可以引用 `__base__` 配置信息的一些域内容，这样可以避免重复定义。 可以参照 [mmcv](https://mmcv.readthedocs.io/en/latest/understand_mmcv/config.html#reference-variables-from-base) 来获得一些简单的指导。
 
-以下是一个简单应用案例，在训练数据预处理流水线中使用 `auto augment`，具体参考配置文件 "configs/_base_/datasets/imagenet_bs64_autoaug.py"。 在定义 `train_pipeline` 时直接引用 `_base_`  中的 `auto_increasing_policies` 变量：
+以下是一个简单应用案例，在训练数据预处理流水线中使用 `auto augment`，具体参考配置文件 ["configs/_base_/datasets/imagenet_bs64_autoaug.py"](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/datasets/imagenet_bs64_autoaug.py)。 在定义 `train_pipeline` 时直接引用 `_base_`  中的 `auto_increasing_policies` 变量：
 
 ```python
 _base_ = ['./pipelines/auto_aug.py']
@@ -353,7 +352,7 @@ evaluation = dict(interval=1, metric='accuracy')
 
 ## 通过命令行参数修改配置信息
 
-当用户使用脚本 "tools/train.py" 或者 "tools/test.py" 提交任务时，可以通过指定 `--cfg-options` 参数来直接修改所使用的配置文件内容。
+当用户使用脚本 "tools/train.py" 或者 "tools/test.py" 提交任务，以及使用一些工具脚本时，可以通过指定 `--cfg-options` 参数来直接修改所使用的配置文件内容。
 
 - 更新配置文件内的字典
 
@@ -363,7 +362,7 @@ evaluation = dict(interval=1, metric='accuracy')
 - 更新配置文件内列表的键
 
   配置文件中，存在一些由字典组成的列表。例如，测试数据前处理流水线 data.test.pipeline 就是 python 列表。
-  如，`[type='LoadImageFromFile', dict(type='Resize', size=(256, -1)),...]`。如果用户想更改其中的 `Resize` 步骤的后端 `'backend'` 由默认 改为 `'pillow'`，可以指定 `--cfg-options data.test.pipeline.1.backend=pillow`。
+  如，`[type='LoadImageFromFile', dict(type='Resize', size=(256, -1)),...]`。如果用户想将其中的 `Resize` 步骤的后端 `'backend'` 由默认改为 `'pillow'`，可以指定 `--cfg-options data.test.pipeline.1.backend=pillow`。
 
 - 更新列表/元组的值。
 
@@ -377,7 +376,7 @@ evaluation = dict(interval=1, metric='accuracy')
 本部分仅在当将 MMCls 当作库构建自己项目时可能用到，初学者可跳过。
 ```
 
-您在学习完后续教程 [如何添加新数据集](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/new_dataset.html)、[如何设计数据处理流程](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/data_pipeline.html) 、[如何增加新模块](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/new_modules.html) 后，使用 MMCls 完成了自己项目，为了精简代码，可以将 MMCls 作为一个一般库。这时需要在配置文件中导入自己的新建数据集、模型、数据增强等等。案例可以参考 [OpenMMLab 算法大赛项目](https://github.com/zhangrui-wolf/openmmlab-competition-2021)。
+您在学习完后续教程 [如何添加新数据集](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/new_dataset.html)、[如何设计数据处理流程](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/data_pipeline.html) 、[如何增加新模块](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/new_modules.html) 后，使用 MMCls 完成了自己项目，为了精简代码，可以将 MMCls 作为一个一般库。这时需要在配置文件中导入自己新建的数据集、模型、数据增强等。案例可以参考 [OpenMMLab 算法大赛项目](https://github.com/zhangrui-wolf/openmmlab-competition-2021)。
 
 只需要在你的配置文件中添加以下代码：
 
@@ -390,3 +389,4 @@ custom_imports = dict(
 ```
 
 ## 常见问题
+- 无
