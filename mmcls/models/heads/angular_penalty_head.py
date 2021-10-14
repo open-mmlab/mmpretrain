@@ -63,7 +63,8 @@ class AngularPenaltyHead(LinearClsHead):
                 torch.acos(
                     torch.clamp(
                         torch.diagonal(cls_score.transpose(0, 1)[gt_label]),
-                        - 1. + self.eps, 1 - self.eps
+                        - 1. + self.eps,
+                        1 - self.eps
                     )
                 ) + self.m)
         if self.loss_type == 'sphereface':
@@ -90,7 +91,7 @@ class AngularPenaltyHead(LinearClsHead):
         )
         denominator = torch.exp(logits) + torch.sum(
             torch.exp(self.s * excl), dim=1)
-        L = logits - torch.log(denominator)
+        L = torch.log(torch.exp(logits) / denominator)
 
         losses = dict()
         if self.cal_acc:
@@ -109,9 +110,7 @@ class AngularPenaltyHead(LinearClsHead):
         input shape (N, in_features)
         '''
 
-        for _, module in self.fc.named_modules():
-            if isinstance(module, nn.Linear):
-                module.weight.data = F.normalize(module.weight, p=2, dim=1)
+        self.fc.weight.data = F.normalize(self.fc.weight.data, p=2, dim=1)
 
         if isinstance(x, tuple):
             x = x[-1]
