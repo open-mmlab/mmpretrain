@@ -36,7 +36,7 @@ train_pipeline = [
 ]
 
 data = dict(
-    samples_per_gpu=384,
+    samples_per_gpu=512,
     workers_per_gpu=1,
     train=dict(pipeline=train_pipeline))
 evaluation = dict(interval=1, metric='accuracy')
