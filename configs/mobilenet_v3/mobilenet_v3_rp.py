@@ -17,21 +17,21 @@
 # - modify: RandomErasing use RE-M instead of RE-0
 
 _base_ = [
-    '../_base_/models/mobilenet_v3_openbrands.py',
-    '../_base_/datasets/openbrand_micro.py',
+    '../_base_/models/mobilenet_v3_logo_rp.py',
+    '../_base_/datasets/redpoints.py',
     '../_base_/default_runtime.py'
 ]
 
 data = dict(
-    samples_per_gpu=4,
+    samples_per_gpu=16,
     workers_per_gpu=4,
 )
-evaluation = dict(interval=5, metric=['accuracy', 'crossentropy'])
+evaluation = dict(interval=1, metric=['accuracy', 'crossentropy'])
 
 # optimizer
 optimizer = dict(
     type='RMSprop',
-    lr=0.002,
+    lr=0.08,
     alpha=0.9,
     momentum=0.9,
     eps=0.0316,
@@ -40,4 +40,4 @@ optimizer_config = dict(grad_clip=None)
 # learning policy
 lr_config = dict(policy='step', step=2, gamma=0.973, by_epoch=True)
 runner = dict(type='EpochBasedRunner', max_epochs=600)
-work_dir = "/tmp/train_checkpoints/"
+work_dir = "/tmp/test_checkpoints/"

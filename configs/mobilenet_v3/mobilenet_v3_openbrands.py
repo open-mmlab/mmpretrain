@@ -24,9 +24,9 @@ _base_ = [
 
 data = dict(
     samples_per_gpu=128,
-    workers_per_gpu=2,
+    workers_per_gpu=4,
 )
-evaluation = dict(interval=2, metric='accuracy')
+evaluation = dict(interval=1, metric=['accuracy', 'crossentropy'])
 
 # optimizer
 optimizer = dict(
@@ -40,4 +40,4 @@ optimizer_config = dict(grad_clip=None)
 # learning policy
 lr_config = dict(policy='step', step=2, gamma=0.973, by_epoch=True)
 runner = dict(type='EpochBasedRunner', max_epochs=600)
-work_dir = "/home/ubuntu/train_checkpoints/mobilenet_ob"
+work_dir = "/tmp/train_checkpoints/"
