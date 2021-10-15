@@ -17,10 +17,12 @@
 # - modify: RandomErasing use RE-M instead of RE-0
 
 _base_ = [
-    '../_base_/models/mobilenet_v3_logo_ld.py',
+    '../_base_/models/mobilenet_v3_pretrained.py',
     '../_base_/datasets/logodet.py',
     '../_base_/default_runtime.py'
 ]
+
+model = dict(head=dict(num_classes=515))
 
 data = dict(
     samples_per_gpu=128,

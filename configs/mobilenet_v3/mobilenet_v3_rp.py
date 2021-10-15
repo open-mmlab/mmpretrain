@@ -17,10 +17,12 @@
 # - modify: RandomErasing use RE-M instead of RE-0
 
 _base_ = [
-    '../_base_/models/mobilenet_v3_logo_rp.py',
+    '../_base_/models/mobilenet_v3_pretrained.py',
     '../_base_/datasets/redpoints.py',
     '../_base_/default_runtime.py'
 ]
+
+model = dict(head=dict(num_classes=278))
 
 data = dict(
     samples_per_gpu=16,
@@ -31,7 +33,7 @@ evaluation = dict(interval=1, metric=['accuracy', 'crossentropy'])
 # optimizer
 optimizer = dict(
     type='RMSprop',
-    lr=0.08,
+    lr=0.008,
     alpha=0.9,
     momentum=0.9,
     eps=0.0316,

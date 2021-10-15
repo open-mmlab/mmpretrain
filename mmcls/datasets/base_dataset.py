@@ -5,10 +5,11 @@ from abc import ABCMeta, abstractmethod
 import mmcv
 import numpy as np
 import torch
+import torch.nn.functional as F
 from torch.utils.data import Dataset
 
 from mmcls.core.evaluation import precision_recall_f1, support
-from mmcls.models.losses import accuracy, cross_entropy
+from mmcls.models.losses import accuracy
 from .pipelines import Compose
 
 
@@ -183,8 +184,8 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
                      for k, v in eval_results_.items()})
 
         if 'crossentropy' in metrics:
-            c_entropy_result = cross_entropy(
-                torch.from_numpy(results),
+            c_entropy_result = F.nll_loss(
+                torch.log(torch.from_numpy(results)),
                 torch.from_numpy(gt_labels)
             )
             eval_results['cross_entropy_loss'] = float(c_entropy_result)

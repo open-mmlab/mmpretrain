@@ -51,7 +51,7 @@ class ConcatDataset(_ConcatDataset):
                 all_results[f'concat_{dataset_id}'] = result
             else:
                 all_results[dataset.ann_file] = result
-            current_i = last_i - 1
+            current_i = last_i
 
         accumulated_results = dict()
         for result in all_results.values():

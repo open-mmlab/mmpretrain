@@ -17,13 +17,15 @@
 # - modify: RandomErasing use RE-M instead of RE-0
 
 _base_ = [
-    '../_base_/models/mobilenet_v3_logo_all.py',
+    '../_base_/models/mobilenet_v3_pretrained.py',
     '../_base_/datasets/rp_all_ds_micro.py',
     '../_base_/default_runtime.py'
 ]
 
+model = dict(head=dict(num_classes=3793))
+
 data = dict(
-    samples_per_gpu=128,
+    samples_per_gpu=4,
     workers_per_gpu=8,
 )
 evaluation = dict(interval=1, metric=['accuracy', 'crossentropy'])

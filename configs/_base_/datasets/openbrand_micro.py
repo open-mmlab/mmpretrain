@@ -11,7 +11,6 @@ train_pipeline = [
     dict(type='Resize', size=(224, 224)),
     dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
     dict(type='Normalize', **img_norm_cfg),
-    # dict(type='SwapChannels'),
     dict(type='ImageToTensor', keys=['img']),
     dict(type='Collect', keys=['img', 'gt_label']),
 ]
@@ -21,7 +20,7 @@ test_pipeline = [
     dict(type='CropBoundingBox'),
     dict(type='Resize', size=(224, 224)),
     dict(type='Normalize', **img_norm_cfg),
-    dict(type='SwapChannels'),
+    dict(type='ImageToTensor', keys=['img']),
     dict(type='Collect', keys=['img']),
 ]
 

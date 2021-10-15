@@ -18,18 +18,18 @@
 
 _base_ = [
     '../_base_/models/resnet50_pretrained.py',
-    '../_base_/datasets/openbrand_micro.py',
+    '../_base_/datasets/redpoints.py',
     '../_base_/default_runtime.py'
 ]
 
-model = dict(head=dict(num_classes=559))
+model = dict(head=dict(num_classes=278))
 
 data = dict(
-    samples_per_gpu=4,
-    workers_per_gpu=4,
+    samples_per_gpu=128,
+    workers_per_gpu=8,
 )
-evaluation = dict(interval=5, metric=['accuracy', 'crossentropy'])
-optimizer = dict(type='SGD', lr=0.1, momentum=0.9, weight_decay=0.0001)
+evaluation = dict(interval=1, metric=['accuracy', 'crossentropy'])
+optimizer = dict(type='SGD', lr=0.2, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=None)
 # learning policy
 lr_config = dict(policy='step', step=[30, 60, 90])

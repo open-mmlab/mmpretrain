@@ -1,6 +1,4 @@
 # model settings
-num_classes = 278
-
 model = dict(
     type='ImageClassifier',
     pretrained='/home/ubuntu/checkpoints/mobilenet_v3_small-047dcff4.pth',
@@ -8,7 +6,7 @@ model = dict(
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
         type='StackedLinearClsHead',
-        num_classes=num_classes,
+        num_classes=0,
         in_channels=576,
         mid_channels=[1024],
         dropout_rate=0.2,

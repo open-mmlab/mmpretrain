@@ -1,8 +1,7 @@
-num_classes = 3793
-
 # model settings
 model = dict(
     type='ImageClassifier',
+    pretrained='/home/ubuntu/checkpoints/resnet50-19c8e357.pth',
     backbone=dict(
         type='ResNet',
         depth=50,
@@ -12,7 +11,7 @@ model = dict(
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
         type='LinearClsHead',
-        num_classes=num_classes,
+        num_classes=0,
         in_channels=2048,
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
         topk=(1, 5),

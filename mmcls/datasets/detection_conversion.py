@@ -17,19 +17,23 @@ from .base_dataset import BaseDataset
 @DATASETS.register_module()
 class OpenBrandDataset(BaseDataset):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, bbox_size_threshold=50, **kwargs):
         kwargs.setdefault("classes", "sample_test/labelList.txt")
         super().__init__(*args, **kwargs)
         self.expanded_annotations = []
         for idx in range(len(self.data_infos)):
             ann_info = self.get_ann_info(idx)
             for adx in range(len(ann_info['bboxes'])):
+                bbox = ann_info['bboxes'][adx]
+                w, h = bbox[2] - bbox[0], bbox[3] - bbox[1]
+                if w < bbox_size_threshold or h < bbox_size_threshold:
+                    continue
                 self.expanded_annotations.append(
                     dict(img_prefix=self.data_prefix,
                          img_info=self.data_infos[idx],
                          bbox_fields=list(),
                          ann_info=dict(
-                             bboxes=ann_info['bboxes'][adx].reshape(1, -1),
+                             bboxes=bbox.reshape(1, -1),
                              labels=ann_info['labels'][adx].reshape(1, -1),
                              bboxes_ignore=np.empty((0, 4)),
                              labels_ignore=np.empty(0),
@@ -420,6 +424,7 @@ class XMLDataset(BaseDataset):
                  min_size=None,
                  img_subdir='JPEGImages',
                  ann_subdir='Annotations',
+                 bbox_size_threshold=50,
                  **kwargs):
         self.img_subdir = img_subdir
         self.ann_subdir = ann_subdir
@@ -430,12 +435,16 @@ class XMLDataset(BaseDataset):
         for idx in range(len(self.data_infos)):
             ann_info = self.get_ann_info(idx)
             for adx in range(len(ann_info['bboxes'])):
+                bbox = ann_info['bboxes'][adx]
+                w, h = bbox[2] - bbox[0], bbox[3] - bbox[1]
+                if w < bbox_size_threshold or h < bbox_size_threshold:
+                    continue
                 self.expanded_annotations.append(
                     dict(img_prefix=self.data_prefix,
                          img_info=self.data_infos[idx],
                          bbox_fields=list(),
                          ann_info=dict(
-                             bboxes=ann_info['bboxes'][adx].reshape(1, -1),
+                             bboxes=bbox.reshape(1, -1),
                              labels=ann_info['labels'][adx].reshape(1, -1),
                              bboxes_ignore=np.empty((0, 4)),
                              labels_ignore=np.empty(0),

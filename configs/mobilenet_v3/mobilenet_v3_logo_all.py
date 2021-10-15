@@ -17,10 +17,12 @@
 # - modify: RandomErasing use RE-M instead of RE-0
 
 _base_ = [
-    '../_base_/models/mobilenet_v3_logo_all.py',
+    '../_base_/models/mobilenet_v3_pretrained.py',
     '../_base_/datasets/rp_all_ds.py',
     '../_base_/default_runtime.py'
 ]
+
+model = dict(head=dict(num_classes=3793))
 
 data = dict(
     samples_per_gpu=128,
@@ -31,7 +33,7 @@ evaluation = dict(interval=5, metric=['accuracy', 'crossentropy'])
 # optimizer
 optimizer = dict(
     type='RMSprop',
-    lr=0.064,
+    lr=0.008,
     alpha=0.9,
     momentum=0.9,
     eps=0.0316,
@@ -40,4 +42,4 @@ optimizer_config = dict(grad_clip=None)
 # learning policy
 lr_config = dict(policy='step', step=2, gamma=0.973, by_epoch=True)
 runner = dict(type='EpochBasedRunner', max_epochs=600)
-work_dir = "/home/ubuntu/train_checkpoints/mobilenet_ob"
+work_dir = "/home/ubuntu/train_checkpoints/mobilenetv3_all"

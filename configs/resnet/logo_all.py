@@ -17,10 +17,12 @@
 # - modify: RandomErasing use RE-M instead of RE-0
 
 _base_ = [
-    '../_base_/models/resnet50_logo.py',
+    '../_base_/models/resnet50_pretrained.py',
     '../_base_/datasets/rp_all_ds.py',
     '../_base_/default_runtime.py'
 ]
+
+model = dict(head=dict(num_classes=3793))
 
 data = dict(
     samples_per_gpu=128,
