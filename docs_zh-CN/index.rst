@@ -15,19 +15,15 @@ You can switch between Chinese and English documents in the lower-left corner of
 
 .. toctree::
    :maxdepth: 1
-   :caption: 模型库
-
-   modelzoo_statistics.md
-
-
-.. toctree::
-   :maxdepth: 1
    :caption: 教程
 
    tutorials/finetune.md
    tutorials/new_dataset.md
    tutorials/data_pipeline.md
    tutorials/new_modules.md
+
+
+.. include:: _model_zoo.rst
 
 
 .. toctree::
@@ -41,6 +37,13 @@ You can switch between Chinese and English documents in the lower-left corner of
 
 
 .. toctree::
+   :maxdepth: 1
+   :caption: 社区
+
+   community/CONTRIBUTING.md
+
+
+.. toctree::
    :caption: API 参考文档
 
    api.rst
@@ -49,8 +52,8 @@ You can switch between Chinese and English documents in the lower-left corner of
 .. toctree::
    :caption: 语言切换
 
-   switch_language.md
-
+   English <https://mmclassification.readthedocs.io/en/latest/>
+   简体中文 <https://mmclassification.readthedocs.io/zh_CN/latest/>
 
 
 索引与表格

@@ -83,7 +83,7 @@ html_theme_options = {
     'menu': [
         {
             'name': 'GitHub',
-            'url': 'https://github.com/open-mmlab/mmcv'
+            'url': 'https://github.com/open-mmlab/mmclassification'
         },
         {
             'name':
@@ -161,6 +161,7 @@ html_theme_options = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 html_css_files = ['css/readthedocs.css']
+html_js_files = ['js/custom.js']
 
 master_doc = 'index'
 
@@ -270,4 +271,5 @@ def setup(app):
         'enable_eval_rst': True,
     }, True)
     app.add_transform(AutoStructify)
+    app.add_js_file('./_static/js/custom.js')
     app.connect('builder-inited', builder_inited_handler)

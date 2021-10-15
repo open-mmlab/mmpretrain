@@ -3,7 +3,7 @@
 ## 安装依赖包
 
 - Python 3.6+
-- PyTorch 1.3+
+- PyTorch 1.5+
 - [MMCV](https://github.com/open-mmlab/mmcv)
 
 MMClassification 和 MMCV 的适配关系如下，请安装正确版本的 MMCV 以避免安装问题
@@ -11,6 +11,7 @@ MMClassification 和 MMCV 的适配关系如下，请安装正确版本的 MMCV 
 | MMClassification 版本 |       MMCV 版本      |
 |:---------------------:|:--------------------:|
 |        master         | mmcv>=1.3.8, <=1.5.0 |
+|        0.16.0         | mmcv>=1.3.8, <=1.5.0 |
 |        0.15.0         | mmcv>=1.3.8, <=1.5.0 |
 |        0.14.0         | mmcv>=1.3.8, <=1.5.0 |
 |        0.13.0         | mmcv>=1.3.8, <=1.5.0 |
@@ -23,8 +24,10 @@ MMClassification 和 MMCV 的适配关系如下，请安装正确版本的 MMCV 
 |         0.7.0         | mmcv>=1.1.4          |
 |         0.6.0         | mmcv>=1.1.4          |
 
-提示：由于 `master` 分支处于频繁开发中，`mmcv` 版本依赖可能不准确。如果您在使用
+```{note}
+由于 `master` 分支处于频繁开发中，`mmcv` 版本依赖可能不准确。如果您在使用
 `master` 分支时遇到问题，请尝试更新 `mmcv` 到最新版。
+```
 
 ## 安装 MMClassification 步骤
 
@@ -41,8 +44,10 @@ b. 按照 [官方指南](https://pytorch.org/) 安装 PyTorch 和 TorchVision，
 conda install pytorch torchvision -c pytorch
 ```
 
-**注**：请确保 CUDA 编译版本和运行版本相匹配
-用户可以参照 [PyTorch 官网](https://pytorch.org/) 对预编译包所支持的 CUDA 版本进行核对。
+```{note}
+请确保 CUDA 编译版本和运行版本相匹配。
+可以参照 [PyTorch 官网](https://pytorch.org/) 对预编译包所支持的 CUDA 版本进行核对。
+```
 
 `例 1`：如果用户的 `/usr/local/cuda` 文件夹下已安装 CUDA 10.1 版本，并且想要安装 PyTorch 1.5 版本，
 则需要安装 CUDA 10.1 下预编译的 PyTorch。
@@ -94,11 +99,9 @@ cd mmclassification
 pip install -e .  # 或者 "python setup.py develop"
 ```
 
-提示：
-
-1. 按照以上步骤，MMClassification 是以 `dev` 模式安装的，任何本地的代码修改都可以直接生效，无需重新安装（除非提交了一些 commit，并且希望提升版本号）
-
-2. 如果希望使用 `opencv-python-headless` 而不是 `opencv-python`，可以在安装 [mmcv](https://github.com/open-mmlab/mmcv) 之前提前安装。
+```{note}
+按照以上步骤，MMClassification 是以 `dev` 模式安装的，任何本地的代码修改都可以直接生效，无需重新安装（除非提交了一些 commit，并且希望提升版本号）
+```
 
 ### 利用 Docker 镜像安装 MMClassification
 
@@ -109,7 +112,9 @@ MMClassification 提供 [Dockerfile](https://github.com/open-mmlab/mmclassificat
 docker build -f ./docker/Dockerfile --rm -t mmcls:torch1.6.0-cuda10.1-cudnn7 .
 ```
 
-**注意：** 确保已经安装了 [nvidia-container-toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker).
+```{important}
+请确保已经安装了 [nvidia-container-toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker).
+```
 
 运行一个基于上述镜像的容器：
 

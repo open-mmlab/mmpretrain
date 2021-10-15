@@ -23,7 +23,7 @@ class VisionTransformerClsHead(ClsHead):
         hidden_dim (int): Number of the dimensions for hidden layer. Only
             available during pre-training. Default None.
         act_cfg (dict): The activation config. Only available during
-            pre-training. Defalut Tanh.
+            pre-training. Defaults to Tanh.
     """
 
     def __init__(self,

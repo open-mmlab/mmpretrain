@@ -56,7 +56,7 @@ def train_model(model,
                 timestamp=None,
                 device='cuda',
                 meta=None):
-    logger = get_root_logger(cfg.log_level)
+    logger = get_root_logger()
 
     # prepare data loaders
     dataset = dataset if isinstance(dataset, (list, tuple)) else [dataset]
