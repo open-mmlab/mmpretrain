@@ -943,4 +943,4 @@ class LogoDataset(imagenet.ImageNet):
                          "holikaholika", "gucci", "theexpendables", "dazzle",
                          "vatti", "nintendo"]
 
-    CLASSES = logodet_classes + logos_ds_classes + openbrand_classes
+    CLASSES = []  # logodet_classes + logos_ds_classes + openbrand_classes
