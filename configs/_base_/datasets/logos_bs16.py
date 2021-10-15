@@ -21,7 +21,7 @@ test_pipeline = [
 
 home = '/home/ubuntu/'
 data = dict(
-    samples_per_gpu=256,
+    samples_per_gpu=128,
     workers_per_gpu=1,
     train=dict(
         type=dataset_type,
