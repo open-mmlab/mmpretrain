@@ -255,7 +255,10 @@ data = dict(
 
 ### 使用配置文件里的中间变量
 
-配置文件里会使用一些中间变量，例如数据集里的 `train_pipeline/test_pipeline`。我们在定义新的 `train_pipeline/test_pipeline` 之后，需要将它们传递到 `data` 里。例如，我们想在训练或测试时修改输入图片的大小，`train_pipeline/test_pipeline` 是我们想要修改的中间变量。
+用一些中间变量，中间变量让配置文件更加清晰，也更容易修改。
+
+例如数据集里的 `train_pipeline/test_pipeline` 是作为数据流水线的中间变量。我们首先要定义 `train_pipeline`/`val_pipeline`/`test_pipeline`，然后将它们传递到 `data` 中。如果想修改训练或测试时输入图片的大小，就需要修改 `train_pipeline/test_pipeline` 这些中间变量。
+
 
 ```python
 img_norm_cfg = dict(
@@ -287,22 +290,7 @@ data = dict(
 有时，您需要设置 `_delete_=True` 去忽略基础配置文件里的一些域内容。 可以参照 [mmcv](https://mmcv.readthedocs.io/en/latest/understand_mmcv/config.html#inherit-from-base-config-with-ignored-fields) 来获得一些简单的指导。
 
 
-以下是一个简单应用案例，在实验时，使用不同的学习率策略, 如将上述案列中的 ResNet50 使用 cosine schedule ,如果使用继承并直接修改的方法：
-
-```python
-_base_ = '../../configs/resnet/resnet50_b32x8_imagenet.py'
-
-lr_config = dict(
-    policy='CosineAnnealing',
-    min_lr=0,
-    warmup='linear',
-    warmup_by_epoch=True,
-    warmup_iters=5,
-    warmup_ratio=0.1
-)
-```
-
-这时在构建优化器策略时会报 "get unexcepected keywoord 'step'" 错, 基础配置文件 lr_config 的域信息 `'step'` 被保留下来了，需要加入 `_delete_=True` 去忽略基础配置文件里的 `lr_config` 域内容：
+以下是一个简单应用案例。 如果在上述 ResNet50 案例中 使用 cosine schedule ,使用继承并直接修改会报 `get unexcepected keyword 'step'` 错, 因为基础配置文件 lr_config 域信息的 `'step'` 字段被保留下来了，需要加入 `_delete_=True` 去忽略基础配置文件里的 `lr_config` 相关域内容：
 
 ```python
 _base_ = '../../configs/resnet/resnet50_b32x8_imagenet.py'
@@ -312,7 +300,7 @@ lr_config = dict(
     policy='CosineAnnealing',
     min_lr=0,
     warmup='linear',
-    warmup_by_epoch=True,
+    by_epoch=True,
     warmup_iters=5,
     warmup_ratio=0.1
 )
@@ -322,7 +310,7 @@ lr_config = dict(
 
 有时，您可以引用 `__base__` 配置信息的一些域内容，这样可以避免重复定义。 可以参照 [mmcv](https://mmcv.readthedocs.io/en/latest/understand_mmcv/config.html#reference-variables-from-base) 来获得一些简单的指导。
 
-以下是一个简单应用案例，在训练数据预处理流水线中使用 `auto augment`，具体参考配置文件 ["configs/_base_/datasets/imagenet_bs64_autoaug.py"](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/datasets/imagenet_bs64_autoaug.py)。 在定义 `train_pipeline` 时直接引用 `_base_`  中的 `auto_increasing_policies` 变量：
+以下是一个简单应用案例，在训练数据预处理流水线中使用 `auto augment`，参考配置文件 ["configs/_base_/datasets/imagenet_bs64_autoaug.py"](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/datasets/imagenet_bs64_autoaug.py)中。 在定义 `train_pipeline` 时直接在 `__base__` 中加入 `auto augment` 定义文件，再通过 `{{_base_.auto_increasing_policies}}` 引用变量：
 
 ```python
 _base_ = ['./pipelines/auto_aug.py']
@@ -356,13 +344,13 @@ evaluation = dict(interval=1, metric='accuracy')
 
 - 更新配置文件内的字典
 
-  用户可以按照原始配置中的字典键顺序来指定配置文件的设置。
-  例如，`--cfg-options model.backbone.frozen_stages=1` 会改变训练模式下模型主干网络 backbone 中冻结反向传播的层，由不冻结任何网络层修改为冻结 backbone 中 stage1 和 stage1 前面的网络层。
+  可以按照原始配置文件中字典的键的顺序指定配置选项。
+  例如，`--cfg-options model.backbone.norm_eval=False` 将主干网络中的所有 BN 模块更改为 `train` 模式。
 
 - 更新配置文件内列表的键
 
-  配置文件中，存在一些由字典组成的列表。例如，测试数据前处理流水线 data.test.pipeline 就是 python 列表。
-  如，`[type='LoadImageFromFile', dict(type='Resize', size=(256, -1)),...]`。如果用户想将其中的 `Resize` 步骤的后端 `'backend'` 由默认改为 `'pillow'`，可以指定 `--cfg-options data.test.pipeline.1.backend=pillow`。
+  一些配置字典在配置文件中会形成一个列表。例如，训练流水线 `data.train.pipeline` 通常是一个列表。
+  例如，`[dict(type='LoadImageFromFile'), dict(type='TopDownRandomFlip', flip_prob=0.5), ...]` 。如果要将流水线中的 `'flip_prob=0.5'` 更改为 `'flip_prob=0.0'`，您可以这样指定 `--cfg-options data.train.pipeline.1.flip_prob=0.0` 。
 
 - 更新列表/元组的值。
 
@@ -383,8 +371,9 @@ evaluation = dict(interval=1, metric='accuracy')
 ```python
 custom_imports = dict(
     imports=['your_dataset_class',
-             'your_transformer_class',
-             'your_model_class'],
+             'your_transforme_class',
+             'your_model_class',
+             'your_module_class'],
     allow_failed_imports=False)
 ```
 

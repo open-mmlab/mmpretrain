@@ -1,245 +1,243 @@
-# 教程 1：如何编写配置文件
+# Tutorial 1：Learn about Configs
 
-MMCls 使用 `python` 文件作为配置文件。其配置文件系统的设计将模块化与继承整合进来，方便用户进行各种实验。所有配置文件都放置在 `$MMCls/configs` 文件夹下，主要包含 `_base_` 原始配置文件夹 以及 `resnet`, `swin_transformer`，`vision_transformer` 等诸多算法文件夹。
+MMCls uses python files as configs. The design of our configuration file system integrates modularity and inheritance, facilitating users to conduct various experiments. All configuration files are placed in the `$MMCls/configs` folder, which mainly contains the original configuration folder of `_base_` and many algorithm folders such as `resnet`, `swin_transformer`, `vision_transformer`, etc.
 
-可以使用工具 `python tools/misc/print_config.py /PATH/TO/CONFIG` 命令来查看完整的配置信息，从而方便检查所对应的配置文件。
-
-<!-- TOC -->
-
-- [配置文件命名规则](#配置文件命名规则)
-- [配置文件结构](#配置文件结构)
-- [继承并修改配置文件](#继承并修改配置文件)
-  - [使用配置文件里的中间变量](#使用配置文件里的中间变量)
-  - [忽略基础配置文件里的部分内容](#忽略基础配置文件里的部分内容)
-  - [引用基础配置文件里的变量](#引用基础配置文件里的变量)
-- [通过命令行参数修改配置信息](#通过命令行参数修改配置信息)
-- [导入新的模块](#导入新的模块)
-- [常见问题](#常见问题)
+If you wish to inspect the config file, you may run `python tools/analysis/print_config.py /PATH/TO/CONFIG` to see the complete config.
 
 <!-- TOC -->
 
-## 配置文件命名规则
+- [Config File Naming Convention](#config-file-naming-convention)
+- [Config File Structure](#config-file-structure)
+- [Inherit and Modify Config File](#inherit-and-modify-config-file)
+  - [Use intermediate variables in configs](#use-intermediate-variables-in-configs)
+  - [Ignore some fields in the base configs](#ignore-some-fields-in-the-base-configs)
+  - [Use some fields in the base configs](#use-some-fields-in-the-base-configs)
+- [Modify config through script arguments](#modify-config-through-script-arguments)
+- [Import new module](#Import-new-module)
+- [FAQ](#faq)
 
-MMCls 按照以下风格进行配置文件命名，代码库的贡献者需要遵循相同的命名规则。文件名总体分为四部分：算法信息，模块信息，训练信息和数据信息。逻辑上属于不同部分的单词之间用下划线'_'连接，同一部分有多个单词用短横线'-'连接。
+<!-- TOC -->
+
+## Config File Naming Convention
+
+We follow the below convention to name config files. Contributors are advised to follow the same style。The config file names are divided into four parts: model information, module information, training information and data information. Logically, different parts are connected by underscores `'_'`, and words in the same part are connected by dashes `'-'`.
 
 ```
 {model info}_{module info}_{training info}_{data info}.py
 ```
 
-- `model info`：算法信息，算法名称或者网络架构，如 resnet 等；
-- `module info`： 模块信息，因任务而异，用以表示一些特殊的 neck、head 和 pretrain 信息；
-- `training info`：训练信息，训练策略的一些设置，包括 batch size，schedule 数据增强 等；
-- `data info`：数据信息，数据集名称、模态、输入尺寸等，如 imagenet, cifar 等；
+- `model info`：algorithm information, model name or neural network architecture, such as resnet, etc.;
+- `module info`： module information is used to represent some special neck, head and pretrain information;
+- `training info`：Training information, some settings of training strategy, including batch size, schedule, data enhancement and the like;
+- `data info`：Data information, dataset name, input size and so on. such as imagenet, cifar;
 
-### 算法信息
-指论文中的算法名称缩写，以及相应的分支架构信息。例如：
+### model information
+Refers to the abbreviation of the algorithm name in the paper and the corresponding branch architecture information. E.g：
 - `resnet50`
 - `mobilenet-v3-large`
-- `vit-small-patch32`   : `patch32` 表示 `ViT` 切分的分块大小
-- `seresnext101-32x4d`  : `SeResNet101` 基本网络结构，`32x4d` 表示在 `Bottleneck` 中  `groups` 和 `width_per_group` 分别为32和4
+- `vit-small-patch32`   : `patch32` represents the size of the partition in `ViT` algorithm;
+- `seresnext101-32x4d`  : `SeResNet101` basic network structure, `32x4d` means that `groups` and `width_per_group` are 32 and 4 respectively in `Bottleneck`;
 
-### 模块信息
-指一些特殊的 `neck` 、`head` 或者 `pretrain` 的信息， 在分类中常见为预训练 `pretrain` 信息，比如：
-- `in21k-pre` : 表示 `ImageNet21k` 上预训练的
-- `in21k-pre-3rd-party` : 表示 `ImageNet21k` 上预训练的，来自其他仓库的模型
+### module information
+Refers to some special `neck`, `head` or `pretrain` information, which is commonly used as pre-training information in classification, such as:
+- `in21k-pre` : pre-trained on ImageNet21k;
+- `in21k-pre-3rd-party` : Represents a model pre-trained on ImageNet21k from other repository;
 
-### 训练信息
-训练策略的一些设置，包括 训练类型，batch size, lr schedule，数据增强以及特殊的损失函数等等,比如：
-Batch size 信息：
-- 格式为`{gpu x batch_per_gpu}`, 如 `8xb32`
+### training information
+Some settings of the training strategy, including training type, `batch size`, `lr schedule`, data augment and special loss functions, etc. such as:
+- format of `{gpu x batch_per_gpu}`, such as `8xb32`
 
-训练类型(主要见于 transformer 网络，如 `ViT` 算法，这类算法通常分为预训练和微调两种模式):
-- `ft` : Finetune config，用于微调的配置文件
-- `pt` : Pretrain config，用于预训练的配置文件
+Training type (mainly seen in the transformer network, such as the `ViT` algorithm, which is usually divided into two training type: pre-training and fine-tuning):
+- `ft` : Configuration file for fine-tuning
+- `pt` : Configuration file for pretraining
 
-训练策略信息，训练策略以复现配置文件为基础，此基础不必标注训练策略。但如果在此基础上进行改进，则需注明训练策略，例：
-  按照应用点位顺序排列，如：`{pipeline aug}-{train aug}-{loss trick}-{scheduler}-{epochs}`
-- `coslr-200e` : 使用 cosine scheduler, 训练200个 epoch
-- `autoaug-mixup-lbs-coslr-50e` : 使用了autoaug、mixup、label smooth、cosine scheduler, 训练了50个 epoch
+Training strategy information, the training strategy is based on the recurrence profile, and the basic training strategy does not need to be marked. However, if improvements are made on this basis, the training strategy needs to be indicated and arranged in the order, such as: `{pipeline aug}-{train aug}-{loss trick}-{scheduler}-{epochs}`
+- `coslr-200e` : Use cosine scheduler to train 200 epochs
+- `autoaug-mixup-lbs-coslr-50e` : Used `autoaug`, `mixup`, `label smooth`, `cosine scheduler` to train 50 epochs
 
-### 数据信息
-- `in1k` : `ImageNet1k` 数据集
-- `in21k` : `ImageNet21k` 数据集，有些地方也称为 `ImageNet22k` 数据集
-- `in1k-384px` : 表示训练的输出图片大小为 `384x384`, `224x224` 则不需要额外标注
+### data information
+- `in1k` : `ImageNet1k` dataset;
+- `in21k` : `ImageNet21k` dataset, also called `ImageNet22k` dataset
+- `in1k-384px` : Indicates that the input image size in training is 384x384, and 224x224 does not require additional annotations
 - `cifar100`
 
-### 配置文件命名案例：
+### Config File Name Example：
 
 ```
 repvgg-D2se_deploy_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py
 ```
 
-其中 `repvgg-D2se` 表示算法信息，`RepVGG` 算法，`D2se` 为结构信息 ； `deploy` 表示模块信息，该模型为推理状态 ； `4xb64-autoaug-lbs-mixup-coslr-200e` 表示训练信息， 4块GPU，每块GPU的批数量为64，使用 `auto augment`、`label smooth` 以及 `cosine scheduler` 技巧训练了200个 `epoch`; `in1k` 为数据信息，表示在 `ImageNet1k` 数据集上使用 `224x224` 大小图片训练。
+Among them, `repvgg-D2se` represents algorithm information, `RepVGG` model, `D2se` is structure information; `deploy` represents module information, and this model is in the inference state; `4xb64-autoaug-lbs-mixup-coslr-200e` represents training information, 4 GPUs, the number of batches per GPU is 64, using the `auto augment`, `label smooth` and `cosine scheduler` techniques to train 200 epoches; `in1k` is the data information, which means using `224x224` input image size to train in `ImageNet1k`.
 
 ```{note}
-部分配置文件目前还没有遵循此命名规范，相关文件命名近期会更新。
+Some configuration files currently do not follow this naming convention, and related files will be updated in the near future.
 ```
 
-## 配置文件结构
+## Config File Structure
 
-在 `configs/_base_` 文件夹下有 4 个基本组件类型，分别是：
+There are four kind basic component file in the `configs/_base_` folder, namely：
 
-- [模型(model)](https://github.com/open-mmlab/mmclassification/tree/master/configs/_base_/models)
-- [数据(data)](https://github.com/open-mmlab/mmclassification/tree/master/configs/_base_/datasets)
-- [训练策略(schedule)](https://github.com/open-mmlab/mmclassification/tree/master/configs/_base_/schedules)
-- [默认运行设置(default_runtime)](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/default_runtime.py)
+- [models](https://github.com/open-mmlab/mmclassification/tree/master/configs/_base_/models)
+- [datasets](https://github.com/open-mmlab/mmclassification/tree/master/configs/_base_/datasets)
+- [schedules](https://github.com/open-mmlab/mmclassification/tree/master/configs/_base_/schedules)
+- [default_runtime](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/default_runtime.py)
 
-许多方法都可以方便地通过组合这些组件进行实现，如 ResNet、Swin_Transformer、 ViT、 RepVGG 等。
-其中，通过 `_base_` 下组件来构建的配置被称为 _原始配置_（_primitive_）。
+Many methods, such as ResNet, Swin_Transformer, ViT, RepVGG and etc, can be easily implemented by combining these components. The configs that are composed by components from `_base_` are called _primitive_.
 
-为了帮助用户对 MMCls 检测系统中的完整配置和模块有一个基本的了解，我们对使用 [ResNet50 原始配置文件](../../configs/resnet/resnet50_b32x8_imagenet.py)作为案例进行说明以及注释每一行含义。更详细的用法和各个模块对应的替代方案，请参考 API 文档。
+For easy understanding, we use [ResNet50 primitive config](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/ resnet50_b32x8_imagenet.py) as a example and comment the meaning of each line. For more detaile, please refer to the API documentation.
 
 ```python
 _base_ = [
-    '../_base_/models/resnet50.py',           # 模型
-    '../_base_/datasets/imagenet_bs32.py',    # 数据
-    '../_base_/schedules/imagenet_bs256.py',  # 训练策略
-    '../_base_/default_runtime.py'            # 默认运行设置
+    '../_base_/models/resnet50.py',           # model
+    '../_base_/datasets/imagenet_bs32.py',    # data
+    '../_base_/schedules/imagenet_bs256.py',  # training schedule
+    '../_base_/default_runtime.py'            # default runtime setting
 ]
 ```
 
-下面对这四个部分分别进行说明，还是以[ResNet50 原始配置文件](../../configs/resnet/resnet50_b32x8_imagenet.py)中的配置信息作为案例。
+The four parts are explained separately below, and the above-mentioned ResNet50 primitive config are also used as an example.
 
-### 模型
+### model
+The parameter `"model"` is a python dictionary in the configuration file, which mainly includes information such as network structure and loss function:
+- `type` ： Classifier name, MMCls supports `ImageClassifier`, refer to [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.classifiers)。
+- `backbone` ： Backbones name, refer to [API document](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/models/backbones) for available options.
+- `neck` ：Neck network name, MMCls supports `GlobalAveragePooling`, please refer to [API documentation](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.necks).
+-`head`: head network name, MMCls supports single-label classification and multi-label classification head networks, available options refer to [API 文档](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/models/heads).
+    -`loss`: Loss function type, supports `CrossEntropyLoss`, [`LabelSmoothLoss`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_label_smooth.py) etc., For available options, refer to [API Document](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/models/losses).
+- `train_cfg` ：Training augment config, MMCls supports [`mixup`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_mixup.py), [`cutmix`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_cutmix.py) and other augments.
 
-模型参数 `model` 在配置文件中为一个 `python` 字典，主要包括网络结构、损失函数等信息：
-- `type` ： 分类器名称, 目前 MMCls 只支持 `ImageClassifier`， 参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.classifiers)。
-- `backbone` ： 主干网类型，可用选项参考 [API 文档](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/models/backbones)。
-- `neck` ： 颈网络类型，目前 MMCls 只支持 `GlobalAveragePooling`， 参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.necks)。
-- `head` ： 头网络类型， 包括单标签分类与多标签分类头网络，可用选项参考 [API 文档](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/models/heads)。
-  - `loss` ： 损失函数类型， 支持 `CrossEntropyLoss`, [`LabelSmoothLoss`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_label_smooth.py) 等，可用选项参考 [API 文档](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/models/losses)。
-- `train_cfg` ：训练配置, 支持 [`mixup`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_mixup.py), [`cutmix`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_cutmix.py) 等训练增强。
 
 ```python
 model = dict(
-    type='ImageClassifier',     # 分类器类型
+    type='ImageClassifier',     # Classifier name
     backbone=dict(
-        type='ResNet',          # 主干网络类型
-        depth=50,               # 主干网网络深度， ResNet 一般有18, 34, 50, 101, 152 可以选择
-        num_stages=4,           # 主干网络状态(stages)的数目，这些状态产生的特征图作为后续的 head 的输入。
-        out_indices=(3, ),      # 输出的特征图输出索引。越远离输入图像，索引越大
-        frozen_stages=-1,       # 网络微调时，冻结网络的stage（训练时不执行反相传播算法），若num_stages=4，backbone包含stem 与 4 个 stages。frozen_stages为-1时，不冻结网络； 为0时，冻结 stem； 为1时，冻结 stem 和 stage1； 为4时，冻结整个backbone
-        style='pytorch'),       # 主干网络的风格，'pytorch' 意思是步长为2的层为 3x3 卷积， 'caffe' 意思是步长为2的层为 1x1 卷积。
-    neck=dict(type='GlobalAveragePooling'),    # 颈网络类型
+        type='ResNet',          # Backbones name
+        depth=50,               # depth of backbone， ResNet has optionsof 18, 34, 50, 101, 152.
+        num_stages=4,           # number of stages，The feature maps generated by these states are used as the input for the subsequent neck and head.
+        out_indices=(3, ),      # The output index of the output feature maps.
+        frozen_stages=-1,       # the stage to be frozen, '-1' means not be forzen
+        style='pytorch'),        # The style of backbone, 'pytorch' means that stride 2 layers are in 3x3 conv, 'caffe' means stride 2 layers are in 1x1 convs.
+    neck=dict(type='GlobalAveragePooling'),    # neck network name
     head=dict(
-        type='LinearClsHead',     # 线性分类头，
-        num_classes=1000,         # 输出类别数，这与数据集的类别数一致
-        in_channels=2048,         # 输入通道数，这与 neck 的输出通道一致
-        loss=dict(type='CrossEntropyLoss', loss_weight=1.0), # 损失函数配置信息
-        topk=(1, 5),              # 评估指标，Top-k 准确率， 这里为 top1 与 top5 准确率
+        type='LinearClsHead',     # linear classification head，
+        num_classes=1000,         # The number of output categories, consistent with the number of categories in the dataset
+        in_channels=2048,         # The number of input channels, consistent with the output channel of the neck
+        loss=dict(type='CrossEntropyLoss', loss_weight=1.0), # Loss function configuration information
+        topk=(1, 5),              # Evaluation index, Top-k accuracy rate, here is the accuracy rate of top1 and top5
     ))
 ```
 
-### 数据
-数据参数 `data` 在配置文件中为一个 `python` 字典，主要包含构造数据集加载器(dataloader)配置信息：
-- `samples_per_gpu` : 构建 dataloader 时，每个 GPU 的 Batch Size
-- `workers_per_gpu` : 构建 dataloader 时，每个 GPU 的 线程数
-- `train ｜ val ｜ test` : 构造数据集
-  - `type` :  数据集类型， MMCls 支持 `ImageNet`、 `Cifar` 等 ，参考[API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.datasets)
-  - `data_prefix` : 数据集根目录
-  - `pipeline` :  数据处理流水线，参考相关教程文档 [如何设计数据处理流水线](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/data_pipeline.html)
+### data
+The parameter `"data"` is a python dictionary in the configuration file, which mainly includes information to construct dataloader:
+- `samples_per_gpu` : the BatchSize of each GPU, When building the dataloader
+- `workers_per_gpu` : the number of threads per GPU, When building dataloader
+- `train ｜ val ｜ test` : construct dataset
+  - `type`: Dataset name, MMCls supports `ImageNet`, `Cifar` etc., refer to [API documentation](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.datasets)
+  - `data_prefix` : Dataset root directory
+  - `pipeline` :  Data processing pipeline, refer to related tutorial documents [如何设计数据处理流水线](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/data_pipeline.html)
 
-评估参数 `evaluation` 也是一个字典， 为 `evaluation hook` 的配置信息, 主要包括评估间隔、评估指标等：
+The parameter `evaluation` is also a dictionary, which is the configuration information of `evaluation hook`, mainly including evaluation interval, evaluation index, etc.:
 
 ```python
 # dataset settings
-dataset_type = 'ImageNet'  # 数据集名称，
-img_norm_cfg = dict(       #图像归一化配置，用来归一化输入的图像。
-    mean=[123.675, 116.28, 103.53],  # 预训练里用于预训练主干网络模型的平均值。
-    std=[58.395, 57.12, 57.375],     # 预训练里用于预训练主干网络模型的标准差。
-    to_rgb=True)                     # 是否反转通道，使用 cv2, mmcv 读取图片默认为 BGR 通道顺序，这里 Normalize 均值方差数组的数值是以 RGB 通道顺序， 因此需要反转通道顺序。
-# 训练数据流水线
+dataset_type = 'ImageNet'  # dataset name，
+img_norm_cfg = dict(        # Image normalization config to normalize the input images
+    mean=[123.675, 116.28, 103.53],  # Mean values used to pre-training the pre-trained backbone models
+    std=[58.395, 57.12, 57.375],     # Standard variance used to pre-training the pre-trained backbone models
+    to_rgb=True)                     # Whether to invert the color channel, rgb2bgr or bgr2rgb.
+# train data pipeline
 train_pipeline = [
-    dict(type='LoadImageFromFile'),                # 读取图片
-    dict(type='RandomResizedCrop', size=224),      # 随机缩放抠图
-    dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),  # 以概率为0.5随机水平翻转图片
-    dict(type='Normalize', **img_norm_cfg),        # 归一化
-    dict(type='ImageToTensor', keys=['img']),      # image 转为 torch.Tensor
-    dict(type='ToTensor', keys=['gt_label']),      # gt_label 转为 torch.Tensor
-    dict(type='Collect', keys=['img', 'gt_label']) # 决定数据中哪些键应该传递给检测器的流程
+    dict(type='LoadImageFromFile'),                # First pipeline to load images from file path
+    dict(type='RandomResizedCrop', size=224),      # RandomResizedCrop
+    dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),  # Randomly flip the picture horizontally with a probability of 0.5
+    dict(type='Normalize', **img_norm_cfg),        # normalization
+    dict(type='ImageToTensor', keys=['img']),      # convert image from numpy into torch.Tensor
+    dict(type='ToTensor', keys=['gt_label']),      # convert gt_label into torch.Tensor
+    dict(type='Collect', keys=['img', 'gt_label']) # Pipeline that decides which keys in the data should be passed to the detector
 ]
-# 测试数据流水线
+# test data pipeline
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='Resize', size=(256, -1)),
     dict(type='CenterCrop', crop_size=224),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='ImageToTensor', keys=['img']),
-    dict(type='Collect', keys=['img'])             # test 时不传递 gt_label
+    dict(type='Collect', keys=['img'])             # do not pass gt_label while testing
 ]
 data = dict(
-    samples_per_gpu=32,    # 单个 GPU 的 Batch size
-    workers_per_gpu=2,     # 单个 GPU 的 线程数
-    train=dict(            # 训练数据信息
-        type=dataset_type,                  # 数据集名称
-        data_prefix='data/imagenet/train',  # 数据集目录，当不存在 ann_file 时，类别信息从文件夹自动获取
-        pipeline=train_pipeline),           # 数据集需要经过的 数据流水线
-    val=dict(              # 验证数据集信息
+    samples_per_gpu=32,     # Batch size of a single GPU
+    workers_per_gpu=2,      # Worker to pre-fetch data for each single GPU
+    train=dict(  # Train dataset config
+    train=dict(            # train data config
+        type=dataset_type,                  # dataset name
+        data_prefix='data/imagenet/train',  # Dataset root, when ann_file does not exist, the category information is automatically obtained from the root folder
+        pipeline=train_pipeline),           # train data pipeline
+    val=dict(              # val data config
         type=dataset_type,
         data_prefix='data/imagenet/val',
-        ann_file='data/imagenet/meta/val.txt',   # 标注文件路径，存在 ann_file 时，不通过文件夹自动获取类别信息
+        ann_file='data/imagenet/meta/val.txt',   #  ann_file existes, the category information is obtained from file
         pipeline=test_pipeline),
-    test=dict(             # 测试数据集信息
+    test=dict(             # test data config
         type=dataset_type,
         data_prefix='data/imagenet/val',
         ann_file='data/imagenet/meta/val.txt',
         pipeline=test_pipeline))
-evaluation = dict(       # evaluation hook 的配置
-    interval=1,          # 验证期间的间隔，单位为 epoch 或者 iter， 取决于 runner 类型。
-    metric='accuracy')   # 验证期间使用的指标。
+evaluation = dict(       # The config to build the evaluation hook, refer to https://github.com/open-mmlab/mmdetection/blob/master/mmdet/core/evaluation/eval_hooks.py#L7 for more details.
+    interval=1,          # Evaluation interval
+    metric='accuracy')   # Metrics used during evaluation
 ```
 
-### 训练策略
-主要包含 优化器设置、 `optimizer hook` 设置、学习率策略和 `runner`设置：
-- `optimizer` : 优化器设置信息, 支持 `pytorch` 所有的优化器，参考相关[MMCV代码及文档](https://mmcv.readthedocs.io/en/latest/_modules/mmcv/runner/optimizer/default_constructor.html#DefaultOptimizerConstructor)
-- `optimizer_config` : `optimizer hook` 的配置文件,如设置梯度限制，参考相关[MMCV代码及文档](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/optimizer.py#L8)
-- `lr_config` : 学习率策略，支持 `CosineAnnealing`, `step`, `warmup` 等等，参考相关[MMCV代码及文档](https://mmcv.readthedocs.io/en/latest/_modules/mmcv/runner/hooks/lr_updater.html#LrUpdaterHook)
-- `runner` : 有关 `runner` 可以参考 `MMCV` 对于 [`runner` 介绍文档](https://mmcv.readthedocs.io/en/latest/understand_mmcv/runner.html)。
+### training schedule
+Mainly include optimizer settings, `optimizer hook` settings, learning rate strategy and `runner` settings:
+-`optimizer`: optimizer setting , support all optimizers in `pytorch`, refer to related [mmcv](https://mmcv.readthedocs.io/en/latest/_modules/mmcv/runner/optimizer/default_constructor.html#DefaultOptimizerConstructor) documentation.
+-`optimizer_config`: `optimizer hook` configuration file, such as setting gradient limit, refer to related [mmcv](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/optimizer.py#L8) code.
+-`lr_config`: Learning rate strategy, support `CosineAnnealing`, `step`, `warmup`, etc. refer to related [mmcv](https://mmcv.readthedocs.io/en/latest/_modules/mmcv/runner/ hooks/lr_updater.html#LrUpdaterHook) documentation for more options.
+-`runner`: For `runner`, please refer to `mmcv` for [`runner`](https://mmcv.readthedocs.io/en/latest/understand_mmcv/runner.html) introduction document.
+
 ```python
-# 用于构建优化器的配置文件。支持 PyTorch 中的所有优化器，同时它们的参数与 PyTorch 里的优化器参数一致。
-optimizer = dict(type='SGD',         # 优化器类型
-                lr=0.1,              # 优化器的学习率，参数的使用细节请参照对应的 PyTorch 文档。
-                momentum=0.9,        # 动量(Momentum)
-                weight_decay=0.0001) # 权重衰减系数(weight decay)。
- # optimizer hook 的配置文件
-optimizer_config = dict(grad_clip=None)  # 大多数方法不使用梯度限制(grad_clip)。
-# 学习率调整配置，用于注册 LrUpdater hook。
-lr_config = dict(policy='step',          # 调度流程(scheduler)的策略，也支持 CosineAnnealing, Cyclic, 等。
-                 step=[30, 60, 90])      # 在 epoch 为 30, 60, 90 时， lr 进行衰减
-runner = dict(type='EpochBasedRunner',   # 将使用的 runner 的类别，如 IterBasedRunner 或 EpochBasedRunner。
-            max_epochs=100)              # runner 总回合数， 对于 IterBasedRunner 使用 `max_iters`
+# he configuration file used to build the optimizer, support all optimizers in PyTorch.
+optimizer = dict(type='SGD',         # Optimizer type
+                lr=0.1,              #  # Learning rate of optimizers, see detail usages of the parameters in the documentation of PyTorch
+                momentum=0.9,        # Momentum
+                weight_decay=0.0001) # Weight decay of SGD
+# Config used to build the optimizer hook, refer to https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/optimizer.py#L8 for implementation details.
+optimizer_config = dict(grad_clip=None)  # Most of the methods do not use gradient clip
+# Learning rate scheduler config used to register LrUpdater hook
+lr_config = dict(policy='step',          # The policy of scheduler, also support CosineAnnealing, Cyclic, etc. Refer to details of supported LrUpdater from https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/lr_updater.py#L9.
+                 step=[30, 60, 90])      # Steps to decay the learning rate
+runner = dict(type='EpochBasedRunner',   # Type of runner to use (i.e. IterBasedRunner or EpochBasedRunner)
+            max_epochs=100)    # Runner that runs the workflow in total max_epochs. For IterBasedRunner use `max_iters`
 ```
 
-### 运行设置
+### runtime setting
 
-本部分主要包括保存 `checkpoint` 策略、日志配置、训练参数、断点权重路径和工作目录等等。
+This part mainly includes saving the checkpoint strategy, log configuration, training parameters, breakpoint weight path and working directory, etc.
 
 ```python
-# Checkpoint hook 的配置文件。
-checkpoint_config = dict(interval=1)   # 保存的间隔是 1，单位会根据 runner 不同变动，可以为 epoch 或者 iter。
-# 日志配置信息。
+# Config to set the checkpoint hook, Refer to https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/checkpoint.py for implementation.
+checkpoint_config = dict(interval=1)    # The save interval is 1
+# config to register logger hook
 log_config = dict(
-    interval=100,                      # 打印日志的间隔， 单位 iters
+    interval=100,                       # Interval to print the log
     hooks=[
-        dict(type='TextLoggerHook'),          # 用于记录训练过程的文本记录器(logger)。
-        # dict(type='TensorboardLoggerHook')  # 同样支持 Tensorboard 日志
+        dict(type='TextLoggerHook'),           # The Tensorboard logger is also supported
+        # dict(type='TensorboardLoggerHook')   # also support Tensorboard logger
     ])
 
-dist_params = dict(backend='nccl')   # 用于设置分布式训练的参数，端口也同样可被设置。
-log_level = 'INFO'             # 日志的输出级别。
-resume_from = None             # 从给定路径里恢复检查点(checkpoints)，训练模式将从检查点保存的轮次开始恢复训练。
-workflow = [('train', 1)]      # runner 的工作流程，[('train', 1)] 表示只有一个工作流且工作流仅执行一次。
-work_dir = 'work_dir'          # 用于保存当前实验的模型检查点和日志的目录文件地址。
+dist_params = dict(backend='nccl')   # Parameters to setup distributed training, the port can also be set.
+log_level = 'INFO'             # The output level of the log.
+resume_from = None             # Resume checkpoints from a given path, the training will be resumed from the epoch when the checkpoint's is saved.
+workflow = [('train', 1)]      # Workflow for runner. [('train', 1)] means there is only one workflow and the workflow named 'train' is executed once.
+work_dir = 'work_dir'          # Directory to save the model checkpoints and logs for the current experiments.
 ```
 
-## 继承并编写配置信息
+## Inherit and Modify Config File
 
-为了精简代码、更快的修改配置文件以及便于理解，我们建议继承现有方法。
+For easy understanding, we recommend contributors to inherit from existing methods.
 
-对于在同一算法文件夹下的所有配置文件，MMCls 推荐只存在 **一个** 对应的 _原始配置_ 文件。
-所有其他的配置文件都应该继承 _原始配置_ 文件，这样就能保证配置文件的最大继承深度为 3。
+For all configs under the same folder, it is recommended to have only **one** _primitive_ config. All other configs should inherit from the _primitive_ config. In this way, the maximum of inheritance level is 3.
 
-例如，如果在 ResNet 的基础上做了一些修改，用户首先可以通过指定 `_base_ = '../../configs/resnet/resnet50_b32x8_imagenet.py'` 来继承基础的 ResNet 结构、数据集以及其他训练配置信息，然后修改配置文件中的必要参数以完成继承。如想在基础 resnet50 的基础上将训练轮数由 100 改为 300 和修改学习率衰减轮数，同时修改数据集路径，可以建立新的配置文件 `configs/resnet/resnet50_8xb32-300e_in1k.py`， 文件中写入以下内容:
+For example, if some modifications are made on the basis of ResNet, the user can first inherit the basic ResNet structure, dataset and other training setting by specifying `_base_ ='../../configs/resnet/resnet50_b32x8_imagenet.py'` Information, and then modify the necessary parameters in the configuration file to complete the inheritance. If you want to change the number of training rounds from 100 to 300 epoches based on the basic resnet50, modify the number of learning rate decay rounds, and modify the data set path at the same time, you can create a new configuration file `configs/resnet/resnet50_8xb32-300e_in1k.py`, file write the following in:
 
 ```python
 _base_ = '../../configs/resnet/resnet50_b32x8_imagenet.py'
@@ -254,9 +252,11 @@ data = dict(
 )
 ```
 
-### 使用配置文件里的中间变量
+### Use intermediate variables in configs
 
-配置文件里会使用一些中间变量，例如数据集里的 `train_pipeline/test_pipeline`。我们在定义新的 `train_pipeline/test_pipeline` 之后，需要将它们传递到 `data` 里。例如，我们想在训练或测试时修改输入图片的大小，`train_pipeline/test_pipeline` 是我们想要修改的中间变量。
+Some intermediate variables are used in the configuration file. The intermediate variables make the configuration file clearer and easier to modify.
+
+For example, `train_pipeline` / `test_pipeline` is the intermediate variable of the data pipeline. We first need to define `train_pipeline` / `test_pipeline`, and then pass them to `data`. If you want to modify the size of the input image during training or testing, you need to modify the intermediate variables of `train_pipeline` / `test_pipeline`.
 
 ```python
 img_norm_cfg = dict(
@@ -283,27 +283,11 @@ data = dict(
     test=dict(pipeline=test_pipeline))
 ```
 
-### 忽略基础配置文件里的部分内容
+### Ignore some fields in the base configs
 
-有时，您需要设置 `_delete_=True` 去忽略基础配置文件里的一些域内容。 可以参照 [mmcv](https://mmcv.readthedocs.io/en/latest/understand_mmcv/config.html#inherit-from-base-config-with-ignored-fields) 来获得一些简单的指导。
+Sometimes, you need to set `_delete_=True` to ignore some domain content in the basic configuration file. You can refer to [mmcv](https://mmcv.readthedocs.io/en/latest/understand_mmcv/config.html#inherit-from-base-config-with-ignored-fields) for more instructions.
 
-
-以下是一个简单应用案例，在实验时，使用不同的学习率策略, 如将上述案列中的 ResNet50 使用 cosine schedule ,如果使用继承并直接修改的方法：
-
-```python
-_base_ = '../../configs/resnet/resnet50_b32x8_imagenet.py'
-
-lr_config = dict(
-    policy='CosineAnnealing',
-    min_lr=0,
-    warmup='linear',
-    warmup_by_epoch=True,
-    warmup_iters=5,
-    warmup_ratio=0.1
-)
-```
-
-这时在构建优化器策略时会报 "get unexcepected keywoord 'step'" 错, 原配置信息 lr_config 的 `'step'` 被保留下来了，需要加入 `_delete_=True` 去忽略基础配置文件里的 `lr_config` 域内容：
+The following is an example. If you use cosine schedule in the above ResNet50 case, use inheritance and directly modify it will report `get unexcepected keyword'step'` error, because the `'step'` field of the basic configuration file in lr_config domain information is reserved, and you need to add `_delete_ =True` to ignore the content of `lr_config` related fields in the basic configuration file:
 
 ```python
 _base_ = '../../configs/resnet/resnet50_b32x8_imagenet.py'
@@ -313,17 +297,17 @@ lr_config = dict(
     policy='CosineAnnealing',
     min_lr=0,
     warmup='linear',
-    warmup_by_epoch=True,
+    by_epoch=True,
     warmup_iters=5,
     warmup_ratio=0.1
 )
 ```
 
-### 引用基础配置文件里的变量
+### Use some fields in the base configs
 
-有时，您可以引用 `__base__` 配置信息的一些域内容，这样可以避免重复定义。 可以参照 [mmcv](https://mmcv.readthedocs.io/en/latest/understand_mmcv/config.html#reference-variables-from-base) 来获得一些简单的指导。
+Sometimes, you can refer to some fields of the `__base__` configuration, so as to avoid duplication of definitions. You can refer to [mmcv](https://mmcv.readthedocs.io/en/latest/understand_mmcv/config.html#reference-variables-from-base) for some more instructions.
 
-以下是一个简单应用案例，在训练数据预处理流水线中使用 `auto augment`，具体参考配置文件 "configs/_base_/datasets/imagenet_bs64_autoaug.py"。 在定义 `train_pipeline` 时直接引用 `_base_`  中的 `auto_increasing_policies` 变量：
+The following is a example of using `auto augment` in the training data preprocessing pipeline， refer to ["configs/_base_/datasets/imagenet_bs64_autoaug.py"](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/datasets/imagenet_bs64_autoaug.py). When defining `train_pipeline`, just add the definition file of `auto augment` to `__base__`, and then use `{{_base_.auto_increasing_policies}}` to reference the variables:
 
 ```python
 _base_ = ['./pipelines/auto_aug.py']
@@ -351,42 +335,46 @@ data = dict(
 evaluation = dict(interval=1, metric='accuracy')
 ```
 
-## 通过命令行参数修改配置信息
+## Modify config through script arguments
 
-当用户使用脚本 "tools/train.py" 或者 "tools/test.py" 提交任务时，可以通过指定 `--cfg-options` 参数来直接修改所使用的配置文件内容。
+When users use the script "tools/train.py" or "tools/test.py" to submit tasks or use some other tools, they can directly modify the content of the configuration file used by specifying the `--cfg-options` parameter.
 
-- 更新配置文件内的字典
+- Update config keys of dict chains.
 
-  用户可以按照原始配置中的字典键顺序来指定配置文件的设置。
-  例如，`--cfg-options model.backbone.frozen_stages=1` 会改变训练模式下模型主干网络 backbone 中冻结反向传播的层，由不冻结任何网络层修改为冻结 backbone 中 stage1 和 stage1 前面的网络层。
+  The config options can be specified following the order of the dict keys in the original config.
+  For example, `--cfg-options model.backbone.norm_eval=False` changes the all BN modules in model backbones to `train` mode.
 
-- 更新配置文件内列表的键
+- Update keys inside a list of configs.
 
-  配置文件中，存在一些由字典组成的列表。例如，测试数据前处理流水线 data.test.pipeline 就是 python 列表。
-  如，`[type='LoadImageFromFile', dict(type='Resize', size=(256, -1)),...]`。如果用户想更改其中的 `Resize` 步骤的后端 `'backend'` 由默认 改为 `'pillow'`，可以指定 `--cfg-options data.test.pipeline.1.backend=pillow`。
+  Some config dicts are composed as a list in your config. For example, the training pipeline `data.train.pipeline` is normally a list
+  e.g. `[dict(type='LoadImageFromFile'), dict(type='TopDownRandomFlip', flip_prob=0.5), ...]`. If you want to change `'flip_prob=0.5'` to `'flip_prob=0.0'` in the pipeline,
+  you may specify `--cfg-options data.train.pipeline.1.flip_prob=0.0`.
 
-- 更新列表/元组的值。
+- Update values of list/tuples.
 
-  当配置文件中需要更新的是一个列表或者元组，例如，配置文件通常会设置 `workflow=[('train', 1)]`，用户如果想更改，
-  需要指定 `--cfg-options workflow="[(train,1),(val,1)]"`。注意这里的引号 " 对于列表以及元组数据类型的修改是必要的，
-  并且 **不允许** 引号内所指定的值的书写存在空格。
+  If the value to be updated is a list or a tuple. For example, the config file normally sets `workflow=[('train', 1)]`. If you want to
+  change this key, you may specify `--cfg-options workflow="[(train,1),(val,1)]"`. Note that the quotation mark \" is necessary to
+  support list/tuple data types, and that **NO** white space is allowed inside the quotation marks in the specified value.
 
-## 导入新的模块
+
+## Import new module
 
 ```{note}
-本部分仅在当将 MMCls 当作库构建自己项目时可能用到，初学者可跳过。
+This part may only be used when using MMCls as a library to build your own project, and beginners can skip it.
 ```
 
-您在学习完后续教程 [如何添加新数据集](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/new_dataset.html)、[如何设计数据处理流程](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/data_pipeline.html) 、[如何增加新模块](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/new_modules.html) 后，使用 MMCls 完成了自己项目，为了精简代码，可以将 MMCls 作为一个一般库。这时需要在配置文件中导入自己的新建数据集、模型、数据增强等等。案例可以参考 [OpenMMLab 算法大赛项目](https://github.com/zhangrui-wolf/openmmlab-competition-2021)。
+After completing the follow-up tutorial [ADDING NEW DATASET](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/new_dataset.html), [CUSTOM DATA PIPELINES](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/data_pipeline.html), [ADDING NEW MODULES](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/new_modules.html), MMCls may be used to complete your own project as a 3rd library to streamline the code. At this time, you need to import your own new datasets, models, data augments into the configuration file. For examples, please refer to [OpenMMLab Algorithm Competition Project](https://github.com/zhangrui-wolf/openmmlab-competition-2021).
 
-只需要在你的配置文件中添加以下代码：
+Add the following code to your own configuration file:
 
 ```python
 custom_imports = dict(
     imports=['your_dataset_class',
-             'your_transformer_class',
-             'your_model_class'],
+             'your_transforme_class',
+             'your_model_class',
+             'your_module_class'],
     allow_failed_imports=False)
 ```
 
-## 常见问题
+## FAQ
+- None
