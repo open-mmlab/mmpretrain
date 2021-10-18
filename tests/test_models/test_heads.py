@@ -116,7 +116,7 @@ def test_stacked_linear_cls_head(feat):
 
 
 def test_vit_head():
-    fake_features = torch.rand(4, 100)
+    fake_features = ([torch.rand(4, 7, 7, 16), torch.rand(4, 100)], )
     fake_gt_label = torch.randint(0, 10, (4, ))
 
     # test vit head forward

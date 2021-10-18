@@ -3,19 +3,22 @@ model = dict(
     type='ImageClassifier',
     backbone=dict(
         type='VisionTransformer',
-        num_layers=24,
-        embed_dim=1024,
-        num_heads=16,
+        arch='b',
         img_size=224,
-        patch_size=16,
-        in_channels=3,
-        feedforward_channels=4096,
-        drop_rate=0.1),
+        patch_size=32,
+        drop_rate=0.1,
+        init_cfg=[
+            dict(
+                type='Kaiming',
+                layer='Conv2d',
+                mode='fan_in',
+                nonlinearity='linear')
+        ]),
     neck=None,
     head=dict(
         type='VisionTransformerClsHead',
         num_classes=1000,
-        in_channels=1024,
+        in_channels=768,
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
         topk=(1, 5),
     ))
