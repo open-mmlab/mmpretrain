@@ -17,7 +17,7 @@ class FFN(nn.Module):
             `MultiheadAttention`.
         feedforward_channels (int): The hidden dimension of FFNs.
         num_fcs (int, optional): The number of fully-connected layers in
-            FFNs. Defaluts to 2.
+            FFNs. Defaults to 2.
         act_cfg (dict, optional): The activation config for FFNs.
         dropout (float, optional): Probability of an element to be
             zeroed. Default 0.0.
@@ -182,7 +182,7 @@ class TransformerEncoderLayer(nn.Module):
             Default 0.0.
         proj_drop (float): Probability of an element to be zeroed
             after the feed forward layer. Default 0.0.
-        act_cfg (dict): The activation config for FFNs. Defalut GELU.
+        act_cfg (dict): The activation config for FFNs. Defaults to GELU.
         norm_cfg (dict): Config dict for normalization layer. Default
             layer normalization.
         num_fcs (int): The number of fully-connected layers for FFNs.
@@ -398,7 +398,7 @@ class VisionTransformer(BaseBackbone):
         norm_cfg
         norm_cfg (dict): Config dict for normalization layer. Default
             layer normalization.
-        act_cfg (dict): The activation config for FFNs. Defalut GELU.
+        act_cfg (dict): The activation config for FFNs. Defaults to GELU.
         num_fcs (int): The number of fully-connected layers for FFNs.
             Default 2.
     """

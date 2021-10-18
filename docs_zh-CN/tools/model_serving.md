@@ -10,7 +10,19 @@ python tools/deployment/mmcls2torchserve.py ${CONFIG_FILE} ${CHECKPOINT_FILE} \
 --model-name ${MODEL_NAME}
 ```
 
-**注意**: ${MODEL_STORE} 需要是一个文件夹的绝对路径。
+```{note}
+${MODEL_STORE} 需要是一个文件夹的绝对路径。
+```
+
+示例：
+
+```shell
+python tools/deployment/mmcls2torchserve.py \
+  configs/resnet/resnet18_b32x8_imagenet.py \
+  checkpoints/resnet18_8xb32_in1k_20210831-fbbb1da6.pth \
+  --output-folder ./checkpoints \
+  --model-name resnet18_in1k
+```
 
 ## 2. 构建 `mmcls-serve` docker 镜像
 
@@ -31,8 +43,12 @@ docker run --rm \
 --cpus 8 \
 --gpus device=0 \
 -p8080:8080 -p8081:8081 -p8082:8082 \
---mount type=bind,source=$MODEL_STORE,target=/home/model-server/model-store \
+--mount type=bind,source=`realpath ./checkpoints`,target=/home/model-server/model-store \
 mmcls-serve:latest
+```
+
+```{note}
+`realpath ./checkpoints` 是 "./checkpoints" 的绝对路径，你可以将其替换为你保存 TorchServe 模型的目录的绝对路径。
 ```
 
 参考 [该文档](https://github.com/pytorch/serve/blob/master/docs/rest_api.md) 了解关于推理 (8080)，管理 (8081) 和指标 (8082) 等 API 的信息。
@@ -40,16 +56,32 @@ mmcls-serve:latest
 ## 4. 测试部署
 
 ```shell
-curl -O https://raw.githubusercontent.com/pytorch/serve/master/docs/images/3dogs.jpg
-curl http://127.0.0.1:8080/predictions/${MODEL_NAME} -T 3dogs.jpg
+curl http://127.0.0.1:8080/predictions/${MODEL_NAME} -T demo/demo.JPEG
 ```
 
 您应该获得类似于以下内容的响应：
 
 ```json
 {
-  "pred_label": 245,
-  "pred_score": 0.5536593794822693,
-  "pred_class": "French bulldog"
+  "pred_label": 58,
+  "pred_score": 0.38102269172668457,
+  "pred_class": "water snake"
 }
+```
+
+另外，你也可以使用 `test_torchserver.py` 来比较 TorchServe 和 PyTorch 的结果，并进行可视化。
+
+```shell
+python tools/deployment/test_torchserver.py ${IMAGE_FILE} ${CONFIG_FILE} ${CHECKPOINT_FILE} ${MODEL_NAME}
+[--inference-addr ${INFERENCE_ADDR}] [--device ${DEVICE}]
+```
+
+示例：
+
+```shell
+python tools/deployment/test_torchserver.py \
+  demo/demo.JPEG \
+  configs/resnet/resnet18_b32x8_imagenet.py \
+  checkpoints/resnet18_8xb32_in1k_20210831-fbbb1da6.pth \
+  resnet18_in1k
 ```

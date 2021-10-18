@@ -2,6 +2,7 @@
 import argparse
 import os
 import warnings
+from numbers import Number
 
 import mmcv
 import numpy as np
@@ -186,7 +187,13 @@ def main():
                                             args.metric_options)
             results.update(eval_results)
             for k, v in eval_results.items():
-                print(f'\n{k} : {v:.2f}')
+                if isinstance(v, np.ndarray):
+                    v = [round(out, 2) for out in v.tolist()]
+                elif isinstance(v, Number):
+                    v = round(v, 2)
+                else:
+                    raise ValueError(f'Unsupport metric type: {type(v)}')
+                print(f'\n{k} : {v}')
         if args.out:
             if 'none' not in args.out_items:
                 scores = np.vstack(outputs)

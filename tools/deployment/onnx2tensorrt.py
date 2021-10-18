@@ -28,14 +28,14 @@ def onnx2tensorrt(onnx_file,
         max_batch_size (int): Max batch size of the model.
         verify (bool, optional): Whether to verify the converted model.
             Defaults to False.
-        workspace_size (int, optional): Maximium workspace of GPU.
+        workspace_size (int, optional): Maximum workspace of GPU.
             Defaults to 1.
     """
     import onnx
     from mmcv.tensorrt import TRTWraper, onnx2trt, save_trt_engine
 
     onnx_model = onnx.load(onnx_file)
-    # create trt engine and wraper
+    # create trt engine and wrapper
     assert max_batch_size >= 1
     max_shape = [max_batch_size] + list(input_shape[1:])
     opt_shape_dict = {'input': [input_shape, input_shape, max_shape]}

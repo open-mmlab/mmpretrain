@@ -11,7 +11,7 @@ from .utils import convert_to_one_hot
 
 @LOSSES.register_module()
 class LabelSmoothLoss(nn.Module):
-    r"""Intializer for the label smoothed cross entropy loss.
+    r"""Initializer for the label smoothed cross entropy loss.
 
     Refers to `Rethinking the Inception Architecture for Computer Vision
     <https://arxiv.org/abs/1512.00567>`_
@@ -133,7 +133,7 @@ class LabelSmoothLoss(nn.Module):
             label (torch.Tensor): The ground truth label of the prediction
                 with shape (N, \*).
             weight (torch.Tensor, optional): Sample-wise loss weight with shape
-                (N, \*). Dafaults to None.
+                (N, \*). Defaults to None.
             avg_factor (int, optional): Average factor that is used to average
                 the loss. Defaults to None.
             reduction_override (str, optional): The method used to reduce the
