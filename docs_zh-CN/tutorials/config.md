@@ -257,7 +257,7 @@ data = dict(
 
 用一些中间变量，中间变量让配置文件更加清晰，也更容易修改。
 
-例如数据集里的 `train_pipeline/test_pipeline` 是作为数据流水线的中间变量。我们首先要定义 `train_pipeline`/`val_pipeline`/`test_pipeline`，然后将它们传递到 `data` 中。如果想修改训练或测试时输入图片的大小，就需要修改 `train_pipeline/test_pipeline` 这些中间变量。
+例如数据集里的 `train_pipeline` / `test_pipeline` 是作为数据流水线的中间变量。我们首先要定义 `train_pipeline` / `test_pipeline`，然后将它们传递到 `data` 中。如果想修改训练或测试时输入图片的大小，就需要修改 `train_pipeline` / `test_pipeline` 这些中间变量。
 
 
 ```python
