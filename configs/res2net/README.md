@@ -1,8 +1,9 @@
 # Res2Net: A New Multi-scale Backbone Architecture
+<!-- {Res2Net} -->
 
 ## Introduction
 
-[ALGORITHM]
+<!-- [ALGORITHM] -->
 
 ```latex
 @article{gao2019res2net,

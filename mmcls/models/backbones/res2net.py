@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import torch.utils.checkpoint as cp
 from mmcv.cnn import build_conv_layer, build_norm_layer
-from mmcv.runner import Sequential
+from mmcv.runner import ModuleList, Sequential
 
 from ..builder import BACKBONES
 from .resnet import Bottleneck as _Bottleneck
@@ -47,11 +47,11 @@ class Bottle2neck(_Bottleneck):
         if stage_type == 'stage':
             self.pool = nn.AvgPool2d(
                 kernel_size=3, stride=self.conv2_stride, padding=1)
-        convs = []
-        bns = []
 
+        self.convs = ModuleList()
+        self.bns = ModuleList()
         for i in range(scales - 1):
-            convs.append(
+            self.convs.append(
                 build_conv_layer(
                     self.conv_cfg,
                     width,
@@ -61,10 +61,8 @@ class Bottle2neck(_Bottleneck):
                     padding=self.dilation,
                     dilation=self.dilation,
                     bias=False))
-            bns.append(
+            self.bns.append(
                 build_norm_layer(self.norm_cfg, width, postfix=i + 1)[1])
-        self.convs = nn.ModuleList(convs)
-        self.bns = nn.ModuleList(bns)
 
         self.conv3 = build_conv_layer(
             self.conv_cfg,
