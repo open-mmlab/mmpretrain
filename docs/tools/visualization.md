@@ -45,7 +45,7 @@ python tools/visualizations/vis_pipeline.py \
 
 ```{note}
 
-1. If the `--mode` not specified, it will be set to `pipeline` as default, get the transformed pictures; if the `--mode` set to `original`, get the original pictures; if the `--mode` set to `concat`, get the pictures stitched together by original pictures and transformed pictures.
+1. If the `--mode` not specified, it will be set to `concat` as default, get the transformed pictures; if the `--mode` set to `original`, get the original pictures; if the `--mode` set to `concat`, get the pictures stitched together by original pictures and transformed pictures.
 
 2. When `--adaptive` is set to `True`, images that are too large or too small will be automatically adjusted, `--min-edge-length` and `--max-edge-length` affect in this process.
 ```
