@@ -1098,6 +1098,9 @@ class ImageNet(BaseDataset):
         for filename, gt_label in self.samples:
             info = {'img_prefix': self.data_prefix}
             info['img_info'] = {'filename': filename}
+            cls = filename.split('/')[0]
+            if cls not in self.CLASSES:
+                self.CLASSES.append(cls)
             info['gt_label'] = np.array(gt_label, dtype=np.int64)
             data_infos.append(info)
         return data_infos
