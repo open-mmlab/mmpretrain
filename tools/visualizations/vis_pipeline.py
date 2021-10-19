@@ -42,7 +42,7 @@ def parse_args():
         default=sys.maxsize,
         help='number of images selected to visualize, must bigger than 0. if '
         'the number is bigger than length of dataset, show all the images in '
-        'dataset; defalut "sys.maxsize", show all images in dataset')
+        'dataset; default "sys.maxsize", show all images in dataset')
     parser.add_argument(
         '--mode',
         default='concat',
@@ -105,7 +105,7 @@ def parse_args():
     assert args.number > 0, "'args.number' must be larger than zero."
     if args.window_size != '':
         assert re.match(r'\d+\*\d+', args.window_size), \
-            "'window-size' must be in fromat 'W*H'."
+            "'window-size' must be in format 'W*H'."
     if args.output_dir == '' and not args.show:
         raise ValueError("if '--output-dir' and '--show' are not set, "
                          'nothing will happen when the program running.')
@@ -167,7 +167,7 @@ def concat(left_img, right_img):
     GAP = 10
     left_h, left_w, _ = left_img.shape
     right_h, right_w, _ = right_img.shape
-    # create a big board to contain images whith shape (board_h, board_w*2+10)
+    # create a big board to contain images with shape (board_h, board_w*2+10)
     board_h, board_w = max(left_h, right_h), max(left_w, right_w)
     board = np.ones([board_h, 2 * board_w + GAP, 3], np.uint8) * 255
 
@@ -233,7 +233,7 @@ def main():
                 image = adaptive_size(args.mode, image, args.min_edge_length,
                                       args.max_edge_length)
 
-            # dist_path is None as default, menas not save pictures
+            # dist_path is None as default, means not save pictures
             dist_path = None
             if args.output_dir:
                 # some datasets do not have filename, such as cifar, use id

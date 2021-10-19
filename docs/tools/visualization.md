@@ -38,8 +38,8 @@ python tools/visualizations/vis_pipeline.py \
 - `--mode`: The display mode, can be one of `[original, pipeline, concat]`. If not specified, it will be set to `concat`.
 - `--show`: Whether to display pictures in pop-up windows. If not specified, it will be set to `False`.
 - `--adaptive`: Whether to automatically adjust the size of the visualization images. If not specified, it will be set to `False`.
-- `--min-edge-length`: The minium edge length, used when `--adaptivethe` is `True`. When any side of the picture is smaller than `${MIN_EDGE_LENGTH}`, the picture will be enlarged while keeping the aspect ratio unchanged, and the short side will be aligned to `${MIN_EDGE_LENGTH}`. If not specified, it will be set to 200.
-- `--max-edge-length`: The maxium edge length, used when `--adaptivethe` is `True`. When any side of the picture is larger than `${MAX_EDGE_LENGTH}`, the picture will be reduced while keeping the aspect ratio unchanged, and the long side will be aligned to `${MAX_EDGE_LENGTH}`. If not specified, it will be set to 1000.
+- `--min-edge-length`: The minimum edge length, used when `--adaptivethe` is `True`. When any side of the picture is smaller than `${MIN_EDGE_LENGTH}`, the picture will be enlarged while keeping the aspect ratio unchanged, and the short side will be aligned to `${MIN_EDGE_LENGTH}`. If not specified, it will be set to 200.
+- `--max-edge-length`: The maximum edge length, used when `--adaptivethe` is `True`. When any side of the picture is larger than `${MAX_EDGE_LENGTH}`, the picture will be reduced while keeping the aspect ratio unchanged, and the long side will be aligned to `${MAX_EDGE_LENGTH}`. If not specified, it will be set to 1000.
 - `--bgr2rgb`: Whether to flip the color channel order of images. If not specified, it will be set to `False`.
 - `--window-size`: The shape of display window. If not specified, it will be set to `12*7`. If used, it must be in format `'W*H'`.
 
