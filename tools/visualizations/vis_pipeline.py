@@ -107,7 +107,7 @@ def parse_args():
         assert re.match(r'\d+\*\d+', args.window_size), \
             "'window-size' must be in fromat 'W*H'."
     if args.output_dir == '' and not args.show:
-        raise ValueError("if 'args.output-dir' and 'args.show' are not set, "
+        raise ValueError("if '--output-dir' and '--show' are not set, "
                          'nothing will happen when the program running.')
 
     if args.show_options is None:
