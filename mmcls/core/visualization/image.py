@@ -202,7 +202,7 @@ class ImshowInfosContextManager(BaseFigureContextManager):
                       show=True,
                       wait_time=0,
                       out_file=None):
-        """Show image with extra infomation.
+        """Show image with extra information.
 
         Args:
             img (str | ndarray): The image to be displayed.
@@ -293,7 +293,7 @@ def imshow_infos(img,
                  fig_size=(15, 10),
                  wait_time=0,
                  out_file=None):
-    """Show image with extra infomation.
+    """Show image with extra information.
 
     Args:
         img (str | ndarray): The image to be displayed.

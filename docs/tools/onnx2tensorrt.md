@@ -6,7 +6,7 @@
   - [How to convert models from ONNX to TensorRT](#how-to-convert-models-from-onnx-to-tensorrt)
     - [Prerequisite](#prerequisite)
     - [Usage](#usage)
-  - [List of supported models convertable to TensorRT](#list-of-supported-models-convertable-to-tensorrt)
+  - [List of supported models convertible to TensorRT](#list-of-supported-models-convertible-to-tensorrt)
   - [Reminders](#reminders)
   - [FAQs](#faqs)
 
@@ -55,9 +55,9 @@ python tools/deployment/onnx2tensorrt.py \
     --verify \
 ```
 
-## List of supported models convertable to TensorRT
+## List of supported models convertible to TensorRT
 
-The table below lists the models that are guaranteed to be convertable to TensorRT.
+The table below lists the models that are guaranteed to be convertible to TensorRT.
 
 |    Model     |                                    Config                                    | Status |
 | :----------: | :--------------------------------------------------------------------------: | :----: |

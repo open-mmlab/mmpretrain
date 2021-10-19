@@ -1,4 +1,5 @@
 # Aggregated Residual Transformations for Deep Neural Networks
+<!-- {ResNeXt} -->
 
 ## Introduction
 

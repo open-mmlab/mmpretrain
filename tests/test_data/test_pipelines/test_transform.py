@@ -929,7 +929,7 @@ def test_randomflip():
     results = flip_module(results)
     assert np.equal(results['img'], results['img2']).all()
 
-    # compare hotizontal flip with torchvision
+    # compare horizontal flip with torchvision
     transform = dict(type='RandomFlip', flip_prob=1, direction='horizontal')
     flip_module = build_from_cfg(transform, PIPELINES)
     results = reset_results(results, original_img)

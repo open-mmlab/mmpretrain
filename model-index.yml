@@ -10,3 +10,4 @@ Import:
   - configs/vgg/metafile.yml
   - configs/repvgg/metafile.yml
   - configs/tnt/metafile.yml
+  - configs/vision_transformer/metafile.yml
