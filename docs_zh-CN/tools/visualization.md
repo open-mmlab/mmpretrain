@@ -46,7 +46,7 @@ python tools/visualizations/vis_pipeline.py \
 
 ```{note}
 
-1. 如果不指定 `--mode`，默认设置为 `pipeline`，获取预处理后的图片；如果 `--mode` 设置为 `original`，则获取原始图片； 如果  `--mode` 设置为 `concat`，则获取原始图片和预处理后图片拼接的图片。
+1. 如果不指定 `--mode`，默认设置为 `concat`，获取预处理后的图片；如果 `--mode` 设置为 `original`，则获取原始图片； 如果  `--mode` 设置为 `concat`，则获取原始图片和预处理后图片拼接的图片。
 
 2. `--adaptive` 为 `True` 时，会自动的调整尺寸过大和过小的图片，`--min-edge-length` 与 `--max-edge-length` 在此过程有效。
 
