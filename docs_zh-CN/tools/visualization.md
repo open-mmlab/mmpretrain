@@ -37,19 +37,18 @@ python tools/visualizations/vis_pipeline.py \
 - `--number`: 可视化样本数量。如果没有指定，默认展示数据集的所有图片。
 - `--skip-type`: 预设跳过的数据流水线过程。如果没有指定，默认为 `['ToTensor', 'Normalize', 'ImageToTensor', 'Collect']`。
 - `--mode`: 可视化的模式，只能为 `[original, pipeline, concat]` 之一，如果没有指定，默认为 `concat`。
-- `--show`: 是否将可视化图片以弹窗形式展示。如果没有指定，默认为 `False`。
-- `--adaptive`: 是否自动调节可视化图片的大小。如果没有指定，默认为 `False`。
-- `--min-edge-length`: 最短边长度，在 `--adaptivethe` 为 `True` 时有效。 当图片任意边小于 `${MIN_EDGE_LENGTH}` 时，会保持长宽比不变放大图片，短边对齐至 `${MIN_EDGE_LENGTH}`，默认为200。
-- `--max-edge-length`: 最长边长度，在 `--adaptivethe` 为 `True` 时有效。 当图片任意边大于 `${MAX_EDGE_LENGTH}` 时，会保持长宽比不变缩小图片，短边对齐至 `${MAX_EDGE_LENGTH}`，默认为1000。
-- `--bgr2rgb`: 是否将图片的颜色通道翻转。如果没有指定，默认为 `False`。
+- `--show`: 将可视化图片以弹窗形式展示。
+- `--adaptive`: 自动调节可视化图片的大小。
+- `--min-edge-length`: 最短边长度，当使用了 `--adaptive` 时有效。 当图片任意边小于 `${MIN_EDGE_LENGTH}` 时，会保持长宽比不变放大图片，短边对齐至 `${MIN_EDGE_LENGTH}`，默认为200。
+- `--max-edge-length`: 最长边长度，当使用了 `--adaptive` 时有效。 当图片任意边大于 `${MAX_EDGE_LENGTH}` 时，会保持长宽比不变缩小图片，短边对齐至 `${MAX_EDGE_LENGTH}`，默认为1000。
+- `--bgr2rgb`: 将图片的颜色通道翻转。
 - `--window-size`: 可视化窗口大小，如果没有指定，默认为 `12*7`。如果需要指定，按照格式 `'W*H'`。
 
 ```{note}
 
-1. 如果不指定 `--mode`，默认设置为 `concat`，获取预处理后的图片；如果 `--mode` 设置为 `original`，则获取原始图片； 如果  `--mode` 设置为 `concat`，则获取原始图片和预处理后图片拼接的图片。
+1. 如果不指定 `--mode`，默认设置为 `concat`，获取原始图片和预处理后图片拼接的图片；如果 `--mode` 设置为 `original`，则获取原始图片； 如果  `--mode` 设置为 `pipeline`，则获取预处理后的图片。
 
-2. `--adaptive` 为 `True` 时，会自动的调整尺寸过大和过小的图片，`--min-edge-length` 与 `--max-edge-length` 在此过程有效。
-
+2. 当指定了 `--adaptive` 选项时，会自动的调整尺寸过大和过小的图片，你可以通过设定 `--min-edge-length` 与 `--max-edge-length` 来指定自动调整的图片尺寸。
 ```
 
 **示例**：
