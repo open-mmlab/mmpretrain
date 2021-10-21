@@ -30,4 +30,5 @@ lr_config = dict(
     warmup='linear',
     warmup_iters=10,
     warmup_ratio=1e-6)
+custom_hooks = [dict(type='EMAHook', momentum=4e-5)]
 runner = dict(type='EpochBasedRunner', max_epochs=310)
