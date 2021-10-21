@@ -87,6 +87,22 @@ html_theme_options = {
         },
         {
             'name':
+            'Colab Tutorials',
+            'children': [
+                {
+                    'name': 'Train and inference with shell commands',
+                    'url': 'https://colab.research.google.com/github/'
+                           'open-mmlab/mmclassification/blob/master/docs/tutorials/MMClassification_tools.ipynb',
+                },
+                {
+                    'name': 'Train and inference with Python APIs',
+                    'url': 'https://colab.research.google.com/github/'
+                           'open-mmlab/mmclassification/blob/master/docs/tutorials/MMClassification_python.ipynb',
+                },
+            ]
+        },
+        {
+            'name':
             'Projects',
             'children': [
                 {
