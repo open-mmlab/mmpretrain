@@ -76,6 +76,40 @@ python ./tools/visualizations/vis_pipeline.py configs/resnet/resnet50_b16x8_cifa
 
 <div align=center><img src="../_static/image/original.JPEG" style=" width: auto; height: 40%; "></div>
 
+## lr schedule visualization
+
+### Usage
+
+```bash
+python tools/visualizations/vis_lr.py \
+    ${CONFIG_FILE} \
+    --work-dir ${WORK_DIR} \
+    --title ${TITLE} \
+    --style ${STYLE} \
+    --window-size ${WINDOW_SIZE}
+    --cfg-options
+```
+
+**Description of all arguments**：
+
+- `config` :  The path of a model config file.
+- `title` : Title of figure.
+- `style` : Style of plt.
+- `--window-size`: The shape of the display window. If not specified, it will be set to `12*7`. If used, it must be in the format `'W*H'`.
+- `cfg-options` : Modifications to the configuration file,refer to [DOC](https://mmclassification.readthedocs.io/en/latest/)。
+
+```{note}
+
+After running the tool, {timestamp}.log, {timestamp}.log.josn and {timestamp}.png are generated under $WORK_DIR/{config_basename}, which are the saved learning rate log, learning rate structured data and learning rate curve.
+```
+
+**Examples**：
+
+```bash
+
+python tools/visualizations/vis_lr.py configs/resnet/resnet50_b16x8_cifar100.py
+```
+
 ## FAQs
 
 - None

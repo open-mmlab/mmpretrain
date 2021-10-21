@@ -77,6 +77,41 @@ python ./tools/visualizations/vis_pipeline.py configs/resnet/resnet50_b16x8_cifa
 
 <div align=center><img src="../_static/image/original.JPEG" style=" width: auto; height: 40%; "></div>
 
+## 学习率策略可视化
+
+### 使用方法
+
+```bash
+python tools/visualizations/vis_lr.py \
+    ${CONFIG_FILE} \
+    --work-dir ${WORK_DIR} \
+    --title ${TITLE} \
+    --style ${STYLE} \
+    --window-size ${WINDOW_SIZE}
+    --cfg-options
+```
+
+**所有参数的说明**：
+
+- `config` : 模型配置文件的路径。
+- `title` : 可视化图片的标题。
+- `style` : 可视化图片的风格。
+- `--window-size`: 可视化窗口大小，如果没有指定，默认为 `12*7`。如果需要指定，按照格式 `'W*H'`。
+- `cfg-options` : 对配置文件的修改，参考[教程](https://mmclassification.readthedocs.io/zh_CN/latest/)。
+
+```{note}
+
+1. 工具运行完成后，在 $WORK_DIR/{config_basename} 下产生 {timestamp}.log、 {timestamp}.log.josn 和 {timestamp}.png，分别为保存的学习率变化日志，学习率变化结构化数据以及学习率曲线。
+
+```
+
+**示例**：
+
+```bash
+
+python tools/visualizations/vis_lr.py configs/resnet/resnet50_b16x8_cifar100.py
+```
+
 ## 常见问题
 
 - 无
