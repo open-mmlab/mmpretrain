@@ -1,5 +1,6 @@
 # model settings
 embed_dims = 384
+num_classes = 1000
 
 model = dict(
     type='ImageClassifier',
@@ -25,7 +26,7 @@ model = dict(
     neck=None,
     head=dict(
         type='VisionTransformerClsHead',
-        num_classes=1000,
+        num_classes=num_classes,
         in_channels=embed_dims,
         loss=dict(
             type='LabelSmoothLoss',
@@ -34,11 +35,7 @@ model = dict(
         ),
         topk=(1, 5),
         init_cfg=dict(type='TruncNormal', layer='Linear', std=.02)),
-    train_cfg=dict(
-        cutmixup=dict(
-            mixup_alpha=0.8,
-            cutmix_alpha=1.0,
-            prob=1.0,
-            switch_prob=0.5,
-            mode='batch',
-            num_classes=1000)))
+    train_cfg=dict(augments=[
+        dict(type='BatchMixup', alpha=0.8, prob=0.5, num_classes=num_classes),
+        dict(type='BatchCutMix', alpha=1.0, prob=0.5, num_classes=num_classes),
+    ]))
