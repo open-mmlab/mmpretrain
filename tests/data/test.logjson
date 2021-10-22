@@ -1,0 +1,10 @@
+{"a": "b"}
+{"mode": "train", "epoch": 1, "iter": 10, "lr": 0.01309, "memory": 0, "data_time": 0.0072, "time": 0.00727}
+{"mode": "train", "epoch": 1, "iter": 20, "lr": 0.02764, "memory": 0, "data_time": 0.00044, "time": 0.00046}
+{"mode": "train", "epoch": 1, "iter": 30, "lr": 0.04218, "memory": 0, "data_time": 0.00028, "time": 0.0003}
+{"mode": "train", "epoch": 1, "iter": 40, "lr": 0.05673, "memory": 0, "data_time": 0.00027, "time": 0.00029}
+{"mode": "train", "epoch": 2, "iter": 10, "lr": 0.17309, "memory": 0, "data_time": 0.00048, "time": 0.0005}
+{"mode": "train", "epoch": 2, "iter": 20, "lr": 0.18763, "memory": 0, "data_time": 0.00038, "time": 0.0004}
+{"mode": "train", "epoch": 2, "iter": 30, "lr": 0.20218, "memory": 0, "data_time": 0.00037, "time": 0.00039}
+{"mode": "train", "epoch": 3, "iter": 10, "lr": 0.33305, "memory": 0, "data_time": 0.00045, "time": 0.00046}
+{"mode": "train", "epoch": 3, "iter": 20, "lr": 0.34759, "memory": 0, "data_time": 0.0003, "time": 0.00032}
