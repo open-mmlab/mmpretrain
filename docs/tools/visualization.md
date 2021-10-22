@@ -93,8 +93,8 @@ python tools/visualizations/vis_lr.py \
 **Description of all arguments**：
 
 - `config` :  The path of a model config file.
-- `title` : Title of figure.
-- `style` : Style of plt.
+- `title` : Title of figure. If not set, default to be config file name.
+- `style` : Style of plt. If not set, default to be `whitegrid`.
 - `--window-size`: The shape of the display window. If not specified, it will be set to `12*7`. If used, it must be in the format `'W*H'`.
 - `cfg-options` : Modifications to the configuration file,refer to [DOC](https://mmclassification.readthedocs.io/en/latest/)。
 
