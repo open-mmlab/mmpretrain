@@ -101,7 +101,7 @@ python tools/visualizations/vis_lr.py \
 
 ```{note}
 
-1. 工具运行完成后，在 $WORK_DIR/{config_basename} 下产生 {timestamp}.log、 {timestamp}.log.josn 和 {timestamp}.png，分别为保存的学习率变化日志，学习率变化结构化数据以及学习率曲线。
+1. 工具运行完成后，在 $WORK_DIR/{config_basename} 下产生 {timestamp}.log、 {timestamp}.log.json 和 {timestamp}.png，分别为保存的学习率变化日志，学习率变化结构化数据以及学习率曲线。
 
 ```
 
@@ -110,6 +110,13 @@ python tools/visualizations/vis_lr.py \
 ```bash
 
 python tools/visualizations/vis_lr.py configs/resnet/resnet50_b16x8_cifar100.py
+```
+
+使用更小的 `log_config.interval` 可以绘制更精细的学习率变化曲线：
+
+```bash
+
+python tools/visualizations/vis_lr.py configs/resnet/resnet50_b16x8_cifar100.py --cfg-option log_config.interval=10
 ```
 
 ## 常见问题

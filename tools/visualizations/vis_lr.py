@@ -148,7 +148,7 @@ def do_train(cfg, timestamp):
 
 def print_info(cfg, base_path, lr_config):
     """print sometine usefully message to remind users."""
-    print('\n LR Config : ', lr_config)
+    print('\n LR Config : \n', lr_config, '\n')
     print(f'Logs and picture are save in  {cfg.work_dir}')
     print(f"Details of the lr can be seen in {base_path + '.log'}")
     print(f"Format json data is saved in {base_path + '.log.json'}")
@@ -189,7 +189,7 @@ def main():
     by_epoch = True if cfg.runner.type == 'EpochBasedRunner' else False
     plot_curve(log_dict, args, 'lr', cfg, timestamp, by_epoch)
 
-    # print sometine usefully message
+    # print some messages
     base_path = osp.join(cfg.work_dir, timestamp)
     print_info(cfg, base_path, lr_config)
 

@@ -110,6 +110,13 @@ After running the tool, {timestamp}.log, {timestamp}.log.josn and {timestamp}.pn
 python tools/visualizations/vis_lr.py configs/resnet/resnet50_b16x8_cifar100.py
 ```
 
+Use a smaller `log_config.interval` to draw a more meticulous curve :
+
+```bash
+
+python tools/visualizations/vis_lr.py configs/resnet/resnet50_b16x8_cifar100.py --cfg-option log_config.interval=10
+```
+
 ## FAQs
 
 - None
