@@ -151,7 +151,11 @@ def train_model(model,
         eval_cfg = cfg.get('evaluation', {})
         eval_cfg['by_epoch'] = cfg.runner['type'] != 'IterBasedRunner'
         eval_hook = DistEvalHook if distributed else EvalHook
-        runner.register_hook(eval_hook(val_dataloader, **eval_cfg))
+        # `EvalHook` needs to be executed after `IterTimerHook`.
+        # Otherwise, it will cause a bug if use `IterBasedRunner`.
+        # Refers to https://github.com/open-mmlab/mmcv/issues/1261
+        runner.register_hook(
+            eval_hook(val_dataloader, **eval_cfg), priority='LOW')
 
     if cfg.resume_from:
         runner.resume(cfg.resume_from)
