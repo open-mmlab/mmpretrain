@@ -1,19 +1,13 @@
 # model settings
-#pretrained='https://download.openmmlab.com/mmclassification/v0/conformer/conformer-small-p16_16xb128_in1k_20211016-cd6e7b89.pth'
-
 model = dict(
     type='ImageClassifier',
     backbone=dict(
-        type='Conformer',
-        arch='small',
-        drop_path_rate=0.1,
-        init_cfg=None),
+        type='Conformer', arch='small', drop_path_rate=0.1, init_cfg=None),
     neck=None,
     head=dict(
         type='ConformerHead',
         num_classes=1000,
         in_channels=[1024, 384],
-        # init_cfg=dict(type='Pretrained', checkpoint=pretrained),  # suppress the default init_cfg of LinearClsHead.
         init_cfg=None,
         loss=dict(
             type='LabelSmoothLoss', label_smooth_val=0.1, mode='original'),
