@@ -182,12 +182,13 @@ def main(args):
         if args.checkpoint_root is not None:
             root = Path(args.checkpoint_root)
             checkpoint = root / model_info.Weights[len(http_prefix):]
+            checkpoint = str(checkpoint)
         else:
             checkpoint = None
 
         try:
             # build the model from a config file and a checkpoint file
-            result = inference(MMCLS_ROOT / config, str(checkpoint),
+            result = inference(MMCLS_ROOT / config, checkpoint,
                                classes_map[dataset], args)
             result['valid'] = 'PASS'
         except Exception as e:
