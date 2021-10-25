@@ -1,64 +1,64 @@
 # Tutorial 1：Learn about Configs
 
-MMCls uses python files as configs. The design of our configuration file system integrates modularity and inheritance, facilitating users to conduct various experiments. All configuration files are placed in the `$MMCls/configs` folder, which mainly contains the original configuration folder of `_base_` and many algorithm folders such as `resnet`, `swin_transformer`, `vision_transformer`, etc.
+MMClassification mainly uses python files as configs. The design of our configuration file system integrates modularity and inheritance, facilitating users to conduct various experiments. All configuration files are placed in the `configs` folder, which mainly contains the primitive configuration folder of `_base_` and many algorithm folders such as `resnet`, `swin_transformer`, `vision_transformer`, etc.
 
 If you wish to inspect the config file, you may run `python tools/analysis/print_config.py /PATH/TO/CONFIG` to see the complete config.
 
 <!-- TOC -->
 
-- [Config File Naming Convention](#config-file-naming-convention)
+- [Config  File and Checkpoint Naming Convention](#config-file-and-checkpoint-naming-convention)
 - [Config File Structure](#config-file-structure)
 - [Inherit and Modify Config File](#inherit-and-modify-config-file)
   - [Use intermediate variables in configs](#use-intermediate-variables-in-configs)
   - [Ignore some fields in the base configs](#ignore-some-fields-in-the-base-configs)
   - [Use some fields in the base configs](#use-some-fields-in-the-base-configs)
 - [Modify config through script arguments](#modify-config-through-script-arguments)
-- [Import new module](#Import-new-module)
+- [Import user-defined modules](#import-ser-defined-modules)
 - [FAQ](#faq)
 
 <!-- TOC -->
 
-## Config File Naming Convention
+## Config File and Checkpoint Naming Convention
 
-We follow the below convention to name config files. Contributors are advised to follow the same style。The config file names are divided into four parts: model information, module information, training information and data information. Logically, different parts are concatenated by underscores `'_'`, and words in the same part are concatenated by dashes `'-'`.
+We follow the below convention to name config files. Contributors are advised to follow the same style. The config file names are divided into four parts: algorithm info, module information, training information and data information. Logically, different parts are concatenated by underscores `'_'`, and words in the same part are concatenated by dashes `'-'`.
 
 ```
-{model info}_{module info}_{training info}_{data info}.py
+{algorithm info}_{module info}_{training info}_{data info}.py
 ```
 
-- `model info`：algorithm information, model name and neural network architecture, such as resnet, etc.;
+- `algorithm info`：algorithm information, model name and neural network architecture, such as resnet, etc.;
 - `module info`： module information is used to represent some special neck, head and pretrain information;
 - `training info`：Training information, some training schedule, including batch size, lr schedule, data augment and the like;
-- `data info`：Data information, dataset name, input size and so on, such as imagenet, cifar;
+- `data info`：Data information, dataset name, input size and so on, such as imagenet, cifar, etc.;
 
-### model information
-Refers to the abbreviation of the algorithm name in the paper and the corresponding branch architecture information. E.g：
+### Algorithm information
+The main algorithm name and the corresponding branch architecture information. E.g：
 - `resnet50`
 - `mobilenet-v3-large`
 - `vit-small-patch32`   : `patch32` represents the size of the partition in `ViT` algorithm;
 - `seresnext101-32x4d`  : `SeResNet101` network structure, `32x4d` means that `groups` and `width_per_group` are 32 and 4 respectively in `Bottleneck`;
 
-### module information
-Refers to some special `neck`, `head` or `pretrain` information, which is commonly used as pretraining information in classification tash:
+### Module information
+Some special `neck`, `head` and `pretrain` information. In classification tasks, `pretrain` information is the most commonly used:
 - `in21k-pre` : pre-trained on ImageNet21k;
-- `in21k-pre-3rd-party` : pre-trained on ImageNet21k from other repository;
+- `in21k-pre-3rd-party` : pre-trained on ImageNet21k and the checkpoint is converted from a third-party repository;
 
-### training information
+### Training information
 Training schedule, including training type, `batch size`, `lr schedule`, data augment, special loss functions and so on:
 - format `{gpu x batch_per_gpu}`, such as `8xb32`
 
 Training type (mainly seen in the transformer network, such as the `ViT` algorithm, which is usually divided into two training type: pre-training and fine-tuning):
-- `ft` : Configuration file for fine-tuning
-- `pt` : Configuration file for pretraining
+- `ft` : configuration file for fine-tuning
+- `pt` : configuration file for pretraining
 
-Training strategy information, the training strategy is based on the recurrence profile, and the basic training strategy does not need to be marked. However, if improvements are made on this basis, the training strategy needs to be indicated and arranged in the order, such as: `{pipeline aug}-{train aug}-{loss trick}-{scheduler}-{epochs}`
-- `coslr-200e` : Use cosine scheduler to train 200 epochs
-- `autoaug-mixup-lbs-coslr-50e` : Use `autoaug`, `mixup`, `label smooth`, `cosine scheduler` to train 50 epochs
+Training recipe. Usually, only the part that is different from the original paper will be marked. These methods will be arranged in the order `{pipeline aug}-{train aug}-{loss trick}-{scheduler}-{epochs}`.
+- `coslr-200e` : use cosine scheduler to train 200 epochs
+- `autoaug-mixup-lbs-coslr-50e` : use `autoaug`, `mixup`, `label smooth`, `cosine scheduler` to train 50 epochs
 
-### data information
-- `in1k` : `ImageNet1k` dataset;
-- `in21k` : `ImageNet21k` dataset, also called `ImageNet22k` dataset
-- `in1k-384px` : Indicates that the input image size is 384x384, and does not require additional annotations if 224x224;
+### Data information
+- `in1k` : `ImageNet1k` dataset, default to use the input image size of 224x224;
+- `in21k` : `ImageNet21k` dataset, also called `ImageNet22k` dataset, default to use the input image size of 224x224;
+- `in1k-384px` : Indicates that the input image size is 384x384;
 - `cifar100`
 
 ### Config File Name Example
@@ -67,24 +67,43 @@ Training strategy information, the training strategy is based on the recurrence 
 repvgg-D2se_deploy_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py
 ```
 
-Among them, `repvgg-D2se` represents algorithm information, `RepVGG` model, `D2se` is structure information; `deploy` represents module information, and this model is in the inference state; `4xb64-autoaug-lbs-mixup-coslr-200e` represents training information, 4 GPUs, the number of batches per GPU is 64, using the `auto augment`, `label smooth` and `cosine scheduler` techniques to train 200 epoches; `in1k` is the data information, which means using `224x224` input image size to train in `ImageNet1k`.
+- `repvgg-D2se`:  Algorithm information
+  + `repvgg`: The main algorithm.
+  + `D2se`: The architecture.
+- `deploy`: Module information, means the backbone is in the deploy state.
+- `4xb64-autoaug-lbs-mixup-coslr-200e`: Training information.
+  + `4xb64`: Use 4 GPUs and the size of batches per GPU is 64.
+  + `autoaug`: Use `AutoAugment` in training pipeline.
+  + `lbs`: Use label smoothing loss.
+  + `mixup`: Use `mixup` training augment method.
+  + `coslr`: Use cosine learning rate scheduler.
+  + `200e`: Train the model for 200 epoches.
+- `in1k`: Dataset information. The config is for `ImageNet1k` dataset and the input size is `224x224`.
 
 ```{note}
 Some configuration files currently do not follow this naming convention, and related files will be updated in the near future.
 ```
 
+### Checkpoint Naming Convention
+
+The naming of the weight mainly includes the configuration file name, date and hash value.
+
+```
+{config_name}_{date}-{hash}.pth
+```
+
 ## Config File Structure
 
-There are four kind basic component file in the `configs/_base_` folder, namely：
+There are four kinds of basic component file in the `configs/_base_` folders, namely：
 
 - [models](https://github.com/open-mmlab/mmclassification/tree/master/configs/_base_/models)
 - [datasets](https://github.com/open-mmlab/mmclassification/tree/master/configs/_base_/datasets)
 - [schedules](https://github.com/open-mmlab/mmclassification/tree/master/configs/_base_/schedules)
 - [default_runtime](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/default_runtime.py)
 
-Many methods, such as ResNet, Swin_Transformer, ViT, RepVGG and etc, can be easily implemented by combining these components. The configs that are composed by components from `_base_` are called _primitive_.
+You can easily build your own training config file by inherit some base config files. And the configs that are composed by components from `_base_` are called _primitive_.
 
-For easy understanding, we use [ResNet50 primitive config](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/ resnet50_b32x8_imagenet.py) as a example and comment the meaning of each line. For more detaile, please refer to the API documentation.
+For easy understanding, we use [ResNet50 primitive config](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet50_b32x8_imagenet.py) as a example and comment the meaning of each line. For more detaile, please refer to the API documentation.
 
 ```python
 _base_ = [
@@ -99,20 +118,24 @@ The four parts are explained separately below, and the above-mentioned ResNet50 
 
 ### model
 The parameter `"model"` is a python dictionary in the configuration file, which mainly includes information such as network structure and loss function:
-- `type` ： Classifier name, MMCls supports `ImageClassifier`, refer to [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.classifiers)。
-- `backbone` ： Backbones name, refer to [API document](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/models/backbones) for available options.
-- `neck` ：Neck network name, MMCls supports `GlobalAveragePooling`, please refer to [API documentation](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.necks).
--`head`: Head network name, MMCls supports single-label and multi-label classification head networks, available options refer to [API 文档](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/models/heads).
-    -`loss`: Loss function type, supports `CrossEntropyLoss`, [`LabelSmoothLoss`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_label_smooth.py) etc., For available options, refer to [API Document](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/models/losses).
+- `type` ： Classifier name, MMCls supports `ImageClassifier`, refer to [API document](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.classifiers).
+- `backbone` ： Backbone configs, refer to [API document](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.backbones) for available options.
+- `neck` ：Neck network name, MMCls supports `GlobalAveragePooling`, please refer to [API document](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.necks).
+- `head`: Head network name, MMCls supports single-label and multi-label classification head networks, available options refer to [API document](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.heads).
+    - `loss`: Loss function type, supports `CrossEntropyLoss`, [`LabelSmoothLoss`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_label_smooth.py) etc., For available options, refer to [API Document](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.losses).
 - `train_cfg` ：Training augment config, MMCls supports [`mixup`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_mixup.py), [`cutmix`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_cutmix.py) and other augments.
 
+
+```{note}
+The 'type' in the configuration file is not a constructed parameter, but a class name.
+```
 
 ```python
 model = dict(
     type='ImageClassifier',     # Classifier name
     backbone=dict(
         type='ResNet',          # Backbones name
-        depth=50,               # depth of backbone， ResNet has optionsof 18, 34, 50, 101, 152.
+        depth=50,               # depth of backbone, ResNet has options of 18, 34, 50, 101, 152.
         num_stages=4,           # number of stages，The feature maps generated by these states are used as the input for the subsequent neck and head.
         out_indices=(3, ),      # The output index of the output feature maps.
         frozen_stages=-1,       # the stage to be frozen, '-1' means not be forzen
@@ -129,14 +152,14 @@ model = dict(
 
 ### data
 The parameter `"data"` is a python dictionary in the configuration file, which mainly includes information to construct dataloader:
-- `samples_per_gpu` : the BatchSize of each GPU, When building the dataloader
-- `workers_per_gpu` : the number of threads per GPU, When building dataloader
-- `train ｜ val ｜ test` : construct dataset
-  - `type`: Dataset name, MMCls supports `ImageNet`, `Cifar` etc., refer to [API documentation](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.datasets)
+- `samples_per_gpu` : the BatchSize of each GPU when building the dataloader
+- `workers_per_gpu` : the number of threads per GPU when building dataloader
+- `train ｜ val ｜ test` : config to construct dataset
+  - `type`: Dataset name, MMCls supports `ImageNet`, `Cifar` etc., refer to [API documentation](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.datasets)
   - `data_prefix` : Dataset root directory
-  - `pipeline` :  Data processing pipeline, refer to related tutorial documents [如何设计数据处理流水线](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/data_pipeline.html)
+  - `pipeline` :  Data processing pipeline, refer to related tutorial documents [CUSTOM DATA PIPELINES](https://mmclassification.readthedocs.io/en/latest/tutorials/data_pipeline.html)
 
-The parameter `evaluation` is also a dictionary, which is the configuration information of `evaluation hook`, mainly including evaluation interval, evaluation index, etc.:
+The parameter `evaluation` is also a dictionary, which is the configuration information of `evaluation hook`, mainly including evaluation interval, evaluation index, etc..
 
 ```python
 # dataset settings
@@ -189,15 +212,15 @@ evaluation = dict(       # The config to build the evaluation hook, refer to htt
 
 ### training schedule
 Mainly include optimizer settings, `optimizer hook` settings, learning rate schedule and `runner` settings:
--`optimizer`: optimizer setting , support all optimizers in `pytorch`, refer to related [mmcv](https://mmcv.readthedocs.io/en/latest/_modules/mmcv/runner/optimizer/default_constructor.html#DefaultOptimizerConstructor) documentation.
--`optimizer_config`: `optimizer hook` configuration file, such as setting gradient limit, refer to related [mmcv](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/optimizer.py#L8) code.
--`lr_config`: Learning rate schedule, supports `CosineAnnealing`, `step`, `warmup`, etc. refer to related [mmcv](https://mmcv.readthedocs.io/en/latest/_modules/mmcv/runner/ hooks/lr_updater.html#LrUpdaterHook) documentation for more options.
--`runner`: For `runner`, please refer to `mmcv` for [`runner`](https://mmcv.readthedocs.io/en/latest/understand_mmcv/runner.html) introduction document.
+- `optimizer`: optimizer setting , support all optimizers in `pytorch`, refer to related [mmcv](https://mmcv.readthedocs.io/en/latest/_modules/mmcv/runner/optimizer/default_constructor.html#DefaultOptimizerConstructor) documentation.
+- `optimizer_config`: `optimizer hook` configuration file, such as setting gradient limit, refer to related [mmcv](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/optimizer.py#L8) code.
+- `lr_config`: Learning rate schedule, supports `CosineAnnealing`, `step`, `warmup`, etc. refer to related [mmcv](https://mmcv.readthedocs.io/en/latest/_modules/mmcv/runner/hooks/lr_updater.html#LrUpdaterHook) documentation for more options.
+- `runner`: For `runner`, please refer to `mmcv` for [`runner`](https://mmcv.readthedocs.io/en/latest/understand_mmcv/runner.html) introduction document.
 
 ```python
 # he configuration file used to build the optimizer, support all optimizers in PyTorch.
 optimizer = dict(type='SGD',         # Optimizer type
-                lr=0.1,              #  # Learning rate of optimizers, see detail usages of the parameters in the documentation of PyTorch
+                lr=0.1,              # Learning rate of optimizers, see detail usages of the parameters in the documentation of PyTorch
                 momentum=0.9,        # Momentum
                 weight_decay=0.0001) # Weight decay of SGD
 # Config used to build the optimizer hook, refer to https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/optimizer.py#L8 for implementation details.
@@ -211,7 +234,7 @@ runner = dict(type='EpochBasedRunner',   # Type of runner to use (i.e. IterBased
 
 ### runtime setting
 
-This part mainly includes saving the checkpoint strategy, log configuration, training parameters, breakpoint weight path, working directory, etc.
+This part mainly includes saving the checkpoint strategy, log configuration, training parameters, breakpoint weight path, working directory, etc..
 
 ```python
 # Config to set the checkpoint hook, Refer to https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/checkpoint.py for implementation.
@@ -221,7 +244,7 @@ log_config = dict(
     interval=100,                       # Interval to print the log
     hooks=[
         dict(type='TextLoggerHook'),           # The Tensorboard logger is also supported
-        # dict(type='TensorboardLoggerHook')   # also support Tensorboard logger
+        # dict(type='TensorboardLoggerHook')
     ])
 
 dist_params = dict(backend='nccl')   # Parameters to setup distributed training, the port can also be set.
@@ -305,9 +328,9 @@ lr_config = dict(
 
 ### Use some fields in the base configs
 
-Sometimes, you can refer to some fields in the `__base__` config, so as to avoid duplication of definitions. You can refer to [mmcv](https://mmcv.readthedocs.io/en/latest/understand_mmcv/config.html#reference-variables-from-base) for some more instructions.
+Sometimes, you may refer to some fields in the `_base_` config, so as to avoid duplication of definitions. You can refer to [mmcv](https://mmcv.readthedocs.io/en/latest/understand_mmcv/config.html#reference-variables-from-base) for some more instructions.
 
-The following is a example of using `auto augment` in the training data preprocessing pipeline， refer to ["configs/_base_/datasets/imagenet_bs64_autoaug.py"](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/datasets/imagenet_bs64_autoaug.py). When defining `train_pipeline`, just add the definition file name of `auto augment` to `__base__`, and then use `{{_base_.auto_increasing_policies}}` to reference the variables:
+The following is an example of using `auto augment` in the training data preprocessing pipeline， refer to [`configs/_base_/datasets/imagenet_bs64_autoaug.py`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/datasets/imagenet_bs64_autoaug.py). When defining `train_pipeline`, just add the definition file name of `auto augment` to `_base_`, and then use `{{_base_.auto_increasing_policies}}` to reference the variables:
 
 ```python
 _base_ = ['./pipelines/auto_aug.py']
@@ -357,15 +380,15 @@ When users use the script "tools/train.py" or "tools/test.py" to submit tasks or
   support list/tuple data types, and that **NO** white space is allowed inside the quotation marks in the specified value.
 
 
-## Import new module
+## Import user-defined modules
 
 ```{note}
-This part may only be used when using MMCls as a library to build your own project, and beginners can skip it.
+This part may only be used when using MMClassification as a third party library to build your own project, and beginners can skip it.
 ```
 
-After completing the follow-up tutorial [ADDING NEW DATASET](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/new_dataset.html), [CUSTOM DATA PIPELINES](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/data_pipeline.html), [ADDING NEW MODULES](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/new_modules.html), MMCls may be used to complete your own project as a 3rd library to streamline the code. At this time, you need to import your own new datasets, models, data augments into the configuration file. For examples, please refer to [OpenMMLab Algorithm Competition Project](https://github.com/zhangrui-wolf/openmmlab-competition-2021).
+After studying the follow-up tutorials [ADDING NEW DATASET](https://mmclassification.readthedocs.io/en/latest/tutorials/new_dataset.html), [CUSTOM DATA PIPELINES](https://mmclassification.readthedocs.io/en/latest/tutorials/data_pipeline.html), [ADDING NEW MODULES](https://mmclassification.readthedocs.io/en/latest/tutorials/new_modules.html). You may use MMClassification to complete your project and create new classes of datasets, models, data enhancements, etc. in the project. In order to streamline the code, you can use MMClassification as a third-party library, you just need to keep your own extra code and import your own custom module in the configuration files. For examples, you may refer to [OpenMMLab Algorithm Competition Project](https://github.com/zhangrui-wolf/openmmlab-competition-2021) .
 
-Add the following code to your own configuration file:
+Add the following code to your own configuration files:
 
 ```python
 custom_imports = dict(

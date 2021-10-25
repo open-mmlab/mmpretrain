@@ -1,34 +1,34 @@
 # 教程 1：如何编写配置文件
 
-MMCls 使用 `python` 文件作为配置文件。其配置文件系统的设计将模块化与继承整合进来，方便用户进行各种实验。所有配置文件都放置在 `$MMCls/configs` 文件夹下，主要包含 `_base_` 原始配置文件夹 以及 `resnet`, `swin_transformer`，`vision_transformer` 等诸多算法文件夹。
+MMClassification 主要使用 python 文件作为配置文件。其配置文件系统的设计将模块化与继承整合进来，方便用户进行各种实验。所有配置文件都放置在 `configs` 文件夹下，主要包含 `_base_` 原始配置文件夹 以及 `resnet`, `swin_transformer`，`vision_transformer` 等诸多算法文件夹。
 
-可以使用工具 ```python tools/misc/print_config.py /PATH/TO/CONFIG``` 命令来查看完整的配置信息，从而方便检查所对应的配置文件。
+可以使用 ```python tools/misc/print_config.py /PATH/TO/CONFIG``` 命令来查看完整的配置信息，从而方便检查所对应的配置文件。
 
 <!-- TOC -->
 
-- [配置文件命名规则](#配置文件命名规则)
+- [配置文件以及权重命名规则](#配置文件以及权重命名规则)
 - [配置文件结构](#配置文件结构)
 - [继承并修改配置文件](#继承并修改配置文件)
   - [使用配置文件里的中间变量](#使用配置文件里的中间变量)
   - [忽略基础配置文件里的部分内容](#忽略基础配置文件里的部分内容)
   - [引用基础配置文件里的变量](#引用基础配置文件里的变量)
 - [通过命令行参数修改配置信息](#通过命令行参数修改配置信息)
-- [导入新的模块](#导入新的模块)
+- [导入用户自定义模块](#导入用户自定义模块)
 - [常见问题](#常见问题)
 
 <!-- TOC -->
 
-## 配置文件命名规则
+## 配置文件以及权重命名规则
 
-MMCls 按照以下风格进行配置文件命名，代码库的贡献者需要遵循相同的命名规则。文件名总体分为四部分：算法信息，模块信息，训练信息和数据信息。逻辑上属于不同部分的单词之间用下划线 `'_'` 连接，同一部分有多个单词用短横线 `'-'` 连接。
+MMClassification 按照以下风格进行配置文件命名，代码库的贡献者需要遵循相同的命名规则。文件名总体分为四部分：算法信息，模块信息，训练信息和数据信息。逻辑上属于不同部分的单词之间用下划线 `'_'` 连接，同一部分有多个单词用短横线 `'-'` 连接。
 
 ```
-{model info}_{module info}_{training info}_{data info}.py
+{algorithm info}_{module info}_{training info}_{data info}.py
 ```
 
-- `model info`：算法信息，算法名称或者网络架构，如 resnet 等；
+- `algorithm info`：算法信息，算法名称或者网络架构，如 resnet 等；
 - `module info`： 模块信息，因任务而异，用以表示一些特殊的 neck、head 和 pretrain 信息；
-- `training info`：训练信息，训练策略的一些设置，包括 batch size，schedule 数据增强 等；
+- `training info`：一些训练信息，训练策略设置，包括 batch size，schedule 数据增强等；
 - `data info`：数据信息，数据集名称、模态、输入尺寸等，如 imagenet, cifar 等；
 
 ### 算法信息
@@ -39,12 +39,12 @@ MMCls 按照以下风格进行配置文件命名，代码库的贡献者需要�
 - `seresnext101-32x4d`  : `SeResNet101` 基本网络结构，`32x4d` 表示在 `Bottleneck` 中  `groups` 和 `width_per_group` 分别为32和4
 
 ### 模块信息
-指一些特殊的 `neck` 、`head` 或者 `pretrain` 的信息， 在分类中常见为预训练 `pretrain` 信息，比如：
-- `in21k-pre` : 表示 `ImageNet21k` 上预训练的
-- `in21k-pre-3rd-party` : 表示 `ImageNet21k` 上预训练的，来自其他仓库的模型
+指一些特殊的 `neck` 、`head` 或者 `pretrain` 的信息， 在分类中常见为预训练信息，比如：
+- `in21k-pre` : 在 `ImageNet21k` 上预训练
+- `in21k-pre-3rd-party` : 在 `ImageNet21k` 上预训练，其权重来自其他仓库
 
 ### 训练信息
-训练策略的一些设置，包括 训练类型，`batch size`, `lr schedule`，数据增强以及特殊的损失函数等等,比如:
+训练策略的一些设置，包括训练类型、 `batch size`、 `lr schedule`、 数据增强以及特殊的损失函数等等,比如:
 Batch size 信息：
 - 格式为`{gpu x batch_per_gpu}`, 如 `8xb32`
 
@@ -54,12 +54,12 @@ Batch size 信息：
 
 训练策略信息，训练策略以复现配置文件为基础，此基础不必标注训练策略。但如果在此基础上进行改进，则需注明训练策略，按照应用点位顺序排列，如：`{pipeline aug}-{train aug}-{loss trick}-{scheduler}-{epochs}`
 - `coslr-200e` : 使用 cosine scheduler, 训练 200 个 epoch
-- `autoaug-mixup-lbs-coslr-50e` : 使用了 `autoaug`、`mixup`、`label smooth`、`cosine scheduler`, 训练了50个 epoch
+- `autoaug-mixup-lbs-coslr-50e` : 使用了 `autoaug`、`mixup`、`label smooth`、`cosine scheduler`, 训练了 50 个 epoch
 
 ### 数据信息
-- `in1k` : `ImageNet1k` 数据集
-- `in21k` : `ImageNet21k` 数据集，有些地方也称为 `ImageNet22k` 数据集
-- `in1k-384px` : 表示训练的输出图片大小为 `384x384`, `224x224` 则不需要额外标注
+- `in1k` : `ImageNet1k` 数据集，默认使用 `224x224` 大小的图片
+- `in21k` : `ImageNet21k` 数据集，有些地方也称为 `ImageNet22k` 数据集，默认使用 `224x224` 大小的图片
+- `in1k-384px` : 表示训练的输出图片大小为 `384x384`
 - `cifar100`
 
 ### 配置文件命名案例：
@@ -68,11 +68,31 @@ Batch size 信息：
 repvgg-D2se_deploy_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py
 ```
 
-其中 `repvgg-D2se` 表示算法信息，`RepVGG` 算法，`D2se` 为结构信息 ； `deploy` 表示模块信息，该模型为推理状态 ； `4xb64-autoaug-lbs-mixup-coslr-200e` 表示训练信息， 4块GPU，每块GPU的批数量为64，使用 `auto augment`、`label smooth` 以及 `cosine scheduler` 技巧训练了200个 `epoch`; `in1k` 为数据信息，表示在 `ImageNet1k` 数据集上使用 `224x224` 大小图片训练。
+- `repvgg-D2se`:  算法信息
+  + `repvgg`: 主要算法名称。
+  + `D2se`: 模型的结构。
+- `deploy`:模块信息，该模型为推理状态。
+- `4xb64-autoaug-lbs-mixup-coslr-200e`: 训练信息
+  + `4xb64`: 使用4块 GPU 并且 每块 GPU 的批大小为64。
+  + `autoaug`: 使用 `AutoAugment` 数据增强方法。
+  + `lbs`: 使用 `label smoothing` 损失函数。
+  + `mixup`: 使用 `mixup` 训练增强方法。
+  + `coslr`: 使用 `cosine scheduler` 优化策略。
+  + `200e`: 训练200个 `epoch`。
+- `in1k`: 数据信息。 配置文件用于 `ImageNet1k` 数据集上使用 `224x224` 大小图片训练。
 
 ```{note}
 部分配置文件目前还没有遵循此命名规范，相关文件命名近期会更新。
 ```
+
+### 权重命名规则
+
+权重的命名主要包括配置文件名，日期和哈希值。
+
+```
+{config_name}_{date}-{hash}.pth
+```
+
 
 ## 配置文件结构
 
@@ -83,10 +103,9 @@ repvgg-D2se_deploy_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py
 - [训练策略(schedule)](https://github.com/open-mmlab/mmclassification/tree/master/configs/_base_/schedules)
 - [默认运行设置(default_runtime)](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/default_runtime.py)
 
-许多方法都可以方便地通过组合这些组件进行实现，如 ResNet、Swin_Transformer、 ViT、 RepVGG 等。
-其中，通过 `_base_` 下组件来构建的配置被称为 _原始配置_（_primitive_）。
+你可以通过继承一些基本配置文件轻松构建自己的训练配置文件。由来自`_base_` 的组件组成的配置称为 _primitive_。
 
-为了帮助用户对 MMCls 检测系统中的完整配置和模块有一个基本的了解，我们使用 [ResNet50 原始配置文件](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet50_b32x8_imagenet.py) 作为案例进行说明并注释每一行含义。更详细的用法和各个模块对应的替代方案，请参考 API 文档。
+为了帮助用户对 MMClassification 检测系统中的完整配置和模块有一个基本的了解，我们使用 [ResNet50 原始配置文件](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet50_b32x8_imagenet.py) 作为案例进行说明并注释每一行含义。更详细的用法和各个模块对应的替代方案，请参考 API 文档。
 
 ```python
 _base_ = [
@@ -97,17 +116,22 @@ _base_ = [
 ]
 ```
 
-下面对这四个部分分别进行说明，还是以上述 ResNet50 原始配置文件作为案例。
+下面对这四个部分分别进行说明，仍然以上述 ResNet50 原始配置文件作为案例。
+
 
 ### 模型
 
 模型参数 `model` 在配置文件中为一个 `python` 字典，主要包括网络结构、损失函数等信息：
-- `type` ： 分类器名称, 目前 MMCls 只支持 `ImageClassifier`， 参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.classifiers)。
-- `backbone` ： 主干网类型，可用选项参考 [API 文档](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/models/backbones)。
-- `neck` ： 颈网络类型，目前 MMCls 只支持 `GlobalAveragePooling`， 参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.necks)。
-- `head` ： 头网络类型， 包括单标签分类与多标签分类头网络，可用选项参考 [API 文档](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/models/heads)。
-  - `loss` ： 损失函数类型， 支持 `CrossEntropyLoss`, [`LabelSmoothLoss`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_label_smooth.py) 等，可用选项参考 [API 文档](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/models/losses)。
+- `type` ： 分类器名称, 目前 MMClassification 只支持 `ImageClassifier`， 参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.classifiers)。
+- `backbone` ： 主干网类型，可用选项参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.backbones)。
+- `neck` ： 颈网络类型，目前 MMClassification 只支持 `GlobalAveragePooling`， 参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.necks)。
+- `head` ： 头网络类型， 包括单标签分类与多标签分类头网络，可用选项参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.heads)。
+  - `loss` ： 损失函数类型， 支持 `CrossEntropyLoss`, [`LabelSmoothLoss`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_label_smooth.py) 等，可用选项参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.losses)。
 - `train_cfg` ：训练配置, 支持 [`mixup`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_mixup.py), [`cutmix`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_cutmix.py) 等训练增强。
+
+```{note}
+配置文件中的 'type' 不是构造时的参数，而是类名。
+```
 
 ```python
 model = dict(
@@ -134,11 +158,11 @@ model = dict(
 - `samples_per_gpu` : 构建 dataloader 时，每个 GPU 的 Batch Size
 - `workers_per_gpu` : 构建 dataloader 时，每个 GPU 的 线程数
 - `train ｜ val ｜ test` : 构造数据集
-  - `type` :  数据集类型， MMCls 支持 `ImageNet`、 `Cifar` 等 ，参考[API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.datasets)
+  - `type` :  数据集类型， MMClassification 支持 `ImageNet`、 `Cifar` 等 ，参考[API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.datasets)
   - `data_prefix` : 数据集根目录
   - `pipeline` :  数据处理流水线，参考相关教程文档 [如何设计数据处理流水线](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/data_pipeline.html)
 
-评估参数 `evaluation` 也是一个字典， 为 `evaluation hook` 的配置信息, 主要包括评估间隔、评估指标等：
+评估参数 `evaluation` 也是一个字典， 为 `evaluation hook` 的配置信息, 主要包括评估间隔、评估指标等。
 
 ```python
 # dataset settings
@@ -211,7 +235,7 @@ runner = dict(type='EpochBasedRunner',   # 将使用的 runner 的类别，如 I
 
 ### 运行设置
 
-本部分主要包括保存 `checkpoint` 策略、日志配置、训练参数、断点权重路径和工作目录等等。
+本部分主要包括保存权重策略、日志配置、训练参数、断点权重路径和工作目录等等。
 
 ```python
 # Checkpoint hook 的配置文件。
@@ -231,11 +255,11 @@ workflow = [('train', 1)]      # runner 的工作流程，[('train', 1)] 表示�
 work_dir = 'work_dir'          # 用于保存当前实验的模型检查点和日志的目录文件地址。
 ```
 
-## 继承并编写配置信息
+## 继承并修改配置文件
 
 为了精简代码、更快的修改配置文件以及便于理解，我们建议继承现有方法。
 
-对于在同一算法文件夹下的所有配置文件，MMCls 推荐只存在 **一个** 对应的 _原始配置_ 文件。
+对于在同一算法文件夹下的所有配置文件，MMClassification 推荐只存在 **一个** 对应的 _原始配置_ 文件。
 所有其他的配置文件都应该继承 _原始配置_ 文件，这样就能保证配置文件的最大继承深度为 3。
 
 例如，如果在 ResNet 的基础上做了一些修改，用户首先可以通过指定 `_base_ = '../../configs/resnet/resnet50_b32x8_imagenet.py'` 来继承基础的 ResNet 结构、数据集以及其他训练配置信息，然后修改配置文件中的必要参数以完成继承。如想在基础 resnet50 的基础上将训练轮数由 100 改为 300 和修改学习率衰减轮数，同时修改数据集路径，可以建立新的配置文件 `configs/resnet/resnet50_8xb32-300e_in1k.py`， 文件中写入以下内容:
@@ -308,9 +332,9 @@ lr_config = dict(
 
 ### 引用基础配置文件里的变量
 
-有时，您可以引用 `__base__` 配置信息的一些域内容，这样可以避免重复定义。 可以参照 [mmcv](https://mmcv.readthedocs.io/en/latest/understand_mmcv/config.html#reference-variables-from-base) 来获得一些简单的指导。
+有时，您可以引用 `_base_` 配置信息的一些域内容，这样可以避免重复定义。 可以参照 [mmcv](https://mmcv.readthedocs.io/en/latest/understand_mmcv/config.html#reference-variables-from-base) 来获得一些简单的指导。
 
-以下是一个简单应用案例，在训练数据预处理流水线中使用 `auto augment`，参考配置文件 ["configs/_base_/datasets/imagenet_bs64_autoaug.py"](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/datasets/imagenet_bs64_autoaug.py)中。 在定义 `train_pipeline` 时直接在 `__base__` 中加入 `auto augment` 定义文件，再通过 `{{_base_.auto_increasing_policies}}` 引用变量：
+以下是一个简单应用案例，在训练数据预处理流水线中使用 `auto augment`，参考配置文件 [`configs/_base_/datasets/imagenet_bs64_autoaug.py`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/datasets/imagenet_bs64_autoaug.py)。 在定义 `train_pipeline` 时直接在 `_base_` 中加入 `auto augment` 定义文件，再通过 `{{_base_.auto_increasing_policies}}` 引用变量：
 
 ```python
 _base_ = ['./pipelines/auto_aug.py']
@@ -358,13 +382,13 @@ evaluation = dict(interval=1, metric='accuracy')
   需要指定 `--cfg-options workflow="[(train,1),(val,1)]"`。注意这里的引号 " 对于列表以及元组数据类型的修改是必要的，
   并且 **不允许** 引号内所指定的值的书写存在空格。
 
-## 导入新的模块
+## 导入用户自定义模块
 
 ```{note}
-本部分仅在当将 MMCls 当作库构建自己项目时可能用到，初学者可跳过。
+本部分仅在当将 MMClassification 当作库构建自己项目时可能用到，初学者可跳过。
 ```
 
-您在学习完后续教程 [如何添加新数据集](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/new_dataset.html)、[如何设计数据处理流程](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/data_pipeline.html) 、[如何增加新模块](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/new_modules.html) 后，使用 MMCls 完成了自己项目，为了精简代码，可以将 MMCls 作为一个一般库。这时需要在配置文件中导入自己新建的数据集、模型、数据增强等。案例可以参考 [OpenMMLab 算法大赛项目](https://github.com/zhangrui-wolf/openmmlab-competition-2021)。
+在学习完后续教程 [如何添加新数据集](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/new_dataset.html)、[如何设计数据处理流程](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/data_pipeline.html) 、[如何增加新模块](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/new_modules.html) 后，您可能使用 MMClassification 完成自己的项目并在项目中自定义了数据集、模型、数据增强等。为了精简代码，可以将 MMClassification 作为一个第三方库，只需要保留自己的额外的代码，并在配置文件中导入自定义的模块。案例可以参考 [OpenMMLab 算法大赛项目](https://github.com/zhangrui-wolf/openmmlab-competition-2021)。
 
 只需要在你的配置文件中添加以下代码：
 
