@@ -1,20 +1,25 @@
+from functools import partial
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from functools import partial
-from collections import OrderedDict
+from mmcv.cnn.bricks.drop import DropPath
+from mmcv.cnn.utils.weight_init import trunc_normal_
+from mmcv.runner import load_checkpoint
 
 from mmcls.utils import get_root_logger
-from mmcv.runner import _load_checkpoint
-
-from mmcv.cnn.utils.weight_init import trunc_normal_
-from mmcv.cnn.bricks.drop import DropPath
-
 from ..builder import BACKBONES
 from .base_backbone import BaseBackbone
 
+
 class Mlp(nn.Module):
-    def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=nn.GELU, drop=0.):
+
+    def __init__(self,
+                 in_features,
+                 hidden_features=None,
+                 out_features=None,
+                 act_layer=nn.GELU,
+                 drop=0.):
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
@@ -31,13 +36,20 @@ class Mlp(nn.Module):
         x = self.drop(x)
         return x
 
+
 class Attention(nn.Module):
-    def __init__(self, dim, num_heads=8, qkv_bias=False, qk_scale=None, attn_drop=0., proj_drop=0.):
+
+    def __init__(self,
+                 dim,
+                 num_heads=8,
+                 qkv_bias=False,
+                 qk_scale=None,
+                 attn_drop=0.,
+                 proj_drop=0.):
         super().__init__()
         self.num_heads = num_heads
         head_dim = dim // num_heads
-        # NOTE scale factor was wrong in my original version, can set manually to be compat with prev weights
-        self.scale = qk_scale or head_dim ** -0.5
+        self.scale = qk_scale or head_dim**-0.5
 
         self.qkv = nn.Linear(dim, dim * 3, bias=qkv_bias)
         self.attn_drop = nn.Dropout(attn_drop)
@@ -46,8 +58,10 @@ class Attention(nn.Module):
 
     def forward(self, x):
         B, N, C = x.shape
-        qkv = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
-        q, k, v = qkv[0], qkv[1], qkv[2]  # make torchscript happy (cannot use tensor as tuple)
+        qkv = self.qkv(x).reshape(B, N, 3, self.num_heads,
+                                  C // self.num_heads).permute(2, 0, 3, 1, 4)
+        q, k, v = qkv[0], qkv[1], qkv[
+            2]  # make torchscript happy (cannot use tensor as tuple)
 
         attn = (q @ k.transpose(-2, -1)) * self.scale
         attn = attn.softmax(dim=-1)
@@ -61,17 +75,35 @@ class Attention(nn.Module):
 
 class Block(nn.Module):
 
-    def __init__(self, dim, num_heads, mlp_ratio=4., qkv_bias=False, qk_scale=None, drop=0., attn_drop=0.,
-                 drop_path=0., act_layer=nn.GELU, norm_layer=partial(nn.LayerNorm, eps=1e-6)):
+    def __init__(self,
+                 dim,
+                 num_heads,
+                 mlp_ratio=4.,
+                 qkv_bias=False,
+                 qk_scale=None,
+                 drop=0.,
+                 attn_drop=0.,
+                 drop_path=0.,
+                 act_layer=nn.GELU,
+                 norm_layer=partial(nn.LayerNorm, eps=1e-6)):
         super().__init__()
         self.norm1 = norm_layer(dim)
         self.attn = Attention(
-            dim, num_heads=num_heads, qkv_bias=qkv_bias, qk_scale=qk_scale, attn_drop=attn_drop, proj_drop=drop)
-        # NOTE: drop path for stochastic depth, we shall see if this is better than dropout here
-        self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
+            dim,
+            num_heads=num_heads,
+            qkv_bias=qkv_bias,
+            qk_scale=qk_scale,
+            attn_drop=attn_drop,
+            proj_drop=drop)
+        self.drop_path = DropPath(
+            drop_path) if drop_path > 0. else nn.Identity()
         self.norm2 = norm_layer(dim)
         mlp_hidden_dim = int(dim * mlp_ratio)
-        self.mlp = Mlp(in_features=dim, hidden_features=mlp_hidden_dim, act_layer=act_layer, drop=drop)
+        self.mlp = Mlp(
+            in_features=dim,
+            hidden_features=mlp_hidden_dim,
+            act_layer=act_layer,
+            drop=drop)
 
     def forward(self, x):
         x = x + self.drop_path(self.attn(self.norm1(x)))
@@ -81,28 +113,60 @@ class Block(nn.Module):
 
 class ConvBlock(nn.Module):
 
-    def __init__(self, inplanes, outplanes, stride=1, res_conv=False, act_layer=nn.ReLU, groups=1,
-                 norm_layer=partial(nn.BatchNorm2d, eps=1e-6), drop_block=None, drop_path=None):
+    def __init__(self,
+                 inplanes,
+                 outplanes,
+                 stride=1,
+                 res_conv=False,
+                 act_layer=nn.ReLU,
+                 groups=1,
+                 norm_layer=partial(nn.BatchNorm2d, eps=1e-6),
+                 drop_block=None,
+                 drop_path=None):
         super(ConvBlock, self).__init__()
 
         expansion = 4
         med_planes = outplanes // expansion
 
-        self.conv1 = nn.Conv2d(inplanes, med_planes, kernel_size=1, stride=1, padding=0, bias=False)
+        self.conv1 = nn.Conv2d(
+            inplanes,
+            med_planes,
+            kernel_size=1,
+            stride=1,
+            padding=0,
+            bias=False)
         self.bn1 = norm_layer(med_planes)
         self.act1 = act_layer(inplace=True)
 
-        self.conv2 = nn.Conv2d(med_planes, med_planes, kernel_size=3, stride=stride, groups=groups, padding=1,
-                               bias=False)
+        self.conv2 = nn.Conv2d(
+            med_planes,
+            med_planes,
+            kernel_size=3,
+            stride=stride,
+            groups=groups,
+            padding=1,
+            bias=False)
         self.bn2 = norm_layer(med_planes)
         self.act2 = act_layer(inplace=True)
 
-        self.conv3 = nn.Conv2d(med_planes, outplanes, kernel_size=1, stride=1, padding=0, bias=False)
+        self.conv3 = nn.Conv2d(
+            med_planes,
+            outplanes,
+            kernel_size=1,
+            stride=1,
+            padding=0,
+            bias=False)
         self.bn3 = norm_layer(outplanes)
         self.act3 = act_layer(inplace=True)
 
         if res_conv:
-            self.residual_conv = nn.Conv2d(inplanes, outplanes, kernel_size=1, stride=stride, padding=0, bias=False)
+            self.residual_conv = nn.Conv2d(
+                inplanes,
+                outplanes,
+                kernel_size=1,
+                stride=stride,
+                padding=0,
+                bias=False)
             self.residual_bn = norm_layer(outplanes)
 
         self.res_conv = res_conv
@@ -149,17 +213,23 @@ class ConvBlock(nn.Module):
 
 
 class FCUDown(nn.Module):
-    """ CNN feature maps -> Transformer patch embeddings
-    """
+    """CNN feature maps -> Transformer patch embeddings."""
 
-    def __init__(self, inplanes, outplanes, dw_stride, act_layer=nn.GELU,
-                 norm_layer=partial(nn.LayerNorm, eps=1e-6), cls_token=True):
+    def __init__(self,
+                 inplanes,
+                 outplanes,
+                 dw_stride,
+                 act_layer=nn.GELU,
+                 norm_layer=partial(nn.LayerNorm, eps=1e-6),
+                 cls_token=True):
         super(FCUDown, self).__init__()
         self.dw_stride = dw_stride
         self.cls_token = cls_token
 
-        self.conv_project = nn.Conv2d(inplanes, outplanes, kernel_size=1, stride=1, padding=0)
-        self.sample_pooling = nn.AvgPool2d(kernel_size=dw_stride, stride=dw_stride)
+        self.conv_project = nn.Conv2d(
+            inplanes, outplanes, kernel_size=1, stride=1, padding=0)
+        self.sample_pooling = nn.AvgPool2d(
+            kernel_size=dw_stride, stride=dw_stride)
 
         self.ln = norm_layer(outplanes)
         self.act = act_layer()
@@ -178,17 +248,22 @@ class FCUDown(nn.Module):
 
 
 class FCUUp(nn.Module):
-    """ Transformer patch embeddings -> CNN feature maps
-    """
+    """Transformer patch embeddings -> CNN feature maps."""
 
-    def __init__(self, inplanes, outplanes, up_stride, act_layer=nn.ReLU,
-                 norm_layer=partial(nn.BatchNorm2d, eps=1e-6), cls_token=True):
+    def __init__(self,
+                 inplanes,
+                 outplanes,
+                 up_stride,
+                 act_layer=nn.ReLU,
+                 norm_layer=partial(nn.BatchNorm2d, eps=1e-6),
+                 cls_token=True):
         super(FCUUp, self).__init__()
 
         self.up_stride = up_stride
         self.cls_token = cls_token
 
-        self.conv_project = nn.Conv2d(inplanes, outplanes, kernel_size=1, stride=1, padding=0)
+        self.conv_project = nn.Conv2d(
+            inplanes, outplanes, kernel_size=1, stride=1, padding=0)
         self.bn = norm_layer(outplanes)
         self.act = act_layer()
 
@@ -202,41 +277,77 @@ class FCUUp(nn.Module):
 
         x_r = self.act(self.bn(self.conv_project(x_r)))
 
-        return F.interpolate(x_r, size=(H * self.up_stride, W * self.up_stride))
+        return F.interpolate(
+            x_r, size=(H * self.up_stride, W * self.up_stride))
 
 
 class ConvTransBlock(nn.Module):
-    """
-    Basic module for Conformer, keep feature maps for CNN block and patch embeddings for transformer encoder block
-    """
+    """Basic module for Conformer, keep feature maps for CNN block and patch
+    embeddings for transformer encoder block."""
 
-    def __init__(self, inplanes, outplanes, res_conv, stride, dw_stride, embed_dim, num_heads=12, mlp_ratio=4.,
-                 qkv_bias=False, qk_scale=None, cls_token=True, drop_rate=0., attn_drop_rate=0., drop_path_rate=0.,
-                 last_fusion=False, num_med_block=0, groups=1):
+    def __init__(self,
+                 inplanes,
+                 outplanes,
+                 res_conv,
+                 stride,
+                 dw_stride,
+                 embed_dim,
+                 num_heads=12,
+                 mlp_ratio=4.,
+                 qkv_bias=False,
+                 qk_scale=None,
+                 cls_token=True,
+                 drop_rate=0.,
+                 attn_drop_rate=0.,
+                 drop_path_rate=0.,
+                 last_fusion=False,
+                 num_med_block=0,
+                 groups=1):
 
         super(ConvTransBlock, self).__init__()
         expansion = 4
-        self.cnn_block = ConvBlock(inplanes=inplanes, outplanes=outplanes, res_conv=res_conv, stride=stride,
-                                   groups=groups)
+        self.cnn_block = ConvBlock(
+            inplanes=inplanes,
+            outplanes=outplanes,
+            res_conv=res_conv,
+            stride=stride,
+            groups=groups)
 
         if last_fusion:
-            self.fusion_block = ConvBlock(inplanes=outplanes, outplanes=outplanes, stride=2, res_conv=True,
-                                          groups=groups)
+            self.fusion_block = ConvBlock(
+                inplanes=outplanes,
+                outplanes=outplanes,
+                stride=2,
+                res_conv=True,
+                groups=groups)
         else:
-            self.fusion_block = ConvBlock(inplanes=outplanes, outplanes=outplanes, groups=groups)
+            self.fusion_block = ConvBlock(
+                inplanes=outplanes, outplanes=outplanes, groups=groups)
 
         if num_med_block > 0:
             raise NotImplementedError
 
-        self.squeeze_block = FCUDown(inplanes=outplanes // expansion, outplanes=embed_dim, dw_stride=dw_stride,
-                                     cls_token=cls_token)
+        self.squeeze_block = FCUDown(
+            inplanes=outplanes // expansion,
+            outplanes=embed_dim,
+            dw_stride=dw_stride,
+            cls_token=cls_token)
 
-        self.expand_block = FCUUp(inplanes=embed_dim, outplanes=outplanes // expansion, up_stride=dw_stride,
-                                  cls_token=cls_token)
+        self.expand_block = FCUUp(
+            inplanes=embed_dim,
+            outplanes=outplanes // expansion,
+            up_stride=dw_stride,
+            cls_token=cls_token)
 
         self.trans_block = Block(
-            dim=embed_dim, num_heads=num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, qk_scale=qk_scale,
-            drop=drop_rate, attn_drop=attn_drop_rate, drop_path=drop_path_rate)
+            dim=embed_dim,
+            num_heads=num_heads,
+            mlp_ratio=mlp_ratio,
+            qkv_bias=qkv_bias,
+            qk_scale=qk_scale,
+            drop=drop_rate,
+            attn_drop=attn_drop_rate,
+            drop_path=drop_path_rate)
 
         self.dw_stride = dw_stride
         self.embed_dim = embed_dim
@@ -256,7 +367,8 @@ class ConvTransBlock(nn.Module):
             for m in self.med_block:
                 x = m(x)
 
-        x_t_r = self.expand_block(x_t, H // self.dw_stride, W // self.dw_stride)
+        x_t_r = self.expand_block(x_t, H // self.dw_stride,
+                                  W // self.dw_stride)
         x = self.fusion_block(x, x_t_r, return_x_2=False)
 
         return x, x_t
@@ -264,8 +376,7 @@ class ConvTransBlock(nn.Module):
 
 @BACKBONES.register_module()
 class Conformer(BaseBackbone):
-    """ Vision Transformer with support for patch or hybrid CNN input stage
-    """
+    """Vision Transformer with support for patch or hybrid CNN input stage."""
     arch_zoo = {
         **dict.fromkeys(['t', 'tiny'],
                         {'embed_dims': 384,
@@ -314,7 +425,9 @@ class Conformer(BaseBackbone):
                 f'Arch {arch} is not in default archs {set(self.arch_zoo)}'
             self.arch_settings = self.arch_zoo[arch]
         else:
-            essential_keys = {'embed_dims', 'depths', 'num_head', 'channel_ratio'}
+            essential_keys = {
+                'embed_dims', 'depths', 'num_head', 'channel_ratio'
+            }
             assert isinstance(arch, dict) and set(arch) == essential_keys, \
                 f'Custom arch needs a dict with keys {essential_keys}'
             self.arch_settings = arch
@@ -333,36 +446,58 @@ class Conformer(BaseBackbone):
         if self.cls_token_flag:
             self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dims))
 
-        self.trans_dpr = [x.item() for x in torch.linspace(0, drop_path_rate, self.depths)]  # stochastic depth decay rule
+        self.trans_dpr = [
+            x.item() for x in torch.linspace(0, drop_path_rate, self.depths)
+        ]  # stochastic depth decay rule
 
-        # Stem stage: get the feature maps by conv block (copied form resnet.py)
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)  # 1 / 2 [112, 112]
+        # Stem stage: get the feature maps by conv block (copied resnet.py)
+        self.conv1 = nn.Conv2d(
+            3, 64, kernel_size=7, stride=2, padding=3,
+            bias=False)  # 1 / 2 [112, 112]
         self.bn1 = nn.BatchNorm2d(64)
         self.act1 = nn.ReLU(inplace=True)
-        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)  # 1 / 4 [56, 56]
+        self.maxpool = nn.MaxPool2d(
+            kernel_size=3, stride=2, padding=1)  # 1 / 4 [56, 56]
 
         # 1 stage
         stage_1_channel = int(base_channel * self.channel_ratio)
         trans_dw_stride = patch_size // 4
-        self.conv_1 = ConvBlock(inplanes=64, outplanes=stage_1_channel, res_conv=True, stride=1)
-        self.trans_patch_conv = nn.Conv2d(64, self.embed_dims, kernel_size=trans_dw_stride, stride=trans_dw_stride, padding=0)
-        self.trans_1 = Block(dim=self.embed_dims, num_heads=self.num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias,
-                             qk_scale=qk_scale, drop_path=self.trans_dpr[0],
-                             )
+        self.conv_1 = ConvBlock(
+            inplanes=64, outplanes=stage_1_channel, res_conv=True, stride=1)
+        self.trans_patch_conv = nn.Conv2d(
+            64,
+            self.embed_dims,
+            kernel_size=trans_dw_stride,
+            stride=trans_dw_stride,
+            padding=0)
+        self.trans_1 = Block(
+            dim=self.embed_dims,
+            num_heads=self.num_heads,
+            mlp_ratio=mlp_ratio,
+            qkv_bias=qkv_bias,
+            qk_scale=qk_scale,
+            drop_path=self.trans_dpr[0],
+        )
 
         # 2~4 stage
         init_stage = 2
         fin_stage = self.depths // 3 + 1
         for i in range(init_stage, fin_stage):
-            self.add_module('conv_trans_' + str(i),
-                            ConvTransBlock(
-                                stage_1_channel, stage_1_channel, False, 1, dw_stride=trans_dw_stride,
-                                embed_dim=self.embed_dims,
-                                num_heads=self.num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, qk_scale=qk_scale,
-                                drop_path_rate=self.trans_dpr[i - 1],
-                                cls_token=self.cls_token_flag
-                            )
-                            )
+            self.add_module(
+                'conv_trans_' + str(i),
+                ConvTransBlock(
+                    stage_1_channel,
+                    stage_1_channel,
+                    False,
+                    1,
+                    dw_stride=trans_dw_stride,
+                    embed_dim=self.embed_dims,
+                    num_heads=self.num_heads,
+                    mlp_ratio=mlp_ratio,
+                    qkv_bias=qkv_bias,
+                    qk_scale=qk_scale,
+                    drop_path_rate=self.trans_dpr[i - 1],
+                    cls_token=self.cls_token_flag))
 
         stage_2_channel = int(base_channel * self.channel_ratio * 2)
         # 5~8 stage
@@ -370,17 +505,24 @@ class Conformer(BaseBackbone):
         fin_stage = fin_stage + self.depths // 3  # 9
         for i in range(init_stage, fin_stage):
             s = 2 if i == init_stage else 1
-            in_channel = stage_1_channel if i == init_stage else stage_2_channel
+            in_channel = stage_1_channel if i == init_stage \
+                else stage_2_channel
             res_conv = True if i == init_stage else False
-            self.add_module('conv_trans_' + str(i),
-                            ConvTransBlock(
-                                in_channel, stage_2_channel, res_conv, s, dw_stride=trans_dw_stride // 2,
-                                embed_dim=self.embed_dims,
-                                num_heads=self.num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, qk_scale=qk_scale,
-                                drop_path_rate=self.trans_dpr[i - 1],
-                                cls_token=self.cls_token_flag
-                            )
-                            )
+            self.add_module(
+                'conv_trans_' + str(i),
+                ConvTransBlock(
+                    in_channel,
+                    stage_2_channel,
+                    res_conv,
+                    s,
+                    dw_stride=trans_dw_stride // 2,
+                    embed_dim=self.embed_dims,
+                    num_heads=self.num_heads,
+                    mlp_ratio=mlp_ratio,
+                    qkv_bias=qkv_bias,
+                    qk_scale=qk_scale,
+                    drop_path_rate=self.trans_dpr[i - 1],
+                    cls_token=self.cls_token_flag))
 
         stage_3_channel = int(base_channel * self.channel_ratio * 2 * 2)
         # 9~12 stage
@@ -388,19 +530,26 @@ class Conformer(BaseBackbone):
         fin_stage = fin_stage + self.depths // 3  # 13
         for i in range(init_stage, fin_stage):
             s = 2 if i == init_stage else 1
-            in_channel = stage_2_channel if i == init_stage else stage_3_channel
+            in_channel = stage_2_channel if i == init_stage \
+                else stage_3_channel
             res_conv = True if i == init_stage else False
             last_fusion = True if i == self.depths else False
-            self.add_module('conv_trans_' + str(i),
-                            ConvTransBlock(
-                                in_channel, stage_3_channel, res_conv, s, dw_stride=trans_dw_stride // 4,
-                                embed_dim=self.embed_dims,
-                                num_heads=self.num_heads, mlp_ratio=mlp_ratio, qkv_bias=qkv_bias, qk_scale=qk_scale,
-                                drop_path_rate=self.trans_dpr[i - 1],
-                                cls_token=self.cls_token_flag,
-                                last_fusion=last_fusion
-                            )
-                            )
+            self.add_module(
+                'conv_trans_' + str(i),
+                ConvTransBlock(
+                    in_channel,
+                    stage_3_channel,
+                    res_conv,
+                    s,
+                    dw_stride=trans_dw_stride // 4,
+                    embed_dim=self.embed_dims,
+                    num_heads=self.num_heads,
+                    mlp_ratio=mlp_ratio,
+                    qkv_bias=qkv_bias,
+                    qk_scale=qk_scale,
+                    drop_path_rate=self.trans_dpr[i - 1],
+                    cls_token=self.cls_token_flag,
+                    last_fusion=last_fusion))
         self.fin_stage = fin_stage
 
         self.pooling = nn.AdaptiveAvgPool2d(1)
@@ -418,7 +567,8 @@ class Conformer(BaseBackbone):
             nn.init.constant_(m.bias, 0)
             nn.init.constant_(m.weight, 1.0)
         elif isinstance(m, nn.Conv2d):
-            nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+            nn.init.kaiming_normal_(
+                m.weight, mode='fan_out', nonlinearity='relu')
         elif isinstance(m, nn.BatchNorm2d):
             nn.init.constant_(m.weight, 1.)
             nn.init.constant_(m.bias, 0.)
@@ -433,9 +583,12 @@ class Conformer(BaseBackbone):
         if (isinstance(self.init_cfg, dict)
                 and self.init_cfg['type'] == 'Pretrained'):
             # Suppress default init if use pretrained model.
-            ckpt = _load_checkpoint(
-                self.init_cfg.checkpoint, logger=logger, map_location='cpu')
-            self.load_state_dict(ckpt, False)
+            load_checkpoint(
+                self,
+                self.init_cfg.checkpoint,
+                strict=False,
+                logger=logger,
+                map_location='cpu')
 
         else:
             logger.warn(f'No pre-trained weights for '
@@ -464,8 +617,14 @@ class Conformer(BaseBackbone):
             x, x_t = eval('self.conv_trans_' + str(i))(x, x_t)
             if i in self.out_indices:
                 if self.cls_token_flag:
-                    output.append([self.pooling(x).flatten(1), self.trans_norm(x_t)[:, 0]])
+                    output.append([
+                        self.pooling(x).flatten(1),
+                        self.trans_norm(x_t)[:, 0]
+                    ])
                 else:
-                    output.append([self.pooling(x).flatten(1), self.trans_norm(x_t).mean(dim=1)])
+                    output.append([
+                        self.pooling(x).flatten(1),
+                        self.trans_norm(x_t).mean(dim=1)
+                    ])
 
         return tuple(output)

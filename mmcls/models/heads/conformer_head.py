@@ -1,15 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch.nn as nn
 import torch.nn.functional as F
+from mmcv.cnn.utils.weight_init import trunc_normal_
+from mmcv.runner import load_checkpoint
 
-from collections import OrderedDict
-
+from mmcls.utils import get_root_logger
 from ..builder import HEADS
 from .cls_head import ClsHead
-
-from mmcv.cnn.utils.weight_init import trunc_normal_
-from mmcls.utils import get_root_logger
-from mmcv.runner import _load_checkpoint
 
 
 @HEADS.register_module()
@@ -24,12 +21,13 @@ class ConformerHead(ClsHead):
             Defaults to use dict(type='Normal', layer='Linear', std=0.01).
     """
 
-    def __init__(self,
-                 num_classes,
-                 in_channels,  # [conv_dim, trans_dim]
-                 init_cfg=dict(type='Normal', layer='Linear', std=0.01),
-                 *args,
-                 **kwargs):
+    def __init__(
+            self,
+            num_classes,
+            in_channels,  # [conv_dim, trans_dim]
+            init_cfg=dict(type='Normal', layer='Linear', std=0.01),
+            *args,
+            **kwargs):
         super(ConformerHead, self).__init__(init_cfg=None, *args, **kwargs)
 
         self.in_channels = in_channels
@@ -56,9 +54,12 @@ class ConformerHead(ClsHead):
         if (isinstance(self.init_cfg, dict)
                 and self.init_cfg['type'] == 'Pretrained'):
             # Suppress default init if use pretrained model.
-            ckpt = _load_checkpoint(
-                self.init_cfg.checkpoint, logger=logger, map_location='cpu')
-            self.load_state_dict(ckpt, False)
+            load_checkpoint(
+                self,
+                self.init_cfg.checkpoint,
+                strict=False,
+                logger=logger,
+                map_location='cpu')
         else:
             logger.warn(f'No pre-trained weights for '
                         f'{self.__class__.__name__}, '
@@ -69,7 +70,8 @@ class ConformerHead(ClsHead):
         """Test without augmentation."""
         if isinstance(x, tuple):
             x = x[-1]
-        assert isinstance(x, list)  # There are two outputs in the Conformer model
+        assert isinstance(x,
+                          list)  # There are two outputs in the Conformer model
 
         conv_cls_score = self.conv_cls_head(x[0])
         tran_cls_score = self.trans_cls_head(x[1])
@@ -83,7 +85,8 @@ class ConformerHead(ClsHead):
     def forward_train(self, x, gt_label):
         if isinstance(x, tuple):
             x = x[-1]
-        assert isinstance(x, list)  # There are two outputs in the Conformer model
+        assert isinstance(x,
+                          list)  # There are two outputs in the Conformer model
 
         conv_cls_score = self.conv_cls_head(x[0])
         tran_cls_score = self.trans_cls_head(x[1])
@@ -95,7 +98,10 @@ class ConformerHead(ClsHead):
         num_samples = len(cls_score[0])
         losses = dict()
         # compute loss
-        loss = sum([self.compute_loss(score, gt_label, avg_factor=num_samples) / len(cls_score) for score in cls_score])
+        loss = sum([
+            self.compute_loss(score, gt_label, avg_factor=num_samples) /
+            len(cls_score) for score in cls_score
+        ])
         if self.cal_acc:
             # compute accuracy
             acc = self.compute_accuracy(cls_score[0] + cls_score[1], gt_label)
