@@ -221,7 +221,7 @@ so that 1 epoch for training and 1 epoch for validation will be run iteratively.
 
 #### 1. Implement a new hook
 
-Here we give an example of creating a new hook in MMAction2 and using it in training.
+Here we give an example of creating a new hook in MMClassification and using it in training.
 
 ```python
 from mmcv.runner import HOOKS, Hook

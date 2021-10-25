@@ -1,4 +1,4 @@
-# 教程 7：如何自定义模型运行参数
+# 教程 6：如何自定义模型运行参数
 
 在本教程中，我们将介绍如何在运行自定义模型时，进行自定义参数优化方法，学习率调整策略，工作流和钩子的方法。
 
@@ -31,7 +31,7 @@
 
 ### 使用 PyTorch 内置的优化器
 
-MMCls 支持 PyTorch 实现的所有优化器，仅需在配置文件中，指定 “optimizer” 字段
+MMClassification 支持 PyTorch 实现的所有优化器，仅需在配置文件中，指定 “optimizer” 字段
 例如，如果要使用 “Adam”，则修改如下。
 
 ```python
@@ -55,7 +55,7 @@ optimizer = dict(type='Adam', lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_de
 一个自定义的优化器可根据如下规则进行定制
 
 假设用户想添加一个名为 `MyOptimzer` 的优化器，其拥有参数 `a`, `b` 和 `c`，
-可以创建一个名为 `mmaction/core/optimizer` 的文件夹，并在目录下的文件进行构建，如 `mmaction/core/optimizer/my_optimizer.py`：
+可以创建一个名为 `mmcls/core/optimizer` 的文件夹，并在目录下的文件进行构建，如 `mmcls/core/optimizer/my_optimizer.py`：
 
 ```python
 from mmcv.runner import OPTIMIZERS
@@ -132,7 +132,7 @@ class MyOptimizerConstructor:
 ### 额外设定
 
 优化器没有实现的优化技巧（trick）可通过优化器构造函数（例如，设置按参数的学习率）或钩子来实现。
-下面列出了一些可以稳定训练或加快训练速度的常用设置。用户亦可通过为 MMAction2 创建 PR，发布更多设置。
+下面列出了一些可以稳定训练或加快训练速度的常用设置。用户亦可通过为 MMClassification 创建 PR，发布更多设置。
 
 - __使用梯度裁剪来稳定训练__
     一些模型需要使用梯度裁剪来剪辑渐变以稳定训练过程。 一个例子如下：
@@ -142,7 +142,7 @@ class MyOptimizerConstructor:
     ```
 
 - __使用动量调整来加速模型收敛__
-    MMAction2 支持动量调整器根据学习率修改模型的动量，从而使模型收敛更快。
+    MMClassification 支持动量调整器根据学习率修改模型的动量，从而使模型收敛更快。
     动量调整程序通常与学习率调整器一起使用，例如，以下配置用于3D检测以加速收敛。
     更多细节可参考 [CyclicLrUpdater](https://github.com/open-mmlab/mmcv/blob/f48241a65aebfe07db122e9db320c31b685dc674/mmcv/runner/hooks/lr_updater.py#L327)
     和 [CyclicMomentumUpdater](https://github.com/open-mmlab/mmcv/blob/f48241a65aebfe07db122e9db320c31b685dc674/mmcv/runner/hooks/momentum_updater.py#L130)。
@@ -186,7 +186,7 @@ class MyOptimizerConstructor:
 
 ## 定制工作流
 
-默认情况下，MMCls 推荐用户在训练周期中使用 “EvalHook” 进行模型验证，也可以选择 “val” 工作流模型进行模型验证。
+默认情况下，MMClassification 推荐用户在训练周期中使用 “EvalHook” 进行模型验证，也可以选择 “val” 工作流模型进行模型验证。
 
 工作流是一个形如 (工作流名, 周期数) 的列表，用于指定运行顺序和周期。其默认设置为：
 
@@ -218,7 +218,7 @@ workflow = [('train', 1)]
 
 #### 1. 创建一个新钩子
 
-这里举一个在 MMCls 中创建一个新钩子，并在训练中使用它的示例：
+这里举一个在 MMClassification 中创建一个新钩子，并在训练中使用它的示例：
 
 ```python
 from mmcv.runner import HOOKS, Hook
@@ -266,7 +266,7 @@ from .my_hook import MyHook
 - 使用配置文件中的 `custom_imports` 变量手动导入
 
 ```python
-custom_imports = dict(imports=['mmaction.core.utils.my_hook'], allow_failed_imports=False)
+custom_imports = dict(imports=['mmcls.core.utils.my_hook'], allow_failed_imports=False)
 ```
 
 #### 3. 修改配置
