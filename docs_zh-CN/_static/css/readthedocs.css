@@ -8,3 +8,8 @@
 pre {
     white-space: pre;
 }
+
+article.pytorch-article .section :not(dt) > code {
+  padding: 3px 3px;
+  background-color: #f3f4f7;
+}
