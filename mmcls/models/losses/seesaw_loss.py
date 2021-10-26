@@ -109,7 +109,7 @@ class SeesawLoss(nn.Module):
                  reduction='mean',
                  loss_weight=1.0):
         super(SeesawLoss, self).__init__()
-        assert not use_sigmoid
+        assert not use_sigmoid, '`use_sigmoid` is not supported'
         self.use_sigmoid = False
         self.p = p
         self.q = q
@@ -146,11 +146,17 @@ class SeesawLoss(nn.Module):
                  if return_dict == True: The dict of calculated losses
                  for objectness and classes, respectively.
         """
-        assert reduction_override in (None, 'none', 'mean', 'sum')
-        assert cls_score.size(0) == labels.size(0)
+        assert reduction_override in (None, 'none', 'mean', 'sum'), \
+            f'The `reduction_override` should be one of (None, "none", ' \
+            f'"mean", "sum"), but get "{reduction_override}".'
+        assert cls_score.size(0) == labels.view(-1).size(0), \
+            f'Expected `labels` shape [{cls_score.size(0)}], ' \
+            f'but got {list(labels.size())}'
         reduction = (
             reduction_override if reduction_override else self.reduction)
-        assert cls_score.size(-1) == self.num_classes
+        assert cls_score.size(-1) == self.num_classes, \
+            f'The channel number of output ({cls_score.size(-1)}) does ' \
+            f'not match the `num_classes` of seesaw loss ({self.num_classes}).'
 
         # accumulate the samples for each category
         unique_labels = labels.unique()
