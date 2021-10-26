@@ -1,4 +1,4 @@
-# Tutorial 1: Fine-tune Models
+# Tutorial 2: Fine-tune Models
 
 Classification models pre-trained on the ImageNet dataset have been demonstrated to be effective for other datasets and other downstream tasks.
 This tutorial provides instructions for users to use the models provided in the [Model Zoo](../model_zoo.md) for other datasets to obtain better performance.
