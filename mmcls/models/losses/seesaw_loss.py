@@ -84,19 +84,19 @@ class SeesawLoss(nn.Module):
     <https://arxiv.org/abs/2008.10032>`_
 
     Args:
-        use_sigmoid (bool, optional): Whether the prediction uses sigmoid
-             of softmax. Only False is supported.
-        p (float, optional): The ``p`` in the mitigation factor.
+        use_sigmoid (bool): Whether the prediction uses sigmoid of softmax.
+             Only False is supported. Defaults to False.
+        p (float): The ``p`` in the mitigation factor.
              Defaults to 0.8.
-        q (float, optional): The ``q`` in the compenstation factor.
+        q (float): The ``q`` in the compenstation factor.
              Defaults to 2.0.
-        num_classes (int, optional): The number of classes.
+        num_classes (int): The number of classes.
              Default to 1000 for the ImageNet dataset.
-        eps (float, optional): The minimal value of divisor to smooth
-             the computation of compensation factor
-        reduction (str, optional): The method that reduces the loss to a
-             scalar. Options are "none", "mean" and "sum".
-        loss_weight (float, optional): The weight of the loss. Defaults to 1.0
+        eps (float): The minimal value of divisor to smooth
+             the computation of compensation factor, default to 1e-2.
+        reduction (str): The method that reduces the loss to a scalar.
+             Options are "none", "mean" and "sum". Default to "mean".
+        loss_weight (float): The weight of the loss. Defaults to 1.0
     """
 
     def __init__(self,
