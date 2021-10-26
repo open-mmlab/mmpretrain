@@ -78,7 +78,7 @@ repvgg-D2se_deploy_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py
   + `lbs`: 使用 `label smoothing` 损失函数。
   + `mixup`: 使用 `mixup` 训练增强方法。
   + `coslr`: 使用 `cosine scheduler` 优化策略。
-  + `200e`: 训练200个 `epoch`。
+  + `200e`: 训练 200 轮次。
 - `in1k`: 数据信息。 配置文件用于 `ImageNet1k` 数据集上使用 `224x224` 大小图片训练。
 
 ```{note}
