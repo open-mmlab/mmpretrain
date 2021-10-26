@@ -90,7 +90,7 @@ class SeesawLoss(nn.Module):
         q (float, optional): The ``q`` in the compenstation factor.
              Defaults to 2.0.
         num_classes (int, optional): The number of classes.
-             Default to 1203 for LVIS v1 dataset.
+             Default to 1000 for the ImageNet dataset.
         eps (float, optional): The minimal value of divisor to smooth
              the computation of compensation factor
         reduction (str, optional): The method that reduces the loss to a
@@ -133,7 +133,7 @@ class SeesawLoss(nn.Module):
         """Forward function.
 
         Args:
-            cls_score (torch.Tensor): The prediction with shape (N, C + 2).
+            cls_score (torch.Tensor): The prediction with shape (N, C).
             labels (torch.Tensor): The learning label of the prediction.
             weight (torch.Tensor, optional): Sample-wise loss weight.
             avg_factor (int, optional): Average factor that is used to average
@@ -147,6 +147,7 @@ class SeesawLoss(nn.Module):
                  for objectness and classes, respectively.
         """
         assert reduction_override in (None, 'none', 'mean', 'sum')
+        assert cls_score.size(0) == labels.size(0)
         reduction = (
             reduction_override if reduction_override else self.reduction)
         assert cls_score.size(-1) == self.num_classes
