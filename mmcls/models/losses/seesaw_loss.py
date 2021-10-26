@@ -78,9 +78,10 @@ def seesaw_ce_loss(cls_score,
 
 @LOSSES.register_module()
 class SeesawLoss(nn.Module):
-    """
-    Seesaw Loss for Long-Tailed Instance Segmentation (CVPR 2021)
-    arXiv: https://arxiv.org/abs/2008.10032
+    """Implementation of seesaw loss.
+
+    Refers to `Seesaw Loss for Long-Tailed Instance Segmentation (CVPR 2021)
+    <https://arxiv.org/abs/2008.10032>`_
 
     Args:
         use_sigmoid (bool, optional): Whether the prediction uses sigmoid
@@ -96,8 +97,6 @@ class SeesawLoss(nn.Module):
         reduction (str, optional): The method that reduces the loss to a
              scalar. Options are "none", "mean" and "sum".
         loss_weight (float, optional): The weight of the loss. Defaults to 1.0
-        return_dict (bool, optional): Whether return the losses as a dict.
-             Default to True.
     """
 
     def __init__(self,
@@ -141,10 +140,7 @@ class SeesawLoss(nn.Module):
             reduction (str, optional): The method used to reduce the loss.
                  Options are "none", "mean" and "sum".
         Returns:
-            torch.Tensor | Dict [str, torch.Tensor]:
-                 if return_dict == False: The calculated loss |
-                 if return_dict == True: The dict of calculated losses
-                 for objectness and classes, respectively.
+            torch.Tensor: The calculated loss
         """
         assert reduction_override in (None, 'none', 'mean', 'sum'), \
             f'The `reduction_override` should be one of (None, "none", ' \
