@@ -1,4 +1,4 @@
-# Tutorial 1：Learn about Configs
+# Tutorial 1: Learn about Configs
 
 MMClassification mainly uses python files as configs. The design of our configuration file system integrates modularity and inheritance, facilitating users to conduct various experiments. All configuration files are placed in the `configs` folder, which mainly contains the primitive configuration folder of `_base_` and many algorithm folders such as `resnet`, `swin_transformer`, `vision_transformer`, etc.
 
