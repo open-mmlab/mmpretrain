@@ -54,7 +54,7 @@ Batch size 信息：
 
 训练策略信息，训练策略以复现配置文件为基础，此基础不必标注训练策略。但如果在此基础上进行改进，则需注明训练策略，按照应用点位顺序排列，如：`{pipeline aug}-{train aug}-{loss trick}-{scheduler}-{epochs}`
 - `coslr-200e` : 使用 cosine scheduler, 训练 200 个 epoch
-- `autoaug-mixup-lbs-coslr-50e` : 使用了 `autoaug`、`mixup`、`label smooth`、`cosine scheduler`, 训练了 50 个 epoch
+- `autoaug-mixup-lbs-coslr-50e` : 使用了 `autoaug`、`mixup`、`label smooth`、`cosine scheduler`, 训练了 50 个轮次
 
 ### 数据信息
 - `in1k` : `ImageNet1k` 数据集，默认使用 `224x224` 大小的图片
@@ -101,7 +101,7 @@ repvgg-D2se_deploy_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py
 - [模型(model)](https://github.com/open-mmlab/mmclassification/tree/master/configs/_base_/models)
 - [数据(data)](https://github.com/open-mmlab/mmclassification/tree/master/configs/_base_/datasets)
 - [训练策略(schedule)](https://github.com/open-mmlab/mmclassification/tree/master/configs/_base_/schedules)
-- [默认运行设置(default_runtime)](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/default_runtime.py)
+- [运行设置(runtime)](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/default_runtime.py)
 
 你可以通过继承一些基本配置文件轻松构建自己的训练配置文件。由来自`_base_` 的组件组成的配置称为 _primitive_。
 
@@ -214,10 +214,10 @@ evaluation = dict(       # evaluation hook 的配置
 
 ### 训练策略
 主要包含 优化器设置、 `optimizer hook` 设置、学习率策略和 `runner`设置：
-- `optimizer` : 优化器设置信息, 支持 `pytorch` 所有的优化器，参考相关 [mmcv](https://mmcv.readthedocs.io/en/latest/_modules/mmcv/runner/optimizer/default_constructor.html#DefaultOptimizerConstructor) 文档
+- `optimizer` : 优化器设置信息, 支持 `pytorch` 所有的优化器，参考相关 [mmcv](https://mmcv.readthedocs.io/zh_CN/latest/_modules/mmcv/runner/optimizer/default_constructor.html#DefaultOptimizerConstructor) 文档
 - `optimizer_config` : `optimizer hook` 的配置文件,如设置梯度限制，参考相关 [mmcv](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/optimizer.py#L8) 代码
-- `lr_config` : 学习率策略，支持 `CosineAnnealing`, `step`, `warmup` 等等，参考相关 [mmcv](https://mmcv.readthedocs.io/en/latest/_modules/mmcv/runner/hooks/lr_updater.html#LrUpdaterHook) 文档
-- `runner` : 有关 `runner` 可以参考 `mmcv` 对于 [`runner`](https://mmcv.readthedocs.io/en/latest/understand_mmcv/runner.html) 介绍文档
+- `lr_config` : 学习率策略，支持 "CosineAnnealing"、 "Step"、 "Cyclic" 等等，参考相关 [mmcv](https://mmcv.readthedocs.io/zh_CN/latest/_modules/mmcv/runner/hooks/lr_updater.html#LrUpdaterHook) 文档
+- `runner` : 有关 `runner` 可以参考 `mmcv` 对于 [`runner`](https://mmcv.readthedocs.io/zh_CN/latest/understand_mmcv/runner.html) 介绍文档
 ```python
 # 用于构建优化器的配置文件。支持 PyTorch 中的所有优化器，同时它们的参数与 PyTorch 里的优化器参数一致。
 optimizer = dict(type='SGD',         # 优化器类型
@@ -311,7 +311,7 @@ data = dict(
 
 ### 忽略基础配置文件里的部分内容
 
-有时，您需要设置 `_delete_=True` 去忽略基础配置文件里的一些域内容。 可以参照 [mmcv](https://mmcv.readthedocs.io/en/latest/understand_mmcv/config.html#inherit-from-base-config-with-ignored-fields) 来获得一些简单的指导。
+有时，您需要设置 `_delete_=True` 去忽略基础配置文件里的一些域内容。 可以参照 [mmcv](https://mmcv.readthedocs.io/zh_CN/latest/understand_mmcv/config.html#inherit-from-base-config-with-ignored-fields) 来获得一些简单的指导。
 
 
 以下是一个简单应用案例。 如果在上述 ResNet50 案例中 使用 cosine schedule ,使用继承并直接修改会报 `get unexcepected keyword 'step'` 错, 因为基础配置文件 lr_config 域信息的 `'step'` 字段被保留下来了，需要加入 `_delete_=True` 去忽略基础配置文件里的 `lr_config` 相关域内容：
@@ -332,9 +332,9 @@ lr_config = dict(
 
 ### 引用基础配置文件里的变量
 
-有时，您可以引用 `_base_` 配置信息的一些域内容，这样可以避免重复定义。 可以参照 [mmcv](https://mmcv.readthedocs.io/en/latest/understand_mmcv/config.html#reference-variables-from-base) 来获得一些简单的指导。
+有时，您可以引用 `_base_` 配置信息的一些域内容，这样可以避免重复定义。 可以参照 [mmcv](https://mmcv.readthedocs.io/zh_CN/latest/understand_mmcv/config.html#reference-variables-from-base) 来获得一些简单的指导。
 
-以下是一个简单应用案例，在训练数据预处理流水线中使用 `auto augment`，参考配置文件 [`configs/_base_/datasets/imagenet_bs64_autoaug.py`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/datasets/imagenet_bs64_autoaug.py)。 在定义 `train_pipeline` 时直接在 `_base_` 中加入 `auto augment` 定义文件，再通过 `{{_base_.auto_increasing_policies}}` 引用变量：
+以下是一个简单应用案例，在训练数据预处理流水线中使用 auto augment 数据增强，参考配置文件 [`configs/_base_/datasets/imagenet_bs64_autoaug.py`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/datasets/imagenet_bs64_autoaug.py)。 在定义 `train_pipeline` 时，可以直接在 `_base_` 中加入定义 auto augment 数据增强的文件命名，再通过 `{{_base_.auto_increasing_policies}}` 引用变量：
 
 ```python
 _base_ = ['./pipelines/auto_aug.py']
