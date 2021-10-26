@@ -214,7 +214,7 @@ evaluation = dict(       # The config to build the evaluation hook, refer to htt
 Mainly include optimizer settings, `optimizer hook` settings, learning rate schedule and `runner` settings:
 - `optimizer`: optimizer setting , support all optimizers in `pytorch`, refer to related [mmcv](https://mmcv.readthedocs.io/en/latest/_modules/mmcv/runner/optimizer/default_constructor.html#DefaultOptimizerConstructor) documentation.
 - `optimizer_config`: `optimizer hook` configuration file, such as setting gradient limit, refer to related [mmcv](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/optimizer.py#L8) code.
-- `lr_config`: Learning rate schedule, supports `CosineAnnealing`, `step`, `warmup`, etc. refer to related [mmcv](https://mmcv.readthedocs.io/en/latest/_modules/mmcv/runner/hooks/lr_updater.html#LrUpdaterHook) documentation for more options.
+- `lr_config`: Learning rate scheduler, supports "CosineAnnealing", "Step", "Cyclic", etc. refer to related [mmcv](https://mmcv.readthedocs.io/en/latest/_modules/mmcv/runner/hooks/lr_updater.html#LrUpdaterHook) documentation for more options.
 - `runner`: For `runner`, please refer to `mmcv` for [`runner`](https://mmcv.readthedocs.io/en/latest/understand_mmcv/runner.html) introduction document.
 
 ```python
