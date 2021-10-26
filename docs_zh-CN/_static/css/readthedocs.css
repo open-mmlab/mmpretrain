@@ -10,6 +10,7 @@ pre {
 }
 
 article.pytorch-article .section :not(dt) > code {
-  padding: 3px 3px;
+  padding: .2em .4em;
   background-color: #f3f4f7;
+  border-radius: 5px;
 }
