@@ -99,7 +99,7 @@ There are four kinds of basic component file in the `configs/_base_` folders, na
 - [models](https://github.com/open-mmlab/mmclassification/tree/master/configs/_base_/models)
 - [datasets](https://github.com/open-mmlab/mmclassification/tree/master/configs/_base_/datasets)
 - [schedules](https://github.com/open-mmlab/mmclassification/tree/master/configs/_base_/schedules)
-- [default_runtime](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/default_runtime.py)
+- [runtime](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/default_runtime.py)
 
 You can easily build your own training config file by inherit some base config files. And the configs that are composed by components from `_base_` are called _primitive_.
 
@@ -110,7 +110,7 @@ _base_ = [
     '../_base_/models/resnet50.py',           # model
     '../_base_/datasets/imagenet_bs32.py',    # data
     '../_base_/schedules/imagenet_bs256.py',  # training schedule
-    '../_base_/default_runtime.py'            # default runtime setting
+    '../_base_/default_runtime.py'            # runtime setting
 ]
 ```
 
@@ -330,7 +330,7 @@ lr_config = dict(
 
 Sometimes, you may refer to some fields in the `_base_` config, so as to avoid duplication of definitions. You can refer to [mmcv](https://mmcv.readthedocs.io/en/latest/understand_mmcv/config.html#reference-variables-from-base) for some more instructions.
 
-The following is an example of using `auto augment` in the training data preprocessing pipeline， refer to [`configs/_base_/datasets/imagenet_bs64_autoaug.py`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/datasets/imagenet_bs64_autoaug.py). When defining `train_pipeline`, just add the definition file name of `auto augment` to `_base_`, and then use `{{_base_.auto_increasing_policies}}` to reference the variables:
+The following is an example of using auto augment in the training data preprocessing pipeline， refer to [`configs/_base_/datasets/imagenet_bs64_autoaug.py`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/datasets/imagenet_bs64_autoaug.py). When defining `train_pipeline`, just add the definition file name of auto augment to `_base_`, and then use `{{_base_.auto_increasing_policies}}` to reference the variables:
 
 ```python
 _base_ = ['./pipelines/auto_aug.py']
