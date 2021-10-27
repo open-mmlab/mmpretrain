@@ -70,9 +70,8 @@ Please see [getting_started.md](docs/getting_started.md) for the basic usage of 
 - [adding new modules](docs/tutorials/new_modules.md)
 - [customizing runtime settings](docs/tutorials/customize_runtime.md)
 
-Colab tutorials are also provided:
-To learn about MMClassification Python API, you may preview the notebook [here](https://github.com/open-mmlab/mmclassification/blob/master/docs/tutorials/MMClassification_python.ipynb) or directly [run](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/tutorials/MMClassification_python.ipynb) on Colab.
-To learn about MMClassification tools, you may preview the notebook [here](https://github.com/open-mmlab/mmclassification/blob/master/docs/tutorials/MMClassification_tools.ipynb) or directly [run](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/tutorials/MMClassification_tools.ipynb) on Colab.
+Colab tutorials are also provided. To learn about MMClassification Python API, you may preview the notebook [here](https://github.com/open-mmlab/mmclassification/blob/master/docs/tutorials/MMClassification_python.ipynb) or directly [run](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/tutorials/MMClassification_python.ipynb) on Colab.
+To learn about MMClassification shell tools, you may preview the notebook [here](https://github.com/open-mmlab/mmclassification/blob/master/docs/tutorials/MMClassification_tools.ipynb) or directly [run](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/tutorials/MMClassification_tools.ipynb) on Colab.
 
 ## Citation
 

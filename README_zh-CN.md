@@ -71,9 +71,7 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 - [如何增加新模块](docs_zh-CN/tutorials/new_modules.md)
 - [如何自定义模型运行参数](docs_zh-CN/tutorials/customize_runtime.md)
 
-MMClassification 也提供了相应的中文 Colab 教程:
-了解 MMClassification Python API, 可以查看 [这里](https://github.com/open-mmlab/mmclassification/blob/master/docs_zh-CN/tutorials/MMClassification_python_cn.ipynb) 或者直接在 Colab 上 [运行](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs_zh-CN/tutorials/MMClassification_python_cn.ipynb)。
-了解 MMClassification 工具, 可以查看 [这里](https://github.com/open-mmlab/mmclassification/blob/master/docs_zh-CN/tutorials/MMClassification_tools_cn.ipynb) 或者直接在 Colab 上 [运行](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs_zh-CN/tutorials/MMClassification_tools_cn.ipynb)。
+MMClassification 也提供了相应的中文 Colab 教程。了解 MMClassification Python API，可以查看 [这里](https://github.com/open-mmlab/mmclassification/blob/master/docs_zh-CN/tutorials/MMClassification_python_cn.ipynb) 或者直接在 Colab 上 [运行](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs_zh-CN/tutorials/MMClassification_python_cn.ipynb)。了解 MMClassification 命令行工具，可以查看 [这里](https://github.com/open-mmlab/mmclassification/blob/master/docs_zh-CN/tutorials/MMClassification_tools_cn.ipynb) 或者直接在 Colab 上 [运行](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs_zh-CN/tutorials/MMClassification_tools_cn.ipynb)。
 
 ## 参与贡献
 
