@@ -289,8 +289,7 @@ def test_dataset_imagenet21k():
 
     # test with load annotation from ann file
     dataset_cfg = base_dataset_cfg.copy()
-    dataset_cfg['recursion_subdir'] = False
     dataset_cfg['ann_file'] = 'tests/data/dataset/ann.txt'
     dataset = ImageNet21k(**dataset_cfg)
-    assert len(dataset) == 2
+    assert len(dataset) == 3
     assert isinstance(dataset[0], dict)

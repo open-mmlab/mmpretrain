@@ -28,7 +28,7 @@ except ImportError:
 class ExampleDataset(Dataset):
 
     def __getitem__(self, idx):
-        results = dict(img=torch.tensor([1]), img_metas=dict(), gt_label=0)
+        results = dict(img=torch.tensor([1]), img_metas=dict())
         return results
 
     def __len__(self):
