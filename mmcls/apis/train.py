@@ -135,7 +135,7 @@ def train_model(model,
         cfg.log_config,
         cfg.get('momentum_config', None),
         custom_hooks_config=cfg.get('custom_hooks', None))
-    if distributed:
+    if distributed and cfg.runner['type'] != 'IterBasedRunner':
         runner.register_hook(DistSamplerSeedHook())
 
     # register eval hooks
