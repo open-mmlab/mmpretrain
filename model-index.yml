@@ -2,6 +2,7 @@ Import:
   - configs/fp16/metafile.yml
   - configs/mobilenet_v2/metafile.yml
   - configs/resnet/metafile.yml
+  - configs/res2net/metafile.yml
   - configs/resnext/metafile.yml
   - configs/seresnet/metafile.yml
   - configs/shufflenet_v1/metafile.yml
@@ -10,3 +11,4 @@ Import:
   - configs/vgg/metafile.yml
   - configs/repvgg/metafile.yml
   - configs/tnt/metafile.yml
+  - configs/vision_transformer/metafile.yml

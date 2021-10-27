@@ -1,4 +1,5 @@
 # ShuffleNet: An Extremely Efficient Convolutional Neural Network for Mobile Devices
+<!-- {ShuffleNet V1} -->
 
 ## Introduction
 

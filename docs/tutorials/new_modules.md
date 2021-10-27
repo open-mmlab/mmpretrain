@@ -1,4 +1,4 @@
-# Tutorial 4: Adding New Modules
+# Tutorial 5: Adding New Modules
 
 ## Develop new components
 
@@ -215,7 +215,7 @@ model = dict(
 
 To add a new loss function, we mainly implement the `forward` function in the loss module.
 In addition, it is helpful to leverage the decorator `weighted_loss` to weight the loss for each element.
-Assuming that we want to mimic a probablistic distribution generated from another classification model, we implement a L1Loss to fulfil the purpose as below.
+Assuming that we want to mimic a probabilistic distribution generated from another classification model, we implement a L1Loss to fulfil the purpose as below.
 
 1. Create a new file in `mmcls/models/losses/l1_loss.py`.
 

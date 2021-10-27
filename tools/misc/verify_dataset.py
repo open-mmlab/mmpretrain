@@ -2,14 +2,11 @@
 import argparse
 import fcntl
 import os
-import time
-from multiprocessing import Pool
 from pathlib import Path
 
-from mmcv import Config, DictAction
+from mmcv import Config, DictAction, track_parallel_progress, track_progress
 
-from mmcls.datasets import build_dataset
-from mmcls.datasets.pipelines import Compose
+from mmcls.datasets import PIPELINES, build_dataset
 
 
 def parse_args():
@@ -45,39 +42,26 @@ def parse_args():
     return args
 
 
-class Dataset_vaild():
+class DatasetValidator():
     """the dataset tool class to check if all file are broken."""
 
     def __init__(self, dataset_cfg, log_file_path, phase):
-        super(Dataset_vaild, self).__init__()
+        super(DatasetValidator, self).__init__()
         # keep only LoadImageFromFile pipeline
+        assert dataset_cfg.data[phase].pipeline[0][
+            'type'] == 'LoadImageFromFile', 'This tool is only for dataset ' \
+            'that needs to load image from files.'
+        self.pipeline = PIPELINES.build(dataset_cfg.data[phase].pipeline[0])
         dataset_cfg.data[phase].pipeline = []
-        LoadImageFromFile_pipeline = [dict(type='LoadImageFromFile')]
-        pipeline = Compose(LoadImageFromFile_pipeline)
         dataset = build_dataset(dataset_cfg.data[phase])
 
-        self.loadFile_pipeline = pipeline
         self.dataset = dataset
         self.log_file_path = log_file_path
-        self.task_num = len(self)
-        # the number to call print function, if the files is less than
-        # 100000, the value is 5, else 100
-        self.intervals = 100 if self.task_num > 100000 else 5
-        # check number files everytime to print some someting
-        self.print_intervals = self.task_num // self.intervals
-        self.start = time.time()
 
-    def vaild_idx(self, idx):
-        if idx % self.print_intervals == 0:
-            time_spend = round(time.time() - self.start, 2)
-            precent = int(idx / self.print_intervals * 100 / self.intervals)
-            files_pre_second = idx // time_spend
-            print(f'[{precent}%]\t| {idx} pictures, consumes {time_spend} '
-                  f'seconds, around {files_pre_second} files pre second.')
-
+    def valid_idx(self, idx):
         item = self.dataset[idx]
         try:
-            item = self.loadFile_pipeline(item)
+            item = self.pipeline(item)
         except Exception:
             with open(self.log_file_path, 'a') as f:
                 # add file lock to prevent multi-process writing errors
@@ -122,10 +106,23 @@ def main():
         os.remove(output_path)
     output_path.touch()
 
-    # do vaild
-    dataset_vaild = Dataset_vaild(cfg, output_path, args.phase)
-    with Pool(args.num_process) as p:
-        p.map(dataset_vaild.vaild_idx, list(range(len(dataset_vaild))))
+    # do valid
+    validator = DatasetValidator(cfg, output_path, args.phase)
+
+    if args.num_process > 1:
+        # The default chunksize calcuation method of Pool.map
+        chunksize, extra = divmod(len(validator), args.num_process * 8)
+        if extra:
+            chunksize += 1
+
+        track_parallel_progress(
+            validator.valid_idx,
+            list(range(len(validator))),
+            args.num_process,
+            chunksize=chunksize,
+            keep_order=False)
+    else:
+        track_progress(validator.valid_idx, list(range(len(validator))))
 
     print_info(output_path)
 

@@ -87,6 +87,28 @@ html_theme_options = {
         },
         {
             'name':
+            'Colab Tutorials',
+            'children': [
+                {
+                    'name':
+                    'Train and inference with shell commands',
+                    'url':
+                    'https://colab.research.google.com/github/'
+                    'open-mmlab/mmclassification/blob/master/docs/tutorials/'
+                    'MMClassification_tools.ipynb',
+                },
+                {
+                    'name':
+                    'Train and inference with Python APIs',
+                    'url':
+                    'https://colab.research.google.com/github/'
+                    'open-mmlab/mmclassification/blob/master/docs/tutorials/'
+                    'MMClassification_python.ipynb',
+                },
+            ]
+        },
+        {
+            'name':
             'Projects',
             'children': [
                 {
@@ -161,6 +183,7 @@ html_theme_options = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 html_css_files = ['css/readthedocs.css']
+html_js_files = ['js/custom.js']
 
 master_doc = 'index'
 
@@ -270,4 +293,5 @@ def setup(app):
         'enable_eval_rst': True,
     }, True)
     app.add_transform(AutoStructify)
+    app.add_js_file('./_static/js/custom.js')
     app.connect('builder-inited', builder_inited_handler)

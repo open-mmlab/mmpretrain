@@ -195,7 +195,7 @@ class BaseClassifier(BaseModule, metaclass=ABCMeta):
                 Default: None.
 
         Returns:
-            img (ndarray): Image with overlayed results.
+            img (ndarray): Image with overlaid results.
         """
         img = mmcv.imread(img)
         img = img.copy()

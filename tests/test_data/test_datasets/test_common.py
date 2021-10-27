@@ -223,7 +223,7 @@ def test_dataset_evaluation():
     with pytest.raises(ValueError):
         eval_results = dataset.evaluate(fake_results, metric='map')
 
-    # test multi-label evalutation
+    # test multi-label evaluation
     dataset = MultiLabelDataset(data_prefix='', pipeline=[], test_mode=True)
     dataset.data_infos = [
         dict(gt_label=[1, 1, 0, -1]),
@@ -260,7 +260,7 @@ def test_dataset_imagenet21k():
         data_prefix='tests/data/dataset', pipeline=[], recursion_subdir=True)
 
     with pytest.raises(NotImplementedError):
-        # multi_label have noe be implemented
+        # multi_label have not be implemented
         dataset_cfg = base_dataset_cfg.copy()
         dataset_cfg.update({'multi_label': True})
         dataset = ImageNet21k(**dataset_cfg)
@@ -291,5 +291,6 @@ def test_dataset_imagenet21k():
     dataset_cfg = base_dataset_cfg.copy()
     dataset_cfg['recursion_subdir'] = False
     dataset_cfg['ann_file'] = 'tests/data/dataset/ann.txt'
+    dataset = ImageNet21k(**dataset_cfg)
     assert len(dataset) == 2
     assert isinstance(dataset[0], dict)

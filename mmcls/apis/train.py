@@ -56,7 +56,7 @@ def train_model(model,
                 timestamp=None,
                 device='cuda',
                 meta=None):
-    logger = get_root_logger(cfg.log_level)
+    logger = get_root_logger()
 
     # prepare data loaders
     dataset = dataset if isinstance(dataset, (list, tuple)) else [dataset]
@@ -135,7 +135,7 @@ def train_model(model,
         cfg.log_config,
         cfg.get('momentum_config', None),
         custom_hooks_config=cfg.get('custom_hooks', None))
-    if distributed:
+    if distributed and cfg.runner['type'] == 'EpochBasedRunner':
         runner.register_hook(DistSamplerSeedHook())
 
     # register eval hooks
@@ -151,7 +151,11 @@ def train_model(model,
         eval_cfg = cfg.get('evaluation', {})
         eval_cfg['by_epoch'] = cfg.runner['type'] != 'IterBasedRunner'
         eval_hook = DistEvalHook if distributed else EvalHook
-        runner.register_hook(eval_hook(val_dataloader, **eval_cfg))
+        # `EvalHook` needs to be executed after `IterTimerHook`.
+        # Otherwise, it will cause a bug if use `IterBasedRunner`.
+        # Refers to https://github.com/open-mmlab/mmcv/issues/1261
+        runner.register_hook(
+            eval_hook(val_dataloader, **eval_cfg), priority='LOW')
 
     if cfg.resume_from:
         runner.resume(cfg.resume_from)

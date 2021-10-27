@@ -153,7 +153,7 @@ class RandomResizedCrop(object):
             to the original image. Defaults to (0.08, 1.0).
         ratio (tuple): Range of the random aspect ratio of the cropped image
             compared to the original image. Defaults to (3. / 4., 4. / 3.).
-        max_attempts (int): Maxinum number of attempts before falling back to
+        max_attempts (int): Maximum number of attempts before falling back to
             Central Crop. Defaults to 10.
         efficientnet_style (bool): Whether to use efficientnet style Random
             ResizedCrop. Defaults to False.
@@ -219,7 +219,7 @@ class RandomResizedCrop(object):
                 compared to the original image size.
             ratio (tuple): Range of the random aspect ratio of the cropped
                 image compared to the original image area.
-            max_attempts (int): Maxinum number of attempts before falling back
+            max_attempts (int): Maximum number of attempts before falling back
                 to central crop. Defaults to 10.
 
         Returns:
@@ -281,7 +281,7 @@ class RandomResizedCrop(object):
                 compared to the original image size.
             ratio (tuple): Range of the random aspect ratio of the cropped
                 image compared to the original image area.
-            max_attempts (int): Maxinum number of attempts before falling back
+            max_attempts (int): Maximum number of attempts before falling back
                 to central crop. Defaults to 10.
             min_covered (Number): Minimum ratio of the cropped area to the
                 original area. Only valid if efficientnet_style is true.
@@ -313,7 +313,7 @@ class RandomResizedCrop(object):
             max_target_height = min(max_target_height, height)
             min_target_height = min(max_target_height, min_target_height)
 
-            # slightly differs from tf inplementation
+            # slightly differs from tf implementation
             target_height = int(
                 round(random.uniform(min_target_height, max_target_height)))
             target_width = int(round(target_height * aspect_ratio))
@@ -895,7 +895,7 @@ class Lighting(object):
         eigvec (list[list]): the eigenvector of the convariance matrix of pixel
             values, respectively.
         alphastd (float): The standard deviation for distribution of alpha.
-            Dafaults to 0.1
+            Defaults to 0.1
         to_rgb (bool): Whether to convert img to rgb.
     """
 

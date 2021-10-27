@@ -221,7 +221,7 @@ if __name__ == '__main__':
     if args.checkpoint:
         load_checkpoint(classifier, args.checkpoint, map_location='cpu')
 
-    # conver model to onnx file
+    # convert model to onnx file
     pytorch2onnx(
         classifier,
         input_shape,

@@ -87,6 +87,28 @@ html_theme_options = {
         },
         {
             'name':
+            'Colab 教程',
+            'children': [
+                {
+                    'name':
+                    '用命令行工具训练和推理',
+                    'url':
+                    'https://colab.research.google.com/github/'
+                    'open-mmlab/mmclassification/blob/master/docs_zh-CN/'
+                    'tutorials/MMClassification_tools_cn.ipynb',
+                },
+                {
+                    'name':
+                    '用 Python API 训练和推理',
+                    'url':
+                    'https://colab.research.google.com/github/'
+                    'open-mmlab/mmclassification/blob/master/docs_zh-CN/'
+                    'tutorials/MMClassification_python_cn.ipynb',
+                },
+            ]
+        },
+        {
+            'name':
             '算法库',
             'children': [
                 {

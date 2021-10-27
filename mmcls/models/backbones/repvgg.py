@@ -183,7 +183,7 @@ class RepVGGBlock(BaseModule):
         self.deploy = True
 
     def reparameterize(self):
-        """Fuse all the parameters of all branchs.
+        """Fuse all the parameters of all branches.
 
         Returns:
             tuple[torch.Tensor, torch.Tensor]: Parameters after fusion of all

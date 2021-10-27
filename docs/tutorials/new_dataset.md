@@ -1,4 +1,4 @@
-# Tutorial 2: Adding New Dataset
+# Tutorial 3: Adding New Dataset
 
 ## Customize datasets by reorganizing data
 
@@ -39,7 +39,7 @@ Note: The value of ground-truth labels should fall in range `[0, num_classes - 1
 
 You can write a new Dataset class inherited from `BaseDataset`, and overwrite `load_annotations(self)`,
 like [CIFAR10](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/datasets/cifar.py) and [ImageNet](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/datasets/imagenet.py).
-Typically, this function returns a list, where each sample is a dict, containing necessary data informations, e.g., `img` and `gt_label`.
+Typically, this function returns a list, where each sample is a dict, containing necessary data information, e.g., `img` and `gt_label`.
 
 Assume we are going to implement a `Filelist` dataset, which takes filelists for both training and testing. The format of annotation list is as follows:
 
