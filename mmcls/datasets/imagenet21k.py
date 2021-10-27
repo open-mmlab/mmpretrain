@@ -43,7 +43,7 @@ class ImageNet21k(BaseDataset):
         the subclass is expected to read from the ann_file. When ann_file
         is None, the subclass is expected to read according to data_prefix
     test_mode (bool): in train mode or test mode
-    multi_lable (bool): use multi lable or not.
+    multi_label (bool): use multi label or not.
     recursion_subdir(bool): whether to use sub-directory pictures, which
         are meet the conditions in the folder under category directory.
     """
