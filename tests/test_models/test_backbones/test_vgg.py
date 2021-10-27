@@ -125,7 +125,8 @@ def test_vgg():
 
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
-    assert feat.shape == (1, 512, 7, 7)
+    assert len(feat) == 1
+    assert feat[0].shape == (1, 512, 7, 7)
 
     # Test VGG19 with classification score out forward
     model = VGG(19, num_classes=10)
@@ -134,4 +135,5 @@ def test_vgg():
 
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
-    assert feat.shape == (1, 10)
+    assert len(feat) == 1
+    assert feat[0].shape == (1, 10)

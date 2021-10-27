@@ -45,8 +45,9 @@ def test_regnet_backbone(arch_name, arch, out_channels):
 
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
-    assert isinstance(feat, torch.Tensor)
-    assert feat.shape == (1, out_channels[-1], 7, 7)
+    assert len(feat) == 1
+    assert isinstance(feat[0], torch.Tensor)
+    assert feat[0].shape == (1, out_channels[-1], 7, 7)
 
     # output feature map of all stages
     model = RegNet(arch_name, out_indices=(0, 1, 2, 3))
@@ -70,8 +71,9 @@ def test_custom_arch(arch_name, arch, out_channels):
 
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
-    assert isinstance(feat, torch.Tensor)
-    assert feat.shape == (1, out_channels[-1], 7, 7)
+    assert len(feat) == 1
+    assert isinstance(feat[0], torch.Tensor)
+    assert feat[0].shape == (1, out_channels[-1], 7, 7)
 
     # output feature map of all stages
     model = RegNet(arch, out_indices=(0, 1, 2, 3))

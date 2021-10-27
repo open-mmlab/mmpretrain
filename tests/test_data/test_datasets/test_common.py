@@ -218,7 +218,7 @@ def test_dataset_evaluation():
     with pytest.raises(ValueError):
         eval_results = dataset.evaluate(fake_results, metric='map')
 
-    # test multi-label evalutation
+    # test multi-label evaluation
     dataset = MultiLabelDataset(data_prefix='', pipeline=[], test_mode=True)
     dataset.data_infos = [
         dict(gt_label=[1, 1, 0, -1]),

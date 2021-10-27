@@ -6,7 +6,7 @@ You can switch between Chinese and English documents in the lower-left corner of
 您可以在页面左下角切换中英文文档。
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: 开始你的第一步
 
    install.md
@@ -14,30 +14,35 @@ You can switch between Chinese and English documents in the lower-left corner of
 
 
 .. toctree::
-   :maxdepth: 2
-   :caption: 模型库
-
-   modelzoo_statistics.md
-
-
-.. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: 教程
 
+   tutorials/config.md
    tutorials/finetune.md
    tutorials/new_dataset.md
    tutorials/data_pipeline.md
    tutorials/new_modules.md
 
 
+.. include:: _model_zoo.rst
+
+
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: 实用工具
 
    tools/pytorch2onnx.md
    tools/onnx2tensorrt.md
    tools/pytorch2torchscript.md
    tools/model_serving.md
+   tools/visualization.md
+
+
+.. toctree::
+   :maxdepth: 1
+   :caption: 社区
+
+   community/CONTRIBUTING.md
 
 
 .. toctree::
@@ -49,8 +54,8 @@ You can switch between Chinese and English documents in the lower-left corner of
 .. toctree::
    :caption: 语言切换
 
-   switch_language.md
-
+   English <https://mmclassification.readthedocs.io/en/latest/>
+   简体中文 <https://mmclassification.readthedocs.io/zh_CN/latest/>
 
 
 索引与表格

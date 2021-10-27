@@ -228,8 +228,9 @@ def test_shufflenetv1_backbone():
 
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
-    assert isinstance(feat, torch.Tensor)
-    assert feat.shape == torch.Size((1, 960, 7, 7))
+    assert len(feat) == 1
+    assert isinstance(feat[0], torch.Tensor)
+    assert feat[0].shape == torch.Size((1, 960, 7, 7))
 
     # Test ShuffleNetV1 forward with checkpoint forward
     model = ShuffleNetV1(groups=3, with_cp=True)

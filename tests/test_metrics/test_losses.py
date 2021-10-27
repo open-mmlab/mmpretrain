@@ -45,48 +45,92 @@ def test_cross_entropy_loss():
         loss = build_loss(loss_cfg)
 
     # test ce_loss
-    cls_score = torch.Tensor([[100, -100]])
-    label = torch.Tensor([1]).long()
-    weight = torch.tensor(0.5)
+    cls_score = torch.Tensor([[-1000, 1000], [100, -100]])
+    label = torch.Tensor([0, 1]).long()
+    class_weight = [0.3, 0.7]  # class 0 : 0.3, class 1 : 0.7
+    weight = torch.tensor([0.6, 0.4])
 
+    # test ce_loss without class weight
     loss_cfg = dict(type='CrossEntropyLoss', reduction='mean', loss_weight=1.0)
     loss = build_loss(loss_cfg)
-    assert torch.allclose(loss(cls_score, label), torch.tensor(200.))
+    assert torch.allclose(loss(cls_score, label), torch.tensor(1100.))
     # test ce_loss with weight
     assert torch.allclose(
-        loss(cls_score, label, weight=weight), torch.tensor(100.))
+        loss(cls_score, label, weight=weight), torch.tensor(640.))
+
+    # test ce_loss with class weight
+    loss_cfg = dict(
+        type='CrossEntropyLoss',
+        reduction='mean',
+        loss_weight=1.0,
+        class_weight=class_weight)
+    loss = build_loss(loss_cfg)
+    assert torch.allclose(loss(cls_score, label), torch.tensor(370.))
+    # test ce_loss with weight
+    assert torch.allclose(
+        loss(cls_score, label, weight=weight), torch.tensor(208.))
 
     # test bce_loss
-    cls_score = torch.Tensor([[100, -100], [100, -100]])
-    label = torch.Tensor([[1, 0], [0, 1]])
-    weight = torch.Tensor([0.5, 0.5])
+    cls_score = torch.Tensor([[-200, 100], [500, -1000], [300, -300]])
+    label = torch.Tensor([[1, 0], [0, 1], [1, 0]])
+    weight = torch.Tensor([0.6, 0.4, 0.5])
+    class_weight = [0.1, 0.9]  # class 0: 0.1, class 1: 0.9
 
+    # test bce_loss without class weight
     loss_cfg = dict(
         type='CrossEntropyLoss',
         use_sigmoid=True,
         reduction='mean',
         loss_weight=1.0)
     loss = build_loss(loss_cfg)
-    assert torch.allclose(loss(cls_score, label), torch.tensor(50.))
+    assert torch.allclose(loss(cls_score, label), torch.tensor(300.))
     # test ce_loss with weight
     assert torch.allclose(
-        loss(cls_score, label, weight=weight), torch.tensor(25.))
+        loss(cls_score, label, weight=weight), torch.tensor(130.))
+
+    # test bce_loss with class weight
+    loss_cfg = dict(
+        type='CrossEntropyLoss',
+        use_sigmoid=True,
+        reduction='mean',
+        loss_weight=1.0,
+        class_weight=class_weight)
+    loss = build_loss(loss_cfg)
+    assert torch.allclose(loss(cls_score, label), torch.tensor(176.667))
+    # test bce_loss with weight
+    assert torch.allclose(
+        loss(cls_score, label, weight=weight), torch.tensor(74.333))
 
     # test soft_ce_loss
-    cls_score = torch.Tensor([[100, -100]])
-    label = torch.Tensor([[1, 0], [0, 1]])
-    weight = torch.tensor(0.5)
+    cls_score = torch.Tensor([[-1000, 1000], [100, -100]])
+    label = torch.Tensor([[1.0, 0.0], [0.0, 1.0]])
+    class_weight = [0.3, 0.7]  # class 0 : 0.3, class 1 : 0.7
+    weight = torch.tensor([0.6, 0.4])
 
+    # test soft_ce_loss without class weight
     loss_cfg = dict(
         type='CrossEntropyLoss',
         use_soft=True,
         reduction='mean',
         loss_weight=1.0)
     loss = build_loss(loss_cfg)
-    assert torch.allclose(loss(cls_score, label), torch.tensor(100.))
+    assert torch.allclose(loss(cls_score, label), torch.tensor(1100.))
     # test soft_ce_loss with weight
     assert torch.allclose(
-        loss(cls_score, label, weight=weight), torch.tensor(50.))
+        loss(cls_score, label, weight=weight), torch.tensor(640.))
+
+    # test soft_ce_loss with class weight
+    loss_cfg = dict(
+        type='CrossEntropyLoss',
+        use_soft=True,
+        reduction='mean',
+        loss_weight=1.0,
+        class_weight=class_weight)
+    loss = build_loss(loss_cfg)
+    assert torch.allclose(loss(cls_score, label), torch.tensor(370.))
+    # test soft_ce_loss with weight
+    assert torch.allclose(
+        loss(cls_score, label, weight=weight), torch.tensor(208.))
 
 
 def test_focal_loss():
@@ -206,3 +250,54 @@ def test_label_smooth_loss():
     assert torch.allclose(
         loss(cls_score, label, weight=weight),
         loss(cls_score, label) / 2)
+
+
+# migrate from mmdetection with modifications
+def test_seesaw_loss():
+    # only softmax version of Seesaw Loss is implemented
+    with pytest.raises(AssertionError):
+        loss_cfg = dict(type='SeesawLoss', use_sigmoid=True, loss_weight=1.0)
+        build_loss(loss_cfg)
+
+    # test that cls_score.size(-1) == num_classes
+    loss_cls_cfg = dict(
+        type='SeesawLoss', p=0.0, q=0.0, loss_weight=1.0, num_classes=2)
+    loss_cls = build_loss(loss_cls_cfg)
+    # the length of fake_pred should be num_classe = 4
+    with pytest.raises(AssertionError):
+        fake_pred = torch.Tensor([[-100, 100, -100]])
+        fake_label = torch.Tensor([1]).long()
+        loss_cls(fake_pred, fake_label)
+    # the length of fake_pred should be num_classes + 2 = 4
+    with pytest.raises(AssertionError):
+        fake_pred = torch.Tensor([[-100, 100, -100, 100]])
+        fake_label = torch.Tensor([1]).long()
+        loss_cls(fake_pred, fake_label)
+
+    # test the calculation without p and q
+    loss_cls_cfg = dict(
+        type='SeesawLoss', p=0.0, q=0.0, loss_weight=1.0, num_classes=2)
+    loss_cls = build_loss(loss_cls_cfg)
+    fake_pred = torch.Tensor([[-100, 100]])
+    fake_label = torch.Tensor([1]).long()
+    loss = loss_cls(fake_pred, fake_label)
+    assert torch.allclose(loss, torch.tensor(0.))
+
+    # test the calculation with p and without q
+    loss_cls_cfg = dict(
+        type='SeesawLoss', p=1.0, q=0.0, loss_weight=1.0, num_classes=2)
+    loss_cls = build_loss(loss_cls_cfg)
+    fake_pred = torch.Tensor([[-100, 100]])
+    fake_label = torch.Tensor([0]).long()
+    loss_cls.cum_samples[0] = torch.exp(torch.Tensor([20]))
+    loss = loss_cls(fake_pred, fake_label)
+    assert torch.allclose(loss, torch.tensor(180.))
+
+    # test the calculation with q and without p
+    loss_cls_cfg = dict(
+        type='SeesawLoss', p=0.0, q=1.0, loss_weight=1.0, num_classes=2)
+    loss_cls = build_loss(loss_cls_cfg)
+    fake_pred = torch.Tensor([[-100, 100]])
+    fake_label = torch.Tensor([0]).long()
+    loss = loss_cls(fake_pred, fake_label)
+    assert torch.allclose(loss, torch.tensor(200.) + torch.tensor(100.).log())

@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 import os.path as osp
+import warnings
 
 import mmcv
 from mmcv import DictAction
@@ -21,12 +22,32 @@ def parse_args():
         type=int,
         help='Number of images to select for success/fail')
     parser.add_argument(
+        '--cfg-options',
+        nargs='+',
+        action=DictAction,
+        help='override some settings in the used config, the key-value pair '
+        'in xxx=yyy format will be merged into config file. If the value to '
+        'be overwritten is a list, it should be like key="[a,b]" or key=a,b '
+        'It also allows nested list/tuple values, e.g. key="[(a,b),(c,d)]" '
+        'Note that the quotation marks are necessary and that no white space '
+        'is allowed.')
+    parser.add_argument(
         '--options',
         nargs='+',
         action=DictAction,
         help='override some settings in the used config, the key-value pair '
-        'in xxx=yyy format will be merged into config file.')
+        'in xxx=yyy format will be merged into config file (deprecate), '
+        'change to --cfg-options instead.')
     args = parser.parse_args()
+
+    if args.options and args.cfg_options:
+        raise ValueError(
+            '--options and --cfg-options cannot be both '
+            'specified, --options is deprecated in favor of --cfg-options')
+    if args.options:
+        warnings.warn('--options is deprecated in favor of --cfg-options')
+        args.cfg_options = args.options
+
     return args
 
 
@@ -46,9 +67,16 @@ def save_imgs(result_dir, folder_name, results, model):
 def main():
     args = parse_args()
 
+    # load test results
+    outputs = mmcv.load(args.result)
+    assert ('pred_score' in outputs and 'pred_class' in outputs
+            and 'pred_label' in outputs), \
+        'No "pred_label", "pred_score" or "pred_class" in result file, ' \
+        'please set "--out-items" in test.py'
+
     cfg = mmcv.Config.fromfile(args.config)
-    if args.options is not None:
-        cfg.merge_from_dict(args.options)
+    if args.cfg_options is not None:
+        cfg.merge_from_dict(args.cfg_options)
 
     model = build_classifier(cfg.model)
 
@@ -65,8 +93,6 @@ def main():
     gt_labels = list(dataset.get_gt_labels())
     gt_classes = [dataset.CLASSES[x] for x in gt_labels]
 
-    # load test results
-    outputs = mmcv.load(args.result)
     outputs['filename'] = filenames
     outputs['gt_label'] = gt_labels
     outputs['gt_class'] = gt_classes

@@ -21,7 +21,7 @@ class RegNet(ResNet):
             - wm (float): quantization parameter to quantize the width
             - depth (int): depth of the backbone
             - group_w (int): width of group
-            - bot_mul (float): bottleneck ratio, i.e. expansion of bottlneck.
+            - bot_mul (float): bottleneck ratio, i.e. expansion of bottleneck.
         strides (Sequence[int]): Strides of the first block of each stage.
         base_channels (int): Base channels after stem layer.
         in_channels (int): Number of input image channels. Default: 3.
@@ -309,7 +309,4 @@ class RegNet(ResNet):
             if i in self.out_indices:
                 outs.append(x)
 
-        if len(outs) == 1:
-            return outs[0]
-        else:
-            return tuple(outs)
+        return tuple(outs)

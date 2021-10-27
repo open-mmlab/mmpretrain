@@ -1,6 +1,3 @@
-API Reference
-=============
-
 mmcls.apis
 -------------
 .. automodule:: mmcls.apis
@@ -30,6 +27,11 @@ classifiers
 backbones
 ^^^^^^^^^^
 .. automodule:: mmcls.models.backbones
+    :members:
+
+heads
+^^^^^^^^^^
+.. automodule:: mmcls.models.heads
     :members:
 
 necks

@@ -10,8 +10,13 @@ Collections:
       Batch Size: 256
       Architecture:
         - ResNet
-    Paper: https://openaccess.thecvf.com/content_cvpr_2018/html/Hu_Squeeze-and-Excitation_Networks_CVPR_2018_paper.html
+    Paper:
+      URL: https://openaccess.thecvf.com/content_cvpr_2018/html/Hu_Squeeze-and-Excitation_Networks_CVPR_2018_paper.html
+      Title: "Squeeze-and-Excitation Networks"
     README: configs/seresnet/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.15.0/mmcls/models/backbones/seresnet.py#L58
+      Version: v0.15.0
 
 Models:
   - Name: seresnet50_b32x8_imagenet
@@ -26,7 +31,7 @@ Models:
           Top 5 Accuracy: 93.84
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet50_batch256_imagenet_20200804-ae206104.pth
-    Config: configs/seresnet50/seresnet50_b32x8_imagenet.py
+    Config: configs/seresnet/seresnet50_b32x8_imagenet.py
   - Name: seresnet101_b32x8_imagenet
     Metadata:
       FLOPs: 7860000000
@@ -39,4 +44,4 @@ Models:
           Top 5 Accuracy: 94.07
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet101_batch256_imagenet_20200804-ba5b51d4.pth
-    Config: configs/seresnet101/seresnet101_b32x8_imagenet.py
+    Config: configs/seresnet/seresnet101_b32x8_imagenet.py

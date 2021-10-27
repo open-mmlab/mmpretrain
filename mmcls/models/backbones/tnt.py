@@ -28,7 +28,7 @@ class TransformerBlock(BaseModule):
         drop_path_rate (float): stochastic depth rate. Default 0.
         num_fcs (int): The number of fully-connected layers for FFNs. Default 2
         qkv_bias (bool): Enable bias for qkv if True. Default False
-        act_cfg (dict): The activation config for FFNs. Defalut GELU
+        act_cfg (dict): The activation config for FFNs. Defaults to GELU.
         norm_cfg (dict): Config dict for normalization layer. Default
             layer normalization
         batch_first (bool): Key, Query and Value are shape of
@@ -222,7 +222,7 @@ class TNT(BaseBackbone):
         attn_drop_rate (float): The drop out rate for attention layer.
             Default 0.
         drop_path_rate (float): stochastic depth rate. Default 0.
-        act_cfg (dict): The activation config for FFNs. Defalut GELU
+        act_cfg (dict): The activation config for FFNs. Defaults to GELU.
         norm_cfg (dict): Config dict for normalization layer. Default
             layer normalization
         first_stride (int): The stride of the conv2d layer. We use a conv2d
@@ -364,4 +364,4 @@ class TNT(BaseBackbone):
             pixel_embed, patch_embed = layer(pixel_embed, patch_embed)
 
         patch_embed = self.norm(patch_embed)
-        return patch_embed[:, 0]
+        return (patch_embed[:, 0], )

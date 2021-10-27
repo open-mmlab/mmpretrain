@@ -2,6 +2,7 @@
 import argparse
 import os
 import warnings
+from numbers import Number
 
 import mmcv
 import numpy as np
@@ -28,6 +29,17 @@ def parse_args():
     parser.add_argument('config', help='test config file path')
     parser.add_argument('checkpoint', help='checkpoint file')
     parser.add_argument('--out', help='output result file')
+    out_options = ['class_scores', 'pred_score', 'pred_label', 'pred_class']
+    parser.add_argument(
+        '--out-items',
+        nargs='+',
+        default=['all'],
+        choices=out_options + ['none', 'all'],
+        help='Besides metrics, what items will be included in the output '
+        f'result file. You can choose some of ({", ".join(out_options)}), '
+        'or use "all" to include all above, or use "none" to disable all of '
+        'above. Defaults to output all.',
+        metavar='')
     parser.add_argument(
         '--metrics',
         type=str,
@@ -40,16 +52,27 @@ def parse_args():
     parser.add_argument(
         '--show-dir', help='directory where painted images will be saved')
     parser.add_argument(
-        '--gpu_collect',
+        '--gpu-collect',
         action='store_true',
         help='whether to use gpu to collect results')
     parser.add_argument('--tmpdir', help='tmp dir for writing some results')
+    parser.add_argument(
+        '--cfg-options',
+        nargs='+',
+        action=DictAction,
+        help='override some settings in the used config, the key-value pair '
+        'in xxx=yyy format will be merged into config file. If the value to '
+        'be overwritten is a list, it should be like key="[a,b]" or key=a,b '
+        'It also allows nested list/tuple values, e.g. key="[(a,b),(c,d)]" '
+        'Note that the quotation marks are necessary and that no white space '
+        'is allowed.')
     parser.add_argument(
         '--options',
         nargs='+',
         action=DictAction,
         help='override some settings in the used config, the key-value pair '
-        'in xxx=yyy format will be merged into config file.')
+        'in xxx=yyy format will be merged into config file (deprecate), '
+        'change to --cfg-options instead.')
     parser.add_argument(
         '--metric-options',
         nargs='+',
@@ -78,6 +101,15 @@ def parse_args():
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
+
+    if args.options and args.cfg_options:
+        raise ValueError(
+            '--options and --cfg-options cannot be both '
+            'specified, --options is deprecated in favor of --cfg-options')
+    if args.options:
+        warnings.warn('--options is deprecated in favor of --cfg-options')
+        args.cfg_options = args.options
+
     return args
 
 
@@ -85,8 +117,8 @@ def main():
     args = parse_args()
 
     cfg = mmcv.Config.fromfile(args.config)
-    if args.options is not None:
-        cfg.merge_from_dict(args.options)
+    if args.cfg_options is not None:
+        cfg.merge_from_dict(args.cfg_options)
     # set cudnn_benchmark
     if cfg.get('cudnn_benchmark', False):
         torch.backends.cudnn.benchmark = True
@@ -155,18 +187,30 @@ def main():
                                             args.metric_options)
             results.update(eval_results)
             for k, v in eval_results.items():
-                print(f'\n{k} : {v:.2f}')
+                if isinstance(v, np.ndarray):
+                    v = [round(out, 2) for out in v.tolist()]
+                elif isinstance(v, Number):
+                    v = round(v, 2)
+                else:
+                    raise ValueError(f'Unsupport metric type: {type(v)}')
+                print(f'\n{k} : {v}')
         if args.out:
-            scores = np.vstack(outputs)
-            pred_score = np.max(scores, axis=1)
-            pred_label = np.argmax(scores, axis=1)
-            pred_class = [CLASSES[lb] for lb in pred_label]
-            results.update({
-                'class_scores': scores,
-                'pred_score': pred_score,
-                'pred_label': pred_label,
-                'pred_class': pred_class
-            })
+            if 'none' not in args.out_items:
+                scores = np.vstack(outputs)
+                pred_score = np.max(scores, axis=1)
+                pred_label = np.argmax(scores, axis=1)
+                pred_class = [CLASSES[lb] for lb in pred_label]
+                res_items = {
+                    'class_scores': scores,
+                    'pred_score': pred_score,
+                    'pred_label': pred_label,
+                    'pred_class': pred_class
+                }
+                if 'all' in args.out_items:
+                    results.update(res_items)
+                else:
+                    for key in args.out_items:
+                        results[key] = res_items[key]
             print(f'\ndumping results to {args.out}')
             mmcv.dump(results, args.out)
 

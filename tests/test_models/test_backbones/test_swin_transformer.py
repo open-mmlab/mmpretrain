@@ -1,14 +1,17 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import os
+import tempfile
 from math import ceil
 
 import numpy as np
 import pytest
 import torch
+from mmcv.runner import load_checkpoint, save_checkpoint
 
 from mmcls.models.backbones import SwinTransformer
 
 
-def test_swin_transformer():
+def test_assertion():
     """Test Swin Transformer backbone."""
     with pytest.raises(AssertionError):
         # Swin Transformer arch string should be in
@@ -19,6 +22,8 @@ def test_swin_transformer():
         # 'depths' and 'num_head' keys.
         SwinTransformer(arch=dict(embed_dims=96, depths=[2, 2, 18, 2]))
 
+
+def test_forward():
     # Test tiny arch forward
     model = SwinTransformer(arch='Tiny')
     model.init_weights()
@@ -26,7 +31,8 @@ def test_swin_transformer():
 
     imgs = torch.randn(1, 3, 224, 224)
     output = model(imgs)
-    assert output.shape == (1, 768, 49)
+    assert len(output) == 1
+    assert output[0].shape == (1, 768, 7, 7)
 
     # Test small arch forward
     model = SwinTransformer(arch='small')
@@ -35,7 +41,8 @@ def test_swin_transformer():
 
     imgs = torch.randn(1, 3, 224, 224)
     output = model(imgs)
-    assert output.shape == (1, 768, 49)
+    assert len(output) == 1
+    assert output[0].shape == (1, 768, 7, 7)
 
     # Test base arch forward
     model = SwinTransformer(arch='B')
@@ -44,7 +51,8 @@ def test_swin_transformer():
 
     imgs = torch.randn(1, 3, 224, 224)
     output = model(imgs)
-    assert output.shape == (1, 1024, 49)
+    assert len(output) == 1
+    assert output[0].shape == (1, 1024, 7, 7)
 
     # Test large arch forward
     model = SwinTransformer(arch='l')
@@ -53,7 +61,8 @@ def test_swin_transformer():
 
     imgs = torch.randn(1, 3, 224, 224)
     output = model(imgs)
-    assert output.shape == (1, 1536, 49)
+    assert len(output) == 1
+    assert output[0].shape == (1, 1536, 7, 7)
 
     # Test base arch with window_size=12, image_size=384
     model = SwinTransformer(
@@ -65,19 +74,18 @@ def test_swin_transformer():
 
     imgs = torch.randn(1, 3, 384, 384)
     output = model(imgs)
-    assert output.shape == (1, 1024, 144)
+    assert len(output) == 1
+    assert output[0].shape == (1, 1024, 12, 12)
 
+
+def test_structure():
     # Test small with use_abs_pos_embed = True
     model = SwinTransformer(arch='small', use_abs_pos_embed=True)
-    model.init_weights()
-    model.train()
-
     assert model.absolute_pos_embed.shape == (1, 3136, 96)
 
     # Test small with use_abs_pos_embed = False
-    with pytest.raises(AttributeError):
-        model = SwinTransformer(arch='small', use_abs_pos_embed=False)
-        model.absolute_pos_embed
+    model = SwinTransformer(arch='small', use_abs_pos_embed=False)
+    assert not hasattr(model, 'absolute_pos_embed')
 
     # Test small with auto_pad = True
     model = SwinTransformer(
@@ -88,10 +96,6 @@ def test_swin_transformer():
             downsample_cfg={
                 'kernel_size': (3, 2),
             }))
-    model.init_weights()
-    model.train()
-
-    imgs = torch.randn(1, 3, 224, 224)
 
     # stage 1
     input_h = int(224 / 4 / 3)
@@ -143,3 +147,22 @@ def test_swin_transformer():
             assert np.isclose(block.ffn.dropout_layer.drop_prob, expect_prob)
             assert np.isclose(block.attn.drop.drop_prob, expect_prob)
             pos += 1
+
+
+def test_load_checkpoint():
+    model = SwinTransformer(arch='tiny')
+    ckpt_path = os.path.join(tempfile.gettempdir(), 'ckpt.pth')
+
+    assert model._version == 2
+
+    # test load v2 checkpoint
+    save_checkpoint(model, ckpt_path)
+    load_checkpoint(model, ckpt_path, strict=True)
+
+    # test load v1 checkpoint
+    setattr(model, 'norm', model.norm3)
+    model._version = 1
+    del model.norm3
+    save_checkpoint(model, ckpt_path)
+    model = SwinTransformer(arch='tiny')
+    load_checkpoint(model, ckpt_path, strict=True)
