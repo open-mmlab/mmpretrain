@@ -7,6 +7,7 @@ from .dataset_wrappers import (ClassBalancedDataset, ConcatDataset,
 from .imagenet import ImageNet
 from .mnist import MNIST, FashionMNIST
 from .multi_label import MultiLabelDataset
+from .pipelines import Compose
 from .samplers import DistributedSampler
 from .voc import VOC
 
