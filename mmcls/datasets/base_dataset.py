@@ -33,7 +33,6 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
                  ann_file=None,
                  test_mode=False):
         super(BaseDataset, self).__init__()
-
         self.ann_file = ann_file
         self.data_prefix = data_prefix
         self.test_mode = test_mode
