@@ -28,10 +28,10 @@ def check_norm_state(modules, train_state):
 def test_vit_backbone():
 
     cfg_ori = dict(
+        img_size=224,
+        in_channels=3,
+        embed_dims=384,
         t2t_cfg=dict(
-            img_size=224,
-            in_channels=3,
-            embed_dims=384,
             token_dims=64,
             use_performer=False,
         ),
@@ -66,7 +66,7 @@ def test_vit_backbone():
 
     # Test custom arch T2T-ViT without output cls token
     cfg = deepcopy(cfg_ori)
-    cfg['t2t_cfg']['embed_dims'] = 256
+    cfg['embed_dims'] = 256
     cfg['num_layers'] = 16
     cfg['layer_cfgs'] = dict(num_heads=8, feedforward_channels=1024)
     cfg['output_cls_token'] = False
