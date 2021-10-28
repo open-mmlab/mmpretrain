@@ -196,6 +196,18 @@ class T2TModule(BaseModule):
 
 
 def get_sinusoid_encoding(n_position, embed_dims):
+    """Generate sinusoid encoding table.
+
+    Sinusoid encoding is a kind of relative position encoding method came from
+    `Attention Is All You Need<https://arxiv.org/abs/1706.03762>`_.
+
+    Args:
+        n_position (int): The length of the input token.
+        embed_dims (int): The position embedding dimension.
+
+    Returns:
+        :obj:`torch.FloatTensor`: The sinusoid encoding table.
+    """
 
     def get_position_angle_vec(position):
         return [
@@ -215,8 +227,8 @@ def get_sinusoid_encoding(n_position, embed_dims):
 class T2T_ViT(BaseBackbone):
     """Tokens-to-Token Vision Transformer (T2T-ViT)
 
-    A PyTorch impl of : `Tokens-to-Token ViT: Training Vision Transformers
-    from Scratch on ImageNet<https://arxiv.org/abs/2101.11986>`_
+    A PyTorch implementation of `Tokens-to-Token ViT: Training Vision
+    Transformers from Scratch on ImageNet<https://arxiv.org/abs/2101.11986>`_
 
     Args:
         img_size (int): Input image size.
