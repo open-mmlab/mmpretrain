@@ -1,8 +1,7 @@
-from functools import partial
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from mmcv.cnn import build_activation_layer, build_norm_layer
 from mmcv.cnn.bricks.drop import DropPath
 from mmcv.cnn.utils.weight_init import trunc_normal_
 from mmcv.runner import load_checkpoint
@@ -16,29 +15,29 @@ from .vision_transformer import TransformerEncoderLayer
 class ConvBlock(nn.Module):
 
     def __init__(self,
-                 inplanes,
-                 outplanes,
+                 in_channels,
+                 out_channels,
                  stride=1,
                  res_conv=False,
-                 act_layer=nn.ReLU,
                  groups=1,
-                 norm_layer=partial(nn.BatchNorm2d, eps=1e-6),
                  drop_block=None,
-                 drop_path=0.):
+                 drop_path=0.,
+                 norm_cfg=dict(type='BN', eps=1e-6),
+                 act_cfg=dict(type='ReLU', inplace=True)):
         super(ConvBlock, self).__init__()
 
         expansion = 4
-        med_planes = outplanes // expansion
+        med_planes = out_channels // expansion
 
         self.conv1 = nn.Conv2d(
-            inplanes,
+            in_channels,
             med_planes,
             kernel_size=1,
             stride=1,
             padding=0,
             bias=False)
-        self.bn1 = norm_layer(med_planes)
-        self.act1 = act_layer(inplace=True)
+        self.bn1 = build_norm_layer(norm_cfg, med_planes)[1]
+        self.act1 = build_activation_layer(act_cfg)
 
         self.conv2 = nn.Conv2d(
             med_planes,
@@ -48,28 +47,28 @@ class ConvBlock(nn.Module):
             groups=groups,
             padding=1,
             bias=False)
-        self.bn2 = norm_layer(med_planes)
-        self.act2 = act_layer(inplace=True)
+        self.bn2 = build_norm_layer(norm_cfg, med_planes)[1]
+        self.act2 = build_activation_layer(act_cfg)
 
         self.conv3 = nn.Conv2d(
             med_planes,
-            outplanes,
+            out_channels,
             kernel_size=1,
             stride=1,
             padding=0,
             bias=False)
-        self.bn3 = norm_layer(outplanes)
-        self.act3 = act_layer(inplace=True)
+        self.bn3 = build_norm_layer(norm_cfg, out_channels)[1]
+        self.act3 = build_activation_layer(act_cfg)
 
         if res_conv:
             self.residual_conv = nn.Conv2d(
-                inplanes,
-                outplanes,
+                in_channels,
+                out_channels,
                 kernel_size=1,
                 stride=stride,
                 padding=0,
                 bias=False)
-            self.residual_bn = norm_layer(outplanes)
+            self.residual_bn = build_norm_layer(norm_cfg, out_channels)[1]
 
         self.res_conv = res_conv
         self.drop_block = drop_block
@@ -79,7 +78,7 @@ class ConvBlock(nn.Module):
     def zero_init_last_bn(self):
         nn.init.zeros_(self.bn3.weight)
 
-    def forward(self, x, x_t=None, return_x_2=True):
+    def forward(self, x, fusion_features=None, out_conv2=True):
         residual = x
 
         x = self.conv1(x)
@@ -88,7 +87,8 @@ class ConvBlock(nn.Module):
             x = self.drop_block(x)
         x = self.act1(x)
 
-        x = self.conv2(x) if x_t is None else self.conv2(x + x_t)
+        x = self.conv2(x) if fusion_features is None else self.conv2(
+            x + fusion_features)
         x = self.bn2(x)
         if self.drop_block is not None:
             x = self.drop_block(x)
@@ -109,7 +109,7 @@ class ConvBlock(nn.Module):
         x += residual
         x = self.act3(x)
 
-        if return_x_2:
+        if out_conv2:
             return x, x2
         else:
             return x
@@ -119,23 +119,23 @@ class FCUDown(nn.Module):
     """CNN feature maps -> Transformer patch embeddings."""
 
     def __init__(self,
-                 inplanes,
-                 outplanes,
+                 in_channels,
+                 out_channels,
                  dw_stride,
-                 act_layer=nn.GELU,
-                 norm_layer=partial(nn.LayerNorm, eps=1e-6),
-                 cls_token=True):
+                 cls_token=True,
+                 norm_cfg=dict(type='LN', eps=1e-6),
+                 act_cfg=dict(type='GELU')):
         super(FCUDown, self).__init__()
         self.dw_stride = dw_stride
         self.cls_token = cls_token
 
         self.conv_project = nn.Conv2d(
-            inplanes, outplanes, kernel_size=1, stride=1, padding=0)
+            in_channels, out_channels, kernel_size=1, stride=1, padding=0)
         self.sample_pooling = nn.AvgPool2d(
             kernel_size=dw_stride, stride=dw_stride)
 
-        self.ln = norm_layer(outplanes)
-        self.act = act_layer()
+        self.ln = build_norm_layer(norm_cfg, out_channels)[1]
+        self.act = build_activation_layer(act_cfg)
 
     def forward(self, x, x_t):
         x = self.conv_project(x)  # [N, C, H, W]
@@ -154,21 +154,21 @@ class FCUUp(nn.Module):
     """Transformer patch embeddings -> CNN feature maps."""
 
     def __init__(self,
-                 inplanes,
-                 outplanes,
+                 in_channels,
+                 out_channels,
                  up_stride,
-                 act_layer=nn.ReLU,
-                 norm_layer=partial(nn.BatchNorm2d, eps=1e-6),
-                 cls_token=True):
+                 cls_token=True,
+                 norm_cfg=dict(type='BN', eps=1e-6),
+                 act_cfg=dict(type='ReLU', inplace=True)):
         super(FCUUp, self).__init__()
 
         self.up_stride = up_stride
         self.cls_token = cls_token
 
         self.conv_project = nn.Conv2d(
-            inplanes, outplanes, kernel_size=1, stride=1, padding=0)
-        self.bn = norm_layer(outplanes)
-        self.act = act_layer()
+            in_channels, out_channels, kernel_size=1, stride=1, padding=0)
+        self.bn = build_norm_layer(norm_cfg, out_channels)[1]
+        self.act = build_activation_layer(act_cfg)
 
     def forward(self, x, H, W):
         B, _, C = x.shape
@@ -189,8 +189,8 @@ class ConvTransBlock(nn.Module):
     embeddings for transformer encoder block."""
 
     def __init__(self,
-                 inplanes,
-                 outplanes,
+                 in_channels,
+                 out_channels,
                  res_conv,
                  stride,
                  dw_stride,
@@ -209,24 +209,24 @@ class ConvTransBlock(nn.Module):
         super(ConvTransBlock, self).__init__()
         expansion = 4
         self.cnn_block = ConvBlock(
-            inplanes=inplanes,
-            outplanes=outplanes,
+            in_channels=in_channels,
+            out_channels=out_channels,
             res_conv=res_conv,
             stride=stride,
             groups=groups)
 
         if last_fusion:
             self.fusion_block = ConvBlock(
-                inplanes=outplanes,
-                outplanes=outplanes,
+                in_channels=out_channels,
+                out_channels=out_channels,
                 stride=2,
                 res_conv=True,
                 groups=groups,
                 drop_path=drop_path_rate)
         else:
             self.fusion_block = ConvBlock(
-                inplanes=outplanes,
-                outplanes=outplanes,
+                in_channels=out_channels,
+                out_channels=out_channels,
                 groups=groups,
                 drop_path=drop_path_rate)
 
@@ -234,14 +234,14 @@ class ConvTransBlock(nn.Module):
             raise NotImplementedError
 
         self.squeeze_block = FCUDown(
-            inplanes=outplanes // expansion,
-            outplanes=embed_dim,
+            in_channels=out_channels // expansion,
+            out_channels=embed_dim,
             dw_stride=dw_stride,
             cls_token=cls_token)
 
         self.expand_block = FCUUp(
-            inplanes=embed_dim,
-            outplanes=outplanes // expansion,
+            in_channels=embed_dim,
+            out_channels=out_channels // expansion,
             up_stride=dw_stride,
             cls_token=cls_token)
 
@@ -261,21 +261,21 @@ class ConvTransBlock(nn.Module):
         self.last_fusion = last_fusion
 
     def forward(self, x, x_t):
-        x, x2 = self.cnn_block(x)
+        x, x_conv2 = self.cnn_block(x)
 
-        _, _, H, W = x2.shape
+        _, _, H, W = x_conv2.shape
 
-        x_st = self.squeeze_block(x2, x_t)
+        x_conv2_emd = self.squeeze_block(x_conv2, x_t)
 
-        x_t = self.trans_block(x_st + x_t)
+        x_t = self.trans_block(x_conv2_emd + x_t)
 
         if self.num_med_block > 0:
             for m in self.med_block:
                 x = m(x)
 
-        x_t_r = self.expand_block(x_t, H // self.dw_stride,
-                                  W // self.dw_stride)
-        x = self.fusion_block(x, x_t_r, return_x_2=False)
+        x_t_fea = self.expand_block(x_t, H // self.dw_stride,
+                                    W // self.dw_stride)
+        x = self.fusion_block(x, fusion_features=x_t_fea, out_conv2=False)
 
         return x, x_t
 
@@ -368,7 +368,10 @@ class Conformer(BaseBackbone):
         stage_1_channel = int(base_channel * self.channel_ratio)
         trans_dw_stride = patch_size // 4
         self.conv_1 = ConvBlock(
-            inplanes=64, outplanes=stage_1_channel, res_conv=True, stride=1)
+            in_channels=64,
+            out_channels=stage_1_channel,
+            res_conv=True,
+            stride=1)
         self.trans_patch_conv = nn.Conv2d(
             64,
             self.embed_dims,
@@ -508,7 +511,7 @@ class Conformer(BaseBackbone):
         x_base = self.maxpool(self.act1(self.bn1(self.conv1(x))))
 
         # 1 stage [N, 64, 56, 56] -> [N, 128, 56, 56]
-        x = self.conv_1(x_base, return_x_2=False)
+        x = self.conv_1(x_base, out_conv2=False)
         x_t = self.trans_patch_conv(x_base).flatten(2).transpose(1, 2)
         if self.cls_token_flag:
             x_t = torch.cat([cls_tokens, x_t], dim=1)
