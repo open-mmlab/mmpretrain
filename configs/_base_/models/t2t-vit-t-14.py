@@ -6,10 +6,10 @@ model = dict(
     type='ImageClassifier',
     backbone=dict(
         type='T2T_ViT',
+        img_size=224,
+        in_channels=3,
+        embed_dims=embed_dims,
         t2t_cfg=dict(
-            img_size=224,
-            in_channels=3,
-            embed_dims=embed_dims,
             token_dims=64,
             use_performer=False,
         ),

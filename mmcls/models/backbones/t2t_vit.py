@@ -219,7 +219,11 @@ class T2T_ViT(BaseBackbone):
     from Scratch on ImageNet<https://arxiv.org/abs/2101.11986>`_
 
     Args:
-        t2t_cfg (dict): Config of Tokens-to-Token module.
+        img_size (int): Input image size.
+        in_channels (int): Number of input channels.
+        embed_dims (int): Embedding dimension.
+        t2t_cfg (dict): Extra config of Tokens-to-Token module.
+            Defaults to an empty dict.
         drop_rate (float): Dropout rate after position embedding.
             Defaults to 0.
         num_layers (int): Num of transformer layers in encoder.
@@ -240,6 +244,9 @@ class T2T_ViT(BaseBackbone):
     """
 
     def __init__(self,
+                 img_size=224,
+                 in_channels=3,
+                 embed_dims=384,
                  t2t_cfg=dict(),
                  drop_rate=0.,
                  num_layers=14,
@@ -253,9 +260,12 @@ class T2T_ViT(BaseBackbone):
         super(T2T_ViT, self).__init__(init_cfg)
 
         # Token-to-Token Module
-        self.tokens_to_token = T2TModule(**t2t_cfg)
+        self.tokens_to_token = T2TModule(
+            img_size=img_size,
+            in_channels=in_channels,
+            embed_dims=embed_dims,
+            **t2t_cfg)
         num_patches = self.tokens_to_token.num_patches
-        embed_dims = self.tokens_to_token.embed_dims
 
         # Class token
         self.output_cls_token = output_cls_token
