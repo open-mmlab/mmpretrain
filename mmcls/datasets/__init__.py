@@ -7,13 +7,12 @@ from .dataset_wrappers import (ClassBalancedDataset, ConcatDataset,
 from .imagenet import ImageNet
 from .mnist import MNIST, FashionMNIST
 from .multi_label import MultiLabelDataset
-from .pipelines import Compose
 from .samplers import DistributedSampler
 from .voc import VOC
 
 __all__ = [
     'BaseDataset', 'ImageNet', 'CIFAR10', 'CIFAR100', 'MNIST', 'FashionMNIST',
-    'VOC', 'MultiLabelDataset', 'build_dataloader', 'build_dataset', 'Compose',
+    'VOC', 'MultiLabelDataset', 'build_dataloader', 'build_dataset',
     'DistributedSampler', 'ConcatDataset', 'RepeatDataset',
     'ClassBalancedDataset', 'DATASETS', 'PIPELINES'
 ]
