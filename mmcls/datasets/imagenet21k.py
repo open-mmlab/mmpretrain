@@ -54,7 +54,7 @@ class ImageNet21k(BaseDataset):
 
     def __init__(self,
                  data_prefix,
-                 pipeline=[],
+                 pipeline,
                  classes=None,
                  ann_file=None,
                  multi_label=False,
