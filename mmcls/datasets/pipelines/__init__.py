@@ -8,7 +8,7 @@ from .formatting import (Collect, ImageToTensor, ToNumpy, ToPIL, ToTensor,
                          Transpose, to_tensor)
 from .loading import LoadImageFromFile
 from .transforms import (CenterCrop, ColorJitter, Lighting, RandomCrop,
-                         RandomErasing, RandomFlip, RandomGrayscale,
+                         RandomErasing, RandomFlip, Normalize, RandomGrayscale,
                          RandomResizedCrop, Resize)
 
 __all__ = [
