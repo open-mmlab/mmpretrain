@@ -12,3 +12,4 @@ Import:
   - configs/repvgg/metafile.yml
   - configs/tnt/metafile.yml
   - configs/vision_transformer/metafile.yml
+  - configs/t2t_vit/metafile.yml

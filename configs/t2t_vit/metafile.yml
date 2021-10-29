@@ -1,0 +1,64 @@
+Collections:
+  - Name: Tokens-to-Token ViT
+    Metadata:
+      Training Data: ImageNet-1k
+      Architecture:
+        - Layer Normalization
+        - Scaled Dot-Product Attention
+        - Attention Dropout
+        - Dropout
+        - Tokens to Token
+    Paper:
+      URL: https://arxiv.org/abs/2101.11986
+      Title: "Tokens-to-Token ViT: Training Vision Transformers from Scratch on ImageNet"
+    README: configs/t2t_vit/README.md
+
+Models:
+  - Name: t2t-vit-t-14_3rdparty_8xb64_in1k
+    Metadata:
+      FLOPs: 4340000000
+      Parameters: 21470000
+    In Collection: Tokens-to-Token ViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 81.69
+          Top 5 Accuracy: 95.85
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/t2t-vit/t2t-vit-t-14_3rdparty_8xb64_in1k_20210928-b7c09b62.pth
+    Converted From:
+      Weights: https://github.com/yitu-opensource/T2T-ViT/releases/download/main/81.7_T2T_ViTt_14.pth.tar
+      Code: https://github.com/yitu-opensource/T2T-ViT/blob/main/models/t2t_vit.py#L243
+    Config: configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py
+  - Name: t2t-vit-t-19_3rdparty_8xb64_in1k
+    Metadata:
+      FLOPs: 7800000000
+      Parameters: 39080000
+    In Collection: Tokens-to-Token ViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 82.43
+          Top 5 Accuracy: 96.08
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/t2t-vit/t2t-vit-t-19_3rdparty_8xb64_in1k_20210928-7f1478d5.pth
+    Converted From:
+      Weights: https://github.com/yitu-opensource/T2T-ViT/releases/download/main/82.4_T2T_ViTt_19.pth.tar
+      Code: https://github.com/yitu-opensource/T2T-ViT/blob/main/models/t2t_vit.py#L254
+    Config: configs/t2t_vit/t2t-vit-t-19_8xb64_in1k.py
+  - Name: t2t-vit-t-24_3rdparty_8xb64_in1k
+    Metadata:
+      FLOPs: 12690000000
+      Parameters: 64000000
+    In Collection: Tokens-to-Token ViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 82.55
+          Top 5 Accuracy: 96.06
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/t2t-vit/t2t-vit-t-24_3rdparty_8xb64_in1k_20210928-fe95a61b.pth
+    Converted From:
+      Weights: https://github.com/yitu-opensource/T2T-ViT/releases/download/main/82.6_T2T_ViTt_24.pth.tar
+      Code: https://github.com/yitu-opensource/T2T-ViT/blob/main/models/t2t_vit.py#L265
+    Config: configs/t2t_vit/t2t-vit-t-24_8xb64_in1k.py

@@ -31,8 +31,14 @@ This project is released under the [Apache 2.0 license](LICENSE).
 
 ## Changelog
 
-v0.16.0 was released in 30/9/2021.
-Please refer to [changelog.md](docs/changelog.md) for details and release history.
+v0.17.0 was released in 29/10/2021.
+
+Highlights of the new version:
+- Support **Tokens-to-Token ViT** backbone and **Res2Net** backbone. Welcome to use!
+- Support **ImageNet21k** dataset.
+- Add a **pipeline visualization** tool. Try it with the [tutorials](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#pipeline-visualization)!
+
+Please refer to [changelog.md](docs/changelog.md) for more details and other release history.
 
 ## Benchmark and model zoo
 
