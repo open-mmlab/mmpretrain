@@ -1,5 +1,42 @@
 # Changelog
 
+## v0.17.0(29/10/2021)
+
+### Highlights
+
+- Support Tokens-to-Token ViT backbone and Res2Net backbone. Welcome to use!
+- Support ImageNet21k dataset.
+- Add a pipeline visualization tool. Try it with the [tutorials](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#pipeline-visualization)!
+
+### New Features
+
+- Add Tokens-to-Token ViT backbone and converted checkpoints. ([#467](https://github.com/open-mmlab/mmclassification/pull/467))
+- Add Res2Net backbone and converted weights. ([#465](https://github.com/open-mmlab/mmclassification/pull/465))
+- Support ImageNet21k dataset. ([#461](https://github.com/open-mmlab/mmclassification/pull/461))
+- Support seesaw loss. ([#500](https://github.com/open-mmlab/mmclassification/pull/500))
+- Add a pipeline visualization tool. ([#406](https://github.com/open-mmlab/mmclassification/pull/406))
+- Add a tool to find broken files. ([#482](https://github.com/open-mmlab/mmclassification/pull/482))
+- Add a tool to test TorchServe. ([#468](https://github.com/open-mmlab/mmclassification/pull/468))
+
+### Improvements
+
+- Refator Vision Transformer. ([#395](https://github.com/open-mmlab/mmclassification/pull/395))
+- Use context manager to reuse matplotlib figures. ([#432](https://github.com/open-mmlab/mmclassification/pull/432))
+
+### Bug Fixes
+
+- Remove `DistSamplerSeedHook` if use `IterBasedRunner`. ([#501](https://github.com/open-mmlab/mmclassification/pull/501))
+- Set the priority of `EvalHook` to "LOW" to avoid a bug when using `IterBasedRunner`. ([#488](https://github.com/open-mmlab/mmclassification/pull/488))
+- Fix a wrong parameter of `get_root_logger` in `apis/train.py`. ([#486](https://github.com/open-mmlab/mmclassification/pull/486))
+- Fix version check in dataset builder. ([#474](https://github.com/open-mmlab/mmclassification/pull/474))
+
+### Docs Update
+
+- Add English Colab tutorials and update Chinese Colab tutorials. ([#483](https://github.com/open-mmlab/mmclassification/pull/483), [#497](https://github.com/open-mmlab/mmclassification/pull/497))
+- Add tutuorial for config files. ([#487](https://github.com/open-mmlab/mmclassification/pull/487))
+- Add model-pages in Model Zoo. ([#480](https://github.com/open-mmlab/mmclassification/pull/480))
+- Add code-spell pre-commit hook and fix a large mount of typos. ([#470](https://github.com/open-mmlab/mmclassification/pull/470))
+
 ## v0.16.0(30/9/2021)
 
 ### Highlights
