@@ -317,8 +317,6 @@ class Conformer(BaseBackbone):
                  norm_eval=True,
                  frozen_stages=0,
                  out_indices=(12, ),
-                 norm_cfg=dict(),
-                 stage_cfgs=dict(),
                  init_cfg=None):
 
         # Transformer
