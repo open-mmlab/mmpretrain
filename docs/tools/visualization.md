@@ -83,7 +83,9 @@ python ./tools/visualizations/vis_pipeline.py configs/resnet/resnet50_b16x8_cifa
 ```bash
 python tools/visualizations/vis_lr.py \
     ${CONFIG_FILE} \
-    --work-dir ${WORK_DIR} \
+    --dataset-size ${DATASET_SIZE} \
+    --ngpus ${NUM_GPUs}
+    --save-path ${SAVE_PATH} \
     --title ${TITLE} \
     --style ${STYLE} \
     --window-size ${WINDOW_SIZE}
@@ -93,28 +95,28 @@ python tools/visualizations/vis_lr.py \
 **Description of all arguments**：
 
 - `config` :  The path of a model config file.
+- `dataset-size` : The size of the datasets. If set，`build_dataset` will be skipped and `${DATASET_SIZE}` will be used as the size. Default to use the function `build_dataset`.
+- `ngpus` : The number of GPUs will be used in training, default to be 1.
+- `save-path` : The learning rate curve plot save path, default not to save.
 - `title` : Title of figure. If not set, default to be config file name.
 - `style` : Style of plt. If not set, default to be `whitegrid`.
-- `--window-size`: The shape of the display window. If not specified, it will be set to `12*7`. If used, it must be in the format `'W*H'`.
+- `window-size`: The shape of the display window. If not specified, it will be set to `12*7`. If used, it must be in the format `'W*H'`.
 - `cfg-options` : Modifications to the configuration file,refer to [DOC](https://mmclassification.readthedocs.io/en/latest/)。
 
 ```{note}
-
-After running the tool, {timestamp}.log, {timestamp}.log.josn and {timestamp}.png are generated under $WORK_DIR/{config_basename}, which are the saved learning rate log, learning rate structured data and learning rate curve.
+Loading annotations maybe consume much time,you can directly specify the size of the dataset with `dataset-size` to save time.
 ```
 
 **Examples**：
 
 ```bash
-
 python tools/visualizations/vis_lr.py configs/resnet/resnet50_b16x8_cifar100.py
 ```
 
-Use a smaller `log_config.interval` to draw a more meticulous curve :
+When using Imganet, directly specify the size of the data set and save the picture, as below:
 
 ```bash
-
-python tools/visualizations/vis_lr.py configs/resnet/resnet50_b16x8_cifar100.py --cfg-option log_config.interval=10
+python tools/visualizations/vis_lr.py configs/swin_transformer/swin_base_384_evalonly_imagenet.py --dataset-size 1100000 --save-path ./swin_lr_polt.jpg
 ```
 
 ## FAQs

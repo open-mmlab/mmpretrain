@@ -180,7 +180,6 @@ def parse_args():
         type=int,
         default=1,
         help='the number of GPUs will be used in training.')
-    parser.add_argument('--work-dir', help='the dir to save log and picture')
     parser.add_argument('--title', type=str, help='title of figure')
     parser.add_argument(
         '--style', type=str, default='whitegrid', help='style of plt')

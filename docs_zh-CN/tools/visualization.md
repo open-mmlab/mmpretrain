@@ -84,7 +84,9 @@ python ./tools/visualizations/vis_pipeline.py configs/resnet/resnet50_b16x8_cifa
 ```bash
 python tools/visualizations/vis_lr.py \
     ${CONFIG_FILE} \
-    --work-dir ${WORK_DIR} \
+    --dataset-size ${Dataset_Size} \
+    --ngpus ${NUM_GPUs}
+    --save-path ${SAVE_PATH} \
     --title ${TITLE} \
     --style ${STYLE} \
     --window-size ${WINDOW_SIZE}
@@ -94,29 +96,30 @@ python tools/visualizations/vis_lr.py \
 **所有参数的说明**：
 
 - `config` : 模型配置文件的路径。
+- `dataset-size` : 数据集的大小。如果指定，`build_dataset` 将被跳过并使用这个大小作为数据集大小，默认使用 `build_dataset` 所得数据集的大小。
+- `ngpus` : 使用 GPU 的数量。
+- `save-path` : 保存的可视化图片的路径，默认不保存。
 - `title` : 可视化图片的标题，默认为配置文件名。
 - `style` : 可视化图片的风格，默认为 `whitegrid`。
-- `--window-size`: 可视化窗口大小，如果没有指定，默认为 `12*7`。如果需要指定，按照格式 `'W*H'`。
+- `window-size`: 可视化窗口大小，如果没有指定，默认为 `12*7`。如果需要指定，按照格式 `'W*H'`。
 - `cfg-options` : 对配置文件的修改，参考[教程](https://mmclassification.readthedocs.io/zh_CN/latest/)。
 
 ```{note}
 
-1. 工具运行完成后，在 $WORK_DIR/{config_basename} 下产生 {timestamp}.log、 {timestamp}.log.json 和 {timestamp}.png，分别为保存的学习率变化日志，学习率变化结构化数据以及学习率曲线。
+部分数据集在解析标注阶段比较耗时，可直接将 `dataset-size` 指定数据集的大小，以节约时间。
 
 ```
 
 **示例**：
 
 ```bash
-
 python tools/visualizations/vis_lr.py configs/resnet/resnet50_b16x8_cifar100.py
 ```
 
-使用更小的 `log_config.interval` 可以绘制更精细的学习率变化曲线：
+当数据集为 Imganet 时，通过直接指定数据集大小来节约时间，并保存图片：
 
 ```bash
-
-python tools/visualizations/vis_lr.py configs/resnet/resnet50_b16x8_cifar100.py --cfg-option log_config.interval=10
+python tools/visualizations/vis_lr.py configs/swin_transformer/swin_base_384_evalonly_imagenet.py --dataset-size 1100000 --save-path ./swin_lr_polt.jpg
 ```
 
 ## 常见问题
