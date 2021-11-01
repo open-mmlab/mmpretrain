@@ -2,50 +2,198 @@ import argparse
 import os.path as osp
 import re
 import time
-from unittest.mock import MagicMock
+from pathlib import Path
+from pprint import pformat
 
 import matplotlib.pyplot as plt
-import mmcv.parallel.collate
-import numpy as np
-import seaborn as sns
+import mmcv
 import torch.nn as nn
-from mmcv import Config, DictAction
-from mmcv.runner import EpochBasedRunner, OptimizerHook
+from mmcv import Config, DictAction, ProgressBar
+from mmcv.runner import (EpochBasedRunner, IterBasedRunner, IterLoader,
+                         build_optimizer)
+from torch.utils.data import DataLoader
 
-from mmcls.utils import get_root_logger, load_json_logs
+from mmcls.utils import get_root_logger
 
 
-def mock_time_consuming_functions():
-    """In order to speed up, mock the functions that takes much time."""
-    # mock function sleep in tain if runner
-    time.sleep = MagicMock()
-    # skip function log hook info
-    EpochBasedRunner.get_hook_info = MagicMock(return_value='')
-    # mock function collate in dataloader
-    mmcv.parallel.collate = MagicMock(return_value=dict())
-    # skip  function loss.backward
-    OptimizerHook.after_train_iter = MagicMock()
+class DummyEpochBasedRunner(EpochBasedRunner):
+    """Fake Epoch-based Runner.
+
+    This runner won't train model, and it will only call hooks and return all
+    learning rate in each iteration.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.progress_bar = ProgressBar(self._max_epochs, start=False)
+
+    def train(self, data_loader, **kwargs):
+        lr_list = []
+        self.model.train()
+        self.mode = 'train'
+        self.data_loader = data_loader
+        self._max_iters = self._max_epochs * len(self.data_loader)
+        self.call_hook('before_train_epoch')
+        for i in range(len(self.data_loader)):
+            self._inner_iter = i
+            self.call_hook('before_train_iter')
+            lr_list.append(self.current_lr())
+            self.call_hook('after_train_iter')
+            self._iter += 1
+
+        self.call_hook('after_train_epoch')
+        self._epoch += 1
+        self.progress_bar.update(1)
+        return lr_list
+
+    def val(self, data_loader, **kwargs):
+        return []
+
+    def run(self, data_loaders, workflow, **kwargs):
+        assert isinstance(data_loaders, list)
+        assert mmcv.is_list_of(workflow, tuple)
+        assert len(data_loaders) == len(workflow)
+
+        assert self._max_epochs is not None, (
+            'max_epochs must be specified during instantiation')
+
+        for i, flow in enumerate(workflow):
+            mode, epochs = flow
+            if mode == 'train':
+                self._max_iters = self._max_epochs * len(data_loaders[i])
+                break
+
+        self.logger.info('workflow: %s, max: %d epochs', workflow,
+                         self._max_epochs)
+        self.call_hook('before_run')
+
+        self.progress_bar.start()
+        lr_list = []
+        while self.epoch < self._max_epochs:
+            for i, flow in enumerate(workflow):
+                mode, epochs = flow
+                if isinstance(mode, str):  # self.train()
+                    if not hasattr(self, mode):
+                        raise ValueError(
+                            f'runner has no method named "{mode}" to run an '
+                            'epoch')
+                    epoch_runner = getattr(self, mode)
+                else:
+                    raise TypeError(
+                        'mode in workflow must be a str, but got {}'.format(
+                            type(mode)))
+
+                for _ in range(epochs):
+                    if mode == 'train' and self.epoch >= self._max_epochs:
+                        break
+                    lr_list.extend(epoch_runner(data_loaders[i], **kwargs))
+
+        self.progress_bar.file.write('\n')
+        time.sleep(1)  # wait for some hooks like loggers to finish
+        self.call_hook('after_run')
+        return lr_list
+
+
+class DummyIterBasedRunner(IterBasedRunner):
+    """Fake Iter-based Runner.
+
+    This runner won't train model, and it will only call hooks and return all
+    learning rate in each iteration.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.progress_bar = ProgressBar(self._max_iters, start=False)
+
+    def train(self, data_loader, **kwargs):
+        lr_list = []
+        self.model.train()
+        self.mode = 'train'
+        self.data_loader = data_loader
+        self._epoch = data_loader.epoch
+        next(data_loader)
+        self.call_hook('before_train_iter')
+        lr_list.append(self.current_lr())
+        self.call_hook('after_train_iter')
+        self._inner_iter += 1
+        self._iter += 1
+        self.progress_bar.update(1)
+        return lr_list
+
+    def val(self, data_loader, **kwargs):
+        return []
+
+    def run(self, data_loaders, workflow, **kwargs):
+        assert isinstance(data_loaders, list)
+        assert mmcv.is_list_of(workflow, tuple)
+        assert len(data_loaders) == len(workflow)
+        assert self._max_iters is not None, (
+            'max_iters must be specified during instantiation')
+
+        self.logger.info('workflow: %s, max: %d iters', workflow,
+                         self._max_iters)
+        self.call_hook('before_run')
+
+        iter_loaders = [IterLoader(x) for x in data_loaders]
+
+        self.call_hook('before_epoch')
+
+        self.progress_bar.start()
+        lr_list = []
+        while self.iter < self._max_iters:
+            for i, flow in enumerate(workflow):
+                self._inner_iter = 0
+                mode, iters = flow
+                if not isinstance(mode, str) or not hasattr(self, mode):
+                    raise ValueError(
+                        'runner has no method named "{}" to run a workflow'.
+                        format(mode))
+                iter_runner = getattr(self, mode)
+                for _ in range(iters):
+                    if mode == 'train' and self.iter >= self._max_iters:
+                        break
+                    lr_list.extend(iter_runner(iter_loaders[i], **kwargs))
+
+        self.progress_bar.file.write('\n')
+        time.sleep(1)  # wait for some hooks like loggers to finish
+        self.call_hook('after_epoch')
+        self.call_hook('after_run')
+        return lr_list
 
 
 class SimpleModel(nn.Module):
     """simple model that do nothing in train_step."""
 
-    def __init__(self, **cfg) -> None:
+    def __init__(self):
         super(SimpleModel, self).__init__()
-        self.cnov = nn.Conv2d(1, 1, 1)
+        self.conv = nn.Conv2d(1, 1, 1)
 
-    def train_step(self, data, optimizer):
-        return {'loss': 0}
+    def train_step(self, *args, **kwargs):
+        pass
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
         description='Visualize a Dataset Pipeline')
     parser.add_argument('config', help='config file path')
+    parser.add_argument(
+        '--dataset-size',
+        type=int,
+        help='The size of the dataset. If specify, `build_dataset` will '
+        'be skipped and use this size as the dataset size.')
+    parser.add_argument(
+        '--ngpus',
+        type=int,
+        default=1,
+        help='the number of GPUs will be used in training.')
     parser.add_argument('--work-dir', help='the dir to save log and picture')
     parser.add_argument('--title', type=str, help='title of figure')
     parser.add_argument(
         '--style', type=str, default='whitegrid', help='style of plt')
+    parser.add_argument(
+        '--save-path',
+        type=Path,
+        help='The learning rate curve plot save path')
     parser.add_argument(
         '--window-size',
         default='12*7',
@@ -68,130 +216,122 @@ def parse_args():
     return args
 
 
-def retrieve_data_cfg(config_path, cfg_options):
-    cfg = Config.fromfile(config_path)
-    if cfg_options is not None:
-        cfg.merge_from_dict(cfg_options)
-    # import modules from string list.
-    if cfg.get('custom_imports', None):
-        from mmcv.utils import import_modules_from_strings
-        import_modules_from_strings(**cfg['custom_imports'])
-    data_cfg = cfg.data.train
-    while 'dataset' in data_cfg:
-        data_cfg = data_cfg['dataset']
-
-    return cfg
-
-
-def plot_curve(log_dict, args, key, cfg, timestamp, by_epoch=True):
-    """Plot train key-iter graph."""
-    sns.set_style(args.style)
+def plot_curve(lr_list, args, iters_per_epoch, by_epoch=True):
+    """Plot learning rate vs iter graph."""
+    try:
+        import seaborn as sns
+        sns.set_style(args.style)
+    except ImportError:
+        print("Attention: The plot style won't be applied because 'seaborn' "
+              'package is not installed, please install it if you want better '
+              'show style.')
     wind_w, wind_h = args.window_size.split('*')
     wind_w, wind_h = int(wind_w), int(wind_h)
     plt.figure(figsize=(wind_w, wind_h))
     # if legend is None, use {filename}_{key} as legend
-    legend = f'{osp.basename(args.config)[:-4]}_{key}'
 
-    epochs = list(log_dict.keys())
-    if key not in log_dict[epochs[0]]:
-        raise KeyError(f'{args.config} does not contain key {key} '
-                       f'in train mode')
-    xs, ys = [], []
-    num_iters_per_epoch = log_dict[epochs[0]]['iter'][-1]
-    for epoch in epochs:
-        iters = log_dict[epoch]['iter']
-        if log_dict[epoch]['mode'][-1] == 'val':
-            iters = iters[:-1]
-        if by_epoch:
-            xs.append(np.array(iters) / num_iters_per_epoch + epoch - 1)
-        else:
-            xs.append(np.array(iters) + (epoch - 1) * num_iters_per_epoch)
-        ys.append(np.array(log_dict[epoch][key][:len(iters)]))
-    xs = np.concatenate(xs)
-    ys = np.concatenate(ys)
+    ax: plt.Axes = plt.subplot()
+
+    ax.plot(lr_list, linewidth=1)
     if by_epoch:
-        plt.xlabel('Epochs')
+        ax.xaxis.tick_top()
+        ax.set_xlabel('Iters')
+        ax.xaxis.set_label_position('top')
+        sec_ax = ax.secondary_xaxis(
+            'bottom',
+            functions=(lambda x: x / iters_per_epoch,
+                       lambda y: y * iters_per_epoch))
+        sec_ax.set_xlabel('Epochs')
+        #  ticks = range(0, len(lr_list), iters_per_epoch)
+        #  plt.xticks(ticks=ticks, labels=range(len(ticks)))
     else:
         plt.xlabel('Iters')
     plt.ylabel('Learning Rate')
-    plt.plot(xs, ys, label=legend, linewidth=1)
-    plt.legend()
+
     if args.title is None:
-        plt.title(f'{osp.basename(args.config)} LR-schedule')
+        plt.title(f'{osp.basename(args.config)} Learning Rate curve')
     else:
         plt.title(args.title)
-    save_path = osp.join(cfg.work_dir, timestamp + '.jpg')
-    plt.savefig(save_path)
+
+    if args.save_path:
+        plt.savefig(args.save_path)
+        print(f'The learning rate graph is saved at {args.save_path}')
     plt.show()
-    plt.cla()
 
 
-def do_train(cfg, timestamp):
-    """Use a model without forward and backward to simulate the training
-    process."""
+def simulate_train(data_loader, cfg, by_epoch=True):
+    logger = get_root_logger()
+
+    data_loaders = [data_loader]
+
+    # put model on cpu
     model = SimpleModel()
-    cfg.data.train.pipeline = []
-    from mmcls.datasets.builder import build_dataset
-    datasets = [build_dataset(cfg.data.train)]
 
-    from mmcls.apis import train_model
-    train_model(
-        model,
-        datasets,
-        cfg,
-        distributed=False,
-        validate=False,
-        timestamp=timestamp,
-        device='cpu',
-        meta=dict())
+    # build runner
+    optimizer = build_optimizer(model, cfg.optimizer)
 
+    if by_epoch:
+        runner = DummyEpochBasedRunner(
+            max_epochs=cfg.runner.max_epochs,
+            model=model,
+            optimizer=optimizer,
+            logger=logger)
+    else:
+        runner = DummyIterBasedRunner(
+            max_iters=cfg.runner.max_iters,
+            model=model,
+            optimizer=optimizer,
+            logger=logger)
 
-def print_info(cfg, base_path, lr_config):
-    """print sometine usefully message to remind users."""
-    print('\n LR Config : \n', lr_config, '\n')
-    print(f'Logs and picture are save in  {cfg.work_dir}')
-    print(f"Details of the lr can be seen in {base_path + '.log'}")
-    print(f"Format json data is saved in {base_path + '.log.json'}")
-    print(f"picture is saved in {base_path + '.jpg'}\n")
+    # register hooks
+    runner.register_training_hooks(
+        lr_config=cfg.lr_config,
+        custom_hooks_config=cfg.get('custom_hooks', None),
+    )
+
+    # only use the first train workflow
+    workflow = cfg.workflow[:1]
+    assert workflow[0][0] == 'train'
+    return runner.run(data_loaders, cfg.workflow)
 
 
 def main():
-    mock_time_consuming_functions()
     args = parse_args()
-    cfg = retrieve_data_cfg(args.config, args.cfg_options)
-    lr_config = str(cfg.lr_config)
-    cfg.gpu_ids = range(1)
-    cfg.seed = 1
-    cfg.checkpoint_config = None
-    timestamp = time.strftime('%Y%m%d_%H%M%S', time.localtime())
-
-    # init work_dir
-    config_basename = osp.splitext(osp.basename(args.config))[0]
-    if args.work_dir is not None:
-        # update configs according to CLI args if args.work_dir is not None
-        cfg.work_dir = args.work_dir
-    elif cfg.get('work_dir', None) is None:
-        # use config filename as default work_dir if cfg.work_dir is None
-        cfg.work_dir = osp.join('./work_dirs', config_basename)
+    cfg = Config.fromfile(args.config)
+    if args.cfg_options is not None:
+        cfg.merge_from_dict(args.cfg_options)
 
     # init logger
-    mmcv.mkdir_or_exist(osp.abspath(cfg.work_dir))
-    log_file = osp.join(cfg.work_dir, f'{timestamp}.log')
-    logger = get_root_logger(log_file=log_file, log_level=cfg.log_level)
-    logger.info('Lr config : \n\n' + lr_config + '\n')
+    logger = get_root_logger(log_level=cfg.log_level)
+    logger.info('Lr config : \n\n' + pformat(cfg.lr_config, sort_dicts=False) +
+                '\n')
+
+    by_epoch = True if cfg.runner.type == 'EpochBasedRunner' else False
+
+    # prepare data loader
+    batch_size = cfg.data.samples_per_gpu * args.ngpus
+
+    if args.dataset_size is None and by_epoch:
+        from mmcls.datasets.builder import build_dataset
+        dataset_size = len(build_dataset(cfg.data.train))
+    else:
+        dataset_size = args.dataset_size or batch_size
+
+    fake_dataset = list(range(dataset_size))
+    data_loader = DataLoader(fake_dataset, batch_size=batch_size)
+    dataset_info = (f'\nDataset infos:'
+                    f'\n - Dataset size: {dataset_size}'
+                    f'\n - Samples per GPU: {cfg.data.samples_per_gpu}'
+                    f'\n - Number of GPUs: {args.ngpus}'
+                    f'\n - Total batch size: {batch_size}')
+    if by_epoch:
+        dataset_info += f'\n - Iterations per epoch: {len(data_loader)}'
+    logger.info(dataset_info)
 
     # simulation training process
-    do_train(cfg, timestamp)
+    lr_list = simulate_train(data_loader, cfg, by_epoch)
 
-    # analyze training logs and draw graphs
-    log_jsonfile = osp.abspath(log_file + '.json')
-    log_dict = load_json_logs([log_jsonfile])[0]
-    by_epoch = True if cfg.runner.type == 'EpochBasedRunner' else False
-    plot_curve(log_dict, args, 'lr', cfg, timestamp, by_epoch)
-
-    # print some messages
-    base_path = osp.join(cfg.work_dir, timestamp)
-    print_info(cfg, base_path, lr_config)
+    plot_curve(lr_list, args, len(data_loader), by_epoch)
 
 
 if __name__ == '__main__':
