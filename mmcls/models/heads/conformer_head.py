@@ -61,9 +61,6 @@ class ConformerHead(ClsHead):
                 logger=logger,
                 map_location='cpu')
         else:
-            logger.warn(f'No pre-trained weights for '
-                        f'{self.__class__.__name__}, '
-                        f'training start from scratch')
             self.apply(self._init_weights)
 
     def simple_test(self, x):
