@@ -179,7 +179,7 @@ def parse_args():
         '--ngpus',
         type=int,
         default=1,
-        help='the number of GPUs will be used in training.')
+        help='The number of GPUs used in training.')
     parser.add_argument('--title', type=str, help='title of figure')
     parser.add_argument(
         '--style', type=str, default='whitegrid', help='style of plt')
@@ -190,7 +190,7 @@ def parse_args():
     parser.add_argument(
         '--window-size',
         default='12*7',
-        help='size of the window to display images, in format of "$W*$H".')
+        help='Size of the window to display images, in format of "$W*$H".')
     parser.add_argument(
         '--cfg-options',
         nargs='+',
