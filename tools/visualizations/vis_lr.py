@@ -46,9 +46,6 @@ class DummyEpochBasedRunner(EpochBasedRunner):
         self.progress_bar.update(1)
         return lr_list
 
-    def val(self, data_loader, **kwargs):
-        return []
-
     def run(self, data_loaders, workflow, **kwargs):
         assert isinstance(data_loaders, list)
         assert mmcv.is_list_of(workflow, tuple)
@@ -119,9 +116,6 @@ class DummyIterBasedRunner(IterBasedRunner):
         self._iter += 1
         self.progress_bar.update(1)
         return lr_list
-
-    def val(self, data_loader, **kwargs):
-        return []
 
     def run(self, data_loaders, workflow, **kwargs):
         assert isinstance(data_loaders, list)
@@ -260,16 +254,13 @@ def plot_curve(lr_list, args, iters_per_epoch, by_epoch=True):
 
 
 def simulate_train(data_loader, cfg, by_epoch=True):
+    # build logger, data_loader, model and optimizer
     logger = get_root_logger()
-
     data_loaders = [data_loader]
-
-    # put model on cpu
     model = SimpleModel()
-
-    # build runner
     optimizer = build_optimizer(model, cfg.optimizer)
 
+    # build runner
     if by_epoch:
         runner = DummyEpochBasedRunner(
             max_epochs=cfg.runner.max_epochs,
@@ -300,6 +291,11 @@ def main():
     cfg = Config.fromfile(args.config)
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
+
+    # make sure save_root exists
+    if args.save_path and not args.save_path.parent.exists():
+        raise Exception(f'The save path is {args.save_path}, and directory '
+                        f"'{args.save_path.parent}' do not exist.")
 
     # init logger
     logger = get_root_logger(log_level=cfg.log_level)
