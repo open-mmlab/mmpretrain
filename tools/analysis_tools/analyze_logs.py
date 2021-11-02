@@ -57,11 +57,9 @@ def plot_curve(log_dicts, args):
                     f'{args.json_logs[i]} does not contain metric {metric} '
                     f'in train mode')
 
-            if 'mAP' in metric:
-                xs = np.arange(1, max(epochs) + 1)
-                ys = []
-                for epoch in epochs:
-                    ys += log_dict[epoch][metric]
+            if any(m in metric for m in ('mAP', 'accuracy')):
+                xs = epochs
+                ys = [log_dict[e][metric] for e in xs]
                 ax = plt.gca()
                 ax.set_xticks(xs)
                 plt.xlabel('epoch')
