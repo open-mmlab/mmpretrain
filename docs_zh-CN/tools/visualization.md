@@ -116,10 +116,10 @@ python tools/visualizations/vis_lr.py \
 python tools/visualizations/vis_lr.py configs/resnet/resnet50_b16x8_cifar100.py
 ```
 
-当数据集为 Imganet 时，通过直接指定数据集大小来节约时间，并保存图片：
+当数据集为 ImageNet 时，通过直接指定数据集大小来节约时间，并保存图片：
 
 ```bash
-python tools/visualizations/vis_lr.py configs/swin_transformer/swin_base_384_evalonly_imagenet.py --dataset-size 1100000 --save-path ./swin_lr_polt.jpg
+python tools/visualizations/vis_lr.py configs/swin_transformer/swin_tiny_224_b16x64_300e_imagenet.py --dataset-size 1281167 --ngpus 8 --save-path ./swin_lr_polt.jpg
 ```
 
 ## 常见问题

@@ -113,7 +113,7 @@ Loading annotations maybe consume much time, you can directly specify the size o
 python tools/visualizations/vis_lr.py configs/resnet/resnet50_b16x8_cifar100.py
 ```
 
-When using Imganet, directly specify the size of Imganet, as below:
+When using ImageNet, directly specify the size of Imganet, as below:
 
 ```bash
 python tools/visualizations/vis_lr.py configs/swin_transformer/swin_tiny_224_b16x64_300e_imagenet.py --dataset-size 1281167 --ngpus 8 --save-path ./swin_lr_polt.jpg
