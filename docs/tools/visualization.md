@@ -116,7 +116,7 @@ python tools/visualizations/vis_lr.py configs/resnet/resnet50_b16x8_cifar100.py
 When using ImageNet, directly specify the size of ImageNet, as below:
 
 ```bash
-python tools/visualizations/vis_lr.py configs/swin_transformer/swin_tiny_224_b16x64_300e_imagenet.py --dataset-size 1281167 --ngpus 8 --save-path ./swin_lr_polt.jpg
+python tools/visualizations/vis_lr.py configs/repvgg/repvgg-B3g4_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py --dataset-size 1281167 --ngpus 4 --save-path ./repvgg-B3g4_4xb64-lr.jpg
 ```
 
 ## FAQs
