@@ -118,11 +118,11 @@ The four parts are explained separately below, and the above-mentioned ResNet50 
 
 ### model
 The parameter `"model"` is a python dictionary in the configuration file, which mainly includes information such as network structure and loss function:
-- `type` ： Classifier name, MMCls supports `ImageClassifier`, refer to [API document](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.classifiers).
-- `backbone` ： Backbone configs, refer to [API document](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.backbones) for available options.
-- `neck` ：Neck network name, MMCls supports `GlobalAveragePooling`, please refer to [API document](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.necks).
-- `head`: Head network name, MMCls supports single-label and multi-label classification head networks, available options refer to [API document](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.heads).
-    - `loss`: Loss function type, supports `CrossEntropyLoss`, [`LabelSmoothLoss`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_label_smooth.py) etc., For available options, refer to [API Document](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.losses).
+- `type` ： Classifier name, MMCls supports `ImageClassifier`, refer to [API documentation](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.classifiers).
+- `backbone` ： Backbone configs, refer to [API documentation](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.backbones) for available options.
+- `neck` ：Neck network name, MMCls supports `GlobalAveragePooling`, please refer to [API documentation](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.necks).
+- `head`: Head network name, MMCls supports single-label and multi-label classification head networks, available options refer to [API documentation](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.heads).
+    - `loss`: Loss function type, supports `CrossEntropyLoss`, [`LabelSmoothLoss`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_label_smooth.py) etc., For available options, refer to [API Documentation](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.losses).
 - `train_cfg` ：Training augment config, MMCls supports [`mixup`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_mixup.py), [`cutmix`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_cutmix.py) and other augments.
 
 
@@ -157,7 +157,7 @@ The parameter `"data"` is a python dictionary in the configuration file, which m
 - `train ｜ val ｜ test` : config to construct dataset
   - `type`: Dataset name, MMCls supports `ImageNet`, `Cifar` etc., refer to [API documentation](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.datasets)
   - `data_prefix` : Dataset root directory
-  - `pipeline` :  Data processing pipeline, refer to related tutorial documents [CUSTOM DATA PIPELINES](https://mmclassification.readthedocs.io/en/latest/tutorials/data_pipeline.html)
+  - `pipeline` :  Data processing pipeline, refer to related tutorial [CUSTOM DATA PIPELINES](https://mmclassification.readthedocs.io/en/latest/tutorials/data_pipeline.html)
 
 The parameter `evaluation` is also a dictionary, which is the configuration information of `evaluation hook`, mainly including evaluation interval, evaluation index, etc..
 
