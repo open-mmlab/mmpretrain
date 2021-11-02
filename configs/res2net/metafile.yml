@@ -15,6 +15,9 @@ Collections:
       Title: 'Res2Net: A New Multi-scale Backbone Architecture'
       URL: https://arxiv.org/pdf/1904.01169.pdf
     README: configs/res2net/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.17.0/mmcls/models/backbones/res2net.py
+      Version: v0.17.0
 
 Models:
   - Name: res2net50-w14-s8_3rdparty_8xb32_in1k
