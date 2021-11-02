@@ -57,11 +57,11 @@ python tools/deployment/onnx2tensorrt.py \
 
 |     模型     |                                    配置文件                                  |  状态  |
 | :----------: | :--------------------------------------------------------------------------: | :----: |
-| MobileNetV2  |    `configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py`                     |   Y    |
-|    ResNet    |          `configs/resnet/resnet18_b16x8_cifar10.py`                          |   Y    |
-|   ResNeXt    |     `configs/resnext/resnext50_32x4d_b32x8_imagenet.py`                      |   Y    |
-| ShuffleNetV1 | `configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py` |   Y    |
-| ShuffleNetV2 | `configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py` |   Y    |
+| MobileNetV2  |    `configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py`                     |   Y    |
+|    ResNet    |          `configs/resnet/resnet18_8xb16_cifar10.py`                          |   Y    |
+|   ResNeXt    |     `configs/resnext/resnext50-32x4d_8xb32_in1k.py`                      |   Y    |
+| ShuffleNetV1 | `configs/shufflenet_v1/shufflenet-v1-1x_16xb64_in1k.py` |   Y    |
+| ShuffleNetV2 | `configs/shufflenet_v2/shufflenet-v2-1x_16xb64_in1k.py` |   Y    |
 
 注：
 

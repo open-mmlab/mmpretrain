@@ -56,7 +56,7 @@ python tools/visualizations/vis_pipeline.py \
 1. 可视化 `ImageNet` 训练集的所有经过预处理的图片，并以弹窗形式显示：
 
 ```shell
-python ./tools/visualizations/vis_pipeline.py ./configs/resnet/resnet50_b32x8_imagenet.py --show --mode pipeline
+python ./tools/visualizations/vis_pipeline.py ./configs/resnet/resnet50_8xb32_in1k.py --show --mode pipeline
 ```
 
 <div align=center><img src="../_static/image/pipeline.JPEG" style=" width: auto; height: 40%; "></div>
@@ -72,7 +72,7 @@ python ./tools/visualizations/vis_pipeline.py configs/swin_transformer/swin_base
 3. 可视化 `CIFAR100` 验证集中的100张原始图片，显示并保存在 `./tmp` 文件夹下：
 
 ```shell
-python ./tools/visualizations/vis_pipeline.py configs/resnet/resnet50_b16x8_cifar100.py --phase val --output-dir tmp --mode original --number 100 --show --adaptive --bgr2rgb
+python ./tools/visualizations/vis_pipeline.py configs/resnet/resnet50_8xb16_cifar100.py --phase val --output-dir tmp --mode original --number 100 --show --adaptive --bgr2rgb
 ```
 
 <div align=center><img src="../_static/image/original.JPEG" style=" width: auto; height: 40%; "></div>

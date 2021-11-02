@@ -103,7 +103,7 @@ There are four kinds of basic component file in the `configs/_base_` folders, na
 
 You can easily build your own training config file by inherit some base config files. And the configs that are composed by components from `_base_` are called _primitive_.
 
-For easy understanding, we use [ResNet50 primitive config](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet50_b32x8_imagenet.py) as a example and comment the meaning of each line. For more detaile, please refer to the API documentation.
+For easy understanding, we use [ResNet50 primitive config](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet50_8xb32_in1k.py) as a example and comment the meaning of each line. For more detaile, please refer to the API documentation.
 
 ```python
 _base_ = [
@@ -260,10 +260,10 @@ For easy understanding, we recommend contributors to inherit from existing metho
 
 For all configs under the same folder, it is recommended to have only **one** _primitive_ config. All other configs should inherit from the _primitive_ config. In this way, the maximum of inheritance level is 3.
 
-For example, if some modifications are made on the basis of ResNet, the user can first inherit the basic ResNet structure, dataset and other training setting by specifying `_base_ ='../../configs/resnet/resnet50_b32x8_imagenet.py'` Information, and then modify the necessary parameters in the configuration file to complete the inheritance. If you want to change the number of training rounds from 100 to 300 epoches based on the basic resnet50, modify the number of learning rate decay rounds, and modify the data set path at the same time, you can create a new configuration file `configs/resnet/resnet50_8xb32-300e_in1k.py`, file write the following in:
+For example, if some modifications are made on the basis of ResNet, the user can first inherit the basic ResNet structure, dataset and other training setting by specifying `_base_ ='../../configs/resnet/resnet50_8xb32_in1k.py'` Information, and then modify the necessary parameters in the configuration file to complete the inheritance. If you want to change the number of training rounds from 100 to 300 epoches based on the basic resnet50, modify the number of learning rate decay rounds, and modify the data set path at the same time, you can create a new configuration file `configs/resnet/resnet50_8xb32-300e_in1k.py`, file write the following in:
 
 ```python
-_base_ = '../../configs/resnet/resnet50_b32x8_imagenet.py'
+_base_ = '../../configs/resnet/resnet50_8xb32_in1k.py'
 
 runner = dict(max_epochs=300)
 lr_config = dict(step=[150, 200, 250])
@@ -313,7 +313,7 @@ Sometimes, you need to set `_delete_=True` to ignore some domain content in the 
 The following is an example. If you wangt to use cosine schedule in the above ResNet50 case, just using inheritance and directly modify it will report `get unexcepected keyword'step'` error, because the `'step'` field of the basic config in `lr_config` domain information is reserved, and you need to add `_delete_ =True` to ignore the content of `lr_config` related fields in the basic configuration file:
 
 ```python
-_base_ = '../../configs/resnet/resnet50_b32x8_imagenet.py'
+_base_ = '../../configs/resnet/resnet50_8xb32_in1k.py'
 
 lr_config = dict(
     _delete_=True,
