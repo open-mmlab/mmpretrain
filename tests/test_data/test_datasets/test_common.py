@@ -6,8 +6,7 @@ import numpy as np
 import pytest
 import torch
 
-from mmcls.datasets import (DATASETS, BaseDataset, ImageNet21k,
-                            MultiLabelDataset)
+from mmcls.datasets import DATASETS, BaseDataset, MultiLabelDataset
 
 
 @pytest.mark.parametrize('dataset_name', [
@@ -255,25 +254,29 @@ def test_dataset_evaluation():
     assert 'CF1' not in eval_results.keys()
 
 
-def test_dataset_imagenet21k():
+@pytest.mark.parametrize('dataset_name', ['ImageNet', 'ImageNet21k'])
+def test_dataset_imagenet(dataset_name):
+    dataset_class = DATASETS.get(dataset_name)
+
     base_dataset_cfg = dict(
         data_prefix='tests/data/dataset', pipeline=[], recursion_subdir=True)
 
-    with pytest.raises(NotImplementedError):
-        # multi_label have not be implemented
-        dataset_cfg = base_dataset_cfg.copy()
-        dataset_cfg.update({'multi_label': True})
-        dataset = ImageNet21k(**dataset_cfg)
+    if dataset_name == 'ImageNet21k':
+        with pytest.raises(NotImplementedError):
+            # multi_label have not be implemented
+            dataset_cfg = base_dataset_cfg.copy()
+            dataset_cfg.update({'multi_label': True})
+            dataset = dataset_class(**dataset_cfg)
 
     with pytest.raises(TypeError):
         # ann_file must be a string or None
         dataset_cfg = base_dataset_cfg.copy()
         ann_file = {'path': 'tests/data/dataset/ann.txt'}
         dataset_cfg.update({'ann_file': ann_file})
-        dataset = ImageNet21k(**dataset_cfg)
+        dataset = dataset_class(**dataset_cfg)
 
     # test with recursion_subdir is True
-    dataset = ImageNet21k(**base_dataset_cfg)
+    dataset = dataset_class(**base_dataset_cfg)
     assert len(dataset) == 3
     assert isinstance(dataset[0], dict)
     assert 'img_prefix' in dataset[0]
@@ -283,13 +286,13 @@ def test_dataset_imagenet21k():
     # test with recursion_subdir is False
     dataset_cfg = base_dataset_cfg.copy()
     dataset_cfg['recursion_subdir'] = False
-    dataset = ImageNet21k(**dataset_cfg)
+    dataset = dataset_class(**dataset_cfg)
     assert len(dataset) == 2
     assert isinstance(dataset[0], dict)
 
     # test with load annotation from ann file
     dataset_cfg = base_dataset_cfg.copy()
     dataset_cfg['ann_file'] = 'tests/data/dataset/ann.txt'
-    dataset = ImageNet21k(**dataset_cfg)
+    dataset = dataset_class(**dataset_cfg)
     assert len(dataset) == 3
     assert isinstance(dataset[0], dict)

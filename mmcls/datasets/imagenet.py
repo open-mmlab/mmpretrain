@@ -2,22 +2,11 @@
 import os
 
 import numpy as np
+from mmcv.utils import scandir
 
+from ..utils import get_root_logger
 from .base_dataset import BaseDataset
 from .builder import DATASETS
-
-
-def has_file_allowed_extension(filename, extensions):
-    """Checks if a file is an allowed extension.
-
-    Args:
-        filename (string): path to a file
-
-    Returns:
-        bool: True if the filename ends with a known image extension
-    """
-    filename_lower = filename.lower()
-    return any(filename_lower.endswith(ext) for ext in extensions)
 
 
 def find_folders(root):
@@ -37,27 +26,42 @@ def find_folders(root):
     return folder_to_idx
 
 
-def get_samples(root, folder_to_idx, extensions):
-    """Make dataset by walking all images under a root.
+def get_samples(root, folder_to_idx, extensions, recursion_subdir=False):
+    """get all the samples of the dataset in root with specified extensions.
 
     Args:
         root (string): root directory of folders
         folder_to_idx (dict): the map from class name to class idx
         extensions (tuple): allowed extensions
+        recursion_subdir(bool): if set to True, include the pictures in
+            subdir of root. Default to be True.
 
     Returns:
         samples (list): a list of tuple where each element is (image, label)
     """
-    samples = []
+    samples, empty_folderes = [], []
     root = os.path.expanduser(root)
     for folder_name in sorted(list(folder_to_idx.keys())):
         _dir = os.path.join(root, folder_name)
-        for _, _, fns in sorted(os.walk(_dir)):
-            for fn in sorted(fns):
-                if has_file_allowed_extension(fn, extensions):
-                    path = os.path.join(folder_name, fn)
-                    item = (path, folder_to_idx[folder_name])
-                    samples.append(item)
+        samples_pre_folder = []
+        # Insensitive to the case of the suffixs
+        for path in scandir(
+                _dir, extensions, recursion_subdir, case_sensitive=False):
+            path = os.path.join(folder_name, path)
+            item = (path, folder_to_idx[folder_name])
+            samples_pre_folder.append(item)
+        if len(samples_pre_folder) == 0:
+            empty_folderes.append(folder_name)
+        samples.extend(samples_pre_folder)
+
+    if len(empty_folderes) != 0:
+        logger = get_root_logger()
+        msg = 'Found no valid file for the folders : ' + \
+            f"{', '.join(sorted(empty_folderes))}. "
+        msg += 'Supported extensions are: ' + \
+            f"{', '.join(extensions)}."
+        logger.info(msg)
+
     return samples
 
 
@@ -67,6 +71,17 @@ class ImageNet(BaseDataset):
 
     This implementation is modified from
     https://github.com/pytorch/vision/blob/master/torchvision/datasets/imagenet.py
+
+    Args:
+        data_prefix (str): the prefix of data path
+        pipeline (list): a list of dict, where each element represents
+            a operation defined in `mmcls.datasets.pipelines`
+        ann_file (str | None): the annotation file. When ann_file is str,
+            the subclass is expected to read from the ann_file. When ann_file
+            is None, the subclass is expected to read according to data_prefix
+        test_mode (bool): in train mode or test mode
+        recursion_subdir(bool): whether to use sub-directory pictures, which are meet
+             the conditions in the folder under category directory.
     """  # noqa: E501
 
     IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif')
@@ -1073,13 +1088,25 @@ class ImageNet(BaseDataset):
         'toilet tissue, toilet paper, bathroom tissue'
     ]
 
+    def __init__(self,
+                 data_prefix,
+                 pipeline,
+                 classes=None,
+                 ann_file=None,
+                 test_mode=False,
+                 recursion_subdir=True):
+        self.recursion_subdir = recursion_subdir
+        super(ImageNet, self).__init__(data_prefix, pipeline, classes,
+                                       ann_file, test_mode)
+
     def load_annotations(self):
         if self.ann_file is None:
             folder_to_idx = find_folders(self.data_prefix)
             samples = get_samples(
                 self.data_prefix,
                 folder_to_idx,
-                extensions=self.IMG_EXTENSIONS)
+                extensions=self.IMG_EXTENSIONS,
+                recursion_subdir=self.recursion_subdir)
             if len(samples) == 0:
                 raise (RuntimeError('Found 0 files in subfolders of: '
                                     f'{self.data_prefix}. '
