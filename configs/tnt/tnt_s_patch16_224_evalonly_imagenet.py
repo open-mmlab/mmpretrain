@@ -23,7 +23,7 @@ test_pipeline = [
 
 dataset_type = 'ImageNet'
 data = dict(
-    samples_per_gpu=32, workers_per_gpu=4, test=dict(pipeline=test_pipeline))
+    samples_per_gpu=64, workers_per_gpu=4, test=dict(pipeline=test_pipeline))
 
 # optimizer
 optimizer = dict(type='AdamW', lr=1e-3, weight_decay=0.05)
