@@ -122,7 +122,7 @@ The parameter `"model"` is a python dictionary in the configuration file, which 
 - `backbone` ： Backbone configs, refer to [API documentation](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.backbones) for available options.
 - `neck` ：Neck network name, MMCls supports `GlobalAveragePooling`, please refer to [API documentation](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.necks).
 - `head`: Head network name, MMCls supports single-label and multi-label classification head networks, available options refer to [API documentation](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.heads).
-    - `loss`: Loss function type, supports `CrossEntropyLoss`, [`LabelSmoothLoss`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_label_smooth.py) etc., For available options, refer to [API Documentation](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.losses).
+    - `loss`: Loss function type, supports `CrossEntropyLoss`, [`LabelSmoothLoss`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_label_smooth.py) etc., For available options, refer to [API documentation](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.losses).
 - `train_cfg` ：Training augment config, MMCls supports [`mixup`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_mixup.py), [`cutmix`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_cutmix.py) and other augments.
 
 
