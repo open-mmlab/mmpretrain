@@ -73,7 +73,7 @@ def plot_curve(log_dicts, args):
                 for epoch in epochs:
                     iters = log_dict[epoch]['iter']
                     if log_dict[epoch]['mode'][-1] == 'val':
-                        iters = iters[:-1]
+                        iters = iters[:-1] or iters
                     xs.append(
                         np.array(iters) + (epoch - 1) * num_iters_per_epoch)
                     ys.append(np.array(log_dict[epoch][metric][:len(iters)]))
