@@ -262,10 +262,10 @@ work_dir = 'work_dir'          # 用于保存当前实验的模型检查点和�
 对于在同一算法文件夹下的所有配置文件，MMClassification 推荐只存在 **一个** 对应的 _原始配置_ 文件。
 所有其他的配置文件都应该继承 _原始配置_ 文件，这样就能保证配置文件的最大继承深度为 3。
 
-例如，如果在 ResNet 的基础上做了一些修改，用户首先可以通过指定 `_base_ = '../../configs/resnet/resnet50_8xb32_in1k.py'` 来继承基础的 ResNet 结构、数据集以及其他训练配置信息，然后修改配置文件中的必要参数以完成继承。如想在基础 resnet50 的基础上将训练轮数由 100 改为 300 和修改学习率衰减轮数，同时修改数据集路径，可以建立新的配置文件 `configs/resnet/resnet50_8xb32-300e_in1k.py`， 文件中写入以下内容:
+例如，如果在 ResNet 的基础上做了一些修改，用户首先可以通过指定 `_base_ = './resnet50_8xb32_in1k.py'`（相对于你的配置文件的路径），来继承基础的 ResNet 结构、数据集以及其他训练配置信息，然后修改配置文件中的必要参数以完成继承。如想在基础 resnet50 的基础上将训练轮数由 100 改为 300 和修改学习率衰减轮数，同时修改数据集路径，可以建立新的配置文件 `configs/resnet/resnet50_8xb32-300e_in1k.py`， 文件中写入以下内容:
 
 ```python
-_base_ = '../../configs/resnet/resnet50_8xb32_in1k.py'
+_base_ = './resnet50_8xb32_in1k.py'
 
 runner = dict(max_epochs=300)
 lr_config = dict(step=[150, 200, 250])

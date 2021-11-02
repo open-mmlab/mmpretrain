@@ -77,7 +77,7 @@ repvgg-D2se_deploy_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py
   + `lbs`: Use label smoothing loss.
   + `mixup`: Use `mixup` training augment method.
   + `coslr`: Use cosine learning rate scheduler.
-  + `200e`: Train the model for 200 epoches.
+  + `200e`: Train the model for 200 epochs.
 - `in1k`: Dataset information. The config is for `ImageNet1k` dataset and the input size is `224x224`.
 
 ```{note}
@@ -260,10 +260,10 @@ For easy understanding, we recommend contributors to inherit from existing metho
 
 For all configs under the same folder, it is recommended to have only **one** _primitive_ config. All other configs should inherit from the _primitive_ config. In this way, the maximum of inheritance level is 3.
 
-For example, if some modifications are made on the basis of ResNet, the user can first inherit the basic ResNet structure, dataset and other training setting by specifying `_base_ ='../../configs/resnet/resnet50_8xb32_in1k.py'` Information, and then modify the necessary parameters in the configuration file to complete the inheritance. If you want to change the number of training rounds from 100 to 300 epoches based on the basic resnet50, modify the number of learning rate decay rounds, and modify the data set path at the same time, you can create a new configuration file `configs/resnet/resnet50_8xb32-300e_in1k.py`, file write the following in:
+For example, if your config file is based on ResNet with some other modification, you can first inherit the basic ResNet structure, dataset and other training setting by specifying `_base_ ='./resnet50_8xb32_in1k.py'` (The path relative to your config file), and then modify the necessary parameters in the config file. A more specific example, now we want to use almost all configs in `configs/resnet/resnet50_8xb32_in1k.py`, but change the number of training epochs from 100 to 300, modify when to decay the learning rate, and modify the dataset path, you can create a new config file `configs/resnet/resnet50_8xb32-300e_in1k.py` with content as below:
 
 ```python
-_base_ = '../../configs/resnet/resnet50_8xb32_in1k.py'
+_base_ = './resnet50_8xb32_in1k.py'
 
 runner = dict(max_epochs=300)
 lr_config = dict(step=[150, 200, 250])

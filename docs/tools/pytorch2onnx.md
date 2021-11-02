@@ -61,8 +61,8 @@ Example:
 ```bash
 python tools/deployment/pytorch2onnx.py \
     configs/resnet/resnet18_8xb16_cifar10.py \
-    --checkpoint checkpoints/resnet/resnet18_b16x8_cifar10.pth \
-    --output-file checkpoints/resnet/resnet18_b16x8_cifar10.onnx \
+    --checkpoint checkpoints/resnet/resnet18_8xb16_cifar10.pth \
+    --output-file checkpoints/resnet/resnet18_8xb16_cifar10.onnx \
     --dynamic-export \
     --show \
     --simplify \
@@ -182,12 +182,12 @@ This part selects ImageNet for onnxruntime verification. ImageNet has multiple v
 
 The table below lists the models that are guaranteed to be exportable to ONNX and runnable in ONNX Runtime.
 
-|    Model     |                                                                                            Config                                                                                             | Batch Inference | Dynamic Shape | Note |
-| :----------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------: | :-----------: | ---- |
-| MobileNetV2  |                       [mobilenet-v2_8xb32_in1k.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py)                        |        Y        |       Y       |      |
-|    ResNet    |                               [resnet18_8xb16_cifar10.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnet/resnet18_8xb16_cifar10.py)                                |        Y        |       Y       |      |
-|   ResNeXt    |                       [resnext50-32x4d_8xb32_in1k.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnext/resnext50-32x4d_8xb32_in1k.py)                       |        Y        |       Y       |      |
-|  SE-ResNet   |                           [seresnet50_8xb32_in1k.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/seresnet/seresnet50_8xb32_in1k.py)                            |        Y        |       Y       |      |
+|    Model     |                            Config                            | Batch Inference | Dynamic Shape | Note |
+| :----------: | :----------------------------------------------------------: | :-------------: | :-----------: | ---- |
+| MobileNetV2  | [mobilenet-v2_8xb32_in1k.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py) |        Y        |       Y       |      |
+|    ResNet    | [resnet18_8xb16_cifar10.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnet/resnet18_8xb16_cifar10.py) |        Y        |       Y       |      |
+|   ResNeXt    | [resnext50-32x4d_8xb32_in1k.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnext/resnext50-32x4d_8xb32_in1k.py) |        Y        |       Y       |      |
+|  SE-ResNet   | [seresnet50_8xb32_in1k.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/seresnet/seresnet50_8xb32_in1k.py) |        Y        |       Y       |      |
 | ShuffleNetV1 | [shufflenet-v1-1x_16xb64_in1k.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v1/shufflenet-v1-1x_16xb64_in1k.py) |        Y        |       Y       |      |
 | ShuffleNetV2 | [shufflenet-v2-1x_16xb64_in1k.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v2/shufflenet-v2-1x_16xb64_in1k.py) |        Y        |       Y       |      |
 
