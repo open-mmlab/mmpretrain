@@ -109,7 +109,7 @@ html_theme_options = {
         },
         {
             'name':
-            'Projects',
+            'Docs',
             'children': [
                 {
                     'name': 'MMCV',

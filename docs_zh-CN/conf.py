@@ -109,7 +109,7 @@ html_theme_options = {
         },
         {
             'name':
-            '算法库',
+            '文档',
             'children': [
                 {
                     'name': 'MMCV',
