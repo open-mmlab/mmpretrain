@@ -29,6 +29,11 @@ backbones
 .. automodule:: mmcls.models.backbones
     :members:
 
+heads
+^^^^^^^^^^
+.. automodule:: mmcls.models.heads
+    :members:
+
 necks
 ^^^^^^
 .. automodule:: mmcls.models.necks

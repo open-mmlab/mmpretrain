@@ -1,7 +1,7 @@
 欢迎来到 MMClassification 中文教程！
 ==========================================
 
-You can switch between Chinese and English documents in the lower-left corner of the layout.
+You can switch between Chinese and English documentation in the lower-left corner of the layout.
 
 您可以在页面左下角切换中英文文档。
 
@@ -17,6 +17,7 @@ You can switch between Chinese and English documents in the lower-left corner of
    :maxdepth: 1
    :caption: 教程
 
+   tutorials/config.md
    tutorials/finetune.md
    tutorials/new_dataset.md
    tutorials/data_pipeline.md
@@ -34,6 +35,7 @@ You can switch between Chinese and English documents in the lower-left corner of
    tools/onnx2tensorrt.md
    tools/pytorch2torchscript.md
    tools/model_serving.md
+   tools/visualization.md
 
 
 .. toctree::

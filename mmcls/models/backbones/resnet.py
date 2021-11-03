@@ -396,10 +396,8 @@ class ResNet(BaseBackbone):
             Default: ``(1, 2, 2, 2)``.
         dilations (Sequence[int]): Dilation of each stage.
             Default: ``(1, 1, 1, 1)``.
-        out_indices (Sequence[int]): Output from which stages. If only one
-            stage is specified, a single tensor (feature map) is returned,
-            otherwise multiple stages are specified, a tuple of tensors will
-            be returned. Default: ``(3, )``.
+        out_indices (Sequence[int]): Output from which stages.
+            Default: ``(3, )``.
         style (str): `pytorch` or `caffe`. If set to "pytorch", the stride-two
             layer is the 3x3 conv layer, otherwise the stride-two layer is
             the first 1x1 conv layer.

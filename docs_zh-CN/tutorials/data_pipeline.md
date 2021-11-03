@@ -1,4 +1,4 @@
-# 教程 3：如何设计数据处理流程
+# 教程 4：如何设计数据处理流程
 
 ## 设计数据流水线
 
@@ -142,3 +142,7 @@ train_pipeline = [
         dict(type='Collect', keys=['img', 'gt_label'])
     ]
     ```
+
+## 流水线可视化
+
+设计好数据流水线后，可以使用[可视化工具](../tools/visualization.md)查看具体的效果。

@@ -8,21 +8,22 @@
 
 MMClassification 和 MMCV 的适配关系如下，请安装正确版本的 MMCV 以避免安装问题
 
-| MMClassification 版本 |       MMCV 版本      |
-|:---------------------:|:--------------------:|
-|        master         | mmcv>=1.3.8, <=1.5.0 |
-|        0.16.0         | mmcv>=1.3.8, <=1.5.0 |
-|        0.15.0         | mmcv>=1.3.8, <=1.5.0 |
-|        0.14.0         | mmcv>=1.3.8, <=1.5.0 |
-|        0.13.0         | mmcv>=1.3.8, <=1.5.0 |
-|        0.12.0         | mmcv>=1.3.1, <=1.5.0 |
-|        0.11.1         | mmcv>=1.3.1, <=1.5.0 |
-|        0.11.0         | mmcv>=1.3.0          |
-|        0.10.0         | mmcv>=1.3.0          |
-|         0.9.0         | mmcv>=1.1.4          |
-|         0.8.0         | mmcv>=1.1.4          |
-|         0.7.0         | mmcv>=1.1.4          |
-|         0.6.0         | mmcv>=1.1.4          |
+| MMClassification 版本 |       MMCV 版本       |
+|:---------------------:|:---------------------:|
+|        master         | mmcv>=1.3.16, <=1.5.0 |
+|        0.17.0         | mmcv>=1.3.8, <=1.5.0  |
+|        0.16.0         | mmcv>=1.3.8, <=1.5.0  |
+|        0.15.0         | mmcv>=1.3.8, <=1.5.0  |
+|        0.14.0         | mmcv>=1.3.8, <=1.5.0  |
+|        0.13.0         | mmcv>=1.3.8, <=1.5.0  |
+|        0.12.0         | mmcv>=1.3.1, <=1.5.0  |
+|        0.11.1         | mmcv>=1.3.1, <=1.5.0  |
+|        0.11.0         | mmcv>=1.3.0           |
+|        0.10.0         | mmcv>=1.3.0           |
+|         0.9.0         | mmcv>=1.1.4           |
+|         0.8.0         | mmcv>=1.1.4           |
+|         0.7.0         | mmcv>=1.1.4           |
+|         0.6.0         | mmcv>=1.1.4           |
 
 ```{note}
 由于 `master` 分支处于频繁开发中，`mmcv` 版本依赖可能不准确。如果您在使用
@@ -34,7 +35,7 @@ MMClassification 和 MMCV 的适配关系如下，请安装正确版本的 MMCV 
 a. 创建 conda 虚拟环境，并激活
 
 ```shell
-conda create -n open-mmlab python=3.7 -y
+conda create -n open-mmlab python=3.8 -y
 conda activate open-mmlab
 ```
 
@@ -49,18 +50,18 @@ conda install pytorch torchvision -c pytorch
 可以参照 [PyTorch 官网](https://pytorch.org/) 对预编译包所支持的 CUDA 版本进行核对。
 ```
 
-`例 1`：如果用户的 `/usr/local/cuda` 文件夹下已安装 CUDA 10.1 版本，并且想要安装 PyTorch 1.5 版本，
+`例 1`：如果用户的 `/usr/local/cuda` 文件夹下已安装 CUDA 10.1 版本，并且想要安装 PyTorch 1.5.1 版本，
 则需要安装 CUDA 10.1 下预编译的 PyTorch。
 
 ```shell
-conda install pytorch cudatoolkit=10.1 torchvision -c pytorch
+conda install pytorch==1.5.1 torchvision==0.6.1 cudatoolkit=10.1 -c pytorch
 ```
 
-`例 2`：如果用户的 `/usr/local/cuda` 文件夹下已安装 CUDA 9.2 版本，并且想要安装 PyTorch 1.3.1 版本，
-则需要安装 CUDA 9.2 下预编译的 PyTorch。
+`例 2`：如果用户的 `/usr/local/cuda` 文件夹下已安装 CUDA 11.3 版本，并且想要安装 PyTorch 1.10.0 版本，
+则需要安装 CUDA 11.3 下预编译的 PyTorch。
 
 ```shell
-conda install pytorch=1.3.1 cudatoolkit=9.2 torchvision=0.4.2 -c pytorch
+conda install pytorch==1.10.0 torchvision==0.11.1 cudatoolkit=11.3 -c pytorch
 ```
 
 如果 PyTorch 是由源码进行编译安装（而非直接下载预编译好的安装包），则可以使用更多的 CUDA 版本（如 9.0 版本）。
