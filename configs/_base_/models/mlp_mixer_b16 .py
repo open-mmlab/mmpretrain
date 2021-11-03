@@ -5,7 +5,7 @@ model = dict(
         type='MlpMixer',
         patch_size=16,
         num_blocks=12,
-        embed_dim=768,
+        embed_dims=768,
     ),
     head=dict(
         type='LinearClsHead',
