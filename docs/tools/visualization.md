@@ -76,6 +76,49 @@ python ./tools/visualizations/vis_pipeline.py configs/resnet/resnet50_b16x8_cifa
 
 <div align=center><img src="../_static/image/original.JPEG" style=" width: auto; height: 40%; "></div>
 
+## lr schedule visualization
+
+### Usage
+
+```bash
+python tools/visualizations/vis_lr.py \
+    ${CONFIG_FILE} \
+    --dataset-size ${DATASET_SIZE} \
+    --ngpus ${NUM_GPUs}
+    --save-path ${SAVE_PATH} \
+    --title ${TITLE} \
+    --style ${STYLE} \
+    --window-size ${WINDOW_SIZE}
+    --cfg-options
+```
+
+**Description of all arguments**：
+
+- `config` :  The path of a model config file.
+- `dataset-size` : The size of the datasets. If set，`build_dataset` will be skipped and `${DATASET_SIZE}` will be used as the size. Default to use the function `build_dataset`.
+- `ngpus` : The number of GPUs used in training, default to be 1.
+- `save-path` : The learning rate curve plot save path, default not to save.
+- `title` : Title of figure. If not set, default to be config file name.
+- `style` : Style of plt. If not set, default to be `whitegrid`.
+- `window-size`: The shape of the display window. If not specified, it will be set to `12*7`. If used, it must be in the format `'W*H'`.
+- `cfg-options` : Modifications to the configuration file, refer to [Tutorial 1: Learn about Configs](https://mmclassification.readthedocs.io/en/latest/tutorials/config.html).
+
+```{note}
+Loading annotations maybe consume much time, you can directly specify the size of the dataset with `dataset-size` to save time.
+```
+
+**Examples**：
+
+```bash
+python tools/visualizations/vis_lr.py configs/resnet/resnet50_b16x8_cifar100.py
+```
+
+When using ImageNet, directly specify the size of ImageNet, as below:
+
+```bash
+python tools/visualizations/vis_lr.py configs/repvgg/repvgg-B3g4_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py --dataset-size 1281167 --ngpus 4 --save-path ./repvgg-B3g4_4xb64-lr.jpg
+```
+
 ## FAQs
 
 - None
