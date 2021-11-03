@@ -122,12 +122,12 @@ class FCUDown(nn.Module):
                  in_channels,
                  out_channels,
                  dw_stride,
-                 cls_token=True,
+                 with_cls_token=True,
                  norm_cfg=dict(type='LN', eps=1e-6),
                  act_cfg=dict(type='GELU')):
         super(FCUDown, self).__init__()
         self.dw_stride = dw_stride
-        self.cls_token = cls_token
+        self.with_cls_token = with_cls_token
 
         self.conv_project = nn.Conv2d(
             in_channels, out_channels, kernel_size=1, stride=1, padding=0)
@@ -144,7 +144,7 @@ class FCUDown(nn.Module):
         x = self.ln(x)
         x = self.act(x)
 
-        if self.cls_token:
+        if self.with_cls_token:
             x = torch.cat([x_t[:, 0][:, None, :], x], dim=1)
 
         return x
@@ -157,13 +157,13 @@ class FCUUp(nn.Module):
                  in_channels,
                  out_channels,
                  up_stride,
-                 cls_token=True,
+                 with_cls_token=True,
                  norm_cfg=dict(type='BN', eps=1e-6),
                  act_cfg=dict(type='ReLU', inplace=True)):
         super(FCUUp, self).__init__()
 
         self.up_stride = up_stride
-        self.cls_token = cls_token
+        self.with_cls_token = with_cls_token
 
         self.conv_project = nn.Conv2d(
             in_channels, out_channels, kernel_size=1, stride=1, padding=0)
@@ -173,7 +173,7 @@ class FCUUp(nn.Module):
     def forward(self, x, H, W):
         B, _, C = x.shape
         # [N, 197, 384] -> [N, 196, 384] -> [N, 384, 196] -> [N, 384, 14, 14]
-        if self.cls_token:
+        if self.with_cls_token:
             x_r = x[:, 1:].transpose(1, 2).reshape(B, C, H, W)
         else:
             x_r = x.transpose(1, 2).reshape(B, C, H, W)
@@ -198,7 +198,7 @@ class ConvTransBlock(nn.Module):
                  num_heads=12,
                  mlp_ratio=4.,
                  qkv_bias=False,
-                 cls_token=True,
+                 with_cls_token=True,
                  drop_rate=0.,
                  attn_drop_rate=0.,
                  drop_path_rate=0.,
@@ -237,13 +237,13 @@ class ConvTransBlock(nn.Module):
             in_channels=out_channels // expansion,
             out_channels=embed_dim,
             dw_stride=dw_stride,
-            cls_token=cls_token)
+            with_cls_token=with_cls_token)
 
         self.expand_block = FCUUp(
             in_channels=embed_dim,
             out_channels=out_channels // expansion,
             up_stride=dw_stride,
-            cls_token=cls_token)
+            with_cls_token=with_cls_token)
 
         self.trans_block = TransformerEncoderLayer(
             embed_dims=embed_dim,
@@ -312,7 +312,7 @@ class Conformer(BaseBackbone):
                  base_channel=64,
                  mlp_ratio=4.,
                  qkv_bias=True,
-                 cls_token=True,
+                 with_cls_token=True,
                  drop_path_rate=0.,
                  norm_eval=True,
                  frozen_stages=0,
@@ -329,7 +329,7 @@ class Conformer(BaseBackbone):
             self.arch_settings = self.arch_zoo[arch]
         else:
             essential_keys = {
-                'embed_dims', 'depths', 'num_head', 'channel_ratio'
+                'embed_dims', 'depths', 'num_heads', 'channel_ratio'
             }
             assert isinstance(arch, dict) and set(arch) == essential_keys, \
                 f'Custom arch needs a dict with keys {essential_keys}'
@@ -345,8 +345,8 @@ class Conformer(BaseBackbone):
         self.norm_eval = norm_eval
         self.frozen_stages = frozen_stages
 
-        self.cls_token_flag = cls_token
-        if self.cls_token_flag:
+        self.with_cls_token = with_cls_token
+        if self.with_cls_token:
             self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dims))
 
         self.trans_dpr = [
@@ -390,7 +390,7 @@ class Conformer(BaseBackbone):
         fin_stage = self.depths // 3 + 1
         for i in range(init_stage, fin_stage):
             self.add_module(
-                'conv_trans_' + str(i),
+                f'conv_trans_{i}',
                 ConvTransBlock(
                     stage_1_channel,
                     stage_1_channel,
@@ -402,63 +402,63 @@ class Conformer(BaseBackbone):
                     mlp_ratio=mlp_ratio,
                     qkv_bias=qkv_bias,
                     drop_path_rate=self.trans_dpr[i - 1],
-                    cls_token=self.cls_token_flag))
+                    with_cls_token=self.with_cls_token))
 
         stage_2_channel = int(base_channel * self.channel_ratio * 2)
         # 5~8 stage
         init_stage = fin_stage  # 5
         fin_stage = fin_stage + self.depths // 3  # 9
         for i in range(init_stage, fin_stage):
-            s = 2 if i == init_stage else 1
+            stride = 2 if i == init_stage else 1
             in_channel = stage_1_channel if i == init_stage \
                 else stage_2_channel
             res_conv = True if i == init_stage else False
             self.add_module(
-                'conv_trans_' + str(i),
+                f'conv_trans_{i}',
                 ConvTransBlock(
                     in_channel,
                     stage_2_channel,
                     res_conv,
-                    s,
+                    stride,
                     dw_stride=trans_dw_stride // 2,
                     embed_dim=self.embed_dims,
                     num_heads=self.num_heads,
                     mlp_ratio=mlp_ratio,
                     qkv_bias=qkv_bias,
                     drop_path_rate=self.trans_dpr[i - 1],
-                    cls_token=self.cls_token_flag))
+                    with_cls_token=self.with_cls_token))
 
         stage_3_channel = int(base_channel * self.channel_ratio * 2 * 2)
         # 9~12 stage
         init_stage = fin_stage  # 9
         fin_stage = fin_stage + self.depths // 3  # 13
         for i in range(init_stage, fin_stage):
-            s = 2 if i == init_stage else 1
+            stride = 2 if i == init_stage else 1
             in_channel = stage_2_channel if i == init_stage \
                 else stage_3_channel
             res_conv = True if i == init_stage else False
             last_fusion = True if i == self.depths else False
             self.add_module(
-                'conv_trans_' + str(i),
+                f'conv_trans_{i}',
                 ConvTransBlock(
                     in_channel,
                     stage_3_channel,
                     res_conv,
-                    s,
+                    stride,
                     dw_stride=trans_dw_stride // 4,
                     embed_dim=self.embed_dims,
                     num_heads=self.num_heads,
                     mlp_ratio=mlp_ratio,
                     qkv_bias=qkv_bias,
                     drop_path_rate=self.trans_dpr[i - 1],
-                    cls_token=self.cls_token_flag,
+                    with_cls_token=self.with_cls_token,
                     last_fusion=last_fusion))
         self.fin_stage = fin_stage
 
         self.pooling = nn.AdaptiveAvgPool2d(1)
         self.trans_norm = nn.LayerNorm(self.embed_dims)
 
-        if self.cls_token_flag:
+        if self.with_cls_token:
             trunc_normal_(self.cls_token, std=.02)
 
     def _init_weights(self, m):
@@ -494,7 +494,7 @@ class Conformer(BaseBackbone):
                 map_location='cpu')
 
         else:
-            logger.warn(f'No pre-trained weights for '
+            logger.info(f'No pre-trained weights for '
                         f'{self.__class__.__name__}, '
                         f'training start from scratch')
             self.apply(self._init_weights)
@@ -502,7 +502,7 @@ class Conformer(BaseBackbone):
     def forward(self, x):
         output = []
         B = x.shape[0]
-        if self.cls_token_flag:
+        if self.with_cls_token:
             cls_tokens = self.cls_token.expand(B, -1, -1)
 
         # stem
@@ -511,20 +511,23 @@ class Conformer(BaseBackbone):
         # 1 stage [N, 64, 56, 56] -> [N, 128, 56, 56]
         x = self.conv_1(x_base, out_conv2=False)
         x_t = self.trans_patch_conv(x_base).flatten(2).transpose(1, 2)
-        if self.cls_token_flag:
+        if self.with_cls_token:
             x_t = torch.cat([cls_tokens, x_t], dim=1)
         x_t = self.trans_1(x_t)
 
         # 2 ~ final
         for i in range(2, self.fin_stage):
-            x, x_t = eval('self.conv_trans_' + str(i))(x, x_t)
+            stage = self.get_submodule(f'conv_trans_{i}')
+            x, x_t = stage(x, x_t)
             if i in self.out_indices:
-                if self.cls_token_flag:
+                if self.with_cls_token:
                     output.append([
                         self.pooling(x).flatten(1),
                         self.trans_norm(x_t)[:, 0]
                     ])
                 else:
+                    # if no class token, use the mean patch token
+                    # as the transformer feature.
                     output.append([
                         self.pooling(x).flatten(1),
                         self.trans_norm(x_t).mean(dim=1)
