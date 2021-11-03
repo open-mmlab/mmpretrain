@@ -4,13 +4,11 @@
 
 - [Visualization](#visualization)
   - [Pipeline Visualization](#pipeline-visualization)
-    - [Usage](#usage)
+  - [Learning Rate Schedule Visualization](#learning-rate-schedule-visualization)
   - [FAQs](#faqs)
 
 <!-- TOC -->
-## pipeline visualization
-
-### Usage
+## Pipeline Visualization
 
 ```bash
 python tools/visualizations/vis_pipeline.py \
@@ -58,7 +56,7 @@ python tools/visualizations/vis_pipeline.py \
 python ./tools/visualizations/vis_pipeline.py ./configs/resnet/resnet50_b32x8_imagenet.py --show --mode pipeline
 ```
 
-<div align=center><img src="../_static/image/pipeline.JPEG" style=" width: auto; height: 40%; "></div>
+<div align=center><img src="../_static/image/tools/visualization/pipeline-pipeline.jpg" style=" width: auto; height: 40%; "></div>
 
 2. Visualize 10 comparison pictures in the `ImageNet` train set and save them in the `./tmp` folder：
 
@@ -66,7 +64,7 @@ python ./tools/visualizations/vis_pipeline.py ./configs/resnet/resnet50_b32x8_im
 python ./tools/visualizations/vis_pipeline.py configs/swin_transformer/swin_base_224_b16x64_300e_imagenet.py --phase train --output-dir tmp --number 10 --adaptive
 ```
 
-<div align=center><img src="../_static/image/concat.JPEG" style=" width: auto; height: 40%; "></div>
+<div align=center><img src="../_static/image/tools/visualization/pipeline-concat.jpg" style=" width: auto; height: 40%; "></div>
 
 3. Visualize 100 original pictures in the `CIFAR100` validation set, then display and save them in the `./tmp` folder：
 
@@ -74,11 +72,9 @@ python ./tools/visualizations/vis_pipeline.py configs/swin_transformer/swin_base
 python ./tools/visualizations/vis_pipeline.py configs/resnet/resnet50_b16x8_cifar100.py --phase val --output-dir tmp --mode original --number 100  --show --adaptive --bgr2rgb
 ```
 
-<div align=center><img src="../_static/image/original.JPEG" style=" width: auto; height: 40%; "></div>
+<div align=center><img src="../_static/image/tools/visualization/pipeline-original.jpg" style=" width: auto; height: 40%; "></div>
 
-## lr schedule visualization
-
-### Usage
+## Learning Rate Schedule Visualization
 
 ```bash
 python tools/visualizations/vis_lr.py \
@@ -113,11 +109,15 @@ Loading annotations maybe consume much time, you can directly specify the size o
 python tools/visualizations/vis_lr.py configs/resnet/resnet50_b16x8_cifar100.py
 ```
 
+<div align=center><img src="../_static/image/tools/visualization/lr_schedule1.png" style=" width: auto; height: 40%; "></div>
+
 When using ImageNet, directly specify the size of ImageNet, as below:
 
 ```bash
 python tools/visualizations/vis_lr.py configs/repvgg/repvgg-B3g4_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py --dataset-size 1281167 --ngpus 4 --save-path ./repvgg-B3g4_4xb64-lr.jpg
 ```
+
+<div align=center><img src="../_static/image/tools/visualization/lr_schedule2.png" style=" width: auto; height: 40%; "></div>
 
 ## FAQs
 
