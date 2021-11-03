@@ -305,12 +305,12 @@ mmcv_hooks = [
 
 There are some common hooks that are not registered through `custom_hooks` but has been registered by default when importing MMCV, they are
 
-- log_config
-- checkpoint_config
-- evaluation
-- lr_config
-- optimizer_config
-- momentum_config
+- Logger hooks
+- Checkpoint hook
+- Evaluation hook
+- Learning rate updater hook (introduced in [Customize Training Schedules](#customize-training-schedules))
+- Optimizer hook (introduced in [Additional settings](#additional-settings))
+- Momentum updater hook (introduced in [Additional settings](#additional-settings))
 
 In those hooks, only the logger hook has the `VERY_LOW` priority, others' priority are `NORMAL`.
 The above-mentioned tutorials already cover how to modify `optimizer_config`, `momentum_config`, and `lr_config`.
