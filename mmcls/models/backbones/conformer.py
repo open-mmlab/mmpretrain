@@ -517,7 +517,7 @@ class Conformer(BaseBackbone):
 
         # 2 ~ final
         for i in range(2, self.fin_stage):
-            stage = self.get_submodule(f'conv_trans_{i}')
+            stage = getattr(self, f'conv_trans_{i}')
             x, x_t = stage(x, x_t)
             if i in self.out_indices:
                 if self.with_cls_token:
