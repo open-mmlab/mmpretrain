@@ -124,7 +124,7 @@ class MyOptimizerConstructor:
         pass
 
     def __call__(self, model):
-
+        ...      # Construct your optimzier here.
         return my_optimizer
 ```
 
