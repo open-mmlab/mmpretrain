@@ -613,6 +613,42 @@ class RandomErasing(object):
 
 
 @PIPELINES.register_module()
+class Pad(object):
+    """Pad images.
+
+    Args:
+        shape (tuple[int]): Expected padding shape (h, w)
+        pad_val (Number | Sequence[Number]): Values to be filled in padding
+            areas when padding_mode is 'constant'. Default: 0.
+        padding_mode (str): Type of padding. Should be: constant, edge,
+            reflect or symmetric. Default: constant.
+    """
+
+    def __init__(self, shape, pad_val=0, padding_mode='constant'):
+        self.shape = shape
+        self.pad_val = pad_val
+        self.padding_mode = padding_mode
+
+    def __call__(self, results):
+        for key in results.get('img_fields', ['img']):
+            img = results[key]
+            img = mmcv.impad(
+                img,
+                shape=self.shape,
+                pad_val=self.pad_val,
+                padding_mode=self.padding_mode)
+            results[key] = img
+            results['img_shape'] = img.shape
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += f'(shape={self.shape}, '
+        repr_str += f'(pad_val={self.pad_val}, '
+        repr_str += f'padding_mode={self.padding_mode})'
+        return repr_str
+
+
+@PIPELINES.register_module()
 class Resize(object):
     """Resize images.
 
@@ -628,6 +664,8 @@ class Resize(object):
         interpolation (str): Interpolation method, accepted values are
             "nearest", "bilinear", "bicubic", "area", "lanczos".
             More details can be found in `mmcv.image.geometric`.
+        resize_short(bool): Whether to resize the short side and adapt
+            the long side or vice versa.
         backend (str): The image resize backend type, accepted values are
             `cv2` and `pillow`. Default: `cv2`.
     """
@@ -635,26 +673,20 @@ class Resize(object):
     def __init__(self,
                  size,
                  interpolation='bilinear',
-                 keep_ratio=False,
-                 pad=False,
-                 pad_val=0,
+                 resize_short=True,
                  backend='cv2'):
         assert isinstance(size, int) or (isinstance(size, tuple)
                                          and len(size) == 2)
-        self.resize_w_short_side = False
-        self.keep_ratio = keep_ratio
-        self.pad = pad
-        self.pad_val = pad_val
+
+        self.resize_w_short = resize_short
+        self.adaptive_resize = False
         if isinstance(size, int):
             assert size > 0
             size = (size, size)
         else:
             assert size[0] > 0 and (size[1] > 0 or size[1] == -1)
             if size[1] == -1:
-                self.resize_w_short_side = True
-                self.keep_ratio = True
-                assert not self.pad, '`pad` is not compatible with ' \
-                                     'resizing based on the short size.'
+                self.adaptive_resize = True
         assert interpolation in ('nearest', 'bilinear', 'bicubic', 'area',
                                  'lanczos')
         if backend not in ['cv2', 'pillow']:
@@ -668,37 +700,42 @@ class Resize(object):
     def _resize_img(self, results):
         for key in results.get('img_fields', ['img']):
             img = results[key]
-            skip_resize = False
-            im_h, im_w = img.shape[:2]
-            if self.resize_w_short_side:
-
-                short_side = self.size[0]
-                if min(im_h, im_w) == short_side:
-                    skip_resize = True
-                else:
-                    if im_w < im_h:
-                        width = short_side
-                        height = int(short_side * im_h / im_w)
+            ignore_resize = False
+            if self.adaptive_resize:
+                h, w = img.shape[:2]
+                fixed_side = self.size[0]
+                if self.resize_w_short:
+                    if min(h, w) == fixed_side:
+                        ignore_resize = True
                     else:
-                        height = short_side
-                        width = int(short_side * im_w / im_h)
-            elif self.keep_ratio:
-                scale = min(self.size[0] / im_h, self.size[1] / im_w)
-                height = round(self.size[0] * scale)
-                width = round(self.size[1] * scale)
+                        if w < h:
+                            width = fixed_side
+                            height = int(fixed_side * h / w)
+                        else:
+                            height = fixed_side
+                            width = int(fixed_side * w / h)
+                else:
+                    if max(h, w) == fixed_side:
+                        ignore_resize = True
+                    else:
+                        if w > h:
+                            width = fixed_side
+                            height = int(fixed_side * h / w)
+                        else:
+                            height = fixed_side
+                            width = int(fixed_side * w / h)
+
             else:
                 height, width = self.size
-            if not skip_resize:
+            if not ignore_resize:
                 img = mmcv.imresize(
                     img,
                     size=(width, height),
                     interpolation=self.interpolation,
                     return_scale=False,
                     backend=self.backend)
-            if self.pad:
-                img = mmcv.impad(img, shape=self.size, pad_val=self.pad_val)
-            results[key] = img
-            results['img_shape'] = img.shape
+                results[key] = img
+                results['img_shape'] = img.shape
 
     def __call__(self, results):
         self._resize_img(results)
