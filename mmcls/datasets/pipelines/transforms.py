@@ -639,6 +639,7 @@ class Pad(object):
                 padding_mode=self.padding_mode)
             results[key] = img
             results['img_shape'] = img.shape
+        return results
 
     def __repr__(self):
         repr_str = self.__class__.__name__
@@ -677,6 +678,7 @@ class Resize(object):
                  backend='cv2'):
         assert isinstance(size, int) or (isinstance(size, tuple)
                                          and len(size) == 2)
+        assert isinstance(resize_short, bool)
 
         self.resize_w_short = resize_short
         self.adaptive_resize = False

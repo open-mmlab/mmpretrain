@@ -63,6 +63,11 @@ def test_resize():
         transform = dict(type='Resize', size=224, interpolation='2333')
         build_from_cfg(transform, PIPELINES)
 
+    # test assertion when resize_short is invalid
+    with pytest.raises(AssertionError):
+        transform = dict(type='Resize', size=224, resize_short='False')
+        build_from_cfg(transform, PIPELINES)
+
     # test repr
     transform = dict(type='Resize', size=224)
     resize_module = build_from_cfg(transform, PIPELINES)
@@ -163,6 +168,46 @@ def test_resize():
     assert np.equal(results['img'], results['img2']).all()
     assert results['img_shape'] == (224, 224, 3)
     assert np.allclose(results['img'], resized_img, atol=30)
+
+    # test resize when size is tuple, the second value is -1
+    # and resize_short=False
+    transform = dict(
+        type='Resize',
+        size=(224, -1),
+        resize_short=False,
+        interpolation='bilinear')
+    resize_module = build_from_cfg(transform, PIPELINES)
+    results = reset_results(results, original_img)
+    results = resize_module(results)
+    assert np.equal(results['img'], results['img2']).all()
+    assert results['img_shape'] == (168, 224, 3)
+
+
+def test_pad():
+    results = dict()
+    img = mmcv.imread(
+        osp.join(osp.dirname(__file__), '../../data/color.jpg'), 'color')
+    results['img'] = img
+    results['img2'] = copy.deepcopy(img)
+    results['img_shape'] = img.shape
+    results['ori_shape'] = img.shape
+    results['img_fields'] = ['img', 'img2']
+
+    # test assertion if shape is None
+    with pytest.raises(AssertionError):
+        transform = dict(type='Pad', shape=None)
+        pad_module = build_from_cfg(transform, PIPELINES)
+        pad_result = pad_module(copy.deepcopy(results))
+        assert np.equal(pad_result['img'], pad_result['img2']).all()
+        assert pad_result['img_shape'] == (400, 400, 3)
+
+    # test if pad is valid
+    transform = dict(type='Pad', shape=(400, 400))
+    pad_module = build_from_cfg(transform, PIPELINES)
+    pad_result = pad_module(copy.deepcopy(results))
+    assert np.equal(pad_result['img'], pad_result['img2']).all()
+    assert pad_result['img_shape'] == (400, 400, 3)
+    assert np.allclose(pad_result['img'][-100:, :, :], 0)
 
 
 def test_center_crop():
