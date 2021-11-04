@@ -666,7 +666,7 @@ class Resize(object):
             "nearest", "bilinear", "bicubic", "area", "lanczos".
             More details can be found in `mmcv.image.geometric`.
         resize_short(bool): Whether to resize the short side and adapt
-            the long side or vice versa.
+            the long side or vice versa. Defaults: True.
         backend (str): The image resize backend type, accepted values are
             `cv2` and `pillow`. Default: `cv2`.
     """
