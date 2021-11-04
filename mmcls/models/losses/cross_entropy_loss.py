@@ -11,7 +11,8 @@ def cross_entropy(pred,
                   weight=None,
                   reduction='mean',
                   avg_factor=None,
-                  class_weight=None):
+                  class_weight=None,
+                  pos_weight=None):
     """Calculate the CrossEntropy loss.
 
     Args:
@@ -45,7 +46,8 @@ def soft_cross_entropy(pred,
                        weight=None,
                        reduction='mean',
                        class_weight=None,
-                       avg_factor=None):
+                       avg_factor=None,
+                       pos_weight=None):
     """Calculate the Soft CrossEntropy loss. The label can be float.
 
     Args:
@@ -83,7 +85,8 @@ def binary_cross_entropy(pred,
                          weight=None,
                          reduction='mean',
                          avg_factor=None,
-                         class_weight=None):
+                         class_weight=None,
+                         pos_weight=None):
     r"""Calculate the binary CrossEntropy loss with logits.
 
     Args:
@@ -98,6 +101,8 @@ def binary_cross_entropy(pred,
             the loss. Defaults to None.
         class_weight (torch.Tensor, optional): The weight for each class with
             shape (C), C is the number of classes. Default None.
+        pos_weight (torch.Tensor, optional): The positive weight for each
+            class with shape (C), C is the number of classes. Default None.
 
     Returns:
         torch.Tensor: The calculated loss
@@ -109,7 +114,11 @@ def binary_cross_entropy(pred,
         N = pred.size()[0]
         class_weight = class_weight.repeat(N, 1)
     loss = F.binary_cross_entropy_with_logits(
-        pred, label, weight=class_weight, reduction='none')
+        pred,
+        label,
+        weight=class_weight,
+        pos_weight=pos_weight,
+        reduction='none')
 
     # apply weights and do the reduction
     if weight is not None:
@@ -136,6 +145,8 @@ class CrossEntropyLoss(nn.Module):
         loss_weight (float):  Weight of the loss. Defaults to 1.0.
         class_weight (List[float], optional): The weight for each class with
             shape (C), C is the number of classes. Default None.
+        pos_weight (List[float], optional): The positive weight for each
+            class with shape (C), C is the number of classes. Default None.
     """
 
     def __init__(self,
@@ -143,7 +154,8 @@ class CrossEntropyLoss(nn.Module):
                  use_soft=False,
                  reduction='mean',
                  loss_weight=1.0,
-                 class_weight=None):
+                 class_weight=None,
+                 pos_weight=None):
         super(CrossEntropyLoss, self).__init__()
         self.use_sigmoid = use_sigmoid
         self.use_soft = use_soft
@@ -154,6 +166,7 @@ class CrossEntropyLoss(nn.Module):
         self.reduction = reduction
         self.loss_weight = loss_weight
         self.class_weight = class_weight
+        self.pos_weight = pos_weight
 
         if self.use_sigmoid:
             self.cls_criterion = binary_cross_entropy
@@ -178,6 +191,12 @@ class CrossEntropyLoss(nn.Module):
         else:
             class_weight = None
 
+        # only BCE loss has pos_weight
+        if self.pos_weight is not None and self.use_sigmoid:
+            pos_weight = cls_score.new_tensor(self.pos_weight)
+        else:
+            pos_weight = None
+
         loss_cls = self.loss_weight * self.cls_criterion(
             cls_score,
             label,
@@ -185,5 +204,6 @@ class CrossEntropyLoss(nn.Module):
             class_weight=class_weight,
             reduction=reduction,
             avg_factor=avg_factor,
+            pos_weight=pos_weight,
             **kwargs)
         return loss_cls
