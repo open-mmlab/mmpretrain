@@ -182,6 +182,38 @@ def test_resize():
     assert np.equal(results['img'], results['img2']).all()
     assert results['img_shape'] == (168, 224, 3)
 
+    # test resize when size is tuple, the second value is -1
+    # and resize_short=False, h > w
+    transform1 = dict(type='Resize', size=(300, 200), interpolation='bilinear')
+    resize_module1 = build_from_cfg(transform1, PIPELINES)
+    transform2 = dict(
+        type='Resize',
+        size=(224, -1),
+        resize_short=False,
+        interpolation='bilinear')
+    resize_module2 = build_from_cfg(transform2, PIPELINES)
+    results = reset_results(results, original_img)
+    results = resize_module1(results)
+    results = resize_module2(results)
+    assert np.equal(results['img'], results['img2']).all()
+    assert results['img_shape'] == (224, 149, 3)
+
+    # test resize when size is tuple, the second value is -1
+    # and resize_short=True, h > w
+    transform1 = dict(type='Resize', size=(300, 200), interpolation='bilinear')
+    resize_module1 = build_from_cfg(transform1, PIPELINES)
+    transform2 = dict(
+        type='Resize',
+        size=(224, -1),
+        resize_short=True,
+        interpolation='bilinear')
+    resize_module2 = build_from_cfg(transform2, PIPELINES)
+    results = reset_results(results, original_img)
+    results = resize_module1(results)
+    results = resize_module2(results)
+    assert np.equal(results['img'], results['img2']).all()
+    assert results['img_shape'] == (336, 224, 3)
+
 
 def test_pad():
     results = dict()
@@ -205,6 +237,7 @@ def test_pad():
     transform = dict(type='Pad', shape=(400, 400))
     pad_module = build_from_cfg(transform, PIPELINES)
     pad_result = pad_module(copy.deepcopy(results))
+    assert isinstance(repr(pad_module), str)
     assert np.equal(pad_result['img'], pad_result['img2']).all()
     assert pad_result['img_shape'] == (400, 400, 3)
     assert np.allclose(pad_result['img'][-100:, :, :], 0)
