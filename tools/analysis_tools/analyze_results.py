@@ -97,7 +97,11 @@ def main():
     outputs['gt_label'] = gt_labels
     outputs['gt_class'] = gt_classes
 
-    outputs = {k: v for k, v in outputs.items() if isinstance(v, list)}
+    need_keys = [
+        'filename', 'gt_label', 'gt_class', 'pred_score', 'pred_label',
+        'pred_class'
+    ]
+    outputs = {k: v for k, v in outputs.items() if k in need_keys}
     outputs_list = list()
     for i in range(len(gt_labels)):
         output = dict()
