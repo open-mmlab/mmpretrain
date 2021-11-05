@@ -8,32 +8,6 @@ from mmcls.models.utils import PatchEmbed
 from ..builder import BACKBONES
 
 
-class Mlp(BaseModule):
-    """MLP as used in Vision Transformer, MLP-Mixer and related networks."""
-
-    def __init__(self,
-                 in_features,
-                 hidden_features=None,
-                 out_features=None,
-                 act_layer_cfg=dict(type='GELU'),
-                 drop=0.):
-        super().__init__()
-        out_features = out_features or in_features
-        hidden_features = hidden_features or in_features
-        self.fc1 = nn.Linear(in_features, hidden_features)
-        self.act = build_activation_layer(act_layer_cfg)
-        self.fc2 = nn.Linear(hidden_features, out_features)
-        self.drop = nn.Dropout(drop)
-
-    def forward(self, x):
-        x = self.fc1(x)
-        x = self.act(x)
-        x = self.drop(x)
-        x = self.fc2(x)
-        x = self.drop(x)
-        return x
-
-
 class MixerBlock(nn.Module):
     """Residual Block w/ token mixing and channel MLPs.
 
@@ -52,14 +26,32 @@ class MixerBlock(nn.Module):
         super().__init__()
         tokens_dim, channels_dim = [int(x * dim) for x in to_2tuple(mlp_ratio)]
         self.norm1 = build_norm_layer(norm_cfg, dim)[1]
-        self.mlp_tokens = Mlp(
+        self.mlp_tokens = self.__build_mlp(
             seq_len, tokens_dim, act_layer_cfg=act_layer_cfg, drop=drop)
         self.drop_path = build_dropout(
             dict(type='DropPath',
                  drop_prob=drop_path)) if drop_path > 0. else nn.Identity()
         self.norm2 = build_norm_layer(norm_cfg, dim)[1]
-        self.mlp_channels = Mlp(
+        self.mlp_channels = self.__build_mlp(
             dim, channels_dim, act_layer_cfg=act_layer_cfg, drop=drop)
+
+    def __build_mlp(self,
+                    in_features,
+                    hidden_features=None,
+                    out_features=None,
+                    act_layer_cfg=None,
+                    drop=0.):
+        out_features = out_features or in_features
+        hidden_features = hidden_features or in_features
+        mlp = Sequential(*[
+            nn.Linear(in_features, hidden_features),
+            build_activation_layer(act_layer_cfg),
+            nn.Dropout(drop),
+            nn.Linear(hidden_features, out_features),
+            nn.Dropout(drop)
+        ])
+
+        return mlp
 
     def forward(self, x):
         x = x + self.drop_path(
@@ -129,9 +121,17 @@ def convert_weights(weight):
     result = dict()
     result['meta'] = dict()
     temp = dict()
+    mapping = {
+        'proj': 'projection',
+        'mlp_tokens.fc1': 'mlp_tokens.0',
+        'mlp_tokens.fc2': 'mlp_tokens.3',
+        'mlp_channels.fc1': 'mlp_channels.0',
+        'mlp_channels.fc2': 'mlp_channels.3',
+    }
     for k, v in weight.items():
-        if 'proj' in k:
-            k = k.replace('proj', 'projection')
+        for mk, mv in mapping.items():
+            if mk in k:
+                k = k.replace(mk, mv)
         if k.startswith('head.'):
             temp['head.fc.' + k[5:]] = v
         else:
