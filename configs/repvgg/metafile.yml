@@ -31,7 +31,7 @@ Models:
       Weights: https://drive.google.com/drive/folders/1Avome4KvNp0Lqh2QwhXO6L5URQjzCjUq
       Code: https://github.com/DingXiaoH/RepVGG/blob/9f272318abfc47a2b702cd0e916fca8d25d683e7/repvgg.py#L196
   - Name: repvgg-A1_4xb64-coslr-120e_in1k
-    In Collection: Repvgg
+    In Collection: RepVGG
     Config: configs/repvgg/repvgg-A1_4xb64-coslr-120e_in1k.py
     Metadata:
       FLOPs: 2640000000
@@ -47,7 +47,7 @@ Models:
       Weights: https://drive.google.com/drive/folders/1Avome4KvNp0Lqh2QwhXO6L5URQjzCjUq
       Code: https://github.com/DingXiaoH/RepVGG/blob/9f272318abfc47a2b702cd0e916fca8d25d683e7/repvgg.py#L200
   - Name: repvgg-A2_4xb64-coslr-120e_in1k
-    In Collection: Repvgg
+    In Collection: RepVGG
     Config: configs/repvgg/repvgg-A2_4xb64-coslr-120e_in1k.py
     Metadata:
       FLOPs: 28210000000
