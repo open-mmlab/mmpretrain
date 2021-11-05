@@ -97,6 +97,7 @@ def main():
     outputs['gt_label'] = gt_labels
     outputs['gt_class'] = gt_classes
 
+    outputs = {k: v for k, v in outputs.items() if isinstance(v, list)}
     outputs_list = list()
     for i in range(len(gt_labels)):
         output = dict()
