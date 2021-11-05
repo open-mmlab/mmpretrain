@@ -22,7 +22,8 @@ You can switch between Chinese and English documents in the lower-left corner of
    tutorials/new_dataset.md
    tutorials/data_pipeline.md
    tutorials/new_modules.md
-   tutorials/customize_runtime.md
+   tutorials/schedule.md
+   tutorials/runtime.md
 
 
 .. include:: _model_zoo.rst

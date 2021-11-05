@@ -74,7 +74,8 @@ Please see [getting_started.md](docs/getting_started.md) for the basic usage of 
 - [adding new dataset](docs/tutorials/new_dataset.md)
 - [designing data pipeline](docs/tutorials/data_pipeline.md)
 - [adding new modules](docs/tutorials/new_modules.md)
-- [customizing runtime settings](docs/tutorials/customize_runtime.md)
+- [customizing schedule](docs/tutorials/schedule.md)
+- [customizing runtime settings](docs/tutorials/runtime.md)
 
 Colab tutorials are also provided. To learn about MMClassification Python API, you may preview the notebook [here](https://github.com/open-mmlab/mmclassification/blob/master/docs/tutorials/MMClassification_python.ipynb) or directly [run](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/tutorials/MMClassification_python.ipynb) on Colab.
 To learn about MMClassification shell tools, you may preview the notebook [here](https://github.com/open-mmlab/mmclassification/blob/master/docs/tutorials/MMClassification_tools.ipynb) or directly [run](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/tutorials/MMClassification_tools.ipynb) on Colab.
