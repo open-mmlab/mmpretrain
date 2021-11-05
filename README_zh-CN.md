@@ -74,7 +74,8 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 - [如何增加新数据集](docs_zh-CN/tutorials/new_dataset.md)
 - [如何设计数据处理流程](/docs_zh-CN/tutorials/data_pipeline.md)
 - [如何增加新模块](docs_zh-CN/tutorials/new_modules.md)
-- [如何自定义模型运行参数](docs_zh-CN/tutorials/customize_runtime.md)
+- [如何自定义优化策略](tutorials/schedule.md)
+- [如何自定义运行参数](tutorials/runtime.md)
 
 MMClassification 也提供了相应的中文 Colab 教程。了解 MMClassification Python API，可以查看 [这里](https://github.com/open-mmlab/mmclassification/blob/master/docs_zh-CN/tutorials/MMClassification_python_cn.ipynb) 或者直接在 Colab 上 [运行](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs_zh-CN/tutorials/MMClassification_python_cn.ipynb)。了解 MMClassification 命令行工具，可以查看 [这里](https://github.com/open-mmlab/mmclassification/blob/master/docs_zh-CN/tutorials/MMClassification_tools_cn.ipynb) 或者直接在 Colab 上 [运行](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs_zh-CN/tutorials/MMClassification_tools_cn.ipynb)。
 

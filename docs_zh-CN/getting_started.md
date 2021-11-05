@@ -228,4 +228,4 @@ python tools/convert_models/publish_model.py work_dirs/resnet50/latest.pth image
 - [如何设计数据处理流程](tutorials/data_pipeline.md)
 - [如何增加新模块](tutorials/new_modules.md)
 - [如何自定义优化策略](tutorials/schedule.md)
-- [如何自定义模型运行参数](tutorials/runtime.md)。
+- [如何自定义运行参数](tutorials/runtime.md)。

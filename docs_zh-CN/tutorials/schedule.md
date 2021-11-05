@@ -1,6 +1,6 @@
-# Tutorial 6: 如何自定义优化策略
+# 教程 6：如何自定义优化策略
 
-在本教程中，我们将介绍如何在运行自定义模型时，进行构造优化器、定制学习率及动量调整策略、梯度裁剪、梯度累计以及自定义设计优化方法等。
+在本教程中，我们将介绍如何在运行自定义模型时，进行构造优化器、定制学习率及动量调整策略、梯度裁剪、梯度累计以及用户自定义优化方法等。
 
 <!-- TOC -->
 
@@ -13,7 +13,7 @@
 - [梯度裁剪与梯度累计](#梯度裁剪与梯度累计)
   - [梯度裁剪](#梯度裁剪)
   - [梯度累计](#梯度累计)
-- [用户自定义设计优化方法](#用户自定义设计优化方法)
+- [用户自定义优化方法](#用户自定义优化方法)
   - [自定义优化器](#自定义优化器)
   - [自定义优化器构造器](#自定义优化器构造器)
 
@@ -56,16 +56,17 @@ optimizer = dict(type='Adam', lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_de
 
 此外，也支持其他学习率调整方法，如 `CosineAnnealing` 和 `Poly` 等。 详情可见 [这里](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/lr_updater.py)
 
-- Poly:
-
-    ```python
-    lr_config = dict(policy='poly', power=0.9, min_lr=1e-4, by_epoch=False)
-    ```
 
 - ConsineAnnealing:
 
     ```python
     lr_config = dict(policy='CosineAnnealing', min_lr_ratio=1e-5)
+    ```
+
+- Poly:
+
+    ```python
+    lr_config = dict(policy='poly', power=0.9, min_lr=1e-4, by_epoch=False)
     ```
 
 - ······
@@ -76,7 +77,7 @@ optimizer = dict(type='Adam', lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_de
 
 - type : 必须为 'constant'、 'linear' 以及 'exp' 其一。
 - warmup_by_epoch : 是否以轮次 (epoch) 预热。
-- warmup_iters :  预热的迭代次数，当 `warmup_by_epoch=True` 时，单位为轮次 (epoch)； 
+- warmup_iters :  预热的迭代次数，当 `warmup_by_epoch=True` 时，单位为轮次 (epoch)；
     当 `warmup_by_epoch=False` 时，单位为迭代次数 (iter)。
 - warmup_ratio : 预测的初始学习率 `lr = lr * warmup_ratio`。
 
@@ -84,28 +85,28 @@ optimizer = dict(type='Adam', lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_de
 
 1. linear & warmup by iter
 
-```python
-lr_config = dict(
-    policy='CosineAnnealing',
-    by_epoch=False,
-    min_lr_ratio=1e-2,
-    warmup='linear',
-    warmup_ratio=1e-3,
-    warmup_iters=20 * 1252,
-    warmup_by_epoch=False)
-```
+    ```python
+    lr_config = dict(
+        policy='CosineAnnealing',
+        by_epoch=False,
+        min_lr_ratio=1e-2,
+        warmup='linear',
+        warmup_ratio=1e-3,
+        warmup_iters=20 * 1252,
+        warmup_by_epoch=False)
+    ```
 
 2. exp & warmup by epoch
 
-```python
-lr_config = dict(
-    policy='CosineAnnealing',
-    min_lr=0,
-    warmup='exp',
-    warmup_iters=5,
-    warmup_ratio=0.1,
-    warmup_by_epoch=True)
-```
+    ```python
+    lr_config = dict(
+        policy='CosineAnnealing',
+        min_lr=0,
+        warmup='exp',
+        warmup_iters=5,
+        warmup_ratio=0.1,
+        warmup_by_epoch=True)
+    ```
 
 **配置完成后，可以使用 MMClassification 提供的 [学习率可视化工具](https://mmclassification.readthedocs.io/zh_CN/latest/tools/visualization.html#id3) 画出对应学习率调整曲线。**
 
@@ -138,34 +139,34 @@ MMClassification 提供了 `paramwise_cfg` 进行配置，可以参考[MMCV](htt
 
 - 使用指定选项
 
-MMClassification 提供了包括 `bias_lr_mult`、 `bias_decay_mult`、 `norm_decay_mult`、 `dwconv_decay_mult`、 `dcn_offset_lr_mult` 和 `bypass_duplicate` 选项，指定相关所有的 `bais`、 `norm`、 `dwconv`、 `dcn` 和 `bypass` 参数。例如：
+    MMClassification 提供了包括 `bias_lr_mult`、 `bias_decay_mult`、 `norm_decay_mult`、 `dwconv_decay_mult`、 `dcn_offset_lr_mult` 和 `bypass_duplicate` 选项，指定相关所有的 `bais`、 `norm`、 `dwconv`、 `dcn` 和 `bypass` 参数。例如：
 
-1. 模型中所有的 BN 不进行参数衰减
+    模型中所有的 BN 不进行参数衰减
 
-```python
-paramwise_cfg = dict(norm_decay_mult=0.)
-```
+    ```python
+    paramwise_cfg = dict(norm_decay_mult=0.)
+    ```
 
 - 使用 `custom_keys` 指定参数
 
-MMClassification 可通过 `custom_keys` 指定不同的参数使用不同的学习率或者权重衰减，例如：
+    MMClassification 可通过 `custom_keys` 指定不同的参数使用不同的学习率或者权重衰减，例如：
 
-1. 对特定的参数不使用权重衰减
+    对特定的参数不使用权重衰减
 
-```python
-paramwise_cfg = dict(
-    custom_keys={
-        '.backbone.cls_token': dict(decay_mult=0.0),
-        '.backbone.pos_embed': dict(decay_mult=0.0)
-    })
-```
+    ```python
+    paramwise_cfg = dict(
+        custom_keys={
+            '.backbone.cls_token': dict(decay_mult=0.0),
+            '.backbone.pos_embed': dict(decay_mult=0.0)
+        })
+    ```
 
-2. 对 backbone 使用更小的学习率与衰减系数
+    对 backbone 使用更小的学习率与衰减系数
 
-```python
-paramwise_cfg = dict(custom_keys={'.backbone': dict(lr_mult=0.1, decay_mult=0.9)})s
-# backbone 的 'lr' and 'weight_decay' 分别为 0.1 * lr 和 0.9 * weight_decay
-```
+    ```python
+    paramwise_cfg = dict(custom_keys={'.backbone': dict(lr_mult=0.1, decay_mult=0.9)})s
+    # backbone 的 'lr' and 'weight_decay' 分别为 0.1 * lr 和 0.9 * weight_decay
+    ```
 
 ## 梯度裁剪与梯度累计
 
@@ -173,7 +174,7 @@ MMCV 在 PyTorch 基础优化器的基础上，对优化器的功能进行增强
 
 ### 梯度裁剪
 
-训练过程中，异常点可能会导致一些模型梯度爆炸，需要使用梯度裁剪以稳定训练过程。 
+训练过程中，异常点可能会导致一些模型梯度爆炸，需要使用梯度裁剪以稳定训练过程。
 目前支持 `clip_grad_norm_`，可参考 [PyTorch 文档](https://pytorch.org/docs/stable/generated/torch.nn.utils.clip_grad_norm_.html)。
 例子如下：
 
@@ -196,7 +197,7 @@ optimizer_config = dict(type="OptimizerHook", grad_clip=dict(max_norm=35, norm_t
 optimizer_config = dict(type="GradientCumulativeOptimizerHook", cumulative_iters=4)
 ```
 
-表示训练时，每4个 iter 执行一次反向传播。  
+表示训练时，每4个 iter 执行一次反向传播。
 如果此时的  `DataLoader` 的 batch_size 为 64，那么上述等价于：
 
 ```
@@ -204,7 +205,7 @@ loader = DataLoader(data, batch_size=256)
 optim_hook = OptimizerHook()
 ```
 
-## 用户自定义设计优化方法
+## 用户自定义优化方法
 
 在学术研究和工业实践中，可能需要使用 MMClassification 未实现的优化方法，用户可以通过以下方法添加。
 

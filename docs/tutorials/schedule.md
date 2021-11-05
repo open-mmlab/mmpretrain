@@ -53,12 +53,6 @@ We use step learning rate with default value in config files, this calls [`StepL
 
 We support many other learning rate schedule [here](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/lr_updater.py), such as `CosineAnnealing` and `Poly` schedule. Here are some examples
 
-- Poly schedule:
-
-    ```python
-    lr_config = dict(policy='poly', power=0.9, min_lr=1e-4, by_epoch=False)
-    ```
-
 - ConsineAnnealing schedule:
 
     ```python
@@ -70,6 +64,12 @@ We support many other learning rate schedule [here](https://github.com/open-mmla
         min_lr_ratio=1e-5)
     ```
 
+- Poly schedule:
+
+    ```python
+    lr_config = dict(policy='poly', power=0.9, min_lr=1e-4, by_epoch=False)
+    ```
+
 - ······
 
 ### Warmup strategy
@@ -79,95 +79,95 @@ We support many other learning rate schedule [here](https://github.com/open-mmla
 - type : must be one of 'constant'、 'linear' 以及 'exp'.
 - warmup_by_epoch : if warmup by epoch or not, default to be True, if set to be False, warmup by iter.
 - warmup_iters : the number of warm-up iterations, when `warmup_by_epoch=True`, the unit is epoch; when `warmup_by_epoch=False`, the unit is the number of iterations (iter).
-- warmup_ratio : warm-up initial learning rate will caculate as `lr = lr * warmup_ratio`。
+- warmup_ratio : warm-up initial learning rate will calculate as `lr = lr * warmup_ratio`。
 
 Here are some examples
 
 1. linear & warmup by iter
 
-```python
-lr_config = dict(
-    policy='CosineAnnealing',
-    by_epoch=False,
-    min_lr_ratio=1e-2,
-    warmup='linear',
-    warmup_ratio=1e-3,
-    warmup_iters=20 * 1252,
-    warmup_by_epoch=False)
-```
+    ```python
+    lr_config = dict(
+        policy='CosineAnnealing',
+        by_epoch=False,
+        min_lr_ratio=1e-2,
+        warmup='linear',
+        warmup_ratio=1e-3,
+        warmup_iters=20 * 1252,
+        warmup_by_epoch=False)
+    ```
 
 2. exp & warmup by epoch
 
-```python
-lr_config = dict(
-    policy='CosineAnnealing',
-    min_lr=0,
-    warmup='exp',
-    warmup_iters=5,
-    warmup_ratio=0.1,
-    warmup_by_epoch=True)
-```
+    ```python
+    lr_config = dict(
+        policy='CosineAnnealing',
+        min_lr=0,
+        warmup='exp',
+        warmup_iters=5,
+        warmup_ratio=0.1,
+        warmup_by_epoch=True)
+    ```
 
 ## Customize momentum schedules
 
-    We support momentum scheduler to modify model's momentum according to learning rate, which could make the model converge in a faster way.
-    Momentum scheduler is usually used with LR scheduler, for example, the following config is used  to accelerate convergence.
-    For more details, please refer to the implementation of [CyclicLrUpdater](https://github.com/open-mmlab/mmcv/blob/f48241a65aebfe07db122e9db320c31b685dc674/mmcv/runner/hooks/lr_updater.py#L327)
-    and [CyclicMomentumUpdater](https://github.com/open-mmlab/mmcv/blob/f48241a65aebfe07db122e9db320c31b685dc674/mmcv/runner/hooks/momentum_updater.py#L130).
+We support momentum scheduler to modify model's momentum according to learning rate, which could make the model converge in a faster way.
+Momentum scheduler is usually used with LR scheduler, for example, the following config is used  to accelerate convergence.
+For more details, please refer to the implementation of [CyclicLrUpdater](https://github.com/open-mmlab/mmcv/blob/f48241a65aebfe07db122e9db320c31b685dc674/mmcv/runner/hooks/lr_updater.py#L327)
+and [CyclicMomentumUpdater](https://github.com/open-mmlab/mmcv/blob/f48241a65aebfe07db122e9db320c31b685dc674/mmcv/runner/hooks/momentum_updater.py#L130).
 
-    ```python
-    lr_config = dict(
-        policy='cyclic',
-        target_ratio=(10, 1e-4),
-        cyclic_times=1,
-        step_ratio_up=0.4,
-    )
-    momentum_config = dict(
-        policy='cyclic',
-        target_ratio=(0.85 / 0.95, 1),
-        cyclic_times=1,
-        step_ratio_up=0.4,
-    )
-    ```
+```python
+lr_config = dict(
+    policy='cyclic',
+    target_ratio=(10, 1e-4),
+    cyclic_times=1,
+    step_ratio_up=0.4,
+)
+momentum_config = dict(
+    policy='cyclic',
+    target_ratio=(0.85 / 0.95, 1),
+    cyclic_times=1,
+    step_ratio_up=0.4,
+)
+```
 
 **After completing your configuration file，you could use [learning rate visualization tool](https://mmclassification.readthedocs.io/zh_CN/latest/tools/visualization.html#id3) to draw the corresponding learning rate adjustment curve.**
 
 ## Use multiple learning rates and weight_decays
 
-Some models may have some parameter-specific settings for optimization, for example, no weight decay to the BatchNorm layer or useing different learning rates for different network layers.
+Some models may have some parameter-specific settings for optimization, for example, no weight decay to the BatchNorm layer or using different learning rates for different network layers.
 MMClassification provides `paramwise_cfg` for configuration, please refer to [MMCV](https://mmcv.readthedocs.io/en/latest/_modules/mmcv/runner/optimizer/default_constructor.html#DefaultOptimizerConstructor).
 
 - Using specified options
 
-MMClassification provides options including `bias_lr_mult`, `bias_decay_mult`, `norm_decay_mult`, `dwconv_decay_mult`, `dcn_offset_lr_mult` and `bypass_duplicate` to specify all relevant `bais`, `conv and`, `dw bypass` parameter. E.g:
+    MMClassification provides options including `bias_lr_mult`, `bias_decay_mult`, `norm_decay_mult`, `dwconv_decay_mult`, `dcn_offset_lr_mult` and `bypass_duplicate` to specify all relevant `bais`, `conv and`, `dw bypass` parameter. E.g:
 
-1. No weight decay to the BatchNorm layer
+    1. No weight decay to the BatchNorm layer
 
-```python
-paramwise_cfg = dict(norm_decay_mult=0.)
-```
+    ```python
+    paramwise_cfg = dict(norm_decay_mult=0.)
+    ```
 
 - Using `custom_keys` dict
 
-MMClassification can use `custom_keys` to specify different parameters to use different learning rates or weight decays, 
-for example:
+    MMClassification can use `custom_keys` to specify different parameters to use different learning rates or weight decays,
+    for example:
 
-1. No weight decay for specific parameters
+    1. No weight decay for specific parameters
 
-```python
-paramwise_cfg = dict(
-    custom_keys={
-        '.backbone.cls_token': dict(decay_mult=0.0),
-        '.backbone.pos_embed': dict(decay_mult=0.0)
-    })
-```
+    ```python
+    paramwise_cfg = dict(
+        custom_keys={
+            '.backbone.cls_token': dict(decay_mult=0.0),
+            '.backbone.pos_embed': dict(decay_mult=0.0)
+        })
+    ```
 
-2. Using a smaller learning rate and aweight decay for the backbone layers
+    2. Using a smaller learning rate and aweight decay for the backbone layers
 
-```python
-paramwise_cfg = dict(custom_keys={'.backbone': dict(lr_mult=0.1, decay_mult=0.9)})s
-# backbone 的 'lr' and 'weight_decay' 分别为 0.1 * lr 和 0.9 * weight_decay
-```
+    ```python
+    paramwise_cfg = dict(custom_keys={'.backbone': dict(lr_mult=0.1, decay_mult=0.9)})s
+    # backbone 的 'lr' and 'weight_decay' 分别为 0.1 * lr 和 0.9 * weight_decay
+    ```
 
 ## Gradient clipping and gradient accumulation
 
@@ -194,9 +194,16 @@ optimizer_config = dict(type="OptimizerHook", grad_clip=dict(max_norm=35, norm_t
 When computing resources are lacking, BatchSize can only be set to a small value, which affects the effect of the resulting model. Gradient accumulation can be used to circumvent this problem.
 Examples are as follows:
 
-```python
-optimizer_config = dict(type="GradientCumulativeOptimizerHook", cumulative_iters=4)
-```
+- ConsineAnnealing schedule:
+
+    ```python
+    lr_config = dict(
+        policy='CosineAnnealing',
+        warmup='linear',
+        warmup_iters=1000,
+        warmup_ratio=1.0 / 10,
+        min_lr_ratio=1e-5)
+    ```
 
 Indicates that during training, back-propagation is performed every 4 iters.
 If the batch_size of the `DataLoader` at this time is 64, then the above is equivalent to:
@@ -295,4 +302,3 @@ class MyOptimizerConstructor:
 ```
 
 The default optimizer constructor is implemented [here](https://github.com/open-mmlab/mmcv/blob/9ecd6b0d5ff9d2172c49a182eaa669e9f27bb8e7/mmcv/runner/optimizer/default_constructor.py#L11), which could also serve as a template for new optimizer constructor.
-

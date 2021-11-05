@@ -262,7 +262,5 @@ custom_hooks = [
 - init_cfg.Pretrained 加载模型权重，并且可以按 'key' 指定加载。
 
 ```{note}
-模型微调时更推荐使用在 init_cfg.Pretrained  指定预训练权重。 
+模型微调时更推荐使用在 init_cfg.Pretrained 指定预训练权重。
 ```
-
-
