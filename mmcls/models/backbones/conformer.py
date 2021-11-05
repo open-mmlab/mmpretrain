@@ -4,7 +4,6 @@ import torch.nn.functional as F
 from mmcv.cnn import build_activation_layer, build_norm_layer
 from mmcv.cnn.bricks.drop import DropPath
 from mmcv.cnn.utils.weight_init import trunc_normal_
-from mmcv.runner import load_checkpoint
 
 from mmcls.utils import get_root_logger
 from ..builder import BACKBONES
@@ -20,38 +19,37 @@ class ConvBlock(nn.Module):
                  stride=1,
                  res_conv=False,
                  groups=1,
-                 drop_block=None,
                  drop_path=0.,
                  norm_cfg=dict(type='BN', eps=1e-6),
                  act_cfg=dict(type='ReLU', inplace=True)):
         super(ConvBlock, self).__init__()
 
         expansion = 4
-        med_planes = out_channels // expansion
+        mid_channels = out_channels // expansion
 
         self.conv1 = nn.Conv2d(
             in_channels,
-            med_planes,
+            mid_channels,
             kernel_size=1,
             stride=1,
             padding=0,
             bias=False)
-        self.bn1 = build_norm_layer(norm_cfg, med_planes)[1]
+        self.bn1 = build_norm_layer(norm_cfg, mid_channels)[1]
         self.act1 = build_activation_layer(act_cfg)
 
         self.conv2 = nn.Conv2d(
-            med_planes,
-            med_planes,
+            mid_channels,
+            mid_channels,
             kernel_size=3,
             stride=stride,
             groups=groups,
             padding=1,
             bias=False)
-        self.bn2 = build_norm_layer(norm_cfg, med_planes)[1]
+        self.bn2 = build_norm_layer(norm_cfg, mid_channels)[1]
         self.act2 = build_activation_layer(act_cfg)
 
         self.conv3 = nn.Conv2d(
-            med_planes,
+            mid_channels,
             out_channels,
             kernel_size=1,
             stride=1,
@@ -71,7 +69,6 @@ class ConvBlock(nn.Module):
             self.residual_bn = build_norm_layer(norm_cfg, out_channels)[1]
 
         self.res_conv = res_conv
-        self.drop_block = drop_block
         self.drop_path = DropPath(
             drop_path) if drop_path > 0. else nn.Identity()
 
@@ -83,21 +80,15 @@ class ConvBlock(nn.Module):
 
         x = self.conv1(x)
         x = self.bn1(x)
-        if self.drop_block is not None:
-            x = self.drop_block(x)
         x = self.act1(x)
 
         x = self.conv2(x) if fusion_features is None else self.conv2(
             x + fusion_features)
         x = self.bn2(x)
-        if self.drop_block is not None:
-            x = self.drop_block(x)
         x2 = self.act2(x)
 
         x = self.conv3(x2)
         x = self.bn3(x)
-        if self.drop_block is not None:
-            x = self.drop_block(x)
 
         if self.drop_path is not None:
             x = self.drop_path(x)
@@ -203,7 +194,6 @@ class ConvTransBlock(nn.Module):
                  attn_drop_rate=0.,
                  drop_path_rate=0.,
                  last_fusion=False,
-                 num_med_block=0,
                  groups=1):
 
         super(ConvTransBlock, self).__init__()
@@ -230,9 +220,6 @@ class ConvTransBlock(nn.Module):
                 groups=groups,
                 drop_path=drop_path_rate)
 
-        if num_med_block > 0:
-            raise NotImplementedError
-
         self.squeeze_block = FCUDown(
             in_channels=out_channels // expansion,
             out_channels=embed_dim,
@@ -257,27 +244,26 @@ class ConvTransBlock(nn.Module):
 
         self.dw_stride = dw_stride
         self.embed_dim = embed_dim
-        self.num_med_block = num_med_block
         self.last_fusion = last_fusion
 
-    def forward(self, x, x_t):
-        x, x_conv2 = self.cnn_block(x)
+    def forward(self, cnn_input, trans_input):
+        x, x_conv2 = self.cnn_block(cnn_input, out_conv2=True)
 
         _, _, H, W = x_conv2.shape
 
-        x_conv2_emd = self.squeeze_block(x_conv2, x_t)
+        # Convert the feature map of conv2 to transformer embedding
+        # and concat with class token.
+        conv2_embedding = self.squeeze_block(x_conv2, trans_input)
 
-        x_t = self.trans_block(x_conv2_emd + x_t)
+        trans_output = self.trans_block(conv2_embedding + trans_input)
 
-        if self.num_med_block > 0:
-            for m in self.med_block:
-                x = m(x)
+        # Convert the transformer output embedding to feature map
+        trans_features = self.expand_block(trans_output, H // self.dw_stride,
+                                           W // self.dw_stride)
+        x = self.fusion_block(
+            x, fusion_features=trans_features, out_conv2=False)
 
-        x_t_fea = self.expand_block(x_t, H // self.dw_stride,
-                                    W // self.dw_stride)
-        x = self.fusion_block(x, fusion_features=x_t_fea, out_conv2=False)
-
-        return x, x_t
+        return x, trans_output
 
 
 @BACKBONES.register_module()
@@ -486,13 +472,7 @@ class Conformer(BaseBackbone):
         if (isinstance(self.init_cfg, dict)
                 and self.init_cfg['type'] == 'Pretrained'):
             # Suppress default init if use pretrained model.
-            load_checkpoint(
-                self,
-                self.init_cfg.checkpoint,
-                strict=False,
-                logger=logger,
-                map_location='cpu')
-
+            return
         else:
             logger.info(f'No pre-trained weights for '
                         f'{self.__class__.__name__}, '
