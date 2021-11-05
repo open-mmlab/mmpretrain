@@ -1,7 +1,7 @@
 Welcome to MMClassification's documentation!
 ============================================
 
-You can switch between Chinese and English documents in the lower-left corner of the layout.
+You can switch between Chinese and English documentation in the lower-left corner of the layout.
 
 您可以在页面左下角切换中英文文档。
 
