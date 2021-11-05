@@ -65,7 +65,7 @@ def test_resize():
 
     # test assertion when resize_short is invalid
     with pytest.raises(AssertionError):
-        transform = dict(type='Resize', size=224, resize_short='False')
+        transform = dict(type='Resize', size=224, adaptive_side='False')
         build_from_cfg(transform, PIPELINES)
 
     # test repr
@@ -174,7 +174,7 @@ def test_resize():
     transform = dict(
         type='Resize',
         size=(224, -1),
-        resize_short=False,
+        adaptive_side='long',
         interpolation='bilinear')
     resize_module = build_from_cfg(transform, PIPELINES)
     results = reset_results(results, original_img)
@@ -189,7 +189,7 @@ def test_resize():
     transform2 = dict(
         type='Resize',
         size=(224, -1),
-        resize_short=False,
+        adaptive_side='long',
         interpolation='bilinear')
     resize_module2 = build_from_cfg(transform2, PIPELINES)
     results = reset_results(results, original_img)
@@ -205,7 +205,7 @@ def test_resize():
     transform2 = dict(
         type='Resize',
         size=(224, -1),
-        resize_short=True,
+        adaptive_side='short',
         interpolation='bilinear')
     resize_module2 = build_from_cfg(transform2, PIPELINES)
     results = reset_results(results, original_img)
@@ -227,14 +227,23 @@ def test_pad():
 
     # test assertion if shape is None
     with pytest.raises(AssertionError):
-        transform = dict(type='Pad', shape=None)
+        transform = dict(type='Pad', size=None)
         pad_module = build_from_cfg(transform, PIPELINES)
         pad_result = pad_module(copy.deepcopy(results))
         assert np.equal(pad_result['img'], pad_result['img2']).all()
         assert pad_result['img_shape'] == (400, 400, 3)
 
     # test if pad is valid
-    transform = dict(type='Pad', shape=(400, 400))
+    transform = dict(type='Pad', size=(400, 400))
+    pad_module = build_from_cfg(transform, PIPELINES)
+    pad_result = pad_module(copy.deepcopy(results))
+    assert isinstance(repr(pad_module), str)
+    assert np.equal(pad_result['img'], pad_result['img2']).all()
+    assert pad_result['img_shape'] == (400, 400, 3)
+    assert np.allclose(pad_result['img'][-100:, :, :], 0)
+
+    # test if pad is valid
+    transform = dict(type='Pad', size=-1)
     pad_module = build_from_cfg(transform, PIPELINES)
     pad_result = pad_module(copy.deepcopy(results))
     assert isinstance(repr(pad_module), str)

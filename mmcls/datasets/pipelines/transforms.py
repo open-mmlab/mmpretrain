@@ -617,24 +617,30 @@ class Pad(object):
     """Pad images.
 
     Args:
-        shape (tuple[int]): Expected padding shape (h, w)
+        size (tuple[int] | int): Expected padding size (h, w), using -1
+            to adaptively pad any image to square shape.
         pad_val (Number | Sequence[Number]): Values to be filled in padding
-            areas when padding_mode is 'constant'. Default: 0.
+            areas when padding_mode is 'constant'. Default to 0.
         padding_mode (str): Type of padding. Should be: constant, edge,
-            reflect or symmetric. Default: constant.
+            reflect or symmetric. Default to "constant".
     """
 
-    def __init__(self, shape, pad_val=0, padding_mode='constant'):
-        self.shape = shape
+    def __init__(self, size, pad_val=0, padding_mode='constant'):
+        self.size = size
         self.pad_val = pad_val
         self.padding_mode = padding_mode
 
     def __call__(self, results):
         for key in results.get('img_fields', ['img']):
             img = results[key]
+            if self.size == -1:
+                target_size = tuple(
+                    max(img.shape[0], img.shape[1]) for _ in range(2))
+            else:
+                target_size = self.size
             img = mmcv.impad(
                 img,
-                shape=self.shape,
+                shape=target_size,
                 pad_val=self.pad_val,
                 padding_mode=self.padding_mode)
             results[key] = img
@@ -643,7 +649,7 @@ class Pad(object):
 
     def __repr__(self):
         repr_str = self.__class__.__name__
-        repr_str += f'(shape={self.shape}, '
+        repr_str += f'(size={self.size}, '
         repr_str += f'(pad_val={self.pad_val}, '
         repr_str += f'padding_mode={self.padding_mode})'
         return repr_str
@@ -665,8 +671,8 @@ class Resize(object):
         interpolation (str): Interpolation method, accepted values are
             "nearest", "bilinear", "bicubic", "area", "lanczos".
             More details can be found in `mmcv.image.geometric`.
-        resize_short(bool): Whether to resize the short side and adapt
-            the long side or vice versa. Defaults: True.
+        adaptive_side(bool): Adaptive resize policy, accepted values are
+            "short", "long", "height", "width". Default to "short".
         backend (str): The image resize backend type, accepted values are
             `cv2` and `pillow`. Default: `cv2`.
     """
@@ -674,13 +680,13 @@ class Resize(object):
     def __init__(self,
                  size,
                  interpolation='bilinear',
-                 resize_short=True,
+                 adaptive_side='short',
                  backend='cv2'):
         assert isinstance(size, int) or (isinstance(size, tuple)
                                          and len(size) == 2)
-        assert isinstance(resize_short, bool)
+        assert adaptive_side in {'short', 'long', 'height', 'width'}
 
-        self.resize_w_short = resize_short
+        self.adaptive_side = adaptive_side
         self.adaptive_resize = False
         if isinstance(size, int):
             assert size > 0
@@ -705,28 +711,26 @@ class Resize(object):
             ignore_resize = False
             if self.adaptive_resize:
                 h, w = img.shape[:2]
-                fixed_side = self.size[0]
-                if self.resize_w_short:
-                    if min(h, w) == fixed_side:
-                        ignore_resize = True
-                    else:
-                        if w < h:
-                            width = fixed_side
-                            height = int(fixed_side * h / w)
-                        else:
-                            height = fixed_side
-                            width = int(fixed_side * w / h)
+                target_size = self.size[0]
+                if any([
+                        min(h, w) == target_size
+                        and self.adaptive_side == 'short',
+                        max(h, w) == target_size
+                        and self.adaptive_side == 'long', h == target_size
+                        and self.adaptive_side == 'height', w == target_size
+                        and self.adaptive_side == 'width'
+                ]):
+                    ignore_resize = True
+                elif any([
+                        w < h and self.adaptive_side == 'short',
+                        w > h and self.adaptive_side == 'long',
+                        self.adaptive_side == 'width',
+                ]):
+                    width = target_size
+                    height = int(target_size * h / w)
                 else:
-                    if max(h, w) == fixed_side:
-                        ignore_resize = True
-                    else:
-                        if w > h:
-                            width = fixed_side
-                            height = int(fixed_side * h / w)
-                        else:
-                            height = fixed_side
-                            width = int(fixed_side * w / h)
-
+                    height = target_size
+                    width = int(target_size * w / h)
             else:
                 height, width = self.size
             if not ignore_resize:
