@@ -11,8 +11,7 @@ def cross_entropy(pred,
                   weight=None,
                   reduction='mean',
                   avg_factor=None,
-                  class_weight=None,
-                  pos_weight=None):
+                  class_weight=None):
     """Calculate the CrossEntropy loss.
 
     Args:
@@ -46,8 +45,7 @@ def soft_cross_entropy(pred,
                        weight=None,
                        reduction='mean',
                        class_weight=None,
-                       avg_factor=None,
-                       pos_weight=None):
+                       avg_factor=None):
     """Calculate the Soft CrossEntropy loss. The label can be float.
 
     Args:
@@ -107,9 +105,10 @@ def binary_cross_entropy(pred,
     Returns:
         torch.Tensor: The calculated loss
     """
-    assert pred.dim() == label.dim()
     # Ensure that the size of class_weight is consistent with pred and label to
     # avoid automatic boracast,
+    assert pred.dim() == label.dim()
+
     if class_weight is not None:
         N = pred.size()[0]
         class_weight = class_weight.repeat(N, 1)
@@ -146,7 +145,8 @@ class CrossEntropyLoss(nn.Module):
         class_weight (List[float], optional): The weight for each class with
             shape (C), C is the number of classes. Default None.
         pos_weight (List[float], optional): The positive weight for each
-            class with shape (C), C is the number of classes. Default None.
+            class with shape (C), C is the number of classes. Only enabled in
+            BCE loss when ``use_sigmoid`` is True. Default None.
     """
 
     def __init__(self,
@@ -194,6 +194,7 @@ class CrossEntropyLoss(nn.Module):
         # only BCE loss has pos_weight
         if self.pos_weight is not None and self.use_sigmoid:
             pos_weight = cls_score.new_tensor(self.pos_weight)
+            kwargs.update({'pos_weight': pos_weight})
         else:
             pos_weight = None
 
@@ -204,6 +205,5 @@ class CrossEntropyLoss(nn.Module):
             class_weight=class_weight,
             reduction=reduction,
             avg_factor=avg_factor,
-            pos_weight=pos_weight,
             **kwargs)
         return loss_cls
