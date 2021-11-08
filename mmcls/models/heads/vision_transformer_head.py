@@ -79,9 +79,9 @@ class VisionTransformerClsHead(ClsHead):
 
         return self.post_process(pred)
 
-    def forward_train(self, x, gt_label):
+    def forward_train(self, x, gt_label, **kwargs):
         x = x[-1]
         _, cls_token = x
         cls_score = self.layers(cls_token)
-        losses = self.loss(cls_score, gt_label)
+        losses = self.loss(cls_score, gt_label, **kwargs)
         return losses
