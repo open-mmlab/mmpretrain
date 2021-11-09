@@ -172,9 +172,9 @@ def convert_weights(weight):
     Converts the weights from timm to mmcls
 
     Args:
-        weight: weight dict from timm
+        weight (dict): weight dict from timm
 
-    Returns: transformed mmcls weight dict
+    Returns: converted weight dict for mmcls
     """
     result = dict()
     result['meta'] = dict()
