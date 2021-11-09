@@ -17,7 +17,7 @@
 
 ```shell
 python tools/analysis/analyze_logs.py plot_curve  \
-    ${JSON_LOGS}                       \  
+    ${JSON_LOGS}                       \
     [--keys ${KEYS}]                   \
     [--title ${TITLE}]                 \
     [--legend ${LEGEND}]               \
@@ -29,7 +29,7 @@ python tools/analysis/analyze_logs.py plot_curve  \
 
 **Description of all arguments**：
 
-- `json_logs` : The pathes of configs, multiple logs are feasible, separated by spaces.
+- `json_logs` : The paths of configs, multiple logs are feasible, separated by spaces.
 - `--keys` : The key fields of the logs to analyse, multiple logs are feasible, separated by spaces. Default to be `['loss']`.
 - `--title` : The title of picture, default to be None。
 - `--legend` : The names of legend, the number of which must be equal to `len(${JSON_LOGS}) * len(${KEYS})`. Default to be "${JSON_LOG}-${KEYS}".
@@ -62,12 +62,12 @@ Examples:
 
     ```shell
     python tools/analysis/analyze_logs.py cal_train_time \
-        ${JSON_LOGS} 
+        ${JSON_LOGS}
         [--include-outliers]
     ```
 **Description of all arguments**
 
-- `json_logs` ：The pathes of configs, multiple logs are feasible, separated by spaces.
+- `json_logs` ：The paths of configs, multiple logs are feasible, separated by spaces.
 - `--include-outliers` ：Whether to count the records of the first epoch, default not.
 
 
@@ -112,4 +112,3 @@ This tool is still experimental and we do not guarantee that the number is corre
 - FLOPs are related to the input shape while parameters are not. The default input shape is (1, 3, 224, 224).
 - Some operators are not counted into FLOPs like GN and custom operators. Refer to [`mmcv.cnn.get_model_complexity_info()`](https://github.com/open-mmlab/mmcv/blob/master/mmcv/cnn/utils/flops_counter.py) for details.
 ```
-

@@ -1,15 +1,16 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
-import re
 import os
+import re
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 from mmcls.utils import load_json_logs
 
-ACCEPT_METRICS = ('precision', 'recall', 'f1_score', 'support', 'mAP', 'CP', 
-                'CR', 'CF1', 'OP', 'OR', 'OF1')
+ACCEPT_METRICS = ('precision', 'recall', 'f1_score', 'support', 'mAP', 'CP',
+                  'CR', 'CF1', 'OP', 'OR', 'OF1', 'accuracy')
+
 
 def cal_train_time(log_dicts, args):
     """Compute the average time per training iteration."""
@@ -36,66 +37,78 @@ def cal_train_time(log_dicts, args):
 
 
 def get_legend(args):
-    '''if legend is None, use {filename}_{key} as legend'''
+    """if legend is None, use {filename}_{key} as legend."""
     legend = args.legend
     if legend is None:
         legend = []
         for json_log in args.json_logs:
             for metric in args.keys:
-                basename = os.path.basename(json_log)
-                if basename.endswith('.json'):
-                    basename = basename[:-5] 
+                # rm '.json' in the end if logn ames
+                basename = os.path.basename(json_log)[:-5]
                 if basename.endswith('.log'):
-                    basename = basename[:-4]  
+                    basename = basename[:-4]
                 legend.append(f'{basename}_{metric}')
     assert len(legend) == (len(args.json_logs) * len(args.keys))
     return legend
 
 
+def plot_phase_train(metric, log_dict, epochs, curve_label, json_log):
+    """plot phase of train cruve."""
+    if metric not in log_dict[epochs[0]]:
+        raise KeyError(f'{json_log} does not contain metric {metric}'
+                       f' in train mode')
+    xs, ys = [], []
+    for epoch in epochs:
+        iters = log_dict[epoch]['iter']
+        if log_dict[epoch]['mode'][-1] == 'val':
+            iters = iters[:-1]
+        num_iters_per_epoch = iters[-1]
+        assert len(iters) > 0, (
+            'The training log is empty, please try to reduce the '
+            'interval of log in config file.')
+        xs.append(np.array(iters) / num_iters_per_epoch + (epoch - 1))
+        ys.append(np.array(log_dict[epoch][metric][:len(iters)]))
+    xs = np.concatenate(xs)
+    ys = np.concatenate(ys)
+    plt.xlabel('Epochs')
+    plt.plot(xs, ys, label=curve_label, linewidth=0.75)
+
+
+def plot_phase_val(metric, log_dict, epochs, curve_label, json_log):
+    """plot phase of val cruves."""
+    # some epoch may not have evaluation. as [(train, 5),(val, 1)]
+    xs = [e for e in epochs if metric in log_dict[e]]
+    ys = [log_dict[e][metric] for e in xs if metric in log_dict[e]]
+    assert len(xs) > 0, (f'{json_log} does not contain metric {metric}')
+    plt.xlabel('Epochs')
+    plt.plot(xs, ys, label=curve_label, linewidth=0.75)
+
+
 def plot_curve_helper(log_dicts, metrics, args, legend):
-    '''plot curves from log_dicts by metrics'''
+    """plot curves from log_dicts by metrics."""
     num_metrics = len(metrics)
     for i, log_dict in enumerate(log_dicts):
         epochs = list(log_dict.keys())
         for j, metric in enumerate(metrics):
-            print(f'plot curve of {args.json_logs[i]}, metric is {metric}')
-            if metric not in log_dict[epochs[0]]:
-                raise KeyError(
-                    f'{args.json_logs[i]} does not contain metric {metric} '
-                    f'in train mode')
-
-            # plot from val log lines
-            if any(m == metric for m in ACCEPT_METRICS) or \
-                                        re.match('accuracy_top-(\d)+', metric):
-                xs = epochs
-                ys = [log_dict[e][metric] for e in xs]
-                plt.xlabel('Epochs')
-                plt.plot(xs, ys, label=legend[i * num_metrics + j], 
-                        linewidth=0.75)
-            # plot from train log lines
+            json_log = args.json_logs[i]
+            print(f'plot curve of {json_log}, metric is {metric}')
+            curve_label = legend[i * num_metrics + j]
+            if any(m in metric for m in ACCEPT_METRICS):
+                if 'accuracy' in metric and not re.match(
+                        'accuracy_top-[1-9]+', metric):
+                    raise ValueError(f"{metric} doesn't match accuracy_top-k")
+                plot_phase_val(metric, log_dict, epochs, curve_label, json_log)
             else:
-                xs, ys = [], []
-                for epoch in epochs:
-                    iters = log_dict[epoch]['iter']
-                    if log_dict[epoch]['mode'][-1] == 'val':
-                        iters = iters[:-1]
-                    num_iters_per_epoch = iters[-1]
-                    assert len(iters) > 0, (
-                        'The training log is empty, please try to reduce the '
-                        'interval of log in config file.')
-                    xs.append(
-                        np.array(iters) + (epoch - 1) * num_iters_per_epoch)
-                    ys.append(np.array(log_dict[epoch][metric][:len(iters)]))
-                xs = np.concatenate(xs)
-                ys = np.concatenate(ys)
-                plt.xlabel('Iters')
-                plt.plot(
-                    xs, ys, label=legend[i * num_metrics + j], linewidth=0.75)
+                plot_phase_train(metric, log_dict, epochs, curve_label,
+                                 json_log)
             plt.legend()
 
 
 def plot_curve(log_dicts, args):
     """Plot train metric-iter graph."""
+    # set backend and style
+    if args.backend is not None:
+        plt.switch_backend(args.backend)
     try:
         import seaborn as sns
         sns.set_style(args.style)
@@ -103,18 +116,20 @@ def plot_curve(log_dicts, args):
         print("Attention: The plot style won't be applied because 'seaborn' "
               'package is not installed, please install it if you want better '
               'show style.')
-    
+
     # set plot window size
     wind_w, wind_h = args.window_size.split('*')
     wind_w, wind_h = int(wind_w), int(wind_h)
     plt.figure(figsize=(wind_w, wind_h))
 
+    # get legends and metrics
     legend = get_legend(args)
     metrics = args.keys
 
     # plot curves from log_dicts by metrics
     plot_curve_helper(log_dicts, metrics, args, legend)
-    
+
+    # set title and show or save
     if args.title is not None:
         plt.title(args.title)
     if args.out is None:
@@ -146,6 +161,8 @@ def add_plot_parser(subparsers):
         nargs='+',
         default=None,
         help='legend of each plot')
+    parser_plt.add_argument(
+        '--backend', type=str, default=None, help='backend of plt')
     parser_plt.add_argument(
         '--style', type=str, default='whitegrid', help='style of plt')
     parser_plt.add_argument('--out', type=str, default=None)
@@ -192,7 +209,7 @@ def main():
     for json_log in json_logs:
         assert json_log.endswith('.json')
 
-    log_dicts  = load_json_logs(json_logs)
+    log_dicts = load_json_logs(json_logs)
 
     eval(args.task)(log_dicts, args)
 

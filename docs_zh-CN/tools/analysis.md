@@ -19,7 +19,7 @@
 
 ```shell
 python tools/analysis/analyze_logs.py plot_curve  \
-    ${JSON_LOGS}                       \  
+    ${JSON_LOGS}                       \
     [--keys ${KEYS}]                   \
     [--title ${TITLE}]                 \
     [--legend ${LEGEND}]               \
@@ -64,7 +64,7 @@ python tools/analysis/analyze_logs.py plot_curve  \
 
     ```shell
     python tools/analysis/analyze_logs.py cal_train_time \
-        ${JSON_LOGS} 
+        ${JSON_LOGS}
         [--include-outliers]
     ```
 **所有参数的说明**
