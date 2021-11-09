@@ -617,23 +617,32 @@ class Pad(object):
     """Pad images.
 
     Args:
-        size (tuple[int] | int): Expected padding size (h, w), using -1
-            to adaptively pad any image to square shape.
+        size (tuple[int] | None): Expected padding size (h, w). Conflicts with
+                pad_to_square. Defaults to None.
+        pad_to_square (bool): Pad any image to square shape. Defaults to False.
         pad_val (Number | Sequence[Number]): Values to be filled in padding
             areas when padding_mode is 'constant'. Default to 0.
         padding_mode (str): Type of padding. Should be: constant, edge,
             reflect or symmetric. Default to "constant".
     """
 
-    def __init__(self, size, pad_val=0, padding_mode='constant'):
+    def __init__(self,
+                 size=None,
+                 pad_to_square=False,
+                 pad_val=0,
+                 padding_mode='constant'):
+        assert (size is None) ^ (pad_to_square is False), \
+            'Only one of [size, pad_to_square] should be given, ' \
+            f'but get {(size is not None) + (pad_to_square is not False)}'
         self.size = size
+        self.pad_to_square = pad_to_square
         self.pad_val = pad_val
         self.padding_mode = padding_mode
 
     def __call__(self, results):
         for key in results.get('img_fields', ['img']):
             img = results[key]
-            if self.size == -1:
+            if self.pad_to_square:
                 target_size = tuple(
                     max(img.shape[0], img.shape[1]) for _ in range(2))
             else:
@@ -663,15 +672,15 @@ class Resize(object):
         size (int | tuple): Images scales for resizing (h, w).
             When size is int, the default behavior is to resize an image
             to (size, size). When size is tuple and the second value is -1,
-            the short edge of an image is resized to its first value.
-            For example, when size is 224, the image is resized to 224x224.
-            When size is (224, -1), the short side is resized to 224 and the
-            other side is computed based on the short side, maintaining the
-            aspect ratio.
+            the image will be resized according to adaptive_side. For example,
+            when size is 224, the image is resized to 224x224. When size is
+            (224, -1) and adaptive_size is "short", the short side is resized
+            to 224 and the other side is computed based on the short side,
+            maintaining the aspect ratio.
         interpolation (str): Interpolation method, accepted values are
             "nearest", "bilinear", "bicubic", "area", "lanczos".
             More details can be found in `mmcv.image.geometric`.
-        adaptive_side(bool): Adaptive resize policy, accepted values are
+        adaptive_side(str): Adaptive resize policy, accepted values are
             "short", "long", "height", "width". Default to "short".
         backend (str): The image resize backend type, accepted values are
             `cv2` and `pillow`. Default: `cv2`.
@@ -712,18 +721,19 @@ class Resize(object):
             if self.adaptive_resize:
                 h, w = img.shape[:2]
                 target_size = self.size[0]
-                if any([
-                        min(h, w) == target_size
-                        and self.adaptive_side == 'short',
-                        max(h, w) == target_size
-                        and self.adaptive_side == 'long', h == target_size
-                        and self.adaptive_side == 'height', w == target_size
-                        and self.adaptive_side == 'width'
-                ]):
+
+                condition_ignore_resize = {
+                    'short': min(h, w) == target_size,
+                    'long': max(h, w) == target_size,
+                    'height': h == target_size,
+                    'width': w == target_size
+                }
+
+                if condition_ignore_resize[self.adaptive_side]:
                     ignore_resize = True
                 elif any([
-                        w < h and self.adaptive_side == 'short',
-                        w > h and self.adaptive_side == 'long',
+                        self.adaptive_side == 'short' and w < h,
+                        self.adaptive_side == 'long' and w > h,
                         self.adaptive_side == 'width',
                 ]):
                     width = target_size

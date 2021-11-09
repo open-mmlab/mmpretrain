@@ -170,7 +170,7 @@ def test_resize():
     assert np.allclose(results['img'], resized_img, atol=30)
 
     # test resize when size is tuple, the second value is -1
-    # and resize_short=False
+    # and adaptive_side='long'
     transform = dict(
         type='Resize',
         size=(224, -1),
@@ -183,7 +183,7 @@ def test_resize():
     assert results['img_shape'] == (168, 224, 3)
 
     # test resize when size is tuple, the second value is -1
-    # and resize_short=False, h > w
+    # and adaptive_side='long', h > w
     transform1 = dict(type='Resize', size=(300, 200), interpolation='bilinear')
     resize_module1 = build_from_cfg(transform1, PIPELINES)
     transform2 = dict(
@@ -199,7 +199,7 @@ def test_resize():
     assert results['img_shape'] == (224, 149, 3)
 
     # test resize when size is tuple, the second value is -1
-    # and resize_short=True, h > w
+    # and adaptive_side='short', h > w
     transform1 = dict(type='Resize', size=(300, 200), interpolation='bilinear')
     resize_module1 = build_from_cfg(transform1, PIPELINES)
     transform2 = dict(
@@ -242,8 +242,8 @@ def test_pad():
     assert pad_result['img_shape'] == (400, 400, 3)
     assert np.allclose(pad_result['img'][-100:, :, :], 0)
 
-    # test if pad is valid
-    transform = dict(type='Pad', size=-1)
+    # test if pad_to_square is valid
+    transform = dict(type='Pad', pad_to_square=True)
     pad_module = build_from_cfg(transform, PIPELINES)
     pad_result = pad_module(copy.deepcopy(results))
     assert isinstance(repr(pad_module), str)
