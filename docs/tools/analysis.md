@@ -60,11 +60,12 @@ Examples:
 
 ### Statistics Time
 
-    ```shell
-    python tools/analysis/analyze_logs.py cal_train_time \
-        ${JSON_LOGS}
-        [--include-outliers]
-    ```
+```shell
+python tools/analysis/analyze_logs.py cal_train_time \
+    ${JSON_LOGS}
+    [--include-outliers]
+```
+
 **Description of all arguments**
 
 - `json_logs` ：The paths of configs, multiple logs are feasible, separated by spaces.
@@ -73,19 +74,19 @@ Examples:
 
 Example:
 
-    ```shell
-    python tools/analysis/analyze_logs.py cal_train_time work_dirs/some_exp/20200422_153324.log.json
-    ```
+```shell
+python tools/analysis/analyze_logs.py cal_train_time work_dirs/some_exp/20200422_153324.log.json
+```
 
 The output is expected to be like the following.
 
-    ```text
-    -----Analyze train time of work_dirs/some_exp/20200422_153324.log.json-----
-    slowest epoch 68, average time is 0.3818
-    fastest epoch 1, average time is 0.3694
-    time std over epochs is 0.0020
-    average iter time: 0.3777 s/iter
-    ```
+```text
+-----Analyze train time of work_dirs/some_exp/20200422_153324.log.json-----
+slowest epoch 68, average time is 0.3818
+fastest epoch 1, average time is 0.3694
+time std over epochs is 0.0020
+average iter time: 0.3777 s/iter
+```
 
 ## Model Complexity
 

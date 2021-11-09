@@ -62,11 +62,11 @@ python tools/analysis/analyze_logs.py plot_curve  \
 
 ### 统计时间
 
-    ```shell
-    python tools/analysis/analyze_logs.py cal_train_time \
-        ${JSON_LOGS}
-        [--include-outliers]
-    ```
+```shell
+python tools/analysis/analyze_logs.py cal_train_time \
+    ${JSON_LOGS}
+    [--include-outliers]
+```
 **所有参数的说明**
 
 - `json_logs` ：模型配置文件的路径（可同时传入多个，使用空格分开）。
@@ -75,19 +75,19 @@ python tools/analysis/analyze_logs.py plot_curve  \
 
 例如:
 
-    ```shell
-    python tools/analysis/analyze_logs.py cal_train_time work_dirs/some_exp/20200422_153324.log.json
-    ```
+```shell
+python tools/analysis/analyze_logs.py cal_train_time work_dirs/some_exp/20200422_153324.log.json
+```
 
 预计输出结果如下所示：
 
-    ```text
-    -----Analyze train time of work_dirs/some_exp/20200422_153324.log.json-----
-    slowest epoch 68, average time is 0.3818
-    fastest epoch 1, average time is 0.3694
-    time std over epochs is 0.0020
-    average iter time: 0.3777 s/iter
-    ```
+```text
+-----Analyze train time of work_dirs/some_exp/20200422_153324.log.json-----
+slowest epoch 68, average time is 0.3818
+fastest epoch 1, average time is 0.3694
+time std over epochs is 0.0020
+average iter time: 0.3777 s/iter
+```
 
 ## 模型复杂度分析
 
