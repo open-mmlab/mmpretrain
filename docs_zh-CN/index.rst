@@ -36,6 +36,7 @@ You can switch between Chinese and English documentation in the lower-left corne
    tools/pytorch2torchscript.md
    tools/model_serving.md
    tools/visualization.md
+   tools/analysis.md
 
 
 .. toctree::

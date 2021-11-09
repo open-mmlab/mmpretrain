@@ -1,0 +1,116 @@
+# 分析
+
+<!-- TOC -->
+
+- [日志分析](#日志分析)
+- [模型复杂度分析](#模型复杂度分析)
+
+<!-- TOC -->
+
+## 日志分析
+
+
+### 绘制曲线图
+
+
+输入变量指定一个训练日志文件，可通过 `tools/analysis/analyze_logs.py` 脚本绘制 loss/top-k 曲线。本功能依赖于 `seaborn`，使用前请先通过 `pip install seaborn` 安装依赖包。
+
+<div align=center><img src="../_static/image/tools/analysis/analysis_log.jpg" style=" width: 75%; height: 30%; "></div>
+
+```shell
+python tools/analysis/analyze_logs.py plot_curve  \
+    ${JSON_LOGS}                       \  
+    [--keys ${KEYS}]                   \
+    [--title ${TITLE}]                 \
+    [--legend ${LEGEND}]               \
+    [--backend ${BACKEND}]             \
+    [--style ${STYLE}]                 \
+    [--out ${OUT_FILE}]                \
+    [--window-size ${WINDOW_SIZE}]
+```
+
+所有参数的说明
+
+- `json_logs` ：模型配置文件的路径（可同时传入多个，使用空格分开）。
+- `--keys` ：分析日志的关键字段，数量为 `len(${JSON_LOGS}) * len(${KEYS})` 默认为 'loss'。
+- `--title` ：分析日志的图片名称，默认使用配置文件名， 默认为空。
+- `--legend` ：坐标轴名（可同时传入多个，使用空格分开，数目与 `${JSON_LOGS} * ${KEYS}` 数目一致）。默认使用 "${JSON_LOG}-${KEYS}"。
+- `--backend` ：`plt` 的后端。
+- `--style` ：`plt` 的绘图风格， 默认为 `whitegrid`。
+- `--out` ：保存分析图片的路径，默认不保存。
+- `--window-size`: 可视化窗口大小，如果没有指定，默认为 `12*7`。如果需要指定，按照格式 `'W*H'`。
+
+例如:
+
+- 绘制某日志文件对应的损失曲线图。
+
+    ```shell
+    python tools/analysis/analyze_logs.py plot_curve log.json --keys loss --legend loss
+    ```
+
+- 绘制某日志文件对应的 top-1 和 top-5 准确率曲线图，并将曲线图导出为 results.jpg 文件。
+
+    ```shell
+    python tools/analysis/analyze_logs.py plot_curve log.json --keys accuracy_top-1 accuracy_top-5  --legend top1 top5 --out results.jpg
+    ```
+
+- 在同一图像内绘制两份日志文件对应的 top-1 准确率曲线图。
+
+    ```shell
+    python tools/analysis/analyze_logs.py plot_curve log1.json log2.json --keys accuracy_top-1 --legend run1 run2
+    ```
+
+### 统计时间
+
+    ```shell
+    python tools/analysis/analyze_logs.py cal_train_time \
+        ${JSON_LOGS} 
+        [--include-outliers]
+    ```
+**所有参数的说明**
+
+- `json_logs` ：模型配置文件的路径（可同时传入多个，使用空格分开）。
+- `--include-outliers` ：是否统计第一个轮次的记录，默认不统计。
+
+
+例如:
+
+    ```shell
+    python tools/analysis/analyze_logs.py cal_train_time work_dirs/some_exp/20200422_153324.log.json
+    ```
+
+    预计输出结果如下所示：
+
+    ```text
+    -----Analyze train time of work_dirs/some_exp/20200422_153324.log.json-----
+    slowest epoch 68, average time is 0.3818
+    fastest epoch 1, average time is 0.3694
+    time std over epochs is 0.0020
+    average iter time: 0.3777 s/iter
+    ```
+
+## 模型复杂度分析
+
+### 计算 FLOPs 和参数量（试验性的）
+
+我们根据 [flops-counter.pytorch](https://github.com/sovrasov/flops-counter.pytorch) 提供了一个脚本用于计算给定模型的 FLOPs 和参数量
+
+```shell
+python tools/analysis/get_flops.py ${CONFIG_FILE} [--shape ${INPUT_SHAPE}]
+```
+
+用户将获得如下结果：
+
+```
+==============================
+Input shape: (3, 224, 224)
+Flops: 4.12 GFLOPs
+Params: 25.56 M
+==============================
+```
+
+```{warning}
+此工具仍处于试验阶段，我们不保证该数字正确无误。您最好将结果用于简单比较，但在技术报告或论文中采用该结果之前，请仔细检查。
+- FLOPs 与输入的尺寸有关，而参数量与输入尺寸无关。默认输入尺寸为 (1, 3, 224, 224)
+- 一些运算不会被计入 FLOPs 的统计中，例如 GN 和自定义运算。详细信息请参考 [`mmcv.cnn.get_model_complexity_info()`](https://github.com/open-mmlab/mmcv/blob/master/mmcv/cnn/utils/flops_counter.py)
+```

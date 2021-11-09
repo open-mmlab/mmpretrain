@@ -1,12 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
+import re
+import os
 
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
 
 from mmcls.utils import load_json_logs
 
+ACCEPT_METRICS = ('precision', 'recall', 'f1_score', 'support', 'mAP', 'CP', 
+                'CR', 'CF1', 'OP', 'OR', 'OF1')
 
 def cal_train_time(log_dicts, args):
     """Compute the average time per training iteration."""
@@ -32,21 +35,25 @@ def cal_train_time(log_dicts, args):
         print()
 
 
-def plot_curve(log_dicts, args):
-    """Plot train metric-iter graph."""
-    if args.backend is not None:
-        plt.switch_backend(args.backend)
-    sns.set_style(args.style)
-    # if legend is None, use {filename}_{key} as legend
+def get_legend(args):
+    '''if legend is None, use {filename}_{key} as legend'''
     legend = args.legend
     if legend is None:
         legend = []
         for json_log in args.json_logs:
             for metric in args.keys:
-                legend.append(f'{json_log}_{metric}')
+                basename = os.path.basename(json_log)
+                if basename.endswith('.json'):
+                    basename = basename[:-5] 
+                if basename.endswith('.log'):
+                    basename = basename[:-4]  
+                legend.append(f'{basename}_{metric}')
     assert len(legend) == (len(args.json_logs) * len(args.keys))
-    metrics = args.keys
+    return legend
 
+
+def plot_curve_helper(log_dicts, metrics, args, legend):
+    '''plot curves from log_dicts by metrics'''
     num_metrics = len(metrics)
     for i, log_dict in enumerate(log_dicts):
         epochs = list(log_dict.keys())
@@ -57,21 +64,22 @@ def plot_curve(log_dicts, args):
                     f'{args.json_logs[i]} does not contain metric {metric} '
                     f'in train mode')
 
-            if any(m in metric for m in ('mAP', 'accuracy')):
+            # plot from val log lines
+            if any(m == metric for m in ACCEPT_METRICS) or \
+                                        re.match('accuracy_top-(\d)+', metric):
                 xs = epochs
                 ys = [log_dict[e][metric] for e in xs]
-                ax = plt.gca()
-                ax.set_xticks(xs)
-                plt.xlabel('epoch')
-                plt.plot(xs, ys, label=legend[i * num_metrics + j], marker='o')
+                plt.xlabel('Epochs')
+                plt.plot(xs, ys, label=legend[i * num_metrics + j], 
+                        linewidth=0.75)
+            # plot from train log lines
             else:
-                xs = []
-                ys = []
-                num_iters_per_epoch = log_dict[epochs[0]]['iter'][-1]
+                xs, ys = [], []
                 for epoch in epochs:
                     iters = log_dict[epoch]['iter']
                     if log_dict[epoch]['mode'][-1] == 'val':
                         iters = iters[:-1]
+                    num_iters_per_epoch = iters[-1]
                     assert len(iters) > 0, (
                         'The training log is empty, please try to reduce the '
                         'interval of log in config file.')
@@ -80,12 +88,35 @@ def plot_curve(log_dicts, args):
                     ys.append(np.array(log_dict[epoch][metric][:len(iters)]))
                 xs = np.concatenate(xs)
                 ys = np.concatenate(ys)
-                plt.xlabel('iter')
+                plt.xlabel('Iters')
                 plt.plot(
-                    xs, ys, label=legend[i * num_metrics + j], linewidth=0.5)
+                    xs, ys, label=legend[i * num_metrics + j], linewidth=0.75)
             plt.legend()
-        if args.title is not None:
-            plt.title(args.title)
+
+
+def plot_curve(log_dicts, args):
+    """Plot train metric-iter graph."""
+    try:
+        import seaborn as sns
+        sns.set_style(args.style)
+    except ImportError:
+        print("Attention: The plot style won't be applied because 'seaborn' "
+              'package is not installed, please install it if you want better '
+              'show style.')
+    
+    # set plot window size
+    wind_w, wind_h = args.window_size.split('*')
+    wind_w, wind_h = int(wind_w), int(wind_h)
+    plt.figure(figsize=(wind_w, wind_h))
+
+    legend = get_legend(args)
+    metrics = args.keys
+
+    # plot curves from log_dicts by metrics
+    plot_curve_helper(log_dicts, metrics, args, legend)
+    
+    if args.title is not None:
+        plt.title(args.title)
     if args.out is None:
         plt.show()
     else:
@@ -116,10 +147,12 @@ def add_plot_parser(subparsers):
         default=None,
         help='legend of each plot')
     parser_plt.add_argument(
-        '--backend', type=str, default=None, help='backend of plt')
-    parser_plt.add_argument(
-        '--style', type=str, default='dark', help='style of plt')
+        '--style', type=str, default='whitegrid', help='style of plt')
     parser_plt.add_argument('--out', type=str, default=None)
+    parser_plt.add_argument(
+        '--window-size',
+        default='12*7',
+        help='size of the window to display images, in format of "$W*$H".')
 
 
 def add_time_parser(subparsers):
@@ -145,6 +178,10 @@ def parse_args():
     add_plot_parser(subparsers)
     add_time_parser(subparsers)
     args = parser.parse_args()
+
+    if args.window_size != '':
+        assert re.match(r'\d+\*\d+', args.window_size), \
+            "'window-size' must be in format 'W*H'."
     return args
 
 
@@ -155,7 +192,7 @@ def main():
     for json_log in json_logs:
         assert json_log.endswith('.json')
 
-    log_dicts = load_json_logs(json_logs)
+    log_dicts  = load_json_logs(json_logs)
 
     eval(args.task)(log_dicts, args)
 
