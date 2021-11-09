@@ -32,7 +32,7 @@ python tools/analysis/analyze_logs.py plot_curve  \
 - `json_logs` : The paths of configs, multiple logs are feasible, separated by spaces.
 - `--keys` : The key fields of the logs to analyse, multiple logs are feasible, separated by spaces. Default to be `['loss']`.
 - `--title` : The title of picture, default to be None。
-- `--legend` : The names of legend, the number of which must be equal to `len(${JSON_LOGS}) * len(${KEYS})`. Default to be "${JSON_LOG}-${KEYS}".
+- `--legend` : The names of legend, the number of which must be equal to `len(${JSON_LOGS}) * len(${KEYS})`. Default to be `"${JSON_LOG}-${KEYS}"`.
 - `--backend` : The backend of `plt`.
 - `--style` : The style of `plt`, default to be `whitegrid`.
 - `--out` : The path of the output picture, default not to save.

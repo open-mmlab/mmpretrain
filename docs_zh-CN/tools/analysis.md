@@ -34,7 +34,7 @@ python tools/analysis/analyze_logs.py plot_curve  \
 - `json_logs` ：模型配置文件的路径（可同时传入多个，使用空格分开）。
 - `--keys` ：分析日志的关键字段，数量为 `len(${JSON_LOGS}) * len(${KEYS})` 默认为 'loss'。
 - `--title` ：分析日志的图片名称，默认使用配置文件名， 默认为空。
-- `--legend` ：坐标轴名（可同时传入多个，使用空格分开，数目与 `${JSON_LOGS} * ${KEYS}` 数目一致）。默认使用 "${JSON_LOG}-${KEYS}"。
+- `--legend` ：坐标轴名（可同时传入多个，使用空格分开，数目与 `${JSON_LOGS} * ${KEYS}` 数目一致）。默认使用 `"${JSON_LOG}-${KEYS}"`。
 - `--backend` ：`plt` 的后端。
 - `--style` ：`plt` 的绘图风格， 默认为 `whitegrid`。
 - `--out` ：保存分析图片的路径，默认不保存。
@@ -79,7 +79,7 @@ python tools/analysis/analyze_logs.py plot_curve  \
     python tools/analysis/analyze_logs.py cal_train_time work_dirs/some_exp/20200422_153324.log.json
     ```
 
-    预计输出结果如下所示：
+预计输出结果如下所示：
 
     ```text
     -----Analyze train time of work_dirs/some_exp/20200422_153324.log.json-----
