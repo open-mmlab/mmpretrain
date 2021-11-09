@@ -9,10 +9,26 @@ from ..builder import BACKBONES
 
 
 class MixerBlock(nn.Module):
-    """Residual Block w/ token mixing and channel MLPs.
+    """MlpMixer block.
 
-    Based on: 'MLP-Mixer: An all-MLP Architecture for Vision'
-     - https://arxiv.org/abs/2105.01601
+    Basic module of `MLP-Mixer: An all-MLP Architecture for Vision
+    <https://arxiv.org/pdf/2105.01601.pdf>`_
+
+    Some code is borrowed and modified from timm.
+
+    Args:
+        dim (int): Embedding dimension.
+        seq_len (int): Length of the sequence, mally equivalent to um patches.
+        mlp_ratio (tuple | int): Multiplier for the D_s and D_c. Default
+            to (0.5, 4.0)
+        norm_cfg (dict): Configuration for the normalization layer. Default to
+            dict(type='LN', eps=1e-6).
+        act_layer_cfg (dict): Configuration for the activation layer. Default
+            to dict(type='GELU').
+        drop_rate (float): Dropout rate for the dropout layer in MixerBlock.
+            Default to 0.
+        drop_path_rate (float | list): Drop path rate for the DropPath (
+            Stochastic Depth) in Mixer. Default to 0.
     """
 
     def __init__(self,
@@ -21,34 +37,40 @@ class MixerBlock(nn.Module):
                  mlp_ratio=(0.5, 4.0),
                  norm_cfg=dict(type='LN', eps=1e-6),
                  act_layer_cfg=dict(type='GELU'),
-                 drop=0.,
-                 drop_path=0.):
+                 drop_rate=0.,
+                 drop_path_rate=0.):
         super().__init__()
         tokens_dim, channels_dim = [int(x * dim) for x in to_2tuple(mlp_ratio)]
         self.norm1 = build_norm_layer(norm_cfg, dim)[1]
         self.mlp_tokens = self.__build_mlp(
-            seq_len, tokens_dim, act_layer_cfg=act_layer_cfg, drop=drop)
+            seq_len,
+            tokens_dim,
+            act_layer_cfg=act_layer_cfg,
+            drop_rate=drop_rate)
         self.drop_path = build_dropout(
-            dict(type='DropPath',
-                 drop_prob=drop_path)) if drop_path > 0. else nn.Identity()
+            dict(type='DropPath', drop_prob=drop_path_rate)
+        ) if drop_path_rate > 0. else nn.Identity()
         self.norm2 = build_norm_layer(norm_cfg, dim)[1]
         self.mlp_channels = self.__build_mlp(
-            dim, channels_dim, act_layer_cfg=act_layer_cfg, drop=drop)
+            dim,
+            channels_dim,
+            act_layer_cfg=act_layer_cfg,
+            drop_rate=drop_rate)
 
     def __build_mlp(self,
                     in_features,
                     hidden_features=None,
                     out_features=None,
                     act_layer_cfg=None,
-                    drop=0.):
+                    drop_rate=0.):
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
         mlp = Sequential(*[
             nn.Linear(in_features, hidden_features),
             build_activation_layer(act_layer_cfg),
-            nn.Dropout(drop),
+            nn.Dropout(drop_rate),
             nn.Linear(hidden_features, out_features),
-            nn.Dropout(drop)
+            nn.Dropout(drop_rate)
         ])
 
         return mlp
@@ -62,6 +84,32 @@ class MixerBlock(nn.Module):
 
 @BACKBONES.register_module()
 class MlpMixer(BaseModule):
+    """MlpMixer backbone.
+
+    Pytorch implementation of `MLP-Mixer: An all-MLP Architecture for Vision
+    <https://arxiv.org/pdf/2105.01601.pdf>`_
+
+    Some code is borrowed and modified from timm.
+
+    Args:
+        img_size (int): Input image size. Default to 224.
+        in_channels (int): Number of input channels. Default to 3.
+        patch_size (int): Size of patch. Default to 16.
+        num_blocks (int): Num of mixer block. Default to 8.
+        embed_dims (int): Embedding dimension.
+        mlp_ratio (tuple | int): Multiplier for the D_s and D_c. Default
+            to (0.5, 4.0)
+        norm_cfg (dict): Configuration for the normalization layer. Default to
+            dict(type='LN', eps=1e-6).
+        act_layer_cfg (dict): Configuration for the activation layer. Default
+            to dict(type='GELU').
+        drop_rate (float): Dropout rate for the dropout layer in MixerBlock.
+            Default to 0.
+        drop_path_rate (float | list): Drop path rate for the DropPath (
+            Stochastic Depth) in Mixer. Default to 0.
+        stem_norm (bool): If use normalization in the stem part. Default to
+            False.
+    """
 
     def __init__(
         self,
@@ -87,7 +135,16 @@ class MlpMixer(BaseModule):
             in_channels=in_channels,
             embed_dims=embed_dims,
             norm_cfg=norm_cfg if stem_norm else None)
-        # FIXME drop_path (stochastic depth scaling rule or all the same?)
+
+        if isinstance(drop_path_rate, (int, float)):
+            drop_path_rate = [drop_path_rate for _ in range(num_blocks)]
+
+        assert len(
+            drop_path_rate
+        ) == num_blocks, f'The drop_path_rate should be a single value or ' \
+                         f'have {num_blocks} elements, but got ' \
+                         f'{len(drop_path_rate)}'
+
         self.blocks = Sequential(*[
             MixerBlock(
                 embed_dims,
@@ -95,8 +152,9 @@ class MlpMixer(BaseModule):
                 mlp_ratio,
                 norm_cfg=norm_cfg,
                 act_layer_cfg=act_layer_cfg,
-                drop=drop_rate,
-                drop_path=drop_path_rate) for _ in range(num_blocks)
+                drop_rate=drop_rate,
+                drop_path_rate=drop_path_rate[idx])
+            for idx in range(num_blocks)
         ])
         self.norm = build_norm_layer(norm_cfg, embed_dims)[1]
 
