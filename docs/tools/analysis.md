@@ -77,7 +77,7 @@ Example:
     python tools/analysis/analyze_logs.py cal_train_time work_dirs/some_exp/20200422_153324.log.json
     ```
 
-    The output is expected to be like the following.
+The output is expected to be like the following.
 
     ```text
     -----Analyze train time of work_dirs/some_exp/20200422_153324.log.json-----
