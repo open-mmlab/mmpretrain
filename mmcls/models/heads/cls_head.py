@@ -39,11 +39,12 @@ class ClsHead(BaseHead):
         self.compute_accuracy = Accuracy(topk=self.topk)
         self.cal_acc = cal_acc
 
-    def loss(self, cls_score, gt_label):
+    def loss(self, cls_score, gt_label, **kwargs):
         num_samples = len(cls_score)
         losses = dict()
         # compute loss
-        loss = self.compute_loss(cls_score, gt_label, avg_factor=num_samples)
+        loss = self.compute_loss(
+            cls_score, gt_label, avg_factor=num_samples, **kwargs)
         if self.cal_acc:
             # compute accuracy
             acc = self.compute_accuracy(cls_score, gt_label)
@@ -55,10 +56,10 @@ class ClsHead(BaseHead):
         losses['loss'] = loss
         return losses
 
-    def forward_train(self, cls_score, gt_label):
+    def forward_train(self, cls_score, gt_label, **kwargs):
         if isinstance(cls_score, tuple):
             cls_score = cls_score[-1]
-        losses = self.loss(cls_score, gt_label)
+        losses = self.loss(cls_score, gt_label, **kwargs)
         return losses
 
     def simple_test(self, cls_score):
