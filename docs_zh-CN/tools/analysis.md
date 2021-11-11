@@ -15,7 +15,7 @@
 
 输入变量指定一个训练日志文件，可通过 `tools/analysis_tools/analyz_logs.py` 脚本绘制 loss/top-k 曲线。本功能依赖于 `seaborn`，使用前请先通过 `pip install seaborn` 安装依赖包。
 
-<div align=center><img src="../_static/image/tools/analysis_tools/analyz_log.jpg" style=" width: 75%; height: 30%; "></div>
+<div align=center><img src="../_static/image/tools/analysis/analyze_log.jpg" style=" width: 75%; height: 30%; "></div>
 
 ```shell
 python tools/analysis/analyze_logs.py plot_curve  \
