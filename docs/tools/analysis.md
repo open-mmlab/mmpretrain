@@ -11,9 +11,9 @@
 
 ### Plot Curves
 
-`tools/analysis/analyze_logs.py` plots loss/top-k acc curves given a training log file. Run `pip install seaborn` first to install the dependency.
+`tools/analysis_tools/analyze_logs.py` plots loss/top-k acc curves given a training log file. Run `pip install seaborn` first to install the dependency.
 
-<div align=center><img src="../_static/image/tools/analysis/analysis_log.jpg" style=" width: 75%; height: 30%; "></div>
+<div align=center><img src="../_static/image/tools/analysis/analyze_log.jpg" style=" width: 75%; height: 30%; "></div>
 
 ```shell
 python tools/analysis/analyze_logs.py plot_curve  \
@@ -43,25 +43,25 @@ Examples:
 - Plot the loss of some run.
 
     ```shell
-    python tools/analysis/analyze_logs.py plot_curve log.json --keys loss --legend loss
+    python tools/analysis_tools/analyze_logs.py plot_curve log.json --keys loss --legend loss
     ```
 
 - Plot the top-1 acc and top-5 acc of some run, and save the figure to results.jpg.
 
     ```shell
-    python tools/analysis/analyze_logs.py plot_curve log.json --keys accuracy_top-1 accuracy_top-5  --legend top1 top5 --out results.jpg
+    python tools/analysis_tools/analyze_logs.py plot_curve log.json --keys accuracy_top-1 accuracy_top-5  --legend top1 top5 --out results.jpg
     ```
 
 - Compare the top-1 acc of two runs in the same figure.
 
     ```shell
-    python tools/analysis/analyze_logs.py plot_curve log1.json log2.json --keys accuracy_top-1 --legend run1 run2
+    python tools/analysis_tools/analyze_logs.py plot_curve log1.json log2.json --keys accuracy_top-1 --legend run1 run2
     ```
 
 ### Statistics Time
 
 ```shell
-python tools/analysis/analyze_logs.py cal_train_time \
+python tools/analysis_tools/analyze_logs.py cal_train_time \
     ${JSON_LOGS}
     [--include-outliers]
 ```
@@ -75,7 +75,7 @@ python tools/analysis/analyze_logs.py cal_train_time \
 Example:
 
 ```shell
-python tools/analysis/analyze_logs.py cal_train_time work_dirs/some_exp/20200422_153324.log.json
+python tools/analysis_tools/analyze_logs.py cal_train_time work_dirs/some_exp/20200422_153324.log.json
 ```
 
 The output is expected to be like the following.
@@ -95,7 +95,7 @@ average iter time: 0.3777 s/iter
 We provide a script adapted from [flops-counter.pytorch](https://github.com/sovrasov/flops-counter.pytorch) to compute the FLOPs and params of a given model.
 
 ```shell
-python tools/analysis/get_flops.py ${CONFIG_FILE} [--shape ${INPUT_SHAPE}]
+python tools/analysis_tools/get_flops.py ${CONFIG_FILE} [--shape ${INPUT_SHAPE}]
 ```
 
 You will get the result like this.

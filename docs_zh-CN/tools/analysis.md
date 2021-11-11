@@ -13,9 +13,9 @@
 ### 绘制曲线图
 
 
-输入变量指定一个训练日志文件，可通过 `tools/analysis/analyze_logs.py` 脚本绘制 loss/top-k 曲线。本功能依赖于 `seaborn`，使用前请先通过 `pip install seaborn` 安装依赖包。
+输入变量指定一个训练日志文件，可通过 `tools/analysis_tools/analyz_logs.py` 脚本绘制 loss/top-k 曲线。本功能依赖于 `seaborn`，使用前请先通过 `pip install seaborn` 安装依赖包。
 
-<div align=center><img src="../_static/image/tools/analysis/analysis_log.jpg" style=" width: 75%; height: 30%; "></div>
+<div align=center><img src="../_static/image/tools/analysis_tools/analyz_log.jpg" style=" width: 75%; height: 30%; "></div>
 
 ```shell
 python tools/analysis/analyze_logs.py plot_curve  \
@@ -45,25 +45,25 @@ python tools/analysis/analyze_logs.py plot_curve  \
 - 绘制某日志文件对应的损失曲线图。
 
     ```shell
-    python tools/analysis/analyze_logs.py plot_curve log.json --keys loss --legend loss
+    python tools/analysis_tools/analyze_logs.py plot_curve log.json --keys loss --legend loss
     ```
 
 - 绘制某日志文件对应的 top-1 和 top-5 准确率曲线图，并将曲线图导出为 results.jpg 文件。
 
     ```shell
-    python tools/analysis/analyze_logs.py plot_curve log.json --keys accuracy_top-1 accuracy_top-5  --legend top1 top5 --out results.jpg
+    python tools/analysis_tools/analyze_logs.py plot_curve log.json --keys accuracy_top-1 accuracy_top-5  --legend top1 top5 --out results.jpg
     ```
 
 - 在同一图像内绘制两份日志文件对应的 top-1 准确率曲线图。
 
     ```shell
-    python tools/analysis/analyze_logs.py plot_curve log1.json log2.json --keys accuracy_top-1 --legend run1 run2
+    python tools/analysis_tools/analyze_logs.py plot_curve log1.json log2.json --keys accuracy_top-1 --legend run1 run2
     ```
 
 ### 统计时间
 
 ```shell
-python tools/analysis/analyze_logs.py cal_train_time \
+python tools/analysis_tools/analyze_logs.py cal_train_time \
     ${JSON_LOGS}
     [--include-outliers]
 ```
@@ -76,7 +76,7 @@ python tools/analysis/analyze_logs.py cal_train_time \
 例如:
 
 ```shell
-python tools/analysis/analyze_logs.py cal_train_time work_dirs/some_exp/20200422_153324.log.json
+python tools/analysis_tools/analyze_logs.py cal_train_time work_dirs/some_exp/20200422_153324.log.json
 ```
 
 预计输出结果如下所示：
@@ -96,7 +96,7 @@ average iter time: 0.3777 s/iter
 我们根据 [flops-counter.pytorch](https://github.com/sovrasov/flops-counter.pytorch) 提供了一个脚本用于计算给定模型的 FLOPs 和参数量
 
 ```shell
-python tools/analysis/get_flops.py ${CONFIG_FILE} [--shape ${INPUT_SHAPE}]
+python tools/analysis_tools/get_flops.py ${CONFIG_FILE} [--shape ${INPUT_SHAPE}]
 ```
 
 用户将获得如下结果：
