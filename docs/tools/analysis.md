@@ -3,6 +3,7 @@
 <!-- TOC -->
 
 - [Log Analysis](#log-analysis)
+- [Result Analysis](#result-analysis)
 - [Model Complexity](#model-complexity)
 
 <!-- TOC -->
@@ -17,13 +18,13 @@
 
 ```shell
 python tools/analysis/analyze_logs.py plot_curve  \
-    ${JSON_LOGS}                       \
-    [--keys ${KEYS}]                   \
-    [--title ${TITLE}]                 \
-    [--legend ${LEGEND}]               \
-    [--backend ${BACKEND}]             \
-    [--style ${STYLE}]                 \
-    [--out ${OUT_FILE}]                \
+    ${JSON_LOGS}  \
+    [--keys ${KEYS}]  \
+    [--title ${TITLE}]  \
+    [--legend ${LEGEND}]  \
+    [--backend ${BACKEND}]  \
+    [--style ${STYLE}]  \
+    [--out ${OUT_FILE}]  \
     [--window-size ${WINDOW_SIZE}]
 ```
 
@@ -86,6 +87,43 @@ slowest epoch 68, average time is 0.3818
 fastest epoch 1, average time is 0.3694
 time std over epochs is 0.0020
 average iter time: 0.3777 s/iter
+```
+
+## Result Analysis
+
+`tools/analysis_tools/analyze_results.py` saves the topk images with the highest and lowest scores based on prediction results.
+
+**Usage**
+
+```shell
+python tools/analysis_tools/analyze_results.py \
+      ${CONFIG} \
+      ${RESULT} \
+      [--out-dir ${OUT_DIR}] \
+      [--topk ${TOPK}] \
+      [--cfg-options ${CFG_OPTIONS}]
+```
+
+Description of all arguments:
+
+- `config` : The path of a model config file.
+- `result`:  Output result file in pickle format from `tools/test.py`.
+- `--out_dir`: Directory to store output files.
+- `--topk`:The number of saved images that have the highest and lowest `topk` scores after sorting. If not specified, it will be set to `20`.
+- `--cfg-options`: If specified, the key-value pair optional cfg will be merged into config file, for more details please refer to [Tutorial 1: Learn about Configs](../tutorials/config.md)
+
+**Examples**:
+
+Assume that you have got result file in pickle format from `tools/test.py`  in the path './result.pkl'.
+
+1. Test Faster R-CNN and visualize the results specified topk to 50, save images to the directory `results/`
+
+```shell
+python tools/analysis_tools/analyze_results.py \
+       configs/resnet/resnet50_b32x8_imagenet.py \
+       result.pkl \
+       --out_dir results \
+       --topk 50
 ```
 
 ## Model Complexity

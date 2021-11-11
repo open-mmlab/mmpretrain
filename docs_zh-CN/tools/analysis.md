@@ -3,6 +3,7 @@
 <!-- TOC -->
 
 - [日志分析](#日志分析)
+- [结果分析](#结果分析)
 - [模型复杂度分析](#模型复杂度分析)
 
 <!-- TOC -->
@@ -18,14 +19,14 @@
 <div align=center><img src="../_static/image/tools/analysis/analyze_log.jpg" style=" width: 75%; height: 30%; "></div>
 
 ```shell
-python tools/analysis/analyze_logs.py plot_curve  \
-    ${JSON_LOGS}                       \
-    [--keys ${KEYS}]                   \
-    [--title ${TITLE}]                 \
-    [--legend ${LEGEND}]               \
-    [--backend ${BACKEND}]             \
-    [--style ${STYLE}]                 \
-    [--out ${OUT_FILE}]                \
+python tools/analysis/analyze_logs.py plot_curve \
+    ${JSON_LOGS}  \
+    [--keys ${KEYS}]  \
+    [--title ${TITLE}]  \
+    [--legend ${LEGEND}]  \
+    [--backend ${BACKEND}]  \
+    [--style ${STYLE}]  \
+    [--out ${OUT_FILE}] \
     [--window-size ${WINDOW_SIZE}]
 ```
 
@@ -88,6 +89,44 @@ fastest epoch 1, average time is 0.3694
 time std over epochs is 0.0020
 average iter time: 0.3777 s/iter
 ```
+
+## 结果分析
+
+`tools/analysis_tools/analyze_results.py` `results.py` 根据预测结果分别保存最高分和最低分的 k 个图像。
+
+**Usage**
+
+```shell
+python tools/analysis_tools/analyze_results.py \
+      ${CONFIG} \
+      ${RESULT} \
+      [--out-dir ${OUT_DIR}] \
+      [--topk ${TOPK}] \
+      [--cfg-options ${CFG_OPTIONS}]
+```
+
+Description of all arguments:
+
+- `config` ：配置文件的路径。
+- `result` ： 由 `tools/test.py` 做的的结果文件。
+- `--out_dir` ：保存结果分析的文件夹路径。
+- `--topk` ：排序后，保存具有最高和最低分数图像的数量。如果不指定，默认为 `20`。
+- `--cfg-options`: 对配置文件的修改，参考[教程 1：如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html)。
+
+**Examples**:
+
+使用前确保您的路径 './result.pkl' 为从 ‘tools/test.py’ 获得的 pickle 格式的结果文件。
+
+1. 测试 `ResNet` 所得结果， 并可视化指定`topk`为 50 的结果，将图片保存到目录`results/`：
+
+```shell
+python tools/analysis_tools/analyze_results.py \
+       configs/resnet/resnet50_xxxx.py \
+       result.pkl \
+       --out_dir results \
+       --topk 50
+```
+
 
 ## 模型复杂度分析
 
