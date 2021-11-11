@@ -6,7 +6,7 @@
 
 - [定制工作流](#定制工作流)
 - [钩子](#钩子)
-  - [默认运行的钩子](#默认运行的钩子)
+  - [默认训练钩子](#默认训练钩子)
     - [权重文件钩子](#权重文件钩子)
     - [日志钩子](#日志钩子)
     - [验证钩子](#验证钩子)
@@ -21,7 +21,7 @@
 
 ## 定制工作流
 
-默认情况下，MMClassification 推荐用户在训练周期中使用 **`EvaluationHook`** 进行模型验证，也可以选择 `val` 工作流模型进行模型验证。
+默认情况下，MMClassification 推荐用户在训练周期中使用 **`EvalHook`** 进行模型验证，也可以选择 `val` 工作流模型进行模型验证。
 
 工作流是一个形如 (工作流名, 周期数) 的列表，用于指定运行顺序和周期。其默认设置为：
 
@@ -41,7 +41,7 @@ workflow = [('train', 1)]
 
 ```{note}
 1. 在验证周期时不会更新模型参数。
-2. 配置文件内的关键词 `total_epochs` 控制训练时期数，并且不会影响验证工作流程。
+2. 配置文件内的关键词 `max_epochs` 控制训练时期数，并且不会影响验证工作流程。
 3. 工作流 `[('train', 1), ('val', 1)]` 和 `[('train', 1)]` 不会改变 `EvalHook` 的行为。
    因为 `EvalHook` 由 `after_train_epoch` 调用，而验证工作流只会影响 `after_val_epoch` 调用的钩子。
    因此，`[('train', 1), ('val', 1)]` 和 ``[('train', 1)]`` 的区别在于，runner 在完成每一轮训练后，会计算验证集上的损失。
@@ -53,13 +53,13 @@ workflow = [('train', 1)]
 
 钩子只有在构造器中被注册才起作用，目前钩子主要分为两类：
 
-- 默认运行的钩子
+- 默认训练钩子
 
 默认运行的钩子由运行器默认注册，一般为一些基础型功能的钩子，已经有确定的优先级，一般不需要修改优先级。
 
-- 非默认运行的钩子
+- 定制钩子
 
-非默认运行的钩子通过 `custom_hooks` 注册，一般为一些增强型功能的钩子，需要在配置文件中指定优先级，不指定该钩子的优先级将默被设定为 'NORMAL'。
+定制钩子通过 `custom_hooks` 注册，一般为一些增强型功能的钩子，需要在配置文件中指定优先级，不指定该钩子的优先级将默被设定为 'NORMAL'。
 
 **优先级列表**
 
@@ -77,7 +77,7 @@ workflow = [('train', 1)]
 
 优先级确定钩子的执行顺序，每次训练前，日志会打印出各个阶段钩子的执行顺序，方便调试。
 
-### 默认运行的钩子
+### 默认训练钩子
 
 有一些常见的钩子未通过 `custom_hooks` 注册，但会在运行器（`Runner`）中默认注册，它们是：
 
@@ -88,13 +88,14 @@ workflow = [('train', 1)]
 | `OptimizerHook`        | ABOVE_NORMAL (40)       |
 | `CheckpointSaverHook`  | NORMAL (50)             |
 | `IterTimerHook`        | LOW (70)                |
-| `EvaluationHook`       | LOW (70)                |
+| `EvalHook`             | LOW (70)                |
 | `LoggerHook(s)`        | VERY_LOW (90)           |
 
 
-[优化策略](./sehedule)中已经介绍了如何修改 `OptimizerHook`，`MomentumUpdaterHook`和 `LrUpdaterHook`; `IterTimerHook` 用于记录时间的钩子，目前不支持修改;
+`OptimizerHook`，`MomentumUpdaterHook`和 `LrUpdaterHook` 已经在 [优化策略](./sehedule) 介绍过了，
+`IterTimerHook` 用于记录所用时间，目前不支持修改;
 
-下面介绍如何使用 `LoggerHooks`、`CheckpointHook` 以及 `EvaluationHook` 能做什么。
+下面介绍如何使用去定制 `LoggerHooks`、`CheckpointHook` 以及 `EvalHook`。
 
 #### 权重文件钩子
 
@@ -110,7 +111,7 @@ checkpoint_config = dict(interval=1)
 #### 日志钩子
 
 `log_config` 包装了多个记录器钩子，并可以设置间隔。
-目前，MMCV 支持 `WandbLoggerHook`，`MlflowLoggerHook` 和 `TensorboardLoggerHook`。
+目前，MMCV 支持 `TextLoggerHook`、 `WandbLoggerHook`、`MlflowLoggerHook` 和 `TensorboardLoggerHook`。
 更多细节可参考[这里](https://mmcv.readthedocs.io/zh_CN/latest/api.html#mmcv.runner.LoggerHook)。
 
 ```python
@@ -124,7 +125,7 @@ log_config = dict(
 
 #### 验证钩子
 
-评估的配置将用于初始化 [`EvaluationHook`](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/evaluation.py)。
+评估的配置将用于初始化 [`EvalHook`](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/evaluation.py)。
 除了键 `interval` 外，其他参数，如 “metrics” 也将传递给 `dataset.evaluate()`。
 
 ```python
@@ -143,7 +144,7 @@ evaluation = dict(interval=1, save_best=True, metric='accuracy', metric_options=
 evaluation = dict(interval=1, start=200, metric='accuracy', metric_options={'topk': (1, )})
 ```
 
-表示 200 轮之前的轮次，只执行训练流程，不执行验证；从轮次 200 开始，训练一轮，验证一轮。
+表示在第 200 轮之前，只执行训练流程，不执行验证；从轮次 200 开始，在每一轮训练之后进行验证。
 
 ```{note}
 在 MMClassification 的默认配置文件中， evaluation 字段一般被放在 datasets 基础配置文件中。
@@ -255,12 +256,8 @@ custom_hooks = [
 
 ### 1. resume_from， load_from，init_cfg.Pretrained 区别
 
-- load_from 仅仅加载模型权重，主要用于加载预训练或者训练好的模型；
+- `load_from` ：仅仅加载模型权重，主要用于加载预训练或者训练好的模型；
 
-- resume_from 不仅导入模型权重，还会导入优化器信息，当前轮次（epoch）信息，主要用于从断点继续训练。
+- `resume_from` ：不仅导入模型权重，还会导入优化器信息，当前轮次（epoch）信息，主要用于从断点继续训练。
 
-- init_cfg.Pretrained 加载模型权重，并且可以按 'key' 指定加载。
-
-```{note}
-模型微调时更推荐使用在 init_cfg.Pretrained 指定预训练权重。
-```
+- `init_cfg.Pretrained` ：在权重初始化期间加载权重，您可以指定要加载的模块。 这通常在微调模型时使用，请参阅[教程 2：如何微调模型](./finetune.md)

@@ -1,6 +1,6 @@
 # Tutorial 6: Customize Schedule
 
-In this tutorial, we will introduce some methods about how to construct optimizers, customize learning rate and momentum schedules, use multiple learning rates and weight_decay, gradient clipping, gradient accumulation, and customize self-implemented methods for the project.
+In this tutorial, we will introduce some methods about how to construct optimizers, customize learning rate and momentum schedules, use multiple learning rates and weight decay, gradient clipping, gradient accumulation, and customize self-implemented methods for the project.
 
 <!-- TOC -->
 
@@ -70,16 +70,14 @@ We support many other learning rate schedule [here](https://github.com/open-mmla
     lr_config = dict(policy='poly', power=0.9, min_lr=1e-4, by_epoch=False)
     ```
 
-- ······
-
 ### Warmup strategy
 
-在配置文件中预热（warmup）的逐步学习率调整，主要的参数有以下几个：
+In MMClassification, use `lr_config` to configure warm-up strategy, the main parameters are as follows：
 
-- type : must be one of 'constant'、 'linear' 以及 'exp'.
-- warmup_by_epoch : if warmup by epoch or not, default to be True, if set to be False, warmup by iter.
-- warmup_iters : the number of warm-up iterations, when `warmup_by_epoch=True`, the unit is epoch; when `warmup_by_epoch=False`, the unit is the number of iterations (iter).
-- warmup_ratio : warm-up initial learning rate will calculate as `lr = lr * warmup_ratio`。
+- `warmup`: The warmup curve type. Please choose one from 'constant', 'linear', 'exp' and `None`, and `None` means disable warmup.
+- `warmup_by_epoch` : if warmup by epoch or not, default to be True, if set to be False, warmup by iter.
+- `warmup_iters` : the number of warm-up iterations, when `warmup_by_epoch=True`, the unit is epoch; when `warmup_by_epoch=False`, the unit is the number of iterations (iter).
+- `warmup_ratio` : warm-up initial learning rate will calculate as `lr = lr * warmup_ratio`。
 
 Here are some examples
 
@@ -132,14 +130,14 @@ momentum_config = dict(
 
 **After completing your configuration file，you could use [learning rate visualization tool](https://mmclassification.readthedocs.io/zh_CN/latest/tools/visualization.html#id3) to draw the corresponding learning rate adjustment curve.**
 
-## Use multiple learning rates and weight_decays
+## Parameter-wise finely configuration
 
 Some models may have some parameter-specific settings for optimization, for example, no weight decay to the BatchNorm layer or using different learning rates for different network layers.
 MMClassification provides `paramwise_cfg` for configuration, please refer to [MMCV](https://mmcv.readthedocs.io/en/latest/_modules/mmcv/runner/optimizer/default_constructor.html#DefaultOptimizerConstructor).
 
 - Using specified options
 
-    MMClassification provides options including `bias_lr_mult`, `bias_decay_mult`, `norm_decay_mult`, `dwconv_decay_mult`, `dcn_offset_lr_mult` and `bypass_duplicate` to specify all relevant `bais`, `conv and`, `dw bypass` parameter. E.g:
+    The `DefaultOptimizerConstructor` provides options including `bias_lr_mult`, `bias_decay_mult`, `norm_decay_mult`, `dwconv_decay_mult`, `dcn_offset_lr_mult` and `bypass_duplicate` to configure special optimizer behaviors of bias, normalization, depth-wise convolution, deformable convolution and duplicated parameter. E.g:
 
     1. No weight decay to the BatchNorm layer
 
@@ -149,8 +147,7 @@ MMClassification provides `paramwise_cfg` for configuration, please refer to [MM
 
 - Using `custom_keys` dict
 
-    MMClassification can use `custom_keys` to specify different parameters to use different learning rates or weight decays,
-    for example:
+    MMClassification can use `custom_keys` to specify different parameters to use different learning rates or weight decays, for example:
 
     1. No weight decay for specific parameters
 
@@ -166,7 +163,7 @@ MMClassification provides `paramwise_cfg` for configuration, please refer to [MM
 
     ```python
     paramwise_cfg = dict(custom_keys={'.backbone': dict(lr_mult=0.1, decay_mult=0.9)})s
-    # backbone 的 'lr' and 'weight_decay' 分别为 0.1 * lr 和 0.9 * weight_decay
+    # 'lr' for backbone and 'weight_decay' are 0.1 * lr and 0.9 * weight_decay
     ```
 
 ## Gradient clipping and gradient accumulation
@@ -176,34 +173,22 @@ Based on the PyTorch basic optimizer, MMCV enhances the optimizer's functions, s
 ### Gradient clipping
 
 During the training process, abnormal points may cause some model gradients to explode. Gradient clipping needs to be used to stabilize the training process.
-Currently `clip_grad_norm_` is supported, please refer to [PyTorch Documentation](https://pytorch.org/docs/stable/generated/torch.nn.utils.clip_grad_norm_.html).
+Currently `clip_grad_norm_` is supported, please refer to [PyTorch Documentation](https://pytorch.org/docs/stable/generated/torch.nn.utils.clip_grad_norm_.html) for more details.
 Examples are as follows:
 
 ```python
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
-```
-
-When the optimizer hook type is not specified, `OptimizerHook` is used by default, and the above is equivalent to:
-
-```python
-optimizer_config = dict(type="OptimizerHook", grad_clip=dict(max_norm=35, norm_type=2))
+# norm_type: type of the used p-norm, here norm_type is 2.
 ```
 
 ### Gradient accumulation
 
-When computing resources are lacking, BatchSize can only be set to a small value, which affects the effect of the resulting model. Gradient accumulation can be used to circumvent this problem.
+When computing resources are lacking, batchSize can only be set to a small value, which affects the effect of the resulting model. Gradient accumulation can be used to circumvent this problem.
 Examples are as follows:
 
-- ConsineAnnealing schedule:
-
-    ```python
-    lr_config = dict(
-        policy='CosineAnnealing',
-        warmup='linear',
-        warmup_iters=1000,
-        warmup_ratio=1.0 / 10,
-        min_lr_ratio=1e-5)
-    ```
+```python
+optimizer_config = dict(type="GradientCumulativeOptimizerHook", cumulative_iters=4)
+```
 
 Indicates that during training, back-propagation is performed every 4 iters.
 If the batch_size of the `DataLoader` at this time is 64, then the above is equivalent to:
@@ -213,11 +198,15 @@ loader = DataLoader(data, batch_size=256)
 optim_hook = OptimizerHook()
 ```
 
+```{note}
+When the optimizer hook type is not specified in `optimizer_config`, `OptimizerHook` is used by default.
+```
+
 ## Customize self-implemented methods
 
 In academic research and industrial practice, it may be necessary to use optimization methods not implemented by MMClassification, and users can add them through the following methods.
 
-```(note)
+```{note}
 This part will modify the MMClassification source code or add code to the MMClassification framework, beginners can skip it.
 ```
 

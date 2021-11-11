@@ -9,7 +9,7 @@
   - [学习率调整曲线](#定制学习率调整曲线)
   - [学习率预热策略](#定制学习率预热策略)
 - [定制动量调整策略](#定制动量调整策略)
-- [采用多个学习率和衰减系数](#采用多个学习率和衰减系数)
+- [参数化精细配置](#参数化精细配置)
 - [梯度裁剪与梯度累计](#梯度裁剪与梯度累计)
   - [梯度裁剪](#梯度裁剪)
   - [梯度累计](#梯度累计)
@@ -69,13 +69,11 @@ optimizer = dict(type='Adam', lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_de
     lr_config = dict(policy='poly', power=0.9, min_lr=1e-4, by_epoch=False)
     ```
 
-- ······
-
 ### 定制学习率预热策略
 
-在配置文件中预热（warmup）的逐步学习率调整，主要的参数有以下几个：
+在 MMClassification 中，使用 `lr_config` 配置学习率预热策略，主要的参数有以下几个：
 
-- type : 必须为 'constant'、 'linear' 以及 'exp' 其一。
+- warmup : 学习率预热曲线类别，必须为 'constant'、 'linear'， 'exp' 或者 `None` 其一， 如果为 `None`, 则不使用学习率预热策略。
 - warmup_by_epoch : 是否以轮次 (epoch) 预热。
 - warmup_iters :  预热的迭代次数，当 `warmup_by_epoch=True` 时，单位为轮次 (epoch)；
     当 `warmup_by_epoch=False` 时，单位为迭代次数 (iter)。
@@ -131,7 +129,7 @@ momentum_config = dict(
 )
 ```
 
-## 采用多个学习率
+## 参数化精细配置
 
 一些模型可能具有一些特定于参数的设置以进行优化，例如 BatchNorm 层不添加权重衰减或者对不同的网络层使用不同的学习率。
 MMClassification 提供了 `paramwise_cfg` 进行配置，可以参考[MMCV](https://mmcv.readthedocs.io/en/latest/_modules/mmcv/runner/optimizer/default_constructor.html#DefaultOptimizerConstructor)。
@@ -203,6 +201,10 @@ optimizer_config = dict(type="GradientCumulativeOptimizerHook", cumulative_iters
 ```
 loader = DataLoader(data, batch_size=256)
 optim_hook = OptimizerHook()
+```
+
+```{note}
+当在 `optimizer_config` 不指定优化器钩子类型时，默认使用 `OptimizerHook`。
 ```
 
 ## 用户自定义优化方法

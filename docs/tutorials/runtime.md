@@ -1,15 +1,15 @@
 # Tutorial 7: Customize Runtime Settings
 
-In this tutorial, we will introduce some methods about how to customize optimization methods, training schedules, workflow and hooks when running your own settings for the project.
+In this tutorial, we will introduce some methods about how to customize workflow and hooks when running your own settings for the project.
 
 <!-- TOC -->
 
 - [Customize Workflow](#customize-workflow)
 - [Hooks](#hooks)
   - [Default runtime hooks](#default-runtime-hooks)
-    - [CheckpointSaverHook](#checkpointsaverhook)
+    - [CheckpointHook](#checkpointhook)
     - [LoggerHooks](#loggerhooks)
-    - [EvaluationHook](#evaluationhook)
+    - [EvalHook](#evalhook)
   - [Use implemented hooks](#use-implemented-hooks)
   - [Customize self-implemented hooks](#customize-self-implemented-hooks)
     - [1. Implement a new hook](#1-implement-a-new-hook)
@@ -21,7 +21,6 @@ In this tutorial, we will introduce some methods about how to customize optimiza
 
 ## Customize Workflow
 
-By default, we recommend users to use **`EvaluationHook`** to do evaluation after training epoch, but they can still use `val` workflow as an alternative.
 
 Workflow is a list of (phase, epochs) to specify the running order and epochs. By default it is set to be
 
@@ -29,7 +28,7 @@ Workflow is a list of (phase, epochs) to specify the running order and epochs. B
 workflow = [('train', 1)]
 ```
 
-which means running 1 epoch for training.
+Which means running 1 epoch for training.
 Sometimes user may want to check some metrics (e.g. loss, accuracy) about the model on the validate set.
 In such case, we can set the workflow as
 
@@ -39,10 +38,12 @@ In such case, we can set the workflow as
 
 so that 1 epoch for training and 1 epoch for validation will be run iteratively.
 
+By default, we recommend users to use **`EvalHook`** to do evaluation after training epoch, but they can still use `val` workflow as an alternative.
+
 ```{note}
 1. The parameters of model will not be updated during val epoch.
-2. Keyword `total_epochs` in the config only controls the number of training epochs and will not affect the validation workflow.
-3. Workflows `[('train', 1), ('val', 1)]` and `[('train', 1)]` will not change the behavior of `EvalHook` because `EvalHook` is called by `after_train_epoch` and validation workflow only affect hooks that are called through `after_val_epoch`.
+2. Keyword `max_epochs` in the config only controls the number of training epochs and will not affect the validation workflow.
+3.  Workflows `[('train', 1), ('val', 1)]` and `[('train', 1)]` will not change the behavior of `EvalHook` because `EvalHook` is called by `after_train_epoch` and validation workflow only affect hooks that are called through `after_val_epoch`.
    Therefore, the only difference between `[('train', 1), ('val', 1)]` and ``[('train', 1)]`` is that the runner will calculate losses on validation set after each training epoch.
 ```
 
@@ -50,15 +51,15 @@ so that 1 epoch for training and 1 epoch for validation will be run iteratively.
 
 The hook mechanism is widely used in the OpenMMLab open source algorithm library. Combined with the `Runner`, the entire life cycle of the training process can be managed easily. You can learn more about the hook through [related article](https://www.calltutors.com/blog/what-is-hook/).
 
-Hooks only work when they are registered in the constructor. At present, hooks are mainly divided into two categories:
+Hooks only work after being registered into the runner. At present, hooks are mainly divided into two categories:
 
-- default runtime hooks
+- default training hooks
 
 The default runtime hooks are registered by the runner by default. Generally, they are hooks for some basic functions, and have a certain priority, there is no need to modify the priority.
 
-- non-default runtime hooks
+- custom hooks
 
-The non-default runtime hooks are registered through `custom_hooks`. Generally, they are hooks with enhanced functions. The priority needs to be specified in the configuration file. If you do not specify the priority of the hook, it will be set to'NORMAL' by default.
+The non-default runtime hooks are registered through `custom_hooks`. Generally, they are hooks with enhanced functions. The priority needs to be specified in the configuration file. If you do not specify the priority of the hook, it will be set to 'NORMAL' by default.
 
 **Priority list**
 
@@ -76,9 +77,9 @@ The non-default runtime hooks are registered through `custom_hooks`. Generally, 
 
 The priority determines the execution order of the hooks. Before training, the log will print out the execution order of the hooks at each stage to facilitate debugging.
 
-### Default runtime hooks
+### default training hooks
 
-There are some common hooks that are not registered through `custom_hooks` but has been registered by default when importing MMCV, they are
+There are some common hooks that are not registered through `custom_hooks`, they are
 
 | Hooks                  | Priority                |
 |:--:|:--:|
@@ -87,12 +88,13 @@ There are some common hooks that are not registered through `custom_hooks` but h
 | `OptimizerHook`        | ABOVE_NORMAL (40)       |
 | `CheckpointHook`       | NORMAL (50)             |
 | `IterTimerHook`        | LOW (70)                |
-| `EvaluationHook`       | LOW (70)                |
+| `EvalHook`             | LOW (70)                |
 | `LoggerHook(s)`        | VERY_LOW (90)           |
 
-[sehedule strategy](./sehedule) has introduced how to modify `OptimizerHook`, `MomentumUpdaterHook` and `LrUpdaterHook`; `IterTimerHook` is used to record the time hook, currently does not support modification;
+`OptimizerHook`, `MomentumUpdaterHook` and `LrUpdaterHook` have been introduced in [sehedule strategy](./sehedule).
+``IterTimerHook` is used to record elapsed time and does not support modification.
 
-Here we reveals how what we can do with `CheckpointHook`, `LoggerHooks`, and `EvaluationHook`.
+Here we reveals how to customize `CheckpointHook`, `LoggerHooks`, and `EvalHook`.
 
 #### CheckpointHook
 
@@ -102,12 +104,12 @@ The MMCV runner will use `checkpoint_config` to initialize [`CheckpointHook`](ht
 checkpoint_config = dict(interval=1)
 ```
 
-The users could set `max_keep_ckpts` to only save only small number of checkpoints or decide whether to store state dict of optimizer by `save_optimizer`.
+We could set `max_keep_ckpts` to save only small number of checkpoints or decide whether to store state dict of optimizer by `save_optimizer`.
 More details of the arguments are [here](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.CheckpointHook)
 
-#### Log config
+#### LoggerHooks
 
-The `log_config` wraps multiple logger hooks and enables to set intervals. Now MMCV supports `WandbLoggerHook`, `MlflowLoggerHook`, and `TensorboardLoggerHook`.
+The `log_config` wraps multiple logger hooks and enables to set intervals. Now MMCV supports `TextLoggerHook`, `WandbLoggerHook`, `MlflowLoggerHook` and `TensorboardLoggerHook`.
 The detail usages can be found in the [doc](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.LoggerHook).
 
 ```python
@@ -119,7 +121,7 @@ log_config = dict(
     ])
 ```
 
-#### Evaluation config
+#### EvalHook
 
 The config of `evaluation` will be used to initialize the [`EvalHook`](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/core/evaluation/eval_hooks.py).
 Except the key `interval`, other arguments such as `metrics` will be passed to the `dataset.evaluate()`
@@ -140,17 +142,15 @@ When running some large experiments, you can skip the validation step at the beg
 evaluation = dict(interval=1, start=200, metric='accuracy', metric_options={'topk': (1, )})
 ```
 
-Indicates that, in one epoch, only the training process is performed before the 200th epoch, withith validation process; starting from the 200th epoch, validation rocess would be executed after training process.
+Indicates that, before the 200th epoch, evaluation would not be executed. Since the 200th epoch, evaluation would be executed after training process.
 
 ```{note}
-1. In the default configuration files of MMClassification, the evaluation field is generally placed in the datasets configs.
-
-2. 'EvalHook' in 'MMClassification/mmcls/core/evaluation/eval_hooks.py' will be deprecated, recommend to use 'EvaluationHook' in MMCV as above.
+In the default configuration files of MMClassification, the evaluation field is generally placed in the datasets configs.
 ```
 
 ### Use implemented hooks
 
-Some hooks have been  already implemented in MMCV 和 MMClassification:
+Some hooks have been  already implemented in MMCV and MMClassification:
 
 - [EMAHook](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/ema.py)
 - [SyncBuffersHook](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/sync_buffer.py)
@@ -254,12 +254,8 @@ By default the hook's priority is set as `NORMAL` during registration.
 
 ### 1. resume_from and load_from and init_cfg.Pretrained
 
-- load_from : only imports model weights, which is mainly used to load pre-trained or trained models;
+- `load_from` : only imports model weights, which is mainly used to load pre-trained or trained models;
 
-- resume_from : not only import model weights, but also optimizer information, current epoch information, mainly used to continue training from the breakpoint.
+- `resume_from` : not only import model weights, but also optimizer information, current epoch information, mainly used to continue training from the checkpoint.
 
-- init_cfg.Pretrained : load the model weight, and you can specify a specific ‘key’ layer to load.
-
-```{note}
-It is recommended to specify pre-training weights using init_cfg.Pretrained when fine-tuning the model.
-```
+- `init_cfg.Pretrained` : Load weights during weight initialization, and you can specify which module to load. This is usually used when fine-tuning a model, refer to [Tutorial 2: Fine-tune Models](./finetune.md).
