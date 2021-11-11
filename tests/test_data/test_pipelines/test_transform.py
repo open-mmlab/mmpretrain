@@ -63,6 +63,11 @@ def test_resize():
         transform = dict(type='Resize', size=224, interpolation='2333')
         build_from_cfg(transform, PIPELINES)
 
+    # test assertion when resize_short is invalid
+    with pytest.raises(AssertionError):
+        transform = dict(type='Resize', size=224, adaptive_side='False')
+        build_from_cfg(transform, PIPELINES)
+
     # test repr
     transform = dict(type='Resize', size=224)
     resize_module = build_from_cfg(transform, PIPELINES)
@@ -163,6 +168,88 @@ def test_resize():
     assert np.equal(results['img'], results['img2']).all()
     assert results['img_shape'] == (224, 224, 3)
     assert np.allclose(results['img'], resized_img, atol=30)
+
+    # test resize when size is tuple, the second value is -1
+    # and adaptive_side='long'
+    transform = dict(
+        type='Resize',
+        size=(224, -1),
+        adaptive_side='long',
+        interpolation='bilinear')
+    resize_module = build_from_cfg(transform, PIPELINES)
+    results = reset_results(results, original_img)
+    results = resize_module(results)
+    assert np.equal(results['img'], results['img2']).all()
+    assert results['img_shape'] == (168, 224, 3)
+
+    # test resize when size is tuple, the second value is -1
+    # and adaptive_side='long', h > w
+    transform1 = dict(type='Resize', size=(300, 200), interpolation='bilinear')
+    resize_module1 = build_from_cfg(transform1, PIPELINES)
+    transform2 = dict(
+        type='Resize',
+        size=(224, -1),
+        adaptive_side='long',
+        interpolation='bilinear')
+    resize_module2 = build_from_cfg(transform2, PIPELINES)
+    results = reset_results(results, original_img)
+    results = resize_module1(results)
+    results = resize_module2(results)
+    assert np.equal(results['img'], results['img2']).all()
+    assert results['img_shape'] == (224, 149, 3)
+
+    # test resize when size is tuple, the second value is -1
+    # and adaptive_side='short', h > w
+    transform1 = dict(type='Resize', size=(300, 200), interpolation='bilinear')
+    resize_module1 = build_from_cfg(transform1, PIPELINES)
+    transform2 = dict(
+        type='Resize',
+        size=(224, -1),
+        adaptive_side='short',
+        interpolation='bilinear')
+    resize_module2 = build_from_cfg(transform2, PIPELINES)
+    results = reset_results(results, original_img)
+    results = resize_module1(results)
+    results = resize_module2(results)
+    assert np.equal(results['img'], results['img2']).all()
+    assert results['img_shape'] == (336, 224, 3)
+
+
+def test_pad():
+    results = dict()
+    img = mmcv.imread(
+        osp.join(osp.dirname(__file__), '../../data/color.jpg'), 'color')
+    results['img'] = img
+    results['img2'] = copy.deepcopy(img)
+    results['img_shape'] = img.shape
+    results['ori_shape'] = img.shape
+    results['img_fields'] = ['img', 'img2']
+
+    # test assertion if shape is None
+    with pytest.raises(AssertionError):
+        transform = dict(type='Pad', size=None)
+        pad_module = build_from_cfg(transform, PIPELINES)
+        pad_result = pad_module(copy.deepcopy(results))
+        assert np.equal(pad_result['img'], pad_result['img2']).all()
+        assert pad_result['img_shape'] == (400, 400, 3)
+
+    # test if pad is valid
+    transform = dict(type='Pad', size=(400, 400))
+    pad_module = build_from_cfg(transform, PIPELINES)
+    pad_result = pad_module(copy.deepcopy(results))
+    assert isinstance(repr(pad_module), str)
+    assert np.equal(pad_result['img'], pad_result['img2']).all()
+    assert pad_result['img_shape'] == (400, 400, 3)
+    assert np.allclose(pad_result['img'][-100:, :, :], 0)
+
+    # test if pad_to_square is valid
+    transform = dict(type='Pad', pad_to_square=True)
+    pad_module = build_from_cfg(transform, PIPELINES)
+    pad_result = pad_module(copy.deepcopy(results))
+    assert isinstance(repr(pad_module), str)
+    assert np.equal(pad_result['img'], pad_result['img2']).all()
+    assert pad_result['img_shape'] == (400, 400, 3)
+    assert np.allclose(pad_result['img'][-100:, :, :], 0)
 
 
 def test_center_crop():
