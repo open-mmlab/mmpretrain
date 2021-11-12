@@ -1,6 +1,6 @@
 # Tutorial 6: Customize Schedule
 
-In this tutorial, we will introduce some methods about how to construct optimizers, customize learning rate and momentum schedules, use multiple learning rates and weight decay, gradient clipping, gradient accumulation, and customize self-implemented methods for the project.
+In this tutorial, we will introduce some methods about how to construct optimizers, customize learning rate and momentum schedules, parameter-wise finely configuration, gradient clipping, gradient accumulation, and customize self-implemented methods for the project.
 
 <!-- TOC -->
 

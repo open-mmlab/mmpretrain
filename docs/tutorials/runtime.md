@@ -55,11 +55,11 @@ Hooks only work after being registered into the runner. At present, hooks are ma
 
 - default training hooks
 
-The default runtime hooks are registered by the runner by default. Generally, they are hooks for some basic functions, and have a certain priority, there is no need to modify the priority.
+The default training hooks are registered by the runner by default. Generally, they are hooks for some basic functions, and have a certain priority, you don't need to modify the priority.
 
 - custom hooks
 
-The non-default runtime hooks are registered through `custom_hooks`. Generally, they are hooks with enhanced functions. The priority needs to be specified in the configuration file. If you do not specify the priority of the hook, it will be set to 'NORMAL' by default.
+The custom hooks are registered through `custom_hooks`. Generally, they are hooks with enhanced functions. The priority needs to be specified in the configuration file. If you do not specify the priority of the hook, it will be set to 'NORMAL' by default.
 
 **Priority list**
 
@@ -136,7 +136,7 @@ You can also save the model weight when the best verification result is obtained
 evaluation = dict(interval=1, save_best=True, metric='accuracy', metric_options={'topk': (1, )})
 ```
 
-When running some large experiments, you can skip the validation step at the beginning of training by modifying the parameter `start` to save time. as follows:
+When running some large experiments, you can skip the validation step at the beginning of training by modifying the parameter `start` as below:
 
 ```python
 evaluation = dict(interval=1, start=200, metric='accuracy', metric_options={'topk': (1, )})
@@ -150,7 +150,7 @@ In the default configuration files of MMClassification, the evaluation field is 
 
 ### Use implemented hooks
 
-Some hooks have been  already implemented in MMCV and MMClassification:
+Some hooks have been  already implemented in MMCV and MMClassification, they are:
 
 - [EMAHook](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/ema.py)
 - [SyncBuffersHook](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/sync_buffer.py)

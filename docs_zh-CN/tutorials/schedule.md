@@ -4,7 +4,7 @@
 
 <!-- TOC -->
 
-- [构造优化器](#构造优化器)
+- [构造 PyTorch 内置优化器](#构造-=pytorch-内置优化器)
 - [定制学习率调整策略](#定制学习率调整策略)
   - [学习率调整曲线](#定制学习率调整曲线)
   - [学习率预热策略](#定制学习率预热策略)
@@ -19,9 +19,9 @@
 
 <!-- TOC -->
 
-## 构造优化器
+## 构造 PyTorch 内置优化器
 
-MMClassification 支持 PyTorch 实现的所有优化器，仅需在配置文件中，指定 “optimizer” 字段
+MMClassification 支持 PyTorch 实现的所有优化器，仅需在配置文件中，指定 “optimizer” 字段。
 例如，如果要使用 “SGD”，则修改如下。
 
 ```python
@@ -184,11 +184,12 @@ optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 
 ```python
 optimizer_config = dict(type="OptimizerHook", grad_clip=dict(max_norm=35, norm_type=2))
+# norm_type: 使用的范数类型，此处使用范数2。
 ```
 
 ### 梯度累计
 
-计算资源缺乏缺乏时，BatchSize 只能设置较小的值，影响所得模型的效果，可以使用梯度累计来规避这一问题。
+计算资源缺乏缺乏时，batchsize 只能设置较小的值，影响所得模型的效果，可以使用梯度累计来规避这一问题。
 例子如下：
 
 ```python
