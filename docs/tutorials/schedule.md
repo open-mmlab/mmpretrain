@@ -9,11 +9,11 @@ In this tutorial, we will introduce some methods about how to construct optimize
   - [Learning rate curve](#learning-rate-curve)
   - [Warmup strategy](#warmup-strategy)
 - [Customize momentum schedules](#customize-momentum-schedules)
-- [Use multiple learning rates and weight_decays](#use-multiple-learning-rates-and-weight_decays)
+- [Parameter-wise finely configuration](#parameter-wise-finely-configuration)
 - [Gradient clipping and gradient accumulation](#gradient-clipping-and-gradient-accumulation)
   - [Gradient clipping](#gradient-clipping)
   - [Gradient accumulation](#gradient-accumulation)
-- [Customize self-implemented methods](#self-implemented-methods)
+- [Customize self-implemented methods](#customize-self-implemented-methods)
   - [Customize self-implemented optimizer](#customize-self-implemented-optimizer)
   - [Customize optimizer constructor](#customize-optimizer-constructor)
 

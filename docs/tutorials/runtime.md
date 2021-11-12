@@ -6,7 +6,7 @@ In this tutorial, we will introduce some methods about how to customize workflow
 
 - [Customize Workflow](#customize-workflow)
 - [Hooks](#hooks)
-  - [Default runtime hooks](#default-runtime-hooks)
+  - [Default training hooks](#default-training-hooks)
     - [CheckpointHook](#checkpointhook)
     - [LoggerHooks](#loggerhooks)
     - [EvalHook](#evalhook)
@@ -252,7 +252,7 @@ By default the hook's priority is set as `NORMAL` during registration.
 
 ## FAQ
 
-### 1. resume_from and load_from and init_cfg.Pretrained
+### 1. `resume_from` and `load_from` and `init_cfg.Pretrained`
 
 - `load_from` : only imports model weights, which is mainly used to load pre-trained or trained models;
 
