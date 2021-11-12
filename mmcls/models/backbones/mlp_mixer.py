@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Sequence
+
 import torch.nn as nn
 from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.transformer import FFN
@@ -52,7 +54,8 @@ class MixerBlock(BaseModule):
             num_fcs=num_fcs,
             ffn_drop=drop_rate,
             dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
-            act_cfg=act_cfg)
+            act_cfg=act_cfg,
+            add_identity=False)
 
         self.norm2_name, norm2 = build_norm_layer(
             norm_cfg, embed_dims, postfix=2)
@@ -102,6 +105,8 @@ class MlpMixer(BaseBackbone):
             Default: 'b'.
         img_size (int | tuple): Input image size.
         patch_size (int | tuple): The patch size.
+        out_indices (Sequence | int): Output from which layer.
+            Defaults to -1, means the last layer.
         drop_rate (float): Probability of an element to be zeroed.
             Defaults to 0.
         drop_path_rate (float): stochastic depth rate. Defaults to 0.
@@ -143,6 +148,7 @@ class MlpMixer(BaseBackbone):
                  arch='b',
                  img_size=224,
                  patch_size=16,
+                 out_indices=-1,
                  drop_rate=0.,
                  drop_path_rate=0.,
                  norm_cfg=dict(type='LN'),
@@ -183,6 +189,19 @@ class MlpMixer(BaseBackbone):
         self.patch_embed = PatchEmbed(**_patch_cfg)
         num_patches = self.patch_embed.num_patches
 
+        if isinstance(out_indices, int):
+            out_indices = [out_indices]
+        assert isinstance(out_indices, Sequence), \
+            f'"out_indices" must be a sequence or int, ' \
+            f'get {type(out_indices)} instead.'
+        for i, index in enumerate(out_indices):
+            if index < 0:
+                out_indices[i] = self.num_layers + index
+                assert out_indices[i] >= 0, f'Invalid out_indices {index}'
+            else:
+                assert index >= self.num_layers, f'Invalid out_indices {index}'
+        self.out_indices = out_indices
+
         self.layers = ModuleList()
         if isinstance(layer_cfgs, dict):
             layer_cfgs = [layer_cfgs] * self.num_layers
@@ -211,8 +230,15 @@ class MlpMixer(BaseBackbone):
     def forward(self, x):
         x = self.patch_embed(x)
 
-        for layer in self.layers:
+        outs = []
+        for i, layer in enumerate(self.layers):
             x = layer(x)
 
-        x = self.norm1(x).transpose(1, 2)
-        return x
+            if i == len(self.layers) - 1:
+                x = self.norm1(x)
+
+            if i in self.out_indices:
+                out = x.transpose(1, 2)
+                outs.append(out)
+
+        return tuple(outs)
