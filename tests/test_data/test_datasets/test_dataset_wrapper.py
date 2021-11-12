@@ -16,7 +16,7 @@ def construct_toy_dataset(length):
     BaseDataset.__getitem__ = MagicMock(side_effect=lambda idx: idx)
     dataset = BaseDataset(data_prefix='', pipeline=[], test_mode=True)
     cat_ids_list = [
-        np.random.randint(0, 80, num).tolist()
+        np.random.randint(0, 80, num)
         for num in np.random.randint(1, 20, length)
     ]
     dataset.data_infos = MagicMock()
@@ -32,8 +32,8 @@ def test_concat_dataset():
     concat_dataset = ConcatDataset([dataset_a, dataset_b])
     assert concat_dataset[5] == 5
     assert concat_dataset[25] == 15
-    assert concat_dataset.get_cat_ids(5) == cat_ids_list_a[5]
-    assert concat_dataset.get_cat_ids(25) == cat_ids_list_b[15]
+    assert np.array_equal(concat_dataset.get_cat_ids(5), cat_ids_list_a[5])
+    assert np.array_equal(concat_dataset.get_cat_ids(25), cat_ids_list_b[15])
     assert len(concat_dataset) == len(dataset_a) + len(dataset_b)
     assert concat_dataset.CLASSES == BaseDataset.CLASSES
 
@@ -44,9 +44,9 @@ def test_repeat_dataset():
     assert repeat_dataset[5] == 5
     assert repeat_dataset[15] == 5
     assert repeat_dataset[27] == 7
-    assert repeat_dataset.get_cat_ids(5) == cat_ids_list[5]
-    assert repeat_dataset.get_cat_ids(15) == cat_ids_list[5]
-    assert repeat_dataset.get_cat_ids(27) == cat_ids_list[7]
+    assert np.array_equal(repeat_dataset.get_cat_ids(5), cat_ids_list[5])
+    assert np.array_equal(repeat_dataset.get_cat_ids(15), cat_ids_list[5])
+    assert np.array_equal(repeat_dataset.get_cat_ids(27), cat_ids_list[7])
     assert len(repeat_dataset) == 10 * len(dataset)
     assert repeat_dataset.CLASSES == BaseDataset.CLASSES
 

@@ -71,10 +71,10 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
             idx (int): Index of data.
 
         Returns:
-            int: Image category of specified index.
+            cat_ids (np.darray): Image category of specified index.
         """
 
-        return self.data_infos[idx]['gt_label'].astype(np.int)
+        return self.data_infos[idx]['gt_label'].astype(np.int64)
 
     def prepare_data(self, idx):
         results = copy.deepcopy(self.data_infos[idx])
