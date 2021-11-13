@@ -43,7 +43,7 @@ class TIMMBackbone(BaseBackbone):
             **kwargs,
         )
 
-        # Make unused parameters None
+        # reset classifier
         self.timm_model.reset_classifier(0, '')
 
         # Hack to use pretrained weights from timm
