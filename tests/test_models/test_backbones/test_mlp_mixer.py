@@ -64,5 +64,12 @@ def test_mlp_mixer_backbone():
     assert check_norm_state(model.modules(), True)
 
     imgs = torch.randn(3, 3, 224, 224)
-    feat = model(imgs)
-    assert feat.shape == torch.Size((3, 768, 196))
+    feat = model(imgs)[-1]
+    assert feat.shape == (3, 768, 196)
+
+    # Test MlpMixer with multi out indices
+    cfg = deepcopy(cfg_ori)
+    cfg['out_indices'] = [-3, -2, -1]
+    model = MlpMixer(**cfg)
+    for out in model(imgs):
+        assert out.shape == (3, 768, 196)
