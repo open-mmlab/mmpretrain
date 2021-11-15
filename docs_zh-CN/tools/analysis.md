@@ -3,8 +3,13 @@
 <!-- TOC -->
 
 - [日志分析](#日志分析)
+ - [绘制曲线图](#绘制曲线图)
+ - [统计时间](#统计时间)
 - [结果分析](#结果分析)
+  - [评估结果](#查看典型结果)
+  - [查看典型结果](#查看典型结果)
 - [模型复杂度分析](#模型复杂度分析)
+- [常见问题](#常见问题)
 
 <!-- TOC -->
 
@@ -92,9 +97,34 @@ average iter time: 0.3777 s/iter
 
 ## 结果分析
 
-`tools/analysis_tools/analyze_results.py` `results.py` 根据预测结果分别保存最高分和最低分的 k 个图像。
+### 评估结果
 
-**Usage**
+`tools/analysis_tools/eval_metric.py` 可以用来评估结果。
+
+```shell
+python tools/analysis_tools/analyze_results.py \
+      ${CONFIG} \
+      ${PKL_RESULT} \
+      [--metrics ${METRICS}]  \
+      [--cfg-options ${CFG_OPTIONS}]
+```
+
+**所有参数说明**：
+
+- `config` ：配置文件的路径。
+- `pkl_result` ： 由 `tools/test.py` 做的的结果文件。
+- `metrics` ： 评估的衡量指标，取决于数据集。
+- `--cfg-options`: 对配置文件的修改，参考[教程 1：如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html)。
+
+**样例**：
+
+```
+python tools/analysis_tools/analyze_results.py configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py ./result.pkl --metrics accuracy
+```
+
+### 查看典型结果
+
+`tools/analysis_tools/analyze_results.py` `results.py` 根据预测结果分别保存最高分和最低分的 k 个图像。
 
 ```shell
 python tools/analysis_tools/analyze_results.py \
@@ -105,7 +135,7 @@ python tools/analysis_tools/analyze_results.py \
       [--cfg-options ${CFG_OPTIONS}]
 ```
 
-Description of all arguments:
+**所有参数说明**：
 
 - `config` ：配置文件的路径。
 - `result` ： 由 `tools/test.py` 做的的结果文件。
@@ -113,9 +143,11 @@ Description of all arguments:
 - `--topk` ：排序后，保存具有最高和最低分数图像的数量。如果不指定，默认为 `20`。
 - `--cfg-options`: 对配置文件的修改，参考[教程 1：如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html)。
 
-**Examples**:
+```{note}
+使用前确保您的路径 `./result.pkl` 为从 'tools/test.py' 获得的 pickle 格式的结果文件。
+```
 
-使用前确保您的路径 './result.pkl' 为从 ‘tools/test.py’ 获得的 pickle 格式的结果文件。
+**样例**：
 
 1. 测试 `ResNet` 所得结果， 并可视化指定`topk`为 50 的结果，将图片保存到目录`results/`：
 
@@ -153,3 +185,7 @@ Params: 25.56 M
 - FLOPs 与输入的尺寸有关，而参数量与输入尺寸无关。默认输入尺寸为 (1, 3, 224, 224)
 - 一些运算不会被计入 FLOPs 的统计中，例如 GN 和自定义运算。详细信息请参考 [`mmcv.cnn.get_model_complexity_info()`](https://github.com/open-mmlab/mmcv/blob/master/mmcv/cnn/utils/flops_counter.py)
 ```
+
+## 常见问题
+
+- 无
