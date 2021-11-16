@@ -22,18 +22,19 @@ In this tutorial, we will introduce some methods about how to construct optimize
 
 ## Customize optimizer supported by PyTorch
 
-We already support to use all the optimizers implemented by PyTorch, and the only modification is to change the `optimizer` field of config files.
+We already support to use all the optimizers implemented by PyTorch, and to use and modify them, please change the `optimizer` field of config files.
+
 For example, if you want to use `SGD`, the modification could be as the following.
 
 ```python
 optimizer = dict(type='SGD', lr=0.0003, weight_decay=0.0001)
 ```
 
-To modify the learning rate of the model, the users only need to modify the `lr` in the config of optimizer.
-The users can directly set arguments following the [API doc](https://pytorch.org/docs/stable/optim.html?highlight=optim#module-torch.optim) of PyTorch.
+To modify the learning rate of the model, just modify the `lr` in the config of optimizer.
+You can also directly set other arguments according to the [API doc](https://pytorch.org/docs/stable/optim.html?highlight=optim#module-torch.optim) of PyTorch.
 
 For example, if you want to use `Adam` with the setting like `torch.optim.Adam(params, lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)` in PyTorch,
-the modification could be set as the following.
+the config should looks like.
 
 ```python
 optimizer = dict(type='Adam', lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
@@ -41,17 +42,19 @@ optimizer = dict(type='Adam', lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_de
 
 ## Customize learning rate schedules
 
-### Learning rate curve
+### Learning rate decay
 
-We use step learning rate with default value in config files, this calls [`StepLRHook`](https://github.com/open-mmlab/mmcv/blob/f48241a65aebfe07db122e9db320c31b685dc674/mmcv/runner/hooks/lr_updater.py#L153) in MMCV. For example:
+Learning rate decay is widely used to improve performance. And to use learning rate decay, please set the `lr_confg` field in config files.
 
-- Step:
+For example, we use step policy as the default learning rate decay policy of ResNet, and the config is:
 
-    ```python
-    lr_config = dict(policy='step', step=[100, 150])
-    ```
+```python
+lr_config = dict(policy='step', step=[100, 150])
+```
 
-We support many other learning rate schedule [here](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/lr_updater.py), such as `CosineAnnealing` and `Poly` schedule. Here are some examples
+Then during training, the program will call [`StepLRHook`](https://github.com/open-mmlab/mmcv/blob/f48241a65aebfe07db122e9db320c31b685dc674/mmcv/runner/hooks/lr_updater.py#L153) periodically to update the learning rate.
+
+We also support many other learning rate schedules [here](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/lr_updater.py), such as `CosineAnnealing` and `Poly` schedule. Here are some examples
 
 - ConsineAnnealing schedule:
 
@@ -72,7 +75,11 @@ We support many other learning rate schedule [here](https://github.com/open-mmla
 
 ### Warmup strategy
 
-In MMClassification, use `lr_config` to configure warm-up strategy, the main parameters are as follows：
+In the early stage, training is easy to be volatile, and warmup is a technique
+to reduce volatility. With warmup, the learning rate will increase gradually
+from a minor value to the expected value.
+
+In MMClassification, we use `lr_config` to configure the warmup strategy, the main parameters are as follows：
 
 - `warmup`: The warmup curve type. Please choose one from 'constant', 'linear', 'exp' and `None`, and `None` means disable warmup.
 - `warmup_by_epoch` : if warmup by epoch or not, default to be True, if set to be False, warmup by iter.
@@ -106,12 +113,19 @@ Here are some examples
         warmup_by_epoch=True)
     ```
 
+```{tip}
+After completing your configuration file，you could use [learning rate visualization tool](https://mmclassification.readthedocs.io/zh_CN/latest/tools/visualization.html#id3) to draw the corresponding learning rate adjustment curve.
+```
+
 ## Customize momentum schedules
 
-We support momentum scheduler to modify model's momentum according to learning rate, which could make the model converge in a faster way.
-Momentum scheduler is usually used with LR scheduler, for example, the following config is used  to accelerate convergence.
+We support the momentum scheduler to modify the model's momentum according to learning rate, which could make the model converge in a faster way.
+
+Momentum scheduler is usually used with LR scheduler, for example, the following config is used to accelerate convergence.
 For more details, please refer to the implementation of [CyclicLrUpdater](https://github.com/open-mmlab/mmcv/blob/f48241a65aebfe07db122e9db320c31b685dc674/mmcv/runner/hooks/lr_updater.py#L327)
 and [CyclicMomentumUpdater](https://github.com/open-mmlab/mmcv/blob/f48241a65aebfe07db122e9db320c31b685dc674/mmcv/runner/hooks/momentum_updater.py#L130).
+
+Here is an example
 
 ```python
 lr_config = dict(
@@ -128,12 +142,12 @@ momentum_config = dict(
 )
 ```
 
-**After completing your configuration file，you could use [learning rate visualization tool](https://mmclassification.readthedocs.io/zh_CN/latest/tools/visualization.html#id3) to draw the corresponding learning rate adjustment curve.**
-
 ## Parameter-wise finely configuration
 
 Some models may have some parameter-specific settings for optimization, for example, no weight decay to the BatchNorm layer or using different learning rates for different network layers.
-MMClassification provides `paramwise_cfg` for configuration, please refer to [MMCV](https://mmcv.readthedocs.io/en/latest/_modules/mmcv/runner/optimizer/default_constructor.html#DefaultOptimizerConstructor).
+To finely configuration them, we can use the `paramwise_cfg` option in `optimizer`.
+
+We provide some examples here and more usages refer to [DefaultOptimizerConstructor](https://mmcv.readthedocs.io/en/latest/_modules/mmcv/runner/optimizer/default_constructor.html#DefaultOptimizerConstructor).
 
 - Using specified options
 
@@ -142,7 +156,11 @@ MMClassification provides `paramwise_cfg` for configuration, please refer to [MM
     1. No weight decay to the BatchNorm layer
 
     ```python
-    paramwise_cfg = dict(norm_decay_mult=0.)
+    optimizer = dict(
+        type='SGD',
+        lr=0.8,
+        weight_decay=1e-4,
+        paramwise_cfg=dict(norm_decay_mult=0.))
     ```
 
 - Using `custom_keys` dict
@@ -157,24 +175,37 @@ MMClassification provides `paramwise_cfg` for configuration, please refer to [MM
             '.backbone.cls_token': dict(decay_mult=0.0),
             '.backbone.pos_embed': dict(decay_mult=0.0)
         })
+
+    optimizer = dict(
+        type='SGD',
+        lr=0.8,
+        weight_decay=1e-4,
+        paramwise_cfg=paramwise_cfg)
     ```
 
-    2. Using a smaller learning rate and aweight decay for the backbone layers
+    2. Using a smaller learning rate and a weight decay for the backbone layers
 
     ```python
-    paramwise_cfg = dict(custom_keys={'.backbone': dict(lr_mult=0.1, decay_mult=0.9)})s
-    # 'lr' for backbone and 'weight_decay' are 0.1 * lr and 0.9 * weight_decay
+    optimizer = dict(
+        type='SGD',
+        lr=0.8,
+        weight_decay=1e-4,
+        # 'lr' for backbone and 'weight_decay' are 0.1 * lr and 0.9 * weight_decay
+        paramwise_cfg=dict(
+            custom_keys={'.backbone': dict(lr_mult=0.1, decay_mult=0.9)}))
     ```
 
 ## Gradient clipping and gradient accumulation
 
-Based on the PyTorch basic optimizer, MMCV enhances the optimizer's functions, such as gradient clipping, gradient accumulation, etc., refer to [MMCV](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/optimizer.py).
+Besides the basic function of PyTorch optimizers, we also provide some enhancement functions, such as gradient clipping, gradient accumulation, etc., refer to [MMCV](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/optimizer.py).
 
 ### Gradient clipping
 
-During the training process, abnormal points may cause some model gradients to explode. Gradient clipping needs to be used to stabilize the training process.
-Currently `clip_grad_norm_` is supported, please refer to [PyTorch Documentation](https://pytorch.org/docs/stable/generated/torch.nn.utils.clip_grad_norm_.html) for more details.
-Examples are as follows:
+During the training process, the loss function may get close to a cliffy region and cause gradient explosion. And gradient clipping is helpful to stabilize the training process. More introduction can be found in [this page](https://paperswithcode.com/method/gradient-clipping).
+
+Currently we support `grad_clip` option in `optimizer_config`, and the arguments refer to [PyTorch Documentation](https://pytorch.org/docs/stable/generated/torch.nn.utils.clip_grad_norm_.html).
+
+Here is an example:
 
 ```python
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
@@ -183,19 +214,20 @@ optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 
 ### Gradient accumulation
 
-When computing resources are lacking, batchSize can only be set to a small value, which affects the effect of the resulting model. Gradient accumulation can be used to circumvent this problem.
-Examples are as follows:
+When computing resources are lacking, the batch size can only be set to a small value, which may affect the performance of models. Gradient accumulation can be used to solve this problem.
+
+Here is an example:
 
 ```python
+data = dict(samples_per_gpu=64)
 optimizer_config = dict(type="GradientCumulativeOptimizerHook", cumulative_iters=4)
 ```
 
-Indicates that during training, back-propagation is performed every 4 iters.
-If the batch_size of the `DataLoader` at this time is 64, then the above is equivalent to:
+Indicates that during training, back-propagation is performed every 4 iters. And the above is equivalent to:
 
-```
-loader = DataLoader(data, batch_size=256)
-optim_hook = OptimizerHook()
+```python
+data = dict(samples_per_gpu=256)
+optimizer_config = dict(type="OptimizerHook")
 ```
 
 ```{note}
@@ -204,7 +236,7 @@ When the optimizer hook type is not specified in `optimizer_config`, `OptimizerH
 
 ## Customize self-implemented methods
 
-In academic research and industrial practice, it may be necessary to use optimization methods not implemented by MMClassification, and users can add them through the following methods.
+In academic research and industrial practice, it may be necessary to use optimization methods not implemented by MMClassification, and you can add them through the following methods.
 
 ```{note}
 This part will modify the MMClassification source code or add code to the MMClassification framework, beginners can skip it.
@@ -214,7 +246,7 @@ This part will modify the MMClassification source code or add code to the MMClas
 
 #### 1. Define a new optimizer
 
-A customized optimizer could be defined as following.
+A customized optimizer could be defined as below.
 
 Assume you want to add an optimizer named `MyOptimizer`, which has arguments `a`, `b`, and `c`.
 You need to create a new directory named `mmcls/core/optimizer`.
@@ -238,12 +270,19 @@ To find the above module defined above, this module should be imported into the 
 
 - Modify `mmcls/core/optimizer/__init__.py` to import it.
 
-    Create the `mmcls/core/optimizer` folder and the `mmcls/core/optimizer/__init__.py` file if they not exist. The newly defined module should be imported in `mmcls/core/optimizer/__init__.py` so that the registry will find the new module and add it:
+    Create the `mmcls/core/optimizer` folder and the `mmcls/core/optimizer/__init__.py` file if they don't exist. The newly defined module should be imported in `mmcls/core/optimizer/__init__.py` and `mmcls/core/__init__.py` so that the registry will find the new module and add it:
 
 ```python
+# In mmcls/core/optimizer/__init__.py
 from .my_optimizer import MyOptimizer # MyOptimizer maybe other class name
 
 __all__ = ['MyOptimizer']
+```
+
+```python
+# In mmcls/core/__init__.py
+...
+from .optimizer import *  # noqa: F401, F403
 ```
 
 - Use `custom_imports` in the config to manually import it
@@ -273,7 +312,8 @@ optimizer = dict(type='MyOptimizer', a=a_value, b=b_value, c=c_value)
 ### Customize optimizer constructor
 
 Some models may have some parameter-specific settings for optimization, e.g. weight decay for BatchNorm layers.
-The users can do those fine-grained parameter tuning through customizing optimizer constructor.
+
+Although our `DefaultOptimizerConstructor` is powerful, it may still not cover your need. If that, you can do those fine-grained parameter tuning through customizing optimizer constructor.
 
 ```python
 from mmcv.runner.optimizer import OPTIMIZER_BUILDERS
