@@ -37,6 +37,7 @@ data = dict(
     train=dict(
         type=dataset_type,
         data_prefix='data/imagenet/train',
+        ann_file='data/imagenet/meta/train.txt',
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
