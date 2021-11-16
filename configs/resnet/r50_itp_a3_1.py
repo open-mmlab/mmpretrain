@@ -21,14 +21,18 @@ model = dict(
         num_classes=1000,
         in_channels=2048,
         loss=dict(
-            type='LabelSmoothLoss', label_smooth_val=0.0, mode='multi_label'),
+            type='CrossEntropyLoss',
+            use_sigmoid=True,
+        ),
         topk=(1, 5),
     ),
     train_cfg=dict(augments=[
-        dict(type='BatchMixup', alpha=0.1, num_classes=1000, prob=0.5),
-        dict(type='BatchCutMix', alpha=1.0, num_classes=1000, prob=0.5)
+        dict(
+            type='BatchCutMixup',
+            alpha_mixup=0.1,
+            alpha_cutmix=1.0,
+            num_classes=1000,
+            prob=1.0),
     ]))
 
 optimizer = dict(lr=0.008, )
-
-fp16 = dict(loss_scale='dynamic')

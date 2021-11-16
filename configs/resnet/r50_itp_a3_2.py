@@ -1,5 +1,5 @@
 _base_ = [
-    '../_base_/datasets/imagenet_bs256_itp_a12.py',
+    '../_base_/datasets/imagenet_bs256_itp_a3.py',
     '../_base_/schedules/imagenet_bs2048_itp.py',
     '../_base_/default_runtime.py'
 ]
@@ -13,7 +13,7 @@ model = dict(
         num_stages=4,
         out_indices=(3, ),
         norm_cfg=dict(type='BN', requires_grad=True),
-        drop_path_rate=0.05,
+        drop_path_rate=0.0,
         style='pytorch'),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
@@ -31,5 +31,4 @@ model = dict(
         dict(type='BatchCutMix', alpha=1.0, num_classes=1000, prob=0.5)
     ]))
 
-fp16 = dict(loss_scale='dynamic')
-runner = dict(max_epochs=300)
+optimizer = dict(lr=0.008, )
