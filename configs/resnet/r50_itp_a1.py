@@ -32,3 +32,4 @@ model = dict(
 optimizer = dict(lr=0.005, weight_decay=0.01)
 fp16 = dict(loss_scale='dynamic')
 runner = dict(max_epochs=600)
+rep_aug = True

@@ -10,6 +10,7 @@ from mmcv.runner import get_dist_info
 from mmcv.utils import Registry, build_from_cfg, digit_version
 from torch.utils.data import DataLoader
 
+from mmcls.core.sampler import RepeatAugSampler
 from .samplers import DistributedSampler
 
 if platform.system() != 'Windows':
@@ -51,6 +52,7 @@ def build_dataloader(dataset,
                      seed=None,
                      pin_memory=True,
                      persistent_workers=True,
+                     ra_sampler=False,
                      **kwargs):
     """Build PyTorch DataLoader.
 
@@ -83,12 +85,17 @@ def build_dataloader(dataset,
     """
     rank, world_size = get_dist_info()
     if dist:
-        sampler = DistributedSampler(
-            dataset, world_size, rank, shuffle=shuffle, round_up=round_up)
+        if ra_sampler:
+            sampler = RepeatAugSampler(
+                dataset, world_size, rank, shuffle=shuffle)
+        else:
+            sampler = DistributedSampler(
+                dataset, world_size, rank, shuffle=shuffle, round_up=round_up)
         shuffle = False
         batch_size = samples_per_gpu
         num_workers = workers_per_gpu
     else:
+        assert not ra_sampler
         sampler = None
         batch_size = num_gpus * samples_per_gpu
         num_workers = num_gpus * workers_per_gpu
