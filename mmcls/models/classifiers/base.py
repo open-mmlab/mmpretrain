@@ -118,7 +118,7 @@ class BaseClassifier(BaseModule, metaclass=ABCMeta):
 
         return loss, log_vars
 
-    def train_step(self, data, optimizer):
+    def train_step(self, data, optimizer=None, **kwargs):
         """The iteration step during training.
 
         This method defines an iteration step during training, except for the
@@ -151,7 +151,7 @@ class BaseClassifier(BaseModule, metaclass=ABCMeta):
 
         return outputs
 
-    def val_step(self, data, optimizer):
+    def val_step(self, data, optimizer=None, **kwargs):
         """The iteration step during validation.
 
         This method shares the same signature as :func:`train_step`, but used
