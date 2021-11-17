@@ -7,7 +7,15 @@ img_norm_cfg = dict(
     mean=[127.5, 127.5, 127.5], std=[127.5, 127.5, 127.5], to_rgb=True)
 
 # training is not supported for now
-train_pipeline = []
+train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='RandomResizedCrop', size=224, backend='cv2'),
+    dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
+    dict(type='Normalize', **img_norm_cfg),
+    dict(type='ImageToTensor', keys=['img']),
+    dict(type='ToTensor', keys=['gt_label']),
+    dict(type='Collect', keys=['img', 'gt_label'])
+]
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
