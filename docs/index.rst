@@ -22,6 +22,8 @@ You can switch between Chinese and English documentation in the lower-left corne
    tutorials/new_dataset.md
    tutorials/data_pipeline.md
    tutorials/new_modules.md
+   tutorials/schedule.md
+   tutorials/runtime.md
 
 
 .. include:: _model_zoo.rst

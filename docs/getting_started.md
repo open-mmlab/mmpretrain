@@ -226,7 +226,10 @@ The final output filename will be `imagenet_resnet50_{date}-{hash id}.pth`.
 
 Currently, we provide five tutorials for users.
 
+- [learn about config](tutorials/config.md)
 - [finetune models](tutorials/finetune.md)
 - [add new dataset](tutorials/new_dataset.md)
 - [design data pipeline](tutorials/data_pipeline.md)
-- [add new modules](tutorials/new_modules.md).
+- [add new modules](tutorials/new_modules.md)
+- [customize schedule](tutorials/schedule.md)
+- [customize runtime settings](tutorials/runtime.md).

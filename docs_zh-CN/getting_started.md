@@ -222,7 +222,10 @@ python tools/convert_models/publish_model.py work_dirs/resnet50/latest.pth image
 
 目前，MMClassification 提供以下几种更详细的教程：
 
+- [如何编写配置文件](tutorials/config.md)
 - [如何微调模型](tutorials/finetune.md)
 - [如何增加新数据集](tutorials/new_dataset.md)
 - [如何设计数据处理流程](tutorials/data_pipeline.md)
 - [如何增加新模块](tutorials/new_modules.md)
+- [如何自定义优化策略](tutorials/schedule.md)
+- [如何自定义运行参数](tutorials/runtime.md)。
