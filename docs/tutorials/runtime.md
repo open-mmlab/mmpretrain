@@ -92,7 +92,7 @@ Some common hooks are not registered through `custom_hooks`, they are
 | `EvalHook`             | LOW (70)                |
 | `LoggerHook(s)`        | VERY_LOW (90)           |
 
-`OptimizerHook`, `MomentumUpdaterHook` and `LrUpdaterHook` have been introduced in [sehedule strategy](./sehedule).
+`OptimizerHook`, `MomentumUpdaterHook` and `LrUpdaterHook` have been introduced in [sehedule strategy](./schedule.md).
 `IterTimerHook` is used to record elapsed time and does not support modification.
 
 Here we reveal how to customize `CheckpointHook`, `LoggerHooks`, and `EvalHook`.

@@ -268,7 +268,7 @@ class MyOptimizer(Optimizer):
 
 To find the above module defined above, this module should be imported into the main namespace at first. There are two ways to achieve it.
 
-- Modify `mmcls/core/optimizer/__init__.py` to import it.
+- Modify `mmcls/core/optimizer/__init__.py` to import it into `optimizer` package, and then modify `mmcls/core/__init__.py` to import the new `optimizer` package.
 
     Create the `mmcls/core/optimizer` folder and the `mmcls/core/optimizer/__init__.py` file if they don't exist. The newly defined module should be imported in `mmcls/core/optimizer/__init__.py` and `mmcls/core/__init__.py` so that the registry will find the new module and add it:
 
