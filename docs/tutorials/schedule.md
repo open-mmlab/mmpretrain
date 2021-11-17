@@ -114,7 +114,7 @@ Here are some examples
     ```
 
 ```{tip}
-After completing your configuration file，you could use [learning rate visualization tool](https://mmclassification.readthedocs.io/zh_CN/latest/tools/visualization.html#id3) to draw the corresponding learning rate adjustment curve.
+After completing your configuration file，you could use [learning rate visualization tool](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#learning-rate-schedule-visualization) to draw the corresponding learning rate adjustment curve.
 ```
 
 ## Customize momentum schedules
@@ -210,6 +210,15 @@ Here is an example:
 ```python
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # norm_type: type of the used p-norm, here norm_type is 2.
+```
+
+When inheriting from base and modifying configs, if `grad_clip=None` in base, `_delete_=True` is needed. For more details about `_delete_` you can refer to [TUTORIAL 1: LEARN ABOUT CONFIGS](https://mmclassification.readthedocs.io/en/latest/tutorials/config.html#ignore-some-fields-in-the-base-configs). For example,
+
+```python
+_base_ = [./_base_/schedules/imagenet_bs256_coslr.py]
+
+optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2), _delete_=True, type='OptimizerHook')
+# you can ignore type if type is 'OptimizerHook', otherwise you must add "type='xxxxxOptimizerHook'" here
 ```
 
 ### Gradient accumulation

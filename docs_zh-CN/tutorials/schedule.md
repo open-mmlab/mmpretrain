@@ -200,6 +200,15 @@ momentum_config = dict(
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 ```
 
+当使用继承并修改基础配置方式时，如果基础配置中 `grad_clip=None`，需要添加 `_delete_=True`。有关 `_delete_` 可以参靠[教程 1：如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html#id16)。案列如下：
+
+```python
+_base_ = [./_base_/schedules/imagenet_bs256_coslr.py]
+
+optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2), _delete_=True, type='OptimizerHook')
+# 当 type 为 'OptimizerHook'，可以省略 type； 不然此处必须指明 type="xxxOptimizerHook"
+```
+
 ### 梯度累计
 
 计算资源缺乏缺乏时，每个训练批次的大小（batch size）只能设置为较小的值，这可能会影响模型的性能。
