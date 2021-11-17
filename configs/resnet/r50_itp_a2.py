@@ -34,3 +34,4 @@ model = dict(
 fp16 = dict(loss_scale='dynamic')
 runner = dict(max_epochs=300)
 rep_aug = True
+checkpoint_config = dict(interval=1, max_keep_ckpts=10)
