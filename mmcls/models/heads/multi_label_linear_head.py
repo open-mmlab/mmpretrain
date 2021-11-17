@@ -39,12 +39,12 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
 
         self.fc = nn.Linear(self.in_channels, self.num_classes)
 
-    def forward_train(self, x, gt_label):
+    def forward_train(self, x, gt_label, **kwargs):
         if isinstance(x, tuple):
             x = x[-1]
         gt_label = gt_label.type_as(x)
         cls_score = self.fc(x)
-        losses = self.loss(cls_score, gt_label)
+        losses = self.loss(cls_score, gt_label, **kwargs)
         return losses
 
     def simple_test(self, x):

@@ -1,5 +1,5 @@
-ARG PYTORCH="1.6.0"
-ARG CUDA="10.1"
+ARG PYTORCH="1.8.1"
+ARG CUDA="10.2"
 ARG CUDNN="7"
 
 FROM pytorch/pytorch:${PYTORCH}-cuda${CUDA}-cudnn${CUDNN}-devel
@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build 
     && rm -rf /var/lib/apt/lists/*
 
 # Install MMCV
-RUN pip install mmcv-full==1.3.8 -f https://download.openmmlab.com/mmcv/dist/cu101/torch1.6.0/index.html
+RUN pip install mmcv-full==1.3.16 -f https://download.openmmlab.com/mmcv/dist/cu101/torch1.8.1/index.html
 
 # Install MMClassification
 RUN conda clean --all
