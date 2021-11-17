@@ -15,7 +15,7 @@ Collections:
 #      Version:  # todo
 
 Models:
-  - Name: -mixer_b16_224_3rdparty_64xb64_in1k
+  - Name: mlp-mixer_b16_224_3rdparty_64xb64_in1k
     Metadata:
       FLOPs: 12610000000  # 12.61 G
       Parameters: 59880000  # 59.88 M
@@ -32,7 +32,7 @@ Models:
       Code: https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/mlp_mixer.py#L70
     Config: configs/mlp_mixer/mlp_mixer-base_p16_64xb64_in1k.py
 
-  - Name: -mixer_l16_224_3rdparty_64xb64_in1k
+  - Name: mlp-mixer_l16_224_3rdparty_64xb64_in1k
     Metadata:
       FLOPs: 44570000000  # 44.57 G
       Parameters: 208200000  # 208.2 M
