@@ -6,7 +6,7 @@ In this tutorial, we will introduce some methods about how to construct optimize
 
 - [Customize optimizer supported by PyTorch](#customize-optimizer-supported-by-pytorch)
 - [Customize learning rate schedules](#customize-learning-rate-schedules)
-  - [Learning rate curve](#learning-rate-curve)
+  - [Learning rate decay](#learning-rate-decay)
   - [Warmup strategy](#warmup-strategy)
 - [Customize momentum schedules](#customize-momentum-schedules)
 - [Parameter-wise finely configuration](#parameter-wise-finely-configuration)

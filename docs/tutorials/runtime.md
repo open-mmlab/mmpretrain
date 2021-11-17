@@ -10,11 +10,11 @@ In this tutorial, we will introduce some methods about how to customize workflow
     - [CheckpointHook](#checkpointhook)
     - [LoggerHooks](#loggerhooks)
     - [EvalHook](#evalhook)
-  - [Use implemented hooks](#use-implemented-hooks)
+  - [Use other implemented hooks](#use-other-implemented-hooks)
   - [Customize self-implemented hooks](#customize-self-implemented-hooks)
-    - [1. Implement a new hook](#1-implement-a-new-hook)
-    - [2. Register the new hook](#2-register-the-new-hook)
-    - [3. Modify the config](#3-modify-the-config)
+    - [1. Implement a new hook](#1.-implement-a-new-hook)
+    - [2. Register the new hook](#2.-register-the-new-hook)
+    - [3. Modify the config](#3.-modify-the-config)
 - [FAQ](#faq)
 
 <!-- TOC -->

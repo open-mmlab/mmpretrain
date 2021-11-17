@@ -7,14 +7,14 @@
 - [定制工作流](#定制工作流)
 - [钩子](#钩子)
   - [默认训练钩子](#默认训练钩子)
-    - [权重文件钩子](#权重文件钩子)
-    - [日志钩子](#日志钩子)
-    - [验证钩子](#验证钩子)
+    - [权重文件钩子（CheckpointHook）](#权重文件钩子（checkpointhook）)
+    - [日志钩子（LoggerHooks）](#日志钩子（loggerhooks）)
+    - [验证钩子（EvalHook）](#验证钩子（evalhook）)
   - [使用内置钩子](#使用内置钩子)
   - [自定义钩子](#自定义钩子)
-    - [1. 创建一个新钩子](#1-创建一个新钩子)
-    - [2. 注册新钩子](#2-注册新钩子)
-    - [3. 修改配置](#3-修改配置)
+    - [1. 创建一个新钩子](#1.-创建一个新钩子)
+    - [2. 注册新钩子](#2.-注册新钩子)
+    - [3. 修改配置](#3.-修改配置)
 - [常见问题](#常见问题)
 
 <!-- TOC -->
@@ -95,7 +95,7 @@ workflow = [('train', 1)]
 | `LoggerHook(s)`        | VERY_LOW (90)           |
 
 
-`OptimizerHook`，`MomentumUpdaterHook`和 `LrUpdaterHook` 已经在 [优化策略](./schedule.md) 介绍过了，
+`OptimizerHook`，`MomentumUpdaterHook`和 `LrUpdaterHook` 在 [优化策略](./schedule.md) 部分进行了介绍，
 `IterTimerHook` 用于记录所用时间，目前不支持修改;
 
 下面介绍如何使用去定制 `CheckpointHook`、`LoggerHooks` 以及 `EvalHook`。
@@ -126,7 +126,7 @@ log_config = dict(
     ])
 ```
 
-#### 验证钩子
+#### 验证钩子（EvalHook）
 
 配置中的 `evaluation` 字段将用于初始化 [`EvalHook`](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/evaluation.py)。
 
