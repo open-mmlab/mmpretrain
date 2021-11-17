@@ -21,15 +21,16 @@ In this tutorial, we will introduce some methods about how to customize workflow
 
 ## Customize Workflow
 
+Workflow is a list of (phase, duration) to specify the running order and duration. The meaning of "duration" depends on the runner's type.
 
-Workflow is a list of (phase, epochs) to specify the running order and epochs. By default it is set to be
+For example, we use epoch-based runner by default, and the "duration" means how many epochs the phase to be executed in a cycle. Usually,
+we only want to execute training phase, just use the following config.
 
 ```python
 workflow = [('train', 1)]
 ```
 
-Which means running 1 epoch for training.
-Sometimes user may want to check some metrics (e.g. loss, accuracy) about the model on the validate set.
+Sometimes we may want to check some metrics (e.g. loss, accuracy) about the model on the validate set.
 In such case, we can set the workflow as
 
 ```python
@@ -38,18 +39,18 @@ In such case, we can set the workflow as
 
 so that 1 epoch for training and 1 epoch for validation will be run iteratively.
 
-By default, we recommend users to use **`EvalHook`** to do evaluation after training epoch, but they can still use `val` workflow as an alternative.
+By default, we recommend using **`EvalHook`** to do evaluation after the training epoch, but you can still use `val` workflow as an alternative.
 
 ```{note}
-1. The parameters of model will not be updated during val epoch.
+1. The parameters of model will not be updated during the val epoch.
 2. Keyword `max_epochs` in the config only controls the number of training epochs and will not affect the validation workflow.
-3.  Workflows `[('train', 1), ('val', 1)]` and `[('train', 1)]` will not change the behavior of `EvalHook` because `EvalHook` is called by `after_train_epoch` and validation workflow only affect hooks that are called through `after_val_epoch`.
-   Therefore, the only difference between `[('train', 1), ('val', 1)]` and ``[('train', 1)]`` is that the runner will calculate losses on validation set after each training epoch.
+3. Workflows `[('train', 1), ('val', 1)]` and `[('train', 1)]` will not change the behavior of `EvalHook` because `EvalHook` is called by `after_train_epoch` and validation workflow only affect hooks that are called through `after_val_epoch`.
+   Therefore, the only difference between `[('train', 1), ('val', 1)]` and ``[('train', 1)]`` is that the runner will calculate losses on the validation set after each training epoch.
 ```
 
 ## Hooks
 
-The hook mechanism is widely used in the OpenMMLab open source algorithm library. Combined with the `Runner`, the entire life cycle of the training process can be managed easily. You can learn more about the hook through [related article](https://www.calltutors.com/blog/what-is-hook/).
+The hook mechanism is widely used in the OpenMMLab open-source algorithm library. Combined with the `Runner`, the entire life cycle of the training process can be managed easily. You can learn more about the hook through [related article](https://www.calltutors.com/blog/what-is-hook/).
 
 Hooks only work after being registered into the runner. At present, hooks are mainly divided into two categories:
 
@@ -79,7 +80,7 @@ The priority determines the execution order of the hooks. Before training, the l
 
 ### default training hooks
 
-There are some common hooks that are not registered through `custom_hooks`, they are
+Some common hooks are not registered through `custom_hooks`, they are
 
 | Hooks                  | Priority                |
 |:--:|:--:|
@@ -92,9 +93,9 @@ There are some common hooks that are not registered through `custom_hooks`, they
 | `LoggerHook(s)`        | VERY_LOW (90)           |
 
 `OptimizerHook`, `MomentumUpdaterHook` and `LrUpdaterHook` have been introduced in [sehedule strategy](./sehedule).
-``IterTimerHook` is used to record elapsed time and does not support modification.
+`IterTimerHook` is used to record elapsed time and does not support modification.
 
-Here we reveals how to customize `CheckpointHook`, `LoggerHooks`, and `EvalHook`.
+Here we reveal how to customize `CheckpointHook`, `LoggerHooks`, and `EvalHook`.
 
 #### CheckpointHook
 
@@ -104,13 +105,13 @@ The MMCV runner will use `checkpoint_config` to initialize [`CheckpointHook`](ht
 checkpoint_config = dict(interval=1)
 ```
 
-We could set `max_keep_ckpts` to save only small number of checkpoints or decide whether to store state dict of optimizer by `save_optimizer`.
+We could set `max_keep_ckpts` to save only a small number of checkpoints or decide whether to store state dict of optimizer by `save_optimizer`.
 More details of the arguments are [here](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.CheckpointHook)
 
 #### LoggerHooks
 
-The `log_config` wraps multiple logger hooks and enables to set intervals. Now MMCV supports `TextLoggerHook`, `WandbLoggerHook`, `MlflowLoggerHook` and `TensorboardLoggerHook`.
-The detail usages can be found in the [doc](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.LoggerHook).
+The `log_config` wraps multiple logger hooks and enables to set intervals. Now MMCV supports `TextLoggerHook`, `WandbLoggerHook`, `MlflowLoggerHook`, `NeptuneLoggerHook`, `DvcliveLoggerHook` and `TensorboardLoggerHook`.
+The detailed usages can be found in the [doc](https://mmcv.readthedocs.io/en/latest/api.html#mmcv.runner.LoggerHook).
 
 ```python
 log_config = dict(
@@ -124,16 +125,19 @@ log_config = dict(
 #### EvalHook
 
 The config of `evaluation` will be used to initialize the [`EvalHook`](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/core/evaluation/eval_hooks.py).
-Except the key `interval`, other arguments such as `metrics` will be passed to the `dataset.evaluate()`
+
+The `EvalHook` has some reserved keys, such as `interval`, `save_best` and `start`, and the other arguments such as `metrics` will be passed to the `dataset.evaluate()`
 
 ```python
 evaluation = dict(interval=1, metric='accuracy', metric_options={'topk': (1, )})
 ```
 
-You can also save the model weight when the best verification result is obtained by modifying the parameter `save_best`:
+You can save the model weight when the best verification result is obtained by modifying the parameter `save_best`:
 
 ```python
-evaluation = dict(interval=1, save_best=True, metric='accuracy', metric_options={'topk': (1, )})
+# "auto" means automatically select the metrics to compare.
+# You can also use a specific key like "accuracy_top-1".
+evaluation = dict(interval=1, save_best="auto", metric='accuracy', metric_options={'topk': (1, )})
 ```
 
 When running some large experiments, you can skip the validation step at the beginning of training by modifying the parameter `start` as below:
@@ -142,15 +146,15 @@ When running some large experiments, you can skip the validation step at the beg
 evaluation = dict(interval=1, start=200, metric='accuracy', metric_options={'topk': (1, )})
 ```
 
-Indicates that, before the 200th epoch, evaluation would not be executed. Since the 200th epoch, evaluation would be executed after training process.
+This indicates that, before the 200th epoch, evaluations would not be executed. Since the 200th epoch, evaluations would be executed after the training process.
 
 ```{note}
 In the default configuration files of MMClassification, the evaluation field is generally placed in the datasets configs.
 ```
 
-### Use implemented hooks
+### Use other implemented hooks
 
-Some hooks have been  already implemented in MMCV and MMClassification, they are:
+Some hooks have been already implemented in MMCV and MMClassification, they are:
 
 - [EMAHook](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/ema.py)
 - [SyncBuffersHook](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/sync_buffer.py)
@@ -247,7 +251,7 @@ custom_hooks = [
 ]
 ```
 
-By default the hook's priority is set as `NORMAL` during registration.
+By default, the hook's priority is set as `NORMAL` during registration.
 
 
 ## FAQ
