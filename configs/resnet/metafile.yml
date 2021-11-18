@@ -215,3 +215,20 @@ Models:
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnetv1d152_b32x8_imagenet_20210531-278cf22a.pth
     Config: configs/resnet/resnetv1d152_8xb32_in1k.py
+  - Name: resnet50_8xb32-fp16_in1k
+    Metadata:
+      FLOPs: 4120000000
+      Parameters: 25560000
+      Training Techniques:
+        - SGD with Momentum
+        - Weight Decay
+        - Mixed Precision Training
+    In Collection: ResNet
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 76.30
+          Top 5 Accuracy: 93.07
+    Weights: https://download.openmmlab.com/mmclassification/v0/fp16/resnet50_batch256_fp16_imagenet_20210320-b3964210.pth
+    Config: configs/resnet/resnet50_8xb32-fp16_in1k.py
