@@ -19,7 +19,7 @@ Collections:
       Version: v0.15.0
 
 Models:
-  - Name: mobilenet_v2_b32x8_imagenet
+  - Name: mobilenet-v2_8xb32_in1k
     Metadata:
       FLOPs: 319000000
       Parameters: 3500000

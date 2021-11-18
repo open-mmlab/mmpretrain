@@ -37,7 +37,7 @@ Collections:
       Version: v0.15.0
 
 Models:
-  - Name: resnet18_b16x8_cifar10
+  - Name: resnet18_8xb16_cifar10
     Metadata:
       FLOPs: 560000000
       Parameters: 11170000
@@ -49,7 +49,7 @@ Models:
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_b16x8_cifar10_20210528-bd6371c8.pth
     Config: configs/resnet/resnet18_8xb16_cifar10.py
-  - Name: resnet34_b16x8_cifar10
+  - Name: resnet34_8xb16_cifar10
     Metadata:
       FLOPs: 1160000000
       Parameters: 21280000
@@ -61,7 +61,7 @@ Models:
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet34_b16x8_cifar10_20210528-a8aa36a6.pth
     Config: configs/resnet/resnet34_8xb16_cifar10.py
-  - Name: resnet50_b16x8_cifar10
+  - Name: resnet50_8xb16_cifar10
     Metadata:
       FLOPs: 1310000000
       Parameters: 23520000
@@ -73,7 +73,7 @@ Models:
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_b16x8_cifar10_20210528-f54bfad9.pth
     Config: configs/resnet/resnet50_8xb16_cifar10.py
-  - Name: resnet101_b16x8_cifar10
+  - Name: resnet101_8xb16_cifar10
     Metadata:
       FLOPs: 2520000000
       Parameters: 42510000
@@ -85,7 +85,7 @@ Models:
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet101_b16x8_cifar10_20210528-2d29e936.pth
     Config: configs/resnet/resnet101_8xb16_cifar10.py
-  - Name: resnet152_b16x8_cifar10
+  - Name: resnet152_8xb16_cifar10
     Metadata:
       FLOPs: 3740000000
       Parameters: 58160000
@@ -97,7 +97,7 @@ Models:
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet152_b16x8_cifar10_20210528-3e8e9178.pth
     Config: configs/resnet/resnet152_8xb16_cifar10.py
-  - Name: resnet50_b16x8_cifar100
+  - Name: resnet50_8xb16_cifar100
     Metadata:
       FLOPs: 1310000000
       Parameters: 23710000
@@ -111,7 +111,7 @@ Models:
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_b16x8_cifar100_20210528-67b58a1b.pth
     Config: configs/resnet/resnet50_8xb16_cifar100.py
-  - Name: resnet18_b32x8_imagenet
+  - Name: resnet18_8xb32_in1k
     Metadata:
       FLOPs: 1820000000
       Parameters: 11690000
@@ -124,7 +124,7 @@ Models:
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth
     Config: configs/resnet/resnet18_8xb32_in1k.py
-  - Name: resnet34_b32x8_imagenet
+  - Name: resnet34_8xb32_in1k
     Metadata:
       FLOPs: 3680000000
       Parameters: 2180000
@@ -137,7 +137,7 @@ Models:
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet34_8xb32_in1k_20210831-f257d4e6.pth
     Config: configs/resnet/resnet34_8xb32_in1k.py
-  - Name: resnet50_b32x8_imagenet
+  - Name: resnet50_8xb32_in1k
     Metadata:
       FLOPs: 4120000000
       Parameters: 25560000
@@ -150,7 +150,7 @@ Models:
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb32_in1k_20210831-ea4938fc.pth
     Config: configs/resnet/resnet50_8xb32_in1k.py
-  - Name: resnet101_b32x8_imagenet
+  - Name: resnet101_8xb32_in1k
     Metadata:
       FLOPs: 7850000000
       Parameters: 44550000
@@ -163,7 +163,7 @@ Models:
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet101_8xb32_in1k_20210831-539c63f8.pth
     Config: configs/resnet/resnet101_8xb32_in1k.py
-  - Name: resnet152_b32x8_imagenet
+  - Name: resnet152_8xb32_in1k
     Metadata:
       FLOPs: 11580000000
       Parameters: 60190000
@@ -176,7 +176,7 @@ Models:
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet152_8xb32_in1k_20210901-4d7582fa.pth
     Config: configs/resnet/resnet152_8xb32_in1k.py
-  - Name: resnetv1d50_b32x8_imagenet
+  - Name: resnetv1d50_8xb32_in1k
     Metadata:
       FLOPs: 4360000000
       Parameters: 25580000
@@ -189,7 +189,7 @@ Models:
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnetv1d50_b32x8_imagenet_20210531-db14775a.pth
     Config: configs/resnet/resnetv1d50_8xb32_in1k.py
-  - Name: resnetv1d101_b32x8_imagenet
+  - Name: resnetv1d101_8xb32_in1k
     Metadata:
       FLOPs: 8090000000
       Parameters: 44570000
@@ -202,7 +202,7 @@ Models:
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnetv1d101_b32x8_imagenet_20210531-6e13bcd3.pth
     Config: configs/resnet/resnetv1d101_8xb32_in1k.py
-  - Name: resnetv1d152_b32x8_imagenet
+  - Name: resnetv1d152_8xb32_in1k
     Metadata:
       FLOPs: 11820000000
       Parameters: 60210000

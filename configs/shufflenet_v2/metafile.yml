@@ -20,7 +20,7 @@ Collections:
       Version: v0.15.0
 
 Models:
-  - Name: shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet
+  - Name: shufflenet-v2-1x_16xb64_in1k
     Metadata:
       FLOPs: 149000000
       Parameters: 2280000
