@@ -6,8 +6,9 @@ _base_ = [
 
 # optimizer
 paramwise_cfg = dict(
+    norm_decay_mult=0.0,
     bias_decay_mult=0.0,
-    custom_keys={'.backbone.cls_token': dict(decay_mult=0.0)},
+    custom_keys={'cls_token': dict(decay_mult=0.0)},
 )
 optimizer = dict(
     type='AdamW',
