@@ -704,12 +704,15 @@ class Resize(object):
             assert size[0] > 0 and (size[1] > 0 or size[1] == -1)
             if size[1] == -1:
                 self.adaptive_resize = True
-        assert interpolation in ('nearest', 'bilinear', 'bicubic', 'area',
-                                 'lanczos')
         if backend not in ['cv2', 'pillow']:
             raise ValueError(f'backend: {backend} is not supported for resize.'
                              'Supported backends are "cv2", "pillow"')
-
+        if backend == 'cv2':
+            assert interpolation in ('nearest', 'bilinear', 'bicubic', 'area',
+                                     'lanczos')
+        else:
+            assert interpolation in ('nearest', 'bilinear', 'bicubic', 'box',
+                                     'lanczos', 'hamming')
         self.size = size
         self.interpolation = interpolation
         self.backend = backend
