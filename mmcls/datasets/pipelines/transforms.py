@@ -677,8 +677,10 @@ class Resize(object):
             (224, -1) and adaptive_size is "short", the short side is resized
             to 224 and the other side is computed based on the short side,
             maintaining the aspect ratio.
-        interpolation (str): Interpolation method, accepted values are
-            "nearest", "bilinear", "bicubic", "area", "lanczos".
+        interpolation (str): Interpolation method. For "cv2" backend, accepted
+            values are "nearest", "bilinear", "bicubic", "area", "lanczos". For
+            "pillow" backend, accepted values are "nearest", "bilinear",
+            "bicubic", "box", "lanczos", "hamming".
             More details can be found in `mmcv.image.geometric`.
         adaptive_side(str): Adaptive resize policy, accepted values are
             "short", "long", "height", "width". Default to "short".
