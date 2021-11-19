@@ -51,7 +51,7 @@ MMClassification 提供了一些脚本用于进行单张图像的推理、数据
 python demo/image_demo.py ${IMAGE_FILE} ${CONFIG_FILE} ${CHECKPOINT_FILE}
 
 # Example
-python demo/image_demo.py demo/demo.JPEG configs/resnet/resnet50_b32x8_imagenet.py \
+python demo/image_demo.py demo/demo.JPEG configs/resnet/resnet50_8xb32_in1k.py \
   https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb32_in1k_20210831-ea4938fc.pth
 ```
 
@@ -86,7 +86,7 @@ python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--metrics ${METRICS}] [-
 在 ImageNet 验证集上，使用 ResNet-50 进行推理并获得预测标签及其对应的预测得分。
 
 ```shell
-python tools/test.py configs/resnet/resnet50_b16x8_cifar10.py \
+python tools/test.py configs/resnet/resnet50_8xb16_cifar10.py \
   https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_b16x8_cifar10_20210528-f54bfad9.pth \
   --out result.pkl
 ```
