@@ -88,7 +88,7 @@ class FocalLoss(nn.Module):
         Args:
             pred (torch.Tensor): The prediction with shape (N, \*).
             target (torch.Tensor): The ground truth label of the prediction
-                with shape (N, \*).
+                with shape (N, \*), N or (N,1).
             weight (torch.Tensor, optional): Sample-wise loss weight with shape
                 (N, \*). Defaults to None.
             avg_factor (int, optional): Average factor that is used to average
