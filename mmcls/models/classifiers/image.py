@@ -122,12 +122,12 @@ class ImageClassifier(BaseClassifier):
 
         return losses
 
-    def simple_test(self, img, img_metas):
+    def simple_test(self, img, img_metas=None, **kwargs):
         """Test without augmentation."""
         x = self.extract_feat(img)
 
         try:
-            res = self.head.simple_test(x)
+            res = self.head.simple_test(x, **kwargs)
         except TypeError as e:
             if 'not tuple' in str(e) and self.return_tuple:
                 return TypeError(

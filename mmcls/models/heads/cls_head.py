@@ -62,12 +62,15 @@ class ClsHead(BaseHead):
         losses = self.loss(cls_score, gt_label, **kwargs)
         return losses
 
-    def simple_test(self, cls_score):
+    def simple_test(self, cls_score, return_score=False):
         """Test without augmentation."""
         if isinstance(cls_score, tuple):
             cls_score = cls_score[-1]
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
+
+        if return_score:
+            return cls_score
         pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
         return self.post_process(pred)
 

@@ -35,13 +35,15 @@ class LinearClsHead(ClsHead):
 
         self.fc = nn.Linear(self.in_channels, self.num_classes)
 
-    def simple_test(self, x):
+    def simple_test(self, x, return_score=False):
         """Test without augmentation."""
         if isinstance(x, tuple):
             x = x[-1]
         cls_score = self.fc(x)
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
+        if return_score:
+            return cls_score
         pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
 
         return self.post_process(pred)
