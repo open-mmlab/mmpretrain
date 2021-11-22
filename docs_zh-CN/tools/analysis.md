@@ -3,8 +3,8 @@
 <!-- TOC -->
 
 - [日志分析](#日志分析)
- - [绘制曲线图](#绘制曲线图)
- - [统计时间](#统计时间)
+  - [绘制曲线图](#绘制曲线图)
+  - [统计时间](#统计时间)
 - [结果分析](#结果分析)
   - [评估结果](#查看典型结果)
   - [查看典型结果](#查看典型结果)
@@ -15,16 +15,14 @@
 
 ## 日志分析
 
-
 ### 绘制曲线图
-
 
 输入变量指定一个训练日志文件，可通过 `tools/analysis_tools/analyz_logs.py` 脚本绘制 loss/top-k 曲线。本功能依赖于 `seaborn`，使用前请先通过 `pip install seaborn` 安装依赖包。
 
 <div align=center><img src="../_static/image/tools/analysis/analyze_log.jpg" style=" width: 75%; height: 30%; "></div>
 
 ```shell
-python tools/analysis/analyze_logs.py plot_curve \
+python tools/analysis_tools/analyze_logs.py plot_curve \
     ${JSON_LOGS}  \
     [--keys ${KEYS}]  \
     [--title ${TITLE}]  \
@@ -73,13 +71,13 @@ python tools/analysis_tools/analyze_logs.py cal_train_time \
     ${JSON_LOGS}
     [--include-outliers]
 ```
-**所有参数的说明**
+
+**所有参数的说明**：
 
 - `json_logs` ：模型配置文件的路径（可同时传入多个，使用空格分开）。
 - `--include-outliers` ：是否统计第一个轮次的记录，默认不统计。
 
-
-例如:
+**案例**:
 
 ```shell
 python tools/analysis_tools/analyze_logs.py cal_train_time work_dirs/some_exp/20200422_153324.log.json
@@ -118,7 +116,7 @@ python tools/analysis_tools/analyze_results.py \
 
 **样例**：
 
-```
+```shell
 python tools/analysis_tools/analyze_results.py configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py ./result.pkl --metrics accuracy
 ```
 
@@ -129,7 +127,7 @@ python tools/analysis_tools/analyze_results.py configs/t2t_vit/t2t-vit-t-14_8xb6
 ```shell
 python tools/analysis_tools/analyze_results.py \
       ${CONFIG} \
-      ${RESULT} \
+      ${PKL_RESULT} \
       [--out-dir ${OUT_DIR}] \
       [--topk ${TOPK}] \
       [--cfg-options ${CFG_OPTIONS}]
@@ -138,13 +136,13 @@ python tools/analysis_tools/analyze_results.py \
 **所有参数说明**：
 
 - `config` ：配置文件的路径。
-- `result` ： 由 `tools/test.py` 做的的结果文件。
+- `pkl_result` ： 由 `tools/test.py` 做的的结果文件。
 - `--out_dir` ：保存结果分析的文件夹路径。
 - `--topk` ：排序后，保存具有最高和最低分数图像的数量。如果不指定，默认为 `20`。
 - `--cfg-options`: 对配置文件的修改，参考[教程 1：如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html)。
 
 ```{note}
-使用前确保您的路径 `./result.pkl` 为从 'tools/test.py' 获得的 pickle 格式的结果文件。
+使用前确保您的路径 ${PKL_RESULT} 为从 'tools/test.py' 获得的 pickle 格式的结果文件。
 ```
 
 **样例**：
@@ -159,20 +157,24 @@ python tools/analysis_tools/analyze_results.py \
        --topk 50
 ```
 
-
 ## 模型复杂度分析
 
 ### 计算 FLOPs 和参数量（试验性的）
 
-我们根据 [flops-counter.pytorch](https://github.com/sovrasov/flops-counter.pytorch) 提供了一个脚本用于计算给定模型的 FLOPs 和参数量
+我们根据 [flops-counter.pytorch](https://github.com/sovrasov/flops-counter.pytorch) 提供了一个脚本用于计算给定模型的 FLOPs 和参数量。
 
 ```shell
 python tools/analysis_tools/get_flops.py ${CONFIG_FILE} [--shape ${INPUT_SHAPE}]
 ```
 
+**所有参数说明**：
+
+- `config` ：配置文件的路径。
+- `--shape`: 输入尺寸，支持单值或者双值， 如： `--shape 256`、`--shape 224 256`。默认为`224 224`。
+
 用户将获得如下结果：
 
-```
+```text
 ==============================
 Input shape: (3, 224, 224)
 Flops: 4.12 GFLOPs

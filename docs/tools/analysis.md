@@ -22,7 +22,7 @@
 <div align=center><img src="../_static/image/tools/analysis/analyze_log.jpg" style=" width: 75%; height: 30%; "></div>
 
 ```shell
-python tools/analysis/analyze_logs.py plot_curve  \
+python tools/analysis_tools/analyze_logs.py plot_curve  \
     ${JSON_LOGS}  \
     [--keys ${KEYS}]  \
     [--title ${TITLE}]  \
@@ -72,10 +72,10 @@ python tools/analysis_tools/analyze_logs.py cal_train_time \
     [--include-outliers]
 ```
 
-**Description of all arguments**
+**Description of all arguments**:
 
 - `json_logs` ：The paths of configs, multiple logs are feasible, separated by spaces.
-- `--include-outliers` ：Whether to count the records of the first epoch, default not.
+- `--include-outliers` ：Whether to count the records in the first few rounds, default not to count.
 
 Example:
 
@@ -99,7 +99,6 @@ average iter time: 0.3777 s/iter
 
 `tools/analysis_tools/eval_metric.py` evaluates the results.
 
-
 ```shell
 python tools/analysis_tools/analyze_results.py \
       ${CONFIG} \
@@ -116,15 +115,14 @@ Description of all arguments:
 - `--cfg-options`: If specified, the key-value pair optional cfg will be merged into config file, for more details please refer to [Tutorial 1: Learn about Configs](../tutorials/config.md)
 
 ```{note}
-Assume that you have got result file in pickle format from `tools/test.py`  in the path './result.pkl'.
+Assume that you have got result file in pickle format from `tools/test.py`  in the path ${PKL_RESULT}.
 ```
 
 **Examples**:
 
-```
+```shell
 python tools/analysis_tools/analyze_results.py configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py ./result.pkl --metrics accuracy
 ```
-
 
 ### View Typical Results
 
@@ -139,21 +137,21 @@ python tools/analysis_tools/analyze_results.py \
       [--cfg-options ${CFG_OPTIONS}]
 ```
 
-Description of all arguments:
+**Description of all arguments**:
 
 - `config` : The path of a model config file.
 - `result`:  Output result file in pickle format from `tools/test.py`.
 - `--out_dir`: Directory to store output files.
-- `--topk`:The number of saved images that have the highest and lowest `topk` scores after sorting. If not specified, it will be set to `20`.
+- `--topk`:The number of saved images that have the highest and lowest `topk` scores after sorting. If not specified, it will be set to 20.
 - `--cfg-options`: If specified, the key-value pair optional cfg will be merged into config file, for more details please refer to [Tutorial 1: Learn about Configs](../tutorials/config.md)
 
 ```{note}
-Assume that you have got result file in pickle format from `tools/test.py`  in the path './result.pkl'.
+Assume that you have got result file in pickle format from `tools/test.py`  in the path ${PKL_RESULT}.
 ```
 
 **Examples**:
 
-1. Test Faster R-CNN and visualize the results specified topk to 50, save images to the directory `results/`
+1. Test Resnet and visualize the results specified topk to 50, save images to the directory `results/`
 
 ```shell
 python tools/analysis_tools/analyze_results.py \
@@ -173,9 +171,14 @@ We provide a script adapted from [flops-counter.pytorch](https://github.com/sovr
 python tools/analysis_tools/get_flops.py ${CONFIG_FILE} [--shape ${INPUT_SHAPE}]
 ```
 
+Description of all arguments:
+
+- `config` : The path of a model config file.
+- `--shape`: Input size, support single value or double value parameter, such as `--shape 256` or `--shape 224 256`. If not set, default to be `224 224`.
+
 You will get the result like this.
 
-```
+```text
 ==============================
 Input shape: (3, 224, 224)
 Flops: 4.12 GFLOPs
@@ -188,7 +191,6 @@ This tool is still experimental and we do not guarantee that the number is corre
 - FLOPs are related to the input shape while parameters are not. The default input shape is (1, 3, 224, 224).
 - Some operators are not counted into FLOPs like GN and custom operators. Refer to [`mmcv.cnn.get_model_complexity_info()`](https://github.com/open-mmlab/mmcv/blob/master/mmcv/cnn/utils/flops_counter.py) for details.
 ```
-
 
 ## FAQs
 

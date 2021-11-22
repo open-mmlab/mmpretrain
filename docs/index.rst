@@ -39,6 +39,7 @@ You can switch between Chinese and English documentation in the lower-left corne
    tools/model_serving.md
    tools/visualization.md
    tools/analysis.md
+   tools/miscellaneous.md
 
 
 .. toctree::
