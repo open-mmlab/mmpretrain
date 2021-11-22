@@ -23,7 +23,7 @@ Description of all arguments:
 
 **Examples**:
 
-```
+```shell
 python tools/misc/print_config.py configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py
 ```
 
@@ -40,7 +40,7 @@ python tools/print_config.py \
     [--cfg-options ${CFG_OPTIONS}]
 ```
 
-Description of all arguments:
+**Description of all arguments**:
 
 - `config` : The path of a model config file.
 - `--out-path` : The path to save the verification result, if not set, default to be 'brokenfiles.log'.
@@ -50,7 +50,7 @@ Description of all arguments:
 
 **Examples**:
 
-```
+```shell
 python tools/analysis/print_config.py configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py --out-path broken_imgs.log --phase val --num-process 8
 ```
 

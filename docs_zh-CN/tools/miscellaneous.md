@@ -2,10 +2,9 @@
 
 <!-- TOC -->
 
-- [其他工具](#其他工具)
-  - [打印完整配置](#打印完整配置)
-  - [检查数据集](#检查数据集)
-  - [常见问题](#常见问题)
+- [打印完整配置](#打印完整配置)
+- [检查数据集](#检查数据集)
+- [常见问题](#常见问题)
 
 <!-- TOC -->
 
@@ -24,7 +23,7 @@ python tools/misc/print_config.py ${CONFIG} [--cfg-options ${CFG_OPTIONS}]
 
 **样例**：
 
-```
+```shell
 python tools/misc/print_config.py configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py
 ```
 
@@ -41,7 +40,7 @@ python tools/print_config.py \
     [--cfg-options ${CFG_OPTIONS}]
 ```
 
-Description of all arguments:
+**所有参数说明**:
 
 - `config` ： 配置文件的路径。
 - `--out-path` ： 输出结果路径，默认为 'brokenfiles.log'。
@@ -51,7 +50,7 @@ Description of all arguments:
 
 **样例**:
 
-```
+```shell
 python tools/analysis/print_config.py configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py --out-path broken_imgs.log --phase val --num-process 8
 ```
 
