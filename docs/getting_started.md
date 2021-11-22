@@ -51,7 +51,7 @@ We provide scripts to inference a single image, inference a dataset and test a d
 python demo/image_demo.py ${IMAGE_FILE} ${CONFIG_FILE} ${CHECKPOINT_FILE}
 
 # Example
-python demo/image_demo.py demo/demo.JPEG configs/resnet/resnet50_b32x8_imagenet.py \
+python demo/image_demo.py demo/demo.JPEG configs/resnet/resnet50_8xb32_in1k.py \
   https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb32_in1k_20210831-ea4938fc.pth
 ```
 
@@ -85,7 +85,7 @@ Assume that you have already downloaded the checkpoints to the directory `checkp
 Infer ResNet-50 on ImageNet validation set to get predicted labels and their corresponding predicted scores.
 
 ```shell
-python tools/test.py configs/resnet/resnet50_b16x8_cifar10.py \
+python tools/test.py configs/resnet/resnet50_8xb16_cifar10.py \
   https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_b16x8_cifar10_20210528-f54bfad9.pth \
   --out result.pkl
 ```
@@ -226,7 +226,10 @@ The final output filename will be `imagenet_resnet50_{date}-{hash id}.pth`.
 
 Currently, we provide five tutorials for users.
 
+- [learn about config](tutorials/config.md)
 - [finetune models](tutorials/finetune.md)
 - [add new dataset](tutorials/new_dataset.md)
 - [design data pipeline](tutorials/data_pipeline.md)
-- [add new modules](tutorials/new_modules.md).
+- [add new modules](tutorials/new_modules.md)
+- [customize schedule](tutorials/schedule.md)
+- [customize runtime settings](tutorials/runtime.md).

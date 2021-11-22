@@ -44,8 +44,18 @@ def test_image_classifier():
     assert outputs['loss'].item() > 0
     assert outputs['num_samples'] == 16
 
+    # test train_step without optimizer
+    outputs = model.train_step({'img': imgs, 'gt_label': label})
+    assert outputs['loss'].item() > 0
+    assert outputs['num_samples'] == 16
+
     # test val_step
     outputs = model.val_step({'img': imgs, 'gt_label': label}, None)
+    assert outputs['loss'].item() > 0
+    assert outputs['num_samples'] == 16
+
+    # test val_step without optimizer
+    outputs = model.val_step({'img': imgs, 'gt_label': label})
     assert outputs['loss'].item() > 0
     assert outputs['num_samples'] == 16
 

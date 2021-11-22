@@ -1,7 +1,6 @@
-# Only for evaluation
-_base_ = [
-    '../_base_/models/swin_transformer/base_384.py',
-    '../_base_/datasets/imagenet_bs64_swin_384.py',
-    '../_base_/schedules/imagenet_bs1024_adamw_swin.py',
-    '../_base_/default_runtime.py'
-]
+_base_ = 'swin-base_16xb64_in1k-384px.py'
+
+_deprecation_ = dict(
+    expected='swin-base_16xb64_in1k-384px.py',
+    reference='https://github.com/open-mmlab/mmclassification/pull/508',
+)

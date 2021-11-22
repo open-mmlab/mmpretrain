@@ -1,5 +1,4 @@
 Import:
-  - configs/fp16/metafile.yml
   - configs/mobilenet_v2/metafile.yml
   - configs/resnet/metafile.yml
   - configs/res2net/metafile.yml

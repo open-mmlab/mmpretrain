@@ -53,7 +53,7 @@ python tools/visualizations/vis_pipeline.py \
 1. Visualize all the transformed pictures of the `ImageNet` training set and display them in pop-up windows：
 
 ```shell
-python ./tools/visualizations/vis_pipeline.py ./configs/resnet/resnet50_b32x8_imagenet.py --show --mode pipeline
+python ./tools/visualizations/vis_pipeline.py ./configs/resnet/resnet50_8xb32_in1k.py --show --mode pipeline
 ```
 
 <div align=center><img src="../_static/image/tools/visualization/pipeline-pipeline.jpg" style=" width: auto; height: 40%; "></div>
@@ -69,7 +69,7 @@ python ./tools/visualizations/vis_pipeline.py configs/swin_transformer/swin_base
 3. Visualize 100 original pictures in the `CIFAR100` validation set, then display and save them in the `./tmp` folder：
 
 ```shell
-python ./tools/visualizations/vis_pipeline.py configs/resnet/resnet50_b16x8_cifar100.py --phase val --output-dir tmp --mode original --number 100  --show --adaptive --bgr2rgb
+python ./tools/visualizations/vis_pipeline.py configs/resnet/resnet50_8xb16_cifar100.py --phase val --output-dir tmp --mode original --number 100  --show --adaptive --bgr2rgb
 ```
 
 <div align=center><img src="../_static/image/tools/visualization/pipeline-original.jpg" style=" width: auto; height: 40%; "></div>
