@@ -129,7 +129,7 @@ class BaseClassifier(BaseModule, metaclass=ABCMeta):
 
         Args:
             data (dict): The output of dataloader.
-            optimizer (:obj:`torch.optim.Optimizer` | dict | optional): The
+            optimizer (:obj:`torch.optim.Optimizer` | dict, optional): The
                 optimizer of runner is passed to ``train_step()``. This
                 argument is unused and reserved.
 
@@ -160,7 +160,7 @@ class BaseClassifier(BaseModule, metaclass=ABCMeta):
 
         Args:
             data (dict): The output of dataloader.
-            optimizer (:obj:`torch.optim.Optimizer` | dict | optional): The
+            optimizer (:obj:`torch.optim.Optimizer` | dict, optional): The
                 optimizer of runner is passed to ``train_step()``. This
                 argument is unused and reserved.
 
