@@ -2,9 +2,7 @@
 import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn.utils.weight_init import trunc_normal_
-from mmcv.runner import load_checkpoint
 
-from mmcls.utils import get_root_logger
 from ..builder import HEADS
 from .cls_head import ClsHead
 
@@ -49,17 +47,11 @@ class ConformerHead(ClsHead):
 
     def init_weights(self):
         super(ConformerHead, self).init_weights()
-        logger = get_root_logger()
 
         if (isinstance(self.init_cfg, dict)
                 and self.init_cfg['type'] == 'Pretrained'):
             # Suppress default init if use pretrained model.
-            load_checkpoint(
-                self,
-                self.init_cfg.checkpoint,
-                strict=False,
-                logger=logger,
-                map_location='cpu')
+            return
         else:
             self.apply(self._init_weights)
 
@@ -82,8 +74,8 @@ class ConformerHead(ClsHead):
     def forward_train(self, x, gt_label):
         if isinstance(x, tuple):
             x = x[-1]
-        assert isinstance(x,
-                          list)  # There are two outputs in the Conformer model
+        assert isinstance(x, list) and len(x) == 2, \
+            'There should be two outputs in the Conformer model'
 
         conv_cls_score = self.conv_cls_head(x[0])
         tran_cls_score = self.trans_cls_head(x[1])
