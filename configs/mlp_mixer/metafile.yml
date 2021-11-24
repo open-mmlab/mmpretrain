@@ -1,5 +1,5 @@
 Collections:
-  - Name: Mlp-Mixer
+  - Name: MLP-Mixer
     Metadata:
       Training Data: ImageNet-1k
       Architecture:
@@ -15,36 +15,36 @@ Collections:
 #      Version:  # todo
 
 Models:
-  - Name: mlp-mixer_b16_224_3rdparty_64xb64_in1k
+  - Name: mlp-mixer-base-p16_3rdparty_64xb64_in1k
+    In Collection: MLP-Mixer
+    Config: configs/mlp_mixer/mlp-mixer-base-p16_64xb64_in1k.py
     Metadata:
       FLOPs: 12610000000  # 12.61 G
       Parameters: 59880000  # 59.88 M
-    In Collection: Mlp-Mixer
     Results:
       - Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 76.68
           Top 5 Accuracy: 92.25
         Task: Image Classification
-#    Weights: # todo
+    Weights: https://download.openmmlab.com/mmclassification/v0/mlp-mixer/mixer-base-p16_3rdparty_64xb64_in1k_20211124-1377e3e0.pth
     Converted From:
       Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-vitjx/jx_mixer_b16_224-76587d61.pth
       Code: https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/mlp_mixer.py#L70
-    Config: configs/mlp_mixer/mlp_mixer-base_p16_64xb64_in1k.py
 
-  - Name: mlp-mixer_l16_224_3rdparty_64xb64_in1k
+  - Name: mlp-mixer-large-p16_3rdparty_64xb64_in1k
+    In Collection: MLP-Mixer
+    Config: configs/mlp_mixer/mlp-mixer-large-p16_64xb64_in1k.py
     Metadata:
       FLOPs: 44570000000  # 44.57 G
       Parameters: 208200000  # 208.2 M
-    In Collection: Mlp-Mixer
     Results:
       - Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 72.34
           Top 5 Accuracy: 88.02
         Task: Image Classification
-#    Weights: # todo
+    Weights: https://download.openmmlab.com/mmclassification/v0/mlp-mixer/mixer-large-p16_3rdparty_64xb64_in1k_20211124-5a2519d2.pth
     Converted From:
       Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-vitjx/jx_mixer_b16_224_in21k-617b3de2.pth
       Code: https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/mlp_mixer.py#L73
-    Config: configs/mlp_mixer/mlp_mixer-large_p16_64xb64_in1k.py
