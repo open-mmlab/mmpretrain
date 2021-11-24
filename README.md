@@ -46,6 +46,7 @@ Results and models are available in the [model zoo](docs/model_zoo.md).
 
 Supported backbones:
 
+- [x] VGG
 - [x] ResNet
 - [x] ResNeXt
 - [x] SE-ResNet
@@ -56,14 +57,28 @@ Supported backbones:
 - [x] MobileNetV2
 - [x] MobileNetV3
 - [x] Swin-Transformer
+- [x] RepVGG
+- [x] Vision-Transformer
+- [x] Transformer-in-Transformer
+- [x] Res2Net
 
 ## Installation
 
 Please refer to [install.md](docs/install.md) for installation and dataset preparation.
 
 ## Getting Started
+Please see [getting_started.md](docs/getting_started.md) for the basic usage of MMClassification. There are also tutorials:
 
-Please see [getting_started.md](docs/getting_started.md) for the basic usage of MMClassification. There are also tutorials for [finetuning models](docs/tutorials/finetune.md), [adding new dataset](docs/tutorials/new_dataset.md), [designing data pipeline](docs/tutorials/data_pipeline.md), and [adding new modules](docs/tutorials/new_modules.md).
+- [learn about configs](docs/tutorials/config.md)
+- [finetuning models](docs/tutorials/finetune.md)
+- [adding new dataset](docs/tutorials/new_dataset.md)
+- [designing data pipeline](docs/tutorials/data_pipeline.md)
+- [adding new modules](docs/tutorials/new_modules.md)
+- [customizing schedule](docs/tutorials/schedule.md)
+- [customizing runtime settings](docs/tutorials/runtime.md)
+
+Colab tutorials are also provided. To learn about MMClassification Python API, you may preview the notebook [here](https://github.com/open-mmlab/mmclassification/blob/master/docs/tutorials/MMClassification_python.ipynb) or directly [run](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/tutorials/MMClassification_python.ipynb) on Colab.
+To learn about MMClassification shell tools, you may preview the notebook [here](https://github.com/open-mmlab/mmclassification/blob/master/docs/tutorials/MMClassification_tools.ipynb) or directly [run](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/tutorials/MMClassification_tools.ipynb) on Colab.
 
 ## Citation
 
@@ -102,3 +117,4 @@ We wish that the toolbox and benchmark could serve the growing research communit
 - [MMEditing](https://github.com/open-mmlab/mmediting): OpenMMLab image and video editing toolbox.
 - [MMOCR](https://github.com/open-mmlab/mmocr): OpenMMLab toolbox for text detection, recognition and understanding.
 - [MMGeneration](https://github.com/open-mmlab/mmgeneration): OpenMMlab toolkit for generative models.
+- [MMFlow](https://github.com/open-mmlab/mmflow) OpenMMLab optical flow toolbox and benchmark.

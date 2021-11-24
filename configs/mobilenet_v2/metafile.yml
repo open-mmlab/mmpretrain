@@ -19,7 +19,7 @@ Collections:
       Version: v0.15.0
 
 Models:
-  - Name: mobilenet_v2_b32x8_imagenet
+  - Name: mobilenet-v2_8xb32_in1k
     Metadata:
       FLOPs: 319000000
       Parameters: 3500000
@@ -31,4 +31,4 @@ Models:
           Top 5 Accuracy: 90.42
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/mobilenet_v2/mobilenet_v2_batch256_imagenet_20200708-3b2dc3af.pth
-    Config: configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py
+    Config: configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py

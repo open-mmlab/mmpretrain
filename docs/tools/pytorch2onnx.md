@@ -60,9 +60,9 @@ Example:
 
 ```bash
 python tools/deployment/pytorch2onnx.py \
-    configs/resnet/resnet18_b16x8_cifar10.py \
-    --checkpoint checkpoints/resnet/resnet18_b16x8_cifar10.pth \
-    --output-file checkpoints/resnet/resnet18_b16x8_cifar10.onnx \
+    configs/resnet/resnet18_8xb16_cifar10.py \
+    --checkpoint checkpoints/resnet/resnet18_8xb16_cifar10.pth \
+    --output-file checkpoints/resnet/resnet18_8xb16_cifar10.onnx \
     --dynamic-export \
     --show \
     --simplify \
@@ -124,7 +124,7 @@ This part selects ImageNet for onnxruntime verification. ImageNet has multiple v
   </tr>
   <tr>
     <td align="center">ResNet</td>
-    <td align="center"><code>resnet50_b32x8_imagenet.py</code></td>
+    <td align="center"><code>resnet50_8xb32_in1k.py</code></td>
     <td align="center">Top 1 / 5</td>
     <td align="center">76.55 / 93.15</td>
     <td align="center">76.49 / 93.22</td>
@@ -133,7 +133,7 @@ This part selects ImageNet for onnxruntime verification. ImageNet has multiple v
   </tr>
   <tr>
     <td align="center">ResNeXt</td>
-    <td align="center"><code>resnext50_32x4d_b32x8_imagenet.py</code></td>
+    <td align="center"><code>resnext50-32x4d_8xb32_in1k.py</code></td>
     <td align="center">Top 1 / 5</td>
     <td align="center">77.90 / 93.66</td>
     <td align="center">77.90 / 93.66</td>
@@ -142,7 +142,7 @@ This part selects ImageNet for onnxruntime verification. ImageNet has multiple v
   </tr>
   <tr>
     <td align="center">SE-ResNet</td>
-    <td align="center"><code>seresnet50_b32x8_imagenet.py</code></td>
+    <td align="center"><code>seresnet50_8xb32_in1k.py</code></td>
     <td align="center">Top 1 / 5</td>
     <td align="center">77.74 / 93.84</td>
     <td align="center">77.74 / 93.84</td>
@@ -151,7 +151,7 @@ This part selects ImageNet for onnxruntime verification. ImageNet has multiple v
   </tr>
   <tr>
     <td align="center">ShuffleNetV1</td>
-    <td align="center"><code>shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py</code></td>
+    <td align="center"><code>shufflenet-v1-1x_16xb64_in1k.py</code></td>
     <td align="center">Top 1 / 5</td>
     <td align="center">68.13 / 87.81</td>
     <td align="center">68.13 / 87.81</td>
@@ -160,7 +160,7 @@ This part selects ImageNet for onnxruntime verification. ImageNet has multiple v
   </tr>
   <tr>
     <td align="center">ShuffleNetV2</td>
-    <td align="center"><code>shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py</code></td>
+    <td align="center"><code>shufflenet-v2-1x_16xb64_in1k.py</code></td>
     <td align="center">Top 1 / 5</td>
     <td align="center">69.55 / 88.92</td>
     <td align="center">69.55 / 88.92</td>
@@ -169,7 +169,7 @@ This part selects ImageNet for onnxruntime verification. ImageNet has multiple v
   </tr>
   <tr>
     <td align="center">MobileNetV2</td>
-    <td align="center"><code>mobilenet_v2_b32x8_imagenet.py</code></td>
+    <td align="center"><code>mobilenet-v2_8xb32_in1k.py</code></td>
     <td align="center">Top 1 / 5</td>
     <td align="center">71.86 / 90.42</td>
     <td align="center">71.86 / 90.42</td>
@@ -182,14 +182,14 @@ This part selects ImageNet for onnxruntime verification. ImageNet has multiple v
 
 The table below lists the models that are guaranteed to be exportable to ONNX and runnable in ONNX Runtime.
 
-|    Model     |                                                                                            Config                                                                                             | Batch Inference | Dynamic Shape | Note |
-| :----------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------: | :-----------: | ---- |
-| MobileNetV2  |                       [mobilenet_v2_b32x8_imagenet.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py)                        |        Y        |       Y       |      |
-|    ResNet    |                               [resnet18_b16x8_cifar10.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnet/resnet18_b16x8_cifar10.py)                                |        Y        |       Y       |      |
-|   ResNeXt    |                       [resnext50_32x4d_b32x8_imagenet.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnext/resnext50_32x4d_b32x8_imagenet.py)                       |        Y        |       Y       |      |
-|  SE-ResNet   |                           [seresnet50_b32x8_imagenet.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/seresnet/seresnet50_b32x8_imagenet.py)                            |        Y        |       Y       |      |
-| ShuffleNetV1 | [shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py) |        Y        |       Y       |      |
-| ShuffleNetV2 | [shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py) |        Y        |       Y       |      |
+|    Model     |                            Config                            | Batch Inference | Dynamic Shape | Note |
+| :----------: | :----------------------------------------------------------: | :-------------: | :-----------: | ---- |
+| MobileNetV2  | [mobilenet-v2_8xb32_in1k.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py) |        Y        |       Y       |      |
+|    ResNet    | [resnet18_8xb16_cifar10.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnet/resnet18_8xb16_cifar10.py) |        Y        |       Y       |      |
+|   ResNeXt    | [resnext50-32x4d_8xb32_in1k.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnext/resnext50-32x4d_8xb32_in1k.py) |        Y        |       Y       |      |
+|  SE-ResNet   | [seresnet50_8xb32_in1k.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/seresnet/seresnet50_8xb32_in1k.py) |        Y        |       Y       |      |
+| ShuffleNetV1 | [shufflenet-v1-1x_16xb64_in1k.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v1/shufflenet-v1-1x_16xb64_in1k.py) |        Y        |       Y       |      |
+| ShuffleNetV2 | [shufflenet-v2-1x_16xb64_in1k.py](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v2/shufflenet-v2-1x_16xb64_in1k.py) |        Y        |       Y       |      |
 
 Notes:
 

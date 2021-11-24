@@ -18,7 +18,7 @@ Example:
 
 ```shell
 python tools/deployment/mmcls2torchserve.py \
-  configs/resnet/resnet18_b32x8_imagenet.py \
+  configs/resnet/resnet18_8xb32_in1k.py \
   checkpoints/resnet18_8xb32_in1k_20210831-fbbb1da6.pth \
   --output-folder ./checkpoints \
   --model-name resnet18_in1k
@@ -81,7 +81,7 @@ Example:
 ```shell
 python tools/deployment/test_torchserver.py \
   demo/demo.JPEG \
-  configs/resnet/resnet18_b32x8_imagenet.py \
+  configs/resnet/resnet18_8xb32_in1k.py \
   checkpoints/resnet18_8xb32_in1k_20210831-fbbb1da6.pth \
   resnet18_in1k
 ```
