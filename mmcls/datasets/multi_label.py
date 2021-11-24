@@ -17,7 +17,7 @@ class MultiLabelDataset(BaseDataset):
             idx (int): Index of data.
 
         Returns:
-            cat_ids (np.darray): Image categories of specified index.
+            cat_ids (np.ndarray): Image categories of specified index.
         """
         gt_labels = self.data_infos[idx]['gt_label']
         cat_ids = np.where(gt_labels == 1)[0].astype(np.int64)

@@ -66,6 +66,17 @@ class ImageNet21k(BaseDataset):
         self.multi_lable = multi_label
         super(ImageNet21k, self).__init__(data_prefix, pipeline, classes,
                                           ann_file, test_mode)
+    def get_cat_ids(self, idx):
+        """Get category id by index.
+
+        Args:
+            idx (int): Index of data.
+
+        Returns:
+            cat_ids (np.ndarray): Image category of specified index.
+        """
+        
+        return np.array(self.data_infos[idx].gt_label, dtype=np.int64)
 
     def prepare_data(self, idx):
         info = self.data_infos[idx]

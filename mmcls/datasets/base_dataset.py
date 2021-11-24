@@ -71,7 +71,7 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
             idx (int): Index of data.
 
         Returns:
-            cat_ids (np.darray): Image category of specified index.
+            cat_ids (np.ndarray): Image category of specified index.
         """
 
         return self.data_infos[idx]['gt_label'].astype(np.int64)
