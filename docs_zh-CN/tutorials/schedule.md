@@ -161,8 +161,8 @@ momentum_config = dict(
     ```python
     paramwise_cfg = dict(
         custom_keys={
-            '.backbone.cls_token': dict(decay_mult=0.0),
-            '.backbone.pos_embed': dict(decay_mult=0.0)
+            'backbone.cls_token': dict(decay_mult=0.0),
+            'backbone.pos_embed': dict(decay_mult=0.0)
         })
 
     optimizer = dict(
@@ -180,7 +180,7 @@ momentum_config = dict(
         lr=0.8,
         weight_decay=1e-4,
         # backbone 的 'lr' and 'weight_decay' 分别为 0.1 * lr 和 0.9 * weight_decay
-        paramwise_cfg = dict(custom_keys={'.backbone': dict(lr_mult=0.1, decay_mult=0.9)}))
+        paramwise_cfg = dict(custom_keys={'backbone': dict(lr_mult=0.1, decay_mult=0.9)}))
     ```
 
 ## 梯度裁剪与梯度累计

@@ -172,8 +172,8 @@ We provide some examples here and more usages refer to [DefaultOptimizerConstruc
     ```python
     paramwise_cfg = dict(
         custom_keys={
-            '.backbone.cls_token': dict(decay_mult=0.0),
-            '.backbone.pos_embed': dict(decay_mult=0.0)
+            'backbone.cls_token': dict(decay_mult=0.0),
+            'backbone.pos_embed': dict(decay_mult=0.0)
         })
 
     optimizer = dict(
@@ -192,7 +192,7 @@ We provide some examples here and more usages refer to [DefaultOptimizerConstruc
         weight_decay=1e-4,
         # 'lr' for backbone and 'weight_decay' are 0.1 * lr and 0.9 * weight_decay
         paramwise_cfg=dict(
-            custom_keys={'.backbone': dict(lr_mult=0.1, decay_mult=0.9)}))
+            custom_keys={'backbone': dict(lr_mult=0.1, decay_mult=0.9)}))
     ```
 
 ## Gradient clipping and gradient accumulation

@@ -1,6 +1,6 @@
-_base_ = [
-    '../_base_/models/seresnet50.py',
-    '../_base_/datasets/imagenet_bs32_pil_resize.py',
-    '../_base_/schedules/imagenet_bs256_140e.py',
-    '../_base_/default_runtime.py'
-]
+_base_ = 'seresnet50_8xb32_in1k.py'
+
+_deprecation_ = dict(
+    expected='seresnet50_8xb32_in1k.py',
+    reference='https://github.com/open-mmlab/mmclassification/pull/508',
+)
