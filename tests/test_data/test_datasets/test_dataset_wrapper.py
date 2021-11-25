@@ -17,7 +17,7 @@ def construct_toy_multi_label_dataset(length):
     BaseDataset.__getitem__ = MagicMock(side_effect=lambda idx: idx)
     dataset = BaseDataset(data_prefix='', pipeline=[], test_mode=True)
     cat_ids_list = [
-        np.random.randint(0, 80, num)
+        np.random.randint(0, 80, num).tolist()
         for num in np.random.randint(1, 20, length)
     ]
     dataset.data_infos = MagicMock()
@@ -27,23 +27,20 @@ def construct_toy_multi_label_dataset(length):
 
 
 @patch.multiple(BaseDataset, __abstractmethods__=set())
-def construct_toy_sigle_label_dataset(length):
+def construct_toy_single_label_dataset(length):
     BaseDataset.CLASSES = ('foo', 'bar')
     BaseDataset.__getitem__ = MagicMock(side_effect=lambda idx: idx)
     dataset = BaseDataset(data_prefix='', pipeline=[], test_mode=True)
-    cat_ids_list = [
-        np.array(np.random.randint(0, 80), dtype=np.int64)
-        for _ in range(length)
-    ]
+    cat_ids_list = [[np.random.randint(0, 80)] for _ in range(length)]
     dataset.data_infos = MagicMock()
     dataset.data_infos.__len__.return_value = length
     dataset.get_cat_ids = MagicMock(side_effect=lambda idx: cat_ids_list[idx])
     return dataset, cat_ids_list
 
 
-@pytest.mark.parametrize(
-    'construct_dataset',
-    ['construct_toy_multi_label_dataset', 'construct_toy_sigle_label_dataset'])
+@pytest.mark.parametrize('construct_dataset', [
+    'construct_toy_multi_label_dataset', 'construct_toy_single_label_dataset'
+])
 def test_concat_dataset(construct_dataset):
     construct_toy_dataset = eval(construct_dataset)
     dataset_a, cat_ids_list_a = construct_toy_dataset(10)
@@ -58,9 +55,9 @@ def test_concat_dataset(construct_dataset):
     assert concat_dataset.CLASSES == BaseDataset.CLASSES
 
 
-@pytest.mark.parametrize(
-    'construct_dataset',
-    ['construct_toy_multi_label_dataset', 'construct_toy_sigle_label_dataset'])
+@pytest.mark.parametrize('construct_dataset', [
+    'construct_toy_multi_label_dataset', 'construct_toy_single_label_dataset'
+])
 def test_repeat_dataset(construct_dataset):
     construct_toy_dataset = eval(construct_dataset)
     dataset, cat_ids_list = construct_toy_dataset(10)
@@ -75,16 +72,16 @@ def test_repeat_dataset(construct_dataset):
     assert repeat_dataset.CLASSES == BaseDataset.CLASSES
 
 
-@pytest.mark.parametrize(
-    'construct_dataset',
-    ['construct_toy_multi_label_dataset', 'construct_toy_sigle_label_dataset'])
+@pytest.mark.parametrize('construct_dataset', [
+    'construct_toy_multi_label_dataset', 'construct_toy_single_label_dataset'
+])
 def test_class_balanced_dataset(construct_dataset):
     construct_toy_dataset = eval(construct_dataset)
     dataset, cat_ids_list = construct_toy_dataset(10)
 
     category_freq = defaultdict(int)
     for cat_ids in cat_ids_list:
-        cat_ids = set(cat_ids.flatten())
+        cat_ids = set(cat_ids)
         for cat_id in cat_ids:
             category_freq[cat_id] += 1
     for k, v in category_freq.items():
@@ -100,7 +97,7 @@ def test_class_balanced_dataset(construct_dataset):
 
     repeat_factors = []
     for cat_ids in cat_ids_list:
-        cat_ids = set(cat_ids.flatten())
+        cat_ids = set(cat_ids)
         repeat_factor = max({category_repeat[cat_id] for cat_id in cat_ids})
         repeat_factors.append(math.ceil(repeat_factor))
     repeat_factors_cumsum = np.cumsum(repeat_factors)

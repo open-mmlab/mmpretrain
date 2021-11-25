@@ -51,9 +51,10 @@ def test_datasets_override_default(dataset_name):
     assert dataset.CLASSES == ('bus', 'car')
 
     # Test get_cat_ids
-    if dataset_name != 'ImageNet21k':
-        assert isinstance(dataset.get_cat_ids(0), np.ndarray)
-        assert np.issubdtype(dataset.get_cat_ids(0).dtype, np.int64)
+    if dataset_name not in ['ImageNet21k', 'VOC']:
+        assert isinstance(dataset.get_cat_ids(0), list)
+        assert len(dataset.get_cat_ids(0)) == 1
+        assert isinstance(dataset.get_cat_ids(0)[0], int)
 
     # Test setting classes as a list
     dataset = dataset_class(
@@ -292,9 +293,9 @@ def test_dataset_imagenet21k():
     assert 'gt_label' in dataset[0]
 
     # Test get_cat_ids
-    assert isinstance(dataset.get_cat_ids(0),
-                      np.ndarray), type(dataset.get_cat_ids(0))
-    assert np.issubdtype(dataset.get_cat_ids(0).dtype, np.int64)
+    assert isinstance(dataset.get_cat_ids(0), list)
+    assert len(dataset.get_cat_ids(0)) == 1
+    assert isinstance(dataset.get_cat_ids(0)[0], int)
 
     # test with recursion_subdir is False
     dataset_cfg = base_dataset_cfg.copy()

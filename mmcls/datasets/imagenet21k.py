@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
 import warnings
+from typing import List
 
 import numpy as np
 from mmcv.utils import scandir
@@ -67,17 +68,17 @@ class ImageNet21k(BaseDataset):
         super(ImageNet21k, self).__init__(data_prefix, pipeline, classes,
                                           ann_file, test_mode)
 
-    def get_cat_ids(self, idx):
+    def get_cat_ids(self, idx: int) -> List[int]:
         """Get category id by index.
 
         Args:
             idx (int): Index of data.
 
         Returns:
-            cat_ids (np.ndarray): Image category of specified index.
+            cat_ids (List[int]): Image category of specified index.
         """
 
-        return np.array(self.data_infos[idx].gt_label, dtype=np.int64)
+        return [self.data_infos[idx].gt_label]
 
     def prepare_data(self, idx):
         info = self.data_infos[idx]
