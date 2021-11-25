@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from copy import deepcopy
 from typing import Sequence
 
 import numpy as np
@@ -269,61 +268,41 @@ class VisionTransformer(BaseBackbone):
                 norm_cfg, self.embed_dims, postfix=1)
             self.add_module(self.norm1_name, norm1)
 
+        self._register_load_state_dict_pre_hook(self._prepare_checkpoint_hook)
+
     @property
     def norm1(self):
         return getattr(self, self.norm1_name)
 
     def init_weights(self):
-        # Suppress default init if use pretrained model.
-        # And use custom load_checkpoint function to load checkpoint.
-        if (isinstance(self.init_cfg, dict)
+        super(VisionTransformer, self).init_weights()
+
+        if not (isinstance(self.init_cfg, dict)
                 and self.init_cfg['type'] == 'Pretrained'):
-            init_cfg = deepcopy(self.init_cfg)
-            init_cfg.pop('type')
-            self._load_checkpoint(**init_cfg)
-        else:
-            super(VisionTransformer, self).init_weights()
             trunc_normal_(self.pos_embed, std=0.02)
 
-    def _load_checkpoint(self, checkpoint, prefix=None, map_location=None):
-        from mmcv.runner import (_load_checkpoint,
-                                 _load_checkpoint_with_prefix, load_state_dict)
-        from mmcv.utils import print_log
+    def _prepare_checkpoint_hook(self, state_dict, prefix, *args, **kwargs):
+        name = prefix + 'pos_embed'
+        if name not in state_dict.keys():
+            return
 
-        logger = get_root_logger()
-
-        if prefix is None:
-            print_log(f'load model from: {checkpoint}', logger=logger)
-            checkpoint = _load_checkpoint(checkpoint, map_location, logger)
-            # get state_dict from checkpoint
-            if 'state_dict' in checkpoint:
-                state_dict = checkpoint['state_dict']
-            else:
-                state_dict = checkpoint
-        else:
+        ckpt_pos_embed_shape = state_dict[name].shape
+        if self.pos_embed.shape != ckpt_pos_embed_shape:
+            from mmcv.utils import print_log
+            logger = get_root_logger()
             print_log(
-                f'load {prefix} in model from: {checkpoint}', logger=logger)
-            state_dict = _load_checkpoint_with_prefix(prefix, checkpoint,
-                                                      map_location)
+                f'Resize the pos_embed shape from {ckpt_pos_embed_shape} '
+                f'to {self.pos_embed.shape}.',
+                logger=logger)
 
-        if 'pos_embed' in state_dict.keys():
-            ckpt_pos_embed_shape = state_dict['pos_embed'].shape
-            if self.pos_embed.shape != ckpt_pos_embed_shape:
-                print_log(
-                    f'Resize the pos_embed shape from {ckpt_pos_embed_shape} '
-                    f'to {self.pos_embed.shape}.',
-                    logger=logger)
+            ckpt_pos_embed_shape = to_2tuple(
+                int(np.sqrt(ckpt_pos_embed_shape[1] - 1)))
+            pos_embed_shape = self.patch_embed.patches_resolution
 
-                ckpt_pos_embed_shape = to_2tuple(
-                    int(np.sqrt(ckpt_pos_embed_shape[1] - 1)))
-                pos_embed_shape = self.patch_embed.patches_resolution
-
-                state_dict['pos_embed'] = self.resize_pos_embed(
-                    state_dict['pos_embed'], ckpt_pos_embed_shape,
-                    pos_embed_shape, self.interpolate_mode)
-
-        # load state_dict
-        load_state_dict(self, state_dict, strict=False, logger=logger)
+            state_dict[name] = self.resize_pos_embed(state_dict[name],
+                                                     ckpt_pos_embed_shape,
+                                                     pos_embed_shape,
+                                                     self.interpolate_mode)
 
     @staticmethod
     def resize_pos_embed(pos_embed, src_shape, dst_shape, mode='bicubic'):
