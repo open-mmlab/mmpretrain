@@ -8,6 +8,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.transformer import FFN
+from mmcv.cnn.utils.weight_init import trunc_normal_
 from mmcv.runner.base_module import BaseModule, ModuleList
 
 from mmcls.utils import get_root_logger
@@ -155,6 +156,27 @@ class VisionTransformer(BaseBackbone):
                 'num_heads': 16,
                 'feedforward_channels': 4096
             }),
+        **dict.fromkeys(
+            ['deit-t', 'deit-tiny'], {
+                'embed_dims': 192,
+                'num_layers': 12,
+                'num_heads': 3,
+                'feedforward_channels': 192 * 4
+            }),
+        **dict.fromkeys(
+            ['deit-s', 'deit-small'], {
+                'embed_dims': 384,
+                'num_layers': 12,
+                'num_heads': 6,
+                'feedforward_channels': 384 * 4
+            }),
+        **dict.fromkeys(
+            ['deit-b', 'deit-base'], {
+                'embed_dims': 768,
+                'num_layers': 12,
+                'num_heads': 12,
+                'feedforward_channels': 768 * 4
+            }),
     }
 
     def __init__(self,
@@ -182,7 +204,7 @@ class VisionTransformer(BaseBackbone):
             essential_keys = {
                 'embed_dims', 'num_layers', 'num_heads', 'feedforward_channels'
             }
-            assert isinstance(arch, dict) and set(arch) == essential_keys, \
+            assert isinstance(arch, dict) and essential_keys < set(arch), \
                 f'Custom arch needs a dict with keys {essential_keys}'
             self.arch_settings = arch
 
@@ -261,8 +283,7 @@ class VisionTransformer(BaseBackbone):
             self._load_checkpoint(**init_cfg)
         else:
             super(VisionTransformer, self).init_weights()
-            # Modified from ClassyVision
-            nn.init.normal_(self.pos_embed, std=0.02)
+            trunc_normal_(self.pos_embed, std=0.02)
 
     def _load_checkpoint(self, checkpoint, prefix=None, map_location=None):
         from mmcv.runner import (_load_checkpoint,
