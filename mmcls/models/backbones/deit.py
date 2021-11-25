@@ -9,6 +9,35 @@ from .vision_transformer import VisionTransformer
 
 @BACKBONES.register_module()
 class DistilledVisionTransformer(VisionTransformer):
+    """Distilled Vision Transformer.
+
+    A PyTorch implement of : `Training data-efficient image transformers &
+    distillation through attention <https://arxiv.org/abs/2012.12877>`_
+
+    Args:
+        arch (str | dict): Vision Transformer architecture
+            Default: 'b'
+        img_size (int | tuple): Input image size
+        patch_size (int | tuple): The patch size
+        out_indices (Sequence | int): Output from which stages.
+            Defaults to -1, means the last stage.
+        drop_rate (float): Probability of an element to be zeroed.
+            Defaults to 0.
+        drop_path_rate (float): stochastic depth rate. Defaults to 0.
+        norm_cfg (dict): Config dict for normalization layer.
+            Defaults to ``dict(type='LN')``.
+        final_norm (bool): Whether to add a additional layer to normalize
+            final feature map. Defaults to True.
+        output_cls_token (bool): Whether output the cls_token. If set True,
+            `with_cls_token` must be True. Defaults to True.
+        interpolate_mode (str): Select the interpolate mode for position
+            embeding vector resize. Defaults to "bicubic".
+        patch_cfg (dict): Configs of patch embeding. Defaults to an empty dict.
+        layer_cfgs (Sequence | dict): Configs of each transformer layer in
+            encoder. Defaults to an empty dict.
+        init_cfg (dict, optional): Initialization config dict.
+            Defaults to None.
+    """
 
     def __init__(self, *args, **kwargs):
         super(DistilledVisionTransformer, self).__init__(*args, **kwargs)
