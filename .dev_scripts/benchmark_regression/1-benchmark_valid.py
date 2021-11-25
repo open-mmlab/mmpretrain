@@ -9,6 +9,7 @@ import numpy as np
 import torch
 from mmcv import Config
 from mmcv.parallel import collate, scatter
+from modelindex.load_model_index import load
 from rich.console import Console
 from rich.table import Table
 
@@ -148,11 +149,9 @@ def show_summary(summary_data):
 # Sample test whether the inference code is correct
 def main(args):
     model_index_file = MMCLS_ROOT / 'model-index.yml'
-    model_index = Config.fromfile(model_index_file)
-    models = OrderedDict()
-    for file in model_index.Import:
-        metafile = Config.fromfile(MMCLS_ROOT / file)
-        models.update({model.Name: model for model in metafile.Models})
+    model_index = load(str(model_index_file))
+    model_index.build_models_with_collections()
+    models = OrderedDict({model.name: model for model in model_index.models})
 
     logger = get_root_logger(
         log_file='benchmark_test_image.log', log_level=logging.INFO)
@@ -172,17 +171,27 @@ def main(args):
     summary_data = {}
     for model_name, model_info in models.items():
 
-        config = Path(model_info.Config)
+        config = Path(model_info.config)
         assert config.exists(), f'{model_name}: {config} not found.'
 
         logger.info(f'Processing: {model_name}')
 
         http_prefix = 'https://download.openmmlab.com/mmclassification/'
-        dataset = model_info.Results[0]['Dataset']
+        dataset = model_info.results[0].dataset
         if args.checkpoint_root is not None:
-            root = Path(args.checkpoint_root)
-            checkpoint = root / model_info.Weights[len(http_prefix):]
-            checkpoint = str(checkpoint)
+            root = args.checkpoint_root
+            if 's3://' in args.checkpoint_root:
+                from mmcv.fileio import FileClient
+                file_client = FileClient.infer_client(uri=root)
+                checkpoint = file_client.join_path(
+                    root, model_info.weights[len(http_prefix):])
+                assert checkpoint.exists(), \
+                    f'{model_name}: {checkpoint} not found.'
+            else:
+                checkpoint = Path(root) / model_info.weights[len(http_prefix):]
+                assert checkpoint.exists(), \
+                    f'{model_name}: {checkpoint} not found.'
+                checkpoint = str(checkpoint)
         else:
             checkpoint = None
 

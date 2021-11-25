@@ -1,13 +1,13 @@
 import argparse
 import os
 import os.path as osp
+import pickle
 import re
 from collections import OrderedDict
 from datetime import datetime
 from pathlib import Path
 
-import mmcv
-from mmcv import Config
+from modelindex.load_model_index import load
 from rich.console import Console
 from rich.syntax import Syntax
 from rich.table import Table
@@ -69,15 +69,22 @@ def parse_args():
 
 def create_test_job_batch(commands, model_info, args, port, script_name):
 
-    fname = model_info.Name
+    fname = model_info.name
 
-    config = Path(model_info.Config)
+    config = Path(model_info.config)
     assert config.exists(), f'{fname}: {config} not found.'
 
     http_prefix = 'https://download.openmmlab.com/mmclassification/'
-    checkpoint_root = Path(args.checkpoint_root)
-    checkpoint = checkpoint_root / model_info.Weights[len(http_prefix):]
-    assert checkpoint.exists(), f'{fname}: {checkpoint} not found.'
+    if 's3://' in args.checkpoint_root:
+        from mmcv.fileio import FileClient
+        file_client = FileClient.infer_client(uri=args.checkpoint_root)
+        checkpoint = file_client.join_path(
+            args.checkpoint_root, model_info.weights[len(http_prefix):])
+        assert checkpoint.exists(), f'{fname}: {checkpoint} not found.'
+    else:
+        checkpoint_root = Path(args.checkpoint_root)
+        checkpoint = checkpoint_root / model_info.weights[len(http_prefix):]
+        assert checkpoint.exists(), f'{fname}: {checkpoint} not found.'
 
     job_name = f'{args.job_name}_{fname}'
     work_dir = Path(args.work_dir) / fname
@@ -127,11 +134,9 @@ def create_test_job_batch(commands, model_info, args, port, script_name):
 def test(args):
     # parse model-index.yml
     model_index_file = MMCLS_ROOT / 'model-index.yml'
-    model_index = Config.fromfile(model_index_file)
-    models = OrderedDict()
-    for file in model_index.Import:
-        metafile = Config.fromfile(MMCLS_ROOT / file)
-        models.update({model.Name: model for model in metafile.Models})
+    model_index = load(str(model_index_file))
+    model_index.build_models_with_collections()
+    models = OrderedDict({model.name: model for model in model_index.models})
 
     script_name = osp.join('tools', 'test.py')
     port = args.port
@@ -253,12 +258,9 @@ def show_summary(summary_data):
 
 def summary(args):
     model_index_file = MMCLS_ROOT / 'model-index.yml'
-    model_index = Config.fromfile(model_index_file)
-    models = OrderedDict()
-
-    for file in model_index.Import:
-        metafile = Config.fromfile(MMCLS_ROOT / file)
-        models.update({model.Name: model for model in metafile.Models})
+    model_index = load(str(model_index_file))
+    model_index.build_models_with_collections()
+    models = OrderedDict({model.name: model for model in model_index.models})
 
     work_dir = Path(args.work_dir)
 
@@ -283,10 +285,11 @@ def summary(args):
             summary_data[model_name] = {}
             continue
 
-        results = mmcv.load(result_file)
+        with open(result_file, 'rb') as file:
+            results = pickle.load(file)
         date = datetime.fromtimestamp(result_file.lstat().st_mtime)
 
-        expect_metrics = model_info.Results[0].Metrics
+        expect_metrics = model_info.results[0].metrics
 
         # extract metrics
         summary = {'date': date.strftime('%Y-%m-%d')}
