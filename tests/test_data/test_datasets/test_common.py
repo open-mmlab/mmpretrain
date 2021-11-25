@@ -17,7 +17,12 @@ from mmcls.datasets import (DATASETS, BaseDataset, ImageNet21k,
 def test_datasets_override_default(dataset_name):
     dataset_class = DATASETS.get(dataset_name)
     load_annotations_f = dataset_class.load_annotations
-    ann = [dict(img_prefix='',img_info=dict(),gt_label=np.array(0,dtype=np.int64))]
+    ann = [
+        dict(
+            img_prefix='',
+            img_info=dict(),
+            gt_label=np.array(0, dtype=np.int64))
+    ]
     dataset_class.load_annotations = MagicMock(return_value=ann)
 
     original_classes = dataset_class.CLASSES
@@ -287,7 +292,8 @@ def test_dataset_imagenet21k():
     assert 'gt_label' in dataset[0]
 
     # Test get_cat_ids
-    assert isinstance(dataset.get_cat_ids(0), np.ndarray), type(dataset.get_cat_ids(0))
+    assert isinstance(dataset.get_cat_ids(0),
+                      np.ndarray), type(dataset.get_cat_ids(0))
     assert np.issubdtype(dataset.get_cat_ids(0).dtype, np.int64)
 
     # test with recursion_subdir is False
