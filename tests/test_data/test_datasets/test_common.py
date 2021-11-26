@@ -17,7 +17,13 @@ from mmcls.datasets import (DATASETS, BaseDataset, ImageNet21k,
 def test_datasets_override_default(dataset_name):
     dataset_class = DATASETS.get(dataset_name)
     load_annotations_f = dataset_class.load_annotations
-    dataset_class.load_annotations = MagicMock()
+    ann = [
+        dict(
+            img_prefix='',
+            img_info=dict(),
+            gt_label=np.array(0, dtype=np.int64))
+    ]
+    dataset_class.load_annotations = MagicMock(return_value=ann)
 
     original_classes = dataset_class.CLASSES
 
@@ -43,6 +49,12 @@ def test_datasets_override_default(dataset_name):
         classes=('bus', 'car'),
         test_mode=True)
     assert dataset.CLASSES == ('bus', 'car')
+
+    # Test get_cat_ids
+    if dataset_name not in ['ImageNet21k', 'VOC']:
+        assert isinstance(dataset.get_cat_ids(0), list)
+        assert len(dataset.get_cat_ids(0)) == 1
+        assert isinstance(dataset.get_cat_ids(0)[0], int)
 
     # Test setting classes as a list
     dataset = dataset_class(
@@ -279,6 +291,11 @@ def test_dataset_imagenet21k():
     assert 'img_prefix' in dataset[0]
     assert 'img_info' in dataset[0]
     assert 'gt_label' in dataset[0]
+
+    # Test get_cat_ids
+    assert isinstance(dataset.get_cat_ids(0), list)
+    assert len(dataset.get_cat_ids(0)) == 1
+    assert isinstance(dataset.get_cat_ids(0)[0], int)
 
     # test with recursion_subdir is False
     dataset_cfg = base_dataset_cfg.copy()
