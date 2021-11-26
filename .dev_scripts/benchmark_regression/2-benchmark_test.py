@@ -77,14 +77,21 @@ def create_test_job_batch(commands, model_info, args, port, script_name):
     http_prefix = 'https://download.openmmlab.com/mmclassification/'
     if 's3://' in args.checkpoint_root:
         from mmcv.fileio import FileClient
+        from petrel_client.common.exception import AccessDeniedError
         file_client = FileClient.infer_client(uri=args.checkpoint_root)
         checkpoint = file_client.join_path(
             args.checkpoint_root, model_info.weights[len(http_prefix):])
-        assert checkpoint.exists(), f'{fname}: {checkpoint} not found.'
+        try:
+            exists = file_client.exists(checkpoint)
+        except AccessDeniedError:
+            exists = False
     else:
         checkpoint_root = Path(args.checkpoint_root)
         checkpoint = checkpoint_root / model_info.weights[len(http_prefix):]
-        assert checkpoint.exists(), f'{fname}: {checkpoint} not found.'
+        exists = checkpoint.exists()
+    if not exists:
+        print(f'WARNING: {fname}: {checkpoint} not found.')
+        return None
 
     job_name = f'{args.job_name}_{fname}'
     work_dir = Path(args.work_dir) / fname
@@ -154,19 +161,21 @@ def test(args):
             return
         models = filter_models
 
+    preview_script = ''
     for model_info in models.values():
         script_path = create_test_job_batch(commands, model_info, args, port,
                                             script_name)
+        preview_script = script_path or preview_script
         port += 1
 
     command_str = '\n'.join(commands)
 
     preview = Table()
-    preview.add_column(str(script_path))
+    preview.add_column(str(preview_script))
     preview.add_column('Shell command preview')
     preview.add_row(
         Syntax.from_path(
-            script_path,
+            preview_script,
             background_color='default',
             line_numbers=True,
             word_wrap=True),

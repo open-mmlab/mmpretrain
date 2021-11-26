@@ -182,16 +182,22 @@ def main(args):
             root = args.checkpoint_root
             if 's3://' in args.checkpoint_root:
                 from mmcv.fileio import FileClient
+                from petrel_client.common.exception import AccessDeniedError
                 file_client = FileClient.infer_client(uri=root)
                 checkpoint = file_client.join_path(
                     root, model_info.weights[len(http_prefix):])
-                assert checkpoint.exists(), \
-                    f'{model_name}: {checkpoint} not found.'
+                try:
+                    exists = file_client.exists(checkpoint)
+                except AccessDeniedError:
+                    exists = False
             else:
                 checkpoint = Path(root) / model_info.weights[len(http_prefix):]
-                assert checkpoint.exists(), \
-                    f'{model_name}: {checkpoint} not found.'
+                exists = checkpoint.exists()
+            if exists:
                 checkpoint = str(checkpoint)
+            else:
+                print(f'WARNING: {model_name}: {checkpoint} not found.')
+                checkpoint = None
         else:
             checkpoint = None
 
