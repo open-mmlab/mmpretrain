@@ -39,7 +39,7 @@ class SwinBlock(BaseModule):
             Defaults to dict(type='LN').
         with_cp (bool, optional): Use checkpoint or not. Using checkpoint
             will save some memory while slowing down the training speed.
-            Default: False.
+            Defaults to False.
         auto_pad (bool, optional): Auto pad the feature map to be divisible by
             window_size, Defaults to False.
         init_cfg (dict, optional): The extra config for initialization.
@@ -130,7 +130,7 @@ class SwinBlockSequence(BaseModule):
             block. Defaults to empty dicts.
         with_cp (bool, optional): Use checkpoint or not. Using checkpoint
             will save some memory while slowing down the training speed.
-            Default: False.
+            Defaults to False.
         auto_pad (bool, optional): Auto pad the feature map to be divisible by
             window_size, Defaults to False.
         init_cfg (dict, optional): The extra config for initialization.
@@ -234,7 +234,7 @@ class SwinTransformer(BaseBackbone):
             the patch embedding. Defaults to False.
         with_cp (bool, optional): Use checkpoint or not. Using checkpoint
             will save some memory while slowing down the training speed.
-            Default: False.
+            Defaults to False.
         auto_pad (bool): If True, auto pad feature map to fit window_size.
             Defaults to False.
         norm_cfg (dict, optional): Config dict for normalization layer at end
