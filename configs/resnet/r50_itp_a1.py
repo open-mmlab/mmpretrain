@@ -21,7 +21,9 @@ model = dict(
         num_classes=1000,
         in_channels=2048,
         loss=dict(
-            type='LabelSmoothLoss', label_smooth_val=0.1, mode='multi_label'),
+            type='CrossEntropyLoss',
+            use_sigmoid=True,
+        ),
         topk=(1, 5),
     ),
     train_cfg=dict(augments=[
