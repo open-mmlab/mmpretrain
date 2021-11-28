@@ -28,7 +28,8 @@ class BaseCutMixLayer(object, metaclass=ABCMeta):
                  num_classes,
                  prob=1.0,
                  cutmix_minmax=None,
-                 correct_lam=True):
+                 correct_lam=True,
+                 smoothing=0.0):
         super(BaseCutMixLayer, self).__init__()
 
         assert isinstance(alpha, float) and alpha > 0
@@ -40,6 +41,7 @@ class BaseCutMixLayer(object, metaclass=ABCMeta):
         self.prob = prob
         self.cutmix_minmax = cutmix_minmax
         self.correct_lam = correct_lam
+        self.smoothing = smoothing
 
     def rand_bbox_minmax(self, img_shape, count=None):
         """Min-Max CutMix bounding-box Inspired by Darknet cutmix
@@ -115,6 +117,14 @@ class BaseCutMixLayer(object, metaclass=ABCMeta):
         pass
 
 
+def one_hot(x, num_classes, smoothing, device='cuda'):
+    off_value = smoothing / num_classes
+    on_value = 1. - smoothing + off_value
+    x = x.long().view(-1, 1)
+    return torch.full((x.size()[0], num_classes), off_value,
+                      device=device).scatter_(1, x, on_value)
+
+
 @AUGMENT.register_module(name='BatchCutMix')
 class BatchCutMixLayer(BaseCutMixLayer):
     """CutMix layer for batch CutMix."""
@@ -123,7 +133,12 @@ class BatchCutMixLayer(BaseCutMixLayer):
         super(BatchCutMixLayer, self).__init__(*args, **kwargs)
 
     def cutmix(self, img, gt_label):
-        one_hot_gt_label = F.one_hot(gt_label, num_classes=self.num_classes)
+        if self.smoothing > 1e-4:
+            one_hot_gt_label = F.one_hot(
+                gt_label, num_classes=self.num_classes)
+        else:
+            one_hot_gt_label = one_hot(gt_label, self.num_classes,
+                                       self.smoothing)
         lam = np.random.beta(self.alpha, self.alpha)
         batch_size = img.size(0)
         index = torch.randperm(batch_size)
