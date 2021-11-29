@@ -119,6 +119,80 @@ python tools/visualizations/vis_lr.py configs/repvgg/repvgg-B3g4_4xb64-autoaug-l
 
 <div align=center><img src="../_static/image/tools/visualization/lr_schedule2.png" style=" width: auto; height: 40%; "></div>
 
+## Class Activation Map Visualization
+
+MMClassification provides `tools\visualizations\vis_cam.py` tool to visualize class activation map.please use `pip install grad-cam` command to install dependent third-party libraries. This tool is based on [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam)。
+
+```bash
+python tools/visualizations/vis_cam.py \
+    ${IMG-PATH} \
+    ${CONFIG_FILE} \
+    ${CHECKPOINT} \
+    --target-layers ${TARGET-LAYERS} \
+    [--preview-model] \
+    [--cam-type ${CAM-TYPE}] \
+    [--target-category ${TARGET-CATEGORY}] \
+    [--save-path ${SAVE_PATH}] \
+    [--aug_smooth] \
+    [--eigen_smooth] \
+    [--device ${DEVICE}] \
+    [--cfg-options ${CFG-OPTIONS}]
+```
+
+**Description of all arguments**：
+
+- `img`：The target picture path.
+- `config`： The path of a model config file.
+- `checkpoint`：The path of checkpoint.
+- `--target-layers`：The target layer to get activation map. One or more network layers can be specified.
+- `--preview-model`：Whether to print all network layer names of the model.
+- `--cam-type`：Visualization algorithm name, support ['GradCAM', 'ScoreCAM', 'GradCAM++', 'AblationCAM', 'XGradCAM', 'EigenCAM', 'EigenGradCAM', 'LayerCAM', 'FullGrad'] (case insensitive). if not set, it will be set to 'GradCAM'.
+- `--target-category`：Target category, if not set, use the category detected by the model.
+- `--save-path`：The path of the saved visualization image, which is not saved by default.
+- `--aug_smooth`：Whether to enable enhancement to smooth the activation map during testing, it is not enabled by default.
+- `--eigen_smooth`：Whether to use the principal component to reduce noise,  it is not enabled by default.
+- `--device`：The computing device used, if not set, the default is 'cpu'.
+- `cfg-options` : Modifications to the configuration file, refer to [Tutorial 1: Learn about Configs](https://mmclassification.readthedocs.io/en/latest/tutorials/config.html).
+
+
+```{note}
+1. If you don't know which network layers are in the model, you can add'--preview-model' to the command line to view all the name of each network layer;
+2. The 'target-layers' always start with 'model' and can't end with'relu'. For example, it can be'model.backbone.layer4' or 'model.backbone.layer4.1.conv';
+3. For Transformer type networks, such as `Swin`, `ViT`, etc., The 'target-layers' needs to be set to xxxx;
+4. The `--aug_smooth` and `--aug_smooth` can smooth the noise.
+```
+
+**Examples**：
+
+1. Using `GradCAM++` algorithm to visualize cam of `layer4` in `ResNet50`, the target category would be set to category detected by the model.
+
+```shell
+python tools/visualizations/vis_cam.py demo\demo.JPEG configs\resnet\resnet50_8xb32_in1k.py \
+    https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_batch256_imagenet_20200708-cfb998bf.pth \
+    --target-layers model.backbone.layer4 \
+    --cam-type GradCAM++
+```
+
+2. Visualization of `Swin` or `ViT`.
+
+```shell
+python tools/visualizations/vis_cam.py demo\demo.JPEG  \
+    configs/swin_transformer/swin-tiny_16xb64_in1k.py \
+    https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_tiny_224_b16x64_300e_imagenet_20210616_090925-66df6be6.pth \
+    --target-layers model.backbone.layer4 \
+    --cam-type ablationcam
+```
+
+3. Use `--aug_smooth` and `--aug_smooth` to smooth the noise.
+
+```shell
+python tools/visualizations/vis_cam.py demo\demo.JPEG  \
+    configs\mobilenet_v3\mobilenet-v3-large_8xb32_in1k.py \
+    https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_large-3ea3c186.pth \
+    --target-layers model.backbone.layer4 \
+    --aug_smooth --aug_smooth
+```
+
 ## FAQs
 
 - None

@@ -47,13 +47,17 @@ class MultiLabelClsHead(BaseHead):
         losses = self.loss(cls_score, gt_label, **kwargs)
         return losses
 
-    def simple_test(self, x):
+    def simple_test(self, x, post_processing=True):
         if isinstance(x, tuple):
             x = x[-1]
         if isinstance(x, list):
             x = sum(x) / float(len(x))
-        pred = F.sigmoid(x) if x is not None else None
 
+        # Not execute `softmax` and `head.post-process`, return torch.Tensor
+        if not post_processing:
+            return x
+
+        pred = F.sigmoid(x) if x is not None else None
         return self.post_process(pred)
 
     def post_process(self, pred):

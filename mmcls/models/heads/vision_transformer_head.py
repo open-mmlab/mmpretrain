@@ -68,15 +68,19 @@ class VisionTransformerClsHead(ClsHead):
                 std=math.sqrt(1 / self.layers.pre_logits.in_features))
             nn.init.zeros_(self.layers.pre_logits.bias)
 
-    def simple_test(self, x):
+    def simple_test(self, x, post_processing=True):
         """Test without augmentation."""
         x = x[-1]
         _, cls_token = x
         cls_score = self.layers(cls_token)
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
-        pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
 
+        # Not execute `softmax` and `head.post-process`, return torch.Tensor
+        if not post_processing:
+            return cls_score
+
+        pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
         return self.post_process(pred)
 
     def forward_train(self, x, gt_label, **kwargs):

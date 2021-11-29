@@ -123,7 +123,13 @@ class ImageClassifier(BaseClassifier):
         return losses
 
     def simple_test(self, img, img_metas=None, **kwargs):
-        """Test without augmentation."""
+        """Test without augmentation.
+
+        Args:
+            img (Tensor): of shape (N, C, H, W) encoding input images.
+                Typically these should be mean centered and std scaled.
+            img_metas (Dict, optional): the meta information of the img.
+        """
         x = self.extract_feat(img)
 
         try:

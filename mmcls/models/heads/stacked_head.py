@@ -114,7 +114,7 @@ class StackedLinearClsHead(ClsHead):
     def init_weights(self):
         self.layers.init_weights()
 
-    def simple_test(self, x):
+    def simple_test(self, x, post_processing=True):
         """Test without augmentation."""
         if isinstance(x, tuple):
             x = x[-1]
@@ -123,8 +123,12 @@ class StackedLinearClsHead(ClsHead):
             cls_score = layer(cls_score)
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
-        pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
 
+        # Not execute `softmax` and `head.post-process`, return torch.Tensor
+        if not post_processing:
+            return cls_score
+
+        pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
         return self.post_process(pred)
 
     def forward_train(self, x, gt_label, **kwargs):

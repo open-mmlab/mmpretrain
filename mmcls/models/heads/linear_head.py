@@ -35,17 +35,19 @@ class LinearClsHead(ClsHead):
 
         self.fc = nn.Linear(self.in_channels, self.num_classes)
 
-    def simple_test(self, x, return_score=False):
+    def simple_test(self, x, post_processing=True):
         """Test without augmentation."""
         if isinstance(x, tuple):
             x = x[-1]
         cls_score = self.fc(x)
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
-        if return_score:
-            return cls_score
-        pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
 
+        # Not execute `softmax` and `head.post-process`, return torch.Tensor
+        if not post_processing:
+            return cls_score
+
+        pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
         return self.post_process(pred)
 
     def forward_train(self, x, gt_label, **kwargs):

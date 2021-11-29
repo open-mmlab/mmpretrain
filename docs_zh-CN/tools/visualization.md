@@ -5,6 +5,7 @@
 - [可视化](#可视化)
   - [数据流水线可视化](#数据流水线可视化)
   - [学习率策略可视化](#学习率策略可视化)
+  - [Grad-CAM可视化](#grad-cam可视化)
   - [常见问题](#常见问题)
 
 <!-- TOC -->
@@ -121,6 +122,79 @@ python tools/visualizations/vis_lr.py configs/repvgg/repvgg-B3g4_4xb64-autoaug-l
 ```
 
 <div align=center><img src="../_static/image/tools/visualization/lr_schedule2.png" style=" width: auto; height: 40%; "></div>
+
+## 类别激活图可视化
+
+MMClassification 提供 `tools\visualizations\vis_cam.py` 工具来可视化类别激活图。请使用 `pip install grad-cam` 安装依赖库。工具基于 [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam)。
+
+```bash
+python tools/visualizations/vis_cam.py \
+    ${IMG-PATH} \
+    ${CONFIG_FILE} \
+    ${CHECKPOINT} \
+    --target-layers ${TARGET-LAYERS} \
+    [--preview-model] \
+    [--cam-type ${CAM-TYPE}] \
+    [--target-category ${TARGET-CATEGORY}] \
+    [--save-path ${SAVE_PATH}] \
+    [--aug_smooth] \
+    [--eigen_smooth] \
+    [--device ${DEVICE}] \
+    [--cfg-options ${CFG-OPTIONS}]
+```
+
+**所有参数的说明**：
+
+- `img`：目标图片路径。
+- `config`：模型配置文件的路径。
+- `checkpoint`：权重路径。
+- `--target-layers`：所查看的网络层名称，可输入一个或者多个网络层名称。
+- `--preview-model`：是否查看模型有哪些网络层。
+- `--cam-type`：热力图可视化的算法名称，目前支持 ['GradCAM', 'ScoreCAM', 'GradCAM++', 'AblationCAM', 'XGradCAM', 'EigenCAM', 'EigenGradCAM', 'LayerCAM', 'FullGrad']，(不区分大小写)，如果不设置，默认为 'GradCAM'。
+- `--target-category`：查看的目标类别，如果不设置，使用模型检测出来的类别做为目标类别。
+- `--save-path`：保存的可视化图片的路径，默认不保存。
+- `--aug_smooth`：是否开启测试时增强以平滑热力图，默认不开启。
+- `--eigen_smooth`：是否使用主成分降低噪音， 默认不开启。
+- `--device`：使用的计算设备，如果不设置，默认为'cpu'。
+- `--cfg-options`：对配置文件的修改，参考[教程 1：如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html)。
+
+```{note}
+1. 不知道模型中有哪些层，可以在命令行中添加 '--preview-model' 查看网络各层名称；
+2. 'target-layers' 都是以 'model'开始，不能以 'relu' 为结尾。例如可以为 'model.backbone.layer4' 或者 'model.backbone.layer4.1.conv'；
+3. Transformer 类的网络，如 `Swin`, `ViT` 等，'target-layers' 需要设置为xxxx;
+4. `--aug_smooth` 以及 `--aug_smooth` 可以平滑噪音。
+```
+
+**示例**：
+
+1. 使用 `GradCAM++` 算法 `可视化 `ResNet50` 的 `layer4`，默认 `target-category` 为模型结果类别。
+
+```shell
+python tools/visualizations/vis_cam.py demo\demo.JPEG configs\resnet\resnet50_8xb32_in1k.py \
+    https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_batch256_imagenet_20200708-cfb998bf.pth \
+    --target-layers model.backbone.layer4 \
+    --cam-type GradCAM++
+```
+
+2. 对 `Swin` 或者 `ViT` 的可视化。
+
+```shell
+python tools/visualizations/vis_cam.py demo\demo.JPEG  \
+    configs/swin_transformer/swin-tiny_16xb64_in1k.py \
+    https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_tiny_224_b16x64_300e_imagenet_20210616_090925-66df6be6.pth \
+    --target-layers model.backbone.layer4 \
+    --cam-type ablationcam
+```
+
+3. 使用 `--aug_smooth` 以及 `--aug_smooth` 平滑噪音。
+
+```shell
+python tools/visualizations/vis_cam.py demo\demo.JPEG  \
+    configs\mobilenet_v3\mobilenet-v3-large_8xb32_in1k.py \
+    https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_large-3ea3c186.pth \
+    --target-layers model.backbone.layer4 \
+    --aug_smooth --aug_smooth
+```
 
 ## 常见问题
 

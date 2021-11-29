@@ -14,7 +14,8 @@ from mmcls.datasets.pipelines import Compose
 
 try:
     from pytorch_grad_cam import (AblationCAM, EigenCAM, GradCAM,
-                                  GradCAMPlusPlus, ScoreCAM, XGradCAM)
+                                  GradCAMPlusPlus, ScoreCAM, XGradCAM,
+                                  EigenGradCAM, LayerCAM, FullGrad)
     import pytorch_grad_cam.activations_and_gradients as act_and_grad
     from pytorch_grad_cam.utils.image import show_cam_on_image
 except ImportError:
@@ -25,12 +26,15 @@ FORMAT_TRANSFORMS_SET = {'ToTensor', 'Normalize', 'ImageToTensor', 'Collect'}
 
 # Supported grad-cam type map
 GradCAM_MAP = {
-    'GradCAM': GradCAM,
-    'ScoreCAM': ScoreCAM,
-    'GradCAM++': GradCAMPlusPlus,
-    'AblationCAM': AblationCAM,
-    'XGradCAM': XGradCAM,
-    'EigenCAM': EigenCAM
+    'gradcam': GradCAM,
+    'scorecam': ScoreCAM,
+    'gradcam++': GradCAMPlusPlus,
+    'ablationcam': AblationCAM,
+    'xgradcam': XGradCAM,
+    'eigencam': EigenCAM,
+    'eigengradcam': EigenGradCAM,
+    'layercam': LayerCAM,
+    'fullgrad': FullGrad
 }
 
 
@@ -40,7 +44,13 @@ def parse_args():
     parser.add_argument('config', help='Config file')
     parser.add_argument('checkpoint', help='Checkpoint file')
     parser.add_argument(
-        '--preview',
+        '--target-layers',
+        default=[],
+        nargs='+',
+        type=str,
+        help='target layers in insight')
+    parser.add_argument(
+        '--preview-model',
         default=False,
         action='store_true',
         help='preview the model')
@@ -51,16 +61,19 @@ def parse_args():
         help='Type of algorithm to use, support "GradCAM", "ScoreCAM",'
         '"GradCAM++", "AblationCAM", "XGradCAM" and "EigenCAM".')
     parser.add_argument(
-        '--target-layers',
-        default=[],
-        nargs='+',
-        type=str,
-        help='target layers in insight')
-    parser.add_argument(
         '--target-category',
         default=None,
         type=int,
         help='target category in insight')
+    parser.add_argument(
+        '--aug_smooth',
+        action='store_true',
+        help='Apply test time augmentation to smooth the CAM')
+    parser.add_argument(
+        '--eigen_smooth',
+        action='store_true',
+        help='Reduce noise by taking the first principle componenet of '
+        '``cam_weights*activations``')
     parser.add_argument(
         '--save-path',
         type=Path,
@@ -126,7 +139,7 @@ def init_cam(cam_type, model, target_layers, use_cuda):
             self.gradients = []
             self.activations = []
 
-            return self.model(x, return_loss=False, return_score=True)
+            return self.model(x, return_loss=False, post_processing=False)
 
     def custom_get_loss(self, output, target_category):
         """get loss function of MMCls model."""
@@ -185,7 +198,7 @@ def main():
     # build the model from a config file and a checkpoint file
     model = init_model(cfg, args.checkpoint, device=args.device)
     # if don't know the layers of a model, preview all layers in a model
-    if args.preview:
+    if args.preview_model:
         print(model)
         sys.exit()
 
@@ -205,7 +218,10 @@ def main():
 
     # calculate cam grads and show|save
     grayscale_cam = cam(
-        input_tensor=data['img'], target_category=args.target_category)
+        input_tensor=data['img'],
+        target_category=args.target_category,
+        eigen_smooth=args.eigen_smooth,
+        aug_smooth=args.aug_smoot)
     show_cam_grad(
         grayscale_cam, src_img, title=args.cam_type, out_path=args.save_path)
 

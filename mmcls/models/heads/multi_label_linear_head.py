@@ -47,13 +47,17 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
         losses = self.loss(cls_score, gt_label, **kwargs)
         return losses
 
-    def simple_test(self, x):
+    def simple_test(self, x, post_processing=True):
         """Test without augmentation."""
         if isinstance(x, tuple):
             x = x[-1]
         cls_score = self.fc(x)
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
-        pred = F.sigmoid(cls_score) if cls_score is not None else None
 
+        # Not execute `softmax` and `head.post-process`, return torch.Tensor
+        if not post_processing:
+            return cls_score
+
+        pred = F.sigmoid(cls_score) if cls_score is not None else None
         return self.post_process(pred)
