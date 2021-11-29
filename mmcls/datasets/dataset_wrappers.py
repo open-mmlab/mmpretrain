@@ -175,10 +175,16 @@ class ClassBalancedDataset(object):
 @DATASETS.register_module()
 class KFoldDataset:
 
-    def __init__(self, dataset, K=5, fold=0, test_mode=False, seed=None):
+    def __init__(self,
+                 dataset,
+                 fold=0,
+                 num_splits=5,
+                 test_mode=False,
+                 seed=None):
         self.dataset = dataset
         self.CLASSES = dataset.CLASSES
         self.test_mode = test_mode
+        self.num_splits = num_splits
 
         length = len(dataset)
         indices = list(range(length))
@@ -186,8 +192,8 @@ class KFoldDataset:
             rng = np.random.default_rng(seed)
             rng.shuffle(indices)
 
-        test_start = length // K * fold
-        test_end = length // K * (fold + 1)
+        test_start = length // num_splits * fold
+        test_end = length // num_splits * (fold + 1)
         if test_mode:
             self.indices = indices[test_start:test_end]
         else:
