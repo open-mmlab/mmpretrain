@@ -118,6 +118,7 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
                  results,
                  metric='accuracy',
                  metric_options=None,
+                 indices=None,
                  logger=None):
         """Evaluate the dataset.
 
@@ -128,6 +129,8 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
             metric_options (dict, optional): Options for calculating metrics.
                 Allowed keys are 'topk', 'thrs' and 'average_mode'.
                 Defaults to None.
+            indices (list, optional): The indices of samples corresponding to
+                the results. Defaults to None.
             logger (logging.Logger | str, optional): Logger used for printing
                 related information during evaluation. Defaults to None.
         Returns:
@@ -145,6 +148,8 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         eval_results = {}
         results = np.vstack(results)
         gt_labels = self.get_gt_labels()
+        if indices is not None:
+            gt_labels = gt_labels[indices]
         num_imgs = len(results)
         assert len(gt_labels) == num_imgs, 'dataset testing results should '\
             'be of the same length as gt_labels.'

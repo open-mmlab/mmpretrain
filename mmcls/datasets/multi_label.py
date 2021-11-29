@@ -28,6 +28,7 @@ class MultiLabelDataset(BaseDataset):
                  results,
                  metric='mAP',
                  metric_options=None,
+                 indices=None,
                  logger=None,
                  **deprecated_kwargs):
         """Evaluate the dataset.
@@ -62,6 +63,8 @@ class MultiLabelDataset(BaseDataset):
         eval_results = {}
         results = np.vstack(results)
         gt_labels = self.get_gt_labels()
+        if indices is not None:
+            gt_labels = gt_labels[indices]
         num_imgs = len(results)
         assert len(gt_labels) == num_imgs, 'dataset testing results should '\
             'be of the same length as gt_labels.'
