@@ -170,3 +170,35 @@ class ClassBalancedDataset(object):
 
     def __len__(self):
         return len(self.repeat_indices)
+
+
+@DATASETS.register_module()
+class KFoldDataset:
+
+    def __init__(self, dataset, K=5, fold=0, test_mode=False, seed=None):
+        self.dataset = dataset
+        self.CLASSES = dataset.CLASSES
+        self.test_mode = test_mode
+
+        length = len(dataset)
+        indices = list(range(length))
+        if isinstance(seed, int):
+            rng = np.random.default_rng(seed)
+            rng.shuffle(indices)
+
+        test_start = length // K * fold
+        test_end = length // K * (fold + 1)
+        if test_mode:
+            self.indices = indices[test_start:test_end]
+        else:
+            self.indices = indices[:test_start] + indices[test_end:]
+
+    def __getitem__(self, idx):
+        return self.dataset[self.indices[idx]]
+
+    def __len__(self):
+        return len(self.indices)
+
+    def evaluate(self, *args, **kwargs):
+        kwargs['indices'] = self.indices
+        return self.dataset.evaluate(*args, **kwargs)
