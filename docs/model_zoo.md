@@ -61,6 +61,9 @@ The ResNet family models below are trained by standard data augmentations, i.e.,
 | T2T-ViT_t-14\* |   21.47   |  4.34    | 81.69     | 95.85     | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/t2t-vit/t2t-vit-t-14_3rdparty_8xb64_in1k_20210928-420df0f6.pth)  &#124; [log]()|
 | T2T-ViT_t-19\* |   39.08   |  7.80    | 82.43     | 96.08     | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/t2t_vit/t2t-vit-t-19_8xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/t2t-vit/t2t-vit-t-19_3rdparty_8xb64_in1k_20210928-e479c2a6.pth)  &#124; [log]()|
 | T2T-ViT_t-24\* |   64.00   | 12.69    | 82.55     | 96.06     | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/t2t_vit/t2t-vit-t-24_8xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/t2t-vit/t2t-vit-t-24_3rdparty_8xb64_in1k_20210928-b5bf2526.pth)  &#124; [log]()|
+|  Mixer-B/16\*  |  59.88   |  12.61    | 76.68     | 92.25     | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/mlp_mixer/mlp-mixer-base-p16_64xb64_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/mlp-mixer/mixer-base-p16_3rdparty_64xb64_in1k_20211124-1377e3e0.pth)  &#124; [log]()|
+|  Mixer-L/16\*  |  208.2   |  44.57    | 72.34     | 88.02     | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/mlp_mixer/mlp-mixer-large-p16_64xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mlp-mixer/mixer-large-p16_3rdparty_64xb64_in1k_20211124-5a2519d2.pth)  &#124; [log]()|
+
 
 Models with * are converted from other repos, others are trained by ourselves.
 

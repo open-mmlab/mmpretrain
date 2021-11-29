@@ -1,10 +1,17 @@
 # Repvgg: Making vgg-style convnets great again
 <!-- {RepVGG} -->
-
-## Introduction
-
 <!-- [ALGORITHM] -->
 
+## Abstract
+<!-- [ABSTRACT] -->
+We present a simple but powerful architecture of convolutional neural network, which has a VGG-like inference-time body composed of nothing but a stack of 3x3 convolution and ReLU, while the training-time model has a multi-branch topology. Such decoupling of the training-time and inference-time architecture is realized by a structural re-parameterization technique so that the model is named RepVGG. On ImageNet, RepVGG reaches over 80% top-1 accuracy, which is the first time for a plain model, to the best of our knowledge. On NVIDIA 1080Ti GPU, RepVGG models run 83% faster than ResNet-50 or 101% faster than ResNet-101 with higher accuracy and show favorable accuracy-speed trade-off compared to the state-of-the-art models like EfficientNet and RegNet.
+
+<!-- [IMAGE] -->
+<div align=center>
+<img src="https://user-images.githubusercontent.com/26739999/142573223-f7f14d32-ea08-43a1-81ad-5a6a83ee0122.png" width="60%"/>
+</div>
+
+## Citation
 ```latex
 @inproceedings{ding2021repvgg,
   title={Repvgg: Making vgg-style convnets great again},
