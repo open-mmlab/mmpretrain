@@ -37,6 +37,13 @@ Highlights of the new version:
 - Support **MLP-Mixer** backbone and provide pre-trained checkpoints.
 - Add a tool to **visualize the learning rate curve** of the training phase. Welcome to use with the [tutorial](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#learning-rate-schedule-visualization)!
 
+v0.17.0 was released in 29/10/2021.
+
+Highlights of this version:
+- Support **Tokens-to-Token ViT** backbone and **Res2Net** backbone. Welcome to use!
+- Support **ImageNet21k** dataset.
+- Add a **pipeline visualization** tool. Try it with the [tutorials](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#pipeline-visualization)!
+
 Please refer to [changelog.md](docs/changelog.md) for more details and other release history.
 
 ## Benchmark and model zoo
