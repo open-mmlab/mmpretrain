@@ -19,7 +19,8 @@ try:
     import pytorch_grad_cam.activations_and_gradients as act_and_grad
     from pytorch_grad_cam.utils.image import show_cam_on_image
 except ImportError:
-    print('please use `pip install grad-cam` to install pytorch_grad_cam')
+    raise ImportError(
+        'please use `pip install grad-cam` to install pytorch_grad_cam')
 
 # set of transforms, which just change data format, but not change the pictures
 FORMAT_TRANSFORMS_SET = {'ToTensor', 'Normalize', 'ImageToTensor', 'Collect'}

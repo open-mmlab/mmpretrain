@@ -170,6 +170,7 @@ python tools/visualizations/vis_cam.py \
 python tools/visualizations/vis_cam.py demo\demo.JPEG configs\resnet\resnet50_8xb32_in1k.py \
     https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_batch256_imagenet_20200708-cfb998bf.pth \
     --target-layers model.backbone.layer4 \
+    --target-category 254 \  # category 254 is 'dog'; category 281 is 'tabby, tabby cat'
     --cam-type GradCAM++
 ```
 
