@@ -86,7 +86,8 @@ def test_context_manager(mock_blocking_input):
         fig_show = manager.fig_show
         fig_save = manager.fig_save
         for image in images:
-            out_image = manager.put_img_infos(image, result, show=True)
+            ret, out_image = manager.put_img_infos(image, result, show=True)
+            assert ret == 0
             assert image.shape == out_image.shape
             assert not np.allclose(image, out_image)
             assert fig_show is manager.fig_show
@@ -99,7 +100,8 @@ def test_context_manager(mock_blocking_input):
             fig_show = manager.fig_show
             plt.close(manager.fig_show)
 
-            out_image = manager.put_img_infos(image, result, show=True)
+            ret, out_image = manager.put_img_infos(image, result, show=True)
+            assert ret == 0
             assert image.shape == out_image.shape
             assert not np.allclose(image, out_image)
             assert not (fig_show is manager.fig_show)
