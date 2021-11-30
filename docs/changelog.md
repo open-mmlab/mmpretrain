@@ -1,5 +1,48 @@
 # Changelog
 
+## v0.18.0(30/11/2021)
+
+### Highlights
+
+- Support MLP-Mixer backbone and provide pre-trained checkpoints.
+- Add a tool to visualize the learning rate curve of the training phase. Welcome to use with the [tutorial](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#learning-rate-schedule-visualization)!
+
+### New Features
+
+- Add MLP Mixer Backbone. ([#528](https://github.com/open-mmlab/mmclassification/pull/528), [#539](https://github.com/open-mmlab/mmclassification/pull/539))
+- Support positive weights in BCE. ([#516](https://github.com/open-mmlab/mmclassification/pull/516))
+- Add a tool to visualize learning rate in each iterations ([#498](https://github.com/open-mmlab/mmclassification/pull/498))
+
+### Improvements
+
+- Use CircleCI to do unit tests. ([#567](https://github.com/open-mmlab/mmclassification/pull/567))
+- Focal loss for single label tasks ([#548](https://github.com/open-mmlab/mmclassification/pull/548))
+- Remove useless `import_modules_from_string`. ([#544](https://github.com/open-mmlab/mmclassification/pull/544))
+- Rename config files according to the config name standard. ([#508](https://github.com/open-mmlab/mmclassification/pull/508))
+- Use `reset_classifier` to remove head of timm backbones. ([#534](https://github.com/open-mmlab/mmclassification/pull/534))
+- Support passing arguments to loss from head. ([#523](https://github.com/open-mmlab/mmclassification/pull/523))
+- Refactor `Resize` transform and add `Pad` transform. ([#506](https://github.com/open-mmlab/mmclassification/pull/506))
+- Update mmcv dependency version ([#509](https://github.com/open-mmlab/mmclassification/pull/509))
+
+### Bug Fixes
+
+- Fix bug when using `ClassBalancedDataset` ([#555](https://github.com/open-mmlab/mmclassification/pull/555))
+- Fix a bug when using iter-based runner with 'val' workflow ([#542](https://github.com/open-mmlab/mmclassification/pull/542))
+- Fix interpolation method checking in `Resize` ([#547](https://github.com/open-mmlab/mmclassification/pull/547))
+- Fix a bug when load checkpoints in mulit-GPUs environment. ([#527](https://github.com/open-mmlab/mmclassification/pull/527))
+- Fix an error on indexing scalar metrics in `analyze_result.py` ([#518](https://github.com/open-mmlab/mmclassification/pull/518))
+- Fix wrong condition judgment in `analyze_logs.py` and prevent empty curve. ([#510](https://github.com/open-mmlab/mmclassification/pull/510))
+
+### Docs Update
+
+- Fix vit config and model broken links ([#564](https://github.com/open-mmlab/mmclassification/pull/564))
+- Add abstract and image for every paper. ([#546](https://github.com/open-mmlab/mmclassification/pull/546))
+- Add mmflow and mim in banner and readme ([#543](https://github.com/open-mmlab/mmclassification/pull/543))
+- Add schedule and runtime tutorial docs ([#499](https://github.com/open-mmlab/mmclassification/pull/499))
+- Add the top-5 acc in ResNet-CIFAR README. ([#531](https://github.com/open-mmlab/mmclassification/pull/531))
+- Fix TOC of `visualization.md` and add example images. ([#513](https://github.com/open-mmlab/mmclassification/pull/513))
+- Use docs link of other projects and add MMCV docs. ([#511](https://github.com/open-mmlab/mmclassification/pull/511))
+
 ## v0.17.0(29/10/2021)
 
 ### Highlights

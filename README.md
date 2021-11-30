@@ -31,12 +31,11 @@ This project is released under the [Apache 2.0 license](LICENSE).
 
 ## Changelog
 
-v0.17.0 was released in 29/10/2021.
+v0.18.0 was released in 30/11/2021.
 
 Highlights of the new version:
-- Support **Tokens-to-Token ViT** backbone and **Res2Net** backbone. Welcome to use!
-- Support **ImageNet21k** dataset.
-- Add a **pipeline visualization** tool. Try it with the [tutorials](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#pipeline-visualization)!
+- Support **MLP-Mixer** backbone and provide pre-trained checkpoints.
+- Add a tool to **visualize the learning rate curve** of the training phase. Welcome to use with the [tutorial](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#learning-rate-schedule-visualization)!
 
 Please refer to [changelog.md](docs/changelog.md) for more details and other release history.
 
@@ -61,6 +60,10 @@ Supported backbones:
 - [x] Vision-Transformer
 - [x] Transformer-in-Transformer
 - [x] Res2Net
+- [x] MLP-Mixer
+- [ ] DeiT
+- [ ] Conformer
+- [ ] EfficientNet
 
 ## Installation
 

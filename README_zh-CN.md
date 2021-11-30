@@ -30,12 +30,11 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 
 ## 更新日志
 
-2021/10/29 发布了 v0.17.0 版本
+2021/11/30 发布了 v0.18.0 版本
 
 新版本的一些新功能如下：
-- 支持了 **Tokens-to-Token ViT** 主干网络和 **Res2Net** 主干网络，欢迎使用！
-- 支持了 **ImageNet21k** 数据集
-- 添加了一个**可视化数据预处理**的工具，可以参考[教程](https://mmclassification.readthedocs.io/zh_CN/latest/tools/visualization.html#id2)使用
+- 支持了 **MLP-Mixer** 主干网络，欢迎使用！
+- 添加了一个**可视化学习率曲线**的工具，可以参考[教程](https://mmclassification.readthedocs.io/zh_CN/latest/tools/visualization.html#id3)使用
 
 发布历史和更新细节请参考 [更新日志](docs/changelog.md)
 
@@ -60,6 +59,10 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 - [x] Vision-Transformer
 - [x] Transformer-in-Transformer
 - [x] Res2Net
+- [x] MLP-Mixer
+- [ ] DeiT
+- [ ] Conformer
+- [ ] EfficientNet
 
 ## 安装
 
