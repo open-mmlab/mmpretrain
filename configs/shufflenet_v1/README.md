@@ -1,10 +1,17 @@
 # ShuffleNet: An Extremely Efficient Convolutional Neural Network for Mobile Devices
 <!-- {ShuffleNet V1} -->
-
-## Introduction
-
 <!-- [ALGORITHM] -->
 
+## Abstract
+<!-- [ABSTRACT] -->
+We introduce an extremely computation-efficient CNN architecture named ShuffleNet, which is designed specially for mobile devices with very limited computing power (e.g., 10-150 MFLOPs). The new architecture utilizes two new operations, pointwise group convolution and channel shuffle, to greatly reduce computation cost while maintaining accuracy. Experiments on ImageNet classification and MS COCO object detection demonstrate the superior performance of ShuffleNet over other structures, e.g. lower top-1 error (absolute 7.8%) than recent MobileNet on ImageNet classification task, under the computation budget of 40 MFLOPs. On an ARM-based mobile device, ShuffleNet achieves ~13x actual speedup over AlexNet while maintaining comparable accuracy.
+
+<!-- [IMAGE] -->
+<div align=center>
+<img src="https://user-images.githubusercontent.com/26739999/142575730-dc2f616d-80df-4fb1-93e1-77ebb2b835cf.png" width="70%"/>
+</div>
+
+## Citation
 ```latex
 @inproceedings{zhang2018shufflenet,
   title={Shufflenet: An extremely efficient convolutional neural network for mobile devices},

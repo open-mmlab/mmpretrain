@@ -12,7 +12,10 @@ from .base_backbone import BaseBackbone
 
 
 class MixerBlock(BaseModule):
-    """Implements mixer block in MLP Mixer.
+    """Mlp-Mixer basic block.
+
+    Basic module of `MLP-Mixer: An all-MLP Architecture for Vision
+    <https://arxiv.org/pdf/2105.01601.pdf>`_
 
     Args:
         num_tokens (int): The number of patched tokens
@@ -96,13 +99,14 @@ class MixerBlock(BaseModule):
 
 @BACKBONES.register_module()
 class MlpMixer(BaseBackbone):
-    """Mlp Mixer.
+    """Mlp-Mixer backbone.
 
-    A PyTorch implement of : `MLP-Mixer: An all-MLP Architecture for Vision` -
-        https://arxiv.org/abs/2105.01601
+    Pytorch implementation of `MLP-Mixer: An all-MLP Architecture for Vision
+    <https://arxiv.org/pdf/2105.01601.pdf>`_
+
     Args:
         arch (str | dict): MLP Mixer architecture
-            Default: 'b'.
+            Defaults to 'b'.
         img_size (int | tuple): Input image size.
         patch_size (int | tuple): The patch size.
         out_indices (Sequence | int): Output from which layer.
