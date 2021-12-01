@@ -346,7 +346,7 @@ class SwinTransformer(BaseBackbone):
 
         for i in out_indices:
             if norm_cfg is not None:
-                norm_layer = build_norm_layer(norm_cfg, embed_dims[i+1])[1]
+                norm_layer = build_norm_layer(norm_cfg, embed_dims[i + 1])[1]
             else:
                 norm_layer = nn.Identity()
 
