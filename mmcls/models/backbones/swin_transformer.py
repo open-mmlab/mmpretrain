@@ -9,6 +9,7 @@ from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.transformer import FFN
 from mmcv.cnn.utils.weight_init import trunc_normal_
 from mmcv.runner.base_module import BaseModule, ModuleList
+from mmcv.utils.parrots_wrapper import _BatchNorm
 
 from ..builder import BACKBONES
 from ..utils import PatchEmbed, PatchMerging, ShiftWindowMSA
@@ -291,7 +292,7 @@ class SwinTransformer(BaseBackbone):
                  use_abs_pos_embed=False,
                  auto_pad=False,
                  with_cp=False,
-                 frozen=Flase,
+                 frozen=False,
                  norm_cfg=dict(type='LN'),
                  stage_cfgs=dict(),
                  patch_cfg=dict(),
@@ -427,19 +428,19 @@ class SwinTransformer(BaseBackbone):
 
         super()._load_from_state_dict(state_dict, prefix, local_metadata,
                                       *args, **kwargs)
-    
+
     def _freeze_stages(self):
         if self.frozen:
             self.patch_embed.eval()
             for param in self.patch_embed.parameters():
                 param.requires_grad = False
 
-        for i in range( len(self.stages) ):
+        for i in range(len(self.stages)):
             m = self.stages[i]
             m.eval()
             for param in m.parameters():
                 param.requires_grad = False
-    
+
     def train(self, mode=True):
         super(SwinTransformer, self).train(mode)
         self._freeze_stages()
