@@ -19,9 +19,9 @@ python tools/misc/print_config.py ${CONFIG} [--cfg-options ${CFG_OPTIONS}]
 **所有参数说明**：
 
 - `config` ：配置文件的路径。
-- `--cfg-options` ： 对配置文件的修改，参考[教程 1：如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html)。
+- `--cfg-options`: 额外的配置选项，会被合入配置文件，参考[教程 1：如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html)。
 
-**样例**：
+**示例**：
 
 ```shell
 python tools/misc/print_config.py configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py
@@ -44,14 +44,14 @@ python tools/print_config.py \
 
 - `config` ： 配置文件的路径。
 - `--out-path` ： 输出结果路径，默认为 'brokenfiles.log'。
-- `--phase` ： 检查数据集的阶段，接受 "train" 、"test" 或者 "val"， 默认为 "train"。
+- `--phase` ： 检查哪个阶段的数据集，可用值为 "train" 、"test" 或者 "val"， 默认为 "train"。
 - `--num-process` ： 指定的进程数，默认为1。
-- `--cfg-options` ：对配置文件的修改，参考[教程 1：如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html)。
+- `--cfg-options`: 额外的配置选项，会被合入配置文件，参考[教程 1：如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html)。
 
-**样例**:
+**示例**:
 
 ```shell
-python tools/analysis/print_config.py configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py --out-path broken_imgs.log --phase val --num-process 8
+python tools/misc/verify_dataset.py configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py --out-path broken_imgs.log --phase val --num-process 8
 ```
 
 ## 常见问题

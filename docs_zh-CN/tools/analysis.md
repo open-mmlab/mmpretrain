@@ -4,7 +4,7 @@
 
 - [日志分析](#日志分析)
   - [绘制曲线图](#绘制曲线图)
-  - [统计时间](#统计时间)
+  - [统计训练时间](#统计训练时间)
 - [结果分析](#结果分析)
   - [评估结果](#查看典型结果)
   - [查看典型结果](#查看典型结果)
@@ -17,7 +17,7 @@
 
 ### 绘制曲线图
 
-输入变量指定一个训练日志文件，可通过 `tools/analysis_tools/analyze_logs.py` 脚本绘制 loss/top-k 曲线。本功能依赖于 `seaborn`，使用前请先通过 `pip install seaborn` 安装依赖包。
+指定一个训练日志文件，可通过 `tools/analysis_tools/analyze_logs.py` 脚本绘制指定键值的变化曲线
 
 <div align=center><img src="../_static/image/tools/analysis/analyze_log.jpg" style=" width: 75%; height: 30%; "></div>
 
@@ -38,24 +38,28 @@ python tools/analysis_tools/analyze_logs.py plot_curve \
 - `json_logs` ：模型配置文件的路径（可同时传入多个，使用空格分开）。
 - `--keys` ：分析日志的关键字段，数量为 `len(${JSON_LOGS}) * len(${KEYS})` 默认为 'loss'。
 - `--title` ：分析日志的图片名称，默认使用配置文件名， 默认为空。
-- `--legend` ：坐标轴名（可同时传入多个，使用空格分开，数目与 `${JSON_LOGS} * ${KEYS}` 数目一致）。默认使用 `"${JSON_LOG}-${KEYS}"`。
-- `--backend` ：`plt` 的后端。
-- `--style` ：`plt` 的绘图风格， 默认为 `whitegrid`。
-- `--out` ：保存分析图片的路径，默认不保存。
-- `--window-size`: 可视化窗口大小，如果没有指定，默认为 `12*7`。如果需要指定，按照格式 `'W*H'`。
+- `--legend` ：图例名（可同时传入多个，使用空格分开，数目与 `${JSON_LOGS} * ${KEYS}` 数目一致）。默认使用 `"${JSON_LOG}-${KEYS}"`。
+- `--backend` ：matplotlib 的绘图后端，默认由 matplotlib 自动选择。
+- `--style` ：绘图配色风格，默认为 `whitegrid`。
+- `--out` ：保存分析图片的路径，如不指定则不保存。
+- `--window-size`: 可视化窗口大小，如果没有指定，默认为 `12*7`。如果需要指定，需按照格式 `'W*H'`。
+
+```{note}
+`--style` 选项依赖于第三方库 `seaborn`，需要设置绘图风格请现安装该库。
+```
 
 例如:
 
 - 绘制某日志文件对应的损失曲线图。
 
     ```shell
-    python tools/analysis_tools/analyze_logs.py plot_curve log.json --keys loss --legend loss
+    python tools/analysis_tools/analyze_logs.py plot_curve your_log_json --keys loss --legend loss
     ```
 
 - 绘制某日志文件对应的 top-1 和 top-5 准确率曲线图，并将曲线图导出为 results.jpg 文件。
 
     ```shell
-    python tools/analysis_tools/analyze_logs.py plot_curve log.json --keys accuracy_top-1 accuracy_top-5  --legend top1 top5 --out results.jpg
+    python tools/analysis_tools/analyze_logs.py plot_curve your_log_json --keys accuracy_top-1 accuracy_top-5  --legend top1 top5 --out results.jpg
     ```
 
 - 在同一图像内绘制两份日志文件对应的 top-1 准确率曲线图。
@@ -64,7 +68,14 @@ python tools/analysis_tools/analyze_logs.py plot_curve \
     python tools/analysis_tools/analyze_logs.py plot_curve log1.json log2.json --keys accuracy_top-1 --legend run1 run2
     ```
 
-### 统计时间
+```{note}
+本工具会自动根据关键字段选择从日志的训练部分还是验证部分读取，因此如果你添加了
+自定义的验证指标，请把相对应的关键字段加入到本工具的 `TEST_METRICS` 变量中。
+```
+
+### 统计训练时间
+
+`tools/analysis_tools/analyze_logs.py` 也可以根据日志文件统计训练耗时。
 
 ```shell
 python tools/analysis_tools/analyze_logs.py cal_train_time \
@@ -75,9 +86,9 @@ python tools/analysis_tools/analyze_logs.py cal_train_time \
 **所有参数的说明**：
 
 - `json_logs` ：模型配置文件的路径（可同时传入多个，使用空格分开）。
-- `--include-outliers` ：是否统计第一个轮次的记录，默认不统计。
+- `--include-outliers` ：如果指定，将不会排除每个轮次中第一轮迭代的记录（有时第一轮迭代会耗时较长）
 
-**案例**:
+**示例**:
 
 ```shell
 python tools/analysis_tools/analyze_logs.py cal_train_time work_dirs/some_exp/20200422_153324.log.json
@@ -95,39 +106,48 @@ average iter time: 0.3777 s/iter
 
 ## 结果分析
 
+利用 `tools/train.py` 的 `--out` 参数，我们可以将所有的样本的推理结果保存到输出
+文件中。利用这一文件，我们可以进行进一步的分析。
+
 ### 评估结果
 
-`tools/analysis_tools/eval_metric.py` 可以用来评估结果。
+`tools/analysis_tools/eval_metric.py` 可以用来再次计算评估结果。
 
 ```shell
 python tools/analysis_tools/analyze_results.py \
       ${CONFIG} \
-      ${PKL_RESULT} \
+      ${RESULT} \
       [--metrics ${METRICS}]  \
-      [--cfg-options ${CFG_OPTIONS}]
+      [--cfg-options ${CFG_OPTIONS}] \
+      [--metric-options ${METRIC_OPTIONS}]
 ```
 
 **所有参数说明**：
 
 - `config` ：配置文件的路径。
-- `pkl_result` ： 由 `tools/test.py` 做的的结果文件。
-- `metrics` ： 评估的衡量指标，取决于数据集。
-- `--cfg-options`: 对配置文件的修改，参考[教程 1：如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html)。
+- `result` ： `tools/test.py` 的输出结果文件。
+- `metrics` ： 评估的衡量指标，可接受的值取决于数据集类。
+- `--cfg-options`: 额外的配置选项，会被合入配置文件，参考[教程 1：如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html)。
+- `--metric-options`: 如果指定了，这些选项将被传递给数据集 `evaluate` 函数的 `metric_options` 参数。
 
-**样例**：
+```{note}
+在 `tools/test.py` 中，我们支持使用 `--out-items` 选项来选择保存哪些结果。为了使用本工具，请确保结果文件中包含 "class_scores"。
+```
+
+**示例**：
 
 ```shell
-python tools/analysis_tools/analyze_results.py configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py ./result.pkl --metrics accuracy
+python tools/analysis_tools/analyze_results.py configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py ./result.pkl --metrics accuracy --metric-options "topk=(1,5)"
 ```
 
 ### 查看典型结果
 
-`tools/analysis_tools/analyze_results.py` `results.py` 根据预测结果分别保存最高分和最低分的 k 个图像。
+`tools/analysis_tools/analyze_results.py` 可以保存预测成功/失败，同时得分最高的 k 个图像。
 
 ```shell
 python tools/analysis_tools/analyze_results.py \
       ${CONFIG} \
-      ${PKL_RESULT} \
+      ${RESULT} \
       [--out-dir ${OUT_DIR}] \
       [--topk ${TOPK}] \
       [--cfg-options ${CFG_OPTIONS}]
@@ -136,18 +156,16 @@ python tools/analysis_tools/analyze_results.py \
 **所有参数说明**：
 
 - `config` ：配置文件的路径。
-- `pkl_result` ： 由 `tools/test.py` 做的的结果文件。
+- `result` ： `tools/test.py` 的输出结果文件。
 - `--out_dir` ：保存结果分析的文件夹路径。
-- `--topk` ：排序后，保存具有最高和最低分数图像的数量。如果不指定，默认为 `20`。
-- `--cfg-options`: 对配置文件的修改，参考[教程 1：如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html)。
+- `--topk` ：分别保存多少张预测成功/失败的图像。如果不指定，默认为 `20`。
+- `--cfg-options`: 额外的配置选项，会被合入配置文件，参考[教程 1：如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html)。
 
 ```{note}
-使用前确保您的路径 ${PKL_RESULT} 为从 'tools/test.py' 获得的 pickle 格式的结果文件。
+在 `tools/test.py` 中，我们支持使用 `--out-items` 选项来选择保存哪些结果。为了使用本工具，请确保结果文件中包含 "pred_score"、"pred_label" 和 "pred_class"。
 ```
 
-**样例**：
-
-1. 测试 `ResNet` 所得结果， 并可视化指定`topk`为 50 的结果，将图片保存到目录`results/`：
+**示例**：
 
 ```shell
 python tools/analysis_tools/analyze_results.py \
