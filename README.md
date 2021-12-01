@@ -31,9 +31,15 @@ This project is released under the [Apache 2.0 license](LICENSE).
 
 ## Changelog
 
-v0.17.0 was released in 29/10/2021.
+v0.18.0 was released in 30/11/2021.
 
 Highlights of the new version:
+- Support **MLP-Mixer** backbone and provide pre-trained checkpoints.
+- Add a tool to **visualize the learning rate curve** of the training phase. Welcome to use with the [tutorial](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#learning-rate-schedule-visualization)!
+
+v0.17.0 was released in 29/10/2021.
+
+Highlights of this version:
 - Support **Tokens-to-Token ViT** backbone and **Res2Net** backbone. Welcome to use!
 - Support **ImageNet21k** dataset.
 - Add a **pipeline visualization** tool. Try it with the [tutorials](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#pipeline-visualization)!
@@ -61,6 +67,10 @@ Supported backbones:
 - [x] Vision-Transformer
 - [x] Transformer-in-Transformer
 - [x] Res2Net
+- [x] MLP-Mixer
+- [ ] DeiT
+- [ ] Conformer
+- [ ] EfficientNet
 
 ## Installation
 
@@ -118,3 +128,4 @@ We wish that the toolbox and benchmark could serve the growing research communit
 - [MMOCR](https://github.com/open-mmlab/mmocr): OpenMMLab toolbox for text detection, recognition and understanding.
 - [MMGeneration](https://github.com/open-mmlab/mmgeneration): OpenMMlab toolkit for generative models.
 - [MMFlow](https://github.com/open-mmlab/mmflow) OpenMMLab optical flow toolbox and benchmark.
+- [MMFewShot](https://github.com/open-mmlab/mmfewshot): OpenMMLab FewShot Learning Toolbox and Benchmark.
