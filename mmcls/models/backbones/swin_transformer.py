@@ -291,6 +291,7 @@ class SwinTransformer(BaseBackbone):
                  use_abs_pos_embed=False,
                  auto_pad=False,
                  with_cp=False,
+                 frozen=Flase,
                  norm_cfg=dict(type='LN'),
                  stage_cfgs=dict(),
                  patch_cfg=dict(),
@@ -315,6 +316,7 @@ class SwinTransformer(BaseBackbone):
         self.out_indices = out_indices
         self.use_abs_pos_embed = use_abs_pos_embed
         self.auto_pad = auto_pad
+        self.frozen = frozen
 
         _patch_cfg = {
             'img_size': img_size,
@@ -425,3 +427,26 @@ class SwinTransformer(BaseBackbone):
 
         super()._load_from_state_dict(state_dict, prefix, local_metadata,
                                       *args, **kwargs)
+    
+    def _freeze_stages(self):
+        if self.frozen:
+            self.patch_embed.eval()
+            for param in self.patch_embed.parameters():
+                param.requires_grad = False
+
+        for i in range( len(self.stages) ):
+            m = self.stages[i]
+            m.eval()
+            for param in m.parameters():
+                param.requires_grad = False
+    
+    def train(self, mode=True):
+        super(SwinTransformer, self).train(mode)
+        self._freeze_stages()
+        if mode and self.norm_eval:
+            for m in self.modules():
+                # trick: eval have effect on BatchNorm only
+                if isinstance(m, _BatchNorm):
+                    m.eval()
+                if isinstance(m, nn.modules.LayerNorm):
+                    m.eval()
