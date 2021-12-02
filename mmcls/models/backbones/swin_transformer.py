@@ -293,6 +293,7 @@ class SwinTransformer(BaseBackbone):
                  auto_pad=False,
                  with_cp=False,
                  frozen=False,
+                 norm_eval=False,
                  norm_cfg=dict(type='LN'),
                  stage_cfgs=dict(),
                  patch_cfg=dict(),
@@ -337,6 +338,7 @@ class SwinTransformer(BaseBackbone):
                 torch.zeros(1, num_patches, self.embed_dims))
 
         self.drop_after_pos = nn.Dropout(p=drop_rate)
+        self.norm_eval = norm_eval
 
         # stochastic depth
         total_depth = sum(self.depths)
