@@ -1,5 +1,6 @@
-_base_ = [
-    '../_base_/models/resnet50_cutmix.py',
-    '../_base_/datasets/imagenet_bs32.py',
-    '../_base_/schedules/imagenet_bs256.py', '../_base_/default_runtime.py'
-]
+_base_ = 'resnet50_8xb32-cutmix_in1k.py'
+
+_deprecation_ = dict(
+    expected='resnet50_8xb32-cutmix_in1k.py',
+    reference='https://github.com/open-mmlab/mmclassification/pull/508',
+)

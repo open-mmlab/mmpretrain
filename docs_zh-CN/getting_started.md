@@ -51,7 +51,7 @@ MMClassification 提供了一些脚本用于进行单张图像的推理、数据
 python demo/image_demo.py ${IMAGE_FILE} ${CONFIG_FILE} ${CHECKPOINT_FILE}
 
 # Example
-python demo/image_demo.py demo/demo.JPEG configs/resnet/resnet50_b32x8_imagenet.py \
+python demo/image_demo.py demo/demo.JPEG configs/resnet/resnet50_8xb32_in1k.py \
   https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb32_in1k_20210831-ea4938fc.pth
 ```
 
@@ -86,7 +86,7 @@ python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--metrics ${METRICS}] [-
 在 ImageNet 验证集上，使用 ResNet-50 进行推理并获得预测标签及其对应的预测得分。
 
 ```shell
-python tools/test.py configs/resnet/resnet50_b16x8_cifar10.py \
+python tools/test.py configs/resnet/resnet50_8xb16_cifar10.py \
   https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_b16x8_cifar10_20210528-f54bfad9.pth \
   --out result.pkl
 ```
@@ -222,7 +222,10 @@ python tools/convert_models/publish_model.py work_dirs/resnet50/latest.pth image
 
 目前，MMClassification 提供以下几种更详细的教程：
 
+- [如何编写配置文件](tutorials/config.md)
 - [如何微调模型](tutorials/finetune.md)
 - [如何增加新数据集](tutorials/new_dataset.md)
 - [如何设计数据处理流程](tutorials/data_pipeline.md)
 - [如何增加新模块](tutorials/new_modules.md)
+- [如何自定义优化策略](tutorials/schedule.md)
+- [如何自定义运行参数](tutorials/runtime.md)。

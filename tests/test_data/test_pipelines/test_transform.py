@@ -214,6 +214,20 @@ def test_resize():
     assert np.equal(results['img'], results['img2']).all()
     assert results['img_shape'] == (336, 224, 3)
 
+    # test interpolation method checking
+    with pytest.raises(AssertionError):
+        transform = dict(
+            type='Resize', size=(300, 200), backend='cv2', interpolation='box')
+        resize_module = build_from_cfg(transform, PIPELINES)
+
+    with pytest.raises(AssertionError):
+        transform = dict(
+            type='Resize',
+            size=(300, 200),
+            backend='pillow',
+            interpolation='area')
+        resize_module = build_from_cfg(transform, PIPELINES)
+
 
 def test_pad():
     results = dict()

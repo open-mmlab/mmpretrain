@@ -19,7 +19,7 @@ Collections:
       Version: v0.15.0
 
 Models:
-  - Name: resnext50_32x4d_b32x8_imagenet
+  - Name: resnext50-32x4d_8xb32_in1k
     Metadata:
       FLOPs: 4270000000
       Parameters: 25030000
@@ -31,8 +31,8 @@ Models:
           Top 5 Accuracy: 93.66
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/resnext/resnext50_32x4d_b32x8_imagenet_20210429-56066e27.pth
-    Config: configs/resnext/resnext50_32x4d_b32x8_imagenet.py
-  - Name: resnext101_32x4d_b32x8_imagenet
+    Config: configs/resnext/resnext50-32x4d_8xb32_in1k.py
+  - Name: resnext101-32x4d_8xb32_in1k
     Metadata:
       FLOPs: 8030000000
       Parameters: 44180000
@@ -44,8 +44,8 @@ Models:
           Top 5 Accuracy: 94.17
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/resnext/resnext101_32x4d_b32x8_imagenet_20210506-e0fa3dd5.pth
-    Config: configs/resnext/resnext101_32x4d_b32x8_imagenet.py
-  - Name: resnext101_32x8d_b32x8_imagenet
+    Config: configs/resnext/resnext101-32x4d_8xb32_in1k.py
+  - Name: resnext101-32x8d_8xb32_in1k
     Metadata:
       FLOPs: 16500000000
       Parameters: 88790000
@@ -57,8 +57,8 @@ Models:
           Top 5 Accuracy: 94.58
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/resnext/resnext101_32x8d_b32x8_imagenet_20210506-23a247d5.pth
-    Config: configs/resnext/resnext101_32x8d_b32x8_imagenet.py
-  - Name: resnext152_32x4d_b32x8_imagenet
+    Config: configs/resnext/resnext101-32x8d_8xb32_in1k.py
+  - Name: resnext152-32x4d_8xb32_in1k
     Metadata:
       FLOPs: 11800000000
       Parameters: 59950000
@@ -70,4 +70,4 @@ Models:
           Top 5 Accuracy: 94.33
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/resnext/resnext152_32x4d_b32x8_imagenet_20210524-927787be.pth
-    Config: configs/resnext/resnext152_32x4d_b32x8_imagenet.py
+    Config: configs/resnext/resnext152-32x4d_8xb32_in1k.py

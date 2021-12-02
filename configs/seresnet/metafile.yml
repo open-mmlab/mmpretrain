@@ -19,7 +19,7 @@ Collections:
       Version: v0.15.0
 
 Models:
-  - Name: seresnet50_b32x8_imagenet
+  - Name: seresnet50_8xb32_in1k
     Metadata:
       FLOPs: 4130000000
       Parameters: 28090000
@@ -31,8 +31,8 @@ Models:
           Top 5 Accuracy: 93.84
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet50_batch256_imagenet_20200804-ae206104.pth
-    Config: configs/seresnet/seresnet50_b32x8_imagenet.py
-  - Name: seresnet101_b32x8_imagenet
+    Config: configs/seresnet/seresnet50_8xb32_in1k.py
+  - Name: seresnet101_8xb32_in1k
     Metadata:
       FLOPs: 7860000000
       Parameters: 49330000
@@ -44,4 +44,4 @@ Models:
           Top 5 Accuracy: 94.07
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet101_batch256_imagenet_20200804-ba5b51d4.pth
-    Config: configs/seresnet/seresnet101_b32x8_imagenet.py
+    Config: configs/seresnet/seresnet101_8xb32_in1k.py
