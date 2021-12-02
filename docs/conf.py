@@ -164,6 +164,10 @@ html_theme_options = {
                     'name': 'MMFlow',
                     'url': 'https://mmflow.readthedocs.io/en/latest/',
                 },
+                {
+                    'name': 'MMFewShot',
+                    'url': 'https://github.com/open-mmlab/mmfewshot',
+                },
             ]
         },
         {
