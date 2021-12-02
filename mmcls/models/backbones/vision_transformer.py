@@ -202,7 +202,7 @@ class VisionTransformer(BaseBackbone):
             essential_keys = {
                 'embed_dims', 'num_layers', 'num_heads', 'feedforward_channels'
             }
-            assert isinstance(arch, dict) and essential_keys < set(arch), \
+            assert isinstance(arch, dict) and essential_keys <= set(arch), \
                 f'Custom arch needs a dict with keys {essential_keys}'
             self.arch_settings = arch
 
