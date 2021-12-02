@@ -133,6 +133,8 @@ MMClassification provides `tools\visualizations\vis_cam.py` tool to visualize cl
 | EigenGradCAM  | Like EigenCAM but with class discrimination: First principle component of Activations*Grad. Looks like GradCAM, but cleaner|
 | LayerCAM  | Spatially weight the activations by positive gradients. Works better especially in lower layers |
 
+**Command**：
+
 ```bash
 python tools/visualizations/vis_cam.py \
     ${IMG-PATH} \
@@ -180,37 +182,55 @@ python tools/visualizations/vis_cam.py \
 1.使用不同算法可视化 `ResNet50` 的 `layer4`，默认 `target-category` 为模型结果类别。
 
 ```shell
-python tools/visualizations/vis_cam.py demo/bird.JPEG configs/resnet/resnet50_8xb32_in1k.py \
+python tools/visualizations/vis_cam.py \
+    demo/bird.JPEG \
+    configs/resnet/resnet50_8xb32_in1k.py \
     https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_batch256_imagenet_20200708-cfb998bf.pth \
     --target-layers model.backbone.layer4.2 \
-    --cam-type GradCAM
+    --method GradCAM
     # GradCAM++, XGradCAM, EigenCAM, EigenGradCAM, LayerCAM
 ```
 
-2.同一张图不同类别的激活图效果图, `ImageNet` 中， 类别238 为 '', 类别281 为 'tabby, tabby cat'。
+| Category  | Image | GradCAM  |  GradCAM++ |  EigenGradCAM |  LayerCAM  |
+| --------- |-------|----------|------------|-------------- |------------|
+| Bird | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429496-628d3fb3-1f6e-41ff-aa5c-1b08c60c32a9.JPEG' style=" width: 236px; height: 236px; "></div> | <div align=center><img src=https://user-images.githubusercontent.com/18586273/144431491-a2e19fe3-5c12-4404-b2af-a9552f5a95d9.jpg ></div>  | <div align=center><img src=https://user-images.githubusercontent.com/18586273/144431610-f854556d-7f10-4084-8987-c2587aef8298.jpg ></div>  | <div align=center><img src=https://user-images.githubusercontent.com/18586273/144431776-899ec2e5-c15a-4274-b38c-5ac154d31ed0.jpg ></div> | <div align=center><img src=https://user-images.githubusercontent.com/18586273/144431865-951ba8db-6dca-4909-ad5f-d1b21e0636ba.jpg ></div>  |
+
+2.同一张图不同类别的激活图效果图, 238 为 '', 281 为 ''。
 
 ```shell
-python tools/visualizations/vis_cam.py demo/cat-dog.png configs/resnet/resnet50_8xb32_in1k.py \
+python tools/visualizations/vis_cam.py \
+    demo/cat-dog.png configs/resnet/resnet50_8xb32_in1k.py \
     https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_batch256_imagenet_20200708-cfb998bf.pth \
     --target-layers model.backbone.layer4.2 \
-    --cam-type GradCAM \
+    --method GradCAM \
     --target-category 238
     # --target-category 281
 ```
 
+| Category  | Image | GradCAM  |  GradCAM++ |  XGradCAM |  LayerCAM  |
+| --------- |-------|----------|------------|-------------- |------------|
+|   Dog     | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429526-f27f4cce-89b9-4117-bfe6-55c2ca7eaba6.png' style=" width: 236px; height: 236px; "></div> | ![](https://user-images.githubusercontent.com/18586273/144433562-968a57bc-17d9-413e-810e-f91e334d648a.jpg)    |![](https://user-images.githubusercontent.com/18586273/144433736-1500401d-6d95-4d6c-80f4-3888fd011d7e.jpg)    |![](https://user-images.githubusercontent.com/18586273/144433853-319f3a8f-95f2-446d-b84f-3028daca5378.jpg)    |![](https://user-images.githubusercontent.com/18586273/144433937-daef5a69-fd70-428f-98a3-5e7747f4bb88.jpg)    |
+|   Cat     | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429526-f27f4cce-89b9-4117-bfe6-55c2ca7eaba6.png' style=" width: 236px; height: 236px; "></div> | ![GradCAM](https://user-images.githubusercontent.com/18586273/144434518-867ae32a-1cb5-4dbd-b1b9-5e375e94ea48.jpg)   |  ![](https://user-images.githubusercontent.com/18586273/144434533-e9410fd4-f5cc-4d60-a17e-02dc5d9a90d0.jpg)   |![](https://user-images.githubusercontent.com/18586273/144434603-0a2fd9ec-c02e-4e6c-a17b-64c234808c56.jpg) |![](https://user-images.githubusercontent.com/18586273/144434623-b4432cc2-c663-4b97-aed3-583d9d3743e6.jpg)   |
+
 3.使用 `--eigen-smooth` 以及 `--aug-smooth` 获取更好的效果。
 
 ```shell
-python tools/visualizations/vis_cam.py demo/bird.JPEG  \
+python tools/visualizations/vis_cam.py \
+    demo/bird.JPEG  \
     configs/mobilenet_v3/mobilenet-v3-large_8xb32_in1k.py \
     https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_large-3ea3c186.pth \
     --target-layers model.backbone.layer16 \
+    --method GradCAM \
     --eigen-smooth --aug-smooth
 ```
 
+| Category  | Image | GradCAM  |  eigen-smooth |  aug-smooth |  eigen-smooth & aug-smooth  |
+| --------- |-------|----------|------------|-------------- |------------|
+| Bird | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429496-628d3fb3-1f6e-41ff-aa5c-1b08c60c32a9.JPEG' style=" width: 236px; height: 236px; "></div> | ![](https://user-images.githubusercontent.com/18586273/144435372-10b1c57b-dc24-4e03-85f6-95e0e0746c59.jpg)   |  ![](https://user-images.githubusercontent.com/18586273/144435422-4f57a32a-f071-434d-b18c-0afa1afcf621.jpg)   |![](https://user-images.githubusercontent.com/18586273/144435488-2bb2b5dd-0b02-4146-929f-7a374adeef2f.jpg)   |![](https://user-images.githubusercontent.com/18586273/144435512-97e84f4d-a952-42b1-8a79-d1fd89a24dc0.jpg)   |
+
 **Examples(Transformer)**：
 
-Transformer 类的网络，目前只支持 `SwinTransformer`、 `T2T_ViT` 和 `VisionTransformer`，`target-layers` 需要设置为 `layer norm`,如：
+Transformer 类的网络，目前只支持 `SwinTransformer`、`T2T-Vit` 和 `VisionTransformer`，`target-layers` 需要设置为 `layer norm`,如：
 
 - `model.backbone.norm3`
 - `model.backbone.layers.11.ln1`
@@ -218,7 +238,8 @@ Transformer 类的网络，目前只支持 `SwinTransformer`、 `T2T_ViT` 和 `V
 1.对 `Swin Transformer` 进行 CAM 可视化：
 
 ```shell
-python tools/visualizations/vis_cam.py demo/bird.JPEG  \
+python tools/visualizations/vis_cam.py \
+    demo/bird.JPEG  \
     configs/swin_transformer/swin-tiny_16xb64_in1k.py \
     https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_tiny_224_b16x64_300e_imagenet_20210616_090925-66df6be6.pth \
     --target-layers model.backbone.norm3
@@ -227,20 +248,26 @@ python tools/visualizations/vis_cam.py demo/bird.JPEG  \
 2.对 `Vision Transformer(ViT)` 进行 CAM 可视化：
 
 ```shell
-python tools/visualizations/vis_cam.py demo/bird.JPEG  \
+python tools/visualizations/vis_cam.py \
+    demo/bird.JPEG  \
     configs/vision_transformer/vit-base-p16_ft-64xb64_in1k-384.py \
     https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-base-p16_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-98e8652b.pth \
     --target-layers model.backbone.layers.11.ln1
 ```
 
-3.对 `T2T_ViT` 进行 CAM 可视化：
+3.对 `T2T-ViT` 进行 CAM 可视化：
 
 ```shell
-python tools/visualizations/vis_cam.py demo/bird.JPEG  \
-    configs/vision_transformer/vit-base-p16_ft-64xb64_in1k-384.py \
-    https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-base-p16_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-98e8652b.pth \
-    --target-layers model.backbone.layers.11.ln1
+python tools/visualizations/vis_cam.py \
+    demo/bird.JPEG  \
+    configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py \
+    https://download.openmmlab.com/mmclassification/v0/t2t-vit/t2t-vit-t-14_3rdparty_8xb64_in1k_20210928-b7c09b62.pth \
+    --target-layers model.backbone.encoder.13.ln1
 ```
+
+| Image | ResNet50  |  ViT |  Swin |  T2T-Vit  |
+|-------|----------|------------|-------------- |------------|
+| <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429496-628d3fb3-1f6e-41ff-aa5c-1b08c60c32a9.JPEG' style=" width: 236px; height: 236px; "></div> | <div align=center><img src=https://user-images.githubusercontent.com/18586273/144431491-a2e19fe3-5c12-4404-b2af-a9552f5a95d9.jpg ></div> |<div align=center><img src='https://user-images.githubusercontent.com/18586273/144436218-245a11de-6234-4852-9c08-ff5069f6a739.jpg' style=" width: 224px; height: 224px; "></div>   |  ![](https://user-images.githubusercontent.com/18586273/144436168-01b0e565-442c-4e1e-910c-17c62cff7cd3.jpg)   |![](https://user-images.githubusercontent.com/18586273/144436198-51dbfbda-c48d-48cc-ae06-1a923d19b6f6.jpg)  |
 
 ## FAQs
 
