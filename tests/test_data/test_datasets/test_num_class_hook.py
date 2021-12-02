@@ -2,13 +2,13 @@ import logging
 import tempfile
 from unittest.mock import MagicMock
 
-import mmcv
+import mmcv.runner as mmcv_runner
 import pytest
 import torch
 from mmcv.runner import obj_from_dict
 from torch.utils.data import DataLoader, Dataset
 
-from mmcls.core.hook import NumClassCheckHook
+from mmcls.core.hook import ClassNumCheckHook
 from mmcls.models.heads.base_head import BaseHead
 
 
@@ -51,9 +51,11 @@ class ExampleModel(torch.nn.Module):
         return dict(loss=loss)
 
 
+@pytest.mark.parametrize('runner_type',
+                         ['EpochBasedRunner', 'IterBasedRunner'])
 @pytest.mark.parametrize(
     'CLASSES', [None, ('A', 'B', 'C', 'D', 'E'), ('A', 'B', 'C', 'D')])
-def test_num_class_hook(CLASSES):
+def test_num_class_hook(runner_type, CLASSES):
     test_dataset = ExampleDataset(CLASSES)
     loader = DataLoader(test_dataset, batch_size=1)
     model = ExampleModel()
@@ -62,9 +64,9 @@ def test_num_class_hook(CLASSES):
                               dict(params=model.parameters()))
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        num_class_hook = NumClassCheckHook()
+        num_class_hook = ClassNumCheckHook()
         logger_mock = MagicMock(spec=logging.Logger)
-        runner = mmcv.runner.EpochBasedRunner(
+        runner = getattr(mmcv_runner, runner_type)(
             model=model,
             optimizer=optimizer,
             work_dir=tmpdir,
