@@ -127,11 +127,11 @@ class StackedLinearClsHead(ClsHead):
 
         return self.post_process(pred)
 
-    def forward_train(self, x, gt_label):
+    def forward_train(self, x, gt_label, **kwargs):
         if isinstance(x, tuple):
             x = x[-1]
         cls_score = x
         for layer in self.layers:
             cls_score = layer(cls_score)
-        losses = self.loss(cls_score, gt_label)
+        losses = self.loss(cls_score, gt_label, **kwargs)
         return losses

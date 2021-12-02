@@ -105,7 +105,7 @@ repvgg-D2se_deploy_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py
 
 你可以通过继承一些基本配置文件轻松构建自己的训练配置文件。由来自`_base_` 的组件组成的配置称为 _primitive_。
 
-为了帮助用户对 MMClassification 检测系统中的完整配置和模块有一个基本的了解，我们使用 [ResNet50 原始配置文件](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet50_b32x8_imagenet.py) 作为案例进行说明并注释每一行含义。更详细的用法和各个模块对应的替代方案，请参考 API 文档。
+为了帮助用户对 MMClassification 检测系统中的完整配置和模块有一个基本的了解，我们使用 [ResNet50 原始配置文件](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet50_8xb32_in1k.py) 作为案例进行说明并注释每一行含义。更详细的用法和各个模块对应的替代方案，请参考 API 文档。
 
 ```python
 _base_ = [
@@ -262,10 +262,10 @@ work_dir = 'work_dir'          # 用于保存当前实验的模型检查点和�
 对于在同一算法文件夹下的所有配置文件，MMClassification 推荐只存在 **一个** 对应的 _原始配置_ 文件。
 所有其他的配置文件都应该继承 _原始配置_ 文件，这样就能保证配置文件的最大继承深度为 3。
 
-例如，如果在 ResNet 的基础上做了一些修改，用户首先可以通过指定 `_base_ = '../../configs/resnet/resnet50_b32x8_imagenet.py'` 来继承基础的 ResNet 结构、数据集以及其他训练配置信息，然后修改配置文件中的必要参数以完成继承。如想在基础 resnet50 的基础上将训练轮数由 100 改为 300 和修改学习率衰减轮数，同时修改数据集路径，可以建立新的配置文件 `configs/resnet/resnet50_8xb32-300e_in1k.py`， 文件中写入以下内容:
+例如，如果在 ResNet 的基础上做了一些修改，用户首先可以通过指定 `_base_ = './resnet50_8xb32_in1k.py'`（相对于你的配置文件的路径），来继承基础的 ResNet 结构、数据集以及其他训练配置信息，然后修改配置文件中的必要参数以完成继承。如想在基础 resnet50 的基础上将训练轮数由 100 改为 300 和修改学习率衰减轮数，同时修改数据集路径，可以建立新的配置文件 `configs/resnet/resnet50_8xb32-300e_in1k.py`， 文件中写入以下内容:
 
 ```python
-_base_ = '../../configs/resnet/resnet50_b32x8_imagenet.py'
+_base_ = './resnet50_8xb32_in1k.py'
 
 runner = dict(max_epochs=300)
 lr_config = dict(step=[150, 200, 250])
@@ -317,7 +317,7 @@ data = dict(
 以下是一个简单应用案例。 如果在上述 ResNet50 案例中 使用 cosine schedule ,使用继承并直接修改会报 `get unexcepected keyword 'step'` 错, 因为基础配置文件 lr_config 域信息的 `'step'` 字段被保留下来了，需要加入 `_delete_=True` 去忽略基础配置文件里的 `lr_config` 相关域内容：
 
 ```python
-_base_ = '../../configs/resnet/resnet50_b32x8_imagenet.py'
+_base_ = '../../configs/resnet/resnet50_8xb32_in1k.py'
 
 lr_config = dict(
     _delete_=True,
