@@ -125,7 +125,16 @@ python tools/visualizations/vis_lr.py configs/repvgg/repvgg-B3g4_4xb64-autoaug-l
 
 ## 类别激活图可视化
 
-MMClassification 提供 `tools\visualizations\vis_cam.py` 工具来可视化类别激活图。请使用 `pip install grad-cam` 安装依赖库。工具基于 [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam)。
+MMClassification 提供 `tools\visualizations\vis_cam.py` 工具来可视化类别激活图。请使用 `pip install grad-cam` 安装依赖库。工具基于 [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam)。支持的方法有：
+
+| Method   | What it does |
+|----------|--------------|
+| GradCAM  | Weight the 2D activations by the average gradient |
+| GradCAM++  | Like GradCAM but uses second order gradients |
+| XGradCAM  | Like GradCAM but scale the gradients by the normalized activations |
+| EigenCAM  | Takes the first principle component of the 2D Activations (no class discrimination, but seems to give great results)|
+| EigenGradCAM  | Like EigenCAM but with class discrimination: First principle component of Activations*Grad. Looks like GradCAM, but cleaner|
+| LayerCAM  | Spatially weight the activations by positive gradients. Works better especially in lower layers |
 
 ```bash
 python tools/visualizations/vis_cam.py \
@@ -134,11 +143,11 @@ python tools/visualizations/vis_cam.py \
     ${CHECKPOINT} \
     --target-layers ${TARGET-LAYERS} \
     [--preview-model] \
-    [--cam-type ${CAM-TYPE}] \
+    [--method ${CAM-TYPE}] \
     [--target-category ${TARGET-CATEGORY}] \
     [--save-path ${SAVE_PATH}] \
-    [--aug_smooth] \
-    [--eigen_smooth] \
+    [--aug-smooth] \
+    [--eigen-smooth] \
     [--device ${DEVICE}] \
     [--cfg-options ${CFG-OPTIONS}]
 ```
@@ -149,52 +158,110 @@ python tools/visualizations/vis_cam.py \
 - `config`：模型配置文件的路径。
 - `checkpoint`：权重路径。
 - `--target-layers`：所查看的网络层名称，可输入一个或者多个网络层名称。
-- `--preview-model`：是否查看模型有哪些网络层。
-- `--cam-type`：热力图可视化的算法名称，目前支持 ['GradCAM', 'ScoreCAM', 'GradCAM++', 'AblationCAM', 'XGradCAM', 'EigenCAM', 'EigenGradCAM', 'LayerCAM', 'FullGrad']，(不区分大小写)，如果不设置，默认为 'GradCAM'。
+- `--preview-model`：是否查看模型所有网络层。
+- `--method`：热力图可视化的算法名称，目前支持 `GradCAM`, `GradCAM++`, `XGradCAM`, `EigenCAM`, `EigenGradCAM`, `LayerCAM`(不区分大小写)，如果不设置，默认为 `GradCAM`。
 - `--target-category`：查看的目标类别，如果不设置，使用模型检测出来的类别做为目标类别。
 - `--save-path`：保存的可视化图片的路径，默认不保存。
-- `--aug_smooth`：是否开启测试时增强以平滑热力图，默认不开启。
-- `--eigen_smooth`：是否使用主成分降低噪音， 默认不开启。
+- `--eigen-smooth`：是否使用主成分降低噪音，默认不开启。
+- `--aug-smooth`：是否使用测试时增强，默认不开启。
 - `--device`：使用的计算设备，如果不设置，默认为'cpu'。
 - `--cfg-options`：对配置文件的修改，参考[教程 1：如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html)。
 
 ```{note}
-1. 不知道模型中有哪些层，可以在命令行中添加 '--preview-model' 查看网络各层名称；
-2. 'target-layers' 都是以 'model'开始，不能以 'relu' 为结尾。例如可以为 'model.backbone.layer4' 或者 'model.backbone.layer4.1.conv'；
-3. Transformer 类的网络，如 `Swin`, `ViT` 等，'target-layers' 需要设置为xxxx;
-4. `--aug_smooth` 以及 `--aug_smooth` 可以平滑噪音。
+1. 不知道模型中有哪些层，可以在命令行中添加 '--preview-model' 查看所有网络层名称；
+2. 'target-layers' 都是以 'model'开始；
+3. `--eigen-smooth` 以及 `--aug-smooth` 可以获得更加平滑的效果图。
 ```
 
-**示例**：
+**示例（CNN）**：
 
-1. 使用 `GradCAM++` 算法 `可视化 `ResNet50` 的 `layer4`，默认 `target-category` 为模型结果类别。
+`target-layers` 不能为 `bn` 或者 `relu`。可以为:
+
+- `model.backbone.layer4`
+- `model.backbone.layer4.1.conv`
+
+1.使用不同算法可视化 `ResNet50` 的 `layer4`，默认 `target-category` 为模型结果类别。
 
 ```shell
-python tools/visualizations/vis_cam.py demo\demo.JPEG configs\resnet\resnet50_8xb32_in1k.py \
+python tools/visualizations/vis_cam.py demo/bird.JPEG configs/resnet/resnet50_8xb32_in1k.py \
     https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_batch256_imagenet_20200708-cfb998bf.pth \
-    --target-layers model.backbone.layer4 \
-    --cam-type GradCAM++
+    --target-layers model.backbone.layer4.2 \
+    --method GradCAM
+    # GradCAM++, XGradCAM, EigenCAM, EigenGradCAM, LayerCAM
 ```
 
-2. 对 `Swin` 或者 `ViT` 的可视化。
+| Category  | Image | GradCAM  |  GradCAM++ |  EigenGradCAM |  LayerCAM  |
+| --------- |-------|----------|------------|-------------- |------------|
+| Bird | ![](../../demo/bird.JPEG) | ![](../_static/image/tools/visualization/cam_resnet50_bird_gradcam.jpg)   |  ![](../_static/image/tools/visualization/cam_resnet50_bird_gradcamplusplus.jpg)   |![](../_static/image/tools/visualization/cam_resnet50_bird_eigengradcam.jpg) |![](../_static/image/tools/visualization/cam_resnet50_bird_layercam.jpg)   |
+
+2.同一张图不同类别的激活图效果图, 238 为 '', 281 为 ''。
 
 ```shell
-python tools/visualizations/vis_cam.py demo\demo.JPEG  \
+python tools/visualizations/vis_cam.py demo/cat-dog.png configs/resnet/resnet50_8xb32_in1k.py \
+    https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_batch256_imagenet_20200708-cfb998bf.pth \
+    --target-layers model.backbone.layer4.2 \
+    --method GradCAM \
+    --target-category 238
+    # --target-category 281
+```
+
+| Category  | Image | GradCAM  |  GradCAM++ |  XGradCAM |  LayerCAM  |
+| --------- |-------|----------|------------|-------------- |------------|
+|   Dog     | ![原图](../../demo/cat-dog.png) | ![GradCAM](../_static/image/tools/visualization/cam_dog_gradcam.jpg)   |  ![](../_static/image/tools/visualization/cam_dog_gradcamplusplus.jpg)   |![](../_static/image/tools/visualization/cam_dog_xgradcam.jpg) |![](../_static/image/tools/visualization/cam_dog_layercam.jpg)   |
+|   Cat     | ![原图](../../demo/cat-dog.png) | ![GradCAM](../_static/image/tools/visualization/cam_cat_gradcam.jpg)   |  ![](../_static/image/tools/visualization/cam_cat_gradcamplusplus.jpg)   |![](../_static/image/tools/visualization/cam_cat_xgradcam.jpg) |![](../_static/image/tools/visualization/cam_cat_layercam.jpg)   |
+
+3.使用 `--eigen-smooth` 以及 `--aug-smooth` 获取更好的效果。
+
+```shell
+python tools/visualizations/vis_cam.py demo/bird.JPEG  \
+    configs/mobilenet_v3/mobilenet-v3-large_8xb32_in1k.py \
+    https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_large-3ea3c186.pth \
+    --target-layers model.backbone.layer16 \
+    --method GradCAM \
+    --eigen-smooth --aug-smooth
+```
+
+| Category  | Image | GradCAM  |  eigen-smooth |  aug-smooth |  eigen-smooth & aug-smooth  |
+| --------- |-------|----------|------------|-------------- |------------|
+| Bird | ![](../../demo/bird.JPEG) | ![](../_static/image/tools/visualization/cam_mobilenetv3_bird_gradcam.jpg)   |  ![](../_static/image/tools/visualization/cam_mobilenetv3_bird_gradcam_eigen.jpg)   |![](../_static/image/tools/visualization/cam_mobilenetv3_bird_gradcam_aug.jpg) |![](../_static/image/tools/visualization/cam_mobilenetv3_bird_gradcam_eigen_aug.jpg)   |
+
+**示例（Transformer）**：
+
+Transformer 类的网络，目前只支持 `SwinTransformer` 和 `VisionTransformer`，`target-layers` 需要设置为 `layer norm`,如：
+
+- `model.backbone.norm3`
+- `model.backbone.layers.11.ln1`
+
+1.对 `Swin Transformer` 进行 CAM 可视化：
+
+```shell
+python tools/visualizations/vis_cam.py demo/bird.JPEG  \
     configs/swin_transformer/swin-tiny_16xb64_in1k.py \
     https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_tiny_224_b16x64_300e_imagenet_20210616_090925-66df6be6.pth \
-    --target-layers model.backbone.layer4 \
-    --cam-type ablationcam
+    --target-layers model.backbone.norm3
 ```
 
-3. 使用 `--aug_smooth` 以及 `--aug_smooth` 平滑噪音。
+2.对 `Vision Transformer(ViT)` 进行 CAM 可视化：
 
 ```shell
-python tools/visualizations/vis_cam.py demo\demo.JPEG  \
-    configs\mobilenet_v3\mobilenet-v3-large_8xb32_in1k.py \
-    https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_large-3ea3c186.pth \
-    --target-layers model.backbone.layer4 \
-    --aug_smooth --aug_smooth
+python tools/visualizations/vis_cam.py demo/bird.JPEG  \
+    configs/vision_transformer/vit-base-p16_ft-64xb64_in1k-384.py \
+    https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-base-p16_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-98e8652b.pth \
+    --target-layers model.backbone.layers.11.ln1
 ```
+
+3.对 `T2T-ViT` 进行 CAM 可视化：
+
+```shell
+python tools/visualizations/vis_cam.py demo/bird.JPEG  \
+    configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py \
+    https://download.openmmlab.com/mmclassification/v0/t2t-vit/t2t-vit-t-14_3rdparty_8xb64_in1k_20210928-b7c09b62.pth \
+    --target-layers model.backbone.encoder.13.ln1
+```
+
+| Image | ResNet50  |  ViT |  Swin |  T2T-Vit  |
+|-------|----------|------------|-------------- |------------|
+| ![](../../demo/bird.JPEG) | ![](../_static/image/tools/visualization/cam_resnet50_bird_gradcam.jpg)   |  ![](../_static/image/tools/visualization/cam_vit_bird_gradcam.jpg)   |![](../_static/image/tools/visualization/cam_swin_bird_gradcam.jpg) |![](../_static/image/tools/visualization/cam_t2tvit_bird_gradcam.jpg)   |
 
 ## 常见问题
 

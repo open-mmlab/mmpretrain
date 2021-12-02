@@ -5,6 +5,7 @@
 - [Visualization](#visualization)
   - [Pipeline Visualization](#pipeline-visualization)
   - [Learning Rate Schedule Visualization](#learning-rate-schedule-visualization)
+  - [Class Activation Map Visualization](#class-activation-map-visualization)
   - [FAQs](#faqs)
 
 <!-- TOC -->
@@ -121,7 +122,16 @@ python tools/visualizations/vis_lr.py configs/repvgg/repvgg-B3g4_4xb64-autoaug-l
 
 ## Class Activation Map Visualization
 
-MMClassification provides `tools\visualizations\vis_cam.py` tool to visualize class activation map.please use `pip install grad-cam` command to install dependent third-party libraries. This tool is based on [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam)。
+MMClassification provides `tools\visualizations\vis_cam.py` tool to visualize class activation map.please use `pip install grad-cam` command to install dependent third-party libraries. This tool is based on [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam)。The supported methods are as follows:
+
+| Method   | What it does |
+|----------|--------------|
+| GradCAM  | Weight the 2D activations by the average gradient |
+| GradCAM++  | Like GradCAM but uses second order gradients |
+| XGradCAM  | Like GradCAM but scale the gradients by the normalized activations |
+| EigenCAM  | Takes the first principle component of the 2D Activations (no class discrimination, but seems to give great results)|
+| EigenGradCAM  | Like EigenCAM but with class discrimination: First principle component of Activations*Grad. Looks like GradCAM, but cleaner|
+| LayerCAM  | Spatially weight the activations by positive gradients. Works better especially in lower layers |
 
 ```bash
 python tools/visualizations/vis_cam.py \
@@ -130,7 +140,7 @@ python tools/visualizations/vis_cam.py \
     ${CHECKPOINT} \
     --target-layers ${TARGET-LAYERS} \
     [--preview-model] \
-    [--cam-type ${CAM-TYPE}] \
+    [--method ${CAM-TYPE}] \
     [--target-category ${TARGET-CATEGORY}] \
     [--save-path ${SAVE_PATH}] \
     [--aug_smooth] \
@@ -146,52 +156,90 @@ python tools/visualizations/vis_cam.py \
 - `checkpoint`：The path of checkpoint.
 - `--target-layers`：The target layer to get activation map. One or more network layers can be specified.
 - `--preview-model`：Whether to print all network layer names of the model.
-- `--cam-type`：Visualization algorithm name, support ['GradCAM', 'ScoreCAM', 'GradCAM++', 'AblationCAM', 'XGradCAM', 'EigenCAM', 'EigenGradCAM', 'LayerCAM', 'FullGrad'] (case insensitive). if not set, it will be set to 'GradCAM'.
+- `--method`：Visualization algorithm name, support `GradCAM`, `GradCAM++`, `XGradCAM`, `EigenCAM`, `EigenGradCAM`, `LayerCAM` (case insensitive). if not set, it will be set to `GradCAM`.
 - `--target-category`：Target category, if not set, use the category detected by the model.
 - `--save-path`：The path of the saved visualization image, which is not saved by default.
 - `--aug_smooth`：Whether to enable enhancement to smooth the activation map during testing, it is not enabled by default.
 - `--eigen_smooth`：Whether to use the principal component to reduce noise,  it is not enabled by default.
 - `--device`：The computing device used, if not set, the default is 'cpu'.
-- `cfg-options` : Modifications to the configuration file, refer to [Tutorial 1: Learn about Configs](https://mmclassification.readthedocs.io/en/latest/tutorials/config.html).
-
+- `--cfg-options` : Modifications to the configuration file, refer to [Tutorial 1: Learn about Configs](https://mmclassification.readthedocs.io/en/latest/tutorials/config.html).
 
 ```{note}
 1. If you don't know which network layers are in the model, you can add'--preview-model' to the command line to view all the name of each network layer;
-2. The 'target-layers' always start with 'model' and can't end with'relu'. For example, it can be'model.backbone.layer4' or 'model.backbone.layer4.1.conv';
-3. For Transformer type networks, such as `Swin`, `ViT`, etc., The 'target-layers' needs to be set to xxxx;
-4. The `--aug_smooth` and `--aug_smooth` can smooth the noise.
+2. 'target-layers' must start with 'model';
+3. The `--aug_smooth` and `--eigen_smooth` can smooth to get nice looking CAMs.
 ```
 
-**Examples**：
+**Examples(CNN)**：
 
-1. Using `GradCAM++` algorithm to visualize cam of `layer4` in `ResNet50`, the target category would be set to category detected by the model.
+`target-layers` 不能为 `bn` 或者 `relu`。可以为:
+
+- `model.backbone.layer4`
+- `model.backbone.layer4.1.conv`
+
+1.使用不同算法可视化 `ResNet50` 的 `layer4`，默认 `target-category` 为模型结果类别。
 
 ```shell
-python tools/visualizations/vis_cam.py demo\demo.JPEG configs\resnet\resnet50_8xb32_in1k.py \
+python tools/visualizations/vis_cam.py demo/bird.JPEG configs/resnet/resnet50_8xb32_in1k.py \
     https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_batch256_imagenet_20200708-cfb998bf.pth \
-    --target-layers model.backbone.layer4 \
-    --target-category 254 \  # category 254 is 'dog'; category 281 is 'tabby, tabby cat'
-    --cam-type GradCAM++
+    --target-layers model.backbone.layer4.2 \
+    --cam-type GradCAM
+    # GradCAM++, XGradCAM, EigenCAM, EigenGradCAM, LayerCAM
 ```
 
-2. Visualization of `Swin` or `ViT`.
+2.同一张图不同类别的激活图效果图, `ImageNet` 中， 类别238 为 '', 类别281 为 'tabby, tabby cat'。
 
 ```shell
-python tools/visualizations/vis_cam.py demo\demo.JPEG  \
+python tools/visualizations/vis_cam.py demo/cat-dog.png configs/resnet/resnet50_8xb32_in1k.py \
+    https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_batch256_imagenet_20200708-cfb998bf.pth \
+    --target-layers model.backbone.layer4.2 \
+    --cam-type GradCAM \
+    --target-category 238
+    # --target-category 281
+```
+
+3.使用 `--eigen-smooth` 以及 `--aug-smooth` 获取更好的效果。
+
+```shell
+python tools/visualizations/vis_cam.py demo/bird.JPEG  \
+    configs/mobilenet_v3/mobilenet-v3-large_8xb32_in1k.py \
+    https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_large-3ea3c186.pth \
+    --target-layers model.backbone.layer16 \
+    --eigen-smooth --aug-smooth
+```
+
+**Examples(Transformer)**：
+
+Transformer 类的网络，目前只支持 `SwinTransformer`、 `T2T_ViT` 和 `VisionTransformer`，`target-layers` 需要设置为 `layer norm`,如：
+
+- `model.backbone.norm3`
+- `model.backbone.layers.11.ln1`
+
+1.对 `Swin Transformer` 进行 CAM 可视化：
+
+```shell
+python tools/visualizations/vis_cam.py demo/bird.JPEG  \
     configs/swin_transformer/swin-tiny_16xb64_in1k.py \
     https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_tiny_224_b16x64_300e_imagenet_20210616_090925-66df6be6.pth \
-    --target-layers model.backbone.layer4 \
-    --cam-type ablationcam
+    --target-layers model.backbone.norm3
 ```
 
-3. Use `--aug_smooth` and `--aug_smooth` to smooth the noise.
+2.对 `Vision Transformer(ViT)` 进行 CAM 可视化：
 
 ```shell
-python tools/visualizations/vis_cam.py demo\demo.JPEG  \
-    configs\mobilenet_v3\mobilenet-v3-large_8xb32_in1k.py \
-    https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_large-3ea3c186.pth \
-    --target-layers model.backbone.layer4 \
-    --aug_smooth --aug_smooth
+python tools/visualizations/vis_cam.py demo/bird.JPEG  \
+    configs/vision_transformer/vit-base-p16_ft-64xb64_in1k-384.py \
+    https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-base-p16_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-98e8652b.pth \
+    --target-layers model.backbone.layers.11.ln1
+```
+
+3.对 `T2T_ViT` 进行 CAM 可视化：
+
+```shell
+python tools/visualizations/vis_cam.py demo/bird.JPEG  \
+    configs/vision_transformer/vit-base-p16_ft-64xb64_in1k-384.py \
+    https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-base-p16_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-98e8652b.pth \
+    --target-layers model.backbone.layers.11.ln1
 ```
 
 ## FAQs

@@ -1,46 +1,43 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 import copy
+import math
 import sys
 from pathlib import Path
 
-import cv2
+import mmcv
 import numpy as np
-import torch
 from mmcv import Config, DictAction
 
 from mmcls.apis import init_model
 from mmcls.datasets.pipelines import Compose
+from mmcls.models.backbones import SwinTransformer, T2T_ViT, VisionTransformer
 
 try:
-    from pytorch_grad_cam import (AblationCAM, EigenCAM, GradCAM,
-                                  GradCAMPlusPlus, ScoreCAM, XGradCAM,
-                                  EigenGradCAM, LayerCAM, FullGrad)
+    from pytorch_grad_cam import (EigenCAM, GradCAM, GradCAMPlusPlus, XGradCAM,
+                                  EigenGradCAM, LayerCAM)
     import pytorch_grad_cam.activations_and_gradients as act_and_grad
     from pytorch_grad_cam.utils.image import show_cam_on_image
 except ImportError:
     raise ImportError(
         'please use `pip install grad-cam` to install pytorch_grad_cam')
 
-# set of transforms, which just change data format, but not change the pictures
+# set of transforms, which just change data format, not change the pictures
 FORMAT_TRANSFORMS_SET = {'ToTensor', 'Normalize', 'ImageToTensor', 'Collect'}
 
 # Supported grad-cam type map
 GradCAM_MAP = {
     'gradcam': GradCAM,
-    'scorecam': ScoreCAM,
     'gradcam++': GradCAMPlusPlus,
-    'ablationcam': AblationCAM,
     'xgradcam': XGradCAM,
     'eigencam': EigenCAM,
     'eigengradcam': EigenGradCAM,
     'layercam': LayerCAM,
-    'fullgrad': FullGrad
 }
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Visualize Cam Grad')
+    parser = argparse.ArgumentParser(description='Visualize CAM')
     parser.add_argument('img', help='Image file')
     parser.add_argument('config', help='Config file')
     parser.add_argument('checkpoint', help='Checkpoint file')
@@ -56,25 +53,26 @@ def parse_args():
         action='store_true',
         help='preview the model')
     parser.add_argument(
-        '--cam-type',
+        '--method',
         default='GradCAM',
-        choices=list(GradCAM_MAP.keys()),
-        help='Type of algorithm to use, support "GradCAM", "ScoreCAM",'
-        '"GradCAM++", "AblationCAM", "XGradCAM" and "EigenCAM".')
+        help='Type of algorithm to use, supports '
+        f'{", ".join(list(GradCAM_MAP.keys()))}.')
     parser.add_argument(
         '--target-category',
         default=None,
         type=int,
         help='target category in insight')
     parser.add_argument(
-        '--aug_smooth',
-        action='store_true',
-        help='Apply test time augmentation to smooth the CAM')
-    parser.add_argument(
-        '--eigen_smooth',
+        '--eigen-smooth',
+        default=False,
         action='store_true',
         help='Reduce noise by taking the first principle componenet of '
         '``cam_weights*activations``')
+    parser.add_argument(
+        '--aug-smooth',
+        default=False,
+        action='store_true',
+        help='Wether to use test time augmentation')
     parser.add_argument(
         '--save-path',
         type=Path,
@@ -91,16 +89,48 @@ def parse_args():
         'Note that the quotation marks are necessary and that no white space '
         'is allowed.')
     args = parser.parse_args()
+    if args.method.lower() not in GradCAM_MAP.keys():
+        raise ValueError(f'invalid CAM type {args.method},'
+                         f' supports {", ".join(list(GradCAM_MAP.keys()))}.')
 
     return args
 
 
+def build_reshape_transform(model):
+    """build reshape_transform for cam.activations_and_grads, some neural
+    networks such as SwinTransformer and VisionTransformer need an additional
+    reshape operation.
+
+    CNNs don;t need, jush return None
+    """
+    if isinstance(model.backbone, SwinTransformer):
+        has_clstoken = False
+    elif isinstance(model.backbone, (VisionTransformer, T2T_ViT)):
+        has_clstoken = True
+    else:
+        return None
+
+    def _reshape_transform(tensor, has_clstoken=has_clstoken):
+        """reshape_transform helper."""
+        tensor = tensor[:, 1:, :] if has_clstoken else tensor
+        # get heat_map_height and heat_map_width, preset input is a square
+        heat_map_size = tensor.size()[1]
+        height = width = int(math.sqrt(heat_map_size))
+        message = 'Only support input pictures with the same length and ' \
+                  'width when using Tansformer neural networks, like ViT, Swin'
+        assert height * height == heat_map_size, message
+        result = tensor.reshape(tensor.size(0), height, width, tensor.size(2))
+
+        # Bring the channels to the first dimension, like in CNNs.
+        result = result.transpose(2, 3).transpose(1, 2)
+        return result
+
+    return _reshape_transform
+
+
 def apply_transforms(img_path, pipeline_cfg):
     """Since there are some transforms, which will change the regin to
-    inference such as CenterCrop.
-
-    So it is necessary to get inference image.
-    """
+    inference such as CenterCrop.So it is necessary to get inference image."""
     data = dict(img_info=dict(filename=img_path), img_prefix=None)
 
     def split_pipeline_cfg(pipeline_cfg):
@@ -127,7 +157,7 @@ def apply_transforms(img_path, pipeline_cfg):
     return format_data, inference_img
 
 
-def init_cam(cam_type, model, target_layers, use_cuda):
+def init_cam(method, model, target_layers, use_cuda, reshape_transform):
     """Construct the CAM object once, In order to be compatible with mmcls,
     here we modify the ActivationsAndGradients object and the get_loss
     function."""
@@ -142,21 +172,11 @@ def init_cam(cam_type, model, target_layers, use_cuda):
 
             return self.model(x, return_loss=False, post_processing=False)
 
-    def custom_get_loss(self, output, target_category):
-        """get loss function of MMCls model."""
-        loss = 0
-        for i in range(len(target_category)):
-            label = torch.tensor([target_category[i]])
-            loss += self.model.head.loss(output, label)['loss']
-        return loss
-
-    GradCAM_Class = GradCAM_MAP[cam_type]
-    MMGradCAM = type('MMGradCAM', (GradCAM_Class, ),
-                     {'get_loss': custom_get_loss})
-    cam = MMGradCAM(
+    GradCAM_Class = GradCAM_MAP[method.lower()]
+    cam = GradCAM_Class(
         model=model, target_layers=target_layers, use_cuda=use_cuda)
     cam.activations_and_grads = mmActivationsAndGradients(
-        cam.model, cam.target_layers, cam.reshape_transform)
+        cam.model, cam.target_layers, reshape_transform)
 
     return cam
 
@@ -164,10 +184,12 @@ def init_cam(cam_type, model, target_layers, use_cuda):
 def get_layer(layer_str, model):
     """get model lyaer from given str."""
     cur_layer = model
-    assert layer_str.startswith('model'), "target-layer must start with 'model"
+    assert layer_str.startswith(
+        'model'), "target-layer must start with 'model'"
     layer_items = layer_str.strip().split('.')
-    assert not layer_items[-1].startswith(
-        'relu') and not layer_items[-1].startswith('bn')
+    assert not (layer_items[-1].startswith('relu')
+                or layer_items[-1].startswith('bn')
+                ), "target-layer can't be 'bn' or 'relu'"
     for item_str in layer_items[1:]:
         if hasattr(cur_layer, item_str):
             cur_layer = getattr(cur_layer, item_str)
@@ -177,17 +199,17 @@ def get_layer(layer_str, model):
     return cur_layer
 
 
-def show_cam_grad(grayscale_cam, src_img, title='cam-grad', out_path=None):
+def show_cam_grad(grayscale_cam, src_img, title, out_path=None):
     """fuse src_img and grayscale_cam and show or save."""
     grayscale_cam = grayscale_cam[0, :]
-    src_img = np.float32(src_img[:, :, ::-1]) / 255
-    visualization_img = show_cam_on_image(src_img, grayscale_cam)
+    src_img = np.float32(src_img) / 255
+    visualization_img = show_cam_on_image(
+        src_img, grayscale_cam, use_rgb=False)
+
     if out_path:
-        cv2.imsave(out_path, visualization_img)
+        mmcv.imwrite(visualization_img, str(out_path))
     else:
-        cv2.imshow(title, visualization_img)
-        cv2.waitKey()
-        cv2.destroyAllWindows()
+        mmcv.imshow(visualization_img, win_name=title)
 
 
 def main():
@@ -208,23 +230,25 @@ def main():
     data['img'] = data['img'].unsqueeze(0)
 
     # build target layers
-    target_layers = []
-    for layer_str in args.target_layers:
-        target_layers.append(get_layer(layer_str, model))
+    target_layers = [
+        get_layer(layer_str, model) for layer_str in args.target_layers
+    ]
     assert len(args.target_layers) != 0, '`--target-layers` can not be empty'
 
     # init a cam grad computer
     use_cuda = True if 'cuda' in args.device else False
-    cam = init_cam(args.cam_type, model, target_layers, use_cuda)
+    reshape_transform = build_reshape_transform(model)
+    cam = init_cam(args.method, model, target_layers, use_cuda,
+                   reshape_transform)
 
     # calculate cam grads and show|save
     grayscale_cam = cam(
         input_tensor=data['img'],
         target_category=args.target_category,
         eigen_smooth=args.eigen_smooth,
-        aug_smooth=args.aug_smoot)
+        aug_smooth=args.aug_smooth)
     show_cam_grad(
-        grayscale_cam, src_img, title=args.cam_type, out_path=args.save_path)
+        grayscale_cam, src_img, title=args.method, out_path=args.save_path)
 
 
 if __name__ == '__main__':
