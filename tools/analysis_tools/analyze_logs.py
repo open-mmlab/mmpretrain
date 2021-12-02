@@ -8,8 +8,8 @@ import numpy as np
 
 from mmcls.utils import load_json_logs
 
-ACCEPT_METRICS = ('precision', 'recall', 'f1_score', 'support', 'mAP', 'CP',
-                  'CR', 'CF1', 'OP', 'OR', 'OF1', 'accuracy')
+TEST_METRICS = ('precision', 'recall', 'f1_score', 'support', 'mAP', 'CP',
+                'CR', 'CF1', 'OP', 'OR', 'OF1', 'accuracy')
 
 
 def cal_train_time(log_dicts, args):
@@ -36,14 +36,14 @@ def cal_train_time(log_dicts, args):
         print()
 
 
-def get_legend(args):
+def get_legends(args):
     """if legend is None, use {filename}_{key} as legend."""
     legend = args.legend
     if legend is None:
         legend = []
         for json_log in args.json_logs:
             for metric in args.keys:
-                # rm '.json' in the end if logn ames
+                # remove '.json' in the end of log names
                 basename = os.path.basename(json_log)[:-5]
                 if basename.endswith('.log'):
                     basename = basename[:-4]
@@ -93,10 +93,7 @@ def plot_curve_helper(log_dicts, metrics, args, legend):
             json_log = args.json_logs[i]
             print(f'plot curve of {json_log}, metric is {metric}')
             curve_label = legend[i * num_metrics + j]
-            if any(m in metric for m in ACCEPT_METRICS):
-                if 'accuracy' in metric and not re.match(
-                        'accuracy_top-[1-9]+', metric):
-                    raise ValueError(f"{metric} doesn't match accuracy_top-k")
+            if any(m in metric for m in TEST_METRICS):
                 plot_phase_val(metric, log_dict, epochs, curve_label, json_log)
             else:
                 plot_phase_train(metric, log_dict, epochs, curve_label,
@@ -123,11 +120,11 @@ def plot_curve(log_dicts, args):
     plt.figure(figsize=(wind_w, wind_h))
 
     # get legends and metrics
-    legend = get_legend(args)
+    legends = get_legends(args)
     metrics = args.keys
 
     # plot curves from log_dicts by metrics
-    plot_curve_helper(log_dicts, metrics, args, legend)
+    plot_curve_helper(log_dicts, metrics, args, legends)
 
     # set title and show or save
     if args.title is not None:
