@@ -47,9 +47,6 @@ class DistilledVisionTransformer(VisionTransformer):
         self.pos_embed = nn.Parameter(
             torch.zeros(1, num_patches + 2, self.embed_dims))
 
-        trunc_normal_(self.dist_token, std=.02)
-        trunc_normal_(self.pos_embed, std=.02)
-
     def forward(self, x):
         B = x.shape[0]
         x = self.patch_embed(x)
