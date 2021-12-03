@@ -238,7 +238,7 @@ def main():
 
             infos = dict(label=CLASSES[item['gt_label']])
 
-            manager.put_img_infos(
+            ret, _ = manager.put_img_infos(
                 image,
                 infos,
                 font_size=20,
@@ -247,6 +247,10 @@ def main():
                 **args.show_options)
 
             progressBar.update()
+
+            if ret == 1:
+                print('\nMannualy interrupted.')
+                break
 
 
 if __name__ == '__main__':
