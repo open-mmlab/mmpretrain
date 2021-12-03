@@ -6,10 +6,11 @@ import logging
 import mmcv
 import torch
 from mmcv.parallel import MMDistributedDataParallel
-from mmcv.runner import Hook, get_dist_info
+from mmcv.runner import get_dist_info
 from mmcv.utils import print_log
 from torch.nn.parallel import DataParallel, DistributedDataParallel
 from torch.utils.data import DataLoader
+from mmcv.runner.hooks import HOOKS, Hook
 
 
 def is_parallel_module(module):
@@ -135,6 +136,7 @@ def update_bn_stats(model, loaders, NUM_SAMPLES_PRECISE=8192, logger=None):
         bn.momentum = momentums[i]
 
 
+@HOOKS.register_module()
 class PreciseBNHook(Hook):
     """Precise BN hook.
 

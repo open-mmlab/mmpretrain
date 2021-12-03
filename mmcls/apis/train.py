@@ -11,7 +11,6 @@ from mmcv.runner import (DistSamplerSeedHook, build_optimizer, build_runner,
 
 from mmcls.core import DistOptimizerHook
 from mmcls.datasets import build_dataloader, build_dataset
-from mmcls.runner import PreciseBNHook
 from mmcls.utils import get_root_logger
 
 # TODO import eval hooks from mmcv and delete them from mmcls
@@ -174,11 +173,6 @@ def train_model(model,
     if distributed and cfg.runner['type'] == 'EpochBasedRunner':
         runner.register_hook(DistSamplerSeedHook())
 
-    # precise bn setting
-    if cfg.get('precise_bn', False):
-        precise_bn_hook = PreciseBNHook(data_loaders, **cfg.get('precise_bn'))
-        runner.register_hook(precise_bn_hook, priority='ABOVE_NORMAL')
-
     # register eval hooks
     if validate:
         val_dataset = build_dataset(cfg.data.val, dict(test_mode=True))
@@ -202,4 +196,5 @@ def train_model(model,
         runner.resume(cfg.resume_from)
     elif cfg.load_from:
         runner.load_checkpoint(cfg.load_from)
+
     runner.run(data_loaders, cfg.workflow)
