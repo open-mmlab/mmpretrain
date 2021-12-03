@@ -155,31 +155,30 @@ python tools/visualizations/vis_cam.py \
 
 - `img`：The target picture path.
 - `config`： The path of a model config file.
-- `checkpoint`：The path of checkpoint.
-- `--target-layers`：The target layer to get activation map. One or more network layers can be specified.
-- `--preview-model`：Whether to print all network layer names of the model.
-- `--method`：Visualization algorithm name, support `GradCAM`, `GradCAM++`, `XGradCAM`, `EigenCAM`, `EigenGradCAM`, `LayerCAM` (case insensitive). if not set, it will be set to `GradCAM`.
-- `--target-category`：Target category, if not set, use the category detected by the model.
-- `--save-path`：The path of the saved visualization image, which is not saved by default.
-- `--aug_smooth`：Whether to enable enhancement to smooth the activation map during testing, it is not enabled by default.
-- `--eigen_smooth`：Whether to use the principal component to reduce noise,  it is not enabled by default.
-- `--device`：The computing device used, if not set, the default is 'cpu'.
+- `checkpoint`：The path of the checkpoint.
+- `--target-layers`：The target layers to get activation maps, one or more network layers can be specified.
+- `--preview-model`：Whether to print all network layer names in the model.
+- `--method`：Visualization method, support `GradCAM`, `GradCAM++`, `XGradCAM`, `EigenCAM`, `EigenGradCAM`, `LayerCAM` (case insensitive). if not set, it will be set to `GradCAM`.
+- `--target-category`：Target category, if not set, use the category detected by the given model.
+- `--save-path`：The path to save CAM visualization image, which is not saved by default.
+- `--aug_smooth`：Whether to use TTA(Test Time Augment) to get CAM. If it is not set, default not to use.
+- `--eigen_smooth`：Whether to use the principal component to reduce noise, If it is not set, default not to use.
+- `--device`：The computing device used, if not set, if it is not set, default to be 'cpu'.
 - `--cfg-options` : Modifications to the configuration file, refer to [Tutorial 1: Learn about Configs](https://mmclassification.readthedocs.io/en/latest/tutorials/config.html).
 
 ```{note}
-1. If you don't know which network layers are in the model, you can add'--preview-model' to the command line to view all the name of each network layer;
-2. 'target-layers' must start with 'model';
-3. The `--aug_smooth` and `--eigen_smooth` can smooth to get nice looking CAMs.
+1. The argument of `--preview-model` can view all network layers names in the given model. It will be helpful if you know nothing about layers in the model.
+2. The argument of 'target-layers' must start with 'model';
 ```
 
 **Examples(CNN)**：
 
-`target-layers` 不能为 `bn` 或者 `relu`。可以为:
+`target-layers` can not be BN layer or Relu layer, Here are some examples:
 
 - `model.backbone.layer4`
 - `model.backbone.layer4.1.conv`
 
-1.使用不同算法可视化 `ResNet50` 的 `layer4`，默认 `target-category` 为模型结果类别。
+1.Use different methods to visualize CAM from `mobel.backbone.layer4` of `ResNet50`, the `target-category` is the predicted result by the given checkpoint.
 
 ```shell
 python tools/visualizations/vis_cam.py \
@@ -195,7 +194,7 @@ python tools/visualizations/vis_cam.py \
 | --------- |-------|----------|------------|-------------- |------------|
 | Bird | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429496-628d3fb3-1f6e-41ff-aa5c-1b08c60c32a9.JPEG' style=" width: 236px; height: 236px; "></div> | <div align=center><img src=https://user-images.githubusercontent.com/18586273/144431491-a2e19fe3-5c12-4404-b2af-a9552f5a95d9.jpg ></div>  | <div align=center><img src=https://user-images.githubusercontent.com/18586273/144431610-f854556d-7f10-4084-8987-c2587aef8298.jpg ></div>  | <div align=center><img src=https://user-images.githubusercontent.com/18586273/144431776-899ec2e5-c15a-4274-b38c-5ac154d31ed0.jpg ></div> | <div align=center><img src=https://user-images.githubusercontent.com/18586273/144431865-951ba8db-6dca-4909-ad5f-d1b21e0636ba.jpg ></div>  |
 
-2.同一张图不同类别的激活图效果图, 238 为 '', 281 为 ''。
+2.Use different `target-category` to get CAM from the same picture, the category 238 is 'Greater Swiss Mountain dog', the category 281 is 'tabby, tabby cat'。
 
 ```shell
 python tools/visualizations/vis_cam.py \
@@ -212,7 +211,7 @@ python tools/visualizations/vis_cam.py \
 |   Dog     | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429526-f27f4cce-89b9-4117-bfe6-55c2ca7eaba6.png' style=" width: 236px; height: 236px; "></div> | ![](https://user-images.githubusercontent.com/18586273/144433562-968a57bc-17d9-413e-810e-f91e334d648a.jpg)    |![](https://user-images.githubusercontent.com/18586273/144433736-1500401d-6d95-4d6c-80f4-3888fd011d7e.jpg)    |![](https://user-images.githubusercontent.com/18586273/144433853-319f3a8f-95f2-446d-b84f-3028daca5378.jpg)    |![](https://user-images.githubusercontent.com/18586273/144433937-daef5a69-fd70-428f-98a3-5e7747f4bb88.jpg)    |
 |   Cat     | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429526-f27f4cce-89b9-4117-bfe6-55c2ca7eaba6.png' style=" width: 236px; height: 236px; "></div> | ![GradCAM](https://user-images.githubusercontent.com/18586273/144434518-867ae32a-1cb5-4dbd-b1b9-5e375e94ea48.jpg)   |  ![](https://user-images.githubusercontent.com/18586273/144434533-e9410fd4-f5cc-4d60-a17e-02dc5d9a90d0.jpg)   |![](https://user-images.githubusercontent.com/18586273/144434603-0a2fd9ec-c02e-4e6c-a17b-64c234808c56.jpg) |![](https://user-images.githubusercontent.com/18586273/144434623-b4432cc2-c663-4b97-aed3-583d9d3743e6.jpg)   |
 
-3.使用 `--eigen-smooth` 以及 `--aug-smooth` 获取更好的效果。
+3.Use `--eigen-smooth` and `--aug-smooth` to improve visual effects.
 
 ```shell
 python tools/visualizations/vis_cam.py \
@@ -226,16 +225,16 @@ python tools/visualizations/vis_cam.py \
 
 | Category  | Image | GradCAM  |  eigen-smooth |  aug-smooth |  eigen-smooth & aug-smooth  |
 | --------- |-------|----------|------------|-------------- |------------|
-| Bird | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429496-628d3fb3-1f6e-41ff-aa5c-1b08c60c32a9.JPEG' style=" width: 236px; height: 236px; "></div> | ![](https://user-images.githubusercontent.com/18586273/144435372-10b1c57b-dc24-4e03-85f6-95e0e0746c59.jpg)   |  ![](https://user-images.githubusercontent.com/18586273/144435422-4f57a32a-f071-434d-b18c-0afa1afcf621.jpg)   |![](https://user-images.githubusercontent.com/18586273/144435488-2bb2b5dd-0b02-4146-929f-7a374adeef2f.jpg)   |![](https://user-images.githubusercontent.com/18586273/144435512-97e84f4d-a952-42b1-8a79-d1fd89a24dc0.jpg)   |
+| Bird | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557492-98ac5ce0-61f9-4da9-8ea7-396d0b6a20fa.jpg' style=" width: 236px; height: 236px; "></div> | ![](https://user-images.githubusercontent.com/18586273/144557541-a4cf7d86-7267-46f9-937c-6f657ea661b4.jpg)   |  ![](https://user-images.githubusercontent.com/18586273/144557547-2731b53e-e997-4dd2-a092-64739cc91959.jpg)   |![](https://user-images.githubusercontent.com/18586273/144557545-8189524a-eb92-4cce-bf6a-760cab4a8065.jpg)   |![](https://user-images.githubusercontent.com/18586273/144557548-c1e3f3ec-3c96-43d4-874a-3b33cd3351c5.jpg)   |
 
 **Examples(Transformer)**：
 
-Transformer 类的网络，目前只支持 `SwinTransformer`、`T2T-Vit` 和 `VisionTransformer`，`target-layers` 需要设置为 `layer norm`,如：
+supports `SwinTransformer`、`T2T-Vit` 和 `VisionTransformer`，`target-layers` need to be set `layer norm`, here are some examples:
 
 - `model.backbone.norm3`
 - `model.backbone.layers.11.ln1`
 
-1.对 `Swin Transformer` 进行 CAM 可视化：
+1.to visualize CAM from `Swin Transformer`:
 
 ```shell
 python tools/visualizations/vis_cam.py \
@@ -245,7 +244,7 @@ python tools/visualizations/vis_cam.py \
     --target-layers model.backbone.norm3
 ```
 
-2.对 `Vision Transformer(ViT)` 进行 CAM 可视化：
+2.to visualize CAM from `Vision Transformer(ViT)`:
 
 ```shell
 python tools/visualizations/vis_cam.py \
@@ -255,7 +254,7 @@ python tools/visualizations/vis_cam.py \
     --target-layers model.backbone.layers.11.ln1
 ```
 
-3.对 `T2T-ViT` 进行 CAM 可视化：
+3.to visualize CAM from `T2T-ViT`:
 
 ```shell
 python tools/visualizations/vis_cam.py \

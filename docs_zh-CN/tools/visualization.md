@@ -227,9 +227,9 @@ python tools/visualizations/vis_cam.py \
     --eigen-smooth --aug-smooth
 ```
 
-| Category  | Image | GradCAM  |  eigen-smooth |  aug-smooth |  eigen-smooth & aug-smooth  |
+| Category  | Image | LayerCAM  |  eigen-smooth |  aug-smooth |  eigen-smooth & aug-smooth  |
 | --------- |-------|----------|------------|-------------- |------------|
-| Bird | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429496-628d3fb3-1f6e-41ff-aa5c-1b08c60c32a9.JPEG' style=" width: 236px; height: 236px; "></div> | ![](https://user-images.githubusercontent.com/18586273/144435372-10b1c57b-dc24-4e03-85f6-95e0e0746c59.jpg)   |  ![](https://user-images.githubusercontent.com/18586273/144435422-4f57a32a-f071-434d-b18c-0afa1afcf621.jpg)   |![](https://user-images.githubusercontent.com/18586273/144435488-2bb2b5dd-0b02-4146-929f-7a374adeef2f.jpg)   |![](https://user-images.githubusercontent.com/18586273/144435512-97e84f4d-a952-42b1-8a79-d1fd89a24dc0.jpg)   |
+| Dog | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557492-98ac5ce0-61f9-4da9-8ea7-396d0b6a20fa.jpg' style=" width: 236px; height: 236px; "></div> | ![](https://user-images.githubusercontent.com/18586273/144557541-a4cf7d86-7267-46f9-937c-6f657ea661b4.jpg)   |  ![](https://user-images.githubusercontent.com/18586273/144557547-2731b53e-e997-4dd2-a092-64739cc91959.jpg)   | ![](https://user-images.githubusercontent.com/18586273/144557545-8189524a-eb92-4cce-bf6a-760cab4a8065.jpg)   | ![](https://user-images.githubusercontent.com/18586273/144557548-c1e3f3ec-3c96-43d4-874a-3b33cd3351c5.jpg)   |
 
 **示例（Transformer）**：
 
@@ -268,7 +268,7 @@ python tools/visualizations/vis_cam.py \
     --target-layers model.backbone.encoder.13.ln1
 ```
 
-| Image | ResNet50  |  ViT |  Swin |  T2T-Vit  |
+| Image | ResNet50  |  ViT |  Swin |  T2T-ViT  |
 |-------|----------|------------|-------------- |------------|
 | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429496-628d3fb3-1f6e-41ff-aa5c-1b08c60c32a9.JPEG' style=" width: 236px; height: 236px; "></div> | <div align=center><img src=https://user-images.githubusercontent.com/18586273/144431491-a2e19fe3-5c12-4404-b2af-a9552f5a95d9.jpg ></div> |<div align=center><img src='https://user-images.githubusercontent.com/18586273/144436218-245a11de-6234-4852-9c08-ff5069f6a739.jpg' style=" width: 224px; height: 224px; "></div>   |  ![](https://user-images.githubusercontent.com/18586273/144436168-01b0e565-442c-4e1e-910c-17c62cff7cd3.jpg)   |![](https://user-images.githubusercontent.com/18586273/144436198-51dbfbda-c48d-48cc-ae06-1a923d19b6f6.jpg)  |
 
