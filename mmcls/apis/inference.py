@@ -34,8 +34,9 @@ def init_model(config, checkpoint=None, device='cuda:0', options=None):
     config.model.pretrained = None
     model = build_classifier(config.model)
     if checkpoint is not None:
-        map_loc = 'cpu' if device == 'cpu' else None
-        checkpoint = load_checkpoint(model, checkpoint, map_location=map_loc)
+        # Mapping the weights to GPU may cause unexpected video memory leak
+        # which refers to https://github.com/open-mmlab/mmdetection/pull/6405
+        checkpoint = load_checkpoint(model, checkpoint, map_location='cpu')
         if 'CLASSES' in checkpoint.get('meta', {}):
             model.CLASSES = checkpoint['meta']['CLASSES']
         else:

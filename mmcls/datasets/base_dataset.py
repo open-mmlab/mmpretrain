@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
 from abc import ABCMeta, abstractmethod
+from typing import List
 
 import mmcv
 import numpy as np
@@ -33,7 +34,6 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
                  ann_file=None,
                  test_mode=False):
         super(BaseDataset, self).__init__()
-
         self.ann_file = ann_file
         self.data_prefix = data_prefix
         self.test_mode = test_mode
@@ -65,17 +65,17 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         gt_labels = np.array([data['gt_label'] for data in self.data_infos])
         return gt_labels
 
-    def get_cat_ids(self, idx):
+    def get_cat_ids(self, idx: int) -> List[int]:
         """Get category id by index.
 
         Args:
             idx (int): Index of data.
 
         Returns:
-            int: Image category of specified index.
+            cat_ids (List[int]): Image category of specified index.
         """
 
-        return self.data_infos[idx]['gt_label'].astype(np.int)
+        return [int(self.data_infos[idx]['gt_label'])]
 
     def prepare_data(self, idx):
         results = copy.deepcopy(self.data_infos[idx])

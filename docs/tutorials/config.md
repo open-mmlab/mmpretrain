@@ -77,7 +77,7 @@ repvgg-D2se_deploy_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py
   + `lbs`: Use label smoothing loss.
   + `mixup`: Use `mixup` training augment method.
   + `coslr`: Use cosine learning rate scheduler.
-  + `200e`: Train the model for 200 epoches.
+  + `200e`: Train the model for 200 epochs.
 - `in1k`: Dataset information. The config is for `ImageNet1k` dataset and the input size is `224x224`.
 
 ```{note}
@@ -103,7 +103,7 @@ There are four kinds of basic component file in the `configs/_base_` folders, na
 
 You can easily build your own training config file by inherit some base config files. And the configs that are composed by components from `_base_` are called _primitive_.
 
-For easy understanding, we use [ResNet50 primitive config](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet50_b32x8_imagenet.py) as a example and comment the meaning of each line. For more detaile, please refer to the API documentation.
+For easy understanding, we use [ResNet50 primitive config](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet50_8xb32_in1k.py) as a example and comment the meaning of each line. For more detaile, please refer to the API documentation.
 
 ```python
 _base_ = [
@@ -118,11 +118,11 @@ The four parts are explained separately below, and the above-mentioned ResNet50 
 
 ### model
 The parameter `"model"` is a python dictionary in the configuration file, which mainly includes information such as network structure and loss function:
-- `type` ： Classifier name, MMCls supports `ImageClassifier`, refer to [API document](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.classifiers).
-- `backbone` ： Backbone configs, refer to [API document](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.backbones) for available options.
-- `neck` ：Neck network name, MMCls supports `GlobalAveragePooling`, please refer to [API document](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.necks).
-- `head`: Head network name, MMCls supports single-label and multi-label classification head networks, available options refer to [API document](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.heads).
-    - `loss`: Loss function type, supports `CrossEntropyLoss`, [`LabelSmoothLoss`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_label_smooth.py) etc., For available options, refer to [API Document](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.losses).
+- `type` ： Classifier name, MMCls supports `ImageClassifier`, refer to [API documentation](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.classifiers).
+- `backbone` ： Backbone configs, refer to [API documentation](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.backbones) for available options.
+- `neck` ：Neck network name, MMCls supports `GlobalAveragePooling`, please refer to [API documentation](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.necks).
+- `head`: Head network name, MMCls supports single-label and multi-label classification head networks, available options refer to [API documentation](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.heads).
+    - `loss`: Loss function type, supports `CrossEntropyLoss`, [`LabelSmoothLoss`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_label_smooth.py) etc., For available options, refer to [API documentation](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.losses).
 - `train_cfg` ：Training augment config, MMCls supports [`mixup`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_mixup.py), [`cutmix`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_cutmix.py) and other augments.
 
 
@@ -157,7 +157,7 @@ The parameter `"data"` is a python dictionary in the configuration file, which m
 - `train ｜ val ｜ test` : config to construct dataset
   - `type`: Dataset name, MMCls supports `ImageNet`, `Cifar` etc., refer to [API documentation](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.datasets)
   - `data_prefix` : Dataset root directory
-  - `pipeline` :  Data processing pipeline, refer to related tutorial documents [CUSTOM DATA PIPELINES](https://mmclassification.readthedocs.io/en/latest/tutorials/data_pipeline.html)
+  - `pipeline` :  Data processing pipeline, refer to related tutorial [CUSTOM DATA PIPELINES](https://mmclassification.readthedocs.io/en/latest/tutorials/data_pipeline.html)
 
 The parameter `evaluation` is also a dictionary, which is the configuration information of `evaluation hook`, mainly including evaluation interval, evaluation index, etc..
 
@@ -260,10 +260,10 @@ For easy understanding, we recommend contributors to inherit from existing metho
 
 For all configs under the same folder, it is recommended to have only **one** _primitive_ config. All other configs should inherit from the _primitive_ config. In this way, the maximum of inheritance level is 3.
 
-For example, if some modifications are made on the basis of ResNet, the user can first inherit the basic ResNet structure, dataset and other training setting by specifying `_base_ ='../../configs/resnet/resnet50_b32x8_imagenet.py'` Information, and then modify the necessary parameters in the configuration file to complete the inheritance. If you want to change the number of training rounds from 100 to 300 epoches based on the basic resnet50, modify the number of learning rate decay rounds, and modify the data set path at the same time, you can create a new configuration file `configs/resnet/resnet50_8xb32-300e_in1k.py`, file write the following in:
+For example, if your config file is based on ResNet with some other modification, you can first inherit the basic ResNet structure, dataset and other training setting by specifying `_base_ ='./resnet50_8xb32_in1k.py'` (The path relative to your config file), and then modify the necessary parameters in the config file. A more specific example, now we want to use almost all configs in `configs/resnet/resnet50_8xb32_in1k.py`, but change the number of training epochs from 100 to 300, modify when to decay the learning rate, and modify the dataset path, you can create a new config file `configs/resnet/resnet50_8xb32-300e_in1k.py` with content as below:
 
 ```python
-_base_ = '../../configs/resnet/resnet50_b32x8_imagenet.py'
+_base_ = './resnet50_8xb32_in1k.py'
 
 runner = dict(max_epochs=300)
 lr_config = dict(step=[150, 200, 250])
@@ -313,7 +313,7 @@ Sometimes, you need to set `_delete_=True` to ignore some domain content in the 
 The following is an example. If you wangt to use cosine schedule in the above ResNet50 case, just using inheritance and directly modify it will report `get unexcepected keyword'step'` error, because the `'step'` field of the basic config in `lr_config` domain information is reserved, and you need to add `_delete_ =True` to ignore the content of `lr_config` related fields in the basic configuration file:
 
 ```python
-_base_ = '../../configs/resnet/resnet50_b32x8_imagenet.py'
+_base_ = '../../configs/resnet/resnet50_8xb32_in1k.py'
 
 lr_config = dict(
     _delete_=True,

@@ -1,7 +1,7 @@
 Welcome to MMClassification's documentation!
 ============================================
 
-You can switch between Chinese and English documents in the lower-left corner of the layout.
+You can switch between Chinese and English documentation in the lower-left corner of the layout.
 
 您可以在页面左下角切换中英文文档。
 
@@ -22,6 +22,8 @@ You can switch between Chinese and English documents in the lower-left corner of
    tutorials/new_dataset.md
    tutorials/data_pipeline.md
    tutorials/new_modules.md
+   tutorials/schedule.md
+   tutorials/runtime.md
 
 
 .. include:: _model_zoo.rst

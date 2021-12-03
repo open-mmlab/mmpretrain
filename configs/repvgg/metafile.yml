@@ -14,7 +14,7 @@ Collections:
       Version: v0.16.0
 
 Models:
-  - Name: repvgg-A0_4xb64-coslr-120e_in1k
+  - Name: repvgg-A0_3rdparty_4xb64-coslr-120e_in1k
     In Collection: RepVGG
     Config: configs/repvgg/repvgg-A0_4xb64-coslr-120e_in1k.py
     Metadata:
@@ -30,8 +30,8 @@ Models:
     Converted From:
       Weights: https://drive.google.com/drive/folders/1Avome4KvNp0Lqh2QwhXO6L5URQjzCjUq
       Code: https://github.com/DingXiaoH/RepVGG/blob/9f272318abfc47a2b702cd0e916fca8d25d683e7/repvgg.py#L196
-  - Name: repvgg-A1_4xb64-coslr-120e_in1k
-    In Collection: Repvgg
+  - Name: repvgg-A1_3rdparty_4xb64-coslr-120e_in1k
+    In Collection: RepVGG
     Config: configs/repvgg/repvgg-A1_4xb64-coslr-120e_in1k.py
     Metadata:
       FLOPs: 2640000000
@@ -46,8 +46,8 @@ Models:
     Converted From:
       Weights: https://drive.google.com/drive/folders/1Avome4KvNp0Lqh2QwhXO6L5URQjzCjUq
       Code: https://github.com/DingXiaoH/RepVGG/blob/9f272318abfc47a2b702cd0e916fca8d25d683e7/repvgg.py#L200
-  - Name: repvgg-A2_4xb64-coslr-120e_in1k
-    In Collection: Repvgg
+  - Name: repvgg-A2_3rdparty_4xb64-coslr-120e_in1k
+    In Collection: RepVGG
     Config: configs/repvgg/repvgg-A2_4xb64-coslr-120e_in1k.py
     Metadata:
       FLOPs: 28210000000
@@ -62,7 +62,7 @@ Models:
     Converted From:
       Weights: https://drive.google.com/drive/folders/1Avome4KvNp0Lqh2QwhXO6L5URQjzCjUq
       Code: https://github.com/DingXiaoH/RepVGG/blob/9f272318abfc47a2b702cd0e916fca8d25d683e7/repvgg.py#L204
-  - Name: repvgg-B0_4xb64-coslr-120e_in1k
+  - Name: repvgg-B0_3rdparty_4xb64-coslr-120e_in1k
     In Collection: RepVGG
     Config: configs/repvgg/repvgg-B0_4xb64-coslr-120e_in1k.py
     Metadata:
@@ -78,7 +78,7 @@ Models:
     Converted From:
       Weights: https://drive.google.com/drive/folders/1Avome4KvNp0Lqh2QwhXO6L5URQjzCjUq
       Code: https://github.com/DingXiaoH/RepVGG/blob/9f272318abfc47a2b702cd0e916fca8d25d683e7/repvgg.py#L208
-  - Name: repvgg-B1_4xb64-coslr-120e_in1k
+  - Name: repvgg-B1_3rdparty_4xb64-coslr-120e_in1k
     In Collection: RepVGG
     Config: configs/repvgg/repvgg-B1_4xb64-coslr-120e_in1k.py
     Metadata:
@@ -94,7 +94,7 @@ Models:
     Converted From:
       Weights: https://drive.google.com/drive/folders/1Avome4KvNp0Lqh2QwhXO6L5URQjzCjUq
       Code: https://github.com/DingXiaoH/RepVGG/blob/9f272318abfc47a2b702cd0e916fca8d25d683e7/repvgg.py#L212
-  - Name: repvgg-B1g2_4xb64-coslr-120e_in1k
+  - Name: repvgg-B1g2_3rdparty_4xb64-coslr-120e_in1k
     In Collection: RepVGG
     Config: configs/repvgg/repvgg-B1g2_4xb64-coslr-120e_in1k.py
     Metadata:
@@ -110,7 +110,7 @@ Models:
     Converted From:
       Weights: https://drive.google.com/drive/folders/1Avome4KvNp0Lqh2QwhXO6L5URQjzCjUq
       Code: https://github.com/DingXiaoH/RepVGG/blob/9f272318abfc47a2b702cd0e916fca8d25d683e7/repvgg.py#L216
-  - Name: repvgg-B1g4_4xb64-coslr-120e_in1k
+  - Name: repvgg-B1g4_3rdparty_4xb64-coslr-120e_in1k
     In Collection: RepVGG
     Config: configs/repvgg/repvgg-B1g4_4xb64-coslr-120e_in1k.py
     Metadata:
@@ -126,7 +126,7 @@ Models:
     Converted From:
       Weights: https://drive.google.com/drive/folders/1Avome4KvNp0Lqh2QwhXO6L5URQjzCjUq
       Code: https://github.com/DingXiaoH/RepVGG/blob/9f272318abfc47a2b702cd0e916fca8d25d683e7/repvgg.py#L220
-  - Name: repvgg-B2_4xb64-coslr-120e_in1k
+  - Name: repvgg-B2_3rdparty_4xb64-coslr-120e_in1k
     In Collection: RepVGG
     Config: configs/repvgg/repvgg-B2_4xb64-coslr-120e_in1k.py
     Metadata:
@@ -142,7 +142,7 @@ Models:
     Converted From:
       Weights: https://drive.google.com/drive/folders/1Avome4KvNp0Lqh2QwhXO6L5URQjzCjUq
       Code: https://github.com/DingXiaoH/RepVGG/blob/9f272318abfc47a2b702cd0e916fca8d25d683e7/repvgg.py#L225
-  - Name: repvgg-B2g4_4xb64-autoaug-lbs-mixup-coslr-200e_in1k
+  - Name: repvgg-B2g4_3rdparty_4xb64-autoaug-lbs-mixup-coslr-200e_in1k
     In Collection: RepVGG
     Config: configs/repvgg/repvgg-B2g4_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py
     Metadata:
@@ -158,7 +158,7 @@ Models:
     Converted From:
       Weights: https://drive.google.com/drive/folders/1Avome4KvNp0Lqh2QwhXO6L5URQjzCjUq
       Code: https://github.com/DingXiaoH/RepVGG/blob/9f272318abfc47a2b702cd0e916fca8d25d683e7/repvgg.py#L229
-  - Name: repvgg-B3_4xb64-autoaug-lbs-mixup-coslr-200e_in1k
+  - Name: repvgg-B3_3rdparty_4xb64-autoaug-lbs-mixup-coslr-200e_in1k
     In Collection: RepVGG
     Config: configs/repvgg/repvgg-B3_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py
     Metadata:
@@ -174,7 +174,7 @@ Models:
     Converted From:
       Weights: https://drive.google.com/drive/folders/1Avome4KvNp0Lqh2QwhXO6L5URQjzCjUq
       Code: https://github.com/DingXiaoH/RepVGG/blob/9f272318abfc47a2b702cd0e916fca8d25d683e7/repvgg.py#L238
-  - Name: repvgg-B3g4_4xb64-autoaug-lbs-mixup-coslr-200e_in1k
+  - Name: repvgg-B3g4_3rdparty_4xb64-autoaug-lbs-mixup-coslr-200e_in1k
     In Collection: RepVGG
     Config: configs/repvgg/repvgg-B3g4_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py
     Metadata:
@@ -190,7 +190,7 @@ Models:
     Converted From:
       Weights: https://drive.google.com/drive/folders/1Avome4KvNp0Lqh2QwhXO6L5URQjzCjUq
       Code: https://github.com/DingXiaoH/RepVGG/blob/9f272318abfc47a2b702cd0e916fca8d25d683e7/repvgg.py#L238
-  - Name: repvgg-D2se_4xb64-autoaug-lbs-mixup-coslr-200e_in1k
+  - Name: repvgg-D2se_3rdparty_4xb64-autoaug-lbs-mixup-coslr-200e_in1k
     In Collection: RepVGG
     Config: configs/repvgg/repvgg-D2se_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py
     Metadata:

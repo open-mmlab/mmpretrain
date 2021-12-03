@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import warnings
+from typing import List
 
 import numpy as np
 
@@ -10,17 +11,17 @@ from .base_dataset import BaseDataset
 class MultiLabelDataset(BaseDataset):
     """Multi-label Dataset."""
 
-    def get_cat_ids(self, idx):
+    def get_cat_ids(self, idx: int) -> List[int]:
         """Get category ids by index.
 
         Args:
             idx (int): Index of data.
 
         Returns:
-            np.ndarray: Image categories of specified index.
+            cat_ids (List[int]): Image categories of specified index.
         """
         gt_labels = self.data_infos[idx]['gt_label']
-        cat_ids = np.where(gt_labels == 1)[0]
+        cat_ids = np.where(gt_labels == 1)[0].tolist()
         return cat_ids
 
     def evaluate(self,

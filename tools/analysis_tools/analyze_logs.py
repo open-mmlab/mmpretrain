@@ -1,11 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
-import json
-from collections import defaultdict
 
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
+
+from mmcls.utils import load_json_logs
 
 
 def cal_train_time(log_dicts, args):
@@ -57,11 +57,9 @@ def plot_curve(log_dicts, args):
                     f'{args.json_logs[i]} does not contain metric {metric} '
                     f'in train mode')
 
-            if 'mAP' in metric:
-                xs = np.arange(1, max(epochs) + 1)
-                ys = []
-                for epoch in epochs:
-                    ys += log_dict[epoch][metric]
+            if any(m in metric for m in ('mAP', 'accuracy')):
+                xs = epochs
+                ys = [log_dict[e][metric] for e in xs]
                 ax = plt.gca()
                 ax.set_xticks(xs)
                 plt.xlabel('epoch')
@@ -74,6 +72,9 @@ def plot_curve(log_dicts, args):
                     iters = log_dict[epoch]['iter']
                     if log_dict[epoch]['mode'][-1] == 'val':
                         iters = iters[:-1]
+                    assert len(iters) > 0, (
+                        'The training log is empty, please try to reduce the '
+                        'interval of log in config file.')
                     xs.append(
                         np.array(iters) + (epoch - 1) * num_iters_per_epoch)
                     ys.append(np.array(log_dict[epoch][metric][:len(iters)]))
@@ -145,26 +146,6 @@ def parse_args():
     add_time_parser(subparsers)
     args = parser.parse_args()
     return args
-
-
-def load_json_logs(json_logs):
-    # load and convert json_logs to log_dict, key is epoch, value is a sub dict
-    # keys of sub dict is different metrics, e.g. memory, bbox_mAP
-    # value of sub dict is a list of corresponding values of all iterations
-    log_dicts = [dict() for _ in json_logs]
-    for json_log, log_dict in zip(json_logs, log_dicts):
-        with open(json_log, 'r') as log_file:
-            for line in log_file:
-                log = json.loads(line.strip())
-                # skip lines without `epoch` field
-                if 'epoch' not in log:
-                    continue
-                epoch = log.pop('epoch')
-                if epoch not in log_dict:
-                    log_dict[epoch] = defaultdict(list)
-                for k, v in log.items():
-                    log_dict[epoch][k].append(v)
-    return log_dicts
 
 
 def main():

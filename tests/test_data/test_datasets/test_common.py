@@ -6,15 +6,24 @@ import numpy as np
 import pytest
 import torch
 
-from mmcls.datasets import DATASETS, BaseDataset, MultiLabelDataset
+from mmcls.datasets import (DATASETS, BaseDataset, ImageNet21k,
+                            MultiLabelDataset)
 
 
-@pytest.mark.parametrize(
-    'dataset_name',
-    ['MNIST', 'FashionMNIST', 'CIFAR10', 'CIFAR100', 'ImageNet', 'VOC'])
+@pytest.mark.parametrize('dataset_name', [
+    'MNIST', 'FashionMNIST', 'CIFAR10', 'CIFAR100', 'ImageNet', 'VOC',
+    'ImageNet21k'
+])
 def test_datasets_override_default(dataset_name):
     dataset_class = DATASETS.get(dataset_name)
-    dataset_class.load_annotations = MagicMock()
+    load_annotations_f = dataset_class.load_annotations
+    ann = [
+        dict(
+            img_prefix='',
+            img_info=dict(),
+            gt_label=np.array(0, dtype=np.int64))
+    ]
+    dataset_class.load_annotations = MagicMock(return_value=ann)
 
     original_classes = dataset_class.CLASSES
 
@@ -40,6 +49,12 @@ def test_datasets_override_default(dataset_name):
         classes=('bus', 'car'),
         test_mode=True)
     assert dataset.CLASSES == ('bus', 'car')
+
+    # Test get_cat_ids
+    if dataset_name not in ['ImageNet21k', 'VOC']:
+        assert isinstance(dataset.get_cat_ids(0), list)
+        assert len(dataset.get_cat_ids(0)) == 1
+        assert isinstance(dataset.get_cat_ids(0)[0], int)
 
     # Test setting classes as a list
     dataset = dataset_class(
@@ -81,6 +96,8 @@ def test_datasets_override_default(dataset_name):
     assert not dataset.test_mode
     assert dataset.ann_file is None
     assert dataset.CLASSES == original_classes
+
+    dataset_class.load_annotations = load_annotations_f
 
 
 @patch.multiple(MultiLabelDataset, __abstractmethods__=set())
@@ -248,3 +265,48 @@ def test_dataset_evaluation():
     assert 'CR' in eval_results.keys()
     assert 'OF1' in eval_results.keys()
     assert 'CF1' not in eval_results.keys()
+
+
+def test_dataset_imagenet21k():
+    base_dataset_cfg = dict(
+        data_prefix='tests/data/dataset', pipeline=[], recursion_subdir=True)
+
+    with pytest.raises(NotImplementedError):
+        # multi_label have not be implemented
+        dataset_cfg = base_dataset_cfg.copy()
+        dataset_cfg.update({'multi_label': True})
+        dataset = ImageNet21k(**dataset_cfg)
+
+    with pytest.raises(TypeError):
+        # ann_file must be a string or None
+        dataset_cfg = base_dataset_cfg.copy()
+        ann_file = {'path': 'tests/data/dataset/ann.txt'}
+        dataset_cfg.update({'ann_file': ann_file})
+        dataset = ImageNet21k(**dataset_cfg)
+
+    # test with recursion_subdir is True
+    dataset = ImageNet21k(**base_dataset_cfg)
+    assert len(dataset) == 3
+    assert isinstance(dataset[0], dict)
+    assert 'img_prefix' in dataset[0]
+    assert 'img_info' in dataset[0]
+    assert 'gt_label' in dataset[0]
+
+    # Test get_cat_ids
+    assert isinstance(dataset.get_cat_ids(0), list)
+    assert len(dataset.get_cat_ids(0)) == 1
+    assert isinstance(dataset.get_cat_ids(0)[0], int)
+
+    # test with recursion_subdir is False
+    dataset_cfg = base_dataset_cfg.copy()
+    dataset_cfg['recursion_subdir'] = False
+    dataset = ImageNet21k(**dataset_cfg)
+    assert len(dataset) == 2
+    assert isinstance(dataset[0], dict)
+
+    # test with load annotation from ann file
+    dataset_cfg = base_dataset_cfg.copy()
+    dataset_cfg['ann_file'] = 'tests/data/dataset/ann.txt'
+    dataset = ImageNet21k(**dataset_cfg)
+    assert len(dataset) == 3
+    assert isinstance(dataset[0], dict)
