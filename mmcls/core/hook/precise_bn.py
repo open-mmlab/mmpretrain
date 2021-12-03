@@ -1,16 +1,16 @@
 # Adapted from https://github.com/facebookresearch/pycls/blob/f8cd962737e33ce9e19b3083a33551da95c2d9c0/pycls/core/net.py  # noqa: E501
 # Original licence: Copyright (c) 2019 Facebook, Inc under the Apache License 2.0  # noqa: E501
 
+import itertools
 import logging
 
 import mmcv
 import torch
 from mmcv.parallel import MMDistributedDataParallel
 from mmcv.runner import get_dist_info
+from mmcv.runner.hooks import HOOKS, Hook
 from mmcv.utils import print_log
 from torch.nn.parallel import DataParallel, DistributedDataParallel
-from torch.utils.data import DataLoader
-from mmcv.runner.hooks import HOOKS, Hook
 
 
 def is_parallel_module(module):
@@ -57,15 +57,15 @@ def scaled_all_reduce(tensors, NUM_GPUS):
 
 
 @torch.no_grad()
-def update_bn_stats(model, loaders, NUM_SAMPLES_PRECISE=8192, logger=None):
+def update_bn_stats(model, loader, num_samples=8192, logger=None):
     """Computes precise BN stats on training data.
 
     the actual num_items is :
-      int(NUM_SAMPLES_PRECISE / batch_size / NUM_GPUS) * batch_size * NUM_GPUS
+      int(num_samples / batch_size / NUM_GPUS) * batch_size * NUM_GPUS
 
     Attributes:
-        model (): A pytorch NN model.
-        loaders (List[DataLoader]): A List of PyTorch dataloader.
+        model (nn.module): A pytorch NN model.
+        loader (DataLoader): PyTorch dataloader.
         num_items (int): Number of iterations to update the bn stats.
             Default: 8192.
         logger : the logger.
@@ -76,12 +76,12 @@ def update_bn_stats(model, loaders, NUM_SAMPLES_PRECISE=8192, logger=None):
         model = model.module
     else:
         parallel_module = model
+
     # get dist info
-    rank, world_size = get_dist_info()
-    NUM_GPUS = world_size
+    rank, NUM_GPUS = get_dist_info()
     # Compute the number of minibatches to use
-    num_iter = int(NUM_SAMPLES_PRECISE / (loaders[0].batch_size * NUM_GPUS))
-    num_iter = min(num_iter, sum([len(loader) for loader in loaders]))
+    num_iter = num_samples // (loader.batch_size * NUM_GPUS)
+    num_iter = min(num_iter, len(loader))
     # Retrieve the BN layers
     bn_layers = [
         m for m in model.modules()
@@ -108,23 +108,13 @@ def update_bn_stats(model, loaders, NUM_SAMPLES_PRECISE=8192, logger=None):
     if rank == 0:
         prog_bar = mmcv.ProgressBar(num_iter)
 
-    count = 0
-    finish = False
-    for loader in loaders:
-        for data in loader:
-            parallel_module(**data)
-            for i, bn in enumerate(bn_layers):
-                running_means[i] += bn.running_mean / num_iter
-                running_vars[i] += bn.running_var / num_iter
-            count += 1
-            if count >= num_iter:
-                finish = True
-                break
-
-            if rank == 0:
-                prog_bar.update()
-        if finish:
-            break
+    for data in itertools.islice(loader, num_iter):
+        parallel_module(**data)
+        for i, bn in enumerate(bn_layers):
+            running_means[i] += bn.running_mean / num_iter
+            running_vars[i] += bn.running_var / num_iter
+        if rank == 0:
+            prog_bar.update()
 
     # Sync BN stats across GPUs (no reduction if 1 GPU used)
     running_means = scaled_all_reduce(running_means, NUM_GPUS)
@@ -141,33 +131,28 @@ class PreciseBNHook(Hook):
     """Precise BN hook.
 
     Attributes:
-        dataloaders (DataLoader): A List of PyTorch dataloader.
         num_items (int): Number of iterations to update the bn stats.
             Default: 8192.
         interval (int): Perform precise bn interval (by epochs). Default: 1.
     """
 
-    def __init__(self, dataloaders, num_items=8192, interval=1):
-        assert len(dataloaders) > 0, 'dataloaders is empty...'
-        if not isinstance(dataloaders, list):
-            raise TypeError('dataloaders must be a List,but got',
-                            f' {type(dataloaders)}')
-        if not isinstance(dataloaders[0], DataLoader):
-            raise TypeError(
-                'dataloaders must be a list of Pytorch Dataloaders ,but got',
-                f' {type(dataloaders[0])}')
-        self.dataloaders = dataloaders
+    def __init__(self, num_items=8192, interval=1):
         self.interval = interval
         self.num_items = num_items
 
     def after_train_epoch(self, runner):
+        """Calculate prcise BN and broadcast BN stats across GPUs.
+
+        Args:
+            runner (obj:`EpochBasedRunner`, `IterBasedRunner`): runner object.
+        """
         if self.every_n_epochs(runner, self.interval):
             print_log(
                 f'Running Precise BN for {self.num_items} items...',
                 logger=runner.logger)
             update_bn_stats(
                 runner.model,
-                self.dataloaders,
+                runner.data_loader,
                 self.num_items,
                 logger=runner.logger)
             print_log(
