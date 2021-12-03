@@ -5,13 +5,14 @@ from collections import defaultdict
 from unittest.mock import MagicMock, patch
 
 import numpy as np
+import pytest
 
 from mmcls.datasets import (BaseDataset, ClassBalancedDataset, ConcatDataset,
                             RepeatDataset)
 
 
 @patch.multiple(BaseDataset, __abstractmethods__=set())
-def construct_toy_dataset(length):
+def construct_toy_multi_label_dataset(length):
     BaseDataset.CLASSES = ('foo', 'bar')
     BaseDataset.__getitem__ = MagicMock(side_effect=lambda idx: idx)
     dataset = BaseDataset(data_prefix='', pipeline=[], test_mode=True)
@@ -25,7 +26,23 @@ def construct_toy_dataset(length):
     return dataset, cat_ids_list
 
 
-def test_concat_dataset():
+@patch.multiple(BaseDataset, __abstractmethods__=set())
+def construct_toy_single_label_dataset(length):
+    BaseDataset.CLASSES = ('foo', 'bar')
+    BaseDataset.__getitem__ = MagicMock(side_effect=lambda idx: idx)
+    dataset = BaseDataset(data_prefix='', pipeline=[], test_mode=True)
+    cat_ids_list = [[np.random.randint(0, 80)] for _ in range(length)]
+    dataset.data_infos = MagicMock()
+    dataset.data_infos.__len__.return_value = length
+    dataset.get_cat_ids = MagicMock(side_effect=lambda idx: cat_ids_list[idx])
+    return dataset, cat_ids_list
+
+
+@pytest.mark.parametrize('construct_dataset', [
+    'construct_toy_multi_label_dataset', 'construct_toy_single_label_dataset'
+])
+def test_concat_dataset(construct_dataset):
+    construct_toy_dataset = eval(construct_dataset)
     dataset_a, cat_ids_list_a = construct_toy_dataset(10)
     dataset_b, cat_ids_list_b = construct_toy_dataset(20)
 
@@ -38,7 +55,11 @@ def test_concat_dataset():
     assert concat_dataset.CLASSES == BaseDataset.CLASSES
 
 
-def test_repeat_dataset():
+@pytest.mark.parametrize('construct_dataset', [
+    'construct_toy_multi_label_dataset', 'construct_toy_single_label_dataset'
+])
+def test_repeat_dataset(construct_dataset):
+    construct_toy_dataset = eval(construct_dataset)
     dataset, cat_ids_list = construct_toy_dataset(10)
     repeat_dataset = RepeatDataset(dataset, 10)
     assert repeat_dataset[5] == 5
@@ -51,7 +72,11 @@ def test_repeat_dataset():
     assert repeat_dataset.CLASSES == BaseDataset.CLASSES
 
 
-def test_class_balanced_dataset():
+@pytest.mark.parametrize('construct_dataset', [
+    'construct_toy_multi_label_dataset', 'construct_toy_single_label_dataset'
+])
+def test_class_balanced_dataset(construct_dataset):
+    construct_toy_dataset = eval(construct_dataset)
     dataset, cat_ids_list = construct_toy_dataset(10)
 
     category_freq = defaultdict(int)
