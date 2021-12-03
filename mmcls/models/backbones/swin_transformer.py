@@ -9,6 +9,7 @@ from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.transformer import FFN
 from mmcv.cnn.utils.weight_init import trunc_normal_
 from mmcv.runner.base_module import BaseModule, ModuleList
+from mmcv.utils.parrots_wrapper import _BatchNorm
 
 from ..builder import BACKBONES
 from ..utils import PatchEmbed, PatchMerging, ShiftWindowMSA
@@ -448,5 +449,5 @@ class SwinTransformer(BaseBackbone):
         if mode and self.norm_eval:
             for m in self.modules():
                 # trick: eval have effect on BatchNorm only
-                if isinstance(m, nn.modules.LayerNorm):
+                if isinstance(m, _BatchNorm):
                     m.eval()
