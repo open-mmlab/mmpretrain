@@ -236,6 +236,9 @@ class SwinTransformer(BaseBackbone):
         with_cp (bool, optional): Use checkpoint or not. Using checkpoint
             will save some memory while slowing down the training speed.
             Defaults to False.
+        frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
+            option: -1, 0,1,2,3
+            -1 means not freezing any parameters. Default: -1.
         auto_pad (bool): If True, auto pad feature map to fit window_size.
             Defaults to False.
         norm_cfg (dict, optional): Config dict for normalization layer at end
@@ -292,7 +295,7 @@ class SwinTransformer(BaseBackbone):
                  use_abs_pos_embed=False,
                  auto_pad=False,
                  with_cp=False,
-                 frozen=False,
+                 frozen_stages=-1,
                  norm_eval=False,
                  norm_cfg=dict(type='LN'),
                  stage_cfgs=dict(),
@@ -318,7 +321,7 @@ class SwinTransformer(BaseBackbone):
         self.out_indices = out_indices
         self.use_abs_pos_embed = use_abs_pos_embed
         self.auto_pad = auto_pad
-        self.frozen = frozen
+        self.frozen_stages = frozen_stages
 
         _patch_cfg = {
             'img_size': img_size,
@@ -432,13 +435,13 @@ class SwinTransformer(BaseBackbone):
                                       *args, **kwargs)
 
     def _freeze_stages(self):
-        if self.frozen:
+        if self.frozen_stages >= 0:
             self.patch_embed.eval()
             for param in self.patch_embed.parameters():
                 param.requires_grad = False
 
-        for i in range(len(self.stages)):
-            m = self.stages[i]
+        for i in range(0, self.frozen_stages + 1):
+            m = getattr(self, 'stages')[i]
             m.eval()
             for param in m.parameters():
                 param.requires_grad = False
