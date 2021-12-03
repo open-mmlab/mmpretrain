@@ -4,9 +4,9 @@ from unittest.mock import patch
 import pytest
 import torch
 
-from mmcls.models.heads import (ClsHead, LinearClsHead, MultiLabelClsHead,
-                                MultiLabelLinearClsHead, StackedLinearClsHead,
-                                VisionTransformerClsHead)
+from mmcls.models.heads import (ClsHead, DeiTClsHead, LinearClsHead,
+                                MultiLabelClsHead, MultiLabelLinearClsHead,
+                                StackedLinearClsHead, VisionTransformerClsHead)
 
 
 @pytest.mark.parametrize('feat', [torch.rand(4, 3), (torch.rand(4, 3), )])
@@ -157,3 +157,44 @@ def test_vit_head():
     # test assertion
     with pytest.raises(ValueError):
         VisionTransformerClsHead(-1, 100)
+
+
+def test_deit_head():
+    fake_features = ([
+        torch.rand(4, 7, 7, 16),
+        torch.rand(4, 100),
+        torch.rand(4, 100)
+    ], )
+    fake_gt_label = torch.randint(0, 10, (4, ))
+
+    # test deit head forward
+    head = DeiTClsHead(num_classes=10, in_channels=100)
+    losses = head.forward_train(fake_features, fake_gt_label)
+    assert not hasattr(head.layers, 'pre_logits')
+    assert not hasattr(head.layers, 'act')
+    assert losses['loss'].item() > 0
+
+    # test deit head forward with hidden layer
+    head = DeiTClsHead(num_classes=10, in_channels=100, hidden_dim=20)
+    losses = head.forward_train(fake_features, fake_gt_label)
+    assert hasattr(head.layers, 'pre_logits') and hasattr(head.layers, 'act')
+    assert losses['loss'].item() > 0
+
+    # test deit head init_weights
+    head = DeiTClsHead(10, 100, hidden_dim=20)
+    head.init_weights()
+    assert abs(head.layers.pre_logits.weight).sum() > 0
+
+    # test simple_test
+    head = DeiTClsHead(10, 100, hidden_dim=20)
+    pred = head.simple_test(fake_features)
+    assert isinstance(pred, list) and len(pred) == 4
+
+    with patch('torch.onnx.is_in_onnx_export', return_value=True):
+        head = DeiTClsHead(10, 100, hidden_dim=20)
+        pred = head.simple_test(fake_features)
+        assert pred.shape == (4, 10)
+
+    # test assertion
+    with pytest.raises(ValueError):
+        DeiTClsHead(-1, 100)
