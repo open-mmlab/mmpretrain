@@ -2,7 +2,10 @@
 import torch
 from torch.utils.data import DistributedSampler as _DistributedSampler
 
+from mmcls.datasets.samplers import SAMPLERS
 
+
+@SAMPLERS.register_module()
 class DistributedSampler(_DistributedSampler):
 
     def __init__(self,

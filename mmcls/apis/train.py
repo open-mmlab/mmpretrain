@@ -105,7 +105,8 @@ def train_model(model,
             num_gpus=len(cfg.gpu_ids),
             dist=distributed,
             round_up=True,
-            seed=cfg.seed) for ds in dataset
+            seed=cfg.seed,
+            sampler_cfg=cfg.sampler) for ds in dataset
     ]
 
     # put model on gpus
