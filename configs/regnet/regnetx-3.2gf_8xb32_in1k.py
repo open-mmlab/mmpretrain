@@ -4,8 +4,14 @@ _base_ = [
     '../_base_/schedules/imagenet_bs256.py', '../_base_/default_runtime.py'
 ]
 
-# precise bn
-precise_bn = dict(num_items=8192, interval=1)
+# precise BN hook
+custom_hooks = [
+    dict(
+        type='PreciseBNHook',
+        num_items=8192,
+        interval=1,
+        priority='ABOVE_NORMAL')
+]
 
 # sgd with nesterov
 optimizer = dict(
