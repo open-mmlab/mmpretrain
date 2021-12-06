@@ -26,6 +26,10 @@ on:
       - 'demo/**'
       - '.dev_scripts/**'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build_without_timm:
     runs-on: ubuntu-latest
