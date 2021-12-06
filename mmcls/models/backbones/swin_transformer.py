@@ -237,8 +237,10 @@ class SwinTransformer(BaseBackbone):
             will save some memory while slowing down the training speed.
             Defaults to False.
         frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
-            option: -1, 0,1,2,3
-            -1 means not freezing any parameters. Default: -1.
+            -1 means not freezing any parameters. Defaults to -1.
+        norm_eval (bool): Whether to set norm layers to eval mode, namely,
+            freeze running stats (mean and var). Note: Effect on Batch Norm
+            and its variants only. Defaults to False.
         auto_pad (bool): If True, auto pad feature map to fit window_size.
             Defaults to False.
         norm_cfg (dict, optional): Config dict for normalization layer at end
@@ -441,10 +443,14 @@ class SwinTransformer(BaseBackbone):
                 param.requires_grad = False
 
         for i in range(0, self.frozen_stages + 1):
-            m = getattr(self, 'stages')[i]
+            m = self.stages[i]
             m.eval()
             for param in m.parameters():
                 param.requires_grad = False
+        for i in self.out_indices:
+            if i <= self.frozen_stages:
+                for param in getattr(self, f'norm{i}').parameters():
+                    param.requires_grad = False
 
     def train(self, mode=True):
         super(SwinTransformer, self).train(mode)
