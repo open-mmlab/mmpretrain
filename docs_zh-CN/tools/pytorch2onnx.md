@@ -54,7 +54,7 @@ python tools/deployment/pytorch2onnx.py \
 
 ```bash
 python tools/deployment/pytorch2onnx.py \
-    configs/resnet/resnet18_b16x8_cifar10.py \
+    configs/resnet/resnet18_8xb16_cifar10.py \
     --checkpoint checkpoints/resnet/resnet18_b16x8_cifar10.pth \
     --output-file checkpoints/resnet/resnet18_b16x8_cifar10.onnx \
     --dynamic-shape \
@@ -69,12 +69,12 @@ python tools/deployment/pytorch2onnx.py \
 
 |     模型     |                               配置文件                                       |     批推理      |  动态输入尺寸 | 备注 |
 | :----------: | :--------------------------------------------------------------------------: | :-------------: | :-----------: | ---- |
-| MobileNetV2  |    `configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py`                     |        Y        |       Y       |      |
-|    ResNet    |          `configs/resnet/resnet18_b16x8_cifar10.py`                          |        Y        |       Y       |      |
-|   ResNeXt    |     `configs/resnext/resnext50_32x4d_b32x8_imagenet.py`                      |        Y        |       Y       |      |
-|  SE-ResNet   |       `configs/seresnet/seresnet50_b32x8_imagenet.py`                        |        Y        |       Y       |      |
-| ShuffleNetV1 | `configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py` |        Y        |       Y       |      |
-| ShuffleNetV2 | `configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py` |        Y        |       Y       |      |
+| MobileNetV2  |    `configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py`                     |        Y        |       Y       |      |
+|    ResNet    |          `configs/resnet/resnet18_8xb16_cifar10.py`                          |        Y        |       Y       |      |
+|   ResNeXt    |     `configs/resnext/resnext50-32x4d_8xb32_in1k.py`                      |        Y        |       Y       |      |
+|  SE-ResNet   |       `configs/seresnet/seresnet50_8xb32_in1k.py`                        |        Y        |       Y       |      |
+| ShuffleNetV1 | `configs/shufflenet_v1/shufflenet-v1-1x_16xb64_in1k.py` |        Y        |       Y       |      |
+| ShuffleNetV2 | `configs/shufflenet_v2/shufflenet-v2-1x_16xb64_in1k.py` |        Y        |       Y       |      |
 
 注：
 

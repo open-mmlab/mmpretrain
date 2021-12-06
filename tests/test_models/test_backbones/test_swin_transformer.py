@@ -9,6 +9,7 @@ import torch
 from mmcv.runner import load_checkpoint, save_checkpoint
 
 from mmcls.models.backbones import SwinTransformer
+from mmcls.models.backbones.swin_transformer import SwinBlock
 
 
 def test_assertion():
@@ -76,6 +77,28 @@ def test_forward():
     output = model(imgs)
     assert len(output) == 1
     assert output[0].shape == (1, 1024, 12, 12)
+
+    # Test multiple output indices
+    imgs = torch.randn(1, 3, 224, 224)
+    model = SwinTransformer(arch='base', out_indices=(0, 1, 2, 3))
+    outs = model(imgs)
+    assert outs[0].shape == (1, 256, 28, 28)
+    assert outs[1].shape == (1, 512, 14, 14)
+    assert outs[2].shape == (1, 1024, 7, 7)
+    assert outs[3].shape == (1, 1024, 7, 7)
+
+    # Test base arch with with checkpoint forward
+    model = SwinTransformer(arch='B', with_cp=True)
+    for m in model.modules():
+        if isinstance(m, SwinBlock):
+            assert m.with_cp
+    model.init_weights()
+    model.train()
+
+    imgs = torch.randn(1, 3, 224, 224)
+    output = model(imgs)
+    assert len(output) == 1
+    assert output[0].shape == (1, 1024, 7, 7)
 
 
 def test_structure():

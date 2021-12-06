@@ -1,4 +1,6 @@
-_base_ = ['../resnet/resnet50_b32x8_imagenet.py']
+_base_ = '../resnet/resnet50_8xb32-fp16-dynamic_in1k.py'
 
-# fp16 settings
-fp16 = dict(loss_scale='dynamic')
+_deprecation_ = dict(
+    expected='../resnet/resnet50_8xb32-fp16-dynamic_in1k.py',
+    reference='https://github.com/open-mmlab/mmclassification/pull/508',
+)

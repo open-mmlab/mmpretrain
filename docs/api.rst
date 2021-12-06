@@ -34,6 +34,11 @@ necks
 .. automodule:: mmcls.models.necks
     :members:
 
+heads
+^^^^^^
+.. automodule:: mmcls.models.heads
+    :members:
+
 losses
 ^^^^^^
 .. automodule:: mmcls.models.losses

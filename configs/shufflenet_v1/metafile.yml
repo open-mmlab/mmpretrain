@@ -20,7 +20,7 @@ Collections:
       Version: v0.15.0
 
 Models:
-  - Name: shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet
+  - Name: shufflenet-v1-1x_16xb64_in1k
     Metadata:
       FLOPs: 146000000
       Parameters: 1870000
@@ -32,4 +32,4 @@ Models:
           Top 5 Accuracy: 87.81
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/shufflenet_v1/shufflenet_v1_batch1024_imagenet_20200804-5d6cec73.pth
-    Config: configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py
+    Config: configs/shufflenet_v1/shufflenet-v1-1x_16xb64_in1k.py

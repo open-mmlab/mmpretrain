@@ -1,9 +1,8 @@
 # Copyright (c) Open-MMLab. All rights reserved.
 import os
 import os.path as osp
-import shutil
 import tempfile
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock
 
 import matplotlib.pyplot as plt
 import mmcv
@@ -52,30 +51,8 @@ def test_imshow_infos():
     assert image.shape == out_image.shape[:2]
     os.remove(tmp_filename)
 
-    # test show=True
-    image = np.ones((10, 10, 3), np.uint8)
-    result = {'pred_label': 1, 'pred_class': 'bird', 'pred_score': 0.98}
 
-    def mock_blocking_input(self, n=1, timeout=30):
-        keypress = Mock()
-        keypress.key = ' '
-        out_path = osp.join(tmp_dir, '_'.join([str(n), str(timeout)]))
-        with open(out_path, 'w') as f:
-            f.write('test')
-        return [keypress]
-
-    with patch('matplotlib.blocking_input.BlockingInput.__call__',
-               mock_blocking_input):
-        vis.imshow_infos(image, result, show=True, wait_time=5)
-        assert osp.exists(osp.join(tmp_dir, '1_0'))
-
-    shutil.rmtree(tmp_dir)
-
-
-@patch(
-    'matplotlib.blocking_input.BlockingInput.__call__',
-    return_value=[Mock(key=' ')])
-def test_context_manager(mock_blocking_input):
+def test_figure_context_manager():
     # test show multiple images with the same figure.
     images = [
         np.random.randint(0, 255, (100, 100, 3), np.uint8) for _ in range(5)
@@ -85,22 +62,39 @@ def test_context_manager(mock_blocking_input):
     with vis.ImshowInfosContextManager() as manager:
         fig_show = manager.fig_show
         fig_save = manager.fig_save
+
+        # Test time out
+        fig_show.canvas.start_event_loop = MagicMock()
+        fig_show.canvas.end_event_loop = MagicMock()
         for image in images:
-            out_image = manager.put_img_infos(image, result, show=True)
+            ret, out_image = manager.put_img_infos(image, result, show=True)
+            assert ret == 0
             assert image.shape == out_image.shape
             assert not np.allclose(image, out_image)
             assert fig_show is manager.fig_show
             assert fig_save is manager.fig_save
 
-    # test rebuild figure if user destroyed it.
-    with vis.ImshowInfosContextManager() as manager:
-        fig_save = manager.fig_save
+        # Test continue key
+        fig_show.canvas.start_event_loop = (
+            lambda _: fig_show.canvas.key_press_event(' '))
         for image in images:
-            fig_show = manager.fig_show
-            plt.close(manager.fig_show)
-
-            out_image = manager.put_img_infos(image, result, show=True)
+            ret, out_image = manager.put_img_infos(image, result, show=True)
+            assert ret == 0
             assert image.shape == out_image.shape
             assert not np.allclose(image, out_image)
-            assert not (fig_show is manager.fig_show)
+            assert fig_show is manager.fig_show
             assert fig_save is manager.fig_save
+
+        # Test close figure manually
+        fig_show = manager.fig_show
+
+        def destroy(*_, **__):
+            fig_show.canvas.close_event()
+            plt.close(fig_show)
+
+        fig_show.canvas.start_event_loop = destroy
+        ret, out_image = manager.put_img_infos(images[0], result, show=True)
+        assert ret == 1
+        assert image.shape == out_image.shape
+        assert not np.allclose(image, out_image)
+        assert fig_save is manager.fig_save

@@ -119,10 +119,6 @@ def retrieve_data_cfg(config_path, skip_type, cfg_options, phase):
     cfg = Config.fromfile(config_path)
     if cfg_options is not None:
         cfg.merge_from_dict(cfg_options)
-    # import modules from string list.
-    if cfg.get('custom_imports', None):
-        from mmcv.utils import import_modules_from_strings
-        import_modules_from_strings(**cfg['custom_imports'])
     data_cfg = cfg.data[phase]
     while 'dataset' in data_cfg:
         data_cfg = data_cfg['dataset']
@@ -242,7 +238,7 @@ def main():
 
             infos = dict(label=CLASSES[item['gt_label']])
 
-            manager.put_img_infos(
+            ret, _ = manager.put_img_infos(
                 image,
                 infos,
                 font_size=20,
@@ -251,6 +247,10 @@ def main():
                 **args.show_options)
 
             progressBar.update()
+
+            if ret == 1:
+                print('\nMannualy interrupted.')
+                break
 
 
 if __name__ == '__main__':

@@ -2,6 +2,7 @@
 from .alexnet import AlexNet
 from .conformer import Conformer
 from .lenet import LeNet5
+from .mlp_mixer import MlpMixer
 from .mobilenet_v2 import MobileNetV2
 from .mobilenet_v3 import MobileNetV3
 from .regnet import RegNet
@@ -27,5 +28,5 @@ __all__ = [
     'ResNeSt', 'ResNet_CIFAR', 'SEResNet', 'SEResNeXt', 'ShuffleNetV1',
     'ShuffleNetV2', 'MobileNetV2', 'MobileNetV3', 'VisionTransformer',
     'SwinTransformer', 'TNT', 'TIMMBackbone', 'T2T_ViT', 'Res2Net', 'RepVGG',
-    'Conformer'
+    'Conformer', 'MlpMixer'
 ]

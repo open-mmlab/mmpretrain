@@ -40,11 +40,11 @@ class MultiLabelClsHead(BaseHead):
         losses['loss'] = loss
         return losses
 
-    def forward_train(self, cls_score, gt_label):
+    def forward_train(self, cls_score, gt_label, **kwargs):
         if isinstance(cls_score, tuple):
             cls_score = cls_score[-1]
         gt_label = gt_label.type_as(cls_score)
-        losses = self.loss(cls_score, gt_label)
+        losses = self.loss(cls_score, gt_label, **kwargs)
         return losses
 
     def simple_test(self, x):
