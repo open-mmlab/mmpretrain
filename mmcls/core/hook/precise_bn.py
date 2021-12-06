@@ -7,7 +7,7 @@ import logging
 import mmcv
 import torch
 from mmcv.parallel import MMDistributedDataParallel
-from mmcv.runner import get_dist_info
+from mmcv.runner import EpochBasedRunner, get_dist_info
 from mmcv.runner.hooks import HOOKS, Hook
 from mmcv.utils import print_log
 from torch.nn.parallel import DataParallel, DistributedDataParallel
@@ -32,7 +32,7 @@ def is_parallel_module(module):
         return False
 
 
-def scaled_all_reduce(tensors, NUM_GPUS):
+def scaled_all_reduce(tensors, num_gpus):
     """Performs the scaled all_reduce operation on the provided tensors.
 
     The input tensors are modified in-place. Currently supports only the sum
@@ -40,7 +40,7 @@ def scaled_all_reduce(tensors, NUM_GPUS):
     the process group .
     """
     # There is no need for reduction in the single-proc case
-    if NUM_GPUS == 1:
+    if num_gpus == 1:
         return tensors
     # Queue the reductions
     reductions = []
@@ -52,7 +52,7 @@ def scaled_all_reduce(tensors, NUM_GPUS):
         reduction.wait()
     # Scale the results
     for tensor in tensors:
-        tensor.mul_(1.0 / NUM_GPUS)
+        tensor.mul_(1.0 / num_gpus)
     return tensors
 
 
@@ -65,12 +65,8 @@ def update_bn_stats(model, loader, num_samples=8192, logger=None):
 
     Attributes:
         model (nn.module): A pytorch NN model.
-        loader (DataLoader): PyTorch dataloader.
-        num_items (int): Number of iterations to update the bn stats.
-            Default: 8192.
-        logger : the logger.
+        loader (DataLoader): PyTorch dataloader._dataloader
     """
-
     if is_parallel_module(model):
         parallel_module = model
         model = model.module
@@ -85,8 +81,7 @@ def update_bn_stats(model, loader, num_samples=8192, logger=None):
     # Retrieve the BN layers
     bn_layers = [
         m for m in model.modules()
-        if isinstance(m, (torch.nn.BatchNorm2d, torch.nn.BatchNorm1d,
-                          torch.nn.BatchNorm3d))
+        if isinstance(m, (torch.nn.BatchNorm2d, torch.nn.BatchNorm1d))
     ]
 
     if len(bn_layers) == 0:
@@ -133,27 +128,39 @@ class PreciseBNHook(Hook):
     Attributes:
         num_items (int): Number of iterations to update the bn stats.
             Default: 8192.
-        interval (int): Perform precise bn interval (by epochs). Default: 1.
+        interval (int): Perform precise bn interval. Default: 1.
+        by_epoch (bool): Determine perform precise bn by epoch or by iteration.
+            If set to True, it will perform by epoch. Otherwise, by iteration.
+            Default: True.
     """
 
     def __init__(self, num_items=8192, interval=1):
+        assert interval > 0 and num_items > 0
+
         self.interval = interval
         self.num_items = num_items
+
+    def _perform_precise_bn(self, runner):
+        print_log(
+            f'Running Precise BN for {self.num_items} items...',
+            logger=runner.logger)
+        update_bn_stats(
+            runner.model,
+            runner.data_loader,
+            self.num_items,
+            logger=runner.logger)
+        print_log(
+            'Finish Precise BN, BN stats updated..', logger=runner.logger)
 
     def after_train_epoch(self, runner):
         """Calculate prcise BN and broadcast BN stats across GPUs.
 
         Args:
-            runner (obj:`EpochBasedRunner`, `IterBasedRunner`): runner object.
+            runner (obj:`EpochBasedRunner`): runner object.
         """
+        assert isinstance(runner,
+                          EpochBasedRunner), 'Only support `EpochBasedRunner`'
+
+        # if by epoch, do perform precise every `self.interval` epochs;
         if self.every_n_epochs(runner, self.interval):
-            print_log(
-                f'Running Precise BN for {self.num_items} items...',
-                logger=runner.logger)
-            update_bn_stats(
-                runner.model,
-                runner.data_loader,
-                self.num_items,
-                logger=runner.logger)
-            print_log(
-                'Finish Precise BN, BN stats updated..', logger=runner.logger)
+            self._perform_precise_bn(runner)
