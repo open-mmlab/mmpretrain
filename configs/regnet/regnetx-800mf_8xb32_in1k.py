@@ -1,7 +1,8 @@
 _base_ = [
     '../_base_/models/regnet/regnetx_800mf.py',
     '../_base_/datasets/imagenet_bs32.py',
-    '../_base_/schedules/imagenet_bs256.py', '../_base_/default_runtime.py'
+    '../_base_/schedules/imagenet_bs1024_coslr.py',
+    '../_base_/default_runtime.py'
 ]
 
 # precise BN hook
@@ -14,8 +15,7 @@ custom_hooks = [
 ]
 
 # sgd with nesterov
-optimizer = dict(
-    type='SGD', lr=0.8, momentum=0.9, weight_decay=5e-5, nesterov=True)
+optimizer = dict(lr=0.8, nesterov=True)
 
 # dataset settings
 dataset_type = 'ImageNet'
