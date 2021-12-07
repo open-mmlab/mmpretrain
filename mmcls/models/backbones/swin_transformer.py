@@ -342,7 +342,7 @@ class SwinTransformer(BaseBackbone):
         ]  # stochastic depth decay rule
 
         self.stages = ModuleList()
-        embed_dims = self.embed_dims
+        embed_dims = [self.embed_dims]
         input_resolution = patches_resolution
         for i, (depth,
                 num_heads) in enumerate(zip(self.depths, self.num_heads)):
@@ -352,7 +352,7 @@ class SwinTransformer(BaseBackbone):
                 stage_cfg = deepcopy(stage_cfgs)
             downsample = True if i < self.num_layers - 1 else False
             _stage_cfg = {
-                'embed_dims': embed_dims,
+                'embed_dims': embed_dims[-1],
                 'depth': depth,
                 'num_heads': num_heads,
                 'downsample': downsample,
@@ -367,12 +367,12 @@ class SwinTransformer(BaseBackbone):
             self.stages.append(stage)
 
             dpr = dpr[depth:]
-            embed_dims = stage.out_channels
+            embed_dims.append(stage.out_channels)
             input_resolution = stage.out_resolution
 
         for i in out_indices:
             if norm_cfg is not None:
-                norm_layer = build_norm_layer(norm_cfg, embed_dims)[1]
+                norm_layer = build_norm_layer(norm_cfg, embed_dims[i + 1])[1]
             else:
                 norm_layer = nn.Identity()
 
