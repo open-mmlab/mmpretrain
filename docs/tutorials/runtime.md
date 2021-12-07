@@ -181,7 +181,7 @@ custom_hooks = [
 
 ## Customize self-implemented hooks
 
-#### 1. Implement a new hook
+### 1. Implement a new hook
 
 Here we give an example of creating a new hook in MMClassification and using it in training.
 
@@ -216,7 +216,7 @@ class MyHook(Hook):
 
 Depending on the functionality of the hook, the users need to specify what the hook will do at each stage of the training in `before_run`, `after_run`, `before_epoch`, `after_epoch`, `before_iter`, and `after_iter`.
 
-#### 2. Register the new hook
+### 2. Register the new hook
 
 Then we need to make `MyHook` imported. Assuming the file is in `mmcls/core/utils/my_hook.py` there are two ways to do that:
 
@@ -235,7 +235,7 @@ from .my_hook import MyHook
 custom_imports = dict(imports=['mmcls.core.utils.my_hook'], allow_failed_imports=False)
 ```
 
-#### 3. Modify the config
+### 3. Modify the config
 
 ```python
 custom_hooks = [
