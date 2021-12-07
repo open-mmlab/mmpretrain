@@ -26,7 +26,7 @@ except ImportError:
 FORMAT_TRANSFORMS_SET = {'ToTensor', 'Normalize', 'ImageToTensor', 'Collect'}
 
 # Supported grad-cam type map
-GradCAM_MAP = {
+METHOD_MAP = {
     'gradcam': GradCAM,
     'gradcam++': GradCAMPlusPlus,
     'xgradcam': XGradCAM,
@@ -34,6 +34,12 @@ GradCAM_MAP = {
     'eigengradcam': EigenGradCAM,
     'layercam': LayerCAM,
 }
+
+# Transformer set based on ViT
+ViT_based_Transformers = tuple([T2T_ViT, VisionTransformer])
+
+# Transformer set based on Swin
+Swin_based_Transformers = tuple([SwinTransformer])
 
 
 def parse_args():
@@ -46,22 +52,23 @@ def parse_args():
         default=[],
         nargs='+',
         type=str,
-        help='target layers in insight')
+        help='The target layers to get CAM')
     parser.add_argument(
         '--preview-model',
         default=False,
         action='store_true',
-        help='preview the model')
+        help='To preview all the model layers')
     parser.add_argument(
         '--method',
         default='GradCAM',
-        help='Type of algorithm to use, supports '
-        f'{", ".join(list(GradCAM_MAP.keys()))}.')
+        help='Type of method to use, supports '
+        f'{", ".join(list(METHOD_MAP.keys()))}.')
     parser.add_argument(
         '--target-category',
         default=None,
         type=int,
-        help='target category in insight')
+        help='The target category to get CAM, default to use result '
+        'get from given model')
     parser.add_argument(
         '--eigen-smooth',
         default=False,
@@ -72,12 +79,12 @@ def parse_args():
         '--aug-smooth',
         default=False,
         action='store_true',
-        help='Wether to use test time augmentation')
+        help='Wether to use test time augmentation, default not to use')
     parser.add_argument(
         '--save-path',
         type=Path,
-        help='The learning rate curve plot save path')
-    parser.add_argument('--device', default='cpu', help='Device to use')
+        help='The path to save visualize cam image, default not to save.')
+    parser.add_argument('--device', default='cpu', help='Device to use cpu')
     parser.add_argument(
         '--cfg-options',
         nargs='+',
@@ -89,23 +96,23 @@ def parse_args():
         'Note that the quotation marks are necessary and that no white space '
         'is allowed.')
     args = parser.parse_args()
-    if args.method.lower() not in GradCAM_MAP.keys():
+    if args.method.lower() not in METHOD_MAP.keys():
         raise ValueError(f'invalid CAM type {args.method},'
-                         f' supports {", ".join(list(GradCAM_MAP.keys()))}.')
+                         f' supports {", ".join(list(METHOD_MAP.keys()))}.')
 
     return args
 
 
 def build_reshape_transform(model):
-    """build reshape_transform for cam.activations_and_grads, some neural
+    """build reshape_transform for `cam.activations_and_grads`, some neural
     networks such as SwinTransformer and VisionTransformer need an additional
     reshape operation.
 
-    CNNs don;t need, jush return None
+    CNNs don't need, jush return None
     """
-    if isinstance(model.backbone, SwinTransformer):
+    if isinstance(model.backbone, Swin_based_Transformers):
         has_clstoken = False
-    elif isinstance(model.backbone, (VisionTransformer, T2T_ViT)):
+    elif isinstance(model.backbone, ViT_based_Transformers):
         has_clstoken = True
     else:
         return None
@@ -117,7 +124,7 @@ def build_reshape_transform(model):
         heat_map_size = tensor.size()[1]
         height = width = int(math.sqrt(heat_map_size))
         message = 'Only support input pictures with the same length and ' \
-                  'width when using Tansformer neural networks, like ViT, Swin'
+                  'width when using Tansformer neural networks.'
         assert height * height == heat_map_size, message
         result = tensor.reshape(tensor.size(0), height, width, tensor.size(2))
 
@@ -172,7 +179,7 @@ def init_cam(method, model, target_layers, use_cuda, reshape_transform):
 
             return self.model(x, return_loss=False, post_processing=False)
 
-    GradCAM_Class = GradCAM_MAP[method.lower()]
+    GradCAM_Class = METHOD_MAP[method.lower()]
     cam = GradCAM_Class(
         model=model, target_layers=target_layers, use_cuda=use_cuda)
     cam.activations_and_grads = mmActivationsAndGradients(
@@ -220,9 +227,9 @@ def main():
 
     # build the model from a config file and a checkpoint file
     model = init_model(cfg, args.checkpoint, device=args.device)
-    # if don't know the layers of a model, preview all layers in a model
     if args.preview_model:
         print(model)
+        print('\n Please remove `--preview-model` to get the CAM.')
         sys.exit()
 
     # apply transform and perpare data
@@ -235,13 +242,13 @@ def main():
     ]
     assert len(args.target_layers) != 0, '`--target-layers` can not be empty'
 
-    # init a cam grad computer
+    # init a cam grad calculator
     use_cuda = True if 'cuda' in args.device else False
     reshape_transform = build_reshape_transform(model)
     cam = init_cam(args.method, model, target_layers, use_cuda,
                    reshape_transform)
 
-    # calculate cam grads and show|save
+    # calculate cam grads and show|save the visualization image
     grayscale_cam = cam(
         input_tensor=data['img'],
         target_category=args.target_category,

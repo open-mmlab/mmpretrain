@@ -218,11 +218,11 @@ python tools/visualizations/vis_cam.py \
 
 ```shell
 python tools/visualizations/vis_cam.py \
-    demo/bird.JPEG  \
+    demo/dog.jpg  \
     configs/mobilenet_v3/mobilenet-v3-large_8xb32_in1k.py \
     https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_large-3ea3c186.pth \
     --target-layers model.backbone.layer16 \
-    --method GradCAM \
+    --method LayerCAM \
     --eigen-smooth --aug-smooth
 ```
 
