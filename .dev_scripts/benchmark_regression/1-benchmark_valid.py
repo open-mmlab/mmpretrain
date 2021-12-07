@@ -70,6 +70,12 @@ def parse_args():
         action='store_true',
         help='Test inference time by run 10 times for each model.')
     parser.add_argument(
+        '--flops', action='store_true', help='Get Flops and Params of models')
+    parser.add_argument(
+        '--flops-str',
+        action='store_true',
+        help='Output FLOPs and params counts in a string form.')
+    parser.add_argument(
         '--device', default='cuda:0', help='Device used for inference')
     args = parser.parse_args()
     return args
@@ -120,15 +126,34 @@ def inference(config_file, checkpoint, classes, args):
 
     result['model'] = config_file.stem
 
+    if args.flops:
+        from mmcv.cnn.utils import get_model_complexity_info
+        if hasattr(model, 'extract_feat'):
+            model.forward = model.extract_feat
+            flops, params = get_model_complexity_info(
+                model,
+                input_shape=(3, ) + resolution,
+                print_per_layer_stat=False,
+                as_strings=args.flops_str)
+            result['flops'] = flops if args.flops_str else int(flops)
+            result['params'] = params if args.flops_str else int(params)
+        else:
+            result['flops'] = ''
+            result['params'] = ''
+
     return result
 
 
-def show_summary(summary_data):
+def show_summary(summary_data, args):
     table = Table(title='Validation Benchmark Regression Summary')
     table.add_column('Model')
     table.add_column('Validation')
     table.add_column('Resolution (h, w)')
-    table.add_column('Inference Time (std) (ms/im)')
+    if args.inference_time:
+        table.add_column('Inference Time (std) (ms/im)')
+    if args.flops:
+        table.add_column('Flops', justify='right')
+        table.add_column('Params', justify='right')
 
     for model_name, summary in summary_data.items():
         row = [model_name]
@@ -137,10 +162,13 @@ def show_summary(summary_data):
         row.append(f'[{color}]{valid}[/{color}]')
         if valid == 'PASS':
             row.append(str(summary['resolution']))
-            if 'time_mean' in summary:
+            if args.inference_time:
                 time_mean = f"{summary['time_mean']:.2f}"
                 time_std = f"{summary['time_std']:.2f}"
                 row.append(f'{time_mean}\t({time_std})'.expandtabs(8))
+            if args.flops:
+                row.append(str(summary['flops']))
+                row.append(str(summary['params']))
         table.add_row(*row)
 
     console.print(table)
@@ -215,7 +243,7 @@ def main(args):
         if args.show:
             imshow_infos(args.img, result, wait_time=args.wait_time)
 
-    show_summary(summary_data)
+    show_summary(summary_data, args)
 
 
 if __name__ == '__main__':
