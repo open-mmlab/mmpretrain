@@ -1,6 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved
-from operator import attrgetter
-
 from mmcv.runner import IterBasedRunner
 from mmcv.runner.hooks import HOOKS, Hook
 from mmcv.utils import is_seq_of
@@ -9,15 +7,15 @@ from mmcv.utils import is_seq_of
 @HOOKS.register_module()
 class ClassNumCheckHook(Hook):
 
-    def _check_head(self, runner, runner_dataset):
+    def _check_head(self, runner, dataset):
         """Check whether the `num_classes` in head matches the length of
         `CLASSES` in `dataset`.
 
         Args:
             runner (obj:`EpochBasedRunner`, `IterBasedRunner`): runner object.
+            dataset (obj: `BaseDataset`): the dataset to check.
         """
         model = runner.model
-        dataset = attrgetter(runner_dataset)(runner.data_loader)
         if dataset.CLASSES is None:
             runner.logger.warning(
                 f'Please set `CLASSES` '
@@ -44,9 +42,9 @@ class ClassNumCheckHook(Hook):
         Args:
             runner (obj: `IterBasedRunner`): Iter based Runner.
         """
-        if runner.__class__ != IterBasedRunner:
+        if not isinstance(runner, IterBasedRunner):
             return
-        self._check_head(runner, '_dataloader.dataset')
+        self._check_head(runner, runner.data_loader._dataloader.dataset)
 
     def before_val_iter(self, runner):
         """Check whether the eval dataset is compatible with head.
@@ -54,9 +52,9 @@ class ClassNumCheckHook(Hook):
         Args:
             runner (obj:`IterBasedRunner`): Iter based Runner.
         """
-        if runner.__class__ != IterBasedRunner:
+        if not isinstance(runner, IterBasedRunner):
             return
-        self._check_head(runner, '_dataloader.dataset')
+        self._check_head(runner, runner.data_loader._dataloader.dataset)
 
     def before_train_epoch(self, runner):
         """Check whether the training dataset is compatible with head.
@@ -64,7 +62,7 @@ class ClassNumCheckHook(Hook):
         Args:
             runner (obj:`EpochBasedRunner`): Epoch based Runner.
         """
-        self._check_head(runner, 'dataset')
+        self._check_head(runner, runner.data_loader.dataset)
 
     def before_val_epoch(self, runner):
         """Check whether the eval dataset is compatible with head.
@@ -72,4 +70,4 @@ class ClassNumCheckHook(Hook):
         Args:
             runner (obj:`EpochBasedRunner`): Epoch based Runner.
         """
-        self._check_head(runner, 'dataset')
+        self._check_head(runner, runner.data_loader.dataset)
