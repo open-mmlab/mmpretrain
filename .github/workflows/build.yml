@@ -1,26 +1,36 @@
-# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# This workflow will install Python dependencies, run tests with a variety of Python versions
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
 name: build
 
-on: [push, pull_request]
+on:
+  push:
+    paths-ignore:
+      - 'README.md'
+      - 'README_zh-CN.md'
+      - 'model-index.yml'
+      - 'configs/**.md'
+      - 'docs/**'
+      - 'docs_zh-CN/**'
+      - 'demo/**'
+      - '.dev_scripts/**'
+
+  pull_request:
+    paths-ignore:
+      - 'README.md'
+      - 'README_zh-CN.md'
+      - 'model-index.yml'
+      - 'configs/**.md'
+      - 'docs/**'
+      - 'docs_zh-CN/**'
+      - 'demo/**'
+      - '.dev_scripts/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.7
-      - name: Install pre-commit hook
-        run: |
-          pip install pre-commit
-          pre-commit install
-      - name: Linting
-        run: pre-commit run --all-files
-
   build_without_timm:
     runs-on: ubuntu-latest
     env:
@@ -28,10 +38,10 @@ jobs:
     strategy:
       matrix:
         python-version: [3.6]
-        torch: [1.3.0, 1.8.0, 1.9.0]
+        torch: [1.5.0, 1.8.0, 1.9.0]
         include:
-          - torch: 1.3.0
-            torchvision: 0.4.2
+          - torch: 1.5.0
+            torchvision: 0.6.0
           - torch: 1.8.0
             torchvision: 0.9.0
           - torch: 1.9.0

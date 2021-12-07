@@ -1,10 +1,17 @@
 # Swin Transformer: Hierarchical Vision Transformer using Shifted Windows
 <!-- {Swin Transformer} -->
+<!-- [ALGORITHM] -->
 
-## Introduction
+## Abstract
+<!-- [ABSTRACT] -->
+This paper presents a new vision Transformer, called Swin Transformer, that capably serves as a general-purpose backbone for computer vision. Challenges in adapting Transformer from language to vision arise from differences between the two domains, such as large variations in the scale of visual entities and the high resolution of pixels in images compared to words in text. To address these differences, we propose a hierarchical Transformer whose representation is computed with **S**hifted **win**dows. The shifted windowing scheme brings greater efficiency by limiting self-attention computation to non-overlapping local windows while also allowing for cross-window connection. This hierarchical architecture has the flexibility to model at various scales and has linear computational complexity with respect to image size. These qualities of Swin Transformer make it compatible with a broad range of vision tasks, including image classification (87.3 top-1 accuracy on ImageNet-1K) and dense prediction tasks such as object detection (58.7 box AP and 51.1 mask AP on COCO test-dev) and semantic segmentation (53.5 mIoU on ADE20K val). Its performance surpasses the previous state-of-the-art by a large margin of +2.7 box AP and +2.6 mask AP on COCO, and +3.2 mIoU on ADE20K, demonstrating the potential of Transformer-based models as vision backbones. The hierarchical design and the shifted window approach also prove beneficial for all-MLP architectures.
 
-[ALGORITHM]
+<!-- [IMAGE] -->
+<div align=center>
+<img src="https://user-images.githubusercontent.com/26739999/142576715-14668c6b-5cb8-4de8-ac51-419fae773c90.png" width="90%"/>
+</div>
 
+## Citation
 ```latex
 @article{liu2021Swin,
   title={Swin Transformer: Hierarchical Vision Transformer using Shifted Windows},
@@ -34,7 +41,7 @@ The pre-trained modles are converted from [model zoo of Swin Transformer](https:
 
 ## Results and models
 
-### ImageNet
+### ImageNet 1k
 |   Model   |  Pretrain    | resolution  | Params(M) |  Flops(G) | Top-1 (%) | Top-5 (%) |   Config   | Download |
 |:---------:|:------------:|:-----------:|:---------:|:---------:|:---------:|:---------:|:----------:|:--------:|
 |  Swin-T   | ImageNet-1k  |   224x224   |   28.29   |    4.36   |   81.18   |   95.61   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/swin_transformer/swin-tiny_16xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_tiny_224_b16x64_300e_imagenet_20210616_090925-66df6be6.pth)  &#124; [log](https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_tiny_224_b16x64_300e_imagenet_20210616_090925.log.json)|

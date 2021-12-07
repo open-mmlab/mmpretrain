@@ -15,8 +15,6 @@ import subprocess
 import sys
 
 import pytorch_sphinx_theme
-from m2r import MdInclude
-from recommonmark.transform import AutoStructify
 from sphinx.builders.html import StandaloneHTMLBuilder
 
 sys.path.insert(0, os.path.abspath('..'))
@@ -26,6 +24,8 @@ sys.path.insert(0, os.path.abspath('..'))
 project = 'MMClassification'
 copyright = '2020, OpenMMLab'
 author = 'MMClassification Authors'
+
+# The full version, including alpha/beta/rc tags
 version_file = '../mmcls/version.py'
 
 
@@ -35,7 +35,6 @@ def get_version():
     return locals()['__version__']
 
 
-# The full version, including alpha/beta/rc tags
 release = get_version()
 
 # -- General configuration ---------------------------------------------------
@@ -52,10 +51,23 @@ extensions = [
     'sphinx_copybutton',
 ]
 
-autodoc_mock_imports = ['matplotlib', 'mmcls.version', 'mmcv.ops']
+autodoc_mock_imports = ['mmcv._ext']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
+
+# The suffix(es) of source filenames.
+# You can specify multiple suffix as a list of string:
+#
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.md': 'markdown',
+}
+
+language = 'en'
+
+# The master toctree document.
+master_doc = 'index'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -63,10 +75,6 @@ templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # -- Options for HTML output -------------------------------------------------
-source_suffix = {
-    '.rst': 'restructuredtext',
-    '.md': 'markdown',
-}
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
@@ -79,7 +87,8 @@ html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 # documentation.
 #
 html_theme_options = {
-    # 'logo_url': 'https://mmocr.readthedocs.io/en/latest/',
+    'logo_url':
+    'https://mmclassification.readthedocs.io/en/latest/',
     'menu': [
         {
             'name': 'GitHub',
@@ -164,6 +173,14 @@ html_theme_options = {
                     'name': 'MMFlow',
                     'url': 'https://mmflow.readthedocs.io/en/latest/',
                 },
+                {
+                    'name': 'MMFewShot',
+                    'url': 'https://mmfewshot.readthedocs.io/en/latest/',
+                },
+                {
+                    'name': 'MMHuman3d',
+                    'url': 'https://mmhuman3d.readthedocs.io/en/latest/',
+                },
             ]
         },
         {
@@ -196,9 +213,7 @@ html_theme_options = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 html_css_files = ['css/readthedocs.css']
-html_js_files = ['js/custom.js']
-
-master_doc = 'index'
+#  html_js_files = ['js/custom.js']
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
@@ -242,8 +257,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'mmcls.tex', 'MMClassification Documentation',
-     'MMClassification Contributors', 'manual'),
+    (master_doc, 'mmcls.tex', 'MMClassification Documentation', author,
+     'manual'),
 ]
 
 # -- Options for manual page output ------------------------------------------
@@ -260,7 +275,7 @@ man_pages = [(master_doc, 'mmcls', 'MMClassification Documentation', [author],
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'mmcls', 'MMClassification Documentation', author, 'mmcls',
-     'One line description of project.', 'Miscellaneous'),
+     'OpenMMLab image classification toolbox and benchmark.', 'Miscellaneous'),
 ]
 
 # -- Options for Epub output -------------------------------------------------
@@ -296,15 +311,5 @@ def builder_inited_handler(app):
 
 
 def setup(app):
-    app.add_config_value('no_underscore_emphasis', False, 'env')
-    app.add_config_value('m2r_parse_relative_links', False, 'env')
-    app.add_config_value('m2r_anonymous_references', False, 'env')
-    app.add_config_value('m2r_disable_inline_math', False, 'env')
-    app.add_directive('mdinclude', MdInclude)
-    app.add_config_value('recommonmark_config', {
-        'auto_toc_tree_section': 'Contents',
-        'enable_eval_rst': True,
-    }, True)
-    app.add_transform(AutoStructify)
     app.add_js_file('./_static/js/custom.js')
     app.connect('builder-inited', builder_inited_handler)

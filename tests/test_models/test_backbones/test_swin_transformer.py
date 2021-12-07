@@ -7,8 +7,19 @@ import numpy as np
 import pytest
 import torch
 from mmcv.runner import load_checkpoint, save_checkpoint
+from mmcv.utils.parrots_wrapper import _BatchNorm
 
 from mmcls.models.backbones import SwinTransformer
+from mmcls.models.backbones.swin_transformer import SwinBlock
+
+
+def check_norm_state(modules, train_state):
+    """Check if norm layer is in correct train state."""
+    for mod in modules:
+        if isinstance(mod, _BatchNorm):
+            if mod.training != train_state:
+                return False
+    return True
 
 
 def test_assertion():
@@ -76,6 +87,28 @@ def test_forward():
     output = model(imgs)
     assert len(output) == 1
     assert output[0].shape == (1, 1024, 12, 12)
+
+    # Test multiple output indices
+    imgs = torch.randn(1, 3, 224, 224)
+    model = SwinTransformer(arch='base', out_indices=(0, 1, 2, 3))
+    outs = model(imgs)
+    assert outs[0].shape == (1, 256, 28, 28)
+    assert outs[1].shape == (1, 512, 14, 14)
+    assert outs[2].shape == (1, 1024, 7, 7)
+    assert outs[3].shape == (1, 1024, 7, 7)
+
+    # Test base arch with with checkpoint forward
+    model = SwinTransformer(arch='B', with_cp=True)
+    for m in model.modules():
+        if isinstance(m, SwinBlock):
+            assert m.with_cp
+    model.init_weights()
+    model.train()
+
+    imgs = torch.randn(1, 3, 224, 224)
+    output = model(imgs)
+    assert len(output) == 1
+    assert output[0].shape == (1, 1024, 7, 7)
 
 
 def test_structure():
@@ -147,6 +180,41 @@ def test_structure():
             assert np.isclose(block.ffn.dropout_layer.drop_prob, expect_prob)
             assert np.isclose(block.attn.drop.drop_prob, expect_prob)
             pos += 1
+
+    # Test Swin-Transformer with norm_eval=True
+    model = SwinTransformer(
+        arch='small',
+        norm_eval=True,
+        norm_cfg=dict(type='BN'),
+        stage_cfgs=dict(block_cfgs=dict(norm_cfg=dict(type='BN'))),
+    )
+    model.init_weights()
+    model.train()
+    assert check_norm_state(model.modules(), False)
+
+    # Test Swin-Transformer with first stage frozen.
+    frozen_stages = 0
+    model = SwinTransformer(
+        arch='small', frozen_stages=frozen_stages, out_indices=(0, 1, 2, 3))
+    model.init_weights()
+    model.train()
+
+    assert model.patch_embed.training is False
+    for param in model.patch_embed.parameters():
+        assert param.requires_grad is False
+    for i in range(frozen_stages + 1):
+        stage = model.stages[i]
+        for param in stage.parameters():
+            assert param.requires_grad is False
+    for param in model.norm0.parameters():
+        assert param.requires_grad is False
+
+    # the second stage should require grad.
+    stage = model.stages[1]
+    for param in stage.parameters():
+        assert param.requires_grad is True
+    for param in model.norm1.parameters():
+        assert param.requires_grad is True
 
 
 def test_load_checkpoint():

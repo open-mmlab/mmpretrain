@@ -1,10 +1,17 @@
 # Tokens-to-Token ViT: Training Vision Transformers from Scratch on ImageNet
 <!-- {Tokens-to-Token ViT} -->
-
-## Introduction
-
 <!-- [ALGORITHM] -->
 
+## Abstract
+<!-- [ABSTRACT] -->
+Transformers, which are popular for language modeling, have been explored for solving vision tasks recently, \eg, the Vision Transformer (ViT) for image classification. The ViT model splits each image into a sequence of tokens with fixed length and then applies multiple Transformer layers to model their global relation for classification. However, ViT achieves inferior performance to CNNs when trained from scratch on a midsize dataset like ImageNet. We find it is because: 1) the simple tokenization of input images fails to model the important local structure such as edges and lines among neighboring pixels, leading to low training sample efficiency; 2) the redundant attention backbone design of ViT leads to limited feature richness for fixed computation budgets and limited training samples. To overcome such limitations, we propose a new Tokens-To-Token Vision Transformer (T2T-ViT), which incorporates 1) a layer-wise Tokens-to-Token (T2T) transformation to progressively structurize the image to tokens by recursively aggregating neighboring Tokens into one Token (Tokens-to-Token), such that local structure represented by surrounding tokens can be modeled and tokens length can be reduced; 2) an efficient backbone with a deep-narrow structure for vision transformer motivated by CNN architecture design after empirical study. Notably, T2T-ViT reduces the parameter count and MACs of vanilla ViT by half, while achieving more than 3.0\% improvement when trained from scratch on ImageNet. It also outperforms ResNets and achieves comparable performance with MobileNets by directly training on ImageNet. For example, T2T-ViT with comparable size to ResNet50 (21.5M parameters) can achieve 83.3\% top1 accuracy in image resolution 384×384 on ImageNet.
+
+<!-- [IMAGE] -->
+<div align=center>
+<img src="https://user-images.githubusercontent.com/26739999/142578381-e9040610-05d9-457c-8bf5-01c2fa94add2.png" width="60%"/>
+</div>
+
+## Citation
 ```latex
 @article{yuan2021tokens,
   title={Tokens-to-token vit: Training vision transformers from scratch on imagenet},
@@ -16,7 +23,7 @@
 
 ## Pretrain model
 
-The pre-trained modles are converted from [official repo](https://github.com/yitu-opensource/T2T-ViT/tree/main#2-t2t-vit-models).
+The pre-trained models are converted from [official repo](https://github.com/yitu-opensource/T2T-ViT/tree/main#2-t2t-vit-models).
 
 ### ImageNet-1k
 

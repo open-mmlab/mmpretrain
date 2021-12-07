@@ -29,7 +29,7 @@ def parse_args():
         'Note that the quotation marks are necessary and that no white space '
         'is allowed.')
     parser.add_argument(
-        '--eval-options',
+        '--metric-options',
         nargs='+',
         action=DictAction,
         help='custom options for evaluation, the key-value pair in xxx=yyy '
@@ -56,14 +56,14 @@ def main():
     dataset = build_dataset(cfg.data.test)
     pred_score = outputs['class_scores']
 
-    kwargs = {} if args.eval_options is None else args.eval_options
     eval_kwargs = cfg.get('evaluation', {}).copy()
     # hard-code way to remove EvalHook args
     for key in [
             'interval', 'tmpdir', 'start', 'gpu_collect', 'save_best', 'rule'
     ]:
         eval_kwargs.pop(key, None)
-    eval_kwargs.update(dict(metric=args.metrics, **kwargs))
+    eval_kwargs.update(
+        dict(metric=args.metrics, metric_options=args.metric_options))
     print(dataset.evaluate(pred_score, **eval_kwargs))
 
 
