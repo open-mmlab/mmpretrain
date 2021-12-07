@@ -211,7 +211,7 @@ def save_summary(summary_data, models_map, work_dir):
             row.extend([''] * 2)
 
         model_info = models_map[model_name]
-        row.append(model_info.Config)
+        row.append(model_info.config)
         row.append(str(summary['log_file'].relative_to(work_dir)))
         zip_file.write(summary['log_file'])
         file.write('| ' + ' | '.join(row) + ' |\n')
