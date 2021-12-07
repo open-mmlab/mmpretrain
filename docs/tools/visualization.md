@@ -122,7 +122,7 @@ python tools/visualizations/vis_lr.py configs/repvgg/repvgg-B3g4_4xb64-autoaug-l
 
 ## Class Activation Map Visualization
 
-MMClassification provides `tools\visualizations\vis_cam.py` tool to visualize class activation map.please use `pip install grad-cam` command to install dependent third-party libraries. This tool is based on [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam)。The supported methods are as follows:
+MMClassification provides `tools\visualizations\vis_cam.py` tool to visualize class activation map. Please use `pip install grad-cam` command to install [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam).The supported methods are as follows:
 
 | Method   | What it does |
 |----------|--------------|
@@ -137,12 +137,12 @@ MMClassification provides `tools\visualizations\vis_cam.py` tool to visualize cl
 
 ```bash
 python tools/visualizations/vis_cam.py \
-    ${IMG-PATH} \
+    ${IMG} \
     ${CONFIG_FILE} \
     ${CHECKPOINT} \
     --target-layers ${TARGET-LAYERS} \
     [--preview-model] \
-    [--method ${CAM-TYPE}] \
+    [--method ${METHOD}] \
     [--target-category ${TARGET-CATEGORY}] \
     [--save-path ${SAVE_PATH}] \
     [--aug_smooth] \
@@ -153,22 +153,22 @@ python tools/visualizations/vis_cam.py \
 
 **Description of all arguments**：
 
-- `img`：The target picture path.
-- `config`： The path of a model config file.
-- `checkpoint`：The path of the checkpoint.
-- `--target-layers`：The target layers to get activation maps, one or more network layers can be specified.
-- `--preview-model`：Whether to print all network layer names in the model.
-- `--method`：Visualization method, support `GradCAM`, `GradCAM++`, `XGradCAM`, `EigenCAM`, `EigenGradCAM`, `LayerCAM` (case insensitive). if not set, it will be set to `GradCAM`.
+- `img`:The target picture path.
+- `config`: The path of a model config file.
+- `checkpoint`: The path of the checkpoint.
+- `--target-layers`:The target layers to get activation maps, one or more network layers can be specified.
+- `--preview-model`: Whether to print all network layer names in the model.
+- `--method`: Visualization method, supports `GradCAM`, `GradCAM++`, `XGradCAM`, `EigenCAM`, `EigenGradCAM`, `LayerCAM`, which is case insensitive. If not set, it will be set to `GradCAM`.
 - `--target-category`：Target category, if not set, use the category detected by the given model.
-- `--save-path`：The path to save CAM visualization image, which is not saved by default.
+- `--save-path`：The path to save the CAM visualization image, if not set, the CAM image will not be saved.
 - `--aug_smooth`：Whether to use TTA(Test Time Augment) to get CAM. If it is not set, default not to use.
-- `--eigen_smooth`：Whether to use the principal component to reduce noise, If it is not set, default not to use.
+- `--eigen_smooth`：Whether to use the principal component to reduce noise. If it is not set, default not to use.
 - `--device`：The computing device used, if not set, if it is not set, default to be 'cpu'.
 - `--cfg-options` : Modifications to the configuration file, refer to [Tutorial 1: Learn about Configs](https://mmclassification.readthedocs.io/en/latest/tutorials/config.html).
 
 ```{note}
-1. The argument of `--preview-model` can view all network layers names in the given model. It will be helpful if you know nothing about layers in the model.
-2. The argument of 'target-layers' must start with 'model';
+1. The argument of `--preview-model` can view all network layers names in the given model. It will be helpful if you know nothing about the model layers when setting `--target-layers`.
+2. The argument of `--target-layers` must start with 'model';
 ```
 
 **Examples(CNN)**：
@@ -192,9 +192,9 @@ python tools/visualizations/vis_cam.py \
 
 | Category  | Image | GradCAM  |  GradCAM++ |  EigenGradCAM |  LayerCAM  |
 | --------- |-------|----------|------------|-------------- |------------|
-| Bird | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429496-628d3fb3-1f6e-41ff-aa5c-1b08c60c32a9.JPEG' style=" width: 236px; height: 236px; "></div> | <div align=center><img src=https://user-images.githubusercontent.com/18586273/144431491-a2e19fe3-5c12-4404-b2af-a9552f5a95d9.jpg ></div>  | <div align=center><img src=https://user-images.githubusercontent.com/18586273/144431610-f854556d-7f10-4084-8987-c2587aef8298.jpg ></div>  | <div align=center><img src=https://user-images.githubusercontent.com/18586273/144431776-899ec2e5-c15a-4274-b38c-5ac154d31ed0.jpg ></div> | <div align=center><img src=https://user-images.githubusercontent.com/18586273/144431865-951ba8db-6dca-4909-ad5f-d1b21e0636ba.jpg ></div>  |
+| Bird | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429496-628d3fb3-1f6e-41ff-aa5c-1b08c60c32a9.JPEG' height="288" width="236" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144431491-a2e19fe3-5c12-4404-b2af-a9552f5a95d9.jpg' height="224" width="224" ></div>  | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144431610-f854556d-7f10-4084-8987-c2587aef8298.jpg' height="224" width="224"></div>  | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144431776-899ec2e5-c15a-4274-b38c-5ac154d31ed0.jpg' height="224" width="224"></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144431865-951ba8db-6dca-4909-ad5f-d1b21e0636ba.jpg' height="224" width="224"></div>  |
 
-2.Use different `target-category` to get CAM from the same picture, the category 238 is 'Greater Swiss Mountain dog', the category 281 is 'tabby, tabby cat'。
+2.Use different `target-category` to get CAM from the same picture. In `ImageNet` dataset, the category 238 is 'Greater Swiss Mountain dog', the category 281 is 'tabby, tabby cat'.
 
 ```shell
 python tools/visualizations/vis_cam.py \
@@ -208,14 +208,14 @@ python tools/visualizations/vis_cam.py \
 
 | Category  | Image | GradCAM  |  GradCAM++ |  XGradCAM |  LayerCAM  |
 | --------- |-------|----------|------------|-------------- |------------|
-|   Dog     | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429526-f27f4cce-89b9-4117-bfe6-55c2ca7eaba6.png' style=" width: 236px; height: 236px; "></div> | ![](https://user-images.githubusercontent.com/18586273/144433562-968a57bc-17d9-413e-810e-f91e334d648a.jpg)    |![](https://user-images.githubusercontent.com/18586273/144433736-1500401d-6d95-4d6c-80f4-3888fd011d7e.jpg)    |![](https://user-images.githubusercontent.com/18586273/144433853-319f3a8f-95f2-446d-b84f-3028daca5378.jpg)    |![](https://user-images.githubusercontent.com/18586273/144433937-daef5a69-fd70-428f-98a3-5e7747f4bb88.jpg)    |
-|   Cat     | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429526-f27f4cce-89b9-4117-bfe6-55c2ca7eaba6.png' style=" width: 236px; height: 236px; "></div> | ![GradCAM](https://user-images.githubusercontent.com/18586273/144434518-867ae32a-1cb5-4dbd-b1b9-5e375e94ea48.jpg)   |  ![](https://user-images.githubusercontent.com/18586273/144434533-e9410fd4-f5cc-4d60-a17e-02dc5d9a90d0.jpg)   |![](https://user-images.githubusercontent.com/18586273/144434603-0a2fd9ec-c02e-4e6c-a17b-64c234808c56.jpg) |![](https://user-images.githubusercontent.com/18586273/144434623-b4432cc2-c663-4b97-aed3-583d9d3743e6.jpg)   |
+|   Dog     | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429526-f27f4cce-89b9-4117-bfe6-55c2ca7eaba6.png' height="236" width="288" ></div> | ![](https://user-images.githubusercontent.com/18586273/144433562-968a57bc-17d9-413e-810e-f91e334d648a.jpg)    |![](https://user-images.githubusercontent.com/18586273/144433736-1500401d-6d95-4d6c-80f4-3888fd011d7e.jpg)    |![](https://user-images.githubusercontent.com/18586273/144433853-319f3a8f-95f2-446d-b84f-3028daca5378.jpg)    |![](https://user-images.githubusercontent.com/18586273/144433937-daef5a69-fd70-428f-98a3-5e7747f4bb88.jpg)    |
+|   Cat     | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429526-f27f4cce-89b9-4117-bfe6-55c2ca7eaba6.png' height="236" width="288" ></div> | ![](https://user-images.githubusercontent.com/18586273/144434518-867ae32a-1cb5-4dbd-b1b9-5e375e94ea48.jpg)   |  ![](https://user-images.githubusercontent.com/18586273/144434533-e9410fd4-f5cc-4d60-a17e-02dc5d9a90d0.jpg)   |![](https://user-images.githubusercontent.com/18586273/144434603-0a2fd9ec-c02e-4e6c-a17b-64c234808c56.jpg) |![](https://user-images.githubusercontent.com/18586273/144434623-b4432cc2-c663-4b97-aed3-583d9d3743e6.jpg)   |
 
 3.Use `--eigen-smooth` and `--aug-smooth` to improve visual effects.
 
 ```shell
 python tools/visualizations/vis_cam.py \
-    demo/bird.JPEG  \
+    demo/dog.JPEG  \
     configs/mobilenet_v3/mobilenet-v3-large_8xb32_in1k.py \
     https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_large-3ea3c186.pth \
     --target-layers model.backbone.layer16 \
@@ -223,9 +223,9 @@ python tools/visualizations/vis_cam.py \
     --eigen-smooth --aug-smooth
 ```
 
-| Category  | Image | GradCAM  |  eigen-smooth |  aug-smooth |  eigen-smooth & aug-smooth  |
+| Category  | Image | LayerCAM  |  eigen-smooth |  aug-smooth |  eigen-smooth & aug-smooth  |
 | --------- |-------|----------|------------|-------------- |------------|
-| Bird | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557492-98ac5ce0-61f9-4da9-8ea7-396d0b6a20fa.jpg' style=" width: 236px; height: 236px; "></div> | ![](https://user-images.githubusercontent.com/18586273/144557541-a4cf7d86-7267-46f9-937c-6f657ea661b4.jpg)   |  ![](https://user-images.githubusercontent.com/18586273/144557547-2731b53e-e997-4dd2-a092-64739cc91959.jpg)   |![](https://user-images.githubusercontent.com/18586273/144557545-8189524a-eb92-4cce-bf6a-760cab4a8065.jpg)   |![](https://user-images.githubusercontent.com/18586273/144557548-c1e3f3ec-3c96-43d4-874a-3b33cd3351c5.jpg)   |
+| Dog | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557492-98ac5ce0-61f9-4da9-8ea7-396d0b6a20fa.jpg' height="236" width="288"></div> | ![](https://user-images.githubusercontent.com/18586273/144557541-a4cf7d86-7267-46f9-937c-6f657ea661b4.jpg)   |  ![](https://user-images.githubusercontent.com/18586273/144557547-2731b53e-e997-4dd2-a092-64739cc91959.jpg)   | ![](https://user-images.githubusercontent.com/18586273/144557545-8189524a-eb92-4cce-bf6a-760cab4a8065.jpg)   | ![](https://user-images.githubusercontent.com/18586273/144557548-c1e3f3ec-3c96-43d4-874a-3b33cd3351c5.jpg)   |
 
 **Examples(Transformer)**：
 
@@ -264,9 +264,9 @@ python tools/visualizations/vis_cam.py \
     --target-layers model.backbone.encoder.13.ln1
 ```
 
-| Image | ResNet50  |  ViT |  Swin |  T2T-Vit  |
+| Image | ResNet50  |  ViT |  Swin |  T2T-ViT  |
 |-------|----------|------------|-------------- |------------|
-| <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429496-628d3fb3-1f6e-41ff-aa5c-1b08c60c32a9.JPEG' style=" width: 236px; height: 236px; "></div> | <div align=center><img src=https://user-images.githubusercontent.com/18586273/144431491-a2e19fe3-5c12-4404-b2af-a9552f5a95d9.jpg ></div> |<div align=center><img src='https://user-images.githubusercontent.com/18586273/144436218-245a11de-6234-4852-9c08-ff5069f6a739.jpg' style=" width: 224px; height: 224px; "></div>   |  ![](https://user-images.githubusercontent.com/18586273/144436168-01b0e565-442c-4e1e-910c-17c62cff7cd3.jpg)   |![](https://user-images.githubusercontent.com/18586273/144436198-51dbfbda-c48d-48cc-ae06-1a923d19b6f6.jpg)  |
+| <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429496-628d3fb3-1f6e-41ff-aa5c-1b08c60c32a9.JPEG' height="288" width="236" ></div> | <div align=center><img src=https://user-images.githubusercontent.com/18586273/144431491-a2e19fe3-5c12-4404-b2af-a9552f5a95d9.jpg  height="224" width="224" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144436218-245a11de-6234-4852-9c08-ff5069f6a739.jpg' height="224" width="224" ></div>   | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144436168-01b0e565-442c-4e1e-910c-17c62cff7cd3.jpg' height="224" width="224" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144436198-51dbfbda-c48d-48cc-ae06-1a923d19b6f6.jpg' height="224" width="224" ></div>  |
 
 ## FAQs
 
