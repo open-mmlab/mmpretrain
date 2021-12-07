@@ -54,7 +54,7 @@ def test_conformer_backbone():
     imgs = torch.randn(3, 3, 224, 224)
     conv_feature, transformer_feature = model(imgs)[-1]
     assert conv_feature.shape == (3, 64 * 1 * 4
-                                  )  # base_channel * channel_ratio * 4
+                                  )  # base_channels * channel_ratio * 4
     assert transformer_feature.shape == (3, 384)
 
     # Test custom arch Conformer without output cls token
@@ -66,7 +66,7 @@ def test_conformer_backbone():
         'channel_ratio': 3,
     }
     cfg['with_cls_token'] = False
-    cfg['base_channel'] = 32
+    cfg['base_channels'] = 32
     model = Conformer(**cfg)
     conv_feature, transformer_feature = model(imgs)[-1]
     assert conv_feature.shape == (3, 32 * 3 * 4)
