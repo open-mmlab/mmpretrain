@@ -85,7 +85,7 @@ def build_dataloader(dataset,
     rank, world_size = get_dist_info()
 
     if sampler_cfg:
-        sampler_cfg.update(shuflle=shuffle)
+        sampler_cfg.update(shuffle=shuffle)
         shuffle = False
     sampler = build_sampler(
         sampler_cfg,
