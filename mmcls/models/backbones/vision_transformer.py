@@ -176,6 +176,8 @@ class VisionTransformer(BaseBackbone):
                 'feedforward_channels': 768 * 4
             }),
     }
+    # Some structures have multiple extra tokens, like DeiT.
+    num_extra_tokens = 1  # cls_token
 
     def __init__(self,
                  arch='b',
@@ -228,7 +230,8 @@ class VisionTransformer(BaseBackbone):
         # Set position embedding
         self.interpolate_mode = interpolate_mode
         self.pos_embed = nn.Parameter(
-            torch.zeros(1, num_patches + 1, self.embed_dims))
+            torch.zeros(1, num_patches + self.num_extra_tokens,
+                        self.embed_dims))
         self.drop_after_pos = nn.Dropout(p=drop_rate)
 
         if isinstance(out_indices, int):
@@ -295,16 +298,21 @@ class VisionTransformer(BaseBackbone):
                 logger=logger)
 
             ckpt_pos_embed_shape = to_2tuple(
-                int(np.sqrt(ckpt_pos_embed_shape[1] - 1)))
+                int(np.sqrt(ckpt_pos_embed_shape[1] - self.num_extra_tokens)))
             pos_embed_shape = self.patch_embed.patches_resolution
 
             state_dict[name] = self.resize_pos_embed(state_dict[name],
                                                      ckpt_pos_embed_shape,
                                                      pos_embed_shape,
-                                                     self.interpolate_mode)
+                                                     self.interpolate_mode,
+                                                     self.num_extra_tokens)
 
     @staticmethod
-    def resize_pos_embed(pos_embed, src_shape, dst_shape, mode='bicubic'):
+    def resize_pos_embed(pos_embed,
+                         src_shape,
+                         dst_shape,
+                         mode='bicubic',
+                         num_extra_tokens=1):
         """Resize pos_embed weights.
 
         Args:
@@ -323,17 +331,17 @@ class VisionTransformer(BaseBackbone):
         assert pos_embed.ndim == 3, 'shape of pos_embed must be [1, L, C]'
         _, L, C = pos_embed.shape
         src_h, src_w = src_shape
-        assert L == src_h * src_w + 1
-        cls_token = pos_embed[:, :1]
+        assert L == src_h * src_w + num_extra_tokens
+        extra_tokens = pos_embed[:, :num_extra_tokens]
 
-        src_weight = pos_embed[:, 1:]
+        src_weight = pos_embed[:, num_extra_tokens:]
         src_weight = src_weight.reshape(1, src_h, src_w, C).permute(0, 3, 1, 2)
 
         dst_weight = F.interpolate(
             src_weight, size=dst_shape, align_corners=False, mode=mode)
         dst_weight = torch.flatten(dst_weight, 2).transpose(1, 2)
 
-        return torch.cat((cls_token, dst_weight), dim=1)
+        return torch.cat((extra_tokens, dst_weight), dim=1)
 
     def forward(self, x):
         B = x.shape[0]

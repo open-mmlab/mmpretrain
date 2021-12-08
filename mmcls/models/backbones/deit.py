@@ -38,14 +38,11 @@ class DistilledVisionTransformer(VisionTransformer):
         init_cfg (dict, optional): Initialization config dict.
             Defaults to None.
     """
+    num_extra_tokens = 2  # cls_token, dist_token
 
     def __init__(self, *args, **kwargs):
         super(DistilledVisionTransformer, self).__init__(*args, **kwargs)
         self.dist_token = nn.Parameter(torch.zeros(1, 1, self.embed_dims))
-
-        num_patches = self.patch_embed.num_patches
-        self.pos_embed = nn.Parameter(
-            torch.zeros(1, num_patches + 2, self.embed_dims))
 
     def forward(self, x):
         B = x.shape[0]
