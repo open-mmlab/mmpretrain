@@ -89,9 +89,7 @@ class StackedLinearClsHead(ClsHead):
         self._init_layers()
 
     def _init_layers(self):
-        self.layers = ModuleList(
-            init_cfg=dict(
-                type='Normal', layer='Linear', mean=0., std=0.01, bias=0.))
+        self.layers = ModuleList()
         in_channels = self.in_channels
         for hidden_channels in self.mid_channels:
             self.layers.append(
