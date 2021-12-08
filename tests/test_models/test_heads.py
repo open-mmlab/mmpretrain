@@ -41,7 +41,7 @@ def test_cls_head(feat):
     pred = head.simple_test(feat, post_process=False)
     assert isinstance(pred, torch.Tensor) and pred.shape == (4, 10)
     logits = head.simple_test(feat, softmax=False, post_process=False)
-    torch.testing.assert_close(pred, torch.softmax(logits, dim=1))
+    torch.testing.assert_allclose(pred, torch.softmax(logits, dim=1))
 
     # test pre_logits
     features = head.pre_logits(feat)
@@ -77,7 +77,7 @@ def test_linear_head(feat):
     pred = head.simple_test(feat, post_process=False)
     assert isinstance(pred, torch.Tensor) and pred.shape == (4, 10)
     logits = head.simple_test(feat, softmax=False, post_process=False)
-    torch.testing.assert_close(pred, torch.softmax(logits, dim=1))
+    torch.testing.assert_allclose(pred, torch.softmax(logits, dim=1))
 
     # test pre_logits
     features = head.pre_logits(feat)
@@ -106,7 +106,7 @@ def test_multilabel_head(feat):
     pred = head.simple_test(feat, post_process=False)
     assert isinstance(pred, torch.Tensor) and pred.shape == (4, 10)
     logits = head.simple_test(feat, sigmoid=False, post_process=False)
-    torch.testing.assert_close(pred, torch.sigmoid(logits))
+    torch.testing.assert_allclose(pred, torch.sigmoid(logits))
 
     # test pre_logits
     features = head.pre_logits(feat)
@@ -136,7 +136,7 @@ def test_multilabel_linear_head(feat):
     pred = head.simple_test(feat, post_process=False)
     assert isinstance(pred, torch.Tensor) and pred.shape == (4, 10)
     logits = head.simple_test(feat, sigmoid=False, post_process=False)
-    torch.testing.assert_close(pred, torch.sigmoid(logits))
+    torch.testing.assert_allclose(pred, torch.sigmoid(logits))
 
     # test pre_logits
     features = head.pre_logits(feat)
@@ -176,7 +176,7 @@ def test_stacked_linear_cls_head(feat):
     pred = head.simple_test(feat, post_process=False)
     assert isinstance(pred, torch.Tensor) and pred.shape == (4, 10)
     logits = head.simple_test(feat, softmax=False, post_process=False)
-    torch.testing.assert_close(pred, torch.softmax(logits, dim=1))
+    torch.testing.assert_allclose(pred, torch.softmax(logits, dim=1))
 
     # test pre_logits
     features = head.pre_logits(feat)
@@ -230,7 +230,7 @@ def test_vit_head():
     pred = head.simple_test(fake_features, post_process=False)
     assert isinstance(pred, torch.Tensor) and pred.shape == (4, 10)
     logits = head.simple_test(fake_features, softmax=False, post_process=False)
-    torch.testing.assert_close(pred, torch.softmax(logits, dim=1))
+    torch.testing.assert_allclose(pred, torch.softmax(logits, dim=1))
 
     # test pre_logits
     features = head.pre_logits(fake_features)
@@ -261,7 +261,7 @@ def test_conformer_head():
     pred = head.simple_test(fake_features, post_process=False)
     assert isinstance(pred, torch.Tensor) and pred.shape == (4, 10)
     logits = head.simple_test(fake_features, softmax=False, post_process=False)
-    torch.testing.assert_close(pred, torch.softmax(sum(logits), dim=1))
+    torch.testing.assert_allclose(pred, torch.softmax(sum(logits), dim=1))
 
     # test pre_logits
     features = head.pre_logits(fake_features)
