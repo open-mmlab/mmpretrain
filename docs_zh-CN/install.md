@@ -110,8 +110,8 @@ pip install -e .  # 或者 "python setup.py develop"
 MMClassification 提供 [Dockerfile](https://github.com/open-mmlab/mmclassification/blob/master/docker/Dockerfile) ，可以通过以下命令创建 docker 镜像。
 
 ```shell
-# 创建基于 PyTorch 1.6.0, CUDA 10.1, CUDNN 7 的镜像。
-docker build -f ./docker/Dockerfile --rm -t mmcls:torch1.6.0-cuda10.1-cudnn7 .
+# 创建基于 PyTorch 1.8.1, CUDA 10.2, CUDNN 7 以及最近版本的 MMCV-full 的镜像 。
+docker build -f ./docker/Dockerfile --rm -t mmcls:latest .
 ```
 
 ```{important}
@@ -121,7 +121,7 @@ docker build -f ./docker/Dockerfile --rm -t mmcls:torch1.6.0-cuda10.1-cudnn7 .
 运行一个基于上述镜像的容器：
 
 ```shell
-docker run --gpus all --shm-size=8g -it -v {DATA_DIR}:/workspace/mmclassification/data mmcls:torch1.6.0-cuda10.1-cudnn7 /bin/bash
+docker run --gpus all --shm-size=8g -it -v {DATA_DIR}:/workspace/mmclassification/data mmcls:latest /bin/bash
 ```
 
 ## 在多个 MMClassification 版本下进行开发
