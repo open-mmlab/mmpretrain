@@ -16,7 +16,7 @@ class ConformerHead(ClsHead):
             category.
         in_channels (int): Number of channels in the input feature map.
         init_cfg (dict | optional): The extra init config of layers.
-            Defaults to use dict(type='Normal', layer='Linear', std=0.01).
+            Defaults to use ``dict(type='Normal', layer='Linear', std=0.01)``.
     """
 
     def __init__(
@@ -55,25 +55,34 @@ class ConformerHead(ClsHead):
         else:
             self.apply(self._init_weights)
 
-    def simple_test(self, x):
-        """Test without augmentation."""
+    def pre_logits(self, x):
         if isinstance(x, tuple):
             x = x[-1]
-        assert isinstance(x,
-                          list)  # There are two outputs in the Conformer model
+        return x
+
+    def simple_test(self, x, softmax=True, post_process=True):
+        """Test without augmentation."""
+        x = self.pre_logits(x)
+        # There are two outputs in the Conformer model
+        assert isinstance(x, list)
 
         conv_cls_score = self.conv_cls_head(x[0])
         tran_cls_score = self.trans_cls_head(x[1])
 
-        cls_score = conv_cls_score + tran_cls_score
-
-        pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
-
-        return self.post_process(pred)
+        if softmax:
+            cls_score = conv_cls_score + tran_cls_score
+            pred = (
+                F.softmax(cls_score, dim=1) if cls_score is not None else None)
+            if post_process:
+                pred = self.post_process(pred)
+        else:
+            pred = [conv_cls_score, tran_cls_score]
+            if post_process:
+                pred = list(map(self.post_process, pred))
+        return pred
 
     def forward_train(self, x, gt_label):
-        if isinstance(x, tuple):
-            x = x[-1]
+        x = self.pre_logits(x)
         assert isinstance(x, list) and len(x) == 2, \
             'There should be two outputs in the Conformer model'
 

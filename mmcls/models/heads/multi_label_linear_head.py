@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from ..builder import HEADS
 from .multi_label_head import MultiLabelClsHead
@@ -39,21 +39,31 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
 
         self.fc = nn.Linear(self.in_channels, self.num_classes)
 
-    def forward_train(self, x, gt_label, **kwargs):
+    def pre_logits(self, x):
         if isinstance(x, tuple):
             x = x[-1]
+        return x
+
+    def forward_train(self, x, gt_label, **kwargs):
+        x = self.pre_logits(x)
         gt_label = gt_label.type_as(x)
         cls_score = self.fc(x)
         losses = self.loss(cls_score, gt_label, **kwargs)
         return losses
 
-    def simple_test(self, x):
+    def simple_test(self, x, sigmoid=True, post_process=True):
         """Test without augmentation."""
-        if isinstance(x, tuple):
-            x = x[-1]
+        x = self.pre_logits(x)
         cls_score = self.fc(x)
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
-        pred = F.sigmoid(cls_score) if cls_score is not None else None
 
-        return self.post_process(pred)
+        if sigmoid:
+            pred = torch.sigmoid(cls_score) if cls_score is not None else None
+        else:
+            pred = cls_score
+
+        if post_process:
+            return self.post_process(pred)
+        else:
+            return pred

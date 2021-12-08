@@ -70,8 +70,12 @@ class ImageClassifier(BaseClassifier):
                     cfg['prob'] = cutmix_prob
                     self.augments = Augments(cfg)
 
-    def extract_feat(self, img):
+    def extract_feat(self, img, stage='neck'):
         """Directly extract features from the backbone + neck."""
+        assert stage in ['backbone', 'neck', 'pre_logits'], \
+            (f'Invalid output stage "{stage}", please choose from "backbone", '
+             '"neck" and "pre_logits"')
+
         x = self.backbone(img)
         if self.return_tuple:
             if not isinstance(x, tuple):
@@ -83,8 +87,16 @@ class ImageClassifier(BaseClassifier):
         else:
             if isinstance(x, tuple):
                 x = x[-1]
+        if stage == 'backbone':
+            return x
+
         if self.with_neck:
             x = self.neck(x)
+        if stage == 'neck':
+            return x
+
+        if self.with_head and hasattr(self.head, 'pre_logits'):
+            x = self.head.pre_logits(x)
         return x
 
     def forward_train(self, img, gt_label, **kwargs):
@@ -122,12 +134,12 @@ class ImageClassifier(BaseClassifier):
 
         return losses
 
-    def simple_test(self, img, img_metas):
+    def simple_test(self, img, img_metas=None, **kwargs):
         """Test without augmentation."""
         x = self.extract_feat(img)
 
         try:
-            res = self.head.simple_test(x)
+            res = self.head.simple_test(x, **kwargs)
         except TypeError as e:
             if 'not tuple' in str(e) and self.return_tuple:
                 return TypeError(
