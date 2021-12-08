@@ -1,0 +1,85 @@
+Models:
+  - Name: resnet34
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 73.85
+          Top 5 Accuracy: 91.53
+    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet34_batch256_imagenet_20200708-32ffb4f7.pth
+    Config: configs/resnet/resnet34_8xb32_in1k.py
+    Gpus: 8
+
+  - Name: vgg11bn
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 70.75
+          Top 5 Accuracy: 90.12
+    Weights: https://download.openmmlab.com/mmclassification/v0/vgg/vgg11_bn_batch256_imagenet_20210207-f244902c.pth
+    Config: configs/vgg/vgg11bn_8xb32_in1k.py
+    Gpus: 8
+
+  - Name: seresnet50
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 77.74
+          Top 5 Accuracy: 93.84
+    Weights: https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet50_batch256_imagenet_20200804-ae206104.pth
+    Config: configs/seresnet/seresnet50_8xb32_in1k.py
+    Gpus: 8
+
+  - Name: resnext50
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 77.92
+          Top 5 Accuracy: 93.74
+    Weights: https://download.openmmlab.com/mmclassification/v0/resnext/resnext50_32x4d_batch256_imagenet_20200708-c07adbb7.pth
+    Config: configs/resnext/resnext50-32x4d_8xb32_in1k.py
+    Gpus: 8
+
+  - Name: mobilenet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 71.86
+          Top 5 Accuracy: 90.42
+    Weights: https://download.openmmlab.com/mmclassification/v0/mobilenet_v2/mobilenet_v2_batch256_imagenet_20200708-3b2dc3af.pth
+    Config: configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py
+    Gpus: 8
+    Months:
+      - 1
+      - 4
+      - 7
+      - 10
+
+  - Name: shufflenet_v1
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 68.13
+          Top 5 Accuracy: 87.81
+    Weights: https://download.openmmlab.com/mmclassification/v0/shufflenet_v1/shufflenet_v1_batch1024_imagenet_20200804-5d6cec73.pth
+    Config: configs/shufflenet_v1/shufflenet-v1-1x_16xb64_in1k.py
+    Gpus: 16
+    Months:
+      - 2
+      - 5
+      - 8
+      - 11
+
+  - Name: swin_tiny
+    Results:
+    - Dataset: ImageNet
+      Metrics:
+        Top 1 Accuracy: 81.18
+        Top 5 Accuracy: 95.61
+    Weights: https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_tiny_224_b16x64_300e_imagenet_20210616_090925-66df6be6.pth
+    Config: configs/swin_transformer/swin-tiny_16xb64_in1k.py
+    Gpus: 16
+    Months:
+      - 3
+      - 6
+      - 9
+      - 12

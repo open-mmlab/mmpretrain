@@ -1,5 +1,7 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import copy
 from abc import ABCMeta, abstractmethod
+from typing import List
 
 import mmcv
 import numpy as np
@@ -32,7 +34,6 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
                  ann_file=None,
                  test_mode=False):
         super(BaseDataset, self).__init__()
-
         self.ann_file = ann_file
         self.data_prefix = data_prefix
         self.test_mode = test_mode
@@ -64,17 +65,17 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         gt_labels = np.array([data['gt_label'] for data in self.data_infos])
         return gt_labels
 
-    def get_cat_ids(self, idx):
+    def get_cat_ids(self, idx: int) -> List[int]:
         """Get category id by index.
 
         Args:
             idx (int): Index of data.
 
         Returns:
-            int: Image category of specified index.
+            cat_ids (List[int]): Image category of specified index.
         """
 
-        return self.data_infos[idx]['gt_label'].astype(np.int)
+        return [int(self.data_infos[idx]['gt_label'])]
 
     def prepare_data(self, idx):
         results = copy.deepcopy(self.data_infos[idx])
@@ -89,6 +90,7 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
     @classmethod
     def get_classes(cls, classes=None):
         """Get class names of current dataset.
+
         Args:
             classes (Sequence[str] | str | None): If classes is None, use
                 default CLASSES defined by builtin dataset. If classes is a
@@ -149,14 +151,17 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
 
         invalid_metrics = set(metrics) - set(allowed_metrics)
         if len(invalid_metrics) != 0:
-            raise ValueError(f'metirc {invalid_metrics} is not supported.')
+            raise ValueError(f'metric {invalid_metrics} is not supported.')
 
         topk = metric_options.get('topk', (1, 5))
         thrs = metric_options.get('thrs')
         average_mode = metric_options.get('average_mode', 'macro')
 
         if 'accuracy' in metrics:
-            acc = accuracy(results, gt_labels, topk=topk, thrs=thrs)
+            if thrs is not None:
+                acc = accuracy(results, gt_labels, topk=topk, thrs=thrs)
+            else:
+                acc = accuracy(results, gt_labels, topk=topk)
             if isinstance(topk, tuple):
                 eval_results_ = {
                     f'accuracy_top-{k}': a
@@ -182,8 +187,12 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
 
         precision_recall_f1_keys = ['precision', 'recall', 'f1_score']
         if len(set(metrics) & set(precision_recall_f1_keys)) != 0:
-            precision_recall_f1_values = precision_recall_f1(
-                results, gt_labels, average_mode=average_mode, thrs=thrs)
+            if thrs is not None:
+                precision_recall_f1_values = precision_recall_f1(
+                    results, gt_labels, average_mode=average_mode, thrs=thrs)
+            else:
+                precision_recall_f1_values = precision_recall_f1(
+                    results, gt_labels, average_mode=average_mode)
             for key, values in zip(precision_recall_f1_keys,
                                    precision_recall_f1_values):
                 if key in metrics:

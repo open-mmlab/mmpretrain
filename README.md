@@ -31,8 +31,20 @@ This project is released under the [Apache 2.0 license](LICENSE).
 
 ## Changelog
 
-v0.12.0 was released in 3/6/2021.
-Please refer to [changelog.md](docs/changelog.md) for details and release history.
+v0.18.0 was released in 30/11/2021.
+
+Highlights of the new version:
+- Support **MLP-Mixer** backbone and provide pre-trained checkpoints.
+- Add a tool to **visualize the learning rate curve** of the training phase. Welcome to use with the [tutorial](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#learning-rate-schedule-visualization)!
+
+v0.17.0 was released in 29/10/2021.
+
+Highlights of this version:
+- Support **Tokens-to-Token ViT** backbone and **Res2Net** backbone. Welcome to use!
+- Support **ImageNet21k** dataset.
+- Add a **pipeline visualization** tool. Try it with the [tutorials](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#pipeline-visualization)!
+
+Please refer to [changelog.md](docs/changelog.md) for more details and other release history.
 
 ## Benchmark and model zoo
 
@@ -40,6 +52,7 @@ Results and models are available in the [model zoo](docs/model_zoo.md).
 
 Supported backbones:
 
+- [x] VGG
 - [x] ResNet
 - [x] ResNeXt
 - [x] SE-ResNet
@@ -49,14 +62,33 @@ Supported backbones:
 - [x] ShuffleNetV2
 - [x] MobileNetV2
 - [x] MobileNetV3
+- [x] Swin-Transformer
+- [x] RepVGG
+- [x] Vision-Transformer
+- [x] Transformer-in-Transformer
+- [x] Res2Net
+- [x] MLP-Mixer
+- [ ] DeiT
+- [ ] Conformer
+- [ ] EfficientNet
 
 ## Installation
 
 Please refer to [install.md](docs/install.md) for installation and dataset preparation.
 
 ## Getting Started
+Please see [getting_started.md](docs/getting_started.md) for the basic usage of MMClassification. There are also tutorials:
 
-Please see [getting_started.md](docs/getting_started.md) for the basic usage of MMClassification. There are also tutorials for [finetuning models](docs/tutorials/finetune.md), [adding new dataset](docs/tutorials/new_dataset.md), [designing data pipeline](docs/tutorials/data_pipeline.md), and [adding new modules](docs/tutorials/new_modules.md).
+- [learn about configs](docs/tutorials/config.md)
+- [finetuning models](docs/tutorials/finetune.md)
+- [adding new dataset](docs/tutorials/new_dataset.md)
+- [designing data pipeline](docs/tutorials/data_pipeline.md)
+- [adding new modules](docs/tutorials/new_modules.md)
+- [customizing schedule](docs/tutorials/schedule.md)
+- [customizing runtime settings](docs/tutorials/runtime.md)
+
+Colab tutorials are also provided. To learn about MMClassification Python API, you may preview the notebook [here](https://github.com/open-mmlab/mmclassification/blob/master/docs/tutorials/MMClassification_python.ipynb) or directly [run](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/tutorials/MMClassification_python.ipynb) on Colab.
+To learn about MMClassification shell tools, you may preview the notebook [here](https://github.com/open-mmlab/mmclassification/blob/master/docs/tutorials/MMClassification_tools.ipynb) or directly [run](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/tutorials/MMClassification_tools.ipynb) on Colab.
 
 ## Citation
 
@@ -74,7 +106,7 @@ If you find this project useful in your research, please consider cite:
 ## Contributing
 
 We appreciate all contributions to improve MMClassification.
-Please refer to [CONTRUBUTING.md](.github/CONTRIBUTING.md) for the contributing guideline.
+Please refer to [CONTRUBUTING.md](docs/community/CONTRIBUTING.md) for the contributing guideline.
 
 ## Acknowledgement
 
@@ -84,6 +116,7 @@ We wish that the toolbox and benchmark could serve the growing research communit
 ## Projects in OpenMMLab
 
 - [MMCV](https://github.com/open-mmlab/mmcv): OpenMMLab foundational library for computer vision.
+- [MIM](https://github.com/open-mmlab/mim): MIM Installs OpenMMLab Packages.
 - [MMClassification](https://github.com/open-mmlab/mmclassification): OpenMMLab image classification toolbox and benchmark.
 - [MMDetection](https://github.com/open-mmlab/mmdetection): OpenMMLab detection toolbox and benchmark.
 - [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): OpenMMLab's next-generation platform for general 3D object detection.
@@ -94,3 +127,6 @@ We wish that the toolbox and benchmark could serve the growing research communit
 - [MMEditing](https://github.com/open-mmlab/mmediting): OpenMMLab image and video editing toolbox.
 - [MMOCR](https://github.com/open-mmlab/mmocr): OpenMMLab toolbox for text detection, recognition and understanding.
 - [MMGeneration](https://github.com/open-mmlab/mmgeneration): OpenMMlab toolkit for generative models.
+- [MMFlow](https://github.com/open-mmlab/mmflow) OpenMMLab optical flow toolbox and benchmark.
+- [MMFewShot](https://github.com/open-mmlab/mmfewshot): OpenMMLab FewShot Learning Toolbox and Benchmark.
+- [MMHuman3D](https://github.com/open-mmlab/mmhuman3d): OpenMMLab 3D Human Parametric Model Toolbox and Benchmark.

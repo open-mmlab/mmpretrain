@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -260,7 +261,7 @@ class Bottleneck(_Bottleneck):
 class ResNeSt(ResNetV1d):
     """ResNeSt backbone.
 
-    Please refer to the `paper <https://arxiv.org/pdf/2004.08955.pdf>`_ for
+    Please refer to the `paper <https://arxiv.org/pdf/2004.08955.pdf>`__ for
     details.
 
     Args:

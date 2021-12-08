@@ -1,8 +1,10 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import torch
 import torch.nn.functional as F
 
 from mmcls.models.losses import Accuracy
 from ..builder import HEADS, build_loss
+from ..utils import is_tracing
 from .base_head import BaseHead
 
 
@@ -37,11 +39,12 @@ class ClsHead(BaseHead):
         self.compute_accuracy = Accuracy(topk=self.topk)
         self.cal_acc = cal_acc
 
-    def loss(self, cls_score, gt_label):
+    def loss(self, cls_score, gt_label, **kwargs):
         num_samples = len(cls_score)
         losses = dict()
         # compute loss
-        loss = self.compute_loss(cls_score, gt_label, avg_factor=num_samples)
+        loss = self.compute_loss(
+            cls_score, gt_label, avg_factor=num_samples, **kwargs)
         if self.cal_acc:
             # compute accuracy
             acc = self.compute_accuracy(cls_score, gt_label)
@@ -53,17 +56,23 @@ class ClsHead(BaseHead):
         losses['loss'] = loss
         return losses
 
-    def forward_train(self, cls_score, gt_label):
-        losses = self.loss(cls_score, gt_label)
+    def forward_train(self, cls_score, gt_label, **kwargs):
+        if isinstance(cls_score, tuple):
+            cls_score = cls_score[-1]
+        losses = self.loss(cls_score, gt_label, **kwargs)
         return losses
 
     def simple_test(self, cls_score):
         """Test without augmentation."""
+        if isinstance(cls_score, tuple):
+            cls_score = cls_score[-1]
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
         pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
+        return self.post_process(pred)
 
-        on_trace = hasattr(torch.jit, 'is_tracing') and torch.jit.is_tracing()
+    def post_process(self, pred):
+        on_trace = is_tracing()
         if torch.onnx.is_in_onnx_export() or on_trace:
             return pred
         pred = list(pred.detach().cpu().numpy())

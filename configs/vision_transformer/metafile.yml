@@ -1,0 +1,79 @@
+Collections:
+  - Name: Vision Transformer
+    Metadata:
+      Architecture:
+        - Attention Dropout
+        - Convolution
+        - Dense Connections
+        - Dropout
+        - GELU
+        - Layer Normalization
+        - Multi-Head Attention
+        - Scaled Dot-Product Attention
+        - Tanh Activation
+    Paper:
+      URL: https://arxiv.org/pdf/2010.11929.pdf
+      Title: 'An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale'
+    README: configs/vision_transformer/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.17.0/mmcls/models/backbones/vision_transformer.py
+      Version: v0.17.0
+
+Models:
+  - Name: vit-base-p16_in21k-pre-3rdparty_ft-64xb64_in1k-384
+    In Collection: Vision Transformer
+    Metadata:
+      FLOPs: 33030000000
+      Parameters: 86860000
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 85.43
+        Top 5 Accuracy: 97.77
+    Weights: https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-base-p16_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-98e8652b.pth
+    Converted From:
+      Weights: https://console.cloud.google.com/storage/browser/_details/vit_models/augreg/B_16-i21k-300ep-lr_0.001-aug_medium1-wd_0.1-do_0.0-sd_0.0--imagenet2012-steps_20k-lr_0.03-res_384.npz
+      Code: https://github.com/google-research/vision_transformer/blob/88a52f8892c80c10de99194990a517b4d80485fd/vit_jax/models.py#L208
+    Config: configs/vision_transformer/vit-base-p16_ft-64xb64_in1k-384.py
+  - Name: vit-base-p32_in21k-pre-3rdparty_ft-64xb64_in1k-384
+    In Collection: Vision Transformer
+    Metadata:
+      FLOPs: 8560000000
+      Parameters: 88300000
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 84.01
+        Top 5 Accuracy: 97.08
+    Weights: https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-base-p32_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-9cea8599.pth
+    Converted From:
+      Weights: https://console.cloud.google.com/storage/browser/_details/vit_models/augreg/B_32-i21k-300ep-lr_0.001-aug_light1-wd_0.1-do_0.0-sd_0.0--imagenet2012-steps_20k-lr_0.01-res_384.npz
+      Code: https://github.com/google-research/vision_transformer/blob/88a52f8892c80c10de99194990a517b4d80485fd/vit_jax/models.py#L208
+    Config: configs/vision_transformer/vit-base-p32_ft-64xb64_in1k-384.py
+  - Name: vit-large-p16_in21k-pre-3rdparty_ft-64xb64_in1k-384
+    In Collection: Vision Transformer
+    Metadata:
+      FLOPs: 116680000000
+      Parameters: 304720000
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 85.63
+        Top 5 Accuracy: 97.63
+    Weights: https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-large-p16_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-b20ba619.pth
+    Converted From:
+      Weights: https://console.cloud.google.com/storage/browser/_details/vit_models/augreg/L_16-i21k-300ep-lr_0.001-aug_strong1-wd_0.1-do_0.0-sd_0.0--imagenet2012-steps_20k-lr_0.01-res_384.npz
+      Code: https://github.com/google-research/vision_transformer/blob/88a52f8892c80c10de99194990a517b4d80485fd/vit_jax/models.py#L208
+    Config: configs/vision_transformer/vit-large-p16_ft-64xb64_in1k-384.py

@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import torch.nn as nn
 
 from ..builder import BACKBONES
@@ -52,4 +53,4 @@ class AlexNet(BaseBackbone):
             x = x.view(x.size(0), 256 * 6 * 6)
             x = self.classifier(x)
 
-        return x
+        return (x, )

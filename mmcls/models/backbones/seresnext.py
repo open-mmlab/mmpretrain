@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from mmcv.cnn import build_conv_layer, build_norm_layer
 
 from ..builder import BACKBONES
@@ -95,7 +96,7 @@ class SEBottleneck(_SEBottleneck):
 class SEResNeXt(SEResNet):
     """SEResNeXt backbone.
 
-    Please refer to the `paper <https://arxiv.org/abs/1709.01507>`_ for
+    Please refer to the `paper <https://arxiv.org/abs/1709.01507>`__ for
     details.
 
     Args:

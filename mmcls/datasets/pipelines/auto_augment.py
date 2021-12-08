@@ -1,5 +1,8 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import copy
+import inspect
 import random
+from math import ceil
 from numbers import Number
 from typing import Sequence
 
@@ -9,18 +12,43 @@ import numpy as np
 from ..builder import PIPELINES
 from .compose import Compose
 
+# Default hyperparameters for all Ops
+_HPARAMS_DEFAULT = dict(pad_val=128)
+
 
 def random_negative(value, random_negative_prob):
     """Randomly negate value based on random_negative_prob."""
     return -value if np.random.rand() < random_negative_prob else value
 
 
+def merge_hparams(policy: dict, hparams: dict):
+    """Merge hyperparameters into policy config.
+
+    Only merge partial hyperparameters required of the policy.
+
+    Args:
+        policy (dict): Original policy config dict.
+        hparams (dict): Hyperparameters need to be merged.
+
+    Returns:
+        dict: Policy config dict after adding ``hparams``.
+    """
+    op = PIPELINES.get(policy['type'])
+    assert op is not None, f'Invalid policy type "{policy["type"]}".'
+    for key, value in hparams.items():
+        if policy.get(key, None) is not None:
+            continue
+        if key in inspect.getfullargspec(op.__init__).args:
+            policy[key] = value
+    return policy
+
+
 @PIPELINES.register_module()
 class AutoAugment(object):
-    """Auto augmentation. This data augmentation is proposed in `AutoAugment:
-    Learning Augmentation Policies from Data.
+    """Auto augmentation.
 
-    <https://arxiv.org/abs/1805.09501>`_.
+    This data augmentation is proposed in `AutoAugment: Learning Augmentation
+    Policies from Data <https://arxiv.org/abs/1805.09501>`_.
 
     Args:
         policies (list[list[dict]]): The policies of auto augmentation. Each
@@ -28,9 +56,12 @@ class AutoAugment(object):
             composed by several augmentations (dict). When AutoAugment is
             called, a random policy in ``policies`` will be selected to
             augment images.
+        hparams (dict): Configs of hyperparameters. Hyperparameters will be
+            used in policies that require these arguments if these arguments
+            are not set in policy dicts. Defaults to use _HPARAMS_DEFAULT.
     """
 
-    def __init__(self, policies):
+    def __init__(self, policies, hparams=_HPARAMS_DEFAULT):
         assert isinstance(policies, list) and len(policies) > 0, \
             'Policies must be a non-empty list.'
         for policy in policies:
@@ -41,7 +72,13 @@ class AutoAugment(object):
                     'Each specific augmentation must be a dict with key' \
                     ' "type".'
 
-        self.policies = copy.deepcopy(policies)
+        self.hparams = hparams
+        policies = copy.deepcopy(policies)
+        self.policies = []
+        for sub in policies:
+            merged_sub = [merge_hparams(policy, hparams) for policy in sub]
+            self.policies.append(merged_sub)
+
         self.sub_policy = [Compose(policy) for policy in self.policies]
 
     def __call__(self, results):
@@ -56,9 +93,10 @@ class AutoAugment(object):
 
 @PIPELINES.register_module()
 class RandAugment(object):
-    """Random augmentation. This data augmentation is proposed in `RandAugment:
-    Practical automated data augmentation with a reduced search space.
+    r"""Random augmentation.
 
+    This data augmentation is proposed in `RandAugment: Practical automated
+    data augmentation with a reduced search space
     <https://arxiv.org/abs/1909.13719>`_.
 
     Args:
@@ -78,19 +116,26 @@ class RandAugment(object):
         total_level (int | float): Total level for the magnitude. Defaults to
             30.
         magnitude_std (Number | str): Deviation of magnitude noise applied.
-            If positive number, magnitude is sampled from normal distribution
-                (mean=magnitude, std=magnitude_std).
-            If 0 or negative number, magnitude remains unchanged.
-            If str "inf", magnitude is sampled from uniform distribution
-                (range=[min, magnitude]).
+
+            - If positive number, magnitude is sampled from normal distribution
+              (mean=magnitude, std=magnitude_std).
+            - If 0 or negative number, magnitude remains unchanged.
+            - If str "inf", magnitude is sampled from uniform distribution
+              (range=[min, magnitude]).
+        hparams (dict): Configs of hyperparameters. Hyperparameters will be
+            used in policies that require these arguments if these arguments
+            are not set in policy dicts. Defaults to use _HPARAMS_DEFAULT.
 
     Note:
         `magnitude_std` will introduce some randomness to policy, modified by
-        https://github.com/rwightman/pytorch-image-models
+        https://github.com/rwightman/pytorch-image-models.
+
         When magnitude_std=0, we calculate the magnitude as follows:
 
         .. math::
-            magnitude = magnitude_level / total_level * (val2 - val1) + val1
+            \text{magnitude} = \frac{\text{magnitude\_level}}
+            {\text{total\_level}} \times (\text{val2} - \text{val1})
+            + \text{val1}
     """
 
     def __init__(self,
@@ -98,7 +143,8 @@ class RandAugment(object):
                  num_policies,
                  magnitude_level,
                  magnitude_std=0.,
-                 total_level=30):
+                 total_level=30,
+                 hparams=_HPARAMS_DEFAULT):
         assert isinstance(num_policies, int), 'Number of policies must be ' \
             f'of int type, got {type(num_policies)} instead.'
         assert isinstance(magnitude_level, (int, float)), \
@@ -125,8 +171,10 @@ class RandAugment(object):
         self.magnitude_level = magnitude_level
         self.magnitude_std = magnitude_std
         self.total_level = total_level
-        self.policies = policies
-        self._check_policies(self.policies)
+        self.hparams = hparams
+        policies = copy.deepcopy(policies)
+        self._check_policies(policies)
+        self.policies = [merge_hparams(policy, hparams) for policy in policies]
 
     def _check_policies(self, policies):
         for policy in policies:
@@ -190,8 +238,8 @@ class Shear(object):
 
     Args:
         magnitude (int | float): The magnitude used for shear.
-        pad_val (int, tuple[int]): Pixel pad_val value for constant fill. If a
-            tuple of length 3, it is used to pad_val R, G, B channels
+        pad_val (int, Sequence[int]): Pixel pad_val value for constant fill.
+            If a sequence of length 3, it is used to pad_val R, G, B channels
             respectively. Defaults to 128.
         prob (float): The probability for performing Shear therefore should be
             in range [0, 1]. Defaults to 0.5.
@@ -214,7 +262,7 @@ class Shear(object):
             f'be int or float, but got {type(magnitude)} instead.'
         if isinstance(pad_val, int):
             pad_val = tuple([pad_val] * 3)
-        elif isinstance(pad_val, tuple):
+        elif isinstance(pad_val, Sequence):
             assert len(pad_val) == 3, 'pad_val as a tuple must have 3 ' \
                 f'elements, got {len(pad_val)} instead.'
             assert all(isinstance(i, int) for i in pad_val), 'pad_val as a '\
@@ -229,7 +277,7 @@ class Shear(object):
             f'should be in range [0,1], got {random_negative_prob} instead.'
 
         self.magnitude = magnitude
-        self.pad_val = pad_val
+        self.pad_val = tuple(pad_val)
         self.prob = prob
         self.direction = direction
         self.random_negative_prob = random_negative_prob
@@ -269,9 +317,9 @@ class Translate(object):
         magnitude (int | float): The magnitude used for translate. Note that
             the offset is calculated by magnitude * size in the corresponding
             direction. With a magnitude of 1, the whole image will be moved out
-             of the range.
-        pad_val (int, tuple[int]): Pixel pad_val value for constant fill. If a
-            tuple of length 3, it is used to pad_val R, G, B channels
+            of the range.
+        pad_val (int, Sequence[int]): Pixel pad_val value for constant fill.
+            If a sequence of length 3, it is used to pad_val R, G, B channels
             respectively. Defaults to 128.
         prob (float): The probability for performing translate therefore should
              be in range [0, 1]. Defaults to 0.5.
@@ -294,7 +342,7 @@ class Translate(object):
             f'be int or float, but got {type(magnitude)} instead.'
         if isinstance(pad_val, int):
             pad_val = tuple([pad_val] * 3)
-        elif isinstance(pad_val, tuple):
+        elif isinstance(pad_val, Sequence):
             assert len(pad_val) == 3, 'pad_val as a tuple must have 3 ' \
                 f'elements, got {len(pad_val)} instead.'
             assert all(isinstance(i, int) for i in pad_val), 'pad_val as a '\
@@ -309,7 +357,7 @@ class Translate(object):
             f'should be in range [0,1], got {random_negative_prob} instead.'
 
         self.magnitude = magnitude
-        self.pad_val = pad_val
+        self.pad_val = tuple(pad_val)
         self.prob = prob
         self.direction = direction
         self.random_negative_prob = random_negative_prob
@@ -354,11 +402,11 @@ class Rotate(object):
         angle (float): The angle used for rotate. Positive values stand for
             clockwise rotation.
         center (tuple[float], optional): Center point (w, h) of the rotation in
-             the source image. If None, the center of the image will be used.
-            defaults to None.
+            the source image. If None, the center of the image will be used.
+            Defaults to None.
         scale (float): Isotropic scale factor. Defaults to 1.0.
-        pad_val (int, tuple[int]): Pixel pad_val value for constant fill. If a
-            tuple of length 3, it is used to pad_val R, G, B channels
+        pad_val (int, Sequence[int]): Pixel pad_val value for constant fill.
+            If a sequence of length 3, it is used to pad_val R, G, B channels
             respectively. Defaults to 128.
         prob (float): The probability for performing Rotate therefore should be
             in range [0, 1]. Defaults to 0.5.
@@ -388,7 +436,7 @@ class Rotate(object):
             f'got {type(scale)} instead.'
         if isinstance(pad_val, int):
             pad_val = tuple([pad_val] * 3)
-        elif isinstance(pad_val, tuple):
+        elif isinstance(pad_val, Sequence):
             assert len(pad_val) == 3, 'pad_val as a tuple must have 3 ' \
                 f'elements, got {len(pad_val)} instead.'
             assert all(isinstance(i, int) for i in pad_val), 'pad_val as a '\
@@ -403,7 +451,7 @@ class Rotate(object):
         self.angle = angle
         self.center = center
         self.scale = scale
-        self.pad_val = pad_val
+        self.pad_val = tuple(pad_val)
         self.prob = prob
         self.random_negative_prob = random_negative_prob
         self.interpolation = interpolation
@@ -621,7 +669,8 @@ class Posterize(object):
         assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
             f'got {prob} instead.'
 
-        self.bits = int(bits)
+        # To align timm version, we need to round up to integer here.
+        self.bits = ceil(bits)
         self.prob = prob
 
     def __call__(self, results):
@@ -692,7 +741,7 @@ class ColorTransform(object):
     Args:
         magnitude (int | float): The magnitude used for color transform. A
             positive magnitude would enhance the color and a negative magnitude
-             would make the image grayer. A magnitude=0 gives the origin img.
+            would make the image grayer. A magnitude=0 gives the origin img.
         prob (float): The probability for performing ColorTransform therefore
             should be in range [0, 1]. Defaults to 0.5.
         random_negative_prob (float): The probability that turns the magnitude
@@ -827,8 +876,8 @@ class Cutout(object):
         shape (int | float | tuple(int | float)): Expected cutout shape (h, w).
             If given as a single value, the value will be used for
             both h and w.
-        pad_val (int, tuple[int]): Pixel pad_val value for constant fill. If
-            it is a tuple, it must have the same length with the image
+        pad_val (int, Sequence[int]): Pixel pad_val value for constant fill.
+            If it is a sequence, it must have the same length with the image
             channels. Defaults to 128.
         prob (float): The probability for performing cutout therefore should
             be in range [0, 1]. Defaults to 0.5.
@@ -843,11 +892,16 @@ class Cutout(object):
             raise TypeError(
                 'shape must be of '
                 f'type int, float or tuple, got {type(shape)} instead')
+        if isinstance(pad_val, int):
+            pad_val = tuple([pad_val] * 3)
+        elif isinstance(pad_val, Sequence):
+            assert len(pad_val) == 3, 'pad_val as a tuple must have 3 ' \
+                f'elements, got {len(pad_val)} instead.'
         assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
             f'got {prob} instead.'
 
         self.shape = shape
-        self.pad_val = pad_val
+        self.pad_val = tuple(pad_val)
         self.prob = prob
 
     def __call__(self, results):

@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import torch.nn as nn
 from mmcv.cnn import build_conv_layer, build_norm_layer
 
@@ -77,7 +78,4 @@ class ResNet_CIFAR(ResNet):
             x = res_layer(x)
             if i in self.out_indices:
                 outs.append(x)
-        if len(outs) == 1:
-            return outs[0]
-        else:
-            return tuple(outs)
+        return tuple(outs)

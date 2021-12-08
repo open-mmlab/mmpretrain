@@ -49,6 +49,10 @@ We provide scripts to inference a single image, inference a dataset and test a d
 
 ```shell
 python demo/image_demo.py ${IMAGE_FILE} ${CONFIG_FILE} ${CHECKPOINT_FILE}
+
+# Example
+python demo/image_demo.py demo/demo.JPEG configs/resnet/resnet50_8xb32_in1k.py \
+  https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb32_in1k_20210831-ea4938fc.pth
 ```
 
 ### Inference and test a dataset
@@ -81,7 +85,9 @@ Assume that you have already downloaded the checkpoints to the directory `checkp
 Infer ResNet-50 on ImageNet validation set to get predicted labels and their corresponding predicted scores.
 
 ```shell
-python tools/test.py configs/imagenet/resnet50_batch256.py checkpoints/xxx.pth --out result.pkl
+python tools/test.py configs/resnet/resnet50_8xb16_cifar10.py \
+  https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_b16x8_cifar10_20210528-f54bfad9.pth \
+  --out result.pkl
 ```
 
 ## Train a model
@@ -95,7 +101,7 @@ which is specified by `work_dir` in the config file.
 By default we evaluate the model on the validation set after each epoch, you can change the evaluation interval by adding the interval argument in the training config.
 
 ```python
-evaluation = dict(interval=12)  # This evaluate the model per 12 epoch.
+evaluation = dict(interval=12)  # Evaluate the model per 12 epochs.
 ```
 
 ### Train with a single GPU
@@ -178,7 +184,7 @@ We provide lots of useful tools under `tools/` directory.
 We provide a script adapted from [flops-counter.pytorch](https://github.com/sovrasov/flops-counter.pytorch) to compute the FLOPs and params of a given model.
 
 ```shell
-python tools/get_flops.py ${CONFIG_FILE} [--shape ${INPUT_SHAPE}]
+python tools/analysis_tools/get_flops.py ${CONFIG_FILE} [--shape ${INPUT_SHAPE}]
 ```
 
 You will get the result like this.
@@ -191,35 +197,39 @@ Params: 25.56 M
 ==============================
 ```
 
-**Note**: This tool is still experimental and we do not guarantee that the number is correct. You may well use the result for simple comparisons, but double check it before you adopt it in technical reports or papers.
-
-(1) FLOPs are related to the input shape while parameters are not. The default input shape is (1, 3, 224, 224).
-(2) Some operators are not counted into FLOPs like GN and custom operators. Refer to [`mmcv.cnn.get_model_complexity_info()`](https://github.com/open-mmlab/mmcv/blob/master/mmcv/cnn/utils/flops_counter.py) for details.
+```{warning}
+This tool is still experimental and we do not guarantee that the number is correct. You may well use the result for simple comparisons, but double check it before you adopt it in technical reports or papers.
+- FLOPs are related to the input shape while parameters are not. The default input shape is (1, 3, 224, 224).
+- Some operators are not counted into FLOPs like GN and custom operators. Refer to [`mmcv.cnn.get_model_complexity_info()`](https://github.com/open-mmlab/mmcv/blob/master/mmcv/cnn/utils/flops_counter.py) for details.
+```
 
 ### Publish a model
 
-Before you upload a model to AWS, you may want to
-(1) convert model weights to CPU tensors
-(2) delete the optimizer states
-(3) compute the hash of the checkpoint file and append the hash id to the filename.
+Before you publish a model, you may want to
+1. Convert model weights to CPU tensors.
+2. Delete the optimizer states.
+3. Compute the hash of the checkpoint file and append the hash id to the filename.
 
 ```shell
-python tools/publish_model.py ${INPUT_FILENAME} ${OUTPUT_FILENAME}
+python tools/convert_models/publish_model.py ${INPUT_FILENAME} ${OUTPUT_FILENAME}
 ```
 
 E.g.,
 
 ```shell
-python tools/publish_model.py work_dirs/resnet50/latest.pth imagenet_resnet50_20200708.pth
+python tools/convert_models/publish_model.py work_dirs/resnet50/latest.pth imagenet_resnet50.pth
 ```
 
-The final output filename will be `imagenet_resnet50_20200708-{hash id}.pth`.
+The final output filename will be `imagenet_resnet50_{date}-{hash id}.pth`.
 
 ## Tutorials
 
 Currently, we provide five tutorials for users.
 
+- [learn about config](tutorials/config.md)
 - [finetune models](tutorials/finetune.md)
 - [add new dataset](tutorials/new_dataset.md)
 - [design data pipeline](tutorials/data_pipeline.md)
-- [add new modules](tutorials/new_modules.md).
+- [add new modules](tutorials/new_modules.md)
+- [customize schedule](tutorials/schedule.md)
+- [customize runtime settings](tutorials/runtime.md).

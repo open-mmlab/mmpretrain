@@ -30,7 +30,18 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 
 ## 更新日志
 
-2021/6/3 发布了 v0.12.0 版本
+2021/11/30 发布了 v0.18.0 版本
+
+新版本的一些新功能如下：
+- 支持了 **MLP-Mixer** 主干网络，欢迎使用！
+- 添加了一个**可视化学习率曲线**的工具，可以参考[教程](https://mmclassification.readthedocs.io/zh_CN/latest/tools/visualization.html#id3)使用
+
+2021/10/29 发布了 v0.17.0 版本
+
+该版本的一些新功能如下：
+- 支持了 **Tokens-to-Token ViT** 主干网络和 **Res2Net** 主干网络，欢迎使用！
+- 支持了 **ImageNet21k** 数据集
+- 添加了一个**可视化数据预处理**的工具，可以参考[教程](https://mmclassification.readthedocs.io/zh_CN/latest/tools/visualization.html#id2)使用
 
 发布历史和更新细节请参考 [更新日志](docs/changelog.md)
 
@@ -40,6 +51,7 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 
 支持的主干网络：
 
+- [x] VGG
 - [x] ResNet
 - [x] ResNeXt
 - [x] SE-ResNet
@@ -49,6 +61,15 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 - [x] ShuffleNetV2
 - [x] MobileNetV2
 - [x] MobileNetV3
+- [x] Swin-Transformer
+- [x] RepVGG
+- [x] Vision-Transformer
+- [x] Transformer-in-Transformer
+- [x] Res2Net
+- [x] MLP-Mixer
+- [ ] DeiT
+- [ ] Conformer
+- [ ] EfficientNet
 
 ## 安装
 
@@ -56,11 +77,21 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 
 ## 基础教程
 
-请参考 [基础教程](docs_zh-CN/getting_started.md) 来了解 MMClassification 的基本使用。其中还包含了 [如何微调模型](docs_zh-CN/tutorials/finetune.md), [如何增加新数据集](docs_zh-CN/tutorials/new_dataset.md), [如何设计数据处理流程](docs_zh-CN/tutorials/data_pipeline.md), 以及 [如何增加新模块](docs_zh-CN/tutorials/new_modules.md) 等指南。
+请参考 [基础教程](docs_zh-CN/getting_started.md) 来了解 MMClassification 的基本使用。MMClassification 也提供了其他更详细的教程:
+
+- [如何编写配置文件](docs_zh-CN/tutorials/config.md)
+- [如何微调模型](docs_zh-CN/tutorials/finetune.md)
+- [如何增加新数据集](docs_zh-CN/tutorials/new_dataset.md)
+- [如何设计数据处理流程](/docs_zh-CN/tutorials/data_pipeline.md)
+- [如何增加新模块](docs_zh-CN/tutorials/new_modules.md)
+- [如何自定义优化策略](tutorials/schedule.md)
+- [如何自定义运行参数](tutorials/runtime.md)
+
+MMClassification 也提供了相应的中文 Colab 教程。了解 MMClassification Python API，可以查看 [这里](https://github.com/open-mmlab/mmclassification/blob/master/docs_zh-CN/tutorials/MMClassification_python_cn.ipynb) 或者直接在 Colab 上 [运行](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs_zh-CN/tutorials/MMClassification_python_cn.ipynb)。了解 MMClassification 命令行工具，可以查看 [这里](https://github.com/open-mmlab/mmclassification/blob/master/docs_zh-CN/tutorials/MMClassification_tools_cn.ipynb) 或者直接在 Colab 上 [运行](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs_zh-CN/tutorials/MMClassification_tools_cn.ipynb)。
 
 ## 参与贡献
 
-我们非常欢迎任何有助于提升 MMClassification 的贡献，请参考 [贡献指南](.github/CONTRIBUTING.md) 来了解如何参与贡献。
+我们非常欢迎任何有助于提升 MMClassification 的贡献，请参考 [贡献指南](docs_zh-CN/community/CONTRIBUTING.md) 来了解如何参与贡献。
 
 ## 致谢
 
@@ -71,6 +102,7 @@ MMClassification 是一款由不同学校和公司共同贡献的开源项目。
 ## OpenMMLab 的其他项目
 
 - [MMCV](https://github.com/open-mmlab/mmcv): OpenMMLab 计算机视觉基础库
+- [MIM](https://github.com/open-mmlab/mim): MIM 是 OpenMMlab 项目、算法、模型的统一入口
 - [MMDetection](https://github.com/open-mmlab/mmdetection): OpenMMLab 检测工具箱与测试基准
 - [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): OpenMMLab 新一代通用 3D 目标检测平台
 - [MMSegmentation](https://github.com/open-mmlab/mmsegmentation): OpenMMLab 语义分割工具箱与测试基准
@@ -80,10 +112,13 @@ MMClassification 是一款由不同学校和公司共同贡献的开源项目。
 - [MMEditing](https://github.com/open-mmlab/mmediting): OpenMMLab 图像视频编辑工具箱
 - [MMOCR](https://github.com/open-mmlab/mmocr): OpenMMLab 全流程文字检测识别理解工具包
 - [MMGeneration](https://github.com/open-mmlab/mmgeneration): OpenMMLab 生成模型工具箱
+- [MMFlow](https://github.com/open-mmlab/mmflow): OpenMMLab 光流估计工具箱与测试基准
+- [MMFewShot](https://github.com/open-mmlab/mmfewshot): OpenMMLab 少样本学习工具箱与测试基准
+- [MMHuman3D](https://github.com/open-mmlab/mmhuman3d)：OpenMMLab 人体参数化模型工具箱与测试基准
 
 ## 欢迎加入 OpenMMLab 社区
 
-扫描下方的二维码可关注 OpenMMLab 团队的 [知乎官方账号](https://www.zhihu.com/people/openmmlab)，加入 OpenMMLab 团队的 [官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=aCvMxdr3)
+扫描下方的二维码可关注 OpenMMLab 团队的 [知乎官方账号](https://www.zhihu.com/people/openmmlab)，加入 OpenMMLab 团队的 [官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=GJP18SjI)
 
 <div align="center">
 <img src="/docs/imgs/zhihu_qrcode.jpg" height="400" />  <img src="/docs/imgs/qq_group_qrcode.jpg" height="400" />

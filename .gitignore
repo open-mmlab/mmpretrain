@@ -105,13 +105,14 @@ venv.bak/
 .mypy_cache/
 
 # custom
-data
+/data
 .vscode
 .idea
 *.pkl
 *.pkl.json
 *.log.json
-work_dirs/
+/work_dirs
+/mmcls/.mim
 
 # Pytorch
 *.pth

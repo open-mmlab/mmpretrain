@@ -1,13 +1,14 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import warnings
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 
-import cv2
 import mmcv
 import torch
 import torch.distributed as dist
-from mmcv import color_val
 from mmcv.runner import BaseModule
+
+from mmcls.core.visualization import imshow_infos
 
 # TODO import `auto_fp16` from mmcv and delete them from mmcls
 try:
@@ -117,7 +118,7 @@ class BaseClassifier(BaseModule, metaclass=ABCMeta):
 
         return loss, log_vars
 
-    def train_step(self, data, optimizer):
+    def train_step(self, data, optimizer=None, **kwargs):
         """The iteration step during training.
 
         This method defines an iteration step during training, except for the
@@ -128,20 +129,19 @@ class BaseClassifier(BaseModule, metaclass=ABCMeta):
 
         Args:
             data (dict): The output of dataloader.
-            optimizer (:obj:`torch.optim.Optimizer` | dict): The optimizer of
-                runner is passed to ``train_step()``. This argument is unused
-                and reserved.
+            optimizer (:obj:`torch.optim.Optimizer` | dict, optional): The
+                optimizer of runner is passed to ``train_step()``. This
+                argument is unused and reserved.
 
         Returns:
-            dict: It should contain at least 3 keys: ``loss``, ``log_vars``,
-                ``num_samples``.
-                ``loss`` is a tensor for back propagation, which can be a
-                weighted sum of multiple losses.
-                ``log_vars`` contains all the variables to be sent to the
-                logger.
-                ``num_samples`` indicates the batch size (when the model is
-                DDP, it means the batch size on each GPU), which is used for
-                averaging the logs.
+            dict: Dict of outputs. The following fields are contained.
+                - loss (torch.Tensor): A tensor for back propagation, which \
+                    can be a weighted sum of multiple losses.
+                - log_vars (dict): Dict contains all the variables to be sent \
+                    to the logger.
+                - num_samples (int): Indicates the batch size (when the model \
+                    is DDP, it means the batch size on each GPU), which is \
+                    used for averaging the logs.
         """
         losses = self(**data)
         loss, log_vars = self._parse_losses(losses)
@@ -151,12 +151,28 @@ class BaseClassifier(BaseModule, metaclass=ABCMeta):
 
         return outputs
 
-    def val_step(self, data, optimizer):
+    def val_step(self, data, optimizer=None, **kwargs):
         """The iteration step during validation.
 
         This method shares the same signature as :func:`train_step`, but used
         during val epochs. Note that the evaluation after training epochs is
         not implemented with this method, but an evaluation hook.
+
+        Args:
+            data (dict): The output of dataloader.
+            optimizer (:obj:`torch.optim.Optimizer` | dict, optional): The
+                optimizer of runner is passed to ``train_step()``. This
+                argument is unused and reserved.
+
+        Returns:
+            dict: Dict of outputs. The following fields are contained.
+                - loss (torch.Tensor): A tensor for back propagation, which \
+                    can be a weighted sum of multiple losses.
+                - log_vars (dict): Dict contains all the variables to be sent \
+                    to the logger.
+                - num_samples (int): Indicates the batch size (when the model \
+                    is DDP, it means the batch size on each GPU), which is \
+                    used for averaging the logs.
         """
         losses = self(**data)
         loss, log_vars = self._parse_losses(losses)
@@ -169,56 +185,47 @@ class BaseClassifier(BaseModule, metaclass=ABCMeta):
     def show_result(self,
                     img,
                     result,
-                    text_color='green',
+                    text_color='white',
                     font_scale=0.5,
                     row_width=20,
                     show=False,
+                    fig_size=(15, 10),
                     win_name='',
                     wait_time=0,
                     out_file=None):
         """Draw `result` over `img`.
 
         Args:
-            img (str or Tensor): The image to be displayed.
-            result (Tensor): The classification results to draw over `img`.
+            img (str or ndarray): The image to be displayed.
+            result (dict): The classification results to draw over `img`.
             text_color (str or tuple or :obj:`Color`): Color of texts.
             font_scale (float): Font scales of texts.
             row_width (int): width between each row of results on the image.
             show (bool): Whether to show the image.
                 Default: False.
+            fig_size (tuple): Image show figure size. Defaults to (15, 10).
             win_name (str): The window name.
-            wait_time (int): Value of waitKey param.
-                Default: 0.
+            wait_time (int): How many seconds to display the image.
+                Defaults to 0.
             out_file (str or None): The filename to write the image.
                 Default: None.
 
         Returns:
-            img (Tensor): Only if not `show` or `out_file`
+            img (ndarray): Image with overlaid results.
         """
         img = mmcv.imread(img)
         img = img.copy()
 
-        # write results on left-top of the image
-        x, y = 0, row_width
-        text_color = color_val(text_color)
-        for k, v in result.items():
-            if isinstance(v, float):
-                v = f'{v:.2f}'
-            label_text = f'{k}: {v}'
-            cv2.putText(img, label_text, (x, y), cv2.FONT_HERSHEY_COMPLEX,
-                        font_scale, text_color)
-            y += row_width
+        img = imshow_infos(
+            img,
+            result,
+            text_color=text_color,
+            font_size=int(font_scale * 50),
+            row_width=row_width,
+            win_name=win_name,
+            show=show,
+            fig_size=fig_size,
+            wait_time=wait_time,
+            out_file=out_file)
 
-        # if out_file specified, do not show image in window
-        if out_file is not None:
-            show = False
-
-        if show:
-            mmcv.imshow(img, win_name, wait_time)
-        if out_file is not None:
-            mmcv.imwrite(img, out_file)
-
-        if not (show or out_file):
-            warnings.warn('show==False and out_file is not specified, only '
-                          'result image will be returned')
-            return img
+        return img

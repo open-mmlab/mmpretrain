@@ -1,6 +1,6 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from typing import Dict, Sequence
 
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import build_activation_layer, build_norm_layer
@@ -114,22 +114,24 @@ class StackedLinearClsHead(ClsHead):
     def init_weights(self):
         self.layers.init_weights()
 
-    def simple_test(self, img):
+    def simple_test(self, x):
         """Test without augmentation."""
-        cls_score = img
+        if isinstance(x, tuple):
+            x = x[-1]
+        cls_score = x
         for layer in self.layers:
             cls_score = layer(cls_score)
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
         pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
-        if torch.onnx.is_in_onnx_export():
-            return pred
-        pred = list(pred.detach().cpu().numpy())
-        return pred
 
-    def forward_train(self, x, gt_label):
+        return self.post_process(pred)
+
+    def forward_train(self, x, gt_label, **kwargs):
+        if isinstance(x, tuple):
+            x = x[-1]
         cls_score = x
         for layer in self.layers:
             cls_score = layer(cls_score)
-        losses = self.loss(cls_score, gt_label)
+        losses = self.loss(cls_score, gt_label, **kwargs)
         return losses

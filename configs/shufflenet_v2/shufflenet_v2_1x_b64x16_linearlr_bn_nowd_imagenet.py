@@ -1,6 +1,6 @@
-_base_ = [
-    '../_base_/models/shufflenet_v2_1x.py',
-    '../_base_/datasets/imagenet_bs64_pil_resize.py',
-    '../_base_/schedules/imagenet_bs1024_linearlr_bn_nowd.py',
-    '../_base_/default_runtime.py'
-]
+_base_ = 'shufflenet-v2-1x_16xb64_in1k.py'
+
+_deprecation_ = dict(
+    expected='shufflenet-v2-1x_16xb64_in1k.py',
+    reference='https://github.com/open-mmlab/mmclassification/pull/508',
+)

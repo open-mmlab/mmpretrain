@@ -1,4 +1,4 @@
-# 教程 2：如何添加新数据集
+# 教程 3：如何添加新数据集
 
 ## 通过重新组织数据来自定义数据集
 
@@ -137,4 +137,4 @@ dataset_A_train = dict(
     )
 ```
 
-更加具体的细节，请参考 [源代码](../../mmcls/datasets/dataset_wrappers.py)。
+更加具体的细节，请参考 [源代码](https://github.com/open-mmlab/mmclassification/tree/master/mmcls/datasets/dataset_wrappers.py)。

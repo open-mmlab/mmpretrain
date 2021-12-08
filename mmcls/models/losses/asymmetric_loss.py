@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import torch
 import torch.nn as nn
 
@@ -13,24 +14,24 @@ def asymmetric_loss(pred,
                     clip=0.05,
                     reduction='mean',
                     avg_factor=None):
-    """asymmetric loss.
+    r"""asymmetric loss.
 
-    Please refer to the `paper <https://arxiv.org/abs/2009.14119>`_ for
+    Please refer to the `paper <https://arxiv.org/abs/2009.14119>`__ for
     details.
 
     Args:
-        pred (torch.Tensor): The prediction with shape (N, *).
+        pred (torch.Tensor): The prediction with shape (N, \*).
         target (torch.Tensor): The ground truth label of the prediction with
-            shape (N, *).
+            shape (N, \*).
         weight (torch.Tensor, optional): Sample-wise loss weight with shape
-            (N, ). Dafaults to None.
+            (N, ). Defaults to None.
         gamma_pos (float): positive focusing parameter. Defaults to 0.0.
         gamma_neg (float): Negative focusing parameter. We usually set
             gamma_neg > gamma_pos. Defaults to 4.0.
         clip (float, optional): Probability margin. Defaults to 0.05.
         reduction (str): The method used to reduce the loss.
             Options are "none", "mean" and "sum". If reduction is 'none' , loss
-             is same shape as pred and label. Defaults to 'mean'.
+            is same shape as pred and label. Defaults to 'mean'.
         avg_factor (int, optional): Average factor that is used to average
             the loss. Defaults to None.
 

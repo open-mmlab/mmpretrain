@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import torch.nn as nn
 import torch.utils.checkpoint as cp
 from mmcv.cnn import (ConvModule, build_conv_layer, build_norm_layer,
@@ -382,7 +383,7 @@ class ResLayer(nn.Sequential):
 class ResNet(BaseBackbone):
     """ResNet backbone.
 
-    Please refer to the `paper <https://arxiv.org/abs/1512.03385>`_ for
+    Please refer to the `paper <https://arxiv.org/abs/1512.03385>`__ for
     details.
 
     Args:
@@ -395,10 +396,8 @@ class ResNet(BaseBackbone):
             Default: ``(1, 2, 2, 2)``.
         dilations (Sequence[int]): Dilation of each stage.
             Default: ``(1, 1, 1, 1)``.
-        out_indices (Sequence[int]): Output from which stages. If only one
-            stage is specified, a single tensor (feature map) is returned,
-            otherwise multiple stages are specified, a tuple of tensors will
-            be returned. Default: ``(3, )``.
+        out_indices (Sequence[int]): Output from which stages.
+            Default: ``(3, )``.
         style (str): `pytorch` or `caffe`. If set to "pytorch", the stride-two
             layer is the 3x3 conv layer, otherwise the stride-two layer is
             the first 1x1 conv layer.
@@ -594,9 +593,13 @@ class ResNet(BaseBackbone):
             for param in m.parameters():
                 param.requires_grad = False
 
-    # def init_weights(self, pretrained=None):
     def init_weights(self):
         super(ResNet, self).init_weights()
+
+        if (isinstance(self.init_cfg, dict)
+                and self.init_cfg['type'] == 'Pretrained'):
+            # Suppress zero_init_residual if use pretrained model.
+            return
 
         if self.zero_init_residual:
             for m in self.modules():
@@ -619,10 +622,7 @@ class ResNet(BaseBackbone):
             x = res_layer(x)
             if i in self.out_indices:
                 outs.append(x)
-        if len(outs) == 1:
-            return outs[0]
-        else:
-            return tuple(outs)
+        return tuple(outs)
 
     def train(self, mode=True):
         super(ResNet, self).train(mode)
@@ -636,8 +636,9 @@ class ResNet(BaseBackbone):
 
 @BACKBONES.register_module()
 class ResNetV1d(ResNet):
-    """ResNetV1d variant described in `Bag of Tricks.
+    """ResNetV1d backbone.
 
+    This variant is described in `Bag of Tricks.
     <https://arxiv.org/pdf/1812.01187.pdf>`_.
 
     Compared with default ResNet(ResNetV1b), ResNetV1d replaces the 7x7 conv in

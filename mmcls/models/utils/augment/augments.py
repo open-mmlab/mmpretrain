@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import random
 
 import numpy as np
@@ -9,6 +10,7 @@ class Augments(object):
     """Data augments.
 
     We implement some data augmentation methods, such as mixup, cutmix.
+
     Args:
         augments_cfg (list[`mmcv.ConfigDict`] | obj:`mmcv.ConfigDict`):
             Config dict of augments

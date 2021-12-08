@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import mmcv
 import torch.nn as nn
 from mmcv.cnn import ConvModule
@@ -11,10 +12,16 @@ class SELayer(BaseModule):
 
     Args:
         channels (int): The input (and output) channels of the SE layer.
-        ratio (int): Squeeze ratio in SELayer, the intermediate channel will be
-            ``int(base_channels/ratio)``. Default: 16.
-        conv_cfg (None or dict): Config dict for convolution layer.
-            Default: None, which means using conv2d.
+        squeeze_channels (None or int): The intermediate channel number of
+            SElayer. Default: None, means the value of ``squeeze_channels``
+            is ``make_divisible(channels // ratio, divisor)``.
+        ratio (int): Squeeze ratio in SELayer, the intermediate channel will
+            be ``make_divisible(channels // ratio, divisor)``. Only used when
+            ``squeeze_channels`` is None. Default: 16.
+        divisor(int): The divisor to true divide the channel number. Only
+            used when ``squeeze_channels`` is None. Default: 8.
+        conv_cfg (None or dict): Config dict for convolution layer. Default:
+            None, which means using conv2d.
         act_cfg (dict or Sequence[dict]): Config dict for activation layer.
             If act_cfg is a dict, two activation layers will be configurated
             by this dict. If act_cfg is a sequence of dicts, the first
@@ -28,7 +35,9 @@ class SELayer(BaseModule):
 
     def __init__(self,
                  channels,
+                 squeeze_channels=None,
                  ratio=16,
+                 divisor=8,
                  bias='auto',
                  conv_cfg=None,
                  base_channels=None,
@@ -40,11 +49,11 @@ class SELayer(BaseModule):
         assert len(act_cfg) == 2
         assert mmcv.is_tuple_of(act_cfg, dict)
         self.global_avgpool = nn.AdaptiveAvgPool2d(1)
-        if base_channels is None:
-            squeeze_channels = make_divisible(channels // ratio, 8)
-        else:
-            assert isinstance(base_channels, int)
-            squeeze_channels = max(1, round(base_channels / ratio))
+        if squeeze_channels is None:
+            squeeze_channels = make_divisible(channels // ratio, divisor)
+        assert isinstance(squeeze_channels, int) and squeeze_channels > 0, \
+            '"squeeze_channels" should be a positive integer, but get ' + \
+            f'{squeeze_channels} instead.'
         self.conv1 = ConvModule(
             in_channels=channels,
             out_channels=squeeze_channels,

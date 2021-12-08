@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import inspect
 import math
 import random
@@ -36,18 +37,19 @@ class RandomCrop(object):
         pad_val (Number | Sequence[Number]): Pixel pad_val value for constant
             fill. If a tuple of length 3, it is used to pad_val R, G, B
             channels respectively. Default: 0.
-        padding_mode (str): Type of padding. Should be: constant, edge,
-            reflect or symmetric. Default: constant.
-            -constant: Pads with a constant value, this value is specified
+        padding_mode (str): Type of padding. Defaults to "constant". Should
+            be one of the following:
+
+            - constant: Pads with a constant value, this value is specified \
                 with pad_val.
-            -edge: pads with the last value at the edge of the image.
-            -reflect: Pads with reflection of image without repeating the
-                last value on the edge. For example, padding [1, 2, 3, 4]
-                with 2 elements on both sides in reflect mode will result
+            - edge: pads with the last value at the edge of the image.
+            - reflect: Pads with reflection of image without repeating the \
+                last value on the edge. For example, padding [1, 2, 3, 4] \
+                with 2 elements on both sides in reflect mode will result \
                 in [3, 2, 1, 2, 3, 4, 3, 2].
-            -symmetric: Pads with reflection of image repeating the last
-                value on the edge. For example, padding [1, 2, 3, 4] with
-                2 elements on both sides in symmetric mode will result in
+            - symmetric: Pads with reflection of image repeating the last \
+                value on the edge. For example, padding [1, 2, 3, 4] with \
+                2 elements on both sides in symmetric mode will result in \
                 [2, 1, 1, 2, 3, 4, 4, 3].
     """
 
@@ -151,7 +153,7 @@ class RandomResizedCrop(object):
             to the original image. Defaults to (0.08, 1.0).
         ratio (tuple): Range of the random aspect ratio of the cropped image
             compared to the original image. Defaults to (3. / 4., 4. / 3.).
-        max_attempts (int): Maxinum number of attempts before falling back to
+        max_attempts (int): Maximum number of attempts before falling back to
             Central Crop. Defaults to 10.
         efficientnet_style (bool): Whether to use efficientnet style Random
             ResizedCrop. Defaults to False.
@@ -163,7 +165,7 @@ class RandomResizedCrop(object):
         interpolation (str): Interpolation method, accepted values are
             'nearest', 'bilinear', 'bicubic', 'area', 'lanczos'. Defaults to
             'bilinear'.
-        backend (str): The image resize backend type, accpeted values are
+        backend (str): The image resize backend type, accepted values are
             `cv2` and `pillow`. Defaults to `cv2`.
     """
 
@@ -191,7 +193,7 @@ class RandomResizedCrop(object):
                              f'But received scale {scale} and rato {ratio}.')
         assert min_covered >= 0, 'min_covered should be no less than 0.'
         assert isinstance(max_attempts, int) and max_attempts >= 0, \
-            'max_attempts mush be of typle int and no less than 0.'
+            'max_attempts mush be int and no less than 0.'
         assert interpolation in ('nearest', 'bilinear', 'bicubic', 'area',
                                  'lanczos')
         if backend not in ['cv2', 'pillow']:
@@ -217,7 +219,7 @@ class RandomResizedCrop(object):
                 compared to the original image size.
             ratio (tuple): Range of the random aspect ratio of the cropped
                 image compared to the original image area.
-            max_attempts (int): Maxinum number of attempts before falling back
+            max_attempts (int): Maximum number of attempts before falling back
                 to central crop. Defaults to 10.
 
         Returns:
@@ -279,7 +281,7 @@ class RandomResizedCrop(object):
                 compared to the original image size.
             ratio (tuple): Range of the random aspect ratio of the cropped
                 image compared to the original image area.
-            max_attempts (int): Maxinum number of attempts before falling back
+            max_attempts (int): Maximum number of attempts before falling back
                 to central crop. Defaults to 10.
             min_covered (Number): Minimum ratio of the cropped area to the
                 original area. Only valid if efficientnet_style is true.
@@ -311,7 +313,7 @@ class RandomResizedCrop(object):
             max_target_height = min(max_target_height, height)
             min_target_height = min(max_target_height, min_target_height)
 
-            # slightly differs from tf inplementation
+            # slightly differs from tf implementation
             target_height = int(
                 round(random.uniform(min_target_height, max_target_height)))
             target_width = int(round(target_height * aspect_ratio))
@@ -393,11 +395,12 @@ class RandomGrayscale(object):
             grayscale. Default: 0.1.
 
     Returns:
-        ndarray: Grayscale version of the input image with probability
-            gray_prob and unchanged with probability (1-gray_prob).
-            - If input image is 1 channel: grayscale version is 1 channel.
-            - If input image is 3 channel: grayscale version is 3 channel
-                with r == g == b.
+        ndarray: Image after randomly grayscale transform.
+
+    Notes:
+        - If input image is 1 channel: grayscale version is 1 channel.
+        - If input image is 3 channel: grayscale version is 3 channel
+          with r == g == b.
     """
 
     def __init__(self, gray_prob=0.1):
@@ -484,20 +487,24 @@ class RandomErasing(object):
             if float, it will be converted to (aspect_ratio, 1/aspect_ratio)
             Default: (3/10, 10/3)
         mode (str): Fill method in erased area, can be:
-            - 'const' (default): All pixels are assign with the same value.
-            - 'rand': each pixel is assigned with a random value in [0, 255]
+
+            - const (default): All pixels are assign with the same value.
+            - rand: each pixel is assigned with a random value in [0, 255]
+
         fill_color (sequence | Number): Base color filled in erased area.
-            Default: (128, 128, 128)
-        fill_std (sequence | Number, optional): If set and mode='rand', fill
-            erased area with random color from normal distribution
+            Defaults to (128, 128, 128).
+        fill_std (sequence | Number, optional): If set and ``mode`` is 'rand',
+            fill erased area with random color from normal distribution
             (mean=fill_color, std=fill_std); If not set, fill erased area with
-            random color from uniform distribution (0~255)
-            Default: None
+            random color from uniform distribution (0~255). Defaults to None.
 
     Note:
-        See https://arxiv.org/pdf/1708.04896.pdf
+        See `Random Erasing Data Augmentation
+        <https://arxiv.org/pdf/1708.04896.pdf>`_
+
         This paper provided 4 modes: RE-R, RE-M, RE-0, RE-255, and use RE-M as
-        default.
+        default. The config of these 4 modes are:
+
         - RE-R: RandomErasing(mode='rand')
         - RE-M: RandomErasing(mode='const', fill_color=(123.67, 116.3, 103.5))
         - RE-0: RandomErasing(mode='const', fill_color=0)
@@ -606,6 +613,58 @@ class RandomErasing(object):
 
 
 @PIPELINES.register_module()
+class Pad(object):
+    """Pad images.
+
+    Args:
+        size (tuple[int] | None): Expected padding size (h, w). Conflicts with
+                pad_to_square. Defaults to None.
+        pad_to_square (bool): Pad any image to square shape. Defaults to False.
+        pad_val (Number | Sequence[Number]): Values to be filled in padding
+            areas when padding_mode is 'constant'. Default to 0.
+        padding_mode (str): Type of padding. Should be: constant, edge,
+            reflect or symmetric. Default to "constant".
+    """
+
+    def __init__(self,
+                 size=None,
+                 pad_to_square=False,
+                 pad_val=0,
+                 padding_mode='constant'):
+        assert (size is None) ^ (pad_to_square is False), \
+            'Only one of [size, pad_to_square] should be given, ' \
+            f'but get {(size is not None) + (pad_to_square is not False)}'
+        self.size = size
+        self.pad_to_square = pad_to_square
+        self.pad_val = pad_val
+        self.padding_mode = padding_mode
+
+    def __call__(self, results):
+        for key in results.get('img_fields', ['img']):
+            img = results[key]
+            if self.pad_to_square:
+                target_size = tuple(
+                    max(img.shape[0], img.shape[1]) for _ in range(2))
+            else:
+                target_size = self.size
+            img = mmcv.impad(
+                img,
+                shape=target_size,
+                pad_val=self.pad_val,
+                padding_mode=self.padding_mode)
+            results[key] = img
+            results['img_shape'] = img.shape
+        return results
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += f'(size={self.size}, '
+        repr_str += f'(pad_val={self.pad_val}, '
+        repr_str += f'padding_mode={self.padding_mode})'
+        return repr_str
+
+
+@PIPELINES.register_module()
 class Resize(object):
     """Resize images.
 
@@ -613,35 +672,49 @@ class Resize(object):
         size (int | tuple): Images scales for resizing (h, w).
             When size is int, the default behavior is to resize an image
             to (size, size). When size is tuple and the second value is -1,
-            the short edge of an image is resized to its first value.
-            For example, when size is 224, the image is resized to 224x224.
-            When size is (224, -1), the short side is resized to 224 and the
-            other side is computed based on the short side, maintaining the
-            aspect ratio.
-        interpolation (str): Interpolation method, accepted values are
-            "nearest", "bilinear", "bicubic", "area", "lanczos".
+            the image will be resized according to adaptive_side. For example,
+            when size is 224, the image is resized to 224x224. When size is
+            (224, -1) and adaptive_size is "short", the short side is resized
+            to 224 and the other side is computed based on the short side,
+            maintaining the aspect ratio.
+        interpolation (str): Interpolation method. For "cv2" backend, accepted
+            values are "nearest", "bilinear", "bicubic", "area", "lanczos". For
+            "pillow" backend, accepted values are "nearest", "bilinear",
+            "bicubic", "box", "lanczos", "hamming".
             More details can be found in `mmcv.image.geometric`.
-        backend (str): The image resize backend type, accpeted values are
+        adaptive_side(str): Adaptive resize policy, accepted values are
+            "short", "long", "height", "width". Default to "short".
+        backend (str): The image resize backend type, accepted values are
             `cv2` and `pillow`. Default: `cv2`.
     """
 
-    def __init__(self, size, interpolation='bilinear', backend='cv2'):
+    def __init__(self,
+                 size,
+                 interpolation='bilinear',
+                 adaptive_side='short',
+                 backend='cv2'):
         assert isinstance(size, int) or (isinstance(size, tuple)
                                          and len(size) == 2)
-        self.resize_w_short_side = False
+        assert adaptive_side in {'short', 'long', 'height', 'width'}
+
+        self.adaptive_side = adaptive_side
+        self.adaptive_resize = False
         if isinstance(size, int):
             assert size > 0
             size = (size, size)
         else:
             assert size[0] > 0 and (size[1] > 0 or size[1] == -1)
             if size[1] == -1:
-                self.resize_w_short_side = True
-        assert interpolation in ('nearest', 'bilinear', 'bicubic', 'area',
-                                 'lanczos')
+                self.adaptive_resize = True
         if backend not in ['cv2', 'pillow']:
             raise ValueError(f'backend: {backend} is not supported for resize.'
                              'Supported backends are "cv2", "pillow"')
-
+        if backend == 'cv2':
+            assert interpolation in ('nearest', 'bilinear', 'bicubic', 'area',
+                                     'lanczos')
+        else:
+            assert interpolation in ('nearest', 'bilinear', 'bicubic', 'box',
+                                     'lanczos', 'hamming')
         self.size = size
         self.interpolation = interpolation
         self.backend = backend
@@ -650,19 +723,29 @@ class Resize(object):
         for key in results.get('img_fields', ['img']):
             img = results[key]
             ignore_resize = False
-            if self.resize_w_short_side:
+            if self.adaptive_resize:
                 h, w = img.shape[:2]
-                short_side = self.size[0]
-                if (w <= h and w == short_side) or (h <= w
-                                                    and h == short_side):
+                target_size = self.size[0]
+
+                condition_ignore_resize = {
+                    'short': min(h, w) == target_size,
+                    'long': max(h, w) == target_size,
+                    'height': h == target_size,
+                    'width': w == target_size
+                }
+
+                if condition_ignore_resize[self.adaptive_side]:
                     ignore_resize = True
+                elif any([
+                        self.adaptive_side == 'short' and w < h,
+                        self.adaptive_side == 'long' and w > h,
+                        self.adaptive_side == 'width',
+                ]):
+                    width = target_size
+                    height = int(target_size * h / w)
                 else:
-                    if w < h:
-                        width = short_side
-                        height = int(short_side * h / w)
-                    else:
-                        height = short_side
-                        width = int(short_side * w / h)
+                    height = target_size
+                    width = int(target_size * w / h)
             else:
                 height, width = self.size
             if not ignore_resize:
@@ -700,21 +783,23 @@ class CenterCrop(object):
             32.
         interpolation (str): Interpolation method, accepted values are
             'nearest', 'bilinear', 'bicubic', 'area', 'lanczos'. Only valid if
-             efficientnet style is True. Defaults to 'bilinear'.
-        backend (str): The image resize backend type, accpeted values are
+            ``efficientnet_style`` is True. Defaults to 'bilinear'.
+        backend (str): The image resize backend type, accepted values are
             `cv2` and `pillow`. Only valid if efficientnet style is True.
             Defaults to `cv2`.
 
 
     Notes:
-        If the image is smaller than the crop size, return the original image.
-        If efficientnet_style is set to False, the pipeline would be a simple
-        center crop using the crop_size.
-        If efficientnet_style is set to True, the pipeline will be to first to
-        perform the center crop with the crop_size_ as:
+        - If the image is smaller than the crop size, return the original
+          image.
+        - If efficientnet_style is set to False, the pipeline would be a simple
+          center crop using the crop_size.
+        - If efficientnet_style is set to True, the pipeline will be to first
+          to perform the center crop with the ``crop_size_`` as:
 
         .. math::
-        crop\_size\_ = crop\_size / (crop\_size + crop\_padding) * short\_edge
+            \text{crop\_size\_} = \frac{\text{crop\_size}}{\text{crop\_size} +
+            \text{crop\_padding}} \times \text{short\_edge}
 
         And then the pipeline resizes the img to the input crop size.
     """
@@ -886,7 +971,7 @@ class Lighting(object):
         eigvec (list[list]): the eigenvector of the convariance matrix of pixel
             values, respectively.
         alphastd (float): The standard deviation for distribution of alpha.
-            Dafaults to 0.1
+            Defaults to 0.1
         to_rgb (bool): Whether to convert img to rgb.
     """
 

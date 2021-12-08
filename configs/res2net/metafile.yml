@@ -1,0 +1,70 @@
+Collections:
+  - Name: Res2Net
+    Metadata:
+      Training Data: ImageNet-1k
+      Training Techniques:
+        - SGD with Momentum
+        - Weight Decay
+      Architecture:
+        - Batch Normalization
+        - Convolution
+        - Global Average Pooling
+        - ReLU
+        - Res2Net Block
+    Paper:
+      Title: 'Res2Net: A New Multi-scale Backbone Architecture'
+      URL: https://arxiv.org/pdf/1904.01169.pdf
+    README: configs/res2net/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.17.0/mmcls/models/backbones/res2net.py
+      Version: v0.17.0
+
+Models:
+  - Name: res2net50-w14-s8_3rdparty_8xb32_in1k
+    Metadata:
+      FLOPs: 4220000000
+      Parameters: 25060000
+    In Collection: Res2Net
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 78.14
+          Top 5 Accuracy: 93.85
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/res2net/res2net50-w14-s8_3rdparty_8xb32_in1k_20210927-bc967bf1.pth
+    Converted From:
+      Weights: https://1drv.ms/u/s!AkxDDnOtroRPdOTqhF8ne_aakDI?e=EVb8Ri
+      Code: https://github.com/Res2Net/Res2Net-PretrainedModels/blob/master/res2net.py#L221
+    Config: configs/res2net/res2net50-w14-s8_8xb32_in1k.py
+  - Name: res2net50-w26-s8_3rdparty_8xb32_in1k
+    Metadata:
+      FLOPs: 8390000000
+      Parameters: 48400000
+    In Collection: Res2Net
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 79.20
+          Top 5 Accuracy: 94.36
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/res2net/res2net50-w26-s8_3rdparty_8xb32_in1k_20210927-f547a94b.pth
+    Converted From:
+      Weights: https://1drv.ms/u/s!AkxDDnOtroRPdTrAd_Afzc26Z7Q?e=slYqsR
+      Code: https://github.com/Res2Net/Res2Net-PretrainedModels/blob/master/res2net.py#L201
+    Config: configs/res2net/res2net50-w26-s8_8xb32_in1k.py
+  - Name: res2net101-w26-s4_3rdparty_8xb32_in1k
+    Metadata:
+      FLOPs: 8120000000
+      Parameters: 45210000
+    In Collection: Res2Net
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 79.19
+          Top 5 Accuracy: 94.44
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/res2net/res2net101-w26-s4_3rdparty_8xb32_in1k_20210927-870b6c36.pth
+    Converted From:
+      Weights: https://1drv.ms/u/s!AkxDDnOtroRPcJRgTLkahL0cFYw?e=nwbnic
+      Code: https://github.com/Res2Net/Res2Net-PretrainedModels/blob/master/res2net.py#L181
+    Config: configs/res2net/res2net101-w26-s4_8xb32_in1k.py

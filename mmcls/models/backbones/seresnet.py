@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import torch.utils.checkpoint as cp
 
 from ..builder import BACKBONES
@@ -57,7 +58,7 @@ class SEBottleneck(Bottleneck):
 class SEResNet(ResNet):
     """SEResNet backbone.
 
-    Please refer to the `paper <https://arxiv.org/abs/1709.01507>`_ for
+    Please refer to the `paper <https://arxiv.org/abs/1709.01507>`__ for
     details.
 
     Args:

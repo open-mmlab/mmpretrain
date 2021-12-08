@@ -1,7 +1,9 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import torch
 import torch.nn as nn
 import torch.utils.checkpoint as cp
 from mmcv.cnn import ConvModule, constant_init, normal_init
+from mmcv.runner import BaseModule
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from mmcls.models.utils import channel_shuffle
@@ -9,7 +11,7 @@ from ..builder import BACKBONES
 from .base_backbone import BaseBackbone
 
 
-class InvertedResidual(nn.Module):
+class InvertedResidual(BaseModule):
     """InvertedResidual block for ShuffleNetV2 backbone.
 
     Args:
@@ -36,8 +38,9 @@ class InvertedResidual(nn.Module):
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
                  act_cfg=dict(type='ReLU'),
-                 with_cp=False):
-        super(InvertedResidual, self).__init__()
+                 with_cp=False,
+                 init_cfg=None):
+        super(InvertedResidual, self).__init__(init_cfg)
         self.stride = stride
         self.with_cp = with_cp
 
@@ -253,8 +256,14 @@ class ShuffleNetV2(BaseBackbone):
             for param in m.parameters():
                 param.requires_grad = False
 
-    def init_weighs(self):
+    def init_weights(self):
         super(ShuffleNetV2, self).init_weights()
+
+        if (isinstance(self.init_cfg, dict)
+                and self.init_cfg['type'] == 'Pretrained'):
+            # Suppress default init if use pretrained model.
+            return
+
         for name, m in self.named_modules():
             if isinstance(m, nn.Conv2d):
                 if 'conv1' in name:
@@ -277,10 +286,7 @@ class ShuffleNetV2(BaseBackbone):
             if i in self.out_indices:
                 outs.append(x)
 
-        if len(outs) == 1:
-            return outs[0]
-        else:
-            return tuple(outs)
+        return tuple(outs)
 
     def train(self, mode=True):
         super(ShuffleNetV2, self).train(mode)

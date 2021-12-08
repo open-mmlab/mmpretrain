@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 from functools import partial
 
@@ -58,7 +59,15 @@ def pytorch2onnx(model,
     """
     model.cpu().eval()
 
-    num_classes = model.head.num_classes
+    if hasattr(model.head, 'num_classes'):
+        num_classes = model.head.num_classes
+    # Some backbones use `num_classes=-1` to disable top classifier.
+    elif getattr(model.backbone, 'num_classes', -1) > 0:
+        num_classes = model.backbone.num_classes
+    else:
+        raise AttributeError('Cannot find "num_classes" in both head and '
+                             'backbone, please check the config file.')
+
     mm_inputs = _demo_mm_inputs(input_shape, num_classes)
 
     imgs = mm_inputs.pop('imgs')
@@ -101,6 +110,7 @@ def pytorch2onnx(model,
     if do_simplify:
         from mmcv import digit_version
         import onnxsim
+        import onnx
 
         min_required_version = '0.3.0'
         assert digit_version(mmcv.__version__) >= digit_version(
@@ -117,11 +127,16 @@ def pytorch2onnx(model,
         input_dic = {'input': imgs.detach().cpu().numpy()}
         input_shape_dic = {'input': list(input_shape)}
 
-        onnxsim.simplify(
+        model_opt, check_ok = onnxsim.simplify(
             output_file,
             input_shapes=input_shape_dic,
             input_data=input_dic,
             dynamic_input_shape=dynamic_export)
+        if check_ok:
+            onnx.save(model_opt, output_file)
+            print(f'Successfully simplified ONNX model: {output_file}')
+        else:
+            print('Failed to simplify ONNX model.')
     if verify:
         # check by onnx
         import onnx
@@ -206,7 +221,7 @@ if __name__ == '__main__':
     if args.checkpoint:
         load_checkpoint(classifier, args.checkpoint, map_location='cpu')
 
-    # conver model to onnx file
+    # convert model to onnx file
     pytorch2onnx(
         classifier,
         input_shape,

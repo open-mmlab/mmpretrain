@@ -1,4 +1,4 @@
-import torch
+# Copyright (c) OpenMMLab. All rights reserved.
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -14,6 +14,8 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
         num_classes (int): Number of categories.
         in_channels (int): Number of channels in the input feature map.
         loss (dict): Config of classification loss.
+        init_cfg (dict | optional): The extra init config of layers.
+            Defaults to use dict(type='Normal', layer='Linear', std=0.01).
     """
 
     def __init__(self,
@@ -24,12 +26,7 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
                      use_sigmoid=True,
                      reduction='mean',
                      loss_weight=1.0),
-                 init_cfg=dict(
-                     type='Normal',
-                     mean=0.,
-                     std=0.01,
-                     bias=0.,
-                     override=dict(name='fc'))):
+                 init_cfg=dict(type='Normal', layer='Linear', std=0.01)):
         super(MultiLabelLinearClsHead, self).__init__(
             loss=loss, init_cfg=init_cfg)
 
@@ -39,26 +36,24 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
 
         self.in_channels = in_channels
         self.num_classes = num_classes
-        self._init_layers()
 
-    def _init_layers(self):
         self.fc = nn.Linear(self.in_channels, self.num_classes)
 
-    def forward_train(self, x, gt_label):
+    def forward_train(self, x, gt_label, **kwargs):
+        if isinstance(x, tuple):
+            x = x[-1]
         gt_label = gt_label.type_as(x)
         cls_score = self.fc(x)
-        losses = self.loss(cls_score, gt_label)
+        losses = self.loss(cls_score, gt_label, **kwargs)
         return losses
 
-    def simple_test(self, img):
+    def simple_test(self, x):
         """Test without augmentation."""
-        cls_score = self.fc(img)
+        if isinstance(x, tuple):
+            x = x[-1]
+        cls_score = self.fc(x)
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
         pred = F.sigmoid(cls_score) if cls_score is not None else None
 
-        on_trace = hasattr(torch.jit, 'is_tracing') and torch.jit.is_tracing()
-        if torch.onnx.is_in_onnx_export() or on_trace:
-            return pred
-        pred = list(pred.detach().cpu().numpy())
-        return pred
+        return self.post_process(pred)

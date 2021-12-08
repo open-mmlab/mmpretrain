@@ -1,9 +1,12 @@
+# Copyright (c) OpenMMLab. All rights reserved.
+import math
 from collections import OrderedDict
 
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmcv.cnn import build_activation_layer, constant_init, kaiming_init
+from mmcv.cnn import build_activation_layer
+from mmcv.cnn.utils.weight_init import trunc_normal_
+from mmcv.runner import Sequential
 
 from ..builder import HEADS
 from .cls_head import ClsHead
@@ -20,7 +23,7 @@ class VisionTransformerClsHead(ClsHead):
         hidden_dim (int): Number of the dimensions for hidden layer. Only
             available during pre-training. Default None.
         act_cfg (dict): The activation config. Only available during
-            pre-training. Defalut Tanh.
+            pre-training. Defaults to Tanh.
     """
 
     def __init__(self,
@@ -28,9 +31,11 @@ class VisionTransformerClsHead(ClsHead):
                  in_channels,
                  hidden_dim=None,
                  act_cfg=dict(type='Tanh'),
+                 init_cfg=dict(type='Constant', layer='Linear', val=0),
                  *args,
                  **kwargs):
-        super(VisionTransformerClsHead, self).__init__(*args, **kwargs)
+        super(VisionTransformerClsHead, self).__init__(
+            init_cfg=init_cfg, *args, **kwargs)
         self.in_channels = in_channels
         self.num_classes = num_classes
         self.hidden_dim = hidden_dim
@@ -51,31 +56,32 @@ class VisionTransformerClsHead(ClsHead):
                 ('act', build_activation_layer(self.act_cfg)),
                 ('head', nn.Linear(self.hidden_dim, self.num_classes)),
             ]
-        self.layers = nn.Sequential(OrderedDict(layers))
+        self.layers = Sequential(OrderedDict(layers))
 
     def init_weights(self):
         super(VisionTransformerClsHead, self).init_weights()
         # Modified from ClassyVision
         if hasattr(self.layers, 'pre_logits'):
             # Lecun norm
-            kaiming_init(
-                self.layers.pre_logits, mode='fan_in', nonlinearity='linear')
-        constant_init(self.layers.head, 0)
+            trunc_normal_(
+                self.layers.pre_logits.weight,
+                std=math.sqrt(1 / self.layers.pre_logits.in_features))
+            nn.init.zeros_(self.layers.pre_logits.bias)
 
-    def simple_test(self, img):
+    def simple_test(self, x):
         """Test without augmentation."""
-        cls_score = self.layers(img)
+        x = x[-1]
+        _, cls_token = x
+        cls_score = self.layers(cls_token)
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
         pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
 
-        on_trace = hasattr(torch.jit, 'is_tracing') and torch.jit.is_tracing()
-        if torch.onnx.is_in_onnx_export() or on_trace:
-            return pred
-        pred = list(pred.detach().cpu().numpy())
-        return pred
+        return self.post_process(pred)
 
-    def forward_train(self, x, gt_label):
-        cls_score = self.layers(x)
-        losses = self.loss(cls_score, gt_label)
+    def forward_train(self, x, gt_label, **kwargs):
+        x = x[-1]
+        _, cls_token = x
+        cls_score = self.layers(cls_token)
+        losses = self.loss(cls_score, gt_label, **kwargs)
         return losses
