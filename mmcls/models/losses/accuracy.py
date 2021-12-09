@@ -19,11 +19,12 @@ def accuracy_numpy(pred, target, topk=(1, ), thrs=0.):
     res = []
     maxk = max(topk)
     num = pred.shape[0]
+
+    static_inds = np.indices((num, maxk))[0]
     pred_label = pred.argpartition(-maxk, axis=1)[:, -maxk:]
-    pred_score = pred[np.indices((num, maxk))[0], pred_label]
+    pred_score = pred[static_inds, pred_label]
 
     sort_inds = np.argsort(pred_score, axis=1)[:, ::-1]
-    static_inds = np.indices(sort_inds.shape)[0]
     pred_label = pred_label[static_inds, sort_inds]
     pred_score = pred_score[static_inds, sort_inds]
 
