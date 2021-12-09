@@ -1,9 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from functools import partial
+
 import pytest
 import torch
 
 from mmcls.core import average_performance, mAP
-from mmcls.models.losses.accuracy import Accuracy
+from mmcls.models.losses.accuracy import Accuracy, accuracy_numpy
 
 
 def test_mAP():
@@ -77,10 +79,15 @@ def test_accuracy():
     assert compute_acc(pred_array, target_array)[0] == acc_top1
 
     compute_acc = Accuracy(topk=(1, 2))
-    assert compute_acc(pred_tensor, target_tensor)[0] == acc_top1
+    assert compute_acc(pred_tensor, target_array)[0] == acc_top1
     assert compute_acc(pred_tensor, target_tensor)[1] == acc_top2
     assert compute_acc(pred_array, target_array)[0] == acc_top1
     assert compute_acc(pred_array, target_array)[1] == acc_top2
 
-    with pytest.raises(TypeError):
-        compute_acc(pred_tensor, target_array)
+    with pytest.raises(AssertionError):
+        compute_acc(pred_tensor, 'other_type')
+
+    # test accuracy_numpy
+    compute_acc = partial(accuracy_numpy, topk=(1, 2))
+    assert compute_acc(pred_array, target_array)[0] == acc_top1
+    assert compute_acc(pred_array, target_array)[1] == acc_top2
