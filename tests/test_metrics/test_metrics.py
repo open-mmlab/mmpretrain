@@ -3,6 +3,7 @@ import pytest
 import torch
 
 from mmcls.core import average_performance, mAP
+from mmcls.models.losses.accuracy import Accuracy
 
 
 def test_mAP():
@@ -55,3 +56,31 @@ def test_average_performance():
     assert average_performance(
         pred, target, k=2) == pytest.approx(
             (43.75, 50.00, 46.67, 40.00, 57.14, 47.06), rel=1e-2)
+
+
+def test_accuracy():
+    pred_tensor = torch.tensor([[0.1, 0.2, 0.4], [0.2, 0.5, 0.3],
+                                [0.4, 0.3, 0.1], [0.8, 0.9, 0.0]])
+    target_tensor = torch.tensor([2, 0, 0, 0])
+    pred_array = pred_tensor.numpy()
+    target_array = target_tensor.numpy()
+
+    acc_top1 = 50.
+    acc_top2 = 75.
+
+    compute_acc = Accuracy(topk=1)
+    assert compute_acc(pred_tensor, target_tensor) == acc_top1
+    assert compute_acc(pred_array, target_array) == acc_top1
+
+    compute_acc = Accuracy(topk=(1, ))
+    assert compute_acc(pred_tensor, target_tensor)[0] == acc_top1
+    assert compute_acc(pred_array, target_array)[0] == acc_top1
+
+    compute_acc = Accuracy(topk=(1, 2))
+    assert compute_acc(pred_tensor, target_tensor)[0] == acc_top1
+    assert compute_acc(pred_tensor, target_tensor)[1] == acc_top2
+    assert compute_acc(pred_array, target_array)[0] == acc_top1
+    assert compute_acc(pred_array, target_array)[1] == acc_top2
+
+    with pytest.raises(TypeError):
+        compute_acc(pred_tensor, target_array)

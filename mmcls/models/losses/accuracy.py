@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 
 
-def accuracy_numpy(pred, target, topk=1, thrs=0.):
+def accuracy_numpy(pred, target, topk=(1, ), thrs=0.):
     if isinstance(thrs, Number):
         thrs = (thrs, )
         res_single = True
@@ -19,8 +19,14 @@ def accuracy_numpy(pred, target, topk=1, thrs=0.):
     res = []
     maxk = max(topk)
     num = pred.shape[0]
-    pred_label = pred.argsort(axis=1)[:, -maxk:][:, ::-1]
-    pred_score = np.sort(pred, axis=1)[:, -maxk:][:, ::-1]
+
+    static_inds = np.indices((num, maxk))[0]
+    pred_label = pred.argpartition(-maxk, axis=1)[:, -maxk:]
+    pred_score = pred[static_inds, pred_label]
+
+    sort_inds = np.argsort(pred_score, axis=1)[:, ::-1]
+    pred_label = pred_label[static_inds, sort_inds]
+    pred_score = pred_score[static_inds, sort_inds]
 
     for k in topk:
         correct_k = pred_label[:, :k] == target.reshape(-1, 1)
@@ -37,7 +43,7 @@ def accuracy_numpy(pred, target, topk=1, thrs=0.):
     return res
 
 
-def accuracy_torch(pred, target, topk=1, thrs=0.):
+def accuracy_torch(pred, target, topk=(1, ), thrs=0.):
     if isinstance(thrs, Number):
         thrs = (thrs, )
         res_single = True
