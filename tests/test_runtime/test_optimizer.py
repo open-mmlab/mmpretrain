@@ -1,4 +1,5 @@
 import functools
+from collections import OrderedDict
 from copy import deepcopy
 
 import torch
@@ -18,6 +19,9 @@ base_wd = 0.0001
 def assert_equal(x, y):
     if isinstance(x, torch.Tensor) and isinstance(y, torch.Tensor):
         torch.testing.assert_allclose(x, y.to(x.device))
+    elif isinstance(x, OrderedDict) and isinstance(y, OrderedDict):
+        for x_value, y_value in zip(x.values(), y.values()):
+            assert_equal(x_value, y_value)
     elif isinstance(x, dict) and isinstance(y, dict):
         assert x.keys() == y.keys()
         for key in x.keys():
