@@ -104,19 +104,17 @@ def precision_recall_f1(pred, target, average_mode='macro', thrs=0.):
     precisions = []
     recalls = []
     f1_scores = []
-    eps1 = torch.tensor(1)
-    eps2 = torch.tensor(torch.finfo(torch.float32).eps)
     for thr in thrs:
         # Only prediction values larger than thr are counted as positive
         pred_positive = one_hot(pred_label, num_classes)
         if thr is not None:
             pred_positive[pred_score <= thr] = 0
         class_correct = (pred_positive & gt_positive).sum(0)
-        precision = class_correct / torch.maximum(pred_positive.sum(0),
-                                                  eps1) * 100
-        recall = class_correct / torch.maximum(gt_positive.sum(0), eps1) * 100
-        f1_score = 2 * precision * recall / torch.maximum(
-            precision + recall, eps2)
+        precision = class_correct / np.maximum(pred_positive.sum(0), 1) * 100
+        recall = class_correct / np.maximum(gt_positive.sum(0), 1) * 100
+        f1_score = 2 * precision * recall / np.maximum(
+            precision + recall,
+            torch.finfo(torch.float32).eps)
         if average_mode == 'macro':
             precision = float(precision.mean())
             recall = float(recall.mean())
