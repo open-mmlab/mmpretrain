@@ -110,8 +110,8 @@ def precision_recall_f1(pred, target, average_mode='macro', thrs=0.):
         if thr is not None:
             pred_positive[pred_score <= thr] = 0
         class_correct = (pred_positive & gt_positive).sum(0)
-        precision = class_correct / np.maximum(pred_positive.sum(0), 1) * 100
-        recall = class_correct / np.maximum(gt_positive.sum(0), 1) * 100
+        precision = class_correct / np.maximum(pred_positive.sum(0), 1.) * 100
+        recall = class_correct / np.maximum(gt_positive.sum(0), 1.) * 100
         f1_score = 2 * precision * recall / np.maximum(
             precision + recall,
             torch.finfo(torch.float32).eps)
