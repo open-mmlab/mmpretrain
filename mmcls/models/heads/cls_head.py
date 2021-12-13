@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import warnings
+
 import torch
 import torch.nn.functional as F
 
@@ -62,19 +64,33 @@ class ClsHead(BaseHead):
         losses = self.loss(cls_score, gt_label, **kwargs)
         return losses
 
-    def simple_test(self, cls_score, post_processing=True):
+    def pre_logits(self, x):
+        if isinstance(x, tuple):
+            x = x[-1]
+
+        warnings.warn(
+            'The input of ClsHead should be already logits. '
+            'Please modify the backbone if you want to get pre-logits feature.'
+        )
+        return x
+
+    def simple_test(self, cls_score, softmax=True, post_process=True):
         """Test without augmentation."""
         if isinstance(cls_score, tuple):
             cls_score = cls_score[-1]
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
 
-        # Not execute `softmax` and `head.post-process`, return torch.Tensor
-        if not post_processing:
-            return cls_score
+        if softmax:
+            pred = (
+                F.softmax(cls_score, dim=1) if cls_score is not None else None)
+        else:
+            pred = cls_score
 
-        pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
-        return self.post_process(pred)
+        if post_process:
+            return self.post_process(pred)
+        else:
+            return pred
 
     def post_process(self, pred):
         on_trace = is_tracing()

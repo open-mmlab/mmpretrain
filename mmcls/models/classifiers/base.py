@@ -35,13 +35,14 @@ class BaseClassifier(BaseModule, metaclass=ABCMeta):
         return hasattr(self, 'head') and self.head is not None
 
     @abstractmethod
-    def extract_feat(self, imgs):
+    def extract_feat(self, imgs, stage=None):
         pass
 
-    def extract_feats(self, imgs):
+    def extract_feats(self, imgs, stage=None):
         assert isinstance(imgs, list)
+        kwargs = {} if stage is None else {'stage': stage}
         for img in imgs:
-            yield self.extract_feat(img)
+            yield self.extract_feat(img, **kwargs)
 
     @abstractmethod
     def forward_train(self, imgs, **kwargs):

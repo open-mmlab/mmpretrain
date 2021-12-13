@@ -68,24 +68,39 @@ class VisionTransformerClsHead(ClsHead):
                 std=math.sqrt(1 / self.layers.pre_logits.in_features))
             nn.init.zeros_(self.layers.pre_logits.bias)
 
-    def simple_test(self, x, post_processing=True):
-        """Test without augmentation."""
+    def pre_logits(self, x):
         x = x[-1]
         _, cls_token = x
-        cls_score = self.layers(cls_token)
+        if self.hidden_dim is None:
+            return cls_token
+        else:
+            x = self.layers.pre_logits(cls_token)
+            return self.layers.act(x)
+
+    @property
+    def fc(self):
+        return self.layers.head
+
+    def simple_test(self, x, softmax=True, post_process=True):
+        """Test without augmentation."""
+        x = self.pre_logits(x)
+        cls_score = self.fc(x)
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
 
-        # Not execute `softmax` and `head.post-process`, return torch.Tensor
-        if not post_processing:
-            return cls_score
+        if softmax:
+            pred = (
+                F.softmax(cls_score, dim=1) if cls_score is not None else None)
+        else:
+            pred = cls_score
 
-        pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
-        return self.post_process(pred)
+        if post_process:
+            return self.post_process(pred)
+        else:
+            return pred
 
     def forward_train(self, x, gt_label, **kwargs):
-        x = x[-1]
-        _, cls_token = x
-        cls_score = self.layers(cls_token)
+        x = self.pre_logits(x)
+        cls_score = self.fc(x)
         losses = self.loss(cls_score, gt_label, **kwargs)
         return losses
