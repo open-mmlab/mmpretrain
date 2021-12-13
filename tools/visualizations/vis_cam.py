@@ -8,6 +8,7 @@ from pathlib import Path
 import mmcv
 import numpy as np
 from mmcv import Config, DictAction
+from mmcv.utils import to_2tuple
 
 from mmcls.apis import init_model
 from mmcls.datasets.pipelines import Compose
@@ -68,7 +69,7 @@ def parse_args():
         default=None,
         type=int,
         help='The target category to get CAM, default to use result '
-        'get from given model')
+        'get from given model.')
     parser.add_argument(
         '--eigen-smooth',
         default=False,
@@ -108,8 +109,9 @@ def build_reshape_transform(model):
     networks such as SwinTransformer and VisionTransformer need an additional
     reshape operation.
 
-    CNNs don't need, jush return None
+    CNNs don't need, jush return `None`.
     """
+    # ViT_based_Transformers have an additional clstoken in features
     if isinstance(model.backbone, Swin_based_Transformers):
         has_clstoken = False
     elif isinstance(model.backbone, ViT_based_Transformers):
@@ -121,11 +123,10 @@ def build_reshape_transform(model):
         """reshape_transform helper."""
         tensor = tensor[:, 1:, :] if has_clstoken else tensor
         # get heat_map_height and heat_map_width, preset input is a square
-        heat_map_size = tensor.size()[1]
-        height = width = int(math.sqrt(heat_map_size))
-        message = 'Only support input pictures with the same length and ' \
-                  'width when using Tansformer neural networks.'
-        assert height * height == heat_map_size, message
+        heat_map_area = tensor.size()[1]
+        height, width = to_2tuple(int(math.sqrt(heat_map_area)))
+        message = 'Only square input images are supported for Transformers.'
+        assert height * height == heat_map_area, message
         result = tensor.reshape(tensor.size(0), height, width, tensor.size(2))
 
         # Bring the channels to the first dimension, like in CNNs.
@@ -137,7 +138,11 @@ def build_reshape_transform(model):
 
 def apply_transforms(img_path, pipeline_cfg):
     """Since there are some transforms, which will change the regin to
-    inference such as CenterCrop.So it is necessary to get inference image."""
+    inference such as CenterCrop.
+
+    So it is necessary to get inference image. this function is to get
+    transformed imgaes besides transformes in `FORMAT_TRANSFORMS_SET`
+    """
     data = dict(img_info=dict(filename=img_path), img_prefix=None)
 
     def split_pipeline_cfg(pipeline_cfg):
@@ -166,8 +171,7 @@ def apply_transforms(img_path, pipeline_cfg):
 
 def init_cam(method, model, target_layers, use_cuda, reshape_transform):
     """Construct the CAM object once, In order to be compatible with mmcls,
-    here we modify the ActivationsAndGradients object and the get_loss
-    function."""
+    here we modify the ActivationsAndGradients object."""
 
     class mmActivationsAndGradients(act_and_grad.ActivationsAndGradients):
         """since the original __call__ can not pass additional parameters we
@@ -177,7 +181,8 @@ def init_cam(method, model, target_layers, use_cuda, reshape_transform):
             self.gradients = []
             self.activations = []
 
-            return self.model(x, return_loss=False, post_processing=False)
+            return self.model(
+                x, return_loss=False, softmax=False, post_process=False)
 
     GradCAM_Class = METHOD_MAP[method.lower()]
     cam = GradCAM_Class(
