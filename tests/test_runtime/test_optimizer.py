@@ -1,6 +1,7 @@
 import functools
 from collections import OrderedDict
 from copy import deepcopy
+from typing import Iterable
 
 import torch
 import torch.nn as nn
@@ -26,6 +27,14 @@ def assert_equal(x, y):
         assert x.keys() == y.keys()
         for key in x.keys():
             assert_equal(x[key], y[key])
+    elif isinstance(x, str) and isinstance(y, str):
+        assert x == y
+    elif isinstance(x, Iterable) and isinstance(y, Iterable):
+        assert len(x) == len(y)
+        for x_item, y_item in zip(x, y):
+            assert_equal(x_item, y_item)
+    else:
+        assert x == y
 
 
 class SubModel(nn.Module):
@@ -170,11 +179,18 @@ def _test_state_dict(weight, bias, input, constructor):
     assert_equal(state_dict, state_dict_c)
     # Make sure state dict is deterministic with equal
     # but not identical parameters
-    assert_equal(optimizer.state_dict(), optimizer_c.state_dict())
+    # NOTE: The state_dict of optimizers in PyTorch 1.5 have random keys,
+    state_dict = deepcopy(optimizer.state_dict())
+    state_dict_c = deepcopy(optimizer_c.state_dict())
+    keys = state_dict['param_groups'][-1]['params']
+    keys_c = state_dict_c['param_groups'][-1]['params']
+    for key, key_c in zip(keys, keys_c):
+        assert_equal(optimizer.state_dict()['state'][key],
+                     optimizer_c.state_dict()['state'][key_c])
     # Make sure repeated parameters have identical representation in state dict
     optimizer_c.param_groups.extend(optimizer_c.param_groups)
-    assert_equal(optimizer.state_dict()['param_groups'][-1],
-                 optimizer_c.state_dict()['param_groups'][-1])
+    assert_equal(optimizer_c.state_dict()['param_groups'][0],
+                 optimizer_c.state_dict()['param_groups'][1])
 
     # Check that state dict can be loaded even when we cast parameters
     # to a different type and move to a different device.
