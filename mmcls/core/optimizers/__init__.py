@@ -1,3 +1,5 @@
 from .lamb import Lamb
 
-__all__ = ('Lamb', )
+__all__ = [
+    'Lamb',
+]
