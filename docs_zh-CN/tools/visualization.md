@@ -226,7 +226,7 @@ python tools/visualizations/vis_cam.py \
     --eigen-smooth --aug-smooth
 ```
 
-| Image | LayerCAM  |  eigen-smooth |  aug-smooth |  eigen-smooth & aug-smooth  |
+| Image | LayerCAM  |  eigen-smooth |  aug-smooth |  eigen&aug  |
 |-------|----------|------------|-------------- |------------|
 | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557492-98ac5ce0-61f9-4da9-8ea7-396d0b6a20fa.jpg' height="auto" width="160"></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557541-a4cf7d86-7267-46f9-937c-6f657ea661b4.jpg'  height="auto" width="145" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557547-2731b53e-e997-4dd2-a092-64739cc91959.jpg'  height="auto" width="145" ></div>  | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557545-8189524a-eb92-4cce-bf6a-760cab4a8065.jpg'  height="auto" width="145" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557548-c1e3f3ec-3c96-43d4-874a-3b33cd3351c5.jpg'  height="auto" width="145" ></div>  |
 
