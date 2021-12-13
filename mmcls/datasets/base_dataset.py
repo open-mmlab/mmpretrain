@@ -172,13 +172,11 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
             if isinstance(thrs, tuple):
                 for key, values in eval_results_.items():
                     eval_results.update({
-                        f'{key}_thr_{thr:.2f}': value.item()
+                        f'{key}_thr_{thr:.2f}': value
                         for thr, value in zip(thrs, values)
                     })
             else:
-                eval_results.update(
-                    {k: v.item()
-                     for k, v in eval_results_.items()})
+                eval_results.update(eval_results_)
 
         if 'support' in metrics:
             support_value = support(
