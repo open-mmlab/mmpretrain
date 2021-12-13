@@ -190,9 +190,9 @@ python tools/visualizations/vis_cam.py \
     # GradCAM++, XGradCAM, EigenCAM, EigenGradCAM, LayerCAM
 ```
 
-| Category  | Image | GradCAM  |  GradCAM++ |  EigenGradCAM |  LayerCAM  |
-| --------- |-------|----------|------------|-------------- |------------|
-| Bird | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429496-628d3fb3-1f6e-41ff-aa5c-1b08c60c32a9.JPEG' height="auto" width="160" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144431491-a2e19fe3-5c12-4404-b2af-a9552f5a95d9.jpg' height="auto" width="150" ></div>  | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144431610-f854556d-7f10-4084-8987-c2587aef8298.jpg' height="auto" width="150"></div>  | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144431776-899ec2e5-c15a-4274-b38c-5ac154d31ed0.jpg' height="auto" width="150"></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144431865-951ba8db-6dca-4909-ad5f-d1b21e0636ba.jpg' height="auto" width="150"></div>  |
+| Image | GradCAM  |  GradCAM++ |  EigenGradCAM |  LayerCAM  |
+|-------|----------|------------|-------------- |------------|
+| <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429496-628d3fb3-1f6e-41ff-aa5c-1b08c60c32a9.JPEG' height="auto" width="160" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144431491-a2e19fe3-5c12-4404-b2af-a9552f5a95d9.jpg' height="auto" width="150" ></div>  | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144431610-f854556d-7f10-4084-8987-c2587aef8298.jpg' height="auto" width="150"></div>  | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144431776-899ec2e5-c15a-4274-b38c-5ac154d31ed0.jpg' height="auto" width="150"></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144431865-951ba8db-6dca-4909-ad5f-d1b21e0636ba.jpg' height="auto" width="150"></div>  |
 
 2.Use different `target-category` to get CAM from the same picture. In `ImageNet` dataset, the category 238 is 'Greater Swiss Mountain dog', the category 281 is 'tabby, tabby cat'.
 
@@ -206,10 +206,10 @@ python tools/visualizations/vis_cam.py \
     # --target-category 281
 ```
 
-| Category  | Image | GradCAM  |  GradCAM++ |  XGradCAM |  LayerCAM  |
-| --------- |-------|----------|------------|-------------- |------------|
-|   Dog     | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429526-f27f4cce-89b9-4117-bfe6-55c2ca7eaba6.png' height="auto" width="165" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144433562-968a57bc-17d9-413e-810e-f91e334d648a.jpg' height="auto" width="150" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144433736-1500401d-6d95-4d6c-80f4-3888fd011d7e.jpg' height="auto" width="150" ></div>  | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144433853-319f3a8f-95f2-446d-b84f-3028daca5378.jpg' height="auto" width="150" ></div>  | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144433937-daef5a69-fd70-428f-98a3-5e7747f4bb88.jpg' height="auto" width="150" ></div>  |
-|   Cat     | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429526-f27f4cce-89b9-4117-bfe6-55c2ca7eaba6.png' height="auto" width="165" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144434518-867ae32a-1cb5-4dbd-b1b9-5e375e94ea48.jpg' height="auto" width="150" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144434533-e9410fd4-f5cc-4d60-a17e-02dc5d9a90d0.jpg' height="auto" width="150" ></div>  | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144434603-0a2fd9ec-c02e-4e6c-a17b-64c234808c56.jpg' height="auto" width="150" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144434623-b4432cc2-c663-4b97-aed3-583d9d3743e6.jpg' height="auto" width="150" ></div>  |
+| Category  | Image | GradCAM  |  XGradCAM |  LayerCAM  |
+| --------- |-------|----------|-------------- |------------|
+|   Dog     | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429526-f27f4cce-89b9-4117-bfe6-55c2ca7eaba6.png' height="auto" width="165" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144433562-968a57bc-17d9-413e-810e-f91e334d648a.jpg' height="auto" width="150" ></div>  | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144433853-319f3a8f-95f2-446d-b84f-3028daca5378.jpg' height="auto" width="150" ></div>  | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144433937-daef5a69-fd70-428f-98a3-5e7747f4bb88.jpg' height="auto" width="150" ></div>  |
+|   Cat     | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429526-f27f4cce-89b9-4117-bfe6-55c2ca7eaba6.png' height="auto" width="165" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144434518-867ae32a-1cb5-4dbd-b1b9-5e375e94ea48.jpg' height="auto" width="150" ></div>  | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144434603-0a2fd9ec-c02e-4e6c-a17b-64c234808c56.jpg' height="auto" width="150" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144434623-b4432cc2-c663-4b97-aed3-583d9d3743e6.jpg' height="auto" width="150" ></div>  |
 
 3.Use `--eigen-smooth` and `--aug-smooth` to improve visual effects.
 
@@ -223,9 +223,9 @@ python tools/visualizations/vis_cam.py \
     --eigen-smooth --aug-smooth
 ```
 
-| Category  | Image | LayerCAM  |  eigen-smooth |  aug-smooth |  eigen-smooth & aug-smooth  |
-| --------- |-------|----------|------------|-------------- |------------|
-| Dog | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557492-98ac5ce0-61f9-4da9-8ea7-396d0b6a20fa.jpg' height="auto" width="175"></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557541-a4cf7d86-7267-46f9-937c-6f657ea661b4.jpg'  height="auto" width="145" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557547-2731b53e-e997-4dd2-a092-64739cc91959.jpg'  height="auto" width="145" ></div>  | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557545-8189524a-eb92-4cce-bf6a-760cab4a8065.jpg'  height="auto" width="145" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557548-c1e3f3ec-3c96-43d4-874a-3b33cd3351c5.jpg'  height="auto" width="145" ></div>  |
+| Image | LayerCAM  |  eigen-smooth |  aug-smooth |  eigen-smooth & aug-smooth  |
+|-------|----------|------------|-------------- |------------|
+| <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557492-98ac5ce0-61f9-4da9-8ea7-396d0b6a20fa.jpg' height="auto" width="165"></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557541-a4cf7d86-7267-46f9-937c-6f657ea661b4.jpg'  height="auto" width="150" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557547-2731b53e-e997-4dd2-a092-64739cc91959.jpg'  height="auto" width="150" ></div>  | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557545-8189524a-eb92-4cce-bf6a-760cab4a8065.jpg'  height="auto" width="150" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557548-c1e3f3ec-3c96-43d4-874a-3b33cd3351c5.jpg'  height="auto" width="150" ></div>  |
 
 **Examples(Transformer)**：
 
