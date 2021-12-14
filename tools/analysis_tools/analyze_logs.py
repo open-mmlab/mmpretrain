@@ -6,7 +6,7 @@ import re
 import matplotlib.pyplot as plt
 import numpy as np
 
-from mmcls.utils import load_json_logs
+from mmcls.utils import load_json_log
 
 TEST_METRICS = ('precision', 'recall', 'f1_score', 'support', 'mAP', 'CP',
                 'CR', 'CF1', 'OP', 'OR', 'OF1', 'accuracy')
@@ -206,7 +206,7 @@ def main():
     for json_log in json_logs:
         assert json_log.endswith('.json')
 
-    log_dicts = load_json_logs(json_logs)
+    log_dicts = [load_json_log(json_log) for json_log in json_logs]
 
     eval(args.task)(log_dicts, args)
 
