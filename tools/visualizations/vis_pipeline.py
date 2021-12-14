@@ -1,17 +1,21 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import argparse
+import copy
 import itertools
 import os
 import re
 import sys
 from pathlib import Path
+from typing import List
 
+import cv2
 import mmcv
 import numpy as np
 from mmcv import Config, DictAction, ProgressBar
 
 from mmcls.core import visualization as vis
-from mmcls.datasets.builder import build_dataset
-from mmcls.datasets.pipelines import Compose
+from mmcls.datasets.builder import PIPELINES, build_dataset, build_from_cfg
+from mmcls.models.utils import to_2tuple
 
 
 def parse_args():
@@ -47,11 +51,12 @@ def parse_args():
         '--mode',
         default='concat',
         type=str,
-        choices=['original', 'pipeline', 'concat'],
+        choices=['original', 'output', 'concat', 'pipeline'],
         help='display mode; display original pictures or transformed pictures'
-        ' or comparison pictures. "original" means show images load from disk;'
-        ' "pipeline" means to show images after pipeline; "concat" means show '
-        'images stitched by "original" and "pipeline" images. Default concat.')
+        ' or comparison pictures. "original" means show images load from disk'
+        '; "output" means to show images after transformed; "concat" means '
+        'show images stitched by "original" and "output" images. "pipeline" '
+        'means show all the intermediate images. Default concat.')
     parser.add_argument(
         '--show',
         default=False,
@@ -129,7 +134,7 @@ def retrieve_data_cfg(config_path, skip_type, cfg_options, phase):
     return cfg
 
 
-def build_dataset_pipeline(cfg, phase):
+def build_dataset_pipelines(cfg, phase):
     """build dataset and pipeline from config.
 
     Separate the pipeline except 'LoadImageFromFile' step if
@@ -143,43 +148,44 @@ def build_dataset_pipeline(cfg, phase):
     origin_pipeline = data_cfg.pipeline
     data_cfg.pipeline = loadimage_pipeline
     dataset = build_dataset(data_cfg)
-    pipeline = Compose(origin_pipeline)
+    pipelines = {
+        pipeline_cfg['type']: build_from_cfg(pipeline_cfg, PIPELINES)
+        for pipeline_cfg in origin_pipeline
+    }
 
-    return dataset, pipeline
-
-
-def put_img(board, img, center):
-    """put a image into a big board image with the anchor center."""
-    center_x, center_y = center
-    img_h, img_w, _ = img.shape
-    xmin, ymin = int(center_x - img_w // 2), int(center_y - img_h // 2)
-    board[ymin:ymin + img_h, xmin:xmin + img_w, :] = img
-    return board
+    return dataset, pipelines
 
 
-def concat(left_img, right_img):
+def concat_imgs(imgs: List[np.ndarray], steps):
     """Concat two pictures into a single big picture, accepts two images with
     diffenert shapes."""
     GAP = 10
-    left_h, left_w, _ = left_img.shape
-    right_h, right_w, _ = right_img.shape
-    # create a big board to contain images with shape (board_h, board_w*2+10)
-    board_h, board_w = max(left_h, right_h), max(left_w, right_w)
-    board = np.ones([board_h, 2 * board_w + GAP, 3], np.uint8) * 255
+    shapes = [img.shape for img in imgs]
+    heights = [shape[0] for shape in shapes]
+    max_height = max(heights)
+    for i, img in enumerate(imgs):
+        cur_height = heights[i]
+        pad_height = max_height - cur_height
+        pad_up, pad_down = to_2tuple(pad_height // 2)
+        if pad_height % 2 == 1:
+            pad_up = pad_up + 1
+        pad_down += 20
+        img = np.pad(
+            img, ((pad_up, pad_down), (GAP, GAP), (0, 0)),
+            'constant',
+            constant_values=255)
+        imgs[i] = cv2.putText(img, steps[i], (GAP, max_height + 10),
+                              cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 0), 1)
 
-    put_img(board, left_img, (int(board_w // 2), int(board_h // 2)))
-    put_img(board, right_img,
-            (int(board_w // 2) + board_w + GAP // 2, int(board_h // 2)))
+    board = np.concatenate(imgs, axis=1)
     return board
 
 
-def adaptive_size(mode, image, min_edge_length, max_edge_length):
+def adaptive_size(image, min_edge_length, max_edge_length, src_shape):
     """rescale image if image is too small to put text like cifra."""
     assert min_edge_length >= 0 and max_edge_length >= 0
     assert max_edge_length >= min_edge_length
-
-    image_h, image_w, *_ = image.shape
-    image_w = image_w // 2 if mode == 'concat' else image_w
+    image_h, image_w, _ = src_shape
 
     if image_h < min_edge_length or image_w < min_edge_length:
         image = mmcv.imrescale(
@@ -190,23 +196,38 @@ def adaptive_size(mode, image, min_edge_length, max_edge_length):
     return image
 
 
-def get_display_img(item, pipeline, mode, bgr2rgb):
+def get_display_img(args, item, pipelines):
     """get image to display."""
-    if bgr2rgb:
+    if args.bgr2rgb:
         item['img'] = mmcv.bgr2rgb(item['img'])
     src_image = item['img'].copy()
-    # get transformed picture
-    if mode in ['pipeline', 'concat']:
-        item = pipeline(item)
-        trans_image = item['img']
-        trans_image = np.ascontiguousarray(trans_image, dtype=np.uint8)
+    intermediates_images = []
 
-    if mode == 'concat':
-        image = concat(src_image, trans_image)
-    elif mode == 'original':
+    # get intermediates images through pipelines
+    if args.mode in ['output', 'concat', 'pipeline']:
+        for pipeline in pipelines.values():
+            item = pipeline(item)
+            trans_image = copy.deepcopy(item['img'])
+            trans_image = np.ascontiguousarray(trans_image, dtype=np.uint8)
+            intermediates_images.append(trans_image)
+
+    if args.mode == 'original':
         image = src_image
-    elif mode == 'pipeline':
+    elif args.mode == 'output':
         image = trans_image
+    elif args.mode == 'concat':
+        steps = ['src', 'output']
+        image = concat_imgs([src_image, intermediates_images[-1]], steps)
+    elif args.mode == 'pipeline':
+        steps = ['src'] + list(pipelines.keys())
+        image = concat_imgs([src_image] + intermediates_images, steps)
+    else:
+        raise NotImplementedError(
+            "Only support 'original', 'output', 'concat', 'pipeline'")
+
+    if args.adaptive:
+        image = adaptive_size(image, args.min_edge_length,
+                              args.max_edge_length, src_image.shape)
     return image
 
 
@@ -217,17 +238,14 @@ def main():
     cfg = retrieve_data_cfg(args.config, args.skip_type, args.cfg_options,
                             args.phase)
 
-    dataset, pipeline = build_dataset_pipeline(cfg, args.phase)
+    dataset, pipelines = build_dataset_pipelines(cfg, args.phase)
     CLASSES = dataset.CLASSES
     display_number = min(args.number, len(dataset))
     progressBar = ProgressBar(display_number)
 
     with vis.ImshowInfosContextManager(fig_size=(wind_w, wind_h)) as manager:
         for i, item in enumerate(itertools.islice(dataset, display_number)):
-            image = get_display_img(item, pipeline, args.mode, args.bgr2rgb)
-            if args.adaptive:
-                image = adaptive_size(args.mode, image, args.min_edge_length,
-                                      args.max_edge_length)
+            image = get_display_img(args, item, pipelines)
 
             # dist_path is None as default, means not save pictures
             dist_path = None
