@@ -170,7 +170,7 @@ def concat_imgs(imgs: List[np.ndarray], steps: List[str]) -> np.ndarray:
         # handle instance that the pad_height is an odd number
         if pad_height % 2 == 1:
             pad_top = pad_top + 1
-        pad_bottom += text_height * 2  # keep pxs to put step information text
+        pad_bottom += text_height  # keep pxs to put step information text
         pad_left, pad_right = to_2tuple(pic_horizontal_gap)
 
         img = cv2.copyMakeBorder(
@@ -185,6 +185,7 @@ def concat_imgs(imgs: List[np.ndarray], steps: List[str]) -> np.ndarray:
                               (pic_horizontal_gap, max_height + 10),
                               cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 0), 1)
 
+    # High alignment for concatenating
     board = np.concatenate(imgs, axis=1)
     return board
 
