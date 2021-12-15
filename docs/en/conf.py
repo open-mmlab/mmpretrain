@@ -17,7 +17,7 @@ import sys
 import pytorch_sphinx_theme
 from sphinx.builders.html import StandaloneHTMLBuilder
 
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('../../'))
 
 # -- Project information -----------------------------------------------------
 
@@ -26,7 +26,7 @@ copyright = '2020, OpenMMLab'
 author = 'MMClassification Authors'
 
 # The full version, including alpha/beta/rc tags
-version_file = '../mmcls/version.py'
+version_file = '../../mmcls/version.py'
 
 
 def get_version():
@@ -64,7 +64,7 @@ source_suffix = {
     '.md': 'markdown',
 }
 
-language = 'zh_CN'
+language = 'en'
 
 # The master toctree document.
 master_doc = 'index'
@@ -88,7 +88,7 @@ html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 #
 html_theme_options = {
     'logo_url':
-    'https://mmocr.readthedocs.io/zh_CN/latest/',
+    'https://mmclassification.readthedocs.io/en/latest/',
     'menu': [
         {
             'name': 'GitHub',
@@ -96,118 +96,30 @@ html_theme_options = {
         },
         {
             'name':
-            'Colab 教程',
+            'Colab Tutorials',
             'children': [
                 {
                     'name':
-                    '用命令行工具训练和推理',
+                    'Train and inference with shell commands',
                     'url':
                     'https://colab.research.google.com/github/'
-                    'open-mmlab/mmclassification/blob/master/docs_zh-CN/'
-                    'tutorials/MMClassification_tools_cn.ipynb',
+                    'open-mmlab/mmclassification/blob/master/docs/tutorials/'
+                    'MMClassification_tools.ipynb',
                 },
                 {
                     'name':
-                    '用 Python API 训练和推理',
+                    'Train and inference with Python APIs',
                     'url':
                     'https://colab.research.google.com/github/'
-                    'open-mmlab/mmclassification/blob/master/docs_zh-CN/'
-                    'tutorials/MMClassification_python_cn.ipynb',
+                    'open-mmlab/mmclassification/blob/master/docs/tutorials/'
+                    'MMClassification_python.ipynb',
                 },
             ]
         },
-        {
-            'name':
-            '文档',
-            'children': [
-                {
-                    'name': 'MMCV',
-                    'url': 'https://mmcv.readthedocs.io/zh_CN/latest/',
-                },
-                {
-                    'name': 'MIM',
-                    'url': 'https://openmim.readthedocs.io/en/latest/'
-                },
-                {
-                    'name': 'MMAction2',
-                    'url': 'https://mmaction2.readthedocs.io/zh_CN/latest/',
-                },
-                {
-                    'name': 'MMClassification',
-                    'url':
-                    'https://mmclassification.readthedocs.io/zh_CN/latest/',
-                },
-                {
-                    'name': 'MMDetection',
-                    'url': 'https://mmdetection.readthedocs.io/zh_CN/latest/',
-                },
-                {
-                    'name': 'MMDetection3D',
-                    'url':
-                    'https://mmdetection3d.readthedocs.io/zh_CN/latest/',
-                },
-                {
-                    'name': 'MMEditing',
-                    'url': 'https://mmediting.readthedocs.io/zh_CN/latest/',
-                },
-                {
-                    'name': 'MMGeneration',
-                    'url': 'https://mmgeneration.readthedocs.io/zh_CN/latest/',
-                },
-                {
-                    'name': 'MMOCR',
-                    'url': 'https://mmocr.readthedocs.io/zh_CN/latest/',
-                },
-                {
-                    'name': 'MMPose',
-                    'url': 'https://mmpose.readthedocs.io/zh_CN/latest/',
-                },
-                {
-                    'name': 'MMSegmentation',
-                    'url':
-                    'https://mmsegmentation.readthedocs.io/zh_CN/latest/',
-                },
-                {
-                    'name': 'MMTracking',
-                    'url': 'https://mmtracking.readthedocs.io/zh_CN/latest/',
-                },
-                {
-                    'name': 'MMFlow',
-                    'url': 'https://mmflow.readthedocs.io/en/latest/',
-                },
-                {
-                    'name': 'MMFewShot',
-                    'url': 'https://mmfewshot.readthedocs.io/zh_CN/latest/',
-                },
-                {
-                    'name': 'MMHuman3d',
-                    'url': 'https://mmhuman3d.readthedocs.io/en/latest/',
-                },
-            ]
-        },
-        {
-            'name':
-            'OpenMMLab',
-            'children': [
-                {
-                    'name': '官网',
-                    'url': 'https://openmmlab.com/'
-                },
-                {
-                    'name': 'GitHub',
-                    'url': 'https://github.com/open-mmlab/'
-                },
-                {
-                    'name': '推特',
-                    'url': 'https://twitter.com/OpenMMLab'
-                },
-                {
-                    'name': '知乎',
-                    'url': 'https://zhihu.com/people/openmmlab'
-                },
-            ]
-        },
-    ]
+    ],
+    # Specify the language of shared menu
+    'menu_lang':
+    'en'
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -215,6 +127,7 @@ html_theme_options = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 html_css_files = ['css/readthedocs.css']
+#  html_js_files = ['js/custom.js']
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
@@ -235,10 +148,23 @@ latex_elements = {
     # Additional stuff for the LaTeX preamble.
     #
     # 'preamble': '',
-
-    # Latex figure (float) alignment
-    #
-    # 'figure_align': 'htbp',
+    'preamble':
+    r'''
+\hypersetup{unicode=true}
+\usepackage{CJKutf8}
+\DeclareUnicodeCharacter{00A0}{\nobreakspace}
+\DeclareUnicodeCharacter{2203}{\ensuremath{\exists}}
+\DeclareUnicodeCharacter{2200}{\ensuremath{\forall}}
+\DeclareUnicodeCharacter{2286}{\ensuremath{\subseteq}}
+\DeclareUnicodeCharacter{2713}{x}
+\DeclareUnicodeCharacter{27FA}{\ensuremath{\Longleftrightarrow}}
+\DeclareUnicodeCharacter{221A}{\ensuremath{\sqrt{}}}
+\DeclareUnicodeCharacter{221B}{\ensuremath{\sqrt[3]{}}}
+\DeclareUnicodeCharacter{2295}{\ensuremath{\oplus}}
+\DeclareUnicodeCharacter{2297}{\ensuremath{\otimes}}
+\begin{CJK}{UTF8}{gbsn}
+\AtEndDocument{\end{CJK}}
+''',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
@@ -299,5 +225,5 @@ def builder_inited_handler(app):
 
 
 def setup(app):
-    app.add_config_value('no_underscore_emphasis', False, 'env')
+    app.add_js_file('./_static/js/custom.js')
     app.connect('builder-inited', builder_inited_handler)
