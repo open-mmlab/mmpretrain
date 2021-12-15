@@ -20,8 +20,6 @@ class DeiTClsHead(VisionTransformerClsHead):
         assert isinstance(x, list) and len(x) == 3
         _, cls_token, dist_token = x
         cls_score = (self.layers(cls_token) + self.head_dist(dist_token)) / 2
-        if isinstance(cls_score, list):
-            cls_score = sum(cls_score) / float(len(cls_score))
         pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
 
         return self.post_process(pred)

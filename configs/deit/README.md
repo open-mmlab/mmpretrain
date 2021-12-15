@@ -27,7 +27,9 @@ Recently, neural networks purely based on attention were shown to address image 
 
 ## Pretrained models
 
-## ImageNet-1k
+The pre-trained models are converted from the [official repo](https://github.com/facebookresearch/deit). And the teacher of the distilled version DeiT is RegNetY-16GF.
+
+### ImageNet-1k
 
 |         Model         | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
 |:---------------------:|:---------:|:--------:|:---------:|:---------:|:------:|:--------:|
@@ -42,7 +44,9 @@ Recently, neural networks purely based on attention were shown to address image 
 
 ## Fine-tuned models
 
-## ImageNet-1k
+The fine-tuned models are converted from the [official repo](https://github.com/facebookresearch/deit).
+
+### ImageNet-1k
 
 |         Model         | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
 |:---------------------:|:---------:|:--------:|:---------:|:---------:|:------:|:--------:|
@@ -51,7 +55,7 @@ Recently, neural networks purely based on attention were shown to address image 
 
 *Models with \* are converted from other repos.*
 
-```{note}
+```{warning}
 MMClassification doesn't support training the distilled version DeiT.
 And we provide distilled version checkpoints for inference only.
 ```
