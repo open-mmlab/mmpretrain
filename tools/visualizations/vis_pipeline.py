@@ -51,12 +51,12 @@ def parse_args():
         '--mode',
         default='concat',
         type=str,
-        choices=['original', 'output', 'concat', 'pipeline'],
+        choices=['original', 'transformed', 'concat', 'pipeline'],
         help='display mode; display original pictures or transformed pictures'
         ' or comparison pictures. "original" means show images load from disk'
-        '; "output" means to show images after transformed; "concat" means '
-        'show images stitched by "original" and "output" images. "pipeline" '
-        'means show all the intermediate images. Default concat.')
+        '; "transformed" means to show images after transformed; "concat" '
+        'means show images stitched by "original" and "output" images. '
+        '"pipeline" means show all the intermediate images. Default concat.')
     parser.add_argument(
         '--show',
         default=False,
@@ -156,25 +156,33 @@ def build_dataset_pipelines(cfg, phase):
     return dataset, pipelines
 
 
-def concat_imgs(imgs: List[np.ndarray], steps):
-    """Concat two pictures into a single big picture, accepts two images with
-    diffenert shapes."""
-    GAP = 10
+def concat_imgs(imgs: List[np.ndarray], steps: List[str]) -> np.ndarray:
+    """Concat list of pictures into a single big picture, align height here."""
     shapes = [img.shape for img in imgs]
     heights = [shape[0] for shape in shapes]
+    widths = [shape[1] for shape in shapes]
     max_height = max(heights)
+    text_height, pic_horizontal_gap = max_height // 10, min(widths) // 10
     for i, img in enumerate(imgs):
         cur_height = heights[i]
         pad_height = max_height - cur_height
-        pad_up, pad_down = to_2tuple(pad_height // 2)
+        pad_top, pad_bottom = to_2tuple(pad_height // 2)
+        # handle instance that the pad_height is an odd number
         if pad_height % 2 == 1:
-            pad_up = pad_up + 1
-        pad_down += 20
-        img = np.pad(
-            img, ((pad_up, pad_down), (GAP, GAP), (0, 0)),
-            'constant',
-            constant_values=255)
-        imgs[i] = cv2.putText(img, steps[i], (GAP, max_height + 10),
+            pad_top = pad_top + 1
+        pad_bottom += text_height * 2  # keep pxs to put step information text
+        pad_left, pad_right = to_2tuple(pic_horizontal_gap)
+
+        img = cv2.copyMakeBorder(
+            img,
+            pad_top,
+            pad_bottom,
+            pad_left,
+            pad_right,
+            cv2.BORDER_CONSTANT,
+            value=(255, 255, 255))
+        imgs[i] = cv2.putText(img, steps[i],
+                              (pic_horizontal_gap, max_height + 10),
                               cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 0), 1)
 
     board = np.concatenate(imgs, axis=1)
@@ -198,13 +206,14 @@ def adaptive_size(image, min_edge_length, max_edge_length, src_shape):
 
 def get_display_img(args, item, pipelines):
     """get image to display."""
+    # srcs picture could be in RGB or BGR order due to different backends.
     if args.bgr2rgb:
         item['img'] = mmcv.bgr2rgb(item['img'])
     src_image = item['img'].copy()
     intermediates_images = []
 
     # get intermediates images through pipelines
-    if args.mode in ['output', 'concat', 'pipeline']:
+    if args.mode in ['transformed', 'concat', 'pipeline']:
         for pipeline in pipelines.values():
             item = pipeline(item)
             trans_image = copy.deepcopy(item['img'])
@@ -213,18 +222,17 @@ def get_display_img(args, item, pipelines):
 
     if args.mode == 'original':
         image = src_image
-    elif args.mode == 'output':
-        image = trans_image
+    elif args.mode == 'transformed':
+        image = intermediates_images[-1]
     elif args.mode == 'concat':
-        steps = ['src', 'output']
+        steps = ['src', 'transformed']
         image = concat_imgs([src_image, intermediates_images[-1]], steps)
     elif args.mode == 'pipeline':
         steps = ['src'] + list(pipelines.keys())
         image = concat_imgs([src_image] + intermediates_images, steps)
-    else:
-        raise NotImplementedError(
-            "Only support 'original', 'output', 'concat', 'pipeline'")
 
+    # if src image is too large or too small, it will make the text information
+    #  difficult to confirm, so here add adaptive adjustment.
     if args.adaptive:
         image = adaptive_size(image, args.min_edge_length,
                               args.max_edge_length, src_image.shape)
