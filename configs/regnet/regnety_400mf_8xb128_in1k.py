@@ -21,11 +21,11 @@ optimizer = dict(
 # dataset settings
 dataset_type = 'ImageNet'
 
-# normalization params, in order of BGR
+# normalization params, in order of BGR, from repo. pycls
 NORM_MEAN = [103.53, 116.28, 123.675]
 NORM_STD = [57.375, 57.12, 58.395]
 
-# lighting params, in order of RGB
+# lighting params, in order of RGB, from repo. pycls
 EIGVAL = [0.2175, 0.0188, 0.0045]
 EIGVEC = [[-0.5675, 0.7192, 0.4009], [-0.5808, -0.0045, -0.814],
           [-0.5836, -0.6948, 0.4203]]

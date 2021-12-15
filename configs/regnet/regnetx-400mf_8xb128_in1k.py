@@ -22,7 +22,7 @@ optimizer = dict(lr=0.8, nesterov=True)
 # dataset settings
 dataset_type = 'ImageNet'
 
-# normalization params, in order of BGR
+# normalization params, in order of BGR, from repo. pycls
 NORM_MEAN = [103.53, 116.28, 123.675]
 NORM_STD = [57.375, 57.12, 58.395]
 
