@@ -15,8 +15,8 @@ custom_hooks = [
         priority='ABOVE_NORMAL')
 ]
 
-# sgd with nesterov, base ls is 0.8 for batch_size 1024, 
-# 0.4 for batch_size 512 and 0.2 for batch_size 256  when training ImageNet1k
+# sgd with nesterov, base ls is 0.8 for batch_size 1024,
+# 0.4 for batch_size 512 and 0.2 for batch_size 256 when training ImageNet1k
 optimizer = dict(lr=0.8, nesterov=True)
 
 # dataset settings
@@ -40,8 +40,10 @@ train_pipeline = [
         eigval=EIGVAL,
         eigvec=EIGVEC,
         alphastd=25.5,  # because the value range of images is [0,255]
-        to_rgb=True),   # BGR image from cv2 in LoadImageFromFile, convert to RGB here
-    dict(type='Normalize', mean=NORM_MEAN, std=NORM_STD, to_rgb=True), # RGB2BGR
+        to_rgb=True
+    ),  # BGR image from cv2 in LoadImageFromFile, convert to RGB here
+    dict(type='Normalize', mean=NORM_MEAN, std=NORM_STD,
+         to_rgb=True),  # RGB2BGR
     dict(type='ImageToTensor', keys=['img']),
     dict(type='ToTensor', keys=['gt_label']),
     dict(type='Collect', keys=['img', 'gt_label'])
