@@ -1,11 +1,12 @@
 _base_ = [
-    '../_base_/models/regnet/regnetx_800mf.py',
+    '../_base_/models/regnet/regnetx_400mf.py',
     '../_base_/datasets/imagenet_bs32.py',
     '../_base_/schedules/imagenet_bs1024_coslr.py',
     '../_base_/default_runtime.py'
 ]
 
-# precise BN hook
+# precise BN hook, since PreciseBNHook should execute before EvalHook,
+# so the priority set to be 'ABOVE_NORMAL'
 custom_hooks = [
     dict(
         type='PreciseBNHook',
@@ -14,7 +15,8 @@ custom_hooks = [
         priority='ABOVE_NORMAL')
 ]
 
-# sgd with nesterov
+# sgd with nesterov, base ls is 0.8 for batch_size 1024, 
+# 0.4 for batch_size 512 and 0.2 for batch_size 256  when training ImageNet1k
 optimizer = dict(lr=0.8, nesterov=True)
 
 # dataset settings
@@ -24,7 +26,7 @@ dataset_type = 'ImageNet'
 NORM_MEAN = [103.53, 116.28, 123.675]
 NORM_STD = [57.375, 57.12, 58.395]
 
-# lighting params, in order of RGB
+# lighting params, in order of RGB, from repo. pycls
 EIGVAL = [0.2175, 0.0188, 0.0045]
 EIGVEC = [[-0.5675, 0.7192, 0.4009], [-0.5808, -0.0045, -0.814],
           [-0.5836, -0.6948, 0.4203]]
@@ -37,9 +39,9 @@ train_pipeline = [
         type='Lighting',
         eigval=EIGVAL,
         eigvec=EIGVEC,
-        alphastd=25.5,
-        to_rgb=True),
-    dict(type='Normalize', mean=NORM_MEAN, std=NORM_STD, to_rgb=True),
+        alphastd=25.5,  # because the value range of images is [0,255]
+        to_rgb=True),   # BGR image from cv2 in LoadImageFromFile, convert to RGB here
+    dict(type='Normalize', mean=NORM_MEAN, std=NORM_STD, to_rgb=True), # RGB2BGR
     dict(type='ImageToTensor', keys=['img']),
     dict(type='ToTensor', keys=['gt_label']),
     dict(type='Collect', keys=['img', 'gt_label'])
@@ -70,4 +72,3 @@ data = dict(
         data_prefix='data/imagenet/val',
         ann_file='data/imagenet/meta/val.txt',
         pipeline=test_pipeline))
-evaluation = dict(interval=1, metric='accuracy')
