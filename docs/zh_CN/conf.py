@@ -17,7 +17,7 @@ import sys
 import pytorch_sphinx_theme
 from sphinx.builders.html import StandaloneHTMLBuilder
 
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('../..'))
 
 # -- Project information -----------------------------------------------------
 
@@ -26,7 +26,7 @@ copyright = '2020, OpenMMLab'
 author = 'MMClassification Authors'
 
 # The full version, including alpha/beta/rc tags
-version_file = '../mmcls/version.py'
+version_file = '../../mmcls/version.py'
 
 
 def get_version():
@@ -51,7 +51,7 @@ extensions = [
     'sphinx_copybutton',
 ]
 
-autodoc_mock_imports = ['mmcv._ext']
+autodoc_mock_imports = ['mmcv._ext', 'matplotlib']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -116,98 +116,10 @@ html_theme_options = {
                 },
             ]
         },
-        {
-            'name':
-            '文档',
-            'children': [
-                {
-                    'name': 'MMCV',
-                    'url': 'https://mmcv.readthedocs.io/zh_CN/latest/',
-                },
-                {
-                    'name': 'MIM',
-                    'url': 'https://openmim.readthedocs.io/en/latest/'
-                },
-                {
-                    'name': 'MMAction2',
-                    'url': 'https://mmaction2.readthedocs.io/zh_CN/latest/',
-                },
-                {
-                    'name': 'MMClassification',
-                    'url':
-                    'https://mmclassification.readthedocs.io/zh_CN/latest/',
-                },
-                {
-                    'name': 'MMDetection',
-                    'url': 'https://mmdetection.readthedocs.io/zh_CN/latest/',
-                },
-                {
-                    'name': 'MMDetection3D',
-                    'url':
-                    'https://mmdetection3d.readthedocs.io/zh_CN/latest/',
-                },
-                {
-                    'name': 'MMEditing',
-                    'url': 'https://mmediting.readthedocs.io/zh_CN/latest/',
-                },
-                {
-                    'name': 'MMGeneration',
-                    'url': 'https://mmgeneration.readthedocs.io/zh_CN/latest/',
-                },
-                {
-                    'name': 'MMOCR',
-                    'url': 'https://mmocr.readthedocs.io/zh_CN/latest/',
-                },
-                {
-                    'name': 'MMPose',
-                    'url': 'https://mmpose.readthedocs.io/zh_CN/latest/',
-                },
-                {
-                    'name': 'MMSegmentation',
-                    'url':
-                    'https://mmsegmentation.readthedocs.io/zh_CN/latest/',
-                },
-                {
-                    'name': 'MMTracking',
-                    'url': 'https://mmtracking.readthedocs.io/zh_CN/latest/',
-                },
-                {
-                    'name': 'MMFlow',
-                    'url': 'https://mmflow.readthedocs.io/en/latest/',
-                },
-                {
-                    'name': 'MMFewShot',
-                    'url': 'https://mmfewshot.readthedocs.io/zh_CN/latest/',
-                },
-                {
-                    'name': 'MMHuman3d',
-                    'url': 'https://mmhuman3d.readthedocs.io/en/latest/',
-                },
-            ]
-        },
-        {
-            'name':
-            'OpenMMLab',
-            'children': [
-                {
-                    'name': '官网',
-                    'url': 'https://openmmlab.com/'
-                },
-                {
-                    'name': 'GitHub',
-                    'url': 'https://github.com/open-mmlab/'
-                },
-                {
-                    'name': '推特',
-                    'url': 'https://twitter.com/OpenMMLab'
-                },
-                {
-                    'name': '知乎',
-                    'url': 'https://zhihu.com/people/openmmlab'
-                },
-            ]
-        },
-    ]
+    ],
+    # Specify the language of shared menu
+    'menu_lang':
+    'cn',
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,

@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 
 
-def accuracy_numpy(pred, target, topk=1, thrs=0.):
+def accuracy_numpy(pred, target, topk=(1, ), thrs=0.):
     if isinstance(thrs, Number):
         thrs = (thrs, )
         res_single = True
@@ -19,8 +19,14 @@ def accuracy_numpy(pred, target, topk=1, thrs=0.):
     res = []
     maxk = max(topk)
     num = pred.shape[0]
-    pred_label = pred.argsort(axis=1)[:, -maxk:][:, ::-1]
-    pred_score = np.sort(pred, axis=1)[:, -maxk:][:, ::-1]
+
+    static_inds = np.indices((num, maxk))[0]
+    pred_label = pred.argpartition(-maxk, axis=1)[:, -maxk:]
+    pred_score = pred[static_inds, pred_label]
+
+    sort_inds = np.argsort(pred_score, axis=1)[:, ::-1]
+    pred_label = pred_label[static_inds, sort_inds]
+    pred_score = pred_score[static_inds, sort_inds]
 
     for k in topk:
         correct_k = pred_label[:, :k] == target.reshape(-1, 1)
@@ -29,7 +35,7 @@ def accuracy_numpy(pred, target, topk=1, thrs=0.):
             # Only prediction values larger than thr are counted as correct
             _correct_k = correct_k & (pred_score[:, :k] > thr)
             _correct_k = np.logical_or.reduce(_correct_k, axis=1)
-            res_thr.append(_correct_k.sum() * 100. / num)
+            res_thr.append((_correct_k.sum() * 100. / num))
         if res_single:
             res.append(res_thr[0])
         else:
@@ -37,7 +43,7 @@ def accuracy_numpy(pred, target, topk=1, thrs=0.):
     return res
 
 
-def accuracy_torch(pred, target, topk=1, thrs=0.):
+def accuracy_torch(pred, target, topk=(1, ), thrs=0.):
     if isinstance(thrs, Number):
         thrs = (thrs, )
         res_single = True
@@ -59,7 +65,7 @@ def accuracy_torch(pred, target, topk=1, thrs=0.):
             # Only prediction values larger than thr are counted as correct
             _correct = correct & (pred_score.t() > thr)
             correct_k = _correct[:k].reshape(-1).float().sum(0, keepdim=True)
-            res_thr.append(correct_k.mul_(100. / num))
+            res_thr.append((correct_k.mul_(100. / num)))
         if res_single:
             res.append(res_thr[0])
         else:
@@ -80,11 +86,11 @@ def accuracy(pred, target, topk=1, thrs=0.):
             the thresholds are considered negative. Default to 0.
 
     Returns:
-        float | list[float] | list[list[float]]: Accuracy
-            - float: If both ``topk`` and ``thrs`` is a single value.
-            - list[float]: If one of ``topk`` or ``thrs`` is a tuple.
-            - list[list[float]]: If both ``topk`` and ``thrs`` is a tuple. \
-                And the first dim is ``topk``, the second dim is ``thrs``.
+        torch.Tensor | list[torch.Tensor] | list[list[torch.Tensor]]: Accuracy
+            - torch.Tensor: If both ``topk`` and ``thrs`` is a single value.
+            - list[torch.Tensor]: If one of ``topk`` or ``thrs`` is a tuple.
+            - list[list[torch.Tensor]]: If both ``topk`` and ``thrs`` is a \
+              tuple. And the first dim is ``topk``, the second dim is ``thrs``.
     """
     assert isinstance(topk, (int, tuple))
     if isinstance(topk, int):
@@ -93,14 +99,20 @@ def accuracy(pred, target, topk=1, thrs=0.):
     else:
         return_single = False
 
-    if isinstance(pred, torch.Tensor) and isinstance(target, torch.Tensor):
-        res = accuracy_torch(pred, target, topk, thrs)
-    elif isinstance(pred, np.ndarray) and isinstance(target, np.ndarray):
-        res = accuracy_numpy(pred, target, topk, thrs)
-    else:
-        raise TypeError(
-            f'pred and target should both be torch.Tensor or np.ndarray, '
-            f'but got {type(pred)} and {type(target)}.')
+    assert isinstance(pred, (torch.Tensor, np.ndarray)), \
+        f'The pred should be torch.Tensor or np.ndarray ' \
+        f'instead of {type(pred)}.'
+    assert isinstance(target, (torch.Tensor, np.ndarray)), \
+        f'The target should be torch.Tensor or np.ndarray ' \
+        f'instead of {type(target)}.'
+
+    # torch version is faster in most situations.
+    to_tensor = (lambda x: torch.from_numpy(x)
+                 if isinstance(x, np.ndarray) else x)
+    pred = to_tensor(pred)
+    target = to_tensor(target)
+
+    res = accuracy_torch(pred, target, topk, thrs)
 
     return res[0] if return_single else res
 
@@ -125,6 +137,6 @@ class Accuracy(nn.Module):
             target (torch.Tensor): Target for each prediction.
 
         Returns:
-            list[float]: The accuracies under different topk criterions.
+            list[torch.Tensor]: The accuracies under different topk criterions.
         """
         return accuracy(pred, target, self.topk)
