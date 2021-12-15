@@ -23,7 +23,7 @@ Transformers, which are popular for language modeling, have been explored for so
 
 ## Pretrain model
 
-The pre-trained modles are converted from [official repo](https://github.com/yitu-opensource/T2T-ViT/tree/main#2-t2t-vit-models).
+The pre-trained models are converted from [official repo](https://github.com/yitu-opensource/T2T-ViT/tree/main#2-t2t-vit-models).
 
 ### ImageNet-1k
 
