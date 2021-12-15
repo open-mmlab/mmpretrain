@@ -9,9 +9,9 @@ on:
       - 'README.md'
       - 'README_zh-CN.md'
       - 'model-index.yml'
+      - 'configs/**.md'
       - 'docs/**'
       - 'docs_zh-CN/**'
-      - 'configs/**.md'
       - 'demo/**'
       - '.dev_scripts/**'
 
@@ -20,11 +20,15 @@ on:
       - 'README.md'
       - 'README_zh-CN.md'
       - 'model-index.yml'
+      - 'configs/**.md'
       - 'docs/**'
       - 'docs_zh-CN/**'
-      - 'configs/**.md'
       - 'demo/**'
       - '.dev_scripts/**'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build_without_timm:
