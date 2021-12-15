@@ -24,8 +24,8 @@ Models:
     - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
-        Top 1 Accuracy: 72.41
-        Top 5 Accuracy: 90.50
+        Top 1 Accuracy: 72.56
+        Top 5 Accuracy: 90.78
     Weights: https://download.openmmlab.com/mmclassification/v0/regnet/regnetx-400mf_8xb128_in1k_20211213-89bfc226.pth
   - Name: regnetx-800mf_8xb128_in1k
     In Collection: RegNet
@@ -52,7 +52,7 @@ Models:
       Metrics:
         Top 1 Accuracy: 76.84
         Top 5 Accuracy: 93.31
-    Weights: https://download.openmmlab.com/mmclassification/v0/regnet/regnetx-1.6gf_128_in1k_20211213-d1b89758.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/regnet/regnetx-1.6gf_8xb128_in1k_20211213-d1b89758.pth
   - Name: regnetx-3.2gf_8xb64_in1k
     In Collection: RegNet
     Config: configs/regnet/regnetx-3.2gf_8xb64_in1k.py
@@ -115,6 +115,6 @@ Models:
     - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
-        Top 1 Accuracy: 79.22
-        Top 5 Accuracy: 94.61
+        Top 1 Accuracy: 79.67
+        Top 5 Accuracy: 95.03
     Weights: https://download.openmmlab.com/mmclassification/v0/regnet/regnetx-12gf_8xb64_in1k_20211213-5df8c2f8.pth
