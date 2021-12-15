@@ -85,7 +85,7 @@ def set_random_seed(seed, deterministic=False):
 
 def set_default_sampler_cfg(cfg, distributed):
     runner_type = cfg.get('runner').type.split('.')[-1]
-    if runner_type == 'EpochBasedRunner':
+    if runner_type in ('EpochBasedRunner', 'IterBasedRunner'):
         if distributed:
             sampler_cfg = dict(
                 type='DistributedSampler', shuffle=True, round_up=True)
