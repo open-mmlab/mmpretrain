@@ -89,15 +89,6 @@ class RegNet(ResNet):
             depth=16,
             bot_mul=1.0,
             se_cfg=dict(ratio=4)),
-        'regnety_600mf':
-        dict(
-            w0=48,
-            wa=32.54,
-            wm=2.32,
-            group_w=16,
-            depth=15,
-            bot_mul=1.0,
-            se_cfg=dict(ratio=4)),
         'regnety_800mf':
         dict(
             w0=56,

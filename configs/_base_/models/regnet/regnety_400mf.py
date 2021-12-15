@@ -11,7 +11,7 @@ model = dict(
         topk=(1, 5),
     ))
 '''
-for different regnety-xxx, the head should have different in_channels
+for different regnety-xxx, the heads should have different in_channels
 here are the map:
 
 regnety_400mf : 440
