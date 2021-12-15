@@ -10,8 +10,6 @@ from mmcv.runner import get_dist_info
 from mmcv.utils import Registry, build_from_cfg, digit_version
 from torch.utils.data import DataLoader
 
-from mmcls.datasets.samplers.builder import build_sampler
-
 if platform.system() != 'Windows':
     # https://github.com/pytorch/pytorch/issues/973
     import resource
@@ -22,6 +20,7 @@ if platform.system() != 'Windows':
 
 DATASETS = Registry('dataset')
 PIPELINES = Registry('pipeline')
+SAMPLERS = Registry('sampler')
 
 
 def build_dataset(cfg, default_args=None):
@@ -125,3 +124,10 @@ def worker_init_fn(worker_id, num_workers, rank, seed):
     worker_seed = num_workers * rank + worker_id + seed
     np.random.seed(worker_seed)
     random.seed(worker_seed)
+
+
+def build_sampler(cfg, default_args=None):
+    if cfg is None:
+        return None
+    else:
+        return build_from_cfg(cfg, SAMPLERS, default_args=default_args)

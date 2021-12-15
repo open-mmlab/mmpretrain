@@ -4,7 +4,7 @@ import torch
 import torch.distributed as dist
 from torch.utils.data import Sampler
 
-from mmcls.datasets.samplers import SAMPLERS
+from mmcls.datasets import SAMPLERS
 
 
 @SAMPLERS.register_module()
