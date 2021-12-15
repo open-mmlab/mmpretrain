@@ -12,7 +12,7 @@ url_prefix = 'https://github.com/open-mmlab/mmclassification/blob/master/'
 
 papers_root = Path('papers')
 papers_root.mkdir(exist_ok=True)
-files = [Path(f) for f in sorted(glob.glob('../configs/*/README.md'))]
+files = [Path(f) for f in sorted(glob.glob('../../configs/*/README.md'))]
 
 stats = []
 titles = []

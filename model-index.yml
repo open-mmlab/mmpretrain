@@ -14,3 +14,4 @@ Import:
   - configs/t2t_vit/metafile.yml
   - configs/mlp_mixer/metafile.yml
   - configs/conformer/metafile.yml
+  - configs/regnet/metafile.yml

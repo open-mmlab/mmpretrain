@@ -12,6 +12,7 @@ In this work, we present a new network design paradigm. Our goal is to help adva
 </div>
 
 ## Citation
+
 ```latex
 @article{radosavovic2020designing,
     title={Designing Network Design Spaces},
@@ -38,18 +39,19 @@ The pre-trained modles are converted from [model zoo of pycls](https://github.co
 | RegNetX-4.0GF         |   22.12   |   4.0    |   78.72   |   94.22   | [model](https://download.openmmlab.com/mmclassification/v0/regnet/convert/RegNetX-4.0GF-ef8bb32c.pth)|
 | RegNetX-6.4GF         |   26.21   |   6.51   |   79.22   |   94.61   | [model](https://download.openmmlab.com/mmclassification/v0/regnet/convert/RegNetX-6.4GF-6888c0ea.pth)|
 | RegNetX-8.0GF         |   39.57   |   8.03   |   79.31   |   94.57   | [model](https://download.openmmlab.com/mmclassification/v0/regnet/convert/RegNetX-8.0GF-cb4c77ec.pth)|
-| RegNetX-12GF          |   46.11   |   12.15  |   79.91   |   94.78   | [model](https://download.openmmlab.com/mmclassification/v0/regnet/convert/RegNetX-12GF-0574538f.pth)|
-| RegNetY-400MF         |   4.34    |    0.41  |   74.02   |   91.92   | [model](https://download.openmmlab.com/mmclassification/v0/regnety/convert/RegNetY-400MF_dds_8gpu-converted.pth)|
-| RegNetY-600MF         |   6.06    |    0.61  |   75.55   |   92.70   | [model](https://download.openmmlab.com/mmclassification/v0/regnety/convert/RegNetY-600MF_dds_8gpu-converted.pth)|
-| RegNetY-800MF         |   6.26    |    0.81  |   76.34   |   93.15   | [model](https://download.openmmlab.com/mmclassification/v0/regnety/convert/RegNetY-800MF_dds_8gpu-converted.pth)|
-| RegNetY-1.6GF         |   11.2    |   1.64   |   78.05   |   93.85   | [model](https://download.openmmlab.com/mmclassification/v0/regnety/convert/RegNetY-1.6GF_dds_8gpu-converted.pth)|
-| RegNetY-3.2GF         |   19.44   |   3.21   |   78.99   |   94.55   | [model](https://download.openmmlab.com/mmclassification/v0/regnety/convert/RegNetY-3.2GF_dds_8gpu-converted.pth)|
-| RegNetY-4.0GF         |   20.65   |   4.01   |   79.34   |   94.67   | [model](https://download.openmmlab.com/mmclassification/v0/regnety/convert/RegNetY-4.0GF_dds_8gpu-converted.pth)|
-| RegNetY-6.4GF         |   30.28   |   6.41   |   79.89   |   94.88   | [model](https://download.openmmlab.com/mmclassification/v0/regnety/convert/RegNetY-6.4GF_dds_8gpu-converted.pth)|
-| RegNetY-8.0GF         |   39.18   |   8.02   |   79.97   |   94.93   | [model](https://download.openmmlab.com/mmclassification/v0/regnety/convert/RegNetY-8.0GF_dds_8gpu-converted.pth)|
-| RegNetY-12GF          |   51.82   |   12.16  |   80.34   |   95.18   | [model](https://download.openmmlab.com/mmclassification/v0/regnety/convert/RegNetY-12GF_dds_8gpu-converted.pth)|
-
+| RegNetX-12GF          |   46.11   |   12.15  |   79.71   |   94.78   | [model](https://download.openmmlab.com/mmclassification/v0/regnet/convert/RegNetX-12GF-0574538f.pth)|
 
 ## Results and models
 
-Waiting for adding.
+### ImageNet-1k
+
+|         Model         | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |  Config  | Download |
+|:---------------------:|:---------:|:--------:|:---------:|:---------:|:--------:| :--------:|
+| RegNetX-400MF         |   5.16    |   0.41   |   72.56   |   90.78   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/regnet/regnetx-400mf_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/regnet/regnetx-400mf_8xb128_in1k_20211213-89bfc226.pth) &#124; [log](https://download.openmmlab.com/mmclassification/v0/regnet/regnetx-400mf_8xb128_in1k_20211208_143316.log.json) |
+| RegNetX-800MF         |   7.26    |   0.81   |   74.76   |   92.32   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/regnet/regnetx-800mf_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/regnet/regnetx-800mf_8xb128_in1k_20211213-222b0f11.pth) &#124; [log](https://download.openmmlab.com/mmclassification/v0/regnet/regnetx-800mf_8xb128_in1k_20211207_143037.log.json) |
+| RegNetX-1.6GF         |   9.19    |   1.63   |   76.84   |   93.31   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/regnet/regnetx-1.6gf_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/regnet/regnetx-1.6gf_8xb128_in1k_20211213-d1b89758.pth) &#124; [log](https://download.openmmlab.com/mmclassification/v0/regnet/regnetx-1.6gf_8xb128_in1k_20211208_143018.log.json) |
+| RegNetX-3.2GF         |   15.3    |   3.21   |   78.09   |   94.08   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/regnet/regnetx-3.2gf_8xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/regnet/regnetx-3.2gf_8xb64_in1k_20211213-1fdd82ae.pth)  &#124; [log](https://download.openmmlab.com/mmclassification/v0/regnet/regnetx-3.2gf_8xb64_in1k_20211208_142720.log.json) |
+| RegNetX-4.0GF         |   22.12   |   4.0    |   78.60   |   94.17   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/regnet/regnetx-4.0gf_8xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/regnet/regnetx-4.0gf_8xb64_in1k_20211213-efed675c.pth)  &#124; [log](https://download.openmmlab.com/mmclassification/v0/regnet/regnetx-4.0gf_8xb64_in1k_20211207_150431.log.json) |
+| RegNetX-6.4GF         |   26.21   |   6.51   |   79.38   |   94.65   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/regnet/regnetx-6.4gf_8xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/regnet/regnetx-6.4gf_8xb64_in1k_20211215-5c6089da.pth)  &#124; [log](https://download.openmmlab.com/mmclassification/v0/regnet/regnetx-6.4gf_8xb64_in1k_20211213_172748.log.json) |
+| RegNetX-8.0GF         |   39.57   |   8.03   |   79.12   |   94.51   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/regnet/regnetx-8.0gf_8xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/regnet/regnetx-8.0gf_8xb64_in1k_20211213-9a9fcc76.pth)  &#124; [log](https://download.openmmlab.com/mmclassification/v0/regnet/regnetx-8.0gf_8xb64_in1k_20211208_103250.log.json) |
+| RegNetX-12GF          |   46.11   |   12.15  |   79.67   |   95.03   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/regnet/regnetx-12gf_8xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/regnet/regnetx-12gf_8xb64_in1k_20211213-5df8c2f8.pth)  &#124; [log](https://download.openmmlab.com/mmclassification/v0/regnet/regnetx-12gf_8xb64_in1k_20211208_143713.log.json) |
