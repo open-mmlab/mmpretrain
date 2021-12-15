@@ -65,77 +65,21 @@ class RegNet(ResNet):
     """
     arch_settings = {
         'regnetx_400mf':
-        dict(
-            w0=24,
-            wa=24.48,
-            wm=2.54,
-            group_w=16,
-            depth=22,
-            bot_mul=1.0,
-            has_se=False),
+        dict(w0=24, wa=24.48, wm=2.54, group_w=16, depth=22, bot_mul=1.0),
         'regnetx_800mf':
-        dict(
-            w0=56,
-            wa=35.73,
-            wm=2.28,
-            group_w=16,
-            depth=16,
-            bot_mul=1.0,
-            has_se=False),
+        dict(w0=56, wa=35.73, wm=2.28, group_w=16, depth=16, bot_mul=1.0),
         'regnetx_1.6gf':
-        dict(
-            w0=80,
-            wa=34.01,
-            wm=2.25,
-            group_w=24,
-            depth=18,
-            bot_mul=1.0,
-            has_se=False),
+        dict(w0=80, wa=34.01, wm=2.25, group_w=24, depth=18, bot_mul=1.0),
         'regnetx_3.2gf':
-        dict(
-            w0=88,
-            wa=26.31,
-            wm=2.25,
-            group_w=48,
-            depth=25,
-            bot_mul=1.0,
-            has_se=False),
+        dict(w0=88, wa=26.31, wm=2.25, group_w=48, depth=25, bot_mul=1.0),
         'regnetx_4.0gf':
-        dict(
-            w0=96,
-            wa=38.65,
-            wm=2.43,
-            group_w=40,
-            depth=23,
-            bot_mul=1.0,
-            has_se=False),
+        dict(w0=96, wa=38.65, wm=2.43, group_w=40, depth=23, bot_mul=1.0),
         'regnetx_6.4gf':
-        dict(
-            w0=184,
-            wa=60.83,
-            wm=2.07,
-            group_w=56,
-            depth=17,
-            bot_mul=1.0,
-            has_se=False),
+        dict(w0=184, wa=60.83, wm=2.07, group_w=56, depth=17, bot_mul=1.0),
         'regnetx_8.0gf':
-        dict(
-            w0=80,
-            wa=49.56,
-            wm=2.88,
-            group_w=120,
-            depth=23,
-            bot_mul=1.0,
-            has_se=False),
+        dict(w0=80, wa=49.56, wm=2.88, group_w=120, depth=23, bot_mul=1.0),
         'regnetx_12gf':
-        dict(
-            w0=168,
-            wa=73.36,
-            wm=2.37,
-            group_w=112,
-            depth=19,
-            bot_mul=1.0,
-            has_se=False),
+        dict(w0=168, wa=73.36, wm=2.37, group_w=112, depth=19, bot_mul=1.0),
         'regnety_400mf':
         dict(
             w0=48,
@@ -144,7 +88,7 @@ class RegNet(ResNet):
             group_w=8,
             depth=16,
             bot_mul=1.0,
-            has_se=True),
+            se_cfg=dict(ratio=4)),
         'regnety_600mf':
         dict(
             w0=48,
@@ -153,7 +97,7 @@ class RegNet(ResNet):
             group_w=16,
             depth=15,
             bot_mul=1.0,
-            has_se=True),
+            se_cfg=dict(ratio=4)),
         'regnety_800mf':
         dict(
             w0=56,
@@ -162,7 +106,7 @@ class RegNet(ResNet):
             group_w=16,
             depth=14,
             bot_mul=1.0,
-            has_se=True),
+            se_cfg=dict(ratio=4)),
         'regnety_1.6gf':
         dict(
             w0=48,
@@ -171,7 +115,7 @@ class RegNet(ResNet):
             group_w=24,
             depth=27,
             bot_mul=1.0,
-            has_se=True),
+            se_cfg=dict(ratio=4)),
         'regnety_3.2gf':
         dict(
             w0=80,
@@ -180,7 +124,7 @@ class RegNet(ResNet):
             group_w=24,
             depth=21,
             bot_mul=1.0,
-            has_se=True),
+            se_cfg=dict(ratio=4)),
         'regnety_4.0gf':
         dict(
             w0=96,
@@ -189,7 +133,7 @@ class RegNet(ResNet):
             group_w=64,
             depth=22,
             bot_mul=1.0,
-            has_se=True),
+            se_cfg=dict(ratio=4)),
         'regnety_6.4gf':
         dict(
             w0=112,
@@ -198,7 +142,7 @@ class RegNet(ResNet):
             group_w=72,
             depth=25,
             bot_mul=1.0,
-            has_se=True),
+            se_cfg=dict(ratio=4)),
         'regnety_8.0gf':
         dict(
             w0=192,
@@ -207,7 +151,7 @@ class RegNet(ResNet):
             group_w=56,
             depth=17,
             bot_mul=1.0,
-            has_se=True),
+            se_cfg=dict(ratio=4)),
         'regnety_12gf':
         dict(
             w0=168,
@@ -216,7 +160,7 @@ class RegNet(ResNet):
             group_w=112,
             depth=19,
             bot_mul=1.0,
-            has_se=True),
+            se_cfg=dict(ratio=4)),
     }
 
     def __init__(self,
@@ -301,7 +245,6 @@ class RegNet(ResNet):
             group_width = self.group_widths[i]
             width = int(round(self.stage_widths[i] * self.bottleneck_ratio[i]))
             stage_groups = width // group_width
-
             res_layer = self.make_res_layer(
                 block=Bottleneck,
                 num_blocks=num_blocks,
@@ -318,7 +261,7 @@ class RegNet(ResNet):
                 base_channels=self.stage_widths[i],
                 groups=stage_groups,
                 width_per_group=group_width,
-                has_se=arch['has_se'])
+                se_cfg=arch.get('se_cfg', dict()))
             _in_channels = self.stage_widths[i]
             layer_name = f'layer{i + 1}'
             self.add_module(layer_name, res_layer)

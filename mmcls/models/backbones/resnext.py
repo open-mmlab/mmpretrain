@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import torch.utils.checkpoint as cp
 from mmcv.cnn import build_conv_layer, build_norm_layer
 
 from ..builder import BACKBONES
@@ -38,11 +39,12 @@ class Bottleneck(_Bottleneck):
                  base_channels=64,
                  groups=32,
                  width_per_group=4,
-                 has_se=False,
+                 se_cfg=dict(),
                  **kwargs):
         super(Bottleneck, self).__init__(in_channels, out_channels, **kwargs)
         self.groups = groups
         self.width_per_group = width_per_group
+        self.with_se = True if se_cfg else False
 
         # For ResNet bottleneck, middle channels are determined by expansion
         # and out_channels, but for ResNeXt bottleneck, it is determined by
@@ -80,14 +82,12 @@ class Bottleneck(_Bottleneck):
             bias=False)
         self.add_module(self.norm2_name, norm2)
 
-        if has_se:
+        if se_cfg:
+            squeeze_channels = in_channels // se_cfg['ratio']
             self.se = SELayer(
                 self.mid_channels,
-                ratio=4,
-                base_channels=in_channels,
+                squeeze_channels=squeeze_channels,
                 bias=True)
-        else:
-            self.se = None
 
         self.conv3 = build_conv_layer(
             self.conv_cfg,
@@ -110,7 +110,7 @@ class Bottleneck(_Bottleneck):
             out = self.norm2(out)
             out = self.relu(out)
 
-            if self.se is not None:
+            if self.with_se:
                 out = self.se(out)
 
             out = self.conv3(out)

@@ -40,7 +40,6 @@ class SELayer(BaseModule):
                  divisor=8,
                  bias='auto',
                  conv_cfg=None,
-                 base_channels=None,
                  act_cfg=(dict(type='ReLU'), dict(type='Sigmoid')),
                  init_cfg=None):
         super(SELayer, self).__init__(init_cfg)
