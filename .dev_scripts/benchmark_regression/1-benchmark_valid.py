@@ -9,6 +9,7 @@ import numpy as np
 import torch
 from mmcv import Config
 from mmcv.parallel import collate, scatter
+from modelindex.load_model_index import load
 from rich.console import Console
 from rich.table import Table
 
@@ -69,6 +70,12 @@ def parse_args():
         action='store_true',
         help='Test inference time by run 10 times for each model.')
     parser.add_argument(
+        '--flops', action='store_true', help='Get Flops and Params of models')
+    parser.add_argument(
+        '--flops-str',
+        action='store_true',
+        help='Output FLOPs and params counts in a string form.')
+    parser.add_argument(
         '--device', default='cuda:0', help='Device used for inference')
     args = parser.parse_args()
     return args
@@ -119,15 +126,34 @@ def inference(config_file, checkpoint, classes, args):
 
     result['model'] = config_file.stem
 
+    if args.flops:
+        from mmcv.cnn.utils import get_model_complexity_info
+        if hasattr(model, 'extract_feat'):
+            model.forward = model.extract_feat
+            flops, params = get_model_complexity_info(
+                model,
+                input_shape=(3, ) + resolution,
+                print_per_layer_stat=False,
+                as_strings=args.flops_str)
+            result['flops'] = flops if args.flops_str else int(flops)
+            result['params'] = params if args.flops_str else int(params)
+        else:
+            result['flops'] = ''
+            result['params'] = ''
+
     return result
 
 
-def show_summary(summary_data):
+def show_summary(summary_data, args):
     table = Table(title='Validation Benchmark Regression Summary')
     table.add_column('Model')
     table.add_column('Validation')
     table.add_column('Resolution (h, w)')
-    table.add_column('Inference Time (std) (ms/im)')
+    if args.inference_time:
+        table.add_column('Inference Time (std) (ms/im)')
+    if args.flops:
+        table.add_column('Flops', justify='right')
+        table.add_column('Params', justify='right')
 
     for model_name, summary in summary_data.items():
         row = [model_name]
@@ -136,10 +162,13 @@ def show_summary(summary_data):
         row.append(f'[{color}]{valid}[/{color}]')
         if valid == 'PASS':
             row.append(str(summary['resolution']))
-            if 'time_mean' in summary:
+            if args.inference_time:
                 time_mean = f"{summary['time_mean']:.2f}"
                 time_std = f"{summary['time_std']:.2f}"
                 row.append(f'{time_mean}\t({time_std})'.expandtabs(8))
+            if args.flops:
+                row.append(str(summary['flops']))
+                row.append(str(summary['params']))
         table.add_row(*row)
 
     console.print(table)
@@ -148,11 +177,9 @@ def show_summary(summary_data):
 # Sample test whether the inference code is correct
 def main(args):
     model_index_file = MMCLS_ROOT / 'model-index.yml'
-    model_index = Config.fromfile(model_index_file)
-    models = OrderedDict()
-    for file in model_index.Import:
-        metafile = Config.fromfile(MMCLS_ROOT / file)
-        models.update({model.Name: model for model in metafile.Models})
+    model_index = load(str(model_index_file))
+    model_index.build_models_with_collections()
+    models = OrderedDict({model.name: model for model in model_index.models})
 
     logger = get_root_logger(
         log_file='benchmark_test_image.log', log_level=logging.INFO)
@@ -172,17 +199,33 @@ def main(args):
     summary_data = {}
     for model_name, model_info in models.items():
 
-        config = Path(model_info.Config)
+        config = Path(model_info.config)
         assert config.exists(), f'{model_name}: {config} not found.'
 
         logger.info(f'Processing: {model_name}')
 
         http_prefix = 'https://download.openmmlab.com/mmclassification/'
-        dataset = model_info.Results[0]['Dataset']
+        dataset = model_info.results[0].dataset
         if args.checkpoint_root is not None:
-            root = Path(args.checkpoint_root)
-            checkpoint = root / model_info.Weights[len(http_prefix):]
-            checkpoint = str(checkpoint)
+            root = args.checkpoint_root
+            if 's3://' in args.checkpoint_root:
+                from mmcv.fileio import FileClient
+                from petrel_client.common.exception import AccessDeniedError
+                file_client = FileClient.infer_client(uri=root)
+                checkpoint = file_client.join_path(
+                    root, model_info.weights[len(http_prefix):])
+                try:
+                    exists = file_client.exists(checkpoint)
+                except AccessDeniedError:
+                    exists = False
+            else:
+                checkpoint = Path(root) / model_info.weights[len(http_prefix):]
+                exists = checkpoint.exists()
+            if exists:
+                checkpoint = str(checkpoint)
+            else:
+                print(f'WARNING: {model_name}: {checkpoint} not found.')
+                checkpoint = None
         else:
             checkpoint = None
 
@@ -200,7 +243,7 @@ def main(args):
         if args.show:
             imshow_infos(args.img, result, wait_time=args.wait_time)
 
-    show_summary(summary_data)
+    show_summary(summary_data, args)
 
 
 if __name__ == '__main__':
