@@ -4,9 +4,10 @@ from unittest.mock import patch
 import pytest
 import torch
 
-from mmcls.models.heads import (ClsHead, ConformerHead, LinearClsHead,
-                                MultiLabelClsHead, MultiLabelLinearClsHead,
-                                StackedLinearClsHead, VisionTransformerClsHead)
+from mmcls.models.heads import (ClsHead, ConformerHead, DeiTClsHead,
+                                LinearClsHead, MultiLabelClsHead,
+                                MultiLabelLinearClsHead, StackedLinearClsHead,
+                                VisionTransformerClsHead)
 
 
 @pytest.mark.parametrize('feat', [torch.rand(4, 10), (torch.rand(4, 10), )])
@@ -266,3 +267,53 @@ def test_conformer_head():
     # test pre_logits
     features = head.pre_logits(fake_features)
     assert features is fake_features[0]
+
+
+def test_deit_head():
+    fake_features = ([
+        torch.rand(4, 7, 7, 16),
+        torch.rand(4, 100),
+        torch.rand(4, 100)
+    ], )
+    fake_gt_label = torch.randint(0, 10, (4, ))
+
+    # test deit head forward
+    head = DeiTClsHead(num_classes=10, in_channels=100)
+    losses = head.forward_train(fake_features, fake_gt_label)
+    assert not hasattr(head.layers, 'pre_logits')
+    assert not hasattr(head.layers, 'act')
+    assert losses['loss'].item() > 0
+
+    # test deit head forward with hidden layer
+    head = DeiTClsHead(num_classes=10, in_channels=100, hidden_dim=20)
+    losses = head.forward_train(fake_features, fake_gt_label)
+    assert hasattr(head.layers, 'pre_logits') and hasattr(head.layers, 'act')
+    assert losses['loss'].item() > 0
+
+    # test deit head init_weights
+    head = DeiTClsHead(10, 100, hidden_dim=20)
+    head.init_weights()
+    assert abs(head.layers.pre_logits.weight).sum() > 0
+
+    head = DeiTClsHead(10, 100, hidden_dim=20)
+    # test simple_test with post_process
+    pred = head.simple_test(fake_features)
+    assert isinstance(pred, list) and len(pred) == 4
+    with patch('torch.onnx.is_in_onnx_export', return_value=True):
+        pred = head.simple_test(fake_features)
+        assert pred.shape == (4, 10)
+
+    # test simple_test without post_process
+    pred = head.simple_test(fake_features, post_process=False)
+    assert isinstance(pred, torch.Tensor) and pred.shape == (4, 10)
+    logits = head.simple_test(fake_features, softmax=False, post_process=False)
+    torch.testing.assert_allclose(pred, torch.softmax(logits, dim=1))
+
+    # test pre_logits
+    cls_token, dist_token = head.pre_logits(fake_features)
+    assert cls_token.shape == (4, 20)
+    assert dist_token.shape == (4, 20)
+
+    # test assertion
+    with pytest.raises(ValueError):
+        DeiTClsHead(-1, 100)

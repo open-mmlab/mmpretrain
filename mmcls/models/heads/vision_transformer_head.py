@@ -1,12 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
-from collections import OrderedDict
 
 import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import build_activation_layer
 from mmcv.cnn.utils.weight_init import trunc_normal_
-from mmcv.runner import Sequential
+from mmcv.runner import ModuleDict
 
 from ..builder import HEADS
 from .cls_head import ClsHead
@@ -49,19 +48,19 @@ class VisionTransformerClsHead(ClsHead):
 
     def _init_layers(self):
         if self.hidden_dim is None:
-            layers = [('head', nn.Linear(self.in_channels, self.num_classes))]
+            layers = {'head': nn.Linear(self.in_channels, self.num_classes)}
         else:
-            layers = [
-                ('pre_logits', nn.Linear(self.in_channels, self.hidden_dim)),
-                ('act', build_activation_layer(self.act_cfg)),
-                ('head', nn.Linear(self.hidden_dim, self.num_classes)),
-            ]
-        self.layers = Sequential(OrderedDict(layers))
+            layers = {
+                'pre_logits': nn.Linear(self.in_channels, self.hidden_dim),
+                'act': build_activation_layer(self.act_cfg),
+                'head': nn.Linear(self.hidden_dim, self.num_classes),
+            }
+        self.layers = ModuleDict(layers)
 
     def init_weights(self):
         super(VisionTransformerClsHead, self).init_weights()
         # Modified from ClassyVision
-        if hasattr(self.layers, 'pre_logits'):
+        if 'pre_logits' in self.layers:
             # Lecun norm
             trunc_normal_(
                 self.layers.pre_logits.weight,
@@ -77,14 +76,10 @@ class VisionTransformerClsHead(ClsHead):
             x = self.layers.pre_logits(cls_token)
             return self.layers.act(x)
 
-    @property
-    def fc(self):
-        return self.layers.head
-
     def simple_test(self, x, softmax=True, post_process=True):
         """Test without augmentation."""
         x = self.pre_logits(x)
-        cls_score = self.fc(x)
+        cls_score = self.layers.head(x)
         if isinstance(cls_score, list):
             cls_score = sum(cls_score) / float(len(cls_score))
 
@@ -101,6 +96,6 @@ class VisionTransformerClsHead(ClsHead):
 
     def forward_train(self, x, gt_label, **kwargs):
         x = self.pre_logits(x)
-        cls_score = self.fc(x)
+        cls_score = self.layers.head(x)
         losses = self.loss(cls_score, gt_label, **kwargs)
         return losses
