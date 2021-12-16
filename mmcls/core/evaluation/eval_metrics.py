@@ -3,6 +3,7 @@ from numbers import Number
 
 import numpy as np
 import torch
+from torch.nn.functional import one_hot
 
 
 def calculate_confusion_matrix(pred, target):
@@ -27,16 +28,17 @@ def calculate_confusion_matrix(pred, target):
         (f'pred and target should be torch.Tensor or np.ndarray, '
          f'but got {type(pred)} and {type(target)}.')
 
+    # Modified from PyTorch-Ignite
     num_classes = pred.size(1)
-    _, pred_label = pred.topk(1, dim=1)
-    pred_label = pred_label.view(-1)
-    target_label = target.view(-1)
+    pred_label = torch.argmax(pred, dim=1).flatten()
+    target_label = target.flatten()
     assert len(pred_label) == len(target_label)
-    confusion_matrix = torch.zeros(num_classes, num_classes)
+
     with torch.no_grad():
-        for t, p in zip(target_label, pred_label):
-            confusion_matrix[t.long(), p.long()] += 1
-    return confusion_matrix
+        indices = num_classes * target_label + pred_label
+        matrix = torch.bincount(indices, minlength=num_classes**2)
+        matrix = matrix.reshape(num_classes, num_classes)
+    return matrix
 
 
 def precision_recall_f1(pred, target, average_mode='macro', thrs=0.):
@@ -73,13 +75,15 @@ def precision_recall_f1(pred, target, average_mode='macro', thrs=0.):
     if average_mode not in allowed_average_mode:
         raise ValueError(f'Unsupport type of averaging {average_mode}.')
 
-    if isinstance(pred, torch.Tensor):
-        pred = pred.numpy()
-    if isinstance(target, torch.Tensor):
-        target = target.numpy()
-    assert (isinstance(pred, np.ndarray) and isinstance(target, np.ndarray)),\
-        (f'pred and target should be torch.Tensor or np.ndarray, '
-         f'but got {type(pred)} and {type(target)}.')
+    if isinstance(pred, np.ndarray):
+        pred = torch.from_numpy(pred)
+    assert isinstance(pred, torch.Tensor), \
+        (f'pred should be torch.Tensor or np.ndarray, but got {type(pred)}.')
+    if isinstance(target, np.ndarray):
+        target = torch.from_numpy(target)
+    assert isinstance(target, torch.Tensor), \
+        f'target should be torch.Tensor or np.ndarray, ' \
+        f'but got {type(target)}.'
 
     if isinstance(thrs, Number):
         thrs = (thrs, )
@@ -90,30 +94,37 @@ def precision_recall_f1(pred, target, average_mode='macro', thrs=0.):
         raise TypeError(
             f'thrs should be a number or tuple, but got {type(thrs)}.')
 
-    label = np.indices(pred.shape)[1]
-    pred_label = np.argsort(pred, axis=1)[:, -1]
-    pred_score = np.sort(pred, axis=1)[:, -1]
+    num_classes = pred.size(1)
+    pred_score, pred_label = torch.topk(pred, k=1)
+    pred_score = pred_score.flatten()
+    pred_label = pred_label.flatten()
+
+    gt_positive = one_hot(target.flatten(), num_classes)
 
     precisions = []
     recalls = []
     f1_scores = []
     for thr in thrs:
         # Only prediction values larger than thr are counted as positive
-        _pred_label = pred_label.copy()
+        pred_positive = one_hot(pred_label, num_classes)
         if thr is not None:
-            _pred_label[pred_score <= thr] = -1
-        pred_positive = label == _pred_label.reshape(-1, 1)
-        gt_positive = label == target.reshape(-1, 1)
-        precision = (pred_positive & gt_positive).sum(0) / np.maximum(
-            pred_positive.sum(0), 1) * 100
-        recall = (pred_positive & gt_positive).sum(0) / np.maximum(
-            gt_positive.sum(0), 1) * 100
-        f1_score = 2 * precision * recall / np.maximum(precision + recall,
-                                                       1e-20)
+            pred_positive[pred_score <= thr] = 0
+        class_correct = (pred_positive & gt_positive).sum(0)
+        precision = class_correct / np.maximum(pred_positive.sum(0), 1.) * 100
+        recall = class_correct / np.maximum(gt_positive.sum(0), 1.) * 100
+        f1_score = 2 * precision * recall / np.maximum(
+            precision + recall,
+            torch.finfo(torch.float32).eps)
         if average_mode == 'macro':
             precision = float(precision.mean())
             recall = float(recall.mean())
             f1_score = float(f1_score.mean())
+        elif average_mode == 'none':
+            precision = precision.detach().cpu().numpy()
+            recall = recall.detach().cpu().numpy()
+            f1_score = f1_score.detach().cpu().numpy()
+        else:
+            raise ValueError(f'Unsupport type of averaging {average_mode}.')
         precisions.append(precision)
         recalls.append(recall)
         f1_scores.append(f1_score)

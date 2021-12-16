@@ -7,7 +7,7 @@ from datetime import datetime
 from pathlib import Path
 from zipfile import ZipFile
 
-from mmcv import Config
+from modelindex.load_model_index import load
 from rich.console import Console
 from rich.syntax import Syntax
 from rich.table import Table
@@ -70,13 +70,13 @@ def parse_args():
 
 def create_train_job_batch(commands, model_info, args, port, script_name):
 
-    fname = model_info.Name
+    fname = model_info.name
 
-    assert 'Gpus' in model_info, \
+    assert 'Gpus' in model_info.data, \
         f"Haven't specify gpu numbers for {fname}"
-    gpus = model_info.Gpus
+    gpus = model_info.data['Gpus']
 
-    config = Path(model_info.Config)
+    config = Path(model_info.config)
     assert config.exists(), f'"{fname}": {config} not found.'
 
     job_name = f'{args.job_name}_{fname}'
@@ -125,8 +125,9 @@ def create_train_job_batch(commands, model_info, args, port, script_name):
 
 
 def train(args):
-    models_cfg = Config.fromfile(Path(__file__).parent / 'bench_train.yml')
-    models = {model.Name: model for model in models_cfg.Models}
+    models_cfg = load(str(Path(__file__).parent / 'bench_train.yml'))
+    models_cfg.build_models_with_collections()
+    models = {model.name: model for model in models_cfg.models}
 
     script_name = osp.join('tools', 'train.py')
     port = args.port
@@ -145,7 +146,7 @@ def train(args):
         models = filter_models
 
     for model_info in models.values():
-        months = model_info.get('Months', range(1, 13))
+        months = model_info.data.get('Months', range(1, 13))
         if datetime.now().month in months:
             script_path = create_train_job_batch(commands, model_info, args,
                                                  port, script_name)
@@ -210,7 +211,7 @@ def save_summary(summary_data, models_map, work_dir):
             row.extend([''] * 2)
 
         model_info = models_map[model_name]
-        row.append(model_info.Config)
+        row.append(model_info.config)
         row.append(str(summary['log_file'].relative_to(work_dir)))
         zip_file.write(summary['log_file'])
         file.write('| ' + ' | '.join(row) + ' |\n')
@@ -258,8 +259,8 @@ def show_summary(summary_data):
 
 
 def summary(args):
-    models_cfg = Config.fromfile(Path(__file__).parent / 'bench_train.yml')
-    models = {model.Name: model for model in models_cfg.Models}
+    models_cfg = load(str(Path(__file__).parent / 'bench_train.yml'))
+    models = {model.name: model for model in models_cfg.models}
 
     work_dir = Path(args.work_dir)
     dir_map = {p.name: p for p in work_dir.iterdir() if p.is_dir()}
@@ -300,7 +301,7 @@ def summary(args):
         if len(val_logs) == 0:
             continue
 
-        expect_metrics = model_info.Results[0].Metrics
+        expect_metrics = model_info.results[0].metrics
 
         # extract metrics
         summary = {'log_file': log_file}

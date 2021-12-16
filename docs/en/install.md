@@ -118,8 +118,8 @@ number).
 We provide a [Dockerfile](https://github.com/open-mmlab/mmclassification/blob/master/docker/Dockerfile) to build an image.
 
 ```shell
-# build an image with PyTorch 1.6.0, CUDA 10.1, CUDNN 7.
-docker build -f ./docker/Dockerfile --rm -t mmcls:torch1.6.0-cuda10.1-cudnn7 .
+# build an image with PyTorch 1.8.1, CUDA 10.2, CUDNN 7 and MMCV-full latest version released.
+docker build -f ./docker/Dockerfile --rm -t mmcls:latest .
 ```
 
 ```{important}
@@ -129,7 +129,7 @@ Make sure you've installed the [nvidia-container-toolkit](https://docs.nvidia.co
 Run a container built from mmcls image with command:
 
 ```shell
-docker run --gpus all --shm-size=8g -it -v {DATA_DIR}:/workspace/mmclassification/data mmcls:torch1.6.0-cuda10.1-cudnn7 /bin/bash
+docker run --gpus all --shm-size=8g -it -v {DATA_DIR}:/workspace/mmclassification/data mmcls:latest /bin/bash
 ```
 
 ## Using multiple MMClassification versions
