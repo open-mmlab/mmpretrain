@@ -3,6 +3,7 @@ import copy
 import warnings
 
 from ..builder import CLASSIFIERS, build_backbone, build_head, build_neck
+from ..heads import MultiLabelClsHead
 from ..utils.augment import Augments
 from .base import BaseClassifier
 
@@ -139,6 +140,10 @@ class ImageClassifier(BaseClassifier):
         x = self.extract_feat(img)
 
         try:
+            if isinstance(self.head, MultiLabelClsHead):
+                assert 'softmax' not in kwargs, (
+                    'Please use `sigmoid` instead of `softmax` '
+                    'in multi-label tasks.')
             res = self.head.simple_test(x, **kwargs)
         except TypeError as e:
             if 'not tuple' in str(e) and self.return_tuple:

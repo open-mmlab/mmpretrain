@@ -2,6 +2,7 @@
 import warnings
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
+from typing import Sequence
 
 import mmcv
 import torch
@@ -39,7 +40,7 @@ class BaseClassifier(BaseModule, metaclass=ABCMeta):
         pass
 
     def extract_feats(self, imgs, stage=None):
-        assert isinstance(imgs, list)
+        assert isinstance(imgs, Sequence)
         kwargs = {} if stage is None else {'stage': stage}
         for img in imgs:
             yield self.extract_feat(img, **kwargs)
