@@ -13,11 +13,10 @@ class DeiTClsHead(VisionTransformerClsHead):
     def __init__(self, *args, **kwargs):
         super(DeiTClsHead, self).__init__(*args, **kwargs)
         if self.hidden_dim is None:
-            self.layers['head_dist'] = nn.Linear(self.in_channels,
-                                                 self.num_classes)
+            head_dist = nn.Linear(self.in_channels, self.num_classes)
         else:
-            self.layers['head_dist'] = nn.Linear(self.hidden_dim,
-                                                 self.num_classes)
+            head_dist = nn.Linear(self.hidden_dim, self.num_classes)
+        self.layers.add_module('head_dist', head_dist)
 
     def pre_logits(self, x):
         x = x[-1]

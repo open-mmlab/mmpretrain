@@ -1,11 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
+from collections import OrderedDict
 
 import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import build_activation_layer
 from mmcv.cnn.utils.weight_init import trunc_normal_
-from mmcv.runner import ModuleDict
+from mmcv.runner import Sequential
 
 from ..builder import HEADS
 from .cls_head import ClsHead
@@ -48,19 +49,19 @@ class VisionTransformerClsHead(ClsHead):
 
     def _init_layers(self):
         if self.hidden_dim is None:
-            layers = {'head': nn.Linear(self.in_channels, self.num_classes)}
+            layers = [('head', nn.Linear(self.in_channels, self.num_classes))]
         else:
-            layers = {
-                'pre_logits': nn.Linear(self.in_channels, self.hidden_dim),
-                'act': build_activation_layer(self.act_cfg),
-                'head': nn.Linear(self.hidden_dim, self.num_classes),
-            }
-        self.layers = ModuleDict(layers)
+            layers = [
+                ('pre_logits', nn.Linear(self.in_channels, self.hidden_dim)),
+                ('act', build_activation_layer(self.act_cfg)),
+                ('head', nn.Linear(self.hidden_dim, self.num_classes)),
+            ]
+        self.layers = Sequential(OrderedDict(layers))
 
     def init_weights(self):
         super(VisionTransformerClsHead, self).init_weights()
         # Modified from ClassyVision
-        if 'pre_logits' in self.layers:
+        if hasattr(self.layers, 'pre_logits'):
             # Lecun norm
             trunc_normal_(
                 self.layers.pre_logits.weight,
