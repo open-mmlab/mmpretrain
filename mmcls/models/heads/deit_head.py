@@ -19,8 +19,8 @@ class DeiTClsHead(VisionTransformerClsHead):
         self.layers.add_module('head_dist', head_dist)
 
     def pre_logits(self, x):
-        x = x[-1]
-        assert isinstance(x, list) and len(x) == 3
+        if isinstance(x, tuple):
+            x = x[-1]
         _, cls_token, dist_token = x
 
         if self.hidden_dim is None:
@@ -31,7 +31,27 @@ class DeiTClsHead(VisionTransformerClsHead):
             return cls_token, dist_token
 
     def simple_test(self, x, softmax=True, post_process=True):
-        """Test without augmentation."""
+        """Inference without augmentation.
+
+        Args:
+            x (tuple[tuple[tensor, tensor, tensor]]): The input features.
+                Multi-stage inputs are acceptable but only the last stage will
+                be used to classify. Every item should be a tuple which
+                includes patch token, cls token and dist token. The cls token
+                and dist token will be used to classify and the shape of them
+                should be ``(num_samples, in_channels)``.
+            softmax (bool): Whether to softmax the classification score.
+            post_process (bool): Whether to do post processing the
+                inference results. It will convert the output to a list.
+
+        Returns:
+            Tensor | list: The inference results.
+
+                - If no post processing, the output is a tensor with shape
+                  ``(num_samples, num_classes)``.
+                - If post processing, the output is a multi-dimentional list of
+                  float and the dimensions are ``(num_samples, num_classes)``.
+        """
         cls_token, dist_token = self.pre_logits(x)
         cls_score = (self.layers.head(cls_token) +
                      self.layers.head_dist(dist_token)) / 2

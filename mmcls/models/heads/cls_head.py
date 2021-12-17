@@ -75,11 +75,27 @@ class ClsHead(BaseHead):
         return x
 
     def simple_test(self, cls_score, softmax=True, post_process=True):
-        """Test without augmentation."""
+        """Inference without augmentation.
+
+        Args:
+            cls_score (tuple[Tensor]): The input classification score logits.
+                Multi-stage inputs are acceptable but only the last stage will
+                be used to classify. The shape of every item should be
+                ``(num_samples, num_classes)``.
+            softmax (bool): Whether to softmax the classification score.
+            post_process (bool): Whether to do post processing the
+                inference results. It will convert the output to a list.
+
+        Returns:
+            Tensor | list: The inference results.
+
+                - If no post processing, the output is a tensor with shape
+                  ``(num_samples, num_classes)``.
+                - If post processing, the output is a multi-dimentional list of
+                  float and the dimensions are ``(num_samples, num_classes)``.
+        """
         if isinstance(cls_score, tuple):
             cls_score = cls_score[-1]
-        if isinstance(cls_score, list):
-            cls_score = sum(cls_score) / float(len(cls_score))
 
         if softmax:
             pred = (
