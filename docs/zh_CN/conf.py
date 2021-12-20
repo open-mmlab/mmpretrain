@@ -103,7 +103,7 @@ html_theme_options = {
                     '用命令行工具训练和推理',
                     'url':
                     'https://colab.research.google.com/github/'
-                    'open-mmlab/mmclassification/blob/master/docs_zh-CN/'
+                    'open-mmlab/mmclassification/blob/master/docs/zh_CN/'
                     'tutorials/MMClassification_tools_cn.ipynb',
                 },
                 {
@@ -111,7 +111,7 @@ html_theme_options = {
                     '用 Python API 训练和推理',
                     'url':
                     'https://colab.research.google.com/github/'
-                    'open-mmlab/mmclassification/blob/master/docs_zh-CN/'
+                    'open-mmlab/mmclassification/blob/master/docs/zh_CN/'
                     'tutorials/MMClassification_python_cn.ipynb',
                 },
             ]

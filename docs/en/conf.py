@@ -103,16 +103,16 @@ html_theme_options = {
                     'Train and inference with shell commands',
                     'url':
                     'https://colab.research.google.com/github/'
-                    'open-mmlab/mmclassification/blob/master/docs/tutorials/'
-                    'MMClassification_tools.ipynb',
+                    'open-mmlab/mmclassification/blob/master/docs/en/'
+                    'tutorials/MMClassification_tools.ipynb',
                 },
                 {
                     'name':
                     'Train and inference with Python APIs',
                     'url':
                     'https://colab.research.google.com/github/'
-                    'open-mmlab/mmclassification/blob/master/docs/tutorials/'
-                    'MMClassification_python.ipynb',
+                    'open-mmlab/mmclassification/blob/master/docs/en/'
+                    'tutorials/MMClassification_python.ipynb',
                 },
             ]
         },
