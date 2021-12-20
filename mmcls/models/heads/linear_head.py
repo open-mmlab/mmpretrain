@@ -41,11 +41,6 @@ class LinearClsHead(ClsHead):
         return x
 
     def simple_test(self, x, softmax=True, post_process=True):
-        """Test without augmentation."""
-        x = self.pre_logits(x)
-        cls_score = self.fc(x)
-        if isinstance(cls_score, list):
-            cls_score = sum(cls_score) / float(len(cls_score))
         """Inference without augmentation.
 
         Args:
