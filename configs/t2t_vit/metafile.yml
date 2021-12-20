@@ -65,3 +65,42 @@ Models:
       Weights: https://github.com/yitu-opensource/T2T-ViT/releases/download/main/82.6_T2T_ViTt_24.pth.tar
       Code: https://github.com/yitu-opensource/T2T-ViT/blob/main/models/t2t_vit.py#L265
     Config: configs/t2t_vit/t2t-vit-t-24_8xb64_in1k.py
+  - Name: t2t-vit-t-14_8xb64_in1k
+    Metadata:
+      FLOPs: 4340000000
+      Parameters: 21470000
+    In Collection: Tokens-to-Token ViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 81.83
+          Top 5 Accuracy: 95.84
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/t2t-vit/t2t-vit-t-14_8xb64_in1k_20211220-f7378dd5.pth
+    Config: configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py
+  - Name: t2t-vit-t-19_8xb64_in1k
+    Metadata:
+      FLOPs: 7800000000
+      Parameters: 39080000
+    In Collection: Tokens-to-Token ViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 82.63
+          Top 5 Accuracy: 96.18
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/t2t-vit/t2t-vit-t-19_8xb64_in1k_20211214-7f5e3aaf.pth
+    Config: configs/t2t_vit/t2t-vit-t-19_8xb64_in1k.py
+  - Name: t2t-vit-t-24_8xb64_in1k
+    Metadata:
+      FLOPs: 12690000000
+      Parameters: 64000000
+    In Collection: Tokens-to-Token ViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 82.71
+          Top 5 Accuracy: 96.09
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/t2t-vit/t2t-vit-t-24_8xb64_in1k_20211214-b2a68ae3.pth
+    Config: configs/t2t_vit/t2t-vit-t-24_8xb64_in1k.py

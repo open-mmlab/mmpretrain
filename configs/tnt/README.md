@@ -22,18 +22,12 @@ Transformer is a new kind of neural architecture which encodes the input data as
 }
 ```
 
-## Pretrain model
-
-The pre-trained modles are converted from [timm](https://github.com/rwightman/pytorch-image-models/).
+## Results and models
 
 ### ImageNet
 
-|         Model         | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Download |
-|:---------------------:|:---------:|:--------:|:---------:|:---------:|:--------:|
-| Transformer in Transformer small\* |   23.76  |  3.36 | 81.52 | 95.73 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/tnt/tnt-s-p16_16xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/tnt/tnt-small-p16_3rdparty_in1k_20210903-c56ee7df.pth)  &#124; [log]()|
+|              Model                 | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
+|:----------------------------------:|:---------:|:--------:|:---------:|:---------:|:------:|:--------:|
+| Transformer in Transformer small\* |   23.76   |  3.36    | 81.52     |   95.73   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/tnt/tnt-s-p16_16xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/tnt/tnt-small-p16_3rdparty_in1k_20210903-c56ee7df.pth) |
 
-*Models with \* are converted from other repos.*
-
-## Results and models
-
-Waiting for adding.
+*Models with \* are converted from [timm](https://github.com/rwightman/pytorch-image-models/).*
