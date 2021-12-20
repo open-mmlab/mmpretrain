@@ -17,7 +17,7 @@ import sys
 import pytorch_sphinx_theme
 from sphinx.builders.html import StandaloneHTMLBuilder
 
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('../../'))
 
 # -- Project information -----------------------------------------------------
 
@@ -26,7 +26,7 @@ copyright = '2020, OpenMMLab'
 author = 'MMClassification Authors'
 
 # The full version, including alpha/beta/rc tags
-version_file = '../mmcls/version.py'
+version_file = '../../mmcls/version.py'
 
 
 def get_version():
@@ -51,7 +51,7 @@ extensions = [
     'sphinx_copybutton',
 ]
 
-autodoc_mock_imports = ['mmcv._ext']
+autodoc_mock_imports = ['mmcv._ext', 'matplotlib']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -103,109 +103,23 @@ html_theme_options = {
                     'Train and inference with shell commands',
                     'url':
                     'https://colab.research.google.com/github/'
-                    'open-mmlab/mmclassification/blob/master/docs/tutorials/'
-                    'MMClassification_tools.ipynb',
+                    'open-mmlab/mmclassification/blob/master/docs/en/'
+                    'tutorials/MMClassification_tools.ipynb',
                 },
                 {
                     'name':
                     'Train and inference with Python APIs',
                     'url':
                     'https://colab.research.google.com/github/'
-                    'open-mmlab/mmclassification/blob/master/docs/tutorials/'
-                    'MMClassification_python.ipynb',
+                    'open-mmlab/mmclassification/blob/master/docs/en/'
+                    'tutorials/MMClassification_python.ipynb',
                 },
             ]
         },
-        {
-            'name':
-            'Docs',
-            'children': [
-                {
-                    'name': 'MMCV',
-                    'url': 'https://mmcv.readthedocs.io/en/latest/',
-                },
-                {
-                    'name': 'MIM',
-                    'url': 'https://openmim.readthedocs.io/en/latest/'
-                },
-                {
-                    'name': 'MMAction2',
-                    'url': 'https://mmaction2.readthedocs.io/en/latest/',
-                },
-                {
-                    'name': 'MMClassification',
-                    'url':
-                    'https://mmclassification.readthedocs.io/en/latest/',
-                },
-                {
-                    'name': 'MMDetection',
-                    'url': 'https://mmdetection.readthedocs.io/en/latest/',
-                },
-                {
-                    'name': 'MMDetection3D',
-                    'url': 'https://mmdetection3d.readthedocs.io/en/latest/',
-                },
-                {
-                    'name': 'MMEditing',
-                    'url': 'https://mmediting.readthedocs.io/en/latest/',
-                },
-                {
-                    'name': 'MMGeneration',
-                    'url': 'https://mmgeneration.readthedocs.io/en/latest/',
-                },
-                {
-                    'name': 'MMOCR',
-                    'url': 'https://mmocr.readthedocs.io/en/latest/',
-                },
-                {
-                    'name': 'MMPose',
-                    'url': 'https://mmpose.readthedocs.io/en/latest/',
-                },
-                {
-                    'name': 'MMSegmentation',
-                    'url': 'https://mmsegmentation.readthedocs.io/en/latest/',
-                },
-                {
-                    'name': 'MMTracking',
-                    'url': 'https://mmtracking.readthedocs.io/en/latest/',
-                },
-                {
-                    'name': 'MMFlow',
-                    'url': 'https://mmflow.readthedocs.io/en/latest/',
-                },
-                {
-                    'name': 'MMFewShot',
-                    'url': 'https://mmfewshot.readthedocs.io/en/latest/',
-                },
-                {
-                    'name': 'MMHuman3d',
-                    'url': 'https://mmhuman3d.readthedocs.io/en/latest/',
-                },
-            ]
-        },
-        {
-            'name':
-            'OpenMMLab',
-            'children': [
-                {
-                    'name': 'Homepage',
-                    'url': 'https://openmmlab.com/'
-                },
-                {
-                    'name': 'GitHub',
-                    'url': 'https://github.com/open-mmlab/'
-                },
-                {
-                    'name': 'Twitter',
-                    'url': 'https://twitter.com/OpenMMLab'
-                },
-                {
-                    'name': 'Zhihu',
-                    'url': 'https://zhihu.com/people/openmmlab'
-                },
-            ]
-        },
-    ]
+    ],
+    # Specify the language of shared menu
+    'menu_lang':
+    'en'
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,

@@ -61,10 +61,30 @@ class ConformerHead(ClsHead):
         return x
 
     def simple_test(self, x, softmax=True, post_process=True):
-        """Test without augmentation."""
+        """Inference without augmentation.
+
+        Args:
+            x (tuple[tuple[tensor, tensor]]): The input features.
+                Multi-stage inputs are acceptable but only the last stage will
+                be used to classify. Every item should be a tuple which
+                includes convluation features and transformer features. The
+                shape of them should be ``(num_samples, in_channels[0])`` and
+                ``(num_samples, in_channels[1])``.
+            softmax (bool): Whether to softmax the classification score.
+            post_process (bool): Whether to do post processing the
+                inference results. It will convert the output to a list.
+
+        Returns:
+            Tensor | list: The inference results.
+
+                - If no post processing, the output is a tensor with shape
+                  ``(num_samples, num_classes)``.
+                - If post processing, the output is a multi-dimentional list of
+                  float and the dimensions are ``(num_samples, num_classes)``.
+        """
         x = self.pre_logits(x)
         # There are two outputs in the Conformer model
-        assert isinstance(x, list)
+        assert len(x) == 2
 
         conv_cls_score = self.conv_cls_head(x[0])
         tran_cls_score = self.trans_cls_head(x[1])

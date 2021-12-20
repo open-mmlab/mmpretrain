@@ -13,7 +13,8 @@ RUN apt-get update && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build 
     && rm -rf /var/lib/apt/lists/*
 
 # Install MMCV
-RUN pip install mmcv-full==1.3.16 -f https://download.openmmlab.com/mmcv/dist/cu101/torch1.8.1/index.html
+RUN pip install openmim
+RUN mim install mmcv-full
 
 # Install MMClassification
 RUN conda clean --all
