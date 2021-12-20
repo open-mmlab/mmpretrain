@@ -41,9 +41,9 @@ def test_default_cfg_setter():
 
 def test_rep_aug_fail():
     dataset = construct_toy_single_label_dataset(1000)[0]
-    with pytest.raises(RuntimeError):
+    with pytest.raises(Exception):
         RepeatAugSampler(dataset)
-    with pytest.raises(RuntimeError):
+    with pytest.raises(Exception):
         RepeatAugSampler(dataset, num_replicas=1)
 
 
