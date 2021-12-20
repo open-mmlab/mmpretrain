@@ -232,7 +232,7 @@ python tools/visualizations/vis_cam.py \
 
 **示例（Transformer）**：
 
-Transformer 类的网络，目前只支持 `SwinTransformer`、`T2T-Vit` 和 `VisionTransformer`，`target-layers` 需要设置为 `layer norm`,如：
+Transformer 类的网络，目前只支持 `SwinTransformer`、`T2T-Vit` 和 `ViT(VisionTransformer, DistilledVisionTransformer)`，`target-layers` 需要设置为 `layer norm`,如：
 
 - `model.backbone.norm3`
 - `model.backbone.layers.11.ln1`

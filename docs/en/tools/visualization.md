@@ -229,7 +229,7 @@ python tools/visualizations/vis_cam.py \
 
 **Examples(Transformer)**：
 
-supports `SwinTransformer`、`T2T-Vit` 和 `VisionTransformer`，`target-layers` need to be set `layer norm`, here are some examples:
+supports `SwinTransformer`、`T2T-Vit` 和 `ViT(VisionTransformer, DistilledVisionTransformer)`，`target-layers` need to be set `layer norm`, here are some examples:
 
 - `model.backbone.norm3`
 - `model.backbone.layers.11.ln1`
