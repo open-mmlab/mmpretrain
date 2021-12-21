@@ -1,6 +1,6 @@
-_base_ = [
-    '../_base_/models/swin_transformer/tiny_224.py',
-    '../_base_/datasets/imagenet_bs64_swin_224.py',
-    '../_base_/schedules/imagenet_bs1024_adamw_swin.py',
-    '../_base_/default_runtime.py'
-]
+_base_ = 'swin-tiny_16xb64_in1k.py'
+
+_deprecation_ = dict(
+    expected='swin-tiny_16xb64_in1k.py',
+    reference='https://github.com/open-mmlab/mmclassification/pull/508',
+)

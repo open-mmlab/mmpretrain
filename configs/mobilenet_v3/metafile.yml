@@ -26,7 +26,7 @@ Models:
           Top 5 Accuracy: 87.41
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_small-8427ecf0.pth
-    Config: configs/mobilenet_v3/mobilenet_v3_small_imagenet.py
+    Config: configs/mobilenet_v3/mobilenet-v3-small_8xb32_in1k.py
   - Name: mobilenet_v3_large_imagenet
     Metadata:
       FLOPs: 230000000
@@ -39,4 +39,4 @@ Models:
           Top 5 Accuracy: 91.34
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_large-3ea3c186.pth
-    Config: configs/mobilenet_v3/mobilenet_v3_large_imagenet.py
+    Config: configs/mobilenet_v3/mobilenet-v3-large_8xb32_in1k.py

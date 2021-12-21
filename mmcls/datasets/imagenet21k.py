@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
 import warnings
+from typing import List
 
 import numpy as np
 from mmcv.utils import scandir
@@ -26,26 +27,26 @@ class ImageNet21k(BaseDataset):
 
     Since the dataset ImageNet21k is extremely big, cantains 21k+ classes
     and 1.4B files. This class has improved the following points on the
-    basis of the class `ImageNet`, in order to save memory usage and time
-     required :
+    basis of the class ``ImageNet``, in order to save memory usage and time
+    required :
 
         - Delete the samples attribute
         - using 'slots' create a Data_item tp replace dict
-        - Modify setting `info` dict from function `load_annotations` to
-          function `prepare_data`
+        - Modify setting ``info`` dict from function ``load_annotations`` to
+          function ``prepare_data``
         - using int instead of np.array(..., np.int64)
 
     Args:
-    data_prefix (str): the prefix of data path
-    pipeline (list): a list of dict, where each element represents
-        a operation defined in `mmcls.datasets.pipelines`
-    ann_file (str | None): the annotation file. When ann_file is str,
-        the subclass is expected to read from the ann_file. When ann_file
-        is None, the subclass is expected to read according to data_prefix
-    test_mode (bool): in train mode or test mode
-    multi_label (bool): use multi label or not.
-    recursion_subdir(bool): whether to use sub-directory pictures, which
-        are meet the conditions in the folder under category directory.
+        data_prefix (str): the prefix of data path
+        pipeline (list): a list of dict, where each element represents
+            a operation defined in ``mmcls.datasets.pipelines``
+        ann_file (str | None): the annotation file. When ann_file is str,
+            the subclass is expected to read from the ann_file. When ann_file
+            is None, the subclass is expected to read according to data_prefix
+        test_mode (bool): in train mode or test mode
+        multi_label (bool): use multi label or not.
+        recursion_subdir(bool): whether to use sub-directory pictures, which
+            are meet the conditions in the folder under category directory.
     """
 
     IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif',
@@ -66,6 +67,18 @@ class ImageNet21k(BaseDataset):
         self.multi_lable = multi_label
         super(ImageNet21k, self).__init__(data_prefix, pipeline, classes,
                                           ann_file, test_mode)
+
+    def get_cat_ids(self, idx: int) -> List[int]:
+        """Get category id by index.
+
+        Args:
+            idx (int): Index of data.
+
+        Returns:
+            cat_ids (List[int]): Image category of specified index.
+        """
+
+        return [self.data_infos[idx].gt_label]
 
     def prepare_data(self, idx):
         info = self.data_infos[idx]

@@ -44,8 +44,18 @@ def test_image_classifier():
     assert outputs['loss'].item() > 0
     assert outputs['num_samples'] == 16
 
+    # test train_step without optimizer
+    outputs = model.train_step({'img': imgs, 'gt_label': label})
+    assert outputs['loss'].item() > 0
+    assert outputs['num_samples'] == 16
+
     # test val_step
     outputs = model.val_step({'img': imgs, 'gt_label': label}, None)
+    assert outputs['loss'].item() > 0
+    assert outputs['num_samples'] == 16
+
+    # test val_step without optimizer
+    outputs = model.val_step({'img': imgs, 'gt_label': label})
     assert outputs['loss'].item() > 0
     assert outputs['num_samples'] == 16
 
@@ -63,6 +73,19 @@ def test_image_classifier():
     pred = model(single_img, return_loss=False, img_metas=None)
     assert isinstance(pred, list) and len(pred) == 1
 
+    pred = model.simple_test(imgs, softmax=False)
+    assert isinstance(pred, list) and len(pred) == 16
+    assert len(pred[0] == 10)
+
+    pred = model.simple_test(imgs, softmax=False, post_process=False)
+    assert isinstance(pred, torch.Tensor)
+    assert pred.shape == (16, 10)
+
+    soft_pred = model.simple_test(imgs, softmax=True, post_process=False)
+    assert isinstance(soft_pred, torch.Tensor)
+    assert soft_pred.shape == (16, 10)
+    torch.testing.assert_allclose(soft_pred, torch.softmax(pred, dim=1))
+
     # test pretrained
     # TODO remove deprecated pretrained
     with pytest.warns(UserWarning):
@@ -73,7 +96,7 @@ def test_image_classifier():
             type='Pretrained', checkpoint='checkpoint')
 
     # test show_result
-    img = np.random.random_integers(0, 255, (224, 224, 3)).astype(np.uint8)
+    img = np.random.randint(0, 256, (224, 224, 3)).astype(np.uint8)
     result = dict(pred_class='cat', pred_label=0, pred_score=0.9)
 
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -294,3 +317,88 @@ def test_image_classifier_return_tuple():
 
     with pytest.warns(DeprecationWarning):
         model.extract_feat(imgs)
+
+
+def test_classifier_extract_feat():
+    model_cfg = ConfigDict(
+        type='ImageClassifier',
+        backbone=dict(
+            type='ResNet',
+            depth=18,
+            num_stages=4,
+            out_indices=(0, 1, 2, 3),
+            style='pytorch'),
+        neck=dict(type='GlobalAveragePooling'),
+        head=dict(
+            type='LinearClsHead',
+            num_classes=1000,
+            in_channels=512,
+            loss=dict(type='CrossEntropyLoss'),
+            topk=(1, 5),
+        ))
+
+    model = CLASSIFIERS.build(model_cfg)
+
+    # test backbone output
+    outs = model.extract_feat(torch.rand(1, 3, 224, 224), stage='backbone')
+    assert outs[0].shape == (1, 64, 56, 56)
+    assert outs[1].shape == (1, 128, 28, 28)
+    assert outs[2].shape == (1, 256, 14, 14)
+    assert outs[3].shape == (1, 512, 7, 7)
+
+    # test neck output
+    outs = model.extract_feat(torch.rand(1, 3, 224, 224), stage='neck')
+    assert outs[0].shape == (1, 64)
+    assert outs[1].shape == (1, 128)
+    assert outs[2].shape == (1, 256)
+    assert outs[3].shape == (1, 512)
+
+    # test pre_logits output
+    out = model.extract_feat(torch.rand(1, 3, 224, 224), stage='pre_logits')
+    assert out.shape == (1, 512)
+
+    # test transformer style feature extraction
+    model_cfg = dict(
+        type='ImageClassifier',
+        backbone=dict(
+            type='VisionTransformer', arch='b', out_indices=[-3, -2, -1]),
+        neck=None,
+        head=dict(
+            type='VisionTransformerClsHead',
+            num_classes=1000,
+            in_channels=768,
+            hidden_dim=1024,
+            loss=dict(type='CrossEntropyLoss'),
+        ))
+    model = CLASSIFIERS.build(model_cfg)
+
+    # test backbone output
+    outs = model.extract_feat(torch.rand(1, 3, 224, 224), stage='backbone')
+    for out in outs:
+        patch_token, cls_token = out
+        assert patch_token.shape == (1, 768, 14, 14)
+        assert cls_token.shape == (1, 768)
+
+    # test neck output (the same with backbone)
+    outs = model.extract_feat(torch.rand(1, 3, 224, 224), stage='neck')
+    for out in outs:
+        patch_token, cls_token = out
+        assert patch_token.shape == (1, 768, 14, 14)
+        assert cls_token.shape == (1, 768)
+
+    # test pre_logits output
+    out = model.extract_feat(torch.rand(1, 3, 224, 224), stage='pre_logits')
+    assert out.shape == (1, 1024)
+
+    # test extract_feats
+    multi_imgs = [torch.rand(1, 3, 224, 224) for _ in range(3)]
+    outs = model.extract_feats(multi_imgs)
+    for outs_per_img in outs:
+        for out in outs_per_img:
+            patch_token, cls_token = out
+            assert patch_token.shape == (1, 768, 14, 14)
+            assert cls_token.shape == (1, 768)
+
+    outs = model.extract_feats(multi_imgs, stage='pre_logits')
+    for out_per_img in outs:
+        assert out_per_img.shape == (1, 1024)

@@ -4,10 +4,12 @@ from typing import Sequence
 
 import torch
 import torch.nn as nn
+import torch.utils.checkpoint as cp
 from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.transformer import FFN
 from mmcv.cnn.utils.weight_init import trunc_normal_
 from mmcv.runner.base_module import BaseModule, ModuleList
+from mmcv.utils.parrots_wrapper import _BatchNorm
 
 from ..builder import BACKBONES
 from ..utils import PatchEmbed, PatchMerging, ShiftWindowMSA
@@ -36,6 +38,9 @@ class SwinBlock(BaseModule):
             Defaults to empty dict.
         norm_cfg (dict, optional): The config of norm layers.
             Defaults to dict(type='LN').
+        with_cp (bool, optional): Use checkpoint or not. Using checkpoint
+            will save some memory while slowing down the training speed.
+            Defaults to False.
         auto_pad (bool, optional): Auto pad the feature map to be divisible by
             window_size, Defaults to False.
         init_cfg (dict, optional): The extra config for initialization.
@@ -53,10 +58,12 @@ class SwinBlock(BaseModule):
                  attn_cfgs=dict(),
                  ffn_cfgs=dict(),
                  norm_cfg=dict(type='LN'),
+                 with_cp=False,
                  auto_pad=False,
                  init_cfg=None):
 
         super(SwinBlock, self).__init__(init_cfg)
+        self.with_cp = with_cp
 
         _attn_cfgs = {
             'embed_dims': embed_dims,
@@ -84,14 +91,24 @@ class SwinBlock(BaseModule):
         self.ffn = FFN(**_ffn_cfgs)
 
     def forward(self, x):
-        identity = x
-        x = self.norm1(x)
-        x = self.attn(x)
-        x = x + identity
 
-        identity = x
-        x = self.norm2(x)
-        x = self.ffn(x, identity=identity)
+        def _inner_forward(x):
+            identity = x
+            x = self.norm1(x)
+            x = self.attn(x)
+            x = x + identity
+
+            identity = x
+            x = self.norm2(x)
+            x = self.ffn(x, identity=identity)
+
+            return x
+
+        if self.with_cp and x.requires_grad:
+            x = cp.checkpoint(_inner_forward, x)
+        else:
+            x = _inner_forward(x)
+
         return x
 
 
@@ -112,6 +129,9 @@ class SwinBlockSequence(BaseModule):
             each block. Defaults to 0.
         block_cfgs (Sequence[dict] | dict, optional): The extra config of each
             block. Defaults to empty dicts.
+        with_cp (bool, optional): Use checkpoint or not. Using checkpoint
+            will save some memory while slowing down the training speed.
+            Defaults to False.
         auto_pad (bool, optional): Auto pad the feature map to be divisible by
             window_size, Defaults to False.
         init_cfg (dict, optional): The extra config for initialization.
@@ -127,6 +147,7 @@ class SwinBlockSequence(BaseModule):
                  downsample_cfg=dict(),
                  drop_paths=0.,
                  block_cfgs=dict(),
+                 with_cp=False,
                  auto_pad=False,
                  init_cfg=None):
         super().__init__(init_cfg)
@@ -147,6 +168,7 @@ class SwinBlockSequence(BaseModule):
                 'num_heads': num_heads,
                 'shift': False if i % 2 == 0 else True,
                 'drop_path': drop_paths[i],
+                'with_cp': with_cp,
                 'auto_pad': auto_pad,
                 **block_cfgs[i]
             }
@@ -211,6 +233,14 @@ class SwinTransformer(BaseBackbone):
             Defaults to 0.1.
         use_abs_pos_embed (bool): If True, add absolute position embedding to
             the patch embedding. Defaults to False.
+        with_cp (bool, optional): Use checkpoint or not. Using checkpoint
+            will save some memory while slowing down the training speed.
+            Defaults to False.
+        frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
+            -1 means not freezing any parameters. Defaults to -1.
+        norm_eval (bool): Whether to set norm layers to eval mode, namely,
+            freeze running stats (mean and var). Note: Effect on Batch Norm
+            and its variants only. Defaults to False.
         auto_pad (bool): If True, auto pad feature map to fit window_size.
             Defaults to False.
         norm_cfg (dict, optional): Config dict for normalization layer at end
@@ -266,6 +296,9 @@ class SwinTransformer(BaseBackbone):
                  out_indices=(3, ),
                  use_abs_pos_embed=False,
                  auto_pad=False,
+                 with_cp=False,
+                 frozen_stages=-1,
+                 norm_eval=False,
                  norm_cfg=dict(type='LN'),
                  stage_cfgs=dict(),
                  patch_cfg=dict(),
@@ -290,6 +323,7 @@ class SwinTransformer(BaseBackbone):
         self.out_indices = out_indices
         self.use_abs_pos_embed = use_abs_pos_embed
         self.auto_pad = auto_pad
+        self.frozen_stages = frozen_stages
 
         _patch_cfg = {
             'img_size': img_size,
@@ -309,6 +343,7 @@ class SwinTransformer(BaseBackbone):
                 torch.zeros(1, num_patches, self.embed_dims))
 
         self.drop_after_pos = nn.Dropout(p=drop_rate)
+        self.norm_eval = norm_eval
 
         # stochastic depth
         total_depth = sum(self.depths)
@@ -317,7 +352,7 @@ class SwinTransformer(BaseBackbone):
         ]  # stochastic depth decay rule
 
         self.stages = ModuleList()
-        embed_dims = self.embed_dims
+        embed_dims = [self.embed_dims]
         input_resolution = patches_resolution
         for i, (depth,
                 num_heads) in enumerate(zip(self.depths, self.num_heads)):
@@ -327,12 +362,13 @@ class SwinTransformer(BaseBackbone):
                 stage_cfg = deepcopy(stage_cfgs)
             downsample = True if i < self.num_layers - 1 else False
             _stage_cfg = {
-                'embed_dims': embed_dims,
+                'embed_dims': embed_dims[-1],
                 'depth': depth,
                 'num_heads': num_heads,
                 'downsample': downsample,
                 'input_resolution': input_resolution,
                 'drop_paths': dpr[:depth],
+                'with_cp': with_cp,
                 'auto_pad': auto_pad,
                 **stage_cfg
             }
@@ -341,12 +377,12 @@ class SwinTransformer(BaseBackbone):
             self.stages.append(stage)
 
             dpr = dpr[depth:]
-            embed_dims = stage.out_channels
+            embed_dims.append(stage.out_channels)
             input_resolution = stage.out_resolution
 
         for i in out_indices:
             if norm_cfg is not None:
-                norm_layer = build_norm_layer(norm_cfg, embed_dims)[1]
+                norm_layer = build_norm_layer(norm_cfg, embed_dims[i + 1])[1]
             else:
                 norm_layer = nn.Identity()
 
@@ -399,3 +435,28 @@ class SwinTransformer(BaseBackbone):
 
         super()._load_from_state_dict(state_dict, prefix, local_metadata,
                                       *args, **kwargs)
+
+    def _freeze_stages(self):
+        if self.frozen_stages >= 0:
+            self.patch_embed.eval()
+            for param in self.patch_embed.parameters():
+                param.requires_grad = False
+
+        for i in range(0, self.frozen_stages + 1):
+            m = self.stages[i]
+            m.eval()
+            for param in m.parameters():
+                param.requires_grad = False
+        for i in self.out_indices:
+            if i <= self.frozen_stages:
+                for param in getattr(self, f'norm{i}').parameters():
+                    param.requires_grad = False
+
+    def train(self, mode=True):
+        super(SwinTransformer, self).train(mode)
+        self._freeze_stages()
+        if mode and self.norm_eval:
+            for m in self.modules():
+                # trick: eval have effect on BatchNorm only
+                if isinstance(m, _BatchNorm):
+                    m.eval()

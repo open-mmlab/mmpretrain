@@ -19,7 +19,7 @@ Collections:
       Version: v0.15.0
 
 Models:
-  - Name: vgg11_b32x8_imagenet
+  - Name: vgg11_8xb32_in1k
     Metadata:
       FLOPs: 7630000000
       Parameters: 132860000
@@ -31,8 +31,8 @@ Models:
           Top 5 Accuracy: 88.87
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/vgg/vgg11_batch256_imagenet_20210208-4271cd6c.pth
-    Config: configs/vgg/vgg11_b32x8_imagenet.py
-  - Name: vgg13_b32x8_imagenet
+    Config: configs/vgg/vgg11_8xb32_in1k.py
+  - Name: vgg13_8xb32_in1k
     Metadata:
       FLOPs: 11340000000
       Parameters: 133050000
@@ -44,8 +44,8 @@ Models:
           Top 5 Accuracy: 89.46
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/vgg/vgg13_batch256_imagenet_20210208-4d1d6080.pth
-    Config: configs/vgg/vgg13_b32x8_imagenet.py
-  - Name: vgg16_b32x8_imagenet
+    Config: configs/vgg/vgg13_8xb32_in1k.py
+  - Name: vgg16_8xb32_in1k
     Metadata:
       FLOPs: 15500000000
       Parameters: 138360000
@@ -57,8 +57,8 @@ Models:
           Top 5 Accuracy: 90.49
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/vgg/vgg16_batch256_imagenet_20210208-db26f1a5.pth
-    Config: configs/vgg/vgg16_b32x8_imagenet.py
-  - Name: vgg19_b32x8_imagenet
+    Config: configs/vgg/vgg16_8xb32_in1k.py
+  - Name: vgg19_8xb32_in1k
     Metadata:
       FLOPs: 19670000000
       Parameters: 143670000
@@ -70,8 +70,8 @@ Models:
           Top 5 Accuracy: 90.8
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/vgg/vgg19_batch256_imagenet_20210208-e6920e4a.pth
-    Config: configs/vgg/vgg19_b32x8_imagenet.py
-  - Name: vgg11bn_b32x8_imagenet
+    Config: configs/vgg/vgg19_8xb32_in1k.py
+  - Name: vgg11bn_8xb32_in1k
     Metadata:
       FLOPs: 7640000000
       Parameters: 132870000
@@ -83,8 +83,8 @@ Models:
           Top 5 Accuracy: 90.16
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/vgg/vgg11_bn_batch256_imagenet_20210207-f244902c.pth
-    Config: configs/vgg/vgg11bn_b32x8_imagenet.py
-  - Name: vgg13bn_b32x8_imagenet
+    Config: configs/vgg/vgg11bn_8xb32_in1k.py
+  - Name: vgg13bn_8xb32_in1k
     Metadata:
       FLOPs: 11360000000
       Parameters: 133050000
@@ -96,8 +96,8 @@ Models:
           Top 5 Accuracy: 90.66
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/vgg/vgg13_bn_batch256_imagenet_20210207-1a8b7864.pth
-    Config: configs/vgg/vgg13bn_b32x8_imagenet.py
-  - Name: vgg16bn_b32x8_imagenet
+    Config: configs/vgg/vgg13bn_8xb32_in1k.py
+  - Name: vgg16bn_8xb32_in1k
     Metadata:
       FLOPs: 15530000000
       Parameters: 138370000
@@ -109,8 +109,8 @@ Models:
           Top 5 Accuracy: 91.66
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/vgg/vgg16_bn_batch256_imagenet_20210208-7e55cd29.pth
-    Config: configs/vgg/vgg16bn_b32x8_imagenet.py
-  - Name: vgg19bn_b32x8_imagenet
+    Config: configs/vgg/vgg16bn_8xb32_in1k.py
+  - Name: vgg19bn_8xb32_in1k
     Metadata:
       FLOPs: 19700000000
       Parameters: 143680000
@@ -122,4 +122,4 @@ Models:
           Top 5 Accuracy: 92.27
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/vgg/vgg19_bn_batch256_imagenet_20210208-da620c4f.pth
-    Config: configs/vgg/vgg19bn_b32x8_imagenet.py
+    Config: configs/vgg/vgg19bn_8xb32_in1k.py

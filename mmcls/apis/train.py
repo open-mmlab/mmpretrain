@@ -4,8 +4,10 @@ import warnings
 
 import numpy as np
 import torch
+import torch.distributed as dist
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
-from mmcv.runner import DistSamplerSeedHook, build_optimizer, build_runner
+from mmcv.runner import (DistSamplerSeedHook, build_optimizer, build_runner,
+                         get_dist_info)
 
 from mmcls.core import DistOptimizerHook
 from mmcls.datasets import build_dataloader, build_dataset
@@ -29,6 +31,39 @@ except ImportError:
     from mmcls.core import Fp16OptimizerHook
 
 
+def init_random_seed(seed=None, device='cuda'):
+    """Initialize random seed.
+
+    If the seed is not set, the seed will be automatically randomized,
+    and then broadcast to all processes to prevent some potential bugs.
+
+    Args:
+        seed (int, Optional): The seed. Default to None.
+        device (str): The device where the seed will be put on.
+            Default to 'cuda'.
+
+    Returns:
+        int: Seed to be used.
+    """
+    if seed is not None:
+        return seed
+
+    # Make sure all ranks share the same random seed to prevent
+    # some potential bugs. Please refer to
+    # https://github.com/open-mmlab/mmdetection/issues/6339
+    rank, world_size = get_dist_info()
+    seed = np.random.randint(2**31)
+    if world_size == 1:
+        return seed
+
+    if rank == 0:
+        random_num = torch.tensor(seed, dtype=torch.int32, device=device)
+    else:
+        random_num = torch.tensor(0, dtype=torch.int32, device=device)
+    dist.broadcast(random_num, src=0)
+    return random_num.item()
+
+
 def set_random_seed(seed, deterministic=False):
     """Set random seed.
 
@@ -48,6 +83,20 @@ def set_random_seed(seed, deterministic=False):
         torch.backends.cudnn.benchmark = False
 
 
+def set_default_sampler_cfg(cfg, distributed):
+    runner_type = cfg.get('runner').type.split('.')[-1]
+    if runner_type in ('EpochBasedRunner', 'IterBasedRunner'):
+        if distributed:
+            sampler_cfg = dict(
+                type='DistributedSampler', shuffle=True, round_up=True)
+        else:
+            sampler_cfg = None
+    else:
+        raise ValueError('Using custom runner but not setting sampler.'
+                         'Please set sampler in your config.')
+    return sampler_cfg
+
+
 def train_model(model,
                 dataset,
                 cfg,
@@ -61,6 +110,10 @@ def train_model(model,
     # prepare data loaders
     dataset = dataset if isinstance(dataset, (list, tuple)) else [dataset]
 
+    sampler_cfg = cfg.data.get('sampler', None)
+    if sampler_cfg is None:
+        sampler_cfg = set_default_sampler_cfg(cfg, distributed)
+
     data_loaders = [
         build_dataloader(
             ds,
@@ -71,7 +124,7 @@ def train_model(model,
             dist=distributed,
             round_up=True,
             seed=cfg.seed,
-            ra_sampler=cfg.rep_aug) for ds in dataset
+            sampler_cfg=sampler_cfg) for ds in dataset
     ]
 
     # put model on gpus
