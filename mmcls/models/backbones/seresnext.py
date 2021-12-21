@@ -1,95 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmcv.cnn import build_conv_layer, build_norm_layer
-
 from ..builder import BACKBONES
 from .resnet import ResLayer
+from .resnext import Bottleneck
 from .seresnet import SEBottleneck as _SEBottleneck
 from .seresnet import SEResNet
 
 
-class SEBottleneck(_SEBottleneck):
-    """SEBottleneck block for SEResNeXt.
+class SEBottleneck(Bottleneck, _SEBottleneck):
 
-    Args:
-        in_channels (int): Input channels of this block.
-        out_channels (int): Output channels of this block.
-        base_channels (int): Middle channels of the first stage. Default: 64.
-        groups (int): Groups of conv2.
-        width_per_group (int): Width per group of conv2. 64x4d indicates
-            ``groups=64, width_per_group=4`` and 32x8d indicates
-            ``groups=32, width_per_group=8``.
-        stride (int): stride of the block. Default: 1
-        dilation (int): dilation of convolution. Default: 1
-        downsample (nn.Module, optional): downsample operation on identity
-            branch. Default: None
-        se_ratio (int): Squeeze ratio in SELayer. Default: 16
-        style (str): `pytorch` or `caffe`. If set to "pytorch", the stride-two
-            layer is the 3x3 conv layer, otherwise the stride-two layer is
-            the first 1x1 conv layer.
-        conv_cfg (dict, optional): dictionary to construct and config conv
-            layer. Default: None
-        norm_cfg (dict): dictionary to construct and config norm layer.
-            Default: dict(type='BN')
-        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
-            memory while slowing down the training speed.
-    """
-
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 base_channels=64,
-                 groups=32,
-                 width_per_group=4,
-                 se_ratio=16,
-                 **kwargs):
-        super(SEBottleneck, self).__init__(in_channels, out_channels, se_ratio,
-                                           **kwargs)
-        self.groups = groups
-        self.width_per_group = width_per_group
-
-        # We follow the same rational of ResNext to compute mid_channels.
-        # For SEResNet bottleneck, middle channels are determined by expansion
-        # and out_channels, but for SEResNeXt bottleneck, it is determined by
-        # groups and width_per_group and the stage it is located in.
-        if groups != 1:
-            assert self.mid_channels % base_channels == 0
-            self.mid_channels = (
-                groups * width_per_group * self.mid_channels // base_channels)
-
-        self.norm1_name, norm1 = build_norm_layer(
-            self.norm_cfg, self.mid_channels, postfix=1)
-        self.norm2_name, norm2 = build_norm_layer(
-            self.norm_cfg, self.mid_channels, postfix=2)
-        self.norm3_name, norm3 = build_norm_layer(
-            self.norm_cfg, self.out_channels, postfix=3)
-
-        self.conv1 = build_conv_layer(
-            self.conv_cfg,
-            self.in_channels,
-            self.mid_channels,
-            kernel_size=1,
-            stride=self.conv1_stride,
-            bias=False)
-        self.add_module(self.norm1_name, norm1)
-        self.conv2 = build_conv_layer(
-            self.conv_cfg,
-            self.mid_channels,
-            self.mid_channels,
-            kernel_size=3,
-            stride=self.conv2_stride,
-            padding=self.dilation,
-            dilation=self.dilation,
-            groups=groups,
-            bias=False)
-
-        self.add_module(self.norm2_name, norm2)
-        self.conv3 = build_conv_layer(
-            self.conv_cfg,
-            self.mid_channels,
-            self.out_channels,
-            kernel_size=1,
-            bias=False)
-        self.add_module(self.norm3_name, norm3)
+    def __init__(self, in_channels, out_channels, **kwargs):
+        super(SEBottleneck, self).__init__(in_channels, out_channels, **kwargs)
 
 
 @BACKBONES.register_module()

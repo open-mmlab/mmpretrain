@@ -1,12 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import mmcv
 import torch.nn as nn
-from mmcv.cnn import ConvModule
+from mmcv.cnn import PLUGIN_LAYERS, ConvModule
 from mmcv.runner import BaseModule
 
 from .make_divisible import make_divisible
 
 
+@PLUGIN_LAYERS.register_module()
 class SELayer(BaseModule):
     """Squeeze-and-Excitation Module.
 

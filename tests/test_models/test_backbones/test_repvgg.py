@@ -207,12 +207,12 @@ def test_repvgg_backbone():
         if is_norm(m):
             assert isinstance(m, _BatchNorm)
 
-    imgs = torch.randn(1, 3, 224, 224)
+    imgs = torch.randn(1, 3, 64, 64)
     feat = model(imgs)
     assert isinstance(feat, tuple)
     assert len(feat) == 1
     assert isinstance(feat[0], torch.Tensor)
-    assert feat[0].shape == torch.Size((1, 1280, 7, 7))
+    assert feat[0].shape == torch.Size((1, 1280, 2, 2))
 
     # Test RepVGG forward
     model_test_settings = [
@@ -247,16 +247,16 @@ def test_repvgg_backbone():
                 assert isinstance(m, _BatchNorm)
 
         model.train()
-        imgs = torch.randn(1, 3, 224, 224)
+        imgs = torch.randn(1, 3, 64, 64)
         feat = model(imgs)
         assert feat[0].shape == torch.Size(
-            (1, model_test_setting['out_sizes'][0], 56, 56))
+            (1, model_test_setting['out_sizes'][0], 16, 16))
         assert feat[1].shape == torch.Size(
-            (1, model_test_setting['out_sizes'][1], 28, 28))
+            (1, model_test_setting['out_sizes'][1], 8, 8))
         assert feat[2].shape == torch.Size(
-            (1, model_test_setting['out_sizes'][2], 14, 14))
+            (1, model_test_setting['out_sizes'][2], 4, 4))
         assert feat[3].shape == torch.Size(
-            (1, model_test_setting['out_sizes'][3], 7, 7))
+            (1, model_test_setting['out_sizes'][3], 2, 2))
 
         # Test eval of "train" mode and "deploy" mode
         gap = nn.AdaptiveAvgPool2d(output_size=(1))

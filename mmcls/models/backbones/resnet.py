@@ -7,9 +7,10 @@ from mmcv.utils.parrots_wrapper import _BatchNorm
 
 from ..builder import BACKBONES
 from .base_backbone import BaseBackbone
+from .base_cnn_block import BaseBasicBlock, BaseBottleNeck
 
 
-class BasicBlock(nn.Module):
+class BasicBlock(BaseBasicBlock):
     """BasicBlock for ResNet.
 
     Args:
@@ -40,10 +41,17 @@ class BasicBlock(nn.Module):
                  dilation=1,
                  downsample=None,
                  style='pytorch',
+                 plugins=None,
                  with_cp=False,
                  conv_cfg=None,
-                 norm_cfg=dict(type='BN')):
-        super(BasicBlock, self).__init__()
+                 norm_cfg=dict(type='BN'),
+                 init_cfg=None):
+        super(BasicBlock, self).__init__(
+            in_channels=in_channels,
+            out_channels=out_channels,
+            plugins=plugins,
+            init_cfg=init_cfg)
+
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.expansion = expansion
@@ -56,33 +64,38 @@ class BasicBlock(nn.Module):
         self.with_cp = with_cp
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
+        self.downsample = downsample
 
+        self.build_layers()
+
+    def build_layers(self):
         self.norm1_name, norm1 = build_norm_layer(
-            norm_cfg, self.mid_channels, postfix=1)
+            self.norm_cfg, self.mid_channels, postfix=1)
         self.norm2_name, norm2 = build_norm_layer(
-            norm_cfg, out_channels, postfix=2)
+            self.norm_cfg, self.out_channels, postfix=2)
 
         self.conv1 = build_conv_layer(
-            conv_cfg,
-            in_channels,
+            self.conv_cfg,
+            self.in_channels,
             self.mid_channels,
             3,
-            stride=stride,
-            padding=dilation,
-            dilation=dilation,
+            stride=self.stride,
+            padding=self.dilation,
+            dilation=self.dilation,
             bias=False)
         self.add_module(self.norm1_name, norm1)
         self.conv2 = build_conv_layer(
-            conv_cfg,
+            self.conv_cfg,
             self.mid_channels,
-            out_channels,
+            self.out_channels,
             3,
             padding=1,
             bias=False)
         self.add_module(self.norm2_name, norm2)
 
         self.relu = nn.ReLU(inplace=True)
-        self.downsample = downsample
+        self.downsample = self.downsample
+        self.build_plugins()
 
     @property
     def norm1(self):
@@ -101,8 +114,14 @@ class BasicBlock(nn.Module):
             out = self.norm1(out)
             out = self.relu(out)
 
+            if self.with_plugins:
+                out = self.forward_plugin(out, 'after_conv1')
+
             out = self.conv2(out)
             out = self.norm2(out)
+
+            if self.with_plugins:
+                out = self.forward_plugin(out, 'after_conv2')
 
             if self.downsample is not None:
                 identity = self.downsample(x)
@@ -121,7 +140,7 @@ class BasicBlock(nn.Module):
         return out
 
 
-class Bottleneck(nn.Module):
+class Bottleneck(BaseBottleNeck):
     """Bottleneck block for ResNet.
 
     Args:
@@ -150,25 +169,34 @@ class Bottleneck(nn.Module):
                  expansion=4,
                  stride=1,
                  dilation=1,
+                 groups=1,
                  downsample=None,
                  style='pytorch',
                  with_cp=False,
+                 plugins=None,
                  conv_cfg=None,
-                 norm_cfg=dict(type='BN')):
-        super(Bottleneck, self).__init__()
+                 norm_cfg=dict(type='BN'),
+                 init_cfg=None):
+        super(Bottleneck, self).__init__(
+            in_channels=in_channels,
+            out_channels=out_channels,
+            plugins=plugins,
+            init_cfg=init_cfg)
+
         assert style in ['pytorch', 'caffe']
 
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.expansion = expansion
-        assert out_channels % expansion == 0
-        self.mid_channels = out_channels // expansion
+        self.mid_channels = self.get_mid_channels()
         self.stride = stride
         self.dilation = dilation
+        self.groups = groups
         self.style = style
         self.with_cp = with_cp
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
+        self.downsample = downsample
 
         if self.style == 'pytorch':
             self.conv1_stride = 1
@@ -177,42 +205,51 @@ class Bottleneck(nn.Module):
             self.conv1_stride = stride
             self.conv2_stride = 1
 
+        self.build_layers()
+
+    def get_mid_channels(self):
+        assert self.out_channels % self.expansion == 0
+        return self.out_channels // self.expansion
+
+    def build_layers(self):
         self.norm1_name, norm1 = build_norm_layer(
-            norm_cfg, self.mid_channels, postfix=1)
+            self.norm_cfg, self.mid_channels, postfix=1)
         self.norm2_name, norm2 = build_norm_layer(
-            norm_cfg, self.mid_channels, postfix=2)
+            self.norm_cfg, self.mid_channels, postfix=2)
         self.norm3_name, norm3 = build_norm_layer(
-            norm_cfg, out_channels, postfix=3)
+            self.norm_cfg, self.out_channels, postfix=3)
 
         self.conv1 = build_conv_layer(
-            conv_cfg,
-            in_channels,
+            self.conv_cfg,
+            self.in_channels,
             self.mid_channels,
             kernel_size=1,
             stride=self.conv1_stride,
             bias=False)
         self.add_module(self.norm1_name, norm1)
         self.conv2 = build_conv_layer(
-            conv_cfg,
+            self.conv_cfg,
             self.mid_channels,
             self.mid_channels,
             kernel_size=3,
             stride=self.conv2_stride,
-            padding=dilation,
-            dilation=dilation,
+            groups=self.groups,
+            padding=self.dilation,
+            dilation=self.dilation,
             bias=False)
 
         self.add_module(self.norm2_name, norm2)
         self.conv3 = build_conv_layer(
-            conv_cfg,
+            self.conv_cfg,
             self.mid_channels,
-            out_channels,
+            self.out_channels,
             kernel_size=1,
             bias=False)
         self.add_module(self.norm3_name, norm3)
 
         self.relu = nn.ReLU(inplace=True)
-        self.downsample = downsample
+        self.downsample = self.downsample
+        self.build_plugins()
 
     @property
     def norm1(self):
@@ -235,12 +272,21 @@ class Bottleneck(nn.Module):
             out = self.norm1(out)
             out = self.relu(out)
 
+            if self.with_plugins:
+                out = self.forward_plugin(out, 'after_conv1')
+
             out = self.conv2(out)
             out = self.norm2(out)
             out = self.relu(out)
 
+            if self.with_plugins:
+                out = self.forward_plugin(out, 'after_conv2')
+
             out = self.conv3(out)
             out = self.norm3(out)
+
+            if self.with_plugins:
+                out = self.forward_plugin(out, 'after_conv3')
 
             if self.downsample is not None:
                 identity = self.downsample(x)
@@ -454,6 +500,7 @@ class ResNet(BaseBackbone):
                  deep_stem=False,
                  avg_down=False,
                  frozen_stages=-1,
+                 plugins=None,
                  conv_cfg=None,
                  norm_cfg=dict(type='BN', requires_grad=True),
                  norm_eval=False,
@@ -500,6 +547,10 @@ class ResNet(BaseBackbone):
         for i, num_blocks in enumerate(self.stage_blocks):
             stride = strides[i]
             dilation = dilations[i]
+            if plugins is not None:
+                stage_plugins = self.make_stage_plugins(plugins, i)
+            else:
+                stage_plugins = None
             res_layer = self.make_res_layer(
                 block=self.block,
                 num_blocks=num_blocks,
@@ -510,6 +561,7 @@ class ResNet(BaseBackbone):
                 dilation=dilation,
                 style=self.style,
                 avg_down=self.avg_down,
+                plugins=stage_plugins,
                 with_cp=with_cp,
                 conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg)
@@ -574,6 +626,56 @@ class ResNet(BaseBackbone):
             self.add_module(self.norm1_name, norm1)
             self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+
+    def make_stage_plugins(self, plugins, stage_idx):
+        """Make plugins for ResNet ``stage_idx`` th stage.
+        Currently we support to insert ``context_block``,
+        ``empirical_attention_block``, ``nonlocal_block`` into the backbone
+        like ResNet/ResNeXt. They could be inserted after conv1/conv2/conv3 of
+        Bottleneck.
+        An example of plugins format could be:
+        Examples:
+            >>> plugins=[
+            ...     dict(cfg=dict(type='xxx', arg1='xxx'),
+            ...          stages=(False, True, True, True),
+            ...          position='after_conv2'),
+            ...     dict(cfg=dict(type='yyy'),
+            ...          stages=(True, True, True, True),
+            ...          position='after_conv3'),
+            ...     dict(cfg=dict(type='zzz', postfix='1'),
+            ...          stages=(True, True, True, True),
+            ...          position='after_conv3'),
+            ...     dict(cfg=dict(type='zzz', postfix='2'),
+            ...          stages=(True, True, True, True),
+            ...          position='after_conv3')
+            ... ]
+            >>> self = ResNet(depth=18)
+            >>> stage_plugins = self.make_stage_plugins(plugins, 0)
+            >>> assert len(stage_plugins) == 3
+        Suppose ``stage_idx=0``, the structure of blocks in the stage would be:
+        .. code-block:: none
+            conv1-> conv2->conv3->yyy->zzz1->zzz2
+        Suppose 'stage_idx=1', the structure of blocks in the stage would be:
+        .. code-block:: none
+            conv1-> conv2->xxx->conv3->yyy->zzz1->zzz2
+        If stages is missing, the plugin would be applied to all stages.
+        Args:
+            plugins (list[dict]): List of plugins cfg to build. The postfix is
+                required if multiple same type plugins are inserted.
+            stage_idx (int): Index of stage to build
+        Returns:
+            list[dict]: Plugins for current stage
+        """
+        stage_plugins = []
+        for plugin in plugins:
+            plugin = plugin.copy()
+            stages = plugin.pop('stages', None)
+            assert stages is None or len(stages) == self.num_stages
+            # whether to insert plugin into current stage
+            if stages is None or stages[stage_idx]:
+                stage_plugins.append(plugin)
+
+        return stage_plugins
 
     def _freeze_stages(self):
         if self.frozen_stages >= 0:

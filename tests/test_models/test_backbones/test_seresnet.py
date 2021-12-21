@@ -6,7 +6,8 @@ from torch.nn.modules.batchnorm import _BatchNorm
 
 from mmcls.models.backbones import SEResNet
 from mmcls.models.backbones.resnet import ResLayer
-from mmcls.models.backbones.seresnet import SEBottleneck, SELayer
+from mmcls.models.backbones.seresnet import SEBottleneck
+from mmcls.models.utils.se_layer import SELayer
 
 
 def all_zeros(modules):
