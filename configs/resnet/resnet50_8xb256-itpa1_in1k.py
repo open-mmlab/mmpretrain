@@ -12,7 +12,7 @@ model = dict(
         depth=50,
         num_stages=4,
         out_indices=(3, ),
-        norm_cfg=dict(type='BN', requires_grad=True),
+        norm_cfg=dict(type='SyncBN', requires_grad=True),
         drop_path_rate=0.05,
         style='pytorch'),
     neck=dict(type='GlobalAveragePooling'),
@@ -31,7 +31,9 @@ model = dict(
         dict(type='BatchCutMix', alpha=1.0, num_classes=1000, prob=0.5)
     ]))
 
-optimizer = dict(lr=0.005, weight_decay=0.01)
 runner = dict(max_epochs=600)
-rep_aug = True
+optimizer = dict(
+    weight_decay=0.01,
+    paramwise_cfg=dict(bias_decay_mult=0., norm_decay_mult=0.))
 checkpoint_config = dict(interval=1, max_keep_ckpts=10)
+sampler = dict(type='RepeatAugSampler')
