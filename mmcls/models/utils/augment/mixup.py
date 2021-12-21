@@ -35,7 +35,9 @@ class BaseMixupLayer(object, metaclass=ABCMeta):
         pass
 
 
-def one_hot(x, num_classes, smoothing, device='cuda'):
+def one_hot(x, num_classes, smoothing, device=None):
+    if device is None:
+        device = x.device
     off_value = smoothing / num_classes
     on_value = 1. - smoothing + off_value
     x = x.long().view(-1, 1)
