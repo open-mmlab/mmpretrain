@@ -80,6 +80,20 @@ class RegNet(ResNet):
         dict(w0=80, wa=49.56, wm=2.88, group_w=120, depth=23, bot_mul=1.0),
         'regnetx_12gf':
         dict(w0=168, wa=73.36, wm=2.37, group_w=112, depth=19, bot_mul=1.0),
+        'regnety_4.0gf':
+        dict(
+            w0=96,
+            wa=31.41,
+            wm=2.24,
+            group_w=64,
+            depth=22,
+            bot_mul=1.0,
+            plugins=[
+                dict(
+                    position='after_conv2',
+                    cfg=dict(type='SELayer', ratio=4, bias=True))
+            ],
+        ),
     }
 
     def __init__(self,

@@ -97,6 +97,10 @@ class BasicBlock(BaseBasicBlock):
         self.downsample = self.downsample
         self.build_plugins()
 
+    def get_mid_channels(self):
+        assert self.out_channels % self.expansion == 0
+        return self.out_channels // self.expansion
+
     @property
     def norm1(self):
         return getattr(self, self.norm1_name)
