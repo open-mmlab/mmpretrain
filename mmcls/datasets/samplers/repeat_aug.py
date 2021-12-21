@@ -67,7 +67,7 @@ class RepeatAugSampler(Sampler):
     def __iter__(self):
         # deterministically shuffle based on epoch
         if self.shuffle:
-            if self.num_replicas > 1:   # In distributed environment
+            if self.num_replicas > 1:  # In distributed environment
                 # deterministically shuffle based on epoch
                 g = torch.Generator()
                 g.manual_seed(self.epoch)
@@ -75,8 +75,6 @@ class RepeatAugSampler(Sampler):
                     len(self.dataset), generator=g).tolist()
             else:
                 indices = torch.randperm(len(self.dataset)).tolist()
-        else:
-            indices = list(range(len(self.dataset)))
         else:
             indices = list(range(len(self.dataset)))
 
