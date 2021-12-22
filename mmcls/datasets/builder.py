@@ -23,6 +23,25 @@ PIPELINES = Registry('pipeline')
 SAMPLERS = Registry('sampler')
 
 
+def get_sampler_cfg(cfg, distributed):
+    if cfg is not None:
+        sampler_cfg = cfg.data.get('sampler', None)
+        if sampler_cfg is not None:
+            return sampler_cfg
+        else:
+            runner_type = cfg.get('runner').type.split('.')[-1]
+    if cfg is None or runner_type in ('EpochBasedRunner', 'IterBasedRunner'):
+        if distributed:
+            sampler_cfg = dict(
+                type='DistributedSampler', shuffle=True, round_up=True)
+        else:
+            sampler_cfg = None
+    else:
+        raise ValueError('Using custom runner but not setting sampler.'
+                         'Please set sampler in your config.')
+    return sampler_cfg
+
+
 def build_dataset(cfg, default_args=None):
     from .dataset_wrappers import (ConcatDataset, RepeatDataset,
                                    ClassBalancedDataset)
@@ -46,11 +65,10 @@ def build_dataloader(dataset,
                      num_gpus=1,
                      dist=True,
                      shuffle=True,
-                     round_up=True,
                      seed=None,
                      pin_memory=True,
                      persistent_workers=True,
-                     sampler_cfg=None,
+                     cfg=None,
                      **kwargs):
     """Build PyTorch DataLoader.
 
@@ -82,6 +100,8 @@ def build_dataloader(dataset,
         DataLoader: A PyTorch dataloader.
     """
     rank, world_size = get_dist_info()
+
+    sampler_cfg = get_sampler_cfg(cfg, distributed=dist)
 
     if sampler_cfg:
         sampler_cfg.update(shuffle=shuffle)
