@@ -237,8 +237,12 @@ python tools/visualizations/vis_cam.py \
 
 Transformer 类的网络，目前只支持 `SwinTransformer`、`T2T-Vit` 和 `ViT(VisionTransformer, DistilledVisionTransformer)`，`target-layers` 需要设置为 `layer norm`，如：
 
-- `model.backbone.norm3` Swin。
-- `model.backbone.layers.11.ln1` for ViT, Since the final classification is done on the class token computed in the last attention block, the output will not be affected by the 14x14 channels in the last layer. The gradient of the output with respect to them, will be 0!
+- `model.backbone.norm3` for Swin;
+- `model.backbone.layers.11.ln1` for ViT;
+
+```{note}
+Since the final classification is done on the class token computed in the last attention block, the output will not be affected by the 14x14 channels in the last layer. The gradient of the output with respect to them, will be 0!
+```
 
 1.对 `Swin Transformer` 进行 CAM 可视化：
 
@@ -247,6 +251,7 @@ python tools/visualizations/vis_cam.py \
     demo/bird.JPEG  \
     configs/swin_transformer/swin-tiny_16xb64_in1k.py \
     https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_tiny_224_b16x64_300e_imagenet_20210616_090925-66df6be6.pth \
+    --vit-like \
     --target-layers 'backbone.norm3'
 ```
 
@@ -257,7 +262,8 @@ python tools/visualizations/vis_cam.py \
     demo/bird.JPEG  \
     configs/vision_transformer/vit-base-p16_ft-64xb64_in1k-384.py \
     https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-base-p16_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-98e8652b.pth \
-    --target-layers 'backbone.layers[11]ln1'
+    --vit-like \
+    --target-layers 'backbone.layers.11.ln1'
 ```
 
 3.对 `T2T-ViT` 进行 CAM 可视化：
@@ -267,7 +273,8 @@ python tools/visualizations/vis_cam.py \
     demo/bird.JPEG  \
     configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py \
     https://download.openmmlab.com/mmclassification/v0/t2t-vit/t2t-vit-t-14_3rdparty_8xb64_in1k_20210928-b7c09b62.pth \
-    --target-layers 'backbone.encoder[13].ln1'
+    --vit-like \
+    --target-layers 'backbone.encoder[-1].ln1'
 ```
 
 | Image | ResNet50  |  ViT |  Swin |  T2T-ViT   |

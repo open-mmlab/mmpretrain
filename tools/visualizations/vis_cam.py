@@ -91,7 +91,8 @@ def parse_args():
     parser.add_argument(
         '--num-extra-tokens',
         type=int,
-        help='The number of extra tokens in ViT-like backbones. Defaults to 1')
+        help='The number of extra tokens in ViT-like backbones. Defaults to'
+        ' use num_extra_tokens in backbones.')
     parser.add_argument(
         '--cfg-options',
         nargs='+',
@@ -127,8 +128,8 @@ def build_reshape_transform(model, args):
 
     if args.num_extra_tokens is not None:
         num_extra_tokens = args.num_extra_tokens
-    elif hasattr(model, 'num_extra_tokens'):
-        num_extra_tokens = model.num_extra_tokens
+    elif hasattr(model.backbone, 'num_extra_tokens'):
+        num_extra_tokens = model.backbone.num_extra_tokens
     else:
         num_extra_tokens = 1
 
@@ -276,10 +277,20 @@ def get_default_traget_layers(model, args):
     # channels in the last layer. The gradient of the output with
     # respect to them, will be 0! here use the last 3rd norm layer.
     # means the first norm of the last decoder block.
-    if args.vit_like and args.num_extra_tokens >= 1:
-        target_layers = [norm_layers[-3]]
-    else:
-        target_layers = [norm_layers[-1]]
+    if args.vit_like:
+        if args.num_extra_tokens:
+            num_extra_tokens = args.num_extra_tokens
+        elif hasattr(model.backbone, 'num_extra_tokens'):
+            num_extra_tokens = model.backbone.num_extra_tokens
+        else:
+            raise AttributeError('Please set num_extra_tokens in backbone'
+                                 " or using 'num-extra-tokens'")
+
+        # if a vit-like backbone's num_extra_tokens bigger than 0, view it
+        # as a VisionTransformer backbone, eg. DeiT, T2T-ViT.
+        if num_extra_tokens >= 1:
+            return [norm_layers[-3]]
+    target_layers = [norm_layers[-1]]
     return target_layers
 
 

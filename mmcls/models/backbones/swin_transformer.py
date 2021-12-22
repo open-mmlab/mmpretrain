@@ -324,6 +324,7 @@ class SwinTransformer(BaseBackbone):
         self.use_abs_pos_embed = use_abs_pos_embed
         self.auto_pad = auto_pad
         self.frozen_stages = frozen_stages
+        self.num_extra_tokens = 0
 
         _patch_cfg = {
             'img_size': img_size,
