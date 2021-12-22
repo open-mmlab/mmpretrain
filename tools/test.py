@@ -144,7 +144,8 @@ def main():
         workers_per_gpu=cfg.data.workers_per_gpu,
         dist=distributed,
         shuffle=False,
-        round_up=True)
+        round_up=True,
+        sampler_cfg=dict(type='DistributedSampler') if distributed else None)
 
     # build the model and load checkpoint
     model = build_classifier(cfg.model)
