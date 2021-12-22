@@ -1,11 +1,90 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import numpy as np
 import torch.nn as nn
+import torch.utils.checkpoint as cp
 from mmcv.cnn import build_conv_layer, build_norm_layer
 
 from ..builder import BACKBONES
+from ..utils.se_layer import SELayer
 from .resnet import ResNet
-from .resnext import Bottleneck
+from .resnext import Bottleneck as _Bottleneck
+
+
+class Bottleneck(_Bottleneck):
+    """Bottleneck block for RegNet.
+
+    This block base on Bottleneck of resnext, difference is in SE.
+    1. RegNety series networks have special SELayer, squeeze_channels
+    is ``in_channels // ratio``; the squeeze_channels is
+    ``mid_channels // ratio`` in Bottleneck of seresnet.
+
+    Args:
+        in_channels (int): Input channels of this block.
+        out_channels (int): Output channels of this block.
+        groups (int): Groups of conv2.
+        width_per_group (int): Width per group of conv2. 64x4d indicates
+            ``groups=64, width_per_group=4`` and 32x8d indicates
+            ``groups=32, width_per_group=8``.
+        stride (int): stride of the block. Default: 1
+        dilation (int): dilation of convolution. Default: 1
+        downsample (nn.Module, optional): downsample operation on identity
+            branch. Default: None
+        style (str): `pytorch` or `caffe`. If set to "pytorch", the stride-two
+            layer is the 3x3 conv layer, otherwise the stride-two layer is
+            the first 1x1 conv layer.
+        conv_cfg (dict, optional): dictionary to construct and config conv
+            layer. Default: None
+        norm_cfg (dict): dictionary to construct and config norm layer.
+            Default: dict(type='BN')
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+            memory while slowing down the training speed.
+    """
+
+    def __init__(self, se_cfg=dict(), **kwargs):
+        super(Bottleneck, self).__init__(**kwargs)
+        self.with_se = True if se_cfg else False
+
+        if se_cfg:
+            squeeze_channels = self.in_channels // se_cfg['ratio']
+            self.se = SELayer(
+                self.mid_channels,
+                squeeze_channels=squeeze_channels,
+                bias=True)
+
+    def forward(self, x):
+
+        def _inner_forward(x):
+            identity = x
+
+            out = self.conv1(x)
+            out = self.norm1(out)
+            out = self.relu(out)
+
+            out = self.conv2(out)
+            out = self.norm2(out)
+            out = self.relu(out)
+
+            if self.with_se:
+                out = self.se(out)
+
+            out = self.conv3(out)
+            out = self.norm3(out)
+
+            if self.downsample is not None:
+                identity = self.downsample(x)
+
+            out += identity
+
+            return out
+
+        if self.with_cp and x.requires_grad:
+            out = cp.checkpoint(_inner_forward, x)
+        else:
+            out = _inner_forward(x)
+
+        out = self.relu(out)
+
+        return out
 
 
 @BACKBONES.register_module()
@@ -88,7 +167,7 @@ class RegNet(ResNet):
             group_w=8,
             depth=16,
             bot_mul=1.0,
-            se_cfg=dict(ratio=4)),
+            se_cfg=dict(ratio=4, bias=True)),
         'regnety_800mf':
         dict(
             w0=56,
@@ -97,7 +176,7 @@ class RegNet(ResNet):
             group_w=16,
             depth=14,
             bot_mul=1.0,
-            se_cfg=dict(ratio=4)),
+            se_cfg=dict(ratio=4, bias=True)),
         'regnety_1.6gf':
         dict(
             w0=48,
@@ -106,7 +185,7 @@ class RegNet(ResNet):
             group_w=24,
             depth=27,
             bot_mul=1.0,
-            se_cfg=dict(ratio=4)),
+            se_cfg=dict(ratio=4, bias=True)),
         'regnety_3.2gf':
         dict(
             w0=80,
@@ -115,7 +194,7 @@ class RegNet(ResNet):
             group_w=24,
             depth=21,
             bot_mul=1.0,
-            se_cfg=dict(ratio=4)),
+            se_cfg=dict(ratio=4, bias=True)),
         'regnety_4.0gf':
         dict(
             w0=96,
@@ -124,7 +203,7 @@ class RegNet(ResNet):
             group_w=64,
             depth=22,
             bot_mul=1.0,
-            se_cfg=dict(ratio=4)),
+            se_cfg=dict(ratio=4, bias=True)),
         'regnety_6.4gf':
         dict(
             w0=112,
@@ -133,7 +212,7 @@ class RegNet(ResNet):
             group_w=72,
             depth=25,
             bot_mul=1.0,
-            se_cfg=dict(ratio=4)),
+            se_cfg=dict(ratio=4, bias=True)),
         'regnety_8.0gf':
         dict(
             w0=192,
@@ -142,7 +221,7 @@ class RegNet(ResNet):
             group_w=56,
             depth=17,
             bot_mul=1.0,
-            se_cfg=dict(ratio=4)),
+            se_cfg=dict(ratio=4, bias=True)),
         'regnety_12gf':
         dict(
             w0=168,
@@ -151,7 +230,7 @@ class RegNet(ResNet):
             group_w=112,
             depth=19,
             bot_mul=1.0,
-            se_cfg=dict(ratio=4)),
+            se_cfg=dict(ratio=4, bias=True)),
     }
 
     def __init__(self,

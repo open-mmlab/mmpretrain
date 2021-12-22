@@ -1,4 +1,4 @@
-_base_ = ['regnety_400mf_8xb128_in1k.py']
+_base_ = ['./regnetx-400mf_8xb128_in1k.py']
 
 # model settings
 model = dict(
