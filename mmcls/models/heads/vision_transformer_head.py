@@ -68,20 +68,54 @@ class VisionTransformerClsHead(ClsHead):
                 std=math.sqrt(1 / self.layers.pre_logits.in_features))
             nn.init.zeros_(self.layers.pre_logits.bias)
 
-    def simple_test(self, x):
-        """Test without augmentation."""
-        x = x[-1]
+    def pre_logits(self, x):
+        if isinstance(x, tuple):
+            x = x[-1]
         _, cls_token = x
-        cls_score = self.layers(cls_token)
-        if isinstance(cls_score, list):
-            cls_score = sum(cls_score) / float(len(cls_score))
-        pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
+        if self.hidden_dim is None:
+            return cls_token
+        else:
+            x = self.layers.pre_logits(cls_token)
+            return self.layers.act(x)
 
-        return self.post_process(pred)
+    def simple_test(self, x, softmax=True, post_process=True):
+        """Inference without augmentation.
+
+        Args:
+            x (tuple[tuple[tensor, tensor]]): The input features.
+                Multi-stage inputs are acceptable but only the last stage will
+                be used to classify. Every item should be a tuple which
+                includes patch token and cls token. The cls token will be used
+                to classify and the shape of it should be
+                ``(num_samples, in_channels)``.
+            softmax (bool): Whether to softmax the classification score.
+            post_process (bool): Whether to do post processing the
+                inference results. It will convert the output to a list.
+
+        Returns:
+            Tensor | list: The inference results.
+
+                - If no post processing, the output is a tensor with shape
+                  ``(num_samples, num_classes)``.
+                - If post processing, the output is a multi-dimentional list of
+                  float and the dimensions are ``(num_samples, num_classes)``.
+        """
+        x = self.pre_logits(x)
+        cls_score = self.layers.head(x)
+
+        if softmax:
+            pred = (
+                F.softmax(cls_score, dim=1) if cls_score is not None else None)
+        else:
+            pred = cls_score
+
+        if post_process:
+            return self.post_process(pred)
+        else:
+            return pred
 
     def forward_train(self, x, gt_label, **kwargs):
-        x = x[-1]
-        _, cls_token = x
-        cls_score = self.layers(cls_token)
+        x = self.pre_logits(x)
+        cls_score = self.layers.head(x)
         losses = self.loss(cls_score, gt_label, **kwargs)
         return losses
