@@ -2,7 +2,6 @@
 import argparse
 import copy
 import math
-import sys
 from pathlib import Path
 
 import mmcv
@@ -12,16 +11,16 @@ from mmcv.utils import to_2tuple
 
 from mmcls.apis import init_model
 from mmcls.datasets.pipelines import Compose
-from mmcls.models.backbones import SwinTransformer, T2T_ViT, VisionTransformer
 
 try:
     from pytorch_grad_cam import (EigenCAM, GradCAM, GradCAMPlusPlus, XGradCAM,
                                   EigenGradCAM, LayerCAM)
-    import pytorch_grad_cam.activations_and_gradients as act_and_grad
+    from pytorch_grad_cam.activations_and_gradients import (
+        ActivationsAndGradients)
     from pytorch_grad_cam.utils.image import show_cam_on_image
 except ImportError:
     raise ImportError(
-        'please use `pip install grad-cam` to install pytorch_grad_cam')
+        'Please use `pip install grad-cam` to install pytorch_grad_cam')
 
 # set of transforms, which just change data format, not change the pictures
 FORMAT_TRANSFORMS_SET = {'ToTensor', 'Normalize', 'ImageToTensor', 'Collect'}
@@ -35,12 +34,6 @@ METHOD_MAP = {
     'eigengradcam': EigenGradCAM,
     'layercam': LayerCAM,
 }
-
-# Transformer set based on ViT
-ViT_based_Transformers = tuple([T2T_ViT, VisionTransformer])
-
-# Transformer set based on Swin
-Swin_based_Transformers = tuple([SwinTransformer])
 
 
 def parse_args():
@@ -87,6 +80,14 @@ def parse_args():
         help='The path to save visualize cam image, default not to save.')
     parser.add_argument('--device', default='cpu', help='Device to use cpu')
     parser.add_argument(
+        '--vit-like',
+        action='store_true',
+        help='Whether the network is ViT-like.')
+    parser.add_argument(
+        '--num-extra-tokens',
+        type=int,
+        help='The number of extra tokens in ViT-like backbones. Defaults to 1')
+    parser.add_argument(
         '--cfg-options',
         nargs='+',
         action=DictAction,
@@ -104,29 +105,41 @@ def parse_args():
     return args
 
 
-def build_reshape_transform(model):
-    """build reshape_transform for `cam.activations_and_grads`, some neural
-    networks such as SwinTransformer and VisionTransformer need an additional
-    reshape operation.
-
-    CNNs don't need, jush return `None`.
-    """
+def build_reshape_transform(model, args):
+    """Build reshape_transform for `cam.activations_and_grads`, which is
+    necessary for ViT-like networks."""
     # ViT_based_Transformers have an additional clstoken in features
-    if isinstance(model.backbone, Swin_based_Transformers):
-        has_clstoken = False
-    elif isinstance(model.backbone, ViT_based_Transformers):
-        has_clstoken = True
-    else:
-        return None
+    if not args.vit_like:
 
-    def _reshape_transform(tensor, has_clstoken=has_clstoken):
+        def check_shape(tensor):
+            assert len(tensor.size()) != 3, \
+                (f"The input feature's shape is {tensor.size()}, and it seems "
+                 'to have been flattened or from a vit-like network. '
+                 "Please use `--vit-like` if it's from a vit-like network.")
+
+        return check_shape
+
+    if args.num_extra_tokens is not None:
+        num_extra_tokens = args.num_extra_tokens
+    elif hasattr(model, 'num_extra_tokens'):
+        num_extra_tokens = model.num_extra_tokens
+    else:
+        num_extra_tokens = 1
+
+    def _reshape_transform(tensor):
         """reshape_transform helper."""
-        tensor = tensor[:, 1:, :] if has_clstoken else tensor
+        assert len(tensor.size()) == 3, \
+            (f"The input feature's shape is {tensor.size()}, "
+             'and the feature seems not from a vit-like network?')
+        tensor = tensor[:, num_extra_tokens:, :]
         # get heat_map_height and heat_map_width, preset input is a square
         heat_map_area = tensor.size()[1]
         height, width = to_2tuple(int(math.sqrt(heat_map_area)))
-        message = 'Only square input images are supported for Transformers.'
-        assert height * height == heat_map_area, message
+        assert height * height == heat_map_area, \
+            (f"The input feature's length ({heat_map_area+num_extra_tokens}) "
+             f'minus num-extra-tokens ({num_extra_tokens}) is {heat_map_area},'
+             ' which is not a perfect square number. Please check if you used '
+             'a wrong num-extra-tokens.')
         result = tensor.reshape(tensor.size(0), height, width, tensor.size(2))
 
         # Bring the channels to the first dimension, like in CNNs.
@@ -137,12 +150,8 @@ def build_reshape_transform(model):
 
 
 def apply_transforms(img_path, pipeline_cfg):
-    """Since there are some transforms, which will change the regin to
-    inference such as CenterCrop.
-
-    So it is necessary to get inference image. this function is to get
-    transformed imgaes besides transformes in `FORMAT_TRANSFORMS_SET`
-    """
+    """Apply transforms pipeline and get both formatted data and the image
+    without formatting."""
     data = dict(img_info=dict(filename=img_path), img_prefix=None)
 
     def split_pipeline_cfg(pipeline_cfg):
@@ -169,46 +178,41 @@ def apply_transforms(img_path, pipeline_cfg):
     return format_data, inference_img
 
 
+class MMActivationsAndGradients(ActivationsAndGradients):
+    """Activations and gradients manager for mmcls models."""
+
+    def __call__(self, x):
+        self.gradients = []
+        self.activations = []
+        return self.model(
+            x, return_loss=False, softmax=False, post_process=False)
+
+
 def init_cam(method, model, target_layers, use_cuda, reshape_transform):
     """Construct the CAM object once, In order to be compatible with mmcls,
     here we modify the ActivationsAndGradients object."""
 
-    class mmActivationsAndGradients(act_and_grad.ActivationsAndGradients):
-        """since the original __call__ can not pass additional parameters we
-        modify the function to return torch.tensor."""
-
-        def __call__(self, x):
-            self.gradients = []
-            self.activations = []
-
-            return self.model(
-                x, return_loss=False, softmax=False, post_process=False)
-
     GradCAM_Class = METHOD_MAP[method.lower()]
     cam = GradCAM_Class(
         model=model, target_layers=target_layers, use_cuda=use_cuda)
-    cam.activations_and_grads = mmActivationsAndGradients(
+    # Release the original hooks in ActivationsAndGradients to use
+    # MMActivationsAndGradients.
+    cam.activations_and_grads.release()
+    cam.activations_and_grads = MMActivationsAndGradients(
         cam.model, cam.target_layers, reshape_transform)
 
     return cam
 
 
 def get_layer(layer_str, model):
-    """get model lyaer from given str."""
-    cur_layer = model
-    assert layer_str.startswith(
-        'model'), "target-layer must start with 'model'"
-    layer_items = layer_str.strip().split('.')
-    assert not (layer_items[-1].startswith('relu')
-                or layer_items[-1].startswith('bn')
-                ), "target-layer can't be 'bn' or 'relu'"
-    for item_str in layer_items[1:]:
-        if hasattr(cur_layer, item_str):
-            cur_layer = getattr(cur_layer, item_str)
-        else:
-            raise ValueError(
-                f"model don't have `{layer_str}`, please use valid layers")
-    return cur_layer
+    """get model layer from given str."""
+    try:
+        layer = eval(f'model.{layer_str}', {}, {'model': model})
+    except (AttributeError, IndexError) as e:
+        raise AttributeError(
+            e.args[0] +
+            '. Please use `--preview-model` to check keys at first.')
+    return layer
 
 
 def show_cam_grad(grayscale_cam, src_img, title, out_path=None):
@@ -235,11 +239,10 @@ def main():
     if args.preview_model:
         print(model)
         print('\n Please remove `--preview-model` to get the CAM.')
-        sys.exit()
+        return
 
     # apply transform and perpare data
     data, src_img = apply_transforms(args.img, cfg.data.test.pipeline)
-    data['img'] = data['img'].unsqueeze(0)
 
     # build target layers
     target_layers = [
@@ -248,14 +251,14 @@ def main():
     assert len(args.target_layers) != 0, '`--target-layers` can not be empty'
 
     # init a cam grad calculator
-    use_cuda = True if 'cuda' in args.device else False
-    reshape_transform = build_reshape_transform(model)
+    use_cuda = ('cuda' in args.device)
+    reshape_transform = build_reshape_transform(model, args)
     cam = init_cam(args.method, model, target_layers, use_cuda,
                    reshape_transform)
 
     # calculate cam grads and show|save the visualization image
     grayscale_cam = cam(
-        input_tensor=data['img'],
+        input_tensor=data['img'].unsqueeze(0),
         target_category=args.target_category,
         eigen_smooth=args.eigen_smooth,
         aug_smooth=args.aug_smooth)
