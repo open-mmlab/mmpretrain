@@ -87,12 +87,12 @@ def parse_args():
     parser.add_argument(
         '--vit-like',
         action='store_true',
-        help='Whether the network is ViT-like.')
+        help='Whether the network is a ViT-like network.')
     parser.add_argument(
         '--num-extra-tokens',
         type=int,
         help='The number of extra tokens in ViT-like backbones. Defaults to'
-        ' use num_extra_tokens in backbones.')
+        ' use num_extra_tokens of the backbone.')
     parser.add_argument(
         '--cfg-options',
         nargs='+',

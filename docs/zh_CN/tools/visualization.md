@@ -148,8 +148,10 @@ python tools/visualizations/vis_cam.py \
     [--method ${METHOD}] \
     [--target-category ${TARGET-CATEGORY}] \
     [--save-path ${SAVE_PATH}] \
-    [--aug-smooth] \
-    [--eigen-smooth] \
+    [--vit-like] \
+    [--num-extra-tokens ${NUM-EXTRA-TOKENS}]
+    [--aug_smooth] \
+    [--eigen_smooth] \
     [--device ${DEVICE}] \
     [--cfg-options ${CFG-OPTIONS}]
 ```
@@ -159,46 +161,46 @@ python tools/visualizations/vis_cam.py \
 - `img`：目标图片路径。
 - `config`：模型配置文件的路径。
 - `checkpoint`：权重路径。
-- `--target-layers`：所查看的网络层名称，可输入一个或者多个网络层。
+- `--target-layers`：所查看的网络层名称，可输入一个或者多个网络层, 如果不设置，将使用最后一个`block`中的`norm`层。
 - `--preview-model`：是否查看模型所有网络层。
 - `--method`：类别激活图图可视化的方法，目前支持 `GradCAM`, `GradCAM++`, `XGradCAM`, `EigenCAM`, `EigenGradCAM`, `LayerCAM`，不区分大小写。如果不设置，默认为 `GradCAM`。
 - `--target-category`：查看的目标类别，如果不设置，使用模型检测出来的类别做为目标类别。
 - `--save-path`：保存的可视化图片的路径，默认不保存。
 - `--eigen-smooth`：是否使用主成分降低噪音，默认不开启。
+- `--vit-like`: 是否为 `ViT` 类似的 `Transformer` 网络，默认不看做 `Transformer` 网络处理。
+- `--num-extra-tokens`: `ViT` 类网络的额外的 tokens 通道数，默认使用主干网的 `num_extra_tokens`。
 - `--aug-smooth`：是否使用测试时增强，默认不开启。
 - `--device`：使用的计算设备，如果不设置，默认为'cpu'。
 - `--cfg-options`：对配置文件的修改，参考[教程 1：如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html)。
 
 ```{note}
-1. 在指定 `target-layers` 时，如果不知道模型有哪些网络层，可使用命令行添加 `--preview-model` 查看所有网络层名称；
-2. `target-layers` 必须以 'model' 开始；
+1. 在指定 `--target-layers` 时，如果不知道模型有哪些网络层，可使用命令行添加 `--preview-model` 查看所有网络层名称；
 ```
 
 **示例（CNN）**：
 
-`target-layers` 可以指定为以下案例（在Resnet中）:
+`--target-layers` 在 `Resnet` 中的一些案例如下:
 
-- `layer4` 等价于 `backbone[-1]`
-- `layer4.2` 等价于 `backbone[-1].2`
-- `layer4.2.conv1` 等价于 `backbone[-1][-1].conv1`
-- `layer4.2.bn1` 等价于 `backbone[-1][-1].bn1`
-- `layer4.2.relu` 等价于 `backbone[-1][-1].relu`
+- `backbone.layer4` 等价于 `backbone[-1]`
+- `backbone.layer4.2` 等价于 `backbone[-1].2`
+- `backbone.layer4.2.conv1` 等价于 `backbone[-1][-1].conv1`
+- `backbone.layer4.2.bn1` 等价于 `backbone[-1][-1].bn1`
+- `backbone.layer4.2.relu` 等价于 `backbone[-1][-1].relu`
 
-1.使用不同方法可视化 `ResNet50` 的 `layer4`，默认 `target-category` 为模型检测的结果。
+1.使用不同方法可视化 `ResNet50`，默认 `target-category` 为模型检测的结果，使用默认推导的 `target-layers`。
 
 ```shell
 python tools/visualizations/vis_cam.py \
     demo/bird.JPEG \
     configs/resnet/resnet50_8xb32_in1k.py \
     https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_batch256_imagenet_20200708-cfb998bf.pth \
-    --target-layers 'backbone.layer4.2' \
     --method GradCAM
     # GradCAM++, XGradCAM, EigenCAM, EigenGradCAM, LayerCAM
 ```
 
 | Image | GradCAM  |  GradCAM++ |  EigenGradCAM |  LayerCAM  |
 |-------|----------|------------|-------------- |------------|
-| <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429496-628d3fb3-1f6e-41ff-aa5c-1b08c60c32a9.JPEG' height="auto" width="160" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144431491-a2e19fe3-5c12-4404-b2af-a9552f5a95d9.jpg' height="auto" width="150" ></div>  | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144431610-f854556d-7f10-4084-8987-c2587aef8298.jpg' height="auto" width="150"></div>  | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144431776-899ec2e5-c15a-4274-b38c-5ac154d31ed0.jpg' height="auto" width="150"></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144431865-951ba8db-6dca-4909-ad5f-d1b21e0636ba.jpg' height="auto" width="150"></div>  |
+| <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429496-628d3fb3-1f6e-41ff-aa5c-1b08c60c32a9.JPEG' height="auto" width="160" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/147065002-f1c86516-38b2-47ba-90c1-e00b49556c70.jpg' height="auto" width="150" ></div>  | <div align=center><img src='https://user-images.githubusercontent.com/18586273/147065119-82581fa1-3414-4d6c-a849-804e1503c74b.jpg' height="auto" width="150"></div>  | <div align=center><img src='https://user-images.githubusercontent.com/18586273/147065096-75a6a2c1-6c57-4789-ad64-ebe5e38765f4.jpg' height="auto" width="150"></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/147065129-814d20fb-98be-4106-8c5e-420adcc85295.jpg' height="auto" width="150"></div>  |
 
 2.同一张图不同类别的激活图效果图, 在 `ImageNet` 数据集中，类别238为 'Greater Swiss Mountain dog', 类别281为 'tabby, tabby cat'。
 
@@ -235,24 +237,24 @@ python tools/visualizations/vis_cam.py \
 
 **示例（Transformer）**：
 
-Transformer 类的网络，目前只支持 `SwinTransformer`、`T2T-Vit` 和 `ViT(VisionTransformer, DistilledVisionTransformer)`，`target-layers` 需要设置为 `layer norm`，如：
+Transformer 类的网络，目前只支持 `SwinTransformer`、`T2T-Vit` 和 `ViT(VisionTransformer, DistilledVisionTransformer)`，`--target-layers` 需要设置为 `layer norm`，如：
 
-- `model.backbone.norm3` for Swin;
-- `model.backbone.layers.11.ln1` for ViT;
+- `'backbone.norm3'` for Swin;
+- `'backbone.layers[-1].ln1'` for ViT;
 
 ```{note}
-Since the final classification is done on the class token computed in the last attention block, the output will not be affected by the 14x14 channels in the last layer. The gradient of the output with respect to them, will be 0!
+1. 对于 `ViT`, `DeiT` 和 `DeiT`，最终分类是由最后一个注意力模块中计算的 `cls-tokens` 计算所得的，因此分类预测结果不会受到最后一层 14x14 特征图输出的影响，该输出的相对的梯度将为 0！
+2. `--num-extra-tokens` 在可视化 MMClassification 中主干网时不需要指定。但是，当用户可视化自己实现的 `Transformer` 算法时，需要在主干网中设定 `num_extra_tokens` 属性，或者使用 `--num-extra-tokens` 指定。
 ```
 
-1.对 `Swin Transformer` 进行 CAM 可视化：
+1.对 `Swin Transformer` 使用默认 `target-layers` 进行 CAM 可视化：
 
 ```shell
 python tools/visualizations/vis_cam.py \
     demo/bird.JPEG  \
     configs/swin_transformer/swin-tiny_16xb64_in1k.py \
     https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_tiny_224_b16x64_300e_imagenet_20210616_090925-66df6be6.pth \
-    --vit-like \
-    --target-layers 'backbone.norm3'
+    --vit-like
 ```
 
 2.对 `Vision Transformer(ViT)` 进行 CAM 可视化：
