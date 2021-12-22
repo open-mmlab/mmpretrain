@@ -289,7 +289,10 @@ def get_default_traget_layers(model, args):
         # if a vit-like backbone's num_extra_tokens bigger than 0, view it
         # as a VisionTransformer backbone, eg. DeiT, T2T-ViT.
         if num_extra_tokens >= 1:
+            print('Automatically choose the last norm layer before the '
+                  'final attention block as target_layer..')
             return [norm_layers[-3]]
+    print('Automatically choose the last norm layer as target_layer.')
     target_layers = [norm_layers[-1]]
     return target_layers
 
