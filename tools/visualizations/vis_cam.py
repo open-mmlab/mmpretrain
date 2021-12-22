@@ -2,6 +2,7 @@
 import argparse
 import copy
 import math
+import re
 from pathlib import Path
 
 import mmcv
@@ -211,13 +212,37 @@ def init_cam(method, model, target_layers, use_cuda, reshape_transform):
 
 def get_layer(layer_str, model):
     """get model layer from given str."""
-    try:
-        layer = eval(f'model.{layer_str}', {}, {'model': model})
-    except (AttributeError, IndexError) as e:
-        raise AttributeError(
-            e.args[0] +
-            '. Please use `--preview-model` to check keys at first.')
-    return layer
+    cur_layer = model
+    layer_names = layer_str.strip().split('.')
+
+    def get_children_by_name(model, name):
+        try:
+            return getattr(model, name)
+        except AttributeError as e:
+            raise AttributeError(
+                e.args[0] +
+                '. Please use `--preview-model` to check keys at first.')
+
+    def get_children_by_eval(model, name):
+        try:
+            return eval(f'model{name}', {}, {'model': model})
+        except (AttributeError, IndexError) as e:
+            raise AttributeError(
+                e.args[0] +
+                '. Please use `--preview-model` to check keys at first.')
+
+    for layer_name in layer_names:
+        match_res = re.match('(?P<name>.+?)(?P<indices>(\\[.+\\])+)',
+                             layer_name)
+        if match_res:
+            layer_name = match_res.groupdict()['name']
+            indices = match_res.groupdict()['indices']
+            cur_layer = get_children_by_name(cur_layer, layer_name)
+            cur_layer = get_children_by_eval(cur_layer, indices)
+        else:
+            cur_layer = get_children_by_name(cur_layer, layer_name)
+
+    return cur_layer
 
 
 def show_cam_grad(grayscale_cam, src_img, title, out_path=None):
