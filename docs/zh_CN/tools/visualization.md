@@ -125,7 +125,7 @@ python tools/visualizations/vis_lr.py configs/repvgg/repvgg-B3g4_4xb64-autoaug-l
 
 ## 类别激活图可视化
 
-MMClassification 提供 `tools\visualizations\vis_cam.py` 工具来可视化类别激活图。请使用 `pip install grad-cam` 安装依赖的 [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam)。目前支持的方法有：
+MMClassification 提供 `tools\visualizations\vis_cam.py` 工具来可视化类别激活图。请使用 `pip install "grad-cam>=1.3.6"` 安装依赖的 [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam)。目前支持的方法有：
 
 | Method   | What it does |
 |----------|--------------|
@@ -143,7 +143,7 @@ python tools/visualizations/vis_cam.py \
     ${IMG} \
     ${CONFIG_FILE} \
     ${CHECKPOINT} \
-    --target-layers ${TARGET-LAYERS} \
+    [--target-layers ${TARGET-LAYERS}] \
     [--preview-model] \
     [--method ${METHOD}] \
     [--target-category ${TARGET-CATEGORY}] \
@@ -176,10 +176,13 @@ python tools/visualizations/vis_cam.py \
 
 **示例（CNN）**：
 
-`target-layers` 不能为 `bn` 或者 `relu`。以下是例子:
+`target-layers` 可以指定为以下案例（在Resnet中）:
 
-- `model.backbone.layer4`
-- `model.backbone.layer4.1.conv`
+- `layer4` 等价于 `backbone[-1]`
+- `layer4.2` 等价于 `backbone[-1].2`
+- `layer4.2.conv1` 等价于 `backbone[-1][-1].conv1`
+- `layer4.2.bn1` 等价于 `backbone[-1][-1].bn1`
+- `layer4.2.relu` 等价于 `backbone[-1][-1].relu`
 
 1.使用不同方法可视化 `ResNet50` 的 `layer4`，默认 `target-category` 为模型检测的结果。
 
@@ -188,7 +191,7 @@ python tools/visualizations/vis_cam.py \
     demo/bird.JPEG \
     configs/resnet/resnet50_8xb32_in1k.py \
     https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_batch256_imagenet_20200708-cfb998bf.pth \
-    --target-layers model.backbone.layer4.2 \
+    --target-layers 'backbone.layer4.2' \
     --method GradCAM
     # GradCAM++, XGradCAM, EigenCAM, EigenGradCAM, LayerCAM
 ```
@@ -203,7 +206,7 @@ python tools/visualizations/vis_cam.py \
 python tools/visualizations/vis_cam.py \
     demo/cat-dog.png configs/resnet/resnet50_8xb32_in1k.py \
     https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_batch256_imagenet_20200708-cfb998bf.pth \
-    --target-layers model.backbone.layer4.2 \
+    --target-layers 'backbone.layer4.2' \
     --method GradCAM \
     --target-category 238
     # --target-category 281
@@ -221,7 +224,7 @@ python tools/visualizations/vis_cam.py \
     demo/dog.jpg  \
     configs/mobilenet_v3/mobilenet-v3-large_8xb32_in1k.py \
     https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_large-3ea3c186.pth \
-    --target-layers model.backbone.layer16 \
+    --target-layers 'backbone.layer16' \
     --method LayerCAM \
     --eigen-smooth --aug-smooth
 ```
@@ -232,10 +235,10 @@ python tools/visualizations/vis_cam.py \
 
 **示例（Transformer）**：
 
-Transformer 类的网络，目前只支持 `SwinTransformer`、`T2T-Vit` 和 `ViT(VisionTransformer, DistilledVisionTransformer)`，`target-layers` 需要设置为 `layer norm`,如：
+Transformer 类的网络，目前只支持 `SwinTransformer`、`T2T-Vit` 和 `ViT(VisionTransformer, DistilledVisionTransformer)`，`target-layers` 需要设置为 `layer norm`，如：
 
-- `model.backbone.norm3`
-- `model.backbone.layers.11.ln1`
+- `model.backbone.norm3` Swin。
+- `model.backbone.layers.11.ln1` for ViT, Since the final classification is done on the class token computed in the last attention block, the output will not be affected by the 14x14 channels in the last layer. The gradient of the output with respect to them, will be 0!
 
 1.对 `Swin Transformer` 进行 CAM 可视化：
 
@@ -244,7 +247,7 @@ python tools/visualizations/vis_cam.py \
     demo/bird.JPEG  \
     configs/swin_transformer/swin-tiny_16xb64_in1k.py \
     https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_tiny_224_b16x64_300e_imagenet_20210616_090925-66df6be6.pth \
-    --target-layers model.backbone.norm3
+    --target-layers 'backbone.norm3'
 ```
 
 2.对 `Vision Transformer(ViT)` 进行 CAM 可视化：
@@ -254,7 +257,7 @@ python tools/visualizations/vis_cam.py \
     demo/bird.JPEG  \
     configs/vision_transformer/vit-base-p16_ft-64xb64_in1k-384.py \
     https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-base-p16_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-98e8652b.pth \
-    --target-layers model.backbone.layers.11.ln1
+    --target-layers 'backbone.layers[11]ln1'
 ```
 
 3.对 `T2T-ViT` 进行 CAM 可视化：
@@ -264,10 +267,10 @@ python tools/visualizations/vis_cam.py \
     demo/bird.JPEG  \
     configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py \
     https://download.openmmlab.com/mmclassification/v0/t2t-vit/t2t-vit-t-14_3rdparty_8xb64_in1k_20210928-b7c09b62.pth \
-    --target-layers model.backbone.encoder.13.ln1
+    --target-layers 'backbone.encoder[13].ln1'
 ```
 
-| Image | ResNet50  |  ViT |  Swin |  T2T-ViT  |
+| Image | ResNet50  |  ViT |  Swin |  T2T-ViT   |
 |-------|----------|------------|-------------- |------------|
 | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429496-628d3fb3-1f6e-41ff-aa5c-1b08c60c32a9.JPEG' height="auto" width="165" ></div> | <div align=center><img src=https://user-images.githubusercontent.com/18586273/144431491-a2e19fe3-5c12-4404-b2af-a9552f5a95d9.jpg  height="auto" width="150" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144436218-245a11de-6234-4852-9c08-ff5069f6a739.jpg' height="auto" width="150" ></div>   | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144436168-01b0e565-442c-4e1e-910c-17c62cff7cd3.jpg' height="auto" width="150" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144436198-51dbfbda-c48d-48cc-ae06-1a923d19b6f6.jpg' height="auto" width="150" ></div>  |
 

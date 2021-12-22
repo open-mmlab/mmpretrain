@@ -122,7 +122,7 @@ python tools/visualizations/vis_lr.py configs/repvgg/repvgg-B3g4_4xb64-autoaug-l
 
 ## Class Activation Map Visualization
 
-MMClassification provides `tools\visualizations\vis_cam.py` tool to visualize class activation map. Please use `pip install grad-cam` command to install [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam).The supported methods are as follows:
+MMClassification provides `tools\visualizations\vis_cam.py` tool to visualize class activation map. Please use `pip install "grad-cam>=1.3.6"` command to install [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam).The supported methods are as follows:
 
 | Method   | What it does |
 |----------|--------------|
@@ -173,10 +173,12 @@ python tools/visualizations/vis_cam.py \
 
 **Examples(CNN)**：
 
-`target-layers` can not be BN layer or Relu layer, Here are some examples:
+Here are some examples of `target-layers` in ResNet, which can be a BottleNeck, conv, BN or a Relu layer:
 
 - `model.backbone.layer4`
-- `model.backbone.layer4.1.conv`
+- `model.backbone.layer4.2.conv1`
+- `model.backbone.layer4.2.bn2`
+- `model.backbone.layer4.2.relu`
 
 1.Use different methods to visualize CAM from `mobel.backbone.layer4` of `ResNet50`, the `target-category` is the predicted result by the given checkpoint.
 
@@ -215,11 +217,11 @@ python tools/visualizations/vis_cam.py \
 
 ```shell
 python tools/visualizations/vis_cam.py \
-    demo/dog.JPEG  \
+    demo/dog.jpg  \
     configs/mobilenet_v3/mobilenet-v3-large_8xb32_in1k.py \
     https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_large-3ea3c186.pth \
     --target-layers model.backbone.layer16 \
-    --method GradCAM \
+    --method LayerCAM \
     --eigen-smooth --aug-smooth
 ```
 
@@ -229,7 +231,7 @@ python tools/visualizations/vis_cam.py \
 
 **Examples(Transformer)**：
 
-supports `SwinTransformer`、`T2T-Vit` 和 `ViT(VisionTransformer, DistilledVisionTransformer)`，`target-layers` need to be set `layer norm`, here are some examples:
+supports `SwinTransformer`、`T2T-Vit` 和 `ViT(VisionTransformer, DistilledVisionTransformer)`, it is better to set `target-layers` to norm layer, here are some examples:
 
 - `model.backbone.norm3`
 - `model.backbone.layers.11.ln1`

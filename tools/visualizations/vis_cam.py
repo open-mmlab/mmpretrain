@@ -8,6 +8,7 @@ import mmcv
 import numpy as np
 from mmcv import Config, DictAction
 from mmcv.utils import to_2tuple
+from torch.nn import BatchNorm1d, BatchNorm2d, GroupNorm, LayerNorm
 
 from mmcls.apis import init_model
 from mmcls.datasets.pipelines import Compose
@@ -19,8 +20,8 @@ try:
         ActivationsAndGradients)
     from pytorch_grad_cam.utils.image import show_cam_on_image
 except ImportError:
-    raise ImportError(
-        'Please use `pip install grad-cam` to install pytorch_grad_cam')
+    raise ImportError('Please run `pip install "grad-cam>=1.3.6"` to install '
+                      '3rd party package pytorch_grad_cam.')
 
 # set of transforms, which just change data format, not change the pictures
 FORMAT_TRANSFORMS_SET = {'ToTensor', 'Normalize', 'ImageToTensor', 'Collect'}
@@ -46,7 +47,10 @@ def parse_args():
         default=[],
         nargs='+',
         type=str,
-        help='The target layers to get CAM')
+        help='The target layers to get CAM, if not set, the tool will '
+        'specify the norm layer in the last block. Backbones '
+        'implemented by users are recommended to manually specify'
+        ' target layers in commmad statement.')
     parser.add_argument(
         '--preview-model',
         default=False,
@@ -116,6 +120,7 @@ def build_reshape_transform(model, args):
                 (f"The input feature's shape is {tensor.size()}, and it seems "
                  'to have been flattened or from a vit-like network. '
                  "Please use `--vit-like` if it's from a vit-like network.")
+            return tensor
 
         return check_shape
 
@@ -228,6 +233,31 @@ def show_cam_grad(grayscale_cam, src_img, title, out_path=None):
         mmcv.imshow(visualization_img, win_name=title)
 
 
+def get_default_traget_layers(model, args):
+    """get default target layers from given model, here choose nrom type layer
+    as default target layer."""
+    norm_layers = []
+    for m in model.backbone.modules():
+        if isinstance(m, (BatchNorm2d, LayerNorm, GroupNorm, BatchNorm1d)):
+            norm_layers.append(m)
+    if len(norm_layers) == 0:
+        raise ValueError(
+            '`--target-layers` is empty. Please use `--preview-model`'
+            ' to check keys at first and then specify `target-layers`.')
+    # if the model is CNN model or Swin model, just use the last norm
+    # layer as the target-layer, if the model is ViT model, the final
+    # classification is done on the class token computed in the last
+    # attention block, the output will not be affected by the 14x14
+    # channels in the last layer. The gradient of the output with
+    # respect to them, will be 0! here use the last 3rd norm layer.
+    # means the first norm of the last decoder block.
+    if args.vit_like and args.num_extra_tokens >= 1:
+        target_layers = [norm_layers[-3]]
+    else:
+        target_layers = [norm_layers[-1]]
+    return target_layers
+
+
 def main():
     args = parse_args()
     cfg = Config.fromfile(args.config)
@@ -245,10 +275,12 @@ def main():
     data, src_img = apply_transforms(args.img, cfg.data.test.pipeline)
 
     # build target layers
-    target_layers = [
-        get_layer(layer_str, model) for layer_str in args.target_layers
-    ]
-    assert len(args.target_layers) != 0, '`--target-layers` can not be empty'
+    if args.target_layers:
+        target_layers = [
+            get_layer(layer, model) for layer in args.target_layers
+        ]
+    else:
+        target_layers = get_default_traget_layers(model, args)
 
     # init a cam grad calculator
     use_cuda = ('cuda' in args.device)
