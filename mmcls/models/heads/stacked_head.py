@@ -49,8 +49,7 @@ class StackedLinearClsHead(ClsHead):
     """Classifier head with several hidden fc layer and a output fc layer.
 
     Args:
-        num_classes (int): Number of categories excluding the background
-            category.
+        num_classes (int): Number of categories.
         in_channels (int): Number of channels in the input feature map.
         mid_channels (Sequence): Number of channels in the hidden fc layers.
         dropout_rate (float): Dropout rate after each hidden fc layer,
@@ -89,9 +88,7 @@ class StackedLinearClsHead(ClsHead):
         self._init_layers()
 
     def _init_layers(self):
-        self.layers = ModuleList(
-            init_cfg=dict(
-                type='Normal', layer='Linear', mean=0., std=0.01, bias=0.))
+        self.layers = ModuleList()
         in_channels = self.in_channels
         for hidden_channels in self.mid_channels:
             self.layers.append(
@@ -114,24 +111,53 @@ class StackedLinearClsHead(ClsHead):
     def init_weights(self):
         self.layers.init_weights()
 
-    def simple_test(self, x):
-        """Test without augmentation."""
+    def pre_logits(self, x):
         if isinstance(x, tuple):
             x = x[-1]
-        cls_score = x
-        for layer in self.layers:
-            cls_score = layer(cls_score)
-        if isinstance(cls_score, list):
-            cls_score = sum(cls_score) / float(len(cls_score))
-        pred = F.softmax(cls_score, dim=1) if cls_score is not None else None
+        for layer in self.layers[:-1]:
+            x = layer(x)
+        return x
 
-        return self.post_process(pred)
+    @property
+    def fc(self):
+        return self.layers[-1]
+
+    def simple_test(self, x, softmax=True, post_process=True):
+        """Inference without augmentation.
+
+        Args:
+            x (tuple[Tensor]): The input features.
+                Multi-stage inputs are acceptable but only the last stage will
+                be used to classify. The shape of every item should be
+                ``(num_samples, in_channels)``.
+            softmax (bool): Whether to softmax the classification score.
+            post_process (bool): Whether to do post processing the
+                inference results. It will convert the output to a list.
+
+        Returns:
+            Tensor | list: The inference results.
+
+                - If no post processing, the output is a tensor with shape
+                  ``(num_samples, num_classes)``.
+                - If post processing, the output is a multi-dimentional list of
+                  float and the dimensions are ``(num_samples, num_classes)``.
+        """
+        x = self.pre_logits(x)
+        cls_score = self.fc(x)
+
+        if softmax:
+            pred = (
+                F.softmax(cls_score, dim=1) if cls_score is not None else None)
+        else:
+            pred = cls_score
+
+        if post_process:
+            return self.post_process(pred)
+        else:
+            return pred
 
     def forward_train(self, x, gt_label, **kwargs):
-        if isinstance(x, tuple):
-            x = x[-1]
-        cls_score = x
-        for layer in self.layers:
-            cls_score = layer(cls_score)
+        x = self.pre_logits(x)
+        cls_score = self.fc(x)
         losses = self.loss(cls_score, gt_label, **kwargs)
         return losses

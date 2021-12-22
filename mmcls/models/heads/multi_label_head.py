@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
-import torch.nn.functional as F
 
 from ..builder import HEADS, build_loss
 from ..utils import is_tracing
@@ -47,14 +46,50 @@ class MultiLabelClsHead(BaseHead):
         losses = self.loss(cls_score, gt_label, **kwargs)
         return losses
 
-    def simple_test(self, x):
+    def pre_logits(self, x):
         if isinstance(x, tuple):
             x = x[-1]
-        if isinstance(x, list):
-            x = sum(x) / float(len(x))
-        pred = F.sigmoid(x) if x is not None else None
 
-        return self.post_process(pred)
+        from mmcls.utils import get_root_logger
+        logger = get_root_logger()
+        logger.warning(
+            'The input of MultiLabelClsHead should be already logits. '
+            'Please modify the backbone if you want to get pre-logits feature.'
+        )
+        return x
+
+    def simple_test(self, x, sigmoid=True, post_process=True):
+        """Inference without augmentation.
+
+        Args:
+            cls_score (tuple[Tensor]): The input classification score logits.
+                Multi-stage inputs are acceptable but only the last stage will
+                be used to classify. The shape of every item should be
+                ``(num_samples, num_classes)``.
+            sigmoid (bool): Whether to sigmoid the classification score.
+            post_process (bool): Whether to do post processing the
+                inference results. It will convert the output to a list.
+
+        Returns:
+            Tensor | list: The inference results.
+
+                - If no post processing, the output is a tensor with shape
+                  ``(num_samples, num_classes)``.
+                - If post processing, the output is a multi-dimentional list of
+                  float and the dimensions are ``(num_samples, num_classes)``.
+        """
+        if isinstance(x, tuple):
+            x = x[-1]
+
+        if sigmoid:
+            pred = torch.sigmoid(x) if x is not None else None
+        else:
+            pred = x
+
+        if post_process:
+            return self.post_process(pred)
+        else:
+            return pred
 
     def post_process(self, pred):
         on_trace = is_tracing()
