@@ -27,7 +27,7 @@ class TestDataloaderBuilder():
 
         if digit_version(torch.__version__) >= digit_version('1.8.0'):
             assert dataloader.persistent_workers
-        else:
+        elif hasattr(dataloader, 'persistent_workers'):
             assert not dataloader.persistent_workers
 
         assert dataloader.batch_size == self.samples_per_gpu
@@ -62,7 +62,7 @@ class TestDataloaderBuilder():
 
         if digit_version(torch.__version__) >= digit_version('1.8.0'):
             assert dataloader.persistent_workers
-        else:
+        elif hasattr(dataloader, 'persistent_workers'):
             assert not dataloader.persistent_workers
 
         assert dataloader.batch_size == self.samples_per_gpu * 2
@@ -98,7 +98,7 @@ class TestDataloaderBuilder():
 
         if digit_version(torch.__version__) >= digit_version('1.8.0'):
             assert dataloader.persistent_workers
-        else:
+        elif hasattr(dataloader, 'persistent_workers'):
             assert not dataloader.persistent_workers
 
         assert dataloader.batch_size == self.samples_per_gpu
