@@ -3,8 +3,9 @@ import pytest
 import torch
 import torch.nn as nn
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
-from mmcv.runner import EpochBasedRunner, build_optimizer
+from mmcv.runner import EpochBasedRunner, IterBasedRunner, build_optimizer
 from mmcv.utils import get_logger
+from mmcv.utils.logging import print_log
 from torch.utils.data import DataLoader, Dataset
 
 from mmcls.core.hook import PreciseBNHook
@@ -108,13 +109,13 @@ def test_precise_bn():
         # num_items must be larger than 0
         precise_bn_hook = PreciseBNHook(num_items=-1)
         runner.register_hook(precise_bn_hook)
-        runner.run([loader], [('train', 1)], 1)
+        runner.run([loader], [('train', 1)], max_epochs=1)
 
     with pytest.raises(AssertionError):
         # interval must be larger than 0
         precise_bn_hook = PreciseBNHook(interval=0)
         runner.register_hook(precise_bn_hook)
-        runner.run([loader], [('train', 1)], 1)
+        runner.run([loader], [('train', 1)], max_epochs=1)
 
     with pytest.raises(AssertionError):
         # interval must be larger than 0
@@ -125,7 +126,19 @@ def test_precise_bn():
             logger=logger)
         precise_bn_hook = PreciseBNHook(interval=0)
         runner.register_hook(precise_bn_hook)
-        runner.run([loader], [('train', 1)], 1)
+        runner.run([loader], [('train', 1)], max_epochs=1)
+
+    with pytest.raises(AssertionError):
+        # only support EpochBaseRunner
+        runner = IterBasedRunner(
+            model=model,
+            batch_processor=None,
+            optimizer=optimizer,
+            logger=logger)
+        precise_bn_hook = PreciseBNHook(interval=2)
+        runner.register_hook(precise_bn_hook)
+        print_log(runner)
+        runner.run([loader], [('train', 1)], max_epochs=1)
 
     # test non-DDP model
     test_bigger_dataset = BiggerDataset()
@@ -137,7 +150,7 @@ def test_precise_bn():
     runner = EpochBasedRunner(
         model=model, batch_processor=None, optimizer=optimizer, logger=logger)
     runner.register_hook(precise_bn_hook)
-    runner.run(loaders, [('train', 1)], 1)
+    runner.run(loaders, [('train', 1)], max_epochs=1)
 
     # test DP model
     test_bigger_dataset = BiggerDataset()
@@ -150,7 +163,7 @@ def test_precise_bn():
     runner = EpochBasedRunner(
         model=model, batch_processor=None, optimizer=optimizer, logger=logger)
     runner.register_hook(precise_bn_hook)
-    runner.run(loaders, [('train', 1)], 1)
+    runner.run(loaders, [('train', 1)], max_epochs=1)
 
     # test model w/ gn layer
     loader = DataLoader(test_bigger_dataset, batch_size=2)
@@ -162,7 +175,7 @@ def test_precise_bn():
     runner = EpochBasedRunner(
         model=model, batch_processor=None, optimizer=optimizer, logger=logger)
     runner.register_hook(precise_bn_hook)
-    runner.run(loaders, [('train', 1)], 1)
+    runner.run(loaders, [('train', 1)], max_epochs=1)
 
     # test model without bn layer
     loader = DataLoader(test_bigger_dataset, batch_size=2)
@@ -174,7 +187,7 @@ def test_precise_bn():
     runner = EpochBasedRunner(
         model=model, batch_processor=None, optimizer=optimizer, logger=logger)
     runner.register_hook(precise_bn_hook)
-    runner.run(loaders, [('train', 1)], 1)
+    runner.run(loaders, [('train', 1)], max_epochs=1)
 
     # test how precise it is
     loader = DataLoader(test_bigger_dataset, batch_size=2)
@@ -186,7 +199,7 @@ def test_precise_bn():
     runner = EpochBasedRunner(
         model=model, batch_processor=None, optimizer=optimizer, logger=logger)
     runner.register_hook(precise_bn_hook)
-    runner.run(loaders, [('train', 1)], 1)
+    runner.run(loaders, [('train', 1)], max_epochs=1)
     imgs_list = list()
     for loader in loaders:
         for i, data in enumerate(loader):
@@ -221,4 +234,4 @@ def test_precise_bn():
             optimizer=optimizer,
             logger=logger)
         runner.register_hook(precise_bn_hook)
-        runner.run(loaders, [('train', 1)], 1)
+        runner.run(loaders, [('train', 1)], max_epochs=1)

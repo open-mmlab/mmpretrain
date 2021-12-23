@@ -10,6 +10,9 @@ from mmcv.parallel import MMDistributedDataParallel
 from mmcv.runner import EpochBasedRunner, get_dist_info
 from mmcv.runner.hooks import HOOKS, Hook
 from mmcv.utils import print_log
+from torch.nn import GroupNorm
+from torch.nn.modules.batchnorm import _BatchNorm
+from torch.nn.modules.instancenorm import _InstanceNorm
 from torch.nn.parallel import DataParallel, DistributedDataParallel
 
 
@@ -79,16 +82,21 @@ def update_bn_stats(model, loader, num_samples=8192, logger=None):
     num_iter = num_samples // (loader.batch_size * NUM_GPUS)
     num_iter = min(num_iter, len(loader))
     # Retrieve the BN layers
-    bn_layers = [
-        m for m in model.modules()
-        if isinstance(m, (torch.nn.BatchNorm2d, torch.nn.BatchNorm1d))
-    ]
+    bn_layers = [m for m in model.modules() if isinstance(m, (_BatchNorm))]
 
     if len(bn_layers) == 0:
         print_log('No BN found in model', logger=logger, level=logging.WARNING)
         return
     print_log(
         f'{len(bn_layers)} BN found, run {num_iter} iters...', logger=logger)
+
+    # Finds all the other norm layers with training=True.
+    for m in model.modules():
+        if m.training and isinstance(m, (_InstanceNorm, GroupNorm)):
+            print_log(
+                'IN/GN stats will not be updated in PreciseHook.',
+                logger=logger,
+                level=logging.WARNING)
 
     # Initialize BN stats storage for computing
     # mean(mean(batch)) and mean(var(batch))
@@ -129,9 +137,6 @@ class PreciseBNHook(Hook):
         num_items (int): Number of iterations to update the bn stats.
             Default: 8192.
         interval (int): Perform precise bn interval. Default: 1.
-        by_epoch (bool): Determine perform precise bn by epoch or by iteration.
-            If set to True, it will perform by epoch. Otherwise, by iteration.
-            Default: True.
     """
 
     def __init__(self, num_items=8192, interval=1):
