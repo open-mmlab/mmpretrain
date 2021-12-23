@@ -83,20 +83,6 @@ def set_random_seed(seed, deterministic=False):
         torch.backends.cudnn.benchmark = False
 
 
-def set_default_sampler_cfg(cfg, distributed):
-    runner_type = cfg.get('runner').type.split('.')[-1]
-    if runner_type in ('EpochBasedRunner', 'IterBasedRunner'):
-        if distributed:
-            sampler_cfg = dict(
-                type='DistributedSampler', shuffle=True, round_up=True)
-        else:
-            sampler_cfg = None
-    else:
-        raise ValueError('Using custom runner but not setting sampler.'
-                         'Please set sampler in your config.')
-    return sampler_cfg
-
-
 def train_model(model,
                 dataset,
                 cfg,
@@ -111,8 +97,6 @@ def train_model(model,
     dataset = dataset if isinstance(dataset, (list, tuple)) else [dataset]
 
     sampler_cfg = cfg.data.get('sampler', None)
-    if sampler_cfg is None:
-        sampler_cfg = set_default_sampler_cfg(cfg, distributed)
 
     data_loaders = [
         build_dataloader(
