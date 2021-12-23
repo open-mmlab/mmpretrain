@@ -22,6 +22,7 @@ def is_parallel_module(module):
     The following 3 modules (and their subclasses) are regarded as parallel
     modules: DataParallel, DistributedDataParallel,
     MMDistributedDataParallel (the deprecated version).
+
     Args:
         module (nn.Module): The module to be checked.
     Returns:
@@ -40,7 +41,13 @@ def scaled_all_reduce(tensors, num_gpus):
 
     The input tensors are modified in-place. Currently supports only the sum
     reduction operator. The reduced values are scaled by the inverse size of
-    the process group .
+    the process group.
+
+    Args:
+        tensors (List[torch.Tensor]): The tensors to process.
+        num_gpus (int): The number of gpus to use
+    Returns:
+        List[torch.Tensor]: The processed tensors.
     """
     # There is no need for reduction in the single-proc case
     if num_gpus == 1:
@@ -63,12 +70,19 @@ def scaled_all_reduce(tensors, num_gpus):
 def update_bn_stats(model, loader, num_samples=8192, logger=None):
     """Computes precise BN stats on training data.
 
-    the actual num_items is :
-      int(num_samples / batch_size / NUM_GPUS) * batch_size * NUM_GPUS
+    During training both BN stats and the weight are changing after every
+    iteration, so the running average can not precisely reflect the actual
+    stats of the current model.
+    In this function, the BN stats are recomputed with fixed weights, to make
+    the running average more precise. Specifically, it computes the true
+    average of per-batch mean/variance instead of the running average.
 
     Attributes:
-        model (nn.module): A pytorch NN model.
+        model (nn.module): The model whose bn stats will be recomputed.
         loader (DataLoader): PyTorch dataloader._dataloader
+        num_iters (int): number of iterations to compute the stats.
+        logger (:obj:`logging.Logger` | None): Logger for logging.
+            Default: None.
     """
     if is_parallel_module(model):
         parallel_module = model
@@ -78,11 +92,15 @@ def update_bn_stats(model, loader, num_samples=8192, logger=None):
 
     # get dist info
     rank, NUM_GPUS = get_dist_info()
-    # Compute the number of minibatches to use
+    # Compute the number of minibatches to use, if the size of dataloader is
+    #  less than num_iters, use all the samples in dataloader.
     num_iter = num_samples // (loader.batch_size * NUM_GPUS)
     num_iter = min(num_iter, len(loader))
     # Retrieve the BN layers
-    bn_layers = [m for m in model.modules() if isinstance(m, (_BatchNorm))]
+    bn_layers = [
+        m for m in model.modules()
+        if m.training and isinstance(m, (_BatchNorm))
+    ]
 
     if len(bn_layers) == 0:
         print_log('No BN found in model', logger=logger, level=logging.WARNING)
