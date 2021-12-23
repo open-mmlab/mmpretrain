@@ -1,7 +1,7 @@
 import math
 
 import torch
-import torch.distributed as dist
+from mmcv.runner import get_dist_info
 from torch.utils.data import Sampler
 
 from mmcls.datasets import SAMPLERS
@@ -30,16 +30,11 @@ class RepeatAugSampler(Sampler):
         selected_round=256,
         selected_ratio=0,
     ):
-        if num_replicas is None:
-            if not dist.is_available():
-                raise RuntimeError(
-                    'Requires distributed package to be available')
-            num_replicas = dist.get_world_size()
-        if rank is None:
-            if not dist.is_available():
-                raise RuntimeError(
-                    'Requires distributed package to be available')
-            rank = dist.get_rank()
+        default_rank, default_world_size = get_dist_info()
+        rank = default_rank if rank is None else rank
+        num_replicas = (
+            default_world_size if num_replicas is None else num_replicas)
+
         self.dataset = dataset
         self.num_replicas = num_replicas
         self.rank = rank
