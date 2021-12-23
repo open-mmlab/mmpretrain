@@ -96,12 +96,13 @@ def build_dataloader(dataset,
     # Default sampler logic
     elif dist:
         sampler = build_sampler(
-            type='DistributedSampler',
-            dataset=dataset,
-            num_replicas=world_size,
-            rank=rank,
-            shuffle=shuffle,
-            round_up=round_up)
+            dict(
+                type='DistributedSampler',
+                dataset=dataset,
+                num_replicas=world_size,
+                rank=rank,
+                shuffle=shuffle,
+                round_up=round_up))
     else:
         sampler = None
 
