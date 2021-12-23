@@ -4,10 +4,8 @@ from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
-from mmcv.utils import Config
 
 from mmcls.datasets import BaseDataset, RepeatAugSampler, build_sampler
-from mmcls.datasets.builder import get_sampler_cfg
 
 
 @patch.multiple(BaseDataset, __abstractmethods__=set())
@@ -30,30 +28,6 @@ def test_sampler_builder(mock_torch_dist):
     mock_torch_dist.get_rank.side_effect = lambda: 0
     dataset = construct_toy_single_label_dataset(1000)[0]
     build_sampler(dict(type='RepeatAugSampler', dataset=dataset))
-
-
-def test_default_cfg_setter():
-    result = get_sampler_cfg(None, distributed=True)
-    assert result.get('type', None) == 'DistributedSampler'
-    result = get_sampler_cfg(None, distributed=False)
-    assert result is None
-
-    cfg = Config(dict(data=dict(sampler='123456')))
-    result = get_sampler_cfg(cfg, True)
-    assert result == '123456'
-
-    cfg = Config(dict(data=dict(), runner=dict(type='EpochBasedRunner')))
-
-    result = get_sampler_cfg(cfg, distributed=False)
-    assert result is None
-    result = get_sampler_cfg(cfg, distributed=True)
-    assert result.get('type', None) == 'DistributedSampler'
-    assert result.get('shuffle', None)
-    assert result.get('round_up', None)
-
-    cfg = Config(dict(data=dict(), runner=dict(type='CustomRunner')))
-    with pytest.raises(ValueError):
-        get_sampler_cfg(cfg, distributed=False)
 
 
 @patch('mmcls.datasets.samplers.repeat_aug.dist')

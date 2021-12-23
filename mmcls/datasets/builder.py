@@ -23,25 +23,6 @@ PIPELINES = Registry('pipeline')
 SAMPLERS = Registry('sampler')
 
 
-def get_sampler_cfg(cfg, distributed):
-    if cfg is not None:
-        sampler_cfg = cfg.data.get('sampler', None)
-        if sampler_cfg is not None:
-            return sampler_cfg
-        else:
-            runner_type = cfg.get('runner').type.split('.')[-1]
-    if cfg is None or runner_type in ('EpochBasedRunner', 'IterBasedRunner'):
-        if distributed:
-            sampler_cfg = dict(
-                type='DistributedSampler', shuffle=True, round_up=True)
-        else:
-            sampler_cfg = None
-    else:
-        raise ValueError('Using custom runner but not setting sampler.'
-                         'Please set sampler in your config.')
-    return sampler_cfg
-
-
 def build_dataset(cfg, default_args=None):
     from .dataset_wrappers import (ConcatDataset, RepeatDataset,
                                    ClassBalancedDataset)
@@ -69,7 +50,7 @@ def build_dataloader(dataset,
                      seed=None,
                      pin_memory=True,
                      persistent_workers=True,
-                     cfg=None,
+                     sampler_cfg=None,
                      **kwargs):
     """Build PyTorch DataLoader.
 
@@ -95,6 +76,8 @@ def build_dataloader(dataset,
             This allows to maintain the workers Dataset instances alive.
             The argument also has effect in PyTorch>=1.7.0.
             Default: True
+        sampler_cfg (dict): sampler configuration to override the default
+            sampler
         kwargs: any keyword argument to be used to initialize DataLoader
 
     Returns:
@@ -102,14 +85,29 @@ def build_dataloader(dataset,
     """
     rank, world_size = get_dist_info()
 
-    sampler_cfg = get_sampler_cfg(cfg, distributed=dist)
-
+    # Custom sampler logic
     if sampler_cfg:
+        # shuffle=False when val and test
         sampler_cfg.update(shuffle=shuffle)
+        sampler = build_sampler(
+            sampler_cfg,
+            default_args=dict(
+                dataset=dataset, num_replicas=world_size, rank=rank))
+    # Default sampler logic
+    elif dist:
+        sampler = build_sampler(
+            type='DistributedSampler',
+            dataset=dataset,
+            num_replicas=world_size,
+            rank=rank,
+            shuffle=shuffle,
+            round_up=round_up)
+    else:
+        sampler = None
+
+    # If sampler exists, turn off dataloader shuffle
+    if sampler is not None:
         shuffle = False
-    sampler = build_sampler(
-        sampler_cfg,
-        default_args=dict(dataset=dataset, num_replicas=world_size, rank=rank))
 
     if dist:
         batch_size = samples_per_gpu
