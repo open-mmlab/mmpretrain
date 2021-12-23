@@ -33,12 +33,12 @@ class TestDataloaderBuilder():
         assert dataloader.batch_size == self.samples_per_gpu
         assert dataloader.num_workers == self.workers_per_gpu
         assert not all(
-            torch.concat(list(iter(dataloader))) == torch.tensor(self.data))
+            torch.cat(list(iter(dataloader))) == torch.tensor(self.data))
 
         # Test without shuffle
         dataloader = build_dataloader(**common_cfg, shuffle=False)
         assert all(
-            torch.concat(list(iter(dataloader))) == torch.tensor(self.data))
+            torch.cat(list(iter(dataloader))) == torch.tensor(self.data))
 
         # Test with custom sampler_cfg
         dataloader = build_dataloader(
@@ -46,8 +46,7 @@ class TestDataloaderBuilder():
             sampler_cfg=dict(type='RepeatAugSampler', selected_round=0),
             shuffle=False)
         expect = [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6]
-        assert all(
-            torch.concat(list(iter(dataloader))) == torch.tensor(expect))
+        assert all(torch.cat(list(iter(dataloader))) == torch.tensor(expect))
 
     @patch('mmcls.datasets.builder.get_dist_info', return_value=(0, 1))
     def test_multi_gpu(self, _):
@@ -69,12 +68,12 @@ class TestDataloaderBuilder():
         assert dataloader.batch_size == self.samples_per_gpu * 2
         assert dataloader.num_workers == self.workers_per_gpu * 2
         assert not all(
-            torch.concat(list(iter(dataloader))) == torch.tensor(self.data))
+            torch.cat(list(iter(dataloader))) == torch.tensor(self.data))
 
         # Test without shuffle
         dataloader = build_dataloader(**common_cfg, shuffle=False)
         assert all(
-            torch.concat(list(iter(dataloader))) == torch.tensor(self.data))
+            torch.cat(list(iter(dataloader))) == torch.tensor(self.data))
 
         # Test with custom sampler_cfg
         dataloader = build_dataloader(
@@ -83,7 +82,7 @@ class TestDataloaderBuilder():
             shuffle=False)
         expect = torch.tensor(
             [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6])
-        assert all(torch.concat(list(iter(dataloader))) == expect)
+        assert all(torch.cat(list(iter(dataloader))) == expect)
 
     @patch('mmcls.datasets.builder.get_dist_info', return_value=(1, 2))
     def test_distributed(self, _):
@@ -105,12 +104,12 @@ class TestDataloaderBuilder():
         assert dataloader.batch_size == self.samples_per_gpu
         assert dataloader.num_workers == self.workers_per_gpu
         non_expect = torch.tensor(self.data[1::2])
-        assert not all(torch.concat(list(iter(dataloader))) == non_expect)
+        assert not all(torch.cat(list(iter(dataloader))) == non_expect)
 
         # Test without shuffle
         dataloader = build_dataloader(**common_cfg, shuffle=False)
         expect = torch.tensor(self.data[1::2])
-        assert all(torch.concat(list(iter(dataloader))) == expect)
+        assert all(torch.cat(list(iter(dataloader))) == expect)
 
         # Test with custom sampler_cfg
         dataloader = build_dataloader(
@@ -119,4 +118,4 @@ class TestDataloaderBuilder():
             shuffle=False)
         expect = torch.tensor(
             [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6][1::2])
-        assert all(torch.concat(list(iter(dataloader))) == expect)
+        assert all(torch.cat(list(iter(dataloader))) == expect)
