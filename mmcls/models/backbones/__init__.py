@@ -9,6 +9,7 @@ from .res2net import Res2Net
 from .resnest import ResNeSt
 from .resnet import ResNet, ResNetV1d
 from .resnet_cifar import ResNet_CIFAR
+from .rmnet import RMNet
 from .resnext import ResNeXt
 from .seresnet import SEResNet
 from .seresnext import SEResNeXt
@@ -25,5 +26,5 @@ __all__ = [
     'LeNet5', 'AlexNet', 'VGG', 'RegNet', 'ResNet', 'ResNeXt', 'ResNetV1d',
     'ResNeSt', 'ResNet_CIFAR', 'SEResNet', 'SEResNeXt', 'ShuffleNetV1',
     'ShuffleNetV2', 'MobileNetV2', 'MobileNetV3', 'VisionTransformer',
-    'SwinTransformer', 'TNT', 'TIMMBackbone', 'T2T_ViT', 'Res2Net', 'RepVGG'
+    'SwinTransformer', 'TNT', 'TIMMBackbone', 'T2T_ViT', 'Res2Net', 'RepVGG','RMNet',
 ]
