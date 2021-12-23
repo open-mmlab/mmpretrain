@@ -125,16 +125,18 @@ python tools/visualizations/vis_lr.py configs/repvgg/repvgg-B3g4_4xb64-autoaug-l
 
 ## 类别激活图可视化
 
-MMClassification 提供 `tools\visualizations\vis_cam.py` 工具来可视化类别激活图。请使用 `pip install "grad-cam>=1.3.6"` 安装依赖的 [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam)。目前支持的方法有：
+MMClassification 提供 `tools\visualizations\vis_cam.py` 工具来可视化类别激活图。请使用 `pip install "grad-cam>=1.3.6"` 安装依赖的 [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam)。
 
-| Method   | What it does |
-|----------|--------------|
-| GradCAM  | Weight the 2D activations by the average gradient |
-| GradCAM++  | Like GradCAM but uses second order gradients |
-| XGradCAM  | Like GradCAM but scale the gradients by the normalized activations |
-| EigenCAM  | Takes the first principle component of the 2D Activations (no class discrimination, but seems to give great results)|
-| EigenGradCAM  | Like EigenCAM but with class discrimination: First principle component of Activations*Grad. Looks like GradCAM, but cleaner|
-| LayerCAM  | Spatially weight the activations by positive gradients. Works better especially in lower layers |
+目前支持的方法有：
+
+| Method     | What it does |
+|:----------:|:------------:|
+| GradCAM    | 使用平均梯度对 2D 激活进行加权 |
+| GradCAM++  | 类似 GradCAM，但使用了二阶梯度 |
+| XGradCAM   | 类似 GradCAM，但通过归一化的激活对梯度进行了加权 |
+| EigenCAM   | 使用 2D 激活的第一主成分（无法区分类别，但效果似乎不错）|
+| EigenGradCAM  | 类似 EigenCAM，但支持类别区分，使用了激活 \* 梯度的第一主成分，看起来和 GradCAM 差不多，但是更干净 |
+| LayerCAM  | 使用正梯度对激活进行空间加权，对于浅层有更好的效果 |
 
 **命令行**：
 
@@ -167,27 +169,29 @@ python tools/visualizations/vis_cam.py \
 - `--target-category`：查看的目标类别，如果不设置，使用模型检测出来的类别做为目标类别。
 - `--save-path`：保存的可视化图片的路径，默认不保存。
 - `--eigen-smooth`：是否使用主成分降低噪音，默认不开启。
-- `--vit-like`: 是否为 `ViT` 类似的 `Transformer` 网络，默认不看做 `Transformer` 网络处理。
-- `--num-extra-tokens`: `ViT` 类网络的额外的 tokens 通道数，默认使用主干网的 `num_extra_tokens`。
-- `--aug-smooth`：是否使用测试时增强，默认不开启。
+- `--vit-like`: 是否为 `ViT` 类似的 Transformer-based 网络
+- `--num-extra-tokens`: `ViT` 类网络的额外的 tokens 通道数，默认使用主干网络的 `num_extra_tokens`。
+- `--aug-smooth`：是否使用测试时增强
 - `--device`：使用的计算设备，如果不设置，默认为'cpu'。
 - `--cfg-options`：对配置文件的修改，参考[教程 1：如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html)。
 
 ```{note}
-1. 在指定 `--target-layers` 时，如果不知道模型有哪些网络层，可使用命令行添加 `--preview-model` 查看所有网络层名称；
+在指定 `--target-layers` 时，如果不知道模型有哪些网络层，可使用命令行添加 `--preview-model` 查看所有网络层名称；
 ```
 
 **示例（CNN）**：
 
-`--target-layers` 在 `Resnet` 中的一些案例如下:
+`--target-layers` 在 `Resnet-50` 中的一些示例如下:
 
-- `backbone.layer4` 等价于 `backbone[-1]`
-- `backbone.layer4.2` 等价于 `backbone[-1].2`
-- `backbone.layer4.2.conv1` 等价于 `backbone[-1][-1].conv1`
-- `backbone.layer4.2.bn1` 等价于 `backbone[-1][-1].bn1`
-- `backbone.layer4.2.relu` 等价于 `backbone[-1][-1].relu`
+- `'backbone.layer4'`，表示第四个 `ResLayer` 层的输出。
+- `'backbone.layer4.2'` 表示第四个 `ResLayer` 层中第三个 `BottleNeck` 块的输出。
+- `'backbone.layer4.2.conv1'` 表示上述 `BottleNeck` 块中 `conv1` 层的输出。
 
-1.使用不同方法可视化 `ResNet50`，默认 `target-category` 为模型检测的结果，使用默认推导的 `target-layers`。
+```{note}
+对于 `ModuleList` 或者 `Sequential` 类型的网络层，可以直接使用索引的方式指定子模块。比如 `backbone.layer4[-1]` 和 `backbone.layer4.2` 是相同的，因为 `layer4` 是一个拥有三个子模块的 `Sequential`。
+```
+
+1. 使用不同方法可视化 `ResNet50`，默认 `target-category` 为模型检测的结果，使用默认推导的 `target-layers`。
 
 ```shell
 python tools/visualizations/vis_cam.py \
@@ -202,7 +206,7 @@ python tools/visualizations/vis_cam.py \
 |-------|----------|------------|-------------- |------------|
 | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429496-628d3fb3-1f6e-41ff-aa5c-1b08c60c32a9.JPEG' height="auto" width="160" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/147065002-f1c86516-38b2-47ba-90c1-e00b49556c70.jpg' height="auto" width="150" ></div>  | <div align=center><img src='https://user-images.githubusercontent.com/18586273/147065119-82581fa1-3414-4d6c-a849-804e1503c74b.jpg' height="auto" width="150"></div>  | <div align=center><img src='https://user-images.githubusercontent.com/18586273/147065096-75a6a2c1-6c57-4789-ad64-ebe5e38765f4.jpg' height="auto" width="150"></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/147065129-814d20fb-98be-4106-8c5e-420adcc85295.jpg' height="auto" width="150"></div>  |
 
-2.同一张图不同类别的激活图效果图，在 `ImageNet` 数据集中，类别238为 'Greater Swiss Mountain dog'，类别281为 'tabby, tabby cat'。
+2. 同一张图不同类别的激活图效果图，在 `ImageNet` 数据集中，类别238为 'Greater Swiss Mountain dog'，类别281为 'tabby, tabby cat'。
 
 ```shell
 python tools/visualizations/vis_cam.py \
@@ -219,7 +223,7 @@ python tools/visualizations/vis_cam.py \
 |   Dog     | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429526-f27f4cce-89b9-4117-bfe6-55c2ca7eaba6.png' height="auto" width="165" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144433562-968a57bc-17d9-413e-810e-f91e334d648a.jpg' height="auto" width="150" ></div>  | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144433853-319f3a8f-95f2-446d-b84f-3028daca5378.jpg' height="auto" width="150" ></div>  | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144433937-daef5a69-fd70-428f-98a3-5e7747f4bb88.jpg' height="auto" width="150" ></div>  |
 |   Cat     | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429526-f27f4cce-89b9-4117-bfe6-55c2ca7eaba6.png' height="auto" width="165" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144434518-867ae32a-1cb5-4dbd-b1b9-5e375e94ea48.jpg' height="auto" width="150" ></div>  | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144434603-0a2fd9ec-c02e-4e6c-a17b-64c234808c56.jpg' height="auto" width="150" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144434623-b4432cc2-c663-4b97-aed3-583d9d3743e6.jpg' height="auto" width="150" ></div>  |
 
-3.使用 `--eigen-smooth` 以及 `--aug-smooth` 获取更好的可视化效果。
+3. 使用 `--eigen-smooth` 以及 `--aug-smooth` 获取更好的可视化效果。
 
 ```shell
 python tools/visualizations/vis_cam.py \
@@ -237,17 +241,18 @@ python tools/visualizations/vis_cam.py \
 
 **示例（Transformer）**：
 
-Transformer 类的网络，目前只支持 `SwinTransformer`、`T2T-Vit` 和 `ViT(VisionTransformer, DistilledVisionTransformer)`，`--target-layers` 需要设置为 `layer norm`，如：
+`--target-layers` 在 Transformer-based 网络中的一些示例如下:
 
-- `'backbone.norm3'` for Swin;
-- `'backbone.layers[-1].ln1'` for ViT;
+- Swin-Transformer 中：`'backbone.norm3'`
+- ViT 中：`'backbone.layers[-1].ln1'`
 
-```{note}
-1. 对于 `ViT`, `DeiT` 和 `DeiT`，最终分类是由最后一个注意力模块中计算的 `cls-tokens` 计算所得的，因此分类预测结果不会受到最后一层 14x14 特征图输出的影响，该输出的相对的梯度将为 0！
-2. `--num-extra-tokens` 在可视化 MMClassification 中主干网时不需要指定。但是，当用户可视化自己实现的 `Transformer` 算法时，需要在主干网中设定 `num_extra_tokens` 属性，或者使用 `--num-extra-tokens` 指定。
-```
+对于 Transformer-based 的网络，比如 ViT、T2T-ViT 和 Swin-Transformer，特征是被展平的。为了绘制 CAM 图，我们需要指定 `--vit-like` 选项，从而让被展平的特征恢复方形的特征图。
 
-1.对 `Swin Transformer` 使用默认 `target-layers` 进行 CAM 可视化：
+除了特征被展平之外，一些类 ViT 的网络还会添加额外的 tokens。比如 ViT 和 T2T-ViT 中添加了分类 token，DeiT 中还添加了蒸馏 token。在这些网络中，分类计算在最后一个注意力模块之后就已经完成了，分类得分也只和这些额外的 tokens 有关，与特征图无关，也就是说，分类得分对这些特征图的导数为 0。因此，我们不能使用最后一个注意力模块的输出作为 CAM 绘制的目标层。
+
+另外，为了去除这些额外的 toekns 以获得特征图，我们需要知道这些额外 tokens 的数量。MMClassification 中几乎所有 Transformer-based 的网络都拥有 `num_extra_tokens` 属性。而如果你希望将此工具应用于新的，或者第三方的网络，而且该网络没有指定 `num_extra_tokens` 属性，那么可以使用 `--num-extra-tokens` 参数手动指定其数量。
+
+1. 对 `Swin Transformer` 使用默认 `target-layers` 进行 CAM 可视化：
 
 ```shell
 python tools/visualizations/vis_cam.py \
@@ -257,7 +262,7 @@ python tools/visualizations/vis_cam.py \
     --vit-like
 ```
 
-2.对 `Vision Transformer(ViT)` 进行 CAM 可视化：
+2. 对 `Vision Transformer(ViT)` 进行 CAM 可视化：
 
 ```shell
 python tools/visualizations/vis_cam.py \
@@ -265,10 +270,10 @@ python tools/visualizations/vis_cam.py \
     configs/vision_transformer/vit-base-p16_ft-64xb64_in1k-384.py \
     https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-base-p16_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-98e8652b.pth \
     --vit-like \
-    --target-layers 'backbone.layers.11.ln1'
+    --target-layers 'backbone.layers[-1].ln1'
 ```
 
-3.对 `T2T-ViT` 进行 CAM 可视化：
+3. 对 `T2T-ViT` 进行 CAM 可视化：
 
 ```shell
 python tools/visualizations/vis_cam.py \
