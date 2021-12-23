@@ -282,6 +282,7 @@ class T2T_ViT(BaseBackbone):
         # Class token
         self.output_cls_token = output_cls_token
         self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dims))
+        self.num_extra_tokens = 1
 
         # Position Embedding
         sinusoid_table = get_sinusoid_encoding(num_patches + 1, embed_dims)
