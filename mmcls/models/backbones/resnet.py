@@ -11,6 +11,8 @@ from mmcv.utils.parrots_wrapper import _BatchNorm
 from ..builder import BACKBONES
 from .base_backbone import BaseBackbone
 
+eps = 1.0e-5
+
 
 class BasicBlock(nn.Module):
     """BasicBlock for ResNet.
@@ -87,9 +89,8 @@ class BasicBlock(nn.Module):
 
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
-        self.drop_path = DropPath(
-            drop_prob=drop_path_rate
-        ) if drop_path_rate > 0.0001 else nn.Identity()
+        self.drop_path = DropPath(drop_prob=drop_path_rate
+                                  ) if drop_path_rate > eps else nn.Identity()
 
     @property
     def norm1(self):
@@ -223,9 +224,8 @@ class Bottleneck(nn.Module):
 
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
-        self.drop_path = DropPath(
-            drop_prob=drop_path_rate
-        ) if drop_path_rate > 0.0001 else nn.Identity()
+        self.drop_path = DropPath(drop_prob=drop_path_rate
+                                  ) if drop_path_rate > eps else nn.Identity()
 
     @property
     def norm1(self):
@@ -507,7 +507,7 @@ class ResNet(BaseBackbone):
         self.norm_eval = norm_eval
         self.zero_init_residual = zero_init_residual
         self.block, stage_blocks = self.arch_settings[depth]
-        if drop_path_rate > 0.0001:
+        if drop_path_rate > eps:
             self.block = partial(self.block, drop_path_rate=drop_path_rate)
         self.stage_blocks = stage_blocks[:num_stages]
         self.expansion = get_expansion(self.block, expansion)

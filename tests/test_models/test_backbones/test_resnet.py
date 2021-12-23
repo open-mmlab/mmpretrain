@@ -456,6 +456,19 @@ def test_resnet():
     assert feat[2].shape == (1, 1024, 14, 14)
     assert feat[3].shape == (1, 2048, 7, 7)
 
+    # Test ResNet50 with DropPath forward
+    model = ResNet(50, out_indices=(0, 1, 2, 3), drop_path_rate=0.5)
+    model.init_weights()
+    model.train()
+
+    imgs = torch.randn(1, 3, 224, 224)
+    feat = model(imgs)
+    assert len(feat) == 4
+    assert feat[0].shape == (1, 256, 56, 56)
+    assert feat[1].shape == (1, 512, 28, 28)
+    assert feat[2].shape == (1, 1024, 14, 14)
+    assert feat[3].shape == (1, 2048, 7, 7)
+
     # Test ResNet50 with layers 1, 2, 3 out forward
     model = ResNet(50, out_indices=(0, 1, 2))
     model.init_weights()

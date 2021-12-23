@@ -3,7 +3,6 @@ from abc import ABCMeta, abstractmethod
 
 import numpy as np
 import torch
-import torch.nn.functional as F
 
 from .builder import AUGMENT
 
@@ -135,12 +134,7 @@ class BatchCutMixLayer(BaseCutMixLayer):
         super(BatchCutMixLayer, self).__init__(*args, **kwargs)
 
     def cutmix(self, img, gt_label):
-        if self.smoothing > 1e-4:
-            one_hot_gt_label = F.one_hot(
-                gt_label, num_classes=self.num_classes)
-        else:
-            one_hot_gt_label = one_hot(gt_label, self.num_classes,
-                                       self.smoothing)
+        one_hot_gt_label = one_hot(gt_label, self.num_classes, self.smoothing)
         lam = np.random.beta(self.alpha, self.alpha)
         batch_size = img.size(0)
         index = torch.randperm(batch_size)
