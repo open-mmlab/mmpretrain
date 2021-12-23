@@ -1,6 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from functools import partial
-
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -86,8 +84,7 @@ def binary_cross_entropy(pred,
                          reduction='mean',
                          avg_factor=None,
                          class_weight=None,
-                         pos_weight=None,
-                         target_threshold=None):
+                         pos_weight=None):
     r"""Calculate the binary CrossEntropy loss with logits.
 
     Args:
@@ -115,8 +112,6 @@ def binary_cross_entropy(pred,
     if class_weight is not None:
         N = pred.size()[0]
         class_weight = class_weight.repeat(N, 1)
-    if target_threshold is not None:
-        label = label.gt(target_threshold).to(dtype=label.dtype)
     loss = F.binary_cross_entropy_with_logits(
         pred,
         label,
@@ -160,8 +155,7 @@ class CrossEntropyLoss(nn.Module):
                  reduction='mean',
                  loss_weight=1.0,
                  class_weight=None,
-                 pos_weight=None,
-                 target_threshold=None):
+                 pos_weight=None):
         super(CrossEntropyLoss, self).__init__()
         self.use_sigmoid = use_sigmoid
         self.use_soft = use_soft
@@ -175,8 +169,7 @@ class CrossEntropyLoss(nn.Module):
         self.pos_weight = pos_weight
 
         if self.use_sigmoid:
-            self.cls_criterion = partial(
-                binary_cross_entropy, target_threshold=target_threshold)
+            self.cls_criterion = binary_cross_entropy
         elif self.use_soft:
             self.cls_criterion = soft_cross_entropy
         else:
