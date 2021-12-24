@@ -26,7 +26,7 @@ class LabelSmoothLoss(nn.Module):
         label_smooth_val (float): The degree of label smoothing.
         num_classes (int, optional): Number of classes. Defaults to None.
         mode (str): Refers to notes, Options are 'original', 'classy_vision',
-            'multi_label'. Defaults to 'classy_vision'
+            'multi_label', 'multi_label_mix'. Defaults to 'classy_vision'
         reduction (str): The method used to reduce the loss.
             Options are "none", "mean" and "sum". Defaults to 'mean'.
         loss_weight (float):  Weight of the loss. Defaults to 1.0.
