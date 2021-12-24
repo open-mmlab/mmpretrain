@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from functools import partial
 
 import torch.nn as nn
 import torch.utils.checkpoint as cp
@@ -292,8 +291,6 @@ def get_expansion(block, expansion=None):
     Returns:
         int: The expansion of the block.
     """
-    if isinstance(block, partial):
-        block = block.func
     if isinstance(expansion, int):
         assert expansion > 0
     elif expansion is None:
@@ -507,8 +504,6 @@ class ResNet(BaseBackbone):
         self.norm_eval = norm_eval
         self.zero_init_residual = zero_init_residual
         self.block, stage_blocks = self.arch_settings[depth]
-        if drop_path_rate > eps:
-            self.block = partial(self.block, drop_path_rate=drop_path_rate)
         self.stage_blocks = stage_blocks[:num_stages]
         self.expansion = get_expansion(self.block, expansion)
 
@@ -532,7 +527,8 @@ class ResNet(BaseBackbone):
                 avg_down=self.avg_down,
                 with_cp=with_cp,
                 conv_cfg=conv_cfg,
-                norm_cfg=norm_cfg)
+                norm_cfg=norm_cfg,
+                drop_path_rate=drop_path_rate)
             _in_channels = _out_channels
             _out_channels *= 2
             layer_name = f'layer{i + 1}'
