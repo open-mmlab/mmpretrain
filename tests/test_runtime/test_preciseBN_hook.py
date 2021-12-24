@@ -107,7 +107,7 @@ def test_precise_bn():
 
     with pytest.raises(AssertionError):
         # num_items must be larger than 0
-        precise_bn_hook = PreciseBNHook(num_items=-1)
+        precise_bn_hook = PreciseBNHook(num_samples=-1)
         runner.register_hook(precise_bn_hook)
         runner.run([loader], [('train', 1)], max_epochs=1)
 
@@ -144,7 +144,7 @@ def test_precise_bn():
     test_bigger_dataset = BiggerDataset()
     loader = DataLoader(test_bigger_dataset, batch_size=2)
     loaders = [loader]
-    precise_bn_hook = PreciseBNHook(num_items=4)
+    precise_bn_hook = PreciseBNHook(num_samples=4)
     assert precise_bn_hook.num_items == 4
     assert precise_bn_hook.interval == 1
     runner = EpochBasedRunner(
@@ -156,7 +156,7 @@ def test_precise_bn():
     test_bigger_dataset = BiggerDataset()
     loader = DataLoader(test_bigger_dataset, batch_size=2)
     loaders = [loader]
-    precise_bn_hook = PreciseBNHook(num_items=4)
+    precise_bn_hook = PreciseBNHook(num_samples=4)
     assert precise_bn_hook.num_items == 4
     assert precise_bn_hook.interval == 1
     model = MMDataParallel(model)
@@ -168,7 +168,7 @@ def test_precise_bn():
     # test model w/ gn layer
     loader = DataLoader(test_bigger_dataset, batch_size=2)
     loaders = [loader]
-    precise_bn_hook = PreciseBNHook(num_items=4)
+    precise_bn_hook = PreciseBNHook(num_samples=4)
     assert precise_bn_hook.num_items == 4
     assert precise_bn_hook.interval == 1
     model = GNExampleModel()
@@ -180,7 +180,7 @@ def test_precise_bn():
     # test model without bn layer
     loader = DataLoader(test_bigger_dataset, batch_size=2)
     loaders = [loader]
-    precise_bn_hook = PreciseBNHook(num_items=4)
+    precise_bn_hook = PreciseBNHook(num_samples=4)
     assert precise_bn_hook.num_items == 4
     assert precise_bn_hook.interval == 1
     model = NoBNExampleModel()
@@ -192,7 +192,7 @@ def test_precise_bn():
     # test how precise it is
     loader = DataLoader(test_bigger_dataset, batch_size=2)
     loaders = [loader]
-    precise_bn_hook = PreciseBNHook(num_items=12)
+    precise_bn_hook = PreciseBNHook(num_samples=12)
     assert precise_bn_hook.num_items == 12
     assert precise_bn_hook.interval == 1
     model = SingleBNModel()
@@ -219,7 +219,7 @@ def test_precise_bn():
         test_bigger_dataset = BiggerDataset()
         loader = DataLoader(test_bigger_dataset, batch_size=2)
         loaders = [loader]
-        precise_bn_hook = PreciseBNHook(num_items=5)
+        precise_bn_hook = PreciseBNHook(num_samples=5)
         assert precise_bn_hook.num_items == 5
         assert precise_bn_hook.interval == 1
         model = ExampleModel()
