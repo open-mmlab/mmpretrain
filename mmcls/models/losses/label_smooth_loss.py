@@ -26,7 +26,7 @@ class LabelSmoothLoss(nn.Module):
         label_smooth_val (float): The degree of label smoothing.
         num_classes (int, optional): Number of classes. Defaults to None.
         mode (str): Refers to notes, Options are 'original', 'classy_vision',
-            'multi_label', 'multi_label_mix'. Defaults to 'classy_vision'
+            'multi_label'. Defaults to 'classy_vision'
         reduction (str): The method used to reduce the loss.
             Options are "none", "mean" and "sum". Defaults to 'mean'.
         loss_weight (float):  Weight of the loss. Defaults to 1.0.
@@ -84,9 +84,7 @@ class LabelSmoothLoss(nn.Module):
                 'to keep "classy_vision".', UserWarning)
             mode = 'classy_vision'
 
-        accept_mode = {
-            'original', 'classy_vision', 'multi_label', 'multi_label_mix'
-        }
+        accept_mode = {'original', 'classy_vision', 'multi_label'}
         assert mode in accept_mode, \
             f'LabelSmoothLoss supports mode {accept_mode}, but gets {mode}.'
         self.mode = mode
@@ -94,10 +92,7 @@ class LabelSmoothLoss(nn.Module):
         self._eps = label_smooth_val
         if mode == 'classy_vision':
             self._eps = label_smooth_val / (1 + label_smooth_val)
-        if mode == 'multi_label_mix':
-            self.ce = CrossEntropyLoss(use_sigmoid=True)
-            self.smooth_label = self.multilabel_mix_smooth_label
-        elif mode == 'multi_label':
+        if mode == 'multi_label':
             self.ce = CrossEntropyLoss(use_sigmoid=True)
             self.smooth_label = self.multilabel_smooth_label
         else:
@@ -122,14 +117,6 @@ class LabelSmoothLoss(nn.Module):
         assert self.num_classes > 0
         smooth_label = torch.full_like(one_hot_like_label, self._eps)
         smooth_label.masked_fill_(one_hot_like_label > 0, 1 - self._eps)
-        return smooth_label
-
-    def multilabel_mix_smooth_label(self, one_hot_like_label):
-        assert self.num_classes > 0
-        smooth_eps = self._eps / self.num_classes
-        smooth_label = torch.full_like(
-            one_hot_like_label,
-            smooth_eps) + one_hot_like_label * (1.0 - self._eps)
         return smooth_label
 
     def forward(self,

@@ -199,23 +199,6 @@ def test_label_smooth_loss():
 
     loss_cfg = dict(
         type='LabelSmoothLoss',
-        num_classes=5,
-        label_smooth_val=0.1,
-        mode='multi_label_mix',
-        reduction='mean',
-        loss_weight=1.0)
-    loss = build_loss(loss_cfg)
-
-    one_hot = torch.tensor([[0.6, 0.4, 0, 0, 0]], dtype=torch.float)
-
-    smoothed = loss.smooth_label(one_hot)
-    print(smoothed)
-    assert torch.allclose(
-        smoothed,
-        torch.tensor([[0.56, 0.38, 0.02, 0.02, 0.02]], dtype=torch.float))
-
-    loss_cfg = dict(
-        type='LabelSmoothLoss',
         label_smooth_val=0.1,
         mode='original',
         reduction='mean',
