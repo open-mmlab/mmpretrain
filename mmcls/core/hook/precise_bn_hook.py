@@ -16,9 +16,7 @@ from torch.functional import Tensor
 from torch.nn import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 from torch.nn.modules.instancenorm import _InstanceNorm
-
-Torch_DataLoader = torch.utils.data.DataLoader
-MMCV_RUNNER = mmcv.runner.BaseRunner
+from torch.utils.data import DataLoader
 
 
 def scaled_all_reduce(tensors: List[Tensor], num_gpus: int) -> List[Tensor]:
@@ -53,31 +51,24 @@ def scaled_all_reduce(tensors: List[Tensor], num_gpus: int) -> List[Tensor]:
 
 @torch.no_grad()
 def update_bn_stats(model: nn.Module,
-                    loader: Torch_DataLoader,
+                    loader: DataLoader,
                     num_samples: int = 8192,
                     logger: Optional[logging.Logger] = None) -> None:
     """Computes precise BN stats on training data.
 
-    During training both BN stats and the weight are changing after every
-    iteration, so the running average can not precisely reflect the actual
-    stats of the current model.
-    In this function, the BN stats are recomputed with fixed weights, to make
-    the running average more precise. Specifically, it computes the true
-    average of per-batch mean/variance instead of the running average.
-
-    Attributes:
+    Args:
         model (nn.module): The model whose bn stats will be recomputed.
         loader (DataLoader): PyTorch dataloader._dataloader
-        num_samples (int): Number of sampers to update the bn stats.
-            Default: 8192.
+        num_samples (int): The number of samples to update the bn stats.
+            Defaults to 8192.
         logger (:obj:`logging.Logger` | None): Logger for logging.
             Default: None.
     """
     # get dist info
-    rank, NUM_GPUS = get_dist_info()
-    # Compute the number of minibatches to use, if the size of dataloader is
-    #  less than num_iters, use all the samples in dataloader.
-    num_iter = num_samples // (loader.batch_size * NUM_GPUS)
+    rank, world_size = get_dist_info()
+    # Compute the number of mini-batches to use, if the size of dataloader is
+    # less than num_iters, use all the samples in dataloader.
+    num_iter = num_samples // (loader.batch_size * world_size)
     num_iter = min(num_iter, len(loader))
     # Retrieve the BN layers
     bn_layers = [
@@ -92,12 +83,15 @@ def update_bn_stats(model: nn.Module,
         f'{len(bn_layers)} BN found, run {num_iter} iters...', logger=logger)
 
     # Finds all the other norm layers with training=True.
-    for m in model.modules():
-        if m.training and isinstance(m, (_InstanceNorm, GroupNorm)):
-            print_log(
-                'IN/GN stats will not be updated in PreciseHook.',
-                logger=logger,
-                level=logging.WARNING)
+    other_norm_layers = [
+        m for m in model.modules()
+        if m.training and isinstance(m, (_InstanceNorm, GroupNorm))
+    ]
+    if len(other_norm_layers) > 0:
+        print_log(
+            'IN/GN stats will not be updated in PreciseHook.',
+            logger=logger,
+            level=logging.INFO)
 
     # Initialize BN stats storage for computing
     # mean(mean(batch)) and mean(var(batch))
@@ -121,8 +115,8 @@ def update_bn_stats(model: nn.Module,
             prog_bar.update()
 
     # Sync BN stats across GPUs (no reduction if 1 GPU used)
-    running_means = scaled_all_reduce(running_means, NUM_GPUS)
-    running_vars = scaled_all_reduce(running_vars, NUM_GPUS)
+    running_means = scaled_all_reduce(running_means, world_size)
+    running_vars = scaled_all_reduce(running_vars, world_size)
     # Set BN stats and restore original momentum values
     for i, bn in enumerate(bn_layers):
         bn.running_mean = running_means[i]
@@ -134,41 +128,52 @@ def update_bn_stats(model: nn.Module,
 class PreciseBNHook(Hook):
     """Precise BN hook.
 
-    This hook will update bn stats, so it should be executed before
-    ``CheckpointHook``, generally set its priority to "ABOVE_NORMAL".
+    Recompute and update the batch norm stats to make them more precise. During
+    training both BN stats and the weight are changing after every iteration,
+    so the running average can not precisely reflect the actual stats of the
+    current model.
 
-    Attributes:
-        num_samples (int): Number of sampers to update the bn stats.
-            Default: 8192.
-        interval (int): Perform precise bn interval. Default: 1.
+    With this hook, the BN stats are recomputed with fixed weights, to make the
+    running average more precise. Specifically, it computes the true average of
+    per-batch mean/variance instead of the running average. See Sec. 3 of the
+    paper `Rethinking Batch in BatchNorm <https://arxiv.org/abs/2105.07576>`
+    for details.
+
+    This hook will update BN stats, so it should be executed before
+    ``CheckpointHook`` and ``EMAHook``, generally set its priority to
+    "ABOVE_NORMAL".
+
+    Args:
+        num_samples (int): The number of samples to update the bn stats.
+            Defaults to 8192.
+        interval (int): Perform precise bn interval. Defaults to 1.
     """
 
     def __init__(self, num_samples: int = 8192, interval: int = 1) -> None:
         assert interval > 0 and num_samples > 0
 
         self.interval = interval
-        self.num_items = num_samples
+        self.num_samples = num_samples
 
-    def _perform_precise_bn(self, runner: MMCV_RUNNER) -> None:
+    def _perform_precise_bn(self, runner: EpochBasedRunner) -> None:
         print_log(
-            f'Running Precise BN for {self.num_items} items...',
+            f'Running Precise BN for {self.num_samples} items...',
             logger=runner.logger)
         update_bn_stats(
             runner.model,
             runner.data_loader,
-            self.num_items,
+            self.num_samples,
             logger=runner.logger)
-        print_log(
-            'Finish Precise BN, BN stats updated..', logger=runner.logger)
+        print_log('Finish Precise BN, BN stats updated.', logger=runner.logger)
 
-    def after_train_epoch(self, runner: MMCV_RUNNER) -> None:
+    def after_train_epoch(self, runner: EpochBasedRunner) -> None:
         """Calculate prcise BN and broadcast BN stats across GPUs.
 
         Args:
             runner (obj:`EpochBasedRunner`): runner object.
         """
-        assert isinstance(runner,
-                          EpochBasedRunner), 'Only support `EpochBasedRunner`'
+        assert isinstance(runner, EpochBasedRunner), \
+            'PreciseBN only supports `EpochBasedRunner` by now'
 
         # if by epoch, do perform precise every `self.interval` epochs;
         if self.every_n_epochs(runner, self.interval):

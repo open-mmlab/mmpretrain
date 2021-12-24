@@ -103,19 +103,23 @@ def test_precise_bn():
     optimizer = build_optimizer(model, optimizer_cfg)
     logger = get_logger('precise_bn')
     runner = EpochBasedRunner(
-        model=model, batch_processor=None, optimizer=optimizer, logger=logger)
+        model=model,
+        batch_processor=None,
+        optimizer=optimizer,
+        logger=logger,
+        max_epochs=1)
 
     with pytest.raises(AssertionError):
-        # num_items must be larger than 0
+        # num_samples must be larger than 0
         precise_bn_hook = PreciseBNHook(num_samples=-1)
         runner.register_hook(precise_bn_hook)
-        runner.run([loader], [('train', 1)], max_epochs=1)
+        runner.run([loader], [('train', 1)])
 
     with pytest.raises(AssertionError):
         # interval must be larger than 0
         precise_bn_hook = PreciseBNHook(interval=0)
         runner.register_hook(precise_bn_hook)
-        runner.run([loader], [('train', 1)], max_epochs=1)
+        runner.run([loader], [('train', 1)])
 
     with pytest.raises(AssertionError):
         # interval must be larger than 0
@@ -123,10 +127,11 @@ def test_precise_bn():
             model=model,
             batch_processor=None,
             optimizer=optimizer,
-            logger=logger)
+            logger=logger,
+            max_epochs=1)
         precise_bn_hook = PreciseBNHook(interval=0)
         runner.register_hook(precise_bn_hook)
-        runner.run([loader], [('train', 1)], max_epochs=1)
+        runner.run([loader], [('train', 1)])
 
     with pytest.raises(AssertionError):
         # only support EpochBaseRunner
@@ -134,72 +139,93 @@ def test_precise_bn():
             model=model,
             batch_processor=None,
             optimizer=optimizer,
-            logger=logger)
+            logger=logger,
+            max_epochs=1)
         precise_bn_hook = PreciseBNHook(interval=2)
         runner.register_hook(precise_bn_hook)
         print_log(runner)
-        runner.run([loader], [('train', 1)], max_epochs=1)
+        runner.run([loader], [('train', 1)])
 
     # test non-DDP model
     test_bigger_dataset = BiggerDataset()
     loader = DataLoader(test_bigger_dataset, batch_size=2)
     loaders = [loader]
     precise_bn_hook = PreciseBNHook(num_samples=4)
-    assert precise_bn_hook.num_items == 4
+    assert precise_bn_hook.num_samples == 4
     assert precise_bn_hook.interval == 1
     runner = EpochBasedRunner(
-        model=model, batch_processor=None, optimizer=optimizer, logger=logger)
+        model=model,
+        batch_processor=None,
+        optimizer=optimizer,
+        logger=logger,
+        max_epochs=1)
     runner.register_hook(precise_bn_hook)
-    runner.run(loaders, [('train', 1)], max_epochs=1)
+    runner.run(loaders, [('train', 1)])
 
     # test DP model
     test_bigger_dataset = BiggerDataset()
     loader = DataLoader(test_bigger_dataset, batch_size=2)
     loaders = [loader]
     precise_bn_hook = PreciseBNHook(num_samples=4)
-    assert precise_bn_hook.num_items == 4
+    assert precise_bn_hook.num_samples == 4
     assert precise_bn_hook.interval == 1
     model = MMDataParallel(model)
     runner = EpochBasedRunner(
-        model=model, batch_processor=None, optimizer=optimizer, logger=logger)
+        model=model,
+        batch_processor=None,
+        optimizer=optimizer,
+        logger=logger,
+        max_epochs=1)
     runner.register_hook(precise_bn_hook)
-    runner.run(loaders, [('train', 1)], max_epochs=1)
+    runner.run(loaders, [('train', 1)])
 
     # test model w/ gn layer
     loader = DataLoader(test_bigger_dataset, batch_size=2)
     loaders = [loader]
     precise_bn_hook = PreciseBNHook(num_samples=4)
-    assert precise_bn_hook.num_items == 4
+    assert precise_bn_hook.num_samples == 4
     assert precise_bn_hook.interval == 1
     model = GNExampleModel()
     runner = EpochBasedRunner(
-        model=model, batch_processor=None, optimizer=optimizer, logger=logger)
+        model=model,
+        batch_processor=None,
+        optimizer=optimizer,
+        logger=logger,
+        max_epochs=1)
     runner.register_hook(precise_bn_hook)
-    runner.run(loaders, [('train', 1)], max_epochs=1)
+    runner.run(loaders, [('train', 1)])
 
     # test model without bn layer
     loader = DataLoader(test_bigger_dataset, batch_size=2)
     loaders = [loader]
     precise_bn_hook = PreciseBNHook(num_samples=4)
-    assert precise_bn_hook.num_items == 4
+    assert precise_bn_hook.num_samples == 4
     assert precise_bn_hook.interval == 1
     model = NoBNExampleModel()
     runner = EpochBasedRunner(
-        model=model, batch_processor=None, optimizer=optimizer, logger=logger)
+        model=model,
+        batch_processor=None,
+        optimizer=optimizer,
+        logger=logger,
+        max_epochs=1)
     runner.register_hook(precise_bn_hook)
-    runner.run(loaders, [('train', 1)], max_epochs=1)
+    runner.run(loaders, [('train', 1)])
 
     # test how precise it is
     loader = DataLoader(test_bigger_dataset, batch_size=2)
     loaders = [loader]
     precise_bn_hook = PreciseBNHook(num_samples=12)
-    assert precise_bn_hook.num_items == 12
+    assert precise_bn_hook.num_samples == 12
     assert precise_bn_hook.interval == 1
     model = SingleBNModel()
     runner = EpochBasedRunner(
-        model=model, batch_processor=None, optimizer=optimizer, logger=logger)
+        model=model,
+        batch_processor=None,
+        optimizer=optimizer,
+        logger=logger,
+        max_epochs=1)
     runner.register_hook(precise_bn_hook)
-    runner.run(loaders, [('train', 1)], max_epochs=1)
+    runner.run(loaders, [('train', 1)])
     imgs_list = list()
     for loader in loaders:
         for i, data in enumerate(loader):
@@ -220,7 +246,7 @@ def test_precise_bn():
         loader = DataLoader(test_bigger_dataset, batch_size=2)
         loaders = [loader]
         precise_bn_hook = PreciseBNHook(num_samples=5)
-        assert precise_bn_hook.num_items == 5
+        assert precise_bn_hook.num_samples == 5
         assert precise_bn_hook.interval == 1
         model = ExampleModel()
         model = MMDistributedDataParallel(
@@ -232,6 +258,7 @@ def test_precise_bn():
             model=model,
             batch_processor=None,
             optimizer=optimizer,
-            logger=logger)
+            logger=logger,
+            max_epochs=1)
         runner.register_hook(precise_bn_hook)
-        runner.run(loaders, [('train', 1)], max_epochs=1)
+        runner.run(loaders, [('train', 1)])
