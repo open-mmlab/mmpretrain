@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 # Adapted from https://github.com/facebookresearch/pycls/blob/f8cd962737e33ce9e19b3083a33551da95c2d9c0/pycls/core/net.py  # noqa: E501
 # Original licence: Copyright (c) 2019 Facebook, Inc under the Apache License 2.0  # noqa: E501
 
