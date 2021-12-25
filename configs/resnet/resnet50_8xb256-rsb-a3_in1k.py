@@ -1,6 +1,6 @@
 _base_ = [
-    '../_base_/datasets/imagenet_bs256_itp_a3.py',
-    '../_base_/schedules/imagenet_bs2048_itp.py',
+    '../_base_/datasets/imagenet_bs256_rsb_a3.py',
+    '../_base_/schedules/imagenet_bs2048_rsb.py',
     '../_base_/default_runtime.py'
 ]
 
