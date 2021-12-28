@@ -28,12 +28,12 @@ This paper presents a new vision Transformer, called Swin Transformer, that capa
 
 The pre-trained models on ImageNet-21k are used to fine-tune, and therefore don't have evaluation results.
 
-|   Model   | resolution  | Params(M) |  Flops(G) | Top-1 (%) | Top-5 (%) | Download |
-|:---------:|:-----------:|:---------:|:---------:|:---------:|:---------:|:--------:|
-|  Swin-B   |   224x224   |   87.77   |   15.14   |   85.16   |   97.50   | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin-base_3rdparty_in21k.pth)|
-|  Swin-B   |   384x384   |   87.90   |   44.49   |   86.44   |   98.05   | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin-base_3rdparty_in21k-384px.pth)|
-|  Swin-L   |   224x224   |  196.53   |   34.04   |   86.24   |   97.88   | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin-large_3rdparty_in21k.pth)|
-|  Swin-L   |   384x384   |  196.74   |  100.04   |   87.25   |   98.25   | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin-base_3rdparty_in21k-384px.pth)|
+|   Model   | resolution  | Params(M) |  Flops(G) | Download |
+|:---------:|:-----------:|:---------:|:---------:|:--------:|
+|  Swin-B   |   224x224   |   86.74   |   15.14   | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin-base_3rdparty_in21k.pth)|
+|  Swin-B   |   384x384   |   86.88   |   44.49   | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin-base_3rdparty_in21k-384px.pth)|
+|  Swin-L   |   224x224   |  195.00   |   34.04   | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin-large_3rdparty_in21k.pth)|
+|  Swin-L   |   384x384   |  195.20   |  100.04   | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin-base_3rdparty_in21k-384px.pth)|
 
 ### ImageNet-1k
 
