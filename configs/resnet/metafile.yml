@@ -232,3 +232,66 @@ Models:
           Top 5 Accuracy: 93.07
     Weights: https://download.openmmlab.com/mmclassification/v0/fp16/resnet50_batch256_fp16_imagenet_20210320-b3964210.pth
     Config: configs/resnet/resnet50_8xb32-fp16_in1k.py
+  - Name: resnet50_8xb256-rsb-a1-600e_in1k
+    Metadata:
+      FLOPs: 4120000000
+      Parameters: 25560000
+      Training Techniques:
+        - LAMB
+        - Weight Decay
+        - Cosine Annealing
+        - Mixup
+        - CutMix
+        - RepeatAugSampler
+        - RandAugment
+    In Collection: ResNet
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 80.12
+          Top 5 Accuracy: 94.78
+    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb256-rsb-a1-600e_in1k_20211228-20e21305.pth
+    Config: configs/resnet/resnet50_8xb256-rsb-a1-600e_in1k.py
+  - Name: resnet50_8xb256-rsb-a2-300e_in1k
+    Metadata:
+      FLOPs: 4120000000
+      Parameters: 25560000
+      Training Techniques:
+        - LAMB
+        - Weight Decay
+        - Cosine Annealing
+        - Mixup
+        - CutMix
+        - RepeatAugSampler
+        - RandAugment
+    In Collection: ResNet
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 79.55
+          Top 5 Accuracy: 94.37
+    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb256-rsb-a2-300e_in1k_20211228-0fd8be6e.pth
+    Config: configs/resnet/resnet50_8xb256-rsb-a2-300e_in1k.py
+  - Name: resnet50_8xb256-rsb-a3-100e_in1k
+    Metadata:
+      FLOPs: 4120000000
+      Parameters: 25560000
+      Training Techniques:
+        - LAMB
+        - Weight Decay
+        - Cosine Annealing
+        - Mixup
+        - CutMix
+        - RepeatAugSampler
+        - RandAugment
+    In Collection: ResNet
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 78.30
+          Top 5 Accuracy: 93.80
+    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb256-rsb-a3-100e_in1k_20211228-3493673c.pth
+    Config: configs/resnet/resnet50_8xb256-rsb-a3-100e_in1k.py
