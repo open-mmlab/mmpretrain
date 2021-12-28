@@ -22,17 +22,13 @@ We present the next generation of MobileNets based on a combination of complemen
 }
 ```
 
-## Pretrain model
-
-The pre-trained modles are converted from [torchvision](https://pytorch.org/vision/stable/_modules/torchvision/models/mobilenetv3.html).
-
-### ImageNet
-
-|         Model         | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Download |
-|:---------------------:|:---------:|:--------:|:---------:|:---------:|:--------:|
-| MobileNetV3-Small     |   2.54    |   0.06   |   67.66   |   87.41   | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_small-8427ecf0.pth)|
-| MobileNetV3-Large     |   5.48    |   0.23   |   74.04   |   91.34   | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_large-3ea3c186.pth)|
-
 ## Results and models
 
-Waiting for adding.
+### ImageNet-1k
+
+|         Model         | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
+|:---------------------:|:---------:|:--------:|:---------:|:---------:|:------:|:--------:|
+| MobileNetV3-Small\*   |   2.54    |   0.06   |   67.66   |   87.41   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/mobilenet_v3/mobilenet-v3-small_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_small-8427ecf0.pth) |
+| MobileNetV3-Large\*   |   5.48    |   0.23   |   74.04   |   91.34   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/mobilenet_v3/mobilenet-v3-large_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_large-3ea3c186.pth) |
+
+*Models with \* are converted from [torchvision](https://pytorch.org/vision/stable/_modules/torchvision/models/mobilenetv3.html). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*

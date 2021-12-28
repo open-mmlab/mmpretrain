@@ -24,7 +24,7 @@ We present a simple, highly modularized network architecture for image classific
 
 ## Results and models
 
-### ImageNet
+### ImageNet-1k
 
 |         Model         | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
 |:---------------------:|:---------:|:--------:|:---------:|:---------:|:---------:|:--------:|

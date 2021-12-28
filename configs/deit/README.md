@@ -25,35 +25,24 @@ Recently, neural networks purely based on attention were shown to address image 
 }
 ```
 
-## Pretrained models
-
-The pre-trained models are converted from the [official repo](https://github.com/facebookresearch/deit). And the teacher of the distilled version DeiT is RegNetY-16GF.
+## Results and models
 
 ### ImageNet-1k
 
-|         Model         | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
-|:---------------------:|:---------:|:--------:|:---------:|:---------:|:------:|:--------:|
-| DeiT-tiny\* | 5.72 | 1.08 | 72.13 | 91.13 | [config](configs/deit/deit-tiny_pt-4xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/deit/deit-tiny_3rdparty_pt-4xb256_in1k_20211124-e930093b.pth) |
-| DeiT-tiny distilled\* | 5.72 | 1.08 | 74.51 | 91.90 | [config](configs/deit/deit-tiny-distilled_pt-4xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/deit/deit-tiny-distilled_3rdparty_pt-4xb256_in1k_20211216-c429839a.pth) |
-| DeiT-small\* | 22.05 | 4.24 | 79.83 | 94.95 | [config](configs/deit/deit-small_pt-4xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/deit/deit-small_3rdparty_pt-4xb256_in1k_20211124-ffe94edd.pth) |
-| DeiT-small distilled\* | 22.05 | 4.24 | 81.17 | 95.40 | [config](configs/deit/deit-small-distilled_pt-4xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/deit/deit-small-distilled_3rdparty_pt-4xb256_in1k_20211216-4de1d725.pth) |
-| DeiT-base\* | 86.57 | 16.86 | 81.79 | 95.59 | [config](configs/deit/deit-base_pt-16xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/deit/deit-base_3rdparty_pt-16xb64_in1k_20211124-6f40c188.pth) |
-| DeiT-base distilled\* | 86.57 | 16.86 | 83.33 | 96.49 | [config](configs/deit/deit-base-distilled_pt-16xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/deit/deit-base-distilled_3rdparty_pt-16xb64_in1k_20211216-42891296.pth) |
+The teacher of the distilled version DeiT is RegNetY-16GF.
 
-*Models with \* are converted from other repos.*
+|         Model         |    Pretrain  | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
+|:---------------------:|:------------:|:---------:|:--------:|:---------:|:---------:|:------:|:--------:|
+| DeiT-tiny\*           | From scratch | 5.72      | 1.08     | 72.13     | 91.13     | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/deit/deit-tiny_pt-4xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/deit/deit-tiny_3rdparty_pt-4xb256_in1k_20211124-e930093b.pth) |
+| DeiT-tiny distilled\* | From scratch | 5.72      | 1.08     | 74.51     | 91.90     | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/deit/deit-tiny-distilled_pt-4xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/deit/deit-tiny-distilled_3rdparty_pt-4xb256_in1k_20211216-c429839a.pth) |
+| DeiT-small\*          | From scratch | 22.05     | 4.24     | 79.83     | 94.95     | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/deit/deit-small_pt-4xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/deit/deit-small_3rdparty_pt-4xb256_in1k_20211124-ffe94edd.pth) |
+| DeiT-small distilled\*| From scratch | 22.05     | 4.24     | 81.17     | 95.40     | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/deit/deit-small-distilled_pt-4xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/deit/deit-small-distilled_3rdparty_pt-4xb256_in1k_20211216-4de1d725.pth) |
+| DeiT-base\*           | From scratch | 86.57     | 16.86    | 81.79     | 95.59     | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/deit/deit-base_pt-16xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/deit/deit-base_3rdparty_pt-16xb64_in1k_20211124-6f40c188.pth) |
+| DeiT-base distilled\* | From scratch | 86.57     | 16.86    | 83.33     | 96.49     | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/deit/deit-base-distilled_pt-16xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/deit/deit-base-distilled_3rdparty_pt-16xb64_in1k_20211216-42891296.pth) |
+| DeiT-base 384px\*     | ImageNet-1k  | 86.86     | 49.37    | 83.04     | 96.31     | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/deit/deit-base_ft-16xb32_in1k-384px.py) | [model](https://download.openmmlab.com/mmclassification/v0/deit/deit-base_3rdparty_ft-16xb32_in1k-384px_20211124-822d02f2.pth) |
+| DeiT-base distilled 384px\* | ImageNet-1k | 86.86 | 49.37   | 85.55     | 97.35     | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/deit/deit-base-distilled_ft-16xb32_in1k-384px.py) | [model](https://download.openmmlab.com/mmclassification/v0/deit/deit-base-distilled_3rdparty_ft-16xb32_in1k-384px_20211216-e48d6000.pth) |
 
-## Fine-tuned models
-
-The fine-tuned models are converted from the [official repo](https://github.com/facebookresearch/deit).
-
-### ImageNet-1k
-
-|         Model         | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
-|:---------------------:|:---------:|:--------:|:---------:|:---------:|:------:|:--------:|
-| DeiT-base 384px\* | 86.86 | 49.37 | 83.04 | 96.31 | [config](configs/deit/deit-base_ft-16xb32_in1k-384px.py) | [model](https://download.openmmlab.com/mmclassification/v0/deit/deit-base_3rdparty_ft-16xb32_in1k-384px_20211124-822d02f2.pth) |
-| DeiT-base distilled 384px\* | 86.86 | 49.37 | 85.55 | 97.35 | [config](configs/deit/deit-base-distilled_ft-16xb32_in1k-384px.py) | [model](https://download.openmmlab.com/mmclassification/v0/deit/deit-base-distilled_3rdparty_ft-16xb32_in1k-384px_20211216-e48d6000.pth) |
-
-*Models with \* are converted from other repos.*
+*Models with \* are converted from the [official repo](https://github.com/facebookresearch/deit). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 
 ```{warning}
 MMClassification doesn't support training the distilled version DeiT.
