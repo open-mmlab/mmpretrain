@@ -244,6 +244,8 @@ Models:
         - CutMix
         - RepeatAugSampler
         - RandAugment
+      Epochs: 600
+      Batch Size: 2048
     In Collection: ResNet
     Results:
       - Task: Image Classification
@@ -265,6 +267,8 @@ Models:
         - CutMix
         - RepeatAugSampler
         - RandAugment
+      Epochs: 300
+      Batch Size: 2048
     In Collection: ResNet
     Results:
       - Task: Image Classification
@@ -284,8 +288,8 @@ Models:
         - Cosine Annealing
         - Mixup
         - CutMix
-        - RepeatAugSampler
         - RandAugment
+      Batch Size: 2048
     In Collection: ResNet
     Results:
       - Task: Image Classification
