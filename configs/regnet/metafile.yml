@@ -5,6 +5,8 @@ Collections:
       Architecture:
         - Neural Architecture Search
         - Design Space Design
+        - Precise BN
+        - SGD with nesterov
     Paper:
       URL: https://arxiv.org/abs/2003.13678
       Title: Designing Network Design Spaces

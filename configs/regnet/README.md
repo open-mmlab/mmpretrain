@@ -47,4 +47,4 @@ In this work, we present a new network design paradigm. Our goal is to help adva
 | RegNetX-8.0GF\*       |   39.57   |   8.03   |   79.31   |   94.57   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/regnet/regnetx-8.0gf_8xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/regnet/convert/RegNetX-8.0GF-cb4c77ec.pth) |
 | RegNetX-12GF\*        |   46.11   |   12.15  |   79.91   |   94.78   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/regnet/regnetx-12gf_8xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/regnet/convert/RegNetX-12GF-0574538f.pth) |
 
-*Models with \* are converted from [pycls](https://github.com/facebookresearch/pycls/blob/master/MODEL_ZOO.md).*
+*Models with \* are converted from [pycls](https://github.com/facebookresearch/pycls/blob/master/MODEL_ZOO.md). The config files of these models are only for validation.*

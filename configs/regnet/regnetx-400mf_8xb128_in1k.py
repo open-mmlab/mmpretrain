@@ -15,13 +15,6 @@ custom_hooks = [
         interval=1,
         priority='ABOVE_NORMAL')
 ]
-custom_hooks = [
-    dict(
-        type='PreciseBNHook',
-        num_items=8192,
-        interval=1,
-        priority='ABOVE_NORMAL')
-]
 
 # sgd with nesterov, base ls is 0.8 for batch_size 1024,
 # 0.4 for batch_size 512 and 0.2 for batch_size 256 when training ImageNet1k

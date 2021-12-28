@@ -24,7 +24,7 @@ The central building block of convolutional neural networks (CNNs) is the convol
 
 ## Results and models
 
-### ImageNet
+### ImageNet-1k
 
 |         Model         | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
 |:---------------------:|:---------:|:--------:|:---------:|:---------:|:---------:|:--------:|
