@@ -17,7 +17,7 @@
 # - modify: RandomErasing use RE-M instead of RE-0
 
 _base_ = [
-    '../_base_/models/mobilenet-v3-large_8xb32_in1k.py',
+    '../_base_/models/mobilenet_v3_large_imagenet.py',
     '../_base_/datasets/imagenet_bs32_pil_resize.py',
     '../_base_/default_runtime.py'
 ]
