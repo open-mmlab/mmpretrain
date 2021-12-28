@@ -96,6 +96,8 @@ def train_model(model,
     # prepare data loaders
     dataset = dataset if isinstance(dataset, (list, tuple)) else [dataset]
 
+    sampler_cfg = cfg.data.get('sampler', None)
+
     data_loaders = [
         build_dataloader(
             ds,
@@ -105,7 +107,8 @@ def train_model(model,
             num_gpus=len(cfg.gpu_ids),
             dist=distributed,
             round_up=True,
-            seed=cfg.seed) for ds in dataset
+            seed=cfg.seed,
+            sampler_cfg=sampler_cfg) for ds in dataset
     ]
 
     # put model on gpus
