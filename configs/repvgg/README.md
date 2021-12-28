@@ -22,7 +22,9 @@ We present a simple but powerful architecture of convolutional neural network, w
 }
 ```
 
-## Pretrain model
+## Results and models
+
+### ImageNet-1k
 
 |    Model    | Epochs |             Params(M)             |            Flops(G)             | Top-1 (%) | Top-5 (%) |                            Config                            |                           Download                           |
 | :---------: | :----: | :-------------------------------: | :-----------------------------: | :-------: | :-------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
@@ -39,7 +41,7 @@ We present a simple but powerful architecture of convolutional neural network, w
 | RepVGG-B3g4\* |  200   |  83.83 (train) \| 75.63 (deploy)  | 17.9 (train) \| 16.08 (deploy)  |   80.22   |   95.10   | [config (train)](https://github.com/open-mmlab/mmclassification/blob/master/configs/repvgg/repvgg-B3g4_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py) \|[config (deploy)](https://github.com/open-mmlab/mmclassification/blob/master/configs/repvgg/deploy/repvgg-B3g4_deploy_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-B3g4_3rdparty_4xb64-autoaug-lbs-mixup-coslr-200e_in1k_20210909-4e54846a.pth) |
 | RepVGG-D2se\* |  200   |  133.33 (train) \| 120.39 (deploy)  | 36.56 (train) \| 32.85 (deploy)  |   81.81   |   95.94   | [config (train)](https://github.com/open-mmlab/mmclassification/blob/master/configs/repvgg/repvgg-D2se_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py) \|[config (deploy)](https://github.com/open-mmlab/mmclassification/blob/master/configs/repvgg/deploy/repvgg-D2se_deploy_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-D2se_3rdparty_4xb64-autoaug-lbs-mixup-coslr-200e_in1k_20210909-cf3139b7.pth) |
 
-*Models with \* are converted from other repos.*
+*Models with \* are converted from the [official repo](https://github.com/DingXiaoH/RepVGG). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 
 ## Reparameterize RepVGG
 
