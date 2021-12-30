@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from copy import deepcopy
 from typing import Sequence
 
 import numpy as np
@@ -8,6 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.transformer import FFN
+from mmcv.cnn.utils.weight_init import trunc_normal_
 from mmcv.runner.base_module import BaseModule, ModuleList
 
 from mmcls.utils import get_root_logger
@@ -104,9 +104,8 @@ class TransformerEncoderLayer(BaseModule):
 class VisionTransformer(BaseBackbone):
     """Vision Transformer.
 
-    A PyTorch implement of : `An Image is Worth 16x16 Words:
-    Transformers for Image Recognition at Scale
-    <https://arxiv.org/abs/2010.11929>`_
+    A PyTorch implement of : `An Image is Worth 16x16 Words: Transformers
+    for Image Recognition at Scale <https://arxiv.org/abs/2010.11929>`_
 
     Args:
         arch (str | dict): Vision Transformer architecture
@@ -155,7 +154,30 @@ class VisionTransformer(BaseBackbone):
                 'num_heads': 16,
                 'feedforward_channels': 4096
             }),
+        **dict.fromkeys(
+            ['deit-t', 'deit-tiny'], {
+                'embed_dims': 192,
+                'num_layers': 12,
+                'num_heads': 3,
+                'feedforward_channels': 192 * 4
+            }),
+        **dict.fromkeys(
+            ['deit-s', 'deit-small'], {
+                'embed_dims': 384,
+                'num_layers': 12,
+                'num_heads': 6,
+                'feedforward_channels': 384 * 4
+            }),
+        **dict.fromkeys(
+            ['deit-b', 'deit-base'], {
+                'embed_dims': 768,
+                'num_layers': 12,
+                'num_heads': 12,
+                'feedforward_channels': 768 * 4
+            }),
     }
+    # Some structures have multiple extra tokens, like DeiT.
+    num_extra_tokens = 1  # cls_token
 
     def __init__(self,
                  arch='b',
@@ -182,7 +204,7 @@ class VisionTransformer(BaseBackbone):
             essential_keys = {
                 'embed_dims', 'num_layers', 'num_heads', 'feedforward_channels'
             }
-            assert isinstance(arch, dict) and set(arch) == essential_keys, \
+            assert isinstance(arch, dict) and essential_keys <= set(arch), \
                 f'Custom arch needs a dict with keys {essential_keys}'
             self.arch_settings = arch
 
@@ -208,7 +230,8 @@ class VisionTransformer(BaseBackbone):
         # Set position embedding
         self.interpolate_mode = interpolate_mode
         self.pos_embed = nn.Parameter(
-            torch.zeros(1, num_patches + 1, self.embed_dims))
+            torch.zeros(1, num_patches + self.num_extra_tokens,
+                        self.embed_dims))
         self.drop_after_pos = nn.Dropout(p=drop_rate)
 
         if isinstance(out_indices, int):
@@ -247,65 +270,49 @@ class VisionTransformer(BaseBackbone):
                 norm_cfg, self.embed_dims, postfix=1)
             self.add_module(self.norm1_name, norm1)
 
+        self._register_load_state_dict_pre_hook(self._prepare_checkpoint_hook)
+
     @property
     def norm1(self):
         return getattr(self, self.norm1_name)
 
     def init_weights(self):
-        # Suppress default init if use pretrained model.
-        # And use custom load_checkpoint function to load checkpoint.
-        if (isinstance(self.init_cfg, dict)
+        super(VisionTransformer, self).init_weights()
+
+        if not (isinstance(self.init_cfg, dict)
                 and self.init_cfg['type'] == 'Pretrained'):
-            init_cfg = deepcopy(self.init_cfg)
-            init_cfg.pop('type')
-            self._load_checkpoint(**init_cfg)
-        else:
-            super(VisionTransformer, self).init_weights()
-            # Modified from ClassyVision
-            nn.init.normal_(self.pos_embed, std=0.02)
+            trunc_normal_(self.pos_embed, std=0.02)
 
-    def _load_checkpoint(self, checkpoint, prefix=None, map_location=None):
-        from mmcv.runner import (_load_checkpoint,
-                                 _load_checkpoint_with_prefix, load_state_dict)
-        from mmcv.utils import print_log
+    def _prepare_checkpoint_hook(self, state_dict, prefix, *args, **kwargs):
+        name = prefix + 'pos_embed'
+        if name not in state_dict.keys():
+            return
 
-        logger = get_root_logger()
-
-        if prefix is None:
-            print_log(f'load model from: {checkpoint}', logger=logger)
-            checkpoint = _load_checkpoint(checkpoint, map_location, logger)
-            # get state_dict from checkpoint
-            if 'state_dict' in checkpoint:
-                state_dict = checkpoint['state_dict']
-            else:
-                state_dict = checkpoint
-        else:
+        ckpt_pos_embed_shape = state_dict[name].shape
+        if self.pos_embed.shape != ckpt_pos_embed_shape:
+            from mmcv.utils import print_log
+            logger = get_root_logger()
             print_log(
-                f'load {prefix} in model from: {checkpoint}', logger=logger)
-            state_dict = _load_checkpoint_with_prefix(prefix, checkpoint,
-                                                      map_location)
+                f'Resize the pos_embed shape from {ckpt_pos_embed_shape} '
+                f'to {self.pos_embed.shape}.',
+                logger=logger)
 
-        if 'pos_embed' in state_dict.keys():
-            ckpt_pos_embed_shape = state_dict['pos_embed'].shape
-            if self.pos_embed.shape != ckpt_pos_embed_shape:
-                print_log(
-                    f'Resize the pos_embed shape from {ckpt_pos_embed_shape} '
-                    f'to {self.pos_embed.shape}.',
-                    logger=logger)
+            ckpt_pos_embed_shape = to_2tuple(
+                int(np.sqrt(ckpt_pos_embed_shape[1] - self.num_extra_tokens)))
+            pos_embed_shape = self.patch_embed.patches_resolution
 
-                ckpt_pos_embed_shape = to_2tuple(
-                    int(np.sqrt(ckpt_pos_embed_shape[1] - 1)))
-                pos_embed_shape = self.patch_embed.patches_resolution
-
-                state_dict['pos_embed'] = self.resize_pos_embed(
-                    state_dict['pos_embed'], ckpt_pos_embed_shape,
-                    pos_embed_shape, self.interpolate_mode)
-
-        # load state_dict
-        load_state_dict(self, state_dict, strict=False, logger=logger)
+            state_dict[name] = self.resize_pos_embed(state_dict[name],
+                                                     ckpt_pos_embed_shape,
+                                                     pos_embed_shape,
+                                                     self.interpolate_mode,
+                                                     self.num_extra_tokens)
 
     @staticmethod
-    def resize_pos_embed(pos_embed, src_shape, dst_shape, mode='bicubic'):
+    def resize_pos_embed(pos_embed,
+                         src_shape,
+                         dst_shape,
+                         mode='bicubic',
+                         num_extra_tokens=1):
         """Resize pos_embed weights.
 
         Args:
@@ -324,17 +331,17 @@ class VisionTransformer(BaseBackbone):
         assert pos_embed.ndim == 3, 'shape of pos_embed must be [1, L, C]'
         _, L, C = pos_embed.shape
         src_h, src_w = src_shape
-        assert L == src_h * src_w + 1
-        cls_token = pos_embed[:, :1]
+        assert L == src_h * src_w + num_extra_tokens
+        extra_tokens = pos_embed[:, :num_extra_tokens]
 
-        src_weight = pos_embed[:, 1:]
+        src_weight = pos_embed[:, num_extra_tokens:]
         src_weight = src_weight.reshape(1, src_h, src_w, C).permute(0, 3, 1, 2)
 
         dst_weight = F.interpolate(
             src_weight, size=dst_shape, align_corners=False, mode=mode)
         dst_weight = torch.flatten(dst_weight, 2).transpose(1, 2)
 
-        return torch.cat((cls_token, dst_weight), dim=1)
+        return torch.cat((extra_tokens, dst_weight), dim=1)
 
     def forward(self, x):
         B = x.shape[0]

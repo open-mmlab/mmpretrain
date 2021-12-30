@@ -24,7 +24,7 @@ We introduce an extremely computation-efficient CNN architecture named ShuffleNe
 
 ## Results and models
 
-### ImageNet
+### ImageNet-1k
 
 |         Model         | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
 |:---------------------:|:---------:|:--------:|:---------:|:---------:|:---------:|:--------:|

@@ -24,7 +24,7 @@ Currently, the neural network architecture design is mostly guided by the *indir
 
 ## Results and models
 
-### ImageNet
+### ImageNet-1k
 
 |         Model         | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
 |:---------------------:|:---------:|:--------:|:---------:|:---------:|:---------:|:--------:|
