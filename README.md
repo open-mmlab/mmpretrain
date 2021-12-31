@@ -6,6 +6,8 @@
 [![Documentation Status](https://readthedocs.org/projects/mmclassification/badge/?version=latest)](https://mmclassification.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/open-mmlab/mmclassification/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmclassification)
 [![license](https://img.shields.io/github/license/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/blob/master/LICENSE)
+[![PyPI](https://badge.fury.io/py/mmcls.svg)](https://pypi.org/project/mmcls/)
+[![Percentage of issues still open](https://isitmaintained.com/badge/open/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
 
 ## Introduction
 
@@ -24,6 +26,7 @@ Documentation: https://mmclassification.readthedocs.io/en/latest/
 - Bag of training tricks
 - Large-scale training configs
 - High efficiency and extensibility
+- Powerful toolkits
 
 ## License
 
@@ -31,18 +34,20 @@ This project is released under the [Apache 2.0 license](LICENSE).
 
 ## Changelog
 
+v0.19.0 was released in 31/12/2021.
+
+Highlights of the new version:
+- The **feature extraction** function has been enhanced. See [#593](https://github.com/open-mmlab/mmclassification/pull/593) for more details.
+- Provide the high-acc **ResNet-50** training settings from [*ResNet strikes back*](https://arxiv.org/abs/2110.00476).
+- Reproduce the training accuracy of **T2T-ViT** & **RegNetX**, and provide self-training checkpoints.
+- Support **DeiT** & **Conformer** backbone and checkpoints.
+- Provide a **CAM visualization** tool based on [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam), and detailed [user guide](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#class-activation-map-visualization)!
+
 v0.18.0 was released in 30/11/2021.
 
 Highlights of the new version:
 - Support **MLP-Mixer** backbone and provide pre-trained checkpoints.
 - Add a tool to **visualize the learning rate curve** of the training phase. Welcome to use with the [tutorial](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#learning-rate-schedule-visualization)!
-
-v0.17.0 was released in 29/10/2021.
-
-Highlights of this version:
-- Support **Tokens-to-Token ViT** backbone and **Res2Net** backbone. Welcome to use!
-- Support **ImageNet21k** dataset.
-- Add a **pipeline visualization** tool. Try it with the [tutorials](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#pipeline-visualization)!
 
 Please refer to [changelog.md](docs/en/changelog.md) for more details and other release history.
 
@@ -50,27 +55,33 @@ Please refer to [changelog.md](docs/en/changelog.md) for more details and other 
 
 Results and models are available in the [model zoo](docs/en/model_zoo.md).
 
-Supported backbones:
+<details open>
+<summary>Supported backbones</summary>
 
-- [x] VGG
-- [x] ResNet
-- [x] ResNeXt
-- [x] SE-ResNet
-- [x] SE-ResNeXt
-- [x] RegNet
-- [x] ShuffleNetV1
-- [x] ShuffleNetV2
-- [x] MobileNetV2
-- [x] MobileNetV3
-- [x] Swin-Transformer
-- [x] RepVGG
-- [x] Vision-Transformer
-- [x] Transformer-in-Transformer
-- [x] Res2Net
-- [x] MLP-Mixer
-- [ ] DeiT
-- [ ] Conformer
+- [x] [VGG](https://github.com/open-mmlab/mmclassification/tree/master/configs/vgg)
+- [x] [ResNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnet)
+- [x] [ResNeXt](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnext)
+- [x] [SE-ResNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/seresnet)
+- [x] [SE-ResNeXt](https://github.com/open-mmlab/mmclassification/tree/master/configs/seresnet)
+- [x] [RegNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/repvgg)
+- [x] [ShuffleNetV1](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v1)
+- [x] [ShuffleNetV2](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v2)
+- [x] [MobileNetV2](https://github.com/open-mmlab/mmclassification/tree/master/configs/mobilenet_v2)
+- [x] [MobileNetV3](https://github.com/open-mmlab/mmclassification/tree/master/configs/mobilenet_v3)
+- [x] [Swin-Transformer](https://github.com/open-mmlab/mmclassification/tree/master/configs/swin_transformer)
+- [x] [RepVGG](https://github.com/open-mmlab/mmclassification/tree/master/configs/repvgg)
+- [x] [Vision-Transformer](https://github.com/open-mmlab/mmclassification/tree/master/configs/vision_transformer)
+- [x] [Transformer-in-Transformer](https://github.com/open-mmlab/mmclassification/tree/master/configs/tnt)
+- [x] [Res2Net](https://github.com/open-mmlab/mmclassification/tree/master/configs/res2net)
+- [x] [MLP-Mixer](https://github.com/open-mmlab/mmclassification/tree/master/configs/mlp_mixer)
+- [x] [DeiT](https://github.com/open-mmlab/mmclassification/tree/master/configs/deit)
+- [x] [Conformer](https://github.com/open-mmlab/mmclassification/tree/master/configs/conformer)
+- [x] [T2T-ViT](https://github.com/open-mmlab/mmclassification/tree/master/configs/t2t_vit)
 - [ ] EfficientNet
+- [ ] Twins
+- [ ] HRNet
+
+</details>
 
 ## Installation
 
