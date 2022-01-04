@@ -92,7 +92,7 @@ the `dev` branch, please try to update `mmcv` to the latest version.
 According to your needs, we support two install modes.
 
 - [Use as a Python package](#use-as-a-python-package): In this mode, you just want to call MMClassification's APIs or import MMClassification's modules in your project.
-- [Develop based on MMClassification (Recommended)](#develop-based-on-mmclassification): In this mode, you want to develop your own image classification task or new features based on MMClassification framework. And you can use all tools we provided.
+- [Develop based on MMClassification (Recommended)](#develop-based-on-mmclassification): In this mode, you want to develop your own image classification task or new features based on MMClassification framework. For example, you want to add new dataset or new models. And you can use all tools we provided.
 
 ### Use as a Python package
 

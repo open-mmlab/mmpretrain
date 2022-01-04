@@ -87,8 +87,8 @@ MMClassification 和 MMCV 的适配关系如下，请安装正确版本的 MMCV 
 
 根据你的需求，我们支持两种安装模式。
 
-- [仅作为 Python 包使用]()：该模式下，你只希望在你的项目中调用 MMClassification 的 API，或者导入 MMClassification 中的模块
-- [基于 MMClassification 进行开发（推荐）]()：该模式下，你希望基于 MMClassification 框架开发你自己的图像分类任务，或是新的功能。并且你可以使用我们提供的所有工具。
+- [仅作为 Python 包使用](#仅作为-python-包使用)：该模式下，你只希望在你的项目中调用 MMClassification 的 API，或者导入 MMClassification 中的模块
+- [基于 MMClassification 进行开发（推荐）](#基于-mmclassification-进行开发)：该模式下，你希望基于 MMClassification 框架开发你自己的图像分类任务，需要添加新的功能，比如新的模型或是数据集。并且你可以使用我们提供的所有工具。
 
 ### 仅作为 Python 包使用
 
