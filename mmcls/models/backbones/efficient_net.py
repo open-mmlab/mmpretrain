@@ -204,7 +204,7 @@ class EffNet(BaseModule):
             exp_ratios=[1, 6, 6, 6, 6, 6, 6],
             strides=[1, 2, 2, 2, 1, 2, 1],
             kernels=[3, 3, 5, 3, 5, 5, 3],
-            head_width=1280),
+            head_width=1408),
         b3=dict(
             stem_width=40,
             depths=[2, 3, 3, 5, 5, 6, 2],
