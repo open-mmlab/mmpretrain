@@ -81,7 +81,7 @@ the `dev` branch, please try to update `mmcv` to the latest version.
 
    If you want to install mmcv-full, you can install/compile it according to the [instructions](https://mmcv.readthedocs.io/en/latest/get_started/installation.html).
 
-   A better choice is to use [MIM](https://github.com/open-mmlab/mim) to automatically select the mmcv-full version.
+   A better choice is to use [MIM](https://github.com/open-mmlab/mim) to automatically select the mmcv-full version. MIM will automatically install mmcv-full when you use it to install MMClassification in the next section.
 
    ```shell
    pip install openmim

@@ -77,7 +77,7 @@ MMClassification 和 MMCV 的适配关系如下，请安装正确版本的 MMCV 
 
    如果你希望安装 mmcv-full，你可以根据 [该教程](https://mmcv.readthedocs.io/en/latest/get_started/installation.html) 完成安装或编译。
 
-   一个更好的选择是使用 [MIM](https://github.com/open-mmlab/mim) 来自动选择适合你的 mmcv-full 版本.
+   一个更好的选择是使用 [MIM](https://github.com/open-mmlab/mim) 来自动选择适合你的 mmcv-full 版本。在使用 MIM 安装 MMClassification 的时候，它就会自动完成 mmcv-full 的安装。
 
    ```shell
    pip install openmim
