@@ -98,7 +98,10 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 - [如何自定义优化策略](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/schedule.html)
 - [如何自定义运行参数](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/runtime.html)
 
-MMClassification 也提供了相应的中文 Colab 教程。了解 MMClassification Python API，可以查看 [这里](https://github.com/open-mmlab/mmclassification/blob/master/docs/zh_CN/tutorials/MMClassification_python_cn.ipynb) 或者直接在 Colab 上 [运行](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/zh_CN/tutorials/MMClassification_python_cn.ipynb)。了解 MMClassification 命令行工具，可以查看 [这里](https://github.com/open-mmlab/mmclassification/blob/master/docs/zh_CN/tutorials/MMClassification_tools_cn.ipynb) 或者直接在 Colab 上 [运行](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/zh_CN/tutorials/MMClassification_tools_cn.ipynb)。
+我们也提供了相应的中文 Colab 教程：
+
+- 了解 MMClassification **Python API**：[预览 Notebook](https://github.com/open-mmlab/mmclassification/blob/master/docs/zh_CN/tutorials/MMClassification_python_cn.ipynb) 或者直接[在 Colab 上运行](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/zh_CN/tutorials/MMClassification_python_cn.ipynb)。
+- 了解 MMClassification **命令行工具**：[预览 Notebook](https://github.com/open-mmlab/mmclassification/blob/master/docs/zh_CN/tutorials/MMClassification_tools_cn.ipynb) 或者直接[在 Colab 上运行](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/zh_CN/tutorials/MMClassification_tools_cn.ipynb)。
 
 ## 参与贡献
 

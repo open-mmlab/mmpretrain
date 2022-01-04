@@ -92,14 +92,16 @@ Please see [Getting Started](https://mmclassification.readthedocs.io/en/latest/g
 
 - [Learn about Configs](https://mmclassification.readthedocs.io/en/latest/tutorials/config.html)
 - [Fine-tune Models](https://mmclassification.readthedocs.io/en/latest/tutorials/finetune.html)
-- [Adding New Dataset](https://mmclassification.readthedocs.io/en/latest/tutorials/new_dataset.html)
+- [Add New Dataset](https://mmclassification.readthedocs.io/en/latest/tutorials/new_dataset.html)
 - [Customizie Data Pipeline](https://mmclassification.readthedocs.io/en/latest/tutorials/data_pipeline.html)
 - [Add New Modules](https://mmclassification.readthedocs.io/en/latest/tutorials/new_modules.html)
 - [Customizie Schedule](https://mmclassification.readthedocs.io/en/latest/tutorials/schedule.html)
 - [Customizie Runtime Settings](https://mmclassification.readthedocs.io/en/latest/tutorials/runtime.html)
 
-Colab tutorials are also provided. To learn about MMClassification Python API, you may preview the notebook [here](https://github.com/open-mmlab/mmclassification/blob/master/docs/en/tutorials/MMClassification_python.ipynb) or directly [run](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/en/tutorials/MMClassification_python.ipynb) on Colab.
-To learn about MMClassification shell tools, you may preview the notebook [here](https://github.com/open-mmlab/mmclassification/blob/master/docs/en/tutorials/MMClassification_tools.ipynb) or directly [run](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/en/tutorials/MMClassification_tools.ipynb) on Colab.
+Colab tutorials are also provided:
+
+- Learn about MMClassification **Python API**: [Preview the notebook](https://github.com/open-mmlab/mmclassification/blob/master/docs/en/tutorials/MMClassification_python.ipynb) or directly [run on Colab](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/en/tutorials/MMClassification_python.ipynb).
+- Learn about MMClassification **CLI tools**: [Preview the notebook](https://github.com/open-mmlab/mmclassification/blob/master/docs/en/tutorials/MMClassification_tools.ipynb) or directly [run on Colab](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/en/tutorials/MMClassification_tools.ipynb).
 
 ## Citation
 
