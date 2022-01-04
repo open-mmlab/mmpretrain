@@ -8,6 +8,8 @@
 [![Documentation Status](https://readthedocs.org/projects/mmclassification/badge/?version=latest)](https://mmclassification.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/open-mmlab/mmclassification/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmclassification)
 [![license](https://img.shields.io/github/license/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/blob/master/LICENSE)
+[![PyPI](https://badge.fury.io/py/mmcls.svg)](https://pypi.org/project/mmcls/)
+[![Percentage of issues still open](https://isitmaintained.com/badge/open/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
 
 ## Introduction
 
@@ -23,6 +25,7 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 - 支持配置多种训练技巧
 - 大量的训练配置文件
 - 高效率和高可扩展性
+- 功能强大的工具箱
 
 ## 许可证
 
@@ -30,18 +33,20 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 
 ## 更新日志
 
+2021/12/31 发布了 v0.19.0 版本
+
+新版本亮点：
+- **特征提取**功能得到了加强。详见 [#593](https://github.com/open-mmlab/mmclassification/pull/593)。
+- 提供了 **ResNet-50** 的高精度训练配置，原论文参见 [*ResNet strikes back*](https://arxiv.org/abs/2110.00476)。
+- 复现了 **T2T-ViT** 和 **RegNetX** 的训练精度，并提供了自训练的模型权重文件。
+- 支持了 **DeiT** 和 **Conformer** 主干网络，并提供了预训练模型。
+- 提供了一个 **CAM 可视化** 工具。该工具基于 [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam)，我们提供了详细的 [使用教程](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#class-activation-map-visualization)！
+
 2021/11/30 发布了 v0.18.0 版本
 
-新版本的一些新功能如下：
+新版本亮点：
 - 支持了 **MLP-Mixer** 主干网络，欢迎使用！
 - 添加了一个**可视化学习率曲线**的工具，可以参考[教程](https://mmclassification.readthedocs.io/zh_CN/latest/tools/visualization.html#id3)使用
-
-2021/10/29 发布了 v0.17.0 版本
-
-该版本的一些新功能如下：
-- 支持了 **Tokens-to-Token ViT** 主干网络和 **Res2Net** 主干网络，欢迎使用！
-- 支持了 **ImageNet21k** 数据集
-- 添加了一个**可视化数据预处理**的工具，可以参考[教程](https://mmclassification.readthedocs.io/zh_CN/latest/tools/visualization.html#id2)使用
 
 发布历史和更新细节请参考 [更新日志](docs/en/changelog.md)
 
@@ -49,27 +54,33 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 
 相关结果和模型可在 [model zoo](docs/en/model_zoo.md) 中获得
 
-支持的主干网络：
+<details open>
+<summary>支持的主干网络</summary>
 
-- [x] VGG
-- [x] ResNet
-- [x] ResNeXt
-- [x] SE-ResNet
-- [x] SE-ResNeXt
-- [x] RegNet
-- [x] ShuffleNetV1
-- [x] ShuffleNetV2
-- [x] MobileNetV2
-- [x] MobileNetV3
-- [x] Swin-Transformer
-- [x] RepVGG
-- [x] Vision-Transformer
-- [x] Transformer-in-Transformer
-- [x] Res2Net
-- [x] MLP-Mixer
-- [ ] DeiT
-- [ ] Conformer
+- [x] [VGG](https://github.com/open-mmlab/mmclassification/tree/master/configs/vgg)
+- [x] [ResNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnet)
+- [x] [ResNeXt](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnext)
+- [x] [SE-ResNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/seresnet)
+- [x] [SE-ResNeXt](https://github.com/open-mmlab/mmclassification/tree/master/configs/seresnet)
+- [x] [RegNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/repvgg)
+- [x] [ShuffleNetV1](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v1)
+- [x] [ShuffleNetV2](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v2)
+- [x] [MobileNetV2](https://github.com/open-mmlab/mmclassification/tree/master/configs/mobilenet_v2)
+- [x] [MobileNetV3](https://github.com/open-mmlab/mmclassification/tree/master/configs/mobilenet_v3)
+- [x] [Swin-Transformer](https://github.com/open-mmlab/mmclassification/tree/master/configs/swin_transformer)
+- [x] [RepVGG](https://github.com/open-mmlab/mmclassification/tree/master/configs/repvgg)
+- [x] [Vision-Transformer](https://github.com/open-mmlab/mmclassification/tree/master/configs/vision_transformer)
+- [x] [Transformer-in-Transformer](https://github.com/open-mmlab/mmclassification/tree/master/configs/tnt)
+- [x] [Res2Net](https://github.com/open-mmlab/mmclassification/tree/master/configs/res2net)
+- [x] [MLP-Mixer](https://github.com/open-mmlab/mmclassification/tree/master/configs/mlp_mixer)
+- [x] [DeiT](https://github.com/open-mmlab/mmclassification/tree/master/configs/deit)
+- [x] [Conformer](https://github.com/open-mmlab/mmclassification/tree/master/configs/conformer)
+- [x] [T2T-ViT](https://github.com/open-mmlab/mmclassification/tree/master/configs/t2t_vit)
 - [ ] EfficientNet
+- [ ] Twins
+- [ ] HRNet
+
+</details>
 
 ## 安装
 
