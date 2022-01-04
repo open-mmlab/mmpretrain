@@ -232,15 +232,28 @@ class EffNet(BaseModule):
     )
 
     def __init__(self,
-                 stem_width=40,
-                 depths=(2, 3, 3, 5, 5, 6, 2),
-                 widths=(24, 32, 48, 96, 136, 232, 384),
-                 exp_ratios=(1, 6, 6, 6, 6, 6, 6),
-                 strides=(1, 2, 2, 2, 1, 2, 1),
-                 kernels=(3, 3, 5, 3, 5, 5, 3),
-                 head_width=1536,
+                 arch=None,
+                 stem_width=None,
+                 depths=None,
+                 widths=None,
+                 exp_ratios=None,
+                 strides=None,
+                 kernels=None,
+                 head_width=None,
                  se_ratios=0.25):
         super(EffNet, self).__init__()
+        if arch is not None:
+            assert isinstance(arch, str)
+            arch = arch.lower()
+            assert arch in EffNet.arch_zoo.keys()
+            arch_setting = EffNet.arch_zoo[arch]
+            stem_width = arch_setting['stem_width']
+            depths = arch_setting['depths']
+            widths = arch_setting['widths']
+            exp_ratios = arch_setting['exp_ratios']
+            strides = arch_setting['strides']
+            kernels = arch_setting['kernels']
+            head_width = arch_setting['head_width']
         stage_params = list(zip(depths, widths, exp_ratios, strides, kernels))
         self.stem = StemIN(3, stem_width)
         prev_w = stem_width

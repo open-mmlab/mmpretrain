@@ -4,7 +4,7 @@ img_norm_cfg = dict(
     mean=[103.53, 116.28, 123.675], std=[57.375, 57.12, 58.395], to_rgb=False)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='RandomResizedCrop', size=300),
+    dict(type='RandomResizedCrop', size=456),
     dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='ImageToTensor', keys=['img']),
@@ -13,8 +13,8 @@ train_pipeline = [
 ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='Resize', size=(342, -1)),
-    dict(type='CenterCrop', crop_size=300),
+    dict(type='Resize', size=(522, -1)),
+    dict(type='CenterCrop', crop_size=456),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='ImageToTensor', keys=['img']),
     dict(type='Collect', keys=['img'])
@@ -41,12 +41,12 @@ evaluation = dict(interval=1, metric='accuracy')
 
 model = dict(
     type='ImageClassifier',
-    backbone=dict(type='EffNet', arch='b3'),
+    backbone=dict(type='EffNet', arch='b5'),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
         type='LinearClsHead',
         num_classes=1000,
-        in_channels=1536,
+        in_channels=2048,
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
         topk=(1, 5),
     ),
