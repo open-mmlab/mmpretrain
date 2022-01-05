@@ -1,3 +1,5 @@
+__base__ = ['../_base_/schedules/imagenet_bs256_coslr.py']
+
 # dataset settings
 dataset_type = 'ImageNet'
 img_norm_cfg = dict(
@@ -20,7 +22,7 @@ test_pipeline = [
     dict(type='Collect', keys=['img'])
 ]
 data = dict(
-    samples_per_gpu=64,
+    samples_per_gpu=8,
     workers_per_gpu=2,
     train=dict(
         type=dataset_type,
@@ -51,3 +53,5 @@ model = dict(
         topk=(1, 5),
     ),
 )
+
+optimizer = dict(nesterov=True, weight_decay=1e-5, lr=0.1)
