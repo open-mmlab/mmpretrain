@@ -81,7 +81,6 @@ Optional arguments:
 
 Examples:
 
-Assume that you have already downloaded the checkpoints to the directory `checkpoints/`.
 Infer ResNet-50 on ImageNet validation set to get predicted labels and their corresponding predicted scores.
 
 ```shell
