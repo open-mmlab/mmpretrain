@@ -43,7 +43,7 @@ evaluation = dict(interval=1, metric='accuracy')
 
 model = dict(
     type='ImageClassifier',
-    backbone=dict(type='EfficientNet', arch='b5'),
+    backbone=dict(type='EfficientNet', scale=5, stem_channels=48),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
         type='LinearClsHead',

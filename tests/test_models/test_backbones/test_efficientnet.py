@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-import pytest
 import torch
 from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
@@ -26,10 +25,7 @@ def check_norm_state(modules, train_state):
 
 def test_efficientnet():
 
-    with pytest.raises(AssertionError):
-        EfficientNet(arch='bad')
-
-    model = EfficientNet(arch='b0')
+    model = EfficientNet(scale=0)
     model.init_weights()
     model.train()
 
