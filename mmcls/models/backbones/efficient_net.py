@@ -6,6 +6,7 @@
 """EfficientNet models."""
 
 import warnings
+from typing import Sequence
 
 import numpy as np
 import torch
@@ -32,34 +33,47 @@ else:
     ACTIVATION_LAYERS.register_module(module=SiLU)
 
 
-def conv2d(w_in, w_out, k, *, stride=1, groups=1, bias=False):
+def conv2d(in_channels,
+           out_channels,
+           kernel_size,
+           *,
+           stride=1,
+           groups=1,
+           bias=False):
     """Helper for building a conv2d layer."""
-    assert k % 2 == 1, 'Only odd size kernels supported ' \
-                       'to avoid padding issues.'
-    s, p, g, b = stride, (k - 1) // 2, groups, bias
-    return nn.Conv2d(w_in, w_out, k, stride=s, padding=p, groups=g, bias=b)
+    assert kernel_size % 2 == 1, 'Only odd size kernels supported ' \
+                                 'to avoid padding issues.'
+    pad = (kernel_size - 1) // 2
+    return nn.Conv2d(
+        in_channels,
+        out_channels,
+        kernel_size,
+        stride=stride,
+        padding=pad,
+        groups=groups,
+        bias=bias)
 
 
-def norm2d(w_in):
+def norm2d(in_channels):
     """Helper for building a norm2d layer."""
-    return nn.BatchNorm2d(num_features=w_in, eps=1e-5, momentum=0.1)
+    return nn.BatchNorm2d(num_features=in_channels, eps=1e-5, momentum=0.1)
 
 
-def linear(w_in, w_out, *, bias=False):
+def linear(in_channels, out_channels, *, bias=False):
     """Helper for building a linear layer."""
-    return nn.Linear(w_in, w_out, bias=bias)
+    return nn.Linear(in_channels, out_channels, bias=bias)
 
 
 class SE(BaseModule):
-    """Squeeze-and-Excitation (SE) block: AvgPool, FC, Act, FC, Sigmoid."""
+    """Squeeze-and-Excitation (SE) block."""
 
-    def __init__(self, w_in, w_se):
+    def __init__(self, in_channels, se_channels):
         super(SE, self).__init__()
         self.avg_pool = nn.AdaptiveAvgPool2d((1, 1))
         self.f_ex = nn.Sequential(
-            conv2d(w_in, w_se, 1, bias=True),
+            conv2d(in_channels, se_channels, 1, bias=True),
             build_activation_layer(dict(type='SiLU')),
-            conv2d(w_se, w_in, 1, bias=True),
+            conv2d(se_channels, in_channels, 1, bias=True),
             nn.Sigmoid(),
         )
 
@@ -68,12 +82,12 @@ class SE(BaseModule):
 
 
 class EffHead(BaseModule):
-    """EfficientNet head: 1x1, BN, AF, AvgPool, Dropout, FC."""
+    """EfficientNet head."""
 
-    def __init__(self, w_in, w_out):
+    def __init__(self, in_channels, out_channels):
         super(EffHead, self).__init__()
-        self.conv = conv2d(w_in, w_out, 1)
-        self.conv_bn = norm2d(w_out)
+        self.conv = conv2d(in_channels, out_channels, 1)
+        self.conv_bn = norm2d(out_channels)
         self.conv_af = build_activation_layer(dict(type='SiLU'))
 
     def forward(self, x):
@@ -84,24 +98,27 @@ class EffHead(BaseModule):
 class MBConv(BaseModule):
     """Mobile inverted bottleneck block with SE."""
 
-    def __init__(self, in_channel, expansion_ratio, kernel_size, stride,
+    def __init__(self, in_channels, expansion_ratio, kernel_size, stride,
                  se_ratio, out_channel):
-        # Expansion, kxk dwise, BN, AF, SE, 1x1, BN, skip_connection
         super(MBConv, self).__init__()
         self.exp = None
-        w_exp = int(in_channel * expansion_ratio)
-        if w_exp != in_channel:
-            self.exp = conv2d(in_channel, w_exp, 1)
-            self.exp_bn = norm2d(w_exp)
+        expansion_channels = int(in_channels * expansion_ratio)
+        if expansion_channels != in_channels:
+            self.exp = conv2d(in_channels, expansion_channels, 1)
+            self.exp_bn = norm2d(expansion_channels)
             self.exp_af = build_activation_layer(dict(type='SiLU'))
         self.dwise = conv2d(
-            w_exp, w_exp, kernel_size, stride=stride, groups=w_exp)
-        self.dwise_bn = norm2d(w_exp)
+            expansion_channels,
+            expansion_channels,
+            kernel_size,
+            stride=stride,
+            groups=expansion_channels)
+        self.dwise_bn = norm2d(expansion_channels)
         self.dwise_af = build_activation_layer(dict(type='SiLU'))
-        self.se = SE(w_exp, int(in_channel * se_ratio))
-        self.lin_proj = conv2d(w_exp, out_channel, 1)
+        self.se = SE(expansion_channels, int(in_channels * se_ratio))
+        self.lin_proj = conv2d(expansion_channels, out_channel, 1)
         self.lin_proj_bn = norm2d(out_channel)
-        self.has_skip = stride == 1 and in_channel == out_channel
+        self.has_skip = stride == 1 and in_channels == out_channel
 
     def forward(self, x):
         f_x = self.exp_af(self.exp_bn(self.exp(x))) if self.exp else x
@@ -132,8 +149,30 @@ class EffStage(BaseModule):
 
 
 @BACKBONES.register_module()
-class EffNet(BaseModule):
-    """EfficientNet model."""
+class EfficientNet(BaseModule):
+    """EfficientNet backbone.
+
+    Please refer to the `paper <https://arxiv.org/abs/1905.11946>`__ for
+    details.
+
+    Args:
+        arch (ste): Network architecture, from {b0, b1, b2, b3, b4, b5}.
+            Defaults to None.
+        in_channels (int): Number of input image channels. Defaults to 3.
+        stem_width (int): Output channels of the stem layer. Defaults to None.
+        depths (Sequence[int]): Depth of each stage. Defaults to None.
+        widths (Sequence[int]): Channels of each stage. Defaults to None.
+        expansion_ratios (Sequence[int]): Expansion ratio of each stage.
+            Defaults to None.
+        strides (Sequence[int]): Stride of  each stage. Defaults to None.
+        kernel_sizes (Sequence[int]): Kernel size of each stage. Defaults
+            to None.
+        head_width (int): Channels of the output feature map. Defaults to None.
+        se_ratio (int): The ratio of the Squeeze-Excitation module.  Defaults
+            to 0.25.
+        out_indices (Sequence | int): Output from which layer. Defaults to -1,
+            means the last layer.
+    """
 
     arch_zoo = dict(
         b0=dict(
@@ -195,11 +234,13 @@ class EffNet(BaseModule):
                  strides=None,
                  kernel_sizes=None,
                  head_width=None,
-                 se_ratio=0.25):
-        super(EffNet, self).__init__()
+                 in_channels=3,
+                 se_ratio=0.25,
+                 out_indices=-1):
+        super(EfficientNet, self).__init__()
 
         if arch is not None:
-            assert isinstance(arch, str)
+            assert isinstance(arch, str), 'Unknown arch'
             for param in [
                     stem_width, depths, widths, expansion_ratios, strides,
                     kernel_sizes, head_width
@@ -208,8 +249,8 @@ class EffNet(BaseModule):
                     warnings.warn('specifying arch will overwrite the other '
                                   'parameters')
             arch = arch.lower()
-            assert arch in EffNet.arch_zoo.keys()
-            arch_setting = EffNet.arch_zoo[arch]
+            assert arch in EfficientNet.arch_zoo.keys()
+            arch_setting = EfficientNet.arch_zoo[arch]
             stem_width = arch_setting['stem_width']
             depths = arch_setting['depths']
             widths = arch_setting['widths']
@@ -221,7 +262,7 @@ class EffNet(BaseModule):
         stage_params = list(
             zip(depths, widths, expansion_ratios, strides, kernel_sizes))
         self.stem = nn.Sequential(
-            conv2d(3, stem_width, 3, stride=2), norm2d(stem_width),
+            conv2d(in_channels, stem_width, 3, stride=2), norm2d(stem_width),
             build_activation_layer(dict(type='SiLU')))
         prev_width = stem_width
         for i, (depth, width, exp_ratio, stride,
@@ -231,6 +272,20 @@ class EffNet(BaseModule):
             self.add_module('s{}'.format(i + 1), stage)
             prev_width = width
         self.head = EffHead(prev_width, head_width)
+
+        num_layers = len(depths) + 2  # stem + head
+        if isinstance(out_indices, int):
+            out_indices = [out_indices]
+        assert isinstance(out_indices, Sequence), \
+            f'"out_indices" must be a sequence or int, ' \
+            f'get {type(out_indices)} instead.'
+        for i, index in enumerate(out_indices):
+            if index < 0:
+                out_indices[i] = num_layers + index
+                assert out_indices[i] >= 0, f'Invalid out_indices {index}'
+            else:
+                assert index >= self.num_layers, f'Invalid out_indices {index}'
+        self.out_indices = out_indices
 
     def init_weights(self):
         for m in self.modules():
@@ -249,6 +304,9 @@ class EffNet(BaseModule):
                 m.bias.data.zero_()
 
     def forward(self, x):
-        for module in self.children():
+        result = []
+        for idx, module in enumerate(self.children()):
             x = module(x)
-        return (x, )
+            if idx in self.out_indices:
+                result.append(x)
+        return tuple(result)
