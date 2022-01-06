@@ -31,7 +31,7 @@ class SiLU(nn.Module):
             sigmoid_i = torch.sigmoid(i)
             return grad_output * (sigmoid_i * (1 + i * (1 - sigmoid_i)))
 
-    def __init__(self, inplace):
+    def __init__(self):
         super(SiLU, self).__init__()
 
     def forward(self, x):
