@@ -2,46 +2,15 @@ import warnings
 from typing import Sequence
 
 import mmcv
-import torch
 import torch.nn as nn
 import torch.utils.checkpoint as cp
-from mmcv.cnn import (ACTIVATION_LAYERS, ConvModule, build_activation_layer,
-                      build_norm_layer)
+from mmcv.cnn import ConvModule, build_activation_layer, build_norm_layer
 from mmcv.cnn.bricks.drop import drop_path
 from mmcv.runner import Sequential
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from ..builder import BACKBONES
 from ..utils.inverted_residual import InvertedResidual
-
-
-class SiLU(nn.Module):
-
-    class F(torch.autograd.Function):
-
-        @staticmethod
-        def forward(ctx, i):
-            result = i * torch.sigmoid(i)
-            ctx.save_for_backward(i)
-            return result
-
-        @staticmethod
-        def backward(ctx, grad_output):
-            i = ctx.saved_variables[0]
-            sigmoid_i = torch.sigmoid(i)
-            return grad_output * (sigmoid_i * (1 + i * (1 - sigmoid_i)))
-
-    def __init__(self):
-        super(SiLU, self).__init__()
-
-    def forward(self, x):
-        return SiLU.F.apply(x)
-
-
-if hasattr(nn, 'SiLU'):
-    ACTIVATION_LAYERS.register_module(module=nn.SiLU)
-else:
-    ACTIVATION_LAYERS.register_module(module=SiLU)
 
 
 class MBConv(InvertedResidual):
@@ -123,9 +92,8 @@ class EfficientLayer(nn.Sequential):
                 'channels': midchannels,
                 'ratio': expand_ratio * se_ratio,
                 'divisor': 1,
-                'act_cfg': (dict(type='SiLU'), dict(type='Sigmoid')),
+                'act_cfg': (dict(type='Swish'), dict(type='Sigmoid')),
             }
-            # print(se_cfg)
             layers.append(
                 MBConv(
                     in_channels=block_width,
@@ -136,7 +104,7 @@ class EfficientLayer(nn.Sequential):
                     with_cp=with_cp,
                     dropout=dropout,
                     se_cfg=se_cfg,
-                    act_cfg=dict(type='SiLU'),
+                    act_cfg=dict(type='Swish'),
                     norm_cfg=norm_cfg,
                     conv_cfg=conv_cfg,
                     init_cfg=init_cfg))
@@ -278,7 +246,7 @@ class EfficientNet(mmcv.runner.BaseModule):
         self.head = Sequential(
             nn.Conv2d(previous_width, self.head_channels, 1, bias=False),
             build_norm_layer(norm_cfg, self.head_channels)[1],
-            build_activation_layer(dict(type='SiLU')))
+            build_activation_layer(dict(type='Swish')))
 
     def _make_stem_layer(self, in_channels, out_channels):
         self.conv1 = ConvModule(
@@ -290,7 +258,7 @@ class EfficientNet(mmcv.runner.BaseModule):
             bias=False,
             conv_cfg=self.conv_cfg,
             norm_cfg=self.norm_cfg,
-            act_cfg=dict(type='SiLU'))
+            act_cfg=dict(type='Swish'))
 
     def make_efficient_layer(self, **kwargs):
         return EfficientLayer(**kwargs)
