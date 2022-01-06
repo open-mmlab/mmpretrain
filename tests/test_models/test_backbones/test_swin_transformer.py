@@ -193,16 +193,18 @@ def test_structure():
     assert check_norm_state(model.modules(), False)
 
     # Test Swin-Transformer with first stage frozen.
-    frozen_stages = 0
+    frozen_stages = 1
     model = SwinTransformer(
         arch='small', frozen_stages=frozen_stages, out_indices=(0, 1, 2, 3))
     model.init_weights()
     model.train()
 
+    # Test Swin-Transformer patch_embed.
     assert model.patch_embed.training is False
     for param in model.patch_embed.parameters():
         assert param.requires_grad is False
-    for i in range(frozen_stages + 1):
+
+    for i in range(frozen_stages):
         stage = model.stages[i]
         for param in stage.parameters():
             assert param.requires_grad is False
@@ -215,6 +217,16 @@ def test_structure():
         assert param.requires_grad is True
     for param in model.norm1.parameters():
         assert param.requires_grad is True
+
+    # Test Swin-Transformer with all stages frozen.
+    frozen_stages = 4
+    model = SwinTransformer(
+        arch='small', frozen_stages=frozen_stages, out_indices=(0, 1, 2, 3))
+    model.init_weights()
+    model.train()
+
+    for p in model.parameters():
+        assert not p.requires_grad
 
 
 def test_load_checkpoint():

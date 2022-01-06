@@ -442,16 +442,22 @@ class SwinTransformer(BaseBackbone):
             self.patch_embed.eval()
             for param in self.patch_embed.parameters():
                 param.requires_grad = False
+            if self.use_abs_pos_embed:
+                self.absolute_pos_embed.requires_grad = False
+            self.drop_after_pos.eval()
 
-        for i in range(0, self.frozen_stages + 1):
-            m = self.stages[i]
+        for i in range(1, self.frozen_stages + 1):
+
+            if (i - 1) in self.out_indices:
+                norm_layer = getattr(self, f'norm{i-1}')
+                norm_layer.eval()
+                for param in norm_layer.parameters():
+                    param.requires_grad = False
+
+            m = self.stages[i - 1]
             m.eval()
             for param in m.parameters():
                 param.requires_grad = False
-        for i in self.out_indices:
-            if i <= self.frozen_stages:
-                for param in getattr(self, f'norm{i}').parameters():
-                    param.requires_grad = False
 
     def train(self, mode=True):
         super(SwinTransformer, self).train(mode)
