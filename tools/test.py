@@ -68,13 +68,6 @@ def parse_args():
         'Note that the quotation marks are necessary and that no white space '
         'is allowed.')
     parser.add_argument(
-        '--options',
-        nargs='+',
-        action=DictAction,
-        help='override some settings in the used config, the key-value pair '
-        'in xxx=yyy format will be merged into config file (deprecate), '
-        'change to --cfg-options instead.')
-    parser.add_argument(
         '--metric-options',
         nargs='+',
         action=DictAction,
@@ -105,20 +98,6 @@ def parse_args():
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
-
-    if args.options and args.cfg_options:
-        raise ValueError(
-            '--options and --cfg-options cannot be both '
-            'specified, --options is deprecated in favor of --cfg-options')
-    if args.options:
-        warnings.warn('--options is deprecated in favor of --cfg-options')
-        args.cfg_options = args.options
-
-    if args.device:
-        warnings.warn(
-            '--device is deprecated. To use cpu to test, please '
-            'refers to https://mmclassification.readthedocs.io/en/latest/'
-            'getting_started.html#inference-with-pretrained-models')
 
     assert args.metrics or args.out, \
         'Please specify at least one of output path and evaluation metrics.'
