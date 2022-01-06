@@ -4,10 +4,8 @@ import tempfile
 from copy import deepcopy
 
 import numpy as np
-import pytest
 import torch
 from mmcv import ConfigDict
-from mmcv.runner.base_module import BaseModule
 
 from mmcls.models import CLASSIFIERS
 from mmcls.models.classifiers import ImageClassifier
@@ -86,15 +84,6 @@ def test_image_classifier():
     assert soft_pred.shape == (16, 10)
     torch.testing.assert_allclose(soft_pred, torch.softmax(pred, dim=1))
 
-    # test pretrained
-    # TODO remove deprecated pretrained
-    with pytest.warns(UserWarning):
-        model_cfg_ = deepcopy(model_cfg)
-        model_cfg_['pretrained'] = 'checkpoint'
-        model = CLASSIFIERS.build(model_cfg_)
-        assert model.init_cfg == dict(
-            type='Pretrained', checkpoint='checkpoint')
-
     # test show_result
     img = np.random.randint(0, 256, (224, 224, 3)).astype(np.uint8)
     result = dict(pred_class='cat', pred_label=0, pred_score=0.9)
@@ -137,17 +126,6 @@ def test_image_classifier_with_mixup():
     losses = img_classifier.forward_train(imgs, label)
     assert losses['loss'].item() > 0
 
-    # Considering BC-breaking
-    # TODO remove deprecated mixup usage.
-    model_cfg['train_cfg'] = dict(mixup=dict(alpha=1.0, num_classes=10))
-    img_classifier = ImageClassifier(**model_cfg)
-    img_classifier.init_weights()
-    imgs = torch.randn(16, 3, 32, 32)
-    label = torch.randint(0, 10, (16, ))
-
-    losses = img_classifier.forward_train(imgs, label)
-    assert losses['loss'].item() > 0
-
 
 def test_image_classifier_with_cutmix():
 
@@ -169,18 +147,6 @@ def test_image_classifier_with_cutmix():
         train_cfg=dict(
             augments=dict(
                 type='BatchCutMix', alpha=1., num_classes=10, prob=1.)))
-    img_classifier = ImageClassifier(**model_cfg)
-    img_classifier.init_weights()
-    imgs = torch.randn(16, 3, 32, 32)
-    label = torch.randint(0, 10, (16, ))
-
-    losses = img_classifier.forward_train(imgs, label)
-    assert losses['loss'].item() > 0
-
-    # Considering BC-breaking
-    # TODO remove deprecated mixup usage.
-    model_cfg['train_cfg'] = dict(
-        cutmix=dict(alpha=1.0, num_classes=10, cutmix_prob=1.0))
     img_classifier = ImageClassifier(**model_cfg)
     img_classifier.init_weights()
     imgs = torch.randn(16, 3, 32, 32)
@@ -264,59 +230,6 @@ def test_image_classifier_with_augments():
 
     losses = img_classifier.forward_train(imgs, label)
     assert losses['loss'].item() > 0
-
-
-def test_image_classifier_return_tuple():
-    model_cfg = ConfigDict(
-        type='ImageClassifier',
-        backbone=dict(
-            type='ResNet_CIFAR',
-            depth=50,
-            num_stages=4,
-            out_indices=(3, ),
-            style='pytorch',
-            return_tuple=False),
-        head=dict(
-            type='LinearClsHead',
-            num_classes=10,
-            in_channels=2048,
-            loss=dict(type='CrossEntropyLoss')))
-
-    imgs = torch.randn(16, 3, 32, 32)
-
-    model_cfg_ = deepcopy(model_cfg)
-    with pytest.warns(DeprecationWarning):
-        model = CLASSIFIERS.build(model_cfg_)
-
-    # test backbone return tensor
-    feat = model.extract_feat(imgs)
-    assert isinstance(feat, torch.Tensor)
-
-    # test backbone return tuple
-    model_cfg_ = deepcopy(model_cfg)
-    model_cfg_.backbone.return_tuple = True
-    model = CLASSIFIERS.build(model_cfg_)
-
-    feat = model.extract_feat(imgs)
-    assert isinstance(feat, tuple)
-
-    # test warning if backbone return tensor
-    class ToyBackbone(BaseModule):
-
-        def __init__(self):
-            super().__init__()
-            self.conv = torch.nn.Conv2d(3, 16, 3)
-
-        def forward(self, x):
-            return self.conv(x)
-
-    model_cfg_ = deepcopy(model_cfg)
-    model_cfg_.backbone.return_tuple = True
-    model = CLASSIFIERS.build(model_cfg_)
-    model.backbone = ToyBackbone()
-
-    with pytest.warns(DeprecationWarning):
-        model.extract_feat(imgs)
 
 
 def test_classifier_extract_feat():

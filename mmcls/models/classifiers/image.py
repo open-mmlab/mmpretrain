@@ -1,13 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import copy
-import warnings
-
 from ..builder import CLASSIFIERS, build_backbone, build_head, build_neck
 from ..heads import MultiLabelClsHead
 from ..utils.augment import Augments
 from .base import BaseClassifier
-
-warnings.simplefilter('once')
 
 
 @CLASSIFIERS.register_module()
@@ -17,24 +12,11 @@ class ImageClassifier(BaseClassifier):
                  backbone,
                  neck=None,
                  head=None,
-                 pretrained=None,
                  train_cfg=None,
                  init_cfg=None):
         super(ImageClassifier, self).__init__(init_cfg)
 
-        if pretrained is not None:
-            warnings.warn('DeprecationWarning: pretrained is a deprecated \
-                key, please consider using init_cfg')
-            self.init_cfg = dict(type='Pretrained', checkpoint=pretrained)
-
-        return_tuple = backbone.pop('return_tuple', True)
         self.backbone = build_backbone(backbone)
-        if return_tuple is False:
-            warnings.warn(
-                'The `return_tuple` is a temporary arg, we will force to '
-                'return tuple in the future. Please handle tuple in your '
-                'custom neck or head.', DeprecationWarning)
-        self.return_tuple = return_tuple
 
         if neck is not None:
             self.neck = build_neck(neck)
@@ -47,29 +29,6 @@ class ImageClassifier(BaseClassifier):
             augments_cfg = train_cfg.get('augments', None)
             if augments_cfg is not None:
                 self.augments = Augments(augments_cfg)
-            else:
-                # Considering BC-breaking
-                mixup_cfg = train_cfg.get('mixup', None)
-                cutmix_cfg = train_cfg.get('cutmix', None)
-                assert mixup_cfg is None or cutmix_cfg is None, \
-                    'If mixup and cutmix are set simultaneously,' \
-                    'use augments instead.'
-                if mixup_cfg is not None:
-                    warnings.warn('The mixup attribute will be deprecated. '
-                                  'Please use augments instead.')
-                    cfg = copy.deepcopy(mixup_cfg)
-                    cfg['type'] = 'BatchMixup'
-                    # In the previous version, mixup_prob is always 1.0.
-                    cfg['prob'] = 1.0
-                    self.augments = Augments(cfg)
-                if cutmix_cfg is not None:
-                    warnings.warn('The cutmix attribute will be deprecated. '
-                                  'Please use augments instead.')
-                    cfg = copy.deepcopy(cutmix_cfg)
-                    cutmix_prob = cfg.pop('cutmix_prob')
-                    cfg['type'] = 'BatchCutMix'
-                    cfg['prob'] = cutmix_prob
-                    self.augments = Augments(cfg)
 
     def extract_feat(self, img, stage='neck'):
         """Directly extract features from the specified stage.
@@ -140,16 +99,7 @@ class ImageClassifier(BaseClassifier):
              '"neck" and "pre_logits"')
 
         x = self.backbone(img)
-        if self.return_tuple:
-            if not isinstance(x, tuple):
-                x = (x, )
-                warnings.warn(
-                    'We will force all backbones to return a tuple in the '
-                    'future. Please check your backbone and wrap the output '
-                    'as a tuple.', DeprecationWarning)
-        else:
-            if isinstance(x, tuple):
-                x = x[-1]
+
         if stage == 'backbone':
             return x
 
@@ -181,17 +131,7 @@ class ImageClassifier(BaseClassifier):
         x = self.extract_feat(img)
 
         losses = dict()
-        try:
-            loss = self.head.forward_train(x, gt_label)
-        except TypeError as e:
-            if 'not tuple' in str(e) and self.return_tuple:
-                return TypeError(
-                    'Seems the head cannot handle tuple input. We have '
-                    'changed all backbones\' output to a tuple. Please '
-                    'update your custom head\'s forward function. '
-                    'Temporarily, you can set "return_tuple=False" in '
-                    'your backbone config to disable this feature.')
-            raise e
+        loss = self.head.forward_train(x, gt_label)
 
         losses.update(loss)
 
@@ -201,20 +141,10 @@ class ImageClassifier(BaseClassifier):
         """Test without augmentation."""
         x = self.extract_feat(img)
 
-        try:
-            if isinstance(self.head, MultiLabelClsHead):
-                assert 'softmax' not in kwargs, (
-                    'Please use `sigmoid` instead of `softmax` '
-                    'in multi-label tasks.')
-            res = self.head.simple_test(x, **kwargs)
-        except TypeError as e:
-            if 'not tuple' in str(e) and self.return_tuple:
-                return TypeError(
-                    'Seems the head cannot handle tuple input. We have '
-                    'changed all backbones\' output to a tuple. Please '
-                    'update your custom head\'s forward function. '
-                    'Temporarily, you can set "return_tuple=False" in '
-                    'your backbone config to disable this feature.')
-            raise e
+        if isinstance(self.head, MultiLabelClsHead):
+            assert 'softmax' not in kwargs, (
+                'Please use `sigmoid` instead of `softmax` '
+                'in multi-label tasks.')
+        res = self.head.simple_test(x, **kwargs)
 
         return res
