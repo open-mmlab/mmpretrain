@@ -74,7 +74,7 @@ class HRFuseScales(BaseModule):
 
         feat = self.increase_layers[0](x[0])
         for i in range(len(self.downsample_layers)):
-            feat = self.downsample_layers[i](feat)
-            feat += self.increase_layers[i + 1](x[i + 1])
+            feat = self.downsample_layers[i](feat) + \
+                self.increase_layers[i + 1](x[i + 1])
 
         return self.final_layer(feat)
