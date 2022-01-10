@@ -4,6 +4,7 @@ from .conformer import Conformer
 from .convnext import ConvNeXt
 from .deit import DistilledVisionTransformer
 from .efficientnet import EfficientNet
+from .hrnet import HRNet
 from .lenet import LeNet5
 from .mlp_mixer import MlpMixer
 from .mobilenet_v2 import MobileNetV2
@@ -33,5 +34,5 @@ __all__ = [
     'ShuffleNetV2', 'MobileNetV2', 'MobileNetV3', 'VisionTransformer',
     'SwinTransformer', 'TNT', 'TIMMBackbone', 'T2T_ViT', 'Res2Net', 'RepVGG',
     'Conformer', 'MlpMixer', 'DistilledVisionTransformer', 'PCPVT', 'SVT',
-    'EfficientNet', 'ConvNeXt'
+    'EfficientNet', 'ConvNeXt', 'HRNet'
 ]
