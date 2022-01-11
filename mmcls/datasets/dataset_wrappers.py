@@ -192,8 +192,8 @@ class KFoldDataset:
             rng = np.random.default_rng(seed)
             rng.shuffle(indices)
 
-        test_start = length // num_splits * fold
-        test_end = length // num_splits * (fold + 1)
+        test_start = length * fold // num_splits
+        test_end = length * (fold + 1) // num_splits
         if test_mode:
             self.indices = indices[test_start:test_end]
         else:
