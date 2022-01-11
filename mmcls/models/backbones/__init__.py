@@ -21,6 +21,7 @@ from .swin_transformer import SwinTransformer
 from .t2t_vit import T2T_ViT
 from .timm_backbone import TIMMBackbone
 from .tnt import TNT
+from .twins import PCPVT, SVT
 from .vgg import VGG
 from .vision_transformer import VisionTransformer
 
@@ -29,5 +30,5 @@ __all__ = [
     'ResNeSt', 'ResNet_CIFAR', 'SEResNet', 'SEResNeXt', 'ShuffleNetV1',
     'ShuffleNetV2', 'MobileNetV2', 'MobileNetV3', 'VisionTransformer',
     'SwinTransformer', 'TNT', 'TIMMBackbone', 'T2T_ViT', 'Res2Net', 'RepVGG',
-    'Conformer', 'MlpMixer', 'DistilledVisionTransformer'
+    'Conformer', 'MlpMixer', 'DistilledVisionTransformer', 'PCPVT', 'SVT'
 ]
