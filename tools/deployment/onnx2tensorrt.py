@@ -52,8 +52,8 @@ def onnx2tensorrt(onnx_file,
     print(f'Successfully created TensorRT engine: {trt_file}')
 
     if verify:
-        import torch
         import onnxruntime as ort
+        import torch
 
         input_img = torch.randn(*input_shape)
         input_img_cpu = input_img.detach().cpu().numpy()
