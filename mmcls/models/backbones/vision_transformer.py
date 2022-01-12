@@ -6,13 +6,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import build_norm_layer
-from mmcv.cnn.bricks.transformer import FFN
+from mmcv.cnn.bricks.transformer import FFN, PatchEmbed
 from mmcv.cnn.utils.weight_init import trunc_normal_
 from mmcv.runner.base_module import BaseModule, ModuleList
 
 from mmcls.utils import get_root_logger
 from ..builder import BACKBONES
-from ..utils import MultiheadAttention, PatchEmbed, to_2tuple
+from ..utils import MultiheadAttention, to_2tuple
 from .base_backbone import BaseBackbone
 
 
@@ -214,14 +214,17 @@ class VisionTransformer(BaseBackbone):
 
         # Set patch embedding
         _patch_cfg = dict(
-            img_size=img_size,
+            input_size=img_size,
             embed_dims=self.embed_dims,
-            conv_cfg=dict(
-                type='Conv2d', kernel_size=patch_size, stride=patch_size),
-        )
+            conv_type='Conv2d',
+            kernel_size=patch_size,
+            stride=patch_size)
         _patch_cfg.update(patch_cfg)
         self.patch_embed = PatchEmbed(**_patch_cfg)
-        num_patches = self.patch_embed.num_patches
+        patches_resolution = self.patch_embed.init_out_size
+        assert patches_resolution and len(patches_resolution) == 2
+        num_patches = patches_resolution[0] * patches_resolution[1]
+        self.patches_resolution = patches_resolution
 
         # Set cls token
         self.output_cls_token = output_cls_token
@@ -299,7 +302,7 @@ class VisionTransformer(BaseBackbone):
 
             ckpt_pos_embed_shape = to_2tuple(
                 int(np.sqrt(ckpt_pos_embed_shape[1] - self.num_extra_tokens)))
-            pos_embed_shape = self.patch_embed.patches_resolution
+            pos_embed_shape = self.patch_embed.init_out_size
 
             state_dict[name] = self.resize_pos_embed(state_dict[name],
                                                      ckpt_pos_embed_shape,
@@ -345,8 +348,8 @@ class VisionTransformer(BaseBackbone):
 
     def forward(self, x):
         B = x.shape[0]
-        x = self.patch_embed(x)
-        patch_resolution = self.patch_embed.patches_resolution
+        x, output_size = self.patch_embed(x)
+        patch_resolution = output_size
 
         # stole cls_tokens impl from Phil Wang, thanks
         cls_tokens = self.cls_token.expand(B, -1, -1)

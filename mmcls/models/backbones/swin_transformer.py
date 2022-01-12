@@ -6,13 +6,13 @@ import torch
 import torch.nn as nn
 import torch.utils.checkpoint as cp
 from mmcv.cnn import build_norm_layer
-from mmcv.cnn.bricks.transformer import FFN
+from mmcv.cnn.bricks.transformer import FFN, PatchEmbed
 from mmcv.cnn.utils.weight_init import trunc_normal_
 from mmcv.runner.base_module import BaseModule, ModuleList
 from mmcv.utils.parrots_wrapper import _BatchNorm
 
 from ..builder import BACKBONES
-from ..utils import PatchEmbed, PatchMerging, ShiftWindowMSA
+from ..utils import PatchMerging, ShiftWindowMSA
 from .base_backbone import BaseBackbone
 
 
@@ -327,16 +327,19 @@ class SwinTransformer(BaseBackbone):
         self.num_extra_tokens = 0
 
         _patch_cfg = {
-            'img_size': img_size,
+            'input_size': img_size,
             'in_channels': in_channels,
             'embed_dims': self.embed_dims,
-            'conv_cfg': dict(type='Conv2d', kernel_size=4, stride=4),
+            'conv_type': 'Conv2d',
+            'kernel_size': 4,
+            'stride': 4,
             'norm_cfg': dict(type='LN'),
             **patch_cfg
         }
         self.patch_embed = PatchEmbed(**_patch_cfg)
-        num_patches = self.patch_embed.num_patches
-        patches_resolution = self.patch_embed.patches_resolution
+        patches_resolution = self.patch_embed.init_out_size
+        assert patches_resolution and len(patches_resolution) == 2
+        num_patches = patches_resolution[0] * patches_resolution[1]
         self.patches_resolution = patches_resolution
 
         if self.use_abs_pos_embed:
@@ -354,7 +357,7 @@ class SwinTransformer(BaseBackbone):
 
         self.stages = ModuleList()
         embed_dims = [self.embed_dims]
-        input_resolution = patches_resolution
+        input_resolution = self.patches_resolution
         for i, (depth,
                 num_heads) in enumerate(zip(self.depths, self.num_heads)):
             if isinstance(stage_cfgs, Sequence):
@@ -401,7 +404,7 @@ class SwinTransformer(BaseBackbone):
             trunc_normal_(self.absolute_pos_embed, std=0.02)
 
     def forward(self, x):
-        x = self.patch_embed(x)
+        x, _ = self.patch_embed(x)
         if self.use_abs_pos_embed:
             x = x + self.absolute_pos_embed
         x = self.drop_after_pos(x)

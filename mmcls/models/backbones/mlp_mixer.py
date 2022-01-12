@@ -3,11 +3,11 @@ from typing import Sequence
 
 import torch.nn as nn
 from mmcv.cnn import build_norm_layer
-from mmcv.cnn.bricks.transformer import FFN
+from mmcv.cnn.bricks.transformer import FFN, PatchEmbed
 from mmcv.runner.base_module import BaseModule, ModuleList
 
 from ..builder import BACKBONES
-from ..utils import PatchEmbed, to_2tuple
+from ..utils import to_2tuple
 from .base_backbone import BaseBackbone
 
 
@@ -183,15 +183,18 @@ class MlpMixer(BaseBackbone):
 
         self.img_size = to_2tuple(img_size)
 
-        _patch_cfg = dict(
-            img_size=img_size,
-            embed_dims=self.embed_dims,
-            conv_cfg=dict(
-                type='Conv2d', kernel_size=patch_size, stride=patch_size),
-        )
+        _patch_cfg = {
+            'input_size': img_size,
+            'embed_dims': self.embed_dims,
+            'conv_type': 'Conv2d',
+            'kernel_size': patch_size,
+            'stride': patch_size,
+        }
         _patch_cfg.update(patch_cfg)
         self.patch_embed = PatchEmbed(**_patch_cfg)
-        num_patches = self.patch_embed.num_patches
+        patches_resolution = self.patch_embed.init_out_size
+        assert patches_resolution and len(patches_resolution) == 2
+        num_patches = patches_resolution[0] * patches_resolution[1]
 
         if isinstance(out_indices, int):
             out_indices = [out_indices]
@@ -232,7 +235,7 @@ class MlpMixer(BaseBackbone):
         return getattr(self, self.norm1_name)
 
     def forward(self, x):
-        x = self.patch_embed(x)
+        x, _ = self.patch_embed(x)
 
         outs = []
         for i, layer in enumerate(self.layers):

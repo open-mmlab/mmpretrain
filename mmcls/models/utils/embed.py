@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import warnings
+
 import torch
 import torch.nn as nn
 from mmcv.cnn import build_conv_layer, build_norm_layer
@@ -32,6 +34,10 @@ class PatchEmbed(BaseModule):
                  conv_cfg=None,
                  init_cfg=None):
         super(PatchEmbed, self).__init__(init_cfg)
+        warnings.warn(
+            'DeprecationWarning: PatchEmbed in mmcls will be deprecated in '
+            '2022-07-01, please use `mmcv.cnn.bricks.transformer.PatchEmbed` '
+            'in mmcv>=1.4.2.')
 
         if isinstance(img_size, int):
             img_size = to_2tuple(img_size)
