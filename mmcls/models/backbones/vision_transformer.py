@@ -222,9 +222,10 @@ class VisionTransformer(BaseBackbone):
         _patch_cfg.update(patch_cfg)
         self.patch_embed = PatchEmbed(**_patch_cfg)
         patches_resolution = self.patch_embed.init_out_size
-        assert patches_resolution and len(patches_resolution) == 2
+        assert patches_resolution and len(patches_resolution) == 2, (
+            'the `PatchEmbed` of ViT like networks with cls_token must set '
+            "'input_size' to calculate num_patches.")
         num_patches = patches_resolution[0] * patches_resolution[1]
-        self.patches_resolution = patches_resolution
 
         # Set cls token
         self.output_cls_token = output_cls_token

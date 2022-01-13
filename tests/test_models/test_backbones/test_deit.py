@@ -25,7 +25,9 @@ def test_deit_backbone():
 
     assert check_norm_state(model.modules(), True)
     assert model.dist_token.shape == (1, 1, 768)
-    assert model.pos_embed.shape == (1, model.patch_embed.num_patches + 2, 768)
+    patches_reslution = model.patch_embed.init_out_size
+    num_patches = patches_reslution[0] * patches_reslution[1]
+    assert model.pos_embed.shape == (1, num_patches + 2, 768)
 
     # Test forward
     imgs = torch.rand(1, 3, 224, 224)

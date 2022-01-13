@@ -46,8 +46,8 @@ class DistilledVisionTransformer(VisionTransformer):
 
     def forward(self, x):
         B = x.shape[0]
-        x = self.patch_embed(x)
-        patch_resolution = self.patch_embed.patches_resolution
+        x, wh_shape = self.patch_embed(x)
+        patch_resolution = wh_shape
 
         # stole cls_tokens impl from Phil Wang, thanks
         cls_tokens = self.cls_token.expand(B, -1, -1)
