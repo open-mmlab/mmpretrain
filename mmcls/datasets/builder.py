@@ -37,9 +37,9 @@ def build_dataset(cfg, default_args=None):
             build_dataset(cfg['dataset'], default_args), cfg['oversample_thr'])
     elif cfg['type'] == 'KFoldDataset':
         cp_cfg = copy.deepcopy(cfg)
-        cp_cfg['dataset'] = build_dataset(cp_cfg['dataset'])
         if cp_cfg.get('test_mode', None) is None:
-            cp_cfg['test_mode'] = (default_args or {}).get('test_mode', False)
+            cp_cfg['test_mode'] = (default_args or {}).pop('test_mode', False)
+        cp_cfg['dataset'] = build_dataset(cp_cfg['dataset'], default_args)
         cp_cfg.pop('type')
         dataset = KFoldDataset(**cp_cfg)
     else:
