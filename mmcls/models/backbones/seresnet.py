@@ -23,7 +23,7 @@ class SEBottleneck(Bottleneck):
                 cfg=dict(type='SELayer', ratio=se_ratio))
         ]
 
-        if kwargs['plugins']:
+        if 'plugins' in kwargs and kwargs['plugins']:
             kwargs['plugins'].extend(_plugins)
         else:
             kwargs['plugins'] = _plugins
