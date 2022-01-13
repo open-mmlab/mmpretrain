@@ -88,12 +88,7 @@ class RegNet(ResNet):
             group_w=64,
             depth=22,
             bot_mul=1.0,
-            plugins=[
-                dict(
-                    position='after_conv2',
-                    cfg=dict(type='SELayer', ratio=4, bias=True))
-            ],
-        ),
+            se_cfg=dict(type='SELayer', ratio=4, bias=True)),
     }
 
     def __init__(self,
@@ -178,7 +173,6 @@ class RegNet(ResNet):
             group_width = self.group_widths[i]
             width = int(round(self.stage_widths[i] * self.bottleneck_ratio[i]))
             stage_groups = width // group_width
-
             res_layer = self.make_res_layer(
                 block=Bottleneck,
                 num_blocks=num_blocks,

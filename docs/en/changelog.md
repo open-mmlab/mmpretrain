@@ -1,5 +1,53 @@
 # Changelog
 
+## v0.19.0(31/12/2021)
+
+### Highlights
+
+- The feature extraction function has been enhanced. See [#593](https://github.com/open-mmlab/mmclassification/pull/593) for more details.
+- Provide the high-acc ResNet-50 training settings from [*ResNet strikes back*](https://arxiv.org/abs/2110.00476).
+- Reproduce the training accuracy of T2T-ViT & RegNetX, and provide self-training checkpoints.
+- Support DeiT & Conformer backbone and checkpoints.
+- Provide a CAM visualization tool based on [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam), and detailed [user guide](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#class-activation-map-visualization)!
+
+### New Features
+
+- Support Precise BN. ([#401](https://github.com/open-mmlab/mmclassification/pull/401))
+- Add CAM visualization tool. ([#577](https://github.com/open-mmlab/mmclassification/pull/577))
+- Repeated Aug and Sampler Registry. ([#588](https://github.com/open-mmlab/mmclassification/pull/588))
+- Add DeiT backbone and checkpoints. ([#576](https://github.com/open-mmlab/mmclassification/pull/576))
+- Support LAMB optimizer. ([#591](https://github.com/open-mmlab/mmclassification/pull/591))
+- Implement the conformer backbone. ([#494](https://github.com/open-mmlab/mmclassification/pull/494))
+- Add the frozen function for Swin Transformer model. ([#574](https://github.com/open-mmlab/mmclassification/pull/574))
+- Support using checkpoint in Swin Transformer to save memory. ([#557](https://github.com/open-mmlab/mmclassification/pull/557))
+
+### Improvements
+
+- [Reproduction] Reproduce RegNetX training accuracy. ([#587](https://github.com/open-mmlab/mmclassification/pull/587))
+- [Reproduction] Reproduce training results of T2T-ViT. ([#610](https://github.com/open-mmlab/mmclassification/pull/610))
+- [Enhance] Provide high-acc training settings of ResNet. ([#572](https://github.com/open-mmlab/mmclassification/pull/572))
+- [Enhance] Set a random seed when the user does not set a seed. ([#554](https://github.com/open-mmlab/mmclassification/pull/554))
+- [Enhance] Added `NumClassCheckHook` and unit tests. ([#559](https://github.com/open-mmlab/mmclassification/pull/559))
+- [Enhance] Enhance feature extraction function. ([#593](https://github.com/open-mmlab/mmclassification/pull/593))
+- [Enhance] Improve efficiency of precision, recall, f1_score and support. ([#595](https://github.com/open-mmlab/mmclassification/pull/595))
+- [Enhance] Improve accuracy calculation performance. ([#592](https://github.com/open-mmlab/mmclassification/pull/592))
+- [Refactor] Refactor `analysis_log.py`. ([#529](https://github.com/open-mmlab/mmclassification/pull/529))
+- [Refactor] Use new API of matplotlib to handle blocking input in visualization. ([#568](https://github.com/open-mmlab/mmclassification/pull/568))
+- [CI] Cancel previous runs that are not completed. ([#583](https://github.com/open-mmlab/mmclassification/pull/583))
+- [CI] Skip build CI if only configs or docs modification. ([#575](https://github.com/open-mmlab/mmclassification/pull/575))
+
+### Bug Fixes
+
+- Fix test sampler bug. ([#611](https://github.com/open-mmlab/mmclassification/pull/611))
+- Try to create a symbolic link, otherwise copy. ([#580](https://github.com/open-mmlab/mmclassification/pull/580))
+- Fix a bug for multiple output in swin transformer. ([#571](https://github.com/open-mmlab/mmclassification/pull/571))
+
+### Docs Update
+
+- Update mmcv, torch, cuda version in Dockerfile and docs. ([#594](https://github.com/open-mmlab/mmclassification/pull/594))
+- Add analysis&misc docs. ([#525](https://github.com/open-mmlab/mmclassification/pull/525))
+- Fix docs build dependency. ([#584](https://github.com/open-mmlab/mmclassification/pull/584))
+
 ## v0.18.0(30/11/2021)
 
 ### Highlights

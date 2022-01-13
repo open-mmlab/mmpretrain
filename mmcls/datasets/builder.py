@@ -10,8 +10,6 @@ from mmcv.runner import get_dist_info
 from mmcv.utils import Registry, build_from_cfg, digit_version
 from torch.utils.data import DataLoader
 
-from .samplers import DistributedSampler
-
 if platform.system() != 'Windows':
     # https://github.com/pytorch/pytorch/issues/973
     import resource
@@ -22,6 +20,7 @@ if platform.system() != 'Windows':
 
 DATASETS = Registry('dataset')
 PIPELINES = Registry('pipeline')
+SAMPLERS = Registry('sampler')
 
 
 def build_dataset(cfg, default_args=None):
@@ -51,6 +50,7 @@ def build_dataloader(dataset,
                      seed=None,
                      pin_memory=True,
                      persistent_workers=True,
+                     sampler_cfg=None,
                      **kwargs):
     """Build PyTorch DataLoader.
 
@@ -76,20 +76,44 @@ def build_dataloader(dataset,
             This allows to maintain the workers Dataset instances alive.
             The argument also has effect in PyTorch>=1.7.0.
             Default: True
+        sampler_cfg (dict): sampler configuration to override the default
+            sampler
         kwargs: any keyword argument to be used to initialize DataLoader
 
     Returns:
         DataLoader: A PyTorch dataloader.
     """
     rank, world_size = get_dist_info()
-    if dist:
-        sampler = DistributedSampler(
-            dataset, world_size, rank, shuffle=shuffle, round_up=round_up)
+
+    # Custom sampler logic
+    if sampler_cfg:
+        # shuffle=False when val and test
+        sampler_cfg.update(shuffle=shuffle)
+        sampler = build_sampler(
+            sampler_cfg,
+            default_args=dict(
+                dataset=dataset, num_replicas=world_size, rank=rank))
+    # Default sampler logic
+    elif dist:
+        sampler = build_sampler(
+            dict(
+                type='DistributedSampler',
+                dataset=dataset,
+                num_replicas=world_size,
+                rank=rank,
+                shuffle=shuffle,
+                round_up=round_up))
+    else:
+        sampler = None
+
+    # If sampler exists, turn off dataloader shuffle
+    if sampler is not None:
         shuffle = False
+
+    if dist:
         batch_size = samples_per_gpu
         num_workers = workers_per_gpu
     else:
-        sampler = None
         batch_size = num_gpus * samples_per_gpu
         num_workers = num_gpus * workers_per_gpu
 
@@ -120,3 +144,10 @@ def worker_init_fn(worker_id, num_workers, rank, seed):
     worker_seed = num_workers * rank + worker_id + seed
     np.random.seed(worker_seed)
     random.seed(worker_seed)
+
+
+def build_sampler(cfg, default_args=None):
+    if cfg is None:
+        return None
+    else:
+        return build_from_cfg(cfg, SAMPLERS, default_args=default_args)

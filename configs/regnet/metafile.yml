@@ -1,0 +1,122 @@
+Collections:
+  - Name: RegNet
+    Metadata:
+      Training Data: ImageNet-1k
+      Architecture:
+        - Neural Architecture Search
+        - Design Space Design
+        - Precise BN
+        - SGD with nesterov
+    Paper:
+      URL: https://arxiv.org/abs/2003.13678
+      Title: Designing Network Design Spaces
+    README: configs/regnet/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.18.0/mmcls/models/backbones/regnet.py
+      Version: v0.18.0
+
+Models:
+  - Name: regnetx-400mf_8xb128_in1k
+    In Collection: RegNet
+    Config: configs/regnet/regnetx-400mf_8xb128_in1k.py
+    Metadata:
+      FLOPs: 410000000     # 0.41G
+      Parameters: 5160000  # 5.16M
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 72.56
+        Top 5 Accuracy: 90.78
+    Weights: https://download.openmmlab.com/mmclassification/v0/regnet/regnetx-400mf_8xb128_in1k_20211213-89bfc226.pth
+  - Name: regnetx-800mf_8xb128_in1k
+    In Collection: RegNet
+    Config: configs/regnet/regnetx-800mf_8xb128_in1k.py
+    Metadata:
+      FLOPs: 810000000     # 0.81G
+      Parameters: 7260000  # 7.26M
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 74.76
+        Top 5 Accuracy: 92.32
+    Weights: https://download.openmmlab.com/mmclassification/v0/regnet/regnetx-800mf_8xb128_in1k_20211213-222b0f11.pth
+  - Name: regnetx-1.6gf_8xb128_in1k
+    In Collection: RegNet
+    Config: configs/regnet/regnetx-1.6gf_8xb128_in1k.py
+    Metadata:
+      FLOPs: 1630000000     # 1.63G
+      Parameters: 9190000   # 9.19M
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 76.84
+        Top 5 Accuracy: 93.31
+    Weights: https://download.openmmlab.com/mmclassification/v0/regnet/regnetx-1.6gf_8xb128_in1k_20211213-d1b89758.pth
+  - Name: regnetx-3.2gf_8xb64_in1k
+    In Collection: RegNet
+    Config: configs/regnet/regnetx-3.2gf_8xb64_in1k.py
+    Metadata:
+      FLOPs: 1530000000     # 1.53G
+      Parameters: 3210000   # 32.1M
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 78.09
+        Top 5 Accuracy: 94.08
+    Weights: https://download.openmmlab.com/mmclassification/v0/regnet/regnetx-3.2gf_8xb64_in1k_20211213-1fdd82ae.pth
+  - Name: regnetx-4.0gf_8xb64_in1k
+    In Collection: RegNet
+    Config: configs/regnet/regnetx-4.0gf_8xb64_in1k.py
+    Metadata:
+      FLOPs: 4000000000     # 4G
+      Parameters: 22120000  # 22.12M
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 78.60
+        Top 5 Accuracy: 94.17
+    Weights: https://download.openmmlab.com/mmclassification/v0/regnet/regnetx-4.0gf_8xb64_in1k_20211213-efed675c.pth
+  - Name: regnetx-6.4gf_8xb64_in1k
+    In Collection: RegNet
+    Config: configs/regnet/regnetx-6.4gf_8xb64_in1k.py
+    Metadata:
+      FLOPs: 6510000000      # 6.51G
+      Parameters: 26210000   # 26.21M
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 79.38
+        Top 5 Accuracy: 94.65
+    Weights: https://download.openmmlab.com/mmclassification/v0/regnet/regnetx-6.4gf_8xb64_in1k_20211215-5c6089da.pth
+  - Name: regnetx-8.0gf_8xb64_in1k
+    In Collection: RegNet
+    Config: configs/regnet/regnetx-8.0gf_8xb64_in1k.py
+    Metadata:
+      FLOPs: 8030000000     # 8.03G
+      Parameters: 39570000  # 39.57M
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 79.12
+        Top 5 Accuracy: 94.51
+    Weights: https://download.openmmlab.com/mmclassification/v0/regnet/regnetx-8.0gf_8xb64_in1k_20211213-9a9fcc76.pth
+  - Name: regnetx-12gf_8xb64_in1k
+    In Collection: RegNet
+    Config: configs/regnet/regnetx-12gf_8xb64_in1k.py
+    Metadata:
+      FLOPs: 12150000000      # 12.15G
+      Parameters: 46110000    # 46.11M
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 79.67
+        Top 5 Accuracy: 95.03
+    Weights: https://download.openmmlab.com/mmclassification/v0/regnet/regnetx-12gf_8xb64_in1k_20211213-5df8c2f8.pth

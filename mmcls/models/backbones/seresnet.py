@@ -17,12 +17,16 @@ class SEBottleneck(Bottleneck):
     """
 
     def __init__(self, in_channels, out_channels, se_ratio=16, **kwargs):
-        plugins = [
+        _plugins = [
             dict(
                 position='after_conv3',
                 cfg=dict(type='SELayer', ratio=se_ratio))
         ]
-        kwargs.update(dict(plugins=plugins))
+
+        if kwargs['plugins']:
+            kwargs['plugins'].extend(_plugins)
+        else:
+            kwargs['plugins'] = _plugins
         super(SEBottleneck, self).__init__(in_channels, out_channels, **kwargs)
 
 
@@ -92,8 +96,8 @@ class SEResNet(ResNet):
             raise KeyError(f'invalid depth {depth} for SEResNet')
         self.se_ratio = se_ratio
         if 'plugins' in kwargs and kwargs['plugins']:
-            warnings('parameter plugins  are not valid in SEResNet. Please '
-                     'use ResNet with your additional plugins and SELayer.')
+            warnings('Parameter plugins are not recommend in SEResNet. Please'
+                     ' use ResNet with SELayer and your additional plugins.')
         super(SEResNet, self).__init__(depth, **kwargs)
 
     def make_res_layer(self, **kwargs):
