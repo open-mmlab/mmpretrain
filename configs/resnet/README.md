@@ -26,7 +26,7 @@ The depth of representations is of central importance for many visual recognitio
 
 ## Results and models
 
-## Cifar10
+### Cifar10
 
 |         Model         | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
 |:---------------------:|:---------:|:--------:|:---------:|:---------:|:---------:|:--------:|
@@ -36,7 +36,7 @@ The depth of representations is of central importance for many visual recognitio
 | ResNet-101-b16x8 | 42.51 | 2.52 | 95.58 | 99.87 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet101_8xb16_cifar10.py) | [model](https://download.openmmlab.com/mmclassification/v0/resnet/resnet101_b16x8_cifar10_20210528-2d29e936.pth) &#124; [log](https://download.openmmlab.com/mmclassification/v0/resnet/resnet101_b16x8_cifar10_20210528-2d29e936.log.json) |
 | ResNet-152-b16x8 | 58.16 | 3.74 | 95.76 | 99.89 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet152_8xb16_cifar10.py) | [model](https://download.openmmlab.com/mmclassification/v0/resnet/resnet152_b16x8_cifar10_20210528-3e8e9178.pth) &#124; [log](https://download.openmmlab.com/mmclassification/v0/resnet/resnet152_b16x8_cifar10_20210528-3e8e9178.log.json) |
 
-## Cifar100
+### Cifar100
 
 |         Model         | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
 |:---------------------:|:---------:|:--------:|:---------:|:---------:|:---------:|:--------:|
