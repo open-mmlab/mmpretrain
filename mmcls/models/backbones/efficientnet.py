@@ -1,6 +1,7 @@
 import copy
 import logging
 import math
+from functools import partial
 
 import torch.nn as nn
 import torch.utils.checkpoint as cp
@@ -312,7 +313,6 @@ class EfficientNet(BaseBackbone):
 
         self.layer_setting = model_scaling(self.layer_setting,
                                            self.arch_setting)
-        # import ipdb; ipdb.set_trace()
         block_cfg_0 = self.layer_setting[0][0]
         block_cfg_last = self.layer_setting[-1][0]
         self.in_channels = make_divisible(block_cfg_0[1], 8)
@@ -342,8 +342,6 @@ class EfficientNet(BaseBackbone):
                 act_cfg=(self.act_cfg if block_cfg_last[3] else dict(
                     type='ReLU'))))
 
-        # print(self)
-
     def make_layer(self):
         for layer_cfg in self.layer_setting[1:-1]:
             layer = []
@@ -363,21 +361,19 @@ class EfficientNet(BaseBackbone):
                         divisor=1,
                         act_cfg=(act_cfg, dict(type='Sigmoid')))
                 if block_type == 1:  # edge tpu
-                    pass
-                    # assert False
-                    # block = EdgeResidual
-                    # if i > 0 and expand_ratio == 3:
-                    #     with_residual = False
-                    #     expand_ratio = 4
-                    # else:
-                    #     with_residual = True
-                    # mid_channels = int(self.in_channels * expand_ratio)
-                    # if se_cfg is not None:
-                    #     se_cfg = dict(
-                    #         channels=mid_channels,
-                    #         base_channels=self.in_channels,
-                    #         ratio=se_ratio * se_ratio,
-                    #         act_cfg=(act_cfg, dict(type='Sigmoid')))
+                    if i > 0 and expand_ratio == 3:
+                        with_residual = False
+                        expand_ratio = 4
+                    else:
+                        with_residual = True
+                    mid_channels = int(self.in_channels * expand_ratio)
+                    if se_cfg is not None:
+                        se_cfg = dict(
+                            channels=mid_channels,
+                            ratio=se_ratio * expand_ratio,
+                            divisor=1,
+                            act_cfg=(act_cfg, dict(type='Sigmoid')))
+                    block = partial(EdgeResidual, with_residual=with_residual)
                 else:
                     block = MBConv
                 layer.append(
