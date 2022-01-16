@@ -29,18 +29,24 @@ def read_ckpt(ckpt):
 def map_key(weight):
     m = dict()
     has_expand_conv = set()
+    is_MBConv = set()
     max_idx = 0
     name = None
     for k, v in weight.items():
         seg = k.split('/')
         if len(seg) == 1:
             continue
-        name = seg[0][13:]
+        if 'edgetpu' in seg[0]:
+            name = 'e' + seg[0][21:].lower()
+        else:
+            name = seg[0][13:]
         if seg[2] == 'tpu_batch_normalization_2':
             has_expand_conv.add(seg[1])
         if seg[1].startswith('blocks_'):
             idx = int(seg[1][7:]) + 1
             max_idx = max(max_idx, idx)
+            if 'depthwise' in k:
+                is_MBConv.add(seg[1])
 
     model = EfficientNet(name)
     idx2key = []
@@ -53,13 +59,15 @@ def map_key(weight):
 
     for k, v in weight.items():
 
-        if 'Exponential' in k:
+        if 'Exponential' in k or 'RMS' in k:
             continue
+
         seg = k.split('/')
         if len(seg) == 1:
             continue
         if seg[2] == 'depthwise_conv2d':
             v = v.transpose(1, 0)
+
         if seg[1] == 'stem':
             prefix = 'backbone.layers.{}'.format(idx2key[0])
             mapping = {
@@ -75,71 +83,95 @@ def map_key(weight):
         elif seg[1].startswith('blocks_'):
             idx = int(seg[1][7:]) + 1
             prefix = '.'.join(['backbone', 'layers', idx2key[idx]])
-
-            base_mapping = {
-                'depthwise_conv2d/depthwise_kernel':
-                'depthwise_conv.conv.weight',
-                'se/conv2d/kernel': 'se.conv1.conv.weight',
-                'se/conv2d/bias': 'se.conv1.conv.bias',
-                'se/conv2d_1/kernel': 'se.conv2.conv.weight',
-                'se/conv2d_1/bias': 'se.conv2.conv.bias'
-            }
-
-            if seg[1] not in has_expand_conv:
+            if seg[1] not in is_MBConv:
                 mapping = {
                     'conv2d/kernel':
-                    'linear_conv.conv.weight',
-                    'tpu_batch_normalization/beta':
-                    'depthwise_conv.bn.bias',
+                    'conv1.conv.weight',
                     'tpu_batch_normalization/gamma':
-                    'depthwise_conv.bn.weight',
+                    'conv1.bn.weight',
+                    'tpu_batch_normalization/beta':
+                    'conv1.bn.bias',
                     'tpu_batch_normalization/moving_mean':
-                    'depthwise_conv.bn.running_mean',
+                    'conv1.bn.running_mean',
                     'tpu_batch_normalization/moving_variance':
-                    'depthwise_conv.bn.running_var',
-                    'tpu_batch_normalization_1/beta':
-                    'linear_conv.bn.bias',
+                    'conv1.bn.running_var',
+                    'conv2d_1/kernel':
+                    'conv2.conv.weight',
                     'tpu_batch_normalization_1/gamma':
-                    'linear_conv.bn.weight',
+                    'conv2.bn.weight',
+                    'tpu_batch_normalization_1/beta':
+                    'conv2.bn.bias',
                     'tpu_batch_normalization_1/moving_mean':
-                    'linear_conv.bn.running_mean',
+                    'conv2.bn.running_mean',
                     'tpu_batch_normalization_1/moving_variance':
-                    'linear_conv.bn.running_var',
+                    'conv2.bn.running_var',
                 }
             else:
-                mapping = {
+
+                base_mapping = {
                     'depthwise_conv2d/depthwise_kernel':
                     'depthwise_conv.conv.weight',
-                    'conv2d/kernel':
-                    'expand_conv.conv.weight',
-                    'conv2d_1/kernel':
-                    'linear_conv.conv.weight',
-                    'tpu_batch_normalization/beta':
-                    'expand_conv.bn.bias',
-                    'tpu_batch_normalization/gamma':
-                    'expand_conv.bn.weight',
-                    'tpu_batch_normalization/moving_mean':
-                    'expand_conv.bn.running_mean',
-                    'tpu_batch_normalization/moving_variance':
-                    'expand_conv.bn.running_var',
-                    'tpu_batch_normalization_1/beta':
-                    'depthwise_conv.bn.bias',
-                    'tpu_batch_normalization_1/gamma':
-                    'depthwise_conv.bn.weight',
-                    'tpu_batch_normalization_1/moving_mean':
-                    'depthwise_conv.bn.running_mean',
-                    'tpu_batch_normalization_1/moving_variance':
-                    'depthwise_conv.bn.running_var',
-                    'tpu_batch_normalization_2/beta':
-                    'linear_conv.bn.bias',
-                    'tpu_batch_normalization_2/gamma':
-                    'linear_conv.bn.weight',
-                    'tpu_batch_normalization_2/moving_mean':
-                    'linear_conv.bn.running_mean',
-                    'tpu_batch_normalization_2/moving_variance':
-                    'linear_conv.bn.running_var',
+                    'se/conv2d/kernel': 'se.conv1.conv.weight',
+                    'se/conv2d/bias': 'se.conv1.conv.bias',
+                    'se/conv2d_1/kernel': 'se.conv2.conv.weight',
+                    'se/conv2d_1/bias': 'se.conv2.conv.bias'
                 }
-            mapping.update(base_mapping)
+
+                if seg[1] not in has_expand_conv:
+                    mapping = {
+                        'conv2d/kernel':
+                        'linear_conv.conv.weight',
+                        'tpu_batch_normalization/beta':
+                        'depthwise_conv.bn.bias',
+                        'tpu_batch_normalization/gamma':
+                        'depthwise_conv.bn.weight',
+                        'tpu_batch_normalization/moving_mean':
+                        'depthwise_conv.bn.running_mean',
+                        'tpu_batch_normalization/moving_variance':
+                        'depthwise_conv.bn.running_var',
+                        'tpu_batch_normalization_1/beta':
+                        'linear_conv.bn.bias',
+                        'tpu_batch_normalization_1/gamma':
+                        'linear_conv.bn.weight',
+                        'tpu_batch_normalization_1/moving_mean':
+                        'linear_conv.bn.running_mean',
+                        'tpu_batch_normalization_1/moving_variance':
+                        'linear_conv.bn.running_var',
+                    }
+                else:
+                    mapping = {
+                        'depthwise_conv2d/depthwise_kernel':
+                        'depthwise_conv.conv.weight',
+                        'conv2d/kernel':
+                        'expand_conv.conv.weight',
+                        'conv2d_1/kernel':
+                        'linear_conv.conv.weight',
+                        'tpu_batch_normalization/beta':
+                        'expand_conv.bn.bias',
+                        'tpu_batch_normalization/gamma':
+                        'expand_conv.bn.weight',
+                        'tpu_batch_normalization/moving_mean':
+                        'expand_conv.bn.running_mean',
+                        'tpu_batch_normalization/moving_variance':
+                        'expand_conv.bn.running_var',
+                        'tpu_batch_normalization_1/beta':
+                        'depthwise_conv.bn.bias',
+                        'tpu_batch_normalization_1/gamma':
+                        'depthwise_conv.bn.weight',
+                        'tpu_batch_normalization_1/moving_mean':
+                        'depthwise_conv.bn.running_mean',
+                        'tpu_batch_normalization_1/moving_variance':
+                        'depthwise_conv.bn.running_var',
+                        'tpu_batch_normalization_2/beta':
+                        'linear_conv.bn.bias',
+                        'tpu_batch_normalization_2/gamma':
+                        'linear_conv.bn.weight',
+                        'tpu_batch_normalization_2/moving_mean':
+                        'linear_conv.bn.running_mean',
+                        'tpu_batch_normalization_2/moving_variance':
+                        'linear_conv.bn.running_var',
+                    }
+                mapping.update(base_mapping)
             suffix = mapping['/'.join(seg[2:])]
             m[prefix + '.' + suffix] = v
         elif seg[1] == 'head':
@@ -161,6 +193,8 @@ def map_key(weight):
                 'head.fc.bias'
             }
             key = mapping['/'.join(seg[2:])]
+            if name.startswith('e') and 'fc' in key:
+                v = v[1:]
             m[key] = v
     return m
 
