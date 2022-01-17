@@ -1,14 +1,12 @@
 import copy
-import logging
 import math
 from functools import partial
 
 import torch.nn as nn
 import torch.utils.checkpoint as cp
-from mmcv.cnn import ConvModule, constant_init, kaiming_init
+from mmcv.cnn import ConvModule
 from mmcv.cnn.bricks.drop import drop_path
-from mmcv.runner import Sequential, load_checkpoint
-from torch.nn.modules.batchnorm import _BatchNorm
+from mmcv.runner import Sequential
 
 from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.models.utils import InvertedResidual, SELayer, make_divisible
@@ -284,12 +282,19 @@ class EfficientNet(BaseBackbone):
                  arch='b0',
                  out_indices=(6, ),
                  frozen_stages=0,
-                 conv_cfg=None,
-                 norm_cfg=dict(type='BN'),
+                 conv_cfg=dict(type='Conv2dAdaptivePadding'),
+                 norm_cfg=dict(type='BN', eps=1e-3),
                  act_cfg=dict(type='Swish'),
                  norm_eval=False,
-                 with_cp=False):
-        super(EfficientNet, self).__init__()
+                 with_cp=False,
+                 init_cfg=[
+                     dict(type='Kaiming', layer='Conv2d'),
+                     dict(
+                         type='Constant',
+                         layer=['_BatchNorm', 'GroupNorm'],
+                         val=1)
+                 ]):
+        super(EfficientNet, self).__init__(init_cfg)
         assert arch in self.arch_settings
         self.arch_setting = self.arch_settings[arch]
         self.layer_setting = self.layer_settings[arch[:1]]
@@ -397,19 +402,6 @@ class EfficientNet(BaseBackbone):
             m.eval()
             for param in m.parameters():
                 param.requires_grad = False
-
-    def init_weights(self, pretrained=None):
-        if isinstance(pretrained, str):
-            logger = logging.getLogger()
-            load_checkpoint(self, pretrained, strict=False, logger=logger)
-        elif pretrained is None:
-            for m in self.modules():
-                if isinstance(m, nn.Conv2d):
-                    kaiming_init(m)
-                elif isinstance(m, (_BatchNorm, nn.GroupNorm)):
-                    constant_init(m, 1)
-        else:
-            raise TypeError('pretrained must be a str or None')
 
     def forward(self, x):
         outs = []

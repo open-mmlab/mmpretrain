@@ -1,11 +1,7 @@
 # model settings
 model = dict(
     type='ImageClassifier',
-    backbone=dict(
-        type='EfficientNet',
-        arch='b0',
-        conv_cfg=dict(type='Conv2dAdaptivePadding'),
-        norm_cfg=dict(type='BN', eps=1e-3)),
+    backbone=dict(type='EfficientNet', arch='b0'),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
         type='LinearClsHead',
