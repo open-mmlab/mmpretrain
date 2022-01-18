@@ -2,6 +2,7 @@
 import argparse
 import copy
 import math
+import pkg_resources
 import re
 from pathlib import Path
 
@@ -11,6 +12,7 @@ from mmcv import Config, DictAction
 from mmcv.utils import to_2tuple
 from torch.nn import BatchNorm1d, BatchNorm2d, GroupNorm, LayerNorm
 
+from mmcls import digit_version
 from mmcls.apis import init_model
 from mmcls.datasets.pipelines import Compose
 
@@ -64,7 +66,8 @@ def parse_args():
         f'{", ".join(list(METHOD_MAP.keys()))}.')
     parser.add_argument(
         '--target-category',
-        default=None,
+        default=[],
+        nargs='+',
         type=int,
         help='The target category to get CAM, default to use result '
         'get from given model.')
@@ -327,11 +330,22 @@ def main():
     cam = init_cam(args.method, model, target_layers, use_cuda,
                    reshape_transform)
 
+    # warp the target_category with ClassifierOutputTarget in grad_cam>=1.3.7,
+    # to fix the bug in #654.
+    targets = None
+    if args.target_category:
+        grad_cam_v = pkg_resources.get_distribution('grad_cam').version
+        if digit_version(grad_cam_v) >= digit_version('1.3.7'):
+            from pytorch_grad_cam.utils.model_targets import (
+                ClassifierOutputTarget)
+            targets = [ClassifierOutputTarget(c) for c in args.target_category]
+        else:
+            targets = args.target_category
+
     # calculate cam grads and show|save the visualization image
     grayscale_cam = cam(
-        input_tensor=data['img'].unsqueeze(0),
-        # Fix bug 654 temporary
-        # target_category=args.target_category,
+        data['img'].unsqueeze(0),
+        targets,
         eigen_smooth=args.eigen_smooth,
         aug_smooth=args.aug_smooth)
     show_cam_grad(
