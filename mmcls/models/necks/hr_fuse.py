@@ -56,7 +56,7 @@ class HRFuseScales(BaseModule):
                     stride=2,
                     padding=1,
                     norm_cfg=self.norm_cfg,
-                    bias=True,
+                    bias=False,
                 ))
         self.downsample_layers = nn.ModuleList(downsample_layers)
 
@@ -66,7 +66,7 @@ class HRFuseScales(BaseModule):
             out_channels=2048,
             kernel_size=1,
             norm_cfg=self.norm_cfg,
-            bias=True,
+            bias=False,
         )
 
     def forward(self, x):
