@@ -2,6 +2,7 @@
 import argparse
 import copy
 import math
+import pkg_resources
 import re
 from pathlib import Path
 
@@ -11,6 +12,7 @@ from mmcv import Config, DictAction
 from mmcv.utils import to_2tuple
 from torch.nn import BatchNorm1d, BatchNorm2d, GroupNorm, LayerNorm
 
+from mmcls import digit_version
 from mmcls.apis import init_model
 from mmcls.datasets.pipelines import Compose
 
@@ -329,26 +331,21 @@ def main():
                    reshape_transform)
 
     # warp the target_category with ClassifierOutputTarget in grad_cam>=1.3.7,
-    # due to #654. Because the package of pytorch_grad_cam lacks version
-    # information, here use try-except block.
-    target_category = None
+    # to fix the bug in #654.
+    targets = None
     if args.target_category:
-        try:
-            from pytorch_grad_cam.utils.model_targets import (
-                ClassifierOutputTarget)
-            target_category = [
-                ClassifierOutputTarget(category)
-                for category in args.target_category
-            ]
-        except Exception as e:
-            import warnings
-            warnings(f'You can using pytorch_grad_cam==1.3.6 : {e}')
-            target_category = args.target_category
+        from pytorch_grad_cam.utils.model_targets import (
+            ClassifierOutputTarget)
+        grad_cam_v = pkg_resources.get_distribution('grad_cam').version
+        if digit_version(grad_cam_v) >= digit_version('1.3.7'):
+            targets = [ClassifierOutputTarget(c) for c in args.target_category]
+        else:
+            targets = args.target_category
 
     # calculate cam grads and show|save the visualization image
     grayscale_cam = cam(
         data['img'].unsqueeze(0),
-        target_category,
+        targets,
         eigen_smooth=args.eigen_smooth,
         aug_smooth=args.aug_smooth)
     show_cam_grad(
