@@ -1,7 +1,7 @@
 # model settings
 model = dict(
     type='ImageClassifier',
-    backbone=dict(type='HRNet', arch='w18'),
+    backbone=dict(type='HRNet', arch='w48'),
     neck=[
         dict(type='HRFuseScales', in_channels=(48, 96, 192, 384)),
         dict(type='GlobalAveragePooling'),
