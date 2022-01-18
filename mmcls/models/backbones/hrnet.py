@@ -273,7 +273,7 @@ class HRNet(BaseModule):
                  in_channels=3,
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
-                 norm_eval=True,
+                 norm_eval=False,
                  with_cp=False,
                  zero_init_residual=False,
                  multiscale_output=True,
