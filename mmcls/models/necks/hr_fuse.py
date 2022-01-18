@@ -22,10 +22,12 @@ class HRFuseScales(BaseModule):
 
     def __init__(self,
                  in_channels,
+                 out_channels=2048,
                  norm_cfg=dict(type='BN', momentum=0.1),
                  init_cfg=dict(type='Normal', layer='Linear', std=0.01)):
         super(HRFuseScales, self).__init__(init_cfg=init_cfg)
         self.in_channels = in_channels
+        self.out_channels = out_channels
         self.norm_cfg = norm_cfg
 
         block_type = Bottleneck
@@ -63,7 +65,7 @@ class HRFuseScales(BaseModule):
         # The final conv block before final classifier linear layer.
         self.final_layer = ConvModule(
             in_channels=out_channels[3],
-            out_channels=2048,
+            out_channels=self.out_channels,
             kernel_size=1,
             norm_cfg=self.norm_cfg,
             bias=False,
@@ -77,4 +79,4 @@ class HRFuseScales(BaseModule):
             feat = self.downsample_layers[i](feat) + \
                 self.increase_layers[i + 1](x[i + 1])
 
-        return self.final_layer(feat)
+        return (self.final_layer(feat), )
