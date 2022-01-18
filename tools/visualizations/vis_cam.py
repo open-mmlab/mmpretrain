@@ -64,7 +64,8 @@ def parse_args():
         f'{", ".join(list(METHOD_MAP.keys()))}.')
     parser.add_argument(
         '--target-category',
-        default=None,
+        default=[],
+        nargs='+',
         type=int,
         help='The target category to get CAM, default to use result '
         'get from given model.')
@@ -327,10 +328,27 @@ def main():
     cam = init_cam(args.method, model, target_layers, use_cuda,
                    reshape_transform)
 
+    # warp the target_category with ClassifierOutputTarget in grad_cam>=1.3.7,
+    # due to #654. Because the package of pytorch_grad_cam lacks version
+    # information, here use try-except block.
+    target_category = None
+    if args.target_category:
+        try:
+            from pytorch_grad_cam.utils.model_targets import (
+                ClassifierOutputTarget)
+            target_category = [
+                ClassifierOutputTarget(category)
+                for category in args.target_category
+            ]
+        except Exception as e:
+            import warnings
+            warnings(f'You can using pytorch_grad_cam==1.3.6 : {e}')
+            target_category = args.target_category
+
     # calculate cam grads and show|save the visualization image
     grayscale_cam = cam(
-        input_tensor=data['img'].unsqueeze(0),
-        target_category=args.target_category,
+        data['img'].unsqueeze(0),
+        target_category,
         eigen_smooth=args.eigen_smooth,
         aug_smooth=args.aug_smooth)
     show_cam_grad(
