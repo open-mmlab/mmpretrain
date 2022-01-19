@@ -28,7 +28,6 @@ test_pipeline = [
         type='CenterCrop',
         crop_size=224,
         efficientnet_style=True,
-        backend='pillow',
         interpolation='bicubic'),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='ImageToTensor', keys=['img']),
