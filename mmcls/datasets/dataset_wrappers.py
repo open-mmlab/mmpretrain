@@ -174,6 +174,21 @@ class ClassBalancedDataset(object):
 
 @DATASETS.register_module()
 class KFoldDataset:
+    """A wrapper of dataset for K-Fold cross-validation.
+
+    K-Fold cross-validation divides all the samples in groups of samples,
+    called folds, of almost equal sizes. And we use k-1 of folds to do training
+    and use the fold left to do validation.
+
+    Args:
+        dataset (:obj:`CustomDataset`): The dataset to be divided.
+        fold (int): The fold used to do validation. Defaults to 0.
+        num_splits (int): The number of all folds. Defaults to 5.
+        test_mode (bool): Use the training dataset or validation dataset.
+            Defaults to False.
+        seed (int, optional): The seed to shuffle the dataset before splitting.
+            If None, not shuffle the dataset. Defaults to None.
+    """
 
     def __init__(self,
                  dataset,

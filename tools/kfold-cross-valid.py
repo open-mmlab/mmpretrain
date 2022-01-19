@@ -4,7 +4,6 @@ import copy
 import os
 import os.path as osp
 import time
-import warnings
 from datetime import datetime
 from pathlib import Path
 
@@ -22,13 +21,35 @@ from mmcls.utils import collect_env, get_root_logger, load_json_log
 TEST_METRICS = ('precision', 'recall', 'f1_score', 'support', 'mAP', 'CP',
                 'CR', 'CF1', 'OP', 'OR', 'OF1', 'accuracy')
 
+prog_description = """K-Fold cross-validation.
+
+To start a 5-fold cross-validation experiment:
+    python tools/kfold-cross-valid.py $CONFIG --num-splits 5
+
+To resume a 5-fold cross-validation from an interrupted experiment:
+    python tools/kfold-cross-valid.py $CONFIG --num-splits 5 --resume-from work_dirs/fold2/latest.pth
+
+To summarize a 5-fold cross-validation:
+    python tools/kfold-cross-valid.py $CONFIG --num-splits 5 --summary
+"""  # noqa: E501
+
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Train a model')
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=prog_description)
     parser.add_argument('config', help='train config file path')
-    parser.add_argument('--num-splits', type=int, help='TODO')
-    parser.add_argument('--fold', type=int, help='TODO')
-    parser.add_argument('--summary', action='store_true', help='TODO')
+    parser.add_argument(
+        '--num-splits', type=int, help='The number of all folds.')
+    parser.add_argument(
+        '--fold',
+        type=int,
+        help='The fold used to do validation. '
+        'If specify, only do an experiment of the specified fold.')
+    parser.add_argument(
+        '--summary',
+        action='store_true',
+        help='Summarize the k-fold cross-validation results.')
     parser.add_argument('--work-dir', help='the dir to save logs and models')
     parser.add_argument(
         '--resume-from', help='the checkpoint file to resume from')
@@ -55,13 +76,6 @@ def parse_args():
         action='store_true',
         help='whether to set deterministic options for CUDNN backend.')
     parser.add_argument(
-        '--options',
-        nargs='+',
-        action=DictAction,
-        help='override some settings in the used config, the key-value pair '
-        'in xxx=yyy format will be merged into config file (deprecate), '
-        'change to --cfg-options instead.')
-    parser.add_argument(
         '--cfg-options',
         nargs='+',
         action=DictAction,
@@ -80,14 +94,6 @@ def parse_args():
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
-
-    if args.options and args.cfg_options:
-        raise ValueError(
-            '--options and --cfg-options cannot be both '
-            'specified, --options is deprecated in favor of --cfg-options')
-    if args.options:
-        warnings.warn('--options is deprecated in favor of --cfg-options')
-        args.cfg_options = args.options
 
     return args
 
@@ -232,8 +238,13 @@ def summary(args, cfg):
 
 
 def show_summary(args, summary_data):
-    from rich.console import Console
-    from rich.table import Table
+    try:
+        from rich.console import Console
+        from rich.table import Table
+    except ImportError:
+        raise ImportError('Please run `pip install rich` to install '
+                          'package `rich` to draw the table.')
+
     console = Console()
     table = Table(title=f'{args.num_splits}-fold Cross-validation Summary')
     table.add_column('Fold')
