@@ -1,6 +1,7 @@
 # model settings
 model = dict(
     type='ImageClassifier',
+    # `es` means EfficientNet-EdgeTPU-S arch
     backbone=dict(type='EfficientNet', arch='es'),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
