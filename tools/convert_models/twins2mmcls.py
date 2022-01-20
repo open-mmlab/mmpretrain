@@ -24,6 +24,7 @@ def convert_twins(args, ckpt):
             else:
                 new_k = k
         elif k.startswith('blocks'):
+            k = k.replace('blocks', 'stages')
             # Union
             if 'mlp.fc1' in k:
                 new_k = k.replace('mlp.fc1', 'ffn.layers.0.0')
@@ -38,7 +39,7 @@ def convert_twins(args, ckpt):
             if 'proj.0.' in new_k:
                 new_k = new_k.replace('proj.0.', 'proj.')
         elif k.startswith('norm'):
-            new_k = k.replace('norm', 'ln1')
+            new_k = k.replace('norm', 'norm_after_stage3')
         else:
             new_k = k
         new_k = 'backbone.' + new_k

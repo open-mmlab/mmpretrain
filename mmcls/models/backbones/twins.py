@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
-import warnings
 
 import torch
 import torch.nn as nn
@@ -61,8 +60,8 @@ class GlobalSubsampledAttention(MultiheadAttention):
         self.q = nn.Linear(self.input_dims, embed_dims, bias=qkv_bias)
         self.kv = nn.Linear(self.input_dims, embed_dims * 2, bias=qkv_bias)
 
-        delattr(self,
-                'qkv')  # remove self.qkv, here split into self.q, self.kv
+        # remove self.qkv, here split into self.q, self.kv
+        delattr(self, 'qkv')
 
         self.sr_ratio = sr_ratio
         if sr_ratio > 1:
@@ -77,7 +76,7 @@ class GlobalSubsampledAttention(MultiheadAttention):
     def forward(self, x, hw_shape):
         B, N, C = x.shape
         H, W = hw_shape
-        assert H * W == N, 'The  product of h and w of hw_shape must be N, ' \
+        assert H * W == N, 'The product of h and w of hw_shape must be N, ' \
                            'which is the 2nd dim number of the input Tensor x.'
 
         q = self.q(x).reshape(B, N, self.num_heads,
@@ -205,9 +204,9 @@ class LocallyGroupedSelfAttention(BaseModule):
                  init_cfg=None):
         super(LocallyGroupedSelfAttention, self).__init__(init_cfg=init_cfg)
 
-        assert embed_dims % num_heads == 0, f'dim {embed_dims} should be ' \
-                                            f'divided by num_heads ' \
-                                            f'{num_heads}.'
+        assert embed_dims % num_heads == 0, \
+            f'dim {embed_dims} should be divided by num_heads {num_heads}'
+
         self.embed_dims = embed_dims
         self.num_heads = num_heads
         head_dim = embed_dims // num_heads
@@ -352,15 +351,20 @@ class PCPVT(BaseModule):
     <https://arxiv.org/abs/1512.03385>`_.
 
     Args:
+        arch (dict, str): PCPVT architecture, the configuration for each stage
+            must have 7 keys, the length of all the values should be the same:
+                - depths (List[int]): Depths of all stages.
+                - embed_dims (List[int]): Embedding dimension of all stages.
+                - patch_sizes (List[int]): The patch sizes of all stages.
+                - num_heads (List[int]): Numbers of attention head.
+                - strides (List[int]): The strides of all stages.
+                - mlp_ratios (List[int]): Ratio of mlp hidden dim to embedding
+                    dim of all stages.
+                - sr_ratios (List[int]): Kernel_size of conv in each Attn
+                    module in Transformer encoder layer.
         in_channels (int): Number of input channels. Default: 3.
-        embed_dims (list): Embedding dimension. Default: [64, 128, 256, 512].
-        patch_sizes (list): The patch sizes. Default: [4, 2, 2, 2].
-        strides (list): The strides. Default: [4, 2, 2, 2].
-        num_heads (int): Number of attention heads. Default: [1, 2, 4, 8].
-        mlp_ratios (int): Ratio of mlp hidden dim to embedding dim.
-            Default: [4, 4, 4, 4].
         out_indices (tuple[int]): Output from which stages.
-            Default: (0, 1, 2, 3).
+            Default: (3, ).
         qkv_bias (bool): Enable bias for qkv if True. Default: False.
         drop_rate (float): Probability of an element to be zeroed.
             Default 0.
@@ -369,111 +373,173 @@ class PCPVT(BaseModule):
         drop_path_rate (float): Stochastic depth rate. Default 0.0
         norm_cfg (dict): Config dict for normalization layer.
             Default: dict(type='LN')
-        depths (list): Depths of each stage. Default [3, 4, 6, 3]
-        sr_ratios (list): Kernel_size of conv in each Attn module in
-            Transformer encoder layer. Default: [8, 4, 2, 1].
-        norm_after_stage（bool): Add extra norm. Default False.
-        final_norm (bool): Whether to add a additional layer to normalize
-            final feature map. Defaults to True.
+        norm_after_stage(bool, List[bool]): Add extra norm. Default False.
         init_cfg (dict, optional): The Config for initialization.
             Defaults to None.
+
+    Examples:
+        >>> from mmcls.models import PCPVT
+        >>> import torch
+        >>> pcpvt_cfg = {'arch': "small",
+        >>>              'norm_after_stage': [False, False, False, True]}
+        >>> model = PCPVT(**pcpvt_cfg)
+        >>> x = torch.rand(1, 3, 224, 224)
+        >>> outputs = model(x)
+        >>> print(outputs[-1].shape)
+        torch.Size([1, 512, 7, 7])
+        >>> pcpvt_cfg['norm_after_stage'] = [True, True, True, True]
+        >>> pcpvt_cfg['out_indices'] = (0, 1, 2, 3)
+        >>> model = PCPVT(**pcpvt_cfg)
+        >>> outputs = model(x)
+        >>> for feat in outputs:
+        >>>     print(feat.shape)
+        torch.Size([1, 64, 56, 56])
+        torch.Size([1, 128, 28, 28])
+        torch.Size([1, 320, 14, 14])
+        torch.Size([1, 512, 7, 7])
     """
+    arch_zoo = {
+        **dict.fromkeys(['s', 'small'],
+                        {'embed_dims':    [64, 128, 320, 512],
+                         'depths':        [3, 4, 6, 3],
+                         'num_heads':     [1, 2, 5, 8],
+                         'patch_sizes':   [4, 2, 2, 2],
+                         'strides':       [4, 2, 2, 2],
+                         'mlp_ratios':    [8, 8, 4, 4],
+                         'sr_ratios':     [8, 4, 2, 1]}),
+        **dict.fromkeys(['b', 'base'],
+                        {'embed_dims':    [64, 128, 320, 512],
+                         'depths':        [3, 4, 18, 3],
+                         'num_heads':     [1, 2, 5, 8],
+                         'patch_sizes':   [4, 2, 2, 2],
+                         'strides':       [4, 2, 2, 2],
+                         'mlp_ratios':    [8, 8, 4, 4],
+                         'sr_ratios':     [8, 4, 2, 1]}),
+        **dict.fromkeys(['l', 'large'],
+                        {'embed_dims':    [64, 128, 320, 512],
+                         'depths':        [3, 8, 27, 3],
+                         'num_heads':     [1, 2, 5, 8],
+                         'patch_sizes':   [4, 2, 2, 2],
+                         'strides':       [4, 2, 2, 2],
+                         'mlp_ratios':    [8, 8, 4, 4],
+                         'sr_ratios':     [8, 4, 2, 1]}),
+    }   # yapf: disable
+
+    essential_keys = {
+        'embed_dims', 'depths', 'num_heads', 'patch_sizes', 'strides',
+        'mlp_ratios', 'sr_ratios'
+    }
 
     def __init__(self,
+                 arch,
                  in_channels=3,
-                 embed_dims=[64, 128, 256, 512],
-                 patch_sizes=[4, 2, 2, 2],
-                 strides=[4, 2, 2, 2],
-                 num_heads=[1, 2, 4, 8],
-                 mlp_ratios=[4, 4, 4, 4],
-                 out_indices=(0, 1, 2, 3),
+                 out_indices=(3, ),
                  qkv_bias=False,
                  drop_rate=0.,
                  attn_drop_rate=0.,
                  drop_path_rate=0.,
                  norm_cfg=dict(type='LN'),
-                 depths=[3, 4, 6, 3],
-                 sr_ratios=[8, 4, 2, 1],
                  norm_after_stage=False,
-                 pretrained=None,
-                 final_norm=True,
                  init_cfg=None):
         super(PCPVT, self).__init__(init_cfg=init_cfg)
-        assert not (init_cfg and pretrained), \
-            'init_cfg and pretrained cannot be set at the same time'
-        if isinstance(pretrained, str):
-            warnings.warn('DeprecationWarning: pretrained is deprecated, '
-                          'please use "init_cfg" instead')
-            self.init_cfg = dict(type='Pretrained', checkpoint=pretrained)
-        elif pretrained is not None:
-            raise TypeError('pretrained must be a str or None')
-        self.depths = depths
-        self.final_norm = final_norm
+        if isinstance(arch, str):
+            arch = arch.lower()
+            assert arch in set(self.arch_zoo), \
+                f'Arch {arch} is not in default archs {set(self.arch_zoo)}'
+            self.arch_settings = self.arch_zoo[arch]
+        else:
+            assert isinstance(arch, dict) and (
+                set(arch) == self.essential_keys
+            ), f'Custom arch needs a dict with keys {self.essential_keys}.'
+            self.arch_settings = arch
+
+        self.depths = self.arch_settings['depths']
+        self.embed_dims = self.arch_settings['embed_dims']
+        self.patch_sizes = self.arch_settings['patch_sizes']
+        self.strides = self.arch_settings['strides']
+        self.mlp_ratios = self.arch_settings['mlp_ratios']
+        self.num_heads = self.arch_settings['num_heads']
+        self.sr_ratios = self.arch_settings['sr_ratios']
+
+        self.num_extra_tokens = 0  # there is no cls-token in Twins
+        self.num_stage = len(self.depths)
+        for key, value in self.arch_settings.items():
+            assert isinstance(value, list) and len(value) == self.num_stage, (
+                'Length of setting item in arch dict must be type of list and'
+                ' have the same length.')
 
         # patch_embeds
         self.patch_embeds = ModuleList()
         self.position_encoding_drops = ModuleList()
-        self.layers = ModuleList()
+        self.stages = ModuleList()
 
-        for i in range(len(depths)):
+        for i in range(self.num_stage):
+            # use in_channels of the model in the first stage
+            if i == 0:
+                stage_in_channels = in_channels
+            else:
+                stage_in_channels = self.embed_dims[i - 1]
+
             self.patch_embeds.append(
                 PatchEmbed(
-                    in_channels=in_channels if i == 0 else embed_dims[i - 1],
-                    embed_dims=embed_dims[i],
+                    in_channels=stage_in_channels,
+                    embed_dims=self.embed_dims[i],
                     conv_type='Conv2d',
-                    kernel_size=patch_sizes[i],
-                    stride=strides[i],
+                    kernel_size=self.patch_sizes[i],
+                    stride=self.strides[i],
                     padding='corner',
                     norm_cfg=dict(type='LN')))
 
             self.position_encoding_drops.append(nn.Dropout(p=drop_rate))
 
-        # PEGs in paper
+        # PEGs
         self.position_encodings = ModuleList([
             ConditionalPositionEncoding(embed_dim, embed_dim)
-            for embed_dim in embed_dims
+            for embed_dim in self.embed_dims
         ])
 
-        # transformer encoder
-        dpr = [
-            x.item() for x in torch.linspace(0, drop_path_rate, sum(depths))
+        # stochastic depth
+        total_depth = sum(self.depths)
+        self.dpr = [
+            x.item() for x in torch.linspace(0, drop_path_rate, total_depth)
         ]  # stochastic depth decay rule
         cur = 0
 
-        for k in range(len(depths)):
+        for k in range(len(self.depths)):
             _block = ModuleList([
                 GSAEncoderLayer(
-                    embed_dims=embed_dims[k],
-                    num_heads=num_heads[k],
-                    feedforward_channels=mlp_ratios[k] * embed_dims[k],
+                    embed_dims=self.embed_dims[k],
+                    num_heads=self.num_heads[k],
+                    feedforward_channels=self.mlp_ratios[k] *
+                    self.embed_dims[k],
                     attn_drop_rate=attn_drop_rate,
                     drop_rate=drop_rate,
-                    drop_path_rate=dpr[cur + i],
+                    drop_path_rate=self.dpr[cur + i],
                     num_fcs=2,
                     qkv_bias=qkv_bias,
                     act_cfg=dict(type='GELU'),
                     norm_cfg=norm_cfg,
-                    sr_ratio=sr_ratios[k]) for i in range(depths[k])
+                    sr_ratio=self.sr_ratios[k]) for i in range(self.depths[k])
             ])
-            self.layers.append(_block)
-            cur += depths[k]
-
-        # final_norm before GAP
-        if final_norm:
-            self.norm_name, norm = build_norm_layer(
-                norm_cfg, embed_dims[-1], postfix=1)
-            self.add_module(self.norm_name, norm)
+            self.stages.append(_block)
+            cur += self.depths[k]
 
         self.out_indices = out_indices
-        self.norm_after_stage = norm_after_stage
-        if self.norm_after_stage:
-            self.norm_list = ModuleList()
-            for dim in embed_dims:
-                self.norm_list.append(build_norm_layer(norm_cfg, dim)[1])
+        if isinstance(norm_after_stage, bool):
+            self.norm_after_stage = [norm_after_stage] * self.num_stage
+        else:
+            self.norm_after_stage = norm_after_stage
+        assert len(self.norm_after_stage) == self.num_stage, \
+            (f'Number of norm_after_stage({len(self.norm_after_stage)}) should'
+             f' be equal to the number of stages({self.num_stage}).')
 
-    @property
-    def norm(self):
-        return getattr(self, self.norm_name)
+        for i, has_norm in enumerate(self.norm_after_stage):
+            if has_norm and norm_cfg is not None:
+                norm_layer = build_norm_layer(norm_cfg, self.embed_dims[i])[1]
+            else:
+                norm_layer = nn.Identity()
+
+            self.add_module(f'norm_after_stage{i}', norm_layer)
 
     def init_weights(self):
         if self.init_cfg is not None:
@@ -496,20 +562,17 @@ class PCPVT(BaseModule):
 
         b = x.shape[0]
 
-        for i in range(len(self.depths)):
+        for i in range(self.num_stage):
             x, hw_shape = self.patch_embeds[i](x)
             h, w = hw_shape
             x = self.position_encoding_drops[i](x)
-            for j, blk in enumerate(self.layers[i]):
+            for j, blk in enumerate(self.stages[i]):
                 x = blk(x, hw_shape)
                 if j == 0:
                     x = self.position_encodings[i](x, hw_shape)
-            if self.norm_after_stage:
-                x = self.norm_list[i](x)
 
-            if i == len(self.layers) - 1 and self.final_norm:
-                x = self.norm(x)
-
+            norm_layer = getattr(self, f'norm_after_stage{i}')
+            x = norm_layer(x)
             x = x.reshape(b, h, w, -1).permute(0, 3, 1, 2).contiguous()
 
             if i in self.out_indices:
@@ -527,13 +590,19 @@ class SVT(PCPVT):
     <https://arxiv.org/abs/1512.03385>`_.
 
     Args:
+        arch (dict, str): PCPVT architecture, the configuration for each stage
+        must have 8 keys, the length of all the values should be the same:
+            - depths (List[int]): Depths of all stages.
+            - embed_dims (List[int]): Embedding dimension of all stages.
+            - patch_sizes (List[int]): The patch sizes of all stages.
+            - num_heads (List[int]): Numbers of attention head.
+            - strides (List[int]): The strides of all stages.
+            - mlp_ratios (List[int]): Ratio of mlp hidden dim to embedding
+                dim of all stages.
+            - sr_ratios (List[int]): Kernel_size of conv in each Attn module in
+                Transformer encoder layer.
+            - windiow_sizes (List[int]): Window size of LSA of all stages.
         in_channels (int): Number of input channels. Default: 3.
-        embed_dims (list): Embedding dimension. Default: [64, 128, 256, 512].
-        patch_sizes (list): The patch sizes. Default: [4, 2, 2, 2].
-        strides (list): The strides. Default: [4, 2, 2, 2].
-        num_heads (int): Number of attention heads. Default: [1, 2, 4].
-        mlp_ratios (int): Ratio of mlp hidden dim to embedding dim.
-            Default: [4, 4, 4].
         out_indices (tuple[int]): Output from which stages.
             Default: (0, 1, 2, 3).
         qkv_bias (bool): Enable bias for qkv if True. Default: False.
@@ -543,62 +612,96 @@ class SVT(PCPVT):
         drop_path_rate (float): Stochastic depth rate. Default 0.2.
         norm_cfg (dict): Config dict for normalization layer.
             Default: dict(type='LN')
-        depths (list): Depths of each stage. Default [4, 4, 4].
-        sr_ratios (list): Kernel_size of conv in each Attn module in
-            Transformer encoder layer. Default: [4, 2, 1].
-        windiow_sizes (list): Window size of LSA. Default: [7, 7, 7],
-        input_features_slice（bool): Input features need slice. Default: False.
-        norm_after_stage（bool): Add extra norm. Default False.
-        strides (list): Strides in patch-Embedding modules. Default: (2, 2, 2)
-        final_norm (bool): Whether to add a additional layer to normalize
-            final feature map. Defaults to True.
+        norm_after_stage(bool, List[bool]): Add extra norm. Default False.
         init_cfg (dict, optional): The Config for initialization.
             Defaults to None.
+
+    Examples:
+        >>> from mmcls.models import SVT
+        >>> import torch
+        >>> svt_cfg = {'arch': "small",
+        >>>            'norm_after_stage': [False, False, False, True]}
+        >>> model = SVT(**svt_cfg)
+        >>> x = torch.rand(1, 3, 224, 224)
+        >>> outputs = model(x)
+        >>> print(outputs[-1].shape)
+        torch.Size([1, 512, 7, 7])
+        >>> svt_cfg["out_indices"] = (0, 1, 2, 3)
+        >>> svt_cfg["norm_after_stage"] = [True, True, True, True]
+        >>> model = SVT(**svt_cfg)
+        >>> output = model(x)
+        >>> for feat in output:
+        >>>     print(feat.shape)
+        torch.Size([1, 64, 56, 56])
+        torch.Size([1, 128, 28, 28])
+        torch.Size([1, 320, 14, 14])
+        torch.Size([1, 512, 7, 7])
     """
+    arch_zoo = {
+        **dict.fromkeys(['s', 'small'],
+                        {'embed_dims':    [64, 128, 256, 512],
+                         'depths':        [2, 2, 10, 4],
+                         'num_heads':     [2, 4, 8, 16],
+                         'patch_sizes':   [4, 2, 2, 2],
+                         'strides':       [4, 2, 2, 2],
+                         'mlp_ratios':    [4, 4, 4, 4],
+                         'sr_ratios':     [8, 4, 2, 1],
+                         'window_sizes':  [7, 7, 7, 7]}),
+        **dict.fromkeys(['b', 'base'],
+                        {'embed_dims':    [96, 192, 384, 768],
+                         'depths':        [2, 2, 18, 2],
+                         'num_heads':     [3, 6, 12, 24],
+                         'patch_sizes':   [4, 2, 2, 2],
+                         'strides':       [4, 2, 2, 2],
+                         'mlp_ratios':    [4, 4, 4, 4],
+                         'sr_ratios':     [8, 4, 2, 1],
+                         'window_sizes':  [7, 7, 7, 7]}),
+        **dict.fromkeys(['l', 'large'],
+                        {'embed_dims':    [128, 256, 512, 1024],
+                         'depths':        [2, 2, 18, 2],
+                         'num_heads':     [4, 8, 16, 32],
+                         'patch_sizes':   [4, 2, 2, 2],
+                         'strides':       [4, 2, 2, 2],
+                         'mlp_ratios':    [4, 4, 4, 4],
+                         'sr_ratios':     [8, 4, 2, 1],
+                         'window_sizes':  [7, 7, 7, 7]}),
+    }  # yapf: disable
+
+    essential_keys = {
+        'embed_dims', 'depths', 'num_heads', 'patch_sizes', 'strides',
+        'mlp_ratios', 'sr_ratios', 'window_sizes'
+    }
 
     def __init__(self,
+                 arch,
                  in_channels=3,
-                 embed_dims=[64, 128, 256],
-                 patch_sizes=[4, 2, 2, 2],
-                 strides=[4, 2, 2, 2],
-                 num_heads=[1, 2, 4],
-                 mlp_ratios=[4, 4, 4],
-                 out_indices=(0, 1, 2, 3),
+                 out_indices=(3, ),
                  qkv_bias=False,
                  drop_rate=0.,
                  attn_drop_rate=0.,
-                 drop_path_rate=0.2,
+                 drop_path_rate=0.0,
                  norm_cfg=dict(type='LN'),
-                 depths=[4, 4, 4],
-                 sr_ratios=[4, 2, 1],
-                 windiow_sizes=[7, 7, 7],
-                 norm_after_stage=True,
-                 pretrained=None,
-                 final_norm=True,
+                 norm_after_stage=False,
                  init_cfg=None):
-        super(SVT,
-              self).__init__(in_channels, embed_dims, patch_sizes, strides,
-                             num_heads, mlp_ratios, out_indices, qkv_bias,
-                             drop_rate, attn_drop_rate, drop_path_rate,
-                             norm_cfg, depths, sr_ratios, norm_after_stage,
-                             pretrained, final_norm, init_cfg)
-        # transformer encoder
-        dpr = [
-            x.item() for x in torch.linspace(0, drop_path_rate, sum(depths))
-        ]  # stochastic depth decay rule
+        super(SVT, self).__init__(arch, in_channels, out_indices, qkv_bias,
+                                  drop_rate, attn_drop_rate, drop_path_rate,
+                                  norm_cfg, norm_after_stage, init_cfg)
 
-        for k in range(len(depths)):
-            for i in range(depths[k]):
-                # Odd-numbered layers are GSA, even-numbered layers are LSA
+        self.window_sizes = self.arch_settings['window_sizes']
+
+        for k in range(self.num_stage):
+            for i in range(self.depths[k]):
+                # in even-numbered layers of each stage, replace GSA with LSA
                 if i % 2 == 0:
-                    self.layers[k][i] = \
+                    ffn_channels = self.mlp_ratios[k] * self.embed_dims[k]
+                    self.stages[k][i] = \
                         LSAEncoderLayer(
-                            embed_dims=embed_dims[k],
-                            num_heads=num_heads[k],
-                            feedforward_channels=mlp_ratios[k] * embed_dims[k],
+                            embed_dims=self.embed_dims[k],
+                            num_heads=self.num_heads[k],
+                            feedforward_channels=ffn_channels,
                             drop_rate=drop_rate,
                             norm_cfg=norm_cfg,
                             attn_drop_rate=attn_drop_rate,
-                            drop_path_rate=dpr[sum(depths[:k])+i],
+                            drop_path_rate=self.dpr[sum(self.depths[:k])+i],
                             qkv_bias=qkv_bias,
-                            window_size=windiow_sizes[k])
+                            window_size=self.window_sizes[k])

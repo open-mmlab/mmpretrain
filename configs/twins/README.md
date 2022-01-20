@@ -6,7 +6,7 @@
 
 <a href = "https://github.com/Meituan-AutoML/Twins">Official Repo</a>
 
-<a href="https://github.com/open-mmlab/mmclassification/blob/v0.20.0/mmcls/models/backbones/twins.py#L345">Code Snippet</a>
+<a href="https://github.com/open-mmlab/mmclassification/blob/master/mmcls/models/backbones/twins.py">Code Snippet</a>
 
 ## Abstract
 
@@ -35,7 +35,7 @@ Very recently, a variety of vision transformer architectures for dense predictio
 
 To use other repositories' pre-trained models, it is necessary to convert keys.
 
-We provide a script [`twins2mmcls.py`](../../tools/model_converters/twins2mmcls.py) in the tools directory to convert the key of models from [the official repo](https://github.com/Meituan-AutoML/Twins) to MMClassification style.
+We provide a script [`twins2mmcls.py`](https://github.com/open-mmlab/mmclassification/tree/master/tools/convert_models/twins2mmcls.py) in the tools directory to convert the key of models from [the official repo](https://github.com/Meituan-AutoML/Twins) to MMClassification style.
 
 ```shell
 python tools/model_converters/twins2mmcls.py ${PRETRAIN_PATH} ${STORE_PATH}
@@ -46,7 +46,7 @@ This script convert `pcpvt` or `svt` pretrained model from `PRETRAIN_PATH` and s
 For example,
 
 ```shell
-python tools/model_converters/twins2mmcls.py ./alt_gvt_base.pth ./pretrained/alt_gvt_base.pth
+python tools/model_converters/twins2mmcls.py ./alt_gvt_base.pth ./twins_alt_gvt_base.pth
 ```
 
 ## Results and models
@@ -55,11 +55,11 @@ python tools/model_converters/twins2mmcls.py ./alt_gvt_base.pth ./pretrained/alt
 
 |      Model     | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
 |:--------------:|:---------:|:--------:|:---------:|:---------:|:------:|:--------:|
-|   PCPVT-small  |   24.11   |   3.67   |   81.13   |   95.69   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/twins/twins-pcpvt-small_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/twins/twins-pcpvt-small_3rdparty_8xb128_in1k_20220111-425ac4ab.pth) |
-|   PCPVT-base   |   43.83   |   6.45   |   82.66   |   96.26   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/twins/twins-pcpvt-base_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/twins/twins-pcpvt-base_3rdparty_8xb128_in1k_20220111-cc710067.pth) |
-|   PCPVT-large  |   60.99   |   9.51   |   83.09   |   96.59   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/twins/twins-pcpvt-large_16xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/twins/twins-pcpvt-large_3rdparty_16xb64_in1k_20220111-48811c61.pth) |
-|     SVT-small  |   24.06   |   2.82   |   81.77   |   95.57   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/twins/twins-svt-small_8xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/twins/twins-svt-small_3rdparty_8xb128_in1k_20220111-d89283be.pth) |
-|     SVT-base   |   56.07   |   8.35   |   83.13   |   96.29   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/twins/twins-svt-base_8xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/twins/twins-svt-base_3rdparty_8xb128_in1k_20220111-f6b7b82d.pth)  |
-|    SVT-large   |   99.27   |   14.82  |   83.60   |   96.50   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/twins/twins-svt-large_16xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/twins/twins-svt-large_3rdparty_16xb64_in1k_20220111-919463f8.pth) |
+|   PCPVT-small  |   24.11   |   3.67   |   81.14   |   95.69   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/twins/twins-pcpvt-small_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/twins/twins-pcpvt-small_3rdparty_8xb128_in1k_20220120-9f87e819.pth) |
+|   PCPVT-base   |   43.83   |   6.45   |   82.66   |   96.26   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/twins/twins-pcpvt-base_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/twins/twins-pcpvt-base_3rdparty_8xb128_in1k_20220120-27a7e6d7.pth) |
+|   PCPVT-large  |   60.99   |   9.51   |   83.09   |   96.59   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/twins/twins-pcpvt-large_16xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/twins/twins-pcpvt-large_3rdparty_16xb64_in1k_20220120-6f613882.pth) |
+|     SVT-small  |   24.06   |   2.82   |   81.77   |   95.57   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/twins/twins-svt-small_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/twins/twins-svt-small_3rdparty_8xb128_in1k_20220120-1667a72a.pth) |
+|     SVT-base   |   56.07   |   8.35   |   83.13   |   96.29   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/twins/twins-svt-base_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/twins/twins-svt-base_3rdparty_8xb128_in1k_20220120-2ecf4da4.pth)  |
+|    SVT-large   |   99.27   |   14.82  |   83.60   |   96.50   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/twins/twins-svt-large_16xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/twins/twins-svt-large_3rdparty_16xb64_in1k_20220120-2861aed1.pth) |
 
 *Models with \* are converted from [the official repo](https://github.com/Meituan-AutoML/Twins). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results. The validation accuracy is a little different from the official paper because of the PyTorch version. This result is get in PyTorch=1.9 while the official result is get in PyTorch=1.7*
