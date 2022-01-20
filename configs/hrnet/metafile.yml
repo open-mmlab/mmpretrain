@@ -27,7 +27,7 @@ Models:
           Top 1 Accuracy: 76.75
           Top 5 Accuracy: 93.44
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w18_3rdparty_8xb32_in1k_20220117-111b2267.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w18_3rdparty_8xb32_in1k_20220120-0c10b180.pth
     Config: configs/hrnet/hrnet-w18_4xb32_in1k.py
     Converted From:
       Weights: https://1drv.ms/u/s!Aus8VCZ_C_33cMkPimlmClRvmpw
@@ -43,7 +43,7 @@ Models:
           Top 1 Accuracy: 78.19
           Top 5 Accuracy: 94.22
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w30_3rdparty_8xb32_in1k_20220117-0c12842b.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w30_3rdparty_8xb32_in1k_20220120-8aa3832f.pth
     Config: configs/hrnet/hrnet-w30_4xb32_in1k.py
     Converted From:
       Weights: https://1drv.ms/u/s!Aus8VCZ_C_33cQoACCEfrzcSaVI
@@ -59,7 +59,7 @@ Models:
           Top 1 Accuracy: 78.44
           Top 5 Accuracy: 94.19
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w32_3rdparty_8xb32_in1k_20220117-9b92a6ea.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w32_3rdparty_8xb32_in1k_20220120-c394f1ab.pth
     Config: configs/hrnet/hrnet-w32_4xb32_in1k.py
     Converted From:
       Weights: https://1drv.ms/u/s!Aus8VCZ_C_33dYBMemi9xOUFR0w
@@ -75,7 +75,7 @@ Models:
           Top 1 Accuracy: 78.94
           Top 5 Accuracy: 94.47
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w40_3rdparty_8xb32_in1k_20220117-3404cb59.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w40_3rdparty_8xb32_in1k_20220120-9a2dbfc5.pth
     Config: configs/hrnet/hrnet-w40_4xb32_in1k.py
     Converted From:
       Weights: https://1drv.ms/u/s!Aus8VCZ_C_33ck0gvo5jfoWBOPo
@@ -91,7 +91,7 @@ Models:
           Top 1 Accuracy: 78.88
           Top 5 Accuracy: 94.37
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w44_3rdparty_8xb32_in1k_20220117-d6f67f4c.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w44_3rdparty_8xb32_in1k_20220120-35d07f73.pth
     Config: configs/hrnet/hrnet-w44_4xb32_in1k.py
     Converted From:
       Weights: https://1drv.ms/u/s!Aus8VCZ_C_33czZQ0woUb980gRs
@@ -107,7 +107,7 @@ Models:
           Top 1 Accuracy: 79.32
           Top 5 Accuracy: 94.52
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w48_3rdparty_8xb32_in1k_20220117-21f2f215.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w48_3rdparty_8xb32_in1k_20220120-e555ef50.pth
     Config: configs/hrnet/hrnet-w48_4xb32_in1k.py
     Converted From:
       Weights: https://1drv.ms/u/s!Aus8VCZ_C_33dKvqI6pBZlifgJk
@@ -123,7 +123,7 @@ Models:
           Top 1 Accuracy: 79.46
           Top 5 Accuracy: 94.65
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w64_3rdparty_8xb32_in1k_20220117-0d10efad.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w64_3rdparty_8xb32_in1k_20220120-19126642.pth
     Config: configs/hrnet/hrnet-w64_4xb32_in1k.py
     Converted From:
       Weights: https://1drv.ms/u/s!Aus8VCZ_C_33gQbJsUPTIj3rQu99
@@ -139,7 +139,7 @@ Models:
           Top 1 Accuracy: 81.06
           Top 5 Accuracy: 95.7
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w18_3rdparty_8xb32-ssld_in1k_20220118-18da2cb6.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w18_3rdparty_8xb32-ssld_in1k_20220120-455f69ea.pth
     Config: configs/hrnet/hrnet-w18_4xb32_in1k.py
     Converted From:
       Weights: https://github.com/HRNet/HRNet-Image-Classification/releases/download/PretrainedWeights/HRNet_W18_C_ssld_pretrained.pth
@@ -155,7 +155,7 @@ Models:
           Top 1 Accuracy: 83.63
           Top 5 Accuracy: 96.79
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w48_3rdparty_8xb32-ssld_in1k_20220118-4a0384d9.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w48_3rdparty_8xb32-ssld_in1k_20220120-d0459c38.pth
     Config: configs/hrnet/hrnet-w48_4xb32_in1k.py
     Converted From:
       Weights: https://github.com/HRNet/HRNet-Image-Classification/releases/download/PretrainedWeights/HRNet_W48_C_ssld_pretrained.pth
