@@ -354,7 +354,6 @@ class PCPVT(BaseModule):
         arch (dict, str): PCPVT architecture, a str value in arch zoo or a
             detailed configuration dict with 7 keys, and the length of all the
             values in dict should be the same:
-
                 - depths (List[int]): Depths of all stages.
                 - embed_dims (List[int]): Embedding dimension of all stages.
                 - patch_sizes (List[int]): The patch sizes of all stages.
@@ -363,7 +362,6 @@ class PCPVT(BaseModule):
                 - mlp_ratios (List[int]): Ratios of mlp of all stages.
                 - sr_ratios (List[int]): Kernel_sizes in conv of all stages.
                 - windiow_sizes (List[int]): Window sizes in LSA of all stages.
-
         in_channels (int): Number of input channels. Default: 3.
         out_indices (tuple[int]): Output from which stages.
             Default: (3, ).
@@ -607,7 +605,6 @@ class SVT(PCPVT):
         arch (dict, str): PCPVT architecture, a str value in arch zoo or a
             detailed configuration dict with 8 keys, and the length of all the
             values in dict should be the same:
-
                 - depths (List[int]): Depths of all stages.
                 - embed_dims (List[int]): Embedding dimension of all stages.
                 - patch_sizes (List[int]): The patch sizes of all stages.
@@ -616,7 +613,6 @@ class SVT(PCPVT):
                 - mlp_ratios (List[int]): Ratios of mlp of all stages.
                 - sr_ratios (List[int]): Kernel_sizes in conv of all stages.
                 - windiow_sizes (List[int]): Window sizes in LSA of all stages.
-
         in_channels (int): Number of input channels. Default: 3.
         out_indices (tuple[int]): Output from which stages.
             Default: (3, ).
