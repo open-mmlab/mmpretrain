@@ -2,7 +2,7 @@
 model = dict(
     type='ImageClassifier',
     # `em` means EfficientNet-EdgeTPU-M arch
-    backbone=dict(type='EfficientNet', arch='em'),
+    backbone=dict(type='EfficientNet', arch='em', act_cfg=dict(type='ReLU')),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
         type='LinearClsHead',
