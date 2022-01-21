@@ -351,17 +351,15 @@ class PCPVT(BaseModule):
     <https://arxiv.org/abs/1512.03385>`_.
 
     Args:
-        arch (dict, str): PCPVT architecture, the configuration for each stage
-            must have 7 keys, the length of all the values should be the same:
-                - depths (List[int]): Depths of all stages.
-                - embed_dims (List[int]): Embedding dimension of all stages.
-                - patch_sizes (List[int]): The patch sizes of all stages.
-                - num_heads (List[int]): Numbers of attention head.
-                - strides (List[int]): The strides of all stages.
-                - mlp_ratios (List[int]): Ratio of mlp hidden dim to embedding
-                    dim of all stages.
-                - sr_ratios (List[int]): Kernel_size of conv in each Attn
-                    module in Transformer encoder layer.
+        arch (dict, str): PCPVT architecture, the configuration should be a
+        dict with 7 keys, the length of all the values should be the same:
+            - depths (List[int]): Depths of all stages.
+            - embed_dims (List[int]): Embedding dimension of all stages.
+            - patch_sizes (List[int]): The patch sizes of all stages.
+            - num_heads (List[int]): Numbers of attention head.
+            - strides (List[int]): The strides of all stages.
+            - mlp_ratios (List[int]): Ratios of mlp hidden dim of all stages.
+            - sr_ratios (List[int]): Kernel_sizes of conv in each Attn module.
         in_channels (int): Number of input channels. Default: 3.
         out_indices (tuple[int]): Output from which stages.
             Default: (3, ).
@@ -376,6 +374,14 @@ class PCPVT(BaseModule):
         norm_after_stage(bool, List[bool]): Add extra norm. Default False.
         init_cfg (dict, optional): The Config for initialization.
             Defaults to None.
+
+    Note:
+        The arg ``norm_after_stage`` should be modified according to
+        ``out_indices``, default to output feature map after stage3. If you
+        want to output multi-feature map, the norm of the corresponding stage
+        should be set to True. For example, if you want output feature map from
+        stage1 and stage3, set ``out_indices=(1, 3)`` and
+        ``norm_after_stage=[False, True, False, True]``.
 
     Examples:
         >>> from mmcls.models import PCPVT
@@ -594,21 +600,19 @@ class SVT(PCPVT):
     <https://arxiv.org/abs/1512.03385>`_.
 
     Args:
-        arch (dict, str): PCPVT architecture, the configuration for each stage
-        must have 8 keys, the length of all the values should be the same:
+        arch (dict, str): PCPVT architecture, the configuration should be a
+        dict with 8 keys, the length of all the values should be the same:
             - depths (List[int]): Depths of all stages.
             - embed_dims (List[int]): Embedding dimension of all stages.
             - patch_sizes (List[int]): The patch sizes of all stages.
             - num_heads (List[int]): Numbers of attention head.
             - strides (List[int]): The strides of all stages.
-            - mlp_ratios (List[int]): Ratio of mlp hidden dim to embedding
-                dim of all stages.
-            - sr_ratios (List[int]): Kernel_size of conv in each Attn module in
-                Transformer encoder layer.
-            - windiow_sizes (List[int]): Window size of LSA of all stages.
+            - mlp_ratios (List[int]): Ratios of mlp hidden dim of all stages.
+            - sr_ratios (List[int]): Kernel_sizes of conv in each Attn module.
+            - windiow_sizes (List[int]): Window sizes of LSA of all stages.
         in_channels (int): Number of input channels. Default: 3.
         out_indices (tuple[int]): Output from which stages.
-            Default: (0, 1, 2, 3).
+            Default: (3, ).
         qkv_bias (bool): Enable bias for qkv if True. Default: False.
         drop_rate (float): Dropout rate. Default 0.
         attn_drop_rate (float): Dropout ratio of attention weight.
@@ -619,6 +623,14 @@ class SVT(PCPVT):
         norm_after_stage(bool, List[bool]): Add extra norm. Default False.
         init_cfg (dict, optional): The Config for initialization.
             Defaults to None.
+
+    Note:
+        The arg ``norm_after_stage`` should be modified according to
+        ``out_indices``, default to output feature map after stage3. If you
+        want to output multi-feature map, the norm of the corresponding stage
+        should be set to True. For example, if you want output feature map from
+        stage1 and stage3, set ``out_indices=(1, 3)`` and
+        ``norm_after_stage=[False, True, False, True]``.
 
     Examples:
         >>> from mmcls.models import SVT
