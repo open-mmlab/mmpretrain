@@ -363,6 +363,7 @@ class PCPVT(BaseModule):
                 - mlp_ratios (List[int]): Ratios of mlp of all stages.
                 - sr_ratios (List[int]): Kernel_sizes in conv of all stages.
                 - windiow_sizes (List[int]): Window sizes in LSA of all stages.
+
         in_channels (int): Number of input channels. Default: 3.
         out_indices (tuple[int]): Output from which stages.
             Default: (3, ).
@@ -615,6 +616,7 @@ class SVT(PCPVT):
                 - mlp_ratios (List[int]): Ratios of mlp of all stages.
                 - sr_ratios (List[int]): Kernel_sizes in conv of all stages.
                 - windiow_sizes (List[int]): Window sizes in LSA of all stages.
+
         in_channels (int): Number of input channels. Default: 3.
         out_indices (tuple[int]): Output from which stages.
             Default: (3, ).
