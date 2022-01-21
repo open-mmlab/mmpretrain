@@ -603,7 +603,7 @@ class SVT(PCPVT):
     <https://arxiv.org/abs/1512.03385>`_.
 
     Args:
-        arch (dict, str): PCPVT architecture, a str value in arch zoo or a
+        arch (dict, str): SVT architecture, a str value in arch zoo or a
             detailed configuration dict with 8 keys, and the length of all the
             values in dict should be the same:
 
