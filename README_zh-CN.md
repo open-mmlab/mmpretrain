@@ -28,7 +28,7 @@
   [![issue resolution](https://isitmaintained.com/badge/resolution/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
 
   [📘 中文文档](https://mmclassification.readthedocs.io/zh_CN/latest/) |
-  [🛠️ 安装教程](https://mmclassification.readthedocs.io/zh_CN/latest/getting_started.html) |
+  [🛠️ 安装教程](https://mmclassification.readthedocs.io/zh_CN/latest/install.html) |
   [👀 模型库](https://mmclassification.readthedocs.io/zh_CN/latest/model_zoo.html) |
   [🆕 更新日志](https://mmclassification.readthedocs.io/en/latest/changelog.html) |
   [🤔 报告问题](https://github.com/open-mmlab/mmclassification/issues/new/choose)
@@ -179,7 +179,7 @@ MMClassification 是一款由不同学校和公司共同贡献的开源项目。
 扫描下方的二维码可关注 OpenMMLab 团队的 [知乎官方账号](https://www.zhihu.com/people/openmmlab)，加入 OpenMMLab 团队的 [官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=aCvMxdr3) 或联络 OpenMMLab 官方微信小助手
 
 <div align="center">
-<img src="https://download.openmmlab.com/resources/zhihu_qrcode.jpg" height="400" /><img src="https://download.openmmlab.com/resources/wechat_qrcode.jpg" height="400" /><img src="https://download.openmmlab.com/resources/qq_group_qrcode.jpg" height="400" />
+<img src="https://github.com/open-mmlab/mmcv/raw/master/docs/en/_static/zhihu_qrcode.jpg" height="400" />  <img src="https://github.com/open-mmlab/mmcv/raw/master/docs/en/_static/qq_group_qrcode.jpg" height="400" /> <img src="https://github.com/open-mmlab/mmcv/raw/master/docs/en/_static/wechat_qrcode.jpg" height="400" />
 </div>
 
 我们会在 OpenMMLab 社区为大家
