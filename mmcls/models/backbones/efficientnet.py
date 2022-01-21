@@ -1,40 +1,42 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import copy
 import math
 from functools import partial
 
+import torch
 import torch.nn as nn
 import torch.utils.checkpoint as cp
-from mmcv.cnn import ConvModule
-from mmcv.cnn.bricks.drop import drop_path
-from mmcv.runner import Sequential
+from mmcv.cnn.bricks import ConvModule, DropPath
+from mmcv.runner import BaseModule, Sequential
 
 from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.models.utils import InvertedResidual, SELayer, make_divisible
 from ..builder import BACKBONES
 
 
-class EdgeResidual(nn.Module):
-    """Edge Residual Block
+class EdgeResidual(BaseModule):
+    """Edge Residual Block.
+
     Args:
-        in_channels (int): The input channels of this Module.
-        out_channels (int): The output channels of this Module.
-        mid_channels (int): The input channels of the depthwise convolution.
-        kernel_size (int): The kernel size of the depthwise convolution.
-            Default: 3.
-        stride (int): The stride of the depthwise convolution. Default: 1.
-        se_cfg (dict): Config dict for se layer. Default: None, which means no
-            se layer.
-        with_residual (bool): Use residual connection. Default: True.
-        conv_cfg (dict): Config dict for convolution layer. Default: None,
-            which means using conv2d.
+        in_channels (int): The input channels of this module.
+        out_channels (int): The output channels of this module.
+        mid_channels (int): The input channels of the second convolution.
+        kernel_size (int): The kernel size of the first convolution.
+            Defaults to 3.
+        stride (int): The stride of the first convolution. Defaults to 1.
+        se_cfg (dict, optional): Config dict for se layer. Defaults to None,
+            which means no se layer.
+        with_residual (bool): Use residual connection. Defaults to True.
+        conv_cfg (dict, optional): Config dict for convolution layer.
+            Defaults to None, which means using conv2d.
         norm_cfg (dict): Config dict for normalization layer.
-            Default: dict(type='BN').
+            Defaults to ``dict(type='BN')``.
         act_cfg (dict): Config dict for activation layer.
-            Default: dict(type='ReLU').
+            Defaults to ``dict(type='ReLU')``.
+        drop_path_rate (float): stochastic depth rate. Defaults to 0.
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
-            memory while slowing down the training speed. Default: False.
-    Returns:
-        Tensor: The output tensor.
+            memory while slowing down the training speed. Defaults to False.
+        init_cfg (dict | list[dict], optional): Initialization config dict.
     """
 
     def __init__(self,
@@ -48,10 +50,14 @@ class EdgeResidual(nn.Module):
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
                  act_cfg=dict(type='ReLU'),
-                 with_cp=False):
-        super(EdgeResidual, self).__init__()
+                 drop_path_rate=0.,
+                 with_cp=False,
+                 init_cfg=None):
+        super(EdgeResidual, self).__init__(init_cfg=init_cfg)
         assert stride in [1, 2]
         self.with_cp = with_cp
+        self.drop_path = DropPath(
+            drop_path_rate) if drop_path_rate > 0 else nn.Identity()
         self.with_se = se_cfg is not None
         self.with_residual = (
             stride == 1 and in_channels == out_channels and with_residual)
@@ -94,44 +100,7 @@ class EdgeResidual(nn.Module):
             out = self.conv2(out)
 
             if self.with_residual:
-                return x + out
-            else:
-                return out
-
-        if self.with_cp and x.requires_grad:
-            out = cp.checkpoint(_inner_forward, x)
-        else:
-            out = _inner_forward(x)
-
-        return out
-
-
-class MBConv(InvertedResidual):
-
-    def __init__(self, dropout=0.0, **kwargs):
-        super(MBConv, self).__init__(**kwargs)
-        self.dropout = dropout
-
-    def forward(self, x):
-
-        def _inner_forward(x):
-            out = x
-
-            if self.with_expand_conv:
-                out = self.expand_conv(out)
-
-            out = self.depthwise_conv(out)
-
-            if self.with_se:
-                out = self.se(out)
-
-            out = self.linear_conv(out)
-
-            if self.with_res_shortcut:
-                if self.dropout > 0:
-                    out = drop_path(out, self.dropout, True)
-                out = x + out
-                return out
+                return x + self.drop_path(out)
             else:
                 return out
 
@@ -177,7 +146,7 @@ def model_scaling(layer_setting, arch_setting):
         else:
             tmp_layer_cfg = copy.deepcopy(layer_cfg) + [layer_cfg[-1]] * (
                 new_layers[i] - num_of_layers[i])
-        if tmp_layer_cfg[0][4] == 1 and i != 0:
+        if tmp_layer_cfg[0][3] == 1 and i != 0:
             merge_layer_setting[-1] += tmp_layer_cfg.copy()
         else:
             merge_layer_setting.append(tmp_layer_cfg.copy())
@@ -195,7 +164,7 @@ class EfficientNet(BaseBackbone):
         out_indices (Sequence[int]): Output from which stages.
             Defaults to (6, ).
         frozen_stages (int): Stages to be frozen (all param fixed).
-            Defaults to -1, which means not freezing any parameters.
+            Defaults to 0, which means not freezing any parameters.
         conv_cfg (dict): Config dict for convolution layer.
             Defaults to None, which means using conv2d.
         norm_cfg (dict): Config dict for normalization layer.
@@ -214,49 +183,53 @@ class EfficientNet(BaseBackbone):
     # 'b0', 'b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'b8'.
     # 'e' represents the architecture of EfficientNet-EdgeTPU including 'es',
     # 'em', 'el'.
-    # 9 parameters are needed to construct a layer, From left to right:
-    # kernel_size, out_channel, se_ratio, use_swish, stride, expand_ratio,
-    # block_type.
+    # 6 parameters are needed to construct a layer, From left to right:
+    # - kernel_size: The kernel size of the block
+    # - out_channel: The number of out_channels of the block
+    # - se_ratio: The sequeeze ratio of SELayer.
+    # - stride: The stride of the block
+    # - expand_ratio: The expand_ratio of the mid_channels
+    # - block_type: -1: Not a block, 0: InvertedResidual, 1: EdgeResidual
     layer_settings = {
-        'b': [[[3, 32, 0, 1, 2, 0, -1]],
-              [[3, 16, 4, 1, 1, 1, 0]],
-              [[3, 24, 4, 1, 2, 6, 0],
-               [3, 24, 4, 1, 1, 6, 0]],
-              [[5, 40, 4, 1, 2, 6, 0],
-               [5, 40, 4, 1, 1, 6, 0]],
-              [[3, 80, 4, 1, 2, 6, 0],
-               [3, 80, 4, 1, 1, 6, 0],
-               [3, 80, 4, 1, 1, 6, 0],
-               [5, 112, 4, 1, 1, 6, 0],
-               [5, 112, 4, 1, 1, 6, 0],
-               [5, 112, 4, 1, 1, 6, 0]],
-              [[5, 192, 4, 1, 2, 6, 0],
-               [5, 192, 4, 1, 1, 6, 0],
-               [5, 192, 4, 1, 1, 6, 0],
-               [5, 192, 4, 1, 1, 6, 0],
-               [3, 320, 4, 1, 1, 6, 0]],
-              [[1, 1280, 0, 1, 1, 0, -1]]
+        'b': [[[3, 32, 0, 2, 0, -1]],
+              [[3, 16, 4, 1, 1, 0]],
+              [[3, 24, 4, 2, 6, 0],
+               [3, 24, 4, 1, 6, 0]],
+              [[5, 40, 4, 2, 6, 0],
+               [5, 40, 4, 1, 6, 0]],
+              [[3, 80, 4, 2, 6, 0],
+               [3, 80, 4, 1, 6, 0],
+               [3, 80, 4, 1, 6, 0],
+               [5, 112, 4, 1, 6, 0],
+               [5, 112, 4, 1, 6, 0],
+               [5, 112, 4, 1, 6, 0]],
+              [[5, 192, 4, 2, 6, 0],
+               [5, 192, 4, 1, 6, 0],
+               [5, 192, 4, 1, 6, 0],
+               [5, 192, 4, 1, 6, 0],
+               [3, 320, 4, 1, 6, 0]],
+              [[1, 1280, 0, 1, 0, -1]]
               ],
-        'e': [[[3, 32, 0, 0, 2, 0, -1]],
-              [[3, 24, 0, 0, 1, 3, 1]],
-              [[3, 32, 0, 0, 2, 8, 1],
-               [3, 32, 0, 0, 1, 8, 1]],
-              [[3, 48, 0, 0, 2, 8, 1],
-               [3, 48, 0, 0, 1, 8, 1],
-               [3, 48, 0, 0, 1, 8, 1],
-               [3, 48, 0, 0, 1, 8, 1]],
-              [[5, 96, 0, 0, 2, 8, 0],
-               [5, 96, 0, 0, 1, 8, 0],
-               [5, 96, 0, 0, 1, 8, 0],
-               [5, 96, 0, 0, 1, 8, 0],
-               [5, 96, 0, 0, 1, 8, 0],
-               [5, 144, 0, 0, 1, 8, 0],
-               [5, 144, 0, 0, 1, 8, 0],
-               [5, 144, 0, 0, 1, 8, 0],
-               [5, 144, 0, 0, 1, 8, 0]],
-              [[5, 192, 0, 0, 2, 8, 0],
-               [5, 192, 0, 0, 1, 8, 0]],
-              [[1, 1280, 0, 0, 1, 0, -1]]
+        'e': [[[3, 32, 0, 2, 0, -1]],
+              [[3, 24, 0, 1, 3, 1]],
+              [[3, 32, 0, 2, 8, 1],
+               [3, 32, 0, 1, 8, 1]],
+              [[3, 48, 0, 2, 8, 1],
+               [3, 48, 0, 1, 8, 1],
+               [3, 48, 0, 1, 8, 1],
+               [3, 48, 0, 1, 8, 1]],
+              [[5, 96, 0, 2, 8, 0],
+               [5, 96, 0, 1, 8, 0],
+               [5, 96, 0, 1, 8, 0],
+               [5, 96, 0, 1, 8, 0],
+               [5, 96, 0, 1, 8, 0],
+               [5, 144, 0, 1, 8, 0],
+               [5, 144, 0, 1, 8, 0],
+               [5, 144, 0, 1, 8, 0],
+               [5, 144, 0, 1, 8, 0]],
+              [[5, 192, 0, 2, 8, 0],
+               [5, 192, 0, 1, 8, 0]],
+              [[1, 1280, 0, 1, 0, -1]]
               ]
     }  # yapf: disable
 
@@ -280,6 +253,7 @@ class EfficientNet(BaseBackbone):
 
     def __init__(self,
                  arch='b0',
+                 drop_path_rate=0.,
                  out_indices=(6, ),
                  frozen_stages=0,
                  conv_cfg=dict(type='Conv2dAdaptivePadding'),
@@ -295,7 +269,9 @@ class EfficientNet(BaseBackbone):
                          val=1)
                  ]):
         super(EfficientNet, self).__init__(init_cfg)
-        assert arch in self.arch_settings
+        assert arch in self.arch_settings, \
+            f'"{arch}" is not one of the arch_settings ' \
+            f'({", ".join(self.arch_setting.keys())})'
         self.arch_setting = self.arch_settings[arch]
         self.layer_setting = self.layer_settings[arch[:1]]
         for index in out_indices:
@@ -308,6 +284,7 @@ class EfficientNet(BaseBackbone):
             raise ValueError('frozen_stages must be in range(0, '
                              f'{len(self.layer_setting) + 1}). '
                              f'But received {frozen_stages}')
+        self.drop_path_rate = drop_path_rate
         self.out_indices = out_indices
         self.frozen_stages = frozen_stages
         self.conv_cfg = conv_cfg
@@ -328,32 +305,39 @@ class EfficientNet(BaseBackbone):
                 in_channels=3,
                 out_channels=self.in_channels,
                 kernel_size=block_cfg_0[0],
-                stride=block_cfg_0[4],
+                stride=block_cfg_0[3],
                 padding=block_cfg_0[0] // 2,
                 conv_cfg=self.conv_cfg,
                 norm_cfg=self.norm_cfg,
-                act_cfg=(self.act_cfg if block_cfg_0[3] else dict(
-                    type='ReLU'))))
+                act_cfg=self.act_cfg))
         self.make_layer()
         self.layers.append(
             ConvModule(
                 in_channels=self.in_channels,
                 out_channels=self.out_channels,
                 kernel_size=block_cfg_last[0],
-                stride=block_cfg_last[4],
+                stride=block_cfg_last[3],
                 padding=block_cfg_last[0] // 2,
                 conv_cfg=self.conv_cfg,
                 norm_cfg=self.norm_cfg,
-                act_cfg=(self.act_cfg if block_cfg_last[3] else dict(
-                    type='ReLU'))))
+                act_cfg=self.act_cfg))
 
     def make_layer(self):
-        for layer_cfg in self.layer_setting[1:-1]:
+        # Without the first and the final conv block.
+        layer_setting = self.layer_setting[1:-1]
+
+        total_num_blocks = sum([len(x) for x in layer_setting])
+        block_idx = 0
+        dpr = [
+            x.item()
+            for x in torch.linspace(0, self.drop_path_rate, total_num_blocks)
+        ]  # stochastic depth decay rule
+
+        for layer_cfg in layer_setting:
             layer = []
             for i, block_cfg in enumerate(layer_cfg):
-                (kernel_size, out_channels, se_ratio, use_swish, stride,
-                 expand_ratio, block_type) = block_cfg
-                act_cfg = self.act_cfg if use_swish else dict(type='ReLU')
+                (kernel_size, out_channels, se_ratio, stride, expand_ratio,
+                 block_type) = block_cfg
 
                 mid_channels = int(self.in_channels * expand_ratio)
                 out_channels = make_divisible(out_channels, 8)
@@ -364,7 +348,7 @@ class EfficientNet(BaseBackbone):
                         channels=mid_channels,
                         ratio=expand_ratio * se_ratio,
                         divisor=1,
-                        act_cfg=(act_cfg, dict(type='Sigmoid')))
+                        act_cfg=(self.act_cfg, dict(type='Sigmoid')))
                 if block_type == 1:  # edge tpu
                     if i > 0 and expand_ratio == 3:
                         with_residual = False
@@ -377,10 +361,10 @@ class EfficientNet(BaseBackbone):
                             channels=mid_channels,
                             ratio=se_ratio * expand_ratio,
                             divisor=1,
-                            act_cfg=(act_cfg, dict(type='Sigmoid')))
+                            act_cfg=(self.act_cfg, dict(type='Sigmoid')))
                     block = partial(EdgeResidual, with_residual=with_residual)
                 else:
-                    block = MBConv
+                    block = InvertedResidual
                 layer.append(
                     block(
                         in_channels=self.in_channels,
@@ -391,17 +375,12 @@ class EfficientNet(BaseBackbone):
                         se_cfg=se_cfg,
                         conv_cfg=self.conv_cfg,
                         norm_cfg=self.norm_cfg,
-                        act_cfg=act_cfg,
+                        act_cfg=self.act_cfg,
+                        drop_path_rate=dpr[block_idx],
                         with_cp=self.with_cp))
                 self.in_channels = out_channels
+                block_idx += 1
             self.layers.append(Sequential(*layer))
-
-    def _freeze_stages(self):
-        for i in range(self.frozen_stages):
-            m = self.layers[i]
-            m.eval()
-            for param in m.parameters():
-                param.requires_grad = False
 
     def forward(self, x):
         outs = []
@@ -411,6 +390,13 @@ class EfficientNet(BaseBackbone):
                 outs.append(x)
 
         return tuple(outs)
+
+    def _freeze_stages(self):
+        for i in range(self.frozen_stages):
+            m = self.layers[i]
+            m.eval()
+            for param in m.parameters():
+                param.requires_grad = False
 
     def train(self, mode=True):
         super(EfficientNet, self).train(mode)
