@@ -351,8 +351,10 @@ class PCPVT(BaseModule):
     <https://arxiv.org/abs/1512.03385>`_.
 
     Args:
-        arch (dict, str): PCPVT architecture, the configuration should be a
-            dict with 7 keys, the length of all the values should be the same:
+        arch (dict, str): PCPVT architecture, a str value in arch zoo or a
+            detailed configuration dict with 7 keys, and the length of all the
+            values in dict should be the same:
+
                 - depths (List[int]): Depths of all stages.
                 - embed_dims (List[int]): Embedding dimension of all stages.
                 - patch_sizes (List[int]): The patch sizes of all stages.
@@ -601,8 +603,10 @@ class SVT(PCPVT):
     <https://arxiv.org/abs/1512.03385>`_.
 
     Args:
-        arch (dict, str): PCPVT architecture, the configuration should be a
-            dict with 8 keys, the length of all the values should be the same:
+        arch (dict, str): PCPVT architecture, a str value in arch zoo or a
+            detailed configuration dict with 8 keys, and the length of all the
+            values in dict should be the same:
+
                 - depths (List[int]): Depths of all stages.
                 - embed_dims (List[int]): Embedding dimension of all stages.
                 - patch_sizes (List[int]): The patch sizes of all stages.
