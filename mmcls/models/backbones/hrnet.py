@@ -163,40 +163,47 @@ class HRNet(BaseModule):
     """HRNet backbone.
 
     `High-Resolution Representations for Labeling Pixels and Regions
-    arXiv: <https://arxiv.org/abs/1904.04514>`_.
+    <https://arxiv.org/abs/1904.04514>`_.
 
     Args:
-        extra (dict): Detailed configuration for each stage of HRNet.
+        arch (str): The preset HRNet architecture, includes 'w18', 'w30',
+            'w32', 'w40', 'w44', 'w48', 'w64'. It will only be used if
+            extra is ``None``. Defaults to 'w32'.
+        extra (dict, optional): Detailed configuration for each stage of HRNet.
             There must be 4 stages, the configuration for each stage must have
             5 keys:
 
-                - num_modules(int): The number of HRModule in this stage.
-                - num_branches(int): The number of branches in the HRModule.
-                - block(str): The type of convolution block.
-                - num_blocks(tuple): The number of blocks in each branch.
-                    The length must be equal to num_branches.
-                - num_channels(tuple): The number of channels in each branch.
-                    The length must be equal to num_branches.
-        in_channels (int): Number of input image channels. Default: 3.
-        conv_cfg (dict): Dictionary to construct and config conv layer.
+            - num_modules (int): The number of HRModule in this stage.
+            - num_branches (int): The number of branches in the HRModule.
+            - block (str): The type of convolution block. Please choose between
+              'BOTTLENECK' and 'BASIC'.
+            - num_blocks (tuple): The number of blocks in each branch.
+              The length must be equal to num_branches.
+            - num_channels (tuple): The number of channels in each branch.
+              The length must be equal to num_branches.
+
+            Defaults to None.
+        in_channels (int): Number of input image channels. Defaults to 3.
+        conv_cfg (dict, optional): Dictionary to construct and config conv
+            layer. Defaults to None.
         norm_cfg (dict): Dictionary to construct and config norm layer.
+            Defaults to ``dict(type='BN')``.
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm
-            and its variants only. Default: True.
+            and its variants only. Defaults to False.
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
-            memory while slowing down the training speed. Default: False.
+            memory while slowing down the training speed. Defaults to False.
         zero_init_residual (bool): Whether to use zero init for last norm layer
-            in resblocks to let them behave as identity. Default: False.
+            in resblocks to let them behave as identity. Defaults to False.
         multiscale_output (bool): Whether to output multi-level features
             produced by multiple branches. If False, only the first level
-            feature will be output. Default: True.
-        pretrained (str, optional): Model pretrained path. Default: None.
+            feature will be output. Defaults to True.
         init_cfg (dict or list[dict], optional): Initialization config dict.
-            Default: None.
+            Defaults to None.
 
     Example:
-        >>> from mmdet.models import HRNet
         >>> import torch
+        >>> from mmcls.models import HRNet
         >>> extra = dict(
         >>>     stage1=dict(
         >>>         num_modules=1,
