@@ -525,6 +525,8 @@ class PCPVT(BaseModule):
             cur += self.depths[k]
 
         self.out_indices = out_indices
+
+        assert isinstance(norm_after_stage, (bool, list))
         if isinstance(norm_after_stage, bool):
             self.norm_after_stage = [norm_after_stage] * self.num_stage
         else:
@@ -534,6 +536,8 @@ class PCPVT(BaseModule):
              f' be equal to the number of stages({self.num_stage}).')
 
         for i, has_norm in enumerate(self.norm_after_stage):
+            assert isinstance(has_norm, bool), 'norm_after_stage should be ' \
+                                               'bool or List[bool].'
             if has_norm and norm_cfg is not None:
                 norm_layer = build_norm_layer(norm_cfg, self.embed_dims[i])[1]
             else:
