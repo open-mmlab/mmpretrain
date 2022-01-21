@@ -352,14 +352,15 @@ class PCPVT(BaseModule):
 
     Args:
         arch (dict, str): PCPVT architecture, the configuration should be a
-        dict with 7 keys, the length of all the values should be the same:
-            - depths (List[int]): Depths of all stages.
-            - embed_dims (List[int]): Embedding dimension of all stages.
-            - patch_sizes (List[int]): The patch sizes of all stages.
-            - num_heads (List[int]): Numbers of attention head.
-            - strides (List[int]): The strides of all stages.
-            - mlp_ratios (List[int]): Ratios of mlp hidden dim of all stages.
-            - sr_ratios (List[int]): Kernel_sizes of conv in each Attn module.
+            dict with 7 keys, the length of all the values should be the same:
+                - depths (List[int]): Depths of all stages.
+                - embed_dims (List[int]): Embedding dimension of all stages.
+                - patch_sizes (List[int]): The patch sizes of all stages.
+                - num_heads (List[int]): Numbers of attention head.
+                - strides (List[int]): The strides of all stages.
+                - mlp_ratios (List[int]): Ratios of mlp of all stages.
+                - sr_ratios (List[int]): Kernel_sizes in conv of all stages.
+                - windiow_sizes (List[int]): Window sizes in LSA of all stages.
         in_channels (int): Number of input channels. Default: 3.
         out_indices (tuple[int]): Output from which stages.
             Default: (3, ).
@@ -376,7 +377,7 @@ class PCPVT(BaseModule):
             Defaults to None.
 
     Note:
-        The arg ``norm_after_stage`` should be modified according to
+        The arguments ``norm_after_stage`` should be modified according to
         ``out_indices``, default to output feature map after stage3. If you
         want to output multi-feature map, the norm of the corresponding stage
         should be set to True. For example, if you want output feature map from
@@ -601,15 +602,15 @@ class SVT(PCPVT):
 
     Args:
         arch (dict, str): PCPVT architecture, the configuration should be a
-        dict with 8 keys, the length of all the values should be the same:
-            - depths (List[int]): Depths of all stages.
-            - embed_dims (List[int]): Embedding dimension of all stages.
-            - patch_sizes (List[int]): The patch sizes of all stages.
-            - num_heads (List[int]): Numbers of attention head.
-            - strides (List[int]): The strides of all stages.
-            - mlp_ratios (List[int]): Ratios of mlp hidden dim of all stages.
-            - sr_ratios (List[int]): Kernel_sizes of conv in each Attn module.
-            - windiow_sizes (List[int]): Window sizes of LSA of all stages.
+            dict with 8 keys, the length of all the values should be the same:
+                - depths (List[int]): Depths of all stages.
+                - embed_dims (List[int]): Embedding dimension of all stages.
+                - patch_sizes (List[int]): The patch sizes of all stages.
+                - num_heads (List[int]): Numbers of attention head.
+                - strides (List[int]): The strides of all stages.
+                - mlp_ratios (List[int]): Ratios of mlp of all stages.
+                - sr_ratios (List[int]): Kernel_sizes in conv of all stages.
+                - windiow_sizes (List[int]): Window sizes in LSA of all stages.
         in_channels (int): Number of input channels. Default: 3.
         out_indices (tuple[int]): Output from which stages.
             Default: (3, ).
@@ -625,7 +626,7 @@ class SVT(PCPVT):
             Defaults to None.
 
     Note:
-        The arg ``norm_after_stage`` should be modified according to
+        The arguments ``norm_after_stage`` should be modified according to
         ``out_indices``, default to output feature map after stage3. If you
         want to output multi-feature map, the norm of the corresponding stage
         should be set to True. For example, if you want output feature map from
