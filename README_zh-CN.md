@@ -1,23 +1,51 @@
 <div align="center">
+
   <img src="resources/mmcls-logo.png" width="600"/>
+  <div>&nbsp;</div>
+  <div align="center">
+    <b><font size="5">OpenMMLab 官网</font></b>
+    <sup>
+      <a href="https://openmmlab.com">
+        <i><font size="4">HOT</font></i>
+      </a>
+    </sup>
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <b><font size="5">OpenMMLab 开放平台</font></b>
+    <sup>
+      <a href="https://platform.openmmlab.com">
+        <i><font size="4">TRY IT OUT</font></i>
+      </a>
+    </sup>
+  </div>
+  <div>&nbsp;</div>
+
+  [![PyPI](https://img.shields.io/pypi/v/mmcls)](https://pypi.org/project/mmcls)
+  [![Docs](https://img.shields.io/badge/docs-latest-blue)](https://mmclassification.readthedocs.io/zh_CN/latest/)
+  [![Build Status](https://github.com/open-mmlab/mmclassification/workflows/build/badge.svg)](https://github.com/open-mmlab/mmclassification/actions)
+  [![codecov](https://codecov.io/gh/open-mmlab/mmclassification/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmclassification)
+  [![license](https://img.shields.io/github/license/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/blob/master/LICENSE)
+  [![open issues](https://isitmaintained.com/badge/open/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
+  [![issue resolution](https://isitmaintained.com/badge/resolution/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
+
+  [📘 中文文档](https://mmclassification.readthedocs.io/zh_CN/latest/) |
+  [🛠️ 安装教程](https://mmclassification.readthedocs.io/zh_CN/latest/install.html) |
+  [👀 模型库](https://mmclassification.readthedocs.io/zh_CN/latest/model_zoo.html) |
+  [🆕 更新日志](https://mmclassification.readthedocs.io/en/latest/changelog.html) |
+  [🤔 报告问题](https://github.com/open-mmlab/mmclassification/issues/new/choose)
+
 </div>
-
-[English](/README.md) | 简体中文
-
-[![Build Status](https://github.com/open-mmlab/mmclassification/workflows/build/badge.svg)](https://github.com/open-mmlab/mmclassification/actions)
-[![Documentation Status](https://readthedocs.org/projects/mmclassification/badge/?version=latest)](https://mmclassification.readthedocs.io/en/latest/?badge=latest)
-[![codecov](https://codecov.io/gh/open-mmlab/mmclassification/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmclassification)
-[![license](https://img.shields.io/github/license/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/blob/master/LICENSE)
-[![PyPI](https://badge.fury.io/py/mmcls.svg)](https://pypi.org/project/mmcls/)
-[![Percentage of issues still open](https://isitmaintained.com/badge/open/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
 
 ## Introduction
 
+[English](/README.md) | 简体中文
+
 MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [OpenMMLab](https://openmmlab.com/) 项目的成员之一
 
-参考文档：https://mmclassification.readthedocs.io/en/latest/
+主分支代码目前支持 PyTorch 1.5 以上的版本。
 
-![demo](https://user-images.githubusercontent.com/9102141/87268895-3e0d0780-c4fe-11ea-849e-6140b7e0d4de.gif)
+<div align="center">
+  <img src="https://user-images.githubusercontent.com/9102141/87268895-3e0d0780-c4fe-11ea-849e-6140b7e0d4de.gif" width="70%"/>
+</div>
 
 ### 主要特性
 
@@ -26,10 +54,6 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 - 大量的训练配置文件
 - 高效率和高可扩展性
 - 功能强大的工具箱
-
-## 许可证
-
-该项目开源自 [Apache 2.0 license](LICENSE).
 
 ## 更新日志
 
@@ -50,7 +74,28 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 
 发布历史和更新细节请参考 [更新日志](docs/en/changelog.md)
 
-## 基准测试及模型库
+## 安装
+
+请参考 [安装指南](https://mmclassification.readthedocs.io/zh_CN/latest/install.html) 进行安装
+
+## 基础教程
+
+请参考 [基础教程](https://mmclassification.readthedocs.io/zh_CN/latest/getting_started.html) 来了解 MMClassification 的基本使用。MMClassification 也提供了其他更详细的教程:
+
+- [如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html)
+- [如何微调模型](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/finetune.html)
+- [如何增加新数据集](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/new_dataset.html)
+- [如何设计数据处理流程](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/data_pipeline.html)
+- [如何增加新模块](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/new_modules.html)
+- [如何自定义优化策略](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/schedule.html)
+- [如何自定义运行参数](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/runtime.html)
+
+我们也提供了相应的中文 Colab 教程：
+
+- 了解 MMClassification **Python API**：[预览 Notebook](https://github.com/open-mmlab/mmclassification/blob/master/docs/zh_CN/tutorials/MMClassification_python_cn.ipynb) 或者直接[在 Colab 上运行](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/zh_CN/tutorials/MMClassification_python_cn.ipynb)。
+- 了解 MMClassification **命令行工具**：[预览 Notebook](https://github.com/open-mmlab/mmclassification/blob/master/docs/zh_CN/tutorials/MMClassification_tools_cn.ipynb) 或者直接[在 Colab 上运行](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/zh_CN/tutorials/MMClassification_tools_cn.ipynb)。
+
+## 模型库
 
 相关结果和模型可在 [model zoo](https://mmclassification.readthedocs.io/en/latest/model_zoo.html) 中获得
 
@@ -82,27 +127,6 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 
 </details>
 
-## 安装
-
-请参考 [安装指南](https://mmclassification.readthedocs.io/zh_CN/latest/install.html) 进行安装
-
-## 基础教程
-
-请参考 [基础教程](https://mmclassification.readthedocs.io/zh_CN/latest/getting_started.html) 来了解 MMClassification 的基本使用。MMClassification 也提供了其他更详细的教程:
-
-- [如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html)
-- [如何微调模型](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/finetune.html)
-- [如何增加新数据集](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/new_dataset.html)
-- [如何设计数据处理流程](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/data_pipeline.html)
-- [如何增加新模块](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/new_modules.html)
-- [如何自定义优化策略](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/schedule.html)
-- [如何自定义运行参数](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/runtime.html)
-
-我们也提供了相应的中文 Colab 教程：
-
-- 了解 MMClassification **Python API**：[预览 Notebook](https://github.com/open-mmlab/mmclassification/blob/master/docs/zh_CN/tutorials/MMClassification_python_cn.ipynb) 或者直接[在 Colab 上运行](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/zh_CN/tutorials/MMClassification_python_cn.ipynb)。
-- 了解 MMClassification **命令行工具**：[预览 Notebook](https://github.com/open-mmlab/mmclassification/blob/master/docs/zh_CN/tutorials/MMClassification_tools_cn.ipynb) 或者直接[在 Colab 上运行](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/zh_CN/tutorials/MMClassification_tools_cn.ipynb)。
-
 ## 参与贡献
 
 我们非常欢迎任何有助于提升 MMClassification 的贡献，请参考 [贡献指南](https://mmclassification.readthedocs.io/zh_CN/latest/community/CONTRIBUTING.html) 来了解如何参与贡献。
@@ -112,6 +136,23 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 MMClassification 是一款由不同学校和公司共同贡献的开源项目。我们感谢所有为项目提供算法复现和新功能支持的贡献者，以及提供宝贵反馈的用户。
 
 我们希望该工具箱和基准测试可以为社区提供灵活的代码工具，供用户复现现有算法并开发自己的新模型，从而不断为开源社区提供贡献。
+
+## 引用
+
+如果你在研究中使用了本项目的代码或者性能基准，请参考如下 bibtex 引用 MMClassification。
+
+```BibTeX
+@misc{2020mmclassification,
+    title={OpenMMLab's Image Classification Toolbox and Benchmark},
+    author={MMClassification Contributors},
+    howpublished = {\url{https://github.com/open-mmlab/mmclassification}},
+    year={2020}
+}
+```
+
+## 许可证
+
+该项目开源自 [Apache 2.0 license](LICENSE).
 
 ## OpenMMLab 的其他项目
 
@@ -135,10 +176,10 @@ MMClassification 是一款由不同学校和公司共同贡献的开源项目。
 
 ## 欢迎加入 OpenMMLab 社区
 
-扫描下方的二维码可关注 OpenMMLab 团队的 [知乎官方账号](https://www.zhihu.com/people/openmmlab)，加入 OpenMMLab 团队的 [官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=GJP18SjI)
+扫描下方的二维码可关注 OpenMMLab 团队的 [知乎官方账号](https://www.zhihu.com/people/openmmlab)，加入 OpenMMLab 团队的 [官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=aCvMxdr3) 或联络 OpenMMLab 官方微信小助手
 
 <div align="center">
-<img src="/docs/zh_CN/imgs/zhihu_qrcode.jpg" height="400" />  <img src="/docs/zh_CN/imgs/qq_group_qrcode.jpg" height="400" />
+<img src="https://github.com/open-mmlab/mmcv/raw/master/docs/en/_static/zhihu_qrcode.jpg" height="400" />  <img src="https://github.com/open-mmlab/mmcv/raw/master/docs/en/_static/qq_group_qrcode.jpg" height="400" /> <img src="https://github.com/open-mmlab/mmcv/raw/master/docs/en/_static/wechat_qrcode.jpg" height="400" />
 </div>
 
 我们会在 OpenMMLab 社区为大家
