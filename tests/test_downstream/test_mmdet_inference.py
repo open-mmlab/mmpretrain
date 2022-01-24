@@ -7,6 +7,7 @@ from mmdet.models import build_detector
 from mmcls.models import (MobileNetV2, MobileNetV3, RegNet, ResNeSt, ResNet,
                           ResNeXt, SEResNet, SEResNeXt, SwinTransformer,
                           TIMMBackbone)
+from mmcls.models.backbones.timm_backbone import timm
 
 backbone_configs = dict(
     mobilenetv2=dict(
@@ -92,7 +93,11 @@ def test_mmdet_inference():
     img1 = rng.rand(100, 100, 3)
 
     for module_name, backbone_config in backbone_configs.items():
-        print(module_name)
+        module = module_mapping[module_name]
+        if module is TIMMBackbone and timm is None:
+            print(f'skip {module_name} because timm is not available')
+            continue
+        print(f'test {module_name}')
         config = Config.fromfile(config_path)
         config.model.backbone = backbone_config['backbone']
         out_channels = backbone_config['out_channels']
@@ -105,7 +110,6 @@ def test_mmdet_inference():
             config.model.neck.in_channels = out_channels
 
         model = build_detector(config.model)
-        module = module_mapping[module_name]
         assert isinstance(model.backbone, module)
 
         model.cfg = config
