@@ -106,7 +106,7 @@ average iter time: 0.3777 s/iter
 
 ## Result Analysis
 
-With the `--out` argument in `tools/train.py`, we can save the inference results of all samples as a file.
+With the `--out` argument in `tools/test.py`, we can save the inference results of all samples as a file.
 And with this result file, we can do further analysis.
 
 ### Evaluate Results
