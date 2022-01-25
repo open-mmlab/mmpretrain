@@ -17,3 +17,4 @@ Import:
   - configs/regnet/metafile.yml
   - configs/deit/metafile.yml
   - configs/twins/metafile.yml
+  - configs/efficientnet/metafile.yml

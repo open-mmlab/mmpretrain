@@ -1,7 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import pytest
 import torch
 
 from mmcls.models.utils import Augments
+
+augment_cfgs = [
+    dict(type='BatchCutMix', alpha=1., prob=1.),
+    dict(type='BatchMixup', alpha=1., prob=1.),
+    dict(type='Identity', prob=1.),
+]
 
 
 def test_augments():
@@ -47,6 +54,34 @@ def test_augments():
         dict(type='Identity', num_classes=10, prob=0.2)
     ]
     augs = Augments(augments_cfg)
+    mixed_imgs, mixed_labels = augs(imgs, labels)
+    assert mixed_imgs.shape == torch.Size((4, 3, 32, 32))
+    assert mixed_labels.shape == torch.Size((4, 10))
+
+
+@pytest.mark.parametrize('cfg', augment_cfgs)
+def test_binary_augment(cfg):
+
+    cfg_ = dict(num_classes=1, **cfg)
+    augs = Augments(cfg_)
+
+    imgs = torch.randn(4, 3, 32, 32)
+    labels = torch.randint(0, 2, (4, 1)).float()
+
+    mixed_imgs, mixed_labels = augs(imgs, labels)
+    assert mixed_imgs.shape == torch.Size((4, 3, 32, 32))
+    assert mixed_labels.shape == torch.Size((4, 1))
+
+
+@pytest.mark.parametrize('cfg', augment_cfgs)
+def test_multilabel_augment(cfg):
+
+    cfg_ = dict(num_classes=10, **cfg)
+    augs = Augments(cfg_)
+
+    imgs = torch.randn(4, 3, 32, 32)
+    labels = torch.randint(0, 2, (4, 10)).float()
+
     mixed_imgs, mixed_labels = augs(imgs, labels)
     assert mixed_imgs.shape == torch.Size((4, 3, 32, 32))
     assert mixed_labels.shape == torch.Size((4, 10))

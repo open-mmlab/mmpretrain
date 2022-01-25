@@ -77,8 +77,8 @@ Results and models are available in the [model zoo](https://mmclassification.rea
 - [x] [DeiT](https://github.com/open-mmlab/mmclassification/tree/master/configs/deit)
 - [x] [Conformer](https://github.com/open-mmlab/mmclassification/tree/master/configs/conformer)
 - [x] [T2T-ViT](https://github.com/open-mmlab/mmclassification/tree/master/configs/t2t_vit)
-- [] EfficientNet
 - [x] [Twins](https://github.com/open-mmlab/mmclassification/tree/master/configs/twins)
+- [x] [EfficientNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/efficientnet)
 - [ ] HRNet
 
 </details>
