@@ -46,18 +46,18 @@ class TIMMBackbone(BaseBackbone):
 
     Args:
         model_name (str): Name of timm model to instantiate.
-        features_only (bool, optional): Whether to extract feature pyramid
-            (multi-scale feature maps from the deepest layer at each stride).
-            For Vision Transformer models that do not support this argument,
-            set this False. Default: False.
-        pretrained (bool, optional): Whether to load pretrained weights.
-            Default: False.
-        checkpoint_path (str, optional): Path of checkpoint to load at the
-            last of timm.create_model. Default: '', which means not loading.
-        in_channels (int, optional): Number of input image channels.
-            Default: 3.
+        features_only (bool): Whether to extract feature pyramid (multi-scale
+            feature maps from the deepest layer at each stride). For Vision
+            Transformer models that do not support this argument,
+            set this False. Defaults to False.
+        pretrained (bool): Whether to load pretrained weights.
+            Defaults to False.
+        checkpoint_path (str): Path of checkpoint to load at the last of
+            ``timm.create_model``. Defaults to empty string, which means
+            not loading.
+        in_channels (int): Number of input image channels. Defaults to 3.
         init_cfg (dict or list[dict], optional): Initialization config dict of
-            OpenMMLab projects. Default: None.
+            OpenMMLab projects. Defaults to None.
         **kwargs: Other timm & model specific arguments.
     """
 
