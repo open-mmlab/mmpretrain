@@ -81,8 +81,6 @@ python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--metrics ${METRICS}] [-
 
 例子：
 
-假定用户将下载的模型权重文件放置在 `checkpoints/` 目录下。
-
 在 ImageNet 验证集上，使用 ResNet-50 进行推理并获得预测标签及其对应的预测得分。
 
 ```shell
