@@ -31,12 +31,20 @@ for f in files:
     num_ckpts += len(ckpts)
 
     # Extract paper title
-    title = content.split('\n')[0].replace('# ', '').strip()
+    match_res = list(re.finditer(r'> \[(.*)\]\((.*)\)', content))
+    if len(match_res) > 0:
+        title, paperlink = match_res[0].groups()
+    else:
+        title = content.split('\n')[0].replace('# ', '').strip()
+        paperlink = None
     titles.append(title)
 
-    # Extract paper abbreviation
-    abbr = [x for x in re.findall(r'<!-- {(.+)} -->', content)]
-    abbr = abbr[0] if len(abbr) > 0 else title
+    # Replace paper link to a button
+    if paperlink is not None:
+        start = match_res[0].start()
+        end = match_res[0].end()
+        link_button = f'<a href="{paperlink}" class="paperlink">{title}</a>'
+        content = content[:start] + link_button + content[end:]
 
     # Extract paper type
     _papertype = [x for x in re.findall(r'\[([A-Z]+)\]', content)]
@@ -66,9 +74,7 @@ for f in files:
     statsmsg = f"""
 \t* [{papertype}] [{title}]({copy}) ({len(ckpts)} ckpts)
 """
-    stats.append(
-        dict(
-            paper=paper, ckpts=ckpts, statsmsg=statsmsg, abbr=abbr, copy=copy))
+    stats.append(dict(paper=paper, ckpts=ckpts, statsmsg=statsmsg, copy=copy))
 
 allpapers = func.reduce(lambda a, b: a.union(b),
                         [stat['paper'] for stat in stats])
@@ -91,17 +97,3 @@ modelzoo = f"""
 
 with open('modelzoo_statistics.md', 'w') as f:
     f.write(modelzoo)
-
-toctree = """
-.. toctree::
-   :maxdepth: 1
-   :caption: Model zoo
-   :glob:
-
-   modelzoo_statistics.md
-   model_zoo.md
-"""
-with open('_model_zoo.rst', 'w') as f:
-    f.write(toctree)
-    for stat in stats:
-        f.write(f'   {stat["abbr"]} <{stat["copy"]}>\n')
