@@ -16,7 +16,7 @@ Collections:
       Version: v0.20.0
 
 Models:
-  - Name: twins-pcpvt-small_8xb128_in1k.py
+  - Name: twins-pcpvt-small_3rdparty_8xb128_in1k
     Metadata:
       FLOPs: 3670000000        # 3.67G
       Parameters: 24110000     # 24.11M
@@ -32,7 +32,7 @@ Models:
     Converted From:
       Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-vt3p-weights/twins_pcpvt_small-e70e7e7a.pth
       Code: https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/twins.py
-  - Name: twins-pcpvt-base_8xb128_in1k.py
+  - Name: twins-pcpvt-base_3rdparty_8xb128_in1k
     Metadata:
       FLOPs: 6450000000        # 6.45G
       Parameters: 43830000     # 43.83M
@@ -48,7 +48,7 @@ Models:
     Converted From:
       Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-vt3p-weights/twins_pcpvt_small-e70e7e7a.pth
       Code: https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/twins.py
-  - Name: twins-pcpvt-large_16xb64_in1k.py
+  - Name: twins-pcpvt-large_3rdparty_16xb64_in1k
     Metadata:
       FLOPs: 9510000000           # 9.51G
       Parameters: 60990000        # 60.99M
@@ -64,7 +64,7 @@ Models:
     Converted From:
       Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-vt3p-weights/twins_pcpvt_small-e70e7e7a.pth
       Code: https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/twins.py
-  - Name: twins-svt-small_8xb64_in1k.py
+  - Name: twins-svt-small_3rdparty_8xb64_in1k
     Metadata:
       FLOPs: 2820000000            # 2.82G
       Parameters: 24060000         # 24.06M
@@ -80,7 +80,7 @@ Models:
     Converted From:
       Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-vt3p-weights/twins_pcpvt_small-e70e7e7a.pth
       Code: https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/twins.py
-  - Name: twins-svt-base_8xb64_in1k.py
+  - Name: twins-svt-base_8xb64_3rdparty_in1k
     Metadata:
       FLOPs: 8350000000           # 8.35G
       Parameters: 56070000        # 56.07M
@@ -96,7 +96,7 @@ Models:
     Converted From:
       Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-vt3p-weights/twins_pcpvt_small-e70e7e7a.pth
       Code: https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/twins.py
-  - Name: twins-svt-large_16xb64_in1k.py
+  - Name: twins-svt-large_3rdparty_16xb64_in1k
     Metadata:
       FLOPs: 14820000000          # 14.82G
       Parameters: 99270000        # 99.27M

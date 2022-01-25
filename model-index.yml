@@ -16,3 +16,4 @@ Import:
   - configs/conformer/metafile.yml
   - configs/regnet/metafile.yml
   - configs/deit/metafile.yml
+  - configs/twins/metafile.yml

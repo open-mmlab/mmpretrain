@@ -50,7 +50,7 @@ def convert_twins(args, ckpt):
 def main():
     parser = argparse.ArgumentParser(
         description='Convert keys in timm pretrained vit models to '
-        'MMSegmentation style.')
+        'MMClassification style.')
     parser.add_argument('src', help='src model path or url')
     # The dst path must be a full path of the new checkpoint.
     parser.add_argument('dst', help='save path')

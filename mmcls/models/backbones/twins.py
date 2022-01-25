@@ -42,6 +42,8 @@ class GlobalSubsampledAttention(MultiheadAttention):
         v_shortcut (bool): Add a shortcut from value to output. It's usually
             used if ``input_dims`` is different from ``embed_dims``.
             Defaults to False.
+        sr_ratio (float): The ratio of spatial reduction in attention modules.
+            Defaults to 1.
         init_cfg (dict, optional): The Config for initialization.
             Defaults to None.
     """
@@ -65,6 +67,8 @@ class GlobalSubsampledAttention(MultiheadAttention):
 
         self.sr_ratio = sr_ratio
         if sr_ratio > 1:
+            # use a conv as the spatial-reduction operation, the kernel_size
+            # and stride in conv is is equal to sr_ratio.
             self.sr = Conv2d(
                 in_channels=embed_dims,
                 out_channels=embed_dims,
@@ -106,7 +110,7 @@ class GlobalSubsampledAttention(MultiheadAttention):
 
 
 class GSAEncoderLayer(BaseModule):
-    """Implements one encoder layer with GSA.
+    """Implements one encoder layer with GlobalSubsampledAttention(GSA).
 
     Args:
         embed_dims (int): The feature dimension.
@@ -124,7 +128,8 @@ class GSAEncoderLayer(BaseModule):
             Default: dict(type='GELU').
         norm_cfg (dict): Config dict for normalization layer.
             Default: dict(type='LN').
-        sr_ratio (float): Kernel_size of conv in Attention modules. Default: 1.
+        sr_ratio (float): The ratio of spatial reduction in attention modules.
+            Defaults to 1.
         init_cfg (dict, optional): The Config for initialization.
             Defaults to None.
     """
@@ -274,7 +279,7 @@ class LocallyGroupedSelfAttention(BaseModule):
 
 
 class LSAEncoderLayer(BaseModule):
-    """Implements one encoder layer with LSA.
+    """Implements one encoder layer with LocallyGroupedSelfAttention(LSA).
 
     Args:
         embed_dims (int): The feature dimension.
@@ -355,13 +360,14 @@ class PCPVT(BaseModule):
             detailed configuration dict with 7 keys, and the length of all the
             values in dict should be the same:
 
-            - depths (List[int]): Depths of all stages.
-            - embed_dims (List[int]): Embedding dimension of all stages.
-            - patch_sizes (List[int]): The patch sizes of all stages.
-            - num_heads (List[int]): Numbers of attention head.
-            - strides (List[int]): The strides of all stages.
-            - mlp_ratios (List[int]): Ratios of mlp of all stages.
-            - sr_ratios (List[int]): Kernel_sizes in conv of all stages.
+            - depths (List[int]): The number of encoder layers in each stage.
+            - embed_dims (List[int]): Embedding dimension in each stage.
+            - patch_sizes (List[int]): The patch sizes in each stage.
+            - num_heads (List[int]): Numbers of attention head in each stage.
+            - strides (List[int]): The strides in each stage.
+            - mlp_ratios (List[int]): The ratios of mlp in each stage.
+            - sr_ratios (List[int]): The ratios of GSA-encoder layers in each
+                stage.
 
         in_channels (int): Number of input channels. Default: 3.
         out_indices (tuple[int]): Output from which stages.
@@ -600,14 +606,16 @@ class SVT(PCPVT):
             detailed configuration dict with 8 keys, and the length of all the
             values in dict should be the same:
 
-            - depths (List[int]): Depths of all stages.
-            - embed_dims (List[int]): Embedding dimension of all stages.
-            - patch_sizes (List[int]): The patch sizes of all stages.
-            - num_heads (List[int]): Numbers of attention head.
-            - strides (List[int]): The strides of all stages.
-            - mlp_ratios (List[int]): Ratios of mlp of all stages.
-            - sr_ratios (List[int]): Kernel_sizes in conv of all stages.
-            - windiow_sizes (List[int]): Window sizes in LSA of all stages.
+            - depths (List[int]): The number of encoder layers in each stage.
+            - embed_dims (List[int]): Embedding dimension in each stage.
+            - patch_sizes (List[int]): The patch sizes in each stage.
+            - num_heads (List[int]): Numbers of attention head in each stage.
+            - strides (List[int]): The strides in each stage.
+            - mlp_ratios (List[int]): The ratios of mlp in each stage.
+            - sr_ratios (List[int]): The ratios of GSA-encoder layers in each
+                stage.
+            - windiow_sizes (List[int]): The window sizes in LSA-encoder layers
+                in each stage.
 
         in_channels (int): Number of input channels. Default: 3.
         out_indices (tuple[int]): Output from which stages.
