@@ -5,7 +5,9 @@ from mmdet.apis import inference_detector
 from mmdet.models import build_detector
 
 from mmcls.models import (MobileNetV2, MobileNetV3, RegNet, ResNeSt, ResNet,
-                          ResNeXt, SEResNet, SEResNeXt, SwinTransformer)
+                          ResNeXt, SEResNet, SEResNeXt, SwinTransformer,
+                          TIMMBackbone)
+from mmcls.models.backbones.timm_backbone import timm
 
 backbone_configs = dict(
     mobilenetv2=dict(
@@ -52,7 +54,23 @@ backbone_configs = dict(
             img_size=800,
             out_indices=(2, 3),
             auto_pad=True),
-        out_channels=[384, 768]))
+        out_channels=[384, 768]),
+    timm_efficientnet=dict(
+        backbone=dict(
+            type='mmcls.TIMMBackbone',
+            model_name='efficientnet_b1',
+            features_only=True,
+            pretrained=False,
+            out_indices=(1, 2, 3, 4)),
+        out_channels=[24, 40, 112, 320]),
+    timm_resnet=dict(
+        backbone=dict(
+            type='mmcls.TIMMBackbone',
+            model_name='resnet50',
+            features_only=True,
+            pretrained=False,
+            out_indices=(1, 2, 3, 4)),
+        out_channels=[256, 512, 1024, 2048]))
 
 module_mapping = {
     'mobilenetv2': MobileNetV2,
@@ -63,7 +81,9 @@ module_mapping = {
     'seresnext': SEResNeXt,
     'seresnet': SEResNet,
     'resnest': ResNeSt,
-    'swin': SwinTransformer
+    'swin': SwinTransformer,
+    'timm_efficientnet': TIMMBackbone,
+    'timm_resnet': TIMMBackbone
 }
 
 
@@ -73,6 +93,11 @@ def test_mmdet_inference():
     img1 = rng.rand(100, 100, 3)
 
     for module_name, backbone_config in backbone_configs.items():
+        module = module_mapping[module_name]
+        if module is TIMMBackbone and timm is None:
+            print(f'skip {module_name} because timm is not available')
+            continue
+        print(f'test {module_name}')
         config = Config.fromfile(config_path)
         config.model.backbone = backbone_config['backbone']
         out_channels = backbone_config['out_channels']
@@ -85,12 +110,10 @@ def test_mmdet_inference():
             config.model.neck.in_channels = out_channels
 
         model = build_detector(config.model)
-        module = module_mapping[module_name]
         assert isinstance(model.backbone, module)
 
         model.cfg = config
 
         model.eval()
-        print(module_name)
         result = inference_detector(model, img1)
         assert len(result) == config.num_classes
