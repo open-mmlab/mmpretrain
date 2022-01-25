@@ -68,7 +68,7 @@ class GlobalSubsampledAttention(MultiheadAttention):
         self.sr_ratio = sr_ratio
         if sr_ratio > 1:
             # use a conv as the spatial-reduction operation, the kernel_size
-            # and stride in conv is is equal to sr_ratio.
+            # and stride in conv are equal to the sr_ratio.
             self.sr = Conv2d(
                 in_channels=embed_dims,
                 out_channels=embed_dims,
