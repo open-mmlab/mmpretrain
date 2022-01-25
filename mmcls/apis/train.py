@@ -89,7 +89,7 @@ def train_model(model,
                 distributed=False,
                 validate=False,
                 timestamp=None,
-                device='cuda',
+                device=None,
                 meta=None):
     logger = get_root_logger()
 
@@ -122,13 +122,14 @@ def train_model(model,
             broadcast_buffers=False,
             find_unused_parameters=find_unused_parameters)
     else:
-        if device == 'cuda':
-            model = MMDataParallel(
-                model.cuda(cfg.gpu_ids[0]), device_ids=cfg.gpu_ids)
-        elif device == 'cpu':
+        if device == 'cpu':
+            warnings.warn(
+                'The argument `device` is deprecated. To use cpu to train, '
+                'please refers to https://mmclassification.readthedocs.io/en'
+                '/latest/getting_started.html#train-a-model')
             model = model.cpu()
         else:
-            raise ValueError(F'unsupported device name {device}.')
+            model = MMDataParallel(model, device_ids=cfg.gpu_ids)
 
     # build runner
     optimizer = build_optimizer(model, cfg.optimizer)

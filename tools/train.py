@@ -29,7 +29,8 @@ def parse_args():
         action='store_true',
         help='whether not to evaluate the checkpoint during training')
     group_gpus = parser.add_mutually_exclusive_group()
-    group_gpus.add_argument('--device', help='device used for training')
+    group_gpus.add_argument(
+        '--device', help='device used for training. (Deprecated)')
     group_gpus.add_argument(
         '--gpus',
         type=int,
@@ -80,6 +81,12 @@ def parse_args():
     if args.options:
         warnings.warn('--options is deprecated in favor of --cfg-options')
         args.cfg_options = args.options
+
+    if args.device:
+        warnings.warn(
+            '--device is deprecated. To use cpu to train, please '
+            'refers to https://mmclassification.readthedocs.io/en/latest/'
+            'getting_started.html#train-a-model')
 
     return args
 

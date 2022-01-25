@@ -88,16 +88,19 @@ def parse_args():
         help='custom options for show_result. key-value pair in xxx=yyy.'
         'Check available options in `model.show_result`.')
     parser.add_argument(
+        '--device', default=None, help='device used for testing. (Deprecated)')
+    parser.add_argument(
+        '--gpu-ids',
+        type=int,
+        nargs='+',
+        help='ids of gpus to use '
+        '(only applicable to non-distributed testing)')
+    parser.add_argument(
         '--launcher',
         choices=['none', 'pytorch', 'slurm', 'mpi'],
         default='none',
         help='job launcher')
     parser.add_argument('--local_rank', type=int, default=0)
-    parser.add_argument(
-        '--device',
-        choices=['cpu', 'cuda'],
-        default='cuda',
-        help='device used for testing')
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
@@ -109,6 +112,15 @@ def parse_args():
     if args.options:
         warnings.warn('--options is deprecated in favor of --cfg-options')
         args.cfg_options = args.options
+
+    if args.device:
+        warnings.warn(
+            '--device is deprecated. To use cpu to test, please '
+            'refers to https://mmclassification.readthedocs.io/en/latest/'
+            'getting_started.html#inference-with-pretrained-models')
+
+    assert args.metrics or args.out, \
+        'Please specify at least one of output path and evaluation metrics.'
 
     return args
 
@@ -125,12 +137,19 @@ def main():
     cfg.model.pretrained = None
     cfg.data.test.test_mode = True
 
-    assert args.metrics or args.out, \
-        'Please specify at least one of output path and evaluation metrics.'
+    if args.gpu_ids is not None:
+        cfg.gpu_ids = args.gpu_ids
+    else:
+        cfg.gpu_ids = range(1)
 
     # init distributed env first, since logger depends on the dist info.
     if args.launcher == 'none':
         distributed = False
+        if len(cfg.gpu_ids) > 1:
+            warnings.warn(f'The gpu-ids is reset from {cfg.gpu_ids} to '
+                          f'{cfg.gpu_ids[0:1]} to avoid potential error in '
+                          'non-distribute testing time.')
+            cfg.gpu_ids = cfg.gpu_ids[0:1]
     else:
         distributed = True
         init_dist(args.launcher, **cfg.dist_params)
@@ -166,7 +185,7 @@ def main():
         if args.device == 'cpu':
             model = model.cpu()
         else:
-            model = MMDataParallel(model, device_ids=[0])
+            model = MMDataParallel(model, device_ids=cfg.gpu_ids)
         model.CLASSES = CLASSES
         show_kwargs = {} if args.show_options is None else args.show_options
         outputs = single_gpu_test(model, data_loader, args.show, args.show_dir,
