@@ -1,5 +1,6 @@
-# A ConvNet for the 2020s
-<!-- {ConvNeXt} -->
+# ConvNeXt
+
+> [A ConvNet for the 2020s](https://arxiv.org/abs/2201.03545v1)
 <!-- [ALGORITHM] -->
 
 ## Abstract
@@ -9,10 +10,8 @@ The "Roaring 20s" of visual recognition began with the introduction of Vision Tr
 
 <!-- [IMAGE] -->
 <div align=center>
-<img src="" width="50%"/>
+<img src="https://user-images.githubusercontent.com/8370623/148624004-e9581042-ea4d-4e10-b3bd-42c92b02053b.png" width="100%"/>
 </div>
-
-## Citation
 
 ## Results and models
 
@@ -41,3 +40,14 @@ The pre-trained models on ImageNet-21k are used to fine-tune, and therefore don'
 | convnext-xlarge_3rdparty_in21k\* | 350.20    | 60.93    | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-xlarge_3rdparty_in21k_20220124-f909bad7.pth) |
 
 *Models with \* are converted from the [official repo](https://github.com/facebookresearch/ConvNeXt).*
+
+## Citation
+
+```bibtex
+@Article{liu2022convnet,
+  author  = {Zhuang Liu and Hanzi Mao and Chao-Yuan Wu and Christoph Feichtenhofer and Trevor Darrell and Saining Xie},
+  title   = {A ConvNet for the 2020s},
+  journal = {arXiv preprint arXiv:2201.03545},
+  year    = {2022},
+}
+```
