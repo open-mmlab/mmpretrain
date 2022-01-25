@@ -190,6 +190,10 @@ class ConvNeXt(BaseBackbone):
                 f'Unavailable arch, please choose from ' \
                 f'({set(self.arch_settings)}) or pass a dict.'
             arch = self.arch_settings[arch]
+        elif isinstance(arch, dict):
+            assert 'depths' in arch and 'channels' in arch, \
+                f'The arch dict must have "depths" and "channels", ' \
+                f'but got {list(arch.keys())}.'
         self.depths = arch['depths']
         self.channels = arch['channels']
         self.num_stages = len(self.depths)
@@ -256,6 +260,8 @@ class ConvNeXt(BaseBackbone):
             if i in self.out_indices:
                 norm_layer = LayerNorm2d(channels, dim=1)
                 self.add_module(f'norm{i}', norm_layer)
+
+        self._freeze_stages()
 
     def forward(self, x):
         outs = []
