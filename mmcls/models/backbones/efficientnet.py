@@ -271,7 +271,7 @@ class EfficientNet(BaseBackbone):
         super(EfficientNet, self).__init__(init_cfg)
         assert arch in self.arch_settings, \
             f'"{arch}" is not one of the arch_settings ' \
-            f'({", ".join(self.arch_setting.keys())})'
+            f'({", ".join(self.arch_settings.keys())})'
         self.arch_setting = self.arch_settings[arch]
         self.layer_setting = self.layer_settings[arch[:1]]
         for index in out_indices:
