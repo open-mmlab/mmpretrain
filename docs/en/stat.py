@@ -43,7 +43,8 @@ for f in files:
     if paperlink is not None:
         start = match_res[0].start()
         end = match_res[0].end()
-        link_button = f'<a href="{paperlink}" class="paperlink">{title}</a>'
+        #  link_button = f'<a href="{paperlink}" class="paperlink">{title}</a>'
+        link_button = f'[{title}]({paperlink})'
         content = content[:start] + link_button + content[end:]
 
     # Extract paper type

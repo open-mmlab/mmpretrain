@@ -14,20 +14,3 @@ article.pytorch-article .section :not(dt) > code {
   background-color: #f3f4f7;
   border-radius: 5px;
 }
-
-a.paperlink {
-  background-color: rgb(97, 155, 255);
-  border: none;
-  color: #FFFFFF !important;
-  padding: 12px 24px;
-  text-align: center;
-  -webkit-transition-duration: 0.4s;
-  transition-duration: 0.4s;
-  font-size: 18px;
-  border-radius: 5px;
-}
-
-a.paperlink:hover {
-  text-decoration: none !important;
-  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.24),0 6px 20px 0 rgba(0,0,0,0.19);
-}
