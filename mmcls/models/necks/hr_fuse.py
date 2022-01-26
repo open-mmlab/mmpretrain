@@ -9,15 +9,16 @@ from ..builder import NECKS
 
 @NECKS.register_module()
 class HRFuseScales(BaseModule):
-    """Global Average Pooling neck.
-
-    Note that we use `view` to remove extra channel after pooling. We do not
-    use `squeeze` as it will also remove the batch dimension when the tensor
-    has a batch dimension of size 1, which can lead to unexpected errors.
+    """Fuse feature map of multiple scales in HRNet.
 
     Args:
-        dim (int): Dimensions of each sample channel, can be one of {1, 2, 3}.
-            Default: 2
+        in_channels (list[int]): The input channels of all scales.
+        out_channels (int): The channels of fused feature map.
+            Defaults to 2048.
+        norm_cfg (dict): dictionary to construct norm layers.
+            Defaults to ``dict(type='BN', momentum=0.1)``.
+        init_cfg (dict | list[dict], optional): Initialization config dict.
+            Defaults to ``dict(type='Normal', layer='Linear', std=0.01))``.
     """
 
     def __init__(self,

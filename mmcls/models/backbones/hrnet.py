@@ -13,11 +13,32 @@ class HRModule(BaseModule):
 
     In this module, every branch has 4 BasicBlocks/Bottlenecks. Fusion/Exchange
     is in this module.
+
+    Args:
+        num_branches (int): The number of branches.
+        block (``BaseModule``): Convolution block module.
+        num_blocks (tuple): The number of blocks in each branch.
+            The length must be equal to ``num_branches``.
+        num_channels (tuple): The number of base channels in each branch.
+            The length must be equal to ``num_branches``.
+        multiscale_output (bool): Whether to output multi-level features
+            produced by multiple branches. If False, only the first level
+            feature will be output. Defaults to True.
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+            memory while slowing down the training speed. Defaults to False.
+        conv_cfg (dict, optional): Dictionary to construct and config conv
+            layer. Defaults to None.
+        norm_cfg (dict): Dictionary to construct and config norm layer.
+            Defaults to ``dict(type='BN')``.
+        block_init_cfg (dict, optional): The initialization configs of every
+            blocks. Defaults to None.
+        init_cfg (dict or list[dict], optional): Initialization config dict.
+            Defaults to None.
     """
 
     def __init__(self,
                  num_branches,
-                 blocks,
+                 block,
                  num_blocks,
                  in_channels,
                  num_channels,
@@ -39,7 +60,7 @@ class HRModule(BaseModule):
         self.norm_cfg = norm_cfg
         self.conv_cfg = conv_cfg
         self.with_cp = with_cp
-        self.branches = self._make_branches(num_branches, blocks, num_blocks,
+        self.branches = self._make_branches(num_branches, block, num_blocks,
                                             num_channels)
         self.fuse_layers = self._make_fuse_layers()
         self.relu = nn.ReLU(inplace=False)
@@ -69,9 +90,13 @@ class HRModule(BaseModule):
             branches.append(
                 ResLayer(
                     block=block,
+                    num_blocks=num_blocks[i],
                     in_channels=self.in_channels[i],
                     out_channels=out_channels,
-                    num_blocks=num_blocks[i],
+                    conv_cfg=self.conv_cfg,
+                    norm_cfg=self.norm_cfg,
+                    with_cp=self.with_cp,
+                    init_cfg=self.block_init_cfg,
                 ))
 
         return ModuleList(branches)
@@ -88,6 +113,7 @@ class HRModule(BaseModule):
             fuse_layer = []
             for j in range(num_branches):
                 if j > i:
+                    # Upsample the feature maps of smaller scales.
                     fuse_layer.append(
                         nn.Sequential(
                             build_conv_layer(
@@ -102,10 +128,13 @@ class HRModule(BaseModule):
                             nn.Upsample(
                                 scale_factor=2**(j - i), mode='nearest')))
                 elif j == i:
+                    # Keep the feature map with the same scale.
                     fuse_layer.append(None)
                 else:
+                    # Downsample the feature maps of larger scales.
                     conv_downsamples = []
                     for k in range(i - j):
+                        # Use stacked convolution layers to downsample.
                         if k == i - j - 1:
                             conv_downsamples.append(
                                 nn.Sequential(
@@ -179,7 +208,7 @@ class HRNet(BaseModule):
               'BOTTLENECK' and 'BASIC'.
             - num_blocks (tuple): The number of blocks in each branch.
               The length must be equal to num_branches.
-            - num_channels (tuple): The number of channels in each branch.
+            - num_channels (tuple): The number of base channels in each branch.
               The length must be equal to num_branches.
 
             Defaults to None.
@@ -243,7 +272,7 @@ class HRNet(BaseModule):
 
     blocks_dict = {'BASIC': BasicBlock, 'BOTTLENECK': Bottleneck}
     arch_zoo = {
-        # num_modules, num_branches, block, num_blocks, base_channels
+        # num_modules, num_branches, block, num_blocks, num_channels
         'w18': [[1, 1, 'BOTTLENECK', (4, ),        (64, )],
                 [1, 2, 'BASIC',      (4, 4),       (18, 36)],
                 [4, 3, 'BASIC',      (4, 4, 4),    (18, 36, 72)],
