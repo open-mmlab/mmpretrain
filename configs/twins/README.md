@@ -7,7 +7,6 @@
 
 Very recently, a variety of vision transformer architectures for dense prediction tasks have been proposed and they show that the design of spatial attention is critical to their success in these tasks. In this work, we revisit the design of the spatial attention and demonstrate that a carefully-devised yet simple spatial attention mechanism performs favourably against the state-of-the-art schemes. As a result, we propose two vision transformer architectures, namely, Twins-PCPVT and Twins-SVT. Our proposed architectures are highly-efficient and easy to implement, only involving matrix multiplications that are highly optimized in modern deep learning frameworks. More importantly, the proposed architectures achieve excellent performance on a wide range of visual tasks, including image level classification as well as dense detection and segmentation. The simplicity and strong performance suggest that our proposed architectures may serve as stronger backbones for many vision tasks. Our code is released at [this https URL](https://github.com/Meituan-AutoML/Twins).
 
-<!-- [IMAGE] -->
 <div align=center>
 <img src="https://user-images.githubusercontent.com/24582831/145021310-57826cf5-5e03-4c7c-9081-ffa744bdae27.png" width="80%"/>
 </div>
@@ -29,7 +28,7 @@ Very recently, a variety of vision transformer architectures for dense predictio
 
 ## Citation
 
-```latex
+```
 @article{chu2021twins,
   title={Twins: Revisiting spatial attention design in vision transformers},
   author={Chu, Xiangxiang and Tian, Zhi and Wang, Yuqing and Zhang, Bo and Ren, Haibing and Wei, Xiaolin and Xia, Huaxia and Shen, Chunhua},
