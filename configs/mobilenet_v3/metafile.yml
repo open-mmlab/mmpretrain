@@ -10,8 +10,13 @@ Collections:
       Batch Size: 1024
       Architecture:
         - MobileNet V3
-    Paper: https://arxiv.org/abs/1905.02244
+    Paper:
+      URL: https://arxiv.org/abs/1905.02244
+      Title: Searching for MobileNetV3
     README: configs/mobilenet_v3/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.15.0/mmcls/models/backbones/mobilenet_v3.py
+      Version: v0.15.0
 
 Models:
   - Name: mobilenet_v3_small_imagenet
