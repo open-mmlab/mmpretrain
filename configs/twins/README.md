@@ -1,6 +1,6 @@
 # Twins
 
-> [Twins: Revisiting the Design of Spatial Attention in Vision Transformers](https://arxiv.org/pdf/2104.13840.pdf)
+> [Twins: Revisiting the Design of Spatial Attention in Vision Transformers](http://arxiv-export-lb.library.cornell.edu/abs/2104.13840)
 <!-- [ALGORITHM] -->
 
 ## Abstract
