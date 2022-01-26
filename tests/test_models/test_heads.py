@@ -7,7 +7,7 @@ import torch
 from mmcls.models.heads import (ClsHead, ConformerHead, DeiTClsHead,
                                 LinearClsHead, MultiLabelClsHead,
                                 MultiLabelLinearClsHead, StackedLinearClsHead,
-                                VisionTransformerClsHead)
+                                VisionTransformerClsHead, MultiTaskClsHead)
 
 
 @pytest.mark.parametrize('feat', [torch.rand(4, 10), (torch.rand(4, 10), )])
@@ -317,3 +317,44 @@ def test_deit_head():
     # test assertion
     with pytest.raises(ValueError):
         DeiTClsHead(-1, 100)
+
+@pytest.mark.parametrize('feat', [torch.rand(4, 3), (torch.rand(4, 3), )])
+def test_multitask_head(feat):
+    head = MultiTaskClsHead(heads=dict(
+      first=dict(type='LinearClsHead', num_classes=10, in_channels=3),
+      second=dict(type='LinearClsHead', num_classes=8, in_channels=3)
+    ))
+    fake_gt_label = (
+      torch.randint(0, 10, (4, )),
+      torch.randint(0, 8, (4, ))
+    )
+
+    losses = head.forward_train(feat, fake_gt_label)
+    assert losses['loss'].item() > 0
+
+    # test simple_test with post_process
+    pred = head.simple_test(feat)
+    assert isinstance(pred, tuple) and len(pred) == 2
+    assert isinstance(pred[0], list) and len(pred[0]) == 10
+    assert isinstance(pred[1], list) and len(pred[1]) == 8
+    
+    with patch('torch.onnx.is_in_onnx_export', return_value=True):
+        pred = head.simple_test(feat)
+        assert pred[0].shape == (4, 10)
+        assert pred[1].shape == (4, 8)
+
+    # test simple_test without post_process
+    pred = head.simple_test(feat, post_process=False)
+    assert isinstance(pred[0], torch.Tensor) and pred[0].shape == (4, 10)
+    assert isinstance(pred[1], torch.Tensor) and pred[1].shape == (4, 8)
+    
+    logits = head.simple_test(feat, sigmoid=False, post_process=False)
+    torch.testing.assert_allclose(pred[0], torch.sigmoid(logits[0]))
+    torch.testing.assert_allclose(pred[1], torch.sigmoid(logits[1]))
+
+    # test pre_logits
+    features = head.pre_logits(feat)
+    if isinstance(feat, tuple):
+        torch.testing.assert_allclose(features, feat[0])
+    else:
+        torch.testing.assert_allclose(features, feat)
