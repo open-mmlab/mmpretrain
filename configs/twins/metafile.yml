@@ -27,7 +27,7 @@ Models:
           Top 1 Accuracy: 81.14
           Top 5 Accuracy: 95.69
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/twins/twins-pcpvt-small_3rdparty_8xb128_in1k_20220120-9f87e819.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/twins/twins-pcpvt-small_3rdparty_8xb128_in1k_20220126-ef23c132.pth
     Config: configs/twins/twins-pcpvt-small_8xb128_in1k.py
     Converted From:
       Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-vt3p-weights/twins_pcpvt_small-e70e7e7a.pth
@@ -43,7 +43,7 @@ Models:
           Top 1 Accuracy: 82.66
           Top 5 Accuracy: 96.26
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/twins/twins-pcpvt-base_3rdparty_8xb128_in1k_20220120-27a7e6d7.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/twins/twins-pcpvt-base_3rdparty_8xb128_in1k_20220126-f8c4b0d5.pth
     Config: configs/twins/twins-pcpvt-base_8xb128_in1k.py
     Converted From:
       Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-vt3p-weights/twins_pcpvt_small-e70e7e7a.pth
@@ -59,12 +59,12 @@ Models:
           Top 1 Accuracy: 83.09
           Top 5 Accuracy: 96.59
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/twins/twins-pcpvt-large_3rdparty_16xb64_in1k_20220120-6f613882.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/twins/twins-pcpvt-large_3rdparty_16xb64_in1k_20220126-c1ef8d80.pth
     Config: configs/twins/twins-pcpvt-large_16xb64_in1k.py
     Converted From:
       Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-vt3p-weights/twins_pcpvt_small-e70e7e7a.pth
       Code: https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/twins.py
-  - Name: twins-svt-small_3rdparty_8xb64_in1k
+  - Name: twins-svt-small_3rdparty_8xb128_in1k
     Metadata:
       FLOPs: 2820000000            # 2.82G
       Parameters: 24060000         # 24.06M
@@ -75,12 +75,12 @@ Models:
           Top 1 Accuracy: 81.77
           Top 5 Accuracy: 95.57
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/twins/twins-svt-small_3rdparty_8xb128_in1k_20220120-1667a72a.pth
-    Config: configs/twins/twins-svt-small_8xb64_in1k.py
+    Weights: https://download.openmmlab.com/mmclassification/v0/twins/twins-svt-small_3rdparty_8xb128_in1k_20220126-8fe5205b.pth
+    Config: configs/twins/twins-svt-small_8xb128_in1k.py
     Converted From:
       Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-vt3p-weights/twins_pcpvt_small-e70e7e7a.pth
       Code: https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/twins.py
-  - Name: twins-svt-base_8xb64_3rdparty_in1k
+  - Name: twins-svt-base_8xb128_3rdparty_in1k
     Metadata:
       FLOPs: 8350000000           # 8.35G
       Parameters: 56070000        # 56.07M
@@ -91,8 +91,8 @@ Models:
           Top 1 Accuracy: 83.13
           Top 5 Accuracy: 96.29
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/twins/twins-svt-base_3rdparty_8xb128_in1k_20220120-2ecf4da4.pth
-    Config: configs/twins/twins-svt-base_8xb64_in1k.py
+    Weights: https://download.openmmlab.com/mmclassification/v0/twins/twins-svt-base_3rdparty_8xb128_in1k_20220126-e31cc8e9.pth
+    Config: configs/twins/twins-svt-base_8xb128_in1k.py
     Converted From:
       Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-vt3p-weights/twins_pcpvt_small-e70e7e7a.pth
       Code: https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/twins.py
@@ -107,7 +107,7 @@ Models:
           Top 1 Accuracy: 83.60
           Top 5 Accuracy: 96.50
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/twins/twins-svt-large_3rdparty_16xb64_in1k_20220120-2861aed1.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/twins/twins-svt-large_3rdparty_16xb64_in1k_20220126-4817645f.pth
     Config: configs/twins/twins-svt-large_16xb64_in1k.py
     Converted From:
       Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-vt3p-weights/twins_pcpvt_small-e70e7e7a.pth
