@@ -26,7 +26,14 @@ You can switch between Chinese and English documentation in the lower-left corne
    tutorials/runtime.md
 
 
-.. include:: _model_zoo.rst
+.. toctree::
+   :maxdepth: 1
+   :caption: 模型库
+   :glob:
+
+   modelzoo_statistics.md
+   model_zoo.md
+   papers/*
 
 
 .. toctree::
@@ -53,6 +60,13 @@ You can switch between Chinese and English documentation in the lower-left corne
    :caption: API 参考文档
 
    api.rst
+
+
+.. toctree::
+   :maxdepth: 1
+   :caption: 更新日志
+
+   changelog.md
 
 
 .. toctree::
