@@ -87,7 +87,7 @@ class ConcatDataset(_ConcatDataset):
 
                 results_per_dataset = results[start_idx:end_idx]
                 print_log(
-                    f'\nEvaluateing dataset-{dataset_idx} with '
+                    f'Evaluateing dataset-{dataset_idx} with '
                     f'{len(results_per_dataset)} images now',
                     logger=logger)
 
@@ -267,6 +267,7 @@ class ClassBalancedDataset(object):
             f'{dataset_type} dataset with total number of samples {len(self)}.'
         )
         return result
+
 
 @DATASETS.register_module()
 class KFoldDataset:
