@@ -330,27 +330,23 @@ def test_multitask_head(feat):
     )
 
     losses = head.forward_train(feat, fake_gt_label)
-    assert losses['loss'].item() > 0
+    assert losses['loss_first'].item() > 0
+    assert losses['loss_second'].item() > 0
 
     # test simple_test with post_process
     pred = head.simple_test(feat)
-    assert isinstance(pred, tuple) and len(pred) == 2
-    assert isinstance(pred[0], list) and len(pred[0]) == 10
-    assert isinstance(pred[1], list) and len(pred[1]) == 8
+    assert isinstance(pred, list) and len(pred) == 4
+    assert isinstance(pred[0], tuple) and len(pred[0]) == 2
+    assert len(pred[0][0]) == 10
+    assert len(pred[0][1]) == 8
     
     with patch('torch.onnx.is_in_onnx_export', return_value=True):
         pred = head.simple_test(feat)
-        assert pred[0].shape == (4, 10)
-        assert pred[1].shape == (4, 8)
+        assert pred[0][0].shape == (10,)
 
     # test simple_test without post_process
-    pred = head.simple_test(feat, post_process=False)
-    assert isinstance(pred[0], torch.Tensor) and pred[0].shape == (4, 10)
-    assert isinstance(pred[1], torch.Tensor) and pred[1].shape == (4, 8)
-    
-    logits = head.simple_test(feat, sigmoid=False, post_process=False)
-    torch.testing.assert_allclose(pred[0], torch.sigmoid(logits[0]))
-    torch.testing.assert_allclose(pred[1], torch.sigmoid(logits[1]))
+    with pytest.raises(AssertionError):
+        head.simple_test(feat, post_process=False)
 
     # test pre_logits
     features = head.pre_logits(feat)
