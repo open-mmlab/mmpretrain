@@ -22,17 +22,19 @@ class LayerNorm2d(nn.LayerNorm):
     Args:
         num_channels (int): The number of channels of the input tensor.
         eps (float): a value added to the denominator for numerical stability.
-            Defaults to 1e-6.
+            Defaults to 1e-5.
         elementwise_affine (bool): a boolean value that when set to ``True``,
             this module has learnable per-element affine parameters initialized
             to ones (for weights) and zeros (for biases). Defaults to True.
     """
 
-    def __init__(self, num_channels: int, eps: float = 1e-6, **kwargs) -> None:
-        super().__init__(num_channels, eps=eps, **kwargs)
+    def __init__(self, num_channels: int, **kwargs) -> None:
+        super().__init__(num_channels, **kwargs)
         self.num_channels = self.normalized_shape[0]
 
     def forward(self, x):
+        assert x.dim() == 4, 'LayerNorm2d only supports inputs with shape ' \
+            f'(N, C, H, W), but got tensor with shape {x.shape}'
         return F.layer_norm(
             x.permute(0, 2, 3, 1), self.normalized_shape, self.weight,
             self.bias, self.eps).permute(0, 3, 1, 2)
@@ -149,7 +151,7 @@ class ConvNeXt(BaseBackbone):
 
             Defaults to 'tiny'.
         in_channels (int): Number of input image channels. Defaults to 3.
-        patch_size (int): The size of one patch in the stem layer.
+        stem_patch_size (int): The size of one patch in the stem layer.
             Defaults to 4.
         norm_cfg (dict): The config dict for norm layers.
             Defaults to ``dict(type='LN2d', eps=1e-6)``.
@@ -195,7 +197,7 @@ class ConvNeXt(BaseBackbone):
     def __init__(self,
                  arch='tiny',
                  in_channels=3,
-                 patch_size=4,
+                 stem_patch_size=4,
                  norm_cfg=dict(type='LN2d', eps=1e-6),
                  act_cfg=dict(type='GELU'),
                  linear_pw_conv=True,
@@ -254,8 +256,8 @@ class ConvNeXt(BaseBackbone):
             nn.Conv2d(
                 in_channels,
                 self.channels[0],
-                kernel_size=patch_size,
-                stride=patch_size),
+                kernel_size=stem_patch_size,
+                stride=stem_patch_size),
             build_norm_layer(norm_cfg, self.channels[0])[1],
         )
         self.downsample_layers.append(stem)
