@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+from mmcv.utils import digit_version
 from torchvision.transforms import Resize
 
 from mmcls.models.utils.augment.builder import AUGMENT
@@ -23,6 +24,9 @@ class BatchResizeMixLayer(BatchCutMixLayer):
                  lam_max: float = 0.8,
                  *args,
                  **kwargs):
+        if digit_version(torch.__version__) < digit_version('1.7.0'):
+            raise RuntimeError('torchvision.transforms.Resize is not available'
+                               'with Tensor before 1.7.0')
         super(BatchResizeMixLayer, self).__init__(*args, **kwargs)
         self.lam_min = lam_min
         self.lam_max = lam_max
