@@ -6,8 +6,8 @@ import torch
 
 from mmcls.models.heads import (ClsHead, ConformerHead, DeiTClsHead,
                                 LinearClsHead, MultiLabelClsHead,
-                                MultiLabelLinearClsHead, StackedLinearClsHead,
-                                VisionTransformerClsHead, MultiTaskClsHead)
+                                MultiLabelLinearClsHead, MultiTaskClsHead,
+                                StackedLinearClsHead, VisionTransformerClsHead)
 
 
 @pytest.mark.parametrize('feat', [torch.rand(4, 10), (torch.rand(4, 10), )])
@@ -318,16 +318,14 @@ def test_deit_head():
     with pytest.raises(ValueError):
         DeiTClsHead(-1, 100)
 
+
 @pytest.mark.parametrize('feat', [torch.rand(4, 3), (torch.rand(4, 3), )])
 def test_multitask_head(feat):
-    head = MultiTaskClsHead(heads=dict(
-      first=dict(type='LinearClsHead', num_classes=10, in_channels=3),
-      second=dict(type='LinearClsHead', num_classes=8, in_channels=3)
-    ))
-    fake_gt_label = (
-      torch.randint(0, 10, (4, )),
-      torch.randint(0, 8, (4, ))
-    )
+    head = MultiTaskClsHead(
+        heads=dict(
+            first=dict(type='LinearClsHead', num_classes=10, in_channels=3),
+            second=dict(type='LinearClsHead', num_classes=8, in_channels=3)))
+    fake_gt_label = (torch.randint(0, 10, (4, )), torch.randint(0, 8, (4, )))
 
     losses = head.forward_train(feat, fake_gt_label)
     assert losses['loss_first'].item() > 0
@@ -339,10 +337,10 @@ def test_multitask_head(feat):
     assert isinstance(pred[0], tuple) and len(pred[0]) == 2
     assert len(pred[0][0]) == 10
     assert len(pred[0][1]) == 8
-    
+
     with patch('torch.onnx.is_in_onnx_export', return_value=True):
         pred = head.simple_test(feat)
-        assert pred[0][0].shape == (10,)
+        assert pred[0][0].shape == (10, )
 
     # test simple_test without post_process
     with pytest.raises(AssertionError):
