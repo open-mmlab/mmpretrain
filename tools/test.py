@@ -14,6 +14,7 @@ from mmcv.runner import get_dist_info, init_dist, load_checkpoint
 from mmcls.apis import multi_gpu_test, single_gpu_test
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.models import build_classifier
+from mmcls.utils import setup_multi_processes
 
 # TODO import `wrap_fp16_model` from mmcv and delete them from mmcls
 try:
@@ -119,6 +120,10 @@ def main():
     cfg = mmcv.Config.fromfile(args.config)
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
+
+    # set multi-process settings
+    setup_multi_processes(cfg)
+
     # set cudnn_benchmark
     if cfg.get('cudnn_benchmark', False):
         torch.backends.cudnn.benchmark = True
