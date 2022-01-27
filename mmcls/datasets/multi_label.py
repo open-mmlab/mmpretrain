@@ -47,7 +47,7 @@ class MultiLabelDataset(BaseDataset):
         Returns:
             dict: evaluation results
         """
-        if metric_options is None:
+        if metric_options is None or metric_options == {}:
             metric_options = {'thr': 0.5}
 
         if deprecated_kwargs != {}:
