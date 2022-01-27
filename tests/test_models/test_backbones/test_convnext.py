@@ -13,6 +13,10 @@ def test_assertion():
         # ConvNeXt arch dict should include 'embed_dims',
         ConvNeXt(arch=dict(channels=[2, 3, 4, 5]))
 
+    with pytest.raises(AssertionError):
+        # ConvNeXt arch dict should include 'embed_dims',
+        ConvNeXt(arch=dict(depths=[2, 3, 4], channels=[2, 3, 4, 5]))
+
 
 def test_convnext():
 
