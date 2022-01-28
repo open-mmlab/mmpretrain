@@ -27,3 +27,12 @@ model = dict(
 
 # data settings
 data = dict(samples_per_gpu=256, workers_per_gpu=5)
+
+paramwise_cfg = dict(
+    norm_decay_mult=0.0,
+    bias_decay_mult=0.0,
+    custom_keys={
+        '.cls_token': dict(decay_mult=0.0),
+        '.pos_embed': dict(decay_mult=0.0)
+    })
+optimizer = dict(paramwise_cfg=paramwise_cfg)
