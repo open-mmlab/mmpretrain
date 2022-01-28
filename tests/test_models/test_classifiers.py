@@ -4,6 +4,7 @@ import tempfile
 from copy import deepcopy
 
 import numpy as np
+import pytest
 import torch
 from mmcv import ConfigDict
 
@@ -83,6 +84,14 @@ def test_image_classifier():
     assert isinstance(soft_pred, torch.Tensor)
     assert soft_pred.shape == (16, 10)
     torch.testing.assert_allclose(soft_pred, torch.softmax(pred, dim=1))
+
+    # test pretrained
+    with pytest.warns(UserWarning):
+        model_cfg_ = deepcopy(model_cfg)
+        model_cfg_['pretrained'] = 'checkpoint'
+        model = CLASSIFIERS.build(model_cfg_)
+        assert model.init_cfg == dict(
+            type='Pretrained', checkpoint='checkpoint')
 
     # test show_result
     img = np.random.randint(0, 256, (224, 224, 3)).astype(np.uint8)
