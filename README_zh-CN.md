@@ -124,7 +124,7 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 - [x] [Twins](https://github.com/open-mmlab/mmclassification/tree/master/configs/twins)
 - [x] [EfficientNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/efficientnet)
 - [x] [ConvNeXt](https://github.com/open-mmlab/mmclassification/tree/master/configs/convnext)
-- [ ] HRNet
+- [x] [HRNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/hrnet)
 
 </details>
 
