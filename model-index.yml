@@ -19,3 +19,4 @@ Import:
   - configs/twins/metafile.yml
   - configs/efficientnet/metafile.yml
   - configs/convnext/metafile.yml
+  - configs/hrnet/metafile.yml
