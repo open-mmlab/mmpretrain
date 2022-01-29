@@ -130,6 +130,11 @@ def train_model(model,
             model = model.cpu()
         else:
             model = MMDataParallel(model, device_ids=cfg.gpu_ids)
+            if not model.device_ids:
+                from mmcv import digit_version, __version__
+                assert digit_version(__version__) >= (1, 4, 4), \
+                    'To train with CPU, please confirm your mmcv version ' \
+                    'is not lower than v1.4.4'
 
     # build runner
     optimizer = build_optimizer(model, cfg.optimizer)

@@ -186,6 +186,10 @@ def main():
             model = model.cpu()
         else:
             model = MMDataParallel(model, device_ids=cfg.gpu_ids)
+            if not model.device_ids:
+                assert mmcv.digit_version(mmcv.__version__) >= (1, 4, 4), \
+                    'To test with CPU, please confirm your mmcv version ' \
+                    'is not lower than v1.4.4'
         model.CLASSES = CLASSES
         show_kwargs = {} if args.show_options is None else args.show_options
         outputs = single_gpu_test(model, data_loader, args.show, args.show_dir,
