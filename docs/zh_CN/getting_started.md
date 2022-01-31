@@ -58,6 +58,7 @@ python demo/image_demo.py demo/demo.JPEG configs/resnet/resnet50_8xb32_in1k.py \
 ### 数据集的推理与测试
 
 - 支持单 GPU
+- 支持 CPU
 - 支持单节点多 GPU
 - 支持多节点
 
@@ -65,6 +66,10 @@ python demo/image_demo.py demo/demo.JPEG configs/resnet/resnet50_8xb32_in1k.py \
 
 ```shell
 # 单 GPU
+python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--metrics ${METRICS}] [--out ${RESULT_FILE}]
+
+# CPU: 禁用 GPU 并运行单 GPU 测试脚本
+export CUDA_VISIBLE_DEVICES=-1
 python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--metrics ${METRICS}] [--out ${RESULT_FILE}]
 
 # 多 GPU
@@ -80,8 +85,6 @@ python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--metrics ${METRICS}] [-
 - `METRICS`：数据集测试指标，如准确率 (accuracy), 精确率 (precision), 召回率 (recall) 等
 
 例子：
-
-假定用户将下载的模型权重文件放置在 `checkpoints/` 目录下。
 
 在 ImageNet 验证集上，使用 ResNet-50 进行推理并获得预测标签及其对应的预测得分。
 
@@ -110,6 +113,20 @@ python tools/train.py ${CONFIG_FILE} [optional arguments]
 ```
 
 如果用户想在命令中指定工作目录，则需要增加参数 `--work-dir ${YOUR_WORK_DIR}`
+
+### 使用 CPU 训练
+
+使用 CPU 训练的流程和使用单 GPU 训练的流程一致，我们仅需要在训练流程开始前禁用 GPU。
+
+```shell
+export CUDA_VISIBLE_DEVICES=-1
+```
+
+之后运行单 GPU 训练脚本即可。
+
+```{warning}
+我们不推荐用户使用 CPU 进行训练，这太过缓慢。我们支持这个功能是为了方便用户在没有 GPU 的机器上进行调试。
+```
 
 ### 使用多个 GPU 进行训练
 
@@ -150,7 +167,7 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 PORT=29500 ./tools/dist_train.sh ${CONFIG_FILE} 4
 CUDA_VISIBLE_DEVICES=4,5,6,7 PORT=29501 ./tools/dist_train.sh ${CONFIG_FILE} 4
 ```
 
-如果用户在 slurm 集群下启动多个训练任务，则需要修改配置文件（通常是配置文件的倒数第 6 行）中的 `dist_params` 变量，以设置不同的通信端口。
+如果用户在 slurm 集群下启动多个训练任务，则需要修改配置文件中的 `dist_params` 变量，以设置不同的通信端口。
 
 在 `config1.py` 中，
 
