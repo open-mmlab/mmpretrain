@@ -57,6 +57,13 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 
 ## 更新日志
 
+2022/1/30 发布了 v0.20.0 版本
+
+新版本亮点：
+- 支持 **K 折交叉验证** 工具。相应文档会在后续添加。
+- 支持了 **HRNet**，**ConvNeXt**，**Twins** 以及 **EfficientNet** 四个主干网络，欢迎使用！
+- 支持了从 PyTorch 模型到 Core-ML 模型的转换工具。
+
 2021/12/31 发布了 v0.19.0 版本
 
 新版本亮点：
@@ -65,12 +72,6 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 - 复现了 **T2T-ViT** 和 **RegNetX** 的训练精度，并提供了自训练的模型权重文件。
 - 支持了 **DeiT** 和 **Conformer** 主干网络，并提供了预训练模型。
 - 提供了一个 **CAM 可视化** 工具。该工具基于 [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam)，我们提供了详细的 [使用教程](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#class-activation-map-visualization)！
-
-2021/11/30 发布了 v0.18.0 版本
-
-新版本亮点：
-- 支持了 **MLP-Mixer** 主干网络，欢迎使用！
-- 添加了一个**可视化学习率曲线**的工具，可以参考[教程](https://mmclassification.readthedocs.io/zh_CN/latest/tools/visualization.html#id3)使用
 
 发布历史和更新细节请参考 [更新日志](docs/en/changelog.md)
 

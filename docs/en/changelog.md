@@ -1,5 +1,43 @@
 # Changelog
 
+## v0.20.0(30/01/2022)
+
+### Highlights
+
+- Support K-fold cross-validation. The tutorial will be released later.
+- Support HRNet, ConvNeXt, Twins and EfficientNet.
+- Support model conversion from PyTorch to Core-ML by a tool.
+
+### New Features
+
+- Support K-fold cross-validation. ([#563](https://github.com/open-mmlab/mmclassification/pull/563))
+- Support HRNet and add pre-trained models. ([#660](https://github.com/open-mmlab/mmclassification/pull/660))
+- Support ConvNeXt and add pre-trained models. ([#670](https://github.com/open-mmlab/mmclassification/pull/670))
+- Support Twins and add pre-trained models. ([#642](https://github.com/open-mmlab/mmclassification/pull/642))
+- Support EfficientNet and add pre-trained models.([#649](https://github.com/open-mmlab/mmclassification/pull/649))
+- Support `features_only` option in `TIMMBackbone`. ([#668](https://github.com/open-mmlab/mmclassification/pull/668))
+- Add conversion script from pytorch to Core-ML model. ([#597](https://github.com/open-mmlab/mmclassification/pull/597))
+
+### Improvements
+
+- New-style CPU training and inference. ([#674](https://github.com/open-mmlab/mmclassification/pull/674))
+- Add setup multi-processing both in train and test. ([#671](https://github.com/open-mmlab/mmclassification/pull/671))
+- Rewrite channel split operation in ShufflenetV2. ([#632](https://github.com/open-mmlab/mmclassification/pull/632))
+- Deprecate the support for "python setup.py test". ([#646](https://github.com/open-mmlab/mmclassification/pull/646))
+- Support single-label, softmax, custom eps by asymmetric loss. ([#609](https://github.com/open-mmlab/mmclassification/pull/609))
+- Save class names in best checkpoint created by evaluation hook. ([#641](https://github.com/open-mmlab/mmclassification/pull/641))
+
+### Bug Fixes
+
+- Fix potential unexcepted behaviors if `metric_options` is not specified in multi-label evaluation. ([#647](https://github.com/open-mmlab/mmclassification/pull/647))
+- Fix API changes in  `pytorch-grad-cam&gt;=1.3.7`. ([#656](https://github.com/open-mmlab/mmclassification/pull/656))
+- Fix bug which breaks `cal_train_time` in `analyze_logs.py`. ([#662](https://github.com/open-mmlab/mmclassification/pull/662))
+
+### Docs Update
+
+- Update README in configs according to OpenMMLab standard. ([#672](https://github.com/open-mmlab/mmclassification/pull/672))
+- Update installation guide and README. ([#624](https://github.com/open-mmlab/mmclassification/pull/624))
+
 ## v0.19.0(31/12/2021)
 
 ### Highlights
