@@ -36,7 +36,7 @@
 ### Docs Update
 
 - Update README in configs according to OpenMMLab standard. ([#672](https://github.com/open-mmlab/mmclassification/pull/672))
-- Update install guide and README. ([#624](https://github.com/open-mmlab/mmclassification/pull/624))
+- Update installation guide and README. ([#624](https://github.com/open-mmlab/mmclassification/pull/624))
 
 ## v0.19.0(31/12/2021)
 
