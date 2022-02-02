@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn.utils.weight_init import trunc_normal_
@@ -100,6 +101,55 @@ class ConformerHead(ClsHead):
             if post_process:
                 pred = list(map(self.post_process, pred))
         return pred
+
+    def aug_test(self, cls_scores, softmax=True, post_process=True):
+        """Inference with augmentation.
+
+        Args:
+            cls_scores (List[tuple[Tensor]]):
+                 The input classification score logits.
+                Multi-stage inputs are acceptable but only the last stage will
+                be used to classify. The shape of every item should be
+                ``(num_samples, num_classes)``.
+            softmax (bool): Whether to softmax the classification score.
+            post_process (bool): Whether to do post processing the
+                inference results. It will convert the output to a list.
+
+        Returns:
+            Tensor | list: The inference results.
+
+                - If no post processing, the output is a tensor with shape
+                  ``(num_samples, num_classes)``.
+                - If post processing, the output is a multi-dimentional list of
+                  float and the dimensions are ``(num_samples, num_classes)``.
+        """
+        aug_pred = []
+        for cls_score in cls_scores:
+            pred = self.simple_test(
+                cls_score, softmax=softmax, post_process=False)
+            aug_pred.append(pred)
+
+        if softmax:
+            aug_pred = torch.stack(aug_pred).mean(dim=0)
+        else:
+            aug_conv_cls_score = []
+            aug_tran_cls_score = []
+            for pred in aug_pred:
+                conv_cls_score, tran_cls_score = pred
+                aug_conv_cls_score.append(conv_cls_score)
+                aug_tran_cls_score.append(tran_cls_score)
+            aug_pred = [
+                torch.stack(aug_conv_cls_score).mean(dim=0),
+                torch.stack(aug_tran_cls_score).mean(dim=0)
+            ]
+
+        if post_process:
+            if softmax:
+                return self.post_process(aug_pred)
+            else:
+                return list(map(self.post_process, pred))
+        else:
+            return aug_pred
 
     def forward_train(self, x, gt_label):
         x = self.pre_logits(x)

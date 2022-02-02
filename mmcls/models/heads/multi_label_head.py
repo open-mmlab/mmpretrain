@@ -91,6 +91,39 @@ class MultiLabelClsHead(BaseHead):
         else:
             return pred
 
+    def aug_test(self, cls_scores, sigmoid=True, post_process=True):
+        """Inference with augmentation.
+
+        Args:
+            cls_score (List[tuple[Tensor]]):
+                The input classification score logits.
+                Multi-stage inputs are acceptable but only the last stage will
+                be used to classify. The shape of every item should be
+                ``(num_samples, num_classes)``.
+            sigmoid (bool): Whether to sigmoid the classification score.
+            post_process (bool): Whether to do post processing the
+                inference results. It will convert the output to a list.
+
+        Returns:
+            Tensor | list: The inference results.
+
+                - If no post processing, the output is a tensor with shape
+                  ``(num_samples, num_classes)``.
+                - If post processing, the output is a multi-dimentional list of
+                  float and the dimensions are ``(num_samples, num_classes)``.
+        """
+        aug_pred = []
+        for cls_score in cls_scores:
+            pred = self.simple_test(
+                cls_score, sigmoid=sigmoid, post_process=False)
+            aug_pred.append(pred)
+        aug_pred = torch.stack(aug_pred).mean(dim=0)
+
+        if post_process:
+            return self.post_process(aug_pred)
+        else:
+            return aug_pred
+
     def post_process(self, pred):
         on_trace = is_tracing()
         if torch.onnx.is_in_onnx_export() or on_trace:

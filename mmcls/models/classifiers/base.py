@@ -59,6 +59,11 @@ class BaseClassifier(BaseModule, metaclass=ABCMeta):
     def simple_test(self, img, **kwargs):
         pass
 
+    @abstractmethod
+    def aug_test(self, imgs, **kwargs):
+        """Test function with test time augmentation."""
+        pass
+
     def forward_test(self, imgs, **kwargs):
         """
         Args:
@@ -75,7 +80,7 @@ class BaseClassifier(BaseModule, metaclass=ABCMeta):
         if len(imgs) == 1:
             return self.simple_test(imgs[0], **kwargs)
         else:
-            raise NotImplementedError('aug_test has not been implemented')
+            return self.aug_test(imgs, **kwargs)
 
     @auto_fp16(apply_to=('img', ))
     def forward(self, img, return_loss=True, **kwargs):

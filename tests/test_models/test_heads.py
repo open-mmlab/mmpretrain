@@ -51,6 +51,19 @@ def test_cls_head(feat):
     else:
         torch.testing.assert_allclose(features, feat)
 
+    # test aug_test with post_process
+    pred = head.aug_test([feat, feat])
+    assert isinstance(pred, list) and len(pred) == 4
+    with patch('torch.onnx.is_in_onnx_export', return_value=True):
+        pred = head.aug_test([feat, feat])
+        assert pred.shape == (4, 10)
+
+    # test aug_test without post_process
+    pred = head.aug_test([feat, feat], post_process=False)
+    assert isinstance(pred, torch.Tensor) and pred.shape == (4, 10)
+    logits = head.aug_test([feat, feat], softmax=False, post_process=False)
+    torch.testing.assert_allclose(pred, torch.softmax(logits, dim=1))
+
 
 @pytest.mark.parametrize('feat', [torch.rand(4, 3), (torch.rand(4, 3), )])
 def test_linear_head(feat):
@@ -87,6 +100,19 @@ def test_linear_head(feat):
     else:
         torch.testing.assert_allclose(features, feat)
 
+    # test aug_test with post_process
+    pred = head.aug_test([feat, feat])
+    assert isinstance(pred, list) and len(pred) == 4
+    with patch('torch.onnx.is_in_onnx_export', return_value=True):
+        pred = head.aug_test([feat, feat])
+        assert pred.shape == (4, 10)
+
+    # test aug_test without post_process
+    pred = head.aug_test([feat, feat], post_process=False)
+    assert isinstance(pred, torch.Tensor) and pred.shape == (4, 10)
+    logits = head.aug_test([feat, feat], softmax=False, post_process=False)
+    torch.testing.assert_allclose(pred, torch.softmax(logits, dim=1))
+
 
 @pytest.mark.parametrize('feat', [torch.rand(4, 10), (torch.rand(4, 10), )])
 def test_multilabel_head(feat):
@@ -115,6 +141,19 @@ def test_multilabel_head(feat):
         torch.testing.assert_allclose(features, feat[0])
     else:
         torch.testing.assert_allclose(features, feat)
+
+    # test aug_test with post_process
+    pred = head.aug_test([feat, feat])
+    assert isinstance(pred, list) and len(pred) == 4
+    with patch('torch.onnx.is_in_onnx_export', return_value=True):
+        pred = head.aug_test([feat, feat])
+        assert pred.shape == (4, 10)
+
+    # test aug_test without post_process
+    pred = head.aug_test([feat, feat], post_process=False)
+    assert isinstance(pred, torch.Tensor) and pred.shape == (4, 10)
+    logits = head.aug_test([feat, feat], sigmoid=False, post_process=False)
+    torch.testing.assert_allclose(pred, torch.sigmoid(logits))
 
 
 @pytest.mark.parametrize('feat', [torch.rand(4, 5), (torch.rand(4, 5), )])
@@ -145,6 +184,19 @@ def test_multilabel_linear_head(feat):
         torch.testing.assert_allclose(features, feat[0])
     else:
         torch.testing.assert_allclose(features, feat)
+
+    # test aug_test with post_process
+    pred = head.aug_test([feat, feat])
+    assert isinstance(pred, list) and len(pred) == 4
+    with patch('torch.onnx.is_in_onnx_export', return_value=True):
+        pred = head.aug_test([feat, feat])
+        assert pred.shape == (4, 10)
+
+    # test aug_test without post_process
+    pred = head.aug_test([feat, feat], post_process=False)
+    assert isinstance(pred, torch.Tensor) and pred.shape == (4, 10)
+    logits = head.aug_test([feat, feat], sigmoid=False, post_process=False)
+    torch.testing.assert_allclose(pred, torch.sigmoid(logits))
 
 
 @pytest.mark.parametrize('feat', [torch.rand(4, 5), (torch.rand(4, 5), )])
@@ -182,6 +234,19 @@ def test_stacked_linear_cls_head(feat):
     # test pre_logits
     features = head.pre_logits(feat)
     assert features.shape == (4, 20)
+
+    # test aug_test with post_process
+    pred = head.aug_test([feat, feat])
+    assert isinstance(pred, list) and len(pred) == 4
+    with patch('torch.onnx.is_in_onnx_export', return_value=True):
+        pred = head.aug_test([feat, feat])
+        assert pred.shape == (4, 10)
+
+    # test aug_test without post_process
+    pred = head.aug_test([feat, feat], post_process=False)
+    assert isinstance(pred, torch.Tensor) and pred.shape == (4, 10)
+    logits = head.aug_test([feat, feat], softmax=False, post_process=False)
+    torch.testing.assert_allclose(pred, torch.softmax(logits, dim=1))
 
     # test forward with full function
     head = StackedLinearClsHead(
@@ -237,6 +302,21 @@ def test_vit_head():
     features = head.pre_logits(fake_features)
     assert features.shape == (4, 20)
 
+    # test aug_test with post_process
+    pred = head.aug_test([fake_features, fake_features])
+    assert isinstance(pred, list) and len(pred) == 4
+    with patch('torch.onnx.is_in_onnx_export', return_value=True):
+        pred = head.aug_test([fake_features, fake_features])
+        assert pred.shape == (4, 10)
+
+    # test aug_test without post_process
+    pred = head.aug_test([fake_features, fake_features], post_process=False)
+    assert isinstance(pred, torch.Tensor) and pred.shape == (4, 10)
+    logits = head.aug_test([fake_features, fake_features],
+                           softmax=False,
+                           post_process=False)
+    torch.testing.assert_allclose(pred, torch.softmax(logits, dim=1))
+
     # test assertion
     with pytest.raises(ValueError):
         VisionTransformerClsHead(-1, 100)
@@ -267,6 +347,21 @@ def test_conformer_head():
     # test pre_logits
     features = head.pre_logits(fake_features)
     assert features is fake_features[0]
+
+    # test aug_test with post_process
+    pred = head.aug_test([fake_features, fake_features])
+    assert isinstance(pred, list) and len(pred) == 4
+    with patch('torch.onnx.is_in_onnx_export', return_value=True):
+        pred = head.aug_test([fake_features, fake_features])
+        assert pred.shape == (4, 10)
+
+    # test aug_test without post_process
+    pred = head.aug_test([fake_features, fake_features], post_process=False)
+    assert isinstance(pred, torch.Tensor) and pred.shape == (4, 10)
+    logits = head.aug_test([fake_features, fake_features],
+                           softmax=False,
+                           post_process=False)
+    torch.testing.assert_allclose(pred, torch.softmax(sum(logits), dim=1))
 
 
 def test_deit_head():
@@ -313,6 +408,21 @@ def test_deit_head():
     cls_token, dist_token = head.pre_logits(fake_features)
     assert cls_token.shape == (4, 20)
     assert dist_token.shape == (4, 20)
+
+    # test aug_test with post_process
+    pred = head.aug_test([fake_features, fake_features])
+    assert isinstance(pred, list) and len(pred) == 4
+    with patch('torch.onnx.is_in_onnx_export', return_value=True):
+        pred = head.aug_test([fake_features, fake_features])
+        assert pred.shape == (4, 10)
+
+    # test aug_test without post_process
+    pred = head.aug_test([fake_features, fake_features], post_process=False)
+    assert isinstance(pred, torch.Tensor) and pred.shape == (4, 10)
+    logits = head.aug_test([fake_features, fake_features],
+                           softmax=False,
+                           post_process=False)
+    torch.testing.assert_allclose(pred, torch.softmax(logits, dim=1))
 
     # test assertion
     with pytest.raises(ValueError):
