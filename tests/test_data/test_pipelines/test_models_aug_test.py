@@ -28,6 +28,9 @@ def model_aug_test_template(cfg_file):
     load = Compose(load_cfg)
     transform = build_from_cfg(multi_scale_cfg, PIPELINES)
 
+    # test __repr__()
+    transform.__repr__()
+
     results = dict(
         img_prefix=osp.join(osp.dirname(__file__), '../../data'),
         img_info=dict(filename='color.jpg'))
