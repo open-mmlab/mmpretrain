@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.20.1(07/02/2022)
+
+### Bug Fixes
+
+- Fix the MMCV dependency version.
+
 ## v0.20.0(30/01/2022)
 
 ### Highlights
