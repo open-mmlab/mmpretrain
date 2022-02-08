@@ -439,13 +439,16 @@ class Conformer(BaseBackbone):
         self.maxpool = nn.MaxPool2d(
             kernel_size=3, stride=2, padding=1)  # 1 / 4 [56, 56]
 
+        assert patch_size % 16 == 0, 'The patch size of Conformer must ' \
+            'be divisible by 16.'
+        trans_down_stride = patch_size // 4
+
         # To solve the issue #680
-        # Auto pad the feature map to be divisible by 4
-        self.auto_pad = AdaptivePadding(kernel_size=4, stride=4)
+        # Auto pad the feature map to be divisible by trans_down_stride
+        self.auto_pad = AdaptivePadding(trans_down_stride, trans_down_stride)
 
         # 1 stage
         stage1_channels = int(base_channels * self.channel_ratio)
-        trans_down_stride = patch_size // 4
         self.conv_1 = ConvBlock(
             in_channels=64,
             out_channels=stage1_channels,
