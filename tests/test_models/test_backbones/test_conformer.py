@@ -57,6 +57,25 @@ def test_conformer_backbone():
                                   )  # base_channels * channel_ratio * 4
     assert transformer_feature.shape == (3, 384)
 
+    # Test Conformer with irregular input size.
+    model = Conformer(**cfg_ori)
+    model.init_weights()
+    model.train()
+
+    assert check_norm_state(model.modules(), True)
+
+    imgs = torch.randn(3, 3, 241, 241)
+    conv_feature, transformer_feature = model(imgs)[-1]
+    assert conv_feature.shape == (3, 64 * 1 * 4
+                                  )  # base_channels * channel_ratio * 4
+    assert transformer_feature.shape == (3, 384)
+
+    imgs = torch.randn(3, 3, 321, 221)
+    conv_feature, transformer_feature = model(imgs)[-1]
+    assert conv_feature.shape == (3, 64 * 1 * 4
+                                  )  # base_channels * channel_ratio * 4
+    assert transformer_feature.shape == (3, 384)
+
     # Test custom arch Conformer without output cls token
     cfg = deepcopy(cfg_ori)
     cfg['arch'] = {
@@ -72,7 +91,7 @@ def test_conformer_backbone():
     assert conv_feature.shape == (3, 32 * 3 * 4)
     assert transformer_feature.shape == (3, 128)
 
-    # Test ViT with multi out indices
+    # Test Conformer with multi out indices
     cfg = deepcopy(cfg_ori)
     cfg['out_indices'] = [4, 8, 12]
     model = Conformer(**cfg)
