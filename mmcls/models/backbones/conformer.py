@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import build_activation_layer, build_norm_layer
 from mmcv.cnn.bricks.drop import DropPath
+from mmcv.cnn.bricks.transformer import AdaptivePadding
 from mmcv.cnn.utils.weight_init import trunc_normal_
 
 from mmcls.utils import get_root_logger
@@ -438,6 +439,10 @@ class Conformer(BaseBackbone):
         self.maxpool = nn.MaxPool2d(
             kernel_size=3, stride=2, padding=1)  # 1 / 4 [56, 56]
 
+        # To solve the issue #680
+        # Auto pad the feature map to be divisible by 4
+        self.auto_pad = AdaptivePadding(kernel_size=4, stride=4)
+
         # 1 stage
         stage1_channels = int(base_channels * self.channel_ratio)
         trans_down_stride = patch_size // 4
@@ -587,6 +592,7 @@ class Conformer(BaseBackbone):
 
         # stem
         x_base = self.maxpool(self.act1(self.bn1(self.conv1(x))))
+        x_base = self.auto_pad(x_base)
 
         # 1 stage [N, 64, 56, 56] -> [N, 128, 56, 56]
         x = self.conv_1(x_base, out_conv2=False)
