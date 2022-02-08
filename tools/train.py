@@ -42,6 +42,11 @@ def parse_args():
         nargs='+',
         help='ids of gpus to use '
         '(only applicable to non-distributed training)')
+    parser.add_argument(
+        '--ipu_replicas',
+        type=int,
+        default=None,
+        help='num of ipu replicas to use')
     parser.add_argument('--seed', type=int, default=None, help='random seed')
     parser.add_argument(
         '--deterministic',
@@ -120,6 +125,10 @@ def main():
     else:
         cfg.gpu_ids = range(1) if args.gpus is None else range(args.gpus)
 
+    if args.ipu_replicas is not None:
+        cfg.ipu_replicas = args.ipu_replicas
+        args.device = 'ipu'
+
     # init distributed env first, since logger depends on the dist info.
     if args.launcher == 'none':
         distributed = False
@@ -186,7 +195,7 @@ def main():
         distributed=distributed,
         validate=(not args.no_validate),
         timestamp=timestamp,
-        device='cpu' if args.device == 'cpu' else 'cuda',
+        device=args.device,
         meta=meta)
 
 

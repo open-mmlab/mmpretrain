@@ -123,3 +123,9 @@ venv.bak/
 
 # Pytorch
 *.pth
+
+# IPU
+*.pvti
+*.pvti-journal
+/cache_engine
+/report

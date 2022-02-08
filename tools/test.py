@@ -89,8 +89,6 @@ def parse_args():
         help='custom options for show_result. key-value pair in xxx=yyy.'
         'Check available options in `model.show_result`.')
     parser.add_argument(
-        '--device', default=None, help='device used for testing. (Deprecated)')
-    parser.add_argument(
         '--gpu-ids',
         type=int,
         nargs='+',
@@ -102,6 +100,11 @@ def parse_args():
         default='none',
         help='job launcher')
     parser.add_argument('--local_rank', type=int, default=0)
+    parser.add_argument(
+        '--device',
+        choices=['cpu', 'cuda', 'ipu'],
+        default='cuda',
+        help='device used for testing')
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
@@ -160,12 +163,16 @@ def main():
         init_dist(args.launcher, **cfg.dist_params)
 
     # build the dataloader
+    samples_per_gpu = cfg.data.test.pop('samples_per_gpu',
+                                        cfg.data.samples_per_gpu)
+    workers_per_gpu = cfg.data.test.pop('workers_per_gpu',
+                                        cfg.data.workers_per_gpu)
     dataset = build_dataset(cfg.data.test)
     # the extra round_up data will be removed during gpu/cpu collect
     data_loader = build_dataloader(
         dataset,
-        samples_per_gpu=cfg.data.samples_per_gpu,
-        workers_per_gpu=cfg.data.workers_per_gpu,
+        samples_per_gpu=samples_per_gpu,
+        workers_per_gpu=workers_per_gpu,
         dist=distributed,
         shuffle=False,
         round_up=True)
@@ -173,6 +180,7 @@ def main():
     # build the model and load checkpoint
     model = build_classifier(cfg.model)
     fp16_cfg = cfg.get('fp16', None)
+    # if fp16_cfg is not None and args.device != 'ipu':
     if fp16_cfg is not None:
         wrap_fp16_model(model)
     checkpoint = load_checkpoint(model, args.checkpoint, map_location='cpu')
@@ -189,6 +197,12 @@ def main():
     if not distributed:
         if args.device == 'cpu':
             model = model.cpu()
+        elif args.device == 'ipu':
+            from mmcv.runner.ipu import ipu_model_wrapper, parse_ipu_options
+            opts = parse_ipu_options(cfg.runner.get('ipu_options', {}))
+            if fp16_cfg is not None:
+                model.half()
+            model = ipu_model_wrapper(model, opts, fp16_cfg=fp16_cfg)
         else:
             model = MMDataParallel(model, device_ids=cfg.gpu_ids)
             if not model.device_ids:

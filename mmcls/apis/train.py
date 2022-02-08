@@ -98,16 +98,20 @@ def train_model(model,
 
     sampler_cfg = cfg.data.get('sampler', None)
 
+    samples_per_gpu = cfg.data.train.pop('samples_per_gpu',
+                                         cfg.data.samples_per_gpu)
+    workers_per_gpu = cfg.data.train.pop('workers_per_gpu',
+                                         cfg.data.workers_per_gpu)
     data_loaders = [
         build_dataloader(
             ds,
-            cfg.data.samples_per_gpu,
-            cfg.data.workers_per_gpu,
-            # cfg.gpus will be ignored if distributed
-            num_gpus=len(cfg.gpu_ids),
+            samples_per_gpu,
+            workers_per_gpu,
+            num_gpus=cfg.ipu_replicas if device == 'ipu' else len(cfg.gpu_ids),
             dist=distributed,
             round_up=True,
             seed=cfg.seed,
+            drop_last=cfg.data.get('drop_last', False),
             sampler_cfg=sampler_cfg) for ds in dataset
     ]
 
@@ -127,6 +131,8 @@ def train_model(model,
                 'The argument `device` is deprecated. To use cpu to train, '
                 'please refers to https://mmclassification.readthedocs.io/en'
                 '/latest/getting_started.html#train-a-model')
+            model = model.cpu()
+        elif device == 'ipu':
             model = model.cpu()
         else:
             model = MMDataParallel(model, device_ids=cfg.gpu_ids)
@@ -148,6 +154,14 @@ def train_model(model,
             'config is now expected to have a `runner` section, '
             'please set `runner` in your config.', UserWarning)
 
+    if device == 'ipu':
+        if not cfg.runner['type'].startswith('Ipu'):
+            cfg.runner['type'] = 'Ipu' + cfg.runner['type']
+        if 'ipu_options' not in cfg.runner:
+            cfg.runner['ipu_options'] = {}
+        cfg.runner['ipu_options']['replicationFactor'] = cfg.ipu_replicas
+        cfg.runner['fp16_cfg'] = cfg.get('fp16', None)
+
     runner = build_runner(
         cfg.runner,
         default_args=dict(
@@ -164,8 +178,17 @@ def train_model(model,
     # fp16 setting
     fp16_cfg = cfg.get('fp16', None)
     if fp16_cfg is not None:
-        optimizer_config = Fp16OptimizerHook(
-            **cfg.optimizer_config, **fp16_cfg, distributed=distributed)
+        if device == 'ipu':
+            from mmcv.runner.ipu import IpuFp16OptimizerHook
+            optimizer_config = IpuFp16OptimizerHook(
+                **cfg.optimizer_config,
+                loss_scale=fp16_cfg['loss_scale'],
+                distributed=distributed)
+        else:
+            optimizer_config = Fp16OptimizerHook(
+                **cfg.optimizer_config,
+                loss_scale=fp16_cfg['loss_scale'],
+                distributed=distributed)
     elif distributed and 'type' not in cfg.optimizer_config:
         optimizer_config = DistOptimizerHook(**cfg.optimizer_config)
     else:
@@ -184,11 +207,15 @@ def train_model(model,
 
     # register eval hooks
     if validate:
+        samples_per_gpu = cfg.data.val.pop('samples_per_gpu',
+                                           cfg.data.samples_per_gpu)
+        workers_per_gpu = cfg.data.val.pop('workers_per_gpu',
+                                           cfg.data.workers_per_gpu)
         val_dataset = build_dataset(cfg.data.val, dict(test_mode=True))
         val_dataloader = build_dataloader(
             val_dataset,
-            samples_per_gpu=cfg.data.samples_per_gpu,
-            workers_per_gpu=cfg.data.workers_per_gpu,
+            samples_per_gpu=samples_per_gpu,
+            workers_per_gpu=samples_per_gpu,
             dist=distributed,
             shuffle=False,
             round_up=True)
