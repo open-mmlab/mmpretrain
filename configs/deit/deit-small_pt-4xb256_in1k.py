@@ -11,7 +11,8 @@ model = dict(
         type='VisionTransformer',
         arch='deit-small',
         img_size=224,
-        patch_size=16),
+        patch_size=16,
+        drop_path_rate=0.1),
     neck=None,
     head=dict(
         type='VisionTransformerClsHead',
@@ -23,7 +24,11 @@ model = dict(
     init_cfg=[
         dict(type='TruncNormal', layer='Linear', std=.02),
         dict(type='Constant', layer='LayerNorm', val=1., bias=0.),
-    ])
+    ],
+    train_cfg=dict(augments=[
+        dict(type='BatchMixup', alpha=0.8, num_classes=1000, prob=0.5),
+        dict(type='BatchCutMix', alpha=1.0, num_classes=1000, prob=0.5)
+    ]))
 
 # data settings
 data = dict(samples_per_gpu=256, workers_per_gpu=5)
