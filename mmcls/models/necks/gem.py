@@ -39,11 +39,14 @@ class GeneralizedMeanPooling(nn.Module):
 
     def forward(self, inputs):
         if isinstance(inputs, tuple):
-            outs = tuple([gem(x, p=self.p, eps=self.eps) for x in inputs])
+            outs = tuple([
+                gem(x, p=self.p, eps=self.eps, clamp=self.clamp)
+                for x in inputs
+            ])
             outs = tuple(
                 [out.view(x.size(0), -1) for out, x in zip(outs, inputs)])
         elif isinstance(inputs, torch.Tensor):
-            outs = gem(inputs, p=self.p, eps=self.eps)
+            outs = gem(inputs, p=self.p, eps=self.eps, clamp=self.clamp)
             outs = outs.view(inputs.size(0), -1)
         else:
             raise TypeError('neck inputs should be tuple or torch.tensor')
