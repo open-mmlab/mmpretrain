@@ -4,7 +4,6 @@ import copy
 import os
 import os.path as osp
 import time
-import warnings
 
 import mmcv
 import torch
@@ -48,13 +47,6 @@ def parse_args():
         action='store_true',
         help='whether to set deterministic options for CUDNN backend.')
     parser.add_argument(
-        '--options',
-        nargs='+',
-        action=DictAction,
-        help='override some settings in the used config, the key-value pair '
-        'in xxx=yyy format will be merged into config file (deprecate), '
-        'change to --cfg-options instead.')
-    parser.add_argument(
         '--cfg-options',
         nargs='+',
         action=DictAction,
@@ -73,20 +65,6 @@ def parse_args():
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
-
-    if args.options and args.cfg_options:
-        raise ValueError(
-            '--options and --cfg-options cannot be both '
-            'specified, --options is deprecated in favor of --cfg-options')
-    if args.options:
-        warnings.warn('--options is deprecated in favor of --cfg-options')
-        args.cfg_options = args.options
-
-    if args.device:
-        warnings.warn(
-            '--device is deprecated. To use cpu to train, please '
-            'refers to https://mmclassification.readthedocs.io/en/latest/'
-            'getting_started.html#train-a-model')
 
     return args
 

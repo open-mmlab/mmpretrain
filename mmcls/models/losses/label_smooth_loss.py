@@ -1,6 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import warnings
-
 import torch
 import torch.nn as nn
 
@@ -26,7 +24,7 @@ class LabelSmoothLoss(nn.Module):
         label_smooth_val (float): The degree of label smoothing.
         num_classes (int, optional): Number of classes. Defaults to None.
         mode (str): Refers to notes, Options are 'original', 'classy_vision',
-            'multi_label'. Defaults to 'classy_vision'
+            'multi_label'. Defaults to 'original'
         reduction (str): The method used to reduce the loss.
             Options are "none", "mean" and "sum". Defaults to 'mean'.
         loss_weight (float):  Weight of the loss. Defaults to 1.0.
@@ -57,7 +55,7 @@ class LabelSmoothLoss(nn.Module):
     def __init__(self,
                  label_smooth_val,
                  num_classes=None,
-                 mode=None,
+                 mode='original',
                  reduction='mean',
                  loss_weight=1.0):
         super().__init__()
@@ -75,14 +73,6 @@ class LabelSmoothLoss(nn.Module):
             f'LabelSmoothLoss supports reduction {accept_reduction}, ' \
             f'but gets {mode}.'
         self.reduction = reduction
-
-        if mode is None:
-            warnings.warn(
-                'LabelSmoothLoss mode is not set, use "classy_vision" '
-                'by default. The default value will be changed to '
-                '"original" recently. Please set mode manually if want '
-                'to keep "classy_vision".', UserWarning)
-            mode = 'classy_vision'
 
         accept_mode = {'original', 'classy_vision', 'multi_label'}
         assert mode in accept_mode, \
