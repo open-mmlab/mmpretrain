@@ -59,3 +59,7 @@ def test_gem_neck():
     # batch_size, num_features
     assert output[0].shape == (1, 8)
     assert output[1].shape == (1, 16)
+
+    with pytest.raises(AssertionError):
+        # p must be a value greater then 1
+        GeneralizedMeanPooling(p=0.5)
