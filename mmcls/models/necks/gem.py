@@ -7,7 +7,7 @@ from torch.nn.parameter import Parameter
 from ..builder import NECKS
 
 
-def gem(x: Tensor, p: int = 3, eps: float = 1e-6) -> Tensor:
+def gem(x: Tensor, p: Parameter, eps: float = 1e-6) -> Tensor:
     return F.avg_pool2d(x.clamp(min=eps).pow(p),
                         (x.size(-2), x.size(-1))).pow(1. / p)
 
@@ -21,13 +21,13 @@ class GeneralizedMeanPooling(nn.Module):
     has a batch dimension of size 1, which can lead to unexpected errors.
 
     Args:
-        p:
-            Parameter value
-        eps:
-            epsilon
+        p (float): Parameter value.
+            Default: 3.
+        eps (float): epsilon.
+            Default: 1e-6
     """
 
-    def __init__(self, p: int = 3, eps: float = 1e-6):
+    def __init__(self, p=3., eps=1e-6):
         super(GeneralizedMeanPooling, self).__init__()
         self.p = Parameter(torch.ones(1) * p)
         self.eps = eps
