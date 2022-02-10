@@ -7,9 +7,10 @@ from torch.nn.parameter import Parameter
 from ..builder import NECKS
 
 
-def gem(x: Tensor, p: Parameter, eps: float = 1e-6) -> Tensor:
-    return F.avg_pool2d(x.clamp(min=eps).pow(p),
-                        (x.size(-2), x.size(-1))).pow(1. / p)
+def gem(x: Tensor, p: Parameter, eps: float = 1e-6, clamp=True) -> Tensor:
+    if clamp:
+        x = x.clamp(min=eps)
+    return F.avg_pool2d(x.pow(p), (x.size(-2), x.size(-1))).pow(1. / p)
 
 
 @NECKS.register_module()
@@ -25,13 +26,16 @@ class GeneralizedMeanPooling(nn.Module):
             Default: 3.
         eps (float): epsilon.
             Default: 1e-6
+        clamp (bool): Use clamp before pooling.
+            Default: True
     """
 
-    def __init__(self, p=3., eps=1e-6):
+    def __init__(self, p=3., eps=1e-6, clamp=True):
         assert p >= 1, "'p' must be a value greater then 1"
         super(GeneralizedMeanPooling, self).__init__()
         self.p = Parameter(torch.ones(1) * p)
         self.eps = eps
+        self.clamp = clamp
 
     def forward(self, inputs):
         if isinstance(inputs, tuple):
