@@ -2,7 +2,7 @@
 import pytest
 import torch
 
-from mmcls.models.necks import GeneralizedMeanPooling, GlobalAveragePooling
+from mmcls.models.necks import GeneralizedMeanPooling, GlobalAveragePooling, HRFuseScales
 
 
 def test_gap_neck():
@@ -63,3 +63,25 @@ def test_gem_neck():
     with pytest.raises(AssertionError):
         # p must be a value greater then 1
         GeneralizedMeanPooling(p=0.5)
+
+
+def test_hr_fuse_scales():
+
+    in_channels = (18, 32, 64, 128)
+    neck = HRFuseScales(in_channels=in_channels, out_channels=1024)
+
+    feat_size = 56
+    inputs = []
+    for in_channel in in_channels:
+        input_tensor = torch.rand(3, in_channel, feat_size, feat_size)
+        inputs.append(input_tensor)
+        feat_size = feat_size // 2
+
+    with pytest.raises(AssertionError):
+        neck(inputs)
+
+    outs = neck(tuple(inputs))
+    assert isinstance(outs, tuple)
+    assert len(outs) == 1
+    assert outs[0].shape == (3, 1024, 7, 7)
+

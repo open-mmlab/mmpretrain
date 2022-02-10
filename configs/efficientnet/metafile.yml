@@ -17,8 +17,8 @@ Collections:
       Title: "EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks"
     README: configs/efficientnet/README.md
     Code:
-      Version: v0.20.0
-      URL: https://github.com/open-mmlab/mmclassification/blob/v0.20.0/mmcls/models/backbones/efficientnet.py
+      Version: v0.20.1
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.20.1/mmcls/models/backbones/efficientnet.py
 
 Models:
   - Name: efficientnet-b0_3rdparty_8xb32_in1k

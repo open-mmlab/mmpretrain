@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import warnings
 from typing import List
 
 import numpy as np
@@ -29,8 +28,7 @@ class MultiLabelDataset(BaseDataset):
                  metric='mAP',
                  metric_options=None,
                  indices=None,
-                 logger=None,
-                 **deprecated_kwargs):
+                 logger=None):
         """Evaluate the dataset.
 
         Args:
@@ -42,18 +40,12 @@ class MultiLabelDataset(BaseDataset):
                 Allowed keys are 'k' and 'thr'. Defaults to None
             logger (logging.Logger | str, optional): Logger used for printing
                 related information during evaluation. Defaults to None.
-            deprecated_kwargs (dict): Used for containing deprecated arguments.
 
         Returns:
             dict: evaluation results
         """
         if metric_options is None or metric_options == {}:
             metric_options = {'thr': 0.5}
-
-        if deprecated_kwargs != {}:
-            warnings.warn('Option arguments for metrics has been changed to '
-                          '`metric_options`.')
-            metric_options = {**deprecated_kwargs}
 
         if isinstance(metric, str):
             metrics = [metric]
