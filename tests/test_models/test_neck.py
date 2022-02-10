@@ -2,7 +2,8 @@
 import pytest
 import torch
 
-from mmcls.models.necks import GeneralizedMeanPooling, GlobalAveragePooling, HRFuseScales
+from mmcls.models.necks import (GeneralizedMeanPooling, GlobalAveragePooling,
+                                HRFuseScales)
 
 
 def test_gap_neck():
@@ -84,4 +85,3 @@ def test_hr_fuse_scales():
     assert isinstance(outs, tuple)
     assert len(outs) == 1
     assert outs[0].shape == (3, 1024, 7, 7)
-
