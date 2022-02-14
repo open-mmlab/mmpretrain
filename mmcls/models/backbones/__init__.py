@@ -13,7 +13,7 @@ from .regnet import RegNet
 from .repvgg import RepVGG
 from .res2net import Res2Net
 from .resnest import ResNeSt
-from .resnet import ResNet, ResNetV1d, ResNetV1c
+from .resnet import ResNet, ResNetV1c, ResNetV1d
 from .resnet_cifar import ResNet_CIFAR
 from .resnext import ResNeXt
 from .seresnet import SEResNet
