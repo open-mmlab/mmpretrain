@@ -80,7 +80,7 @@ def main():
             args.model, class_names=dataset.CLASSES, device_id=0)
     else:
         print('Unknown backend: {}.'.format(args.model))
-        exit()
+        exit(1)
 
     model = MMDataParallel(model, device_ids=[0])
     model.CLASSES = dataset.CLASSES
