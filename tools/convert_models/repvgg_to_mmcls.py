@@ -49,7 +49,7 @@ def main():
     dst = Path(args.dst)
     if dst.suffix != '.pth':
         print('The path should contain the name of the pth format file.')
-        exit()
+        exit(1)
     dst.parent.mkdir(parents=True, exist_ok=True)
 
     convert(args.src, args.dst)
