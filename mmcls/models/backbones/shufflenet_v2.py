@@ -115,7 +115,14 @@ class InvertedResidual(BaseModule):
             if self.stride > 1:
                 out = torch.cat((self.branch1(x), self.branch2(x)), dim=1)
             else:
-                x1, x2 = x.chunk(2, dim=1)
+                # Channel Split operation. using these lines of code to replace
+                # ``chunk(x, 2, dim=1)`` can make it easier to deploy a
+                # shufflenetv2 model by using mmdeploy.
+                channels = x.shape[1]
+                c = channels // 2 + channels % 2
+                x1 = x[:, :c, :, :]
+                x2 = x[:, c:, :, :]
+
                 out = torch.cat((x1, self.branch2(x2)), dim=1)
 
             out = channel_shuffle(out, 2)

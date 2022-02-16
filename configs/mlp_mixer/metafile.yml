@@ -10,9 +10,9 @@ Collections:
       URL: https://arxiv.org/abs/2105.01601
       Title: "MLP-Mixer: An all-MLP Architecture for Vision"
     README: configs/mlp_mixer/README.md
-#    Code:
-#      URL:  # todo
-#      Version:  # todo
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.18.0/mmcls/models/backbones/mlp_mixer.py
+      Version: v0.18.0
 
 Models:
   - Name: mlp-mixer-base-p16_3rdparty_64xb64_in1k

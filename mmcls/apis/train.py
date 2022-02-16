@@ -6,29 +6,13 @@ import numpy as np
 import torch
 import torch.distributed as dist
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
-from mmcv.runner import (DistSamplerSeedHook, build_optimizer, build_runner,
-                         get_dist_info)
+from mmcv.runner import (DistSamplerSeedHook, Fp16OptimizerHook,
+                         build_optimizer, build_runner, get_dist_info)
+from mmcv.runner.hooks import DistEvalHook, EvalHook
 
 from mmcls.core import DistOptimizerHook
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.utils import get_root_logger
-
-# TODO import eval hooks from mmcv and delete them from mmcls
-try:
-    from mmcv.runner.hooks import EvalHook, DistEvalHook
-except ImportError:
-    warnings.warn('DeprecationWarning: EvalHook and DistEvalHook from mmcls '
-                  'will be deprecated.'
-                  'Please install mmcv through master branch.')
-    from mmcls.core import EvalHook, DistEvalHook
-
-# TODO import optimizer hook from mmcv and delete them from mmcls
-try:
-    from mmcv.runner import Fp16OptimizerHook
-except ImportError:
-    warnings.warn('DeprecationWarning: FP16OptimizerHook from mmcls will be '
-                  'deprecated. Please install mmcv>=1.1.4.')
-    from mmcls.core import Fp16OptimizerHook
 
 
 def init_random_seed(seed=None, device='cuda'):
@@ -89,7 +73,7 @@ def train_model(model,
                 distributed=False,
                 validate=False,
                 timestamp=None,
-                device='cuda',
+                device=None,
                 meta=None):
     logger = get_root_logger()
 
@@ -122,13 +106,19 @@ def train_model(model,
             broadcast_buffers=False,
             find_unused_parameters=find_unused_parameters)
     else:
-        if device == 'cuda':
-            model = MMDataParallel(
-                model.cuda(cfg.gpu_ids[0]), device_ids=cfg.gpu_ids)
-        elif device == 'cpu':
+        if device == 'cpu':
+            warnings.warn(
+                'The argument `device` is deprecated. To use cpu to train, '
+                'please refers to https://mmclassification.readthedocs.io/en'
+                '/latest/getting_started.html#train-a-model')
             model = model.cpu()
         else:
-            raise ValueError(F'unsupported device name {device}.')
+            model = MMDataParallel(model, device_ids=cfg.gpu_ids)
+            if not model.device_ids:
+                from mmcv import digit_version, __version__
+                assert digit_version(__version__) >= (1, 4, 4), \
+                    'To train with CPU, please confirm your mmcv version ' \
+                    'is not lower than v1.4.4'
 
     # build runner
     optimizer = build_optimizer(model, cfg.optimizer)

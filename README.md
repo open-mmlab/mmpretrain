@@ -59,6 +59,13 @@ The master branch works with **PyTorch 1.5+**.
 
 ## What's new
 
+v0.20.0 was released in 30/1/2022.
+
+Highlights of the new version:
+- Support **K-fold cross-validation**. The tutorial will be released later.
+- Support **HRNet**, **ConvNeXt**, **Twins** and **EfficientNet**.
+- Support model conversion from PyTorch to **Core ML** by a tool.
+
 v0.19.0 was released in 31/12/2021.
 
 Highlights of the new version:
@@ -67,12 +74,6 @@ Highlights of the new version:
 - Reproduce the training accuracy of **T2T-ViT** & **RegNetX**, and provide self-training checkpoints.
 - Support **DeiT** & **Conformer** backbone and checkpoints.
 - Provide a **CAM visualization** tool based on [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam), and detailed [user guide](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#class-activation-map-visualization)!
-
-v0.18.0 was released in 30/11/2021.
-
-Highlights of the new version:
-- Support **MLP-Mixer** backbone and provide pre-trained checkpoints.
-- Add a tool to **visualize the learning rate curve** of the training phase. Welcome to use with the [tutorial](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#learning-rate-schedule-visualization)!
 
 Please refer to [changelog.md](docs/en/changelog.md) for more details and other release history.
 
@@ -123,9 +124,10 @@ Results and models are available in the [model zoo](https://mmclassification.rea
 - [x] [DeiT](https://github.com/open-mmlab/mmclassification/tree/master/configs/deit)
 - [x] [Conformer](https://github.com/open-mmlab/mmclassification/tree/master/configs/conformer)
 - [x] [T2T-ViT](https://github.com/open-mmlab/mmclassification/tree/master/configs/t2t_vit)
-- [ ] EfficientNet
-- [ ] Twins
-- [ ] HRNet
+- [x] [Twins](https://github.com/open-mmlab/mmclassification/tree/master/configs/twins)
+- [x] [EfficientNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/efficientnet)
+- [x] [ConvNeXt](https://github.com/open-mmlab/mmclassification/tree/master/configs/convnext)
+- [x] [HRNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/hrnet)
 
 </details>
 
