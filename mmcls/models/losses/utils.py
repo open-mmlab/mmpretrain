@@ -114,8 +114,5 @@ def convert_to_one_hot(targets: torch.Tensor, classes) -> torch.Tensor:
     """
     assert (torch.max(targets).item() <
             classes), 'Class Index must be less than number of classes'
-    one_hot_targets = torch.zeros((targets.shape[0], classes),
-                                  dtype=torch.long,
-                                  device=targets.device)
-    one_hot_targets.scatter_(1, targets.long(), 1)
+    one_hot_targets = torch.nn.functional.one_hot(targets.long().squeeze(), num_classes=classes)
     return one_hot_targets
