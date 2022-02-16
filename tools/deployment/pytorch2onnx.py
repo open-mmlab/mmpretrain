@@ -108,9 +108,9 @@ def pytorch2onnx(model,
     model.forward = origin_forward
 
     if do_simplify:
-        from mmcv import digit_version
-        import onnxsim
         import onnx
+        import onnxsim
+        from mmcv import digit_version
 
         min_required_version = '0.3.0'
         assert digit_version(mmcv.__version__) >= digit_version(
