@@ -236,7 +236,7 @@ if __name__ == '__main__':
     from colorama import Fore, Back, Style
 
     msg = Back.LIGHTWHITE_EX + Style.BRIGHT + Fore.RED
-    msg += 'DeprecationWarning: This tool will be deprecated in future.'
+    msg += 'DeprecationWarning: This tool will be deprecated in future. '
     msg += Fore.BLUE + 'Welcome to use the unified model deployment toolbox '
     msg += 'MMDeploy: https://github.com/open-mmlab/mmdeploy'
     msg += Style.RESET_ALL
