@@ -10,6 +10,14 @@ class CUB(BaseDataset):
     """`CUB-200-2011.
 
     <http://www.vision.caltech.edu/visipedia/CUB-200-2011.html>`_ Dataset.
+
+    Args:
+        ann_file (str): the annotation file.
+            images.txt in CUB.
+        image_class_labels_file (str): the label file.
+            image_class_labels.txt in CUB.
+        train_test_split_file (str): the split file.
+            train_test_split_file.txt in CUB.
     """  # noqa: E501
 
     CLASSES = [
