@@ -100,6 +100,89 @@ def test_datasets_override_default(dataset_name):
     dataset_class.load_annotations = load_annotations_f
 
 
+def test_datasets_override_default_cub():
+    dataset_class = DATASETS.get('CUB')
+    load_annotations_f = dataset_class.load_annotations
+    ann = [
+        dict(
+            img_prefix='',
+            img_info=dict(),
+            gt_label=np.array(0, dtype=np.int64))
+    ]
+    dataset_class.load_annotations = MagicMock(return_value=ann)
+
+    original_classes = dataset_class.CLASSES
+
+    # Test setting classes as a tuple
+    dataset = dataset_class(
+        data_prefix='',
+        pipeline=[],
+        ann_file=None,
+        image_class_labels_file=None,
+        train_test_split_file=None,
+        classes=('bus', 'car'),
+        test_mode=True)
+    assert dataset.CLASSES == ('bus', 'car')
+
+    # Test get_cat_ids
+    assert isinstance(dataset.get_cat_ids(0), list)
+    assert len(dataset.get_cat_ids(0)) == 1
+    assert isinstance(dataset.get_cat_ids(0)[0], int)
+
+    # Test setting classes as a list
+    dataset = dataset_class(
+        data_prefix='',
+        pipeline=[],
+        ann_file=None,
+        image_class_labels_file=None,
+        train_test_split_file=None,
+        classes=['bus', 'car'],
+        test_mode=True)
+    assert dataset.CLASSES == ['bus', 'car']
+
+    # Test setting classes through a file
+    tmp_file = tempfile.NamedTemporaryFile()
+    with open(tmp_file.name, 'w') as f:
+        f.write('bus\ncar\n')
+    dataset = dataset_class(
+        data_prefix='',
+        pipeline=[],
+        ann_file=None,
+        image_class_labels_file=None,
+        train_test_split_file=None,
+        classes=tmp_file.name,
+        test_mode=True)
+    tmp_file.close()
+
+    assert dataset.CLASSES == ['bus', 'car']
+
+    # Test overriding not a subset
+    dataset = dataset_class(
+        data_prefix='',
+        pipeline=[],
+        ann_file=None,
+        image_class_labels_file=None,
+        train_test_split_file=None,
+        classes=['foo'],
+        test_mode=True)
+    assert dataset.CLASSES == ['foo']
+
+    # Test default behavior
+    dataset = dataset_class(
+        '',
+        pipeline=[],
+        ann_file=None,
+        image_class_labels_file=None,
+        train_test_split_file=None)
+
+    assert dataset.data_prefix == ''
+    assert not dataset.test_mode
+    assert dataset.ann_file is None
+    assert dataset.CLASSES == original_classes
+
+    dataset_class.load_annotations = load_annotations_f
+
+
 @patch.multiple(MultiLabelDataset, __abstractmethods__=set())
 @patch.multiple(BaseDataset, __abstractmethods__=set())
 def test_dataset_evaluation():
