@@ -9,20 +9,13 @@ import numpy as np
 import torch
 from mmcv import DictAction
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
-from mmcv.runner import get_dist_info, init_dist, load_checkpoint
+from mmcv.runner import (get_dist_info, init_dist, load_checkpoint,
+                         wrap_fp16_model)
 
 from mmcls.apis import multi_gpu_test, single_gpu_test
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.models import build_classifier
 from mmcls.utils import setup_multi_processes
-
-# TODO import `wrap_fp16_model` from mmcv and delete them from mmcls
-try:
-    from mmcv.runner import wrap_fp16_model
-except ImportError:
-    warnings.warn('wrap_fp16_model from mmcls will be deprecated.'
-                  'Please install mmcv>=1.1.4.')
-    from mmcls.core import wrap_fp16_model
 
 
 def parse_args():
@@ -68,13 +61,6 @@ def parse_args():
         'Note that the quotation marks are necessary and that no white space '
         'is allowed.')
     parser.add_argument(
-        '--options',
-        nargs='+',
-        action=DictAction,
-        help='override some settings in the used config, the key-value pair '
-        'in xxx=yyy format will be merged into config file (deprecate), '
-        'change to --cfg-options instead.')
-    parser.add_argument(
         '--metric-options',
         nargs='+',
         action=DictAction,
@@ -105,20 +91,6 @@ def parse_args():
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
-
-    if args.options and args.cfg_options:
-        raise ValueError(
-            '--options and --cfg-options cannot be both '
-            'specified, --options is deprecated in favor of --cfg-options')
-    if args.options:
-        warnings.warn('--options is deprecated in favor of --cfg-options')
-        args.cfg_options = args.options
-
-    if args.device:
-        warnings.warn(
-            '--device is deprecated. To use cpu to test, please '
-            'refers to https://mmclassification.readthedocs.io/en/latest/'
-            'getting_started.html#inference-with-pretrained-models')
 
     assert args.metrics or args.out, \
         'Please specify at least one of output path and evaluation metrics.'
