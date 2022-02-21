@@ -37,6 +37,7 @@ data = dict(
         image_class_labels_file=data_root + 'image_class_labels.txt',
         train_test_split_file=data_root + 'train_test_split.txt',
         data_prefix=data_root + 'images',
+        test_mode=True,
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
@@ -44,5 +45,6 @@ data = dict(
         image_class_labels_file=data_root + 'image_class_labels.txt',
         train_test_split_file=data_root + 'train_test_split.txt',
         data_prefix=data_root + 'images',
+        test_mode=True,
         pipeline=test_pipeline))
 evaluation = dict(interval=1, metric='accuracy')
