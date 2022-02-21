@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from .image import (BaseFigureContextManager, ImshowInfosContextManager,
                     color_val_matplotlib, imshow_infos)
 
