@@ -655,12 +655,13 @@ class ResNet(BaseBackbone):
 
 @BACKBONES.register_module()
 class ResNetV1c(ResNet):
-    """ResNetV1c variant described in [1]_. Compared with default
-    ResNet(ResNetV1b), ResNetV1c replaces the 7x7 conv in the input stem with
-    three 3x3 convs. For more details please refer to `Bag of Tricks for Image
-    Classification with Convolutional Neural Networks.
+    """ResNetV1c backbone.
 
-    <https://arxiv.org/abs/1812.01187>`_.
+    This variant is described in `Bag of Tricks.
+    <https://arxiv.org/pdf/1812.01187.pdf>`_.
+
+    Compared with default ResNet(ResNetV1b), ResNetV1c replaces the 7x7 conv
+    in the input stem with three 3x3 convs.
     """
 
     def __init__(self, **kwargs):
