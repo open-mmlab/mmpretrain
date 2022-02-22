@@ -1125,6 +1125,8 @@ class Albu(object):
         if 'gt_labels' in results:
             if isinstance(results['gt_labels'], list):
                 results['gt_labels'] = np.array(results['gt_labels'])
+            if len(results['gt_labels'].shape) == 2:
+                pass
             results['gt_labels'] = results['gt_labels'].astype(np.int64)
 
         # back to the original format
@@ -1138,4 +1140,105 @@ class Albu(object):
 
     def __repr__(self):
         repr_str = self.__class__.__name__ + f'(transforms={self.transforms})'
+        return repr_str
+
+
+@PIPELINES.register_module()
+class MixUp:
+    """Mixup data augmentation.
+
+    Args:
+        alpha (float): Coefficient of beta distribution.
+        num_classes (int): Number of the classes.
+        num_mixed_images (int): Number of images to be mixed up.
+    """
+
+    def __init__(self, alpha, num_classes, num_mixed_images=2):
+        assert isinstance(alpha, float) and alpha > 0
+        assert isinstance(num_classes, int)
+        assert isinstance(num_mixed_images, int) and num_mixed_images > 1
+
+        self.alpha = alpha
+        self.num_classes = num_classes
+        self.num_mixed_images = num_mixed_images
+
+    def get_indexes(self, dataset):
+        """Call function to collect indexes.
+
+        Args:
+            dataset (:obj:`MultiImageMixDataset`): The dataset.
+
+        Returns:
+            list: indexes.
+        """
+        indexes = [
+            random.randint(0, len(dataset))
+            for _ in range(self.num_mixed_images - 1)
+            ]
+        return indexes
+
+    def __call__(self, results):
+        """Call function to make a mixup of images and labels.
+
+        Args:
+            results (dict): Result dict.
+
+        Returns:
+            dict: Result dict with mixup transformed.
+        """
+        mix_results = results['mix_results']
+        all_imgs = [ele['img'][np.newaxis] for ele in mix_results]\
+            + [results['img'][np.newaxis]]
+        all_labels = [ele['gt_label'] for ele in mix_results]\
+            + [results['gt_label']]
+        all_labels = [self.format_label(ele)[np.newaxis] for ele in all_labels]
+        all_imgs = np.concatenate(all_imgs, axis=0)
+        all_labels = np.concatenate(all_labels, axis=0)
+
+        # Generalize Beta (binomial) to Dirichlet distribution(multinomial)
+        lams = np.random.dirichlet([self.alpha]*self.num_mixed_images)\
+            .astype(np.float32)
+
+        mixed_img = (all_imgs * lams[:, np.newaxis, np.newaxis, np.newaxis])\
+            .sum(0)
+        mixed_labels = (all_labels * lams[:, np.newaxis]).sum(0)
+
+        results['img'], results['gt_label'] = mixed_img, mixed_labels
+        return results
+
+    def format_label(self, gt_labels):
+        """One-hot encoding gt_labels.
+
+        Args:
+            gt_labels (int | list | np.array): The gt label with scalar(int)
+            or list(int, multi-label) or one dimension np.array(np.int).
+        Returns:
+            numpy array: One hot gt label.
+        """
+
+        if isinstance(gt_labels, int) or np.isscalar(gt_labels):
+            gt_labels = [gt_labels]
+        if isinstance(gt_labels, list):
+            gt_labels = np.array(gt_labels, dtype=np.int64)
+        if gt_labels.ndim == 0:
+            gt_labels = np.asarray([gt_labels])
+        if gt_labels.ndim == 1:
+            eye = np.eye(self.num_classes)
+            gt_labels = eye[gt_labels]
+        if gt_labels.ndim == 2:
+            assert gt_labels.shape[1] == self.num_classes, \
+                'the second dimension of gt_labels' \
+                ' must be equal to the number of classes'
+        else:
+            raise RuntimeError('not supported gt_labels shape')
+        gt_labels = gt_labels.sum(0)
+        assert gt_labels.max() <= 1, '1 represents postitive '\
+            'and 0 represetns negative there should be no other number'
+        return gt_labels
+
+    def __repr__(self):
+        repr_str = self.__class__.__name__
+        repr_str += f'alpha={self.alpha}, '
+        repr_str += f'num_classes={self.num_classes}), '
+        repr_str += f'num_mixed_images={self.num_mixed_images})'
         return repr_str
