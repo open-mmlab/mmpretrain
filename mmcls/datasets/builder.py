@@ -26,7 +26,8 @@ SAMPLERS = Registry('sampler')
 
 def build_dataset(cfg, default_args=None):
     from .dataset_wrappers import (ConcatDataset, RepeatDataset,
-                                   ClassBalancedDataset, KFoldDataset)
+                                   ClassBalancedDataset, KFoldDataset,
+                                   MultiImageMixDataset)
     if isinstance(cfg, (list, tuple)):
         dataset = ConcatDataset([build_dataset(c, default_args) for c in cfg])
     elif cfg['type'] == 'RepeatDataset':
@@ -42,6 +43,11 @@ def build_dataset(cfg, default_args=None):
         cp_cfg['dataset'] = build_dataset(cp_cfg['dataset'], default_args)
         cp_cfg.pop('type')
         dataset = KFoldDataset(**cp_cfg)
+    elif cfg['type'] == 'MultiImageMixDataset':
+        cp_cfg = copy.deepcopy(cfg)
+        cp_cfg['dataset'] = build_dataset(cp_cfg['dataset'])
+        cp_cfg.pop('type')
+        dataset = MultiImageMixDataset(**cp_cfg)
     else:
         dataset = build_from_cfg(cfg, DATASETS, default_args)
 
