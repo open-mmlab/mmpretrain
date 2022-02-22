@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import numpy as np
+import pytest
 import torch
 
 from mmcls.models.utils.attention import ShiftWindowMSA, WindowMSA
@@ -9,7 +10,8 @@ def get_relative_position_index(window_size):
     """Method from original code of Swin-Transformer."""
     coords_h = torch.arange(window_size[0])
     coords_w = torch.arange(window_size[1])
-    coords = torch.stack(torch.meshgrid([coords_h, coords_w]))  # 2, Wh, Ww
+    coords = torch.stack(torch.meshgrid([coords_h, coords_w],
+                                        indexing='ij'))  # 2, Wh, Ww
     coords_flatten = torch.flatten(coords, 1)  # 2, Wh*Ww
     # 2, Wh*Ww, Wh*Ww
     relative_coords = coords_flatten[:, :, None] - coords_flatten[:, None, :]
@@ -118,13 +120,10 @@ def test_shift_window_msa():
 
     # test forward
     attn = ShiftWindowMSA(
-        embed_dims=embed_dims,
-        input_resolution=input_resolution,
-        num_heads=num_heads,
-        window_size=window_size)
+        embed_dims=embed_dims, num_heads=num_heads, window_size=window_size)
     inputs = torch.rand(
         (batch_size, input_resolution[0] * input_resolution[1], embed_dims))
-    output = attn(inputs)
+    output = attn(inputs, input_resolution)
     assert output.shape == (inputs.shape)
     assert attn.w_msa.relative_position_bias_table.shape == ((2 * window_size -
                                                               1)**2, num_heads)
@@ -132,11 +131,10 @@ def test_shift_window_msa():
     # test forward with shift_size
     attn = ShiftWindowMSA(
         embed_dims=embed_dims,
-        input_resolution=input_resolution,
         num_heads=num_heads,
         window_size=window_size,
         shift_size=1)
-    output = attn(inputs)
+    output = attn(inputs, input_resolution)
     assert output.shape == (inputs.shape)
 
     # test relative_position_bias_table init
@@ -146,33 +144,42 @@ def test_shift_window_msa():
     # test dropout_layer
     attn = ShiftWindowMSA(
         embed_dims=embed_dims,
-        input_resolution=input_resolution,
         num_heads=num_heads,
         window_size=window_size,
         dropout_layer=dict(type='DropPath', drop_prob=0.5))
     torch.manual_seed(0)
-    output = attn(inputs)
+    output = attn(inputs, input_resolution)
     assert (output == 0).all()
 
-    # test auto_pad
+    # test auto padding
     input_resolution = (19, 18)
     attn = ShiftWindowMSA(
-        embed_dims=embed_dims,
-        input_resolution=input_resolution,
-        num_heads=num_heads,
-        window_size=window_size,
-        auto_pad=True)
-    assert attn.pad_r == 3
-    assert attn.pad_b == 2
+        embed_dims=embed_dims, num_heads=num_heads, window_size=window_size)
+    inputs = torch.rand(
+        (batch_size, input_resolution[0] * input_resolution[1], embed_dims))
+    output = attn(inputs, input_resolution)
+    assert output.shape == (inputs.shape)
 
-    # test small input_resolution
-    input_resolution = (5, 6)
+    # test wrong input_resolution
+    input_resolution = (14, 14)
     attn = ShiftWindowMSA(
-        embed_dims=embed_dims,
-        input_resolution=input_resolution,
-        num_heads=num_heads,
-        window_size=window_size,
-        shift_size=3,
-        auto_pad=True)
-    assert attn.window_size == 5
-    assert attn.shift_size == 0
+        embed_dims=embed_dims, num_heads=num_heads, window_size=window_size)
+    inputs = torch.rand(
+        (batch_size, input_resolution[0] * input_resolution[1], embed_dims))
+    with pytest.raises(AssertionError):
+        attn(inputs, (14, 15))
+
+    # test deprecated arguments
+    with pytest.warns(DeprecationWarning):
+        ShiftWindowMSA(
+            embed_dims=embed_dims,
+            num_heads=num_heads,
+            window_size=window_size,
+            input_resolution=input_resolution)
+
+    with pytest.warns(DeprecationWarning):
+        ShiftWindowMSA(
+            embed_dims=embed_dims,
+            num_heads=num_heads,
+            window_size=window_size,
+            auto_pad=True)

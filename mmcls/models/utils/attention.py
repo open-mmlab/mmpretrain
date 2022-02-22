@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import warnings
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -126,8 +128,6 @@ class ShiftWindowMSA(BaseModule):
 
     Args:
         embed_dims (int): Number of input channels.
-        input_resolution (Tuple[int, int]): The resolution of the input feature
-            map.
         num_heads (int): Number of attention heads.
         window_size (int): The height and width of the window.
         shift_size (int, optional): The shift step of each window towards
@@ -141,15 +141,12 @@ class ShiftWindowMSA(BaseModule):
         proj_drop (float, optional): Dropout ratio of output. Defaults to 0.
         dropout_layer (dict, optional): The dropout_layer used before output.
             Defaults to dict(type='DropPath', drop_prob=0.).
-        auto_pad (bool, optional): Auto pad the feature map to be divisible by
-            window_size, Defaults to False.
         init_cfg (dict, optional): The extra config for initialization.
             Default: None.
     """
 
     def __init__(self,
                  embed_dims,
-                 input_resolution,
                  num_heads,
                  window_size,
                  shift_size=0,
@@ -158,104 +155,69 @@ class ShiftWindowMSA(BaseModule):
                  attn_drop=0,
                  proj_drop=0,
                  dropout_layer=dict(type='DropPath', drop_prob=0.),
-                 auto_pad=False,
+                 input_resolution=None,
+                 auto_pad=None,
                  init_cfg=None):
         super().__init__(init_cfg)
 
-        self.embed_dims = embed_dims
-        self.input_resolution = input_resolution
+        if input_resolution is not None or auto_pad is not None:
+            warnings.warn(
+                'The ShiftWindowMSA in new version has supported auto padding '
+                'and dynamic input shape in all condition. And the argument '
+                '`auto_pad` and `input_resolution` have been deprecated.',
+                DeprecationWarning)
+
         self.shift_size = shift_size
         self.window_size = window_size
-        if min(self.input_resolution) <= self.window_size:
-            # if window size is larger than input resolution, don't partition
-            self.shift_size = 0
-            self.window_size = min(self.input_resolution)
+        assert 0 <= self.shift_size < self.window_size
 
-        self.w_msa = WindowMSA(embed_dims, to_2tuple(self.window_size),
-                               num_heads, qkv_bias, qk_scale, attn_drop,
-                               proj_drop)
+        self.w_msa = WindowMSA(
+            embed_dims=embed_dims,
+            window_size=to_2tuple(self.window_size),
+            num_heads=num_heads,
+            qkv_bias=qkv_bias,
+            qk_scale=qk_scale,
+            attn_drop=attn_drop,
+            proj_drop=proj_drop,
+        )
 
         self.drop = build_dropout(dropout_layer)
 
-        H, W = self.input_resolution
-        # Handle auto padding
-        self.auto_pad = auto_pad
-        if self.auto_pad:
-            self.pad_r = (self.window_size -
-                          W % self.window_size) % self.window_size
-            self.pad_b = (self.window_size -
-                          H % self.window_size) % self.window_size
-            self.H_pad = H + self.pad_b
-            self.W_pad = W + self.pad_r
-        else:
-            H_pad, W_pad = self.input_resolution
-            assert H_pad % self.window_size + W_pad % self.window_size == 0,\
-                f'input_resolution({self.input_resolution}) is not divisible '\
-                f'by window_size({self.window_size}). Please check feature '\
-                f'map shape or set `auto_pad=True`.'
-            self.H_pad, self.W_pad = H_pad, W_pad
-            self.pad_r, self.pad_b = 0, 0
-
-        if self.shift_size > 0:
-            # calculate attention mask for SW-MSA
-            img_mask = torch.zeros((1, self.H_pad, self.W_pad, 1))  # 1 H W 1
-            h_slices = (slice(0, -self.window_size),
-                        slice(-self.window_size,
-                              -self.shift_size), slice(-self.shift_size, None))
-            w_slices = (slice(0, -self.window_size),
-                        slice(-self.window_size,
-                              -self.shift_size), slice(-self.shift_size, None))
-            cnt = 0
-            for h in h_slices:
-                for w in w_slices:
-                    img_mask[:, h, w, :] = cnt
-                    cnt += 1
-
-            # nW, window_size, window_size, 1
-            mask_windows = self.window_partition(img_mask)
-            mask_windows = mask_windows.view(
-                -1, self.window_size * self.window_size)
-            attn_mask = mask_windows.unsqueeze(1) - mask_windows.unsqueeze(2)
-            attn_mask = attn_mask.masked_fill(attn_mask != 0,
-                                              float(-100.0)).masked_fill(
-                                                  attn_mask == 0, float(0.0))
-        else:
-            attn_mask = None
-
-        self.register_buffer('attn_mask', attn_mask)
-
-    def forward(self, query):
-        H, W = self.input_resolution
+    def forward(self, query, hw_shape):
         B, L, C = query.shape
-        assert L == H * W, 'input feature has wrong size'
+        H, W = hw_shape
+        assert L == H * W, f"The query length {L} doesn't match the input "\
+            f'shape ({H}, {W}).'
         query = query.view(B, H, W, C)
 
-        if self.pad_r or self.pad_b:
-            query = F.pad(query, (0, 0, 0, self.pad_r, 0, self.pad_b))
+        pad_r = (self.window_size - W % self.window_size) % self.window_size
+        pad_b = (self.window_size - H % self.window_size) % self.window_size
+        query = F.pad(query, (0, 0, 0, pad_r, 0, pad_b))
+        H_pad, W_pad = query.shape[1], query.shape[2]
 
         # cyclic shift
         if self.shift_size > 0:
-            shifted_query = torch.roll(
+            query = torch.roll(
                 query,
                 shifts=(-self.shift_size, -self.shift_size),
                 dims=(1, 2))
-        else:
-            shifted_query = query
+
+        attn_mask = self.get_attn_mask((H_pad, W_pad))
 
         # nW*B, window_size, window_size, C
-        query_windows = self.window_partition(shifted_query)
+        query_windows = self.window_partition(query)
         # nW*B, window_size*window_size, C
         query_windows = query_windows.view(-1, self.window_size**2, C)
 
         # W-MSA/SW-MSA (nW*B, window_size*window_size, C)
-        attn_windows = self.w_msa(query_windows, mask=self.attn_mask)
+        attn_windows = self.w_msa(query_windows, mask=attn_mask)
 
         # merge windows
         attn_windows = attn_windows.view(-1, self.window_size,
                                          self.window_size, C)
 
         # B H' W' C
-        shifted_x = self.window_reverse(attn_windows, self.H_pad, self.W_pad)
+        shifted_x = self.window_reverse(attn_windows, H_pad, W_pad)
         # reverse cyclic shift
         if self.shift_size > 0:
             x = torch.roll(
@@ -265,7 +227,7 @@ class ShiftWindowMSA(BaseModule):
         else:
             x = shifted_x
 
-        if self.pad_r or self.pad_b:
+        if H != H_pad or W != W_pad:
             x = x[:, :H, :W, :].contiguous()
 
         x = x.view(B, H * W, C)
@@ -289,6 +251,32 @@ class ShiftWindowMSA(BaseModule):
         windows = x.permute(0, 1, 3, 2, 4, 5).contiguous()
         windows = windows.view(-1, window_size, window_size, C)
         return windows
+
+    def get_attn_mask(self, hw_shape):
+        if self.shift_size > 0:
+            img_mask = torch.zeros(1, *hw_shape, 1)
+            h_slices = (slice(0, -self.window_size),
+                        slice(-self.window_size,
+                              -self.shift_size), slice(-self.shift_size, None))
+            w_slices = (slice(0, -self.window_size),
+                        slice(-self.window_size,
+                              -self.shift_size), slice(-self.shift_size, None))
+            cnt = 0
+            for h in h_slices:
+                for w in w_slices:
+                    img_mask[:, h, w, :] = cnt
+                    cnt += 1
+
+            # nW, window_size, window_size, 1
+            mask_windows = self.window_partition(img_mask)
+            mask_windows = mask_windows.view(
+                -1, self.window_size * self.window_size)
+            attn_mask = mask_windows.unsqueeze(1) - mask_windows.unsqueeze(2)
+            attn_mask = attn_mask.masked_fill(attn_mask != 0, -100.0)
+            attn_mask = attn_mask.masked_fill(attn_mask == 0, 0.0)
+        else:
+            attn_mask = None
+        return attn_mask
 
 
 class MultiheadAttention(BaseModule):
