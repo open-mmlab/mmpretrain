@@ -14,6 +14,16 @@ Collections:
       URL: https://github.com/open-mmlab/mmclassification/blob/v0.20.1/mmcls/models/backbones/convnext.py
 
 Models:
+  - Name: convnext-tiny_3rdparty_in1k
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 4457472768
+      Parameters: 28589128
+    In Collections: ConvNeXt
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext/convnext-tiny_3rdparty_32xb128-noema_in1k_20220222-2908964a.pth
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnext_tiny_1k_224.pth
+      Code: https://github.com/facebookresearch/ConvNeXt
   - Name: convnext-tiny_3rdparty_32xb128_in1k
     Metadata:
       FLOPs: 4457472768
@@ -30,6 +40,16 @@ Models:
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/convnext/convnext_tiny_1k_224_ema.pth
       Code: https://github.com/facebookresearch/ConvNeXt
+  - Name: convnext-small_3rdparty_in1k
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 8687008512
+      Parameters: 50223688
+    In Collections: ConvNeXt
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext/convnext-small_3rdparty_32xb128-noema_in1k_20220222-fa001ca5.pth
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnext_small_1k_224.pth
+      Code: https://github.com/facebookresearch/ConvNeXt
   - Name: convnext-small_3rdparty_32xb128_in1k
     Metadata:
       FLOPs: 8687008512
@@ -45,6 +65,16 @@ Models:
     Config: configs/convnext/convnext-small_32xb128_in1k.py
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/convnext/convnext_small_1k_224_ema.pth
+      Code: https://github.com/facebookresearch/ConvNeXt
+  - Name: convnext-base_3rdparty_in1k
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 15359124480
+      Parameters: 88591464
+    In Collections: ConvNeXt
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext/convnext-base_3rdparty_32xb128-noema_in1k_20220222-dba4f95f.pth
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnext_base_1k_224.pth
       Code: https://github.com/facebookresearch/ConvNeXt
   - Name: convnext-base_3rdparty_32xb128_in1k
     Metadata:
