@@ -142,7 +142,12 @@ if __name__ == '__main__':
         workspace_size=args.workspace_size)
 
     import warnings
-    from colorama import Fore, Back, Style
+    try:
+        from colorama import Fore, Style, Back
+    except ImportError:
+        Style = mmcv.ConfigDict({'BRIGHT': '\x1b[1m', 'RESET_ALL': '\x1b[0m'})
+        Fore = mmcv.ConfigDict({'RED': '\x1b[31m', 'BLUE': '\x1b[34m'})
+        Back = mmcv.ConfigDict({'LIGHTWHITE_EX': '\x1b[107m'})
 
     msg = Back.LIGHTWHITE_EX + Style.BRIGHT + Fore.RED
     msg += 'DeprecationWarning: This tool will be deprecated in future. '
