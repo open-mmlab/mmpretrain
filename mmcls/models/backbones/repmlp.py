@@ -1,164 +1,192 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-
+# Adapted from official impl at https://github.com/DingXiaoH/RepMLP.
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmcv.cnn import ConvModule
+from mmcv.cnn import (ConvModule, build_activation_layer, build_conv_layer,
+                      build_norm_layer)
 from mmcv.runner import BaseModule, ModuleList, Sequential
 
 from mmcls.models.builder import BACKBONES
+from mmcls.models.utils import SELayer
 
 
 def fuse_bn(conv_or_fc, bn):
+    """fuse conv and bn."""
     std = (bn.running_var + bn.eps).sqrt()
-    t = bn.weight / std
-    t = t.reshape(-1, 1, 1, 1)
+    tmp = bn.weight / std
+    tmp = tmp.reshape(-1, 1, 1, 1)
 
-    if len(t) == conv_or_fc.weight.size(0):
-        return (conv_or_fc.weight * t,
+    if len(tmp) == conv_or_fc.weight.size(0):
+        return (conv_or_fc.weight * tmp,
                 bn.bias - bn.running_mean * bn.weight / std)
     else:
-        repeat_times = conv_or_fc.weight.size(0) // len(t)
-        repeated = t.repeat_interleave(repeat_times, 0)
-        return conv_or_fc.weight * repeated, (
-            bn.bias - bn.running_mean * bn.weight / std).repeat_interleave(
-                repeat_times, 0)
+        # in RepMLPBlock, dim0 in conv weights and fc3_bn weights
+        # are different.
+        repeat_times = conv_or_fc.weight.size(0) // len(tmp)
+        repeated = tmp.repeat_interleave(repeat_times, 0)
+        fused_weight = conv_or_fc.weight * repeated
+        bias = bn.bias - bn.running_mean * bn.weight / std
+        fused_bias = (bias).repeat_interleave(repeat_times, 0)
+        return (fused_weight, fused_bias)
 
 
-class GlobalPerceptron(nn.Module):
+class GlobalPerceptron(SELayer):
+    """GlobalPerceptron implemented by using ``mmcls.modes.SELayer``.
 
-    def __init__(self, input_channels, internal_neurons):
-        super(GlobalPerceptron, self).__init__()
-        self.fc1 = nn.Conv2d(
-            in_channels=input_channels,
-            out_channels=internal_neurons,
-            kernel_size=1,
-            stride=1,
-            bias=True)
-        self.fc2 = nn.Conv2d(
-            in_channels=internal_neurons,
-            out_channels=input_channels,
-            kernel_size=1,
-            stride=1,
-            bias=True)
-        self.input_channels = input_channels
+    Args:
+        input_channels (int): The input (and output) channels of the
+            GlobalPerceptron.
+        ratio (int): Squeeze ratio in GlobalPerceptron, the intermediate
+            channel will be ``make_divisible(channels // ratio, divisor)``.
+    """
 
-    def forward(self, inputs):
-        x = F.adaptive_avg_pool2d(inputs, output_size=(1, 1))
-        x = self.fc1(x)
-        x = F.relu(x, inplace=True)
-        x = self.fc2(x)
-        x = F.sigmoid(x)
-        x = x.view(-1, self.input_channels, 1, 1)
-        return x
+    def __init__(self, input_channels: int, ratio: int, **kwargs) -> None:
+        super(GlobalPerceptron, self).__init__(
+            channels=input_channels,
+            ratio=ratio,
+            return_weight=True,
+            act_cfg=(dict(type='ReLU'), dict(type='Sigmoid')),
+            **kwargs)
 
 
-class RepMLPBlock(nn.Module):
+class RepMLPBlock(BaseModule):
+    """Basic RepMLPNet, consists of PartitionPerceptron and GlobalPerceptron.
+
+    Args:
+        channels (int): The input and the output channels of the block.
+        path_h (int): The height of patches.
+        path_w (int): The weidth of patches.
+        reparam_conv_kernels (Squeue(int) | None): The conv kernels in the
+            GlobalPerceptron. Default: None.
+        globalperceptron_ratio (int): The reducation ratio in the
+            GlobalPerceptron. Default: 4.
+        num_sharesets (int): The number of sharesets in the
+            PartitionPerceptron. Default 1.
+        conv_cfg (dict, optional): Config dict for convolution layer.
+            Default: None, which means using conv2d.
+        norm_cfg (dict): dictionary to construct and config norm layer.
+            Default: dict(type='BN', requires_grad=True).
+        deploy (bool): Whether to switch the model structure to
+            deployment mode. Default: False.
+        init_cfg (dict or list[dict], optional): Initialization config dict.
+            Default: None
+    """
 
     def __init__(self,
-                 in_channels,
-                 out_channels,
-                 h,
-                 w,
-                 reparam_conv_k=None,
-                 globalperceptron_reduce=4,
+                 channels,
+                 path_h,
+                 path_w,
+                 reparam_conv_kernels=None,
+                 globalperceptron_ratio=4,
                  num_sharesets=1,
-                 deploy=False):
-        super().__init__()
-
-        self.in_channels = in_channels
-        self.out_channels = out_channels
-        self.num_sharesets = num_sharesets
-
-        self.h, self.w = h, w
+                 conv_cfg=None,
+                 norm_cfg=dict(type='BN', requires_grad=True),
+                 deploy=False,
+                 init_cfg=None):
+        super().__init__(init_cfg=init_cfg)
 
         self.deploy = deploy
+        self.channels = channels
+        self.num_sharesets = num_sharesets
+        self.path_h, self.path_w = path_h, path_w
+        # the input channel of fc3
+        self._path_vec_channles = path_h * path_w * num_sharesets
 
-        assert in_channels == out_channels
+        self.conv_cfg = conv_cfg
+        self.norm_cfg = norm_cfg
+
         self.gp = GlobalPerceptron(
-            input_channels=in_channels,
-            internal_neurons=in_channels // globalperceptron_reduce)
+            input_channels=channels, ratio=globalperceptron_ratio)
 
-        self.fc3 = nn.Conv2d(
-            self.h * self.w * num_sharesets,
-            self.h * self.w * num_sharesets,
-            1,
-            1,
-            0,
+        # using a conv layer to implement a fc layer
+        self.fc3 = build_conv_layer(
+            conv_cfg,
+            in_channels=self._path_vec_channles,
+            out_channels=self._path_vec_channles,
+            kernel_size=1,
+            stride=1,
+            padding=0,
             bias=deploy,
             groups=num_sharesets)
         if deploy:
             self.fc3_bn = nn.Identity()
         else:
-            self.fc3_bn = nn.BatchNorm2d(num_sharesets)
+            norm_layer = build_norm_layer(norm_cfg, num_sharesets)[1]
+            self.add_module('fc3_bn', norm_layer)
 
-        self.reparam_conv_k = reparam_conv_k
-        if not deploy and reparam_conv_k is not None:
-            for k in reparam_conv_k:
+        self.reparam_conv_kernels = reparam_conv_kernels
+        if not deploy and reparam_conv_kernels is not None:
+            for k in reparam_conv_kernels:
                 conv_branch = ConvModule(
                     in_channels=num_sharesets,
                     out_channels=num_sharesets,
                     kernel_size=k,
                     stride=1,
                     padding=k // 2,
-                    norm_cfg=dict(type='BN'),
+                    norm_cfg=dict(type='BN', requires_grad=True),
                     groups=num_sharesets,
                     act_cfg=None)
                 self.__setattr__('repconv{}'.format(k), conv_branch)
 
     def partition(self, x, h_parts, w_parts):
-        x = x.reshape(-1, self.in_channels, h_parts, self.h, w_parts, self.w)
+        # convert (N, C, H, W) to (N, h_parts, w_parts, C, path_h, path_w)
+        x = x.reshape(-1, self.channels, h_parts, self.path_h, w_parts,
+                      self.path_w)
         x = x.permute(0, 2, 4, 1, 3, 5)
         return x
 
     def partition_affine(self, x, h_parts, w_parts):
-        fc_inputs = x.reshape(-1, self.num_sharesets * self.h * self.w, 1, 1)
+        """perform Partition Perceptron."""
+        fc_inputs = x.reshape(-1, self._path_vec_channles, 1, 1)
         out = self.fc3(fc_inputs)
-        out = out.reshape(-1, self.num_sharesets, self.h, self.w)
+        out = out.reshape(-1, self.num_sharesets, self.path_h, self.path_w)
         out = self.fc3_bn(out)
-        out = out.reshape(-1, h_parts, w_parts, self.num_sharesets, self.h,
-                          self.w)
+        out = out.reshape(-1, h_parts, w_parts, self.num_sharesets,
+                          self.path_h, self.path_w)
         return out
 
     def forward(self, inputs):
-        #   Global Perceptron
+        # Global Perceptron
         global_vec = self.gp(inputs)
 
         origin_shape = inputs.size()
-        h_parts = origin_shape[2] // self.h
-        w_parts = origin_shape[3] // self.w
+        h_parts = origin_shape[2] // self.path_h
+        w_parts = origin_shape[3] // self.path_w
 
         partitions = self.partition(inputs, h_parts, w_parts)
 
-        #  Channel Perceptron
+        # Channel Perceptron
         fc3_out = self.partition_affine(partitions, h_parts, w_parts)
 
-        #   Local Perceptron
-        if self.reparam_conv_k is not None and not self.deploy:
-            conv_inputs = partitions.reshape(-1, self.num_sharesets, self.h,
-                                             self.w)
+        # perform Local Perceptron
+        if self.reparam_conv_kernels is not None and not self.deploy:
+            conv_inputs = partitions.reshape(-1, self.num_sharesets,
+                                             self.path_h, self.path_w)
             conv_out = 0
-            for k in self.reparam_conv_k:
+            for k in self.reparam_conv_kernels:
                 conv_branch = self.__getattr__('repconv{}'.format(k))
                 conv_out += conv_branch(conv_inputs)
             conv_out = conv_out.reshape(-1, h_parts, w_parts,
-                                        self.num_sharesets, self.h, self.w)
+                                        self.num_sharesets, self.path_h,
+                                        self.path_w)
             fc3_out += conv_out
 
-        fc3_out = fc3_out.permute(0, 3, 1, 4, 2,
-                                  5)  # N, O, h_parts, out_h, w_parts, out_w
+        # N, h_parts, w_parts, num_sharesets, out_h, out_w
+        fc3_out = fc3_out.permute(0, 3, 1, 4, 2, 5)
         out = fc3_out.reshape(*origin_shape)
         out = out * global_vec
         return out
 
     def get_equivalent_fc3(self):
+        """get the equivalent fc3 weight and bias."""
         fc_weight, fc_bias = fuse_bn(self.fc3, self.fc3_bn)
-        if self.reparam_conv_k is not None:
-            largest_k = max(self.reparam_conv_k)
+        if self.reparam_conv_kernels is not None:
+            largest_k = max(self.reparam_conv_kernels)
             largest_branch = self.__getattr__('repconv{}'.format(largest_k))
             total_kernel, total_bias = fuse_bn(largest_branch.conv,
                                                largest_branch.bn)
-            for k in self.reparam_conv_k:
+            for k in self.reparam_conv_kernels:
                 if k != largest_k:
                     k_branch = self.__getattr__('repconv{}'.format(k))
                     kernel, bias = fuse_bn(k_branch.conv, k_branch.bn)
@@ -174,18 +202,20 @@ class RepMLPBlock(nn.Module):
         return final_fc3_weight, final_fc3_bias
 
     def local_inject(self):
+        """inject the Local Perceptron into Partition Perceptron."""
         self.deploy = True
-        #   Locality Injection
+        #  Locality Injection
         fc3_weight, fc3_bias = self.get_equivalent_fc3()
-        #   Remove Local Perceptron
-        if self.reparam_conv_k is not None:
-            for k in self.reparam_conv_k:
+        #  Remove Local Perceptron
+        if self.reparam_conv_kernels is not None:
+            for k in self.reparam_conv_kernels:
                 self.__delattr__('repconv{}'.format(k))
         self.__delattr__('fc3')
         self.__delattr__('fc3_bn')
-        self.fc3 = nn.Conv2d(
-            self.num_sharesets * self.h * self.w,
-            self.num_sharesets * self.h * self.w,
+        self.fc3 = build_conv_layer(
+            self.conv_cfg,
+            self._path_vec_channles,
+            self._path_vec_channles,
             1,
             1,
             0,
@@ -196,80 +226,103 @@ class RepMLPBlock(nn.Module):
         self.fc3.bias.data = fc3_bias
 
     def _convert_conv_to_fc(self, conv_kernel, conv_bias):
-        in_channels = torch.eye(self.h * self.w).repeat(
-            1, self.num_sharesets).reshape(self.h * self.w, self.num_sharesets,
-                                           self.h,
-                                           self.w).to(conv_kernel.device)
+        """convert conv_k1 to fc, which is still a conv_k2, and the k2 > k1."""
+        in_channels = torch.eye(self.path_h * self.path_w).repeat(
+            1, self.num_sharesets).reshape(self.path_h * self.path_w,
+                                           self.num_sharesets, self.path_h,
+                                           self.path_w).to(conv_kernel.device)
         fc_k = F.conv2d(
             in_channels,
             conv_kernel,
             padding=(conv_kernel.size(2) // 2, conv_kernel.size(3) // 2),
             groups=self.num_sharesets)
-        fc_k = fc_k.reshape(self.h * self.w,
-                            self.num_sharesets * self.h * self.w).t()
-        fc_bias = conv_bias.repeat_interleave(self.h * self.w)
+        fc_k = fc_k.reshape(self.path_w * self.path_w, self.num_sharesets *
+                            self.path_h * self.path_w).t()
+        fc_bias = conv_bias.repeat_interleave(self.path_h * self.path_w)
         return fc_k, fc_bias
 
 
 class RepMLPNetUnit(BaseModule):
+    """A basic unit in RepMLPNet : [REPMLPBlock + BN + FFN + BN].
+
+    Args:
+        channels (int): The input and the output channels of the block.
+        path_h (int): Stride of the 3x3 and 1x1 convolution layer. Default: 1.
+        path_w (int): Padding of the 3x3 convolution layer.
+        reparam_conv_kernels (int): Dilation of the 3x3 convolution layer.
+        globalperceptron_ratio (int): Groups of the 3x3 and 1x1 convolution
+            layer. Default: 1.
+        conv_cfg (dict, optional): Config dict for convolution layer.
+            Default: None, which means using conv2d.
+        norm_cfg (dict): dictionary to construct and config norm layer.
+            Default: dict(type='BN', requires_grad=True).
+        act_cfg (dict): Config dict for activation layer.
+            Default: dict(type='ReLU').
+        init_cfg (dict or list[dict], optional): Initialization config dict.
+            Default: None
+    """
 
     def __init__(self,
                  channels,
-                 h,
-                 w,
-                 reparam_conv_k,
-                 globalperceptron_reduce,
+                 path_h,
+                 path_w,
+                 reparam_conv_kernels,
+                 globalperceptron_ratio,
+                 norm_cfg=dict(type='BN', requires_grad=True),
                  ffn_expand=4,
                  num_sharesets=1,
-                 deploy=False):
-        super().__init__()
+                 deploy=False,
+                 init_cfg=None):
+        super().__init__(init_cfg=init_cfg)
         self.repmlp_block = RepMLPBlock(
-            in_channels=channels,
-            out_channels=channels,
-            h=h,
-            w=w,
-            reparam_conv_k=reparam_conv_k,
-            globalperceptron_reduce=globalperceptron_reduce,
+            channels=channels,
+            path_h=path_h,
+            path_w=path_w,
+            reparam_conv_kernels=reparam_conv_kernels,
+            globalperceptron_ratio=globalperceptron_ratio,
             num_sharesets=num_sharesets,
             deploy=deploy)
-        self.ffn_block = FFNBlock(channels, channels * ffn_expand)
-        self.prebn1 = nn.BatchNorm2d(channels)
-        self.prebn2 = nn.BatchNorm2d(channels)
+        self.ffn_block = ConvFFN(channels, channels * ffn_expand)
+        norm1 = build_norm_layer(norm_cfg, channels)[1]
+        self.add_module('norm1', norm1)
+        norm2 = build_norm_layer(norm_cfg, channels)[1]
+        self.add_module('norm2', norm2)
 
     def forward(self, x):
-        y = x + self.repmlp_block(self.prebn1(x))
-        z = y + self.ffn_block(self.prebn2(y))
-        return z
+        y = x + self.repmlp_block(self.norm1(x))
+        out = y + self.ffn_block(self.norm2(y))
+        return out
 
 
-class FFNBlock(nn.Module):
-    """FFNBlock implemented by using point-wise convs."""
+class ConvFFN(nn.Module):
+    """ConvFFN implemented by using point-wise convs."""
 
     def __init__(self,
                  in_channels,
                  hidden_channels=None,
                  out_channels=None,
-                 act_layer=nn.GELU):
+                 norm_cfg=dict(type='BN', requires_grad=True),
+                 act_cfg=dict(type='GELU')):
         super().__init__()
         out_features = out_channels or in_channels
         hidden_features = hidden_channels or in_channels
         self.ffn_fc1 = ConvModule(
-            in_channels,
-            hidden_features,
-            1,
-            1,
-            0,
-            norm_cfg=dict(type='BN'),
+            in_channels=in_channels,
+            out_channels=hidden_features,
+            kernel_size=1,
+            stride=1,
+            padding=0,
+            norm_cfg=norm_cfg,
             act_cfg=None)
         self.ffn_fc2 = ConvModule(
-            hidden_features,
-            out_features,
-            1,
-            1,
-            0,
-            norm_cfg=dict(type='BN'),
+            in_channels=hidden_features,
+            out_channels=out_features,
+            kernel_size=1,
+            stride=1,
+            padding=0,
+            norm_cfg=norm_cfg,
             act_cfg=None)
-        self.act = act_layer()
+        self.act = build_activation_layer(act_cfg)
 
     def forward(self, x):
         x = self.ffn_fc1(x)
@@ -278,37 +331,65 @@ class FFNBlock(nn.Module):
         return x
 
 
-@BACKBONES.register_module(force=True)
+@BACKBONES.register_module()
 class RepMLPNet(BaseModule):
+    """RepMLPNet backbone.
+
+    A PyTorch impl of : `RepMLP: Re-parameterizing Convolutions into
+    Fully-connected Layers for Image Recognition
+    <https://arxiv.org/abs/2105.01883>`_
+
+    Args:
+        arch (str | dict): The parameter of RepVGG.
+            If it's a dict, it should contain the following keys:
+
+            - channels (List[int]): Number of blocks in each stage.
+            - num_blocks (List[float]): The number of blocks in each branch.
+            - sharesets_nums (List[int]): RepVGG Block that declares
+              the need to apply group convolution.
+
+        img_size (int): The size of input image. Defaults: 224.
+        in_channels (int): Number of input image channels. Default: 3.
+        patch_size (int): The patch size of patch embeding.
+        out_indices (Sequence[int]): Output from which stages.
+            Default: ``(3, )``.
+        reparam_conv_kernels (Sequence[int]):
+        globalperceptron_ratio (int):
+        conv_cfg (dict | None): The config dict for conv layers. Default: None.
+        norm_cfg (dict): The config dict for norm layers.
+            Default: dict(type='BN').
+        final_norm (bool): Whether to add a additional layer to normalize
+            final feature map. Defaults to True.
+        act_cfg (dict): Config dict for activation layer.
+            Default: dict(type='ReLU').
+        deploy (bool): Whether to switch the model structure to deployment
+            mode. Default: False.
+        init_cfg (dict or list[dict], optional): Initialization config dict.
+    """
     arch_zoo = {
-        **dict.fromkeys(['b224'],
+        **dict.fromkeys(['b', 'base'],
                         {'channels':       [96, 192, 384, 768],
-                         'hs':             [56, 28, 14, 7],
-                         'ws':             [56, 28, 14, 7],
-                         'num_blocks':     [2, 2, 12, 2],
-                         'sharesets_nums': [1, 4, 32, 128]}),
-        **dict.fromkeys(['b256'],
-                        {'channels':       [96, 192, 384, 768],
-                         'hs':             [64, 32, 16, 8],
-                         'ws':             [64, 32, 16, 8],
                          'num_blocks':     [2, 2, 12, 2],
                          'sharesets_nums': [1, 4, 32, 128]}),
     }  # yapf: disable
 
-    essential_keys = {'channels', 'hs', 'ws', 'num_blocks', 'sharesets_nums'}
+    essential_keys = {'channels', 'num_blocks', 'sharesets_nums'}
 
     def __init__(self,
                  arch,
+                 img_size=224,
                  in_channels=3,
                  out_indices=(3, ),
-                 patch_size=(4, 4),
-                 reparam_conv_k=(3, ),
-                 globalperceptron_reduce=4,
+                 patch_size=4,
+                 reparam_conv_kernels=(3, ),
+                 globalperceptron_ratio=4,
                  conv_cfg=None,
                  norm_cfg=dict(type='BN', requires_grad=True),
+                 final_norm=True,
                  deploy=False,
                  init_cfg=None):
         super(RepMLPNet, self).__init__(init_cfg=init_cfg)
+        assert img_size % 32 == 0, 'img_sizemust be divisible by 32.'
         if isinstance(arch, str):
             arch = arch.lower()
             assert arch in set(self.arch_zoo), \
@@ -323,16 +404,20 @@ class RepMLPNet(BaseModule):
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
 
-        self.num_extra_tokens = 0  # there is no cls-token in Twins
+        self.num_extra_tokens = 0  # there is no cls-token in RepMLP
         self.num_stage = len(self.arch_settings['channels'])
-        for key, value in self.arch_settings.items():
+        for value in self.arch_settings.values():
             assert isinstance(value, list) and len(value) == self.num_stage, (
                 'Length of setting item in arch dict must be type of list and'
                 ' have the same length.')
 
         self.channels = self.arch_settings['channels']
-        self.hs = self.arch_settings['hs']
-        self.ws = self.arch_settings['ws']
+        self.patch_hs = [
+            int(img_size / 2**(i + 2)) for i in range(self.num_stage)
+        ]
+        self.patch_ws = [
+            int(img_size / 2**(i + 2)) for i in range(self.num_stage)
+        ]
         self.num_blocks = self.arch_settings['num_blocks']
         self.sharesets_nums = self.arch_settings['sharesets_nums']
 
@@ -346,22 +431,29 @@ class RepMLPNet(BaseModule):
             norm_cfg=self.norm_cfg,
             inplace=True)
 
-        self.stages, self.embeds = ModuleList(), ModuleList()
+        self.stages = ModuleList()
+        self.downsample_layers = ModuleList()
         for stage_idx in range(self.num_stage):
+            # make stage layers
+            _stage_cfg = dict(
+                channels=self.channels[stage_idx],
+                path_h=self.patch_hs[stage_idx],
+                path_w=self.patch_ws[stage_idx],
+                reparam_conv_kernels=reparam_conv_kernels,
+                globalperceptron_ratio=globalperceptron_ratio,
+                norm_cfg=self.norm_cfg,
+                ffn_expand=4,
+                num_sharesets=self.sharesets_nums[stage_idx],
+                deploy=deploy)
             stage_blocks = [
-                RepMLPNetUnit(
-                    channels=self.channels[stage_idx],
-                    h=self.hs[stage_idx],
-                    w=self.ws[stage_idx],
-                    reparam_conv_k=reparam_conv_k,
-                    globalperceptron_reduce=globalperceptron_reduce,
-                    ffn_expand=4,
-                    num_sharesets=self.sharesets_nums[stage_idx],
-                    deploy=deploy) for _ in range(self.num_blocks[stage_idx])
+                RepMLPNetUnit(**_stage_cfg)
+                for _ in range(self.num_blocks[stage_idx])
             ]
             self.stages.append(Sequential(*stage_blocks))
+
+            # make downsample layers
             if stage_idx < self.num_stage - 1:
-                self.embeds.append(
+                self.downsample_layers.append(
                     ConvModule(
                         in_channels=self.channels[stage_idx],
                         out_channels=self.channels[stage_idx + 1],
@@ -372,12 +464,13 @@ class RepMLPNet(BaseModule):
                         norm_cfg=self.norm_cfg,
                         inplace=True))
 
-        self.head_norm = nn.BatchNorm2d(self.channels[-1])
         self.out_indice = out_indices
-        channels = tuple(list(self.channels) + [self.channels[-1]])
-        for i in out_indices:
-            norm_layer = nn.BatchNorm2d(channels[i + 1])
-            self.add_module(f'norm{i}', norm_layer)
+
+        if final_norm:
+            norm_layer = build_norm_layer(norm_cfg, self.channels[-1])[1]
+        else:
+            norm_layer = nn.Identity()
+        self.add_module('final_norm', norm_layer)
 
     def forward(self, x):
         outs = []
@@ -385,51 +478,22 @@ class RepMLPNet(BaseModule):
         x = self.path_embed(x)
         for i, stage in enumerate(self.stages):
             x = stage(x)
+
+            # downsample after each stage except last stage
             if i < len(self.stages) - 1:
-                embed = self.embeds[i]
-                x = embed(x)
+                downsample = self.downsample_layers[i]
+                x = downsample(x)
 
             if i in self.out_indice:
-                norm_layer = getattr(self, f'norm{i}')
-                out = norm_layer(x)
+                if self.final_norm and i == len(self.stages) - 1:
+                    out = self.final_norm(x)
+                else:
+                    out = x
                 outs.append(out)
+
         return tuple(outs)
 
-    def locality_injection(self):
+    def switch_to_deploy(self):
         for m in self.modules():
             if hasattr(m, 'local_inject'):
                 m.local_inject()
-
-
-if __name__ == '__main__':
-    # model settings
-    repmlp_224_cfg = dict(
-        type='ImageClassifier',
-        backbone=dict(
-            type='RepMLPNet',
-            arch='B224',
-            out_indices=(
-                0,
-                1,
-                2,
-                3,
-            ),
-            reparam_conv_k=(1, 3),
-            deploy=False),
-        neck=dict(type='GlobalAveragePooling'),
-        head=dict(
-            type='LinearClsHead',
-            num_classes=1000,
-            in_channels=768,
-            loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
-            topk=(1, 5),
-        ))
-
-    from mmcls.models import CLASSIFIERS
-    model = CLASSIFIERS.build(repmlp_224_cfg)
-    x = torch.rand((1, 3, 224, 224))
-    y = model(x, return_loss=False)
-    print(y[0].shape)
-    outs = model.extract_feat(x, stage='backbone')
-    for i, out in enumerate(outs):
-        print(i, out.shape)

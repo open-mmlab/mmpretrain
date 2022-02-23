@@ -1,22 +1,12 @@
 import argparse
-import warnings
 from pathlib import Path
 
 import torch
-from colorama import Fore, Style
 
 from mmcls.apis import init_model
 
-msg = Style.BRIGHT + Fore.RED
-msg += 'DeprecationWarning: This tool will be deprecated in future. '
-msg += Fore.BLUE + 'Welcome to use the'
-msg += '"tools/convert_models/reparameterize_model.py" instead'
-msg += Style.RESET_ALL
-warnings.warn(msg)
 
-
-def convert_repvggblock_param(config_path, checkpoint_path, save_path):
-    model = init_model(config_path, checkpoint=checkpoint_path)
+def convert_repvggblock_param(model, save_path):
     print('Converting...')
 
     model.backbone.switch_to_deploy()
@@ -47,8 +37,8 @@ def main():
         exit()
     save_path.parent.mkdir(parents=True, exist_ok=True)
 
-    convert_repvggblock_param(args.config_path, args.checkpoint_path,
-                              args.save_path)
+    model = init_model(args.config_path, checkpoint=args.checkpoint_path)
+    convert_repvggblock_param(model, args.save_path)
 
 
 if __name__ == '__main__':
