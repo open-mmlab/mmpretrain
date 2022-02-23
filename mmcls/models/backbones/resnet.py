@@ -654,6 +654,22 @@ class ResNet(BaseBackbone):
 
 
 @BACKBONES.register_module()
+class ResNetV1c(ResNet):
+    """ResNetV1c backbone.
+
+    This variant is described in `Bag of Tricks.
+    <https://arxiv.org/pdf/1812.01187.pdf>`_.
+
+    Compared with default ResNet(ResNetV1b), ResNetV1c replaces the 7x7 conv
+    in the input stem with three 3x3 convs.
+    """
+
+    def __init__(self, **kwargs):
+        super(ResNetV1c, self).__init__(
+            deep_stem=True, avg_down=False, **kwargs)
+
+
+@BACKBONES.register_module()
 class ResNetV1d(ResNet):
     """ResNetV1d backbone.
 
