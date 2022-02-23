@@ -233,13 +233,14 @@ if __name__ == '__main__':
         do_simplify=args.simplify,
         verify=args.verify)
 
-    Style = mmcv.ConfigDict({'BRIGHT': '\x1b[1m', 'RESET_ALL': '\x1b[0m'})
-    Fore = mmcv.ConfigDict({'RED': '\x1b[31m', 'BLUE': '\x1b[34m'})
-    Back = mmcv.ConfigDict({'LIGHTWHITE_EX': '\x1b[107m'})
+    # Following strings of text style are from colorama package
+    bright_style, reset_style = '\x1b[1m', '\x1b[0m'
+    red_text, blue_text = '\x1b[31m', '\x1b[34m'
+    white_background = '\x1b[107m'
 
-    msg = Back.LIGHTWHITE_EX + Style.BRIGHT + Fore.RED
+    msg = white_background + bright_style + red_text
     msg += 'DeprecationWarning: This tool will be deprecated in future. '
-    msg += Fore.BLUE + 'Welcome to use the unified model deployment toolbox '
+    msg += blue_text + 'Welcome to use the unified model deployment toolbox '
     msg += 'MMDeploy: https://github.com/open-mmlab/mmdeploy'
-    msg += Style.RESET_ALL
+    msg += reset_style
     warnings.warn(msg)
