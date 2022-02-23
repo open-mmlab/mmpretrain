@@ -2,7 +2,9 @@
 import argparse
 import os
 import os.path as osp
+import warnings
 
+import mmcv
 import numpy as np
 
 
@@ -141,13 +143,9 @@ if __name__ == '__main__':
         verify=args.verify,
         workspace_size=args.workspace_size)
 
-    import warnings
-    try:
-        from colorama import Fore, Style, Back
-    except ImportError:
-        Style = mmcv.ConfigDict({'BRIGHT': '\x1b[1m', 'RESET_ALL': '\x1b[0m'})
-        Fore = mmcv.ConfigDict({'RED': '\x1b[31m', 'BLUE': '\x1b[34m'})
-        Back = mmcv.ConfigDict({'LIGHTWHITE_EX': '\x1b[107m'})
+    Style = mmcv.ConfigDict({'BRIGHT': '\x1b[1m', 'RESET_ALL': '\x1b[0m'})
+    Fore = mmcv.ConfigDict({'RED': '\x1b[31m', 'BLUE': '\x1b[34m'})
+    Back = mmcv.ConfigDict({'LIGHTWHITE_EX': '\x1b[107m'})
 
     msg = Back.LIGHTWHITE_EX + Style.BRIGHT + Fore.RED
     msg += 'DeprecationWarning: This tool will be deprecated in future. '

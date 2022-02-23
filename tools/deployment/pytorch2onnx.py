@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
+import warnings
 from functools import partial
 
 import mmcv
@@ -232,8 +233,9 @@ if __name__ == '__main__':
         do_simplify=args.simplify,
         verify=args.verify)
 
-    import warnings
-    from colorama import Fore, Back, Style
+    Style = mmcv.ConfigDict({'BRIGHT': '\x1b[1m', 'RESET_ALL': '\x1b[0m'})
+    Fore = mmcv.ConfigDict({'RED': '\x1b[31m', 'BLUE': '\x1b[34m'})
+    Back = mmcv.ConfigDict({'LIGHTWHITE_EX': '\x1b[107m'})
 
     msg = Back.LIGHTWHITE_EX + Style.BRIGHT + Fore.RED
     msg += 'DeprecationWarning: This tool will be deprecated in future. '
