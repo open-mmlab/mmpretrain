@@ -39,6 +39,8 @@ The checkpoints provided are all `training-time` models. Use the reparameterize 
 
 ### Use tool
 
+Use provided tool to reparameterize the given model and save the checkpoint:
+
 ```bash
 python tools/convert_models/reparameterize_model.py ${CFG_PATH} ${SRC_CKPT_PATH} ${TARGET_CKPT_PATH}
 ```

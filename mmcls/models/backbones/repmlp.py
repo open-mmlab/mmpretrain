@@ -14,17 +14,17 @@ from mmcls.models.utils import SELayer
 def fuse_bn(conv_or_fc, bn):
     """fuse conv and bn."""
     std = (bn.running_var + bn.eps).sqrt()
-    tmp = bn.weight / std
-    tmp = tmp.reshape(-1, 1, 1, 1)
+    tmp_weight = bn.weight / std
+    tmp_weight = tmp_weight.reshape(-1, 1, 1, 1)
 
-    if len(tmp) == conv_or_fc.weight.size(0):
-        return (conv_or_fc.weight * tmp,
+    if len(tmp_weight) == conv_or_fc.weight.size(0):
+        return (conv_or_fc.weight * tmp_weight,
                 bn.bias - bn.running_mean * bn.weight / std)
     else:
         # in RepMLPBlock, dim0 in conv weights and fc3_bn weights
         # are different.
-        repeat_times = conv_or_fc.weight.size(0) // len(tmp)
-        repeated = tmp.repeat_interleave(repeat_times, 0)
+        repeat_times = conv_or_fc.weight.size(0) // len(tmp_weight)
+        repeated = tmp_weight.repeat_interleave(repeat_times, 0)
         fused_weight = conv_or_fc.weight * repeated
         bias = bn.bias - bn.running_mean * bn.weight / std
         fused_bias = (bias).repeat_interleave(repeat_times, 0)
@@ -35,8 +35,8 @@ class GlobalPerceptron(SELayer):
     """GlobalPerceptron implemented by using ``mmcls.modes.SELayer``.
 
     Args:
-        input_channels (int): The input (and output) channels of the
-            GlobalPerceptron.
+        input_channels (int): The number of input (and output) channels
+            in the GlobalPerceptron.
         ratio (int): Squeeze ratio in GlobalPerceptron, the intermediate
             channel will be ``make_divisible(channels // ratio, divisor)``.
     """
@@ -54,7 +54,8 @@ class RepMLPBlock(BaseModule):
     """Basic RepMLPNet, consists of PartitionPerceptron and GlobalPerceptron.
 
     Args:
-        channels (int): The input and the output channels of the block.
+        channels (int): The number of input and the output channels of the
+            block.
         path_h (int): The height of patches.
         path_w (int): The weidth of patches.
         reparam_conv_kernels (Squeue(int) | None): The conv kernels in the
@@ -243,21 +244,27 @@ class RepMLPBlock(BaseModule):
 
 
 class RepMLPNetUnit(BaseModule):
-    """A basic unit in RepMLPNet : [REPMLPBlock + BN + FFN + BN].
+    """A basic unit in RepMLPNet : [REPMLPBlock + BN + ConvFFN + BN].
 
     Args:
-        channels (int): The input and the output channels of the block.
-        path_h (int): Stride of the 3x3 and 1x1 convolution layer. Default: 1.
-        path_w (int): Padding of the 3x3 convolution layer.
-        reparam_conv_kernels (int): Dilation of the 3x3 convolution layer.
-        globalperceptron_ratio (int): Groups of the 3x3 and 1x1 convolution
-            layer. Default: 1.
+        channels (int): The number of input and the output channels of the
+            unit.
+        path_h (int): The height of patches.
+        path_w (int): The weidth of patches.
+        reparam_conv_kernels (Squeue(int) | None): The conv kernels in the
+            GlobalPerceptron. Default: None.
+        globalperceptron_ratio (int): The reducation ratio in the
+            GlobalPerceptron. Default: 4.
+        num_sharesets (int): The number of sharesets in the
+            PartitionPerceptron. Default 1.
         conv_cfg (dict, optional): Config dict for convolution layer.
             Default: None, which means using conv2d.
         norm_cfg (dict): dictionary to construct and config norm layer.
             Default: dict(type='BN', requires_grad=True).
         act_cfg (dict): Config dict for activation layer.
             Default: dict(type='ReLU').
+        deploy (bool): Whether to switch the model structure to
+            deployment mode. Default: False.
         init_cfg (dict or list[dict], optional): Initialization config dict.
             Default: None
     """
@@ -350,11 +357,16 @@ class RepMLPNet(BaseModule):
 
         img_size (int): The size of input image. Defaults: 224.
         in_channels (int): Number of input image channels. Default: 3.
-        patch_size (int): The patch size of patch embeding.
+        patch_size (int): The patch size of patch embeding layer.
+            Default: 4.
         out_indices (Sequence[int]): Output from which stages.
             Default: ``(3, )``.
-        reparam_conv_kernels (Sequence[int]):
-        globalperceptron_ratio (int):
+        reparam_conv_kernels (Squeue(int) | None): The conv kernels in the
+            GlobalPerceptron. Default: None.
+        globalperceptron_ratio (int): The reducation ratio in the
+            GlobalPerceptron. Default: 4.
+        num_sharesets (int): The number of sharesets in the
+            PartitionPerceptron. Default 1.
         conv_cfg (dict | None): The config dict for conv layers. Default: None.
         norm_cfg (dict): The config dict for norm layers.
             Default: dict(type='BN').

@@ -3,10 +3,10 @@ Collections:
     Metadata:
       Training Data: ImageNet-1k
       Architecture:
-        - Multilayer Perceptron
-        - re-parameterization Convolution
+        - Multi-layer Perceptron
+        - Re-parameterization Convolution
     Paper:
-      URL: https://arxiv.org/abs/2105.01601
+      URL: https://arxiv.org/abs/2105.01883
       Title: 'RepMLP: Re-parameterizing Convolutions into Fully-connected Layers for Image Recognition'
     README: configs/repmlp/README.md
     Code:

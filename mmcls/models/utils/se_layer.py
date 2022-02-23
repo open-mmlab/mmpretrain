@@ -22,8 +22,7 @@ class SELayer(BaseModule):
             used when ``squeeze_channels`` is None. Default: 8.
         conv_cfg (None or dict): Config dict for convolution layer. Default:
             None, which means using conv2d.
-        return_weight(bool): Whether to return weight or the output tensor,
-            Default: False.
+        return_weight(bool): Whether to return the weight. Default: False.
         act_cfg (dict or Sequence[dict]): Config dict for activation layer.
             If act_cfg is a dict, two activation layers will be configurated
             by this dict. If act_cfg is a sequence of dicts, the first

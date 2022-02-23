@@ -16,14 +16,3 @@ model = dict(
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
         topk=(1, 5),
     ))
-
-if __name__ == '__main__':
-    from mmcls.models import build_classifier
-    import torch
-
-    m = build_classifier(model).cuda()
-    m.backbone.switch_to_deploy()
-
-    x = torch.randn((1, 3, 224, 224)).cuda()
-    y = m(x, return_loss=False, post_process=False)
-    print(y.size())
