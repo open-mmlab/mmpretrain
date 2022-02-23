@@ -66,6 +66,9 @@ def parse_requirements(fname='requirements.txt', with_version=True):
                         info['platform_deps'] = platform_deps
                     else:
                         version = rest  # NOQA
+                    if '--' in version:
+                        # the `extras_require` doesn't accept options.
+                        version = version.split('--')[0].strip()
                     info['version'] = (op, version)
             yield info
 
@@ -171,7 +174,6 @@ if __name__ == '__main__':
             'License :: OSI Approved :: Apache Software License',
             'Operating System :: OS Independent',
             'Programming Language :: Python :: 3',
-            'Programming Language :: Python :: 3.5',
             'Programming Language :: Python :: 3.6',
             'Programming Language :: Python :: 3.7',
             'Programming Language :: Python :: 3.8',
