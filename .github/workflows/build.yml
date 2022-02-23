@@ -51,14 +51,11 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install Pillow
-        run: pip install Pillow==6.2.2
-        if: ${{matrix.torchvision < 0.5}}
       - name: Install PyTorch
-        run: pip install --use-deprecated=legacy-resolver torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu  -f https://download.pytorch.org/whl/torch_stable.html
+        run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install MMCV
         run: |
-          pip install --use-deprecated=legacy-resolver mmcv-full -f https://download.openmmlab.com/mmcv/dist/cpu/torch${{matrix.torch}}/index.html
+          pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cpu/torch${{matrix.torch}}/index.html
           python -c 'import mmcv; print(mmcv.__version__)'
       - name: Install mmcls dependencies
         run: |
@@ -96,11 +93,13 @@ jobs:
             python-version: 3.9
           - torch: 1.9.0
             torchvision: 0.10.0
-          - torch: 1.9.0
-            torchvision: 0.10.0
+          - torch: 1.10.0
+            torchvision: 0.11.1
+          - torch: 1.10.0
+            torchvision: 0.11.1
             python-version: 3.8
-          - torch: 1.9.0
-            torchvision: 0.10.0
+          - torch: 1.10.0
+            torchvision: 0.11.1
             python-version: 3.9
 
     steps:
@@ -109,14 +108,11 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install Pillow
-        run: pip install Pillow==6.2.2
-        if: ${{matrix.torchvision < 0.5}}
       - name: Install PyTorch
-        run: pip install --use-deprecated=legacy-resolver torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu  -f https://download.pytorch.org/whl/torch_stable.html
+        run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install MMCV
         run: |
-          pip install --use-deprecated=legacy-resolver mmcv-full -f https://download.openmmlab.com/mmcv/dist/cpu/torch${{matrix.torch}}/index.html
+          pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cpu/torch${{matrix.torch}}/index.html
           python -c 'import mmcv; print(mmcv.__version__)'
       - name: Install mmcls dependencies
         run: |
@@ -133,10 +129,53 @@ jobs:
           coverage run --branch --source mmcls -m pytest tests/
           coverage xml
           coverage report -m --omit="mmcls/utils/*","mmcls/apis/*"
-      # Only upload coverage report for python3.7 && pytorch1.5
       - name: Upload coverage to Codecov
-        if: ${{matrix.torch == '1.5.0' && matrix.python-version == '3.7'}}
-        uses: codecov/codecov-action@v1.0.10
+        uses: codecov/codecov-action@v2
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          env_vars: OS,PYTHON
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+  build-windows:
+    runs-on: windows-2022
+    strategy:
+      matrix:
+        python-version: [3.8]
+        torch: [1.8.2]
+        include:
+          - torch: 1.8.2
+            torchvision: 0.9.2
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install PyTorch
+        run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
+      - name: Install MMCV
+        run: |
+          pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cpu/torch${{matrix.torch}}/index.html
+          python -c 'import mmcv; print(mmcv.__version__)'
+      - name: Install mmcls dependencies
+        run: |
+          pip install -r requirements.txt
+      - name: Install timm
+        run: |
+          pip install timm
+      - name: Build and install
+        run: |
+          rm -rf .eggs
+          pip install -e . -U
+      - name: Run unittests and generate coverage report
+        run: |
+          coverage run --branch --source mmcls -m pytest tests/
+          coverage xml
+          coverage report -m --omit="mmcls/utils/*","mmcls/apis/*"
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
         with:
           file: ./coverage.xml
           flags: unittests
