@@ -58,6 +58,7 @@ python demo/image_demo.py demo/demo.JPEG configs/resnet/resnet50_8xb32_in1k.py \
 ### Inference and test a dataset
 
 - single GPU
+- CPU
 - single node multiple GPU
 - multiple node
 
@@ -65,6 +66,10 @@ You can use the following commands to infer a dataset.
 
 ```shell
 # single-gpu
+python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--metrics ${METRICS}] [--out ${RESULT_FILE}]
+
+# CPU: disable GPUs and run single-gpu testing script
+export CUDA_VISIBLE_DEVICES=-1
 python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--metrics ${METRICS}] [--out ${RESULT_FILE}]
 
 # multi-gpu
@@ -81,7 +86,6 @@ Optional arguments:
 
 Examples:
 
-Assume that you have already downloaded the checkpoints to the directory `checkpoints/`.
 Infer ResNet-50 on ImageNet validation set to get predicted labels and their corresponding predicted scores.
 
 ```shell
@@ -111,6 +115,20 @@ python tools/train.py ${CONFIG_FILE} [optional arguments]
 ```
 
 If you want to specify the working directory in the command, you can add an argument `--work_dir ${YOUR_WORK_DIR}`.
+
+### Train with CPU
+
+The process of training on the CPU is consistent with single GPU training. We just need to disable GPUs before the training process.
+
+```shell
+export CUDA_VISIBLE_DEVICES=-1
+```
+
+And then run the script [above](#train-with-a-single-gpu).
+
+```{warning}
+The process of training on the CPU is consistent with single GPU training. We just need to disable GPUs before the training process.
+```
 
 ### Train with multiple GPUs
 

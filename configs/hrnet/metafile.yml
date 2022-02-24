@@ -1,0 +1,162 @@
+Collections:
+  - Name: HRNet
+    Metadata:
+      Training Data: ImageNet-1k
+      Architecture:
+        - Batch Normalization
+        - Convolution
+        - ReLU
+        - Residual Connection
+    Paper:
+      URL: https://arxiv.org/abs/1908.07919v2
+      Title: "Deep High-Resolution Representation Learning for Visual Recognition"
+    README: configs/hrnet/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.20.1/mmcls/models/backbones/hrnet.py
+      Version: v0.20.1
+
+Models:
+  - Name: hrnet-w18_3rdparty_8xb32_in1k
+    Metadata:
+      FLOPs: 4330397932
+      Parameters: 21295164
+    In Collection: HRNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 76.75
+          Top 5 Accuracy: 93.44
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w18_3rdparty_8xb32_in1k_20220120-0c10b180.pth
+    Config: configs/hrnet/hrnet-w18_4xb32_in1k.py
+    Converted From:
+      Weights: https://1drv.ms/u/s!Aus8VCZ_C_33cMkPimlmClRvmpw
+      Code: https://github.com/HRNet/HRNet-Image-Classification
+  - Name: hrnet-w30_3rdparty_8xb32_in1k
+    Metadata:
+      FLOPs: 8168305684
+      Parameters: 37708380
+    In Collection: HRNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 78.19
+          Top 5 Accuracy: 94.22
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w30_3rdparty_8xb32_in1k_20220120-8aa3832f.pth
+    Config: configs/hrnet/hrnet-w30_4xb32_in1k.py
+    Converted From:
+      Weights: https://1drv.ms/u/s!Aus8VCZ_C_33cQoACCEfrzcSaVI
+      Code: https://github.com/HRNet/HRNet-Image-Classification
+  - Name: hrnet-w32_3rdparty_8xb32_in1k
+    Metadata:
+      FLOPs: 8986267584
+      Parameters: 41228840
+    In Collection: HRNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 78.44
+          Top 5 Accuracy: 94.19
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w32_3rdparty_8xb32_in1k_20220120-c394f1ab.pth
+    Config: configs/hrnet/hrnet-w32_4xb32_in1k.py
+    Converted From:
+      Weights: https://1drv.ms/u/s!Aus8VCZ_C_33dYBMemi9xOUFR0w
+      Code: https://github.com/HRNet/HRNet-Image-Classification
+  - Name: hrnet-w40_3rdparty_8xb32_in1k
+    Metadata:
+      FLOPs: 12767574064
+      Parameters: 57553320
+    In Collection: HRNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 78.94
+          Top 5 Accuracy: 94.47
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w40_3rdparty_8xb32_in1k_20220120-9a2dbfc5.pth
+    Config: configs/hrnet/hrnet-w40_4xb32_in1k.py
+    Converted From:
+      Weights: https://1drv.ms/u/s!Aus8VCZ_C_33ck0gvo5jfoWBOPo
+      Code: https://github.com/HRNet/HRNet-Image-Classification
+  - Name: hrnet-w44_3rdparty_8xb32_in1k
+    Metadata:
+      FLOPs: 14963902632
+      Parameters: 67061144
+    In Collection: HRNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 78.88
+          Top 5 Accuracy: 94.37
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w44_3rdparty_8xb32_in1k_20220120-35d07f73.pth
+    Config: configs/hrnet/hrnet-w44_4xb32_in1k.py
+    Converted From:
+      Weights: https://1drv.ms/u/s!Aus8VCZ_C_33czZQ0woUb980gRs
+      Code: https://github.com/HRNet/HRNet-Image-Classification
+  - Name: hrnet-w48_3rdparty_8xb32_in1k
+    Metadata:
+      FLOPs: 17364014752
+      Parameters: 77466024
+    In Collection: HRNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 79.32
+          Top 5 Accuracy: 94.52
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w48_3rdparty_8xb32_in1k_20220120-e555ef50.pth
+    Config: configs/hrnet/hrnet-w48_4xb32_in1k.py
+    Converted From:
+      Weights: https://1drv.ms/u/s!Aus8VCZ_C_33dKvqI6pBZlifgJk
+      Code: https://github.com/HRNet/HRNet-Image-Classification
+  - Name: hrnet-w64_3rdparty_8xb32_in1k
+    Metadata:
+      FLOPs: 29002298752
+      Parameters: 128056104
+    In Collection: HRNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 79.46
+          Top 5 Accuracy: 94.65
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w64_3rdparty_8xb32_in1k_20220120-19126642.pth
+    Config: configs/hrnet/hrnet-w64_4xb32_in1k.py
+    Converted From:
+      Weights: https://1drv.ms/u/s!Aus8VCZ_C_33gQbJsUPTIj3rQu99
+      Code: https://github.com/HRNet/HRNet-Image-Classification
+  - Name: hrnet-w18_3rdparty_8xb32-ssld_in1k
+    Metadata:
+      FLOPs: 4330397932
+      Parameters: 21295164
+    In Collection: HRNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 81.06
+          Top 5 Accuracy: 95.7
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w18_3rdparty_8xb32-ssld_in1k_20220120-455f69ea.pth
+    Config: configs/hrnet/hrnet-w18_4xb32_in1k.py
+    Converted From:
+      Weights: https://github.com/HRNet/HRNet-Image-Classification/releases/download/PretrainedWeights/HRNet_W18_C_ssld_pretrained.pth
+      Code: https://github.com/HRNet/HRNet-Image-Classification
+  - Name: hrnet-w48_3rdparty_8xb32-ssld_in1k
+    Metadata:
+      FLOPs: 17364014752
+      Parameters: 77466024
+    In Collection: HRNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.63
+          Top 5 Accuracy: 96.79
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w48_3rdparty_8xb32-ssld_in1k_20220120-d0459c38.pth
+    Config: configs/hrnet/hrnet-w48_4xb32_in1k.py
+    Converted From:
+      Weights: https://github.com/HRNet/HRNet-Image-Classification/releases/download/PretrainedWeights/HRNet_W48_C_ssld_pretrained.pth
+      Code: https://github.com/HRNet/HRNet-Image-Classification

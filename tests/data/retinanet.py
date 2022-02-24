@@ -1,5 +1,6 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 # small RetinaNet
-num_classes=3
+num_classes = 3
 
 # model settings
 model = dict(

@@ -163,6 +163,10 @@ def test(args):
 
     preview_script = ''
     for model_info in models.values():
+
+        if model_info.results is None:
+            continue
+
         script_path = create_test_job_batch(commands, model_info, args, port,
                                             script_name)
         preview_script = script_path or preview_script
@@ -287,6 +291,9 @@ def summary(args):
 
     summary_data = {}
     for model_name, model_info in models.items():
+
+        if model_info.results is None:
+            continue
 
         # Skip if not found result file.
         result_file = work_dir / model_name / 'result.pkl'

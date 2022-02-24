@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import torch.nn.functional as F
-
 from .builder import AUGMENT
+from .utils import one_hot_encoding
 
 
 @AUGMENT.register_module(name='Identity')
@@ -24,7 +23,7 @@ class Identity(object):
         self.prob = prob
 
     def one_hot(self, gt_label):
-        return F.one_hot(gt_label, num_classes=self.num_classes)
+        return one_hot_encoding(gt_label, self.num_classes)
 
     def __call__(self, img, gt_label):
         return img, self.one_hot(gt_label)
