@@ -95,15 +95,15 @@ class CUB(BaseDataset):
 
     def load_annotations(self):
         with open(self.ann_file) as f:
-            samples = [x.strip().split(' ')[1] for x in f.readlines()][:100]
+            samples = [x.strip().split(' ')[1] for x in f.readlines()]
 
         with open(self.image_class_labels_file) as f:
-            gt_labels = [int(x.strip().split(' ')[1]) - 1
-                         for x in f.readlines()][:100]
+            gt_labels = [
+                int(x.strip().split(' ')[1]) - 1 for x in f.readlines()
+            ]
 
         with open(self.train_test_split_file) as f:
-            splits = [int(x.strip().split(' ')[1])
-                      for x in f.readlines()][:100]
+            splits = [int(x.strip().split(' ')[1]) for x in f.readlines()]
 
         assert len(samples) == len(gt_labels) == len(splits),\
             'samples, gt_labels and splits should have same length.'
