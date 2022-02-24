@@ -75,7 +75,7 @@ def parse_args():
         '"--adaptive" is true. Default 200.')
     parser.add_argument(
         '--max-edge-length',
-        default=1000,
+        default=800,
         type=int,
         help='the max edge length when visualizing images, used when '
         '"--adaptive" is true. Default 1000.')
@@ -156,23 +156,33 @@ def build_dataset_pipelines(cfg, phase):
     return dataset, pipelines
 
 
-def concat_imgs(imgs: List[np.ndarray], steps: List[str]) -> np.ndarray:
+def concat_imgs(args, imgs: List[np.ndarray], steps: List[str]) -> np.ndarray:
     """Concat list of pictures into a single big picture, align height here."""
-    shapes = [img.shape for img in imgs]
-    heights = [shape[0] for shape in shapes]
-    widths = [shape[1] for shape in shapes]
-    max_height = max(heights)
-    text_height, pic_horizontal_gap = max_height // 10, min(widths) // 10
+    ori_shapes = [img.shape for img in imgs]
+    # if src image is too large or too small, it will make the text
+    # information difficult to confirm, so here add adaptive adjustment.
+    if args.adaptive:
+        for i, img in enumerate(imgs):
+            imgs[i] = adaptive_size(img, args.min_edge_length,
+                                    args.max_edge_length)
+
+    show_shapes = [img.shape for img in imgs]
+    show_heights = [shape[0] for shape in show_shapes]
+    show_widths = [shape[1] for shape in show_shapes]
+
+    max_height = max(show_heights)
+    text_height = 20
+    font_size = 0.5
+    pic_horizontal_gap = min(show_widths) // 10
     for i, img in enumerate(imgs):
-        cur_height = heights[i]
+        cur_height = show_heights[i]
         pad_height = max_height - cur_height
         pad_top, pad_bottom = to_2tuple(pad_height // 2)
         # handle instance that the pad_height is an odd number
         if pad_height % 2 == 1:
             pad_top = pad_top + 1
-        pad_bottom += text_height * 3 # keep pxs to put step information text
+        pad_bottom += text_height * 3  # keep pxs to put step information text
         pad_left, pad_right = to_2tuple(pic_horizontal_gap)
-
         # make border
         img = cv2.copyMakeBorder(
             img,
@@ -182,23 +192,23 @@ def concat_imgs(imgs: List[np.ndarray], steps: List[str]) -> np.ndarray:
             pad_right,
             cv2.BORDER_CONSTANT,
             value=(255, 255, 255))
-        # put transformer phase
+        # put transform phase information in the bottom
         imgs[i] = cv2.putText(
-            img=img, 
+            img=img,
             text=steps[i],
             org=(pic_horizontal_gap, max_height + text_height // 2),
-            fontFace=cv2.FONT_HERSHEY_COMPLEX, 
-            fontScale=0.5, 
-            color=(0, 0, 0), 
+            fontFace=cv2.FONT_HERSHEY_TRIPLEX,
+            fontScale=font_size,
+            color=(255, 0, 0),
             lineType=1)
-        # put image size
+        # put image size information in the bottom
         imgs[i] = cv2.putText(
-            img=img, 
-            text=str(shapes[i]),
+            img=img,
+            text=str(ori_shapes[i]),
             org=(pic_horizontal_gap, max_height + int(text_height * 1.5)),
-            fontFace=cv2.FONT_HERSHEY_COMPLEX, 
-            fontScale=0.5, 
-            color=(0, 0, 0), 
+            fontFace=cv2.FONT_HERSHEY_TRIPLEX,
+            fontScale=font_size,
+            color=(255, 0, 0),
             lineType=1)
 
     # High alignment for concatenating
@@ -206,10 +216,11 @@ def concat_imgs(imgs: List[np.ndarray], steps: List[str]) -> np.ndarray:
     return board
 
 
-def adaptive_size(image, min_edge_length, max_edge_length, src_shape):
+def adaptive_size(image, min_edge_length, max_edge_length, src_shape=None):
     """rescale image if image is too small to put text like cifra."""
     assert min_edge_length >= 0 and max_edge_length >= 0
     assert max_edge_length >= min_edge_length
+    src_shape = image.shape if src_shape is None else src_shape
     image_h, image_w, _ = src_shape
 
     if image_h < min_edge_length or image_w < min_edge_length:
@@ -227,7 +238,7 @@ def get_display_img(args, item, pipelines):
     if args.bgr2rgb:
         item['img'] = mmcv.bgr2rgb(item['img'])
     src_image = item['img'].copy()
-    intermediates_images = []
+    pipeline_images = [src_image]
 
     # get intermediates images through pipelines
     if args.mode in ['transformed', 'concat', 'pipeline']:
@@ -235,32 +246,28 @@ def get_display_img(args, item, pipelines):
             item = pipeline(item)
             trans_image = copy.deepcopy(item['img'])
             trans_image = np.ascontiguousarray(trans_image, dtype=np.uint8)
-            intermediates_images.append(trans_image)
+            pipeline_images.append(trans_image)
 
     # concat all the images to show, depandding on 'mode'
     if args.mode == 'original':
-        image = src_image
+        image = pipeline_images[0]
     elif args.mode == 'transformed':
-        image = intermediates_images[-1]
+        image = pipeline_images[-1]
     elif args.mode == 'concat':
         steps = ['src', 'transformed']
-        image = concat_imgs([src_image, intermediates_images[-1]], steps)
+        image = concat_imgs(args, [pipeline_images[0], pipeline_images[-1]],
+                            steps)
     elif args.mode == 'pipeline':
         steps = ['src'] + list(pipelines.keys())
-        image = concat_imgs([src_image] + intermediates_images, steps)
+        image = concat_imgs(args, pipeline_images, steps)
 
-    # if src image is too large or too small, it will make the text information
-    #  difficult to confirm, so here add adaptive adjustment.
-    if args.adaptive:
-        image = adaptive_size(image, args.min_edge_length,
-                              args.max_edge_length, src_image.shape)
     return image
 
 
 def main():
     args = parse_args()
     wind_w, wind_h = args.window_size.split('*')
-    wind_w, wind_h = int(wind_w), int(wind_h) # showing windows size
+    wind_w, wind_h = int(wind_w), int(wind_h)  # showing windows size
     cfg = retrieve_data_cfg(args.config, args.skip_type, args.cfg_options,
                             args.phase)
 
@@ -271,7 +278,7 @@ def main():
 
     with vis.ImshowInfosContextManager(fig_size=(wind_w, wind_h)) as manager:
         for i, item in enumerate(itertools.islice(dataset, display_number)):
-            image = get_display_img(args, item, pipelines) 
+            image = get_display_img(args, item, pipelines)
 
             # dist_path is None as default, means not saving pictures
             dist_path = None
