@@ -10,8 +10,7 @@ def get_relative_position_index(window_size):
     """Method from original code of Swin-Transformer."""
     coords_h = torch.arange(window_size[0])
     coords_w = torch.arange(window_size[1])
-    coords = torch.stack(torch.meshgrid([coords_h, coords_w],
-                                        indexing='ij'))  # 2, Wh, Ww
+    coords = torch.stack(torch.meshgrid([coords_h, coords_w]))  # 2, Wh, Ww
     coords_flatten = torch.flatten(coords, 1)  # 2, Wh*Ww
     # 2, Wh*Ww, Wh*Ww
     relative_coords = coords_flatten[:, :, None] - coords_flatten[:, None, :]
