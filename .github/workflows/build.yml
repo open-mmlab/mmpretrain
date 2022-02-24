@@ -182,7 +182,6 @@ jobs:
           pip install timm
       - name: Build and install
         run: |
-          rm -rf .eggs
           pip install -e . -U
       - name: Run unittests and generate coverage report
         run: |
