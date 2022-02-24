@@ -41,3 +41,45 @@ rand_increasing_policies = [
         magnitude_range=(0, 0.45),
         direction='vertical')
 ]
+
+trivial_policies = [
+    dict(type='AutoContrast'),
+    dict(type='Equalize'),
+    dict(type='Invert', prob=0.5),  # as "Identity"
+    dict(type='Rotate', magnitude_key='angle', magnitude_range=(0, 135)),
+    dict(type='Posterize', magnitude_key='bits', magnitude_range=(8, 2)),
+    dict(type='Solarize', magnitude_key='thr', magnitude_range=(256, 0)),
+    dict(
+        type='ColorTransform',
+        magnitude_key='magnitude',
+        magnitude_range=(0, 0.99)),
+    dict(
+        type='Contrast', magnitude_key='magnitude', magnitude_range=(0, 0.99)),
+    dict(
+        type='Brightness',
+        magnitude_key='magnitude',
+        magnitude_range=(0, 0.99)),
+    dict(
+        type='Sharpness', magnitude_key='magnitude',
+        magnitude_range=(0, 0.99)),
+    dict(
+        type='Shear',
+        magnitude_key='magnitude',
+        magnitude_range=(0, 0.99),
+        direction='horizontal'),
+    dict(
+        type='Shear',
+        magnitude_key='magnitude',
+        magnitude_range=(0, 0.99),
+        direction='vertical'),
+    dict(
+        type='Translate',
+        magnitude_key='magnitude',
+        magnitude_range=(0, 0.2),
+        direction='horizontal'),
+    dict(
+        type='Translate',
+        magnitude_key='magnitude',
+        magnitude_range=(0, 0.2),
+        direction='vertical')
+]
