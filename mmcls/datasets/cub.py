@@ -98,7 +98,7 @@ class CUB(BaseDataset):
             samples = [x.strip().split(' ')[1] for x in f.readlines()][:100]
 
         with open(self.image_class_labels_file) as f:
-            gt_labels = [int(x.strip().split(' ')[1])
+            gt_labels = [int(x.strip().split(' ')[1]) - 1
                          for x in f.readlines()][:100]
 
         with open(self.train_test_split_file) as f:
