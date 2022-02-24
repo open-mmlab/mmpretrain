@@ -170,9 +170,10 @@ def concat_imgs(imgs: List[np.ndarray], steps: List[str]) -> np.ndarray:
         # handle instance that the pad_height is an odd number
         if pad_height % 2 == 1:
             pad_top = pad_top + 1
-        pad_bottom += text_height  # keep pxs to put step information text
+        pad_bottom += text_height * 3 # keep pxs to put step information text
         pad_left, pad_right = to_2tuple(pic_horizontal_gap)
 
+        # make border
         img = cv2.copyMakeBorder(
             img,
             pad_top,
@@ -181,9 +182,24 @@ def concat_imgs(imgs: List[np.ndarray], steps: List[str]) -> np.ndarray:
             pad_right,
             cv2.BORDER_CONSTANT,
             value=(255, 255, 255))
-        imgs[i] = cv2.putText(img, steps[i],
-                              (pic_horizontal_gap, max_height + 10),
-                              cv2.FONT_HERSHEY_COMPLEX, 0.5, (0, 0, 0), 1)
+        # put transformer phase
+        imgs[i] = cv2.putText(
+            img=img, 
+            text=steps[i],
+            org=(pic_horizontal_gap, max_height + text_height // 2),
+            fontFace=cv2.FONT_HERSHEY_COMPLEX, 
+            fontScale=0.5, 
+            color=(0, 0, 0), 
+            lineType=1)
+        # put image size
+        imgs[i] = cv2.putText(
+            img=img, 
+            text=str(shapes[i]),
+            org=(pic_horizontal_gap, max_height + int(text_height * 1.5)),
+            fontFace=cv2.FONT_HERSHEY_COMPLEX, 
+            fontScale=0.5, 
+            color=(0, 0, 0), 
+            lineType=1)
 
     # High alignment for concatenating
     board = np.concatenate(imgs, axis=1)
@@ -221,6 +237,7 @@ def get_display_img(args, item, pipelines):
             trans_image = np.ascontiguousarray(trans_image, dtype=np.uint8)
             intermediates_images.append(trans_image)
 
+    # concat all the images to show, depandding on 'mode'
     if args.mode == 'original':
         image = src_image
     elif args.mode == 'transformed':
@@ -243,7 +260,7 @@ def get_display_img(args, item, pipelines):
 def main():
     args = parse_args()
     wind_w, wind_h = args.window_size.split('*')
-    wind_w, wind_h = int(wind_w), int(wind_h)
+    wind_w, wind_h = int(wind_w), int(wind_h) # showing windows size
     cfg = retrieve_data_cfg(args.config, args.skip_type, args.cfg_options,
                             args.phase)
 
@@ -254,12 +271,12 @@ def main():
 
     with vis.ImshowInfosContextManager(fig_size=(wind_w, wind_h)) as manager:
         for i, item in enumerate(itertools.islice(dataset, display_number)):
-            image = get_display_img(args, item, pipelines)
+            image = get_display_img(args, item, pipelines) 
 
-            # dist_path is None as default, means not save pictures
+            # dist_path is None as default, means not saving pictures
             dist_path = None
             if args.output_dir:
-                # some datasets do not have filename, such as cifar, use id
+                # some datasets don't have filenames, such as cifar
                 src_path = item.get('filename', '{}.jpg'.format(i))
                 dist_path = os.path.join(args.output_dir, Path(src_path).name)
 
