@@ -169,8 +169,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
-      - name: Install MMCV
+      - name: Install MMCV & OpenCV
         run: |
+          pip install opencv-python
           pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cpu/torch${{matrix.torch_major}}/index.html
           python -c 'import mmcv; print(mmcv.__version__)'
       - name: Install mmcls dependencies
