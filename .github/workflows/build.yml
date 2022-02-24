@@ -40,13 +40,13 @@ jobs:
         include:
           - torch: 1.5.0
             torchvision: 0.6.0
-            torch_major: 1.5
+            torch_major: 1.5.0
           - torch: 1.8.0
             torchvision: 0.9.0
-            torch_major: 1.8
+            torch_major: 1.8.0
           - torch: 1.9.0
             torchvision: 0.10.0
-            torch_major: 1.9
+            torch_major: 1.9.0
 
     steps:
       - uses: actions/checkout@v2
@@ -82,37 +82,37 @@ jobs:
         include:
           - torch: 1.5.0
             torchvision: 0.6.0
-            torch_major: 1.5
+            torch_major: 1.5.0
           - torch: 1.6.0
             torchvision: 0.7.0
-            torch_major: 1.6
+            torch_major: 1.6.0
           - torch: 1.7.0
             torchvision: 0.8.1
-            torch_major: 1.7
+            torch_major: 1.7.0
           - torch: 1.8.0
             torchvision: 0.9.0
-            torch_major: 1.8
+            torch_major: 1.8.0
           - torch: 1.8.0
             torchvision: 0.9.0
-            torch_major: 1.8
+            torch_major: 1.8.0
             python-version: 3.8
           - torch: 1.8.0
             torchvision: 0.9.0
-            torch_major: 1.8
+            torch_major: 1.8.0
             python-version: 3.9
           - torch: 1.9.0
             torchvision: 0.10.0
-            torch_major: 1.9
+            torch_major: 1.9.0
           - torch: 1.10.0
             torchvision: 0.11.1
-            torch_major: 1.10
+            torch_major: 1.10.0
           - torch: 1.10.0
             torchvision: 0.11.1
-            torch_major: 1.10
+            torch_major: 1.10.0
             python-version: 3.8
           - torch: 1.10.0
             torchvision: 0.11.1
-            torch_major: 1.10
+            torch_major: 1.10.0
             python-version: 3.9
 
     steps:
@@ -160,7 +160,7 @@ jobs:
         include:
           - torch: 1.8.1
             torchvision: 0.9.1
-            torch_major: 1.8
+            torch_major: 1.8.0
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
