@@ -99,6 +99,7 @@ def multi_gpu_test(model, data_loader, tmpdir=None, gpu_collect=False):
                            ' Since tmpdir will be deleted after testing,',
                            ' please make sure you specify an empty one.'))
         prog_bar = mmcv.ProgressBar(len(dataset))
+    time.sleep(2)
     dist.barrier()
     for i, data in enumerate(data_loader):
         with torch.no_grad():
