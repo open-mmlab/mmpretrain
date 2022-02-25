@@ -10,9 +10,9 @@ Collections:
       URL: https://arxiv.org/abs/2105.03889
       Title: "Conformer: Local Features Coupling Global Representations for Visual Recognition"
     README: configs/conformer/README.md
-#    Code:
-#      URL:  # todo
-#      Version:  # todo
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.19.0/mmcls/models/backbones/conformer.py
+      Version: v0.19.0
 
 Models:
   - Name: conformer-tiny-p16_3rdparty_8xb128_in1k

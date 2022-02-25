@@ -106,7 +106,7 @@ average iter time: 0.3777 s/iter
 
 ## 结果分析
 
-利用 `tools/train.py` 的 `--out` 参数，我们可以将所有的样本的推理结果保存到输出
+利用 `tools/test.py` 的 `--out` 参数，我们可以将所有的样本的推理结果保存到输出
 文件中。利用这一文件，我们可以进行进一步的分析。
 
 ### 评估结果
@@ -114,7 +114,7 @@ average iter time: 0.3777 s/iter
 `tools/analysis_tools/eval_metric.py` 可以用来再次计算评估结果。
 
 ```shell
-python tools/analysis_tools/analyze_results.py \
+python tools/analysis_tools/eval_metric.py \
       ${CONFIG} \
       ${RESULT} \
       [--metrics ${METRICS}]  \
@@ -137,7 +137,7 @@ python tools/analysis_tools/analyze_results.py \
 **示例**：
 
 ```shell
-python tools/analysis_tools/analyze_results.py configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py ./result.pkl --metrics accuracy --metric-options "topk=(1,5)"
+python tools/analysis_tools/eval_metric.py configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py ./result.pkl --metrics accuracy --metric-options "topk=(1,5)"
 ```
 
 ### 查看典型结果

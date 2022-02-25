@@ -193,7 +193,7 @@ def parse_args():
     add_time_parser(subparsers)
     args = parser.parse_args()
 
-    if args.window_size != '':
+    if hasattr(args, 'window_size') and args.window_size != '':
         assert re.match(r'\d+\*\d+', args.window_size), \
             "'window-size' must be in format 'W*H'."
     return args

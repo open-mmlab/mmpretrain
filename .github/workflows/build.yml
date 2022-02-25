@@ -9,9 +9,8 @@ on:
       - 'README.md'
       - 'README_zh-CN.md'
       - 'model-index.yml'
-      - 'configs/**.md'
+      - 'configs/**'
       - 'docs/**'
-      - 'docs_zh-CN/**'
       - 'demo/**'
       - '.dev_scripts/**'
 
@@ -20,9 +19,8 @@ on:
       - 'README.md'
       - 'README_zh-CN.md'
       - 'model-index.yml'
-      - 'configs/**.md'
+      - 'configs/**'
       - 'docs/**'
-      - 'docs_zh-CN/**'
       - 'demo/**'
       - '.dev_scripts/**'
 

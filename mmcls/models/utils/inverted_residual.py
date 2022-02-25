@@ -1,35 +1,35 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import torch.nn as nn
 import torch.utils.checkpoint as cp
 from mmcv.cnn import ConvModule
+from mmcv.cnn.bricks import DropPath
 from mmcv.runner import BaseModule
 
 from .se_layer import SELayer
 
 
-# class InvertedResidual(nn.Module):
 class InvertedResidual(BaseModule):
     """Inverted Residual Block.
 
     Args:
-        in_channels (int): The input channels of this Module.
-        out_channels (int): The output channels of this Module.
+        in_channels (int): The input channels of this module.
+        out_channels (int): The output channels of this module.
         mid_channels (int): The input channels of the depthwise convolution.
         kernel_size (int): The kernel size of the depthwise convolution.
-            Default: 3.
-        stride (int): The stride of the depthwise convolution. Default: 1.
-        se_cfg (dict): Config dict for se layer. Default: None, which means no
-            se layer.
-        conv_cfg (dict): Config dict for convolution layer. Default: None,
+            Defaults to 3.
+        stride (int): The stride of the depthwise convolution. Defaults to 1.
+        se_cfg (dict, optional): Config dict for se layer. Defaults to None,
+            which means no se layer.
+        conv_cfg (dict): Config dict for convolution layer. Defaults to None,
             which means using conv2d.
         norm_cfg (dict): Config dict for normalization layer.
-            Default: dict(type='BN').
+            Defaults to ``dict(type='BN')``.
         act_cfg (dict): Config dict for activation layer.
-            Default: dict(type='ReLU').
+            Defaults to ``dict(type='ReLU')``.
+        drop_path_rate (float): stochastic depth rate. Defaults to 0.
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
-            memory while slowing down the training speed. Default: False.
-
-    Returns:
-        Tensor: The output tensor.
+            memory while slowing down the training speed. Defaults to False.
+        init_cfg (dict | list[dict], optional): Initialization config dict.
     """
 
     def __init__(self,
@@ -42,12 +42,15 @@ class InvertedResidual(BaseModule):
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
                  act_cfg=dict(type='ReLU'),
+                 drop_path_rate=0.,
                  with_cp=False,
                  init_cfg=None):
         super(InvertedResidual, self).__init__(init_cfg)
         self.with_res_shortcut = (stride == 1 and in_channels == out_channels)
         assert stride in [1, 2]
         self.with_cp = with_cp
+        self.drop_path = DropPath(
+            drop_path_rate) if drop_path_rate > 0 else nn.Identity()
         self.with_se = se_cfg is not None
         self.with_expand_conv = (mid_channels != in_channels)
 
@@ -87,6 +90,14 @@ class InvertedResidual(BaseModule):
             act_cfg=None)
 
     def forward(self, x):
+        """Forward function.
+
+        Args:
+            x (torch.Tensor): The input tensor.
+
+        Returns:
+            torch.Tensor: The output tensor.
+        """
 
         def _inner_forward(x):
             out = x
@@ -102,7 +113,7 @@ class InvertedResidual(BaseModule):
             out = self.linear_conv(out)
 
             if self.with_res_shortcut:
-                return x + out
+                return x + self.drop_path(out)
             else:
                 return out
 
