@@ -257,6 +257,8 @@ class VisionTransformer(BaseBackbone):
         self.pos_embed = nn.Parameter(
             torch.zeros(1, num_patches + self.num_extra_tokens,
                         self.embed_dims))
+        self._register_load_state_dict_pre_hook(self._prepare_pos_embed)
+
         self.drop_after_pos = nn.Dropout(p=drop_rate)
 
         if isinstance(out_indices, int):
@@ -267,11 +269,12 @@ class VisionTransformer(BaseBackbone):
         for i, index in enumerate(out_indices):
             if index < 0:
                 out_indices[i] = self.num_layers + index
-                assert out_indices[i] >= 0, f'Invalid out_indices {index}'
+            assert 0 <= out_indices[i] <= self.num_layers, \
+                f'Invalid out_indices {index}'
         self.out_indices = out_indices
 
         # stochastic depth decay rule
-        dpr = np.linspace(0, drop_path_rate, self.arch_settings['num_layers'])
+        dpr = np.linspace(0, drop_path_rate, self.num_layers)
 
         self.layers = ModuleList()
         if isinstance(layer_cfgs, dict):
@@ -295,8 +298,6 @@ class VisionTransformer(BaseBackbone):
                 norm_cfg, self.embed_dims, postfix=1)
             self.add_module(self.norm1_name, norm1)
 
-        self._register_load_state_dict_pre_hook(self._prepare_checkpoint_hook)
-
     @property
     def norm1(self):
         return getattr(self, self.norm1_name)
@@ -308,7 +309,7 @@ class VisionTransformer(BaseBackbone):
                 and self.init_cfg['type'] == 'Pretrained'):
             trunc_normal_(self.pos_embed, std=0.02)
 
-    def _prepare_checkpoint_hook(self, state_dict, prefix, *args, **kwargs):
+    def _prepare_pos_embed(self, state_dict, prefix, *args, **kwargs):
         name = prefix + 'pos_embed'
         if name not in state_dict.keys():
             return

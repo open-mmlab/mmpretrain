@@ -6,42 +6,19 @@ from copy import deepcopy
 from unittest import TestCase
 
 import torch
-import torch.nn.functional as F
 from mmcv.runner import load_checkpoint, save_checkpoint
 
 from mmcls.models.backbones import VisionTransformer
-
-
-def timm_resize_pos_embed(posemb, posemb_new, num_tokens=1, gs_new=()):
-    # Timm version pos embed resize function.
-    # Refers to https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/vision_transformer.py # noqa:E501
-    ntok_new = posemb_new.shape[1]
-    if num_tokens:
-        posemb_tok, posemb_grid = posemb[:, :num_tokens], posemb[0,
-                                                                 num_tokens:]
-        ntok_new -= num_tokens
-    else:
-        posemb_tok, posemb_grid = posemb[:, :0], posemb[0]
-    gs_old = int(math.sqrt(len(posemb_grid)))
-    if not len(gs_new):  # backwards compatibility
-        gs_new = [int(math.sqrt(ntok_new))] * 2
-    assert len(gs_new) >= 2
-    posemb_grid = posemb_grid.reshape(1, gs_old, gs_old,
-                                      -1).permute(0, 3, 1, 2)
-    posemb_grid = F.interpolate(
-        posemb_grid, size=gs_new, mode='bicubic', align_corners=False)
-    posemb_grid = posemb_grid.permute(0, 2, 3,
-                                      1).reshape(1, gs_new[0] * gs_new[1], -1)
-    posemb = torch.cat([posemb_tok, posemb_grid], dim=1)
-    return posemb
+from .utils import timm_resize_pos_embed
 
 
 class TestVisionTransformer(TestCase):
 
     def setUp(self):
-        self.cfg = dict(arch='b', img_size=224, patch_size=16, drop_rate=0.1)
+        self.cfg = dict(
+            arch='b', img_size=224, patch_size=16, drop_path_rate=0.1)
 
-    def test_arch(self):
+    def test_structure(self):
         # Test invalid default arch
         with self.assertRaisesRegex(AssertionError, 'not in default archs'):
             cfg = deepcopy(self.cfg)
@@ -72,6 +49,29 @@ class TestVisionTransformer(TestCase):
         for layer in model.layers:
             self.assertEqual(layer.attn.num_heads, 16)
             self.assertEqual(layer.ffn.feedforward_channels, 1024)
+
+        # Test out_indices
+        cfg = deepcopy(self.cfg)
+        cfg['out_indices'] = {1: 1}
+        with self.assertRaisesRegex(AssertionError, "get <class 'dict'>"):
+            VisionTransformer(**cfg)
+        cfg['out_indices'] = [0, 13]
+        with self.assertRaisesRegex(AssertionError, 'Invalid out_indices 13'):
+            VisionTransformer(**cfg)
+
+        # Test model structure
+        cfg = deepcopy(self.cfg)
+        model = VisionTransformer(**cfg)
+        self.assertEqual(len(model.layers), 12)
+        dpr_inc = 0.1 / (12 - 1)
+        dpr = 0
+        for layer in model.layers:
+            self.assertEqual(layer.attn.embed_dims, 768)
+            self.assertEqual(layer.attn.num_heads, 12)
+            self.assertEqual(layer.ffn.feedforward_channels, 3072)
+            self.assertAlmostEqual(layer.attn.out_drop.drop_prob, dpr)
+            self.assertAlmostEqual(layer.ffn.dropout_layer.drop_prob, dpr)
+            dpr += dpr_inc
 
     def test_init_weights(self):
         # test weight init cfg
