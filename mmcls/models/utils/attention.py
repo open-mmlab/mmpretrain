@@ -133,7 +133,7 @@ class ShiftWindowMSA(BaseModule):
         shift_size (int, optional): The shift step of each window towards
             right-bottom. If zero, act as regular window-msa. Defaults to 0.
         qkv_bias (bool, optional): If True, add a learnable bias to q, k, v.
-            Default: True
+            Defaults to True
         qk_scale (float | None, optional): Override default qk scale of
             head_dim ** -0.5 if set. Defaults to None.
         attn_drop (float, optional): Dropout ratio of attention weight.
@@ -141,8 +141,13 @@ class ShiftWindowMSA(BaseModule):
         proj_drop (float, optional): Dropout ratio of output. Defaults to 0.
         dropout_layer (dict, optional): The dropout_layer used before output.
             Defaults to dict(type='DropPath', drop_prob=0.).
+        pad_small_map (bool): If True, pad the small feature map to the window
+            size, which is common used in detection and segmentation. If False,
+            avoid shifting window and shrink the window size to the size of
+            feature map, which is common used in classification.
+            Defaults to False.
         init_cfg (dict, optional): The extra config for initialization.
-            Default: None.
+            Defaults to None.
     """
 
     def __init__(self,
@@ -155,6 +160,7 @@ class ShiftWindowMSA(BaseModule):
                  attn_drop=0,
                  proj_drop=0,
                  dropout_layer=dict(type='DropPath', drop_prob=0.),
+                 pad_small_map=False,
                  input_resolution=None,
                  auto_pad=None,
                  init_cfg=None):
@@ -182,6 +188,7 @@ class ShiftWindowMSA(BaseModule):
         )
 
         self.drop = build_dropout(dropout_layer)
+        self.pad_small_map = pad_small_map
 
     def forward(self, query, hw_shape):
         B, L, C = query.shape
@@ -190,40 +197,46 @@ class ShiftWindowMSA(BaseModule):
             f'shape ({H}, {W}).'
         query = query.view(B, H, W, C)
 
-        pad_r = (self.window_size - W % self.window_size) % self.window_size
-        pad_b = (self.window_size - H % self.window_size) % self.window_size
-        query = F.pad(query, (0, 0, 0, pad_r, 0, pad_b))
+        if (not self.pad_small_map) and min(H, W) <= self.window_size:
+            shift_size = 0
+            window_size = min(H, W)
+        else:
+            shift_size = self.shift_size
+            window_size = self.window_size
+            pad_r = (window_size - W % window_size) % window_size
+            pad_b = (window_size - H % window_size) % window_size
+            query = F.pad(query, (0, 0, 0, pad_r, 0, pad_b))
+
         H_pad, W_pad = query.shape[1], query.shape[2]
 
         # cyclic shift
-        if self.shift_size > 0:
+        if shift_size > 0:
             query = torch.roll(
-                query,
-                shifts=(-self.shift_size, -self.shift_size),
-                dims=(1, 2))
+                query, shifts=(-shift_size, -shift_size), dims=(1, 2))
 
-        attn_mask = self.get_attn_mask((H_pad, W_pad), device=query.device)
+        attn_mask = self.get_attn_mask((H_pad, W_pad),
+                                       window_size=window_size,
+                                       shift_size=shift_size,
+                                       device=query.device)
 
         # nW*B, window_size, window_size, C
-        query_windows = self.window_partition(query)
+        query_windows = self.window_partition(query, window_size)
         # nW*B, window_size*window_size, C
-        query_windows = query_windows.view(-1, self.window_size**2, C)
+        query_windows = query_windows.view(-1, window_size**2, C)
 
         # W-MSA/SW-MSA (nW*B, window_size*window_size, C)
         attn_windows = self.w_msa(query_windows, mask=attn_mask)
 
         # merge windows
-        attn_windows = attn_windows.view(-1, self.window_size,
-                                         self.window_size, C)
+        attn_windows = attn_windows.view(-1, window_size, window_size, C)
 
         # B H' W' C
-        shifted_x = self.window_reverse(attn_windows, H_pad, W_pad)
+        shifted_x = self.window_reverse(attn_windows, H_pad, W_pad,
+                                        window_size)
         # reverse cyclic shift
         if self.shift_size > 0:
             x = torch.roll(
-                shifted_x,
-                shifts=(self.shift_size, self.shift_size),
-                dims=(1, 2))
+                shifted_x, shifts=(shift_size, shift_size), dims=(1, 2))
         else:
             x = shifted_x
 
@@ -233,34 +246,36 @@ class ShiftWindowMSA(BaseModule):
         x = x.view(B, H * W, C)
 
         x = self.drop(x)
+
         return x
 
-    def window_reverse(self, windows, H, W):
-        window_size = self.window_size
+    @staticmethod
+    def window_reverse(windows, H, W, window_size):
         B = int(windows.shape[0] / (H * W / window_size / window_size))
         x = windows.view(B, H // window_size, W // window_size, window_size,
                          window_size, -1)
         x = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(B, H, W, -1)
         return x
 
-    def window_partition(self, x):
+    @staticmethod
+    def window_partition(x, window_size):
         B, H, W, C = x.shape
-        window_size = self.window_size
         x = x.view(B, H // window_size, window_size, W // window_size,
                    window_size, C)
         windows = x.permute(0, 1, 3, 2, 4, 5).contiguous()
         windows = windows.view(-1, window_size, window_size, C)
         return windows
 
-    def get_attn_mask(self, hw_shape, device=None):
-        if self.shift_size > 0:
+    @staticmethod
+    def get_attn_mask(hw_shape, window_size, shift_size, device=None):
+        if shift_size > 0:
             img_mask = torch.zeros(1, *hw_shape, 1, device=device)
-            h_slices = (slice(0, -self.window_size),
-                        slice(-self.window_size,
-                              -self.shift_size), slice(-self.shift_size, None))
-            w_slices = (slice(0, -self.window_size),
-                        slice(-self.window_size,
-                              -self.shift_size), slice(-self.shift_size, None))
+            h_slices = (slice(0, -window_size), slice(-window_size,
+                                                      -shift_size),
+                        slice(-shift_size, None))
+            w_slices = (slice(0, -window_size), slice(-window_size,
+                                                      -shift_size),
+                        slice(-shift_size, None))
             cnt = 0
             for h in h_slices:
                 for w in w_slices:
@@ -268,9 +283,9 @@ class ShiftWindowMSA(BaseModule):
                     cnt += 1
 
             # nW, window_size, window_size, 1
-            mask_windows = self.window_partition(img_mask)
-            mask_windows = mask_windows.view(
-                -1, self.window_size * self.window_size)
+            mask_windows = ShiftWindowMSA.window_partition(
+                img_mask, window_size)
+            mask_windows = mask_windows.view(-1, window_size * window_size)
             attn_mask = mask_windows.unsqueeze(1) - mask_windows.unsqueeze(2)
             attn_mask = attn_mask.masked_fill(attn_mask != 0, -100.0)
             attn_mask = attn_mask.masked_fill(attn_mask == 0, 0.0)

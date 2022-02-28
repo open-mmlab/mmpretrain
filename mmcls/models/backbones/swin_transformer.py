@@ -31,6 +31,11 @@ class SwinBlock(BaseModule):
             hidden layer channels. Defaults to 4.
         drop_path (float, optional): The drop path rate after attention and
             ffn. Defaults to 0.
+        pad_small_map (bool): If True, pad the small feature map to the window
+            size, which is common used in detection and segmentation. If False,
+            avoid shifting window and shrink the window size to the size of
+            feature map, which is common used in classification.
+            Defaults to False.
         attn_cfgs (dict, optional): The extra config of Shift Window-MSA.
             Defaults to empty dict.
         ffn_cfgs (dict, optional): The extra config of FFN.
@@ -51,6 +56,7 @@ class SwinBlock(BaseModule):
                  shift=False,
                  ffn_ratio=4.,
                  drop_path=0.,
+                 pad_small_map=False,
                  attn_cfgs=dict(),
                  ffn_cfgs=dict(),
                  norm_cfg=dict(type='LN'),
@@ -66,6 +72,7 @@ class SwinBlock(BaseModule):
             'shift_size': window_size // 2 if shift else 0,
             'window_size': window_size,
             'dropout_layer': dict(type='DropPath', drop_prob=drop_path),
+            'pad_small_map': pad_small_map,
             **attn_cfgs
         }
         self.norm1 = build_norm_layer(norm_cfg, embed_dims)[1]
