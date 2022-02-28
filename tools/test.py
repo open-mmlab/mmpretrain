@@ -15,8 +15,7 @@ from mmcv.runner import (get_dist_info, init_dist, load_checkpoint,
 from mmcls.apis import multi_gpu_test, single_gpu_test
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.models import build_classifier
-from mmcls.utils import setup_multi_processes
-from mmcls.utils import get_root_logger
+from mmcls.utils import get_root_logger, setup_multi_processes
 
 
 def parse_args():
