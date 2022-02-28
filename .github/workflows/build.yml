@@ -172,7 +172,7 @@ jobs:
       - name: Install MMCV & OpenCV
         run: |
           pip install opencv-python
-          pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cpu/torch${{matrix.torch_major}}/index.html
+          pip install mmcv-full==1.4.2 -f https://download.openmmlab.com/mmcv/dist/cpu/torch${{matrix.torch_major}}/index.html
           python -c 'import mmcv; print(mmcv.__version__)'
       - name: Install mmcls dependencies
         run: |
