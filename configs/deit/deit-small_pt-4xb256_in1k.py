@@ -1,3 +1,5 @@
+# In small and tiny arch, remove drop path and EMA hook comparing with the
+# original config
 _base_ = [
     '../_base_/datasets/imagenet_bs64_swin_224.py',
     '../_base_/schedules/imagenet_bs1024_adamw_swin.py',
