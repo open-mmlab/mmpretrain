@@ -202,7 +202,7 @@ class ShiftWindowMSA(BaseModule):
                 shifts=(-self.shift_size, -self.shift_size),
                 dims=(1, 2))
 
-        attn_mask = self.get_attn_mask((H_pad, W_pad))
+        attn_mask = self.get_attn_mask((H_pad, W_pad), device=query.device)
 
         # nW*B, window_size, window_size, C
         query_windows = self.window_partition(query)
@@ -252,9 +252,9 @@ class ShiftWindowMSA(BaseModule):
         windows = windows.view(-1, window_size, window_size, C)
         return windows
 
-    def get_attn_mask(self, hw_shape):
+    def get_attn_mask(self, hw_shape, device=None):
         if self.shift_size > 0:
-            img_mask = torch.zeros(1, *hw_shape, 1)
+            img_mask = torch.zeros(1, *hw_shape, 1, device=device)
             h_slices = (slice(0, -self.window_size),
                         slice(-self.window_size,
                               -self.shift_size), slice(-self.shift_size, None))

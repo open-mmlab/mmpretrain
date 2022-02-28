@@ -320,6 +320,7 @@ class SwinTransformer(BaseBackbone):
             conv_type='Conv2d',
             kernel_size=patch_size,
             stride=patch_size,
+            norm_cfg=dict(type='LN'),
         )
         _patch_cfg.update(patch_cfg)
         self.patch_embed = PatchEmbed(**_patch_cfg)
