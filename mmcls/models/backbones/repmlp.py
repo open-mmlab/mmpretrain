@@ -5,10 +5,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import (ConvModule, build_activation_layer, build_conv_layer,
                       build_norm_layer)
+from mmcv.cnn.bricks.transformer import PatchEmbed as _PatchEmbed
 from mmcv.runner import BaseModule, ModuleList, Sequential
 
 from mmcls.models.builder import BACKBONES
-from mmcls.models.utils import SELayer
+from mmcls.models.utils import SELayer, to_2tuple
 
 
 def fuse_bn(conv_or_fc, bn):
@@ -29,6 +30,61 @@ def fuse_bn(conv_or_fc, bn):
         bias = bn.bias - bn.running_mean * bn.weight / std
         fused_bias = (bias).repeat_interleave(repeat_times, 0)
         return (fused_weight, fused_bias)
+
+
+class PatchEmbed(_PatchEmbed):
+    """Image to Patch Embedding.
+
+    Compared with default Patch Embedding(in ViT), Patch Embedding of RepMLP
+     have ReLu and do not convert output tensor into shape (N, L, C).
+
+    Args:
+        in_channels (int): The num of input channels. Default: 3
+        embed_dims (int): The dimensions of embedding. Default: 768
+        conv_type (str): The type of convolution
+            to generate patch embedding. Default: "Conv2d".
+        kernel_size (int): The kernel_size of embedding conv. Default: 16.
+        stride (int): The slide stride of embedding conv.
+            Default: 16.
+        padding (int | tuple | string): The padding length of
+            embedding conv. When it is a string, it means the mode
+            of adaptive padding, support "same" and "corner" now.
+            Default: "corner".
+        dilation (int): The dilation rate of embedding conv. Default: 1.
+        bias (bool): Bias of embed conv. Default: True.
+        norm_cfg (dict, optional): Config dict for normalization layer.
+            Default: None.
+        input_size (int | tuple | None): The size of input, which will be
+            used to calculate the out size. Only works when `dynamic_size`
+            is False. Default: None.
+        init_cfg (`mmcv.ConfigDict`, optional): The Config for initialization.
+            Default: None.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(PatchEmbed, self).__init__(*args, **kwargs)
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        """
+        Args:
+            x (Tensor): Has shape (B, C, H, W). In most case, C is 3.
+        Returns:
+            tuple: Contains merged results and its spatial shape.
+            - x (Tensor): The output tensor.
+            - out_size (tuple[int]): Spatial shape of x, arrange as
+              (out_h, out_w).
+        """
+
+        if self.adaptive_padding:
+            x = self.adaptive_padding(x)
+
+        x = self.projection(x)
+        if self.norm is not None:
+            x = self.norm(x)
+        x = self.relu(x)
+        out_size = (x.shape[2], x.shape[3])
+        return x, out_size
 
 
 class GlobalPerceptron(SELayer):
@@ -347,8 +403,8 @@ class RepMLPNet(BaseModule):
     <https://arxiv.org/abs/2105.01883>`_
 
     Args:
-        arch (str | dict): The parameter of RepVGG.
-            If it's a dict, it should contain the following keys:
+        arch (str | dict): RepMLP architecture. If use string, choose
+            from 'base' and 'b'. If use dict, it should have below keys:
 
             - channels (List[int]): Number of blocks in each stage.
             - num_blocks (List[float]): The number of blocks in each branch.
@@ -357,8 +413,8 @@ class RepMLPNet(BaseModule):
 
         img_size (int): The size of input image. Defaults: 224.
         in_channels (int): Number of input image channels. Default: 3.
-        patch_size (int): The patch size of patch embeding layer.
-            Default: 4.
+        patch_size (int | tuple): The patch size in patch embedding.
+            Defaults to 4.
         out_indices (Sequence[int]): Output from which stages.
             Default: ``(3, )``.
         reparam_conv_kernels (Squeue(int) | None): The conv kernels in the
@@ -369,7 +425,9 @@ class RepMLPNet(BaseModule):
             PartitionPerceptron. Default 1.
         conv_cfg (dict | None): The config dict for conv layers. Default: None.
         norm_cfg (dict): The config dict for norm layers.
-            Default: dict(type='BN').
+            Default: dict(type='BN', requires_grad=True).
+        patch_cfg (dict): Extra config dict for patch embedding.
+            Defaults to an empty dict.
         final_norm (bool): Whether to add a additional layer to normalize
             final feature map. Defaults to True.
         act_cfg (dict): Config dict for activation layer.
@@ -385,38 +443,39 @@ class RepMLPNet(BaseModule):
                          'sharesets_nums': [1, 4, 32, 128]}),
     }  # yapf: disable
 
-    essential_keys = {'channels', 'num_blocks', 'sharesets_nums'}
+    num_extra_tokens = 0  # there is no cls-token in RepMLP
 
     def __init__(self,
                  arch,
                  img_size=224,
                  in_channels=3,
-                 out_indices=(3, ),
                  patch_size=4,
+                 out_indices=(3, ),
                  reparam_conv_kernels=(3, ),
                  globalperceptron_ratio=4,
                  conv_cfg=None,
                  norm_cfg=dict(type='BN', requires_grad=True),
+                 patch_cfg=dict(),
                  final_norm=True,
                  deploy=False,
                  init_cfg=None):
         super(RepMLPNet, self).__init__(init_cfg=init_cfg)
-        assert img_size % 32 == 0, 'img_sizemust be divisible by 32.'
         if isinstance(arch, str):
             arch = arch.lower()
             assert arch in set(self.arch_zoo), \
                 f'Arch {arch} is not in default archs {set(self.arch_zoo)}'
             self.arch_settings = self.arch_zoo[arch]
         else:
-            assert isinstance(arch, dict) and (
-                set(arch) == self.essential_keys
-            ), f'Custom arch needs a dict with keys {self.essential_keys}.'
+            essential_keys = {'channels', 'num_blocks', 'sharesets_nums'}
+            assert isinstance(arch, dict) & set(arch) == essential_keys,  \
+                f'Custom arch needs a dict with keys {self.essential_keys}.'
             self.arch_settings = arch
 
+        self.img_size = to_2tuple(img_size)
+        self.patch_size = to_2tuple(patch_size)
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
 
-        self.num_extra_tokens = 0  # there is no cls-token in RepMLP
         self.num_stage = len(self.arch_settings['channels'])
         for value in self.arch_settings.values():
             assert isinstance(value, list) and len(value) == self.num_stage, (
@@ -424,24 +483,28 @@ class RepMLPNet(BaseModule):
                 ' have the same length.')
 
         self.channels = self.arch_settings['channels']
-        self.patch_hs = [
-            int(img_size / 2**(i + 2)) for i in range(self.num_stage)
-        ]
-        self.patch_ws = [
-            int(img_size / 2**(i + 2)) for i in range(self.num_stage)
-        ]
         self.num_blocks = self.arch_settings['num_blocks']
         self.sharesets_nums = self.arch_settings['sharesets_nums']
 
-        self.path_embed = ConvModule(
-            in_channels,
-            self.channels[0],
-            kernel_size=patch_size,
-            stride=patch_size,
-            padding=0,
-            conv_cfg=self.conv_cfg,
+        _patch_cfg = dict(
+            in_channels=in_channels,
+            input_size=self.img_size,
+            embed_dims=self.channels[0],
+            conv_type='Conv2d',
+            kernel_size=self.patch_size,
+            stride=self.patch_size,
             norm_cfg=self.norm_cfg,
-            inplace=True)
+            bias=False)
+        _patch_cfg.update(patch_cfg)
+        self.patch_embed = PatchEmbed(**_patch_cfg)
+        self.patch_resolution = self.patch_embed.init_out_size
+
+        self.patch_hs = [
+            self.patch_resolution[0] // 2**i for i in range(self.num_stage)
+        ]
+        self.patch_ws = [
+            self.patch_resolution[1] // 2**i for i in range(self.num_stage)
+        ]
 
         self.stages = ModuleList()
         self.downsample_layers = ModuleList()
@@ -485,9 +548,13 @@ class RepMLPNet(BaseModule):
         self.add_module('final_norm', norm_layer)
 
     def forward(self, x):
+        assert x.shape[2:] == self.img_size, \
+            "The Rep-MLP doesn't support dynamic input shape. " \
+            f'Please input images with shape {self.img_size}'
+
         outs = []
 
-        x = self.path_embed(x)
+        x, _ = self.patch_embed(x)
         for i, stage in enumerate(self.stages):
             x = stage(x)
 

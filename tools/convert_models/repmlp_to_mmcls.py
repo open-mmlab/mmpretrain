@@ -21,7 +21,7 @@ def convert(src, dst):
         else:
             splited_key = key.split('.')
             splited_key = [
-                'path_embed' if i == 'conv_embedding' else i
+                'patch_embed' if i == 'conv_embedding' else i
                 for i in splited_key
             ]
             splited_key = [
@@ -43,6 +43,11 @@ def convert(src, dst):
             splited_key = [
                 'norm2' if i == 'prebn2' else i for i in splited_key
             ]
+            if 'patch_embed' in splited_key:
+                splited_key = [
+                    'projection' if i == 'conv' else i for i in splited_key
+                ]
+                splited_key = ['norm' if i == 'bn' else i for i in splited_key]
             new_key = 'backbone.' + '.'.join(splited_key)
             converted_state_dict[new_key] = value
         print(f'{new_key} <--- {key} | Size: {value.size()}')
