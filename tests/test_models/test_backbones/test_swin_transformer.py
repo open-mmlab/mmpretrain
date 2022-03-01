@@ -88,11 +88,13 @@ class TestSwinTransformer(TestCase):
         pretrain_pos_embed = model.absolute_pos_embed.clone().detach()
 
         tmpdir = tempfile.gettempdir()
-        # Save v2 checkpoints
-        checkpoint_v2 = os.path.join(tmpdir, 'v2.pth')
+        # Save v3 checkpoints
+        checkpoint_v2 = os.path.join(tmpdir, 'v3.pth')
         save_checkpoint(model, checkpoint_v2)
         # Save v1 checkpoints
         setattr(model, 'norm', model.norm3)
+        setattr(model.stages[0].blocks[1].attn, 'attn_mask',
+                torch.zeros(64, 49, 49))
         model._version = 1
         del model.norm3
         checkpoint_v1 = os.path.join(tmpdir, 'v1.pth')
@@ -104,13 +106,13 @@ class TestSwinTransformer(TestCase):
         model = SwinTransformer(**cfg)
         load_checkpoint(model, checkpoint_v1, strict=True)
 
-        # test load v2 checkpoint
+        # test load v3 checkpoint
         cfg = deepcopy(self.cfg)
         cfg['use_abs_pos_embed'] = True
         model = SwinTransformer(**cfg)
         load_checkpoint(model, checkpoint_v2, strict=True)
 
-        # test load v2 checkpoint with different img_size
+        # test load v3 checkpoint with different img_size
         cfg = deepcopy(self.cfg)
         cfg['img_size'] = 384
         cfg['use_abs_pos_embed'] = True

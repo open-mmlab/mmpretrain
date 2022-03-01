@@ -288,7 +288,7 @@ class SwinTransformer(BaseBackbone):
                          'num_heads':  [6, 12, 24, 48]}),
     }  # yapf: disable
 
-    _version = 2
+    _version = 3
     num_extra_tokens = 0
 
     def __init__(self,
@@ -441,6 +441,12 @@ class SwinTransformer(BaseBackbone):
                 if k.startswith('norm.') or k.startswith('backbone.norm.'):
                     convert_key = k.replace('norm.', f'norm{final_stage_num}.')
                     state_dict[convert_key] = state_dict[k]
+                    del state_dict[k]
+        if (version is None
+                or version < 3) and self.__class__ is SwinTransformer:
+            state_dict_keys = list(state_dict.keys())
+            for k in state_dict_keys:
+                if 'attn_mask' in k:
                     del state_dict[k]
 
         super()._load_from_state_dict(state_dict, prefix, local_metadata,
