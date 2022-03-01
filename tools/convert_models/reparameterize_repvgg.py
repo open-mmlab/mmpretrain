@@ -1,24 +1,22 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 import warnings
 from pathlib import Path
 
-import mmcv
 import torch
-
-try:
-    from colorama import Back, Fore, Style
-except ImportError:
-    Style = mmcv.ConfigDict({'BRIGHT': '\x1b[1m', 'RESET_ALL': '\x1b[0m'})
-    Fore = mmcv.ConfigDict({'RED': '\x1b[31m', 'BLUE': '\x1b[34m'})
-    Back = mmcv.ConfigDict({'LIGHTWHITE_EX': '\x1b[107m'})
 
 from mmcls.apis import init_model
 
-msg = Style.BRIGHT + Fore.RED
+bright_style, reset_style = '\x1b[1m', '\x1b[0m'
+red_text, blue_text = '\x1b[31m', '\x1b[34m'
+white_background = '\x1b[107m'
+
+msg = bright_style + red_text
 msg += 'DeprecationWarning: This tool will be deprecated in future. '
-msg += Fore.BLUE + 'Welcome to use the'
-msg += '"tools/convert_models/reparameterize_model.py" instead'
-msg += Style.RESET_ALL
+msg += red_text + 'Welcome to use the '
+msg += white_background
+msg += '"tools/convert_models/reparameterize_model.py"'
+msg += reset_style
 warnings.warn(msg)
 
 
