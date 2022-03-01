@@ -2,7 +2,6 @@ import torch.nn as nn
 from mmcv.cnn.bricks import build_activation_layer, build_norm_layer
 
 from ..builder import BACKBONES
-from ..utils import PatchEmbed
 from .base_backbone import BaseBackbone
 
 
@@ -46,7 +45,6 @@ class ConvMixer(BaseBackbone):
             Defaults to ``dict(type='BN')``.
         act_cfg (dict): The config dict for activation after each convolution.
             Defaults to ``dict(type='GELU')``.
-        patch_cfg (dict): Configs of patch embeding. Defaults to an empty dict.
         init_cfg (dict, optional): Initialization config dict.
     """
     arch_settings = {
@@ -72,11 +70,9 @@ class ConvMixer(BaseBackbone):
 
     def __init__(self,
                  arch='small',
-                 img_size=224,
                  in_channels=3,
                  norm_cfg=dict(type='BN'),
                  act_cfg=dict(type='GELU'),
-                 patch_cfg=dict(),
                  init_cfg=None):
         super().__init__(init_cfg=init_cfg)
 
@@ -94,21 +90,16 @@ class ConvMixer(BaseBackbone):
         self.depth = arch['depth']
         self.patch_size = arch['patch_size']
         self.kernel_size = arch['kernel_size']
-
-        # Set patch embedding
-        _patch_cfg = dict(
-            img_size=img_size,
-            in_channels=in_channels,
-            embed_dims=self.embed_dims,
-            conv_cfg=dict(
-                type='Conv2d',
-                kernel_size=self.patch_size,
-                stride=self.patch_size),
-        )
-        _patch_cfg.update(patch_cfg)
-        self.patch_embed = PatchEmbed(**_patch_cfg)
         self.act = build_activation_layer(act_cfg)
-        self.norm = build_norm_layer(norm_cfg, self.embed_dims)[1]
+
+        # Set stem layers
+        self.stem = nn.Sequential(
+            nn.Conv2d(
+                in_channels,
+                self.embed_dims,
+                kernel_size=self.patch_size,
+                stride=self.patch_size), self.act,
+            build_norm_layer(norm_cfg, self.embed_dims)[1])
 
         # Repetitions of ConvMixer Layer
         self.layers = nn.Sequential(*[
@@ -120,17 +111,17 @@ class ConvMixer(BaseBackbone):
                             self.embed_dims,
                             self.kernel_size,
                             groups=self.embed_dims,
-                            padding='same'), build_activation_layer(act_cfg),
+                            padding=int((self.kernel_size - 1) / 2)), self.act,
                         build_norm_layer(norm_cfg, self.embed_dims)[1])),
                 nn.Conv2d(self.embed_dims, self.embed_dims, kernel_size=1),
-                build_activation_layer(act_cfg),
+                self.act,
                 build_norm_layer(norm_cfg, self.embed_dims)[1])
             for _ in range(self.depth)
         ])
+        self.pooling = nn.AdaptiveAvgPool2d((1, 1))
 
     def forward(self, x):
-        x = self.patch_embed(x)
+        x = self.stem(x)
         x = self.layers(x)
-        gap = x.mean([-2, -1], keepdim=True)
-
-        return (gap, )
+        x = self.pooling(x).flatten(1)
+        return (x, )
