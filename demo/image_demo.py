@@ -15,6 +15,9 @@ def main():
 
     # build the model from a config file and a checkpoint file
     model = init_model(args.config, args.checkpoint, device=args.device)
+    for i, stage in enumerate(model.backbone.stages):
+        print(i, len(stage))
+        print(i, stage[0])
     # test a single image
     result = inference_model(model, args.img)
     # show the results

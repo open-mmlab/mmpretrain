@@ -22,7 +22,7 @@ def fuse_bn(conv_or_fc, bn):
         return (conv_or_fc.weight * tmp_weight,
                 bn.bias - bn.running_mean * bn.weight / std)
     else:
-        # in RepMLPBlock, dim0 in conv weights and fc3_bn weights
+        # in RepMLPBlock, dim0 of fc3 weights and fc3_bn weights
         # are different.
         repeat_times = conv_or_fc.weight.size(0) // len(tmp_weight)
         repeated = tmp_weight.repeat_interleave(repeat_times, 0)
@@ -407,11 +407,11 @@ class RepMLPNet(BaseModule):
             from 'base' and 'b'. If use dict, it should have below keys:
 
             - channels (List[int]): Number of blocks in each stage.
-            - num_blocks (List[float]): The number of blocks in each branch.
+            - depths (List[int]): The number of blocks in each branch.
             - sharesets_nums (List[int]): RepVGG Block that declares
               the need to apply group convolution.
 
-        img_size (int): The size of input image. Defaults: 224.
+        img_size (int | tuple): The size of input image. Defaults: 224.
         in_channels (int): Number of input image channels. Default: 3.
         patch_size (int | tuple): The patch size in patch embedding.
             Defaults to 4.
@@ -439,7 +439,7 @@ class RepMLPNet(BaseModule):
     arch_zoo = {
         **dict.fromkeys(['b', 'base'],
                         {'channels':       [96, 192, 384, 768],
-                         'num_blocks':     [2, 2, 12, 2],
+                         'depths':         [2, 2, 12, 2],
                          'sharesets_nums': [1, 4, 32, 128]}),
     }  # yapf: disable
 
@@ -466,9 +466,9 @@ class RepMLPNet(BaseModule):
                 f'Arch {arch} is not in default archs {set(self.arch_zoo)}'
             self.arch_settings = self.arch_zoo[arch]
         else:
-            essential_keys = {'channels', 'num_blocks', 'sharesets_nums'}
-            assert isinstance(arch, dict) & set(arch) == essential_keys,  \
-                f'Custom arch needs a dict with keys {self.essential_keys}.'
+            essential_keys = {'channels', 'depths', 'sharesets_nums'}
+            assert isinstance(arch, dict) and set(arch) == essential_keys, \
+                f'Custom arch needs a dict with keys {essential_keys}.'
             self.arch_settings = arch
 
         self.img_size = to_2tuple(img_size)
@@ -483,7 +483,7 @@ class RepMLPNet(BaseModule):
                 ' have the same length.')
 
         self.channels = self.arch_settings['channels']
-        self.num_blocks = self.arch_settings['num_blocks']
+        self.depths = self.arch_settings['depths']
         self.sharesets_nums = self.arch_settings['sharesets_nums']
 
         _patch_cfg = dict(
@@ -522,7 +522,7 @@ class RepMLPNet(BaseModule):
                 deploy=deploy)
             stage_blocks = [
                 RepMLPNetUnit(**_stage_cfg)
-                for _ in range(self.num_blocks[stage_idx])
+                for _ in range(self.depths[stage_idx])
             ]
             self.stages.append(Sequential(*stage_blocks))
 
