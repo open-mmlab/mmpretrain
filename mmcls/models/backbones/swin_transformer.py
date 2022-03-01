@@ -23,30 +23,26 @@ class SwinBlock(BaseModule):
     Args:
         embed_dims (int): Number of input channels.
         num_heads (int): Number of attention heads.
-        window_size (int, optional): The height and width of the window.
-            Defaults to 7.
-        shift (bool, optional): Shift the attention window or not.
-            Defaults to False.
-        ffn_ratio (float, optional): The expansion ratio of feedforward network
-            hidden layer channels. Defaults to 4.
-        drop_path (float, optional): The drop path rate after attention and
-            ffn. Defaults to 0.
+        window_size (int): The height and width of the window. Defaults to 7.
+        shift (bool): Shift the attention window or not. Defaults to False.
+        ffn_ratio (float): The expansion ratio of feedforward network hidden
+            layer channels. Defaults to 4.
+        drop_path (float): The drop path rate after attention and ffn.
+            Defaults to 0.
         pad_small_map (bool): If True, pad the small feature map to the window
             size, which is common used in detection and segmentation. If False,
             avoid shifting window and shrink the window size to the size of
             feature map, which is common used in classification.
             Defaults to False.
-        attn_cfgs (dict, optional): The extra config of Shift Window-MSA.
+        attn_cfgs (dict): The extra config of Shift Window-MSA.
             Defaults to empty dict.
-        ffn_cfgs (dict, optional): The extra config of FFN.
-            Defaults to empty dict.
-        norm_cfg (dict, optional): The config of norm layers.
-            Defaults to dict(type='LN').
-        with_cp (bool, optional): Use checkpoint or not. Using checkpoint
-            will save some memory while slowing down the training speed.
-            Defaults to False.
+        ffn_cfgs (dict): The extra config of FFN. Defaults to empty dict.
+        norm_cfg (dict): The config of norm layers.
+            Defaults to ``dict(type='LN')``.
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+            memory while slowing down the training speed. Defaults to False.
         init_cfg (dict, optional): The extra config for initialization.
-            Default: None.
+            Defaults to None.
     """
 
     def __init__(self,
@@ -119,30 +115,37 @@ class SwinBlockSequence(BaseModule):
         embed_dims (int): Number of input channels.
         depth (int): Number of successive swin transformer blocks.
         num_heads (int): Number of attention heads.
-        downsample (bool, optional): Downsample the output of blocks by patch
-            merging. Defaults to False.
-        downsample_cfg (dict, optional): The extra config of the patch merging
-            layer. Defaults to empty dict.
-        drop_paths (Sequence[float] | float, optional): The drop path rate in
-            each block. Defaults to 0.
-        block_cfgs (Sequence[dict] | dict, optional): The extra config of each
-            block. Defaults to empty dicts.
-        with_cp (bool, optional): Use checkpoint or not. Using checkpoint
-            will save some memory while slowing down the training speed.
+        window_size (int): The height and width of the window. Defaults to 7.
+        downsample (bool): Downsample the output of blocks by patch merging.
+            Defaults to False.
+        downsample_cfg (dict): The extra config of the patch merging layer.
+            Defaults to empty dict.
+        drop_paths (Sequence[float] | float): The drop path rate in each block.
+            Defaults to 0.
+        block_cfgs (Sequence[dict] | dict): The extra config of each block.
+            Defaults to empty dicts.
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+            memory while slowing down the training speed. Defaults to False.
+        pad_small_map (bool): If True, pad the small feature map to the window
+            size, which is common used in detection and segmentation. If False,
+            avoid shifting window and shrink the window size to the size of
+            feature map, which is common used in classification.
             Defaults to False.
         init_cfg (dict, optional): The extra config for initialization.
-            Default: None.
+            Defaults to None.
     """
 
     def __init__(self,
                  embed_dims,
                  depth,
                  num_heads,
+                 window_size=7,
                  downsample=False,
                  downsample_cfg=dict(),
                  drop_paths=0.,
                  block_cfgs=dict(),
                  with_cp=False,
+                 pad_small_map=False,
                  init_cfg=None):
         super().__init__(init_cfg)
 
@@ -158,9 +161,11 @@ class SwinBlockSequence(BaseModule):
             _block_cfg = {
                 'embed_dims': embed_dims,
                 'num_heads': num_heads,
+                'window_size': window_size,
                 'shift': False if i % 2 == 0 else True,
                 'drop_path': drop_paths[i],
                 'with_cp': with_cp,
+                'pad_small_map': pad_small_map,
                 **block_cfgs[i]
             }
             block = SwinBlock(**_block_cfg)
@@ -223,23 +228,28 @@ class SwinTransformer(BaseBackbone):
         patch_size (int | tuple): The patch size in patch embedding.
             Defaults to 4.
         in_channels (int): The num of input channels. Defaults to 3.
+        window_size (int): The height and width of the window. Defaults to 7.
         drop_rate (float): Dropout rate after embedding. Defaults to 0.
         drop_path_rate (float): Stochastic depth rate. Defaults to 0.1.
         use_abs_pos_embed (bool): If True, add absolute position embedding to
             the patch embedding. Defaults to False.
         interpolate_mode (str): Select the interpolate mode for absolute
             position embeding vector resize. Defaults to "bicubic".
-        with_cp (bool, optional): Use checkpoint or not. Using checkpoint
-            will save some memory while slowing down the training speed.
-            Defaults to False.
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+            memory while slowing down the training speed. Defaults to False.
         frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
             -1 means not freezing any parameters. Defaults to -1.
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm
             and its variants only. Defaults to False.
-        norm_cfg (dict, optional): Config dict for normalization layer for all
-            output features. Defaults to ``dict(type='LN')``
-        stage_cfgs (Sequence | dict): Extra config dict for each
+        pad_small_map (bool): If True, pad the small feature map to the window
+            size, which is common used in detection and segmentation. If False,
+            avoid shifting window and shrink the window size to the size of
+            feature map, which is common used in classification.
+            Defaults to False.
+        norm_cfg (dict): Config dict for normalization layer for all output
+            features. Defaults to ``dict(type='LN')``
+        stage_cfgs (Sequence[dict] | dict): Extra config dict for each
             stage. Defaults to an empty dict.
         patch_cfg (dict): Extra config dict for patch embedding.
             Defaults to an empty dict.
@@ -286,6 +296,7 @@ class SwinTransformer(BaseBackbone):
                  img_size=224,
                  patch_size=4,
                  in_channels=3,
+                 window_size=7,
                  drop_rate=0.,
                  drop_path_rate=0.1,
                  out_indices=(3, ),
@@ -294,6 +305,7 @@ class SwinTransformer(BaseBackbone):
                  with_cp=False,
                  frozen_stages=-1,
                  norm_eval=False,
+                 pad_small_map=False,
                  norm_cfg=dict(type='LN'),
                  stage_cfgs=dict(),
                  patch_cfg=dict(),
@@ -362,9 +374,11 @@ class SwinTransformer(BaseBackbone):
                 'embed_dims': embed_dims[-1],
                 'depth': depth,
                 'num_heads': num_heads,
+                'window_size': window_size,
                 'downsample': downsample,
                 'drop_paths': dpr[:depth],
                 'with_cp': with_cp,
+                'pad_small_map': pad_small_map,
                 **stage_cfg
             }
 

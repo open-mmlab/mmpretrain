@@ -137,9 +137,22 @@ class TestSwinTransformer(TestCase):
 
         # test with window_size=12
         cfg = deepcopy(self.cfg)
-        cfg['stage_cfgs'] = dict(block_cfgs=dict(window_size=12))
+        cfg['window_size'] = 12
         model = SwinTransformer(**cfg)
-        outs = model(imgs)
+        outs = model(torch.randn(3, 3, 384, 384))
+        self.assertIsInstance(outs, tuple)
+        self.assertEqual(len(outs), 1)
+        feat = outs[-1]
+        self.assertEqual(feat.shape, (3, 1024, 12, 12))
+        with self.assertRaisesRegex(AssertionError, r'the window size \(12\)'):
+            model(torch.randn(3, 3, 224, 224))
+
+        # test with pad_small_map=True
+        cfg = deepcopy(self.cfg)
+        cfg['window_size'] = 12
+        cfg['pad_small_map'] = True
+        model = SwinTransformer(**cfg)
+        outs = model(torch.randn(3, 3, 224, 224))
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 1)
         feat = outs[-1]

@@ -197,15 +197,27 @@ class ShiftWindowMSA(BaseModule):
             f'shape ({H}, {W}).'
         query = query.view(B, H, W, C)
 
-        if (not self.pad_small_map) and min(H, W) <= self.window_size:
-            shift_size = 0
-            window_size = min(H, W)
-        else:
-            shift_size = self.shift_size
-            window_size = self.window_size
-            pad_r = (window_size - W % window_size) % window_size
-            pad_b = (window_size - H % window_size) % window_size
-            query = F.pad(query, (0, 0, 0, pad_r, 0, pad_b))
+        window_size = self.window_size
+        shift_size = self.shift_size
+
+        if min(H, W) == window_size:
+            # If not pad small feature map, avoid shifting when the window size
+            # is equal to the size of feature map. It's to align with the
+            # behavior of the original implementation.
+            shift_size = shift_size if self.pad_small_map else 0
+        elif min(H, W) < window_size:
+            # In the original implementation, the window size will be shrunk
+            # to the size of feature map. The behavior is different with
+            # swin-transformer for downstream tasks. To support dynamic input
+            # shape, we don't allow this feature.
+            assert self.pad_small_map, \
+                f'The input shape ({H}, {W}) is smaller than the window ' \
+                f'size ({window_size}). Please set `pad_small_map=True`, or ' \
+                'decrease the `window_size`.'
+
+        pad_r = (window_size - W % window_size) % window_size
+        pad_b = (window_size - H % window_size) % window_size
+        query = F.pad(query, (0, 0, 0, pad_r, 0, pad_b))
 
         H_pad, W_pad = query.shape[1], query.shape[2]
 
