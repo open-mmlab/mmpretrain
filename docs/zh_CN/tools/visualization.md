@@ -80,7 +80,7 @@ python tools/visualizations/vis_pipeline.py \
 4. **'pipeline'** 模式，可视化 `ImageNet` 训练集经过数据流水线的过程图像：
 
   ```shell
-  python ./tools/visualizations/vis_pipeline.py configs/swin_transformer/swin_base_224_b16x64_300e_imagenet.py --phase train --adaptive --pipeline
+  python ./tools/visualizations/vis_pipeline.py configs/swin_transformer/swin_base_224_b16x64_300e_imagenet.py --phase train --adaptive --mode pipeline --show
   ```
 
   <div align=center><img src="https://user-images.githubusercontent.com/18586273/146128201-eb97c2aa-a615-4a81-a649-38db1c315d0e.JPEG" style=" width: auto; height: 40%; "></div>
