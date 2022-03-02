@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import warnings
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -19,9 +21,9 @@ def resize_pos_embed(pos_embed,
         pos_embed (torch.Tensor): Position embedding weights with shape
             [1, L, C].
         src_shape (tuple): The resolution of downsampled origin training
-            image.
+            image, in format (H, W).
         dst_shape (tuple): The resolution of downsampled new training
-            image.
+            image, in format (H, W).
         mode (str): Algorithm used for upsampling. Choose one from 'nearest',
             'linear', 'bilinear', 'bicubic' and 'trilinear'.
             Defaults to 'bicubic'.
@@ -77,6 +79,9 @@ class PatchEmbed(BaseModule):
                  conv_cfg=None,
                  init_cfg=None):
         super(PatchEmbed, self).__init__(init_cfg)
+        warnings.warn('The `PatchEmbed` in mmcls will be deprecated. '
+                      'Please use `mmcv.cnn.bricks.transformer.PatchEmbed`. '
+                      "It's more general and supports dynamic input shape")
 
         if isinstance(img_size, int):
             img_size = to_2tuple(img_size)
@@ -248,6 +253,10 @@ class PatchMerging(BaseModule):
                  norm_cfg=dict(type='LN'),
                  init_cfg=None):
         super().__init__(init_cfg)
+        warnings.warn('The `PatchMerging` in mmcls will be deprecated. '
+                      'Please use `mmcv.cnn.bricks.transformer.PatchMerging`. '
+                      "It's more general and supports dynamic input shape")
+
         H, W = input_resolution
         self.input_resolution = input_resolution
         self.in_channels = in_channels
