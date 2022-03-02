@@ -1,0 +1,64 @@
+Collections:
+  - Name: ConvMixer
+    Metadata:
+      Training Data: ImageNet-1k
+      Architecture:
+        - 1x1 Convolution
+        - LayerScale
+    Paper:
+      URL: https://arxiv.org/abs/2201.09792
+      Title: Patches Are All You Need?
+    README: configs/convmixer/README.md
+    Code:
+      Version: v0.20.1
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.20.1/mmcls/models/backbones/convnext.py
+
+Models:
+  - Name: convmixer-768-32_10xb64_in1k
+    Metadata:
+      FLOPs: 20881342464
+      Parameters: 21110248
+    In Collections: ConvMixer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 80.16
+          Top 5 Accuracy: 95.08
+        Task: Image Classification
+    Weights: TODO
+    Config: configs/convnext/convmixer-768-32_10xb64_in1k.py
+    Converted From:
+      Weights: https://github.com/tmp-iclr/convmixer/releases/download/v1.0/convmixer_768_32_ks7_p7_relu.pth.tar
+      Code: https://github.com/locuslab/convmixer
+  - Name: convmixer-1024-20_10xb64_in1k
+    Metadata:
+      FLOPs: 5980028928
+      Parameters: 24383464
+    In Collections: ConvMixer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 76.94
+          Top 5 Accuracy: 93.36
+        Task: Image Classification
+    Weights: TODO
+    Config: configs/convnext/convmixer-1024-20_10xb64_in1k.py
+    Converted From:
+      Weights: https://github.com/tmp-iclr/convmixer/releases/download/v1.0/convmixer_1024_20_ks9_p14.pth.tar
+      Code: https://github.com/locuslab/convmixer
+  - Name: convmixer-1536-20_10xb64_in1k
+    Metadata:
+      FLOPs: 51292667904
+      Parameters: 51625960
+    In Collections: ConvMixer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 81.37
+          Top 5 Accuracy: 95.61
+        Task: Image Classification
+    Weights: TODO
+    Config: configs/convnext/convmixer-1536-20_10xb64_in1k.py
+    Converted From:
+      Weights: https://github.com/tmp-iclr/convmixer/releases/download/v1.0/convmixer_1536_20_ks9_p7.pth.tar
+      Code: https://github.com/locuslab/convmixer
