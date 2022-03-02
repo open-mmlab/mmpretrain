@@ -6,13 +6,13 @@ import numpy as np
 import pytest
 import torch
 
-from mmcls.datasets import (DATASETS, BaseDataset, ImageNet21k,
+from mmcls.datasets import (CUB, DATASETS, BaseDataset, ImageNet21k,
                             MultiLabelDataset)
 
 
 @pytest.mark.parametrize('dataset_name', [
     'MNIST', 'FashionMNIST', 'CIFAR10', 'CIFAR100', 'ImageNet', 'VOC',
-    'ImageNet21k'
+    'ImageNet21k', 'CUB'
 ])
 def test_datasets_override_default(dataset_name):
     dataset_class = DATASETS.get(dataset_name)
@@ -27,6 +27,15 @@ def test_datasets_override_default(dataset_name):
 
     original_classes = dataset_class.CLASSES
 
+    # some datasets need extra argument to init
+    extra_kwargs_settings = {
+        'CUB':
+        dict(
+            ann_file=None,
+            image_class_labels_file=None,
+            train_test_split_file=None),
+    }
+    extra_kwargs = extra_kwargs_settings.get(dataset_name, dict())
     # Test VOC year
     if dataset_name == 'VOC':
         dataset = dataset_class(
@@ -47,7 +56,8 @@ def test_datasets_override_default(dataset_name):
         data_prefix='VOC2007' if dataset_name == 'VOC' else '',
         pipeline=[],
         classes=('bus', 'car'),
-        test_mode=True)
+        test_mode=True,
+        **extra_kwargs)
     assert dataset.CLASSES == ('bus', 'car')
 
     # Test get_cat_ids
@@ -61,7 +71,8 @@ def test_datasets_override_default(dataset_name):
         data_prefix='VOC2007' if dataset_name == 'VOC' else '',
         pipeline=[],
         classes=['bus', 'car'],
-        test_mode=True)
+        test_mode=True,
+        **extra_kwargs)
     assert dataset.CLASSES == ['bus', 'car']
 
     # Test setting classes through a file
@@ -72,7 +83,8 @@ def test_datasets_override_default(dataset_name):
         data_prefix='VOC2007' if dataset_name == 'VOC' else '',
         pipeline=[],
         classes=tmp_file.name,
-        test_mode=True)
+        test_mode=True,
+        **extra_kwargs)
     tmp_file.close()
 
     assert dataset.CLASSES == ['bus', 'car']
@@ -82,100 +94,20 @@ def test_datasets_override_default(dataset_name):
         data_prefix='VOC2007' if dataset_name == 'VOC' else '',
         pipeline=[],
         classes=['foo'],
-        test_mode=True)
+        test_mode=True,
+        **extra_kwargs)
     assert dataset.CLASSES == ['foo']
 
     # Test default behavior
     dataset = dataset_class(
-        data_prefix='VOC2007' if dataset_name == 'VOC' else '', pipeline=[])
+        data_prefix='VOC2007' if dataset_name == 'VOC' else '',
+        pipeline=[],
+        **extra_kwargs)
 
     if dataset_name == 'VOC':
         assert dataset.data_prefix == 'VOC2007'
     else:
         assert dataset.data_prefix == ''
-    assert not dataset.test_mode
-    assert dataset.ann_file is None
-    assert dataset.CLASSES == original_classes
-
-    dataset_class.load_annotations = load_annotations_f
-
-
-def test_datasets_override_default_cub():
-    dataset_class = DATASETS.get('CUB')
-    load_annotations_f = dataset_class.load_annotations
-    ann = [
-        dict(
-            img_prefix='',
-            img_info=dict(),
-            gt_label=np.array(0, dtype=np.int64))
-    ]
-    dataset_class.load_annotations = MagicMock(return_value=ann)
-
-    original_classes = dataset_class.CLASSES
-
-    # Test setting classes as a tuple
-    dataset = dataset_class(
-        data_prefix='',
-        pipeline=[],
-        ann_file=None,
-        image_class_labels_file=None,
-        train_test_split_file=None,
-        classes=('bus', 'car'),
-        test_mode=True)
-    assert dataset.CLASSES == ('bus', 'car')
-
-    # Test get_cat_ids
-    assert isinstance(dataset.get_cat_ids(0), list)
-    assert len(dataset.get_cat_ids(0)) == 1
-    assert isinstance(dataset.get_cat_ids(0)[0], int)
-
-    # Test setting classes as a list
-    dataset = dataset_class(
-        data_prefix='',
-        pipeline=[],
-        ann_file=None,
-        image_class_labels_file=None,
-        train_test_split_file=None,
-        classes=['bus', 'car'],
-        test_mode=True)
-    assert dataset.CLASSES == ['bus', 'car']
-
-    # Test setting classes through a file
-    tmp_file = tempfile.NamedTemporaryFile()
-    with open(tmp_file.name, 'w') as f:
-        f.write('bus\ncar\n')
-    dataset = dataset_class(
-        data_prefix='',
-        pipeline=[],
-        ann_file=None,
-        image_class_labels_file=None,
-        train_test_split_file=None,
-        classes=tmp_file.name,
-        test_mode=True)
-    tmp_file.close()
-
-    assert dataset.CLASSES == ['bus', 'car']
-
-    # Test overriding not a subset
-    dataset = dataset_class(
-        data_prefix='',
-        pipeline=[],
-        ann_file=None,
-        image_class_labels_file=None,
-        train_test_split_file=None,
-        classes=['foo'],
-        test_mode=True)
-    assert dataset.CLASSES == ['foo']
-
-    # Test default behavior
-    dataset = dataset_class(
-        '',
-        pipeline=[],
-        ann_file=None,
-        image_class_labels_file=None,
-        train_test_split_file=None)
-
-    assert dataset.data_prefix == ''
     assert not dataset.test_mode
     assert dataset.ann_file is None
     assert dataset.CLASSES == original_classes
@@ -393,3 +325,55 @@ def test_dataset_imagenet21k():
     dataset = ImageNet21k(**dataset_cfg)
     assert len(dataset) == 3
     assert isinstance(dataset[0], dict)
+
+
+def test_dataset_cub():
+    # Test setting classes through a file
+    tmp_ann_file = tempfile.NamedTemporaryFile()
+    tmp_image_class_labels_file = tempfile.NamedTemporaryFile()
+    tmp_train_test_split_file = tempfile.NamedTemporaryFile()
+
+    with open(tmp_ann_file.name, 'w') as f:
+        f.write('1 1.txt \n2 2.txt \n')
+    with open(tmp_image_class_labels_file.name, 'w') as f:
+        f.write('1 1 \n2 2 \n')
+    with open(tmp_train_test_split_file.name, 'w') as f:
+        f.write('1 0 \n2 1 \n')
+
+    # test in train mode
+    dataset = CUB(
+        data_prefix='',
+        pipeline=[],
+        test_mode=False,
+        ann_file=tmp_ann_file.name,
+        image_class_labels_file=tmp_image_class_labels_file.name,
+        train_test_split_file=tmp_train_test_split_file.name)
+
+    assert len(dataset) == 1
+
+    # test in test mode
+    dataset = CUB(
+        data_prefix='',
+        pipeline=[],
+        test_mode=True,
+        ann_file=tmp_ann_file.name,
+        image_class_labels_file=tmp_image_class_labels_file.name,
+        train_test_split_file=tmp_train_test_split_file.name)
+
+    assert len(dataset) == 1
+
+    # test with different items in three files
+    with open(tmp_train_test_split_file.name, 'w') as f:
+        f.write('1 0 \n')
+    with pytest.raises(AssertionError, match='should have same length'):
+        dataset = CUB(
+            data_prefix='',
+            pipeline=[],
+            test_mode=True,
+            ann_file=tmp_ann_file.name,
+            image_class_labels_file=tmp_image_class_labels_file.name,
+            train_test_split_file=tmp_train_test_split_file.name)
+
+    tmp_ann_file.close()
+    tmp_image_class_labels_file.close()
+    tmp_train_test_split_file.close()

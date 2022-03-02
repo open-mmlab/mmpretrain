@@ -101,6 +101,9 @@ class CUB(BaseDataset):
 
         with open(self.image_class_labels_file) as f:
             gt_labels = [
+                # in the official CUB-200-2011 dataset, labels in
+                # image_class_labels_file are started from 1, so
+                # here we need to '- 1' to let them start from 0.
                 int(x.strip().split(' ')[1]) - 1 for x in f.readlines()
             ]
 
@@ -108,7 +111,8 @@ class CUB(BaseDataset):
             splits = [int(x.strip().split(' ')[1]) for x in f.readlines()]
 
         assert len(samples) == len(gt_labels) == len(splits),\
-            'samples, gt_labels and splits should have same length.'
+            f'samples({len(samples)}), gt_labels({len(gt_labels)}) and ' \
+            f'splits({len(splits)}) should have same length.'
 
         data_infos = []
         for filename, gt_label, split in zip(samples, gt_labels, splits):

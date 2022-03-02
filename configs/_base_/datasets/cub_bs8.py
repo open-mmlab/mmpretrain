@@ -20,7 +20,7 @@ test_pipeline = [
     dict(type='ImageToTensor', keys=['img']),
     dict(type='Collect', keys=['img'])
 ]
-data_root = 'data/CUB_200_2011/CUB_200_2011/'
+data_root = 'data/CUB_200_2011/'
 data = dict(
     samples_per_gpu=8,
     workers_per_gpu=2,
