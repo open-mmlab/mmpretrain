@@ -1,5 +1,7 @@
+import torch
 import torch.nn as nn
 from mmcv.cnn.bricks import build_activation_layer, build_norm_layer
+from mmcv.utils import digit_version
 
 from ..builder import BACKBONES
 from .base_backbone import BaseBackbone
@@ -69,7 +71,7 @@ class ConvMixer(BaseBackbone):
     }
 
     def __init__(self,
-                 arch='small',
+                 arch='768/32',
                  in_channels=3,
                  norm_cfg=dict(type='BN'),
                  act_cfg=dict(type='GELU'),
@@ -82,9 +84,11 @@ class ConvMixer(BaseBackbone):
                 f'({set(self.arch_settings)}) or pass a dict.'
             arch = self.arch_settings[arch]
         elif isinstance(arch, dict):
-            assert 'depths' in arch and 'channels' in arch, \
-                f'The arch dict must have "depths" and "channels", ' \
-                f'but got {list(arch.keys())}.'
+            essential_keys = {
+                'embed_dims', 'depth', 'patch_size', 'kernel_size'
+            }
+            assert isinstance(arch, dict) and essential_keys <= set(arch), \
+                f'Custom arch needs a dict with keys {essential_keys}'
 
         self.embed_dims = arch['embed_dims']
         self.depth = arch['depth']
@@ -101,6 +105,16 @@ class ConvMixer(BaseBackbone):
                 stride=self.patch_size), self.act,
             build_norm_layer(norm_cfg, self.embed_dims)[1])
 
+        # Set padding according to kernel size
+        if digit_version(torch.__version__) >= digit_version('1.9.0'):
+            padding = 'same'
+        else:
+            if self.kernel_size % 2 == 1:
+                padding = int((self.kernel_size - 1) / 2)
+            else:
+                raise NotImplementedError('`same` mode padding for even kernel'
+                                          'length is not supported.')
+
         # Repetitions of ConvMixer Layer
         self.layers = nn.Sequential(*[
             nn.Sequential(
@@ -111,7 +125,7 @@ class ConvMixer(BaseBackbone):
                             self.embed_dims,
                             self.kernel_size,
                             groups=self.embed_dims,
-                            padding=int((self.kernel_size - 1) / 2)), self.act,
+                            padding=padding), self.act,
                         build_norm_layer(norm_cfg, self.embed_dims)[1])),
                 nn.Conv2d(self.embed_dims, self.embed_dims, kernel_size=1),
                 self.act,
