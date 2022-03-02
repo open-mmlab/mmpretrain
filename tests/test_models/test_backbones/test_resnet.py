@@ -5,7 +5,7 @@ import torch.nn as nn
 from mmcv.cnn import ConvModule
 from mmcv.utils.parrots_wrapper import _BatchNorm
 
-from mmcls.models.backbones import ResNet, ResNetV1d
+from mmcls.models.backbones import ResNet, ResNetV1c, ResNetV1d
 from mmcls.models.backbones.resnet import (BasicBlock, Bottleneck, ResLayer,
                                            get_expansion)
 
@@ -524,6 +524,45 @@ def test_resnet():
             assert not all_zeros(m.norm3)
         elif isinstance(m, BasicBlock):
             assert not all_zeros(m.norm2)
+
+
+def test_resnet_v1c():
+    model = ResNetV1c(depth=50, out_indices=(0, 1, 2, 3))
+    model.init_weights()
+    model.train()
+
+    assert len(model.stem) == 3
+    for i in range(3):
+        assert isinstance(model.stem[i], ConvModule)
+
+    imgs = torch.randn(1, 3, 224, 224)
+    feat = model.stem(imgs)
+    assert feat.shape == (1, 64, 112, 112)
+    feat = model(imgs)
+    assert len(feat) == 4
+    assert feat[0].shape == (1, 256, 56, 56)
+    assert feat[1].shape == (1, 512, 28, 28)
+    assert feat[2].shape == (1, 1024, 14, 14)
+    assert feat[3].shape == (1, 2048, 7, 7)
+
+    # Test ResNet50V1d with first stage frozen
+    frozen_stages = 1
+    model = ResNetV1d(depth=50, frozen_stages=frozen_stages)
+    assert len(model.stem) == 3
+    for i in range(3):
+        assert isinstance(model.stem[i], ConvModule)
+    model.init_weights()
+    model.train()
+    check_norm_state(model.stem, False)
+    for param in model.stem.parameters():
+        assert param.requires_grad is False
+    for i in range(1, frozen_stages + 1):
+        layer = getattr(model, f'layer{i}')
+        for mod in layer.modules():
+            if isinstance(mod, _BatchNorm):
+                assert mod.training is False
+        for param in layer.parameters():
+            assert param.requires_grad is False
 
 
 def test_resnet_v1d():

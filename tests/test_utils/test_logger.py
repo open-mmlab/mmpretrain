@@ -28,6 +28,11 @@ def test_get_root_logger():
             assert message2 in lines[1]
 
         assert logger is logger2
+
+        handlers = list(logger.handlers)
+        for handler in handlers:
+            handler.close()
+            logger.removeHandler(handler)
         os.remove(log_path)
 
 
