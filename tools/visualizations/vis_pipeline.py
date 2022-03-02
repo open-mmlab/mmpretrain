@@ -5,6 +5,7 @@ import itertools
 import os
 import re
 import sys
+import warnings
 from pathlib import Path
 from typing import List
 
@@ -16,6 +17,11 @@ from mmcv import Config, DictAction, ProgressBar
 from mmcls.core import visualization as vis
 from mmcls.datasets.builder import PIPELINES, build_dataset, build_from_cfg
 from mmcls.models.utils import to_2tuple
+
+# text style
+bright_style, reset_style = '\x1b[1m', '\x1b[0m'
+red_text, blue_text = '\x1b[31m', '\x1b[34m'
+white_background = '\x1b[107m'
 
 
 def parse_args():
@@ -156,16 +162,39 @@ def build_dataset_pipelines(cfg, phase):
     return dataset, pipelines
 
 
-def concat_imgs(args, imgs: List[np.ndarray], steps: List[str]) -> np.ndarray:
-    """Concat list of pictures into a single big picture, align height here."""
+def prepare_imgs(args, imgs: List[np.ndarray], steps=None):
+    '''prepare the showing picture'''
     ori_shapes = [img.shape for img in imgs]
-    # if src image is too large or too small, it will make the text
-    # information difficult to confirm, so here add adaptive adjustment.
+    # adaptivly adjustment to rescale pictures
     if args.adaptive:
         for i, img in enumerate(imgs):
             imgs[i] = adaptive_size(img, args.min_edge_length,
                                     args.max_edge_length)
+    else:
+        # if src image is too large or too small,
+        # warning a "--adaptive" message.
+        for ori_h, ori_w, _ in ori_shapes:
+            if (args.min_edge_length > ori_h or args.min_edge_length > ori_w
+                    or args.max_edge_length < ori_h
+                    or args.max_edge_length < ori_w):
+                msg = red_text
+                msg += 'The visualization picture is too small or too large to'
+                msg += ' put text information on it, please add '
+                msg += bright_style + red_text + white_background
+                msg += '"--adaptive"'
+                msg += reset_style + red_text
+                msg += ' to adaptively rescale the showing pictures'
+                msg += reset_style
+                warnings.warn(msg)
+    
+    if len(imgs) == 1:
+        return imgs[0]
+    else:
+        return concat_imgs(imgs, steps, ori_shapes)
 
+
+def concat_imgs(imgs, steps, ori_shapes):
+    """Concat list of pictures into a single big picture, align height here."""
     show_shapes = [img.shape for img in imgs]
     show_heights = [shape[0] for shape in show_shapes]
     show_widths = [shape[1] for shape in show_shapes]
@@ -217,7 +246,7 @@ def concat_imgs(args, imgs: List[np.ndarray], steps: List[str]) -> np.ndarray:
 
 
 def adaptive_size(image, min_edge_length, max_edge_length, src_shape=None):
-    """rescale image if image is too small to put text like cifra."""
+    """rescale image if image is too small to put text like cifar."""
     assert min_edge_length >= 0 and max_edge_length >= 0
     assert max_edge_length >= min_edge_length
     src_shape = image.shape if src_shape is None else src_shape
@@ -250,16 +279,16 @@ def get_display_img(args, item, pipelines):
 
     # concat all the images to show, depandding on 'mode'
     if args.mode == 'original':
-        image = pipeline_images[0]
+        image = prepare_imgs(args, [src_image], ['src'])
     elif args.mode == 'transformed':
-        image = pipeline_images[-1]
+        image = prepare_imgs(args, [pipeline_images[-1]], ['transformed'])
     elif args.mode == 'concat':
         steps = ['src', 'transformed']
-        image = concat_imgs(args, [pipeline_images[0], pipeline_images[-1]],
-                            steps)
+        image = prepare_imgs(args, [pipeline_images[0], pipeline_images[-1]],
+                             steps)
     elif args.mode == 'pipeline':
         steps = ['src'] + list(pipelines.keys())
-        image = concat_imgs(args, pipeline_images, steps)
+        image = prepare_imgs(args, pipeline_images, steps)
 
     return image
 
