@@ -7,9 +7,11 @@ from .builder import DATASETS
 
 @DATASETS.register_module()
 class CUB(BaseDataset):
-    """`CUB-200-2011.
+    """The CUB-200-2011 Dataset.
 
-    <http://www.vision.caltech.edu/visipedia/CUB-200-2011.html>`_ Dataset.
+    Support for `CUB-200-2011 <http://www.vision.caltech.edu/visipedia/CUB-200-2011.html>`_ Dataset.
+    Comparing with the `CUB-200 <http://www.vision.caltech.edu/visipedia/CUB-200.html>`_ Dataset,
+    there are much more pictures in `CUB-200-2011`.
 
     Args:
         ann_file (str): the annotation file.
