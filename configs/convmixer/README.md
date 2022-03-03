@@ -19,9 +19,9 @@ Although convolutional networks have been the dominant architecture for vision t
 
 |      Model      |   Pretrain   | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
 |:---------------:|:------------:|:---------:|:--------:|:---------:|:---------:|:------:|:--------:|
-| ConvMixer-768/32\*    | From scratch | 21.11 | 20.88 | 80.16 | 95.08  | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/convmixer/convmixer-768-32_10xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/convmixer/convmixer_768_32_ks7_p7_relu_20220303-148e99c1.pth) |
-| ConvMixer-1024/20\*    | From scratch | 24.38 | 5.98 | 76.94 | 93.36  | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/convmixer/convmixer-1024-20_10xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/convmixer/convmixer_1024_20_ks9_p14_20220303-3dfd8dff.pth) |
-| ConvMixer-1536/20\*    | From scratch | 51.63 | 51.29 | 81.37 | 95.61 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/convmixer/convmixer-1536-20_10xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/convmixer/convmixer_1536_20_ks9_p7_20220303-db5975f7.pth) |
+| ConvMixer-768/32\*    | From scratch | 21.11 | 19.62 | 80.16 | 95.08  | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/convmixer/convmixer-768-32_10xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/convmixer/convmixer_768_32_ks7_p7_relu_20220303-148e99c1.pth) |
+| ConvMixer-1024/20\*    | From scratch | 24.38 | 5.55 | 76.94 | 93.36  | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/convmixer/convmixer-1024-20_10xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/convmixer/convmixer_1024_20_ks9_p14_20220303-3dfd8dff.pth) |
+| ConvMixer-1536/20\*    | From scratch | 51.63 | 48.71 | 81.37 | 95.61 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/convmixer/convmixer-1536-20_10xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/convmixer/convmixer_1536_20_ks9_p7_20220303-db5975f7.pth) |
 
 
 *Models with \* are converted from the [official repo](https://github.com/locuslab/convmixer). The config files of these models are only for inference. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*

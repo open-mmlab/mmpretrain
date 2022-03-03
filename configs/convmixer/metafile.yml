@@ -16,7 +16,7 @@ Collections:
 Models:
   - Name: convmixer-768-32_10xb64_in1k
     Metadata:
-      FLOPs: 20881342464
+      FLOPs: 19623051264
       Parameters: 21110248
     In Collections: ConvMixer
     Results:
@@ -32,7 +32,7 @@ Models:
       Code: https://github.com/locuslab/convmixer
   - Name: convmixer-1024-20_10xb64_in1k
     Metadata:
-      FLOPs: 5980028928
+      FLOPs: 5550112768
       Parameters: 24383464
     In Collections: ConvMixer
     Results:
@@ -48,7 +48,7 @@ Models:
       Code: https://github.com/locuslab/convmixer
   - Name: convmixer-1536-20_10xb64_in1k
     Metadata:
-      FLOPs: 51292667904
+      FLOPs: 48713170944
       Parameters: 51625960
     In Collections: ConvMixer
     Results:
