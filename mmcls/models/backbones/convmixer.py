@@ -135,7 +135,8 @@ class ConvMixer(BaseBackbone):
                 padding = int((self.kernel_size - 1) / 2)
             else:
                 raise NotImplementedError('`same` mode padding for even kernel'
-                                          'length is not supported.')
+                                          'length is not supported for torch'
+                                          'version lower than 1.9.0.')
 
         # Repetitions of ConvMixer Layer
         self.stages = nn.Sequential(*[

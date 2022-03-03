@@ -25,8 +25,8 @@ Models:
           Top 1 Accuracy: 80.16
           Top 5 Accuracy: 95.08
         Task: Image Classification
-    Weights: TODO
-    Config: configs/convnext/convmixer-768-32_10xb64_in1k.py
+    Weights: https://download.openmmlab.com/mmclassification/v0/convmixer/convmixer_768_32_ks7_p7_relu_20220303-148e99c1.pth
+    Config: configs/convmixer/convmixer-768-32_10xb64_in1k.py
     Converted From:
       Weights: https://github.com/tmp-iclr/convmixer/releases/download/v1.0/convmixer_768_32_ks7_p7_relu.pth.tar
       Code: https://github.com/locuslab/convmixer
@@ -41,8 +41,8 @@ Models:
           Top 1 Accuracy: 76.94
           Top 5 Accuracy: 93.36
         Task: Image Classification
-    Weights: TODO
-    Config: configs/convnext/convmixer-1024-20_10xb64_in1k.py
+    Weights: https://download.openmmlab.com/mmclassification/v0/convmixer/convmixer_1024_20_ks9_p14_20220303-3dfd8dff.pth
+    Config: configs/convmixer/convmixer-1024-20_10xb64_in1k.py
     Converted From:
       Weights: https://github.com/tmp-iclr/convmixer/releases/download/v1.0/convmixer_1024_20_ks9_p14.pth.tar
       Code: https://github.com/locuslab/convmixer
@@ -57,8 +57,8 @@ Models:
           Top 1 Accuracy: 81.37
           Top 5 Accuracy: 95.61
         Task: Image Classification
-    Weights: TODO
-    Config: configs/convnext/convmixer-1536-20_10xb64_in1k.py
+    Weights: https://download.openmmlab.com/mmclassification/v0/convmixer/convmixer_1536_20_ks9_p7_20220303-db5975f7.pth
+    Config: configs/convmixer/convmixer-1536-20_10xb64_in1k.py
     Converted From:
       Weights: https://github.com/tmp-iclr/convmixer/releases/download/v1.0/convmixer_1536_20_ks9_p7.pth.tar
       Code: https://github.com/locuslab/convmixer
