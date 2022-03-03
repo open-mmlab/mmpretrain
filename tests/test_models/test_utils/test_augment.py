@@ -8,6 +8,7 @@ augment_cfgs = [
     dict(type='BatchCutMix', alpha=1., prob=1.),
     dict(type='BatchMixup', alpha=1., prob=1.),
     dict(type='Identity', prob=1.),
+    dict(type='BatchResizeMix', alpha=1., prob=1.)
 ]
 
 
@@ -24,6 +25,14 @@ def test_augments():
 
     # Test mixup
     augments_cfg = dict(type='BatchMixup', alpha=1., num_classes=10, prob=1.)
+    augs = Augments(augments_cfg)
+    mixed_imgs, mixed_labels = augs(imgs, labels)
+    assert mixed_imgs.shape == torch.Size((4, 3, 32, 32))
+    assert mixed_labels.shape == torch.Size((4, 10))
+
+    # Test resizemix
+    augments_cfg = dict(
+        type='BatchResizeMix', alpha=1., num_classes=10, prob=1.)
     augs = Augments(augments_cfg)
     mixed_imgs, mixed_labels = augs(imgs, labels)
     assert mixed_imgs.shape == torch.Size((4, 3, 32, 32))
@@ -77,41 +86,6 @@ def test_binary_augment(cfg):
 def test_multilabel_augment(cfg):
 
     cfg_ = dict(num_classes=10, **cfg)
-    augs = Augments(cfg_)
-
-    imgs = torch.randn(4, 3, 32, 32)
-    labels = torch.randint(0, 2, (4, 10)).float()
-
-    mixed_imgs, mixed_labels = augs(imgs, labels)
-    assert mixed_imgs.shape == torch.Size((4, 3, 32, 32))
-    assert mixed_labels.shape == torch.Size((4, 10))
-
-
-def test_resizemix():
-    imgs = torch.randn(4, 3, 32, 32)
-    labels = torch.randint(0, 10, (4, ))
-
-    # Test multi class
-    augments_cfg = dict(
-        type='BatchResizeMix', alpha=1., num_classes=10, prob=1.)
-    augs = Augments(augments_cfg)
-    mixed_imgs, mixed_labels = augs(imgs, labels)
-    assert mixed_imgs.shape == torch.Size((4, 3, 32, 32))
-    assert mixed_labels.shape == torch.Size((4, 10))
-
-    # Test binary
-    cfg_ = dict(type='BatchResizeMix', alpha=1., num_classes=1, prob=1.)
-    augs = Augments(cfg_)
-
-    imgs = torch.randn(4, 3, 32, 32)
-    labels = torch.randint(0, 2, (4, 1)).float()
-
-    mixed_imgs, mixed_labels = augs(imgs, labels)
-    assert mixed_imgs.shape == torch.Size((4, 3, 32, 32))
-    assert mixed_labels.shape == torch.Size((4, 1))
-
-    # Test multi label
-    cfg_ = dict(type='BatchResizeMix', alpha=1., num_classes=10, prob=1.)
     augs = Augments(cfg_)
 
     imgs = torch.randn(4, 3, 32, 32)
