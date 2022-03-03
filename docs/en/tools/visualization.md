@@ -32,11 +32,11 @@ python tools/visualizations/vis_pipeline.py \
 - `config` : The path of a model config file.
 - `--output-dir`: The output path for visualized images. If not specified, it will be set to `''`, which means not to save.
 - `--phase`: Phase of visualizing dataset，must be one of `[train, val, test]`. If not specified, it will be set to `train`.
-- `--number`: The number of samples to visualize. If not specified, display all images in the dataset.
+- `--number`: The number of samples to visualized. If not specified, display all images in the dataset.
 - `--skip-type`: The pipelines to be skipped. If not specified, it will be set to `['ToTensor', 'Normalize', 'ImageToTensor', 'Collect']`.
 - `--mode`: The display mode, can be one of `[original, pipeline, concat]`. If not specified, it will be set to `concat`.
 - `--show`: If set, display pictures in pop-up windows.
-- `--adaptive`: If set, automatically adjust the size of the visualization images.
+- `--adaptive`: If set, adaptively resize images for better visualization.
 - `--min-edge-length`: The minimum edge length, used when `--adaptive` is set. When any side of the picture is smaller than `${MIN_EDGE_LENGTH}`, the picture will be enlarged while keeping the aspect ratio unchanged, and the short side will be aligned to `${MIN_EDGE_LENGTH}`. If not specified, it will be set to 200.
 - `--max-edge-length`: The maximum edge length, used when `--adaptive` is set. When any side of the picture is larger than `${MAX_EDGE_LENGTH}`, the picture will be reduced while keeping the aspect ratio unchanged, and the long side will be aligned to `${MAX_EDGE_LENGTH}`. If not specified, it will be set to 1000.
 - `--bgr2rgb`: If set, flip the color channel order of images.
@@ -68,7 +68,7 @@ python tools/visualizations/vis_pipeline.py \
 
   <div align=center><img src="https://user-images.githubusercontent.com/18586273/146117553-8006a4ba-e2fa-4f53-99bc-42a4b06e413f.jpg" style=" width: auto; height: 40%; "></div>
 
-3. In **'concat'** mode, visualize 10 comparison pictures in the `ImageNet` train set and save them in the `./tmp` folder：
+3. In **'concat'** mode, visualize 10 pairs of origin and transformed images for comparison in the `ImageNet` train set and save them in the `./tmp` folder：
 
   ```shell
   python ./tools/visualizations/vis_pipeline.py configs/swin_transformer/swin_base_224_b16x64_300e_imagenet.py --phase train --output-dir tmp --number 10 --adaptive
