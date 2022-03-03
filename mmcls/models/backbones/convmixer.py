@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Sequence
+
 import torch
 import torch.nn as nn
 from mmcv.cnn.bricks import build_activation_layer, build_norm_layer
@@ -48,6 +50,10 @@ class ConvMixer(BaseBackbone):
             Defaults to ``dict(type='BN')``.
         act_cfg (dict): The config dict for activation after each convolution.
             Defaults to ``dict(type='GELU')``.
+        out_indices (Sequence | int): Output from which stages.
+            Defaults to -1, means the last stage.
+        frozen_stages (int): Stages to be frozen (all param fixed).
+            Defaults to 0, which means not freezing any parameters.
         init_cfg (dict, optional): Initialization config dict.
     """
     arch_settings = {
@@ -76,6 +82,8 @@ class ConvMixer(BaseBackbone):
                  in_channels=3,
                  norm_cfg=dict(type='BN'),
                  act_cfg=dict(type='GELU'),
+                 out_indices=-1,
+                 frozen_stages=0,
                  init_cfg=None):
         super().__init__(init_cfg=init_cfg)
 
@@ -97,6 +105,19 @@ class ConvMixer(BaseBackbone):
         self.kernel_size = arch['kernel_size']
         self.act = build_activation_layer(act_cfg)
 
+        # check out indices and frozen stages
+        if isinstance(out_indices, int):
+            out_indices = [out_indices]
+        assert isinstance(out_indices, Sequence), \
+            f'"out_indices" must by a sequence or int, ' \
+            f'get {type(out_indices)} instead.'
+        for i, index in enumerate(out_indices):
+            if index < 0:
+                out_indices[i] = self.depth + index
+                assert out_indices[i] >= 0, f'Invalid out_indices {index}'
+        self.out_indices = out_indices
+        self.frozen_stages = frozen_stages
+
         # Set stem layers
         self.stem = nn.Sequential(
             nn.Conv2d(
@@ -117,7 +138,7 @@ class ConvMixer(BaseBackbone):
                                           'length is not supported.')
 
         # Repetitions of ConvMixer Layer
-        self.layers = nn.Sequential(*[
+        self.stages = nn.Sequential(*[
             nn.Sequential(
                 Residual(
                     nn.Sequential(
@@ -133,10 +154,27 @@ class ConvMixer(BaseBackbone):
                 build_norm_layer(norm_cfg, self.embed_dims)[1])
             for _ in range(self.depth)
         ])
-        self.pooling = nn.AdaptiveAvgPool2d((1, 1))
+
+        self._freeze_stages()
 
     def forward(self, x):
         x = self.stem(x)
-        x = self.layers(x)
-        x = self.pooling(x).flatten(1)
-        return (x, )
+        outs = []
+        for i, stage in enumerate(self.stages):
+            x = stage(x)
+            if i in self.out_indices:
+                outs.append(x)
+
+        # x = self.pooling(x).flatten(1)
+        return tuple(outs)
+
+    def train(self, mode=True):
+        super(ConvMixer, self).train(mode)
+        self._freeze_stages()
+
+    def _freeze_stages(self):
+        for i in range(self.frozen_stages):
+            stage = self.stages[i]
+            stage.eval()
+            for param in stage.parameters():
+                param.requires_grad = False
