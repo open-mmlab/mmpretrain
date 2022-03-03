@@ -64,8 +64,8 @@ data = dict(
     test=dict(
         # replace `data/val` with `data/test` for standard test
         type=dataset_type,
-        data_prefix='data/test_images/val',
-        ann_file='data/test_images/val.txt',
+        data_prefix='data/imagenet/val',
+        ann_file='data/imagenet/meta/val.txt',
         pipeline=test_pipeline))
 
 evaluation = dict(interval=10, metric='accuracy')

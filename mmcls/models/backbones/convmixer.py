@@ -3,7 +3,8 @@ from typing import Sequence
 
 import torch
 import torch.nn as nn
-from mmcv.cnn.bricks import build_activation_layer, build_norm_layer
+from mmcv.cnn.bricks import (Conv2dAdaptivePadding, build_activation_layer,
+                             build_norm_layer)
 from mmcv.utils import digit_version
 
 from ..builder import BACKBONES
@@ -127,28 +128,22 @@ class ConvMixer(BaseBackbone):
                 stride=self.patch_size), self.act,
             build_norm_layer(norm_cfg, self.embed_dims)[1])
 
-        # Set padding according to kernel size
-        if digit_version(torch.__version__) >= digit_version('1.9.0'):
-            padding = 'same'
-        else:
-            if self.kernel_size % 2 == 1:
-                padding = int((self.kernel_size - 1) / 2)
-            else:
-                raise NotImplementedError('`same` mode padding for even kernel'
-                                          'length is not supported for torch'
-                                          'version lower than 1.9.0.')
+        # Set conv2d according to torch version
+        convfunc = nn.Conv2d
+        if digit_version(torch.__version__) < digit_version('1.9.0'):
+            convfunc = Conv2dAdaptivePadding
 
         # Repetitions of ConvMixer Layer
         self.stages = nn.Sequential(*[
             nn.Sequential(
                 Residual(
                     nn.Sequential(
-                        nn.Conv2d(
+                        convfunc(
                             self.embed_dims,
                             self.embed_dims,
                             self.kernel_size,
                             groups=self.embed_dims,
-                            padding=padding), self.act,
+                            padding='same'), self.act,
                         build_norm_layer(norm_cfg, self.embed_dims)[1])),
                 nn.Conv2d(self.embed_dims, self.embed_dims, kernel_size=1),
                 self.act,

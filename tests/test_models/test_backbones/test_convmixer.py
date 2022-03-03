@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 import torch
-from mmcv.utils import digit_version
 
 from mmcls.models.backbones import ConvMixer
 
@@ -17,19 +16,6 @@ def test_assertion():
     with pytest.raises(AssertionError):
         # ConvMixer out_indices should be valid depth.
         ConvMixer(out_indices=-100)
-
-    # even kernel size number for padding `same` conv is not supported
-    # yet for torch version lower than 1.9.0
-    if digit_version(torch.__version__) < digit_version('1.9.0'):
-        with pytest.raises(NotImplementedError):
-            # even kernel size number for padding `same` conv is not supported
-            # yet for torch version lower than 1.9.0
-            ConvMixer(arch={
-                'embed_dims': 99,
-                'depth': 5,
-                'patch_size': 5,
-                'kernel_size': 8
-            })
 
 
 def test_convmixer():
@@ -70,6 +56,21 @@ def test_convmixer():
     assert len(feat) == 5
     for f in feat:
         assert f.shape == torch.Size([1, 99, 44, 44])
+
+    # Test with even kernel size arch
+    model = ConvMixer(arch={
+        'embed_dims': 99,
+        'depth': 5,
+        'patch_size': 5,
+        'kernel_size': 8
+    })
+    model.init_weights()
+    model.train()
+
+    imgs = torch.randn(1, 3, 224, 224)
+    feat = model(imgs)
+    assert len(feat) == 1
+    assert feat[0].shape == torch.Size([1, 99, 44, 44])
 
     # Test frozen_stages
     model = ConvMixer(arch='768/32', frozen_stages=10)
