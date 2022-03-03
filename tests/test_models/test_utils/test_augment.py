@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 import torch
-from mmcv.utils import digit_version
 
 from mmcls.models.utils import Augments
 
@@ -88,10 +87,6 @@ def test_multilabel_augment(cfg):
     assert mixed_labels.shape == torch.Size((4, 10))
 
 
-@pytest.mark.skipif(
-    digit_version(torch.__version__) < digit_version('1.7.0'),
-    reason='torchvision.transforms.Resize is not available with Tensor'
-    ' before 1.7.0')
 def test_resizemix():
     imgs = torch.randn(4, 3, 32, 32)
     labels = torch.randint(0, 10, (4, ))

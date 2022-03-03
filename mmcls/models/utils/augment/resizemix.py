@@ -1,7 +1,6 @@
 import numpy as np
 import torch
-from mmcv.utils import digit_version
-from torchvision.transforms import Resize
+import torch.nn.functional as F
 
 from mmcls.models.utils.augment.builder import AUGMENT
 from .cutmix import BatchCutMixLayer
@@ -36,14 +35,13 @@ class BatchResizeMixLayer(BatchCutMixLayer):
         to the range [``lam_min``, ``lam_max``].
 
         .. math::
-            \lambda = \frac{Beta(\alpha, \alpha)}{\lambda_{max} - \lambda_{min}} + 
-            \lambda_{min}
+            \lambda = \frac{Beta(\alpha, \alpha)}{\lambda_{max} - \lambda_{min}
+            } + \lambda_{min}
 
         And the resize ratio of source images is calculated by :math:`\lambda`:
 
         .. math::
             \text{ratio} = \sqrt{1-lam}
-    """
     """
 
     def __init__(self,
@@ -55,9 +53,6 @@ class BatchResizeMixLayer(BatchCutMixLayer):
                  cutmix_minmax=None,
                  correct_lam=True,
                  **kwargs):
-        if digit_version(torch.__version__) < digit_version('1.7.0'):
-            raise RuntimeError('torchvision.transforms.Resize is not available'
-                               'with Tensor before 1.7.0')
         super(BatchResizeMixLayer, self).__init__(
             alpha=alpha,
             num_classes=num_classes,
@@ -79,8 +74,8 @@ class BatchResizeMixLayer(BatchCutMixLayer):
         (bby1, bby2, bbx1,
          bbx2), lam = self.cutmix_bbox_and_lam(img.shape, lam)
 
-        resize_transform = Resize((bby2 - bby1, bbx2 - bbx1))
-        img[:, :, bby1:bby2, bbx1:bbx2] = resize_transform(img[index])
+        img[:, :, bby1:bby2, bbx1:bbx2] = F.interpolate(
+            img[index], size=(bby2 - bby1, bbx2 - bbx1))
         mixed_gt_label = lam * one_hot_gt_label + (
             1 - lam) * one_hot_gt_label[index, :]
         return img, mixed_gt_label
