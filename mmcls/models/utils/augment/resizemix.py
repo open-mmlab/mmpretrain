@@ -35,8 +35,8 @@ class BatchResizeMixLayer(BatchCutMixLayer):
         to the range [``lam_min``, ``lam_max``].
 
         .. math::
-            \lambda = \frac{Beta(\alpha, \alpha)}{\lambda_{max} - \lambda_{min}
-            } + \lambda_{min}
+            \lambda = \frac{Beta(\alpha, \alpha)}
+            {\lambda_{max} - \lambda_{min}} + \lambda_{min}
 
         And the resize ratio of source images is calculated by :math:`\lambda`:
 
