@@ -17,10 +17,10 @@ from mmcls.apis import init_model
 from mmcls.datasets.pipelines import Compose
 
 try:
-    from pytorch_grad_cam import (EigenCAM, GradCAM, GradCAMPlusPlus, XGradCAM,
-                                  EigenGradCAM, LayerCAM)
-    from pytorch_grad_cam.activations_and_gradients import (
-        ActivationsAndGradients)
+    from pytorch_grad_cam import (EigenCAM, EigenGradCAM, GradCAM,
+                                  GradCAMPlusPlus, LayerCAM, XGradCAM)
+    from pytorch_grad_cam.activations_and_gradients import \
+        ActivationsAndGradients
     from pytorch_grad_cam.utils.image import show_cam_on_image
 except ImportError:
     raise ImportError('Please run `pip install "grad-cam>=1.3.6"` to install '
@@ -336,8 +336,8 @@ def main():
     if args.target_category:
         grad_cam_v = pkg_resources.get_distribution('grad_cam').version
         if digit_version(grad_cam_v) >= digit_version('1.3.7'):
-            from pytorch_grad_cam.utils.model_targets import (
-                ClassifierOutputTarget)
+            from pytorch_grad_cam.utils.model_targets import \
+                ClassifierOutputTarget
             targets = [ClassifierOutputTarget(c) for c in args.target_category]
         else:
             targets = args.target_category

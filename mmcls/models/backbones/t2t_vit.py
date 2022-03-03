@@ -11,7 +11,7 @@ from mmcv.cnn.utils.weight_init import trunc_normal_
 from mmcv.runner.base_module import BaseModule, ModuleList
 
 from ..builder import BACKBONES
-from ..utils import MultiheadAttention
+from ..utils import MultiheadAttention, resize_pos_embed, to_2tuple
 from .base_backbone import BaseBackbone
 
 
@@ -173,26 +173,44 @@ class T2TModule(BaseModule):
             raise NotImplementedError("Performer hasn't been implemented.")
 
         # there are 3 soft split, stride are 4,2,2 separately
-        self.num_patches = (img_size // (4 * 2 * 2))**2
+        out_side = img_size // (4 * 2 * 2)
+        self.init_out_size = [out_side, out_side]
+        self.num_patches = out_side**2
+
+    @staticmethod
+    def _get_unfold_size(unfold: nn.Unfold, input_size):
+        h, w = input_size
+        kernel_size = to_2tuple(unfold.kernel_size)
+        stride = to_2tuple(unfold.stride)
+        padding = to_2tuple(unfold.padding)
+        dilation = to_2tuple(unfold.dilation)
+
+        h_out = (h + 2 * padding[0] - dilation[0] *
+                 (kernel_size[0] - 1) - 1) // stride[0] + 1
+        w_out = (w + 2 * padding[1] - dilation[1] *
+                 (kernel_size[1] - 1) - 1) // stride[1] + 1
+        return (h_out, w_out)
 
     def forward(self, x):
         # step0: soft split
+        hw_shape = self._get_unfold_size(self.soft_split0, x.shape[2:])
         x = self.soft_split0(x).transpose(1, 2)
 
         for step in [1, 2]:
             # re-structurization/reconstruction
             attn = getattr(self, f'attention{step}')
             x = attn(x).transpose(1, 2)
-            B, C, new_HW = x.shape
-            x = x.reshape(B, C, int(np.sqrt(new_HW)), int(np.sqrt(new_HW)))
+            B, C, _ = x.shape
+            x = x.reshape(B, C, hw_shape[0], hw_shape[1])
 
             # soft split
             soft_split = getattr(self, f'soft_split{step}')
+            hw_shape = self._get_unfold_size(soft_split, hw_shape)
             x = soft_split(x).transpose(1, 2)
 
         # final tokens
         x = self.project(x)
-        return x
+        return x, hw_shape
 
 
 def get_sinusoid_encoding(n_position, embed_dims):
@@ -231,43 +249,52 @@ class T2T_ViT(BaseBackbone):
     Transformers from Scratch on ImageNet <https://arxiv.org/abs/2101.11986>`_
 
     Args:
-        img_size (int): Input image size.
+        img_size (int | tuple): The expected input image shape. Because we
+            support dynamic input shape, just set the argument to the most
+            common input image shape. Defaults to 224.
         in_channels (int): Number of input channels.
         embed_dims (int): Embedding dimension.
-        t2t_cfg (dict): Extra config of Tokens-to-Token module.
-            Defaults to an empty dict.
-        drop_rate (float): Dropout rate after position embedding.
-            Defaults to 0.
         num_layers (int): Num of transformer layers in encoder.
             Defaults to 14.
         out_indices (Sequence | int): Output from which stages.
             Defaults to -1, means the last stage.
-        layer_cfgs (Sequence | dict): Configs of each transformer layer in
-            encoder. Defaults to an empty dict.
+        drop_rate (float): Dropout rate after position embedding.
+            Defaults to 0.
         drop_path_rate (float): stochastic depth rate. Defaults to 0.
         norm_cfg (dict): Config dict for normalization layer. Defaults to
             ``dict(type='LN')``.
         final_norm (bool): Whether to add a additional layer to normalize
             final feature map. Defaults to True.
-        output_cls_token (bool): Whether output the cls_token.
-            Defaults to True.
+        with_cls_token (bool): Whether concatenating class token into image
+            tokens as transformer input. Defaults to True.
+        output_cls_token (bool): Whether output the cls_token. If set True,
+            ``with_cls_token`` must be True. Defaults to True.
+        interpolate_mode (str): Select the interpolate mode for position
+            embeding vector resize. Defaults to "bicubic".
+        t2t_cfg (dict): Extra config of Tokens-to-Token module.
+            Defaults to an empty dict.
+        layer_cfgs (Sequence | dict): Configs of each transformer layer in
+            encoder. Defaults to an empty dict.
         init_cfg (dict, optional): The Config for initialization.
             Defaults to None.
     """
+    num_extra_tokens = 1  # cls_token
 
     def __init__(self,
                  img_size=224,
                  in_channels=3,
                  embed_dims=384,
-                 t2t_cfg=dict(),
-                 drop_rate=0.,
                  num_layers=14,
                  out_indices=-1,
-                 layer_cfgs=dict(),
+                 drop_rate=0.,
                  drop_path_rate=0.,
                  norm_cfg=dict(type='LN'),
                  final_norm=True,
+                 with_cls_token=True,
                  output_cls_token=True,
+                 interpolate_mode='bicubic',
+                 t2t_cfg=dict(),
+                 layer_cfgs=dict(),
                  init_cfg=None):
         super(T2T_ViT, self).__init__(init_cfg)
 
@@ -277,30 +304,41 @@ class T2T_ViT(BaseBackbone):
             in_channels=in_channels,
             embed_dims=embed_dims,
             **t2t_cfg)
-        num_patches = self.tokens_to_token.num_patches
+        self.patch_resolution = self.tokens_to_token.init_out_size
+        num_patches = self.patch_resolution[0] * self.patch_resolution[1]
 
-        # Class token
+        # Set cls token
+        if output_cls_token:
+            assert with_cls_token is True, f'with_cls_token must be True if' \
+                f'set output_cls_token to True, but got {with_cls_token}'
+        self.with_cls_token = with_cls_token
         self.output_cls_token = output_cls_token
         self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dims))
-        self.num_extra_tokens = 1
 
-        # Position Embedding
-        sinusoid_table = get_sinusoid_encoding(num_patches + 1, embed_dims)
+        # Set position embedding
+        self.interpolate_mode = interpolate_mode
+        sinusoid_table = get_sinusoid_encoding(
+            num_patches + self.num_extra_tokens, embed_dims)
         self.register_buffer('pos_embed', sinusoid_table)
+        self._register_load_state_dict_pre_hook(self._prepare_pos_embed)
+
         self.drop_after_pos = nn.Dropout(p=drop_rate)
 
         if isinstance(out_indices, int):
             out_indices = [out_indices]
         assert isinstance(out_indices, Sequence), \
-            f'"out_indices" must by a sequence or int, ' \
+            f'"out_indices" must be a sequence or int, ' \
             f'get {type(out_indices)} instead.'
         for i, index in enumerate(out_indices):
             if index < 0:
                 out_indices[i] = num_layers + index
-                assert out_indices[i] >= 0, f'Invalid out_indices {index}'
+            assert 0 <= out_indices[i] <= num_layers, \
+                f'Invalid out_indices {index}'
         self.out_indices = out_indices
 
+        # stochastic depth decay rule
         dpr = [x for x in np.linspace(0, drop_path_rate, num_layers)]
+
         self.encoder = ModuleList()
         for i in range(num_layers):
             if isinstance(layer_cfgs, Sequence):
@@ -336,16 +374,48 @@ class T2T_ViT(BaseBackbone):
 
         trunc_normal_(self.cls_token, std=.02)
 
+    def _prepare_pos_embed(self, state_dict, prefix, *args, **kwargs):
+        name = prefix + 'pos_embed'
+        if name not in state_dict.keys():
+            return
+
+        ckpt_pos_embed_shape = state_dict[name].shape
+        if self.pos_embed.shape != ckpt_pos_embed_shape:
+            from mmcls.utils import get_root_logger
+            logger = get_root_logger()
+            logger.info(
+                f'Resize the pos_embed shape from {ckpt_pos_embed_shape} '
+                f'to {self.pos_embed.shape}.')
+
+            ckpt_pos_embed_shape = to_2tuple(
+                int(np.sqrt(ckpt_pos_embed_shape[1] - self.num_extra_tokens)))
+            pos_embed_shape = self.tokens_to_token.init_out_size
+
+            state_dict[name] = resize_pos_embed(state_dict[name],
+                                                ckpt_pos_embed_shape,
+                                                pos_embed_shape,
+                                                self.interpolate_mode,
+                                                self.num_extra_tokens)
+
     def forward(self, x):
         B = x.shape[0]
-        x = self.tokens_to_token(x)
-        num_patches = self.tokens_to_token.num_patches
-        patch_resolution = [int(np.sqrt(num_patches))] * 2
+        x, patch_resolution = self.tokens_to_token(x)
 
+        # stole cls_tokens impl from Phil Wang, thanks
         cls_tokens = self.cls_token.expand(B, -1, -1)
         x = torch.cat((cls_tokens, x), dim=1)
-        x = x + self.pos_embed
+
+        x = x + resize_pos_embed(
+            self.pos_embed,
+            self.patch_resolution,
+            patch_resolution,
+            mode=self.interpolate_mode,
+            num_extra_tokens=self.num_extra_tokens)
         x = self.drop_after_pos(x)
+
+        if not self.with_cls_token:
+            # Remove class token for transformer encoder input
+            x = x[:, 1:]
 
         outs = []
         for i, layer in enumerate(self.encoder):
@@ -356,9 +426,14 @@ class T2T_ViT(BaseBackbone):
 
             if i in self.out_indices:
                 B, _, C = x.shape
-                patch_token = x[:, 1:].reshape(B, *patch_resolution, C)
-                patch_token = patch_token.permute(0, 3, 1, 2)
-                cls_token = x[:, 0]
+                if self.with_cls_token:
+                    patch_token = x[:, 1:].reshape(B, *patch_resolution, C)
+                    patch_token = patch_token.permute(0, 3, 1, 2)
+                    cls_token = x[:, 0]
+                else:
+                    patch_token = x.reshape(B, *patch_resolution, C)
+                    patch_token = patch_token.permute(0, 3, 1, 2)
+                    cls_token = None
                 if self.output_cls_token:
                     out = [patch_token, cls_token]
                 else:

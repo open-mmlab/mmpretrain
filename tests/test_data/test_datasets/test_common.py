@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import tempfile
+import os.path as osp
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -65,15 +65,13 @@ def test_datasets_override_default(dataset_name):
     assert dataset.CLASSES == ['bus', 'car']
 
     # Test setting classes through a file
-    tmp_file = tempfile.NamedTemporaryFile()
-    with open(tmp_file.name, 'w') as f:
-        f.write('bus\ncar\n')
+    classes_file = osp.join(
+        osp.dirname(__file__), '../../data/dataset/classes.txt')
     dataset = dataset_class(
         data_prefix='VOC2007' if dataset_name == 'VOC' else '',
         pipeline=[],
-        classes=tmp_file.name,
+        classes=classes_file,
         test_mode=True)
-    tmp_file.close()
 
     assert dataset.CLASSES == ['bus', 'car']
 

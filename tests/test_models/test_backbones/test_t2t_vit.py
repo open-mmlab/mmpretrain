@@ -1,84 +1,157 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import math
+import os
+import tempfile
 from copy import deepcopy
+from unittest import TestCase
 
-import pytest
 import torch
-from torch.nn.modules import GroupNorm
-from torch.nn.modules.batchnorm import _BatchNorm
+from mmcv.runner import load_checkpoint, save_checkpoint
 
 from mmcls.models.backbones import T2T_ViT
+from .utils import timm_resize_pos_embed
 
 
-def is_norm(modules):
-    """Check if is one of the norms."""
-    if isinstance(modules, (GroupNorm, _BatchNorm)):
-        return True
-    return False
+class TestT2TViT(TestCase):
 
+    def setUp(self):
+        self.cfg = dict(
+            img_size=224,
+            in_channels=3,
+            embed_dims=384,
+            t2t_cfg=dict(
+                token_dims=64,
+                use_performer=False,
+            ),
+            num_layers=14,
+            drop_path_rate=0.1)
 
-def check_norm_state(modules, train_state):
-    """Check if norm layer is in correct train state."""
-    for mod in modules:
-        if isinstance(mod, _BatchNorm):
-            if mod.training != train_state:
-                return False
-    return True
-
-
-def test_vit_backbone():
-
-    cfg_ori = dict(
-        img_size=224,
-        in_channels=3,
-        embed_dims=384,
-        t2t_cfg=dict(
-            token_dims=64,
-            use_performer=False,
-        ),
-        num_layers=14,
-        layer_cfgs=dict(
-            num_heads=6,
-            feedforward_channels=3 * 384,  # mlp_ratio = 3
-        ),
-        drop_path_rate=0.1,
-        init_cfg=[
-            dict(type='TruncNormal', layer='Linear', std=.02),
-            dict(type='Constant', layer='LayerNorm', val=1., bias=0.),
-        ])
-
-    with pytest.raises(NotImplementedError):
-        # test if use performer
-        cfg = deepcopy(cfg_ori)
+    def test_structure(self):
+        # The performer hasn't been implemented
+        cfg = deepcopy(self.cfg)
         cfg['t2t_cfg']['use_performer'] = True
-        T2T_ViT(**cfg)
+        with self.assertRaises(NotImplementedError):
+            T2T_ViT(**cfg)
 
-    # Test T2T-ViT model with input size of 224
-    model = T2T_ViT(**cfg_ori)
-    model.init_weights()
-    model.train()
+        # Test out_indices
+        cfg = deepcopy(self.cfg)
+        cfg['out_indices'] = {1: 1}
+        with self.assertRaisesRegex(AssertionError, "get <class 'dict'>"):
+            T2T_ViT(**cfg)
+        cfg['out_indices'] = [0, 15]
+        with self.assertRaisesRegex(AssertionError, 'Invalid out_indices 15'):
+            T2T_ViT(**cfg)
 
-    assert check_norm_state(model.modules(), True)
+        # Test model structure
+        cfg = deepcopy(self.cfg)
+        model = T2T_ViT(**cfg)
+        self.assertEqual(len(model.encoder), 14)
+        dpr_inc = 0.1 / (14 - 1)
+        dpr = 0
+        for layer in model.encoder:
+            self.assertEqual(layer.attn.embed_dims, 384)
+            # The default mlp_ratio is 3
+            self.assertEqual(layer.ffn.feedforward_channels, 384 * 3)
+            self.assertAlmostEqual(layer.attn.out_drop.drop_prob, dpr)
+            self.assertAlmostEqual(layer.ffn.dropout_layer.drop_prob, dpr)
+            dpr += dpr_inc
 
-    imgs = torch.randn(3, 3, 224, 224)
-    patch_token, cls_token = model(imgs)[-1]
-    assert cls_token.shape == (3, 384)
-    assert patch_token.shape == (3, 384, 14, 14)
+    def test_init_weights(self):
+        # test weight init cfg
+        cfg = deepcopy(self.cfg)
+        cfg['init_cfg'] = [dict(type='TruncNormal', layer='Linear', std=.02)]
+        model = T2T_ViT(**cfg)
+        ori_weight = model.tokens_to_token.project.weight.clone().detach()
 
-    # Test custom arch T2T-ViT without output cls token
-    cfg = deepcopy(cfg_ori)
-    cfg['embed_dims'] = 256
-    cfg['num_layers'] = 16
-    cfg['layer_cfgs'] = dict(num_heads=8, feedforward_channels=1024)
-    cfg['output_cls_token'] = False
+        model.init_weights()
+        initialized_weight = model.tokens_to_token.project.weight
+        self.assertFalse(torch.allclose(ori_weight, initialized_weight))
 
-    model = T2T_ViT(**cfg)
-    patch_token = model(imgs)[-1]
-    assert patch_token.shape == (3, 256, 14, 14)
+        # test load checkpoint
+        pretrain_pos_embed = model.pos_embed.clone().detach()
+        tmpdir = tempfile.gettempdir()
+        checkpoint = os.path.join(tmpdir, 'test.pth')
+        save_checkpoint(model, checkpoint)
+        cfg = deepcopy(self.cfg)
+        model = T2T_ViT(**cfg)
+        load_checkpoint(model, checkpoint, strict=True)
+        self.assertTrue(torch.allclose(model.pos_embed, pretrain_pos_embed))
 
-    # Test T2T_ViT with multi out indices
-    cfg = deepcopy(cfg_ori)
-    cfg['out_indices'] = [-3, -2, -1]
-    model = T2T_ViT(**cfg)
-    for out in model(imgs):
-        assert out[0].shape == (3, 384, 14, 14)
-        assert out[1].shape == (3, 384)
+        # test load checkpoint with different img_size
+        cfg = deepcopy(self.cfg)
+        cfg['img_size'] = 384
+        model = T2T_ViT(**cfg)
+        load_checkpoint(model, checkpoint, strict=True)
+        resized_pos_embed = timm_resize_pos_embed(pretrain_pos_embed,
+                                                  model.pos_embed)
+        self.assertTrue(torch.allclose(model.pos_embed, resized_pos_embed))
+
+        os.remove(checkpoint)
+
+    def test_forward(self):
+        imgs = torch.randn(3, 3, 224, 224)
+
+        # test with_cls_token=False
+        cfg = deepcopy(self.cfg)
+        cfg['with_cls_token'] = False
+        cfg['output_cls_token'] = True
+        with self.assertRaisesRegex(AssertionError, 'but got False'):
+            T2T_ViT(**cfg)
+
+        cfg = deepcopy(self.cfg)
+        cfg['with_cls_token'] = False
+        cfg['output_cls_token'] = False
+        model = T2T_ViT(**cfg)
+        outs = model(imgs)
+        self.assertIsInstance(outs, tuple)
+        self.assertEqual(len(outs), 1)
+        patch_token = outs[-1]
+        self.assertEqual(patch_token.shape, (3, 384, 14, 14))
+
+        # test with output_cls_token
+        cfg = deepcopy(self.cfg)
+        model = T2T_ViT(**cfg)
+        outs = model(imgs)
+        self.assertIsInstance(outs, tuple)
+        self.assertEqual(len(outs), 1)
+        patch_token, cls_token = outs[-1]
+        self.assertEqual(patch_token.shape, (3, 384, 14, 14))
+        self.assertEqual(cls_token.shape, (3, 384))
+
+        # test without output_cls_token
+        cfg = deepcopy(self.cfg)
+        cfg['output_cls_token'] = False
+        model = T2T_ViT(**cfg)
+        outs = model(imgs)
+        self.assertIsInstance(outs, tuple)
+        self.assertEqual(len(outs), 1)
+        patch_token = outs[-1]
+        self.assertEqual(patch_token.shape, (3, 384, 14, 14))
+
+        # Test forward with multi out indices
+        cfg = deepcopy(self.cfg)
+        cfg['out_indices'] = [-3, -2, -1]
+        model = T2T_ViT(**cfg)
+        outs = model(imgs)
+        self.assertIsInstance(outs, tuple)
+        self.assertEqual(len(outs), 3)
+        for out in outs:
+            patch_token, cls_token = out
+            self.assertEqual(patch_token.shape, (3, 384, 14, 14))
+            self.assertEqual(cls_token.shape, (3, 384))
+
+        # Test forward with dynamic input size
+        imgs1 = torch.randn(3, 3, 224, 224)
+        imgs2 = torch.randn(3, 3, 256, 256)
+        imgs3 = torch.randn(3, 3, 256, 309)
+        cfg = deepcopy(self.cfg)
+        model = T2T_ViT(**cfg)
+        for imgs in [imgs1, imgs2, imgs3]:
+            outs = model(imgs)
+            self.assertIsInstance(outs, tuple)
+            self.assertEqual(len(outs), 1)
+            patch_token, cls_token = outs[-1]
+            expect_feat_shape = (math.ceil(imgs.shape[2] / 16),
+                                 math.ceil(imgs.shape[3] / 16))
+            self.assertEqual(patch_token.shape, (3, 384, *expect_feat_shape))
+            self.assertEqual(cls_token.shape, (3, 384))
