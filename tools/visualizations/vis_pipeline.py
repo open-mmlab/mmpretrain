@@ -165,7 +165,7 @@ def build_dataset_pipelines(cfg, phase):
 def prepare_imgs(args, imgs: List[np.ndarray], steps=None):
     """prepare the showing picture."""
     ori_shapes = [img.shape for img in imgs]
-    # adaptivly adjustment to rescale pictures
+    # adaptive adjustment to rescale pictures
     if args.adaptive:
         for i, img in enumerate(imgs):
             imgs[i] = adaptive_size(img, args.min_edge_length,
@@ -240,7 +240,7 @@ def concat_imgs(imgs, steps, ori_shapes):
             color=(255, 0, 0),
             lineType=1)
 
-    # High alignment for concatenating
+    # Height alignment for concatenating
     board = np.concatenate(imgs, axis=1)
     return board
 
@@ -269,7 +269,7 @@ def get_display_img(args, item, pipelines):
     src_image = item['img'].copy()
     pipeline_images = [src_image]
 
-    # get intermediates images through pipelines
+    # get intermediate images through pipelines
     if args.mode in ['transformed', 'concat', 'pipeline']:
         for pipeline in pipelines.values():
             item = pipeline(item)
@@ -277,7 +277,7 @@ def get_display_img(args, item, pipelines):
             trans_image = np.ascontiguousarray(trans_image, dtype=np.uint8)
             pipeline_images.append(trans_image)
 
-    # concat all the images to show, depandding on 'mode'
+    # concatenate images to be showed according to mode
     if args.mode == 'original':
         image = prepare_imgs(args, [src_image], ['src'])
     elif args.mode == 'transformed':
