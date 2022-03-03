@@ -1,6 +1,3 @@
-from pyexpat import model
-
-
 _base_ = [
     '../_base_/models/wide-resnet50.py',
     '../_base_/datasets/imagenet_bs32_pil_resize.py',
