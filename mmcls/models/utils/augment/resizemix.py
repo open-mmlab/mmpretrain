@@ -47,14 +47,24 @@ class BatchResizeMixLayer(BatchCutMixLayer):
     """
 
     def __init__(self,
+                 alpha,
+                 num_classes,
                  lam_min: float = 0.1,
                  lam_max: float = 0.8,
-                 *args,
+                 prob=1.0,
+                 cutmix_minmax=None,
+                 correct_lam=True,
                  **kwargs):
         if digit_version(torch.__version__) < digit_version('1.7.0'):
             raise RuntimeError('torchvision.transforms.Resize is not available'
                                'with Tensor before 1.7.0')
-        super(BatchResizeMixLayer, self).__init__(*args, **kwargs)
+        super(BatchResizeMixLayer, self).__init__(
+            alpha=alpha,
+            num_classes=num_classes,
+            prob=prob,
+            cutmix_minmax=cutmix_minmax,
+            correct_lam=correct_lam,
+            **kwargs)
         self.lam_min = lam_min
         self.lam_max = lam_max
 
