@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 import torch
+from mmcv.utils import digit_version
 
 from mmcls.models.backbones import ConvMixer
 
@@ -12,6 +13,23 @@ def test_assertion():
     with pytest.raises(AssertionError):
         # ConvMixer arch dict should include essential_keys,
         ConvMixer(arch=dict(channels=[2, 3, 4, 5]))
+
+    with pytest.raises(AssertionError):
+        # ConvMixer out_indices should be valid depth.
+        ConvMixer(out_indices=-100)
+
+    # even kernel size number for padding `same` conv is not supported
+    # yet for torch version lower than 1.9.0
+    if digit_version(torch.__version__) < digit_version('1.9.0'):
+        with pytest.raises(NotImplementedError):
+            # even kernel size number for padding `same` conv is not supported
+            # yet for torch version lower than 1.9.0
+            ConvMixer(arch={
+                'embed_dims': 99,
+                'depth': 5,
+                'patch_size': 5,
+                'kernel_size': 8
+            })
 
 
 def test_convmixer():
