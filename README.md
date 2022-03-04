@@ -59,21 +59,19 @@ The master branch works with **PyTorch 1.5+**.
 
 ## What's new
 
+v0.21.0 was released in 4/3/2022.
+
+Highlights of the new version:
+- Support **ResNetV1c** and **Wide-ResNet**, and provide pre-trained models.
+- Support **dynamic input shape** for ViT-based algorithms. Now our ViT, DeiT, Swin-Transformer and T2T-ViT supports forwarding with any input shape.
+- Reproduce training results of DeiT. And our DeiT-T and DeiT-S have **higher accuracy** comparing with the official weights.
+
 v0.20.0 was released in 30/1/2022.
 
 Highlights of the new version:
 - Support **K-fold cross-validation**. The tutorial will be released later.
 - Support **HRNet**, **ConvNeXt**, **Twins** and **EfficientNet**.
 - Support model conversion from PyTorch to **Core ML** by a tool.
-
-v0.19.0 was released in 31/12/2021.
-
-Highlights of the new version:
-- The **feature extraction** function has been enhanced. See [#593](https://github.com/open-mmlab/mmclassification/pull/593) for more details.
-- Provide the high-acc **ResNet-50** training settings from [*ResNet strikes back*](https://arxiv.org/abs/2110.00476).
-- Reproduce the training accuracy of **T2T-ViT** & **RegNetX**, and provide self-training checkpoints.
-- Support **DeiT** & **Conformer** backbone and checkpoints.
-- Provide a **CAM visualization** tool based on [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam), and detailed [user guide](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#class-activation-map-visualization)!
 
 Please refer to [changelog.md](docs/en/changelog.md) for more details and other release history.
 
