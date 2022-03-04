@@ -1,5 +1,39 @@
 # Changelog
 
+## v0.21.0(04/03/2022)
+
+### Highlights
+
+- Support ResNetV1c and Wide-ResNet, and provide pre-trained models.
+- Support dynamic input shape for ViT-based algorithms. Now our ViT, DeiT, Swin-Transformer and T2T-ViT support forwarding with any input shape.
+- Reproduce training results of DeiT. And our DeiT-T and DeiT-S have higher accuracy comparing with the official weights.
+
+### New Features
+
+- Add ResNetV1c. ([#692](https://github.com/open-mmlab/mmclassification/pull/692))
+- Support Wide-ResNet. ([#715](https://github.com/open-mmlab/mmclassification/pull/715))
+- Support gem pooling ([#677](https://github.com/open-mmlab/mmclassification/pull/677))
+
+### Improvements
+
+- Reproduce training results of DeiT. ([#711](https://github.com/open-mmlab/mmclassification/pull/711))
+- Add ConvNeXt pretrain models on ImageNet-1k. ([#707](https://github.com/open-mmlab/mmclassification/pull/707))
+- Support dynamic input shape for ViT-based algorithms. ([#706](https://github.com/open-mmlab/mmclassification/pull/706))
+- Add `evaluate` function for ConcatDataset. ([#650](https://github.com/open-mmlab/mmclassification/pull/650))
+- Enhance vis-pipeline tool. ([#604](https://github.com/open-mmlab/mmclassification/pull/604))
+- Return code 1 if scripts runs failed. ([#694](https://github.com/open-mmlab/mmclassification/pull/694))
+- Use PyTorch official `one_hot` to implement `convert_to_one_hot`. ([#696](https://github.com/open-mmlab/mmclassification/pull/696))
+- Add a new pre-commit-hook to automatically add a copyright. ([#710](https://github.com/open-mmlab/mmclassification/pull/710))
+- Add deprecation message for deploy tools. ([#697](https://github.com/open-mmlab/mmclassification/pull/697))
+- Upgrade isort pre-commit hooks. ([#687](https://github.com/open-mmlab/mmclassification/pull/687))
+- Use `--gpu-id` instead of `--gpu-ids` in non-distributed multi-gpu training/testing. ([#688](https://github.com/open-mmlab/mmclassification/pull/688))
+- Remove deprecation. ([#633](https://github.com/open-mmlab/mmclassification/pull/633))
+
+### Bug Fixes
+
+- Fix Conformer forward with irregular input size. ([#686](https://github.com/open-mmlab/mmclassification/pull/686))
+- Add `dist.barrier` to fix a bug in directory checking. ([#666](https://github.com/open-mmlab/mmclassification/pull/666))
+
 ## v0.20.1(07/02/2022)
 
 ### Bug Fixes

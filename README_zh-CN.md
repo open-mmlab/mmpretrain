@@ -57,21 +57,19 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 
 ## 更新日志
 
+2022/3/4 发布了 v0.21.0 版本
+
+新版本亮点：
+- 支持了 **ResNetV1c** 和 **Wide-ResNet** 两个 ResNet 变种，并提供了预训练模型
+- ViT相关模型支持 **动态输入尺寸**。现在我们的 ViT，DeiT，Swin-Transformer 和 T2T-ViT 支持任意尺寸的输入。
+- 复现了 DeiT 的训练结果，并且我们的 DeiT-T 和 DeiT-S 拥有比官方权重 **更高的精度**。
+
 2022/1/30 发布了 v0.20.0 版本
 
 新版本亮点：
 - 支持 **K 折交叉验证** 工具。相应文档会在后续添加。
 - 支持了 **HRNet**，**ConvNeXt**，**Twins** 以及 **EfficientNet** 四个主干网络，欢迎使用！
 - 支持了从 PyTorch 模型到 Core-ML 模型的转换工具。
-
-2021/12/31 发布了 v0.19.0 版本
-
-新版本亮点：
-- **特征提取**功能得到了加强。详见 [#593](https://github.com/open-mmlab/mmclassification/pull/593)。
-- 提供了 **ResNet-50** 的高精度训练配置，原论文参见 [*ResNet strikes back*](https://arxiv.org/abs/2110.00476)。
-- 复现了 **T2T-ViT** 和 **RegNetX** 的训练精度，并提供了自训练的模型权重文件。
-- 支持了 **DeiT** 和 **Conformer** 主干网络，并提供了预训练模型。
-- 提供了一个 **CAM 可视化** 工具。该工具基于 [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam)，我们提供了详细的 [使用教程](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#class-activation-map-visualization)！
 
 发布历史和更新细节请参考 [更新日志](docs/en/changelog.md)
 
