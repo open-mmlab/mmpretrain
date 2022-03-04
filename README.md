@@ -63,7 +63,7 @@ v0.21.0 was released in 4/3/2022.
 
 Highlights of the new version:
 - Support **ResNetV1c** and **Wide-ResNet**, and provide pre-trained models.
-- Support **dynamic input shape** for ViT-based algorithms. Now our ViT, DeiT, Swin-Transformer and T2T-ViT supports forwarding with any input shape.
+- Support **dynamic input shape** for ViT-based algorithms. Now our ViT, DeiT, Swin-Transformer and T2T-ViT support forwarding with any input shape.
 - Reproduce training results of DeiT. And our DeiT-T and DeiT-S have **higher accuracy** comparing with the official weights.
 
 v0.20.0 was released in 30/1/2022.
