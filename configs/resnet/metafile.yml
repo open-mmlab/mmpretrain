@@ -312,7 +312,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 78.48
           Top 5 Accuracy: 94.08
-    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/wide-resnet50_3rdparty_8xb32_in1k_20220303-7be758f7.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/wide-resnet50_3rdparty_8xb32_in1k_20220304-66678344.pth
     Config: configs/resnet/wide-resnet50_8xb32_in1k.py
     Converted From:
       Weights: https://download.pytorch.org/models/wide_resnet50_2-95faca4d.pth
@@ -331,7 +331,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 78.84
           Top 5 Accuracy: 94.28
-    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/wide-resnet101_3rdparty_8xb32_in1k_20220303-06f17b38.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/wide-resnet101_3rdparty_8xb32_in1k_20220304-8d5f9d61.pth
     Config: configs/resnet/wide-resnet101_8xb32_in1k.py
     Converted From:
       Weights: https://download.pytorch.org/models/wide_resnet101_2-32ee1156.pth
