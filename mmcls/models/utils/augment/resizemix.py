@@ -21,6 +21,9 @@ class BatchResizeMixLayer(BatchCutMixLayer):
         num_classes (int): The number of classes.
         lam_min(float): The minimum value of lam. Defaults to 0.1.
         lam_max(float): The maximum value of lam. Defaults to 0.8.
+        interpolation (str): algorithm used for upsampling:
+         'nearest' | 'linear' | 'bilinear' | 'bicubic' | 'trilinear' | 'area'.
+         Default to 'bilinear'.
         prob (float): mix probability. It should be in range [0, 1].
             Default to 1.0.
         cutmix_minmax (List[float], optional): cutmix min/max image ratio.
@@ -50,6 +53,7 @@ class BatchResizeMixLayer(BatchCutMixLayer):
                  num_classes,
                  lam_min: float = 0.1,
                  lam_max: float = 0.8,
+                 interpolation='bilinear',
                  prob=1.0,
                  cutmix_minmax=None,
                  correct_lam=True,
@@ -63,6 +67,7 @@ class BatchResizeMixLayer(BatchCutMixLayer):
             **kwargs)
         self.lam_min = lam_min
         self.lam_max = lam_max
+        self.interpolation = interpolation
 
     def cutmix(self, img, gt_label):
         one_hot_gt_label = one_hot_encoding(gt_label, self.num_classes)
@@ -76,7 +81,9 @@ class BatchResizeMixLayer(BatchCutMixLayer):
          bbx2), lam = self.cutmix_bbox_and_lam(img.shape, lam)
 
         img[:, :, bby1:bby2, bbx1:bbx2] = F.interpolate(
-            img[index], size=(bby2 - bby1, bbx2 - bbx1))
+            img[index],
+            size=(bby2 - bby1, bbx2 - bbx1),
+            mode=self.interpolation)
         mixed_gt_label = lam * one_hot_gt_label + (
             1 - lam) * one_hot_gt_label[index, :]
         return img, mixed_gt_label
