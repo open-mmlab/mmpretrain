@@ -1,0 +1,77 @@
+Collections:
+  - Name: Wide-ResNet
+    Metadata:
+      Training Data: ImageNet-1k
+      Training Techniques:
+        - SGD with Momentum
+        - Weight Decay
+      Training Resources: 8x V100 GPUs
+      Epochs: 100
+      Batch Size: 256
+      Architecture:
+        - 1x1 Convolution
+        - Batch Normalization
+        - Convolution
+        - Global Average Pooling
+        - Max Pooling
+        - ReLU
+        - Residual Connection
+        - Softmax
+        - Wide Residual Block
+    Paper:
+      URL: https://arxiv.org/abs/1605.07146
+      Title: "Wide Residual Networks"
+    README: configs/wrn/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.20.1/mmcls/models/backbones/resnet.py#L383
+      Version: v0.20.1
+
+Models:
+  - Name: wide-resnet50_3rdparty_8xb32_in1k
+    Metadata:
+      FLOPs: 11440000000  # 11.44G
+      Parameters: 68880000  # 68.88M
+    In Collection: Wide-ResNet
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 78.48
+          Top 5 Accuracy: 94.08
+    Weights: https://download.openmmlab.com/mmclassification/v0/wrn/wide-resnet50_3rdparty_8xb32_in1k_20220304-66678344.pth
+    Config: configs/wrn/wide-resnet50_8xb32_in1k.py
+    Converted From:
+      Weights: https://download.pytorch.org/models/wide_resnet50_2-95faca4d.pth
+      Code: https://github.com/pytorch/vision/blob/main/torchvision/models/resnet.py
+  - Name: wide-resnet101_3rdparty_8xb32_in1k
+    Metadata:
+      FLOPs: 22810000000  # 22.81G
+      Parameters: 126890000 # 126.89M
+    In Collection: Wide-ResNet
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 78.84
+          Top 5 Accuracy: 94.28
+    Weights: https://download.openmmlab.com/mmclassification/v0/wrn/wide-resnet101_3rdparty_8xb32_in1k_20220304-8d5f9d61.pth
+    Config: configs/wrn/wide-resnet101_8xb32_in1k.py
+    Converted From:
+      Weights: https://download.pytorch.org/models/wide_resnet101_2-32ee1156.pth
+      Code: https://github.com/pytorch/vision/blob/main/torchvision/models/resnet.py
+  - Name: wide-resnet50_3rdparty-timm_8xb32_in1k
+    Metadata:
+      FLOPs: 11440000000  # 11.44G
+      Parameters: 68880000  # 68.88M
+    In Collection: Wide-ResNet
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 81.45
+          Top 5 Accuracy: 95.53
+    Weights: https://download.openmmlab.com/mmclassification/v0/wrn/wide-resnet50_3rdparty-timm_8xb32_in1k_20220304-83ae4399.pth
+    Config: configs/wrn/wide-resnet50_timm_8xb32_in1k.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/wide_resnet50_racm-8234f177.pth
+      Code: https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/resnet.py
