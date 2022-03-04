@@ -29,15 +29,18 @@ The "Roaring 20s" of visual recognition began with the introduction of Vision Tr
 
 *Models with \* are converted from the [official repo](https://github.com/facebookresearch/ConvNeXt). The config files of these models are only for inference. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 
-### ImageNet-21k
+### Pre-trained Models
 
-The pre-trained models on ImageNet-21k are used to fine-tune, and therefore don't have evaluation results.
+The pre-trained models on ImageNet-1k or ImageNet-21k are used to fine-tune on the downstream tasks.
 
-|                Model             | Params(M) | Flops(G) | Download |
-|:--------------------------------:|:---------:|:--------:|:--------:|
-| convnext-base_3rdparty_in21k\*   | 88.59     | 15.36    | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-base_3rdparty_in21k_20220124-13b83eec.pth) |
-| convnext-large_3rdparty_in21k\*  | 197.77    | 34.37    | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-large_3rdparty_in21k_20220124-41b5a79f.pth) |
-| convnext-xlarge_3rdparty_in21k\* | 350.20    | 60.93    | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-xlarge_3rdparty_in21k_20220124-f909bad7.pth) |
+|       Model    | Training Data | Params(M) | Flops(G) | Download |
+|:--------------:|:-------------:|:---------:|:--------:|:--------:|
+| ConvNeXt-T\*   | ImageNet-1k   | 28.59     | 4.46     | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-tiny_3rdparty_32xb128-noema_in1k_20220222-2908964a.pth) |
+| ConvNeXt-S\*   | ImageNet-1k   | 50.22     | 8.69     | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-small_3rdparty_32xb128-noema_in1k_20220222-fa001ca5.pth) |
+| ConvNeXt-B\*   | ImageNet-1k   | 88.59     | 15.36    | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-base_3rdparty_32xb128-noema_in1k_20220222-dba4f95f.pth) |
+| ConvNeXt-B\*   | ImageNet-21k  | 88.59     | 15.36    | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-base_3rdparty_in21k_20220124-13b83eec.pth) |
+| ConvNeXt-L\*   | ImageNet-21k  | 197.77    | 34.37    | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-large_3rdparty_in21k_20220124-41b5a79f.pth) |
+| ConvNeXt-XL\*  | ImageNet-21k  | 350.20    | 60.93    | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-xlarge_3rdparty_in21k_20220124-f909bad7.pth) |
 
 *Models with \* are converted from the [official repo](https://github.com/facebookresearch/ConvNeXt).*
 

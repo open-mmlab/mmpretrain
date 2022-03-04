@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 from pathlib import Path
 
@@ -35,7 +36,7 @@ def main():
     save_path = Path(args.save_path)
     if save_path.suffix != '.pth':
         print('The path should contain the name of the pth format file.')
-        exit()
+        exit(1)
     save_path.parent.mkdir(parents=True, exist_ok=True)
 
     convert_repvggblock_param(args.config_path, args.checkpoint_path,
