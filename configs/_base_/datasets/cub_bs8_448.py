@@ -51,4 +51,4 @@ data = dict(
 
 evaluation = dict(
     interval=1, metric='accuracy',
-    save_best='auto')  # save the best acc checkpoint
+    save_best='auto')  # save the checkpoint with highest accuracy

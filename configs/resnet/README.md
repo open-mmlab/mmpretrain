@@ -19,7 +19,7 @@ The pre-trained models on ImageNet-21k are used to fine-tune, and therefore don'
 
 |   Model         | resolution  | Params(M) |  Flops(G) | Download |
 |:---------------:|:-----------:|:---------:|:---------:|:--------:|
-| ResNet-50-mill  |   224x224   |   86.74   |   15.14   | [model](https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_mill_3rdparty_in21k_20220307-bdb3a68b.pth.pth)|
+| ResNet-50-mill  |   224x224   |   86.74   |   15.14   | [model](https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_mill_3rdparty_in21k_20220307-bdb3a68b.pth)|
 
 *The "mill" means using the mutil-label pretrain weight from [ImageNet-21K Pretraining for the Masses](https://github.com/Alibaba-MIIL/ImageNet21K).*
 

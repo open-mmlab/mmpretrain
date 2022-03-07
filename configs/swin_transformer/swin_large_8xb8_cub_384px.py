@@ -21,8 +21,6 @@ paramwise_cfg = dict(
         '.relative_position_bias_table': dict(decay_mult=0.0)
     })
 
-# for batch in each gpu is 128, 8 gpu
-# lr = 5e-4 * 8 * 8 / 512 = 0.001
 optimizer = dict(
     type='AdamW',
     lr=5e-6,
@@ -32,7 +30,7 @@ optimizer = dict(
     paramwise_cfg=paramwise_cfg)
 optimizer_config = dict(grad_clip=dict(max_norm=5.0))
 
-log_config = dict(interval=20)  # log every 20 items
+log_config = dict(interval=20)  # log every 20 intervals
 
 checkpoint_config = dict(
     interval=1, max_keep_ckpts=3)  # save last three checkpoints

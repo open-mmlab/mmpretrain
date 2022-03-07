@@ -194,7 +194,8 @@ Models:
     Results:
       - Dataset: CUB-200-2011
         Metrics:
-          Top 1 Accuracy: 88.45
+          Top 1 Accuracy: 91.87
         Task: Image Classification
+    Pretrain: https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin-base_3rdparty_in21k-384px.pth
     Weights: https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_large_8xb8_cub_384px_20220307-1bbaee6a.pth
     Config: configs/swin_transformer/swin-large_8xb8_cub_384px.py

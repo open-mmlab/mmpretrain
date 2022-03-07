@@ -13,7 +13,7 @@ model = dict(
             type='Pretrained', checkpoint=checkpoint, prefix='backbone')),
     head=dict(num_classes=200, ))
 
-log_config = dict(interval=20)  # log every 20 items
+log_config = dict(interval=20)  # log every 20 intervals
 
 checkpoint_config = dict(
     interval=1, max_keep_ckpts=3)  # save last three checkpoints
