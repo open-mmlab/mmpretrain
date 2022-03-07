@@ -128,6 +128,8 @@ The ResNet family models below are trained by standard data augmentations, i.e.,
 | HRNet-W64\* | 128.06 | 29.00 | 79.46 | 94.65 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hrnet/hrnet-w64_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w64_3rdparty_8xb32_in1k_20220120-19126642.pth) |
 | HRNet-W18 (ssld)\* | 21.30 | 4.33 | 81.06 | 95.70 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hrnet/hrnet-w18_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w18_3rdparty_8xb32-ssld_in1k_20220120-455f69ea.pth) |
 | HRNet-W48 (ssld)\* | 77.47 | 17.36 | 83.63 | 96.79 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hrnet/hrnet-w48_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w48_3rdparty_8xb32-ssld_in1k_20220120-d0459c38.pth) |
+| WRN-50\*           | 68.88 | 11.44 | 81.45 | 95.53 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/wrn/wide-resnet50_timm_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/wrn/wide-resnet50_3rdparty-timm_8xb32_in1k_20220304-83ae4399.pth) |
+| WRN-101\*          | 126.89| 22.81 | 78.84 | 94.28 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/wrn/wide-resnet101_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/wrn/wide-resnet101_3rdparty_8xb32_in1k_20220304-8d5f9d61.pth) |
 
 *Models with \* are converted from other repos, others are trained by ourselves.*
 
