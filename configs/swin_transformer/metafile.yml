@@ -186,3 +186,15 @@ Models:
       Weights: https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_large_patch4_window12_384_22kto1k.pth
       Code: https://github.com/microsoft/Swin-Transformer/blob/777f6c66604bb5579086c4447efe3620344d95a9/models/swin_transformer.py#L458
     Config: configs/swin_transformer/swin-large_16xb64_in1k-384px.py
+  - Name: swin-large_8xb8_cub_384px
+    Metadata:
+      FLOPs: 34040000000
+      Parameters: 196530000
+    In Collection: Swin-Transformer
+    Results:
+      - Dataset: CUB-200-2011
+        Metrics:
+          Top 1 Accuracy: 88.45
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_large_8xb8_cub_384px_20220307-1bbaee6a.pth
+    Config: configs/swin_transformer/swin-large_8xb8_cub_384px.py

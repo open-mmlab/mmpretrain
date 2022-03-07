@@ -328,7 +328,6 @@ def test_dataset_imagenet21k():
 
 
 def test_dataset_cub():
-    # Test setting classes through a file
     tmp_ann_file = tempfile.NamedTemporaryFile()
     tmp_image_class_labels_file = tempfile.NamedTemporaryFile()
     tmp_train_test_split_file = tempfile.NamedTemporaryFile()

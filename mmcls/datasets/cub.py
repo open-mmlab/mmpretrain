@@ -9,7 +9,7 @@ from .builder import DATASETS
 class CUB(BaseDataset):
     """The CUB-200-2011 Dataset.
 
-    Support for `CUB-200-2011 <http://www.vision.caltech.edu/visipedia/CUB-200-2011.html>`_ Dataset.
+    Support the `CUB-200-2011 <http://www.vision.caltech.edu/visipedia/CUB-200-2011.html>`_ Dataset.
     Comparing with the `CUB-200 <http://www.vision.caltech.edu/visipedia/CUB-200.html>`_ Dataset,
     there are much more pictures in `CUB-200-2011`.
 

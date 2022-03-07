@@ -20,6 +20,7 @@ test_pipeline = [
     dict(type='ImageToTensor', keys=['img']),
     dict(type='Collect', keys=['img'])
 ]
+
 data_root = 'data/CUB_200_2011/'
 data = dict(
     samples_per_gpu=8,
@@ -47,4 +48,7 @@ data = dict(
         data_prefix=data_root + 'images',
         test_mode=True,
         pipeline=test_pipeline))
-evaluation = dict(interval=1, metric='accuracy')
+
+evaluation = dict(
+    interval=1, metric='accuracy',
+    save_best='auto')  # save the best acc checkpoint

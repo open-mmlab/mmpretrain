@@ -337,3 +337,16 @@ Models:
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnetv1c152_8xb32_in1k_20220214-c013291f.pth
     Config: configs/resnet/resnetv1c152_8xb32_in1k.py
+  - Name: resnet50_8xb8_cub
+    Metadata:
+      Pretrain: https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_mill_3rdparty_in21k.pth
+      FLOPs: 1310000000
+      Parameters: 23520000
+    In Collection: ResNet
+    Results:
+      - Dataset: CUB-200-2011
+        Metrics:
+          Top 1 Accuracy: 88.45
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb8_cub_20220307-57840e60.pth
+    Config: configs/resnet/resnet50_8xb8_cub.py
