@@ -188,8 +188,8 @@ Models:
     Config: configs/swin_transformer/swin-large_16xb64_in1k-384px.py
   - Name: swin-large_8xb8_cub_384px
     Metadata:
-      FLOPs: 34040000000
-      Parameters: 196530000
+      FLOPs: 100040000000
+      Parameters: 195510000
     In Collection: Swin-Transformer
     Results:
       - Dataset: CUB-200-2011

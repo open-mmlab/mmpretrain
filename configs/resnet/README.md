@@ -67,9 +67,9 @@ The pre-trained models on ImageNet-21k are used to fine-tune, and therefore don'
 
 ### CUB-200-2011
 
-|         Model         |   Pretrain   |  resolution  |  Params(M) | Flops(G) | Top-1 (%) |  Config | Download |
+|         Model         |   Pretrain   |  resolution  |  Params(M) | Flops(G) | Top-1 (%) |  Config |  Download  |
 |:---------------------:|:------------:|:---------:|:---------:|:--------:|:---------:|:---------:|:---------:|
-|    ResNet-50          | [ImageNet-21k-mill](https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_mill_3rdparty_in21k_20220307-bdb3a68b.pth)  | 448x448 |   11.69   |   1.82   |   88.45   |  [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet50_8xb8_cub.py) | [model](https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb8_cub_20220307-57840e60.pth) &#124; [log](https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb8_cub_20220307-57840e60.log.json) |
+|    ResNet-50          | [ImageNet-21k-mill](https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_mill_3rdparty_in21k_20220307-bdb3a68b.pth)  | 448x448 |   23.92   |   16.48   |   88.45   |  [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet50_8xb8_cub.py) | [model](https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb8_cub_20220307-57840e60.pth) &#124; [log](https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb8_cub_20220307-57840e60.log.json) |
 
 
 ## Citation

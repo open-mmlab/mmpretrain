@@ -45,7 +45,7 @@ The pre-trained models on ImageNet-21k are used to fine-tune, and therefore don'
 
 |       Model      |  Pretrain   | resolution  | Params(M) | Flops(G) | Top-1 (%) |  Config | Download |
 |:----------------:|:------------:|:---------:|:---------:|:--------:|:---------:|:---------:|:---------:|
-|      Swin-L      |  [ImageNet-21k](https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin-base_3rdparty_in21k-384px.pth) |   384x384   |  196.53   |   34.04   |   91.87   |  [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/swin_transformer/swin-large_8xb8_cub.py) | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_large_8xb8_cub_384px_20220307-1bbaee6a.pth) &#124; [log](https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_large_8xb8_cub_384px_20220307-1bbaee6a.log.json) |
+|      Swin-L      |  [ImageNet-21k](https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin-base_3rdparty_in21k-384px.pth) |   384x384   |  195.51   |   100.04   |   91.87   |  [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/swin_transformer/swin-large_8xb8_cub.py) | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin-large_8xb8_cub_384px_20220307-1bbaee6a.pth) &#124; [log](https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin-large_8xb8_cub_384px_20220307-1bbaee6a.log.json) |
 
 
 ## Citation

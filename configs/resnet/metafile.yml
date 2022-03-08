@@ -377,8 +377,8 @@ Models:
     Config: configs/resnet/resnetv1c152_8xb32_in1k.py
   - Name: resnet50_8xb8_cub
     Metadata:
-      FLOPs: 1310000000
-      Parameters: 23520000
+      FLOPs: 16480000000
+      Parameters: 23920000
     In Collection: ResNet
     Results:
       - Dataset: CUB-200-2011
