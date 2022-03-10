@@ -26,6 +26,6 @@ class StopAugmentsHook(Hook):
         model = runner.model
         if is_module_wrapper(model):
             model = model.module
-        if (epoch + 1) == runner.max_epochs - self.num_last_epochs:
+        if epoch == runner.max_epochs - self.num_last_epochs:
             runner.logger.info('Stop augments now!')
             model.augments = None
