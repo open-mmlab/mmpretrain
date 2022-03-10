@@ -25,6 +25,7 @@ def _build_demo_runner_without_hook(runner_type='EpochBasedRunner',
             super().__init__()
             self.linear = nn.Linear(2, 1)
             self.conv = nn.Conv2d(3, 3, 3)
+            self.augments = True  # demo
 
         def forward(self, x):
             return self.linear(x)
@@ -155,4 +156,18 @@ def test_cosine_cooldown_hook(multi_optimziers):
     runner.register_hook(check_hook, priority='LOWEST')
 
     runner.run([loader], [('train', 1)])
+    shutil.rmtree(runner.work_dir)
+
+
+def test_stop_augments_hook():
+    loader = DataLoader(torch.ones((10, 2)))
+    runner = _build_demo_runner(max_epochs=3)
+
+    # add momentum LR scheduler
+    hook_cfg = dict(type='StopAugmentsHook', num_last_epochs=1)
+    runner.register_hook_from_cfg(hook_cfg)
+
+    assert runner.model.augments
+    runner.run([loader], [('train', 1)])
+    assert runner.model.augments is None
     shutil.rmtree(runner.work_dir)
