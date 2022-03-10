@@ -25,6 +25,7 @@ from .t2t_vit import T2T_ViT
 from .timm_backbone import TIMMBackbone
 from .tnt import TNT
 from .twins import PCPVT, SVT
+from .van import VAN
 from .vgg import VGG
 from .vision_transformer import VisionTransformer
 
@@ -34,5 +35,5 @@ __all__ = [
     'ShuffleNetV2', 'MobileNetV2', 'MobileNetV3', 'VisionTransformer',
     'SwinTransformer', 'TNT', 'TIMMBackbone', 'T2T_ViT', 'Res2Net', 'RepVGG',
     'Conformer', 'MlpMixer', 'DistilledVisionTransformer', 'PCPVT', 'SVT',
-    'EfficientNet', 'ConvNeXt', 'HRNet', 'ResNetV1c'
+    'EfficientNet', 'ConvNeXt', 'HRNet', 'ResNetV1c', 'VAN'
 ]
