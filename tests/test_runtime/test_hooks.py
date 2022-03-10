@@ -12,12 +12,18 @@ from mmcv.runner.hooks import Hook, IterTimerHook
 from torch.utils.data import DataLoader
 
 import mmcls.core  # noqa: F401
+from mmcls.models.losses import CrossEntropyLoss
 
 
 def _build_demo_runner_without_hook(runner_type='EpochBasedRunner',
                                     max_epochs=1,
                                     max_iters=None,
                                     multi_optimziers=False):
+
+    class Head:
+
+        def __init__(self):
+            self.compute_loss = None
 
     class Model(nn.Module):
 
@@ -26,6 +32,7 @@ def _build_demo_runner_without_hook(runner_type='EpochBasedRunner',
             self.linear = nn.Linear(2, 1)
             self.conv = nn.Conv2d(3, 3, 3)
             self.augments = True  # demo
+            self.head = Head()
 
         def forward(self, x):
             return self.linear(x)
@@ -164,10 +171,15 @@ def test_stop_augments_hook():
     runner = _build_demo_runner(max_epochs=3)
 
     # add momentum LR scheduler
-    hook_cfg = dict(type='StopAugmentsHook', num_last_epochs=1)
+    hook_cfg = dict(
+        type='StopAugmentsHook',
+        num_last_epochs=1,
+        loss=dict(type='CrossEntropyLoss', loss_weight=1.0))
     runner.register_hook_from_cfg(hook_cfg)
 
     assert runner.model.augments
+    assert runner.model.head.compute_loss is None
     runner.run([loader], [('train', 1)])
     assert runner.model.augments is None
+    assert isinstance(runner.model.head.compute_loss, CrossEntropyLoss)
     shutil.rmtree(runner.work_dir)
