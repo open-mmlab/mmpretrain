@@ -15,7 +15,7 @@ class StopAugmentsHook(Hook):
 
     Args:
         num_last_epochs (int): The number of latter epochs in the end of the
-            training to close the data augmentation and switch to L1 loss.
+            training to close the model.augments.
             Default: 15.
         loss (dict): Config of classification loss after stop augments.
     """
