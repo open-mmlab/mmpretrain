@@ -195,7 +195,8 @@ class CustomDataset(BaseDataset):
             warnings.warn(
                 'Found no valid file in the folder '
                 f'{", ".join(empty_classes)}. '
-                f"Supported extensions are: {', '.join(self.extensions)}")
+                f"Supported extensions are: {', '.join(self.extensions)}",
+                UserWarning)
 
         self.folder_to_idx = folder_to_idx
 

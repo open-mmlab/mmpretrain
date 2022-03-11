@@ -71,7 +71,7 @@ class ImageNet21k(CustomDataset):
         if multi_label:
             raise NotImplementedError(
                 'The `multi_label` option is not supported by now.')
-        self.multi_lable = multi_label
+        self.multi_label = multi_label
         self.serialize_data = serialize_data
 
         if ann_file is None:
@@ -160,3 +160,15 @@ class ImageNet21k(CustomDataset):
         serialized_data_infos = np.concatenate(serialized_data_infos_list)
 
         return serialized_data_infos, data_address
+
+    def __len__(self) -> int:
+        """Get the length of filtered dataset and automatically call
+        ``full_init`` if the  dataset has not been fully init.
+
+        Returns:
+            int: The length of filtered dataset.
+        """
+        if self.serialize_data:
+            return len(self.data_address)
+        else:
+            return len(self.data_infos)
