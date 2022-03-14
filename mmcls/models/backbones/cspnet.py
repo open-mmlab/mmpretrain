@@ -128,9 +128,10 @@ class CSPStage(BaseModule):
 
         if has_downsamper:
             self.conv_down = ConvModule(
-                in_channels,
-                down_channels,
-                2,
+                in_channels=in_channels,
+                out_channels=down_channels,
+                kernel_size=3,
+                stride=2,
                 norm_cfg=norm_cfg,
                 act_cfg=act_cfg)
         else:
@@ -213,7 +214,7 @@ class CSPNet(BaseModule, metaclass=ABCMeta):
         self._make_stem_layer(in_channels)
 
         stages = []
-        for stage_setting in enumerate(self.arch_setting):
+        for stage_setting in self.arch_setting:
             (block_fn, in_channels, out_channels, num_blocks, expand_ratio,
              has_downsamper, down_growth) = stage_setting
             csp_stage = CSPStage(
@@ -228,6 +229,8 @@ class CSPNet(BaseModule, metaclass=ABCMeta):
                 norm_cfg=norm_cfg,
                 act_cfg=act_cfg,
                 init_cfg=init_cfg)
+            print('has_downsamper', has_downsamper)
+            # print(csp_stage)
             stages.append(csp_stage)
         self.stages = Sequential(*stages)
 
@@ -259,7 +262,7 @@ class CSPNet(BaseModule, metaclass=ABCMeta):
         outs = []
 
         x = self.stem(x)
-        print(x.size())
+        print('stem : ', x.size())
         for i, stage in enumerate(self.stages):
             x = stage(x)
             if i in self.out_indices:
@@ -352,7 +355,7 @@ class CSPDarknet(CSPNet):
     def _make_stem_layer(self, in_channels):
         """using a stride=1 conv as the stem in CSPDarknet."""
         # `stem_channels` equals to the `in_channels` in the first stage.
-        stem_channels = self.arch_setting[0][0]
+        stem_channels = self.arch_setting[0][1]
         self.stem = ConvModule(
             in_channels=in_channels,
             out_channels=stem_channels,
@@ -446,7 +449,7 @@ class CSPResNet(CSPNet):
 
     def _make_stem_layer(self, in_channels):
         # `stem_channels` equals to the `in_channels` in the first stage.
-        stem_channels = self.arch_setting[0][0]
+        stem_channels = self.arch_setting[0][1]
         if self.deep_stem:
             self.stem = nn.Sequential(
                 ConvModule(
