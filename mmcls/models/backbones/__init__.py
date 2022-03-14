@@ -2,7 +2,7 @@
 from .alexnet import AlexNet
 from .conformer import Conformer
 from .convnext import ConvNeXt
-from .cspnet import CSPDarknet, CSPResNet, CSPResNeXt
+from .cspnet import CSPDarkNet, CSPResNet, CSPResNeXt
 from .deit import DistilledVisionTransformer
 from .efficientnet import EfficientNet
 from .hrnet import HRNet
@@ -35,6 +35,6 @@ __all__ = [
     'ShuffleNetV2', 'MobileNetV2', 'MobileNetV3', 'VisionTransformer',
     'SwinTransformer', 'TNT', 'TIMMBackbone', 'T2T_ViT', 'Res2Net', 'RepVGG',
     'Conformer', 'MlpMixer', 'DistilledVisionTransformer', 'PCPVT', 'SVT',
-    'EfficientNet', 'ConvNeXt', 'HRNet', 'ResNetV1c', 'CSPDarknet',
+    'EfficientNet', 'ConvNeXt', 'HRNet', 'ResNetV1c', 'CSPDarkNet',
     'CSPResNet', 'CSPResNeXt'
 ]

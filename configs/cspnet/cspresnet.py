@@ -1,8 +1,8 @@
-from mmcls.models.backbones import CSPDarkNet
+from mmcls.models.backbones import CSPResNet
 
 if __name__ == '__main__':
     import torch
-    model = CSPDarkNet(depth=53)
+    model = CSPResNet(depth=50)
     model.eval()
     print(model)
     inputs = torch.rand(1, 3, 224, 224)

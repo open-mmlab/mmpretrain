@@ -25,7 +25,8 @@ class DarknetBottleneck(BaseModule):
     Args:
         in_channels (int): The input channels of this Module.
         out_channels (int): The output channels of this Module.
-        expansion (int): The kernel size of the convolution. Default: 0.5
+        expansion (int): The ratio of ``out_channels/mid_channels`` where
+            ``mid_channels`` is the input/output channels of conv2. Default: 4.
         add_identity (bool): Whether to add identity to the out.
             Default: True
         use_depthwise (bool): Whether to use depthwise separable convolution.
@@ -41,16 +42,16 @@ class DarknetBottleneck(BaseModule):
     def __init__(self,
                  in_channels,
                  out_channels,
-                 expansion=0.5,
+                 expansion=2,
                  add_identity=True,
                  use_depthwise=False,
                  conv_cfg=None,
                  drop_path_rate=0,
-                 norm_cfg=dict(type='BN', momentum=0.03, eps=0.001),
-                 act_cfg=dict(type='Swish'),
+                 norm_cfg=dict(type='BN', eps=1e-5),
+                 act_cfg=dict(type='LeakyReLU', inplace=True),
                  init_cfg=None):
         super().__init__(init_cfg)
-        hidden_channels = int(out_channels * expansion)
+        hidden_channels = int(out_channels / expansion)
         conv = DepthwiseSeparableConvModule if use_depthwise else ConvModule
         self.conv1 = ConvModule(
             in_channels,
@@ -95,7 +96,7 @@ class CSPStage(BaseModule):
     Args:
         in_channels (int): The input channels of the CSP layer.
         out_channels (int): The output channels of the CSP layer.
-        expand_ratio (float): Ratio to adjust the number of channels of the
+        bottle_ratio (float): Ratio to adjust the number of channels of the
             hidden layer. Default: 0.5
         num_blocks (int): Number of blocks. Default: 1
         add_identity (bool): Whether to add identity in blocks.
@@ -115,12 +116,13 @@ class CSPStage(BaseModule):
                  in_channels,
                  out_channels,
                  expand_ratio=0.5,
+                 bottle_ratio=2,
                  num_blocks=1,
                  has_downsamper=True,
                  down_growth=False,
                  block_dpr=None,
-                 norm_cfg=dict(type='BN', momentum=0.03, eps=0.001),
-                 act_cfg=dict(type='Swish'),
+                 norm_cfg=dict(type='BN', eps=1e-5),
+                 act_cfg=dict(type='LeakyReLU', inplace=True),
                  init_cfg=None):
         super().__init__(init_cfg)
         # grow downsample channels to output channels
@@ -132,6 +134,7 @@ class CSPStage(BaseModule):
                 out_channels=down_channels,
                 kernel_size=3,
                 stride=2,
+                padding=1,
                 norm_cfg=norm_cfg,
                 act_cfg=act_cfg)
         else:
@@ -139,20 +142,23 @@ class CSPStage(BaseModule):
 
         exp_channels = int(down_channels * expand_ratio)
         self.conv_exp = ConvModule(
-            in_channels, exp_channels, 1, norm_cfg=norm_cfg, act_cfg=act_cfg)
+            down_channels, exp_channels, 1, norm_cfg=norm_cfg, act_cfg=act_cfg)
 
         assert exp_channels % 2 == 0, \
             'The channel number before blocks must be divisible by 2.'
         block_channcels = exp_channels // 2
-        self.blocks = nn.Sequential(*[
-            block(
-                in_channels=block_channcels,
-                out_channels=block_channcels,
-                expansion=1.0,
-                drop_path_rate=block_dpr,
-                norm_cfg=norm_cfg,
-                act_cfg=act_cfg) for _ in range(num_blocks)
-        ])
+        block_cfg = dict(
+            in_channels=block_channcels,
+            out_channels=block_channcels,
+            expansion=bottle_ratio,
+            drop_path_rate=block_dpr,
+            base_channels=32,
+            norm_cfg=norm_cfg,
+            act_cfg=act_cfg)
+        if isinstance(block, ResNeXtBottleneck):
+            block_cfg['base_channels'] = 32
+        self.blocks = nn.Sequential(
+            *[block(**block_cfg) for _ in range(num_blocks)])
         self.conv_transition = ConvModule(
             block_channcels,
             block_channcels,
@@ -189,8 +195,8 @@ class CSPNet(BaseModule, metaclass=ABCMeta):
                  out_indices=(0, ),
                  frozen_stages=-1,
                  conv_cfg=None,
-                 norm_cfg=dict(type='BN', eps=0.001),
-                 act_cfg=dict(type='Swish'),
+                 norm_cfg=dict(type='BN', eps=1e-5),
+                 act_cfg=dict(type='LeakyReLU', inplace=True),
                  norm_eval=False,
                  init_cfg=dict(
                      type='Kaiming',
@@ -216,13 +222,14 @@ class CSPNet(BaseModule, metaclass=ABCMeta):
         stages = []
         for stage_setting in self.arch_setting:
             (block_fn, in_channels, out_channels, num_blocks, expand_ratio,
-             has_downsamper, down_growth) = stage_setting
+             bottle_ratio, has_downsamper, down_growth) = stage_setting
             csp_stage = CSPStage(
                 block_fn,
                 in_channels,
                 out_channels,
                 num_blocks=num_blocks,
                 expand_ratio=expand_ratio,
+                bottle_ratio=bottle_ratio,
                 has_downsamper=has_downsamper,
                 down_growth=down_growth,
                 block_dpr=0,
@@ -244,8 +251,8 @@ class CSPNet(BaseModule, metaclass=ABCMeta):
             for param in self.stem.parameters():
                 param.requires_grad = False
 
-        for i in range(1, self.frozen_stages + 1):
-            m = getattr(self, f'layer{i}')
+        for i in range(self.frozen_stages):
+            m = self.stages[i]
             m.eval()
             for param in m.parameters():
                 param.requires_grad = False
@@ -262,7 +269,6 @@ class CSPNet(BaseModule, metaclass=ABCMeta):
         outs = []
 
         x = self.stem(x)
-        print('stem : ', x.size())
         for i, stage in enumerate(self.stages):
             x = stage(x)
             if i in self.out_indices:
@@ -271,7 +277,7 @@ class CSPNet(BaseModule, metaclass=ABCMeta):
 
 
 @BACKBONES.register_module()
-class CSPDarknet(CSPNet):
+class CSPDarkNet(CSPNet):
     """CSP-Darknet backbone used in YOLOv4.
 
     Args:
@@ -307,23 +313,24 @@ class CSPDarknet(CSPNet):
         (1, 1024, 13, 13)
     """
     # From left to right: [in_channels, out_channels, num_blocks,
-    # expand_ratio, has_downsamper, down_growth] for each CSP-stage
+    # expand_ratio, bottle_ratio, has_downsamper, down_growth] for
+    # each CSP-stage.
     arch_settings = {
-        53: [[DarknetBottleneck, 32, 64, 1, 2, False, True],
-             [DarknetBottleneck, 64, 128, 2, 1, True, False],
-             [DarknetBottleneck, 128, 256, 8, 1, True, False],
-             [DarknetBottleneck, 256, 512, 8, 1, True, False],
-             [DarknetBottleneck, 512, 1024, 4, 1, False, True]],
+        53: [[DarknetBottleneck, 32, 64, 1, 2, 2, True, True],
+             [DarknetBottleneck, 64, 128, 2, 1, 1, True, True],
+             [DarknetBottleneck, 128, 256, 8, 1, 1, True, True],
+             [DarknetBottleneck, 256, 512, 8, 1, 1, True, True],
+             [DarknetBottleneck, 512, 1024, 4, 1, 1, True, True]],
     }
 
     def __init__(self,
                  depth,
                  in_channels=3,
-                 out_indices=(2, 3, 4),
+                 out_indices=(0, 1, 2, 3, 4),
                  frozen_stages=-1,
                  conv_cfg=None,
-                 norm_cfg=dict(type='BN', eps=0.001),
-                 act_cfg=dict(type='Swish'),
+                 norm_cfg=dict(type='BN', eps=1e-5),
+                 act_cfg=dict(type='LeakyReLU', inplace=True),
                  norm_eval=False,
                  init_cfg=dict(
                      type='Kaiming',
@@ -402,23 +409,24 @@ class CSPResNet(CSPNet):
         (1, 1024, 13, 13)
     """
     # From left to right: [in_channels, out_channels, num_blocks,
-    # expand_ratio, has_downsamper, down_growth] for each CSP-stage
+    # expand_ratio, bottle_ratio, has_downsamper, down_growth]
+    # for each CSP-stage.
     arch_settings = {
-        50: [[ResNetBottleneck, 64, 128, 3, 4, False, False],
-             [ResNetBottleneck, 128, 256, 3, 4, True, False],
-             [ResNetBottleneck, 256, 512, 5, 4, True, False],
-             [ResNetBottleneck, 512, 1024, 2, 4, True, False]],
+        50: [[ResNetBottleneck, 64, 128, 3, 4, 2, False, False],
+             [ResNetBottleneck, 128, 256, 3, 4, 2, True, False],
+             [ResNetBottleneck, 256, 512, 5, 4, 2, True, False],
+             [ResNetBottleneck, 512, 1024, 2, 4, 2, True, False]],
     }
 
     def __init__(self,
                  depth,
                  in_channels=3,
-                 out_indices=(2, 3, 4),
+                 out_indices=(0, 1, 2, 3),
                  frozen_stages=-1,
                  deep_stem=False,
                  conv_cfg=None,
-                 norm_cfg=dict(type='BN', eps=0.001),
-                 act_cfg=dict(type='Swish'),
+                 norm_cfg=dict(type='BN', eps=1e-5),
+                 act_cfg=dict(type='LeakyReLU', inplace=True),
                  norm_eval=False,
                  init_cfg=dict(
                      type='Kaiming',
@@ -429,12 +437,14 @@ class CSPResNet(CSPNet):
                      nonlinearity='leaky_relu')):
         assert depth in self.arch_settings, 'depth must be one of ' \
             f'{list(self.arch_settings.keys())}, but get {depth}.'
-        arch_setting = self.arch_settings[depth]
-        assert set(out_indices).issubset(i for i in range(len(arch_setting)))
-        if self.frozen_stages not in range(-1, len(arch_setting)):
+        self.arch_setting = self.arch_settings[depth]
+        assert set(out_indices).issubset(
+            i for i in range(len(self.arch_setting)))
+        self.frozen_stages = frozen_stages
+        if self.frozen_stages not in range(-1, len(self.arch_setting)):
             raise ValueError('frozen_stages must be in range(-1, '
                              'len(arch_setting)). But received '
-                             f'{frozen_stages}')
+                             f'{self.frozen_stages}')
         self.deep_stem = deep_stem
 
         super().__init__(
@@ -530,12 +540,12 @@ class CSPResNeXt(CSPResNet):
         (1, 1024, 13, 13)
     """
     # From left to right: [block_fn, in_channels, out_channels, num_blocks,
-    # expand_ratio, has_downsamper, down_growth] for each CSP-stage
+    # bottle_ratio, has_downsamper, down_growth] for each CSP-stage
     arch_settings = {
-        50: [[ResNeXtBottleneck, 64, 128, 3, 4, False, False],
-             [ResNeXtBottleneck, 128, 256, 3, 4, True, False],
-             [ResNeXtBottleneck, 256, 512, 5, 4, True, False],
-             [ResNeXtBottleneck, 512, 1024, 2, 4, True, False]],
+        50: [[ResNeXtBottleneck, 64, 128, 3, 4, 4, False, False],
+             [ResNeXtBottleneck, 128, 256, 3, 4, 4, True, False],
+             [ResNeXtBottleneck, 256, 512, 5, 4, 4, True, False],
+             [ResNeXtBottleneck, 512, 1024, 2, 4, 4, True, False]],
     }
 
     def __init__(self, *args, **kwargs):
