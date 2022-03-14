@@ -17,7 +17,7 @@ class SwitchTrainAugHook(Hook):
 
     Args:
         action_epoch (int): switch train aug at the action_epoch.
-            Default: 15.
+            Default: 180.
         augments_cfg (dict, optional): the new train augments.
             Default: None.
         loss (dict): Config of classification loss after stop augments.
@@ -25,7 +25,7 @@ class SwitchTrainAugHook(Hook):
     """
 
     def __init__(self,
-                 action_epoch=15,
+                 action_epoch=180,
                  augments_cfg=None,
                  loss=dict(type='CrossEntropyLoss', loss_weight=1.0)):
         self.action_epoch = action_epoch
@@ -41,7 +41,7 @@ class SwitchTrainAugHook(Hook):
         model = runner.model
         if is_module_wrapper(model):
             model = model.module
-        if epoch == self.action_epoch:
+        if epoch - 1 == self.action_epoch:
             runner.logger.info('Stop train aug now!')
             model.augments = self.augments
             model.head.compute_loss = build_loss(self.loss)
@@ -58,7 +58,7 @@ class SwitchDataAugHook(Hook):
 
     Args:
         action_epoch (int): switch data aug at the action_epoch.
-            Default: 15.
+            Default: 180.
         pipeline (list, optional): the new pipeline.
             a list of dict, where each element represents a operation
             defined in `mmcls.datasets.pipelines`
@@ -69,7 +69,7 @@ class SwitchDataAugHook(Hook):
     """
 
     def __init__(self,
-                 action_epoch=15,
+                 action_epoch=180,
                  pipeline=None,
                  skip_type_keys=('AutoAugment', 'RandAugment')):
         self.action_epoch = action_epoch
@@ -84,7 +84,7 @@ class SwitchDataAugHook(Hook):
         """Close augments."""
         epoch = runner.epoch
         train_loader = runner.data_loader
-        if epoch == self.action_epoch:
+        if epoch - 1 == self.action_epoch:
             runner.logger.info('Stop data aug now!')
 
             # The dataset pipeline cannot be updated when persistent_workers
