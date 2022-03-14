@@ -42,7 +42,7 @@ class SwitchTrainAugHook(Hook):
         if is_module_wrapper(model):
             model = model.module
         if epoch - 1 == self.action_epoch:
-            runner.logger.info('Stop train aug now!')
+            runner.logger.info('Switch train aug now!')
             model.augments = self.augments
             model.head.compute_loss = build_loss(self.loss)
 
@@ -85,7 +85,7 @@ class SwitchDataAugHook(Hook):
         epoch = runner.epoch
         train_loader = runner.data_loader
         if epoch - 1 == self.action_epoch:
-            runner.logger.info('Stop data aug now!')
+            runner.logger.info('Switch data aug now!')
 
             # The dataset pipeline cannot be updated when persistent_workers
             # is True, so we need to force the dataloader's multi-process
