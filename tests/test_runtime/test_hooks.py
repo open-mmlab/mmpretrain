@@ -9,6 +9,7 @@ import torch
 import torch.nn as nn
 from mmcv.runner import build_runner
 from mmcv.runner.hooks import Hook, IterTimerHook
+from mmcv.utils import digit_version
 from torch.utils.data import DataLoader, Dataset
 
 import mmcls.core  # noqa: F401
@@ -191,7 +192,7 @@ def test_cosine_cooldown_hook(multi_optimziers):
 def test_switch_augments_hook():
     # test stop augments
     loader = DataLoader(ExampleDataset())
-    runner = _build_demo_runner(max_epochs=3)
+    runner = _build_demo_runner(max_epochs=2)
 
     hook_cfg = dict(
         type='SwitchTrainAugHook',
@@ -218,7 +219,7 @@ def test_switch_augments_hook():
 
     # test switch augments
     loader = DataLoader(ExampleDataset())
-    runner = _build_demo_runner(max_epochs=3)
+    runner = _build_demo_runner(max_epochs=2)
 
     hook_cfg = dict(
         type='SwitchTrainAugHook',
@@ -245,7 +246,7 @@ def test_switch_augments_hook():
 
     # test stop augments with dataset wrappers
     loader = DataLoader(RepeatDataset(ExampleDataset(), 2))
-    runner = _build_demo_runner(max_epochs=3)
+    runner = _build_demo_runner(max_epochs=2)
 
     hook_cfg = dict(
         type='SwitchTrainAugHook',
@@ -271,7 +272,7 @@ def test_switch_augments_hook():
     shutil.rmtree(runner.work_dir)
 
     loader = DataLoader(ConcatDataset([ExampleDataset(), ExampleDataset()]))
-    runner = _build_demo_runner(max_epochs=3)
+    runner = _build_demo_runner(max_epochs=2)
 
     hook_cfg = dict(
         type='SwitchTrainAugHook',
@@ -297,29 +298,30 @@ def test_switch_augments_hook():
     shutil.rmtree(runner.work_dir)
 
     # test stop augments persistent_workers=True
-    loader = DataLoader(
-        ExampleDataset(), persistent_workers=True, num_workers=1)
-    runner = _build_demo_runner(max_epochs=3)
+    if digit_version(torch.__version__) >= digit_version('1.8.0'):
+        loader = DataLoader(
+            ExampleDataset(), persistent_workers=True, num_workers=1)
+        runner = _build_demo_runner(max_epochs=2)
 
-    hook_cfg = dict(
-        type='SwitchTrainAugHook',
-        action_epoch=2,
-        augments_cfg=None,
-        loss=dict(type='CrossEntropyLoss', loss_weight=1.0))
-    runner.register_hook_from_cfg(hook_cfg)
+        hook_cfg = dict(
+            type='SwitchTrainAugHook',
+            action_epoch=2,
+            augments_cfg=None,
+            loss=dict(type='CrossEntropyLoss', loss_weight=1.0))
+        runner.register_hook_from_cfg(hook_cfg)
 
-    hook_cfg = dict(
-        type='SwitchDataAugHook',
-        action_epoch=2,
-        skip_type_keys=('ExampleAug'))
-    runner.register_hook_from_cfg(hook_cfg)
+        hook_cfg = dict(
+            type='SwitchDataAugHook',
+            action_epoch=2,
+            skip_type_keys=('ExampleAug'))
+        runner.register_hook_from_cfg(hook_cfg)
 
-    assert runner.model.augments
-    assert runner.model.head.compute_loss is None
-    assert loader.dataset.pipeline.skip_type_keys is None
-    runner.run([loader], [('train', 1)])
-    assert runner.model.augments is None
-    assert isinstance(runner.model.head.compute_loss, CrossEntropyLoss)
-    assert runner.data_loader.dataset.pipeline.skip_type_keys == \
-           hook_cfg['skip_type_keys']
-    shutil.rmtree(runner.work_dir)
+        assert runner.model.augments
+        assert runner.model.head.compute_loss is None
+        assert loader.dataset.pipeline.skip_type_keys is None
+        runner.run([loader], [('train', 1)])
+        assert runner.model.augments is None
+        assert isinstance(runner.model.head.compute_loss, CrossEntropyLoss)
+        assert runner.data_loader.dataset.pipeline.skip_type_keys == \
+               hook_cfg['skip_type_keys']
+        shutil.rmtree(runner.work_dir)

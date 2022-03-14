@@ -20,7 +20,7 @@ class SwitchTrainAugHook(Hook):
             Default: 180.
         augments_cfg (dict, optional): the new train augments.
             Default: None.
-        loss (dict): Config of classification loss after stop augments.
+        loss (dict): Config of classification loss after switch augments.
             Default: dict(type='CrossEntropyLoss', loss_weight=1.0).
     """
 
