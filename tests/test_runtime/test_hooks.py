@@ -12,6 +12,7 @@ from mmcv.runner.hooks import Hook, IterTimerHook
 from torch.utils.data import DataLoader, Dataset
 
 import mmcls.core  # noqa: F401
+from mmcls.datasets.dataset_wrappers import ConcatDataset, RepeatDataset
 from mmcls.datasets.pipelines import Compose
 from mmcls.models.losses import CrossEntropyLoss
 
@@ -124,6 +125,7 @@ class ExampleAug:
 class ExampleDataset(Dataset):
 
     def __init__(self):
+        self.CLASSES = None
         self.pipeline = Compose([ExampleAug()])
 
     def __getitem__(self, idx):
@@ -239,4 +241,85 @@ def test_switch_augments_hook():
     assert len(runner.model.augments.augments) == 1
     assert isinstance(runner.model.head.compute_loss, CrossEntropyLoss)
     assert len(runner.data_loader.dataset.pipeline.transforms) == 2
+    shutil.rmtree(runner.work_dir)
+
+    # test stop augments with dataset wrappers
+    loader = DataLoader(RepeatDataset(ExampleDataset(), 2))
+    runner = _build_demo_runner(max_epochs=3)
+
+    hook_cfg = dict(
+        type='SwitchTrainAugHook',
+        action_epoch=2,
+        augments_cfg=None,
+        loss=dict(type='CrossEntropyLoss', loss_weight=1.0))
+    runner.register_hook_from_cfg(hook_cfg)
+
+    hook_cfg = dict(
+        type='SwitchDataAugHook',
+        action_epoch=2,
+        skip_type_keys=('ExampleAug'))
+    runner.register_hook_from_cfg(hook_cfg)
+
+    assert runner.model.augments
+    assert runner.model.head.compute_loss is None
+    assert loader.dataset.dataset.pipeline.skip_type_keys is None
+    runner.run([loader], [('train', 1)])
+    assert runner.model.augments is None
+    assert isinstance(runner.model.head.compute_loss, CrossEntropyLoss)
+    assert runner.data_loader.dataset.dataset.pipeline.skip_type_keys == \
+           hook_cfg['skip_type_keys']
+    shutil.rmtree(runner.work_dir)
+
+    loader = DataLoader(ConcatDataset([ExampleDataset(), ExampleDataset()]))
+    runner = _build_demo_runner(max_epochs=3)
+
+    hook_cfg = dict(
+        type='SwitchTrainAugHook',
+        action_epoch=2,
+        augments_cfg=None,
+        loss=dict(type='CrossEntropyLoss', loss_weight=1.0))
+    runner.register_hook_from_cfg(hook_cfg)
+
+    hook_cfg = dict(
+        type='SwitchDataAugHook',
+        action_epoch=2,
+        skip_type_keys=('ExampleAug'))
+    runner.register_hook_from_cfg(hook_cfg)
+
+    assert runner.model.augments
+    assert runner.model.head.compute_loss is None
+    assert loader.dataset.datasets[0].pipeline.skip_type_keys is None
+    runner.run([loader], [('train', 1)])
+    assert runner.model.augments is None
+    assert isinstance(runner.model.head.compute_loss, CrossEntropyLoss)
+    assert runner.data_loader.dataset.datasets[0].pipeline.skip_type_keys == \
+           hook_cfg['skip_type_keys']
+    shutil.rmtree(runner.work_dir)
+
+    # test stop augments persistent_workers=True
+    loader = DataLoader(
+        ExampleDataset(), persistent_workers=True, num_workers=1)
+    runner = _build_demo_runner(max_epochs=3)
+
+    hook_cfg = dict(
+        type='SwitchTrainAugHook',
+        action_epoch=2,
+        augments_cfg=None,
+        loss=dict(type='CrossEntropyLoss', loss_weight=1.0))
+    runner.register_hook_from_cfg(hook_cfg)
+
+    hook_cfg = dict(
+        type='SwitchDataAugHook',
+        action_epoch=2,
+        skip_type_keys=('ExampleAug'))
+    runner.register_hook_from_cfg(hook_cfg)
+
+    assert runner.model.augments
+    assert runner.model.head.compute_loss is None
+    assert loader.dataset.pipeline.skip_type_keys is None
+    runner.run([loader], [('train', 1)])
+    assert runner.model.augments is None
+    assert isinstance(runner.model.head.compute_loss, CrossEntropyLoss)
+    assert runner.data_loader.dataset.pipeline.skip_type_keys == \
+           hook_cfg['skip_type_keys']
     shutil.rmtree(runner.work_dir)

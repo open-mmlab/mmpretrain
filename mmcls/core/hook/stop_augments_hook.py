@@ -41,7 +41,7 @@ class SwitchTrainAugHook(Hook):
         model = runner.model
         if is_module_wrapper(model):
             model = model.module
-        if epoch - 1 == self.action_epoch:
+        if epoch + 1 == self.action_epoch:
             runner.logger.info('Switch train aug now!')
             model.augments = self.augments
             model.head.compute_loss = build_loss(self.loss)
@@ -84,20 +84,26 @@ class SwitchDataAugHook(Hook):
         """Close augments."""
         epoch = runner.epoch
         train_loader = runner.data_loader
-        if epoch - 1 == self.action_epoch:
+        if epoch + 1 == self.action_epoch:
             runner.logger.info('Switch data aug now!')
 
-            # The dataset pipeline cannot be updated when persistent_workers
-            # is True, so we need to force the dataloader's multi-process
-            # restart. This is a very hacky approach.
             if hasattr(train_loader.dataset, 'pipeline'):
                 # for dataset
                 if self.pipeline is not None:
                     train_loader.dataset.pipeline = self.pipeline
                 train_loader.dataset.pipeline.update_skip_type_keys(
                     self.skip_type_keys)
+            elif hasattr(train_loader.dataset, 'datasets'):
+                # for concat dataset wrappers
+                new_datasets = []
+                for ds in train_loader.dataset.datasets:
+                    if self.pipeline is not None:
+                        ds.pipeline = self.pipeline
+                    ds.pipeline.update_skip_type_keys(self.skip_type_keys)
+                    new_datasets.append(ds)
+                train_loader.dataset.datasets = new_datasets
             elif hasattr(train_loader.dataset.dataset, 'pipeline'):
-                # for dataset wrappers
+                # for other dataset wrappers
                 if self.pipeline is not None:
                     train_loader.dataset.dataset.pipeline = self.pipeline
                 train_loader.dataset.dataset.pipeline.update_skip_type_keys(
@@ -106,6 +112,10 @@ class SwitchDataAugHook(Hook):
                 raise ValueError(
                     'train_loader.dataset or train_loader.dataset.dataset'
                     ' must have pipeline')
+
+            # The dataset pipeline cannot be updated when persistent_workers
+            # is True, so we need to force the dataloader's multi-process
+            # restart. This is a very hacky approach.
             if hasattr(train_loader, 'persistent_workers'
                        ) and train_loader.persistent_workers is True:
                 train_loader._DataLoader__initialized = False
