@@ -2,9 +2,10 @@
 from .class_num_check_hook import ClassNumCheckHook
 from .lr_updater import CosineAnnealingCooldownLrUpdaterHook
 from .precise_bn_hook import PreciseBNHook
-from .stop_augments_hook import StopAugmentsHook
+from .stop_augments_hook import StopDataAugHook, StopTrainAugHook
 
 __all__ = [
     'ClassNumCheckHook', 'PreciseBNHook',
-    'CosineAnnealingCooldownLrUpdaterHook', 'StopAugmentsHook'
+    'CosineAnnealingCooldownLrUpdaterHook', 'StopTrainAugHook',
+    'StopDataAugHook'
 ]

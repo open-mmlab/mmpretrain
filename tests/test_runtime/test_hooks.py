@@ -9,9 +9,10 @@ import torch
 import torch.nn as nn
 from mmcv.runner import build_runner
 from mmcv.runner.hooks import Hook, IterTimerHook
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset
 
 import mmcls.core  # noqa: F401
+from mmcls.datasets.pipelines import Compose
 from mmcls.models.losses import CrossEntropyLoss
 
 
@@ -114,6 +115,25 @@ class ValueCheckHook(Hook):
                      f'not equals to {target}')
 
 
+class ExampleAug:
+
+    def __call__(self, results):
+        return results
+
+
+class ExampleDataset(Dataset):
+
+    def __init__(self):
+        self.pipeline = Compose([ExampleAug()])
+
+    def __getitem__(self, idx):
+        results = dict(x=torch.tensor([1., 1.]))
+        return self.pipeline(results)['x']
+
+    def __len__(self):
+        return 10
+
+
 @pytest.mark.parametrize('multi_optimziers', (True, False))
 def test_cosine_cooldown_hook(multi_optimziers):
     """xdoctest -m tests/test_hooks.py test_cosine_runner_hook."""
@@ -167,19 +187,28 @@ def test_cosine_cooldown_hook(multi_optimziers):
 
 
 def test_stop_augments_hook():
-    loader = DataLoader(torch.ones((10, 2)))
+    loader = DataLoader(ExampleDataset())
     runner = _build_demo_runner(max_epochs=3)
 
     # add momentum LR scheduler
     hook_cfg = dict(
-        type='StopAugmentsHook',
+        type='StopTrainAugHook',
         num_last_epochs=1,
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0))
     runner.register_hook_from_cfg(hook_cfg)
 
+    hook_cfg = dict(
+        type='StopDataAugHook',
+        num_last_epochs=1,
+        skip_type_keys=('ExampleAug'))
+    runner.register_hook_from_cfg(hook_cfg)
+
     assert runner.model.augments
     assert runner.model.head.compute_loss is None
+    assert loader.dataset.pipeline.skip_type_keys is None
     runner.run([loader], [('train', 1)])
     assert runner.model.augments is None
     assert isinstance(runner.model.head.compute_loss, CrossEntropyLoss)
+    assert runner.data_loader.dataset.pipeline.skip_type_keys == \
+           hook_cfg['skip_type_keys']
     shutil.rmtree(runner.work_dir)
