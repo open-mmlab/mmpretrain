@@ -2,28 +2,37 @@
 from mmcv.parallel import is_module_wrapper
 from mmcv.runner.hooks import HOOKS, Hook
 
+from mmcls.datasets.pipelines import Compose
 from mmcls.models.builder import build_loss
+from mmcls.models.utils.augment import Augments
 
 
 @HOOKS.register_module()
-class StopTrainAugHook(Hook):
-    """Stop train aug during training. This hook turns off the model.augments.
+class SwitchTrainAugHook(Hook):
+    """Switch train aug during training. This hook switches the model.augments.
 
     A PyTorch implement of : `Data Augmentation Revisited:
     Rethinking the Distribution Gap between Clean and Augmented Data
     <https://arxiv.org/pdf/1909.09148.pdf>`_
 
     Args:
-        num_last_epochs (int): The number of latter epochs in the end of the
-            training to close the model.augments.
+        action_epoch (int): switch train aug at the action_epoch.
             Default: 15.
+        augments_cfg (dict, optional): the new train augments.
+            Default: None.
         loss (dict): Config of classification loss after stop augments.
+            Default: dict(type='CrossEntropyLoss', loss_weight=1.0).
     """
 
     def __init__(self,
-                 num_last_epochs=15,
+                 action_epoch=15,
+                 augments_cfg=None,
                  loss=dict(type='CrossEntropyLoss', loss_weight=1.0)):
-        self.num_last_epochs = num_last_epochs
+        self.action_epoch = action_epoch
+        if augments_cfg is not None:
+            self.augments = Augments(augments_cfg)
+        else:
+            self.augments = None
         self.loss = loss
 
     def before_train_epoch(self, runner):
@@ -32,33 +41,42 @@ class StopTrainAugHook(Hook):
         model = runner.model
         if is_module_wrapper(model):
             model = model.module
-        if epoch == runner.max_epochs - self.num_last_epochs:
+        if epoch == self.action_epoch:
             runner.logger.info('Stop train aug now!')
-            model.augments = None
+            model.augments = self.augments
             model.head.compute_loss = build_loss(self.loss)
 
 
 @HOOKS.register_module()
-class StopDataAugHook(Hook):
-    """Stop data aug during training. This hook turns off the AutoAugment and
-    RandAugment.
+class SwitchDataAugHook(Hook):
+    """Switch data aug during training. This hook switches the data
+    augmentation.
 
     A PyTorch implement of : `Data Augmentation Revisited:
     Rethinking the Distribution Gap between Clean and Augmented Data
     <https://arxiv.org/pdf/1909.09148.pdf>`_
 
     Args:
-        num_last_epochs (int): The number of latter epochs in the end of the
-            training to close the model.augments.
+        action_epoch (int): switch data aug at the action_epoch.
             Default: 15.
+        pipeline (list, optional): the new pipeline.
+            a list of dict, where each element represents a operation
+            defined in `mmcls.datasets.pipelines`
+            Default: None.
         skip_type_keys (list[str], optional): Sequence of type string to be
-            skip pipeline. Default: ('AutoAugment', 'RandAugment')
+            skip pipeline.
+            Default: ('AutoAugment', 'RandAugment').
     """
 
     def __init__(self,
-                 num_last_epochs=15,
+                 action_epoch=15,
+                 pipeline=None,
                  skip_type_keys=('AutoAugment', 'RandAugment')):
-        self.num_last_epochs = num_last_epochs
+        self.action_epoch = action_epoch
+        if pipeline is not None:
+            self.pipeline = Compose(pipeline)
+        else:
+            self.pipeline = None
         self.skip_type_keys = skip_type_keys
         self._restart_dataloader = False
 
@@ -66,7 +84,7 @@ class StopDataAugHook(Hook):
         """Close augments."""
         epoch = runner.epoch
         train_loader = runner.data_loader
-        if epoch == runner.max_epochs - self.num_last_epochs:
+        if epoch == self.action_epoch:
             runner.logger.info('Stop data aug now!')
 
             # The dataset pipeline cannot be updated when persistent_workers
@@ -74,10 +92,14 @@ class StopDataAugHook(Hook):
             # restart. This is a very hacky approach.
             if hasattr(train_loader.dataset, 'pipeline'):
                 # for dataset
+                if self.pipeline is not None:
+                    train_loader.dataset.pipeline = self.pipeline
                 train_loader.dataset.pipeline.update_skip_type_keys(
                     self.skip_type_keys)
             elif hasattr(train_loader.dataset.dataset, 'pipeline'):
                 # for dataset wrappers
+                if self.pipeline is not None:
+                    train_loader.dataset.dataset.pipeline = self.pipeline
                 train_loader.dataset.dataset.pipeline.update_skip_type_keys(
                     self.skip_type_keys)
             else:

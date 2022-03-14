@@ -186,20 +186,21 @@ def test_cosine_cooldown_hook(multi_optimziers):
     shutil.rmtree(runner.work_dir)
 
 
-def test_stop_augments_hook():
+def test_switch_augments_hook():
+    # test stop augments
     loader = DataLoader(ExampleDataset())
     runner = _build_demo_runner(max_epochs=3)
 
-    # add momentum LR scheduler
     hook_cfg = dict(
-        type='StopTrainAugHook',
-        num_last_epochs=1,
+        type='SwitchTrainAugHook',
+        action_epoch=2,
+        augments_cfg=None,
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0))
     runner.register_hook_from_cfg(hook_cfg)
 
     hook_cfg = dict(
-        type='StopDataAugHook',
-        num_last_epochs=1,
+        type='SwitchDataAugHook',
+        action_epoch=2,
         skip_type_keys=('ExampleAug'))
     runner.register_hook_from_cfg(hook_cfg)
 
@@ -211,4 +212,31 @@ def test_stop_augments_hook():
     assert isinstance(runner.model.head.compute_loss, CrossEntropyLoss)
     assert runner.data_loader.dataset.pipeline.skip_type_keys == \
            hook_cfg['skip_type_keys']
+    shutil.rmtree(runner.work_dir)
+
+    # test switch augments
+    loader = DataLoader(ExampleDataset())
+    runner = _build_demo_runner(max_epochs=3)
+
+    hook_cfg = dict(
+        type='SwitchTrainAugHook',
+        action_epoch=2,
+        augments_cfg=dict(
+            type='BatchMixup', alpha=1., num_classes=10, prob=1.),
+        loss=dict(type='CrossEntropyLoss', loss_weight=1.0, use_soft=True))
+    runner.register_hook_from_cfg(hook_cfg)
+
+    hook_cfg = dict(
+        type='SwitchDataAugHook',
+        action_epoch=2,
+        pipeline=[ExampleAug(), ExampleAug()])
+    runner.register_hook_from_cfg(hook_cfg)
+
+    assert runner.model.augments
+    assert runner.model.head.compute_loss is None
+    assert len(loader.dataset.pipeline.transforms) == 1
+    runner.run([loader], [('train', 1)])
+    assert len(runner.model.augments.augments) == 1
+    assert isinstance(runner.model.head.compute_loss, CrossEntropyLoss)
+    assert len(runner.data_loader.dataset.pipeline.transforms) == 2
     shutil.rmtree(runner.work_dir)
