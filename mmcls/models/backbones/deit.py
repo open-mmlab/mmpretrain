@@ -37,6 +37,15 @@ class DistilledVisionTransformer(VisionTransformer):
         drop_rate (float): Probability of an element to be zeroed.
             Defaults to 0.
         drop_path_rate (float): stochastic depth rate. Defaults to 0.
+        feat_scale (bool): If True, use FeatScale.
+            FeatScale re-weights feature maps on separate frequency bands
+            to amplify the high-frequency signals.
+            Defaults to False.
+        attn_scale (bool): If True, use AttnScale.
+            AttnScale decomposes a self-attention block into low-pass and
+            high-pass components, then rescales and combines these two filters
+            to produce an all-pass self-attention matrix.
+            Defaults to False.
         qkv_bias (bool): Whether to add bias for qkv in attention modules.
             Defaults to True.
         norm_cfg (dict): Config dict for normalization layer.

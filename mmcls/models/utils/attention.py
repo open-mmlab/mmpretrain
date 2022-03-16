@@ -347,6 +347,11 @@ class MultiheadAttention(BaseModule):
             use ``embed_dims``. Defaults to None.
         attn_drop (float): Dropout rate of the dropout layer after the
             attention calculation of query and key. Defaults to 0.
+        attn_scale (bool): If True, use AttnScale.
+            AttnScale decomposes a self-attention block into low-pass and
+            high-pass components, then rescales and combines these two filters
+            to produce an all-pass self-attention matrix.
+            Defaults to False.
         proj_drop (float): Dropout rate of the dropout layer after the
             output projection. Defaults to 0.
         dropout_layer (dict): The dropout config before adding the shortcut.
@@ -369,6 +374,7 @@ class MultiheadAttention(BaseModule):
                  num_heads,
                  input_dims=None,
                  attn_drop=0.,
+                 attn_scale=False,
                  proj_drop=0.,
                  dropout_layer=dict(type='Dropout', drop_prob=0.),
                  qkv_bias=True,
@@ -391,6 +397,11 @@ class MultiheadAttention(BaseModule):
         self.proj = nn.Linear(embed_dims, embed_dims, bias=proj_bias)
         self.proj_drop = nn.Dropout(proj_drop)
 
+        self.attn_scale = attn_scale
+        if self.attn_scale:
+            self.lamb = nn.Parameter(
+                torch.zeros(num_heads), requires_grad=True)
+
         self.out_drop = DROPOUT_LAYERS.build(dropout_layer)
 
     def forward(self, x):
@@ -401,6 +412,16 @@ class MultiheadAttention(BaseModule):
 
         attn = (q @ k.transpose(-2, -1)) * self.scale
         attn = attn.softmax(dim=-1)
+
+        if self.attn_scale:
+            attn_d = torch.ones(
+                attn.shape[-2:], device=attn.device) / N  # [l, l]
+            attn_d = attn_d[None, None, ...]  # [B, N, l, l]
+            attn_h = attn - attn_d  # [B, N, l, l]
+            attn_h = attn_h * (1. + self.lamb[None, :, None, None]
+                               )  # [B, N, l, l]
+            attn = attn_d + attn_h  # [B, N, l, l]
+
         attn = self.attn_drop(attn)
 
         x = (attn @ v).transpose(1, 2).reshape(B, N, self.embed_dims)

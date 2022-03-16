@@ -166,6 +166,28 @@ class TestVisionTransformer(TestCase):
             self.assertEqual(patch_token.shape, (3, 768, 14, 14))
             self.assertEqual(cls_token.shape, (3, 768))
 
+        # test with attn_scale=True
+        cfg = deepcopy(self.cfg)
+        cfg['attn_scale'] = True
+        model = VisionTransformer(**cfg)
+        outs = model(imgs)
+        self.assertIsInstance(outs, tuple)
+        self.assertEqual(len(outs), 1)
+        patch_token, cls_token = outs[-1]
+        self.assertEqual(patch_token.shape, (3, 768, 14, 14))
+        self.assertEqual(cls_token.shape, (3, 768))
+
+        # test with feat_scale=True
+        cfg = deepcopy(self.cfg)
+        cfg['feat_scale'] = True
+        model = VisionTransformer(**cfg)
+        outs = model(imgs)
+        self.assertIsInstance(outs, tuple)
+        self.assertEqual(len(outs), 1)
+        patch_token, cls_token = outs[-1]
+        self.assertEqual(patch_token.shape, (3, 768, 14, 14))
+        self.assertEqual(cls_token.shape, (3, 768))
+
         # Test forward with dynamic input size
         imgs1 = torch.randn(3, 3, 224, 224)
         imgs2 = torch.randn(3, 3, 256, 256)

@@ -29,6 +29,15 @@ class TransformerEncoderLayer(BaseModule):
         drop_path_rate (float): Stochastic depth rate. Defaults to 0.
         num_fcs (int): The number of fully-connected layers for FFNs.
             Defaults to 2.
+        feat_scale (bool): If True, use FeatScale.
+            FeatScale re-weights feature maps on separate frequency bands
+            to amplify the high-frequency signals.
+            Defaults to False.
+        attn_scale (bool): If True, use AttnScale.
+            AttnScale decomposes a self-attention block into low-pass and
+            high-pass components, then rescales and combines these two filters
+            to produce an all-pass self-attention matrix.
+            Defaults to False.
         qkv_bias (bool): enable bias for qkv if True. Defaults to True.
         act_cfg (dict): The activation config for FFNs.
             Defaluts to ``dict(type='GELU')``.
@@ -46,6 +55,8 @@ class TransformerEncoderLayer(BaseModule):
                  attn_drop_rate=0.,
                  drop_path_rate=0.,
                  num_fcs=2,
+                 feat_scale=False,
+                 attn_scale=False,
                  qkv_bias=True,
                  act_cfg=dict(type='GELU'),
                  norm_cfg=dict(type='LN'),
@@ -62,6 +73,7 @@ class TransformerEncoderLayer(BaseModule):
             embed_dims=embed_dims,
             num_heads=num_heads,
             attn_drop=attn_drop_rate,
+            attn_scale=attn_scale,
             proj_drop=drop_rate,
             dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
             qkv_bias=qkv_bias)
@@ -78,6 +90,13 @@ class TransformerEncoderLayer(BaseModule):
             dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
             act_cfg=act_cfg)
 
+        self.feat_scale = feat_scale
+        if self.feat_scale:
+            self.lamb1 = nn.Parameter(
+                torch.zeros(embed_dims), requires_grad=True)
+            self.lamb2 = nn.Parameter(
+                torch.zeros(embed_dims), requires_grad=True)
+
     @property
     def norm1(self):
         return getattr(self, self.norm1_name)
@@ -93,8 +112,21 @@ class TransformerEncoderLayer(BaseModule):
                 nn.init.xavier_uniform_(m.weight)
                 nn.init.normal_(m.bias, std=1e-6)
 
+    def freq_decompose(self, x):
+        x_d = torch.mean(x, -2, keepdim=True)  # [bs, 1, dim]
+        x_h = x - x_d  # high freq [bs, len, dim]
+        return x_d, x_h
+
     def forward(self, x):
-        x = x + self.attn(self.norm1(x))
+        identity = x
+        x = self.norm1(x)
+        x = self.attn(x)
+        if self.feat_scale:
+            x_d, x_h = self.freq_decompose(x)
+            x_d = x_d * self.lamb1
+            x_h = x_h * self.lamb2
+            x = x + x_d + x_h
+        x = x + identity
         x = self.ffn(self.norm2(x), identity=x)
         return x
 
@@ -129,6 +161,15 @@ class VisionTransformer(BaseBackbone):
         drop_rate (float): Probability of an element to be zeroed.
             Defaults to 0.
         drop_path_rate (float): stochastic depth rate. Defaults to 0.
+        feat_scale (bool): If True, use FeatScale.
+            FeatScale re-weights feature maps on separate frequency bands
+            to amplify the high-frequency signals.
+            Defaults to False.
+        attn_scale (bool): If True, use AttnScale.
+            AttnScale decomposes a self-attention block into low-pass and
+            high-pass components, then rescales and combines these two filters
+            to produce an all-pass self-attention matrix.
+            Defaults to False.
         qkv_bias (bool): Whether to add bias for qkv in attention modules.
             Defaults to True.
         norm_cfg (dict): Config dict for normalization layer.
@@ -202,6 +243,8 @@ class VisionTransformer(BaseBackbone):
                  out_indices=-1,
                  drop_rate=0.,
                  drop_path_rate=0.,
+                 feat_scale=False,
+                 attn_scale=False,
                  qkv_bias=True,
                  norm_cfg=dict(type='LN', eps=1e-6),
                  final_norm=True,
@@ -287,6 +330,8 @@ class VisionTransformer(BaseBackbone):
                 arch_settings['feedforward_channels'],
                 drop_rate=drop_rate,
                 drop_path_rate=dpr[i],
+                feat_scale=feat_scale,
+                attn_scale=attn_scale,
                 qkv_bias=qkv_bias,
                 norm_cfg=norm_cfg)
             _layer_cfg.update(layer_cfgs[i])
