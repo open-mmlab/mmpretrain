@@ -3,6 +3,7 @@ from .base_dataset import BaseDataset
 from .builder import (DATASETS, PIPELINES, SAMPLERS, build_dataloader,
                       build_dataset, build_sampler)
 from .cifar import CIFAR10, CIFAR100
+from .cub import CUB
 from .dataset_wrappers import (ClassBalancedDataset, ConcatDataset,
                                KFoldDataset, RepeatDataset)
 from .imagenet import ImageNet
@@ -17,5 +18,5 @@ __all__ = [
     'VOC', 'MultiLabelDataset', 'build_dataloader', 'build_dataset',
     'DistributedSampler', 'ConcatDataset', 'RepeatDataset',
     'ClassBalancedDataset', 'DATASETS', 'PIPELINES', 'ImageNet21k', 'SAMPLERS',
-    'build_sampler', 'RepeatAugSampler', 'KFoldDataset'
+    'build_sampler', 'RepeatAugSampler', 'KFoldDataset', 'CUB'
 ]
