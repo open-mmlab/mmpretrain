@@ -129,7 +129,7 @@ class CSPStage(BaseModule):
         down_channels = out_channels if down_growth else in_channels
 
         if has_downsamper:
-            self.conv_down = ConvModule(
+            self.downsamper_conv = ConvModule(
                 in_channels=in_channels,
                 out_channels=down_channels,
                 kernel_size=3,
@@ -138,10 +138,10 @@ class CSPStage(BaseModule):
                 norm_cfg=norm_cfg,
                 act_cfg=act_cfg)
         else:
-            self.conv_down = nn.Identity()
+            self.downsamper_conv = nn.Identity()
 
         exp_channels = int(down_channels * expand_ratio)
-        self.conv_exp = ConvModule(
+        self.expand_conv = ConvModule(
             down_channels, exp_channels, 1, norm_cfg=norm_cfg, act_cfg=act_cfg)
 
         assert exp_channels % 2 == 0, \
@@ -152,14 +152,15 @@ class CSPStage(BaseModule):
             out_channels=block_channcels,
             expansion=bottle_ratio,
             drop_path_rate=block_dpr,
-            base_channels=32,
             norm_cfg=norm_cfg,
             act_cfg=act_cfg)
-        if isinstance(block, ResNeXtBottleneck):
+        # there is a extra attribute base_channels in ResNeXtBottleneck
+        # the base_channels change from 64 to 32 in CSPNet
+        if block is ResNeXtBottleneck:
             block_cfg['base_channels'] = 32
         self.blocks = nn.Sequential(
             *[block(**block_cfg) for _ in range(num_blocks)])
-        self.conv_transition = ConvModule(
+        self.atfer_blocks_conv = ConvModule(
             block_channcels,
             block_channcels,
             1,
@@ -174,14 +175,14 @@ class CSPStage(BaseModule):
             act_cfg=act_cfg)
 
     def forward(self, x):
-        x = self.conv_down(x)
-        x = self.conv_exp(x)
+        x = self.downsamper_conv(x)
+        x = self.expand_conv(x)
 
         split = x.shape[1] // 2
         xa, xb = x[:, :split], x[:, split:]
 
         xb = self.blocks(xb)
-        xb = self.conv_transition(xb).contiguous()
+        xb = self.atfer_blocks_conv(xb).contiguous()
 
         x_final = torch.cat((xa, xb), dim=1)
         return self.final_conv(x_final)
@@ -198,13 +199,7 @@ class CSPNet(BaseModule, metaclass=ABCMeta):
                  norm_cfg=dict(type='BN', eps=1e-5),
                  act_cfg=dict(type='LeakyReLU', inplace=True),
                  norm_eval=False,
-                 init_cfg=dict(
-                     type='Kaiming',
-                     layer='Conv2d',
-                     a=math.sqrt(5),
-                     distribution='uniform',
-                     mode='fan_in',
-                     nonlinearity='leaky_relu')):
+                 init_cfg=dict(type='Kaiming', layer='Conv2d')):
         super().__init__(init_cfg)
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
@@ -236,8 +231,6 @@ class CSPNet(BaseModule, metaclass=ABCMeta):
                 norm_cfg=norm_cfg,
                 act_cfg=act_cfg,
                 init_cfg=init_cfg)
-            print('has_downsamper', has_downsamper)
-            # print(csp_stage)
             stages.append(csp_stage)
         self.stages = Sequential(*stages)
 
@@ -312,9 +305,8 @@ class CSPDarkNet(CSPNet):
         (1, 512, 26, 26)
         (1, 1024, 13, 13)
     """
-    # From left to right: [in_channels, out_channels, num_blocks,
-    # expand_ratio, bottle_ratio, has_downsamper, down_growth] for
-    # each CSP-stage.
+    # From left to right: [block_fn, in_channels, out_channels, num_blocks,
+    # expand_ratio, bottle_ratio, has_downsamper, down_growth] in CSPStage.
     arch_settings = {
         53: [[DarknetBottleneck, 32, 64, 1, 2, 2, True, True],
              [DarknetBottleneck, 64, 128, 2, 1, 1, True, True],
@@ -408,9 +400,8 @@ class CSPResNet(CSPNet):
         (1, 512, 26, 26)
         (1, 1024, 13, 13)
     """
-    # From left to right: [in_channels, out_channels, num_blocks,
-    # expand_ratio, bottle_ratio, has_downsamper, down_growth]
-    # for each CSP-stage.
+    # From left to right: [block_fn, in_channels, out_channels, num_blocks,
+    # expand_ratio, bottle_ratio, has_downsamper, down_growth] in CSPStage.
     arch_settings = {
         50: [[ResNetBottleneck, 64, 128, 3, 4, 2, False, False],
              [ResNetBottleneck, 128, 256, 3, 4, 2, True, False],
@@ -540,7 +531,7 @@ class CSPResNeXt(CSPResNet):
         (1, 1024, 13, 13)
     """
     # From left to right: [block_fn, in_channels, out_channels, num_blocks,
-    # bottle_ratio, has_downsamper, down_growth] for each CSP-stage
+    # expand_ratio, bottle_ratio, has_downsamper, down_growth] in CSPStage.
     arch_settings = {
         50: [[ResNeXtBottleneck, 64, 128, 3, 4, 4, False, False],
              [ResNeXtBottleneck, 128, 256, 3, 4, 4, True, False],
