@@ -27,6 +27,11 @@ class WindowMSA(BaseModule):
             ``head_dim ** -0.5`` if set. Defaults to None.
         attn_drop (float, optional): Dropout ratio of attention weight.
             Defaults to 0.
+        attn_scale (bool): If True, use AttnScale.
+            AttnScale decomposes a self-attention block into low-pass and
+            high-pass components, then rescales and combines these two filters
+            to produce an all-pass self-attention matrix.
+            Defaults to False.
         proj_drop (float, optional): Dropout ratio of output. Defaults to 0.
         init_cfg (dict, optional): The extra config for initialization.
             Defaults to None.
@@ -39,6 +44,7 @@ class WindowMSA(BaseModule):
                  qkv_bias=True,
                  qk_scale=None,
                  attn_drop=0.,
+                 attn_scale=False,
                  proj_drop=0.,
                  init_cfg=None):
 
@@ -65,6 +71,11 @@ class WindowMSA(BaseModule):
         self.attn_drop = nn.Dropout(attn_drop)
         self.proj = nn.Linear(embed_dims, embed_dims)
         self.proj_drop = nn.Dropout(proj_drop)
+
+        self.attn_scale = attn_scale
+        if self.attn_scale:
+            self.lamb = nn.Parameter(
+                torch.zeros(num_heads), requires_grad=True)
 
         self.softmax = nn.Softmax(dim=-1)
 
@@ -108,6 +119,15 @@ class WindowMSA(BaseModule):
         else:
             attn = self.softmax(attn)
 
+        if self.attn_scale:
+            attn_d = torch.ones(
+                attn.shape[-2:], device=attn.device) / N  # [l, l]
+            attn_d = attn_d[None, None, ...]  # [B, N, l, l]
+            attn_h = attn - attn_d  # [B, N, l, l]
+            attn_h = attn_h * (1. + self.lamb[None, :, None, None]
+                               )  # [B, N, l, l]
+            attn = attn_d + attn_h  # [B, N, l, l]
+
         attn = self.attn_drop(attn)
 
         x = (attn @ v).transpose(1, 2).reshape(B_, N, C)
@@ -138,6 +158,11 @@ class ShiftWindowMSA(BaseModule):
             head_dim ** -0.5 if set. Defaults to None.
         attn_drop (float, optional): Dropout ratio of attention weight.
             Defaults to 0.0.
+        attn_scale (bool): If True, use AttnScale.
+            AttnScale decomposes a self-attention block into low-pass and
+            high-pass components, then rescales and combines these two filters
+            to produce an all-pass self-attention matrix.
+            Defaults to False.
         proj_drop (float, optional): Dropout ratio of output. Defaults to 0.
         dropout_layer (dict, optional): The dropout_layer used before output.
             Defaults to dict(type='DropPath', drop_prob=0.).
@@ -158,6 +183,7 @@ class ShiftWindowMSA(BaseModule):
                  qkv_bias=True,
                  qk_scale=None,
                  attn_drop=0,
+                 attn_scale=False,
                  proj_drop=0,
                  dropout_layer=dict(type='DropPath', drop_prob=0.),
                  pad_small_map=False,
@@ -184,6 +210,7 @@ class ShiftWindowMSA(BaseModule):
             qkv_bias=qkv_bias,
             qk_scale=qk_scale,
             attn_drop=attn_drop,
+            attn_scale=attn_scale,
             proj_drop=proj_drop,
         )
 

@@ -34,6 +34,15 @@ class SwinBlock(BaseModule):
             avoid shifting window and shrink the window size to the size of
             feature map, which is common used in classification.
             Defaults to False.
+        feat_scale (bool): If True, use FeatScale.
+            FeatScale re-weights feature maps on separate frequency bands
+            to amplify the high-frequency signals.
+            Defaults to False.
+        attn_scale (bool): If True, use AttnScale.
+            AttnScale decomposes a self-attention block into low-pass and
+            high-pass components, then rescales and combines these two filters
+            to produce an all-pass self-attention matrix.
+            Defaults to False.
         attn_cfgs (dict): The extra config of Shift Window-MSA.
             Defaults to empty dict.
         ffn_cfgs (dict): The extra config of FFN. Defaults to empty dict.
@@ -53,6 +62,8 @@ class SwinBlock(BaseModule):
                  ffn_ratio=4.,
                  drop_path=0.,
                  pad_small_map=False,
+                 feat_scale=False,
+                 attn_scale=False,
                  attn_cfgs=dict(),
                  ffn_cfgs=dict(),
                  norm_cfg=dict(type='LN'),
@@ -69,6 +80,7 @@ class SwinBlock(BaseModule):
             'window_size': window_size,
             'dropout_layer': dict(type='DropPath', drop_prob=drop_path),
             'pad_small_map': pad_small_map,
+            'attn_scale': attn_scale,
             **attn_cfgs
         }
         self.norm1 = build_norm_layer(norm_cfg, embed_dims)[1]
@@ -86,12 +98,29 @@ class SwinBlock(BaseModule):
         self.norm2 = build_norm_layer(norm_cfg, embed_dims)[1]
         self.ffn = FFN(**_ffn_cfgs)
 
+        self.feat_scale = feat_scale
+        if self.feat_scale:
+            self.lamb1 = nn.Parameter(
+                torch.zeros(embed_dims), requires_grad=True)
+            self.lamb2 = nn.Parameter(
+                torch.zeros(embed_dims), requires_grad=True)
+
+    def freq_decompose(self, x):
+        x_d = torch.mean(x, -2, keepdim=True)  # [bs, 1, dim]
+        x_h = x - x_d  # high freq [bs, len, dim]
+        return x_d, x_h
+
     def forward(self, x, hw_shape):
 
         def _inner_forward(x):
             identity = x
             x = self.norm1(x)
             x = self.attn(x, hw_shape)
+            if self.feat_scale:
+                x_d, x_h = self.freq_decompose(x)
+                x_d = x_d * self.lamb1
+                x_h = x_h * self.lamb2
+                x = x + x_d + x_h
             x = x + identity
 
             identity = x
@@ -131,6 +160,15 @@ class SwinBlockSequence(BaseModule):
             avoid shifting window and shrink the window size to the size of
             feature map, which is common used in classification.
             Defaults to False.
+        feat_scale (bool): If True, use FeatScale.
+            FeatScale re-weights feature maps on separate frequency bands
+            to amplify the high-frequency signals.
+            Defaults to False.
+        attn_scale (bool): If True, use AttnScale.
+            AttnScale decomposes a self-attention block into low-pass and
+            high-pass components, then rescales and combines these two filters
+            to produce an all-pass self-attention matrix.
+            Defaults to False.
         init_cfg (dict, optional): The extra config for initialization.
             Defaults to None.
     """
@@ -146,6 +184,8 @@ class SwinBlockSequence(BaseModule):
                  block_cfgs=dict(),
                  with_cp=False,
                  pad_small_map=False,
+                 feat_scale=False,
+                 attn_scale=False,
                  init_cfg=None):
         super().__init__(init_cfg)
 
@@ -166,6 +206,8 @@ class SwinBlockSequence(BaseModule):
                 'drop_path': drop_paths[i],
                 'with_cp': with_cp,
                 'pad_small_map': pad_small_map,
+                'feat_scale': feat_scale,
+                'attn_scale': attn_scale,
                 **block_cfgs[i]
             }
             block = SwinBlock(**_block_cfg)
@@ -247,6 +289,15 @@ class SwinTransformer(BaseBackbone):
             avoid shifting window and shrink the window size to the size of
             feature map, which is common used in classification.
             Defaults to False.
+        feat_scale (bool): If True, use FeatScale.
+            FeatScale re-weights feature maps on separate frequency bands
+            to amplify the high-frequency signals.
+            Defaults to False.
+        attn_scale (bool): If True, use AttnScale.
+            AttnScale decomposes a self-attention block into low-pass and
+            high-pass components, then rescales and combines these two filters
+            to produce an all-pass self-attention matrix.
+            Defaults to False.
         norm_cfg (dict): Config dict for normalization layer for all output
             features. Defaults to ``dict(type='LN')``
         stage_cfgs (Sequence[dict] | dict): Extra config dict for each
@@ -306,6 +357,8 @@ class SwinTransformer(BaseBackbone):
                  frozen_stages=-1,
                  norm_eval=False,
                  pad_small_map=False,
+                 feat_scale=False,
+                 attn_scale=False,
                  norm_cfg=dict(type='LN'),
                  stage_cfgs=dict(),
                  patch_cfg=dict(),
@@ -379,6 +432,8 @@ class SwinTransformer(BaseBackbone):
                 'drop_paths': dpr[:depth],
                 'with_cp': with_cp,
                 'pad_small_map': pad_small_map,
+                'feat_scale': feat_scale,
+                'attn_scale': attn_scale,
                 **stage_cfg
             }
 

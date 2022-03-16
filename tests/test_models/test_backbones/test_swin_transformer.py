@@ -160,6 +160,26 @@ class TestSwinTransformer(TestCase):
         feat = outs[-1]
         self.assertEqual(feat.shape, (3, 1024, 7, 7))
 
+        # test with attn_scale=True
+        cfg = deepcopy(self.cfg)
+        cfg['attn_scale'] = True
+        model = SwinTransformer(**cfg)
+        outs = model(torch.randn(3, 3, 224, 224))
+        self.assertIsInstance(outs, tuple)
+        self.assertEqual(len(outs), 1)
+        feat = outs[-1]
+        self.assertEqual(feat.shape, (3, 1024, 7, 7))
+
+        # test with feat_scale=True
+        cfg = deepcopy(self.cfg)
+        cfg['feat_scale'] = True
+        model = SwinTransformer(**cfg)
+        outs = model(torch.randn(3, 3, 224, 224))
+        self.assertIsInstance(outs, tuple)
+        self.assertEqual(len(outs), 1)
+        feat = outs[-1]
+        self.assertEqual(feat.shape, (3, 1024, 7, 7))
+
         # test multiple output indices
         cfg = deepcopy(self.cfg)
         cfg['out_indices'] = (0, 1, 2, 3)
