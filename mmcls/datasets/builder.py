@@ -7,7 +7,7 @@ import numpy as np
 import torch
 from mmcv.parallel import collate
 from mmcv.runner import get_dist_info
-from mmcv.utils import Registry, build_from_cfg, digit_version
+from mmcv.utils import Registry, build_from_cfg, digit_version, IPU_MODE
 from torch.utils.data import DataLoader
 
 if platform.system() != 'Windows':
@@ -58,6 +58,7 @@ def build_dataloader(dataset,
                      pin_memory=True,
                      persistent_workers=True,
                      sampler_cfg=None,
+                     device=None,
                      **kwargs):
     """Build PyTorch DataLoader.
 
@@ -130,17 +131,26 @@ def build_dataloader(dataset,
 
     if digit_version(torch.__version__) >= digit_version('1.8.0'):
         kwargs['persistent_workers'] = persistent_workers
-
-    data_loader = DataLoader(
-        dataset,
-        batch_size=batch_size,
-        sampler=sampler,
-        num_workers=num_workers,
-        collate_fn=partial(collate, samples_per_gpu=samples_per_gpu),
-        pin_memory=pin_memory,
-        shuffle=shuffle,
-        worker_init_fn=init_fn,
-        **kwargs)
+    if device == 'ipu':
+        assert IPU_MODE, 'no ipu environment detected'
+        from mmcv.runner.ipu import IPUDataloader
+        data_loader = IPUDataloader(None,
+                                    dataset,
+                                    batch_size=samples_per_gpu,
+                                    num_workers=num_workers,
+                                    shuffle=shuffle,
+                                    worker_init_fn=init_fn)
+    else:
+        data_loader = DataLoader(
+            dataset,
+            batch_size=batch_size,
+            sampler=sampler,
+            num_workers=num_workers,
+            collate_fn=partial(collate, samples_per_gpu=samples_per_gpu),
+            pin_memory=pin_memory,
+            shuffle=shuffle,
+            worker_init_fn=init_fn,
+            **kwargs)
 
     return data_loader
 

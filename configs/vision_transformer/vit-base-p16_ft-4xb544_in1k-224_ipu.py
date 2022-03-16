@@ -30,7 +30,8 @@ train_pipeline = [
     dict(type='Normalize', **img_norm_cfg),
     dict(type='ImageToTensor', keys=['img']),
     dict(type='ToTensor', keys=['gt_label']),
-    dict(type='Collect', keys=['img', 'gt_label'])
+    dict(type='Collect', keys=['img', 'gt_label']),
+    dict(type='ToHalf', keys=['img'])
 ]
 
 test_pipeline = [
@@ -39,13 +40,14 @@ test_pipeline = [
     dict(type='CenterCrop', crop_size=224),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='ImageToTensor', keys=['img']),
-    dict(type='Collect', keys=['img'])
+    dict(type='Collect', keys=['img']),
+    dict(type='ToHalf', keys=['img'])
 ]
 
 # change batch size
 data = dict(
-    samples_per_gpu=510,
-    workers_per_gpu=8,
+    samples_per_gpu=17,
+    workers_per_gpu=16,
     drop_last=True,
     train=dict(pipeline=train_pipeline),
     val=dict(
@@ -97,18 +99,21 @@ ipu_model_cfg = dict(
 
 # device config
 ipu_options = dict(
-    randomSeed=888,
-    enableExecutableCaching='cache_engine',
+    randomSeed=42,
     partialsType='half',
     train_cfgs=dict(executionStrategy='SameAsIpu',
-                    Training=dict(gradientAccumulation=30),
+                    Training=dict(gradientAccumulation=32),
                     availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],),
     eval_cfgs=dict(deviceIterations=1,),)
 
 # add model partition config and device config to runner
 runner = dict(
+    type='IterBasedRunner',
     ipu_model_cfg=ipu_model_cfg,
     ipu_options=ipu_options,
-    max_epochs=8)
+    max_iters=5000,
+    _delete_=True)
 
-fp16 = dict(loss_scale=512., velocity_accum_type='half', accum_type='half')
+checkpoint_config = dict(interval=1000)
+
+fp16 = dict(loss_scale=256.0, velocity_accum_type='half', accum_type='half')

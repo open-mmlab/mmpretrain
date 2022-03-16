@@ -108,6 +108,7 @@ def train_model(model,
             samples_per_gpu,
             workers_per_gpu,
             num_gpus=cfg.ipu_replicas if device == 'ipu' else len(cfg.gpu_ids),
+            device=device,
             dist=distributed,
             round_up=True,
             seed=cfg.seed,
@@ -155,8 +156,8 @@ def train_model(model,
             'please set `runner` in your config.', UserWarning)
 
     if device == 'ipu':
-        if not cfg.runner['type'].startswith('Ipu'):
-            cfg.runner['type'] = 'Ipu' + cfg.runner['type']
+        if not cfg.runner['type'].startswith('IPU'):
+            cfg.runner['type'] = 'IPU' + cfg.runner['type']
         if 'ipu_options' not in cfg.runner:
             cfg.runner['ipu_options'] = {}
         cfg.runner['ipu_options']['replicationFactor'] = cfg.ipu_replicas
@@ -179,8 +180,8 @@ def train_model(model,
     fp16_cfg = cfg.get('fp16', None)
     if fp16_cfg is not None:
         if device == 'ipu':
-            from mmcv.runner.ipu import IpuFp16OptimizerHook
-            optimizer_config = IpuFp16OptimizerHook(
+            from mmcv.runner.ipu import IPUFp16OptimizerHook
+            optimizer_config = IPUFp16OptimizerHook(
                 **cfg.optimizer_config,
                 loss_scale=fp16_cfg['loss_scale'],
                 distributed=distributed)
