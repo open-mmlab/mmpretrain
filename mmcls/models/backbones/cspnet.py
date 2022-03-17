@@ -135,6 +135,7 @@ class CSPStage(BaseModule):
                 kernel_size=3,
                 stride=2,
                 padding=1,
+                groups=32 if block is ResNeXtBottleneck else 1,
                 norm_cfg=norm_cfg,
                 act_cfg=act_cfg)
         else:
@@ -142,7 +143,11 @@ class CSPStage(BaseModule):
 
         exp_channels = int(down_channels * expand_ratio)
         self.expand_conv = ConvModule(
-            down_channels, exp_channels, 1, norm_cfg=norm_cfg, act_cfg=act_cfg)
+            in_channels=down_channels,
+            out_channels=exp_channels,
+            kernel_size=1,
+            norm_cfg=norm_cfg,
+            act_cfg=act_cfg if block is DarknetBottleneck else None)
 
         assert exp_channels % 2 == 0, \
             'The channel number before blocks must be divisible by 2.'
@@ -419,13 +424,7 @@ class CSPResNet(CSPNet):
                  norm_cfg=dict(type='BN', eps=1e-5),
                  act_cfg=dict(type='LeakyReLU', inplace=True),
                  norm_eval=False,
-                 init_cfg=dict(
-                     type='Kaiming',
-                     layer='Conv2d',
-                     a=math.sqrt(5),
-                     distribution='uniform',
-                     mode='fan_in',
-                     nonlinearity='leaky_relu')):
+                 init_cfg=dict(type='Kaiming', layer='Conv2d')):
         assert depth in self.arch_settings, 'depth must be one of ' \
             f'{list(self.arch_settings.keys())}, but get {depth}.'
         self.arch_setting = self.arch_settings[depth]
@@ -461,7 +460,7 @@ class CSPResNet(CSPNet):
                     padding=1,
                     conv_cfg=self.conv_cfg,
                     norm_cfg=self.norm_cfg,
-                    inplace=True),
+                    act_cfg=self.act_cfg),
                 ConvModule(
                     stem_channels // 2,
                     stem_channels // 2,
@@ -470,7 +469,7 @@ class CSPResNet(CSPNet):
                     padding=1,
                     conv_cfg=self.conv_cfg,
                     norm_cfg=self.norm_cfg,
-                    inplace=True),
+                    act_cfg=self.act_cfg),
                 ConvModule(
                     stem_channels // 2,
                     stem_channels,
@@ -479,7 +478,7 @@ class CSPResNet(CSPNet):
                     padding=1,
                     conv_cfg=self.conv_cfg,
                     norm_cfg=self.norm_cfg,
-                    inplace=True))
+                    act_cfg=self.act_cfg))
         else:
             self.stem = nn.Sequential(
                 ConvModule(
@@ -490,7 +489,7 @@ class CSPResNet(CSPNet):
                     padding=3,
                     conv_cfg=self.conv_cfg,
                     norm_cfg=self.norm_cfg,
-                    inplace=True),
+                    act_cfg=self.act_cfg),
                 nn.MaxPool2d(kernel_size=3, stride=2, padding=1))
 
 
@@ -533,10 +532,12 @@ class CSPResNeXt(CSPResNet):
     # From left to right: [block_fn, in_channels, out_channels, num_blocks,
     # expand_ratio, bottle_ratio, has_downsamper, down_growth] in CSPStage.
     arch_settings = {
-        50: [[ResNeXtBottleneck, 64, 128, 3, 4, 4, False, False],
-             [ResNeXtBottleneck, 128, 256, 3, 4, 4, True, False],
-             [ResNeXtBottleneck, 256, 512, 5, 4, 4, True, False],
-             [ResNeXtBottleneck, 512, 1024, 2, 4, 4, True, False]],
+        50: [
+            [ResNeXtBottleneck, 64, 256, 3, 4, 4, False, False],
+            [ResNeXtBottleneck, 256, 512, 3, 2, 4, True, False],
+            [ResNeXtBottleneck, 512, 1024, 5, 2, 4, True, False],
+            [ResNeXtBottleneck, 1024, 2048, 2, 2, 4, True, False],
+        ],
     }
 
     def __init__(self, *args, **kwargs):
