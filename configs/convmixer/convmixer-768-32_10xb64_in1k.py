@@ -5,8 +5,6 @@ _base_ = [
     '../_base_/default_runtime.py',
 ]
 
-data = dict(samples_per_gpu=64)
-
 optimizer = dict(lr=0.01)
 
 runner = dict(type='EpochBasedRunner', max_epochs=300)
