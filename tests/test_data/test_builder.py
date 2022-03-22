@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 import torch
 from mmcv.utils import digit_version
+from mmcv.utils.ipu_wrapper import IPU_MODE
 
 from mmcls.datasets import ImageNet, build_dataloader, build_dataset
 from mmcls.datasets.dataset_wrappers import (ClassBalancedDataset,
@@ -52,6 +53,12 @@ class TestDataloaderBuilder():
             shuffle=False)
         expect = [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6]
         assert all(torch.cat(list(iter(dataloader))) == torch.tensor(expect))
+
+        if IPU_MODE:
+            import poptorch
+            dataloader = build_dataloader(**common_cfg, device='ipu')
+            opts = poptorch.Options()
+            dataloader.init(options=opts)
 
     @patch('mmcls.datasets.builder.get_dist_info', return_value=(0, 1))
     def test_multi_gpu(self, _):
