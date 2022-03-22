@@ -286,21 +286,22 @@ class VAN(BaseBackbone):
             and its variants only. Defaults to False.
         norm_cfg (dict): Config dict for normalization layer for all output
             features. Defaults to ``dict(type='LN')``
+        block_cfgs (Sequence[dict] | dict): The extra config of each block.
+            Defaults to empty dicts.
         init_cfg (dict, optional): The Config for initialization.
             Defaults to None.
 
     Examples:
-        >>> from mmcls.models import SwinTransformer
+        >>> from mmcls.models import VAN
         >>> import torch
         >>> extra_config = dict(
         >>>     arch='tiny',
-        >>>     stage_cfgs=dict(downsample_cfg={'kernel_size': 3,
-        >>>                                     'expansion_ratio': 3}))
-        >>> self = SwinTransformer(**extra_config)
+        >>>     block_cfgs=dict(norm_cfg=dict(type='BN', eps=1e-5)))
+        >>> self = VAN(**extra_config)
         >>> inputs = torch.rand(1, 3, 224, 224)
         >>> output = self.forward(inputs)
-        >>> print(output.shape)
-        (1, 2592, 4)
+        >>> print(output[0].shape)
+        (1, 256, 7, 7)
     """
     arch_zoo = {
         **dict.fromkeys(['t', 'tiny'],
@@ -331,6 +332,7 @@ class VAN(BaseBackbone):
                  frozen_stages=-1,
                  norm_eval=False,
                  norm_cfg=dict(type='LN'),
+                 block_cfgs=dict(),
                  init_cfg=None):
         super(VAN, self).__init__(init_cfg=init_cfg)
 
@@ -373,7 +375,8 @@ class VAN(BaseBackbone):
                     embed_dims=self.embed_dims[i],
                     ffn_ratio=self.ffn_ratios[i],
                     drop_rate=drop_rate,
-                    drop_path_rate=dpr[j]) for j in range(depth)
+                    drop_path_rate=dpr[j],
+                    **block_cfgs) for j in range(depth)
             ])
             norm = build_norm_layer(norm_cfg, self.embed_dims[i])[1]
             dpr = dpr[depth:]
