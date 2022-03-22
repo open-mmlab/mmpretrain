@@ -1,0 +1,73 @@
+Collections:
+  - Name: Visual-Attention-Network
+    Metadata:
+      Training Data: ImageNet-1k
+      Training Techniques:
+        - AdamW
+        - Weight Decay
+      Training Resources:
+      Epochs: 300
+      Batch Size: 1024
+      Architecture:
+        - Visual Attention Network
+    Paper:
+      URL: https://arxiv.org/pdf/2202.09741v2.pdf
+      Title: "Visual Attention Network"
+    README: configs/van/README.md
+    Code:
+      URL:
+      Version:
+
+Models:
+  - Name: van-tiny_8xb128_in1k
+    Metadata:
+      FLOPs:
+      Parameters:
+    In Collection: Visual-Attention-Network
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 75.4
+          Top 5 Accuracy:
+        Task: Image Classification
+    Weights:
+    Config: configs/van/van-tiny_8xb128_in1k.py
+  - Name: van-small_8xb128_in1k
+    Metadata:
+      FLOPs:
+      Parameters:
+    In Collection: Visual-Attention-Network
+    Results:
+        - Dataset: ImageNet-1k
+          Metrics:
+            Top 1 Accuracy: 81.1
+            Top 5 Accuracy:
+          Task: Image Classification
+    Weights:
+    Config: configs/van/van-small_8xb128_in1k.py
+  - Name: van-base_8xb128_in1k
+    Metadata:
+      FLOPs:
+      Parameters:
+    In Collection: Visual-Attention-Network
+    Results:
+        - Dataset: ImageNet-1k
+          Metrics:
+            Top 1 Accuracy: 82.8
+            Top 5 Accuracy:
+          Task: Image Classification
+    Weights:
+    Config: configs/van/van-base_8xb128_in1k.py
+  - Name: van-large_8xb128_in1k
+    Metadata:
+      FLOPs:
+      Parameters:
+    In Collection: Visual-Attention-Network
+    Results:
+        - Dataset: ImageNet-1k
+          Metrics:
+            Top 1 Accuracy: 83.9
+            Top 5 Accuracy:
+          Task: Image Classification
+    Weights:
+    Config: configs/van/van-large_8xb128_in1k.py

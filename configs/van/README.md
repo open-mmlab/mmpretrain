@@ -22,10 +22,10 @@ While originally designed for natural language processing (NLP) tasks, the self-
 
 |   Model   |   Pretrain   | resolution  | Params(M) |  Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
 |:---------:|:------------:|:-----------:|:---------:|:---------:|:---------:|:---------:|:------:|:--------:|
-|  VAN-T   | From scratch |   224x224   |   4.1   |    0.9   |   75.4   |      | [config](van-tiny-8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_tiny_224_b16x64_300e_imagenet_20210616_090925-66df6be6.pth)  &#124; [log](https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_tiny_224_b16x64_300e_imagenet_20210616_090925.log.json)|
-|  VAN-S   | From scratch |   224x224   |   13.9   |    2.5   |   81.1   |      | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/swin_transformer/swin-small_16xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_small_224_b16x64_300e_imagenet_20210615_110219-7f9d988b.pth)  &#124; [log](https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_small_224_b16x64_300e_imagenet_20210615_110219.log.json)|
-|  VAN-B   | From scratch |   224x224   |   26.6   |   5.0   |   82.8   |      | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/swin_transformer/swin_base_224_b16x64_300e_imagenet.py) | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_base_224_b16x64_300e_imagenet_20210616_190742-93230b0d.pth)  &#124; [log](https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_base_224_b16x64_300e_imagenet_20210616_190742.log.json)|
-|  VAN-L | From scratch |   224x224   |   44.8   |    9.0   |   83.9   |      | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/swin_transformer/swin-small_16xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin_small_patch4_window7_224-cc7a01c9.pth) |
+|  VAN-T   | From scratch |   224x224   |   4.1   |    0.9   |   75.4   |      |  | |
+|  VAN-S   | From scratch |   224x224   |   13.9   |    2.5   |   81.1   |      |  | |
+|  VAN-B   | From scratch |   224x224   |   26.6   |   5.0   |   82.8   |      |  | |
+|  VAN-L | From scratch |   224x224   |   44.8   |    9.0   |   83.9   |      |  | |
 
 ## Citation
 
