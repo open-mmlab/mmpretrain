@@ -1,11 +1,12 @@
 _base_ = [
+    '../_base_/datasets/imagenet_bs32_pil_resize.py',
     '../_base_/schedules/imagenet_bs256.py', '../_base_/default_runtime.py'
 ]
 
 # model settings
 model = dict(
     type='ImageClassifier',
-    backbone=dict(type='CSPDarkNet', depth=53),
+    backbone=dict(type='CSPResNet', depth=50),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
         type='LinearClsHead',
@@ -63,8 +64,3 @@ data = dict(
         ann_file='data/imagenet/meta/val.txt',
         pipeline=test_pipeline))
 evaluation = dict(interval=1, metric='accuracy')
-"""
-accuracy_top-1 : 80.05
-
-accuracy_top-5 : 95.07
-"""

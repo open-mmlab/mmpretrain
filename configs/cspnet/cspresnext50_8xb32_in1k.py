@@ -63,8 +63,3 @@ data = dict(
         ann_file='data/imagenet/meta/val.txt',
         pipeline=test_pipeline))
 evaluation = dict(interval=1, metric='accuracy')
-"""
-accuracy_top-1 : 79.96
-
-accuracy_top-5 : 94.96
-"""

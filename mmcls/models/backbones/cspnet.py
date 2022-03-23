@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
 from abc import ABCMeta, abstractmethod
+from typing import Sequence
 
 import torch
 import torch.nn as nn
@@ -33,8 +34,9 @@ class DarknetBottleneck(BaseModule):
             Default: False
         conv_cfg (dict): Config dict for convolution layer. Default: None,
             which means using conv2d.
+        drop_path_rate (float): The ratio of the drop path layer. Default: 0.
         norm_cfg (dict): Config dict for normalization layer.
-            Default: dict(type='BN').
+            Default:dict(type='BN', eps=1e-5).
         act_cfg (dict): Config dict for activation layer.
             Default: dict(type='Swish').
     """
@@ -90,37 +92,43 @@ class DarknetBottleneck(BaseModule):
 class CSPStage(BaseModule):
     """Cross Stage Partial Stage.
 
-    CrossStage = down_conv(x) + exp_conv(x) + split_into(xa, xb) +
-    bloack(xb) + transition_conv(xb) +concat(xa, xb) + final_conv(x)
+    CrossStage = downsamper_conv(x) + expand_conv(x) + split(x)->[xa,xb]
+    + blocks(xb) + transition_conv(xb) + concat(xa, xb) + final_conv(x)
 
     Args:
+        block (nn.module): The basic block function in the Stage.
         in_channels (int): The input channels of the CSP layer.
         out_channels (int): The output channels of the CSP layer.
+        has_downsamper (bool): Whether to add a downsamper in the stage.
+            Default: False.
+        down_growth (bool): Whether to expand the channels in the
+            downsamper layer of the stage. Default: False.
+        expand_ratio (float): The expand ratio to adjust the number of
+             channels of the expand conv layer. Default: 0.5
         bottle_ratio (float): Ratio to adjust the number of channels of the
             hidden layer. Default: 0.5
+        drop_path_rate (float): The ratio of the drop path layer in the
+            blocks of the stage. Default: 0.
         num_blocks (int): Number of blocks. Default: 1
-        add_identity (bool): Whether to add identity in blocks.
-            Default: True
-        use_depthwise (bool): Whether to depthwise separable convolution in
-            blocks. Default: False
         conv_cfg (dict, optional): Config dict for convolution layer.
             Default: None, which means using conv2d.
         norm_cfg (dict): Config dict for normalization layer.
             Default: dict(type='BN')
         act_cfg (dict): Config dict for activation layer.
-            Default: dict(type='Swish')
+            Default: dict(type='LeakyReLU', inplace=True)
     """
 
     def __init__(self,
                  block,
                  in_channels,
                  out_channels,
+                 has_downsamper=True,
+                 down_growth=False,
                  expand_ratio=0.5,
                  bottle_ratio=2,
                  num_blocks=1,
-                 has_downsamper=True,
-                 down_growth=False,
-                 block_dpr=None,
+                 block_dpr=0,
+                 conv_cfg=None,
                  norm_cfg=dict(type='BN', eps=1e-5),
                  act_cfg=dict(type='LeakyReLU', inplace=True),
                  init_cfg=None):
@@ -194,11 +202,27 @@ class CSPStage(BaseModule):
 
 
 class CSPNet(BaseModule, metaclass=ABCMeta):
-    """base CSPNet for CSPDarkNet, CSPResNet and CSPResNeXt."""
+    """base CSPNet for CSPDarkNet, CSPResNet and CSPResNeXt.
+
+    CrossStage = downsamper_conv(x) + expand_conv(x) + split(x)->[xa,xb]
+    + blocks(xb) + transition_conv(xb) + concat(xa, xb) + final_conv(x)
+
+    Args:
+        in_channels (int): Number of input image channels. Default: 3.
+        out_indices (Sequence[int]): Output from which stages.
+            Default: ``(3, )``.
+        frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
+            -1 means not freezing any parameters. Default: -1.
+        conv_cfg (dict | None): The config dict for conv layers. Default: None.
+        norm_cfg (dict): The config dict for norm layers.
+        norm_eval (bool): Whether to set norm layers to eval mode, namely,
+            freeze running stats (mean and var). Note: Effect on Batch Norm
+            and its variants only. Default: False.
+    """
 
     def __init__(self,
                  in_channels=3,
-                 out_indices=(0, ),
+                 out_indices=(4, ),
                  frozen_stages=-1,
                  conv_cfg=None,
                  norm_cfg=dict(type='BN', eps=1e-5),
@@ -211,10 +235,9 @@ class CSPNet(BaseModule, metaclass=ABCMeta):
         self.act_cfg = act_cfg
         self.norm_eval = norm_eval
         self.frozen_stages = frozen_stages
-        self.out_indices = out_indices
 
-        assert self.arch_setting, \
-            'Please set block_fn and arch_setting attributes in ' \
+        assert hasattr(self, 'arch_setting'), \
+            'Please set arch_setting attribute in ' \
             f'definition of Class : {self.__class__}.'
 
         self._make_stem_layer(in_channels)
@@ -239,6 +262,19 @@ class CSPNet(BaseModule, metaclass=ABCMeta):
             stages.append(csp_stage)
         self.stages = Sequential(*stages)
 
+        if isinstance(out_indices, int):
+            out_indices = [out_indices]
+        assert isinstance(out_indices, Sequence), \
+            f'"out_indices" must by a sequence or int, ' \
+            f'get {type(out_indices)} instead.'
+        out_indices = list(out_indices)
+        for i, index in enumerate(out_indices):
+            if index < 0:
+                out_indices[i] = len(self.stages) + index
+            assert 0 <= out_indices[i] <= len(self.stages), \
+                f'Invalid out_indices {index}.'
+        self.out_indices = out_indices
+
     @abstractmethod
     def _make_stem_layer(self, in_channels):
         pass
@@ -249,7 +285,7 @@ class CSPNet(BaseModule, metaclass=ABCMeta):
             for param in self.stem.parameters():
                 param.requires_grad = False
 
-        for i in range(self.frozen_stages):
+        for i in range(self.frozen_stages + 1):
             m = self.stages[i]
             m.eval()
             for param in m.parameters():
@@ -280,12 +316,11 @@ class CSPDarkNet(CSPNet):
 
     Args:
         depth (int): Depth of CSP-Darknet. Default: 53.
+        in_channels (int): Number of input image channels. Default: 3.
         out_indices (Sequence[int]): Output from which stages.
-            Default: (2, 3, 4).
+            Default: (3, ).
         frozen_stages (int): Stages to be frozen (stop grad and set eval
             mode). -1 means not freezing any parameters. Default: -1.
-        use_depthwise (bool): Whether to use depthwise separable convolution.
-            Default: False.
         conv_cfg (dict): Config dict for convolution layer. Default: None.
         norm_cfg (dict): Dictionary to construct and config norm layer.
             Default: dict(type='BN', requires_grad=True).
@@ -297,15 +332,17 @@ class CSPDarkNet(CSPNet):
         init_cfg (dict or list[dict], optional): Initialization config dict.
             Default: None.
     Example:
-        >>> from mmcls.models import CSPDarknet
+        >>> from mmcls.models import CSPDarkNet
         >>> import torch
-        >>> model = CSPDarknet(depth=53)
+        >>> model = CSPDarkNet(depth=53, out_indices=(0, 1, 2, 3, 4))
         >>> model.eval()
         >>> inputs = torch.rand(1, 3, 416, 416)
         >>> level_outputs = model.forward(inputs)
         >>> for level_out in level_outputs:
         ...     print(tuple(level_out.shape))
         ...
+        (1, 64, 208, 208)
+        (1, 128, 104, 104)
         (1, 256, 52, 52)
         (1, 512, 26, 26)
         (1, 1024, 13, 13)
@@ -323,7 +360,7 @@ class CSPDarkNet(CSPNet):
     def __init__(self,
                  depth,
                  in_channels=3,
-                 out_indices=(0, 1, 2, 3, 4),
+                 out_indices=(4, ),
                  frozen_stages=-1,
                  conv_cfg=None,
                  norm_cfg=dict(type='BN', eps=1e-5),
@@ -336,11 +373,10 @@ class CSPDarkNet(CSPNet):
                      distribution='uniform',
                      mode='fan_in',
                      nonlinearity='leaky_relu')):
+
         assert depth in self.arch_settings, 'depth must be one of ' \
             f'{list(self.arch_settings.keys())}, but get {depth}.'
         self.arch_setting = self.arch_settings[depth]
-        assert set(out_indices).issubset(
-            i for i in range(len(self.arch_setting)))
         if frozen_stages not in range(-1, len(self.arch_setting)):
             raise ValueError('frozen_stages must be in range(-1, '
                              'len(arch_setting)). But received '
@@ -376,11 +412,9 @@ class CSPResNet(CSPNet):
     Args:
         depth (int): Depth of CSP-ResNet. Default: 50.
         out_indices (Sequence[int]): Output from which stages.
-            Default: (2, 3, 4).
+            Default: (4, ).
         frozen_stages (int): Stages to be frozen (stop grad and set eval
             mode). -1 means not freezing any parameters. Default: -1.
-        use_depthwise (bool): Whether to use depthwise separable convolution.
-            Default: False.
         conv_cfg (dict): Config dict for convolution layer. Default: None.
         norm_cfg (dict): Dictionary to construct and config norm layer.
             Default: dict(type='BN', requires_grad=True).
@@ -392,15 +426,16 @@ class CSPResNet(CSPNet):
         init_cfg (dict or list[dict], optional): Initialization config dict.
             Default: None.
     Example:
-        >>> from mmcls.models import CSPDarknet
+        >>> from mmcls.models import CSPResNet
         >>> import torch
-        >>> self = CSPDarknet(depth=53)
+        >>> self = CSPResNet(depth=50, out_indices=(0, 1, 2, 3))
         >>> self.eval()
         >>> inputs = torch.rand(1, 3, 416, 416)
         >>> level_outputs = self.forward(inputs)
         >>> for level_out in level_outputs:
         ...     print(tuple(level_out.shape))
         ...
+        (1, 128, 104, 104)
         (1, 256, 52, 52)
         (1, 512, 26, 26)
         (1, 1024, 13, 13)
@@ -417,7 +452,7 @@ class CSPResNet(CSPNet):
     def __init__(self,
                  depth,
                  in_channels=3,
-                 out_indices=(0, 1, 2, 3),
+                 out_indices=(3, ),
                  frozen_stages=-1,
                  deep_stem=False,
                  conv_cfg=None,
@@ -428,8 +463,6 @@ class CSPResNet(CSPNet):
         assert depth in self.arch_settings, 'depth must be one of ' \
             f'{list(self.arch_settings.keys())}, but get {depth}.'
         self.arch_setting = self.arch_settings[depth]
-        assert set(out_indices).issubset(
-            i for i in range(len(self.arch_setting)))
         self.frozen_stages = frozen_stages
         if self.frozen_stages not in range(-1, len(self.arch_setting)):
             raise ValueError('frozen_stages must be in range(-1, '
@@ -500,11 +533,9 @@ class CSPResNeXt(CSPResNet):
     Args:
         depth (int): Depth of CSP-ResNeXt. Default: 50.
         out_indices (Sequence[int]): Output from which stages.
-            Default: (2, 3, 4).
+            Default: (4, ).
         frozen_stages (int): Stages to be frozen (stop grad and set eval
             mode). -1 means not freezing any parameters. Default: -1.
-        use_depthwise (bool): Whether to use depthwise separable convolution.
-            Default: False.
         conv_cfg (dict): Config dict for convolution layer. Default: None.
         norm_cfg (dict): Dictionary to construct and config norm layer.
             Default: dict(type='BN', requires_grad=True).
@@ -518,16 +549,17 @@ class CSPResNeXt(CSPResNet):
     Example:
         >>> from mmcls.models import CSPResNeXt
         >>> import torch
-        >>> self = CSPResNeXt(depth=50)
-        >>> self.eval()
+        >>> model = CSPResNeXt(depth=50, out_indices=(0, 1, 2, 3))
+        >>> model.eval()
         >>> inputs = torch.rand(1, 3, 224, 224)
-        >>> level_outputs = self.forward(inputs)
+        >>> level_outputs = model(inputs)
         >>> for level_out in level_outputs:
         ...     print(tuple(level_out.shape))
         ...
-        (1, 256, 52, 52)
-        (1, 512, 26, 26)
-        (1, 1024, 13, 13)
+        (1, 256, 56, 56)
+        (1, 512, 28, 28)
+        (1, 1024, 14, 14)
+        (1, 2048, 7, 7)
     """
     # From left to right: [block_fn, in_channels, out_channels, num_blocks,
     # expand_ratio, bottle_ratio, has_downsamper, down_growth] in CSPStage.
