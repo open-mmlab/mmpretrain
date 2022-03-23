@@ -112,6 +112,7 @@ runner = dict(
     ipu_model_cfg=ipu_model_cfg,
     ipu_options=ipu_options,
     max_iters=5000,
+    ipu_dataloader=True,
     _delete_=True)
 
 checkpoint_config = dict(interval=1000)

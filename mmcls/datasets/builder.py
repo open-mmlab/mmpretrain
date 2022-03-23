@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import copy
 import platform
 import random
 from functools import partial
@@ -58,7 +59,7 @@ def build_dataloader(dataset,
                      pin_memory=True,
                      persistent_workers=True,
                      sampler_cfg=None,
-                     device=None,
+                     ipu_dataloader=False,
                      **kwargs):
     """Build PyTorch DataLoader.
 
@@ -131,7 +132,7 @@ def build_dataloader(dataset,
 
     if digit_version(torch.__version__) >= digit_version('1.8.0'):
         kwargs['persistent_workers'] = persistent_workers
-    if device == 'ipu':
+    if ipu_dataloader:
         assert IPU_MODE, 'no ipu environment detected'
         from mmcv.runner.ipu import IPUDataloader
         data_loader = IPUDataloader(None,
@@ -139,7 +140,8 @@ def build_dataloader(dataset,
                                     batch_size=samples_per_gpu,
                                     num_workers=num_workers,
                                     shuffle=shuffle,
-                                    worker_init_fn=init_fn)
+                                    worker_init_fn=init_fn,
+                                    **kwargs)
     else:
         data_loader = DataLoader(
             dataset,

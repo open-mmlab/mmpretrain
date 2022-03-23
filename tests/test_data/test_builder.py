@@ -56,7 +56,8 @@ class TestDataloaderBuilder():
 
         if IPU_MODE:
             import poptorch
-            dataloader = build_dataloader(**common_cfg, device='ipu')
+            dataloader = build_dataloader(
+                **common_cfg, device='ipu', rebatched_worker_size=1)
             opts = poptorch.Options()
             dataloader.init(options=opts)
 

@@ -102,13 +102,14 @@ def train_model(model,
                                          cfg.data.samples_per_gpu)
     workers_per_gpu = cfg.data.train.pop('workers_per_gpu',
                                          cfg.data.workers_per_gpu)
+    ipu_dataloader = getattr(cfg.runner, 'ipu_dataloader', False)
     data_loaders = [
         build_dataloader(
             ds,
             samples_per_gpu,
             workers_per_gpu,
             num_gpus=cfg.ipu_replicas if device == 'ipu' else len(cfg.gpu_ids),
-            device=device,
+            ipu_dataloader=ipu_dataloader,
             dist=distributed,
             round_up=True,
             seed=cfg.seed,
