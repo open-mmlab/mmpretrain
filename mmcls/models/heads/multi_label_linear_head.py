@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import warnings
+
 import torch
 import torch.nn as nn
 
@@ -14,6 +16,8 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
         num_classes (int): Number of categories.
         in_channels (int): Number of channels in the input feature map.
         loss (dict): Config of classification loss.
+        lazy_linear (bool): If True, the fc layer use nn.LazyLinear.
+            Defaults to False.
         init_cfg (dict | optional): The extra init config of layers.
             Defaults to use dict(type='Normal', layer='Linear', std=0.01).
     """
@@ -26,6 +30,7 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
                      use_sigmoid=True,
                      reduction='mean',
                      loss_weight=1.0),
+                 lazy_linear=False,
                  init_cfg=dict(type='Normal', layer='Linear', std=0.01)):
         super(MultiLabelLinearClsHead, self).__init__(
             loss=loss, init_cfg=init_cfg)
@@ -36,8 +41,20 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
 
         self.in_channels = in_channels
         self.num_classes = num_classes
+        self.lazy_linear = lazy_linear
 
-        self.fc = nn.Linear(self.in_channels, self.num_classes)
+        if self.lazy_linear:
+            warnings.warn('For MultiLabelLinearClsHead with lazy_linear=True, '
+                          f'in_channels={in_channels} and '
+                          f'init_cfg={self.init_cfg}  is ignored and '
+                          f'calculated automatically.')
+            self.fc = nn.LazyLinear(self.num_classes)
+        else:
+            self.fc = nn.Linear(self.in_channels, self.num_classes)
+
+    def init_weights(self):
+        if not self.lazy_linear:
+            super(MultiLabelLinearClsHead, self).init_weights()
 
     def pre_logits(self, x):
         if isinstance(x, tuple):

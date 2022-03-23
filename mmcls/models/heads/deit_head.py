@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import warnings
+
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -12,7 +14,13 @@ class DeiTClsHead(VisionTransformerClsHead):
 
     def __init__(self, *args, **kwargs):
         super(DeiTClsHead, self).__init__(*args, **kwargs)
-        if self.hidden_dim is None:
+        if self.lazy_linear:
+            warnings.warn('For DeiTClsHead with lazy_linear=True, '
+                          f'in_channels={self.in_channels} and '
+                          f'init_cfg={self.init_cfg} is ignored and '
+                          f'calculated automatically.')
+            head_dist = nn.LazyLinear(self.num_classes)
+        elif self.hidden_dim is None:
             head_dist = nn.Linear(self.in_channels, self.num_classes)
         else:
             head_dist = nn.Linear(self.hidden_dim, self.num_classes)

@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
+import warnings
 from collections import OrderedDict
 
 import torch.nn as nn
@@ -31,6 +32,7 @@ class VisionTransformerClsHead(ClsHead):
                  in_channels,
                  hidden_dim=None,
                  act_cfg=dict(type='Tanh'),
+                 lazy_linear=False,
                  init_cfg=dict(type='Constant', layer='Linear', val=0),
                  *args,
                  **kwargs):
@@ -40,6 +42,7 @@ class VisionTransformerClsHead(ClsHead):
         self.num_classes = num_classes
         self.hidden_dim = hidden_dim
         self.act_cfg = act_cfg
+        self.lazy_linear = lazy_linear
 
         if self.num_classes <= 0:
             raise ValueError(
@@ -49,24 +52,47 @@ class VisionTransformerClsHead(ClsHead):
 
     def _init_layers(self):
         if self.hidden_dim is None:
-            layers = [('head', nn.Linear(self.in_channels, self.num_classes))]
+            if self.lazy_linear:
+                warnings.warn(
+                    'For VisionTransformerClsHead with lazy_linear=True, '
+                    f'in_channels={self.in_channels} and '
+                    f'init_cfg={self.init_cfg} is ignored and '
+                    f'calculated automatically.')
+                layers = [('head', nn.LazyLinear(self.num_classes))]
+            else:
+                layers = [('head', nn.Linear(self.in_channels,
+                                             self.num_classes))]
         else:
-            layers = [
-                ('pre_logits', nn.Linear(self.in_channels, self.hidden_dim)),
-                ('act', build_activation_layer(self.act_cfg)),
-                ('head', nn.Linear(self.hidden_dim, self.num_classes)),
-            ]
+            if self.lazy_linear:
+                warnings.warn(
+                    'For VisionTransformerClsHead with lazy_linear=True, '
+                    f'in_channels={self.in_channels} and '
+                    f'init_cfg={self.init_cfg} is ignored and '
+                    f'calculated automatically.')
+                layers = [
+                    ('pre_logits', nn.LazyLinear(self.hidden_dim)),
+                    ('act', build_activation_layer(self.act_cfg)),
+                    ('head', nn.Linear(self.hidden_dim, self.num_classes)),
+                ]
+            else:
+                layers = [
+                    ('pre_logits', nn.Linear(self.in_channels,
+                                             self.hidden_dim)),
+                    ('act', build_activation_layer(self.act_cfg)),
+                    ('head', nn.Linear(self.hidden_dim, self.num_classes)),
+                ]
         self.layers = Sequential(OrderedDict(layers))
 
     def init_weights(self):
-        super(VisionTransformerClsHead, self).init_weights()
-        # Modified from ClassyVision
-        if hasattr(self.layers, 'pre_logits'):
-            # Lecun norm
-            trunc_normal_(
-                self.layers.pre_logits.weight,
-                std=math.sqrt(1 / self.layers.pre_logits.in_features))
-            nn.init.zeros_(self.layers.pre_logits.bias)
+        if not self.lazy_linear:
+            super(VisionTransformerClsHead, self).init_weights()
+            # Modified from ClassyVision
+            if hasattr(self.layers, 'pre_logits'):
+                # Lecun norm
+                trunc_normal_(
+                    self.layers.pre_logits.weight,
+                    std=math.sqrt(1 / self.layers.pre_logits.in_features))
+                nn.init.zeros_(self.layers.pre_logits.bias)
 
     def pre_logits(self, x):
         if isinstance(x, tuple):

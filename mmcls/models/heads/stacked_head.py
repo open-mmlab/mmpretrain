@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import warnings
 from typing import Dict, Sequence
 
 import torch.nn as nn
@@ -18,9 +19,14 @@ class LinearBlock(BaseModule):
                  dropout_rate=0.,
                  norm_cfg=None,
                  act_cfg=None,
+                 lazy_linear=False,
                  init_cfg=None):
         super().__init__(init_cfg=init_cfg)
-        self.fc = nn.Linear(in_channels, out_channels)
+        self.lazy_linear = lazy_linear
+        if self.lazy_linear:
+            self.fc = nn.LazyLinear(out_channels)
+        else:
+            self.fc = nn.Linear(in_channels, out_channels)
 
         self.norm = None
         self.act = None
@@ -58,6 +64,8 @@ class StackedLinearClsHead(ClsHead):
             each hidden fc layer, except the last layer. Defaults to None.
         act_cfg (dict, optional): Config dict of activation function after each
             hidden layer, except the last layer. Defaults to use "ReLU".
+        lazy_linear (bool): If True, the fc layer use nn.LazyLinear.
+            Defaults to False.
     """
 
     def __init__(self,
@@ -67,8 +75,15 @@ class StackedLinearClsHead(ClsHead):
                  dropout_rate: float = 0.,
                  norm_cfg: Dict = None,
                  act_cfg: Dict = dict(type='ReLU'),
+                 lazy_linear=False,
                  **kwargs):
         super(StackedLinearClsHead, self).__init__(**kwargs)
+        if lazy_linear:
+            warnings.warn(
+                'For StackedLinearClsHead with lazy_linear=True, '
+                f'in_channels={in_channels} and init_cfg={self.init_cfg} '
+                f'is ignored and calculated automatically.')
+
         assert num_classes > 0, \
             f'`num_classes` of StackedLinearClsHead must be a positive ' \
             f'integer, got {num_classes} instead.'
@@ -84,6 +99,7 @@ class StackedLinearClsHead(ClsHead):
         self.dropout_rate = dropout_rate
         self.norm_cfg = norm_cfg
         self.act_cfg = act_cfg
+        self.lazy_linear = lazy_linear
 
         self._init_layers()
 
@@ -97,7 +113,8 @@ class StackedLinearClsHead(ClsHead):
                     hidden_channels,
                     dropout_rate=self.dropout_rate,
                     norm_cfg=self.norm_cfg,
-                    act_cfg=self.act_cfg))
+                    act_cfg=self.act_cfg,
+                    lazy_linear=self.lazy_linear))
             in_channels = hidden_channels
 
         self.layers.append(
@@ -106,10 +123,12 @@ class StackedLinearClsHead(ClsHead):
                 self.num_classes,
                 dropout_rate=0.,
                 norm_cfg=None,
-                act_cfg=None))
+                act_cfg=None,
+                lazy_linear=self.lazy_linear))
 
     def init_weights(self):
-        self.layers.init_weights()
+        if not self.lazy_linear:
+            self.layers.init_weights()
 
     def pre_logits(self, x):
         if isinstance(x, tuple):

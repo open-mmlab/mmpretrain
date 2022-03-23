@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import warnings
+
 import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn.utils.weight_init import trunc_normal_
@@ -15,6 +17,8 @@ class ConformerHead(ClsHead):
         num_classes (int): Number of categories excluding the background
             category.
         in_channels (int): Number of channels in the input feature map.
+        lazy_linear (bool): If True, the fc layer use nn.LazyLinear.
+            Defaults to False.
         init_cfg (dict | optional): The extra init config of layers.
             Defaults to use ``dict(type='Normal', layer='Linear', std=0.01)``.
     """
@@ -23,6 +27,7 @@ class ConformerHead(ClsHead):
             self,
             num_classes,
             in_channels,  # [conv_dim, trans_dim]
+            lazy_linear=False,
             init_cfg=dict(type='Normal', layer='Linear', std=0.01),
             *args,
             **kwargs):
@@ -30,14 +35,23 @@ class ConformerHead(ClsHead):
 
         self.in_channels = in_channels
         self.num_classes = num_classes
+        self.lazy_linear = lazy_linear
         self.init_cfg = init_cfg
 
         if self.num_classes <= 0:
             raise ValueError(
                 f'num_classes={num_classes} must be a positive integer')
 
-        self.conv_cls_head = nn.Linear(self.in_channels[0], num_classes)
-        self.trans_cls_head = nn.Linear(self.in_channels[1], num_classes)
+        if self.lazy_linear:
+            warnings.warn('For ConformerHead with lazy_linear=True, '
+                          f'in_channels={in_channels} and '
+                          f'init_cfg={self.init_cfg} is ignored and '
+                          f'calculated automatically.')
+            self.conv_cls_head = nn.LazyLinear(self.num_classes)
+            self.trans_cls_head = nn.LazyLinear(self.num_classes)
+        else:
+            self.conv_cls_head = nn.Linear(self.in_channels[0], num_classes)
+            self.trans_cls_head = nn.Linear(self.in_channels[1], num_classes)
 
     def _init_weights(self, m):
         if isinstance(m, nn.Linear):
@@ -46,14 +60,15 @@ class ConformerHead(ClsHead):
                 nn.init.constant_(m.bias, 0)
 
     def init_weights(self):
-        super(ConformerHead, self).init_weights()
+        if not self.lazy_linear:
+            super(ConformerHead, self).init_weights()
 
-        if (isinstance(self.init_cfg, dict)
-                and self.init_cfg['type'] == 'Pretrained'):
-            # Suppress default init if use pretrained model.
-            return
-        else:
-            self.apply(self._init_weights)
+            if (isinstance(self.init_cfg, dict)
+                    and self.init_cfg['type'] == 'Pretrained'):
+                # Suppress default init if use pretrained model.
+                return
+            else:
+                self.apply(self._init_weights)
 
     def pre_logits(self, x):
         if isinstance(x, tuple):

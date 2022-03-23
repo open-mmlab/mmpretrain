@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import warnings
+
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -14,6 +16,8 @@ class LinearClsHead(ClsHead):
         num_classes (int): Number of categories excluding the background
             category.
         in_channels (int): Number of channels in the input feature map.
+        lazy_linear (bool): If True, the fc layer use nn.LazyLinear.
+            Defaults to False.
         init_cfg (dict | optional): The extra init config of layers.
             Defaults to use dict(type='Normal', layer='Linear', std=0.01).
     """
@@ -21,6 +25,7 @@ class LinearClsHead(ClsHead):
     def __init__(self,
                  num_classes,
                  in_channels,
+                 lazy_linear=False,
                  init_cfg=dict(type='Normal', layer='Linear', std=0.01),
                  *args,
                  **kwargs):
@@ -28,12 +33,24 @@ class LinearClsHead(ClsHead):
 
         self.in_channels = in_channels
         self.num_classes = num_classes
+        self.lazy_linear = lazy_linear
 
         if self.num_classes <= 0:
             raise ValueError(
                 f'num_classes={num_classes} must be a positive integer')
 
-        self.fc = nn.Linear(self.in_channels, self.num_classes)
+        if self.lazy_linear:
+            warnings.warn('For LinearClsHead with lazy_linear=True, '
+                          f'in_channels={in_channels} and '
+                          f'init_cfg={self.init_cfg}  is ignored and '
+                          f'calculated automatically.')
+            self.fc = nn.LazyLinear(self.num_classes)
+        else:
+            self.fc = nn.Linear(self.in_channels, self.num_classes)
+
+    def init_weights(self):
+        if not self.lazy_linear:
+            super(LinearClsHead, self).init_weights()
 
     def pre_logits(self, x):
         if isinstance(x, tuple):
