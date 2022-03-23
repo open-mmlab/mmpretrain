@@ -233,6 +233,14 @@ def test_vit_head():
     assert hasattr(head.layers, 'pre_logits') and hasattr(head.layers, 'act')
     assert losses['loss'].item() > 0
 
+    # test vit head forward with lazy_linear=True
+    head = VisionTransformerClsHead(10, 0, lazy_linear=True)
+    head.init_weights()
+    losses = head.forward_train(fake_features, fake_gt_label)
+    assert not hasattr(head.layers, 'pre_logits')
+    assert not hasattr(head.layers, 'act')
+    assert losses['loss'].item() > 0
+
     # test vit head forward with hidden layer and lazy_linear=True
     head = VisionTransformerClsHead(10, 0, hidden_dim=20, lazy_linear=True)
     head.init_weights()
@@ -282,6 +290,11 @@ def test_conformer_head():
     head.init_weights()
     losses = head.forward_train(fake_features, fake_gt_label)
     assert losses['loss'].item() > 0
+
+    # test conformer head init_weights
+    head = ConformerHead(num_classes=10, in_channels=[64, 96])
+    head.init_weights()
+    assert abs(head.conv_cls_head.weight).sum() > 0
 
     # test simple_test with post_process
     pred = head.simple_test(fake_features)
