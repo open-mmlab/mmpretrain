@@ -22,3 +22,4 @@ Import:
   - configs/hrnet/metafile.yml
   - configs/wrn/metafile.yml
   - configs/cspnet/metafile.yml
+  - configs/convmixer/metafile.yml

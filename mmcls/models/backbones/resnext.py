@@ -46,8 +46,7 @@ class Bottleneck(_Bottleneck):
         # and out_channels, but for ResNeXt bottleneck, it is determined by
         # groups and width_per_group and the stage it is located in.
         if groups != 1:
-            assert self.mid_channels % base_channels == 0, (self.mid_channels,
-                                                            base_channels)
+            assert self.mid_channels % base_channels == 0
             self.mid_channels = (
                 groups * width_per_group * self.mid_channels // base_channels)
 

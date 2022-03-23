@@ -128,7 +128,7 @@ export CUDA_VISIBLE_DEVICES=-1
 我们不推荐用户使用 CPU 进行训练，这太过缓慢。我们支持这个功能是为了方便用户在没有 GPU 的机器上进行调试。
 ```
 
-### 使用多个 GPU 进行训练
+### 使用单台机器多个 GPU 进行训练
 
 ```shell
 ./tools/dist_train.sh ${CONFIG_FILE} ${GPU_NUM} [optional arguments]
@@ -145,6 +145,22 @@ export CUDA_VISIBLE_DEVICES=-1
 `load-from` 只加载模型参数，但周期数从 0 开始计数，常被用于微调模型。
 
 ### 使用多台机器进行训练
+
+如果您想使用由 ethernet 连接起来的多台机器， 您可以使用以下命令:
+
+在第一台机器上:
+
+```shell
+NNODES=2 NODE_RANK=0 PORT=$MASTER_PORT MASTER_ADDR=$MASTER_ADDR sh tools/dist_train.sh $CONFIG $GPUS
+```
+
+在第二台机器上:
+
+```shell
+NNODES=2 NODE_RANK=1 PORT=$MASTER_PORT MASTER_ADDR=$MASTER_ADDR sh tools/dist_train.sh $CONFIG $GPUS
+```
+
+但是，如果您不使用高速网路连接这几台机器的话，训练将会非常慢。
 
 如果用户在 [slurm](https://slurm.schedmd.com/) 集群上运行 MMClassification，可使用 `slurm_train.sh` 脚本。（该脚本也支持单台机器上进行训练）
 
