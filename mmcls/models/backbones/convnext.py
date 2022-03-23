@@ -312,7 +312,7 @@ class ConvNeXt(BaseBackbone):
                     gap = x.mean([-2, -1], keepdim=True)
                     outs.append(norm_layer(gap).flatten(1))
                 else:
-                    outs.append(norm_layer(x))
+                    outs.append(norm_layer(x).contiguous())
 
         return tuple(outs)
 
