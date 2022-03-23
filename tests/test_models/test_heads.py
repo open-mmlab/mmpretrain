@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 import pytest
 import torch
+from mmcv.utils import digit_version
 
 from mmcls.models.heads import (ClsHead, ConformerHead, DeiTClsHead,
                                 LinearClsHead, MultiLabelClsHead,
@@ -62,11 +63,12 @@ def test_linear_head(feat):
     losses = head.forward_train(feat, fake_gt_label)
     assert losses['loss'].item() > 0
 
-    # test LinearClsHead forward with lazy_linear=True
-    head = LinearClsHead(10, 0, lazy_linear=True)
-    head.init_weights()
-    losses = head.forward_train(feat, fake_gt_label)
-    assert losses['loss'].item() > 0
+    if digit_version(torch.__version__) >= digit_version('1.8.0'):
+        # test LinearClsHead forward with lazy_linear=True
+        head = LinearClsHead(10, 0, lazy_linear=True)
+        head.init_weights()
+        losses = head.forward_train(feat, fake_gt_label)
+        assert losses['loss'].item() > 0
 
     # test init weights
     head = LinearClsHead(10, 3)
@@ -132,11 +134,12 @@ def test_multilabel_linear_head(feat):
     losses = head.forward_train(feat, fake_gt_label)
     assert losses['loss'].item() > 0
 
-    # test MultiLabelLinearClsHead forward with lazy_linear=True
-    head = MultiLabelLinearClsHead(10, 0, lazy_linear=True)
-    head.init_weights()
-    losses = head.forward_train(feat, fake_gt_label)
-    assert losses['loss'].item() > 0
+    if digit_version(torch.__version__) >= digit_version('1.8.0'):
+        # test MultiLabelLinearClsHead forward with lazy_linear=True
+        head = MultiLabelLinearClsHead(10, 0, lazy_linear=True)
+        head.init_weights()
+        losses = head.forward_train(feat, fake_gt_label)
+        assert losses['loss'].item() > 0
 
     # test simple_test with post_process
     pred = head.simple_test(feat)
@@ -178,12 +181,13 @@ def test_stacked_linear_cls_head(feat):
     losses = head.forward_train(feat, fake_gt_label)
     assert losses['loss'].item() > 0
 
-    # test forward with lazy_linear=True
-    head = StackedLinearClsHead(10, 0, mid_channels=[20], lazy_linear=True)
-    head.init_weights()
+    if digit_version(torch.__version__) >= digit_version('1.8.0'):
+        # test forward with lazy_linear=True
+        head = StackedLinearClsHead(10, 0, mid_channels=[20], lazy_linear=True)
+        head.init_weights()
 
-    losses = head.forward_train(feat, fake_gt_label)
-    assert losses['loss'].item() > 0
+        losses = head.forward_train(feat, fake_gt_label)
+        assert losses['loss'].item() > 0
 
     # test simple_test with post_process
     pred = head.simple_test(feat)
@@ -233,20 +237,22 @@ def test_vit_head():
     assert hasattr(head.layers, 'pre_logits') and hasattr(head.layers, 'act')
     assert losses['loss'].item() > 0
 
-    # test vit head forward with lazy_linear=True
-    head = VisionTransformerClsHead(10, 0, lazy_linear=True)
-    head.init_weights()
-    losses = head.forward_train(fake_features, fake_gt_label)
-    assert not hasattr(head.layers, 'pre_logits')
-    assert not hasattr(head.layers, 'act')
-    assert losses['loss'].item() > 0
+    if digit_version(torch.__version__) >= digit_version('1.8.0'):
+        # test vit head forward with lazy_linear=True
+        head = VisionTransformerClsHead(10, 0, lazy_linear=True)
+        head.init_weights()
+        losses = head.forward_train(fake_features, fake_gt_label)
+        assert not hasattr(head.layers, 'pre_logits')
+        assert not hasattr(head.layers, 'act')
+        assert losses['loss'].item() > 0
 
-    # test vit head forward with hidden layer and lazy_linear=True
-    head = VisionTransformerClsHead(10, 0, hidden_dim=20, lazy_linear=True)
-    head.init_weights()
-    losses = head.forward_train(fake_features, fake_gt_label)
-    assert hasattr(head.layers, 'pre_logits') and hasattr(head.layers, 'act')
-    assert losses['loss'].item() > 0
+        # test vit head forward with hidden layer and lazy_linear=True
+        head = VisionTransformerClsHead(10, 0, hidden_dim=20, lazy_linear=True)
+        head.init_weights()
+        losses = head.forward_train(fake_features, fake_gt_label)
+        assert hasattr(head.layers, 'pre_logits') and hasattr(
+            head.layers, 'act')
+        assert losses['loss'].item() > 0
 
     # test vit head init_weights
     head = VisionTransformerClsHead(10, 100, hidden_dim=20)
@@ -285,11 +291,13 @@ def test_conformer_head():
     losses = head.forward_train(fake_features, fake_gt_label)
     assert losses['loss'].item() > 0
 
-    # test conformer head forward with lazy_linear=True
-    head = ConformerHead(num_classes=10, in_channels=[0, 0], lazy_linear=True)
-    head.init_weights()
-    losses = head.forward_train(fake_features, fake_gt_label)
-    assert losses['loss'].item() > 0
+    if digit_version(torch.__version__) >= digit_version('1.8.0'):
+        # test conformer head forward with lazy_linear=True
+        head = ConformerHead(
+            num_classes=10, in_channels=[0, 0], lazy_linear=True)
+        head.init_weights()
+        losses = head.forward_train(fake_features, fake_gt_label)
+        assert losses['loss'].item() > 0
 
     # test conformer head init_weights
     head = ConformerHead(num_classes=10, in_channels=[64, 96])
@@ -335,13 +343,15 @@ def test_deit_head():
     assert hasattr(head.layers, 'pre_logits') and hasattr(head.layers, 'act')
     assert losses['loss'].item() > 0
 
-    # test deit head forward with hidden layer and lazy_linear=True
-    head = DeiTClsHead(
-        num_classes=10, in_channels=0, hidden_dim=20, lazy_linear=True)
-    head.init_weights()
-    losses = head.forward_train(fake_features, fake_gt_label)
-    assert hasattr(head.layers, 'pre_logits') and hasattr(head.layers, 'act')
-    assert losses['loss'].item() > 0
+    if digit_version(torch.__version__) >= digit_version('1.8.0'):
+        # test deit head forward with hidden layer and lazy_linear=True
+        head = DeiTClsHead(
+            num_classes=10, in_channels=0, hidden_dim=20, lazy_linear=True)
+        head.init_weights()
+        losses = head.forward_train(fake_features, fake_gt_label)
+        assert hasattr(head.layers, 'pre_logits') and hasattr(
+            head.layers, 'act')
+        assert losses['loss'].item() > 0
 
     # test deit head init_weights
     head = DeiTClsHead(10, 100, hidden_dim=20)

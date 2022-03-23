@@ -3,6 +3,7 @@ import warnings
 
 import torch
 import torch.nn as nn
+from mmcv.utils import digit_version
 
 from ..builder import HEADS
 from .multi_label_head import MultiLabelClsHead
@@ -44,6 +45,9 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
         self.lazy_linear = lazy_linear
 
         if self.lazy_linear:
+            if digit_version(torch.__version__) < digit_version('1.8.0'):
+                raise RuntimeError(
+                    'torch.nn.LazyLinear is not available before 1.8.0')
             warnings.warn('For MultiLabelLinearClsHead with lazy_linear=True, '
                           f'in_channels={in_channels} and '
                           f'init_cfg={self.init_cfg}  is ignored and '

@@ -1,9 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import warnings
 
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn.utils.weight_init import trunc_normal_
+from mmcv.utils import digit_version
 
 from ..builder import HEADS
 from .cls_head import ClsHead
@@ -43,6 +45,9 @@ class ConformerHead(ClsHead):
                 f'num_classes={num_classes} must be a positive integer')
 
         if self.lazy_linear:
+            if digit_version(torch.__version__) < digit_version('1.8.0'):
+                raise RuntimeError(
+                    'torch.nn.LazyLinear is not available before 1.8.0')
             warnings.warn('For ConformerHead with lazy_linear=True, '
                           f'in_channels={in_channels} and '
                           f'init_cfg={self.init_cfg} is ignored and '

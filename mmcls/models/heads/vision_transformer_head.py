@@ -3,11 +3,13 @@ import math
 import warnings
 from collections import OrderedDict
 
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import build_activation_layer
 from mmcv.cnn.utils.weight_init import trunc_normal_
 from mmcv.runner import Sequential
+from mmcv.utils import digit_version
 
 from ..builder import HEADS
 from .cls_head import ClsHead
@@ -38,6 +40,11 @@ class VisionTransformerClsHead(ClsHead):
                  **kwargs):
         super(VisionTransformerClsHead, self).__init__(
             init_cfg=init_cfg, *args, **kwargs)
+        if lazy_linear:
+            if digit_version(torch.__version__) < digit_version('1.8.0'):
+                raise RuntimeError(
+                    'torch.nn.LazyLinear is not available before 1.8.0')
+
         self.in_channels = in_channels
         self.num_classes = num_classes
         self.hidden_dim = hidden_dim

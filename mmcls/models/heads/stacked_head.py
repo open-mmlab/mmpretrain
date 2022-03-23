@@ -2,10 +2,12 @@
 import warnings
 from typing import Dict, Sequence
 
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import build_activation_layer, build_norm_layer
 from mmcv.runner import BaseModule, ModuleList
+from mmcv.utils import digit_version
 
 from ..builder import HEADS
 from .cls_head import ClsHead
@@ -79,6 +81,9 @@ class StackedLinearClsHead(ClsHead):
                  **kwargs):
         super(StackedLinearClsHead, self).__init__(**kwargs)
         if lazy_linear:
+            if digit_version(torch.__version__) < digit_version('1.8.0'):
+                raise RuntimeError(
+                    'torch.nn.LazyLinear is not available before 1.8.0')
             warnings.warn(
                 'For StackedLinearClsHead with lazy_linear=True, '
                 f'in_channels={in_channels} and init_cfg={self.init_cfg} '

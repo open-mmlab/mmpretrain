@@ -1,8 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import warnings
 
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from mmcv.utils import digit_version
 
 from mmcls.utils import get_root_logger
 from ..builder import HEADS
@@ -15,6 +17,9 @@ class DeiTClsHead(VisionTransformerClsHead):
     def __init__(self, *args, **kwargs):
         super(DeiTClsHead, self).__init__(*args, **kwargs)
         if self.lazy_linear:
+            if digit_version(torch.__version__) < digit_version('1.8.0'):
+                raise RuntimeError(
+                    'torch.nn.LazyLinear is not available before 1.8.0')
             warnings.warn('For DeiTClsHead with lazy_linear=True, '
                           f'in_channels={self.in_channels} and '
                           f'init_cfg={self.init_cfg} is ignored and '
