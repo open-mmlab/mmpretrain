@@ -21,17 +21,15 @@ class RepeatAugSampler(Sampler):
     Copyright (c) 2015-present, Facebook, Inc.
     """
 
-    def __init__(
-        self,
-        dataset,
-        num_replicas=None,
-        rank=None,
-        shuffle=True,
-        num_repeats=3,
-        selected_round=256,
-        selected_ratio=0,
-        seed=0
-    ):
+    def __init__(self,
+                 dataset,
+                 num_replicas=None,
+                 rank=None,
+                 shuffle=True,
+                 num_repeats=3,
+                 selected_round=256,
+                 selected_ratio=0,
+                 seed=0):
         default_rank, default_world_size = get_dist_info()
         rank = default_rank if rank is None else rank
         num_replicas = (
