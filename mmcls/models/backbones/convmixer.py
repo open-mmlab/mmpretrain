@@ -25,7 +25,7 @@ class Residual(nn.Module):
 class ConvMixer(BaseBackbone):
     """ConvMixer.                              .
 
-    A PyTorch implementation of : `A ConvMixer for the 2020s
+    A PyTorch implementation of : `Patches Are All You Need?
     <https://arxiv.org/pdf/2201.09792.pdf>`_
 
     Modified from the `official repo
