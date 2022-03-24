@@ -35,7 +35,7 @@ Models:
     Metadata:
       Training Data: ImageNet-1k
       FLOPs: 3510411008
-      Parameters: 28589128
+      Parameters: 21388968
     In Collections: PoolFormer
     Results:
       - Dataset: ImageNet-1k
