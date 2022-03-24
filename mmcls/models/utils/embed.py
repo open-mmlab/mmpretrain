@@ -1,10 +1,57 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import warnings
+
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from mmcv.cnn import build_conv_layer, build_norm_layer
 from mmcv.runner.base_module import BaseModule
 
 from .helpers import to_2tuple
+
+
+def resize_pos_embed(pos_embed,
+                     src_shape,
+                     dst_shape,
+                     mode='bicubic',
+                     num_extra_tokens=1):
+    """Resize pos_embed weights.
+
+    Args:
+        pos_embed (torch.Tensor): Position embedding weights with shape
+            [1, L, C].
+        src_shape (tuple): The resolution of downsampled origin training
+            image, in format (H, W).
+        dst_shape (tuple): The resolution of downsampled new training
+            image, in format (H, W).
+        mode (str): Algorithm used for upsampling. Choose one from 'nearest',
+            'linear', 'bilinear', 'bicubic' and 'trilinear'.
+            Defaults to 'bicubic'.
+        num_extra_tokens (int): The number of extra tokens, such as cls_token.
+            Defaults to 1.
+
+    Returns:
+        torch.Tensor: The resized pos_embed of shape [1, L_new, C]
+    """
+    if src_shape[0] == dst_shape[0] and src_shape[1] == dst_shape[1]:
+        return pos_embed
+    assert pos_embed.ndim == 3, 'shape of pos_embed must be [1, L, C]'
+    _, L, C = pos_embed.shape
+    src_h, src_w = src_shape
+    assert L == src_h * src_w + num_extra_tokens, \
+        f"The length of `pos_embed` ({L}) doesn't match the expected " \
+        f'shape ({src_h}*{src_w}+{num_extra_tokens}). Please check the' \
+        '`img_size` argument.'
+    extra_tokens = pos_embed[:, :num_extra_tokens]
+
+    src_weight = pos_embed[:, num_extra_tokens:]
+    src_weight = src_weight.reshape(1, src_h, src_w, C).permute(0, 3, 1, 2)
+
+    dst_weight = F.interpolate(
+        src_weight, size=dst_shape, align_corners=False, mode=mode)
+    dst_weight = torch.flatten(dst_weight, 2).transpose(1, 2)
+
+    return torch.cat((extra_tokens, dst_weight), dim=1)
 
 
 class PatchEmbed(BaseModule):
@@ -32,6 +79,9 @@ class PatchEmbed(BaseModule):
                  conv_cfg=None,
                  init_cfg=None):
         super(PatchEmbed, self).__init__(init_cfg)
+        warnings.warn('The `PatchEmbed` in mmcls will be deprecated. '
+                      'Please use `mmcv.cnn.bricks.transformer.PatchEmbed`. '
+                      "It's more general and supports dynamic input shape")
 
         if isinstance(img_size, int):
             img_size = to_2tuple(img_size)
@@ -203,6 +253,10 @@ class PatchMerging(BaseModule):
                  norm_cfg=dict(type='LN'),
                  init_cfg=None):
         super().__init__(init_cfg)
+        warnings.warn('The `PatchMerging` in mmcls will be deprecated. '
+                      'Please use `mmcv.cnn.bricks.transformer.PatchMerging`. '
+                      "It's more general and supports dynamic input shape")
+
         H, W = input_resolution
         self.input_resolution = input_resolution
         self.in_channels = in_channels

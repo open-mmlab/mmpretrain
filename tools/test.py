@@ -9,20 +9,13 @@ import numpy as np
 import torch
 from mmcv import DictAction
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
-from mmcv.runner import get_dist_info, init_dist, load_checkpoint
+from mmcv.runner import (get_dist_info, init_dist, load_checkpoint,
+                         wrap_fp16_model)
 
 from mmcls.apis import multi_gpu_test, single_gpu_test
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.models import build_classifier
-from mmcls.utils import setup_multi_processes
-
-# TODO import `wrap_fp16_model` from mmcv and delete them from mmcls
-try:
-    from mmcv.runner import wrap_fp16_model
-except ImportError:
-    warnings.warn('wrap_fp16_model from mmcls will be deprecated.'
-                  'Please install mmcv>=1.1.4.')
-    from mmcls.core import wrap_fp16_model
+from mmcls.utils import get_root_logger, setup_multi_processes
 
 
 def parse_args():
@@ -68,13 +61,6 @@ def parse_args():
         'Note that the quotation marks are necessary and that no white space '
         'is allowed.')
     parser.add_argument(
-        '--options',
-        nargs='+',
-        action=DictAction,
-        help='override some settings in the used config, the key-value pair '
-        'in xxx=yyy format will be merged into config file (deprecate), '
-        'change to --cfg-options instead.')
-    parser.add_argument(
         '--metric-options',
         nargs='+',
         action=DictAction,
@@ -92,7 +78,13 @@ def parse_args():
         '--gpu-ids',
         type=int,
         nargs='+',
-        help='ids of gpus to use '
+        help='(Deprecated, please use --gpu-id) ids of gpus to use '
+        '(only applicable to non-distributed testing)')
+    parser.add_argument(
+        '--gpu-id',
+        type=int,
+        default=0,
+        help='id of gpu to use '
         '(only applicable to non-distributed testing)')
     parser.add_argument(
         '--launcher',
@@ -108,20 +100,6 @@ def parse_args():
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
-
-    if args.options and args.cfg_options:
-        raise ValueError(
-            '--options and --cfg-options cannot be both '
-            'specified, --options is deprecated in favor of --cfg-options')
-    if args.options:
-        warnings.warn('--options is deprecated in favor of --cfg-options')
-        args.cfg_options = args.options
-
-    if args.device:
-        warnings.warn(
-            '--device is deprecated. To use cpu to test, please '
-            'refers to https://mmclassification.readthedocs.io/en/latest/'
-            'getting_started.html#inference-with-pretrained-models')
 
     assert args.metrics or args.out, \
         'Please specify at least one of output path and evaluation metrics.'
@@ -143,21 +121,19 @@ def main():
     if cfg.get('cudnn_benchmark', False):
         torch.backends.cudnn.benchmark = True
     cfg.model.pretrained = None
-    cfg.data.test.test_mode = True
 
     if args.gpu_ids is not None:
-        cfg.gpu_ids = args.gpu_ids
+        cfg.gpu_ids = args.gpu_ids[0:1]
+        warnings.warn('`--gpu-ids` is deprecated, please use `--gpu-id`. '
+                      'Because we only support single GPU mode in '
+                      'non-distributed testing. Use the first GPU '
+                      'in `gpu_ids` now.')
     else:
-        cfg.gpu_ids = range(1)
+        cfg.gpu_ids = [args.gpu_id]
 
     # init distributed env first, since logger depends on the dist info.
     if args.launcher == 'none':
         distributed = False
-        if len(cfg.gpu_ids) > 1:
-            warnings.warn(f'The gpu-ids is reset from {cfg.gpu_ids} to '
-                          f'{cfg.gpu_ids[0:1]} to avoid potential error in '
-                          'non-distribute testing time.')
-            cfg.gpu_ids = cfg.gpu_ids[0:1]
     else:
         distributed = True
         init_dist(args.launcher, **cfg.dist_params)
@@ -167,7 +143,7 @@ def main():
                                         cfg.data.samples_per_gpu)
     workers_per_gpu = cfg.data.test.pop('workers_per_gpu',
                                         cfg.data.workers_per_gpu)
-    dataset = build_dataset(cfg.data.test)
+    dataset = build_dataset(cfg.data.test, default_args=dict(test_mode=True))
     # the extra round_up data will be removed during gpu/cpu collect
     data_loader = build_dataloader(
         dataset,
@@ -224,9 +200,13 @@ def main():
     rank, _ = get_dist_info()
     if rank == 0:
         results = {}
+        logger = get_root_logger()
         if args.metrics:
-            eval_results = dataset.evaluate(outputs, args.metrics,
-                                            args.metric_options)
+            eval_results = dataset.evaluate(
+                results=outputs,
+                metric=args.metrics,
+                metric_options=args.metric_options,
+                logger=logger)
             results.update(eval_results)
             for k, v in eval_results.items():
                 if isinstance(v, np.ndarray):

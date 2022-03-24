@@ -41,6 +41,13 @@ The pre-trained models on ImageNet-21k are used to fine-tune, and therefore don'
 
 *Models with \* are converted from the [official repo](https://github.com/microsoft/Swin-Transformer#main-results-on-imagenet-with-pretrained-models). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 
+### CUB-200-2011
+
+|       Model      |  Pretrain   | resolution  | Params(M) | Flops(G) | Top-1 (%) |  Config | Download |
+|:----------------:|:------------:|:---------:|:---------:|:--------:|:---------:|:---------:|:---------:|
+|      Swin-L      |  [ImageNet-21k](https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin-base_3rdparty_in21k-384px.pth) |   384x384   |  195.51   |   100.04   |   91.87   |  [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/swin_transformer/swin-large_8xb8_cub.py) | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin-large_8xb8_cub_384px_20220307-1bbaee6a.pth) &#124; [log](https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin-large_8xb8_cub_384px_20220307-1bbaee6a.log.json) |
+
+
 ## Citation
 
 ```

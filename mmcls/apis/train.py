@@ -6,29 +6,13 @@ import numpy as np
 import torch
 import torch.distributed as dist
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
-from mmcv.runner import (DistSamplerSeedHook, build_optimizer, build_runner,
-                         get_dist_info)
+from mmcv.runner import (DistSamplerSeedHook, Fp16OptimizerHook,
+                         build_optimizer, build_runner, get_dist_info)
+from mmcv.runner.hooks import DistEvalHook, EvalHook
 
 from mmcls.core import DistOptimizerHook
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.utils import get_root_logger
-
-# TODO import eval hooks from mmcv and delete them from mmcls
-try:
-    from mmcv.runner.hooks import EvalHook, DistEvalHook
-except ImportError:
-    warnings.warn('DeprecationWarning: EvalHook and DistEvalHook from mmcls '
-                  'will be deprecated.'
-                  'Please install mmcv through master branch.')
-    from mmcls.core import EvalHook, DistEvalHook
-
-# TODO import optimizer hook from mmcv and delete them from mmcls
-try:
-    from mmcv.runner import Fp16OptimizerHook
-except ImportError:
-    warnings.warn('DeprecationWarning: FP16OptimizerHook from mmcls will be '
-                  'deprecated. Please install mmcv>=1.1.4.')
-    from mmcls.core import Fp16OptimizerHook
 
 
 def init_random_seed(seed=None, device='cuda'):
@@ -139,7 +123,7 @@ def train_model(model,
         else:
             model = MMDataParallel(model, device_ids=cfg.gpu_ids)
             if not model.device_ids:
-                from mmcv import digit_version, __version__
+                from mmcv import __version__, digit_version
                 assert digit_version(__version__) >= (1, 4, 4), \
                     'To train with CPU, please confirm your mmcv version ' \
                     'is not lower than v1.4.4'

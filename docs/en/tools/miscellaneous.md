@@ -1,4 +1,4 @@
-# MISCELLANEOUS
+# Miscellaneous
 
 <!-- TOC -->
 

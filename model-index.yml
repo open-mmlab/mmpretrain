@@ -20,3 +20,5 @@ Import:
   - configs/efficientnet/metafile.yml
   - configs/convnext/metafile.yml
   - configs/hrnet/metafile.yml
+  - configs/wrn/metafile.yml
+  - configs/convmixer/metafile.yml

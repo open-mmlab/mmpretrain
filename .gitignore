@@ -129,6 +129,3 @@ venv.bak/
 *.pvti-journal
 /cache_engine
 /report
-
-# my dev
-/configs/myconfigs

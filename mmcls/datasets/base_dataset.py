@@ -59,7 +59,7 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         """Get all ground-truth labels (categories).
 
         Returns:
-            list[int]: categories for all images.
+            np.ndarray: categories for all images.
         """
 
         gt_labels = np.array([data['gt_label'] for data in self.data_infos])

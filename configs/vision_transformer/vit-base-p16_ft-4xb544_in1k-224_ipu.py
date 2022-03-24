@@ -1,9 +1,14 @@
 _base_ = [
     '../_base_/models/vit-base-p16.py',
     '../_base_/datasets/imagenet_bs64_pil_resize_autoaug.py',
-    '../_base_/schedules/imagenet_bs4096_AdamW.py',
     '../_base_/default_runtime.py'
 ]
+
+# specific to vit pretrain
+paramwise_cfg = dict(custom_keys={
+    '.cls_token': dict(decay_mult=0.0),
+    '.pos_embed': dict(decay_mult=0.0)
+})
 
 model = dict(
     head=dict(
@@ -30,8 +35,8 @@ train_pipeline = [
     dict(type='Normalize', **img_norm_cfg),
     dict(type='ImageToTensor', keys=['img']),
     dict(type='ToTensor', keys=['gt_label']),
-    dict(type='Collect', keys=['img', 'gt_label']),
-    dict(type='ToHalf', keys=['img'])
+    dict(type='ToHalf', keys=['img']),
+    dict(type='Collect', keys=['img', 'gt_label'])
 ]
 
 test_pipeline = [
@@ -40,13 +45,13 @@ test_pipeline = [
     dict(type='CenterCrop', crop_size=224),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='ImageToTensor', keys=['img']),
-    dict(type='Collect', keys=['img']),
-    dict(type='ToHalf', keys=['img'])
+    dict(type='ToHalf', keys=['img']),
+    dict(type='Collect', keys=['img'])
 ]
 
 # change batch size
 data = dict(
-    samples_per_gpu=17,
+    samples_per_gpu=17*32,
     workers_per_gpu=16,
     drop_last=True,
     train=dict(pipeline=train_pipeline),
@@ -60,18 +65,21 @@ data = dict(
         workers_per_gpu=1),)
 
 # remove clip-norm
-optimizer_config = dict(_delete_=True)
+optimizer_config = dict()
 
+# optimizer
 optimizer = dict(
     type='SGD',
     lr=0.08,
     weight_decay=1e-5,
-    momentum=0.9
+    momentum=0.9,
+    paramwise_cfg=paramwise_cfg,
 )
 
 # learning policy
 lr_config = dict(
     policy='CosineAnnealing',
+    min_lr=0,
     warmup='linear',
     warmup_iters=800,
     warmup_ratio=0.02,
@@ -112,8 +120,7 @@ runner = dict(
     ipu_model_cfg=ipu_model_cfg,
     ipu_options=ipu_options,
     max_iters=5000,
-    ipu_dataloader=True,
-    _delete_=True)
+    ipu_dataloader=True)
 
 checkpoint_config = dict(interval=1000)
 
