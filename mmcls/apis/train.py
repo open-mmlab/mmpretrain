@@ -82,11 +82,15 @@ def train_model(model,
 
     sampler_cfg = cfg.data.get('sampler', None)
 
+    samples_per_gpu = cfg.data.train.pop(
+        'samples_per_gpu', cfg.data.samples_per_gpu)
+    workers_per_gpu = cfg.data.train.pop(
+        'workers_per_gpu', cfg.data.workers_per_gpu)
     data_loaders = [
         build_dataloader(
             ds,
-            cfg.data.samples_per_gpu,
-            cfg.data.workers_per_gpu,
+            samples_per_gpu,
+            workers_per_gpu,
             # cfg.gpus will be ignored if distributed
             num_gpus=len(cfg.gpu_ids),
             dist=distributed,
@@ -168,11 +172,15 @@ def train_model(model,
 
     # register eval hooks
     if validate:
+        samples_per_gpu = cfg.data.val.pop(
+            'samples_per_gpu', cfg.data.samples_per_gpu)
+        workers_per_gpu = cfg.data.val.pop(
+            'workers_per_gpu', cfg.data.workers_per_gpu)
         val_dataset = build_dataset(cfg.data.val, dict(test_mode=True))
         val_dataloader = build_dataloader(
             val_dataset,
-            samples_per_gpu=cfg.data.samples_per_gpu,
-            workers_per_gpu=cfg.data.workers_per_gpu,
+            samples_per_gpu=samples_per_gpu,
+            workers_per_gpu=workers_per_gpu,
             dist=distributed,
             shuffle=False,
             round_up=True)
