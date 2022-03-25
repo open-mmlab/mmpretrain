@@ -49,7 +49,7 @@ def parse_args():
         help='id of gpu to use '
         '(only applicable to non-distributed training)')
     parser.add_argument(
-        '--ipu_replicas',
+        '--ipu-replicas',
         type=int,
         default=None,
         help='num of ipu replicas to use')

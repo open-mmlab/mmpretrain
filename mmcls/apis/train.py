@@ -97,7 +97,7 @@ def train_model(model,
             dist=distributed,
             round_up=True,
             seed=cfg.seed,
-            drop_last=cfg.data.get('drop_last', False),
+            drop_last=cfg.data.pop('drop_last', False),
             sampler_cfg=sampler_cfg) for ds in dataset
     ]
 

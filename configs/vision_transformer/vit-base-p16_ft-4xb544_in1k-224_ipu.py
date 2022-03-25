@@ -51,7 +51,7 @@ test_pipeline = [
 
 # change batch size
 data = dict(
-    samples_per_gpu=17*32,
+    samples_per_gpu=17,
     workers_per_gpu=16,
     drop_last=True,
     train=dict(pipeline=train_pipeline),
