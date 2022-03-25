@@ -1,11 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from functools import partial
-from itertools import chain
-from typing import Sequence
-
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from mmcv.cnn.bricks import (DropPath, build_activation_layer,
                              build_norm_layer)
 from mmcv.runner import BaseModule
@@ -23,13 +18,14 @@ class PatchEmbed(nn.Module):
         stride (int): Stride of the patch embedding. Defaults to 16.
         padding (int): Padding of the patch embedding. Defaults to 0.
         in_chans (int): Input channels. Defaults to 3.
-        embed_dim (int): Output dimension of the patch embedding. Defaults to 768.
+        embed_dim (int): Output dimension of the patch embedding.
+            Defaults to 768.
         norm_layer (module): Normalization module. Defaults to None (not use).
     """
-    def __init__(self, patch_size=16, stride=16, padding=0, 
+    def __init__(self, patch_size=16, stride=16, padding=0,
                  in_chans=3, embed_dim=768, norm_layer=None):
         super().__init__()
-        self.proj = nn.Conv2d(in_chans, embed_dim, kernel_size=patch_size, 
+        self.proj = nn.Conv2d(in_chans, embed_dim, kernel_size=patch_size,
                               stride=stride, padding=padding)
         self.norm = norm_layer(embed_dim) if norm_layer else nn.Identity()
 
@@ -76,7 +72,7 @@ class Mlp(nn.Module):
             convolution. Defaults to ``dict(type='GELU')``.
         drop (float): Dropout rate. Defaults to 0.0.
     """
-    def __init__(self, in_features, hidden_features=None, 
+    def __init__(self, in_features, hidden_features=None,
                  out_features=None, act_cfg=dict(type='GELU'), drop=0.):
         super().__init__()
         out_features = out_features or in_features
@@ -110,10 +106,10 @@ class PoolFormerBlock(BaseModule):
         layer_scale_init_value (float): Init value for Layer Scale.
             Defaults to 1e-5.
     """
-    def __init__(self, dim, pool_size=3, mlp_ratio=4., 
+    def __init__(self, dim, pool_size=3, mlp_ratio=4.,
                  norm_cfg=dict(type='GN', num_groups=1),
                  act_cfg=dict(type='GELU'),
-                 drop=0., drop_path=0., 
+                 drop=0., drop_path=0.,
                  layer_scale_init_value=1e-5):
 
         super().__init__()
@@ -122,7 +118,7 @@ class PoolFormerBlock(BaseModule):
         self.token_mixer = Pooling(pool_size=pool_size)
         self.norm2 = build_norm_layer(norm_cfg, dim)[1]
         mlp_hidden_dim = int(dim * mlp_ratio)
-        self.mlp = Mlp(in_features=dim, hidden_features=mlp_hidden_dim, 
+        self.mlp = Mlp(in_features=dim, hidden_features=mlp_hidden_dim,
                        act_cfg=act_cfg, drop=drop)
 
         # The following two techniques are useful to train deep PoolFormers.
@@ -143,26 +139,26 @@ class PoolFormerBlock(BaseModule):
         return x
 
 
-def basic_blocks(dim, index, layers, 
-                 pool_size=3, mlp_ratio=4., 
+def basic_blocks(dim, index, layers,
+                 pool_size=3, mlp_ratio=4.,
                  norm_cfg=dict(type='GN', num_groups=1),
                  act_cfg=dict(type='GELU'),
-                 drop_rate=.0, drop_path_rate=0., 
+                 drop_rate=.0, drop_path_rate=0.,
                  layer_scale_init_value=1e-5):
     """
     generate PoolFormer blocks for a stage
-    return: PoolFormer blocks 
+    return: PoolFormer blocks
     """
     blocks = []
     for block_idx in range(layers[index]):
         block_dpr = drop_path_rate * (
             block_idx + sum(layers[:index])) / (sum(layers) - 1)
         blocks.append(PoolFormerBlock(
-            dim, pool_size=pool_size, mlp_ratio=mlp_ratio, 
+            dim, pool_size=pool_size, mlp_ratio=mlp_ratio,
             norm_cfg=norm_cfg,
             act_cfg=act_cfg,
-            drop=drop_rate, drop_path=block_dpr, 
-            layer_scale_init_value=layer_scale_init_value, 
+            drop=drop_rate, drop_path=block_dpr,
+            layer_scale_init_value=layer_scale_init_value,
             ))
     blocks = nn.Sequential(*blocks)
 
@@ -210,13 +206,13 @@ class PoolFormer(BaseBackbone):
         drop_rate (float): Dropout rate. Defaults to 0.
         drop_path_rate (float): Stochastic depth rate. Defaults to 0.
         out_indices (Sequence | int): Output from which stages.
-            Defaults to None, means the global pooling of last stage for 
+            Defaults to None, means the global pooling of last stage for
             classification task.
         init_cfg (dict, optional): Initialization config dict
     """  # noqa: E501
 
     # --layers: [x,x,x,x], numbers of layers for the four stages
-    # --embed_dims, --mlp_ratios: 
+    # --embed_dims, --mlp_ratios:
     #     embedding dims and mlp ratios for the four stages
     # --downsamples: flags to apply downsampling or not in four blocks
     arch_settings = {
@@ -224,43 +220,43 @@ class PoolFormer(BaseBackbone):
             'layers': [2, 2, 6, 2],
             'embed_dims': [64, 128, 320, 512],
             'mlp_ratios': [4, 4, 4, 4],
-            'layer_scale_init_value': 1e-5, 
+            'layer_scale_init_value': 1e-5,
         },
         's24': {
             'layers': [4, 4, 12, 4],
             'embed_dims': [64, 128, 320, 512],
             'mlp_ratios': [4, 4, 4, 4],
-            'layer_scale_init_value': 1e-5, 
+            'layer_scale_init_value': 1e-5,
         },
         's36': {
             'layers': [6, 6, 18, 6],
             'embed_dims': [64, 128, 320, 512],
             'mlp_ratios': [4, 4, 4, 4],
-            'layer_scale_init_value': 1e-6, 
+            'layer_scale_init_value': 1e-6,
         },
         'm36': {
             'layers': [6, 6, 18, 6],
             'embed_dims': [96, 192, 384, 768],
             'mlp_ratios': [4, 4, 4, 4],
-            'layer_scale_init_value': 1e-6, 
+            'layer_scale_init_value': 1e-6,
         },
         'm48': {
             'layers': [8, 8, 24, 8],
             'embed_dims': [96, 192, 384, 768],
             'mlp_ratios': [4, 4, 4, 4],
-            'layer_scale_init_value': 1e-6, 
+            'layer_scale_init_value': 1e-6,
         },
     }
 
-    def __init__(self, 
+    def __init__(self,
                  arch='s12',
-                 pool_size=3, 
+                 pool_size=3,
                  norm_cfg=dict(type='GN', num_groups=1),
                  act_cfg=dict(type='GELU'),
-                 in_patch_size=7, in_stride=4, in_pad=2, 
-                 down_patch_size=3, down_stride=2, down_pad=1, 
+                 in_patch_size=7, in_stride=4, in_pad=2,
+                 down_patch_size=3, down_stride=2, down_pad=1,
                  drop_rate=0., drop_path_rate=0.,
-                 out_indices=None, 
+                 out_indices=None,
                  init_cfg=None):
 
         super().__init__(init_cfg=init_cfg)
@@ -281,18 +277,18 @@ class PoolFormer(BaseBackbone):
             if 'mlp_ratios' in arch else [4, 4, 4, 4]
         layer_scale_init_value = arch['layer_scale_init_value'] \
             if 'layer_scale_init_value' in arch else 1e-5
-        
+
         self.patch_embed = PatchEmbed(
-            patch_size=in_patch_size, stride=in_stride, padding=in_pad, 
+            patch_size=in_patch_size, stride=in_stride, padding=in_pad,
             in_chans=3, embed_dim=embed_dims[0])
 
         # set the main block in network
         network = []
         for i in range(len(layers)):
-            stage = basic_blocks(embed_dims[i], i, layers, 
+            stage = basic_blocks(embed_dims[i], i, layers,
                                  pool_size=pool_size, mlp_ratio=mlp_ratios[i],
                                  norm_cfg=norm_cfg, act_cfg=act_cfg,
-                                 drop_rate=drop_rate, 
+                                 drop_rate=drop_rate,
                                  drop_path_rate=drop_path_rate,
                                  layer_scale_init_value=layer_scale_init_value)
             network.append(stage)
@@ -302,8 +298,8 @@ class PoolFormer(BaseBackbone):
                 # downsampling between two stages
                 network.append(
                     PatchEmbed(
-                        patch_size=down_patch_size, stride=down_stride, 
-                        padding=down_pad, 
+                        patch_size=down_patch_size, stride=down_stride,
+                        padding=down_pad,
                         in_chans=embed_dims[i], embed_dim=embed_dims[i+1]
                         )
                     )
@@ -313,7 +309,8 @@ class PoolFormer(BaseBackbone):
         self.out_indices = out_indices
         if self.out_indices:
             for i_layer in self.out_indices:
-                layer = build_norm_layer(norm_cfg, embed_dims[(i_layer+1)//2])[1]
+                layer = build_norm_layer(
+                    norm_cfg, embed_dims[(i_layer+1)//2])[1]
                 layer_name = f'norm{i_layer}'
                 self.add_module(layer_name, layer)
         else:
