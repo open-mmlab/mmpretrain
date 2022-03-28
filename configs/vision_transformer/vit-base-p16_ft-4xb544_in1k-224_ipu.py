@@ -18,7 +18,7 @@ model = dict(
         img_size=224,
         init_cfg=dict(
             type='Pretrained',
-            checkpoint='https://download.openmmlab.com/mmclassification/v0/vit/pretrain/vit-base-p16_3rdparty_pt-64xb64_in1k-224_20210928-02284250.pth',
+            checkpoint='https://download.openmmlab.com/mmclassification/v0/vit/pretrain/vit-base-p16_3rdparty_pt-64xb64_in1k-224_20210928-02284250.pth', # noqa
             _delete_=True,
             prefix='backbone'
             )
