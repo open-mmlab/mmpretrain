@@ -57,7 +57,7 @@ Models:
           Top 1 Accuracy: 79.96
           Top 5 Accuracy: 94.96
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/cspnet/cspresnext50_3rdparty_8xb32_in1k_20220328-8eb986cf.pthh
+    Weights: https://download.openmmlab.com/mmclassification/v0/cspnet/cspresnext50_3rdparty_8xb32_in1k_20220328-8eb986cf.pth
     Config: configs/cspnet/cspresnext50_8xb32_in1k.py
     Converted From:
       Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/cspresnext50_ra_224-648b4713.pth

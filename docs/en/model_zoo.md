@@ -132,7 +132,7 @@ The ResNet family models below are trained by standard data augmentations, i.e.,
 | WRN-101\*          | 126.89| 22.81 | 78.84 | 94.28 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/wrn/wide-resnet101_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/wrn/wide-resnet101_3rdparty_8xb32_in1k_20220304-8d5f9d61.pth) |
 | CSPDarkNet50\*  |  27.64 | 5.04 | 80.05 | 95.07  | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/cspnet/cspdarknet50_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/cspnet/cspdarknet50_3rdparty_8xb32_in1k_20220328-338ee213.pth) |
 |  CSPResNet50\*  |  21.62 | 3.48 | 79.55 | 94.68  | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/cspnet/cspresnet50_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/cspnet/cspresnet50_3rdparty_8xb32_in1k_20220328-a65ccae5.pth) |
-|  CSPResNeXt50\* | 20.57 | 3.11 | 79.96 | 94.96 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/cspnet/cspresnext50_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/cspnet/cspresnext50_3rdparty_8xb32_in1k_20220328-8eb986cf.pthh) |
+|  CSPResNeXt50\* | 20.57 | 3.11 | 79.96 | 94.96 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/cspnet/cspresnext50_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/cspnet/cspresnext50_3rdparty_8xb32_in1k_20220328-8eb986cf.pth) |
 
 *Models with \* are converted from other repos, others are trained by ourselves.*
 
