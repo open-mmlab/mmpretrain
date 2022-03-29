@@ -11,6 +11,7 @@ from mmcv.cnn.bricks.transformer import FFN, PatchEmbed, PatchMerging
 from mmcv.cnn.utils.weight_init import trunc_normal_
 from mmcv.runner.base_module import BaseModule, ModuleList
 from mmcv.utils.parrots_wrapper import _BatchNorm
+from scipy import interpolate
 
 from ..builder import BACKBONES
 from ..utils import ShiftWindowMSA, resize_pos_embed, to_2tuple
@@ -351,6 +352,7 @@ class SwinTransformer(BaseBackbone):
                 torch.zeros(1, num_patches, self.embed_dims))
             self._register_load_state_dict_pre_hook(
                 self._prepare_abs_pos_embed)
+        self._register_load_state_dict_pre_hook(self._prepare_rel_pos_embed)
 
         self.drop_after_pos = nn.Dropout(p=drop_rate)
         self.norm_eval = norm_eval
@@ -499,3 +501,63 @@ class SwinTransformer(BaseBackbone):
                                                 pos_embed_shape,
                                                 self.interpolate_mode,
                                                 self.num_extra_tokens)
+
+    def _prepare_rel_pos_embed(self, state_dict, prefix, *args, **kwargs):
+        all_keys = list(state_dict.keys())
+        state_dict_model = self.state_dict()
+        for key in all_keys:
+            if 'relative_position_bias_table' in key:
+                relative_position_bias_table_pretrained = state_dict[key]
+                relative_position_bias_table_current = state_dict_model[key]
+                L1, nH1 = relative_position_bias_table_pretrained.size()
+                L2, nH2 = relative_position_bias_table_current.size()
+                if L1 != L2:
+                    src_size = int(L1**0.5)
+                    dst_size = int(L2**0.5)
+
+                    def geometric_progression(a, r, n):
+                        return a * (1.0 - r**n) / (1.0 - r)
+
+                    left, right = 1.01, 1.5
+                    while right - left > 1e-6:
+                        q = (left + right) / 2.0
+                        gp = geometric_progression(1, q, src_size // 2)
+                        if gp > dst_size // 2:
+                            right = q
+                        else:
+                            left = q
+
+                    dis = []
+                    cur = 1
+                    for i in range(src_size // 2):
+                        dis.append(cur)
+                        cur += q**(i + 1)
+
+                    r_ids = [-_ for _ in reversed(dis)]
+
+                    x = r_ids + [0] + dis
+                    y = r_ids + [0] + dis
+
+                    t = dst_size // 2.0
+                    dx = np.arange(-t, t + 0.1, 1.0)
+                    dy = np.arange(-t, t + 0.1, 1.0)
+
+                    all_rel_pos_bias = []
+
+                    for i in range(nH1):
+                        z = relative_position_bias_table_pretrained[:, i].view(
+                            src_size, src_size).float().numpy()
+                        f_cubic = interpolate.interp2d(x, y, z, kind='cubic')
+                        all_rel_pos_bias.append(
+                            torch.Tensor(f_cubic(dx,
+                                                 dy)).contiguous().view(-1, 1).
+                            to(relative_position_bias_table_pretrained.device))
+
+                    new_rel_pos_bias = torch.cat(all_rel_pos_bias, dim=-1)
+                    state_dict[key] = new_rel_pos_bias
+
+        relative_position_index_keys = [
+            k for k in state_dict.keys() if 'relative_position_index' in k
+        ]
+        for k in relative_position_index_keys:
+            del state_dict[k]
