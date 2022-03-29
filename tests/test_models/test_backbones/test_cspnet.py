@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from copy import deepcopy
+from functools import partial
 from unittest import TestCase
 
 import torch
@@ -11,40 +12,24 @@ from mmcls.models.backbones.cspnet import (CSPNet, DarknetBottleneck,
                                            ResNetBottleneck, ResNeXtBottleneck)
 
 
-class SubCSPNetWithoutArchSetting(CSPNet):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def _make_stem_layer(self, in_channels):
-        pass
-
-
-class SubCSPNetWithArchSetting(CSPNet):
-
-    arch_setting = [[DarknetBottleneck, 32, 64, 1, 2, 2, True, True],
-                    [ResNetBottleneck, 64, 128, 2, 1, 1, True, True],
-                    [ResNeXtBottleneck, 128, 256, 8, 1, 1, True, True]]
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def _make_stem_layer(self, in_channels):
-        pass
-
-
 class TestCSPNet(TestCase):
 
-    def test_subclass(self):
-        # Test without attribute arch_setting.
-        with self.assertRaisesRegex(AssertionError,
-                                    'set arch_setting attribute'):
-            model = SubCSPNetWithoutArchSetting()
+    def setUp(self):
+        self.arch = dict(
+            block_fn=(DarknetBottleneck, ResNetBottleneck, ResNeXtBottleneck),
+            in_channels=(32, 64, 128),
+            out_channels=(64, 128, 256),
+            num_blocks=(1, 2, 8),
+            expand_ratio=(2, 1, 1),
+            bottle_ratio=(3, 1, 1),
+            has_downsampler=True,
+            down_growth=True,
+            block_args=({}, {}, dict(base_channels=32)))
+        self.stem_fn = partial(torch.nn.Conv2d, out_channels=32, kernel_size=3)
 
+    def test_structure(self):
         # Test with attribute arch_setting.
-        model = SubCSPNetWithArchSetting(out_indices=[
-            -1,
-        ])
+        model = CSPNet(arch=self.arch, stem_fn=self.stem_fn, out_indices=[-1])
         self.assertEqual(len(model.stages), 3)
         self.assertEqual(type(model.stages[0].blocks[0]), DarknetBottleneck)
         self.assertEqual(type(model.stages[1].blocks[0]), ResNetBottleneck)
