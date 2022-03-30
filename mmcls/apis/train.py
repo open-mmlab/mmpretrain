@@ -90,10 +90,10 @@ def train_model(model,
         sampler_cfg=cfg.get('sampler', None),
     )
     # The overall dataloader settings
-    loader_cfg = {
+    loader_cfg.update({
         k: v
         for k, v in cfg.data.items() if k not in ['train', 'val', 'test']
-    }
+    })
     # The specific dataloader settings
     train_loader_cfg = {**loader_cfg, **cfg.data.get('train_dataloader', {})}
 

@@ -146,10 +146,10 @@ def main():
         round_up=True,
     )
     # The overall dataloader settings
-    loader_cfg = {
+    loader_cfg.update({
         k: v
         for k, v in cfg.data.items() if k not in ['train', 'val', 'test']
-    }
+    })
     test_loader_cfg = {
         **loader_cfg,
         'shuffle': False,  # Not shuffle by default
