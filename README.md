@@ -127,6 +127,7 @@ Results and models are available in the [model zoo](https://mmclassification.rea
 - [x] [ConvNeXt](https://github.com/open-mmlab/mmclassification/tree/master/configs/convnext)
 - [x] [HRNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/hrnet)
 - [x] [ConvMixer](https://github.com/open-mmlab/mmclassification/tree/master/configs/convmixer)
+- [x] [CSPNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/cspnet)
 
 </details>
 
