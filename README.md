@@ -77,7 +77,7 @@ Please refer to [changelog.md](docs/en/changelog.md) for more details and other 
 
 ## Installation
 
-Below are quick steps for installation.
+Below are quick steps for installation:
 
 ```shell
 conda create -n open-mmlab python=3.8 pytorch=1.10 cudatoolkit=11.3 torchvision -c pytorch -y
