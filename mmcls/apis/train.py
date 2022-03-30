@@ -92,7 +92,10 @@ def train_model(model,
     # The overall dataloader settings
     loader_cfg.update({
         k: v
-        for k, v in cfg.data.items() if k not in ['train', 'val', 'test']
+        for k, v in cfg.data.items() if k not in [
+            'train', 'val', 'test', 'train_dataloader', 'val_dataloader',
+            'test_dataloader'
+        ]
     })
     # The specific dataloader settings
     train_loader_cfg = {**loader_cfg, **cfg.data.get('train_dataloader', {})}
