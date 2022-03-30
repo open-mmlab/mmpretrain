@@ -83,7 +83,7 @@ def train_model(model,
     sampler_cfg = cfg.data.get('sampler', None)
 
     ipu_dataloader = getattr(cfg.runner, 'ipu_dataloader', False)
-    # The overall val dataloader settings
+    # The overall train dataloader settings
     train_loader_cfg = dict(
         samples_per_gpu=cfg.data.samples_per_gpu,
         workers_per_gpu=cfg.data.workers_per_gpu,
