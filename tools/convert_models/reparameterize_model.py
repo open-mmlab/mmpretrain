@@ -5,10 +5,14 @@ from pathlib import Path
 import torch
 
 from mmcls.apis import init_model
+from mmcls.classifiers import ImageClassifier
 
 
-def convert_repvggblock_param(model, save_path):
+def convert_classifier_to_deploy(model, save_path):
     print('Converting...')
+    assert isinstance(model, ImageClassifier), \
+        f'model must be a `mmcls.classifiers.ImageClassifier` instance,' \
+        f' but get a `{model.__class__}` instance'
 
     model.backbone.switch_to_deploy()
     torch.save(model.state_dict(), save_path)
@@ -39,7 +43,7 @@ def main():
     save_path.parent.mkdir(parents=True, exist_ok=True)
 
     model = init_model(args.config_path, checkpoint=args.checkpoint_path)
-    convert_repvggblock_param(model, args.save_path)
+    convert_classifier_to_deploy(model, args.save_path)
 
 
 if __name__ == '__main__':
