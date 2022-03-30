@@ -1,72 +1,106 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os
+import gc
+import pickle
 import warnings
-from typing import List
+from typing import List, Optional, Sequence, Tuple, Union
 
 import numpy as np
-from mmcv.utils import scandir
 
-from .base_dataset import BaseDataset
 from .builder import DATASETS
-from .imagenet import find_folders
-
-
-class ImageInfo():
-    """class to  store image info, using slots will save memory than using
-    dict."""
-    __slots__ = ['path', 'gt_label']
-
-    def __init__(self, path, gt_label):
-        self.path = path
-        self.gt_label = gt_label
+from .custom import CustomDataset
 
 
 @DATASETS.register_module()
-class ImageNet21k(BaseDataset):
+class ImageNet21k(CustomDataset):
     """ImageNet21k Dataset.
 
     Since the dataset ImageNet21k is extremely big, cantains 21k+ classes
     and 1.4B files. This class has improved the following points on the
-    basis of the class ``ImageNet``, in order to save memory usage and time
-    required :
-
-        - Delete the samples attribute
-        - using 'slots' create a Data_item tp replace dict
-        - Modify setting ``info`` dict from function ``load_annotations`` to
-          function ``prepare_data``
-        - using int instead of np.array(..., np.int64)
+    basis of the class ``ImageNet``, in order to save memory, we enable the
+    ``serialize_data`` optional by default. With this option, the annotation
+    won't be stored in the list ``data_infos``, but be serialized as an
+    array.
 
     Args:
-        data_prefix (str): the prefix of data path
-        pipeline (list): a list of dict, where each element represents
-            a operation defined in ``mmcls.datasets.pipelines``
-        ann_file (str | None): the annotation file. When ann_file is str,
-            the subclass is expected to read from the ann_file. When ann_file
-            is None, the subclass is expected to read according to data_prefix
-        test_mode (bool): in train mode or test mode
-        multi_label (bool): use multi label or not.
-        recursion_subdir(bool): whether to use sub-directory pictures, which
-            are meet the conditions in the folder under category directory.
+        data_prefix (str): The path of data directory.
+        pipeline (Sequence[dict]): A list of dict, where each element
+            represents a operation defined in :mod:`mmcls.datasets.pipelines`.
+            Defaults to an empty tuple.
+        classes (str | Sequence[str], optional): Specify names of classes.
+
+            - If is string, it should be a file path, and the every line of
+              the file is a name of a class.
+            - If is a sequence of string, every item is a name of class.
+            - If is None, use ``cls.CLASSES`` or the names of sub folders
+              (If use the second way to arrange samples).
+
+            Defaults to None.
+        ann_file (str, optional): The annotation file. If is string, read
+            samples paths from the ann_file. If is None, find samples in
+            ``data_prefix``. Defaults to None.
+        serialize_data (bool): Whether to hold memory using serialized objects,
+            when enabled, data loader workers can use shared RAM from master
+            process instead of making a copy. Defaults to True.
+        multi_label (bool): Not implement by now. Use multi label or not.
+            Defaults to False.
+        recursion_subdir(bool): Deprecated, and the dataset will recursively
+            get all images now.
+        test_mode (bool): In train mode or test mode. It's only a mark and
+            won't be used in this class. Defaults to False.
+        file_client_args (dict, optional): Arguments to instantiate a
+            FileClient. See :class:`mmcv.fileio.FileClient` for details.
+            If None, automatically inference from the specified path.
+            Defaults to None.
     """
 
-    IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif',
-                      '.JPEG', '.JPG')
+    IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif')
     CLASSES = None
 
     def __init__(self,
-                 data_prefix,
-                 pipeline,
-                 classes=None,
-                 ann_file=None,
-                 multi_label=False,
-                 recursion_subdir=False,
-                 test_mode=False):
-        self.recursion_subdir = recursion_subdir
+                 data_prefix: str,
+                 pipeline: Sequence = (),
+                 classes: Union[str, Sequence[str], None] = None,
+                 ann_file: Optional[str] = None,
+                 serialize_data: bool = True,
+                 multi_label: bool = False,
+                 recursion_subdir: bool = True,
+                 test_mode=False,
+                 file_client_args: Optional[dict] = None):
+        assert recursion_subdir, 'The `recursion_subdir` option is ' \
+            'deprecated. Now the dataset will recursively get all images.'
         if multi_label:
-            raise NotImplementedError('Multi_label have not be implemented.')
-        self.multi_lable = multi_label
-        super(ImageNet21k, self).__init__(data_prefix, pipeline, classes,
-                                          ann_file, test_mode)
+            raise NotImplementedError(
+                'The `multi_label` option is not supported by now.')
+        self.multi_label = multi_label
+        self.serialize_data = serialize_data
+
+        if ann_file is None:
+            warnings.warn(
+                'The ImageNet21k dataset is large, and scanning directory may '
+                'consume long time. Considering to specify the `ann_file` to '
+                'accelerate the initialization.', UserWarning)
+
+        if classes is None:
+            warnings.warn(
+                'The CLASSES is not stored in the `ImageNet21k` class. '
+                'Considering to specify the `classes` argument if you need '
+                'do inference on the ImageNet-21k dataset', UserWarning)
+
+        super().__init__(
+            data_prefix=data_prefix,
+            pipeline=pipeline,
+            classes=classes,
+            ann_file=ann_file,
+            extensions=self.IMG_EXTENSIONS,
+            test_mode=test_mode,
+            file_client_args=file_client_args)
+
+        if self.serialize_data:
+            self.data_infos_bytes, self.data_address = self._serialize_data()
+            # Empty cache for preventing making multiple copies of
+            # `self.data_infos` when loading data multi-processes.
+            self.data_infos.clear()
+            gc.collect()
 
     def get_cat_ids(self, idx: int) -> List[int]:
         """Get category id by index.
@@ -78,77 +112,63 @@ class ImageNet21k(BaseDataset):
             cat_ids (List[int]): Image category of specified index.
         """
 
-        return [self.data_infos[idx].gt_label]
+        return [int(self.get_data_info(idx)['gt_label'])]
+
+    def get_data_info(self, idx: int) -> dict:
+        """Get annotation by index.
+
+        Args:
+            idx (int): The index of data.
+
+        Returns:
+            dict: The idx-th annotation of the dataset.
+        """
+        if self.serialize_data:
+            start_addr = 0 if idx == 0 else self.data_address[idx - 1].item()
+            end_addr = self.data_address[idx].item()
+            bytes = memoryview(self.data_infos_bytes[start_addr:end_addr])
+            data_info = pickle.loads(bytes)
+        else:
+            data_info = self.data_infos[idx]
+
+        return data_info
 
     def prepare_data(self, idx):
-        info = self.data_infos[idx]
-        results = {
-            'img_prefix': self.data_prefix,
-            'img_info': dict(filename=info.path),
-            'gt_label': np.array(info.gt_label, dtype=np.int64)
-        }
-        return self.pipeline(results)
+        data_info = self.get_data_info(idx)
+        return self.pipeline(data_info)
 
-    def load_annotations(self):
-        """load dataset annotations."""
-        if self.ann_file is None:
-            data_infos = self._load_annotations_from_dir()
-        elif isinstance(self.ann_file, str):
-            data_infos = self._load_annotations_from_file()
+    def _serialize_data(self) -> Tuple[np.ndarray, np.ndarray]:
+        """Serialize ``self.data_infos`` to save memory when launching multiple
+        workers in data loading. This function will be called in ``full_init``.
+
+        Hold memory using serialized objects, and data loader workers can use
+        shared RAM from master process instead of making a copy.
+
+        Returns:
+            Tuple[np.ndarray, np.ndarray]: serialize result and corresponding
+            address.
+        """
+
+        def _serialize(data):
+            buffer = pickle.dumps(data, protocol=4)
+            return np.frombuffer(buffer, dtype=np.uint8)
+
+        serialized_data_infos_list = [_serialize(x) for x in self.data_infos]
+        address_list = np.asarray([len(x) for x in serialized_data_infos_list],
+                                  dtype=np.int64)
+        data_address: np.ndarray = np.cumsum(address_list)
+        serialized_data_infos = np.concatenate(serialized_data_infos_list)
+
+        return serialized_data_infos, data_address
+
+    def __len__(self) -> int:
+        """Get the length of filtered dataset and automatically call
+        ``full_init`` if the  dataset has not been fully init.
+
+        Returns:
+            int: The length of filtered dataset.
+        """
+        if self.serialize_data:
+            return len(self.data_address)
         else:
-            raise TypeError('ann_file must be a str or None')
-
-        if len(data_infos) == 0:
-            msg = 'Found no valid file in '
-            msg += f'{self.ann_file}. ' if self.ann_file \
-                else f'{self.data_prefix}. '
-            msg += 'Supported extensions are: ' + \
-                ', '.join(self.IMG_EXTENSIONS)
-            raise RuntimeError(msg)
-
-        return data_infos
-
-    def _find_allowed_files(self, root, folder_name):
-        """find all the allowed files in a folder, including sub folder if
-        recursion_subdir is true."""
-        _dir = os.path.join(root, folder_name)
-        infos_pre_class = []
-        for path in scandir(_dir, self.IMG_EXTENSIONS, self.recursion_subdir):
-            path = os.path.join(folder_name, path)
-            item = ImageInfo(path, self.folder_to_idx[folder_name])
-            infos_pre_class.append(item)
-        return infos_pre_class
-
-    def _load_annotations_from_dir(self):
-        """load annotations from self.data_prefix directory."""
-        data_infos, empty_classes = [], []
-        folder_to_idx = find_folders(self.data_prefix)
-        self.folder_to_idx = folder_to_idx
-        root = os.path.expanduser(self.data_prefix)
-        for folder_name in folder_to_idx.keys():
-            infos_pre_class = self._find_allowed_files(root, folder_name)
-            if len(infos_pre_class) == 0:
-                empty_classes.append(folder_name)
-            data_infos.extend(infos_pre_class)
-
-        if len(empty_classes) != 0:
-            msg = 'Found no valid file for the classes ' + \
-                f"{', '.join(sorted(empty_classes))} "
-            msg += 'Supported extensions are: ' + \
-                f"{', '.join(self.IMG_EXTENSIONS)}."
-            warnings.warn(msg)
-
-        return data_infos
-
-    def _load_annotations_from_file(self):
-        """load annotations from self.ann_file."""
-        data_infos = []
-        with open(self.ann_file) as f:
-            for line in f.readlines():
-                if line == '':
-                    continue
-                filepath, gt_label = line.strip().rsplit(' ', 1)
-                info = ImageInfo(filepath, int(gt_label))
-                data_infos.append(info)
-
-        return data_infos
+            return len(self.data_infos)
