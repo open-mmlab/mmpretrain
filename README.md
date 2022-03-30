@@ -77,7 +77,19 @@ Please refer to [changelog.md](docs/en/changelog.md) for more details and other 
 
 ## Installation
 
-Please refer to [install.md](https://mmclassification.readthedocs.io/en/latest/install.html) for installation and dataset preparation.
+Below are quick steps for installation.
+
+```shell
+conda create -n open-mmlab python=3.8 pytorch=1.10 cudatoolkit=11.3 torchvision -c pytorch -y
+conda activate open-mmlab
+pip3 install openmim
+mim install mmcv-full
+git clone https://github.com/open-mmlab/mmclassification.git
+cd mmclassification
+pip3 install -e .
+```
+
+Please refer to [install.md](https://mmclassification.readthedocs.io/en/latest/install.html) for more detailed installation and dataset preparation.
 
 ## Getting Started
 

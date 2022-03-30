@@ -75,7 +75,19 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 
 ## 安装
 
-请参考 [安装指南](https://mmclassification.readthedocs.io/zh_CN/latest/install.html) 进行安装
+以下是安装的简要步骤：
+
+```shell
+conda create -n open-mmlab python=3.8 pytorch=1.10 cudatoolkit=11.3 torchvision -c pytorch -y
+conda activate open-mmlab
+pip3 install openmim
+mim install mmcv-full
+git clone https://github.com/open-mmlab/mmclassification.git
+cd mmclassification
+pip3 install -e .
+```
+
+更详细的步骤请参考 [安装指南](https://mmclassification.readthedocs.io/zh_CN/latest/install.html) 进行安装。
 
 ## 基础教程
 
