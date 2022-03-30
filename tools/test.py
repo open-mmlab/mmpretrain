@@ -139,19 +139,22 @@ def main():
         init_dist(args.launcher, **cfg.dist_params)
 
     # build the dataloader
-    samples_per_gpu = cfg.data.test.pop('samples_per_gpu',
-                                        cfg.data.samples_per_gpu)
-    workers_per_gpu = cfg.data.test.pop('workers_per_gpu',
-                                        cfg.data.workers_per_gpu)
     dataset = build_dataset(cfg.data.test, default_args=dict(test_mode=True))
-    # the extra round_up data will be removed during gpu/cpu collect
-    data_loader = build_dataloader(
-        dataset,
-        samples_per_gpu=samples_per_gpu,
-        workers_per_gpu=workers_per_gpu,
+
+    # The overall test dataloader settings
+    test_loader_cfg = dict(
+        samples_per_gpu=cfg.data.samples_per_gpu,
+        workers_per_gpu=cfg.data.workers_per_gpu,
+        # cfg.gpus will be ignored if distributed
+        num_gpus=1 if args.device == 'ipu' else len(cfg.gpu_ids),
         dist=distributed,
         shuffle=False,
-        round_up=True)
+        round_up=True,
+        **cfg.data.get('test_dataloader', {})
+    )
+
+    # the extra round_up data will be removed during gpu/cpu collect
+    data_loader = build_dataloader(dataset, **test_loader_cfg)
 
     # build the model and load checkpoint
     model = build_classifier(cfg.model)
