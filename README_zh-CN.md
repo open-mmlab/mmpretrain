@@ -57,29 +57,41 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 
 ## 更新日志
 
+2022/3/30 发布了 v0.22.0 版本
+
+新版本亮点：
+- 支持了一系列 **CSP Net**，包括 CSP-ResNet，CSP-ResNeXt 和 CSP-DarkNet。
+- 我们提供了一个新的 `CustomDataset` 类，这个类将帮助你轻松使用**自己的数据集**！
+- 支持了新的主干网络 **ConvMixer**、**RepMLP** 和一个新的数据集 **CUB dataset**。
+
 2022/3/4 发布了 v0.21.0 版本
 
 新版本亮点：
 - 支持了 **ResNetV1c** 和 **Wide-ResNet** 两个 ResNet 变种，并提供了预训练模型
-- ViT相关模型支持 **动态输入尺寸**。现在我们的 ViT，DeiT，Swin-Transformer 和 T2T-ViT 支持任意尺寸的输入。
+- ViT 相关模型支持 **动态输入尺寸**。现在我们的 ViT，DeiT，Swin-Transformer 和 T2T-ViT 支持任意尺寸的输入。
 - 复现了 DeiT 的训练结果，并且我们的 DeiT-T 和 DeiT-S 拥有比官方权重 **更高的精度**。
-
-2022/1/30 发布了 v0.20.0 版本
-
-新版本亮点：
-- 支持 **K 折交叉验证** 工具。相应文档会在后续添加。
-- 支持了 **HRNet**，**ConvNeXt**，**Twins** 以及 **EfficientNet** 四个主干网络，欢迎使用！
-- 支持了从 PyTorch 模型到 Core-ML 模型的转换工具。
 
 发布历史和更新细节请参考 [更新日志](docs/en/changelog.md)
 
 ## 安装
 
-请参考 [安装指南](https://mmclassification.readthedocs.io/zh_CN/latest/install.html) 进行安装
+以下是安装的简要步骤：
+
+```shell
+conda create -n open-mmlab python=3.8 pytorch=1.10 cudatoolkit=11.3 torchvision -c pytorch -y
+conda activate open-mmlab
+pip3 install openmim
+mim install mmcv-full
+git clone https://github.com/open-mmlab/mmclassification.git
+cd mmclassification
+pip3 install -e .
+```
+
+更详细的步骤请参考 [安装指南](https://mmclassification.readthedocs.io/zh_CN/latest/install.html) 进行安装。
 
 ## 基础教程
 
-请参考 [基础教程](https://mmclassification.readthedocs.io/zh_CN/latest/getting_started.html) 来了解 MMClassification 的基本使用。MMClassification 也提供了其他更详细的教程:
+请参考 [基础教程](https://mmclassification.readthedocs.io/zh_CN/latest/getting_started.html) 来了解 MMClassification 的基本使用。MMClassification 也提供了其他更详细的教程：
 
 - [如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html)
 - [如何微调模型](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/finetune.html)
@@ -124,6 +136,8 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 - [x] [EfficientNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/efficientnet)
 - [x] [ConvNeXt](https://github.com/open-mmlab/mmclassification/tree/master/configs/convnext)
 - [x] [HRNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/hrnet)
+- [x] [ConvMixer](https://github.com/open-mmlab/mmclassification/tree/master/configs/convmixer)
+- [x] [CSPNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/cspnet)
 
 </details>
 

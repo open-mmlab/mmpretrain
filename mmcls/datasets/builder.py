@@ -104,7 +104,8 @@ def build_dataloader(dataset,
         sampler = build_sampler(
             sampler_cfg,
             default_args=dict(
-                dataset=dataset, num_replicas=world_size, rank=rank))
+                dataset=dataset, num_replicas=world_size, rank=rank,
+                seed=seed))
     # Default sampler logic
     elif dist:
         sampler = build_sampler(
@@ -114,7 +115,8 @@ def build_dataloader(dataset,
                 num_replicas=world_size,
                 rank=rank,
                 shuffle=shuffle,
-                round_up=round_up))
+                round_up=round_up,
+                seed=seed))
     else:
         sampler = None
 
@@ -156,6 +158,7 @@ def worker_init_fn(worker_id, num_workers, rank, seed):
     worker_seed = num_workers * rank + worker_id + seed
     np.random.seed(worker_seed)
     random.seed(worker_seed)
+    torch.manual_seed(worker_seed)
 
 
 def build_sampler(cfg, default_args=None):

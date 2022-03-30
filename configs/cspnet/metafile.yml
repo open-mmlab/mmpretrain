@@ -1,0 +1,64 @@
+Collections:
+  - Name: CSPNet
+    Metadata:
+      Training Data: ImageNet-1k
+      Architecture:
+        - Cross Stage Partia Stage
+    Paper:
+      URL: https://arxiv.org/abs/1911.11929
+      Title: 'CSPNet: A New Backbone that can Enhance Learning Capability of CNN'
+    README: configs/cspnet/README.md
+    Code:
+      Version: v0.22.0
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.22.0/mmcls/models/backbones/cspnet.py
+
+Models:
+  - Name: cspdarknet50_3rdparty_8xb32_in1k
+    Metadata:
+      FLOPs: 5040000000
+      Parameters: 27640000
+    In Collections: CSPNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 80.05
+          Top 5 Accuracy: 95.07
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/cspnet/cspdarknet50_3rdparty_8xb32_in1k_20220329-bd275287.pth
+    Config: configs/cspnet/cspdarknet50_8xb32_in1k.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/cspdarknet53_ra_256-d05c7c21.pth
+      Code: https://github.com/rwightman/pytorch-image-models
+  - Name: cspresnet50_3rdparty_8xb32_in1k
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 3480000000
+      Parameters: 21620000
+    In Collections: CSPNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 79.55
+          Top 5 Accuracy: 94.68
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/cspnet/cspresnet50_3rdparty_8xb32_in1k_20220329-dd6dddfb.pth
+    Config: configs/cspnet/cspresnet50_8xb32_in1k.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/cspresnet50_ra-d3e8d487.pth
+      Code: https://github.com/rwightman/pytorch-image-models
+  - Name: cspresnext50_3rdparty_8xb32_in1k
+    Metadata:
+      FLOPs: 3110000000
+      Parameters: 20570000
+    In Collections: CSPNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 79.96
+          Top 5 Accuracy: 94.96
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/cspnet/cspresnext50_3rdparty_8xb32_in1k_20220329-2cc84d21.pth
+    Config: configs/cspnet/cspresnext50_8xb32_in1k.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/cspresnext50_ra_224-648b4713.pth
+      Code: https://github.com/rwightman/pytorch-image-models
