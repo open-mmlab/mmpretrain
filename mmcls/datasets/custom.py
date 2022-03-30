@@ -95,13 +95,16 @@ class CustomDataset(BaseDataset):
                ├── nsdf3.png
                └── ...
 
-       The annotation file: ::
+       The annotation file (the first column is the image path and the second
+       column is the index of category): ::
 
             folder_1/xxx.png 0
             folder_1/xxy.png 1
             folder_2/123.png 5
             folder_2/nsdf3.png 3
             ...
+
+       Please specify the name of categories by the argument ``classes``.
 
     2. The samples are arranged in the specific way: ::
 
@@ -156,7 +159,7 @@ class CustomDataset(BaseDataset):
                                               '.bmp', '.pgm', '.tif'),
                  test_mode: bool = False,
                  file_client_args: Optional[dict] = None):
-        self.extensions = extensions
+        self.extensions = tuple(set([i.lower() for i in extensions]))
         self.file_client_args = file_client_args
 
         super().__init__(
