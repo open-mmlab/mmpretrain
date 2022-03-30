@@ -59,19 +59,19 @@ The master branch works with **PyTorch 1.5+**.
 
 ## What's new
 
+v0.22.0 was released in 30/3/2022.
+
+Highlights of the new version:
+- Support a series of **CSP Network**, such as CSP-ResNet, CSP-ResNeXt and CSP-DarkNet.
+- A new `CustomDataset` class to help you **build dataset of yourself**!
+- Support new backbones - **ConvMixer**, **RepMLP** and new dataset - **CUB dataset**.
+
 v0.21.0 was released in 4/3/2022.
 
 Highlights of the new version:
 - Support **ResNetV1c** and **Wide-ResNet**, and provide pre-trained models.
 - Support **dynamic input shape** for ViT-based algorithms. Now our ViT, DeiT, Swin-Transformer and T2T-ViT support forwarding with any input shape.
 - Reproduce training results of DeiT. And our DeiT-T and DeiT-S have **higher accuracy** comparing with the official weights.
-
-v0.20.0 was released in 30/1/2022.
-
-Highlights of the new version:
-- Support **K-fold cross-validation**. The tutorial will be released later.
-- Support **HRNet**, **ConvNeXt**, **Twins** and **EfficientNet**.
-- Support model conversion from PyTorch to **Core ML** by a tool.
 
 Please refer to [changelog.md](docs/en/changelog.md) for more details and other release history.
 
