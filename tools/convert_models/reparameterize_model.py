@@ -1,28 +1,19 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
-import warnings
 from pathlib import Path
 
 import torch
 
 from mmcls.apis import init_model
-
-bright_style, reset_style = '\x1b[1m', '\x1b[0m'
-red_text, blue_text = '\x1b[31m', '\x1b[34m'
-white_background = '\x1b[107m'
-
-msg = bright_style + red_text
-msg += 'DeprecationWarning: This tool will be deprecated in future. '
-msg += red_text + 'Welcome to use the '
-msg += white_background
-msg += '"tools/convert_models/reparameterize_model.py"'
-msg += reset_style
-warnings.warn(msg)
+from mmcls.models.classifiers import ImageClassifier
 
 
-def convert_repvggblock_param(config_path, checkpoint_path, save_path):
-    model = init_model(config_path, checkpoint=checkpoint_path)
+def convert_classifier_to_deploy(model, save_path):
     print('Converting...')
+    assert hasattr(model, 'backbone') and \
+        hasattr(model.backbone, 'switch_to_deploy'), \
+        '`model.backbone` must has method of "switch_to_deploy".' \
+        f' But {model.backbone.__class__} does not have.'
 
     model.backbone.switch_to_deploy()
     torch.save(model.state_dict(), save_path)
@@ -49,11 +40,15 @@ def main():
     save_path = Path(args.save_path)
     if save_path.suffix != '.pth':
         print('The path should contain the name of the pth format file.')
-        exit(1)
+        exit()
     save_path.parent.mkdir(parents=True, exist_ok=True)
 
-    convert_repvggblock_param(args.config_path, args.checkpoint_path,
-                              args.save_path)
+    model = init_model(
+        args.config_path, checkpoint=args.checkpoint_path, device='cpu')
+    assert isinstance(model, ImageClassifier), \
+        '`model` must be a `mmcls.classifiers.ImageClassifier` instance.'
+
+    convert_classifier_to_deploy(model, args.save_path)
 
 
 if __name__ == '__main__':

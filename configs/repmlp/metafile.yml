@@ -1,0 +1,48 @@
+Collections:
+  - Name: RepMLP
+    Metadata:
+      Training Data: ImageNet-1k
+      Architecture:
+        - Multi-layer Perceptron
+        - Re-parameterization Convolution
+    Paper:
+      URL: https://arxiv.org/abs/2105.01883
+      Title: 'RepMLP: Re-parameterizing Convolutions into Fully-connected Layers for Image Recognition'
+    README: configs/repmlp/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.21.0/mmcls/models/backbones/repmlp.py
+      Version: v0.21.0
+
+Models:
+  - Name: repmlp-base_3rdparty_8xb64_in1k
+    In Collection: RepMLP
+    Config: configs/repmlp/repmlp-base_8xb64_in1k.py
+    Metadata:
+      FLOPs: 6710000000  # 6.71 G
+      Parameters: 68240000  # 68.24 M
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 80.41
+          Top 5 Accuracy: 95.14
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/repmlp/repmlp-base_3rdparty_8xb64_in1k_20220330-1cb1f11b.pth
+    Converted From:
+      Weights: https://github.com/DingXiaoH/RepMLP
+      Code: https://github.com/DingXiaoH/RepMLP/blob/072d8516beba83d75dfe6ebb12f625abad4b53d5/repmlpnet.py#L274
+  - Name: repmlp-base_3rdparty_8xb64_in1k-256px.py
+    In Collection: RepMLP
+    Config: configs/repmlp/repmlp-base_8xb64_in1k-256px.py
+    Metadata:
+      FLOPs: 9690000000  # 9.69 G
+      Parameters: 96450000  # 96.45M
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 81.11
+          Top 5 Accuracy: 95.50
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/repmlp/repmlp-base_3rdparty_8xb64_in1k-256px_20220330-7c5a91ce.pth
+    Converted From:
+      Weights: https://github.com/DingXiaoH/RepMLP
+      Code: https://github.com/DingXiaoH/RepMLP/blob/072d8516beba83d75dfe6ebb12f625abad4b53d5/repmlpnet.py#L278

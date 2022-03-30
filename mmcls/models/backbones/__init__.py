@@ -12,6 +12,7 @@ from .mlp_mixer import MlpMixer
 from .mobilenet_v2 import MobileNetV2
 from .mobilenet_v3 import MobileNetV3
 from .regnet import RegNet
+from .repmlp import RepMLPNet
 from .repvgg import RepVGG
 from .res2net import Res2Net
 from .resnest import ResNeSt
@@ -37,5 +38,5 @@ __all__ = [
     'SwinTransformer', 'TNT', 'TIMMBackbone', 'T2T_ViT', 'Res2Net', 'RepVGG',
     'Conformer', 'MlpMixer', 'DistilledVisionTransformer', 'PCPVT', 'SVT',
     'EfficientNet', 'ConvNeXt', 'HRNet', 'ResNetV1c', 'ConvMixer',
-    'CSPDarkNet', 'CSPResNet', 'CSPResNeXt', 'CSPNet'
+    'CSPDarkNet', 'CSPResNet', 'CSPResNeXt', 'CSPNet', 'RepMLPNet'
 ]
