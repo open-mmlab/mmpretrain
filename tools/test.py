@@ -15,7 +15,7 @@ from mmcv.runner import (get_dist_info, init_dist, load_checkpoint,
 from mmcls.apis import multi_gpu_test, single_gpu_test
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.models import build_classifier
-from mmcls.utils import setup_multi_processes
+from mmcls.utils import get_root_logger, setup_multi_processes
 
 
 def parse_args():
@@ -118,7 +118,6 @@ def main():
     if cfg.get('cudnn_benchmark', False):
         torch.backends.cudnn.benchmark = True
     cfg.model.pretrained = None
-    cfg.data.test.test_mode = True
 
     if args.gpu_ids is not None:
         cfg.gpu_ids = args.gpu_ids[0:1]
@@ -137,7 +136,7 @@ def main():
         init_dist(args.launcher, **cfg.dist_params)
 
     # build the dataloader
-    dataset = build_dataset(cfg.data.test)
+    dataset = build_dataset(cfg.data.test, default_args=dict(test_mode=True))
     # the extra round_up data will be removed during gpu/cpu collect
     data_loader = build_dataloader(
         dataset,
@@ -187,9 +186,13 @@ def main():
     rank, _ = get_dist_info()
     if rank == 0:
         results = {}
+        logger = get_root_logger()
         if args.metrics:
-            eval_results = dataset.evaluate(outputs, args.metrics,
-                                            args.metric_options)
+            eval_results = dataset.evaluate(
+                results=outputs,
+                metric=args.metrics,
+                metric_options=args.metric_options,
+                logger=logger)
             results.update(eval_results)
             for k, v in eval_results.items():
                 if isinstance(v, np.ndarray):

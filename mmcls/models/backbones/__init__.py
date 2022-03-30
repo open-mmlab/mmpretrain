@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from .alexnet import AlexNet
 from .conformer import Conformer
+from .convmixer import ConvMixer
 from .convnext import ConvNeXt
 from .deit import DistilledVisionTransformer
 from .efficientnet import EfficientNet
@@ -35,5 +36,5 @@ __all__ = [
     'ShuffleNetV2', 'MobileNetV2', 'MobileNetV3', 'VisionTransformer',
     'SwinTransformer', 'TNT', 'TIMMBackbone', 'T2T_ViT', 'Res2Net', 'RepVGG',
     'Conformer', 'MlpMixer', 'DistilledVisionTransformer', 'PCPVT', 'SVT',
-    'EfficientNet', 'ConvNeXt', 'HRNet', 'ResNetV1c', 'RepMLPNet'
+    'EfficientNet', 'ConvNeXt', 'HRNet', 'ResNetV1c', 'ConvMixer', 'RepMLPNet'
 ]
