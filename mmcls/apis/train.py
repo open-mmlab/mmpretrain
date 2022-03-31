@@ -80,23 +80,25 @@ def train_model(model,
     # prepare data loaders
     dataset = dataset if isinstance(dataset, (list, tuple)) else [dataset]
 
-    sampler_cfg = cfg.data.get('sampler', None)
-
-    ipu_dataloader = getattr(cfg.runner, 'ipu_dataloader', False)
-    # The overall train dataloader settings
-    train_loader_cfg = dict(
-        samples_per_gpu=cfg.data.samples_per_gpu,
-        workers_per_gpu=cfg.data.workers_per_gpu,
+    # The default loader config
+    loader_cfg = dict(
         # cfg.gpus will be ignored if distributed
         num_gpus=cfg.ipu_replicas if device == 'ipu' else len(cfg.gpu_ids),
         dist=distributed,
-        ipu_dataloader=ipu_dataloader,
         round_up=True,
-        seed=cfg.seed,
-        drop_last=cfg.data.pop('drop_last', False),
-        sampler_cfg=sampler_cfg,
-        **cfg.data.get('train_dataloader', {})
+        seed=cfg.get('seed'),
+        sampler_cfg=cfg.get('sampler', None),
     )
+    # The overall dataloader settings
+    loader_cfg.update({
+        k: v
+        for k, v in cfg.data.items() if k not in [
+            'train', 'val', 'test', 'train_dataloader', 'val_dataloader',
+            'test_dataloader'
+        ]
+    })
+    # The specific dataloader settings
+    train_loader_cfg = {**loader_cfg, **cfg.data.get('train_dataloader', {})}
 
     data_loaders = [build_dataloader(ds, **train_loader_cfg) for ds in dataset]
 
@@ -193,19 +195,14 @@ def train_model(model,
     # register eval hooks
     if validate:
         val_dataset = build_dataset(cfg.data.val, dict(test_mode=True))
-        # The overall val dataloader settings
-        val_loader_cfg = dict(
-            samples_per_gpu=cfg.data.samples_per_gpu,
-            workers_per_gpu=cfg.data.workers_per_gpu,
-            # cfg.gpus will be ignored if distributed
-            num_gpus=cfg.ipu_replicas if device == 'ipu' else len(cfg.gpu_ids),
-            dist=distributed,
-            shuffle=False,
-            round_up=True,
-            **cfg.data.get('val_dataloader', {})
-        )
+        # The specific dataloader settings
+        val_loader_cfg = {
+            **loader_cfg,
+            'shuffle': False,  # Not shuffle by default
+            'sampler_cfg': None,  # Not use sampler by default
+            **cfg.data.get('val_dataloader', {}),
+        }
         val_dataloader = build_dataloader(val_dataset, **val_loader_cfg)
-
         eval_cfg = cfg.get('evaluation', {})
         eval_cfg['by_epoch'] = cfg.runner['type'] != 'IterBasedRunner'
         eval_hook = DistEvalHook if distributed else EvalHook

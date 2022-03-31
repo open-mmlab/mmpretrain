@@ -8,7 +8,7 @@ import numpy as np
 import torch
 from mmcv.parallel import collate
 from mmcv.runner import get_dist_info
-from mmcv.utils import Registry, build_from_cfg, digit_version
+from mmcv.utils import Registry, build_from_cfg, digit_version, IPU_MODE
 from torch.utils.data import DataLoader
 
 if platform.system() != 'Windows':
@@ -63,7 +63,6 @@ def build_dataloader(dataset,
                      pin_memory=True,
                      persistent_workers=True,
                      sampler_cfg=None,
-                     ipu_dataloader=False,
                      **kwargs):
     """Build PyTorch DataLoader.
 
@@ -136,9 +135,7 @@ def build_dataloader(dataset,
 
     if digit_version(torch.__version__) >= digit_version('1.8.0'):
         kwargs['persistent_workers'] = persistent_workers
-    if ipu_dataloader:
-        from mmcv.utils import IPU_MODE
-        assert IPU_MODE, 'no IPU environment detected'
+    if IPU_MODE:
         from mmcv.runner.ipu import IPUDataloader
         data_loader = IPUDataloader(None,
                                     dataset,

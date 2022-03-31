@@ -55,14 +55,15 @@ data = dict(
     workers_per_gpu=16,
     drop_last=True,
     train=dict(pipeline=train_pipeline),
-    val=dict(
-        pipeline=test_pipeline,
+    train_dataloader=dict(mode='async'),
+    val=dict(pipeline=test_pipeline,),
+    val_dataloader=dict(
         samples_per_gpu=4,
-        workers_per_gpu=1,),
-    test=dict(
-        pipeline=test_pipeline,
+        workers_per_gpu=1),
+    test=dict(pipeline=test_pipeline),
+    test_dataloader=dict(
         samples_per_gpu=4,
-        workers_per_gpu=1),)
+        workers_per_gpu=1))
 
 # remove clip-norm
 optimizer_config = dict()
@@ -119,8 +120,7 @@ runner = dict(
     type='IterBasedRunner',
     ipu_model_cfg=ipu_model_cfg,
     ipu_options=ipu_options,
-    max_iters=5000,
-    ipu_dataloader=True)
+    max_iters=5000)
 
 checkpoint_config = dict(interval=1000)
 

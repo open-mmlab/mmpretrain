@@ -138,21 +138,29 @@ def main():
         distributed = True
         init_dist(args.launcher, **cfg.dist_params)
 
-    # build the dataloader
     dataset = build_dataset(cfg.data.test, default_args=dict(test_mode=True))
 
-    # The overall test dataloader settings
-    test_loader_cfg = dict(
-        samples_per_gpu=cfg.data.samples_per_gpu,
-        workers_per_gpu=cfg.data.workers_per_gpu,
+    # build the dataloader
+    # The default loader config
+    loader_cfg = dict(
         # cfg.gpus will be ignored if distributed
         num_gpus=1 if args.device == 'ipu' else len(cfg.gpu_ids),
-        dist=distributed,
-        shuffle=False,
         round_up=True,
-        **cfg.data.get('test_dataloader', {})
     )
-
+    # The overall dataloader settings
+    loader_cfg.update({
+        k: v
+        for k, v in cfg.data.items() if k not in [
+            'train', 'val', 'test', 'train_dataloader', 'val_dataloader',
+            'test_dataloader'
+        ]
+    })
+    test_loader_cfg = {
+        **loader_cfg,
+        'shuffle': False,  # Not shuffle by default
+        'sampler_cfg': None,  # Not use sampler by default
+        **cfg.data.get('test_dataloader', {}),
+    }
     # the extra round_up data will be removed during gpu/cpu collect
     data_loader = build_dataloader(dataset, **test_loader_cfg)
 
@@ -182,6 +190,7 @@ def main():
             if fp16_cfg is not None:
                 model.half()
             model = ipu_model_wrapper(model, opts, fp16_cfg=fp16_cfg)
+            data_loader.init(opts['inference'])
         else:
             model = MMDataParallel(model, device_ids=cfg.gpu_ids)
             if not model.device_ids:
