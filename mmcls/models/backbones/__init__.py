@@ -15,6 +15,7 @@ from .regnet import RegNet
 from .repmlp import RepMLPNet
 from .repvgg import RepVGG
 from .res2net import Res2Net
+from .resizer import LearnableResizer
 from .resnest import ResNeSt
 from .resnet import ResNet, ResNetV1c, ResNetV1d
 from .resnet_cifar import ResNet_CIFAR
@@ -38,5 +39,6 @@ __all__ = [
     'SwinTransformer', 'TNT', 'TIMMBackbone', 'T2T_ViT', 'Res2Net', 'RepVGG',
     'Conformer', 'MlpMixer', 'DistilledVisionTransformer', 'PCPVT', 'SVT',
     'EfficientNet', 'ConvNeXt', 'HRNet', 'ResNetV1c', 'ConvMixer',
-    'CSPDarkNet', 'CSPResNet', 'CSPResNeXt', 'CSPNet', 'RepMLPNet'
+    'CSPDarkNet', 'CSPResNet', 'CSPResNeXt', 'CSPNet', 'RepMLPNet',
+    'LearnableResizer'
 ]
