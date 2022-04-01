@@ -12,7 +12,8 @@ class BaseMixupLayer(object, metaclass=ABCMeta):
     """Base class for MixupLayer.
 
     Args:
-        alpha (float): Parameters for Beta distribution.
+        alpha (float): Parameters for Beta distribution to generate the
+            mixing ratio. It should be a positive number.
         num_classes (int): The number of classes.
         prob (float): MixUp probability. It should be in range [0, 1].
             Default to 1.0
@@ -36,7 +37,29 @@ class BaseMixupLayer(object, metaclass=ABCMeta):
 
 @AUGMENT.register_module(name='BatchMixup')
 class BatchMixupLayer(BaseMixupLayer):
-    """Mixup layer for batch mixup."""
+    r"""Mixup layer for a batch of data.
+
+    Mixup is a method to reduces the memorization of corrupt labels and
+    increases the robustness to adversarial examples. It's
+    proposed in `mixup: Beyond Empirical Risk Minimization
+    <https://arxiv.org/abs/1710.09412>`
+
+    This method simply linearly mix pairs of data and their labels.
+
+    Args:
+        alpha (float): Parameters for Beta distribution to generate the
+            mixing ratio. It should be a positive number. More details
+            are in the note.
+        num_classes (int): The number of classes.
+        prob (float): The probability to execute mixup. It should be in
+            range [0, 1]. Default sto 1.0.
+
+    Note:
+        The :math:`\alpha` (``alpha``) determines a random distribution
+        :math:`Beta(\alpha, \alpha)`. For each batch of data, we sample
+        a mixing ratio (marked as :math:`\lambda`, ``lam``) from the random
+        distribution.
+    """
 
     def __init__(self, *args, **kwargs):
         super(BatchMixupLayer, self).__init__(*args, **kwargs)
