@@ -1,6 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
+import os.path as osp
 from abc import ABCMeta, abstractmethod
+from os import PathLike
 from typing import List
 
 import mmcv
@@ -10,6 +12,13 @@ from torch.utils.data import Dataset
 from mmcls.core.evaluation import precision_recall_f1, support
 from mmcls.models.losses import accuracy
 from .pipelines import Compose
+
+
+def expanduser(path):
+    if isinstance(path, (str, PathLike)):
+        return osp.expanduser(path)
+    else:
+        return path
 
 
 class BaseDataset(Dataset, metaclass=ABCMeta):
@@ -34,11 +43,11 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
                  ann_file=None,
                  test_mode=False):
         super(BaseDataset, self).__init__()
-        self.ann_file = ann_file
-        self.data_prefix = data_prefix
-        self.test_mode = test_mode
+        self.data_prefix = expanduser(data_prefix)
         self.pipeline = Compose(pipeline)
         self.CLASSES = self.get_classes(classes)
+        self.ann_file = expanduser(ann_file)
+        self.test_mode = test_mode
         self.data_infos = self.load_annotations()
 
     @abstractmethod
@@ -106,7 +115,7 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
 
         if isinstance(classes, str):
             # take it as a file path
-            class_names = mmcv.list_from_file(classes)
+            class_names = mmcv.list_from_file(expanduser(classes))
         elif isinstance(classes, (tuple, list)):
             class_names = classes
         else:

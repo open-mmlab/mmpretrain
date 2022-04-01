@@ -104,7 +104,8 @@ def build_dataloader(dataset,
         sampler = build_sampler(
             sampler_cfg,
             default_args=dict(
-                dataset=dataset, num_replicas=world_size, rank=rank))
+                dataset=dataset, num_replicas=world_size, rank=rank,
+                seed=seed))
     # Default sampler logic
     elif dist:
         sampler = build_sampler(
@@ -114,7 +115,8 @@ def build_dataloader(dataset,
                 num_replicas=world_size,
                 rank=rank,
                 shuffle=shuffle,
-                round_up=round_up))
+                round_up=round_up,
+                seed=seed))
     else:
         sampler = None
 

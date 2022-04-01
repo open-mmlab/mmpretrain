@@ -10,8 +10,9 @@ MMClassification 和 MMCV 的适配关系如下，请安装正确版本的 MMCV 
 
 | MMClassification 版本 |       MMCV 版本       |
 |:---------------------:|:---------------------:|
-|        dev            | mmcv>=1.4.6, <=1.5.0  |
-|        0.21.0 (master)| mmcv>=1.4.2, <=1.5.0  |
+|        dev            | mmcv>=1.4.8, <=1.5.0  |
+|        0.22.0 (master)| mmcv>=1.4.2, <=1.5.0  |
+|        0.21.0         | mmcv>=1.4.2, <=1.5.0  |
 |        0.20.1         | mmcv>=1.4.2, <=1.5.0  |
 |        0.19.0         | mmcv>=1.3.16, <=1.5.0 |
 |        0.18.0         | mmcv>=1.3.16, <=1.5.0 |
@@ -109,7 +110,7 @@ MMClassification 和 MMCV 的适配关系如下，请安装正确版本的 MMCV 
    cd mmclassification
    ```
 
-2. [可选] 签出到 `dev` 分支
+2. 【可选】 签出到 `dev` 分支
 
    ```shell
    git checkout dev

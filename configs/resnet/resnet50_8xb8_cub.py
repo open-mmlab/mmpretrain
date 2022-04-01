@@ -4,7 +4,7 @@ _base_ = [
 ]
 
 # use pre-train weight converted from https://github.com/Alibaba-MIIL/ImageNet21K # noqa
-checkpoint = 'https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_mill_3rdparty_in21k_20220307-bdb3a68b.pth'  # noqa
+checkpoint = 'https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_3rdparty-mill_in21k_20220331-faac000b.pth'  # noqa
 
 model = dict(
     type='ImageClassifier',

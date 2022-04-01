@@ -91,7 +91,7 @@ def parse_args():
         choices=['none', 'pytorch', 'slurm', 'mpi'],
         default='none',
         help='job launcher')
-    parser.add_argument('--local_rank', type=int, default=0)
+    parser.add_argument('--local-rank', type=int, default=0)
     parser.add_argument(
         '--device',
         choices=['cpu', 'cuda', 'ipu'],
@@ -144,7 +144,12 @@ def main():
     # The default loader config
     loader_cfg = dict(
         # cfg.gpus will be ignored if distributed
+<<<<<<< HEAD
         num_gpus=1 if args.device == 'ipu' else len(cfg.gpu_ids),
+=======
+        num_gpus=len(cfg.gpu_ids),
+        dist=distributed,
+>>>>>>> dev
         round_up=True,
     )
     # The overall dataloader settings
