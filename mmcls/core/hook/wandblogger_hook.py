@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import warnings
 
+import numpy as np
 from mmcv.runner import HOOKS
 from mmcv.runner.dist_utils import master_only
 from mmcv.runner.hooks.checkpoint import CheckpointHook
@@ -23,6 +24,8 @@ class MMClsWandbHook(WandbLoggerHook):
 
         self.log_checkpoint = log_checkpoint
         self.log_checkpoint_metadata = log_checkpoint_metadata
+        self.num_eval_images = num_eval_images
+        self.log_evaluation = True
 
     @master_only
     def before_run(self, runner):
@@ -48,10 +51,20 @@ class MMClsWandbHook(WandbLoggerHook):
             self.val_dataset = self.val_dataloader.dataset
         except AttributeError:
             self.log_checkpoint_metadata = False
-            self.log_eval_metrics = False
             warnings.warn(
                 'To log num_eval_images turn validate '
                 'to True in train_detector.', UserWarning)
+
+        # If num_eval_images is greater than zero, create
+        # and log W&B table for validation data.
+        if self.num_eval_images > 0:
+            # Initialize data table
+            self._init_data_table()
+            # Add data to the table
+            self._add_ground_truth()
+            # Log ground truth data
+            if self.log_evaluation:
+                self._log_data_table()
 
     @master_only
     def after_train_epoch(self, runner):
@@ -63,9 +76,7 @@ class MMClsWandbHook(WandbLoggerHook):
                         self.ckpt_hook.save_last
                         and self.is_last_epoch(runner)):
                     if self.log_checkpoint_metadata and self.eval_hook:
-                        print('GET METADATA')
                         metadata = self._get_ckpt_metadata(runner)
-                        print(metadata)
                         aliases = [f'epoch_{runner.epoch+1}', 'latest']
                         self._log_ckpt_as_artifact(self.ckpt_hook.out_dir,
                                                    runner.epoch, aliases,
@@ -74,6 +85,17 @@ class MMClsWandbHook(WandbLoggerHook):
                         aliases = [f'epoch_{runner.epoch+1}', 'latest']
                         self._log_ckpt_as_artifact(self.ckpt_hook.out_dir,
                                                    runner.epoch, aliases)
+
+        if self.num_eval_images > 0 and self.log_evaluation:
+            if self.eval_hook.by_epoch and self.eval_hook._should_evaluate(
+                    runner):
+                results = self.eval_hook.results
+                # Initialize evaluation table
+                self._init_pred_table()
+                # Log predictions
+                self._log_predictions(results, runner.epoch + 1)
+                # Log the table
+                self._log_eval_table()
 
     @master_only
     def after_run(self, runner):
@@ -118,3 +140,88 @@ class MMClsWandbHook(WandbLoggerHook):
             results, logger='silent', **self.eval_hook.eval_kwargs)
         metadata = dict(epoch=runner.epoch + 1, **eval_results)
         return metadata
+
+    def _init_data_table(self):
+        """Initialize the W&B Tables for validation data."""
+        columns = ['image_name', 'image']
+        self.data_table = self.wandb.Table(columns=columns)
+
+    def _init_pred_table(self):
+        """Initialize the W&B Tables for model evaluation."""
+        columns = ['epoch', 'image_name', 'ground_truth', 'prediction'] + list(
+            self.class_id_to_label.values())
+        self.eval_table = self.wandb.Table(columns=columns)
+
+    def _add_ground_truth(self):
+        # Get image loading pipeline
+        from mmcls.datasets.pipelines import LoadImageFromFile
+        transforms = self.val_dataset.pipeline.transforms
+        for transform in transforms:
+            if isinstance(transform, LoadImageFromFile):
+                img_loader = transform
+        if 'img_loader' not in locals():
+            warnings.warn(
+                'LoadImageFromFile is required to add images '
+                'to W&B Tables.', UserWarning)
+            self.log_evaluation = False
+
+        # Determine the number of samples to be logged.
+        num_total_images = len(self.val_dataset)
+        if self.num_eval_images > num_total_images:
+            warnings.warn(
+                'The num_eval_images is greater than the total number '
+                'of validation samples. The complete validation set '
+                'will be logged.', UserWarning)
+        self.num_eval_images = min(self.num_eval_images, num_total_images)
+
+        classes = self.val_dataset.CLASSES
+        self.class_id_to_label = {id: name for id, name in enumerate(classes)}
+        img_prefix = self.val_dataset.data_prefix
+
+        for idx in range(self.num_eval_images):
+            img_info = self.val_dataset.data_infos[idx]
+            img_meta = img_loader(img_info)
+
+            # Get image and convert from BGR to RGB
+            image = img_meta['img'][..., ::-1]
+            image_name = img_info['filename']
+
+            self.data_table.add_data(image_name, self.wandb.Image(image))
+
+    def _log_predictions(self, results, epoch):
+        table_idxs = self.data_table_ref.get_index()
+        assert len(table_idxs) == self.num_eval_images
+
+        for ndx in table_idxs:
+            result = results[ndx]
+
+            self.eval_table.add_data(epoch, self.data_table_ref.data[ndx][0],
+                                     self.data_table_ref.data[ndx][1],
+                                     self.class_id_to_label[np.argmax(result)],
+                                     *tuple(result))
+
+    def _log_data_table(self):
+        """Log the W&B Tables for validation data as artifact and calls
+        `use_artifact` on it so that the evaluation table can use the reference
+        of already uploaded images.
+
+        This allows the data to be uploaded just once.
+        """
+        data_artifact = self.wandb.Artifact('val', type='dataset')
+        data_artifact.add(self.data_table, 'val_data')
+
+        self.wandb.run.use_artifact(data_artifact)
+        data_artifact.wait()
+
+        self.data_table_ref = data_artifact.get('val_data')
+
+    def _log_eval_table(self):
+        """Log the W&B Tables for model evaluation.
+
+        The table will be logged multiple times creating new version. Use this
+        to compare models at different intervals interactively.
+        """
+        pred_artifact = self.wandb.Artifact(
+            f'run_{self.wandb.run.id}_pred', type='evaluation')
+        pred_artifact.add(self.eval_table, 'eval_data')
+        self.wandb.run.log_artifact(pred_artifact)
