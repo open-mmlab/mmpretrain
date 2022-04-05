@@ -11,7 +11,69 @@ from mmcv.runner.hooks.logger.wandb import WandbLoggerHook
 
 @HOOKS.register_module()
 class MMClsWandbHook(WandbLoggerHook):
-    """DOCS."""
+    """MMClsWandbHook logs metrics, saves model checkpoints as W&B Artifact,
+    and logs model prediction as interactive W&B Tables.
+
+    - Metrics: The `MMClsWandbHook` will automatically log training
+        and validation metrics.
+
+    - Checkpointing: If `log_checkpoint` is True, the checkpoint saved at
+        every checkpoint interval will be saved as W&B Artifacts.
+        This depends on the `CheckpointHook` whose priority is more
+        than `MMClsWandbHook`. Please refer to
+        https://docs.wandb.ai/guides/artifacts/model-versioning
+        to learn more about model versioning with W&B Artifacts.
+
+    - Checkpoint Metadata: If `log_checkpoint_metadata` is True, every
+        checkpoint artifact will have a metadata associated with it.
+        The metadata contains the evaluation metrics computed on validation
+        data with that checkpoint along with the current epoch.
+        It depends on `EvalHook` whose priority is more
+        than MMClsWandbHook.
+
+    - Evaluation: At every evaluation interval, the `MMClsWandbHook` logs the
+        model prediction as interactive W&B Tables. The number of samples
+        logged is given by `num_eval_images`. Currently, the `MMClsWandbHook`
+        logs the predicted bounding boxes along with the ground truth at every
+        evaluation interval. This depends on the `EvalHook` whose priority is
+        more than `MMClsWandbHook`. Also note that the data is just logged once
+        and subsequent evaluation tables uses reference to the logged data
+        to save memory usage. Please refer to
+        https://docs.wandb.ai/guides/data-vis to learn more about W&B Tables.
+    ```
+    Example:
+        log_config = dict(
+            interval=10,
+            hooks=[
+                dict(type='MMClsWandbHook',
+                     init_kwargs={
+                         'entity': WANDB_ENTITY,
+                         'project': WANDB_PROJECT_NAME
+                     },
+                     interval=10,
+                     log_checkpoint=True,
+                     log_checkpoint_metadata=True,
+                     num_eval_images=100)
+            ])
+    ```
+
+    Args:
+        init_kwargs (dict): A dict passed to wandb.init to initialize
+            a W&B run. Please refer to https://docs.wandb.ai/ref/python/init
+            for possible key-value pairs.
+        interval (int): Logging interval (every k iterations).
+            Default 10.
+        log_checkpoint (bool): Save the checkpoint at every checkpoint interval
+            as W&B Artifacts. Use this for model versioning where each version
+            is a checkpoint.
+            Default: False
+        log_checkpoint_metadata (bool): Log the evaluation metrics computed
+            on the validation data with the checkpoint, along with current
+            epoch as a metadata to that checkpoint.
+            Default: True
+        num_eval_images (int): Number of validation images to be logged.
+            Default: 100
+    """
 
     def __init__(self,
                  init_kwargs=None,
@@ -53,7 +115,7 @@ class MMClsWandbHook(WandbLoggerHook):
             self.log_checkpoint_metadata = False
             warnings.warn(
                 'To log num_eval_images turn validate '
-                'to True in train_detector.', UserWarning)
+                'to True in train_model.', UserWarning)
 
         # If num_eval_images is greater than zero, create
         # and log W&B table for validation data.
@@ -143,13 +205,14 @@ class MMClsWandbHook(WandbLoggerHook):
 
     def _init_data_table(self):
         """Initialize the W&B Tables for validation data."""
-        columns = ['image_name', 'image']
+        columns = ['image_name', 'image', 'ground_truth']
         self.data_table = self.wandb.Table(columns=columns)
 
     def _init_pred_table(self):
         """Initialize the W&B Tables for model evaluation."""
-        columns = ['epoch', 'image_name', 'ground_truth', 'prediction'] + list(
-            self.class_id_to_label.values())
+        columns = [
+            'epoch', 'image_name', 'image', 'ground_truth', 'prediction'
+        ] + list(self.class_id_to_label.values())
         self.eval_table = self.wandb.Table(columns=columns)
 
     def _add_ground_truth(self):
@@ -185,8 +248,10 @@ class MMClsWandbHook(WandbLoggerHook):
             # Get image and convert from BGR to RGB
             image = img_meta['img'][..., ::-1]
             image_name = img_info['filename']
+            gt_label = img_info.get('gt_label').item()
 
-            self.data_table.add_data(image_name, self.wandb.Image(image))
+            self.data_table.add_data(image_name, self.wandb.Image(image),
+                                     self.class_id_to_label[gt_label])
 
     def _log_predictions(self, results, epoch):
         table_idxs = self.data_table_ref.get_index()
@@ -197,6 +262,7 @@ class MMClsWandbHook(WandbLoggerHook):
 
             self.eval_table.add_data(epoch, self.data_table_ref.data[ndx][0],
                                      self.data_table_ref.data[ndx][1],
+                                     self.data_table_ref.data[ndx][2],
                                      self.class_id_to_label[np.argmax(result)],
                                      *tuple(result))
 
