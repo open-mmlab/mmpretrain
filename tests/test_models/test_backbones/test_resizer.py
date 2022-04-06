@@ -8,7 +8,7 @@ from mmcls.models.backbones import LearnableResizer
 def test_learnableresizer():
     imgs = torch.randn(16, 3, 48, 48)
 
-    preprocessors = LearnableResizer(input_size=[32, 32])
+    preprocessors = LearnableResizer(output_size=(32, 32))
     imgs = preprocessors(imgs)
     assert isinstance(imgs, Tensor) and imgs.shape == (16, 3, 32, 32)
 
