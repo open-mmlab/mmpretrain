@@ -88,7 +88,7 @@ html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 #
 html_theme_options = {
     'logo_url':
-    'https://mmocr.readthedocs.io/zh_CN/latest/',
+    'https://mmclassification.readthedocs.io/zh_CN/latest/',
     'menu': [
         {
             'name': 'GitHub',
