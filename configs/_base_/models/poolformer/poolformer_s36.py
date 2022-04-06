@@ -13,6 +13,7 @@ model = dict(
                 bias=0.),
             dict(type='Constant', layer=['GroupNorm'], val=1., bias=0.),
         ]),
+    neck=dict(type='GlobalAveragePooling'),
     head=dict(
         type='LinearClsHead',
         num_classes=1000,

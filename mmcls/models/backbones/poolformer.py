@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from itertools import chain
+from typing import Sequence
 import torch
 import torch.nn as nn
 from mmcv.cnn.bricks import (DropPath, build_activation_layer,
@@ -33,17 +35,6 @@ class PatchEmbed(nn.Module):
         x = self.proj(x)
         x = self.norm(x)
         return x
-
-
-class GroupNorm(nn.GroupNorm):
-    """Group Normalization with 1 group.
-    Input: Tensor in shape [B, C, H, W].
-    Output: Tensor in shape [B, C, H, W].
-    Args:
-        num_channels (int): Number of channels.
-    """
-    def __init__(self, num_channels, **kwargs):
-        super().__init__(1, num_channels, **kwargs)
 
 
 class Pooling(nn.Module):
@@ -170,7 +161,7 @@ class PoolFormer(BaseBackbone):
     """PoolFormer.
 
     A PyTorch implementation of PoolFormer introduced by:
-    `MetaFormer is Actually What You Need for Vision <https://arxiv.org/pdf/2201.03545.pdf>`_
+    `MetaFormer is Actually What You Need for Vision <https://arxiv.org/abs/2111.11418>`_
 
     Modified from the `official repo
     <https://github.com/sail-sg/poolformer/blob/main/models/poolformer.py>`.
@@ -205,9 +196,12 @@ class PoolFormer(BaseBackbone):
             Defaults to 1.
         drop_rate (float): Dropout rate. Defaults to 0.
         drop_path_rate (float): Stochastic depth rate. Defaults to 0.
-        out_indices (Sequence | int): Output from which stages.
-            Defaults to None, means the global pooling of last stage for
-            classification task.
+        out_indices (Sequence | int): Output from which newtork position.
+            Index 0-6 respectively corresponds to 
+            [stage1, downsampling, stage2, downsampling, stage3, downsampling, stage4]
+            Defaults to -1, means the last stage.
+        frozen_stages (int): Stages to be frozen (all param fixed).
+            Defaults to 0, which means not freezing any parameters.
         init_cfg (dict, optional): Initialization config dict
     """  # noqa: E501
 
@@ -256,7 +250,8 @@ class PoolFormer(BaseBackbone):
                  in_patch_size=7, in_stride=4, in_pad=2,
                  down_patch_size=3, down_stride=2, down_pad=1,
                  drop_rate=0., drop_path_rate=0.,
-                 out_indices=None,
+                 out_indices=-1,
+                 frozen_stages=0,
                  init_cfg=None):
 
         super().__init__(init_cfg=init_cfg)
@@ -306,6 +301,15 @@ class PoolFormer(BaseBackbone):
 
         self.network = nn.ModuleList(network)
 
+        if isinstance(out_indices, int):
+            out_indices = [out_indices]
+        assert isinstance(out_indices, Sequence), \
+            f'"out_indices" must by a sequence or int, ' \
+            f'get {type(out_indices)} instead.'
+        for i, index in enumerate(out_indices):
+            if index < 0:
+                out_indices[i] = 7 + index
+                assert out_indices[i] >= 0, f'Invalid out_indices {index}'
         self.out_indices = out_indices
         if self.out_indices:
             for i_layer in self.out_indices:
@@ -317,6 +321,8 @@ class PoolFormer(BaseBackbone):
             # Classifier head
             self.norm = build_norm_layer(norm_cfg, embed_dims[-1])[1]
 
+        self.frozen_stages = frozen_stages
+
     def forward_embeddings(self, x):
         x = self.patch_embed(x)
         return x
@@ -325,26 +331,32 @@ class PoolFormer(BaseBackbone):
         outs = []
         for idx, block in enumerate(self.network):
             x = block(x)
-            if self.out_indices:
-                if idx in self.out_indices:
-                    norm_layer = getattr(self, f'norm{idx}')
-                    x_out = norm_layer(x)
-                    outs.append(x_out)
-        if self.out_indices:
-            # output the features of four stages for dense prediction
-            return outs
-        # output only the features of last layer for image classification
-        return x
+            if idx in self.out_indices:
+                norm_layer = getattr(self, f'norm{idx}')
+                x_out = norm_layer(x)
+                outs.append(x_out)
+        return tuple(outs)
 
     def forward(self, x):
         # input embedding
         x = self.forward_embeddings(x)
         # through backbone
         x = self.forward_tokens(x)
-        if self.out_indices:
-            # otuput features of four stages for dense prediction
-            return tuple(x)
-        x = self.norm(x)
-        x = x.mean([-2, -1])
-        # for image classification
-        return (x, )
+        return x
+
+    def _freeze_stages(self):
+        for i in range(self.frozen_stages):
+            if i == 0:
+                downsample_layer = self.patch_embed
+            else: 
+                downsample_layer = self.network[int(i*2-1)]
+            stage = self.network[int(i*2)]
+            downsample_layer.eval()
+            stage.eval()
+            for param in chain(downsample_layer.parameters(),
+                               stage.parameters()):
+                param.requires_grad = False
+
+    def train(self, mode=True):
+        super(PoolFormer, self).train(mode)
+        self._freeze_stages()
