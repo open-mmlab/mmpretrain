@@ -11,7 +11,7 @@ model = dict(
     backbone=[
         dict(type='LearnableResizer', output_size=(384, 384)),
         dict(
-            type='ResNeSt',
+            type='ResNet',
             depth=50,
             num_stages=4,
             out_indices=(3, ),

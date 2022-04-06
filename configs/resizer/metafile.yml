@@ -1,0 +1,19 @@
+Collections:
+  - Name: LearnableResizer
+    Metadata:
+      Training Data:
+      Training Techniques:
+        - Weight Decay
+      Architecture:
+        - Batch Normalization
+        - Convolution
+        - LeakyReLU
+    Paper:
+      Title: 'Learning to Resize Images for Computer Vision Tasks'
+      URL: https://arxiv.org/pdf/2103.09950.pdf
+    README: configs/resizer/README.md
+    Code:
+      URL:
+      Version:
+
+Models:
