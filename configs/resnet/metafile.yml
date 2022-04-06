@@ -385,6 +385,6 @@ Models:
         Metrics:
           Top 1 Accuracy: 88.45
         Task: Image Classification
-    Pretrain: https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_mill_3rdparty_in21k_20220307-bdb3a68b.pth
+    Pretrain: https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_3rdparty-mill_in21k_20220331-faac000b.pth
     Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb8_cub_20220307-57840e60.pth
     Config: configs/resnet/resnet50_8xb8_cub.py
