@@ -166,7 +166,7 @@ def train_model(model,
     fp16_cfg = cfg.get('fp16', None)
     if fp16_cfg is not None:
         if device == 'ipu':
-            from mmcv.runner.ipu import IPUFp16OptimizerHook
+            from mmcv.device.ipu import IPUFp16OptimizerHook
             optimizer_config = IPUFp16OptimizerHook(
                 **cfg.optimizer_config,
                 loss_scale=fp16_cfg['loss_scale'],

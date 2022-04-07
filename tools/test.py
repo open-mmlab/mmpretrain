@@ -185,7 +185,7 @@ def main():
         if args.device == 'cpu':
             model = model.cpu()
         elif args.device == 'ipu':
-            from mmcv.runner.ipu import ipu_model_wrapper, parse_ipu_options
+            from mmcv.device.ipu import ipu_model_wrapper, parse_ipu_options
             opts = parse_ipu_options(cfg.runner.get('ipu_options', {}))
             if fp16_cfg is not None:
                 model.half()
