@@ -196,7 +196,7 @@ class PoolFormer(BaseBackbone):
             Defaults to 1.
         drop_rate (float): Dropout rate. Defaults to 0.
         drop_path_rate (float): Stochastic depth rate. Defaults to 0.
-        out_indices (Sequence | int): Output from which newtork position.
+        out_indices (Sequence | int): Output from which network position.
             Index 0-6 respectively corresponds to
             [stage1, downsampling, stage2, downsampling, stage3, downsampling, stage4]
             Defaults to -1, means the last stage.
