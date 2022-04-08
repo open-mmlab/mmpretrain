@@ -139,8 +139,8 @@ def build_dataloader(dataset,
     if digit_version(torch.__version__) >= digit_version('1.8.0'):
         kwargs['persistent_workers'] = persistent_workers
     if IPU_MODE:
-        from mmcv.device.ipu import IPUDataloader
-        data_loader = IPUDataloader(None,
+        from mmcv.device.ipu import IPUDataLoader
+        data_loader = IPUDataLoader(None,
                                     dataset,
                                     batch_size=samples_per_gpu,
                                     num_workers=num_workers,
