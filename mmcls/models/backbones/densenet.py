@@ -14,7 +14,7 @@ from ..builder import BACKBONES
 from .base_backbone import BaseBackbone
 
 
-class DenseLayer(nn.Module):
+class DenseLayer(BaseBackbone):
 
     def __init__(self,
                  in_channels,
@@ -139,11 +139,14 @@ class DenseTransition(nn.Sequential):
                  norm_cfg=dict(type='BN'),
                  act_cfg=dict(type='ReLU')):
         super(DenseTransition, self).__init__()
-        self.norm = build_norm_layer(norm_cfg, in_channels)[1]
-        self.act = build_activation_layer(act_cfg)
-        self.conv = nn.Conv2d(
-            in_channels, out_channels, kernel_size=1, stride=1, bias=False)
-        self.pool = nn.AvgPool2d(kernel_size=2, stride=2)
+        self.add_module('norm', build_norm_layer(norm_cfg, in_channels)[1])
+        self.add_module('act', build_activation_layer(act_cfg))
+        self.add_module(
+            'conv',
+            nn.Conv2d(
+                in_channels, out_channels, kernel_size=1, stride=1,
+                bias=False))
+        self.add_module('pool', nn.AvgPool2d(kernel_size=2, stride=2))
 
 
 @BACKBONES.register_module()
@@ -155,11 +158,6 @@ class DenseNet(BaseBackbone):
             'depths': [6, 12, 24, 16],
             'init_channels': 64,
         },
-        '161': {
-            'growth_rate': 48,
-            'depths': [6, 12, 36, 24],
-            'init_channels': 96,
-        },
         '169': {
             'growth_rate': 32,
             'depths': [6, 12, 32, 32],
@@ -169,6 +167,11 @@ class DenseNet(BaseBackbone):
             'growth_rate': 32,
             'depths': [6, 12, 48, 32],
             'init_channels': 64,
+        },
+        '161': {
+            'growth_rate': 48,
+            'depths': [6, 12, 36, 24],
+            'init_channels': 96,
         },
     }
 
