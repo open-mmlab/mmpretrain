@@ -110,10 +110,10 @@ ipu_model_cfg = dict(
 ipu_options = dict(
     randomSeed=42,
     partialsType='half',
-    train_cfgs=dict(executionStrategy='SameAsIpu',
+    train_cfg=dict(executionStrategy='SameAsIpu',
                     Training=dict(gradientAccumulation=32),
                     availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],),
-    eval_cfgs=dict(deviceIterations=1,),)
+    eval_cfg=dict(deviceIterations=1,),)
 
 # add model partition config and device config to runner
 runner = dict(
