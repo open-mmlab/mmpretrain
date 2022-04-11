@@ -61,38 +61,30 @@ class DenseLayer(BaseBackbone):
                 return True
         return False
 
+    # This decorator indicates to the compiler that a function or method
+    # should be ignored and replaced with the raising of an exception.
+    # Here this function is incompatible with torchscript.
     @torch.jit.unused  # noqa: T484
     def call_checkpoint_bottleneck(self, x):
         # type: (List[torch.Tensor]) -> torch.Tensor
         def closure(*xs):
             return self.bottleneck_fn(xs)
 
+        # Here use torch.utils.checkpoint to rerun a forward-pass during
+        # backward in bottleneck to save memories.
         return cp.checkpoint(closure, *x)
 
-    @torch.jit._overload_method  # noqa: F811
     def forward(self, x):  # noqa: F811
-        # type: (List[torch.Tensor]) -> (torch.Tensor)
-        pass
+        # type: (List[torch.Tensor]) -> torch.Tensor
+        # assert input features is a list of Tensor
+        assert isinstance(x, list)
 
-    @torch.jit._overload_method  # noqa: F811
-    def forward(self, x):  # noqa: F811
-        # type: (torch.Tensor) -> (torch.Tensor)
-        pass
-
-    # torchscript does not yet support *args, so we overload method
-    # allowing it to take either a List[Tensor] or single Tensor
-    def forward(self, x):  # noqa: F811
-        if isinstance(x, torch.Tensor):
-            prev_features = [x]
-        else:
-            prev_features = x
-
-        if self.memory_efficient and self.any_requires_grad(prev_features):
+        if self.memory_efficient and self.any_requires_grad(x):
             if torch.jit.is_scripting():
                 raise Exception('Memory Efficient not supported in JIT')
-            bottleneck_output = self.call_checkpoint_bottleneck(prev_features)
+            bottleneck_output = self.call_checkpoint_bottleneck(x)
         else:
-            bottleneck_output = self.bottleneck_fn(prev_features)
+            bottleneck_output = self.bottleneck_fn(x)
 
         new_features = self.conv2(self.act(self.norm2(bottleneck_output)))
         if self.drop_rate > 0:
