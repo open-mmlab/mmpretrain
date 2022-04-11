@@ -30,6 +30,16 @@ def test_DenseNet():
     assert len(feat) == 1
     assert feat[0].shape == torch.Size([1, 1024, 7, 7])
 
+    # Test memory efficient option
+    model = DenseNet(arch='121', memory_efficient=True)
+    model.init_weights()
+    model.train()
+
+    imgs = torch.randn(1, 3, 224, 224)
+    feat = model(imgs)
+    assert len(feat) == 1
+    assert feat[0].shape == torch.Size([1, 1024, 7, 7])
+
     # Test forward with multiple outputs
     model = DenseNet(arch='121', out_indices=(0, 1, 2, 3))
 
