@@ -15,6 +15,7 @@ from .base_backbone import BaseBackbone
 
 
 class DenseLayer(BaseBackbone):
+    """DenseBlock layers."""
 
     def __init__(self,
                  in_channels,
@@ -101,6 +102,7 @@ class DenseLayer(BaseBackbone):
 
 
 class DenseBlock(nn.Module):
+    """DenseNet Blocks."""
 
     def __init__(self,
                  num_layers,
@@ -132,6 +134,7 @@ class DenseBlock(nn.Module):
 
 
 class DenseTransition(nn.Sequential):
+    """DenseNet Transition Layers."""
 
     def __init__(self,
                  in_channels,
@@ -151,7 +154,46 @@ class DenseTransition(nn.Sequential):
 
 @BACKBONES.register_module()
 class DenseNet(BaseBackbone):
+    """DenseNet.
 
+    A PyTorch implementation of : `Densely Connected Convolutional Networks
+    <https://arxiv.org/pdf/1608.06993.pdf>`_
+
+    Modified from the `official repo
+    <https://github.com/liuzhuang13/DenseNet>`_
+    and `pytorch
+    <https://github.com/pytorch/vision/blob/main/torchvision/models/densenet.py>`_.
+
+    Args:
+        arch (str | dict): The model's architecture. If string, it should be
+            one of architecture in ``DenseNet.arch_settings``. And if dict, it
+            should include the following two keys:
+
+            - growth_rate (int): Each layer of DenseBlock produce `k` feature
+            maps. Here refers `k` as the growth rate of the network.
+            - depths (list[int]): Number of repeated layers in each DenseBlock.
+            - init_channels (int): The output channels of stem layers.
+
+            Defaults to '121'.
+        in_channels (int): Number of input image channels. Defaults to 3.
+        bn_size (int): Refers to channel expansion parameter of 1x1
+            convolution layer. Defaults to 4.
+        drop_rate (float): Drop rate of Dropout Layer. Defaults to 0.
+        compression_factor (float): The reduction rate of transition layers.
+            Defaults to 0.5.
+        memory_efficient (bool): If True, uses checkpointing. Much more memory
+            efficient, but slower. Defaults to False.
+            See `"paper" <https://arxiv.org/pdf/1707.06990.pdf>`_.
+        norm_cfg (dict): The config dict for norm layers.
+            Defaults to ``dict(type='BN')``.
+        act_cfg (dict): The config dict for activation after each convolution.
+            Defaults to ``dict(type='ReLU')``.
+        out_indices (Sequence | int): Output from which stages.
+            Defaults to -1, means the last stage.
+        frozen_stages (int): Stages to be frozen (all param fixed).
+            Defaults to 0, which means not freezing any parameters.
+        init_cfg (dict, optional): Initialization config dict.
+    """
     arch_settings = {
         '121': {
             'growth_rate': 32,
