@@ -10,11 +10,6 @@ from mmcv.runner.base_module import BaseModule
 
 from .helpers import to_2tuple
 
-try:
-    from scipy import interpolate
-except ImportError:
-    interpolate = None
-
 
 def resize_pos_embed(pos_embed,
                      src_shape,
@@ -74,6 +69,7 @@ def resize_relative_position_bias_table(src_shape, dst_shape, table, num_head):
     Returns:
         torch.Tensor: The resized relative position bias table.
     """
+    from scipy import interpolate
 
     def geometric_progression(a, r, n):
         return a * (1.0 - r**n) / (1.0 - r)
