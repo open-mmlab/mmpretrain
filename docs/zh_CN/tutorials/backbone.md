@@ -1,4 +1,4 @@
-# 使用主干网络
+# 教程 0：如何调用mmcls主干网络
 
 在神经网络中，主干网络是重要的提取特征方式，在分类，检测，分割以及视频理解等等任务中，主干网络都是必不可少的组成部分。
 由于图片特征提取对于各类视觉任务是较为通用，因而可以“借用”在分类任务中预训练的主干网络和相应的模型权重。因为分类任务比较简单，故而可以利用庞大的 ImageNet 数据集进行预训练，而在此基础上进一步训练检测网络，既能够提高模型收敛速度，又能够提高精度。
@@ -10,13 +10,12 @@ MMClassification 在 OpenMMLab 项目中，不仅作为分类任务的工具箱�
 - [通过已有接口实例化主干网络](#通过已有接口实例化主干网络)
 - [在下游算法库（mmdet,mmseg等）中使用](#在下游算法库（mmdet,mmseg等）中使用)
 - [使用timm中的主干网](#导入用户自定义模块)
-- [常见问题](#常见问题)
 
 <!-- TOC -->
 
 ## 通过已有接口实例化主干网络
 
-MMClassification 提供了 `build_backbone` 接口实例化主干网络。其传入参数为一个字典，包括主干网类别参数 `type` 以及其他可配置参数。目前 MMClassification 支持的主干网络可参见[这里](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/models/backbones/__init__.py)，主干网络的相关参数可参考 [API](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.backbones)。
+MMClassification 提供了 `build_backbone` 接口实例化主干网络。其传入参数为一个字典，包括主干网类别参数 `type` 以及其他可配置参数。目前 MMClassification 支持的主干网络可参见[这里](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/models/backbones/__init__.py)，主干网络的相关参数可参考 [API](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.backbones)。
 
 
 ### 基础用法
@@ -34,12 +33,12 @@ model.init_weights()
 
 outs = model(x)   # 输出为一个 tuple
 for out in outs:
-    print(out.size(), type(out))
+    print(out.size())
 ```
 
 Output
 ```
-torch.Size([1, 2048, 7, 7]) <class 'torch.Tensor'>
+torch.Size([1, 2048, 7, 7])
 ```
 
 ***ViT***
@@ -103,11 +102,11 @@ import torch
 from mmcls.models import build_backbone
 x = torch.randn( (1, 3, 224, 224) )
 
-backbone_cfg = dict(type='SwinTransformer', arch="base", out_indices=(0, 1, 2, 3, 4))
+backbone_cfg = dict(type='SwinTransformer', arch="base", out_indices=(0, 1, 2, 3))
 model = build_backbone(backbone_cfg)
 model.init_weights()
 
-outs = model(x)   # 输出为一个 tuple
+outs = model(x)
 for out in outs:
     print(out.size())
 ```
@@ -269,7 +268,7 @@ model = dict(
 )
 ```
 
-**在mmseg中使用mmcls的主干网络**
+**在mmsegmentation中使用mmcls的主干网络**
 
 在 `mmsegmentation` 中使用 `mmcls` 的主干网络与在 `mmdet` 的用法一致。 如在 `mmsegmentation` 中使用 `mmcls` 的 `RegNet`。
 
@@ -333,7 +332,3 @@ torch.Size([1, 64, 28, 28])
 torch.Size([1, 160, 14, 14])
 torch.Size([1, 256, 7, 7])
 ```
-
-## 常见问题
-
-

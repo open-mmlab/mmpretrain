@@ -17,6 +17,7 @@ You can switch between Chinese and English documentation in the lower-left corne
    :maxdepth: 1
    :caption: Tutorials
 
+   tutorials/backbone.md
    tutorials/config.md
    tutorials/finetune.md
    tutorials/new_dataset.md
