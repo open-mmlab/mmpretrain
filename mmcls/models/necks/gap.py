@@ -18,16 +18,19 @@ class GlobalAveragePooling(nn.Module):
             Default: 2
     """
 
-    def __init__(self, dim=2):
+    def __init__(self, dim=2, flatten=True):
         super(GlobalAveragePooling, self).__init__()
-        assert dim in [1, 2, 3], 'GlobalAveragePooling dim only support ' \
-            f'{1, 2, 3}, get {dim} instead.'
+        assert dim in [1, 2, 3], (
+            "GlobalAveragePooling dim only support "
+            f"{1, 2, 3}, get {dim} instead."
+        )
         if dim == 1:
             self.gap = nn.AdaptiveAvgPool1d(1)
         elif dim == 2:
             self.gap = nn.AdaptiveAvgPool2d((1, 1))
         else:
             self.gap = nn.AdaptiveAvgPool3d((1, 1, 1))
+        self.flatten = flatten
 
     def init_weights(self):
         pass
@@ -35,11 +38,14 @@ class GlobalAveragePooling(nn.Module):
     def forward(self, inputs):
         if isinstance(inputs, tuple):
             outs = tuple([self.gap(x) for x in inputs])
-            outs = tuple(
-                [out.view(x.size(0), -1) for out, x in zip(outs, inputs)])
+            if self.flatten:
+                outs = tuple(
+                    [out.view(x.size(0), -1) for out, x in zip(outs, inputs)]
+                )
         elif isinstance(inputs, torch.Tensor):
             outs = self.gap(inputs)
-            outs = outs.view(inputs.size(0), -1)
+            if self.flatten:
+                outs = outs.view(inputs.size(0), -1)
         else:
-            raise TypeError('neck inputs should be tuple or torch.tensor')
+            raise TypeError("neck inputs should be tuple or torch.tensor")
         return outs
