@@ -12,7 +12,8 @@ def main():
     parser.add_argument(
         '--device', default='cuda:0', help='Device used for inference')
     parser.add_argument(
-        '--display', default='image', choices=['image', 'text'], help='Display in the form of image or text'
+        '--display', default='image', choices=['image', 'text'],
+        help='Display in the form of image or text'
     )
     args = parser.parse_args()
 
