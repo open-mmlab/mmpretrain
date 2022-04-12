@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from copy import deepcopy
-from functools import partial
 from typing import Sequence
 
 import numpy as np
@@ -354,10 +353,8 @@ class SwinTransformer(BaseBackbone):
             self._register_load_state_dict_pre_hook(
                 self._prepare_abs_pos_embed)
 
-        resize_relative_position_bias_table_func = partial(
-            resize_relative_position_bias_table, model=self)
         self._register_load_state_dict_pre_hook(
-            resize_relative_position_bias_table_func)
+            self._prepare_relative_position_bias_table)
 
         self.drop_after_pos = nn.Dropout(p=drop_rate)
         self.norm_eval = norm_eval
@@ -506,3 +503,34 @@ class SwinTransformer(BaseBackbone):
                                                 pos_embed_shape,
                                                 self.interpolate_mode,
                                                 self.num_extra_tokens)
+
+    def _prepare_relative_position_bias_table(self, state_dict, prefix, *args,
+                                              **kwargs):
+        all_keys = list(state_dict.keys())
+        state_dict_model = self.state_dict()
+        for key in all_keys:
+            if 'relative_position_bias_table' in key:
+                relative_position_bias_table_pretrained = state_dict[key]
+                relative_position_bias_table_current = state_dict_model[key]
+                L1, nH1 = relative_position_bias_table_pretrained.size()
+                L2, nH2 = relative_position_bias_table_current.size()
+                if L1 != L2:
+                    src_size = int(L1**0.5)
+                    dst_size = int(L2**0.5)
+                    new_rel_pos_bias = resize_relative_position_bias_table(
+                        src_size, dst_size,
+                        relative_position_bias_table_pretrained, nH1)
+                    from mmcls.utils import get_root_logger
+                    logger = get_root_logger()
+                    logger.info(
+                        f'Resize the relative_position_bias_table from \
+                        {state_dict[key].shape} to {new_rel_pos_bias.shape}')
+                    state_dict[key] = new_rel_pos_bias
+
+        # The 'relative_position_index' is auto-generated and not
+        # required for loading.
+        relative_position_index_keys = [
+            k for k in state_dict.keys() if 'relative_position_index' in k
+        ]
+        for k in relative_position_index_keys:
+            del state_dict[k]
