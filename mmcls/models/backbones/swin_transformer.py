@@ -527,10 +527,6 @@ class SwinTransformer(BaseBackbone):
                         {state_dict[key].shape} to {new_rel_pos_bias.shape}')
                     state_dict[key] = new_rel_pos_bias
 
-        # The 'relative_position_index' is auto-generated and not
-        # required for loading.
-        relative_position_index_keys = [
-            k for k in state_dict.keys() if 'relative_position_index' in k
-        ]
-        for k in relative_position_index_keys:
-            del state_dict[k]
+                    # The index buffer need to be re-generated.
+                    index_buffer = key.replace('bias_table', 'index')
+                    del state_dict[index_buffer]
