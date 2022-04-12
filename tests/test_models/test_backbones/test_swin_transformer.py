@@ -253,3 +253,41 @@ class TestSwinTransformer(TestCase):
             norm = getattr(model, f'norm{i}')
             for param in norm.parameters():
                 self.assertTrue(param.requires_grad)
+
+    def test_get_layer_depth(self):
+        cfg = deepcopy(self.cfg)
+        cfg['out_indices'] = (0, 1, 2, 3)
+        model = SwinTransformer(**cfg)
+
+        # test invalid parameter
+        with self.assertRaisesRegex(ValueError, '"backbone.unknown"'):
+            model.get_layer_depth('backbone.unknown')
+
+        # test patch embedding
+        key = 'backbone.patch_embed.projection.bias'
+        stage_id, block_id = model.get_layer_depth(key, prefix='backbone.')
+        self.assertEqual(stage_id, 0)
+        self.assertEqual(block_id, 0)
+
+        # test blocks
+        key = 'backbone.stages.2.blocks.15.attn.w_msa.qkv.weight'
+        stage_id, block_id = model.get_layer_depth(key, prefix='backbone.')
+        self.assertEqual(stage_id, 3)
+        self.assertEqual(block_id, 2 + 2 + 16)
+
+        # test downsample layers
+        key = 'backbone.stages.2.downsample.norm.bias'
+        stage_id, block_id = model.get_layer_depth(key, prefix='backbone.')
+        self.assertEqual(stage_id, 3)
+        self.assertEqual(block_id, 2 + 2 + 18)
+
+        # test out norm layers
+        key = 'backbone.norm3.weight'
+        stage_id, block_id = model.get_layer_depth(key, prefix='backbone.')
+        self.assertEqual(stage_id, 4)
+        self.assertEqual(block_id, 2 + 2 + 18 + 2)
+
+        key = 'backbone.norm2.bias'
+        stage_id, block_id = model.get_layer_depth(key, prefix='backbone.')
+        self.assertEqual(stage_id, 3)
+        self.assertEqual(block_id, 2 + 2 + 18)

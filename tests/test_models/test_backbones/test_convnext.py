@@ -84,3 +84,33 @@ def test_convnext():
     for i in range(2, 4):
         assert model.downsample_layers[i].training
         assert model.stages[i].training
+
+    # Test get_layer_depth
+    model = ConvNeXt(arch='tiny', out_indices=(0, 1, 2, 3))
+
+    # test invalid parameter
+    with pytest.raises(ValueError):
+        model.get_layer_depth('backbone.unknown')
+
+    # test blocks
+    key = 'backbone.stages.3.1.pointwise_conv1.weight'
+    stage_id, block_id = model.get_layer_depth(key, prefix='backbone.')
+    assert stage_id == 4
+    assert block_id == 3 + 3 + 9 + 2
+
+    # test downsample layers
+    key = 'backbone.downsample_layers.2.1.weight'
+    stage_id, block_id = model.get_layer_depth(key, prefix='backbone.')
+    assert stage_id == 3
+    assert block_id == 3 + 3
+
+    # test out norm layers
+    key = 'backbone.norm3.weight'
+    stage_id, block_id = model.get_layer_depth(key, prefix='backbone.')
+    assert stage_id == 4
+    assert block_id == 3 + 3 + 9 + 3
+
+    key = 'backbone.norm2.bias'
+    stage_id, block_id = model.get_layer_depth(key, prefix='backbone.')
+    assert stage_id == 3
+    assert block_id == 3 + 3 + 9

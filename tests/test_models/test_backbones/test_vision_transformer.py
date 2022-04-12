@@ -181,3 +181,29 @@ class TestVisionTransformer(TestCase):
                                  math.ceil(imgs.shape[3] / 16))
             self.assertEqual(patch_token.shape, (3, 768, *expect_feat_shape))
             self.assertEqual(cls_token.shape, (3, 768))
+
+    def test_get_layer_depth(self):
+        cfg = deepcopy(self.cfg)
+        model = VisionTransformer(**cfg)
+
+        # test invalid parameter
+        with self.assertRaisesRegex(ValueError, '"backbone.unknown"'):
+            model.get_layer_depth('backbone.unknown')
+
+        # test patch embedding
+        key = 'backbone.patch_embed.projection.bias'
+        stage_id, layer_id = model.get_layer_depth(key, prefix='backbone.')
+        self.assertEqual(stage_id, 0)
+        self.assertEqual(layer_id, 0)
+
+        # test transformer layers
+        key = 'backbone.layers.10.attn.proj.weight'
+        stage_id, layer_id = model.get_layer_depth(key, prefix='backbone.')
+        self.assertEqual(stage_id, 0)
+        self.assertEqual(layer_id, 11)
+
+        # test final norm layer
+        key = 'backbone.ln1.weight'
+        stage_id, layer_id = model.get_layer_depth(key, prefix='backbone.')
+        self.assertEqual(stage_id, 0)
+        self.assertEqual(layer_id, model.num_layers)

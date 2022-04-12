@@ -381,3 +381,39 @@ class VisionTransformer(BaseBackbone):
                 outs.append(out)
 
         return tuple(outs)
+
+    def get_layer_depth(self, parameter_name: str, prefix: str = ''):
+        """Get the stage-wise depth and layer-wise depth of a parameter.
+
+        Since the VisionTransformer doesn't have stages, the stage-wise
+        depth of all parameters are 0.
+
+        Args:
+            parameter_name (str): The name of the parameter.
+            prefix (str): The prefix for the parameter.
+                Defaults to an empty string.
+
+        Returns:
+            Tuple[int, int]: The stage-wise depth and the layer-wise depth.
+        """
+        import re
+
+        for pattern in ['cls_token', 'pos_embed', 'patch_embed']:
+            if re.match(prefix + pattern, parameter_name) is not None:
+                return 0, 0
+
+        # The final norm layer
+        match_pattern = prefix + self.norm1_name
+        match_result = re.match(match_pattern, parameter_name)
+        if match_result is not None:
+            layer_id = self.num_layers
+            return 0, layer_id
+
+        # Transformer layers
+        match_pattern = prefix + r'layers\.(\d+)'
+        match_result = re.match(match_pattern, parameter_name)
+        if match_result is not None:
+            layer_id = int(match_result.groups()[0])
+            return 0, layer_id + 1
+
+        raise ValueError(f'Invalid parameter name "{parameter_name}".')

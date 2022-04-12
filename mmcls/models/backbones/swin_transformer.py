@@ -499,3 +499,50 @@ class SwinTransformer(BaseBackbone):
                                                 pos_embed_shape,
                                                 self.interpolate_mode,
                                                 self.num_extra_tokens)
+
+    def get_layer_depth(self, parameter_name: str, prefix: str = ''):
+        """Get the stage-wise depth and block-wise depth of a parameter.
+
+        Args:
+            parameter_name (str): The name of the parameter.
+            prefix (str): The prefix for the parameter.
+                Defaults to an empty string.
+
+        Returns:
+            Tuple[int, int]: The stage-wise depth and the block-wise depth.
+        """
+        import re
+
+        import numpy as np
+
+        cumsum_depths = [0] + np.cumsum(self.depths).tolist()
+
+        if re.match(prefix + 'patch_embed', parameter_name) is not None:
+            return 0, 0
+
+        # Downsample layers
+        match_pattern = prefix + r'stages\.(\d+)\.downsample'
+        match_result = re.match(match_pattern, parameter_name)
+        if match_result is not None:
+            stage_id = int(match_result.groups()[0])
+            block_id = cumsum_depths[stage_id + 1]
+            return stage_id + 1, block_id
+
+        # Stage layers
+        match_pattern = prefix + r'stages\.(\d+)\.blocks\.(\d+)'
+        match_result = re.match(match_pattern, parameter_name)
+        if match_result is not None:
+            stage_id = int(match_result.groups()[0])
+            inner_block_id = int(match_result.groups()[1])
+            block_id = cumsum_depths[stage_id] + inner_block_id
+            return stage_id + 1, block_id + 1
+
+        # Out norm layers
+        match_pattern = prefix + r'norm(\d+)'
+        match_result = re.match(match_pattern, parameter_name)
+        if match_result is not None:
+            stage_id = int(match_result.groups()[0])
+            block_id = cumsum_depths[stage_id + 1]
+            return stage_id + 1, block_id
+
+        raise ValueError(f'Invalid parameter name "{parameter_name}".')
