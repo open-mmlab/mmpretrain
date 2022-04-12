@@ -144,9 +144,9 @@ def train_model(model,
     if device == 'ipu':
         if not cfg.runner['type'].startswith('IPU'):
             cfg.runner['type'] = 'IPU' + cfg.runner['type']
-        if 'ipu_options' not in cfg.runner:
-            cfg.runner['ipu_options'] = {}
-        cfg.runner['ipu_options']['replicationFactor'] = cfg.ipu_replicas
+        if 'options_cfg' not in cfg.runner:
+            cfg.runner['options_cfg'] = {}
+        cfg.runner['options_cfg']['replicationFactor'] = cfg.ipu_replicas
         cfg.runner['fp16_cfg'] = cfg.get('fp16', None)
 
     runner = build_runner(

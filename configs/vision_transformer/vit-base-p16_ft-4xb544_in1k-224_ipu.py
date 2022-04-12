@@ -107,7 +107,7 @@ ipu_model_cfg = dict(
     ])
 
 # device config
-ipu_options = dict(
+options_cfg = dict(
     randomSeed=42,
     partialsType='half',
     train_cfg=dict(executionStrategy='SameAsIpu',
@@ -119,7 +119,7 @@ ipu_options = dict(
 runner = dict(
     type='IterBasedRunner',
     ipu_model_cfg=ipu_model_cfg,
-    ipu_options=ipu_options,
+    options_cfg=options_cfg,
     max_iters=5000)
 
 checkpoint_config = dict(interval=1000)
