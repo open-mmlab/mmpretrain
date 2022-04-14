@@ -26,7 +26,7 @@
 2. Install onnx and onnxruntime
 
   ```shell
-  pip install onnx onnxruntime==1.5.1
+  python3 -m pip install onnx onnxruntime==1.5.1
   ```
 
 ### Usage
@@ -78,7 +78,7 @@ We prepare a tool `tools/deployment/test.py` to evaluate ONNX models with ONNXRu
 - Install onnx and onnxruntime-gpu
 
   ```shell
-  pip install onnx onnxruntime-gpu
+  python3 -m pip install onnx onnxruntime-gpu
   ```
 
 ### Usage

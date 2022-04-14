@@ -39,7 +39,7 @@ pre-commit hook 的配置文件位于 [.pre-commit-config](https://github.com/op
 在你克隆仓库后，你需要按照如下步骤安装并初始化 pre-commit hook。
 
 ```shell
-pip install -U pre-commit
+python3 -m pip install -U pre-commit
 ```
 
 在仓库文件夹中执行

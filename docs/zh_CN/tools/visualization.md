@@ -134,7 +134,7 @@ python tools/visualizations/vis_lr.py configs/repvgg/repvgg-B3g4_4xb64-autoaug-l
 
 ## 类别激活图可视化
 
-MMClassification 提供 `tools\visualizations\vis_cam.py` 工具来可视化类别激活图。请使用 `pip install "grad-cam>=1.3.6"` 安装依赖的 [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam)。
+MMClassification 提供 `tools\visualizations\vis_cam.py` 工具来可视化类别激活图。请使用 `python3 -m pip install "grad-cam>=1.3.6"` 安装依赖的 [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam)。
 
 目前支持的方法有：
 
