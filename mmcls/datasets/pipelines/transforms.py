@@ -1140,10 +1140,11 @@ class Albu(object):
         repr_str = self.__class__.__name__ + f'(transforms={self.transforms})'
         return repr_str
 
+
 @PIPELINES.register_module()
 class Imgaug:
     """Imgaug augmentation.
-    
+
     Adds custom transformations from imgaug library.
     Please visit `https://imgaug.readthedocs.io/en/latest/index.html`
     to get more information.
@@ -1209,6 +1210,7 @@ class Imgaug:
     @staticmethod
     def default_transforms():
         """Default transforms for imgaug.
+
         Implement RandAugment by imgaug.
         Please visit `https://arxiv.org/abs/1909.13719` for more information.
         Augmenters and hyper parameters are borrowed from the following repo:
@@ -1262,6 +1264,7 @@ class Imgaug:
 
     def imgaug_builder(self, cfg):
         """Import a module from imgaug.
+
         It follows the logic of :func:`build_from_cfg`. Use a dict object to
         create an iaa.Augmenter object.
         Args:
