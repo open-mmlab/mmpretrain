@@ -1295,7 +1295,8 @@ class Imgaug:
         return repr_str
 
     def __call__(self, results):
-        assert results['modality'] == 'RGB', 'Imgaug only support RGB images.
+        # Imgaug only support RGB images
+        assert results['modality'] == 'RGB'
         cur_aug = self.aug.to_deterministic()
         results['img'] = cur_aug.augment_image(results['img'])
         return results
