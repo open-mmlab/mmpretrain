@@ -369,11 +369,9 @@ class PoolFormer(BaseBackbone):
                                          embed_dims[(i_layer + 1) // 2])[1]
                 layer_name = f'norm{i_layer}'
                 self.add_module(layer_name, layer)
-        else:
-            # Classifier head
-            self.norm = build_norm_layer(norm_cfg, embed_dims[-1])[1]
 
         self.frozen_stages = frozen_stages
+        self._freeze_stages()
 
     def forward_embeddings(self, x):
         x = self.patch_embed(x)
@@ -397,17 +395,22 @@ class PoolFormer(BaseBackbone):
         return x
 
     def _freeze_stages(self):
-        for i in range(self.frozen_stages):
-            if i == 0:
-                downsample_layer = self.patch_embed
-            else:
-                downsample_layer = self.network[int(i * 2 - 1)]
-            stage = self.network[int(i * 2)]
-            downsample_layer.eval()
-            stage.eval()
-            for param in chain(downsample_layer.parameters(),
-                               stage.parameters()):
+        if self.frozen_stages >= 0:
+            self.patch_embed.eval()
+            for param in self.patch_embed.parameters():
                 param.requires_grad = False
+
+        for i in range(self.frozen_stages):
+            # Include both block and downsample layer.
+            module = self.network[i]
+            module.eval()
+            for param in module.parameters():
+                param.requires_grad = False
+            if i in self.out_indices:
+                norm_layer = getattr(self, f'norm{i}')
+                norm_layer.eval()
+                for param in norm_layer.parameters():
+                    param.requires_grad = False
 
     def train(self, mode=True):
         super(PoolFormer, self).train(mode)
