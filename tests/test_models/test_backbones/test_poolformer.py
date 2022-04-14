@@ -1,24 +1,17 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import math
-import os
-import tempfile
 from copy import deepcopy
-from itertools import chain
 from unittest import TestCase
 
 import torch
-from mmcv.runner import load_checkpoint, save_checkpoint
-from mmcv.utils.parrots_wrapper import _BatchNorm
 
 from mmcls.models.backbones import PoolFormer
 from mmcls.models.backbones.poolformer import PoolFormerBlock
-from .utils import timm_resize_pos_embed
 
 
 class TestPoolFormer(TestCase):
 
     def setUp(self):
-        arch='s12'
+        arch = 's12'
         self.cfg = dict(arch=arch, drop_path_rate=0.1)
         self.arch = PoolFormer.arch_settings[arch]
 
@@ -42,8 +35,8 @@ class TestPoolFormer(TestCase):
         cfg = deepcopy(self.cfg)
         layers = [2, 2, 4, 2]
         embed_dims = [6, 12, 6, 12]
-        mlp_ratios=[2, 3, 4, 4]
-        layer_scale_init_value=1e-4
+        mlp_ratios = [2, 3, 4, 4]
+        layer_scale_init_value = 1e-4
         cfg['arch'] = dict(
             layers=layers,
             embed_dims=embed_dims,
@@ -103,7 +96,6 @@ class TestPoolFormer(TestCase):
         for dim, stride, out in zip(self.arch['embed_dims'], [1, 2, 4, 8],
                                     outs):
             self.assertEqual(out.shape, (1, dim, 56 // stride, 56 // stride))
-
 
     def test_structure(self):
         # test drop_path_rate decay
