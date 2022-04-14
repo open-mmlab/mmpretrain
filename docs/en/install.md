@@ -87,7 +87,7 @@ the `dev` branch, please try to update `mmcv` to the latest version.
    A better choice is to use [MIM](https://github.com/open-mmlab/mim) to automatically select the mmcv-full version. MIM will automatically install mmcv-full when you use it to install MMClassification in the next section.
 
    ```shell
-   pip install openmim
+   python3 -m pip install openmim
    ```
 
 ## Install MMClassification repository
@@ -104,7 +104,7 @@ MMClassification. MIM will automatically install the mmcv-full which fits your
 environment. In addition, MIM also has some other functions to help to do
 training, parameter searching and model filtering, etc.
 
-Or, you can use pip to install MMClassification with `pip install mmcls`. In
+Or, you can use pip to install MMClassification with `python3 -m pip install mmcls`. In
 this situation, if you want to use mmcv-full, please install it manually in
 advance.
 
@@ -139,7 +139,7 @@ version number).
    Or use pip, and if you want to use mmcv-full, you need to install it manually in advance.
 
    ```shell
-   pip install -e .
+   python3 -m pip install -e .
    ```
 
 ## Another option: Docker Image

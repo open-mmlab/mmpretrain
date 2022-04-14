@@ -37,7 +37,7 @@ The config for a pre-commit hook is stored in [.pre-commit-config](https://githu
 After you clone the repository, you will need to install initialize pre-commit hook.
 
 ```shell
-pip install -U pre-commit
+python3 -m pip install -U pre-commit
 ```
 
 From the repository folder

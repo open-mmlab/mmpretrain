@@ -83,7 +83,7 @@ MMClassification 和 MMCV 的适配关系如下，请安装正确版本的 MMCV 
    一个更好的选择是使用 [MIM](https://github.com/open-mmlab/mim) 来自动选择适合你的 mmcv-full 版本。在使用 MIM 安装 MMClassification 的时候，它就会自动完成 mmcv-full 的安装。
 
    ```shell
-   pip install openmim
+   python3 -m pip install openmim
    ```
 
 ## 安装 MMClassification 库
@@ -97,7 +97,7 @@ MMClassification 和 MMCV 的适配关系如下，请安装正确版本的 MMCV 
 
 如果你已经安装了 MIM，那么只需要使用 `mim install mmcls` 命令来安装 MMClassification。MIM 将会根据你的环境选择安装合适的 mmcv-full 版本。另外，MIM 还提供了一系列其他功能来协助进行训练、参数搜索及模型筛选等。
 
-或者，你可以直接通过 pip 来安装，使用 `pip install mmcls` 命令。这种情况下，如果你希望使用 mmcv-full，那么需要提前手动安装 mmcv-full。
+或者，你可以直接通过 pip 来安装，使用 `python3 -m pip install mmcls` 命令。这种情况下，如果你希望使用 mmcv-full，那么需要提前手动安装 mmcv-full。
 
 ### 基于 MMClassification 进行开发
 
@@ -129,7 +129,7 @@ MMClassification 和 MMCV 的适配关系如下，请安装正确版本的 MMCV 
    或者使用 pip，如果你希望使用 mmcv-full，你需要提前手动安装。
 
    ```shell
-   pip install -e .
+   python3 -m pip install -e .
    ```
 
 ## 利用 Docker 镜像安装 MMClassification

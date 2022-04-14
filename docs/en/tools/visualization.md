@@ -131,7 +131,7 @@ python tools/visualizations/vis_lr.py configs/repvgg/repvgg-B3g4_4xb64-autoaug-l
 
 ## Class Activation Map Visualization
 
-MMClassification provides `tools\visualizations\vis_cam.py` tool to visualize class activation map. Please use `pip install "grad-cam>=1.3.6"` command to install [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam).
+MMClassification provides `tools\visualizations\vis_cam.py` tool to visualize class activation map. Please use `python3 -m pip install "grad-cam>=1.3.6"` command to install [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam).
 
 The supported methods are as follows:
 

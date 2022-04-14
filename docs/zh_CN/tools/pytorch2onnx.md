@@ -20,7 +20,7 @@
 2. 安装 onnx 和 onnxruntime。
 
   ```shell
-  pip install onnx onnxruntime==1.5.1
+  python3 -m pip install onnx onnxruntime==1.5.1
   ```
 
 ### 使用方法
