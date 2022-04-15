@@ -32,7 +32,7 @@ class ConditionalPositionEncoding(BaseModule):
         H, W = hw_shape
         feat_token = x
         # convert (B, N, C) to (B, C, H, W)
-        cnn_feat = feat_token.transpose(1, 2).view(B, C, H, W)
+        cnn_feat = feat_token.transpose(1, 2).view(B, C, H, W).contiguous()
         if self.stride == 1:
             x = self.proj(cnn_feat) + cnn_feat
         else:

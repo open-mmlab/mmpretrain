@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.22.1(15/4/2022)
+
+### New Features
+
+- [Feature] Support resize relative position embedding in `SwinTransformer`. ([#749](https://github.com/open-mmlab/mmclassification/pull/749))
+- [Feature] Add PoolFormer backbone and checkpoints. ([#746](https://github.com/open-mmlab/mmclassification/pull/746))
+
+### Improvements
+
+- [Enhance] Improve CPE performance by reduce memory copy. ([#762](https://github.com/open-mmlab/mmclassification/pull/762))
+- [Enhance] Add extra dataloader settings in configs. ([#752](https://github.com/open-mmlab/mmclassification/pull/752))
+
 ## v0.22.0(30/3/2022)
 
 ### Highlights
