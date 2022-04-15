@@ -201,8 +201,9 @@ class PixelEmbed(BaseModule):
 
 @BACKBONES.register_module()
 class TNT(BaseBackbone):
-    """ Transformer in Transformer
-    A PyTorch implement of : `Transformer in Transformer
+    """Transformer in Transformer.
+
+    A PyTorch implement of: `Transformer in Transformer
     <https://arxiv.org/abs/2103.00112>`_
 
     Inspiration from

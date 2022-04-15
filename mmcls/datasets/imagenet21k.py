@@ -31,8 +31,8 @@ class ImageNet21k(CustomDataset):
             - If is string, it should be a file path, and the every line of
               the file is a name of a class.
             - If is a sequence of string, every item is a name of class.
-            - If is None, use ``cls.CLASSES`` or the names of sub folders
-              (If use the second way to arrange samples).
+            - If is None, the object won't have category information.
+              (Not recommended)
 
             Defaults to None.
         ann_file (str, optional): The annotation file. If is string, read
