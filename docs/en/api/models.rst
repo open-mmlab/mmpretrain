@@ -63,6 +63,7 @@ Backbones
    MobileNetV2
    MobileNetV3
    PCPVT
+   PoolFormer
    RegNet
    RepMLPNet
    RepVGG
