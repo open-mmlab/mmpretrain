@@ -6,11 +6,10 @@ import numpy as np
 import torch
 import torch.distributed as dist
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
-from mmcv.runner import (DistSamplerSeedHook, Fp16OptimizerHook,
+from mmcv.runner import (DistSamplerSeedHook, Fp16OptimizerHook, OptimizerHook
                          build_optimizer, build_runner, get_dist_info)
 from mmcv.runner.hooks import DistEvalHook, EvalHook
 
-from mmcls.core import DistOptimizerHook
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.utils import get_root_logger
 
@@ -180,7 +179,7 @@ def train_model(model,
         optimizer_config = Fp16OptimizerHook(
             **cfg.optimizer_config, **fp16_cfg, distributed=distributed)
     elif distributed and 'type' not in cfg.optimizer_config:
-        optimizer_config = DistOptimizerHook(**cfg.optimizer_config)
+        optimizer_config = OptimizerHook(**cfg.optimizer_config)
     else:
         optimizer_config = cfg.optimizer_config
 
