@@ -12,18 +12,14 @@ paramwise_cfg = dict(custom_keys={
 
 model = dict(
     head=dict(
-        loss=dict(type='CrossEntropyLoss', loss_weight=1.0, _delete_=True),
-    ),
+        loss=dict(type='CrossEntropyLoss', loss_weight=1.0, _delete_=True), ),
     backbone=dict(
         img_size=224,
         init_cfg=dict(
             type='Pretrained',
-            checkpoint='https://download.openmmlab.com/mmclassification/v0/vit/pretrain/vit-base-p16_3rdparty_pt-64xb64_in1k-224_20210928-02284250.pth', # noqa
+            checkpoint='https://download.openmmlab.com/mmclassification/v0/vit/pretrain/vit-base-p16_3rdparty_pt-64xb64_in1k-224_20210928-02284250.pth',  # noqa
             _delete_=True,
-            prefix='backbone'
-            )
-        )
-    )
+            prefix='backbone')))
 
 img_norm_cfg = dict(
     mean=[127.5, 127.5, 127.5], std=[127.5, 127.5, 127.5], to_rgb=True)
@@ -56,14 +52,10 @@ data = dict(
     drop_last=True,
     train=dict(pipeline=train_pipeline),
     train_dataloader=dict(mode='async'),
-    val=dict(pipeline=test_pipeline,),
-    val_dataloader=dict(
-        samples_per_gpu=4,
-        workers_per_gpu=1),
+    val=dict(pipeline=test_pipeline, ),
+    val_dataloader=dict(samples_per_gpu=4, workers_per_gpu=1),
     test=dict(pipeline=test_pipeline),
-    test_dataloader=dict(
-        samples_per_gpu=4,
-        workers_per_gpu=1))
+    test_dataloader=dict(samples_per_gpu=4, workers_per_gpu=1))
 
 # remove clip-norm
 optimizer_config = dict()
@@ -90,30 +82,24 @@ lr_config = dict(
 # model partition config
 ipu_model_cfg = dict(
     train_split_edges=[
-        dict(
-            layer_to_call='backbone.patch_embed',
-            ipu_id=0),
-        dict(
-            layer_to_call='backbone.layers.3',
-            ipu_id=1),
-        dict(
-            layer_to_call='backbone.layers.6',
-            ipu_id=2),
-        dict(
-            layer_to_call='backbone.layers.9',
-            ipu_id=3)],
-    train_ckpt_nodes=[
-        'backbone.layers.{}'.format(i) for i in range(12)
-    ])
+        dict(layer_to_call='backbone.patch_embed', ipu_id=0),
+        dict(layer_to_call='backbone.layers.3', ipu_id=1),
+        dict(layer_to_call='backbone.layers.6', ipu_id=2),
+        dict(layer_to_call='backbone.layers.9', ipu_id=3)
+    ],
+    train_ckpt_nodes=['backbone.layers.{}'.format(i) for i in range(12)])
 
 # device config
 options_cfg = dict(
     randomSeed=42,
     partialsType='half',
-    train_cfg=dict(executionStrategy='SameAsIpu',
-                    Training=dict(gradientAccumulation=32),
-                    availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],),
-    eval_cfg=dict(deviceIterations=1,),)
+    train_cfg=dict(
+        executionStrategy='SameAsIpu',
+        Training=dict(gradientAccumulation=32),
+        availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],
+    ),
+    eval_cfg=dict(deviceIterations=1, ),
+)
 
 # add model partition config and device config to runner
 runner = dict(

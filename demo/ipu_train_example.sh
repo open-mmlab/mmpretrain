@@ -1,5 +1,5 @@
 
-   
+
 # get SOTA accuracy 81.2 for 224 input ViT fine-tuning, reference is below:
 # https://github.com/google-research/vision_transformer#available-vit-models
 # cfg: vit-base-p16_ft-4xb544_in1k-224_ipu train model in fp16 precision

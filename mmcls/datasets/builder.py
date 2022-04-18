@@ -8,8 +8,8 @@ import numpy as np
 import torch
 from mmcv.parallel import collate
 from mmcv.runner import get_dist_info
-from mmcv.utils import Registry, build_from_cfg, digit_version
-from mmcv.device.ipu import IS_IPU
+from mmcv.utils import (IS_IPU_AVAILABLE, Registry, build_from_cfg,
+                        digit_version)
 from torch.utils.data import DataLoader
 
 if platform.system() != 'Windows':
@@ -138,15 +138,16 @@ def build_dataloader(dataset,
 
     if digit_version(torch.__version__) >= digit_version('1.8.0'):
         kwargs['persistent_workers'] = persistent_workers
-    if IS_IPU:
+    if IS_IPU_AVAILABLE:
         from mmcv.device.ipu import IPUDataLoader
-        data_loader = IPUDataLoader(None,
-                                    dataset,
-                                    batch_size=samples_per_gpu,
-                                    num_workers=num_workers,
-                                    shuffle=shuffle,
-                                    worker_init_fn=init_fn,
-                                    **kwargs)
+        data_loader = IPUDataLoader(
+            dataset,
+            None,
+            batch_size=samples_per_gpu,
+            num_workers=num_workers,
+            shuffle=shuffle,
+            worker_init_fn=init_fn,
+            **kwargs)
     else:
         data_loader = DataLoader(
             dataset,
