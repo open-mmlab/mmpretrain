@@ -54,7 +54,7 @@ class TestVAN(TestCase):
         model = VAN(**cfg)
 
         for i in range(len(depths)):
-            stage = getattr(model, f'block{i + 1}')
+            stage = getattr(model, f'blocks{i + 1}')
             self.assertEqual(stage[-1].out_channels, embed_dims[i])
             self.assertEqual(len(stage), depths[i])
 
@@ -129,7 +129,7 @@ class TestVAN(TestCase):
         cfg['drop_path_rate'] = 0.2
         model = VAN(**cfg)
         depths = model.arch_settings['depths']
-        stages = [model.block1, model.block2, model.block3, model.block4]
+        stages = [model.blocks1, model.blocks2, model.blocks3, model.blocks4]
         blocks = chain(*[stage for stage in stages])
         total_depth = sum(depths)
         dpr = [
@@ -165,8 +165,14 @@ class TestVAN(TestCase):
         for param in model.patch_embed1.parameters():
             self.assertFalse(param.requires_grad)
         for i in range(frozen_stages + 1):
-            stage = getattr(model, f'patch_embed{i+1}')
-            for param in stage.parameters():
+            patch = getattr(model, f'patch_embed{i+1}')
+            for param in patch.parameters():
+                self.assertFalse(param.requires_grad)
+            blocks = getattr(model, f'blocks{i + 1}')
+            for param in blocks.parameters():
+                self.assertFalse(param.requires_grad)
+            norm = getattr(model, f'norm{i + 1}')
+            for param in norm.parameters():
                 self.assertFalse(param.requires_grad)
 
         # the second stage should require grad.
@@ -174,8 +180,8 @@ class TestVAN(TestCase):
             patch = getattr(model, f'patch_embed{i + 1}')
             for param in patch.parameters():
                 self.assertTrue(param.requires_grad)
-            stage = getattr(model, f'block{i+1}')
-            for param in stage.parameters():
+            blocks = getattr(model, f'blocks{i+1}')
+            for param in blocks.parameters():
                 self.assertTrue(param.requires_grad)
             norm = getattr(model, f'norm{i + 1}')
             for param in norm.parameters():
