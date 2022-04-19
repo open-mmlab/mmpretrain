@@ -75,25 +75,54 @@ def train_model(model,
                 timestamp=None,
                 device=None,
                 meta=None):
+    """Train a model.
+
+    This method will build dataloaders, wrap the model and build a runner
+    according to the provided config.
+
+    Args:
+        model (:obj:`torch.nn.Module`): The model to be run.
+        dataset (:obj:`mmcls.datasets.BaseDataset` | List[BaseDataset]):
+            The dataset used to train the model. It can be a single dataset,
+            or a list of dataset with the same length as workflow.
+        cfg (:obj:`mmcv.utils.Config`): The configs of the experiment.
+        distributed (bool): Whether to train the model in a distributed
+            environment. Defaults to False.
+        validate (bool): Whether to do validation with
+            :obj:`mmcv.runner.EvalHook`. Defaults to False.
+        timestamp (str, optional): The timestamp string to auto generate the
+            name of log files. Defaults to None.
+        device (str, optional): TODO
+        meta (dict, optional): A dict records some import information such as
+            environment info and seed, which will be logged in logger hook.
+            Defaults to None.
+    """
     logger = get_root_logger()
 
     # prepare data loaders
     dataset = dataset if isinstance(dataset, (list, tuple)) else [dataset]
 
-    sampler_cfg = cfg.data.get('sampler', None)
+    # The default loader config
+    loader_cfg = dict(
+        # cfg.gpus will be ignored if distributed
+        num_gpus=len(cfg.gpu_ids),
+        dist=distributed,
+        round_up=True,
+        seed=cfg.get('seed'),
+        sampler_cfg=cfg.get('sampler', None),
+    )
+    # The overall dataloader settings
+    loader_cfg.update({
+        k: v
+        for k, v in cfg.data.items() if k not in [
+            'train', 'val', 'test', 'train_dataloader', 'val_dataloader',
+            'test_dataloader'
+        ]
+    })
+    # The specific dataloader settings
+    train_loader_cfg = {**loader_cfg, **cfg.data.get('train_dataloader', {})}
 
-    data_loaders = [
-        build_dataloader(
-            ds,
-            cfg.data.samples_per_gpu,
-            cfg.data.workers_per_gpu,
-            # cfg.gpus will be ignored if distributed
-            num_gpus=len(cfg.gpu_ids),
-            dist=distributed,
-            round_up=True,
-            seed=cfg.seed,
-            sampler_cfg=sampler_cfg) for ds in dataset
-    ]
+    data_loaders = [build_dataloader(ds, **train_loader_cfg) for ds in dataset]
 
     # put model on gpus
     if distributed:
@@ -169,13 +198,14 @@ def train_model(model,
     # register eval hooks
     if validate:
         val_dataset = build_dataset(cfg.data.val, dict(test_mode=True))
-        val_dataloader = build_dataloader(
-            val_dataset,
-            samples_per_gpu=cfg.data.samples_per_gpu,
-            workers_per_gpu=cfg.data.workers_per_gpu,
-            dist=distributed,
-            shuffle=False,
-            round_up=True)
+        # The specific dataloader settings
+        val_loader_cfg = {
+            **loader_cfg,
+            'shuffle': False,  # Not shuffle by default
+            'sampler_cfg': None,  # Not use sampler by default
+            **cfg.data.get('val_dataloader', {}),
+        }
+        val_dataloader = build_dataloader(val_dataset, **val_loader_cfg)
         eval_cfg = cfg.get('evaluation', {})
         eval_cfg['by_epoch'] = cfg.runner['type'] != 'IterBasedRunner'
         eval_hook = DistEvalHook if distributed else EvalHook

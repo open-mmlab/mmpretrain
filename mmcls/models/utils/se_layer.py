@@ -22,6 +22,7 @@ class SELayer(BaseModule):
             used when ``squeeze_channels`` is None. Default: 8.
         conv_cfg (None or dict): Config dict for convolution layer. Default:
             None, which means using conv2d.
+        return_weight(bool): Whether to return the weight. Default: False.
         act_cfg (dict or Sequence[dict]): Config dict for activation layer.
             If act_cfg is a dict, two activation layers will be configurated
             by this dict. If act_cfg is a sequence of dicts, the first
@@ -38,6 +39,7 @@ class SELayer(BaseModule):
                  bias='auto',
                  conv_cfg=None,
                  act_cfg=(dict(type='ReLU'), dict(type='Sigmoid')),
+                 return_weight=False,
                  init_cfg=None):
         super(SELayer, self).__init__(init_cfg)
         if isinstance(act_cfg, dict):
@@ -50,6 +52,7 @@ class SELayer(BaseModule):
         assert isinstance(squeeze_channels, int) and squeeze_channels > 0, \
             '"squeeze_channels" should be a positive integer, but get ' + \
             f'{squeeze_channels} instead.'
+        self.return_weight = return_weight
         self.conv1 = ConvModule(
             in_channels=channels,
             out_channels=squeeze_channels,
@@ -71,4 +74,7 @@ class SELayer(BaseModule):
         out = self.global_avgpool(x)
         out = self.conv1(out)
         out = self.conv2(out)
-        return x * out
+        if self.return_weight:
+            return out
+        else:
+            return x * out

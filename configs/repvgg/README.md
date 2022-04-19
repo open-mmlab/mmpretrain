@@ -11,21 +11,6 @@ We present a simple but powerful architecture of convolutional neural network, w
 <img src="https://user-images.githubusercontent.com/26739999/142573223-f7f14d32-ea08-43a1-81ad-5a6a83ee0122.png" width="60%"/>
 </div>
 
-## Introduction
-
-The checkpoints provided are all `training-time` models. Use the reparameterize tool to switch them to more efficient `inference-time` architecture, which not only has fewer parameters but also less calculations.
-
-```bash
-python tools/convert_models/reparameterize_repvgg.py ${CFG_PATH} ${SRC_CKPT_PATH} ${TARGET_CKPT_PATH}
-```
-
-`${CFG_PATH}` is the config file, `${SRC_CKPT_PATH}` is the source chenpoint file, `${TARGET_CKPT_PATH}` is the target deploy weight file path.
-
-To use reparameterized repvgg weight, the config file must switch to [the deploy config files](./deploy) as below:
-
-```bash
-python tools/test.py ${RapVGG_Deploy_CFG} ${CHECK_POINT}
-```
 
 ## Results and models
 
@@ -47,6 +32,61 @@ python tools/test.py ${RapVGG_Deploy_CFG} ${CHECK_POINT}
 | RepVGG-D2se\* |  200   |  133.33 (train) \| 120.39 (deploy)  | 36.56 (train) \| 32.85 (deploy)  |   81.81   |   95.94   | [config (train)](https://github.com/open-mmlab/mmclassification/blob/master/configs/repvgg/repvgg-D2se_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py) \|[config (deploy)](https://github.com/open-mmlab/mmclassification/blob/master/configs/repvgg/deploy/repvgg-D2se_deploy_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-D2se_3rdparty_4xb64-autoaug-lbs-mixup-coslr-200e_in1k_20210909-cf3139b7.pth) |
 
 *Models with \* are converted from the [official repo](https://github.com/DingXiaoH/RepVGG). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
+
+## How to use
+
+The checkpoints provided are all `training-time` models. Use the reparameterize tool to switch them to more efficient `inference-time` architecture, which not only has fewer parameters but also less calculations.
+
+### Use tool
+
+Use provided tool to reparameterize the given model and save the checkpoint:
+
+```bash
+python tools/convert_models/reparameterize_model.py ${CFG_PATH} ${SRC_CKPT_PATH} ${TARGET_CKPT_PATH}
+```
+
+`${CFG_PATH}` is the config file, `${SRC_CKPT_PATH}` is the source chenpoint file, `${TARGET_CKPT_PATH}` is the target deploy weight file path.
+
+To use reparameterized weights, the config file must switch to the deploy config files.
+
+```bash
+python tools/test.py ${Deploy_CFG} ${Deploy_Checkpoint} --metrics accuracy
+```
+
+### In the code
+
+Use `backbone.switch_to_deploy()` or `classificer.backbone.switch_to_deploy()` to switch to the deploy mode. For example:
+
+```python
+from mmcls.models import build_backbone
+
+backbone_cfg=dict(type='RepVGG',arch='A0'),
+backbone = build_backbone(backbone_cfg)
+backbone.switch_to_deploy()
+```
+
+or
+
+```python
+from mmcls.models import build_classifier
+
+cfg = dict(
+    type='ImageClassifier',
+    backbone=dict(
+        type='RepVGG',
+        arch='A0'),
+    neck=dict(type='GlobalAveragePooling'),
+    head=dict(
+        type='LinearClsHead',
+        num_classes=1000,
+        in_channels=1280,
+        loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
+        topk=(1, 5),
+    ))
+
+classifier = build_classifier(cfg)
+classifier.backbone.switch_to_deploy()
+```
 
 ## Citation
 

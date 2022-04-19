@@ -59,7 +59,14 @@ You can switch between Chinese and English documentation in the lower-left corne
 .. toctree::
    :caption: API 参考文档
 
-   api.rst
+   mmcls.apis <api/apis>
+   mmcls.core <api/core>
+   mmcls.models <api/models>
+   mmcls.models.utils <api/models.utils>
+   mmcls.datasets <api/datasets>
+   数据转换 <api/transforms>
+   批数据增强 <api/models.utils.augment>
+   mmcls.utils <api/utils>
 
 
 .. toctree::

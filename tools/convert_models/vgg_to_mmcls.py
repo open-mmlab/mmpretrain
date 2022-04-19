@@ -104,7 +104,7 @@ def main():
     parser.add_argument(
         '--bn', action='store_true', help='whether original vgg has BN')
     parser.add_argument(
-        '--layer_num',
+        '--layer-num',
         type=int,
         choices=[11, 13, 16, 19],
         default=11,

@@ -18,7 +18,7 @@ class ConcatDataset(_ConcatDataset):
     add `get_cat_ids` function.
 
     Args:
-        datasets (list[:obj:`Dataset`]): A list of datasets.
+        datasets (list[:obj:`BaseDataset`]): A list of datasets.
         separate_eval (bool): Whether to evaluate the results
             separately if it is used as validation dataset.
             Defaults to True.
@@ -117,7 +117,7 @@ class RepeatDataset(object):
     epochs.
 
     Args:
-        dataset (:obj:`Dataset`): The dataset to be repeated.
+        dataset (:obj:`BaseDataset`): The dataset to be repeated.
         times (int): Repeat times.
     """
 
@@ -157,9 +157,11 @@ class RepeatDataset(object):
 class ClassBalancedDataset(object):
     r"""A wrapper of repeated dataset with repeat factor.
 
-    Suitable for training on class imbalanced datasets like LVIS. Following
-    the sampling strategy in [#1]_, in each epoch, an image may appear multiple
-    times based on its "repeat factor".
+    Suitable for training on class imbalanced datasets like LVIS. Following the
+    sampling strategy in `this paper`_, in each epoch, an image may appear
+    multiple times based on its "repeat factor".
+
+    .. _this paper: https://arxiv.org/pdf/1908.03195.pdf
 
     The repeat factor for an image is a function of the frequency the rarest
     category labeled in that image. The "frequency of category c" in [0, 1]
@@ -184,16 +186,13 @@ class ClassBalancedDataset(object):
         .. math::
             r(I) = \max_{c \in L(I)} r(c)
 
-    References:
-        .. [#1]  https://arxiv.org/pdf/1908.03195.pdf
-
     Args:
-        dataset (:obj:`CustomDataset`): The dataset to be repeated.
+        dataset (:obj:`BaseDataset`): The dataset to be repeated.
         oversample_thr (float): frequency threshold below which data is
-            repeated. For categories with `f_c` >= `oversample_thr`, there is
-            no oversampling. For categories with `f_c` < `oversample_thr`, the
-            degree of oversampling following the square-root inverse frequency
-            heuristic above.
+            repeated. For categories with ``f_c`` >= ``oversample_thr``, there
+            is no oversampling. For categories with ``f_c`` <
+            ``oversample_thr``, the degree of oversampling following the
+            square-root inverse frequency heuristic above.
     """
 
     def __init__(self, dataset, oversample_thr):
@@ -278,7 +277,7 @@ class KFoldDataset:
     and use the fold left to do validation.
 
     Args:
-        dataset (:obj:`CustomDataset`): The dataset to be divided.
+        dataset (:obj:`BaseDataset`): The dataset to be divided.
         fold (int): The fold used to do validation. Defaults to 0.
         num_splits (int): The number of all folds. Defaults to 5.
         test_mode (bool): Use the training dataset or validation dataset.
@@ -310,6 +309,14 @@ class KFoldDataset:
             self.indices = indices[test_start:test_end]
         else:
             self.indices = indices[:test_start] + indices[test_end:]
+
+    def get_cat_ids(self, idx):
+        return self.dataset.get_cat_ids(self.indices[idx])
+
+    def get_gt_labels(self):
+        dataset_gt_labels = self.dataset.get_gt_labels()
+        gt_labels = np.array([dataset_gt_labels[idx] for idx in self.indices])
+        return gt_labels
 
     def __getitem__(self, idx):
         return self.dataset[self.indices[idx]]
