@@ -1,8 +1,8 @@
 # Tutorial 0: Build Backbones
 
-In the neural network, the backbone network is an important way to extract features. In tasks such as classification, detection, segmentation, video understanding and etc., the backbone network is an essential component. Since image feature extraction is more general for various visual tasks, it can "borrow" the backbone network and corresponding model weights pre-trained in classification tasks. What's more the classification task is relatively simple, the huge ImageNet dataset can be used for pre-training, and further training the detection network on this basis can not only improve the convergence speed of the model, but also improve the accuracy.
+In the neural networks, the backbone is an important way to extract features. In tasks such as classification, detection, segmentation, video understanding and etc., the backbones are essential component. Since image feature extraction is more general for various visual tasks, it can "borrow" the backbone network and corresponding model weights pre-trained in classification tasks. What's more? the classification task is relatively simple, the huge ImageNet dataset can be used for pre-training, and further training the detection network on this basis can not only improve the convergence speed of the model, but also improve the accuracy.
 
-In the OpenMMLab project, MMClassification not only acts as a toolbox and benchmark for classification tasks, but also a backbone network library. This document mainly describes how to use these backbone networks. Part of the code in the document can only be run after configuring the required environment. For details, see [Installation](https://mmclassification.readthedocs.io/en/latest/install.html).
+In the OpenMMLab project, MMClassification not only acts as a toolbox and benchmark for classification tasks, but also a **backbone library**. This document mainly describes how to build these backbones in MMClassification. All the code in the document can only be run after configuring the required environment. For details, see [Installation](https://mmclassification.readthedocs.io/en/latest/install.html).
 
 <!-- TOC -->
 
@@ -14,7 +14,7 @@ In the OpenMMLab project, MMClassification not only acts as a toolbox and benchm
 
 ## Build backbones by interface
 
-MMClassification provides the `build_backbone` interface to build backbones. The needed parameter is a dictionary, including the backbone network type parameter `type` and other configurable parameters. The backbone currently supported by MMClassification can be found in [here](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/models/backbones/__init__.py), and the relevant parameters of the backbone network can be found in [API ](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.backbones).
+MMClassification provides the `build_backbone` interface to build backbones. It expects to pass in a dictionary, including the backbone type parameter `type` and other configurable parameters. The backbone currently supported by MMClassification can be found in [API Docs](https://mmclassification.readthedocs.io/en/latest/api/models.html#backbones).
 
 ```note
 When using the related tools provided by MMClassification, such as train, test and other tools, the build_backbone interface will be implicitly called to construct the backbone network!
@@ -22,12 +22,12 @@ When using the related tools provided by MMClassification, such as train, test a
 
 ### Basic usage of `build_backbone` interface
 
-- "type" : Name of backbone，supported algorithms reference [list](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/models/backbones/__init__.py);
+- "type" : Names of backbone，supported algorithms reference [list](https://mmclassification.readthedocs.io/en/latest/api/models.html#backbones);
 - "depth" or "arch" : The architecture of the specified backbone.
 
 ***ResNet50***
 
-in ResNet, The architecture of the model is configured by `depth`, e.g. 18, 34, 50, 101.
+in ResNet, The architecture of the model is configured by `depth`, including 18, 34, 50, 101 and 152.
 
 ```
 import torch
@@ -52,7 +52,7 @@ torch.Size([1, 2048, 7, 7])
 
 ***ViT***
 
-in ViT, using parameter `arch` to specify bancbone architecture, such as 'tiny', 'base' and 'lagre'.
+in `VisionTransformer`, using parameter 'arch' to specify bancbone architecture, such as 'tiny', 'base' and 'lagre'.
 
 ```
 import torch
@@ -79,7 +79,7 @@ torch.Size([1, 768, 14, 14])
 
 ### Output multi-feature map
 
-In detection and segmentation tasks, the backbones are often required to output multiple feature maps for multi-scale processing. In order to meet this requirement, all backboness of MMClassification support multi-feature map output, which is configured by the parameter `out_indices`, generally a ` Sequence[int]`, such as `tuple` or `list`.
+In detection, segmentation and other downstream tasks, generally the backbones are required to output multiple feature maps for multi-scale processing. In order to meet this requirement, all backboness of MMClassification support multi-feature map output, which is configured by the parameter `out_indices`, generally a ` Sequence[int]`, such as `tuple` or `list`.
 
 ***ResNet***
 ```
@@ -266,7 +266,8 @@ model = dict(
 ## Using TIMMBackbone
 
 [`TIMM`](https://github.com/rwightman/pytorch-image-models/) is a very popular PyTorch-based algorithm library, including a wide variety of backbones, widely used in academia and industry. Compared to MMClassification, `TIMM` has a very large advantage in model diversity, but the MMClassification code is more flexible for training and adding new components. MMClassification implements the [`TIMMBackbone`](https://github.com/open-mmlab/mmclassification/blob/f0ee5dcb2aca434e972c7969a5cd6edc4d56c97a/mmcls/models/backbones/timm_backbone.py#L39) wrapper for more convenient use of the TIMM backbone. Note that:
-1. Using 'model_name' to Specify algorithms, architecture and training;
+
+1. Using 'model_name' to Specify algorithms, architecture and training information, the same parameter in `timm.create_model`;
 2. If you want to output multiple feature maps, you need to add `features_only=True`;
 3. If you want to load a pretrained model, you need to add `pretrained=True`.
 

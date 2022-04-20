@@ -1,6 +1,6 @@
 # 教程 0：如何调用MMClassification主干网络
 
-在神经网络中，主干网络是重要的提取特征方式，在分类，检测，分割以及视频理解等等视觉任务中，主干网络都是必不可少的组成部分。
+在神经网络中，主干网络是一种重要的提取特征方式，在分类，检测，分割以及视频理解等等视觉任务中，主干网络都是必不可少的组成部分。
 由于图片特征提取较为通用，因而可以“借用”在分类任务中预训练的主干网络和相应的模型权重。因为分类任务比较简单，故而可以利用庞大的 ImageNet 数据集进行预训练，而在此基础上进一步训练检测网络、分割网络以及其他下游任务中，既能够提高模型收敛速度，又能够提高精度。
 
 MMClassification 在 OpenMMLab 项目中，不仅作为分类任务的工具箱以及基准，还充当**主干网络库**的角色，本文档主要介绍如何调用 MMClassification 的主干网络。文档中的示例，需要配置所需环境后才可运行，详见[安装](https://mmclassification.readthedocs.io/zh_CN/latest/install.html)。
@@ -15,20 +15,20 @@ MMClassification 在 OpenMMLab 项目中，不仅作为分类任务的工具箱�
 
 ## 通过接口构建主干网
 
-MMClassification 提供了 `build_backbone` 接口实例化主干网络。其传入参数为一个字典或者 `mmcv.ConfigDict` 数据类型，包括主干网类别参数 `type` 以及其他可配置参数。目前 MMClassification 已支持的主干网络可参考[这里](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/models/backbones/__init__.py)，主干网络的相关参数可参考 [API](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.backbones)。
+MMClassification 提供了 `build_backbone` 接口实例化主干网络。其传入参数为一个字典或者 `mmcv.ConfigDict` 数据类型，包括主干网类别参数 'type' 以及其他可配置参数。目前 MMClassification 已支持的主干网络及相关参数可参考 [API](https://mmclassification.readthedocs.io/ch_CH/latest/api/models.html#backbones) 文档。
 
-```
+```note
 使用 MMClassification 提供的相关工具，比如 train、test 等工具时会隐式调用 build_backbone 接口构造主干网络！
 ```
 
 ### 基本调用方法
 
-- "type" : 主干网络算法，已支持算法可参考[列表](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/models/backbones/__init__.py)；
-- "depth" 或者 "arch" ： 控制主干模型架构。
+- "type" : 主干网络算法，已支持算法可参考 [主干网络列表](https://mmclassification.readthedocs.io/ch_CH/latest/api/models.html#backbones)；
+- "depth" 或者 "arch" ： 配置主干模型架构。
 
-***ResNet50 示例***
+**ResNet50 示例**
 
-在 ResNet 中， 由 `depth` 控制模型的架构， 如 18, 34, 50, 101。
+在 `ResNet` 中， 由 'depth' 配置模型的架构， 可选项有 18, 34, 50, 101。
 
 ```
 import torch
@@ -50,9 +50,9 @@ Output
 torch.Size([1, 2048, 7, 7])
 ```
 
-***ViT 示例***
+**ViT 示例**
 
-在 ViT 中， 由 `arch` 控制模型的架构， 如 'tiny', 'base' 和 'lagre'。
+在 `VisionTransformer` 中， 通过 'arch' 配置模型的架构， 可选项有 'tiny', 'base' 和 'lagre'。
 
 ```
 import torch
@@ -79,7 +79,7 @@ torch.Size([1, 768, 14, 14])
 
 ### 输出多个特征图
 
-在检测，分割任务中，往往需要主干网络输出多个特征图进行多尺度的处理，为了满足这一需求 MMClassification 的所有主干网络都支持多特征图输出，由参数 `out_indices` 配置，一般为一个 `Sequence[int]`，如 `tuple` 或者 `list`。
+在检测，分割等任务中，往往需要主干网络输出多个特征图进行多尺度的处理，为了满足这一需求 MMClassification 的所有主干网络都支持多特征图输出，由参数 `out_indices` 配置，一般为一个 `Sequence[int]`，如 `tuple` 或者 `list`。
 
 **Swin-base 示例**
 
@@ -160,7 +160,7 @@ torch.Size([1, 2048, 7, 7])
 在一些下游任务，特别是数据集非常小的任务中，加载好预训练模型后，为了减小过拟合效应，需要冻结主干网络中前补的网络层（包括 BN ）。 MMClassification 提供 `frozen_stages` 配置该设置，要求传入一个 `int` 数据， 默认为 '-1'，表示不冻结任何网络层； '0' 表示冻结 **`stage0` 以及其之前的网络层**（部分算法为 `layer0`）。
 
 
-**ConvNeXt示例**
+**ConvNeXt 示例**
 
 ```
 import torch
@@ -233,7 +233,7 @@ model = dict(
 
 **在mmsegmentation中使用mmcls的主干网络**
 
-在 `mmsegmentation` 中使用 `mmcls` 的主干网络与在 `mmdet` 的用法一致。 如在 `mmsegmentation` 中使用 `mmcls` 的 `RegNet`。
+在 `MMSegmentation` 中使用 `mmcls` 的主干网络与在 `MMDet` 的用法一致。 如在 `MMSegmentation` 中使用 `mmcls` 的 `RegNet`。
 
 ```
 # 直接继承 uppernet 的原始配置，路径 https://github.com/open-mmlab/mmsegmentation/tree/master/configs/upernet
@@ -267,7 +267,7 @@ model = dict(
 
 [`TIMM`](https://github.com/rwightman/pytorch-image-models/) 是一个非常流行的基于 PyTorch 的算法库，包含丰富的主干网络，在学术界以及工业界都被广泛运用。相对于 MMClassification，`TIMM` 在模型多样性上有非常大的优势，但是 MMClassification 代码对于训练和添加新组件更加灵活。 MMCclassification 实现了 [`TIMMBackbone`](https://github.com/open-mmlab/mmclassification/blob/f0ee5dcb2aca434e972c7969a5cd6edc4d56c97a/mmcls/models/backbones/timm_backbone.py#L39) 包装器以更加方便的使用 TIMM 主干网络。需要注意:
 
-1. 使用 'model_name' 指定算法名以及架构;
+1. 使用 'model_name' 指定算法名，架构以及其他训练信息，即 `timm.create_model` 的 'model_name';
 2. 如果想输出多个特征图， 需要添加 `features_only=True`;
 3. 如果想加载预训练模型，需要添加 `pretrained=True`。
 
