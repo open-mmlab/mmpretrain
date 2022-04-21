@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from .attention import MultiheadAttention, ShiftWindowMSA
+from .attention import ShiftWindowMSA_v2
 from .augment.augments import Augments
 from .channel_shuffle import channel_shuffle
 from .embed import (HybridEmbed, PatchEmbed, PatchMerging, resize_pos_embed,
@@ -15,5 +16,5 @@ __all__ = [
     'to_ntuple', 'to_2tuple', 'to_3tuple', 'to_4tuple', 'PatchEmbed',
     'PatchMerging', 'HybridEmbed', 'Augments', 'ShiftWindowMSA', 'is_tracing',
     'MultiheadAttention', 'ConditionalPositionEncoding', 'resize_pos_embed',
-    'resize_relative_position_bias_table'
+    'resize_relative_position_bias_table', 'ShiftWindowMSA_v2'
 ]

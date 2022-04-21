@@ -13,7 +13,7 @@ from mmcv.runner.base_module import BaseModule, ModuleList
 from mmcv.utils.parrots_wrapper import _BatchNorm
 
 from ..builder import BACKBONES
-from ..utils import (ShiftWindowMSA, resize_pos_embed,
+from ..utils import (ShiftWindowMSA_v2, resize_pos_embed,
                      resize_relative_position_bias_table, to_2tuple)
 from .base_backbone import BaseBackbone
 
@@ -73,7 +73,7 @@ class SwinBlock(BaseModule):
             **attn_cfgs
         }
         self.norm1 = build_norm_layer(norm_cfg, embed_dims)[1]
-        self.attn = ShiftWindowMSA(**_attn_cfgs)
+        self.attn = ShiftWindowMSA_v2(**_attn_cfgs)
 
         _ffn_cfgs = {
             'embed_dims': embed_dims,
@@ -91,13 +91,17 @@ class SwinBlock(BaseModule):
 
         def _inner_forward(x):
             identity = x
-            x = self.norm1(x)
+            # x = self.norm1(x)
             x = self.attn(x, hw_shape)
+            # move to the next
+            x = self.norm1(x)
             x = x + identity
 
             identity = x
-            x = self.norm2(x)
+            # x = self.norm2(x)
             x = self.ffn(x, identity=identity)
+            # move to the next
+            x = self.norm2(x)
 
             return x
 
@@ -332,8 +336,7 @@ class SwinTransformer(BaseBackbone):
         self.use_abs_pos_embed = use_abs_pos_embed
         self.interpolate_mode = interpolate_mode
         self.frozen_stages = frozen_stages
-        import pdb
-        pdb.set_trace()
+
         _patch_cfg = dict(
             in_channels=in_channels,
             input_size=img_size,
@@ -507,14 +510,11 @@ class SwinTransformer(BaseBackbone):
 
     def _prepare_relative_position_bias_table(self, state_dict, prefix, *args,
                                               **kwargs):
+        all_keys = list(state_dict.keys())
         state_dict_model = self.state_dict()
-        all_keys = list(state_dict_model.keys())
         for key in all_keys:
             if 'relative_position_bias_table' in key:
-                ckpt_key = prefix + key
-                if ckpt_key not in state_dict:
-                    continue
-                relative_position_bias_table_pretrained = state_dict[ckpt_key]
+                relative_position_bias_table_pretrained = state_dict[key]
                 relative_position_bias_table_current = state_dict_model[key]
                 L1, nH1 = relative_position_bias_table_pretrained.size()
                 L2, nH2 = relative_position_bias_table_current.size()
@@ -526,11 +526,11 @@ class SwinTransformer(BaseBackbone):
                         relative_position_bias_table_pretrained, nH1)
                     from mmcls.utils import get_root_logger
                     logger = get_root_logger()
-                    logger.info('Resize the relative_position_bias_table from '
-                                f'{state_dict[ckpt_key].shape} to '
-                                f'{new_rel_pos_bias.shape}')
-                    state_dict[ckpt_key] = new_rel_pos_bias
+                    logger.info(
+                        f'Resize the relative_position_bias_table from \
+                        {state_dict[key].shape} to {new_rel_pos_bias.shape}')
+                    state_dict[key] = new_rel_pos_bias
 
                     # The index buffer need to be re-generated.
-                    index_buffer = ckpt_key.replace('bias_table', 'index')
+                    index_buffer = key.replace('bias_table', 'index')
                     del state_dict[index_buffer]
