@@ -44,6 +44,23 @@ class MultiLabelDataset(BaseDataset):
         Returns:
             dict: evaluation results
         """
+        results = np.vstack(results)
+        gt_labels = self.get_gt_labels()
+        if indices is not None:
+            gt_labels = gt_labels[indices]
+        return self.evaluate_multi_label(
+            results=results,
+            gt_labels=gt_labels,
+            metric=metric,
+            metric_options=metric_options,
+            logger=logger)
+
+    @staticmethod
+    def evaluate_multi_label(results,
+                             gt_labels,
+                             metric='mAP',
+                             metric_options=None,
+                             logger=None):
         if metric_options is None or metric_options == {}:
             metric_options = {'thr': 0.5}
 
@@ -53,10 +70,7 @@ class MultiLabelDataset(BaseDataset):
             metrics = metric
         allowed_metrics = ['mAP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1']
         eval_results = {}
-        results = np.vstack(results)
-        gt_labels = self.get_gt_labels()
-        if indices is not None:
-            gt_labels = gt_labels[indices]
+
         num_imgs = len(results)
         assert len(gt_labels) == num_imgs, 'dataset testing results should '\
             'be of the same length as gt_labels.'

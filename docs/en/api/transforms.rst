@@ -169,3 +169,7 @@ ToTensor
 Transpose
 ---------------------
 .. autoclass:: Transpose
+
+FormatMultiTaskLabels
+---------------------
+.. autoclass:: FormatMultiTaskLabels

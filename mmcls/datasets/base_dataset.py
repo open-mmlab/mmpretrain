@@ -145,6 +145,24 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         Returns:
             dict: evaluation results
         """
+        results = np.vstack(results)
+        gt_labels = self.get_gt_labels()
+        if indices is not None:
+            gt_labels = gt_labels[indices]
+
+        return self.evaluate_single_label(
+            results=results,
+            gt_labels=gt_labels,
+            metric=metric,
+            metric_options=metric_options,
+            logger=logger)
+
+    @staticmethod
+    def evaluate_single_label(results,
+                              gt_labels,
+                              metric='accuracy',
+                              metric_options=None,
+                              logger=None):
         if metric_options is None:
             metric_options = {'topk': (1, 5)}
         if isinstance(metric, str):
@@ -154,11 +172,6 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         allowed_metrics = [
             'accuracy', 'precision', 'recall', 'f1_score', 'support'
         ]
-        eval_results = {}
-        results = np.vstack(results)
-        gt_labels = self.get_gt_labels()
-        if indices is not None:
-            gt_labels = gt_labels[indices]
         num_imgs = len(results)
         assert len(gt_labels) == num_imgs, 'dataset testing results should '\
             'be of the same length as gt_labels.'
@@ -171,6 +184,7 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         thrs = metric_options.get('thrs')
         average_mode = metric_options.get('average_mode', 'macro')
 
+        eval_results = {}
         if 'accuracy' in metrics:
             if thrs is not None:
                 acc = accuracy(results, gt_labels, topk=topk, thrs=thrs)

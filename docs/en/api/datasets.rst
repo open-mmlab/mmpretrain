@@ -46,6 +46,11 @@ Base classes
 
 .. autoclass:: MultiLabelDataset
 
+Multi-Task Dataset
+------------------
+
+.. autoclass:: MultiTaskDataset
+
 Dataset Wrappers
 ----------------
 

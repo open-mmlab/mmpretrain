@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from collections.abc import Sequence
+from typing import Any, Dict, List, Optional
 
 import mmcv
 import numpy as np
@@ -31,6 +32,37 @@ def to_tensor(data):
             f'Type {type(data)} cannot be converted to tensor.'
             'Supported types are: `numpy.ndarray`, `torch.Tensor`, '
             '`Sequence`, `int` and `float`')
+
+
+@PIPELINES.register_module()
+class FormatMultiTaskLabels:
+    """Convert all image labels of multi-task dataset to a dict of tensor.
+
+    Args:
+        tasks (List[str], optional): The task names defined in the dataset.
+            If no set, try to match all keys with format ``xxx_img_label``.
+            Defaults to None.
+    """
+
+    def __init__(self, tasks: Optional[List[str]] = None):
+        self.tasks = tasks
+
+    def __call__(self, results: Dict[str, Any]) -> Dict[str, Any]:
+        gt_label = dict()
+        if self.tasks is None:
+            for k, v in results.items():
+                if k.endswith('_img_label'):
+                    task = k[:-10]
+                    gt_label[task] = to_tensor(v)
+        else:
+            for task in self.tasks:
+                label_key = task + '_img_label'
+                gt_label[task] = to_tensor(results[label_key])
+        results['gt_label'] = gt_label
+        return results
+
+    def __repr__(self):
+        return self.__class__.__name__ + f'(tasks={self.tasks})'
 
 
 @PIPELINES.register_module()
