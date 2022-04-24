@@ -147,9 +147,9 @@ class SwinBlockV2Sequence(BaseModule):
             avoid shifting window and shrink the window size to the size of
             feature map, which is common used in classification.
             Defaults to False.
-        extra_norm_every_n_blocks (int): Add extra norm at the end of main branch
-            every n blocks. Defaults to 0, which means no needs for extra norm
-            layer.
+        extra_norm_every_n_blocks (int): Add extra norm at the end of main
+            branch every n blocks. Defaults to 0, which means no needs for
+            extra norm layer.
         init_cfg (dict, optional): The extra config for initialization.
             Defaults to None.
     """
@@ -179,15 +179,23 @@ class SwinBlockV2Sequence(BaseModule):
         self.blocks = ModuleList()
         for i in range(depth):
             _block_cfg = {
-                'embed_dims': embed_dims,
-                'num_heads': num_heads,
-                'window_size': window_size,
-                'shift': False if i % 2 == 0 else True,
-                'extra_norm': True if extra_norm_every_n_blocks and \
-                            (i+1) % extra_norm_every_n_blocks == 0 else False,
-                'drop_path': drop_paths[i],
-                'with_cp': with_cp,
-                'pad_small_map': pad_small_map,
+                'embed_dims':
+                embed_dims,
+                'num_heads':
+                num_heads,
+                'window_size':
+                window_size,
+                'shift':
+                False if i % 2 == 0 else True,
+                'extra_norm':
+                True if extra_norm_every_n_blocks and
+                (i + 1) % extra_norm_every_n_blocks == 0 else False,
+                'drop_path':
+                drop_paths[i],
+                'with_cp':
+                with_cp,
+                'pad_small_map':
+                pad_small_map,
                 **block_cfgs[i]
             }
             block = SwinBlockV2(**_block_cfg)
@@ -358,7 +366,10 @@ class SwinTransformerV2(BaseBackbone):
                 f'Arch {arch} is not in default archs {set(self.arch_zoo)}'
             self.arch_settings = self.arch_zoo[arch]
         else:
-            essential_keys = {'embed_dims', 'depths', 'num_heads', 'extra_norm_every_n_blocks'}
+            essential_keys = {
+                'embed_dims', 'depths', 'num_heads',
+                'extra_norm_every_n_blocks'
+            }
             assert isinstance(arch, dict) and set(arch) == essential_keys, \
                 f'Custom arch needs a dict with keys {essential_keys}'
             self.arch_settings = arch
@@ -366,7 +377,8 @@ class SwinTransformerV2(BaseBackbone):
         self.embed_dims = self.arch_settings['embed_dims']
         self.depths = self.arch_settings['depths']
         self.num_heads = self.arch_settings['num_heads']
-        self.extra_norm_every_n_blocks = self.arch_settings['extra_norm_every_n_blocks']
+        self.extra_norm_every_n_blocks = self.arch_settings[
+            'extra_norm_every_n_blocks']
         self.num_layers = len(self.depths)
         self.out_indices = out_indices
         self.use_abs_pos_embed = use_abs_pos_embed

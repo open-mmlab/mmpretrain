@@ -157,22 +157,32 @@ class WindowMSAV2(BaseModule):
         # Use log-spaced coordinate index
         indexes_h = torch.arange(self.window_size[0])
         indexes_w = torch.arange(self.window_size[1])
-        coordinates = torch.stack(torch.meshgrid([indexes_h, indexes_w]), dim=0)
+        coordinates = torch.stack(
+            torch.meshgrid([indexes_h, indexes_w]), dim=0)
         coordinates = torch.flatten(coordinates, start_dim=1)
-        relative_coordinates = coordinates[:, :, None] - coordinates[:, None, :]
-        relative_coordinates = relative_coordinates.permute(1, 2, 0).reshape(-1, 2).float()
+        relative_coordinates = coordinates[:, :, None] - coordinates[:,
+                                                                     None, :]
+        relative_coordinates = relative_coordinates.permute(1, 2, 0).reshape(
+            -1, 2).float()
         relative_coordinates_log = torch.sign(relative_coordinates) \
-                                                 * torch.log(1. + relative_coordinates.abs())
-        self.register_buffer("relative_coordinates_log", relative_coordinates_log)
+            * torch.log(1. + relative_coordinates.abs())
+        self.register_buffer('relative_coordinates_log',
+                             relative_coordinates_log)
 
         # Use small network for continuous relative position bias
         self.meta_network = nn.Sequential(
-            nn.Linear(in_features=2, out_features=meta_network_hidden_dims, bias=True),
-            nn.ReLU(inplace=True),
-            nn.Linear(in_features=meta_network_hidden_dims, out_features=num_heads, bias=True))
-        
+            nn.Linear(
+                in_features=2,
+                out_features=meta_network_hidden_dims,
+                bias=True), nn.ReLU(inplace=True),
+            nn.Linear(
+                in_features=meta_network_hidden_dims,
+                out_features=num_heads,
+                bias=True))
+
         # Add learnable scalar for cosine attention
-        self.register_parameter("tau", torch.nn.Parameter(torch.ones(1, num_heads, 1, 1)))
+        self.register_parameter(
+            'tau', torch.nn.Parameter(torch.ones(1, num_heads, 1, 1)))
 
         self.qkv = nn.Linear(embed_dims, embed_dims * 3, bias=qkv_bias)
         self.attn_drop = nn.Dropout(attn_drop)
@@ -180,7 +190,6 @@ class WindowMSAV2(BaseModule):
         self.proj_drop = nn.Dropout(proj_drop)
 
         self.softmax = nn.Softmax(dim=-1)
-
 
     def forward(self, x, mask=None):
         """
@@ -196,18 +205,19 @@ class WindowMSAV2(BaseModule):
         q, k, v = qkv[0], qkv[1], qkv[
             2]  # make torchscript happy (cannot use tensor as tuple)
 
-        attn = q @ k.transpose(-2, -1) \
-                                      / torch.maximum(torch.norm(q, dim=-1, keepdim=True)
-                                                      * torch.norm(k, dim=-1, keepdim=True).transpose(-2, -1),
-                                                      torch.tensor(1e-06, device=q.device, dtype=q.dtype))
+        attn = q @ k.transpose(-2, -1) / torch.maximum(
+            torch.norm(q, dim=-1, keepdim=True) *
+            torch.norm(k, dim=-1, keepdim=True).transpose(-2, -1),
+            torch.tensor(1e-06, device=q.device, dtype=q.dtype))
         attn = attn / self.tau.clamp(min=0.01)
 
         # use meta network
-        relative_position_bias = self.meta_network(self.relative_coordinates_log)
+        relative_position_bias = self.meta_network(
+            self.relative_coordinates_log)
         relative_position_bias = relative_position_bias.permute(1, 0)
-        relative_position_bias = relative_position_bias.reshape(self.num_heads,
-                                                                self.window_size[0] * self.window_size[1],
-                                                                self.window_size[0] * self.window_size[1])
+        relative_position_bias = relative_position_bias.reshape(
+            self.num_heads, self.window_size[0] * self.window_size[1],
+            self.window_size[0] * self.window_size[1])
 
         attn = attn + relative_position_bias.unsqueeze(0)
 
