@@ -178,24 +178,17 @@ class SwinBlockV2Sequence(BaseModule):
         self.embed_dims = embed_dims
         self.blocks = ModuleList()
         for i in range(depth):
+            extra_norm = True if extra_norm_every_n_blocks and \
+                (i + 1) % extra_norm_every_n_blocks == 0 else False
             _block_cfg = {
-                'embed_dims':
-                embed_dims,
-                'num_heads':
-                num_heads,
-                'window_size':
-                window_size,
-                'shift':
-                False if i % 2 == 0 else True,
-                'extra_norm':
-                True if extra_norm_every_n_blocks and
-                (i + 1) % extra_norm_every_n_blocks == 0 else False,
-                'drop_path':
-                drop_paths[i],
-                'with_cp':
-                with_cp,
-                'pad_small_map':
-                pad_small_map,
+                'embed_dims': embed_dims,
+                'num_heads': num_heads,
+                'window_size': window_size,
+                'shift': False if i % 2 == 0 else True,
+                'extra_norm': extra_norm,
+                'drop_path': drop_paths[i],
+                'with_cp': with_cp,
+                'pad_small_map': pad_small_map,
                 **block_cfgs[i]
             }
             block = SwinBlockV2(**_block_cfg)
