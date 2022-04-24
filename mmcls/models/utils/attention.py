@@ -122,6 +122,112 @@ class WindowMSA(BaseModule):
         return (seq1[:, None] + seq2[None, :]).reshape(1, -1)
 
 
+class WindowMSAV2(BaseModule):
+    """Window based multi-head self-attention (W-MSA) module with relative
+    position bias. Based on implementation on Swin Transformer V2.
+
+    Args:
+        embed_dims (int): Number of input channels.
+        window_size (tuple[int]): The height and width of the window.
+        num_heads (int): Number of attention heads.
+        qkv_bias (bool, optional): If True, add a learnable bias to q, k, v.
+            Defaults to True.
+        attn_drop (float, optional): Dropout ratio of attention weight.
+            Defaults to 0.
+        proj_drop (float, optional): Dropout ratio of output. Defaults to 0.
+        init_cfg (dict, optional): The extra config for initialization.
+            Defaults to None.
+    """
+
+    def __init__(self,
+                 embed_dims,
+                 window_size,
+                 num_heads,
+                 qkv_bias=True,
+                 attn_drop=0.,
+                 proj_drop=0.,
+                 meta_network_hidden_dims=256,
+                 init_cfg=None):
+
+        super().__init__(init_cfg)
+        self.embed_dims = embed_dims
+        self.window_size = window_size  # Wh, Ww
+        self.num_heads = num_heads
+
+        # Use log-spaced coordinate index
+        indexes_h = torch.arange(self.window_size[0])
+        indexes_w = torch.arange(self.window_size[1])
+        coordinates = torch.stack(torch.meshgrid([indexes_h, indexes_w]), dim=0)
+        coordinates = torch.flatten(coordinates, start_dim=1)
+        relative_coordinates = coordinates[:, :, None] - coordinates[:, None, :]
+        relative_coordinates = relative_coordinates.permute(1, 2, 0).reshape(-1, 2).float()
+        relative_coordinates_log = torch.sign(relative_coordinates) \
+                                                 * torch.log(1. + relative_coordinates.abs())
+        self.register_buffer("relative_coordinates_log", relative_coordinates_log)
+
+        # Use small network for continuous relative position bias
+        self.meta_network = nn.Sequential(
+            nn.Linear(in_features=2, out_features=meta_network_hidden_dims, bias=True),
+            nn.ReLU(inplace=True),
+            nn.Linear(in_features=meta_network_hidden_dims, out_features=num_heads, bias=True))
+        
+        # Add learnable scalar for cosine attention
+        self.register_parameter("tau", torch.nn.Parameter(torch.ones(1, num_heads, 1, 1)))
+
+        self.qkv = nn.Linear(embed_dims, embed_dims * 3, bias=qkv_bias)
+        self.attn_drop = nn.Dropout(attn_drop)
+        self.proj = nn.Linear(embed_dims, embed_dims)
+        self.proj_drop = nn.Dropout(proj_drop)
+
+        self.softmax = nn.Softmax(dim=-1)
+
+
+    def forward(self, x, mask=None):
+        """
+        Args:
+
+            x (tensor): input features with shape of (num_windows*B, N, C)
+            mask (tensor, Optional): mask with shape of (num_windows, Wh*Ww,
+                Wh*Ww), value should be between (-inf, 0].
+        """
+        B_, N, C = x.shape
+        qkv = self.qkv(x).reshape(B_, N, 3, self.num_heads,
+                                  C // self.num_heads).permute(2, 0, 3, 1, 4)
+        q, k, v = qkv[0], qkv[1], qkv[
+            2]  # make torchscript happy (cannot use tensor as tuple)
+
+        attn = q @ k.transpose(-2, -1) \
+                                      / torch.maximum(torch.norm(q, dim=-1, keepdim=True)
+                                                      * torch.norm(k, dim=-1, keepdim=True).transpose(-2, -1),
+                                                      torch.tensor(1e-06, device=q.device, dtype=q.dtype))
+        attn = attn / self.tau.clamp(min=0.01)
+
+        # use meta network
+        relative_position_bias = self.meta_network(self.relative_coordinates_log)
+        relative_position_bias = relative_position_bias.permute(1, 0)
+        relative_position_bias = relative_position_bias.reshape(self.num_heads,
+                                                                self.window_size[0] * self.window_size[1],
+                                                                self.window_size[0] * self.window_size[1])
+
+        attn = attn + relative_position_bias.unsqueeze(0)
+
+        if mask is not None:
+            nW = mask.shape[0]
+            attn = attn.view(B_ // nW, nW, self.num_heads, N,
+                             N) + mask.unsqueeze(1).unsqueeze(0)
+            attn = attn.view(-1, self.num_heads, N, N)
+            attn = self.softmax(attn)
+        else:
+            attn = self.softmax(attn)
+
+        attn = self.attn_drop(attn)
+
+        x = (attn @ v).transpose(1, 2).reshape(B_, N, C)
+        x = self.proj(x)
+        x = self.proj_drop(x)
+        return x
+
+
 @ATTENTION.register_module()
 class ShiftWindowMSA(BaseModule):
     """Shift Window Multihead Self-Attention Module.
@@ -146,6 +252,8 @@ class ShiftWindowMSA(BaseModule):
             avoid shifting window and shrink the window size to the size of
             feature map, which is common used in classification.
             Defaults to False.
+        version (str, optional): Version of implementation of Swin
+            Transformers. Defaults to `v1`.
         init_cfg (dict, optional): The extra config for initialization.
             Defaults to None.
     """
@@ -163,6 +271,7 @@ class ShiftWindowMSA(BaseModule):
                  pad_small_map=False,
                  input_resolution=None,
                  auto_pad=None,
+                 version='v1',
                  init_cfg=None):
         super().__init__(init_cfg)
 
@@ -177,15 +286,27 @@ class ShiftWindowMSA(BaseModule):
         self.window_size = window_size
         assert 0 <= self.shift_size < self.window_size
 
-        self.w_msa = WindowMSA(
-            embed_dims=embed_dims,
-            window_size=to_2tuple(self.window_size),
-            num_heads=num_heads,
-            qkv_bias=qkv_bias,
-            qk_scale=qk_scale,
-            attn_drop=attn_drop,
-            proj_drop=proj_drop,
-        )
+        if version == 'v1':
+            self.w_msa = WindowMSA(
+                embed_dims=embed_dims,
+                window_size=to_2tuple(self.window_size),
+                num_heads=num_heads,
+                qkv_bias=qkv_bias,
+                qk_scale=qk_scale,
+                attn_drop=attn_drop,
+                proj_drop=proj_drop,
+            )
+        elif version == 'v2':
+            self.w_msa = WindowMSAV2(
+                embed_dims=embed_dims,
+                window_size=to_2tuple(self.window_size),
+                num_heads=num_heads,
+                qkv_bias=qkv_bias,
+                attn_drop=attn_drop,
+                proj_drop=proj_drop,
+            )
+        else:
+            raise ValueError(f'Version {version} is not supported.')
 
         self.drop = build_dropout(dropout_layer)
         self.pad_small_map = pad_small_map

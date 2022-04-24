@@ -332,8 +332,7 @@ class SwinTransformer(BaseBackbone):
         self.use_abs_pos_embed = use_abs_pos_embed
         self.interpolate_mode = interpolate_mode
         self.frozen_stages = frozen_stages
-        import pdb
-        pdb.set_trace()
+        
         _patch_cfg = dict(
             in_channels=in_channels,
             input_size=img_size,
