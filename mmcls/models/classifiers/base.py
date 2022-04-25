@@ -69,19 +69,27 @@ class BaseClassifier(BaseModule, metaclass=ABCMeta):
             raise NotImplementedError('aug_test has not been implemented')
 
     @auto_fp16(apply_to=('img', ))
-    def forward(self, img, return_loss=True, **kwargs):
+    def forward(self, img, return_loss=True, export_img_norm_cfg=None, **kwargs):
         """Calls either forward_train or forward_test depending on whether
         return_loss=True.
 
         Note this setting will change the expected inputs. When
         `return_loss=True`, img and img_meta are single-nested (i.e. Tensor and
-        List[dict]), and when `resturn_loss=False`, img and img_meta should be
+        List[dict]), and when `return_loss=False`, img and img_meta should be
         double nested (i.e.  List[Tensor], List[List[dict]]), with the outer
         list indicating test time augmentations.
+
+        export_img_norm_cfg: If present when exporting, image normalization will happen in the graph
         """
         if return_loss:
             return self.forward_train(img, **kwargs)
         else:
+            if torch.onnx.is_in_onnx_export() and export_img_norm_cfg:
+                mean = torch.tensor(export_img_norm_cfg['mean'])[None, ..., None,
+                                                              None]
+                std = torch.tensor(export_img_norm_cfg['std'])[None, ..., None,
+                                                        None]
+                img = [(i - mean) / std for i in img]
             return self.forward_test(img, **kwargs)
 
     def _parse_losses(self, losses):

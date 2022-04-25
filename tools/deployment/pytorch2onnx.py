@@ -43,7 +43,8 @@ def pytorch2onnx(model,
                  show=False,
                  output_file='tmp.onnx',
                  do_simplify=False,
-                 verify=False):
+                 verify=False,
+                 img_norm_cfg=None):
     """Export Pytorch model to ONNX model and verify the outputs are same
     between Pytorch and ONNX.
 
@@ -57,6 +58,7 @@ def pytorch2onnx(model,
             Default: `tmp.onnx`.
         verify (bool): Whether compare the outputs between Pytorch and ONNX.
             Default: False.
+        img_norm_cfg (dict): Config for `Normalize` transform. If present, we will normalize in the graph.
     """
     model.cpu().eval()
 
@@ -76,7 +78,7 @@ def pytorch2onnx(model,
 
     # replace original forward function
     origin_forward = model.forward
-    model.forward = partial(model.forward, img_metas={}, return_loss=False)
+    model.forward = partial(model.forward, img_metas={}, return_loss=False, export_img_norm_cfg=img_norm_cfg)
     register_extra_symbolics(opset_version)
 
     # support dynamic shape export
@@ -196,6 +198,10 @@ def parse_args():
         action='store_true',
         help='Whether to export ONNX with dynamic input shape. \
             Defaults to False.')
+    parser.add_argument(
+        '--normalize-in-graph',
+        action='store_true',
+        help='Whether to include image normalization in ONNX graph.')
     args = parser.parse_args()
     return args
 
@@ -222,6 +228,11 @@ if __name__ == '__main__':
     if args.checkpoint:
         load_checkpoint(classifier, args.checkpoint, map_location='cpu')
 
+    img_norm_cfg = None
+    if args.normalize_in_graph:
+        norm_config_li = [_ for _ in cfg.train_pipeline if _['type'] == 'Normalize']
+        assert len(norm_config_li) == 1, '`norm_config` should only have one'
+        img_norm_cfg = norm_config_li[0]
     # convert model to onnx file
     pytorch2onnx(
         classifier,
@@ -231,7 +242,8 @@ if __name__ == '__main__':
         dynamic_export=args.dynamic_export,
         output_file=args.output_file,
         do_simplify=args.simplify,
-        verify=args.verify)
+        verify=args.verify,
+        img_norm_cfg=img_norm_cfg)
 
     # Following strings of text style are from colorama package
     bright_style, reset_style = '\x1b[1m', '\x1b[0m'
