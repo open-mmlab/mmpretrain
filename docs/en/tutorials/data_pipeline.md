@@ -98,6 +98,8 @@ More supported backends can be found in [mmcv.fileio.FileClient](https://github.
 
 - remove: all other keys except for those specified by `keys`
 
+For more information about other data transformation classes, please refer to [Data Transformations](../api/transforms.rst)
+
 ## Extend and use custom pipelines
 
 1. Write a new pipeline in any file, e.g., `my_pipeline.py`, and place it in

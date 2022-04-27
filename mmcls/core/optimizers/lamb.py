@@ -65,13 +65,15 @@ from torch.optim import Optimizer
 
 @OPTIMIZERS.register_module()
 class Lamb(Optimizer):
-    """Implements a pure pytorch variant of FuseLAMB (NvLamb variant) optimizer
-    from apex.optimizers.FusedLAMB
-    reference: https://github.com/NVIDIA/DeepLearningExamples/blob/master/
-    PyTorch/LanguageModeling/Transformer-XL/pytorch/lamb.py
+    """A pure pytorch variant of FuseLAMB (NvLamb variant) optimizer.
 
-    LAMB was proposed in `Large Batch Optimization for Deep Learning: Training
-    BERT in 76 minutes`_.
+    This class is copied from `timm`_. The LAMB was proposed in `Large Batch
+    Optimization for Deep Learning - Training BERT in 76 minutes`_.
+
+    .. _timm:
+        https://github.com/rwightman/pytorch-image-models/blob/master/timm/optim/lamb.py
+    .. _Large Batch Optimization for Deep Learning - Training BERT in 76 minutes:
+        https://arxiv.org/abs/1904.00962
 
     Arguments:
         params (iterable): iterable of parameters to optimize or dicts defining
@@ -89,13 +91,7 @@ class Lamb(Optimizer):
         trust_clip (bool): enable LAMBC trust ratio clipping (default: False)
         always_adapt (boolean, optional): Apply adaptive learning rate to 0.0
             weight decay parameter (default: False)
-
-    .. _Large Batch Optimization for Deep Learning - Training BERT in 76
-        minutes:
-        https://arxiv.org/abs/1904.00962
-    .. _On the Convergence of Adam and Beyond:
-        https://openreview.net/forum?id=ryQu7f-RZ
-    """
+    """  # noqa: E501
 
     def __init__(self,
                  params,

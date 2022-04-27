@@ -9,8 +9,33 @@ from .custom import CustomDataset
 class ImageNet(CustomDataset):
     """`ImageNet <http://www.image-net.org>`_ Dataset.
 
-    This implementation is modified from
-    https://github.com/pytorch/vision/blob/master/torchvision/datasets/imagenet.py
+    The dataset supports two kinds of annotation format. More details can be
+    found in :class:`CustomDataset`.
+
+    Args:
+        data_prefix (str): The path of data directory.
+        pipeline (Sequence[dict]): A list of dict, where each element
+            represents a operation defined in :mod:`mmcls.datasets.pipelines`.
+            Defaults to an empty tuple.
+        classes (str | Sequence[str], optional): Specify names of classes.
+
+            - If is string, it should be a file path, and the every line of
+              the file is a name of a class.
+            - If is a sequence of string, every item is a name of class.
+            - If is None, use the default ImageNet-1k classes names.
+
+            Defaults to None.
+        ann_file (str, optional): The annotation file. If is string, read
+            samples paths from the ann_file. If is None, find samples in
+            ``data_prefix``. Defaults to None.
+        extensions (Sequence[str]): A sequence of allowed extensions. Defaults
+            to ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif').
+        test_mode (bool): In train mode or test mode. It's only a mark and
+            won't be used in this class. Defaults to False.
+        file_client_args (dict, optional): Arguments to instantiate a
+            FileClient. See :class:`mmcv.fileio.FileClient` for details.
+            If None, automatically inference from the specified path.
+            Defaults to None.
     """  # noqa: E501
 
     IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif')

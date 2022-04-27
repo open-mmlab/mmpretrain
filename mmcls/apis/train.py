@@ -75,6 +75,28 @@ def train_model(model,
                 timestamp=None,
                 device=None,
                 meta=None):
+    """Train a model.
+
+    This method will build dataloaders, wrap the model and build a runner
+    according to the provided config.
+
+    Args:
+        model (:obj:`torch.nn.Module`): The model to be run.
+        dataset (:obj:`mmcls.datasets.BaseDataset` | List[BaseDataset]):
+            The dataset used to train the model. It can be a single dataset,
+            or a list of dataset with the same length as workflow.
+        cfg (:obj:`mmcv.utils.Config`): The configs of the experiment.
+        distributed (bool): Whether to train the model in a distributed
+            environment. Defaults to False.
+        validate (bool): Whether to do validation with
+            :obj:`mmcv.runner.EvalHook`. Defaults to False.
+        timestamp (str, optional): The timestamp string to auto generate the
+            name of log files. Defaults to None.
+        device (str, optional): TODO
+        meta (dict, optional): A dict records some import information such as
+            environment info and seed, which will be logged in logger hook.
+            Defaults to None.
+    """
     logger = get_root_logger()
 
     # prepare data loaders

@@ -18,6 +18,21 @@ def single_gpu_test(model,
                     show=False,
                     out_dir=None,
                     **show_kwargs):
+    """Test model with local single gpu.
+
+    This method tests model with a single gpu and supports showing results.
+
+    Args:
+        model (:obj:`torch.nn.Module`): Model to be tested.
+        data_loader (:obj:`torch.utils.data.DataLoader`): Pytorch data loader.
+        show (bool): Whether to show the test results. Defaults to False.
+        out_dir (str): The output directory of result plots of all samples.
+            Defaults to None, which means not to write output files.
+        **show_kwargs: Any other keyword arguments for showing results.
+
+    Returns:
+        list: The prediction results.
+    """
     model.eval()
     results = []
     dataset = data_loader.dataset

@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import warnings
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -52,6 +53,62 @@ def resize_pos_embed(pos_embed,
     dst_weight = torch.flatten(dst_weight, 2).transpose(1, 2)
 
     return torch.cat((extra_tokens, dst_weight), dim=1)
+
+
+def resize_relative_position_bias_table(src_shape, dst_shape, table, num_head):
+    """Resize relative position bias table.
+
+    Args:
+        src_shape (int): The resolution of downsampled origin training
+            image, in format (H, W).
+        dst_shape (int): The resolution of downsampled new training
+            image, in format (H, W).
+        table (tensor): The relative position bias of the pretrained model.
+        num_head (int): Number of attention heads.
+
+    Returns:
+        torch.Tensor: The resized relative position bias table.
+    """
+    from scipy import interpolate
+
+    def geometric_progression(a, r, n):
+        return a * (1.0 - r**n) / (1.0 - r)
+
+    left, right = 1.01, 1.5
+    while right - left > 1e-6:
+        q = (left + right) / 2.0
+        gp = geometric_progression(1, q, src_shape // 2)
+        if gp > dst_shape // 2:
+            right = q
+        else:
+            left = q
+
+    dis = []
+    cur = 1
+    for i in range(src_shape // 2):
+        dis.append(cur)
+        cur += q**(i + 1)
+
+    r_ids = [-_ for _ in reversed(dis)]
+
+    x = r_ids + [0] + dis
+    y = r_ids + [0] + dis
+
+    t = dst_shape // 2.0
+    dx = np.arange(-t, t + 0.1, 1.0)
+    dy = np.arange(-t, t + 0.1, 1.0)
+
+    all_rel_pos_bias = []
+
+    for i in range(num_head):
+        z = table[:, i].view(src_shape, src_shape).float().numpy()
+        f_cubic = interpolate.interp2d(x, y, z, kind='cubic')
+        all_rel_pos_bias.append(
+            torch.Tensor(f_cubic(dx,
+                                 dy)).contiguous().view(-1,
+                                                        1).to(table.device))
+    new_rel_pos_bias = torch.cat(all_rel_pos_bias, dim=-1)
+    return new_rel_pos_bias
 
 
 class PatchEmbed(BaseModule):
