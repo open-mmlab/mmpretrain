@@ -8,7 +8,7 @@
 While originally designed for natural language processing (NLP) tasks, the self-attention mechanism has recently taken various computer vision areas by storm. However, the 2D nature of images brings three challenges for applying self-attention in computer vision. (1) Treating images as 1D sequences neglects their 2D structures. (2) The quadratic complexity is too expensive for high-resolution images. (3) It only captures spatial adaptability but ignores channel adaptability. In this paper, we propose a novel large kernel attention (LKA) module to enable self-adaptive and long-range correlations in self-attention while avoiding the above issues. We further introduce a novel neural network based on LKA, namely Visual Attention Network (VAN). While extremely simple and efficient, VAN outperforms the state-of-the-art vision transformers and convolutional neural networks with a large margin in extensive experiments, including image classification, object detection, semantic segmentation, instance segmentation, etc.
 
 <div align=center>
-<img src="https://user-images.githubusercontent.com/24734142/157409411-2f622ba7-553c-4702-91be-eba03f9ea04f.png" width="45%"/>
+<img src="https://user-images.githubusercontent.com/24734142/157409411-2f622ba7-553c-4702-91be-eba03f9ea04f.png" width="80%"/>
 </div>
 
 
@@ -18,10 +18,12 @@ While originally designed for natural language processing (NLP) tasks, the self-
 
 |   Model   |   Pretrain   | resolution  | Params(M) |  Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
 |:---------:|:------------:|:-----------:|:---------:|:---------:|:---------:|:---------:|:------:|:--------:|
-|  VAN-T   | From scratch |   224x224   |   4.1   |    0.9   |   75.4   |      |  | |
-|  VAN-S   | From scratch |   224x224   |   13.9   |    2.5   |   81.1   |      |  | |
-|  VAN-B   | From scratch |   224x224   |   26.6   |   5.0   |   82.8   |      |  | |
-|  VAN-L | From scratch |   224x224   |   44.8   |    9.0   |   83.9   |      |  | |
+|  VAN-T\*   | From scratch |   224x224   |   4.11   |    0.88   |   75.41   |   93.02   |  [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/van/van-tiny_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/van/van-tiny_8xb128_in1k_20220427-8ac0feec.pth)  |
+|  VAN-S\*   | From scratch |   224x224   |   13.86   |    2.52   |   81.01   |    95.63   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/van/van-small_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/van/van-small_8xb128_in1k_20220427-bd6a9edd.pth)  |
+|  VAN-B\*   | From scratch |   224x224   |   26.58   |   5.03   |   82.80   |    96.21   |   [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/van/van-base_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/van/van-base_8xb128_in1k_20220427-5275471d.pth)  |
+|  VAN-L\* | From scratch |   224x224   |   44.77   |    8.99   |   83.86   |    96.73   |   [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/van/van-large_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/van/van-large_8xb128_in1k_20220427-56159105.pth)  |
+
+*Models with \* are converted from [the official repo](https://github.com/Visual-Attention-Network/VAN-Classification). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.
 
 ## Citation
 

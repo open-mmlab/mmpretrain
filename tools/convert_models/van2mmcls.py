@@ -8,7 +8,7 @@ import torch
 from mmcv.runner import CheckpointLoader
 
 
-def convert_van(args, ckpt):
+def convert_van(ckpt):
 
     new_ckpt = OrderedDict()
 
@@ -23,8 +23,13 @@ def convert_van(args, ckpt):
                 new_k = k.replace('proj.', 'projection.')
             else:
                 new_k = k
-        elif 'dwconv.dwconv' in k:
-            new_k = k.replace('dwconv.dwconv', 'dwconv')
+        elif k.startswith('block'):
+            new_k = k.replace('block', 'blocks')
+            if 'attn.spatial_gating_unit' in new_k:
+                new_k = new_k.replace('conv0', 'DW_conv')
+                new_k = new_k.replace('conv_spatial', 'DW_D_conv')
+            if 'dwconv.dwconv' in new_k:
+                new_k = new_k.replace('dwconv.dwconv', 'dwconv')
         else:
             new_k = k
 
@@ -36,8 +41,7 @@ def convert_van(args, ckpt):
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Convert keys in timm pretrained vit models to '
-        'MMClassification style.')
+        description='Convert keys in pretrained van models to mmcls style.')
     parser.add_argument('src', help='src model path or url')
     # The dst path must be a full path of the new checkpoint.
     parser.add_argument('dst', help='save path')
@@ -46,14 +50,15 @@ def main():
     checkpoint = CheckpointLoader.load_checkpoint(args.src, map_location='cpu')
 
     if 'state_dict' in checkpoint:
-        # timm checkpoint
         state_dict = checkpoint['state_dict']
     else:
         state_dict = checkpoint
 
-    weight = convert_van(args, state_dict)
+    weight = convert_van(state_dict)
     mmcv.mkdir_or_exist(osp.dirname(args.dst))
     torch.save(weight, args.dst)
+
+    print('Done!!')
 
 
 if __name__ == '__main__':

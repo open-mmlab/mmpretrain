@@ -1,12 +1,13 @@
 _base_ = [
-    '../_base_/models/van/van_large.py',
+    '../_base_/models/van/van_tiny.py',
     '../_base_/datasets/imagenet_bs64_swin_224.py',
     '../_base_/schedules/imagenet_bs1024_adamw_swin.py',
     '../_base_/default_runtime.py'
 ]
 
+# Note that the mean and variance used here are different from other configs
 img_norm_cfg = dict(
-    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+    mean=[127.5, 127.5, 127.5], std=[127.5, 127.5, 127.5], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
@@ -53,4 +54,8 @@ test_pipeline = [
     dict(type='Collect', keys=['img'])
 ]
 
-data = dict(samples_per_gpu=128)
+data = dict(
+    samples_per_gpu=128,
+    train=dict(pipeline=train_pipeline),
+    val=dict(pipeline=test_pipeline),
+    test=dict(pipeline=test_pipeline))

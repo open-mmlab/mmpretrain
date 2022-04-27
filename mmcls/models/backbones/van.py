@@ -75,10 +75,14 @@ class MixFFN(BaseModule):
 class LKA(BaseModule):
     """Large Kernel Attention(LKA) of VAN.
 
-    This module has three components: a spatial local convolution
-    (depth-wise convolution), a spatial long-range convolution
-    (depth-wise dilation convolution) and a channel convolution
-    (1×1 convolution).
+    .. code:: text
+            DW_conv (depth-wise convolution)
+                            |
+                            |
+        DW_D_conv (depth-wise dilation convolution)
+                            |
+                            |
+        Transition Convolution (1×1 convolution)
 
     Args:
         embed_dims (int): Number of input channels.
@@ -291,13 +295,12 @@ class VAN(BaseBackbone):
     Examples:
         >>> from mmcls.models import VAN
         >>> import torch
-        >>> extra_config = dict(
-        >>>     arch='tiny',
-        >>>     block_cfgs=dict(norm_cfg=dict(type='BN', eps=1e-5)))
-        >>> model = VAN(**extra_config)
+        >>> cfg = dict(arch='tiny')
+        >>> model = VAN(**cfg)
         >>> inputs = torch.rand(1, 3, 224, 224)
-        >>> output = model(inputs)
-        >>> print(output[0].shape)
+        >>> outputs = model(inputs)
+        >>> for out in outputs:
+        >>>     print(out.size())
         (1, 256, 7, 7)
     """
     arch_zoo = {
