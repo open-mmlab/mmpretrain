@@ -21,7 +21,7 @@ Models:
           Top 1 Accuracy: 74.96
           Top 5 Accuracy: 92.21
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/densenet/densenet121_4xb256_in1k_20220411-f9f05037.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/densenet/densenet121_4xb256_in1k_20220426-07450f99.pth
     Config: configs/densenet/densenet121_4xb256_in1k.py
     Converted From:
       Weights: https://download.pytorch.org/models/densenet121-a639ec97.pth
@@ -37,7 +37,7 @@ Models:
           Top 1 Accuracy: 76.08
           Top 5 Accuracy: 93.11
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/densenet/densenet169_4xb256_in1k_20220411-30d38e7b.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/densenet/densenet169_4xb256_in1k_20220426-a2889902.pth
     Config: configs/densenet/densenet169_4xb256_in1k.py
     Converted From:
       Weights: https://download.pytorch.org/models/densenet169-b2777c0a.pth
@@ -53,7 +53,7 @@ Models:
           Top 1 Accuracy: 77.32
           Top 5 Accuracy: 93.64
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/densenet/densenet201_4xb256_in1k_20220411-7a40ea04.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/densenet/densenet201_4xb256_in1k_20220426-05cae4ef.pth
     Config: configs/densenet/densenet201_4xb256_in1k.py
     Converted From:
       Weights: https://download.pytorch.org/models/densenet201-c1103571.pth
@@ -69,7 +69,7 @@ Models:
           Top 1 Accuracy: 77.61
           Top 5 Accuracy: 93.83
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/densenet/densenet161_4xb256_in1k_20220411-7cd24b4f.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/densenet/densenet161_4xb256_in1k_20220426-ee6a80a9.pth
     Config: configs/densenet/densenet161_4xb256_in1k.py
     Converted From:
       Weights: https://download.pytorch.org/models/densenet161-8d451a50.pth
