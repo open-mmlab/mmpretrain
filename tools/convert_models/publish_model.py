@@ -19,7 +19,6 @@ def parse_args():
 
 def process_checkpoint(in_file, out_file):
     checkpoint = torch.load(in_file, map_location='cpu')
-    print('................')
     # remove optimizer for smaller file size
     if 'optimizer' in checkpoint:
         del checkpoint['optimizer']
