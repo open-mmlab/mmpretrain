@@ -55,6 +55,7 @@ Backbones
    Conformer
    ConvMixer
    ConvNeXt
+   DenseNet
    DistilledVisionTransformer
    EfficientNet
    HRNet
