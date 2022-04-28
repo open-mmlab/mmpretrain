@@ -122,6 +122,7 @@ venv.bak/
 *.log.json
 /work_dirs
 /mmcls/.mim
+.DS_Store
 
 # Pytorch
 *.pth
