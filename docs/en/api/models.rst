@@ -83,6 +83,7 @@ Backbones
    T2T_ViT
    TIMMBackbone
    TNT
+   VAN
    VGG
    VisionTransformer
 

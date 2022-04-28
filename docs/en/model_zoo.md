@@ -133,6 +133,10 @@ The ResNet family models below are trained by standard data augmentations, i.e.,
 | CSPDarkNet50\*  |  27.64 | 5.04 | 80.05 | 95.07  | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/cspnet/cspdarknet50_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/cspnet/cspdarknet50_3rdparty_8xb32_in1k_20220329-bd275287.pth) |
 |  CSPResNet50\*  |  21.62 | 3.48 | 79.55 | 94.68  | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/cspnet/cspresnet50_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/cspnet/cspresnet50_3rdparty_8xb32_in1k_20220329-dd6dddfb.pth) |
 |  CSPResNeXt50\* | 20.57 | 3.11 | 79.96 | 94.96 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/cspnet/cspresnext50_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/cspnet/cspresnext50_3rdparty_8xb32_in1k_20220329-2cc84d21.pth) |
+|  VAN-T\*   |   4.11   |    0.88   |   75.41   |   93.02   |  [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/van/van-tiny_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/van/van-tiny_8xb128_in1k_20220427-8ac0feec.pth)  |
+|  VAN-S\*   |   13.86   |    2.52   |   81.01   |    95.63   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/van/van-small_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/van/van-small_8xb128_in1k_20220427-bd6a9edd.pth)  |
+|  VAN-B\*   |   26.58   |   5.03   |   82.80   |    96.21   |   [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/van/van-base_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/van/van-base_8xb128_in1k_20220427-5275471d.pth)  |
+|  VAN-L\*   |   44.77   |    8.99   |   83.86   |    96.73   |   [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/van/van-large_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/van/van-large_8xb128_in1k_20220427-56159105.pth)  |
 
 *Models with \* are converted from other repos, others are trained by ourselves.*
 
