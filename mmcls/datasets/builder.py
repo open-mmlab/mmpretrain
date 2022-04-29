@@ -8,9 +8,13 @@ import numpy as np
 import torch
 from mmcv.parallel import collate
 from mmcv.runner import get_dist_info
-from mmcv.utils import (IS_IPU_AVAILABLE, Registry, build_from_cfg,
-                        digit_version)
+from mmcv.utils import Registry, build_from_cfg, digit_version
 from torch.utils.data import DataLoader
+
+try:
+    from mmcv.utils import IS_IPU_AVAILABLE
+except ImportError:
+    IS_IPU_AVAILABLE = False
 
 if platform.system() != 'Windows':
     # https://github.com/pytorch/pytorch/issues/973
