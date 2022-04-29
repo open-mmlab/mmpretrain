@@ -105,7 +105,7 @@ def train_model(model,
     # The default loader config
     loader_cfg = dict(
         # cfg.gpus will be ignored if distributed
-        num_gpus=len(cfg.gpu_ids),
+        num_gpus=cfg.ipu_replicas if device == 'ipu' else len(cfg.gpu_ids),
         dist=distributed,
         round_up=True,
         seed=cfg.get('seed'),
@@ -141,6 +141,8 @@ def train_model(model,
                 'please refers to https://mmclassification.readthedocs.io/en'
                 '/latest/getting_started.html#train-a-model')
             model = model.cpu()
+        elif device == 'ipu':
+            model = model.cpu()
         else:
             model = MMDataParallel(model, device_ids=cfg.gpu_ids)
             if not model.device_ids:
@@ -161,6 +163,14 @@ def train_model(model,
             'config is now expected to have a `runner` section, '
             'please set `runner` in your config.', UserWarning)
 
+    if device == 'ipu':
+        if not cfg.runner['type'].startswith('IPU'):
+            cfg.runner['type'] = 'IPU' + cfg.runner['type']
+        if 'options_cfg' not in cfg.runner:
+            cfg.runner['options_cfg'] = {}
+        cfg.runner['options_cfg']['replicationFactor'] = cfg.ipu_replicas
+        cfg.runner['fp16_cfg'] = cfg.get('fp16', None)
+
     runner = build_runner(
         cfg.runner,
         default_args=dict(
@@ -177,8 +187,17 @@ def train_model(model,
     # fp16 setting
     fp16_cfg = cfg.get('fp16', None)
     if fp16_cfg is not None:
-        optimizer_config = Fp16OptimizerHook(
-            **cfg.optimizer_config, **fp16_cfg, distributed=distributed)
+        if device == 'ipu':
+            from mmcv.device.ipu import IPUFp16OptimizerHook
+            optimizer_config = IPUFp16OptimizerHook(
+                **cfg.optimizer_config,
+                loss_scale=fp16_cfg['loss_scale'],
+                distributed=distributed)
+        else:
+            optimizer_config = Fp16OptimizerHook(
+                **cfg.optimizer_config,
+                loss_scale=fp16_cfg['loss_scale'],
+                distributed=distributed)
     elif distributed and 'type' not in cfg.optimizer_config:
         optimizer_config = DistOptimizerHook(**cfg.optimizer_config)
     else:

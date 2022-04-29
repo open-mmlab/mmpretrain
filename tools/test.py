@@ -75,8 +75,6 @@ def parse_args():
         help='custom options for show_result. key-value pair in xxx=yyy.'
         'Check available options in `model.show_result`.')
     parser.add_argument(
-        '--device', default=None, help='device used for testing. (Deprecated)')
-    parser.add_argument(
         '--gpu-ids',
         type=int,
         nargs='+',
@@ -94,6 +92,11 @@ def parse_args():
         default='none',
         help='job launcher')
     parser.add_argument('--local-rank', type=int, default=0)
+    parser.add_argument(
+        '--device',
+        choices=['cpu', 'cuda', 'ipu'],
+        default='cuda',
+        help='device used for testing')
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
@@ -141,7 +144,7 @@ def main():
     # The default loader config
     loader_cfg = dict(
         # cfg.gpus will be ignored if distributed
-        num_gpus=len(cfg.gpu_ids),
+        num_gpus=1 if args.device == 'ipu' else len(cfg.gpu_ids),
         dist=distributed,
         round_up=True,
     )
@@ -181,6 +184,13 @@ def main():
     if not distributed:
         if args.device == 'cpu':
             model = model.cpu()
+        elif args.device == 'ipu':
+            from mmcv.device.ipu import cfg2options, ipu_model_wrapper
+            opts = cfg2options(cfg.runner.get('options_cfg', {}))
+            if fp16_cfg is not None:
+                model.half()
+            model = ipu_model_wrapper(model, opts, fp16_cfg=fp16_cfg)
+            data_loader.init(opts['inference'])
         else:
             model = MMDataParallel(model, device_ids=cfg.gpu_ids)
             if not model.device_ids:

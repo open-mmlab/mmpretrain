@@ -209,6 +209,11 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 GPUS=4 ./tools/slurm_train.sh ${PARTITION} ${JOB_NA
 CUDA_VISIBLE_DEVICES=4,5,6,7 GPUS=4 ./tools/slurm_train.sh ${PARTITION} ${JOB_NAME} config2.py ${WORK_DIR}
 ```
 
+### Train with IPU
+
+The process of training on the IPU is consistent with single GPU training. We just need to have IPU machine and environment
+and add an extra argument `--ipu-replicas ${IPU_NUM}`
+
 ## Useful tools
 
 We provide lots of useful tools under `tools/` directory.
