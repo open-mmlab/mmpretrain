@@ -13,7 +13,7 @@ If you wish to inspect the config file, you may run `python tools/misc/print_con
   - [Ignore some fields in the base configs](#ignore-some-fields-in-the-base-configs)
   - [Use some fields in the base configs](#use-some-fields-in-the-base-configs)
 - [Modify config through script arguments](#modify-config-through-script-arguments)
-- [Import user-defined modules](#import-ser-defined-modules)
+- [Import user-defined modules](#import-user-defined-modules)
 - [FAQ](#faq)
 
 <!-- TOC -->

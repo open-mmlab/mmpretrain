@@ -18,3 +18,12 @@ Import:
   - configs/deit/metafile.yml
   - configs/twins/metafile.yml
   - configs/efficientnet/metafile.yml
+  - configs/convnext/metafile.yml
+  - configs/hrnet/metafile.yml
+  - configs/repmlp/metafile.yml
+  - configs/wrn/metafile.yml
+  - configs/van/metafile.yml
+  - configs/cspnet/metafile.yml
+  - configs/convmixer/metafile.yml
+  - configs/densenet/metafile.yml
+  - configs/poolformer/metafile.yml

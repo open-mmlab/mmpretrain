@@ -2,17 +2,19 @@
 from copy import deepcopy
 from typing import Sequence
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.utils.checkpoint as cp
 from mmcv.cnn import build_norm_layer
-from mmcv.cnn.bricks.transformer import FFN
+from mmcv.cnn.bricks.transformer import FFN, PatchEmbed, PatchMerging
 from mmcv.cnn.utils.weight_init import trunc_normal_
 from mmcv.runner.base_module import BaseModule, ModuleList
 from mmcv.utils.parrots_wrapper import _BatchNorm
 
 from ..builder import BACKBONES
-from ..utils import PatchEmbed, PatchMerging, ShiftWindowMSA
+from ..utils import (ShiftWindowMSA, resize_pos_embed,
+                     resize_relative_position_bias_table, to_2tuple)
 from .base_backbone import BaseBackbone
 
 
@@ -21,45 +23,41 @@ class SwinBlock(BaseModule):
 
     Args:
         embed_dims (int): Number of input channels.
-        input_resolution (Tuple[int, int]): The resolution of the input feature
-            map.
         num_heads (int): Number of attention heads.
-        window_size (int, optional): The height and width of the window.
-            Defaults to 7.
-        shift (bool, optional): Shift the attention window or not.
+        window_size (int): The height and width of the window. Defaults to 7.
+        shift (bool): Shift the attention window or not. Defaults to False.
+        ffn_ratio (float): The expansion ratio of feedforward network hidden
+            layer channels. Defaults to 4.
+        drop_path (float): The drop path rate after attention and ffn.
+            Defaults to 0.
+        pad_small_map (bool): If True, pad the small feature map to the window
+            size, which is common used in detection and segmentation. If False,
+            avoid shifting window and shrink the window size to the size of
+            feature map, which is common used in classification.
             Defaults to False.
-        ffn_ratio (float, optional): The expansion ratio of feedforward network
-            hidden layer channels. Defaults to 4.
-        drop_path (float, optional): The drop path rate after attention and
-            ffn. Defaults to 0.
-        attn_cfgs (dict, optional): The extra config of Shift Window-MSA.
+        attn_cfgs (dict): The extra config of Shift Window-MSA.
             Defaults to empty dict.
-        ffn_cfgs (dict, optional): The extra config of FFN.
-            Defaults to empty dict.
-        norm_cfg (dict, optional): The config of norm layers.
-            Defaults to dict(type='LN').
-        with_cp (bool, optional): Use checkpoint or not. Using checkpoint
-            will save some memory while slowing down the training speed.
-            Defaults to False.
-        auto_pad (bool, optional): Auto pad the feature map to be divisible by
-            window_size, Defaults to False.
+        ffn_cfgs (dict): The extra config of FFN. Defaults to empty dict.
+        norm_cfg (dict): The config of norm layers.
+            Defaults to ``dict(type='LN')``.
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+            memory while slowing down the training speed. Defaults to False.
         init_cfg (dict, optional): The extra config for initialization.
-            Default: None.
+            Defaults to None.
     """
 
     def __init__(self,
                  embed_dims,
-                 input_resolution,
                  num_heads,
                  window_size=7,
                  shift=False,
                  ffn_ratio=4.,
                  drop_path=0.,
+                 pad_small_map=False,
                  attn_cfgs=dict(),
                  ffn_cfgs=dict(),
                  norm_cfg=dict(type='LN'),
                  with_cp=False,
-                 auto_pad=False,
                  init_cfg=None):
 
         super(SwinBlock, self).__init__(init_cfg)
@@ -67,12 +65,11 @@ class SwinBlock(BaseModule):
 
         _attn_cfgs = {
             'embed_dims': embed_dims,
-            'input_resolution': input_resolution,
             'num_heads': num_heads,
             'shift_size': window_size // 2 if shift else 0,
             'window_size': window_size,
             'dropout_layer': dict(type='DropPath', drop_prob=drop_path),
-            'auto_pad': auto_pad,
+            'pad_small_map': pad_small_map,
             **attn_cfgs
         }
         self.norm1 = build_norm_layer(norm_cfg, embed_dims)[1]
@@ -90,12 +87,12 @@ class SwinBlock(BaseModule):
         self.norm2 = build_norm_layer(norm_cfg, embed_dims)[1]
         self.ffn = FFN(**_ffn_cfgs)
 
-    def forward(self, x):
+    def forward(self, x, hw_shape):
 
         def _inner_forward(x):
             identity = x
             x = self.norm1(x)
-            x = self.attn(x)
+            x = self.attn(x, hw_shape)
             x = x + identity
 
             identity = x
@@ -117,38 +114,39 @@ class SwinBlockSequence(BaseModule):
 
     Args:
         embed_dims (int): Number of input channels.
-        input_resolution (Tuple[int, int]): The resolution of the input feature
-            map.
         depth (int): Number of successive swin transformer blocks.
         num_heads (int): Number of attention heads.
-        downsample (bool, optional): Downsample the output of blocks by patch
-            merging. Defaults to False.
-        downsample_cfg (dict, optional): The extra config of the patch merging
-            layer. Defaults to empty dict.
-        drop_paths (Sequence[float] | float, optional): The drop path rate in
-            each block. Defaults to 0.
-        block_cfgs (Sequence[dict] | dict, optional): The extra config of each
-            block. Defaults to empty dicts.
-        with_cp (bool, optional): Use checkpoint or not. Using checkpoint
-            will save some memory while slowing down the training speed.
+        window_size (int): The height and width of the window. Defaults to 7.
+        downsample (bool): Downsample the output of blocks by patch merging.
             Defaults to False.
-        auto_pad (bool, optional): Auto pad the feature map to be divisible by
-            window_size, Defaults to False.
+        downsample_cfg (dict): The extra config of the patch merging layer.
+            Defaults to empty dict.
+        drop_paths (Sequence[float] | float): The drop path rate in each block.
+            Defaults to 0.
+        block_cfgs (Sequence[dict] | dict): The extra config of each block.
+            Defaults to empty dicts.
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+            memory while slowing down the training speed. Defaults to False.
+        pad_small_map (bool): If True, pad the small feature map to the window
+            size, which is common used in detection and segmentation. If False,
+            avoid shifting window and shrink the window size to the size of
+            feature map, which is common used in classification.
+            Defaults to False.
         init_cfg (dict, optional): The extra config for initialization.
-            Default: None.
+            Defaults to None.
     """
 
     def __init__(self,
                  embed_dims,
-                 input_resolution,
                  depth,
                  num_heads,
+                 window_size=7,
                  downsample=False,
                  downsample_cfg=dict(),
                  drop_paths=0.,
                  block_cfgs=dict(),
                  with_cp=False,
-                 auto_pad=False,
+                 pad_small_map=False,
                  init_cfg=None):
         super().__init__(init_cfg)
 
@@ -159,17 +157,16 @@ class SwinBlockSequence(BaseModule):
             block_cfgs = [deepcopy(block_cfgs) for _ in range(depth)]
 
         self.embed_dims = embed_dims
-        self.input_resolution = input_resolution
         self.blocks = ModuleList()
         for i in range(depth):
             _block_cfg = {
                 'embed_dims': embed_dims,
-                'input_resolution': input_resolution,
                 'num_heads': num_heads,
+                'window_size': window_size,
                 'shift': False if i % 2 == 0 else True,
                 'drop_path': drop_paths[i],
                 'with_cp': with_cp,
-                'auto_pad': auto_pad,
+                'pad_small_map': pad_small_map,
                 **block_cfgs[i]
             }
             block = SwinBlock(**_block_cfg)
@@ -177,9 +174,8 @@ class SwinBlockSequence(BaseModule):
 
         if downsample:
             _downsample_cfg = {
-                'input_resolution': input_resolution,
                 'in_channels': embed_dims,
-                'expansion_ratio': 2,
+                'out_channels': 2 * embed_dims,
                 'norm_cfg': dict(type='LN'),
                 **downsample_cfg
             }
@@ -187,20 +183,15 @@ class SwinBlockSequence(BaseModule):
         else:
             self.downsample = None
 
-    def forward(self, x):
+    def forward(self, x, in_shape):
         for block in self.blocks:
-            x = block(x)
+            x = block(x, in_shape)
 
         if self.downsample:
-            x = self.downsample(x)
-        return x
-
-    @property
-    def out_resolution(self):
-        if self.downsample:
-            return self.downsample.output_resolution
+            x, out_shape = self.downsample(x, in_shape)
         else:
-            return self.input_resolution
+            out_shape = in_shape
+        return x, out_shape
 
     @property
     def out_channels(self):
@@ -212,7 +203,8 @@ class SwinBlockSequence(BaseModule):
 
 @BACKBONES.register_module()
 class SwinTransformer(BaseBackbone):
-    """ Swin Transformer
+    """Swin Transformer.
+
     A PyTorch implement of : `Swin Transformer:
     Hierarchical Vision Transformer using Shifted Windows
     <https://arxiv.org/abs/2103.14030>`_
@@ -221,34 +213,47 @@ class SwinTransformer(BaseBackbone):
     https://github.com/microsoft/Swin-Transformer
 
     Args:
-        arch (str | dict): Swin Transformer architecture
-            Defaults to 'T'.
-        img_size (int | tuple): The size of input image.
-            Defaults to 224.
-        in_channels (int): The num of input channels.
-            Defaults to 3.
-        drop_rate (float): Dropout rate after embedding.
-            Defaults to 0.
-        drop_path_rate (float): Stochastic depth rate.
-            Defaults to 0.1.
+        arch (str | dict): Swin Transformer architecture. If use string, choose
+            from 'tiny', 'small', 'base' and 'large'. If use dict, it should
+            have below keys:
+
+            - **embed_dims** (int): The dimensions of embedding.
+            - **depths** (List[int]): The number of blocks in each stage.
+            - **num_heads** (List[int]): The number of heads in attention
+              modules of each stage.
+
+            Defaults to 'tiny'.
+        img_size (int | tuple): The expected input image shape. Because we
+            support dynamic input shape, just set the argument to the most
+            common input image shape. Defaults to 224.
+        patch_size (int | tuple): The patch size in patch embedding.
+            Defaults to 4.
+        in_channels (int): The num of input channels. Defaults to 3.
+        window_size (int): The height and width of the window. Defaults to 7.
+        drop_rate (float): Dropout rate after embedding. Defaults to 0.
+        drop_path_rate (float): Stochastic depth rate. Defaults to 0.1.
         use_abs_pos_embed (bool): If True, add absolute position embedding to
             the patch embedding. Defaults to False.
-        with_cp (bool, optional): Use checkpoint or not. Using checkpoint
-            will save some memory while slowing down the training speed.
-            Defaults to False.
+        interpolate_mode (str): Select the interpolate mode for absolute
+            position embeding vector resize. Defaults to "bicubic".
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+            memory while slowing down the training speed. Defaults to False.
         frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
             -1 means not freezing any parameters. Defaults to -1.
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm
             and its variants only. Defaults to False.
-        auto_pad (bool): If True, auto pad feature map to fit window_size.
+        pad_small_map (bool): If True, pad the small feature map to the window
+            size, which is common used in detection and segmentation. If False,
+            avoid shifting window and shrink the window size to the size of
+            feature map, which is common used in classification.
             Defaults to False.
-        norm_cfg (dict, optional): Config dict for normalization layer at end
-            of backone. Defaults to dict(type='LN')
-        stage_cfgs (Sequence | dict, optional): Extra config dict for each
-            stage. Defaults to empty dict.
-        patch_cfg (dict, optional): Extra config dict for patch embedding.
-            Defaults to empty dict.
+        norm_cfg (dict): Config dict for normalization layer for all output
+            features. Defaults to ``dict(type='LN')``
+        stage_cfgs (Sequence[dict] | dict): Extra config dict for each
+            stage. Defaults to an empty dict.
+        patch_cfg (dict): Extra config dict for patch embedding.
+            Defaults to an empty dict.
         init_cfg (dict, optional): The Config for initialization.
             Defaults to None.
 
@@ -258,8 +263,7 @@ class SwinTransformer(BaseBackbone):
         >>> extra_config = dict(
         >>>     arch='tiny',
         >>>     stage_cfgs=dict(downsample_cfg={'kernel_size': 3,
-        >>>                                     'expansion_ratio': 3}),
-        >>>     auto_pad=True)
+        >>>                                     'expansion_ratio': 3}))
         >>> self = SwinTransformer(**extra_config)
         >>> inputs = torch.rand(1, 3, 224, 224)
         >>> output = self.forward(inputs)
@@ -285,25 +289,29 @@ class SwinTransformer(BaseBackbone):
                          'num_heads':  [6, 12, 24, 48]}),
     }  # yapf: disable
 
-    _version = 2
+    _version = 3
+    num_extra_tokens = 0
 
     def __init__(self,
-                 arch='T',
+                 arch='tiny',
                  img_size=224,
+                 patch_size=4,
                  in_channels=3,
+                 window_size=7,
                  drop_rate=0.,
                  drop_path_rate=0.1,
                  out_indices=(3, ),
                  use_abs_pos_embed=False,
-                 auto_pad=False,
+                 interpolate_mode='bicubic',
                  with_cp=False,
                  frozen_stages=-1,
                  norm_eval=False,
+                 pad_small_map=False,
                  norm_cfg=dict(type='LN'),
                  stage_cfgs=dict(),
                  patch_cfg=dict(),
                  init_cfg=None):
-        super(SwinTransformer, self).__init__(init_cfg)
+        super(SwinTransformer, self).__init__(init_cfg=init_cfg)
 
         if isinstance(arch, str):
             arch = arch.lower()
@@ -311,7 +319,7 @@ class SwinTransformer(BaseBackbone):
                 f'Arch {arch} is not in default archs {set(self.arch_zoo)}'
             self.arch_settings = self.arch_zoo[arch]
         else:
-            essential_keys = {'embed_dims', 'depths', 'num_head'}
+            essential_keys = {'embed_dims', 'depths', 'num_heads'}
             assert isinstance(arch, dict) and set(arch) == essential_keys, \
                 f'Custom arch needs a dict with keys {essential_keys}'
             self.arch_settings = arch
@@ -322,26 +330,31 @@ class SwinTransformer(BaseBackbone):
         self.num_layers = len(self.depths)
         self.out_indices = out_indices
         self.use_abs_pos_embed = use_abs_pos_embed
-        self.auto_pad = auto_pad
+        self.interpolate_mode = interpolate_mode
         self.frozen_stages = frozen_stages
-        self.num_extra_tokens = 0
 
-        _patch_cfg = {
-            'img_size': img_size,
-            'in_channels': in_channels,
-            'embed_dims': self.embed_dims,
-            'conv_cfg': dict(type='Conv2d', kernel_size=4, stride=4),
-            'norm_cfg': dict(type='LN'),
-            **patch_cfg
-        }
+        _patch_cfg = dict(
+            in_channels=in_channels,
+            input_size=img_size,
+            embed_dims=self.embed_dims,
+            conv_type='Conv2d',
+            kernel_size=patch_size,
+            stride=patch_size,
+            norm_cfg=dict(type='LN'),
+        )
+        _patch_cfg.update(patch_cfg)
         self.patch_embed = PatchEmbed(**_patch_cfg)
-        num_patches = self.patch_embed.num_patches
-        patches_resolution = self.patch_embed.patches_resolution
-        self.patches_resolution = patches_resolution
+        self.patch_resolution = self.patch_embed.init_out_size
 
         if self.use_abs_pos_embed:
+            num_patches = self.patch_resolution[0] * self.patch_resolution[1]
             self.absolute_pos_embed = nn.Parameter(
                 torch.zeros(1, num_patches, self.embed_dims))
+            self._register_load_state_dict_pre_hook(
+                self._prepare_abs_pos_embed)
+
+        self._register_load_state_dict_pre_hook(
+            self._prepare_relative_position_bias_table)
 
         self.drop_after_pos = nn.Dropout(p=drop_rate)
         self.norm_eval = norm_eval
@@ -354,7 +367,6 @@ class SwinTransformer(BaseBackbone):
 
         self.stages = ModuleList()
         embed_dims = [self.embed_dims]
-        input_resolution = patches_resolution
         for i, (depth,
                 num_heads) in enumerate(zip(self.depths, self.num_heads)):
             if isinstance(stage_cfgs, Sequence):
@@ -366,11 +378,11 @@ class SwinTransformer(BaseBackbone):
                 'embed_dims': embed_dims[-1],
                 'depth': depth,
                 'num_heads': num_heads,
+                'window_size': window_size,
                 'downsample': downsample,
-                'input_resolution': input_resolution,
                 'drop_paths': dpr[:depth],
                 'with_cp': with_cp,
-                'auto_pad': auto_pad,
+                'pad_small_map': pad_small_map,
                 **stage_cfg
             }
 
@@ -379,7 +391,6 @@ class SwinTransformer(BaseBackbone):
 
             dpr = dpr[depth:]
             embed_dims.append(stage.out_channels)
-            input_resolution = stage.out_resolution
 
         for i in out_indices:
             if norm_cfg is not None:
@@ -401,18 +412,20 @@ class SwinTransformer(BaseBackbone):
             trunc_normal_(self.absolute_pos_embed, std=0.02)
 
     def forward(self, x):
-        x = self.patch_embed(x)
+        x, hw_shape = self.patch_embed(x)
         if self.use_abs_pos_embed:
-            x = x + self.absolute_pos_embed
+            x = x + resize_pos_embed(
+                self.absolute_pos_embed, self.patch_resolution, hw_shape,
+                self.interpolate_mode, self.num_extra_tokens)
         x = self.drop_after_pos(x)
 
         outs = []
         for i, stage in enumerate(self.stages):
-            x = stage(x)
+            x, hw_shape = stage(x, hw_shape)
             if i in self.out_indices:
                 norm_layer = getattr(self, f'norm{i}')
                 out = norm_layer(x)
-                out = out.view(-1, *stage.out_resolution,
+                out = out.view(-1, *hw_shape,
                                stage.out_channels).permute(0, 3, 1,
                                                            2).contiguous()
                 outs.append(out)
@@ -432,6 +445,12 @@ class SwinTransformer(BaseBackbone):
                 if k.startswith('norm.') or k.startswith('backbone.norm.'):
                     convert_key = k.replace('norm.', f'norm{final_stage_num}.')
                     state_dict[convert_key] = state_dict[k]
+                    del state_dict[k]
+        if (version is None
+                or version < 3) and self.__class__ is SwinTransformer:
+            state_dict_keys = list(state_dict.keys())
+            for k in state_dict_keys:
+                if 'attn_mask' in k:
                     del state_dict[k]
 
         super()._load_from_state_dict(state_dict, prefix, local_metadata,
@@ -461,3 +480,53 @@ class SwinTransformer(BaseBackbone):
                 # trick: eval have effect on BatchNorm only
                 if isinstance(m, _BatchNorm):
                     m.eval()
+
+    def _prepare_abs_pos_embed(self, state_dict, prefix, *args, **kwargs):
+        name = prefix + 'absolute_pos_embed'
+        if name not in state_dict.keys():
+            return
+
+        ckpt_pos_embed_shape = state_dict[name].shape
+        if self.absolute_pos_embed.shape != ckpt_pos_embed_shape:
+            from mmcls.utils import get_root_logger
+            logger = get_root_logger()
+            logger.info(
+                'Resize the absolute_pos_embed shape from '
+                f'{ckpt_pos_embed_shape} to {self.absolute_pos_embed.shape}.')
+
+            ckpt_pos_embed_shape = to_2tuple(
+                int(np.sqrt(ckpt_pos_embed_shape[1] - self.num_extra_tokens)))
+            pos_embed_shape = self.patch_embed.init_out_size
+
+            state_dict[name] = resize_pos_embed(state_dict[name],
+                                                ckpt_pos_embed_shape,
+                                                pos_embed_shape,
+                                                self.interpolate_mode,
+                                                self.num_extra_tokens)
+
+    def _prepare_relative_position_bias_table(self, state_dict, prefix, *args,
+                                              **kwargs):
+        all_keys = list(state_dict.keys())
+        state_dict_model = self.state_dict()
+        for key in all_keys:
+            if 'relative_position_bias_table' in key:
+                relative_position_bias_table_pretrained = state_dict[key]
+                relative_position_bias_table_current = state_dict_model[key]
+                L1, nH1 = relative_position_bias_table_pretrained.size()
+                L2, nH2 = relative_position_bias_table_current.size()
+                if L1 != L2:
+                    src_size = int(L1**0.5)
+                    dst_size = int(L2**0.5)
+                    new_rel_pos_bias = resize_relative_position_bias_table(
+                        src_size, dst_size,
+                        relative_position_bias_table_pretrained, nH1)
+                    from mmcls.utils import get_root_logger
+                    logger = get_root_logger()
+                    logger.info(
+                        f'Resize the relative_position_bias_table from \
+                        {state_dict[key].shape} to {new_rel_pos_bias.shape}')
+                    state_dict[key] = new_rel_pos_bias
+
+                    # The index buffer need to be re-generated.
+                    index_buffer = key.replace('bias_table', 'index')
+                    del state_dict[index_buffer]

@@ -1,9 +1,23 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import argparse
+import warnings
 from pathlib import Path
 
 import torch
 
 from mmcls.apis import init_model
+
+bright_style, reset_style = '\x1b[1m', '\x1b[0m'
+red_text, blue_text = '\x1b[31m', '\x1b[34m'
+white_background = '\x1b[107m'
+
+msg = bright_style + red_text
+msg += 'DeprecationWarning: This tool will be deprecated in future. '
+msg += red_text + 'Welcome to use the '
+msg += white_background
+msg += '"tools/convert_models/reparameterize_model.py"'
+msg += reset_style
+warnings.warn(msg)
 
 
 def convert_repvggblock_param(config_path, checkpoint_path, save_path):
@@ -35,7 +49,7 @@ def main():
     save_path = Path(args.save_path)
     if save_path.suffix != '.pth':
         print('The path should contain the name of the pth format file.')
-        exit()
+        exit(1)
     save_path.parent.mkdir(parents=True, exist_ok=True)
 
     convert_repvggblock_param(args.config_path, args.checkpoint_path,

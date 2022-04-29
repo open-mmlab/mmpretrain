@@ -1,0 +1,76 @@
+Collections:
+  - Name: DenseNet
+    Metadata:
+      Training Data: ImageNet-1k
+      Architecture:
+        - DenseBlock
+    Paper:
+      URL: https://arxiv.org/abs/1608.06993
+      Title: Densely Connected Convolutional Networks
+    README: configs/densenet/README.md
+
+Models:
+  - Name: densenet121_4xb256_in1k
+    Metadata:
+      FLOPs: 2881695488
+      Parameters: 7978856
+    In Collections: DenseNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 74.96
+          Top 5 Accuracy: 92.21
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/densenet/densenet121_4xb256_in1k_20220426-07450f99.pth
+    Config: configs/densenet/densenet121_4xb256_in1k.py
+    Converted From:
+      Weights: https://download.pytorch.org/models/densenet121-a639ec97.pth
+      Code: https://github.com/pytorch/vision/blob/main/torchvision/models/densenet.py
+  - Name: densenet169_4xb256_in1k
+    Metadata:
+      FLOPs: 3416860160
+      Parameters: 14149480
+    In Collections: DenseNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 76.08
+          Top 5 Accuracy: 93.11
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/densenet/densenet169_4xb256_in1k_20220426-a2889902.pth
+    Config: configs/densenet/densenet169_4xb256_in1k.py
+    Converted From:
+      Weights: https://download.pytorch.org/models/densenet169-b2777c0a.pth
+      Code: https://github.com/pytorch/vision/blob/main/torchvision/models/densenet.py
+  - Name: densenet201_4xb256_in1k
+    Metadata:
+      FLOPs: 4365236736
+      Parameters: 20013928
+    In Collections: DenseNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 77.32
+          Top 5 Accuracy: 93.64
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/densenet/densenet201_4xb256_in1k_20220426-05cae4ef.pth
+    Config: configs/densenet/densenet201_4xb256_in1k.py
+    Converted From:
+      Weights: https://download.pytorch.org/models/densenet201-c1103571.pth
+      Code: https://github.com/pytorch/vision/blob/main/torchvision/models/densenet.py
+  - Name: densenet161_4xb256_in1k
+    Metadata:
+      FLOPs: 7816363968
+      Parameters: 28681000
+    In Collections: DenseNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 77.61
+          Top 5 Accuracy: 93.83
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/densenet/densenet161_4xb256_in1k_20220426-ee6a80a9.pth
+    Config: configs/densenet/densenet161_4xb256_in1k.py
+    Converted From:
+      Weights: https://download.pytorch.org/models/densenet161-8d451a50.pth
+      Code: https://github.com/pytorch/vision/blob/main/torchvision/models/densenet.py

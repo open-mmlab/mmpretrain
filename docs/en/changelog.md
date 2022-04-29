@@ -1,5 +1,130 @@
 # Changelog
 
+## v0.22.1(15/4/2022)
+
+### New Features
+
+- [Feature] Support resize relative position embedding in `SwinTransformer`. ([#749](https://github.com/open-mmlab/mmclassification/pull/749))
+- [Feature] Add PoolFormer backbone and checkpoints. ([#746](https://github.com/open-mmlab/mmclassification/pull/746))
+
+### Improvements
+
+- [Enhance] Improve CPE performance by reduce memory copy. ([#762](https://github.com/open-mmlab/mmclassification/pull/762))
+- [Enhance] Add extra dataloader settings in configs. ([#752](https://github.com/open-mmlab/mmclassification/pull/752))
+
+## v0.22.0(30/3/2022)
+
+### Highlights
+
+- Support a series of CSP Network, such as CSP-ResNet, CSP-ResNeXt and CSP-DarkNet.
+- A new `CustomDataset` class to help you build dataset of yourself!
+- Support ConvMixer, RepMLP and new dataset - CUB dataset.
+
+### New Features
+
+- [Feature] Add CSPNet and backbone and checkpoints ([#735](https://github.com/open-mmlab/mmclassification/pull/735))
+- [Feature] Add `CustomDataset`. ([#738](https://github.com/open-mmlab/mmclassification/pull/738))
+- [Feature] Add diff seeds to diff ranks.  ([#744](https://github.com/open-mmlab/mmclassification/pull/744))
+- [Feature] Support ConvMixer. ([#716](https://github.com/open-mmlab/mmclassification/pull/716))
+- [Feature] Our `dist_train` & `dist_test` tools support distributed training on multiple machines. ([#734](https://github.com/open-mmlab/mmclassification/pull/734))
+- [Feature] Add RepMLP backbone and checkpoints. ([#709](https://github.com/open-mmlab/mmclassification/pull/709))
+- [Feature] Support CUB dataset. ([#703](https://github.com/open-mmlab/mmclassification/pull/703))
+- [Feature] Support ResizeMix. ([#676](https://github.com/open-mmlab/mmclassification/pull/676))
+
+
+### Improvements
+
+- [Enhance] Use `--a-b` instead of `--a_b` in arguments. ([#754](https://github.com/open-mmlab/mmclassification/pull/754))
+- [Enhance] Add `get_cat_ids` and `get_gt_labels` to KFoldDataset. ([#721](https://github.com/open-mmlab/mmclassification/pull/721))
+- [Enhance] Set torch seed in `worker_init_fn`. ([#733](https://github.com/open-mmlab/mmclassification/pull/733))
+
+### Bug Fixes
+
+- [Fix] Fix the discontiguous output feature map of ConvNeXt. ([#743](https://github.com/open-mmlab/mmclassification/pull/743))
+
+### Docs Update
+
+- [Docs] Add brief installation steps in README for copy&paste. ([#755](https://github.com/open-mmlab/mmclassification/pull/755))
+- [Docs] fix logo url link from mmocr to mmcls. ([#732](https://github.com/open-mmlab/mmclassification/pull/732))
+
+## v0.21.0(04/03/2022)
+
+### Highlights
+
+- Support ResNetV1c and Wide-ResNet, and provide pre-trained models.
+- Support dynamic input shape for ViT-based algorithms. Now our ViT, DeiT, Swin-Transformer and T2T-ViT support forwarding with any input shape.
+- Reproduce training results of DeiT. And our DeiT-T and DeiT-S have higher accuracy comparing with the official weights.
+
+### New Features
+
+- Add ResNetV1c. ([#692](https://github.com/open-mmlab/mmclassification/pull/692))
+- Support Wide-ResNet. ([#715](https://github.com/open-mmlab/mmclassification/pull/715))
+- Support gem pooling ([#677](https://github.com/open-mmlab/mmclassification/pull/677))
+
+### Improvements
+
+- Reproduce training results of DeiT. ([#711](https://github.com/open-mmlab/mmclassification/pull/711))
+- Add ConvNeXt pretrain models on ImageNet-1k. ([#707](https://github.com/open-mmlab/mmclassification/pull/707))
+- Support dynamic input shape for ViT-based algorithms. ([#706](https://github.com/open-mmlab/mmclassification/pull/706))
+- Add `evaluate` function for ConcatDataset. ([#650](https://github.com/open-mmlab/mmclassification/pull/650))
+- Enhance vis-pipeline tool. ([#604](https://github.com/open-mmlab/mmclassification/pull/604))
+- Return code 1 if scripts runs failed. ([#694](https://github.com/open-mmlab/mmclassification/pull/694))
+- Use PyTorch official `one_hot` to implement `convert_to_one_hot`. ([#696](https://github.com/open-mmlab/mmclassification/pull/696))
+- Add a new pre-commit-hook to automatically add a copyright. ([#710](https://github.com/open-mmlab/mmclassification/pull/710))
+- Add deprecation message for deploy tools. ([#697](https://github.com/open-mmlab/mmclassification/pull/697))
+- Upgrade isort pre-commit hooks. ([#687](https://github.com/open-mmlab/mmclassification/pull/687))
+- Use `--gpu-id` instead of `--gpu-ids` in non-distributed multi-gpu training/testing. ([#688](https://github.com/open-mmlab/mmclassification/pull/688))
+- Remove deprecation. ([#633](https://github.com/open-mmlab/mmclassification/pull/633))
+
+### Bug Fixes
+
+- Fix Conformer forward with irregular input size. ([#686](https://github.com/open-mmlab/mmclassification/pull/686))
+- Add `dist.barrier` to fix a bug in directory checking. ([#666](https://github.com/open-mmlab/mmclassification/pull/666))
+
+## v0.20.1(07/02/2022)
+
+### Bug Fixes
+
+- Fix the MMCV dependency version.
+
+## v0.20.0(30/01/2022)
+
+### Highlights
+
+- Support K-fold cross-validation. The tutorial will be released later.
+- Support HRNet, ConvNeXt, Twins and EfficientNet.
+- Support model conversion from PyTorch to Core-ML by a tool.
+
+### New Features
+
+- Support K-fold cross-validation. ([#563](https://github.com/open-mmlab/mmclassification/pull/563))
+- Support HRNet and add pre-trained models. ([#660](https://github.com/open-mmlab/mmclassification/pull/660))
+- Support ConvNeXt and add pre-trained models. ([#670](https://github.com/open-mmlab/mmclassification/pull/670))
+- Support Twins and add pre-trained models. ([#642](https://github.com/open-mmlab/mmclassification/pull/642))
+- Support EfficientNet and add pre-trained models.([#649](https://github.com/open-mmlab/mmclassification/pull/649))
+- Support `features_only` option in `TIMMBackbone`. ([#668](https://github.com/open-mmlab/mmclassification/pull/668))
+- Add conversion script from pytorch to Core-ML model. ([#597](https://github.com/open-mmlab/mmclassification/pull/597))
+
+### Improvements
+
+- New-style CPU training and inference. ([#674](https://github.com/open-mmlab/mmclassification/pull/674))
+- Add setup multi-processing both in train and test. ([#671](https://github.com/open-mmlab/mmclassification/pull/671))
+- Rewrite channel split operation in ShufflenetV2. ([#632](https://github.com/open-mmlab/mmclassification/pull/632))
+- Deprecate the support for "python setup.py test". ([#646](https://github.com/open-mmlab/mmclassification/pull/646))
+- Support single-label, softmax, custom eps by asymmetric loss. ([#609](https://github.com/open-mmlab/mmclassification/pull/609))
+- Save class names in best checkpoint created by evaluation hook. ([#641](https://github.com/open-mmlab/mmclassification/pull/641))
+
+### Bug Fixes
+
+- Fix potential unexcepted behaviors if `metric_options` is not specified in multi-label evaluation. ([#647](https://github.com/open-mmlab/mmclassification/pull/647))
+- Fix API changes in  `pytorch-grad-cam&gt;=1.3.7`. ([#656](https://github.com/open-mmlab/mmclassification/pull/656))
+- Fix bug which breaks `cal_train_time` in `analyze_logs.py`. ([#662](https://github.com/open-mmlab/mmclassification/pull/662))
+
+### Docs Update
+
+- Update README in configs according to OpenMMLab standard. ([#672](https://github.com/open-mmlab/mmclassification/pull/672))
+- Update installation guide and README. ([#624](https://github.com/open-mmlab/mmclassification/pull/624))
+
 ## v0.19.0(31/12/2021)
 
 ### Highlights

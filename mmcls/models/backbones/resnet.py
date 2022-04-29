@@ -2,9 +2,10 @@
 
 import torch.nn as nn
 import torch.utils.checkpoint as cp
-from mmcv.cnn import (ConvModule, build_conv_layer, build_norm_layer,
-                      constant_init)
+from mmcv.cnn import (ConvModule, build_activation_layer, build_conv_layer,
+                      build_norm_layer, constant_init)
 from mmcv.cnn.bricks import DropPath
+from mmcv.runner import BaseModule
 from mmcv.utils.parrots_wrapper import _BatchNorm
 
 from ..builder import BACKBONES
@@ -13,7 +14,7 @@ from .base_backbone import BaseBackbone
 eps = 1.0e-5
 
 
-class BasicBlock(nn.Module):
+class BasicBlock(BaseModule):
     """BasicBlock for ResNet.
 
     Args:
@@ -47,8 +48,10 @@ class BasicBlock(nn.Module):
                  with_cp=False,
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
-                 drop_path_rate=0.0):
-        super(BasicBlock, self).__init__()
+                 drop_path_rate=0.0,
+                 act_cfg=dict(type='ReLU', inplace=True),
+                 init_cfg=None):
+        super(BasicBlock, self).__init__(init_cfg=init_cfg)
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.expansion = expansion
@@ -86,7 +89,7 @@ class BasicBlock(nn.Module):
             bias=False)
         self.add_module(self.norm2_name, norm2)
 
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = build_activation_layer(act_cfg)
         self.downsample = downsample
         self.drop_path = DropPath(drop_prob=drop_path_rate
                                   ) if drop_path_rate > eps else nn.Identity()
@@ -130,7 +133,7 @@ class BasicBlock(nn.Module):
         return out
 
 
-class Bottleneck(nn.Module):
+class Bottleneck(BaseModule):
     """Bottleneck block for ResNet.
 
     Args:
@@ -164,8 +167,10 @@ class Bottleneck(nn.Module):
                  with_cp=False,
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
-                 drop_path_rate=0.0):
-        super(Bottleneck, self).__init__()
+                 act_cfg=dict(type='ReLU', inplace=True),
+                 drop_path_rate=0.0,
+                 init_cfg=None):
+        super(Bottleneck, self).__init__(init_cfg=init_cfg)
         assert style in ['pytorch', 'caffe']
 
         self.in_channels = in_channels
@@ -221,7 +226,7 @@ class Bottleneck(nn.Module):
             bias=False)
         self.add_module(self.norm3_name, norm3)
 
-        self.relu = nn.ReLU(inplace=True)
+        self.relu = build_activation_layer(act_cfg)
         self.downsample = downsample
         self.drop_path = DropPath(drop_prob=drop_path_rate
                                   ) if drop_path_rate > eps else nn.Identity()
@@ -648,6 +653,22 @@ class ResNet(BaseBackbone):
                 # trick: eval have effect on BatchNorm only
                 if isinstance(m, _BatchNorm):
                     m.eval()
+
+
+@BACKBONES.register_module()
+class ResNetV1c(ResNet):
+    """ResNetV1c backbone.
+
+    This variant is described in `Bag of Tricks.
+    <https://arxiv.org/pdf/1812.01187.pdf>`_.
+
+    Compared with default ResNet(ResNetV1b), ResNetV1c replaces the 7x7 conv
+    in the input stem with three 3x3 convs.
+    """
+
+    def __init__(self, **kwargs):
+        super(ResNetV1c, self).__init__(
+            deep_stem=True, avg_down=False, **kwargs)
 
 
 @BACKBONES.register_module()

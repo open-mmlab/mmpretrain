@@ -1,13 +1,40 @@
 <div align="center">
-  <img src="resources/mmcls-logo.png" width="600"/>
-</div>
 
-[![Build Status](https://github.com/open-mmlab/mmclassification/workflows/build/badge.svg)](https://github.com/open-mmlab/mmclassification/actions)
-[![Documentation Status](https://readthedocs.org/projects/mmclassification/badge/?version=latest)](https://mmclassification.readthedocs.io/en/latest/?badge=latest)
-[![codecov](https://codecov.io/gh/open-mmlab/mmclassification/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmclassification)
-[![license](https://img.shields.io/github/license/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/blob/master/LICENSE)
-[![PyPI](https://badge.fury.io/py/mmcls.svg)](https://pypi.org/project/mmcls/)
-[![Percentage of issues still open](https://isitmaintained.com/badge/open/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
+  <img src="resources/mmcls-logo.png" width="600"/>
+  <div>&nbsp;</div>
+  <div align="center">
+    <b><font size="5">OpenMMLab website</font></b>
+    <sup>
+      <a href="https://openmmlab.com">
+        <i><font size="4">HOT</font></i>
+      </a>
+    </sup>
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <b><font size="5">OpenMMLab platform</font></b>
+    <sup>
+      <a href="https://platform.openmmlab.com">
+        <i><font size="4">TRY IT OUT</font></i>
+      </a>
+    </sup>
+  </div>
+  <div>&nbsp;</div>
+
+
+  [![PyPI](https://img.shields.io/pypi/v/mmcls)](https://pypi.org/project/mmcls)
+  [![Docs](https://img.shields.io/badge/docs-latest-blue)](https://mmclassification.readthedocs.io/en/latest/)
+  [![Build Status](https://github.com/open-mmlab/mmclassification/workflows/build/badge.svg)](https://github.com/open-mmlab/mmclassification/actions)
+  [![codecov](https://codecov.io/gh/open-mmlab/mmclassification/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmclassification)
+  [![license](https://img.shields.io/github/license/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/blob/master/LICENSE)
+  [![open issues](https://isitmaintained.com/badge/open/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
+  [![issue resolution](https://isitmaintained.com/badge/resolution/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
+
+  [📘 Documentation](https://mmclassification.readthedocs.io/en/latest/) |
+  [🛠️ Installation](https://mmclassification.readthedocs.io/en/latest/install.html) |
+  [👀 Model Zoo](https://mmclassification.readthedocs.io/en/latest/model_zoo.html) |
+  [🆕 Update News](https://mmclassification.readthedocs.io/en/latest/changelog.html) |
+  [🤔 Reporting Issues](https://github.com/open-mmlab/mmclassification/issues/new/choose)
+
+</div>
 
 ## Introduction
 
@@ -16,9 +43,11 @@ English | [简体中文](/README_zh-CN.md)
 MMClassification is an open source image classification toolbox based on PyTorch. It is
 a part of the [OpenMMLab](https://openmmlab.com/) project.
 
-Documentation: https://mmclassification.readthedocs.io/en/latest/
+The master branch works with **PyTorch 1.5+**.
 
-![demo](https://user-images.githubusercontent.com/9102141/87268895-3e0d0780-c4fe-11ea-849e-6140b7e0d4de.gif)
+<div align="center">
+  <img src="https://user-images.githubusercontent.com/9102141/87268895-3e0d0780-c4fe-11ea-849e-6140b7e0d4de.gif" width="70%"/>
+</div>
 
 ### Major features
 
@@ -28,30 +57,58 @@ Documentation: https://mmclassification.readthedocs.io/en/latest/
 - High efficiency and extensibility
 - Powerful toolkits
 
-## License
+## What's new
 
-This project is released under the [Apache 2.0 license](LICENSE).
-
-## Changelog
-
-v0.19.0 was released in 31/12/2021.
+v0.22.0 was released in 30/3/2022.
 
 Highlights of the new version:
-- The **feature extraction** function has been enhanced. See [#593](https://github.com/open-mmlab/mmclassification/pull/593) for more details.
-- Provide the high-acc **ResNet-50** training settings from [*ResNet strikes back*](https://arxiv.org/abs/2110.00476).
-- Reproduce the training accuracy of **T2T-ViT** & **RegNetX**, and provide self-training checkpoints.
-- Support **DeiT** & **Conformer** backbone and checkpoints.
-- Provide a **CAM visualization** tool based on [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam), and detailed [user guide](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#class-activation-map-visualization)!
+- Support a series of **CSP Network**, such as CSP-ResNet, CSP-ResNeXt and CSP-DarkNet.
+- A new `CustomDataset` class to help you **build dataset of yourself**!
+- Support new backbones - **ConvMixer**, **RepMLP** and new dataset - **CUB dataset**.
 
-v0.18.0 was released in 30/11/2021.
+v0.21.0 was released in 4/3/2022.
 
 Highlights of the new version:
-- Support **MLP-Mixer** backbone and provide pre-trained checkpoints.
-- Add a tool to **visualize the learning rate curve** of the training phase. Welcome to use with the [tutorial](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#learning-rate-schedule-visualization)!
+- Support **ResNetV1c** and **Wide-ResNet**, and provide pre-trained models.
+- Support **dynamic input shape** for ViT-based algorithms. Now our ViT, DeiT, Swin-Transformer and T2T-ViT support forwarding with any input shape.
+- Reproduce training results of DeiT. And our DeiT-T and DeiT-S have **higher accuracy** comparing with the official weights.
 
 Please refer to [changelog.md](docs/en/changelog.md) for more details and other release history.
 
-## Benchmark and model zoo
+## Installation
+
+Below are quick steps for installation:
+
+```shell
+conda create -n open-mmlab python=3.8 pytorch=1.10 cudatoolkit=11.3 torchvision -c pytorch -y
+conda activate open-mmlab
+pip3 install openmim
+mim install mmcv-full
+git clone https://github.com/open-mmlab/mmclassification.git
+cd mmclassification
+pip3 install -e .
+```
+
+Please refer to [install.md](https://mmclassification.readthedocs.io/en/latest/install.html) for more detailed installation and dataset preparation.
+
+## Getting Started
+
+Please see [Getting Started](https://mmclassification.readthedocs.io/en/latest/getting_started.html) for the basic usage of MMClassification. There are also tutorials:
+
+- [Learn about Configs](https://mmclassification.readthedocs.io/en/latest/tutorials/config.html)
+- [Fine-tune Models](https://mmclassification.readthedocs.io/en/latest/tutorials/finetune.html)
+- [Add New Dataset](https://mmclassification.readthedocs.io/en/latest/tutorials/new_dataset.html)
+- [Customizie Data Pipeline](https://mmclassification.readthedocs.io/en/latest/tutorials/data_pipeline.html)
+- [Add New Modules](https://mmclassification.readthedocs.io/en/latest/tutorials/new_modules.html)
+- [Customizie Schedule](https://mmclassification.readthedocs.io/en/latest/tutorials/schedule.html)
+- [Customizie Runtime Settings](https://mmclassification.readthedocs.io/en/latest/tutorials/runtime.html)
+
+Colab tutorials are also provided:
+
+- Learn about MMClassification **Python API**: [Preview the notebook](https://github.com/open-mmlab/mmclassification/blob/master/docs/en/tutorials/MMClassification_python.ipynb) or directly [run on Colab](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/en/tutorials/MMClassification_python.ipynb).
+- Learn about MMClassification **CLI tools**: [Preview the notebook](https://github.com/open-mmlab/mmclassification/blob/master/docs/en/tutorials/MMClassification_tools.ipynb) or directly [run on Colab](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/en/tutorials/MMClassification_tools.ipynb).
+
+## Model zoo
 
 Results and models are available in the [model zoo](https://mmclassification.readthedocs.io/en/latest/model_zoo.html).
 
@@ -79,29 +136,24 @@ Results and models are available in the [model zoo](https://mmclassification.rea
 - [x] [T2T-ViT](https://github.com/open-mmlab/mmclassification/tree/master/configs/t2t_vit)
 - [x] [Twins](https://github.com/open-mmlab/mmclassification/tree/master/configs/twins)
 - [x] [EfficientNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/efficientnet)
-- [ ] HRNet
+- [x] [ConvNeXt](https://github.com/open-mmlab/mmclassification/tree/master/configs/convnext)
+- [x] [HRNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/hrnet)
+- [x] [VAN](https://github.com/open-mmlab/mmclassification/tree/master/configs/van)
+- [x] [ConvMixer](https://github.com/open-mmlab/mmclassification/tree/master/configs/convmixer)
+- [x] [CSPNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/cspnet)
+- [x] [PoolFormer](https://github.com/open-mmlab/mmclassification/tree/master/configs/poolformer)
 
 </details>
 
-## Installation
+## Contributing
 
-Please refer to [install.md](https://mmclassification.readthedocs.io/en/latest/install.html) for installation and dataset preparation.
+We appreciate all contributions to improve MMClassification.
+Please refer to [CONTRUBUTING.md](https://mmclassification.readthedocs.io/en/latest/community/CONTRIBUTING.html) for the contributing guideline.
 
-## Getting Started
-Please see [Getting Started](https://mmclassification.readthedocs.io/en/latest/getting_started.html) for the basic usage of MMClassification. There are also tutorials:
+## Acknowledgement
 
-- [Learn about Configs](https://mmclassification.readthedocs.io/en/latest/tutorials/config.html)
-- [Fine-tune Models](https://mmclassification.readthedocs.io/en/latest/tutorials/finetune.html)
-- [Add New Dataset](https://mmclassification.readthedocs.io/en/latest/tutorials/new_dataset.html)
-- [Customizie Data Pipeline](https://mmclassification.readthedocs.io/en/latest/tutorials/data_pipeline.html)
-- [Add New Modules](https://mmclassification.readthedocs.io/en/latest/tutorials/new_modules.html)
-- [Customizie Schedule](https://mmclassification.readthedocs.io/en/latest/tutorials/schedule.html)
-- [Customizie Runtime Settings](https://mmclassification.readthedocs.io/en/latest/tutorials/runtime.html)
-
-Colab tutorials are also provided:
-
-- Learn about MMClassification **Python API**: [Preview the notebook](https://github.com/open-mmlab/mmclassification/blob/master/docs/en/tutorials/MMClassification_python.ipynb) or directly [run on Colab](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/en/tutorials/MMClassification_python.ipynb).
-- Learn about MMClassification **CLI tools**: [Preview the notebook](https://github.com/open-mmlab/mmclassification/blob/master/docs/en/tutorials/MMClassification_tools.ipynb) or directly [run on Colab](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/en/tutorials/MMClassification_tools.ipynb).
+MMClassification is an open source project that is contributed by researchers and engineers from various colleges and companies. We appreciate all the contributors who implement their methods or add new features, as well as users who give valuable feedbacks.
+We wish that the toolbox and benchmark could serve the growing research community by providing a flexible toolkit to reimplement existing methods and develop their own new classifiers.
 
 ## Citation
 
@@ -116,33 +168,28 @@ If you find this project useful in your research, please consider cite:
 }
 ```
 
-## Contributing
+## License
 
-We appreciate all contributions to improve MMClassification.
-Please refer to [CONTRUBUTING.md](https://mmclassification.readthedocs.io/en/latest/community/CONTRIBUTING.html) for the contributing guideline.
-
-## Acknowledgement
-
-MMClassification is an open source project that is contributed by researchers and engineers from various colleges and companies. We appreciate all the contributors who implement their methods or add new features, as well as users who give valuable feedbacks.
-We wish that the toolbox and benchmark could serve the growing research community by providing a flexible toolkit to reimplement existing methods and develop their own new classifiers.
+This project is released under the [Apache 2.0 license](LICENSE).
 
 ## Projects in OpenMMLab
 
 - [MMCV](https://github.com/open-mmlab/mmcv): OpenMMLab foundational library for computer vision.
-- [MIM](https://github.com/open-mmlab/mim): MIM Installs OpenMMLab Packages.
+- [MIM](https://github.com/open-mmlab/mim): MIM installs OpenMMLab packages.
 - [MMClassification](https://github.com/open-mmlab/mmclassification): OpenMMLab image classification toolbox and benchmark.
 - [MMDetection](https://github.com/open-mmlab/mmdetection): OpenMMLab detection toolbox and benchmark.
 - [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): OpenMMLab's next-generation platform for general 3D object detection.
+- [MMRotate](https://github.com/open-mmlab/mmrotate): OpenMMLab rotated object detection toolbox and benchmark.
 - [MMSegmentation](https://github.com/open-mmlab/mmsegmentation): OpenMMLab semantic segmentation toolbox and benchmark.
+- [MMOCR](https://github.com/open-mmlab/mmocr): OpenMMLab text detection, recognition, and understanding toolbox.
+- [MMPose](https://github.com/open-mmlab/mmpose): OpenMMLab pose estimation toolbox and benchmark.
+- [MMHuman3D](https://github.com/open-mmlab/mmhuman3d): OpenMMLab 3D human parametric model toolbox and benchmark.
+- [MMSelfSup](https://github.com/open-mmlab/mmselfsup): OpenMMLab self-supervised learning toolbox and benchmark.
+- [MMRazor](https://github.com/open-mmlab/mmrazor): OpenMMLab model compression toolbox and benchmark.
+- [MMFewShot](https://github.com/open-mmlab/mmfewshot): OpenMMLab fewshot learning toolbox and benchmark.
 - [MMAction2](https://github.com/open-mmlab/mmaction2): OpenMMLab's next-generation action understanding toolbox and benchmark.
 - [MMTracking](https://github.com/open-mmlab/mmtracking): OpenMMLab video perception toolbox and benchmark.
-- [MMPose](https://github.com/open-mmlab/mmpose): OpenMMLab pose estimation toolbox and benchmark.
+- [MMFlow](https://github.com/open-mmlab/mmflow): OpenMMLab optical flow toolbox and benchmark.
 - [MMEditing](https://github.com/open-mmlab/mmediting): OpenMMLab image and video editing toolbox.
-- [MMOCR](https://github.com/open-mmlab/mmocr): OpenMMLab toolbox for text detection, recognition and understanding.
-- [MMGeneration](https://github.com/open-mmlab/mmgeneration): OpenMMlab toolkit for generative models.
-- [MMFlow](https://github.com/open-mmlab/mmflow) OpenMMLab optical flow toolbox and benchmark.
-- [MMFewShot](https://github.com/open-mmlab/mmfewshot): OpenMMLab FewShot Learning Toolbox and Benchmark.
-- [MMHuman3D](https://github.com/open-mmlab/mmhuman3d): OpenMMLab 3D Human Parametric Model Toolbox and Benchmark.
-- [MMSelfSup](https://github.com/open-mmlab/mmselfsup): OpenMMLab self-supervised learning toolbox and benchmark.
-- [MMRazor](https://github.com/open-mmlab/mmrazor): OpenMMLab Model Compression Toolbox and Benchmark.
-- [MMDeploy](https://github.com/open-mmlab/mmdeploy): OpenMMLab Model Deployment Framework.
+- [MMGeneration](https://github.com/open-mmlab/mmgeneration): OpenMMLab image and video generative models toolbox.
+- [MMDeploy](https://github.com/open-mmlab/mmdeploy): OpenMMLab model deployment framework.
