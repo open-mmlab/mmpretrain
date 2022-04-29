@@ -322,33 +322,48 @@ def test_deit_head():
 @pytest.mark.parametrize('feat', [torch.rand(4, 3), (torch.rand(4, 3), )])
 def test_multitask_head(feat):
     head = MultiTaskClsHead(
-        heads=dict(
-            first=dict(type='LinearClsHead', num_classes=10, in_channels=3),
-            second=dict(type='LinearClsHead', num_classes=8, in_channels=3)))
-    fake_gt_label = (torch.randint(0, 10, (4, )), torch.randint(0, 8, (4, )))
+        sub_heads={
+            'task1': dict(num_classes=10),
+            'task2': dict(num_classes=8)
+        },
+        common_cfg=dict(type='LinearClsHead', in_channels=3))
+    gt_label = {
+        'task1': torch.randint(0, 10, (4, )),
+        'task2': torch.randint(0, 8, (4, )),
+    }
 
-    losses = head.forward_train(feat, fake_gt_label)
-    assert losses['loss_first'].item() > 0
-    assert losses['loss_second'].item() > 0
+    losses = head.forward_train(feat, gt_label)
+    assert losses['task1_loss'].item() > 0
+    assert losses['task2_loss'].item() > 0
 
     # test simple_test with post_process
-    pred = head.simple_test(feat)
+    pred = head.simple_test(feat, post_process=True)
     assert isinstance(pred, list) and len(pred) == 4
-    assert isinstance(pred[0], tuple) and len(pred[0]) == 2
-    assert len(pred[0][0]) == 10
-    assert len(pred[0][1]) == 8
+    assert isinstance(pred[0], dict) and pred[0].keys() == {'task1', 'task2'}
+    assert len(pred[0]['task1']) == 10
+    assert len(pred[0]['task2']) == 8
 
     with patch('torch.onnx.is_in_onnx_export', return_value=True):
         pred = head.simple_test(feat)
-        assert pred[0][0].shape == (10, )
+        assert pred[0]['task1'].shape == (10, )
 
     # test simple_test without post_process
-    with pytest.raises(AssertionError):
-        head.simple_test(feat, post_process=False)
+    pred = head.simple_test(feat, post_process=False)
+    assert isinstance(pred, dict) and pred.keys() == {'task1', 'task2'}
+    assert pred['task1'].shape == (4, 10)
+    assert pred['task2'].shape == (4, 8)
+
+    # test task_wise_args
+    pred_ = head.simple_test(
+        feat,
+        post_process=False,
+        task_wise_args=dict(task1={'softmax': False}))
+    assert isinstance(pred, dict) and pred.keys() == {'task1', 'task2'}
+    torch.testing.assert_allclose(pred_['task1'].softmax(dim=1), pred['task1'])
+    torch.testing.assert_allclose(pred_['task2'], pred['task2'])
 
     # test pre_logits
-    features = head.pre_logits(feat)
-    if isinstance(feat, tuple):
-        torch.testing.assert_allclose(features, feat[0])
-    else:
-        torch.testing.assert_allclose(features, feat)
+    pre_logits = head.pre_logits(feat)
+    assert isinstance(pre_logits, dict)
+    assert pre_logits['task1'].shape == (4, 3)
+    assert pre_logits['task2'].shape == (4, 3)
