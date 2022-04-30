@@ -506,11 +506,14 @@ class SwinTransformer(BaseBackbone):
 
     def _prepare_relative_position_bias_table(self, state_dict, prefix, *args,
                                               **kwargs):
-        all_keys = list(state_dict.keys())
         state_dict_model = self.state_dict()
+        all_keys = list(state_dict_model.keys())
         for key in all_keys:
             if 'relative_position_bias_table' in key:
-                relative_position_bias_table_pretrained = state_dict[key]
+                ckpt_key = prefix + key
+                if ckpt_key not in state_dict:
+                    continue
+                relative_position_bias_table_pretrained = state_dict[ckpt_key]
                 relative_position_bias_table_current = state_dict_model[key]
                 L1, nH1 = relative_position_bias_table_pretrained.size()
                 L2, nH2 = relative_position_bias_table_current.size()
@@ -522,11 +525,11 @@ class SwinTransformer(BaseBackbone):
                         relative_position_bias_table_pretrained, nH1)
                     from mmcls.utils import get_root_logger
                     logger = get_root_logger()
-                    logger.info(
-                        f'Resize the relative_position_bias_table from \
-                        {state_dict[key].shape} to {new_rel_pos_bias.shape}')
-                    state_dict[key] = new_rel_pos_bias
+                    logger.info('Resize the relative_position_bias_table from '
+                                f'{state_dict[ckpt_key].shape} to '
+                                f'{new_rel_pos_bias.shape}')
+                    state_dict[ckpt_key] = new_rel_pos_bias
 
                     # The index buffer need to be re-generated.
-                    index_buffer = key.replace('bias_table', 'index')
+                    index_buffer = ckpt_key.replace('bias_table', 'index')
                     del state_dict[index_buffer]
