@@ -59,19 +59,18 @@ The master branch works with **PyTorch 1.5+**.
 
 ## What's new
 
+v0.23.0 was released in 1/5/2022.
+Highlights of the new version:
+- Support **DenseNet**, **VAN** and **PoolFormer**, and provide pre-trained models.
+- Support training on IPU.
+- New style API docs, welcome [view it](https://mmclassification.readthedocs.io/en/master/api/models.html).
+
 v0.22.0 was released in 30/3/2022.
 
 Highlights of the new version:
 - Support a series of **CSP Network**, such as CSP-ResNet, CSP-ResNeXt and CSP-DarkNet.
 - A new `CustomDataset` class to help you **build dataset of yourself**!
 - Support new backbones - **ConvMixer**, **RepMLP** and new dataset - **CUB dataset**.
-
-v0.21.0 was released in 4/3/2022.
-
-Highlights of the new version:
-- Support **ResNetV1c** and **Wide-ResNet**, and provide pre-trained models.
-- Support **dynamic input shape** for ViT-based algorithms. Now our ViT, DeiT, Swin-Transformer and T2T-ViT support forwarding with any input shape.
-- Reproduce training results of DeiT. And our DeiT-T and DeiT-S have **higher accuracy** comparing with the official weights.
 
 Please refer to [changelog.md](docs/en/changelog.md) for more details and other release history.
 
