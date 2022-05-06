@@ -274,8 +274,13 @@ class MMClsWandbHook(WandbLoggerHook):
                 img_loader = t
 
         CLASSES = self.val_dataset.CLASSES
+        self.eval_image_indexs = np.arange(len(self.val_dataset))
+        # Set seed so that same validation set is logged each time.
+        np.random.seed(42)
+        np.random.shuffle(self.eval_image_indexs)
+        self.eval_image_indexs = self.eval_image_indexs[:self.num_eval_images]
 
-        for idx in range(self.num_eval_images):
+        for idx in self.eval_image_indexs:
             img_info = self.val_dataset.data_infos[idx]
             if img_loader is not None:
                 img_info = img_loader(img_info)
@@ -292,10 +297,10 @@ class MMClsWandbHook(WandbLoggerHook):
 
     def _add_predictions(self, results, idx):
         table_idxs = self.data_table_ref.get_index()
-        assert len(table_idxs) == self.num_eval_images
+        assert len(table_idxs) == len(self.eval_image_indexs)
 
-        for ndx in table_idxs:
-            result = results[ndx]
+        for ndx, eval_image_index in enumerate(self.eval_image_indexs):
+            result = results[eval_image_index]
 
             self.eval_table.add_data(
                 idx, self.data_table_ref.data[ndx][0],
