@@ -7,14 +7,8 @@
 - [定制工作流](#定制工作流)
 - [钩子](#钩子)
   - [默认训练钩子](#默认训练钩子)
-    - [权重文件钩子（CheckpointHook）](#权重文件钩子（checkpointhook）)
-    - [日志钩子（LoggerHooks）](#日志钩子（loggerhooks）)
-    - [验证钩子（EvalHook）](#验证钩子（evalhook）)
   - [使用内置钩子](#使用内置钩子)
   - [自定义钩子](#自定义钩子)
-    - [1. 创建一个新钩子](#1.-创建一个新钩子)
-    - [2. 注册新钩子](#2.-注册新钩子)
-    - [3. 修改配置](#3.-修改配置)
 - [常见问题](#常见问题)
 
 <!-- TOC -->
@@ -183,7 +177,7 @@ custom_hooks = [
 
 ## 自定义钩子
 
-### 1. 创建一个新钩子
+### 创建一个新钩子
 
 这里举一个在 MMClassification 中创建一个新钩子，并在训练中使用它的示例：
 
@@ -218,7 +212,7 @@ class MyHook(Hook):
 
 根据钩子的功能，用户需要指定钩子在训练的每个阶段将要执行的操作，比如 `before_run`，`after_run`，`before_epoch`，`after_epoch`，`before_iter` 和 `after_iter`。
 
-### 2. 注册新钩子
+### 注册新钩子
 
 之后，需要导入 `MyHook`。假设该文件在 `mmcls/core/utils/my_hook.py`，有两种办法导入它：
 
@@ -238,7 +232,7 @@ __all__ = ['MyHook']
 custom_imports = dict(imports=['mmcls.core.utils.my_hook'], allow_failed_imports=False)
 ```
 
-### 3. 修改配置
+### 修改配置
 
 ```python
 custom_hooks = [

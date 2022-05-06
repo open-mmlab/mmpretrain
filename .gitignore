@@ -69,10 +69,12 @@ docs/en/_build/
 docs/en/_model_zoo.rst
 docs/en/modelzoo_statistics.md
 docs/en/papers/
+docs/en/api/generated/
 docs/zh_CN/_build/
 docs/zh_CN/_model_zoo.rst
 docs/zh_CN/modelzoo_statistics.md
 docs/zh_CN/papers/
+docs/zh_CN/api/generated/
 
 # PyBuilder
 target/
@@ -120,6 +122,13 @@ venv.bak/
 *.log.json
 /work_dirs
 /mmcls/.mim
+.DS_Store
 
 # Pytorch
 *.pth
+
+# IPU
+*.pvti
+*.pvti-journal
+/cache_engine
+/report

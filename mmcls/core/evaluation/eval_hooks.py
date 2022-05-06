@@ -8,15 +8,23 @@ from torch.nn.modules.batchnorm import _BatchNorm
 
 
 class EvalHook(BaseEvalHook):
+    """Non-Distributed evaluation hook.
+
+    Comparing with the ``EvalHook`` in MMCV, this hook will save the latest
+    evaluation results as an attribute for other hooks to use (like
+    `MMClsWandbHook`).
+    """
 
     def __init__(self, dataloader, **kwargs):
         super(EvalHook, self).__init__(dataloader, **kwargs)
+        self.latest_results = None
 
     def _do_evaluate(self, runner):
         """perform evaluation and save ckpt."""
-        self.results = self.test_fn(runner.model, self.dataloader)
+        results = self.test_fn(runner.model, self.dataloader)
+        self.latest_results = results
         runner.log_buffer.output['eval_iter_num'] = len(self.dataloader)
-        key_score = self.evaluate(runner, self.results)
+        key_score = self.evaluate(runner, results)
         # the key_score may be `None` so it needs to skip the action to save
         # the best checkpoint
         if self.save_best and key_score:
@@ -24,9 +32,16 @@ class EvalHook(BaseEvalHook):
 
 
 class DistEvalHook(BaseDistEvalHook):
+    """Non-Distributed evaluation hook.
+
+    Comparing with the ``EvalHook`` in MMCV, this hook will save the latest
+    evaluation results as an attribute for other hooks to use (like
+    `MMClsWandbHook`).
+    """
 
     def __init__(self, dataloader, **kwargs):
         super(DistEvalHook, self).__init__(dataloader, **kwargs)
+        self.latest_results = None
 
     def _do_evaluate(self, runner):
         """perform evaluation and save ckpt."""
@@ -47,15 +62,16 @@ class DistEvalHook(BaseDistEvalHook):
         if tmpdir is None:
             tmpdir = osp.join(runner.work_dir, '.eval_hook')
 
-        self.results = self.test_fn(
+        results = self.test_fn(
             runner.model,
             self.dataloader,
             tmpdir=tmpdir,
             gpu_collect=self.gpu_collect)
+        self.latest_results = results
         if runner.rank == 0:
             print('\n')
             runner.log_buffer.output['eval_iter_num'] = len(self.dataloader)
-            key_score = self.evaluate(runner, self.results)
+            key_score = self.evaluate(runner, results)
             # the key_score may be `None` so it needs to skip the action to
             # save the best checkpoint
             if self.save_best and key_score:

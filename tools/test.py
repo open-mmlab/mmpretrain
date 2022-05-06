@@ -75,8 +75,6 @@ def parse_args():
         help='custom options for show_result. key-value pair in xxx=yyy.'
         'Check available options in `model.show_result`.')
     parser.add_argument(
-        '--device', default=None, help='device used for testing. (Deprecated)')
-    parser.add_argument(
         '--gpu-ids',
         type=int,
         nargs='+',
@@ -94,6 +92,11 @@ def parse_args():
         default='none',
         help='job launcher')
     parser.add_argument('--local-rank', type=int, default=0)
+    parser.add_argument(
+        '--device',
+        choices=['cpu', 'cuda', 'ipu'],
+        default='cuda',
+        help='device used for testing')
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
@@ -135,16 +138,32 @@ def main():
         distributed = True
         init_dist(args.launcher, **cfg.dist_params)
 
-    # build the dataloader
     dataset = build_dataset(cfg.data.test, default_args=dict(test_mode=True))
-    # the extra round_up data will be removed during gpu/cpu collect
-    data_loader = build_dataloader(
-        dataset,
-        samples_per_gpu=cfg.data.samples_per_gpu,
-        workers_per_gpu=cfg.data.workers_per_gpu,
+
+    # build the dataloader
+    # The default loader config
+    loader_cfg = dict(
+        # cfg.gpus will be ignored if distributed
+        num_gpus=1 if args.device == 'ipu' else len(cfg.gpu_ids),
         dist=distributed,
-        shuffle=False,
-        round_up=True)
+        round_up=True,
+    )
+    # The overall dataloader settings
+    loader_cfg.update({
+        k: v
+        for k, v in cfg.data.items() if k not in [
+            'train', 'val', 'test', 'train_dataloader', 'val_dataloader',
+            'test_dataloader'
+        ]
+    })
+    test_loader_cfg = {
+        **loader_cfg,
+        'shuffle': False,  # Not shuffle by default
+        'sampler_cfg': None,  # Not use sampler by default
+        **cfg.data.get('test_dataloader', {}),
+    }
+    # the extra round_up data will be removed during gpu/cpu collect
+    data_loader = build_dataloader(dataset, **test_loader_cfg)
 
     # build the model and load checkpoint
     model = build_classifier(cfg.model)
@@ -165,6 +184,13 @@ def main():
     if not distributed:
         if args.device == 'cpu':
             model = model.cpu()
+        elif args.device == 'ipu':
+            from mmcv.device.ipu import cfg2options, ipu_model_wrapper
+            opts = cfg2options(cfg.runner.get('options_cfg', {}))
+            if fp16_cfg is not None:
+                model.half()
+            model = ipu_model_wrapper(model, opts, fp16_cfg=fp16_cfg)
+            data_loader.init(opts['inference'])
         else:
             model = MMDataParallel(model, device_ids=cfg.gpu_ids)
             if not model.device_ids:

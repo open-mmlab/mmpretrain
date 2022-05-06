@@ -11,6 +11,11 @@ from mmcv.runner import get_dist_info
 from mmcv.utils import Registry, build_from_cfg, digit_version
 from torch.utils.data import DataLoader
 
+try:
+    from mmcv.utils import IS_IPU_AVAILABLE
+except ImportError:
+    IS_IPU_AVAILABLE = False
+
 if platform.system() != 'Windows':
     # https://github.com/pytorch/pytorch/issues/973
     import resource
@@ -137,17 +142,27 @@ def build_dataloader(dataset,
 
     if digit_version(torch.__version__) >= digit_version('1.8.0'):
         kwargs['persistent_workers'] = persistent_workers
-
-    data_loader = DataLoader(
-        dataset,
-        batch_size=batch_size,
-        sampler=sampler,
-        num_workers=num_workers,
-        collate_fn=partial(collate, samples_per_gpu=samples_per_gpu),
-        pin_memory=pin_memory,
-        shuffle=shuffle,
-        worker_init_fn=init_fn,
-        **kwargs)
+    if IS_IPU_AVAILABLE:
+        from mmcv.device.ipu import IPUDataLoader
+        data_loader = IPUDataLoader(
+            dataset,
+            None,
+            batch_size=samples_per_gpu,
+            num_workers=num_workers,
+            shuffle=shuffle,
+            worker_init_fn=init_fn,
+            **kwargs)
+    else:
+        data_loader = DataLoader(
+            dataset,
+            batch_size=batch_size,
+            sampler=sampler,
+            num_workers=num_workers,
+            collate_fn=partial(collate, samples_per_gpu=samples_per_gpu),
+            pin_memory=pin_memory,
+            shuffle=shuffle,
+            worker_init_fn=init_fn,
+            **kwargs)
 
     return data_loader
 

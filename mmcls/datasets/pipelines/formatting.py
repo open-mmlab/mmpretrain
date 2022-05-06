@@ -178,3 +178,18 @@ class WrapFieldsToLists(object):
 
     def __repr__(self):
         return f'{self.__class__.__name__}()'
+
+
+@PIPELINES.register_module()
+class ToHalf(object):
+
+    def __init__(self, keys):
+        self.keys = keys
+
+    def __call__(self, results):
+        for k in self.keys:
+            if isinstance(results[k], torch.Tensor):
+                results[k] = results[k].to(torch.half)
+            else:
+                results[k] = results[k].astype(np.float16)
+        return results

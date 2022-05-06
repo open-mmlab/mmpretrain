@@ -13,7 +13,8 @@ from mmcv.runner.base_module import BaseModule, ModuleList
 from mmcv.utils.parrots_wrapper import _BatchNorm
 
 from ..builder import BACKBONES
-from ..utils import ShiftWindowMSA, resize_pos_embed, to_2tuple
+from ..utils import (ShiftWindowMSA, resize_pos_embed,
+                     resize_relative_position_bias_table, to_2tuple)
 from .base_backbone import BaseBackbone
 
 
@@ -352,6 +353,9 @@ class SwinTransformer(BaseBackbone):
             self._register_load_state_dict_pre_hook(
                 self._prepare_abs_pos_embed)
 
+        self._register_load_state_dict_pre_hook(
+            self._prepare_relative_position_bias_table)
+
         self.drop_after_pos = nn.Dropout(p=drop_rate)
         self.norm_eval = norm_eval
 
@@ -499,3 +503,33 @@ class SwinTransformer(BaseBackbone):
                                                 pos_embed_shape,
                                                 self.interpolate_mode,
                                                 self.num_extra_tokens)
+
+    def _prepare_relative_position_bias_table(self, state_dict, prefix, *args,
+                                              **kwargs):
+        state_dict_model = self.state_dict()
+        all_keys = list(state_dict_model.keys())
+        for key in all_keys:
+            if 'relative_position_bias_table' in key:
+                ckpt_key = prefix + key
+                if ckpt_key not in state_dict:
+                    continue
+                relative_position_bias_table_pretrained = state_dict[ckpt_key]
+                relative_position_bias_table_current = state_dict_model[key]
+                L1, nH1 = relative_position_bias_table_pretrained.size()
+                L2, nH2 = relative_position_bias_table_current.size()
+                if L1 != L2:
+                    src_size = int(L1**0.5)
+                    dst_size = int(L2**0.5)
+                    new_rel_pos_bias = resize_relative_position_bias_table(
+                        src_size, dst_size,
+                        relative_position_bias_table_pretrained, nH1)
+                    from mmcls.utils import get_root_logger
+                    logger = get_root_logger()
+                    logger.info('Resize the relative_position_bias_table from '
+                                f'{state_dict[ckpt_key].shape} to '
+                                f'{new_rel_pos_bias.shape}')
+                    state_dict[ckpt_key] = new_rel_pos_bias
+
+                    # The index buffer need to be re-generated.
+                    index_buffer = ckpt_key.replace('bias_table', 'index')
+                    del state_dict[index_buffer]

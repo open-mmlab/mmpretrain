@@ -8,6 +8,8 @@ from mmcv.utils import digit_version
 
 
 def is_tracing() -> bool:
+    """Determine whether the model is called during the tracing of code with
+    ``torch.jit.trace``."""
     if digit_version(torch.__version__) >= digit_version('1.6.0'):
         on_trace = torch.jit.is_tracing()
         # In PyTorch 1.6, torch.jit.is_tracing has a bug.
@@ -26,6 +28,15 @@ def is_tracing() -> bool:
 
 # From PyTorch internals
 def _ntuple(n):
+    """A `to_tuple` function generator.
+
+    It returns a function, this function will repeat the input to a tuple of
+    length ``n`` if the input is not an Iterable object, otherwise, return the
+    input directly.
+
+    Args:
+        n (int): The number of the target length.
+    """
 
     def parse(x):
         if isinstance(x, collections.abc.Iterable):

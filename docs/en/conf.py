@@ -44,6 +44,8 @@ release = get_version()
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'sphinx_markdown_tables',
@@ -127,7 +129,7 @@ html_theme_options = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 html_css_files = ['css/readthedocs.css']
-#  html_js_files = ['js/custom.js']
+html_js_files = ['js/custom.js']
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
@@ -218,6 +220,15 @@ StandaloneHTMLBuilder.supported_image_types = [
 # Ignore >>> when copying code
 copybutton_prompt_text = r'>>> |\.\.\. '
 copybutton_prompt_is_regexp = True
+# Auto-generated header anchors
+myst_heading_anchors = 3
+# Configuration for intersphinx
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None),
+    'numpy': ('https://numpy.org/doc/stable', None),
+    'torch': ('https://pytorch.org/docs/stable/', None),
+    'mmcv': ('https://mmcv.readthedocs.io/en/master/', None),
+}
 
 
 def builder_inited_handler(app):
@@ -225,5 +236,4 @@ def builder_inited_handler(app):
 
 
 def setup(app):
-    app.add_js_file('./_static/js/custom.js')
     app.connect('builder-inited', builder_inited_handler)

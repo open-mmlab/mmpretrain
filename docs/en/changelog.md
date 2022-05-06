@@ -1,5 +1,32 @@
 # Changelog
 
+## v0.23.0(1/5/2022)
+
+### New Features
+
+- Support DenseNet. ([#750](https://github.com/open-mmlab/mmclassification/pull/750))
+- Support VAN. ([#739](https://github.com/open-mmlab/mmclassification/pull/739))
+
+### Improvements
+
+- Support training on IPU and add fine-tuning configs of ViT. ([#723](https://github.com/open-mmlab/mmclassification/pull/723))
+
+### Docs Update
+
+- New style API reference, and easier to use! Welcome [view it](https://mmclassification.readthedocs.io/en/master/api/models.html). ([#774](https://github.com/open-mmlab/mmclassification/pull/774))
+
+## v0.22.1(15/4/2022)
+
+### New Features
+
+- [Feature] Support resize relative position embedding in `SwinTransformer`. ([#749](https://github.com/open-mmlab/mmclassification/pull/749))
+- [Feature] Add PoolFormer backbone and checkpoints. ([#746](https://github.com/open-mmlab/mmclassification/pull/746))
+
+### Improvements
+
+- [Enhance] Improve CPE performance by reduce memory copy. ([#762](https://github.com/open-mmlab/mmclassification/pull/762))
+- [Enhance] Add extra dataloader settings in configs. ([#752](https://github.com/open-mmlab/mmclassification/pull/752))
+
 ## v0.22.0(30/3/2022)
 
 ### Highlights
