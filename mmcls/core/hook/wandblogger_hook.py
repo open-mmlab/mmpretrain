@@ -140,6 +140,7 @@ class MMClsWandbHook(WandbLoggerHook):
                     f'({len(self.val_dataset)}). The complete validation '
                     'dataset will be logged.')
 
+        # Check conditions to log checkpoint metadata
         if self.log_checkpoint_metadata:
             assert self.ckpt_interval % self.eval_interval == 0, \
                 'To log checkpoint metadata in MMClsWandbHook, the interval ' \
@@ -165,7 +166,7 @@ class MMClsWandbHook(WandbLoggerHook):
 
         # Save checkpoint and metadata
         if (self.log_checkpoint
-                and self.every_n_epochs(runner, self.ckpt_hook.interval)
+                and self.every_n_epochs(runner, self.ckpt_interval)
                 or (self.ckpt_hook.save_last and self.is_last_epoch(runner))):
             if self.log_checkpoint_metadata and self.eval_hook:
                 metadata = {
@@ -187,7 +188,7 @@ class MMClsWandbHook(WandbLoggerHook):
             # Add predictions to evaluation table
             self._add_predictions(results, runner.epoch + 1)
             # Log the evaluation table
-            self._log_eval_table()
+            self._log_eval_table(runner.epoch + 1)
 
     @master_only
     def after_train_iter(self, runner):
@@ -227,7 +228,7 @@ class MMClsWandbHook(WandbLoggerHook):
             # Log predictions
             self._add_predictions(results, runner.iter + 1)
             # Log the table
-            self._log_eval_table()
+            self._log_eval_table(runner.iter + 1)
 
     @master_only
     def after_run(self, runner):
@@ -323,7 +324,7 @@ class MMClsWandbHook(WandbLoggerHook):
 
         self.data_table_ref = data_artifact.get('val_data')
 
-    def _log_eval_table(self):
+    def _log_eval_table(self, idx):
         """Log the W&B Tables for model evaluation.
 
         The table will be logged multiple times creating new version. Use this
@@ -332,4 +333,8 @@ class MMClsWandbHook(WandbLoggerHook):
         pred_artifact = self.wandb.Artifact(
             f'run_{self.wandb.run.id}_pred', type='evaluation')
         pred_artifact.add(self.eval_table, 'eval_data')
-        self.wandb.run.log_artifact(pred_artifact)
+        if self.by_epoch:
+            aliases = ['latest', f'epoch_{idx}']
+        else:
+            aliases = ['latest', f'iter_{idx}']
+        self.wandb.run.log_artifact(pred_artifact, aliases=aliases)
