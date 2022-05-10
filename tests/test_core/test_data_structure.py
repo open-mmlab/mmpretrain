@@ -86,3 +86,19 @@ class TestClsDataSample(TestCase):
 
     def test_set_pred_label(self):
         self._test_set_label('pred_label')
+
+    def test_del_gt_label(self):
+        data_sample = ClsDataSample()
+        self.assertNotIn('gt_label', data_sample)
+        data_sample.set_gt_label(1)
+        self.assertIn('gt_label', data_sample)
+        del data_sample.gt_label
+        self.assertNotIn('gt_label', data_sample)
+
+    def test_del_pred_label(self):
+        data_sample = ClsDataSample()
+        self.assertNotIn('pred_label', data_sample)
+        data_sample.set_pred_label(1)
+        self.assertIn('pred_label', data_sample)
+        del data_sample.pred_label
+        self.assertNotIn('pred_label', data_sample)

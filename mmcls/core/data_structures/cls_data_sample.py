@@ -113,11 +113,35 @@ class ClsDataSample(BaseDataElement):
                            Number]) -> None:
         """Set the gt_label data."""
         label = format_label(value, self.get('num_classes'))
-        self.set_field(label, 'gt_label')
+        self.gt_label = label
 
     def set_pred_label(
         self, value: Union[np.ndarray, torch.Tensor, Sequence[Number],
                            Number]) -> None:
         """Set the pred_label data."""
         label = format_label(value, self.get('num_classes'))
-        self.set_field(label, 'pred_label')
+        self.pred_label = label
+
+    @property
+    def gt_label(self):
+        return self._gt_label
+
+    @gt_label.setter
+    def gt_label(self, value: LabelData):
+        self.set_field(value, '_gt_label', dtype=LabelData)
+
+    @gt_label.deleter
+    def gt_label(self):
+        del self._gt_label
+
+    @property
+    def pred_label(self):
+        return self._pred_label
+
+    @pred_label.setter
+    def pred_label(self, value: LabelData):
+        self.set_field(value, '_pred_label', dtype=LabelData)
+
+    @pred_label.deleter
+    def pred_label(self):
+        del self._pred_label
