@@ -5,12 +5,12 @@ import torch
 import torch.nn.functional as F
 
 from mmcls.models.losses import Accuracy
-from ..builder import HEADS, build_loss
+from mmcls.registry import MODELS
 from ..utils import is_tracing
 from .base_head import BaseHead
 
 
-@HEADS.register_module()
+@MODELS.register_module()
 class ClsHead(BaseHead):
     """classification head.
 
@@ -37,7 +37,7 @@ class ClsHead(BaseHead):
             assert _topk > 0, 'Top-k should be larger than 0'
         self.topk = topk
 
-        self.compute_loss = build_loss(loss)
+        self.compute_loss = MODELS.build(loss)
         self.compute_accuracy = Accuracy(topk=self.topk)
         self.cal_acc = cal_acc
 

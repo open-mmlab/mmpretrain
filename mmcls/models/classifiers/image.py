@@ -1,11 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from ..builder import CLASSIFIERS, build_backbone, build_head, build_neck
+from mmcls.registry import MODELS
+from ..builder import build_backbone, build_head, build_neck
 from ..heads import MultiLabelClsHead
 from ..utils.augment import Augments
 from .base import BaseClassifier
 
 
-@CLASSIFIERS.register_module()
+@MODELS.register_module()
 class ImageClassifier(BaseClassifier):
 
     def __init__(self,

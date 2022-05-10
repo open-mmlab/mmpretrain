@@ -12,7 +12,7 @@ from mmcv.cnn.utils.weight_init import trunc_normal_
 from mmcv.runner.base_module import BaseModule, ModuleList
 from mmcv.utils.parrots_wrapper import _BatchNorm
 
-from ..builder import BACKBONES
+from mmcls.registry import MODELS
 from ..utils import (ShiftWindowMSA, resize_pos_embed,
                      resize_relative_position_bias_table, to_2tuple)
 from .base_backbone import BaseBackbone
@@ -201,7 +201,7 @@ class SwinBlockSequence(BaseModule):
             return self.embed_dims
 
 
-@BACKBONES.register_module()
+@MODELS.register_module()
 class SwinTransformer(BaseBackbone):
     """Swin Transformer.
 

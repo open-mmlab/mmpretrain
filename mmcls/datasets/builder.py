@@ -8,8 +8,10 @@ import numpy as np
 import torch
 from mmcv.parallel import collate
 from mmcv.runner import get_dist_info
-from mmcv.utils import Registry, build_from_cfg, digit_version
+from mmcv.utils import digit_version
 from torch.utils.data import DataLoader
+
+from mmcls.registry import DATA_SAMPLERS, DATASETS, TRANSFORMS
 
 try:
     from mmcv.utils import IS_IPU_AVAILABLE
@@ -24,9 +26,8 @@ if platform.system() != 'Windows':
     soft_limit = min(4096, hard_limit)
     resource.setrlimit(resource.RLIMIT_NOFILE, (soft_limit, hard_limit))
 
-DATASETS = Registry('dataset')
-PIPELINES = Registry('pipeline')
-SAMPLERS = Registry('sampler')
+PIPELINES = TRANSFORMS
+SAMPLERS = DATA_SAMPLERS
 
 
 def build_dataset(cfg, default_args=None):
@@ -52,7 +53,7 @@ def build_dataset(cfg, default_args=None):
         cp_cfg.pop('type')
         dataset = KFoldDataset(**cp_cfg)
     else:
-        dataset = build_from_cfg(cfg, DATASETS, default_args)
+        dataset = DATASETS.build(cfg, default_args=default_args)
 
     return dataset
 
@@ -180,4 +181,4 @@ def build_sampler(cfg, default_args=None):
     if cfg is None:
         return None
     else:
-        return build_from_cfg(cfg, SAMPLERS, default_args=default_args)
+        return DATA_SAMPLERS.build(cfg, default_args=default_args)

@@ -1,7 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from math import cos, pi
 
-from mmcv.runner.hooks import HOOKS, LrUpdaterHook
+from mmcv.runner.hooks import LrUpdaterHook
+
+from mmcls.registry import HOOKS
 
 
 @HOOKS.register_module()

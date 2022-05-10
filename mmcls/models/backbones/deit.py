@@ -3,11 +3,11 @@ import torch
 import torch.nn as nn
 from mmcv.cnn.utils.weight_init import trunc_normal_
 
-from ..builder import BACKBONES
+from mmcls.registry import MODELS
 from .vision_transformer import VisionTransformer
 
 
-@BACKBONES.register_module()
+@MODELS.register_module()
 class DistilledVisionTransformer(VisionTransformer):
     """Distilled Vision Transformer.
 

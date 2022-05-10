@@ -10,7 +10,7 @@ from mmcv.cnn.bricks.transformer import FFN
 from mmcv.cnn.utils.weight_init import trunc_normal_
 from mmcv.runner.base_module import BaseModule, ModuleList
 
-from ..builder import BACKBONES
+from mmcls.registry import MODELS
 from ..utils import MultiheadAttention, resize_pos_embed, to_2tuple
 from .base_backbone import BaseBackbone
 
@@ -241,7 +241,7 @@ def get_sinusoid_encoding(n_position, embed_dims):
     return torch.FloatTensor(sinusoid_table).unsqueeze(0)
 
 
-@BACKBONES.register_module()
+@MODELS.register_module()
 class T2T_ViT(BaseBackbone):
     """Tokens-to-Token Vision Transformer (T2T-ViT)
 

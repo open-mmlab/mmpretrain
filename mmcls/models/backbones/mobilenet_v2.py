@@ -6,7 +6,7 @@ from mmcv.runner import BaseModule
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from mmcls.models.utils import make_divisible
-from ..builder import BACKBONES
+from mmcls.registry import MODELS
 from .base_backbone import BaseBackbone
 
 
@@ -97,7 +97,7 @@ class InvertedResidual(BaseModule):
         return out
 
 
-@BACKBONES.register_module()
+@MODELS.register_module()
 class MobileNetV2(BaseBackbone):
     """MobileNetV2 backbone.
 

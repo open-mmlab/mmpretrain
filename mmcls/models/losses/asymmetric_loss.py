@@ -2,7 +2,7 @@
 import torch
 import torch.nn as nn
 
-from ..builder import LOSSES
+from mmcls.registry import MODELS
 from .utils import convert_to_one_hot, weight_reduce_loss
 
 
@@ -71,7 +71,7 @@ def asymmetric_loss(pred,
     return loss
 
 
-@LOSSES.register_module()
+@MODELS.register_module()
 class AsymmetricLoss(nn.Module):
     """asymmetric loss.
 

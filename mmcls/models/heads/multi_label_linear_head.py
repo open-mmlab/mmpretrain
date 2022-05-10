@@ -2,11 +2,11 @@
 import torch
 import torch.nn as nn
 
-from ..builder import HEADS
+from mmcls.registry import MODELS
 from .multi_label_head import MultiLabelClsHead
 
 
-@HEADS.register_module()
+@MODELS.register_module()
 class MultiLabelLinearClsHead(MultiLabelClsHead):
     """Linear classification head for multilabel task.
 

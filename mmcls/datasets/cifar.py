@@ -7,8 +7,8 @@ import numpy as np
 import torch.distributed as dist
 from mmcv.runner import get_dist_info
 
+from mmcls.registry import DATASETS
 from .base_dataset import BaseDataset
-from .builder import DATASETS
 from .utils import check_integrity, download_and_extract_archive
 
 

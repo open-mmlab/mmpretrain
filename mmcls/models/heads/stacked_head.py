@@ -6,7 +6,7 @@ import torch.nn.functional as F
 from mmcv.cnn import build_activation_layer, build_norm_layer
 from mmcv.runner import BaseModule, ModuleList
 
-from ..builder import HEADS
+from mmcls.registry import MODELS
 from .cls_head import ClsHead
 
 
@@ -44,7 +44,7 @@ class LinearBlock(BaseModule):
         return x
 
 
-@HEADS.register_module()
+@MODELS.register_module()
 class StackedLinearClsHead(ClsHead):
     """Classifier head with several hidden fc layer and a output fc layer.
 

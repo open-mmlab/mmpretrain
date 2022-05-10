@@ -11,7 +11,7 @@ from mmcv.runner import BaseModule, Sequential
 
 from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.models.utils import InvertedResidual, SELayer, make_divisible
-from ..builder import BACKBONES
+from mmcls.registry import MODELS
 
 
 class EdgeResidual(BaseModule):
@@ -155,7 +155,7 @@ def model_scaling(layer_setting, arch_setting):
     return merge_layer_setting
 
 
-@BACKBONES.register_module()
+@MODELS.register_module()
 class EfficientNet(BaseBackbone):
     """EfficientNet backbone.
 

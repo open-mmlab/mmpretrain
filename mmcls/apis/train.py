@@ -8,9 +8,11 @@ import torch.distributed as dist
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import (DistSamplerSeedHook, Fp16OptimizerHook,
                          build_optimizer, build_runner, get_dist_info)
+from mmcv.runner.hooks import DistEvalHook, EvalHook
 
-from mmcls.core import DistEvalHook, DistOptimizerHook, EvalHook
-from mmcls.datasets import build_dataloader, build_dataset
+from mmcls.core import DistOptimizerHook
+from mmcls.datasets import build_dataloader
+from mmcls.registry import DATASETS
 from mmcls.utils import get_root_logger
 
 
@@ -215,7 +217,7 @@ def train_model(model,
 
     # register eval hooks
     if validate:
-        val_dataset = build_dataset(cfg.data.val, dict(test_mode=True))
+        val_dataset = DATASETS.build(cfg.data.val, dict(test_mode=True))
         # The specific dataloader settings
         val_loader_cfg = {
             **loader_cfg,

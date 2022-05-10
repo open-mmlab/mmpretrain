@@ -12,9 +12,9 @@ from mmcv.cnn.utils.weight_init import (constant_init, normal_init,
 from mmcv.runner import BaseModule, ModuleList
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from mmcls.models.builder import BACKBONES
 from mmcls.models.utils.attention import MultiheadAttention
 from mmcls.models.utils.position_encoding import ConditionalPositionEncoding
+from mmcls.registry import MODELS
 
 
 class GlobalSubsampledAttention(MultiheadAttention):
@@ -347,7 +347,7 @@ class LSAEncoderLayer(BaseModule):
         return x
 
 
-@BACKBONES.register_module()
+@MODELS.register_module()
 class PCPVT(BaseModule):
     """The backbone of Twins-PCPVT.
 
@@ -593,7 +593,7 @@ class PCPVT(BaseModule):
         return tuple(outputs)
 
 
-@BACKBONES.register_module()
+@MODELS.register_module()
 class SVT(PCPVT):
     """The backbone of Twins-SVT.
 

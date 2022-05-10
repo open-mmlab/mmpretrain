@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 import mmcv
 import numpy as np
 
-from .builder import DATASETS
+from mmcls.registry import DATASETS
 from .multi_label import MultiLabelDataset
 
 

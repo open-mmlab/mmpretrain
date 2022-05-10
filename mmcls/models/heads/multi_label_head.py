@@ -1,12 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
 
-from ..builder import HEADS, build_loss
+from mmcls.registry import MODELS
 from ..utils import is_tracing
 from .base_head import BaseHead
 
 
-@HEADS.register_module()
+@MODELS.register_module()
 class MultiLabelClsHead(BaseHead):
     """Classification head for multilabel task.
 
@@ -25,7 +25,7 @@ class MultiLabelClsHead(BaseHead):
 
         assert isinstance(loss, dict)
 
-        self.compute_loss = build_loss(loss)
+        self.compute_loss = MODELS.build(loss)
 
     def loss(self, cls_score, gt_label):
         gt_label = gt_label.type_as(cls_score)

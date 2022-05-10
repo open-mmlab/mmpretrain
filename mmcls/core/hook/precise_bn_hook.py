@@ -10,13 +10,15 @@ import mmcv
 import torch
 import torch.nn as nn
 from mmcv.runner import EpochBasedRunner, get_dist_info
-from mmcv.runner.hooks import HOOKS, Hook
 from mmcv.utils import print_log
+from mmengine.hooks import Hook
 from torch.functional import Tensor
 from torch.nn import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 from torch.nn.modules.instancenorm import _InstanceNorm
 from torch.utils.data import DataLoader
+
+from mmcls.registry import HOOKS
 
 
 def scaled_all_reduce(tensors: List[Tensor], num_gpus: int) -> List[Tensor]:

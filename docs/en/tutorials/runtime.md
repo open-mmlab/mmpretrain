@@ -179,7 +179,8 @@ custom_hooks = [
 Here we give an example of creating a new hook in MMClassification and using it in training.
 
 ```python
-from mmcv.runner import HOOKS, Hook
+from mmengine.hooks import Hook
+from mmcls.registry import HOOKS
 
 
 @HOOKS.register_module()

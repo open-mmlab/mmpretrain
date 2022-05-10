@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Optional, Sequence, Union
 
-from .builder import DATASETS
+from mmcls.registry import DATASETS
 from .custom import CustomDataset
 
 

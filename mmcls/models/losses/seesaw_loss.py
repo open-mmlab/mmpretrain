@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ..builder import LOSSES
+from mmcls.registry import MODELS
 from .utils import weight_reduce_loss
 
 
@@ -76,7 +76,7 @@ def seesaw_ce_loss(cls_score,
     return loss
 
 
-@LOSSES.register_module()
+@MODELS.register_module()
 class SeesawLoss(nn.Module):
     """Implementation of seesaw loss.
 

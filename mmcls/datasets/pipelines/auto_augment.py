@@ -9,7 +9,7 @@ from typing import Sequence
 import mmcv
 import numpy as np
 
-from ..builder import PIPELINES
+from mmcls.registry import TRANSFORMS
 from .compose import Compose
 
 # Default hyperparameters for all Ops
@@ -33,7 +33,7 @@ def merge_hparams(policy: dict, hparams: dict):
     Returns:
         dict: Policy config dict after adding ``hparams``.
     """
-    op = PIPELINES.get(policy['type'])
+    op = TRANSFORMS.get(policy['type'])
     assert op is not None, f'Invalid policy type "{policy["type"]}".'
     for key, value in hparams.items():
         if policy.get(key, None) is not None:
@@ -43,7 +43,7 @@ def merge_hparams(policy: dict, hparams: dict):
     return policy
 
 
-@PIPELINES.register_module()
+@TRANSFORMS.register_module()
 class AutoAugment(object):
     """Auto augmentation.
 
@@ -91,7 +91,7 @@ class AutoAugment(object):
         return repr_str
 
 
-@PIPELINES.register_module()
+@TRANSFORMS.register_module()
 class RandAugment(object):
     r"""Random augmentation.
 
@@ -232,7 +232,7 @@ class RandAugment(object):
         return repr_str
 
 
-@PIPELINES.register_module()
+@TRANSFORMS.register_module()
 class Shear(object):
     """Shear images.
 
@@ -309,7 +309,7 @@ class Shear(object):
         return repr_str
 
 
-@PIPELINES.register_module()
+@TRANSFORMS.register_module()
 class Translate(object):
     """Translate images.
 
@@ -394,7 +394,7 @@ class Translate(object):
         return repr_str
 
 
-@PIPELINES.register_module()
+@TRANSFORMS.register_module()
 class Rotate(object):
     """Rotate images.
 
@@ -484,7 +484,7 @@ class Rotate(object):
         return repr_str
 
 
-@PIPELINES.register_module()
+@TRANSFORMS.register_module()
 class AutoContrast(object):
     """Auto adjust image contrast.
 
@@ -514,7 +514,7 @@ class AutoContrast(object):
         return repr_str
 
 
-@PIPELINES.register_module()
+@TRANSFORMS.register_module()
 class Invert(object):
     """Invert images.
 
@@ -544,7 +544,7 @@ class Invert(object):
         return repr_str
 
 
-@PIPELINES.register_module()
+@TRANSFORMS.register_module()
 class Equalize(object):
     """Equalize the image histogram.
 
@@ -574,7 +574,7 @@ class Equalize(object):
         return repr_str
 
 
-@PIPELINES.register_module()
+@TRANSFORMS.register_module()
 class Solarize(object):
     """Solarize images (invert all pixel values above a threshold).
 
@@ -610,7 +610,7 @@ class Solarize(object):
         return repr_str
 
 
-@PIPELINES.register_module()
+@TRANSFORMS.register_module()
 class SolarizeAdd(object):
     """SolarizeAdd images (add a certain value to pixels below a threshold).
 
@@ -653,7 +653,7 @@ class SolarizeAdd(object):
         return repr_str
 
 
-@PIPELINES.register_module()
+@TRANSFORMS.register_module()
 class Posterize(object):
     """Posterize images (reduce the number of bits for each color channel).
 
@@ -689,7 +689,7 @@ class Posterize(object):
         return repr_str
 
 
-@PIPELINES.register_module()
+@TRANSFORMS.register_module()
 class Contrast(object):
     """Adjust images contrast.
 
@@ -734,7 +734,7 @@ class Contrast(object):
         return repr_str
 
 
-@PIPELINES.register_module()
+@TRANSFORMS.register_module()
 class ColorTransform(object):
     """Adjust images color balance.
 
@@ -778,7 +778,7 @@ class ColorTransform(object):
         return repr_str
 
 
-@PIPELINES.register_module()
+@TRANSFORMS.register_module()
 class Brightness(object):
     """Adjust images brightness.
 
@@ -823,7 +823,7 @@ class Brightness(object):
         return repr_str
 
 
-@PIPELINES.register_module()
+@TRANSFORMS.register_module()
 class Sharpness(object):
     """Adjust images sharpness.
 
@@ -868,7 +868,7 @@ class Sharpness(object):
         return repr_str
 
 
-@PIPELINES.register_module()
+@TRANSFORMS.register_module()
 class Cutout(object):
     """Cutout images.
 

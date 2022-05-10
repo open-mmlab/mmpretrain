@@ -6,7 +6,7 @@ from mmcv.cnn import build_activation_layer, build_conv_layer, build_norm_layer
 from mmcv.runner import BaseModule, Sequential
 from mmcv.utils.parrots_wrapper import _BatchNorm
 
-from ..builder import BACKBONES
+from mmcls.registry import MODELS
 from ..utils.se_layer import SELayer
 from .base_backbone import BaseBackbone
 
@@ -254,7 +254,7 @@ class RepVGGBlock(BaseModule):
         return tmp_conv3x3
 
 
-@BACKBONES.register_module()
+@MODELS.register_module()
 class RepVGG(BaseBackbone):
     """RepVGG backbone.
 

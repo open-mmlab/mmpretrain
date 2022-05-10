@@ -181,7 +181,8 @@ custom_hooks = [
 这里举一个在 MMClassification 中创建一个新钩子，并在训练中使用它的示例：
 
 ```python
-from mmcv.runner import HOOKS, Hook
+from mmengine.hooks import Hook
+from mmcls.registry import HOOKS
 
 
 @HOOKS.register_module()

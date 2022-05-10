@@ -3,10 +3,10 @@ import torch
 from torch.utils.data import DistributedSampler as _DistributedSampler
 
 from mmcls.core.utils import sync_random_seed
-from mmcls.datasets import SAMPLERS
+from mmcls.registry import DATA_SAMPLERS
 
 
-@SAMPLERS.register_module()
+@DATA_SAMPLERS.register_module()
 class DistributedSampler(_DistributedSampler):
 
     def __init__(self,

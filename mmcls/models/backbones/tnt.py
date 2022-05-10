@@ -8,7 +8,7 @@ from mmcv.cnn.bricks.transformer import FFN, MultiheadAttention
 from mmcv.cnn.utils.weight_init import trunc_normal_
 from mmcv.runner.base_module import BaseModule, ModuleList
 
-from ..builder import BACKBONES
+from mmcls.registry import MODELS
 from ..utils import to_2tuple
 from .base_backbone import BaseBackbone
 
@@ -199,7 +199,7 @@ class PixelEmbed(BaseModule):
         return x
 
 
-@BACKBONES.register_module()
+@MODELS.register_module()
 class TNT(BaseBackbone):
     """Transformer in Transformer.
 

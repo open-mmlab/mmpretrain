@@ -1,7 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved
 from mmcv.runner import IterBasedRunner
-from mmcv.runner.hooks import HOOKS, Hook
 from mmcv.utils import is_seq_of
+from mmengine.hooks import Hook
+
+from mmcls.registry import HOOKS
 
 
 @HOOKS.register_module()

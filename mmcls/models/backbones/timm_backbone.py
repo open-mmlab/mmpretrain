@@ -8,8 +8,8 @@ import warnings
 
 from mmcv.cnn.bricks.registry import NORM_LAYERS
 
+from mmcls.registry import MODELS
 from ...utils import get_root_logger
-from ..builder import BACKBONES
 from .base_backbone import BaseBackbone
 
 
@@ -35,7 +35,7 @@ def print_timm_feature_info(feature_info):
             logger.warning('Unexpected format of backbone feature_info')
 
 
-@BACKBONES.register_module()
+@MODELS.register_module()
 class TIMMBackbone(BaseBackbone):
     """Wrapper to use backbones from timm library.
 

@@ -1,8 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import numpy as np
 
+from mmcls.registry import DATASETS
 from .base_dataset import BaseDataset
-from .builder import DATASETS
 
 
 @DATASETS.register_module()

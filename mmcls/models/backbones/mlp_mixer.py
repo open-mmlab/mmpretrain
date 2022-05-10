@@ -6,7 +6,7 @@ from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.transformer import FFN, PatchEmbed
 from mmcv.runner.base_module import BaseModule, ModuleList
 
-from ..builder import BACKBONES
+from mmcls.registry import MODELS
 from ..utils import to_2tuple
 from .base_backbone import BaseBackbone
 
@@ -97,7 +97,7 @@ class MixerBlock(BaseModule):
         return x
 
 
-@BACKBONES.register_module()
+@MODELS.register_module()
 class MlpMixer(BaseBackbone):
     """Mlp-Mixer backbone.
 

@@ -6,8 +6,8 @@ import mmcv
 import numpy as np
 from mmcv import FileClient
 
+from mmcls.registry import DATASETS
 from .base_dataset import BaseDataset
-from .builder import DATASETS
 
 
 def find_folders(root: str,

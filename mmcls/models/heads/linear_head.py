@@ -2,11 +2,11 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
-from ..builder import HEADS
+from mmcls.registry import MODELS
 from .cls_head import ClsHead
 
 
-@HEADS.register_module()
+@MODELS.register_module()
 class LinearClsHead(ClsHead):
     """Linear classifier head.
 

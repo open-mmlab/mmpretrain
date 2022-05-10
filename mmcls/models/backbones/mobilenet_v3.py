@@ -2,12 +2,12 @@
 from mmcv.cnn import ConvModule
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from ..builder import BACKBONES
+from mmcls.registry import MODELS
 from ..utils import InvertedResidual
 from .base_backbone import BaseBackbone
 
 
-@BACKBONES.register_module()
+@MODELS.register_module()
 class MobileNetV3(BaseBackbone):
     """MobileNetV3 backbone.
 

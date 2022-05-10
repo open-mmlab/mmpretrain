@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 import torch
 import torchvision
-from mmcv.utils import build_from_cfg
+from mmengine.registry import build_from_cfg
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 from PIL import Image
 from torchvision import transforms

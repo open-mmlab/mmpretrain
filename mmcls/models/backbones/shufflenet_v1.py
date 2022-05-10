@@ -8,7 +8,7 @@ from mmcv.runner import BaseModule
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from mmcls.models.utils import channel_shuffle, make_divisible
-from ..builder import BACKBONES
+from mmcls.registry import MODELS
 from .base_backbone import BaseBackbone
 
 
@@ -148,7 +148,7 @@ class ShuffleUnit(BaseModule):
         return out
 
 
-@BACKBONES.register_module()
+@MODELS.register_module()
 class ShuffleNetV1(BaseBackbone):
     """ShuffleNetV1 backbone.
 

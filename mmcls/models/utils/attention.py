@@ -9,7 +9,7 @@ from mmcv.cnn.bricks.transformer import build_dropout
 from mmcv.cnn.utils.weight_init import trunc_normal_
 from mmcv.runner.base_module import BaseModule
 
-from ..builder import ATTENTION
+from mmcls.registry import MODELS
 from .helpers import to_2tuple
 
 
@@ -122,7 +122,7 @@ class WindowMSA(BaseModule):
         return (seq1[:, None] + seq2[None, :]).reshape(1, -1)
 
 
-@ATTENTION.register_module()
+@MODELS.register_module()
 class ShiftWindowMSA(BaseModule):
     """Shift Window Multihead Self-Attention Module.
 

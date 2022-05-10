@@ -3,7 +3,7 @@ import torch.nn as nn
 from mmcv.cnn import ConvModule
 from mmcv.utils.parrots_wrapper import _BatchNorm
 
-from ..builder import BACKBONES
+from mmcls.registry import MODELS
 from .base_backbone import BaseBackbone
 
 
@@ -35,7 +35,7 @@ def make_vgg_layer(in_channels,
     return layers
 
 
-@BACKBONES.register_module()
+@MODELS.register_module()
 class VGG(BaseBackbone):
     """VGG backbone.
 

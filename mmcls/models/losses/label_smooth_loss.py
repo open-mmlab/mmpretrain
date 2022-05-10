@@ -2,12 +2,12 @@
 import torch
 import torch.nn as nn
 
-from ..builder import LOSSES
+from mmcls.registry import MODELS
 from .cross_entropy_loss import CrossEntropyLoss
 from .utils import convert_to_one_hot
 
 
-@LOSSES.register_module()
+@MODELS.register_module()
 class LabelSmoothLoss(nn.Module):
     r"""Initializer for the label smoothed cross entropy loss.
 

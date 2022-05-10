@@ -2,12 +2,12 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
+from mmcls.registry import MODELS
 from mmcls.utils import get_root_logger
-from ..builder import HEADS
 from .vision_transformer_head import VisionTransformerClsHead
 
 
-@HEADS.register_module()
+@MODELS.register_module()
 class DeiTClsHead(VisionTransformerClsHead):
     """Distilled Vision Transformer classifier head.
 

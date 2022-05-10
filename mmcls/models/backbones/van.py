@@ -7,7 +7,7 @@ from mmcv.cnn.bricks.transformer import PatchEmbed
 from mmcv.runner import BaseModule, ModuleList
 from mmcv.utils.parrots_wrapper import _BatchNorm
 
-from ..builder import BACKBONES
+from mmcls.registry import MODELS
 from .base_backbone import BaseBackbone
 
 
@@ -252,7 +252,7 @@ class VANPatchEmbed(PatchEmbed):
         return x, out_size
 
 
-@BACKBONES.register_module()
+@MODELS.register_module()
 class VAN(BaseBackbone):
     """Visual Attention Network.
 

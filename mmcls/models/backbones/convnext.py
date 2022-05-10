@@ -11,7 +11,7 @@ from mmcv.cnn.bricks import (NORM_LAYERS, DropPath, build_activation_layer,
 from mmcv.runner import BaseModule
 from mmcv.runner.base_module import ModuleList, Sequential
 
-from ..builder import BACKBONES
+from mmcls.registry import MODELS
 from .base_backbone import BaseBackbone
 
 
@@ -129,7 +129,7 @@ class ConvNeXtBlock(BaseModule):
         return x
 
 
-@BACKBONES.register_module()
+@MODELS.register_module()
 class ConvNeXt(BaseBackbone):
     """ConvNeXt.
 

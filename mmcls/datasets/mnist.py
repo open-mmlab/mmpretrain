@@ -8,8 +8,8 @@ import torch
 import torch.distributed as dist
 from mmcv.runner import get_dist_info, master_only
 
+from mmcls.registry import DATASETS
 from .base_dataset import BaseDataset
-from .builder import DATASETS
 from .utils import download_and_extract_archive, rm_suffix
 
 

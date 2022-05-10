@@ -7,7 +7,7 @@ from mmcv.cnn.bricks import (Conv2dAdaptivePadding, build_activation_layer,
                              build_norm_layer)
 from mmcv.utils import digit_version
 
-from ..builder import BACKBONES
+from mmcls.registry import MODELS
 from .base_backbone import BaseBackbone
 
 
@@ -21,7 +21,7 @@ class Residual(nn.Module):
         return self.fn(x) + x
 
 
-@BACKBONES.register_module()
+@MODELS.register_module()
 class ConvMixer(BaseBackbone):
     """ConvMixer.                              .
 

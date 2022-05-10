@@ -8,11 +8,11 @@ from mmcv.cnn import build_activation_layer
 from mmcv.cnn.utils.weight_init import trunc_normal_
 from mmcv.runner import Sequential
 
-from ..builder import HEADS
+from mmcls.registry import MODELS
 from .cls_head import ClsHead
 
 
-@HEADS.register_module()
+@MODELS.register_module()
 class VisionTransformerClsHead(ClsHead):
     """Vision Transformer classifier head.
 

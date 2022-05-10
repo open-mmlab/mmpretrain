@@ -6,7 +6,7 @@ from typing import List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
-from .builder import DATASETS
+from mmcls.registry import DATASETS
 from .custom import CustomDataset
 
 

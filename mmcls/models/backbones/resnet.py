@@ -8,7 +8,7 @@ from mmcv.cnn.bricks import DropPath
 from mmcv.runner import BaseModule
 from mmcv.utils.parrots_wrapper import _BatchNorm
 
-from ..builder import BACKBONES
+from mmcls.registry import MODELS
 from .base_backbone import BaseBackbone
 
 eps = 1.0e-5
@@ -398,7 +398,7 @@ class ResLayer(nn.Sequential):
         super(ResLayer, self).__init__(*layers)
 
 
-@BACKBONES.register_module()
+@MODELS.register_module()
 class ResNet(BaseBackbone):
     """ResNet backbone.
 
@@ -655,7 +655,7 @@ class ResNet(BaseBackbone):
                     m.eval()
 
 
-@BACKBONES.register_module()
+@MODELS.register_module()
 class ResNetV1c(ResNet):
     """ResNetV1c backbone.
 
@@ -671,7 +671,7 @@ class ResNetV1c(ResNet):
             deep_stem=True, avg_down=False, **kwargs)
 
 
-@BACKBONES.register_module()
+@MODELS.register_module()
 class ResNetV1d(ResNet):
     """ResNetV1d backbone.
 

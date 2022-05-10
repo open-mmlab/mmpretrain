@@ -5,7 +5,7 @@ import random
 import mmcv
 import numpy as np
 import pytest
-from mmcv.utils import build_from_cfg
+from mmengine.registry import build_from_cfg
 
 from mmcls.datasets.builder import PIPELINES
 

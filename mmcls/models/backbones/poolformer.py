@@ -6,7 +6,7 @@ import torch.nn as nn
 from mmcv.cnn.bricks import DropPath, build_activation_layer, build_norm_layer
 from mmcv.runner import BaseModule
 
-from ..builder import BACKBONES
+from mmcls.registry import MODELS
 from .base_backbone import BaseBackbone
 
 
@@ -194,7 +194,7 @@ def basic_blocks(dim,
     return blocks
 
 
-@BACKBONES.register_module()
+@MODELS.register_module()
 class PoolFormer(BaseBackbone):
     """PoolFormer.
 

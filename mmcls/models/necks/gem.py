@@ -4,7 +4,7 @@ from torch import Tensor, nn
 from torch.nn import functional as F
 from torch.nn.parameter import Parameter
 
-from ..builder import NECKS
+from mmcls.registry import MODELS
 
 
 def gem(x: Tensor, p: Parameter, eps: float = 1e-6, clamp=True) -> Tensor:
@@ -13,7 +13,7 @@ def gem(x: Tensor, p: Parameter, eps: float = 1e-6, clamp=True) -> Tensor:
     return F.avg_pool2d(x.pow(p), (x.size(-2), x.size(-1))).pow(1. / p)
 
 
-@NECKS.register_module()
+@MODELS.register_module()
 class GeneralizedMeanPooling(nn.Module):
     """Generalized Mean Pooling neck.
 
