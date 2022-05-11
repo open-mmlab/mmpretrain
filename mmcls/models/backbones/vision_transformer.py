@@ -316,7 +316,7 @@ class VisionTransformer(BaseBackbone):
 
         ckpt_pos_embed_shape = state_dict[name].shape
         if self.pos_embed.shape != ckpt_pos_embed_shape:
-            from mmcv.utils import print_log
+            from mmengine.logging import print_log
             logger = get_root_logger()
             print_log(
                 f'Resize the pos_embed shape from {ckpt_pos_embed_shape} '

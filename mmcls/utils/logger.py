@@ -3,7 +3,7 @@ import json
 import logging
 from collections import defaultdict
 
-from mmcv.utils import get_logger
+from mmengine.logging import MMLogger
 
 
 def get_root_logger(log_file=None, log_level=logging.INFO):
@@ -17,7 +17,15 @@ def get_root_logger(log_file=None, log_level=logging.INFO):
     Returns:
         :obj:`logging.Logger`: The obtained logger
     """
-    return get_logger('mmcls', log_file, log_level)
+    try:
+        return MMLogger.get_instance(
+            'mmcls',
+            logger_name='mmcls',
+            log_file=log_file,
+            log_level=log_level)
+    except AssertionError:
+        # if root logger already existed, no extra kwargs needed.
+        return MMLogger.get_instance('mmcls')
 
 
 def load_json_log(json_log):

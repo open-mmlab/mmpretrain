@@ -4,7 +4,7 @@ import math
 from collections import defaultdict
 
 import numpy as np
-from mmcv.utils import print_log
+from mmengine.logging import print_log
 from torch.utils.data.dataset import ConcatDataset as _ConcatDataset
 
 from mmcls.registry import DATASETS
@@ -57,8 +57,16 @@ class ConcatDataset(_ConcatDataset):
             indices (list, optional): The indices of samples corresponding to
                 the results. It's unavailable on ConcatDataset.
                 Defaults to None.
-            logger (logging.Logger | str, optional): Logger used for printing
-                related information during evaluation. Defaults to None.
+            logger (logging.Logger or str, optional): If the type of logger is
+            ``logging.Logger``, we directly use logger to log messages.
+                Some special loggers are:
+                - "silent": No message will be printed.
+                - "current": Use latest created logger to log message.
+                - other str: Instance name of logger. The corresponding logger
+                will log message if it has been created, otherwise will raise a
+                `ValueError`.
+                - None: The `print()` method will be used to print log
+                messages.
 
         Returns:
             dict[str: float]: AP results of the total dataset or each separate

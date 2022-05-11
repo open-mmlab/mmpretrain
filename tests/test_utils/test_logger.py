@@ -3,14 +3,13 @@ import os
 import os.path as osp
 import tempfile
 
-import mmcv.utils.logging
-
+from mmengine.logging import MMLogger
 from mmcls.utils import get_root_logger, load_json_log
 
 
 def test_get_root_logger():
-    # Reset the initialized log
-    mmcv.utils.logging.logger_initialized = {}
+    # set all logger instance
+    MMLogger._instance_dict = {}
     with tempfile.TemporaryDirectory() as tmpdirname:
         log_path = osp.join(tmpdirname, 'test.log')
 
@@ -33,7 +32,6 @@ def test_get_root_logger():
         for handler in handlers:
             handler.close()
             logger.removeHandler(handler)
-        os.remove(log_path)
 
 
 def test_load_json_log():

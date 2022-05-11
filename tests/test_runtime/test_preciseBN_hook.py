@@ -5,8 +5,7 @@ import torch
 import torch.nn as nn
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import EpochBasedRunner, IterBasedRunner, build_optimizer
-from mmcv.utils import get_logger
-from mmcv.utils.logging import print_log
+from mmengine.logging import MMLogger, print_log
 from torch.utils.data import DataLoader, Dataset
 
 from mmcls.core.hook import PreciseBNHook
@@ -102,7 +101,7 @@ def test_precise_bn():
     loader = DataLoader(test_dataset, batch_size=2)
     model = ExampleModel()
     optimizer = build_optimizer(model, optimizer_cfg)
-    logger = get_logger('precise_bn')
+    logger = MMLogger.get_instance('precise_bn')
     runner = EpochBasedRunner(
         model=model,
         batch_processor=None,

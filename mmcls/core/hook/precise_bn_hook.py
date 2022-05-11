@@ -4,13 +4,13 @@
 
 import itertools
 import logging
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import mmcv
 import torch
 import torch.nn as nn
 from mmcv.runner import EpochBasedRunner, get_dist_info
-from mmcv.utils import print_log
+from mmengine.logging import print_log
 from mmengine.hooks import Hook
 from torch.functional import Tensor
 from torch.nn import GroupNorm
@@ -52,10 +52,11 @@ def scaled_all_reduce(tensors: List[Tensor], num_gpus: int) -> List[Tensor]:
 
 
 @torch.no_grad()
-def update_bn_stats(model: nn.Module,
-                    loader: DataLoader,
-                    num_samples: int = 8192,
-                    logger: Optional[logging.Logger] = None) -> None:
+def update_bn_stats(
+        model: nn.Module,
+        loader: DataLoader,
+        num_samples: int = 8192,
+        logger: Optional[Union[logging.Logger, str]] = None) -> None:
     """Computes precise BN stats on training data.
 
     Args:
@@ -63,8 +64,15 @@ def update_bn_stats(model: nn.Module,
         loader (DataLoader): PyTorch dataloader._dataloader
         num_samples (int): The number of samples to update the bn stats.
             Defaults to 8192.
-        logger (:obj:`logging.Logger` | None): Logger for logging.
-            Default: None.
+        logger (logging.Logger or str, optional): If the type of logger is
+        ``logging.Logger``, we directly use logger to log messages.
+            Some special loggers are:
+            - "silent": No message will be printed.
+            - "current": Use latest created logger to log message.
+            - other str: Instance name of logger. The corresponding logger
+            will log message if it has been created, otherwise will raise a
+            `ValueError`.
+            - None: The `print()` method will be used to print log messages.
     """
     # get dist info
     rank, world_size = get_dist_info()
