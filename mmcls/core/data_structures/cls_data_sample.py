@@ -44,7 +44,7 @@ def format_label(value: Union[torch.Tensor, np.ndarray, Sequence, int],
         if value.max() >= num_classes:
             raise ValueError(f'The label data ({value}) should not '
                              f'exceed num_classes ({num_classes}).')
-    label = LabelData(item=value, metainfo=metainfo)
+    label = LabelData(label=value, metainfo=metainfo)
     return label
 
 
@@ -95,32 +95,83 @@ class ClsDataSample(BaseDataElement):
             META INFORMATION
             num_classes: 5
             DATA FIELDS
-            item: tensor([0, 1, 4])
+            label: tensor([0, 1, 4])
         ) at 0x7fd7d1b41970>
-        >>> # Convert to one-hot format
-        >>> data_sample.gt_label.to_onehot()
-        >>> print(data_sample.gt_label)
+        >>> # Set one-hot format score
+        >>> score = torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1])
+        >>> data_sample.set_pred_score(score)
+        >>> print(data_sample.pred_label)
         <LabelData(
             META INFORMATION
             num_classes: 5
             DATA FIELDS
-            item: tensor([1, 1, 0, 0, 1])
+            score: tensor([0.1, 0.1, 0.6, 0.1, 0.1])
         ) at 0x7fd7d1b41970>
     """
 
     def set_gt_label(
-        self, value: Union[np.ndarray, torch.Tensor, Sequence[Number],
-                           Number]) -> None:
-        """Set the gt_label data."""
+        self, value: Union[np.ndarray, torch.Tensor, Sequence[Number], Number]
+    ) -> 'ClsDataSample':
+        """Set label of ``gt_label``."""
         label = format_label(value, self.get('num_classes'))
-        self.gt_label = label
+        if 'gt_label' in self:
+            self.gt_label.label = label.label
+        else:
+            self.gt_label = label
+        return self
+
+    def set_gt_score(self, value: torch.Tensor) -> 'ClsDataSample':
+        """Set score of ``gt_label``."""
+        assert isinstance(value, torch.Tensor), \
+            f'The value should be a torch.Tensor but got {type(value)}.'
+        assert value.ndim == 1, \
+            f'The dims of value should be 1, but got {value.ndim}.'
+
+        if 'num_classes' in self:
+            assert value.size(0) == self.num_classes, \
+                f"The length of value ({value.size(0)}) doesn't "\
+                f'match the num_classes ({self.num_classes}).'
+            metainfo = {'num_classes': self.num_classes}
+        else:
+            metainfo = {'num_classes': value.size(0)}
+
+        if 'gt_label' in self:
+            self.gt_label.score = value
+        else:
+            self.gt_label = LabelData(score=value, metainfo=metainfo)
+        return self
 
     def set_pred_label(
-        self, value: Union[np.ndarray, torch.Tensor, Sequence[Number],
-                           Number]) -> None:
-        """Set the pred_label data."""
+        self, value: Union[np.ndarray, torch.Tensor, Sequence[Number], Number]
+    ) -> 'ClsDataSample':
+        """Set label of ``pred_label``."""
         label = format_label(value, self.get('num_classes'))
-        self.pred_label = label
+        if 'pred_label' in self:
+            self.pred_label.label = label.label
+        else:
+            self.pred_label = label
+        return self
+
+    def set_pred_score(self, value: torch.Tensor) -> 'ClsDataSample':
+        """Set score of ``pred_label``."""
+        assert isinstance(value, torch.Tensor), \
+            f'The value should be a torch.Tensor but got {type(value)}.'
+        assert value.ndim == 1, \
+            f'The dims of value should be 1, but got {value.ndim}.'
+
+        if 'num_classes' in self:
+            assert value.size(0) == self.num_classes, \
+                f"The length of value ({value.size(0)}) doesn't "\
+                f'match the num_classes ({self.num_classes}).'
+            metainfo = {'num_classes': self.num_classes}
+        else:
+            metainfo = {'num_classes': value.size(0)}
+
+        if 'pred_label' in self:
+            self.pred_label.score = value
+        else:
+            self.pred_label = LabelData(score=value, metainfo=metainfo)
+        return self
 
     @property
     def gt_label(self):
