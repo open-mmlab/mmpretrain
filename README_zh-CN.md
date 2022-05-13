@@ -118,7 +118,7 @@ pip3 install -e .
 - [x] [ResNeXt](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnext)
 - [x] [SE-ResNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/seresnet)
 - [x] [SE-ResNeXt](https://github.com/open-mmlab/mmclassification/tree/master/configs/seresnet)
-- [x] [RegNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/repvgg)
+- [x] [RegNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/regnet)
 - [x] [ShuffleNetV1](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v1)
 - [x] [ShuffleNetV2](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v2)
 - [x] [MobileNetV2](https://github.com/open-mmlab/mmclassification/tree/master/configs/mobilenet_v2)
