@@ -1,8 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .image import (BaseFigureContextManager, ImshowInfosContextManager,
-                    color_val_matplotlib, imshow_infos)
+from .cls_visualizer import ClsVisualizer
 
-__all__ = [
-    'BaseFigureContextManager', 'ImshowInfosContextManager', 'imshow_infos',
-    'color_val_matplotlib'
-]
+__all__ = ['ClsVisualizer']

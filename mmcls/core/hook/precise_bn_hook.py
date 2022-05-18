@@ -10,8 +10,8 @@ import mmcv
 import torch
 import torch.nn as nn
 from mmcv.runner import EpochBasedRunner, get_dist_info
-from mmengine.logging import print_log
 from mmengine.hooks import Hook
+from mmengine.logging import print_log
 from torch.functional import Tensor
 from torch.nn import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm

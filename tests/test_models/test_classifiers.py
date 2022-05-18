@@ -1,9 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os.path as osp
-import tempfile
 from copy import deepcopy
 
-import numpy as np
 import torch
 from mmcv import ConfigDict
 
@@ -89,20 +86,6 @@ def test_image_classifier():
     model_cfg_['pretrained'] = 'checkpoint'
     model = CLASSIFIERS.build(model_cfg_)
     assert model.init_cfg == dict(type='Pretrained', checkpoint='checkpoint')
-
-    # test show_result
-    img = np.random.randint(0, 256, (224, 224, 3)).astype(np.uint8)
-    result = dict(pred_class='cat', pred_label=0, pred_score=0.9)
-
-    with tempfile.TemporaryDirectory() as tmpdir:
-        out_file = osp.join(tmpdir, 'out.png')
-        model.show_result(img, result, out_file=out_file)
-        assert osp.exists(out_file)
-
-    with tempfile.TemporaryDirectory() as tmpdir:
-        out_file = osp.join(tmpdir, 'out.png')
-        model.show_result(img, result, out_file=out_file)
-        assert osp.exists(out_file)
 
 
 def test_image_classifier_with_mixup():

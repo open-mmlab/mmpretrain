@@ -1,9 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os
 import os.path as osp
 import tempfile
 
 from mmengine.logging import MMLogger
+
 from mmcls.utils import get_root_logger, load_json_log
 
 
