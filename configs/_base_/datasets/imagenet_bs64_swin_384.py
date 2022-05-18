@@ -17,7 +17,12 @@ train_pipeline = [
 ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='Resize', size=384, backend='pillow', interpolation='bicubic'),
+    dict(
+        type='Resize',
+        scale=(256, -1),
+        keep_ratio=True,
+        backend='pillow',
+        interpolation='bicubic'),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='ImageToTensor', keys=['img']),
     dict(type='Collect', keys=['img'])

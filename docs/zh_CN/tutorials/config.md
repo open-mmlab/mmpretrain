@@ -194,7 +194,7 @@ train_pipeline = [
 # 测试数据流水线
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='Resize', size=(256, -1)),
+    dict(type='Resize', scale=(256, -1), keep_ratio=True),
     dict(type='CenterCrop', crop_size=224),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='ImageToTensor', keys=['img']),
@@ -310,7 +310,7 @@ train_pipeline = [
 ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='Resize', size=384, backend='pillow'),
+    dict(type='Resize', scale=384, backend='pillow'),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='ImageToTensor', keys=['img']),
     dict(type='Collect', keys=['img'])

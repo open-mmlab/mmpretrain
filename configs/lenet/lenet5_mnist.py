@@ -11,14 +11,14 @@ model = dict(
 dataset_type = 'MNIST'
 img_norm_cfg = dict(mean=[33.46], std=[78.87], to_rgb=True)
 train_pipeline = [
-    dict(type='Resize', size=32),
+    dict(type='Resize', scale=32),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='ImageToTensor', keys=['img']),
     dict(type='ToTensor', keys=['gt_label']),
     dict(type='Collect', keys=['img', 'gt_label']),
 ]
 test_pipeline = [
-    dict(type='Resize', size=32),
+    dict(type='Resize', scale=32),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='ImageToTensor', keys=['img']),
     dict(type='Collect', keys=['img']),

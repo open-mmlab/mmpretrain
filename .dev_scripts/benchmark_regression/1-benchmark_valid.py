@@ -92,7 +92,7 @@ def inference(config_file, checkpoint, classes, args):
         cfg.data.test.pipeline.insert(0, dict(type='LoadImageFromFile'))
     if cfg.data.test.type in ['CIFAR10', 'CIFAR100']:
         # The image shape of CIFAR is (32, 32, 3)
-        cfg.data.test.pipeline.insert(1, dict(type='Resize', size=32))
+        cfg.data.test.pipeline.insert(1, dict(type='Resize', scale=32))
 
     data = dict(img_info=dict(filename=args.img), img_prefix=None)
 

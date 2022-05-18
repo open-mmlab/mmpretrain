@@ -45,7 +45,8 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='Resize',
-        size=(248, -1),
+        scale=(248, -1),
+        keep_ratio=True,
         backend='pillow',
         interpolation='bicubic'),
     dict(type='CenterCrop', crop_size=224),

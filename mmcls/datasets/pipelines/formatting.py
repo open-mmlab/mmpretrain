@@ -1,12 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import warnings
 from collections.abc import Sequence
 
 import mmcv
 import numpy as np
 import torch
 from mmcv.parallel import DataContainer as DC
+from mmcv.transforms.base import BaseTransform
 from PIL import Image
 
+from mmcls.core import ClsDataSample
 from mmcls.registry import TRANSFORMS
 
 
@@ -34,7 +37,86 @@ def to_tensor(data):
 
 
 @TRANSFORMS.register_module()
+class PackClsInputs(BaseTransform):
+    """Pack the inputs data for the classification.
+
+    The ``img_meta`` item is always populated.  The contents of the
+    ``img_meta`` dictionary depends on ``meta_keys``. By default this includes:
+
+        - ``sample_idx``: id of the image sample
+
+        - ``img_path``: path to the image file
+
+        - ``ori_shape``: original shape of the image as a tuple (H, W).
+
+        - ``img_shape``: shape of the image input to the network as a tuple
+          (H, W).  Note that images may be zero padded on the bottom/right
+          if the batch tensor is larger than this shape.
+
+        - ``scale_factor``: a float indicating the preprocessing scale
+
+        - ``flip``: a boolean indicating if image flip transform was used
+
+        - ``flip_direction``: the flipping direction
+
+    Args:
+        meta_keys (Sequence[str], optional): The meta keys to saved in the
+            ``metainfo`` of the packed ``data_sample``.
+            Default: ``('sample_idx', 'img_path', 'ori_shape', 'img_shape',
+            'scale_factor', 'flip', 'flip_direction')``
+    """
+
+    def __init__(self,
+                 meta_keys=('sample_idx', 'img_path', 'ori_shape', 'img_shape',
+                            'scale_factor', 'flip', 'flip_direction')):
+        self.meta_keys = meta_keys
+
+    def transform(self, results: dict) -> dict:
+        """Method to pack the input data.
+
+        Args:
+            results (dict): Result dict from the data pipeline.
+
+        Returns:
+            dict:
+            - 'inputs' (obj:`torch.Tensor`): The forward data of models.
+            - 'data_sample' (obj:`ClsDataSample`): The annotation info of the
+              sample.
+        """
+        packed_results = dict()
+        if 'img' in results:
+            img = results['img']
+            if len(img.shape) < 3:
+                img = np.expand_dims(img, -1)
+            img = np.ascontiguousarray(img.transpose(2, 0, 1))
+            packed_results['inputs'] = to_tensor(img)
+        else:
+            warnings.warn(
+                'Cannot get "img" in the input dict of `PackClsInputs`,'
+                'please make sure `LoadImageFromFile` has been added '
+                'in the data pipeline or images have been loaded in '
+                'the dataset.')
+
+        data_sample = ClsDataSample()
+        if 'gt_label' in results:
+            gt_label = results['gt_label']
+            data_sample.set_gt_label(gt_label)
+
+        img_meta = {k: results[k] for k in self.meta_keys if k in results}
+        data_sample.set_metainfo(img_meta)
+        packed_results['data_sample'] = data_sample
+
+        return packed_results
+
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += f'(meta_keys={self.meta_keys})'
+        return repr_str
+
+
+@TRANSFORMS.register_module()
 class ToTensor(object):
+    """Convert objects of various python types to :obj:`torch.Tensor`."""
 
     def __init__(self, keys):
         self.keys = keys
@@ -50,6 +132,7 @@ class ToTensor(object):
 
 @TRANSFORMS.register_module()
 class ImageToTensor(object):
+    """Convert objects :obj:`PIL.Image` to :obj:`torch.Tensor`."""
 
     def __init__(self, keys):
         self.keys = keys
@@ -68,6 +151,7 @@ class ImageToTensor(object):
 
 @TRANSFORMS.register_module()
 class Transpose(object):
+    """matrix transpose."""
 
     def __init__(self, keys, order):
         self.keys = keys
@@ -85,6 +169,7 @@ class Transpose(object):
 
 @TRANSFORMS.register_module()
 class ToPIL(object):
+    """Convert tensor to :obj:`PIL.Image`."""
 
     def __init__(self):
         pass
@@ -96,6 +181,7 @@ class ToPIL(object):
 
 @TRANSFORMS.register_module()
 class ToNumpy(object):
+    """Convert tensor to :obj:`np.ndarray`."""
 
     def __init__(self):
         pass

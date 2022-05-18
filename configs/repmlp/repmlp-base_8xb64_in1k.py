@@ -10,7 +10,7 @@ img_norm_cfg = dict(
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     # resizing to (256, 256) here, different with resizing shorter edge to 256
-    dict(type='Resize', size=(256, 256), backend='pillow'),
+    dict(type='Resize', scale=(256, 256), backend='pillow'),
     dict(type='CenterCrop', crop_size=224),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='ImageToTensor', keys=['img']),

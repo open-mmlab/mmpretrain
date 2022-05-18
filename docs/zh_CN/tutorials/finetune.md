@@ -102,14 +102,14 @@ img_norm_cfg = dict(
 train_pipeline = [
     dict(type='RandomCrop', size=32, padding=4),
     dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
-    dict(type='Resize', size=224),
+    dict(type='Resize', scale=224),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='ImageToTensor', keys=['img']),
     dict(type='ToTensor', keys=['gt_label']),
     dict(type='Collect', keys=['img', 'gt_label']),
 ]
 test_pipeline = [
-    dict(type='Resize', size=224),
+    dict(type='Resize', scale=224),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='ImageToTensor', keys=['img']),
     dict(type='Collect', keys=['img']),
@@ -166,14 +166,14 @@ img_norm_cfg = dict(
 train_pipeline = [
     dict(type='RandomCrop', size=32, padding=4),
     dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
-    dict(type='Resize', size=224),
+    dict(type='Resize', scale=224),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='ImageToTensor', keys=['img']),
     dict(type='ToTensor', keys=['gt_label']),
     dict(type='Collect', keys=['img', 'gt_label']),
 ]
 test_pipeline = [
-    dict(type='Resize', size=224),
+    dict(type='Resize', scale=224),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='ImageToTensor', keys=['img']),
     dict(type='Collect', keys=['img']),
