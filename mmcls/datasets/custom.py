@@ -1,12 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import warnings
 from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
 
-import mmcv
-import numpy as np
-from mmcv import FileClient
+import mmengine
+from mmengine import FileClient
 
 from mmcls.registry import DATASETS
+from mmcls.utils import get_root_logger
 from .base_dataset import BaseDataset
 
 
@@ -104,7 +103,8 @@ class CustomDataset(BaseDataset):
             folder_2/nsdf3.png 3
             ...
 
-       Please specify the name of categories by the argument ``classes``.
+       Please specify the name of categories by the argument ``classes``
+       or ``metainfo``.
 
     2. The samples are arranged in the specific way: ::
 
@@ -124,58 +124,61 @@ class CustomDataset(BaseDataset):
     first way, otherwise, try the second way.
 
     Args:
-        data_prefix (str): The path of data directory.
-        pipeline (Sequence[dict]): A list of dict, where each element
-            represents a operation defined in :mod:`mmcls.datasets.pipelines`.
-            Defaults to an empty tuple.
-        classes (str | Sequence[str], optional): Specify names of classes.
-
-            - If is string, it should be a file path, and the every line of
-              the file is a name of a class.
-            - If is a sequence of string, every item is a name of class.
-            - If is None, use ``cls.CLASSES`` or the names of sub folders
-              (If use the second way to arrange samples).
-
-            Defaults to None.
-        ann_file (str, optional): The annotation file. If is string, read
-            samples paths from the ann_file. If is None, find samples in
-            ``data_prefix``. Defaults to None.
+        ann_file (str, optional): Annotation file path. Defaults to None.
+        metainfo (dict, optional): Meta information for dataset, such as class
+            information. Defaults to None.
+        data_root (str, optional): The root directory for ``data_prefix`` and
+            ``ann_file``. Defaults to None.
+        data_prefix (str | dict, optional): Prefix for training data. Defaults
+            to None.
         extensions (Sequence[str]): A sequence of allowed extensions. Defaults
             to ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif').
-        test_mode (bool): In train mode or test mode. It's only a mark and
-            won't be used in this class. Defaults to False.
-        file_client_args (dict, optional): Arguments to instantiate a
-            FileClient. See :class:`mmcv.fileio.FileClient` for details.
-            If None, automatically inference from the specified path.
-            Defaults to None.
+        lazy_init (bool, optional): Whether to load annotation during
+            instantiation. In some cases, such as visualization, only the meta
+            information of the dataset is needed, which is not necessary to
+            load annotation file. ``Basedataset`` can skip load annotations to
+            save time by set ``lazy_init=False``. Defaults to False.
+        **kwargs: Other keyword arguments in :class:`BaseDataset`.
     """
 
     def __init__(self,
-                 data_prefix: str,
-                 pipeline: Sequence = (),
-                 classes: Union[str, Sequence[str], None] = None,
                  ann_file: Optional[str] = None,
+                 metainfo: Optional[dict] = None,
+                 data_root: Optional[str] = None,
+                 data_prefix: Union[str, dict, None] = None,
                  extensions: Sequence[str] = ('.jpg', '.jpeg', '.png', '.ppm',
                                               '.bmp', '.pgm', '.tif'),
-                 test_mode: bool = False,
-                 file_client_args: Optional[dict] = None):
+                 lazy_init: bool = False,
+                 **kwargs):
+        assert (ann_file is not None or data_prefix is not None
+                or data_root is not None), \
+            'One of `ann_file`, `data_root` and `data_prefix` must '\
+            'be specified.'
+
         self.extensions = tuple(set([i.lower() for i in extensions]))
-        self.file_client_args = file_client_args
 
         super().__init__(
+            # The base class requires string ann_file but this class doesn't
+            ann_file=ann_file if ann_file is not None else '',
+            metainfo=metainfo,
+            data_root=data_root,
             data_prefix=data_prefix,
-            pipeline=pipeline,
-            classes=classes,
-            ann_file=ann_file,
-            test_mode=test_mode)
+            # Force to lazy_init for some modification before loading data.
+            lazy_init=True,
+            **kwargs)
 
-    def _find_samples(self):
+        if ann_file is None:
+            self.ann_file = None
+
+        # Full initialize the dataset.
+        if not lazy_init:
+            self.full_init()
+
+    def _find_samples(self, file_client):
         """find samples from ``data_prefix``."""
-        file_client = FileClient.infer_client(self.file_client_args,
-                                              self.data_prefix)
-        classes, folder_to_idx = find_folders(self.data_prefix, file_client)
+        classes, folder_to_idx = find_folders(self.img_prefix, file_client)
         samples, empty_classes = get_samples(
-            self.data_prefix,
+            self.img_prefix,
             folder_to_idx,
             is_valid_file=self.is_valid_file,
             file_client=file_client,
@@ -192,37 +195,42 @@ class CustomDataset(BaseDataset):
                 f'the number of specified classes ({len(self.CLASSES)}). ' \
                 'Please check the data folder.'
         else:
-            self.CLASSES = classes
+            self._metainfo['CLASSES'] = tuple(classes)
 
         if empty_classes:
-            warnings.warn(
+            logger = get_root_logger()
+            logger.warning(
                 'Found no valid file in the folder '
                 f'{", ".join(empty_classes)}. '
-                f"Supported extensions are: {', '.join(self.extensions)}",
-                UserWarning)
+                f"Supported extensions are: {', '.join(self.extensions)}")
 
         self.folder_to_idx = folder_to_idx
 
         return samples
 
-    def load_annotations(self):
+    def load_data_list(self):
         """Load image paths and gt_labels."""
-        if self.ann_file is None:
-            samples = self._find_samples()
-        elif isinstance(self.ann_file, str):
-            lines = mmcv.list_from_file(
-                self.ann_file, file_client_args=self.file_client_args)
-            samples = [x.strip().rsplit(' ', 1) for x in lines]
-        else:
-            raise TypeError('ann_file must be a str or None')
+        if self.img_prefix is not None:
+            file_client = FileClient.infer_client(uri=self.img_prefix)
 
-        data_infos = []
+        if self.ann_file is None:
+            samples = self._find_samples(file_client)
+        else:
+            lines = mmengine.list_from_file(self.ann_file)
+            samples = [x.strip().rsplit(' ', 1) for x in lines]
+
+        def add_prefix(filename, prefix=None):
+            if prefix is None:
+                return filename
+            else:
+                return file_client.join_path(prefix, filename)
+
+        data_list = []
         for filename, gt_label in samples:
-            info = {'img_prefix': self.data_prefix}
-            info['img_info'] = {'filename': filename}
-            info['gt_label'] = np.array(gt_label, dtype=np.int64)
-            data_infos.append(info)
-        return data_infos
+            img_path = add_prefix(filename, self.img_prefix)
+            info = {'img_path': img_path, 'gt_label': int(gt_label)}
+            data_list.append(info)
+        return data_list
 
     def is_valid_file(self, filename: str) -> bool:
         """Check if a file is a valid sample."""

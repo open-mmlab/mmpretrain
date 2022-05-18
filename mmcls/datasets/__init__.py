@@ -7,8 +7,7 @@ from .cub import CUB
 from .custom import CustomDataset
 from .dataset_wrappers import (ClassBalancedDataset, ConcatDataset,
                                KFoldDataset, RepeatDataset)
-from .imagenet import ImageNet
-from .imagenet21k import ImageNet21k
+from .imagenet import ImageNet, ImageNet21k
 from .mnist import MNIST, FashionMNIST
 from .multi_label import MultiLabelDataset
 from .samplers import DistributedSampler, RepeatAugSampler
