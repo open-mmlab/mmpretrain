@@ -409,7 +409,7 @@ class PCPVT(BaseModule):
     arch_zoo = {
         **dict.fromkeys(['s', 'small'],
                         {'embed_dims':    [64, 128, 320, 512],
-                         'depths':        [3, 4, 6, 3],
+                         'depths':        [3, 3, 6, 3],
                          'num_heads':     [1, 2, 5, 8],
                          'patch_sizes':   [4, 2, 2, 2],
                          'strides':       [4, 2, 2, 2],
@@ -417,7 +417,7 @@ class PCPVT(BaseModule):
                          'sr_ratios':     [8, 4, 2, 1]}),
         **dict.fromkeys(['b', 'base'],
                         {'embed_dims':    [64, 128, 320, 512],
-                         'depths':        [3, 4, 18, 3],
+                         'depths':        [3, 3, 18, 3],
                          'num_heads':     [1, 2, 5, 8],
                          'patch_sizes':   [4, 2, 2, 2],
                          'strides':       [4, 2, 2, 2],

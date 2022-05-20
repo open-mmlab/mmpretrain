@@ -24,8 +24,8 @@ Models:
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 81.14
-          Top 5 Accuracy: 95.69
+          Top 1 Accuracy: 80.65
+          Top 5 Accuracy: 95.38
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/twins/twins-pcpvt-small_3rdparty_8xb128_in1k_20220126-ef23c132.pth
     Config: configs/twins/twins-pcpvt-small_8xb128_in1k.py
@@ -40,8 +40,8 @@ Models:
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 82.66
-          Top 5 Accuracy: 96.26
+          Top 1 Accuracy: 82.29
+          Top 5 Accuracy: 96.16
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/twins/twins-pcpvt-base_3rdparty_8xb128_in1k_20220126-f8c4b0d5.pth
     Config: configs/twins/twins-pcpvt-base_8xb128_in1k.py
