@@ -23,7 +23,7 @@ imagenet
 │   │   ├── ...
 ```
 
-For validation, we provide a annotation list. Each line of the list contrains a filename and its corresponding ground-truth labels. The format is as follows:
+For validation, we provide a annotation list. Each line of the list contains a filename and its corresponding ground-truth labels. The format is as follows:
 
 ```
 ILSVRC2012_val_00000001.JPEG 65
