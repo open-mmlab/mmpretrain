@@ -21,6 +21,9 @@ optimizer = dict(
     paramwise_cfg=dict(custom_keys={'.backbone.classifier': dict(lr_mult=10)}))
 optimizer_config = dict(grad_clip=None)
 # learning policy
-lr_config = dict(policy='step', step=20, gamma=0.1)
+param_scheduler = dict(type='StepLR', by_epoch=True, step_size=20, gamma=0.1)
 
-runner = dict(type='EpochBasedRunner', max_epochs=40)
+# train, val, test setting
+train_cfg = dict(by_epoch=True, max_epochs=40)
+val_cfg = dict(interval=1)  # validate every epoch
+test_cfg = dict()

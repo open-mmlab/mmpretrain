@@ -16,13 +16,23 @@ optimizer = dict(
     paramwise_cfg=paramwise_cfg)
 
 # learning policy
-lr_config = dict(
-    policy='CosineAnnealing',
-    by_epoch=False,
-    min_lr_ratio=1e-2,
-    warmup='linear',
-    warmup_ratio=1e-3,
-    warmup_iters=5 * 1252,
-    warmup_by_epoch=False)
+param_scheduler = [
+    dict(
+        type='LinearLR',
+        start_factor=1e-3,
+        by_epoch=False,
+        begin=0,
+        end=5 * 1252),
+    dict(
+        type='CosineAnnealingLR',
+        T_max=295,
+        eta_min=1e-2,
+        by_epoch=True,
+        begin=5,
+        end=300)
+]
 
-runner = dict(type='EpochBasedRunner', max_epochs=300)
+# train, val, test setting
+train_cfg = dict(by_epoch=True, max_epochs=300)
+val_cfg = dict(interval=1)  # validate every epoch
+test_cfg = dict()

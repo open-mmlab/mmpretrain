@@ -171,11 +171,11 @@ optimizer = dict(
 optimizer_config = dict(grad_clip=None)
 
 # learning policy
-lr_config = dict(
-    policy='CosineAnnealing',
-    min_lr=0,
-    warmup='linear',
-    warmup_iters=5,
-    warmup_ratio=1e-6,
-    warmup_by_epoch=True)
-runner = dict(type='EpochBasedRunner', max_epochs=270)
+param_scheduler = [
+    dict(type='LinearLR', start_factor=1e-6, by_epoch=True, begin=0, end=5),
+    dict(type='CosineAnnealingLR', T_max=265, by_epoch=True, begin=5, end=270)
+]
+# train, val, test setting
+train_cfg = dict(by_epoch=True, max_epochs=270)
+val_cfg = dict(interval=1)  # validate every epoch
+test_cfg = dict()

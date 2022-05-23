@@ -9,4 +9,4 @@ default_hooks = dict(optimizer=dict(grad_clip=dict(max_norm=5.0)))
 
 optimizer = dict(lr=0.01)
 
-runner = dict(type='EpochBasedRunner', max_epochs=300)
+train_cfg = dict(by_epoch=True, max_epochs=300)

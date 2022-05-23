@@ -7,4 +7,4 @@ _base_ = [
 
 data = dict(samples_per_gpu=256)
 
-runner = dict(type='EpochBasedRunner', max_epochs=90)
+train_cfg = dict(by_epoch=True, max_epochs=90)

@@ -10,10 +10,30 @@ paramwise_cfg = dict(
         '.backbone.pos_embed': dict(decay_mult=0.0)
     })
 # learning policy
-lr_config = dict(
-    policy='CosineAnnealing',
-    min_lr=0,
-    warmup='linear',
-    warmup_iters=10000,
-    warmup_ratio=1e-4)
-runner = dict(type='EpochBasedRunner', max_epochs=300)
+param_scheduler = [
+    dict(
+        type='LinearLR',
+        start_factor=1e-3,
+        by_epoch=False,
+        begin=0,
+        end=10 * 626),
+    dict(
+        type='CosineAnnealingLR',
+        T_max=290,
+        eta_min=1e-2,
+        by_epoch=True,
+        begin=10,
+        end=300)
+]
+# old learning policy
+# lr_config = dict(
+#     policy='CosineAnnealing',
+#     min_lr=0,
+#     warmup='linear',
+#     warmup_iters=10000,
+#     warmup_ratio=1e-4)
+
+# train, val, test setting
+train_cfg = dict(by_epoch=True, max_epochs=300)
+val_cfg = dict(interval=1)  # validate every epoch
+test_cfg = dict()

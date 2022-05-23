@@ -22,13 +22,16 @@ optimizer = dict(
     betas=(0.9, 0.999),
     paramwise_cfg=paramwise_cfg)
 
-lr_config = dict(
-    policy='CosineAnnealing',
-    by_epoch=True,
-    min_lr_ratio=1e-2,
-    warmup='linear',
-    warmup_ratio=1e-3,
-    warmup_iters=5,
-    warmup_by_epoch=True)
+# learning policy
+param_scheduler = [
+    dict(type='LinearLR', start_factor=1e-3, by_epoch=True, begin=0, end=5),
+    dict(
+        type='CosineAnnealingLR',
+        T_max=295,
+        eta_min=1e-2,
+        by_epoch=True,
+        begin=5,
+        end=300)
+]
 
 evaluation = dict(interval=1, metric='accuracy')

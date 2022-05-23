@@ -1,6 +1,10 @@
 # optimizer
 optimizer = dict(type='SGD', lr=0.1, momentum=0.9, weight_decay=0.0001)
 # learning policy
-lr_config = dict(policy='step', step=[40, 80, 120])
+param_scheduler = dict(
+    type='MultiStepLR', by_epoch=True, milestones=[40, 80, 120], gamma=0.1)
 
-runner = dict(type='EpochBasedRunner', max_epochs=140)
+# train, val, test setting
+train_cfg = dict(by_epoch=True, max_epochs=140)
+val_cfg = dict(interval=1)  # validate every epoch
+test_cfg = dict()

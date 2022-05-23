@@ -30,11 +30,13 @@ data = dict(
 optimizer = dict(type='AdamW', lr=1e-3, weight_decay=0.05)
 optimizer_config = dict(grad_clip=None)
 
-lr_config = dict(
-    policy='CosineAnnealing',
-    min_lr=0,
-    warmup_by_epoch=True,
-    warmup='linear',
-    warmup_iters=5,
-    warmup_ratio=1e-3)
-runner = dict(type='EpochBasedRunner', max_epochs=300)
+# learning policy
+param_scheduler = [
+    dict(type='LinearLR', start_factor=1e-3, by_epoch=True, begin=0, end=5),
+    dict(type='CosineAnnealingLR', T_max=295, by_epoch=True, begin=5, end=300)
+]
+
+# train, val, test setting
+train_cfg = dict(by_epoch=True, max_epochs=300)
+val_cfg = dict(interval=1)  # validate every epoch
+test_cfg = dict()

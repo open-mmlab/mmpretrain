@@ -154,5 +154,8 @@ optimizer = dict(
     weight_decay=1e-5)
 optimizer_config = dict(grad_clip=None)
 # learning policy
-lr_config = dict(policy='step', step=2, gamma=0.973, by_epoch=True)
-runner = dict(type='EpochBasedRunner', max_epochs=600)
+param_scheduler = dict(type='StepLR', by_epoch=True, step_size=2, gamma=0.973)
+# train, val, test setting
+train_cfg = dict(by_epoch=True, max_epochs=600)
+val_cfg = dict(interval=1)  # validate every epoch
+test_cfg = dict()

@@ -7,4 +7,5 @@ _base_ = [
 model = dict(head=dict(num_classes=100))
 
 optimizer = dict(type='SGD', lr=0.1, momentum=0.9, weight_decay=0.0005)
-lr_config = dict(policy='step', step=[60, 120, 160], gamma=0.2)
+param_scheduler = dict(
+    type='MultiStepLR', by_epoch=False, milestones=[60, 120, 160], gamma=0.2)

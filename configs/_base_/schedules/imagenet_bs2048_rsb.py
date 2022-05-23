@@ -2,11 +2,23 @@
 optimizer = dict(type='Lamb', lr=0.005, weight_decay=0.02)
 
 # learning policy
-lr_config = dict(
-    policy='CosineAnnealing',
-    min_lr=1.0e-6,
-    warmup='linear',
-    # For ImageNet-1k, 626 iters per epoch, warmup 5 epochs.
-    warmup_iters=5 * 626,
-    warmup_ratio=0.0001)
-runner = dict(type='EpochBasedRunner', max_epochs=100)
+param_scheduler = [
+    dict(
+        type='LinearLR',
+        start_factor=0.0001,
+        by_epoch=False,
+        begin=0,
+        end=5 * 626),
+    dict(
+        type='CosineAnnealingLR',
+        T_max=95,
+        eta_min=1.0e-6,
+        by_epoch=True,
+        begin=5,
+        end=100)
+]
+
+# train, val, test setting
+train_cfg = dict(by_epoch=True, max_epochs=100)
+val_cfg = dict(interval=1)  # validate every epoch
+test_cfg = dict()

@@ -72,13 +72,15 @@ optimizer = dict(
 )
 
 # learning policy
-lr_config = dict(
-    policy='CosineAnnealing',
-    min_lr=0,
-    warmup='linear',
-    warmup_iters=800,
-    warmup_ratio=0.02,
-)
+param_scheduler = [
+    dict(type='LinearLR', start_factor=0.02, by_epoch=False, begin=0, end=800),
+    dict(
+        type='CosineAnnealingLR',
+        T_max=4200,
+        by_epoch=False,
+        begin=800,
+        end=5000)
+]
 
 # ipu cfg
 # model partition config

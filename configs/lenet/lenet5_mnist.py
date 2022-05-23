@@ -38,7 +38,8 @@ evaluation = dict(
 optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=None)
 # learning policy
-lr_config = dict(policy='step', step=[15])
+param_scheduler = dict(
+    type='MultiStepLR', by_epoch=True, milestones=[15], gamma=0.1)
 # checkpoint saving
 checkpoint_config = dict(interval=1)
 # yapf:disable
@@ -49,8 +50,13 @@ log_config = dict(
         # dict(type='TensorboardLoggerHook')
     ])
 # yapf:enable
+
+# train, val, test setting
+train_cfg = dict(by_epoch=True, max_epochs=5)
+val_cfg = dict(interval=1)  # validate every epoch
+test_cfg = dict()
+
 # runtime settings
-runner = dict(type='EpochBasedRunner', max_epochs=5)
 dist_params = dict(backend='nccl')
 log_level = 'INFO'
 work_dir = './work_dirs/mnist/'
