@@ -5,6 +5,8 @@ _base_ = [
     '../_base_/default_runtime.py',
 ]
 
+default_hooks = dict(optimizer=dict(grad_clip=dict(max_norm=5.0)))
+
 data = dict(samples_per_gpu=64)
 
 optimizer = dict(lr=4e-3)

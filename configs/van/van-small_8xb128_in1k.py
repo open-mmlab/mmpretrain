@@ -5,6 +5,8 @@ _base_ = [
     '../_base_/default_runtime.py'
 ]
 
+default_hooks = dict(optimizer=dict(grad_clip=dict(max_norm=5.0)))
+
 # Note that the mean and variance used here are different from other configs
 img_norm_cfg = dict(
     mean=[127.5, 127.5, 127.5], std=[127.5, 127.5, 127.5], to_rgb=True)

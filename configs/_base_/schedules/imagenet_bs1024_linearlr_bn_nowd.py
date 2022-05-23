@@ -5,7 +5,6 @@ optimizer = dict(
     momentum=0.9,
     weight_decay=0.00004,
     paramwise_cfg=dict(norm_decay_mult=0))
-optimizer_config = dict(grad_clip=None)
 # learning policy
 lr_config = dict(
     policy='poly',

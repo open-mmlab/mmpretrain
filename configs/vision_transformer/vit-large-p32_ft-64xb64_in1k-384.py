@@ -6,6 +6,8 @@ _base_ = [
     '../_base_/default_runtime.py'
 ]
 
+default_hooks = dict(optimizer=dict(grad_clip=dict(max_norm=1.0)))
+
 model = dict(backbone=dict(img_size=384))
 
 img_norm_cfg = dict(

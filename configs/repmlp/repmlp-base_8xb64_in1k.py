@@ -5,6 +5,8 @@ _base_ = [
     '../_base_/default_runtime.py'
 ]
 
+default_hooks = dict(optimizer=dict(grad_clip=dict(max_norm=5.0)))
+
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 test_pipeline = [

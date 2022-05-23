@@ -1,16 +1,37 @@
-# checkpoint saving
-checkpoint_config = dict(interval=1)
-# yapf:disable
-log_config = dict(
-    interval=100,
-    hooks=[
-        dict(type='TextLoggerHook'),
-        # dict(type='TensorboardLoggerHook')
-    ])
-# yapf:enable
+default_scope = 'mmcls'
 
-dist_params = dict(backend='nccl')
+default_hooks = dict(
+    # optimizer configure
+    optimizer=dict(type='OptimizerHook', grad_clip=None),
+
+    # record the time to load data and the time it takes to iterate once
+    timer=dict(type='IterTimerHook'),
+
+    # logger configure
+    logger=dict(type='LoggerHook', interval=50),
+
+    # Parameter Scheduler
+    param_scheduler=dict(type='ParamSchedulerHook'),
+
+    # checkpoint saving
+    checkpoint=dict(type='CheckpointHook', interval=1),
+
+    # Sampler for distributed training
+    sampler_seed=dict(type='DistSamplerSeedHook'),
+)
+
+# Environment configure
+env_cfg = dict(
+    cudnn_benchmark=False,
+    mp_cfg=dict(mp_start_method='fork', opencv_num_threads=0),
+    dist_cfg=dict(backend='nccl'),
+)
+
+# Log level configuration
 log_level = 'INFO'
+
+# Load from weight
 load_from = None
-resume_from = None
-workflow = [('train', 1)]
+
+# resume training
+resume = False

@@ -5,6 +5,9 @@ _base_ = [
     '../_base_/default_runtime.py'
 ]
 
+default_hooks = dict(
+    optimizer=dict(_delete_=True, grad_clip=dict(max_norm=5.0)))
+
 data = dict(samples_per_gpu=128)
 
 paramwise_cfg = dict(_delete=True, norm_decay_mult=0.0, bias_decay_mult=0.0)
@@ -18,9 +21,7 @@ optimizer = dict(
     eps=1e-8,
     betas=(0.9, 0.999),
     paramwise_cfg=paramwise_cfg)
-optimizer_config = dict(_delete_=True, grad_clip=dict(max_norm=5.0))
 
-# learning policy
 lr_config = dict(
     policy='CosineAnnealing',
     by_epoch=True,

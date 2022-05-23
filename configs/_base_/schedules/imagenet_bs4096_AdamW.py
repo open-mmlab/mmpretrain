@@ -11,7 +11,6 @@ optimizer = dict(
     weight_decay=0.3,
     paramwise_cfg=paramwise_cfg,
 )
-optimizer_config = dict(grad_clip=dict(max_norm=1.0))
 
 # learning policy
 lr_config = dict(

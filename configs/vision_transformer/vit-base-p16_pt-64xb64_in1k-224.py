@@ -5,6 +5,8 @@ _base_ = [
     '../_base_/default_runtime.py'
 ]
 
+default_hooks = dict(optimizer=dict(grad_clip=dict(max_norm=1.0)))
+
 model = dict(
     head=dict(hidden_dim=3072),
     train_cfg=dict(

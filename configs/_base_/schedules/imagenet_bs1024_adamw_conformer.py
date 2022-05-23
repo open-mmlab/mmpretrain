@@ -14,7 +14,6 @@ optimizer = dict(
     eps=1e-8,
     betas=(0.9, 0.999),
     paramwise_cfg=paramwise_cfg)
-optimizer_config = dict(grad_clip=None)
 
 # learning policy
 lr_config = dict(
