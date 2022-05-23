@@ -208,7 +208,7 @@ class MMClsWandbHook(WandbLoggerHook):
         if (self.log_checkpoint
                 and self.every_n_iters(runner, self.ckpt_interval)
                 or (self.ckpt_hook.save_last and self.is_last_iter(runner))):
-            if self.log_checkpoint_metadata:
+            if self.log_checkpoint_metadata and self.eval_hook:
                 metadata = {
                     'iter': runner.iter + 1,
                     **self._get_eval_results()
