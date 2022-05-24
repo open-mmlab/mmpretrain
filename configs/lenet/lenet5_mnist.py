@@ -40,15 +40,11 @@ optimizer_config = dict(grad_clip=None)
 # learning policy
 param_scheduler = dict(
     type='MultiStepLR', by_epoch=True, milestones=[15], gamma=0.1)
-# checkpoint saving
-checkpoint_config = dict(interval=1)
 # yapf:disable
-log_config = dict(
-    interval=150,
-    hooks=[
-        dict(type='TextLoggerHook'),
-        # dict(type='TensorboardLoggerHook')
-    ])
+default_hooks = dict(
+    logger=dict(type='LoggerHook', interval=150),
+    checkpoint=dict(type='CheckpointHook', interval=1)
+)
 # yapf:enable
 
 # train, val, test setting

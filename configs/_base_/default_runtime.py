@@ -8,7 +8,7 @@ default_hooks = dict(
     timer=dict(type='IterTimerHook'),
 
     # logger configure
-    logger=dict(type='LoggerHook', interval=50),
+    logger=dict(type='LoggerHook', interval=100),
 
     # Parameter Scheduler
     param_scheduler=dict(type='ParamSchedulerHook'),

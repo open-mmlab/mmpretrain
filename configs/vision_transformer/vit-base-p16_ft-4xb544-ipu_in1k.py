@@ -112,6 +112,6 @@ runner = dict(
     options_cfg=options_cfg,
     max_iters=5000)
 
-checkpoint_config = dict(interval=1000)
+default_hooks = dict(checkpoint=dict(type='CheckpointHook', interval=1000))
 
 fp16 = dict(loss_scale=256.0, velocity_accum_type='half', accum_type='half')

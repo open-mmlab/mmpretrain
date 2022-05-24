@@ -31,7 +31,8 @@ optimizer = dict(
     paramwise_cfg=paramwise_cfg)
 optimizer_config = dict(grad_clip=dict(max_norm=5.0), _delete_=True)
 
-log_config = dict(interval=20)  # log every 20 intervals
-
-checkpoint_config = dict(
-    interval=1, max_keep_ckpts=3)  # save last three checkpoints
+default_hooks = dict(
+    # log every 20 intervals
+    logger=dict(type='LoggerHook', interval=20),
+    # save last three checkpoints
+    checkpoint=dict(type='CheckpointHook', interval=1, max_keep_ckpts=3))
