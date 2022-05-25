@@ -270,7 +270,7 @@ class VAN(BaseBackbone):
             - **embed_dims** (List[int]): The dimensions of embedding.
             - **depths** (List[int]): The number of blocks in each stage.
             - **ffn_ratios** (List[int]): The number of expansion ratio of
-            feedforward network hidden layer channels.
+              feedforward network hidden layer channels.
 
             Defaults to 'tiny'.
         patch_sizes (List[int | tuple]): The patch size in patch embeddings.

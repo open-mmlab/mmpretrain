@@ -162,7 +162,7 @@ class DenseNet(BaseBackbone):
             should include the following two keys:
 
             - growth_rate (int): Each layer of DenseBlock produce `k` feature
-            maps. Here refers `k` as the growth rate of the network.
+              maps. Here refers `k` as the growth rate of the network.
             - depths (list[int]): Number of repeated layers in each DenseBlock.
             - init_channels (int): The output channels of stem layers.
 

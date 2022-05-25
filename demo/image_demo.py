@@ -1,6 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from argparse import ArgumentParser
 
+import mmcv
+
 from mmcls.apis import inference_model, init_model, show_result_pyplot
 
 
@@ -18,6 +20,7 @@ def main():
     # test a single image
     result = inference_model(model, args.img)
     # show the results
+    print(mmcv.dump(result, file_format='json', indent=4))
     show_result_pyplot(model, args.img, result)
 
 
