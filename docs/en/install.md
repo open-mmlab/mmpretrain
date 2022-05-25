@@ -100,8 +100,9 @@ Option (a). If you install mmcls from source, just run the following command:
 python demo/image_demo.py demo/demo.JPEG resnet50_8xb32_in1k.py resnet50_8xb32_in1k_20210831-ea4938fc.pth --device cpu
 ```
 
-You will see the output result dict including `pred_label`, `pred_score` and `pred_class` in your terminal. And if you
-have graphical interface (instead of remote terminal etc.), the demo image with these predictions will show in a window.
+You will see the output result dict including `pred_label`, `pred_score` and `pred_class` in your terminal.
+And if you have graphical interface (instead of remote terminal etc.), you can enable `--show` option to show
+the demo image with these predictions in a window.
 
 Option (b). If you install mmcls as a python package, open you python interpreter and copy&paste the following codes.
 

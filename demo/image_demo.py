@@ -12,6 +12,10 @@ def main():
     parser.add_argument('config', help='Config file')
     parser.add_argument('checkpoint', help='Checkpoint file')
     parser.add_argument(
+        '--show',
+        action='store_true',
+        help='Whether to show the predict results by matplotlib.')
+    parser.add_argument(
         '--device', default='cuda:0', help='Device used for inference')
     args = parser.parse_args()
 
@@ -21,7 +25,8 @@ def main():
     result = inference_model(model, args.img)
     # show the results
     print(mmcv.dump(result, file_format='json', indent=4))
-    show_result_pyplot(model, args.img, result)
+    if args.show:
+        show_result_pyplot(model, args.img, result)
 
 
 if __name__ == '__main__':

@@ -101,7 +101,8 @@ mim download mmcls --config resnet50_8xb32_in1k --dest .
 python demo/image_demo.py demo/demo.JPEG resnet50_8xb32_in1k.py resnet50_8xb32_in1k_20210831-ea4938fc.pth --device cpu
 ```
 
-你可以看到命令行中输出了结果字典，包括 `pred_label`，`pred_score` 和 `pred_class` 三个字段。另外如果你拥有图形界面（而不是使用远程终端），那么将会弹出一个窗口，显示示例图像和对应的预测结果。
+你可以看到命令行中输出了结果字典，包括 `pred_label`，`pred_score` 和 `pred_class` 三个字段。另外如果你拥有图形
+界面（而不是使用远程终端），那么可以启用 `--show` 选项，将示例图像和对应的预测结果在窗口中进行显示。
 
 如果你是**作为 PyThon 包安装**，那么可以打开你的 Python 解释器，并粘贴如下代码：
 
