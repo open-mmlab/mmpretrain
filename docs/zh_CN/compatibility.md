@@ -1,8 +1,7 @@
-# Compatibility of MMClassification 0.x
+# 0.x 相关兼容性问题
 
 ## MMClassification 0.20.1
 
-### MMCV compatibility
+### MMCV 兼容性
 
-In Twins backbone, we use the `PatchEmbed` module of MMCV, and this module is added after MMCV 1.4.2.
-Therefore, we need to update the mmcv version to 1.4.2.
+在 Twins 骨干网络中，我们使用了 MMCV 提供的 `PatchEmbed` 模块，该模块是在 MMCV 1.4.2 版本加入的，因此我们需要将 MMCV 依赖版本升至 1.4.2。
