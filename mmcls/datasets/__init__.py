@@ -10,6 +10,7 @@ from .dataset_wrappers import (ClassBalancedDataset, ConcatDataset,
 from .imagenet import ImageNet, ImageNet21k
 from .mnist import MNIST, FashionMNIST
 from .multi_label import MultiLabelDataset
+from .pipelines import *  # noqa: F401,F403
 from .samplers import DistributedSampler, RepeatAugSampler
 from .voc import VOC
 
