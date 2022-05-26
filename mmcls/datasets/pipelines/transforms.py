@@ -419,7 +419,7 @@ class RandomGrayscale(object):
             num_output_channels = img.shape[2]
             if random.random() < self.gray_prob:
                 if num_output_channels > 1:
-                    img = mmcv.rgb2gray(img)[:, :, None]
+                    img = mmcv.bgr2gray(img, keepdim=True)
                     results[key] = np.dstack(
                         [img for _ in range(num_output_channels)])
                     return results
