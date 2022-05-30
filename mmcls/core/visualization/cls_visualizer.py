@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional
+from typing import Optional, Tuple
 
 import mmcv
 import numpy as np
@@ -8,6 +8,31 @@ from mmengine.dist import master_only
 
 from mmcls.core import ClsDataSample
 from mmcls.registry import VISUALIZERS
+
+
+def _get_adaptive_scale(img_shape: Tuple[int, int],
+                        min_scale: float = 0.3,
+                        max_scale: float = 3.0) -> float:
+    """Get adaptive scale according to image shape.
+
+    The target scale depends on the the short edge length of the image. If the
+    short edge length equals 224, the output is 1.0. And output linear scales
+    according the short edge length.
+
+    You can also specify the minimum scale and the maximum scale to limit the
+    linear scale.
+
+    Args:
+        img_shape (Tuple[int, int]): The shape of the canvas image.
+        min_size (int): The minimum scale. Defaults to 0.3.
+        max_size (int): The maximum scale. Defaults to 3.0.
+
+    Returns:
+        int: The adaptive scale.
+    """
+    short_edge_length = min(img_shape)
+    scale = short_edge_length / 224.
+    return min(max(scale, min_scale), max_scale)
 
 
 @VISUALIZERS.register_module()
@@ -62,6 +87,7 @@ class ClsVisualizer(Visualizer):
                        draw_gt: bool = True,
                        draw_pred: bool = True,
                        draw_score: bool = True,
+                       rescale_factor: Optional[float] = None,
                        show: bool = False,
                        text_cfg: dict = dict(),
                        wait_time: float = 0,
@@ -86,6 +112,8 @@ class ClsVisualizer(Visualizer):
                 Default to True.
             draw_score (bool): Whether to draw the prediction scores
                 of prediction categories. Default to True.
+            rescale_factor (float, optional): Rescale the image by the rescale
+                factor before visualization. Defaults to None.
             show (bool): Whether to display the drawn image. Default to False.
             text_cfg (dict): Extra text setting, which accepts
                 arguments of :attr:`mmengine.Visualizer.draw_texts`.
@@ -100,6 +128,9 @@ class ClsVisualizer(Visualizer):
         classes = None
         if self.dataset_meta is not None:
             classes = self.dataset_meta.get('CLASSES', None)
+
+        if rescale_factor is not None:
+            image = mmcv.imrescale(image, rescale_factor)
 
         texts = []
         self.set_image(image)
@@ -134,8 +165,10 @@ class ClsVisualizer(Visualizer):
             prefix = 'Prediction: '
             texts.append(prefix + ('\n' + ' ' * len(prefix)).join(labels))
 
+        img_scale = _get_adaptive_scale(image.shape[:2])
         text_cfg = {
-            'positions': np.array([(5, 5)]),
+            'positions': np.array([(img_scale * 5, ) * 2]).astype(np.int32),
+            'font_sizes': int(img_scale * 7),
             'font_families': 'monospace',
             'colors': 'white',
             'bboxes': dict(facecolor='black', alpha=0.5, boxstyle='Round'),

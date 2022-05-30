@@ -94,5 +94,39 @@ class TestClsVisualizer(TestCase):
             self.vis.add_datasample(
                 'test', image=image, data_sample=data_sample)
 
+        # Test adaptive font size
+        def assert_font_size(target_size):
+
+            def draw_texts(text, font_sizes, *_, **__):
+                self.assertEqual(font_sizes, target_size)
+
+            return draw_texts
+
+        with patch.object(self.vis, 'draw_texts', assert_font_size(7)):
+            self.vis.add_datasample(
+                'test',
+                image=np.ones((224, 384, 3), np.uint8),
+                data_sample=data_sample)
+
+        with patch.object(self.vis, 'draw_texts', assert_font_size(2)):
+            self.vis.add_datasample(
+                'test',
+                image=np.ones((10, 384, 3), np.uint8),
+                data_sample=data_sample)
+
+        with patch.object(self.vis, 'draw_texts', assert_font_size(21)):
+            self.vis.add_datasample(
+                'test',
+                image=np.ones((1000, 1000, 3), np.uint8),
+                data_sample=data_sample)
+
+        # Test rescale image
+        with patch.object(self.vis, 'draw_texts', assert_font_size(14)):
+            self.vis.add_datasample(
+                'test',
+                image=np.ones((224, 384, 3), np.uint8),
+                rescale_factor=2.,
+                data_sample=data_sample)
+
     def tearDown(self):
         self.tmpdir.cleanup()

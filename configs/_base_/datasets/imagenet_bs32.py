@@ -1,40 +1,47 @@
 # dataset settings
 dataset_type = 'ImageNet'
-img_norm_cfg = dict(
-    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+
+# file_client_args = dict(
+#     backend='petrel',
+#     path_mapping=dict({
+#         './data/': 's3://openmmlab/datasets/classification/',
+#         'data/': 's3://openmmlab/datasets/classification/'
+#     }))
+
+file_client_args = dict(backend='disk')
+
 train_pipeline = [
-    dict(type='LoadImageFromFile'),
+    dict(type='LoadImageFromFile', file_client_args=file_client_args),
     dict(type='RandomResizedCrop', size=224),
-    dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='ImageToTensor', keys=['img']),
-    dict(type='ToTensor', keys=['gt_label']),
-    dict(type='Collect', keys=['img', 'gt_label'])
+    dict(type='RandomFlip', prob=0.5, direction='horizontal'),
+    dict(type='PackClsInputs')
 ]
 test_pipeline = [
-    dict(type='LoadImageFromFile'),
+    dict(type='LoadImageFromFile', file_client_args=file_client_args),
     dict(type='Resize', scale=(256, -1), keep_ratio=True),
     dict(type='CenterCrop', crop_size=224),
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='ImageToTensor', keys=['img']),
-    dict(type='Collect', keys=['img'])
+    dict(type='PackClsInputs')
 ]
-data = dict(
-    samples_per_gpu=32,
-    workers_per_gpu=2,
-    train=dict(
-        type=dataset_type,
-        data_prefix='data/imagenet/train',
-        pipeline=train_pipeline),
-    val=dict(
+
+train_dataloader = dict(
+    batch_size=32,
+    num_workers=2,
+    persistent_workers=True,
+    sampler=dict(type='DefaultSampler', shuffle=True),
+    dataset=dict(
         type=dataset_type,
         data_prefix='data/imagenet/val',
         ann_file='data/imagenet/meta/val.txt',
-        pipeline=test_pipeline),
-    test=dict(
-        # replace `data/val` with `data/test` for standard test
+        pipeline=train_pipeline))
+val_dataloader = dict(
+    batch_size=32,
+    num_workers=2,
+    persistent_workers=True,
+    dataset=dict(
         type=dataset_type,
         data_prefix='data/imagenet/val',
         ann_file='data/imagenet/meta/val.txt',
         pipeline=test_pipeline))
+test_dataloader = val_dataloader
+
 evaluation = dict(interval=1, metric='accuracy')

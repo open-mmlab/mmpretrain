@@ -27,6 +27,10 @@ env_cfg = dict(
     dist_cfg=dict(backend='nccl'),
 )
 
+vis_backends = [dict(type='LocalVisBackend')]
+visualizer = dict(
+    type='ClsVisualizer', vis_backends=vis_backends, name='visualizer')
+
 # Log level configuration
 log_level = 'INFO'
 
