@@ -1,27 +1,21 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import copy
 import inspect
-import random
+from copy import deepcopy
 from math import ceil
 from numbers import Number
-from typing import Sequence
+from typing import List, Optional, Tuple, Union
 
 import mmcv
 import numpy as np
+from mmcv import BaseTransform, RandomChoice
+from mmcv.transforms.utils import cache_randomness
+from mmengine import is_list_of, is_seq_of
 
 from mmcls.registry import TRANSFORMS
 from .compose import Compose
 
-# Default hyperparameters for all Ops
-_HPARAMS_DEFAULT = dict(pad_val=128)
 
-
-def random_negative(value, random_negative_prob):
-    """Randomly negate value based on random_negative_prob."""
-    return -value if np.random.rand() < random_negative_prob else value
-
-
-def merge_hparams(policy: dict, hparams: dict):
+def merge_hparams(policy: dict, hparams: dict) -> dict:
     """Merge hyperparameters into policy config.
 
     Only merge partial hyperparameters required of the policy.
@@ -33,66 +27,60 @@ def merge_hparams(policy: dict, hparams: dict):
     Returns:
         dict: Policy config dict after adding ``hparams``.
     """
+    policy = deepcopy(policy)
     op = TRANSFORMS.get(policy['type'])
     assert op is not None, f'Invalid policy type "{policy["type"]}".'
+
+    op_args = inspect.getfullargspec(op.__init__).args
     for key, value in hparams.items():
-        if policy.get(key, None) is not None:
-            continue
-        if key in inspect.getfullargspec(op.__init__).args:
+        if key in op_args and key not in policy:
             policy[key] = value
     return policy
 
 
 @TRANSFORMS.register_module()
-class AutoAugment(object):
+class AutoAugment(RandomChoice):
     """Auto augmentation.
 
     This data augmentation is proposed in `AutoAugment: Learning Augmentation
     Policies from Data <https://arxiv.org/abs/1805.09501>`_.
 
     Args:
-        policies (list[list[dict]]): The policies of auto augmentation. Each
-            policy in ``policies`` is a specific augmentation policy, and is
-            composed by several augmentations (dict). When AutoAugment is
+        policies (str | list[list[dict]]): The policies of auto augmentation.
+            Each policy in ``policies`` is a specific augmentation policy, and
+            is composed by several augmentations (dict). When AutoAugment is
             called, a random policy in ``policies`` will be selected to
             augment images.
         hparams (dict): Configs of hyperparameters. Hyperparameters will be
             used in policies that require these arguments if these arguments
-            are not set in policy dicts. Defaults to use _HPARAMS_DEFAULT.
+            are not set in policy dicts. Defaults to ``dict(pad_val=128)``.
     """
 
-    def __init__(self, policies, hparams=_HPARAMS_DEFAULT):
-        assert isinstance(policies, list) and len(policies) > 0, \
-            'Policies must be a non-empty list.'
-        for policy in policies:
-            assert isinstance(policy, list) and len(policy) > 0, \
-                'Each policy in policies must be a non-empty list.'
-            for augment in policy:
-                assert isinstance(augment, dict) and 'type' in augment, \
-                    'Each specific augmentation must be a dict with key' \
-                    ' "type".'
-
+    def __init__(self,
+                 policies: Union[str, List[List[dict]]],
+                 hparams: dict = dict(pad_val=128)):
+        if isinstance(policies, str):
+            assert policies in AUTOAUG_POLICIES, 'Invalid policies, ' \
+                f'please choose from {list(AUTOAUG_POLICIES.keys())}.'
+            policies = AUTOAUG_POLICIES[policies]
         self.hparams = hparams
-        policies = copy.deepcopy(policies)
-        self.policies = []
-        for sub in policies:
-            merged_sub = [merge_hparams(policy, hparams) for policy in sub]
-            self.policies.append(merged_sub)
+        self.policies = [[merge_hparams(t, hparams) for t in sub]
+                         for sub in policies]
 
-        self.sub_policy = [Compose(policy) for policy in self.policies]
+        super().__init__(transforms=self.policies)
 
-    def __call__(self, results):
-        sub_policy = random.choice(self.sub_policy)
-        return sub_policy(results)
+    def __repr__(self) -> str:
+        policies_str = ''
+        for sub in self.policies:
+            policies_str += '\n    ' + ', \t'.join([t['type'] for t in sub])
 
-    def __repr__(self):
         repr_str = self.__class__.__name__
-        repr_str += f'(policies={self.policies})'
+        repr_str += f'(policies:{policies_str}\n)'
         return repr_str
 
 
 @TRANSFORMS.register_module()
-class RandAugment(object):
+class RandAugment(BaseTransform):
     r"""Random augmentation.
 
     This data augmentation is proposed in `RandAugment: Practical automated
@@ -100,34 +88,38 @@ class RandAugment(object):
     <https://arxiv.org/abs/1909.13719>`_.
 
     Args:
-        policies (list[dict]): The policies of random augmentation. Each
+        policies (str | list[dict]): The policies of random augmentation. Each
             policy in ``policies`` is one specific augmentation policy (dict).
-            The policy shall at least have key `type`, indicating the type of
-            augmentation. For those which have magnitude, (given to the fact
-            they are named differently in different augmentation, )
-            `magnitude_key` and `magnitude_range` shall be the magnitude
-            argument (str) and the range of magnitude (tuple in the format of
-            (val1, val2)), respectively. Note that val1 is not necessarily
-            less than val2.
+            The policy shall should have these keys:
+
+            - ``type`` (str), The type of augmentation.
+            - ``magnitude_range`` (Sequence[number], optional): For those
+              augmentation have magnitude, you need to specify the magnitude
+              level mapping range. For example, assume ``total_level`` is 10,
+              ``magnitude_level=3`` specify magnitude is 3 if
+              ``magnitude_range=(0, 10)`` while specify magnitude is 7 if
+              ``magnitude_range=(10, 0)``.
+            - other keyword arguments of the augmentation.
+
         num_policies (int): Number of policies to select from policies each
             time.
         magnitude_level (int | float): Magnitude level for all the augmentation
             selected.
-        total_level (int | float): Total level for the magnitude. Defaults to
-            30.
         magnitude_std (Number | str): Deviation of magnitude noise applied.
 
-            - If positive number, magnitude is sampled from normal distribution
-              (mean=magnitude, std=magnitude_std).
+            - If positive number, the magnitude obeys normal distribution
+              :math:`\mathcal{N}(magnitude, magnitude_std)`.
             - If 0 or negative number, magnitude remains unchanged.
-            - If str "inf", magnitude is sampled from uniform distribution
-              (range=[min, magnitude]).
+            - If str "inf", the magnitude obeys uniform distribution
+              :math:`Uniform(min, magnitude)`.
+        total_level (int | float): Total level for the magnitude. Defaults to
+            10.
         hparams (dict): Configs of hyperparameters. Hyperparameters will be
             used in policies that require these arguments if these arguments
-            are not set in policy dicts. Defaults to use _HPARAMS_DEFAULT.
+            are not set in policy dicts. Defaults to ``dict(pad_val=128)``.
 
     Note:
-        `magnitude_std` will introduce some randomness to policy, modified by
+        ``magnitude_std`` will introduce some randomness to policy, modified by
         https://github.com/rwightman/pytorch-image-models.
 
         When magnitude_std=0, we calculate the magnitude as follows:
@@ -139,28 +131,25 @@ class RandAugment(object):
     """
 
     def __init__(self,
-                 policies,
-                 num_policies,
-                 magnitude_level,
-                 magnitude_std=0.,
-                 total_level=30,
-                 hparams=_HPARAMS_DEFAULT):
-        assert isinstance(num_policies, int), 'Number of policies must be ' \
-            f'of int type, got {type(num_policies)} instead.'
-        assert isinstance(magnitude_level, (int, float)), \
-            'Magnitude level must be of int or float type, ' \
-            f'got {type(magnitude_level)} instead.'
-        assert isinstance(total_level, (int, float)),  'Total level must be ' \
-            f'of int or float type, got {type(total_level)} instead.'
-        assert isinstance(policies, list) and len(policies) > 0, \
-            'Policies must be a non-empty list.'
+                 policies: Union[str, List[dict]],
+                 num_policies: int,
+                 magnitude_level: int,
+                 magnitude_std: Union[Number, str] = 0.,
+                 total_level: int = 10,
+                 hparams: dict = dict(pad_val=128)):
+        if isinstance(policies, str):
+            assert policies in RANDAUG_POLICIES, 'Invalid policies, ' \
+                f'please choose from {list(RANDAUG_POLICIES.keys())}.'
+            policies = RANDAUG_POLICIES[policies]
+
+        assert is_list_of(policies, dict), 'policies must be a list of dict.'
 
         assert isinstance(magnitude_std, (Number, str)), \
-            'Magnitude std must be of number or str type, ' \
+            '`magnitude_std` must be of number or str type, ' \
             f'got {type(magnitude_std)} instead.'
         if isinstance(magnitude_std, str):
             assert magnitude_std == 'inf', \
-                'Magnitude std must be of number or "inf", ' \
+                '`magnitude_std` must be of number or "inf", ' \
                 f'got "{magnitude_std}" instead.'
 
         assert num_policies > 0, 'num_policies must be greater than 0.'
@@ -172,72 +161,163 @@ class RandAugment(object):
         self.magnitude_std = magnitude_std
         self.total_level = total_level
         self.hparams = hparams
-        policies = copy.deepcopy(policies)
-        self._check_policies(policies)
-        self.policies = [merge_hparams(policy, hparams) for policy in policies]
+        self.policies = []
+        self.transforms = []
 
-    def _check_policies(self, policies):
+        randaug_cfg = dict(
+            magnitude_level=magnitude_level,
+            total_level=total_level,
+            magnitude_std=magnitude_std)
+
         for policy in policies:
-            assert isinstance(policy, dict) and 'type' in policy, \
-                'Each policy must be a dict with key "type".'
-            type_name = policy['type']
+            self._check_policy(policy)
+            policy = merge_hparams(policy, hparams)
+            policy.pop('magnitude_key', None)  # For backward compatibility
+            if 'magnitude_range' in policy:
+                policy.update(randaug_cfg)
+            self.policies.append(policy)
+            self.transforms.append(TRANSFORMS.build(policy))
 
-            magnitude_key = policy.get('magnitude_key', None)
-            if magnitude_key is not None:
-                assert 'magnitude_range' in policy, \
-                    f'RandAugment policy {type_name} needs `magnitude_range`.'
-                magnitude_range = policy['magnitude_range']
-                assert (isinstance(magnitude_range, Sequence)
-                        and len(magnitude_range) == 2), \
-                    f'`magnitude_range` of RandAugment policy {type_name} ' \
-                    f'should be a Sequence with two numbers.'
+    def __iter__(self):
+        """Iterate all transforms."""
+        return iter(self.transforms)
 
-    def _process_policies(self, policies):
-        processed_policies = []
-        for policy in policies:
-            processed_policy = copy.deepcopy(policy)
-            magnitude_key = processed_policy.pop('magnitude_key', None)
-            if magnitude_key is not None:
-                magnitude = self.magnitude_level
-                # if magnitude_std is positive number or 'inf', move
-                # magnitude_value randomly.
-                if self.magnitude_std == 'inf':
-                    magnitude = random.uniform(0, magnitude)
-                elif self.magnitude_std > 0:
-                    magnitude = random.gauss(magnitude, self.magnitude_std)
-                    magnitude = min(self.total_level, max(0, magnitude))
+    def _check_policy(self, policy):
+        """Check whether the sub-policy dict is available."""
+        assert isinstance(policy, dict) and 'type' in policy, \
+            'Each policy must be a dict with key "type".'
+        type_name = policy['type']
 
-                val1, val2 = processed_policy.pop('magnitude_range')
-                magnitude = (magnitude / self.total_level) * (val2 -
-                                                              val1) + val1
+        if 'magnitude_range' in policy:
+            magnitude_range = policy['magnitude_range']
+            assert is_seq_of(magnitude_range, Number), \
+                f'`magnitude_range` of RandAugment policy {type_name} ' \
+                'should be a sequence with two numbers.'
 
-                processed_policy.update({magnitude_key: magnitude})
-            processed_policies.append(processed_policy)
-        return processed_policies
+    @cache_randomness
+    def random_policy_indices(self) -> np.ndarray:
+        """Return the random chosen transform indices."""
+        indices = np.arange(len(self.policies))
+        return np.random.choice(indices, size=self.num_policies).tolist()
 
-    def __call__(self, results):
-        if self.num_policies == 0:
-            return results
-        sub_policy = random.choices(self.policies, k=self.num_policies)
-        sub_policy = self._process_policies(sub_policy)
-        sub_policy = Compose(sub_policy)
-        return sub_policy(results)
+    def transform(self, results: dict) -> Optional[dict]:
+        """Randomly choose a sub-policy to apply."""
 
-    def __repr__(self):
+        chosen_policies = [
+            self.transforms[i] for i in self.random_policy_indices()
+        ]
+
+        sub_pipeline = Compose(chosen_policies)
+        return sub_pipeline(results)
+
+    def __repr__(self) -> str:
+        policies_str = ''
+        for policy in self.policies:
+            policies_str += '\n    ' + f'{policy["type"]}'
+            if 'magnitude_range' in policy:
+                val1, val2 = policy['magnitude_range']
+                policies_str += f' ({val1}, {val2})'
+
         repr_str = self.__class__.__name__
-        repr_str += f'(policies={self.policies}, '
-        repr_str += f'num_policies={self.num_policies}, '
+        repr_str += f'(num_policies={self.num_policies}, '
         repr_str += f'magnitude_level={self.magnitude_level}, '
-        repr_str += f'total_level={self.total_level})'
+        repr_str += f'total_level={self.total_level}, '
+        repr_str += f'policies:{policies_str}\n)'
         return repr_str
 
 
+class AugTransform(BaseTransform):
+    r"""Augmentation transform for AutoAugment and RandAugment.
+
+    Args:
+        magnitude_level (int | float): Magnitude level.
+        magnitude_range (Sequence[number], optional): For augmentation have
+            magnitude argument, maybe "magnitude", "angle" or other, you can
+            specify the magnitude level mapping range to generate the magnitude
+            argument. For example, assume ``total_level`` is 10,
+            ``magnitude_level=3`` specify magnitude is 3 if
+            ``magnitude_range=(0, 10)`` while specify magnitude is 7 if
+            ``magnitude_range=(10, 0)``. Defaults to None.
+        magnitude_std (Number | str): Deviation of magnitude noise applied.
+
+            - If positive number, the magnitude obeys normal distribution
+              :math:`\mathcal{N}(magnitude, magnitude_std)`.
+            - If 0 or negative number, magnitude remains unchanged.
+            - If str "inf", the magnitude obeys uniform distribution
+              :math:`Uniform(min, magnitude)`.
+
+            Defaults to 0.
+        total_level (int | float): Total level for the magnitude. Defaults to
+            10.
+        prob (float): The probability for performing Shear therefore should be
+            in range [0, 1]. Defaults to 0.5.
+        random_negative_prob (float): The probability that turns the magnitude
+            negative, which should be in range [0,1]. Defaults to 0.
+    """
+
+    def __init__(self,
+                 magnitude_level: int = 10,
+                 magnitude_range: Tuple[float, float] = None,
+                 magnitude_std: Union[str, float] = 0.,
+                 total_level: int = 10,
+                 prob=0.5,
+                 random_negative_prob=0.5):
+        self.magnitude_level = magnitude_level
+        self.magnitude_range = magnitude_range
+        self.magnitude_std = magnitude_std
+        self.total_level = total_level
+        self.prob = prob
+        self.random_negative_prob = random_negative_prob
+
+    @cache_randomness
+    def random_disable(self):
+        """Randomly disable the transform."""
+        return np.random.rand() > self.prob
+
+    @cache_randomness
+    def random_magnitude(self):
+        """Randomly generate magnitude."""
+        magnitude = self.magnitude_level
+        # if magnitude_std is positive number or 'inf', move
+        # magnitude_value randomly.
+        if self.magnitude_std == 'inf':
+            magnitude = np.random.uniform(0, magnitude)
+        elif self.magnitude_std > 0:
+            magnitude = np.random.normal(magnitude, self.magnitude_std)
+            magnitude = np.clip(magnitude, 0, self.total_level)
+
+        val1, val2 = self.magnitude_range
+        magnitude = (magnitude / self.total_level) * (val2 - val1) + val1
+        return magnitude
+
+    @cache_randomness
+    def random_negative(self, value):
+        """Randomly negative the value."""
+        if np.random.rand() < self.random_negative_prob:
+            return -value
+        else:
+            return value
+
+    def extra_repr(self):
+        """Extra repr string when auto-generating magnitude is enabled."""
+        if self.magnitude_range is not None:
+            repr_str = f', magnitude_level={self.magnitude_level}, '
+            repr_str += f'magnitude_range={self.magnitude_range}, '
+            repr_str += f'magnitude_std={self.magnitude_std}, '
+            repr_str += f'total_level={self.total_level}, '
+            return repr_str
+        else:
+            return ''
+
+
 @TRANSFORMS.register_module()
-class Shear(object):
+class Shear(AugTransform):
     """Shear images.
 
     Args:
-        magnitude (int | float): The magnitude used for shear.
+        magnitude (int | float | None): The magnitude used for shear. If None,
+            generate from ``magnitude_range``, see :class:`AugTransform`.
+            Defaults to None.
         pad_val (int, Sequence[int]): Pixel pad_val value for constant fill.
             If a sequence of length 3, it is used to pad_val R, G, B channels
             respectively. Defaults to 128.
@@ -249,53 +329,50 @@ class Shear(object):
             negative, which should be in range [0,1]. Defaults to 0.5.
         interpolation (str): Interpolation method. Options are 'nearest',
             'bilinear', 'bicubic', 'area', 'lanczos'. Defaults to 'bicubic'.
+        **kwargs: Other keyword arguments of :class:`AugTransform`.
     """
 
     def __init__(self,
-                 magnitude,
+                 magnitude=None,
                  pad_val=128,
                  prob=0.5,
                  direction='horizontal',
                  random_negative_prob=0.5,
-                 interpolation='bicubic'):
-        assert isinstance(magnitude, (int, float)), 'The magnitude type must '\
-            f'be int or float, but got {type(magnitude)} instead.'
-        if isinstance(pad_val, int):
-            pad_val = tuple([pad_val] * 3)
-        elif isinstance(pad_val, Sequence):
-            assert len(pad_val) == 3, 'pad_val as a tuple must have 3 ' \
-                f'elements, got {len(pad_val)} instead.'
-            assert all(isinstance(i, int) for i in pad_val), 'pad_val as a '\
-                'tuple must got elements of int type.'
-        else:
-            raise TypeError('pad_val must be int or tuple with 3 elements.')
-        assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
-            f'got {prob} instead.'
-        assert direction in ('horizontal', 'vertical'), 'direction must be ' \
-            f'either "horizontal" or "vertical", got {direction} instead.'
-        assert 0 <= random_negative_prob <= 1.0, 'The random_negative_prob ' \
-            f'should be in range [0,1], got {random_negative_prob} instead.'
+                 interpolation='bicubic',
+                 **kwargs):
+        super().__init__(
+            prob=prob, random_negative_prob=random_negative_prob, **kwargs)
+        assert (magnitude is None) ^ (self.magnitude_range is None), \
+            'Please specify only one of `magnitude` and `magnitude_range`.'
 
         self.magnitude = magnitude
-        self.pad_val = tuple(pad_val)
-        self.prob = prob
+        self.pad_val = pad_val
+
+        assert direction in ('horizontal', 'vertical'), 'direction must be ' \
+            f'either "horizontal" or "vertical", got "{direction}" instead.'
         self.direction = direction
-        self.random_negative_prob = random_negative_prob
+
         self.interpolation = interpolation
 
-    def __call__(self, results):
-        if np.random.rand() > self.prob:
+    def transform(self, results):
+        """Apply transform to results."""
+        if self.random_disable():
             return results
-        magnitude = random_negative(self.magnitude, self.random_negative_prob)
-        for key in results.get('img_fields', ['img']):
-            img = results[key]
-            img_sheared = mmcv.imshear(
-                img,
-                magnitude,
-                direction=self.direction,
-                border_value=self.pad_val,
-                interpolation=self.interpolation)
-            results[key] = img_sheared.astype(img.dtype)
+
+        if self.magnitude is not None:
+            magnitude = self.random_negative(self.magnitude)
+        else:
+            magnitude = self.random_negative(self.random_magnitude())
+
+        img = results['img']
+        img_sheared = mmcv.imshear(
+            img,
+            magnitude,
+            direction=self.direction,
+            border_value=self.pad_val,
+            interpolation=self.interpolation)
+        results['img'] = img_sheared.astype(img.dtype)
+
         return results
 
     def __repr__(self):
@@ -305,19 +382,20 @@ class Shear(object):
         repr_str += f'prob={self.prob}, '
         repr_str += f'direction={self.direction}, '
         repr_str += f'random_negative_prob={self.random_negative_prob}, '
-        repr_str += f'interpolation={self.interpolation})'
+        repr_str += f'interpolation={self.interpolation}{self.extra_repr()})'
         return repr_str
 
 
 @TRANSFORMS.register_module()
-class Translate(object):
+class Translate(AugTransform):
     """Translate images.
 
     Args:
-        magnitude (int | float): The magnitude used for translate. Note that
-            the offset is calculated by magnitude * size in the corresponding
-            direction. With a magnitude of 1, the whole image will be moved out
-            of the range.
+        magnitude (int | float | None): The magnitude used for translate. Note
+            that the offset is calculated by magnitude * size in the
+            corresponding direction. With a magnitude of 1, the whole image
+            will be moved out of the range. If None, generate from
+            ``magnitude_range``, see :class:`AugTransform`.
         pad_val (int, Sequence[int]): Pixel pad_val value for constant fill.
             If a sequence of length 3, it is used to pad_val R, G, B channels
             respectively. Defaults to 128.
@@ -329,58 +407,55 @@ class Translate(object):
             negative, which should be in range [0,1]. Defaults to 0.5.
         interpolation (str): Interpolation method. Options are 'nearest',
             'bilinear', 'bicubic', 'area', 'lanczos'. Defaults to 'nearest'.
+        **kwargs: Other keyword arguments of :class:`AugTransform`.
     """
 
     def __init__(self,
-                 magnitude,
+                 magnitude=None,
                  pad_val=128,
                  prob=0.5,
                  direction='horizontal',
                  random_negative_prob=0.5,
-                 interpolation='nearest'):
-        assert isinstance(magnitude, (int, float)), 'The magnitude type must '\
-            f'be int or float, but got {type(magnitude)} instead.'
-        if isinstance(pad_val, int):
-            pad_val = tuple([pad_val] * 3)
-        elif isinstance(pad_val, Sequence):
-            assert len(pad_val) == 3, 'pad_val as a tuple must have 3 ' \
-                f'elements, got {len(pad_val)} instead.'
-            assert all(isinstance(i, int) for i in pad_val), 'pad_val as a '\
-                'tuple must got elements of int type.'
-        else:
-            raise TypeError('pad_val must be int or tuple with 3 elements.')
-        assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
-            f'got {prob} instead.'
-        assert direction in ('horizontal', 'vertical'), 'direction must be ' \
-            f'either "horizontal" or "vertical", got {direction} instead.'
-        assert 0 <= random_negative_prob <= 1.0, 'The random_negative_prob ' \
-            f'should be in range [0,1], got {random_negative_prob} instead.'
+                 interpolation='nearest',
+                 **kwargs):
+        super().__init__(
+            prob=prob, random_negative_prob=random_negative_prob, **kwargs)
+        assert (magnitude is None) ^ (self.magnitude_range is None), \
+            'Please specify only one of `magnitude` and `magnitude_range`.'
 
         self.magnitude = magnitude
-        self.pad_val = tuple(pad_val)
-        self.prob = prob
+        self.pad_val = pad_val
+
+        assert direction in ('horizontal', 'vertical'), 'direction must be ' \
+            f'either "horizontal" or "vertical", got "{direction}" instead.'
         self.direction = direction
-        self.random_negative_prob = random_negative_prob
+
         self.interpolation = interpolation
 
-    def __call__(self, results):
-        if np.random.rand() > self.prob:
+    def transform(self, results):
+        """Apply transform to results."""
+        if self.random_disable():
             return results
-        magnitude = random_negative(self.magnitude, self.random_negative_prob)
-        for key in results.get('img_fields', ['img']):
-            img = results[key]
-            height, width = img.shape[:2]
-            if self.direction == 'horizontal':
-                offset = magnitude * width
-            else:
-                offset = magnitude * height
-            img_translated = mmcv.imtranslate(
-                img,
-                offset,
-                direction=self.direction,
-                border_value=self.pad_val,
-                interpolation=self.interpolation)
-            results[key] = img_translated.astype(img.dtype)
+
+        if self.magnitude is not None:
+            magnitude = self.random_negative(self.magnitude)
+        else:
+            magnitude = self.random_negative(self.random_magnitude())
+
+        img = results['img']
+        height, width = img.shape[:2]
+        if self.direction == 'horizontal':
+            offset = magnitude * width
+        else:
+            offset = magnitude * height
+        img_translated = mmcv.imtranslate(
+            img,
+            offset,
+            direction=self.direction,
+            border_value=self.pad_val,
+            interpolation=self.interpolation)
+        results['img'] = img_translated.astype(img.dtype)
+
         return results
 
     def __repr__(self):
@@ -390,17 +465,18 @@ class Translate(object):
         repr_str += f'prob={self.prob}, '
         repr_str += f'direction={self.direction}, '
         repr_str += f'random_negative_prob={self.random_negative_prob}, '
-        repr_str += f'interpolation={self.interpolation})'
+        repr_str += f'interpolation={self.interpolation}{self.extra_repr()})'
         return repr_str
 
 
 @TRANSFORMS.register_module()
-class Rotate(object):
+class Rotate(AugTransform):
     """Rotate images.
 
     Args:
-        angle (float): The angle used for rotate. Positive values stand for
-            clockwise rotation.
+        angle (float, optional): The angle used for rotate. Positive values
+            stand for clockwise rotation. If None, generate from
+            ``magnitude_range``, see :class:`AugTransform`. Defaults to None.
         center (tuple[float], optional): Center point (w, h) of the rotation in
             the source image. If None, the center of the image will be used.
             Defaults to None.
@@ -414,62 +490,50 @@ class Rotate(object):
             negative, which should be in range [0,1]. Defaults to 0.5.
         interpolation (str): Interpolation method. Options are 'nearest',
             'bilinear', 'bicubic', 'area', 'lanczos'. Defaults to 'nearest'.
+        **kwargs: Other keyword arguments of :class:`AugTransform`.
     """
 
     def __init__(self,
-                 angle,
+                 angle=None,
                  center=None,
                  scale=1.0,
                  pad_val=128,
                  prob=0.5,
                  random_negative_prob=0.5,
-                 interpolation='nearest'):
-        assert isinstance(angle, float), 'The angle type must be float, but ' \
-            f'got {type(angle)} instead.'
-        if isinstance(center, tuple):
-            assert len(center) == 2, 'center as a tuple must have 2 ' \
-                f'elements, got {len(center)} elements instead.'
-        else:
-            assert center is None, 'The center type' \
-                f'must be tuple or None, got {type(center)} instead.'
-        assert isinstance(scale, float), 'the scale type must be float, but ' \
-            f'got {type(scale)} instead.'
-        if isinstance(pad_val, int):
-            pad_val = tuple([pad_val] * 3)
-        elif isinstance(pad_val, Sequence):
-            assert len(pad_val) == 3, 'pad_val as a tuple must have 3 ' \
-                f'elements, got {len(pad_val)} instead.'
-            assert all(isinstance(i, int) for i in pad_val), 'pad_val as a '\
-                'tuple must got elements of int type.'
-        else:
-            raise TypeError('pad_val must be int or tuple with 3 elements.')
-        assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
-            f'got {prob} instead.'
-        assert 0 <= random_negative_prob <= 1.0, 'The random_negative_prob ' \
-            f'should be in range [0,1], got {random_negative_prob} instead.'
+                 interpolation='nearest',
+                 **kwargs):
+        super().__init__(
+            prob=prob, random_negative_prob=random_negative_prob, **kwargs)
+        assert (angle is None) ^ (self.magnitude_range is None), \
+            'Please specify only one of `angle` and `magnitude_range`.'
 
         self.angle = angle
         self.center = center
         self.scale = scale
-        self.pad_val = tuple(pad_val)
-        self.prob = prob
-        self.random_negative_prob = random_negative_prob
+        self.pad_val = pad_val
+
         self.interpolation = interpolation
 
-    def __call__(self, results):
-        if np.random.rand() > self.prob:
+    def transform(self, results):
+        """Apply transform to results."""
+        if self.random_disable():
             return results
-        angle = random_negative(self.angle, self.random_negative_prob)
-        for key in results.get('img_fields', ['img']):
-            img = results[key]
-            img_rotated = mmcv.imrotate(
-                img,
-                angle,
-                center=self.center,
-                scale=self.scale,
-                border_value=self.pad_val,
-                interpolation=self.interpolation)
-            results[key] = img_rotated.astype(img.dtype)
+
+        if self.angle is not None:
+            angle = self.random_negative(self.angle)
+        else:
+            angle = self.random_negative(self.random_magnitude())
+
+        img = results['img']
+        img_rotated = mmcv.imrotate(
+            img,
+            angle,
+            center=self.center,
+            scale=self.scale,
+            border_value=self.pad_val,
+            interpolation=self.interpolation)
+        results['img'] = img_rotated.astype(img.dtype)
+
         return results
 
     def __repr__(self):
@@ -480,32 +544,32 @@ class Rotate(object):
         repr_str += f'pad_val={self.pad_val}, '
         repr_str += f'prob={self.prob}, '
         repr_str += f'random_negative_prob={self.random_negative_prob}, '
-        repr_str += f'interpolation={self.interpolation})'
+        repr_str += f'interpolation={self.interpolation}{self.extra_repr()})'
         return repr_str
 
 
 @TRANSFORMS.register_module()
-class AutoContrast(object):
+class AutoContrast(AugTransform):
     """Auto adjust image contrast.
 
     Args:
         prob (float): The probability for performing invert therefore should
              be in range [0, 1]. Defaults to 0.5.
+        **kwargs: Other keyword arguments of :class:`AugTransform`.
     """
 
-    def __init__(self, prob=0.5):
-        assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
-            f'got {prob} instead.'
+    def __init__(self, prob=0.5, **kwargs):
+        super().__init__(prob=prob, **kwargs)
 
-        self.prob = prob
-
-    def __call__(self, results):
-        if np.random.rand() > self.prob:
+    def transform(self, results):
+        """Apply transform to results."""
+        if self.random_disable():
             return results
-        for key in results.get('img_fields', ['img']):
-            img = results[key]
-            img_contrasted = mmcv.auto_contrast(img)
-            results[key] = img_contrasted.astype(img.dtype)
+
+        img = results['img']
+        img_contrasted = mmcv.auto_contrast(img)
+        results['img'] = img_contrasted.astype(img.dtype)
+
         return results
 
     def __repr__(self):
@@ -515,27 +579,27 @@ class AutoContrast(object):
 
 
 @TRANSFORMS.register_module()
-class Invert(object):
+class Invert(AugTransform):
     """Invert images.
 
     Args:
         prob (float): The probability for performing invert therefore should
              be in range [0, 1]. Defaults to 0.5.
+        **kwargs: Other keyword arguments of :class:`AugTransform`.
     """
 
-    def __init__(self, prob=0.5):
-        assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
-            f'got {prob} instead.'
+    def __init__(self, prob=0.5, **kwargs):
+        super().__init__(prob=prob, **kwargs)
 
-        self.prob = prob
-
-    def __call__(self, results):
-        if np.random.rand() > self.prob:
+    def transform(self, results):
+        """Apply transform to results."""
+        if self.random_disable():
             return results
-        for key in results.get('img_fields', ['img']):
-            img = results[key]
-            img_inverted = mmcv.iminvert(img)
-            results[key] = img_inverted.astype(img.dtype)
+
+        img = results['img']
+        img_inverted = mmcv.iminvert(img)
+        results['img'] = img_inverted.astype(img.dtype)
+
         return results
 
     def __repr__(self):
@@ -545,27 +609,27 @@ class Invert(object):
 
 
 @TRANSFORMS.register_module()
-class Equalize(object):
+class Equalize(AugTransform):
     """Equalize the image histogram.
 
     Args:
         prob (float): The probability for performing invert therefore should
              be in range [0, 1]. Defaults to 0.5.
+        **kwargs: Other keyword arguments of :class:`AugTransform`.
     """
 
-    def __init__(self, prob=0.5):
-        assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
-            f'got {prob} instead.'
+    def __init__(self, prob=0.5, **kwargs):
+        super().__init__(prob=prob, **kwargs)
 
-        self.prob = prob
-
-    def __call__(self, results):
-        if np.random.rand() > self.prob:
+    def transform(self, results):
+        """Apply transform to results."""
+        if self.random_disable():
             return results
-        for key in results.get('img_fields', ['img']):
-            img = results[key]
-            img_equalized = mmcv.imequalize(img)
-            results[key] = img_equalized.astype(img.dtype)
+
+        img = results['img']
+        img_equalized = mmcv.imequalize(img)
+        results['img'] = img_equalized.astype(img.dtype)
+
         return results
 
     def __repr__(self):
@@ -575,347 +639,463 @@ class Equalize(object):
 
 
 @TRANSFORMS.register_module()
-class Solarize(object):
+class Solarize(AugTransform):
     """Solarize images (invert all pixel values above a threshold).
 
     Args:
-        thr (int | float): The threshold above which the pixels value will be
-            inverted.
+        thr (int | float | None): The threshold above which the pixels value
+            will be inverted. If None, generate from ``magnitude_range``,
+            see :class:`AugTransform`. Defaults to None.
         prob (float): The probability for solarizing therefore should be in
             range [0, 1]. Defaults to 0.5.
+        **kwargs: Other keyword arguments of :class:`AugTransform`.
     """
 
-    def __init__(self, thr, prob=0.5):
-        assert isinstance(thr, (int, float)), 'The thr type must '\
-            f'be int or float, but got {type(thr)} instead.'
-        assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
-            f'got {prob} instead.'
+    def __init__(self, thr=None, prob=0.5, **kwargs):
+        super().__init__(prob=prob, random_negative_prob=0., **kwargs)
+        assert (thr is None) ^ (self.magnitude_range is None), \
+            'Please specify only one of `thr` and `magnitude_range`.'
 
         self.thr = thr
-        self.prob = prob
 
-    def __call__(self, results):
-        if np.random.rand() > self.prob:
+    def transform(self, results):
+        """Apply transform to results."""
+        if self.random_disable():
             return results
-        for key in results.get('img_fields', ['img']):
-            img = results[key]
-            img_solarized = mmcv.solarize(img, thr=self.thr)
-            results[key] = img_solarized.astype(img.dtype)
+
+        if self.thr is not None:
+            thr = self.thr
+        else:
+            thr = self.random_magnitude()
+
+        img = results['img']
+        img_solarized = mmcv.solarize(img, thr=thr)
+        results['img'] = img_solarized.astype(img.dtype)
+
         return results
 
     def __repr__(self):
         repr_str = self.__class__.__name__
         repr_str += f'(thr={self.thr}, '
-        repr_str += f'prob={self.prob})'
+        repr_str += f'prob={self.prob}{self.extra_repr()}))'
         return repr_str
 
 
 @TRANSFORMS.register_module()
-class SolarizeAdd(object):
+class SolarizeAdd(AugTransform):
     """SolarizeAdd images (add a certain value to pixels below a threshold).
 
     Args:
-        magnitude (int | float): The value to be added to pixels below the thr.
+        magnitude (int | float | None): The value to be added to pixels below
+            the thr. If None, generate from ``magnitude_range``, see
+            :class:`AugTransform`. Defaults to None.
         thr (int | float): The threshold below which the pixels value will be
             adjusted.
         prob (float): The probability for solarizing therefore should be in
             range [0, 1]. Defaults to 0.5.
+        **kwargs: Other keyword arguments of :class:`AugTransform`.
     """
 
-    def __init__(self, magnitude, thr=128, prob=0.5):
-        assert isinstance(magnitude, (int, float)), 'The thr magnitude must '\
-            f'be int or float, but got {type(magnitude)} instead.'
-        assert isinstance(thr, (int, float)), 'The thr type must '\
-            f'be int or float, but got {type(thr)} instead.'
-        assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
-            f'got {prob} instead.'
+    def __init__(self, magnitude=None, thr=128, prob=0.5, **kwargs):
+        super().__init__(prob=prob, random_negative_prob=0., **kwargs)
+        assert (magnitude is None) ^ (self.magnitude_range is None), \
+            'Please specify only one of `magnitude` and `magnitude_range`.'
 
         self.magnitude = magnitude
-        self.thr = thr
-        self.prob = prob
 
-    def __call__(self, results):
-        if np.random.rand() > self.prob:
+        assert isinstance(thr, (int, float)), 'The thr type must '\
+            f'be int or float, but got {type(thr)} instead.'
+        self.thr = thr
+
+    def transform(self, results):
+        """Apply transform to results."""
+        if self.random_disable():
             return results
-        for key in results.get('img_fields', ['img']):
-            img = results[key]
-            img_solarized = np.where(img < self.thr,
-                                     np.minimum(img + self.magnitude, 255),
-                                     img)
-            results[key] = img_solarized.astype(img.dtype)
+
+        if self.magnitude is not None:
+            magnitude = self.magnitude
+        else:
+            magnitude = self.random_magnitude()
+
+        img = results['img']
+        img_solarized = np.where(img < self.thr,
+                                 np.minimum(img + magnitude, 255), img)
+        results['img'] = img_solarized.astype(img.dtype)
+
         return results
 
     def __repr__(self):
         repr_str = self.__class__.__name__
         repr_str += f'(magnitude={self.magnitude}, '
         repr_str += f'thr={self.thr}, '
-        repr_str += f'prob={self.prob})'
+        repr_str += f'prob={self.prob}{self.extra_repr()})'
         return repr_str
 
 
 @TRANSFORMS.register_module()
-class Posterize(object):
+class Posterize(AugTransform):
     """Posterize images (reduce the number of bits for each color channel).
 
     Args:
-        bits (int | float): Number of bits for each pixel in the output img,
-            which should be less or equal to 8.
+        bits (int, optional): Number of bits for each pixel in the output img,
+            which should be less or equal to 8. If None, generate from
+            ``magnitude_range``, see :class:`AugTransform`. Defaults to None.
         prob (float): The probability for posterizing therefore should be in
             range [0, 1]. Defaults to 0.5.
+        **kwargs: Other keyword arguments of :class:`AugTransform`.
     """
 
-    def __init__(self, bits, prob=0.5):
-        assert bits <= 8, f'The bits must be less than 8, got {bits} instead.'
-        assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
-            f'got {prob} instead.'
+    def __init__(self, bits=None, prob=0.5, **kwargs):
+        super().__init__(prob=prob, random_negative_prob=0., **kwargs)
+        assert (bits is None) ^ (self.magnitude_range is None), \
+            'Please specify only one of `bits` and `magnitude_range`.'
+
+        if bits is not None:
+            assert bits <= 8, \
+                f'The bits must be less than 8, got {bits} instead.'
+        self.bits = bits
+
+    def transform(self, results):
+        """Apply transform to results."""
+        if self.random_disable():
+            return results
+
+        if self.bits is not None:
+            bits = self.bits
+        else:
+            bits = self.random_magnitude()
 
         # To align timm version, we need to round up to integer here.
-        self.bits = ceil(bits)
-        self.prob = prob
+        bits = ceil(bits)
 
-    def __call__(self, results):
-        if np.random.rand() > self.prob:
-            return results
-        for key in results.get('img_fields', ['img']):
-            img = results[key]
-            img_posterized = mmcv.posterize(img, bits=self.bits)
-            results[key] = img_posterized.astype(img.dtype)
+        img = results['img']
+        img_posterized = mmcv.posterize(img, bits=bits)
+        results['img'] = img_posterized.astype(img.dtype)
+
         return results
 
     def __repr__(self):
         repr_str = self.__class__.__name__
         repr_str += f'(bits={self.bits}, '
-        repr_str += f'prob={self.prob})'
+        repr_str += f'prob={self.prob}{self.extra_repr()})'
         return repr_str
 
 
 @TRANSFORMS.register_module()
-class Contrast(object):
+class Contrast(AugTransform):
     """Adjust images contrast.
 
     Args:
-        magnitude (int | float): The magnitude used for adjusting contrast. A
-            positive magnitude would enhance the contrast and a negative
-            magnitude would make the image grayer. A magnitude=0 gives the
-            origin img.
+        magnitude (int | float | None): The magnitude used for adjusting
+            contrast. A positive magnitude would enhance the contrast and
+            a negative magnitude would make the image grayer. A magnitude=0
+            gives the origin img. If None, generate from ``magnitude_range``,
+            see :class:`AugTransform`. Defaults to None.
         prob (float): The probability for performing contrast adjusting
             therefore should be in range [0, 1]. Defaults to 0.5.
         random_negative_prob (float): The probability that turns the magnitude
             negative, which should be in range [0,1]. Defaults to 0.5.
     """
 
-    def __init__(self, magnitude, prob=0.5, random_negative_prob=0.5):
-        assert isinstance(magnitude, (int, float)), 'The magnitude type must '\
-            f'be int or float, but got {type(magnitude)} instead.'
-        assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
-            f'got {prob} instead.'
-        assert 0 <= random_negative_prob <= 1.0, 'The random_negative_prob ' \
-            f'should be in range [0,1], got {random_negative_prob} instead.'
+    def __init__(self,
+                 magnitude=None,
+                 prob=0.5,
+                 random_negative_prob=0.5,
+                 **kwargs):
+        super().__init__(
+            prob=prob, random_negative_prob=random_negative_prob, **kwargs)
+        assert (magnitude is None) ^ (self.magnitude_range is None), \
+            'Please specify only one of `magnitude` and `magnitude_range`.'
 
         self.magnitude = magnitude
-        self.prob = prob
-        self.random_negative_prob = random_negative_prob
 
-    def __call__(self, results):
-        if np.random.rand() > self.prob:
+    def transform(self, results):
+        """Apply transform to results."""
+        if self.random_disable():
             return results
-        magnitude = random_negative(self.magnitude, self.random_negative_prob)
-        for key in results.get('img_fields', ['img']):
-            img = results[key]
-            img_contrasted = mmcv.adjust_contrast(img, factor=1 + magnitude)
-            results[key] = img_contrasted.astype(img.dtype)
+
+        if self.magnitude is not None:
+            magnitude = self.random_negative(self.magnitude)
+        else:
+            magnitude = self.random_negative(self.random_magnitude())
+
+        img = results['img']
+        img_contrasted = mmcv.adjust_contrast(img, factor=1 + magnitude)
+        results['img'] = img_contrasted.astype(img.dtype)
+
         return results
 
     def __repr__(self):
         repr_str = self.__class__.__name__
         repr_str += f'(magnitude={self.magnitude}, '
         repr_str += f'prob={self.prob}, '
-        repr_str += f'random_negative_prob={self.random_negative_prob})'
+        repr_str += f'random_negative_prob={self.random_negative_prob}'
+        repr_str += f'{self.extra_repr()})'
         return repr_str
 
 
 @TRANSFORMS.register_module()
-class ColorTransform(object):
+class ColorTransform(AugTransform):
     """Adjust images color balance.
 
     Args:
-        magnitude (int | float): The magnitude used for color transform. A
-            positive magnitude would enhance the color and a negative magnitude
-            would make the image grayer. A magnitude=0 gives the origin img.
+        magnitude (int | float | None): The magnitude used for color transform.
+            A positive magnitude would enhance the color and a negative
+            magnitude would make the image grayer. A magnitude=0 gives the
+            origin img. If None, generate from ``magnitude_range``, see
+            :class:`AugTransform`. Defaults to None.
         prob (float): The probability for performing ColorTransform therefore
             should be in range [0, 1]. Defaults to 0.5.
         random_negative_prob (float): The probability that turns the magnitude
             negative, which should be in range [0,1]. Defaults to 0.5.
+        **kwargs: Other keyword arguments of :class:`AugTransform`.
     """
 
-    def __init__(self, magnitude, prob=0.5, random_negative_prob=0.5):
-        assert isinstance(magnitude, (int, float)), 'The magnitude type must '\
-            f'be int or float, but got {type(magnitude)} instead.'
-        assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
-            f'got {prob} instead.'
-        assert 0 <= random_negative_prob <= 1.0, 'The random_negative_prob ' \
-            f'should be in range [0,1], got {random_negative_prob} instead.'
+    def __init__(self,
+                 magnitude=None,
+                 prob=0.5,
+                 random_negative_prob=0.5,
+                 **kwargs):
+        super().__init__(
+            prob=prob, random_negative_prob=random_negative_prob, **kwargs)
+        assert (magnitude is None) ^ (self.magnitude_range is None), \
+            'Please specify only one of `magnitude` and `magnitude_range`.'
 
         self.magnitude = magnitude
-        self.prob = prob
-        self.random_negative_prob = random_negative_prob
 
-    def __call__(self, results):
-        if np.random.rand() > self.prob:
+    def transform(self, results):
+        """Apply transform to results."""
+        if self.random_disable():
             return results
-        magnitude = random_negative(self.magnitude, self.random_negative_prob)
-        for key in results.get('img_fields', ['img']):
-            img = results[key]
-            img_color_adjusted = mmcv.adjust_color(img, alpha=1 + magnitude)
-            results[key] = img_color_adjusted.astype(img.dtype)
+
+        if self.magnitude is not None:
+            magnitude = self.random_negative(self.magnitude)
+        else:
+            magnitude = self.random_negative(self.random_magnitude())
+
+        img = results['img']
+        img_color_adjusted = mmcv.adjust_color(img, alpha=1 + magnitude)
+        results['img'] = img_color_adjusted.astype(img.dtype)
+
         return results
 
     def __repr__(self):
         repr_str = self.__class__.__name__
         repr_str += f'(magnitude={self.magnitude}, '
         repr_str += f'prob={self.prob}, '
-        repr_str += f'random_negative_prob={self.random_negative_prob})'
+        repr_str += f'random_negative_prob={self.random_negative_prob}'
+        repr_str += f'{self.extra_repr()})'
         return repr_str
 
 
 @TRANSFORMS.register_module()
-class Brightness(object):
+class Brightness(AugTransform):
     """Adjust images brightness.
 
     Args:
-        magnitude (int | float): The magnitude used for adjusting brightness. A
-            positive magnitude would enhance the brightness and a negative
-            magnitude would make the image darker. A magnitude=0 gives the
-            origin img.
+        magnitude (int | float | None): The magnitude used for adjusting
+            brightness. A positive magnitude would enhance the brightness and a
+            negative magnitude would make the image darker. A magnitude=0 gives
+            the origin img. If None, generate from ``magnitude_range``, see
+            :class:`AugTransform`. Defaults to None.
         prob (float): The probability for performing contrast adjusting
             therefore should be in range [0, 1]. Defaults to 0.5.
         random_negative_prob (float): The probability that turns the magnitude
             negative, which should be in range [0,1]. Defaults to 0.5.
+        **kwargs: Other keyword arguments of :class:`AugTransform`.
     """
 
-    def __init__(self, magnitude, prob=0.5, random_negative_prob=0.5):
-        assert isinstance(magnitude, (int, float)), 'The magnitude type must '\
-            f'be int or float, but got {type(magnitude)} instead.'
-        assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
-            f'got {prob} instead.'
-        assert 0 <= random_negative_prob <= 1.0, 'The random_negative_prob ' \
-            f'should be in range [0,1], got {random_negative_prob} instead.'
+    def __init__(self,
+                 magnitude=None,
+                 prob=0.5,
+                 random_negative_prob=0.5,
+                 **kwargs):
+        super().__init__(
+            prob=prob, random_negative_prob=random_negative_prob, **kwargs)
+        assert (magnitude is None) ^ (self.magnitude_range is None), \
+            'Please specify only one of `magnitude` and `magnitude_range`.'
 
         self.magnitude = magnitude
-        self.prob = prob
-        self.random_negative_prob = random_negative_prob
 
-    def __call__(self, results):
-        if np.random.rand() > self.prob:
+    def transform(self, results):
+        """Apply transform to results."""
+        if self.random_disable():
             return results
-        magnitude = random_negative(self.magnitude, self.random_negative_prob)
-        for key in results.get('img_fields', ['img']):
-            img = results[key]
-            img_brightened = mmcv.adjust_brightness(img, factor=1 + magnitude)
-            results[key] = img_brightened.astype(img.dtype)
+
+        if self.magnitude is not None:
+            magnitude = self.random_negative(self.magnitude)
+        else:
+            magnitude = self.random_negative(self.random_magnitude())
+
+        img = results['img']
+        img_brightened = mmcv.adjust_brightness(img, factor=1 + magnitude)
+        results['img'] = img_brightened.astype(img.dtype)
+
         return results
 
     def __repr__(self):
         repr_str = self.__class__.__name__
         repr_str += f'(magnitude={self.magnitude}, '
         repr_str += f'prob={self.prob}, '
-        repr_str += f'random_negative_prob={self.random_negative_prob})'
+        repr_str += f'random_negative_prob={self.random_negative_prob}'
+        repr_str += f'{self.extra_repr()})'
         return repr_str
 
 
 @TRANSFORMS.register_module()
-class Sharpness(object):
+class Sharpness(AugTransform):
     """Adjust images sharpness.
 
     Args:
-        magnitude (int | float): The magnitude used for adjusting sharpness. A
-            positive magnitude would enhance the sharpness and a negative
-            magnitude would make the image bulr. A magnitude=0 gives the
-            origin img.
+        magnitude (int | float | None): The magnitude used for adjusting
+            sharpness. A positive magnitude would enhance the sharpness and a
+            negative magnitude would make the image bulr. A magnitude=0 gives
+            the origin img. If None, generate from ``magnitude_range``, see
+            :class:`AugTransform`. Defaults to None.
         prob (float): The probability for performing contrast adjusting
             therefore should be in range [0, 1]. Defaults to 0.5.
         random_negative_prob (float): The probability that turns the magnitude
             negative, which should be in range [0,1]. Defaults to 0.5.
+        **kwargs: Other keyword arguments of :class:`AugTransform`.
     """
 
-    def __init__(self, magnitude, prob=0.5, random_negative_prob=0.5):
-        assert isinstance(magnitude, (int, float)), 'The magnitude type must '\
-            f'be int or float, but got {type(magnitude)} instead.'
-        assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
-            f'got {prob} instead.'
-        assert 0 <= random_negative_prob <= 1.0, 'The random_negative_prob ' \
-            f'should be in range [0,1], got {random_negative_prob} instead.'
+    def __init__(self,
+                 magnitude=None,
+                 prob=0.5,
+                 random_negative_prob=0.5,
+                 **kwargs):
+        super().__init__(
+            prob=prob, random_negative_prob=random_negative_prob, **kwargs)
+        assert (magnitude is None) ^ (self.magnitude_range is None), \
+            'Please specify only one of `magnitude` and `magnitude_range`.'
 
         self.magnitude = magnitude
-        self.prob = prob
-        self.random_negative_prob = random_negative_prob
 
-    def __call__(self, results):
-        if np.random.rand() > self.prob:
+    def transform(self, results):
+        """Apply transform to results."""
+        if self.random_disable():
             return results
-        magnitude = random_negative(self.magnitude, self.random_negative_prob)
-        for key in results.get('img_fields', ['img']):
-            img = results[key]
-            img_sharpened = mmcv.adjust_sharpness(img, factor=1 + magnitude)
-            results[key] = img_sharpened.astype(img.dtype)
+
+        if self.magnitude is not None:
+            magnitude = self.random_negative(self.magnitude)
+        else:
+            magnitude = self.random_negative(self.random_magnitude())
+
+        img = results['img']
+        img_sharpened = mmcv.adjust_sharpness(img, factor=1 + magnitude)
+        results['img'] = img_sharpened.astype(img.dtype)
+
         return results
 
     def __repr__(self):
         repr_str = self.__class__.__name__
         repr_str += f'(magnitude={self.magnitude}, '
         repr_str += f'prob={self.prob}, '
-        repr_str += f'random_negative_prob={self.random_negative_prob})'
+        repr_str += f'random_negative_prob={self.random_negative_prob}'
+        repr_str += f'{self.extra_repr()})'
         return repr_str
 
 
 @TRANSFORMS.register_module()
-class Cutout(object):
+class Cutout(AugTransform):
     """Cutout images.
 
     Args:
-        shape (int | float | tuple(int | float)): Expected cutout shape (h, w).
-            If given as a single value, the value will be used for
-            both h and w.
+        shape (int | tuple(int) | None): Expected cutout shape (h, w).
+            If given as a single value, the value will be used for both h and
+            w. If None, generate from ``magnitude_range``, see
+            :class:`AugTransform`. Defaults to None.
         pad_val (int, Sequence[int]): Pixel pad_val value for constant fill.
             If it is a sequence, it must have the same length with the image
             channels. Defaults to 128.
         prob (float): The probability for performing cutout therefore should
             be in range [0, 1]. Defaults to 0.5.
+        **kwargs: Other keyword arguments of :class:`AugTransform`.
     """
 
-    def __init__(self, shape, pad_val=128, prob=0.5):
-        if isinstance(shape, float):
-            shape = int(shape)
-        elif isinstance(shape, tuple):
-            shape = tuple(int(i) for i in shape)
-        elif not isinstance(shape, int):
-            raise TypeError(
-                'shape must be of '
-                f'type int, float or tuple, got {type(shape)} instead')
-        if isinstance(pad_val, int):
-            pad_val = tuple([pad_val] * 3)
-        elif isinstance(pad_val, Sequence):
-            assert len(pad_val) == 3, 'pad_val as a tuple must have 3 ' \
-                f'elements, got {len(pad_val)} instead.'
-        assert 0 <= prob <= 1.0, 'The prob should be in range [0,1], ' \
-            f'got {prob} instead.'
+    def __init__(self, shape=None, pad_val=128, prob=0.5, **kwargs):
+        super().__init__(prob=prob, random_negative_prob=0., **kwargs)
+        assert (shape is None) ^ (self.magnitude_range is None), \
+            'Please specify only one of `shape` and `magnitude_range`.'
 
         self.shape = shape
-        self.pad_val = tuple(pad_val)
-        self.prob = prob
+        self.pad_val = pad_val
 
-    def __call__(self, results):
-        if np.random.rand() > self.prob:
+    def transform(self, results):
+        """Apply transform to results."""
+        if self.random_disable():
             return results
-        for key in results.get('img_fields', ['img']):
-            img = results[key]
-            img_cutout = mmcv.cutout(img, self.shape, pad_val=self.pad_val)
-            results[key] = img_cutout.astype(img.dtype)
+
+        if self.shape is not None:
+            shape = self.shape
+        else:
+            shape = int(self.random_magnitude())
+
+        img = results['img']
+        img_cutout = mmcv.cutout(img, shape, pad_val=self.pad_val)
+        results['img'] = img_cutout.astype(img.dtype)
+
         return results
 
     def __repr__(self):
         repr_str = self.__class__.__name__
         repr_str += f'(shape={self.shape}, '
         repr_str += f'pad_val={self.pad_val}, '
-        repr_str += f'prob={self.prob})'
+        repr_str += f'prob={self.prob}{self.extra_repr()})'
         return repr_str
+
+
+# yapf: disable
+# flake8: noqa
+AUTOAUG_POLICIES = {
+    # Policy for ImageNet, refers to
+    # https://github.com/DeepVoltaire/AutoAugment/blame/master/autoaugment.py
+    'imagenet': [
+        [dict(type='Posterize', bits=4, prob=0.4),             dict(type='Rotate', angle=30., prob=0.6)],
+        [dict(type='Solarize', thr=256 / 9 * 4, prob=0.6),     dict(type='AutoContrast', prob=0.6)],
+        [dict(type='Equalize', prob=0.8),                      dict(type='Equalize', prob=0.6)],
+        [dict(type='Posterize', bits=5, prob=0.6),             dict(type='Posterize', bits=5, prob=0.6)],
+        [dict(type='Equalize', prob=0.4),                      dict(type='Solarize', thr=256 / 9 * 5, prob=0.2)],
+        [dict(type='Equalize', prob=0.4),                      dict(type='Rotate', angle=30 / 9 * 8, prob=0.8)],
+        [dict(type='Solarize', thr=256 / 9 * 6, prob=0.6),     dict(type='Equalize', prob=0.6)],
+        [dict(type='Posterize', bits=6, prob=0.8),             dict(type='Equalize', prob=1.)],
+        [dict(type='Rotate', angle=10., prob=0.2),             dict(type='Solarize', thr=256 / 9, prob=0.6)],
+        [dict(type='Equalize', prob=0.6),                      dict(type='Posterize', bits=5, prob=0.4)],
+        [dict(type='Rotate', angle=30 / 9 * 8, prob=0.8),      dict(type='ColorTransform', magnitude=0., prob=0.4)],
+        [dict(type='Rotate', angle=30., prob=0.4),             dict(type='Equalize', prob=0.6)],
+        [dict(type='Equalize', prob=0.0),                      dict(type='Equalize', prob=0.8)],
+        [dict(type='Invert', prob=0.6),                        dict(type='Equalize', prob=1.)],
+        [dict(type='ColorTransform', magnitude=0.4, prob=0.6), dict(type='Contrast', magnitude=0.8, prob=1.)],
+        [dict(type='Rotate', angle=30 / 9 * 8, prob=0.8),      dict(type='ColorTransform', magnitude=0.2, prob=1.)],
+        [dict(type='ColorTransform', magnitude=0.8, prob=0.8), dict(type='Solarize', thr=256 / 9 * 2, prob=0.8)],
+        [dict(type='Sharpness', magnitude=0.7, prob=0.4),      dict(type='Invert', prob=0.6)],
+        [dict(type='Shear', magnitude=0.3 / 9 * 5, prob=0.6, direction='horizontal'), dict(type='Equalize', prob=1.)],
+        [dict(type='ColorTransform', magnitude=0., prob=0.4),  dict(type='Equalize', prob=0.6)],
+        [dict(type='Equalize', prob=0.4),                      dict(type='Solarize', thr=256 / 9 * 5, prob=0.2)],
+        [dict(type='Solarize', thr=256 / 9 * 4, prob=0.6),     dict(type='AutoContrast', prob=0.6)],
+        [dict(type='Invert', prob=0.6),                        dict(type='Equalize', prob=1.)],
+        [dict(type='ColorTransform', magnitude=0.4, prob=0.6), dict(type='Contrast', magnitude=0.8, prob=1.)],
+        [dict(type='Equalize', prob=0.8),                      dict(type='Equalize', prob=0.6)],
+    ],
+}
+
+RANDAUG_POLICIES = {
+    # Refers to `_RAND_INCREASING_TRANSFORMS` in pytorch-image-models
+    'timm_increasing': [
+        dict(type='AutoContrast'),
+        dict(type='Equalize'),
+        dict(type='Invert'),
+        dict(type='Rotate', magnitude_range=(0, 30)),
+        dict(type='Posterize', magnitude_range=(4, 0)),
+        dict(type='Solarize', magnitude_range=(256, 0)),
+        dict(type='SolarizeAdd', magnitude_range=(0, 110)),
+        dict(type='ColorTransform', magnitude_range=(0, 0.9)),
+        dict(type='Contrast', magnitude_range=(0, 0.9)),
+        dict(type='Brightness', magnitude_range=(0, 0.9)),
+        dict(type='Sharpness', magnitude_range=(0, 0.9)),
+        dict(type='Shear', magnitude_range=(0, 0.3), direction='horizontal'),
+        dict(type='Shear', magnitude_range=(0, 0.3), direction='vertical'),
+        dict(type='Translate', magnitude_range=(0, 0.45), direction='horizontal'),
+        dict(type='Translate', magnitude_range=(0, 0.45), direction='vertical'),
+    ],
+}
