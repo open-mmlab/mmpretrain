@@ -7,7 +7,8 @@ from typing import Dict, Sequence
 
 import mmcv
 import numpy as np
-from mmcv.transforms import BaseTransform
+from mmcv import BaseTransform
+from mmcv.transforms.utils import cache_randomness
 
 from mmcls.registry import TRANSFORMS
 from .compose import Compose
@@ -432,7 +433,7 @@ class RandomGrayscale(object):
 
 
 @TRANSFORMS.register_module()
-class RandomErasing(object):
+class RandomErasing(BaseTransform):
     """Randomly selects a rectangle region in an image and erase pixels.
 
     Args:
@@ -515,6 +516,7 @@ class RandomErasing(object):
         self.fill_std = fill_std
 
     def _fill_pixels(self, img, top, left, h, w):
+        """Fill pixels to the patch of image."""
         if self.mode == 'const':
             patch = np.empty((h, w, 3), dtype=np.uint8)
             patch[:, :] = np.array(self.fill_color, dtype=np.uint8)
@@ -529,7 +531,27 @@ class RandomErasing(object):
         img[top:top + h, left:left + w] = patch
         return img
 
-    def __call__(self, results):
+    @cache_randomness
+    def random_disable(self):
+        """Randomly disable the transform."""
+        return np.random.rand() > self.erase_prob
+
+    @cache_randomness
+    def random_patch(self, img_h, img_w):
+        """Randomly generate patch the erase."""
+        log_aspect_range = np.log(
+            np.array(self.aspect_range, dtype=np.float32))
+        aspect_ratio = np.exp(np.random.uniform(*log_aspect_range))
+        area = img_h * img_w
+        area *= np.random.uniform(self.min_area_ratio, self.max_area_ratio)
+
+        h = min(int(round(np.sqrt(area * aspect_ratio))), img_h)
+        w = min(int(round(np.sqrt(area / aspect_ratio))), img_w)
+        top = np.random.randint(0, img_h - h) if img_h > h else 0
+        left = np.random.randint(0, img_w - w) if img_w > w else 0
+        return top, left, h, w
+
+    def transform(self, results):
         """
         Args:
             results (dict): Results dict from pipeline
@@ -537,26 +559,17 @@ class RandomErasing(object):
         Returns:
             dict: Results after the transformation.
         """
-        for key in results.get('img_fields', ['img']):
-            if np.random.rand() > self.erase_prob:
-                continue
-            img = results[key]
-            img_h, img_w = img.shape[:2]
+        if self.random_disable():
+            return results
 
-            # convert to log aspect to ensure equal probability of aspect ratio
-            log_aspect_range = np.log(
-                np.array(self.aspect_range, dtype=np.float32))
-            aspect_ratio = np.exp(np.random.uniform(*log_aspect_range))
-            area = img_h * img_w
-            area *= np.random.uniform(self.min_area_ratio, self.max_area_ratio)
+        img = results['img']
+        img_h, img_w = img.shape[:2]
 
-            h = min(int(round(np.sqrt(area * aspect_ratio))), img_h)
-            w = min(int(round(np.sqrt(area / aspect_ratio))), img_w)
-            top = np.random.randint(0, img_h - h) if img_h > h else 0
-            left = np.random.randint(0, img_w - w) if img_w > w else 0
-            img = self._fill_pixels(img, top, left, h, w)
+        # convert to log aspect to ensure equal probability of aspect ratio
+        img = self._fill_pixels(img, *self.random_patch(img_h, img_w))
 
-            results[key] = img
+        results['img'] = img
+
         return results
 
     def __repr__(self):
