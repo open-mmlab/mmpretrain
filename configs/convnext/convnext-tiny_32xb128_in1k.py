@@ -5,10 +5,12 @@ _base_ = [
     '../_base_/default_runtime.py',
 ]
 
-default_hooks = dict(optimizer=dict(grad_clip=dict(max_norm=5.0)))
+# dataset setting
+train_dataloader = dict(batch_size=128)
 
-data = dict(samples_per_gpu=128)
-
+# schedule setting
 optimizer = dict(lr=4e-3)
 
+# runtime setting
+default_hooks = dict(optimizer=dict(grad_clip=dict(max_norm=5.0)))
 custom_hooks = [dict(type='EMAHook', momentum=4e-5, priority='ABOVE_NORMAL')]

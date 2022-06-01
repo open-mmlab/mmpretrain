@@ -4,8 +4,6 @@ _base_ = [
     '../_base_/default_runtime.py'
 ]
 
-default_hooks = dict(optimizer=dict(grad_clip=dict(max_norm=1.0)))
-
 # model settings
 model = dict(
     type='ImageClassifier',
@@ -27,5 +25,8 @@ model = dict(
     # init_cfg=dict(type='Pretrained', checkpoint=''),
 )
 
-# data settings
-data = dict(samples_per_gpu=32, workers_per_gpu=5)
+# dataset settings
+train_dataloader = dict(batch_size=32)
+
+# runtime settings
+default_hooks = dict(optimizer=dict(grad_clip=dict(max_norm=1.0)))

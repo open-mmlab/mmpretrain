@@ -3,10 +3,11 @@ import inspect
 import math
 import random
 from numbers import Number
-from typing import Sequence
+from typing import Dict, Sequence
 
 import mmcv
 import numpy as np
+from mmcv.transforms import BaseTransform
 
 from mmcls.registry import TRANSFORMS
 from .compose import Compose
@@ -619,6 +620,106 @@ class Pad(object):
         repr_str += f'(size={self.size}, '
         repr_str += f'(pad_val={self.pad_val}, '
         repr_str += f'padding_mode={self.padding_mode})'
+        return repr_str
+
+
+@TRANSFORMS.register_module()
+class ResizeEdge(BaseTransform):
+    """Resize images along the specified edge.
+
+    Required Keys:
+
+    - img
+
+    Modified Keys:
+
+    - img
+    - img_shape
+
+    Added Keys:
+
+    - scale
+    - scale_factor
+
+    Args:
+        scale (int): The edge scale to resizing.
+        edge (str): The edge to resize. Defaults to 'short'.
+        backend (str): Image resize backend, choices are 'cv2' and 'pillow'.
+            These two backends generates slightly different results.
+            Defaults to 'cv2'.
+        interpolation (str): Interpolation method, accepted values are
+            "nearest", "bilinear", "bicubic", "area", "lanczos" for 'cv2'
+            backend, "nearest", "bilinear" for 'pillow' backend.
+            Defaults to 'bilinear'.
+    """
+
+    def __init__(self,
+                 scale: int,
+                 edge: str = 'short',
+                 backend: str = 'cv2',
+                 interpolation: str = 'bilinear') -> None:
+        allow_edges = ['short', 'long', 'width', 'height']
+        assert edge in allow_edges, \
+            f'Invalid edge "{edge}", please specify from {allow_edges}.'
+        self.edge = edge
+        self.scale = scale
+        self.backend = backend
+        self.interpolation = interpolation
+
+    def _resize_img(self, results: dict) -> None:
+        """Resize images with ``results['scale']``."""
+
+        img, w_scale, h_scale = mmcv.imresize(
+            results['img'],
+            results['scale'],
+            interpolation=self.interpolation,
+            return_scale=True,
+            backend=self.backend)
+        results['img'] = img
+        results['img_shape'] = img.shape[:2]
+        results['scale'] = img.shape[:2][::-1]
+        results['scale_factor'] = (w_scale, h_scale)
+
+    def transform(self, results: Dict) -> Dict:
+        """Transform function to resize images.
+
+        Args:
+            results (dict): Result dict from loading pipeline.
+
+        Returns:
+            dict: Resized results, 'img', 'scale', 'scale_factor',
+            'img_shape' keys are updated in result dict.
+        """
+        assert 'img' in results, 'No `img` field in the input.'
+
+        h, w = results['img'].shape[:2]
+        if any([
+                # conditions to resize the width
+                self.edge == 'short' and w < h,
+                self.edge == 'long' and w > h,
+                self.edge == 'width',
+        ]):
+            width = self.scale
+            height = int(self.scale * h / w)
+        else:
+            height = self.scale
+            width = int(self.scale * w / h)
+        results['scale'] = (width, height)
+
+        self._resize_img(results)
+        return results
+
+    def __repr__(self):
+        """Print the basic information of the transform.
+
+        Returns:
+            str: Formatted string.
+        """
+        repr_str = self.__class__.__name__
+        repr_str += f'(scale={self.scale}, '
+        repr_str += f'edge={self.edge}, '
+        repr_str += f'backend={self.backend}, '
+        repr_str += f'interpolation={self.interpolation})'
         return repr_str
 
 

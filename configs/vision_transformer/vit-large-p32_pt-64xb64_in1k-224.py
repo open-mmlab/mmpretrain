@@ -5,10 +5,16 @@ _base_ = [
     '../_base_/default_runtime.py'
 ]
 
-default_hooks = dict(optimizer=dict(grad_clip=dict(max_norm=1.0)))
-
+# model setting
 model = dict(
     head=dict(hidden_dim=3072),
     train_cfg=dict(
-        augments=dict(type='BatchMixup', alpha=0.2, num_classes=1000,
-                      prob=1.)))
+        augments=dict(
+            type='BatchMixup',
+            alpha=0.2,
+            num_classes=1000,
+            prob=1.,
+        )))
+
+# runtime setting
+default_hooks = dict(optimizer=dict(grad_clip=dict(max_norm=1.0)))

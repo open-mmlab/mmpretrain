@@ -6,7 +6,7 @@ from .auto_augment import (AutoAugment, AutoContrast, Brightness,
 from .compose import Compose
 from .formatting import (Collect, ImageToTensor, PackClsInputs, ToNumpy, ToPIL,
                          ToTensor, Transpose, to_tensor)
-from .transforms import (CenterCrop, ColorJitter, Lighting, Normalize, Pad,
+from .processing import (CenterCrop, ColorJitter, Lighting, Normalize, Pad,
                          RandomCrop, RandomErasing, RandomGrayscale,
                          RandomResizedCrop)
 

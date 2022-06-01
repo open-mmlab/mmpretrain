@@ -7,7 +7,8 @@ model = dict(
     head=dict(type='VisionTransformerClsHead', in_channels=768),
 )
 
-# data settings
-data = dict(samples_per_gpu=64, workers_per_gpu=5)
+# dataset settings
+train_dataloader = dict(batch_size=64)
 
+# runtime settings
 custom_hooks = [dict(type='EMAHook', momentum=4e-5, priority='ABOVE_NORMAL')]

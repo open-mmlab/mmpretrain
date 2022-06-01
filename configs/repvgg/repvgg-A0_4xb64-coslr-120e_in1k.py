@@ -5,4 +5,5 @@ _base_ = [
     '../_base_/default_runtime.py'
 ]
 
-runner = dict(max_epochs=120)
+# schedule settings
+train_cfg = dict(by_epoch=True, max_epochs=120)

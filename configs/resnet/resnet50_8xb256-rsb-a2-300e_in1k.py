@@ -5,7 +5,7 @@ _base_ = [
     '../_base_/default_runtime.py'
 ]
 
-# Model settings
+# model settings
 model = dict(
     backbone=dict(
         norm_cfg=dict(type='SyncBN', requires_grad=True),
@@ -17,9 +17,10 @@ model = dict(
         dict(type='BatchCutMix', alpha=1.0, num_classes=1000, prob=0.5)
     ]))
 
-# Dataset settings
-sampler = dict(type='RepeatAugSampler')
+# dataset settings
+train_dataloader = dict(sampler=dict(type='RepeatAugSampler', shuffle=True))
 
-# Schedule settings
-runner = dict(max_epochs=300)
+# schedule settings
 optimizer = dict(paramwise_cfg=dict(bias_decay_mult=0., norm_decay_mult=0.))
+
+train_cfg = dict(by_epoch=True, max_epochs=300)

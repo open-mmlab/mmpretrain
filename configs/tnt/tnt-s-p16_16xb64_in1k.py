@@ -5,38 +5,47 @@ _base_ = [
     '../_base_/default_runtime.py'
 ]
 
-img_norm_cfg = dict(
-    mean=[127.5, 127.5, 127.5], std=[127.5, 127.5, 127.5], to_rgb=True)
+# dataset settings
+preprocess_cfg = dict(
+    mean=[127.5, 127.5, 127.5],
+    std=[127.5, 127.5, 127.5],
+    # convert image from BGR to RGB
+    to_rgb=True,
+)
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
-        type='Resize',
-        scale=(248, -1),
-        keep_ratio=True,
-        interpolation='bicubic',
-        backend='pillow'),
+        type='ResizeEdge',
+        scale=248,
+        edge='short',
+        backend='pillow',
+        interpolation='bicubic'),
     dict(type='CenterCrop', crop_size=224),
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='ImageToTensor', keys=['img']),
-    dict(type='Collect', keys=['img'])
+    dict(type='PackClsInputs'),
 ]
 
-dataset_type = 'ImageNet'
-data = dict(
-    samples_per_gpu=64, workers_per_gpu=4, test=dict(pipeline=test_pipeline))
+train_dataloader = dict(batch_size=64)
+val_dataloader = dict(dataset=dict(pipeline=test_pipeline))
+test_dataloader = dict(dataset=dict(pipeline=test_pipeline))
 
-# optimizer
+# schedule settings
 optimizer = dict(type='AdamW', lr=1e-3, weight_decay=0.05)
-optimizer_config = dict(grad_clip=None)
 
-# learning policy
 param_scheduler = [
-    dict(type='LinearLR', start_factor=1e-3, by_epoch=True, begin=0, end=5),
+    # warm up learning rate schedule
+    dict(
+        type='LinearLR',
+        start_factor=1e-3,
+        by_epoch=True,
+        begin=0,
+        end=5,
+        # update by iter
+        convert_to_iter_based=True),
+    # main learning rate scheduler
     dict(type='CosineAnnealingLR', T_max=295, by_epoch=True, begin=5, end=300)
 ]
 
-# train, val, test setting
 train_cfg = dict(by_epoch=True, max_epochs=300)
 val_cfg = dict(interval=1)  # validate every epoch
 test_cfg = dict()

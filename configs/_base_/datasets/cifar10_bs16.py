@@ -1,35 +1,46 @@
 # dataset settings
 dataset_type = 'CIFAR10'
-img_norm_cfg = dict(
+preprocess_cfg = dict(
+    # RGB format normalization parameters
     mean=[125.307, 122.961, 113.8575],
     std=[51.5865, 50.847, 51.255],
+    # loaded images are already RGB format
     to_rgb=False)
+
 train_pipeline = [
     dict(type='RandomCrop', size=32, padding=4),
-    dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='ImageToTensor', keys=['img']),
-    dict(type='ToTensor', keys=['gt_label']),
-    dict(type='Collect', keys=['img', 'gt_label'])
+    dict(type='RandomFlip', prob=0.5, direction='horizontal'),
+    dict(type='PackClsInputs'),
 ]
+
 test_pipeline = [
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='ImageToTensor', keys=['img']),
-    dict(type='Collect', keys=['img'])
+    dict(type='PackClsInputs'),
 ]
-data = dict(
-    samples_per_gpu=16,
-    workers_per_gpu=2,
-    train=dict(
-        type=dataset_type, data_prefix='data/cifar10',
+
+train_dataloader = dict(
+    batch_size=16,
+    num_workers=2,
+    dataset=dict(
+        type=dataset_type,
+        data_prefix='data/cifar10',
+        test_mode=False,
         pipeline=train_pipeline),
-    val=dict(
+    sampler=dict(type='DefaultSampler', shuffle=True),
+    persistent_workers=True,
+)
+
+val_dataloader = dict(
+    batch_size=16,
+    num_workers=2,
+    dataset=dict(
         type=dataset_type,
-        data_prefix='data/cifar10',
-        pipeline=test_pipeline,
-        test_mode=True),
-    test=dict(
-        type=dataset_type,
-        data_prefix='data/cifar10',
-        pipeline=test_pipeline,
-        test_mode=True))
+        data_prefix='data/cifar10/',
+        test_mode=True,
+        pipeline=test_pipeline),
+    sampler=dict(type='DefaultSampler', shuffle=False),
+    persistent_workers=True,
+)
+val_evaluator = dict(type='Accuracy', topk=(1, ))
+
+test_dataloader = val_dataloader
+test_evaluator = val_evaluator

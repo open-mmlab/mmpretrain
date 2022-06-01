@@ -1,4 +1,3 @@
-# Only for evaluation
 _base_ = [
     '../_base_/models/swin_transformer/base_384.py',
     '../_base_/datasets/imagenet_bs64_swin_384.py',
@@ -6,4 +5,5 @@ _base_ = [
     '../_base_/default_runtime.py'
 ]
 
+# runtime settings
 default_hooks = dict(optimizer=dict(grad_clip=dict(max_norm=5.0)))

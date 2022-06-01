@@ -5,26 +5,31 @@ _base_ = [
     '../_base_/default_runtime.py'
 ]
 
-default_hooks = dict(
-    optimizer=dict(_delete_=True, grad_clip=dict(max_norm=5.0)))
+# dataset settings
+train_dataloader = dict(batch_size=128)
 
-data = dict(samples_per_gpu=128)
-
+# schedule settings
 paramwise_cfg = dict(_delete=True, norm_decay_mult=0.0, bias_decay_mult=0.0)
 
-# for batch in each gpu is 128, 8 gpu
-# lr = 5e-4 * 128 * 8 / 512 = 0.001
 optimizer = dict(
     type='AdamW',
-    lr=5e-4 * 128 * 8 / 512,
+    lr=5e-4 * 128 * 8 / 512,  # learning rate for 128 batch size, 8 gpu.
     weight_decay=0.05,
     eps=1e-8,
     betas=(0.9, 0.999),
     paramwise_cfg=paramwise_cfg)
 
-# learning policy
 param_scheduler = [
-    dict(type='LinearLR', start_factor=1e-3, by_epoch=True, begin=0, end=5),
+    # warm up learning rate schedule
+    dict(
+        type='LinearLR',
+        start_factor=1e-3,
+        by_epoch=True,
+        begin=0,
+        end=5,
+        # update by iter
+        convert_to_iter_based=True),
+    # main learning rate scheduler
     dict(
         type='CosineAnnealingLR',
         T_max=295,
@@ -34,4 +39,5 @@ param_scheduler = [
         end=300)
 ]
 
-evaluation = dict(interval=1, metric='accuracy')
+# runtime settings
+default_hooks = dict(optimizer=dict(grad_clip=dict(max_norm=5.0)))

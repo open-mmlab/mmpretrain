@@ -5,7 +5,8 @@ model = dict(
     backbone=dict(type='RegNet', arch='regnetx_4.0gf'),
     head=dict(in_channels=1360, ))
 
-# for batch_size 512, use lr = 0.4
-optimizer = dict(lr=0.4)
+# dataset settings
+train_dataloader = dict(batch_size=64)
 
-data = dict(samples_per_gpu=64, )
+# schedule settings
+optimizer = dict(lr=0.4)  # for batch_size 512, use lr = 0.4

@@ -18,7 +18,16 @@ optimizer = dict(
 
 # learning policy
 param_scheduler = [
-    dict(type='LinearLR', start_factor=1e-3, by_epoch=False, begin=0, end=20),
+    # warm up learning rate schedule
+    dict(
+        type='LinearLR',
+        start_factor=1e-3,
+        by_epoch=False,
+        begin=0,
+        end=20,
+        # update by iter
+        convert_to_iter_based=True),
+    # main learning rate scheduler
     dict(
         type='CosineAnnealingLR',
         T_max=280,

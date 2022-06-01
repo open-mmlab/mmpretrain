@@ -5,6 +5,8 @@ _base_ = [
     '../_base_/default_runtime.py',
 ]
 
-data = dict(samples_per_gpu=256)
+# dataset settings
+train_dataloader = dict(batch_size=256)
 
+# schedule settings
 train_cfg = dict(by_epoch=True, max_epochs=90)

@@ -28,8 +28,8 @@ img_norm_cfg = dict(
 
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='RandomResizedCrop', size=224, backend='pillow'),
-    dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
+    dict(type='RandomResizedCrop', scale=224, backend='pillow'),
+    dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='ImageToTensor', keys=['img']),
     dict(type='ToTensor', keys=['gt_label']),
@@ -58,9 +58,6 @@ data = dict(
     val_dataloader=dict(samples_per_gpu=4, workers_per_gpu=1),
     test=dict(pipeline=test_pipeline),
     test_dataloader=dict(samples_per_gpu=4, workers_per_gpu=1))
-
-# remove clip-norm
-optimizer_config = dict()
 
 # optimizer
 optimizer = dict(

@@ -5,8 +5,10 @@ _base_ = [
     '../_base_/default_runtime.py',
 ]
 
-default_hooks = dict(optimizer=dict(grad_clip=dict(max_norm=5.0)))
-
+# schedule setting
 optimizer = dict(lr=0.01)
 
 train_cfg = dict(by_epoch=True, max_epochs=300)
+
+# runtime setting
+default_hooks = dict(optimizer=dict(grad_clip=dict(max_norm=5.0)))

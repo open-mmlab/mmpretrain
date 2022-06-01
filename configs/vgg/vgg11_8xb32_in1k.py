@@ -4,4 +4,6 @@ _base_ = [
     '../_base_/schedules/imagenet_bs256.py',
     '../_base_/default_runtime.py',
 ]
+
+# schedule settings
 optimizer = dict(lr=0.01)

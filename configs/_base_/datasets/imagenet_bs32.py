@@ -1,47 +1,54 @@
 # dataset settings
 dataset_type = 'ImageNet'
-
-# file_client_args = dict(
-#     backend='petrel',
-#     path_mapping=dict({
-#         './data/': 's3://openmmlab/datasets/classification/',
-#         'data/': 's3://openmmlab/datasets/classification/'
-#     }))
-
-file_client_args = dict(backend='disk')
+preprocess_cfg = dict(
+    # RGB format normalization parameters
+    mean=[123.675, 116.28, 103.53],
+    std=[58.395, 57.12, 57.375],
+    # convert image from BGR to RGB
+    to_rgb=True,
+)
 
 train_pipeline = [
-    dict(type='LoadImageFromFile', file_client_args=file_client_args),
-    dict(type='RandomResizedCrop', size=224),
+    dict(type='LoadImageFromFile'),
+    dict(type='RandomResizedCrop', scale=224),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
-    dict(type='PackClsInputs')
+    dict(type='PackClsInputs'),
 ]
+
 test_pipeline = [
-    dict(type='LoadImageFromFile', file_client_args=file_client_args),
-    dict(type='Resize', scale=(256, -1), keep_ratio=True),
+    dict(type='LoadImageFromFile'),
+    dict(type='ResizeEdge', scale=256, edge='short'),
     dict(type='CenterCrop', crop_size=224),
-    dict(type='PackClsInputs')
+    dict(type='PackClsInputs'),
 ]
 
 train_dataloader = dict(
     batch_size=32,
-    num_workers=2,
-    persistent_workers=True,
-    sampler=dict(type='DefaultSampler', shuffle=True),
+    num_workers=5,
     dataset=dict(
         type=dataset_type,
-        data_prefix='data/imagenet/val',
-        ann_file='data/imagenet/meta/val.txt',
-        pipeline=train_pipeline))
+        data_root='data/imagenet',
+        ann_file='meta/train.txt',
+        data_prefix='train',
+        pipeline=train_pipeline),
+    sampler=dict(type='DefaultSampler', shuffle=True),
+    persistent_workers=True,
+)
+
 val_dataloader = dict(
     batch_size=32,
-    num_workers=2,
-    persistent_workers=True,
+    num_workers=5,
     dataset=dict(
         type=dataset_type,
-        data_prefix='data/imagenet/val',
-        ann_file='data/imagenet/meta/val.txt',
-        pipeline=test_pipeline))
-test_dataloader = val_dataloader
+        data_root='data/imagenet',
+        ann_file='meta/val.txt',
+        data_prefix='val',
+        pipeline=test_pipeline),
+    sampler=dict(type='DefaultSampler', shuffle=False),
+    persistent_workers=True,
+)
+val_evaluator = dict(type='Accuracy', topk=(1, 5))
 
-evaluation = dict(interval=1, metric='accuracy')
+# If you want standard test, please manually configure the test dataset
+test_dataloader = val_dataloader
+test_evaluator = val_evaluator

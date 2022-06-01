@@ -1,4 +1,4 @@
-_base_ = ['pipelines/auto_aug.py']
+_base_ = ['./pipelines/auto_aug.py']
 
 # dataset settings
 dataset_type = 'ImageNet'
@@ -15,34 +15,32 @@ bgr_std = preprocess_cfg['std'][::-1]
 
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(
-        type='RandomResizedCrop',
-        scale=224,
-        backend='pillow',
-        interpolation='bicubic'),
+    dict(type='RandomResizedCrop', scale=224, backend='pillow'),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(
         type='AutoAugment',
-        policies={{_base_.policy_imagenet}},
-        hparams=dict(
-            pad_val=[round(x) for x in bgr_mean], interpolation='bicubic')),
+        policies={{_base_.auto_increasing_policies}},
+        hparams=dict(pad_val=[round(x) for x in bgr_mean])),
+    dict(
+        type='RandomErasing',
+        erase_prob=0.2,
+        mode='rand',
+        min_area_ratio=0.02,
+        max_area_ratio=1 / 3,
+        fill_color=bgr_mean,
+        fill_std=bgr_std),
     dict(type='PackClsInputs'),
 ]
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(
-        type='ResizeEdge',
-        scale=256,
-        edge='short',
-        backend='pillow',
-        interpolation='bicubic'),
+    dict(type='ResizeEdge', scale=256, edge='short', backend='pillow'),
     dict(type='CenterCrop', crop_size=224),
     dict(type='PackClsInputs'),
 ]
 
 train_dataloader = dict(
-    batch_size=64,
+    batch_size=128,
     num_workers=5,
     dataset=dict(
         type=dataset_type,
@@ -55,7 +53,7 @@ train_dataloader = dict(
 )
 
 val_dataloader = dict(
-    batch_size=64,
+    batch_size=128,
     num_workers=5,
     dataset=dict(
         type=dataset_type,
