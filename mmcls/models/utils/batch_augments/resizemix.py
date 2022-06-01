@@ -3,13 +3,12 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from mmcls.models.utils.augment.builder import AUGMENT
-from .cutmix import BatchCutMixLayer
-from .utils import one_hot_encoding
+from mmcls.registry import BATCH_AUGMENTS
+from .cutmix import CutMix
 
 
-@AUGMENT.register_module(name='BatchResizeMix')
-class BatchResizeMixLayer(BatchCutMixLayer):
+@BATCH_AUGMENTS.register_module()
+class ResizeMix(CutMix):
     r"""ResizeMix Random Paste layer for a batch of data.
 
     The ResizeMix will resize an image to a small patch and paste it on another
@@ -19,8 +18,10 @@ class BatchResizeMixLayer(BatchCutMixLayer):
     Args:
         alpha (float): Parameters for Beta distribution to generate the
             mixing ratio. It should be a positive number. More details
-            can be found in :class:`BatchMixupLayer`.
-        num_classes (int): The number of classes.
+            can be found in :class:`Mixup`.
+        num_classes (int, optional): The number of classes. If not specified,
+            will try to get it from data samples during training.
+            Defaults to None.
         lam_min(float): The minimum value of lam. Defaults to 0.1.
         lam_max(float): The maximum value of lam. Defaults to 0.8.
         interpolation (str): algorithm used for upsampling:
@@ -35,7 +36,7 @@ class BatchResizeMixLayer(BatchCutMixLayer):
             ``alpha``. Defaults to None.
         correct_lam (bool): Whether to apply lambda correction when cutmix bbox
             clipped by image borders. Defaults to True
-        **kwargs: Any other parameters accpeted by :class:`BatchCutMixLayer`.
+        **kwargs: Any other parameters accpeted by :class:`CutMix`.
 
     Note:
         The :math:`\lambda` (``lam``) is the mixing ratio. It's a random
@@ -54,40 +55,35 @@ class BatchResizeMixLayer(BatchCutMixLayer):
 
     def __init__(self,
                  alpha,
-                 num_classes,
+                 num_classes=None,
                  lam_min: float = 0.1,
                  lam_max: float = 0.8,
                  interpolation='bilinear',
-                 prob=1.0,
                  cutmix_minmax=None,
-                 correct_lam=True,
-                 **kwargs):
-        super(BatchResizeMixLayer, self).__init__(
+                 correct_lam=True):
+        super().__init__(
             alpha=alpha,
             num_classes=num_classes,
-            prob=prob,
             cutmix_minmax=cutmix_minmax,
-            correct_lam=correct_lam,
-            **kwargs)
+            correct_lam=correct_lam)
         self.lam_min = lam_min
         self.lam_max = lam_max
         self.interpolation = interpolation
 
-    def cutmix(self, img, gt_label):
-        one_hot_gt_label = one_hot_encoding(gt_label, self.num_classes)
-
+    def mix(self, batch_inputs: torch.Tensor, batch_score: torch.Tensor):
+        """Mix the batch inputs and batch one-hot format ground truth."""
         lam = np.random.beta(self.alpha, self.alpha)
         lam = lam * (self.lam_max - self.lam_min) + self.lam_min
-        batch_size = img.size(0)
+        img_shape = batch_inputs.shape[-2:]
+        batch_size = batch_inputs.size(0)
         index = torch.randperm(batch_size)
 
-        (bby1, bby2, bbx1,
-         bbx2), lam = self.cutmix_bbox_and_lam(img.shape, lam)
+        (y1, y2, x1, x2), lam = self.cutmix_bbox_and_lam(img_shape, lam)
+        batch_inputs[:, :, y1:y2, x1:x2] = F.interpolate(
+            batch_inputs[index],
+            size=(y2 - y1, x2 - x1),
+            mode=self.interpolation,
+            align_corners=False)
+        mixed_score = lam * batch_score + (1 - lam) * batch_score[index, :]
 
-        img[:, :, bby1:bby2, bbx1:bbx2] = F.interpolate(
-            img[index],
-            size=(bby2 - bby1, bbx2 - bbx1),
-            mode=self.interpolation)
-        mixed_gt_label = lam * one_hot_gt_label + (
-            1 - lam) * one_hot_gt_label[index, :]
-        return img, mixed_gt_label
+        return batch_inputs, mixed_score

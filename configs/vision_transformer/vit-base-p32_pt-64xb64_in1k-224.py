@@ -8,13 +8,8 @@ _base_ = [
 # model setting
 model = dict(
     head=dict(hidden_dim=3072),
-    train_cfg=dict(
-        augments=dict(
-            type='BatchMixup',
-            alpha=0.2,
-            num_classes=1000,
-            prob=1.,
-        )))
+    train_cfg=dict(augments=dict(type='Mixup', alpha=0.2, num_classes=1000)),
+)
 
 # schedule setting
 optim_wrapper = dict(clip_grad=dict(max_norm=1.0))

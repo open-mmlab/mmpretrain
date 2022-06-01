@@ -47,9 +47,7 @@ class TestImageClassifier(TestCase):
         # test set batch augmentation from train_cfg
         cfg = {
             **self.DEFAULT_ARGS, 'train_cfg':
-            dict(augments=[
-                dict(type='BatchMixup', alpha=1., num_classes=10, prob=1.)
-            ])
+            dict(augments=dict(type='Mixup', alpha=1., num_classes=10))
         }
         model: ImageClassifier = MODELS.build(cfg)
         self.assertIsNotNone(model.data_preprocessor.batch_augments)

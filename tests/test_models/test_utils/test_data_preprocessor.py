@@ -4,7 +4,7 @@ from unittest import TestCase
 import torch
 
 from mmcls.core import ClsDataSample
-from mmcls.models import ClsDataPreprocessor
+from mmcls.models import ClsDataPreprocessor, RandomBatchAugment
 from mmcls.registry import MODELS
 from mmcls.utils import register_all_modules
 
@@ -62,16 +62,25 @@ class TestClsDataPreprocessor(TestCase):
         self.assertIsNone(data_samples)
 
     def test_batch_augmentation(self):
-        # TODO: complete this test after refactoring batch augmentation
-
         cfg = dict(
             type='ClsDataPreprocessor',
             batch_augments=[
-                dict(type='BatchMixup', alpha=1., num_classes=10, prob=1.)
+                dict(type='Mixup', alpha=0.8, num_classes=10),
+                dict(type='CutMix', alpha=1., num_classes=10)
             ])
         processor: ClsDataPreprocessor = MODELS.build(cfg)
-        self.assertIsNotNone(processor.batch_augments)
+        self.assertIsInstance(processor.batch_augments, RandomBatchAugment)
+        data = [{
+            'inputs': torch.randint(0, 256, (3, 224, 224)),
+            'data_sample': ClsDataSample().set_gt_label(1)
+        }]
+        _, data_samples = processor(data, training=True)
 
         cfg['batch_augments'] = None
         processor: ClsDataPreprocessor = MODELS.build(cfg)
         self.assertIsNone(processor.batch_augments)
+        data = [{
+            'inputs': torch.randint(0, 256, (3, 224, 224)),
+        }]
+        _, data_samples = processor(data, training=True)
+        self.assertIsNone(data_samples)

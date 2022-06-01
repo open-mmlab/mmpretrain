@@ -18,9 +18,10 @@ model = dict(
             mode='original',
         )),
     train_cfg=dict(augments=[
-        dict(type='BatchMixup', alpha=0.2, num_classes=1000, prob=0.5),
-        dict(type='BatchCutMix', alpha=1.0, num_classes=1000, prob=0.5)
-    ]))
+        dict(type='Mixup', alpha=0.2, num_classes=1000),
+        dict(type='CutMix', alpha=1.0, num_classes=1000)
+    ]),
+)
 
 # dataset settings
 train_dataloader = dict(sampler=dict(type='RepeatAugSampler', shuffle=True))

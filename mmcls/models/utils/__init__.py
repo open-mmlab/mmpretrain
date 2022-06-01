@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from .attention import MultiheadAttention, ShiftWindowMSA
-from .augment.augments import Augments
+from .batch_augments import CutMix, Mixup, RandomBatchAugment, ResizeMix
 from .channel_shuffle import channel_shuffle
 from .data_preprocessor import ClsDataPreprocessor
 from .embed import (HybridEmbed, PatchEmbed, PatchMerging, resize_pos_embed,
@@ -14,7 +14,8 @@ from .se_layer import SELayer
 __all__ = [
     'channel_shuffle', 'make_divisible', 'InvertedResidual', 'SELayer',
     'to_ntuple', 'to_2tuple', 'to_3tuple', 'to_4tuple', 'PatchEmbed',
-    'PatchMerging', 'HybridEmbed', 'Augments', 'ShiftWindowMSA', 'is_tracing',
-    'MultiheadAttention', 'ConditionalPositionEncoding', 'resize_pos_embed',
-    'resize_relative_position_bias_table', 'ClsDataPreprocessor'
+    'PatchMerging', 'HybridEmbed', 'RandomBatchAugment', 'ShiftWindowMSA',
+    'is_tracing', 'MultiheadAttention', 'ConditionalPositionEncoding',
+    'resize_pos_embed', 'resize_relative_position_bias_table',
+    'ClsDataPreprocessor', 'Mixup', 'CutMix', 'ResizeMix'
 ]

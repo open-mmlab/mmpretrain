@@ -6,13 +6,14 @@ import torch
 from mmengine.model import BaseDataPreprocessor, stack_batch
 
 from mmcls.registry import MODELS
+from .batch_augments import RandomBatchAugment
 
 
 @MODELS.register_module()
 class ClsDataPreprocessor(BaseDataPreprocessor):
     """Image pre-processor for classification tasks.
 
-    Comparing with the :class:`mmengine.ImgDataPreprocessor`,
+    Comparing with the :class:`mmengine.model.ImgDataPreprocessor`,
 
     1. It won't do normalization if ``mean`` is not specified.
     2. It does normalization and color space conversion after stacking batch.
@@ -39,6 +40,9 @@ class ClsDataPreprocessor(BaseDataPreprocessor):
         pad_value (Number): The padded pixel value. Defaults to 0.
         to_rgb (bool): whether to convert image from BGR to RGB.
             Defaults to False.
+        batch_augments (dict, optional): The batch augmentations settings,
+            including "augments" and "probs". For more details, see
+            :class:`mmcls.models.RandomBatchAugment`.
     """
 
     def __init__(self,
@@ -65,14 +69,16 @@ class ClsDataPreprocessor(BaseDataPreprocessor):
         else:
             self._enable_normalize = False
 
-        # TODO: support batch augmentations.
-        self.batch_augments = batch_augments
+        if batch_augments is not None:
+            self.batch_augments = RandomBatchAugment(batch_augments)
+        else:
+            self.batch_augments = None
 
     def forward(self,
                 data: Sequence[dict],
                 training: bool = False) -> Tuple[torch.Tensor, list]:
-        """Perform normalization、padding and bgr2rgb conversion based on
-        ``BaseDataPreprocessor``.
+        """Perform normalization, padding, bgr2rgb conversion and batch
+        augmentation based on ``BaseDataPreprocessor``.
 
         Args:
             data (Sequence[dict]): data sampled from dataloader.
@@ -98,8 +104,9 @@ class ClsDataPreprocessor(BaseDataPreprocessor):
         else:
             batch_inputs = batch_inputs.to(torch.float32)
 
+        # ----- Batch Aug ----
         if training and self.batch_augments is not None:
-            inputs, batch_data_samples = self.batch_augments(
-                inputs, batch_data_samples)
+            batch_inputs, batch_data_samples = self.batch_augments(
+                batch_inputs, batch_data_samples)
 
         return batch_inputs, batch_data_samples

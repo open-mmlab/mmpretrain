@@ -53,6 +53,8 @@ MODEL_WRAPPERS = Registry('model_wrapper', parent=MMENGINE_MODEL_WRAPPERS)
 # manage all kinds of weight initialization modules like `Uniform`
 WEIGHT_INITIALIZERS = Registry(
     'weight initializer', parent=MMENGINE_WEIGHT_INITIALIZERS)
+# manage all kinds of batch augmentations like Mixup and CutMix.
+BATCH_AUGMENTS = Registry('batch augment')
 
 # Registries For Optimizer and the related
 # manage all kinds of optimizers like `SGD` and `Adam`
