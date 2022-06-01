@@ -32,30 +32,39 @@ We follow the below convention to name config files. Contributors are advised to
 - `data info`：Data information, dataset name, input size and so on, such as imagenet, cifar, etc.;
 
 ### Algorithm information
+
 The main algorithm name and the corresponding branch architecture information. E.g：
+
 - `resnet50`
 - `mobilenet-v3-large`
 - `vit-small-patch32`   : `patch32` represents the size of the partition in `ViT` algorithm;
 - `seresnext101-32x4d`  : `SeResNet101` network structure, `32x4d` means that `groups` and `width_per_group` are 32 and 4 respectively in `Bottleneck`;
 
 ### Module information
+
 Some special `neck`, `head` and `pretrain` information. In classification tasks, `pretrain` information is the most commonly used:
+
 - `in21k-pre` : pre-trained on ImageNet21k;
 - `in21k-pre-3rd-party` : pre-trained on ImageNet21k and the checkpoint is converted from a third-party repository;
 
 ### Training information
+
 Training schedule, including training type, `batch size`, `lr schedule`, data augment, special loss functions and so on:
+
 - format `{gpu x batch_per_gpu}`, such as `8xb32`
 
 Training type (mainly seen in the transformer network, such as the `ViT` algorithm, which is usually divided into two training type: pre-training and fine-tuning):
+
 - `ft` : configuration file for fine-tuning
 - `pt` : configuration file for pretraining
 
 Training recipe. Usually, only the part that is different from the original paper will be marked. These methods will be arranged in the order `{pipeline aug}-{train aug}-{loss trick}-{scheduler}-{epochs}`.
+
 - `coslr-200e` : use cosine scheduler to train 200 epochs
 - `autoaug-mixup-lbs-coslr-50e` : use `autoaug`, `mixup`, `label smooth`, `cosine scheduler` to train 50 epochs
 
 ### Data information
+
 - `in1k` : `ImageNet1k` dataset, default to use the input image size of 224x224;
 - `in21k` : `ImageNet21k` dataset, also called `ImageNet22k` dataset, default to use the input image size of 224x224;
 - `in1k-384px` : Indicates that the input image size is 384x384;
@@ -68,16 +77,16 @@ repvgg-D2se_deploy_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py
 ```
 
 - `repvgg-D2se`:  Algorithm information
-  + `repvgg`: The main algorithm.
-  + `D2se`: The architecture.
+  - `repvgg`: The main algorithm.
+  - `D2se`: The architecture.
 - `deploy`: Module information, means the backbone is in the deploy state.
 - `4xb64-autoaug-lbs-mixup-coslr-200e`: Training information.
-  + `4xb64`: Use 4 GPUs and the size of batches per GPU is 64.
-  + `autoaug`: Use `AutoAugment` in training pipeline.
-  + `lbs`: Use label smoothing loss.
-  + `mixup`: Use `mixup` training augment method.
-  + `coslr`: Use cosine learning rate scheduler.
-  + `200e`: Train the model for 200 epochs.
+  - `4xb64`: Use 4 GPUs and the size of batches per GPU is 64.
+  - `autoaug`: Use `AutoAugment` in training pipeline.
+  - `lbs`: Use label smoothing loss.
+  - `mixup`: Use `mixup` training augment method.
+  - `coslr`: Use cosine learning rate scheduler.
+  - `200e`: Train the model for 200 epochs.
 - `in1k`: Dataset information. The config is for `ImageNet1k` dataset and the input size is `224x224`.
 
 ```{note}
@@ -117,14 +126,15 @@ _base_ = [
 The four parts are explained separately below, and the above-mentioned ResNet50 primitive config are also used as an example.
 
 ### model
+
 The parameter `"model"` is a python dictionary in the configuration file, which mainly includes information such as network structure and loss function:
+
 - `type` ： Classifier name, MMCls supports `ImageClassifier`, refer to [API documentation](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.classifiers).
 - `backbone` ： Backbone configs, refer to [API documentation](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.backbones) for available options.
 - `neck` ：Neck network name, MMCls supports `GlobalAveragePooling`, please refer to [API documentation](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.necks).
 - `head`: Head network name, MMCls supports single-label and multi-label classification head networks, available options refer to [API documentation](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.heads).
-    - `loss`: Loss function type, supports `CrossEntropyLoss`, [`LabelSmoothLoss`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_label_smooth.py) etc., For available options, refer to [API documentation](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.losses).
+  - `loss`: Loss function type, supports `CrossEntropyLoss`, [`LabelSmoothLoss`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_label_smooth.py) etc., For available options, refer to [API documentation](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.losses).
 - `train_cfg` ：Training augment config, MMCls supports [`mixup`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_mixup.py), [`cutmix`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_cutmix.py) and other augments.
-
 
 ```{note}
 The 'type' in the configuration file is not a constructed parameter, but a class name.
@@ -151,7 +161,9 @@ model = dict(
 ```
 
 ### data
+
 The parameter `"data"` is a python dictionary in the configuration file, which mainly includes information to construct dataloader:
+
 - `samples_per_gpu` : the BatchSize of each GPU when building the dataloader
 - `workers_per_gpu` : the number of threads per GPU when building dataloader
 - `train ｜ val ｜ test` : config to construct dataset
@@ -211,7 +223,9 @@ evaluation = dict(       # The config to build the evaluation hook, refer to htt
 ```
 
 ### training schedule
+
 Mainly include optimizer settings, `optimizer hook` settings, learning rate schedule and `runner` settings:
+
 - `optimizer`: optimizer setting , support all optimizers in `pytorch`, refer to related [mmcv](https://mmcv.readthedocs.io/en/latest/_modules/mmcv/runner/optimizer/default_constructor.html#DefaultOptimizerConstructor) documentation.
 - `optimizer_config`: `optimizer hook` configuration file, such as setting gradient limit, refer to related [mmcv](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/optimizer.py#L8) code.
 - `lr_config`: Learning rate scheduler, supports "CosineAnnealing", "Step", "Cyclic", etc. refer to related [mmcv](https://mmcv.readthedocs.io/en/latest/_modules/mmcv/runner/hooks/lr_updater.html#LrUpdaterHook) documentation for more options.
@@ -376,9 +390,8 @@ When users use the script "tools/train.py" or "tools/test.py" to submit tasks or
 - Update values of list/tuples.
 
   If the value to be updated is a list or a tuple. For example, the config file normally sets `workflow=[('train', 1)]`. If you want to
-  change this key, you may specify `--cfg-options workflow="[(train,1),(val,1)]"`. Note that the quotation mark \" is necessary to
+  change this key, you may specify `--cfg-options workflow="[(train,1),(val,1)]"`. Note that the quotation mark " is necessary to
   support list/tuple data types, and that **NO** white space is allowed inside the quotation marks in the specified value.
-
 
 ## Import user-defined modules
 
@@ -400,4 +413,5 @@ custom_imports = dict(
 ```
 
 ## FAQ
+
 - None

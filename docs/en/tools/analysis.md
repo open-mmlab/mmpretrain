@@ -52,21 +52,21 @@ Examples:
 
 - Plot the loss curve in training.
 
-    ```shell
-    python tools/analysis_tools/analyze_logs.py plot_curve your_log_json --keys loss --legend loss
-    ```
+  ```shell
+  python tools/analysis_tools/analyze_logs.py plot_curve your_log_json --keys loss --legend loss
+  ```
 
 - Plot the top-1 accuracy and top-5 accuracy curves, and save the figure to results.jpg.
 
-    ```shell
-    python tools/analysis_tools/analyze_logs.py plot_curve your_log_json --keys accuracy_top-1 accuracy_top-5  --legend top1 top5 --out results.jpg
-    ```
+  ```shell
+  python tools/analysis_tools/analyze_logs.py plot_curve your_log_json --keys accuracy_top-1 accuracy_top-5  --legend top1 top5 --out results.jpg
+  ```
 
 - Compare the top-1 accuracy of two log files in the same figure.
 
-    ```shell
-    python tools/analysis_tools/analyze_logs.py plot_curve log1.json log2.json --keys accuracy_top-1 --legend exp1 exp2
-    ```
+  ```shell
+  python tools/analysis_tools/analyze_logs.py plot_curve log1.json log2.json --keys accuracy_top-1 --legend exp1 exp2
+  ```
 
 ```{note}
 The tool will automatically select to find keys in training logs or validation logs according to the keys.

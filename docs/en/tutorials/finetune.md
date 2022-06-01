@@ -96,7 +96,6 @@ Not all backbones support the `frozen_stages` argument by now. Please check
 to confirm if your backbone supports it.
 ```
 
-
 ## Modify dataset
 
 When fine-tuning on a new dataset, usually we need to modify some dataset

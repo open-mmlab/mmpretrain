@@ -1,6 +1,7 @@
 # MobileNet V2
 
 > [MobileNetV2: Inverted Residuals and Linear Bottlenecks](https://arxiv.org/abs/1801.04381)
+
 <!-- [ALGORITHM] -->
 
 ## Abstract
@@ -17,9 +18,9 @@ The MobileNetV2 architecture is based on an inverted residual structure where th
 
 ### ImageNet-1k
 
-|         Model         | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
-|:---------------------:|:---------:|:--------:|:---------:|:---------:|:---------:|:--------:|
-| MobileNet V2          | 3.5       | 0.319    | 71.86 | 90.42 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v2/mobilenet_v2_batch256_imagenet_20200708-3b2dc3af.pth) &#124; [log](https://download.openmmlab.com/mmclassification/v0/mobilenet_v2/mobilenet_v2_batch256_imagenet_20200708-3b2dc3af.log.json) |
+|    Model     | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                                   Config                                    |                                    Download                                    |
+| :----------: | :-------: | :------: | :-------: | :-------: | :-------------------------------------------------------------------------: | :----------------------------------------------------------------------------: |
+| MobileNet V2 |    3.5    |  0.319   |   71.86   |   90.42   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v2/mobilenet_v2_batch256_imagenet_20200708-3b2dc3af.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/mobilenet_v2/mobilenet_v2_batch256_imagenet_20200708-3b2dc3af.log.json) |
 
 ## Citation
 

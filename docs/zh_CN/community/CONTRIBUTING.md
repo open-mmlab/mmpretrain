@@ -31,8 +31,7 @@
 yapf 和 isort 的格式设置位于 [setup.cfg](https://github.com/open-mmlab/mmclassification/blob/master/setup.cfg)
 
 我们使用 [pre-commit hook](https://pre-commit.com/) 来保证每次提交时自动进行代
-码检查和格式化，启用的功能包括 `flake8`, `yapf`, `isort`, `trailing
-whitespaces`, `markdown files`, 修复 `end-of-files`, `double-quoted-strings`,
+码检查和格式化，启用的功能包括 `flake8`, `yapf`, `isort`, `trailing whitespaces`, `markdown files`, 修复 `end-of-files`, `double-quoted-strings`,
 `python-encoding-pragma`, `mixed-line-ending`, 对 `requirments.txt`的排序等。
 pre-commit hook 的配置文件位于 [.pre-commit-config](https://github.com/open-mmlab/mmclassification/blob/master/.pre-commit-config.yaml)
 

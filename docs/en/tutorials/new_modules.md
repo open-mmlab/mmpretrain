@@ -96,42 +96,42 @@ To add a new neck, we mainly implement the `forward` function, which applies som
 
 1. Create a new file in `mmcls/models/necks/gap.py`.
 
-    ```python
-    import torch.nn as nn
+   ```python
+   import torch.nn as nn
 
-    from ..builder import NECKS
+   from ..builder import NECKS
 
-    @NECKS.register_module()
-    class GlobalAveragePooling(nn.Module):
+   @NECKS.register_module()
+   class GlobalAveragePooling(nn.Module):
 
-        def __init__(self):
-            self.gap = nn.AdaptiveAvgPool2d((1, 1))
+       def __init__(self):
+           self.gap = nn.AdaptiveAvgPool2d((1, 1))
 
-        def forward(self, inputs):
-            # we regard inputs as tensor for simplicity
-            outs = self.gap(inputs)
-            outs = outs.view(inputs.size(0), -1)
-            return outs
-    ```
+       def forward(self, inputs):
+           # we regard inputs as tensor for simplicity
+           outs = self.gap(inputs)
+           outs = outs.view(inputs.size(0), -1)
+           return outs
+   ```
 
 2. Import the module in `mmcls/models/necks/__init__.py`.
 
-    ```python
-    ...
-    from .gap import GlobalAveragePooling
+   ```python
+   ...
+   from .gap import GlobalAveragePooling
 
-    __all__ = [
-        ..., 'GlobalAveragePooling'
-    ]
-    ```
+   __all__ = [
+       ..., 'GlobalAveragePooling'
+   ]
+   ```
 
 3. Modify the config file.
 
-    ```python
-    model = dict(
-        neck=dict(type='GlobalAveragePooling'),
-    )
-    ```
+   ```python
+   model = dict(
+       neck=dict(type='GlobalAveragePooling'),
+   )
+   ```
 
 ### Add new heads
 
@@ -140,52 +140,52 @@ To implement a new head, basically we need to implement `forward_train`, which t
 
 1. Create a new file in `mmcls/models/heads/linear_head.py`.
 
-    ```python
-    from ..builder import HEADS
-    from .cls_head import ClsHead
+   ```python
+   from ..builder import HEADS
+   from .cls_head import ClsHead
 
 
-    @HEADS.register_module()
-    class LinearClsHead(ClsHead):
+   @HEADS.register_module()
+   class LinearClsHead(ClsHead):
 
-        def __init__(self,
-                  num_classes,
-                  in_channels,
-                  loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
-                  topk=(1, )):
-            super(LinearClsHead, self).__init__(loss=loss, topk=topk)
-            self.in_channels = in_channels
-            self.num_classes = num_classes
+       def __init__(self,
+                 num_classes,
+                 in_channels,
+                 loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
+                 topk=(1, )):
+           super(LinearClsHead, self).__init__(loss=loss, topk=topk)
+           self.in_channels = in_channels
+           self.num_classes = num_classes
 
-            if self.num_classes <= 0:
-                raise ValueError(
-                    f'num_classes={num_classes} must be a positive integer')
+           if self.num_classes <= 0:
+               raise ValueError(
+                   f'num_classes={num_classes} must be a positive integer')
 
-            self._init_layers()
+           self._init_layers()
 
-        def _init_layers(self):
-            self.fc = nn.Linear(self.in_channels, self.num_classes)
+       def _init_layers(self):
+           self.fc = nn.Linear(self.in_channels, self.num_classes)
 
-        def init_weights(self):
-            normal_init(self.fc, mean=0, std=0.01, bias=0)
+       def init_weights(self):
+           normal_init(self.fc, mean=0, std=0.01, bias=0)
 
-        def forward_train(self, x, gt_label):
-            cls_score = self.fc(x)
-            losses = self.loss(cls_score, gt_label)
-            return losses
+       def forward_train(self, x, gt_label):
+           cls_score = self.fc(x)
+           losses = self.loss(cls_score, gt_label)
+           return losses
 
-    ```
+   ```
 
 2. Import the module in `mmcls/models/heads/__init__.py`.
 
-    ```python
-    ...
-    from .linear_head import LinearClsHead
+   ```python
+   ...
+   from .linear_head import LinearClsHead
 
-    __all__ = [
-        ..., 'LinearClsHead'
-    ]
-    ```
+   __all__ = [
+       ..., 'LinearClsHead'
+   ]
+   ```
 
 3. Modify the config file.
 
@@ -219,54 +219,54 @@ Assuming that we want to mimic a probabilistic distribution generated from anoth
 
 1. Create a new file in `mmcls/models/losses/l1_loss.py`.
 
-    ```python
-    import torch
-    import torch.nn as nn
+   ```python
+   import torch
+   import torch.nn as nn
 
-    from ..builder import LOSSES
-    from .utils import weighted_loss
+   from ..builder import LOSSES
+   from .utils import weighted_loss
 
-    @weighted_loss
-    def l1_loss(pred, target):
-        assert pred.size() == target.size() and target.numel() > 0
-        loss = torch.abs(pred - target)
-        return loss
+   @weighted_loss
+   def l1_loss(pred, target):
+       assert pred.size() == target.size() and target.numel() > 0
+       loss = torch.abs(pred - target)
+       return loss
 
-    @LOSSES.register_module()
-    class L1Loss(nn.Module):
+   @LOSSES.register_module()
+   class L1Loss(nn.Module):
 
-        def __init__(self, reduction='mean', loss_weight=1.0):
-            super(L1Loss, self).__init__()
-            self.reduction = reduction
-            self.loss_weight = loss_weight
+       def __init__(self, reduction='mean', loss_weight=1.0):
+           super(L1Loss, self).__init__()
+           self.reduction = reduction
+           self.loss_weight = loss_weight
 
-        def forward(self,
-                    pred,
-                    target,
-                    weight=None,
-                    avg_factor=None,
-                    reduction_override=None):
-            assert reduction_override in (None, 'none', 'mean', 'sum')
-            reduction = (
-                reduction_override if reduction_override else self.reduction)
-            loss = self.loss_weight * l1_loss(
-                pred, target, weight, reduction=reduction, avg_factor=avg_factor)
-            return loss
-    ```
+       def forward(self,
+                   pred,
+                   target,
+                   weight=None,
+                   avg_factor=None,
+                   reduction_override=None):
+           assert reduction_override in (None, 'none', 'mean', 'sum')
+           reduction = (
+               reduction_override if reduction_override else self.reduction)
+           loss = self.loss_weight * l1_loss(
+               pred, target, weight, reduction=reduction, avg_factor=avg_factor)
+           return loss
+   ```
 
 2. Import the module in `mmcls/models/losses/__init__.py`.
 
-    ```python
-    ...
-    from .l1_loss import L1Loss, l1_loss
+   ```python
+   ...
+   from .l1_loss import L1Loss, l1_loss
 
-    __all__ = [
-        ..., 'L1Loss', 'l1_loss'
-    ]
-    ```
+   __all__ = [
+       ..., 'L1Loss', 'l1_loss'
+   ]
+   ```
 
 3. Modify loss field in the config.
 
-    ```python
-    loss=dict(type='L1Loss', loss_weight=1.0))
-    ```
+   ```python
+   loss=dict(type='L1Loss', loss_weight=1.0))
+   ```

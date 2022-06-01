@@ -1,6 +1,7 @@
 # Mlp-Mixer
 
 > [MLP-Mixer: An all-MLP Architecture for Vision](https://arxiv.org/abs/2105.01601)
+
 <!-- [ALGORITHM] -->
 
 ## Abstract
@@ -15,12 +16,12 @@ Convolutional Neural Networks (CNNs) are the go-to model for computer vision. Re
 
 ### ImageNet-1k
 
-|      Model     | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
-|:--------------:|:---------:|:--------:|:---------:|:---------:|:------:|:--------:|
-|  Mixer-B/16\*  |  59.88   |  12.61    | 76.68     | 92.25     | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/mlp_mixer/mlp-mixer-base-p16_64xb64_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/mlp-mixer/mixer-base-p16_3rdparty_64xb64_in1k_20211124-1377e3e0.pth) |
-|  Mixer-L/16\*  |  208.2   |  44.57    | 72.34     | 88.02     | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/mlp_mixer/mlp-mixer-large-p16_64xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mlp-mixer/mixer-large-p16_3rdparty_64xb64_in1k_20211124-5a2519d2.pth) |
+|    Model     | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                                   Config                                    |                                    Download                                    |
+| :----------: | :-------: | :------: | :-------: | :-------: | :-------------------------------------------------------------------------: | :----------------------------------------------------------------------------: |
+| Mixer-B/16\* |   59.88   |  12.61   |   76.68   |   92.25   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/mlp_mixer/mlp-mixer-base-p16_64xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mlp-mixer/mixer-base-p16_3rdparty_64xb64_in1k_20211124-1377e3e0.pth) |
+| Mixer-L/16\* |   208.2   |  44.57   |   72.34   |   88.02   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/mlp_mixer/mlp-mixer-large-p16_64xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mlp-mixer/mixer-large-p16_3rdparty_64xb64_in1k_20211124-5a2519d2.pth) |
 
-*Models with \* are converted from [timm](https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/mlp_mixer.py). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
+*Models with * are converted from [timm](https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/mlp_mixer.py). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 
 ## Citation
 

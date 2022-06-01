@@ -104,44 +104,44 @@ train_pipeline = [
    一个文件中，例如 `my_pipeline.py`。这个类需要重载 `__call__` 方法，接受一个
    字典作为输入，并返回一个字典。
 
-    ```python
-    from mmcls.datasets import PIPELINES
+   ```python
+   from mmcls.datasets import PIPELINES
 
-    @PIPELINES.register_module()
-    class MyTransform(object):
+   @PIPELINES.register_module()
+   class MyTransform(object):
 
-        def __call__(self, results):
-            # 对 results['img'] 进行变换操作
-            return results
-    ```
+       def __call__(self, results):
+           # 对 results['img'] 进行变换操作
+           return results
+   ```
 
 2. 在 `mmcls/datasets/pipelines/__init__.py` 中导入这个新的类。
 
-    ```python
-    ...
-    from .my_pipeline import MyTransform
+   ```python
+   ...
+   from .my_pipeline import MyTransform
 
-    __all__ = [
-        ..., 'MyTransform'
-    ]
-    ```
+   __all__ = [
+       ..., 'MyTransform'
+   ]
+   ```
 
 3. 在数据流水线的配置中添加这一操作。
 
-    ```python
-    img_norm_cfg = dict(
-        mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
-    train_pipeline = [
-        dict(type='LoadImageFromFile'),
-        dict(type='RandomResizedCrop', size=224),
-        dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
-        dict(type='MyTransform'),
-        dict(type='Normalize', **img_norm_cfg),
-        dict(type='ImageToTensor', keys=['img']),
-        dict(type='ToTensor', keys=['gt_label']),
-        dict(type='Collect', keys=['img', 'gt_label'])
-    ]
-    ```
+   ```python
+   img_norm_cfg = dict(
+       mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+   train_pipeline = [
+       dict(type='LoadImageFromFile'),
+       dict(type='RandomResizedCrop', size=224),
+       dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
+       dict(type='MyTransform'),
+       dict(type='Normalize', **img_norm_cfg),
+       dict(type='ImageToTensor', keys=['img']),
+       dict(type='ToTensor', keys=['gt_label']),
+       dict(type='Collect', keys=['img', 'gt_label'])
+   ]
+   ```
 
 ## 流水线可视化
 

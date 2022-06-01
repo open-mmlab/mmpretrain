@@ -1,6 +1,7 @@
 # SE-ResNet
 
 > [Squeeze-and-Excitation Networks](https://openaccess.thecvf.com/content_cvpr_2018/html/Hu_Squeeze-and-Excitation_Networks_CVPR_2018_paper.html)
+
 <!-- [ALGORITHM] -->
 
 ## Abstract
@@ -15,10 +16,10 @@ The central building block of convolutional neural networks (CNNs) is the convol
 
 ### ImageNet-1k
 
-|         Model         | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
-|:---------------------:|:---------:|:--------:|:---------:|:---------:|:---------:|:--------:|
-| SE-ResNet-50          | 28.09     | 4.13     | 77.74 | 93.84 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/seresnet/seresnet50_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet50_batch256_imagenet_20200804-ae206104.pth) &#124; [log](https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet50_batch256_imagenet_20200708-657b3c36.log.json) |
-| SE-ResNet-101         | 49.33     | 7.86     | 78.26 | 94.07 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/seresnet/seresnet101_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet101_batch256_imagenet_20200804-ba5b51d4.pth) &#124; [log](https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet101_batch256_imagenet_20200708-038a4d04.log.json) |
+|     Model     | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                                   Config                                    |                                   Download                                    |
+| :-----------: | :-------: | :------: | :-------: | :-------: | :-------------------------------------------------------------------------: | :---------------------------------------------------------------------------: |
+| SE-ResNet-50  |   28.09   |   4.13   |   77.74   |   93.84   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/seresnet/seresnet50_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet50_batch256_imagenet_20200804-ae206104.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet50_batch256_imagenet_20200708-657b3c36.log.json) |
+| SE-ResNet-101 |   49.33   |   7.86   |   78.26   |   94.07   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/seresnet/seresnet101_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet101_batch256_imagenet_20200804-ba5b51d4.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet101_batch256_imagenet_20200708-038a4d04.log.json) |
 
 ## Citation
 
