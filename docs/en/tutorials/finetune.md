@@ -92,7 +92,7 @@ model = dict(
 
 ```{note}
 Not all backbones support the `frozen_stages` argument by now. Please check
-[the docs](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.models.backbones)
+[the docs](https://mmclassification.readthedocs.io/en/latest/api/models.html#backbones)
 to confirm if your backbone supports it.
 ```
 

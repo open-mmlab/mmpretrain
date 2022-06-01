@@ -1,7 +1,7 @@
 # Tutorial 3: Customize Dataset
 
 We support many common public datasets for image classification task, you can find them in
-[this page](https://mmclassification.readthedocs.io/en/master/api/datasets.html).
+[this page](https://mmclassification.readthedocs.io/en/latest/api/datasets.html).
 
 In this section, we demonstrate how to [use your own dataset](#use-your-own-dataset)
 and [use dataset wrapper](#use-dataset-wrapper).
@@ -13,7 +13,7 @@ and [use dataset wrapper](#use-dataset-wrapper).
 The simplest way to use your own dataset is to convert it to existing dataset formats.
 
 For multi-class classification task, we recommend to use the format of
-[`CustomDataset`](https://mmclassification.readthedocs.io/en/master/api/datasets.html#mmcls.datasets.CustomDataset).
+[`CustomDataset`](https://mmclassification.readthedocs.io/en/latest/api/datasets.html#mmcls.datasets.CustomDataset).
 
 The `CustomDataset` supports two kinds of format:
 
@@ -236,4 +236,4 @@ data = dict(
 )
 ```
 
-You may refer to [API reference](https://mmclassification.readthedocs.io/en/master/api/datasets.html#mmcls.datasets.ClassBalancedDataset) for details.
+You may refer to [API reference](https://mmclassification.readthedocs.io/en/latest/api/datasets.html#mmcls.datasets.ClassBalancedDataset) for details.

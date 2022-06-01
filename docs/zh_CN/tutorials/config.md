@@ -130,11 +130,11 @@ _base_ = [
 
 模型参数 `model` 在配置文件中为一个 `python` 字典，主要包括网络结构、损失函数等信息：
 
-- `type` ： 分类器名称, 目前 MMClassification 只支持 `ImageClassifier`， 参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.classifiers)。
-- `backbone` ： 主干网类型，可用选项参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.backbones)。
-- `neck` ： 颈网络类型，目前 MMClassification 只支持 `GlobalAveragePooling`， 参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.necks)。
-- `head` ： 头网络类型， 包括单标签分类与多标签分类头网络，可用选项参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.heads)。
-  - `loss` ： 损失函数类型， 支持 `CrossEntropyLoss`, [`LabelSmoothLoss`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_label_smooth.py) 等，可用选项参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.losses)。
+- `type` ： 分类器名称, 目前 MMClassification 只支持 `ImageClassifier`， 参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api/models.html#classifier)。
+- `backbone` ： 主干网类型，可用选项参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api/models.html#backbones)。
+- `neck` ： 颈网络类型，目前 MMClassification 只支持 `GlobalAveragePooling`， 参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api/models.html#necks)。
+- `head` ： 头网络类型， 包括单标签分类与多标签分类头网络，可用选项参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api/models.html#heads)。
+  - `loss` ： 损失函数类型， 支持 `CrossEntropyLoss`, [`LabelSmoothLoss`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_label_smooth.py) 等，可用选项参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api/models.html#losses)。
 - `train_cfg` ：训练配置, 支持 [`mixup`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_mixup.py), [`cutmix`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_cutmix.py) 等训练增强。
 
 ```{note}
@@ -168,7 +168,7 @@ model = dict(
 - `samples_per_gpu` : 构建 dataloader 时，每个 GPU 的 Batch Size
 - `workers_per_gpu` : 构建 dataloader 时，每个 GPU 的 线程数
 - `train ｜ val ｜ test` : 构造数据集
-  - `type` :  数据集类型， MMClassification 支持 `ImageNet`、 `Cifar` 等 ，参考[API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.datasets)
+  - `type` :  数据集类型， MMClassification 支持 `ImageNet`、 `Cifar` 等 ，参考[API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api/datasets.html)
   - `data_prefix` : 数据集根目录
   - `pipeline` :  数据处理流水线，参考相关教程文档 [如何设计数据处理流水线](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/data_pipeline.html)
 
