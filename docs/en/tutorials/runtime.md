@@ -58,17 +58,17 @@ The custom hooks are registered through `custom_hooks`. Generally, they are hook
 
 **Priority list**
 
-| Level           | Value      |
-|:--:|:--:|
-| HIGHEST         | 0          |
-| VERY_HIGH       | 10         |
-| HIGH            | 30         |
-| ABOVE_NORMAL    | 40         |
-| NORMAL(default) | 50         |
-| BELOW_NORMAL    | 60         |
-| LOW             | 70         |
-| VERY_LOW        | 90         |
-| LOWEST          | 100        |
+|      Level      | Value |
+| :-------------: | :---: |
+|     HIGHEST     |   0   |
+|    VERY_HIGH    |  10   |
+|      HIGH       |  30   |
+|  ABOVE_NORMAL   |  40   |
+| NORMAL(default) |  50   |
+|  BELOW_NORMAL   |  60   |
+|       LOW       |  70   |
+|    VERY_LOW     |  90   |
+|     LOWEST      |  100  |
 
 The priority determines the execution order of the hooks. Before training, the log will print out the execution order of the hooks at each stage to facilitate debugging.
 
@@ -76,15 +76,15 @@ The priority determines the execution order of the hooks. Before training, the l
 
 Some common hooks are not registered through `custom_hooks`, they are
 
-| Hooks                  | Priority                |
-|:--:|:--:|
-| `LrUpdaterHook`        | VERY_HIGH (10)          |
-| `MomentumUpdaterHook`  | HIGH (30)               |
-| `OptimizerHook`        | ABOVE_NORMAL (40)       |
-| `CheckpointHook`       | NORMAL (50)             |
-| `IterTimerHook`        | LOW (70)                |
-| `EvalHook`             | LOW (70)                |
-| `LoggerHook(s)`        | VERY_LOW (90)           |
+|         Hooks         |     Priority      |
+| :-------------------: | :---------------: |
+|    `LrUpdaterHook`    |  VERY_HIGH (10)   |
+| `MomentumUpdaterHook` |     HIGH (30)     |
+|    `OptimizerHook`    | ABOVE_NORMAL (40) |
+|   `CheckpointHook`    |    NORMAL (50)    |
+|    `IterTimerHook`    |     LOW (70)      |
+|      `EvalHook`       |     LOW (70)      |
+|    `LoggerHook(s)`    |   VERY_LOW (90)   |
 
 `OptimizerHook`, `MomentumUpdaterHook` and `LrUpdaterHook` have been introduced in [sehedule strategy](./schedule.md).
 `IterTimerHook` is used to record elapsed time and does not support modification.
@@ -156,7 +156,6 @@ Some hooks have been already implemented in MMCV and MMClassification, they are:
 - [ProfilerHook](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/profiler.py)
 - ......
 
-
 If the hook is already implemented in MMCV, you can directly modify the config to use the hook as below
 
 ```python
@@ -216,8 +215,8 @@ Then we need to make `MyHook` imported. Assuming the file is in `mmcls/core/util
 
 - Modify `mmcls/core/utils/__init__.py` to import it.
 
-    The newly defined module should be imported in `mmcls/core/utils/__init__.py` so that the registry will
-    find the new module and add it:
+  The newly defined module should be imported in `mmcls/core/utils/__init__.py` so that the registry will
+  find the new module and add it:
 
 ```python
 from .my_hook import MyHook
@@ -246,7 +245,6 @@ custom_hooks = [
 ```
 
 By default, the hook's priority is set as `NORMAL` during registration.
-
 
 ## FAQ
 

@@ -10,34 +10,34 @@ and make sure you fill in all required information in the template.
 ## Installation
 
 - Compatibility issue between MMCV and MMClassification; "AssertionError:
-  MMCV==xxx is used but incompatible. Please install mmcv>=xxx, <=xxx."
+  MMCV==xxx is used but incompatible. Please install mmcv>=xxx, \<=xxx."
 
   Compatible MMClassification and MMCV versions are shown as below. Please
   choose the correct version of MMCV to avoid installation issues.
 
-  | MMClassification version |     MMCV version      |
-  |:------------------------:|:---------------------:|
-  | dev                      | mmcv>=1.5.0, <1.6.0   |
-  | 0.23.0 (master)          | mmcv>=1.4.2, <1.6.0   |
-  | 0.22.1                   | mmcv>=1.4.2, <1.6.0   |
-  | 0.21.0                   | mmcv>=1.4.2, <=1.5.0  |
-  | 0.20.1                   | mmcv>=1.4.2, <=1.5.0  |
-  | 0.19.0                   | mmcv>=1.3.16, <=1.5.0 |
-  | 0.18.0                   | mmcv>=1.3.16, <=1.5.0 |
-  | 0.17.0                   | mmcv>=1.3.8, <=1.5.0  |
-  | 0.16.0                   | mmcv>=1.3.8, <=1.5.0  |
-  | 0.15.0                   | mmcv>=1.3.8, <=1.5.0  |
-  | 0.15.0                   | mmcv>=1.3.8, <=1.5.0  |
-  | 0.14.0                   | mmcv>=1.3.8, <=1.5.0  |
-  | 0.13.0                   | mmcv>=1.3.8, <=1.5.0  |
-  | 0.12.0                   | mmcv>=1.3.1, <=1.5.0  |
-  | 0.11.1                   | mmcv>=1.3.1, <=1.5.0  |
-  | 0.11.0                   | mmcv>=1.3.0           |
-  | 0.10.0                   | mmcv>=1.3.0           |
-  | 0.9.0                    | mmcv>=1.1.4           |
-  | 0.8.0                    | mmcv>=1.1.4           |
-  | 0.7.0                    | mmcv>=1.1.4           |
-  | 0.6.0                    | mmcv>=1.1.4           |
+  | MMClassification version |      MMCV version      |
+  | :----------------------: | :--------------------: |
+  |           dev            |  mmcv>=1.5.0, \<1.6.0  |
+  |     0.23.0 (master)      |  mmcv>=1.4.2, \<1.6.0  |
+  |          0.22.1          |  mmcv>=1.4.2, \<1.6.0  |
+  |          0.21.0          | mmcv>=1.4.2, \<=1.5.0  |
+  |          0.20.1          | mmcv>=1.4.2, \<=1.5.0  |
+  |          0.19.0          | mmcv>=1.3.16, \<=1.5.0 |
+  |          0.18.0          | mmcv>=1.3.16, \<=1.5.0 |
+  |          0.17.0          | mmcv>=1.3.8, \<=1.5.0  |
+  |          0.16.0          | mmcv>=1.3.8, \<=1.5.0  |
+  |          0.15.0          | mmcv>=1.3.8, \<=1.5.0  |
+  |          0.15.0          | mmcv>=1.3.8, \<=1.5.0  |
+  |          0.14.0          | mmcv>=1.3.8, \<=1.5.0  |
+  |          0.13.0          | mmcv>=1.3.8, \<=1.5.0  |
+  |          0.12.0          | mmcv>=1.3.1, \<=1.5.0  |
+  |          0.11.1          | mmcv>=1.3.1, \<=1.5.0  |
+  |          0.11.0          |      mmcv>=1.3.0       |
+  |          0.10.0          |      mmcv>=1.3.0       |
+  |          0.9.0           |      mmcv>=1.1.4       |
+  |          0.8.0           |      mmcv>=1.1.4       |
+  |          0.7.0           |      mmcv>=1.1.4       |
+  |          0.6.0           |      mmcv>=1.1.4       |
 
   ```{note}
   Since the `dev` branch is under frequent development, the MMCV
@@ -70,7 +70,7 @@ and make sure you fill in all required information in the template.
   can also use the same environment to develop MMClassification in different
   folders, like mmcls-0.21, mmcls-0.23. When you run the train or test shell script,
   it will adopt the mmcls package in the current folder. And when you run other Python
-  script, you can also add ``PYTHONPATH=`pwd` `` at the beginning of your command
+  script, you can also add `` PYTHONPATH=`pwd`  `` at the beginning of your command
   to use the package in the current folder.
 
   Conversely, to use the default MMClassification installed in the environment

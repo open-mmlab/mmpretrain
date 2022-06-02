@@ -18,9 +18,9 @@
 1. 请参照 [安装指南](https://mmclassification.readthedocs.io/zh_CN/latest/install.html#mmclassification) 从源码安装 MMClassification。
 2. 安装 onnx 和 onnxruntime。
 
-  ```shell
-  pip install onnx onnxruntime==1.5.1
-  ```
+```shell
+pip install onnx onnxruntime==1.5.1
+```
 
 ### 使用方法
 
@@ -66,14 +66,14 @@ python tools/deployment/pytorch2onnx.py \
 
 下表列出了保证可导出至 ONNX，并在 ONNX Runtime 中运行的模型。
 
-|     模型     |                               配置文件                                       |     批推理      |  动态输入尺寸 | 备注 |
-| :----------: | :--------------------------------------------------------------------------: | :-------------: | :-----------: | ---- |
-| MobileNetV2  |    `configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py`                     |        Y        |       Y       |      |
-|    ResNet    |          `configs/resnet/resnet18_8xb16_cifar10.py`                          |        Y        |       Y       |      |
-|   ResNeXt    |     `configs/resnext/resnext50-32x4d_8xb32_in1k.py`                      |        Y        |       Y       |      |
-|  SE-ResNet   |       `configs/seresnet/seresnet50_8xb32_in1k.py`                        |        Y        |       Y       |      |
-| ShuffleNetV1 | `configs/shufflenet_v1/shufflenet-v1-1x_16xb64_in1k.py` |        Y        |       Y       |      |
-| ShuffleNetV2 | `configs/shufflenet_v2/shufflenet-v2-1x_16xb64_in1k.py` |        Y        |       Y       |      |
+|     模型     |                        配置文件                         | 批推理 | 动态输入尺寸 | 备注 |
+| :----------: | :-----------------------------------------------------: | :----: | :----------: | ---- |
+| MobileNetV2  |    `configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py`    |   Y    |      Y       |      |
+|    ResNet    |       `configs/resnet/resnet18_8xb16_cifar10.py`        |   Y    |      Y       |      |
+|   ResNeXt    |     `configs/resnext/resnext50-32x4d_8xb32_in1k.py`     |   Y    |      Y       |      |
+|  SE-ResNet   |       `configs/seresnet/seresnet50_8xb32_in1k.py`       |   Y    |      Y       |      |
+| ShuffleNetV1 | `configs/shufflenet_v1/shufflenet-v1-1x_16xb64_in1k.py` |   Y    |      Y       |      |
+| ShuffleNetV2 | `configs/shufflenet_v2/shufflenet-v2-1x_16xb64_in1k.py` |   Y    |      Y       |      |
 
 注：
 

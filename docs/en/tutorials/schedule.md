@@ -19,7 +19,6 @@ In this tutorial, we will introduce some methods about how to construct optimize
 
 <!-- TOC -->
 
-
 ## Customize optimizer supported by PyTorch
 
 We already support to use all the optimizers implemented by PyTorch, and to use and modify them, please change the `optimizer` field of config files.
@@ -58,20 +57,20 @@ We also support many other learning rate schedules [here](https://github.com/ope
 
 - ConsineAnnealing schedule:
 
-    ```python
-    lr_config = dict(
-        policy='CosineAnnealing',
-        warmup='linear',
-        warmup_iters=1000,
-        warmup_ratio=1.0 / 10,
-        min_lr_ratio=1e-5)
-    ```
+  ```python
+  lr_config = dict(
+      policy='CosineAnnealing',
+      warmup='linear',
+      warmup_iters=1000,
+      warmup_ratio=1.0 / 10,
+      min_lr_ratio=1e-5)
+  ```
 
 - Poly schedule:
 
-    ```python
-    lr_config = dict(policy='poly', power=0.9, min_lr=1e-4, by_epoch=False)
-    ```
+  ```python
+  lr_config = dict(policy='poly', power=0.9, min_lr=1e-4, by_epoch=False)
+  ```
 
 ### Warmup strategy
 
@@ -90,28 +89,28 @@ Here are some examples
 
 1. linear & warmup by iter
 
-    ```python
-    lr_config = dict(
-        policy='CosineAnnealing',
-        by_epoch=False,
-        min_lr_ratio=1e-2,
-        warmup='linear',
-        warmup_ratio=1e-3,
-        warmup_iters=20 * 1252,
-        warmup_by_epoch=False)
-    ```
+   ```python
+   lr_config = dict(
+       policy='CosineAnnealing',
+       by_epoch=False,
+       min_lr_ratio=1e-2,
+       warmup='linear',
+       warmup_ratio=1e-3,
+       warmup_iters=20 * 1252,
+       warmup_by_epoch=False)
+   ```
 
 2. exp & warmup by epoch
 
-    ```python
-    lr_config = dict(
-        policy='CosineAnnealing',
-        min_lr=0,
-        warmup='exp',
-        warmup_iters=5,
-        warmup_ratio=0.1,
-        warmup_by_epoch=True)
-    ```
+   ```python
+   lr_config = dict(
+       policy='CosineAnnealing',
+       min_lr=0,
+       warmup='exp',
+       warmup_iters=5,
+       warmup_ratio=0.1,
+       warmup_by_epoch=True)
+   ```
 
 ```{tip}
 After completing your configuration file，you could use [learning rate visualization tool](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#learning-rate-schedule-visualization) to draw the corresponding learning rate adjustment curve.
@@ -151,49 +150,49 @@ We provide some examples here and more usages refer to [DefaultOptimizerConstruc
 
 - Using specified options
 
-    The `DefaultOptimizerConstructor` provides options including `bias_lr_mult`, `bias_decay_mult`, `norm_decay_mult`, `dwconv_decay_mult`, `dcn_offset_lr_mult` and `bypass_duplicate` to configure special optimizer behaviors of bias, normalization, depth-wise convolution, deformable convolution and duplicated parameter. E.g:
+  The `DefaultOptimizerConstructor` provides options including `bias_lr_mult`, `bias_decay_mult`, `norm_decay_mult`, `dwconv_decay_mult`, `dcn_offset_lr_mult` and `bypass_duplicate` to configure special optimizer behaviors of bias, normalization, depth-wise convolution, deformable convolution and duplicated parameter. E.g:
 
-    1. No weight decay to the BatchNorm layer
+  1. No weight decay to the BatchNorm layer
 
-    ```python
-    optimizer = dict(
-        type='SGD',
-        lr=0.8,
-        weight_decay=1e-4,
-        paramwise_cfg=dict(norm_decay_mult=0.))
-    ```
+  ```python
+  optimizer = dict(
+      type='SGD',
+      lr=0.8,
+      weight_decay=1e-4,
+      paramwise_cfg=dict(norm_decay_mult=0.))
+  ```
 
 - Using `custom_keys` dict
 
-    MMClassification can use `custom_keys` to specify different parameters to use different learning rates or weight decays, for example:
+  MMClassification can use `custom_keys` to specify different parameters to use different learning rates or weight decays, for example:
 
-    1. No weight decay for specific parameters
+  1. No weight decay for specific parameters
 
-    ```python
-    paramwise_cfg = dict(
-        custom_keys={
-            'backbone.cls_token': dict(decay_mult=0.0),
-            'backbone.pos_embed': dict(decay_mult=0.0)
-        })
+  ```python
+  paramwise_cfg = dict(
+      custom_keys={
+          'backbone.cls_token': dict(decay_mult=0.0),
+          'backbone.pos_embed': dict(decay_mult=0.0)
+      })
 
-    optimizer = dict(
-        type='SGD',
-        lr=0.8,
-        weight_decay=1e-4,
-        paramwise_cfg=paramwise_cfg)
-    ```
+  optimizer = dict(
+      type='SGD',
+      lr=0.8,
+      weight_decay=1e-4,
+      paramwise_cfg=paramwise_cfg)
+  ```
 
-    2. Using a smaller learning rate and a weight decay for the backbone layers
+  2. Using a smaller learning rate and a weight decay for the backbone layers
 
-    ```python
-    optimizer = dict(
-        type='SGD',
-        lr=0.8,
-        weight_decay=1e-4,
-        # 'lr' for backbone and 'weight_decay' are 0.1 * lr and 0.9 * weight_decay
-        paramwise_cfg=dict(
-            custom_keys={'backbone': dict(lr_mult=0.1, decay_mult=0.9)}))
-    ```
+  ```python
+  optimizer = dict(
+      type='SGD',
+      lr=0.8,
+      weight_decay=1e-4,
+      # 'lr' for backbone and 'weight_decay' are 0.1 * lr and 0.9 * weight_decay
+      paramwise_cfg=dict(
+          custom_keys={'backbone': dict(lr_mult=0.1, decay_mult=0.9)}))
+  ```
 
 ## Gradient clipping and gradient accumulation
 
@@ -279,7 +278,7 @@ To find the above module defined above, this module should be imported into the 
 
 - Modify `mmcls/core/optimizer/__init__.py` to import it into `optimizer` package, and then modify `mmcls/core/__init__.py` to import the new `optimizer` package.
 
-    Create the `mmcls/core/optimizer` folder and the `mmcls/core/optimizer/__init__.py` file if they don't exist. The newly defined module should be imported in `mmcls/core/optimizer/__init__.py` and `mmcls/core/__init__.py` so that the registry will find the new module and add it:
+  Create the `mmcls/core/optimizer` folder and the `mmcls/core/optimizer/__init__.py` file if they don't exist. The newly defined module should be imported in `mmcls/core/optimizer/__init__.py` and `mmcls/core/__init__.py` so that the registry will find the new module and add it:
 
 ```python
 # In mmcls/core/optimizer/__init__.py

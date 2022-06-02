@@ -1,6 +1,7 @@
 # TNT
 
 > [Transformer in Transformer](https://arxiv.org/abs/2103.00112)
+
 <!-- [ALGORITHM] -->
 
 ## Abstract
@@ -15,11 +16,11 @@ Transformer is a new kind of neural architecture which encodes the input data as
 
 ### ImageNet-1k
 
-|    Model    | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
-|:-----------:|:---------:|:--------:|:---------:|:---------:|:------:|:--------:|
-| TNT-small\* |   23.76   |  3.36    | 81.52     |   95.73   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/tnt/tnt-s-p16_16xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/tnt/tnt-small-p16_3rdparty_in1k_20210903-c56ee7df.pth) |
+|    Model    | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                                    Config                                    |                                    Download                                    |
+| :---------: | :-------: | :------: | :-------: | :-------: | :--------------------------------------------------------------------------: | :----------------------------------------------------------------------------: |
+| TNT-small\* |   23.76   |   3.36   |   81.52   |   95.73   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/tnt/tnt-s-p16_16xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/tnt/tnt-small-p16_3rdparty_in1k_20210903-c56ee7df.pth) |
 
-*Models with \* are converted from [timm](https://github.com/rwightman/pytorch-image-models/). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
+*Models with * are converted from [timm](https://github.com/rwightman/pytorch-image-models/). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 
 ## Citation
 

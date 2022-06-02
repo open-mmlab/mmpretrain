@@ -2,7 +2,7 @@
 
 MMClassification 主要使用 python 文件作为配置文件。其配置文件系统的设计将模块化与继承整合进来，方便用户进行各种实验。所有配置文件都放置在 `configs` 文件夹下，主要包含 `_base_` 原始配置文件夹 以及 `resnet`, `swin_transformer`，`vision_transformer` 等诸多算法文件夹。
 
-可以使用 ```python tools/misc/print_config.py /PATH/TO/CONFIG``` 命令来查看完整的配置信息，从而方便检查所对应的配置文件。
+可以使用 `python tools/misc/print_config.py /PATH/TO/CONFIG` 命令来查看完整的配置信息，从而方便检查所对应的配置文件。
 
 <!-- TOC -->
 
@@ -32,31 +32,40 @@ MMClassification 按照以下风格进行配置文件命名，代码库的贡献
 - `data info`：数据信息，数据集名称、模态、输入尺寸等，如 imagenet, cifar 等；
 
 ### 算法信息
+
 指论文中的算法名称缩写，以及相应的分支架构信息。例如：
+
 - `resnet50`
 - `mobilenet-v3-large`
 - `vit-small-patch32`   : `patch32` 表示 `ViT` 切分的分块大小
 - `seresnext101-32x4d`  : `SeResNet101` 基本网络结构，`32x4d` 表示在 `Bottleneck` 中  `groups` 和 `width_per_group` 分别为32和4
 
 ### 模块信息
+
 指一些特殊的 `neck` 、`head` 或者 `pretrain` 的信息， 在分类中常见为预训练信息，比如：
+
 - `in21k-pre` : 在 `ImageNet21k` 上预训练
 - `in21k-pre-3rd-party` : 在 `ImageNet21k` 上预训练，其权重来自其他仓库
 
 ### 训练信息
+
 训练策略的一些设置，包括训练类型、 `batch size`、 `lr schedule`、 数据增强以及特殊的损失函数等等,比如:
 Batch size 信息：
+
 - 格式为`{gpu x batch_per_gpu}`, 如 `8xb32`
 
 训练类型(主要见于 transformer 网络，如 `ViT` 算法，这类算法通常分为预训练和微调两种模式):
+
 - `ft` : Finetune config，用于微调的配置文件
 - `pt` : Pretrain config，用于预训练的配置文件
 
 训练策略信息，训练策略以复现配置文件为基础，此基础不必标注训练策略。但如果在此基础上进行改进，则需注明训练策略，按照应用点位顺序排列，如：`{pipeline aug}-{train aug}-{loss trick}-{scheduler}-{epochs}`
+
 - `coslr-200e` : 使用 cosine scheduler, 训练 200 个 epoch
 - `autoaug-mixup-lbs-coslr-50e` : 使用了 `autoaug`、`mixup`、`label smooth`、`cosine scheduler`, 训练了 50 个轮次
 
 ### 数据信息
+
 - `in1k` : `ImageNet1k` 数据集，默认使用 `224x224` 大小的图片
 - `in21k` : `ImageNet21k` 数据集，有些地方也称为 `ImageNet22k` 数据集，默认使用 `224x224` 大小的图片
 - `in1k-384px` : 表示训练的输出图片大小为 `384x384`
@@ -69,16 +78,16 @@ repvgg-D2se_deploy_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py
 ```
 
 - `repvgg-D2se`:  算法信息
-  + `repvgg`: 主要算法名称。
-  + `D2se`: 模型的结构。
+  - `repvgg`: 主要算法名称。
+  - `D2se`: 模型的结构。
 - `deploy`:模块信息，该模型为推理状态。
 - `4xb64-autoaug-lbs-mixup-coslr-200e`: 训练信息
-  + `4xb64`: 使用4块 GPU 并且 每块 GPU 的批大小为64。
-  + `autoaug`: 使用 `AutoAugment` 数据增强方法。
-  + `lbs`: 使用 `label smoothing` 损失函数。
-  + `mixup`: 使用 `mixup` 训练增强方法。
-  + `coslr`: 使用 `cosine scheduler` 优化策略。
-  + `200e`: 训练 200 轮次。
+  - `4xb64`: 使用4块 GPU 并且 每块 GPU 的批大小为64。
+  - `autoaug`: 使用 `AutoAugment` 数据增强方法。
+  - `lbs`: 使用 `label smoothing` 损失函数。
+  - `mixup`: 使用 `mixup` 训练增强方法。
+  - `coslr`: 使用 `cosine scheduler` 优化策略。
+  - `200e`: 训练 200 轮次。
 - `in1k`: 数据信息。 配置文件用于 `ImageNet1k` 数据集上使用 `224x224` 大小图片训练。
 
 ```{note}
@@ -92,7 +101,6 @@ repvgg-D2se_deploy_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py
 ```
 {config_name}_{date}-{hash}.pth
 ```
-
 
 ## 配置文件结构
 
@@ -118,15 +126,15 @@ _base_ = [
 
 下面对这四个部分分别进行说明，仍然以上述 ResNet50 原始配置文件作为案例。
 
-
 ### 模型
 
 模型参数 `model` 在配置文件中为一个 `python` 字典，主要包括网络结构、损失函数等信息：
-- `type` ： 分类器名称, 目前 MMClassification 只支持 `ImageClassifier`， 参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.classifiers)。
-- `backbone` ： 主干网类型，可用选项参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.backbones)。
-- `neck` ： 颈网络类型，目前 MMClassification 只支持 `GlobalAveragePooling`， 参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.necks)。
-- `head` ： 头网络类型， 包括单标签分类与多标签分类头网络，可用选项参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.heads)。
-  - `loss` ： 损失函数类型， 支持 `CrossEntropyLoss`, [`LabelSmoothLoss`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_label_smooth.py) 等，可用选项参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.losses)。
+
+- `type` ： 分类器名称, 目前 MMClassification 只支持 `ImageClassifier`， 参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api/models.html#classifier)。
+- `backbone` ： 主干网类型，可用选项参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api/models.html#backbones)。
+- `neck` ： 颈网络类型，目前 MMClassification 只支持 `GlobalAveragePooling`， 参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api/models.html#necks)。
+- `head` ： 头网络类型， 包括单标签分类与多标签分类头网络，可用选项参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api/models.html#heads)。
+  - `loss` ： 损失函数类型， 支持 `CrossEntropyLoss`, [`LabelSmoothLoss`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_label_smooth.py) 等，可用选项参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api/models.html#losses)。
 - `train_cfg` ：训练配置, 支持 [`mixup`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_mixup.py), [`cutmix`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_cutmix.py) 等训练增强。
 
 ```{note}
@@ -154,11 +162,13 @@ model = dict(
 ```
 
 ### 数据
+
 数据参数 `data` 在配置文件中为一个 `python` 字典，主要包含构造数据集加载器(dataloader)配置信息：
+
 - `samples_per_gpu` : 构建 dataloader 时，每个 GPU 的 Batch Size
 - `workers_per_gpu` : 构建 dataloader 时，每个 GPU 的 线程数
 - `train ｜ val ｜ test` : 构造数据集
-  - `type` :  数据集类型， MMClassification 支持 `ImageNet`、 `Cifar` 等 ，参考[API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.datasets)
+  - `type` :  数据集类型， MMClassification 支持 `ImageNet`、 `Cifar` 等 ，参考[API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api/datasets.html)
   - `data_prefix` : 数据集根目录
   - `pipeline` :  数据处理流水线，参考相关教程文档 [如何设计数据处理流水线](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/data_pipeline.html)
 
@@ -213,11 +223,14 @@ evaluation = dict(       # evaluation hook 的配置
 ```
 
 ### 训练策略
+
 主要包含 优化器设置、 `optimizer hook` 设置、学习率策略和 `runner`设置：
+
 - `optimizer` : 优化器设置信息, 支持 `pytorch` 所有的优化器，参考相关 [mmcv](https://mmcv.readthedocs.io/zh_CN/latest/_modules/mmcv/runner/optimizer/default_constructor.html#DefaultOptimizerConstructor) 文档
 - `optimizer_config` : `optimizer hook` 的配置文件,如设置梯度限制，参考相关 [mmcv](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/optimizer.py#L8) 代码
 - `lr_config` : 学习率策略，支持 "CosineAnnealing"、 "Step"、 "Cyclic" 等等，参考相关 [mmcv](https://mmcv.readthedocs.io/zh_CN/latest/_modules/mmcv/runner/hooks/lr_updater.html#LrUpdaterHook) 文档
 - `runner` : 有关 `runner` 可以参考 `mmcv` 对于 [`runner`](https://mmcv.readthedocs.io/zh_CN/latest/understand_mmcv/runner.html) 介绍文档
+
 ```python
 # 用于构建优化器的配置文件。支持 PyTorch 中的所有优化器，同时它们的参数与 PyTorch 里的优化器参数一致。
 optimizer = dict(type='SGD',         # 优化器类型
@@ -283,7 +296,6 @@ data = dict(
 
 例如数据集里的 `train_pipeline` / `test_pipeline` 是作为数据流水线的中间变量。我们首先要定义 `train_pipeline` / `test_pipeline`，然后将它们传递到 `data` 中。如果想修改训练或测试时输入图片的大小，就需要修改 `train_pipeline` / `test_pipeline` 这些中间变量。
 
-
 ```python
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
@@ -312,7 +324,6 @@ data = dict(
 ### 忽略基础配置文件里的部分内容
 
 有时，您需要设置 `_delete_=True` 去忽略基础配置文件里的一些域内容。 可以参照 [mmcv](https://mmcv.readthedocs.io/zh_CN/latest/understand_mmcv/config.html#inherit-from-base-config-with-ignored-fields) 来获得一些简单的指导。
-
 
 以下是一个简单应用案例。 如果在上述 ResNet50 案例中 使用 cosine schedule ,使用继承并直接修改会报 `get unexcepected keyword 'step'` 错, 因为基础配置文件 lr_config 域信息的 `'step'` 字段被保留下来了，需要加入 `_delete_=True` 去忽略基础配置文件里的 `lr_config` 相关域内容：
 
@@ -402,4 +413,5 @@ custom_imports = dict(
 ```
 
 ## 常见问题
+
 - 无

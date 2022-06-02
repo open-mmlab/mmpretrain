@@ -52,21 +52,21 @@ python tools/analysis_tools/analyze_logs.py plot_curve \
 
 - 绘制某日志文件对应的损失曲线图。
 
-    ```shell
-    python tools/analysis_tools/analyze_logs.py plot_curve your_log_json --keys loss --legend loss
-    ```
+  ```shell
+  python tools/analysis_tools/analyze_logs.py plot_curve your_log_json --keys loss --legend loss
+  ```
 
 - 绘制某日志文件对应的 top-1 和 top-5 准确率曲线图，并将曲线图导出为 results.jpg 文件。
 
-    ```shell
-    python tools/analysis_tools/analyze_logs.py plot_curve your_log_json --keys accuracy_top-1 accuracy_top-5  --legend top1 top5 --out results.jpg
-    ```
+  ```shell
+  python tools/analysis_tools/analyze_logs.py plot_curve your_log_json --keys accuracy_top-1 accuracy_top-5  --legend top1 top5 --out results.jpg
+  ```
 
 - 在同一图像内绘制两份日志文件对应的 top-1 准确率曲线图。
 
-    ```shell
-    python tools/analysis_tools/analyze_logs.py plot_curve log1.json log2.json --keys accuracy_top-1 --legend run1 run2
-    ```
+  ```shell
+  python tools/analysis_tools/analyze_logs.py plot_curve log1.json log2.json --keys accuracy_top-1 --legend run1 run2
+  ```
 
 ```{note}
 本工具会自动根据关键字段选择从日志的训练部分还是验证部分读取，因此如果你添加了

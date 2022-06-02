@@ -1,7 +1,7 @@
 # 教程 3：如何自定义数据集
 
 我们支持许多常用的图像分类领域公开数据集，你可以在
-[此页面](https://mmclassification.readthedocs.io/zh_CN/master/api/datasets.html)中找到它们。
+[此页面](https://mmclassification.readthedocs.io/zh_CN/latest/api/datasets.html)中找到它们。
 
 在本节中，我们将介绍如何[使用自己的数据集](#使用自己的数据集)以及如何[使用数据集包装](#使用数据集包装)。
 
@@ -11,7 +11,7 @@
 
 想要使用自己的数据集，最简单的方法就是将数据集转换为现有的数据集格式。
 
-对于多分类任务，我们推荐使用 [`CustomDataset`](https://mmclassification.readthedocs.io/zh_CN/master/api/datasets.html#mmcls.datasets.CustomDataset) 格式。
+对于多分类任务，我们推荐使用 [`CustomDataset`](https://mmclassification.readthedocs.io/zh_CN/latest/api/datasets.html#mmcls.datasets.CustomDataset) 格式。
 
 `CustomDataset` 支持两种类型的数据格式：
 
@@ -227,4 +227,4 @@ data = dict(
 )
 ```
 
-更加具体的细节，请参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/master/api/datasets.html#mmcls.datasets.ClassBalancedDataset)。
+更加具体的细节，请参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api/datasets.html#mmcls.datasets.ClassBalancedDataset)。

@@ -1,6 +1,6 @@
 <div align="center">
 
-  <img src="resources/mmcls-logo.png" width="600"/>
+<img src="resources/mmcls-logo.png" width="600"/>
   <div>&nbsp;</div>
   <div align="center">
     <b><font size="5">OpenMMLab website</font></b>
@@ -19,20 +19,19 @@
   </div>
   <div>&nbsp;</div>
 
+[![PyPI](https://img.shields.io/pypi/v/mmcls)](https://pypi.org/project/mmcls)
+[![Docs](https://img.shields.io/badge/docs-latest-blue)](https://mmclassification.readthedocs.io/en/latest/)
+[![Build Status](https://github.com/open-mmlab/mmclassification/workflows/build/badge.svg)](https://github.com/open-mmlab/mmclassification/actions)
+[![codecov](https://codecov.io/gh/open-mmlab/mmclassification/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmclassification)
+[![license](https://img.shields.io/github/license/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/blob/master/LICENSE)
+[![open issues](https://isitmaintained.com/badge/open/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
+[![issue resolution](https://isitmaintained.com/badge/resolution/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
 
-  [![PyPI](https://img.shields.io/pypi/v/mmcls)](https://pypi.org/project/mmcls)
-  [![Docs](https://img.shields.io/badge/docs-latest-blue)](https://mmclassification.readthedocs.io/en/latest/)
-  [![Build Status](https://github.com/open-mmlab/mmclassification/workflows/build/badge.svg)](https://github.com/open-mmlab/mmclassification/actions)
-  [![codecov](https://codecov.io/gh/open-mmlab/mmclassification/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmclassification)
-  [![license](https://img.shields.io/github/license/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/blob/master/LICENSE)
-  [![open issues](https://isitmaintained.com/badge/open/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
-  [![issue resolution](https://isitmaintained.com/badge/resolution/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
-
-  [📘 Documentation](https://mmclassification.readthedocs.io/en/latest/) |
-  [🛠️ Installation](https://mmclassification.readthedocs.io/en/latest/install.html) |
-  [👀 Model Zoo](https://mmclassification.readthedocs.io/en/latest/model_zoo.html) |
-  [🆕 Update News](https://mmclassification.readthedocs.io/en/latest/changelog.html) |
-  [🤔 Reporting Issues](https://github.com/open-mmlab/mmclassification/issues/new/choose)
+[📘 Documentation](https://mmclassification.readthedocs.io/en/latest/) |
+[🛠️ Installation](https://mmclassification.readthedocs.io/en/latest/install.html) |
+[👀 Model Zoo](https://mmclassification.readthedocs.io/en/latest/model_zoo.html) |
+[🆕 Update News](https://mmclassification.readthedocs.io/en/latest/changelog.html) |
+[🤔 Reporting Issues](https://github.com/open-mmlab/mmclassification/issues/new/choose)
 
 </div>
 
@@ -61,6 +60,7 @@ The master branch works with **PyTorch 1.5+**.
 
 v0.23.0 was released in 1/5/2022.
 Highlights of the new version:
+
 - Support **DenseNet**, **VAN** and **PoolFormer**, and provide pre-trained models.
 - Support training on IPU.
 - New style API docs, welcome [view it](https://mmclassification.readthedocs.io/en/master/api/models.html).
@@ -68,6 +68,7 @@ Highlights of the new version:
 v0.22.0 was released in 30/3/2022.
 
 Highlights of the new version:
+
 - Support a series of **CSP Network**, such as CSP-ResNet, CSP-ResNeXt and CSP-DarkNet.
 - A new `CustomDataset` class to help you **build dataset of yourself**!
 - Support new backbones - **ConvMixer**, **RepMLP** and new dataset - **CUB dataset**.

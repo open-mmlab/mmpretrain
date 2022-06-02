@@ -175,7 +175,7 @@ commands.
 !mim install mmcv-full
 ```
 
- **Step 2.** Install MMClassification from the source.
+**Step 2.** Install MMClassification from the source.
 
 ```shell
 !git clone https://github.com/open-mmlab/mmclassification.git
@@ -183,7 +183,7 @@ commands.
 !pip install -e .
 ```
 
- **Step 3.** Verification.
+**Step 3.** Verification.
 
 ```python
 import mmcls
@@ -195,7 +195,7 @@ print(mmcls.__version__)
 Within Jupyter, the exclamation mark `!` is used to call external executables and `%cd` is a [magic command](https://ipython.readthedocs.io/en/stable/interactive/magics.html#magic-cd) to change the current working directory of Python.
 ```
 
- ### Using MMClassification with Docker
+### Using MMClassification with Docker
 
 We provide a [Dockerfile](https://github.com/open-mmlab/mmclassification/blob/master/docker/Dockerfile)
 to build an image. Ensure that your [docker version](https://docs.docker.com/engine/install/) >=19.03.

@@ -106,44 +106,44 @@ For more information about other data transformation classes, please refer to [D
    the folder `mmcls/datasets/pipelines/`. The pipeline class needs to override
    the `__call__` method which takes a dict as input and returns a dict.
 
-    ```python
-    from mmcls.datasets import PIPELINES
+   ```python
+   from mmcls.datasets import PIPELINES
 
-    @PIPELINES.register_module()
-    class MyTransform(object):
+   @PIPELINES.register_module()
+   class MyTransform(object):
 
-        def __call__(self, results):
-            # apply transforms on results['img']
-            return results
-    ```
+       def __call__(self, results):
+           # apply transforms on results['img']
+           return results
+   ```
 
 2. Import the new class in `mmcls/datasets/pipelines/__init__.py`.
 
-    ```python
-    ...
-    from .my_pipeline import MyTransform
+   ```python
+   ...
+   from .my_pipeline import MyTransform
 
-    __all__ = [
-        ..., 'MyTransform'
-    ]
-    ```
+   __all__ = [
+       ..., 'MyTransform'
+   ]
+   ```
 
 3. Use it in config files.
 
-    ```python
-    img_norm_cfg = dict(
-        mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
-    train_pipeline = [
-        dict(type='LoadImageFromFile'),
-        dict(type='RandomResizedCrop', size=224),
-        dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
-        dict(type='MyTransform'),
-        dict(type='Normalize', **img_norm_cfg),
-        dict(type='ImageToTensor', keys=['img']),
-        dict(type='ToTensor', keys=['gt_label']),
-        dict(type='Collect', keys=['img', 'gt_label'])
-    ]
-    ```
+   ```python
+   img_norm_cfg = dict(
+       mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+   train_pipeline = [
+       dict(type='LoadImageFromFile'),
+       dict(type='RandomResizedCrop', size=224),
+       dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
+       dict(type='MyTransform'),
+       dict(type='Normalize', **img_norm_cfg),
+       dict(type='ImageToTensor', keys=['img']),
+       dict(type='ToTensor', keys=['gt_label']),
+       dict(type='Collect', keys=['img', 'gt_label'])
+   ]
+   ```
 
 ## Pipeline visualization
 

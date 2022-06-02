@@ -1,6 +1,7 @@
 # HRNet
 
 > [Deep High-Resolution Representation Learning for Visual Recognition](https://arxiv.org/abs/1908.07919v2)
+
 <!-- [ALGORITHM] -->
 
 ## Abstract
@@ -15,19 +16,19 @@ High-resolution representations are essential for position-sensitive vision prob
 
 ## ImageNet-1k
 
-|         Model         | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
-|:---------------------:|:---------:|:--------:|:---------:|:---------:|:------:|:--------:|
-| HRNet-W18\* | 21.30 | 4.33 | 76.75 | 93.44 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hrnet/hrnet-w18_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w18_3rdparty_8xb32_in1k_20220120-0c10b180.pth) |
-| HRNet-W30\* | 37.71 | 8.17 | 78.19 | 94.22 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hrnet/hrnet-w30_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w30_3rdparty_8xb32_in1k_20220120-8aa3832f.pth) |
-| HRNet-W32\* | 41.23 | 8.99 | 78.44 | 94.19 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hrnet/hrnet-w32_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w32_3rdparty_8xb32_in1k_20220120-c394f1ab.pth) |
-| HRNet-W40\* | 57.55 | 12.77 | 78.94 | 94.47 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hrnet/hrnet-w40_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w40_3rdparty_8xb32_in1k_20220120-9a2dbfc5.pth) |
-| HRNet-W44\* | 67.06 | 14.96 | 78.88 | 94.37 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hrnet/hrnet-w44_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w44_3rdparty_8xb32_in1k_20220120-35d07f73.pth) |
-| HRNet-W48\* | 77.47 | 17.36 | 79.32 | 94.52 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hrnet/hrnet-w48_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w48_3rdparty_8xb32_in1k_20220120-e555ef50.pth) |
-| HRNet-W64\* | 128.06 | 29.00 | 79.46 | 94.65 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hrnet/hrnet-w64_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w64_3rdparty_8xb32_in1k_20220120-19126642.pth) |
-| HRNet-W18 (ssld)\* | 21.30 | 4.33 | 81.06 | 95.70 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hrnet/hrnet-w18_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w18_3rdparty_8xb32-ssld_in1k_20220120-455f69ea.pth) |
-| HRNet-W48 (ssld)\* | 77.47 | 17.36 | 83.63 | 96.79 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hrnet/hrnet-w48_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w48_3rdparty_8xb32-ssld_in1k_20220120-d0459c38.pth) |
+|       Model        | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                                  Config                                  |                                  Download                                   |
+| :----------------: | :-------: | :------: | :-------: | :-------: | :----------------------------------------------------------------------: | :-------------------------------------------------------------------------: |
+|    HRNet-W18\*     |   21.30   |   4.33   |   76.75   |   93.44   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hrnet/hrnet-w18_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w18_3rdparty_8xb32_in1k_20220120-0c10b180.pth) |
+|    HRNet-W30\*     |   37.71   |   8.17   |   78.19   |   94.22   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hrnet/hrnet-w30_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w30_3rdparty_8xb32_in1k_20220120-8aa3832f.pth) |
+|    HRNet-W32\*     |   41.23   |   8.99   |   78.44   |   94.19   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hrnet/hrnet-w32_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w32_3rdparty_8xb32_in1k_20220120-c394f1ab.pth) |
+|    HRNet-W40\*     |   57.55   |  12.77   |   78.94   |   94.47   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hrnet/hrnet-w40_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w40_3rdparty_8xb32_in1k_20220120-9a2dbfc5.pth) |
+|    HRNet-W44\*     |   67.06   |  14.96   |   78.88   |   94.37   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hrnet/hrnet-w44_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w44_3rdparty_8xb32_in1k_20220120-35d07f73.pth) |
+|    HRNet-W48\*     |   77.47   |  17.36   |   79.32   |   94.52   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hrnet/hrnet-w48_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w48_3rdparty_8xb32_in1k_20220120-e555ef50.pth) |
+|    HRNet-W64\*     |  128.06   |  29.00   |   79.46   |   94.65   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hrnet/hrnet-w64_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w64_3rdparty_8xb32_in1k_20220120-19126642.pth) |
+| HRNet-W18 (ssld)\* |   21.30   |   4.33   |   81.06   |   95.70   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hrnet/hrnet-w18_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w18_3rdparty_8xb32-ssld_in1k_20220120-455f69ea.pth) |
+| HRNet-W48 (ssld)\* |   77.47   |  17.36   |   83.63   |   96.79   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hrnet/hrnet-w48_4xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hrnet/hrnet-w48_3rdparty_8xb32-ssld_in1k_20220120-d0459c38.pth) |
 
-*Models with \* are converted from the [official repo](https://github.com/HRNet/HRNet-Image-Classification). The config files of these models are only for inference. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
+*Models with * are converted from the [official repo](https://github.com/HRNet/HRNet-Image-Classification). The config files of these models are only for inference. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 
 ## Citation
 
