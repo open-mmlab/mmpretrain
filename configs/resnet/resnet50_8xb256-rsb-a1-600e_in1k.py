@@ -26,8 +26,8 @@ model = dict(
 train_dataloader = dict(sampler=dict(type='RepeatAugSampler', shuffle=True))
 
 # schedule settings
-optimizer = dict(
-    weight_decay=0.01,
+optim_wrapper = dict(
+    optimizer=dict(weight_decay=0.01),
     paramwise_cfg=dict(bias_decay_mult=0., norm_decay_mult=0.),
 )
 

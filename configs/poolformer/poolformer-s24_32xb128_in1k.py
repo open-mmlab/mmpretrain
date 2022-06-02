@@ -6,7 +6,7 @@ _base_ = [
 ]
 
 # schedule settings
-optimizer = dict(lr=4e-3)
-
-# runtime settings
-default_hooks = dict(optimizer=dict(grad_clip=dict(max_norm=5.0)))
+optim_wrapper = dict(
+    optimizer=dict(lr=4e-3),
+    clip_grad=dict(max_norm=5.0),
+)

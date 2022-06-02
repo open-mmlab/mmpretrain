@@ -6,4 +6,4 @@ _base_ = [
 ]
 
 # schedule settings
-optimizer = dict(lr=0.01)
+optim_wrapper = dict(optimizer=dict(lr=0.01))

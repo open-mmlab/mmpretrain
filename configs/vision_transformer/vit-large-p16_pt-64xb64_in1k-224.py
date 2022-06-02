@@ -16,5 +16,5 @@ model = dict(
             prob=1.,
         )))
 
-# runtime setting
-default_hooks = dict(optimizer=dict(grad_clip=dict(max_norm=1.0)))
+# schedule setting
+optim_wrapper = dict(clip_grad=dict(max_norm=1.0))

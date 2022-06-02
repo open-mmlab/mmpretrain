@@ -9,11 +9,11 @@ _base_ = [
 model = dict(head=dict(num_classes=100))
 
 # schedule settings
-optimizer = dict(type='SGD', lr=0.1, momentum=0.9, weight_decay=0.0005)
+optim_wrapper = dict(optimizer=dict(weight_decay=0.0005))
 
 param_scheduler = dict(
     type='MultiStepLR',
-    by_epoch=False,
+    by_epoch=True,
     milestones=[60, 120, 160],
     gamma=0.2,
 )

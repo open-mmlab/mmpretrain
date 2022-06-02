@@ -28,5 +28,5 @@ model = dict(
 # dataset settings
 train_dataloader = dict(batch_size=32)
 
-# runtime settings
-default_hooks = dict(optimizer=dict(grad_clip=dict(max_norm=1.0)))
+# schedule settings
+optim_wrapper = dict(clip_grad=dict(max_norm=1.0))

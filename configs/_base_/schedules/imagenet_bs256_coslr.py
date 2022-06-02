@@ -1,5 +1,7 @@
 # optimizer
-optimizer = dict(type='SGD', lr=0.1, momentum=0.9, weight_decay=0.0001)
+optim_wrapper = dict(
+    optimizer=dict(type='SGD', lr=0.1, momentum=0.9, weight_decay=0.0001))
+
 # learning policy
 param_scheduler = dict(
     type='CosineAnnealingLR', T_max=100, by_epoch=True, begin=0, end=100)

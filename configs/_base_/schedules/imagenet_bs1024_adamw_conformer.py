@@ -1,19 +1,19 @@
-paramwise_cfg = dict(
-    norm_decay_mult=0.0,
-    bias_decay_mult=0.0,
-    custom_keys={
-        '.cls_token': dict(decay_mult=0.0),
-    })
-
-# for batch in each gpu is 128, 8 gpu
-# lr = 5e-4 * 128 * 8 / 512 = 0.001
-optimizer = dict(
-    type='AdamW',
-    lr=5e-4 * 128 * 8 / 512,
-    weight_decay=0.05,
-    eps=1e-8,
-    betas=(0.9, 0.999),
-    paramwise_cfg=paramwise_cfg)
+optim_wrapper = dict(
+    optimizer=dict(
+        type='AdamW',
+        # for batch in each gpu is 128, 8 gpu
+        # lr = 5e-4 * 128 * 8 / 512 = 0.001
+        lr=5e-4 * 128 * 8 / 512,
+        weight_decay=0.05,
+        eps=1e-8,
+        betas=(0.9, 0.999)),
+    paramwise_cfg=dict(
+        norm_decay_mult=0.0,
+        bias_decay_mult=0.0,
+        custom_keys={
+            '.cls_token': dict(decay_mult=0.0),
+        }),
+)
 
 # learning policy
 param_scheduler = [

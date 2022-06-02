@@ -1,10 +1,9 @@
 # optimizer
-optimizer = dict(
-    type='SGD',
-    lr=0.5,
-    momentum=0.9,
-    weight_decay=0.00004,
-    paramwise_cfg=dict(norm_decay_mult=0))
+optim_wrapper = dict(
+    optimizer=dict(type='SGD', lr=0.5, momentum=0.9, weight_decay=0.00004),
+    paramwise_cfg=dict(norm_decay_mult=0),
+)
+
 # learning policy
 param_scheduler = [
     dict(type='ConstantLR', factor=0.1, by_epoch=False, begin=0, end=5 * 1252),

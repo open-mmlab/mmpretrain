@@ -1,6 +1,7 @@
 # optimizer
-optimizer = dict(
-    type='SGD', lr=0.8, momentum=0.9, weight_decay=0.0001, nesterov=True)
+optim_wrapper = dict(
+    optimizer=dict(
+        type='SGD', lr=0.8, momentum=0.9, weight_decay=0.0001, nesterov=True))
 
 # learning policy
 param_scheduler = [

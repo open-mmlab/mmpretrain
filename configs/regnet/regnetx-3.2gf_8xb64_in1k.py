@@ -9,4 +9,5 @@ model = dict(
 train_dataloader = dict(batch_size=64)
 
 # schedule settings
-optimizer = dict(lr=0.4)  # for batch_size 512, use lr = 0.4
+# for batch_size 512, use lr = 0.4
+optim_wrapper = dict(optimizer=dict(lr=0.4))

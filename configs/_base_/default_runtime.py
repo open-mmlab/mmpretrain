@@ -3,9 +3,6 @@ default_scope = 'mmcls'
 
 # configure default hooks
 default_hooks = dict(
-    # optimizer configuration
-    optimizer=dict(type='OptimizerHook', grad_clip=None),
-
     # record the time of every iteration.
     timer=dict(type='IterTimerHook'),
 

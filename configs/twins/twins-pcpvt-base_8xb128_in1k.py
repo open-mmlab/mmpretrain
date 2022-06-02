@@ -9,18 +9,19 @@ _base_ = [
 train_dataloader = dict(batch_size=128)
 
 # schedule settings
-paramwise_cfg = dict(_delete=True, norm_decay_mult=0.0, bias_decay_mult=0.0)
-
-optimizer = dict(
-    type='AdamW',
-    lr=5e-4 * 128 * 8 / 512,  # learning rate for 128 batch size, 8 gpu.
-    weight_decay=0.05,
-    eps=1e-8,
-    betas=(0.9, 0.999),
-    paramwise_cfg=paramwise_cfg)
+optim_wrapper = dict(
+    optimizer=dict(
+        type='AdamW',
+        lr=5e-4 * 128 * 8 / 512,  # learning rate for 128 batch size, 8 gpu.
+        weight_decay=0.05,
+        eps=1e-8,
+        betas=(0.9, 0.999)),
+    paramwise_cfg=dict(_delete=True, norm_decay_mult=0.0, bias_decay_mult=0.0),
+    clip_grad=dict(max_norm=5.0),
+)
 
 param_scheduler = [
-    # warm up learning rate schedule
+    # warm up learning rate scheduler
     dict(
         type='LinearLR',
         start_factor=1e-3,
@@ -38,6 +39,3 @@ param_scheduler = [
         begin=5,
         end=300)
 ]
-
-# runtime settings
-default_hooks = dict(optimizer=dict(grad_clip=dict(max_norm=5.0)))

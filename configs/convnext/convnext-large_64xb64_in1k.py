@@ -9,8 +9,10 @@ _base_ = [
 train_dataloader = dict(batch_size=64)
 
 # schedule setting
-optimizer = dict(lr=4e-3)
+optim_wrapper = dict(
+    optimizer=dict(lr=4e-3),
+    clip_grad=dict(max_norm=5.0),
+)
 
 # runtime setting
-default_hooks = dict(optimizer=dict(grad_clip=dict(max_norm=5.0)))
 custom_hooks = [dict(type='EMAHook', momentum=4e-5, priority='ABOVE_NORMAL')]

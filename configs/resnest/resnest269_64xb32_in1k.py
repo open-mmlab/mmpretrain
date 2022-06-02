@@ -45,15 +45,13 @@ val_dataloader = dict(dataset=dict(pipeline=test_pipeline))
 test_dataloader = dict(dataset=dict(pipeline=test_pipeline))
 
 # schedule settings
-optimizer = dict(
-    type='SGD',
-    lr=0.8,
-    momentum=0.9,
-    weight_decay=1e-4,
-    paramwise_cfg=dict(bias_decay_mult=0., norm_decay_mult=0.))
+optim_wrapper = dict(
+    optimizer=dict(type='SGD', lr=0.8, momentum=0.9, weight_decay=1e-4),
+    paramwise_cfg=dict(bias_decay_mult=0., norm_decay_mult=0.),
+)
 
 param_scheduler = [
-    # warm up learning rate schedule
+    # warm up learning rate scheduler
     dict(
         type='LinearLR',
         start_factor=1e-6,

@@ -1,14 +1,18 @@
 # optimizer
-optimizer = dict(type='Lamb', lr=0.005, weight_decay=0.02)
+optim_wrapper = dict(optimizer=dict(type='Lamb', lr=0.005, weight_decay=0.02))
 
 # learning policy
 param_scheduler = [
+    # warm up learning rate scheduler
     dict(
         type='LinearLR',
         start_factor=0.0001,
         by_epoch=False,
         begin=0,
-        end=5 * 626),
+        end=5,
+        # update by iter
+        convert_to_iter_based=True),
+    # main learning rate scheduler
     dict(
         type='CosineAnnealingLR',
         T_max=95,

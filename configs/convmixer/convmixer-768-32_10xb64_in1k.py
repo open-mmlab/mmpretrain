@@ -6,9 +6,9 @@ _base_ = [
 ]
 
 # schedule setting
-optimizer = dict(lr=0.01)
+optim_wrapper = dict(
+    optimizer=dict(lr=0.01),
+    clip_grad=dict(max_norm=5.0),
+)
 
 train_cfg = dict(by_epoch=True, max_epochs=300)
-
-# runtime setting
-default_hooks = dict(optimizer=dict(grad_clip=dict(max_norm=5.0)))

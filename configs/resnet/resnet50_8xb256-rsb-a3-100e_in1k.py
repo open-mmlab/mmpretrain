@@ -15,7 +15,7 @@ model = dict(
     ]))
 
 # schedule settings
-optimizer = dict(
-    lr=0.008,
+optim_wrapper = dict(
+    optimizer=dict(lr=0.008),
     paramwise_cfg=dict(bias_decay_mult=0., norm_decay_mult=0.),
 )

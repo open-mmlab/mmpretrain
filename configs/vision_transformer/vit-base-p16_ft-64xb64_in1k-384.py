@@ -34,5 +34,5 @@ train_dataloader = dict(dataset=dict(pipeline=train_pipeline))
 val_dataloader = dict(dataset=dict(pipeline=test_pipeline))
 test_dataloader = dict(dataset=dict(pipeline=test_pipeline))
 
-# runtime setting
-default_hooks = dict(optimizer=dict(grad_clip=dict(max_norm=1.0)))
+# schedule setting
+optim_wrapper = dict(clip_grad=dict(max_norm=1.0))

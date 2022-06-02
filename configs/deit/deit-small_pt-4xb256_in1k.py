@@ -35,14 +35,13 @@ model = dict(
 train_dataloader = dict(batch_size=256)
 
 # schedule settings
-paramwise_cfg = dict(
-    norm_decay_mult=0.0,
-    bias_decay_mult=0.0,
-    custom_keys={
-        '.cls_token': dict(decay_mult=0.0),
-        '.pos_embed': dict(decay_mult=0.0)
-    })
-optimizer = dict(paramwise_cfg=paramwise_cfg)
-
-# runtime settings
-default_hooks = dict(optimizer=dict(grad_clip=dict(max_norm=5.0)))
+optim_wrapper = dict(
+    paramwise_cfg=dict(
+        norm_decay_mult=0.0,
+        bias_decay_mult=0.0,
+        custom_keys={
+            '.cls_token': dict(decay_mult=0.0),
+            '.pos_embed': dict(decay_mult=0.0)
+        }),
+    clip_grad=dict(max_norm=5.0),
+)

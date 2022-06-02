@@ -1,20 +1,16 @@
-# specific to vit pretrain
-paramwise_cfg = dict(custom_keys={
-    '.cls_token': dict(decay_mult=0.0),
-    '.pos_embed': dict(decay_mult=0.0)
-})
-
 # optimizer
-optimizer = dict(
-    type='AdamW',
-    lr=0.003,
-    weight_decay=0.3,
-    paramwise_cfg=paramwise_cfg,
+optim_wrapper = dict(
+    optimizer=dict(type='AdamW', lr=0.003, weight_decay=0.3),
+    # specific to vit pretrain
+    paramwise_cfg=dict(custom_keys={
+        '.cls_token': dict(decay_mult=0.0),
+        '.pos_embed': dict(decay_mult=0.0)
+    }),
 )
 
 # learning policy
 param_scheduler = [
-    # warm up learning rate schedule
+    # warm up learning rate scheduler
     dict(
         type='LinearLR',
         start_factor=1e-4,

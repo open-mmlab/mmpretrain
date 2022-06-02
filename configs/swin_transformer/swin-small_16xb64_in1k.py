@@ -5,5 +5,5 @@ _base_ = [
     '../_base_/default_runtime.py'
 ]
 
-# runtime settings
-default_hooks = dict(optimizer=dict(grad_clip=dict(max_norm=5.0)))
+# schedule settings
+optim_wrapper = dict(clip_grad=dict(max_norm=5.0))

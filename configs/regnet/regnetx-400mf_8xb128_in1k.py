@@ -39,7 +39,7 @@ train_dataloader = dict(dataset=dict(pipeline=train_pipeline))
 # schedule settings
 
 # sgd with nesterov, base ls is 0.8 for batch_size 1024,
-optimizer = dict(lr=0.8, nesterov=True)
+optim_wrapper = dict(optimizer=dict(lr=0.8, nesterov=True))
 
 # runtime settings
 

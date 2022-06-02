@@ -5,20 +5,17 @@ _base_ = [
 ]
 
 # schedule settings
-paramwise_cfg = dict(
-    norm_decay_mult=0.0,
-    bias_decay_mult=0.0,
-    custom_keys={'cls_token': dict(decay_mult=0.0)},
-)
-optimizer = dict(
-    type='AdamW',
-    lr=5e-4,
-    weight_decay=0.065,
-    paramwise_cfg=paramwise_cfg,
+optim_wrapper = dict(
+    optimizer=dict(type='AdamW', lr=5e-4, weight_decay=0.065),
+    paramwise_cfg=dict(
+        norm_decay_mult=0.0,
+        bias_decay_mult=0.0,
+        custom_keys={'cls_token': dict(decay_mult=0.0)},
+    ),
 )
 
 param_scheduler = [
-    # warm up learning rate schedule
+    # warm up learning rate scheduler
     dict(
         type='LinearLR',
         start_factor=1e-6,

@@ -23,13 +23,11 @@ model = dict(
         loss=dict(type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0)))
 
 # schedule settings
-optimizer = dict(
-    type='SGD',
-    lr=0.001,
-    momentum=0.9,
-    weight_decay=0,
+optim_wrapper = dict(
+    optimizer=dict(type='SGD', lr=0.001, momentum=0.9, weight_decay=0),
     # update the final linear by 10 times learning rate.
-    paramwise_cfg=dict(custom_keys={'.backbone.classifier': dict(lr_mult=10)}))
+    paramwise_cfg=dict(custom_keys={'.backbone.classifier': dict(lr_mult=10)}),
+)
 
 # learning policy
 param_scheduler = dict(type='StepLR', by_epoch=True, step_size=20, gamma=0.1)

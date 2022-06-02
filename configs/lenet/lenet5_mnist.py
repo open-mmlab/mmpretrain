@@ -38,7 +38,8 @@ test_dataloader = val_dataloader
 test_evaluator = val_evaluator
 
 # schedule settings
-optimizer = dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001)
+optim_wrapper = dict(
+    optimizer=dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001))
 
 param_scheduler = dict(
     type='MultiStepLR',  # learning policy, decay on several milestones.
@@ -53,7 +54,6 @@ test_cfg = dict()
 
 # runtime settings
 default_hooks = dict(
-    optimizer=dict(grad_clip=None),
     # record the time of every iteration.
     timer=dict(type='IterTimerHook'),
     # print log every 150 iterations.

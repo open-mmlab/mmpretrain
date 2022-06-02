@@ -30,10 +30,10 @@ val_dataloader = dict(dataset=dict(pipeline=test_pipeline))
 test_dataloader = dict(dataset=dict(pipeline=test_pipeline))
 
 # schedule settings
-optimizer = dict(type='AdamW', lr=1e-3, weight_decay=0.05)
+optim_wrapper = dict(optimizer=dict(type='AdamW', lr=1e-3, weight_decay=0.05))
 
 param_scheduler = [
-    # warm up learning rate schedule
+    # warm up learning rate scheduler
     dict(
         type='LinearLR',
         start_factor=1e-3,
