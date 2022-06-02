@@ -45,22 +45,21 @@ class BaseDataset(_BaseDataset):
         filter_cfg (dict, optional): Config for filter data. Defaults to None.
         indices (int or Sequence[int], optional): Support using first few
             data in annotation file to facilitate training/testing on a smaller
-            dataset. Defaults to None which means using all ``data_infos``.
-        serialize_data (bool, optional): Whether to hold memory using
-            serialized objects, when enabled, data loader workers can use
-            shared RAM from master process instead of making a copy. Defaults
-            to True.
-        pipeline (list, optional): Processing pipeline. Defaults to [].
-        test_mode (bool, optional): ``test_mode=True`` means in test phase.
+            dataset. Defaults to None, which means using all ``data_infos``.
+        serialize_data (bool): Whether to hold memory using serialized objects,
+            when enabled, data loader workers can use shared RAM from master
+            process instead of making a copy. Defaults to True.
+        pipeline (Sequence): Processing pipeline. Defaults to an empty tuple.
+        test_mode (bool): ``test_mode=True`` means in test phase.
             Defaults to False.
-        lazy_init (bool, optional): Whether to load annotation during
-            instantiation. In some cases, such as visualization, only the meta
-            information of the dataset is needed, which is not necessary to
-            load annotation file. ``Basedataset`` can skip load annotations to
-            save time by set ``lazy_init=False``. Defaults to False.
-        max_refetch (int, optional): If ``Basedataset.prepare_data`` get a
-            None img. The maximum extra number of cycles to get a valid
-            image. Defaults to 1000.
+        lazy_init (bool): Whether to load annotation during instantiation.
+            In some cases, such as visualization, only the meta information of
+            the dataset is needed, which is not necessary to load annotation
+            file. ``Basedataset`` can skip load annotations to save time by set
+            ``lazy_init=False``. Defaults to False.
+        max_refetch (int): If ``Basedataset.prepare_data`` get a None img.
+            The maximum extra number of cycles to get a valid image.
+            Defaults to 1000.
         classes (str | Sequence[str], optional): Specify names of classes.
 
             - If is string, it should be a file path, and the every line of
@@ -114,7 +113,7 @@ class BaseDataset(_BaseDataset):
     @property
     def CLASSES(self):
         """Return all categories names."""
-        return self._metainfo.get('CLASSES', None)
+        return self._metainfo.get('classes', None)
 
     @property
     def class_to_idx(self):
@@ -163,7 +162,7 @@ class BaseDataset(_BaseDataset):
             metainfo = {}
 
         if classes is not None:
-            metainfo = {'CLASSES': tuple(class_names), **metainfo}
+            metainfo = {'classes': tuple(class_names), **metainfo}
 
         return metainfo
 
@@ -174,10 +173,10 @@ class BaseDataset(_BaseDataset):
 
         #  To support the standard OpenMMLab 2.0 annotation format. Generate
         #  metainfo in internal format from standard metainfo format.
-        if 'categories' in self._metainfo and 'CLASSES' not in self._metainfo:
+        if 'categories' in self._metainfo and 'classes' not in self._metainfo:
             categories = sorted(
                 self._metainfo['categories'], key=lambda x: x['id'])
-            self._metainfo['CLASSES'] = tuple(
+            self._metainfo['classes'] = tuple(
                 [cat['category_name'] for cat in categories])
 
     def __repr__(self):
@@ -198,8 +197,7 @@ class BaseDataset(_BaseDataset):
         else:
             body.append('The `CLASSES` meta info is not set.')
 
-        body.append(f'Annotation file: \t{self.ann_file}')
-        body.append(f'Prefix of images: \t{self.img_prefix}')
+        body.extend(self.extra_repr())
 
         if len(self.pipeline.transforms) > 0:
             body.append('With transforms:')
@@ -208,3 +206,10 @@ class BaseDataset(_BaseDataset):
 
         lines = [head] + [' ' * 4 + line for line in body]
         return '\n'.join(lines)
+
+    def extra_repr(self) -> List[str]:
+        """The extra repr information of the dataset."""
+        body = []
+        body.append(f'Annotation file: \t{self.ann_file}')
+        body.append(f'Prefix of images: \t{self.img_prefix}')
+        return body

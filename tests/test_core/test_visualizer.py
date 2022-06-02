@@ -47,7 +47,7 @@ class TestClsVisualizer(TestCase):
         self.assertTrue(osp.exists(save_file))
 
         # Test with dataset_meta
-        self.vis.dataset_meta = {'CLASSES': ['cat', 'bird', 'dog']}
+        self.vis.dataset_meta = {'classes': ['cat', 'bird', 'dog']}
 
         def test_texts(text, *_, **__):
             self.assertEqual(

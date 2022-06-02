@@ -129,15 +129,15 @@ class CustomDataset(BaseDataset):
             information. Defaults to None.
         data_root (str, optional): The root directory for ``data_prefix`` and
             ``ann_file``. Defaults to None.
-        data_prefix (str | dict, optional): Prefix for training data. Defaults
+        data_prefix (str | dict, optional): Prefix for the data. Defaults
             to None.
         extensions (Sequence[str]): A sequence of allowed extensions. Defaults
             to ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif').
-        lazy_init (bool, optional): Whether to load annotation during
-            instantiation. In some cases, such as visualization, only the meta
-            information of the dataset is needed, which is not necessary to
-            load annotation file. ``Basedataset`` can skip load annotations to
-            save time by set ``lazy_init=False``. Defaults to False.
+        lazy_init (bool): Whether to load annotation during instantiation.
+            In some cases, such as visualization, only the meta information of
+            the dataset is needed, which is not necessary to load annotation
+            file. ``Basedataset`` can skip load annotations to save time by set
+            ``lazy_init=False``. Defaults to False.
         **kwargs: Other keyword arguments in :class:`BaseDataset`.
     """
 
@@ -195,7 +195,7 @@ class CustomDataset(BaseDataset):
                 f'the number of specified classes ({len(self.CLASSES)}). ' \
                 'Please check the data folder.'
         else:
-            self._metainfo['CLASSES'] = tuple(classes)
+            self._metainfo['classes'] = tuple(classes)
 
         if empty_classes:
             logger = get_root_logger()

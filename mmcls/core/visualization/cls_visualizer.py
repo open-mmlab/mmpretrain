@@ -67,7 +67,7 @@ class ClsVisualizer(Visualizer):
         ...     save_dir="./outputs",
         ...     vis_backends=[dict(type='LocalVisBackend')])
         >>> # Set classes names
-        >>> vis.dataset_meta = {'CLASSES': ['cat', 'bird', 'dog']}
+        >>> vis.dataset_meta = {'classes': ['cat', 'bird', 'dog']}
         >>> # Show the example image with annotation in a figure.
         >>> # And it will ignore all preset storage backends.
         >>> vis.add_datasample('res', img, data_sample, show=True)
@@ -127,7 +127,7 @@ class ClsVisualizer(Visualizer):
         """
         classes = None
         if self.dataset_meta is not None:
-            classes = self.dataset_meta.get('CLASSES', None)
+            classes = self.dataset_meta.get('classes', None)
 
         if rescale_factor is not None:
             image = mmcv.imrescale(image, rescale_factor)
