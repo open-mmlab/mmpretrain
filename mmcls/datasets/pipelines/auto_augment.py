@@ -3,7 +3,7 @@ import inspect
 from copy import deepcopy
 from math import ceil
 from numbers import Number
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Sequence, Tuple, Union
 
 import mmcv
 import numpy as np
@@ -47,10 +47,10 @@ class AutoAugment(RandomChoice):
 
     Args:
         policies (str | list[list[dict]]): The policies of auto augmentation.
-            Each policy in ``policies`` is a specific augmentation policy, and
-            is composed by several augmentations (dict). When AutoAugment is
-            called, a random policy in ``policies`` will be selected to
-            augment images.
+            If string, use preset policies collection like "imagenet". If list,
+            Each item is a sub policies, composed by several augmentation
+            policy dicts. When AutoAugment is called, a random sub policies in
+            ``policies`` will be selected to augment images.
         hparams (dict): Configs of hyperparameters. Hyperparameters will be
             used in policies that require these arguments if these arguments
             are not set in policy dicts. Defaults to ``dict(pad_val=128)``.
@@ -88,9 +88,10 @@ class RandAugment(BaseTransform):
     <https://arxiv.org/abs/1909.13719>`_.
 
     Args:
-        policies (str | list[dict]): The policies of random augmentation. Each
-            policy in ``policies`` is one specific augmentation policy (dict).
-            The policy shall should have these keys:
+        policies (str | list[dict]): The policies of random augmentation.
+            If string, use preset policies collection like "timm_increasing".
+            If list, each item is one specific augmentation policy dict.
+            The policy dict shall should have these keys:
 
             - ``type`` (str), The type of augmentation.
             - ``magnitude_range`` (Sequence[number], optional): For those
@@ -108,7 +109,7 @@ class RandAugment(BaseTransform):
         magnitude_std (Number | str): Deviation of magnitude noise applied.
 
             - If positive number, the magnitude obeys normal distribution
-              :math:`\mathcal{N}(magnitude, magnitude_std)`.
+              :math:`\mathcal{N}(magnitude_level, magnitude_std)`.
             - If 0 or negative number, magnitude remains unchanged.
             - If str "inf", the magnitude obeys uniform distribution
               :math:`Uniform(min, magnitude)`.
@@ -117,6 +118,47 @@ class RandAugment(BaseTransform):
         hparams (dict): Configs of hyperparameters. Hyperparameters will be
             used in policies that require these arguments if these arguments
             are not set in policy dicts. Defaults to ``dict(pad_val=128)``.
+
+    Examples:
+
+        To use "timm-increasing" policies collection, select two policies every
+        time, and magnitude_level of every policy is 6 (total is 10 by default)
+
+        >>> import numpy as np
+        >>> from mmcls.datasets import RandAugment
+        >>> transform = RandAugment(
+        ...     policies='timm_increasing',
+        ...     num_policies=2,
+        ...     magnitude_level=6,
+        ... )
+        >>> data = {'img': np.random.randint(0, 256, (224, 224, 3))}
+        >>> results = transform(data)
+        >>> print(results['img'].shape)
+        (224, 224, 3)
+
+        If you want the ``magnitude_level`` randomly changes every time, you
+        can use ``magnitude_std`` to specify the random distribution. For
+        example, a normal distribution :math:`\mathcal{N}(6, 0.5)`.
+
+        >>> transform = RandAugment(
+        ...     policies='timm_increasing',
+        ...     num_policies=2,
+        ...     magnitude_level=6,
+        ...     magnitude_std=0.5,
+        ... )
+
+        You can also use your own policies:
+
+        >>> policies = [
+        ...     dict(type='AutoContrast'),
+        ...     dict(type='Rotate', magnitude_range=(0, 30)),
+        ...     dict(type='ColorTransform', magnitude_range=(0, 0.9)),
+        ... ]
+        >>> transform = RandAugment(
+        ...     policies=policies,
+        ...     num_policies=2,
+        ...     magnitude_level=6
+        ... )
 
     Note:
         ``magnitude_std`` will introduce some randomness to policy, modified by
@@ -226,8 +268,12 @@ class RandAugment(BaseTransform):
         return repr_str
 
 
-class AugTransform(BaseTransform):
-    r"""Augmentation transform for AutoAugment and RandAugment.
+class BaseAugTransform(BaseTransform):
+    r"""The base class of augmentation transform for RandAugment.
+
+    This class provides several common attributions and methods to support the
+    magnitude level mapping and magnitude level randomness in
+    :class:`RandAugment`.
 
     Args:
         magnitude_level (int | float): Magnitude level.
@@ -249,8 +295,8 @@ class AugTransform(BaseTransform):
             Defaults to 0.
         total_level (int | float): Total level for the magnitude. Defaults to
             10.
-        prob (float): The probability for performing Shear therefore should be
-            in range [0, 1]. Defaults to 0.5.
+        prob (float): The probability for performing transformation therefore
+            should be in range [0, 1]. Defaults to 0.5.
         random_negative_prob (float): The probability that turns the magnitude
             negative, which should be in range [0,1]. Defaults to 0.
     """
@@ -260,8 +306,8 @@ class AugTransform(BaseTransform):
                  magnitude_range: Tuple[float, float] = None,
                  magnitude_std: Union[str, float] = 0.,
                  total_level: int = 10,
-                 prob=0.5,
-                 random_negative_prob=0.5):
+                 prob: float = 0.5,
+                 random_negative_prob: float = 0.5):
         self.magnitude_level = magnitude_level
         self.magnitude_range = magnitude_range
         self.magnitude_std = magnitude_std
@@ -311,7 +357,7 @@ class AugTransform(BaseTransform):
 
 
 @TRANSFORMS.register_module()
-class Shear(AugTransform):
+class Shear(BaseAugTransform):
     """Shear images.
 
     Args:
@@ -321,7 +367,7 @@ class Shear(AugTransform):
         pad_val (int, Sequence[int]): Pixel pad_val value for constant fill.
             If a sequence of length 3, it is used to pad_val R, G, B channels
             respectively. Defaults to 128.
-        prob (float): The probability for performing Shear therefore should be
+        prob (float): The probability for performing shear therefore should be
             in range [0, 1]. Defaults to 0.5.
         direction (str): The shearing direction. Options are 'horizontal' and
             'vertical'. Defaults to 'horizontal'.
@@ -333,12 +379,12 @@ class Shear(AugTransform):
     """
 
     def __init__(self,
-                 magnitude=None,
-                 pad_val=128,
-                 prob=0.5,
-                 direction='horizontal',
-                 random_negative_prob=0.5,
-                 interpolation='bicubic',
+                 magnitude: Union[int, float, None] = None,
+                 pad_val: Union[int, Sequence[int]] = 128,
+                 prob: float = 0.5,
+                 direction: str = 'horizontal',
+                 random_negative_prob: float = 0.5,
+                 interpolation: str = 'bicubic',
                  **kwargs):
         super().__init__(
             prob=prob, random_negative_prob=random_negative_prob, **kwargs)
@@ -387,7 +433,7 @@ class Shear(AugTransform):
 
 
 @TRANSFORMS.register_module()
-class Translate(AugTransform):
+class Translate(BaseAugTransform):
     """Translate images.
 
     Args:
@@ -411,12 +457,12 @@ class Translate(AugTransform):
     """
 
     def __init__(self,
-                 magnitude=None,
-                 pad_val=128,
-                 prob=0.5,
-                 direction='horizontal',
-                 random_negative_prob=0.5,
-                 interpolation='nearest',
+                 magnitude: Union[int, float, None] = None,
+                 pad_val: Union[int, Sequence[int]] = 128,
+                 prob: float = 0.5,
+                 direction: str = 'horizontal',
+                 random_negative_prob: float = 0.5,
+                 interpolation: str = 'nearest',
                  **kwargs):
         super().__init__(
             prob=prob, random_negative_prob=random_negative_prob, **kwargs)
@@ -470,7 +516,7 @@ class Translate(AugTransform):
 
 
 @TRANSFORMS.register_module()
-class Rotate(AugTransform):
+class Rotate(BaseAugTransform):
     """Rotate images.
 
     Args:
@@ -484,7 +530,7 @@ class Rotate(AugTransform):
         pad_val (int, Sequence[int]): Pixel pad_val value for constant fill.
             If a sequence of length 3, it is used to pad_val R, G, B channels
             respectively. Defaults to 128.
-        prob (float): The probability for performing Rotate therefore should be
+        prob (float): The probability for performing rotate therefore should be
             in range [0, 1]. Defaults to 0.5.
         random_negative_prob (float): The probability that turns the angle
             negative, which should be in range [0,1]. Defaults to 0.5.
@@ -494,13 +540,13 @@ class Rotate(AugTransform):
     """
 
     def __init__(self,
-                 angle=None,
-                 center=None,
-                 scale=1.0,
-                 pad_val=128,
-                 prob=0.5,
-                 random_negative_prob=0.5,
-                 interpolation='nearest',
+                 angle: Optional[float] = None,
+                 center: Optional[Tuple[float]] = None,
+                 scale: float = 1.0,
+                 pad_val: Union[int, Sequence[int]] = 128,
+                 prob: float = 0.5,
+                 random_negative_prob: float = 0.5,
+                 interpolation: str = 'nearest',
                  **kwargs):
         super().__init__(
             prob=prob, random_negative_prob=random_negative_prob, **kwargs)
@@ -549,16 +595,16 @@ class Rotate(AugTransform):
 
 
 @TRANSFORMS.register_module()
-class AutoContrast(AugTransform):
+class AutoContrast(BaseAugTransform):
     """Auto adjust image contrast.
 
     Args:
-        prob (float): The probability for performing invert therefore should
-             be in range [0, 1]. Defaults to 0.5.
+        prob (float): The probability for performing auto contrast
+            therefore should be in range [0, 1]. Defaults to 0.5.
         **kwargs: Other keyword arguments of :class:`AugTransform`.
     """
 
-    def __init__(self, prob=0.5, **kwargs):
+    def __init__(self, prob: float = 0.5, **kwargs):
         super().__init__(prob=prob, **kwargs)
 
     def transform(self, results):
@@ -579,7 +625,7 @@ class AutoContrast(AugTransform):
 
 
 @TRANSFORMS.register_module()
-class Invert(AugTransform):
+class Invert(BaseAugTransform):
     """Invert images.
 
     Args:
@@ -588,7 +634,7 @@ class Invert(AugTransform):
         **kwargs: Other keyword arguments of :class:`AugTransform`.
     """
 
-    def __init__(self, prob=0.5, **kwargs):
+    def __init__(self, prob: float = 0.5, **kwargs):
         super().__init__(prob=prob, **kwargs)
 
     def transform(self, results):
@@ -609,16 +655,16 @@ class Invert(AugTransform):
 
 
 @TRANSFORMS.register_module()
-class Equalize(AugTransform):
+class Equalize(BaseAugTransform):
     """Equalize the image histogram.
 
     Args:
-        prob (float): The probability for performing invert therefore should
+        prob (float): The probability for performing equalize therefore should
              be in range [0, 1]. Defaults to 0.5.
         **kwargs: Other keyword arguments of :class:`AugTransform`.
     """
 
-    def __init__(self, prob=0.5, **kwargs):
+    def __init__(self, prob: float = 0.5, **kwargs):
         super().__init__(prob=prob, **kwargs)
 
     def transform(self, results):
@@ -639,7 +685,7 @@ class Equalize(AugTransform):
 
 
 @TRANSFORMS.register_module()
-class Solarize(AugTransform):
+class Solarize(BaseAugTransform):
     """Solarize images (invert all pixel values above a threshold).
 
     Args:
@@ -651,7 +697,10 @@ class Solarize(AugTransform):
         **kwargs: Other keyword arguments of :class:`AugTransform`.
     """
 
-    def __init__(self, thr=None, prob=0.5, **kwargs):
+    def __init__(self,
+                 thr: Union[int, float, None] = None,
+                 prob: float = 0.5,
+                 **kwargs):
         super().__init__(prob=prob, random_negative_prob=0., **kwargs)
         assert (thr is None) ^ (self.magnitude_range is None), \
             'Please specify only one of `thr` and `magnitude_range`.'
@@ -682,7 +731,7 @@ class Solarize(AugTransform):
 
 
 @TRANSFORMS.register_module()
-class SolarizeAdd(AugTransform):
+class SolarizeAdd(BaseAugTransform):
     """SolarizeAdd images (add a certain value to pixels below a threshold).
 
     Args:
@@ -696,7 +745,11 @@ class SolarizeAdd(AugTransform):
         **kwargs: Other keyword arguments of :class:`AugTransform`.
     """
 
-    def __init__(self, magnitude=None, thr=128, prob=0.5, **kwargs):
+    def __init__(self,
+                 magnitude: Union[int, float, None] = None,
+                 thr: Union[int, float] = 128,
+                 prob: float = 0.5,
+                 **kwargs):
         super().__init__(prob=prob, random_negative_prob=0., **kwargs)
         assert (magnitude is None) ^ (self.magnitude_range is None), \
             'Please specify only one of `magnitude` and `magnitude_range`.'
@@ -733,7 +786,7 @@ class SolarizeAdd(AugTransform):
 
 
 @TRANSFORMS.register_module()
-class Posterize(AugTransform):
+class Posterize(BaseAugTransform):
     """Posterize images (reduce the number of bits for each color channel).
 
     Args:
@@ -745,7 +798,10 @@ class Posterize(AugTransform):
         **kwargs: Other keyword arguments of :class:`AugTransform`.
     """
 
-    def __init__(self, bits=None, prob=0.5, **kwargs):
+    def __init__(self,
+                 bits: Optional[int] = None,
+                 prob: float = 0.5,
+                 **kwargs):
         super().__init__(prob=prob, random_negative_prob=0., **kwargs)
         assert (bits is None) ^ (self.magnitude_range is None), \
             'Please specify only one of `bits` and `magnitude_range`.'
@@ -782,7 +838,7 @@ class Posterize(AugTransform):
 
 
 @TRANSFORMS.register_module()
-class Contrast(AugTransform):
+class Contrast(BaseAugTransform):
     """Adjust images contrast.
 
     Args:
@@ -798,9 +854,9 @@ class Contrast(AugTransform):
     """
 
     def __init__(self,
-                 magnitude=None,
-                 prob=0.5,
-                 random_negative_prob=0.5,
+                 magnitude: Union[int, float, None] = None,
+                 prob: float = 0.5,
+                 random_negative_prob: float = 0.5,
                  **kwargs):
         super().__init__(
             prob=prob, random_negative_prob=random_negative_prob, **kwargs)
@@ -835,7 +891,7 @@ class Contrast(AugTransform):
 
 
 @TRANSFORMS.register_module()
-class ColorTransform(AugTransform):
+class ColorTransform(BaseAugTransform):
     """Adjust images color balance.
 
     Args:
@@ -852,9 +908,9 @@ class ColorTransform(AugTransform):
     """
 
     def __init__(self,
-                 magnitude=None,
-                 prob=0.5,
-                 random_negative_prob=0.5,
+                 magnitude: Union[int, float, None] = None,
+                 prob: float = 0.5,
+                 random_negative_prob: float = 0.5,
                  **kwargs):
         super().__init__(
             prob=prob, random_negative_prob=random_negative_prob, **kwargs)
@@ -889,7 +945,7 @@ class ColorTransform(AugTransform):
 
 
 @TRANSFORMS.register_module()
-class Brightness(AugTransform):
+class Brightness(BaseAugTransform):
     """Adjust images brightness.
 
     Args:
@@ -898,7 +954,7 @@ class Brightness(AugTransform):
             negative magnitude would make the image darker. A magnitude=0 gives
             the origin img. If None, generate from ``magnitude_range``, see
             :class:`AugTransform`. Defaults to None.
-        prob (float): The probability for performing contrast adjusting
+        prob (float): The probability for performing brightness adjusting
             therefore should be in range [0, 1]. Defaults to 0.5.
         random_negative_prob (float): The probability that turns the magnitude
             negative, which should be in range [0,1]. Defaults to 0.5.
@@ -906,9 +962,9 @@ class Brightness(AugTransform):
     """
 
     def __init__(self,
-                 magnitude=None,
-                 prob=0.5,
-                 random_negative_prob=0.5,
+                 magnitude: Union[int, float, None] = None,
+                 prob: float = 0.5,
+                 random_negative_prob: float = 0.5,
                  **kwargs):
         super().__init__(
             prob=prob, random_negative_prob=random_negative_prob, **kwargs)
@@ -943,7 +999,7 @@ class Brightness(AugTransform):
 
 
 @TRANSFORMS.register_module()
-class Sharpness(AugTransform):
+class Sharpness(BaseAugTransform):
     """Adjust images sharpness.
 
     Args:
@@ -952,7 +1008,7 @@ class Sharpness(AugTransform):
             negative magnitude would make the image bulr. A magnitude=0 gives
             the origin img. If None, generate from ``magnitude_range``, see
             :class:`AugTransform`. Defaults to None.
-        prob (float): The probability for performing contrast adjusting
+        prob (float): The probability for performing sharpness adjusting
             therefore should be in range [0, 1]. Defaults to 0.5.
         random_negative_prob (float): The probability that turns the magnitude
             negative, which should be in range [0,1]. Defaults to 0.5.
@@ -960,9 +1016,9 @@ class Sharpness(AugTransform):
     """
 
     def __init__(self,
-                 magnitude=None,
-                 prob=0.5,
-                 random_negative_prob=0.5,
+                 magnitude: Union[int, float, None] = None,
+                 prob: float = 0.5,
+                 random_negative_prob: float = 0.5,
                  **kwargs):
         super().__init__(
             prob=prob, random_negative_prob=random_negative_prob, **kwargs)
@@ -997,7 +1053,7 @@ class Sharpness(AugTransform):
 
 
 @TRANSFORMS.register_module()
-class Cutout(AugTransform):
+class Cutout(BaseAugTransform):
     """Cutout images.
 
     Args:
@@ -1013,7 +1069,11 @@ class Cutout(AugTransform):
         **kwargs: Other keyword arguments of :class:`AugTransform`.
     """
 
-    def __init__(self, shape=None, pad_val=128, prob=0.5, **kwargs):
+    def __init__(self,
+                 shape: Union[int, Tuple[int], None] = None,
+                 pad_val: Union[int, Sequence[int]] = 128,
+                 prob: float = 0.5,
+                 **kwargs):
         super().__init__(prob=prob, random_negative_prob=0., **kwargs)
         assert (shape is None) ^ (self.magnitude_range is None), \
             'Please specify only one of `shape` and `magnitude_range`.'

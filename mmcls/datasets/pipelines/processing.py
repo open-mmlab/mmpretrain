@@ -539,6 +539,8 @@ class RandomErasing(BaseTransform):
     @cache_randomness
     def random_patch(self, img_h, img_w):
         """Randomly generate patch the erase."""
+        # convert the aspect ratio to log space to equally handle width and
+        # height.
         log_aspect_range = np.log(
             np.array(self.aspect_range, dtype=np.float32))
         aspect_ratio = np.exp(np.random.uniform(*log_aspect_range))
@@ -565,7 +567,6 @@ class RandomErasing(BaseTransform):
         img = results['img']
         img_h, img_w = img.shape[:2]
 
-        # convert to log aspect to ensure equal probability of aspect ratio
         img = self._fill_pixels(img, *self.random_patch(img_h, img_w))
 
         results['img'] = img
