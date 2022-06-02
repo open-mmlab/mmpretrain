@@ -8,7 +8,7 @@ preprocess_cfg = dict(
     to_rgb=False)
 
 train_pipeline = [
-    dict(type='RandomCrop', size=32, padding=4),
+    dict(type='RandomCrop', crop_size=32, padding=4),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(type='PackClsInputs'),
 ]

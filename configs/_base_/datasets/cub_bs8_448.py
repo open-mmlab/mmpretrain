@@ -10,7 +10,7 @@ preprocess_cfg = dict(
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='Resize', scale=600),
-    dict(type='RandomCrop', size=448),
+    dict(type='RandomCrop', crop_size=448),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(type='PackClsInputs'),
 ]
