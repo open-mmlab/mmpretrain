@@ -26,7 +26,7 @@ train_pipeline = [
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(
         type='RandAugment',
-        policies={{_base_.rand_increasing_policies}},
+        policies='timm_increasing',
         num_policies=2,
         total_level=10,
         magnitude_level=9,

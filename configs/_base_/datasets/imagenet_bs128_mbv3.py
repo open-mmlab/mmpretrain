@@ -1,5 +1,3 @@
-_base_ = ['./pipelines/auto_aug.py']
-
 # dataset settings
 dataset_type = 'ImageNet'
 preprocess_cfg = dict(
@@ -19,7 +17,7 @@ train_pipeline = [
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(
         type='AutoAugment',
-        policies={{_base_.auto_increasing_policies}},
+        policies='imagenet',
         hparams=dict(pad_val=[round(x) for x in bgr_mean])),
     dict(
         type='RandomErasing',
