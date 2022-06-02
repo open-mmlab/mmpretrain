@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.23.1(2/6/2022)
+
+### New Features
+
+- Dedicated MMClsWandbHook for MMClassification (Weights and Biases Integration) ([#764](https://github.com/open-mmlab/mmclassification/pull/764))
+
+### Improvements
+
+- Use mdformat instead of markdownlint to format markdown. ([#844](https://github.com/open-mmlab/mmclassification/pull/844))
+
+### Bug Fixes
+
+- Fix wrong `--local_rank`.
+
+### Docs Update
+
+- Update install tutorials. ([#854](https://github.com/open-mmlab/mmclassification/pull/854))
+- Fix wrong link in README. ([#835](https://github.com/open-mmlab/mmclassification/pull/835))
+
 ## v0.23.0(1/5/2022)
 
 ### New Features
