@@ -8,9 +8,8 @@ import torch.distributed as dist
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import (DistSamplerSeedHook, Fp16OptimizerHook,
                          build_optimizer, build_runner, get_dist_info)
-from mmcv.runner.hooks import DistEvalHook, EvalHook
 
-from mmcls.core import DistOptimizerHook
+from mmcls.core import DistEvalHook, DistOptimizerHook, EvalHook
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.utils import get_root_logger
 

@@ -48,6 +48,7 @@ Hook
    ClassNumCheckHook
    PreciseBNHook
    CosineAnnealingCooldownLrUpdaterHook
+   MMClsWandbHook
 
 
 Optimizers
