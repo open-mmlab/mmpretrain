@@ -17,6 +17,9 @@ default_hooks = dict(
 
     # set sampler seed in distributed evrionment.
     sampler_seed=dict(type='DistSamplerSeedHook'),
+
+    # validation results visualization, set True to enable it.
+    visualization=dict(type='VisualizationHook', enable=False),
 )
 
 # configure environment

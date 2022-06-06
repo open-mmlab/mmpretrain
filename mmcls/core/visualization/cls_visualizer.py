@@ -95,11 +95,10 @@ class ClsVisualizer(Visualizer):
                        step: int = 0) -> None:
         """Draw datasample and save to all backends.
 
-        - If ``show`` is True, all storage backends are ignored and then
-        displayed in a local window.
-        - If the ``out_file`` parameter is specified, the drawn image
-        will be additionally saved to ``out_file``. It is usually used
-        in script mode like ``image_demo.py``
+        - If ``out_file`` is specified, all storage backends are ignored
+          and save the image to the ``out_file``.
+        - If ``show`` is True, plot the result image in a window, please
+          confirm you are able to access the graphical interface.
 
         Args:
             name (str): The image identifier.
@@ -121,8 +120,9 @@ class ClsVisualizer(Visualizer):
             wait_time (float): The interval of show (s). Default to 0, which
                 means "forever".
             out_file (str, optional): Extra path to save the visualization
-                result. Whether specified or not, the visualizer will still
-                save the results by its storage backends. Default to None.
+                result. If specified, the visualizer will only save the result
+                image to the out_file and ignore its storage backends.
+                Default to None.
             step (int): Global step value to record. Default to 0.
         """
         classes = None
@@ -179,8 +179,9 @@ class ClsVisualizer(Visualizer):
 
         if show:
             self.show(drawn_img, win_name=name, wait_time=wait_time)
-        else:
-            self.add_image(name, drawn_img, step=step)
 
         if out_file is not None:
+            # save the image to the target file instead of vis_backends
             mmcv.imwrite(drawn_img[..., ::-1], out_file)
+        else:
+            self.add_image(name, drawn_img, step=step)
