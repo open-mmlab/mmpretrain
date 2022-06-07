@@ -56,13 +56,6 @@ class TestClsDataSample(TestCase):
         self.assertIsInstance(label, LabelData)
         self.assertTrue((label.label == torch.tensor([1, 2, 3])).all())
 
-        # Test Sequence with float number
-        method([0.2, 0, 0.8])
-        self.assertIn(key, data_sample)
-        label = getattr(data_sample, key)
-        self.assertIsInstance(label, LabelData)
-        self.assertTrue((label.label == torch.tensor([0.2, 0, 0.8])).all())
-
         # Test unavailable type
         with self.assertRaisesRegex(TypeError, "<class 'str'> is not"):
             method('hi')
