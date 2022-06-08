@@ -1,14 +1,80 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import List
 
-import numpy as np
-
-from mmcls.core import average_performance, mAP
+from mmcls.registry import DATASETS
 from .base_dataset import BaseDataset
 
 
+@DATASETS.register_module()
 class MultiLabelDataset(BaseDataset):
-    """Multi-label Dataset."""
+    """Multi-label Dataset.
+
+    This dataset support annotation file in `OpenMMLab 2.0 style annotation
+    format`.
+
+    .. _OpenMMLab 2.0 style annotation format:
+        https://github.com/open-mmlab/mmengine/blob/main/docs/zh_cn/tutorials/basedataset.md
+
+    The annotation format is shown as follows.
+
+    .. code-block:: none
+        {
+            "metainfo":
+            {
+              "classes":['A', 'B', 'C'....]
+            },
+            "data_list":
+            [
+              {
+                "img_path": "test_img1.jpg",
+                'img_label': [0, 1],
+              },
+              {
+                "img_path": "test_img2.jpg",
+                'img_label': [2],
+              },
+            ]
+            ....
+        }
+
+
+    Args:
+        ann_file (str): Annotation file path.
+        metainfo (dict, optional): Meta information for dataset, such as class
+            information. Defaults to None.
+        data_root (str, optional): The root directory for ``data_prefix`` and
+            ``ann_file``. Defaults to None.
+        data_prefix (str | dict, optional): Prefix for training data. Defaults
+            to None.
+        filter_cfg (dict, optional): Config for filter data. Defaults to None.
+        indices (int or Sequence[int], optional): Support using first few
+            data in annotation file to facilitate training/testing on a smaller
+            dataset. Defaults to None which means using all ``data_infos``.
+        serialize_data (bool, optional): Whether to hold memory using
+            serialized objects, when enabled, data loader workers can use
+            shared RAM from master process instead of making a copy. Defaults
+            to True.
+        pipeline (list, optional): Processing pipeline. Defaults to [].
+        test_mode (bool, optional): ``test_mode=True`` means in test phase.
+            Defaults to False.
+        lazy_init (bool, optional): Whether to load annotation during
+            instantiation. In some cases, such as visualization, only the meta
+            information of the dataset is needed, which is not necessary to
+            load annotation file. ``Basedataset`` can skip load annotations to
+            save time by set ``lazy_init=False``. Defaults to False.
+        max_refetch (int, optional): If ``Basedataset.prepare_data`` get a
+            None img. The maximum extra number of cycles to get a valid
+            image. Defaults to 1000.
+        classes (str | Sequence[str], optional): Specify names of classes.
+
+            - If is string, it should be a file path, and the every line of
+              the file is a name of a class.
+            - If is a sequence of string, every item is a name of class.
+            - If is None, use categories information in ``metainfo`` argument,
+              annotation file or the class attribute ``METAINFO``.
+
+            Defaults to None.
+    """
 
     def get_cat_ids(self, idx: int) -> List[int]:
         """Get category ids by index.
@@ -19,61 +85,4 @@ class MultiLabelDataset(BaseDataset):
         Returns:
             cat_ids (List[int]): Image categories of specified index.
         """
-        gt_labels = self.data_infos[idx]['gt_label']
-        cat_ids = np.where(gt_labels == 1)[0].tolist()
-        return cat_ids
-
-    def evaluate(self,
-                 results,
-                 metric='mAP',
-                 metric_options=None,
-                 indices=None,
-                 logger=None):
-        """Evaluate the dataset.
-
-        Args:
-            results (list): Testing results of the dataset.
-            metric (str | list[str]): Metrics to be evaluated.
-                Default value is 'mAP'. Options are 'mAP', 'CP', 'CR', 'CF1',
-                'OP', 'OR' and 'OF1'.
-            metric_options (dict, optional): Options for calculating metrics.
-                Allowed keys are 'k' and 'thr'. Defaults to None
-            logger (logging.Logger | str, optional): Logger used for printing
-                related information during evaluation. Defaults to None.
-
-        Returns:
-            dict: evaluation results
-        """
-        if metric_options is None or metric_options == {}:
-            metric_options = {'thr': 0.5}
-
-        if isinstance(metric, str):
-            metrics = [metric]
-        else:
-            metrics = metric
-        allowed_metrics = ['mAP', 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1']
-        eval_results = {}
-        results = np.vstack(results)
-        gt_labels = self.get_gt_labels()
-        if indices is not None:
-            gt_labels = gt_labels[indices]
-        num_imgs = len(results)
-        assert len(gt_labels) == num_imgs, 'dataset testing results should '\
-            'be of the same length as gt_labels.'
-
-        invalid_metrics = set(metrics) - set(allowed_metrics)
-        if len(invalid_metrics) != 0:
-            raise ValueError(f'metric {invalid_metrics} is not supported.')
-
-        if 'mAP' in metrics:
-            mAP_value = mAP(results, gt_labels)
-            eval_results['mAP'] = mAP_value
-        if len(set(metrics) - {'mAP'}) != 0:
-            performance_keys = ['CP', 'CR', 'CF1', 'OP', 'OR', 'OF1']
-            performance_values = average_performance(results, gt_labels,
-                                                     **metric_options)
-            for k, v in zip(performance_keys, performance_values):
-                if k in metrics:
-                    eval_results[k] = v
-
-        return eval_results
+        return self.get_data_info(idx)['gt_label']

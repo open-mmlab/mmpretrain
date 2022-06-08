@@ -12,8 +12,6 @@ from mmengine.registry import TRANSFORMS
 from mmcls.datasets import DATASETS
 from mmcls.utils import get_root_logger
 
-#  import torch
-
 mmcls_logger = get_root_logger()
 ASSETS_ROOT = osp.abspath(
     osp.join(osp.dirname(__file__), '../../data/dataset'))
@@ -98,72 +96,6 @@ class TestBaseDataset(TestCase):
         self.assertIn(f'Annotation file: \t{dataset.ann_file}', repr(dataset))
         self.assertIn(f'Prefix of images: \t{dataset.img_prefix}',
                       repr(dataset))
-
-
-"""Temporarily disabled.
-class TestMultiLabelDataset(TestBaseDataset):
-    DATASET_TYPE = 'MultiLabelDataset'
-
-    def test_get_cat_ids(self):
-        dataset_class = DATASETS.get(self.DATASET_TYPE)
-        fake_ann = [
-            dict(
-                img_prefix='',
-                img_info=dict(),
-                gt_label=np.array([0, 1, 1, 0], dtype=np.uint8))
-        ]
-
-        with patch.object(dataset_class, 'load_annotations') as mock_load:
-            mock_load.return_value = fake_ann
-            dataset = dataset_class(**self.DEFAULT_ARGS)
-
-        cat_ids = dataset.get_cat_ids(0)
-        self.assertIsInstance(cat_ids, list)
-        self.assertEqual(len(cat_ids), 2)
-        self.assertIsInstance(cat_ids[0], int)
-        self.assertEqual(cat_ids, [1, 2])
-
-    def test_evaluate(self):
-        dataset_class = DATASETS.get(self.DATASET_TYPE)
-
-        fake_ann = [
-            dict(gt_label=np.array([1, 1, 0, -1], dtype=np.int8)),
-            dict(gt_label=np.array([1, 1, 0, -1], dtype=np.int8)),
-            dict(gt_label=np.array([0, -1, 1, -1], dtype=np.int8)),
-            dict(gt_label=np.array([0, 1, 0, -1], dtype=np.int8)),
-            dict(gt_label=np.array([0, 1, 0, -1], dtype=np.int8)),
-        ]
-
-        with patch.object(dataset_class, 'load_annotations') as mock_load:
-            mock_load.return_value = fake_ann
-            dataset = dataset_class(**self.DEFAULT_ARGS)
-
-        fake_results = np.array([
-            [0.9, 0.8, 0.3, 0.2],
-            [0.1, 0.2, 0.2, 0.1],
-            [0.7, 0.5, 0.9, 0.3],
-            [0.8, 0.1, 0.1, 0.2],
-            [0.8, 0.1, 0.1, 0.2],
-        ])
-
-        # the metric must be valid for the dataset
-        with self.assertRaisesRegex(ValueError,
-                                    "{'unknown'} is not supported"):
-            dataset.evaluate(fake_results, metric='unknown')
-
-        # only one metric
-        eval_results = dataset.evaluate(fake_results, metric='mAP')
-        self.assertEqual(eval_results.keys(), {'mAP'})
-        self.assertAlmostEqual(eval_results['mAP'], 67.5, places=4)
-
-        # multiple metrics
-        eval_results = dataset.evaluate(
-            fake_results, metric=['mAP', 'CR', 'OF1'])
-        self.assertEqual(eval_results.keys(), {'mAP', 'CR', 'OF1'})
-        self.assertAlmostEqual(eval_results['mAP'], 67.50, places=2)
-        self.assertAlmostEqual(eval_results['CR'], 43.75, places=2)
-        self.assertAlmostEqual(eval_results['OF1'], 42.86, places=2)
-"""
 
 
 class TestCustomDataset(TestBaseDataset):
@@ -529,6 +461,200 @@ class TestCIFAR100(TestCIFAR10):
     DATASET_TYPE = 'CIFAR100'
 
 
+class TestMultiLabelDataset(TestBaseDataset):
+    DATASET_TYPE = 'MultiLabelDataset'
+
+    DEFAULT_ARGS = dict(data_root=ASSETS_ROOT, ann_file='multi_label_ann.json')
+
+    def test_get_cat_ids(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+        cfg = {**self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+
+        cat_ids = dataset.get_cat_ids(0)
+        self.assertTrue(cat_ids, [0])
+
+        cat_ids = dataset.get_cat_ids(1)
+        self.assertTrue(cat_ids, [1])
+
+        cat_ids = dataset.get_cat_ids(1)
+        self.assertTrue(cat_ids, [0, 1])
+
+
+class TestVOC(TestBaseDataset):
+    DATASET_TYPE = 'VOC'
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+
+        tmpdir = tempfile.TemporaryDirectory()
+        cls.tmpdir = tmpdir
+        data_root = tmpdir.name
+
+        cls.DEFAULT_ARGS = dict(
+            data_root=data_root,
+            image_set_path='ImageSets/train.txt',
+            data_prefix=dict(img_path='JPEGImages', ann_path='Annotations'),
+            pipeline=[],
+            test_mode=False)
+
+        cls.image_folder = osp.join(data_root, 'JPEGImages')
+        cls.ann_folder = osp.join(data_root, 'Annotations')
+        cls.image_set_folder = osp.join(data_root, 'ImageSets')
+        os.mkdir(cls.image_set_folder)
+        os.mkdir(cls.image_folder)
+        os.mkdir(cls.ann_folder)
+
+        cls.fake_img_paths = [f'{i}' for i in range(6)]
+        cls.fake_labels = [[
+            np.random.randint(10) for _ in range(np.random.randint(1, 4))
+        ] for _ in range(6)]
+        cls.fake_classes = [f'C_{i}' for i in range(10)]
+        train_list = [i for i in range(0, 4)]
+        test_list = [i for i in range(4, 6)]
+
+        with open(osp.join(cls.image_set_folder, 'train.txt'), 'w') as f:
+            for train_item in train_list:
+                f.write(str(train_item) + '\n')
+        with open(osp.join(cls.image_set_folder, 'test.txt'), 'w') as f:
+            for test_item in test_list:
+                f.write(str(test_item) + '\n')
+        with open(osp.join(cls.image_set_folder, 'full_path_test.txt'),
+                  'w') as f:
+            for test_item in test_list:
+                f.write(osp.join(cls.image_folder, str(test_item)) + '\n')
+
+        for train_item in train_list:
+            with open(osp.join(cls.ann_folder, f'{train_item}.xml'), 'w') as f:
+                temple = '<object><name>C_{}</name>{}</object>'
+                ann_data = ''.join([
+                    temple.format(label, '<difficult>0</difficult>')
+                    for label in cls.fake_labels[train_item]
+                ])
+                # add difficult label
+                ann_data += ''.join([
+                    temple.format(label, '<difficult>1</difficult>')
+                    for label in cls.fake_labels[train_item]
+                ])
+                xml_ann_data = f'<annotation>{ann_data}</annotation>'
+                f.write(xml_ann_data + '\n')
+
+        for test_item in test_list:
+            with open(osp.join(cls.ann_folder, f'{test_item}.xml'), 'w') as f:
+                temple = '<object><name>C_{}</name>{}</object>'
+                ann_data = ''.join([
+                    temple.format(label, '<difficult>0</difficult>')
+                    for label in cls.fake_labels[test_item]
+                ])
+                xml_ann_data = f'<annotation>{ann_data}</annotation>'
+                f.write(xml_ann_data + '\n')
+
+    def test_initialize(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test overriding metainfo by `classes` argument
+        cfg = {**self.DEFAULT_ARGS, 'classes': ['bus', 'car']}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(dataset.CLASSES, ('bus', 'car'))
+
+        # Test overriding CLASSES by classes file
+        classes_file = osp.join(ASSETS_ROOT, 'classes.txt')
+        cfg = {**self.DEFAULT_ARGS, 'classes': classes_file}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(dataset.CLASSES, ('bus', 'car'))
+        self.assertEqual(dataset.class_to_idx, {'bus': 0, 'car': 1})
+
+        # Test invalid classes
+        cfg = {**self.DEFAULT_ARGS, 'classes': dict(classes=1)}
+        with self.assertRaisesRegex(ValueError, "type <class 'dict'>"):
+            dataset_class(**cfg)
+
+    def test_get_cat_ids(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+        cfg = {'classes': self.fake_classes, **self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+
+        cat_ids = dataset.get_cat_ids(0)
+        self.assertIsInstance(cat_ids, list)
+        self.assertIsInstance(cat_ids[0], int)
+
+    def test_load_data_list(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test default behavior
+        dataset = dataset_class(**self.DEFAULT_ARGS)
+        self.assertEqual(len(dataset), 4)
+        self.assertEqual(len(dataset.CLASSES), 20)
+
+        cfg = {
+            'classes': self.fake_classes,
+            'lazy_init': True,
+            **self.DEFAULT_ARGS
+        }
+        dataset = dataset_class(**cfg)
+
+        self.assertIn("Haven't been initialized", repr(dataset))
+        dataset.full_init()
+        self.assertIn(f'Number of samples: \t{len(dataset)}', repr(dataset))
+
+        data_info = dataset[0]
+        fake_img_path = osp.join(self.image_folder, self.fake_img_paths[0])
+        self.assertEqual(data_info['img_path'], f'{fake_img_path}.jpg')
+        self.assertEqual(set(data_info['gt_label']), set(self.fake_labels[0]))
+
+        # Test with test_mode=True
+        cfg['image_set_path'] = 'ImageSets/test.txt'
+        cfg['test_mode'] = True
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 2)
+
+        data_info = dataset[0]
+        fake_img_path = osp.join(self.image_folder, self.fake_img_paths[4])
+        self.assertEqual(data_info['img_path'], f'{fake_img_path}.jpg')
+        self.assertEqual(set(data_info['gt_label']), set(self.fake_labels[4]))
+
+        # Test with test_mode=True and ann_path = None
+        cfg['image_set_path'] = 'ImageSets/test.txt'
+        cfg['test_mode'] = True
+        cfg['data_prefix'] = 'JPEGImages'
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 2)
+
+        data_info = dataset[0]
+        fake_img_path = osp.join(self.image_folder, self.fake_img_paths[4])
+        self.assertEqual(data_info['img_path'], f'{fake_img_path}.jpg')
+        self.assertEqual(data_info['gt_label'], None)
+
+        # Test different backend
+        cfg = {
+            **self.DEFAULT_ARGS, 'lazy_init': True,
+            'data_root': 's3:/openmmlab/voc'
+        }
+        dataset = dataset_class(**cfg)
+        dataset._check_integrity = MagicMock(return_value=False)
+        with self.assertRaisesRegex(FileNotFoundError, 's3:/openmmlab/voc'):
+            dataset.full_init()
+
+    def test_extra_repr(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+        cfg = {**self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+
+        self.assertIn(f'Path of image set: \t{dataset.image_set_path}',
+                      repr(dataset))
+        self.assertIn(f'Prefix of dataset: \t{dataset.data_root}',
+                      repr(dataset))
+        self.assertIn(f'Prefix of annotations: \t{dataset.ann_prefix}',
+                      repr(dataset))
+        self.assertIn(f'Prefix of images: \t{dataset.img_prefix}',
+                      repr(dataset))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmpdir.cleanup()
+
+
 """Temporarily disabled.
 
 class TestMNIST(TestBaseDataset):
@@ -592,12 +718,6 @@ class TestMNIST(TestBaseDataset):
     @classmethod
     def tearDownClass(cls):
         cls.tmpdir.cleanup()
-
-
-class TestVOC(TestMultiLabelDataset):
-    DATASET_TYPE = 'VOC'
-
-    DEFAULT_ARGS = dict(data_prefix='VOC2007', pipeline=[])
 
 class TestCUB(TestBaseDataset):
     DATASET_TYPE = 'CUB'

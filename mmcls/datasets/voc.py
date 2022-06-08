@@ -1,69 +1,141 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os.path as osp
 import xml.etree.ElementTree as ET
+from typing import List, Optional, Union
 
-import mmcv
-import numpy as np
+from mmengine import FileClient, list_from_file
 
 from mmcls.registry import DATASETS
+from .base_dataset import expanduser
+from .categories import VOC2007_CATEGORIES
 from .multi_label import MultiLabelDataset
 
 
 @DATASETS.register_module()
 class VOC(MultiLabelDataset):
-    """`Pascal VOC <http://host.robots.ox.ac.uk/pascal/VOC/>`_ Dataset."""
+    """`Pascal VOC <http://host.robots.ox.ac.uk/pascal/VOC/>`_ Dataset.
 
-    CLASSES = ('aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car',
-               'cat', 'chair', 'cow', 'diningtable', 'dog', 'horse',
-               'motorbike', 'person', 'pottedplant', 'sheep', 'sofa', 'train',
-               'tvmonitor')
+    After decompression, the dataset directory structure is as follows:
 
-    def __init__(self, **kwargs):
-        super(VOC, self).__init__(**kwargs)
-        if 'VOC2007' in self.data_prefix:
-            self.year = 2007
+    VOC dataset directory: ::
+
+        VOC2007 (data_root)/
+        ├── JPEGImages (data_prefix['img_path'])
+        │   ├── xxx.jpg
+        │   ├── xxy.jpg
+        │   └── ...
+        ├── Annotations (data_prefix['ann_path'])
+        │   ├── xxx.xml
+        │   ├── xxy.xml
+        │   └── ...
+        └── ImageSets (directory contains various imageset file)
+
+    Args:
+        data_root (str): The root directory for VOC dataset.
+        image_set_path (str): The path of image set, The file which
+            lists image ids of the sub dataset, and this path is relative
+            to ``data_root``.
+        data_prefix (dict): Prefix for data and annotation, keyword
+            'img_path' and 'ann_path' can be set. Defaults to be
+            ``dict(img_path='JPEGImages', ann_path='Annotations')``.
+        test_mode (bool): ``test_mode=True`` means in test phase.
+            It determines to use the training set or test set.
+        metainfo (dict, optional): Meta information for dataset, such as
+            categories information. Defaults to None.
+        **kwargs: Other keyword arguments in :class:`BaseDataset`.
+    """  # noqa: E501
+
+    METAINFO = {'classes': VOC2007_CATEGORIES}
+
+    def __init__(self,
+                 data_root: str,
+                 image_set_path: str,
+                 data_prefix: Union[str, dict] = dict(
+                     img_path='JPEGImages', ann_path='Annotations'),
+                 test_mode: bool = False,
+                 metainfo: Optional[dict] = None,
+                 **kwargs):
+        if isinstance(data_prefix, str):
+            data_prefix = dict(img_path=expanduser(data_prefix))
+        assert isinstance(data_prefix, dict) and 'img_path' in data_prefix, \
+            '`data_prefix` must be a dict with key img_path'
+
+        if test_mode is False:
+            assert 'ann_path' in data_prefix and data_prefix[
+                'ann_path'] is not None, \
+                '"ann_path" must be set in `data_prefix` if `test_mode` is' \
+                ' False.'
+
+        self.data_root = data_root
+        self.file_client = FileClient.infer_client(uri=data_root)
+        self.image_set_path = self.file_client.join_path(
+            data_root, image_set_path)
+
+        super().__init__(
+            ann_file='',
+            metainfo=metainfo,
+            data_root=data_root,
+            data_prefix=data_prefix,
+            test_mode=test_mode,
+            **kwargs)
+
+    @property
+    def ann_prefix(self):
+        """The prefix of images."""
+        if 'ann_path' in self.data_prefix:
+            return self.data_prefix['ann_path']
         else:
-            raise ValueError('Cannot infer dataset year from img_prefix.')
+            return None
 
-    def load_annotations(self):
-        """Load annotations.
+    def _get_labels_from_xml(self, img_id):
+        """Get gt_labels and labels_difficult from xml file."""
+        xml_path = self.file_client.join_path(self.ann_prefix, f'{img_id}.xml')
+        content = self.file_client.get(xml_path)
+        root = ET.fromstring(content)
 
-        Returns:
-            list[dict]: Annotation info from XML file.
-        """
-        data_infos = []
-        img_ids = mmcv.list_from_file(self.ann_file)
+        labels, labels_difficult = set(), set()
+        for obj in root.findall('object'):
+            label_name = obj.find('name').text
+            # in case customized dataset has wrong labels
+            # or CLASSES has been override.
+            if label_name not in self.CLASSES:
+                continue
+            label = self.class_to_idx[label_name]
+            difficult = int(obj.find('difficult').text)
+            if difficult:
+                labels_difficult.add(label)
+            else:
+                labels.add(label)
+
+        return list(labels), list(labels_difficult)
+
+    def load_data_list(self):
+        """Load images and ground truth labels."""
+        data_list = []
+        img_ids = list_from_file(self.image_set_path)
+
         for img_id in img_ids:
-            filename = f'JPEGImages/{img_id}.jpg'
-            xml_path = osp.join(self.data_prefix, 'Annotations',
-                                f'{img_id}.xml')
-            tree = ET.parse(xml_path)
-            root = tree.getroot()
-            labels = []
-            labels_difficult = []
-            for obj in root.findall('object'):
-                label_name = obj.find('name').text
-                # in case customized dataset has wrong labels
-                # or CLASSES has been override.
-                if label_name not in self.CLASSES:
-                    continue
-                label = self.class_to_idx[label_name]
-                difficult = int(obj.find('difficult').text)
-                if difficult:
-                    labels_difficult.append(label)
-                else:
-                    labels.append(label)
+            img_path = self.file_client.join_path(self.img_prefix,
+                                                  f'{img_id}.jpg')
 
-            gt_label = np.zeros(len(self.CLASSES))
-            # The order cannot be swapped for the case where multiple objects
-            # of the same kind exist and some are difficult.
-            gt_label[labels_difficult] = -1
-            gt_label[labels] = 1
+            labels, labels_difficult = None, None
+            if self.ann_prefix is not None:
+                labels, labels_difficult = self._get_labels_from_xml(img_id)
 
             info = dict(
-                img_prefix=self.data_prefix,
-                img_info=dict(filename=filename),
-                gt_label=gt_label.astype(np.int8))
-            data_infos.append(info)
+                img_path=img_path,
+                gt_label=labels,
+                gt_label_difficult=labels_difficult)
+            data_list.append(info)
 
-        return data_infos
+        return data_list
+
+    def extra_repr(self) -> List[str]:
+        """The extra repr information of the dataset."""
+        body = [
+            f'Prefix of dataset: \t{self.data_root}',
+            f'Path of image set: \t{self.image_set_path}',
+            f'Prefix of images: \t{self.img_prefix}',
+            f'Prefix of annotations: \t{self.ann_prefix}'
+        ]
+
+        return body

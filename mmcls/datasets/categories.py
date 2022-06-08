@@ -1,6 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # Pre-defined categories names of various datasets.
 
+VOC2007_CATEGORIES = ('aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus',
+                      'car', 'cat', 'chair', 'cow', 'diningtable', 'dog',
+                      'horse', 'motorbike', 'person', 'pottedplant', 'sheep',
+                      'sofa', 'train', 'tvmonitor')
+
 IMAGENET_CATEGORIES = (
     'tench, Tinca tinca',
     'goldfish, Carassius auratus',

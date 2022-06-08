@@ -49,7 +49,7 @@ def test_pcpvt():
     assert len(outs) == 1
     assert outs[-1].shape == (1, 512, H // 32, W // 32)
 
-    # test with mutil outputs
+    # test with multi outputs
     model = PCPVT('small', out_indices=(0, 1, 2, 3))
     model.init_weights()
     outs = model(temp)
@@ -160,7 +160,7 @@ def test_svt():
     assert len(outs) == 1
     assert outs[-1].shape == (1, 512, H // 32, W // 32)
 
-    # test with mutil outputs
+    # test with multi outputs
     model = SVT('small', out_indices=(0, 1, 2, 3))
     model.init_weights()
     outs = model(temp)
