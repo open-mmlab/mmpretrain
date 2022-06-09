@@ -1,93 +1,112 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from unittest.mock import patch
+from unittest import TestCase
 
-import pytest
 import torch
+from mmengine import is_seq_of
 
-from mmcls.models.heads import (ClsHead, ConformerHead, DeiTClsHead,
-                                LinearClsHead, MultiLabelClsHead,
-                                MultiLabelLinearClsHead, StackedLinearClsHead,
-                                VisionTransformerClsHead)
+from mmcls.core import ClsDataSample
+from mmcls.registry import MODELS
+from mmcls.utils import register_all_modules
 
-
-@pytest.mark.parametrize('feat', [torch.rand(4, 10), (torch.rand(4, 10), )])
-def test_cls_head(feat):
-    fake_gt_label = torch.randint(0, 10, (4, ))
-
-    # test forward_train with cal_acc=True
-    head = ClsHead(cal_acc=True)
-    losses = head.forward_train(feat, fake_gt_label)
-    assert losses['loss'].item() > 0
-    assert 'accuracy' in losses
-
-    # test forward_train with cal_acc=False
-    head = ClsHead()
-    losses = head.forward_train(feat, fake_gt_label)
-    assert losses['loss'].item() > 0
-
-    # test forward_train with weight
-    weight = torch.tensor([0.5, 0.5, 0.5, 0.5])
-    losses_ = head.forward_train(feat, fake_gt_label)
-    losses = head.forward_train(feat, fake_gt_label, weight=weight)
-    assert losses['loss'].item() == losses_['loss'].item() * 0.5
-
-    # test simple_test with post_process
-    pred = head.simple_test(feat)
-    assert isinstance(pred, list) and len(pred) == 4
-    with patch('torch.onnx.is_in_onnx_export', return_value=True):
-        pred = head.simple_test(feat)
-        assert pred.shape == (4, 10)
-
-    # test simple_test without post_process
-    pred = head.simple_test(feat, post_process=False)
-    assert isinstance(pred, torch.Tensor) and pred.shape == (4, 10)
-    logits = head.simple_test(feat, softmax=False, post_process=False)
-    torch.testing.assert_allclose(pred, torch.softmax(logits, dim=1))
-
-    # test pre_logits
-    features = head.pre_logits(feat)
-    if isinstance(feat, tuple):
-        torch.testing.assert_allclose(features, feat[0])
-    else:
-        torch.testing.assert_allclose(features, feat)
+register_all_modules()
 
 
-@pytest.mark.parametrize('feat', [torch.rand(4, 3), (torch.rand(4, 3), )])
-def test_linear_head(feat):
+class TestClsHead(TestCase):
+    DEFAULT_ARGS = dict(type='ClsHead')
 
-    fake_gt_label = torch.randint(0, 10, (4, ))
+    def test_pre_logits(self):
+        head = MODELS.build(self.DEFAULT_ARGS)
 
-    # test LinearClsHead forward
-    head = LinearClsHead(10, 3)
-    losses = head.forward_train(feat, fake_gt_label)
-    assert losses['loss'].item() > 0
+        # return the last item
+        feats = (torch.rand(4, 10), torch.rand(4, 10))
+        pre_logits = head.pre_logits(feats)
+        self.assertIs(pre_logits, feats[-1])
 
-    # test init weights
-    head = LinearClsHead(10, 3)
-    head.init_weights()
-    assert abs(head.fc.weight).sum() > 0
+    def test_forward(self):
+        head = MODELS.build(self.DEFAULT_ARGS)
 
-    # test simple_test with post_process
-    pred = head.simple_test(feat)
-    assert isinstance(pred, list) and len(pred) == 4
-    with patch('torch.onnx.is_in_onnx_export', return_value=True):
-        pred = head.simple_test(feat)
-        assert pred.shape == (4, 10)
+        # return the last item (same as pre_logits)
+        feats = (torch.rand(4, 10), torch.rand(4, 10))
+        outs = head(feats)
+        self.assertIs(outs, feats[-1])
 
-    # test simple_test without post_process
-    pred = head.simple_test(feat, post_process=False)
-    assert isinstance(pred, torch.Tensor) and pred.shape == (4, 10)
-    logits = head.simple_test(feat, softmax=False, post_process=False)
-    torch.testing.assert_allclose(pred, torch.softmax(logits, dim=1))
+    def test_loss(self):
+        feats = (torch.rand(4, 10), )
+        data_samples = [ClsDataSample().set_gt_label(1) for _ in range(4)]
 
-    # test pre_logits
-    features = head.pre_logits(feat)
-    if isinstance(feat, tuple):
-        torch.testing.assert_allclose(features, feat[0])
-    else:
-        torch.testing.assert_allclose(features, feat)
+        # with cal_acc = False
+        head = MODELS.build(self.DEFAULT_ARGS)
+
+        losses = head.loss(feats, data_samples)
+        self.assertEqual(losses.keys(), {'loss'})
+        self.assertGreater(losses['loss'].item(), 0)
+
+        # with cal_acc = True
+        cfg = {**self.DEFAULT_ARGS, 'topk': (1, 2), 'cal_acc': True}
+        head = MODELS.build(cfg)
+
+        losses = head.loss(feats, data_samples)
+        self.assertEqual(losses.keys(),
+                         {'loss', 'accuracy_top-1', 'accuracy_top-2'})
+        self.assertGreater(losses['loss'].item(), 0)
+
+        # test assertion when cal_acc but data is batch agumented.
+        data_samples = [
+            sample.set_gt_score(torch.rand(10)) for sample in data_samples
+        ]
+        cfg = {
+            **self.DEFAULT_ARGS, 'cal_acc': True,
+            'loss': dict(type='CrossEntropyLoss', use_soft=True)
+        }
+        head = MODELS.build(cfg)
+        with self.assertRaisesRegex(AssertionError, 'batch augmentation'):
+            head.loss(feats, data_samples)
+
+    def test_predict(self):
+        feats = (torch.rand(4, 10), )
+        data_samples = [ClsDataSample().set_gt_label(1) for _ in range(4)]
+        head = MODELS.build(self.DEFAULT_ARGS)
+
+        # with without data_samples
+        predictions = head.predict(feats)
+        self.assertTrue(is_seq_of(predictions, ClsDataSample))
+        for pred in predictions:
+            self.assertIn('label', pred.pred_label)
+            self.assertIn('score', pred.pred_label)
+
+        # with with data_samples
+        predictions = head.predict(feats, data_samples)
+        self.assertTrue(is_seq_of(predictions, ClsDataSample))
+        for sample, pred in zip(data_samples, predictions):
+            self.assertIs(sample, pred)
+            self.assertIn('label', pred.pred_label)
+            self.assertIn('score', pred.pred_label)
 
 
+class TestLinearClsHead(TestCase):
+    DEFAULT_ARGS = dict(type='LinearClsHead', in_channels=10, num_classes=5)
+
+    def test_initialize(self):
+        with self.assertRaisesRegex(ValueError, 'num_classes=-5 must be'):
+            MODELS.build({**self.DEFAULT_ARGS, 'num_classes': -5})
+
+    def test_pre_logits(self):
+        head = MODELS.build(self.DEFAULT_ARGS)
+
+        # return the last item
+        feats = (torch.rand(4, 10), torch.rand(4, 10))
+        pre_logits = head.pre_logits(feats)
+        self.assertIs(pre_logits, feats[-1])
+
+    def test_forward(self):
+        head = MODELS.build(self.DEFAULT_ARGS)
+
+        feats = (torch.rand(4, 10), torch.rand(4, 10))
+        outs = head(feats)
+        self.assertEqual(outs.shape, (4, 5))
+
+
+"""Temporarily disabled.
 @pytest.mark.parametrize('feat', [torch.rand(4, 10), (torch.rand(4, 10), )])
 def test_multilabel_head(feat):
     head = MultiLabelClsHead()
@@ -317,3 +336,4 @@ def test_deit_head():
     # test assertion
     with pytest.raises(ValueError):
         DeiTClsHead(-1, 100)
+"""

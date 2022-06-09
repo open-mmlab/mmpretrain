@@ -7,6 +7,7 @@ from .classifiers import *  # noqa: F401,F403
 from .heads import *  # noqa: F401,F403
 from .losses import *  # noqa: F401,F403
 from .necks import *  # noqa: F401,F403
+from .utils import *  # noqa: F401,F403
 
 __all__ = [
     'BACKBONES', 'HEADS', 'NECKS', 'LOSSES', 'CLASSIFIERS', 'build_backbone',

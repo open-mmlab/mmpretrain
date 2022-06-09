@@ -98,6 +98,9 @@ def main():
 
     cfg.load_from = args.checkpoint
 
+    # set preprocess configs to model
+    cfg.model.setdefault('data_preprocessor', cfg.get('preprocess_cfg', {}))
+
     # build the runner from config
     runner = Runner.from_cfg(cfg)
 

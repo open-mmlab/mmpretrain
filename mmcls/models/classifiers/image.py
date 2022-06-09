@@ -1,59 +1,146 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import List, Optional
+
+import torch
+
+from mmcls.core import ClsDataSample
 from mmcls.registry import MODELS
-from ..builder import build_backbone, build_head, build_neck
-from ..heads import MultiLabelClsHead
-from ..utils.augment import Augments
 from .base import BaseClassifier
 
 
 @MODELS.register_module()
 class ImageClassifier(BaseClassifier):
+    """Image classifiers for supervised classification task.
+
+    Args:
+        backbone (dict): The backbone module. See
+            :mod:`mmcls.models.backbones`.
+        neck (dict, optional): The neck module to process features from
+            backbone. See :mod:`mmcls.models.necks`. Defaults to None.
+        head (dict, optional): The head module to do prediction and calculate
+            loss from processed features. See :mod:`mmcls.models.heads`.
+            Notice that if the head is not set, almost all methods cannot be
+            used except :meth:`extract_feat`. Defaults to None.
+        pretrained (str, optional): The pretrained checkpoint path, support
+            local path and remote path. Defaults to None.
+        train_cfg (dict, optional): The training setting. The acceptable
+            fields are:
+
+            - augments (List[dict]): The batch augmentation methods to use.
+              More details can be found in :mod:`mmcls.model.utils.augment`.
+
+            Defaults to None.
+        data_preprocessor (dict, optional): The config for preprocessing input
+            data. If None or no specified type, it will use
+            "ClsDataPreprocessor" as type. See :class:`ClsDataPreprocessor` for
+            more details. Defaults to None.
+        init_cfg (dict, optional): the config to control the initialization.
+            Defaults to None.
+    """
 
     def __init__(self,
-                 backbone,
-                 neck=None,
-                 head=None,
-                 pretrained=None,
-                 train_cfg=None,
-                 init_cfg=None):
-        super(ImageClassifier, self).__init__(init_cfg)
-
+                 backbone: dict,
+                 neck: Optional[dict] = None,
+                 head: Optional[dict] = None,
+                 pretrained: Optional[str] = None,
+                 train_cfg: Optional[dict] = None,
+                 data_preprocessor: Optional[dict] = None,
+                 init_cfg: Optional[dict] = None):
         if pretrained is not None:
-            self.init_cfg = dict(type='Pretrained', checkpoint=pretrained)
-        self.backbone = build_backbone(backbone)
+            init_cfg = dict(type='Pretrained', checkpoint=pretrained)
+
+        if data_preprocessor is None:
+            data_preprocessor = {}
+        # The build process is in MMEngine, so we need to add scope here.
+        data_preprocessor.setdefault('type', 'mmcls.ClsDataPreprocessor')
+
+        if train_cfg is not None and 'augments' in train_cfg:
+            # Set batch augmentations by `train_cfg`
+            data_preprocessor['batch_augments'] = train_cfg['augments']
+
+        super(ImageClassifier, self).__init__(
+            init_cfg=init_cfg, data_preprocessor=data_preprocessor)
+
+        self.backbone = MODELS.build(backbone)
 
         if neck is not None:
-            self.neck = build_neck(neck)
+            self.neck = MODELS.build(neck)
 
         if head is not None:
-            self.head = build_head(head)
+            self.head = MODELS.build(head)
 
-        self.augments = None
-        if train_cfg is not None:
-            augments_cfg = train_cfg.get('augments', None)
-            if augments_cfg is not None:
-                self.augments = Augments(augments_cfg)
+    def forward(self,
+                batch_inputs: torch.Tensor,
+                data_samples: Optional[List[ClsDataSample]] = None,
+                mode: str = 'feat'):
+        """The unified entry for a forward process in both training and test.
 
-    def extract_feat(self, img, stage='neck'):
-        """Directly extract features from the specified stage.
+        The method should accept three modes: "feat", "predict" and "loss":
+
+        - "feat": Forward the whole network and return tensor or tuple of
+          tensor without any post-processing, same as a common nn.Module.
+        - "predict": Forward and return the predictions, which are fully
+          processed to a list of :obj:`ClsDataSample`.
+        - "loss": Forward and return a dict of losses according to the given
+          inputs and data samples.
+
+        Note that this method doesn't handle neither back propagation nor
+        optimizer updating, which are done in the :meth:`train_step`.
 
         Args:
-            img (Tensor): The input images. The shape of it should be
+            batch_inputs (torch.Tensor): The input tensor with shape
+                (N, C, ...) in general.
+            data_samples (List[ClsDataSample], optional): The annotation
+                data of every samples. It's required if ``mode="loss"``.
+                Defaults to None.
+            mode (str): Return what kind of value. Defaults to 'feat'.
+
+        Returns:
+            The return type depends on ``mode``.
+
+            - If ``mode="feat"``, return a tuple of tensor.
+            - If ``mode="predict"``, return a list of
+              :obj:`mmcls.core.ClsDataSample`.
+            - If ``mode="loss"``, return a dict of tensor.
+        """
+        if mode == 'feat':
+            feats = self.extract_feat(batch_inputs)
+            return self.head(feats) if self.with_head else feats
+        elif mode == 'loss':
+            return self.loss(batch_inputs, data_samples)
+        elif mode == 'predict':
+            return self.predict(batch_inputs, data_samples)
+        else:
+            raise RuntimeError(f'Invalid mode "{mode}".')
+
+    def extract_feat(self, batch_inputs, stage='neck'):
+        """Extract features from the input tensor with shape (N, C, ...).
+
+        Args:
+            batch_inputs (Tensor): A batch of inputs. The shape of it should be
                 ``(num_samples, num_channels, *img_shape)``.
-            stage (str): Which stage to output the feature. Choose from
-                "backbone", "neck" and "pre_logits". Defaults to "neck".
+            stage (str): Which stage to output the feature. Choose from:
+
+                - "backbone": The output of backbone network. Returns a tuple
+                  including multiple stages features.
+                - "neck": The output of neck module. Returns a tuple including
+                  multiple stages features.
+                - "pre_logits": The feature before the final classification
+                  linear layer. Usually returns a tensor.
+
+                Defaults to "neck".
 
         Returns:
             tuple | Tensor: The output of specified stage.
-                The output depends on detailed implementation. In general, the
-                output of backbone and neck is a tuple and the output of
-                pre_logits is a tensor.
+            The output depends on detailed implementation. In general, the
+            output of backbone and neck is a tuple and the output of
+            pre_logits is a tensor.
 
         Examples:
             1. Backbone output
 
             >>> import torch
-            >>> from mmcv import Config
+            >>> from mmengine import Config
             >>> from mmcls.models import build_classifier
             >>>
             >>> cfg = Config.fromfile('configs/resnet/resnet18_8xb32_in1k.py').model
@@ -70,7 +157,7 @@ class ImageClassifier(BaseClassifier):
             2. Neck output
 
             >>> import torch
-            >>> from mmcv import Config
+            >>> from mmengine import Config
             >>> from mmcls.models import build_classifier
             >>>
             >>> cfg = Config.fromfile('configs/resnet/resnet18_8xb32_in1k.py').model
@@ -88,7 +175,7 @@ class ImageClassifier(BaseClassifier):
             3. Pre-logits output (without the final linear classifier head)
 
             >>> import torch
-            >>> from mmcv import Config
+            >>> from mmengine import Config
             >>> from mmcls.models import build_classifier
             >>>
             >>> cfg = Config.fromfile('configs/vision_transformer/vit-base-p16_pt-64xb64_in1k-224.py').model
@@ -102,7 +189,7 @@ class ImageClassifier(BaseClassifier):
             (f'Invalid output stage "{stage}", please choose from "backbone", '
              '"neck" and "pre_logits"')
 
-        x = self.backbone(img)
+        x = self.backbone(batch_inputs)
 
         if stage == 'backbone':
             return x
@@ -112,43 +199,38 @@ class ImageClassifier(BaseClassifier):
         if stage == 'neck':
             return x
 
-        if self.with_head and hasattr(self.head, 'pre_logits'):
-            x = self.head.pre_logits(x)
-        return x
+        assert self.with_head and hasattr(self.head, 'pre_logits'), \
+            "No head or the head doesn't implement `pre_logits` method."
+        return self.head.pre_logits(x)
 
-    def forward_train(self, img, gt_label, **kwargs):
-        """Forward computation during training.
+    def loss(self, batch_inputs: torch.Tensor,
+             data_samples: List[ClsDataSample]) -> dict:
+        """Calculate losses from a batch of inputs and data samples.
 
         Args:
-            img (Tensor): of shape (N, C, H, W) encoding input images.
-                Typically these should be mean centered and std scaled.
-            gt_label (Tensor): It should be of shape (N, 1) encoding the
-                ground-truth label of input images for single label task. It
-                shoulf be of shape (N, C) encoding the ground-truth label
-                of input images for multi-labels task.
+            batch_inputs (torch.Tensor): The input tensor with shape
+                (N, C, ...) in general.
+            data_samples (List[ClsDataSample]): The annotation data of
+                every samples.
+
         Returns:
             dict[str, Tensor]: a dictionary of loss components
         """
-        if self.augments is not None:
-            img, gt_label = self.augments(img, gt_label)
+        feats = self.extract_feat(batch_inputs)
+        return self.head.loss(feats, data_samples)
 
-        x = self.extract_feat(img)
+    def predict(self,
+                batch_inputs: tuple,
+                data_samples: Optional[List[ClsDataSample]] = None,
+                **kwargs) -> List[ClsDataSample]:
+        """Predict results from the extracted features.
 
-        losses = dict()
-        loss = self.head.forward_train(x, gt_label)
-
-        losses.update(loss)
-
-        return losses
-
-    def simple_test(self, img, img_metas=None, **kwargs):
-        """Test without augmentation."""
-        x = self.extract_feat(img)
-
-        if isinstance(self.head, MultiLabelClsHead):
-            assert 'softmax' not in kwargs, (
-                'Please use `sigmoid` instead of `softmax` '
-                'in multi-label tasks.')
-        res = self.head.simple_test(x, **kwargs)
-
-        return res
+        Args:
+            batch_inputs (tuple): The features extracted from the backbone.
+            data_samples (List[ClsDataSample], optional): The annotation
+                data of every samples. Defaults to None.
+            **kwargs: Other keyword arguments accepted by the ``predict``
+                method of :attr:`head`.
+        """
+        feats = self.extract_feat(batch_inputs)
+        return self.head.predict(feats, data_samples, **kwargs)

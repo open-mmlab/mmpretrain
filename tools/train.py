@@ -48,10 +48,24 @@ def merge_args(cfg, args):
         cfg.resume = True
         cfg.load_from = args.resume_from
 
-    if args.no_validate is not None:
+    if args.no_validate:
         cfg.val_cfg = None
         cfg.val_dataloader = None
         cfg.val_evaluator = None
+
+    cfg.launcher = args.launcher
+
+    # work_dir is determined in this priority: CLI > segment in file > filename
+    if args.work_dir is not None:
+        # update configs according to CLI args if args.work_dir is not None
+        cfg.work_dir = args.work_dir
+    elif cfg.get('work_dir', None) is None:
+        # use config filename as default work_dir if cfg.work_dir is None
+        cfg.work_dir = osp.join('./work_dirs',
+                                osp.splitext(osp.basename(args.config))[0])
+
+    if args.cfg_options is not None:
+        cfg.merge_from_dict(args.cfg_options)
 
     return cfg
 
@@ -65,19 +79,12 @@ def main():
 
     # load config
     cfg = Config.fromfile(args.config)
-    cfg = merge_args(cfg, args)
-    cfg.launcher = args.launcher
-    if args.cfg_options is not None:
-        cfg.merge_from_dict(args.cfg_options)
 
-    # work_dir is determined in this priority: CLI > segment in file > filename
-    if args.work_dir is not None:
-        # update configs according to CLI args if args.work_dir is not None
-        cfg.work_dir = args.work_dir
-    elif cfg.get('work_dir', None) is None:
-        # use config filename as default work_dir if cfg.work_dir is None
-        cfg.work_dir = osp.join('./work_dirs',
-                                osp.splitext(osp.basename(args.config))[0])
+    # merge cli arguments to config
+    cfg = merge_args(cfg, args)
+
+    # set preprocess configs to model
+    cfg.model.setdefault('data_preprocessor', cfg.get('preprocess_cfg', {}))
 
     # build the runner from config
     runner = Runner.from_cfg(cfg)
