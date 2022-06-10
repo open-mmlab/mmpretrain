@@ -1027,3 +1027,11 @@ CIFAR100_CATEGORIES = (
     'table', 'tank', 'telephone', 'television', 'tiger', 'tractor', 'train',
     'trout', 'tulip', 'turtle', 'wardrobe', 'whale', 'willow_tree', 'wolf',
     'woman', 'worm')
+
+MNIST_CATEGORITES = ('0 - zero', '1 - one', '2 - two', '3 - three', '4 - four',
+                     '5 - five', '6 - six', '7 - seven', '8 - eight',
+                     '9 - nine')
+
+FASHIONMNIST_CATEGORITES = ('T-shirt/top', 'Trouser', 'Pullover', 'Dress',
+                            'Coat', 'Sandal', 'Shirt', 'Sneaker', 'Bag',
+                            'Ankle boot')

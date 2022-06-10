@@ -4,7 +4,7 @@ import os.path as osp
 import pickle
 import tempfile
 from unittest import TestCase
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, call, patch
 
 import numpy as np
 from mmengine.registry import TRANSFORMS
@@ -655,8 +655,6 @@ class TestVOC(TestBaseDataset):
         cls.tmpdir.cleanup()
 
 
-"""Temporarily disabled.
-
 class TestMNIST(TestBaseDataset):
     DATASET_TYPE = 'MNIST'
 
@@ -667,25 +665,22 @@ class TestMNIST(TestBaseDataset):
         tmpdir = tempfile.TemporaryDirectory()
         cls.tmpdir = tmpdir
         data_prefix = tmpdir.name
-        cls.DEFAULT_ARGS = dict(data_prefix=data_prefix, pipeline=[])
+        cls.DEFAULT_ARGS = dict(
+            data_prefix=data_prefix, pipeline=[], test_mode=False)
 
         dataset_class = DATASETS.get(cls.DATASET_TYPE)
 
         def rm_suffix(s):
             return s[:s.rfind('.')]
 
-        train_image_file = osp.join(
-            data_prefix,
-            rm_suffix(dataset_class.resources['train_image_file'][0]))
-        train_label_file = osp.join(
-            data_prefix,
-            rm_suffix(dataset_class.resources['train_label_file'][0]))
-        test_image_file = osp.join(
-            data_prefix,
-            rm_suffix(dataset_class.resources['test_image_file'][0]))
-        test_label_file = osp.join(
-            data_prefix,
-            rm_suffix(dataset_class.resources['test_label_file'][0]))
+        train_image_file = osp.join(data_prefix,
+                                    rm_suffix(dataset_class.train_list[0][0]))
+        train_label_file = osp.join(data_prefix,
+                                    rm_suffix(dataset_class.train_list[1][0]))
+        test_image_file = osp.join(data_prefix,
+                                   rm_suffix(dataset_class.test_list[0][0]))
+        test_label_file = osp.join(data_prefix,
+                                   rm_suffix(dataset_class.test_list[1][0]))
         cls.fake_img = np.random.randint(0, 255, size=(28, 28), dtype=np.uint8)
         cls.fake_label = np.random.randint(0, 10, size=(1, ), dtype=np.uint8)
 
@@ -703,21 +698,88 @@ class TestMNIST(TestBaseDataset):
             with open(file, 'wb') as f:
                 f.write(data)
 
-    def test_load_annotations(self):
+    def test_load_data_list(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
-        with patch.object(dataset_class, 'download'):
-            # Test default behavior
-            dataset = dataset_class(**self.DEFAULT_ARGS)
-            self.assertEqual(len(dataset), 1)
+        # Test default behavior
+        dataset = dataset_class(**self.DEFAULT_ARGS)
+        self.assertEqual(len(dataset), 1)
+        self.assertEqual(dataset.CLASSES, dataset_class.METAINFO['classes'])
 
-            data_info = dataset[0]
-            np.testing.assert_equal(data_info['img'], self.fake_img)
-            np.testing.assert_equal(data_info['gt_label'], self.fake_label)
+        data_info = dataset[0]
+        np.testing.assert_equal(data_info['img'], self.fake_img)
+        np.testing.assert_equal(data_info['gt_label'], self.fake_label)
+
+        # Test with test_mode=True
+        cfg = {**self.DEFAULT_ARGS, 'test_mode': True}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 1)
+
+        data_info = dataset[0]
+        np.testing.assert_equal(data_info['img'], self.fake_img)
+        np.testing.assert_equal(data_info['gt_label'], self.fake_label)
+
+        # Test automatically download
+        with patch(
+                'mmcls.datasets.mnist.download_and_extract_archive') as mock:
+            cfg = {**self.DEFAULT_ARGS, 'lazy_init': True, 'test_mode': True}
+            dataset = dataset_class(**cfg)
+            dataset.train_list = [['invalid_train_file', None]]
+            dataset.test_list = [['invalid_test_file', None]]
+            with self.assertRaisesRegex(AssertionError, 'Download failed'):
+                dataset.full_init()
+            calls = [
+                call(
+                    osp.join(dataset.url_prefix, dataset.train_list[0][0]),
+                    download_root=dataset.data_prefix['root'],
+                    filename=dataset.train_list[0][0],
+                    md5=None),
+                call(
+                    osp.join(dataset.url_prefix, dataset.test_list[0][0]),
+                    download_root=dataset.data_prefix['root'],
+                    filename=dataset.test_list[0][0],
+                    md5=None)
+            ]
+            mock.assert_has_calls(calls)
+
+        with self.assertRaisesRegex(RuntimeError, '`download=True`'):
+            cfg = {
+                **self.DEFAULT_ARGS, 'lazy_init': True,
+                'test_mode': True,
+                'download': False
+            }
+            dataset = dataset_class(**cfg)
+            dataset._check_exists = MagicMock(return_value=False)
+            dataset.full_init()
+
+        # Test different backend
+        cfg = {
+            **self.DEFAULT_ARGS, 'lazy_init': True,
+            'data_prefix': 'http://openmmlab/mnist'
+        }
+        dataset = dataset_class(**cfg)
+        dataset._check_exists = MagicMock(return_value=False)
+        with self.assertRaisesRegex(RuntimeError, 'http://openmmlab/mnist'):
+            dataset.full_init()
+
+    def test_extra_repr(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+        cfg = {**self.DEFAULT_ARGS, 'lazy_init': True}
+        dataset = dataset_class(**cfg)
+
+        self.assertIn(f'Prefix of data: \t{dataset.data_prefix["root"]}',
+                      repr(dataset))
 
     @classmethod
     def tearDownClass(cls):
         cls.tmpdir.cleanup()
+
+
+class FashionMNIST(TestMNIST):
+    DATASET_TYPE = 'FashionMNIST'
+
+
+"""Temporarily disabled.
 
 class TestCUB(TestBaseDataset):
     DATASET_TYPE = 'CUB'

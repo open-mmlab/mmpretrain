@@ -15,7 +15,7 @@ preprocess_cfg = dict(mean=[33.46], std=[78.87])
 pipeline = [dict(type='Resize', scale=32), dict(type='PackClsInputs')]
 
 common_data_cfg = dict(
-    type=dataset_type, data_root='data/mnist', pipeline=pipeline)
+    type=dataset_type, data_prefix='data/mnist', pipeline=pipeline)
 
 train_dataloader = dict(
     batch_size=128,
@@ -53,6 +53,8 @@ val_cfg = dict(interval=1)  # validate every epoch
 test_cfg = dict()
 
 # runtime settings
+default_scope = 'mmcls'
+
 default_hooks = dict(
     # record the time of every iteration.
     timer=dict(type='IterTimerHook'),

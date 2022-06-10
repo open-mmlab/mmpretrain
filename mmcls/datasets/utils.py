@@ -12,7 +12,10 @@ import zipfile
 
 from mmengine.fileio.file_client import FileClient
 
-__all__ = ['rm_suffix', 'check_integrity', 'download_and_extract_archive']
+__all__ = [
+    'rm_suffix', 'check_integrity', 'download_and_extract_archive',
+    'open_maybe_compressed_file'
+]
 
 
 def rm_suffix(s, suffix=None):
@@ -221,3 +224,20 @@ def download_and_extract_archive(url,
     archive = os.path.join(download_root, filename)
     print(f'Extracting {archive} to {extract_root}')
     extract_archive(archive, extract_root, remove_finished)
+
+
+def open_maybe_compressed_file(path: str):
+    """Return a file object that possibly decompresses 'path' on the fly.
+
+    Decompression occurs when argument `path` is a string and ends with '.gz'
+    or '.xz'.
+    """
+    if not isinstance(path, str):
+        return path
+    if path.endswith('.gz'):
+        import gzip
+        return gzip.open(path, 'rb')
+    if path.endswith('.xz'):
+        import lzma
+        return lzma.open(path, 'rb')
+    return open(path, 'rb')
