@@ -44,8 +44,7 @@ def format_label(value: Union[torch.Tensor, np.ndarray, Sequence, int],
         if value.max() >= num_classes:
             raise ValueError(f'The label data ({value}) should not '
                              f'exceed num_classes ({num_classes}).')
-    label = LabelData(metainfo=metainfo)
-    label.set_field(value, 'label', torch.LongTensor)
+    label = LabelData(label=value, metainfo=metainfo)
     return label
 
 
