@@ -65,7 +65,7 @@ class CutMix(Mixup):
 
         Args:
             img_shape (tuple): Image shape as tuple
-            count (int, optional): Number of bbox to generate. Default to None
+            count (int, optional): Number of bbox to generate. Defaults to None
         """
         assert len(self.cutmix_minmax) == 2
         img_h, img_w = img_shape
@@ -92,8 +92,8 @@ class CutMix(Mixup):
             img_shape (tuple): Image shape as tuple
             lam (float): Cutmix lambda value
             margin (float): Percentage of bbox dimension to enforce as margin
-                (reduce amount of box outside image). Default to 0.
-            count (int, optional): Number of bbox to generate. Default to None
+                (reduce amount of box outside image). Defaults to 0.
+            count (int, optional): Number of bbox to generate. Defaults to None
         """
         ratio = np.sqrt(1 - lam)
         img_h, img_w = img_shape
@@ -113,7 +113,7 @@ class CutMix(Mixup):
         Args:
             img_shape (tuple): Image shape as tuple
             lam (float): Cutmix lambda value
-            count (int, optional): Number of bbox to generate. Default to None
+            count (int, optional): Number of bbox to generate. Defaults to None
         """
         if self.cutmix_minmax is not None:
             yl, yu, xl, xu = self.rand_bbox_minmax(img_shape, count=count)

@@ -44,7 +44,7 @@ class ClsVisualizer(Visualizer):
         image (np.ndarray, optional): the origin image to draw. The format
             should be RGB. Defaults to None.
         vis_backends (list, optional): Visual backend config list.
-            Default to None.
+            Defaults to None.
         save_dir (str, optional): Save file dir for all storage backends.
             If it is None, the backend storage will not save any data.
         fig_save_cfg (dict): Keyword parameters of figure for saving.
@@ -104,26 +104,26 @@ class ClsVisualizer(Visualizer):
             name (str): The image identifier.
             image (np.ndarray): The image to draw.
             data_sample (:obj:`ClsDataSample`, optional): The annotation of the
-                image. Default to None.
+                image. Defaults to None.
             draw_gt (bool): Whether to draw ground truth labels.
-                Default to True.
+                Defaults to True.
             draw_pred (bool): Whether to draw prediction labels.
-                Default to True.
+                Defaults to True.
             draw_score (bool): Whether to draw the prediction scores
-                of prediction categories. Default to True.
+                of prediction categories. Defaults to True.
             rescale_factor (float, optional): Rescale the image by the rescale
                 factor before visualization. Defaults to None.
-            show (bool): Whether to display the drawn image. Default to False.
+            show (bool): Whether to display the drawn image. Defaults to False.
             text_cfg (dict): Extra text setting, which accepts
                 arguments of :attr:`mmengine.Visualizer.draw_texts`.
                 Defaults to an empty dict.
-            wait_time (float): The interval of show (s). Default to 0, which
+            wait_time (float): The interval of show (s). Defaults to 0, which
                 means "forever".
             out_file (str, optional): Extra path to save the visualization
                 result. If specified, the visualizer will only save the result
                 image to the out_file and ignore its storage backends.
-                Default to None.
-            step (int): Global step value to record. Default to 0.
+                Defaults to None.
+            step (int): Global step value to record. Defaults to 0.
         """
         classes = None
         if self.dataset_meta is not None:

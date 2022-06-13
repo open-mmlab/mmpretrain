@@ -25,7 +25,7 @@ class VisualizationHook(Hook):
     Args:
         enable (bool): Whether to enable this hook. Defaults to False.
         interval (int): The interval of samples to visualize. Defaults to 5000.
-        show (bool): Whether to display the drawn image. Default to False.
+        show (bool): Whether to display the drawn image. Defaults to False.
         out_dir (str, optional): directory where painted images will be saved
             in the testing process. If None, handle with the backends of the
             visualizer. Defaults to None.
@@ -63,7 +63,7 @@ class VisualizationHook(Hook):
             batch_idx (int): The index of the current batch in the val loop.
             data_batch (Sequence[dict]): Data from dataloader.
             outputs (Sequence[:obj:`DetDataSample`]): Outputs from model.
-            step (int): Global step value to record. Default to 0.
+            step (int): Global step value to record. Defaults to 0.
         """
         if self.enable is False:
             return

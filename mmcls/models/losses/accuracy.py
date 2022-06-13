@@ -84,7 +84,7 @@ def accuracy(pred, target, topk=1, thrs=0.):
             matches the target, the predictions will be regarded as
             correct ones. Defaults to 1.
         thrs (Number | tuple[Number], optional): Predictions with scores under
-            the thresholds are considered negative. Default to 0.
+            the thresholds are considered negative. Defaults to 0.
 
     Returns:
         torch.Tensor | list[torch.Tensor] | list[list[torch.Tensor]]: Accuracy

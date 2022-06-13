@@ -26,7 +26,7 @@ class ResizeMix(CutMix):
         lam_max(float): The maximum value of lam. Defaults to 0.8.
         interpolation (str): algorithm used for upsampling:
             'nearest' | 'linear' | 'bilinear' | 'bicubic' | 'trilinear' |
-            'area'. Default to 'bilinear'.
+            'area'. Defaults to 'bilinear'.
         prob (float): The probability to execute resizemix. It should be in
             range [0, 1]. Defaults to 1.0.
         cutmix_minmax (List[float], optional): The min/max area ratio of the

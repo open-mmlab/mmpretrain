@@ -55,7 +55,7 @@ def precision_recall_f1(pred, target, average_mode='macro', thrs=0.):
             and find their unweighted mean.
             Defaults to 'macro'.
         thrs (Number | tuple[Number], optional): Predictions with scores under
-            the thresholds are considered negative. Default to 0.
+            the thresholds are considered negative. Defaults to 0.
 
     Returns:
         tuple: tuple containing precision, recall, f1 score.
@@ -148,7 +148,7 @@ def precision(pred, target, average_mode='macro', thrs=0.):
             and find their unweighted mean.
             Defaults to 'macro'.
         thrs (Number | tuple[Number], optional): Predictions with scores under
-            the thresholds are considered negative. Default to 0.
+            the thresholds are considered negative. Defaults to 0.
 
     Returns:
          float | np.array | list[float | np.array]: Precision.
@@ -178,7 +178,7 @@ def recall(pred, target, average_mode='macro', thrs=0.):
             and find their unweighted mean.
             Defaults to 'macro'.
         thrs (Number | tuple[Number], optional): Predictions with scores under
-            the thresholds are considered negative. Default to 0.
+            the thresholds are considered negative. Defaults to 0.
 
     Returns:
          float | np.array | list[float | np.array]: Recall.
@@ -208,7 +208,7 @@ def f1_score(pred, target, average_mode='macro', thrs=0.):
             and find their unweighted mean.
             Defaults to 'macro'.
         thrs (Number | tuple[Number], optional): Predictions with scores under
-            the thresholds are considered negative. Default to 0.
+            the thresholds are considered negative. Defaults to 0.
 
     Returns:
          float | np.array | list[float | np.array]: F1 score.

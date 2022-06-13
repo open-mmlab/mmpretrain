@@ -23,9 +23,9 @@ def init_random_seed(seed=None, device='cuda'):
     and then broadcast to all processes to prevent some potential bugs.
 
     Args:
-        seed (int, Optional): The seed. Default to None.
+        seed (int, Optional): The seed. Defaults to None.
         device (str): The device where the seed will be put on.
-            Default to 'cuda'.
+            Defaults to 'cuda'.
 
     Returns:
         int: Seed to be used.

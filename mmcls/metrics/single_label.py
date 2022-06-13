@@ -31,7 +31,7 @@ class Accuracy(BaseMetric):
             correct ones. Defaults to 1.
         thrs (Sequence[float | None] | float | None): Predictions with scores
             under the thresholds are considered negative. None means no
-            thresholds. Default to 0.
+            thresholds. Defaults to 0.
         collect_device (str): Device name used for collecting results from
             different ranks during distributed training. Must be 'cpu' or
             'gpu'. Defaults to 'cpu'.
@@ -175,10 +175,10 @@ class Accuracy(BaseMetric):
             thrs (Sequence[float | None]): Predictions with scores under
                 the thresholds are considered negative. It's only used
                 when ``pred`` is scores. None means no thresholds.
-                Default to (0., ).
+                Defaults to (0., ).
             thrs (Sequence[float]): Predictions with scores under
                 the thresholds are considered negative. It's only used
-                when ``pred`` is scores. Default to (0., ).
+                when ``pred`` is scores. Defaults to (0., ).
 
         Returns:
             torch.Tensor | List[List[torch.Tensor]]: Accuracy.
@@ -246,7 +246,7 @@ class SingleLabelMetric(BaseMetric):
     Args:
         thrs (Sequence[float | None] | float | None): Predictions with scores
             under the thresholds are considered negative. None means no
-            thresholds. Default to 0.
+            thresholds. Defaults to 0.
         items (Sequence[str]): The detailed metric items to evaluate. Here is
             the available options:
 
@@ -465,7 +465,7 @@ class SingleLabelMetric(BaseMetric):
             thrs (Sequence[float | None]): Predictions with scores under
                 the thresholds are considered negative. It's only used
                 when ``pred`` is scores. None means no thresholds.
-                Default to (0., ).
+                Defaults to (0., ).
             average (str, optional): The average method. If None, the scores
                 for each class are returned. And it supports two average modes:
 

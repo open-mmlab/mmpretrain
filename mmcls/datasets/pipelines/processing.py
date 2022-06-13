@@ -521,9 +521,9 @@ class Pad(object):
                 pad_to_square. Defaults to None.
         pad_to_square (bool): Pad any image to square shape. Defaults to False.
         pad_val (Number | Sequence[Number]): Values to be filled in padding
-            areas when padding_mode is 'constant'. Default to 0.
+            areas when padding_mode is 'constant'. Defaults to 0.
         padding_mode (str): Type of padding. Should be: constant, edge,
-            reflect or symmetric. Default to "constant".
+            reflect or symmetric. Defaults to "constant".
     """
 
     def __init__(self,
