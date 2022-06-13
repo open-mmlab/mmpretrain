@@ -21,7 +21,7 @@ class CutMix(Mixup):
     Args:
         alpha (float): Parameters for Beta distribution to generate the
             mixing ratio. It should be a positive number. More details
-            can be found in :class:`BatchMixupLayer`.
+            can be found in :class:`Mixup`.
         num_classes (int, optional): The number of classes. If not specified,
             will try to get it from data samples during training.
             Defaults to None.
@@ -124,8 +124,18 @@ class CutMix(Mixup):
             lam = 1. - bbox_area / float(img_shape[0] * img_shape[1])
         return (yl, yu, xl, xu), lam
 
-    def mix(self, batch_inputs: torch.Tensor, batch_score: torch.Tensor):
-        """Mix the batch inputs and batch one-hot format ground truth."""
+    def mix(self, batch_inputs: torch.Tensor, batch_scores: torch.Tensor):
+        """Mix the batch inputs and batch one-hot format ground truth.
+
+        Args:
+            batch_inputs (Tensor): A batch of images tensor in the shape of
+                ``(N, C, H, W)``.
+            batch_scores (Tensor): A batch of one-hot format labels in the
+                shape of ``(N, num_classes)``.
+
+        Returns:
+            Tuple[Tensor, Tensor): The mixed inputs and labels.
+        """
         lam = np.random.beta(self.alpha, self.alpha)
         batch_size = batch_inputs.size(0)
         img_shape = batch_inputs.shape[-2:]
@@ -133,6 +143,6 @@ class CutMix(Mixup):
 
         (y1, y2, x1, x2), lam = self.cutmix_bbox_and_lam(img_shape, lam)
         batch_inputs[:, :, y1:y2, x1:x2] = batch_inputs[index, :, y1:y2, x1:x2]
-        mixed_score = lam * batch_score + (1 - lam) * batch_score[index, :]
+        mixed_scores = lam * batch_scores + (1 - lam) * batch_scores[index, :]
 
-        return batch_inputs, mixed_score
+        return batch_inputs, mixed_scores

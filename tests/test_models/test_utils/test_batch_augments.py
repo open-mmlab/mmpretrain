@@ -9,13 +9,6 @@ from mmcls.core import ClsDataSample
 from mmcls.models import Mixup, RandomBatchAugment
 from mmcls.registry import BATCH_AUGMENTS
 
-augment_cfgs = [
-    dict(type='BatchCutMix', alpha=1., prob=1.),
-    dict(type='BatchMixup', alpha=1., prob=1.),
-    dict(type='Identity', prob=1.),
-    dict(type='BatchResizeMix', alpha=1., prob=1.)
-]
-
 
 class TestRandomBatchAugment(TestCase):
 
