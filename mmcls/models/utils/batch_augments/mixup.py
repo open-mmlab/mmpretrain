@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import List
+from typing import List, Optional, Tuple
 
 import numpy as np
 import torch
@@ -33,14 +33,15 @@ class Mixup:
         distribution.
     """
 
-    def __init__(self, alpha, num_classes=None):
+    def __init__(self, alpha: float, num_classes: Optional[int] = None):
         assert isinstance(alpha, float) and alpha > 0
         assert isinstance(num_classes, int) or num_classes is None
 
         self.alpha = alpha
         self.num_classes = num_classes
 
-    def mix(self, batch_inputs: torch.Tensor, batch_scores: torch.Tensor):
+    def mix(self, batch_inputs: torch.Tensor,
+            batch_scores: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """Mix the batch inputs and batch one-hot format ground truth.
 
         Args:

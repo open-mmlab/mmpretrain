@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import List, Optional, Tuple
+
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -54,13 +56,13 @@ class ResizeMix(CutMix):
     """
 
     def __init__(self,
-                 alpha,
-                 num_classes=None,
+                 alpha: float,
+                 num_classes: Optional[int] = None,
                  lam_min: float = 0.1,
                  lam_max: float = 0.8,
-                 interpolation='bilinear',
-                 cutmix_minmax=None,
-                 correct_lam=True):
+                 interpolation: str = 'bilinear',
+                 cutmix_minmax: Optional[List[float]] = None,
+                 correct_lam: bool = True):
         super().__init__(
             alpha=alpha,
             num_classes=num_classes,
@@ -70,7 +72,8 @@ class ResizeMix(CutMix):
         self.lam_max = lam_max
         self.interpolation = interpolation
 
-    def mix(self, batch_inputs: torch.Tensor, batch_scores: torch.Tensor):
+    def mix(self, batch_inputs: torch.Tensor,
+            batch_scores: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """Mix the batch inputs and batch one-hot format ground truth.
 
         Args:
