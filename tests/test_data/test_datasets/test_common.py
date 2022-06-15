@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, call, patch
 import numpy as np
 from mmengine.registry import TRANSFORMS
 
-from mmcls.datasets import DATASETS
+from mmcls.registry import DATASETS
 from mmcls.utils import get_root_logger
 
 mmcls_logger = get_root_logger()

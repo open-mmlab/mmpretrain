@@ -31,19 +31,3 @@ def test_convert_to_one_hot():
     ori_one_hot_targets.scatter_(1, targets.long(), 1)
     one_hot_targets = convert_to_one_hot(targets, classes)
     assert torch.equal(ori_one_hot_targets, one_hot_targets)
-
-
-# test cuda version
-@pytest.mark.skipif(
-    not torch.cuda.is_available(), reason='requires CUDA support')
-def test_convert_to_one_hot_cuda():
-    # test with original impl
-    classes = 10
-    targets = torch.randint(high=classes, size=(10, 1)).cuda()
-    ori_one_hot_targets = torch.zeros((targets.shape[0], classes),
-                                      dtype=torch.long,
-                                      device=targets.device)
-    ori_one_hot_targets.scatter_(1, targets.long(), 1)
-    one_hot_targets = convert_to_one_hot(targets, classes)
-    assert torch.equal(ori_one_hot_targets, one_hot_targets)
-    assert ori_one_hot_targets.device == one_hot_targets.device

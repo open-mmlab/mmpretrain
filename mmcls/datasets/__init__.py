@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from .base_dataset import BaseDataset
-from .builder import (DATASETS, PIPELINES, SAMPLERS, build_dataloader,
-                      build_dataset, build_sampler)
+from .builder import build_dataset
 from .cifar import CIFAR10, CIFAR100
 from .cub import CUB
 from .custom import CustomDataset
@@ -11,14 +10,12 @@ from .imagenet import ImageNet, ImageNet21k
 from .mnist import MNIST, FashionMNIST
 from .multi_label import MultiLabelDataset
 from .pipelines import *  # noqa: F401,F403
-from .samplers import DistributedSampler, RepeatAugSampler
+from .samplers import *  # noqa: F401,F403
 from .voc import VOC
 
 __all__ = [
     'BaseDataset', 'ImageNet', 'CIFAR10', 'CIFAR100', 'MNIST', 'FashionMNIST',
-    'VOC', 'build_dataloader', 'build_dataset', 'DistributedSampler',
-    'ConcatDataset', 'RepeatDataset', 'ClassBalancedDataset', 'DATASETS',
-    'PIPELINES', 'ImageNet21k', 'SAMPLERS', 'build_sampler',
-    'RepeatAugSampler', 'KFoldDataset', 'CUB', 'CustomDataset',
-    'MultiLabelDataset'
+    'VOC', 'build_dataset', 'ConcatDataset', 'RepeatDataset',
+    'ClassBalancedDataset', 'ImageNet21k', 'KFoldDataset', 'CUB',
+    'CustomDataset', 'MultiLabelDataset'
 ]

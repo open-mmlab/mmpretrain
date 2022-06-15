@@ -2,9 +2,9 @@ import math
 
 import torch
 from mmcv.runner import get_dist_info
+from mmengine.dist import sync_random_seed
 from torch.utils.data import Sampler
 
-from mmcls.core.utils import sync_random_seed
 from mmcls.registry import DATA_SAMPLERS
 
 
