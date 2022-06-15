@@ -45,12 +45,12 @@ class BaseClassifier(BaseModel, metaclass=ABCMeta):
     def forward(self,
                 batch_inputs: torch.Tensor,
                 data_samples: Optional[List[BaseDataElement]] = None,
-                mode: str = 'feat'):
+                mode: str = 'tensor'):
         """The unified entry for a forward process in both training and test.
 
-        The method should accept three modes: "feat", "predict" and "loss":
+        The method should accept three modes: "tensor", "predict" and "loss":
 
-        - "feat": Forward the whole network and return tensor or tuple of
+        - "tensor": Forward the whole network and return tensor or tuple of
           tensor without any post-processing, same as a common nn.Module.
         - "predict": Forward and return the predictions, which are fully
           processed to a list of :obj:`BaseDataElement`.
@@ -66,12 +66,12 @@ class BaseClassifier(BaseModel, metaclass=ABCMeta):
             data_samples (List[BaseDataElement], optional): The annotation
                 data of every samples. It's required if ``mode="loss"``.
                 Defaults to None.
-            mode (str): Return what kind of value. Defaults to 'feat'.
+            mode (str): Return what kind of value. Defaults to 'tensor'.
 
         Returns:
             The return type depends on ``mode``.
 
-            - If ``mode="feat"``, return a tensor or a tuple of tensor.
+            - If ``mode="tensor"``, return a tensor or a tuple of tensor.
             - If ``mode="predict"``, return a list of
               :obj:`mmengine.BaseDataElement`.
             - If ``mode="loss"``, return a dict of tensor.
