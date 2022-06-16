@@ -392,7 +392,10 @@ class Shear(BaseAugTransform):
             'Please specify only one of `magnitude` and `magnitude_range`.'
 
         self.magnitude = magnitude
-        self.pad_val = pad_val
+        if isinstance(pad_val, Sequence):
+            self.pad_val = tuple(pad_val)
+        else:
+            self.pad_val = pad_val
 
         assert direction in ('horizontal', 'vertical'), 'direction must be ' \
             f'either "horizontal" or "vertical", got "{direction}" instead.'
@@ -470,7 +473,10 @@ class Translate(BaseAugTransform):
             'Please specify only one of `magnitude` and `magnitude_range`.'
 
         self.magnitude = magnitude
-        self.pad_val = pad_val
+        if isinstance(pad_val, Sequence):
+            self.pad_val = tuple(pad_val)
+        else:
+            self.pad_val = pad_val
 
         assert direction in ('horizontal', 'vertical'), 'direction must be ' \
             f'either "horizontal" or "vertical", got "{direction}" instead.'
@@ -556,7 +562,10 @@ class Rotate(BaseAugTransform):
         self.angle = angle
         self.center = center
         self.scale = scale
-        self.pad_val = pad_val
+        if isinstance(pad_val, Sequence):
+            self.pad_val = tuple(pad_val)
+        else:
+            self.pad_val = pad_val
 
         self.interpolation = interpolation
 
@@ -1079,7 +1088,10 @@ class Cutout(BaseAugTransform):
             'Please specify only one of `shape` and `magnitude_range`.'
 
         self.shape = shape
-        self.pad_val = pad_val
+        if isinstance(pad_val, Sequence):
+            self.pad_val = tuple(pad_val)
+        else:
+            self.pad_val = pad_val
 
     def transform(self, results):
         """Apply transform to results."""

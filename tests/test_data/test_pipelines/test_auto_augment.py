@@ -225,6 +225,25 @@ class TestShear(TestCase):
             TRANSFORMS.build(cfg)(construct_toy_data())
             mock.assert_not_called()
 
+        # test sequeue pad_val
+        with patch('mmcv.imshear') as mock:
+            cfg = {
+                **self.DEFAULT_ARGS,
+                'magnitude': 0.2,
+                'random_negative_prob': 0.,
+                'prob': 1.,
+                'direction': 'horizontal',
+                'pad_val': (255, 255, 255),
+                'interpolation': 'nearest',
+            }
+            TRANSFORMS.build(cfg)(construct_toy_data())
+            mock.assert_called_once_with(
+                ANY,
+                0.2,
+                direction='horizontal',
+                border_value=(255, 255, 255),
+                interpolation='nearest')
+
         # test magnitude_range
         with patch('mmcv.imshear') as mock:
             cfg = {
@@ -334,6 +353,25 @@ class TestTranslate(TestCase):
                 border_value=255,
                 interpolation='nearest')
 
+        # test sequeue pad_val
+        with patch(transform_func) as mock:
+            cfg = {
+                **self.DEFAULT_ARGS,
+                'magnitude': 0.2,
+                'random_negative_prob': 0.,
+                'prob': 1.,
+                'direction': 'horizontal',
+                'pad_val': [255, 255, 255],
+                'interpolation': 'nearest',
+            }
+            TRANSFORMS.build(cfg)(construct_toy_data())
+            mock.assert_called_once_with(
+                ANY,
+                200 * 0.2,
+                direction='horizontal',
+                border_value=(255, 255, 255),
+                interpolation='nearest')
+
         # test prob
         with patch(transform_func) as mock:
             cfg = {
@@ -423,6 +461,27 @@ class TestRotate(TestCase):
                 center=(10, 10),
                 scale=1.5,
                 border_value=255,
+                interpolation='bilinear')
+
+        # test params inputs
+        with patch(transform_func) as mock:
+            cfg = {
+                **self.DEFAULT_ARGS,
+                'angle': 30,
+                'center': (10, 10),
+                'random_negative_prob': 0.,
+                'prob': 1.,
+                'scale': 1.5,
+                'pad_val': (255, 255, 255),
+                'interpolation': 'bilinear',
+            }
+            TRANSFORMS.build(cfg)(construct_toy_data())
+            mock.assert_called_once_with(
+                ANY,
+                30,
+                center=(10, 10),
+                scale=1.5,
+                border_value=(255, 255, 255),
                 interpolation='bilinear')
 
         # test prob
@@ -1168,6 +1227,18 @@ class TestCutout(TestCase):
             cfg = {**self.DEFAULT_ARGS, 'shape': 10, 'prob': 0.}
             TRANSFORMS.build(cfg)(construct_toy_data())
             mock.assert_not_called()
+
+        # test sequeue pad_val
+        with patch(transform_func) as mock:
+            cfg = {
+                **self.DEFAULT_ARGS,
+                'shape': (10, 15),
+                'prob': 1.,
+                'pad_val': [255, 255, 255],
+            }
+            TRANSFORMS.build(cfg)(construct_toy_data())
+            mock.assert_called_once_with(
+                ANY, (10, 15), pad_val=(255, 255, 255))
 
         # test random_negative_prob
         # cannot accept `random_negative_prob` argument
