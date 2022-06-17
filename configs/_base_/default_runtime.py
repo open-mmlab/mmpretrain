@@ -6,6 +6,7 @@ log_config = dict(
     hooks=[
         dict(type='TextLoggerHook'),
         # dict(type='TensorboardLoggerHook')
+        # dict(type='PaviLoggerHook') #for internal services
     ])
 # yapf:enable
 
