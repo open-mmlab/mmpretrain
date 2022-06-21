@@ -1,9 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
 from collections import OrderedDict
+from typing import List, Optional, Tuple
 
+import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from mmcv.cnn import build_activation_layer
 from mmcv.cnn.utils.weight_init import trunc_normal_
 from mmcv.runner import Sequential
@@ -20,7 +21,7 @@ class VisionTransformerClsHead(ClsHead):
         num_classes (int): Number of categories excluding the background
             category.
         in_channels (int): Number of channels in the input feature map.
-        hidden_dim (int): Number of the dimensions for hidden layer.
+        hidden_dim (int, optional): Number of the dimensions for hidden layer.
             Defaults to None, which means no extra hidden layer.
         act_cfg (dict): The activation config. Only available during
             pre-training. Defaults to ``dict(type='Tanh')``.
@@ -29,15 +30,14 @@ class VisionTransformerClsHead(ClsHead):
     """
 
     def __init__(self,
-                 num_classes,
-                 in_channels,
-                 hidden_dim=None,
-                 act_cfg=dict(type='Tanh'),
-                 init_cfg=dict(type='Constant', layer='Linear', val=0),
-                 *args,
+                 num_classes: int,
+                 in_channels: int,
+                 hidden_dim: Optional[int] = None,
+                 act_cfg: dict = dict(type='Tanh'),
+                 init_cfg: dict = dict(type='Constant', layer='Linear', val=0),
                  **kwargs):
         super(VisionTransformerClsHead, self).__init__(
-            init_cfg=init_cfg, *args, **kwargs)
+            init_cfg=init_cfg, **kwargs)
         self.in_channels = in_channels
         self.num_classes = num_classes
         self.hidden_dim = hidden_dim
@@ -50,6 +50,7 @@ class VisionTransformerClsHead(ClsHead):
         self._init_layers()
 
     def _init_layers(self):
+        """"Init hidden layer if exists."""
         if self.hidden_dim is None:
             layers = [('head', nn.Linear(self.in_channels, self.num_classes))]
         else:
@@ -61,6 +62,7 @@ class VisionTransformerClsHead(ClsHead):
         self.layers = Sequential(OrderedDict(layers))
 
     def init_weights(self):
+        """"Init weights of hidden layer if exists."""
         super(VisionTransformerClsHead, self).init_weights()
         # Modified from ClassyVision
         if hasattr(self.layers, 'pre_logits'):
@@ -70,54 +72,24 @@ class VisionTransformerClsHead(ClsHead):
                 std=math.sqrt(1 / self.layers.pre_logits.in_features))
             nn.init.zeros_(self.layers.pre_logits.bias)
 
-    def pre_logits(self, x):
-        if isinstance(x, tuple):
-            x = x[-1]
-        _, cls_token = x
+    def pre_logits(self, feats: Tuple[List[torch.Tensor]]) -> torch.Tensor:
+        """The process before the final classification head.
+
+        The input ``feats`` is a tuple of list of tensor, and each tensor is
+        the feature of a backbone stage. In ``VisionTransformerClsHead``, we
+        obtain the feature of the last stage and forward in hidden layer if
+        exists.
+        """
+        _, cls_token = feats[-1]
         if self.hidden_dim is None:
             return cls_token
         else:
             x = self.layers.pre_logits(cls_token)
             return self.layers.act(x)
 
-    def simple_test(self, x, softmax=True, post_process=True):
-        """Inference without augmentation.
-
-        Args:
-            x (tuple[tuple[tensor, tensor]]): The input features.
-                Multi-stage inputs are acceptable but only the last stage will
-                be used to classify. Every item should be a tuple which
-                includes patch token and cls token. The cls token will be used
-                to classify and the shape of it should be
-                ``(num_samples, in_channels)``.
-            softmax (bool): Whether to softmax the classification score.
-            post_process (bool): Whether to do post processing the
-                inference results. It will convert the output to a list.
-
-        Returns:
-            Tensor | list: The inference results.
-
-                - If no post processing, the output is a tensor with shape
-                  ``(num_samples, num_classes)``.
-                - If post processing, the output is a multi-dimentional list of
-                  float and the dimensions are ``(num_samples, num_classes)``.
-        """
-        x = self.pre_logits(x)
-        cls_score = self.layers.head(x)
-
-        if softmax:
-            pred = (
-                F.softmax(cls_score, dim=1) if cls_score is not None else None)
-        else:
-            pred = cls_score
-
-        if post_process:
-            return self.post_process(pred)
-        else:
-            return pred
-
-    def forward_train(self, x, gt_label, **kwargs):
-        x = self.pre_logits(x)
-        cls_score = self.layers.head(x)
-        losses = self.loss(cls_score, gt_label, **kwargs)
-        return losses
+    def forward(self, feats: Tuple[List[torch.Tensor]]) -> torch.Tensor:
+        """The forward process."""
+        pre_logits = self.pre_logits(feats)
+        # The final classification head.
+        cls_score = self.layers.head(pre_logits)
+        return cls_score

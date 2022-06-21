@@ -106,6 +106,205 @@ class TestLinearClsHead(TestCase):
         self.assertEqual(outs.shape, (4, 5))
 
 
+class TestVisionTransformerClsHead(TestCase):
+    DEFAULT_ARGS = dict(
+        type='VisionTransformerClsHead', in_channels=10, num_classes=5)
+    fake_feats = ([torch.rand(4, 7, 7, 16), torch.rand(4, 10)], )
+
+    def test_initialize(self):
+        with self.assertRaisesRegex(ValueError, 'num_classes=-5 must be'):
+            MODELS.build({**self.DEFAULT_ARGS, 'num_classes': -5})
+
+        # test vit head default
+        head = MODELS.build(self.DEFAULT_ARGS)
+        assert not hasattr(head.layers, 'pre_logits')
+        assert not hasattr(head.layers, 'act')
+
+        # test vit head hidden_dim
+        head = MODELS.build({**self.DEFAULT_ARGS, 'hidden_dim': 30})
+        assert hasattr(head.layers, 'pre_logits')
+        assert hasattr(head.layers, 'act')
+
+        # test vit head init_weights
+        head = MODELS.build(self.DEFAULT_ARGS)
+        head.init_weights()
+
+        # test vit head init_weights with hidden_dim
+        head = MODELS.build({**self.DEFAULT_ARGS, 'hidden_dim': 30})
+        head.init_weights()
+        assert abs(head.layers.pre_logits.weight).sum() > 0
+
+    def test_pre_logits(self):
+        # test default
+        head = MODELS.build(self.DEFAULT_ARGS)
+        pre_logits = head.pre_logits(self.fake_feats)
+        self.assertIs(pre_logits, self.fake_feats[-1][1])
+
+        # test hidden_dim
+        head = MODELS.build({**self.DEFAULT_ARGS, 'hidden_dim': 30})
+        pre_logits = head.pre_logits(self.fake_feats)
+        self.assertEqual(pre_logits.shape, (4, 30))
+
+    def test_forward(self):
+        # test default
+        head = MODELS.build(self.DEFAULT_ARGS)
+        outs = head(self.fake_feats)
+        self.assertEqual(outs.shape, (4, 5))
+
+        # test hidden_dim
+        head = MODELS.build({**self.DEFAULT_ARGS, 'hidden_dim': 30})
+        outs = head(self.fake_feats)
+        self.assertEqual(outs.shape, (4, 5))
+
+
+class TestDeiTClsHead(TestVisionTransformerClsHead):
+    DEFAULT_ARGS = dict(type='DeiTClsHead', in_channels=10, num_classes=5)
+    fake_feats = ([
+        torch.rand(4, 7, 7, 16),
+        torch.rand(4, 10),
+        torch.rand(4, 10)
+    ], )
+
+    def test_pre_logits(self):
+        # test default
+        head = MODELS.build(self.DEFAULT_ARGS)
+        cls_token, dist_token = head.pre_logits(self.fake_feats)
+        self.assertIs(cls_token, self.fake_feats[-1][1])
+        self.assertIs(dist_token, self.fake_feats[-1][2])
+
+        # test hidden_dim
+        head = MODELS.build({**self.DEFAULT_ARGS, 'hidden_dim': 30})
+        cls_token, dist_token = head.pre_logits(self.fake_feats)
+        self.assertEqual(cls_token.shape, (4, 30))
+        self.assertEqual(dist_token.shape, (4, 30))
+
+
+class TestConformerHead(TestCase):
+    DEFAULT_ARGS = dict(
+        type='ConformerHead', in_channels=[64, 96], num_classes=5)
+    fake_feats = ([torch.rand(4, 64), torch.rand(4, 96)], )
+
+    def test_initialize(self):
+        with self.assertRaisesRegex(ValueError, 'num_classes=-5 must be'):
+            MODELS.build({**self.DEFAULT_ARGS, 'num_classes': -5})
+
+        # test default
+        head = MODELS.build(self.DEFAULT_ARGS)
+        assert hasattr(head, 'conv_cls_head')
+        assert hasattr(head, 'trans_cls_head')
+
+        # test init_weights
+        head = MODELS.build(self.DEFAULT_ARGS)
+        head.init_weights()
+        assert abs(head.conv_cls_head.weight).sum() > 0
+        assert abs(head.trans_cls_head.weight).sum() > 0
+
+    def test_pre_logits(self):
+        # test default
+        head = MODELS.build(self.DEFAULT_ARGS)
+        pre_logits = head.pre_logits(self.fake_feats)
+        self.assertIs(pre_logits, self.fake_feats[-1])
+
+    def test_forward(self):
+        head = MODELS.build(self.DEFAULT_ARGS)
+        outs = head(self.fake_feats)
+        self.assertEqual(outs[0].shape, (4, 5))
+        self.assertEqual(outs[1].shape, (4, 5))
+
+    def test_loss(self):
+        data_samples = [ClsDataSample().set_gt_label(1) for _ in range(4)]
+
+        # with cal_acc = False
+        head = MODELS.build(self.DEFAULT_ARGS)
+
+        losses = head.loss(self.fake_feats, data_samples)
+        self.assertEqual(losses.keys(), {'loss'})
+        self.assertGreater(losses['loss'].item(), 0)
+
+        # with cal_acc = True
+        cfg = {**self.DEFAULT_ARGS, 'topk': (1, 2), 'cal_acc': True}
+        head = MODELS.build(cfg)
+
+        losses = head.loss(self.fake_feats, data_samples)
+        self.assertEqual(losses.keys(),
+                         {'loss', 'accuracy_top-1', 'accuracy_top-2'})
+        self.assertGreater(losses['loss'].item(), 0)
+
+        # test assertion when cal_acc but data is batch agumented.
+        data_samples = [
+            sample.set_gt_score(torch.rand(5)) for sample in data_samples
+        ]
+        cfg = {
+            **self.DEFAULT_ARGS, 'cal_acc': True,
+            'loss': dict(type='CrossEntropyLoss', use_soft=True)
+        }
+        head = MODELS.build(cfg)
+        with self.assertRaisesRegex(AssertionError, 'batch augmentation'):
+            head.loss(self.fake_feats, data_samples)
+
+    def test_predict(self):
+        data_samples = [ClsDataSample().set_gt_label(1) for _ in range(4)]
+        head = MODELS.build(self.DEFAULT_ARGS)
+
+        # with without data_samples
+        predictions = head.predict(self.fake_feats)
+        self.assertTrue(is_seq_of(predictions, ClsDataSample))
+        for pred in predictions:
+            self.assertIn('label', pred.pred_label)
+            self.assertIn('score', pred.pred_label)
+
+        # with with data_samples
+        predictions = head.predict(self.fake_feats, data_samples)
+        self.assertTrue(is_seq_of(predictions, ClsDataSample))
+        for sample, pred in zip(data_samples, predictions):
+            self.assertIs(sample, pred)
+            self.assertIn('label', pred.pred_label)
+            self.assertIn('score', pred.pred_label)
+
+
+class TestStackedLinearClsHead(TestCase):
+    DEFAULT_ARGS = dict(
+        type='StackedLinearClsHead', in_channels=10, num_classes=5)
+    fake_feats = (torch.rand(4, 10), )
+
+    def test_initialize(self):
+        with self.assertRaisesRegex(ValueError, 'num_classes=-5 must be'):
+            MODELS.build({
+                **self.DEFAULT_ARGS, 'num_classes': -5,
+                'mid_channels': 10
+            })
+
+        # test mid_channels
+        with self.assertRaisesRegex(AssertionError, 'should be a sequence'):
+            MODELS.build({**self.DEFAULT_ARGS, 'mid_channels': 10})
+
+        # test default
+        head = MODELS.build({**self.DEFAULT_ARGS, 'mid_channels': [20]})
+        assert len(head.layers) == 2
+        head.init_weights()
+
+    def test_pre_logits(self):
+        # test default
+        head = MODELS.build({**self.DEFAULT_ARGS, 'mid_channels': [20, 30]})
+        pre_logits = head.pre_logits(self.fake_feats)
+        self.assertEqual(pre_logits.shape, (4, 30))
+
+    def test_forward(self):
+        # test default
+        head = MODELS.build({**self.DEFAULT_ARGS, 'mid_channels': [20, 30]})
+        outs = head(self.fake_feats)
+        self.assertEqual(outs.shape, (4, 5))
+
+        head = MODELS.build({
+            **self.DEFAULT_ARGS, 'mid_channels': [8, 10],
+            'dropout_rate': 0.2,
+            'norm_cfg': dict(type='BN1d'),
+            'act_cfg': dict(type='HSwish')
+        })
+        outs = head(self.fake_feats)
+        self.assertEqual(outs.shape, (4, 5))
+
+
 """Temporarily disabled.
 @pytest.mark.parametrize('feat', [torch.rand(4, 10), (torch.rand(4, 10), )])
 def test_multilabel_head(feat):
@@ -215,125 +414,4 @@ def test_stacked_linear_cls_head(feat):
     losses = head.forward_train(feat, fake_gt_label)
     assert losses['loss'].item() > 0
 
-
-def test_vit_head():
-    fake_features = ([torch.rand(4, 7, 7, 16), torch.rand(4, 100)], )
-    fake_gt_label = torch.randint(0, 10, (4, ))
-
-    # test vit head forward
-    head = VisionTransformerClsHead(10, 100)
-    losses = head.forward_train(fake_features, fake_gt_label)
-    assert not hasattr(head.layers, 'pre_logits')
-    assert not hasattr(head.layers, 'act')
-    assert losses['loss'].item() > 0
-
-    # test vit head forward with hidden layer
-    head = VisionTransformerClsHead(10, 100, hidden_dim=20)
-    losses = head.forward_train(fake_features, fake_gt_label)
-    assert hasattr(head.layers, 'pre_logits') and hasattr(head.layers, 'act')
-    assert losses['loss'].item() > 0
-
-    # test vit head init_weights
-    head = VisionTransformerClsHead(10, 100, hidden_dim=20)
-    head.init_weights()
-    assert abs(head.layers.pre_logits.weight).sum() > 0
-
-    head = VisionTransformerClsHead(10, 100, hidden_dim=20)
-    # test simple_test with post_process
-    pred = head.simple_test(fake_features)
-    assert isinstance(pred, list) and len(pred) == 4
-    with patch('torch.onnx.is_in_onnx_export', return_value=True):
-        pred = head.simple_test(fake_features)
-        assert pred.shape == (4, 10)
-
-    # test simple_test without post_process
-    pred = head.simple_test(fake_features, post_process=False)
-    assert isinstance(pred, torch.Tensor) and pred.shape == (4, 10)
-    logits = head.simple_test(fake_features, softmax=False, post_process=False)
-    torch.testing.assert_allclose(pred, torch.softmax(logits, dim=1))
-
-    # test pre_logits
-    features = head.pre_logits(fake_features)
-    assert features.shape == (4, 20)
-
-    # test assertion
-    with pytest.raises(ValueError):
-        VisionTransformerClsHead(-1, 100)
-
-
-def test_conformer_head():
-    fake_features = ([torch.rand(4, 64), torch.rand(4, 96)], )
-    fake_gt_label = torch.randint(0, 10, (4, ))
-
-    # test conformer head forward
-    head = ConformerHead(num_classes=10, in_channels=[64, 96])
-    losses = head.forward_train(fake_features, fake_gt_label)
-    assert losses['loss'].item() > 0
-
-    # test simple_test with post_process
-    pred = head.simple_test(fake_features)
-    assert isinstance(pred, list) and len(pred) == 4
-    with patch('torch.onnx.is_in_onnx_export', return_value=True):
-        pred = head.simple_test(fake_features)
-        assert pred.shape == (4, 10)
-
-    # test simple_test without post_process
-    pred = head.simple_test(fake_features, post_process=False)
-    assert isinstance(pred, torch.Tensor) and pred.shape == (4, 10)
-    logits = head.simple_test(fake_features, softmax=False, post_process=False)
-    torch.testing.assert_allclose(pred, torch.softmax(sum(logits), dim=1))
-
-    # test pre_logits
-    features = head.pre_logits(fake_features)
-    assert features is fake_features[0]
-
-
-def test_deit_head():
-    fake_features = ([
-        torch.rand(4, 7, 7, 16),
-        torch.rand(4, 100),
-        torch.rand(4, 100)
-    ], )
-    fake_gt_label = torch.randint(0, 10, (4, ))
-
-    # test deit head forward
-    head = DeiTClsHead(num_classes=10, in_channels=100)
-    losses = head.forward_train(fake_features, fake_gt_label)
-    assert not hasattr(head.layers, 'pre_logits')
-    assert not hasattr(head.layers, 'act')
-    assert losses['loss'].item() > 0
-
-    # test deit head forward with hidden layer
-    head = DeiTClsHead(num_classes=10, in_channels=100, hidden_dim=20)
-    losses = head.forward_train(fake_features, fake_gt_label)
-    assert hasattr(head.layers, 'pre_logits') and hasattr(head.layers, 'act')
-    assert losses['loss'].item() > 0
-
-    # test deit head init_weights
-    head = DeiTClsHead(10, 100, hidden_dim=20)
-    head.init_weights()
-    assert abs(head.layers.pre_logits.weight).sum() > 0
-
-    head = DeiTClsHead(10, 100, hidden_dim=20)
-    # test simple_test with post_process
-    pred = head.simple_test(fake_features)
-    assert isinstance(pred, list) and len(pred) == 4
-    with patch('torch.onnx.is_in_onnx_export', return_value=True):
-        pred = head.simple_test(fake_features)
-        assert pred.shape == (4, 10)
-
-    # test simple_test without post_process
-    pred = head.simple_test(fake_features, post_process=False)
-    assert isinstance(pred, torch.Tensor) and pred.shape == (4, 10)
-    logits = head.simple_test(fake_features, softmax=False, post_process=False)
-    torch.testing.assert_allclose(pred, torch.softmax(logits, dim=1))
-
-    # test pre_logits
-    cls_token, dist_token = head.pre_logits(fake_features)
-    assert cls_token.shape == (4, 20)
-    assert dist_token.shape == (4, 20)
-
-    # test assertion
-    with pytest.raises(ValueError):
-        DeiTClsHead(-1, 100)
 """

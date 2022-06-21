@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import List, Tuple
+from typing import List, Optional, Tuple, Union
 
 import torch
 import torch.nn.functional as F
@@ -27,10 +27,10 @@ class ClsHead(BaseHead):
     """
 
     def __init__(self,
-                 loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
-                 topk=(1, ),
-                 cal_acc=False,
-                 init_cfg=None):
+                 loss: dict = dict(type='CrossEntropyLoss', loss_weight=1.0),
+                 topk: Union[int, Tuple[int]] = (1, ),
+                 cal_acc: bool = False,
+                 init_cfg: Optional[dict] = None):
         super(ClsHead, self).__init__(init_cfg=init_cfg)
 
         self.topk = topk

@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # Copyrigforward_trainht (c) OpenMMLab. All rights reserved.
-from typing import Tuple
+from typing import Optional, Tuple
 
 import torch
 import torch.nn as nn
@@ -29,9 +29,10 @@ class LinearClsHead(ClsHead):
     """
 
     def __init__(self,
-                 num_classes,
-                 in_channels,
-                 init_cfg=dict(type='Normal', layer='Linear', std=0.01),
+                 num_classes: int,
+                 in_channels: int,
+                 init_cfg: Optional[dict] = dict(
+                     type='Normal', layer='Linear', std=0.01),
                  **kwargs):
         super(LinearClsHead, self).__init__(init_cfg=init_cfg, **kwargs)
 

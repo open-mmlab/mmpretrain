@@ -1,8 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import torch.nn as nn
-import torch.nn.functional as F
-from mmcv.cnn.utils.weight_init import trunc_normal_
+from typing import List, Sequence, Tuple
 
+import torch
+import torch.nn as nn
+
+from mmcls.core import ClsDataSample
+from mmcls.metrics import Accuracy
 from mmcls.registry import MODELS
 from .cls_head import ClsHead
 
@@ -14,19 +17,19 @@ class ConformerHead(ClsHead):
     Args:
         num_classes (int): Number of categories excluding the background
             category.
-        in_channels (int): Number of channels in the input feature map.
+        in_channels (Sequence[int]): Number of channels in the input
+            feature map.
         init_cfg (dict | optional): The extra init config of layers.
             Defaults to use ``dict(type='Normal', layer='Linear', std=0.01)``.
     """
 
     def __init__(
             self,
-            num_classes,
-            in_channels,  # [conv_dim, trans_dim]
-            init_cfg=dict(type='Normal', layer='Linear', std=0.01),
-            *args,
+            num_classes: int,
+            in_channels: Sequence[int],  # [conv_dim, trans_dim]
+            init_cfg: dict = dict(type='TruncNormal', layer='Linear', std=.02),
             **kwargs):
-        super(ConformerHead, self).__init__(init_cfg=None, *args, **kwargs)
+        super(ConformerHead, self).__init__(init_cfg=init_cfg, **kwargs)
 
         self.in_channels = in_channels
         self.num_classes = num_classes
@@ -39,94 +42,82 @@ class ConformerHead(ClsHead):
         self.conv_cls_head = nn.Linear(self.in_channels[0], num_classes)
         self.trans_cls_head = nn.Linear(self.in_channels[1], num_classes)
 
-    def _init_weights(self, m):
-        if isinstance(m, nn.Linear):
-            trunc_normal_(m.weight, std=.02)
-            if isinstance(m, nn.Linear) and m.bias is not None:
-                nn.init.constant_(m.bias, 0)
+    def pre_logits(self, feats: Tuple[List[torch.Tensor]]) -> torch.Tensor:
+        """The process before the final classification head.
 
-    def init_weights(self):
-        super(ConformerHead, self).init_weights()
-
-        if (isinstance(self.init_cfg, dict)
-                and self.init_cfg['type'] == 'Pretrained'):
-            # Suppress default init if use pretrained model.
-            return
-        else:
-            self.apply(self._init_weights)
-
-    def pre_logits(self, x):
-        if isinstance(x, tuple):
-            x = x[-1]
-        return x
-
-    def simple_test(self, x, softmax=True, post_process=True):
-        """Inference without augmentation.
-
-        Args:
-            x (tuple[tuple[tensor, tensor]]): The input features.
-                Multi-stage inputs are acceptable but only the last stage will
-                be used to classify. Every item should be a tuple which
-                includes convluation features and transformer features. The
-                shape of them should be ``(num_samples, in_channels[0])`` and
-                ``(num_samples, in_channels[1])``.
-            softmax (bool): Whether to softmax the classification score.
-            post_process (bool): Whether to do post processing the
-                inference results. It will convert the output to a list.
-
-        Returns:
-            Tensor | list: The inference results.
-
-                - If no post processing, the output is a tensor with shape
-                  ``(num_samples, num_classes)``.
-                - If post processing, the output is a multi-dimentional list of
-                  float and the dimensions are ``(num_samples, num_classes)``.
+        The input ``feats`` is a tuple of tensor, and each tensor is the
+        feature of a backbone stage. In ``ConformerHead``, we just obtain the
+        feature of the last stage.
         """
-        x = self.pre_logits(x)
+        # The ConformerHead doesn't have other module,
+        # just return after unpacking.
+        return feats[-1]
+
+    def forward(self, feats: Tuple[List[torch.Tensor]]) -> Tuple[torch.Tensor]:
+        """The forward process."""
+        x = self.pre_logits(feats)
         # There are two outputs in the Conformer model
         assert len(x) == 2
 
         conv_cls_score = self.conv_cls_head(x[0])
         tran_cls_score = self.trans_cls_head(x[1])
 
-        if softmax:
-            cls_score = conv_cls_score + tran_cls_score
-            pred = (
-                F.softmax(cls_score, dim=1) if cls_score is not None else None)
-            if post_process:
-                pred = self.post_process(pred)
+        return conv_cls_score, tran_cls_score
+
+    def predict(
+            self,
+            feats: Tuple[List[torch.Tensor]],
+            data_samples: List[ClsDataSample] = None) -> List[ClsDataSample]:
+        """Inference without augmentation.
+
+        Args:
+            feats (tuple[Tensor]): The features extracted from the backbone.
+                Multiple stage inputs are acceptable but only the last stage
+                will be used to classify. The shape of every item should be
+                ``(num_samples, num_classes)``.
+            data_samples (List[ClsDataSample], optional): The annotation
+                data of every samples. If not None, set ``pred_label`` of
+                the input data samples. Defaults to None.
+
+        Returns:
+            List[ClsDataSample]: A list of data samples which contains the
+            predicted results.
+        """
+        # The part can be traced by torch.fx
+        conv_cls_score, tran_cls_score = self(feats)
+        cls_score = conv_cls_score + tran_cls_score
+
+        # The part can not be traced by torch.fx
+        predictions = self._get_predictions(cls_score, data_samples)
+        return predictions
+
+    def _get_loss(self, cls_score: Tuple[torch.Tensor],
+                  data_samples: List[ClsDataSample], **kwargs) -> dict:
+        """Unpack data samples and compute loss."""
+        # Unpack data samples and pack targets
+        if 'score' in data_samples[0].gt_label:
+            # Batch augmentation may convert labels to one-hot format scores.
+            target = torch.stack([i.gt_label.score for i in data_samples])
         else:
-            pred = [conv_cls_score, tran_cls_score]
-            if post_process:
-                pred = list(map(self.post_process, pred))
-        return pred
+            target = torch.hstack([i.gt_label.label for i in data_samples])
 
-    def forward_train(self, x, gt_label):
-        x = self.pre_logits(x)
-        assert isinstance(x, list) and len(x) == 2, \
-            'There should be two outputs in the Conformer model'
-
-        conv_cls_score = self.conv_cls_head(x[0])
-        tran_cls_score = self.trans_cls_head(x[1])
-
-        losses = self.loss([conv_cls_score, tran_cls_score], gt_label)
-        return losses
-
-    def loss(self, cls_score, gt_label):
-        num_samples = len(cls_score[0])
-        losses = dict()
         # compute loss
+        losses = dict()
         loss = sum([
-            self.compute_loss(score, gt_label, avg_factor=num_samples) /
-            len(cls_score) for score in cls_score
+            self.loss_module(
+                score, target, avg_factor=score.size(0), **kwargs)
+            for score in cls_score
         ])
-        if self.cal_acc:
-            # compute accuracy
-            acc = self.compute_accuracy(cls_score[0] + cls_score[1], gt_label)
-            assert len(acc) == len(self.topk)
-            losses['accuracy'] = {
-                f'top-{k}': a
-                for k, a in zip(self.topk, acc)
-            }
         losses['loss'] = loss
+
+        # compute accuracy
+        if self.cal_acc:
+            assert target.ndim == 1, 'If you enable batch augmentation ' \
+                'like mixup during training, `cal_acc` is pointless.'
+            acc = Accuracy.calculate(
+                cls_score[0] + cls_score[1], target, topk=self.topk)
+            losses.update(
+                {f'accuracy_top-{k}': a
+                 for k, a in zip(self.topk, acc)})
+
         return losses
