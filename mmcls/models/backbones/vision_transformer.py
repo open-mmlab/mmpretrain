@@ -162,8 +162,6 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
             qkv_bias=bias,
             act_cfg=act_cfg,
             norm_cfg=norm_cfg,
-            attn_cfg=attn_cfg,
-            ffn_cfg=ffn_cfg,
             init_cfg=init_cfg)
 
         # overwrite the default attention layer in TransformerEncoderLayer
@@ -242,6 +240,8 @@ class VisionTransformer(BaseBackbone):
             final feature map. Defaults to True.
         with_cls_token (bool): Whether concatenating class token into image
             tokens as transformer input. Defaults to True.
+        avg_token (bool): Whether or not use the average token for 
+            classification. Defaults to False.
         output_cls_token (bool): Whether output the cls_token. If set True,
             ``with_cls_token`` must be True. Defaults to True.
         beit_style (bool): Whether or not use BEiT-style 
@@ -315,6 +315,7 @@ class VisionTransformer(BaseBackbone):
                  norm_cfg=dict(type='LN', eps=1e-6),
                  final_norm=True,
                  with_cls_token=True,
+                 avg_token=False,
                  output_cls_token=True,
                  beit_style=False,
                  init_values=None,
@@ -407,7 +408,7 @@ class VisionTransformer(BaseBackbone):
                         init_values=init_values,
                         window_size=self.patch_resolution))
                 _layer_cfg.pop('qkv_bias')
-                self.layers.append(BEiTTransformerEncoderLayer(**layer_cfgs))
+                self.layers.append(BEiTTransformerEncoderLayer(**_layer_cfg))
             else:
                 self.layers.append(TransformerEncoderLayer(**_layer_cfg))
 
@@ -417,9 +418,19 @@ class VisionTransformer(BaseBackbone):
                 norm_cfg, self.embed_dims, postfix=1)
             self.add_module(self.norm1_name, norm1)
 
+        self.avg_token = avg_token
+        if avg_token:
+            self.norm2_name, norm2 = build_norm_layer(
+                norm_cfg, self.embed_dims, postfix=2)
+            self.add_module(self.norm2_name, norm2)
+
     @property
     def norm1(self):
         return getattr(self, self.norm1_name)
+
+    @property
+    def norm2(self):
+        return getattr(self, self.norm2_name)
 
     def init_weights(self):
         super(VisionTransformer, self).init_weights()
@@ -492,7 +503,13 @@ class VisionTransformer(BaseBackbone):
                     patch_token = x.reshape(B, *patch_resolution, C)
                     patch_token = patch_token.permute(0, 3, 1, 2)
                     cls_token = None
-                if self.output_cls_token:
+                if self.avg_token:
+                    patch_token = patch_token.reshape(
+                        B, patch_resolution[0] * patch_resolution[1],
+                        C).mean(dim=1)
+                    patch_token = self.norm2(patch_token)
+                    out = [cls_token, patch_token]
+                elif self.output_cls_token:
                     out = [patch_token, cls_token]
                 else:
                     out = patch_token
