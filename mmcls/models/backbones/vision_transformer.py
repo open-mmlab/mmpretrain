@@ -1,18 +1,19 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional, Sequence, List, Union, Dict
+from typing import Dict, List, Optional, Sequence, Union
 
 import numpy as np
 import torch
 import torch.nn as nn
 from mmcv.cnn import build_norm_layer
+from mmcv.cnn.bricks.drop import build_dropout
 from mmcv.cnn.bricks.transformer import FFN, PatchEmbed
 from mmengine.model import BaseModule, ModuleList
 from mmengine.model.utils import trunc_normal_
 
 from mmcls.registry import MODELS
-from ..utils import MultiheadAttention, resize_pos_embed, to_2tuple, BEiTAttention
-from mmcv.cnn.bricks.drop import build_dropout
 
+from ..utils import (BEiTAttention, MultiheadAttention, resize_pos_embed,
+                     to_2tuple)
 from .base_backbone import BaseBackbone
 
 
@@ -102,6 +103,7 @@ class TransformerEncoderLayer(BaseModule):
 
 class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
     """Implements one encoder layer in Vision Transformer.
+
     Args:
         embed_dims (int): The feature dimension.
         num_heads (int): Parallel attention heads.
@@ -123,9 +125,9 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
             Default: dict(type='LN').
         window_size (tuple[int], optional): The height and width of the window.
             Default: None.
-        attn_cfg (dict): The configuration for the attention layer. 
+        attn_cfg (dict): The configuration for the attention layer.
             Defaults to dict().
-        ffn_cfg (dict): The configuration for the ffn layer. 
+        ffn_cfg (dict): The configuration for the ffn layer.
             Defaults to dict().
         init_values (float, optional): Initialize the values of BEiTAttention
             and FFN with learnable scaling. Default: None.
@@ -240,11 +242,11 @@ class VisionTransformer(BaseBackbone):
             final feature map. Defaults to True.
         with_cls_token (bool): Whether concatenating class token into image
             tokens as transformer input. Defaults to True.
-        avg_token (bool): Whether or not use the average token for 
+        avg_token (bool): Whether or not use the average token for
             classification. Defaults to False.
         output_cls_token (bool): Whether output the cls_token. If set True,
             ``with_cls_token`` must be True. Defaults to True.
-        beit_style (bool): Whether or not use BEiT-style 
+        beit_style (bool): Whether or not use BEiT-style
             BEiTTransformerEncoderLayer. Defaults to False.
         init_values (float, optional): Initialize the values of BEiTAttention
             and FFN with learnable scaling. Default: None.
