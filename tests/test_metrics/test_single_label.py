@@ -183,10 +183,13 @@ class TestSingleLabel(TestCase):
         metric.process(data_batch, pred)
         res = metric.evaluate(6)
         self.assertIsInstance(res, dict)
-        self.assertAlmostEqual(res['single-label/precision'], 66.666, places=2)
-        self.assertAlmostEqual(res['single-label/recall'], 66.666, places=2)
-        self.assertAlmostEqual(res['single-label/f1-score'], 66.666, places=2)
-        self.assertEqual(res['single-label/support'], 6)
+        self.assertAlmostEqual(
+            res['single-label/precision_micro'], 66.666, places=2)
+        self.assertAlmostEqual(
+            res['single-label/recall_micro'], 66.666, places=2)
+        self.assertAlmostEqual(
+            res['single-label/f1-score_micro'], 66.666, places=2)
+        self.assertEqual(res['single-label/support_micro'], 6)
 
         # Test with average mode None
         metric = METRICS.build(
@@ -197,19 +200,19 @@ class TestSingleLabel(TestCase):
         metric.process(data_batch, pred)
         res = metric.evaluate(6)
         self.assertIsInstance(res, dict)
-        precision = res['single-label/precision']
+        precision = res['single-label/precision_classwise']
         self.assertAlmostEqual(precision[0], 100., places=4)
         self.assertAlmostEqual(precision[1], 100., places=4)
         self.assertAlmostEqual(precision[2], 1 / 3 * 100, places=4)
-        recall = res['single-label/recall']
+        recall = res['single-label/recall_classwise']
         self.assertAlmostEqual(recall[0], 2 / 3 * 100, places=4)
         self.assertAlmostEqual(recall[1], 50., places=4)
         self.assertAlmostEqual(recall[2], 100., places=4)
-        f1_score = res['single-label/f1-score']
+        f1_score = res['single-label/f1-score_classwise']
         self.assertAlmostEqual(f1_score[0], 80., places=4)
         self.assertAlmostEqual(f1_score[1], 2 / 3 * 100, places=4)
         self.assertAlmostEqual(f1_score[2], 50., places=4)
-        self.assertEqual(res['single-label/support'], [3, 2, 1])
+        self.assertEqual(res['single-label/support_classwise'], [3, 2, 1])
 
         # Test with label, the thrs will be ignored
         pred_no_score = copy.deepcopy(pred)
@@ -293,7 +296,7 @@ class TestSingleLabel(TestCase):
                           msg=None,
                           **kwarg):
         tensor = tensor.to(torch.float32)
-        value = torch.FloatTensor([value])
+        value = torch.tensor(value).float()
         try:
             torch.testing.assert_allclose(tensor, value, **kwarg)
         except AssertionError as e:

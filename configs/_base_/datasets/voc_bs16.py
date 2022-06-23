@@ -22,35 +22,13 @@ test_pipeline = [
     dict(type='PackClsInputs'),
 ]
 
-data = dict(
-    samples_per_gpu=16,
-    workers_per_gpu=2,
-    train=dict(
-        type=dataset_type,
-        data_prefix='',
-        ann_file='data/VOCdevkit/VOC2007/ImageSets/Main/trainval.txt',
-        pipeline=train_pipeline),
-    val=dict(
-        type=dataset_type,
-        data_prefix='data/VOCdevkit/VOC2007/',
-        ann_file='data/VOCdevkit/VOC2007/ImageSets/Main/test.txt',
-        pipeline=test_pipeline),
-    test=dict(
-        type=dataset_type,
-        data_prefix='data/VOCdevkit/VOC2007/',
-        ann_file='data/VOCdevkit/VOC2007/ImageSets/Main/test.txt',
-        pipeline=test_pipeline))
-evaluation = dict(
-    interval=1, metric=['mAP', 'CP', 'OP', 'CR', 'OR', 'CF1', 'OF1'])
-
 train_dataloader = dict(
     batch_size=16,
     num_workers=5,
     dataset=dict(
         type=dataset_type,
-        data_root='data/VOCdevkit/VOC2007/',
-        # manually split the `trainval.txt` for standard training.
-        ann_file='ImageSets/Main/trainval.txt',
+        data_root='data/VOCdevkit/VOC2007',
+        image_set_path='ImageSets/Layout/val.txt',
         pipeline=train_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=True),
     persistent_workers=True,
@@ -61,27 +39,28 @@ val_dataloader = dict(
     num_workers=5,
     dataset=dict(
         type=dataset_type,
-        data_root='data/VOCdevkit/VOC2007/',
-        # manually split the `trainval.txt` for standard validation.
-        ann_file='ImageSets/Main/test.txt',
+        data_root='data/VOCdevkit/VOC2007',
+        image_set_path='ImageSets/Layout/val.txt',
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
     persistent_workers=True,
 )
-val_evaluator = dict(
-    type='MultiLabelMetric',
-    items=['mAP', 'CP', 'OP', 'CR', 'OR', 'CF1', 'OF1'])
 
 test_dataloader = dict(
     batch_size=16,
     num_workers=5,
     dataset=dict(
         type=dataset_type,
-        data_root='data/VOCdevkit/VOC2007/',
-        ann_file='ImageSets/Main/test.txt',
-        data_prefix='val',
+        data_root='data/VOCdevkit/VOC2007',
+        image_set_path='ImageSets/Layout/val.txt',
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
     persistent_workers=True,
 )
+
+# calculate precision_recall_f1 and mAP
+val_evaluator = [dict(type='MultiLabelMetric'), dict(type='AveragePrecision')]
+
+# If you want standard test, please manually configure the test dataset
+test_dataloader = val_dataloader
 test_evaluator = val_evaluator

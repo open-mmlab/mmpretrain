@@ -21,6 +21,37 @@ def to_tensor(value):
     return value
 
 
+def _precision_recall_f1_support(pred_positive, gt_positive, average):
+    """calculate base classification task metrics, such as  precision, recall,
+    f1_score, support."""
+    average_options = ['micro', 'macro', None]
+    assert average in average_options, 'Invalid `average` argument, ' \
+        f'please specicy from {average_options}.'
+
+    class_correct = (pred_positive & gt_positive)
+    if average == 'micro':
+        tp_sum = class_correct.sum()
+        pred_sum = pred_positive.sum()
+        gt_sum = gt_positive.sum()
+    else:
+        tp_sum = class_correct.sum(0)
+        pred_sum = pred_positive.sum(0)
+        gt_sum = gt_positive.sum(0)
+
+    precision = tp_sum / torch.clamp(pred_sum, min=1.) * 100
+    recall = tp_sum / torch.clamp(gt_sum, min=1.) * 100
+    f1_score = 2 * precision * recall / torch.clamp(
+        precision + recall, min=torch.finfo(torch.float32).eps)
+    if average in ['macro', 'micro']:
+        precision = precision.mean(0)
+        recall = recall.mean(0)
+        f1_score = f1_score.mean(0)
+        support = gt_sum.sum(0)
+    else:
+        support = gt_sum
+    return precision, recall, f1_score, support
+
+
 @METRICS.register_module()
 class Accuracy(BaseMetric):
     """Top-k accuracy evaluation metric.
@@ -327,9 +358,9 @@ class SingleLabelMetric(BaseMetric):
         >>> evaluator.process(data_batch, pred)
         >>> evaluator.evaluate(1000)
         {
-            'single-label/precision': [21.14, 18.69, 17.17, 19.42, 16.14],
-            'single-label/recall': [18.5, 18.5, 17.0, 20.0, 18.0],
-            'single-label/f1-score': [19.73, 18.59, 17.09, 19.70, 17.02]
+            'single-label/precision_classwise': [21.1, 18.7, 17.8, 19.4, 16.1],
+            'single-label/recall_classwise': [18.5, 18.5, 17.0, 20.0, 18.0],
+            'single-label/f1-score_classwise': [19.7, 18.6, 17.1, 19.7, 17.0]
         }
     """
     default_prefix: Optional[str] = 'single-label'
@@ -438,13 +469,17 @@ class SingleLabelMetric(BaseMetric):
                 num_classes=results[0]['num_classes'])
             metrics = pack_results(*res)
 
+        result_metrics = dict()
         for k, v in metrics.items():
-            if self.average is not None:
-                metrics[k] = v.item()
-            else:
-                metrics[k] = v.cpu().detach().tolist()
 
-        return metrics
+            if self.average is None:
+                result_metrics[k + '_classwise'] = v.cpu().detach().tolist()
+            elif self.average == 'micro':
+                result_metrics[k + f'_{self.average}'] = v.item()
+            else:
+                result_metrics[k] = v.item()
+
+        return result_metrics
 
     @staticmethod
     def calculate(
@@ -503,38 +538,14 @@ class SingleLabelMetric(BaseMetric):
             f"The size of pred ({pred.size(0)}) doesn't match "\
             f'the target ({target.size(0)}).'
 
-        def _do_calculate(pred_positive, gt_positive):
-            class_correct = (pred_positive & gt_positive)
-            if average == 'micro':
-                tp_sum = class_correct.sum()
-                pred_sum = pred_positive.sum()
-                gt_sum = gt_positive.sum()
-            else:
-                tp_sum = class_correct.sum(0)
-                pred_sum = pred_positive.sum(0)
-                gt_sum = gt_positive.sum(0)
-
-            precision = tp_sum / np.maximum(pred_sum, 1.) * 100
-            recall = tp_sum / np.maximum(gt_sum, 1.) * 100
-            f1_score = 2 * precision * recall / np.maximum(
-                precision + recall,
-                torch.finfo(torch.float32).eps)
-            if average in ['macro', 'micro']:
-                precision = precision.mean(0, keepdim=True)
-                recall = recall.mean(0, keepdim=True)
-                f1_score = f1_score.mean(0, keepdim=True)
-                support = gt_sum.sum(0, keepdim=True)
-            else:
-                support = gt_sum
-            return precision, recall, f1_score, support
-
         if pred.ndim == 1:
             assert num_classes is not None, \
                 'Please specicy the `num_classes` if the `pred` is labels ' \
                 'intead of scores.'
             gt_positive = F.one_hot(target.flatten(), num_classes)
             pred_positive = F.one_hot(pred.to(torch.int64), num_classes)
-            return _do_calculate(pred_positive, gt_positive)
+            return _precision_recall_f1_support(pred_positive, gt_positive,
+                                                average)
         else:
             # For pred score, calculate on all thresholds.
             num_classes = pred.size(1)
@@ -549,6 +560,8 @@ class SingleLabelMetric(BaseMetric):
                 pred_positive = F.one_hot(pred_label, num_classes)
                 if thr is not None:
                     pred_positive[pred_score <= thr] = 0
-                results.append(_do_calculate(pred_positive, gt_positive))
+                results.append(
+                    _precision_recall_f1_support(pred_positive, gt_positive,
+                                                 average))
 
             return results
