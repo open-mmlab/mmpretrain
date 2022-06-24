@@ -18,6 +18,10 @@ def parse_args():
         '--work-dir',
         help='the directory to save the file containing evaluation metrics')
     parser.add_argument(
+        '--dump',
+        type=str,
+        help='dump predictions to a pickle file for offline evaluation')
+    parser.add_argument(
         '--cfg-options',
         nargs='+',
         action=DictAction,
@@ -69,6 +73,16 @@ def merge_args(cfg, args):
         cfg.default_hooks.visualization.wait_time = args.wait_time
         cfg.default_hooks.visualization.out_dir = args.show_dir
         cfg.default_hooks.visualization.interval = args.interval
+
+    # -------------------- Dump predictions --------------------
+    if args.dump is not None:
+        assert args.dump.endswith(('.pkl', '.pickle')), \
+            'The dump file must be a pkl file.'
+        dump_metric = dict(type='DumpResults', out_file_path=args.dump)
+        if isinstance(cfg.test_evaluator, (list, tuple)):
+            cfg.test_evaluator = list(cfg.test_evaluator).append(dump_metric)
+        else:
+            cfg.test_evaluator = [cfg.test_evaluator, dump_metric]
 
     return cfg
 

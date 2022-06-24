@@ -1,10 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
+import itertools
+import json
+from unittest.mock import MagicMock
 
-import mmcv
-from mmcv import Config, DictAction
+import mmengine
+import rich
+from mmengine import Config, DictAction
+from mmengine.evaluator import Evaluator
 
-from mmcls.datasets import build_dataset
+from mmcls.utils import register_all_modules
 
 
 def parse_args():
@@ -12,12 +17,6 @@ def parse_args():
                                      'results saved in pkl format')
     parser.add_argument('config', help='Config of the model')
     parser.add_argument('pkl_results', help='Results in pickle format')
-    parser.add_argument(
-        '--metrics',
-        type=str,
-        nargs='+',
-        help='Evaluation metrics, which depends on the dataset, e.g., '
-        '"accuracy", "precision", "recall" and "support".')
     parser.add_argument(
         '--cfg-options',
         nargs='+',
@@ -28,12 +27,6 @@ def parse_args():
         'It also allows nested list/tuple values, e.g. key="[(a,b),(c,d)]" '
         'Note that the quotation marks are necessary and that no white space '
         'is allowed.')
-    parser.add_argument(
-        '--metric-options',
-        nargs='+',
-        action=DictAction,
-        help='custom options for evaluation, the key-value pair in xxx=yyy '
-        'format will be kwargs for dataset.evaluate() function')
     args = parser.parse_args()
     return args
 
@@ -41,30 +34,20 @@ def parse_args():
 def main():
     args = parse_args()
 
-    outputs = mmcv.load(args.pkl_results)
-    assert 'class_scores' in outputs, \
-        'No "class_scores" in result file, please set "--out-items" in test.py'
+    register_all_modules()
 
+    # load config
     cfg = Config.fromfile(args.config)
-    assert args.metrics, (
-        'Please specify at least one metric the argument "--metrics".')
-
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
-    cfg.data.test.test_mode = True
 
-    dataset = build_dataset(cfg.data.test)
-    pred_score = outputs['class_scores']
+    predictions = mmengine.load(args.pkl_results)
 
-    eval_kwargs = cfg.get('evaluation', {}).copy()
-    # hard-code way to remove EvalHook args
-    for key in [
-            'interval', 'tmpdir', 'start', 'gpu_collect', 'save_best', 'rule'
-    ]:
-        eval_kwargs.pop(key, None)
-    eval_kwargs.update(
-        dict(metric=args.metrics, metric_options=args.metric_options))
-    print(dataset.evaluate(pred_score, **eval_kwargs))
+    evaluator = Evaluator(cfg.test_evaluator)
+    # dataset is not needed, use an endless iterator to mock it.
+    fake_dataset = itertools.repeat({'data_sample': MagicMock()})
+    eval_results = evaluator.offline_evaluate(fake_dataset, predictions)
+    rich.print_json(json.dumps(eval_results))
 
 
 if __name__ == '__main__':
