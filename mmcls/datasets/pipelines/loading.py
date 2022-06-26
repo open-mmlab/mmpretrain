@@ -5,7 +5,8 @@ import mmcv
 import numpy as np
 
 from ..builder import PIPELINES
-
+from PIL import Image
+import cv2
 
 @PIPELINES.register_module()
 class LoadImageFromFile(object):
@@ -49,7 +50,8 @@ class LoadImageFromFile(object):
         img = mmcv.imfrombytes(img_bytes, flag=self.color_type)
         if self.to_float32:
             img = img.astype(np.float32)
-
+        if img is None:
+            img = cv2.cvtColor(np.array(Image.open(filename)), cv2.COLOR_RGB2BGR)
         results['filename'] = filename
         results['ori_filename'] = results['img_info']['filename']
         results['img'] = img
