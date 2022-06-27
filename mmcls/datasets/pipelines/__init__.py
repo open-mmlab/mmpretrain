@@ -6,8 +6,9 @@ from .auto_augment import (AutoAugment, AutoContrast, Brightness,
 from .compose import Compose
 from .formatting import (Collect, ImageToTensor, PackClsInputs, ToNumpy, ToPIL,
                          ToTensor, Transpose, to_tensor)
-from .processing import (ColorJitter, Lighting, Normalize, Pad, RandomCrop,
-                         RandomErasing, RandomGrayscale, RandomResizedCrop)
+from .processing import (Albumentations, ColorJitter, Lighting, Normalize, Pad,
+                         RandomCrop, RandomErasing, RandomGrayscale,
+                         RandomResizedCrop)
 
 __all__ = [
     'Compose', 'to_tensor', 'ToTensor', 'ImageToTensor', 'ToPIL', 'ToNumpy',
@@ -16,5 +17,5 @@ __all__ = [
     'ColorTransform', 'Solarize', 'Posterize', 'AutoContrast', 'Equalize',
     'Contrast', 'Brightness', 'Sharpness', 'AutoAugment', 'SolarizeAdd',
     'Cutout', 'RandAugment', 'Lighting', 'ColorJitter', 'RandomErasing', 'Pad',
-    'PackClsInputs'
+    'PackClsInputs', 'Albumentations'
 ]

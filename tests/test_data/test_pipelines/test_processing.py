@@ -1,12 +1,17 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
+import random
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import ANY, call, patch
 
+import albumentations
+import mmengine
 import numpy as np
 
-import mmcls.datasets  # noqa: F401,F403
 from mmcls.registry import TRANSFORMS
+from mmcls.utils import register_all_modules
+
+register_all_modules()
 
 
 def construct_toy_data():
@@ -356,3 +361,304 @@ class TestRandomErasing(TestCase):
             'RandomErasing(erase_prob=0.5, min_area_ratio=0.02, '
             'max_area_ratio=0.4, aspect_range=(0.3, 1.3), mode=const, '
             'fill_color=(255, 255, 255), fill_std=None)')
+
+
+class TestColorJitter(TestCase):
+
+    DEFAULT_ARGS = dict(
+        type='ColorJitter',
+        brightness=0.5,
+        contrast=0.5,
+        saturation=0.5,
+        hue=0.2)
+
+    def test_initialize(self):
+        cfg = dict(
+            type='ColorJitter',
+            brightness=(0.8, 1.2),
+            contrast=[0.5, 1.5],
+            saturation=0.,
+            hue=0.2)
+        transform = TRANSFORMS.build(cfg)
+        self.assertEqual(transform.brightness, (0.8, 1.2))
+        self.assertEqual(transform.contrast, (0.5, 1.5))
+        self.assertIsNone(transform.saturation)
+        self.assertEqual(transform.hue, (-0.2, 0.2))
+
+        with self.assertRaisesRegex(ValueError, 'If hue is a single number'):
+            cfg = {**self.DEFAULT_ARGS, 'hue': -0.2}
+            TRANSFORMS.build(cfg)
+
+        with self.assertRaisesRegex(TypeError, 'hue should be a single'):
+            cfg = {**self.DEFAULT_ARGS, 'hue': [0.5, 0.4, 0.2]}
+            TRANSFORMS.build(cfg)
+
+        logger = mmengine.MMLogger.get_current_instance()
+        with self.assertLogs(logger, 'WARN') as log:
+            cfg = {**self.DEFAULT_ARGS, 'hue': [-1, 0.4]}
+            transform = TRANSFORMS.build(cfg)
+        self.assertIn('ColorJitter hue values', log.output[0])
+        self.assertEqual(transform.hue, (-0.5, 0.4))
+
+    def test_transform(self):
+        ori_img = np.random.randint(0, 256, (256, 256, 3), np.uint8)
+        results = dict(img=copy.deepcopy(ori_img))
+
+        # test transform
+        cfg = copy.deepcopy(self.DEFAULT_ARGS)
+        transform = TRANSFORMS.build(cfg)
+        results = transform(results)
+        self.assertEqual(results['img'].dtype, ori_img.dtype)
+        assert not np.equal(results['img'], ori_img).all()
+
+        # test call with brightness, contrast and saturation are all 0
+        results = dict(img=copy.deepcopy(ori_img))
+        cfg = dict(
+            type='ColorJitter', brightness=0., contrast=0., saturation=0.)
+        transform = TRANSFORMS.build(cfg)
+        results = transform(results)
+        self.assertEqual(results['img'].dtype, ori_img.dtype)
+        assert np.equal(results['img'], ori_img).all()
+
+        # test call index
+        cfg = {**self.DEFAULT_ARGS, 'contrast': 0.}
+        transform = TRANSFORMS.build(cfg)
+        with patch('numpy.random', np.random.RandomState(0)):
+            mmcv_module = 'mmcls.datasets.pipelines.processing.mmcv'
+            call_list = [
+                call.adjust_color(ANY, alpha=ANY),
+                call.adjust_hue(ANY, ANY),
+                call.adjust_brightness(ANY, ANY)
+            ]
+            with patch(mmcv_module, autospec=True) as mock:
+                transform(results)
+                self.assertEqual(mock.mock_calls, call_list)
+
+    def test_repr(self):
+        cfg = copy.deepcopy(self.DEFAULT_ARGS)
+        transform = TRANSFORMS.build(cfg)
+        self.assertEqual(
+            repr(transform), 'ColorJitter(brightness=(0.5, 1.5), '
+            'contrast=(0.5, 1.5), saturation=(0.5, 1.5), hue=(-0.2, 0.2))')
+
+
+class TestLighting(TestCase):
+
+    def setUp(self):
+        EIGVAL = [0.2175, 0.0188, 0.0045]
+        EIGVEC = [
+            [-0.5836, -0.6948, 0.4203],
+            [-0.5808, -0.0045, -0.814],
+            [-0.5675, 0.7192, 0.4009],
+        ]
+        self.DEFAULT_ARGS = dict(
+            type='Lighting',
+            eigval=EIGVAL,
+            eigvec=EIGVEC,
+            alphastd=25.5,
+            to_rgb=False)
+
+    def test_assertion(self):
+        with self.assertRaises(AssertionError):
+            cfg = copy.deepcopy(self.DEFAULT_ARGS)
+            cfg['eigval'] = -1
+            TRANSFORMS.build(cfg)
+
+        with self.assertRaises(AssertionError):
+            cfg = copy.deepcopy(self.DEFAULT_ARGS)
+            cfg['eigvec'] = None
+            TRANSFORMS.build(cfg)
+
+        with self.assertRaises(AssertionError):
+            cfg = copy.deepcopy(self.DEFAULT_ARGS)
+            cfg['alphastd'] = 'Lighting'
+            TRANSFORMS.build(cfg)
+
+        with self.assertRaises(AssertionError):
+            cfg = copy.deepcopy(self.DEFAULT_ARGS)
+            cfg['eigvec'] = dict()
+            TRANSFORMS.build(cfg)
+
+        with self.assertRaises(AssertionError):
+            cfg = copy.deepcopy(self.DEFAULT_ARGS)
+            cfg['eigvec'] = [
+                [-0.5836, -0.6948, 0.4203],
+                [-0.5808, -0.0045, -0.814],
+                [-0.5675, 0.7192, 0.4009, 0.10],
+            ]
+            TRANSFORMS.build(cfg)
+
+    def test_transform(self):
+        ori_img = np.random.randint(0, 256, (256, 256, 3), np.uint8)
+        results = dict(img=copy.deepcopy(ori_img))
+
+        # Test transform with non-img-keyword result
+        with self.assertRaises(AssertionError):
+            cfg = copy.deepcopy(self.DEFAULT_ARGS)
+            lightening_module = TRANSFORMS.build(cfg)
+            empty_results = dict()
+            lightening_module(empty_results)
+
+        # test call
+        cfg = copy.deepcopy(self.DEFAULT_ARGS)
+        lightening_module = TRANSFORMS.build(cfg)
+        results = lightening_module(results)
+        self.assertEqual(results['img'].dtype, ori_img.dtype)
+        assert not np.equal(results['img'], ori_img).all()
+
+        # test call with alphastd == 0
+        results = dict(img=copy.deepcopy(ori_img))
+        cfg = copy.deepcopy(self.DEFAULT_ARGS)
+        cfg['alphastd'] = 0.0
+        lightening_module = TRANSFORMS.build(cfg)
+        results = lightening_module(results)
+        self.assertEqual(results['img'].dtype, ori_img.dtype)
+        assert np.equal(results['img'], ori_img).all()
+
+    def test_repr(self):
+        cfg = copy.deepcopy(self.DEFAULT_ARGS)
+        transform = TRANSFORMS.build(cfg)
+        self.assertEqual(
+            repr(transform), 'Lighting(eigval=[0.2175, 0.0188, 0.0045], eigvec'
+            '=[[-0.5836, -0.6948, 0.4203], [-0.5808, -0.0045, -0.814], ['
+            '-0.5675, 0.7192, 0.4009]], alphastd=25.5, to_rgb=False)')
+
+
+class TestAlbumentations(TestCase):
+    DEFAULT_ARGS = dict(
+        type='Albumentations', transforms=[dict(type='ChannelShuffle', p=1)])
+
+    def test_assertion(self):
+        # Test with non-list transforms
+        with self.assertRaises(AssertionError):
+            cfg = copy.deepcopy(self.DEFAULT_ARGS)
+            cfg['transforms'] = 1
+            TRANSFORMS.build(cfg)
+
+        # Test with non-dict transforms item.
+        with self.assertRaises(AssertionError):
+            cfg = copy.deepcopy(self.DEFAULT_ARGS)
+            cfg['transforms'] = [dict(p=1)]
+            TRANSFORMS.build(cfg)
+
+        # Test with dict transforms item without keyword 'type'.
+        with self.assertRaises(AssertionError):
+            cfg = copy.deepcopy(self.DEFAULT_ARGS)
+            cfg['transforms'] = [[]]
+            TRANSFORMS.build(cfg)
+
+        # Test with dict transforms item with wrong type.
+        with self.assertRaises(TypeError):
+            cfg = copy.deepcopy(self.DEFAULT_ARGS)
+            cfg['transforms'] = [dict(type=[])]
+            TRANSFORMS.build(cfg)
+
+        # Test with dict transforms item with wrong type.
+        with self.assertRaises(AssertionError):
+            cfg = copy.deepcopy(self.DEFAULT_ARGS)
+            cfg['keymap'] = []
+            TRANSFORMS.build(cfg)
+
+    def test_transform(self):
+        ori_img = np.random.randint(0, 256, (256, 256, 3), np.uint8)
+        results = dict(img=copy.deepcopy(ori_img))
+
+        # Test transform with non-img-keyword result
+        with self.assertRaises(AssertionError):
+            cfg = copy.deepcopy(self.DEFAULT_ARGS)
+            albu_module = TRANSFORMS.build(cfg)
+            empty_results = dict()
+            albu_module(empty_results)
+
+        # Test normal case
+        results = dict(img=copy.deepcopy(ori_img))
+        cfg = copy.deepcopy(self.DEFAULT_ARGS)
+        albu_module = TRANSFORMS.build(cfg)
+        ablu_result = albu_module(results)
+
+        # Test using 'Albu'
+        results = dict(img=copy.deepcopy(ori_img))
+        cfg = copy.deepcopy(self.DEFAULT_ARGS)
+        cfg['type'] = 'Albu'
+        albu_module = TRANSFORMS.build(cfg)
+        ablu_result = albu_module(results)
+
+        # Test with keymap
+        results = dict(img=copy.deepcopy(ori_img))
+        cfg = copy.deepcopy(self.DEFAULT_ARGS)
+        cfg['keymap'] = dict(img='image')
+        albu_module = TRANSFORMS.build(cfg)
+        ablu_result = albu_module(results)
+
+        # Test with nested transform
+        results = dict(img=copy.deepcopy(ori_img))
+        cfg = copy.deepcopy(self.DEFAULT_ARGS)
+        nested_transform_cfg = [
+            dict(
+                type='ShiftScaleRotate',
+                shift_limit=0.0625,
+                scale_limit=0.0,
+                rotate_limit=0,
+                interpolation=1,
+                p=0.5),
+            dict(
+                type='RandomBrightnessContrast',
+                brightness_limit=[0.1, 0.3],
+                contrast_limit=[0.1, 0.3],
+                p=0.2),
+            dict(type='ChannelShuffle', p=0.1),
+            dict(
+                type='OneOf',
+                transforms=[
+                    dict(type='Blur', blur_limit=3, p=1.0),
+                    dict(type='MedianBlur', blur_limit=3, p=1.0)
+                ],
+                p=0.1),
+        ]
+        cfg['transforms'] = nested_transform_cfg
+        mmcls_module = TRANSFORMS.build(cfg)
+        mmcls_module(results)
+
+        # test to be same with albumentations 3rd package
+        np.random.seed(0)
+        random.seed(0)
+        import albumentations as A
+        ablu_transform_3rd = A.Compose([
+            A.RandomCrop(width=256, height=256),
+            A.HorizontalFlip(p=0.5),
+            A.RandomBrightnessContrast(p=0.2),
+        ])
+        transformed_image_3rd = ablu_transform_3rd(
+            image=copy.deepcopy(ori_img))['image']
+
+        np.random.seed(0)
+        random.seed(0)
+        results = dict(img=copy.deepcopy(ori_img))
+        cfg = copy.deepcopy(self.DEFAULT_ARGS)
+        cfg['transforms'] = [
+            dict(type='RandomCrop', width=256, height=256),
+            dict(type='HorizontalFlip', p=0.5),
+            dict(type='RandomBrightnessContrast', p=0.2)
+        ]
+        mmcls_module = TRANSFORMS.build(cfg)
+        transformed_image_mmcls = mmcls_module(results)['img']
+        assert np.equal(transformed_image_3rd, transformed_image_mmcls).all()
+
+        # Test class obj case
+        results = dict(img=np.random.randint(0, 256, (200, 300, 3), np.uint8))
+        cfg = copy.deepcopy(self.DEFAULT_ARGS)
+        cfg['transforms'] = [
+            dict(type=albumentations.SmallestMaxSize, max_size=400, p=1)
+        ]
+        albu_module = TRANSFORMS.build(cfg)
+        ablu_result = albu_module(results)
+        assert 'img' in ablu_result
+        assert min(ablu_result['img'].shape[:2]) == 400
+        assert ablu_result['img_shape'] == (400, 600)
+
+    def test_repr(self):
+        cfg = copy.deepcopy(self.DEFAULT_ARGS)
+        transform = TRANSFORMS.build(cfg)
+        self.assertEqual(
+            repr(transform), "Albumentations(transforms=[{'type': "
+            "'ChannelShuffle', 'p': 1}])")

@@ -1,17 +1,18 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
 import math
+import numbers
 import random
 from numbers import Number
-from typing import Dict, Optional, Sequence, Tuple, Union
+from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 import mmcv
+import mmengine
 import numpy as np
 from mmcv.transforms import BaseTransform
 from mmcv.transforms.utils import cache_randomness
 
 from mmcls.registry import TRANSFORMS
-from .compose import Compose
 
 try:
     import albumentations
@@ -697,98 +698,204 @@ class Normalize(object):
 
 
 @TRANSFORMS.register_module()
-class ColorJitter(object):
+class ColorJitter(BaseTransform):
     """Randomly change the brightness, contrast and saturation of an image.
 
+    Modified from
+    https://github.com/pytorch/vision/blob/main/torchvision/transforms/transforms.py
+    Licensed under the BSD 3-Clause License.
+
+    Required Keys:
+
+    - img
+
+    Modified Keys:
+
+    - img
+
     Args:
-        brightness (float): How much to jitter brightness.
-            brightness_factor is chosen uniformly from
-            [max(0, 1 - brightness), 1 + brightness].
-        contrast (float): How much to jitter contrast.
-            contrast_factor is chosen uniformly from
-            [max(0, 1 - contrast), 1 + contrast].
-        saturation (float): How much to jitter saturation.
-            saturation_factor is chosen uniformly from
-            [max(0, 1 - saturation), 1 + saturation].
+        brightness (float | Sequence[float] (min, max)): How much to jitter
+            brightness. brightness_factor is chosen uniformly from
+            ``[max(0, 1 - brightness), 1 + brightness]`` or the given
+            ``[min, max]``. Should be non negative numbers. Defaults to 0.
+        contrast (float | Sequence[float] (min, max)): How much to jitter
+            contrast. contrast_factor is chosen uniformly from
+            ``[max(0, 1 - contrast), 1 + contrast]`` or the given
+            ``[min, max]``. Should be non negative numbers. Defaults to 0.
+        saturation (float | Sequence[float] (min, max)): How much to jitter
+            saturation. saturation_factor is chosen uniformly from
+            ``[max(0, 1 - saturation), 1 + saturation]`` or the given
+            ``[min, max]``. Should be non negative numbers. Defaults to 0.
+        hue (float | Sequence[float] (min, max)): How much to jitter hue.
+            hue_factor is chosen uniformly from ``[-hue, hue]`` (0 <= hue
+            <= 0.5) or the given ``[min, max]`` (-0.5 <= min <= max <= 0.5).
+            Defaults to 0.
     """
 
-    def __init__(self, brightness, contrast, saturation):
-        self.brightness = brightness
-        self.contrast = contrast
-        self.saturation = saturation
+    def __init__(self,
+                 brightness: Union[float, Sequence[float]] = 0.,
+                 contrast: Union[float, Sequence[float]] = 0.,
+                 saturation: Union[float, Sequence[float]] = 0.,
+                 hue: Union[float, Sequence[float]] = 0.):
+        self.brightness = self._set_range(brightness, 'brightness')
+        self.contrast = self._set_range(contrast, 'contrast')
+        self.saturation = self._set_range(saturation, 'saturation')
+        self.hue = self._set_range(hue, 'hue', center=0, bound=(-0.5, 0.5))
 
-    def __call__(self, results):
-        brightness_factor = random.uniform(0, self.brightness)
-        contrast_factor = random.uniform(0, self.contrast)
-        saturation_factor = random.uniform(0, self.saturation)
-        color_jitter_transforms = [
-            dict(
-                type='Brightness',
-                magnitude=brightness_factor,
-                prob=1.,
-                random_negative_prob=0.5),
-            dict(
-                type='Contrast',
-                magnitude=contrast_factor,
-                prob=1.,
-                random_negative_prob=0.5),
-            dict(
-                type='ColorTransform',
-                magnitude=saturation_factor,
-                prob=1.,
-                random_negative_prob=0.5)
-        ]
-        random.shuffle(color_jitter_transforms)
-        transform = Compose(color_jitter_transforms)
-        return transform(results)
+    def _set_range(self, value, name, center=1, bound=(0, float('inf'))):
+        """Set the range of magnitudes."""
+        if isinstance(value, numbers.Number):
+            if value < 0:
+                raise ValueError(
+                    f'If {name} is a single number, it must be non negative.')
+            value = (center - float(value), center + float(value))
+
+        if isinstance(value, (tuple, list)) and len(value) == 2:
+            if not bound[0] <= value[0] <= value[1] <= bound[1]:
+                value = np.clip(value, bound[0], bound[1])
+                from mmengine.logging import MMLogger
+                logger = MMLogger.get_current_instance()
+                logger.warning(f'ColorJitter {name} values exceed the bound '
+                               f'{bound}, clipped to the bound.')
+        else:
+            raise TypeError(f'{name} should be a single number '
+                            'or a list/tuple with length 2.')
+
+        # if value is 0 or (1., 1.) for brightness/contrast/saturation
+        # or (0., 0.) for hue, do nothing
+        if value[0] == value[1] == center:
+            value = None
+        else:
+            value = tuple(value)
+
+        return value
+
+    @cache_randomness
+    def _rand_params(self):
+        """Get random parameters including magnitudes and indices of
+        transforms."""
+        trans_inds = np.random.permutation(4)
+        b, c, s, h = (None, ) * 4
+
+        if self.brightness is not None:
+            b = np.random.uniform(self.brightness[0], self.brightness[1])
+        if self.contrast is not None:
+            c = np.random.uniform(self.contrast[0], self.contrast[1])
+        if self.saturation is not None:
+            s = np.random.uniform(self.saturation[0], self.saturation[1])
+        if self.hue is not None:
+            h = np.random.uniform(self.hue[0], self.hue[1])
+
+        return trans_inds, b, c, s, h
+
+    def transform(self, results: Dict) -> Dict:
+        """Transform function to resize images.
+
+        Args:
+            results (dict): Result dict from loading pipeline.
+
+        Returns:
+            dict: ColorJitter results, 'img' key is updated in result dict.
+        """
+        img = results['img']
+        trans_inds, brightness, contrast, saturation, hue = self._rand_params()
+
+        for index in trans_inds:
+            if index == 0 and brightness is not None:
+                img = mmcv.adjust_brightness(img, brightness)
+            elif index == 1 and contrast is not None:
+                img = mmcv.adjust_contrast(img, contrast)
+            elif index == 2 and saturation is not None:
+                img = mmcv.adjust_color(img, alpha=saturation)
+            elif index == 3 and hue is not None:
+                img = mmcv.adjust_hue(img, hue)
+
+        results['img'] = img
+        return results
 
     def __repr__(self):
+        """Print the basic information of the transform.
+
+        Returns:
+            str: Formatted string.
+        """
         repr_str = self.__class__.__name__
         repr_str += f'(brightness={self.brightness}, '
         repr_str += f'contrast={self.contrast}, '
-        repr_str += f'saturation={self.saturation})'
+        repr_str += f'saturation={self.saturation}, '
+        repr_str += f'hue={self.hue})'
         return repr_str
 
 
 @TRANSFORMS.register_module()
-class Lighting(object):
+class Lighting(BaseTransform):
     """Adjust images lighting using AlexNet-style PCA jitter.
 
+    Required Keys:
+
+    - img
+
+    Modified Keys:
+
+    - img
+
     Args:
-        eigval (list): the eigenvalue of the convariance matrix of pixel
-            values, respectively.
-        eigvec (list[list]): the eigenvector of the convariance matrix of pixel
-            values, respectively.
+        eigval (Sequence[float]): the eigenvalue of the convariance matrix
+            of pixel values, respectively.
+        eigvec (list[list]): the eigenvector of the convariance matrix of
+            pixel values, respectively.
         alphastd (float): The standard deviation for distribution of alpha.
-            Defaults to 0.1
-        to_rgb (bool): Whether to convert img to rgb.
+            Defaults to 0.1.
+        to_rgb (bool): Whether to convert img to rgb. Defaults to False.
     """
 
-    def __init__(self, eigval, eigvec, alphastd=0.1, to_rgb=True):
-        assert isinstance(eigval, list), \
-            f'eigval must be of type list, got {type(eigval)} instead.'
-        assert isinstance(eigvec, list), \
-            f'eigvec must be of type list, got {type(eigvec)} instead.'
+    def __init__(self,
+                 eigval: Sequence[float],
+                 eigvec: Sequence[float],
+                 alphastd: float = 0.1,
+                 to_rgb: bool = False):
+        assert isinstance(eigval, Sequence), \
+            f'eigval must be Sequence, got {type(eigval)} instead.'
+        assert isinstance(eigvec, Sequence), \
+            f'eigvec must be Sequence, got {type(eigvec)} instead.'
         for vec in eigvec:
-            assert isinstance(vec, list) and len(vec) == len(eigvec[0]), \
+            assert isinstance(vec, Sequence) and len(vec) == len(eigvec[0]), \
                 'eigvec must contains lists with equal length.'
+        assert isinstance(alphastd, float), 'alphastd should be of type ' \
+            f'float or int, got {type(alphastd)} instead.'
+
         self.eigval = np.array(eigval)
         self.eigvec = np.array(eigvec)
         self.alphastd = alphastd
         self.to_rgb = to_rgb
 
-    def __call__(self, results):
-        for key in results.get('img_fields', ['img']):
-            img = results[key]
-            results[key] = mmcv.adjust_lighting(
-                img,
-                self.eigval,
-                self.eigvec,
-                alphastd=self.alphastd,
-                to_rgb=self.to_rgb)
+    def transform(self, results: Dict) -> Dict:
+        """Transform function to resize images.
+
+        Args:
+            results (dict): Result dict from loading pipeline.
+
+        Returns:
+            dict: Lightinged results, 'img' key is updated in result dict.
+        """
+        assert 'img' in results, 'No `img` field in the input.'
+
+        img = results['img']
+        img_lighting = mmcv.adjust_lighting(
+            img,
+            self.eigval,
+            self.eigvec,
+            alphastd=self.alphastd,
+            to_rgb=self.to_rgb)
+        results['img'] = img_lighting.astype(img.dtype)
         return results
 
     def __repr__(self):
+        """Print the basic information of the transform.
+
+        Returns:
+            str: Formatted string.
+        """
         repr_str = self.__class__.__name__
         repr_str += f'(eigval={self.eigval.tolist()}, '
         repr_str += f'eigvec={self.eigvec.tolist()}, '
@@ -797,13 +904,24 @@ class Lighting(object):
         return repr_str
 
 
-@TRANSFORMS.register_module()
-class Albu(object):
-    """Albumentation augmentation.
+# 'Albu' is used in previous versions of mmcls, here is for compatibility
+# users can use both 'Albumentations' and 'Albu'.
+@TRANSFORMS.register_module(['Albumentations', 'Albu'])
+class Albumentations(BaseTransform):
+    """Wrapper to use augmentation from albumentations library.
 
-    Adds custom transformations from Albumentations library.
-    Please, visit `https://albumentations.readthedocs.io`
-    to get more information.
+    Required Keys:
+
+    - img
+
+    Modified Keys:
+
+    - img
+    - img_shape
+
+    Adds custom transformations from albumentations library.
+    More details can be found in
+    `Albumentations <https://albumentations.readthedocs.io>`_.
     An example of ``transforms`` is as followed:
 
     .. code-block::
@@ -831,31 +949,34 @@ class Albu(object):
         ]
 
     Args:
-        transforms (list[dict]): A list of albu transformations
-        keymap (dict): Contains {'input key':'albumentation-style key'}
+        transforms (List[Dict]): List of albumentations transform configs.
+        keymap (Optional[Dict]): Mapping of mmcls to albumentations fields,
+            in format {'input key':'albumentation-style key'}. Defaults to
+            None.
     """
 
-    def __init__(self, transforms, keymap=None, update_pad_shape=False):
+    def __init__(self, transforms: List[Dict], keymap: Optional[Dict] = None):
         if albumentations is None:
             raise RuntimeError('albumentations is not installed')
         else:
-            from albumentations import Compose
+            from albumentations import Compose as albu_Compose
+
+        assert isinstance(transforms, list), 'transforms must be a list.'
+        if keymap is not None:
+            assert isinstance(keymap, dict), 'keymap must be None or a dict. '
 
         self.transforms = transforms
-        self.filter_lost_elements = False
-        self.update_pad_shape = update_pad_shape
 
-        self.aug = Compose([self.albu_builder(t) for t in self.transforms])
+        self.aug = albu_Compose(
+            [self.albu_builder(t) for t in self.transforms])
 
         if not keymap:
-            self.keymap_to_albu = {
-                'img': 'image',
-            }
+            self.keymap_to_albu = dict(img='image')
         else:
             self.keymap_to_albu = keymap
         self.keymap_back = {v: k for k, v in self.keymap_to_albu.items()}
 
-    def albu_builder(self, cfg):
+    def albu_builder(self, cfg: Dict):
         """Import a module from albumentations.
 
         It inherits some of :func:`build_from_cfg` logic.
@@ -865,13 +986,12 @@ class Albu(object):
             obj: The constructed object.
         """
 
-        assert isinstance(cfg, dict) and 'type' in cfg
+        assert isinstance(cfg, dict) and 'type' in cfg, 'each item in ' \
+            "transforms must be a dict with keyword 'type'."
         args = cfg.copy()
 
         obj_type = args.pop('type')
-        if mmcv.is_str(obj_type):
-            if albumentations is None:
-                raise RuntimeError('albumentations is not installed')
+        if mmengine.is_str(obj_type):
             obj_cls = getattr(albumentations, obj_type)
         elif inspect.isclass(obj_type):
             obj_cls = obj_type
@@ -905,26 +1025,34 @@ class Albu(object):
             updated_dict[new_k] = d[k]
         return updated_dict
 
-    def __call__(self, results):
+    def transform(self, results: Dict) -> Dict:
+        """Transform function to perform albumentations transforms.
+
+        Args:
+            results (dict): Result dict from loading pipeline.
+
+        Returns:
+            dict: Transformed results, 'img' and 'img_shape' keys are
+                updated in result dict.
+        """
+        assert 'img' in results, 'No `img` field in the input.'
+
         # dict to albumentations format
         results = self.mapper(results, self.keymap_to_albu)
-
         results = self.aug(**results)
-
-        if 'gt_labels' in results:
-            if isinstance(results['gt_labels'], list):
-                results['gt_labels'] = np.array(results['gt_labels'])
-            results['gt_labels'] = results['gt_labels'].astype(np.int64)
 
         # back to the original format
         results = self.mapper(results, self.keymap_back)
-
-        # update final shape
-        if self.update_pad_shape:
-            results['pad_shape'] = results['img'].shape
+        results['img_shape'] = results['img'].shape[:2]
 
         return results
 
     def __repr__(self):
-        repr_str = self.__class__.__name__ + f'(transforms={self.transforms})'
+        """Print the basic information of the transform.
+
+        Returns:
+            str: Formatted string.
+        """
+        repr_str = self.__class__.__name__
+        repr_str += f'(transforms={repr(self.transforms)})'
         return repr_str
