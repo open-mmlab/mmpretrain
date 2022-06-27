@@ -779,8 +779,6 @@ class FashionMNIST(TestMNIST):
     DATASET_TYPE = 'FashionMNIST'
 
 
-"""Temporarily disabled.
-
 class TestCUB(TestBaseDataset):
     DATASET_TYPE = 'CUB'
 
@@ -790,57 +788,59 @@ class TestCUB(TestBaseDataset):
 
         tmpdir = tempfile.TemporaryDirectory()
         cls.tmpdir = tmpdir
-        cls.data_prefix = tmpdir.name
-        cls.ann_file = osp.join(cls.data_prefix, 'ann_file.txt')
-        cls.image_class_labels_file = osp.join(cls.data_prefix, 'classes.txt')
-        cls.train_test_split_file = osp.join(cls.data_prefix, 'split.txt')
-        cls.train_test_split_file2 = osp.join(cls.data_prefix, 'split2.txt')
+        cls.root = tmpdir.name
+        cls.ann_file = 'ann_file.txt'
+        cls.image_folder = 'images'
+        cls.image_class_labels_file = 'classes.txt'
+        cls.train_test_split_file = 'split.txt'
+        cls.train_test_split_file2 = 'split2.txt'
         cls.DEFAULT_ARGS = dict(
-            data_prefix=cls.data_prefix,
+            data_root=cls.root,
+            test_mode=False,
+            data_prefix=cls.image_folder,
             pipeline=[],
             ann_file=cls.ann_file,
             image_class_labels_file=cls.image_class_labels_file,
             train_test_split_file=cls.train_test_split_file)
 
-        with open(cls.ann_file, 'w') as f:
+        with open(osp.join(cls.root, cls.ann_file), 'w') as f:
             f.write('\n'.join([
                 '1 1.txt',
                 '2 2.txt',
                 '3 3.txt',
             ]))
 
-        with open(cls.image_class_labels_file, 'w') as f:
+        with open(osp.join(cls.root, cls.image_class_labels_file), 'w') as f:
             f.write('\n'.join([
                 '1 2',
                 '2 3',
                 '3 1',
             ]))
 
-        with open(cls.train_test_split_file, 'w') as f:
+        with open(osp.join(cls.root, cls.train_test_split_file), 'w') as f:
             f.write('\n'.join([
                 '1 0',
                 '2 1',
                 '3 1',
             ]))
 
-        with open(cls.train_test_split_file2, 'w') as f:
+        with open(osp.join(cls.root, cls.train_test_split_file2), 'w') as f:
             f.write('\n'.join([
                 '1 0',
                 '2 1',
             ]))
 
-    def test_load_annotations(self):
+    def test_load_data_list(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
         # Test default behavior
         dataset = dataset_class(**self.DEFAULT_ARGS)
         self.assertEqual(len(dataset), 2)
-        self.assertEqual(dataset.CLASSES, dataset_class.CLASSES)
 
         data_info = dataset[0]
-        np.testing.assert_equal(data_info['img_prefix'], self.data_prefix)
-        np.testing.assert_equal(data_info['img_info'], {'filename': '2.txt'})
-        np.testing.assert_equal(data_info['gt_label'], 3 - 1)
+        self.assertEqual(data_info['img_path'],
+                         osp.join(self.root, self.image_folder, '2.txt'))
+        self.assertEqual(data_info['gt_label'], 3 - 1)
 
         # Test with test_mode=True
         cfg = {**self.DEFAULT_ARGS, 'test_mode': True}
@@ -848,19 +848,26 @@ class TestCUB(TestBaseDataset):
         self.assertEqual(len(dataset), 1)
 
         data_info = dataset[0]
-        np.testing.assert_equal(data_info['img_prefix'], self.data_prefix)
-        np.testing.assert_equal(data_info['img_info'], {'filename': '1.txt'})
-        np.testing.assert_equal(data_info['gt_label'], 2 - 1)
+        self.assertEqual(data_info['img_path'],
+                         osp.join(self.root, self.image_folder, '1.txt'))
+        self.assertEqual(data_info['gt_label'], 2 - 1)
 
         # Test if the numbers of line are not match
         cfg = {
             **self.DEFAULT_ARGS, 'train_test_split_file':
             self.train_test_split_file2
         }
-        with self.assertRaisesRegex(AssertionError, 'should have same length'):
+        with self.assertRaisesRegex(AssertionError,
+                                    'sample_ids should be same'):
             dataset_class(**cfg)
+
+    def test_extra_repr(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+        cfg = {**self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+
+        self.assertIn(f'Root of dataset: \t{dataset.data_root}', repr(dataset))
 
     @classmethod
     def tearDownClass(cls):
         cls.tmpdir.cleanup()
-"""

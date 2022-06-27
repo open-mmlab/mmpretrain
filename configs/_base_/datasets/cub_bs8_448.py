@@ -22,19 +22,14 @@ test_pipeline = [
     dict(type='PackClsInputs'),
 ]
 
-common_data_cfg = dict(
-    type=dataset_type,
-    data_root='data/CUB_200_2011',
-    ann_file='images.txt',
-    image_class_labels_file='image_class_labels.txt',
-    train_test_split_file='train_test_split.txt',
-    data_prefix='images',
-)
-
 train_dataloader = dict(
     batch_size=8,
     num_workers=2,
-    dataset=dict(**common_data_cfg, test_mode=False, pipeline=train_pipeline),
+    dataset=dict(
+        type=dataset_type,
+        data_root='data/CUB_200_2011',
+        test_mode=False,
+        pipeline=train_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=True),
     persistent_workers=True,
 )
@@ -42,7 +37,11 @@ train_dataloader = dict(
 val_dataloader = dict(
     batch_size=8,
     num_workers=2,
-    dataset=dict(**common_data_cfg, test_mode=True, pipeline=test_pipeline),
+    dataset=dict(
+        type=dataset_type,
+        data_root='data/CUB_200_2011',
+        test_mode=True,
+        pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
     persistent_workers=True,
 )
