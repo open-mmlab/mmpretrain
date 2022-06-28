@@ -24,7 +24,7 @@ train_pipeline = [
     dict(
         type='RandomResizedCrop',
         scale=224,
-        backend='cv2',
+        backend='pillow',
         interpolation='bicubic'),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(
@@ -53,7 +53,7 @@ test_pipeline = [
         type='ResizeEdge',
         scale=256,
         edge='short',
-        backend='cv2',
+        backend='pillow',
         interpolation='bicubic'),
     dict(type='CenterCrop', crop_size=224),
     dict(type='PackClsInputs'),
