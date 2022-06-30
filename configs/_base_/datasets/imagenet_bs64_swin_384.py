@@ -21,12 +21,7 @@ train_pipeline = [
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(
-        type='ResizeEdge',
-        scale=256,
-        edge='short',
-        backend='pillow',
-        interpolation='bicubic'),
+    dict(type='Resize', scale=384, backend='pillow', interpolation='bicubic'),
     dict(type='PackClsInputs'),
 ]
 

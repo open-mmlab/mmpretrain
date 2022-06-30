@@ -11,4 +11,24 @@ optim_wrapper = dict(
     clip_grad=dict(max_norm=5.0),
 )
 
+param_scheduler = [
+    # warm up learning rate scheduler
+    dict(
+        type='LinearLR',
+        start_factor=1e-3,
+        by_epoch=True,
+        begin=0,
+        end=20,
+        # update by iter
+        convert_to_iter_based=True),
+    # main learning rate scheduler
+    dict(
+        type='CosineAnnealingLR',
+        T_max=130,
+        eta_min=1e-5,
+        by_epoch=True,
+        begin=20,
+        end=150)
+]
+
 train_cfg = dict(by_epoch=True, max_epochs=150)
