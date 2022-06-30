@@ -7,7 +7,7 @@ param_scheduler = [
     dict(
         type='LinearLR',
         start_factor=0.0001,
-        by_epoch=False,
+        by_epoch=True,
         begin=0,
         end=5,
         # update by iter
