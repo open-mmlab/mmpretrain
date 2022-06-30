@@ -38,10 +38,9 @@ class BaseDataset(_BaseDataset):
         ann_file (str): Annotation file path.
         metainfo (dict, optional): Meta information for dataset, such as class
             information. Defaults to None.
-        data_root (str, optional): The root directory for ``data_prefix`` and
-            ``ann_file``. Defaults to None.
-        data_prefix (str | dict, optional): Prefix for training data. Defaults
-            to None.
+        data_root (str): The root directory for ``data_prefix`` and
+            ``ann_file``. Defaults to ''.
+        data_prefix (str | dict): Prefix for training data. Defaults to ''.
         filter_cfg (dict, optional): Config for filter data. Defaults to None.
         indices (int or Sequence[int], optional): Support using first few
             data in annotation file to facilitate training/testing on a smaller
@@ -74,8 +73,8 @@ class BaseDataset(_BaseDataset):
     def __init__(self,
                  ann_file: str,
                  metainfo: Optional[dict] = None,
-                 data_root: Optional[str] = None,
-                 data_prefix: Union[str, dict, None] = None,
+                 data_root: str = '',
+                 data_prefix: Union[str, dict] = '',
                  filter_cfg: Optional[dict] = None,
                  indices: Optional[Union[int, Sequence[int]]] = None,
                  serialize_data: bool = True,
@@ -86,8 +85,6 @@ class BaseDataset(_BaseDataset):
                  classes: Union[str, Sequence[str], None] = None):
         if isinstance(data_prefix, str):
             data_prefix = dict(img_path=expanduser(data_prefix))
-        elif data_prefix is None:
-            data_prefix = dict(img_path=None)
 
         ann_file = expanduser(ann_file)
         metainfo = self._compat_classes(metainfo, classes)

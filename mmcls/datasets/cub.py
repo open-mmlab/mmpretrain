@@ -41,7 +41,7 @@ class CUB(BaseDataset):
              to use the training set or test set.
         ann_file (str, optional): Annotation file path, path relative to
             ``data_root``. Defaults to 'images.txt'.
-        data_prefix (str, optional): Prefix for iamges, path relative to
+        data_prefix (str): Prefix for iamges, path relative to
             ``data_root``. Defaults to 'images'.
         image_class_labels_file (str, optional): The label file, path
             relative to ``data_root``. Defaults to 'image_class_labels.txt'.

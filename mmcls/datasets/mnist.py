@@ -27,8 +27,8 @@ class MNIST(BaseDataset):
             It determines to use the training set or test set.
         metainfo (dict, optional): Meta information for dataset, such as
             categories information. Defaults to None.
-        data_root (str, optional): The root directory for ``data_prefix``.
-            Defaults to None.
+        data_root (str): The root directory for ``data_prefix``.
+            Defaults to ''.
         download (bool): Whether to download the dataset if not exists.
             Defaults to True.
         **kwargs: Other keyword arguments in :class:`BaseDataset`.
@@ -51,7 +51,7 @@ class MNIST(BaseDataset):
                  data_prefix: str,
                  test_mode: bool,
                  metainfo: Optional[dict] = None,
-                 data_root: Optional[str] = None,
+                 data_root: str = '',
                  download: bool = True,
                  **kwargs):
         self.download = download
@@ -148,8 +148,8 @@ class FashionMNIST(MNIST):
             It determines to use the training set or test set.
         metainfo (dict, optional): Meta information for dataset, such as
             categories information. Defaults to None.
-        data_root (str, optional): The root directory for ``data_prefix``.
-            Defaults to None.
+        data_root (str): The root directory for ``data_prefix``.
+            Defaults to ''.
         download (bool): Whether to download the dataset if not exists.
             Defaults to True.
         **kwargs: Other keyword arguments in :class:`BaseDataset`.

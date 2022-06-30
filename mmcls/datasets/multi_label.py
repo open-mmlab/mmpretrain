@@ -42,10 +42,9 @@ class MultiLabelDataset(BaseDataset):
         ann_file (str): Annotation file path.
         metainfo (dict, optional): Meta information for dataset, such as class
             information. Defaults to None.
-        data_root (str, optional): The root directory for ``data_prefix`` and
-            ``ann_file``. Defaults to None.
-        data_prefix (str | dict, optional): Prefix for training data. Defaults
-            to None.
+        data_root (str): The root directory for ``data_prefix`` and
+            ``ann_file``. Defaults to ''.
+        data_prefix (str | dict): Prefix for training data. Defaults to ''.
         filter_cfg (dict, optional): Config for filter data. Defaults to None.
         indices (int or Sequence[int], optional): Support using first few
             data in annotation file to facilitate training/testing on a smaller

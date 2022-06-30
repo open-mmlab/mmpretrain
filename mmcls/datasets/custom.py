@@ -124,13 +124,12 @@ class CustomDataset(BaseDataset):
     first way, otherwise, try the second way.
 
     Args:
-        ann_file (str, optional): Annotation file path. Defaults to None.
+        ann_file (str): Annotation file path. Defaults to ''.
         metainfo (dict, optional): Meta information for dataset, such as class
             information. Defaults to None.
-        data_root (str, optional): The root directory for ``data_prefix`` and
-            ``ann_file``. Defaults to None.
-        data_prefix (str | dict, optional): Prefix for the data. Defaults
-            to None.
+        data_root (str): The root directory for ``data_prefix`` and
+            ``ann_file``. Defaults to ''.
+        data_prefix (str | dict): Prefix for the data. Defaults to ''.
         extensions (Sequence[str]): A sequence of allowed extensions. Defaults
             to ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif').
         lazy_init (bool): Whether to load annotation during instantiation.
@@ -142,16 +141,15 @@ class CustomDataset(BaseDataset):
     """
 
     def __init__(self,
-                 ann_file: Optional[str] = None,
+                 ann_file: str = '',
                  metainfo: Optional[dict] = None,
-                 data_root: Optional[str] = None,
-                 data_prefix: Union[str, dict, None] = None,
+                 data_root: str = '',
+                 data_prefix: Union[str, dict] = '',
                  extensions: Sequence[str] = ('.jpg', '.jpeg', '.png', '.ppm',
                                               '.bmp', '.pgm', '.tif'),
                  lazy_init: bool = False,
                  **kwargs):
-        assert (ann_file is not None or data_prefix is not None
-                or data_root is not None), \
+        assert (ann_file or data_prefix or data_root), \
             'One of `ann_file`, `data_root` and `data_prefix` must '\
             'be specified.'
 
@@ -159,16 +157,13 @@ class CustomDataset(BaseDataset):
 
         super().__init__(
             # The base class requires string ann_file but this class doesn't
-            ann_file=ann_file if ann_file is not None else '',
+            ann_file=ann_file,
             metainfo=metainfo,
             data_root=data_root,
             data_prefix=data_prefix,
             # Force to lazy_init for some modification before loading data.
             lazy_init=True,
             **kwargs)
-
-        if ann_file is None:
-            self.ann_file = None
 
         # Full initialize the dataset.
         if not lazy_init:
@@ -210,17 +205,17 @@ class CustomDataset(BaseDataset):
 
     def load_data_list(self):
         """Load image paths and gt_labels."""
-        if self.img_prefix is not None:
+        if self.img_prefix:
             file_client = FileClient.infer_client(uri=self.img_prefix)
 
-        if self.ann_file is None:
+        if not self.ann_file:
             samples = self._find_samples(file_client)
         else:
             lines = mmengine.list_from_file(self.ann_file)
             samples = [x.strip().rsplit(' ', 1) for x in lines]
 
-        def add_prefix(filename, prefix=None):
-            if prefix is None:
+        def add_prefix(filename, prefix=''):
+            if not prefix:
                 return filename
             else:
                 return file_client.join_path(prefix, filename)

@@ -134,7 +134,7 @@ class TestCustomDataset(TestBaseDataset):
         cfg = {
             **self.DEFAULT_ARGS,
             'data_prefix': ASSETS_ROOT,
-            'ann_file': None,
+            'ann_file': '',
         }
         dataset = dataset_class(**cfg)
         self.assertEqual(len(dataset), 3)
@@ -184,8 +184,8 @@ class TestCustomDataset(TestBaseDataset):
         # test load with absolute ann_file
         cfg = {
             **self.DEFAULT_ARGS,
-            'data_root': None,
-            'data_prefix': None,
+            'data_root': '',
+            'data_prefix': '',
             'ann_file': osp.join(ASSETS_ROOT, 'ann.txt'),
         }
         dataset = dataset_class(**cfg)
@@ -206,7 +206,7 @@ class TestCustomDataset(TestBaseDataset):
         # test extensions filter
         cfg = {
             **self.DEFAULT_ARGS, 'data_prefix': dict(img_path=ASSETS_ROOT),
-            'ann_file': None,
+            'ann_file': '',
             'extensions': ('.txt', )
         }
         with self.assertRaisesRegex(RuntimeError,
@@ -215,7 +215,7 @@ class TestCustomDataset(TestBaseDataset):
 
         cfg = {
             **self.DEFAULT_ARGS, 'data_prefix': ASSETS_ROOT,
-            'ann_file': None,
+            'ann_file': '',
             'extensions': ('.jpeg', )
         }
         with self.assertLogs(mmcls_logger, 'WARN') as log:
@@ -233,7 +233,7 @@ class TestCustomDataset(TestBaseDataset):
             **self.DEFAULT_ARGS,
             'data_prefix': ASSETS_ROOT,
             'classes': ('apple', 'banana'),
-            'ann_file': None,
+            'ann_file': '',
         }
         dataset = dataset_class(**cfg)
         self.assertEqual(dataset.CLASSES, ('apple', 'banana'))
@@ -256,7 +256,7 @@ class TestImageNet(TestCustomDataset):
         cfg = {
             **self.DEFAULT_ARGS,
             'data_prefix': ASSETS_ROOT,
-            'ann_file': None,
+            'ann_file': '',
         }
         with self.assertRaisesRegex(
                 AssertionError, r"\(2\) doesn't match .* classes \(1000\)"):
@@ -267,7 +267,7 @@ class TestImageNet(TestCustomDataset):
             **self.DEFAULT_ARGS,
             'data_prefix': ASSETS_ROOT,
             'classes': ['cat', 'dog'],
-            'ann_file': None,
+            'ann_file': '',
         }
         dataset = dataset_class(**cfg)
         self.assertEqual(len(dataset), 3)
@@ -290,7 +290,7 @@ class TestImageNet21k(TestCustomDataset):
             dataset_class(**cfg)
 
         # Warn about ann_file
-        cfg = {**self.DEFAULT_ARGS, 'ann_file': None}
+        cfg = {**self.DEFAULT_ARGS, 'ann_file': ''}
         with self.assertLogs(mmcls_logger, 'WARN') as log:
             dataset_class(**cfg)
         self.assertIn('specify the `ann_file`', log.output[0])
