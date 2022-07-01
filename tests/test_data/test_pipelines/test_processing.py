@@ -106,7 +106,7 @@ class TestRandomCrop(TestCase):
             'pad_if_needed=False, pad_val=0, padding_mode=constant)')
 
 
-class RandomResizedCrop(TestCase):
+class TestRandomResizedCrop(TestCase):
 
     def test_assertion(self):
         with self.assertRaises(AssertionError):
@@ -171,6 +171,14 @@ class RandomResizedCrop(TestCase):
         transform = TRANSFORMS.build(cfg)
         results = transform(results)
         self.assertTupleEqual(results['img'].shape, (224, 224, 3))
+        # test fall back with extreme low in_ratio
+        results = dict(img=np.random.randint(0, 256, (10, 256, 3), np.uint8))
+        results = transform(results)
+        self.assertTupleEqual(results['img'].shape, (224, 224, 3))
+        # test fall back with extreme low in_ratio
+        results = dict(img=np.random.randint(0, 256, (256, 10, 3), np.uint8))
+        results = transform(results)
+        self.assertTupleEqual(results['img'].shape, (224, 224, 3))
 
         # test large crop size.
         results = dict(img=np.random.randint(0, 256, (256, 256, 3), np.uint8))
@@ -186,6 +194,89 @@ class RandomResizedCrop(TestCase):
             repr(transform), 'RandomResizedCrop(scale=(224, 224), '
             'crop_ratio_range=(0.08, 1.0), aspect_ratio_range=(0.75, 1.3333), '
             'max_attempts=10, interpolation=bilinear, backend=cv2)')
+
+
+class TestEfficientNetRandomCrop(TestCase):
+
+    def test_assertion(self):
+        with self.assertRaises(AssertionError):
+            cfg = dict(type='EfficientNetRandomCrop', scale=(1, 1))
+            TRANSFORMS.build(cfg)
+
+        with self.assertRaises(AssertionError):
+            cfg = dict(
+                type='EfficientNetRandomCrop', scale=224, min_covered=-1)
+            TRANSFORMS.build(cfg)
+
+        with self.assertRaises(AssertionError):
+            cfg = dict(
+                type='EfficientNetRandomCrop', scale=224, crop_padding=-1)
+            TRANSFORMS.build(cfg)
+
+    def test_transform(self):
+        results = dict(img=np.random.randint(0, 256, (256, 256, 3), np.uint8))
+
+        # test random crop by default.
+        cfg = dict(type='EfficientNetRandomCrop', scale=224)
+        transform = TRANSFORMS.build(cfg)
+        results = transform(results)
+        self.assertTupleEqual(results['img'].shape, (224, 224, 3))
+
+        # test crop_ratio_range.
+        cfg = dict(
+            type='EfficientNetRandomCrop',
+            scale=224,
+            crop_ratio_range=(0.5, 0.8))
+        transform = TRANSFORMS.build(cfg)
+        results = transform(results)
+        self.assertTupleEqual(results['img'].shape, (224, 224, 3))
+
+        # test aspect_ratio_range.
+        cfg = dict(
+            type='EfficientNetRandomCrop',
+            scale=224,
+            aspect_ratio_range=(0.5, 0.8))
+        transform = TRANSFORMS.build(cfg)
+        results = transform(results)
+        self.assertTupleEqual(results['img'].shape, (224, 224, 3))
+
+        # test max_attempts.
+        cfg = dict(type='EfficientNetRandomCrop', scale=224, max_attempts=0)
+        transform = TRANSFORMS.build(cfg)
+        results = transform(results)
+        self.assertTupleEqual(results['img'].shape, (224, 224, 3))
+
+        # test min_covered.
+        cfg = dict(type='EfficientNetRandomCrop', scale=224, min_covered=.9)
+        transform = TRANSFORMS.build(cfg)
+        results = transform(results)
+        self.assertTupleEqual(results['img'].shape, (224, 224, 3))
+
+        # test crop_padding.
+        cfg = dict(
+            type='EfficientNetRandomCrop',
+            scale=224,
+            min_covered=0.9,
+            crop_padding=10)
+        transform = TRANSFORMS.build(cfg)
+        results = transform(results)
+        self.assertTupleEqual(results['img'].shape, (224, 224, 3))
+
+        # test large crop size.
+        results = dict(img=np.random.randint(0, 256, (256, 256, 3), np.uint8))
+        cfg = dict(type='EfficientNetRandomCrop', scale=300)
+        transform = TRANSFORMS.build(cfg)
+        results = transform(results)
+        self.assertTupleEqual(results['img'].shape, (300, 300, 3))
+
+    def test_repr(self):
+        cfg = dict(type='EfficientNetRandomCrop', scale=224)
+        transform = TRANSFORMS.build(cfg)
+        self.assertEqual(
+            repr(transform), 'EfficientNetRandomCrop(scale=(224, 224), '
+            'crop_ratio_range=(0.08, 1.0), aspect_ratio_range=(0.75, 1.3333), '
+            'max_attempts=10, interpolation=bicubic, backend=cv2, '
+            'min_covered=0.1, crop_padding=32)')
 
 
 class TestResizeEdge(TestCase):
@@ -228,6 +319,53 @@ class TestResizeEdge(TestCase):
         self.assertEqual(
             repr(transform), 'ResizeEdge(scale=224, edge=height, backend=cv2, '
             'interpolation=bilinear)')
+
+
+class TestEfficientNetCenterCrop(TestCase):
+
+    def test_assertion(self):
+        with self.assertRaises(AssertionError):
+            cfg = dict(type='EfficientNetCenterCrop', crop_size=(1, 1))
+            TRANSFORMS.build(cfg)
+
+        with self.assertRaises(AssertionError):
+            cfg = dict(type='EfficientNetCenterCrop', crop_size=-1)
+            TRANSFORMS.build(cfg)
+
+        with self.assertRaises(AssertionError):
+            cfg = dict(
+                type='EfficientNetCenterCrop', crop_size=224, crop_padding=-1)
+            TRANSFORMS.build(cfg)
+
+    def test_transform(self):
+        results = dict(img=np.random.randint(0, 256, (256, 256, 3), np.uint8))
+
+        # test random crop by default.
+        cfg = dict(type='EfficientNetCenterCrop', crop_size=224)
+        transform = TRANSFORMS.build(cfg)
+        results = transform(results)
+        self.assertTupleEqual(results['img'].shape, (224, 224, 3))
+
+        # test crop_padding.
+        cfg = dict(
+            type='EfficientNetCenterCrop', crop_size=224, crop_padding=10)
+        transform = TRANSFORMS.build(cfg)
+        results = transform(results)
+        self.assertTupleEqual(results['img'].shape, (224, 224, 3))
+
+        # test large crop size.
+        results = dict(img=np.random.randint(0, 256, (256, 256, 3), np.uint8))
+        cfg = dict(type='EfficientNetCenterCrop', crop_size=300)
+        transform = TRANSFORMS.build(cfg)
+        results = transform(results)
+        self.assertTupleEqual(results['img'].shape, (300, 300, 3))
+
+    def test_repr(self):
+        cfg = dict(type='EfficientNetCenterCrop', crop_size=224)
+        transform = TRANSFORMS.build(cfg)
+        self.assertEqual(
+            repr(transform), 'EfficientNetCenterCrop(crop_size=224, '
+            'crop_padding=32, interpolation=bicubic, backend=cv2)')
 
 
 class TestRandomErasing(TestCase):
