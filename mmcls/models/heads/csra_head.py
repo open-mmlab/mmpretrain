@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
 import torch.nn as nn
+from mmcv.runner import BaseModule
 
 from ..builder import HEADS
 from ..utils import is_tracing
@@ -26,7 +27,7 @@ class CSRAClsHead(ClsHead):
         init_cfg (dict | optional): The extra init config of layers.
             Defaults to use dict(type='Normal', layer='Linear', std=0.01).
     """
-    temp_settings = {  # softmax temperature settings
+    temperature_settings = {  # softmax temperature settings
         1: [1],
         2: [1, 99],
         4: [1, 2, 4, 99],
@@ -39,6 +40,7 @@ class CSRAClsHead(ClsHead):
                  in_channels,
                  num_heads,
                  lam,
+                 difficult_as_neg=False,
                  loss=dict(
                      type='CrossEntropyLoss',
                      use_sigmoid=True,
@@ -47,11 +49,15 @@ class CSRAClsHead(ClsHead):
                  init_cfg=dict(type='Normal', layer='Linear', std=0.01),
                  *args,
                  **kwargs):
+        assert num_heads in self.temperature_settings.keys(
+        ), 'The num of heads is not in temperature setting.'
+        assert lam > 0, 'Lambda should be between 0 and 1.'
         super(CSRAClsHead, self).__init__(
             init_cfg=init_cfg, loss=loss, *args, **kwargs)
-        self.temp_list = self.temp_settings[num_heads]
-        self.multi_head = nn.ModuleList([
-            CSRAModule(in_channels, num_classes, self.temp_list[i], lam)
+        self.difficult_as_neg = difficult_as_neg
+        self.temp_list = self.temperature_settings[num_heads]
+        self.csra_heads = nn.ModuleList([
+            CSRAModule(num_classes, in_channels, self.temp_list[i], lam)
             for i in range(num_heads)
         ])
 
@@ -70,7 +76,7 @@ class CSRAClsHead(ClsHead):
     def simple_test(self, x, post_process=True, **kwargs):
         logit = 0.
         x = self.pre_logits(x)
-        for head in self.multi_head:
+        for head in self.csra_heads:
             logit += head(x)
         if post_process:
             return self.post_process(logit)
@@ -80,20 +86,39 @@ class CSRAClsHead(ClsHead):
     def forward_train(self, x, gt_label, **kwargs):
         logit = 0.
         x = self.pre_logits(x)
-        for head in self.multi_head:
+        for head in self.csra_heads:
             logit += head(x)
         gt_label = gt_label.type_as(logit)
-        losses = self.loss(logit, gt_label, **kwargs)
+        if self.difficult_as_neg:
+            # map difficult examples to zeros
+            gt_label[gt_label < 0] = 0
+        else:
+            # map difficult examples to positive ones
+            gt_label = torch.abs(gt_label)
+        _gt_label = torch.abs(gt_label)
+        losses = self.loss(logit, _gt_label, **kwargs)
         return losses
 
 
-class CSRAModule(nn.Module):  # one basic block
+class CSRAModule(BaseModule):
+    """Basic module of CSRA with different temperature.
 
-    def __init__(self, input_dim, num_classes, T, lam):
-        super(CSRAModule, self).__init__()
+    Args:
+        num_classes (int): Number of categories.
+        in_channels (int): Number of channels in the input feature map.
+        T (int): Temperature setting.
+        lam (float): Lambda that combines global average and max pooling
+            scores.
+        init_cfg (dict | optional): The extra init config of layers.
+            Defaults to use dict(type='Normal', layer='Linear', std=0.01).
+    """
+
+    def __init__(self, num_classes, in_channels, T, lam, init_cfg=None):
+
+        super(CSRAModule, self).__init__(init_cfg=init_cfg)
         self.T = T  # temperature
         self.lam = lam  # Lambda
-        self.head = nn.Conv2d(input_dim, num_classes, 1, bias=False)
+        self.head = nn.Conv2d(in_channels, num_classes, 1, bias=False)
         self.softmax = nn.Softmax(dim=2)
 
     def forward(self, x):
