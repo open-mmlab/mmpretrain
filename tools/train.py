@@ -10,6 +10,7 @@ import mmcv
 import torch
 import torch.distributed as dist
 from mmcv import Config, DictAction
+from mmcv.device import get_device
 from mmcv.runner import get_dist_info, init_dist
 
 from mmcls import __version__
@@ -162,7 +163,8 @@ def main():
     logger.info(f'Config:\n{cfg.pretty_text}')
 
     # set random seeds
-    seed = init_random_seed(args.seed)
+    cfg.device = args.device or get_device()
+    seed = init_random_seed(args.seed, device=cfg.device)
     seed = seed + dist.get_rank() if args.diff_seed else seed
     logger.info(f'Set random seed to {seed}, '
                 f'deterministic: {args.deterministic}')
@@ -195,7 +197,7 @@ def main():
         distributed=distributed,
         validate=(not args.no_validate),
         timestamp=timestamp,
-        device=args.device,
+        device=cfg.device,
         meta=meta)
 
 
