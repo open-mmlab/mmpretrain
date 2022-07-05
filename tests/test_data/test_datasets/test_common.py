@@ -7,6 +7,7 @@ from unittest import TestCase
 from unittest.mock import patch
 
 import numpy as np
+import scipy.io as sio
 import torch
 
 from mmcls.datasets import DATASETS
@@ -757,6 +758,164 @@ class TestCUB(TestBaseDataset):
         }
         with self.assertRaisesRegex(AssertionError, 'should have same length'):
             dataset_class(**cfg)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmpdir.cleanup()
+
+
+class TestStanfordCar(TestBaseDataset):
+    DATASET_TYPE = 'StanfordCar'
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+
+        tmpdir = tempfile.TemporaryDirectory()
+        cls.tmpdir = tmpdir
+        cls.data_prefix = tmpdir.name
+        cls.ann_file = osp.join(cls.data_prefix, 'cars_annos.mat')
+        cls.train_ann_file = osp.join(cls.data_prefix, 'cars_train_annos.mat')
+        cls.test_ann_file = osp.join(cls.data_prefix, 'cars_test_annos.mat')
+        cls.DEFAULT_ARGS = dict(
+            data_prefix=cls.data_prefix,
+            pipeline=[],
+            ann_file=cls.ann_file,
+            train_ann_file=None,
+            test_ann_file=None)
+
+        sio.savemat(
+            cls.ann_file, {
+                'annotations': [(
+                    (np.array(['001.jpg']), np.array([1]), np.array(
+                        [10]), np.array([20]), np.array([50]), 1, 0),
+                    (np.array(['002.jpg']), np.array([2]), np.array(
+                        [15]), np.array([240]), np.array([250]), 200, 0),
+                    (np.array(['012.jpg']), np.array([89]), np.array(
+                        [150]), np.array([278]), np.array([388]), 150, 1),
+                )]
+            })
+
+        sio.savemat(
+            cls.train_ann_file, {
+                'annotations': [(
+                    (np.array([1]), np.array([10]), np.array(
+                        [20]), np.array([50]), 0, np.array(['001.jpg'])),
+                    (np.array([2]), np.array([15]), np.array(
+                        [240]), np.array([250]), 15, np.array(['002.jpg'])),
+                    (np.array([89]), np.array([150]), np.array(
+                        [278]), np.array([388]), 150, np.array(['012.jpg'])),
+                )]
+            })
+
+        sio.savemat(
+            cls.test_ann_file, {
+                'annotations':
+                [((np.array([89]), np.array([150]), np.array(
+                    [278]), np.array([388]), 150, np.array(['025.jpg'])),
+                  (np.array([155]), np.array([10]), np.array(
+                      [200]), np.array([233]), 0, np.array(['111.jpg'])),
+                  (np.array([25]), np.array([115]), np.array(
+                      [240]), np.array([360]), 15, np.array(['265.jpg'])))]
+            })
+
+    def test_initialize(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        with patch.object(dataset_class, 'load_annotations'):
+            # Test default behavior
+            cfg = {
+                **self.DEFAULT_ARGS, 'classes': None,
+                'ann_file': self.ann_file
+            }
+            dataset = dataset_class(**cfg)
+            self.assertEqual(dataset.CLASSES, dataset_class.CLASSES)
+            self.assertFalse(dataset.test_mode)
+
+            # Test setting classes as a tuple
+            cfg = {**self.DEFAULT_ARGS, 'classes': ('bus', 'car')}
+            dataset = dataset_class(**cfg)
+            self.assertEqual(dataset.CLASSES, ('bus', 'car'))
+
+            # Test setting classes as a tuple
+            cfg = {**self.DEFAULT_ARGS, 'classes': ['bus', 'car']}
+            dataset = dataset_class(**cfg)
+            self.assertEqual(dataset.CLASSES, ['bus', 'car'])
+
+            # Test setting classes through a file
+            classes_file = osp.join(ASSETS_ROOT, 'classes.txt')
+            cfg = {**self.DEFAULT_ARGS, 'classes': classes_file}
+            dataset = dataset_class(**cfg)
+            self.assertEqual(dataset.CLASSES, ['bus', 'car'])
+            self.assertEqual(dataset.class_to_idx, {'bus': 0, 'car': 1})
+
+            # Test invalid classes
+            cfg = {**self.DEFAULT_ARGS, 'classes': dict(classes=1)}
+            with self.assertRaisesRegex(ValueError, "type <class 'dict'>"):
+                dataset_class(**cfg)
+
+    def test_load_annotations(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test default behavior test_mode=False
+        dataset = dataset_class(**self.DEFAULT_ARGS)
+        self.assertEqual(len(dataset), 2)
+        self.assertEqual(dataset.CLASSES, dataset_class.CLASSES)
+
+        data_info = dataset[0]
+        np.testing.assert_equal(data_info['img_prefix'], self.data_prefix)
+        np.testing.assert_equal(data_info['img_info'], {'filename': '001.jpg'})
+        np.testing.assert_equal(data_info['x1'], np.array([1]))
+        np.testing.assert_equal(data_info['y1'], np.array([10]))
+        np.testing.assert_equal(data_info['x2'], np.array([20]))
+        np.testing.assert_equal(data_info['y2'], np.array([50]))
+        np.testing.assert_equal(data_info['gt_label'], 1 - 1)
+
+        # Test with test_mode=True
+        cfg = {**self.DEFAULT_ARGS, 'test_mode': True}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 1)
+
+        data_info = dataset[0]
+        np.testing.assert_equal(data_info['img_prefix'], self.data_prefix)
+        np.testing.assert_equal(data_info['img_info'], {'filename': '012.jpg'})
+        np.testing.assert_equal(data_info['x1'], np.array([89]))
+        np.testing.assert_equal(data_info['y1'], np.array([150]))
+        np.testing.assert_equal(data_info['x2'], np.array([278]))
+        np.testing.assert_equal(data_info['y2'], np.array([388]))
+        np.testing.assert_equal(data_info['gt_label'], 150 - 1)
+
+        # Test with ann_file=None and test_ann_file=None
+        self.DEFAULT_ARGS['ann_file'] = None
+        self.DEFAULT_ARGS['train_ann_file'] = self.train_ann_file
+        cfg = {**self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 3)
+
+        data_info = dataset[0]
+        np.testing.assert_equal(data_info['img_prefix'], self.data_prefix)
+        np.testing.assert_equal(data_info['img_info'], {'filename': '001.jpg'})
+        np.testing.assert_equal(data_info['x1'], np.array([1]))
+        np.testing.assert_equal(data_info['y1'], np.array([10]))
+        np.testing.assert_equal(data_info['x2'], np.array([20]))
+        np.testing.assert_equal(data_info['y2'], np.array([50]))
+        np.testing.assert_equal(data_info['gt_label'], 0)
+
+        # Test with ann_file=None and train_ann_file=None
+        self.DEFAULT_ARGS['train_ann_file'] = None
+        self.DEFAULT_ARGS['test_ann_file'] = self.test_ann_file
+        cfg = {**self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 3)
+
+        data_info = dataset[0]
+        np.testing.assert_equal(data_info['img_prefix'], self.data_prefix)
+        np.testing.assert_equal(data_info['img_info'], {'filename': '025.jpg'})
+        np.testing.assert_equal(data_info['x1'], np.array([89]))
+        np.testing.assert_equal(data_info['y1'], np.array([150]))
+        np.testing.assert_equal(data_info['x2'], np.array([278]))
+        np.testing.assert_equal(data_info['y2'], np.array([388]))
+        np.testing.assert_equal(data_info['gt_label'], 150)
 
     @classmethod
     def tearDownClass(cls):
