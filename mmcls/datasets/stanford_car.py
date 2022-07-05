@@ -10,16 +10,9 @@ from .builder import DATASETS
 class StanfordCar(BaseDataset):
     """The Stanford Car Dataset. Support the `Stanford Car.
 
-    <https://ai.stanford.edu/~jkrause/cars/car_dataset.html>`_ Dataset. This
-    dataset can be organized in two ways. The train set and test set are under
-    the car_ims folder, and the train set and test set are under the car_train
-    and car_test folders respectively. cars_anons.mat, car_train_annos.mat and
-    car_test_annos.mat are corresponding annotation files respectively。
-
-    Args:
-        ann_file (str, None): the annotation file for the first type of organization, cars_annos.mat
-        train_ann_file (str, None): the annotation file of train set of the second organization, cars_train_annos.mat
-        test_ann_file (str, None): the annotation file of test set of the second organization, cars_test_annos.mat
+    <https://ai.stanford.edu/~jkrause/cars/car_dataset.html>`_ Dataset. The train set
+     and test set are under the car_train and car_test folders respectively. car_train_annos.mat and
+    car_test_annos.mat are corresponding annotation files.
     """  # noqa: E501
 
     CLASSES = [
@@ -134,56 +127,16 @@ class StanfordCar(BaseDataset):
         'smart fortwo Convertible 2012'
     ]
 
-    def __init__(self,
-                 *args,
-                 ann_file=None,
-                 train_ann_file=None,
-                 test_ann_file=None,
-                 **kwargs):
-        assert ann_file is not None \
-               or train_ann_file is not None \
-               or test_ann_file is not None, \
-               'either ann_file or train_ann_file ' \
-               'or test_ann_file must be provided'
-        self.ann_file = ann_file
-        self.train_ann_file = train_ann_file
-        self.test_ann_file = test_ann_file
-        super(StanfordCar, self).__init__(*args, ann_file=ann_file, **kwargs)
-
     def load_annotations(self):
         data_infos = []
-        if self.ann_file:
-            data = sio.loadmat(self.ann_file)
-            for img in data['annotations'][0]:
-                test = img[6][0][0]
-                if test == 0 and self.test_mode:
-                    # skip train samples when test_mode=True
-                    continue
-                elif test == 1 and not self.test_mode:
-                    # skip test samples when test_mode=True
-                    continue
-                info = {'img_prefix': self.data_prefix}
-                info['img_info'] = {'filename': img[0][0]}
-                info['x1'] = np.array(img[1][0][0], dtype=np.int64)
-                info['y1'] = np.array(img[2][0][0], dtype=np.int64)
-                info['x2'] = np.array(img[3][0][0], dtype=np.int64)
-                info['y2'] = np.array(img[4][0][0], dtype=np.int64)
-                info['gt_label'] = np.array(img[5][0][0] - 1, dtype=np.int64)
-                data_infos.append(info)
-            return data_infos
-        else:
-            if self.train_ann_file is not None:
-                data_file = self.train_ann_file
-            else:
-                data_file = self.test_ann_file
-            data = sio.loadmat(data_file)
-            for img in data['annotations'][0]:
-                info = {'img_prefix': self.data_prefix}
-                info['img_info'] = {'filename': img[5][0]}
-                info['x1'] = np.array(img[0][0][0], dtype=np.int64)
-                info['y1'] = np.array(img[1][0][0], dtype=np.int64)
-                info['x2'] = np.array(img[2][0][0], dtype=np.int64)
-                info['y2'] = np.array(img[3][0][0], dtype=np.int64)
-                info['gt_label'] = np.array(img[4][0][0], dtype=np.int64)
-                data_infos.append(info)
-            return data_infos
+        data = sio.loadmat(self.ann_file)
+        for img in data['annotations'][0]:
+            info = {'img_prefix': self.data_prefix}
+            info['img_info'] = {'filename': img[5][0]}
+            info['x1'] = np.array(img[0][0][0], dtype=np.int64)
+            info['y1'] = np.array(img[1][0][0], dtype=np.int64)
+            info['x2'] = np.array(img[2][0][0], dtype=np.int64)
+            info['y2'] = np.array(img[3][0][0], dtype=np.int64)
+            info['gt_label'] = np.array(img[4][0][0], dtype=np.int64)
+            data_infos.append(info)
+        return data_infos
