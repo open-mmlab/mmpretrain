@@ -2,6 +2,7 @@
 import codecs
 import os
 import os.path as osp
+import warnings
 
 import numpy as np
 import torch
@@ -92,6 +93,10 @@ class MNIST(BaseDataset):
                 download_root=self.data_prefix,
                 filename=filename,
                 md5=md5)
+
+    def get_file_names(self):
+        warnings.warn('MNIST does not have filenames. Empty list is returned.')
+        return []
 
 
 @DATASETS.register_module()

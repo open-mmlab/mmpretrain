@@ -33,13 +33,15 @@ def construct_toy_multi_label_dataset(length):
         np.random.randint(0, 80, num).tolist()
         for num in np.random.randint(1, 20, length)
     ]
+    filenames_list = [f'{i}.jpg' for i in range(length)]
     dataset.data_infos = MagicMock()
     dataset.data_infos.__len__.return_value = length
     dataset.get_cat_ids = MagicMock(side_effect=lambda idx: cat_ids_list[idx])
     dataset.get_gt_labels = \
         MagicMock(side_effect=lambda: np.array(cat_ids_list))
+    dataset.get_file_names = MagicMock(side_effect=lambda: filenames_list)
     dataset.evaluate = MagicMock(side_effect=mock_evaluate)
-    return dataset, cat_ids_list
+    return dataset, cat_ids_list, filenames_list
 
 
 @patch.multiple(BaseDataset, __abstractmethods__=set())
@@ -48,13 +50,15 @@ def construct_toy_single_label_dataset(length):
     BaseDataset.__getitem__ = MagicMock(side_effect=lambda idx: idx)
     dataset = BaseDataset(data_prefix='', pipeline=[], test_mode=True)
     cat_ids_list = [[np.random.randint(0, 80)] for _ in range(length)]
+    filenames_list = [f'{i}.jpg' for i in range(length)]
     dataset.data_infos = MagicMock()
     dataset.data_infos.__len__.return_value = length
     dataset.get_cat_ids = MagicMock(side_effect=lambda idx: cat_ids_list[idx])
     dataset.get_gt_labels = \
         MagicMock(side_effect=lambda: np.array(cat_ids_list))
+    dataset.get_file_names = MagicMock(side_effect=lambda: filenames_list)
     dataset.evaluate = MagicMock(side_effect=mock_evaluate)
-    return dataset, cat_ids_list
+    return dataset, cat_ids_list, filenames_list
 
 
 @pytest.mark.parametrize('construct_dataset', [
@@ -62,8 +66,8 @@ def construct_toy_single_label_dataset(length):
 ])
 def test_concat_dataset(construct_dataset):
     construct_toy_dataset = eval(construct_dataset)
-    dataset_a, cat_ids_list_a = construct_toy_dataset(10)
-    dataset_b, cat_ids_list_b = construct_toy_dataset(20)
+    dataset_a, cat_ids_list_a, filenames_list_a = construct_toy_dataset(10)
+    dataset_b, cat_ids_list_b, filenames_list_b = construct_toy_dataset(20)
 
     concat_dataset = ConcatDataset([dataset_a, dataset_b])
     assert concat_dataset[5] == 5
@@ -73,13 +77,18 @@ def test_concat_dataset(construct_dataset):
     assert len(concat_dataset) == len(dataset_a) + len(dataset_b)
     assert concat_dataset.CLASSES == BaseDataset.CLASSES
 
+    filenames = concat_dataset.get_file_names()
+    assert len(filenames) == len(filenames_list_a) + len(filenames_list_b)
+    assert filenames[5] == filenames_list_a[5]
+    assert filenames[25] == filenames_list_b[15]
+
 
 @pytest.mark.parametrize('construct_dataset', [
     'construct_toy_multi_label_dataset', 'construct_toy_single_label_dataset'
 ])
 def test_repeat_dataset(construct_dataset):
     construct_toy_dataset = eval(construct_dataset)
-    dataset, cat_ids_list = construct_toy_dataset(10)
+    dataset, cat_ids_list, _ = construct_toy_dataset(10)
     repeat_dataset = RepeatDataset(dataset, 10)
     assert repeat_dataset[5] == 5
     assert repeat_dataset[15] == 5
@@ -96,7 +105,7 @@ def test_repeat_dataset(construct_dataset):
 ])
 def test_class_balanced_dataset(construct_dataset):
     construct_toy_dataset = eval(construct_dataset)
-    dataset, cat_ids_list = construct_toy_dataset(10)
+    dataset, cat_ids_list, _ = construct_toy_dataset(10)
 
     category_freq = defaultdict(int)
     for cat_ids in cat_ids_list:
@@ -133,7 +142,7 @@ def test_class_balanced_dataset(construct_dataset):
 ])
 def test_kfold_dataset(construct_dataset):
     construct_toy_dataset = eval(construct_dataset)
-    dataset, cat_ids_list = construct_toy_dataset(10)
+    dataset, cat_ids_list, filenames_list = construct_toy_dataset(10)
 
     # test without random seed
     train_datasets = [
@@ -185,6 +194,15 @@ def test_kfold_dataset(construct_dataset):
         for i in range(len(test_set)):
             gt_label = test_set.get_gt_labels()[i]
             assert gt_label == cat_ids_list[test_set.indices[i]]
+
+    # test behavior of get_gt_labels method
+    for train_set, test_set in zip(train_datasets, test_datasets):
+        for i in range(len(train_set)):
+            filenames = train_set.get_file_names()[i]
+            assert filenames == filenames_list[train_set.indices[i]]
+        for i in range(len(test_set)):
+            filenames = test_set.get_file_names()[i]
+            assert filenames == filenames_list[test_set.indices[i]]
 
     # test evaluate
     for test_set in test_datasets:

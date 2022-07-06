@@ -89,6 +89,24 @@ class TestBaseDataset(TestCase):
         self.assertEqual(len(cat_ids), 1)
         self.assertIsInstance(cat_ids[0], int)
 
+    def test_get_filenames(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+        fake_ann = [
+            dict(
+                img_prefix='',
+                img_info=dict(filename='a.jpg'),
+                gt_label=np.array(0, dtype=np.int64))
+        ]
+
+        with patch.object(dataset_class, 'load_annotations') as mock_load:
+            mock_load.return_value = fake_ann
+            dataset = dataset_class(**self.DEFAULT_ARGS)
+
+        filenames = dataset.get_file_names()
+        self.assertIsInstance(filenames, list)
+        self.assertEqual(len(filenames), 1)
+        self.assertIsInstance(filenames[0], str)
+
     def test_evaluate(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
@@ -273,6 +291,24 @@ class TestMultiLabelDataset(TestBaseDataset):
         self.assertIsInstance(cat_ids[0], int)
         self.assertEqual(cat_ids, [1, 2])
 
+    def test_get_filenames(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+        fake_ann = [
+            dict(
+                img_prefix='',
+                img_info=dict(filename='a.jpg'),
+                gt_label=np.array(0, dtype=np.int64))
+        ]
+
+        with patch.object(dataset_class, 'load_annotations') as mock_load:
+            mock_load.return_value = fake_ann
+            dataset = dataset_class(**self.DEFAULT_ARGS)
+
+        filenames = dataset.get_file_names()
+        self.assertIsInstance(filenames, list)
+        self.assertEqual(len(filenames), 1)
+        self.assertIsInstance(filenames[0], str)
+
     def test_evaluate(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
@@ -425,6 +461,24 @@ class TestCustomDataset(TestBaseDataset):
         with self.assertRaisesRegex(AssertionError,
                                     r"\(2\) doesn't match .* classes \(3\)"):
             dataset_class(**cfg)
+
+    def test_get_filenames(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+        fake_ann = [
+            dict(
+                img_prefix='',
+                img_info=dict(filename='a.jpg'),
+                gt_label=np.array(0, dtype=np.int64))
+        ]
+
+        with patch.object(dataset_class, 'load_annotations') as mock_load:
+            mock_load.return_value = fake_ann
+            dataset = dataset_class(**self.DEFAULT_ARGS)
+
+        filenames = dataset.get_file_names()
+        self.assertIsInstance(filenames, list)
+        self.assertEqual(len(filenames), 1)
+        self.assertIsInstance(filenames[0], str)
 
 
 class TestImageNet(TestBaseDataset):
@@ -590,6 +644,18 @@ class TestMNIST(TestBaseDataset):
             np.testing.assert_equal(data_info['img'], self.fake_img)
             np.testing.assert_equal(data_info['gt_label'], self.fake_label)
 
+    def test_get_filenames(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        with patch.object(dataset_class, 'download'):
+            # Test default behavior
+            dataset = dataset_class(**self.DEFAULT_ARGS)
+            self.assertEqual(len(dataset), 1)
+
+        filenames = dataset.get_file_names()
+        self.assertIsInstance(filenames, list)
+        self.assertEqual(len(filenames), 0)
+
     @classmethod
     def tearDownClass(cls):
         cls.tmpdir.cleanup()
@@ -663,6 +729,16 @@ class TestCIFAR10(TestBaseDataset):
         fake_img = self.fake_imgs[4].reshape(3, 32, 32).transpose(1, 2, 0)
         np.testing.assert_equal(data_info['img'], fake_img)
         np.testing.assert_equal(data_info['gt_label'], self.fake_labels[4])
+
+    def test_get_filenames(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        dataset = dataset_class(**self.DEFAULT_ARGS)
+        self.assertEqual(len(dataset), 4)
+
+        filenames = dataset.get_file_names()
+        self.assertIsInstance(filenames, list)
+        self.assertEqual(len(filenames), 0)
 
     @classmethod
     def tearDownClass(cls):

@@ -234,11 +234,13 @@ def main():
                 pred_score = np.max(scores, axis=1)
                 pred_label = np.argmax(scores, axis=1)
                 pred_class = [CLASSES[lb] for lb in pred_label]
+                file_names = dataset.get_file_names()
                 res_items = {
                     'class_scores': scores,
                     'pred_score': pred_score,
                     'pred_label': pred_label,
-                    'pred_class': pred_class
+                    'pred_class': pred_class,
+                    'file_names': file_names
                 }
                 if 'all' in args.out_items:
                     results.update(res_items)

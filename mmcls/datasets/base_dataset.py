@@ -86,6 +86,16 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
 
         return [int(self.data_infos[idx]['gt_label'])]
 
+    def get_file_names(self):
+        """Get all file names.
+
+        Returns:
+            np.ndarray: file names for all images.
+        """
+
+        filenames = [data['img_info']['filename'] for data in self.data_infos]
+        return filenames
+
     def prepare_data(self, idx):
         results = copy.deepcopy(self.data_infos[idx])
         return self.pipeline(results)

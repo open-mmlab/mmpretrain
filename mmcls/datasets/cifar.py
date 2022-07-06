@@ -2,6 +2,7 @@
 import os
 import os.path
 import pickle
+import warnings
 
 import numpy as np
 import torch.distributed as dist
@@ -113,6 +114,10 @@ class CIFAR10(BaseDataset):
             if not check_integrity(fpath, md5):
                 return False
         return True
+
+    def get_file_names(self):
+        warnings.warn('CIFAR does not have filenames. Empty list is returned.')
+        return []
 
 
 @DATASETS.register_module()

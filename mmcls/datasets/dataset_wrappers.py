@@ -49,6 +49,13 @@ class ConcatDataset(_ConcatDataset):
             sample_idx = idx - self.cumulative_sizes[dataset_idx - 1]
         return self.datasets[dataset_idx].get_cat_ids(sample_idx)
 
+    def get_file_names(self):
+        dataset_filenames = [
+            datasets.get_file_names() for datasets in self.datasets
+        ]
+        filenames = np.concatenate(dataset_filenames, axis=0)
+        return list(filenames)
+
     def evaluate(self, results, *args, indices=None, logger=None, **kwargs):
         """Evaluate the results.
 
@@ -317,6 +324,11 @@ class KFoldDataset:
         dataset_gt_labels = self.dataset.get_gt_labels()
         gt_labels = np.array([dataset_gt_labels[idx] for idx in self.indices])
         return gt_labels
+
+    def get_file_names(self):
+        dataset_filenames = self.dataset.get_file_names()
+        filenames = [dataset_filenames[idx] for idx in self.indices]
+        return filenames
 
     def __getitem__(self, idx):
         return self.dataset[self.indices[idx]]
