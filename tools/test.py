@@ -23,7 +23,9 @@ def parse_args():
     parser.add_argument('config', help='test config file path')
     parser.add_argument('checkpoint', help='checkpoint file')
     parser.add_argument('--out', help='output result file')
-    out_options = ['class_scores', 'pred_score', 'pred_label', 'pred_class']
+    out_options = [
+        'class_scores', 'pred_score', 'pred_label', 'pred_class', 'file_names'
+    ]
     parser.add_argument(
         '--out-items',
         nargs='+',
