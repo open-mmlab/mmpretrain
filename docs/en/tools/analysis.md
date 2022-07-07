@@ -157,7 +157,7 @@ python tools/analysis_tools/analyze_results.py \
 
 - `config` : The path of the model config file.
 - `result`:  Output result file in json/pickle format from `tools/test.py`.
-- `--out_dir`: Directory to store output files.
+- `--out-dir`: Directory to store output files.
 - `--topk`: The number of images in successful or failed prediction with the highest `topk` scores to save. If not specified, it will be set to 20.
 - `--cfg-options`: If specified, the key-value pair config will be merged into the config file, for more details please refer to [Tutorial 1: Learn about Configs](../tutorials/config.md)
 
@@ -171,7 +171,7 @@ In `tools/test.py`, we support using `--out-items` option to select which kind o
 python tools/analysis_tools/analyze_results.py \
        configs/resnet/resnet50_b32x8_imagenet.py \
        result.pkl \
-       --out_dir results \
+       --out-dir results \
        --topk 50
 ```
 

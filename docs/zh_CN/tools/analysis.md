@@ -157,7 +157,7 @@ python tools/analysis_tools/analyze_results.py \
 
 - `config` ：配置文件的路径。
 - `result` ： `tools/test.py` 的输出结果文件。
-- `--out_dir` ：保存结果分析的文件夹路径。
+- `--out-dir` ：保存结果分析的文件夹路径。
 - `--topk` ：分别保存多少张预测成功/失败的图像。如果不指定，默认为 `20`。
 - `--cfg-options`: 额外的配置选项，会被合入配置文件，参考[教程 1：如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html)。
 
@@ -171,7 +171,7 @@ python tools/analysis_tools/analyze_results.py \
 python tools/analysis_tools/analyze_results.py \
        configs/resnet/resnet50_xxxx.py \
        result.pkl \
-       --out_dir results \
+       --out-dir results \
        --topk 50
 ```
 
