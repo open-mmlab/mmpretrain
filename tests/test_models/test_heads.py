@@ -1,6 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import copy
+import random
 from unittest import TestCase
 
+import numpy as np
 import torch
 from mmengine import is_seq_of
 
@@ -9,6 +12,14 @@ from mmcls.registry import MODELS
 from mmcls.utils import register_all_modules
 
 register_all_modules()
+
+
+def setup_seed(seed):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    torch.backends.cudnn.deterministic = True
 
 
 class TestClsHead(TestCase):
@@ -305,113 +316,124 @@ class TestStackedLinearClsHead(TestCase):
         self.assertEqual(outs.shape, (4, 5))
 
 
-"""Temporarily disabled.
-@pytest.mark.parametrize('feat', [torch.rand(4, 10), (torch.rand(4, 10), )])
-def test_multilabel_head(feat):
-    head = MultiLabelClsHead()
-    fake_gt_label = torch.randint(0, 2, (4, 10))
+class TestMultiLabelClsHead(TestCase):
+    DEFAULT_ARGS = dict(type='MultiLabelClsHead')
 
-    losses = head.forward_train(feat, fake_gt_label)
-    assert losses['loss'].item() > 0
+    def test_pre_logits(self):
+        head = MODELS.build(self.DEFAULT_ARGS)
 
-    # test simple_test with post_process
-    pred = head.simple_test(feat)
-    assert isinstance(pred, list) and len(pred) == 4
-    with patch('torch.onnx.is_in_onnx_export', return_value=True):
-        pred = head.simple_test(feat)
-        assert pred.shape == (4, 10)
+        # return the last item
+        feats = (torch.rand(4, 10), torch.rand(4, 10))
+        pre_logits = head.pre_logits(feats)
+        self.assertIs(pre_logits, feats[-1])
 
-    # test simple_test without post_process
-    pred = head.simple_test(feat, post_process=False)
-    assert isinstance(pred, torch.Tensor) and pred.shape == (4, 10)
-    logits = head.simple_test(feat, sigmoid=False, post_process=False)
-    torch.testing.assert_allclose(pred, torch.sigmoid(logits))
+    def test_forward(self):
+        head = MODELS.build(self.DEFAULT_ARGS)
 
-    # test pre_logits
-    features = head.pre_logits(feat)
-    if isinstance(feat, tuple):
-        torch.testing.assert_allclose(features, feat[0])
-    else:
-        torch.testing.assert_allclose(features, feat)
+        # return the last item (same as pre_logits)
+        feats = (torch.rand(4, 10), torch.rand(4, 10))
+        outs = head(feats)
+        self.assertIs(outs, feats[-1])
+
+    def test_loss(self):
+        feats = (torch.rand(4, 10), )
+        data_samples = [ClsDataSample().set_gt_label([0, 3]) for _ in range(4)]
+
+        # Test with thr and topk are all None
+        head = MODELS.build(self.DEFAULT_ARGS)
+        losses = head.loss(feats, data_samples)
+        self.assertEqual(head.thr, 0.5)
+        self.assertEqual(head.topk, None)
+        self.assertEqual(losses.keys(), {'loss'})
+        self.assertGreater(losses['loss'].item(), 0)
+
+        # Test with topk
+        cfg = copy.deepcopy(self.DEFAULT_ARGS)
+        cfg['topk'] = 2
+        head = MODELS.build(cfg)
+        losses = head.loss(feats, data_samples)
+        self.assertEqual(head.thr, None, cfg)
+        self.assertEqual(head.topk, 2)
+        self.assertEqual(losses.keys(), {'loss'})
+        self.assertGreater(losses['loss'].item(), 0)
+
+        # Test with thr
+        setup_seed(0)
+        cfg = copy.deepcopy(self.DEFAULT_ARGS)
+        cfg['thr'] = 0.1
+        head = MODELS.build(cfg)
+        thr_losses = head.loss(feats, data_samples)
+        self.assertEqual(head.thr, 0.1)
+        self.assertEqual(head.topk, None)
+        self.assertEqual(thr_losses.keys(), {'loss'})
+        self.assertGreater(thr_losses['loss'].item(), 0)
+
+        # Test with thr and topk are all not None
+        setup_seed(0)
+        cfg = copy.deepcopy(self.DEFAULT_ARGS)
+        cfg['thr'] = 0.1
+        cfg['topk'] = 2
+        head = MODELS.build(cfg)
+        thr_topk_losses = head.loss(feats, data_samples)
+        self.assertEqual(head.thr, 0.1)
+        self.assertEqual(head.topk, 2)
+        self.assertEqual(thr_topk_losses.keys(), {'loss'})
+        self.assertGreater(thr_topk_losses['loss'].item(), 0)
+
+        # Test with gt_lable with score
+        data_samples = [
+            ClsDataSample().set_gt_score(torch.rand((10, ))) for _ in range(4)
+        ]
+
+        head = MODELS.build(self.DEFAULT_ARGS)
+        losses = head.loss(feats, data_samples)
+        self.assertEqual(head.thr, 0.5)
+        self.assertEqual(head.topk, None)
+        self.assertEqual(losses.keys(), {'loss'})
+        self.assertGreater(losses['loss'].item(), 0)
+
+    def test_predict(self):
+        feats = (torch.rand(4, 10), )
+        data_samples = [ClsDataSample().set_gt_label([1, 2]) for _ in range(4)]
+        head = MODELS.build(self.DEFAULT_ARGS)
+
+        # with without data_samples
+        predictions = head.predict(feats)
+        self.assertTrue(is_seq_of(predictions, ClsDataSample))
+        for pred in predictions:
+            self.assertIn('label', pred.pred_label)
+            self.assertIn('score', pred.pred_label)
+
+        # with with data_samples
+        predictions = head.predict(feats, data_samples)
+        self.assertTrue(is_seq_of(predictions, ClsDataSample))
+        for sample, pred in zip(data_samples, predictions):
+            self.assertIs(sample, pred)
+            self.assertIn('label', pred.pred_label)
+            self.assertIn('score', pred.pred_label)
+
+        # Test with topk
+        cfg = copy.deepcopy(self.DEFAULT_ARGS)
+        cfg['topk'] = 2
+        head = MODELS.build(cfg)
+        predictions = head.predict(feats, data_samples)
+        self.assertEqual(head.thr, None)
+        self.assertTrue(is_seq_of(predictions, ClsDataSample))
+        for sample, pred in zip(data_samples, predictions):
+            self.assertIs(sample, pred)
+            self.assertIn('label', pred.pred_label)
+            self.assertIn('score', pred.pred_label)
 
 
-@pytest.mark.parametrize('feat', [torch.rand(4, 5), (torch.rand(4, 5), )])
-def test_multilabel_linear_head(feat):
-    head = MultiLabelLinearClsHead(10, 5)
-    fake_gt_label = torch.randint(0, 2, (4, 10))
+class TestMultiLabelLinearClsHead(TestMultiLabelClsHead):
+    DEFAULT_ARGS = dict(
+        type='MultiLabelLinearClsHead', num_classes=10, in_channels=10)
 
-    head.init_weights()
-    losses = head.forward_train(feat, fake_gt_label)
-    assert losses['loss'].item() > 0
+    def test_forward(self):
+        head = MODELS.build(self.DEFAULT_ARGS)
+        self.assertTrue(hasattr(head, 'fc'))
+        self.assertTrue(isinstance(head.fc, torch.nn.Linear))
 
-    # test simple_test with post_process
-    pred = head.simple_test(feat)
-    assert isinstance(pred, list) and len(pred) == 4
-    with patch('torch.onnx.is_in_onnx_export', return_value=True):
-        pred = head.simple_test(feat)
-        assert pred.shape == (4, 10)
-
-    # test simple_test without post_process
-    pred = head.simple_test(feat, post_process=False)
-    assert isinstance(pred, torch.Tensor) and pred.shape == (4, 10)
-    logits = head.simple_test(feat, sigmoid=False, post_process=False)
-    torch.testing.assert_allclose(pred, torch.sigmoid(logits))
-
-    # test pre_logits
-    features = head.pre_logits(feat)
-    if isinstance(feat, tuple):
-        torch.testing.assert_allclose(features, feat[0])
-    else:
-        torch.testing.assert_allclose(features, feat)
-
-
-@pytest.mark.parametrize('feat', [torch.rand(4, 5), (torch.rand(4, 5), )])
-def test_stacked_linear_cls_head(feat):
-    # test assertion
-    with pytest.raises(AssertionError):
-        StackedLinearClsHead(num_classes=3, in_channels=5, mid_channels=10)
-
-    with pytest.raises(AssertionError):
-        StackedLinearClsHead(num_classes=-1, in_channels=5, mid_channels=[10])
-
-    fake_gt_label = torch.randint(0, 2, (4, ))  # B, num_classes
-
-    # test forward with default setting
-    head = StackedLinearClsHead(
-        num_classes=10, in_channels=5, mid_channels=[20])
-    head.init_weights()
-
-    losses = head.forward_train(feat, fake_gt_label)
-    assert losses['loss'].item() > 0
-
-    # test simple_test with post_process
-    pred = head.simple_test(feat)
-    assert isinstance(pred, list) and len(pred) == 4
-    with patch('torch.onnx.is_in_onnx_export', return_value=True):
-        pred = head.simple_test(feat)
-        assert pred.shape == (4, 10)
-
-    # test simple_test without post_process
-    pred = head.simple_test(feat, post_process=False)
-    assert isinstance(pred, torch.Tensor) and pred.shape == (4, 10)
-    logits = head.simple_test(feat, softmax=False, post_process=False)
-    torch.testing.assert_allclose(pred, torch.softmax(logits, dim=1))
-
-    # test pre_logits
-    features = head.pre_logits(feat)
-    assert features.shape == (4, 20)
-
-    # test forward with full function
-    head = StackedLinearClsHead(
-        num_classes=3,
-        in_channels=5,
-        mid_channels=[8, 10],
-        dropout_rate=0.2,
-        norm_cfg=dict(type='BN1d'),
-        act_cfg=dict(type='HSwish'))
-    head.init_weights()
-
-    losses = head.forward_train(feat, fake_gt_label)
-    assert losses['loss'].item() > 0
-
-"""
+        # return the last item (same as pre_logits)
+        feats = (torch.rand(4, 10), torch.rand(4, 10))
+        head(feats)

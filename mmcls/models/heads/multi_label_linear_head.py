@@ -1,9 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Dict, Optional, Tuple
+
 import torch
 import torch.nn as nn
 
 from mmcls.registry import MODELS
-from .multi_label_head import MultiLabelClsHead
+from .multi_label_cls_head import MultiLabelClsHead
 
 
 @MODELS.register_module()
@@ -11,75 +13,54 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
     """Linear classification head for multilabel task.
 
     Args:
-        num_classes (int): Number of categories.
-        in_channels (int): Number of channels in the input feature map.
-        loss (dict): Config of classification loss.
-        init_cfg (dict | optional): The extra init config of layers.
+        loss (dict): Config of classification loss. Defaults to
+            dict(type='CrossEntropyLoss', use_sigmoid=True).
+        thr (float, optional): Predictions with scores under the thresholds
+            are considered as negative. Defaults to None.
+        topk (int, optional): Predictions with the k-th highest scores are
+            considered as positive. Defaults to None.
+        init_cfg (dict, optional): The extra init config of layers.
             Defaults to use dict(type='Normal', layer='Linear', std=0.01).
+
+    Notes:
+        If both ``thr`` and ``topk`` are set, use ``thr` to determine
+        positive predictions. If neither is set, use ``thr=0.5`` as
+        default.
     """
 
     def __init__(self,
-                 num_classes,
-                 in_channels,
-                 loss=dict(
-                     type='CrossEntropyLoss',
-                     use_sigmoid=True,
-                     reduction='mean',
-                     loss_weight=1.0),
-                 init_cfg=dict(type='Normal', layer='Linear', std=0.01)):
+                 num_classes: int,
+                 in_channels: int,
+                 loss: Dict = dict(type='CrossEntropyLoss', use_sigmoid=True),
+                 thr: Optional[float] = None,
+                 topk: Optional[int] = None,
+                 init_cfg: Optional[dict] = dict(
+                     type='Normal', layer='Linear', std=0.01)):
         super(MultiLabelLinearClsHead, self).__init__(
-            loss=loss, init_cfg=init_cfg)
+            loss=loss, thr=thr, topk=topk, init_cfg=init_cfg)
 
-        if num_classes <= 0:
-            raise ValueError(
-                f'num_classes={num_classes} must be a positive integer')
+        assert num_classes > 0, f'num_classes ({num_classes}) must be a ' \
+            'positive integer.'
 
         self.in_channels = in_channels
         self.num_classes = num_classes
 
         self.fc = nn.Linear(self.in_channels, self.num_classes)
 
-    def pre_logits(self, x):
-        if isinstance(x, tuple):
-            x = x[-1]
-        return x
+    def pre_logits(self, feats: Tuple[torch.Tensor]) -> torch.Tensor:
+        """The process before the final classification head.
 
-    def forward_train(self, x, gt_label, **kwargs):
-        x = self.pre_logits(x)
-        gt_label = gt_label.type_as(x)
-        cls_score = self.fc(x)
-        losses = self.loss(cls_score, gt_label, **kwargs)
-        return losses
-
-    def simple_test(self, x, sigmoid=True, post_process=True):
-        """Inference without augmentation.
-
-        Args:
-            x (tuple[Tensor]): The input features.
-                Multi-stage inputs are acceptable but only the last stage will
-                be used to classify. The shape of every item should be
-                ``(num_samples, in_channels)``.
-            sigmoid (bool): Whether to sigmoid the classification score.
-            post_process (bool): Whether to do post processing the
-                inference results. It will convert the output to a list.
-
-        Returns:
-            Tensor | list: The inference results.
-
-                - If no post processing, the output is a tensor with shape
-                  ``(num_samples, num_classes)``.
-                - If post processing, the output is a multi-dimentional list of
-                  float and the dimensions are ``(num_samples, num_classes)``.
+        The input ``feats`` is a tuple of tensor, and each tensor is the
+        feature of a backbone stage. In ``MultiLabelLinearClsHead``, we just
+        obtain the feature of the last stage.
         """
-        x = self.pre_logits(x)
-        cls_score = self.fc(x)
+        # The obtain the MultiLabelLinearClsHead doesn't have other module,
+        # just return after unpacking.
+        return feats[-1]
 
-        if sigmoid:
-            pred = torch.sigmoid(cls_score) if cls_score is not None else None
-        else:
-            pred = cls_score
-
-        if post_process:
-            return self.post_process(pred)
-        else:
-            return pred
+    def forward(self, feats: Tuple[torch.Tensor]) -> torch.Tensor:
+        """The forward process."""
+        pre_logits = self.pre_logits(feats)
+        # The final classification head.
+        cls_score = self.fc(pre_logits)
+        return cls_score

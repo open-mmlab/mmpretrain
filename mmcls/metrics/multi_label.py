@@ -407,7 +407,7 @@ def _average_precision(pred: torch.Tensor,
     total_pos = tps[-1].item()  # the last of tensor may change later
 
     # Calculate cumulative tp&fp(pred_poss) case numbers
-    pred_pos_nums = torch.arange(1, len(sorted_target) + 1)
+    pred_pos_nums = torch.arange(1, len(sorted_target) + 1).to(pred.device)
     pred_pos_nums[pred_pos_nums < eps] = eps
 
     tps[torch.logical_not(pos_inds)] = 0
