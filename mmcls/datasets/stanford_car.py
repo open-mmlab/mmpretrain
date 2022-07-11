@@ -1,4 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import os.path as osp
+from typing import Optional
+
 import numpy as np
 import scipy.io as sio
 
@@ -10,9 +13,36 @@ from .builder import DATASETS
 class StanfordCar(BaseDataset):
     """The Stanford Car Dataset. Support the `Stanford Car.
 
-    <https://ai.stanford.edu/~jkrause/cars/car_dataset.html>`_ Dataset. The train set
-     and test set are under the car_train and car_test folders respectively. car_train_annos.mat and
-    car_test_annos.mat are corresponding annotation files.
+    <https://ai.stanford.edu/~jkrause/cars/car_dataset.html>`_ Dataset.
+    After downloading and decompression, the dataset
+    directory structure is as follows.
+
+    Stanford Car dataset directory:
+
+        Stanford Car
+        ├── cars_train
+        │   ├── 00001.jpg
+        │   ├── 00002.jpg
+        │   └── ...
+        ├── cars_test
+        │   ├── 00001.jpg
+        │   ├── 00002.jpg
+        │   └── ...
+        └── devkit
+            ├── cars_meta.mat
+            ├── cars_train_annos.mat
+            ├── cars_test_annos.mat
+            ├── cars_test_annoswithlabels.mat
+            ├── eval_train.m
+            └── train_perfect_preds.txt
+
+    Args:
+        data_prefix (str): the prefix of data path
+        test_mode (bool): ``test_mode=True`` means in test phase. It determines
+             to use the training set or test set.
+        ann_file (str, optional): The annotation file. If is string, read
+            samples paths from the ann_file. If is None, read samples path
+            from cars_{train|test}_annos.mat file. Defaults to None.
     """  # noqa: E501
 
     CLASSES = [
@@ -127,16 +157,49 @@ class StanfordCar(BaseDataset):
         'smart fortwo Convertible 2012'
     ]
 
+    def __init__(self,
+                 data_prefix: str,
+                 test_mode: bool,
+                 ann_file: Optional[str] = None,
+                 **kwargs):
+        if test_mode:
+            if ann_file is not None:
+                self.test_ann_file = ann_file
+                assert osp.exists(ann_file), '{} does not exist.'.format(
+                    ann_file)
+            else:
+                self.test_ann_file = osp.join(
+                    data_prefix, 'devkit/cars_test_annos_withlabels.mat')
+                assert osp.exists(
+                    self.test_ann_file
+                ), 'cars_test_annos_withlabels.mat does not exist.'
+            data_prefix = osp.join(data_prefix, 'cars_test')
+        else:
+            if ann_file is not None:
+                self.train_ann_file = ann_file
+                assert osp.exists(ann_file), '{} does not exist.'.format(
+                    ann_file)
+            else:
+                self.train_ann_file = osp.join(data_prefix,
+                                               'devkit/cars_train_annos.mat')
+                assert osp.exists(self.train_ann_file
+                                  ), 'cars_train_annos.mat does not exist.'
+            data_prefix = osp.join(data_prefix, 'cars_train')
+        super(StanfordCar, self).__init__(
+            ann_file=ann_file,
+            data_prefix=data_prefix,
+            test_mode=test_mode,
+            **kwargs)
+
     def load_annotations(self):
         data_infos = []
-        data = sio.loadmat(self.ann_file)
+        if self.test_mode:
+            data = sio.loadmat(self.test_ann_file)
+        else:
+            data = sio.loadmat(self.train_ann_file)
         for img in data['annotations'][0]:
             info = {'img_prefix': self.data_prefix}
             info['img_info'] = {'filename': img[5][0]}
-            info['x1'] = np.array(img[0][0][0], dtype=np.int64)
-            info['y1'] = np.array(img[1][0][0], dtype=np.int64)
-            info['x2'] = np.array(img[2][0][0], dtype=np.int64)
-            info['y2'] = np.array(img[3][0][0], dtype=np.int64)
-            info['gt_label'] = np.array(img[4][0][0], dtype=np.int64)
+            info['gt_label'] = np.array(img[4][0][0] - 1, dtype=np.int64)
             data_infos.append(info)
         return data_infos

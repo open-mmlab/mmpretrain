@@ -775,16 +775,19 @@ class TestStanfordCar(TestBaseDataset):
         cls.tmpdir = tmpdir
         cls.data_prefix = tmpdir.name
         cls.ann_file = None
-        cls.train_ann_file = osp.join(cls.data_prefix, 'cars_train_annos.mat')
-        cls.test_ann_file = osp.join(cls.data_prefix, 'cars_test_annos.mat')
+        devkit = osp.join(cls.data_prefix, 'devkit')
+        if not osp.exists(devkit):
+            os.mkdir(devkit)
+        cls.train_ann_file = osp.join(devkit, 'cars_train_annos.mat')
+        cls.test_ann_file = osp.join(devkit, 'cars_test_annos_withlabels.mat')
         cls.DEFAULT_ARGS = dict(
-            data_prefix=cls.data_prefix, pipeline=[], ann_file=cls.ann_file)
+            data_prefix=cls.data_prefix, pipeline=[], test_mode=False)
 
         sio.savemat(
             cls.train_ann_file, {
                 'annotations': [(
                     (np.array([1]), np.array([10]), np.array(
-                        [20]), np.array([50]), 0, np.array(['001.jpg'])),
+                        [20]), np.array([50]), 15, np.array(['001.jpg'])),
                     (np.array([2]), np.array([15]), np.array(
                         [240]), np.array([250]), 15, np.array(['002.jpg'])),
                     (np.array([89]), np.array([150]), np.array(
@@ -806,35 +809,27 @@ class TestStanfordCar(TestBaseDataset):
     def test_load_annotations(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
-        # Test default behavior test_mode=False
-        self.DEFAULT_ARGS['ann_file'] = self.train_ann_file
+        # Test with test_mode=False
         dataset = dataset_class(**self.DEFAULT_ARGS)
         self.assertEqual(len(dataset), 3)
         self.assertEqual(dataset.CLASSES, dataset_class.CLASSES)
 
         data_info = dataset[0]
-        np.testing.assert_equal(data_info['img_prefix'], self.data_prefix)
+        np.testing.assert_equal(data_info['img_prefix'],
+                                osp.join(self.data_prefix, 'cars_train'))
         np.testing.assert_equal(data_info['img_info'], {'filename': '001.jpg'})
-        np.testing.assert_equal(data_info['x1'], np.array([1]))
-        np.testing.assert_equal(data_info['y1'], np.array([10]))
-        np.testing.assert_equal(data_info['x2'], np.array([20]))
-        np.testing.assert_equal(data_info['y2'], np.array([50]))
-        np.testing.assert_equal(data_info['gt_label'], 0)
+        np.testing.assert_equal(data_info['gt_label'], 15 - 1)
 
         # Test with test_mode=True
-        self.DEFAULT_ARGS['ann_file'] = self.test_ann_file
         cfg = {**self.DEFAULT_ARGS, 'test_mode': True}
         dataset = dataset_class(**cfg)
         self.assertEqual(len(dataset), 3)
 
         data_info = dataset[0]
-        np.testing.assert_equal(data_info['img_prefix'], self.data_prefix)
+        np.testing.assert_equal(data_info['img_prefix'],
+                                osp.join(self.data_prefix, 'cars_test'))
         np.testing.assert_equal(data_info['img_info'], {'filename': '025.jpg'})
-        np.testing.assert_equal(data_info['x1'], np.array([89]))
-        np.testing.assert_equal(data_info['y1'], np.array([150]))
-        np.testing.assert_equal(data_info['x2'], np.array([278]))
-        np.testing.assert_equal(data_info['y2'], np.array([388]))
-        np.testing.assert_equal(data_info['gt_label'], 150)
+        np.testing.assert_equal(data_info['gt_label'], 150 - 1)
 
     @classmethod
     def tearDownClass(cls):
