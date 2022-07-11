@@ -506,6 +506,7 @@ class VisionTransformer(BaseBackbone):
                     patch_token = patch_token.permute(0, 3, 1, 2)
                     cls_token = None
                 if self.avg_token:
+                    patch_token = patch_token.permute(0, 2, 3, 1)
                     patch_token = patch_token.reshape(
                         B, patch_resolution[0] * patch_resolution[1],
                         C).mean(dim=1)
