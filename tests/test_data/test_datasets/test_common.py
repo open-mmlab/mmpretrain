@@ -767,6 +767,50 @@ class TestCUB(TestBaseDataset):
 class TestStanfordCar(TestBaseDataset):
     DATASET_TYPE = 'StanfordCar'
 
+    def test_initialize(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        with patch.object(dataset_class, 'load_annotations'):
+            # Test with test_mode=False, ann_file is None
+            cfg = {**self.DEFAULT_ARGS, 'test_mode': False, 'ann_file': None}
+            dataset = dataset_class(**cfg)
+            self.assertEqual(dataset.CLASSES, dataset_class.CLASSES)
+            self.assertFalse(dataset.test_mode)
+            self.assertIsNone(dataset.ann_file)
+            self.assertIsNotNone(dataset.train_ann_file)
+
+            # Test with test_mode=False, ann_file is not None
+            cfg = {
+                **self.DEFAULT_ARGS, 'test_mode': False,
+                'ann_file': 'train_ann_file.mat'
+            }
+            dataset = dataset_class(**cfg)
+            self.assertEqual(dataset.CLASSES, dataset_class.CLASSES)
+            self.assertFalse(dataset.test_mode)
+            self.assertIsNotNone(dataset.ann_file)
+            self.assertEqual(dataset.ann_file, 'train_ann_file.mat')
+            self.assertIsNotNone(dataset.train_ann_file)
+
+            # Test with test_mode=True, ann_file is None
+            cfg = {**self.DEFAULT_ARGS, 'test_mode': True, 'ann_file': None}
+            dataset = dataset_class(**cfg)
+            self.assertEqual(dataset.CLASSES, dataset_class.CLASSES)
+            self.assertTrue(dataset.test_mode)
+            self.assertIsNone(dataset.ann_file)
+            self.assertIsNotNone(dataset.test_ann_file)
+
+            # Test with test_mode=True, ann_file is not None
+            cfg = {
+                **self.DEFAULT_ARGS, 'test_mode': True,
+                'ann_file': 'test_ann_file.mat'
+            }
+            dataset = dataset_class(**cfg)
+            self.assertEqual(dataset.CLASSES, dataset_class.CLASSES)
+            self.assertTrue(dataset.test_mode)
+            self.assertIsNotNone(dataset.ann_file)
+            self.assertEqual(dataset.ann_file, 'test_ann_file.mat')
+            self.assertIsNotNone(dataset.test_ann_file)
+
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()

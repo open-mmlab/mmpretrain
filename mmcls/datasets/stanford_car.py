@@ -165,25 +165,16 @@ class StanfordCar(BaseDataset):
         if test_mode:
             if ann_file is not None:
                 self.test_ann_file = ann_file
-                assert osp.exists(ann_file), '{} does not exist.'.format(
-                    ann_file)
             else:
                 self.test_ann_file = osp.join(
                     data_prefix, 'devkit/cars_test_annos_withlabels.mat')
-                assert osp.exists(
-                    self.test_ann_file
-                ), 'cars_test_annos_withlabels.mat does not exist.'
             data_prefix = osp.join(data_prefix, 'cars_test')
         else:
             if ann_file is not None:
                 self.train_ann_file = ann_file
-                assert osp.exists(ann_file), '{} does not exist.'.format(
-                    ann_file)
             else:
                 self.train_ann_file = osp.join(data_prefix,
                                                'devkit/cars_train_annos.mat')
-                assert osp.exists(self.train_ann_file
-                                  ), 'cars_train_annos.mat does not exist.'
             data_prefix = osp.join(data_prefix, 'cars_train')
         super(StanfordCar, self).__init__(
             ann_file=ann_file,
