@@ -11,9 +11,9 @@ from .builder import DATASETS
 
 @DATASETS.register_module()
 class StanfordCar(BaseDataset):
-    """The Stanford Car Dataset. Support the `Stanford Car.
+    """`Stanford Car <https://ai.stanford.edu/~jkrause/cars/car_dataset.html>`_
+    Dataset.
 
-    <https://ai.stanford.edu/~jkrause/cars/car_dataset.html>`_ Dataset.
     After downloading and decompression, the dataset
     directory structure is as follows.
 
@@ -190,6 +190,14 @@ class StanfordCar(BaseDataset):
             data = sio.loadmat(self.train_ann_file)
         for img in data['annotations'][0]:
             info = {'img_prefix': self.data_prefix}
+            # The organization of each record is as follows,
+            # 0: bbox_x1 of each image
+            # 1: bbox_y1 of each image
+            # 2: bbox_x2 of each image
+            # 3: bbox_y2 of each image
+            # 4: class_id, start from 0, so
+            # here we need to '- 1' to let them start from 0
+            # 5: file name of each image
             info['img_info'] = {'filename': img[5][0]}
             info['gt_label'] = np.array(img[4][0][0] - 1, dtype=np.int64)
             data_infos.append(info)

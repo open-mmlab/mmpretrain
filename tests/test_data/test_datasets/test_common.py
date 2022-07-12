@@ -853,7 +853,7 @@ class TestStanfordCar(TestBaseDataset):
     def test_load_annotations(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
-        # Test with test_mode=False
+        # Test with test_mode=False and ann_file=None
         dataset = dataset_class(**self.DEFAULT_ARGS)
         self.assertEqual(len(dataset), 3)
         self.assertEqual(dataset.CLASSES, dataset_class.CLASSES)
@@ -864,8 +864,34 @@ class TestStanfordCar(TestBaseDataset):
         np.testing.assert_equal(data_info['img_info'], {'filename': '001.jpg'})
         np.testing.assert_equal(data_info['gt_label'], 15 - 1)
 
-        # Test with test_mode=True
+        # Test with test_mode=True and ann_file=None
         cfg = {**self.DEFAULT_ARGS, 'test_mode': True}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 3)
+
+        data_info = dataset[0]
+        np.testing.assert_equal(data_info['img_prefix'],
+                                osp.join(self.data_prefix, 'cars_test'))
+        np.testing.assert_equal(data_info['img_info'], {'filename': '025.jpg'})
+        np.testing.assert_equal(data_info['gt_label'], 150 - 1)
+
+        # Test with test_mode=False, ann_file is not None
+        cfg = {
+            **self.DEFAULT_ARGS, 'test_mode': False,
+            'ann_file': self.train_ann_file
+        }
+        dataset = dataset_class(**cfg)
+        data_info = dataset[0]
+        np.testing.assert_equal(data_info['img_prefix'],
+                                osp.join(self.data_prefix, 'cars_train'))
+        np.testing.assert_equal(data_info['img_info'], {'filename': '001.jpg'})
+        np.testing.assert_equal(data_info['gt_label'], 15 - 1)
+
+        # Test with test_mode=True, ann_file is not None
+        cfg = {
+            **self.DEFAULT_ARGS, 'test_mode': True,
+            'ann_file': self.test_ann_file
+        }
         dataset = dataset_class(**cfg)
         self.assertEqual(len(dataset), 3)
 
