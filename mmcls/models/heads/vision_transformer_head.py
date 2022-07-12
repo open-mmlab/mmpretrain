@@ -6,8 +6,8 @@ from typing import List, Optional, Tuple
 import torch
 import torch.nn as nn
 from mmcv.cnn import build_activation_layer
-from mmcv.cnn.utils.weight_init import trunc_normal_
-from mmcv.runner import Sequential
+from mmengine.model import Sequential
+from mmengine.model.utils import trunc_normal_
 
 from mmcls.registry import MODELS
 from .cls_head import ClsHead

@@ -7,8 +7,8 @@ import torch
 import torch.nn as nn
 from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.transformer import FFN
-from mmcv.cnn.utils.weight_init import trunc_normal_
-from mmcv.runner.base_module import BaseModule, ModuleList
+from mmengine.model import BaseModule, ModuleList
+from mmengine.model.utils import trunc_normal_
 
 from mmcls.registry import MODELS
 from ..utils import MultiheadAttention, resize_pos_embed, to_2tuple
@@ -381,8 +381,8 @@ class T2T_ViT(BaseBackbone):
 
         ckpt_pos_embed_shape = state_dict[name].shape
         if self.pos_embed.shape != ckpt_pos_embed_shape:
-            from mmcls.utils import get_root_logger
-            logger = get_root_logger()
+            from mmengine.logging import MMLogger
+            logger = MMLogger.get_current_instance()
             logger.info(
                 f'Resize the pos_embed shape from {ckpt_pos_embed_shape} '
                 f'to {self.pos_embed.shape}.')

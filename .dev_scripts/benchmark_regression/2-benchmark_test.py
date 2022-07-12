@@ -15,8 +15,8 @@ from rich.table import Table
 console = Console()
 MMCLS_ROOT = Path(__file__).absolute().parents[2]
 METRICS_MAP = {
-    'Top 1 Accuracy': 'accuracy_top-1',
-    'Top 5 Accuracy': 'accuracy_top-5'
+    'Top 1 Accuracy': 'accuracy/top1',
+    'Top 5 Accuracy': 'accuracy/top5'
 }
 
 
@@ -96,6 +96,7 @@ def create_test_job_batch(commands, model_info, args, port, script_name):
     job_name = f'{args.job_name}_{fname}'
     work_dir = Path(args.work_dir) / fname
     work_dir.mkdir(parents=True, exist_ok=True)
+    result_file = work_dir / 'result.pkl'
 
     if args.mail is not None and 'NONE' not in args.mail_type:
         mail_cfg = (f'#SBATCH --mail {args.mail}\n'
@@ -121,8 +122,8 @@ def create_test_job_batch(commands, model_info, args, port, script_name):
                   f'#SBATCH --ntasks=8\n'
                   f'#SBATCH --cpus-per-task=5\n\n'
                   f'{runner} -u {script_name} {config} {checkpoint} '
-                  f'--out={work_dir / "result.pkl"} --metrics accuracy '
-                  f'--out-items=none '
+                  f'--work-dir={work_dir} '
+                  f'--out={result_file} '
                   f'--cfg-option dist_params.port={port} '
                   f'--launcher={launcher}\n')
 
@@ -214,14 +215,14 @@ def save_summary(summary_data, models_map, work_dir):
         row = [model_name]
         if 'Top 1 Accuracy' in summary:
             metric = summary['Top 1 Accuracy']
-            row.append(f"{metric['expect']:.2f}")
-            row.append(f"{metric['result']:.2f}")
+            row.append(str(round(metric['expect'], 2)))
+            row.append(str(round(metric['result'], 2)))
         else:
             row.extend([''] * 2)
         if 'Top 5 Accuracy' in summary:
             metric = summary['Top 5 Accuracy']
-            row.append(f"{metric['expect']:.2f}")
-            row.append(f"{metric['result']:.2f}")
+            row.append(str(round(metric['expect'], 2)))
+            row.append(str(round(metric['result'], 2)))
         else:
             row.extend([''] * 2)
 
@@ -253,8 +254,8 @@ def show_summary(summary_data):
         for metric_key in METRICS_MAP:
             if metric_key in summary:
                 metric = summary[metric_key]
-                expect = metric['expect']
-                result = metric['result']
+                expect = round(metric['expect'], 2)
+                result = round(metric['result'], 2)
                 color = set_color(result, expect)
                 row.append(f'{expect:.2f}')
                 row.append(f'[{color}]{result:.2f}[/{color}]')
@@ -310,9 +311,7 @@ def summary(args):
         # extract metrics
         summary = {'date': date.strftime('%Y-%m-%d')}
         for key_yml, key_res in METRICS_MAP.items():
-            if key_yml in expect_metrics:
-                assert key_res in results, \
-                    f'{model_name}: No metric "{key_res}"'
+            if key_yml in expect_metrics and key_res in results:
                 expect_result = float(expect_metrics[key_yml])
                 result = float(results[key_res])
                 summary[key_yml] = dict(expect=expect_result, result=result)

@@ -5,8 +5,8 @@ import torch.utils.checkpoint as cp
 from mmcv.cnn import (ConvModule, build_activation_layer, build_conv_layer,
                       build_norm_layer, constant_init)
 from mmcv.cnn.bricks import DropPath
-from mmcv.runner import BaseModule
 from mmcv.utils.parrots_wrapper import _BatchNorm
+from mmengine.model import BaseModule
 
 from mmcls.registry import MODELS
 from .base_backbone import BaseBackbone

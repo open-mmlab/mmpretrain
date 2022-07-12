@@ -1,8 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Optional, Union
 
+from mmengine.logging import MMLogger
+
 from mmcls.registry import DATASETS
-from mmcls.utils import get_root_logger
 from .categories import IMAGENET_CATEGORIES
 from .custom import CustomDataset
 
@@ -78,7 +79,7 @@ class ImageNet21k(CustomDataset):
                 'The `multi_label` option is not supported by now.')
         self.multi_label = multi_label
 
-        logger = get_root_logger()
+        logger = MMLogger.get_current_instance()
 
         if not ann_file:
             logger.warning(

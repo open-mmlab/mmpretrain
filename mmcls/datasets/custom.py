@@ -3,9 +3,9 @@ from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 import mmengine
 from mmengine import FileClient
+from mmengine.logging import MMLogger
 
 from mmcls.registry import DATASETS
-from mmcls.utils import get_root_logger
 from .base_dataset import BaseDataset
 
 
@@ -193,7 +193,7 @@ class CustomDataset(BaseDataset):
             self._metainfo['classes'] = tuple(classes)
 
         if empty_classes:
-            logger = get_root_logger()
+            logger = MMLogger.get_current_instance()
             logger.warning(
                 'Found no valid file in the folder '
                 f'{", ".join(empty_classes)}. '

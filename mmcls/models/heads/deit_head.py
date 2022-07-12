@@ -1,11 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import warnings
 from typing import List, Tuple
 
 import torch
 import torch.nn as nn
 
 from mmcls.registry import MODELS
-from mmcls.utils import get_root_logger
 from .vision_transformer_head import VisionTransformerClsHead
 
 
@@ -57,9 +57,9 @@ class DeiTClsHead(VisionTransformerClsHead):
 
     def forward(self, feats: Tuple[List[torch.Tensor]]) -> torch.Tensor:
         """The forward process."""
-        logger = get_root_logger()
-        logger.warning("MMClassification doesn't support to train the "
-                       'distilled version DeiT.')
+        if self.training:
+            warnings.warn('MMClassification cannot train the '
+                          'distilled version DeiT.')
         cls_token, dist_token = self.pre_logits(feats)
         # The final classification head.
         cls_score = (self.layers.head(cls_token) +

@@ -32,7 +32,7 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='ResizeEdge',
-        scale=288,
+        scale=256,
         edge='short',
         backend='pillow',
         interpolation='bicubic'),

@@ -36,8 +36,8 @@ param_scheduler = [
     dict(type='ConstantLR', factor=0.1, by_epoch=True, begin=300, end=310),
 ]
 
-train_cfg = dict(by_epoch=True, max_epochs=310)
-val_cfg = dict(interval=1)  # validate every epoch
+train_cfg = dict(by_epoch=True, max_epochs=310, val_interval=1)
+val_cfg = dict()
 test_cfg = dict()
 
 # runtime settings

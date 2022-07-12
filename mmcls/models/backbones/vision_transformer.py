@@ -6,11 +6,10 @@ import torch
 import torch.nn as nn
 from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.transformer import FFN, PatchEmbed
-from mmcv.cnn.utils.weight_init import trunc_normal_
-from mmcv.runner.base_module import BaseModule, ModuleList
+from mmengine.model import BaseModule, ModuleList
+from mmengine.model.utils import trunc_normal_
 
 from mmcls.registry import MODELS
-from mmcls.utils import get_root_logger
 from ..utils import MultiheadAttention, resize_pos_embed, to_2tuple
 from .base_backbone import BaseBackbone
 
@@ -316,12 +315,11 @@ class VisionTransformer(BaseBackbone):
 
         ckpt_pos_embed_shape = state_dict[name].shape
         if self.pos_embed.shape != ckpt_pos_embed_shape:
-            from mmengine.logging import print_log
-            logger = get_root_logger()
-            print_log(
+            from mmengine.logging import MMLogger
+            logger = MMLogger.get_current_instance()
+            logger.info(
                 f'Resize the pos_embed shape from {ckpt_pos_embed_shape} '
-                f'to {self.pos_embed.shape}.',
-                logger=logger)
+                f'to {self.pos_embed.shape}.')
 
             ckpt_pos_embed_shape = to_2tuple(
                 int(np.sqrt(ckpt_pos_embed_shape[1] - self.num_extra_tokens)))

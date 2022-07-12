@@ -6,6 +6,6 @@ param_scheduler = dict(
     type='MultiStepLR', by_epoch=True, milestones=[100, 150], gamma=0.1)
 
 # train, val, test setting
-train_cfg = dict(by_epoch=True, max_epochs=200)
-val_cfg = dict(interval=1)  # validate every epoch
+train_cfg = dict(by_epoch=True, max_epochs=200, val_interval=1)
+val_cfg = dict()
 test_cfg = dict()

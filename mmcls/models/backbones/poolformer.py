@@ -4,7 +4,7 @@ from typing import Sequence
 import torch
 import torch.nn as nn
 from mmcv.cnn.bricks import DropPath, build_activation_layer, build_norm_layer
-from mmcv.runner import BaseModule
+from mmengine.model import BaseModule
 
 from mmcls.registry import MODELS
 from .base_backbone import BaseBackbone

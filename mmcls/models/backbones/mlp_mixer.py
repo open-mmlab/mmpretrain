@@ -4,7 +4,7 @@ from typing import Sequence
 import torch.nn as nn
 from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.transformer import FFN, PatchEmbed
-from mmcv.runner.base_module import BaseModule, ModuleList
+from mmengine.model import BaseModule, ModuleList
 
 from mmcls.registry import MODELS
 from ..utils import to_2tuple

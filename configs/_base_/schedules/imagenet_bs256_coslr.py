@@ -7,6 +7,6 @@ param_scheduler = dict(
     type='CosineAnnealingLR', T_max=100, by_epoch=True, begin=0, end=100)
 
 # train, val, test setting
-train_cfg = dict(by_epoch=True, max_epochs=100)
-val_cfg = dict(interval=1)  # validate every epoch
+train_cfg = dict(by_epoch=True, max_epochs=100, val_interval=1)
+val_cfg = dict()
 test_cfg = dict()

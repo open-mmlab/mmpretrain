@@ -1,54 +1,31 @@
 import logging
 import re
+import tempfile
 from argparse import ArgumentParser
 from pathlib import Path
 from time import time
 from typing import OrderedDict
 
+import mmcv
 import numpy as np
 import torch
-from mmcv import Config
-from mmcv.parallel import collate, scatter
+from mmengine import Config, MMLogger, Runner
+from mmengine.dataset import Compose
 from modelindex.load_model_index import load
 from rich.console import Console
 from rich.table import Table
 
-from mmcls.apis import init_model
-from mmcls.core.visualization.image import imshow_infos
-from mmcls.datasets.imagenet import ImageNet
-from mmcls.datasets.pipelines import Compose
-from mmcls.utils import get_root_logger
+from mmcls.core import ClsVisualizer
+from mmcls.datasets import CIFAR10, CIFAR100, ImageNet
+from mmcls.utils import register_all_modules
 
 console = Console()
 MMCLS_ROOT = Path(__file__).absolute().parents[2]
 
-CIFAR10_CLASSES = [
-    'airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse',
-    'ship', 'truck'
-]
-
-CIFAR100_CLASSES = [
-    'apple', 'aquarium_fish', 'baby', 'bear', 'beaver', 'bed', 'bee', 'beetle',
-    'bicycle', 'bottle', 'bowl', 'boy', 'bridge', 'bus', 'butterfly', 'camel',
-    'can', 'castle', 'caterpillar', 'cattle', 'chair', 'chimpanzee', 'clock',
-    'cloud', 'cockroach', 'couch', 'crab', 'crocodile', 'cup', 'dinosaur',
-    'dolphin', 'elephant', 'flatfish', 'forest', 'fox', 'girl', 'hamster',
-    'house', 'kangaroo', 'keyboard', 'lamp', 'lawn_mower', 'leopard', 'lion',
-    'lizard', 'lobster', 'man', 'maple_tree', 'motorcycle', 'mountain',
-    'mouse', 'mushroom', 'oak_tree', 'orange', 'orchid', 'otter', 'palm_tree',
-    'pear', 'pickup_truck', 'pine_tree', 'plain', 'plate', 'poppy',
-    'porcupine', 'possum', 'rabbit', 'raccoon', 'ray', 'road', 'rocket',
-    'rose', 'sea', 'seal', 'shark', 'shrew', 'skunk', 'skyscraper', 'snail',
-    'snake', 'spider', 'squirrel', 'streetcar', 'sunflower', 'sweet_pepper',
-    'table', 'tank', 'telephone', 'television', 'tiger', 'tractor', 'train',
-    'trout', 'tulip', 'turtle', 'wardrobe', 'whale', 'willow_tree', 'wolf',
-    'woman', 'worm'
-]
-
 classes_map = {
     'ImageNet-1k': ImageNet.CLASSES,
-    'CIFAR-10': CIFAR10_CLASSES,
-    'CIFAR-100': CIFAR100_CLASSES
+    'CIFAR-10': CIFAR10.CLASSES,
+    'CIFAR-100': CIFAR100.CLASSES,
 }
 
 
@@ -75,34 +52,30 @@ def parse_args():
         '--flops-str',
         action='store_true',
         help='Output FLOPs and params counts in a string form.')
-    parser.add_argument(
-        '--device', default='cuda:0', help='Device used for inference')
     args = parser.parse_args()
     return args
 
 
-def inference(config_file, checkpoint, classes, args):
+def inference(config_file, checkpoint, work_dir, args, exp_name):
     cfg = Config.fromfile(config_file)
-
-    model = init_model(cfg, checkpoint, device=args.device)
-    model.CLASSES = classes
+    cfg.work_dir = work_dir
+    cfg.load_from = checkpoint
+    cfg.log_level = 'WARN'
+    cfg.experiment_name = exp_name
 
     # build the data pipeline
-    if cfg.data.test.pipeline[0]['type'] != 'LoadImageFromFile':
-        cfg.data.test.pipeline.insert(0, dict(type='LoadImageFromFile'))
-    if cfg.data.test.type in ['CIFAR10', 'CIFAR100']:
+    test_dataset = cfg.test_dataloader.dataset
+    if test_dataset.pipeline[0]['type'] != 'LoadImageFromFile':
+        test_dataset.pipeline.insert(0, dict(type='LoadImageFromFile'))
+    if test_dataset.type in ['CIFAR10', 'CIFAR100']:
         # The image shape of CIFAR is (32, 32, 3)
-        cfg.data.test.pipeline.insert(1, dict(type='Resize', scale=32))
+        test_dataset.pipeline.insert(1, dict(type='Resize', scale=32))
 
-    data = dict(img_info=dict(filename=args.img), img_prefix=None)
+    data = Compose(test_dataset.pipeline)({'img_path': args.img})
+    resolution = tuple(data['inputs'].shape[1:])
 
-    test_pipeline = Compose(cfg.data.test.pipeline)
-    data = test_pipeline(data)
-    resolution = tuple(data['img'].shape[1:])
-    data = collate([data], samples_per_gpu=1)
-    if next(model.parameters()).is_cuda:
-        # scatter to specified GPU
-        data = scatter(data, [args.device])[0]
+    runner: Runner = Runner.from_cfg(cfg)
+    model = runner.model
 
     # forward the model
     result = {'resolution': resolution}
@@ -111,18 +84,12 @@ def inference(config_file, checkpoint, classes, args):
             time_record = []
             for _ in range(10):
                 start = time()
-                scores = model(return_loss=False, **data)
+                model.val_step([data])
                 time_record.append((time() - start) * 1000)
             result['time_mean'] = np.mean(time_record[1:-1])
             result['time_std'] = np.std(time_record[1:-1])
         else:
-            scores = model(return_loss=False, **data)
-
-        pred_score = np.max(scores, axis=1)[0]
-        pred_label = np.argmax(scores, axis=1)[0]
-        result['pred_label'] = pred_label
-        result['pred_score'] = float(pred_score)
-    result['pred_class'] = model.CLASSES[result['pred_label']]
+            model.val_step([data])
 
     result['model'] = config_file.stem
 
@@ -177,13 +144,17 @@ def show_summary(summary_data, args):
 
 # Sample test whether the inference code is correct
 def main(args):
+    register_all_modules()
     model_index_file = MMCLS_ROOT / 'model-index.yml'
     model_index = load(str(model_index_file))
     model_index.build_models_with_collections()
     models = OrderedDict({model.name: model for model in model_index.models})
 
-    logger = get_root_logger(
-        log_file='benchmark_test_image.log', log_level=logging.INFO)
+    logger = MMLogger(
+        'validation',
+        logger_name='validation',
+        log_file='benchmark_test_image.log',
+        log_level=logging.INFO)
 
     if args.models:
         patterns = [re.compile(pattern) for pattern in args.models]
@@ -198,6 +169,7 @@ def main(args):
         models = filter_models
 
     summary_data = {}
+    tmpdir = tempfile.TemporaryDirectory()
     for model_name, model_info in models.items():
 
         if model_info.config is None:
@@ -209,7 +181,6 @@ def main(args):
         logger.info(f'Processing: {model_name}')
 
         http_prefix = 'https://download.openmmlab.com/mmclassification/'
-        dataset = model_info.results[0].dataset
         if args.checkpoint_root is not None:
             root = args.checkpoint_root
             if 's3://' in args.checkpoint_root:
@@ -235,18 +206,25 @@ def main(args):
 
         try:
             # build the model from a config file and a checkpoint file
-            result = inference(MMCLS_ROOT / config, checkpoint,
-                               classes_map[dataset], args)
+            result = inference(MMCLS_ROOT / config, checkpoint, tmpdir.name,
+                               args, model_name)
             result['valid'] = 'PASS'
-        except Exception as e:
-            logger.error(f'"{config}" : {repr(e)}')
+        except Exception:
+            import traceback
+            logger.error(f'"{config}" :\n{traceback.format_exc()}')
             result = {'valid': 'FAIL'}
 
         summary_data[model_name] = result
         # show the results
         if args.show:
-            imshow_infos(args.img, result, wait_time=args.wait_time)
+            vis = ClsVisualizer.get_instance('valid')
+            vis.set_image(mmcv.imread(args.img))
+            vis.draw_texts(
+                texts='\n'.join([f'{k}: {v}' for k, v in result.items()]),
+                positions=np.array([(5, 5)]))
+            vis.show(wait_time=args.wait_time)
 
+    tmpdir.cleanup()
     show_summary(summary_data, args)
 
 

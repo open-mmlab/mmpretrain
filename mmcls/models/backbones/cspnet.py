@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 from mmcv.cnn import ConvModule, DepthwiseSeparableConvModule
 from mmcv.cnn.bricks import DropPath
-from mmcv.runner import BaseModule, Sequential
+from mmengine.model import BaseModule, Sequential
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from mmcls.registry import MODELS

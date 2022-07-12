@@ -48,8 +48,8 @@ param_scheduler = dict(
     gamma=0.1,  # decay to 0.1 times.
 )
 
-train_cfg = dict(by_epoch=True, max_epochs=5)  # train 5 epochs
-val_cfg = dict(interval=1)  # validate every epoch
+train_cfg = dict(by_epoch=True, max_epochs=5, val_interval=1)  # train 5 epochs
+val_cfg = dict()
 test_cfg = dict()
 
 # runtime settings

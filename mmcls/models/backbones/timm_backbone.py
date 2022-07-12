@@ -7,9 +7,9 @@ except ImportError:
 import warnings
 
 from mmcv.cnn.bricks.registry import NORM_LAYERS
+from mmengine.logging import MMLogger
 
 from mmcls.registry import MODELS
-from ...utils import get_root_logger
 from .base_backbone import BaseBackbone
 
 
@@ -20,7 +20,7 @@ def print_timm_feature_info(feature_info):
         feature_info (list[dict] | timm.models.features.FeatureInfo | None):
             feature_info of timm backbone.
     """
-    logger = get_root_logger()
+    logger = MMLogger.get_current_instance()
     if feature_info is None:
         logger.warning('This backbone does not have feature_info')
     elif isinstance(feature_info, list):

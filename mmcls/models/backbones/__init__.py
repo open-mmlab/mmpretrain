@@ -8,6 +8,7 @@ from .deit import DistilledVisionTransformer
 from .densenet import DenseNet
 from .efficientnet import EfficientNet
 from .hrnet import HRNet
+from .inception_v3 import InceptionV3
 from .lenet import LeNet5
 from .mlp_mixer import MlpMixer
 from .mobilenet_v2 import MobileNetV2
@@ -42,5 +43,5 @@ __all__ = [
     'Conformer', 'MlpMixer', 'DistilledVisionTransformer', 'PCPVT', 'SVT',
     'EfficientNet', 'ConvNeXt', 'HRNet', 'ResNetV1c', 'ConvMixer',
     'CSPDarkNet', 'CSPResNet', 'CSPResNeXt', 'CSPNet', 'RepMLPNet',
-    'PoolFormer', 'DenseNet', 'VAN'
+    'PoolFormer', 'DenseNet', 'VAN', 'InceptionV3'
 ]

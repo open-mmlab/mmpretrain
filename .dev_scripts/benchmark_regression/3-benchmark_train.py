@@ -14,8 +14,8 @@ from rich.table import Table
 
 console = Console()
 METRICS_MAP = {
-    'Top 1 Accuracy': 'accuracy_top-1',
-    'Top 5 Accuracy': 'accuracy_top-5'
+    'Top 1 Accuracy': 'accuracy/top1',
+    'Top 5 Accuracy': 'accuracy/top5'
 }
 
 
@@ -280,23 +280,24 @@ def summary(args):
     summary_data = {}
     for model_name, model_info in models.items():
 
-        # Skip if not found any log file.
+        summary_data[model_name] = {}
+
         if model_name not in dir_map:
-            summary_data[model_name] = {}
             continue
+
+        # Skip if not found any vis_data folder.
         sub_dir = dir_map[model_name]
-        log_files = list(sub_dir.glob('*.log.json'))
-        if len(log_files) == 0:
+        vis_folders = [d for d in sub_dir.iterdir() if d.is_dir()]
+        if len(vis_folders) == 0:
             continue
-        log_file = sorted(log_files)[-1]
+        log_file = sorted(vis_folders)[-1] / 'vis_data' / 'scalars.json'
+        if not log_file.exists():
+            continue
 
         # parse train log
         with open(log_file) as f:
             json_logs = [json.loads(s) for s in f.readlines()]
-            val_logs = [
-                log for log in json_logs
-                if 'mode' in log and log['mode'] == 'val'
-            ]
+            val_logs = [log for log in json_logs if 'loss' not in log]
 
         if len(val_logs) == 0:
             continue
@@ -311,9 +312,10 @@ def summary(args):
                     f'{model_name}: No metric "{key_res}"'
                 expect_result = float(expect_metrics[key_yml])
                 last = float(val_logs[-1][key_res])
-                best_log = sorted(val_logs, key=lambda x: x[key_res])[-1]
+                best_log, best_epoch = sorted(
+                    zip(val_logs, range(len(val_logs))),
+                    key=lambda x: x[0][key_res])[-1]
                 best = float(best_log[key_res])
-                best_epoch = int(best_log['epoch'])
 
                 summary[key_yml] = dict(
                     expect=expect_result,

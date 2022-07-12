@@ -7,12 +7,13 @@ from unittest import TestCase
 from unittest.mock import MagicMock, call, patch
 
 import numpy as np
+from mmengine.logging import MMLogger
 from mmengine.registry import TRANSFORMS
 
 from mmcls.registry import DATASETS
-from mmcls.utils import get_root_logger
+from mmcls.utils import register_all_modules
 
-mmcls_logger = get_root_logger()
+register_all_modules()
 ASSETS_ROOT = osp.abspath(
     osp.join(osp.dirname(__file__), '../../data/dataset'))
 
@@ -218,7 +219,8 @@ class TestCustomDataset(TestBaseDataset):
             'ann_file': '',
             'extensions': ('.jpeg', )
         }
-        with self.assertLogs(mmcls_logger, 'WARN') as log:
+        logger = MMLogger.get_current_instance()
+        with self.assertLogs(logger, 'WARN') as log:
             dataset = dataset_class(**cfg)
         self.assertIn('Supported extensions are: .jpeg', log.output[0])
         self.assertEqual(len(dataset), 1)
@@ -291,13 +293,14 @@ class TestImageNet21k(TestCustomDataset):
 
         # Warn about ann_file
         cfg = {**self.DEFAULT_ARGS, 'ann_file': ''}
-        with self.assertLogs(mmcls_logger, 'WARN') as log:
+        logger = MMLogger.get_current_instance()
+        with self.assertLogs(logger, 'WARN') as log:
             dataset_class(**cfg)
         self.assertIn('specify the `ann_file`', log.output[0])
 
         # Warn about classes
         cfg = {**self.DEFAULT_ARGS, 'classes': None}
-        with self.assertLogs(mmcls_logger, 'WARN') as log:
+        with self.assertLogs(logger, 'WARN') as log:
             dataset_class(**cfg)
         self.assertIn('specify the `classes`', log.output[0])
 

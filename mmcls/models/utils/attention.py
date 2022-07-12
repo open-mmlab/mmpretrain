@@ -4,10 +4,9 @@ import warnings
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmcv.cnn.bricks.registry import DROPOUT_LAYERS
-from mmcv.cnn.bricks.transformer import build_dropout
-from mmcv.cnn.utils.weight_init import trunc_normal_
-from mmcv.runner.base_module import BaseModule
+from mmcv.cnn.bricks.drop import build_dropout
+from mmengine.model import BaseModule
+from mmengine.model.utils import trunc_normal_
 
 from mmcls.registry import MODELS
 from .helpers import to_2tuple
@@ -364,7 +363,7 @@ class MultiheadAttention(BaseModule):
         self.proj = nn.Linear(embed_dims, embed_dims, bias=proj_bias)
         self.proj_drop = nn.Dropout(proj_drop)
 
-        self.out_drop = DROPOUT_LAYERS.build(dropout_layer)
+        self.out_drop = build_dropout(dropout_layer)
 
     def forward(self, x):
         B, N, _ = x.shape

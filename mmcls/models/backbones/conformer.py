@@ -7,11 +7,11 @@ import torch.nn.functional as F
 from mmcv.cnn import build_activation_layer, build_norm_layer
 from mmcv.cnn.bricks.drop import DropPath
 from mmcv.cnn.bricks.transformer import AdaptivePadding
-from mmcv.cnn.utils.weight_init import trunc_normal_
+from mmengine.model import BaseModule
+from mmengine.model.utils import trunc_normal_
 
 from mmcls.registry import MODELS
-from mmcls.utils import get_root_logger
-from .base_backbone import BaseBackbone, BaseModule
+from .base_backbone import BaseBackbone
 from .vision_transformer import TransformerEncoderLayer
 
 
@@ -576,17 +576,12 @@ class Conformer(BaseBackbone):
 
     def init_weights(self):
         super(Conformer, self).init_weights()
-        logger = get_root_logger()
 
         if (isinstance(self.init_cfg, dict)
                 and self.init_cfg['type'] == 'Pretrained'):
             # Suppress default init if use pretrained model.
             return
-        else:
-            logger.info(f'No pre-trained weights for '
-                        f'{self.__class__.__name__}, '
-                        f'training start from scratch')
-            self.apply(self._init_weights)
+        self.apply(self._init_weights)
 
     def forward(self, x):
         output = []
