@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-"""MMClassification provides 17 registry nodes to support using modules across
+"""MMClassification provides 19 registry nodes to support using modules across
 projects. Each node is a child of the root registry in MMEngine.
 
 More details can be found at
@@ -28,6 +28,28 @@ from mmengine.registry import VISUALIZERS as MMENGINE_VISUALIZERS
 from mmengine.registry import \
     WEIGHT_INITIALIZERS as MMENGINE_WEIGHT_INITIALIZERS
 from mmengine.registry import Registry
+
+__all__ = [
+    "RUNNERS",
+    "RUNNER_CONSTRUCTORS",
+    "LOOPS",
+    "HOOKS",
+    "DATASETS",
+    "DATA_SAMPLERS",
+    "TRANSFORMS",
+    "MODELS",
+    "MODEL_WRAPPERS",
+    "WEIGHT_INITIALIZERS",
+    "BATCH_AUGMENTS",
+    "OPTIMIZERS",
+    "OPTIM_WRAPPERS",
+    "OPTIM_WRAPPER_CONSTRUCTORS",
+    "PARAM_SCHEDULERS",
+    "METRICS",
+    "TASK_UTILS",
+    "VISUALIZERS",
+    "VISBACKENDS",
+]
 
 # Registries For Runner and the related
 # manage all kinds of runners like `EpochBasedRunner` and `IterBasedRunner`

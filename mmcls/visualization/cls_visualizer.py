@@ -6,7 +6,7 @@ import numpy as np
 from mmengine import Visualizer
 from mmengine.dist import master_only
 
-from mmcls.engine import ClsDataSample
+from mmcls.data import ClsDataSample
 from mmcls.registry import VISUALIZERS
 
 
@@ -56,7 +56,8 @@ class ClsVisualizer(Visualizer):
         >>> import torch
         >>> import mmcv
         >>> from pathlib import Path
-        >>> from mmcls.core import ClsDataSample, ClsVisualizer
+        >>> from mmcls.visualization import ClsVisualizer
+        >>> from mmcls.data import ClsDataSample 
         >>> # Example image
         >>> img = mmcv.imread("./demo/bird.JPEG", channel_order='rgb')
         >>> # Example annotation

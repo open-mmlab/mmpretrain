@@ -7,7 +7,9 @@ from unittest.mock import ANY, MagicMock, patch
 import torch
 from mmengine.runner import EpochBasedTrainLoop, IterBasedTrainLoop
 
-from mmcls.engine import ClsDataSample, ClsVisualizer, VisualizationHook
+from mmcls.data import ClsDataSample
+from mmcls.visualization import ClsVisualizer
+from mmcls.engine import VisualizationHook
 from mmcls.registry import HOOKS
 from mmcls.utils import register_all_modules
 

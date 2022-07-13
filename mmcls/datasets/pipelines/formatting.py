@@ -9,7 +9,7 @@ from mmcv.parallel import DataContainer as DC
 from mmcv.transforms.base import BaseTransform
 from PIL import Image
 
-from mmcls.engine import ClsDataSample
+from mmcls.data import ClsDataSample
 from mmcls.registry import TRANSFORMS
 
 

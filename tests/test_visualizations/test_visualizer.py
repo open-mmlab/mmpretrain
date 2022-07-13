@@ -7,8 +7,8 @@ from unittest.mock import patch
 import numpy as np
 import torch
 
-from mmcls.engine import ClsDataSample, ClsVisualizer
-
+from mmcls.data import ClsDataSample
+from mmcls.visualization import ClsVisualizer
 
 class TestClsVisualizer(TestCase):
 

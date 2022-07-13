@@ -15,7 +15,7 @@ from modelindex.load_model_index import load
 from rich.console import Console
 from rich.table import Table
 
-from mmcls.engine import ClsVisualizer
+from mmcls.visualization import ClsVisualizer
 from mmcls.datasets import CIFAR10, CIFAR100, ImageNet
 from mmcls.utils import register_all_modules
 

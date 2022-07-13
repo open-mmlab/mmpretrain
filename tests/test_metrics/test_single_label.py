@@ -5,7 +5,7 @@ from unittest import TestCase
 import numpy as np
 import torch
 
-from mmcls.engine import ClsDataSample
+from mmcls.data import ClsDataSample
 from mmcls.metrics import Accuracy, SingleLabelMetric
 from mmcls.registry import METRICS
 

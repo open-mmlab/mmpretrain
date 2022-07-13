@@ -6,7 +6,7 @@ import sklearn.metrics
 import torch
 from mmengine.evaluator import Evaluator
 
-from mmcls.engine import ClsDataSample
+from mmcls.data import ClsDataSample
 from mmcls.metrics import AveragePrecision, MultiLabelMetric
 from mmcls.utils import register_all_modules
 

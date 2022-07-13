@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import torch
 
-from mmcls.engine import ClsDataSample
+from mmcls.data import ClsDataSample
 from mmcls.models import Mixup, RandomBatchAugment
 from mmcls.registry import BATCH_AUGMENTS
 

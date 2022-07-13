@@ -86,7 +86,7 @@ class Accuracy(BaseMetric):
         [[tensor([9.9000])], [tensor([51.5000])]]
         >>>
         >>> # ------------------- Use with Evalutor -------------------
-        >>> from mmcls.core import ClsDataSample
+        >>> from mmcls.data import ClsDataSample
         >>> from mmengine.evaluator import Evaluator
         >>> data_batch = [{
         ...     'inputs': None,  # In this example, the `inputs` is not used.
@@ -335,7 +335,7 @@ class SingleLabelMetric(BaseMetric):
           tensor(1000))]
         >>>
         >>> # ------------------- Use with Evalutor -------------------
-        >>> from mmcls.core import ClsDataSample
+        >>> from mmcls.data import ClsDataSample
         >>> from mmengine.evaluator import Evaluator
         >>> data_batch = [{
         ...     'inputs': None,  # In this example, the `inputs` is not used.

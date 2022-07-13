@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 import torch
 from mmengine import ConfigDict
 
-from mmcls.engine import ClsDataSample
+from mmcls.data import ClsDataSample
 from mmcls.models import ImageClassifier
 from mmcls.registry import MODELS
 from mmcls.utils import register_all_modules

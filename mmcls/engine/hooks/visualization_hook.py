@@ -8,7 +8,7 @@ from mmengine.hooks import Hook
 from mmengine.runner import EpochBasedTrainLoop, Runner
 from mmengine.visualization import Visualizer
 
-from mmcls.engine import ClsDataSample
+from mmcls.data import ClsDataSample
 from mmcls.registry import HOOKS
 
 
@@ -30,7 +30,7 @@ class VisualizationHook(Hook):
             in the testing process. If None, handle with the backends of the
             visualizer. Defaults to None.
         **kwargs: other keyword arguments of
-            :meth:`mmcls.engine.ClsVisualizer.add_datasample`.
+            :meth:`mmcls.visualization.ClsVisualizer.add_datasample`.
     """
 
     def __init__(self,
