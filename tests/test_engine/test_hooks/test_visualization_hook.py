@@ -8,10 +8,10 @@ import torch
 from mmengine.runner import EpochBasedTrainLoop, IterBasedTrainLoop
 
 from mmcls.data import ClsDataSample
-from mmcls.visualization import ClsVisualizer
 from mmcls.engine import VisualizationHook
 from mmcls.registry import HOOKS
 from mmcls.utils import register_all_modules
+from mmcls.visualization import ClsVisualizer
 
 register_all_modules()
 

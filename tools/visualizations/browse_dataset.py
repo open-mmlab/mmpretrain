@@ -10,11 +10,11 @@ from mmengine.config import Config, DictAction
 from mmengine.dataset import Compose
 from mmengine.visualization import Visualizer
 
-from mmcls.visualization import ClsVisualizer
-from mmcls.visualization.cls_visualizer import _get_adaptive_scale
 from mmcls.datasets.builder import build_dataset
 from mmcls.registry import VISUALIZERS
 from mmcls.utils import register_all_modules
+from mmcls.visualization import ClsVisualizer
+from mmcls.visualization.cls_visualizer import _get_adaptive_scale
 
 
 def parse_args():

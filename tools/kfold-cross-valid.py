@@ -14,10 +14,10 @@ from mmcv import Config, DictAction
 from mmcv.runner import get_dist_info, init_dist
 
 from mmcls import __version__
-from mmcls.utils import init_random_seed, set_random_seed, train_model
 from mmcls.datasets import build_dataset
 from mmcls.models import build_classifier
-from mmcls.utils import collect_env, get_root_logger, load_json_log
+from mmcls.utils import (collect_env, get_root_logger, init_random_seed,
+                         load_json_log, set_random_seed, train_model)
 
 TEST_METRICS = ('precision', 'recall', 'f1_score', 'support', 'mAP', 'CP',
                 'CR', 'CF1', 'OP', 'OR', 'OF1', 'accuracy')

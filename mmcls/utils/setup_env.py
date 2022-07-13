@@ -1,13 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import datetime
-import warnings
 import random
+import warnings
 
-from mmcv.runner import get_dist_info
-from mmengine import DefaultScope
 import numpy as np
 import torch
 import torch.distributed as dist
+from mmcv.runner import get_dist_info
+from mmengine import DefaultScope
 
 
 def init_random_seed(seed=None, device='cuda'):
@@ -61,6 +61,7 @@ def set_random_seed(seed, deterministic=False):
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
 
+
 def register_all_modules(init_default_scope: bool = True) -> None:
     """Register all modules in mmcls into the registries.
 
@@ -72,8 +73,8 @@ def register_all_modules(init_default_scope: bool = True) -> None:
             https://github.com/open-mmlab/mmengine/blob/main/docs/en/tutorials/registry.md
             Defaults to True.
     """  # noqa
-    import mmcls.engine  # noqa: F401,F403
     import mmcls.datasets  # noqa: F401,F403
+    import mmcls.engine  # noqa: F401,F403
     import mmcls.metrics  # noqa: F401,F403
     import mmcls.models  # noqa: F401,F403
 

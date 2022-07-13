@@ -57,7 +57,7 @@ class ClsVisualizer(Visualizer):
         >>> import mmcv
         >>> from pathlib import Path
         >>> from mmcls.visualization import ClsVisualizer
-        >>> from mmcls.data import ClsDataSample 
+        >>> from mmcls.data import ClsDataSample
         >>> # Example image
         >>> img = mmcv.imread("./demo/bird.JPEG", channel_order='rgb')
         >>> # Example annotation

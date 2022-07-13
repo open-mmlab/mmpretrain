@@ -8,8 +8,8 @@ from mmcv import DictAction
 from mmcv.parallel import MMDataParallel
 
 from mmcls.apis import single_gpu_test
-from mmcls.engine.export import ONNXRuntimeClassifier, TensorRTClassifier
 from mmcls.datasets import build_dataloader, build_dataset
+from mmcls.engine.export import ONNXRuntimeClassifier, TensorRTClassifier
 
 
 def parse_args():

@@ -15,9 +15,9 @@ from modelindex.load_model_index import load
 from rich.console import Console
 from rich.table import Table
 
-from mmcls.visualization import ClsVisualizer
 from mmcls.datasets import CIFAR10, CIFAR100, ImageNet
 from mmcls.utils import register_all_modules
+from mmcls.visualization import ClsVisualizer
 
 console = Console()
 MMCLS_ROOT = Path(__file__).absolute().parents[2]

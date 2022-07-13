@@ -10,6 +10,7 @@ import torch
 from mmcls.data import ClsDataSample
 from mmcls.visualization import ClsVisualizer
 
+
 class TestClsVisualizer(TestCase):
 
     def setUp(self) -> None:
