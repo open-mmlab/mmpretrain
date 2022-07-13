@@ -10,8 +10,8 @@ from mmengine.config import Config, DictAction
 from mmengine.dataset import Compose
 from mmengine.visualization import Visualizer
 
-from mmcls.core import ClsVisualizer
-from mmcls.core.visualization.cls_visualizer import _get_adaptive_scale
+from mmcls.engine import ClsVisualizer
+from mmcls.engine.visualization.cls_visualizer import _get_adaptive_scale
 from mmcls.datasets.builder import build_dataset
 from mmcls.registry import VISUALIZERS
 from mmcls.utils import register_all_modules

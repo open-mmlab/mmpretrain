@@ -61,7 +61,7 @@ You can switch between Chinese and English documentation in the lower-left corne
    :caption: API Reference
 
    mmcls.apis <api/apis>
-   mmcls.core <api/core>
+   mmcls.engine <api/engine>
    mmcls.models <api/models>
    mmcls.models.utils <api/models.utils>
    mmcls.datasets <api/datasets>

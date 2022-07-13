@@ -6,7 +6,7 @@ import numpy as np
 from mmengine import Visualizer
 from mmengine.dist import master_only
 
-from mmcls.core import ClsDataSample
+from mmcls.engine import ClsDataSample
 from mmcls.registry import VISUALIZERS
 
 

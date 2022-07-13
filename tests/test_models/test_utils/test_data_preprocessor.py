@@ -3,7 +3,7 @@ from unittest import TestCase
 
 import torch
 
-from mmcls.core import ClsDataSample
+from mmcls.engine import ClsDataSample
 from mmcls.models import ClsDataPreprocessor, RandomBatchAugment
 from mmcls.registry import MODELS
 from mmcls.utils import register_all_modules

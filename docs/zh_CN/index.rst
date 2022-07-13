@@ -60,7 +60,6 @@ You can switch between Chinese and English documentation in the lower-left corne
    :caption: API 参考文档
 
    mmcls.apis <api/apis>
-   mmcls.core <api/core>
    mmcls.models <api/models>
    mmcls.models.utils <api/models.utils>
    mmcls.datasets <api/datasets>

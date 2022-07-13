@@ -5,7 +5,7 @@ import numpy as np
 import torch
 from mmengine.data import LabelData
 
-from mmcls.core import ClsDataSample
+from mmcls.engine import ClsDataSample
 
 
 class TestClsDataSample(TestCase):

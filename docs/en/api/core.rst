@@ -11,12 +11,12 @@ classification tasks but not supported by MMCV yet.
 
    Some components may be moved to MMCV in the future.
 
-.. contents:: mmcls.core
+.. contents:: mmcls.engine
    :depth: 2
    :local:
    :backlinks: top
 
-.. currentmodule:: mmcls.core
+.. currentmodule:: mmcls.engine
 
 Evaluation
 ------------------

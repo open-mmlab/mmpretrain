@@ -70,7 +70,7 @@ class ClsDataSample(BaseDataElement):
 
     Examples:
         >>> import torch
-        >>> from mmcls.core import ClsDataSample
+        >>> from mmcls.engine import ClsDataSample
         >>>
         >>> img_meta = dict(img_shape=(960, 720), num_classes=5)
         >>> data_sample = ClsDataSample(metainfo=img_meta)

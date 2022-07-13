@@ -14,7 +14,7 @@ from mmcv import Config, DictAction
 from mmcv.runner import get_dist_info, init_dist
 
 from mmcls import __version__
-from mmcls.apis import init_random_seed, set_random_seed, train_model
+from mmcls.utils import init_random_seed, set_random_seed, train_model
 from mmcls.datasets import build_dataset
 from mmcls.models import build_classifier
 from mmcls.utils import collect_env, get_root_logger, load_json_log

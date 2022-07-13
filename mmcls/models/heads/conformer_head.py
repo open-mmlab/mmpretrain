@@ -4,7 +4,7 @@ from typing import List, Sequence, Tuple
 import torch
 import torch.nn as nn
 
-from mmcls.core import ClsDataSample
+from mmcls.engine import ClsDataSample
 from mmcls.metrics import Accuracy
 from mmcls.registry import MODELS
 from .cls_head import ClsHead

@@ -2,7 +2,7 @@
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
-from mmcls.core import ClassNumCheckHook
+from mmcls.engine import ClassNumCheckHook
 
 
 class TestClassNumCheckHook(TestCase):

@@ -7,7 +7,7 @@ import numpy as np
 import torch
 from mmengine import is_seq_of
 
-from mmcls.core import ClsDataSample
+from mmcls.engine import ClsDataSample
 from mmcls.registry import MODELS
 from mmcls.utils import register_all_modules
 
