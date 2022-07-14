@@ -3,3 +3,8 @@ _base_ = [
     '../_base_/schedules/imagenet_bs2048_coslr.py',
     '../_base_/default_runtime.py'
 ]
+
+# NOTE: `auto_scale_lr` is for automatically scaling LR,
+# USER SHOULD NOT CHANGE ITS VALUES.
+# base_batch_size = (32 GPUs) x (64 samples per GPU)
+auto_scale_lr = dict(base_batch_size=2048)

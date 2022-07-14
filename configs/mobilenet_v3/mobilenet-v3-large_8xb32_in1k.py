@@ -21,3 +21,8 @@ param_scheduler = dict(type='StepLR', by_epoch=True, step_size=2, gamma=0.973)
 train_cfg = dict(by_epoch=True, max_epochs=600, val_interval=1)
 val_cfg = dict()
 test_cfg = dict()
+
+# NOTE: `auto_scale_lr` is for automatically scaling LR,
+# USER SHOULD NOT CHANGE ITS VALUES.
+# base_batch_size = (8 GPUs) x (32 samples per GPU)
+auto_scale_lr = dict(base_batch_size=256)

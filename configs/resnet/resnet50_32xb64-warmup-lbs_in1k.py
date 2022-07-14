@@ -10,3 +10,8 @@ model = dict(
             label_smooth_val=0.1,
             num_classes=1000),
     ))
+
+# NOTE: `auto_scale_lr` is for automatically scaling LR,
+# USER SHOULD NOT CHANGE ITS VALUES.
+# base_batch_size = (32 GPUs) x (64 samples per GPU)
+auto_scale_lr = dict(base_batch_size=2048)

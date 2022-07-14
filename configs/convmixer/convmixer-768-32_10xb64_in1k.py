@@ -12,3 +12,8 @@ optim_wrapper = dict(
 )
 
 train_cfg = dict(by_epoch=True, max_epochs=300)
+
+# NOTE: `auto_scale_lr` is for automatically scaling LR,
+# USER SHOULD NOT CHANGE ITS VALUES.
+# base_batch_size = (10 GPUs) x (64 samples per GPU)
+auto_scale_lr = dict(base_batch_size=640)
