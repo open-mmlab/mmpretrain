@@ -76,7 +76,7 @@ def register_all_modules(init_default_scope: bool = True) -> None:
     import mmcls.data  # noqa: F401,F403
     import mmcls.datasets  # noqa: F401,F403
     import mmcls.engine  # noqa: F401,F403
-    import mmcls.metrics  # noqa: F401,F403
+    import mmcls.evaluation  # noqa: F401,F403
     import mmcls.models  # noqa: F401,F403
     import mmcls.visualization  # noqa: F401,F403
 

@@ -6,7 +6,7 @@ import numpy as np
 import torch
 
 from mmcls.data import ClsDataSample
-from mmcls.metrics import Accuracy, SingleLabelMetric
+from mmcls.evaluation.metrics import Accuracy, SingleLabelMetric
 from mmcls.registry import METRICS
 
 

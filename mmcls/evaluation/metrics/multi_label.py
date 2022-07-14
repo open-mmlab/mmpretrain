@@ -56,7 +56,7 @@ class MultiLabelMetric(BaseMetric):
 
     Examples:
         >>> import torch
-        >>> from mmcls.metrics import MultiLabelMetric
+        >>> from mmcls.evaluation import MultiLabelMetric
         >>> # ------ The Basic Usage for category indices labels -------
         >>> y_pred = [[0], [1], [0, 1], [3]]
         >>> y_true = [[0, 3], [0, 2], [1], [3]]
@@ -444,7 +444,7 @@ class AveragePrecision(BaseMetric):
 
     Examples:
         >>> import torch
-        >>> from mmcls.metrics import AveragePrecision
+        >>> from mmcls.evaluation import AveragePrecision
         >>> # --------- The Basic Usage for one-hot pred scores ---------
         >>> y_pred = torch.Tensor([[0.9, 0.8, 0.3, 0.2],
         ...                        [0.1, 0.2, 0.2, 0.1],

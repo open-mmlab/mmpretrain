@@ -73,7 +73,7 @@ class Accuracy(BaseMetric):
 
     Examples:
         >>> import torch
-        >>> from mmcls.metrics import Accuracy
+        >>> from mmcls.evaluation import Accuracy
         >>> # -------------------- The Basic Usage --------------------
         >>> y_pred = [0, 2, 1, 3]
         >>> y_true = [0, 1, 2, 3]
@@ -311,7 +311,7 @@ class SingleLabelMetric(BaseMetric):
 
     Examples:
         >>> import torch
-        >>> from mmcls.metrics import SingleLabelMetric
+        >>> from mmcls.evaluation import SingleLabelMetric
         >>> # -------------------- The Basic Usage --------------------
         >>> y_pred = [0, 1, 1, 3]
         >>> y_true = [0, 2, 1, 3]
