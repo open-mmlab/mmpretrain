@@ -457,7 +457,7 @@ class AveragePrecision(BaseMetric):
         >>> AveragePrecision.calculate(y_pred, y_true)
         tensor(70.833)
         >>> # ------------------- Use with Evalutor -------------------
-        >>> from mmcls.core import ClsDataSample
+        >>> from mmcls.data import ClsDataSample
         >>> from mmengine.evaluator import Evaluator
         >>> # The `data_batch` won't be used in this case, just use a fake.
         >>> data_batch = [
