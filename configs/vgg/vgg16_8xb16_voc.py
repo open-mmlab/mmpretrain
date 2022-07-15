@@ -37,7 +37,7 @@ train_cfg = dict(by_epoch=True, max_epochs=40, val_interval=1)
 val_cfg = dict()
 test_cfg = dict()
 
-# NOTE: `auto_scale_lr` is for automatically scaling LR,
-# USER SHOULD NOT CHANGE ITS VALUES.
+# NOTE: `auto_scale_lr` is for automatically scaling LR
+# based on the actual training batch size.
 # base_batch_size = (8 GPUs) x (16 samples per GPU)
 auto_scale_lr = dict(base_batch_size=128)

@@ -5,7 +5,7 @@ _base_ = [
     '../_base_/default_runtime.py'
 ]
 
-# NOTE: `auto_scale_lr` is for automatically scaling LR,
-# USER SHOULD NOT CHANGE ITS VALUES.
+# NOTE: `auto_scale_lr` is for automatically scaling LR
+# based on the actual training batch size.
 # base_batch_size = (4 GPUs) x (32 samples per GPU)
 auto_scale_lr = dict(base_batch_size=128)

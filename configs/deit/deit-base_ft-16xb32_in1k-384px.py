@@ -31,7 +31,7 @@ train_dataloader = dict(batch_size=32)
 # schedule settings
 optim_wrapper = dict(clip_grad=dict(max_norm=1.0))
 
-# NOTE: `auto_scale_lr` is for automatically scaling LR,
-# USER SHOULD NOT CHANGE ITS VALUES.
+# NOTE: `auto_scale_lr` is for automatically scaling LR
+# based on the actual training batch size.
 # base_batch_size = (16 GPUs) x (32 samples per GPU)
 auto_scale_lr = dict(base_batch_size=512)

@@ -1,7 +1,7 @@
 # Refers to https://pytorch.org/blog/ml-models-torchvision-v0.9/#classification
 
 _base_ = [
-    '../_base_/models/mobilenet_v3_large_imagenet.py',
+    '../_base_/models/mobilenet_v3_small_imagenet.py',
     '../_base_/datasets/imagenet_bs128_mbv3.py',
     '../_base_/default_runtime.py',
 ]
@@ -22,7 +22,7 @@ train_cfg = dict(by_epoch=True, max_epochs=600, val_interval=1)
 val_cfg = dict()
 test_cfg = dict()
 
-# NOTE: `auto_scale_lr` is for automatically scaling LR,
-# USER SHOULD NOT CHANGE ITS VALUES.
-# base_batch_size = (8 GPUs) x (32 samples per GPU)
-auto_scale_lr = dict(base_batch_size=256)
+# NOTE: `auto_scale_lr` is for automatically scaling LR
+# based on the actual training batch size.
+# base_batch_size = (8 GPUs) x (128 samples per GPU)
+auto_scale_lr = dict(base_batch_size=1024)
