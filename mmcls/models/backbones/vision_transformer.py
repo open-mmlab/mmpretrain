@@ -244,6 +244,8 @@ class VisionTransformer(BaseBackbone):
             tokens as transformer input. Defaults to True.
         avg_token (bool): Whether or not use the average token for
             classification. Defaults to False.
+        frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
+            -1 means not freezing any parameters. Default: -1.
         output_cls_token (bool): Whether output the cls_token. If set True,
             ``with_cls_token`` must be True. Defaults to True.
         beit_style (bool): Whether or not use BEiT-style
@@ -318,6 +320,7 @@ class VisionTransformer(BaseBackbone):
                  final_norm=True,
                  with_cls_token=True,
                  avg_token=False,
+                 frozen_stages=-1,
                  output_cls_token=True,
                  beit_style=False,
                  init_values=None,
@@ -414,6 +417,7 @@ class VisionTransformer(BaseBackbone):
             else:
                 self.layers.append(TransformerEncoderLayer(**_layer_cfg))
 
+        self.frozen_stages = frozen_stages
         self.final_norm = final_norm
         if final_norm:
             self.norm1_name, norm1 = build_norm_layer(
@@ -425,6 +429,9 @@ class VisionTransformer(BaseBackbone):
             self.norm2_name, norm2 = build_norm_layer(
                 norm_cfg, self.embed_dims, postfix=2)
             self.add_module(self.norm2_name, norm2)
+        # freeze stages only when self.frozen_stages > 0
+        if self.frozen_stages > 0:
+            self._freeze_stages()
 
     @property
     def norm1(self):
@@ -468,6 +475,29 @@ class VisionTransformer(BaseBackbone):
     def resize_pos_embed(*args, **kwargs):
         """Interface for backward-compatibility."""
         return resize_pos_embed(*args, **kwargs)
+
+    def _freeze_stages(self):
+        # freeze position embedding
+        self.pos_embed.requires_grad = False
+        # set dropout to eval model
+        self.drop_after_pos.eval()
+        # freeze patch embedding
+        self.patch_embed.eval()
+        for param in self.patch_embed.parameters():
+            param.requires_grad = False
+        # freeze cls_token
+        self.cls_token.requires_grad = False
+        # freeze layers
+        for i in range(1, self.frozen_stages + 1):
+            m = self.layers[i - 1]
+            m.eval()
+            for param in m.parameters():
+                param.requires_grad = False
+        # freeze the last layer norm
+        if self.frozen_stages == len(self.layers) and self.final_norm:
+            self.norm1.eval()
+            for param in self.norm1.parameters():
+                param.requires_grad = False
 
     def forward(self, x):
         B = x.shape[0]

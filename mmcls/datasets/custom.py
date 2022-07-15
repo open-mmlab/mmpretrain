@@ -225,7 +225,7 @@ class CustomDataset(BaseDataset):
             img_path = add_prefix(filename, self.img_prefix)
             info = {'img_path': img_path, 'gt_label': int(gt_label)}
             data_list.append(info)
-        return data_list
+        return data_list[:1000]
 
     def is_valid_file(self, filename: str) -> bool:
         """Check if a file is a valid sample."""
