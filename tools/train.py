@@ -14,11 +14,26 @@ def parse_args():
     parser.add_argument('config', help='train config file path')
     parser.add_argument('--work-dir', help='the dir to save logs and models')
     parser.add_argument(
-        '--resume-from', help='the checkpoint file to resume from')
+        '--resume',
+        nargs='?',
+        type=str,
+        const='auto',
+        help='If specify checkpint path, resume from it, while if not '
+        'specify, try to auto resume from the latest checkpoint '
+        'in the work directory.')
+    parser.add_argument(
+        '--amp',
+        action='store_true',
+        help='enable automatic-mixed-precision training')
     parser.add_argument(
         '--no-validate',
         action='store_true',
         help='whether not to evaluate the checkpoint during training')
+    parser.add_argument(
+        '--auto-scale-lr',
+        action='store_true',
+        help='whether to auto scale the learning rate according to the '
+        'actual batch size and the original batch size.')
     parser.add_argument(
         '--cfg-options',
         nargs='+',
@@ -44,10 +59,6 @@ def parse_args():
 
 def merge_args(cfg, args):
     """Merge CLI arguments to config."""
-    if args.resume_from is not None:
-        cfg.resume = True
-        cfg.load_from = args.resume_from
-
     if args.no_validate:
         cfg.val_cfg = None
         cfg.val_dataloader = None
@@ -63,6 +74,27 @@ def merge_args(cfg, args):
         # use config filename as default work_dir if cfg.work_dir is None
         cfg.work_dir = osp.join('./work_dirs',
                                 osp.splitext(osp.basename(args.config))[0])
+
+    # enable automatic-mixed-precision training
+    if args.amp is True:
+        optim_wrapper = cfg.optim_wrapper.get('type', 'OptimWrapper')
+        assert optim_wrapper in ['OptimWrapper', 'AmpOptimWrapper'], \
+            '`--amp` is not supported custom optimizer wrapper type ' \
+            f'`{optim_wrapper}.'
+        cfg.optim_wrapper.type = 'AmpOptimWrapper'
+        cfg.optim_wrapper.setdefault('loss_scale', 'dynamic')
+
+    # resume training
+    if args.resume == 'auto':
+        cfg.resume = True
+        cfg.load_from = None
+    elif args.resume is not None:
+        cfg.resume = True
+        cfg.load_from = args.resume
+
+    # enable auto scale learning rate
+    if args.auto_scale_lr:
+        cfg.auto_scale_lr.enable = True
 
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
