@@ -26,6 +26,7 @@ def construct_toy_data():
     results['img_shape'] = img.shape
     return results
 
+
 class TestRandomCrop(TestCase):
 
     def test_assertion(self):
