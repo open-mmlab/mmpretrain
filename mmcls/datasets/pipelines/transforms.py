@@ -1122,10 +1122,9 @@ class Albu(object):
 
         results = self.aug(**results)
 
-        if 'gt_labels' in results:
-            if isinstance(results['gt_labels'], list):
-                results['gt_labels'] = np.array(results['gt_labels'])
-            results['gt_labels'] = results['gt_labels'].astype(np.int64)
+        if 'gt_label' in results and results['gt_label'].shape != ():
+            # Albu will make the label from array(x) to array([x])
+            results['gt_label'] = np.array(results['gt_label'][0]).astype(np.int64)
 
         # back to the original format
         results = self.mapper(results, self.keymap_back)
