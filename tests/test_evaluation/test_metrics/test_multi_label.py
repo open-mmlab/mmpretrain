@@ -45,36 +45,38 @@ class TestMultiLabel(TestCase):
             y_true,
             pred_indices=True,
             target_indices=True,
+            average='macro',
             num_classes=4)
         self.assertIsInstance(res, tuple)
-        precision, recall, f1_score, support = res
+        precision, recall, f1_score = res
         expect_precision = sklearn.metrics.precision_score(
             y_true_binary, y_pred_binary, average='macro') * 100
         expect_recall = sklearn.metrics.recall_score(
             y_true_binary, y_pred_binary, average='macro') * 100
-        expect_f1 = sklearn.metrics.f1_score(
-            y_true_binary, y_pred_binary, average='macro') * 100
+        expect_f1 = 2 * expect_precision * expect_recall / (
+            expect_precision + expect_recall)
         self.assertTensorEqual(precision, expect_precision)
         self.assertTensorEqual(recall, expect_recall)
         self.assertTensorEqual(f1_score, expect_f1)
-        self.assertTensorEqual(support, 7)
 
         # Test with onehot input
-        res = MultiLabelMetric.calculate(y_pred_binary,
-                                         torch.from_numpy(y_true_binary))
+        res = MultiLabelMetric.calculate(
+            y_pred_binary,
+            torch.from_numpy(y_true_binary),
+            average='macro',
+        )
         self.assertIsInstance(res, tuple)
-        precision, recall, f1_score, support = res
+        precision, recall, f1_score = res
         # Expected values come from sklearn
         self.assertTensorEqual(precision, expect_precision)
         self.assertTensorEqual(recall, expect_recall)
         self.assertTensorEqual(f1_score, expect_f1)
-        self.assertTensorEqual(support, 7)
 
         # Test with topk argument
         res = MultiLabelMetric.calculate(
             y_pred_score, y_true, target_indices=True, topk=1, num_classes=4)
         self.assertIsInstance(res, tuple)
-        precision, recall, f1_score, support = res
+        CP, CR, CF1, OP, OR, OF1 = res
         # Expected values come from sklearn
         top1_y_pred = np.array([
             [1, 0, 0, 0],
@@ -82,22 +84,29 @@ class TestMultiLabel(TestCase):
             [0, 1, 0, 0],
             [0, 0, 0, 1],
         ])
-        expect_precision = sklearn.metrics.precision_score(
+        expect_CP = sklearn.metrics.precision_score(
             y_true_binary, top1_y_pred, average='macro') * 100
-        expect_recall = sklearn.metrics.recall_score(
+        expect_CR = sklearn.metrics.recall_score(
             y_true_binary, top1_y_pred, average='macro') * 100
-        expect_f1 = sklearn.metrics.f1_score(
-            y_true_binary, top1_y_pred, average='macro') * 100
-        self.assertTensorEqual(precision, expect_precision)
-        self.assertTensorEqual(recall, expect_recall)
-        self.assertTensorEqual(f1_score, expect_f1)
-        self.assertTensorEqual(support, 7)
+        expect_CF1 = 2 * expect_CP * expect_CR / (expect_CP + expect_CR)
+        expect_OP = sklearn.metrics.precision_score(
+            y_true_binary, top1_y_pred, average='micro') * 100
+        expect_OR = sklearn.metrics.recall_score(
+            y_true_binary, top1_y_pred, average='micro') * 100
+        expect_OF1 = sklearn.metrics.f1_score(
+            y_true_binary, top1_y_pred, average='micro') * 100
+        self.assertTensorEqual(CP, expect_CP)
+        self.assertTensorEqual(CR, expect_CR)
+        self.assertTensorEqual(CF1, expect_CF1)
+        self.assertTensorEqual(OP, expect_OP)
+        self.assertTensorEqual(OR, expect_OR)
+        self.assertTensorEqual(OF1, expect_OF1)
 
         # Test with thr argument
         res = MultiLabelMetric.calculate(
             y_pred_score, y_true, target_indices=True, thr=0.25, num_classes=4)
         self.assertIsInstance(res, tuple)
-        precision, recall, f1_score, support = res
+        CP, CR, CF1, OP, OR, OF1 = res
         # Expected values come from sklearn
         thr_y_pred = np.array([
             [1, 0, 0, 1],
@@ -105,16 +114,24 @@ class TestMultiLabel(TestCase):
             [0, 1, 1, 0],
             [0, 0, 0, 1],
         ])
-        expect_precision = sklearn.metrics.precision_score(
+        expect_CP = sklearn.metrics.precision_score(
             y_true_binary, thr_y_pred, average='macro') * 100
-        expect_recall = sklearn.metrics.recall_score(
+        expect_CR = sklearn.metrics.recall_score(
             y_true_binary, thr_y_pred, average='macro') * 100
-        expect_f1 = sklearn.metrics.f1_score(
-            y_true_binary, thr_y_pred, average='macro') * 100
-        self.assertTensorEqual(precision, expect_precision)
-        self.assertTensorEqual(recall, expect_recall)
-        self.assertTensorEqual(f1_score, expect_f1)
-        self.assertTensorEqual(support, 7)
+        expect_CF1 = 2 * expect_CP * expect_CR / (
+            expect_CP + expect_CR + torch.finfo(torch.float32).eps)
+        expect_OP = sklearn.metrics.precision_score(
+            y_true_binary, thr_y_pred, average='micro') * 100
+        expect_OR = sklearn.metrics.recall_score(
+            y_true_binary, thr_y_pred, average='micro') * 100
+        expect_OF1 = sklearn.metrics.f1_score(
+            y_true_binary, thr_y_pred, average='micro') * 100
+        self.assertTensorEqual(CP, expect_CP)
+        self.assertTensorEqual(CR, expect_CR)
+        self.assertTensorEqual(CF1, expect_CF1)
+        self.assertTensorEqual(OP, expect_OP)
+        self.assertTensorEqual(OR, expect_OR)
+        self.assertTensorEqual(OF1, expect_OF1)
 
         # Test with invalid inputs
         with self.assertRaisesRegex(TypeError, "<class 'str'> is not"):
@@ -172,15 +189,24 @@ class TestMultiLabel(TestCase):
             [0, 1, 1, 0],
             [0, 0, 0, 0],
         ])
-        expect_precision = sklearn.metrics.precision_score(
+        expect_CP = sklearn.metrics.precision_score(
             y_true_binary, thr05_y_pred, average='macro') * 100
-        expect_recall = sklearn.metrics.recall_score(
+        expect_CR = sklearn.metrics.recall_score(
             y_true_binary, thr05_y_pred, average='macro') * 100
-        expect_f1 = sklearn.metrics.f1_score(
-            y_true_binary, thr05_y_pred, average='macro') * 100
-        self.assertEqual(res['multi-label/precision'], expect_precision)
-        self.assertEqual(res['multi-label/recall'], expect_recall)
-        self.assertEqual(res['multi-label/f1-score'], expect_f1)
+        expect_CF1 = 2 * expect_CP * expect_CR / (
+            expect_CP + expect_CR + torch.finfo(torch.float32).eps)
+        expect_OP = sklearn.metrics.precision_score(
+            y_true_binary, thr05_y_pred, average='micro') * 100
+        expect_OR = sklearn.metrics.recall_score(
+            y_true_binary, thr05_y_pred, average='micro') * 100
+        expect_OF1 = sklearn.metrics.f1_score(
+            y_true_binary, thr05_y_pred, average='micro') * 100
+        self.assertAlmostEqual(res['multi-label/CP'], expect_CP, places=4)
+        self.assertAlmostEqual(res['multi-label/CR'], expect_CR, places=4)
+        self.assertAlmostEqual(res['multi-label/CF1'], expect_CF1, places=4)
+        self.assertAlmostEqual(res['multi-label/OP'], expect_OP, places=4)
+        self.assertAlmostEqual(res['multi-label/OR'], expect_OR, places=4)
+        self.assertAlmostEqual(res['multi-label/OF1'], expect_OF1, places=4)
 
         # Test with topk argument
         evaluator = Evaluator(dict(type='MultiLabelMetric', topk=1))
@@ -193,15 +219,26 @@ class TestMultiLabel(TestCase):
             [0, 1, 0, 0],
             [0, 0, 0, 1],
         ])
-        expect_precision = sklearn.metrics.precision_score(
+        expect_CP = sklearn.metrics.precision_score(
             y_true_binary, top1_y_pred, average='macro') * 100
-        expect_recall = sklearn.metrics.recall_score(
+        expect_CR = sklearn.metrics.recall_score(
             y_true_binary, top1_y_pred, average='macro') * 100
-        expect_f1 = sklearn.metrics.f1_score(
-            y_true_binary, top1_y_pred, average='macro') * 100
-        self.assertEqual(res['multi-label/precision_top1'], expect_precision)
-        self.assertEqual(res['multi-label/recall_top1'], expect_recall)
-        self.assertEqual(res['multi-label/f1-score_top1'], expect_f1)
+        expect_CF1 = 2 * expect_CP * expect_CR / (
+            expect_CP + expect_CR + torch.finfo(torch.float32).eps)
+        expect_OP = sklearn.metrics.precision_score(
+            y_true_binary, top1_y_pred, average='micro') * 100
+        expect_OR = sklearn.metrics.recall_score(
+            y_true_binary, top1_y_pred, average='micro') * 100
+        expect_OF1 = sklearn.metrics.f1_score(
+            y_true_binary, top1_y_pred, average='micro') * 100
+        self.assertAlmostEqual(res['multi-label/CP_top1'], expect_CP, places=4)
+        self.assertAlmostEqual(res['multi-label/CR_top1'], expect_CR, places=4)
+        self.assertAlmostEqual(
+            res['multi-label/CF1_top1'], expect_CF1, places=4)
+        self.assertAlmostEqual(res['multi-label/OP_top1'], expect_OP, places=4)
+        self.assertAlmostEqual(res['multi-label/OR_top1'], expect_OR, places=4)
+        self.assertAlmostEqual(
+            res['multi-label/OF1_top1'], expect_OF1, places=4)
 
         # Test with both argument
         evaluator = Evaluator(dict(type='MultiLabelMetric', thr=0.25, topk=1))
@@ -215,16 +252,30 @@ class TestMultiLabel(TestCase):
             [0, 1, 1, 0],
             [0, 0, 0, 1],
         ])
-        expect_precision = sklearn.metrics.precision_score(
+        expect_CP = sklearn.metrics.precision_score(
             y_true_binary, thr_y_pred, average='macro') * 100
-        expect_recall = sklearn.metrics.recall_score(
+        expect_CR = sklearn.metrics.recall_score(
             y_true_binary, thr_y_pred, average='macro') * 100
-        expect_f1 = sklearn.metrics.f1_score(
-            y_true_binary, thr_y_pred, average='macro') * 100
-        self.assertEqual(res['multi-label/precision_thr-0.25'],
-                         expect_precision)
-        self.assertEqual(res['multi-label/recall_thr-0.25'], expect_recall)
-        self.assertEqual(res['multi-label/f1-score_thr-0.25'], expect_f1)
+        expect_CF1 = 2 * expect_CP * expect_CR / (
+            expect_CP + expect_CR + torch.finfo(torch.float32).eps)
+        expect_OP = sklearn.metrics.precision_score(
+            y_true_binary, thr_y_pred, average='micro') * 100
+        expect_OR = sklearn.metrics.recall_score(
+            y_true_binary, thr_y_pred, average='micro') * 100
+        expect_OF1 = sklearn.metrics.f1_score(
+            y_true_binary, thr_y_pred, average='micro') * 100
+        self.assertAlmostEqual(
+            res['multi-label/CP_thr-0.25'], expect_CP, places=4)
+        self.assertAlmostEqual(
+            res['multi-label/CR_thr-0.25'], expect_CR, places=4)
+        self.assertAlmostEqual(
+            res['multi-label/CF1_thr-0.25'], expect_CF1, places=4)
+        self.assertAlmostEqual(
+            res['multi-label/OP_thr-0.25'], expect_OP, places=4)
+        self.assertAlmostEqual(
+            res['multi-label/OR_thr-0.25'], expect_OR, places=4)
+        self.assertAlmostEqual(
+            res['multi-label/OF1_thr-0.25'], expect_OF1, places=4)
 
         # Test with average micro
         evaluator = Evaluator(dict(type='MultiLabelMetric', average='micro'))
@@ -232,18 +283,30 @@ class TestMultiLabel(TestCase):
         res = evaluator.evaluate(4)
         self.assertIsInstance(res, dict)
         # Expected values come from sklearn
-        expect_precision = sklearn.metrics.precision_score(
+        expect_OP = sklearn.metrics.precision_score(
             y_true_binary, thr05_y_pred, average='micro') * 100
-        expect_recall = sklearn.metrics.recall_score(
+        expect_OR = sklearn.metrics.recall_score(
             y_true_binary, thr05_y_pred, average='micro') * 100
-        expect_f1 = sklearn.metrics.f1_score(
+        expect_OF1 = sklearn.metrics.f1_score(
             y_true_binary, thr05_y_pred, average='micro') * 100
-        self.assertAlmostEqual(
-            res['multi-label/precision_micro'], expect_precision, places=4)
-        self.assertAlmostEqual(
-            res['multi-label/recall_micro'], expect_recall, places=4)
-        self.assertAlmostEqual(
-            res['multi-label/f1-score_micro'], expect_f1, places=4)
+        self.assertAlmostEqual(res['multi-label/OP'], expect_OP, places=4)
+        self.assertAlmostEqual(res['multi-label/OR'], expect_OR, places=4)
+        self.assertAlmostEqual(res['multi-label/OF1'], expect_OF1, places=4)
+
+        # Test with average macro
+        evaluator = Evaluator(dict(type='MultiLabelMetric', average='macro'))
+        evaluator.process(fake_data_batch, pred)
+        res = evaluator.evaluate(4)
+        self.assertIsInstance(res, dict)
+        # Expected values come from sklearn
+        expect_CP = sklearn.metrics.precision_score(
+            y_true_binary, thr05_y_pred, average='macro') * 100
+        expect_CR = sklearn.metrics.recall_score(
+            y_true_binary, thr05_y_pred, average='macro') * 100
+        expect_CF1 = (2 * expect_CP * expect_CR) / (expect_CP + expect_CR)
+        self.assertAlmostEqual(res['multi-label/CP'], expect_CP, places=4)
+        self.assertAlmostEqual(res['multi-label/CR'], expect_CR, places=4)
+        self.assertAlmostEqual(res['multi-label/CF1'], expect_CF1, places=4)
 
         # Test with average None
         evaluator = Evaluator(dict(type='MultiLabelMetric', average=None))
@@ -270,11 +333,17 @@ class TestMultiLabel(TestCase):
             for i, j in zip(y_pred_score, y_true_binary)
         ]
 
-        evaluator = Evaluator(dict(type='MultiLabelMetric', items=['support']))
+        evaluator = Evaluator(dict(type='MultiLabelMetric', items=['recall']))
         evaluator.process(fake_data_batch, pred)
         res = evaluator.evaluate(4)
         self.assertIsInstance(res, dict)
-        self.assertEqual(res['multi-label/support'], 7)
+        self.assertEqual(len(res), 2)
+        expect_CR = sklearn.metrics.recall_score(
+            y_true_binary, thr05_y_pred, average='macro') * 100
+        expect_OR = sklearn.metrics.recall_score(
+            y_true_binary, thr05_y_pred, average='micro') * 100
+        self.assertAlmostEqual(res['multi-label/CR'], expect_CR, places=4)
+        self.assertAlmostEqual(res['multi-label/OR'], expect_OR, places=4)
 
     def assertTensorEqual(self,
                           tensor: torch.Tensor,
