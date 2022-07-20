@@ -1123,7 +1123,7 @@ class Albu(object):
         results = self.aug(**results)
 
         if 'gt_label' in results and results['gt_label'].shape != ():
-            # Albu will make the label from array(x) to array([x])
+            # Albu will change the label from array(x) to array([x])
             results['gt_label'] = np.array(results['gt_label'][0]).astype(np.int64)
 
         # back to the original format
