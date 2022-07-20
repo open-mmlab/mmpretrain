@@ -1,15 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+# Modified from https://github.com/Kevinz-code/CSRA
 import torch
 import torch.nn as nn
-from mmcv.runner import BaseModule
+from mmcv.runner import BaseModule, ModuleList
 
 from ..builder import HEADS
-from ..utils import is_tracing
-from .cls_head import ClsHead
+from .multi_label_head import MultiLabelClsHead
 
 
 @HEADS.register_module()
-class CSRAClsHead(ClsHead):
+class CSRAClsHead(MultiLabelClsHead):
     """Class-specific residual attention classifier head.
 
     Residual Attention: A Simple but Effective Method for Multi-Label
@@ -40,7 +40,6 @@ class CSRAClsHead(ClsHead):
                  in_channels,
                  num_heads,
                  lam,
-                 difficult_as_neg=False,
                  loss=dict(
                      type='CrossEntropyLoss',
                      use_sigmoid=True,
@@ -54,9 +53,8 @@ class CSRAClsHead(ClsHead):
         assert lam > 0, 'Lambda should be between 0 and 1.'
         super(CSRAClsHead, self).__init__(
             init_cfg=init_cfg, loss=loss, *args, **kwargs)
-        self.difficult_as_neg = difficult_as_neg
         self.temp_list = self.temperature_settings[num_heads]
-        self.csra_heads = nn.ModuleList([
+        self.csra_heads = ModuleList([
             CSRAModule(num_classes, in_channels, self.temp_list[i], lam)
             for i in range(num_heads)
         ])
@@ -65,13 +63,6 @@ class CSRAClsHead(ClsHead):
         if isinstance(x, tuple):
             x = x[-1]
         return x
-
-    def post_process(self, pred):
-        on_trace = is_tracing()
-        if torch.onnx.is_in_onnx_export() or on_trace:
-            return pred
-        pred = list(pred.detach().cpu().numpy())
-        return pred
 
     def simple_test(self, x, post_process=True, **kwargs):
         logit = 0.
@@ -89,12 +80,6 @@ class CSRAClsHead(ClsHead):
         for head in self.csra_heads:
             logit += head(x)
         gt_label = gt_label.type_as(logit)
-        if self.difficult_as_neg:
-            # map difficult examples to zeros
-            gt_label[gt_label < 0] = 0
-        else:
-            # map difficult examples to positive ones
-            gt_label = torch.abs(gt_label)
         _gt_label = torch.abs(gt_label)
         losses = self.loss(logit, _gt_label, **kwargs)
         return losses

@@ -16,14 +16,13 @@ Multi-label image recognition is a challenging computer vision task of practical
 
 ### VOC2007
 
-|           Model           |  Pretrain   | Params(M) | Flops(G) |   mAP   | OF1 (%) | CF1 (%) |                                                  config                                                  |
-| :-----------------------: | :---------: | :-------: | :------: | :-----: | :-----: | :-----: | :------------------------------------------------------------------------------------------------------: |
-|       Resnet50-CSRA       | ImageNet-1k |   23.55   |   4.12   | 90.4639 | 86.0586 | 84.2118 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/csra/resnet50_csra_voc07.py) |
-| Resnet50-MultiLabelLinear | ImageNet-1k |   23.55   |   4.12   | 88.9721 | 84.4115 | 82.6857 |                                                                                                          |
+|     Model      |                      Pretrain                      | Params(M) | Flops(G) |  mAP  | OF1 (%) | CF1 (%) |                      Config                       |                      Download                       |
+| :------------: | :------------------------------------------------: | :-------: | :------: | :---: | :-----: | :-----: | :-----------------------------------------------: | :-------------------------------------------------: |
+| Resnet101-CSRA | [ImageNet-1k](https://download.openmmlab.com/mmclassification/v0/resnet/resnet101_8xb32_in1k_20210831-539c63f8.pth) |   23.55   |   4.12   | 94.98 |  90.80  |  89.16  | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/csra/resnet101_csra_1xb16_voc07_448.py) | [model](https://download.openmmlab.com/mmclassification/v0/csra/resnet101_csra_1xb16_voc07_448_20220722-29efb40a.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/csra/resnet101_csra_1xb16_voc07_448_20220722-29efb40a.log.json) |
 
 ## Citation
 
-```
+```bibtex
 @misc{https://doi.org/10.48550/arxiv.2108.02456,
   doi = {10.48550/ARXIV.2108.02456},
   url = {https://arxiv.org/abs/2108.02456},
