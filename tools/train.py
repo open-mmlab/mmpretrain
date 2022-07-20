@@ -2,8 +2,8 @@
 import argparse
 import os
 import os.path as osp
-import mc
 
+import mc
 from mmengine.config import Config, DictAction
 from mmengine.runner import Runner
 
