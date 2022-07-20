@@ -7,15 +7,142 @@ import torch
 import torch.nn as nn
 import torch.utils.checkpoint as cp
 from mmcv.cnn import build_norm_layer
-from mmcv.cnn.bricks.transformer import FFN, PatchEmbed, PatchMerging
+from mmcv.cnn.bricks.transformer import FFN, AdaptivePadding, PatchEmbed
 from mmcv.cnn.utils.weight_init import trunc_normal_
 from mmcv.runner.base_module import BaseModule, ModuleList
 from mmcv.utils.parrots_wrapper import _BatchNorm
 
 from ..builder import BACKBONES
-from ..utils import (ShiftWindowMSA, resize_pos_embed,
-                     resize_relative_position_bias_table, to_2tuple)
+from ..utils import ShiftWindowMSA, resize_pos_embed, to_2tuple
 from .base_backbone import BaseBackbone
+
+
+class PatchMerging(BaseModule):
+    """Merge patch feature map.
+
+    This layer groups feature map by kernel_size, and applies norm and linear
+    layers to the grouped feature map ((used in Swin Transformer)).
+    Our implementation uses `nn.Unfold` to
+    merge patches, which is about 25% faster than the original
+    implementation. However, we need to modify pretrained
+    models for compatibility.
+
+    Args:
+        in_channels (int): The num of input channels.
+            to gets fully covered by filter and stride you specified.
+        out_channels (int): The num of output channels.
+        kernel_size (int | tuple, optional): the kernel size in the unfold
+            layer. Defaults to 2.
+        stride (int | tuple, optional): the stride of the sliding blocks in the
+            unfold layer. Default: None. (Would be set as `kernel_size`)
+        padding (int | tuple | string ): The padding length of
+            embedding conv. When it is a string, it means the mode
+            of adaptive padding, support "same" and "corner" now.
+            Default: "corner".
+        dilation (int | tuple, optional): dilation parameter in the unfold
+            layer. Default: 1.
+        bias (bool, optional): Whether to add bias in linear layer or not.
+            Defaults: False.
+        norm_cfg (dict, optional): Config dict for normalization layer.
+            Default: dict(type='LN').
+        init_cfg (dict, optional): The extra config for initialization.
+            Default: None.
+    """
+
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 kernel_size=2,
+                 stride=None,
+                 padding='corner',
+                 dilation=1,
+                 bias=False,
+                 norm_cfg=dict(type='LN'),
+                 init_cfg=None):
+        super().__init__(init_cfg=init_cfg)
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        if stride:
+            stride = stride
+        else:
+            stride = kernel_size
+
+        kernel_size = to_2tuple(kernel_size)
+        stride = to_2tuple(stride)
+        dilation = to_2tuple(dilation)
+
+        if isinstance(padding, str):
+            self.adaptive_padding = AdaptivePadding(
+                kernel_size=kernel_size,
+                stride=stride,
+                dilation=dilation,
+                padding=padding)
+            # disable the padding of unfold
+            padding = 0
+        else:
+            self.adaptive_padding = None
+
+        padding = to_2tuple(padding)
+        self.sampler = nn.Unfold(
+            kernel_size=kernel_size,
+            dilation=dilation,
+            padding=padding,
+            stride=stride)
+
+        sample_dim = kernel_size[0] * kernel_size[1] * in_channels
+
+        self.reduction = nn.Linear(sample_dim, out_channels, bias=bias)
+        if norm_cfg is not None:
+            self.norm = build_norm_layer(norm_cfg, out_channels)[1]
+        else:
+            self.norm = None
+
+    def forward(self, x, input_size):
+        """
+        Args:
+            x (Tensor): Has shape (B, H*W, C_in).
+            input_size (tuple[int]): The spatial shape of x, arrange as (H, W).
+                Default: None.
+
+        Returns:
+            tuple: Contains merged results and its spatial shape.
+
+            - x (Tensor): Has shape (B, Merged_H * Merged_W, C_out)
+            - out_size (tuple[int]): Spatial shape of x, arrange as
+              (Merged_H, Merged_W).
+        """
+        B, L, C = x.shape
+        assert isinstance(input_size, Sequence), f'Expect ' \
+                                                 f'input_size is ' \
+                                                 f'`Sequence` ' \
+                                                 f'but get {input_size}'
+
+        H, W = input_size
+        assert L == H * W, 'input feature has wrong size'
+
+        x = x.view(B, H, W, C).permute([0, 3, 1, 2])  # B, C, H, W
+
+        if self.adaptive_padding:
+            x = self.adaptive_padding(x)
+            H, W = x.shape[-2:]
+
+        # Use nn.Unfold to merge patch. About 25% faster than original method,
+        # but need to modify pretrained model for compatibility
+        # if kernel_size=2 and stride=2, x should has shape (B, 4*C, H/2*W/2)
+        x = self.sampler(x)
+
+        out_h = (H + 2 * self.sampler.padding[0] - self.sampler.dilation[0] *
+                 (self.sampler.kernel_size[0] - 1) -
+                 1) // self.sampler.stride[0] + 1
+        out_w = (W + 2 * self.sampler.padding[1] - self.sampler.dilation[1] *
+                 (self.sampler.kernel_size[1] - 1) -
+                 1) // self.sampler.stride[1] + 1
+
+        output_size = (out_h, out_w)
+        x = x.transpose(1, 2)  # B, H/2*W/2, 4*C
+        x = self.norm(x) if self.norm else x
+        x = self.reduction(x)
+        return x, output_size
 
 
 class SwinBlockV2(BaseModule):
@@ -60,6 +187,7 @@ class SwinBlockV2(BaseModule):
                  ffn_cfgs=dict(),
                  norm_cfg=dict(type='LN'),
                  with_cp=False,
+                 pretrained_window_size=0,
                  init_cfg=None):
 
         super(SwinBlockV2, self).__init__(init_cfg)
@@ -76,7 +204,9 @@ class SwinBlockV2(BaseModule):
             **attn_cfgs
         }
         # use V2 attention implementation
-        _attn_cfgs.update(version='v2')
+        _attn_cfgs.update(
+            version='v2',
+            pretrained_window_size=to_2tuple(pretrained_window_size))
         self.attn = ShiftWindowMSA(**_attn_cfgs)
         self.norm1 = build_norm_layer(norm_cfg, embed_dims)[1]
 
@@ -166,6 +296,7 @@ class SwinBlockV2Sequence(BaseModule):
                  with_cp=False,
                  pad_small_map=False,
                  extra_norm_every_n_blocks=0,
+                 pretrained_window_size=0,
                  init_cfg=None):
         super().__init__(init_cfg)
 
@@ -189,6 +320,7 @@ class SwinBlockV2Sequence(BaseModule):
                 'drop_path': drop_paths[i],
                 'with_cp': with_cp,
                 'pad_small_map': pad_small_map,
+                'pretrained_window_size': pretrained_window_size,
                 **block_cfgs[i]
             }
             block = SwinBlockV2(**_block_cfg)
@@ -337,7 +469,7 @@ class SwinTransformerV2(BaseBackbone):
                  img_size=224,
                  patch_size=4,
                  in_channels=3,
-                 window_size=7,
+                 window_size=8,
                  drop_rate=0.,
                  drop_path_rate=0.1,
                  out_indices=(3, ),
@@ -350,6 +482,7 @@ class SwinTransformerV2(BaseBackbone):
                  norm_cfg=dict(type='LN'),
                  stage_cfgs=dict(),
                  patch_cfg=dict(),
+                 pretrained_window_sizes=[0, 0, 0, 0],
                  init_cfg=None):
         super(SwinTransformerV2, self).__init__(init_cfg=init_cfg)
 
@@ -398,8 +531,7 @@ class SwinTransformerV2(BaseBackbone):
             self._register_load_state_dict_pre_hook(
                 self._prepare_abs_pos_embed)
 
-        self._register_load_state_dict_pre_hook(
-            self._prepare_relative_position_bias_table)
+        self._register_load_state_dict_pre_hook(self._delete_reinit_params)
 
         self.drop_after_pos = nn.Dropout(p=drop_rate)
         self.norm_eval = norm_eval
@@ -429,6 +561,7 @@ class SwinTransformerV2(BaseBackbone):
                 'with_cp': with_cp,
                 'pad_small_map': pad_small_map,
                 'extra_norm_every_n_blocks': self.extra_norm_every_n_blocks,
+                'pretrained_window_size': pretrained_window_sizes[i],
                 **stage_cfg
             }
 
@@ -526,33 +659,9 @@ class SwinTransformerV2(BaseBackbone):
                                                 self.interpolate_mode,
                                                 self.num_extra_tokens)
 
-    def _prepare_relative_position_bias_table(self, state_dict, prefix, *args,
-                                              **kwargs):
+    def _delete_reinit_params(self, state_dict, prefix, *args, **kwargs):
         """TODO: Should be somehow modified, when inference, the bias values at
         each relative position can be stored as parameters. And can be further
         transferring to other window size.
         """
-        all_keys = list(state_dict.keys())
-        state_dict_model = self.state_dict()
-        for key in all_keys:
-            if 'relative_position_bias_table' in key:
-                relative_position_bias_table_pretrained = state_dict[key]
-                relative_position_bias_table_current = state_dict_model[key]
-                L1, nH1 = relative_position_bias_table_pretrained.size()
-                L2, nH2 = relative_position_bias_table_current.size()
-                if L1 != L2:
-                    src_size = int(L1**0.5)
-                    dst_size = int(L2**0.5)
-                    new_rel_pos_bias = resize_relative_position_bias_table(
-                        src_size, dst_size,
-                        relative_position_bias_table_pretrained, nH1)
-                    from mmcls.utils import get_root_logger
-                    logger = get_root_logger()
-                    logger.info(
-                        f'Resize the relative_position_bias_table from \
-                        {state_dict[key].shape} to {new_rel_pos_bias.shape}')
-                    state_dict[key] = new_rel_pos_bias
-
-                    # The index buffer need to be re-generated.
-                    index_buffer = key.replace('bias_table', 'index')
-                    del state_dict[index_buffer]
+        pass
