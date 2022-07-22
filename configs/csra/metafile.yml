@@ -24,6 +24,6 @@ Models:
           mAP: 94.98
           OF1: 90.80
           CF1: 89.16
-        Task: Image Classification
+        Task: Multi-Label Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/csra/resnet101_csra_1xb16_voc07_448_20220722-29efb40a.pth
-    Config: resnet101_csra_1xb16_voc07_448.py
+    Config: configs/csra/resnet101_csra_1xb16_voc07_448.py
