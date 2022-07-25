@@ -149,7 +149,8 @@ class WindowMSAV2(BaseModule):
                  proj_drop=0.,
                  cpb_mlp_hidden_dims=512,
                  pretrained_window_size=[0, 0],
-                 init_cfg=None):
+                 init_cfg=None,
+                 **kwargs):  # accept extra arguments
 
         super().__init__(init_cfg)
         self.embed_dims = embed_dims
@@ -329,8 +330,8 @@ class ShiftWindowMSA(BaseModule):
                  pad_small_map=False,
                  input_resolution=None,
                  auto_pad=None,
-                 version='v1',
-                 pretrained_window_size=0,
+                 window_msa=WindowMSA,
+                 msa_cfg=dict(),
                  init_cfg=None):
         super().__init__(init_cfg)
 
@@ -345,28 +346,19 @@ class ShiftWindowMSA(BaseModule):
         self.window_size = window_size
         assert 0 <= self.shift_size < self.window_size
 
-        if version == 'v1':
-            self.w_msa = WindowMSA(
-                embed_dims=embed_dims,
-                window_size=to_2tuple(self.window_size),
-                num_heads=num_heads,
-                qkv_bias=qkv_bias,
-                qk_scale=qk_scale,
-                attn_drop=attn_drop,
-                proj_drop=proj_drop,
-            )
-        elif version == 'v2':
-            self.w_msa = WindowMSAV2(
-                embed_dims=embed_dims,
-                window_size=to_2tuple(self.window_size),
-                num_heads=num_heads,
-                qkv_bias=qkv_bias,
-                attn_drop=attn_drop,
-                proj_drop=proj_drop,
-                pretrained_window_size=pretrained_window_size,
-            )
-        else:
-            raise ValueError(f'Version {version} is not supported.')
+        assert issubclass(window_msa, BaseModule), \
+            'Expect Window based multi-head self-attention Module is type of' \
+            f'{type(BaseModule)}, but got {type(window_msa)}.'
+        self.w_msa = window_msa(
+            embed_dims=embed_dims,
+            window_size=to_2tuple(self.window_size),
+            num_heads=num_heads,
+            qkv_bias=qkv_bias,
+            qk_scale=qk_scale,
+            attn_drop=attn_drop,
+            proj_drop=proj_drop,
+            **msa_cfg,
+        )
 
         self.drop = build_dropout(dropout_layer)
         self.pad_small_map = pad_small_map

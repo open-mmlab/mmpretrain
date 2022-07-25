@@ -13,7 +13,7 @@ from mmcv.runner.base_module import BaseModule, ModuleList
 from mmcv.utils.parrots_wrapper import _BatchNorm
 
 from ..builder import BACKBONES
-from ..utils import ShiftWindowMSA, resize_pos_embed, to_2tuple
+from ..utils import ShiftWindowMSA, WindowMSAV2, resize_pos_embed, to_2tuple
 from .base_backbone import BaseBackbone
 
 
@@ -140,8 +140,8 @@ class PatchMerging(BaseModule):
 
         output_size = (out_h, out_w)
         x = x.transpose(1, 2)  # B, H/2*W/2, 4*C
-        x = self.norm(x) if self.norm else x
         x = self.reduction(x)
+        x = self.norm(x) if self.norm else x
         return x, output_size
 
 
@@ -177,7 +177,7 @@ class SwinBlockV2(BaseModule):
     def __init__(self,
                  embed_dims,
                  num_heads,
-                 window_size=7,
+                 window_size=8,
                  shift=False,
                  extra_norm=False,
                  ffn_ratio=4.,
@@ -205,8 +205,9 @@ class SwinBlockV2(BaseModule):
         }
         # use V2 attention implementation
         _attn_cfgs.update(
-            version='v2',
-            pretrained_window_size=to_2tuple(pretrained_window_size))
+            window_msa=WindowMSAV2,
+            msa_cfg=dict(
+                pretrained_window_size=to_2tuple(pretrained_window_size)))
         self.attn = ShiftWindowMSA(**_attn_cfgs)
         self.norm1 = build_norm_layer(norm_cfg, embed_dims)[1]
 
@@ -288,7 +289,7 @@ class SwinBlockV2Sequence(BaseModule):
                  embed_dims,
                  depth,
                  num_heads,
-                 window_size=7,
+                 window_size=8,
                  downsample=False,
                  downsample_cfg=dict(),
                  drop_paths=0.,
@@ -331,6 +332,7 @@ class SwinBlockV2Sequence(BaseModule):
                 'in_channels': embed_dims,
                 'out_channels': 2 * embed_dims,
                 'norm_cfg': dict(type='LN'),
+                'padding': 0,
                 **downsample_cfg
             }
             self.downsample = PatchMerging(**_downsample_cfg)
@@ -511,6 +513,16 @@ class SwinTransformerV2(BaseBackbone):
         self.interpolate_mode = interpolate_mode
         self.frozen_stages = frozen_stages
 
+        if isinstance(window_size, int):
+            self.window_sizes = [window_size for _ in range(self.num_layers)]
+        elif isinstance(window_size, Sequence):
+            assert len(window_size) == self.num_layers, \
+                f'Length of window_sizes {len(window_size)} is not equal to '\
+                f'length of stages {self.num_layers}.'
+            self.window_sizes = window_size
+        else:
+            raise TypeError('window_size should be a Sequence or int.')
+
         _patch_cfg = dict(
             in_channels=in_channels,
             input_size=img_size,
@@ -555,7 +567,7 @@ class SwinTransformerV2(BaseBackbone):
                 'embed_dims': embed_dims[-1],
                 'depth': depth,
                 'num_heads': num_heads,
-                'window_size': window_size,
+                'window_size': self.window_sizes[i],
                 'downsample': downsample,
                 'drop_paths': dpr[:depth],
                 'with_cp': with_cp,
@@ -592,6 +604,7 @@ class SwinTransformerV2(BaseBackbone):
 
     def forward(self, x):
         x, hw_shape = self.patch_embed(x)
+
         if self.use_abs_pos_embed:
             x = x + resize_pos_embed(
                 self.absolute_pos_embed, self.patch_resolution, hw_shape,

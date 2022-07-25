@@ -4,3 +4,5 @@ _base_ = [
     '../_base_/schedules/imagenet_bs1024_adamw_swin.py',
     '../_base_/default_runtime.py'
 ]
+
+model = dict(backbone=dict(window_size=[16, 16, 16, 8]), )

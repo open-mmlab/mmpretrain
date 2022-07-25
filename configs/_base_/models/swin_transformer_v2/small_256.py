@@ -2,7 +2,9 @@
 model = dict(
     type='ImageClassifier',
     backbone=dict(
-        type='SwinTransformerV2', arch='small', img_size=224,
+        type='SwinTransformerV2',
+        arch='small',
+        img_size=256,
         drop_path_rate=0.3),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
