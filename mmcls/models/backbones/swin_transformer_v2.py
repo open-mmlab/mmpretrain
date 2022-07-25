@@ -332,7 +332,6 @@ class SwinBlockV2Sequence(BaseModule):
                 'in_channels': embed_dims,
                 'out_channels': 2 * embed_dims,
                 'norm_cfg': dict(type='LN'),
-                'padding': 0,
                 **downsample_cfg
             }
             self.downsample = PatchMerging(**_downsample_cfg)
@@ -673,8 +672,16 @@ class SwinTransformerV2(BaseBackbone):
                                                 self.num_extra_tokens)
 
     def _delete_reinit_params(self, state_dict, prefix, *args, **kwargs):
-        """TODO: Should be somehow modified, when inference, the bias values at
-        each relative position can be stored as parameters. And can be further
-        transferring to other window size.
-        """
-        pass
+        # delete relative_position_index since we always re-init it
+        relative_position_index_keys = [
+            k for k in state_dict.keys() if 'relative_position_index' in k
+        ]
+        for k in relative_position_index_keys:
+            del state_dict[k]
+
+        # delete relative_coords_table since we always re-init it
+        relative_position_index_keys = [
+            k for k in state_dict.keys() if 'relative_coords_table' in k
+        ]
+        for k in relative_position_index_keys:
+            del state_dict[k]

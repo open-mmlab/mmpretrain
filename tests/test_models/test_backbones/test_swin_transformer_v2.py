@@ -98,14 +98,14 @@ class TestSwinTransformerV2(TestCase):
         cfg = deepcopy(self.cfg)
         cfg['use_abs_pos_embed'] = True
         model = SwinTransformerV2(**cfg)
-        load_checkpoint(model, checkpoint, strict=True)
+        load_checkpoint(model, checkpoint, strict=False)
 
         # test load checkpoint with different img_size
         cfg = deepcopy(self.cfg)
         cfg['img_size'] = 384
         cfg['use_abs_pos_embed'] = True
         model = SwinTransformerV2(**cfg)
-        load_checkpoint(model, checkpoint, strict=True)
+        load_checkpoint(model, checkpoint, strict=False)
         resized_pos_embed = timm_resize_pos_embed(
             pretrain_pos_embed, model.absolute_pos_embed, num_tokens=0)
         self.assertTrue(
@@ -114,7 +114,7 @@ class TestSwinTransformerV2(TestCase):
         os.remove(checkpoint)
 
     def test_forward(self):
-        imgs = torch.randn(3, 3, 224, 224)
+        imgs = torch.randn(3, 3, 256, 256)
 
         cfg = deepcopy(self.cfg)
         model = SwinTransformerV2(**cfg)
@@ -122,7 +122,7 @@ class TestSwinTransformerV2(TestCase):
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 1)
         feat = outs[-1]
-        self.assertEqual(feat.shape, (3, 1024, 7, 7))
+        self.assertEqual(feat.shape, (3, 1024, 8, 8))
 
         # test with window_size=12
         cfg = deepcopy(self.cfg)
@@ -134,18 +134,18 @@ class TestSwinTransformerV2(TestCase):
         feat = outs[-1]
         self.assertEqual(feat.shape, (3, 1024, 12, 12))
         with self.assertRaisesRegex(AssertionError, r'the window size \(12\)'):
-            model(torch.randn(3, 3, 224, 224))
+            model(torch.randn(3, 3, 256, 256))
 
         # test with pad_small_map=True
         cfg = deepcopy(self.cfg)
         cfg['window_size'] = 12
         cfg['pad_small_map'] = True
         model = SwinTransformerV2(**cfg)
-        outs = model(torch.randn(3, 3, 224, 224))
+        outs = model(torch.randn(3, 3, 256, 256))
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 1)
         feat = outs[-1]
-        self.assertEqual(feat.shape, (3, 1024, 7, 7))
+        self.assertEqual(feat.shape, (3, 1024, 8, 8))
 
         # test multiple output indices
         cfg = deepcopy(self.cfg)
@@ -156,7 +156,7 @@ class TestSwinTransformerV2(TestCase):
         self.assertEqual(len(outs), 4)
         for stride, out in zip([2, 4, 8, 8], outs):
             self.assertEqual(out.shape,
-                             (3, 128 * stride, 56 // stride, 56 // stride))
+                             (3, 128 * stride, 64 // stride, 64 // stride))
 
         # test with checkpoint forward
         cfg = deepcopy(self.cfg)
@@ -172,13 +172,14 @@ class TestSwinTransformerV2(TestCase):
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 1)
         feat = outs[-1]
-        self.assertEqual(feat.shape, (3, 1024, 7, 7))
+        self.assertEqual(feat.shape, (3, 1024, 8, 8))
 
         # test with dynamic input shape
         imgs1 = torch.randn(3, 3, 224, 224)
         imgs2 = torch.randn(3, 3, 256, 256)
         imgs3 = torch.randn(3, 3, 256, 309)
         cfg = deepcopy(self.cfg)
+        cfg['pad_small_map'] = True
         model = SwinTransformerV2(**cfg)
         for imgs in [imgs1, imgs2, imgs3]:
             outs = model(imgs)
