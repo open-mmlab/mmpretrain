@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import copy
 import inspect
 import math
 import random
@@ -1120,14 +1121,23 @@ class Albu(object):
         # dict to albumentations format
         results = self.mapper(results, self.keymap_to_albu)
 
-        results = self.aug(**results)
+        if 'gt_label' in results:
+            if isinstance(results['gt_label'], list):
+                results['gt_label'] = np.array(results['gt_label'])
+            results['gt_label'] = results['gt_label'].astype(np.int64)
 
-        if 'gt_label' in results and results['gt_label'].shape != ():
-            # Albu will change the label from array(x) to array([x])
-            results['gt_label'] = np.array(results['gt_label'][0]).astype(np.int64)
+        # save gt_label incase Albu modify it.
+        _gt_label = copy.deepcopy(results.get('gt_label', None))
+
+        # process aug
+        results = self.aug(**results)
 
         # back to the original format
         results = self.mapper(results, self.keymap_back)
+
+        if _gt_label is not None:
+            # update the original gt_label
+            results.update({'gt_label': _gt_label})
 
         # update final shape
         if self.update_pad_shape:
