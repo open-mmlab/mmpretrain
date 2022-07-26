@@ -8,15 +8,15 @@ import mmcv
 import numpy as np
 import torch
 from mmcv import DictAction
-from mmcv.device import get_device
 from mmcv.runner import (get_dist_info, init_dist, load_checkpoint,
                          wrap_fp16_model)
 
 from mmcls.apis import multi_gpu_test, single_gpu_test
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.models import build_classifier
-from mmcls.utils import (get_root_logger, setup_multi_processes,
-                         wrap_distributed_model, wrap_non_distributed_model)
+from mmcls.utils import (auto_select_device, get_root_logger,
+                         setup_multi_processes, wrap_distributed_model,
+                         wrap_non_distributed_model)
 
 
 def parse_args():
@@ -93,11 +93,7 @@ def parse_args():
         default='none',
         help='job launcher')
     parser.add_argument('--local_rank', type=int, default=0)
-    parser.add_argument(
-        '--device',
-        choices=['cpu', 'cuda', 'ipu'],
-        default='cuda',
-        help='device used for testing')
+    parser.add_argument('--device', help='device used for testing')
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
@@ -131,7 +127,7 @@ def main():
                       'in `gpu_ids` now.')
     else:
         cfg.gpu_ids = [args.gpu_id]
-    cfg.device = args.device or get_device()
+    cfg.device = args.device or auto_select_device()
 
     # init distributed env first, since logger depends on the dist info.
     if args.launcher == 'none':

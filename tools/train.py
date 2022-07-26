@@ -10,14 +10,14 @@ import mmcv
 import torch
 import torch.distributed as dist
 from mmcv import Config, DictAction
-from mmcv.device import get_device
 from mmcv.runner import get_dist_info, init_dist
 
 from mmcls import __version__
 from mmcls.apis import init_random_seed, set_random_seed, train_model
 from mmcls.datasets import build_dataset
 from mmcls.models import build_classifier
-from mmcls.utils import collect_env, get_root_logger, setup_multi_processes
+from mmcls.utils import (auto_select_device, collect_env, get_root_logger,
+                         setup_multi_processes)
 
 
 def parse_args():
@@ -163,7 +163,7 @@ def main():
     logger.info(f'Config:\n{cfg.pretty_text}')
 
     # set random seeds
-    cfg.device = args.device or get_device()
+    cfg.device = args.device or auto_select_device()
     seed = init_random_seed(args.seed, device=cfg.device)
     seed = seed + dist.get_rank() if args.diff_seed else seed
     logger.info(f'Set random seed to {seed}, '
