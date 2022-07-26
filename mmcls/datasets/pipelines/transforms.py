@@ -1132,12 +1132,12 @@ class Albu(object):
         # process aug
         results = self.aug(**results)
 
-        # back to the original format
-        results = self.mapper(results, self.keymap_back)
-
         if _gt_label is not None:
             # update the original gt_label
             results.update({'gt_label': _gt_label})
+
+        # back to the original format
+        results = self.mapper(results, self.keymap_back)
 
         # update final shape
         if self.update_pad_shape:
