@@ -5,4 +5,4 @@ _base_ = [
     '../_base_/default_runtime.py'
 ]
 
-model = dict(backbone=dict(window_size=[16, 16, 16, 8]), )
+model = dict(backbone=dict(window_size=[16, 16, 16, 8]))
