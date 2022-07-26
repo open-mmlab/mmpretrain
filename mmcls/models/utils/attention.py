@@ -136,6 +136,8 @@ class WindowMSAV2(BaseModule):
         attn_drop (float, optional): Dropout ratio of attention weight.
             Defaults to 0.
         proj_drop (float, optional): Dropout ratio of output. Defaults to 0.
+        pretrained_window_size (tuple(int)): The height and width of the window
+            in pre-training.
         init_cfg (dict, optional): The extra config for initialization.
             Defaults to None.
     """
@@ -148,7 +150,7 @@ class WindowMSAV2(BaseModule):
                  attn_drop=0.,
                  proj_drop=0.,
                  cpb_mlp_hidden_dims=512,
-                 pretrained_window_size=[0, 0],
+                 pretrained_window_size=(0, 0),
                  init_cfg=None,
                  **kwargs):  # accept extra arguments
 

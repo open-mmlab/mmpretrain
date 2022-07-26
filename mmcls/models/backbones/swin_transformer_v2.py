@@ -18,7 +18,8 @@ from .base_backbone import BaseBackbone
 
 
 class PatchMerging(BaseModule):
-    """Merge patch feature map.
+    """Merge patch feature map. Modified from mmcv, which uses pre-norm layer
+    whereas Swin V2 uses post-norm here.
 
     This layer groups feature map by kernel_size, and applies norm and linear
     layers to the grouped feature map ((used in Swin Transformer)).
@@ -141,12 +142,13 @@ class PatchMerging(BaseModule):
         output_size = (out_h, out_w)
         x = x.transpose(1, 2)  # B, H/2*W/2, 4*C
         x = self.reduction(x)
+        # use post-norm here
         x = self.norm(x) if self.norm else x
         return x, output_size
 
 
 class SwinBlockV2(BaseModule):
-    """Swin Transformer block.
+    """Swin Transformer V2 block. Use post normalization.
 
     Args:
         embed_dims (int): Number of input channels.
@@ -170,6 +172,7 @@ class SwinBlockV2(BaseModule):
             Defaults to ``dict(type='LN')``.
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
             memory while slowing down the training speed. Defaults to False.
+        pretrained_window_size (int): Window size in pretrained.
         init_cfg (dict, optional): The extra config for initialization.
             Defaults to None.
     """
@@ -281,6 +284,7 @@ class SwinBlockV2Sequence(BaseModule):
         extra_norm_every_n_blocks (int): Add extra norm at the end of main
             branch every n blocks. Defaults to 0, which means no needs for
             extra norm layer.
+        pretrained_window_size (int): Window size in pretrained.
         init_cfg (dict, optional): The extra config for initialization.
             Defaults to None.
     """
@@ -411,6 +415,8 @@ class SwinTransformerV2(BaseBackbone):
             stage. Defaults to an empty dict.
         patch_cfg (dict): Extra config dict for patch embedding.
             Defaults to an empty dict.
+        pretrained_window_sizes (tuple(int)): Pretrained window sizes of
+            each layer.
         init_cfg (dict, optional): The Config for initialization.
             Defaults to None.
 
@@ -420,7 +426,7 @@ class SwinTransformerV2(BaseBackbone):
         >>> extra_config = dict(
         >>>     arch='tiny',
         >>>     stage_cfgs=dict(downsample_cfg={'kernel_size': 3,
-        >>>                                     'expansion_ratio': 3}))
+        >>>                                     'padding': 'same'}))
         >>> self = SwinTransformerV2(**extra_config)
         >>> inputs = torch.rand(1, 3, 224, 224)
         >>> output = self.forward(inputs)
