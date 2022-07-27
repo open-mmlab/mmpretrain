@@ -54,6 +54,7 @@ def test_cls_head(feat):
 
 @pytest.mark.parametrize('feat', [torch.rand(4, 3), (torch.rand(4, 3), )])
 def test_linear_head(feat):
+
     fake_gt_label = torch.randint(0, 10, (4, ))
 
     # test LinearClsHead forward
