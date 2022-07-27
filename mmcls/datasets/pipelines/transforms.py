@@ -1119,7 +1119,7 @@ class Albu(object):
 
     def __call__(self, results):
 
-        # backup gt_label incase Albu modify it.
+        # backup gt_label in case Albu modify it.
         _gt_label = copy.deepcopy(results.get('gt_label', None))
 
         # dict to albumentations format
