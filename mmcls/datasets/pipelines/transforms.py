@@ -1118,26 +1118,22 @@ class Albu(object):
         return updated_dict
 
     def __call__(self, results):
+
+        # backup gt_label incase Albu modify it.
+        _gt_label = copy.deepcopy(results.get('gt_label', None))
+
         # dict to albumentations format
         results = self.mapper(results, self.keymap_to_albu)
-
-        if 'gt_label' in results:
-            if isinstance(results['gt_label'], list):
-                results['gt_label'] = np.array(results['gt_label'])
-            results['gt_label'] = results['gt_label'].astype(np.int64)
-
-        # save gt_label incase Albu modify it.
-        _gt_label = copy.deepcopy(results.get('gt_label', None))
 
         # process aug
         results = self.aug(**results)
 
-        if _gt_label is not None:
-            # update the original gt_label
-            results.update({'gt_label': _gt_label})
-
         # back to the original format
         results = self.mapper(results, self.keymap_back)
+
+        if _gt_label is not None:
+            # recover backup gt_label
+            results.update({'gt_label': _gt_label})
 
         # update final shape
         if self.update_pad_shape:
