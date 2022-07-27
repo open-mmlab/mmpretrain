@@ -360,3 +360,31 @@ def test_seesaw_loss():
     fake_label = torch.Tensor([0]).long()
     loss = loss_cls(fake_pred, fake_label)
     assert torch.allclose(loss, torch.tensor(200.) + torch.tensor(100.).log())
+
+
+def test_arcface_loss():
+    # test arcface_loss
+    cls_score = torch.Tensor([[0.5, 0.7], [0.7, 0.1]])
+    label = torch.Tensor([0, 1]).long()
+    class_weight = [0.3, 0.7]  # class 0 : 0.3, class 1 : 0.7
+    weight = torch.tensor([0.6, 0.4])
+
+    # test arcface_loss without class weight
+    loss_cfg = dict(type='ArcFaceLoss', reduction='mean', loss_weight=1.0)
+    loss = build_loss(loss_cfg)
+    assert torch.allclose(loss(cls_score, label), torch.tensor(26.4850))
+    # test arcface_loss with weight
+    assert torch.allclose(
+        loss(cls_score, label, weight=weight), torch.tensor(12.6232))
+
+    # test arcface_loss with class weight
+    loss_cfg = dict(
+        type='ArcFaceLoss',
+        reduction='mean',
+        loss_weight=1.0,
+        class_weight=class_weight)
+    loss = build_loss(loss_cfg)
+    assert torch.allclose(loss(cls_score, label), torch.tensor(14.4811))
+    # test ce_loss with weight
+    assert torch.allclose(
+        loss(cls_score, label, weight=weight), torch.tensor(6.4012))
