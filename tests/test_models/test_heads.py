@@ -4,8 +4,8 @@ from unittest.mock import patch
 import pytest
 import torch
 
-from mmcls.models.heads import (ClsHead, ConformerHead, DeiTClsHead,
-                                LinearClsHead, MultiLabelClsHead,
+from mmcls.models.heads import (ArcFaceHead, ClsHead, ConformerHead,
+                                DeiTClsHead, LinearClsHead, MultiLabelClsHead,
                                 MultiLabelLinearClsHead, StackedLinearClsHead,
                                 VisionTransformerClsHead)
 
@@ -54,7 +54,6 @@ def test_cls_head(feat):
 
 @pytest.mark.parametrize('feat', [torch.rand(4, 3), (torch.rand(4, 3), )])
 def test_linear_head(feat):
-
     fake_gt_label = torch.randint(0, 10, (4, ))
 
     # test LinearClsHead forward
@@ -317,3 +316,36 @@ def test_deit_head():
     # test assertion
     with pytest.raises(ValueError):
         DeiTClsHead(-1, 100)
+
+
+@pytest.mark.parametrize('feat', [torch.rand(4, 3), (torch.rand(4, 3), )])
+def test_arcface_head(feat):
+    fake_gt_label = torch.randint(0, 10, (4, ))
+
+    # test ArcFaceHead forward with easy_margin=True
+    head = ArcFaceHead(10, 3, easy_margin=True)
+    losses = head.forward_train(feat, fake_gt_label)
+    assert losses['loss'].item() > 0
+
+    # test ArcFaceHead forward with easy_margin=False
+    head = ArcFaceHead(10, 3, easy_margin=False)
+    losses = head.forward_train(feat, fake_gt_label)
+    assert losses['loss'].item() > 0
+
+    # test simple_test with post_process
+    pred = head.simple_test(feat)
+    assert isinstance(pred, list) and len(pred) == 4
+    with patch('torch.onnx.is_in_onnx_export', return_value=True):
+        pred = head.simple_test(feat)
+        assert pred.shape == (4, 3)
+
+    # test simple_test without post_process
+    pred = head.simple_test(feat, post_process=False)
+    assert isinstance(pred, torch.Tensor) and pred.shape == (4, 3)
+
+    # test pre_logits
+    features = head.pre_logits(feat)
+    if isinstance(feat, tuple):
+        torch.testing.assert_allclose(features, feat[0])
+    else:
+        torch.testing.assert_allclose(features, feat)
