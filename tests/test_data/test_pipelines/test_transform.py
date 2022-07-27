@@ -1269,8 +1269,7 @@ def test_albu_transform():
     results = dict(
         img_prefix=osp.join(osp.dirname(__file__), '../../data'),
         img_info=dict(filename='color.jpg'),
-        gt_label=np.array(1)
-    )
+        gt_label=np.array(1))
 
     # Define simple pipeline
     load = dict(type='LoadImageFromFile')
@@ -1287,8 +1286,7 @@ def test_albu_transform():
                 rotate_limit=0,
                 interpolation=1,
                 p=1)
-        ]
-    )
+        ])
     albu_transform = build_from_cfg(albu_transform, PIPELINES)
 
     normalize = dict(type='Normalize', mean=[0] * 3, std=[0] * 3, to_rgb=True)
