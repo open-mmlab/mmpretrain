@@ -8,14 +8,15 @@ import mmcv
 import numpy as np
 import torch
 from mmcv import DictAction
-from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import (get_dist_info, init_dist, load_checkpoint,
                          wrap_fp16_model)
 
 from mmcls.apis import multi_gpu_test, single_gpu_test
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.models import build_classifier
-from mmcls.utils import get_root_logger, setup_multi_processes
+from mmcls.utils import (auto_select_device, get_root_logger,
+                         setup_multi_processes, wrap_distributed_model,
+                         wrap_non_distributed_model)
 
 
 def parse_args():
@@ -92,11 +93,7 @@ def parse_args():
         default='none',
         help='job launcher')
     parser.add_argument('--local_rank', type=int, default=0)
-    parser.add_argument(
-        '--device',
-        choices=['cpu', 'cuda', 'ipu'],
-        default='cuda',
-        help='device used for testing')
+    parser.add_argument('--device', help='device used for testing')
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
@@ -130,6 +127,7 @@ def main():
                       'in `gpu_ids` now.')
     else:
         cfg.gpu_ids = [args.gpu_id]
+    cfg.device = args.device or auto_select_device()
 
     # init distributed env first, since logger depends on the dist info.
     if args.launcher == 'none':
@@ -144,7 +142,7 @@ def main():
     # The default loader config
     loader_cfg = dict(
         # cfg.gpus will be ignored if distributed
-        num_gpus=1 if args.device == 'ipu' else len(cfg.gpu_ids),
+        num_gpus=1 if cfg.device == 'ipu' else len(cfg.gpu_ids),
         dist=distributed,
         round_up=True,
     )
@@ -182,29 +180,24 @@ def main():
         CLASSES = ImageNet.CLASSES
 
     if not distributed:
-        if args.device == 'cpu':
-            model = model.cpu()
-        elif args.device == 'ipu':
+        model = wrap_non_distributed_model(
+            model, device=cfg.device, device_ids=cfg.gpu_ids)
+        if cfg.device == 'ipu':
             from mmcv.device.ipu import cfg2options, ipu_model_wrapper
             opts = cfg2options(cfg.runner.get('options_cfg', {}))
             if fp16_cfg is not None:
                 model.half()
             model = ipu_model_wrapper(model, opts, fp16_cfg=fp16_cfg)
             data_loader.init(opts['inference'])
-        else:
-            model = MMDataParallel(model, device_ids=cfg.gpu_ids)
-            if not model.device_ids:
-                assert mmcv.digit_version(mmcv.__version__) >= (1, 4, 4), \
-                    'To test with CPU, please confirm your mmcv version ' \
-                    'is not lower than v1.4.4'
         model.CLASSES = CLASSES
-        show_kwargs = {} if args.show_options is None else args.show_options
+        show_kwargs = args.show_options or {}
         outputs = single_gpu_test(model, data_loader, args.show, args.show_dir,
                                   **show_kwargs)
     else:
-        model = MMDistributedDataParallel(
-            model.cuda(),
-            device_ids=[torch.cuda.current_device()],
+        model = wrap_distributed_model(
+            model,
+            device=cfg.device,
+            device_ids=[int(os.environ['LOCAL_RANK'])],
             broadcast_buffers=False)
         outputs = multi_gpu_test(model, data_loader, args.tmpdir,
                                  args.gpu_collect)
