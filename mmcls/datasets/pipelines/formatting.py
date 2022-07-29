@@ -9,8 +9,8 @@ from mmcv.parallel import DataContainer as DC
 from mmcv.transforms.base import BaseTransform
 from PIL import Image
 
-from mmcls.data import ClsDataSample
 from mmcls.registry import TRANSFORMS
+from mmcls.structures import ClsDataSample
 
 
 def to_tensor(data):

@@ -7,8 +7,8 @@ import numpy as np
 import torch
 from mmengine.data import LabelData
 
-from mmcls.data import ClsDataSample
 from mmcls.datasets.pipelines import PackClsInputs
+from mmcls.structures import ClsDataSample
 
 
 class TestPackClsInputs(unittest.TestCase):

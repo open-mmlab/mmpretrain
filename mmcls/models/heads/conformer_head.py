@@ -4,9 +4,9 @@ from typing import List, Sequence, Tuple
 import torch
 import torch.nn as nn
 
-from mmcls.data import ClsDataSample
 from mmcls.evaluation.metrics import Accuracy
 from mmcls.registry import MODELS
+from mmcls.structures import ClsDataSample
 from .cls_head import ClsHead
 
 

@@ -4,9 +4,9 @@ from typing import List, Optional, Tuple, Union
 import torch
 import torch.nn.functional as F
 
-from mmcls.data import ClsDataSample
 from mmcls.evaluation.metrics import Accuracy
 from mmcls.registry import MODELS
+from mmcls.structures import ClsDataSample
 from .base_head import BaseHead
 
 
