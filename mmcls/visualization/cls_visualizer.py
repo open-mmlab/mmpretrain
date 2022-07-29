@@ -6,8 +6,8 @@ import numpy as np
 from mmengine import Visualizer
 from mmengine.dist import master_only
 
-from mmcls.data import ClsDataSample
 from mmcls.registry import VISUALIZERS
+from mmcls.structures import ClsDataSample
 
 
 def _get_adaptive_scale(img_shape: Tuple[int, int],
@@ -57,7 +57,7 @@ class ClsVisualizer(Visualizer):
         >>> import mmcv
         >>> from pathlib import Path
         >>> from mmcls.visualization import ClsVisualizer
-        >>> from mmcls.data import ClsDataSample
+        >>> from mmcls.structures import ClsDataSample
         >>> # Example image
         >>> img = mmcv.imread("./demo/bird.JPEG", channel_order='rgb')
         >>> # Example annotation

@@ -8,8 +8,8 @@ from mmengine.hooks import Hook
 from mmengine.runner import EpochBasedTrainLoop, Runner
 from mmengine.visualization import Visualizer
 
-from mmcls.data import ClsDataSample
 from mmcls.registry import HOOKS
+from mmcls.structures import ClsDataSample
 
 
 @HOOKS.register_module()

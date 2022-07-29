@@ -7,7 +7,7 @@ from unittest.mock import patch
 import numpy as np
 import torch
 
-from mmcls.data import ClsDataSample
+from mmcls.structures import ClsDataSample
 from mmcls.visualization import ClsVisualizer
 
 

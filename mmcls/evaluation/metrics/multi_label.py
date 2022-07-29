@@ -93,7 +93,7 @@ class MultiLabelMetric(BaseMetric):
         (tensor(62.5000), tensor(31.2500), tensor(39.1667), tensor(8))
         >>>
         >>> # ------------------- Use with Evalutor -------------------
-        >>> from mmcls.data import ClsDataSample
+        >>> from mmcls.structures import ClsDataSample
         >>> from mmengine.evaluator import Evaluator
         >>> # The `data_batch` won't be used in this case, just use a fake.
         >>> data_batch = [
@@ -457,7 +457,7 @@ class AveragePrecision(BaseMetric):
         >>> AveragePrecision.calculate(y_pred, y_true)
         tensor(70.833)
         >>> # ------------------- Use with Evalutor -------------------
-        >>> from mmcls.data import ClsDataSample
+        >>> from mmcls.structures import ClsDataSample
         >>> from mmengine.evaluator import Evaluator
         >>> # The `data_batch` won't be used in this case, just use a fake.
         >>> data_batch = [

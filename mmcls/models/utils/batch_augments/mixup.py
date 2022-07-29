@@ -5,8 +5,8 @@ import numpy as np
 import torch
 from mmengine.data import LabelData
 
-from mmcls.data import ClsDataSample
 from mmcls.registry import BATCH_AUGMENTS
+from mmcls.structures import ClsDataSample
 
 
 @BATCH_AUGMENTS.register_module()

@@ -3,8 +3,8 @@ from typing import List, Optional
 
 import torch
 
-from mmcls.data import ClsDataSample
 from mmcls.registry import MODELS
+from mmcls.structures import ClsDataSample
 from .base import BaseClassifier
 
 
@@ -100,7 +100,7 @@ class ImageClassifier(BaseClassifier):
 
             - If ``mode="tensor"``, return a tensor or a tuple of tensor.
             - If ``mode="predict"``, return a list of
-              :obj:`mmcls.data.ClsDataSample`.
+              :obj:`mmcls.structures.ClsDataSample`.
             - If ``mode="loss"``, return a dict of tensor.
         """
         if mode == 'tensor':

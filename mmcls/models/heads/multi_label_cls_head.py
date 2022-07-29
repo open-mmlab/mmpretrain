@@ -4,8 +4,8 @@ from typing import Dict, List, Optional, Tuple
 import torch
 from mmengine.data import LabelData
 
-from mmcls.data import ClsDataSample
 from mmcls.registry import MODELS
+from mmcls.structures import ClsDataSample
 from .base_head import BaseHead
 
 

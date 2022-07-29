@@ -5,9 +5,9 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import torch
 
-from mmcls.data import ClsDataSample
 from mmcls.models import Mixup, RandomBatchAugment
 from mmcls.registry import BATCH_AUGMENTS
+from mmcls.structures import ClsDataSample
 
 
 class TestRandomBatchAugment(TestCase):
