@@ -57,6 +57,7 @@ class MultiheadAttentionPooling(BaseModule):
                     bias=False,
                 ),
                 nn.AdaptiveAvgPool2d(1),
+                nn.Flatten(),
             )
             final_layers.append(final_layer)
 
@@ -81,6 +82,6 @@ class MultiheadAttentionPooling(BaseModule):
             self.final_layers[i](feats[i])
             for i in range(len(self.in_channels))
         ]
-        feats = torch.stack(feats, dim=0).sum(dim=0)
 
+        feats = torch.stack(feats, dim=0).sum(dim=0)
         return (feats, )

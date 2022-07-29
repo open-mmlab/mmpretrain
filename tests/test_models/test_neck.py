@@ -105,6 +105,4 @@ def test_mhsa_check():
         neck(inputs)
 
     outs = neck(tuple(inputs))
-    assert isinstance(outs, tuple)
-    assert len(outs) == 1
-    assert outs[0].shape == (3, 1024, 7, 7)
+    assert outs.shape == (3, 1024)
