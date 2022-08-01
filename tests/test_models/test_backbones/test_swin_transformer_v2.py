@@ -28,7 +28,7 @@ class TestSwinTransformerV2(TestCase):
 
     def setUp(self):
         self.cfg = dict(
-            arch='b', img_size=224, patch_size=4, drop_path_rate=0.1)
+            arch='b', img_size=256, patch_size=4, drop_path_rate=0.1)
 
     def test_arch(self):
         # Test invalid default arch
@@ -89,9 +89,9 @@ class TestSwinTransformerV2(TestCase):
 
         pretrain_pos_embed = model.absolute_pos_embed.clone().detach()
 
-        tmpdir = tempfile.gettempdir()
+        tmpdir = tempfile.TemporaryDirectory()
         # Save checkpoints
-        checkpoint = os.path.join(tmpdir, 'checkpoint.pth')
+        checkpoint = os.path.join(tmpdir.name, 'checkpoint.pth')
         save_checkpoint(model, checkpoint)
 
         # test load checkpoint
@@ -111,7 +111,7 @@ class TestSwinTransformerV2(TestCase):
         self.assertTrue(
             torch.allclose(model.absolute_pos_embed, resized_pos_embed))
 
-        os.remove(checkpoint)
+        tmpdir.cleanup()
 
     def test_forward(self):
         imgs = torch.randn(3, 3, 256, 256)
@@ -203,7 +203,7 @@ class TestSwinTransformerV2(TestCase):
                                    expect_prob)
             self.assertAlmostEqual(block.attn.drop.drop_prob, expect_prob)
 
-        # test Swin-Transformer with norm_eval=True
+        # test Swin-Transformer V2 with norm_eval=True
         cfg = deepcopy(self.cfg)
         cfg['norm_eval'] = True
         cfg['norm_cfg'] = dict(type='BN')
@@ -213,7 +213,7 @@ class TestSwinTransformerV2(TestCase):
         model.train()
         self.assertTrue(check_norm_state(model.modules(), False))
 
-        # test Swin-Transformer with first stage frozen.
+        # test Swin-Transformer V2 with first stage frozen.
         cfg = deepcopy(self.cfg)
         frozen_stages = 0
         cfg['frozen_stages'] = frozen_stages

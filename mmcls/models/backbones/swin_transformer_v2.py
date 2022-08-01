@@ -261,7 +261,8 @@ class SwinTransformerV2(BaseBackbone):
         patch_size (int | tuple): The patch size in patch embedding.
             Defaults to 4.
         in_channels (int): The num of input channels. Defaults to 3.
-        window_size (int): The height and width of the window. Defaults to 7.
+        window_size (int | Sequence): The height and width of the window.
+            Defaults to 7.
         drop_rate (float): Dropout rate after embedding. Defaults to 0.
         drop_path_rate (float): Stochastic depth rate. Defaults to 0.1.
         use_abs_pos_embed (bool): If True, add absolute position embedding to

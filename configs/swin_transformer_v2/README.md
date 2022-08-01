@@ -20,8 +20,8 @@ The pre-trained models on ImageNet-21k are used to fine-tune, and therefore don'
 
 |  Model   | resolution | Params(M) | Flops(G) |                                                       Download                                                        |
 | :------: | :--------: | :-------: | :------: | :-------------------------------------------------------------------------------------------------------------------: |
-| Swin-B\* |  192x192   |  109.28   |   8.51   | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer-v2/convert/swin-base_3rdparty_in21k.pth)  |
-| Swin-L\* |  192x192   |  228.78   |  19.04   | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer-v2/convert/swin-large_3rdparty_in21k.pth) |
+| Swin-B\* |  192x192   |   87.92   |   8.51   | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer-v2/convert/swin-base_3rdparty_in21k.pth)  |
+| Swin-L\* |  192x192   |  196.74   |  19.04   | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer-v2/convert/swin-large_3rdparty_in21k.pth) |
 
 ### ImageNet-1k
 
@@ -35,8 +35,8 @@ The pre-trained models on ImageNet-21k are used to fine-tune, and therefore don'
 | Swin-B\* | From scratch |  256x256   | 16x16  |   87.92   |  15.14   |   84.6    |   97.05   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/swin_transformer_v2/swin-base_16xb64_window16_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer-v2/swin_tiny_224_b16x64_300e_imagenet_20210616_090925-66df6be6.pth) |
 | Swin-B\* | ImageNet-21k |  256x256   | 16x16  |   87.92   |  15.14   |   86.17   |   97.88   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/swin_transformer_v2/swin-base_16xb64_window16_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer-v2/swin_tiny_224_b16x64_300e_imagenet_20210616_090925-66df6be6.pth) |
 | Swin-B\* | ImageNet-21k |  384x384   | 24x24  |   87.92   |  34.07   |   87.14   |   98.23   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/swin_transformer_v2/swin-base_16xb64_window16_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer-v2/swin_tiny_224_b16x64_300e_imagenet_20210616_090925-66df6be6.pth) |
-| Swin-L\* | ImageNet-21k |  256X256   | 16x16  |  196.74   |  33.86   |   86.93   |   98.06   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/swin_transformer_v2/swin-base_16xb64_window16_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer-v2/swin_tiny_224_b16x64_300e_imagenet_20210616_090925-66df6be6.pth) |
-| Swin-L\* | ImageNet-21k |  384x384   | 24x24  |  196.74   |   76.2   |   87.59   |   98.27   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/swin_transformer_v2/swin-base_16xb64_window16_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer-v2/swin_tiny_224_b16x64_300e_imagenet_20210616_090925-66df6be6.pth) |
+| Swin-L\* | ImageNet-21k |  256X256   | 16x16  |  196.75   |  33.86   |   86.93   |   98.06   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/swin_transformer_v2/swin-base_16xb64_window16_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer-v2/swin_tiny_224_b16x64_300e_imagenet_20210616_090925-66df6be6.pth) |
+| Swin-L\* | ImageNet-21k |  384x384   | 24x24  |  196.75   |   76.2   |   87.59   |   98.27   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/swin_transformer_v2/swin-base_16xb64_window16_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer-v2/swin_tiny_224_b16x64_300e_imagenet_20210616_090925-66df6be6.pth) |
 
 *Models with * are converted from the [official repo](https://github.com/microsoft/Swin-Transformer#main-results-on-imagenet-with-pretrained-models). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 
