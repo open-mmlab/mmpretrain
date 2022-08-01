@@ -167,7 +167,7 @@ class TestSwinTransformer(TestCase):
         outs = model(imgs)
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 4)
-        for stride, out in zip([2, 4, 8, 8], outs):
+        for stride, out in zip([1, 2, 4, 8], outs):
             self.assertEqual(out.shape,
                              (1, 128 * stride, 56 // stride, 56 // stride))
 
