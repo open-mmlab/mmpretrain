@@ -5,7 +5,10 @@ from mmcv.cnn.bricks import ConvModule
 from mmcv.cnn.bricks.transformer import MultiheadAttention
 from mmcv.runner import BaseModule
 
+from ..builder import NECKS
 
+
+@NECKS.register_module()
 class MultiheadAttentionPooling(BaseModule):
     """MultiheadAttentionPooling.
 
