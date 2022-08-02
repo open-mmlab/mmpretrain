@@ -125,7 +125,11 @@ class WindowMSA(BaseModule):
 
 class WindowMSAV2(BaseModule):
     """Window based multi-head self-attention (W-MSA) module with relative
-    position bias. Based on implementation on Swin Transformer V2.
+    position bias.
+
+    Based on implementation on Swin Transformer V2 original repo. Refers to
+    https://github.com/microsoft/Swin-Transformer/blob/main/models/swin_transformer_v2.py
+    for more details.
 
     Args:
         embed_dims (int): Number of input channels.
