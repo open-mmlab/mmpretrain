@@ -16,7 +16,7 @@ Collections:
     README: configs/swin_transformer_v2/README.md
 
 Models:
-  - Name: swinv2-tiny-w8_16xb64_in1k-256px
+  - Name: swinv2-tiny-w8_3rdparty_in1k-256px
     Metadata:
       FLOPs: 4350000000
       Parameters: 28350000
@@ -32,7 +32,7 @@ Models:
     Converted From:
       Weights: https://github.com/SwinTransformer/storage/releases/download/v2.0.0/swinv2_tiny_patch4_window8_256.pth
       Code: https://github.com/microsoft/Swin-Transformer
-  - Name: swinv2-tiny-w16_16xb64_in1k-256px
+  - Name: swinv2-tiny-w16_3rdparty_in1k-256px
     Metadata:
       FLOPs: 4400000000
       Parameters: 28350000
@@ -48,7 +48,7 @@ Models:
     Converted From:
       Weights: https://github.com/SwinTransformer/storage/releases/download/v2.0.0/swinv2_tiny_patch4_window16_256.pth
       Code: https://github.com/microsoft/Swin-Transformer
-  - Name: swinv2-small-w8_16xb64_in1k-256px
+  - Name: swinv2-small-w8_3rdparty_in1k-256px
     Metadata:
       FLOPs: 8450000000
       Parameters: 49730000
@@ -64,7 +64,7 @@ Models:
     Converted From:
       Weights: https://github.com/SwinTransformer/storage/releases/download/v2.0.0/swinv2_small_patch4_window8_256.pth
       Code: https://github.com/microsoft/Swin-Transformer
-  - Name: swinv2-small-w16_16xb64_in1k-256px
+  - Name: swinv2-small-w16_3rdparty_in1k-256px
     Metadata:
       FLOPs: 8570000000
       Parameters: 49730000
@@ -80,7 +80,7 @@ Models:
     Converted From:
       Weights: https://github.com/SwinTransformer/storage/releases/download/v2.0.0/swinv2_small_patch4_window16_256.pth
       Code: https://github.com/microsoft/Swin-Transformer
-  - Name: swinv2-base-w8_16xb64_in1k-256px
+  - Name: swinv2-base-w8_3rdparty_in1k-256px
     Metadata:
       FLOPs: 14990000000
       Parameters: 87920000
@@ -96,7 +96,7 @@ Models:
     Converted From:
       Weights: https://github.com/SwinTransformer/storage/releases/download/v2.0.0/swinv2_base_patch4_window8_256.pth
       Code: https://github.com/microsoft/Swin-Transformer
-  - Name: swinv2-base-w16_16xb64_in1k-256px
+  - Name: swinv2-base-w16_3rdparty_in1k-256px
     Metadata:
       FLOPs: 15140000000
       Parameters: 87920000
@@ -112,7 +112,7 @@ Models:
     Converted From:
       Weights: https://github.com/SwinTransformer/storage/releases/download/v2.0.0/swinv2_base_patch4_window16_256.pth
       Code: https://github.com/microsoft/Swin-Transformer
-  - Name: swinv2-base-w16_in21k-pre_16xb64_in1k-256px
+  - Name: swinv2-base-w16_in21k-pre_3rdparty_in1k-256px
     Metadata:
       Training Data: ImageNet-21k
       FLOPs: 15140000000
@@ -129,7 +129,7 @@ Models:
     Converted From:
       Weights: https://github.com/SwinTransformer/storage/releases/download/v2.0.0/swinv2_base_patch4_window12to16_192to256_22kto1k_ft.pth
       Code: https://github.com/microsoft/Swin-Transformer
-  - Name: swinv2-base-w24_in21k-pre_16xb64_in1k-384px
+  - Name: swinv2-base-w24_in21k-pre_3rdparty_in1k-384px
     Metadata:
       Training Data: ImageNet-21k
       FLOPs: 34070000000
@@ -146,7 +146,7 @@ Models:
     Converted From:
       Weights: https://github.com/SwinTransformer/storage/releases/download/v2.0.0/swinv2_base_patch4_window12to24_192to384_22kto1k_ft.pth
       Code: https://github.com/microsoft/Swin-Transformer
-  - Name: swinv2-large-w16_in21k-pre_16xb64_in1k-256px
+  - Name: swinv2-large-w16_in21k-pre_3rdparty_in1k-256px
     Metadata:
       Training Data: ImageNet-21k
       FLOPs: 33860000000
@@ -163,7 +163,7 @@ Models:
     Converted From:
       Weights: https://github.com/SwinTransformer/storage/releases/download/v2.0.0/swinv2_large_patch4_window12to16_192to256_22kto1k_ft.pth
       Code: https://github.com/microsoft/Swin-Transformer
-  - Name: swinv2-large-w24_in21k-pre_16xb64_in1k-384px
+  - Name: swinv2-large-w24_in21k-pre_3rdparty_in1k-384px
     Metadata:
       Training Data: ImageNet-21k
       FLOPs: 76200000000
@@ -180,7 +180,7 @@ Models:
     Converted From:
       Weights: https://github.com/SwinTransformer/storage/releases/download/v2.0.0/swinv2_large_patch4_window12to24_192to384_22kto1k_ft.pth
       Code: https://github.com/microsoft/Swin-Transformer
-  - Name: swinv2-base-w12_16xb64_in21k-192px
+  - Name: swinv2-base-w12_3rdparty_in21k-192px
     Metadata:
       Training Data: ImageNet-21k
       FLOPs: 8510000000
@@ -191,7 +191,7 @@ Models:
     Converted From:
       Weights: https://github.com/SwinTransformer/storage/releases/download/v2.0.0/swinv2_base_patch4_window12_192_22k.pth
       Code: https://github.com/microsoft/Swin-Transformer
-  - Name: swinv2-large-w12_16xb64_in21k-192px
+  - Name: swinv2-large-w12_3rdparty_in21k-192px
     Metadata:
       Training Data: ImageNet-21k
       FLOPs: 19040000000
