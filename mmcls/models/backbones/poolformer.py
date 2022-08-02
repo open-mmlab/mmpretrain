@@ -39,7 +39,10 @@ class PatchEmbed(nn.Module):
             kernel_size=patch_size,
             stride=stride,
             padding=padding)
-        self.norm = norm_layer(embed_dim) if norm_layer else nn.Identity()
+        if norm_layer is None:
+            self.norm = nn.Identity()
+        else:
+            self.norm = build_norm_layer(norm_layer, embed_dim)[1]
 
     def forward(self, x):
         x = self.proj(x)

@@ -28,4 +28,8 @@ Import:
   - configs/convmixer/metafile.yml
   - configs/densenet/metafile.yml
   - configs/poolformer/metafile.yml
+<<<<<<< HEAD
   - configs/mvit/metafile.yml
+=======
+  - configs/efficientformer/metafile.yml
+>>>>>>> add efficient backbone
