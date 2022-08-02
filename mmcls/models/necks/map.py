@@ -87,4 +87,4 @@ class MultiheadAttentionPooling(BaseModule):
         ]
 
         feats = torch.stack(feats, dim=0).sum(dim=0)
-        return (feats, )
+        return feats
