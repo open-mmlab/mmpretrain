@@ -182,13 +182,25 @@ class SwinBlockV2Sequence(BaseModule):
         if not isinstance(block_cfgs, Sequence):
             block_cfgs = [deepcopy(block_cfgs) for _ in range(depth)]
 
-        self.embed_dims = embed_dims
+        if downsample:
+            self.embed_dims = 2 * embed_dims
+            _downsample_cfg = {
+                'in_channels': embed_dims,
+                'out_channels': self.embed_dims,
+                'norm_cfg': dict(type='LN'),
+                **downsample_cfg
+            }
+            self.downsample = PatchMerging(**_downsample_cfg)
+        else:
+            self.embed_dims = embed_dims
+            self.downsample = None
+
         self.blocks = ModuleList()
         for i in range(depth):
             extra_norm = True if extra_norm_every_n_blocks and \
                 (i + 1) % extra_norm_every_n_blocks == 0 else False
             _block_cfg = {
-                'embed_dims': embed_dims,
+                'embed_dims': self.embed_dims,
                 'num_heads': num_heads,
                 'window_size': window_size,
                 'shift': False if i % 2 == 0 else True,
@@ -202,33 +214,20 @@ class SwinBlockV2Sequence(BaseModule):
             block = SwinBlockV2(**_block_cfg)
             self.blocks.append(block)
 
-        if downsample:
-            _downsample_cfg = {
-                'in_channels': embed_dims,
-                'out_channels': 2 * embed_dims,
-                'norm_cfg': dict(type='LN'),
-                **downsample_cfg
-            }
-            self.downsample = PatchMerging(**_downsample_cfg)
-        else:
-            self.downsample = None
-
     def forward(self, x, in_shape):
-        for block in self.blocks:
-            x = block(x, in_shape)
-
         if self.downsample:
             x, out_shape = self.downsample(x, in_shape)
         else:
             out_shape = in_shape
+
+        for block in self.blocks:
+            x = block(x, out_shape)
+
         return x, out_shape
 
     @property
     def out_channels(self):
-        if self.downsample:
-            return self.downsample.out_channels
-        else:
-            return self.embed_dims
+        return self.embed_dims
 
 
 @BACKBONES.register_module()
@@ -345,7 +344,7 @@ class SwinTransformerV2(BaseBackbone):
 
     def __init__(self,
                  arch='tiny',
-                 img_size=224,
+                 img_size=256,
                  patch_size=4,
                  in_channels=3,
                  window_size=8,
@@ -359,7 +358,7 @@ class SwinTransformerV2(BaseBackbone):
                  norm_eval=False,
                  pad_small_map=False,
                  norm_cfg=dict(type='LN'),
-                 stage_cfgs=dict(),
+                 stage_cfgs=dict(downsample_cfg=dict(is_post_norm=True)),
                  patch_cfg=dict(),
                  pretrained_window_sizes=[0, 0, 0, 0],
                  init_cfg=None):
@@ -439,7 +438,7 @@ class SwinTransformerV2(BaseBackbone):
                 stage_cfg = stage_cfgs[i]
             else:
                 stage_cfg = deepcopy(stage_cfgs)
-            downsample = True if i < self.num_layers - 1 else False
+            downsample = True if i > 0 else False
             _stage_cfg = {
                 'embed_dims': embed_dims[-1],
                 'depth': depth,
