@@ -26,7 +26,7 @@ METRICS_MAP = {
 class RangeAction(argparse.Action):
 
     def __call__(self, parser, namespace, values: str, option_string):
-        matches = re.match(r'([><=]*)(\w+)', values)
+        matches = re.match(r'([><=]*)([-\w]+)', values)
         if matches is None:
             raise ValueError(f'Unavailable range option {values}')
         symbol, range_str = matches.groups()
