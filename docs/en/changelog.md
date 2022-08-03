@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.23.2(28/7/2022)
+
+### New Features
+
+- Support MPS device. ([#894](https://github.com/open-mmlab/mmclassification/pull/894))
+
+### Bug Fixes
+
+- Fix a bug in Albu which caused crashing. ([#918](https://github.com/open-mmlab/mmclassification/pull/918))
+
 ## v0.23.1(2/6/2022)
 
 ### New Features
