@@ -114,7 +114,7 @@ class TestSwinTransformerV2(TestCase):
         tmpdir.cleanup()
 
     def test_forward(self):
-        imgs = torch.randn(3, 3, 256, 256)
+        imgs = torch.randn(1, 3, 256, 256)
 
         cfg = deepcopy(self.cfg)
         model = SwinTransformerV2(**cfg)
@@ -122,30 +122,30 @@ class TestSwinTransformerV2(TestCase):
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 1)
         feat = outs[-1]
-        self.assertEqual(feat.shape, (3, 1024, 8, 8))
+        self.assertEqual(feat.shape, (1, 1024, 8, 8))
 
         # test with window_size=12
         cfg = deepcopy(self.cfg)
         cfg['window_size'] = 12
         model = SwinTransformerV2(**cfg)
-        outs = model(torch.randn(3, 3, 384, 384))
+        outs = model(torch.randn(1, 3, 384, 384))
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 1)
         feat = outs[-1]
-        self.assertEqual(feat.shape, (3, 1024, 12, 12))
+        self.assertEqual(feat.shape, (1, 1024, 12, 12))
         with self.assertRaisesRegex(AssertionError, r'the window size \(12\)'):
-            model(torch.randn(3, 3, 256, 256))
+            model(torch.randn(1, 3, 256, 256))
 
         # test with pad_small_map=True
         cfg = deepcopy(self.cfg)
         cfg['window_size'] = 12
         cfg['pad_small_map'] = True
         model = SwinTransformerV2(**cfg)
-        outs = model(torch.randn(3, 3, 256, 256))
+        outs = model(torch.randn(1, 3, 256, 256))
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 1)
         feat = outs[-1]
-        self.assertEqual(feat.shape, (3, 1024, 8, 8))
+        self.assertEqual(feat.shape, (1, 1024, 8, 8))
 
         # test multiple output indices
         cfg = deepcopy(self.cfg)
@@ -156,7 +156,7 @@ class TestSwinTransformerV2(TestCase):
         self.assertEqual(len(outs), 4)
         for stride, out in zip([1, 2, 4, 8], outs):
             self.assertEqual(out.shape,
-                             (3, 128 * stride, 64 // stride, 64 // stride))
+                             (1, 128 * stride, 64 // stride, 64 // stride))
 
         # test with checkpoint forward
         cfg = deepcopy(self.cfg)
@@ -172,12 +172,12 @@ class TestSwinTransformerV2(TestCase):
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 1)
         feat = outs[-1]
-        self.assertEqual(feat.shape, (3, 1024, 8, 8))
+        self.assertEqual(feat.shape, (1, 1024, 8, 8))
 
         # test with dynamic input shape
-        imgs1 = torch.randn(3, 3, 224, 224)
-        imgs2 = torch.randn(3, 3, 256, 256)
-        imgs3 = torch.randn(3, 3, 256, 309)
+        imgs1 = torch.randn(1, 3, 224, 224)
+        imgs2 = torch.randn(1, 3, 256, 256)
+        imgs3 = torch.randn(1, 3, 256, 309)
         cfg = deepcopy(self.cfg)
         cfg['pad_small_map'] = True
         model = SwinTransformerV2(**cfg)
@@ -188,7 +188,7 @@ class TestSwinTransformerV2(TestCase):
             feat = outs[-1]
             expect_feat_shape = (math.ceil(imgs.shape[2] / 32),
                                  math.ceil(imgs.shape[3] / 32))
-            self.assertEqual(feat.shape, (3, 1024, *expect_feat_shape))
+            self.assertEqual(feat.shape, (1, 1024, *expect_feat_shape))
 
     def test_structure(self):
         # test drop_path_rate decay
