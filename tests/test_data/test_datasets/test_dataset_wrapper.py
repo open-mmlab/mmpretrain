@@ -52,7 +52,7 @@ def construct_toy_single_label_dataset(length):
     dataset.data_infos.__len__.return_value = length
     dataset.get_cat_ids = MagicMock(side_effect=lambda idx: cat_ids_list[idx])
     dataset.get_gt_labels = \
-        MagicMock(side_effect=lambda: np.array(cat_ids_list))
+        MagicMock(side_effect=lambda: cat_ids_list)
     dataset.evaluate = MagicMock(side_effect=mock_evaluate)
     return dataset, cat_ids_list
 
