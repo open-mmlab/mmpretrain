@@ -52,6 +52,12 @@ def parse_args():
         '--flops-str',
         action='store_true',
         help='Output FLOPs and params counts in a string form.')
+    parser.add_argument(
+        '--cfg-options',
+        nargs='+',
+        type=str,
+        default=[],
+        help='Config options for all config files.')
     args = parser.parse_args()
     return args
 
@@ -62,6 +68,8 @@ def inference(config_file, checkpoint, work_dir, args, exp_name):
     cfg.load_from = checkpoint
     cfg.log_level = 'WARN'
     cfg.experiment_name = exp_name
+    if args.cfg_options is not None:
+        cfg.merge_from_dict(args.cfg_options)
 
     # build the data pipeline
     test_dataset = cfg.test_dataloader.dataset

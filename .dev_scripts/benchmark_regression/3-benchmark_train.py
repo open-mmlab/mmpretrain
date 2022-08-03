@@ -23,6 +23,28 @@ METRICS_MAP = {
 }
 
 
+class RangeAction(argparse.Action):
+
+    def __call__(self, parser, namespace, values: str, option_string):
+        matches = re.match(r'([><=]*)(\w+)', values)
+        if matches is None:
+            raise ValueError(f'Unavailable range option {values}')
+        symbol, range_str = matches.groups()
+        assert range_str in CYCLE_LEVELS, \
+            f'{range_str} are not in {CYCLE_LEVELS}.'
+        level = CYCLE_LEVELS.index(range_str)
+        symbol = symbol or '<='
+        ranges = set()
+        if '=' in symbol:
+            ranges.add(level)
+        if '>' in symbol:
+            ranges.update(range(level + 1, len(CYCLE_LEVELS)))
+        if '<' in symbol:
+            ranges.update(range(level))
+        assert len(ranges) > 0, 'No range are selected.'
+        setattr(namespace, self.dest, ranges)
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description='Train models (in bench_train.yml) and compare accuracy.')
@@ -40,7 +62,8 @@ def parse_args():
         '--range',
         type=str,
         default=CYCLE_LEVELS[0],
-        choices=CYCLE_LEVELS,
+        action=RangeAction,
+        metavar='{month,quarter,half-year,no-training}',
         help='The training benchmark range, "no-training" means all models '
         "including those we haven't trained.")
     parser.add_argument(
@@ -74,6 +97,12 @@ def parse_args():
         '--save',
         action='store_true',
         help='Save the summary and archive log files.')
+    parser.add_argument(
+        '--cfg-options',
+        nargs='+',
+        type=str,
+        default=[],
+        help='Config options for all config files.')
 
     args = parser.parse_args()
     return args
@@ -129,8 +158,9 @@ def create_train_job_batch(commands, model_info, args, port, script_name):
                   f'{runner} -u {script_name} {config} '
                   f'--work-dir={work_dir} --cfg-option '
                   f'env_cfg.dist_cfg.port={port} '
+                  f'{" ".join(args.cfg_options)} '
                   f'default_hooks.checkpoint.max_keep_ckpts=2 '
-                  f'default_hooks.checkpoint.save_best=True '
+                  f'default_hooks.checkpoint.save_best="auto" '
                   f'--launcher={launcher}\n')
 
     with open(work_dir / 'job.sh', 'w') as f:
@@ -277,17 +307,19 @@ def summary(models, args):
 
         # Skip if not found any vis_data folder.
         sub_dir = dir_map[model_name]
-        vis_folders = [d for d in sub_dir.iterdir() if d.is_dir()]
-        if len(vis_folders) == 0:
+        log_files = [f for f in sub_dir.glob('*/vis_data/scalars.json')]
+        if len(log_files) == 0:
             continue
-        log_file = sorted(vis_folders)[-1] / 'vis_data' / 'scalars.json'
-        if not log_file.exists():
-            continue
+        log_file = sorted(log_files)[-1]
 
         # parse train log
         with open(log_file) as f:
             json_logs = [json.loads(s) for s in f.readlines()]
-            val_logs = [log for log in json_logs if 'loss' not in log]
+            val_logs = [
+                log for log in json_logs
+                # TODO: need a better method to extract validate log
+                if 'loss' not in log and 'accuracy/top1' in log
+            ]
 
         if len(val_logs) == 0:
             continue
@@ -336,7 +368,7 @@ def main():
         model_info.cycle = item.get('Cycle', None)
         cycle = getattr(model_info, 'cycle', 'month')
         cycle_level = CYCLE_LEVELS.index(cycle)
-        if cycle_level <= CYCLE_LEVELS.index(args.range):
+        if cycle_level in args.range:
             models[name] = model_info
 
     if args.models:

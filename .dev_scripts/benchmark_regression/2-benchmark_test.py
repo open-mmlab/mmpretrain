@@ -62,6 +62,12 @@ def parse_args():
         action='store_true',
         help='Summarize benchmark test results.')
     parser.add_argument('--save', action='store_true', help='Save the summary')
+    parser.add_argument(
+        '--cfg-options',
+        nargs='+',
+        type=str,
+        default=[],
+        help='Config options for all config files.')
 
     args = parser.parse_args()
     return args
@@ -125,6 +131,7 @@ def create_test_job_batch(commands, model_info, args, port, script_name):
                   f'--work-dir={work_dir} '
                   f'--out={result_file} '
                   f'--cfg-option dist_params.port={port} '
+                  f'{" ".join(args.cfg_options)} '
                   f'--launcher={launcher}\n')
 
     with open(work_dir / 'job.sh', 'w') as f:
