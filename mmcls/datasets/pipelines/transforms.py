@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import copy
 import inspect
 import math
 import random
@@ -1117,18 +1118,22 @@ class Albu(object):
         return updated_dict
 
     def __call__(self, results):
+
+        # backup gt_label in case Albu modify it.
+        _gt_label = copy.deepcopy(results.get('gt_label', None))
+
         # dict to albumentations format
         results = self.mapper(results, self.keymap_to_albu)
 
+        # process aug
         results = self.aug(**results)
-
-        if 'gt_labels' in results:
-            if isinstance(results['gt_labels'], list):
-                results['gt_labels'] = np.array(results['gt_labels'])
-            results['gt_labels'] = results['gt_labels'].astype(np.int64)
 
         # back to the original format
         results = self.mapper(results, self.keymap_back)
+
+        if _gt_label is not None:
+            # recover backup gt_label
+            results.update({'gt_label': _gt_label})
 
         # update final shape
         if self.update_pad_shape:

@@ -28,3 +28,4 @@ Import:
   - configs/convmixer/metafile.yml
   - configs/densenet/metafile.yml
   - configs/poolformer/metafile.yml
+  - configs/mvit/metafile.yml
