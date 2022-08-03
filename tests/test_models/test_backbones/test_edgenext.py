@@ -31,7 +31,7 @@ def test_edgenext():
     assert feat[0].shape == torch.Size([1, 168])
 
     # Test forward with multiple outputs
-    model = EdgeNeXt(arch='small', out_indices=(0, 1, 2, 3))
+    model = EdgeNeXt(arch='xxsmall', out_indices=(0, 1, 2, 3))
     feat = model(imgs)
     assert len(feat) == 4
     assert feat[0].shape == torch.Size([1, 24])
