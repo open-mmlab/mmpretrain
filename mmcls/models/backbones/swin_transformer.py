@@ -183,11 +183,11 @@ class SwinBlockSequence(BaseModule):
         else:
             self.downsample = None
 
-    def forward(self, x, in_shape, downsample=True):
+    def forward(self, x, in_shape, do_downsample=True):
         for block in self.blocks:
             x = block(x, in_shape)
 
-        if self.downsample is not None and downsample:
+        if self.downsample is not None and do_downsample:
             x, out_shape = self.downsample(x, in_shape)
         else:
             out_shape = in_shape
@@ -432,7 +432,7 @@ class SwinTransformer(BaseBackbone):
         outs = []
         for i, stage in enumerate(self.stages):
             x, hw_shape = stage(
-                x, hw_shape, downsample=self.out_after_downsample)
+                x, hw_shape, do_downsample=self.out_after_downsample)
             if i in self.out_indices:
                 norm_layer = getattr(self, f'norm{i}')
                 out = norm_layer(x)
