@@ -18,16 +18,16 @@ Collections:
 Models:
   - Name: efficientformer-l1_3rdparty_8xb128_in1k
     Metadata:
-      FLOPs: 1304601088
-      Parameters: 12278696
+      FLOPs: 1304601088     # 1.3G
+      Parameters: 12278696   # 12M
     In Collections: EfficientFormer
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 80.2
-          Top 5 Accuracy: 93.51
+          Top 1 Accuracy: 80.46
+          Top 5 Accuracy: 94.99
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/poolformer/poolformer-s12_3rdparty_32xb128_in1k_20220414-f8d83051.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/efficientformer/efficientformer-l1_3rdparty_in1k_20220803-d66e61df.pth
     Config: configs/efficientformer/efficientformer-l1_8xb128_in1k.py
     Converted From:
       Weights: https://drive.google.com/file/d/11SbX-3cfqTOc247xKYubrAjBiUmr818y/view?usp=sharing
@@ -35,32 +35,32 @@ Models:
   - Name: efficientformer-l3_3rdparty_8xb128_in1k
     Metadata:
       Training Data: ImageNet-1k
-      FLOPs: 3737045760
-      Parameters: 27456152
+      FLOPs: 3737045760        # 3.7G
+      Parameters: 31406000     # 31M
     In Collections: EfficientFormer
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 80.33
-          Top 5 Accuracy: 95.05
+          Top 1 Accuracy: 82.45
+          Top 5 Accuracy: 96.18
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/poolformer/poolformer-s24_3rdparty_32xb128_in1k_20220414-d7055904.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/efficientformer/efficientformer-l3_3rdparty_in1k_20220803-dde1c8c5.pth
     Config: configs/efficientformer/efficientformer-l3_8xb128_in1k.py
     Converted From:
       Weights: https://drive.google.com/file/d/1OyyjKKxDyMj-BcfInp4GlDdwLu3hc30m/view?usp=sharing
       Code: https://github.com/snap-research/EfficientFormer
   - Name: efficientformer-l7_3rdparty_8xb128_in1k
     Metadata:
-      FLOPs: 9492747264
-      Parameters: 68436952
+      FLOPs: 10163951616      # 10.2G
+      Parameters: 82229328    # 82M
     In Collections: EfficientFormer
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 81.43
-          Top 5 Accuracy: 95.45
+          Top 1 Accuracy: 83.40
+          Top 5 Accuracy: 96.60
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/poolformer/poolformer-s36_3rdparty_32xb128_in1k_20220414-d78ff3e8.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/efficientformer/efficientformer-l7_3rdparty_in1k_20220803-41a552bb.pth
     Config: configs/efficientformer/efficientformer-l7_8xb128_in1k.py
     Converted From:
       Weights: https://drive.google.com/file/d/1cVw-pctJwgvGafeouynqWWCwgkcoFMM5/view?usp=sharing

@@ -22,7 +22,7 @@ class AttentionWithBais(BaseModule):
         key_dim (int): The dimension of q, k. Defaults to 32.
         attn_ratio (float): The dimension of v equals to
             ``key_dim * attn_ratio``. Defaults to 4..
-        resolution (int): The resolution of attention_bias.
+        resolution (int): The height and width of attention_bias.
             Defaults to 7.
         init_cfg (dict, optional): The Config for initialization.
             Defaults to None.
@@ -57,28 +57,31 @@ class AttentionWithBais(BaseModule):
                 if offset not in attention_offsets:
                     attention_offsets[offset] = len(attention_offsets)
                 idxs.append(attention_offsets[offset])
-        self.attention_biases = torch.nn.Parameter(
+        self.attention_biases = nn.Parameter(
             torch.zeros(num_heads, len(attention_offsets)))
         self.register_buffer('attention_bias_idxs',
                              torch.LongTensor(idxs).view(N, N))
 
     @torch.no_grad()
     def train(self, mode=True):
+        """change the mode of model."""
         super().train(mode)
         if mode and hasattr(self, 'ab'):
             del self.ab
         else:
             self.ab = self.attention_biases[:, self.attention_bias_idxs]
 
-    def forward(self, x):  # x (B,N,C)
-        B, N, C = x.shape
+    def forward(self, x):
+        """forward function.
+
+        Args:
+            x (tensor): input features with shape of (B, N, C)
+        """
+        B, N, _ = x.shape
         qkv = self.qkv(x)
-        q, k, v = qkv.reshape(B, N, self.num_heads,
-                              -1).split([self.key_dim, self.key_dim, self.d],
-                                        dim=3)
-        q = q.permute(0, 2, 1, 3)
-        k = k.permute(0, 2, 1, 3)
-        v = v.permute(0, 2, 1, 3)
+        qkv = qkv.reshape(B, N, self.num_heads, -1).permute(0, 2, 1, 3)
+        q, k, v = qkv.split([self.key_dim, self.key_dim, self.d], dim=-1)
+
         attn = ((q @ k.transpose(-2, -1)) * self.scale +
                 (self.attention_biases[:, self.attention_bias_idxs]
                  if self.training else self.ab))
@@ -89,7 +92,7 @@ class AttentionWithBais(BaseModule):
 
 
 class Flat(nn.Module):
-    """Flat the input from (N, C, H, W) to (N, H*W, C)."""
+    """Flat the input from (B, C, H, W) to (B, H*W, C)."""
 
     def __init__(self, ):
         super().__init__()
@@ -100,10 +103,9 @@ class Flat(nn.Module):
 
 
 class LinearMlp(BaseModule):
-    """Mlp implemented by with linear.
+    """Mlp implemented with linear.
 
-    Input: Tensor with shape [B, N, C].
-    Output: Tensor with shape [B, N, C].
+    The shape of input and output tensor are (B, N, C).
 
     Args:
         in_features (int): Dimension of input features.
@@ -136,16 +138,20 @@ class LinearMlp(BaseModule):
         self.drop2 = nn.Dropout(drop)
 
     def forward(self, x):
+        """
+        Args:
+            x (torch.Tensor): input tensor with shape (B, N, C).
+
+        Returns:
+            torch.Tensor: output tensor with shape (B, N, C).
+        """
         x = self.drop1(self.act(self.fc1(x)))
         x = self.drop2(self.fc2(x))
         return x
 
 
 class ConvMlp(BaseModule):
-    """Mlp implemented by with 1*1 convolutions.
-
-    Input: Tensor with shape [B, C, H, W].
-    Output: Tensor with shape [B, C, H, W].
+    """Mlp implemented with 1*1 convolutions.
 
     Args:
         in_features (int): Dimension of input features.
@@ -180,6 +186,14 @@ class ConvMlp(BaseModule):
         self.drop = nn.Dropout(drop)
 
     def forward(self, x):
+        """
+        Args:
+            x (torch.Tensor): input tensor with shape (B, C, H, W).
+
+        Returns:
+            torch.Tensor: output tensor with shape (B, C, H, W).
+        """
+
         x = self.act(self.norm1(self.fc1(x)))
         x = self.drop(x)
         x = self.norm2(self.fc2(x))
@@ -187,28 +201,30 @@ class ConvMlp(BaseModule):
         return x
 
 
-class LayerScale(nn.Module):
+class LayerScale(BaseModule):
     """LayerScale layer.
 
     Args:
         dim (int): Dimension of input features.
-        init_values (float): Dimension of output features.
-        inplace (bool): Config dict for normalization layer.
-            Defaults to ``dict(type='BN')``.
-        data_format (str): The config dict for activation between pointwise
-            convolution. Defaults to ``dict(type='GELU')``.
+        inplace (bool): inplace: can optionally do the
+            operation in-place. Default: ``False``
+        data_format (str): The input data format, can be 'channels_last'
+             and 'channels_first', representing (B, C, H, W) and
+             (B, N, C) format data respectively.
+        init_cfg (dict, optional): Initialization config dict.
+            Defaults to dict(type='Constant', layer='Parameter', val=1e-5).
     """
 
     def __init__(self,
                  dim,
-                 init_values=1e-5,
                  inplace=False,
-                 data_format='channels_last'):
-        super().__init__()
+                 data_format='channels_last',
+                 init_cfg=dict(type='Constant', layer='Parameter', val=1e-5)):
+        super().__init__(init_cfg=init_cfg)
         assert data_format in ('channels_last', 'channels_first')
         self.inplace = inplace
         self.data_format = data_format
-        self.gamma = nn.Parameter(init_values * torch.ones(dim))
+        self.gamma = nn.Parameter(torch.ones(dim))
 
     def forward(self, x):
         if self.data_format == 'channels_first':
@@ -219,12 +235,9 @@ class LayerScale(nn.Module):
         return x.mul_(self.gamma) if self.inplace else x * self.gamma
 
 
-class Meta3D(nn.Module):
-    """Meta Former using 3 dimensions inputs.
-
-    Input: Tensor with shape [B, N, C].
-    Output: Tensor with shape [B, N, C].
-    """
+class Meta3D(BaseModule):
+    """Meta Former block using 3 dimensions inputs, ``torch.Tensor`` with shape
+    (B, N, C)."""
 
     def __init__(self,
                  dim,
@@ -234,8 +247,8 @@ class Meta3D(nn.Module):
                  drop=0.,
                  drop_path=0.,
                  use_layer_scale=True,
-                 layer_scale_init_value=1e-5):
-        super().__init__()
+                 init_cfg=None):
+        super().__init__(init_cfg=init_cfg)
         self.norm1 = build_norm_layer(norm_cfg, dim)[1]
         self.token_mixer = AttentionWithBais(dim)
         self.norm2 = build_norm_layer(norm_cfg, dim)[1]
@@ -249,8 +262,8 @@ class Meta3D(nn.Module):
         self.drop_path = DropPath(drop_path) if drop_path > 0. \
             else nn.Identity()
         if use_layer_scale:
-            self.ls1 = LayerScale(dim, layer_scale_init_value)
-            self.ls2 = LayerScale(dim, layer_scale_init_value)
+            self.ls1 = LayerScale(dim)
+            self.ls2 = LayerScale(dim)
         else:
             self.ls1, self.ls2 = nn.Identity(), nn.Identity()
 
@@ -260,12 +273,9 @@ class Meta3D(nn.Module):
         return x
 
 
-class Meta4D(nn.Module):
-    """Meta Former using 4 dimensions inputs.
-
-    Input: Tensor with shape [B, C, H, W].
-    Output: Tensor with shape [B, C, H, W].
-    """
+class Meta4D(BaseModule):
+    """Meta Former block using 4 dimensions inputs, ``torch.Tensor`` with shape
+    (B, C, H, W)."""
 
     def __init__(self,
                  dim,
@@ -275,8 +285,8 @@ class Meta4D(nn.Module):
                  drop=0.,
                  drop_path=0.,
                  use_layer_scale=True,
-                 layer_scale_init_value=1e-5):
-        super().__init__()
+                 init_cfg=None):
+        super().__init__(init_cfg=init_cfg)
 
         self.token_mixer = Pooling(pool_size=pool_size)
         mlp_hidden_dim = int(dim * mlp_ratio)
@@ -289,10 +299,8 @@ class Meta4D(nn.Module):
         self.drop_path = DropPath(drop_path) if drop_path > 0. \
             else nn.Identity()
         if use_layer_scale:
-            self.ls1 = LayerScale(
-                dim, layer_scale_init_value, data_format='channels_first')
-            self.ls2 = LayerScale(
-                dim, layer_scale_init_value, data_format='channels_first')
+            self.ls1 = LayerScale(dim, data_format='channels_first')
+            self.ls2 = LayerScale(dim, data_format='channels_first')
         else:
             self.ls1, self.ls2 = nn.Identity(), nn.Identity()
 
@@ -308,18 +316,13 @@ def basic_blocks(in_channels,
                  layers,
                  pool_size=3,
                  mlp_ratio=4.,
-                 norm_cfg=dict(type='GN', num_groups=1),
                  act_cfg=dict(type='GELU'),
                  drop_rate=.0,
                  drop_path_rate=0.,
                  use_layer_scale=True,
-                 layer_scale_init_value=1e-5,
                  vit_num=1,
                  has_downsamper=False):
-    """
-    generate EfficientFormer blocks for a stage
-    return: EfficientFormer blocks
-    """
+    """generate EfficientFormer blocks for a stage."""
     blocks = []
     if has_downsamper:
         blocks.append(
@@ -344,7 +347,6 @@ def basic_blocks(in_channels,
                     drop=drop_rate,
                     drop_path=block_dpr,
                     use_layer_scale=use_layer_scale,
-                    layer_scale_init_value=layer_scale_init_value,
                 ))
         else:
             blocks.append(
@@ -354,9 +356,7 @@ def basic_blocks(in_channels,
                     act_cfg=act_cfg,
                     drop=drop_rate,
                     drop_path=block_dpr,
-                    use_layer_scale=use_layer_scale,
-                    layer_scale_init_value=layer_scale_init_value,
-                ))
+                    use_layer_scale=use_layer_scale))
             if index == 3 and layers[index] - block_idx - 1 == vit_num:
                 blocks.append(Flat())
     blocks = nn.Sequential(*blocks)
@@ -367,7 +367,7 @@ def basic_blocks(in_channels,
 class EfficientFormer(BaseBackbone):
     """EfficientFormer.
 
-    A PyTorch implementation of PoolFormer introduced by:
+    A PyTorch implementation of EfficientFormer introduced by:
     `EfficientFormer: Vision Transformers at MobileNet Speed <https://arxiv.org/abs/2206.01191>`_
 
     Modified from the `official repo
@@ -375,8 +375,8 @@ class EfficientFormer(BaseBackbone):
 
     Args:
         arch (str | dict): The model's architecture. If string, it should be
-            one of architecture in ``PoolFormer.arch_settings``. And if dict, it
-            should include the following two keys:
+            one of architecture in ``EfficientFormer.arch_settings``. And if dict,
+             it should include the following 4 keys:
 
             - layers (list[int]): Number of blocks at each stage.
             - embed_dims (list[int]): The number of channels at each stage.
@@ -385,23 +385,19 @@ class EfficientFormer(BaseBackbone):
 
             Defaults to 'l1'.
 
+        in_channels (int): The num of input channels. Defaults to 3.
+        out_indices (Sequence[int]): Output from which stages.
+            Defaults to -1.
+        frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
+            -1 means not freezing any parameters. Defaults to -1.
         act_cfg (dict): The config dict for activation between pointwise
             convolution. Defaults to ``dict(type='GELU')``.
-        in_patch_size (int): The patch size of input image patch embedding.
-            Defaults to 7.
-        in_stride (int): The stride of input image patch embedding.
-            Defaults to 4.
-        in_pad (int): The padding of input image patch embedding.
-            Defaults to 2.
         drop_rate (float): Dropout rate. Defaults to 0.
         drop_path_rate (float): Stochastic depth rate. Defaults to 0.
-        out_indices (Sequence | int): Output from which network position.
-            Index 0-6 respectively corresponds to
-            [stage1, downsampling, stage2, downsampling, stage3, downsampling, stage4]
-            Defaults to -1, means the last stage.
-        frozen_stages (int): Stages to be frozen (all param fixed).
-            Defaults to 0, which means not freezing any parameters.
-        init_cfg (dict, optional): Initialization config dict
+        use_layer_scale (bool): Whether to use use_layer_scale in MetaFormer
+             block. Defaults to True.
+        init_cfg (dict, optional): Initialization config dict.
+            Defaults to None.
     """  # noqa: E501
 
     # --layers: [x,x,x,x], numbers of layers for the four stages
@@ -432,17 +428,15 @@ class EfficientFormer(BaseBackbone):
     def __init__(self,
                  arch='l1',
                  in_channels=3,
-                 norm_cfg=dict(type='GN', num_groups=1),
                  act_cfg=dict(type='GELU'),
                  pool_size=3,
                  mlp_ratios=4,
                  use_layer_scale=True,
-                 layer_scale_init_value=1e-5,
                  drop_rate=0.,
                  drop_path_rate=0.,
                  out_indices=-1,
                  reshape_last_feat=False,
-                 frozen_stages=0,
+                 frozen_stages=-1,
                  init_cfg=None):
 
         super().__init__(init_cfg=init_cfg)
@@ -481,12 +475,11 @@ class EfficientFormer(BaseBackbone):
                 layers,
                 pool_size=pool_size,
                 mlp_ratio=mlp_ratios,
-                norm_cfg=norm_cfg,
                 act_cfg=act_cfg,
                 drop_rate=drop_rate,
                 drop_path_rate=drop_path_rate,
+                vit_num=self.vit_num,
                 use_layer_scale=use_layer_scale,
-                layer_scale_init_value=layer_scale_init_value,
                 has_downsamper=self.downsamples[i])
             network.append(stage)
 

@@ -27,10 +27,10 @@ if __name__ == '__main__':
 
     from mmcls.models import build_classifier
     x = torch.randn((1, 3, 224, 224))
-    print(x.sum().sum().sum())
     m = build_classifier(model)
-    # for name, parameters in m.named_parameters():
-    #     print(name, ':', parameters.size())
+    print(m)
+    for name, parameters in m.named_parameters():
+        print(name, ':', parameters.size())
     m.eval()
     y = m(x, return_loss=False)
     print((type(y[0]), y[0].shape, y[0][:512].sum()))

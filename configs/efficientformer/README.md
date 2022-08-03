@@ -17,11 +17,11 @@ models are generally times slower than lightweight convolutional networks. There
 
 ### ImageNet-1k
 
-|      Model       | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                                  Config                                   |                                   Download                                   |
-| :--------------: | :-------: | :------: | :-------: | :-------: | :-----------------------------------------------------------------------: | :--------------------------------------------------------------------------: |
-| PoolFormer-S12\* |   11.92   |   1.87   |   77.24   |   93.51   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/poolformer/poolformer-s12_32xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/poolformer/poolformer-s12_3rdparty_32xb128_in1k_20220414-f8d83051.pth) |
-| PoolFormer-S24\* |   21.39   |   3.51   |   80.33   |   95.05   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/poolformer/poolformer-s24_32xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/poolformer/poolformer-s24_3rdparty_32xb128_in1k_20220414-d7055904.pth) |
-| PoolFormer-S36\* |   30.86   |   5.15   |   81.43   |   95.45   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/poolformer/poolformer-s36_32xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/poolformer/poolformer-s36_3rdparty_32xb128_in1k_20220414-d78ff3e8.pth) |
+|        Model         | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                                 Config                                  |                                  Download                                  |
+| :------------------: | :-------: | :------: | :-------: | :-------: | :---------------------------------------------------------------------: | :------------------------------------------------------------------------: |
+| EfficientFormer-l1\* |   12.19   |   1.30   |   80.46   |   94.99   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/efficientformer/efficientformer-l1_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/efficientformer/efficientformer-l1_3rdparty_in1k_20220803-d66e61df.pth) |
+| EfficientFormer-l3\* |   31.41   |   3.93   |   82.45   |   96.18   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/efficientformer/efficientformer-l3_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/efficientformer/efficientformer-l3_3rdparty_in1k_20220803-dde1c8c5.pth) |
+| EfficientFormer-l7\* |   82.23   |  10.16   |   83.40   |   96.60   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/efficientformer/efficientformer-l7_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/efficientformer/efficientformer-l7_3rdparty_in1k_20220803-41a552bb.pth) |
 
 *Models with * are converted from the [official repo](https://github.com/sail-sg/poolformer). The config files of these models are only for inference. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 
