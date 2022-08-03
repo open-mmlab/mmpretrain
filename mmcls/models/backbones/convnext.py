@@ -72,6 +72,7 @@ class ConvNeXtBlock(BaseModule):
 
     def __init__(self,
                  in_channels,
+                 dw_conv_cfg=dict(kernel_size=7, padding=3),
                  norm_cfg=dict(type='LN2d', eps=1e-6),
                  act_cfg=dict(type='GELU'),
                  mlp_ratio=4.,
@@ -80,11 +81,7 @@ class ConvNeXtBlock(BaseModule):
                  layer_scale_init_value=1e-6):
         super().__init__()
         self.depthwise_conv = nn.Conv2d(
-            in_channels,
-            in_channels,
-            kernel_size=7,
-            padding=3,
-            groups=in_channels)
+            in_channels, in_channels, groups=in_channels, **dw_conv_cfg)
 
         self.linear_pw_conv = linear_pw_conv
         self.norm = build_norm_layer(norm_cfg, in_channels)[1]
