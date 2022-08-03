@@ -42,22 +42,21 @@ def test_edgenext():
     # Test with custom arch
     model = EdgeNeXt(
         arch={
-            'depths': [2, 3, 4, 5, 6],
-            'channels': [24, 48, 88, 168, 336],
-            'num_heads': [4, 4, 4, 4, 4]
+            'depths': [2, 3, 4, 5],
+            'channels': [26, 46, 86, 166],
+            'num_heads': [4, 4, 4, 4]
         },
-        out_indices=(0, 1, 2, 3, 4))
+        out_indices=(0, 1, 2, 3))
     model.init_weights()
     model.train()
 
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
-    assert len(feat) == 5
-    assert feat[0].sahpe == torch.Size([1, 24])
-    assert feat[1].sahpe == torch.Size([1, 48])
-    assert feat[2].sahpe == torch.Size([1, 88])
-    assert feat[3].sahpe == torch.Size([1, 168])
-    assert feat[4].sahpe == torch.Size([1, 336])
+    assert len(feat) == 4
+    assert feat[0].sahpe == torch.Size([1, 26])
+    assert feat[1].sahpe == torch.Size([1, 46])
+    assert feat[2].sahpe == torch.Size([1, 86])
+    assert feat[3].sahpe == torch.Size([1, 166])
 
     # Test without gap before final norm
     model = EdgeNeXt(
