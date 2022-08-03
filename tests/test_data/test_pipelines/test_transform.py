@@ -1268,14 +1268,25 @@ def test_lighting():
 def test_albu_transform():
     results = dict(
         img_prefix=osp.join(osp.dirname(__file__), '../../data'),
-        img_info=dict(filename='color.jpg'))
+        img_info=dict(filename='color.jpg'),
+        gt_label=np.array(1))
 
     # Define simple pipeline
     load = dict(type='LoadImageFromFile')
     load = build_from_cfg(load, PIPELINES)
 
     albu_transform = dict(
-        type='Albu', transforms=[dict(type='ChannelShuffle', p=1)])
+        type='Albu',
+        transforms=[
+            dict(type='ChannelShuffle', p=1),
+            dict(
+                type='ShiftScaleRotate',
+                shift_limit=0.0625,
+                scale_limit=0.0,
+                rotate_limit=0,
+                interpolation=1,
+                p=1)
+        ])
     albu_transform = build_from_cfg(albu_transform, PIPELINES)
 
     normalize = dict(type='Normalize', mean=[0] * 3, std=[0] * 3, to_rgb=True)
@@ -1287,3 +1298,4 @@ def test_albu_transform():
     results = normalize(results)
 
     assert results['img'].dtype == np.float32
+    assert results['gt_label'].shape == np.array(1).shape
