@@ -46,8 +46,9 @@ optim_wrapper = dict(optimizer=dict(lr=0.8, nesterov=True))
 # runtime settings
 
 # Precise BN hook will update the bn stats, so this hook should be executed
-# before CheckpointHook, which has priority of 'NORMAL'. So set the
-# priority of PreciseBNHook to 'ABOVE_NORMAL' here.
+# before CheckpointHook(priority of 'VERY_LOW') and
+# EMAHook(priority of 'NORMAL') So set the priority of PreciseBNHook to
+# 'ABOVENORMAL' here.
 custom_hooks = [
     dict(
         type='PreciseBNHook',

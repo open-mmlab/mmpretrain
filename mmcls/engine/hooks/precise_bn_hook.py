@@ -4,14 +4,16 @@
 
 import itertools
 import logging
-from typing import List, Optional, Union
+from typing import List, Optional, Sequence, Union
 
 import mmcv
+import mmengine
 import torch
 import torch.nn as nn
-from mmcv.runner import EpochBasedRunner, get_dist_info
 from mmengine.hooks import Hook
 from mmengine.logging import print_log
+from mmengine.model import is_model_wrapper
+from mmengine.runner import EpochBasedTrainLoop, IterBasedTrainLoop, Runner
 from torch.functional import Tensor
 from torch.nn import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
@@ -19,6 +21,8 @@ from torch.nn.modules.instancenorm import _InstanceNorm
 from torch.utils.data import DataLoader
 
 from mmcls.registry import HOOKS
+
+DATA_BATCH = Optional[Sequence[dict]]
 
 
 def scaled_all_reduce(tensors: List[Tensor], num_gpus: int) -> List[Tensor]:
@@ -74,8 +78,11 @@ def update_bn_stats(
             `ValueError`.
             - None: The `print()` method will be used to print log messages.
     """
+    if is_model_wrapper(model):
+        model = model.module
+
     # get dist info
-    rank, world_size = get_dist_info()
+    rank, world_size = mmengine.dist.get_dist_info()
     # Compute the number of mini-batches to use, if the size of dataloader is
     # less than num_iters, use all the samples in dataloader.
     num_iter = num_samples // (loader.batch_size * world_size)
@@ -85,7 +92,6 @@ def update_bn_stats(
         m for m in model.modules()
         if m.training and isinstance(m, (_BatchNorm))
     ]
-
     if len(bn_layers) == 0:
         print_log('No BN found in model', logger=logger, level=logging.WARNING)
         return
@@ -117,7 +123,9 @@ def update_bn_stats(
         prog_bar = mmcv.ProgressBar(num_iter)
 
     for data in itertools.islice(loader, num_iter):
-        model(**data)
+        batch_inputs, data_samples = model.data_preprocessor(data, False)
+        model(batch_inputs, data_samples)
+
         for i, bn in enumerate(bn_layers):
             running_means[i] += bn.running_mean / num_iter
             running_vars[i] += bn.running_var / num_iter
@@ -156,35 +164,60 @@ class PreciseBNHook(Hook):
     Args:
         num_samples (int): The number of samples to update the bn stats.
             Defaults to 8192.
-        interval (int): Perform precise bn interval. Defaults to 1.
+        interval (int): Perform precise bn interval. If the train loop is
+        `EpochBasedTrainLoop` or `by_epoch=True`, its unit is 'epoch'; if the
+         train loop is `IterBasedTrainLoop` or `by_epoch=False`, its unit is
+         'iter'. Defaults to 1.
     """
 
     def __init__(self, num_samples: int = 8192, interval: int = 1) -> None:
-        assert interval > 0 and num_samples > 0
+        assert interval > 0 and num_samples > 0, "'interval' and " \
+            "'num_samples' must be bigger than 0."
 
         self.interval = interval
         self.num_samples = num_samples
 
-    def _perform_precise_bn(self, runner: EpochBasedRunner) -> None:
+    def _perform_precise_bn(self, runner: Runner) -> None:
+        """perform precise bn."""
         print_log(
-            f'Running Precise BN for {self.num_samples} items...',
+            f'Running Precise BN for {self.num_samples} samples...',
             logger=runner.logger)
         update_bn_stats(
             runner.model,
-            runner.data_loader,
+            runner.train_loop.dataloader,
             self.num_samples,
             logger=runner.logger)
         print_log('Finish Precise BN, BN stats updated.', logger=runner.logger)
 
-    def after_train_epoch(self, runner: EpochBasedRunner) -> None:
+    def after_train_epoch(self, runner: Runner) -> None:
         """Calculate prcise BN and broadcast BN stats across GPUs.
 
         Args:
-            runner (obj:`EpochBasedRunner`): runner object.
+            runner (obj:`Runner`): The runner of the training process.
         """
-        assert isinstance(runner, EpochBasedRunner), \
-            'PreciseBN only supports `EpochBasedRunner` by now'
+        # if use `EpochBasedTrainLoop``, do perform precise every
+        # `self.interval` epochs.
+        if isinstance(runner.train_loop,
+                      EpochBasedTrainLoop) and self.every_n_epochs(
+                          runner, self.interval):
+            self._perform_precise_bn(runner)
 
-        # if by epoch, do perform precise every `self.interval` epochs;
-        if self.every_n_epochs(runner, self.interval):
+    def after_train_iter(self,
+                         runner,
+                         batch_idx: int,
+                         data_batch: DATA_BATCH = None,
+                         outputs: Optional[dict] = None) -> None:
+        """Calculate prcise BN and broadcast BN stats across GPUs.
+
+        Args:
+            runner (obj:`Runner`): The runner of the training process.
+            batch_idx (int): The index of the current batch in the train loop.
+            data_batch (Sequence[dict], optional): Data from dataloader.
+                Defaults to None.
+        """
+        # if use `IterBasedTrainLoop``, do perform precise every
+        # `self.interval` iters.
+        if isinstance(runner.train_loop,
+                      IterBasedTrainLoop) and self.every_n_train_iters(
+                          runner, self.interval):
             self._perform_precise_bn(runner)
