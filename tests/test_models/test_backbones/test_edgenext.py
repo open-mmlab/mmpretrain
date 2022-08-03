@@ -53,10 +53,10 @@ def test_edgenext():
     imgs = torch.randn(1, 3, 224, 224)
     feat = model(imgs)
     assert len(feat) == 4
-    assert feat[0].sahpe == torch.Size([1, 20])
-    assert feat[1].sahpe == torch.Size([1, 40])
-    assert feat[2].sahpe == torch.Size([1, 80])
-    assert feat[3].sahpe == torch.Size([1, 160])
+    assert feat[0].shape == torch.Size([1, 20])
+    assert feat[1].shape == torch.Size([1, 40])
+    assert feat[2].shape == torch.Size([1, 80])
+    assert feat[3].shape == torch.Size([1, 160])
 
     # Test without gap before final norm
     model = EdgeNeXt(
@@ -68,7 +68,7 @@ def test_edgenext():
     assert feat[0].shape == torch.Size([1, 48, 56, 56])
     assert feat[1].shape == torch.Size([1, 96, 28, 28])
     assert feat[2].shape == torch.Size([1, 160, 14, 14])
-    assert feat[3].sahpe == torch.size([1, 304, 7, 7])
+    assert feat[3].shape == torch.Size([1, 304, 7, 7])
 
     # Test frozen_stages
     model = EdgeNeXt(arch='small', out_indices=(0, 1, 2, 3), frozen_stages=2)

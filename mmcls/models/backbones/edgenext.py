@@ -352,7 +352,9 @@ class EdgeNeXt(BaseBackbone):
             self.stages.append(stage_blocks)
 
             if i in self.out_indices:
-                norm_layer = build_norm_layer(dict(type='LN'), channels)[1]
+                out_norm_cfg = dict(type='LN') if self.gap_before_final_norm \
+                    else norm_cfg
+                norm_layer = build_norm_layer(out_norm_cfg, channels)[1]
                 self.add_module(f'norm{i}', norm_layer)
 
     def init_weights(self) -> None:
