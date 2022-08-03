@@ -23,18 +23,11 @@ param_scheduler = [
         type='LinearLR',
         start_factor=1e-3,
         by_epoch=True,
-        begin=0,
         end=20,
         # update by iter
         convert_to_iter_based=True),
     # main learning rate scheduler
-    dict(
-        type='CosineAnnealingLR',
-        T_max=280,
-        eta_min=1e-5,
-        by_epoch=True,
-        begin=20,
-        end=300)
+    dict(type='CosineAnnealingLR', eta_min=1e-5, by_epoch=True, begin=20)
 ]
 
 # train, val, test setting
