@@ -58,7 +58,7 @@ class TestSwinTransformerV2(TestCase):
         }
         model = SwinTransformerV2(**cfg)
         for i, stage in enumerate(model.stages):
-            self.assertEqual(stage.embed_dims, 256 * (2**i))
+            self.assertEqual(stage.out_channels, 256 * (2**i))
             self.assertEqual(len(stage.blocks), depths[i])
             self.assertEqual(stage.blocks[0].attn.w_msa.num_heads,
                              num_heads[i])
@@ -154,7 +154,7 @@ class TestSwinTransformerV2(TestCase):
         outs = model(imgs)
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 4)
-        for stride, out in zip([2, 4, 8, 8], outs):
+        for stride, out in zip([1, 2, 4, 8], outs):
             self.assertEqual(out.shape,
                              (3, 128 * stride, 64 // stride, 64 // stride))
 

@@ -183,16 +183,16 @@ class SwinBlockV2Sequence(BaseModule):
             block_cfgs = [deepcopy(block_cfgs) for _ in range(depth)]
 
         if downsample:
-            self.embed_dims = 2 * embed_dims
+            self.out_channels = 2 * embed_dims
             _downsample_cfg = {
                 'in_channels': embed_dims,
-                'out_channels': self.embed_dims,
+                'out_channels': self.out_channels,
                 'norm_cfg': dict(type='LN'),
                 **downsample_cfg
             }
             self.downsample = PatchMerging(**_downsample_cfg)
         else:
-            self.embed_dims = embed_dims
+            self.out_channels = embed_dims
             self.downsample = None
 
         self.blocks = ModuleList()
@@ -200,7 +200,7 @@ class SwinBlockV2Sequence(BaseModule):
             extra_norm = True if extra_norm_every_n_blocks and \
                 (i + 1) % extra_norm_every_n_blocks == 0 else False
             _block_cfg = {
-                'embed_dims': self.embed_dims,
+                'embed_dims': self.out_channels,
                 'num_heads': num_heads,
                 'window_size': window_size,
                 'shift': False if i % 2 == 0 else True,
@@ -224,10 +224,6 @@ class SwinBlockV2Sequence(BaseModule):
             x = block(x, out_shape)
 
         return x, out_shape
-
-    @property
-    def out_channels(self):
-        return self.embed_dims
 
 
 @BACKBONES.register_module()
