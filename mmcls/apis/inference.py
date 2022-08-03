@@ -4,9 +4,9 @@ import warnings
 import torch
 from mmengine.config import Config
 from mmengine.data import pseudo_collate
+from mmengine.dataset import Compose
 from mmengine.runner import load_checkpoint
 
-from mmcls.datasets.pipelines import Compose
 from mmcls.models import build_classifier
 
 

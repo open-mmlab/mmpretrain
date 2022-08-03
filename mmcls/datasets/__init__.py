@@ -8,8 +8,8 @@ from .dataset_wrappers import KFoldDataset
 from .imagenet import ImageNet, ImageNet21k
 from .mnist import MNIST, FashionMNIST
 from .multi_label import MultiLabelDataset
-from .pipelines import *  # noqa: F401,F403
 from .samplers import *  # noqa: F401,F403
+from .transforms import *  # noqa: F401,F403
 from .voc import VOC
 
 __all__ = [
