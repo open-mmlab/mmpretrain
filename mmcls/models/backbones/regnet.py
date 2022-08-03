@@ -47,24 +47,26 @@ class RegNet(ResNet):
         >>> import torch
         >>> inputs = torch.rand(1, 3, 32, 32)
         >>> # use str type 'arch'
-        >>> regnet_cfg = dict(arch='regnetx_4.0gf')  # default out_indices is (3,)
+        >>> # Note that default out_indices is (3,)
+        >>> regnet_cfg = dict(arch='regnetx_4.0gf')
         >>> model = RegNet(**regnet_cfg)
         >>> model.eval()
         >>> level_outputs = model(inputs)
         >>> for level_out in level_outputs:
         ...     print(tuple(level_out.shape))
-        ... 
+        ...
             (1, 1360, 1, 1)
-        >>> 
+        >>>
         >>> # use dict type 'arch'
-        >>> arch_cfg =dict(w0=88, wa=26.31, wm=2.25, group_w=48, depth=25, bot_mul=1.0)
+        >>> arch_cfg =dict(w0=88, wa=26.31, wm=2.25,
+        >>> 		    group_w=48, depth=25, bot_mul=1.0)
         >>> regnet_cfg = dict(arch=arch_cfg, out_indices=(0, 1, 2, 3))
         >>> model = RegNet(**regnet_cfg)
         >>> model.eval()
         >>> level_outputs = model(inputs)
         >>> for level_out in level_outputs:
         ...     print(tuple(level_out.shape))
-        ... 
+
             (1, 96, 8, 8)
             (1, 192, 4, 4)
             (1, 432, 2, 2)
