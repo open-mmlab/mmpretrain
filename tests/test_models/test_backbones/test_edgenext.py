@@ -43,7 +43,8 @@ def test_edgenext():
     model = EdgeNeXt(
         arch={
             'depths': [2, 3, 4, 5, 6],
-            'channels': [24, 48, 88, 168, 336]
+            'channels': [24, 48, 88, 168, 336],
+            'num_heads': [4, 4, 4, 4, 4]
         },
         out_indices=(0, 1, 2, 3, 4))
     model.init_weights()
