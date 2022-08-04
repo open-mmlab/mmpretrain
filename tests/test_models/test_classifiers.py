@@ -321,3 +321,6 @@ def test_classifier_extract_feat():
     outs = model.extract_feats(multi_imgs, stage='pre_logits')
     for out_per_img in outs:
         assert out_per_img.shape == (1, 1024)
+
+    out = model.forward_dummy(torch.rand(1, 3, 224, 224))
+    assert out.shape == (1, 1024)
