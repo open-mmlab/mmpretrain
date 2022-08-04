@@ -18,7 +18,7 @@ Multi-label image recognition is a challenging computer vision task of practical
 
 |     Model      |                      Pretrain                      | Params(M) | Flops(G) |  mAP  | OF1 (%) | CF1 (%) |                      Config                       |                      Download                       |
 | :------------: | :------------------------------------------------: | :-------: | :------: | :---: | :-----: | :-----: | :-----------------------------------------------: | :-------------------------------------------------: |
-| Resnet101-CSRA | [ImageNet-1k](https://download.openmmlab.com/mmclassification/v0/resnet/resnet101_8xb32_in1k_20210831-539c63f8.pth) |   23.55   |   4.12   | 94.98 |  90.80  |  89.16  | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/csra/resnet101_csra_1xb16_voc07_448.py) | [model](https://download.openmmlab.com/mmclassification/v0/csra/resnet101_csra_1xb16_voc07_448_20220722-29efb40a.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/csra/resnet101_csra_1xb16_voc07_448_20220722-29efb40a.log.json) |
+| Resnet101-CSRA | [ImageNet-1k](https://download.openmmlab.com/mmclassification/v0/resnet/resnet101_8xb32_in1k_20210831-539c63f8.pth) |   23.55   |   4.12   | 94.98 |  90.80  |  89.16  | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/csra/resnet101-csra_1xb16_voc07-448px.py) | [model](https://download.openmmlab.com/mmclassification/v0/csra/resnet101-csra_1xb16_voc07-448px_20220722-29efb40a.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/csra/resnet101-csra_1xb16_voc07-448px_20220722-29efb40a.log.json) |
 
 ## Citation
 

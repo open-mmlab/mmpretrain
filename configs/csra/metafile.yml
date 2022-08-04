@@ -1,7 +1,7 @@
 Collections:
   - Name: CSRA
     Metadata:
-      Training Data: VOC-2007
+      Training Data: PASCAL VOC 2007
       Architecture:
         - Class-specific Residual Attention
     Paper:
@@ -13,17 +13,17 @@ Collections:
       URL: https://github.com/open-mmlab/mmclassification/blob/v0.24.0/mmcls/models/heads/multi_label_csra_head.py
 
 Models:
-  - Name: resnet101_csra_1xb16_voc07_448
+  - Name: resnet101-csra_1xb16_voc07-448px
     Metadata:
       FLOPs: 4120000000
       Parameters: 23550000
     In Collections: CSRA
     Results:
-      - Dataset: VOC-2007
+      - Dataset: PASCAL VOC 2007
         Metrics:
           mAP: 94.98
           OF1: 90.80
           CF1: 89.16
-        Task: Multi-Label Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/csra/resnet101_csra_1xb16_voc07_448_20220722-29efb40a.pth
-    Config: configs/csra/resnet101_csra_1xb16_voc07_448.py
+        Task: Multi-Label Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/csra/resnet101-csra_1xb16_voc07-448px_20220722-29efb40a.pth
+    Config: configs/csra/resnet101-csra_1xb16_voc07-448px.py
