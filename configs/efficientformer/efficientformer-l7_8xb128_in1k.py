@@ -17,12 +17,8 @@ model = dict(
                 std=.02,
                 bias=0.),
             dict(type='Constant', layer=['GroupNorm'], val=1., bias=0.),
+            dict(type='Constant', layer=['LayerScale'], val=1e-5)
         ]),
     neck=dict(type='GlobalAveragePooling', dim=1),
     head=dict(
         type='EfficientFormerClsHead', in_channels=768, num_classes=1000))
-
-if __name__ == '__main__':
-    from mmcls.models import build_classifier
-    m = build_classifier(model)
-    print(m)
