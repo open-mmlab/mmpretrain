@@ -36,28 +36,26 @@ def test_hybrid_embed():
 
 
 def test_patch_merging():
-    settings = dict(
-        input_resolution=(56, 56), in_channels=16, expansion_ratio=2)
+    settings = dict(in_channels=16, out_channels=32, padding=0)
     downsample = PatchMerging(**settings)
 
     # test forward with wrong dims
     with pytest.raises(AssertionError):
         inputs = torch.rand((1, 16, 56 * 56))
-        downsample(inputs)
+        downsample(inputs, input_size=(56, 56))
 
     # test patch merging forward
     inputs = torch.rand((1, 56 * 56, 16))
-    out = downsample(inputs)
-    assert downsample.output_resolution == (28, 28)
+    out, output_size = downsample(inputs, input_size=(56, 56))
+    assert output_size == (28, 28)
     assert out.shape == (1, 28 * 28, 32)
 
     # test different kernel_size in each direction
     downsample = PatchMerging(kernel_size=(2, 3), **settings)
-    out = downsample(inputs)
+    out, output_size = downsample(inputs, input_size=(56, 56))
     expected_dim = cal_unfold_dim(56, 2, 2) * cal_unfold_dim(56, 3, 3)
     assert downsample.sampler.kernel_size == (2, 3)
-    assert downsample.output_resolution == (cal_unfold_dim(56, 2, 2),
-                                            cal_unfold_dim(56, 3, 3))
+    assert output_size == (cal_unfold_dim(56, 2, 2), cal_unfold_dim(56, 3, 3))
     assert out.shape == (1, expected_dim, 32)
 
     # test default stride
@@ -66,18 +64,25 @@ def test_patch_merging():
 
     # test stride=3
     downsample = PatchMerging(kernel_size=6, stride=3, **settings)
-    out = downsample(inputs)
+    out, output_size = downsample(inputs, input_size=(56, 56))
     assert downsample.sampler.stride == (3, 3)
     assert out.shape == (1, cal_unfold_dim(56, 6, stride=3)**2, 32)
 
     # test padding
-    downsample = PatchMerging(kernel_size=6, padding=2, **settings)
-    out = downsample(inputs)
+    downsample = PatchMerging(
+        in_channels=16, out_channels=32, kernel_size=6, padding=2)
+    out, output_size = downsample(inputs, input_size=(56, 56))
     assert downsample.sampler.padding == (2, 2)
+    assert out.shape == (1, cal_unfold_dim(56, 6, 6, padding=2)**2, 32)
+
+    # test str padding
+    downsample = PatchMerging(in_channels=16, out_channels=32, kernel_size=6)
+    out, output_size = downsample(inputs, input_size=(56, 56))
+    assert downsample.sampler.padding == (0, 0)
     assert out.shape == (1, cal_unfold_dim(56, 6, 6, padding=2)**2, 32)
 
     # test dilation
     downsample = PatchMerging(kernel_size=6, dilation=2, **settings)
-    out = downsample(inputs)
+    out, output_size = downsample(inputs, input_size=(56, 56))
     assert downsample.sampler.dilation == (2, 2)
     assert out.shape == (1, cal_unfold_dim(56, 6, 6, dilation=2)**2, 32)
