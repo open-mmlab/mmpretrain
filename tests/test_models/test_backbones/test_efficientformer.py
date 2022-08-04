@@ -6,24 +6,33 @@ import torch
 from torch import nn
 
 from mmcls.models.backbones import EfficientFormer
-from mmcls.models.backbones.efficientformer import PatchEmbed, Meta3D, Meta4D, AttentionWithBais, LayerScale, Flat
+from mmcls.models.backbones.efficientformer import (AttentionWithBais, Flat,
+                                                    LayerScale, Meta3D, Meta4D,
+                                                    PatchEmbed)
 from mmcls.models.backbones.poolformer import Pooling
 
+
 class TestLayerScale(TestCase):
+
     def test_init(self):
         with self.assertRaisesRegex(AssertionError, "'data_format' could"):
-            cfg = dict(dim=10, inplace=False, data_format='BNC',)
+            cfg = dict(
+                dim=10,
+                inplace=False,
+                data_format='BNC',
+            )
             LayerScale(**cfg)
 
         cfg = dict(dim=10)
         ls = LayerScale(**cfg)
-        assert torch.equal(ls.weight, torch.ones(10, requires_grad=True) * 1e-5)
-        
+        assert torch.equal(ls.weight,
+                           torch.ones(10, requires_grad=True) * 1e-5)
+
     def forward(self):
         # Test channels_last
         cfg = dict(dim=256, inplace=False, data_format='channels_last')
         ls_channels_last = LayerScale(**cfg)
-        x = torch.randn( (4, 49, 256) )
+        x = torch.randn((4, 49, 256))
         out = ls_channels_last(x)
         self.assertEqual(tuple(out.size()), (4, 49, 256))
         assert torch.equal(x * 1e-5, out)
@@ -31,7 +40,7 @@ class TestLayerScale(TestCase):
         # Test channels_first
         cfg = dict(dim=256, inplace=False, data_format='channels_first')
         ls_channels_first = LayerScale(**cfg)
-        x = torch.randn( (4, 256, 7, 7) )
+        x = torch.randn((4, 256, 7, 7))
         out = ls_channels_first(x)
         self.assertEqual(tuple(out.size()), (4, 256, 7, 7))
         assert torch.equal(x * 1e-5, out)
@@ -39,9 +48,9 @@ class TestLayerScale(TestCase):
         # Test inplace True
         cfg = dict(dim=256, inplace=True, data_format='channels_first')
         ls_channels_first = LayerScale(**cfg)
-        x = torch.randn( (4, 256, 7, 7) )
+        x = torch.randn((4, 256, 7, 7))
         out = ls_channels_first(x)
-        self.assertEqual(tuple(out.size()), (4, 256, 7, 7)) 
+        self.assertEqual(tuple(out.size()), (4, 256, 7, 7))
         self.assertIs(x, out)
 
 
@@ -68,21 +77,21 @@ class TestEfficientFormer(TestCase):
         # Test invalid custom arch
         with self.assertRaisesRegex(AssertionError, 'must have'):
             cfg = deepcopy(self.custom_cfg)
-            cfg['arch'].pop("layers")
+            cfg['arch'].pop('layers')
             EfficientFormer(**cfg)
-        
+
         # Test vit_num < 0
         with self.assertRaisesRegex(AssertionError, "'vit_num' must"):
             cfg = deepcopy(self.custom_cfg)
             cfg['arch']['vit_num'] = -1
             EfficientFormer(**cfg)
-        
+
         # Test vit_num > last stage layers
         with self.assertRaisesRegex(AssertionError, "'vit_num' must"):
             cfg = deepcopy(self.custom_cfg)
             cfg['arch']['vit_num'] = 10
             EfficientFormer(**cfg)
-        
+
         # Test out_ind
         with self.assertRaisesRegex(AssertionError, '"out_indices" must'):
             cfg = deepcopy(self.custom_cfg)
@@ -101,7 +110,7 @@ class TestEfficientFormer(TestCase):
             if downsamples[i]:
                 self.assertIsInstance(stage[0], PatchEmbed)
                 self.assertEqual(stage[0].proj.stride, (2, 2))
-           
+
             if i < len(model.network) - 1:
                 self.assertIsInstance(stage[-1], Meta4D)
                 self.assertIsInstance(stage[-1].token_mixer, Pooling)
@@ -150,8 +159,8 @@ class TestEfficientFormer(TestCase):
         self.assertEqual(len(outs), 1)
         feat = outs[-1]
         self.assertEqual(feat.shape, (1, 448, 49))
-        assert hasattr(model, "norm3")
-        assert isinstance(getattr(model, "norm3"), nn.LayerNorm)
+        assert hasattr(model, 'norm3')
+        assert isinstance(getattr(model, 'norm3'), nn.LayerNorm)
 
         # test multiple output indices
         cfg = deepcopy(self.cfg)
@@ -165,11 +174,11 @@ class TestEfficientFormer(TestCase):
         for dim, stride, out in zip(self.arch['embed_dims'], [1, 2, 4, 8],
                                     outs):
             self.assertEqual(out.shape, (1, dim, 56 // stride, 56 // stride))
-        
+
         # Test norm layer
         for i in range(4):
-            assert hasattr(model, f"norm{i}")
-            stage_norm = getattr(model, f"norm{i}")
+            assert hasattr(model, f'norm{i}')
+            stage_norm = getattr(model, f'norm{i}')
             assert isinstance(stage_norm, nn.GroupNorm)
             assert stage_norm.num_groups == 1
 
@@ -179,11 +188,10 @@ class TestEfficientFormer(TestCase):
         cfg['out_indices'] = (0, 1, 2, 3)
         model = EfficientFormer(**cfg)
         for i in range(4):
-            assert hasattr(model, f"norm{i}")
-            stage_norm = getattr(model, f"norm{i}")
+            assert hasattr(model, f'norm{i}')
+            stage_norm = getattr(model, f'norm{i}')
             assert isinstance(stage_norm, nn.GroupNorm)
             assert stage_norm.num_groups == 1
-
 
     def test_structure(self):
         # test drop_path_rate decay
