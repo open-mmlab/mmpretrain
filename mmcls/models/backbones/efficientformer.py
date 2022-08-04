@@ -201,7 +201,7 @@ class ConvMlp(BaseModule):
         return x
 
 
-class LayerScale(BaseModule):
+class LayerScale(nn.Module):
     """LayerScale layer.
 
     Args:
@@ -211,28 +211,26 @@ class LayerScale(BaseModule):
         data_format (str): The input data format, can be 'channels_last'
              and 'channels_first', representing (B, C, H, W) and
              (B, N, C) format data respectively.
-        init_cfg (dict, optional): Initialization config dict.
-            Defaults to dict(type='Constant', layer='Parameter', val=1e-5).
     """
 
     def __init__(self,
-                 dim,
-                 inplace=False,
-                 data_format='channels_last',
-                 init_cfg=dict(type='Constant', layer='Parameter', val=1e-5)):
-        super().__init__(init_cfg=init_cfg)
-        assert data_format in ('channels_last', 'channels_first')
+                 dim: int,
+                 inplace: bool = False,
+                 data_format: str = 'channels_last'):
+        super().__init__()
+        assert data_format in ('channels_last', 'channels_first'), \
+            "'data_format' could only be channels_last or channels_first."
         self.inplace = inplace
         self.data_format = data_format
-        self.gamma = nn.Parameter(torch.ones(dim))
+        self.weight = nn.Parameter(torch.ones(dim) * 1e-5)
 
     def forward(self, x):
         if self.data_format == 'channels_first':
             if self.inplace:
-                return x.mul_(self.gamma.view(-1, 1, 1))
+                return x.mul_(self.weight.view(-1, 1, 1))
             else:
-                return x * self.gamma.view(-1, 1, 1)
-        return x.mul_(self.gamma) if self.inplace else x * self.gamma
+                return x * self.weight.view(-1, 1, 1)
+        return x.mul_(self.weight) if self.inplace else x * self.weight
 
 
 class Meta3D(BaseModule):
@@ -398,6 +396,31 @@ class EfficientFormer(BaseBackbone):
              block. Defaults to True.
         init_cfg (dict, optional): Initialization config dict.
             Defaults to None.
+
+        Example:
+            >>> from mmcls.models import EfficientFormer
+            >>> import torch
+            >>> inputs = torch.rand((1, 3, 224, 224))
+            >>> # build EfficientFormer backbone for classification task
+            >>> model = EfficientFormer(arch="l1")
+            >>> model.eval()
+            >>> level_outputs = model(inputs)
+            >>> for level_out in level_outputs:
+            ...     print(tuple(level_out.shape))
+            (1, 448, 49)
+            >>> # build EfficientFormer backbone for downstream task
+            >>> EfficientFormer(
+            >>>    arch="l3",
+            >>>    out_indices=(0, 1, 2, 3),
+            >>>    reshape_last_feat=True)
+            >>> model.eval()
+            >>> level_outputs = model(inputs)
+            >>> for level_out in level_outputs:
+            ...     print(tuple(level_out.shape))
+            (1, 64, 56, 56)
+            (1, 128, 28, 28)
+            (1, 320, 14, 14)
+            (1, 512, 7, 7)
     """  # noqa: E501
 
     # --layers: [x,x,x,x], numbers of layers for the four stages
@@ -448,31 +471,42 @@ class EfficientFormer(BaseBackbone):
                 f'({set(self.arch_settings)}) or pass a dict.'
             arch = self.arch_settings[arch]
         elif isinstance(arch, dict):
-            assert 'layers' in arch and 'embed_dims' in arch, \
-                f'The arch dict must have "layers" and "embed_dims", ' \
+            default_keys = set(self.arch_settings['l1'].keys())
+            assert set(arch.keys()) == default_keys, \
+                f'The arch dict must have {default_keys}, ' \
                 f'but got {list(arch.keys())}.'
 
-        layers = arch['layers']
-        embed_dims = arch['embed_dims']
+        self.layers = arch['layers']
+        self.embed_dims = arch['embed_dims']
         self.downsamples = arch['downsamples']
-        self.reshape_last_feat = reshape_last_feat
+        assert isinstance(self.layers, list) and isinstance(
+            self.embed_dims, list) and isinstance(self.downsamples, list)
+        assert len(self.layers) == len(self.embed_dims) == len(
+            self.downsamples)
+
         self.vit_num = arch['vit_num']
+        self.reshape_last_feat = reshape_last_feat
 
         assert self.vit_num >= 0, "'vit_num' must be an integer " \
                                   'greater than or equal to 0.'
+        assert self.vit_num <= self.layers[-1], (
+            "'vit_num' must be an integer smaller than layer number")
 
-        self._make_stem(in_channels, embed_dims[0])
+        self._make_stem(in_channels, self.embed_dims[0])
 
         # set the main block in network
         network = []
-        for i in range(len(layers)):
-            in_channels = embed_dims[i - 1] if i != 0 else embed_dims[i]
-            out_channels = embed_dims[i]
+        for i in range(len(self.layers)):
+            if i != 0:
+                in_channels = self.embed_dims[i - 1]
+            else:
+                in_channels = self.embed_dims[i]
+            out_channels = self.embed_dims[i]
             stage = basic_blocks(
                 in_channels,
                 out_channels,
                 i,
-                layers,
+                self.layers,
                 pool_size=pool_size,
                 mlp_ratio=mlp_ratios,
                 act_cfg=act_cfg,
@@ -485,31 +519,29 @@ class EfficientFormer(BaseBackbone):
 
         self.network = ModuleList(network)
 
-        if out_indices:
-            if isinstance(out_indices, int):
-                out_indices = [out_indices]
-            assert isinstance(out_indices, Sequence), \
-                f'"out_indices" must by a sequence or int, ' \
-                f'get {type(out_indices)} instead.'
-            for i, index in enumerate(out_indices):
-                if index < 0:
-                    out_indices[i] = 4 + index
-                    assert out_indices[i] >= 0, f'Invalid out_indices {index}'
+        if isinstance(out_indices, int):
+            out_indices = [out_indices]
+        assert isinstance(out_indices, Sequence), \
+            f'"out_indices" must by a sequence or int, ' \
+            f'get {type(out_indices)} instead.'
+        for i, index in enumerate(out_indices):
+            if index < 0:
+                out_indices[i] = 4 + index
+                assert out_indices[i] >= 0, f'Invalid out_indices {index}'
 
         self.out_indices = out_indices
-        if self.out_indices:
-            for i_layer in self.out_indices:
-                if not self.reshape_last_feat and \
-                        i_layer == 3 and self.vit_num > 0:
-                    layer = build_norm_layer(
-                        dict(type='LN'), embed_dims[i_layer])[1]
-                else:
-                    # use GN with 1 group as channel-first LN2D
-                    layer = build_norm_layer(
-                        dict(type='GN', num_groups=1), embed_dims[i_layer])[1]
+        for i_layer in self.out_indices:
+            if not self.reshape_last_feat and \
+                    i_layer == 3 and self.vit_num > 0:
+                layer = build_norm_layer(
+                    dict(type='LN'), self.embed_dims[i_layer])[1]
+            else:
+                # use GN with 1 group as channel-first LN2D
+                layer = build_norm_layer(
+                    dict(type='GN', num_groups=1), self.embed_dims[i_layer])[1]
 
-                layer_name = f'norm{i_layer}'
-                self.add_module(layer_name, layer)
+            layer_name = f'norm{i_layer}'
+            self.add_module(layer_name, layer)
 
         self.frozen_stages = frozen_stages
         self._freeze_stages()
@@ -541,7 +573,7 @@ class EfficientFormer(BaseBackbone):
     def forward_tokens(self, x):
         outs = []
         for idx, block in enumerate(self.network):
-            if len(x.size()) == 4:
+            if idx == len(self.network) - 1:
                 N, _, H, W = x.shape
                 if self.downsamples[idx]:
                     H, W = H // 2, W // 2
@@ -549,13 +581,18 @@ class EfficientFormer(BaseBackbone):
             if idx in self.out_indices:
                 norm_layer = getattr(self, f'norm{idx}')
 
-                if len(x.size()) == 3:
+                if idx == len(self.network) - 1 and x.dim() == 3:
+                    # in the last stage, if `self.reshape_last_feat``
+                    # is True, using reshape to NCHW then GN.
+                    # if not, LN then from B N C permute to B C N
                     if self.reshape_last_feat:
-                        x_out = x.permute((0, 2, 1)).reshape(N, -1, H, W)
-                        x_out = norm_layer(x_out)
-                    else:
+                        x = x.permute((0, 2, 1)).reshape(N, -1, H, W)
                         x_out = norm_layer(x)
-                        x_out = x_out.permute((0, 2, 1))
+                    else:
+                        x_out = norm_layer(x).permute((0, 2, 1))
+                else:
+                    x_out = norm_layer(x)
+
                 outs.append(x_out.contiguous())
         return tuple(outs)
 
