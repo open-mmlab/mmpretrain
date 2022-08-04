@@ -40,9 +40,7 @@ Vision Transformers (ViT) have shown rapid progress in computer vision tasks, ac
 
   publisher = {arXiv},
 
-  year = {2022},l1\* |   12.19   |   1.30   |   80.46   |   94.99   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/efficientformer/efficientformer-l1_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/efficientformer/efficientformer-l1_3rdparty_in1k_20220803-d66e61df.pth) |
-| EfficientFormer-l3\* |   31.41   |   3.93   |   82.45   |   96.18   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/efficientformer/efficientformer-l3_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/efficientformer/efficientformer-l3_3rdparty_in1k_20220803-dde1c8c5.pth) |
-| EfficientFormer-l7\* |   82.23   |  10.16   |   83.40   |   96.60   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/efficientformer/efficientformer-l7_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/efficientformer/efficientformer-l7_3rdparty_in1k_20220803-41a552bb.pth) |
+  year = {2022},
 
   copyright = {Creative Commons Attribution 4.0 International}
 }
