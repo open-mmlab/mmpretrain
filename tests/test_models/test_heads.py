@@ -343,8 +343,7 @@ def test_efficientformer_head():
     pred = head.simple_test(fake_features, post_process=False)
     assert isinstance(pred, torch.Tensor) and pred.shape == (4, 10)
     logits = head.simple_test(fake_features, softmax=False, post_process=False)
-    torch.testing.assert_allclose(
-        pred, torch.softmax(logits, dim=1), msg=f'{logits.shape}')
+    torch.testing.assert_allclose(pred, torch.softmax(logits, dim=1))
 
     # test pre_logits
     features = head.pre_logits(fake_features)
@@ -370,8 +369,7 @@ def test_efficientformer_head():
     pred = head.simple_test(fake_features, post_process=False)
     assert isinstance(pred, torch.Tensor) and pred.shape == (4, 10)
     logits = head.simple_test(fake_features, softmax=False, post_process=False)
-    torch.testing.assert_allclose(
-        pred, torch.softmax(logits, dim=1), msg=f'{logits.shape}')
+    torch.testing.assert_allclose(pred, torch.softmax(logits, dim=1))
 
     # test pre_logits
     features = head.pre_logits(fake_features)
