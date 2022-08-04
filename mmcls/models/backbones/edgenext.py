@@ -24,27 +24,27 @@ class SDTAEncoder(BaseModule):
     Args:
         in_channel (int): Number of input channels.
         drop_path_rate (float): Stochastic depth dropout rate.
-            Default to 0.
+            Defaults to 0.
         layer_scale_init_value (float): Initial value of layer scale.
-            Default to 1e-6.
+            Defaults to 1e-6.
         mlp_ratio (int): Number of channels ratio in the MLP.
-            Default to 4.
+            Defaults to 4.
         use_pos_emb (bool): Whether to use position encoding.
-            Default to True.
+            Defaults to True.
         num_heads (int): Number of heads in the multihead attention.
-            Default to 8.
+            Defaults to 8.
         qkv_bias (bool): Whether to use bias in the multihead attention.
-            Default to True.
+            Defaults to True.
         attn_drop (float): Dropout rate of the attention.
-            Default to 0.
+            Defaults to 0.
         proj_drop (float): Dropout rate of the projection.
-            Default to 0.
+            Defaults to 0.
         layer_scale_init_value (float): Initial value of layer scale.
-            Default to 1e-6.
+            Defaults to 1e-6.
         norm_cfg (dict): Dictionary to construct normalization layer.
-            Default to ``dict(type='LN')``.
+            Defaults to ``dict(type='LN')``.
         act_cfg (dict): Dictionary to construct activation layer.
-            Default to ``dict(type='GELU')``.
+            Defaults to ``dict(type='GELU')``.
         scales (int): Number of scales. Default to 1.
     """
 
@@ -167,37 +167,37 @@ class EdgeNeXt(BaseBackbone):
 
             Defaults to 'xxsmall'.
         in_channels (int): The number of input channels.
-            Default to 3.
+            Defaults to 3.
         global_blocks (list[int]): The number of global blocks.
-            Default to [0, 1, 1, 1].
+            Defaults to [0, 1, 1, 1].
         global_block_type (list[str]): The type of global blocks.
-            Default to ['None', 'SDTA', 'SDTA', 'SDTA'].
+            Defaults to ['None', 'SDTA', 'SDTA', 'SDTA'].
         drop_path_rate (float): Stochastic depth dropout rate.
-            Default to 0.
+            Defaults to 0.
         layer_scale_init_value (float): Initial value of layer scale.
-            Default to 1e-6.
+            Defaults to 1e-6.
         linear_pw_conv (bool): Whether to use linear layer to do pointwise
-            convolution. Default to False.
+            convolution. Defaults to False.
         mlp_ratio (int): The number of channel ratio in MLP layers.
-            Default to 4.
+            Defaults to 4.
         conv_kernel_size (list[int]): The kernel size of convolutional layers
-            at each stage. Default to [3, 5, 7, 9].
+            at each stage. Defaults to [3, 5, 7, 9].
         use_pos_embd_csa (list[bool]): Whether to use positional embedding in
-            Channel Self-Attention. Default to [False, True, False, False].
+            Channel Self-Attention. Defaults to [False, True, False, False].
         use_pos_emebd_global (bool): Whether to use positional embedding for
-            whole network. Default to False.
+            whole network. Defaults to False.
         d2_scales (list[int]): The number of channel groups used for SDTA at
-            each stage. Default to [2, 2, 3, 4].
+            each stage. Defaults to [2, 2, 3, 4].
         norm_cfg (dict): The config of normalization layer.
-            Default to ``dict(type='LN2d', eps=1e-6)``.
+            Defaults to ``dict(type='LN2d', eps=1e-6)``.
         out_indices (Sequence | int): Output from which stages.
-            Default to -1, means the last stage.
+            Defaults to -1, means the last stage.
         frozen_stages (int): Stages to be frozen (all param fixed).
-            Default to 0, which means not freezing any parameters.
+            Defaults to 0, which means not freezing any parameters.
         gap_before_final_norm (bool): Whether to globally average the feature
             map before the final norm layer. Defaults to True.
         act_cfg (dict): The config of activation layer.
-            Default to ``dict(type='GELU')``.
+            Defaults to ``dict(type='GELU')``.
         init_cfg (dict, optional): Config for initialization.
             Defaults to None.
     """

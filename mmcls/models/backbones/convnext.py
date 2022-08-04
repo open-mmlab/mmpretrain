@@ -45,6 +45,8 @@ class ConvNeXtBlock(BaseModule):
 
     Args:
         in_channels (int): The number of input channels.
+        dw_conv_cfg (dict): Config of depthwise convolution.
+            Defaults to ``dict(kernel_size=7, padding=3)``.
         norm_cfg (dict): The config dict for norm layers.
             Defaults to ``dict(type='LN2d', eps=1e-6)``.
         act_cfg (dict): The config dict for activation between pointwise
