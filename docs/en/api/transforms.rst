@@ -52,8 +52,8 @@ Every item of a pipeline list is one of the following data transformations class
 
 .. currentmodule:: mmcls.datasets.pipelines
 
-Loading
-=======
+LoadingImage
+============
 
 LoadImageFromFile
 ---------------------
