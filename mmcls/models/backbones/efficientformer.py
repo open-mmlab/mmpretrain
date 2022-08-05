@@ -13,7 +13,7 @@ from .base_backbone import BaseBackbone
 from .poolformer import PatchEmbed, Pooling
 
 
-class AttentionWithBais(BaseModule):
+class AttentionWithBias(BaseModule):
     """Multi-head Attention Module with attention_bias.
 
     Args:
@@ -248,7 +248,7 @@ class Meta3D(BaseModule):
                  init_cfg=None):
         super().__init__(init_cfg=init_cfg)
         self.norm1 = build_norm_layer(norm_cfg, dim)[1]
-        self.token_mixer = AttentionWithBais(dim)
+        self.token_mixer = AttentionWithBias(dim)
         self.norm2 = build_norm_layer(norm_cfg, dim)[1]
         mlp_hidden_dim = int(dim * mlp_ratio)
         self.mlp = LinearMlp(

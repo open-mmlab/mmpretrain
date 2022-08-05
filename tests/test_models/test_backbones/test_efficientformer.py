@@ -6,7 +6,7 @@ import torch
 from torch import nn
 
 from mmcls.models.backbones import EfficientFormer
-from mmcls.models.backbones.efficientformer import (AttentionWithBais, Flat,
+from mmcls.models.backbones.efficientformer import (AttentionWithBias, Flat,
                                                     LayerScale, Meta3D, Meta4D,
                                                     PatchEmbed)
 from mmcls.models.backbones.poolformer import Pooling
@@ -117,7 +117,7 @@ class TestEfficientFormer(TestCase):
                 self.assertEqual(len(stage) - downsamples[i], layers[i])
             elif vit_num > 0:
                 self.assertIsInstance(stage[-1], Meta3D)
-                self.assertIsInstance(stage[-1].token_mixer, AttentionWithBais)
+                self.assertIsInstance(stage[-1].token_mixer, AttentionWithBias)
                 self.assertEqual(len(stage) - downsamples[i] - 1, layers[i])
                 flat_layer_idx = len(stage) - vit_num - downsamples[i]
                 self.assertIsInstance(stage[flat_layer_idx], Flat)
