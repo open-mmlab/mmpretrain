@@ -409,7 +409,7 @@ class EfficientFormer(BaseBackbone):
             ...     print(tuple(level_out.shape))
             (1, 448, 49)
             >>> # build EfficientFormer backbone for downstream task
-            >>> EfficientFormer(
+            >>> model = EfficientFormer(
             >>>    arch="l3",
             >>>    out_indices=(0, 1, 2, 3),
             >>>    reshape_last_feat=True)
