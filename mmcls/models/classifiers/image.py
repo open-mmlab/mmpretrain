@@ -33,6 +33,13 @@ class ImageClassifier(BaseClassifier):
             if augments_cfg is not None:
                 self.augments = Augments(augments_cfg)
 
+    def forward_dummy(self, img):
+        """Used for computing network flops.
+
+        See `mmclassificaiton/tools/analysis_tools/get_flops.py`
+        """
+        return self.extract_feat(img, stage='pre_logits')
+
     def extract_feat(self, img, stage='neck'):
         """Directly extract features from the specified stage.
 
