@@ -563,7 +563,7 @@ class TestColorJitter(TestCase):
         cfg = {**self.DEFAULT_ARGS, 'contrast': 0.}
         transform = TRANSFORMS.build(cfg)
         with patch('numpy.random', np.random.RandomState(0)):
-            mmcv_module = 'mmcls.datasets.pipelines.processing.mmcv'
+            mmcv_module = 'mmcls.datasets.transforms.processing.mmcv'
             call_list = [
                 call.adjust_color(ANY, alpha=ANY),
                 call.adjust_hue(ANY, ANY),

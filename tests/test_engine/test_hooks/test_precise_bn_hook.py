@@ -12,8 +12,8 @@ from mmengine.model import BaseDataPreprocessor, BaseModel
 from mmengine.runner import Runner
 from torch.utils.data import DataLoader, Dataset
 
-from mmcls.data import ClsDataSample
 from mmcls.registry import HOOKS
+from mmcls.structures import ClsDataSample
 from mmcls.utils import register_all_modules
 
 register_all_modules()
