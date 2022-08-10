@@ -55,7 +55,6 @@ class RegNet(ResNet):
         >>> for level_out in level_outputs:
         ...     print(tuple(level_out.shape))
             (1, 1360, 1, 1)
-        >>>
         >>> # use dict type 'arch'
         >>> arch_cfg =dict(w0=88, wa=26.31, wm=2.25,
         >>> 		    group_w=48, depth=25, bot_mul=1.0)
