@@ -54,7 +54,6 @@ class RegNet(ResNet):
         >>> level_outputs = model(inputs)
         >>> for level_out in level_outputs:
         ...     print(tuple(level_out.shape))
-        ...
             (1, 1360, 1, 1)
         >>>
         >>> # use dict type 'arch'
