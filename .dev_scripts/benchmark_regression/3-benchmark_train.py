@@ -61,7 +61,7 @@ def parse_args():
     parser.add_argument(
         '--range',
         type=str,
-        default=CYCLE_LEVELS[0],
+        default={0},
         action=RangeAction,
         metavar='{month,quarter,half-year,no-training}',
         help='The training benchmark range, "no-training" means all models '
@@ -279,12 +279,14 @@ def show_summary(summary_data):
                 metric = summary[metric_key]
                 expect = metric['expect']
                 last = metric['last']
+                last_epoch = metric['last_epoch']
                 last_color = set_color(last, expect)
                 best = metric['best']
                 best_color = set_color(best, expect)
                 best_epoch = metric['best_epoch']
                 row.append(f'{expect:.2f}')
-                row.append(f'[{last_color}]{last:.2f}[/{last_color}]')
+                row.append(
+                    f'[{last_color}]{last:.2f}[/{last_color}] ({last_epoch})')
                 row.append(
                     f'[{best_color}]{best:.2f}[/{best_color}] ({best_epoch})')
         table.add_row(*row)
@@ -342,8 +344,9 @@ def summary(models, args):
                 summary[key_yml] = dict(
                     expect=expect_result,
                     last=last,
+                    last_epoch=len(val_logs),
                     best=best,
-                    best_epoch=best_epoch)
+                    best_epoch=best_epoch+1)
         summary_data[model_name].update(summary)
 
     show_summary(summary_data)

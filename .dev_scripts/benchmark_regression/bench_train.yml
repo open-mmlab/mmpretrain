@@ -35,7 +35,7 @@
   Cycle: half-year
 
 - Name: van-small_8xb128_in1k
-  Cycle: half-year
+  Cycle: no-training
 
 - Name: res2net50-w14-s8_3rdparty_8xb32_in1k
   Cycle: no-training
