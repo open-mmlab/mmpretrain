@@ -20,6 +20,9 @@ model = dict(
         topk=(1, 5),
     ))
 
+# dataset settings
+data = dict(samples_per_gpu=128, workers_per_gpu=5)
+
 if __name__ == '__main__':
     import torch
 

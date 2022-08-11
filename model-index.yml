@@ -30,4 +30,8 @@ Import:
   - configs/poolformer/metafile.yml
   - configs/csra/metafile.yml
   - configs/mvit/metafile.yml
+<<<<<<< HEAD
   - configs/efficientformer/metafile.yml
+=======
+  - configs/mobileone/metafile.yml
+>>>>>>> a02c9bb... update Readme and metafile

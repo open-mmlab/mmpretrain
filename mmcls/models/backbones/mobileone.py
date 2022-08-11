@@ -1,4 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+# Modified from official impl https://github.com/apple/ml-mobileone/blob/main/mobileone.py  # noqa: E501
+from typing import Sequence
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -21,8 +24,6 @@ class MobileOneBlock(BaseModule):
         padding (int): Padding of the 3x3 convolution layer.
         se_cfg (None or dict): The configuration of the se module.
             Default: None.
-        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
-            memory while slowing down the training speed. Default: False.
         norm_cfg (dict): dictionary to construct and config norm layer.
             Default: dict(type='BN', requires_grad=True).
         act_cfg (dict): Config dict for activation layer.
@@ -37,7 +38,7 @@ class MobileOneBlock(BaseModule):
                  in_channels,
                  out_channels,
                  kernel_size,
-                 num_conv_branches,
+                 num_conv,
                  stride=1,
                  padding=1,
                  dilation: int = 1,
@@ -50,7 +51,7 @@ class MobileOneBlock(BaseModule):
                  init_cfg=None):
         super(MobileOneBlock, self).__init__(init_cfg)
 
-        assert se_cfg is None or isinstance(se_cfg, dict), se_cfg
+        assert se_cfg is None or isinstance(se_cfg, dict)
         if se_cfg is not None:
             self.se = SELayer(channels=out_channels, **se_cfg)
         else:
@@ -59,7 +60,7 @@ class MobileOneBlock(BaseModule):
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.kernel_size = kernel_size
-        self.num_conv_branches = num_conv_branches
+        self.num_conv_branches = num_conv
         self.stride = stride
         self.padding = padding
         self.se_cfg = se_cfg
@@ -89,15 +90,17 @@ class MobileOneBlock(BaseModule):
             else:
                 self.branch_norm = None
 
-            self.branch_1x1 = None
+            self.branch_scale = None
             if kernel_size > 1:
-                self.branch_1x1 = self.create_conv_bn(kernel_size=1)
+                self.branch_scale = self.create_conv_bn(kernel_size=1)
 
-            self.branch_3x3_list = ModuleList()
-            for _ in range(num_conv_branches):
-                self.branch_3x3_list.append(
+            self.branch_conv_list = ModuleList()
+            for _ in range(num_conv):
+                self.branch_conv_list.append(
                     self.create_conv_bn(
-                        kernel_size=kernel_size, padding=padding))
+                        kernel_size=kernel_size,
+                        padding=padding,
+                        dilation=dilation))
 
         self.act = build_activation_layer(act_cfg)
 
@@ -127,24 +130,19 @@ class MobileOneBlock(BaseModule):
             if self.deploy:
                 return self.branch_reparam(inputs)
 
-            if self.branch_norm is None:
-                inner_out = 0
-            else:
+            inner_out = 0
+            if self.branch_norm is not None:
                 inner_out = self.branch_norm(inputs)
 
-            if self.branch_1x1 is not None:
-                inner_out += self.branch_1x1(inputs)
+            if self.branch_scale is not None:
+                inner_out += self.branch_scale(inputs)
 
-            for branch_3x3 in self.branch_3x3_list:
-                inner_out += branch_3x3(inputs)
+            for branch_conv in self.branch_conv_list:
+                inner_out += branch_conv(inputs)
 
             return inner_out
 
-        out = _inner_forward(x)
-        out = self.se(out)
-        out = self.act(out)
-
-        return out
+        return self.act(self.se(_inner_forward(x)))
 
     def switch_to_deploy(self):
         """Switch the model structure from training mode to deployment mode."""
@@ -158,7 +156,7 @@ class MobileOneBlock(BaseModule):
             self.conv_cfg,
             self.in_channels,
             self.out_channels,
-            kernel_size=3,
+            kernel_size=self.kernel_size,
             stride=self.stride,
             padding=self.padding,
             dilation=self.dilation,
@@ -169,8 +167,9 @@ class MobileOneBlock(BaseModule):
 
         for param in self.parameters():
             param.detach_()
-        delattr(self, 'branch_3x3_list')
-        delattr(self, 'branch_1x1')
+        delattr(self, 'branch_conv_list')
+        if hasattr(self, 'branch_scale'):
+            delattr(self, 'branch_scale')
         delattr(self, 'branch_norm')
 
         self.deploy = True
@@ -183,26 +182,26 @@ class MobileOneBlock(BaseModule):
                 branches. the first element is the weights and the second is
                 the bias.
         """
-        weight_3x3, bias_3x3 = 0, 0
-        for branch_3x3 in self.branch_3x3_list:
-            weight, bias = self._fuse_conv_bn(branch_3x3)
-            weight_3x3 += weight
-            bias_3x3 += bias
+        weight_conv, bias_conv = 0, 0
+        for branch_conv in self.branch_conv_list:
+            weight, bias = self._fuse_conv_bn(branch_conv)
+            weight_conv += weight
+            bias_conv += bias
 
-        weight_1x1, bias_1x1 = 0, 0
-        if self.branch_1x1 is not None:
-            weight_1x1, bias_1x1 = self._fuse_conv_bn(self.branch_1x1)
+        weight_scale, bias_scale = 0, 0
+        if self.branch_scale is not None:
+            weight_scale, bias_scale = self._fuse_conv_bn(self.branch_scale)
             # Pad scale branch kernel to match conv branch kernel size.
             pad = self.kernel_size // 2
-            weight_1x1 = F.pad(weight_1x1, [pad, pad, pad, pad])
+            weight_scale = F.pad(weight_scale, [pad, pad, pad, pad])
 
         weight_norm, bias_norm = 0, 0
         if self.branch_norm:
             tmp_conv_bn = self._norm_to_conv(self.branch_norm)
             weight_norm, bias_norm = self._fuse_conv_bn(tmp_conv_bn)
 
-        return (weight_3x3 + weight_1x1 + weight_norm,
-                bias_3x3 + bias_1x1 + bias_norm)
+        return (weight_conv + weight_scale + weight_norm,
+                bias_conv + bias_scale + bias_norm)
 
     def _fuse_conv_bn(self, branch):
         """Fuse the parameters in a branch with a conv and bn.
@@ -231,14 +230,14 @@ class MobileOneBlock(BaseModule):
         return fused_weight, fused_bias
 
     def _norm_to_conv(self, branch_nrom):
-        """Convert a norm layer to a conv-bn sequence.
+        """Convert a norm layer to a conv-bn sequence towards
+        ``self.kernel_size``.
 
         Args:
             branch (nn.BatchNorm2d): A branch only with bn in the block.
 
         Returns:
-            tmp_conv3x3 (mmcv.runner.Sequential): a sequential with conv3x3 and
-                bn.
+            (mmcv.runner.Sequential): a sequential with conv and bn.
         """
         input_dim = self.in_channels // self.groups
         conv_weight = torch.zeros(
@@ -250,10 +249,10 @@ class MobileOneBlock(BaseModule):
                         self.kernel_size // 2] = 1
         conv_weight = conv_weight.to(branch_nrom.weight.device)
 
-        tmp_conv3x3 = self.create_conv_bn(kernel_size=3)
-        tmp_conv3x3.conv.weight.data = conv_weight
-        tmp_conv3x3.norm = branch_nrom
-        return tmp_conv3x3
+        tmp_conv = self.create_conv_bn(kernel_size=self.kernel_size)
+        tmp_conv.conv.weight.data = conv_weight
+        tmp_conv.norm = branch_nrom
+        return tmp_conv
 
 
 @BACKBONES.register_module()
@@ -278,11 +277,8 @@ class MobileOne(BaseBackbone):
         in_channels (int): Number of input image channels. Default: 3.
         base_channels (int): Base channels of RepVGG backbone, work
             with width_factor together. Default: 64.
-        out_indices (Sequence[int]): Output from which stages. Default: (3, ).
-        strides (Sequence[int]): Strides of the first block of each stage.
-            Default: (2, 2, 2, 2).
-        dilations (Sequence[int]): Dilation of each stage.
-            Default: (1, 1, 1, 1).
+        out_indices (Sequence[int] | int): Output from which stages.
+            Default: (3, ).
         frozen_stages (int): Stages to be frozen (all param fixed). -1 means
             not freezing any parameters. Default: -1.
         conv_cfg (dict | None): The config dict for conv layers. Default: None.
@@ -298,31 +294,50 @@ class MobileOne(BaseBackbone):
             freeze running stats (mean and var). Note: Effect on Batch Norm
             and its variants only. Default: False.
         init_cfg (dict or list[dict], optional): Initialization config dict.
+
+    Example:
+        >>> from mmcls.models import MobileOne
+        >>> import torch
+        >>> model = MobileOne("s0", out_indices=(0, 1, 2, 3))
+        >>> model.eval()
+        >>> x = torch.rand(1, 3, 224, 224)
+        >>> outputs = model(x)
+        >>> for out in outputs:
+        ...     print(tuple(out.shape))
+        (1, 48, 56, 56)
+        (1, 128, 28, 28)
+        (1, 256, 14, 14)
+        (1, 1024, 7, 7)
     """
 
-    arch_settings = {
+    arch_zoo = {
         's0':
         dict(
+            num_blocks=[2, 8, 10, 1],
             width_factor=[0.75, 1.0, 1.0, 2.0],
             num_conv_branches=[4, 4, 4, 4],
             num_se_blocks=[0, 0, 0, 0]),
         's1':
         dict(
+            num_blocks=[2, 8, 10, 1],
             width_factor=[1.5, 1.5, 2.0, 2.5],
             num_conv_branches=[1, 1, 1, 1],
             num_se_blocks=[0, 0, 0, 0]),
         's2':
         dict(
+            num_blocks=[2, 8, 10, 1],
             width_factor=[1.5, 2.0, 2.5, 4.0],
             num_conv_branches=[1, 1, 1, 1],
             num_se_blocks=[0, 0, 0, 0]),
         's3':
         dict(
+            num_blocks=[2, 8, 10, 1],
             width_factor=[2.0, 2.5, 3.0, 4.0],
             num_conv_branches=[1, 1, 1, 1],
             num_se_blocks=[0, 0, 0, 0]),
         's4':
         dict(
+            num_blocks=[2, 8, 10, 1],
             width_factor=[3.0, 3.5, 3.5, 4.0],
             num_conv_branches=[1, 1, 1, 1],
             num_se_blocks=[0, 0, 5, 1])
@@ -332,9 +347,6 @@ class MobileOne(BaseBackbone):
                  arch,
                  in_channels=3,
                  out_indices=(3, ),
-                 num_blocks=[2, 8, 10, 1],
-                 base_channels=[64, 128, 256, 512],
-                 dilations=(1, 1, 1, 1),
                  frozen_stages=-1,
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
@@ -352,18 +364,19 @@ class MobileOne(BaseBackbone):
         super(MobileOne, self).__init__(init_cfg)
 
         if isinstance(arch, str):
-            assert arch in self.arch_settings, f'"arch": "{arch}"' \
-                f' is not one of the {list(self.arch_settings.keys())}'
-            arch = self.arch_settings[arch]
+            assert arch in self.arch_zoo, f'"arch": "{arch}"' \
+                f' is not one of the {list(self.arch_zoo.keys())}'
+            arch = self.arch_zoo[arch]
         elif not isinstance(arch, dict):
             raise TypeError('Expect "arch" to be either a string '
                             f'or a dict, got {type(arch)}')
 
         self.arch = arch
-        self.in_channels = in_channels
-        self.base_channels = base_channels
+        for k, value in self.arch.items():
+            assert isinstance(value, list) and len(value) == 4, \
+                f'the value of {k} in arch must be list with 4 items.'
 
-        self.out_indices = out_indices
+        self.in_channels = in_channels
         self.deploy = deploy
         self.frozen_stages = frozen_stages
         self.norm_eval = norm_eval
@@ -372,8 +385,8 @@ class MobileOne(BaseBackbone):
         self.norm_cfg = norm_cfg
         self.se_cfg = se_cfg
         self.act_cfg = act_cfg
-        self.dilations = dilations
 
+        base_channels = [64, 128, 256, 512]
         channels = min(64,
                        int(base_channels[0] * self.arch['width_factor'][0]))
         self.stage0 = MobileOneBlock(
@@ -381,7 +394,7 @@ class MobileOne(BaseBackbone):
             channels,
             stride=2,
             kernel_size=3,
-            num_conv_branches=1,
+            num_conv=1,
             conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
             act_cfg=act_cfg,
@@ -389,11 +402,10 @@ class MobileOne(BaseBackbone):
 
         self.in_planes = channels
         self.stages = []
-        for i, num_blocks in enumerate(num_blocks):
-            dilation = self.dilations[i]
+        for i, num_blocks in enumerate(self.arch['num_blocks']):
             planes = int(base_channels[i] * self.arch['width_factor'][i])
 
-            stage = self._make_stage(planes, num_blocks, dilation,
+            stage = self._make_stage(planes, num_blocks,
                                      arch['num_se_blocks'][i],
                                      arch['num_conv_branches'][i])
 
@@ -401,10 +413,21 @@ class MobileOne(BaseBackbone):
             self.add_module(stage_name, stage)
             self.stages.append(stage_name)
 
-    def _make_stage(self, planes, num_blocks, dilation, num_se,
-                    num_conv_branches):
+        if isinstance(out_indices, int):
+            out_indices = [out_indices]
+        assert isinstance(out_indices, Sequence), \
+            f'"out_indices" must by a sequence or int, ' \
+            f'get {type(out_indices)} instead.'
+        out_indices = list(out_indices)
+        for i, index in enumerate(out_indices):
+            if index < 0:
+                out_indices[i] = len(self.stages) + index
+            assert 0 <= out_indices[i] <= len(self.stages), \
+                f'Invalid out_indices {index}.'
+        self.out_indices = out_indices
+
+    def _make_stage(self, planes, num_blocks, num_se, num_conv_branches):
         strides = [2] + [1] * (num_blocks - 1)
-        dilations = [dilation] * num_blocks
         if num_se > num_blocks:
             raise ValueError('Number of SE blocks cannot '
                              'exceed number of layers.')
@@ -420,10 +443,9 @@ class MobileOne(BaseBackbone):
                     in_channels=self.in_planes,
                     out_channels=self.in_planes,
                     kernel_size=3,
-                    num_conv_branches=num_conv_branches,
+                    num_conv=num_conv_branches,
                     stride=strides[i],
                     padding=1,
-                    dilation=dilations[i],
                     groups=self.in_planes,
                     se_cfg=self.se_cfg if use_se else None,
                     conv_cfg=self.conv_cfg,
@@ -437,10 +459,9 @@ class MobileOne(BaseBackbone):
                     in_channels=self.in_planes,
                     out_channels=planes,
                     kernel_size=1,
-                    num_conv_branches=num_conv_branches,
+                    num_conv=num_conv_branches,
                     stride=1,
                     padding=0,
-                    dilation=dilations[i],
                     se_cfg=self.se_cfg if use_se else None,
                     conv_cfg=self.conv_cfg,
                     norm_cfg=self.norm_cfg,
@@ -464,11 +485,11 @@ class MobileOne(BaseBackbone):
 
     def _freeze_stages(self):
         if self.frozen_stages >= 0:
-            self.stem.eval()
-            for param in self.stem.parameters():
+            self.stage0.eval()
+            for param in self.stage0.parameters():
                 param.requires_grad = False
         for i in range(self.frozen_stages):
-            stage = getattr(self, f'stage_{i+1}')
+            stage = getattr(self, f'stage{i+1}')
             stage.eval()
             for param in stage.parameters():
                 param.requires_grad = False

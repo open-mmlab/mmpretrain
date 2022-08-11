@@ -20,15 +20,15 @@ def convert_twins(args, ckpt):
             continue
         elif k.startswith('stage'):
             if 'rbr_scale' in k:
-                new_k = k.replace('rbr_scale.', 'branch_1x1.')
+                new_k = k.replace('rbr_scale.', 'branch_scale.')
                 new_k = new_k.replace('bn.', 'norm.')
             elif 'rbr_conv' in k:
-                new_k = k.replace('rbr_conv.', 'branch_3x3_list.')
+                new_k = k.replace('rbr_conv.', 'branch_conv_list.')
                 new_k = new_k.replace('bn.', 'norm.')
-            elif "rbr_skip" in k:
+            elif 'rbr_skip' in k:
                 new_k = k.replace('rbr_skip.', 'branch_norm.')
                 new_k = new_k.replace('bn.', 'norm.')
-            elif ".se." in k:
+            elif '.se.' in k:
                 new_k = k.replace('reduce.', 'conv1.conv.')
                 new_k = new_k.replace('expand.', 'conv2.conv.')
             else:

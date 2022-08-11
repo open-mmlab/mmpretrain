@@ -16,15 +16,17 @@ Efficient neural network backbones for mobile devices are often optimized for me
 
 ### ImageNet-1k
 
-|     Model      |            Params(M)            |           Flops(G)            | Top-1 (%) | Top-5 (%) |                        Config                         |                        Download                         |
-| :------------: | :-----------------------------: | :---------------------------: | :-------: | :-------: | :---------------------------------------------------: | :-----------------------------------------------------: |
-| MobileOne-s0\* |  9.11（train) \| 8.31 (deploy)  | 1.52 (train) \| 1.36 (deploy) |   71.36   |   89.87   | [config (train)](https://github.com/open-mmlab/mmclassification/blob/master/configs/repvgg/repvgg-A0_4xb64-coslr-120e_in1k.py) \| [config (deploy)](https://github.com/open-mmlab/mmclassification/blob/master/configs/repvgg/deploy/repvgg-A0_deploy_4xb64-coslr-120e_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-A0_3rdparty_4xb64-coslr-120e_in1k_20210909-883ab98c.pth) |
-| MobileOne-s1\* | 14.09 (train) \| 12.79 (deploy) | 2.64 (train) \| 2.37 (deploy) |   75.76   |   92.77   | [config (train)](https://github.com/open-mmlab/mmclassification/blob/master/configs/repvgg/repvgg-A1_4xb64-coslr-120e_in1k.py) \| [config (deploy)](https://github.com/open-mmlab/mmclassification/blob/master/configs/repvgg/deploy/repvgg-A1_deploy_4xb64-coslr-120e_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-A1_3rdparty_4xb64-coslr-120e_in1k_20210909-24003a24.pth) |
-| MobileOne-s2\* | 28.21 (train) \| 25.5 (deploy)  | 5.7 (train)  \| 5.12 (deploy) |   77.39   |   93.63   | [config (train)](https://github.com/open-mmlab/mmclassification/blob/master/configs/repvgg/repvgg-A2_4xb64-coslr-120e_in1k.py) \|[config (deploy)](https://github.com/open-mmlab/mmclassification/blob/master/configs/repvgg/deploy/repvgg-A2_deploy_4xb64-coslr-120e_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-A2_3rdparty_4xb64-coslr-120e_in1k_20210909-97d7695a.pth) |
-| MobileOne-s3\* | 28.21 (train) \| 25.5 (deploy)  | 5.7 (train)  \| 5.12 (deploy) |   77.93   |   93.89   | [config (train)](https://github.com/open-mmlab/mmclassification/blob/master/configs/repvgg/repvgg-A2_4xb64-coslr-120e_in1k.py) \|[config (deploy)](https://github.com/open-mmlab/mmclassification/blob/master/configs/repvgg/deploy/repvgg-A2_deploy_4xb64-coslr-120e_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-A2_3rdparty_4xb64-coslr-120e_in1k_20210909-97d7695a.pth) |
-| MobileOne-s4\* | 15.82 (train) \| 14.34 (deploy) | 3.42 (train) \| 3.06 (deploy) |   79.30   |   94.37   | [config (train)](https://github.com/open-mmlab/mmclassification/blob/master/configs/repvgg/repvgg-B0_4xb64-coslr-120e_in1k.py) \|[config (deploy)](https://github.com/open-mmlab/mmclassification/blob/master/configs/repvgg/deploy/repvgg-B0_deploy_4xb64-coslr-120e_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-B0_3rdparty_4xb64-coslr-120e_in1k_20210909-446375f4.pth) |
+|     Model      |            Params(M)            |            Flops(G)            | Top-1 (%) | Top-5 (%) |                        Config                        |                        Download                         |
+| :------------: | :-----------------------------: | :----------------------------: | :-------: | :-------: | :--------------------------------------------------: | :-----------------------------------------------------: |
+| MobileOne-s0\* |  5.29（train) \| 2.08 (deploy)  | 1.09 (train) \| 0.28 (deploy)  |   71.36   |   89.87   | [config (train)](https://github.com/open-mmlab/mmclassification/blob/master/configs/mobileone/mobileone-s0_8xb128_in1k.py) \| [config (deploy)](https://github.com/open-mmlab/mmclassification/blob/master/configs/mobileone/deploy/mobileone-s0_deploy_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s0_3rdparty_in1k_20220811-db5ce29b.pth) |
+| MobileOne-s1\* |  4.83 (train) \| 4.76 (deploy)  | 0.86 (train) \| 0.84 (deploy)  |   75.76   |   92.77   | [config (train)](https://github.com/open-mmlab/mmclassification/blob/master/configs/mobileone/mobileone-s1_8xb128_in1k.py) \| [config (deploy)](https://github.com/open-mmlab/mmclassification/blob/master/configs/mobileone/deploy/mobileone-s1_deploy_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s1_3rdparty_in1k_20220811-038bfec1.pth) |
+| MobileOne-s2\* |  7.88 (train) \| 7.88 (deploy)  | 1.34 (train)  \| 1.31 (deploy) |   77.39   |   93.63   | [config (train)](https://github.com/open-mmlab/mmclassification/blob/master/configs/mobileone/mobileone-s2_8xb128_in1k.py) \|[config (deploy)](https://github.com/open-mmlab/mmclassification/blob/master/configs/mobileone/deploy/mobileone-s2_deploy_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s2_3rdparty_in1k_20220811-265ed5a4.pth) |
+| MobileOne-s3\* | 10.17 (train) \| 10.08 (deploy) | 1.95 (train)  \| 1.91 (deploy) |   77.93   |   93.89   | [config (train)](https://github.com/open-mmlab/mmclassification/blob/master/configs/mobileone/mobileone-s3_8xb128_in1k.py) \|[config (deploy)](https://github.com/open-mmlab/mmclassification/blob/master/configs/mobileone/deploy/mobileone-s3_deploy_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s3_3rdparty_in1k_20220811-59874d10.pth) |
+| MobileOne-s4\* | 14.95 (train) \| 14.84 (deploy) | 3.05 (train) \| 3.00 (deploy)  |   79.30   |   94.37   | [config (train)](https://github.com/open-mmlab/mmclassification/blob/master/configs/mobileone/mobileone-s4_8xb128_in1k.py) \|[config (deploy)](https://github.com/open-mmlab/mmclassification/blob/master/configs/mobileone/deploy/mobileone-s4_deploy_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s4_3rdparty_in1k_20220811-32860ab2.pth) |
 
 *Models with * are converted from the [official repo](https://github.com/apple/ml-mobileone). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
+
+*Because the [official repo.](https://github.com/apple/ml-mobileone) does not give a strategy for training and testing, the test data pipline of [RepVGG](https://github.com/open-mmlab/mmclassification/tree/master/configs/repvgg) is used here, and the result is about 0.1 lower than the official one. Refer to [this issue](https://github.com/apple/ml-mobileone/issues/2).*
 
 ## How to use
 
@@ -43,8 +45,7 @@ python tools/convert_models/reparameterize_model.py ${CFG_PATH} ${SRC_CKPT_PATH}
 For example:
 
 ```shell
-
-
+python ./tools/convert_models/reparameterize_model.py ./configs/mobileone/mobileone-s0_8xb128_in1k.py https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s0_3rdparty_in1k_20220811-db5ce29b.pth ./mobileone_s0_deploy.pth
 ```
 
 To use reparameterized weights, the config file must switch to the deploy config files.
@@ -53,24 +54,41 @@ To use reparameterized weights, the config file must switch to the deploy config
 python tools/test.py ${Deploy_CFG} ${Deploy_Checkpoint} --metrics accuracy
 ```
 
+For example:
+
+```shell
+python ./tools/test.py ./configs/mobileone/deploy/mobileone-s0_deploy_8xb128_in1k.py  mobileone_s0_deploy.pth --metrics accuracy
+```
+
 ### In the code
 
 Use `backbone.switch_to_deploy()` or `classificer.backbone.switch_to_deploy()` to switch to the deploy mode. For example:
 
 ```python
 from mmcls.models import build_backbone
+import torch
 
-backbone_cfg=dict(type='MobileOne',arch='s0'),
+x = torch.randn( (1, 3, 224, 224) )
+backbone_cfg=dict(type='MobileOne',arch='s0')
 backbone = build_backbone(backbone_cfg)
+backbone.eval()
+outs_ori = backbone(x)
+
 backbone.switch_to_deploy()
+outs_dep = backbone(x)
+
+for out1, out2 in zip(outs_ori, outs_dep):
+    assert torch.allclose(out1, out2)
 ```
 
 or
 
 ```python
 from mmcls.models import build_classifier
+import torch
+import numpy as np
 
-model = dict(
+cfg = dict(
     type='ImageClassifier',
     backbone=dict(
         type='MobileOne',
@@ -86,8 +104,15 @@ model = dict(
         topk=(1, 5),
     ))
 
+x = torch.randn( (1, 3, 224, 224) )
 classifier = build_classifier(cfg)
+y_ori = classifier(x, return_loss=False)
+
 classifier.backbone.switch_to_deploy()
+y_dep = classifier(x, return_loss=False)
+
+for y1, y2 in zip(y_ori, y_dep):
+    assert np.allclose(y1, y2)
 ```
 
 ## Citation
