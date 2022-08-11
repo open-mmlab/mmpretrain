@@ -15,7 +15,7 @@ model = dict(
         loss=dict(
             type='LabelSmoothLoss',
             label_smooth_val=0.1,
-            mode='original',
+            mode='bce',
         )),
     train_cfg=dict(augments=[
         dict(type='Mixup', alpha=0.2, num_classes=1000),

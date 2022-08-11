@@ -74,7 +74,7 @@ class LabelSmoothLoss(nn.Module):
             f'but gets {mode}.'
         self.reduction = reduction
 
-        accept_mode = {'original', 'classy_vision', 'multi_label'}
+        accept_mode = {'original', 'classy_vision', 'multi_label', 'bce'}
         assert mode in accept_mode, \
             f'LabelSmoothLoss supports mode {accept_mode}, but gets {mode}.'
         self.mode = mode
@@ -82,9 +82,12 @@ class LabelSmoothLoss(nn.Module):
         self._eps = label_smooth_val
         if mode == 'classy_vision':
             self._eps = label_smooth_val / (1 + label_smooth_val)
-        if mode == 'multi_label':
+        elif mode == 'multi_label':
             self.ce = CrossEntropyLoss(use_sigmoid=True)
             self.smooth_label = self.multilabel_smooth_label
+        elif mode == 'bce':
+            self.ce = CrossEntropyLoss(use_sigmoid=True)
+            self.smooth_label = self.original_smooth_label
         else:
             self.ce = CrossEntropyLoss(use_soft=True)
             self.smooth_label = self.original_smooth_label
