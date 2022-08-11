@@ -40,19 +40,28 @@ model = dict(
 
 if __name__ == '__main__':
     import torch
-
-    from mmcls.models import build_classifier
-    x = torch.randn((1, 3, 224, 224))
+    import random
     import numpy as np
 
+    def setup_seed(seed):
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+        np.random.seed(seed)
+        random.seed(seed)
+        torch.backends.cudnn.deterministic = True
+
+    from mmcls.models import build_classifier
+    setup_seed(10)
+    x = torch.randn((1, 3, 224, 224))
+    import numpy as np
+    print(x.size(), x.sum().sum().sum().detach())
     classifier = build_classifier(model)
     classifier.eval()
-    for p, _ in classifier.named_parameters():
-        print(p)
     y = classifier(x, return_loss=False)
-    print(type(y))
     classifier.backbone.switch_to_deploy()
-    print(classifier)
     y_ = classifier(x, return_loss=False)
     print(type(y), type(y[0]))
     assert np.allclose(y[0], y_[0]), (y[0][:20], y_[0][:20])
+
+    y = classifier(x, return_loss=False, post_process=False, softmax=False)
+    print(y)
