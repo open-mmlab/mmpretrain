@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Dict, List, Optional, Sequence, Union, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import torch
@@ -11,7 +11,6 @@ from mmengine.model import BaseModule, ModuleList
 from mmengine.model.utils import trunc_normal_
 
 from mmcls.registry import MODELS
-
 from ..utils import (BEiTAttention, MultiheadAttention, resize_pos_embed,
                      to_2tuple)
 from .base_backbone import BaseBackbone
@@ -106,7 +105,7 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
 
     Comparing with conventional ``TransformerEncoderLayer``, this module
     adds weights to the shortcut connection. In addition, ``BEiTAttention``
-    is used to replace the original ``MultiheadAttention`` in 
+    is used to replace the original ``MultiheadAttention`` in
     ``TransformerEncoderLayer``.
 
     Args:
@@ -124,9 +123,9 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
         drop_path_rate (float): Stochastic depth rate. Default 0.0.
         num_fcs (int): The number of fully-connected layers for FFNs.
             Defaults to 2.
-        bias (bool | str): The option to add leanable bias for q, k, v. If bias 
-            is True, it will add leanable bias. If bias is 'qv_bias', it will 
-            only add leanable bias for q, v. If bias is False, it will not add 
+        bias (bool | str): The option to add leanable bias for q, k, v. If bias
+            is True, it will add leanable bias. If bias is 'qv_bias', it will
+            only add leanable bias for q, v. If bias is False, it will not add
             bias for q, k, v. Default to 'qv_bias'.
         act_cfg (dict): The activation config for FFNs.
             Defaults to ``dict(type='GELU')``.
