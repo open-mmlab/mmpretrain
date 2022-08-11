@@ -249,8 +249,9 @@ class VisionTransformer(BaseBackbone):
             final feature map. Defaults to True.
         with_cls_token (bool): Whether concatenating class token into image
             tokens as transformer input. Defaults to True.
-        avg_token (bool): Whether or not use the average token for
-            classification. Defaults to False.
+        avg_token (bool): Whether or not to use the mean patch token for
+            classification. If True, the model will only return the mean patch
+            token regardless of the ``output_cls_token``. Defaults to False.
         frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
             -1 means not freezing any parameters. Defaults to -1.
         output_cls_token (bool): Whether output the cls_token. If set True,
