@@ -113,6 +113,8 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
         embed_dims (int): The feature dimension.
         num_heads (int): Parallel attention heads.
         feedforward_channels (int): The hidden dimension for FFNs.
+        layer_scale_init_value (float): The initialization value for
+            the learnable scaling of attention and FFN.
         drop_rate (float): Probability of an element to be zeroed
             after the feed forward layer. Defaults to 0.
         window_size (tuple[int]): The height and width of the window.
@@ -133,9 +135,7 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
         attn_cfg (dict): The configuration for the attention layer.
             Defaults to dict().
         ffn_cfg (dict): The configuration for the ffn layer.
-            Defaults to dict().
-        init_values (float, optional): Initialize the values of BEiTAttention
-            and FFN with learnable scaling. Defaults to None.
+            Defaults to ``dict(add_identity=False)``.
         init_cfg (dict or List[dict], optional): Initialization config dict.
             Defaults to None.
     """
@@ -144,6 +144,7 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
                  embed_dims: int,
                  num_heads: int,
                  feedforward_channels: int,
+                 layer_scale_init_value: float,
                  window_size: Tuple[int, int],
                  drop_rate: float = 0.,
                  attn_drop_rate: float = 0.,
@@ -154,7 +155,6 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
                  norm_cfg: dict = dict(type='LN'),
                  attn_cfg: dict = dict(),
                  ffn_cfg: dict = dict(add_identity=False),
-                 init_values: Optional[float] = None,
                  init_cfg: Optional[Union[Dict, List[Dict]]] = None) -> None:
         attn_cfg.update(dict(window_size=window_size, qk_scale=None))
 
@@ -199,9 +199,11 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
         self.drop_path = build_dropout(
             dropout_layer) if dropout_layer else nn.Identity()
         self.gamma_1 = nn.Parameter(
-            init_values * torch.ones((embed_dims)), requires_grad=True)
+            layer_scale_init_value * torch.ones((embed_dims)),
+            requires_grad=True)
         self.gamma_2 = nn.Parameter(
-            init_values * torch.ones((embed_dims)), requires_grad=True)
+            layer_scale_init_value * torch.ones((embed_dims)),
+            requires_grad=True)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = x + self.drop_path(self.gamma_1 * self.attn(self.norm1(x)))
@@ -254,9 +256,8 @@ class VisionTransformer(BaseBackbone):
         output_cls_token (bool): Whether output the cls_token. If set True,
             ``with_cls_token`` must be True. Defaults to True.
         beit_style (bool): Whether or not use BEiT-style
-            BEiTTransformerEncoderLayer. Defaults to False.
-        init_values (float, optional): Initialize the values of BEiTAttention
-            and FFN with learnable scaling. Defaults to None.
+        layer_scale_init_value (float): The initialization value for
+            the learnable scaling of attention and FFN. Defaults to 0.1.
         interpolate_mode (str): Select the interpolate mode for position
             embeding vector resize. Defaults to "bicubic".
         patch_cfg (dict): Configs of patch embeding. Defaults to an empty dict.
@@ -328,7 +329,7 @@ class VisionTransformer(BaseBackbone):
                  frozen_stages=-1,
                  output_cls_token=True,
                  beit_style=False,
-                 init_values=None,
+                 layer_scale_init_value=0.1,
                  interpolate_mode='bicubic',
                  patch_cfg=dict(),
                  layer_cfgs=dict(),
@@ -415,7 +416,7 @@ class VisionTransformer(BaseBackbone):
             if beit_style:
                 _layer_cfg.update(
                     dict(
-                        init_values=init_values,
+                        init_values=layer_scale_init_value,
                         window_size=self.patch_resolution))
                 _layer_cfg.pop('qkv_bias')
                 self.layers.append(BEiTTransformerEncoderLayer(**_layer_cfg))
