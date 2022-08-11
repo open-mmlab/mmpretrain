@@ -477,6 +477,7 @@ class BEiTAttention(BaseModule):
                              relative_position_index)
 
     def init_weights(self):
+        super().init_weights()
         trunc_normal_(self.relative_position_bias_table, std=0.02)
 
     def forward(self, x):
