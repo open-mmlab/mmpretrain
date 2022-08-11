@@ -107,7 +107,7 @@ def update_bn_stats(model: nn.Module,
         prog_bar = mmcv.ProgressBar(num_iter)
 
     for data in itertools.islice(loader, num_iter):
-        model(**data)
+        model.train_step(data)
         for i, bn in enumerate(bn_layers):
             running_means[i] += bn.running_mean / num_iter
             running_vars[i] += bn.running_var / num_iter
