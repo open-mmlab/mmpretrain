@@ -133,7 +133,7 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
         norm_cfg (dict): Config dict for normalization layer.
             Defaults to dict(type='LN').
         attn_cfg (dict): The configuration for the attention layer.
-            Defaults to dict().
+            Defaults to an empty dict.
         ffn_cfg (dict): The configuration for the ffn layer.
             Defaults to ``dict(add_identity=False)``.
         init_cfg (dict or List[dict], optional): Initialization config dict.
