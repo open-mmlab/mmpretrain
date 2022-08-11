@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Dict, List, Optional, Sequence, Union
+from typing import Dict, List, Optional, Sequence, Union, Tuple
 
 import numpy as np
 import torch
@@ -102,7 +102,12 @@ class TransformerEncoderLayer(BaseModule):
 
 
 class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
-    """Implements one encoder layer in Vision Transformer.
+    """Implements one encoder layer in BEiT.
+
+    Comparing with conventional ``TransformerEncoderLayer``, this module
+    add weights to the shortcut connection. In addition, ``BEiTAttention``
+    is used to replace the original ``MultiheadAttention`` in 
+    ``TransformerEncoderLayer``.
 
     Args:
         embed_dims (int): The feature dimension.
@@ -110,28 +115,28 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
         feedforward_channels (int): The hidden dimension for FFNs.
         drop_rate (float): Probability of an element to be zeroed
             after the feed forward layer. Defaults to 0.
+        window_size (tuple[int]): The height and width of the window.
+            Defaults to None.
         attn_drop_rate (float): The drop out rate for attention layer.
-            Default: 0.0.
+            Defaults to 0.0.
         drop_path_rate (float): Stochastic depth rate. Default 0.0.
         num_fcs (int): The number of fully-connected layers for FFNs.
-            Default: 2.
-        bias (bool): The option to add leanable bias for q, k, v. If bias is
-            True, it will add leanable bias. If bias is 'qv_bias', it will only
-            add leanable bias for q, v. If bias is False, it will not add bias
-            for q, k, v. Default to 'qv_bias'.
+            Defaults to 2.
+        bias (bool | str): The option to add leanable bias for q, k, v. If bias 
+            is True, it will add leanable bias. If bias is 'qv_bias', it will 
+            only add leanable bias for q, v. If bias is False, it will not add 
+            bias for q, k, v. Default to 'qv_bias'.
         act_cfg (dict): The activation config for FFNs.
-            Default: dict(type='GELU').
+            Defaults to ``dict(type='GELU')``.
         norm_cfg (dict): Config dict for normalization layer.
-            Default: dict(type='LN').
-        window_size (tuple[int], optional): The height and width of the window.
-            Default: None.
+            Defaults to dict(type='LN').
         attn_cfg (dict): The configuration for the attention layer.
             Defaults to dict().
         ffn_cfg (dict): The configuration for the ffn layer.
             Defaults to dict().
         init_values (float, optional): Initialize the values of BEiTAttention
-            and FFN with learnable scaling. Default: None.
-        init_cfg (Dict or List[Dict], optional): Initialization config dict.
+            and FFN with learnable scaling. Defaults to None.
+        init_cfg (dict or List[dict], optional): Initialization config dict.
             Defaults to None.
     """
 
@@ -139,16 +144,16 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
                  embed_dims: int,
                  num_heads: int,
                  feedforward_channels: int,
-                 drop_rate: Optional[float] = 0.,
-                 attn_drop_rate: Optional[float] = 0.,
-                 drop_path_rate: Optional[float] = 0.,
-                 num_fcs: Optional[int] = 2,
-                 bias: Optional[str] = 'qv_bias',
-                 act_cfg: Optional[dict] = dict(type='GELU'),
-                 norm_cfg: Optional[dict] = dict(type='LN'),
-                 window_size: Optional[int] = None,
-                 attn_cfg: Optional[dict] = dict(),
-                 ffn_cfg: Optional[dict] = dict(add_identity=False),
+                 window_size: Tuple[int, int],
+                 drop_rate: float = 0.,
+                 attn_drop_rate: float = 0.,
+                 drop_path_rate: float = 0.,
+                 num_fcs: int = 2,
+                 bias: Union[str, bool] = 'qv_bias',
+                 act_cfg: dict = dict(type='GELU'),
+                 norm_cfg: dict = dict(type='LN'),
+                 attn_cfg: dict = dict(),
+                 ffn_cfg: dict = dict(add_identity=False),
                  init_values: Optional[float] = None,
                  init_cfg: Optional[Union[Dict, List[Dict]]] = None) -> None:
         attn_cfg.update(dict(window_size=window_size, qk_scale=None))
@@ -245,13 +250,13 @@ class VisionTransformer(BaseBackbone):
         avg_token (bool): Whether or not use the average token for
             classification. Defaults to False.
         frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
-            -1 means not freezing any parameters. Default: -1.
+            -1 means not freezing any parameters. Defaults to -1.
         output_cls_token (bool): Whether output the cls_token. If set True,
             ``with_cls_token`` must be True. Defaults to True.
         beit_style (bool): Whether or not use BEiT-style
             BEiTTransformerEncoderLayer. Defaults to False.
         init_values (float, optional): Initialize the values of BEiTAttention
-            and FFN with learnable scaling. Default: None.
+            and FFN with learnable scaling. Defaults to None.
         interpolate_mode (str): Select the interpolate mode for position
             embeding vector resize. Defaults to "bicubic".
         patch_cfg (dict): Configs of patch embeding. Defaults to an empty dict.
@@ -541,7 +546,7 @@ class VisionTransformer(BaseBackbone):
                         B, patch_resolution[0] * patch_resolution[1],
                         C).mean(dim=1)
                     patch_token = self.norm2(patch_token)
-                    out = [cls_token, patch_token]
+                    out = patch_token
                 elif self.output_cls_token:
                     out = [patch_token, cls_token]
                 else:
