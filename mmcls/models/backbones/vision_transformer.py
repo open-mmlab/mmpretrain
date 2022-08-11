@@ -105,7 +105,7 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
     """Implements one encoder layer in BEiT.
 
     Comparing with conventional ``TransformerEncoderLayer``, this module
-    add weights to the shortcut connection. In addition, ``BEiTAttention``
+    adds weights to the shortcut connection. In addition, ``BEiTAttention``
     is used to replace the original ``MultiheadAttention`` in 
     ``TransformerEncoderLayer``.
 
