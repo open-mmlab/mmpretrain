@@ -764,8 +764,8 @@ class TestCUB(TestBaseDataset):
         cls.tmpdir.cleanup()
 
 
-class TestStanfordCar(TestBaseDataset):
-    DATASET_TYPE = 'StanfordCar'
+class TestStanfordCars(TestBaseDataset):
+    DATASET_TYPE = 'StanfordCars'
 
     def test_initialize(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)

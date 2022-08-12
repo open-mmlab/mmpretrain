@@ -1,7 +1,7 @@
 _base_ = [
     '../_base_/models/resnet50.py',
-    '../_base_/datasets/stanford_car_bs8_448.py',
-    '../_base_/schedules/stanford_car_bs8.py', '../_base_/default_runtime.py'
+    '../_base_/datasets/stanford_cars_bs8_448.py',
+    '../_base_/schedules/stanford_cars_bs8.py', '../_base_/default_runtime.py'
 ]
 
 # use pre-train weight converted from https://github.com/Alibaba-MIIL/ImageNet21K # noqa

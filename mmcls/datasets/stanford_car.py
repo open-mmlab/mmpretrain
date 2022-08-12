@@ -10,16 +10,17 @@ from .builder import DATASETS
 
 
 @DATASETS.register_module()
-class StanfordCar(BaseDataset):
-    """`Stanford Car <https://ai.stanford.edu/~jkrause/cars/car_dataset.html>`_
-    Dataset.
+class StanfordCars(BaseDataset):
+    """`Stanford Cars.
+
+    <https://ai.stanford.edu/~jkrause/cars/car_dataset.html>`_ Dataset.
 
     After downloading and decompression, the dataset
     directory structure is as follows.
 
-    Stanford Car dataset directory:
+    Stanford Cars dataset directory:
 
-        Stanford Car
+        Stanford Cars
         ├── cars_train
         │   ├── 00001.jpg
         │   ├── 00002.jpg
@@ -176,7 +177,7 @@ class StanfordCar(BaseDataset):
                 self.train_ann_file = osp.join(data_prefix,
                                                'devkit/cars_train_annos.mat')
             data_prefix = osp.join(data_prefix, 'cars_train')
-        super(StanfordCar, self).__init__(
+        super(StanfordCars, self).__init__(
             ann_file=ann_file,
             data_prefix=data_prefix,
             test_mode=test_mode,

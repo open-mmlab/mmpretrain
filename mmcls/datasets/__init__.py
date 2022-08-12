@@ -12,7 +12,7 @@ from .imagenet21k import ImageNet21k
 from .mnist import MNIST, FashionMNIST
 from .multi_label import MultiLabelDataset
 from .samplers import DistributedSampler, RepeatAugSampler
-from .stanford_car import StanfordCar
+from .stanford_car import StanfordCars
 from .voc import VOC
 
 __all__ = [
@@ -21,5 +21,5 @@ __all__ = [
     'DistributedSampler', 'ConcatDataset', 'RepeatDataset',
     'ClassBalancedDataset', 'DATASETS', 'PIPELINES', 'ImageNet21k', 'SAMPLERS',
     'build_sampler', 'RepeatAugSampler', 'KFoldDataset', 'CUB',
-    'CustomDataset', 'StanfordCar'
+    'CustomDataset', 'StanfordCars'
 ]

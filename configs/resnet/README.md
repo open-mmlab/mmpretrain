@@ -72,6 +72,12 @@ The pre-trained models on ImageNet-21k are used to fine-tune, and therefore don'
 | :-------: | :--------------------------------------------------: | :--------: | :-------: | :------: | :-------: | :------------------------------------------------: | :---------------------------------------------------: |
 | ResNet-50 | [ImageNet-21k-mill](https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_3rdparty-mill_in21k_20220331-faac000b.pth) |  448x448   |   23.92   |  16.48   |   88.45   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet50_8xb8_cub.py) | [model](https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb8_cub_20220307-57840e60.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb8_cub_20220307-57840e60.log.json) |
 
+### Stanford-Cars
+
+|   Model   |                       Pretrain                       | resolution | Params(M) | Flops(G) | Top-1 (%) |                       Config                       |                       Download                        |
+| :-------: | :--------------------------------------------------: | :--------: | :-------: | :------: | :-------: | :------------------------------------------------: | :---------------------------------------------------: |
+| ResNet-50 | [ImageNet-21k-mill](https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_3rdparty-mill_in21k_20220331-faac000b.pth) |  448x448   |   23.92   |  16.48   |   92.82   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet50_8xb8_cars.py) | [model](https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb8_cars_20220812-9d85901a.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb8_cars_20220812-9d85901a.log.json) |
+
 ## Citation
 
 ```
