@@ -628,7 +628,7 @@ class TestLighting(TestCase):
             TRANSFORMS.build(cfg)
 
     def test_transform(self):
-        ori_img = np.random.randint(0, 256, (256, 256, 3), np.uint8)
+        ori_img = np.ones((256, 256, 3), np.uint8) * 127
         results = dict(img=copy.deepcopy(ori_img))
 
         # Test transform with non-img-keyword result
