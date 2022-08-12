@@ -22,22 +22,3 @@ model = dict(
 
 # dataset settings
 data = dict(samples_per_gpu=128, workers_per_gpu=5)
-
-if __name__ == '__main__':
-    import torch
-
-    from mmcls.models import build_classifier
-    x = torch.randn((1, 3, 224, 224))
-    import numpy as np
-
-    classifier = build_classifier(model)
-    classifier.eval()
-    for p, _ in classifier.named_parameters():
-        print(p)
-    y = classifier(x, return_loss=False)
-    print(type(y))
-    classifier.backbone.switch_to_deploy()
-    print(classifier)
-    y_ = classifier(x, return_loss=False)
-    print(type(y), type(y[0]))
-    assert np.allclose(y[0], y_[0]), (y[0][:20], y_[0][:20])
