@@ -26,7 +26,7 @@ Efficient neural network backbones for mobile devices are often optimized for me
 
 *Models with * are converted from the [official repo](https://github.com/apple/ml-mobileone). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 
-*Because the [official repo.](https://github.com/apple/ml-mobileone) does not give a strategy for training and testing, the test data pipline of [RepVGG](https://github.com/open-mmlab/mmclassification/tree/master/configs/repvgg) is used here, and the result is about 0.1 lower than the official one. Refer to [this issue](https://github.com/apple/ml-mobileone/issues/2).*
+*Because the [official repo.](https://github.com/apple/ml-mobileone) does not give a strategy for training and testing, the test data pipline of [RepVGG](https://github.com/open-mmlab/mmclassification/tree/master/configs/repvgg) is used here, and the result is about 0.1 lower than the official repo. Refer to [this issue](https://github.com/apple/ml-mobileone/issues/2).*
 
 ## How to use
 
@@ -40,7 +40,7 @@ Use provided tool to reparameterize the given model and save the checkpoint:
 python tools/convert_models/reparameterize_model.py ${CFG_PATH} ${SRC_CKPT_PATH} ${TARGET_CKPT_PATH}
 ```
 
-`${CFG_PATH}` is the config file, `${SRC_CKPT_PATH}` is the source chenpoint file, `${TARGET_CKPT_PATH}` is the target deploy weight file path.
+`${CFG_PATH}` is the config file path, `${SRC_CKPT_PATH}` is the source chenpoint file path, `${TARGET_CKPT_PATH}` is the target deploy weight file path.
 
 For example:
 
@@ -48,13 +48,13 @@ For example:
 python ./tools/convert_models/reparameterize_model.py ./configs/mobileone/mobileone-s0_8xb128_in1k.py https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s0_3rdparty_in1k_20220811-db5ce29b.pth ./mobileone_s0_deploy.pth
 ```
 
-To use reparameterized weights, the config file must switch to the deploy config files.
+To use reparameterized weights, the config file must switch to **the deploy config files**.
 
 ```bash
 python tools/test.py ${Deploy_CFG} ${Deploy_Checkpoint} --metrics accuracy
 ```
 
-For example:
+For example of using the reparameterized weights above:
 
 ```shell
 python ./tools/test.py ./configs/mobileone/deploy/mobileone-s0_deploy_8xb128_in1k.py  mobileone_s0_deploy.pth --metrics accuracy
@@ -62,16 +62,16 @@ python ./tools/test.py ./configs/mobileone/deploy/mobileone-s0_deploy_8xb128_in1
 
 ### In the code
 
-Use `backbone.switch_to_deploy()` or `classificer.backbone.switch_to_deploy()` to switch to the deploy mode.
+Use the API `switch_to_deploy` of `MobileOne` backbone to to switch to the deploy mode. Usually called like `backbone.switch_to_deploy()` or `classificer.backbone.switch_to_deploy()`.
 
-For Backbone:
+For Backbones:
 
 ```python
 from mmcls.models import build_backbone
 import torch
 
 x = torch.randn( (1, 3, 224, 224) )
-backbone_cfg=dict(type='MobileOne',arch='s0')
+backbone_cfg=dict(type='MobileOne', arch='s0')
 backbone = build_backbone(backbone_cfg)
 backbone.init_weights()
 backbone.eval()
@@ -84,7 +84,7 @@ for out1, out2 in zip(outs_ori, outs_dep):
     assert torch.allclose(out1, out2)
 ```
 
-For ImageClassifier:
+For ImageClassifiers:
 
 ```python
 from mmcls.models import build_classifier

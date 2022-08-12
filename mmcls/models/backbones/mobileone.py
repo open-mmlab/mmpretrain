@@ -278,9 +278,9 @@ class MobileOne(BaseBackbone):
             - width_factor (Sequence[float]): Width deflator in each stage.
             - num_conv_branches (Sequence[float]): Number of conv branches
                  in each stage.
-            - num_se_blocks (Sequence[float]): Number of SE_layer in each
-                 stage, all the SE_layers are put in the last blocks in
-                  each stage.
+            - num_se_blocks (Sequence[float]): Number of SE_layers in each
+                 stage, all the SE_layers are placed in blocks in the
+                 subsequent order of each stage.
 
             Defaults to s0.
 
@@ -498,6 +498,7 @@ class MobileOne(BaseBackbone):
                 param.requires_grad = False
 
     def train(self, mode=True):
+        """switch the mobile to train mode or not."""
         super(MobileOne, self).train(mode)
         self._freeze_stages()
         if mode and self.norm_eval:
@@ -506,6 +507,7 @@ class MobileOne(BaseBackbone):
                     m.eval()
 
     def switch_to_deploy(self):
+        """switch the mobile to deploy."""
         for m in self.modules():
             if isinstance(m, MobileOneBlock):
                 m.switch_to_deploy()
