@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # Modified from official impl https://github.com/apple/ml-mobileone/blob/main/mobileone.py  # noqa: E501
-from typing import Sequence
+from typing import Optional, Sequence
 
 import torch
 import torch.nn as nn
@@ -20,8 +20,14 @@ class MobileOneBlock(BaseModule):
     Args:
         in_channels (int): The input channels of the block.
         out_channels (int): The output channels of the block.
-        stride (int): Stride of the 3x3 and 1x1 convolution layer. Default: 1.
-        padding (int): Padding of the 3x3 convolution layer.
+        kernel_size (int): The kernel size of the convs in the block. If the
+            kernel size is large than 1, there will be a ``branch_scale`` in
+             the block.
+        num_convs (int): Number of conv branches in the block.
+        stride (int): Stride of convolution layers. Default: 1.
+        padding (int): Padding of the convolution layers. Default: 1.
+        dilation (int): Dilation of the convolution layers. Default: 1.
+        groups (int): Groups of the convolution layers. Default: 1.
         se_cfg (None or dict): The configuration of the se module.
             Default: None.
         norm_cfg (dict): dictionary to construct and config norm layer.
@@ -35,20 +41,20 @@ class MobileOneBlock(BaseModule):
     """
 
     def __init__(self,
-                 in_channels,
-                 out_channels,
-                 kernel_size,
-                 num_conv,
-                 stride=1,
-                 padding=1,
+                 in_channels: int,
+                 out_channels: int,
+                 kernel_size: int,
+                 num_convs: int,
+                 stride: int = 1,
+                 padding: int = 1,
                  dilation: int = 1,
-                 groups=1,
-                 se_cfg=None,
-                 conv_cfg=None,
-                 norm_cfg=dict(type='BN'),
-                 act_cfg=dict(type='ReLU'),
-                 deploy=False,
-                 init_cfg=None):
+                 groups: int = 1,
+                 se_cfg: Optional[dict] = None,
+                 conv_cfg: Optional[dict] = None,
+                 norm_cfg: Optional[dict] = dict(type='BN'),
+                 act_cfg: Optional[dict] = dict(type='ReLU'),
+                 deploy: bool = False,
+                 init_cfg: Optional[dict] = None):
         super(MobileOneBlock, self).__init__(init_cfg)
 
         assert se_cfg is None or isinstance(se_cfg, dict)
@@ -60,7 +66,7 @@ class MobileOneBlock(BaseModule):
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.kernel_size = kernel_size
-        self.num_conv_branches = num_conv
+        self.num_conv_branches = num_convs
         self.stride = stride
         self.padding = padding
         self.se_cfg = se_cfg
@@ -95,7 +101,7 @@ class MobileOneBlock(BaseModule):
                 self.branch_scale = self.create_conv_bn(kernel_size=1)
 
             self.branch_conv_list = ModuleList()
-            for _ in range(num_conv):
+            for _ in range(num_convs):
                 self.branch_conv_list.append(
                     self.create_conv_bn(
                         kernel_size=kernel_size,
@@ -105,6 +111,7 @@ class MobileOneBlock(BaseModule):
         self.act = build_activation_layer(act_cfg)
 
     def create_conv_bn(self, kernel_size, dilation=1, padding=0):
+        """cearte a (conv + bn) Sequential layer."""
         conv_bn = Sequential()
         conv_bn.add_module(
             'conv',
@@ -263,20 +270,21 @@ class MobileOne(BaseBackbone):
     <https://arxiv.org/pdf/2206.04040.pdf>`_
 
     Args:
-        arch (str | dict): The parameter of RepVGG.
-            If it's a dict, it should contain the following keys:
+        arch (str | dict): MobileOne architecture. If use string, choose
+            from 's0', 's1', 's2', 's3' and 's4'. If use dict, it should
+            have below keys:
 
             - num_blocks (Sequence[int]): Number of blocks in each stage.
             - width_factor (Sequence[float]): Width deflator in each stage.
-            - group_layer_map (dict | None): RepVGG Block that declares
-              the need to apply group convolution.
-            - se_cfg (dict | None): Se Layer config
+            - num_conv_branches (Sequence[float]): Number of conv branches
+                 in each stage.
+            - num_se_blocks (Sequence[float]): Number of SE_layer in each
+                 stage, all the SE_layers are put in the last blocks in
+                  each stage.
 
             Defaults to s0.
 
         in_channels (int): Number of input image channels. Default: 3.
-        base_channels (int): Base channels of RepVGG backbone, work
-            with width_factor together. Default: 64.
         out_indices (Sequence[int] | int): Output from which stages.
             Default: (3, ).
         frozen_stages (int): Stages to be frozen (all param fixed). -1 means
@@ -286,8 +294,6 @@ class MobileOne(BaseBackbone):
             Default: dict(type='BN').
         act_cfg (dict): Config dict for activation layer.
             Default: dict(type='ReLU').
-        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
-            memory while slowing down the training speed. Default: False.
         deploy (bool): Whether to switch the model structure to deployment
             mode. Default: False.
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
@@ -356,10 +362,7 @@ class MobileOne(BaseBackbone):
                  norm_eval=False,
                  init_cfg=[
                      dict(type='Kaiming', layer=['Conv2d']),
-                     dict(
-                         type='Constant',
-                         val=1,
-                         layer=['_BatchNorm', 'GroupNorm'])
+                     dict(type='Constant', val=1, layer=['_BatchNorm'])
                  ]):
         super(MobileOne, self).__init__(init_cfg)
 
@@ -394,7 +397,7 @@ class MobileOne(BaseBackbone):
             channels,
             stride=2,
             kernel_size=3,
-            num_conv=1,
+            num_convs=1,
             conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
             act_cfg=act_cfg,
@@ -443,7 +446,7 @@ class MobileOne(BaseBackbone):
                     in_channels=self.in_planes,
                     out_channels=self.in_planes,
                     kernel_size=3,
-                    num_conv=num_conv_branches,
+                    num_convs=num_conv_branches,
                     stride=strides[i],
                     padding=1,
                     groups=self.in_planes,
@@ -459,7 +462,7 @@ class MobileOne(BaseBackbone):
                     in_channels=self.in_planes,
                     out_channels=planes,
                     kernel_size=1,
-                    num_conv=num_conv_branches,
+                    num_convs=num_conv_branches,
                     stride=1,
                     padding=0,
                     se_cfg=self.se_cfg if use_se else None,

@@ -24,7 +24,7 @@ Efficient neural network backbones for mobile devices are often optimized for me
 | MobileOne-s3\* | 10.17 (train) \| 10.08 (deploy) | 1.95 (train)  \| 1.91 (deploy) |   77.93   |   93.89   | [config (train)](https://github.com/open-mmlab/mmclassification/blob/master/configs/mobileone/mobileone-s3_8xb128_in1k.py) \|[config (deploy)](https://github.com/open-mmlab/mmclassification/blob/master/configs/mobileone/deploy/mobileone-s3_deploy_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s3_3rdparty_in1k_20220811-59874d10.pth) |
 | MobileOne-s4\* | 14.95 (train) \| 14.84 (deploy) | 3.05 (train) \| 3.00 (deploy)  |   79.30   |   94.37   | [config (train)](https://github.com/open-mmlab/mmclassification/blob/master/configs/mobileone/mobileone-s4_8xb128_in1k.py) \|[config (deploy)](https://github.com/open-mmlab/mmclassification/blob/master/configs/mobileone/deploy/mobileone-s4_deploy_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s4_3rdparty_in1k_20220811-32860ab2.pth) |
 
-*Models with * are converted from the [official repo](https://github.com/apple/ml-mobileone). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
+*Models with \* are converted from the [official repo](https://github.com/apple/ml-mobileone). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 
 *Because the [official repo.](https://github.com/apple/ml-mobileone) does not give a strategy for training and testing, the test data pipline of [RepVGG](https://github.com/open-mmlab/mmclassification/tree/master/configs/repvgg) is used here, and the result is about 0.1 lower than the official one. Refer to [this issue](https://github.com/apple/ml-mobileone/issues/2).*
 
@@ -62,7 +62,9 @@ python ./tools/test.py ./configs/mobileone/deploy/mobileone-s0_deploy_8xb128_in1
 
 ### In the code
 
-Use `backbone.switch_to_deploy()` or `classificer.backbone.switch_to_deploy()` to switch to the deploy mode. For example:
+Use `backbone.switch_to_deploy()` or `classificer.backbone.switch_to_deploy()` to switch to the deploy mode.
+
+For Backbone:
 
 ```python
 from mmcls.models import build_backbone
@@ -71,6 +73,7 @@ import torch
 x = torch.randn( (1, 3, 224, 224) )
 backbone_cfg=dict(type='MobileOne',arch='s0')
 backbone = build_backbone(backbone_cfg)
+backbone.init_weights()
 backbone.eval()
 outs_ori = backbone(x)
 
@@ -81,7 +84,7 @@ for out1, out2 in zip(outs_ori, outs_dep):
     assert torch.allclose(out1, out2)
 ```
 
-or
+For ImageClassifier:
 
 ```python
 from mmcls.models import build_classifier
@@ -106,6 +109,8 @@ cfg = dict(
 
 x = torch.randn( (1, 3, 224, 224) )
 classifier = build_classifier(cfg)
+classifier.init_weights()
+classifier.eval()
 y_ori = classifier(x, return_loss=False)
 
 classifier.backbone.switch_to_deploy()

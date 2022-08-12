@@ -1,16 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
 import tempfile
-import pytest
-from numpy import isin
 
+import pytest
 import torch
 from mmcv.runner import load_checkpoint, save_checkpoint
 from torch import nn
 from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from mmcls.models.backbones import MobileOne   
+from mmcls.models.backbones import MobileOne
 from mmcls.models.backbones.mobileone import MobileOneBlock
 from mmcls.models.utils import SELayer
 
@@ -48,7 +47,7 @@ def test_mobileoneblock():
     assert hasattr(block, 'branch_scale')
     assert hasattr(block, 'branch_conv_list')
     assert hasattr(block, 'branch_norm')
-    assert block.branch_conv_list[0].conv.kernel_size == (3, 3) 
+    assert block.branch_conv_list[0].conv.kernel_size == (3, 3)
     assert block.branch_conv_list[0].conv.groups == 5
     assert block.se_cfg is None
     assert y.shape == torch.Size((1, 10, 16, 16))
@@ -71,14 +70,14 @@ def test_mobileoneblock():
     assert hasattr(block, 'branch_scale')
     assert hasattr(block, 'branch_conv_list')
     assert hasattr(block, 'branch_norm')
-    assert block.branch_conv_list[0].conv.kernel_size == (3, 3) 
+    assert block.branch_conv_list[0].conv.kernel_size == (3, 3)
     assert block.branch_conv_list[0].conv.groups == 5
     assert len(block.branch_conv_list) == 4
     assert block.se_cfg is None
     assert y.shape == torch.Size((1, 10, 16, 16))
     block.switch_to_deploy()
     assert hasattr(block, 'branch_reparam')
-    assert block.branch_reparam.kernel_size == (3, 3) 
+    assert block.branch_reparam.kernel_size == (3, 3)
     assert block.branch_reparam.groups == 5
     assert block.deploy is True
     y_deploy = block(x)
@@ -95,20 +94,19 @@ def test_mobileoneblock():
     assert hasattr(block, 'branch_scale')
     assert hasattr(block, 'branch_conv_list')
     assert hasattr(block, 'branch_norm')
-    assert block.branch_conv_list[0].conv.kernel_size == (1, 1) 
+    assert block.branch_conv_list[0].conv.kernel_size == (1, 1)
     assert block.branch_conv_list[0].conv.groups == 1
     assert len(block.branch_conv_list) == 1
     assert block.se_cfg is None
     assert y.shape == torch.Size((1, 10, 16, 16))
     block.switch_to_deploy()
     assert hasattr(block, 'branch_reparam')
-    assert block.branch_reparam.kernel_size == (1, 1) 
+    assert block.branch_reparam.kernel_size == (1, 1)
     assert block.branch_reparam.groups == 1
     assert block.deploy is True
     y_deploy = block(x)
     assert y_deploy.shape == torch.Size((1, 10, 16, 16))
     assert torch.allclose(y, y_deploy, atol=1e-5, rtol=1e-4)
-
 
     # Test MobileOneBlock with stride = 2
     block = MobileOneBlock(10, 10, 3, 4, stride=2, groups=10)
@@ -120,14 +118,14 @@ def test_mobileoneblock():
     assert hasattr(block, 'branch_scale')
     assert hasattr(block, 'branch_conv_list')
     assert hasattr(block, 'branch_norm')
-    assert block.branch_conv_list[0].conv.kernel_size == (3, 3) 
+    assert block.branch_conv_list[0].conv.kernel_size == (3, 3)
     assert block.branch_conv_list[0].conv.groups == 10
     assert len(block.branch_conv_list) == 4
     assert block.se_cfg is None
     assert y.shape == torch.Size((1, 10, 8, 8))
     block.switch_to_deploy()
     assert hasattr(block, 'branch_reparam')
-    assert block.branch_reparam.kernel_size == (3, 3) 
+    assert block.branch_reparam.kernel_size == (3, 3)
     assert block.branch_reparam.groups == 10
     assert block.deploy is True
     y_deploy = block(x)
@@ -135,7 +133,8 @@ def test_mobileoneblock():
     assert torch.allclose(y, y_deploy, atol=1e-5, rtol=1e-4)
 
     # # Test MobileOneBlock with padding == dilation == 2
-    block = MobileOneBlock(10, 10, 3, 4, stride=1, groups=10, padding=2, dilation=2)
+    block = MobileOneBlock(
+        10, 10, 3, 4, stride=1, groups=10, padding=2, dilation=2)
     x = torch.randn(1, 10, 16, 16)
     block.eval()
     y = block(x)
@@ -143,14 +142,14 @@ def test_mobileoneblock():
     assert hasattr(block, 'branch_scale')
     assert hasattr(block, 'branch_conv_list')
     assert hasattr(block, 'branch_norm')
-    assert block.branch_conv_list[0].conv.kernel_size == (3, 3) 
+    assert block.branch_conv_list[0].conv.kernel_size == (3, 3)
     assert block.branch_conv_list[0].conv.groups == 10
     assert len(block.branch_conv_list) == 4
     assert block.se_cfg is None
     assert y.shape == torch.Size((1, 10, 16, 16))
     block.switch_to_deploy()
     assert hasattr(block, 'branch_reparam')
-    assert block.branch_reparam.kernel_size == (3, 3) 
+    assert block.branch_reparam.kernel_size == (3, 3)
     assert block.branch_reparam.groups == 10
     assert block.deploy is True
     y_deploy = block(x)
@@ -167,14 +166,14 @@ def test_mobileoneblock():
     assert hasattr(block, 'branch_scale')
     assert hasattr(block, 'branch_conv_list')
     assert hasattr(block, 'branch_norm')
-    assert block.branch_conv_list[0].conv.kernel_size == (3, 3) 
+    assert block.branch_conv_list[0].conv.kernel_size == (3, 3)
     assert block.branch_conv_list[0].conv.groups == 32
     assert len(block.branch_conv_list) == 4
     assert isinstance(block.se, SELayer)
     assert y.shape == torch.Size((1, 32, 16, 16))
     block.switch_to_deploy()
     assert hasattr(block, 'branch_reparam')
-    assert block.branch_reparam.kernel_size == (3, 3) 
+    assert block.branch_reparam.kernel_size == (3, 3)
     assert block.branch_reparam.groups == 32
     assert block.deploy is True
     y_deploy = block(x)
@@ -183,11 +182,12 @@ def test_mobileoneblock():
 
     # Test MobileOneBlock with deploy == True
     se_cfg = dict(ratio=4, divisor=1)
-    block = MobileOneBlock(32, 32, 3, 4, stride=1, se_cfg=se_cfg, groups=32, deploy=True)
+    block = MobileOneBlock(
+        32, 32, 3, 4, stride=1, se_cfg=se_cfg, groups=32, deploy=True)
     x = torch.randn(1, 32, 16, 16)
     block.eval()
     assert hasattr(block, 'branch_reparam')
-    assert block.branch_reparam.kernel_size == (3, 3) 
+    assert block.branch_reparam.kernel_size == (3, 3)
     assert block.branch_reparam.groups == 32
     assert isinstance(block.se, SELayer)
     assert block.deploy is True
@@ -211,7 +211,7 @@ def test_mobileone_backbone():
     # Test  len(arch['num_blocks']) == len(arch['width_factor'])
     with pytest.raises(AssertionError):
         arch = dict(
-            num_blocks=[2, 4, 14, 1], 
+            num_blocks=[2, 4, 14, 1],
             width_factor=[0.75, 0.75, 0.75],
             num_conv_branches=[1, 1, 1, 1],
             num_se_blocks=[0, 0, 5, 1])
@@ -221,7 +221,7 @@ def test_mobileone_backbone():
     with pytest.raises(AssertionError):
         MobileOne('s0', out_indices=dict())
 
-    # Test out_indices not type of int or Sequence 
+    # Test out_indices not type of int or Sequence
     with pytest.raises(AssertionError):
         MobileOne('s0', out_indices=(5, ))
 
@@ -268,13 +268,12 @@ def test_mobileone_backbone():
 
     # Test MobileOne forward
     arch_settings = {
-        's0': dict(out_channels=[48, 128, 256, 1024],),
+        's0': dict(out_channels=[48, 128, 256, 1024], ),
         's1': dict(out_channels=[96, 192, 512, 1280]),
         's2': dict(out_channels=[96, 256, 640, 2048]),
-        's3': dict(out_channels=[128, 320, 768, 2048],),
-        's4': dict(out_channels=[192, 448, 896, 2048],)
+        's3': dict(out_channels=[128, 320, 768, 2048], ),
+        's4': dict(out_channels=[192, 448, 896, 2048], )
     }
-
 
     choose_models = ['s0', 's1', 's4']
     # Test RepVGG model forward
