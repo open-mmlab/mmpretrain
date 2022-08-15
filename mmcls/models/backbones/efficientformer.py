@@ -10,7 +10,7 @@ from mmcv.runner import BaseModule, ModuleList, Sequential
 
 from ..builder import BACKBONES
 from .base_backbone import BaseBackbone
-from .poolformer import PatchEmbed, Pooling
+from .poolformer import Pooling
 
 
 class AttentionWithBias(BaseModule):
@@ -21,7 +21,7 @@ class AttentionWithBias(BaseModule):
         num_heads (int): Parallel attention heads. Defaults to 8.
         key_dim (int): The dimension of q, k. Defaults to 32.
         attn_ratio (float): The dimension of v equals to
-            ``key_dim * attn_ratio``. Defaults to 4..
+            ``key_dim * attn_ratio``. Defaults to 4.
         resolution (int): The height and width of attention_bias.
             Defaults to 7.
         init_cfg (dict, optional): The Config for initialization.
@@ -324,13 +324,15 @@ def basic_blocks(in_channels,
     blocks = []
     if has_downsamper:
         blocks.append(
-            PatchEmbed(
-                patch_size=3,
+            ConvModule(
+                in_channels=in_channels,
+                out_channels=out_channels,
+                kernel_size=3,
                 stride=2,
                 padding=1,
-                in_chans=in_channels,
-                embed_dim=out_channels,
-                norm_layer=dict(type='BN')))
+                bias=True,
+                norm_cfg=dict(type='BN'),
+                act_cfg=None))
     if index == 3 and vit_num == layers[index]:
         blocks.append(Flat())
     for block_idx in range(layers[index]):
@@ -384,6 +386,13 @@ class EfficientFormer(BaseBackbone):
             Defaults to 'l1'.
 
         in_channels (int): The num of input channels. Defaults to 3.
+        pool_size (int): The pooling size of ``Meta4D`` blocks. Defaults to 3.
+        mlp_ratios (int): The dimension ratio of multi-head attention mechanism
+            in ``Meta4D`` blocks. Defaults to 3.
+        reshape_last_feat (bool): Whether to reshape the feature map from
+             (B, N, C) to (B, C, H, W) in the last stage, when the ``vit-num``
+              in ``arch`` is not 0. Defaults to False. Usually set to True
+              in downstream tasks.
         out_indices (Sequence[int]): Output from which stages.
             Defaults to -1.
         frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
@@ -451,15 +460,15 @@ class EfficientFormer(BaseBackbone):
     def __init__(self,
                  arch='l1',
                  in_channels=3,
-                 act_cfg=dict(type='GELU'),
                  pool_size=3,
                  mlp_ratios=4,
-                 use_layer_scale=True,
+                 reshape_last_feat=False,
+                 out_indices=-1,
+                 frozen_stages=-1,
+                 act_cfg=dict(type='GELU'),
                  drop_rate=0.,
                  drop_path_rate=0.,
-                 out_indices=-1,
-                 reshape_last_feat=False,
-                 frozen_stages=-1,
+                 use_layer_scale=True,
                  init_cfg=None):
 
         super().__init__(init_cfg=init_cfg)
@@ -582,9 +591,11 @@ class EfficientFormer(BaseBackbone):
                 norm_layer = getattr(self, f'norm{idx}')
 
                 if idx == len(self.network) - 1 and x.dim() == 3:
-                    # in the last stage, if `self.reshape_last_feat``
-                    # is True, using reshape to NCHW then GN.
-                    # if not, LN then from B N C permute to B C N
+                    # when ``vit-num`` > 0 and in the last stage,
+                    # if `self.reshape_last_feat`` is True, reshape the
+                    # features to `BCHW` format before the final normalization.
+                    # if `self.reshape_last_feat`` is False, do
+                    # normalization directly and permute the features to `BCN`.
                     if self.reshape_last_feat:
                         x = x.permute((0, 2, 1)).reshape(N, -1, H, W)
                         x_out = norm_layer(x)
