@@ -2,7 +2,7 @@
 # See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
 
-# this allows you to use CircleCI's dynamic configuration feature
+# This allows you to use CircleCI's dynamic configuration feature
 setup: true
 
 # the path-filtering orb is required to continue a pipeline based on
