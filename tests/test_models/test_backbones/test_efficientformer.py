@@ -3,12 +3,12 @@ from copy import deepcopy
 from unittest import TestCase
 
 import torch
+from mmcv.cnn import ConvModule
 from torch import nn
 
 from mmcls.models.backbones import EfficientFormer
 from mmcls.models.backbones.efficientformer import (AttentionWithBias, Flat,
-                                                    LayerScale, Meta3D, Meta4D,
-                                                    PatchEmbed)
+                                                    LayerScale, Meta3D, Meta4D)
 from mmcls.models.backbones.poolformer import Pooling
 
 
@@ -108,8 +108,10 @@ class TestEfficientFormer(TestCase):
 
         for i, stage in enumerate(model.network):
             if downsamples[i]:
-                self.assertIsInstance(stage[0], PatchEmbed)
-                self.assertEqual(stage[0].proj.stride, (2, 2))
+                self.assertIsInstance(stage[0], ConvModule)
+                self.assertEqual(stage[0].conv.stride, (2, 2))
+                self.assertTrue(hasattr(stage[0].conv, 'bias'))
+                self.assertTrue(isinstance(stage[0].bn, nn.BatchNorm2d))
 
             if i < len(model.network) - 1:
                 self.assertIsInstance(stage[-1], Meta4D)
