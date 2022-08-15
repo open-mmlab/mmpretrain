@@ -3,7 +3,6 @@ import os.path as osp
 from typing import Optional
 
 import numpy as np
-import scipy.io as sio
 
 from .base_dataset import BaseDataset
 from .builder import DATASETS
@@ -184,6 +183,12 @@ class StanfordCars(BaseDataset):
             **kwargs)
 
     def load_annotations(self):
+        try:
+            import scipy.io as sio
+        except ImportError:
+            raise ImportError(
+                'please run `pip install scipy` to install package `scipy`.')
+
         data_infos = []
         if self.test_mode:
             data = sio.loadmat(self.test_ann_file)

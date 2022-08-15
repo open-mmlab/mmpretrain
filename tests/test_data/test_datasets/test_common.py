@@ -7,7 +7,6 @@ from unittest import TestCase
 from unittest.mock import patch
 
 import numpy as np
-import scipy.io as sio
 import torch
 
 from mmcls.datasets import DATASETS
@@ -826,6 +825,12 @@ class TestStanfordCars(TestBaseDataset):
         cls.test_ann_file = osp.join(devkit, 'cars_test_annos_withlabels.mat')
         cls.DEFAULT_ARGS = dict(
             data_prefix=cls.data_prefix, pipeline=[], test_mode=False)
+
+        try:
+            import scipy.io as sio
+        except ImportError:
+            raise ImportError(
+                'please run `pip install scipy` to install package `scipy`.')
 
         sio.savemat(
             cls.train_ann_file, {

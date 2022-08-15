@@ -12,7 +12,7 @@ from .imagenet21k import ImageNet21k
 from .mnist import MNIST, FashionMNIST
 from .multi_label import MultiLabelDataset
 from .samplers import DistributedSampler, RepeatAugSampler
-from .stanford_car import StanfordCars
+from .stanford_cars import StanfordCars
 from .voc import VOC
 
 __all__ = [
