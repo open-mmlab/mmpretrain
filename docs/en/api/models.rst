@@ -87,6 +87,7 @@ Backbones
    VAN
    VGG
    VisionTransformer
+   EfficientFormer
 
 .. _necks:
 
