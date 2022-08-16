@@ -10,14 +10,12 @@ from .builder import DATASETS
 
 @DATASETS.register_module()
 class StanfordCars(BaseDataset):
-    """`Stanford Cars.
-
-    <https://ai.stanford.edu/~jkrause/cars/car_dataset.html>`_ Dataset.
+    """`Stanford Cars`_ Dataset.
 
     After downloading and decompression, the dataset
     directory structure is as follows.
 
-    Stanford Cars dataset directory:
+    Stanford Cars dataset directory::
 
         Stanford Cars
         ├── cars_train
@@ -35,6 +33,8 @@ class StanfordCars(BaseDataset):
             ├── cars_test_annoswithlabels.mat
             ├── eval_train.m
             └── train_perfect_preds.txt
+
+    .. _Stanford Cars: https://ai.stanford.edu/~jkrause/cars/car_dataset.html
 
     Args:
         data_prefix (str): the prefix of data path
