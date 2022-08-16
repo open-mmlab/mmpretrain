@@ -350,3 +350,16 @@ Models:
     Pretrain: https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_3rdparty-mill_in21k_20220331-faac000b.pth
     Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb8_cub_20220307-57840e60.pth
     Config: configs/resnet/resnet50_8xb8_cub.py
+  - Name: resnet50_8xb8_cars
+    Metadata:
+      FLOPs: 16480000000
+      Parameters: 23920000
+    In Collection: ResNet
+    Results:
+      - Dataset: StanfordCars
+        Metrics:
+          Top 1 Accuracy: 92.82
+        Task: Image Classification
+    Pretrain: https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_3rdparty-mill_in21k_20220331-faac000b.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb8_cars_20220812-9d85901a.pth
+    Config: configs/resnet/resnet50_8xb8_cars.py

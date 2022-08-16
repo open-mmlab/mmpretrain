@@ -761,3 +761,151 @@ class TestCUB(TestBaseDataset):
     @classmethod
     def tearDownClass(cls):
         cls.tmpdir.cleanup()
+
+
+class TestStanfordCars(TestBaseDataset):
+    DATASET_TYPE = 'StanfordCars'
+
+    def test_initialize(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        with patch.object(dataset_class, 'load_annotations'):
+            # Test with test_mode=False, ann_file is None
+            cfg = {**self.DEFAULT_ARGS, 'test_mode': False, 'ann_file': None}
+            dataset = dataset_class(**cfg)
+            self.assertEqual(dataset.CLASSES, dataset_class.CLASSES)
+            self.assertFalse(dataset.test_mode)
+            self.assertIsNone(dataset.ann_file)
+            self.assertIsNotNone(dataset.train_ann_file)
+
+            # Test with test_mode=False, ann_file is not None
+            cfg = {
+                **self.DEFAULT_ARGS, 'test_mode': False,
+                'ann_file': 'train_ann_file.mat'
+            }
+            dataset = dataset_class(**cfg)
+            self.assertEqual(dataset.CLASSES, dataset_class.CLASSES)
+            self.assertFalse(dataset.test_mode)
+            self.assertIsNotNone(dataset.ann_file)
+            self.assertEqual(dataset.ann_file, 'train_ann_file.mat')
+            self.assertIsNotNone(dataset.train_ann_file)
+
+            # Test with test_mode=True, ann_file is None
+            cfg = {**self.DEFAULT_ARGS, 'test_mode': True, 'ann_file': None}
+            dataset = dataset_class(**cfg)
+            self.assertEqual(dataset.CLASSES, dataset_class.CLASSES)
+            self.assertTrue(dataset.test_mode)
+            self.assertIsNone(dataset.ann_file)
+            self.assertIsNotNone(dataset.test_ann_file)
+
+            # Test with test_mode=True, ann_file is not None
+            cfg = {
+                **self.DEFAULT_ARGS, 'test_mode': True,
+                'ann_file': 'test_ann_file.mat'
+            }
+            dataset = dataset_class(**cfg)
+            self.assertEqual(dataset.CLASSES, dataset_class.CLASSES)
+            self.assertTrue(dataset.test_mode)
+            self.assertIsNotNone(dataset.ann_file)
+            self.assertEqual(dataset.ann_file, 'test_ann_file.mat')
+            self.assertIsNotNone(dataset.test_ann_file)
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+
+        tmpdir = tempfile.TemporaryDirectory()
+        cls.tmpdir = tmpdir
+        cls.data_prefix = tmpdir.name
+        cls.ann_file = None
+        devkit = osp.join(cls.data_prefix, 'devkit')
+        if not osp.exists(devkit):
+            os.mkdir(devkit)
+        cls.train_ann_file = osp.join(devkit, 'cars_train_annos.mat')
+        cls.test_ann_file = osp.join(devkit, 'cars_test_annos_withlabels.mat')
+        cls.DEFAULT_ARGS = dict(
+            data_prefix=cls.data_prefix, pipeline=[], test_mode=False)
+
+        try:
+            import scipy.io as sio
+        except ImportError:
+            raise ImportError(
+                'please run `pip install scipy` to install package `scipy`.')
+
+        sio.savemat(
+            cls.train_ann_file, {
+                'annotations': [(
+                    (np.array([1]), np.array([10]), np.array(
+                        [20]), np.array([50]), 15, np.array(['001.jpg'])),
+                    (np.array([2]), np.array([15]), np.array(
+                        [240]), np.array([250]), 15, np.array(['002.jpg'])),
+                    (np.array([89]), np.array([150]), np.array(
+                        [278]), np.array([388]), 150, np.array(['012.jpg'])),
+                )]
+            })
+
+        sio.savemat(
+            cls.test_ann_file, {
+                'annotations':
+                [((np.array([89]), np.array([150]), np.array(
+                    [278]), np.array([388]), 150, np.array(['025.jpg'])),
+                  (np.array([155]), np.array([10]), np.array(
+                      [200]), np.array([233]), 0, np.array(['111.jpg'])),
+                  (np.array([25]), np.array([115]), np.array(
+                      [240]), np.array([360]), 15, np.array(['265.jpg'])))]
+            })
+
+    def test_load_annotations(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test with test_mode=False and ann_file=None
+        dataset = dataset_class(**self.DEFAULT_ARGS)
+        self.assertEqual(len(dataset), 3)
+        self.assertEqual(dataset.CLASSES, dataset_class.CLASSES)
+
+        data_info = dataset[0]
+        np.testing.assert_equal(data_info['img_prefix'],
+                                osp.join(self.data_prefix, 'cars_train'))
+        np.testing.assert_equal(data_info['img_info'], {'filename': '001.jpg'})
+        np.testing.assert_equal(data_info['gt_label'], 15 - 1)
+
+        # Test with test_mode=True and ann_file=None
+        cfg = {**self.DEFAULT_ARGS, 'test_mode': True}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 3)
+
+        data_info = dataset[0]
+        np.testing.assert_equal(data_info['img_prefix'],
+                                osp.join(self.data_prefix, 'cars_test'))
+        np.testing.assert_equal(data_info['img_info'], {'filename': '025.jpg'})
+        np.testing.assert_equal(data_info['gt_label'], 150 - 1)
+
+        # Test with test_mode=False, ann_file is not None
+        cfg = {
+            **self.DEFAULT_ARGS, 'test_mode': False,
+            'ann_file': self.train_ann_file
+        }
+        dataset = dataset_class(**cfg)
+        data_info = dataset[0]
+        np.testing.assert_equal(data_info['img_prefix'],
+                                osp.join(self.data_prefix, 'cars_train'))
+        np.testing.assert_equal(data_info['img_info'], {'filename': '001.jpg'})
+        np.testing.assert_equal(data_info['gt_label'], 15 - 1)
+
+        # Test with test_mode=True, ann_file is not None
+        cfg = {
+            **self.DEFAULT_ARGS, 'test_mode': True,
+            'ann_file': self.test_ann_file
+        }
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 3)
+
+        data_info = dataset[0]
+        np.testing.assert_equal(data_info['img_prefix'],
+                                osp.join(self.data_prefix, 'cars_test'))
+        np.testing.assert_equal(data_info['img_info'], {'filename': '025.jpg'})
+        np.testing.assert_equal(data_info['gt_label'], 150 - 1)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmpdir.cleanup()
