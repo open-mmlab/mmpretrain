@@ -416,7 +416,7 @@ class VisionTransformer(BaseBackbone):
             if beit_style:
                 _layer_cfg.update(
                     dict(
-                        init_values=layer_scale_init_value,
+                        layer_scale_init_value=layer_scale_init_value,
                         window_size=self.patch_resolution))
                 _layer_cfg.pop('qkv_bias')
                 self.layers.append(BEiTTransformerEncoderLayer(**_layer_cfg))
@@ -547,8 +547,7 @@ class VisionTransformer(BaseBackbone):
                         B, patch_resolution[0] * patch_resolution[1],
                         C).mean(dim=1)
                     patch_token = self.norm2(patch_token)
-                    out = patch_token
-                elif self.output_cls_token:
+                if self.output_cls_token:
                     out = [patch_token, cls_token]
                 else:
                     out = patch_token
