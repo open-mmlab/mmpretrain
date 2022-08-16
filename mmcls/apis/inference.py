@@ -72,7 +72,7 @@ def inference_model(model, img):
     else:
         if cfg.data.test.pipeline[0]['type'] == 'LoadImageFromFile':
             cfg.data.test.pipeline.pop(0)
-        data = dict(img=img)
+        data = {'img':img}
     test_pipeline = Compose(cfg.data.test.pipeline)
     data = test_pipeline(data)
     data = collate([data], samples_per_gpu=1)
