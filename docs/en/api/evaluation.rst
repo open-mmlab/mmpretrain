@@ -4,7 +4,7 @@
 mmcls.evaluation
 ===================================
 
-These are some Metrics and Evaluator for classification tasks, including Single Label and Multi Label.
+These are some Metrics and Evaluator for classification tasks.
 
 .. contents:: mmcls.evaluation
    :depth: 2

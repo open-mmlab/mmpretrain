@@ -4,7 +4,7 @@
 mmcls.engine
 ===================================
 
-This package includes some runtime components. These components are useful in
+This package includes some runtime components, including hooks, runners, optimizers and loops. These components are useful in
 classification tasks but not supported by MMEngine yet.
 
 .. note::
