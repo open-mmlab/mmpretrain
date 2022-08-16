@@ -30,3 +30,4 @@ Import:
   - configs/poolformer/metafile.yml
   - configs/csra/metafile.yml
   - configs/mvit/metafile.yml
+  - configs/efficientformer/metafile.yml
