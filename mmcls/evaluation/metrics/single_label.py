@@ -38,8 +38,8 @@ def _precision_recall_f1_support(pred_positive, gt_positive, average):
         pred_sum = pred_positive.sum(0)
         gt_sum = gt_positive.sum(0)
 
-    precision = tp_sum / torch.clamp(pred_sum, min=1.) * 100
-    recall = tp_sum / torch.clamp(gt_sum, min=1.) * 100
+    precision = tp_sum / torch.clamp(pred_sum, min=1).float() * 100
+    recall = tp_sum / torch.clamp(gt_sum, min=1).float() * 100
     f1_score = 2 * precision * recall / torch.clamp(
         precision + recall, min=torch.finfo(torch.float32).eps)
     if average in ['macro', 'micro']:
