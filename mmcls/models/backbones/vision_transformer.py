@@ -249,13 +249,13 @@ class VisionTransformer(BaseBackbone):
         with_cls_token (bool): Whether concatenating class token into image
             tokens as transformer input. Defaults to True.
         avg_token (bool): Whether or not to use the mean patch token for
-            classification. If True, the model will only return the mean patch
-            token regardless of the ``output_cls_token``. Defaults to False.
+            classification. If True, the model will only take the average
+            of all patch tokens. Defaults to False.
         frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
             -1 means not freezing any parameters. Defaults to -1.
         output_cls_token (bool): Whether output the cls_token. If set True,
             ``with_cls_token`` must be True. Defaults to True.
-        beit_style (bool): Whether or not use BEiT-style
+        beit_style (bool): Whether or not use BEiT-style. Defaults to False.
         layer_scale_init_value (float): The initialization value for
             the learnable scaling of attention and FFN. Defaults to 0.1.
         interpolate_mode (str): Select the interpolate mode for position
