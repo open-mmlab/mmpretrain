@@ -3,7 +3,7 @@ import pytest
 import torch
 
 from mmcls.models.necks import (GeneralizedMeanPooling, GlobalAveragePooling,
-                                HRFuseScales)
+                                HRFuseScales, Reduction)
 
 
 def test_gap_neck():
@@ -85,3 +85,25 @@ def test_hr_fuse_scales():
     assert isinstance(outs, tuple)
     assert len(outs) == 1
     assert outs[0].shape == (3, 1024, 7, 7)
+
+
+def test_reduction():
+    # test neck_with_reduction
+    neck = Reduction(10, 5)
+    neck.eval()
+
+    # batch_size, in_channels, out_channels
+    fake_input = torch.rand(1, 10)
+    output = neck(fake_input)
+    # batch_size, out_features
+    assert output.shape == (1, 5)
+
+    # batch_size, in_features, feature_size(2)
+    fake_input = (torch.rand(1, 20), torch.rand(1, 10))
+
+    output = neck(fake_input)
+    # batch_size, out_features
+    assert output.shape == (1, 5)
+
+    with pytest.raises(TypeError):
+        neck([])
