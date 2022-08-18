@@ -585,9 +585,40 @@ class AveragePrecision(BaseMetric):
         Returns:
             torch.Tensor: the average precision of all classes.
         """
-        average_options = ['macro', None]
-        assert average in average_options, 'Invalid `average` argument, ' \
-            f'please specicy from {average_options}.'
+        average_options = ['macro', 'retrieval', None]
+        assert average in average_options, \
+            f'Invalid `average` argument, ' \
+            f'please specify from {average_options}.'
+
+        if average == 'retrieval':
+            # 对于图像检索，需要计算mAP@k。对于一个样本，对数据库所有图像对比，
+            # 根据相似度排序，取出前k个检索图像。根据标签会得到0/1的度量标准。
+            # 例如，对于图像A，检索出前k个图像是[A1, B2, A2, C3, F2]
+            # 那么，得到的预测结果是[1, 0, 1, 0, 0]，计算AP@5
+            # 对所有样本均计算，求平均就是mAP@k。
+            # 在该参数下，需要先把所有样本的0-1串计算出来，传入target中。
+            # 参考以下Google中的MeanAveragePrecision方法。
+            # https://github.com/tensorflow/models/blob/master/research/delf/delf/python/datasets/google_landmarks_dataset/metrics.py
+
+            sample_num, rank_num = target.shape  # 样本数，mAP@k中的``k``
+            ap = pred.new_zeros(sample_num)  # 每个样本的AP@k值
+            for sample_id in range(sample_num):
+                p = 0
+                right_index = target[sample_id].cpu().numpy().astype('int64')
+                right_index = np.array(right_index, dtype=bool)
+                positive_ranks = np.arange(rank_num)[right_index]
+                right_num = positive_ranks.shape[0]
+                if right_num == 0:
+                    ap[sample_id] = 0
+                    continue
+                recall_step = 1.0 / right_num
+                for i, rank in enumerate(positive_ranks):
+                    p1 = i / rank if rank > 0 else 1
+                    p2 = (i + 1) / (rank + 1)
+                    p += (p1 + p2) * recall_step / 2
+                    # p += p2 * recall_step  # 另外一种方式
+                ap[sample_id] = p
+            return ap.mean() * 100.0
 
         pred = to_tensor(pred)
         target = to_tensor(target)
