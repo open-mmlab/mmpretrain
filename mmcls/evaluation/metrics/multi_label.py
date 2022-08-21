@@ -633,3 +633,82 @@ class AveragePrecision(BaseMetric):
             return ap.mean() * 100.0
         else:
             return ap * 100
+
+    @staticmethod
+    def calculate_retrieval(sorted_sim_indices: torch.Tensor,
+                            target: torch.Tensor,
+                            max_predictions: int,
+                            option: str = 'standard') -> float:
+        r"""Calculate the average precision for a single sample.
+
+        .. math::
+            \text{mAP@k} = \frac{1}{Q} \sum_{q=1}^{Q}
+                            \frac{1}{\min (m_{q}, k)}
+                            \sum_{i=1}^{\min (n_{q}, k)} P_{q}(i) rel_{q}(i)
+            where
+            - $Q$ is the number of query images
+            - $m_q$ is the number of gallery images in common
+                with the query image
+            - $n_q$ is the number of predictions for query $q$
+            - $P_q(i)$ is the precision at rank $i$ for the $q$-th query
+            - $rel_q(i)$ denotes the relevance of prediction $i$
+                for the $q$-th query: it’s 1 if the $i$-th prediction is
+                 correct, and 0 otherwise
+
+        Args:
+            sorted_sim_indices (torch.Tensor): The subscript of the query
+                image and gallery sorted by similarity
+                with shape ``($n_q$,)``.
+            target (torch.Tensor): The target of predictions
+                with shape ``($m_q$,)``.
+            max_predictions (int) : Maximum number $k$ of predictions per
+                query to take into account.
+            option (str): If option='standard', use the stanford calculation
+                way, if option='average', the method implemented integrates
+                over the precision-recall curve by averaging two adjacent
+                precision points, then multiplying by the recall step. This
+                is the convention for the Revisited Oxford/Paris datasets.
+
+        Returns:
+            float: the average precision of the query image.
+
+        Examples:
+            >>> import torch
+            >>> from mmcls.evaluation import AveragePrecision
+
+            >>> index = torch.Tensor([idx for idx in range(100)])
+            >>> label = torch.Tensor([0, 3, 6, 8, 35,
+            ...                        101, 102, 103, 104, 105,
+            ...                        201, 202, 203, 204, 205])
+            >>> k = 100
+            >>> AveragePrecision.calculate_retrieval(index, label, k)
+            0.16746031746031745
+        """
+        options = ['standard', 'average']
+        assert option in options, \
+            f'Invalid `option` argument, please specify from {options}.'
+
+        # predictions_num = min(m_q, k)
+        predictions_num = sorted_sim_indices.shape[0]
+        if predictions_num > max_predictions:
+            sorted_sim_indices = sorted_sim_indices[:max_predictions]
+            predictions_num = max_predictions
+
+        # num_expected_retrieved = min(n_q, k)
+        num_expected_retrieved = min(target.shape[0], max_predictions)
+
+        positive_ranks = np.arange(predictions_num)[np.in1d(
+            sorted_sim_indices.cpu().numpy(),
+            target.cpu().numpy())]
+        ap = 0
+        for i, rank in enumerate(positive_ranks):
+            if option == 'standard':
+                precision = (i + 1) / (rank + 1)
+                ap += precision
+            else:
+                left_precision = i / rank if rank > 0 else 1
+                right_precision = (i + 1) / (rank + 1)
+                prediction = (left_precision + right_precision) / 2
+                ap += prediction
+        ap = ap / num_expected_retrieved
+        return ap
