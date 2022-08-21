@@ -230,7 +230,7 @@ class RepVGGBlock(BaseModule):
 
         return fused_weight, fused_bias
 
-    def _norm_to_conv3x3(self, branch_nrom):
+    def _norm_to_conv3x3(self, branch_norm):
         """Convert a norm layer to a conv3x3-bn sequence.
 
         Args:
@@ -242,15 +242,15 @@ class RepVGGBlock(BaseModule):
         """
         input_dim = self.in_channels // self.groups
         conv_weight = torch.zeros((self.in_channels, input_dim, 3, 3),
-                                  dtype=branch_nrom.weight.dtype)
+                                  dtype=branch_norm.weight.dtype)
 
         for i in range(self.in_channels):
             conv_weight[i, i % input_dim, 1, 1] = 1
-        conv_weight = conv_weight.to(branch_nrom.weight.device)
+        conv_weight = conv_weight.to(branch_norm.weight.device)
 
         tmp_conv3x3 = self.create_conv_bn(kernel_size=3)
         tmp_conv3x3.conv.weight.data = conv_weight
-        tmp_conv3x3.norm = branch_nrom
+        tmp_conv3x3.norm = branch_norm
         return tmp_conv3x3
 
 
