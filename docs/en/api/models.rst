@@ -58,6 +58,7 @@ Backbones
    DenseNet
    DistilledVisionTransformer
    EfficientNet
+   EdgeNeXt
    HRNet
    LeNet5
    MlpMixer

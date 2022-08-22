@@ -60,8 +60,9 @@ class SDTAEncoder(BaseModule):
                  proj_drop=0.,
                  norm_cfg=dict(type='LN'),
                  act_cfg=dict(type='GELU'),
-                 scales=1):
-        super().__init__()
+                 scales=1,
+                 init_cfg=None):
+        super(SDTAEncoder, self).__init__(init_cfg=init_cfg)
         conv_channels = max(
             int(math.ceil(in_channel / scales)),
             int(math.floor(in_channel // scales)))
@@ -395,7 +396,3 @@ class EdgeNeXt(BaseBackbone):
     def train(self, mode=True):
         super(EdgeNeXt, self).train(mode)
         self._freeze_stages()
-
-
-if __name__ == '__main__':
-    model = EdgeNeXt()
