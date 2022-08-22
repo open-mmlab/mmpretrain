@@ -641,9 +641,10 @@ class TestLighting(TestCase):
         # test call
         cfg = copy.deepcopy(self.DEFAULT_ARGS)
         lightening_module = TRANSFORMS.build(cfg)
-        results = lightening_module(results)
-        self.assertEqual(results['img'].dtype, ori_img.dtype)
-        assert not np.equal(results['img'], ori_img).all()
+        with patch('numpy.random', np.random.RandomState(0)):
+            results = lightening_module(results)
+            self.assertEqual(results['img'].dtype, ori_img.dtype)
+            assert not np.equal(results['img'], ori_img).all()
 
         # test call with alphastd == 0
         results = dict(img=copy.deepcopy(ori_img))
