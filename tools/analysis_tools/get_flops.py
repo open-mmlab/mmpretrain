@@ -35,8 +35,8 @@ def main():
     model = build_classifier(cfg.model)
     model.eval()
 
-    if hasattr(model, 'extract_feat'):
-        model.forward = model.extract_feat
+    if hasattr(model, 'forward_dummy'):
+        model.forward = model.forward_dummy
     else:
         raise NotImplementedError(
             'FLOPs counter is currently not currently supported with {}'.
