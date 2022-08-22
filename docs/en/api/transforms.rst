@@ -45,7 +45,7 @@ for example:
 
 Every item of a pipeline list is one of the following data transformations class. And if you want to add a custom data transformation class, the tutorial :doc:`Custom Data Pipelines </tutorials/data_pipeline>` will help you.
 
-.. contents:: mmcls.datasets.pipelines
+.. contents:: mmcls.datasets.transforms
    :depth: 2
    :local:
    :backlinks: top

@@ -85,7 +85,7 @@ class ClsHead(BaseHead):
             # Batch augmentation may convert labels to one-hot format scores.
             target = torch.stack([i.gt_label.score for i in data_samples])
         else:
-            target = torch.hstack([i.gt_label.label for i in data_samples])
+            target = torch.cat([i.gt_label.label for i in data_samples])
 
         # compute loss
         losses = dict()

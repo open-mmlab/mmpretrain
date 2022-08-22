@@ -382,3 +382,134 @@ class MultiheadAttention(BaseModule):
         if self.v_shortcut:
             x = v.squeeze(1) + x
         return x
+
+
+class BEiTAttention(BaseModule):
+    """Window based multi-head self-attention (W-MSA) module with relative
+    position bias.
+
+    The initial implementation is in MMSegmentation.
+
+    Args:
+        embed_dims (int): Number of input channels.
+        num_heads (int): Number of attention heads.
+        window_size (tuple[int]): The height and width of the window.
+        bias (str): The option to add leanable bias for q, k, v. If bias is
+            True, it will add leanable bias. If bias is 'qv_bias', it will only
+            add leanable bias for q, v. If bias is False, it will not add bias
+            for q, k, v. Default to 'qv_bias'.
+        qk_scale (float | None, optional): Override default qk scale of
+            head_dim ** -0.5 if set. Default: None.
+        attn_drop_rate (float): Dropout ratio of attention weight.
+            Default: 0.0
+        proj_drop_rate (float): Dropout ratio of output. Default: 0.
+        init_cfg (dict | None, optional): The Config for initialization.
+            Default: None.
+    """
+
+    def __init__(self,
+                 embed_dims,
+                 num_heads,
+                 window_size,
+                 bias='qv_bias',
+                 qk_scale=None,
+                 attn_drop_rate=0.,
+                 proj_drop_rate=0.,
+                 init_cfg=None,
+                 **kwargs):
+        super().__init__(init_cfg=init_cfg)
+        self.embed_dims = embed_dims
+        self.num_heads = num_heads
+        head_embed_dims = embed_dims // num_heads
+        self.bias = bias
+        self.scale = qk_scale or head_embed_dims**-0.5
+
+        qkv_bias = bias
+        if bias == 'qv_bias':
+            self._init_qv_bias()
+            qkv_bias = False
+
+        self.window_size = window_size
+        self._init_rel_pos_embedding()
+
+        self.qkv = nn.Linear(embed_dims, embed_dims * 3, bias=qkv_bias)
+        self.attn_drop = nn.Dropout(attn_drop_rate)
+        self.proj = nn.Linear(embed_dims, embed_dims)
+        self.proj_drop = nn.Dropout(proj_drop_rate)
+
+    def _init_qv_bias(self):
+        self.q_bias = nn.Parameter(torch.zeros(self.embed_dims))
+        self.v_bias = nn.Parameter(torch.zeros(self.embed_dims))
+
+    def _init_rel_pos_embedding(self):
+        Wh, Ww = self.window_size
+        # cls to token & token 2 cls & cls to cls
+        self.num_relative_distance = (2 * Wh - 1) * (2 * Ww - 1) + 3
+        # relative_position_bias_table shape is (2*Wh-1 * 2*Ww-1 + 3, nH)
+        self.relative_position_bias_table = nn.Parameter(
+            torch.zeros(self.num_relative_distance, self.num_heads))
+
+        # get pair-wise relative position index for
+        # each token inside the window
+        coords_h = torch.arange(Wh)
+        coords_w = torch.arange(Ww)
+        # coords shape is (2, Wh, Ww)
+        coords = torch.stack(torch.meshgrid([coords_h, coords_w]))
+        # coords_flatten shape is (2, Wh*Ww)
+        coords_flatten = torch.flatten(coords, 1)
+        relative_coords = (
+            coords_flatten[:, :, None] - coords_flatten[:, None, :])
+        # relative_coords shape is (Wh*Ww, Wh*Ww, 2)
+        relative_coords = relative_coords.permute(1, 2, 0).contiguous()
+        # shift to start from 0
+        relative_coords[:, :, 0] += Wh - 1
+        relative_coords[:, :, 1] += Ww - 1
+        relative_coords[:, :, 0] *= 2 * Ww - 1
+        relative_position_index = torch.zeros(
+            size=(Wh * Ww + 1, ) * 2, dtype=relative_coords.dtype)
+        # relative_position_index shape is (Wh*Ww, Wh*Ww)
+        relative_position_index[1:, 1:] = relative_coords.sum(-1)
+        relative_position_index[0, 0:] = self.num_relative_distance - 3
+        relative_position_index[0:, 0] = self.num_relative_distance - 2
+        relative_position_index[0, 0] = self.num_relative_distance - 1
+
+        self.register_buffer('relative_position_index',
+                             relative_position_index)
+
+    def init_weights(self):
+        super().init_weights()
+        trunc_normal_(self.relative_position_bias_table, std=0.02)
+
+    def forward(self, x):
+        """
+        Args:
+            x (tensor): input features with shape of (num_windows*B, N, C).
+        """
+        B, N, C = x.shape
+
+        if self.bias == 'qv_bias':
+            k_bias = torch.zeros_like(self.v_bias, requires_grad=False)
+            qkv_bias = torch.cat((self.q_bias, k_bias, self.v_bias))
+            qkv = F.linear(input=x, weight=self.qkv.weight, bias=qkv_bias)
+        else:
+            qkv = self.qkv(x)
+
+        qkv = qkv.reshape(B, N, 3, self.num_heads, -1).permute(2, 0, 3, 1, 4)
+        q, k, v = qkv[0], qkv[1], qkv[2]
+        q = q * self.scale
+        attn = (q @ k.transpose(-2, -1))
+        if self.relative_position_bias_table is not None:
+            Wh = self.window_size[0]
+            Ww = self.window_size[1]
+            relative_position_bias = self.relative_position_bias_table[
+                self.relative_position_index.view(-1)].view(
+                    Wh * Ww + 1, Wh * Ww + 1, -1)
+            relative_position_bias = relative_position_bias.permute(
+                2, 0, 1).contiguous()  # nH, Wh*Ww, Wh*Ww
+            attn = attn + relative_position_bias.unsqueeze(0)
+        attn = attn.softmax(dim=-1)
+        attn = self.attn_drop(attn)
+        x = (attn @ v).transpose(1, 2).reshape(B, N, C)
+        x = self.proj(x)
+        x = self.proj_drop(x)
+        return x

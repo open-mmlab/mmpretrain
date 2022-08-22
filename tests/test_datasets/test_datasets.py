@@ -14,8 +14,7 @@ from mmcls.registry import DATASETS
 from mmcls.utils import register_all_modules
 
 register_all_modules()
-ASSETS_ROOT = osp.abspath(
-    osp.join(osp.dirname(__file__), '../../data/dataset'))
+ASSETS_ROOT = osp.abspath(osp.join(osp.dirname(__file__), '../data/dataset'))
 
 
 class TestBaseDataset(TestCase):

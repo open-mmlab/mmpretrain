@@ -563,7 +563,7 @@ class TestColorJitter(TestCase):
         cfg = {**self.DEFAULT_ARGS, 'contrast': 0.}
         transform = TRANSFORMS.build(cfg)
         with patch('numpy.random', np.random.RandomState(0)):
-            mmcv_module = 'mmcls.datasets.pipelines.processing.mmcv'
+            mmcv_module = 'mmcls.datasets.transforms.processing.mmcv'
             call_list = [
                 call.adjust_color(ANY, alpha=ANY),
                 call.adjust_hue(ANY, ANY),
@@ -641,9 +641,10 @@ class TestLighting(TestCase):
         # test call
         cfg = copy.deepcopy(self.DEFAULT_ARGS)
         lightening_module = TRANSFORMS.build(cfg)
-        results = lightening_module(results)
-        self.assertEqual(results['img'].dtype, ori_img.dtype)
-        assert not np.equal(results['img'], ori_img).all()
+        with patch('numpy.random', np.random.RandomState(0)):
+            results = lightening_module(results)
+            self.assertEqual(results['img'].dtype, ori_img.dtype)
+            assert not np.equal(results['img'], ori_img).all()
 
         # test call with alphastd == 0
         results = dict(img=copy.deepcopy(ori_img))
