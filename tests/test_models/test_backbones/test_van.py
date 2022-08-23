@@ -5,7 +5,7 @@ from itertools import chain
 from unittest import TestCase
 
 import torch
-from mmcv.utils.parrots_wrapper import _BatchNorm
+from mmengine.utils.parrots_wrapper import _BatchNorm
 from torch import nn
 
 from mmcls.models.backbones import VAN

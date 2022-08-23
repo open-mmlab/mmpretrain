@@ -2,10 +2,10 @@
 import warnings
 from collections.abc import Sequence
 
-import mmcv
 import numpy as np
 import torch
 from mmcv.transforms import BaseTransform
+from mmengine.utils import is_str
 from PIL import Image
 
 from mmcls.registry import TRANSFORMS
@@ -22,7 +22,7 @@ def to_tensor(data):
         return data
     elif isinstance(data, np.ndarray):
         return torch.from_numpy(data)
-    elif isinstance(data, Sequence) and not mmcv.is_str(data):
+    elif isinstance(data, Sequence) and not is_str(data):
         return torch.tensor(data)
     elif isinstance(data, int):
         return torch.LongTensor([data])

@@ -6,7 +6,7 @@ from copy import deepcopy
 from unittest import TestCase
 
 import torch
-from mmcv.runner import load_checkpoint, save_checkpoint
+from mmengine.runner import load_checkpoint, save_checkpoint
 
 from mmcls.models.backbones import T2T_ViT
 from .utils import timm_resize_pos_embed
@@ -71,7 +71,7 @@ class TestT2TViT(TestCase):
         pretrain_pos_embed = model.pos_embed.clone().detach()
         tmpdir = tempfile.gettempdir()
         checkpoint = os.path.join(tmpdir, 'test.pth')
-        save_checkpoint(model, checkpoint)
+        save_checkpoint(model.state_dict(), checkpoint)
         cfg = deepcopy(self.cfg)
         model = T2T_ViT(**cfg)
         load_checkpoint(model, checkpoint, strict=True)

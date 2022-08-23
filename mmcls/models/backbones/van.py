@@ -4,8 +4,8 @@ import torch.nn as nn
 from mmcv.cnn import Conv2d, build_activation_layer, build_norm_layer
 from mmcv.cnn.bricks import DropPath
 from mmcv.cnn.bricks.transformer import PatchEmbed
-from mmcv.utils.parrots_wrapper import _BatchNorm
 from mmengine.model import BaseModule, ModuleList
+from mmengine.utils.parrots_wrapper import _BatchNorm
 
 from mmcls.registry import MODELS
 from .base_backbone import BaseBackbone

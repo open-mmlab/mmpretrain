@@ -7,8 +7,8 @@ from itertools import chain
 from unittest import TestCase
 
 import torch
-from mmcv.runner import load_checkpoint, save_checkpoint
-from mmcv.utils.parrots_wrapper import _BatchNorm
+from mmengine.runner import load_checkpoint, save_checkpoint
+from mmengine.utils.parrots_wrapper import _BatchNorm
 
 from mmcls.models.backbones import SwinTransformer
 from mmcls.models.backbones.swin_transformer import SwinBlock
@@ -90,7 +90,7 @@ class TestSwinTransformer(TestCase):
         tmpdir = tempfile.gettempdir()
         # Save v3 checkpoints
         checkpoint_v2 = os.path.join(tmpdir, 'v3.pth')
-        save_checkpoint(model, checkpoint_v2)
+        save_checkpoint(model.state_dict(), checkpoint_v2)
         # Save v1 checkpoints
         setattr(model, 'norm', model.norm3)
         setattr(model.stages[0].blocks[1].attn, 'attn_mask',
@@ -98,7 +98,7 @@ class TestSwinTransformer(TestCase):
         model._version = 1
         del model.norm3
         checkpoint_v1 = os.path.join(tmpdir, 'v1.pth')
-        save_checkpoint(model, checkpoint_v1)
+        save_checkpoint(model.state_dict(), checkpoint_v1)
 
         # test load v1 checkpoint
         cfg = deepcopy(self.cfg)

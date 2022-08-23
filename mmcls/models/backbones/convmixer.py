@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 from mmcv.cnn.bricks import (Conv2dAdaptivePadding, build_activation_layer,
                              build_norm_layer)
-from mmcv.utils import digit_version
+from mmengine.utils import digit_version
 
 from mmcls.registry import MODELS
 from .base_backbone import BaseBackbone

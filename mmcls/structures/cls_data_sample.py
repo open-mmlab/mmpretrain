@@ -3,10 +3,10 @@
 from numbers import Number
 from typing import Sequence, Union
 
-import mmcv
 import numpy as np
 import torch
 from mmengine.data import BaseDataElement, LabelData
+from mmengine.utils import is_str
 
 
 def format_label(value: Union[torch.Tensor, np.ndarray, Sequence, int],
@@ -31,7 +31,7 @@ def format_label(value: Union[torch.Tensor, np.ndarray, Sequence, int],
 
     if isinstance(value, np.ndarray):
         value = torch.from_numpy(value).to(torch.long)
-    elif isinstance(value, Sequence) and not mmcv.is_str(value):
+    elif isinstance(value, Sequence) and not is_str(value):
         value = torch.tensor(value).to(torch.long)
     elif isinstance(value, int):
         value = torch.LongTensor([value])

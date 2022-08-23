@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmcv.utils import collect_env as collect_base_env
+from mmengine.utils import collect_env as collect_base_env
 from mmengine.utils import get_git_hash
 
 import mmcls
