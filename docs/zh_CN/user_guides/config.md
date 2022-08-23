@@ -2,6 +2,8 @@
 
 MMClassification 主要使用 python 文件作为配置文件。其配置文件系统的设计将模块化与继承整合进来，方便用户进行各种实验。所有配置文件都放置在 `configs` 文件夹下，主要包含 `_base_` 原始配置文件夹 以及 `resnet`, `swin_transformer`，`vision_transformer` 等诸多算法文件夹。
 
+本文主要讲解 MMClassification 配置文件的命名和结构，以及如何基于已有的配置文件修改，并以 [ResNet50 原始配置文件](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet50_8xb32_in1k.py) 逐行解释。
+
 可以使用 `python tools/misc/print_config.py /PATH/TO/CONFIG` 命令来查看完整的配置信息，从而方便检查所对应的配置文件。
 
 <!-- TOC -->
@@ -22,13 +24,13 @@ MMClassification 主要使用 python 文件作为配置文件。其配置文件�
 
 MMClassification 按照以下风格进行配置文件命名，代码库的贡献者需要遵循相同的命名规则。文件名总体分为四部分：算法信息，模块信息，训练信息和数据信息。逻辑上属于不同部分的单词之间用下划线 `'_'` 连接，同一部分有多个单词用短横线 `'-'` 连接。
 
-```
+```text
 {algorithm info}_{module info}_{training info}_{data info}.py
 ```
 
 - `algorithm info`：算法信息，算法名称或者网络架构，如 resnet 等；
 - `module info`： 模块信息，因任务而异，用以表示一些特殊的 neck、head 和 pretrain 信息；
-- `training info`：一些训练信息，训练策略设置，包括 batch size，schedule 数据增强等；
+- `training info`：一些训练信息，训练策略设置，包括 batch size，schedule 以及数据增强等；
 - `data info`：数据信息，数据集名称、模态、输入尺寸等，如 imagenet, cifar 等；
 
 ### 算法信息
@@ -71,9 +73,9 @@ Batch size 信息：
 - `in1k-384px` : 表示训练的输出图片大小为 `384x384`
 - `cifar100`
 
-### 配置文件命名案例：
+### 配置文件命名案例
 
-```
+```text
 repvgg-D2se_deploy_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py
 ```
 
@@ -90,15 +92,11 @@ repvgg-D2se_deploy_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py
   - `200e`: 训练 200 轮次。
 - `in1k`: 数据信息。 配置文件用于 `ImageNet1k` 数据集上使用 `224x224` 大小图片训练。
 
-```{note}
-部分配置文件目前还没有遵循此命名规范，相关文件命名近期会更新。
-```
-
 ### 权重命名规则
 
 权重的命名主要包括配置文件名，日期和哈希值。
 
-```
+```text
 {config_name}_{date}-{hash}.pth
 ```
 
@@ -111,12 +109,12 @@ repvgg-D2se_deploy_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py
 - [训练策略(schedule)](https://github.com/open-mmlab/mmclassification/tree/master/configs/_base_/schedules)
 - [运行设置(runtime)](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/default_runtime.py)
 
-你可以通过继承一些基本配置文件轻松构建自己的训练配置文件。由来自`_base_` 的组件组成的配置称为 _primitive_。
+你可以通过继承一些基本配置文件轻松构建自己的训练配置文件。由来自 `_base_` 的组件组成的配置称为 _primitive_。
 
 为了帮助用户对 MMClassification 检测系统中的完整配置和模块有一个基本的了解，我们使用 [ResNet50 原始配置文件](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet50_8xb32_in1k.py) 作为案例进行说明并注释每一行含义。更详细的用法和各个模块对应的替代方案，请参考 API 文档。
 
 ```python
-_base_ = [
+_base_ = [                                    # _base_ 可为一个 list 或者一个 str
     '../_base_/models/resnet50.py',           # 模型
     '../_base_/datasets/imagenet_bs32.py',    # 数据
     '../_base_/schedules/imagenet_bs256.py',  # 训练策略
@@ -128,28 +126,31 @@ _base_ = [
 
 ### 模型
 
-模型参数 `model` 在配置文件中为一个 `python` 字典，主要包括网络结构、损失函数等信息：
+`model` 在配置文件中为一个 `python` 字典，主要包括网络结构、损失函数等信息：
 
-- `type` ： 分类器名称, 目前 MMClassification 只支持 `ImageClassifier`， 参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api/models.html#classifier)。
-- `backbone` ： 主干网类型，可用选项参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api/models.html#backbones)。
-- `neck` ： 颈网络类型，目前 MMClassification 只支持 `GlobalAveragePooling`， 参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api/models.html#necks)。
-- `head` ： 头网络类型， 包括单标签分类与多标签分类头网络，可用选项参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api/models.html#heads)。
-  - `loss` ： 损失函数类型， 支持 `CrossEntropyLoss`, [`LabelSmoothLoss`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_label_smooth.py) 等，可用选项参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api/models.html#losses)。
-- `train_cfg` ：训练配置, 支持 [`mixup`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_mixup.py), [`cutmix`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50_cutmix.py) 等训练增强。
+- `type`： 分类器名称, 目前 MMClassification 只支持 `ImageClassifier`， 参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.classifiers)， 目前支持的分类算法可查看 [`model zoo`](https://mmclassification.readthedocs.io/en/latest/model_zoo.html)。
+- `data_preprocessor` : 图像输入的预处理模块，包括图像数据转换以及归一化等操作，如 `ClsDataPreprocessor`, 参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.datapreprocessors)。
+- `backbone`： 主干网类型，目前支持 `ResNet`, `Swin Transformer`, `Vision Transformer` 等。可用选项参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.backbones)。
+- `neck`： 颈网络类型，目前 MMClassification 支持 `GlobalAveragePooling` 等，参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.necks)。
+- `head`： 头网络类型， 包括单标签分类与多标签分类头网络，可用选项参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.heads)。
+  - `loss`： 损失函数类型， 支持 `CrossEntropyLoss`, `LabelSmoothLoss` 等，可用选项参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.losses)。
+- `train_cfg`：训练配置, 目前支持 `Mixup`, `CutMix` 等训练增强, 可用选项参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#models.utils.augment.html)。
 
 ```{note}
 配置文件中的 'type' 不是构造时的参数，而是类名。
 ```
 
+以下是 ResNet50 基本配置的模型配置['configs/_base_/models/resnet50.py'](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50.py)：
+
 ```python
 model = dict(
-    type='ImageClassifier',     # 分类器类型
+    type='ImageClassifier',     # 分类器类型， 目前只有 'ImageClassifier'
     backbone=dict(
         type='ResNet',          # 主干网络类型
         depth=50,               # 主干网网络深度， ResNet 一般有18, 34, 50, 101, 152 可以选择
         num_stages=4,           # 主干网络状态(stages)的数目，这些状态产生的特征图作为后续的 head 的输入。
-        out_indices=(3, ),      # 输出的特征图输出索引。越远离输入图像，索引越大
-        frozen_stages=-1,       # 网络微调时，冻结网络的stage（训练时不执行反相传播算法），若num_stages=4，backbone包含stem 与 4 个 stages。frozen_stages为-1时，不冻结网络； 为0时，冻结 stem； 为1时，冻结 stem 和 stage1； 为4时，冻结整个backbone
+        out_indices=(3, ),      # 输出的特征图输出索引。
+        frozen_stages=-1,       # 网络 fine-tune 时，冻结网络的截止 stage，若num_stages=4，backbone包含stem 与 4 个 stages。frozen_stages为-1时，不冻结网络； 为0时，冻结 stem； 为1时，冻结 stem 和 stage1； 为4时，冻结整个backbone
         style='pytorch'),       # 主干网络的风格，'pytorch' 意思是步长为2的层为 3x3 卷积， 'caffe' 意思是步长为2的层为 1x1 卷积。
     neck=dict(type='GlobalAveragePooling'),    # 颈网络类型
     head=dict(
@@ -163,109 +164,172 @@ model = dict(
 
 ### 数据
 
-数据参数 `data` 在配置文件中为一个 `python` 字典，主要包含构造数据集加载器(dataloader)配置信息：
+配置中的 `data` 部分包括构建数据加载器和评估的信息，如下：
 
-- `samples_per_gpu` : 构建 dataloader 时，每个 GPU 的 Batch Size
-- `workers_per_gpu` : 构建 dataloader 时，每个 GPU 的 线程数
-- `train ｜ val ｜ test` : 构造数据集
-  - `type` :  数据集类型， MMClassification 支持 `ImageNet`、 `Cifar` 等 ，参考[API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api/datasets.html)
-  - `data_prefix` : 数据集根目录
-  - `pipeline` :  数据处理流水线，参考相关教程文档 [如何设计数据处理流水线](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/data_pipeline.html)
+- `preprocess_cfg`: 模型输入预处理配置, 与 `model.data_preprocessor` 相同，但优先级更高。
+- `train_evaluator | val_evaluator | test_evaluator`: 构建评估器，参考 [API 文档](TODO:)。
+- `train_dataloader | val_dataloader | test_dataloader`: 构建 dataloader
+  - `samples_per_gpu`: 每个 GPU 的 Batchsize
+  - `workers_per_gpu`: 每个 GPU 的线程数
+  - `sampler`: 采样器配置。
+  - `dataset`: 构造数据集。
+    - `type`:  数据集类型， MMClassification 支持 `ImageNet`、 `Cifar` 等数据集 ，参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.datasets)
+    - `pipeline`:  数据处理流水线，参考相关教程文档 [如何设计数据处理流水线](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/data_pipeline.html)
 
-评估参数 `evaluation` 也是一个字典， 为 `evaluation hook` 的配置信息, 主要包括评估间隔、评估指标等。
+以下是 ResNet50 基本配置的数据配置 ['configs/_base_/datasets/imagenet_bs32.py'](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/datasets/imagenet_bs32.py)：
 
 ```python
-# dataset settings
-dataset_type = 'ImageNet'  # 数据集名称，
-img_norm_cfg = dict(       #图像归一化配置，用来归一化输入的图像。
-    mean=[123.675, 116.28, 103.53],  # 预训练里用于预训练主干网络模型的平均值。
-    std=[58.395, 57.12, 57.375],     # 预训练里用于预训练主干网络模型的标准差。
-    to_rgb=True)                     # 是否反转通道，使用 cv2, mmcv 读取图片默认为 BGR 通道顺序，这里 Normalize 均值方差数组的数值是以 RGB 通道顺序， 因此需要反转通道顺序。
-# 训练数据流水线
+dataset_type = 'ImageNet'
+# 预处理配置
+preprocess_cfg = dict(
+    # 输入的图片数据通道以 'RGB' 顺序
+    mean=[123.675, 116.28, 103.53],    # 输入图像归一化的 RGB 通道均值
+    std=[58.395, 57.12, 57.375],       # 输入图像归一化的 RGB 通道均值
+    to_rgb=True,                       # 是否将通道翻转，从 BGR 转为 RGB 或者 RGB 转为 BGR
+)
+
 train_pipeline = [
-    dict(type='LoadImageFromFile'),                # 读取图片
-    dict(type='RandomResizedCrop', size=224),      # 随机缩放抠图
-    dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),  # 以概率为0.5随机水平翻转图片
-    dict(type='Normalize', **img_norm_cfg),        # 归一化
-    dict(type='ImageToTensor', keys=['img']),      # image 转为 torch.Tensor
-    dict(type='ToTensor', keys=['gt_label']),      # gt_label 转为 torch.Tensor
-    dict(type='Collect', keys=['img', 'gt_label']) # 决定数据中哪些键应该传递给检测器的流程
+    dict(type='LoadImageFromFile'),     # 读取图像
+    dict(type='RandomResizedCrop', scale=224),     # 随机放缩裁剪
+    dict(type='RandomFlip', prob=0.5, direction='horizontal'),   # 随机水平翻转
+    dict(type='PackClsInputs'),         # 准备图像以及标签
 ]
-# 测试数据流水线
+
 test_pipeline = [
-    dict(type='LoadImageFromFile'),
-    dict(type='Resize', scale=(256, -1), keep_ratio=True),
-    dict(type='CenterCrop', crop_size=224),
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='ImageToTensor', keys=['img']),
-    dict(type='Collect', keys=['img'])             # test 时不传递 gt_label
+    dict(type='LoadImageFromFile'),     # 读取图像
+    dict(type='ResizeEdge', scale=256, edge='short'),  # 短边对其256进行放缩
+    dict(type='CenterCrop', crop_size=224),     # 中心裁剪
+    dict(type='PackClsInputs'),                 # 准备图像以及标签
 ]
-data = dict(
-    samples_per_gpu=32,    # 单个 GPU 的 Batch size
-    workers_per_gpu=2,     # 单个 GPU 的 线程数
-    train=dict(            # 训练数据信息
-        type=dataset_type,                  # 数据集名称
-        data_prefix='data/imagenet/train',  # 数据集目录，当不存在 ann_file 时，类别信息从文件夹自动获取
-        pipeline=train_pipeline),           # 数据集需要经过的 数据流水线
-    val=dict(              # 验证数据集信息
+
+# 构造训练集 dataloader
+train_dataloader = dict(
+    batch_size=32,                     # 每张GPU的 batchsize
+    num_workers=5,                     # 每个GPU的线程数
+    dataset=dict(                      # 训练数据集
         type=dataset_type,
-        data_prefix='data/imagenet/val',
-        ann_file='data/imagenet/meta/val.txt',   # 标注文件路径，存在 ann_file 时，不通过文件夹自动获取类别信息
+        data_root='data/imagenet',
+        ann_file='meta/train.txt',
+        data_prefix='train',
+        pipeline=train_pipeline),
+    sampler=dict(type='DefaultSampler', shuffle=True),   # 默认采样器
+    persistent_workers=True,                             # 是否保持进程，可以缩短每个epoch的准备时间
+)
+
+# 构造验证集 dataloader
+val_dataloader = dict(
+    batch_size=32,
+    num_workers=5,
+    dataset=dict(
+        type=dataset_type,
+        data_root='data/imagenet',
+        ann_file='meta/val.txt',
+        data_prefix='val',
         pipeline=test_pipeline),
-    test=dict(             # 测试数据集信息
-        type=dataset_type,
-        data_prefix='data/imagenet/val',
-        ann_file='data/imagenet/meta/val.txt',
-        pipeline=test_pipeline))
-evaluation = dict(       # evaluation hook 的配置
-    interval=1,          # 验证期间的间隔，单位为 epoch 或者 iter， 取决于 runner 类型。
-    metric='accuracy')   # 验证期间使用的指标。
+    sampler=dict(type='DefaultSampler', shuffle=False),
+    persistent_workers=True,
+)
+# 构建验证集评估器，使用准确率为指标
+val_evaluator = dict(type='Accuracy', topk=(1, 5))
+
+test_dataloader = val_dataloader  # 构造验证集 dataloader，这里直接与 val_dataloader相同
+test_evaluator = val_evaluator    # 构造验证集评估器，这里直接与 val_evaluator 相同
+```
+
+```note
+'model.data_preprocessor' 既可以在 `model=dict(data_preprocessor=dict())`中定义，也可以使用此处的 `preprocess_cfg` 定义, 同时配置时，使用 `preprocess_cfg` 的配置。
 ```
 
 ### 训练策略
 
-主要包含 优化器设置、 `optimizer hook` 设置、学习率策略和 `runner`设置：
+主要包含训练策略设置：
 
-- `optimizer` : 优化器设置信息, 支持 `pytorch` 所有的优化器，参考相关 [mmcv](https://mmcv.readthedocs.io/zh_CN/latest/_modules/mmcv/runner/optimizer/default_constructor.html#DefaultOptimizerConstructor) 文档
-- `optimizer_config` : `optimizer hook` 的配置文件,如设置梯度限制，参考相关 [mmcv](https://github.com/open-mmlab/mmcv/blob/master/mmcv/runner/hooks/optimizer.py#L8) 代码
-- `lr_config` : 学习率策略，支持 "CosineAnnealing"、 "Step"、 "Cyclic" 等等，参考相关 [mmcv](https://mmcv.readthedocs.io/zh_CN/latest/_modules/mmcv/runner/hooks/lr_updater.html#LrUpdaterHook) 文档
-- `runner` : 有关 `runner` 可以参考 `mmcv` 对于 [`runner`](https://mmcv.readthedocs.io/zh_CN/latest/understand_mmcv/runner.html) 介绍文档
+- `optim_wrapper`: 优化器设置信息,
+  - `optimizer`: 支持 `pytorch` 所有的优化器，参考相关 [MMEngine](TODO:) 文档。
+  - `paramwise_cfg`: 定制不同参数的学习率以及动量，参考相关 [学习策略文档](TODO:) 文档。
+- `param_scheduler` : 学习率策略，支持 "CosineAnnealing"、 "Step"、 "Cyclic" 等等，参考相关 [mmcv](https://mmcv.readthedocs.io/zh_CN/latest/_modules/mmcv/runner/hooks/lr_updater.html#LrUpdaterHook) 文档
+- `train_cfg | val_cfg`: 训练以及验证的配置，参考相关 [MMEngine](TODO:) 文档。
+
+以下是 ResNet50 基本配置的模型配置['configs/_base_/schedules/imagenet_bs256.py'](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/schedules/imagenet_bs256.py)：
 
 ```python
-# 用于构建优化器的配置文件。支持 PyTorch 中的所有优化器，同时它们的参数与 PyTorch 里的优化器参数一致。
-optimizer = dict(type='SGD',         # 优化器类型
-                lr=0.1,              # 优化器的学习率，参数的使用细节请参照对应的 PyTorch 文档。
-                momentum=0.9,        # 动量(Momentum)
-                weight_decay=0.0001) # 权重衰减系数(weight decay)。
- # optimizer hook 的配置文件
-optimizer_config = dict(grad_clip=None)  # 大多数方法不使用梯度限制(grad_clip)。
-# 学习率调整配置，用于注册 LrUpdater hook。
-lr_config = dict(policy='step',          # 调度流程(scheduler)的策略，也支持 CosineAnnealing, Cyclic, 等。
-                 step=[30, 60, 90])      # 在 epoch 为 30, 60, 90 时， lr 进行衰减
-runner = dict(type='EpochBasedRunner',   # 将使用的 runner 的类别，如 IterBasedRunner 或 EpochBasedRunner。
-            max_epochs=100)              # runner 总回合数， 对于 IterBasedRunner 使用 `max_iters`
+# 优化器配置，支持所有 PyTorch 的优化器
+optim_wrapper = dict(
+    optimizer=dict(type='SGD', lr=0.1, momentum=0.9, weight_decay=0.0001))
+
+# 学习率参数的调整策略
+# 调度流程(scheduler)的策略，也支持 CosineAnnealing, Cyclic, 等,
+# 'MultiStepLR' 在 30， 60，90 个 epoch 时， lr = lr * gamma
+param_scheduler = dict(
+    type='MultiStepLR', by_epoch=True, milestones=[30, 60, 90], gamma=0.1)
+
+# 训练的配置, 迭代 100 个epoch，每一个训练 epoch 后都做验证集评估
+# 'by_epoch=True' 默认使用 EpochBaseLoop,  'by_epoch=False' 默认使用 IterBaseLoop
+# 参考 MMEngine 获取更多 Runner 和 Loop 的信息
+train_cfg = dict(by_epoch=True, max_epochs=100, val_interval=1)
+val_cfg = dict()
+test_cfg = dict()
+
+# 使用自动调整学习率时，基准的 batch_size， 等于 base_num_GPU * base_batch_pre_GPU
+auto_scale_lr = dict(base_batch_size=256)
 ```
 
 ### 运行设置
 
 本部分主要包括保存权重策略、日志配置、训练参数、断点权重路径和工作目录等等。
 
-```python
-# Checkpoint hook 的配置文件。
-checkpoint_config = dict(interval=1)   # 保存的间隔是 1，单位会根据 runner 不同变动，可以为 epoch 或者 iter。
-# 日志配置信息。
-log_config = dict(
-    interval=100,                      # 打印日志的间隔， 单位 iters
-    hooks=[
-        dict(type='TextLoggerHook'),          # 用于记录训练过程的文本记录器(logger)。
-        # dict(type='TensorboardLoggerHook')  # 同样支持 Tensorboard 日志
-    ])
+以下是几乎所有算法都使用的运行配置['configs/_base_/default_runtime.py'](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/default_runtime.py)文件：
 
-dist_params = dict(backend='nccl')   # 用于设置分布式训练的参数，端口也同样可被设置。
-log_level = 'INFO'             # 日志的输出级别。
-resume_from = None             # 从给定路径里恢复检查点(checkpoints)，训练模式将从检查点保存的轮次开始恢复训练。
-workflow = [('train', 1)]      # runner 的工作流程，[('train', 1)] 表示只有一个工作流且工作流仅执行一次。
-work_dir = 'work_dir'          # 用于保存当前实验的模型检查点和日志的目录文件地址。
+```python
+# 默认所有注册器使用的域
+default_scope = 'mmcls'
+
+# 配置默认的hook
+default_hooks = dict(
+    # 记录每次迭代的时间。
+    timer=dict(type='IterTimerHook'),
+
+    # 每 100 次迭代打印一次日志。
+    logger=dict(type='LoggerHook', interval=100),
+
+    # 启用默认参数调度hook。
+    param_scheduler=dict(type='ParamSchedulerHook'),
+
+    # 每个epoch保存检查点。
+    checkpoint=dict(type='CheckpointHook', interval=1),
+
+    # 在分布式环境中设置采样器种子。
+    sampler_seed=dict(type='DistSamplerSeedHook'),
+
+    # 验证结果可视化，默认不启用，设置 True 时启用。
+    visualization=dict(type='VisualizationHook', enable=False),
+)
+
+# 配置环境
+env_cfg = dict(
+   # 是否开启cudnn benchmark
+    cudnn_benchmark=False,
+
+    # 设置多进程参数
+    mp_cfg=dict(mp_start_method='fork', opencv_num_threads=0),
+
+    # 设置分布式参数
+    dist_cfg=dict(backend='nccl'),
+)
+
+# 设置可视化工具
+vis_backends = [dict(type='LocalVisBackend')]
+visualizer = dict(
+    type='ClsVisualizer', vis_backends=vis_backends, name='visualizer')
+
+# 设置日志级别
+log_level = 'INFO'
+
+# 从哪个检查点加载
+load_from = None
+
+# 是否从加载的检查点恢复训练
+resume = False
 ```
 
 ## 继承并修改配置文件
@@ -275,18 +339,33 @@ work_dir = 'work_dir'          # 用于保存当前实验的模型检查点和�
 对于在同一算法文件夹下的所有配置文件，MMClassification 推荐只存在 **一个** 对应的 _原始配置_ 文件。
 所有其他的配置文件都应该继承 _原始配置_ 文件，这样就能保证配置文件的最大继承深度为 3。
 
-例如，如果在 ResNet 的基础上做了一些修改，用户首先可以通过指定 `_base_ = './resnet50_8xb32_in1k.py'`（相对于你的配置文件的路径），来继承基础的 ResNet 结构、数据集以及其他训练配置信息，然后修改配置文件中的必要参数以完成继承。如想在基础 resnet50 的基础上将训练轮数由 100 改为 300 和修改学习率衰减轮数，同时修改数据集路径，可以建立新的配置文件 `configs/resnet/resnet50_8xb32-300e_in1k.py`， 文件中写入以下内容:
+例如，如果在 ResNet 的基础上做了一些修改，用户首先可以通过指定 `_base_ = './resnet50_8xb32_in1k.py'`（相对于你的配置文件的路径），来继承基础的 ResNet 结构、数据集以及其他训练配置信息，然后修改配置文件中的必要参数以完成继承。如想在基础 resnet50 的基础上使用 `CutMix` 训练增强，将训练轮数由 100 改为 300 和修改学习率衰减轮数，同时修改数据集路径，可以建立新的配置文件 `configs/resnet/resnet50_8xb32-300e_in1k.py`， 文件中写入以下内容:
 
 ```python
 _base_ = './resnet50_8xb32_in1k.py'
 
-runner = dict(max_epochs=300)
-lr_config = dict(step=[150, 200, 250])
+# 模型在之前的基础上使用 CutMix 训练增强
+model = dict(
+    train_cfg=dict(
+        augments=dict(type='CutMix', alpha=1.0, num_classes=1000, prob=1.0)
+    )
+)
 
-data = dict(
-    train=dict(data_prefix='mydata/imagenet/train'),
-    val=dict(data_prefix='mydata/imagenet/train', ),
-    test=dict(data_prefix='mydata/imagenet/train', )
+# 优化策略在之前基础上训练更多个 epoch
+train_cfg = dict(max_epochs=300, val_interval=10)  # 训练300个 epoch，每10个 epoch 评估一次
+param_scheduler = dict(step=[150, 200, 250])   # 学习率调整也有所变动
+
+# 使用自己的数据集目录
+train_dataloader = dict(
+    dataset=dict(data_root='mydata/imagenet/train'),
+)
+val_dataloader = dict(
+    batch_size=64,                  # 推理时没有反向传播，可以使用更大的 batchsize
+    dataset=dict(data_root='mydata/imagenet/val'),
+)
+test_dataloader = dict(
+    batch_size=64,                  # 推理时没有反向传播，可以使用更大的 batchsize
+    dataset=dict(data_root='mydata/imagenet/val'),
 )
 ```
 
@@ -294,83 +373,99 @@ data = dict(
 
 用一些中间变量，中间变量让配置文件更加清晰，也更容易修改。
 
-例如数据集里的 `train_pipeline` / `test_pipeline` 是作为数据流水线的中间变量。我们首先要定义 `train_pipeline` / `test_pipeline`，然后将它们传递到 `data` 中。如果想修改训练或测试时输入图片的大小，就需要修改 `train_pipeline` / `test_pipeline` 这些中间变量。
+例如数据集里的 `train_pipeline` / `test_pipeline` 是作为数据流水线的中间变量。我们首先要定义 `train_pipeline` / `test_pipeline`，然后将它们传递到 `xx_dataloader` 中。如果想修改训练或测试时输入图片的大小，就需要修改 `train_pipeline` / `test_pipeline` 这些中间变量。
 
 ```python
-img_norm_cfg = dict(
-    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
+bgr_mean = [103.53, 116.28, 123.675]
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='RandomResizedCrop', size=384, backend='pillow',),
-    dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='ImageToTensor', keys=['img']),
-    dict(type='ToTensor', keys=['gt_label']),
-    dict(type='Collect', keys=['img', 'gt_label'])
+    dict(type='RandomResizedCrop', scale=224, backend='pillow', interpolation='bicubic'),
+    dict(type='RandomFlip', prob=0.5, direction='horizontal'),
+    dict(
+        type='RandAugment',
+        policies='timm_increasing',
+        num_policies=2,
+        total_level=10,
+        magnitude_level=6,
+        magnitude_std=0.5,
+        hparams=dict(pad_val=[round(x) for x in bgr_mean], interpolation='bicubic')),
+    dict(type='PackClsInputs'),
 ]
+
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='Resize', scale=384, backend='pillow'),
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='ImageToTensor', keys=['img']),
-    dict(type='Collect', keys=['img'])
+    dict(type='ResizeEdge', scale=236, edge='short', backend='pillow', interpolation='bicubic'),
+    dict(type='CenterCrop', crop_size=224),
+    dict(type='PackClsInputs')
 ]
-data = dict(
-    train=dict(pipeline=train_pipeline),
-    val=dict(pipeline=test_pipeline),
-    test=dict(pipeline=test_pipeline))
+
+train_dataloader = dict(dataset=dict(pipeline=train_pipeline))
+val_dataloader = dict(dataset=dict(pipeline=val_pipeline))
+test_dataloader = dict(dataset=dict(pipeline=val_pipeline))
 ```
 
 ### 忽略基础配置文件里的部分内容
 
-有时，您需要设置 `_delete_=True` 去忽略基础配置文件里的一些域内容。 可以参照 [mmcv](https://mmcv.readthedocs.io/zh_CN/latest/understand_mmcv/config.html#inherit-from-base-config-with-ignored-fields) 来获得一些简单的指导。
+有时，您需要设置 `_delete_=True` 去忽略基础配置文件里的一些域内容。 可以参照 [MMEngine](TODO:) 来获得一些简单的指导。
 
-以下是一个简单应用案例。 如果在上述 ResNet50 案例中 使用 cosine schedule ,使用继承并直接修改会报 `get unexcepected keyword 'step'` 错, 因为基础配置文件 lr_config 域信息的 `'step'` 字段被保留下来了，需要加入 `_delete_=True` 去忽略基础配置文件里的 `lr_config` 相关域内容：
+以下是一个简单应用案例。 如果在上述 ResNet50 案例中 使用 cosine schedule ,使用继承并直接修改会报 `get unexcepected keyword 'step'` 错, 因为基础配置文件 `param_scheduler` 域信息的 `'step'` 字段被保留下来了，需要加入 `_delete_=True` 去忽略基础配置文件里的 `param_scheduler` 相关域内容：
 
 ```python
 _base_ = '../../configs/resnet/resnet50_8xb32_in1k.py'
 
-lr_config = dict(
-    _delete_=True,
-    policy='CosineAnnealing',
-    min_lr=0,
-    warmup='linear',
-    by_epoch=True,
-    warmup_iters=5,
-    warmup_ratio=0.1
-)
+# 训练参数调整
+param_scheduler = [
+    # 第一个阶段执行 warm up 学习率调整。 第一个阶段 begin 为 0，end 为 5，表示 [0, 5)
+    dict(
+        type='LinearLR',      # warm up 学习率策略类型
+        start_factor=0.25,    # 初始学习率 = lr * start_factor
+        by_epoch=True,        # begin 和 end 表示 epoch，如果为 False， 则表示 iter
+        begin=0,              # 开始 epoch 序号
+        end=5,                # 结束 epoch 序号，epoch 5 不再使用此策略
+        convert_to_iter_based=True),  # 是否以iter为基础更新
+    # 第二个阶段执行 cos 学习率调整。 第二个阶段 begin 为 5，end 为 100，表示 [5, 100)
+    dict(
+        type='CosineAnnealingLR', # 使用 CosineAnnealingLR， 半余弦函数
+        T_max=95,                 # 半余弦函数的周期为 95。
+        by_epoch=True,            # T_max，begin 和 end 表示 epoch，如果为 False， 则表示 iter
+        begin=5,
+        end=100,
+    )
+]
 ```
 
 ### 引用基础配置文件里的变量
 
 有时，您可以引用 `_base_` 配置信息的一些域内容，这样可以避免重复定义。 可以参照 [mmcv](https://mmcv.readthedocs.io/zh_CN/latest/understand_mmcv/config.html#reference-variables-from-base) 来获得一些简单的指导。
 
-以下是一个简单应用案例，在训练数据预处理流水线中使用 auto augment 数据增强，参考配置文件 [`configs/_base_/datasets/imagenet_bs64_autoaug.py`](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/datasets/imagenet_bs64_autoaug.py)。 在定义 `train_pipeline` 时，可以直接在 `_base_` 中加入定义 auto augment 数据增强的文件命名，再通过 `{{_base_.auto_increasing_policies}}` 引用变量：
+以下是一个简单应用案例，在训练数据预处理流水线中使用 auto augment 数据增强，参考配置文件 [`configs/resnest/resnest50_32xb64_in1k.py`](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnest/resnest50_32xb64_in1k.py)。 在定义 `train_pipeline` 时，可以直接在 `_base_` 中加入定义 auto augment 数据增强的文件命名，再通过 `{{_base_.auto_increasing_policies}}` 引用变量：
 
 ```python
-_base_ = ['./pipelines/auto_aug.py']
+_base_ = [
+    '../_base_/models/resnest50.py', '../_base_/datasets/imagenet_bs64.py',
+    '../_base_/default_runtime.py', './_randaug_policies.py',
+]
 
-# dataset settings
-dataset_type = 'ImageNet'
-img_norm_cfg = dict(
-    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='RandomResizedCrop', size=224),
-    dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
-    dict(type='AutoAugment', policies={{_base_.auto_increasing_policies}}),
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='ImageToTensor', keys=['img']),
-    dict(type='ToTensor', keys=['gt_label']),
-    dict(type='Collect', keys=['img', 'gt_label'])
+    dict(
+        type='RandAugment',
+        policies={{_base_.policies}},    # 这里使用了 _base_ 里的 `policies` 参数。
+        num_policies=2,
+        magnitude_level=12),
+    dict(type='EfficientNetRandomCrop', scale=224, backend='pillow'),
+    dict(type='RandomFlip', prob=0.5, direction='horizontal'),
+    dict(type='ColorJitter', brightness=0.4, contrast=0.4, saturation=0.4),
+    dict(
+        type='Lighting',
+        eigval=EIGVAL,
+        eigvec=EIGVEC,
+        alphastd=0.1,
+        to_rgb=False),
+    dict(type='PackClsInputs'),
 ]
-test_pipeline = [...]
-data = dict(
-    samples_per_gpu=64,
-    workers_per_gpu=2,
-    train=dict(..., pipeline=train_pipeline),
-    val=dict(..., pipeline=test_pipeline))
-evaluation = dict(interval=1, metric='accuracy')
+
+train_dataloader = dict(dataset=dict(pipeline=train_pipeline))
 ```
 
 ## 通过命令行参数修改配置信息
@@ -389,15 +484,11 @@ evaluation = dict(interval=1, metric='accuracy')
 
 - 更新列表/元组的值。
 
-  当配置文件中需要更新的是一个列表或者元组，例如，配置文件通常会设置 `workflow=[('train', 1)]`，用户如果想更改，
-  需要指定 `--cfg-options workflow="[(train,1),(val,1)]"`。注意这里的引号 " 对于列表以及元组数据类型的修改是必要的，
+  当配置文件中需要更新的是一个列表或者元组，例如，配置文件通常会设置 `val_evaluator = dict(type='Accuracy', topk=(1, 5))`，用户如果想更改 `topk`，
+  需要指定 `--cfg-options val_evaluator.topk="(1,3)"`。注意这里的引号 " 对于列表以及元组数据类型的修改是必要的，
   并且 **不允许** 引号内所指定的值的书写存在空格。
 
 ## 导入用户自定义模块
-
-```{note}
-本部分仅在当将 MMClassification 当作库构建自己项目时可能用到，初学者可跳过。
-```
 
 在学习完后续教程 [如何添加新数据集](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/new_dataset.html)、[如何设计数据处理流程](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/data_pipeline.html) 、[如何增加新模块](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/new_modules.html) 后，您可能使用 MMClassification 完成自己的项目并在项目中自定义了数据集、模型、数据增强等。为了精简代码，可以将 MMClassification 作为一个第三方库，只需要保留自己的额外的代码，并在配置文件中导入自定义的模块。案例可以参考 [OpenMMLab 算法大赛项目](https://github.com/zhangrui-wolf/openmmlab-competition-2021)。
 
