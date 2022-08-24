@@ -15,7 +15,16 @@ class MultiLabelMetric(BaseMetric):
     """A collection of metrics for multi-label multi-class classification task
     based on confusion matrix.
 
-    It includes precision, recall, f1-score and support.
+    It includes CP, CR, CF1, OP, OR, OF1. The 'C' stands for per-class average,
+    just as the average mode of "macro". The 'O' stands for overall average,
+    just as the average mode of "micro". P stands for precision, R stands for
+    recall and F1 stands for F1-score.
+
+    Notes:
+        The metric CF1 (macro-F1-score) is equals to ``(2 * CP * CR) / (CP + CR)``,
+         which is widely used in papers. It is different with
+         `sklearn.metrics.f1_score(average="macro")`, which equals to
+         ``mean(classwise-F1-score_list)``.
 
     Args:
         thr (float, optional): Predictions with scores under the thresholds
@@ -32,20 +41,21 @@ class MultiLabelMetric(BaseMetric):
                   of true positives and fn the number of false negatives.
                 - `"f1-score"`: The f1-score is the harmonic mean of the
                   precision and recall.
-                - `"support"`: The total number of positive of each category
-                  in the target.
 
             Defaults to ('precision', 'recall', 'f1-score').
         average (str | None): The average method. It supports three average
             modes:
 
                 - `"macro"`: Calculate metrics for each category, and calculate
-                  the mean value over all categories.
+                  the mean value over all categories, including CP, CR and CF1.
                 - `"micro"`: Calculate metrics globally by counting the total
-                  true positives, false negatives and false positives.
+                  true positives, false negatives and false positives, including
+                  OP, OR and OF1.
+                - `"both"`: Calculate metrics both in "macro" and "micro"
+                  modes, including CP, CR, CF1, OP, OR and OF1.
                 - `None`: Return scores of all categories.
 
-            Defaults to "macro".
+            Defaults to "both".
         collect_device (str): Device name used for collecting results from
             different ranks during distributed training. Must be 'cpu' or
             'gpu'. Defaults to 'cpu'.
@@ -56,14 +66,14 @@ class MultiLabelMetric(BaseMetric):
 
     Examples:
         >>> import torch
-        >>> from mmcls.evaluation import MultiLabelMetric
+        >>> from mmcls.metrics import MultiLabelMetric
         >>> # ------ The Basic Usage for category indices labels -------
         >>> y_pred = [[0], [1], [0, 1], [3]]
         >>> y_true = [[0, 3], [0, 2], [1], [3]]
-        >>> # Output precision, recall, f1-score and support
+        >>> # Output "CP", "CR", "CF1", "OP", "OR", "OF1"
         >>> MultiLabelMetric.calculate(
         ...     y_pred, y_true, pred_indices=True, target_indices=True, num_classes=4)
-        (tensor(50.), tensor(50.), tensor(45.8333), tensor(6))
+        (tensor(50.), tensor(50.), tensor(50.), tensor(60.0000), tensor(50.), tensor(54.5455))
         >>> # ----------- The Basic Usage for one-hot labels -----------
         >>> y_pred = torch.tensor([[1, 1, 0, 0],
         ...                        [1, 1, 0, 0],
@@ -76,7 +86,7 @@ class MultiLabelMetric(BaseMetric):
         ...                        [1, 0, 0, 0],
         ...                        [1, 0, 0, 0]])
         >>> MultiLabelMetric.calculate(y_pred, y_true)
-        (tensor(43.7500), tensor(31.2500), tensor(33.3333), tensor(8))
+        (tensor(43.75), tensor(31.25), tensor(36.46), tensor(42.86), tensor(37.50), tensor(40.00))
         >>> # --------- The Basic Usage for one-hot pred scores ---------
         >>> y_pred = torch.rand(y_true.size())
         >>> y_pred
@@ -85,12 +95,12 @@ class MultiLabelMetric(BaseMetric):
         [0.8349, 0.6294, 0.7896, 0.2061],
         [0.4037, 0.7308, 0.6713, 0.8374],
         [0.3779, 0.4836, 0.0313, 0.0067]])
-        >>> # Calculate with different threshold.
+        >>> # Calculate with  threshold.
         >>> MultiLabelMetric.calculate(y_pred, y_true, thr=0.1)
-        (tensor(42.5000), tensor(75.), tensor(53.1746), tensor(8))
+        (tensor(36.67), tensor(62.50), tensor(46.22), tensor(33.33), tensor(75.), tensor(46.15))
         >>> # Calculate with topk.
         >>> MultiLabelMetric.calculate(y_pred, y_true, topk=1)
-        (tensor(62.5000), tensor(31.2500), tensor(39.1667), tensor(8))
+        (tensor(25.), tensor(12.50), tensor(16.67), tensor(20.), tensor(12.50), tensor(15.38))
         >>>
         >>> # ------------------- Use with Evalutor -------------------
         >>> from mmcls.structures import ClsDataSample
@@ -102,35 +112,25 @@ class MultiLabelMetric(BaseMetric):
         >>> pred = [
         ...     ClsDataSample().set_pred_score(torch.rand((5, ))).set_gt_score(torch.randint(2, size=(5, )))
         ...     for i in range(1000)]
-        >>> evaluator = Evaluator(metrics=MultiLabelMetric(thrs=0.5))
+        >>> evaluator = Evaluator(metrics=MultiLabelMetric(thr=0.5))
         >>> evaluator.process(data_batch, pred)
         >>> evaluator.evaluate(1000)
         {
-            'multi-label/precision': 50.72898037055408,
-            'multi-label/recall': 50.06836461357571,
-            'multi-label/f1-score': 50.384466955258475
+            'multi-label/CP': 50.85150909423828,
+            'multi-label/CR': 48.266883850097656,
+            'multi-label/CF1': 49.52549743652344,
+            'multi-label/OP': 50.83981704711914,
+            'multi-label/OR': 48.26915740966797,
+            'multi-label/OF1': 49.52114486694336
         }
         >>> # Evaluate on each class by using topk strategy
         >>> evaluator = Evaluator(metrics=MultiLabelMetric(topk=1, average=None))
         >>> evaluator.process(data_batch, pred)
         >>> evaluator.evaluate(1000)
         {
-            'multi-label/precision_top1_classwise': [48.22, 50.54, 50.99, 44.18, 52.5],
-            'multi-label/recall_top1_classwise': [18.92, 19.22, 19.92, 20.0, 20.27],
-            'multi-label/f1-score_top1_classwise': [27.18, 27.85, 28.65, 27.54, 29.25]
-        }
-        >>> # Evaluate by label data got from head
-        >>> pred = [
-        ...     ClsDataSample().set_pred_score(torch.rand((5, ))).set_pred_label(
-        ...         torch.randint(2, size=(5, ))).set_gt_score(torch.randint(2, size=(5, )))
-        ...     for i in range(1000)]
-        >>> evaluator = Evaluator(metrics=MultiLabelMetric())
-        >>> evaluator.process(data_batch, pred)
-        >>> evaluator.evaluate(1000)
-        {
-            'multi-label/precision': 20.28921606216292,
-            'multi-label/recall': 38.628095855722314,
-            'multi-label/f1-score': 26.603530359627918
+            'multi-label/precision_top1_classwise': [52.02, 52.46, 51.01, 55.91, 48.11],
+            'multi-label/recall_top1_classwise': [21.62, 18.25, 20.04, 20.43, 20.4],
+            'multi-label/f1-score_top1_classwise': [30.54, 27.08, 28.77, 29.93, 28.65]
         }
     """  # noqa: E501
     default_prefix: Optional[str] = 'multi-label'
@@ -139,7 +139,7 @@ class MultiLabelMetric(BaseMetric):
                  thr: Optional[float] = None,
                  topk: Optional[int] = None,
                  items: Sequence[str] = ('precision', 'recall', 'f1-score'),
-                 average: Optional[str] = 'macro',
+                 average: Optional[str] = 'both',
                  collect_device: str = 'cpu',
                  prefix: Optional[str] = None) -> None:
 
@@ -157,10 +157,9 @@ class MultiLabelMetric(BaseMetric):
         self.average = average
 
         for item in items:
-            assert item in ['precision', 'recall', 'f1-score', 'support'], \
-                f'The metric {item} is not supported by `SingleLabelMetric`,' \
-                ' please choose from "precision", "recall", "f1-score" and ' \
-                '"support".'
+            assert item in ['precision', 'recall', 'f1-score'], \
+                f'The metric {item} is not supported by `MultiLabelMetric`,' \
+                ' please choose from "precision", "recall" and "f1-score".'
         self.items = tuple(items)
 
         super().__init__(collect_device=collect_device, prefix=prefix)
@@ -219,17 +218,26 @@ class MultiLabelMetric(BaseMetric):
             thr=self.thr,
             topk=self.topk)
 
-        def pack_results(precision, recall, f1_score, support):
-            single_metrics = {}
-            if 'precision' in self.items:
-                single_metrics['precision'] = precision
-            if 'recall' in self.items:
-                single_metrics['recall'] = recall
-            if 'f1-score' in self.items:
-                single_metrics['f1-score'] = f1_score
-            if 'support' in self.items:
-                single_metrics['support'] = support
-            return single_metrics
+        def pack_results(*args):
+            multi_label_metrics = {}
+            if self.average == 'both':
+                metric_names = ('CP', 'CR', 'CF1', 'OP', 'OR', 'OF1')
+            elif self.average == 'macro':
+                metric_names = ('CP', 'CR', 'CF1')
+            elif self.average == 'micro':
+                metric_names = ('OP', 'OR', 'OF1')
+            else:
+                metric_names = ('precision', 'recall', 'f1-score')
+
+            for i, (name, value) in enumerate(zip(metric_names, args)):
+                if 'precision' in self.items and i % 3 == 0:
+                    multi_label_metrics[name] = value
+                if 'recall' in self.items and i % 3 == 1:
+                    multi_label_metrics[name] = value
+                if 'f1-score' in self.items and i % 3 == 2:
+                    multi_label_metrics[name] = value
+
+            return multi_label_metrics
 
         if self.thr:
             suffix = '' if self.thr == 0.5 else f'_thr-{self.thr:.2f}'
@@ -243,10 +251,8 @@ class MultiLabelMetric(BaseMetric):
         for k, v in metrics.items():
             if self.average is None:
                 result_metrics[k + '_classwise'] = v.detach().cpu().tolist()
-            elif self.average == 'macro':
-                result_metrics[k] = v.item()
             else:
-                result_metrics[k + f'_{self.average}'] = v.item()
+                result_metrics[k] = v.item()
         return result_metrics
 
     @staticmethod
@@ -255,7 +261,7 @@ class MultiLabelMetric(BaseMetric):
         target: Union[torch.Tensor, np.ndarray, Sequence],
         pred_indices: bool = False,
         target_indices: bool = False,
-        average: Optional[str] = 'macro',
+        average: Optional[str] = 'both',
         thr: Optional[float] = None,
         topk: Optional[int] = None,
         num_classes: Optional[int] = None
@@ -285,9 +291,11 @@ class MultiLabelMetric(BaseMetric):
                     - `"micro"`: Calculate metrics globally by counting the
                       total true positives, false negatives and false
                       positives.
+                    - `"both"`: Calculate metrics both in "macro" and "micro"
+                      modes.
                     - `None`: Return scores of all categories.
 
-                Defaults to "macro".
+                Defaults to "both".
             thr (float, optional): Predictions with scores under the thresholds
                 are considered as negative. Defaults to None.
             topk (int, optional): Predictions with the k-th highest scores are
@@ -308,7 +316,7 @@ class MultiLabelMetric(BaseMetric):
             positive predictions. If neither is set, use ``thr=0.5`` as
             default.
         """
-        average_options = ['micro', 'macro', None]
+        average_options = ['micro', 'macro', 'both', None]
         assert average in average_options, 'Invalid `average` argument, ' \
             f'please specicy from {average_options}.'
 
@@ -363,7 +371,24 @@ class MultiLabelMetric(BaseMetric):
             pos_inds = torch.zeros_like(pred).scatter_(1, topk_indices, 1)
             pos_inds = pos_inds.long()
 
-        return _precision_recall_f1_support(pos_inds, target, average)
+        if average is None:
+            return _precision_recall_f1_support(pos_inds, target, average)[:3]
+
+        result = ()
+        if average in ('macro', 'both'):
+            CP, CR, *_ = _precision_recall_f1_support(pos_inds, target,
+                                                      'macro')
+            # here calculate the CF1 by using CP and CR, which is widely used
+            # in most papers. It is different with `sklearn.metrics.f1_score(average="macro")`, # noqa
+            # which equals to mean(classwise-F1-score_list).
+            CF1 = 2 * CP * CR / (CP + CR + torch.finfo(torch.float32).eps)
+            result += (CP, CR, CF1)
+        if average in ('micro', 'both'):
+            OP, OR, OF1, _, = _precision_recall_f1_support(
+                pos_inds, target, 'micro')
+            result += (OP, OR, OF1)
+
+        return result
 
 
 def _average_precision(pred: torch.Tensor,
@@ -407,7 +432,7 @@ def _average_precision(pred: torch.Tensor,
     total_pos = tps[-1].item()  # the last of tensor may change later
 
     # Calculate cumulative tp&fp(pred_poss) case numbers
-    pred_pos_nums = torch.arange(1, len(sorted_target) + 1).to(pred.device)
+    pred_pos_nums = torch.arange(1, len(sorted_target) + 1)
     pred_pos_nums[pred_pos_nums < eps] = eps
 
     tps[torch.logical_not(pos_inds)] = 0
@@ -444,7 +469,7 @@ class AveragePrecision(BaseMetric):
 
     Examples:
         >>> import torch
-        >>> from mmcls.evaluation import AveragePrecision
+        >>> from mmcls.metrics import AveragePrecision
         >>> # --------- The Basic Usage for one-hot pred scores ---------
         >>> y_pred = torch.Tensor([[0.9, 0.8, 0.3, 0.2],
         ...                        [0.1, 0.2, 0.2, 0.1],
