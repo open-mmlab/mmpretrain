@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 import torch
-from mmcv.utils.parrots_wrapper import _BatchNorm
+from mmengine.utils.parrots_wrapper import _BatchNorm
 
 from mmcls.models.backbones import VGG
 

@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch.nn as nn
 from mmcv.cnn import ConvModule
-from mmcv.utils.parrots_wrapper import _BatchNorm
+from mmengine.utils.parrots_wrapper import _BatchNorm
 
 from mmcls.registry import MODELS
 from .base_backbone import BaseBackbone

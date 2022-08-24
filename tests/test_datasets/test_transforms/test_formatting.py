@@ -3,52 +3,130 @@ import copy
 import os.path as osp
 import unittest
 
+import mmcv
 import numpy as np
 import torch
 from mmengine.data import LabelData
+from PIL import Image
 
-from mmcls.datasets.transforms import PackClsInputs
+from mmcls.registry import TRANSFORMS
 from mmcls.structures import ClsDataSample
+from mmcls.utils import register_all_modules
+
+register_all_modules()
 
 
 class TestPackClsInputs(unittest.TestCase):
 
-    def setUp(self):
-        """Setup the model and optimizer which are used in every test method.
-
-        TestCase calls functions in this order: setUp() -> testMethod() ->
-        tearDown() -> cleanUp()
-        """
-        data_prefix = osp.join(osp.dirname(__file__), '../../data')
-        img_path = osp.join(data_prefix, 'color.jpg')
-        rng = np.random.RandomState(0)
-        self.results1 = {
+    def test_transform(self):
+        img_path = osp.join(osp.dirname(__file__), '../../data/color.jpg')
+        data = {
             'sample_idx': 1,
             'img_path': img_path,
-            'ori_height': 300,
-            'ori_width': 400,
-            'height': 600,
-            'width': 800,
-            'scale_factor': 2.0,
+            'ori_shape': (300, 400),
+            'img_shape': (300, 400),
+            'scale_factor': 1.0,
             'flip': False,
-            'img': rng.rand(300, 400),
-            'gt_label': rng.randint(3, )
+            'img': mmcv.imread(img_path),
+            'gt_label': 2,
         }
-        self.meta_keys = ('sample_idx', 'img_path', 'ori_shape', 'img_shape',
-                          'scale_factor', 'flip')
 
-    def test_transform(self):
-        transform = PackClsInputs(meta_keys=self.meta_keys)
-        results = transform(copy.deepcopy(self.results1))
+        cfg = dict(type='PackClsInputs')
+        transform = TRANSFORMS.build(cfg)
+        results = transform(copy.deepcopy(data))
         self.assertIn('inputs', results)
         self.assertIsInstance(results['inputs'], torch.Tensor)
         self.assertIn('data_sample', results)
         self.assertIsInstance(results['data_sample'], ClsDataSample)
+        self.assertIn('flip', results['data_sample'].metainfo_keys())
+        self.assertIsInstance(results['data_sample'].gt_label, LabelData)
 
-        data_sample = results['data_sample']
-        self.assertIsInstance(data_sample.gt_label, LabelData)
+        # Test grayscale image
+        data['img'] = data['img'].mean(-1)
+        results = transform(copy.deepcopy(data))
+        self.assertIn('inputs', results)
+        self.assertIsInstance(results['inputs'], torch.Tensor)
+        self.assertEqual(results['inputs'].shape, (1, 300, 400))
+
+        # Test without `img` and `gt_label`
+        del data['img']
+        del data['gt_label']
+        with self.assertWarnsRegex(Warning, 'Cannot get "img"'):
+            results = transform(copy.deepcopy(data))
+            self.assertNotIn('gt_label', results['data_sample'])
 
     def test_repr(self):
-        transform = PackClsInputs(meta_keys=self.meta_keys)
+        cfg = dict(type='PackClsInputs', meta_keys=['flip', 'img_shape'])
+        transform = TRANSFORMS.build(cfg)
         self.assertEqual(
-            repr(transform), f'PackClsInputs(meta_keys={self.meta_keys})')
+            repr(transform), "PackClsInputs(meta_keys=['flip', 'img_shape'])")
+
+
+class TestTranspose(unittest.TestCase):
+
+    def test_transform(self):
+        cfg = dict(type='Transpose', keys=['img'], order=[2, 0, 1])
+        transform = TRANSFORMS.build(cfg)
+
+        data = {'img': np.random.randint(0, 256, (224, 224, 3), dtype='uint8')}
+
+        results = transform(copy.deepcopy(data))
+        self.assertEqual(results['img'].shape, (3, 224, 224))
+
+    def test_repr(self):
+        cfg = dict(type='Transpose', keys=['img'], order=(2, 0, 1))
+        transform = TRANSFORMS.build(cfg)
+        self.assertEqual(
+            repr(transform), "Transpose(keys=['img'], order=(2, 0, 1))")
+
+
+class TestToPIL(unittest.TestCase):
+
+    def test_transform(self):
+        cfg = dict(type='ToPIL')
+        transform = TRANSFORMS.build(cfg)
+
+        data = {'img': np.random.randint(0, 256, (224, 224, 3), dtype='uint8')}
+
+        results = transform(copy.deepcopy(data))
+        self.assertIsInstance(results['img'], Image.Image)
+
+
+class TestToNumpy(unittest.TestCase):
+
+    def test_transform(self):
+        img_path = osp.join(osp.dirname(__file__), '../../data/color.jpg')
+        data = {
+            'tensor': torch.tensor([1, 2, 3]),
+            'Image': Image.open(img_path),
+        }
+
+        cfg = dict(type='ToNumpy', keys=['tensor', 'Image'], dtype='uint8')
+        transform = TRANSFORMS.build(cfg)
+        results = transform(copy.deepcopy(data))
+        self.assertIsInstance(results['tensor'], np.ndarray)
+        self.assertEqual(results['tensor'].dtype, 'uint8')
+        self.assertIsInstance(results['Image'], np.ndarray)
+        self.assertEqual(results['Image'].dtype, 'uint8')
+
+    def test_repr(self):
+        cfg = dict(type='ToNumpy', keys=['img'], dtype='uint8')
+        transform = TRANSFORMS.build(cfg)
+        self.assertEqual(repr(transform), "ToNumpy(keys=['img'], dtype=uint8)")
+
+
+class TestCollect(unittest.TestCase):
+
+    def test_transform(self):
+        data = {'img': [1, 2, 3], 'gt_label': 1}
+
+        cfg = dict(type='Collect', keys=['img'])
+        transform = TRANSFORMS.build(cfg)
+        results = transform(copy.deepcopy(data))
+        self.assertIn('img', results)
+        self.assertNotIn('gt_label', results)
+
+    def test_repr(self):
+        cfg = dict(type='Collect', keys=['img'])
+        transform = TRANSFORMS.build(cfg)
+        self.assertEqual(repr(transform), "Collect(keys=['img'])")

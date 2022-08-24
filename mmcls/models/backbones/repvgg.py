@@ -3,8 +3,8 @@ import torch
 import torch.nn.functional as F
 import torch.utils.checkpoint as cp
 from mmcv.cnn import build_activation_layer, build_conv_layer, build_norm_layer
-from mmcv.utils.parrots_wrapper import _BatchNorm
 from mmengine.model import BaseModule, Sequential
+from mmengine.utils.parrots_wrapper import _BatchNorm
 
 from mmcls.registry import MODELS
 from ..utils.se_layer import SELayer
