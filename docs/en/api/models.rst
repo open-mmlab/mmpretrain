@@ -206,4 +206,3 @@ to_ntuple
 is_tracing
 ^^^^^^^^^^
 .. autofunction:: is_tracing
-

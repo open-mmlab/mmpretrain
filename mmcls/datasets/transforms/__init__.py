@@ -5,9 +5,8 @@ from .auto_augment import (AutoAugment, AutoContrast, Brightness,
                            Solarize, SolarizeAdd, Translate)
 from .formatting import Collect, PackClsInputs, ToNumpy, ToPIL, Transpose
 from .processing import (Albumentations, ColorJitter, EfficientNetCenterCrop,
-                         EfficientNetRandomCrop, Lighting, Normalize, Pad,
-                         RandomCrop, RandomErasing, RandomGrayscale,
-                         RandomResizedCrop, ResizeEdge)
+                         EfficientNetRandomCrop, Lighting, RandomCrop,
+                         RandomErasing, RandomResizedCrop, ResizeEdge)
 
 __all__ = [
     'ToPIL', 'ToNumpy', 'Transpose', 'Collect', 'RandomCrop',
