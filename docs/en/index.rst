@@ -9,22 +9,33 @@ You can switch between Chinese and English documentation in the lower-left corne
    :maxdepth: 1
    :caption: Get Started
 
-   install.md
    getting_started.md
-
 
 .. toctree::
    :maxdepth: 1
-   :caption: Tutorials
+   :caption: User Guides
 
-   tutorials/config.md
-   tutorials/finetune.md
-   tutorials/new_dataset.md
-   tutorials/data_pipeline.md
-   tutorials/new_modules.md
-   tutorials/schedule.md
-   tutorials/runtime.md
+   user_guides/inference.md
+   user_guides/dataset_prepare.md
+   user_guides/train_test.md
+   user_guides/config.md
+   user_guides/finetune.md
+   user_guides/analysis.md
+   user_guides/visualization.md
+   user_guides/useful_tools.md
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Advanced Guides
+
+   advanced_guides/datasets.md
+   advanced_guides/pipeline.md
+   advanced_guides/modules.md
+   advanced_guides/schedule.md
+   advanced_guides/hook.md
+   advanced_guides/evaluation.md
+   advanced_guides/data_flow.md
+.. advanced_guides/convention.md
 
 .. toctree::
    :maxdepth: 1
@@ -35,26 +46,11 @@ You can switch between Chinese and English documentation in the lower-left corne
    model_zoo.md
    papers/*
 
-
 .. toctree::
    :maxdepth: 1
-   :caption: Useful Tools and Scripts
+   :caption: Migration
 
-   tools/pytorch2onnx.md
-   tools/onnx2tensorrt.md
-   tools/pytorch2torchscript.md
-   tools/model_serving.md
-   tools/visualization.md
-   tools/analysis.md
-   tools/miscellaneous.md
-
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Community
-
-   community/CONTRIBUTING.md
-
+   migration.md
 
 .. toctree::
    :maxdepth: 1
@@ -62,27 +58,28 @@ You can switch between Chinese and English documentation in the lower-left corne
 
    mmcls.apis <api/apis>
    mmcls.engine <api/engine>
-   mmcls.models <api/models>
-   mmcls.models.utils <api/models.utils>
    mmcls.datasets <api/datasets>
-   Data Transformations <api/transforms>
-   Batch Augmentation <api/models.utils.augment>
+   Data Transform <api/transforms>
+   mmcls.models <api/models>
+   mmcls.structures <api/structures>
+   mmcls.visualization <api/visualization>
+   mmcls.evaluation <api/evaluation>
    mmcls.utils <api/utils>
-
 
 .. toctree::
    :maxdepth: 1
    :caption: Notes
 
-   changelog.md
-   compatibility.md
-   faq.md
+   notes/contribution_guide.md
+   notes/projects.md
+   notes/changelog.md
+   notes/faq.md
 
 .. toctree::
-   :caption: Language Switch
+   :caption: Switch Language
 
-   English <https://mmclassification.readthedocs.io/en/latest/>
-   简体中文 <https://mmclassification.readthedocs.io/zh_CN/latest/>
+   English <https://mmclassification.readthedocs.io/en/1.x/>
+   简体中文 <https://mmclassification.readthedocs.io/zh_CN/1.x/>
 
 
 Indices and tables

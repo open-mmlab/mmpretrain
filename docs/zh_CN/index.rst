@@ -9,22 +9,33 @@ You can switch between Chinese and English documentation in the lower-left corne
    :maxdepth: 1
    :caption: 开始你的第一步
 
-   install.md
    getting_started.md
-
 
 .. toctree::
    :maxdepth: 1
    :caption: 教程
 
-   tutorials/config.md
-   tutorials/finetune.md
-   tutorials/new_dataset.md
-   tutorials/data_pipeline.md
-   tutorials/new_modules.md
-   tutorials/schedule.md
-   tutorials/runtime.md
+   user_guides/inference.md
+   user_guides/dataset_prepare.md
+   user_guides/train_test.md
+   user_guides/config.md
+   user_guides/finetune.md
+   user_guides/analysis.md
+   user_guides/visualization.md
+   user_guides/useful_tools.md
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Advanced Guides
+
+   advanced_guides/datasets.md
+   advanced_guides/pipeline.md
+   advanced_guides/modules.md
+   advanced_guides/schedule.md
+   advanced_guides/hook.md
+   advanced_guides/evaluation.md
+   advanced_guides/data_flow.md
+.. advanced_guides/convention.md
 
 .. toctree::
    :maxdepth: 1
@@ -35,53 +46,40 @@ You can switch between Chinese and English documentation in the lower-left corne
    model_zoo.md
    papers/*
 
+.. toctree::
+   :maxdepth: 1
+   :caption: 迁移指南
+
+   migration.md
 
 .. toctree::
    :maxdepth: 1
-   :caption: 实用工具
-
-   tools/pytorch2onnx.md
-   tools/onnx2tensorrt.md
-   tools/pytorch2torchscript.md
-   tools/model_serving.md
-   tools/visualization.md
-   tools/analysis.md
-   tools/miscellaneous.md
-
-
-.. toctree::
-   :maxdepth: 1
-   :caption: 社区
-
-   community/CONTRIBUTING.md
-
-
-.. toctree::
    :caption: API 参考文档
 
    mmcls.apis <api/apis>
-   mmcls.models <api/models>
-   mmcls.models.utils <api/models.utils>
+   mmcls.engine <api/engine>
    mmcls.datasets <api/datasets>
-   数据转换 <api/transforms>
-   批数据增强 <api/models.utils.augment>
+   数据变换 <api/transforms>
+   mmcls.models <api/models>
+   mmcls.structures <api/structures>
+   mmcls.visualization <api/visualization>
+   mmcls.evaluation <api/evaluation>
    mmcls.utils <api/utils>
-
 
 .. toctree::
    :maxdepth: 1
    :caption: 其他说明
 
-   changelog.md
-   compatibility.md
-   faq.md
-
+   notes/contribution_guide.md
+   notes/projects.md
+   notes/changelog.md
+   notes/faq.md
 
 .. toctree::
-   :caption: 语言切换
+   :caption: 切换语言
 
-   English <https://mmclassification.readthedocs.io/en/latest/>
-   简体中文 <https://mmclassification.readthedocs.io/zh_CN/latest/>
+   English <https://mmclassification.readthedocs.io/en/1.x/>
+   简体中文 <https://mmclassification.readthedocs.io/zh_CN/1.x/>
 
 
 索引与表格
