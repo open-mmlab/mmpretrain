@@ -95,15 +95,11 @@ class MultiLabelMetric(BaseMetric):
         >>> # ------------------- Use with Evalutor -------------------
         >>> from mmcls.structures import ClsDataSample
         >>> from mmengine.evaluator import Evaluator
-        >>> # The `data_batch` won't be used in this case, just use a fake.
-        >>> data_batch = [
-        ...     {'inputs': None,  'data_sample': ClsDataSample()}
-        ...     for i in range(1000)]
-        >>> pred = [
-        ...     ClsDataSample().set_pred_score(torch.rand((5, ))).set_gt_score(torch.randint(2, size=(5, )))
-        ...     for i in range(1000)]
-        >>> evaluator = Evaluator(metrics=MultiLabelMetric(thrs=0.5))
-        >>> evaluator.process(data_batch, pred)
+        >>> data_sampels = [
+        ...     ClsDataSample().set_pred_score(pred).set_gt_score(gt)
+        ...     for pred, gt in zip(torch.rand(1000, 5), torch.randint(0, 2, (1000, 5)))]
+        >>> evaluator = Evaluator(metrics=MultiLabelMetric(thr=0.5))
+        >>> evaluator.process(data_sampels)
         >>> evaluator.evaluate(1000)
         {
             'multi-label/precision': 50.72898037055408,
@@ -112,25 +108,12 @@ class MultiLabelMetric(BaseMetric):
         }
         >>> # Evaluate on each class by using topk strategy
         >>> evaluator = Evaluator(metrics=MultiLabelMetric(topk=1, average=None))
-        >>> evaluator.process(data_batch, pred)
+        >>> evaluator.process(data_sampels)
         >>> evaluator.evaluate(1000)
         {
             'multi-label/precision_top1_classwise': [48.22, 50.54, 50.99, 44.18, 52.5],
             'multi-label/recall_top1_classwise': [18.92, 19.22, 19.92, 20.0, 20.27],
             'multi-label/f1-score_top1_classwise': [27.18, 27.85, 28.65, 27.54, 29.25]
-        }
-        >>> # Evaluate by label data got from head
-        >>> pred = [
-        ...     ClsDataSample().set_pred_score(torch.rand((5, ))).set_pred_label(
-        ...         torch.randint(2, size=(5, ))).set_gt_score(torch.randint(2, size=(5, )))
-        ...     for i in range(1000)]
-        >>> evaluator = Evaluator(metrics=MultiLabelMetric())
-        >>> evaluator.process(data_batch, pred)
-        >>> evaluator.evaluate(1000)
-        {
-            'multi-label/precision': 20.28921606216292,
-            'multi-label/recall': 38.628095855722314,
-            'multi-label/f1-score': 26.603530359627918
         }
     """  # noqa: E501
     default_prefix: Optional[str] = 'multi-label'
@@ -165,20 +148,20 @@ class MultiLabelMetric(BaseMetric):
 
         super().__init__(collect_device=collect_device, prefix=prefix)
 
-    def process(self, data_batch: Sequence[dict], predictions: Sequence[dict]):
-        """Process one batch of data and predictions.
+    def process(self, data_batch, data_samples: Sequence[dict]):
+        """Process one batch of data samples.
 
         The processed results should be stored in ``self.results``, which will
         be used to computed the metrics when all batches have been processed.
 
         Args:
-            data_batch (Sequence[dict]): A batch of data from the dataloader.
-            predictions (Sequence[dict]): A batch of outputs from the model.
+            data_batch: A batch of data from the dataloader.
+            data_samples (Sequence[dict]): A batch of outputs from the model.
         """
-        for pred in predictions:
+        for data_sample in data_samples:
             result = dict()
-            pred_label = pred['pred_label']
-            gt_label = pred['gt_label']
+            pred_label = data_sample['pred_label']
+            gt_label = data_sample['gt_label']
 
             result['pred_score'] = pred_label['score'].clone()
             num_classes = result['pred_score'].size()[-1]
@@ -459,21 +442,17 @@ class AveragePrecision(BaseMetric):
         >>> # ------------------- Use with Evalutor -------------------
         >>> from mmcls.structures import ClsDataSample
         >>> from mmengine.evaluator import Evaluator
-        >>> # The `data_batch` won't be used in this case, just use a fake.
-        >>> data_batch = [
-        ...     {'inputs': None, 'data_sample': ClsDataSample()}
-        ...     for i in range(4)]
-        >>> pred = [
+        >>> data_samples = [
         ...     ClsDataSample().set_pred_score(i).set_gt_score(j)
         ...     for i, j in zip(y_pred, y_true)
         ... ]
         >>> evaluator = Evaluator(metrics=AveragePrecision())
-        >>> evaluator.process(data_batch, pred)
+        >>> evaluator.process(data_samples)
         >>> evaluator.evaluate(5)
         {'multi-label/mAP': 70.83333587646484}
         >>> # Evaluate on each class
         >>> evaluator = Evaluator(metrics=AveragePrecision(average=None))
-        >>> evaluator.process(data_batch, pred)
+        >>> evaluator.process(data_samples)
         >>> evaluator.evaluate(5)
         {'multi-label/AP_classwise': [100., 83.33, 100., 0.]}
     """
@@ -486,21 +465,21 @@ class AveragePrecision(BaseMetric):
         super().__init__(collect_device=collect_device, prefix=prefix)
         self.average = average
 
-    def process(self, data_batch: Sequence[dict], predictions: Sequence[dict]):
-        """Process one batch of data and predictions.
+    def process(self, data_batch, data_samples: Sequence[dict]):
+        """Process one batch of data samples.
 
         The processed results should be stored in ``self.results``, which will
         be used to computed the metrics when all batches have been processed.
 
         Args:
-            data_batch (Sequence[dict]): A batch of data from the dataloader.
-            predictions (Sequence[dict]): A batch of outputs from the model.
+            data_batch: A batch of data from the dataloader.
+            data_samples (Sequence[dict]): A batch of outputs from the model.
         """
 
-        for pred in predictions:
+        for data_sample in data_samples:
             result = dict()
-            pred_label = pred['pred_label']
-            gt_label = pred['gt_label']
+            pred_label = data_sample['pred_label']
+            gt_label = data_sample['gt_label']
 
             result['pred_score'] = pred_label['score']
             num_classes = result['pred_score'].size()[-1]

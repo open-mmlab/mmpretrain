@@ -43,7 +43,7 @@ class BaseClassifier(BaseModel, metaclass=ABCMeta):
 
     @abstractmethod
     def forward(self,
-                batch_inputs: torch.Tensor,
+                inputs: torch.Tensor,
                 data_samples: Optional[List[BaseDataElement]] = None,
                 mode: str = 'tensor'):
         """The unified entry for a forward process in both training and test.
@@ -61,8 +61,8 @@ class BaseClassifier(BaseModel, metaclass=ABCMeta):
         optimizer updating, which are done in the :meth:`train_step`.
 
         Args:
-            batch_inputs (torch.Tensor): The input tensor with shape
-                (N, C, ...) in general.
+            inputs (torch.Tensor): The input tensor with shape (N, C, ...)
+                in general.
             data_samples (List[BaseDataElement], optional): The annotation
                 data of every samples. It's required if ``mode="loss"``.
                 Defaults to None.
@@ -78,34 +78,31 @@ class BaseClassifier(BaseModel, metaclass=ABCMeta):
         """
         pass
 
-    def extract_feat(self, batch_inputs: torch.Tensor):
+    def extract_feat(self, inputs: torch.Tensor):
         """Extract features from the input tensor with shape (N, C, ...).
 
         The sub-classes are recommended to implement this method to extract
         features from backbone and neck.
 
         Args:
-            batch_inputs (Tensor): A batch of inputs. The shape of it should be
+            inputs (Tensor): A batch of inputs. The shape of it should be
                 ``(num_samples, num_channels, *img_shape)``.
         """
         raise NotImplementedError
 
-    def extract_feats(self, multi_batch_inputs: Sequence[torch.Tensor],
+    def extract_feats(self, multi_inputs: Sequence[torch.Tensor],
                       **kwargs) -> list:
         """Extract features from a sequence of input tensor.
 
         Args:
-            multi_batch_inputs (Sequence[torch.Tensor]): A sequence of input
+            multi_inputs (Sequence[torch.Tensor]): A sequence of input
                 tensor. It can be used in augmented inference.
             **kwargs: Other keyword arguments accepted by :meth:`extract_feat`.
 
         Returns:
             list: Features of every input tensor.
         """
-        assert isinstance(multi_batch_inputs, Sequence), \
+        assert isinstance(multi_inputs, Sequence), \
             '`extract_feats` is used for a sequence of inputs tensor. If you '\
             'want to extract on single inputs tensor, use `extract_feat`.'
-        return [
-            self.extract_feat(batch_input, **kwargs)
-            for batch_input in multi_batch_inputs
-        ]
+        return [self.extract_feat(inputs, **kwargs) for inputs in multi_inputs]

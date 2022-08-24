@@ -54,21 +54,22 @@ class VisualizationHook(Hook):
 
     def _draw_samples(self,
                       batch_idx: int,
-                      data_batch: Sequence[dict],
-                      outputs: Sequence[ClsDataSample],
+                      data_batch: dict,
+                      data_samples: Sequence[ClsDataSample],
                       step: int = 0) -> None:
         """Visualize every ``self.interval`` samples from a data batch.
 
         Args:
             batch_idx (int): The index of the current batch in the val loop.
-            data_batch (Sequence[dict]): Data from dataloader.
-            outputs (Sequence[:obj:`DetDataSample`]): Outputs from model.
+            data_batch (dict): Data from dataloader.
+            outputs (Sequence[:obj:`ClsDataSample`]): Outputs from model.
             step (int): Global step value to record. Defaults to 0.
         """
         if self.enable is False:
             return
 
-        batch_size = len(outputs)
+        batch_size = len(data_samples)
+        images = data_batch['inputs']
         start_idx = batch_size * batch_idx
         end_idx = start_idx + batch_size
 
@@ -76,10 +77,10 @@ class VisualizationHook(Hook):
         first_sample_id = math.ceil(start_idx / self.interval) * self.interval
 
         for sample_id in range(first_sample_id, end_idx, self.interval):
-            image = data_batch[sample_id - start_idx]['inputs']
+            image = images[sample_id - start_idx]
             image = image.permute(1, 2, 0).numpy().astype('uint8')
 
-            data_sample = outputs[sample_id - start_idx]
+            data_sample = data_samples[sample_id - start_idx]
             if 'img_path' in data_sample:
                 # osp.basename works on different platforms even file clients.
                 sample_name = osp.basename(data_sample.get('img_path'))
@@ -99,15 +100,14 @@ class VisualizationHook(Hook):
                 **self.draw_args,
             )
 
-    def after_val_iter(self, runner: Runner, batch_idx: int,
-                       data_batch: Sequence[dict],
+    def after_val_iter(self, runner: Runner, batch_idx: int, data_batch: dict,
                        outputs: Sequence[ClsDataSample]) -> None:
         """Visualize every ``self.interval`` samples during validation.
 
         Args:
             runner (:obj:`Runner`): The runner of the validation process.
             batch_idx (int): The index of the current batch in the val loop.
-            data_batch (Sequence[dict]): Data from dataloader.
+            data_batch (dict): Data from dataloader.
             outputs (Sequence[:obj:`ClsDataSample`]): Outputs from model.
         """
         if isinstance(runner.train_loop, EpochBasedTrainLoop):
@@ -117,15 +117,14 @@ class VisualizationHook(Hook):
 
         self._draw_samples(batch_idx, data_batch, outputs, step=step)
 
-    def after_test_iter(self, runner: Runner, batch_idx: int,
-                        data_batch: Sequence[dict],
+    def after_test_iter(self, runner: Runner, batch_idx: int, data_batch: dict,
                         outputs: Sequence[ClsDataSample]) -> None:
         """Visualize every ``self.interval`` samples during test.
 
         Args:
             runner (:obj:`Runner`): The runner of the testing process.
             batch_idx (int): The index of the current batch in the test loop.
-            data_batch (Sequence[dict]): Data from dataloader.
+            data_batch (dict): Data from dataloader.
             outputs (Sequence[:obj:`DetDataSample`]): Outputs from model.
         """
         self._draw_samples(batch_idx, data_batch, outputs, step=0)

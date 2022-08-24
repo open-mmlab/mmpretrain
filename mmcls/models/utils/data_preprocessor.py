@@ -1,8 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import math
 from numbers import Number
-from typing import List, Optional, Sequence, Tuple
+from typing import List, Optional, Sequence
 
 import torch
+import torch.nn.functional as F
 from mmengine.model import BaseDataPreprocessor, stack_batch
 
 from mmcls.registry import MODELS
@@ -74,39 +76,69 @@ class ClsDataPreprocessor(BaseDataPreprocessor):
         else:
             self.batch_augments = None
 
-    def forward(self,
-                data: Sequence[dict],
-                training: bool = False) -> Tuple[torch.Tensor, list]:
+    def forward(self, data: dict, training: bool = False) -> dict:
         """Perform normalization, padding, bgr2rgb conversion and batch
         augmentation based on ``BaseDataPreprocessor``.
 
         Args:
-            data (Sequence[dict]): data sampled from dataloader.
+            data (dict): data sampled from dataloader.
             training (bool): Whether to enable training time augmentation.
 
         Returns:
-            Tuple[torch.Tensor, list]: Data in the same format as the model
-            input.
+            dict: Data in the same format as the model input.
         """
-        inputs, batch_data_samples = self.collate_data(data)
+        data = self.cast_data(data)
+        inputs = data['inputs']
 
-        # --- Pad and stack --
-        batch_inputs = stack_batch(inputs, self.pad_size_divisor,
-                                   self.pad_value)
+        if isinstance(inputs, torch.Tensor):
+            # The branch if use `default_collate` in dataloader.
 
-        # ------ To RGB ------
-        if self.to_rgb and batch_inputs.size(1) == 3:
-            batch_inputs = batch_inputs[:, [2, 1, 0], ...]
+            # ------ To RGB ------
+            if self.to_rgb and inputs.size(1) == 3:
+                inputs = inputs.flip(1)
 
-        # -- Normalization ---
-        if self._enable_normalize:
-            batch_inputs = (batch_inputs - self.mean) / self.std
+            # -- Normalization ---
+            inputs = inputs.float()
+            if self._enable_normalize:
+                inputs = (inputs - self.mean) / self.std
+
+            # ------ Padding -----
+            if self.pad_size_divisor > 1:
+                h, w = inputs.shape[-2:]
+
+                target_h = math.ceil(
+                    h / self.pad_size_divisor) * self.pad_size_divisor
+                target_w = math.ceil(
+                    w / self.pad_size_divisor) * self.pad_size_divisor
+                pad_h = target_h - h
+                pad_w = target_w - w
+                inputs = F.pad(inputs, (0, pad_w, 0, pad_h), 'constant',
+                               self.pad_value)
         else:
-            batch_inputs = batch_inputs.to(torch.float32)
+            # The branch if use `pseudo_collate` in dataloader.
+
+            processed_inputs = []
+            for input_ in inputs:
+                # ------ To RGB ------
+                if self.to_rgb and input_.size(0) == 3:
+                    input_ = input_.flip(0)
+
+                # -- Normalization ---
+                input_ = input_.float()
+                if self._enable_normalize:
+                    input_ = (input_ - self.mean) / self.std
+
+                processed_inputs.append(input_)
+            # Combine padding and stack
+            inputs = stack_batch(processed_inputs, self.pad_size_divisor,
+                                 self.pad_value)
 
         # ----- Batch Aug ----
         if training and self.batch_augments is not None:
-            batch_inputs, batch_data_samples = self.batch_augments(
-                batch_inputs, batch_data_samples)
+            data_samples = data['data_samples']
+            inputs, data_samples = self.batch_augments(inputs, data_samples)
+            data['data_samples'] = data_samples
 
-        return batch_inputs, batch_data_samples
+        data['inputs'] = inputs
+
+        return data

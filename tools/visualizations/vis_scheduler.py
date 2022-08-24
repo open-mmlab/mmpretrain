@@ -24,7 +24,7 @@ class SimpleModel(BaseModel):
         self.data_preprocessor = nn.Identity()
         self.conv = nn.Conv2d(1, 1, 1)
 
-    def forward(self, batch_inputs, data_samples, mode='tensor'):
+    def forward(self, inputs, data_samples, mode='tensor'):
         pass
 
     def train_step(self, data, optim_wrapper):
