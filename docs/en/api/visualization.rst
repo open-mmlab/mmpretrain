@@ -1,19 +1,19 @@
 .. role:: hidden
     :class: hidden-section
 
-mmcls.structures
+mmcls.visualization
 ===================================
 
-This package includes some basic MMClassification data structures.
+This package includes some visualizer components for classification tasks.
 
-.. contents:: mmcls.structures
-   :depth: 2
+.. contents:: mmcls.visualization
+   :depth: 1
    :local:
    :backlinks: top
 
-.. currentmodule:: mmcls.structures
+.. currentmodule:: mmcls.visualization
 
-Data_structures
+Visualization
 ------------------
 
 .. autosummary::
@@ -21,4 +21,4 @@ Data_structures
    :nosignatures:
    :template: classtemplate.rst
 
-.. autoclass:: ClsDataSample
+.. autoclass:: ClsVisualizer

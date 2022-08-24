@@ -6,6 +6,11 @@ mmcls.datasets
 
 The ``datasets`` package contains several usual datasets for image classification tasks and some dataset wrappers.
 
+.. contents:: mmcls.datasets
+   :depth: 2
+   :local:
+   :backlinks: top
+
 .. currentmodule:: mmcls.datasets
 
 Custom Dataset
@@ -39,6 +44,11 @@ VOC
 
 .. autoclass:: VOC
 
+CUB
+---
+
+.. autoclass:: CUB
+
 Base classes
 ------------
 
@@ -49,8 +59,10 @@ Base classes
 Dataset Wrappers
 ----------------
 
-.. autoclass:: ConcatDataset
+ConcatDataset
 
-.. autoclass:: RepeatDataset
+RepeatDataset
 
-.. autoclass:: ClassBalancedDataset
+ClassBalancedDataset
+
+.. autoclass:: KFoldDataset

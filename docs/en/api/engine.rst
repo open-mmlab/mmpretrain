@@ -1,15 +1,15 @@
 .. role:: hidden
     :class: hidden-section
 
-mmcls.core
+mmcls.engine
 ===================================
 
 This package includes some runtime components. These components are useful in
-classification tasks but not supported by MMCV yet.
+classification tasks but not supported by MMEngine yet.
 
 .. note::
 
-   Some components may be moved to MMCV in the future.
+   Some components may be moved to MMEngine in the future.
 
 .. contents:: mmcls.engine
    :depth: 2
@@ -17,25 +17,6 @@ classification tasks but not supported by MMCV yet.
    :backlinks: top
 
 .. currentmodule:: mmcls.engine
-
-Evaluation
-------------------
-
-Evaluation metrics calculation functions
-
-.. autosummary::
-   :toctree: generated
-   :nosignatures:
-
-   precision
-   recall
-   f1_score
-   precision_recall_f1
-   average_precision
-   mAP
-   support
-   average_performance
-   calculate_confusion_matrix
 
 Hook
 ------------------
@@ -45,11 +26,9 @@ Hook
    :nosignatures:
    :template: classtemplate.rst
 
-   ClassNumCheckHook
-   PreciseBNHook
-   CosineAnnealingCooldownLrUpdaterHook
-   MMClsWandbHook
-
+.. autoclass:: ClassNumCheckHook
+.. autoclass:: PreciseBNHook
+.. autoclass:: VisualizationHook
 
 Optimizers
 ------------------
@@ -59,4 +38,4 @@ Optimizers
    :nosignatures:
    :template: classtemplate.rst
 
-   Lamb
+.. autoclass:: Lamb

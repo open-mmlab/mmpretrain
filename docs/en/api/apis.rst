@@ -13,26 +13,6 @@ These are some high-level APIs for classification tasks.
 
 .. currentmodule:: mmcls.apis
 
-Train
-------------------
-
-.. autosummary::
-   :toctree: generated
-   :nosignatures:
-
-   init_random_seed
-   set_random_seed
-   train_model
-
-Test
-------------------
-.. autosummary::
-   :toctree: generated
-   :nosignatures:
-
-   single_gpu_test
-   multi_gpu_test
-
 Inference
 ------------------
 
@@ -40,6 +20,5 @@ Inference
    :toctree: generated
    :nosignatures:
 
-   init_model
-   inference_model
-   show_result_pyplot
+.. autofunction:: init_model
+.. autofunction:: inference_model

@@ -7,6 +7,7 @@ mmcls.models
 The ``models`` package contains several sub-packages for addressing the different components of a model.
 
 - :ref:`classifiers`: The top-level module which defines the whole process of a classification model.
+- :ref:`datapreprocessors`: The component before model to preprocess the inputs, e.g., ClsDataPreprocessor.
 - :ref:`backbones`: Usually a feature extraction network, e.g., ResNet, MobileNet.
 - :ref:`necks`: The component between backbones and heads, e.g., GlobalAveragePooling.
 - :ref:`heads`: The component for specific tasks. In MMClassification, we provides heads for classification.
@@ -36,6 +37,18 @@ Classifier
 
    BaseClassifier
    ImageClassifier
+
+.. _datapreprocessors:
+
+Datapreprocessors
+------------------
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: classtemplate.rst
+
+   ClsDataPreprocessor
 
 .. _backbones:
 
@@ -115,11 +128,11 @@ Heads
    ClsHead
    LinearClsHead
    StackedLinearClsHead
-   MultiLabelClsHead
-   MultiLabelLinearClsHead
    VisionTransformerClsHead
    DeiTClsHead
    ConformerHead
+   MultiLabelClsHead
+   MultiLabelLinearClsHead
 
 .. _losses:
 
@@ -131,9 +144,66 @@ Losses
    :nosignatures:
    :template: classtemplate.rst
 
-   Accuracy
-   AsymmetricLoss
    CrossEntropyLoss
    LabelSmoothLoss
    FocalLoss
+   AsymmetricLoss
    SeesawLoss
+
+mmcls.models.utils
+===================================
+
+This package includes some helper functions and common components used in various networks.
+
+.. contents:: mmcls.models.utils
+   :depth: 2
+   :local:
+   :backlinks: top
+
+.. currentmodule:: mmcls.models.utils
+
+Common Components
+------------------
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: classtemplate.rst
+
+   InvertedResidual
+   SELayer
+   ShiftWindowMSA
+   MultiheadAttention
+   ConditionalPositionEncoding
+   PatchEmbed
+   PatchMerging
+   HybridEmbed
+
+Helper Functions
+------------------
+
+channel_shuffle
+^^^^^^^^^^^^^^^
+.. autofunction:: channel_shuffle
+
+make_divisible
+^^^^^^^^^^^^^^
+.. autofunction:: make_divisible
+
+resize_position_enbeding
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autofunction:: resize_pos_embed
+.. autofunction:: resize_relative_position_bias_table
+
+to_ntuple
+^^^^^^^^^
+.. autofunction:: to_ntuple
+.. autofunction:: to_2tuple
+.. autofunction:: to_3tuple
+.. autofunction:: to_4tuple
+
+is_tracing
+^^^^^^^^^^
+.. autofunction:: is_tracing
+

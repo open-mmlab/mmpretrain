@@ -17,7 +17,7 @@ These are some useful help function in the ``utils`` package.
    :toctree: generated
    :nosignatures:
 
-   collect_env
-   get_root_logger
-   load_json_log
-   setup_multi_processes
+.. autofunction:: collect_env
+.. autofunction:: register_all_modules
+.. autofunction:: init_random_seed
+.. autofunction:: set_random_seed

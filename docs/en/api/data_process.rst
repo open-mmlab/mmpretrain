@@ -17,30 +17,19 @@ for example:
 
 .. code:: python
 
-    img_norm_cfg = dict(
-        mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
     train_pipeline = [
         dict(type='LoadImageFromFile'),
-        dict(type='RandomResizedCrop', size=224),
-        dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
-        dict(type='Normalize', **img_norm_cfg),
-        dict(type='ImageToTensor', keys=['img']),
-        dict(type='ToTensor', keys=['gt_label']),
-        dict(type='Collect', keys=['img', 'gt_label'])
-    ]
-    test_pipeline = [
-        dict(type='LoadImageFromFile'),
-        dict(type='Resize', scale=256),
-        dict(type='CenterCrop', crop_size=224),
-        dict(type='Normalize', **img_norm_cfg),
-        dict(type='ImageToTensor', keys=['img']),
-        dict(type='Collect', keys=['img'])
+        dict(type='RandomResizedCrop', scale=224),
+        dict(type='RandomFlip', prob=0.5, direction='horizontal'),
+        dict(type='PackClsInputs'),
     ]
 
-    data = dict(
-        train=dict(..., pipeline=train_pipeline),
-        val=dict(..., pipeline=test_pipeline),
-        test=dict(..., pipeline=test_pipeline),
+    train_dataloader = dict(
+        ....
+        dataset=dict(
+            pipeline=train_pipeline,
+            ....),
+        ....
     )
 
 Every item of a pipeline list is one of the following data transformations class. And if you want to add a custom data transformation class, the tutorial :doc:`Custom Data Pipelines </tutorials/data_pipeline>` will help you.
@@ -56,15 +45,26 @@ Loading
 =======
 
 LoadImageFromFile
+-----------------
+LoadImageFromFile
+:ref:`LoadImageFromFile`
+
+Compose Transforms
+==================
+
+Compose is a helper transform to combine a series of data transformations.
+
+Compose
 ---------------------
-.. autoclass:: LoadImageFromFile
+.. autoclass:: Compose
 
 Preprocessing and Augmentation
 ==============================
 
 CenterCrop
----------------------
-.. autoclass:: CenterCrop
+----------
+CenterCrop
+:ref:`CenterCrop`
 
 Lighting
 ---------------------
@@ -80,7 +80,12 @@ Pad
 
 Resize
 ---------------------
-.. autoclass:: Resize
+Resize
+:ref:`Resize`
+
+ResizeEdge
+---------------------
+.. autoclass:: ResizeEdge
 
 RandomCrop
 ---------------------
@@ -92,7 +97,8 @@ RandomErasing
 
 RandomFlip
 ---------------------
-.. autoclass:: RandomFlip
+RandomFlip
+:ref:`RandomFlip`
 
 RandomGrayscale
 ---------------------
@@ -105,6 +111,10 @@ RandomResizedCrop
 ColorJitter
 ---------------------
 .. autoclass:: ColorJitter
+
+Albumentations
+---------------------
+.. autoclass:: Albumentations
 
 
 Composed Augmentation
@@ -146,6 +156,10 @@ table. In addition, we provide some preset policies in `this folder`_.
 Formatting
 ==========
 
+PackClsInputs
+---------------------
+.. autoclass:: PackClsInputs
+
 Collect
 ---------------------
 .. autoclass:: Collect
@@ -169,3 +183,43 @@ ToTensor
 Transpose
 ---------------------
 .. autoclass:: Transpose
+
+.. role:: hidden
+    :class: hidden-section
+
+Batch Augmentation
+===================================
+
+Batch augmentation is the augmentation which involve multiple samples, such as Mixup and CutMix.
+
+In MMClassification, these batch augmentation is used as a part of :ref:`classifiers`. A typical usage is as below:
+
+.. code-block:: python
+
+   model = dict(
+       backbone = ...,
+       neck = ...,
+       head = ...,
+       train_cfg=dict(augments=[
+           dict(type='BatchMixup', alpha=0.8, prob=0.5, num_classes=num_classes),
+           dict(type='BatchCutMix', alpha=1.0, prob=0.5, num_classes=num_classes),
+       ]))
+   )
+
+.. currentmodule:: mmcls.models.utils.batch_augments
+
+Mixup
+-----
+.. autoclass:: Mixup
+
+CutMix
+------
+.. autoclass:: CutMix
+
+ResizeMix
+---------
+.. autoclass:: ResizeMix
+
+BatchBaseTransform
+------------------
+.. autoclass:: RandomBatchAugment
