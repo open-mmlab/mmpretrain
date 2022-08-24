@@ -1,10 +1,25 @@
-# 教程 1：如何编写配置文件
+# 学习配置文件
 
-MMClassification 主要使用 python 文件作为配置文件。其配置文件系统的设计将模块化与继承整合进来，方便用户进行各种实验。所有配置文件都放置在 `configs` 文件夹下，主要包含 `_base_` 原始配置文件夹 以及 `resnet`, `swin_transformer`，`vision_transformer` 等诸多算法文件夹。
+MMClassification 主要使用 python 文件作为配置文件，它主要分为多个模块且可以继承。所有配置文件都放置在 [`configs`](https://github.com/open-mmlab/mmclassification/tree/master/configs) 文件夹下，目录结构如下所示:
 
-本文主要讲解 MMClassification 配置文件的命名和结构，以及如何基于已有的配置文件修改，并以 [ResNet50 原始配置文件](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet50_8xb32_in1k.py) 逐行解释。
+```text
+MMClassification/
+    ├── configs/
+    │   ├── _base_/                     # 原始配置文件夹
+    │   │   ├── datasets/                   # 原始数据集
+    │   │   ├── models/                     # 原始模型
+    │   │   ├── schedules/                  # 原始优化策略
+    │   │   └── default_runtime.py          # 原始运行信息
+    │   ├── resnet/                     # ResNet 算法文件夹
+    │   ├── swin_transformer/           # Swin 算法文件夹
+    │   ├── vision_transformer/         # ViT 算法文件夹
+    │   ├── ...
+    └── ...
+```
 
 可以使用 `python tools/misc/print_config.py /PATH/TO/CONFIG` 命令来查看完整的配置信息，从而方便检查所对应的配置文件。
+
+本文主要讲解 MMClassification 配置文件的命名和结构，以及如何基于已有的配置文件修改，并以 [ResNet50 原始配置文件](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet50_8xb32_in1k.py) 逐行解释。
 
 <!-- TOC -->
 
@@ -111,7 +126,7 @@ repvgg-D2se_deploy_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py
 
 你可以通过继承一些基本配置文件轻松构建自己的训练配置文件。由来自 `_base_` 的组件组成的配置称为 _primitive_。
 
-为了帮助用户对 MMClassification 检测系统中的完整配置和模块有一个基本的了解，我们使用 [ResNet50 原始配置文件](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet50_8xb32_in1k.py) 作为案例进行说明并注释每一行含义。更详细的用法和各个模块对应的替代方案，请参考 API 文档。
+下面使用 [ResNet50 原始配置文件](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet50_8xb32_in1k.py) 作为案例进行说明并注释每一行含义。更详细的用法和各个模块对应的替代方案，请参考 API 文档。
 
 ```python
 _base_ = [                                    # _base_ 可为一个 list 或者一个 str
@@ -128,19 +143,19 @@ _base_ = [                                    # _base_ 可为一个 list 或者�
 
 `model` 在配置文件中为一个 `python` 字典，主要包括网络结构、损失函数等信息：
 
-- `type`： 分类器名称, 目前 MMClassification 只支持 `ImageClassifier`， 参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.classifiers)， 目前支持的分类算法可查看 [`model zoo`](https://mmclassification.readthedocs.io/en/latest/model_zoo.html)。
-- `data_preprocessor` : 图像输入的预处理模块，包括图像数据转换以及归一化等操作，如 `ClsDataPreprocessor`, 参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.datapreprocessors)。
+- `type`： 分类器名称, 目前 MMClassification 只支持 `ImageClassifier`， 参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.classifiers)，目前支持的分类算法可查看 [`model zoo`](https://mmclassification.readthedocs.io/en/latest/model_zoo.html)。
+- `data_preprocessor`: 图像输入的预处理模块，包括图像数据转换以及归一化等操作，如 `ClsDataPreprocessor`, 参考 [API 文档](TODO:)。
 - `backbone`： 主干网类型，目前支持 `ResNet`, `Swin Transformer`, `Vision Transformer` 等。可用选项参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.backbones)。
 - `neck`： 颈网络类型，目前 MMClassification 支持 `GlobalAveragePooling` 等，参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.necks)。
 - `head`： 头网络类型， 包括单标签分类与多标签分类头网络，可用选项参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.heads)。
   - `loss`： 损失函数类型， 支持 `CrossEntropyLoss`, `LabelSmoothLoss` 等，可用选项参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.losses)。
-- `train_cfg`：训练配置, 目前支持 `Mixup`, `CutMix` 等训练增强, 可用选项参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#models.utils.augment.html)。
+- `train_cfg`：包括一些训练时的批数据增强, 目前支持 `Mixup`, `CutMix` 等, 可用选项参考 [API 文档](TODO:)。
 
 ```{note}
 配置文件中的 'type' 不是构造时的参数，而是类名。
 ```
 
-以下是 ResNet50 基本配置的模型配置['configs/_base_/models/resnet50.py'](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50.py)：
+以下是 ResNet50 的模型配置['configs/_base_/models/resnet50.py'](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50.py)：
 
 ```python
 model = dict(
@@ -176,7 +191,7 @@ model = dict(
     - `type`:  数据集类型， MMClassification 支持 `ImageNet`、 `Cifar` 等数据集 ，参考 [API 文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.datasets)
     - `pipeline`:  数据处理流水线，参考相关教程文档 [如何设计数据处理流水线](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/data_pipeline.html)
 
-以下是 ResNet50 基本配置的数据配置 ['configs/_base_/datasets/imagenet_bs32.py'](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/datasets/imagenet_bs32.py)：
+以下是 ResNet50 的数据配置 ['configs/_base_/datasets/imagenet_bs32.py'](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/datasets/imagenet_bs32.py)：
 
 ```python
 dataset_type = 'ImageNet'
@@ -184,7 +199,7 @@ dataset_type = 'ImageNet'
 preprocess_cfg = dict(
     # 输入的图片数据通道以 'RGB' 顺序
     mean=[123.675, 116.28, 103.53],    # 输入图像归一化的 RGB 通道均值
-    std=[58.395, 57.12, 57.375],       # 输入图像归一化的 RGB 通道均值
+    std=[58.395, 57.12, 57.375],       # 输入图像归一化的 RGB 通道标准差
     to_rgb=True,                       # 是否将通道翻转，从 BGR 转为 RGB 或者 RGB 转为 BGR
 )
 
@@ -237,20 +252,20 @@ test_evaluator = val_evaluator    # 构造验证集评估器，这里直接与 v
 ```
 
 ```note
-'model.data_preprocessor' 既可以在 `model=dict(data_preprocessor=dict())`中定义，也可以使用此处的 `preprocess_cfg` 定义, 同时配置时，使用 `preprocess_cfg` 的配置。
+'model.data_preprocessor' 既可以在 `model=dict(data_preprocessor=dict())`中定义，也可以使用此处的 `preprocess_cfg` 配置, 同时配置时，优先使用 `preprocess_cfg`。
 ```
 
 ### 训练策略
 
 主要包含训练策略设置：
 
-- `optim_wrapper`: 优化器设置信息,
+- `optim_wrapper`: 优化器配置信息。
   - `optimizer`: 支持 `pytorch` 所有的优化器，参考相关 [MMEngine](TODO:) 文档。
-  - `paramwise_cfg`: 定制不同参数的学习率以及动量，参考相关 [学习策略文档](TODO:) 文档。
-- `param_scheduler` : 学习率策略，支持 "CosineAnnealing"、 "Step"、 "Cyclic" 等等，参考相关 [mmcv](https://mmcv.readthedocs.io/zh_CN/latest/_modules/mmcv/runner/hooks/lr_updater.html#LrUpdaterHook) 文档
-- `train_cfg | val_cfg`: 训练以及验证的配置，参考相关 [MMEngine](TODO:) 文档。
+  - `paramwise_cfg`: 定制化不同的优化参数，参考相关 [学习策略文档](TODO:) 文档。
+- `param_scheduler` : 学习率策略，支持 "CosineAnnealing"、 "Step"、 "Cyclic" 等等，参考相关 [MMEngine](TODO:) 文档
+- `train_cfg | val_cfg`: 训练以及验证的执行器配置，参考相关 [MMEngine](TODO:) 文档。
 
-以下是 ResNet50 基本配置的模型配置['configs/_base_/schedules/imagenet_bs256.py'](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/schedules/imagenet_bs256.py)：
+以下是 ResNet50 的训练策略配置['configs/_base_/schedules/imagenet_bs256.py'](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/schedules/imagenet_bs256.py)：
 
 ```python
 # 优化器配置，支持所有 PyTorch 的优化器
@@ -278,7 +293,7 @@ auto_scale_lr = dict(base_batch_size=256)
 
 本部分主要包括保存权重策略、日志配置、训练参数、断点权重路径和工作目录等等。
 
-以下是几乎所有算法都使用的运行配置['configs/_base_/default_runtime.py'](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/default_runtime.py)文件：
+以下是几乎所有算法都使用的运行配置['configs/_base_/default_runtime.py'](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/default_runtime.py)：
 
 ```python
 # 默认所有注册器使用的域
@@ -373,7 +388,7 @@ test_dataloader = dict(
 
 用一些中间变量，中间变量让配置文件更加清晰，也更容易修改。
 
-例如数据集里的 `train_pipeline` / `test_pipeline` 是作为数据流水线的中间变量。我们首先要定义 `train_pipeline` / `test_pipeline`，然后将它们传递到 `xx_dataloader` 中。如果想修改训练或测试时输入图片的大小，就需要修改 `train_pipeline` / `test_pipeline` 这些中间变量。
+例如数据集里的 `train_pipeline` / `test_pipeline` 是作为数据流水线的中间变量。我们首先要定义它们，然后将它们传递到 `train_dataloader` / `test_dataloader` 中。如果想修改训练或测试时输入图片的大小，就需要修改 `train_pipeline` / `test_pipeline` 这些中间变量。
 
 ```python
 bgr_mean = [103.53, 116.28, 123.675]
@@ -436,7 +451,7 @@ param_scheduler = [
 
 ### 引用基础配置文件里的变量
 
-有时，您可以引用 `_base_` 配置信息的一些域内容，这样可以避免重复定义。 可以参照 [mmcv](https://mmcv.readthedocs.io/zh_CN/latest/understand_mmcv/config.html#reference-variables-from-base) 来获得一些简单的指导。
+有时，您可以引用 `_base_` 配置信息的一些域内容，这样可以避免重复定义。 可以参照 [MMEngine](TODO:) 来获得一些简单的指导。
 
 以下是一个简单应用案例，在训练数据预处理流水线中使用 auto augment 数据增强，参考配置文件 [`configs/resnest/resnest50_32xb64_in1k.py`](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnest/resnest50_32xb64_in1k.py)。 在定义 `train_pipeline` 时，可以直接在 `_base_` 中加入定义 auto augment 数据增强的文件命名，再通过 `{{_base_.auto_increasing_policies}}` 引用变量：
 
