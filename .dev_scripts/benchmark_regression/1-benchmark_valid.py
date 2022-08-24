@@ -9,7 +9,7 @@ from typing import OrderedDict
 import mmcv
 import numpy as np
 import torch
-from mmengine import Config, MMLogger, Runner
+from mmengine import Config, MMLogger, Runner, DictAction
 from mmengine.dataset import Compose
 from modelindex.load_model_index import load
 from rich.console import Console
@@ -55,9 +55,13 @@ def parse_args():
     parser.add_argument(
         '--cfg-options',
         nargs='+',
-        type=str,
-        default=[],
-        help='Config options for all config files.')
+        action=DictAction,
+        help='override some settings in the used config, the key-value pair '
+        'in xxx=yyy format will be merged into config file. If the value to '
+        'be overwritten is a list, it should be like key="[a,b]" or key=a,b '
+        'It also allows nested list/tuple values, e.g. key="[(a,b),(c,d)]" '
+        'Note that the quotation marks are necessary and that no white space '
+        'is allowed.')
     args = parser.parse_args()
     return args
 
@@ -91,8 +95,11 @@ def inference(config_file, checkpoint, work_dir, args, exp_name):
         if args.inference_time:
             time_record = []
             for _ in range(10):
+                model.val_step([data])  # warmup before profiling
+                torch.cuda.synchronize()
                 start = time()
                 model.val_step([data])
+                torch.cuda.synchronize()
                 time_record.append((time() - start) * 1000)
             result['time_mean'] = np.mean(time_record[1:-1])
             result['time_std'] = np.std(time_record[1:-1])
