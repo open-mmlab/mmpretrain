@@ -59,7 +59,7 @@ You can switch between Chinese and English documentation in the lower-left corne
    mmcls.apis <api/apis>
    mmcls.engine <api/engine>
    mmcls.datasets <api/datasets>
-   Data Transform <api/transforms>
+   Data Process <api/data_process>
    mmcls.models <api/models>
    mmcls.structures <api/structures>
    mmcls.visualization <api/visualization>
