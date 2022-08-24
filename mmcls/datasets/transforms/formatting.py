@@ -56,8 +56,9 @@ class PackClsInputs(BaseTransform):
       of the sample.
 
     Args:
-        meta_keys (Sequence[str]): The meta keys to saved in the ``metainfo``
-            of the packed ``data_sample``. Defaults to a tuple includes keys:
+        meta_keys (Sequence[str]): The meta keys to be saved in the
+            ``metainfo`` of the packed ``data_sample``.
+            Defaults to a tuple includes keys:
 
             - ``sample_idx``: The id of the image sample.
             - ``img_path``: The path to the image file.
@@ -142,7 +143,7 @@ class Transpose(BaseTransform):
 
 @TRANSFORMS.register_module()
 class ToPIL(BaseTransform):
-    """Convert the image in OpenCV format to :obj:`PIL.Image.Image`.
+    """Convert the image from OpenCV format to :obj:`PIL.Image.Image`.
 
     **Required Keys:**
 
