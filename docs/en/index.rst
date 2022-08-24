@@ -9,7 +9,7 @@ You can switch between Chinese and English documentation in the lower-left corne
    :maxdepth: 1
    :caption: Get Started
 
-   getting_started.md
+   get_started.md
 
 .. toctree::
    :maxdepth: 1
