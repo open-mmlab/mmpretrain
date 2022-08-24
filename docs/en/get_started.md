@@ -1,275 +1,220 @@
-# Getting Started
+# Prerequisites
 
-This page provides basic tutorials about the usage of MMClassification.
+In this section we demonstrate how to prepare an environment with PyTorch.
 
-## Prepare datasets
+MMClassification works on Linux, Windows and macOS. It requires Python 3.6+, CUDA 9.2+ and PyTorch 1.6+.
 
-It is recommended to symlink the dataset root to `$MMCLASSIFICATION/data`.
-If your folder structure is different, you may need to change the corresponding paths in config files.
-
-```
-mmclassification
-├── mmcls
-├── tools
-├── configs
-├── docs
-├── data
-│   ├── imagenet
-│   │   ├── meta
-│   │   ├── train
-│   │   ├── val
-│   ├── cifar
-│   │   ├── cifar-10-batches-py
-│   ├── mnist
-│   │   ├── train-images-idx3-ubyte
-│   │   ├── train-labels-idx1-ubyte
-│   │   ├── t10k-images-idx3-ubyte
-│   │   ├── t10k-labels-idx1-ubyte
-
+```{note}
+If you are experienced with PyTorch and have already installed it, just skip this part and jump to the [next section](#installation). Otherwise, you can follow these steps for the preparation.
 ```
 
-For ImageNet, it has multiple versions, but the most commonly used one is [ILSVRC 2012](http://www.image-net.org/challenges/LSVRC/2012/). It can be accessed with the following steps.
+**Step 1.** Download and install Miniconda from the [official website](https://docs.conda.io/en/latest/miniconda.html).
 
-1. Register an account and login to the [download page](http://www.image-net.org/download-images).
-2. Find download links for ILSVRC2012 and download the following two files
-   - ILSVRC2012_img_train.tar (~138GB)
-   - ILSVRC2012_img_val.tar (~6.3GB)
-3. Untar the downloaded files
-4. Download meta data using this [script](https://github.com/BVLC/caffe/blob/master/data/ilsvrc12/get_ilsvrc_aux.sh)
-
-For MNIST, CIFAR10 and CIFAR100, the datasets will be downloaded and unzipped automatically if they are not found.
-
-For using custom datasets, please refer to [Tutorials 2: Adding New Dataset](tutorials/new_dataset.md).
-
-## Inference with pretrained models
-
-We provide scripts to inference a single image, inference a dataset and test a dataset (e.g., ImageNet).
-
-### Inference a single image
+**Step 2.** Create a conda environment and activate it.
 
 ```shell
-python demo/image_demo.py ${IMAGE_FILE} ${CONFIG_FILE} ${CHECKPOINT_FILE}
-
-# Example
-python demo/image_demo.py demo/demo.JPEG configs/resnet/resnet50_8xb32_in1k.py \
-  https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb32_in1k_20210831-ea4938fc.pth
+conda create --name openmmlab python=3.8 -y
+conda activate openmmlab
 ```
 
-### Inference and test a dataset
+**Step 3.** Install PyTorch following [official instructions](https://pytorch.org/get-started/locally/), e.g.
 
-- single GPU
-- CPU
-- single node multiple GPU
-- multiple node
-
-You can use the following commands to infer a dataset.
+On GPU platforms:
 
 ```shell
-# single-gpu
-python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--metrics ${METRICS}] [--out ${RESULT_FILE}]
-
-# CPU: disable GPUs and run single-gpu testing script
-export CUDA_VISIBLE_DEVICES=-1
-python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--metrics ${METRICS}] [--out ${RESULT_FILE}]
-
-# multi-gpu
-./tools/dist_test.sh ${CONFIG_FILE} ${CHECKPOINT_FILE} ${GPU_NUM} [--metrics ${METRICS}] [--out ${RESULT_FILE}]
-
-# multi-node in slurm environment
-python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--metrics ${METRICS}] [--out ${RESULT_FILE}] --launcher slurm
-```
-
-Optional arguments:
-
-- `RESULT_FILE`: Filename of the output results. If not specified, the results will not be saved to a file. Support formats include json, yaml and pickle.
-- `METRICS`：Items to be evaluated on the results, like accuracy, precision, recall, etc.
-
-Examples:
-
-Infer ResNet-50 on ImageNet validation set to get predicted labels and their corresponding predicted scores.
-
-```shell
-python tools/test.py configs/resnet/resnet50_8xb16_cifar10.py \
-  https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_b16x8_cifar10_20210528-f54bfad9.pth \
-  --out result.pkl
-```
-
-## Train a model
-
-MMClassification implements distributed training and non-distributed training,
-which uses `MMDistributedDataParallel` and `MMDataParallel` respectively.
-
-All outputs (log files and checkpoints) will be saved to the working directory,
-which is specified by `work_dir` in the config file.
-
-By default we evaluate the model on the validation set after each epoch, you can change the evaluation interval by adding the interval argument in the training config.
-
-```python
-evaluation = dict(interval=12)  # Evaluate the model per 12 epochs.
-```
-
-### Train with a single GPU
-
-```shell
-python tools/train.py ${CONFIG_FILE} [optional arguments]
-```
-
-If you want to specify the working directory in the command, you can add an argument `--work_dir ${YOUR_WORK_DIR}`.
-
-### Train with CPU
-
-The process of training on the CPU is consistent with single GPU training. We just need to disable GPUs before the training process.
-
-```shell
-export CUDA_VISIBLE_DEVICES=-1
-```
-
-And then run the script [above](#train-with-a-single-gpu).
-
-```{warning}
-The process of training on the CPU is consistent with single GPU training. We just need to disable GPUs before the training process.
-```
-
-### Train with multiple GPUs in single machine
-
-```shell
-./tools/dist_train.sh ${CONFIG_FILE} ${GPU_NUM} [optional arguments]
-```
-
-Optional arguments are:
-
-- `--no-validate` (**not suggested**): By default, the codebase will perform evaluation at every k (default value is 1) epochs during the training. To disable this behavior, use `--no-validate`.
-- `--work-dir ${WORK_DIR}`: Override the working directory specified in the config file.
-- `--resume-from ${CHECKPOINT_FILE}`: Resume from a previous checkpoint file.
-
-Difference between `resume-from` and `load-from`:
-`resume-from` loads both the model weights and optimizer status, and the epoch is also inherited from the specified checkpoint. It is usually used for resuming the training process that is interrupted accidentally.
-`load-from` only loads the model weights and the training epoch starts from 0. It is usually used for finetuning.
-
-### Train with multiple machines
-
-If you launch with multiple machines simply connected with ethernet, you can simply run following commands:
-
-On the first machine:
-
-```shell
-NNODES=2 NODE_RANK=0 PORT=$MASTER_PORT MASTER_ADDR=$MASTER_ADDR sh tools/dist_train.sh $CONFIG $GPUS
-```
-
-On the second machine:
-
-```shell
-NNODES=2 NODE_RANK=1 PORT=$MASTER_PORT MASTER_ADDR=$MASTER_ADDR sh tools/dist_train.sh $CONFIG $GPUS
-```
-
-Usually it is slow if you do not have high speed networking like InfiniBand.
-
-If you run MMClassification on a cluster managed with [slurm](https://slurm.schedmd.com/), you can use the script `slurm_train.sh`. (This script also supports single machine training.)
-
-```shell
-[GPUS=${GPUS}] ./tools/slurm_train.sh ${PARTITION} ${JOB_NAME} ${CONFIG_FILE} ${WORK_DIR}
-```
-
-You can check [slurm_train.sh](https://github.com/open-mmlab/mmclassification/blob/master/tools/slurm_train.sh) for full arguments and environment variables.
-
-If you have just multiple machines connected with ethernet, you can refer to
-PyTorch [launch utility](https://pytorch.org/docs/stable/distributed_deprecated.html#launch-utility).
-Usually it is slow if you do not have high speed networking like InfiniBand.
-
-### Launch multiple jobs on a single machine
-
-If you launch multiple jobs on a single machine, e.g., 2 jobs of 4-GPU training on a machine with 8 GPUs,
-you need to specify different ports (29500 by default) for each job to avoid communication conflict.
-
-If you use `dist_train.sh` to launch training jobs, you can set the port in commands.
-
-```shell
-CUDA_VISIBLE_DEVICES=0,1,2,3 PORT=29500 ./tools/dist_train.sh ${CONFIG_FILE} 4
-CUDA_VISIBLE_DEVICES=4,5,6,7 PORT=29501 ./tools/dist_train.sh ${CONFIG_FILE} 4
-```
-
-If you use launch training jobs with Slurm, you need to modify the config files (usually the 6th line from the bottom in config files) to set different communication ports.
-
-In `config1.py`,
-
-```python
-dist_params = dict(backend='nccl', port=29500)
-```
-
-In `config2.py`,
-
-```python
-dist_params = dict(backend='nccl', port=29501)
-```
-
-Then you can launch two jobs with `config1.py` ang `config2.py`.
-
-```shell
-CUDA_VISIBLE_DEVICES=0,1,2,3 GPUS=4 ./tools/slurm_train.sh ${PARTITION} ${JOB_NAME} config1.py ${WORK_DIR}
-CUDA_VISIBLE_DEVICES=4,5,6,7 GPUS=4 ./tools/slurm_train.sh ${PARTITION} ${JOB_NAME} config2.py ${WORK_DIR}
-```
-
-### Train with IPU
-
-The process of training on the IPU is consistent with single GPU training. We just need to have IPU machine and environment
-and add an extra argument `--ipu-replicas ${IPU_NUM}`
-
-## Useful tools
-
-We provide lots of useful tools under `tools/` directory.
-
-### Get the FLOPs and params (experimental)
-
-We provide a script adapted from [flops-counter.pytorch](https://github.com/sovrasov/flops-counter.pytorch) to compute the FLOPs and params of a given model.
-
-```shell
-python tools/analysis_tools/get_flops.py ${CONFIG_FILE} [--shape ${INPUT_SHAPE}]
-```
-
-You will get the result like this.
-
-```
-==============================
-Input shape: (3, 224, 224)
-Flops: 4.12 GFLOPs
-Params: 25.56 M
-==============================
+conda install pytorch torchvision -c pytorch
 ```
 
 ```{warning}
-This tool is still experimental and we do not guarantee that the number is correct. You may well use the result for simple comparisons, but double check it before you adopt it in technical reports or papers.
-- FLOPs are related to the input shape while parameters are not. The default input shape is (1, 3, 224, 224).
-- Some operators are not counted into FLOPs like GN and custom operators. Refer to [`mmcv.cnn.get_model_complexity_info()`](https://github.com/open-mmlab/mmcv/blob/master/mmcv/cnn/utils/flops_counter.py) for details.
+This command will automatically install the latest version PyTorch and cudatoolkit, please check whether they matches your environment.
 ```
 
-### Publish a model
-
-Before you publish a model, you may want to
-
-1. Convert model weights to CPU tensors.
-2. Delete the optimizer states.
-3. Compute the hash of the checkpoint file and append the hash id to the filename.
+On CPU platforms:
 
 ```shell
-python tools/convert_models/publish_model.py ${INPUT_FILENAME} ${OUTPUT_FILENAME}
+conda install pytorch torchvision cpuonly -c pytorch
 ```
 
-E.g.,
+# Installation
+
+We recommend that users follow our best practices to install MMClassification. However, the whole process is highly customizable. See [Customize Installation](#customize-installation) section for more information.
+
+## Best Practices
+
+**Step 1.** Install [MMEngine](https://github.com/open-mmlab/mmengine) and [MMCV](https://github.com/open-mmlab/mmcv) using [MIM](https://github.com/open-mmlab/mim).
 
 ```shell
-python tools/convert_models/publish_model.py work_dirs/resnet50/latest.pth imagenet_resnet50.pth
+pip install -U openmim
+mim install mmengine "mmcv-full>=2.0rc0"
 ```
 
-The final output filename will be `imagenet_resnet50_{date}-{hash id}.pth`.
+**Step 2.** Install MMClassification.
 
-## Tutorials
+According to your needs, we support two install modes:
 
-Currently, we provide five tutorials for users.
+- [Install from source (Recommended)](#install-from-source): You want to develop your own image classification task or new features based on MMClassification framework. For example, you want to add new dataset or new models. And you can use all tools we provided.
+- [Install as a Python package](#install-as-a-python-package): You just want to call MMClassification's APIs or import MMClassification's modules in your project.
 
-- [learn about config](tutorials/config.md)
-- [finetune models](tutorials/finetune.md)
-- [add new dataset](tutorials/new_dataset.md)
-- [design data pipeline](tutorials/data_pipeline.md)
-- [add new modules](tutorials/new_modules.md)
-- [customize schedule](tutorials/schedule.md)
-- [customize runtime settings](tutorials/runtime.md).
+### Install from source
+
+In this case, install mmcls from source:
+
+```shell
+git clone https://github.com/open-mmlab/mmclassification.git
+cd mmclassification
+git checkout 1.x
+pip install -v -e .
+# "-v" means verbose, or more output
+# "-e" means installing a project in editable mode,
+# thus any local modifications made to the code will take effect without reinstallation.
+```
+
+Optionally, if you want to contribute to MMClassification or experience experimental functions, please checkout to the `dev-1.x` branch:
+
+```shell
+git checkout dev-1.x
+```
+
+### Install as a Python package
+
+Just install with pip.
+
+```shell
+pip install "mmcls>=1.0rc0"
+```
+
+## Verify the installation
+
+To verify whether MMClassification is installed correctly, we provide some sample codes to run an inference demo.
+
+**Step 1.** We need to download config and checkpoint files.
+
+```shell
+mim download mmcls --config resnet50_8xb32_in1k --dest .
+```
+
+**Step 2.** Verify the inference demo.
+
+Option (a). If you install mmcls from source, just run the following command:
+
+```shell
+python demo/image_demo.py demo/demo.JPEG resnet50_8xb32_in1k.py resnet50_8xb32_in1k_20210831-ea4938fc.pth --device cpu
+```
+
+You will see the output result dict including `pred_label`, `pred_score` and `pred_class` in your terminal.
+
+Option (b). If you install mmcls as a python package, open you python interpreter and copy&paste the following codes.
+
+```python
+from mmcls.apis import init_model, inference_model
+from mmcls.utils import register_all_modules
+
+config_file = 'resnet50_8xb32_in1k.py'
+checkpoint_file = 'resnet50_8xb32_in1k_20210831-ea4938fc.pth'
+register_all_modules()  # register all modules and set mmcls as the default scope.
+model = init_model(config_file, checkpoint_file, device='cpu')  # or device='cuda:0'
+inference_model(model, 'demo/demo.JPEG')
+```
+
+You will see a dict printed, including the predicted label, score and category name.
+
+## Customize Installation
+
+### CUDA versions
+
+When installing PyTorch, you need to specify the version of CUDA. If you are
+not clear on which to choose, follow our recommendations:
+
+- For Ampere-based NVIDIA GPUs, such as GeForce 30 series and NVIDIA A100, CUDA 11 is a must.
+- For older NVIDIA GPUs, CUDA 11 is backward compatible, but CUDA 10.2 offers better compatibility and is more lightweight.
+
+Please make sure the GPU driver satisfies the minimum version requirements. See [this table](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html#cuda-major-component-versions__table-cuda-toolkit-driver-versions) for more information.
+
+```{note}
+Installing CUDA runtime libraries is enough if you follow our best practices,
+because no CUDA code will be compiled locally. However if you hope to compile
+MMCV from source or develop other CUDA operators, you need to install the
+complete CUDA toolkit from NVIDIA's [website](https://developer.nvidia.com/cuda-downloads),
+and its version should match the CUDA version of PyTorch. i.e., the specified
+version of cudatoolkit in `conda install` command.
+```
+
+### Install MMCV without MIM
+
+MMCV contains C++ and CUDA extensions, thus depending on PyTorch in a complex
+way. MIM solves such dependencies automatically and makes the installation
+easier. However, it is not a must.
+
+To install MMCV with pip instead of MIM, please follow
+[MMCV installation guides](https://mmcv.readthedocs.io/en/dev-2.x/get_started/installation.html).
+This requires manually specifying a find-url based on PyTorch version and its CUDA version.
+
+For example, the following command install mmcv-full built for PyTorch 1.10.x and CUDA 11.3.
+
+```shell
+pip install "mmcv-full>=2.0rc0" -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.10/index.html
+```
+
+### Install on CPU-only platforms
+
+MMClassification can be built for CPU only environment. In CPU mode you can train, test or inference a model.
+
+Some functionalities are gone in this mode, usually GPU-compiled ops. But don't
+worry, almost all models in MMClassification don't depends on these ops.
+
+### Install on Google Colab
+
+[Google Colab](https://research.google.com/) usually has PyTorch installed,
+thus we only need to install MMCV and MMClassification with the following
+commands.
+
+**Step 1.** Install [MMEngine](https://github.com/open-mmlab/mmengine) and [MMCV](https://github.com/open-mmlab/mmcv) using [MIM](https://github.com/open-mmlab/mim).
+
+```shell
+!pip3 install openmim
+!mim install mmengine "mmcv-full>=2.0rc0"
+```
+
+**Step 2.** Install MMClassification from the source.
+
+```shell
+!git clone https://github.com/open-mmlab/mmclassification.git
+%cd mmclassification
+!git checkout 1.x
+!pip install -e .
+```
+
+**Step 3.** Verification.
+
+```python
+import mmcls
+print(mmcls.__version__)
+# Example output: 1.0.0rc0 or newer
+```
+
+```{note}
+Within Jupyter, the exclamation mark `!` is used to call external executables and `%cd` is a [magic command](https://ipython.readthedocs.io/en/stable/interactive/magics.html#magic-cd) to change the current working directory of Python.
+```
+
+### Using MMClassification with Docker
+
+We provide a [Dockerfile](https://github.com/open-mmlab/mmclassification/blob/master/docker/Dockerfile)
+to build an image. Ensure that your [docker version](https://docs.docker.com/engine/install/) >=19.03.
+
+```shell
+# build an image with PyTorch 1.8.1, CUDA 10.2
+# If you prefer other versions, just modified the Dockerfile
+docker build -t mmclassification docker/
+```
+
+Run it with
+
+```shell
+docker run --gpus all --shm-size=8g -it -v {DATA_DIR}:/mmclassification/data mmclassification
+```
+
+## Trouble shooting
+
+If you have some issues during the installation, please first view the [FAQ](faq.md) page.
+You may [open an issue](https://github.com/open-mmlab/mmclassification/issues/new/choose)
+on GitHub if no solution is found.
