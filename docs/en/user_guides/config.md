@@ -1,6 +1,10 @@
 # Learn about Configs
 
-MMClassification mainly uses python files as configuration files, it is mainly divided into multiple modules and can be inherited. All configuration files are placed under the [`configs`](https://github.com/open-mmlab/mmclassification/tree/master/configs) folder, the directory structure is as follows:
+To manage various configurations in a deep-learning experiment, we use a kind of config file to record all of
+these configurations. This config system has modular and inheritance design, and more details can be found in
+[the tutorial in MMEngine](TODO).
+
+Usually, we use python files as config file. All configuration files are placed under the [`configs`](https://github.com/open-mmlab/mmclassification/tree/1.x/configs) folder, and the directory structure is as follows:
 
 ```text
 MMClassification/
@@ -19,182 +23,93 @@ MMClassification/
 
 If you wish to inspect the config file, you may run `python tools/misc/print_config.py /PATH/TO/CONFIG` to see the complete config.
 
-This article mainly explains the naming convention and the structure of configuration files, and how to modify it based on the existing configuration files. We also take [ResNet50 primitive configuration file](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet50_8xb32_in1k.py) as an example and explained line by line.
-
-<!-- TOC -->
-
-- [Naming Convention](#naming-convention)
-- [Config Structure](#config-structure)
-- [Inherit and Modify Config File](#inherit-and-modify-config-file)
-  - [Use intermediate variables in configs](#use-intermediate-variables-in-configs)
-  - [Ignore some fields in the base configs](#ignore-some-fields-in-the-base-configs)
-  - [Use some fields in the base configs](#use-some-fields-in-the-base-configs)
-- [Modify config in command](#modify-config-in-command)
-- [Import user-defined modules](#import-user-defined-modules)
-- [FAQ](#faq)
-
-<!-- TOC -->
-
-## Naming Convention
-
-We follow the below convention to name config files. Contributors are advised to follow the same style. The config file names are divided into four parts: algorithm info, module information, training information and data information. Logically, different parts are concatenated by underscores `'_'`, and words in the same part are concatenated by dashes `'-'`.
-
-```text
-{algorithm info}_{module info}_{training info}_{data info}.py
-```
-
-- `algorithm info`：algorithm information, model name and neural network architecture, such as resnet, etc.;
-- `module info`： module information is used to represent some special neck, head and pretrain information;
-- `training info`：Training information, some training schedule, including batch size, lr schedule, data augment and the like;
-- `data info`：Data information, dataset name, input size and so on, such as imagenet, cifar, etc.;
-
-### Algorithm information
-
-The main algorithm name and the corresponding branch architecture information. E.g：
-
-- `resnet50`
-- `mobilenet-v3-large`
-- `vit-small-patch32`   : `patch32` represents the size of the partition in `ViT` algorithm;
-- `seresnext101-32x4d`  : `SeResNet101` network structure, `32x4d` means that `groups` and `width_per_group` are 32 and 4 respectively in `Bottleneck`;
-
-### Module information
-
-Some special `neck`, `head` and `pretrain` information. In classification tasks, `pretrain` information is the most commonly used:
-
-- `in21k-pre` : pre-trained on ImageNet21k;
-- `in21k-pre-3rd-party` : pre-trained on ImageNet21k and the checkpoint is converted from a third-party repository;
-
-### Training information
-
-Training schedule, including training type, `batch size`, `lr schedule`, data augment, special loss functions and so on:
-
-- format `{gpu x batch_per_gpu}`, such as `8xb32`
-
-Training type (mainly seen in the transformer network, such as the `ViT` algorithm, which is usually divided into two training type: pre-training and fine-tuning):
-
-- `ft` : configuration file for fine-tuning
-- `pt` : configuration file for pretraining
-
-Training recipe. Usually, only the part that is different from the original paper will be marked. These methods will be arranged in the order `{pipeline aug}-{train aug}-{loss trick}-{scheduler}-{epochs}`.
-
-- `coslr-200e` : use cosine scheduler to train 200 epochs
-- `autoaug-mixup-lbs-coslr-50e` : use `autoaug`, `mixup`, `label smooth`, `cosine scheduler` to train 50 epochs
-
-### Data information
-
-- `in1k` : `ImageNet1k` dataset, default to use the input image size of 224x224;
-- `in21k` : `ImageNet21k` dataset, also called `ImageNet22k` dataset, default to use the input image size of 224x224;
-- `in1k-384px` : Indicates that the input image size is 384x384;
-- `cifar100`
-
-### Config File Name Example
-
-```text
-repvgg-D2se_deploy_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py
-```
-
-- `repvgg-D2se`:  Algorithm information
-  - `repvgg`: The main algorithm.
-  - `D2se`: The architecture.
-- `deploy`: Module information, means the backbone is in the deploy state.
-- `4xb64-autoaug-lbs-mixup-coslr-200e`: Training information.
-  - `4xb64`: Use 4 GPUs and the size of batches per GPU is 64.
-  - `autoaug`: Use `AutoAugment` in training pipeline.
-  - `lbs`: Use label smoothing loss.
-  - `mixup`: Use `mixup` training augment method.
-  - `coslr`: Use cosine learning rate scheduler.
-  - `200e`: Train the model for 200 epochs.
-- `in1k`: Dataset information. The config is for `ImageNet1k` dataset and the input size is `224x224`.
-
-```{note}
-Some configuration files currently do not follow this naming convention, and related files will be updated in the near future.
-```
-
-### Checkpoint Naming Convention
-
-The naming of the weight mainly includes the configuration file name, date and hash value.
-
-```text
-{config_name}_{date}-{hash}.pth
-```
+This article mainly explains the structure of configuration files, and how to modify it based on the existing configuration files. We will take [ResNet50 config file](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnet/resnet50_8xb32_in1k.py) as an example and explain it line by line.
 
 ## Config Structure
 
 There are four kinds of basic component file in the `configs/_base_` folders, namely：
 
-- [models](https://github.com/open-mmlab/mmclassification/tree/master/configs/_base_/models)
-- [datasets](https://github.com/open-mmlab/mmclassification/tree/master/configs/_base_/datasets)
-- [schedules](https://github.com/open-mmlab/mmclassification/tree/master/configs/_base_/schedules)
-- [runtime](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/default_runtime.py)
+- [models](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/_base_/models)
+- [datasets](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/_base_/datasets)
+- [schedules](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/_base_/schedules)
+- [runtime](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/_base_/default_runtime.py)
 
-You can easily build your own training config file by inherit some base config files. And the configs that are composed by components from `_base_` are called _primitive_.
+We call all the config files in the `_base_` folder as _primitive_ config file. You can easily build your own training config file by inherit some primitive config files.
 
-For easy understanding, we use [ResNet50 primitive config](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet50_8xb32_in1k.py) as a example and comment the meaning of each line. For more detaile, please refer to the API documentation.
+For easy understanding, we use [ResNet50 config file](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnet/resnet50_8xb32_in1k.py) as a example and comment the meaning of each line.
 
 ```python
-_base_ = [                                    # _base_ can be a list or a str
-    '../_base_/models/resnet50.py',           # model
-    '../_base_/datasets/imagenet_bs32.py',    # data
-    '../_base_/schedules/imagenet_bs256.py',  # training schedule
-    '../_base_/default_runtime.py'            # runtime setting
+_base_ = [                                    # This config file will inherit all config files in `_base_`.
+    '../_base_/models/resnet50.py',           # model settings
+    '../_base_/datasets/imagenet_bs32.py',    # data settings
+    '../_base_/schedules/imagenet_bs256.py',  # schedule settings
+    '../_base_/default_runtime.py'            # runtime settings
 ]
 ```
 
-The four parts are explained separately below, and the above-mentioned ResNet50 primitive config are also used as an example.
+We will explain the four primitive config files separately below.
 
-### model
+### Model settings
 
-The parameter `"model"` is a python dictionary in the configuration file, which mainly includes information such as network structure and loss function:
+This primitive config file includes a dict variable `model`, which mainly includes information such as network structure and loss function:
 
-- `type`： Classifier name, MMCls supports `ImageClassifier`, refer to [API documentation](https://mmclassification.readthedocs.io/en/latest/api/models.html#classifier). The supported classification algorithms can be viewed in [`model zoo`](https://mmclassification.readthedocs.io/en/latest/model_zoo.html).
-- `data_preprocessor`: The component before model to preprocess the inputs, e.g., `ClsDataPreprocessor`, refer to [API documentation](TODO:).
-- `backbone`： Backbone config, MMCls supports `ResNet`, `Swin Transformer`, `Vision Transformer` etc., For available options, refer to [API documentation](https://mmclassification.readthedocs.io/en/latest/api/models.html#backbones).
-- `neck`：Neck network name, MMCls supports `GlobalAveragePooling` etc., For available options, refer to [API documentation](https://mmclassification.readthedocs.io/en/latest/api/models.html#necks).
-- `head`: Head network name, MMCls supports single-label and multi-label classification head networks, available options refer to [API documentation](https://mmclassification.readthedocs.io/en/latest/api/models.html#heads).
-  - `loss`: Loss function type, MMCls supports `CrossEntropyLoss`, `LabelSmoothLoss` etc., For available options, refer to [API documentation](https://mmclassification.readthedocs.io/en/latest/api/models.html#losses).
-- `train_cfg`：Training augment config, MMCls support `Mixup`, `CutMix` etc., please refer [API documentation](TODO:) for more batch augments.
+- `type`: The type of the classifier to build. For image classification task, it's usually `'ImageClassifier'`. You can find more details in the [API documentation](https://mmclassification.readthedocs.io/en/1.x/api/models.html#classifier).
+- `backbone`: The settings of the backbone. The backbone is the main network to extract features of the inputs, like `ResNet`, `Swin Transformer`, `Vision Transformer` and etc. All available backbones can be found in the [API documentation](https://mmclassification.readthedocs.io/en1.x/api/models.html#backbones).
+- `neck`: The settings of the neck. The neck is the intermediate module to connect the backbone and the classification head, like `GlobalAveragePooling`. All available necks can be found in the [API documentation](https://mmclassification.readthedocs.io/en/1.x/api/models.html#necks).
+- `head`: The settings of the classification head. The head is the task-related component to do the final
+  classification. All available heads can be found in the [API documentation](https://mmclassification.readthedocs.io/en/1.x/api/models.html#heads).
+  - `loss`: The loss function to optimize, like `CrossEntropyLoss`, `LabelSmoothLoss` and etc. All available losses can be found in the [API documentation](https://mmclassification.readthedocs.io/en/1.x/api/models.html#losses).
+- `data_preprocessor`: The component before the model forwarding to preprocess the inputs. See the
+  [documentation](TODO) for more details.
+- `train_cfg`: The extra settings of the model during training. In MMCLS, we mainly use it to specify batch augmentation settings, like `Mixup` and `CutMix`. See the
+  [documentation](TODO) for more details.
 
 ```{note}
-The 'type' in the configuration file is not a constructed parameter, but a class name.
+Usually, we use the `type` field to specify the class of the component, and use other fields to pass
+initialization arguments of the class. The [registry tutorial](TODO) describes it in details.
 ```
 
-Following is the model configuration of ResNet50 primitive config in ['configs/_base_/models/resnet50.py'](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/models/resnet50.py):
+Following is the model primitive config of the ResNet50 config file in [`configs/_base_/models/resnet50.py`](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/_base_/models/resnet50.py):
 
 ```python
 model = dict(
-    type='ImageClassifier',     # Classifier name
+    type='ImageClassifier',     # The type of the main model (classifier).
     backbone=dict(
-        type='ResNet',          # Backbones name
-        depth=50,               # depth of backbone, ResNet has options of 18, 34, 50, 101, 152.
-        num_stages=4,           # number of stages，The feature maps generated by these states are used as the input for the subsequent neck and head.
-        out_indices=(3, ),      # The output index of the output feature maps.
-        frozen_stages=-1,       # the stage to be frozen, '-1' means not be forzen
-        style='pytorch'),        # The style of backbone, 'pytorch' means that stride 2 layers are in 3x3 conv, 'caffe' means stride 2 layers are in 1x1 convs.
-    neck=dict(type='GlobalAveragePooling'),    # neck network name
+        type='ResNet',          # The type of the backbone module.
+        # All fields except `type` come from the __init__ method of class `ResNet`
+        # and you can find them from https://mmclassification.readthedocs.io/en/1.x/api/generated/mmcls.models.ResNet.html
+        depth=50,
+        num_stages=4,
+        out_indices=(3, ),
+        frozen_stages=-1,
+        style='pytorch'),
+    neck=dict(type='GlobalAveragePooling'),    # The type of the neck module.
     head=dict(
-        type='LinearClsHead',     # linear classification head，
-        num_classes=1000,         # The number of output categories, consistent with the number of categories in the dataset
-        in_channels=2048,         # The number of input channels, consistent with the output channel of the neck
-        loss=dict(type='CrossEntropyLoss', loss_weight=1.0), # Loss function configuration information
-        topk=(1, 5),              # Evaluation index, Top-k accuracy rate, here is the accuracy rate of top1 and top5
+        type='LinearClsHead',     # The type of the classification head module.
+        # All fields except `type` come from the __init__ method of class `LinearClsHead`
+        # and you can find them from https://mmclassification.readthedocs.io/en/1.x/api/generated/mmcls.models.LinearClsHead.html
+        num_classes=1000,
+        in_channels=2048,
+        loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
     ))
 ```
 
-### data
+### Data settings
 
-The part `"data"` in the config includes information to construct dataloader and evaluator:
+This primitive config file includes information to construct dataloader and evaluator:
 
-- `preprocess_cfg`: Model input preprocessing configuration, same as `model.data_preprocessor` but with higher priority.
-- `train_evaluator | val_evaluator | test_evaluator`: To build the evaluator, refer to the [API documentation](TODO:).
-- `train_dataloader | val_dataloader | test_dataloader`: build dataloader
-  - `samples_per_gpu`: the BatchSize of each GPU when building the dataloader
-  - `workers_per_gpu`: the number of threads per GPU when building dataloader
-  - `sampler`: sampler configuration
-  - `dataset`: Construct a dataset.
-    - `type`: dataset type, MMClassification supports `ImageNet`, `Cifar` and other datasets, refer to [API documentation](https://mmclassification.readthedocs.io/en/latest/api.html#module-mmcls.datasets)
-    - `pipeline`: data processing pipeline, refer to the related tutorial document [How to Design a Data Processing Pipeline](https://mmclassification.readthedocs.io/en/latest/tutorials/data_pipeline.html)
+- `preprocess_cfg`: Model input preprocessing configuration, same as `model.data_preprocessor` but with lower priority.
+- `train_evaluator | val_evaluator | test_evaluator`: To build the evaluator or metrics, refer to the [tutorial](TODO:).
+- `train_dataloader | val_dataloader | test_dataloader`: The settings of dataloaders
+  - `batch_size`: The batch size of each GPU.
+  - `num_workers`: The number of workers to fetch data of each GPU.
+  - `sampler`: The settings of the sampler.
+  - `persistent_workers`: Whether to persistent workers after finishing one epoch.
+  - `dataset`: The settings of the dataset.
+    - `type`: The type of the dataset, we support `CustomDataset`, `ImageNet` and many other datasets, refer to [documentation](https://mmclassification.readthedocs.io/en/1.x/api.html#module-mmcls.datasets).
+    - `pipeline`: The data transform pipeline. You can find how to design a pipeline in [this tutorial](https://mmclassification.readthedocs.io/en/1.x/tutorials/data_pipeline.html).
 
-Following is the data configuration of ResNet50 primitive config in ['configs/_base_/datasets/imagenet_bs32.py'](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/datasets/imagenet_bs32.py)：
+Following is the data primitive config of the ResNet50 config in [`configs/_base_/datasets/imagenet_bs32.py`](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/_base_/datasets/imagenet_bs32.py)：
 
 ```python
 dataset_type = 'ImageNet'
@@ -223,7 +138,7 @@ test_pipeline = [
 # Construct training set dataloader
 train_dataloader = dict(
     batch_size=32,                     # batchsize per GPU
-    num_workers=5,                     # Number of threads per GPU
+    num_workers=5,                     # Number of workers to fetch data per GPU
     dataset=dict(                      # training dataset
         type=dataset_type,
         data_root='data/imagenet',
@@ -247,57 +162,62 @@ val_dataloader = dict(
     sampler=dict(type='DefaultSampler', shuffle=False),
     persistent_workers=True,
 )
-# Build the validation set evaluator, using the accuracy as the indicator
+# The settings of the evaluation metrics for validation. We use the top1 and top5 accuracy here.
 val_evaluator = dict(type='Accuracy', topk=(1, 5))
 
-test_dataloader = val_dataloader  # Construct the test set dataloader, which is directly the same as val_dataloader
-test_evaluator = val_evaluator    # Construct the test set devaluator, which is directly the same as val_evaluator
+test_dataloader = val_dataloader  # The settings of the dataloader for the test dataset, which is the same as val_dataloader
+test_evaluator = val_evaluator    # The settings of the evaluation metrics for test, which is the same as val_evaluator
 ```
 
-```note
-'model.data_preprocessor' can be defined either in `model=dict(data_preprocessor=dict())` or using the `preprocess_cfg` definition here, if both of them exist, use the `preprocess_cfg` configuration.
+```{note}
+'model.data_preprocessor' can be defined either in `model=dict(data_preprocessor=dict())` or using the `preprocess_cfg` definition here, if both of them exist, use the `model.data_preprocessor` configuration.
 ```
 
-### training schedule
+### Schedule settings
 
-Mainly contains training strategy settings：
+This primitive config file mainly contains training strategy settings and the settings of training, val and
+test loops:
 
-- `optim_wrapper`: Optimizer Wrapper Settings Information
-  - `optimizer`: Supports all `pytorch` optimizers, refer to the relevant [MMEngine](TODO:) documentation.
-  - `paramwise_cfg`: To customize different optimization parameters, refer to the relevant [Learning Policy Documentation](TODO:) document.
-- `param_scheduler`: Learning rate policy, supports "CosineAnnealing", "Step", "Cyclic", etc.， [MMEngine](TODO:)
-- `train_cfg | val_cfg`: For the configuration of the runner when training and validation, refer to the relevant [MMEngine](TODO:) documentation.
+- `optim_wrapper`: The settings of the optimizer wrapper. We use the optimizer wrapper to customize the
+  optimization process.
+  - `optimizer`: Supports all `pytorch` optimizers, refers to the relevant [MMEngine documentation](TODO).
+  - `paramwise_cfg`: To set different optimization arguments according to the parameters' type or name, refer to the relevant [learning policy documentation](TODO).
+  - `accumulative_counts`: Optimize parameters after several backward steps instead of one backward step. You
+    can use it to simulate large batch size by small batch size.
+- `param_scheduler`: Optimizer parameters policy. You can use it to speicfy learning rate and momentum curves during training. See the [documentation](TODO) in MMEngine for more details.
+- `train_cfg | val_cfg | test_cfg`: The settings of the training, validation and test loops, refer to the relevant [MMEngine documentation](TODO).
 
-Following is the schedule configuration of ResNet50 primitive config in ['configs/_base_/datasets/imagenet_bs32.py'](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/datasets/imagenet_bs32.py)：
+Following is the schedule primitive config of the ResNet50 config in [`configs/_base_/datasets/imagenet_bs32.py`](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/_base_/datasets/imagenet_bs32.py)：
 
 ```python
-# Optimizer configuration, supports all PyTorch optimizers
 optim_wrapper = dict(
+    # Use SGD optimizer to optimize parameters.
     optimizer=dict(type='SGD', lr=0.1, momentum=0.9, weight_decay=0.0001))
 
-# The tuning strategy of the learning rate parameter
-# Scheduler policy, also supports CosineAnnealing, Cyclic, etc.,
-# 'MultiStepLR' step in 30, 60, 90 epochs, lr = lr * gamma
+# The tuning strategy of the learning rate.
+# The 'MultiStepLR' means to use multiple steps policy to schedule the learning rate (LR).
 param_scheduler = dict(
     type='MultiStepLR', by_epoch=True, milestones=[30, 60, 90], gamma=0.1)
 
-# Training configuration, iterate 100 epochs, and perform validation set evaluation after each training epoch
-# 'by_epoch=True' uses EpochBaseLoop by default, 'by_epoch=False' uses IterBaseLoop by default
-# Refer to MMEngine for more information on Runners and Loops
+# Training configuration, iterate 100 epochs, and perform validation after every training epochs.
+# 'by_epoch=True' means to use `EpochBaseTrainLoop`, 'by_epoch=False' means to use IterBaseTrainLoop.
 train_cfg = dict(by_epoch=True, max_epochs=100, val_interval=1)
+# Use the default val loop settings.
 val_cfg = dict()
+# Use the default test loop settings.
 test_cfg = dict()
 
-# When using automatic learning rate adjustment,
-# the batch_size of the benchmark is equal to base_num_GPU * base_batch_pre_GPU
+# This schedule is for the total batch size 256.
+# If you use a different total batch size, like 512 and enable auto learning rate scaling.
+# We will scale up the learning rate to 2 times.
 auto_scale_lr = dict(base_batch_size=256)
 ```
 
-### runtime setting
+### Runtime settings
 
-This part mainly includes saving the checkpoint strategy, log configuration, training parameters, breakpoint weight path, working directory, etc..
+This part mainly includes saving the checkpoint strategy, log configuration, training parameters, breakpoint weight path, working directory and etc..
 
-Here is the running configuration ['configs/_base_/default_runtime.py'](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/default_runtime.py) file used by almost all algorithms:
+Here is the runtime primitive config file ['configs/_base_/default_runtime.py'](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/_base_/default_runtime.py) file used by almost all configs:
 
 ```python
 # defaults to use registries in mmcls
@@ -353,11 +273,16 @@ resume = False
 
 ## Inherit and Modify Config File
 
-For easy understanding, we recommend contributors to inherit from existing methods.
+For easy understanding, we recommend contributors to inherit from existing methods. But do not abuse the
+inheritance. Usually, for all config files, we recommend the maximum of inheritance level is 3.
 
-For all configs under the same folder, it is recommended to have only **one** _primitive_ config. All other configs should inherit from the _primitive_ config. In this way, the maximum of inheritance level is 3.
-
-For example, if your config file is based on ResNet with some other modification, you can first inherit the basic ResNet structure, dataset and other training setting by specifying `_base_ ='./resnet50_8xb32_in1k.py'` (The path relative to your config file), and then modify the necessary parameters in the config file. A more specific example, now we want to use almost all configs in `configs/resnet/resnet50_8xb32_in1k.py`, but using `CutMix` train batch augment and changing the number of training epochs from 100 to 300, modify when to decay the learning rate, and modify the dataset path, you can create a new config file `configs/resnet/resnet50_8xb32-300e_in1k.py` with content as below:
+For example, if your config file is based on ResNet with some other modification, you can first inherit the
+basic ResNet structure, dataset and other training setting by specifying `_base_ ='./resnet50_8xb32_in1k.py'`
+(The path relative to your config file), and then modify the necessary parameters in the config file. A more
+specific example, now we want to use almost all configs in `configs/resnet/resnet50_8xb32_in1k.py`, but using
+`CutMix` train batch augment and changing the number of training epochs from 100 to 300, modify when to decay
+the learning rate, and modify the dataset path, you can create a new config file
+`configs/resnet/resnet50_8xb32-300e_in1k.py` with content as below:
 
 ```python
 _base_ = './resnet50_8xb32_in1k.py'
@@ -378,11 +303,11 @@ train_dataloader = dict(
     dataset=dict(data_root='mydata/imagenet/train'),
 )
 val_dataloader = dict(
-    batch_size=64,                  # No backpropagation during inference, larger batchsize can be used
+    batch_size=64,                  # No back-propagation during validation, larger batch size can be used
     dataset=dict(data_root='mydata/imagenet/val'),
 )
 test_dataloader = dict(
-    batch_size=64,                  # No backpropagation during inference, larger batchsize can be used
+    batch_size=64,                  # No back-propagation during test, larger batch size can be used
     dataset=dict(data_root='mydata/imagenet/val'),
 )
 ```
@@ -424,41 +349,22 @@ test_dataloader = dict(dataset=dict(pipeline=val_pipeline))
 
 ### Ignore some fields in the base configs
 
-Sometimes, you need to set `_delete_=True` to ignore some domain content in the basic configuration file. You can refer to [mmcv](TODO:) for more instructions.
+Sometimes, you need to set `_delete_=True` to ignore some domain content in the basic configuration file. You can refer to the [documentation in MMEngine](TODO) for more instructions.
 
-The following is an example. If you wangt to use cosine schedule in the above ResNet50 case, just using inheritance and directly modify it will report `get unexcepected keyword'step'` error, because the `'step'` field of the basic config in `param_scheduler` domain information is reserved, and you need to add `_delete_ =True` to ignore the content of `param_scheduler` related fields in the basic configuration file:
+The following is an example. If you want to use cosine schedule in the above ResNet50 case, just using inheritance and directly modify it will report `get unexcepected keyword 'step'` error, because the `'step'` field of the basic config in `param_scheduler` domain information is reserved, and you need to add `_delete_ =True` to ignore the content of `param_scheduler` related fields in the basic configuration file:
 
 ```python
 _base_ = '../../configs/resnet/resnet50_8xb32_in1k.py'
 
 # the learning rate scheduler
-param_scheduler = [
-    # In the first phase performs a warm up learning rate adjustment.
-    # The first stage begin is 0 and end is 5, which means [0, 5)
-    dict(
-        type='LinearLR',      # warm up learning rate policy type
-        start_factor=0.25,    # Initial learning rate = lr * start_factor
-        by_epoch=True,        # begin and end represent epoch, if False, iter
-        begin=0,              # start epoch sequence index
-        end=5,                # End epoch sequence index, epoch 5 no longer use this strategy
-        convert_to_iter_based=True), # Whether to update based on iter
-    # The second stage performs cos learning rate adjustment.
-    # In the second stage, begin is 5 and end is 100, which means [5, 100)
-    dict(
-        type='CosineAnnealingLR', # Use CosineAnnealingLR, half-cosine function
-        T_max=95,                 # The period is 95.
-        by_epoch=True,            # T_max, begin and end represent epoch, and if False, use IterBase
-        begin=5,
-        end=100,
-    )
-]
+param_scheduler = dict(type='CosineAnnealingLR', by_epoch=True, _delete_=True)
 ```
 
 ### Use some fields in the base configs
 
 Sometimes, you may refer to some fields in the `_base_` config, so as to avoid duplication of definitions. You can refer to [MMEngine](TODO:) for some more instructions.
 
-The following is an example of using auto augment in the training data preprocessing pipeline， refer to [`configs/resnest/resnest50_32xb64_in1k.py`](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnest/resnest50_32xb64_in1k.py). When defining `train_pipeline`, just add the definition file name of auto augment to `_base_`, and then use `{{_base_.auto_increasing_policies}}` to reference the variables:
+The following is an example of using auto augment in the training data preprocessing pipeline, refer to [`configs/resnest/resnest50_32xb64_in1k.py`](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnest/resnest50_32xb64_in1k.py). When defining `train_pipeline`, just add the definition file name of auto augment to `_base_`, and then use `_base_.auto_increasing_policies` to reference the variables in the primitive config:
 
 ```python
 _base_ = [
@@ -470,7 +376,7 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='RandAugment',
-        policies={{_base_.policies}}, # This uses the `policies` parameter from _base_.
+        policies=_base_.policies, # This uses the `policies` parameter in the primitive config.
         num_policies=2,
         magnitude_level=12),
     dict(type='EfficientNetRandomCrop', scale=224, backend='pillow'),
@@ -490,7 +396,7 @@ train_dataloader = dict(dataset=dict(pipeline=train_pipeline))
 
 ## Modify config in command
 
-When users use the script "tools/train.py" or "tools/test.py" to submit tasks or use some other tools, they can directly modify the content of the configuration file used by specifying the `--cfg-options` parameter.
+When you use the script "tools/train.py" or "tools/test.py" to submit tasks or use some other tools, they can directly modify the content of the configuration file used by specifying the `--cfg-options` argument.
 
 - Update config keys of dict chains.
 
@@ -506,22 +412,3 @@ When users use the script "tools/train.py" or "tools/test.py" to submit tasks or
 - Update values of list/tuples.
 
   If the value to be updated is a list or a tuple. For example, the config file normally sets `val_evaluator = dict(type='Accuracy', topk=(1, 5))`. If you want to change the field `topk`, you may specify `--cfg-options val_evaluator.topk="(1,3)"`. Note that the quotation mark " is necessary to support list/tuple data types, and that **NO** white space is allowed inside the quotation marks in the specified value.
-
-## Import user-defined modules
-
-After studying the follow-up tutorials [ADDING NEW DATASET](https://mmclassification.readthedocs.io/en/latest/tutorials/new_dataset.html), [CUSTOM DATA PIPELINES](https://mmclassification.readthedocs.io/en/latest/tutorials/data_pipeline.html), [ADDING NEW MODULES](https://mmclassification.readthedocs.io/en/latest/tutorials/new_modules.html). You may use MMClassification to complete your project and create new classes of datasets, models, data enhancements, etc. in the project. In order to streamline the code, you can use MMClassification as a third-party library, you just need to keep your own extra code and import your own custom module in the configuration files. For examples, you may refer to [OpenMMLab Algorithm Competition Project](https://github.com/zhangrui-wolf/openmmlab-competition-2021).
-
-Add the following code to your own configuration files:
-
-```python
-custom_imports = dict(
-    imports=['your_dataset_class',
-             'your_transforme_class',
-             'your_model_class',
-             'your_module_class'],
-    allow_failed_imports=False)
-```
-
-## FAQ
-
-- None
