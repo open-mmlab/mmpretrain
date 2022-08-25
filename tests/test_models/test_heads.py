@@ -497,6 +497,11 @@ class TestArcFaceHead(TestCase):
         pre_logits = head.pre_logits(feats)
         self.assertIs(pre_logits, feats[-1])
 
+        # return the last item
+        feats = torch.rand(4, 10)
+        pre_logits = head.pre_logits(feats)
+        self.assertIs(pre_logits, feats)
+
     def test_forward(self):
         head = MODELS.build(self.DEFAULT_ARGS)
         # target is not None
@@ -508,15 +513,26 @@ class TestArcFaceHead(TestCase):
         # target is None
         feats = (torch.rand(4, 10), torch.rand(4, 10))
         outs = head(feats)
-        self.assertEqual(outs.shape, (4, 10))
+        self.assertEqual(outs.shape, (4, 5))
 
     def test_loss(self):
         feats = (torch.rand(4, 10), )
         data_samples = [ClsDataSample().set_gt_label(1) for _ in range(4)]
 
-        # with cal_acc = False
+        # test loss with used='before'
         head = MODELS.build(self.DEFAULT_ARGS)
-
         losses = head.loss(feats, data_samples)
         self.assertEqual(losses.keys(), {'loss'})
         self.assertGreater(losses['loss'].item(), 0)
+
+    def test_predict(self):
+        feats = (torch.rand(4, 10), )
+        #  test loss with used='before'
+        head = MODELS.build(self.DEFAULT_ARGS)
+        pred = head.predict(feats)
+        self.assertEqual(pred.shape, (4, 10))
+
+        #  test loss with used='after'
+        head = MODELS.build({**self.DEFAULT_ARGS, 'used': 'after'})
+        pred = head.predict(feats)
+        self.assertEqual(pred.shape, (4, 5))

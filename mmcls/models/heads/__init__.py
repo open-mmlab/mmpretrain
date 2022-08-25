@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .arc_face_head import ArcFaceHead
+from .arcface_head import ArcFaceHead
 from .cls_head import ClsHead
 from .conformer_head import ConformerHead
 from .deit_head import DeiTClsHead

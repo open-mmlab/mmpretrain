@@ -11,6 +11,29 @@ from mmcls.registry import MODELS
 from .base_head import BaseHead
 
 
+class NormLinear(nn.Linear):
+
+    def __init__(self,
+                 in_features: int,
+                 out_features: int,
+                 bias: bool = False,
+                 feature_norm: bool = True,
+                 weight_norm: bool = True):
+
+        super().__init__(in_features, out_features, bias=bias)
+        self.weight_norm = weight_norm
+        self.feature_norm = feature_norm
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        if self.feature_norm:
+            input = F.normalize(input)
+        if self.weight_norm:
+            weight = F.normalize(self.weight)
+        else:
+            weight = self.weight
+        return F.linear(input, weight, self.bias)
+
+
 @MODELS.register_module()
 class ArcFaceHead(BaseHead):
     """ArcFace classifier head.
@@ -23,6 +46,15 @@ class ArcFaceHead(BaseHead):
         m (float): Margin. Defaults to 0.5.
         easy_margin (bool): Avoid theta + m >= PI. Defaults to False.
         ls_eps (float): Label smoothing. Defaults to 0.
+        used (str): If used='after', it represents the vector after
+            the weight processing is used for prediction.
+            If used='before', it represents the vector before
+            the weight processing is used to get the feature vector.
+        bias (bool): Whether to use bias in norm layer. Defaults to False.
+        feature_norm (bool): Whether to normalize feature in norm layer.
+            Defaults to True.
+        weight_norm (bool): Whether to normalize weight in norm layer.
+            Defaults to True.
         loss (dict): Config of classification loss. Defaults to
             ``dict(type='CrossEntropyLoss', loss_weight=1.0)``.
         init_cfg (dict, optional): the config to control the initialization.
@@ -36,8 +68,13 @@ class ArcFaceHead(BaseHead):
                  m: float = 0.50,
                  easy_margin: bool = False,
                  ls_eps: float = 0.0,
+                 used: str = 'before',
+                 bias: bool = False,
+                 feature_norm: bool = True,
+                 weight_norm: bool = True,
                  loss: dict = dict(type='CrossEntropyLoss', loss_weight=1.0),
                  init_cfg: Optional[dict] = None):
+
         super(ArcFaceHead, self).__init__(init_cfg=init_cfg)
         self.loss_module = MODELS.build(loss)
 
@@ -51,8 +88,13 @@ class ArcFaceHead(BaseHead):
         self.s = s
         self.m = m
         self.ls_eps = ls_eps
-        self.weight = nn.Parameter(torch.FloatTensor(num_classes, in_channels))
-        nn.init.xavier_uniform_(self.weight)
+
+        self.norm_layer = NormLinear(
+            in_features=in_channels,
+            out_features=num_classes,
+            bias=bias,
+            feature_norm=feature_norm,
+            weight_norm=weight_norm)
 
         self.easy_margin = easy_margin
         self.cos_m = math.cos(m)
@@ -60,9 +102,20 @@ class ArcFaceHead(BaseHead):
         self.th = math.cos(math.pi - m)
         self.mm = math.sin(math.pi - m) * m
 
+        self.used = used
+
     def pre_logits(self, feats: Tuple[torch.Tensor]) -> torch.Tensor:
-        """The process before the final classification head."""
-        return feats[-1]
+        """The process before the final classification head.
+
+        The input ``feats`` is a tuple of tensor, and each tensor is the
+        feature of a backbone stage. In ``ArcFaceHead``, we just obtain the
+        feature of the last stage.
+        """
+        if isinstance(feats, tuple):
+            feats = feats[-1]
+            # The ArcFaceHead doesn't have other module, just return after
+            # unpacking.
+        return feats
 
     def forward(self,
                 feats: Tuple[torch.Tensor],
@@ -70,21 +123,36 @@ class ArcFaceHead(BaseHead):
         """The forward process."""
 
         pre_logits = self.pre_logits(feats)
+
+        # cos=(a*b)/(||a||*||b||)
+        cosine = self.norm_layer(pre_logits)
+
         if target is None:
-            return pre_logits
-        cosine = F.linear(F.normalize(pre_logits), F.normalize(self.weight))
+            return cosine
+
+        # sin^2+cos^2=1
         sine = torch.sqrt(1.0 - torch.pow(cosine, 2))
+
+        # cos(a+b)=cos(a)cos(b)-sin(a)sin(b)
         phi = cosine * self.cos_m - sine * self.sin_m
+
         if self.easy_margin:
+            # when cosine>0, choose phi
+            # when cosine<=0, choose cosine
             phi = torch.where(cosine > 0, phi, cosine)
         else:
+            # when cos>th, choose phi
+            # when cos<=th, choose cosine-mm
             phi = torch.where(cosine > self.th, phi, cosine - self.mm)
+
         one_hot = torch.zeros(cosine.size(), device=pre_logits.device)
         one_hot.scatter_(1, target.view(-1, 1).long(), 1)
         if self.ls_eps > 0:
             one_hot = (1 -
                        self.ls_eps) * one_hot + self.ls_eps / self.num_classes
+
         output = (one_hot * phi) + ((1.0 - one_hot) * cosine)
+
         output *= self.s
 
         return output
@@ -142,4 +210,8 @@ class ArcFaceHead(BaseHead):
         """
 
         pre_logits = self.pre_logits(feats)
-        return pre_logits
+        if self.used == 'after':
+            pre_logits = self.norm_layer(pre_logits)
+            return pre_logits
+        else:
+            return pre_logits
