@@ -33,7 +33,7 @@ class LinearReduction(nn.Module):
         super(LinearReduction, self).__init__()
 
         self.in_channels = in_channels
-        self.out_channles = out_channels
+        self.out_channels = out_channels
         self.act_cfg = copy.deepcopy(act_cfg)
         self.norm_cfg = copy.deepcopy(norm_cfg)
         self.init_cfg = copy.deepcopy(init_cfg)
