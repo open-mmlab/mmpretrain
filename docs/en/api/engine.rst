@@ -26,9 +26,9 @@ Hook
    :nosignatures:
    :template: classtemplate.rst
 
-.. autoclass:: ClassNumCheckHook
-.. autoclass:: PreciseBNHook
-.. autoclass:: VisualizationHook
+  ClassNumCheckHook
+  PreciseBNHook
+  VisualizationHook
 
 Optimizers
 ------------------
@@ -38,4 +38,4 @@ Optimizers
    :nosignatures:
    :template: classtemplate.rst
 
-.. autoclass:: Lamb
+  Lamb

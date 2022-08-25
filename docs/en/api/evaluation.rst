@@ -7,7 +7,7 @@ mmcls.evaluation
 These are some Metrics and Evaluator for classification tasks.
 
 .. contents:: mmcls.evaluation
-   :depth: 2
+   :depth: 3
    :local:
    :backlinks: top
 
@@ -21,8 +21,8 @@ Single Label Metric
    :nosignatures:
    :template: classtemplate.rst
 
-.. autoclass:: Accuracy
-.. autoclass:: SingleLabelMetric
+  Accuracy
+  SingleLabelMetric
 
 Multi Label Metric
 ----------------------
@@ -30,5 +30,5 @@ Multi Label Metric
    :toctree: generated
    :nosignatures:
 
-.. autoclass:: MultiLabelMetric
-.. autoclass:: AveragePrecision
+  MultiLabelMetric
+  AveragePrecision

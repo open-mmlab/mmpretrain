@@ -21,4 +21,4 @@ Data_structures
    :nosignatures:
    :template: classtemplate.rst
 
-.. autoclass:: ClsDataSample
+  ClsDataSample

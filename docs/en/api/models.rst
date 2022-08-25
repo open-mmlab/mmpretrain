@@ -7,13 +7,20 @@ mmcls.models
 The ``models`` package contains several sub-packages for addressing the different components of a model.
 
 - :ref:`classifiers`: The top-level module which defines the whole process of a classification model.
-- :ref:`datapreprocessors`: The component before model to preprocess the inputs, e.g., ClsDataPreprocessor.
 - :ref:`backbones`: Usually a feature extraction network, e.g., ResNet, MobileNet.
 - :ref:`necks`: The component between backbones and heads, e.g., GlobalAveragePooling.
 - :ref:`heads`: The component for specific tasks. In MMClassification, we provides heads for classification.
 - :ref:`losses`: Loss functions.
+- :ref:`datapreprocessors`: The component before model to preprocess the inputs, e.g., ClsDataPreprocessor.
+- :ref:`models.utils`: Some helper functions and common components used in various networks.
+
+  - :ref:`components`: Common components used in various networks.
+  - :ref:`helpers`: Helper functions.
 
 .. currentmodule:: mmcls.models
+
+Build Functions
+---------------
 
 .. autosummary::
     :toctree: generated
@@ -35,20 +42,8 @@ Classifier
    :nosignatures:
    :template: classtemplate.rst
 
-   BaseClassifier
-   ImageClassifier
-
-.. _datapreprocessors:
-
-Datapreprocessors
-------------------
-
-.. autosummary::
-   :toctree: generated
-   :nosignatures:
-   :template: classtemplate.rst
-
-   ClsDataPreprocessor
+    BaseClassifier
+    ImageClassifier
 
 .. _backbones:
 
@@ -125,14 +120,14 @@ Heads
    :nosignatures:
    :template: classtemplate.rst
 
-   ClsHead
-   LinearClsHead
-   StackedLinearClsHead
-   VisionTransformerClsHead
-   DeiTClsHead
-   ConformerHead
-   MultiLabelClsHead
-   MultiLabelLinearClsHead
+    ClsHead
+    LinearClsHead
+    StackedLinearClsHead
+    VisionTransformerClsHead
+    DeiTClsHead
+    ConformerHead
+    MultiLabelClsHead
+    MultiLabelLinearClsHead
 
 .. _losses:
 
@@ -150,8 +145,10 @@ Losses
    AsymmetricLoss
    SeesawLoss
 
-mmcls.models.utils
-===================================
+.. _models.utils:
+
+models.utils
+------------
 
 This package includes some helper functions and common components used in various networks.
 
@@ -162,8 +159,10 @@ This package includes some helper functions and common components used in variou
 
 .. currentmodule:: mmcls.models.utils
 
+.. _components:
+
 Common Components
-------------------
+^^^^^^^^^^^^^^^^^
 
 .. autosummary::
    :toctree: generated
@@ -179,30 +178,32 @@ Common Components
    PatchMerging
    HybridEmbed
 
+.. _helpers:
+
 Helper Functions
-------------------
+^^^^^^^^^^^^^^^^
 
 channel_shuffle
-^^^^^^^^^^^^^^^
+***************
 .. autofunction:: channel_shuffle
 
 make_divisible
-^^^^^^^^^^^^^^
+***************
 .. autofunction:: make_divisible
 
 resize_position_enbeding
-^^^^^^^^^^^^^^^^^^^^^^^^
+***************
 
 .. autofunction:: resize_pos_embed
 .. autofunction:: resize_relative_position_bias_table
 
 to_ntuple
-^^^^^^^^^
+*********
 .. autofunction:: to_ntuple
 .. autofunction:: to_2tuple
 .. autofunction:: to_3tuple
 .. autofunction:: to_4tuple
 
 is_tracing
-^^^^^^^^^^
+**********
 .. autofunction:: is_tracing

@@ -21,4 +21,4 @@ Visualization
    :nosignatures:
    :template: classtemplate.rst
 
-.. autoclass:: ClsVisualizer
+  ClsVisualizer
