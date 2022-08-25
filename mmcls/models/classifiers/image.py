@@ -7,15 +7,53 @@ from .base import BaseClassifier
 
 @CLASSIFIERS.register_module()
 class ImageClassifier(BaseClassifier):
+    arch_zoo = {
+        **dict.fromkeys(['r50'],
+                        dict(
+                            backbone=dict(
+                                type='ResNet',
+                                depth=50,
+                                num_stages=4,
+                                out_indices=(3,),
+                                style='pytorch'),
+                            neck=dict(type='GlobalAveragePooling'),
+                            head=dict(
+                                type='LinearClsHead',
+                                num_classes=1000,
+                                in_channels=2048,
+                                loss=dict(type='CrossEntropyLoss',
+                                          loss_weight=1.0),
+                                topk=(1, 5),
+                            )))
+    }  # yapf: disable
 
     def __init__(self,
-                 backbone,
+                 backbone=None,
                  neck=None,
                  head=None,
+                 arch=None,
                  pretrained=None,
                  train_cfg=None,
                  init_cfg=None):
         super(ImageClassifier, self).__init__(init_cfg)
+
+        if isinstance(arch, str):
+            arch = arch.lower()
+            assert arch in set(self.arch_zoo), \
+                f'Arch {arch} is not in default archs {set(self.arch_zoo)}'
+            arch_settings = self.arch_zoo[arch]
+            if backbone is not None:
+                arch_settings['backbone'].update(backbone)
+            if neck is not None:
+                arch_settings['neck'].update(neck)
+            if head is not None:
+                arch_settings['head'].update(head)
+            backbone = arch_settings['backbone']
+            neck = arch_settings['neck']
+            head = arch_settings['head']
+        else:
+            assert backbone is not None, \
+                'You should be set backbone if arch is None.'
 
         if pretrained is not None:
             self.init_cfg = dict(type='Pretrained', checkpoint=pretrained)
