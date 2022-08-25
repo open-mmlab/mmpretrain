@@ -97,8 +97,6 @@ class ArcFaceHead(BaseHead):
             weight_norm=weight_norm)
 
         self.easy_margin = easy_margin
-        self.cos_m = math.cos(m)
-        self.sin_m = math.sin(m)
         self.th = math.cos(math.pi - m)
         self.mm = math.sin(math.pi - m) * m
 
@@ -130,11 +128,7 @@ class ArcFaceHead(BaseHead):
         if target is None:
             return cosine
 
-        # sin^2+cos^2=1
-        sine = torch.sqrt(1.0 - torch.pow(cosine, 2))
-
-        # cos(a+b)=cos(a)cos(b)-sin(a)sin(b)
-        phi = cosine * self.cos_m - sine * self.sin_m
+        phi = torch.cos(torch.acos(cosine) + self.m)
 
         if self.easy_margin:
             # when cosine>0, choose phi
@@ -211,7 +205,7 @@ class ArcFaceHead(BaseHead):
 
         pre_logits = self.pre_logits(feats)
         if self.used == 'after':
-            pre_logits = self.norm_layer(pre_logits)
+            pre_logits = self.s * self.norm_layer(pre_logits)
             return pre_logits
         else:
             return pre_logits
