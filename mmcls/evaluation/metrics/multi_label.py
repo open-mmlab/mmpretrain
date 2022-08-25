@@ -584,7 +584,7 @@ class RetrievalAveragePrecision(BaseMetric):
         ...                        101, 102, 103, 104, 105,
         ...                        201, 202, 203, 204, 205])
         >>> k = 100
-        >>> RetrievalAveragePrecision.calculate_retrieval(index, label, k)
+        >>> RetrievalAveragePrecision.calculate(index, label, k)
         16.746031746031745
         >>> # ------------------- Use with Evalutor -------------------
         >>> from mmcls.data import ClsDataSample
