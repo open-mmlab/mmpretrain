@@ -91,7 +91,8 @@ class ClsDataPreprocessor(BaseDataPreprocessor):
         inputs = data['inputs']
 
         if isinstance(inputs, torch.Tensor):
-            # The branch if use `default_collate` in dataloader.
+            # The branch if use `default_collate` as the collate_fn in the
+            # dataloader.
 
             # ------ To RGB ------
             if self.to_rgb and inputs.size(1) == 3:
@@ -115,7 +116,8 @@ class ClsDataPreprocessor(BaseDataPreprocessor):
                 inputs = F.pad(inputs, (0, pad_w, 0, pad_h), 'constant',
                                self.pad_value)
         else:
-            # The branch if use `pseudo_collate` in dataloader.
+            # The branch if use `pseudo_collate` as the collate_fn in the
+            # dataloader.
 
             processed_inputs = []
             for input_ in inputs:
