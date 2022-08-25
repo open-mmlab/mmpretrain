@@ -96,7 +96,7 @@ class MultiLabelMetric(BaseMetric):
         (tensor(62.5000), tensor(31.2500), tensor(39.1667), tensor(8))
         >>>
         >>> # ------------------- Use with Evalutor -------------------
-        >>> from mmcls.structures import ClsDataSample
+        >>> from mmcls.data import ClsDataSample
         >>> from mmengine.evaluator import Evaluator
         >>> data_sampels = [
         ...     ClsDataSample().set_pred_score(pred).set_gt_score(gt)
@@ -404,7 +404,7 @@ def _average_precision(pred: torch.Tensor,
     pred_pos_nums[pred_pos_nums < eps] = eps
 
     tps[torch.logical_not(pos_inds)] = 0
-    precision = tps / pred_pos_nums.float()
+    precision = tps / pred_pos_nums
     ap = torch.sum(precision, 0) / max(total_pos, eps)
     return ap
 
@@ -450,7 +450,7 @@ class AveragePrecision(BaseMetric):
         >>> AveragePrecision.calculate(y_pred, y_true)
         tensor(70.833)
         >>> # ------------------- Use with Evalutor -------------------
-        >>> from mmcls.structures import ClsDataSample
+        >>> from mmcls.data import ClsDataSample
         >>> from mmengine.evaluator import Evaluator
         >>> data_samples = [
         ...     ClsDataSample().set_pred_score(i).set_gt_score(j)
