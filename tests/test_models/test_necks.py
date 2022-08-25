@@ -3,7 +3,7 @@ import pytest
 import torch
 
 from mmcls.models.necks import (GeneralizedMeanPooling, GlobalAveragePooling,
-                                HRFuseScales, Reduction)
+                                HRFuseScales, LinearReduction)
 
 
 def test_gap_neck():
@@ -87,10 +87,13 @@ def test_hr_fuse_scales():
     assert outs[0].shape == (3, 1024, 7, 7)
 
 
-def test_reduction():
-    # test neck_with_reduction
-    neck = Reduction(10, 5)
+def test_linear_reduction():
+    # test linear_reduction without `act_cfg` and `norm_cfg`
+    neck = LinearReduction(10, 5, None, None)
+    assert neck.init_weights() is None
     neck.eval()
+    assert neck.act is None
+    assert neck.norm is None
 
     # batch_size, in_channels, out_channels
     fake_input = torch.rand(1, 10)
@@ -99,6 +102,32 @@ def test_reduction():
     assert output.shape == (1, 5)
 
     # batch_size, in_features, feature_size(2)
+    fake_input = (torch.rand(1, 20), torch.rand(1, 10))
+
+    output = neck(fake_input)
+    # batch_size, out_features
+    assert output.shape == (1, 5)
+
+    # test linear_reduction with `init_cfg`
+    neck = LinearReduction(
+        10, 5, init_cfg=dict(type='Xavier', layer=['Linear']))
+    assert neck.init_weights() is None
+
+    # test linear_reduction with `act_cfg` and `norm_cfg`
+    neck = LinearReduction(
+        10, 5, act_cfg=dict(type='ReLU'), norm_cfg=dict(type='BN1d'))
+    neck.eval()
+
+    assert isinstance(neck.act, torch.nn.ReLU)
+    assert isinstance(neck.norm, torch.nn.BatchNorm1d)
+
+    # batch_size, in_channels, out_channels
+    fake_input = torch.rand(1, 10)
+    output = neck(fake_input)
+    # batch_size, out_features
+    assert output.shape == (1, 5)
+    #
+    # # batch_size, in_features, feature_size(2)
     fake_input = (torch.rand(1, 20), torch.rand(1, 10))
 
     output = neck(fake_input)
