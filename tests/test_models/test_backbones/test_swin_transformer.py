@@ -8,7 +8,7 @@ from unittest import TestCase
 
 import torch
 from mmengine.runner import load_checkpoint, save_checkpoint
-from mmengine.utils.parrots_wrapper import _BatchNorm
+from mmengine.utils.dl_utils.parrots_wrapper import _BatchNorm
 
 from mmcls.models.backbones import SwinTransformer
 from mmcls.models.backbones.swin_transformer import SwinBlock

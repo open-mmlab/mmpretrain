@@ -8,7 +8,7 @@ from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.drop import build_dropout
 from mmcv.cnn.bricks.transformer import FFN, PatchEmbed
 from mmengine.model import BaseModule, ModuleList
-from mmengine.model.utils import trunc_normal_
+from mmengine.model.weight_init import trunc_normal_
 
 from mmcls.registry import MODELS
 from ..utils import (BEiTAttention, MultiheadAttention, resize_pos_embed,

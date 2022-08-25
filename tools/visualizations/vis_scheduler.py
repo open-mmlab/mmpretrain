@@ -9,8 +9,11 @@ from unittest.mock import MagicMock
 import matplotlib.pyplot as plt
 import rich
 import torch.nn as nn
-from mmengine import Config, DictAction, Hook, Runner, Visualizer
+from mmengine.config import Config, DictAction
+from mmengine.hooks import Hook
 from mmengine.model import BaseModel
+from mmengine.runner import Runner
+from mmengine.visualization import Visualizer
 from rich.progress import BarColumn, MofNCompleteColumn, Progress, TextColumn
 
 from mmcls.utils import register_all_modules

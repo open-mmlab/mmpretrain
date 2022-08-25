@@ -5,6 +5,7 @@ import os.path as osp
 
 import mmengine
 from mmengine.config import Config, DictAction
+from mmengine.hooks import Hook
 from mmengine.runner import Runner
 
 from mmcls.utils import register_all_modules
@@ -122,7 +123,7 @@ def main():
 
     if args.out:
 
-        class SaveMetricHook(mmengine.Hook):
+        class SaveMetricHook(Hook):
 
             def after_test_epoch(self, _, metrics=None):
                 if metrics is not None:

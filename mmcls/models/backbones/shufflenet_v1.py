@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.utils.checkpoint as cp
 from mmcv.cnn import ConvModule, build_activation_layer
 from mmengine.model import BaseModule
-from mmengine.model.utils import constant_init, normal_init
+from mmengine.model.weight_init import constant_init, normal_init
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from mmcls.models.utils import channel_shuffle, make_divisible

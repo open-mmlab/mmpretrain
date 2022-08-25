@@ -3,8 +3,9 @@ from typing import List, Optional, Sequence, Union
 
 import numpy as np
 import torch
-from mmengine import LabelData, MMLogger
 from mmengine.evaluator import BaseMetric
+from mmengine.logging import MMLogger
+from mmengine.structures import LabelData
 
 from mmcls.registry import METRICS
 from .single_label import _precision_recall_f1_support, to_tensor

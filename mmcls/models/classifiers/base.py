@@ -3,8 +3,8 @@ from abc import ABCMeta, abstractmethod
 from typing import List, Optional, Sequence
 
 import torch
-from mmengine import BaseDataElement
 from mmengine.model import BaseModel
+from mmengine.structures import BaseDataElement
 
 
 class BaseClassifier(BaseModel, metaclass=ABCMeta):

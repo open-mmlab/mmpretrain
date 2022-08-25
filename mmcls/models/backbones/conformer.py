@@ -8,7 +8,7 @@ from mmcv.cnn import build_activation_layer, build_norm_layer
 from mmcv.cnn.bricks.drop import DropPath
 from mmcv.cnn.bricks.transformer import AdaptivePadding
 from mmengine.model import BaseModule
-from mmengine.model.utils import trunc_normal_
+from mmengine.model.weight_init import trunc_normal_
 
 from mmcls.registry import MODELS
 from .base_backbone import BaseBackbone

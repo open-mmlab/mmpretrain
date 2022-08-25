@@ -6,7 +6,7 @@ import unittest
 import mmcv
 import numpy as np
 import torch
-from mmengine.data import LabelData
+from mmengine.structures import LabelData
 from PIL import Image
 
 from mmcls.registry import TRANSFORMS
