@@ -1,10 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from argparse import ArgumentParser
 
-import mmcv
+from mmengine.fileio import dump
 from rich import print_json
 
 from mmcls.apis import inference_model, init_model
+from mmcls.utils import register_all_modules
 
 
 def main():
@@ -16,12 +17,14 @@ def main():
         '--device', default='cuda:0', help='Device used for inference')
     args = parser.parse_args()
 
+    # register all modules and set mmcls as the default scope.
+    register_all_modules()
     # build the model from a config file and a checkpoint file
     model = init_model(args.config, args.checkpoint, device=args.device)
     # test a single image
     result = inference_model(model, args.img)
     # show the results
-    print_json(mmcv.dump(result, file_format='json', indent=4))
+    print_json(dump(result, file_format='json', indent=4))
 
 
 if __name__ == '__main__':
