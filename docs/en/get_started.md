@@ -26,7 +26,7 @@ conda install pytorch torchvision -c pytorch
 ```
 
 ```{warning}
-This command will automatically install the latest version PyTorch and cudatoolkit, please check whether they matches your environment.
+This command will automatically install the latest version PyTorch and cudatoolkit, please check whether they match your environment.
 ```
 
 On CPU platforms:
@@ -52,7 +52,7 @@ mim install mmengine "mmcv-full>=2.0rc0"
 
 According to your needs, we support two install modes:
 
-- [Install from source (Recommended)](#install-from-source): You want to develop your own image classification task or new features based on MMClassification framework. For example, you want to add new dataset or new models. And you can use all tools we provided.
+- [Install from source (Recommended)](#install-from-source): You want to develop your own image classification task or new features based on MMClassification framework. For example, adding new dataset or new models. And you can use all tools we provided.
 - [Install as a Python package](#install-as-a-python-package): You just want to call MMClassification's APIs or import MMClassification's modules in your project.
 
 ### Install from source
@@ -95,7 +95,7 @@ mim download mmcls --config resnet50_8xb32_in1k --dest .
 
 **Step 2.** Verify the inference demo.
 
-Option (a). If you install mmcls from source, just run the following command:
+Option (a). If you install mmcls from the source, just run the following command:
 
 ```shell
 python demo/image_demo.py demo/demo.JPEG resnet50_8xb32_in1k.py resnet50_8xb32_in1k_20210831-ea4938fc.pth --device cpu
@@ -103,7 +103,7 @@ python demo/image_demo.py demo/demo.JPEG resnet50_8xb32_in1k.py resnet50_8xb32_i
 
 You will see the output result dict including `pred_label`, `pred_score` and `pred_class` in your terminal.
 
-Option (b). If you install mmcls as a python package, open you python interpreter and copy&paste the following codes.
+Option (b). If you install mmcls as a python package, open your python interpreter and copy&paste the following codes.
 
 ```python
 from mmcls.apis import init_model, inference_model
