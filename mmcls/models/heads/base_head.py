@@ -2,8 +2,8 @@
 from abc import ABCMeta, abstractmethod
 from typing import List, Optional, Tuple
 
-from mmengine import BaseDataElement
 from mmengine.model import BaseModule
+from mmengine.structures import BaseDataElement
 
 
 class BaseHead(BaseModule, metaclass=ABCMeta):

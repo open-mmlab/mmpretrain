@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn.bricks.drop import build_dropout
 from mmengine.model import BaseModule
-from mmengine.model.utils import trunc_normal_
+from mmengine.model.weight_init import trunc_normal_
 
 from mmcls.registry import MODELS
 from .helpers import to_2tuple

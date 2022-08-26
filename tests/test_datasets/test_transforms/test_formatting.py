@@ -6,7 +6,7 @@ import unittest
 import mmcv
 import numpy as np
 import torch
-from mmengine.data import LabelData
+from mmengine.structures import LabelData
 from PIL import Image
 
 from mmcls.registry import TRANSFORMS
@@ -36,10 +36,10 @@ class TestPackClsInputs(unittest.TestCase):
         results = transform(copy.deepcopy(data))
         self.assertIn('inputs', results)
         self.assertIsInstance(results['inputs'], torch.Tensor)
-        self.assertIn('data_sample', results)
-        self.assertIsInstance(results['data_sample'], ClsDataSample)
-        self.assertIn('flip', results['data_sample'].metainfo_keys())
-        self.assertIsInstance(results['data_sample'].gt_label, LabelData)
+        self.assertIn('data_samples', results)
+        self.assertIsInstance(results['data_samples'], ClsDataSample)
+        self.assertIn('flip', results['data_samples'].metainfo_keys())
+        self.assertIsInstance(results['data_samples'].gt_label, LabelData)
 
         # Test grayscale image
         data['img'] = data['img'].mean(-1)
@@ -53,7 +53,7 @@ class TestPackClsInputs(unittest.TestCase):
         del data['gt_label']
         with self.assertWarnsRegex(Warning, 'Cannot get "img"'):
             results = transform(copy.deepcopy(data))
-            self.assertNotIn('gt_label', results['data_sample'])
+            self.assertNotIn('gt_label', results['data_samples'])
 
     def test_repr(self):
         cfg = dict(type='PackClsInputs', meta_keys=['flip', 'img_shape'])

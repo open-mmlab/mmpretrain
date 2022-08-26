@@ -6,8 +6,8 @@ from mmcv.cnn import (ConvModule, build_activation_layer, build_conv_layer,
                       build_norm_layer)
 from mmcv.cnn.bricks import DropPath
 from mmengine.model import BaseModule
-from mmengine.model.utils import constant_init
-from mmengine.utils.parrots_wrapper import _BatchNorm
+from mmengine.model.weight_init import constant_init
+from mmengine.utils.dl_utils.parrots_wrapper import _BatchNorm
 
 from mmcls.registry import MODELS
 from .base_backbone import BaseBackbone
