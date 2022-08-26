@@ -31,7 +31,7 @@ def init_model(config, checkpoint=None, device='cuda:0', options=None):
         config.merge_from_dict(options)
     config.model.pretrained = None
     config.model.setdefault('data_preprocessor',
-                            config.get('preprocess_cfg', None))
+                            config.get('data_preprocessor', None))
     model = build_classifier(config.model)
     if checkpoint is not None:
         # Mapping the weights to GPU may cause unexpected video memory leak

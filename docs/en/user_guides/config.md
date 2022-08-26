@@ -13,7 +13,7 @@ MMClassification/
     │   │   ├── datasets/                      # primitive datasets
     │   │   ├── models/                        # primitive models
     │   │   ├── schedules/                     # primitive schedules
-    │   │   └── default_runtime.py             # primitive runtime
+    │   │   └── default_runtime.py             # primitive runtime setting
     │   ├── resnet/                       # ResNet Algorithms Folder
     │   ├── swin_transformer/             # Swin Algorithms Folder
     │   ├── vision_transformer/           # ViT Algorithms Folder
@@ -61,8 +61,7 @@ This primitive config file includes a dict variable `model`, which mainly includ
   - `loss`: The loss function to optimize, like `CrossEntropyLoss`, `LabelSmoothLoss` and etc. All available losses can be found in the [API documentation](https://mmclassification.readthedocs.io/en/1.x/api/models.html#losses).
 - `data_preprocessor`: The component before the model forwarding to preprocess the inputs. See the
   [documentation](TODO) for more details.
-- `train_cfg`: The extra settings of the model during training. In MMCLS, we mainly use it to specify batch augmentation settings, like `Mixup` and `CutMix`. See the
-  [documentation](TODO) for more details.
+- `train_cfg`: The extra settings of the model during training. In MMCLS, we mainly use it to specify batch augmentation settings, like `Mixup` and `CutMix`. See the [documentation](TODO) for more details.
 
 ```{note}
 Usually, we use the `type` field to specify the class of the component, and use other fields to pass
@@ -98,7 +97,7 @@ model = dict(
 
 This primitive config file includes information to construct dataloader and evaluator:
 
-- `preprocess_cfg`: Model input preprocessing configuration, same as `model.data_preprocessor` but with lower priority.
+- `data_preprocessor`: Model input preprocessing configuration, same as `model.data_preprocessor` but with lower priority.
 - `train_evaluator | val_evaluator | test_evaluator`: To build the evaluator or metrics, refer to the [tutorial](TODO:).
 - `train_dataloader | val_dataloader | test_dataloader`: The settings of dataloaders
   - `batch_size`: The batch size of each GPU.
@@ -114,7 +113,7 @@ Following is the data primitive config of the ResNet50 config in [`configs/_base
 ```python
 dataset_type = 'ImageNet'
 # preprocessing configuration
-preprocess_cfg = dict(
+data_preprocessor = dict(
     # Input image data channels in 'RGB' order
     mean=[123.675, 116.28, 103.53],    # Input image normalized channel mean in RGB order
     std=[58.395, 57.12, 57.375],       # Input image normalized channel std in RGB order
@@ -170,7 +169,7 @@ test_evaluator = val_evaluator    # The settings of the evaluation metrics for t
 ```
 
 ```{note}
-'model.data_preprocessor' can be defined either in `model=dict(data_preprocessor=dict())` or using the `preprocess_cfg` definition here, if both of them exist, use the `model.data_preprocessor` configuration.
+'model.data_preprocessor' can be defined either in `model=dict(data_preprocessor=dict())` or using the `data_preprocessor` definition here, if both of them exist, use the `model.data_preprocessor` configuration.
 ```
 
 ### Schedule settings
@@ -285,6 +284,7 @@ the learning rate, and modify the dataset path, you can create a new config file
 `configs/resnet/resnet50_8xb32-300e_in1k.py` with content as below:
 
 ```python
+# create this file under 'configs/resnet/' folder
 _base_ = './resnet50_8xb32_in1k.py'
 
 # using CutMix batch augment
