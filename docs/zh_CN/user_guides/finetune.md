@@ -1,4 +1,4 @@
-# 教程 2：如何微调模型
+# 如何微调模型
 
 在很多场景下，我们需要快速地将模型应用到新的数据集上，但从头训练模型通常很难快速收敛，这种不确定性会浪费额外的时间。
 通常，已有的、在大数据集上训练好的模型会比随机初始化提供更为有效的先验信息，粗略来讲，在此基础上的学习我们称之为模型微调。
@@ -8,7 +8,7 @@
 
 在新数据集上微调模型分为两步：
 
-- 按照 [如何增加新数据集](../advanced_guides/datasets.md) 添加对新数据集的支持。
+- 按照 [数据集准备](dataset_prepare.md) 添加对新数据集的支持。
 - 按照本教程中讨论的内容修改配置文件
 
 假设我们现在有一个在 ImageNet-2012 数据集上训练好的 ResNet-50 模型，并且希望在
@@ -89,7 +89,7 @@ model = dict(
 
 ```{note}
 目前还不是所有的网络都支持 `frozen_stages` 参数，在使用之前，请先检查
-[文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.backbones)
+[文档](https://mmclassification.readthedocs.io/zh_CN/1.x/api.html#module-mmcls.models.backbones)
 以确认你所使用的主干网络是否支持。
 ```
 
