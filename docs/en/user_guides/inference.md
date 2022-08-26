@@ -1,0 +1,42 @@
+# Inference with existing models
+
+MMClassification provides pre-trained models for classification in [Model Zoo](../model_zoo.md).
+This note will show **how to use existing models to inference on given images**.
+
+As for how to test existing models on standard datasets, please see this [guide](./train_test.md#Test)
+
+## Inference on given images
+
+MMClassification provides high-level Python APIs for inference on images:
+
+- [init_model](https://mmclassification.readthedocs.io/en/1.x/api/generated/mmcls.apis.init_model.html#mmcls.apis.init_model)
+- [inference_model](https://mmclassification.readthedocs.io/en/latest/api/generated/mmcls.apis.init_model.html#mmcls.apis.inference_model)
+
+Here is an example of building the model and inference on given images by using ImageNet-1k pre-trained checkpoint.
+
+```python
+from mmcls.apis import inference_model, init_model
+from mmcls.utils import register_all_modules
+
+# if you use mmcls as 3rd-party package,
+# use 'mim download mmcls --config resnet50_8xb32_in1k --dest .' download the config
+# set 'config_path = 'resnet50_8xb32_in1k.py''
+config_path = './configs/resnet/resnet50_8xb32_in1k.py'
+checkpoint_path = 'https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb32_in1k_20210831-ea4938fc.pth' # can be a local path
+img_path = 'demo/demo.JPEG'   # you can specify your own picture path
+
+# register all modules and set mmcls as the default scope.
+register_all_modules()
+# build the model from a config file and a checkpoint file
+model = init_model(config_path, checkpoint_path, device="cpu")
+# test a single image
+result = inference_model(model, img_path)
+```
+
+The result should be:
+
+```text
+{"pred_label":65,"pred_score":0.6649366617202759,"pred_class":"sea snake"}
+```
+
+An image demo can be found in [demo/image_demo.py](https://github.com/open-mmlab/mmclassification/blob/1.x/demo/image_demo.py).
