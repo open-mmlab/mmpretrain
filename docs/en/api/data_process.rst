@@ -10,8 +10,8 @@ system. These basic information includes the ground-truth label and raw
 images data / the paths of images.The data process includes data transformations,
 data preprocessors and batch augmentations.
 
-- :ref:`datatransformations`: Transformations includes loading, preprocessing and formatting.
-- :ref:`datapreprocessors`: Processes includes collate, normalization, stacking and channel fliping.
+- :ref:`datatransformations`: Transformations includes loading, preprocessing, formatting and etc.
+- :ref:`datapreprocessors`: Processes includes collate, normalization, stacking, channel fliping and etc.
 - :ref:`batchaugmentations`: Batch augmentation involves multiple samples, such as Mixup and CutMix.
 
 .. _datatransformations:
@@ -200,11 +200,11 @@ Data Preprocessors in MMClassification could do the pre-processing like followin
     - Normalize image with defined std and mean.
     - Do batch augmentations like Mixup and Cutmix during training.
 
-In MMClassification, the data preprocessor could be fefined in the a ``preprocess_cfg`` argument or as a part of :ref:`classifiers`. Typical usages are as below:
+In MMClassification, the data preprocessor could be defined in the ``data_preprocessor`` argument or as a part of :ref:`classifiers`. Typical usages are as below:
 
 .. code-block:: python
 
-    preprocess_cfg = dict(
+    data_preprocessor = dict(
         # RGB format normalization parameters
         mean=[123.675, 116.28, 103.53],
         std=[58.395, 57.12, 57.375],
@@ -226,7 +226,7 @@ Or define in ``classifiers.data_preprocessor`` as following:
        train_cfg=...,
    )
 
-Note that the ``classifiers.data_preprocessor`` has higher priority than ``preprocess_cfg``.
+Note that the ``classifiers.data_preprocessor`` has higher priority than ``data_preprocessor``.
 
 .. currentmodule:: mmcls.models
 
