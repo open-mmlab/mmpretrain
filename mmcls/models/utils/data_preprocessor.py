@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
 from numbers import Number
-from typing import List, Optional, Sequence
+from typing import Optional, Sequence
 
 import torch
 import torch.nn.functional as F
@@ -53,7 +53,7 @@ class ClsDataPreprocessor(BaseDataPreprocessor):
                  pad_size_divisor: int = 1,
                  pad_value: Number = 0,
                  to_rgb: bool = False,
-                 batch_augments: Optional[List[dict]] = None):
+                 batch_augments: Optional[dict] = None):
         super().__init__()
         self.pad_size_divisor = pad_size_divisor
         self.pad_value = pad_value
@@ -72,7 +72,7 @@ class ClsDataPreprocessor(BaseDataPreprocessor):
             self._enable_normalize = False
 
         if batch_augments is not None:
-            self.batch_augments = RandomBatchAugment(batch_augments)
+            self.batch_augments = RandomBatchAugment(**batch_augments)
         else:
             self.batch_augments = None
 
