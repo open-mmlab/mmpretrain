@@ -27,7 +27,7 @@
 
 ```text
 data_prefix/
-├── class_1     
+├── class_1
 │   ├── xxx.png
 │   ├── xxy.png
 │   └── ...
@@ -70,7 +70,7 @@ data_root/
 标注文件 `ann_file` 内为普通文本，分为两列，第一列为图片路径，第二列为**类别的序号**。如下：
 
 ```text
-folder_1/xxx.png 0
+folder_1/xxx.png 0  # 类别序号从 0 开始
 folder_1/xxy.png 1
 123.png 1
 nsdf3.png 2
@@ -93,7 +93,7 @@ dataset_cfg=dict(
 ```
 
 ```{note}
-如果指定了 'ann_file'， 则通过 'ann_file' 得到标准信息，否则，按照子文件夹格式处理。
+如果指定了 'ann_file'， 则通过 'ann_file' 得到标注信息；否则，按照子文件夹格式处理。
 ```
 
 ### OpenMMLab 2.0 规范
@@ -154,10 +154,10 @@ dataset_cfg=dict(
 
 ## 数据集类包装
 
-MMEngine 中支持以下数据包装器，您可以参考 [MMEngine 教程](https://github.com/open-mmlab/mmengine/blob/main/docs/zh_cn/tutorials/basedataset.md#%E6%95%B0%E6%8D%AE%E9%9B%86%E5%9F%BA%E7%B1%BB%E5%8C%85%E8%A3%85) 了解如何使用它。
+MMEngine 中支持以下数据包装器，您可以参考 [MMEngine 教程](TODO:) 了解如何使用它。
 
 - [ConcatDataset](https://github.com/open-mmlab/mmengine/blob/main/docs/zh_cn/tutorials/basedataset.md#concatdataset)
 - [RepeatDataset](https://github.com/open-mmlab/mmengine/blob/main/docs/zh_cn/tutorials/basedataset.md#repeatdataset)
-- [ClassBalanced](Dataset[https://github.com/open-mmlab/mmengine/blob/main/docs/zh_cn/tutorials/basedataset.md#classbalanceddataset)
+- [ClassBalanced](https://github.com/open-mmlab/mmengine/blob/main/docs/zh_cn/tutorials/basedataset.md#classbalanceddataset)
 
 除上述之外，MMClassification 还支持了[KFoldDataset](https://mmclassification.readthedocs.io/zh_CN/1.x/api/datasets.html#kfoldfataset).

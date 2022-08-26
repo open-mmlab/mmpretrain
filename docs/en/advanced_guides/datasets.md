@@ -3,7 +3,7 @@
 ## Add New Dataset Class
 
 You can write a new Dataset class inherited from `BaseDataset`, and overwrite `load_data_list(self)`,
-like [CIFAR10](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/datasets/cifar.py) and [ImageNet](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/datasets/imagenet.py).
+like [CIFAR10](https://github.com/open-mmlab/mmclassification/blob/1.x/mmcls/datasets/cifar.py) and [ImageNet](https://github.com/open-mmlab/mmclassification/blob/1.x/mmcls/datasets/imagenet.py).
 Typically, this function returns a list, where each sample is a dict, containing necessary data information, e.g., `img` and `gt_label`.
 
 Assume we are going to implement a `Filelist` dataset, which takes filelists for both training and testing. The format of annotation list is as follows:
@@ -28,7 +28,7 @@ from .base_dataset import BaseDataset
 class Filelist(BaseDataset):
 
     def load_data_list(self):
-        assert isinstance(self.ann_file, str)
+        assert isinstance(self.ann_file, str)_package.my_module'], allow_failed_imports=Fals
 
         data_list = []
         with open(self.ann_file) as f:
