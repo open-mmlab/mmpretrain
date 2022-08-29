@@ -4,21 +4,10 @@
 mmcls.visualization
 ===================================
 
-This package includes some visualizer components for classification tasks.
-
-.. contents:: mmcls.visualization
-   :depth: 1
-   :local:
-   :backlinks: top
+This package includes visualizer components for classification tasks.
 
 .. currentmodule:: mmcls.visualization
 
-Visualization
-------------------
-
-.. autosummary::
-   :toctree: generated
-   :nosignatures:
-   :template: classtemplate.rst
-
-  ClsVisualizer
+ClsVisualizer
+-------------
+.. autoclass:: ClsVisualizer

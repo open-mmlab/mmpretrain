@@ -2,26 +2,26 @@
     :class: hidden-section
 
 Data Process
-*****************
+=================
 
 In MMClassification, the data process and the dataset is decomposed. The
 datasets only define how to get samples' basic information from the file
 system. These basic information includes the ground-truth label and raw
-images data / the paths of images.The data process includes data transformations,
+images data / the paths of images.The data process includes data transforms,
 data preprocessors and batch augmentations.
 
-- :ref:`datatransformations`: Transformations includes loading, preprocessing, formatting and etc.
+- :ref:`datatransforms`: Transforms includes loading, preprocessing, formatting and etc.
 - :ref:`datapreprocessors`: Processes includes collate, normalization, stacking, channel fliping and etc.
 - :ref:`batchaugmentations`: Batch augmentation involves multiple samples, such as Mixup and CutMix.
 
-.. _datatransformations:
+.. _datatransforms:
 
-Data Transformations
-^^^^^^^^^^^^^^^^^^^^
+Data Transforms
+--------------------
 
-To prepare the inputs data, we need to do some transformations on these basic
-information. These transformations includes loading, preprocessing and
-formatting. And a series of data transformations makes up a data pipeline.
+To prepare the inputs data, we need to do some transforms on these basic
+information. These transforms includes loading, preprocessing and
+formatting. And a series of data transforms makes up a data pipeline.
 Therefore, you can find the a ``pipeline`` argument in the configs of dataset,
 for example:
 
@@ -42,165 +42,147 @@ for example:
         ....
     )
 
-Every item of a pipeline list is one of the following data transformations class. And if you want to add a custom data transformation class, the tutorial :doc:`Custom Data Pipelines </advanced_guides/pipeline.md>` will help you.
+Every item of a pipeline list is one of the following data transforms class. And if you want to add a custom data transformation class, the tutorial :doc:`Custom Data Pipelines </advanced_guides/pipeline.md>` will help you.
 
-.. contents:: data_process
-   :depth: 3
+.. contents::
+   :depth: 1
    :local:
    :backlinks: top
 
 .. currentmodule:: mmcls.datasets.transforms
 
 
-Loading
-=======
+Processing and Augmentation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-LoadImageFromFile
------------------
+.. autosummary::
+   :toctree: generated
+   :template: classtemplate.rst
+   :nosignatures:
 
-TODO: add MMCV Link
-
-Compose Transforms
-==================
-
-Compose is a helper transform to combine a series of data transformations.
-
-Compose
----------------------
-
-TODO: add MMCV Link
-
-Preprocessing and Augmentation
-==============================
-
-CenterCrop
-----------
-
-TODO: add MMCV Link
-
-Lighting
----------------------
-.. autoclass:: Lighting
-
-Pad
----------------------
-
-TODO: add MMCV Link
-
-Resize
----------------------
-
-TODO: add MMCV Link
-
-ResizeEdge
----------------------
-.. autoclass:: ResizeEdge
-
-RandomCrop
----------------------
-.. autoclass:: RandomCrop
-
-RandomErasing
----------------------
-.. autoclass:: RandomErasing
-
-RandomFlip
----------------------
-
-TODO: add MMCV Link
-
-RandomGrayscale
----------------------
-
-TODO: add MMCV Link
-
-RandomResizedCrop
----------------------
-.. autoclass:: RandomResizedCrop
-
-ColorJitter
----------------------
-.. autoclass:: ColorJitter
-
-Albumentations
----------------------
-.. autoclass:: Albumentations
-
+   Albumentations
+   ColorJitter
+   EfficientNetCenterCrop
+   EfficientNetRandomCrop
+   Lighting
+   RandomCrop
+   RandomErasing
+   RandomResizedCrop
+   ResizeEdge
 
 Composed Augmentation
----------------------
+"""""""""""""""""""""
 Composed augmentation is a kind of methods which compose a series of data
-augmentation transformations, such as ``AutoAugment`` and ``RandAugment``.
+augmentation transforms, such as ``AutoAugment`` and ``RandAugment``.
 
-.. autoclass:: AutoAugment
+.. autosummary::
+   :toctree: generated
+   :template: classtemplate.rst
+   :nosignatures:
 
-.. autoclass:: RandAugment
+   AutoAugment
+   RandAugment
 
-In composed augmentation, we need to specify several data transformations or
-several groups of data transformations (The ``policies`` argument) as the
-random sampling space. These data transformations are chosen from the below
-table. In addition, we provide some preset policies in `this folder`_.
+To specify the augmentation combination (The ``policies`` argument), you can use string to specify
+from some preset policies.
 
-.. _this folder: https://github.com/open-mmlab/mmclassification/tree/dev-1.x/configs/_base_/datasets/transforms
+.. list-table::
+   :widths: 20 20 60
+   :header-rows: 1
+
+   * - Preset policy
+     - Use for
+     - Description
+   * - "imagenet"
+     - :class:`AutoAugment`
+     - Policy for ImageNet, come from `DeepVoltaire/AutoAugment`_
+   * - "timm_increasing"
+     - :class:`RandAugment`
+     - The ``_RAND_INCREASING_TRANSFORMS`` policy from `timm`_
+
+.. _DeepVoltaire/AutoAugment: https://github.com/DeepVoltaire/AutoAugment
+.. _timm: https://github.com/rwightman/pytorch-image-models
+
+And you can also configure a group of policies manually by selecting from the below table.
 
 .. autosummary::
    :toctree: generated
    :nosignatures:
    :template: classtemplate.rst
 
-    AutoContrast
-    Brightness
-    ColorTransform
-    Contrast
-    Cutout
-    Equalize
-    Invert
-    Posterize
-    Rotate
-    Sharpness
-    Shear
-    Solarize
-    SolarizeAdd
-    Translate
+   AutoContrast
+   Brightness
+   ColorTransform
+   Contrast
+   Cutout
+   Equalize
+   Invert
+   Posterize
+   Rotate
+   Sharpness
+   Shear
+   Solarize
+   SolarizeAdd
+   Translate
 
 Formatting
-==========
+^^^^^^^^^^
 
-PackClsInputs
----------------------
-.. autoclass:: PackClsInputs
+.. autosummary::
+   :toctree: generated
+   :template: classtemplate.rst
+   :nosignatures:
 
-Collect
----------------------
-.. autoclass:: Collect
+   Collect
+   PackClsInputs
+   ToNumpy
+   ToPIL
+   Transpose
 
-ToNumpy
----------------------
-.. autoclass:: ToNumpy
 
-ToPIL
----------------------
-.. autoclass:: ToPIL
+MMCV transforms
+^^^^^^^^^^^^^^^
 
-Transpose
----------------------
-.. autoclass:: Transpose
+We also provides many transforms in MMCV. You can use them directly in the config files. Here are some frequently used transforms, and the whole transforms list can be found in :external:mod:`mmcv.transforms`.
+
+.. list-table::
+
+   * - :external:class:`~mmcv.transforms.LoadImageFromFile`
+     - Load an image from file.
+   * - :external:class:`~mmcv.transforms.Resize`
+     - Resize images & bbox & seg & keypoints.
+   * - :external:class:`~mmcv.transforms.RandomResize`
+     - Random resize images & bbox & keypoints.
+   * - :external:class:`~mmcv.transforms.RandomFlip`
+     - Flip the image & bbox & keypoints & segmentation map.
+   * - :external:class:`~mmcv.transforms.RandomGrayscale`
+     - Randomly convert image to grayscale with a probability.
+   * - :external:class:`~mmcv.transforms.CenterCrop`
+     - Crop the center of the image, segmentation masks, bounding boxes and key points. If the crop area exceeds the original image and ``auto_pad`` is True, the original image will be padded before cropping.
+   * - :external:class:`~mmcv.transforms.Normalize`
+     - Normalize the image.
+   * - :external:class:`~mmcv.transforms.Compose`
+     - Compose multiple transforms sequentially.
 
 .. _datapreprocessors:
 
 Data Preprocessors
-^^^^^^^^^^^^^^^^^^
+------------------
 
-Data Preprocessors in MMClassification could do the pre-processing like following:
+The data preprocessor is also a component to process the data before feeding data to the neural network.
+Comparing with the data transforms, the data preprocessor is a module of the classifier,
+and it takes a batch of data to process, which means it can use GPU and batch to accelebrate the processing.
 
-    - Collate and move data to the target device.
-    - Pad inputs to the maximum size of current batch.
-    - Stack inputs to batch_inputs.
-    - Convert inputs from bgr to rgb if the shape of input is (3, H, W).
-    - Normalize image with defined std and mean.
-    - Do batch augmentations like Mixup and Cutmix during training.
+The default data preprocessor in MMClassification could do the pre-processing like following:
 
-In MMClassification, the data preprocessor could be defined in the ``data_preprocessor`` argument or as a part of :ref:`classifiers`. Typical usages are as below:
+1. Move data to the target device.
+2. Pad inputs to the maximum size of current batch.
+3. Stack inputs to a batch.
+4. Convert inputs from bgr to rgb if the shape of input is (3, H, W).
+5. Normalize image with defined std and mean.
+6. Do batch augmentations like Mixup and CutMix during training.
+
+You can configure the data preprocessor by the ``data_preprocessor`` field or ``model.data_preprocessor`` field in the config file. Typical usages are as below:
 
 .. code-block:: python
 
@@ -211,7 +193,7 @@ In MMClassification, the data preprocessor could be defined in the ``data_prepro
         to_rgb=True,    # convert image from BGR to RGB
     )
 
-Or define in ``classifiers.data_preprocessor`` as following:
+Or define in ``model.data_preprocessor`` as following:
 
 .. code-block:: python
 
@@ -226,12 +208,9 @@ Or define in ``classifiers.data_preprocessor`` as following:
        train_cfg=...,
    )
 
-Note that the ``classifiers.data_preprocessor`` has higher priority than ``data_preprocessor``.
+Note that the ``model.data_preprocessor`` has higher priority than ``data_preprocessor``.
 
 .. currentmodule:: mmcls.models
-
-Datapreprocessors
-------------------
 
 .. autosummary::
    :toctree: generated
@@ -245,33 +224,45 @@ Datapreprocessors
 Batch Augmentations
 ^^^^^^^^^^^^^^^^^^^^
 
-Batch augmentation is the augmentation which involve multiple samples, such as Mixup and CutMix.
+The batch augmentation is a component of data preprocessors. It involves multiple samples and mix them in some way, such as Mixup and CutMix.
 
-In MMClassification, these batch augmentation is executed in ``classifiers.data_preprocessor.forword`` but used as a part of :ref:`classifiers`. A typical usage is as below:
+These augmentations are usually only used during training, therefore, we use the ``model.train_cfg`` field to configure them in config files.
 
 .. code-block:: python
 
    model = dict(
-       backbone = ...,
-       neck = ...,
-       head = ...,
+       backbone=...,
+       neck=...,
+       head=...,
        train_cfg=dict(augments=[
-           dict(type='BatchMixup', alpha=0.8, prob=0.5, num_classes=num_classes),
-           dict(type='BatchCutMix', alpha=1.0, prob=0.5, num_classes=num_classes),
-       ]))
+           dict(type='Mixup', alpha=0.8, num_classes=num_classes),
+           dict(type='CutMix', alpha=1.0, num_classes=num_classes),
+       ]),
+   )
+
+You can also speicy the probabilities of every batch augmentation by the ``probs`` field.
+
+.. code-block:: python
+
+   model = dict(
+       backbone=...,
+       neck=...,
+       head=...,
+       train_cfg=dict(augments=[
+           dict(type='Mixup', alpha=0.8, num_classes=num_classes),
+           dict(type='CutMix', alpha=1.0, num_classes=num_classes),
+       ], probs=[0.3, 0.7])
    )
 
 .. currentmodule:: mmcls.models.utils.batch_augments
 
-Datapreprocessors
-------------------
+Here is a list of batch augmentations can be used in MMClassification.
 
 .. autosummary::
    :toctree: generated
    :nosignatures:
    :template: classtemplate.rst
 
-    Mixup
-    CutMix
-    ResizeMix
-    RandomBatchAugment
+   Mixup
+   CutMix
+   ResizeMix

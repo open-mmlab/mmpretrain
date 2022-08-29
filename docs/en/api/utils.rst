@@ -4,12 +4,7 @@
 mmcls.utils
 ===================================
 
-These are some useful help function in the ``utils`` package.
-
-.. contents:: mmcls.utils
-   :depth: 1
-   :local:
-   :backlinks: top
+This package includes some useful helper functions for developing.
 
 .. currentmodule:: mmcls.utils
 
@@ -17,5 +12,5 @@ These are some useful help function in the ``utils`` package.
    :toctree: generated
    :nosignatures:
 
-  collect_env
-  register_all_modules
+   collect_env
+   register_all_modules

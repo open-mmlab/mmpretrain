@@ -20,5 +20,5 @@ Inference
    :toctree: generated
    :nosignatures:
 
-  init_model
-  inference_model
+   init_model
+   inference_model

@@ -18,7 +18,7 @@ classification tasks but not supported by MMEngine yet.
 
 .. currentmodule:: mmcls.engine
 
-Hook
+Hooks
 ------------------
 
 .. autosummary::
@@ -26,9 +26,9 @@ Hook
    :nosignatures:
    :template: classtemplate.rst
 
-  ClassNumCheckHook
-  PreciseBNHook
-  VisualizationHook
+   ClassNumCheckHook
+   PreciseBNHook
+   VisualizationHook
 
 Optimizers
 ------------------
@@ -38,4 +38,4 @@ Optimizers
    :nosignatures:
    :template: classtemplate.rst
 
-  Lamb
+   Lamb

@@ -120,14 +120,14 @@ Heads
    :nosignatures:
    :template: classtemplate.rst
 
-    ClsHead
-    LinearClsHead
-    StackedLinearClsHead
-    VisionTransformerClsHead
-    DeiTClsHead
-    ConformerHead
-    MultiLabelClsHead
-    MultiLabelLinearClsHead
+   ClsHead
+   LinearClsHead
+   StackedLinearClsHead
+   VisionTransformerClsHead
+   DeiTClsHead
+   ConformerHead
+   MultiLabelClsHead
+   MultiLabelLinearClsHead
 
 .. _losses:
 
@@ -151,11 +151,6 @@ models.utils
 ------------
 
 This package includes some helper functions and common components used in various networks.
-
-.. contents:: mmcls.models.utils
-   :depth: 2
-   :local:
-   :backlinks: top
 
 .. currentmodule:: mmcls.models.utils
 
@@ -183,27 +178,13 @@ Common Components
 Helper Functions
 ^^^^^^^^^^^^^^^^
 
-channel_shuffle
-***************
-.. autofunction:: channel_shuffle
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
 
-make_divisible
-***************
-.. autofunction:: make_divisible
-
-resize_position_enbeding
-***************
-
-.. autofunction:: resize_pos_embed
-.. autofunction:: resize_relative_position_bias_table
-
-to_ntuple
-*********
-.. autofunction:: to_ntuple
-.. autofunction:: to_2tuple
-.. autofunction:: to_3tuple
-.. autofunction:: to_4tuple
-
-is_tracing
-**********
-.. autofunction:: is_tracing
+   channel_shuffle
+   make_divisible
+   resize_pos_embed
+   resize_relative_position_bias_table
+   to_ntuple
+   is_tracing

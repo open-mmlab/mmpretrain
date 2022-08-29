@@ -4,10 +4,10 @@
 mmcls.evaluation
 ===================================
 
-These are some Metrics and Evaluator for classification tasks.
+This package includes metrics and evaluators for classification tasks.
 
 .. contents:: mmcls.evaluation
-   :depth: 3
+   :depth: 1
    :local:
    :backlinks: top
 
@@ -21,8 +21,8 @@ Single Label Metric
    :nosignatures:
    :template: classtemplate.rst
 
-  Accuracy
-  SingleLabelMetric
+   Accuracy
+   SingleLabelMetric
 
 Multi Label Metric
 ----------------------
@@ -30,5 +30,5 @@ Multi Label Metric
    :toctree: generated
    :nosignatures:
 
-  MultiLabelMetric
-  AveragePrecision
+   MultiLabelMetric
+   AveragePrecision
