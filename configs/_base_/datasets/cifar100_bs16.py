@@ -1,6 +1,6 @@
 # dataset settings
 dataset_type = 'CIFAR100'
-preprocess_cfg = dict(
+data_preprocessor = dict(
     # RGB format normalization parameters
     mean=[129.304, 124.070, 112.434],
     std=[68.170, 65.392, 70.418],

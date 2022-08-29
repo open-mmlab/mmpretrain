@@ -6,7 +6,7 @@ _base_ = [
 ]
 
 # dataset settings
-preprocess_cfg = dict(
+data_preprocessor = dict(
     mean=[127.5, 127.5, 127.5],
     std=[127.5, 127.5, 127.5],
     # convert image from BGR to RGB

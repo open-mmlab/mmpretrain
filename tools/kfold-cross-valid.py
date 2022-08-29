@@ -198,7 +198,7 @@ def main():
     cfg = merge_args(cfg, args)
 
     # set preprocess configs to model
-    cfg.model.setdefault('data_preprocessor', cfg.get('preprocess_cfg', {}))
+    cfg.model.setdefault('data_preprocessor', cfg.get('data_preprocessor', {}))
 
     # set the unify random seed
     cfg.seed = args.seed or sync_random_seed()
