@@ -120,7 +120,8 @@ ImageNet has multiple versions, but the most commonly used one is [ILSVRC 2012](
 3. Untar the downloaded files
 4. Download and untar the meta data from this [link](https://download.openmmlab.com/mmclassification/datasets/imagenet/meta/caffe_ilsvrc12.tar.gz).
 5. Re-organize the image files according to the path in the meta data, and it should be like:
-   ```text
+
+```text
    imagenet/
    ├── meta/
    │   ├── train.txt
@@ -142,7 +143,7 @@ ImageNet has multiple versions, but the most commonly used one is [ILSVRC 2012](
    │   ├── ILSVRC2012_val_00000003.JPEG
    │   ├── ILSVRC2012_val_00000004.JPEG
    │   ├── ...
-   ```
+```
 
 And then, you can use the [`ImageNet`](mmcls.datasets.ImageNet) dataset with the below configurations:
 
