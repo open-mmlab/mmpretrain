@@ -9,8 +9,8 @@ As for how to test existing models on standard datasets, please see this [guide]
 
 MMClassification provides high-level Python APIs for inference on images:
 
-- [init_model](https://mmclassification.readthedocs.io/en/1.x/api/generated/mmcls.apis.init_model.html#mmcls.apis.init_model): Initialize a model with a config and checkpoint
-- [inference_model](https://mmclassification.readthedocs.io/en/latest/api/generated/mmcls.apis.init_model.html#mmcls.apis.inference_model): Inference on given image
+- [init_model](https://mmclassification.readthedocs.io/en/1.x/api/mmcls.apis.init_model.html#mmcls.apis.init_model): Initialize a model with a config and checkpoint
+- [inference_model](https://mmclassification.readthedocs.io/en/latest/api/mmcls.apis.init_model.html#mmcls.apis.inference_model): Inference on given image
 
 Here is an example of building the model and inference on given images by using ImageNet-1k pre-trained checkpoint.
 
@@ -24,7 +24,6 @@ Run 'wget https://github.com/open-mmlab/mmclassification/blob/master/demo/demo.J
 from mmcls.apis import inference_model, init_model
 from mmcls.utils import register_all_modules
 
-
 config_path = './configs/resnet/resnet50_8xb32_in1k.py'
 checkpoint_path = 'https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb32_in1k_20210831-ea4938fc.pth' # can be a local path
 img_path = 'demo/demo.JPEG'   # you can specify your own picture path
@@ -32,7 +31,7 @@ img_path = 'demo/demo.JPEG'   # you can specify your own picture path
 # register all modules and set mmcls as the default scope.
 register_all_modules()
 # build the model from a config file and a checkpoint file
-model = init_model(config_path, checkpoint_path, device="cpu")
+model = init_model(config_path, checkpoint_path, device="cpu")  # device can be 'cuda:0'
 # test a single image
 result = inference_model(model, img_path)
 ```
