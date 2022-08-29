@@ -18,6 +18,7 @@ class MultiLabelDataset(BaseDataset):
     The annotation format is shown as follows.
 
     .. code-block:: none
+
         {
             "metainfo":
             {

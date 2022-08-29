@@ -10,7 +10,7 @@ model = dict(
 
 # dataset settings
 dataset_type = 'MNIST'
-preprocess_cfg = dict(mean=[33.46], std=[78.87])
+data_preprocessor = dict(mean=[33.46], std=[78.87])
 
 pipeline = [dict(type='Resize', scale=32), dict(type='PackClsInputs')]
 

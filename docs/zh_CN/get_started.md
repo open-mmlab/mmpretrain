@@ -1,265 +1,213 @@
-# 基础教程
+# 依赖环境
 
-本文档提供 MMClassification 相关用法的基本教程。
+在本节中，我们将演示如何准备 PyTorch 相关的依赖环境。
 
-## 准备数据集
+MMClassification 适用于 Linux、Windows 和 macOS。它需要 Python 3.6+、CUDA 9.2+ 和 PyTorch 1.6+。
 
-MMClassification 建议用户将数据集根目录链接到 `$MMCLASSIFICATION/data` 下。
-如果用户的文件夹结构与默认结构不同，则需要在配置文件中进行对应路径的修改。
-
-```
-mmclassification
-├── mmcls
-├── tools
-├── configs
-├── docs
-├── data
-│   ├── imagenet
-│   │   ├── meta
-│   │   ├── train
-│   │   ├── val
-│   ├── cifar
-│   │   ├── cifar-10-batches-py
-│   ├── mnist
-│   │   ├── train-images-idx3-ubyte
-│   │   ├── train-labels-idx1-ubyte
-│   │   ├── t10k-images-idx3-ubyte
-│   │   ├── t10k-labels-idx1-ubyte
-
+```{note}
+如果你对配置 PyTorch 环境已经很熟悉，并且已经完成了配置，可以直接进入[下一节](#安装)。
+否则的话，请依照以下步骤完成配置。
 ```
 
-对于 ImageNet，其存在多个版本，但最为常用的一个是 [ILSVRC 2012](http://www.image-net.org/challenges/LSVRC/2012/)，可以通过以下步骤获取该数据集。
+**第 1 步** 从[官网](https://docs.conda.io/en/latest/miniconda.html)下载并安装 Miniconda。
 
-1. 注册账号并登录 [下载页面](http://www.image-net.org/download-images)
-2. 获取 ILSVRC2012 下载链接并下载以下文件
-   - ILSVRC2012_img_train.tar (~138GB)
-   - ILSVRC2012_img_val.tar (~6.3GB)
-3. 解压下载的文件
-4. 使用 [该脚本](https://github.com/BVLC/caffe/blob/master/data/ilsvrc12/get_ilsvrc_aux.sh) 获取元数据
-
-对于 MNIST，CIFAR10 和 CIFAR100，程序将会在需要的时候自动下载数据集。
-
-对于用户自定义数据集的准备，请参阅 [教程 2：如何增加新数据集](tutorials/new_dataset.md)
-
-## 使用预训练模型进行推理
-
-MMClassification 提供了一些脚本用于进行单张图像的推理、数据集的推理和数据集的测试（如 ImageNet 等）
-
-### 单张图像的推理
+**第 2 步** 创建一个 conda 虚拟环境并激活它。
 
 ```shell
-python demo/image_demo.py ${IMAGE_FILE} ${CONFIG_FILE} ${CHECKPOINT_FILE}
-
-# Example
-python demo/image_demo.py demo/demo.JPEG configs/resnet/resnet50_8xb32_in1k.py \
-  https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb32_in1k_20210831-ea4938fc.pth
+conda create --name openmmlab python=3.8 -y
+conda activate openmmlab
 ```
 
-### 数据集的推理与测试
+**第 3 步** 按照[官方指南](https://pytorch.org/get-started/locally/)安装 PyTorch。例如：
 
-- 支持单 GPU
-- 支持 CPU
-- 支持单节点多 GPU
-- 支持多节点
-
-用户可使用以下命令进行数据集的推理：
+在 GPU 平台：
 
 ```shell
-# 单 GPU
-python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--metrics ${METRICS}] [--out ${RESULT_FILE}]
-
-# CPU: 禁用 GPU 并运行单 GPU 测试脚本
-export CUDA_VISIBLE_DEVICES=-1
-python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--metrics ${METRICS}] [--out ${RESULT_FILE}]
-
-# 多 GPU
-./tools/dist_test.sh ${CONFIG_FILE} ${CHECKPOINT_FILE} ${GPU_NUM} [--metrics ${METRICS}] [--out ${RESULT_FILE}]
-
-# 基于 slurm 分布式环境的多节点
-python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [--metrics ${METRICS}] [--out ${RESULT_FILE}] --launcher slurm
-```
-
-可选参数：
-
-- `RESULT_FILE`：输出结果的文件名。如果未指定，结果将不会保存到文件中。支持 json, yaml, pickle 格式。
-- `METRICS`：数据集测试指标，如准确率 (accuracy), 精确率 (precision), 召回率 (recall) 等
-
-例子：
-
-在 ImageNet 验证集上，使用 ResNet-50 进行推理并获得预测标签及其对应的预测得分。
-
-```shell
-python tools/test.py configs/resnet/resnet50_8xb16_cifar10.py \
-  https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_b16x8_cifar10_20210528-f54bfad9.pth \
-  --out result.pkl
-```
-
-## 模型训练
-
-MMClassification 使用 `MMDistributedDataParallel` 进行分布式训练，使用 `MMDataParallel` 进行非分布式训练。
-
-所有的输出（日志文件和模型权重文件）会被将保存到工作目录下。工作目录通过配置文件中的参数 `work_dir` 指定。
-
-默认情况下，MMClassification 在每个周期后会在验证集上评估模型，可以通过在训练配置中修改 `interval` 参数来更改评估间隔
-
-```python
-evaluation = dict(interval=12)  # 每进行 12 轮训练后评估一次模型
-```
-
-### 使用单个 GPU 进行训练
-
-```shell
-python tools/train.py ${CONFIG_FILE} [optional arguments]
-```
-
-如果用户想在命令中指定工作目录，则需要增加参数 `--work-dir ${YOUR_WORK_DIR}`
-
-### 使用 CPU 训练
-
-使用 CPU 训练的流程和使用单 GPU 训练的流程一致，我们仅需要在训练流程开始前禁用 GPU。
-
-```shell
-export CUDA_VISIBLE_DEVICES=-1
-```
-
-之后运行单 GPU 训练脚本即可。
-
-```{warning}
-我们不推荐用户使用 CPU 进行训练，这太过缓慢。我们支持这个功能是为了方便用户在没有 GPU 的机器上进行调试。
-```
-
-### 使用单台机器多个 GPU 进行训练
-
-```shell
-./tools/dist_train.sh ${CONFIG_FILE} ${GPU_NUM} [optional arguments]
-```
-
-可选参数为：
-
-- `--no-validate` (**不建议**): 默认情况下，程序将会在训练期间的每 k （默认为 1) 个周期进行一次验证。要禁用这一功能，使用 `--no-validate`
-- `--work-dir ${WORK_DIR}`：覆盖配置文件中指定的工作目录。
-- `--resume-from ${CHECKPOINT_FILE}`：从以前的模型权重文件恢复训练。
-
-`resume-from` 和 `load-from` 的不同点：
-`resume-from` 加载模型参数和优化器状态，并且保留检查点所在的周期数，常被用于恢复意外被中断的训练。
-`load-from` 只加载模型参数，但周期数从 0 开始计数，常被用于微调模型。
-
-### 使用多台机器进行训练
-
-如果您想使用由 ethernet 连接起来的多台机器， 您可以使用以下命令:
-
-在第一台机器上:
-
-```shell
-NNODES=2 NODE_RANK=0 PORT=$MASTER_PORT MASTER_ADDR=$MASTER_ADDR sh tools/dist_train.sh $CONFIG $GPUS
-```
-
-在第二台机器上:
-
-```shell
-NNODES=2 NODE_RANK=1 PORT=$MASTER_PORT MASTER_ADDR=$MASTER_ADDR sh tools/dist_train.sh $CONFIG $GPUS
-```
-
-但是，如果您不使用高速网路连接这几台机器的话，训练将会非常慢。
-
-如果用户在 [slurm](https://slurm.schedmd.com/) 集群上运行 MMClassification，可使用 `slurm_train.sh` 脚本。（该脚本也支持单台机器上进行训练）
-
-```shell
-[GPUS=${GPUS}] ./tools/slurm_train.sh ${PARTITION} ${JOB_NAME} ${CONFIG_FILE} ${WORK_DIR}
-```
-
-用户可以在 [slurm_train.sh](https://github.com/open-mmlab/mmclassification/blob/master/tools/slurm_train.sh) 中检查所有的参数和环境变量
-
-如果用户的多台机器通过 Ethernet 连接，则可以参考 pytorch [launch utility](https://pytorch.org/docs/stable/distributed.html#launch-utility)。如果用户没有高速网络，如 InfiniBand，速度将会非常慢。
-
-### 使用单台机器启动多个任务
-
-如果用使用单台机器启动多个任务，如在有 8 块 GPU 的单台机器上启动 2 个需要 4 块 GPU 的训练任务，则需要为每个任务指定不同端口，以避免通信冲突。
-
-如果用户使用 `dist_train.sh` 脚本启动训练任务，则可以通过以下命令指定端口
-
-```shell
-CUDA_VISIBLE_DEVICES=0,1,2,3 PORT=29500 ./tools/dist_train.sh ${CONFIG_FILE} 4
-CUDA_VISIBLE_DEVICES=4,5,6,7 PORT=29501 ./tools/dist_train.sh ${CONFIG_FILE} 4
-```
-
-如果用户在 slurm 集群下启动多个训练任务，则需要修改配置文件中的 `dist_params` 变量，以设置不同的通信端口。
-
-在 `config1.py` 中，
-
-```python
-dist_params = dict(backend='nccl', port=29500)
-```
-
-在 `config2.py` 中，
-
-```python
-dist_params = dict(backend='nccl', port=29501)
-```
-
-之后便可启动两个任务，分别对应 `config1.py` 和 `config2.py`。
-
-```shell
-CUDA_VISIBLE_DEVICES=0,1,2,3 GPUS=4 ./tools/slurm_train.sh ${PARTITION} ${JOB_NAME} config1.py ${WORK_DIR}
-CUDA_VISIBLE_DEVICES=4,5,6,7 GPUS=4 ./tools/slurm_train.sh ${PARTITION} ${JOB_NAME} config2.py ${WORK_DIR}
-```
-
-## 实用工具
-
-我们在 `tools/` 目录下提供的一些对训练和测试十分有用的工具
-
-### 计算 FLOPs 和参数量（试验性的）
-
-我们根据 [flops-counter.pytorch](https://github.com/sovrasov/flops-counter.pytorch) 提供了一个脚本用于计算给定模型的 FLOPs 和参数量
-
-```shell
-python tools/analysis_tools/get_flops.py ${CONFIG_FILE} [--shape ${INPUT_SHAPE}]
-```
-
-用户将获得如下结果：
-
-```
-==============================
-Input shape: (3, 224, 224)
-Flops: 4.12 GFLOPs
-Params: 25.56 M
-==============================
+conda install pytorch torchvision -c pytorch
 ```
 
 ```{warning}
-此工具仍处于试验阶段，我们不保证该数字正确无误。您最好将结果用于简单比较，但在技术报告或论文中采用该结果之前，请仔细检查。
-- FLOPs 与输入的尺寸有关，而参数量与输入尺寸无关。默认输入尺寸为 (1, 3, 224, 224)
-- 一些运算不会被计入 FLOPs 的统计中，例如 GN 和自定义运算。详细信息请参考 [`mmcv.cnn.get_model_complexity_info()`](https://github.com/open-mmlab/mmcv/blob/master/mmcv/cnn/utils/flops_counter.py)
+以上命令会自动安装最新版的 PyTorch 与对应的 cudatoolkit，请检查它们是否与你的环境匹配。
 ```
 
-### 模型发布
-
-在发布模型之前，你也许会需要
-
-1. 转换模型权重至 CPU 张量
-2. 删除优化器状态
-3. 计算模型权重文件的哈希值，并添加至文件名之后
+在 CPU 平台：
 
 ```shell
-python tools/convert_models/publish_model.py ${INPUT_FILENAME} ${OUTPUT_FILENAME}
+conda install pytorch torchvision cpuonly -c pytorch
 ```
 
-例如：
+# 安装
+
+我们推荐用户按照我们的最佳实践来安装 MMClassification。但除此之外，如果你想根据
+你的习惯完成安装流程，也可以参见[自定义安装](#自定义安装)一节来获取更多信息。
+
+## 最佳实践
+
+**第 1 步** 使用 [MIM](https://github.com/open-mmlab/mim) 安装 [MMEngine](https://github.com/open-mmlab/mmengine) 和 [MMCV](https://github.com/open-mmlab/mmcv)
 
 ```shell
-python tools/convert_models/publish_model.py work_dirs/resnet50/latest.pth imagenet_resnet50.pth
+pip install -U openmim
+mim install mmengine "mmcv-full>=2.0rc0"
 ```
 
-最终输出的文件名将会是 `imagenet_resnet50_{date}-{hash id}.pth`
+**第 2 步** 安装 MMClassification
 
-## 详细教程
+根据具体需求，我们支持两种安装模式：
 
-目前，MMClassification 提供以下几种更详细的教程：
+- [从源码安装（推荐）](#从源码安装)：希望基于 MMClassification 框架开发自己的图像分类任务，需要添加新的功能，比如新的模型或是数据集，或者使用我们提供的各种工具。
+- [作为 Python 包安装](#作为-python-包安装)：只是希望调用 MMClassification 的 API 接口，或者在自己的项目中导入 MMClassification 中的模块。
 
-- [如何编写配置文件](tutorials/config.md)
-- [如何微调模型](tutorials/finetune.md)
-- [如何增加新数据集](tutorials/new_dataset.md)
-- [如何设计数据处理流程](tutorials/data_pipeline.md)
-- [如何增加新模块](tutorials/new_modules.md)
-- [如何自定义优化策略](tutorials/schedule.md)
-- [如何自定义运行参数](tutorials/runtime.md)。
+### 从源码安装
+
+这种情况下，从源码按如下方式安装 mmcls：
+
+```shell
+git clone https://github.com/open-mmlab/mmclassification.git
+cd mmclassification
+git checkout 1.x
+pip install -v -e .
+# "-v" 表示输出更多安装相关的信息
+# "-e" 表示以可编辑形式安装，这样可以在不重新安装的情况下，让本地修改直接生效
+```
+
+另外，如果你希望向 MMClassification 贡献代码，或者使用试验中的功能，请签出到 `dev-1.x` 分支。
+
+```shell
+git checkout dev-1.x
+```
+
+### 作为 Python 包安装
+
+直接使用 pip 安装即可。
+
+```shell
+pip install "mmcls>=1.0rc0"
+```
+
+## 验证安装
+
+为了验证 MMClassification 的安装是否正确，我们提供了一些示例代码来执行模型推理。
+
+**第 1 步** 我们需要下载配置文件和模型权重文件
+
+```shell
+mim download mmcls --config resnet50_8xb32_in1k --dest .
+```
+
+**第 2 步** 验证示例的推理流程
+
+如果你是**从源码安装**的 mmcls，那么直接运行以下命令进行验证：
+
+```shell
+python demo/image_demo.py demo/demo.JPEG resnet50_8xb32_in1k.py resnet50_8xb32_in1k_20210831-ea4938fc.pth --device cpu
+```
+
+你可以看到命令行中输出了结果字典，包括 `pred_label`，`pred_score` 和 `pred_class` 三个字段。
+
+如果你是**作为 Python 包安装**，那么可以打开你的 Python 解释器，并粘贴如下代码：
+
+```python
+from mmcls.apis import init_model, inference_model
+from mmcls.utils import register_all_modules
+
+config_file = 'resnet50_8xb32_in1k.py'
+checkpoint_file = 'resnet50_8xb32_in1k_20210831-ea4938fc.pth'
+register_all_modules()  # 注册所有模块，并将 mmcls 设为默认 scope。
+model = init_model(config_file, checkpoint_file, device='cpu')  # 或者 device='cuda:0'
+inference_model(model, 'demo/demo.JPEG')
+```
+
+你会看到输出一个字典，包含预测的标签、得分及类别名。
+
+## 自定义安装
+
+### CUDA 版本
+
+安装 PyTorch 时，需要指定 CUDA 版本。如果您不清楚选择哪个，请遵循我们的建议：
+
+- 对于 Ampere 架构的 NVIDIA GPU，例如 GeForce 30 series 以及 NVIDIA A100，CUDA 11 是必需的。
+- 对于更早的 NVIDIA GPU，CUDA 11 是向前兼容的，但 CUDA 10.2 能够提供更好的兼容性，也更加轻量。
+
+请确保你的 GPU 驱动版本满足最低的版本需求，参阅[这张表](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html#cuda-major-component-versions__table-cuda-toolkit-driver-versions)。
+
+```{note}
+如果按照我们的最佳实践进行安装，CUDA 运行时库就足够了，因为我们提供相关 CUDA 代码的预编译，你不需要进行本地编译。
+但如果你希望从源码进行 MMCV 的编译，或是进行其他 CUDA 算子的开发，那么就必须安装完整的 CUDA 工具链，参见
+[NVIDIA 官网](https://developer.nvidia.com/cuda-downloads)，另外还需要确保该 CUDA 工具链的版本与 PyTorch 安装时
+的配置相匹配（如用 `conda install` 安装 PyTorch 时指定的 cudatoolkit 版本）。
+```
+
+### 不使用 MIM 安装 MMCV
+
+MMCV 包含 C++ 和 CUDA 扩展，因此其对 PyTorch 的依赖比较复杂。MIM 会自动解析这些
+依赖，选择合适的 MMCV 预编译包，使安装更简单，但它并不是必需的。
+
+要使用 pip 而不是 MIM 来安装 MMCV，请遵照 [MMCV 安装指南](https://mmcv.readthedocs.io/zh_CN/latest/get_started/installation.html)。
+它需要你用指定 url 的形式手动指定对应的 PyTorch 和 CUDA 版本。
+
+举个例子，如下命令将会安装基于 PyTorch 1.10.x 和 CUDA 11.3 编译的 mmcv-full。
+
+```shell
+pip install "mmcv-full>=2.0rc0" -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.10/index.html
+```
+
+### 在 CPU 环境中安装
+
+MMClassification 可以仅在 CPU 环境中安装，在 CPU 模式下，你可以完成训练、测试和模型推理等所有操作。
+
+在 CPU 模式下，MMCV 的部分功能将不可用，通常是一些 GPU 编译的算子。不过不用担心，
+MMClassification 中几乎所有的模型都不会依赖这些算子。
+
+### 在 Google Colab 中安装
+
+[Google Colab](https://research.google.com/) 通常已经包含了 PyTorch 环境，因此我们只需要安装 MMCV 和 MMClassification 即可，命令如下：
+
+**第 1 步** 使用 [MIM](https://github.com/open-mmlab/mim) 安装 [MMEngine](https://github.com/open-mmlab/mmengine) 和 [MMCV](https://github.com/open-mmlab/mmcv)
+
+```shell
+!pip3 install openmim
+!mim install mmengine "mmcv-full>=2.0rc0"
+```
+
+**第 2 步** 从源码安装 MMClassification
+
+```shell
+!git clone https://github.com/open-mmlab/mmclassification.git
+%cd mmclassification
+!git checkout 1.x
+!pip install -e .
+```
+
+**第 3 步** 验证
+
+```python
+import mmcls
+print(mmcls.__version__)
+# 预期输出： 1.0.0rc0 或更新的版本号
+```
+
+```{note}
+在 Jupyter 中，感叹号 `!` 用于执行外部命令，而 `%cd` 是一个[魔术命令](https://ipython.readthedocs.io/en/stable/interactive/magics.html#magic-cd)，用于切换 Python 的工作路径。
+```
+
+### 通过 Docker 使用 MMClassification
+
+MMClassification 提供 [Dockerfile](https://github.com/open-mmlab/mmclassification/blob/master/docker/Dockerfile)
+用于构建镜像。请确保你的 [Docker 版本](https://docs.docker.com/engine/install/) >=19.03。
+
+```shell
+# 构建默认的 PyTorch 1.8.1，CUDA 10.2 版本镜像
+# 如果你希望使用其他版本，请修改 Dockerfile
+docker build -t mmclassification docker/
+```
+
+用以下命令运行 Docker 镜像：
+
+```shell
+docker run --gpus all --shm-size=8g -it -v {DATA_DIR}:/mmclassification/data mmclassification
+```
+
+## 故障解决
+
+如果你在安装过程中遇到了什么问题，请先查阅[常见问题](faq.md)。如果没有找到解决方法，可以在 GitHub
+上[提出 issue](https://github.com/open-mmlab/mmclassification/issues/new/choose)。

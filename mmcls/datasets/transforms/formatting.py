@@ -166,11 +166,11 @@ class ToNumpy(BaseTransform):
 
     **Required Keys:**
 
-    - ``*keys**
+    - ``*keys**``
 
     **Modified Keys:**
 
-    - ``*keys**
+    - ``*keys**``
 
     Args:
         dtype (str, optional): The dtype of the converted numpy array.
