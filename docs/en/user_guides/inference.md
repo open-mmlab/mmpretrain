@@ -5,19 +5,21 @@ This note will show **how to use existing models to inference on given images**.
 
 As for how to test existing models on standard datasets, please see this [guide](./train_test.md#Test)
 
-## Inference on given images
+## Inference on given image
 
-MMClassification provides high-level Python APIs for inference on images:
+MMClassification provides high-level Python APIs for inference on given image:
 
 - [init_model](https://mmclassification.readthedocs.io/en/1.x/api/mmcls.apis.init_model.html#mmcls.apis.init_model): Initialize a model with a config and checkpoint
-- [inference_model](https://mmclassification.readthedocs.io/en/latest/api/mmcls.apis.init_model.html#mmcls.apis.inference_model): Inference on given image
+- [inference_model](https://mmclassification.readthedocs.io/en/latest/api/mmcls.apis.init_model.html#mmcls.apis.inference_model): Inference on a given image
 
-Here is an example of building the model and inference on given images by using ImageNet-1k pre-trained checkpoint.
+Here is an example of building the model and inference on a given image by using ImageNet-1k pre-trained checkpoint.
 
 ```{note}
-If you use mmcls as a 3-party package, you need to download the configuration files and sample images in the sample.
+If you use mmcls as a 3-party package, you need to download the configuration files and sample images in the example.
+
 Run 'mim download mmcls --config resnet50_8xb32_in1k --dest .' to download the required configuration files.
-Run 'wget https://github.com/open-mmlab/mmclassification/blob/master/demo/demo.JPEG' to download the desired image.
+
+Run 'wget https://github.com/open-mmlab/mmclassification/blob/master/demo/demo.JPEG' to download the desired demo image.
 ```
 
 ```python

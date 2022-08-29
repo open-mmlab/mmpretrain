@@ -16,7 +16,9 @@ MMClassification 为图像推理提供高级 Python API：
 
 ```{note}
 如果您将 mmcls 当作第三方库使用，需要下载样例中的配置文件以及样例图片。
+
 运行 'mim download mmcls --config resnet50_8xb32_in1k --dest .' 下载所需配置文件。
+
 运行 'wget https://github.com/open-mmlab/mmclassification/blob/master/demo/demo.JPEG' 下载所需图片。
 ```
 
