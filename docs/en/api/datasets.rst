@@ -1,6 +1,8 @@
 .. role:: hidden
     :class: hidden-section
 
+.. module:: mmcls.datasets
+
 mmcls.datasets
 ===================================
 
@@ -10,8 +12,6 @@ The ``datasets`` package contains several usual datasets for image classificatio
    :depth: 2
    :local:
    :backlinks: top
-
-.. currentmodule:: mmcls.datasets
 
 Custom Dataset
 --------------

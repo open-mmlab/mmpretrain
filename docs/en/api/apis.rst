@@ -1,6 +1,8 @@
 .. role:: hidden
     :class: hidden-section
 
+.. module:: mmcls.apis
+
 mmcls.apis
 ===================================
 
@@ -10,8 +12,6 @@ These are some high-level APIs for classification tasks.
    :depth: 2
    :local:
    :backlinks: top
-
-.. currentmodule:: mmcls.apis
 
 Inference
 ------------------

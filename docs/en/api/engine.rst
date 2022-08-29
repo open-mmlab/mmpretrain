@@ -1,6 +1,8 @@
 .. role:: hidden
     :class: hidden-section
 
+.. module:: mmcls.engine
+
 mmcls.engine
 ===================================
 
@@ -15,8 +17,6 @@ classification tasks but not supported by MMEngine yet.
    :depth: 2
    :local:
    :backlinks: top
-
-.. currentmodule:: mmcls.engine
 
 Hooks
 ------------------

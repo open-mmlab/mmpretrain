@@ -10,11 +10,12 @@ system. These basic information includes the ground-truth label and raw
 images data / the paths of images.The data process includes data transforms,
 data preprocessors and batch augmentations.
 
-- :ref:`datatransforms`: Transforms includes loading, preprocessing, formatting and etc.
-- :ref:`datapreprocessors`: Processes includes collate, normalization, stacking, channel fliping and etc.
-- :ref:`batchaugmentations`: Batch augmentation involves multiple samples, such as Mixup and CutMix.
+- :mod:`Data Transforms <mmcls.datasets.transforms>`: Transforms includes loading, preprocessing, formatting and etc.
+- :mod:`Data Preprocessors <mmcls.models.utils.data_preprocessor>`: Processes includes collate, normalization, stacking, channel fliping and etc.
 
-.. _datatransforms:
+  - :mod:`Batch Augmentations <mmcls.models.utils.batch_augments>`: Batch augmentation involves multiple samples, such as Mixup and CutMix.
+
+.. module:: mmcls.datasets.transforms
 
 Data Transforms
 --------------------
@@ -49,7 +50,7 @@ Every item of a pipeline list is one of the following data transforms class. And
    :local:
    :backlinks: top
 
-.. currentmodule:: mmcls.datasets.transforms
+.. module:: mmcls.datasets.transforms
 
 
 Processing and Augmentation
@@ -164,7 +165,7 @@ We also provides many transforms in MMCV. You can use them directly in the confi
    * - :external:class:`~mmcv.transforms.Compose`
      - Compose multiple transforms sequentially.
 
-.. _datapreprocessors:
+.. module:: mmcls.models.utils.data_preprocessor
 
 Data Preprocessors
 ------------------
@@ -210,16 +211,14 @@ Or define in ``model.data_preprocessor`` as following:
 
 Note that the ``model.data_preprocessor`` has higher priority than ``data_preprocessor``.
 
-.. currentmodule:: mmcls.models
-
 .. autosummary::
    :toctree: generated
    :nosignatures:
    :template: classtemplate.rst
 
-    ClsDataPreprocessor
+   ClsDataPreprocessor
 
-.. _batchaugmentations:
+.. module:: mmcls.models.utils.batch_augments
 
 Batch Augmentations
 ^^^^^^^^^^^^^^^^^^^^
@@ -253,8 +252,6 @@ You can also speicy the probabilities of every batch augmentation by the ``probs
            dict(type='CutMix', alpha=1.0, num_classes=num_classes),
        ], probs=[0.3, 0.7])
    )
-
-.. currentmodule:: mmcls.models.utils.batch_augments
 
 Here is a list of batch augmentations can be used in MMClassification.
 

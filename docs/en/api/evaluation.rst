@@ -1,6 +1,8 @@
 .. role:: hidden
     :class: hidden-section
 
+.. module:: mmcls.evaluation
+
 mmcls.evaluation
 ===================================
 
@@ -10,8 +12,6 @@ This package includes metrics and evaluators for classification tasks.
    :depth: 1
    :local:
    :backlinks: top
-
-.. currentmodule:: mmcls.evaluation
 
 Single Label Metric
 ----------------------
