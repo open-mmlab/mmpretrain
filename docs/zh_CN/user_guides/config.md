@@ -21,7 +21,7 @@ MMClassification/
 
 可以使用 `python tools/misc/print_config.py /PATH/TO/CONFIG` 命令来查看完整的配置信息，从而方便检查所对应的配置文件。
 
-本文主要讲解 MMClassification 配置文件的命名和结构，以及如何基于已有的配置文件修改，并以 [ResNet50 原始配置文件](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnet/resnet50_8xb32_in1k.py) 逐行解释。
+本文主要讲解 MMClassification 配置文件的命名和结构，以及如何基于已有的配置文件修改，并以 [ResNet50 配置文件](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnet/resnet50_8xb32_in1k.py) 逐行解释。
 
 ## 配置文件结构
 
@@ -32,9 +32,9 @@ MMClassification/
 - [训练策略(schedule)](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/_base_/schedules)
 - [运行设置(runtime)](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/_base_/default_runtime.py)
 
-你可以通过继承一些基本配置文件轻松构建自己的训练配置文件。由来自 `_base_` 的组件组成的配置称为 _primitive_。
+你可以通过继承一些基本配置文件轻松构建自己的训练配置文件。我们称这些被继承的配置文件为 _原始配置文件_，如 `_base_` 文件夹中的文件一般仅作为原始配置文件。
 
-下面使用 [ResNet50 基础配置](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnet/resnet50_8xb32_in1k.py) 作为案例进行说明并注释每一行含义。
+下面使用 [ResNet50 配置文件](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnet/resnet50_8xb32_in1k.py) 作为案例进行说明并注释每一行含义。
 
 ```python
 _base_ = [                                    # 此配置文件将继承所有 `_base_` 中的配置
