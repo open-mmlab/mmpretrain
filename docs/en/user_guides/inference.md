@@ -9,18 +9,22 @@ As for how to test existing models on standard datasets, please see this [guide]
 
 MMClassification provides high-level Python APIs for inference on images:
 
-- [init_model](https://mmclassification.readthedocs.io/en/1.x/api/generated/mmcls.apis.init_model.html#mmcls.apis.init_model)
-- [inference_model](https://mmclassification.readthedocs.io/en/latest/api/generated/mmcls.apis.init_model.html#mmcls.apis.inference_model)
+- [init_model](https://mmclassification.readthedocs.io/en/1.x/api/generated/mmcls.apis.init_model.html#mmcls.apis.init_model): Initialize a model with a config and checkpoint
+- [inference_model](https://mmclassification.readthedocs.io/en/latest/api/generated/mmcls.apis.init_model.html#mmcls.apis.inference_model): Inference on given image
 
 Here is an example of building the model and inference on given images by using ImageNet-1k pre-trained checkpoint.
+
+```{note}
+If you use mmcls as a 3-party package, you need to download the configuration files and sample images in the sample.
+Run 'mim download mmcls --config resnet50_8xb32_in1k --dest .' to download the required configuration files.
+Run 'wget https://github.com/open-mmlab/mmclassification/blob/master/demo/demo.JPEG' to download the desired image.
+```
 
 ```python
 from mmcls.apis import inference_model, init_model
 from mmcls.utils import register_all_modules
 
-# if you use mmcls as 3rd-party package,
-# use 'mim download mmcls --config resnet50_8xb32_in1k --dest .' download the config
-# set 'config_path = 'resnet50_8xb32_in1k.py''
+
 config_path = './configs/resnet/resnet50_8xb32_in1k.py'
 checkpoint_path = 'https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb32_in1k_20210831-ea4938fc.pth' # can be a local path
 img_path = 'demo/demo.JPEG'   # you can specify your own picture path
@@ -33,7 +37,7 @@ model = init_model(config_path, checkpoint_path, device="cpu")
 result = inference_model(model, img_path)
 ```
 
-The result should be:
+`result` is a dictionary containing `pred_label`, `pred_score` and `pred_score`, the result is as follows:
 
 ```text
 {"pred_label":65,"pred_score":0.6649366617202759,"pred_class":"sea snake"}
