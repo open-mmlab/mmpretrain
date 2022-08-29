@@ -15,9 +15,9 @@ MMClassification provides high-level Python APIs for inference on given image:
 Here is an example of building the model and inference on a given image by using ImageNet-1k pre-trained checkpoint.
 
 ```{note}
-If you use mmcls as a 3-party package, you need to download the configuration files and sample images in the example.
+If you use mmcls as a 3rd-party package, you need to download the conifg and the demo image in the example.
 
-Run 'mim download mmcls --config resnet50_8xb32_in1k --dest .' to download the required configuration files.
+Run 'mim download mmcls --config resnet50_8xb32_in1k --dest .' to download the required config.
 
 Run 'wget https://github.com/open-mmlab/mmclassification/blob/master/demo/demo.JPEG' to download the desired demo image.
 ```
