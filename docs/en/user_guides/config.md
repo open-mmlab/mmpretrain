@@ -1,7 +1,7 @@
 # Learn about Configs
 
 To manage various configurations in a deep-learning experiment, we use a kind of config file to record all of
-these configurations. This config system has modular and inheritance design, and more details can be found in
+these configurations. This config system has a modular and inheritance design, and more details can be found in
 [the tutorial in MMEngine](TODO).
 
 Usually, we use python files as config file. All configuration files are placed under the [`configs`](https://github.com/open-mmlab/mmclassification/tree/1.x/configs) folder, and the directory structure is as follows:
@@ -27,16 +27,16 @@ This article mainly explains the structure of configuration files, and how to mo
 
 ## Config Structure
 
-There are four kinds of basic component file in the `configs/_base_` folders, namely：
+There are four kinds of basic component files in the `configs/_base_` folders, namely：
 
 - [models](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/_base_/models)
 - [datasets](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/_base_/datasets)
 - [schedules](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/_base_/schedules)
 - [runtime](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/_base_/default_runtime.py)
 
-We call all the config files in the `_base_` folder as _primitive_ config file. You can easily build your own training config file by inherit some primitive config files.
+We call all the config files in the `_base_` folder as _primitive_ config files. You can easily build your training config file by inheriting some primitive config files.
 
-For easy understanding, we use [ResNet50 config file](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnet/resnet50_8xb32_in1k.py) as a example and comment the meaning of each line.
+For easy understanding, we use [ResNet50 config file](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnet/resnet50_8xb32_in1k.py) as an example and comment on each line.
 
 ```python
 _base_ = [                                    # This config file will inherit all config files in `_base_`.
@@ -53,8 +53,8 @@ We will explain the four primitive config files separately below.
 
 This primitive config file includes a dict variable `model`, which mainly includes information such as network structure and loss function:
 
-- `type`: The type of the classifier to build. For image classification task, it's usually `'ImageClassifier'`. You can find more details in the [API documentation](https://mmclassification.readthedocs.io/en/1.x/api/models.html#classifier).
-- `backbone`: The settings of the backbone. The backbone is the main network to extract features of the inputs, like `ResNet`, `Swin Transformer`, `Vision Transformer` and etc. All available backbones can be found in the [API documentation](https://mmclassification.readthedocs.io/en1.x/api/models.html#backbones).
+- `type`: The type of classifier to build. For image classification tasks, it's usually `'ImageClassifier'`. You can find more details in the [API documentation](https://mmclassification.readthedocs.io/en/1.x/api/models.html#classifier).
+- `backbone`: The settings of the backbone. The backbone is the main network to extract features of the inputs, like `ResNet`, `Swin Transformer`, `Vision Transformer` etc. All available backbones can be found in the [API documentation](https://mmclassification.readthedocs.io/en1.x/api/models.html#backbones).
 - `neck`: The settings of the neck. The neck is the intermediate module to connect the backbone and the classification head, like `GlobalAveragePooling`. All available necks can be found in the [API documentation](https://mmclassification.readthedocs.io/en/1.x/api/models.html#necks).
 - `head`: The settings of the classification head. The head is the task-related component to do the final
   classification. All available heads can be found in the [API documentation](https://mmclassification.readthedocs.io/en/1.x/api/models.html#heads).
@@ -64,8 +64,8 @@ This primitive config file includes a dict variable `model`, which mainly includ
 - `train_cfg`: The extra settings of the model during training. In MMCLS, we mainly use it to specify batch augmentation settings, like `Mixup` and `CutMix`. See the [documentation](TODO) for more details.
 
 ```{note}
-Usually, we use the `type` field to specify the class of the component, and use other fields to pass
-initialization arguments of the class. The [registry tutorial](TODO) describes it in details.
+Usually, we use the `type` field to specify the class of the component and use other fields to pass
+the initialization arguments of the class. The [registry tutorial](TODO) describes it in detail.
 ```
 
 Following is the model primitive config of the ResNet50 config file in [`configs/_base_/models/resnet50.py`](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/_base_/models/resnet50.py):
@@ -95,7 +95,7 @@ model = dict(
 
 ### Data settings
 
-This primitive config file includes information to construct dataloader and evaluator:
+This primitive config file includes information to construct the dataloader and evaluator:
 
 - `data_preprocessor`: Model input preprocessing configuration, same as `model.data_preprocessor` but with lower priority.
 - `train_evaluator | val_evaluator | test_evaluator`: To build the evaluator or metrics, refer to the [tutorial](TODO:).
@@ -183,7 +183,7 @@ test loops:
   - `paramwise_cfg`: To set different optimization arguments according to the parameters' type or name, refer to the relevant [learning policy documentation](TODO).
   - `accumulative_counts`: Optimize parameters after several backward steps instead of one backward step. You
     can use it to simulate large batch size by small batch size.
-- `param_scheduler`: Optimizer parameters policy. You can use it to speicfy learning rate and momentum curves during training. See the [documentation](TODO) in MMEngine for more details.
+- `param_scheduler`: Optimizer parameters policy. You can use it to specify learning rate and momentum curves during training. See the [documentation](TODO) in MMEngine for more details.
 - `train_cfg | val_cfg | test_cfg`: The settings of the training, validation and test loops, refer to the relevant [MMEngine documentation](TODO).
 
 Following is the schedule primitive config of the ResNet50 config in [`configs/_base_/datasets/imagenet_bs32.py`](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/_base_/datasets/imagenet_bs32.py)：
@@ -198,7 +198,7 @@ optim_wrapper = dict(
 param_scheduler = dict(
     type='MultiStepLR', by_epoch=True, milestones=[30, 60, 90], gamma=0.1)
 
-# Training configuration, iterate 100 epochs, and perform validation after every training epochs.
+# Training configuration, iterate 100 epochs, and perform validation after every training epoch.
 # 'by_epoch=True' means to use `EpochBaseTrainLoop`, 'by_epoch=False' means to use IterBaseTrainLoop.
 train_cfg = dict(by_epoch=True, max_epochs=100, val_interval=1)
 # Use the default val loop settings.
@@ -214,7 +214,7 @@ auto_scale_lr = dict(base_batch_size=256)
 
 ### Runtime settings
 
-This part mainly includes saving the checkpoint strategy, log configuration, training parameters, breakpoint weight path, working directory and etc..
+This part mainly includes saving the checkpoint strategy, log configuration, training parameters, breakpoint weight path, working directory, etc.
 
 Here is the runtime primitive config file ['configs/_base_/default_runtime.py'](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/_base_/default_runtime.py) file used by almost all configs:
 
@@ -236,7 +236,7 @@ default_hooks = dict(
     # save checkpoint per epoch.
     checkpoint=dict(type='CheckpointHook', interval=1),
 
-    # set sampler seed in distributed evrionment.
+    # set sampler seed in a distributed environment.
     sampler_seed=dict(type='DistSamplerSeedHook'),
 
     # validation results visualization, set True to enable it.
@@ -248,7 +248,7 @@ env_cfg = dict(
     # whether to enable cudnn benchmark
     cudnn_benchmark=False,
 
-    # set multi process parameters
+    # set multi-process parameters
     mp_cfg=dict(mp_start_method='fork', opencv_num_threads=0),
 
     # set distributed parameters
@@ -272,11 +272,11 @@ resume = False
 
 ## Inherit and Modify Config File
 
-For easy understanding, we recommend contributors to inherit from existing methods. But do not abuse the
-inheritance. Usually, for all config files, we recommend the maximum of inheritance level is 3.
+For easy understanding, we recommend contributors inherit from existing config files. But do not abuse the
+inheritance. Usually, for all config files, we recommend the maximum inheritance level is 3.
 
 For example, if your config file is based on ResNet with some other modification, you can first inherit the
-basic ResNet structure, dataset and other training setting by specifying `_base_ ='./resnet50_8xb32_in1k.py'`
+basic ResNet structure, dataset and other training settings by specifying `_base_ ='./resnet50_8xb32_in1k.py'`
 (The path relative to your config file), and then modify the necessary parameters in the config file. A more
 specific example, now we want to use almost all configs in `configs/resnet/resnet50_8xb32_in1k.py`, but using
 `CutMix` train batch augment and changing the number of training epochs from 100 to 300, modify when to decay
@@ -351,7 +351,7 @@ test_dataloader = dict(dataset=dict(pipeline=val_pipeline))
 
 Sometimes, you need to set `_delete_=True` to ignore some domain content in the basic configuration file. You can refer to the [documentation in MMEngine](TODO) for more instructions.
 
-The following is an example. If you want to use cosine schedule in the above ResNet50 case, just using inheritance and directly modify it will report `get unexcepected keyword 'step'` error, because the `'step'` field of the basic config in `param_scheduler` domain information is reserved, and you need to add `_delete_ =True` to ignore the content of `param_scheduler` related fields in the basic configuration file:
+The following is an example. If you want to use cosine schedule in the above ResNet50 case, just using inheritance and directly modifying it will report `get unexpected keyword 'step'` error, because the `'step'` field of the basic config in `param_scheduler` domain information is reserved, and you need to add `_delete_ =True` to ignore the content of `param_scheduler` related fields in the basic configuration file:
 
 ```python
 _base_ = '../../configs/resnet/resnet50_8xb32_in1k.py'
@@ -362,7 +362,7 @@ param_scheduler = dict(type='CosineAnnealingLR', by_epoch=True, _delete_=True)
 
 ### Use some fields in the base configs
 
-Sometimes, you may refer to some fields in the `_base_` config, so as to avoid duplication of definitions. You can refer to [MMEngine](TODO:) for some more instructions.
+Sometimes, you may refer to some fields in the `_base_` config, to avoid duplication of definitions. You can refer to [MMEngine](TODO:) for some more instructions.
 
 The following is an example of using auto augment in the training data preprocessing pipeline, refer to [`configs/resnest/resnest50_32xb64_in1k.py`](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnest/resnest50_32xb64_in1k.py). When defining `train_pipeline`, just add the definition file name of auto augment to `_base_`, and then use `_base_.auto_increasing_policies` to reference the variables in the primitive config:
 
@@ -411,4 +411,4 @@ When you use the script "tools/train.py" or "tools/test.py" to submit tasks or u
 
 - Update values of list/tuples.
 
-  If the value to be updated is a list or a tuple. For example, the config file normally sets `val_evaluator = dict(type='Accuracy', topk=(1, 5))`. If you want to change the field `topk`, you may specify `--cfg-options val_evaluator.topk="(1,3)"`. Note that the quotation mark " is necessary to support list/tuple data types, and that **NO** white space is allowed inside the quotation marks in the specified value.
+  If the value to be updated is a list or a tuple. For example, the config file normally sets `val_evaluator = dict(type='Accuracy', topk=(1, 5))`. If you want to change the field `topk`, you may specify `--cfg-options val_evaluator.topk="(1,3)"`. Note that the quotation mark " is necessary to support list/tuple data types and that **NO** white space is allowed inside the quotation marks in the specified value.
