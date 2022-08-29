@@ -4,7 +4,7 @@ import tempfile
 
 import pytest
 import torch
-from mmcv.runner import load_checkpoint, save_checkpoint
+from mmengine.runner import load_checkpoint, save_checkpoint
 from torch import nn
 from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
@@ -286,7 +286,7 @@ def test_repvgg_load():
     outputs = model(inputs)
 
     model_deploy = RepVGG('A1', out_indices=(0, 1, 2, 3), deploy=True)
-    save_checkpoint(model, ckpt_path)
+    save_checkpoint(model.state_dict(), ckpt_path)
     load_checkpoint(model_deploy, ckpt_path, strict=True)
 
     outputs_load = model_deploy(inputs)

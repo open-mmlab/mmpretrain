@@ -2,11 +2,10 @@
 import warnings
 from collections.abc import Sequence
 
-import mmcv
 import numpy as np
 import torch
-from mmcv.parallel import DataContainer as DC
-from mmcv.transforms.base import BaseTransform
+from mmcv.transforms import BaseTransform
+from mmengine.utils import is_str
 from PIL import Image
 
 from mmcls.registry import TRANSFORMS
@@ -23,7 +22,7 @@ def to_tensor(data):
         return data
     elif isinstance(data, np.ndarray):
         return torch.from_numpy(data)
-    elif isinstance(data, Sequence) and not mmcv.is_str(data):
+    elif isinstance(data, Sequence) and not is_str(data):
         return torch.tensor(data)
     elif isinstance(data, int):
         return torch.LongTensor([data])
@@ -40,30 +39,36 @@ def to_tensor(data):
 class PackClsInputs(BaseTransform):
     """Pack the inputs data for the classification.
 
-    The ``img_meta`` item is always populated.  The contents of the
-    ``img_meta`` dictionary depends on ``meta_keys``. By default this includes:
+    **Required Keys:**
 
-        - ``sample_idx``: id of the image sample
+    - img
+    - gt_label (optional)
+    - ``*meta_keys`` (optional)
 
-        - ``img_path``: path to the image file
+    **Deleted Keys:**
 
-        - ``ori_shape``: original shape of the image as a tuple (H, W).
+    All keys in the dict.
 
-        - ``img_shape``: shape of the image input to the network as a tuple
-          (H, W).  Note that images may be zero padded on the bottom/right
-          if the batch tensor is larger than this shape.
+    **Added Keys:**
 
-        - ``scale_factor``: a float indicating the preprocessing scale
-
-        - ``flip``: a boolean indicating if image flip transform was used
-
-        - ``flip_direction``: the flipping direction
+    - inputs (:obj:`torch.Tensor`): The forward data of models.
+    - data_samples (:obj:`~mmcls.structures.ClsDataSample`): The annotation
+      info of the sample.
 
     Args:
-        meta_keys (Sequence[str], optional): The meta keys to saved in the
-            ``metainfo`` of the packed ``data_sample``.
-            Default: ``('sample_idx', 'img_path', 'ori_shape', 'img_shape',
-            'scale_factor', 'flip', 'flip_direction')``
+        meta_keys (Sequence[str]): The meta keys to be saved in the
+            ``metainfo`` of the packed ``data_samples``.
+            Defaults to a tuple includes keys:
+
+            - ``sample_idx``: The id of the image sample.
+            - ``img_path``: The path to the image file.
+            - ``ori_shape``: The original shape of the image as a tuple (H, W).
+            - ``img_shape``: The shape of the image after the pipeline as a
+              tuple (H, W).
+            - ``scale_factor``: The scale factor between the resized image and
+              the original image.
+            - ``flip``: A boolean indicating if image flip transform was used.
+            - ``flip_direction``: The flipping direction.
     """
 
     def __init__(self,
@@ -72,17 +77,7 @@ class PackClsInputs(BaseTransform):
         self.meta_keys = meta_keys
 
     def transform(self, results: dict) -> dict:
-        """Method to pack the input data.
-
-        Args:
-            results (dict): Result dict from the data pipeline.
-
-        Returns:
-            dict:
-            - 'inputs' (obj:`torch.Tensor`): The forward data of models.
-            - 'data_sample' (obj:`ClsDataSample`): The annotation info of the
-              sample.
-        """
+        """Method to pack the input data."""
         packed_results = dict()
         if 'img' in results:
             img = results['img']
@@ -104,7 +99,7 @@ class PackClsInputs(BaseTransform):
 
         img_meta = {k: results[k] for k in self.meta_keys if k in results}
         data_sample.set_metainfo(img_meta)
-        packed_results['data_sample'] = data_sample
+        packed_results['data_samples'] = data_sample
 
         return packed_results
 
@@ -115,49 +110,28 @@ class PackClsInputs(BaseTransform):
 
 
 @TRANSFORMS.register_module()
-class ToTensor(object):
-    """Convert objects of various python types to :obj:`torch.Tensor`."""
+class Transpose(BaseTransform):
+    """Transpose numpy array.
 
-    def __init__(self, keys):
-        self.keys = keys
+    **Required Keys:**
 
-    def __call__(self, results):
-        for key in self.keys:
-            results[key] = to_tensor(results[key])
-        return results
+    - ``*keys``
 
-    def __repr__(self):
-        return self.__class__.__name__ + f'(keys={self.keys})'
+    **Modified Keys:**
 
+    - ``*keys``
 
-@TRANSFORMS.register_module()
-class ImageToTensor(object):
-    """Convert objects :obj:`PIL.Image` to :obj:`torch.Tensor`."""
-
-    def __init__(self, keys):
-        self.keys = keys
-
-    def __call__(self, results):
-        for key in self.keys:
-            img = results[key]
-            if len(img.shape) < 3:
-                img = np.expand_dims(img, -1)
-            results[key] = to_tensor(img.transpose(2, 0, 1))
-        return results
-
-    def __repr__(self):
-        return self.__class__.__name__ + f'(keys={self.keys})'
-
-
-@TRANSFORMS.register_module()
-class Transpose(object):
-    """matrix transpose."""
+    Args:
+        keys (List[str]): The fields to convert to tensor.
+        order (List[int]): The output dimensions order.
+    """
 
     def __init__(self, keys, order):
         self.keys = keys
         self.order = order
 
-    def __call__(self, results):
+    def transform(self, results):
+        """Method to transpose array."""
         for key in self.keys:
             results[key] = results[key].transpose(self.order)
         return results
@@ -168,114 +142,80 @@ class Transpose(object):
 
 
 @TRANSFORMS.register_module()
-class ToPIL(object):
-    """Convert tensor to :obj:`PIL.Image`."""
+class ToPIL(BaseTransform):
+    """Convert the image from OpenCV format to :obj:`PIL.Image.Image`.
 
-    def __init__(self):
-        pass
+    **Required Keys:**
 
-    def __call__(self, results):
+    - img
+
+    **Modified Keys:**
+
+    - img
+    """
+
+    def transform(self, results):
+        """Method to convert images to :obj:`PIL.Image.Image`."""
         results['img'] = Image.fromarray(results['img'])
         return results
 
 
 @TRANSFORMS.register_module()
-class ToNumpy(object):
-    """Convert tensor to :obj:`np.ndarray`."""
+class ToNumpy(BaseTransform):
+    """Convert object to :obj:`numpy.ndarray`.
 
-    def __init__(self):
-        pass
+    **Required Keys:**
 
-    def __call__(self, results):
-        results['img'] = np.array(results['img'], dtype=np.float32)
+    - ``*keys**``
+
+    **Modified Keys:**
+
+    - ``*keys**``
+
+    Args:
+        dtype (str, optional): The dtype of the converted numpy array.
+            Defaults to None.
+    """
+
+    def __init__(self, keys, dtype=None):
+        self.keys = keys
+        self.dtype = dtype
+
+    def transform(self, results):
+        """Method to convert object to :obj:`numpy.ndarray`."""
+        for key in self.keys:
+            results[key] = np.array(results[key], dtype=self.dtype)
         return results
+
+    def __repr__(self):
+        return self.__class__.__name__ + \
+            f'(keys={self.keys}, dtype={self.dtype})'
 
 
 @TRANSFORMS.register_module()
-class Collect(object):
-    """Collect data from the loader relevant to the specific task.
+class Collect(BaseTransform):
+    """Collect and only reserve the specified fields.
 
-    This is usually the last stage of the data loader pipeline. Typically keys
-    is set to some subset of "img" and "gt_label".
+    **Required Keys:**
+
+    - ``*keys``
+
+    **Deleted Keys:**
+
+    All keys except those in the argument ``*keys``.
 
     Args:
-        keys (Sequence[str]): Keys of results to be collected in ``data``.
-        meta_keys (Sequence[str], optional): Meta keys to be converted to
-            ``mmcv.DataContainer`` and collected in ``data[img_metas]``.
-            Default: ('filename', 'ori_shape', 'img_shape', 'flip',
-            'flip_direction', 'img_norm_cfg')
-
-    Returns:
-        dict: The result dict contains the following keys
-
-            - keys in ``self.keys``
-            - ``img_metas`` if available
+        keys (Sequence[str]): The keys of the fields to be collected.
     """
 
-    def __init__(self,
-                 keys,
-                 meta_keys=('filename', 'ori_filename', 'ori_shape',
-                            'img_shape', 'flip', 'flip_direction',
-                            'img_norm_cfg')):
+    def __init__(self, keys):
         self.keys = keys
-        self.meta_keys = meta_keys
 
-    def __call__(self, results):
+    def transform(self, results):
         data = {}
-        img_meta = {}
-        for key in self.meta_keys:
-            if key in results:
-                img_meta[key] = results[key]
-        data['img_metas'] = DC(img_meta, cpu_only=True)
         for key in self.keys:
             data[key] = results[key]
         return data
 
     def __repr__(self):
-        return self.__class__.__name__ + \
-            f'(keys={self.keys}, meta_keys={self.meta_keys})'
-
-
-@TRANSFORMS.register_module()
-class WrapFieldsToLists(object):
-    """Wrap fields of the data dictionary into lists for evaluation.
-
-    This class can be used as a last step of a test or validation
-    pipeline for single image evaluation or inference.
-
-    Example:
-        >>> test_pipeline = [
-        >>>    dict(type='LoadImageFromFile'),
-        >>>    dict(type='Normalize',
-                    mean=[123.675, 116.28, 103.53],
-                    std=[58.395, 57.12, 57.375],
-                    to_rgb=True),
-        >>>    dict(type='ImageToTensor', keys=['img']),
-        >>>    dict(type='Collect', keys=['img']),
-        >>>    dict(type='WrapIntoLists')
-        >>> ]
-    """
-
-    def __call__(self, results):
-        # Wrap dict fields into lists
-        for key, val in results.items():
-            results[key] = [val]
-        return results
-
-    def __repr__(self):
-        return f'{self.__class__.__name__}()'
-
-
-@TRANSFORMS.register_module()
-class ToHalf(object):
-
-    def __init__(self, keys):
-        self.keys = keys
-
-    def __call__(self, results):
-        for k in self.keys:
-            if isinstance(results[k], torch.Tensor):
-                results[k] = results[k].to(torch.half)
-            else:
-                results[k] = results[k].astype(np.float16)
-        return results
+        return self.__class__.__name__ + f'(keys={self.keys})'

@@ -2,7 +2,6 @@
 import inspect
 import math
 import numbers
-import random
 from numbers import Number
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 
@@ -24,25 +23,25 @@ except ImportError:
 class RandomCrop(BaseTransform):
     """Crop the given Image at a random location.
 
-    Required Keys:
+    **Required Keys:**
 
     - img
 
-    Modified Keys:
+    **Modified Keys:**
 
     - img
     - img_shape
 
     Args:
-        crop_size (sequence or int): Desired output size of the crop. If
+        crop_size (int | Sequence): Desired output size of the crop. If
             crop_size is an int instead of sequence like (h, w), a square crop
             (crop_size, crop_size) is made.
-        padding (int or sequence, optional): Optional padding on each border
+        padding (int | Sequence, optional): Optional padding on each border
             of the image. If a sequence of length 4 is provided, it is used to
             pad left, top, right, bottom borders respectively.  If a sequence
             of length 2 is provided, it is used to pad left/right, top/bottom
             borders, respectively. Default: None, which means no padding.
-        pad_if_needed (boolean): It will pad the image if smaller than the
+        pad_if_needed (bool): It will pad the image if smaller than the
             desired size to avoid raising an exception. Since cropping is done
             after padding, the padding seems to be done at a random offset.
             Default: False.
@@ -52,17 +51,17 @@ class RandomCrop(BaseTransform):
         padding_mode (str): Type of padding. Defaults to "constant". Should
             be one of the following:
 
-            - constant: Pads with a constant value, this value is specified \
-                with pad_val.
-            - edge: pads with the last value at the edge of the image.
-            - reflect: Pads with reflection of image without repeating the \
-                last value on the edge. For example, padding [1, 2, 3, 4] \
-                with 2 elements on both sides in reflect mode will result \
-                in [3, 2, 1, 2, 3, 4, 3, 2].
-            - symmetric: Pads with reflection of image repeating the last \
-                value on the edge. For example, padding [1, 2, 3, 4] with \
-                2 elements on both sides in symmetric mode will result in \
-                [2, 1, 1, 2, 3, 4, 4, 3].
+            - ``constant``: Pads with a constant value, this value is specified
+              with pad_val.
+            - ``edge``: pads with the last value at the edge of the image.
+            - ``reflect``: Pads with reflection of image without repeating the
+              last value on the edge. For example, padding [1, 2, 3, 4]
+              with 2 elements on both sides in reflect mode will result
+              in [3, 2, 1, 2, 3, 4, 3, 2].
+            - ``symmetric``: Pads with reflection of image repeating the last
+              value on the edge. For example, padding [1, 2, 3, 4] with
+              2 elements on both sides in symmetric mode will result in
+              [2, 1, 1, 2, 3, 4, 4, 3].
     """
 
     def __init__(self,
@@ -70,7 +69,7 @@ class RandomCrop(BaseTransform):
                  padding: Optional[Union[Sequence, int]] = None,
                  pad_if_needed: bool = False,
                  pad_val: Union[Number, Sequence[Number]] = 0,
-                 padding_mode: str = 'constant') -> None:
+                 padding_mode: str = 'constant'):
         if isinstance(crop_size, Sequence):
             assert len(crop_size) == 2
             assert crop_size[0] > 0 and crop_size[1] > 0
@@ -170,11 +169,11 @@ class RandomResizedCrop(BaseTransform):
     random aspect ratio (default: of 3/4 to 4/3) of the original aspect ratio
     is made. This crop is finally resized to given size.
 
-    Required Keys:
+    **Required Keys:**
 
     - img
 
-    Modified Keys:
+    **Modified Keys:**
 
     - img
     - img_shape
@@ -194,7 +193,7 @@ class RandomResizedCrop(BaseTransform):
             'nearest', 'bilinear', 'bicubic', 'area', 'lanczos'. Defaults to
             'bilinear'.
         backend (str): The image resize backend type, accepted values are
-            `cv2` and `pillow`. Defaults to `cv2`.
+            'cv2' and 'pillow'. Defaults to 'cv2'.
     """
 
     def __init__(self,
@@ -320,11 +319,11 @@ class RandomResizedCrop(BaseTransform):
 class EfficientNetRandomCrop(RandomResizedCrop):
     """EfficientNet style RandomResizedCrop.
 
-    Required Keys:
+    **Required Keys:**
 
     - img
 
-    Modified Keys:
+    **Modified Keys:**
 
     - img
     - img_shape
@@ -347,7 +346,7 @@ class EfficientNetRandomCrop(RandomResizedCrop):
             'nearest', 'bilinear', 'bicubic', 'area', 'lanczos'. Defaults to
             'bicubic'.
         backend (str): The image resize backend type, accepted values are
-            `cv2` and `pillow`. Defaults to `cv2`.
+            'cv2' and 'pillow'. Defaults to 'cv2'.
     """
 
     def __init__(self,
@@ -436,52 +435,16 @@ class EfficientNetRandomCrop(RandomResizedCrop):
 
 
 @TRANSFORMS.register_module()
-class RandomGrayscale(object):
-    """Randomly convert image to grayscale with a probability of gray_prob.
-
-    Args:
-        gray_prob (float): Probability that image should be converted to
-            grayscale. Default: 0.1.
-
-    Returns:
-        ndarray: Image after randomly grayscale transform.
-
-    Notes:
-        - If input image is 1 channel: grayscale version is 1 channel.
-        - If input image is 3 channel: grayscale version is 3 channel
-          with r == g == b.
-    """
-
-    def __init__(self, gray_prob=0.1):
-        self.gray_prob = gray_prob
-
-    def __call__(self, results):
-        """
-        Args:
-            img (ndarray): Image to be converted to grayscale.
-
-        Returns:
-            ndarray: Randomly grayscaled image.
-        """
-        for key in results.get('img_fields', ['img']):
-            img = results[key]
-            num_output_channels = img.shape[2]
-            if random.random() < self.gray_prob:
-                if num_output_channels > 1:
-                    img = mmcv.rgb2gray(img)[:, :, None]
-                    results[key] = np.dstack(
-                        [img for _ in range(num_output_channels)])
-                    return results
-            results[key] = img
-        return results
-
-    def __repr__(self):
-        return self.__class__.__name__ + f'(gray_prob={self.gray_prob})'
-
-
-@TRANSFORMS.register_module()
 class RandomErasing(BaseTransform):
     """Randomly selects a rectangle region in an image and erase pixels.
+
+    **Required Keys:**
+
+    - img
+
+    **Modified Keys:**
+
+    - img
 
     Args:
         erase_prob (float): Probability that image will be randomly erased.
@@ -633,60 +596,17 @@ class RandomErasing(BaseTransform):
 
 
 @TRANSFORMS.register_module()
-class Pad(object):
-    """Pad images.
-
-    Args:
-        size (tuple[int] | None): Expected padding size (h, w). Conflicts with
-                pad_to_square. Defaults to None.
-        pad_to_square (bool): Pad any image to square shape. Defaults to False.
-        pad_val (Number | Sequence[Number]): Values to be filled in padding
-            areas when padding_mode is 'constant'. Defaults to 0.
-        padding_mode (str): Type of padding. Should be: constant, edge,
-            reflect or symmetric. Defaults to "constant".
-    """
-
-    def __init__(self,
-                 size=None,
-                 pad_to_square=False,
-                 pad_val=0,
-                 padding_mode='constant'):
-        assert (size is None) ^ (pad_to_square is False), \
-            'Only one of [size, pad_to_square] should be given, ' \
-            f'but get {(size is not None) + (pad_to_square is not False)}'
-        self.size = size
-        self.pad_to_square = pad_to_square
-        self.pad_val = pad_val
-        self.padding_mode = padding_mode
-
-    def __call__(self, results):
-        for key in results.get('img_fields', ['img']):
-            img = results[key]
-            if self.pad_to_square:
-                target_size = tuple(
-                    max(img.shape[0], img.shape[1]) for _ in range(2))
-            else:
-                target_size = self.size
-            img = mmcv.impad(
-                img,
-                shape=target_size,
-                pad_val=self.pad_val,
-                padding_mode=self.padding_mode)
-            results[key] = img
-            results['img_shape'] = img.shape
-        return results
-
-    def __repr__(self):
-        repr_str = self.__class__.__name__
-        repr_str += f'(size={self.size}, '
-        repr_str += f'(pad_val={self.pad_val}, '
-        repr_str += f'padding_mode={self.padding_mode})'
-        return repr_str
-
-
-@TRANSFORMS.register_module()
 class EfficientNetCenterCrop(BaseTransform):
     """EfficientNet style center crop.
+
+    **Required Keys:**
+
+    - img
+
+    **Modified Keys:**
+
+    - img
+    - img_shape
 
     Args:
         crop_size (int): Expected size after cropping with the format
@@ -781,16 +701,16 @@ class EfficientNetCenterCrop(BaseTransform):
 class ResizeEdge(BaseTransform):
     """Resize images along the specified edge.
 
-    Required Keys:
+    **Required Keys:**
 
     - img
 
-    Modified Keys:
+    **Modified Keys:**
 
     - img
     - img_shape
 
-    Added Keys:
+    **Added Keys:**
 
     - scale
     - scale_factor
@@ -878,38 +798,6 @@ class ResizeEdge(BaseTransform):
 
 
 @TRANSFORMS.register_module()
-class Normalize(object):
-    """Normalize the image.
-
-    Args:
-        mean (sequence): Mean values of 3 channels.
-        std (sequence): Std values of 3 channels.
-        to_rgb (bool): Whether to convert the image from BGR to RGB,
-            default is true.
-    """
-
-    def __init__(self, mean, std, to_rgb=True):
-        self.mean = np.array(mean, dtype=np.float32)
-        self.std = np.array(std, dtype=np.float32)
-        self.to_rgb = to_rgb
-
-    def __call__(self, results):
-        for key in results.get('img_fields', ['img']):
-            results[key] = mmcv.imnormalize(results[key], self.mean, self.std,
-                                            self.to_rgb)
-        results['img_norm_cfg'] = dict(
-            mean=self.mean, std=self.std, to_rgb=self.to_rgb)
-        return results
-
-    def __repr__(self):
-        repr_str = self.__class__.__name__
-        repr_str += f'(mean={list(self.mean)}, '
-        repr_str += f'std={list(self.std)}, '
-        repr_str += f'to_rgb={self.to_rgb})'
-        return repr_str
-
-
-@TRANSFORMS.register_module()
 class ColorJitter(BaseTransform):
     """Randomly change the brightness, contrast and saturation of an image.
 
@@ -917,11 +805,11 @@ class ColorJitter(BaseTransform):
     https://github.com/pytorch/vision/blob/main/torchvision/transforms/transforms.py
     Licensed under the BSD 3-Clause License.
 
-    Required Keys:
+    **Required Keys:**
 
     - img
 
-    Modified Keys:
+    **Modified Keys:**
 
     - img
 
@@ -1043,11 +931,11 @@ class ColorJitter(BaseTransform):
 class Lighting(BaseTransform):
     """Adjust images lighting using AlexNet-style PCA jitter.
 
-    Required Keys:
+    **Required Keys:**
 
     - img
 
-    Modified Keys:
+    **Modified Keys:**
 
     - img
 
@@ -1122,11 +1010,11 @@ class Lighting(BaseTransform):
 class Albumentations(BaseTransform):
     """Wrapper to use augmentation from albumentations library.
 
-    Required Keys:
+    **Required Keys:**
 
     - img
 
-    Modified Keys:
+    **Modified Keys:**
 
     - img
     - img_shape
@@ -1137,6 +1025,7 @@ class Albumentations(BaseTransform):
     An example of ``transforms`` is as followed:
 
     .. code-block::
+
         [
             dict(
                 type='ShiftScaleRotate',
@@ -1165,6 +1054,37 @@ class Albumentations(BaseTransform):
         keymap (Optional[Dict]): Mapping of mmcls to albumentations fields,
             in format {'input key':'albumentation-style key'}. Defaults to
             None.
+
+    Example:
+        >>> import mmcv
+        >>> from mmcls.datasets import Albumentations
+        >>> transforms = [
+        ...     dict(
+        ...         type='ShiftScaleRotate',
+        ...         shift_limit=0.0625,
+        ...         scale_limit=0.0,
+        ...         rotate_limit=0,
+        ...         interpolation=1,
+        ...         p=0.5),
+        ...     dict(
+        ...         type='RandomBrightnessContrast',
+        ...         brightness_limit=[0.1, 0.3],
+        ...         contrast_limit=[0.1, 0.3],
+        ...         p=0.2),
+        ...     dict(type='ChannelShuffle', p=0.1),
+        ...     dict(
+        ...         type='OneOf',
+        ...         transforms=[
+        ...             dict(type='Blur', blur_limit=3, p=1.0),
+        ...             dict(type='MedianBlur', blur_limit=3, p=1.0)
+        ...         ],
+        ...         p=0.1),
+        ... ]
+        >>> albu = Albumentations(transforms)
+        >>> data = {'img': mmcv.imread('./demo/demo.JPEG')}
+        >>> data = albu(data)
+        >>> print(data['img'].shape)
+        (375, 500, 3)
     """
 
     def __init__(self, transforms: List[Dict], keymap: Optional[Dict] = None):

@@ -4,12 +4,7 @@
 mmcls.utils
 ===================================
 
-These are some useful help function in the ``utils`` package.
-
-.. contents:: mmcls.utils
-   :depth: 1
-   :local:
-   :backlinks: top
+This package includes some useful helper functions for developing.
 
 .. currentmodule:: mmcls.utils
 
@@ -18,6 +13,4 @@ These are some useful help function in the ``utils`` package.
    :nosignatures:
 
    collect_env
-   get_root_logger
-   load_json_log
-   setup_multi_processes
+   register_all_modules

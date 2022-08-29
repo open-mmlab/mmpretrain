@@ -38,8 +38,8 @@ def _precision_recall_f1_support(pred_positive, gt_positive, average):
         pred_sum = pred_positive.sum(0)
         gt_sum = gt_positive.sum(0)
 
-    precision = tp_sum / torch.clamp(pred_sum, min=1.) * 100
-    recall = tp_sum / torch.clamp(gt_sum, min=1.) * 100
+    precision = tp_sum / torch.clamp(pred_sum, min=1).float() * 100
+    recall = tp_sum / torch.clamp(gt_sum, min=1).float() * 100
     f1_score = 2 * precision * recall / torch.clamp(
         precision + recall, min=torch.finfo(torch.float32).eps)
     if average in ['macro', 'micro']:
@@ -88,16 +88,12 @@ class Accuracy(BaseMetric):
         >>> # ------------------- Use with Evalutor -------------------
         >>> from mmcls.structures import ClsDataSample
         >>> from mmengine.evaluator import Evaluator
-        >>> data_batch = [{
-        ...     'inputs': None,  # In this example, the `inputs` is not used.
-        ...     'data_sample': ClsDataSample().set_gt_label(0)
-        ... } for i in range(1000)]
-        >>> pred = [
-        ...     ClsDataSample().set_pred_score(torch.rand(10))
+        >>> data_samples = [
+        ...     ClsDataSample().set_gt_label(0).set_pred_score(torch.rand(10))
         ...     for i in range(1000)
         ... ]
         >>> evaluator = Evaluator(metrics=Accuracy(topk=(1, 5)))
-        >>> evaluator.process(data_batch, pred)
+        >>> evaluator.process(data_samples)
         >>> evaluator.evaluate(1000)
         {
             'accuracy/top1': 9.300000190734863,
@@ -123,22 +119,21 @@ class Accuracy(BaseMetric):
         else:
             self.thrs = tuple(thrs)
 
-    def process(self, data_batch: Sequence[dict], predictions: Sequence[dict]):
-        """Process one batch of data and predictions.
+    def process(self, data_batch, data_samples: Sequence[dict]):
+        """Process one batch of data samples.
 
         The processed results should be stored in ``self.results``, which will
         be used to computed the metrics when all batches have been processed.
 
         Args:
-            data_batch (Sequence[dict]): A batch of data from the dataloader.
-            predictions (Sequence[dict]): A batch of outputs from the model.
+            data_batch: A batch of data from the dataloader.
+            data_samples (Sequence[dict]): A batch of outputs from the model.
         """
 
-        for data, pred in zip(data_batch, predictions):
+        for data_sample in data_samples:
             result = dict()
-            pred_label = pred['pred_label']
-            # Use gt_label in the pred dict preferentially.
-            gt_label = pred.get('gt_label', data['data_sample']['gt_label'])
+            pred_label = data_sample['pred_label']
+            gt_label = data_sample['gt_label']
             if 'score' in pred_label:
                 result['pred_score'] = pred_label['score'].cpu()
             else:
@@ -317,45 +312,30 @@ class SingleLabelMetric(BaseMetric):
         >>> y_true = [0, 2, 1, 3]
         >>> # Output precision, recall, f1-score and support.
         >>> SingleLabelMetric.calculate(y_pred, y_true, num_classes=4)
-        (tensor(62.5000, dtype=torch.float64),
-         tensor(75., dtype=torch.float64),
-         tensor(66.6667, dtype=torch.float64),
-         tensor(4))
+        (tensor(62.5000), tensor(75.), tensor(66.6667), tensor(4))
         >>> # Calculate with different thresholds.
         >>> y_score = torch.rand((1000, 10))
         >>> y_true = torch.zeros((1000, ))
         >>> SingleLabelMetric.calculate(y_score, y_true, thrs=(0., 0.9))
-        [(tensor(10., dtype=torch.float64),
-          tensor(1.2100, dtype=torch.float64),
-          tensor(2.1588, dtype=torch.float64),
-          tensor(1000)),
-         (tensor(10., dtype=torch.float64),
-          tensor(0.8200, dtype=torch.float64),
-          tensor(1.5157, dtype=torch.float64),
-          tensor(1000))]
+        [(tensor(10.), tensor(0.9500), tensor(1.7352), tensor(1000)),
+         (tensor(10.), tensor(0.5500), tensor(1.0427), tensor(1000))]
         >>>
         >>> # ------------------- Use with Evalutor -------------------
         >>> from mmcls.structures import ClsDataSample
         >>> from mmengine.evaluator import Evaluator
-        >>> data_batch = [{
-        ...     'inputs': None,  # In this example, the `inputs` is not used.
-        ...     'data_sample': ClsDataSample().set_gt_label(i%5)
-        ... } for i in range(1000)]
-        >>> pred = [
-        ...     ClsDataSample().set_pred_score(torch.rand(5))
+        >>> data_samples = [
+        ...     ClsDataSample().set_gt_label(i%5).set_pred_score(torch.rand(5))
         ...     for i in range(1000)
         ... ]
         >>> evaluator = Evaluator(metrics=SingleLabelMetric())
-        >>> evaluator.process(data_batch, pred)
+        >>> evaluator.process(data_samples)
         >>> evaluator.evaluate(1000)
-        {
-            'single-label/precision': 10.0,
-            'single-label/recall': 0.96,
-            'single-label/f1-score': 1.7518248175182483
-        }
+        {'single-label/precision': 19.650691986083984,
+         'single-label/recall': 19.600000381469727,
+         'single-label/f1-score': 19.619548797607422}
         >>> # Evaluate on each class
         >>> evaluator = Evaluator(metrics=SingleLabelMetric(average=None))
-        >>> evaluator.process(data_batch, pred)
+        >>> evaluator.process(data_samples)
         >>> evaluator.evaluate(1000)
         {
             'single-label/precision_classwise': [21.1, 18.7, 17.8, 19.4, 16.1],
@@ -386,31 +366,28 @@ class SingleLabelMetric(BaseMetric):
         self.items = tuple(items)
         self.average = average
 
-    def process(self, data_batch: Sequence[dict], predictions: Sequence[dict]):
-        """Process one batch of data and predictions.
+    def process(self, data_batch, data_samples: Sequence[dict]):
+        """Process one batch of data samples.
 
         The processed results should be stored in ``self.results``, which will
         be used to computed the metrics when all batches have been processed.
 
         Args:
-            data_batch (Sequence[dict]): A batch of data from the dataloader.
-            predictions (Sequence[dict]): A batch of outputs from the model.
+            data_batch: A batch of data from the dataloader.
+            data_samples (Sequence[dict]): A batch of outputs from the model.
         """
 
-        for data, pred in zip(data_batch, predictions):
+        for data_sample in data_samples:
             result = dict()
-            pred_label = pred['pred_label']
-            # Use gt_label in the pred dict preferentially.
-            gt_label = pred.get('gt_label', data['data_sample']['gt_label'])
+            pred_label = data_sample['pred_label']
+            gt_label = data_sample['gt_label']
             if 'score' in pred_label:
                 result['pred_score'] = pred_label['score'].cpu()
-            elif ('num_classes' in pred_label
-                  or 'num_classes' in data['data_sample']):
+            elif ('num_classes' in pred_label):
                 result['pred_label'] = pred_label['label'].cpu()
-                result['num_classes'] = pred_label.get(
-                    'num_classes', None) or data['data_sample']['num_classes']
+                result['num_classes'] = pred_label['num_classes']
             else:
-                raise ValueError('The `pred_label` in predictions do not '
+                raise ValueError('The `pred_label` in data_samples do not '
                                  'have neither `score` nor `num_classes`.')
             result['gt_label'] = gt_label['label'].cpu()
             # Save the result to `self.results`.

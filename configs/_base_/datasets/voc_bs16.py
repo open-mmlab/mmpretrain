@@ -1,6 +1,6 @@
 # dataset settings
 dataset_type = 'VOC'
-preprocess_cfg = dict(
+data_preprocessor = dict(
     # RGB format normalization parameters
     mean=[123.675, 116.28, 103.53],
     std=[58.395, 57.12, 57.375],

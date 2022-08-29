@@ -3,8 +3,8 @@ from typing import Optional, Tuple
 
 import mmcv
 import numpy as np
-from mmengine import Visualizer
 from mmengine.dist import master_only
+from mmengine.visualization import Visualizer
 
 from mmcls.registry import VISUALIZERS
 from mmcls.structures import ClsDataSample

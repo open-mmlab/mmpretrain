@@ -628,7 +628,7 @@ class TestLighting(TestCase):
             TRANSFORMS.build(cfg)
 
     def test_transform(self):
-        ori_img = np.random.randint(0, 256, (256, 256, 3), np.uint8)
+        ori_img = np.ones((256, 256, 3), np.uint8) * 127
         results = dict(img=copy.deepcopy(ori_img))
 
         # Test transform with non-img-keyword result
@@ -641,9 +641,10 @@ class TestLighting(TestCase):
         # test call
         cfg = copy.deepcopy(self.DEFAULT_ARGS)
         lightening_module = TRANSFORMS.build(cfg)
-        results = lightening_module(results)
-        self.assertEqual(results['img'].dtype, ori_img.dtype)
-        assert not np.equal(results['img'], ori_img).all()
+        with patch('numpy.random', np.random.RandomState(0)):
+            results = lightening_module(results)
+            self.assertEqual(results['img'].dtype, ori_img.dtype)
+            assert not np.equal(results['img'], ori_img).all()
 
         # test call with alphastd == 0
         results = dict(img=copy.deepcopy(ori_img))

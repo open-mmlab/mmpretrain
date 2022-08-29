@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved
-from mmcv.utils import is_seq_of
 from mmengine.hooks import Hook
+from mmengine.utils import is_seq_of
 
 from mmcls.registry import HOOKS
 

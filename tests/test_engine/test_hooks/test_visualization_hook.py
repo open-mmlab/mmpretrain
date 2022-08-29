@@ -23,10 +23,10 @@ class TestVisualizationHook(TestCase):
 
         data_sample = ClsDataSample().set_gt_label(1).set_pred_label(2)
         data_sample.set_metainfo({'img_path': 'tests/data/color.jpg'})
-        self.data_batch = [{
-            'inputs': torch.randint(0, 256, (3, 224, 224)),
-            'data_sample': data_sample
-        }] * 10
+        self.data_batch = {
+            'inputs': torch.randint(0, 256, (10, 3, 224, 224)),
+            'data_sample': [data_sample] * 10
+        }
 
         self.outputs = [data_sample] * 10
 

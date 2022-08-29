@@ -4,7 +4,7 @@ import warnings
 from itertools import repeat
 
 import torch
-from mmcv.utils import digit_version
+from mmengine.utils import digit_version
 
 
 def is_tracing() -> bool:

@@ -1,6 +1,6 @@
 # dataset settings
 dataset_type = 'ImageNet'
-preprocess_cfg = dict(
+data_preprocessor = dict(
     # RGB format normalization parameters
     mean=[123.675, 116.28, 103.53],
     std=[58.395, 57.12, 57.375],
@@ -8,8 +8,8 @@ preprocess_cfg = dict(
     to_rgb=True,
 )
 
-bgr_mean = preprocess_cfg['mean'][::-1]
-bgr_std = preprocess_cfg['std'][::-1]
+bgr_mean = data_preprocessor['mean'][::-1]
+bgr_std = data_preprocessor['std'][::-1]
 
 train_pipeline = [
     dict(type='LoadImageFromFile'),

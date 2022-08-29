@@ -6,15 +6,14 @@ from typing import Sequence
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmcv.cnn.bricks import (NORM_LAYERS, DropPath, build_activation_layer,
-                             build_norm_layer)
+from mmcv.cnn.bricks import DropPath, build_activation_layer, build_norm_layer
 from mmengine.model import BaseModule, ModuleList, Sequential
+from mmengine.registry import MODELS
 
-from mmcls.registry import MODELS
 from .base_backbone import BaseBackbone
 
 
-@NORM_LAYERS.register_module('LN2d')
+@MODELS.register_module('LN2d')
 class LayerNorm2d(nn.LayerNorm):
     """LayerNorm on channels for 2d images.
 

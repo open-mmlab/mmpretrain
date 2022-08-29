@@ -137,11 +137,6 @@ class TestMultiLabel(TestCase):
             MultiLabelMetric.calculate(y_pred_binary, 5)
 
     def test_evaluate(self):
-        fake_data_batch = [{
-            'inputs': None,
-            'data_sample': ClsDataSample()
-        } for _ in range(4)]
-
         y_true = [[0], [1, 3], [0, 1, 2], [3]]
         y_true_binary = torch.tensor([
             [1, 0, 0, 0],
@@ -163,7 +158,7 @@ class TestMultiLabel(TestCase):
 
         # Test with default argument
         evaluator = Evaluator(dict(type='MultiLabelMetric'))
-        evaluator.process(fake_data_batch, pred)
+        evaluator.process(pred)
         res = evaluator.evaluate(4)
         self.assertIsInstance(res, dict)
         thr05_y_pred = np.array([
@@ -184,7 +179,7 @@ class TestMultiLabel(TestCase):
 
         # Test with topk argument
         evaluator = Evaluator(dict(type='MultiLabelMetric', topk=1))
-        evaluator.process(fake_data_batch, pred)
+        evaluator.process(pred)
         res = evaluator.evaluate(4)
         self.assertIsInstance(res, dict)
         top1_y_pred = np.array([
@@ -205,7 +200,7 @@ class TestMultiLabel(TestCase):
 
         # Test with both argument
         evaluator = Evaluator(dict(type='MultiLabelMetric', thr=0.25, topk=1))
-        evaluator.process(fake_data_batch, pred)
+        evaluator.process(pred)
         res = evaluator.evaluate(4)
         self.assertIsInstance(res, dict)
         # Expected values come from sklearn
@@ -228,7 +223,7 @@ class TestMultiLabel(TestCase):
 
         # Test with average micro
         evaluator = Evaluator(dict(type='MultiLabelMetric', average='micro'))
-        evaluator.process(fake_data_batch, pred)
+        evaluator.process(pred)
         res = evaluator.evaluate(4)
         self.assertIsInstance(res, dict)
         # Expected values come from sklearn
@@ -247,7 +242,7 @@ class TestMultiLabel(TestCase):
 
         # Test with average None
         evaluator = Evaluator(dict(type='MultiLabelMetric', average=None))
-        evaluator.process(fake_data_batch, pred)
+        evaluator.process(pred)
         res = evaluator.evaluate(4)
         self.assertIsInstance(res, dict)
         # Expected values come from sklearn
@@ -271,7 +266,7 @@ class TestMultiLabel(TestCase):
         ]
 
         evaluator = Evaluator(dict(type='MultiLabelMetric', items=['support']))
-        evaluator.process(fake_data_batch, pred)
+        evaluator.process(pred)
         res = evaluator.evaluate(4)
         self.assertIsInstance(res, dict)
         self.assertEqual(res['multi-label/support'], 7)
@@ -308,11 +303,6 @@ class TestAveragePrecision(TestCase):
             [1, 0, 0, 0],
         ])
 
-        fake_data_batch = [{
-            'inputs': None,
-            'data_sample': ClsDataSample()
-        } for _ in range(4)]
-
         pred = [
             ClsDataSample(num_classes=4).set_pred_score(i).set_gt_score(j)
             for i, j in zip(y_pred, y_true)
@@ -320,14 +310,14 @@ class TestAveragePrecision(TestCase):
 
         # Test with default macro avergae
         evaluator = Evaluator(dict(type='AveragePrecision'))
-        evaluator.process(fake_data_batch, pred)
+        evaluator.process(pred)
         res = evaluator.evaluate(5)
         self.assertIsInstance(res, dict)
         self.assertAlmostEqual(res['multi-label/mAP'], 70.83333, places=4)
 
         # Test with average mode None
         evaluator = Evaluator(dict(type='AveragePrecision', average=None))
-        evaluator.process(fake_data_batch, pred)
+        evaluator.process(pred)
         res = evaluator.evaluate(5)
         self.assertIsInstance(res, dict)
         aps = res['multi-label/AP_classwise']
@@ -342,7 +332,7 @@ class TestAveragePrecision(TestCase):
             for i, j in zip(y_pred, [[0, 1], [1], [2], [0]])
         ]
         evaluator = Evaluator(dict(type='AveragePrecision'))
-        evaluator.process(fake_data_batch, pred)
+        evaluator.process(pred)
         res = evaluator.evaluate(5)
         self.assertAlmostEqual(res['multi-label/mAP'], 70.83333, places=4)
 

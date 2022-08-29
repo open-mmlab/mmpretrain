@@ -8,9 +8,9 @@ import torch.nn as nn
 import torch.utils.checkpoint as cp
 from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.transformer import FFN, PatchEmbed, PatchMerging
-from mmcv.utils.parrots_wrapper import _BatchNorm
 from mmengine.model import BaseModule, ModuleList
-from mmengine.model.utils import trunc_normal_
+from mmengine.model.weight_init import trunc_normal_
+from mmengine.utils.dl_utils.parrots_wrapper import _BatchNorm
 
 from mmcls.registry import MODELS
 from ..utils import (ShiftWindowMSA, resize_pos_embed,

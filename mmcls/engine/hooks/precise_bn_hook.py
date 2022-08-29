@@ -6,7 +6,6 @@ import itertools
 import logging
 from typing import List, Optional, Sequence, Union
 
-import mmcv
 import mmengine
 import torch
 import torch.nn as nn
@@ -14,6 +13,7 @@ from mmengine.hooks import Hook
 from mmengine.logging import print_log
 from mmengine.model import is_model_wrapper
 from mmengine.runner import EpochBasedTrainLoop, IterBasedTrainLoop, Runner
+from mmengine.utils import ProgressBar
 from torch.functional import Tensor
 from torch.nn import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
@@ -120,7 +120,7 @@ def update_bn_stats(
         bn.momentum = 1.0
     # Average the BN stats for each BN layer over the batches
     if rank == 0:
-        prog_bar = mmcv.ProgressBar(num_iter)
+        prog_bar = ProgressBar(num_iter)
 
     for data in itertools.islice(loader, num_iter):
         batch_inputs, data_samples = model.data_preprocessor(data, False)

@@ -5,7 +5,7 @@ from unittest import TestCase
 
 import torch
 from mmcv.cnn import ConvModule
-from mmcv.utils.parrots_wrapper import _BatchNorm
+from mmengine.utils.dl_utils.parrots_wrapper import _BatchNorm
 
 from mmcls.models.backbones import CSPDarkNet, CSPResNet, CSPResNeXt
 from mmcls.models.backbones.cspnet import (CSPNet, DarknetBottleneck,
