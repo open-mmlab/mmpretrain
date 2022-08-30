@@ -22,6 +22,6 @@ article.pytorch-article section table code {
   border-radius: unset;
 }
 
-table.colwidths-auto:not(.colwidths-given) td {
+table.autosummary td {
   width: 50%
 }

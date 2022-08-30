@@ -53,7 +53,7 @@ class ClsDataSample(BaseDataElement):
 
     It's used as interfaces between different components.
 
-    Meta field:
+    Meta fields:
         img_shape (Tuple): The shape of the corresponding input image.
             Used for visualization.
         ori_shape (Tuple): The original shape of the corresponding image.
@@ -61,9 +61,11 @@ class ClsDataSample(BaseDataElement):
         num_classes (int): The number of all categories.
             Used for label format conversion.
 
-    Data field:
-        gt_label (LabelData): The ground truth label.
-        pred_label (LabelData): The predicted label.
+    Data fields:
+        gt_label (:obj:`~mmengine.structures.LabelData`): The ground truth
+            label.
+        pred_label (:obj:`~mmengine.structures.LabelData`): The predicted
+            label.
         scores (torch.Tensor): The outputs of model.
         logits (torch.Tensor): The outputs of model without softmax nor
             sigmoid.

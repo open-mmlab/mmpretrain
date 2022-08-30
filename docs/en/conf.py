@@ -48,7 +48,6 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
-    'sphinx_markdown_tables',
     'myst_parser',
     'sphinx_copybutton',
 ]
@@ -229,6 +228,10 @@ intersphinx_mapping = {
     'torch': ('https://pytorch.org/docs/stable/', None),
     'mmcv': ('https://mmcv.readthedocs.io/en/master/', None),
 }
+napoleon_custom_sections = [
+    ('Meta fields', 'params_style'),
+    ('Data fields', 'params_style'),
+]
 
 
 def builder_inited_handler(app):

@@ -147,6 +147,7 @@ MMCV transforms
 We also provides many transforms in MMCV. You can use them directly in the config files. Here are some frequently used transforms, and the whole transforms list can be found in :external:mod:`mmcv.transforms`.
 
 .. list-table::
+   :widths: 50 50
 
    * - :external:class:`~mmcv.transforms.LoadImageFromFile`
      - Load an image from file.
