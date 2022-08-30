@@ -1,7 +1,5 @@
 # 如何添加新数据集
 
-## 添加新数据集类
-
 用户可以编写一个继承自 [`BasesDataset`](https://mmclassification.readthedocs.io/zh_CN/latest/_modules/mmcls/datasets/base_dataset.html#BaseDataset) 的新数据集类，并重载 `load_data_list(self)` 方法，类似 [CIFAR10](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/datasets/cifar.py) 和 [ImageNet](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/datasets/imagenet.py)。
 
 通常，此方法返回一个包含所有样本的列表，其中的每个样本都是一个字典。字典中包含了必要的数据信息，例如 `img` 和 `gt_label`。
@@ -14,7 +12,7 @@
 ...
 ```
 
-### 1. 创建数据集类
+## 1. 创建数据集类
 
 我们可以在 `mmcls/datasets/filelist.py` 中创建一个新的数据集类以加载数据。
 
@@ -39,7 +37,7 @@ class Filelist(BaseDataset):
         return data_list
 ```
 
-### 2. 添加进 MMCls 库
+## 2. 添加进 MMCls 库
 
 将新的数据集类加入到 `mmcls/datasets/__init__.py` 中：
 
@@ -58,11 +56,13 @@ __all__ = [
 然后在配置文件中，为了使用 `Filelist`，用户可以按以下方式修改配置
 
 ```python
-train = dict(
-    type='Filelist',
-    data_prefix='path/to/images',
-    ann_file = 'image_list.txt',
-    pipeline=transfrom_list
+train_dataloader = dict(
+    ...
+    dataset=dict(
+        type='Filelist',
+        ann_file='image_list.txt',
+        pipeline=train_pipeline,
+    )
 )
 ```
 

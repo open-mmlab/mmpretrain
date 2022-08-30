@@ -1,7 +1,5 @@
 # Adding New Dataset
 
-## Add New Dataset Class
-
 You can write a new dataset class inherited from `BaseDataset`, and overwrite `load_data_list(self)`,
 like [CIFAR10](https://github.com/open-mmlab/mmclassification/blob/1.x/mmcls/datasets/cifar.py) and [ImageNet](https://github.com/open-mmlab/mmclassification/blob/1.x/mmcls/datasets/imagenet.py).
 Typically, this function returns a list, where each sample is a dict, containing necessary data information, e.g., `img` and `gt_label`.
@@ -13,7 +11,7 @@ Assume we are going to implement a `Filelist` dataset, which takes filelists for
 000002.jpg 1
 ```
 
-### 1. Create Dataset Class
+## 1. Create Dataset Class
 
 We can create a new dataset in `mmcls/datasets/filelist.py` to load the data.
 
@@ -38,7 +36,7 @@ class Filelist(BaseDataset):
         return data_list
 ```
 
-### 2. Add to the package
+## 2. Add to the package
 
 And add this dataset class in `mmcls/datasets/__init__.py`
 
@@ -52,7 +50,7 @@ __all__ = [
 ]
 ```
 
-### 3. Modify Correlated Config
+## 3. Modify Correlated Config
 
 Then in the config, to use `Filelist` you can modify the config as the following
 
