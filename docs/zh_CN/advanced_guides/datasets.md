@@ -66,8 +66,8 @@ train_dataloader = dict(
 )
 ```
 
-无论是 `CustomData` 还是自定义的数据集类，都继承了 [`BaseDataset`](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/datasets/base_dataset.py), 其基本用法，**懒加载**以及**节省内存**的特性可以参考相关文档 [mmengine.basedataset](https://github.com/open-mmlab/mmengine/blob/main/docs/zh_cn/tutorials/basedataset.md)。
+所有继承 [`BaseDataset`](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/datasets/base_dataset.py) 的数据集类都具有**懒加载**以及**节省内存**的特性，可以参考相关文档 [mmengine.basedataset](https://github.com/open-mmlab/mmengine/blob/main/docs/zh_cn/tutorials/basedataset.md)。
 
-```note
+```{note}
 如果数据样本时获取的字典中，只包含了 'img_path' 不包含 'img'， 则在 pipeline 中必须包含 'LoadImgFromFile'。
 ```

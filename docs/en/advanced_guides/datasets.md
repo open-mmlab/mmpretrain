@@ -50,7 +50,7 @@ __all__ = [
 ]
 ```
 
-## 3. Modify Correlated Config
+## 3. Modify Related Config
 
 Then in the config, to use `Filelist` you can modify the config as the following
 
@@ -65,8 +65,8 @@ train_dataloader = dict(
 )
 ```
 
-Both `CustomData` and custom dataset classes inherit from [`BaseDataset`](https://github.com/open-mmlab/mmclassification/blob/1.x/mmcls/datasets/base_dataset.py), which basic usage, **lazy loading** and **memory saving** features can refer to related documents [mmengine.basedataset](https://github.com/open-mmlab/mmengine/blob/main/docs/zh_cn/tutorials/basedataset.md).
+All the dataset classes inherit from [`BaseDataset`](https://github.com/open-mmlab/mmclassification/blob/1.x/mmcls/datasets/base_dataset.py) have **lazy loading** and **memory saving** features, you can refer to related documents [mmengine.basedataset](https://github.com/open-mmlab/mmengine/blob/main/docs/zh_cn/tutorials/basedataset.md).
 
-```note
+```{note}
 If the dictionary of the data sample contains 'img_path' but not 'img', then 'LoadImgFromFile' transform must be added in the pipeline.
 ```
