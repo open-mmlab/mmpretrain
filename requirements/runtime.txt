@@ -1,4 +1,3 @@
-fvcore
 matplotlib
 numpy
 packaging

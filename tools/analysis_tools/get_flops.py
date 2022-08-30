@@ -2,8 +2,14 @@
 import argparse
 
 import torch
-from fvcore.nn import (ActivationCountAnalysis, FlopCountAnalysis,
-                       flop_count_str, flop_count_table, parameter_count)
+
+try:
+    from fvcore.nn import (ActivationCountAnalysis, FlopCountAnalysis,
+                           flop_count_str, flop_count_table, parameter_count)
+except ImportError:
+    print('You may need to install fvcore for flops computation, '
+          'and you can use `pip install -r requirements/optional.txt` '
+          'to set up the environment')
 from fvcore.nn.print_model_statistics import _format_size
 from mmcv import Config
 
