@@ -1,12 +1,12 @@
 .. role:: hidden
     :class: hidden-section
 
+.. module:: mmcls.utils
+
 mmcls.utils
 ===================================
 
 This package includes some useful helper functions for developing.
-
-.. currentmodule:: mmcls.utils
 
 .. autosummary::
    :toctree: generated

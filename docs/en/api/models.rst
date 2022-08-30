@@ -1,23 +1,23 @@
 .. role:: hidden
     :class: hidden-section
 
+.. module:: mmcls.models
+
 mmcls.models
 ===================================
 
 The ``models`` package contains several sub-packages for addressing the different components of a model.
 
-- :ref:`classifiers`: The top-level module which defines the whole process of a classification model.
-- :ref:`backbones`: Usually a feature extraction network, e.g., ResNet, MobileNet.
-- :ref:`necks`: The component between backbones and heads, e.g., GlobalAveragePooling.
-- :ref:`heads`: The component for specific tasks. In MMClassification, we provides heads for classification.
-- :ref:`losses`: Loss functions.
-- :ref:`datapreprocessors`: The component before model to preprocess the inputs, e.g., ClsDataPreprocessor.
-- :ref:`models.utils`: Some helper functions and common components used in various networks.
+- :mod:`~mmcls.models.classifiers`: The top-level module which defines the whole process of a classification model.
+- :mod:`~mmcls.models.backbones`: Usually a feature extraction network, e.g., ResNet, MobileNet.
+- :mod:`~mmcls.models.necks`: The component between backbones and heads, e.g., GlobalAveragePooling.
+- :mod:`~mmcls.models.heads`: The component for specific tasks. In MMClassification, we provides heads for classification.
+- :mod:`~mmcls.models.losses`: Loss functions.
+- :mod:`~mmcls.models.utils`: Some helper functions and common components used in various networks.
 
+  - :mod:`~mmcls.models.utils.data_preprocessor`: The component before model to preprocess the inputs, e.g., ClsDataPreprocessor.
   - :ref:`components`: Common components used in various networks.
   - :ref:`helpers`: Helper functions.
-
-.. currentmodule:: mmcls.models
 
 Build Functions
 ---------------
@@ -32,9 +32,9 @@ Build Functions
     build_head
     build_loss
 
-.. _classifiers:
+.. module:: mmcls.models.classifiers
 
-Classifier
+Classifiers
 ------------------
 
 .. autosummary::
@@ -45,7 +45,7 @@ Classifier
     BaseClassifier
     ImageClassifier
 
-.. _backbones:
+.. module:: mmcls.models.backbones
 
 Backbones
 ------------------
@@ -96,7 +96,7 @@ Backbones
    VGG
    VisionTransformer
 
-.. _necks:
+.. module:: mmcls.models.necks
 
 Necks
 ------------------
@@ -110,7 +110,7 @@ Necks
    GeneralizedMeanPooling
    HRFuseScales
 
-.. _heads:
+.. module:: mmcls.models.heads
 
 Heads
 ------------------
@@ -129,7 +129,7 @@ Heads
    MultiLabelClsHead
    MultiLabelLinearClsHead
 
-.. _losses:
+.. module:: mmcls.models.losses
 
 Losses
 ------------------
@@ -145,14 +145,12 @@ Losses
    AsymmetricLoss
    SeesawLoss
 
-.. _models.utils:
+.. module:: mmcls.models.utils
 
 models.utils
 ------------
 
 This package includes some helper functions and common components used in various networks.
-
-.. currentmodule:: mmcls.models.utils
 
 .. _components:
 
