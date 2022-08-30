@@ -1,6 +1,4 @@
-# Customize Modules
-
-## Develop new components
+# Customize models
 
 In our design, a complete model is defined as an ImageClassifier which basically contains below 4 types of model components based on their functionalities.
 
@@ -9,12 +7,12 @@ In our design, a complete model is defined as an ImageClassifier which basically
 - head: the component for specific tasks, e.g., classification or regression.
 - loss: the component in head for calculating losses, e.g., CrossEntropyLoss, LabelSmoothLoss.
 
-### Add a new backbone
+## Add a new backbone
 
-Here we presents how to develop a new backbone component by an example of ResNet_CIFAR.
+Here we presents how to develop a new backbone component by an example of `ResNet_CIFAR`.
 As the input size of CIFAR is 32x32, which is much smaller than the default size of 224x224 in ImageNet, this backbone replaces the `kernel_size=7, stride=2` to `kernel_size=3, stride=1` and removes the MaxPooling after the stem layer to avoid forwarding small feature maps to residual blocks.
 
-The esaiest way is to inherit from `ResNet` and only modify the stem layer.
+The easiest way is to inherit from `ResNet` and only modify the stem layer.
 
 1. Create a new file `mmcls/models/backbones/resnet_cifar.py`.
 
@@ -58,18 +56,37 @@ The esaiest way is to inherit from `ResNet` and only modify the stem layer.
            self.add_module(self.norm1_name, norm1)
            self.relu = nn.ReLU(inplace=True)
 
-       def forward(self, x):  # should return a tuple
-           pass  # implementation is ignored
+       def forward(self, x):
+           # Customize the forward method if need.
+           x = self.conv1(x)
+           x = self.norm1(x)
+           x = self.relu(x)
+           outs = []
+           for i, layer_name in enumerate(self.res_layers):
+               res_layer = getattr(self, layer_name)
+               x = res_layer(x)
+               if i in self.out_indices:
+                   outs.append(x)
+           # The return value need to be a tuple with multi-scale outputs from different depths.
+           # If you don't need multi-scale features, just wrap the output as a one-item tuple.
+           return tuple(outs)
 
-       def init_weights(self, pretrained=None):
-           pass  # override ResNet init_weights if necessary
+       def init_weights(self):
+           # Customize the weight initialization method if need.
+           super().init_weights()
 
-       def train(self, mode=True):
-           pass  # override ResNet train if necessary
+           # Disable the weight initialization if load a pretrained model.
+           if self.init_cfg is not None and self.init_cfg['type'] == 'Pretrained':
+               return
+
+           # Usually, we recommend to use `init_cfg` to specify weight initialization methods
+           # of convolution, linear or normalizaiton layers. If you have some special needs,
+           # do these extra weight initialization here.
+           ...
    ```
 
 ```{note}
-Replace original registry names from BACKBONES, NECKS, HEADS, LOSSES, etc to MODELS in OpenMMLab 2.0 design.
+Replace original registry names from `BACKBONES`, `NECKS`, `HEADS` and `LOSSES` to `MODELS` in OpenMMLab 2.0 design.
 ```
 
 2. Import the new backbone module in `mmcls/models/backbones/__init__.py`.
@@ -95,7 +112,7 @@ Replace original registry names from BACKBONES, NECKS, HEADS, LOSSES, etc to MOD
        ...
    ```
 
-### Add a new neck
+## Add a new neck
 
 Here we take `GlobalAveragePooling` as an example. It is a very simple neck without any arguments.
 To add a new neck, we mainly implement the `forward` function, which applies some operations on the output from backbone and forward the results to head.
@@ -139,12 +156,19 @@ To add a new neck, we mainly implement the `forward` function, which applies som
    )
    ```
 
-### Add a new head
+## Add a new head
 
-Here we presents how to develop a new head by the example of `LinearClsHead` as the following.
+Here we presents how to develop a new head by the example of simplified `VisionTransformerClsHead` as the following.
 To implement a new head, basically we need to implement `pre_logits` method for processes before the final classification head and `forward` method.
 
-1. Create a new file in `mmcls/models/heads/linear_head.py`.
+:::{admonition} Why do we need the `pre_logits` method?
+:class: note
+
+In classification tasks, we usually use a linear layer to do the final classification. And sometimes, we need
+to obtain the feature before the final classification, which is the output of the `pre_logits` method.
+:::
+
+1. Create a new file in `mmcls/models/heads/vit_head.py`.
 
    ```python
    import torch.nn as nn
@@ -154,34 +178,35 @@ To implement a new head, basically we need to implement `pre_logits` method for 
 
 
    @MODELS.register_module()
-   class LinearClsHead(ClsHead):
+   class VisionTransformerClsHead(ClsHead):
 
-       def __init__(self,
-                    num_classes,
-                    in_channels,
-                    init_cfg=dict(
-                        type='Normal', layer='Linear', std=0.01),
-                    **kwargs):
-           super(LinearClsHead, self).__init__(init_cfg=init_cfg, **kwargs)
+       def __init__(self, num_classes, in_channels, hidden_dim, **kwargs):
+           super().__init__(**kwargs)
            self.in_channels = in_channels
            self.num_classes = num_classes
+           self.hidden_dim = hidden_dim
 
-           if self.num_classes <= 0:
-               raise ValueError(
-                   f'num_classes={num_classes} must be a positive integer')
-
-           self.fc = nn.Linear(self.in_channels, self.num_classes)
+           self.fc1 = nn.Linear(in_channels, hidden_dim)
+           self.act = nn.Tanh()
+           self.fc2 = nn.Linear(hidden_dim, num_classes)
 
        def pre_logits(self, feats):
-           """The process before the final classification head."""
-           # The LinearClsHead doesn't have other module, just return after
-           # unpacking.
-           return feats[-1]
+           # The outputs of backbone is usually a tuple from multiple depths,
+           # and for classification, we only need the final output.
+           feat = feats[-1]
+
+           # The final output of VisionTransformer is a tuple of patch tokens and
+           # classification tokens. We need classification tokens here.
+           _, cls_token = feat
+
+           # Do all works except the final classification linear layer.
+           return self.act(self.fc1(cls_token))
 
        def forward(self, feats):
            pre_logits = self.pre_logits(feats)
-           # The final classification head.
-           cls_score = self.fc(pre_logits)
+
+           # The final classification linear layer.
+           cls_score = self.fc2(pre_logits)
            return cls_score
    ```
 
@@ -189,10 +214,10 @@ To implement a new head, basically we need to implement `pre_logits` method for 
 
    ```python
    ...
-   from .linear_head import LinearClsHead
+   from .vit_head import VisionTransformerClsHead
 
    __all__ = [
-       ..., 'LinearClsHead'
+       ..., 'VisionTransformerClsHead'
    ]
    ```
 
@@ -201,14 +226,12 @@ To implement a new head, basically we need to implement `pre_logits` method for 
    ```python
    model = dict(
        head=dict(
-           type='LinearClsHead',
-           num_classes=10, # for cifar10 dataset
-           in_channels=512, # for resnet_cifar with depth of 18
+           type='VisionTransformerClsHead',
            ...,
        ))
    ```
 
-### Add a new loss
+## Add a new loss
 
 To add a new loss function, we mainly implement the `forward` function in the loss module. We should register loss module as `MODELS` as well.
 In addition, it is helpful to leverage the decorator `weighted_loss` to weight the loss for each element.
@@ -255,10 +278,10 @@ Assuming that we want to mimic a probabilistic distribution generated from anoth
 
    ```python
    ...
-   from .l1_loss import L1Loss, l1_loss
+   from .l1_loss import L1Loss
 
    __all__ = [
-       ..., 'L1Loss', 'l1_loss'
+       ..., 'L1Loss'
    ]
    ```
 
