@@ -1,14 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from collections import OrderedDict
-
 import torch
 import torch.nn as nn
 from mmcv.cnn import Conv2d, build_activation_layer, build_norm_layer
 from mmcv.cnn.bricks import DropPath
 from mmcv.cnn.bricks.transformer import PatchEmbed
-from mmcv.runner import (BaseModule, ModuleList, _load_checkpoint,
-                         load_state_dict)
-from mmcv.utils import get_logger
+from mmcv.runner import BaseModule, ModuleList
 from mmcv.utils.parrots_wrapper import _BatchNorm
 
 from ..builder import BACKBONES
@@ -275,8 +271,6 @@ class VAN(BaseBackbone):
             - **depths** (List[int]): The number of blocks in each stage.
             - **ffn_ratios** (List[int]): The number of expansion ratio of
               feedforward network hidden layer channels.
-            - **convert_weights (bool) : Whether to convert pretrained weight
-              keys to use original weights.
 
             Defaults to 'b0'.
         patch_sizes (List[int | tuple]): The patch size in patch embeddings.
@@ -313,38 +307,31 @@ class VAN(BaseBackbone):
         **dict.fromkeys(['b0'],
                         {'embed_dims': [32, 64, 160, 256],
                          'depths': [3, 3, 5, 2],
-                         'ffn_ratios': [8, 8, 4, 4],
-                         'convert_weights': False}),
+                         'ffn_ratios': [8, 8, 4, 4]}),
         **dict.fromkeys(['b1'],
                         {'embed_dims': [64, 128, 320, 512],
                          'depths': [2, 2, 4, 2],
-                         'ffn_ratios': [8, 8, 4, 4],
-                         'convert_weights': False}),
+                         'ffn_ratios': [8, 8, 4, 4]}),
         **dict.fromkeys(['b2'],
                         {'embed_dims': [64, 128, 320, 512],
                          'depths': [3, 3, 12, 3],
-                         'ffn_ratios': [8, 8, 4, 4],
-                         'convert_weights': False}),
+                         'ffn_ratios': [8, 8, 4, 4]}),
         **dict.fromkeys(['b3'],
                         {'embed_dims': [64, 128, 320, 512],
                          'depths': [3, 5, 27, 3],
-                         'ffn_ratios': [8, 8, 4, 4],
-                         'convert_weights': False}),
+                         'ffn_ratios': [8, 8, 4, 4]}),
         **dict.fromkeys(['b4'],
                         {'embed_dims': [64, 128, 320, 512],
                          'depths': [3, 6, 40, 3],
-                         'ffn_ratios': [8, 8, 4, 4],
-                         'convert_weights': True}),
+                         'ffn_ratios': [8, 8, 4, 4]}),
         **dict.fromkeys(['b5'],
                         {'embed_dims': [96, 192, 480, 768],
                          'depths': [3, 3, 24, 3],
-                         'ffn_ratios': [8, 8, 4, 4],
-                         'convert_weights': True}),
+                         'ffn_ratios': [8, 8, 4, 4]}),
         **dict.fromkeys(['b6'],
                         {'embed_dims': [96, 192, 480, 768],
                          'depths': [6, 6, 90, 6],
-                         'ffn_ratios': [8, 8, 4, 4],
-                         'convert_weights': True}),
+                         'ffn_ratios': [8, 8, 4, 4]}),
     }  # yapf: disable
 
     def __init__(self,
@@ -375,7 +362,6 @@ class VAN(BaseBackbone):
         self.embed_dims = self.arch_settings['embed_dims']
         self.depths = self.arch_settings['depths']
         self.ffn_ratios = self.arch_settings['ffn_ratios']
-        self.convert_weights = self.arch_settings['convert_weights']
         self.num_stages = len(self.depths)
         self.out_indices = out_indices
         self.frozen_stages = frozen_stages
@@ -411,36 +397,6 @@ class VAN(BaseBackbone):
             self.add_module(f'patch_embed{i + 1}', patch_embed)
             self.add_module(f'blocks{i + 1}', blocks)
             self.add_module(f'norm{i + 1}', norm)
-
-    def init_weights(self):
-        checkpoint_in_init_cfg = (
-            self.init_cfg is not None and 'checkpoint' in self.init_cfg)
-        if self.convert_weights and checkpoint_in_init_cfg:
-            logger = get_logger(name='mmcls')
-            ckpt = _load_checkpoint(
-                self.init_cfg['checkpoint'], logger=logger, map_location='cpu')
-            if 'state_dict' in ckpt:
-                _state_dict = ckpt['state_dict']
-            elif 'model' in ckpt:
-                _state_dict = ckpt['model']
-            else:
-                _state_dict = ckpt
-
-            state_dict = OrderedDict()
-            for k, v in _state_dict.items():
-                k = k.replace('block', 'blocks')
-                k = k.replace('spatial_gating_unit.conv0',
-                              'spatial_gating_unit.DW_conv')
-                k = k.replace('spatial_gating_unit.conv_spatial',
-                              'spatial_gating_unit.DW_D_conv')
-                k = k.replace('mlp.dwconv.dwconv', 'mlp.dwconv')
-                k = k.replace('proj.', 'projection.')
-                state_dict[k] = v
-
-            # load state_dict
-            load_state_dict(self, state_dict, strict=False, logger=logger)
-        else:
-            super().init_weights()
 
     def train(self, mode=True):
         super(VAN, self).train(mode)

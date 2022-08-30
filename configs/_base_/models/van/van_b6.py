@@ -1,7 +1,7 @@
 # model settings
 model = dict(
     type='ImageClassifier',
-    backbone=dict(type='VAN', arch='b3', drop_path_rate=0.2),
+    backbone=dict(type='VAN', arch='b6', drop_path_rate=0.2),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
         type='LinearClsHead',
