@@ -14,13 +14,11 @@
 ...
 ```
 
-### 创建数据集类
+### 1. 创建数据集类
 
 我们可以在 `mmcls/datasets/filelist.py` 中创建一个新的数据集类以加载数据。
 
 ```python
-import numpy as np
-
 from mmcls.registry import DATASETS
 from .base_dataset import BaseDataset
 
@@ -41,7 +39,7 @@ class Filelist(BaseDataset):
         return data_list
 ```
 
-### 导入自定义数据集类 (MMCls 作为框架)
+### 2. 添加进 MMCls 库
 
 将新的数据集类加入到 `mmcls/datasets/__init__.py` 中：
 
@@ -55,26 +53,14 @@ __all__ = [
 ]
 ```
 
+### 3. 修改相关配置文件
+
 然后在配置文件中，为了使用 `Filelist`，用户可以按以下方式修改配置
 
 ```python
 train = dict(
     type='Filelist',
     data_prefix='path/to/images',
-    ann_file = 'image_list.txt',
-    pipeline=transfrom_list
-)
-```
-
-### 导入自定义数据集类 (MMCls 作为第三方库)
-
-如果你仅仅希望将 MMCls 作为第三库，则需要参考 [MMEngine 教程](https://github.com/open-mmlab/mmengine/blob/main/docs/zh_cn/tutorials/config.md#%E5%AF%BC%E5%85%A5%E8%87%AA%E5%AE%9A%E4%B9%89-python-%E6%A8%A1%E5%9D%97)导入数据集类，在自己的配置文件中加入以下内容：
-
-```python
-custom_imports = dict(imports=['my_package.my_module'], allow_failed_imports=False)
-
-train = dict(
-    type='Filelist',
     ann_file = 'image_list.txt',
     pipeline=transfrom_list
 )
