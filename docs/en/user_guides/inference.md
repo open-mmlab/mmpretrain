@@ -5,12 +5,12 @@ This note will show **how to use existing models to inference on given images**.
 
 As for how to test existing models on standard datasets, please see this [guide](./train_test.md#Test)
 
-## Inference on given image
+## Inference on a given image
 
-MMClassification provides high-level Python APIs for inference on given image:
+MMClassification provides high-level Python APIs for inference on a given image:
 
-- [init_model](https://mmclassification.readthedocs.io/en/1.x/api/mmcls.apis.init_model.html#mmcls.apis.init_model): Initialize a model with a config and checkpoint
-- [inference_model](https://mmclassification.readthedocs.io/en/latest/api/mmcls.apis.init_model.html#mmcls.apis.inference_model): Inference on a given image
+- [init_model](mmcls.apis.init_model): Initialize a model with a config and checkpoint
+- [inference_model](mmcls.apis.inference_model): Inference on a given image
 
 Here is an example of building the model and inference on a given image by using ImageNet-1k pre-trained checkpoint.
 

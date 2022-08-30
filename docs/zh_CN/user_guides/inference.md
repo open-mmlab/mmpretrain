@@ -9,8 +9,8 @@ MMClassification 在 [Model Zoo](../model_zoo.md) 中提供了用于分类的预
 
 MMClassification 为图像推理提供高级 Python API：
 
-- [init_model](https://mmclassification.readthedocs.io/zh_CN/1.x/api/mmcls.apis.init_model.html#mmcls.apis.init_model): 初始化一个模型。
-- [inference_model](https://mmclassification.readthedocs.io/zh_CN/1.x/api/mmcls.apis.init_model.html#mmcls.apis.inference_model)： 对给定图片进行推理。
+- [init_model](mmcls.apis.init_model): 初始化一个模型。
+- [inference_model](mmcls.apis.inference_model)：对给定图片进行推理。
 
 下面是一个示例，如何使用一个 ImageNet-1k 预训练权重初始化模型并推里给定图像。
 
