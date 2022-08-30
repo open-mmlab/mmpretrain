@@ -32,7 +32,7 @@ Changes in **`model.train_cfg`**:
 - `BatchMixup` is renamed to `Mixup`
 - `BatchCutMix` is renamed to `CutMix`
 - `BatchResizeMix` is renamed to `ResizeMix`
-- The `prob` argument are removed from all augments settings, and use the `probs` field in `train_cfg` to
+- The `prob` argument is removed from all augments settings, and you can use the `probs` field in `train_cfg` to
   specify probabilities of every augemnts. If no `probs` field, randomly choose one by the same probability.
 
 <table class="docutils">
@@ -129,6 +129,11 @@ Changes in **`pipeline`**:
 - The argument `size` in **`Resize`** is renamed to `scale`. And `Resize` won't support size like `(256, -1)`, please use `ResizeEdge` to replace it.
 - The argument `policies` in **`AutoAugment`** and **`RandAugment`** supports using string to specify preset policies. `AutoAugment` supports "imagenet" and `RandAugment` supports "timm_increasing".
 - **`RandomResizedCrop`** and **`CenterCrop`** won't supports `efficientnet_style`, and please use `EfficientnNetRandomCrop` and `EfficientNetCenterCrop` to replace them.
+
+```{note}
+We move some work of data transforms to the data preprocessor, like normalization, see [the documentation](mmcls.models.utils.data_preprocessor) for
+more details.
+```
 
 <table class="docutils">
 <tr>
