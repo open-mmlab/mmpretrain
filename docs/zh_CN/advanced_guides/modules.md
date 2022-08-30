@@ -1,6 +1,4 @@
-# 如何增加自定义模块
-
-## 开发新组件
+# 如何增加自定义模型
 
 在我们的设计中，我们定义一个完整的模型为`ImageClassifer`。根据功能的不同，一个`ImageClassifer`基本由以下4种类型的模型组件组成。
 
@@ -9,11 +7,11 @@
 - 头部：用于执行特定任务的组件，例如分类和回归。
 - 损失函数：在头部用于计算损失函数的组件，例如CrossEntropyLoss、LabelSmoothLoss。
 
-### 添加新的主干网络
+## 添加新的主干网络
 
-这里，我们以 ResNet_CIFAR 为例，展示了如何开发一个新的主干网络组件。
+这里，我们以 `ResNet_CIFAR` 为例，展示了如何开发一个新的主干网络组件。
 
-ResNet_CIFAR 针对 CIFAR 32x32 的图像输入，远小于大多数模型使用的ImageNet默认的224x224输入配置，所以我们将骨干网络中 `kernel_size=7,stride=2`
+`ResNet_CIFAR` 针对 CIFAR 32x32 的图像输入，远小于大多数模型使用的ImageNet默认的224x224输入配置，所以我们将骨干网络中 `kernel_size=7,stride=2`
 的设置替换为 `kernel_size=3, stride=1`，并移除了 stem 层之后的
 `MaxPooling`，以避免传递过小的特征图到残差块中。
 
@@ -62,18 +60,37 @@ ResNet_CIFAR 针对 CIFAR 32x32 的图像输入，远小于大多数模型使用
            self.add_module(self.norm1_name, norm1)
            self.relu = nn.ReLU(inplace=True)
 
-       def forward(self, x):  # 需要返回一个元组
-           pass  # 此处省略了网络的前向实现
+       def forward(self, x):
+           # 如果需要的话，可以自定义forward方法
+           x = self.conv1(x)
+           x = self.norm1(x)
+           x = self.relu(x)
+           outs = []
+           for i, layer_name in enumerate(self.res_layers):
+               res_layer = getattr(self, layer_name)
+               x = res_layer(x)
+               if i in self.out_indices:
+                   outs.append(x)
+           # 输出值需要是一个包含不同层多尺度输出的元组
+           # 如果不需要多尺度特征，可以直接在最终输出上包一层元组
+           return tuple(outs)
 
-       def init_weights(self, pretrained=None):
-           pass  # 如果有必要的话，重载基类 ResNet 的参数初始化函数
+       def init_weights(self):
+           # 如果需要的话，可以自定义权重初始化的方法
+           super().init_weights()
 
-       def train(self, mode=True):
-           pass  # 如果有必要的话，重载基类 ResNet 的训练状态函数
+           # 如果有预训练模型，则不需要进行权重初始化
+           if self.init_cfg is not None and self.init_cfg['type'] == 'Pretrained':
+               return
+
+           # 通常来说，我们建议用`init_cfg`去列举不同层权重初始化方法
+           # 包括卷积层，线性层，归一化层等等
+           # 如果有特殊需要，可以在这里进行额外的初始化操作
+           ...
    ```
 
 ```{note}
-在 OpenMMLab 2.0 的设计中，将原有的BACKBONES、NECKS、HEADS、LOSSES等注册名统一为MODELS.
+在 OpenMMLab 2.0 的设计中，将原有的`BACKBONES`、`NECKS`、`HEADS`、`LOSSES`等注册名统一为`MODELS`.
 ```
 
 2. 在 `mmcls/models/backbones/__init__.py` 中导入新模块
@@ -99,7 +116,7 @@ ResNet_CIFAR 针对 CIFAR 32x32 的图像输入，远小于大多数模型使用
        ...
    ```
 
-### 添加新的颈部组件
+## 添加新的颈部组件
 
 这里我们以 `GlobalAveragePooling` 为例。这是一个非常简单的颈部组件，没有任何参数。
 
@@ -145,14 +162,14 @@ ResNet_CIFAR 针对 CIFAR 32x32 的图像输入，远小于大多数模型使用
    )
    ```
 
-### 添加新的头部组件
+## 添加新的头部组件
 
-在此，我们以 `LinearClsHead` 为例，说明如何开发新的头部组件。
+在此，我们以一个简化的 `VisionTransformerClsHead` 为例，说明如何开发新的头部组件。
 
 要添加一个新的头部组件，基本上我们需要实现 `pre_logits` 函数用于进入最后的分类头之前需要的处理，
 以及 `forward` 函数。
 
-1. 创建一个文件 `mmcls/models/heads/linear_head.py`.
+1. 创建一个文件 `mmcls/models/heads/vit_head.py`.
 
    ```python
    import torch.nn as nn
@@ -164,29 +181,31 @@ ResNet_CIFAR 针对 CIFAR 32x32 的图像输入，远小于大多数模型使用
    @MODELS.register_module()
    class LinearClsHead(ClsHead):
 
-       def __init__(self,
-                    num_classes,
-                    in_channels,
-                    init_cfg=dict(
-                        type='Normal', layer='Linear', std=0.01),
-                    **kwargs):
-           super(LinearClsHead, self).__init__(init_cfg=init_cfg, **kwargs)
+       def __init__(self, num_classes, in_channels, hidden_dim, **kwargs):
+           super().__init__(**kwargs)
            self.in_channels = in_channels
            self.num_classes = num_classes
+           self.hidden_dim = hidden_dim
 
-           if self.num_classes <= 0:
-               raise ValueError(
-                   f'num_classes={num_classes} must be a positive integer')
-
-           self.fc = nn.Linear(self.in_channels, self.num_classes)
+           self.fc1 = nn.Linear(in_channels, hidden_dim)
+           self.act = nn.Tanh()
+           self.fc2 = nn.Linear(hidden_dim, num_classes)
 
        def pre_logits(self, feats):
-           """完成最后的分类头之前需要的处理"""
-           # LinearClsHead 没有其他的模块，直接返回最后一个特征
-           return feats[-1]
+           # 骨干网络的输出通常包含多尺度信息的元组
+           # 对于分类任务来说，我们只需要关注最后的输出
+           feat = feats[-1]
+
+           # VisionTransformer的最终输出是一个包含patch tokens和cls tokens的元组
+           # 这里我们只需要cls tokens
+           _, cls_token = feat
+
+           # 完成除了最后的线性分类头以外的操作
+           return self.act(self.fc1(cls_token))
 
        def forward(self, feats):
            pre_logits = self.pre_logits(feats)
+
            # 完成最后的分类头
            cls_score = self.fc(pre_logits)
            return cls_score
@@ -196,10 +215,10 @@ ResNet_CIFAR 针对 CIFAR 32x32 的图像输入，远小于大多数模型使用
 
    ```python
    ...
-   from .linear_head import LinearClsHead
+   from .vit_head import VisionTransformerClsHead
 
    __all__ = [
-       ..., 'LinearClsHead'
+       ..., 'VisionTransformerClsHead'
    ]
    ```
 
@@ -208,14 +227,12 @@ ResNet_CIFAR 针对 CIFAR 32x32 的图像输入，远小于大多数模型使用
    ```python
    model = dict(
        head=dict(
-           type='LinearClsHead',
-           num_classes=10, # for cifar10 dataset
-           in_channels=512, # for resnet_cifar with depth of 18
+           type='VisionTransformerClsHead',
            ...,
        ))
    ```
 
-### 添加新的损失函数
+## 添加新的损失函数
 
 要添加新的损失函数，我们主要需要在损失函数模块中 `forward` 函数。这里需要注意的是，损失模块也应该注册到`MODELS`中。另外，利用装饰器 `weighted_loss` 可以方便的实现对每个元素的损失进行加权平均。
 
@@ -262,10 +279,10 @@ ResNet_CIFAR 针对 CIFAR 32x32 的图像输入，远小于大多数模型使用
 
    ```python
    ...
-   from .l1_loss import L1Loss, l1_loss
+   from .l1_loss import L1Loss
 
    __all__ = [
-       ..., 'L1Loss', 'l1_loss'
+       ..., 'L1Loss'
    ]
    ```
 
@@ -278,7 +295,7 @@ ResNet_CIFAR 针对 CIFAR 32x32 的图像输入，远小于大多数模型使用
        ))
    ```
 
-最后我们可以在配置文件中结合所有新增的模型组件来使用新的模型。
+最后我们可以在配置文件中结合所有新增的模型组件来使用新的模型。由于`ResNet_CIFAR` 不是一个基于ViT的骨干网络，这里我们不用`VisionTransformerClsHead`的配置。
 
 ```python
 model = dict(

@@ -294,7 +294,7 @@ Assuming that we want to mimic a probabilistic distribution generated from anoth
        ))
    ```
 
-Finally we can combine all the new model components in config file to create a new model for best practices.
+Finally we can combine all the new model components in config file to create a new model for best practices. Because `ResNet_CIFAR` is not a ViT-based backbone, we do not implement `VisionTransformerClsHead` here.
 
 ```python
 model = dict(
