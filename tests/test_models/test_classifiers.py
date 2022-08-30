@@ -173,10 +173,10 @@ class TestImageClassifier(TestCase):
         }
         model: ImageClassifier = MODELS.build(cfg)
 
-        data = [{
-            'inputs': torch.randint(0, 256, (3, 224, 224)),
-            'data_sample': ClsDataSample().set_gt_label(1)
-        }]
+        data = {
+            'inputs': torch.randint(0, 256, (1, 3, 224, 224)),
+            'data_samples': [ClsDataSample().set_gt_label(1)]
+        }
 
         optim_wrapper = MagicMock()
         log_vars = model.train_step(data, optim_wrapper)
@@ -190,10 +190,10 @@ class TestImageClassifier(TestCase):
         }
         model: ImageClassifier = MODELS.build(cfg)
 
-        data = [{
-            'inputs': torch.randint(0, 256, (3, 224, 224)),
-            'data_sample': ClsDataSample().set_gt_label(1)
-        }]
+        data = {
+            'inputs': torch.randint(0, 256, (1, 3, 224, 224)),
+            'data_samples': [ClsDataSample().set_gt_label(1)]
+        }
 
         predictions = model.val_step(data)
         self.assertEqual(predictions[0].pred_label.score.shape, (10, ))
@@ -205,10 +205,10 @@ class TestImageClassifier(TestCase):
         }
         model: ImageClassifier = MODELS.build(cfg)
 
-        data = [{
-            'inputs': torch.randint(0, 256, (3, 224, 224)),
-            'data_sample': ClsDataSample().set_gt_label(1)
-        }]
+        data = {
+            'inputs': torch.randint(0, 256, (1, 3, 224, 224)),
+            'data_samples': [ClsDataSample().set_gt_label(1)]
+        }
 
         predictions = model.test_step(data)
         self.assertEqual(predictions[0].pred_label.score.shape, (10, ))

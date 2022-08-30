@@ -5,7 +5,7 @@ from typing import Sequence, Union
 
 import numpy as np
 import torch
-from mmengine.data import BaseDataElement, LabelData
+from mmengine.structures import BaseDataElement, LabelData
 from mmengine.utils import is_str
 
 

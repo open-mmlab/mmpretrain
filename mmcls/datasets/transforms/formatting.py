@@ -52,12 +52,12 @@ class PackClsInputs(BaseTransform):
     **Added Keys:**
 
     - inputs (:obj:`torch.Tensor`): The forward data of models.
-    - data_sample (:obj:`~mmcls.structures.ClsDataSample`): The annotation info
-      of the sample.
+    - data_samples (:obj:`~mmcls.structures.ClsDataSample`): The annotation
+      info of the sample.
 
     Args:
         meta_keys (Sequence[str]): The meta keys to be saved in the
-            ``metainfo`` of the packed ``data_sample``.
+            ``metainfo`` of the packed ``data_samples``.
             Defaults to a tuple includes keys:
 
             - ``sample_idx``: The id of the image sample.
@@ -99,7 +99,7 @@ class PackClsInputs(BaseTransform):
 
         img_meta = {k: results[k] for k in self.meta_keys if k in results}
         data_sample.set_metainfo(img_meta)
-        packed_results['data_sample'] = data_sample
+        packed_results['data_samples'] = data_sample
 
         return packed_results
 
@@ -166,11 +166,11 @@ class ToNumpy(BaseTransform):
 
     **Required Keys:**
 
-    - ``*keys**
+    - ``*keys**``
 
     **Modified Keys:**
 
-    - ``*keys**
+    - ``*keys**``
 
     Args:
         dtype (str, optional): The dtype of the converted numpy array.

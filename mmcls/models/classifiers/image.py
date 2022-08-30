@@ -70,7 +70,7 @@ class ImageClassifier(BaseClassifier):
             self.head = MODELS.build(head)
 
     def forward(self,
-                batch_inputs: torch.Tensor,
+                inputs: torch.Tensor,
                 data_samples: Optional[List[ClsDataSample]] = None,
                 mode: str = 'tensor'):
         """The unified entry for a forward process in both training and test.
@@ -88,7 +88,7 @@ class ImageClassifier(BaseClassifier):
         optimizer updating, which are done in the :meth:`train_step`.
 
         Args:
-            batch_inputs (torch.Tensor): The input tensor with shape
+            inputs (torch.Tensor): The input tensor with shape
                 (N, C, ...) in general.
             data_samples (List[ClsDataSample], optional): The annotation
                 data of every samples. It's required if ``mode="loss"``.
@@ -104,20 +104,20 @@ class ImageClassifier(BaseClassifier):
             - If ``mode="loss"``, return a dict of tensor.
         """
         if mode == 'tensor':
-            feats = self.extract_feat(batch_inputs)
+            feats = self.extract_feat(inputs)
             return self.head(feats) if self.with_head else feats
         elif mode == 'loss':
-            return self.loss(batch_inputs, data_samples)
+            return self.loss(inputs, data_samples)
         elif mode == 'predict':
-            return self.predict(batch_inputs, data_samples)
+            return self.predict(inputs, data_samples)
         else:
             raise RuntimeError(f'Invalid mode "{mode}".')
 
-    def extract_feat(self, batch_inputs, stage='neck'):
+    def extract_feat(self, inputs, stage='neck'):
         """Extract features from the input tensor with shape (N, C, ...).
 
         Args:
-            batch_inputs (Tensor): A batch of inputs. The shape of it should be
+            inputs (Tensor): A batch of inputs. The shape of it should be
                 ``(num_samples, num_channels, *img_shape)``.
             stage (str): Which stage to output the feature. Choose from:
 
@@ -189,7 +189,7 @@ class ImageClassifier(BaseClassifier):
             (f'Invalid output stage "{stage}", please choose from "backbone", '
              '"neck" and "pre_logits"')
 
-        x = self.backbone(batch_inputs)
+        x = self.backbone(inputs)
 
         if stage == 'backbone':
             return x
@@ -203,12 +203,12 @@ class ImageClassifier(BaseClassifier):
             "No head or the head doesn't implement `pre_logits` method."
         return self.head.pre_logits(x)
 
-    def loss(self, batch_inputs: torch.Tensor,
+    def loss(self, inputs: torch.Tensor,
              data_samples: List[ClsDataSample]) -> dict:
         """Calculate losses from a batch of inputs and data samples.
 
         Args:
-            batch_inputs (torch.Tensor): The input tensor with shape
+            inputs (torch.Tensor): The input tensor with shape
                 (N, C, ...) in general.
             data_samples (List[ClsDataSample]): The annotation data of
                 every samples.
@@ -216,21 +216,21 @@ class ImageClassifier(BaseClassifier):
         Returns:
             dict[str, Tensor]: a dictionary of loss components
         """
-        feats = self.extract_feat(batch_inputs)
+        feats = self.extract_feat(inputs)
         return self.head.loss(feats, data_samples)
 
     def predict(self,
-                batch_inputs: tuple,
+                inputs: tuple,
                 data_samples: Optional[List[ClsDataSample]] = None,
                 **kwargs) -> List[ClsDataSample]:
         """Predict results from the extracted features.
 
         Args:
-            batch_inputs (tuple): The features extracted from the backbone.
+            inputs (tuple): The features extracted from the backbone.
             data_samples (List[ClsDataSample], optional): The annotation
                 data of every samples. Defaults to None.
             **kwargs: Other keyword arguments accepted by the ``predict``
                 method of :attr:`head`.
         """
-        feats = self.extract_feat(batch_inputs)
+        feats = self.extract_feat(inputs)
         return self.head.predict(feats, data_samples, **kwargs)

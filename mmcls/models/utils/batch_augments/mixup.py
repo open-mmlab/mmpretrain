@@ -3,7 +3,7 @@ from typing import List, Optional, Tuple
 
 import numpy as np
 import torch
-from mmengine.data import LabelData
+from mmengine.structures import LabelData
 
 from mmcls.registry import BATCH_AUGMENTS
 from mmcls.structures import ClsDataSample

@@ -4,11 +4,10 @@
 mmcls.structures
 ===================================
 
-.. contents:: mmcls.structures
-   :depth: 2
-   :local:
-   :backlinks: top
+This package includes basic data structures for classification tasks.
 
 .. currentmodule:: mmcls.structures
 
+ClsDataSample
+-------------
 .. autoclass:: ClsDataSample

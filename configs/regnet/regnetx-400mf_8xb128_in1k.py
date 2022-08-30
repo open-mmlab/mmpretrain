@@ -6,7 +6,7 @@ _base_ = [
 ]
 
 # dataset settings
-preprocess_cfg = dict(
+data_preprocessor = dict(
     # BGR format normalization parameters
     mean=[103.53, 116.28, 123.675],
     std=[57.375, 57.12, 58.395],
