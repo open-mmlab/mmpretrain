@@ -209,6 +209,8 @@ copybutton_prompt_text = r'>>> |\.\.\. '
 copybutton_prompt_is_regexp = True
 # Auto-generated header anchors
 myst_heading_anchors = 3
+# Enable "colon_fence" extension of myst.
+myst_enable_extensions = ['colon_fence']
 # Configuration for intersphinx
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
