@@ -81,10 +81,10 @@ class TestClsDataPreprocessor(TestCase):
     def test_batch_augmentation(self):
         cfg = dict(
             type='ClsDataPreprocessor',
-            batch_augments=[
+            batch_augments=dict(augments=[
                 dict(type='Mixup', alpha=0.8, num_classes=10),
                 dict(type='CutMix', alpha=1., num_classes=10)
-            ])
+            ]))
         processor: ClsDataPreprocessor = MODELS.build(cfg)
         self.assertIsInstance(processor.batch_augments, RandomBatchAugment)
         data = {

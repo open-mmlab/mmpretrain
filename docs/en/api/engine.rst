@@ -18,6 +18,8 @@ classification tasks but not supported by MMEngine yet.
    :local:
    :backlinks: top
 
+.. module:: mmcls.engine.hooks
+
 Hooks
 ------------------
 
@@ -29,6 +31,8 @@ Hooks
    ClassNumCheckHook
    PreciseBNHook
    VisualizationHook
+
+.. module:: mmcls.engine.optimizers
 
 Optimizers
 ------------------

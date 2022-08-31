@@ -56,7 +56,7 @@ class ImageClassifier(BaseClassifier):
 
         if train_cfg is not None and 'augments' in train_cfg:
             # Set batch augmentations by `train_cfg`
-            data_preprocessor['batch_augments'] = train_cfg['augments']
+            data_preprocessor['batch_augments'] = train_cfg
 
         super(ImageClassifier, self).__init__(
             init_cfg=init_cfg, data_preprocessor=data_preprocessor)
