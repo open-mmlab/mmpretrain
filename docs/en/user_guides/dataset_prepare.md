@@ -6,7 +6,7 @@ MMClassification supports following datasets:
 - [ImageNet](#imagenet)
 - [CIFAR](#cifar)
 - [MINIST](#mnist)
-- [OpenMMLab 2.0 Standard Dataset](#openmmlab-2-0-standard-dataset)
+- [OpenMMLab 2.0 Standard Dataset](#openmmlab-20-standard-dataset)
 - [Other Datasets](#other-datasets)
 - [Dataset Wrappers](#dataset-wrappers)
 
@@ -99,7 +99,7 @@ train_dataloader = dict(
         data_root='path/to/data_root',
         ann_file='meta/train_annfile.txt',
         data_prefix='train',
-        classes=['A', 'B', 'C', 'D', ....],
+        classes=['A', 'B', 'C', 'D', ...],
         pipeline=...,
     )
 )

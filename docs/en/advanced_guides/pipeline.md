@@ -1,4 +1,4 @@
-# Tutorial 4: Custom Data Pipelines
+# Customize Data Pipeline (TODO)
 
 ## Design of Data pipelines
 
@@ -98,7 +98,7 @@ More supported backends can be found in [mmcv.fileio.FileClient](https://github.
 
 - remove: all other keys except for those specified by `keys`
 
-For more information about other data transformation classes, please refer to [Data Transformations](../api/transforms.rst)
+For more information about other data transformation classes, please refer to [Data Transforms](mmcls.datasets.transforms)
 
 ## Extend and use custom pipelines
 
@@ -147,4 +147,4 @@ For more information about other data transformation classes, please refer to [D
 
 ## Pipeline visualization
 
-After designing data pipelines, you can use the [visualization tools](../tools/visualization.md) to view the performance.
+After designing data pipelines, you can use the [visualization tools](../user_guides/visualization.md) to view the performance.

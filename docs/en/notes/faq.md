@@ -17,7 +17,7 @@ and make sure you fill in all required information in the template.
 
   | MMClassification version |      MMCV version      |
   | :----------------------: | :--------------------: |
-  |           dev            |  mmcv>=1.5.0, \<1.6.0  |
+  |      1.0.0rc0 (1.x)      |     mmcv>=2.0.0rc1     |
   |     0.23.1 (master)      |  mmcv>=1.4.2, \<1.6.0  |
   |          0.22.1          |  mmcv>=1.4.2, \<1.6.0  |
   |          0.21.0          | mmcv>=1.4.2, \<=1.5.0  |
@@ -59,7 +59,7 @@ and make sure you fill in all required information in the template.
 
 - Do I need to reinstall mmcls after some code modifications?
 
-  If you follow [the best practice](install.md) and install mmcls from source,
+  If you follow [the best practice](../get_started.md#best-practices) and install mmcls from source,
   any local modifications made to the code will take effect without
   reinstallation.
 

@@ -1,4 +1,4 @@
-# Customize models
+# Customize Models
 
 In our design, a complete model is defined as an ImageClassifier which contains 4 types of model components based on their functionalities.
 

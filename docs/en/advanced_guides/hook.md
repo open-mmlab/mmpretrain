@@ -1,4 +1,4 @@
-# Tutorial 7: Customize Runtime Settings
+# Customize Runtime Settings (TODO)
 
 In this tutorial, we will introduce some methods about how to customize workflow and hooks when running your own settings for the project.
 
@@ -255,4 +255,4 @@ By default, the hook's priority is set as `NORMAL` during registration.
 
 - `resume_from` : not only import model weights, but also optimizer information, current epoch information, mainly used to continue training from the checkpoint.
 
-- `init_cfg.Pretrained` : Load weights during weight initialization, and you can specify which module to load. This is usually used when fine-tuning a model, refer to [Tutorial 2: Fine-tune Models](./finetune.md).
+- `init_cfg.Pretrained` : Load weights during weight initialization, and you can specify which module to load. This is usually used when fine-tuning a model, refer to [Tutorial 2: Fine-tune Models](../user_guides/finetune.md).

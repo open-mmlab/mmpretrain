@@ -1,4 +1,4 @@
-# 如何添加新数据集
+# 添加新数据集
 
 用户可以编写一个继承自 [`BasesDataset`](https://mmclassification.readthedocs.io/zh_CN/latest/_modules/mmcls/datasets/base_dataset.html#BaseDataset) 的新数据集类，并重载 `load_data_list(self)` 方法，类似 [CIFAR10](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/datasets/cifar.py) 和 [ImageNet](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/datasets/imagenet.py)。
 

@@ -6,17 +6,17 @@
 - [ImageNet](#imagenet)
 - [CIFAR](#cifar)
 - [MINIST](#mnist)
-- [OpenMMLab 2.0 Standard Dataset](#openmmlab-2-0-standard-dataset)
-- [Other Datasets](#other-datasets)
-- [Dataset Wrappers](#dataset-wrappers)
+- [OpenMMLab 2.0 标准数据集](#openmmlab-20-标准数据集)
+- [其他数据集](#其他数据集)
+- [数据集包装](#数据集包装)
 
 如果你使用的数据集不在以上所列公开数据集中，需要转换数据集格式来适配 **`CustomDataset`**。
 
-## 适配CustomDataset
+## CustomDataset
 
-[`CustomDataset`](mmcls.datasets.CustomDataset) 是一个通用的数据集类，供您使用自己的数据集。目前 `CustomDataset` 支持以下两种数据格式：
+[`CustomDataset`](mmcls.datasets.CustomDataset) 是一个通用的数据集类，供您使用自己的数据集。目前 `CustomDataset` 支持以下两种方式组织你的数据集文件：
 
-### 子文件夹格式
+### 子文件夹方式
 
 文件夹格式通过文件来区别图片的类别，如下， class_1 和 class_2 就代表了区分了不同的类别。
 
@@ -40,13 +40,13 @@ train_dataloader = dict(
     # 训练数据集配置
     dataset=dict(
         type='CustomDataset',
-        data_prefix='path/to/data_prefix,
+        data_prefix='path/to/data_prefix',
         pipeline=...
     )
-）
+)
 ```
 
-### 标注文件格式
+### 标注文件方式
 
 标注文件格式主要使用文本文件来保存类别信息，`data_prefix` 存放图片，`ann_file` 存放标注类别信息。
 
@@ -59,8 +59,7 @@ data_root/
 │   └── ...
 ├── data_prefix/
 │   ├── folder_1
-│   │   ├── xxx.png
-│   │   ├── xxy.png
+│   │   ├── xxx.png │   │   ├── xxy.png
 │   │   └── ...
 │   ├── 123.png
 │   ├── nsdf3.png
@@ -91,10 +90,10 @@ train_dataloader = dict(
         type='CustomDataset',
         ann_file='path/to/ann_file_path',
         data_prefix='path/to/images',
-        classes=['A', 'B', 'C', 'D'....]
-        pipeline=transfrom_list
+        classes=['A', 'B', 'C', 'D', ...]
+        pipeline=...,
     )
-）
+)
 ```
 
 ```{note}
@@ -221,7 +220,7 @@ val_dataloader = dict(
 test_dataloader = val_dataloader
 ```
 
-### OpenMMLab 2.0 规范数据集
+## OpenMMLab 2.0 标准数据集
 
 为了统一不同任务的数据集接口，便于多任务的算法模型训练，OpenMMLab 制定了 **OpenMMLab 2.0 数据集格式规范**， 数据集标注文件需符合该规范，数据集基类基于该规范去读取与解析数据标注文件。如果用户提供的数据标注文件不符合规定格式，用户可以选择将其转化为规定格式，并使用 OpenMMLab 的算法库基于该数据标注文件进行算法训练和测试。
 
@@ -281,7 +280,7 @@ dataset_cfg=dict(
 
 MMCLassification 还是支持更多其他的数据集，可以通过查阅[数据集文档](mmcls.datasets)获取它们的配置信息。
 
-## 数据集类包装
+## 数据集包装
 
 MMEngine 中支持以下数据包装器，您可以参考 [MMEngine 教程](TODO:) 了解如何使用它。
 

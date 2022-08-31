@@ -43,15 +43,12 @@ for example:
         ....
     )
 
-Every item of a pipeline list is one of the following data transforms class. And if you want to add a custom data transformation class, the tutorial :doc:`Custom Data Pipelines </advanced_guides/pipeline.md>` will help you.
+Every item of a pipeline list is one of the following data transforms class. And if you want to add a custom data transformation class, the tutorial :doc:`Custom Data Pipelines </advanced_guides/pipeline>` will help you.
 
 .. contents::
    :depth: 1
    :local:
    :backlinks: top
-
-.. module:: mmcls.datasets.transforms
-
 
 Processing and Augmentation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
