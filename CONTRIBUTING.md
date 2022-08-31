@@ -18,7 +18,7 @@ Thanks for your interest in contributing to MMClassification! All kinds of contr
 We recommend the potential contributors follow this workflow for contribution.
 
 1. Fork and pull the latest MMClassification repository, follow [get_started](./docs/en/get_started.md) to setup the environment.
-2. Checkout a new branch (**do not use master branch** for PRs)
+2. Checkout a new branch (**do not use the master or dev branch** for PRs)
 
 ```bash
 git checkout -b xxxx # xxxx is the name of new branch
