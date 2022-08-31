@@ -6,7 +6,6 @@
     - [Python](#python)
     - [C++ and CUDA](#c-and-cuda)
   - [Pre-commit Hook](#pre-commit-hook)
-  - [Writing Documentation](#writing-documentation)
 
 Thanks for your interest in contributing to MMClassification! All kinds of contributions are welcome, including but not limited to the following.
 
@@ -72,7 +71,3 @@ pre-commit install
 After this on every commit check code linters and formatter will be enforced.
 
 > Before you create a PR, make sure that your code lints and is formatted by yapf.
-
-## Writing Documentation
-
-(WIP)
