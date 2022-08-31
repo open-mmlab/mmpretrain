@@ -11,7 +11,7 @@ except ImportError:
           'and you can use `pip install -r requirements/optional.txt` '
           'to set up the environment')
 from fvcore.nn.print_model_statistics import _format_size
-from mmcv import Config
+from mmengine import Config
 
 from mmcls.models import build_classifier
 
