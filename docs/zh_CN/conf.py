@@ -216,6 +216,7 @@ intersphinx_mapping = {
     'numpy': ('https://numpy.org/doc/stable', None),
     'torch': ('https://pytorch.org/docs/stable/', None),
     'mmcv': ('https://mmcv.readthedocs.io/zh_CN/2.x/', None),
+    'mmengine': ('https://mmengine.readthedocs.io/zh_CN/latest/', None),
 }
 napoleon_custom_sections = [
     # Custom sections for data elements.
