@@ -52,8 +52,6 @@ extensions = [
     'sphinx_copybutton',
 ]
 
-autodoc_mock_imports = ['mmcv._ext', 'matplotlib']
-
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
@@ -219,21 +217,32 @@ StandaloneHTMLBuilder.supported_image_types = [
 # Ignore >>> when copying code
 copybutton_prompt_text = r'>>> |\.\.\. '
 copybutton_prompt_is_regexp = True
+
 # Auto-generated header anchors
 myst_heading_anchors = 3
 # Enable "colon_fence" extension of myst.
 myst_enable_extensions = ['colon_fence']
+
 # Configuration for intersphinx
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
     'numpy': ('https://numpy.org/doc/stable', None),
     'torch': ('https://pytorch.org/docs/stable/', None),
-    'mmcv': ('https://mmcv.readthedocs.io/en/master/', None),
+    'mmcv': ('https://mmcv.readthedocs.io/en/2.x/', None),
+    'mmengine': ('https://mmengine.readthedocs.io/en/latest/', None),
 }
 napoleon_custom_sections = [
+    # Custom sections for data elements.
     ('Meta fields', 'params_style'),
     ('Data fields', 'params_style'),
 ]
+
+# Disable docstring inheritance
+autodoc_inherit_docstrings = False
+# Mock some imports during generate API docs.
+autodoc_mock_imports = ['mmcv._ext', 'matplotlib']
+# Disable displaying type annotations, these can be very verbose
+autodoc_typehints = 'none'
 
 
 def builder_inited_handler(app):

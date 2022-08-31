@@ -163,7 +163,7 @@ test_dataloader = val_dataloader  # test dataloader配置，这里直接与 val_
 test_evaluator = val_evaluator    # 测试集的评估配置，这里直接与 val_evaluator 相同
 ```
 
-```note
+```{note}
 'model.data_preprocessor' 既可以在 `model=dict(data_preprocessor=dict())`中定义，也可以使用此处的 `data_preprocessor` 定义, 同时配置时，优先使用 `model.data_preprocessor` 的配置。
 ```
 

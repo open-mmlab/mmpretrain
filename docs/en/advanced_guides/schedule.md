@@ -1,4 +1,4 @@
-# Tutorial 6: Customize Schedule
+# Customize Training Schedule (TODO)
 
 In this tutorial, we will introduce some methods about how to construct optimizers, customize learning rate and momentum schedules, parameter-wise finely configuration, gradient clipping, gradient accumulation, and customize self-implemented methods for the project.
 

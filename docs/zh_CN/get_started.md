@@ -209,5 +209,5 @@ docker run --gpus all --shm-size=8g -it -v {DATA_DIR}:/mmclassification/data mmc
 
 ## 故障解决
 
-如果你在安装过程中遇到了什么问题，请先查阅[常见问题](faq.md)。如果没有找到解决方法，可以在 GitHub
+如果你在安装过程中遇到了什么问题，请先查阅[常见问题](./notes/faq.md)。如果没有找到解决方法，可以在 GitHub
 上[提出 issue](https://github.com/open-mmlab/mmclassification/issues/new/choose)。

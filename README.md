@@ -20,17 +20,17 @@
   <div>&nbsp;</div>
 
 [![PyPI](https://img.shields.io/pypi/v/mmcls)](https://pypi.org/project/mmcls)
-[![Docs](https://img.shields.io/badge/docs-latest-blue)](https://mmclassification.readthedocs.io/en/latest/)
+[![Docs](https://img.shields.io/badge/docs-latest-blue)](https://mmclassification.readthedocs.io/en/1.x/)
 [![Build Status](https://github.com/open-mmlab/mmclassification/workflows/build/badge.svg)](https://github.com/open-mmlab/mmclassification/actions)
-[![codecov](https://codecov.io/gh/open-mmlab/mmclassification/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmclassification)
-[![license](https://img.shields.io/github/license/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/blob/master/LICENSE)
+[![codecov](https://codecov.io/gh/open-mmlab/mmclassification/branch/1.x/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmclassification)
+[![license](https://img.shields.io/github/license/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/blob/1.x/LICENSE)
 [![open issues](https://isitmaintained.com/badge/open/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
 [![issue resolution](https://isitmaintained.com/badge/resolution/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
 
-[📘 Documentation](https://mmclassification.readthedocs.io/en/latest/) |
-[🛠️ Installation](https://mmclassification.readthedocs.io/en/latest/install.html) |
-[👀 Model Zoo](https://mmclassification.readthedocs.io/en/latest/model_zoo.html) |
-[🆕 Update News](https://mmclassification.readthedocs.io/en/latest/changelog.html) |
+[📘 Documentation](https://mmclassification.readthedocs.io/en/1.x/) |
+[🛠️ Installation](https://mmclassification.readthedocs.io/en/1.xget_started.html) |
+[👀 Model Zoo](https://mmclassification.readthedocs.io/en/1.x/modelzoo_statistics.html) |
+[🆕 Update News](https://mmclassification.readthedocs.io/en/1.x/notes/changelog.html) |
 [🤔 Reporting Issues](https://github.com/open-mmlab/mmclassification/issues/new/choose)
 
 </div>
@@ -42,7 +42,7 @@ English | [简体中文](/README_zh-CN.md)
 MMClassification is an open source image classification toolbox based on PyTorch. It is
 a part of the [OpenMMLab](https://openmmlab.com/) project.
 
-The master branch works with **PyTorch 1.5+**.
+The `1.x` branch works with **PyTorch 1.6+**.
 
 <div align="center">
   <img src="https://user-images.githubusercontent.com/9102141/87268895-3e0d0780-c4fe-11ea-849e-6140b7e0d4de.gif" width="70%"/>
@@ -58,97 +58,87 @@ The master branch works with **PyTorch 1.5+**.
 
 ## What's new
 
-v0.23.0 was released in 1/5/2022.
-Highlights of the new version:
+v1.0.0rc0 was released in 31/8/2022.
 
-- Support **DenseNet**, **VAN** and **PoolFormer**, and provide pre-trained models.
-- Support training on IPU.
-- New style API docs, welcome [view it](https://mmclassification.readthedocs.io/en/master/api/models.html).
+This release introduced a brand new and flexible training & test engine, but it's still in progress. Welcome
+to try according to [the documentation](https://mmclassification.readthedocs.io/en/1.x/).
 
-v0.22.0 was released in 30/3/2022.
+And there are some BC-breaking changes. Please check [the migration tutorial](https://mmclassification.readthedocs.io/en/1.x/migration.html).
 
-Highlights of the new version:
+The release candidate will last until the end of 2022, and during the release candidate, we will develop on the `1.x` branch. And we will still maintain 0.x version still at least the end of 2023.
 
-- Support a series of **CSP Network**, such as CSP-ResNet, CSP-ResNeXt and CSP-DarkNet.
-- A new `CustomDataset` class to help you **build dataset of yourself**!
-- Support new backbones - **ConvMixer**, **RepMLP** and new dataset - **CUB dataset**.
-
-Please refer to [changelog.md](docs/en/changelog.md) for more details and other release history.
+Please refer to [changelog.md](https://mmclassification.readthedocs.io/en/1.x/notes/changelog.html) for more details and other release history.
 
 ## Installation
 
 Below are quick steps for installation:
 
 ```shell
-conda create -n open-mmlab python=3.8 pytorch=1.10 cudatoolkit=11.3 torchvision -c pytorch -y
+conda create -n open-mmlab python=3.8 pytorch==1.10.1 torchvision==0.11.2 cudatoolkit=11.3 -c pytorch -y
 conda activate open-mmlab
-pip3 install openmim
-mim install mmcv-full
-git clone https://github.com/open-mmlab/mmclassification.git
+pip install openmim
+git clone -b 1.x https://github.com/open-mmlab/mmclassification.git
 cd mmclassification
-pip3 install -e .
+mim install -e .
 ```
 
-Please refer to [install.md](https://mmclassification.readthedocs.io/en/latest/install.html) for more detailed installation and dataset preparation.
+Please refer to [install.md](https://mmclassification.readthedocs.io/en/1.x/get_started.html) for more detailed installation and dataset preparation.
 
-## Getting Started
+## User Guides
 
-Please see [Getting Started](https://mmclassification.readthedocs.io/en/latest/getting_started.html) for the basic usage of MMClassification. There are also tutorials:
+We provided a series of tutorials about the basic usage of MMClassification for new users:
 
-- [Learn about Configs](https://mmclassification.readthedocs.io/en/latest/tutorials/config.html)
-- [Fine-tune Models](https://mmclassification.readthedocs.io/en/latest/tutorials/finetune.html)
-- [Add New Dataset](https://mmclassification.readthedocs.io/en/latest/tutorials/new_dataset.html)
-- [Customizie Data Pipeline](https://mmclassification.readthedocs.io/en/latest/tutorials/data_pipeline.html)
-- [Add New Modules](https://mmclassification.readthedocs.io/en/latest/tutorials/new_modules.html)
-- [Customizie Schedule](https://mmclassification.readthedocs.io/en/latest/tutorials/schedule.html)
-- [Customizie Runtime Settings](https://mmclassification.readthedocs.io/en/latest/tutorials/runtime.html)
-
-Colab tutorials are also provided:
-
-- Learn about MMClassification **Python API**: [Preview the notebook](https://github.com/open-mmlab/mmclassification/blob/master/docs/en/tutorials/MMClassification_python.ipynb) or directly [run on Colab](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/en/tutorials/MMClassification_python.ipynb).
-- Learn about MMClassification **CLI tools**: [Preview the notebook](https://github.com/open-mmlab/mmclassification/blob/master/docs/en/tutorials/MMClassification_tools.ipynb) or directly [run on Colab](https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/en/tutorials/MMClassification_tools.ipynb).
+- [Inference with existing models](https://mmclassification.readthedocs.io/en/1.x/user_guides/inference.html)
+- [Prepare Dataset](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html)
+- [Training and Test](https://mmclassification.readthedocs.io/en/1.x/user_guides/train_test.html)
+- [Learn about Configs](https://mmclassification.readthedocs.io/en/1.x/user_guides/config.html)
+- [Fine-tune Models](https://mmclassification.readthedocs.io/en/1.x/user_guides/finetune.html)
+- [Analysis Tools](https://mmclassification.readthedocs.io/en/1.x/user_guides/analysis.html)
+- [Visualization Tools](https://mmclassification.readthedocs.io/en/1.x/user_guides/visualization.html)
+- [Other Useful Tools](https://mmclassification.readthedocs.io/en/1.x/user_guides/useful_tools.html)
 
 ## Model zoo
 
-Results and models are available in the [model zoo](https://mmclassification.readthedocs.io/en/latest/model_zoo.html).
+Results and models are available in the [model zoo](https://mmclassification.readthedocs.io/en/1.x/modelzoo_statistics.html).
 
 <details open>
 <summary>Supported backbones</summary>
 
-- [x] [VGG](https://github.com/open-mmlab/mmclassification/tree/master/configs/vgg)
-- [x] [ResNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnet)
-- [x] [ResNeXt](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnext)
-- [x] [SE-ResNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/seresnet)
-- [x] [SE-ResNeXt](https://github.com/open-mmlab/mmclassification/tree/master/configs/seresnet)
-- [x] [RegNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/regnet)
-- [x] [ShuffleNetV1](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v1)
-- [x] [ShuffleNetV2](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v2)
-- [x] [MobileNetV2](https://github.com/open-mmlab/mmclassification/tree/master/configs/mobilenet_v2)
-- [x] [MobileNetV3](https://github.com/open-mmlab/mmclassification/tree/master/configs/mobilenet_v3)
-- [x] [Swin-Transformer](https://github.com/open-mmlab/mmclassification/tree/master/configs/swin_transformer)
-- [x] [RepVGG](https://github.com/open-mmlab/mmclassification/tree/master/configs/repvgg)
-- [x] [Vision-Transformer](https://github.com/open-mmlab/mmclassification/tree/master/configs/vision_transformer)
-- [x] [Transformer-in-Transformer](https://github.com/open-mmlab/mmclassification/tree/master/configs/tnt)
-- [x] [Res2Net](https://github.com/open-mmlab/mmclassification/tree/master/configs/res2net)
-- [x] [MLP-Mixer](https://github.com/open-mmlab/mmclassification/tree/master/configs/mlp_mixer)
-- [x] [DeiT](https://github.com/open-mmlab/mmclassification/tree/master/configs/deit)
-- [x] [Conformer](https://github.com/open-mmlab/mmclassification/tree/master/configs/conformer)
-- [x] [T2T-ViT](https://github.com/open-mmlab/mmclassification/tree/master/configs/t2t_vit)
-- [x] [Twins](https://github.com/open-mmlab/mmclassification/tree/master/configs/twins)
-- [x] [EfficientNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/efficientnet)
-- [x] [ConvNeXt](https://github.com/open-mmlab/mmclassification/tree/master/configs/convnext)
-- [x] [HRNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/hrnet)
-- [x] [VAN](https://github.com/open-mmlab/mmclassification/tree/master/configs/van)
-- [x] [ConvMixer](https://github.com/open-mmlab/mmclassification/tree/master/configs/convmixer)
-- [x] [CSPNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/cspnet)
-- [x] [PoolFormer](https://github.com/open-mmlab/mmclassification/tree/master/configs/poolformer)
+- [x] [VGG](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/vgg)
+- [x] [ResNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/resnet)
+- [x] [ResNeXt](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/resnext)
+- [x] [SE-ResNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/seresnet)
+- [x] [SE-ResNeXt](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/seresnet)
+- [x] [RegNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/regnet)
+- [x] [ShuffleNetV1](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/shufflenet_v1)
+- [x] [ShuffleNetV2](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/shufflenet_v2)
+- [x] [MobileNetV2](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobilenet_v2)
+- [x] [MobileNetV3](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobilenet_v3)
+- [x] [Swin-Transformer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/swin_transformer)
+- [x] [RepVGG](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/repvgg)
+- [x] [Vision-Transformer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/vision_transformer)
+- [x] [Transformer-in-Transformer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/tnt)
+- [x] [Res2Net](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/res2net)
+- [x] [MLP-Mixer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mlp_mixer)
+- [x] [DeiT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/deit)
+- [x] [Conformer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/conformer)
+- [x] [T2T-ViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/t2t_vit)
+- [x] [Twins](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/twins)
+- [x] [EfficientNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/efficientnet)
+- [x] [ConvNeXt](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/convnext)
+- [x] [HRNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/hrnet)
+- [x] [VAN](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/van)
+- [x] [ConvMixer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/convmixer)
+- [x] [CSPNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/cspnet)
+- [x] [PoolFormer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/poolformer)
+- [x] [Inception V3](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/inception_v3)
 
 </details>
 
 ## Contributing
 
 We appreciate all contributions to improve MMClassification.
-Please refer to [CONTRUBUTING.md](https://mmclassification.readthedocs.io/en/latest/community/CONTRIBUTING.html) for the contributing guideline.
+Please refer to [CONTRUBUTING.md](https://mmclassification.readthedocs.io/en/1.x/notes/contribution_guide.html) for the contributing guideline.
 
 ## Acknowledgement
 
@@ -174,6 +164,7 @@ This project is released under the [Apache 2.0 license](LICENSE).
 
 ## Projects in OpenMMLab
 
+- [MMEngine](https://github.com/open-mmlab/mmengine): OpenMMLab foundational library for training deep learning models.
 - [MMCV](https://github.com/open-mmlab/mmcv): OpenMMLab foundational library for computer vision.
 - [MIM](https://github.com/open-mmlab/mim): MIM installs OpenMMLab packages.
 - [MMClassification](https://github.com/open-mmlab/mmclassification): OpenMMLab image classification toolbox and benchmark.

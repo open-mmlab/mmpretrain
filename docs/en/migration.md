@@ -10,7 +10,7 @@ according to the [install tutorial](./get_started.md). Or install the below pack
 1. [MMEngine](https://github.com/open-mmlab/mmengine): MMEngine is the core the OpenMMLab 2.0 architecture,
    and we splited many compentents unrelated to computer vision from MMCV to MMEngine.
 2. [MMCV](https://github.com/open-mmlab/mmcv): The computer vision package of OpenMMLab. This is not a new
-   dependency, but you need to upgrade it to above `2.0.0rc0` version.
+   dependency, but you need to upgrade it to above `2.0.0rc1` version.
 3. [rich](https://github.com/Textualize/rich): A terminal formatting package, and we use it to beautify some
    outputs in the terminal.
 
@@ -29,9 +29,9 @@ No changes in `model.backbone`, `model.neck` and `model.head` fields.
 
 Changes in **`model.train_cfg`**:
 
-- `BatchMixup` is renamed to [`Mixup`](Mixup).
-- `BatchCutMix` is renamed to [`CutMix`](CutMix).
-- `BatchResizeMix` is renamed to [`ResizeMix`](ResizeMix).
+- `BatchMixup` is renamed to [`Mixup`](mmcls.models.utils.batch_augments.Mixup).
+- `BatchCutMix` is renamed to [`CutMix`](mmcls.models.utils.batch_augments.CutMix).
+- `BatchResizeMix` is renamed to [`ResizeMix`](mmcls.models.utils.batch_augments.ResizeMix).
 - The `prob` argument is removed from all augments settings, and you can use the `probs` field in `train_cfg` to
   specify probabilities of every augemnts. If no `probs` field, randomly choose one by the same probability.
 
@@ -121,14 +121,14 @@ test_dataloader = val_dataloader
 
 Changes in **`pipeline`**:
 
-- The original formatting transforms **`ToTensor`**、**`ImageToTensor`**、**`Collect`** are combined as [`PackClsInputs`](PackClsInputs).
+- The original formatting transforms **`ToTensor`**、**`ImageToTensor`**、**`Collect`** are combined as [`PackClsInputs`](mmcls.datasets.transforms.PackClsInputs).
 - We don't recommend to do **`Normalize`** in the dataset pipeline. Please remove it from pipelines and set it in the `data_preprocessor` field.
-- The argument `flip_prob` in [**`RandomFlip`**](RandomFlip) is renamed to `flip`.
-- The argument `size` in [**`RandomCrop`**](RandomCrop) is renamed to `crop_size`.
-- The argument `size` in [**`RandomResizedCrop`**](RandomResizedCrop) is renamed to `scale`.
-- The argument `size` in [**`Resize`**](Resize) is renamed to `scale`. And `Resize` won't support size like `(256, -1)`, please use [`ResizeEdge`](ResizeEdge) to replace it.
-- The argument `policies` in [**`AutoAugment`**](AutoAugment) and [**`RandAugment`**](RandAugment) supports using string to specify preset policies. `AutoAugment` supports "imagenet" and `RandAugment` supports "timm_increasing".
-- **`RandomResizedCrop`** and **`CenterCrop`** won't supports `efficientnet_style`, and please use [`EfficientnNetRandomCrop`](EfficientnNetRandomCrop) and [`EfficientNetCenterCrop`](EfficientNetCenterCrop) to replace them.
+- The argument `flip_prob` in [**`RandomFlip`**](mmcv.transforms.RandomFlip) is renamed to `flip`.
+- The argument `size` in [**`RandomCrop`**](mmcls.datasets.transforms.RandomCrop) is renamed to `crop_size`.
+- The argument `size` in [**`RandomResizedCrop`**](mmcls.datasets.transforms.RandomResizedCrop) is renamed to `scale`.
+- The argument `size` in [**`Resize`**](mmcv.transforms.Resize) is renamed to `scale`. And `Resize` won't support size like `(256, -1)`, please use [`ResizeEdge`](mmcls.datasets.transforms.ResizeEdge) to replace it.
+- The argument `policies` in [**`AutoAugment`**](mmcls.datasets.transforms.AutoAugment) and [**`RandAugment`**](mmcls.datasets.transforms.RandAugment) supports using string to specify preset policies. `AutoAugment` supports "imagenet" and `RandAugment` supports "timm_increasing".
+- **`RandomResizedCrop`** and **`CenterCrop`** won't supports `efficientnet_style`, and please use [`EfficientNetRandomCrop`](mmcls.datasets.transforms.EfficientNetRandomCrop) and [`EfficientNetCenterCrop`](mmcls.datasets.transforms.EfficientNetCenterCrop) to replace them.
 
 ```{note}
 We move some work of data transforms to the data preprocessor, like normalization, see [the documentation](mmcls.models.utils.data_preprocessor) for
@@ -521,15 +521,15 @@ the combination of parameter schedulers, see [the tutorial](./advanced_guides/sc
 
 The documentation can be found [here](mmcls.datasets).
 
-|                   Dataset class                   | Changes                                                                        |
-| :-----------------------------------------------: | :----------------------------------------------------------------------------- |
-|         [`CustomDataset`](CustomDataset)          | Add `data_root` argument as the common prefix of `data_prefix` and `ann_file`. |
-|              [`ImageNet`](ImageNet)               | Same as `CustomDataset`.                                                       |
-|           [`ImageNet21k`](ImageNet21k)            | Same as `CustomDataset`.                                                       |
-|   [`CIFAR10`](CIFAR10) & [`CIFAR100`](CIFAR100)   | The `test_mode` argument is a required argument now.                           |
-| [`MNIST`](MNIST) & [`FashionMNIST`](FashionMNIST) | The `test_mode` argument is a required argument now.                           |
-|                   [`VOC`](VOC)                    | Requires `data_root`, `image_set_path` and `test_mode` now.                    |
-|                   [`CUB`](CUB)                    | Requires `data_root` and `test_mode` now.                                      |
+|                                  Dataset class                                  | Changes                                                                        |
+| :-----------------------------------------------------------------------------: | :----------------------------------------------------------------------------- |
+|                 [`CustomDataset`](mmcls.datasets.CustomDataset)                 | Add `data_root` argument as the common prefix of `data_prefix` and `ann_file`. |
+|                      [`ImageNet`](mmcls.datasets.ImageNet)                      | Same as `CustomDataset`.                                                       |
+|                   [`ImageNet21k`](mmcls.datasets.ImageNet21k)                   | Same as `CustomDataset`.                                                       |
+|   [`CIFAR10`](mmcls.datasets.CIFAR10) & [`CIFAR100`](mmcls.datasets.CIFAR100)   | The `test_mode` argument is a required argument now.                           |
+| [`MNIST`](mmcls.datasets.MNIST) & [`FashionMNIST`](mmcls.datasets.FashionMNIST) | The `test_mode` argument is a required argument now.                           |
+|                           [`VOC`](mmcls.datasets.VOC)                           | Requires `data_root`, `image_set_path` and `test_mode` now.                    |
+|                           [`CUB`](mmcls.datasets.CUB)                           | Requires `data_root` and `test_mode` now.                                      |
 
 The `mmcls.datasets.pipelines` is renamed to `mmcls.datasets.transforms`.
 
@@ -538,9 +538,9 @@ The `mmcls.datasets.pipelines` is renamed to `mmcls.datasets.transforms`.
 |       `LoadImageFromFile`       | Removed, use [`mmcv.transforms.LoadImageFromFile`](mmcv.transforms.LoadImageFromFile).                                                                                    |
 |          `RandomFlip`           | Removed, use [`mmcv.transforms.RandomFlip`](mmcv.transforms.RandomFlip). The argument `flip_prob` is renamed to `prob`.                                                   |
 |          `RandomCrop`           | The argument `size` is renamed to `crop_size`.                                                                                                                            |
-|       `RandomResizedCrop`       | The argument `size` is renamed to `scale`. The argument `scale` is renamed to `crop_ratio_range`. Won't support `efficientnet_style`, use [`EfficientNetRandomCrop`](EfficientNetRandomCrop). |
-|          `CenterCrop`           | Removed, use [`mmcv.transforms.CenterCrop`](mmcv.transforms.CenterCrop). Won't support `efficientnet_style`, use [`EfficientNetCenterCrop`](EfficientNetCenterCrop).      |
-|            `Resize`             | Removed, use [`mmcv.transforms.Resize`](mmcv.transforms.Resize). The argument `size` is renamed to `scale`. Won't support size like `(256, -1)`, use [`ResizeEdge`](ResizeEdge). |
+|       `RandomResizedCrop`       | The argument `size` is renamed to `scale`. The argument `scale` is renamed to `crop_ratio_range`. Won't support `efficientnet_style`, use [`EfficientNetRandomCrop`](mmcls.datasets.transforms.EfficientNetRandomCrop). |
+|          `CenterCrop`           | Removed, use [`mmcv.transforms.CenterCrop`](mmcv.transforms.CenterCrop). Won't support `efficientnet_style`, use [`EfficientNetCenterCrop`](mmcls.datasets.transforms.EfficientNetCenterCrop). |
+|            `Resize`             | Removed, use [`mmcv.transforms.Resize`](mmcv.transforms.Resize). The argument `size` is renamed to `scale`. Won't support size like `(256, -1)`, use [`ResizeEdge`](mmcls.datasets.transforms.ResizeEdge). |
 | `AutoAugment` & `RandomAugment` | The argument `policies` supports using string to specify preset policies.                                                                                                 |
 |            `Compose`            | Removed, use [`mmcv.transforms.Compose`](mmcv.transforms.Compose).                                                                                                        |
 
@@ -548,27 +548,27 @@ The `mmcls.datasets.pipelines` is renamed to `mmcls.datasets.transforms`.
 
 The documentation can be found [here](mmcls.models). The interface of all **backbones**, **necks** and **losses** didn't change.
 
-Changes in [`ImageClassifier`](ImageClassifier):
+Changes in [`ImageClassifier`](mmcls.models.classifiers.ImageClassifier):
 
-| Method of classifiers | Changes                                                                                                                                   |
-| :-------------------: | :---------------------------------------------------------------------------------------------------------------------------------------- |
-|    `extract_feat`     | No changes                                                                                                                                |
-|       `forward`       | Now only accepts three arguments: `inputs`, `data_samples` and `mode`. See [the documentation](ImageClassifier.forward) for more details. |
-|    `forward_train`    | Replaced by `loss`.                                                                                                                       |
-|     `simple_test`     | Replaced by `predict`.                                                                                                                    |
-|     `train_step`      | The `optimizer` argument is replaced by `optim_wrapper` and it accepts [`OptimWrapper`](mmengine.optim.OptimWrapper).                     |
-|      `val_step`       | The original `val_step` is the same as `train_step`, now it calls `predict`.                                                              |
-|      `test_step`      | New method, and it's the same as `val_step`.                                                                                              |
+| Method of classifiers | Changes                                                                                                                                                            |
+| :-------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|    `extract_feat`     | No changes                                                                                                                                                         |
+|       `forward`       | Now only accepts three arguments: `inputs`, `data_samples` and `mode`. See [the documentation](mmcls.models.classifiers.ImageClassifier.forward) for more details. |
+|    `forward_train`    | Replaced by `loss`.                                                                                                                                                |
+|     `simple_test`     | Replaced by `predict`.                                                                                                                                             |
+|     `train_step`      | The `optimizer` argument is replaced by `optim_wrapper` and it accepts [`OptimWrapper`](mmengine.optim.OptimWrapper).                                              |
+|      `val_step`       | The original `val_step` is the same as `train_step`, now it calls `predict`.                                                                                       |
+|      `test_step`      | New method, and it's the same as `val_step`.                                                                                                                       |
 
 Changes in [heads](mmcls.models.heads):
 
-| Method of heads | Changes                                                                                                                             |
-| :-------------: | :---------------------------------------------------------------------------------------------------------------------------------- |
-|  `pre_logits`   | No changes                                                                                                                          |
-| `forward_train` | Replaced by `loss`.                                                                                                                 |
-|  `simple_test`  | Replaced by `predict`.                                                                                                              |
-|     `loss`      | It accepts `data_samples` instead of `gt_labels` to calculate loss. The `data_samples` is a list of [ClsDataSample](ClsDataSample). |
-|    `forward`    | New method, and it returns the output of the classification head without any post-processs like softmax or sigmoid.                 |
+| Method of heads | Changes                                                                                                                                              |
+| :-------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
+|  `pre_logits`   | No changes                                                                                                                                           |
+| `forward_train` | Replaced by `loss`.                                                                                                                                  |
+|  `simple_test`  | Replaced by `predict`.                                                                                                                               |
+|     `loss`      | It accepts `data_samples` instead of `gt_labels` to calculate loss. The `data_samples` is a list of [ClsDataSample](mmcls.structures.ClsDataSample). |
+|    `forward`    | New method, and it returns the output of the classification head without any post-processs like softmax or sigmoid.                                  |
 
 ### `mmcls.utils`
 

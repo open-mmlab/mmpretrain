@@ -597,7 +597,7 @@ class RandomErasing(BaseTransform):
 
 @TRANSFORMS.register_module()
 class EfficientNetCenterCrop(BaseTransform):
-    """EfficientNet style center crop.
+    r"""EfficientNet style center crop.
 
     **Required Keys:**
 
@@ -624,9 +624,12 @@ class EfficientNetCenterCrop(BaseTransform):
           image.
         - The pipeline will be to first
           to perform the center crop with the ``crop_size_`` as:
+
         .. math::
+
             \text{crop_size_} = \frac{\text{crop_size}}{\text{crop_size} +
             \text{crop_padding}} \times \text{short_edge}
+
         And then the pipeline resizes the img to the input crop size.
     """
 

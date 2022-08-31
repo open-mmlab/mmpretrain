@@ -1,4 +1,4 @@
-# 分析
+# 分析工具（待更新）
 
 <!-- TOC -->
 
@@ -127,7 +127,7 @@ python tools/analysis_tools/eval_metric.py \
 - `config` ：配置文件的路径。
 - `result` ： `tools/test.py` 的输出结果文件。
 - `metrics` ： 评估的衡量指标，可接受的值取决于数据集类。
-- `--cfg-options`: 额外的配置选项，会被合入配置文件，参考[教程 1：如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html)。
+- `--cfg-options`: 额外的配置选项，会被合入配置文件，参考[如何编写配置文件](./config.md)。
 - `--metric-options`: 如果指定了，这些选项将被传递给数据集 `evaluate` 函数的 `metric_options` 参数。
 
 ```{note}
@@ -159,7 +159,7 @@ python tools/analysis_tools/analyze_results.py \
 - `result` ： `tools/test.py` 的输出结果文件。
 - `--out_dir` ：保存结果分析的文件夹路径。
 - `--topk` ：分别保存多少张预测成功/失败的图像。如果不指定，默认为 `20`。
-- `--cfg-options`: 额外的配置选项，会被合入配置文件，参考[教程 1：如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html)。
+- `--cfg-options`: 额外的配置选项，会被合入配置文件，参考[如何编写配置文件](./config.md)。
 
 ```{note}
 在 `tools/test.py` 中，我们支持使用 `--out-items` 选项来选择保存哪些结果。为了使用本工具，请确保结果文件中包含 "pred_score"、"pred_label" 和 "pred_class"。

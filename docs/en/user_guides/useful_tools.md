@@ -1,4 +1,4 @@
-# Miscellaneous
+# Useful Tools (TODO)
 
 <!-- TOC -->
 
@@ -19,7 +19,7 @@ python tools/misc/print_config.py ${CONFIG} [--cfg-options ${CFG_OPTIONS}]
 Description of all arguments:
 
 - `config` : The path of the model config file.
-- `--cfg-options`: If specified, the key-value pair config will be merged into the config file, for more details please refer to [Tutorial 1: Learn about Configs](../tutorials/config.md)
+- `--cfg-options`: If specified, the key-value pair config will be merged into the config file, for more details please refer to [Learn about Configs](./config.md)
 
 **Examples**:
 
@@ -46,7 +46,7 @@ python tools/print_config.py \
 - `--out-path` : The path to save the verification result, if not set, defaults to 'brokenfiles.log'.
 - `--phase` :  Phase of dataset to verify, accept "train" "test" and "val", if not set, defaults to "train".
 - `--num-process` : number of process to use, if not set, defaults to 1.
-- `--cfg-options`: If specified, the key-value pair config will be merged into the config file, for more details please refer to [Tutorial 1: Learn about Configs](../tutorials/config.md)
+- `--cfg-options`: If specified, the key-value pair config will be merged into the config file, for more details please refer to [Learn about Configs](./config.md)
 
 **Examples**:
 

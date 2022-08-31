@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.0.0rc0(31/8/2022)
+
+MMClassification 1.0.0rc0 is the first version of MMClassification 1.x, a part of the OpenMMLab 2.0 projects.
+
+Built upon the new [training engine](https://github.com/open-mmlab/mmengine), MMClassification 1.x unifies the interfaces of dataset, models, evaluation, and visualization.
+
+And there are some BC-breaking changes. Please check [the migration tutorial](https://mmclassification.readthedocs.io/en/1.x/migration.html) for more details.
+
 ## v0.23.1(2/6/2022)
 
 ### New Features
