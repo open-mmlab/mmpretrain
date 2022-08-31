@@ -1,15 +1,15 @@
 # Customize models
 
-In our design, a complete model is defined as an ImageClassifier which basically contains below 4 types of model components based on their functionalities.
+In our design, a complete model is defined as an ImageClassifier which contains 4 types of model components based on their functionalities.
 
-- backbone: usually a feature extraction network which records the major differences between models, e.g., ResNet, MobileNet.
+- backbone: usually a feature extraction network that records the major differences between models, e.g., ResNet, MobileNet.
 - neck: the component between backbone and head, e.g., GlobalAveragePooling.
 - head: the component for specific tasks, e.g., classification or regression.
-- loss: the component in head for calculating losses, e.g., CrossEntropyLoss, LabelSmoothLoss.
+- loss: the component in the head for calculating losses, e.g., CrossEntropyLoss, LabelSmoothLoss.
 
 ## Add a new backbone
 
-Here we presents how to develop a new backbone component by an example of `ResNet_CIFAR`.
+Here we present how to develop a new backbone component by an example of `ResNet_CIFAR`.
 As the input size of CIFAR is 32x32, which is much smaller than the default size of 224x224 in ImageNet, this backbone replaces the `kernel_size=7, stride=2` to `kernel_size=3, stride=1` and removes the MaxPooling after the stem layer to avoid forwarding small feature maps to residual blocks.
 
 The easiest way is to inherit from `ResNet` and only modify the stem layer.
@@ -38,11 +38,11 @@ The easiest way is to inherit from `ResNet` and only modify the stem layer.
        def __init__(self, depth, deep_stem, **kwargs):
            # call ResNet init
            super(ResNet_CIFAR, self).__init__(depth, deep_stem=deep_stem, **kwargs)
-           # other specific initialization
+           # other specific initializations
            assert not self.deep_stem, 'ResNet_CIFAR do not support deep_stem'
 
        def _make_stem_layer(self, in_channels, base_channels):
-           # override ResNet method to modify the network structure
+           # override the ResNet method to modify the network structure
            self.conv1 = build_conv_layer(
                self.conv_cfg,
                in_channels,
@@ -57,7 +57,7 @@ The easiest way is to inherit from `ResNet` and only modify the stem layer.
            self.relu = nn.ReLU(inplace=True)
 
        def forward(self, x):
-           # Customize the forward method if need.
+           # Customize the forward method if needed.
            x = self.conv1(x)
            x = self.norm1(x)
            x = self.relu(x)
@@ -67,20 +67,20 @@ The easiest way is to inherit from `ResNet` and only modify the stem layer.
                x = res_layer(x)
                if i in self.out_indices:
                    outs.append(x)
-           # The return value need to be a tuple with multi-scale outputs from different depths.
+           # The return value needs to be a tuple with multi-scale outputs from different depths.
            # If you don't need multi-scale features, just wrap the output as a one-item tuple.
            return tuple(outs)
 
        def init_weights(self):
-           # Customize the weight initialization method if need.
+           # Customize the weight initialization method if needed.
            super().init_weights()
 
-           # Disable the weight initialization if load a pretrained model.
+           # Disable the weight initialization if loading a pretrained model.
            if self.init_cfg is not None and self.init_cfg['type'] == 'Pretrained':
                return
 
-           # Usually, we recommend to use `init_cfg` to specify weight initialization methods
-           # of convolution, linear or normalizaiton layers. If you have some special needs,
+           # Usually, we recommend using `init_cfg` to specify weight initialization methods
+           # of convolution, linear, or normalization layers. If you have some special needs,
            # do these extra weight initialization here.
            ...
    ```
@@ -115,7 +115,7 @@ Replace original registry names from `BACKBONES`, `NECKS`, `HEADS` and `LOSSES` 
 ## Add a new neck
 
 Here we take `GlobalAveragePooling` as an example. It is a very simple neck without any arguments.
-To add a new neck, we mainly implement the `forward` function, which applies some operations on the output from backbone and forward the results to head.
+To add a new neck, we mainly implement the `forward` function, which applies some operations on the output from the backbone and forwards the results to the head.
 
 1. Create a new file in `mmcls/models/necks/gap.py`.
 
@@ -158,8 +158,8 @@ To add a new neck, we mainly implement the `forward` function, which applies som
 
 ## Add a new head
 
-Here we presents how to develop a new head by the example of simplified `VisionTransformerClsHead` as the following.
-To implement a new head, basically we need to implement `pre_logits` method for processes before the final classification head and `forward` method.
+Here we present how to develop a new head by the example of simplified `VisionTransformerClsHead` as the following.
+To implement a new head, we need to implement a `pre_logits` method for processes before the final classification head and a `forward` method.
 
 :::{admonition} Why do we need the `pre_logits` method?
 :class: note
@@ -191,7 +191,7 @@ to obtain the feature before the final classification, which is the output of th
            self.fc2 = nn.Linear(hidden_dim, num_classes)
 
        def pre_logits(self, feats):
-           # The outputs of backbone is usually a tuple from multiple depths,
+           # The output of the backbone is usually a tuple from multiple depths,
            # and for classification, we only need the final output.
            feat = feats[-1]
 
@@ -233,9 +233,9 @@ to obtain the feature before the final classification, which is the output of th
 
 ## Add a new loss
 
-To add a new loss function, we mainly implement the `forward` function in the loss module. We should register loss module as `MODELS` as well.
+To add a new loss function, we mainly implement the `forward` function in the loss module. We should register the loss module as `MODELS` as well.
 In addition, it is helpful to leverage the decorator `weighted_loss` to weight the loss for each element.
-Assuming that we want to mimic a probabilistic distribution generated from another classification model, we implement a L1Loss to fulfil the purpose as below.
+Assuming that we want to mimic a probabilistic distribution generated from another classification model, we implement an L1Loss to fulfill the purpose as below.
 
 1. Create a new file in `mmcls/models/losses/l1_loss.py`.
 
@@ -294,7 +294,7 @@ Assuming that we want to mimic a probabilistic distribution generated from anoth
        ))
    ```
 
-Finally we can combine all the new model components in config file to create a new model for best practices. Because `ResNet_CIFAR` is not a ViT-based backbone, we do not implement `VisionTransformerClsHead` here.
+Finally, we can combine all the new model components in a config file to create a new model for best practices. Because `ResNet_CIFAR` is not a ViT-based backbone, we do not implement `VisionTransformerClsHead` here.
 
 ```python
 model = dict(
@@ -317,5 +317,5 @@ model = dict(
 ```
 
 ```{tip}
-For conveniency, the same model components could inherit from existing config files, refers to [Learn about configs](../user_guides/config.md) for more details.
+For convenience, the same model components could inherit from existing config files, refers to [Learn about configs](../user_guides/config.md) for more details.
 ```
