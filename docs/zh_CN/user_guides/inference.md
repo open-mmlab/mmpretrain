@@ -1,18 +1,18 @@
-# 如何使用已有模型推理
+# 使用现有模型推理
 
 MMClassification 在 [Model Zoo](../model_zoo.md) 中提供了用于分类的预训练模型。
 本说明将展示**如何使用现有模型对给定图像进行推理**。
 
 至于如何在标准数据集上测试现有模型，请看这个[指南](./train_test.md#推理)
 
-## 对给定图像的推理
+## 推理单张图片
 
 MMClassification 为图像推理提供高级 Python API：
 
 - [init_model](mmcls.apis.init_model): 初始化一个模型。
 - [inference_model](mmcls.apis.inference_model)：对给定图片进行推理。
 
-下面是一个示例，如何使用一个 ImageNet-1k 预训练权重初始化模型并推里给定图像。
+下面是一个示例，如何使用一个 ImageNet-1k 预训练权重初始化模型并推理给定图像。
 
 ```{note}
 如果您将 mmcls 当作第三方库使用，需要下载样例中的配置文件以及样例图片。
