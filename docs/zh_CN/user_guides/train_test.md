@@ -43,7 +43,7 @@ bash ./tools/dist_train.sh ${CONFIG_FILE} ${GPU_NUM} [PY_ARGS]
 | ------------- | ---------------------------------------------------------------- |
 | `CONFIG_FILE` | 配置文件的路径。                                                 |
 | `GPU_NUM`     | 使用的 GPU 数量。                                                |
-| `[PYARGS]`    | `tools/train.py` 支持的其他可选参数，参见[上文](#单机单卡训练)。 |
+| `[PY_ARGS]`   | `tools/train.py` 支持的其他可选参数，参见[上文](#单机单卡训练)。 |
 
 你还可以使用环境变量来指定启动器的额外参数，比如用如下命令将启动器的通讯端口变更为 29666：
 
@@ -55,7 +55,7 @@ PORT=29666 bash ./tools/dist_train.sh ${CONFIG_FILE} ${GPU_NUM} [PY_ARGS]
 
 ```shell
 CUDA_VISIBLE_DEVICES=0,1,2,3 PORT=29500 bash ./tools/dist_train.sh ${CONFIG_FILE1} 4 [PY_ARGS]
-CUDA_VISIBLE_DEVICES=4,5,6,7 GPUS=29501 bash ./tools/dist_train.sh ${CONFIG_FILE2} 4 [PY_ARGS]
+CUDA_VISIBLE_DEVICES=4,5,6,7 PORT=29501 bash ./tools/dist_train.sh ${CONFIG_FILE2} 4 [PY_ARGS]
 ```
 
 ### 多机训练
@@ -89,7 +89,7 @@ NNODES=2 NODE_RANK=1 PORT=$MASTER_PORT MASTER_ADDR=$MASTER_ADDR bash tools/dist_
 
 #### Slurm 管理下的多机集群
 
-如果你在 [slurm](https://slurm.schedmd.com/) 集群上，可以使用 `slurm_train.sh` 脚本启动任务。
+如果你在 [slurm](https://slurm.schedmd.com/) 集群上，可以使用 `tools/slurm_train.sh` 脚本启动任务。
 
 ```shell
 [ENV_VARS] ./tools/slurm_train.sh ${PARTITION} ${JOB_NAME} ${CONFIG_FILE} ${WORK_DIR} [PY_ARGS]
@@ -103,7 +103,7 @@ NNODES=2 NODE_RANK=1 PORT=$MASTER_PORT MASTER_ADDR=$MASTER_ADDR bash tools/dist_
 | `JOB_NAME`    | 任务的名称，你可以随意起一个名字。                               |
 | `CONFIG_FILE` | 配置文件路径。                                                   |
 | `WORK_DIR`    | 用以保存日志和权重文件的文件夹。                                 |
-| `[PYARGS]`    | `tools/train.py` 支持的其他可选参数，参见[上文](#单机单卡训练)。 |
+| `[PY_ARGS]`   | `tools/train.py` 支持的其他可选参数，参见[上文](#单机单卡训练)。 |
 
 这里是一些你可以用来配置 slurm 任务的环境变量：
 
@@ -161,7 +161,7 @@ bash ./tools/dist_test.sh ${CONFIG_FILE} ${CHECKPOINT_FILE} ${GPU_NUM} [PY_ARGS]
 | `CONFIG_FILE`     | 配置文件的路径。                                                                                                                            |
 | `CHECKPOINT_FILE` | 权重文件路径（支持 http 链接，你可以在[这里](https://mmclassification.readthedocs.io/en/1.x/modelzoo_statistics.html)寻找需要的权重文件）。 |
 | `GPU_NUM`         | 使用的 GPU 数量。                                                                                                                           |
-| `[PYARGS]`        | `tools/test.py` 支持的其他可选参数，参见[上文](#单机单卡测试)。                                                                             |
+| `[PY_ARGS]`       | `tools/test.py` 支持的其他可选参数，参见[上文](#单机单卡测试)。                                                                             |
 
 你还可以使用环境变量来指定启动器的额外参数，比如用如下命令将启动器的通讯端口变更为 29666：
 
@@ -173,7 +173,7 @@ PORT=29666 bash ./tools/dist_test.sh ${CONFIG_FILE} ${CHECKPOINT_FILE} ${GPU_NUM
 
 ```shell
 CUDA_VISIBLE_DEVICES=0,1,2,3 PORT=29500 bash ./tools/dist_test.sh ${CONFIG_FILE1} ${CHECKPOINT_FILE} 4 [PY_ARGS]
-CUDA_VISIBLE_DEVICES=4,5,6,7 GPUS=29501 bash ./tools/dist_test.sh ${CONFIG_FILE2} ${CHECKPOINT_FILE} 4 [PY_ARGS]
+CUDA_VISIBLE_DEVICES=4,5,6,7 PORT=29501 bash ./tools/dist_test.sh ${CONFIG_FILE2} ${CHECKPOINT_FILE} 4 [PY_ARGS]
 ```
 
 ### 多机测试
@@ -205,7 +205,7 @@ NNODES=2 NODE_RANK=1 PORT=$MASTER_PORT MASTER_ADDR=$MASTER_ADDR bash tools/dist_
 
 #### Slurm 管理下的多机集群
 
-如果你在 [slurm](https://slurm.schedmd.com/) 集群上，可以使用 `slurm_test.sh` 脚本启动任务。
+如果你在 [slurm](https://slurm.schedmd.com/) 集群上，可以使用 `tools/slurm_test.sh` 脚本启动任务。
 
 ```shell
 [ENV_VARS] ./tools/slurm_test.sh ${PARTITION} ${JOB_NAME} ${CONFIG_FILE} ${CHECKPOINT_FILE} [PY_ARGS]
@@ -219,7 +219,7 @@ NNODES=2 NODE_RANK=1 PORT=$MASTER_PORT MASTER_ADDR=$MASTER_ADDR bash tools/dist_
 | `JOB_NAME`        | 任务的名称，你可以随意起一个名字。                                                                                                          |
 | `CONFIG_FILE`     | 配置文件路径。                                                                                                                              |
 | `CHECKPOINT_FILE` | 权重文件路径（支持 http 链接，你可以在[这里](https://mmclassification.readthedocs.io/en/1.x/modelzoo_statistics.html)寻找需要的权重文件）。 |
-| `[PYARGS]`        | `tools/test.py` 支持的其他可选参数，参见[上文](#单机单卡测试)。                                                                             |
+| `[PY_ARGS]`       | `tools/test.py` 支持的其他可选参数，参见[上文](#单机单卡测试)。                                                                             |
 
 这里是一些你可以用来配置 slurm 任务的环境变量：
 

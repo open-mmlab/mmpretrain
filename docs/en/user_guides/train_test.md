@@ -43,7 +43,7 @@ bash ./tools/dist_train.sh ${CONFIG_FILE} ${GPU_NUM} [PY_ARGS]
 | ------------- | ---------------------------------------------------------------------------------- |
 | `CONFIG_FILE` | The path to the config file.                                                       |
 | `GPU_NUM`     | The number of GPUs to be used.                                                     |
-| `[PYARGS]`    | The other optional arguments of `tools/train.py`, see [here](#train-with-your-pc). |
+| `[PY_ARGS]`   | The other optional arguments of `tools/train.py`, see [here](#train-with-your-pc). |
 
 You can also specify extra arguments of the launcher by environment variables. For example, change the
 communication port of the launcher to 29666 by the below command:
@@ -53,11 +53,11 @@ PORT=29666 bash ./tools/dist_train.sh ${CONFIG_FILE} ${GPU_NUM} [PY_ARGS]
 ```
 
 If you want to startup multiple training jobs and use different GPUs, you can launch them by specifying
-different port and visible devices.
+different ports and visible devices.
 
 ```shell
 CUDA_VISIBLE_DEVICES=0,1,2,3 PORT=29500 bash ./tools/dist_train.sh ${CONFIG_FILE1} 4 [PY_ARGS]
-CUDA_VISIBLE_DEVICES=4,5,6,7 GPUS=29501 bash ./tools/dist_train.sh ${CONFIG_FILE2} 4 [PY_ARGS]
+CUDA_VISIBLE_DEVICES=4,5,6,7 PORT=29501 bash ./tools/dist_train.sh ${CONFIG_FILE2} 4 [PY_ARGS]
 ```
 
 ### Training with multiple machines
@@ -91,7 +91,7 @@ Usually it is slow if you do not have high speed networking like InfiniBand.
 
 #### Multiple machines managed with slurm
 
-If you run MMClassification on a cluster managed with [slurm](https://slurm.schedmd.com/), you can use the script `slurm_train.sh`.
+If you run MMClassification on a cluster managed with [slurm](https://slurm.schedmd.com/), you can use the script `tools/slurm_train.sh`.
 
 ```shell
 [ENV_VARS] ./tools/slurm_train.sh ${PARTITION} ${JOB_NAME} ${CONFIG_FILE} ${WORK_DIR} [PY_ARGS]
@@ -105,7 +105,7 @@ Here are the arguments description of the script.
 | `JOB_NAME`    | The name of your job, you can name it as you like.                                 |
 | `CONFIG_FILE` | The path to the config file.                                                       |
 | `WORK_DIR`    | The target folder to save logs and checkpoints.                                    |
-| `[PYARGS]`    | The other optional arguments of `tools/train.py`, see [here](#train-with-your-pc). |
+| `[PY_ARGS]`   | The other optional arguments of `tools/train.py`, see [here](#train-with-your-pc). |
 
 Here are the environment variables can be used to configure the slurm job.
 
@@ -163,7 +163,7 @@ bash ./tools/dist_test.sh ${CONFIG_FILE} ${CHECKPOINT_FILE} ${GPU_NUM} [PY_ARGS]
 | `CONFIG_FILE`     | The path to the config file.                                                                                                                                           |
 | `CHECKPOINT_FILE` | The path to the checkpoint file (It can be a http link, and you can find checkpoints [here](https://mmclassification.readthedocs.io/en/1.x/modelzoo_statistics.html)). |
 | `GPU_NUM`         | The number of GPUs to be used.                                                                                                                                         |
-| `[PYARGS]`        | The other optional arguments of `tools/test.py`, see [here](#test-with-your-pc).                                                                                       |
+| `[PY_ARGS]`       | The other optional arguments of `tools/test.py`, see [here](#test-with-your-pc).                                                                                       |
 
 You can also specify extra arguments of the launcher by environment variables. For example, change the
 communication port of the launcher to 29666 by the below command:
@@ -177,7 +177,7 @@ different port and visible devices.
 
 ```shell
 CUDA_VISIBLE_DEVICES=0,1,2,3 PORT=29500 bash ./tools/dist_test.sh ${CONFIG_FILE1} ${CHECKPOINT_FILE} 4 [PY_ARGS]
-CUDA_VISIBLE_DEVICES=4,5,6,7 GPUS=29501 bash ./tools/dist_test.sh ${CONFIG_FILE2} ${CHECKPOINT_FILE} 4 [PY_ARGS]
+CUDA_VISIBLE_DEVICES=4,5,6,7 PORT=29501 bash ./tools/dist_test.sh ${CONFIG_FILE2} ${CHECKPOINT_FILE} 4 [PY_ARGS]
 ```
 
 ### Test with multiple machines
@@ -211,7 +211,7 @@ Usually it is slow if you do not have high speed networking like InfiniBand.
 
 #### Multiple machines managed with slurm
 
-If you run MMClassification on a cluster managed with [slurm](https://slurm.schedmd.com/), you can use the script `slurm_test.sh`.
+If you run MMClassification on a cluster managed with [slurm](https://slurm.schedmd.com/), you can use the script `tools/slurm_test.sh`.
 
 ```shell
 [ENV_VARS] ./tools/slurm_test.sh ${PARTITION} ${JOB_NAME} ${CONFIG_FILE} ${CHECKPOINT_FILE} [PY_ARGS]
@@ -225,7 +225,7 @@ Here are the arguments description of the script.
 | `JOB_NAME`        | The name of your job, you can name it as you like.                                                                                                                     |
 | `CONFIG_FILE`     | The path to the config file.                                                                                                                                           |
 | `CHECKPOINT_FILE` | The path to the checkpoint file (It can be a http link, and you can find checkpoints [here](https://mmclassification.readthedocs.io/en/1.x/modelzoo_statistics.html)). |
-| `[PYARGS]`        | The other optional arguments of `tools/test.py`, see [here](#test-with-your-pc).                                                                                       |
+| `[PY_ARGS]`       | The other optional arguments of `tools/test.py`, see [here](#test-with-your-pc).                                                                                       |
 
 Here are the environment variables can be used to configure the slurm job.
 
