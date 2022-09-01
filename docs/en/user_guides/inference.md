@@ -1,6 +1,6 @@
 # Inference with existing models
 
-MMClassification provides pre-trained models for classification in [Model Zoo](../model_zoo.md).
+MMClassification provides pre-trained models for classification in [Model Zoo](../modelzoo_statistics.md).
 This note will show **how to use existing models to inference on given images**.
 
 As for how to test existing models on standard datasets, please see this [guide](./train_test.md#test)
