@@ -43,7 +43,6 @@ You can switch between Chinese and English documentation in the lower-left corne
    :glob:
 
    modelzoo_statistics.md
-   model_zoo.md
    papers/*
 
 .. toctree::

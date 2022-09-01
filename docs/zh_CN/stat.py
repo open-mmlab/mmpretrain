@@ -1,61 +1,88 @@
 #!/usr/bin/env python
-import functools as func
-import glob
-import os
 import re
+from collections import defaultdict
 from pathlib import Path
 
-import numpy as np
+from modelindex.load_model_index import load
+from tabulate import tabulate
 
-MMCLS_ROOT = Path(__file__).absolute().parents[1]
-url_prefix = 'https://github.com/open-mmlab/mmclassification/blob/master/'
+MMCLS_ROOT = Path(__file__).absolute().parents[2]
+PAPERS_ROOT = Path('papers')  # Path to save generated paper pages.
+GITHUB_PREFIX = 'https://github.com/open-mmlab/mmclassification/blob/1.x/'
+MODELZOO_TEMPLATE = """
+# 模型库统计
 
-papers_root = Path('papers')
-papers_root.mkdir(exist_ok=True)
-files = [Path(f) for f in sorted(glob.glob('../../configs/*/README.md'))]
+* 论文数量：{num_papers}
+{type_msg}
 
-stats = []
-titles = []
-num_ckpts = 0
-num_configs = 0
+* 模型权重文件数量：{num_ckpts}
+{paper_msg}
+"""
 
-for f in files:
-    with open(f, 'r') as content_file:
-        content = content_file.read()
+model_index = load(str(MMCLS_ROOT / 'model-index.yml'))
 
-    # Extract checkpoints
-    ckpts = set(x.lower().strip()
-                for x in re.findall(r'\[model\]\((https?.*)\)', content))
-    if len(ckpts) == 0:
-        continue
-    num_ckpts += len(ckpts)
 
-    # Extract paper title
-    match_res = list(re.finditer(r'> \[(.*)\]\((.*)\)', content))
-    if len(match_res) > 0:
-        title, paperlink = match_res[0].groups()
-    else:
-        title = content.split('\n')[0].replace('# ', '').strip()
-        paperlink = None
-    titles.append(title)
+def build_collections(model_index):
+    col_by_name = {}
+    for col in model_index.collections:
+        setattr(col, 'models', [])
+        col_by_name[col.name] = col
 
-    # Replace paper link to a button
-    if paperlink is not None:
-        start = match_res[0].start()
-        end = match_res[0].end()
-        link_button = f'[{title}]({paperlink})'
-        content = content[:start] + link_button + content[end:]
+    for model in model_index.models:
+        col = col_by_name[model.in_collection]
+        col.models.append(model)
+        setattr(model, 'collection', col)
 
-    # Extract paper type
-    _papertype = [x for x in re.findall(r'\[([A-Z]+)\]', content)]
-    assert len(_papertype) > 0
-    papertype = _papertype[0]
-    paper = set([(papertype, title)])
+
+build_collections(model_index)
+
+
+def count_papers(collections):
+    total_num_ckpts = 0
+    type_count = defaultdict(int)
+    paper_msgs = []
+
+    for collection in collections:
+        with open(MMCLS_ROOT / collection.readme) as f:
+            readme = f.read()
+        ckpts = set(x.lower().strip()
+                    for x in re.findall(r'\[model\]\((https?.*)\)', readme))
+        total_num_ckpts += len(ckpts)
+        title = collection.paper['Title']
+        papertype = collection.data.get('type', 'Algorithm')
+        type_count[papertype] += 1
+
+        readme = PAPERS_ROOT / Path(
+            collection.filepath).parent.with_suffix('.md').name
+        paper_msgs.append(
+            f'\t- [{papertype}] [{title}]({readme}) ({len(ckpts)} ckpts)')
+
+    type_msg = '\n'.join(
+        [f'\t- {type_}: {count}' for type_, count in type_count.items()])
+    paper_msg = '\n'.join(paper_msgs)
+
+    modelzoo = MODELZOO_TEMPLATE.format(
+        num_papers=len(collections),
+        num_ckpts=total_num_ckpts,
+        type_msg=type_msg,
+        paper_msg=paper_msg,
+    )
+
+    with open('modelzoo_statistics.md', 'w') as f:
+        f.write(modelzoo)
+
+
+count_papers(model_index.collections)
+
+
+def generate_paper_page(collection):
+    PAPERS_ROOT.mkdir(exist_ok=True)
 
     # Write a copy of README
-    copy = papers_root / (f.parent.name + '.md')
-    if copy.exists():
-        os.remove(copy)
+    with open(MMCLS_ROOT / collection.readme) as f:
+        readme = f.read()
+    folder = Path(collection.filepath).parent
+    copy = PAPERS_ROOT / folder.with_suffix('.md').name
 
     def replace_link(matchobj):
         # Replace relative link to GitHub link.
@@ -63,37 +90,54 @@ for f in files:
         link = matchobj.group(2)
         if not link.startswith('http') and (f.parent / link).exists():
             rel_link = (f.parent / link).absolute().relative_to(MMCLS_ROOT)
-            link = url_prefix + str(rel_link)
+            link = GITHUB_PREFIX + str(rel_link)
         return f'[{name}]({link})'
 
-    content = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', replace_link, content)
+    content = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', replace_link, readme)
 
     with open(copy, 'w') as copy_file:
         copy_file.write(content)
 
-    statsmsg = f"""
-\t* [{papertype}] [{title}]({copy}) ({len(ckpts)} ckpts)
-"""
-    stats.append(dict(paper=paper, ckpts=ckpts, statsmsg=statsmsg, copy=copy))
 
-allpapers = func.reduce(lambda a, b: a.union(b),
-                        [stat['paper'] for stat in stats])
-msglist = '\n'.join(stat['statsmsg'] for stat in stats)
+for collection in model_index.collections:
+    generate_paper_page(collection)
 
-papertypes, papercounts = np.unique([t for t, _ in allpapers],
-                                    return_counts=True)
-countstr = '\n'.join(
-    [f'   - {t}: {c}' for t, c in zip(papertypes, papercounts)])
 
-modelzoo = f"""
-# 模型库统计
+def generate_summary_table(models):
+    dataset_rows = defaultdict(list)
+    for model in models:
+        if model.results is None:
+            continue
+        name = model.name
+        params = model.metadata.parameters / 1e6
+        flops = model.metadata.flops / 1e9
+        result = model.results[0]
+        top1 = result.metrics.get('Top 1 Accuracy')
+        top5 = result.metrics.get('Top 5 Accuracy')
+        readme = Path(model.collection.filepath).parent.with_suffix('.md').name
+        page = f'[链接]({PAPERS_ROOT / readme})'
+        row = [name, params, flops, top1, top5, page]
+        dataset_rows[result.dataset].append(row)
 
-* 论文数量： {len(set(titles))}
-{countstr}
+    with open('modelzoo_statistics.md', 'a') as f:
+        for dataset, rows in dataset_rows.items():
+            f.write(f'\n## {dataset}\n')
+            f.write("""```{table}\n:class: model-summary\n""")
+            header = [
+                '模型',
+                '参数量 (M)',
+                'Flops (G)',
+                'Top-1 (%)',
+                'Top-5 (%)',
+                'Readme',
+            ]
+            table_cfg = dict(
+                tablefmt='pipe',
+                floatfmt='.2f',
+                numalign='right',
+                stralign='center')
+            f.write(tabulate(rows, header, **table_cfg))
+            f.write('\n```\n')
 
-* 模型权重文件数量： {num_ckpts}
-{msglist}
-"""
 
-with open('modelzoo_statistics.md', 'w') as f:
-    f.write(modelzoo)
+generate_summary_table(model_index.models)
