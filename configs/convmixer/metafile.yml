@@ -15,7 +15,7 @@ Models:
     Metadata:
       FLOPs: 19623051264
       Parameters: 21110248
-    In Collections: ConvMixer
+    In Collection: ConvMixer
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -31,7 +31,7 @@ Models:
     Metadata:
       FLOPs: 5550112768
       Parameters: 24383464
-    In Collections: ConvMixer
+    In Collection: ConvMixer
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -47,7 +47,7 @@ Models:
     Metadata:
       FLOPs: 48713170944
       Parameters: 51625960
-    In Collections: ConvMixer
+    In Collection: ConvMixer
     Results:
       - Dataset: ImageNet-1k
         Metrics:

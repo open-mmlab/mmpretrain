@@ -14,7 +14,7 @@ Models:
     Metadata:
       FLOPs: 2881695488
       Parameters: 7978856
-    In Collections: DenseNet
+    In Collection: DenseNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -30,7 +30,7 @@ Models:
     Metadata:
       FLOPs: 3416860160
       Parameters: 14149480
-    In Collections: DenseNet
+    In Collection: DenseNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -46,7 +46,7 @@ Models:
     Metadata:
       FLOPs: 4365236736
       Parameters: 20013928
-    In Collections: DenseNet
+    In Collection: DenseNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -62,7 +62,7 @@ Models:
     Metadata:
       FLOPs: 7816363968
       Parameters: 28681000
-    In Collections: DenseNet
+    In Collection: DenseNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
