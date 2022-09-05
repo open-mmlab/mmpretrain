@@ -18,7 +18,7 @@ class LinearReduction(BaseModule):
         in_channels (int): Number of channels in the input.
         out_channels (int): Number of channels in the output.
         norm_cfg (dict, optional): dictionary to construct and
-            config norm layer. Defaults to None.
+            config norm layer. Defaults to dict(type='BN1d').
         act_cfg (dict, optional): dictionary to construct and
             config activate layer. Defaults to None.
         init_cfg (dict, optional): dictionary to initialize weights.
@@ -28,7 +28,7 @@ class LinearReduction(BaseModule):
     def __init__(self,
                  in_channels: int,
                  out_channels: int,
-                 norm_cfg: Optional[dict] = None,
+                 norm_cfg: Optional[dict] = dict(type='BN1d'),
                  act_cfg: Optional[dict] = None,
                  init_cfg: Optional[dict] = None):
         super(LinearReduction, self).__init__(init_cfg=init_cfg)

@@ -90,10 +90,9 @@ def test_hr_fuse_scales():
 def test_linear_reduction():
     # test linear_reduction without `act_cfg` and `norm_cfg`
     neck = LinearReduction(10, 5, None, None)
-    assert neck.init_weights() is None
     neck.eval()
-    assert neck.act is None
-    assert neck.norm is None
+    assert isinstance(neck.act, torch.nn.Identity)
+    assert isinstance(neck.norm, torch.nn.Identity)
 
     # batch_size, in_channels, out_channels
     fake_input = torch.rand(1, 10)
@@ -111,7 +110,6 @@ def test_linear_reduction():
     # test linear_reduction with `init_cfg`
     neck = LinearReduction(
         10, 5, init_cfg=dict(type='Xavier', layer=['Linear']))
-    assert neck.init_weights() is None
 
     # test linear_reduction with `act_cfg` and `norm_cfg`
     neck = LinearReduction(
