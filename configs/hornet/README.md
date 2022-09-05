@@ -16,19 +16,28 @@ Recent progress in vision Transformers exhibits great success in various tasks d
 
 ### ImageNet-1k
 
-|      Model       |   Pretrain   | resolution | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                                                        Config                                                        |  Download   |
-| :--------------: | :----------: | :--------: | :-------: | :------: | :-------: | :-------: | :------------------------------------------------------------------------------------------------------------------: | :---------: |
-|    HorNet-T\*    | From scratch |  224x224   |   22.41   |   3.98   |   82.84   |   96.24   |    [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-tiny_8xb128_in1k.py)    | [model](<>) |
-|  HorNet-T-GF\*   | From scratch |  224x224   |           |          |           |           |  [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-tiny-gf_8xb128_in1k.py)   | [model](<>) |
-|    HorNet-S\*    | From scratch |  224x224   |           |          |           |           |   [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-small_8xb128_in1k.py)    | [model](<>) |
-|  HorNet-S-GF\*   | From scratch |  224x224   |           |          |           |           |  [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-small-gf_8xb128_in1k.py)  | [model](<>) |
-|    HorNet-B\*    | From scratch |  224x224   |           |          |           |           |    [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-base_8xb128_in1k.py)    | [model](<>) |
-|  HorNet-B-GF\*   | From scratch |  224x224   |           |          |           |           |  [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-base-gf_8xb128_in1k.py)   | [model](<>) |
-|    HorNet-L\*    | From scratch |  224x224   |           |          |           |           |   [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-large_8xb128_in1k.py)    | [model](<>) |
-|  HorNet-L-GF\*   | From scratch |  224x224   |           |          |           |           |  [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-large-gf_8xb128_in1k.py)  | [model](<>) |
-| HorNet-L-GF384\* | From scratch |  224x224   |           |          |           |           | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-large-gf384_8xb128_in1k.py) | [model](<>) |
+|     Model     |   Pretrain   | resolution | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                                                      Config                                                       |  Download   |
+| :-----------: | :----------: | :--------: | :-------: | :------: | :-------: | :-------: | :---------------------------------------------------------------------------------------------------------------: | :---------: |
+|  HorNet-T\*   | From scratch |  224x224   |   22.41   |   3.98   |   82.84   |   96.24   |  [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-tiny_8xb128_in1k.py)   | [model](<>) |
+| HorNet-T-GF\* | From scratch |  224x224   |   22.99   |   3.9    |   82.98   |   96.38   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-tiny-gf_8xb128_in1k.py) | [model](<>) |
+|  HorNet-S\*   | From scratch |  224x224   |   49.53   |   8.83   |   83.79   |   96.75   |  [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-small_8xb64_in1k.py)   | [model](<>) |
+| HorNet-S-GF\* | From scratch |  224x224   |   50.4    |   8.71   |   83.98   |   96.77   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-small-gf_8xb64_in1k.py) | [model](<>) |
+|  HorNet-B\*   | From scratch |  224x224   |   87.26   |  15.59   |   84.24   |   96.94   |   [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-base_8xb64_in1k.py)   | [model](<>) |
+| HorNet-B-GF\* | From scratch |  224x224   |   88.42   |  15.42   |   84.32   |   96.95   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-base-gf_8xb64_in1k.py)  | [model](<>) |
 
 \*Models with * are converted from [the official repo](https://github.com/raoyongming/HorNet). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.
+
+### Pre-trained Models
+
+The pre-trained models on ImageNet-21k are used to fine-tune on the downstream tasks.
+
+|      Model       |   Pretrain   | resolution | Params(M) | Flops(G)   Download   |
+| :--------------: | :----------: | :--------: | :-------: | :------: | :---------: |
+|    HorNet-L\*    | ImageNet-21k |  224x224   |     34.83      |    194.54      | [model](<>) |
+|  HorNet-L-GF\*   | ImageNet-21k |  224x224   |     34.58      |     196.29     | [model](<>) |
+| HorNet-L-GF384\* | ImageNet-21k |  384x384   |     201.23      |     101.63     | [model](<>) |
+
+\*Models with * are converted from [the official repo](https://github.com/raoyongming/HorNet).
 
 ## Citation
 

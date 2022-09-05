@@ -1,0 +1,96 @@
+Collections:
+  - Name: HorNet
+    Metadata:
+      Training Data: ImageNet-1k
+      Training Techniques:
+        - AdamW
+        - Weight Decay
+      Architecture:
+        - HorNet
+    Paper:
+      URL: https://arxiv.org/pdf/2207.14284v2.pdf
+      Title: "HorNet: Efficient High-Order Spatial Interactions with Recursive Gated Convolutions"
+    README: configs/hornet/README.md
+    Code:
+      URL:
+      Version:
+
+Models:
+  - Name: hornet-tiny_8xb128_in1k
+    Metadata:
+      FLOPs: 22410000      # 22.41M
+      Parameters: 3980000000   # 3.98G
+    In Collection: HorNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 82.84
+          Top 5 Accuracy: 96.24
+        Task: Image Classification
+    Weights:
+    Config: configs/hornet/hornet-tiny_8xb128_in1k.py
+  - Name: hornet-tiny-gf_8xb128_in1k
+    Metadata:
+      FLOPs: 22990000      # 22.99M
+      Parameters: 3900000000   # 3.9G
+    In Collection: HorNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 82.98
+          Top 5 Accuracy: 96.38
+        Task: Image Classification
+    Weights:
+    Config: configs/hornet/hornet-tiny-gf_8xb128_in1k.py
+  - Name: hornet-small_8xb128_in1k
+    Metadata:
+      FLOPs:  49530000          # 49.53M
+      Parameters: 8830000000    # 8.83G
+    In Collection: HorNet
+    Results:
+        - Dataset: ImageNet-1k
+          Metrics:
+            Top 1 Accuracy: 83.79
+            Top 5 Accuracy: 96.75
+          Task: Image Classification
+    Weights:
+    Config: configs/hornet/hornet-small_8xb128_in1k.py
+  - Name: hornet-small-gf_8xb128_in1k
+    Metadata:
+      FLOPs:  50400000          # 50.4M
+      Parameters: 8710000000    # 8.71G
+    In Collection: HorNet
+    Results:
+        - Dataset: ImageNet-1k
+          Metrics:
+            Top 1 Accuracy: 83.98
+            Top 5 Accuracy: 96.77
+          Task: Image Classification
+    Weights:
+    Config: configs/hornet/hornet-small-gf_8xb128_in1k.py
+  - Name: hornet-base_8xb128_in1k
+    Metadata:
+      FLOPs: 87260000            # 87.26M
+      Parameters: 15590000000                # 15.59G
+    In Collection: HorNet
+    Results:
+        - Dataset: ImageNet-1k
+          Metrics:
+            Top 1 Accuracy: 84.24
+            Top 5 Accuracy: 96.94
+          Task: Image Classification
+    Weights:
+    Config: configs/hornet/hornet-base_8xb128_in1k.py
+  - Name: hornet-base-gf_8xb128_in1k
+    Metadata:
+      FLOPs: 88420000            # 88.42M
+      Parameters: 15420000000                # 15.42G
+    In Collection: HorNet
+    Results:
+        - Dataset: ImageNet-1k
+          Metrics:
+            Top 1 Accuracy: 84.32
+            Top 5 Accuracy: 96.95
+          Task: Image Classification
+    Weights:
+    Config: configs/hornet/hornet-base-gf_8xb128_in1k.py

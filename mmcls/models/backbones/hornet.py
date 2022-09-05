@@ -209,6 +209,7 @@ class HorNetBlock(nn.Module):
                  drop_path_rate=0.,
                  layer_scale_init_value=1e-6):
         super().__init__()
+        self.out_channels = dim
 
         self.norm1 = HorNetLayerNorm(
             dim, eps=1e-6, data_format='channels_first')
@@ -279,6 +280,8 @@ class HorNet(BaseBackbone):
             Default to 1e-6.
         out_indices (Sequence[int]): Output from which stages.
             Default: ``(3, )``.
+        frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
+            -1 means not freezing any parameters. Defaults to -1.
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
             memory while slowing down the training speed. Defaults to False.
         gap_before_final_norm (bool): Whether to globally average the feature
@@ -314,7 +317,7 @@ class HorNet(BaseBackbone):
                          'ws': [8, 8, 8, 8],
                          's': 1 / 3}),
         **dict.fromkeys(['s-gf', 'small-gf'],
-                        {'base_dim': 64,
+                        {'base_dim': 96,
                          'depths': [2, 3, 18, 2],
                          'orders': [2, 3, 4, 5],
                          'gflayers': ['DWConv', 'DWConv', 'GlobalLocalFilter',
@@ -382,6 +385,7 @@ class HorNet(BaseBackbone):
                  drop_path_rate=0.,
                  layer_scale_init_value=1e-6,
                  out_indices=(3, ),
+                 frozen_stages=-1,
                  with_cp=False,
                  gap_before_final_norm=True,
                  init_cfg=None):
@@ -401,6 +405,7 @@ class HorNet(BaseBackbone):
             self.arch_settings = arch
 
         self.out_indices = out_indices
+        self.frozen_stages = frozen_stages
         self.with_cp = with_cp
         self.gap_before_final_norm = gap_before_final_norm
 
@@ -452,6 +457,31 @@ class HorNet(BaseBackbone):
             layer = norm_layer(dims[i_layer])
             layer_name = f'norm{i_layer}'
             self.add_module(layer_name, layer)
+
+    def train(self, mode=True):
+        super(HorNet, self).train(mode)
+        self._freeze_stages()
+
+    def _freeze_stages(self):
+        for i in range(0, self.frozen_stages + 1):
+            # freeze patch embed
+            m = self.downsample_layers[i]
+            m.eval()
+            for param in m.parameters():
+                param.requires_grad = False
+
+            # freeze blocks
+            m = self.stages[i]
+            m.eval()
+            for param in m.parameters():
+                param.requires_grad = False
+
+            if i in self.out_indices:
+                # freeze norm
+                m = getattr(self, f'norm{i + 1}')
+                m.eval()
+                for param in m.parameters():
+                    param.requires_grad = False
 
     def forward(self, x):
         outs = []
