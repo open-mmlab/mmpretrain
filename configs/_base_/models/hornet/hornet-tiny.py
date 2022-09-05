@@ -2,7 +2,6 @@
 model = dict(
     type='ImageClassifier',
     backbone=dict(type='HorNet', arch='tiny', drop_path_rate=0.2),
-    neck=dict(type='GlobalAveragePooling'),
     head=dict(
         type='LinearClsHead',
         num_classes=1000,
