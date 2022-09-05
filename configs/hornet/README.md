@@ -1,0 +1,42 @@
+# HorNet
+
+> [HorNet: Efficient High-Order Spatial Interactions with Recursive Gated Convolutions](https://arxiv.org/pdf/2207.14284v2.pdf)
+
+<!-- [ALGORITHM] -->
+
+## Abstract
+
+Recent progress in vision Transformers exhibits great success in various tasks driven by the new spatial modeling mechanism based on dot-product self-attention. In this paper, we show that the key ingredients behind the vision Transformers, namely input-adaptive, long-range and high-order spatial interactions, can also be efficiently implemented with a convolution-based framework. We present the Recursive Gated Convolution (g nConv) that performs high-order spatial interactions with gated convolutions and recursive designs. The new operation is highly flexible and customizable, which is compatible with various variants of convolution and extends the two-order interactions in self-attention to arbitrary orders without introducing significant extra computation. g nConv can serve as a plug-and-play module to improve various vision Transformers and convolution-based models. Based on the operation, we construct a new family of generic vision backbones named HorNet. Extensive experiments on ImageNet classification, COCO object detection and ADE20K semantic segmentation show HorNet outperform Swin Transformers and ConvNeXt by a significant margin with similar overall architecture and training configurations. HorNet also shows favorable scalability to more training data and a larger model size. Apart from the effectiveness in visual encoders, we also show g nConv can be applied to task-specific decoders and consistently improve dense prediction performance with less computation. Our results demonstrate that g nConv can be a new basic module for visual modeling that effectively combines the merits of both vision Transformers and CNNs. Code is available at https://github.com/raoyongming/HorNet.
+
+<div align=center>
+<img src="https://user-images.githubusercontent.com/24734142/188356236-b8e3db94-eaa6-48e9-b323-15e5ba7f2991.png" width="80%"/>
+</div>
+
+## Results and models
+
+### ImageNet-1k
+
+|      Model       |   Pretrain   | resolution | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                                                        Config                                                        |  Download   |
+| :--------------: | :----------: | :--------: | :-------: | :------: | :-------: | :-------: | :------------------------------------------------------------------------------------------------------------------: | :---------: |
+|    HorNet-T\*    | From scratch |  224x224   |   22.41   |   3.98   |   82.84   |   96.24   |    [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-tiny_8xb128_in1k.py)    | [model](<>) |
+|  HorNet-T-GF\*   | From scratch |  224x224   |           |          |           |           |  [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-tiny-gf_8xb128_in1k.py)   | [model](<>) |
+|    HorNet-S\*    | From scratch |  224x224   |           |          |           |           |   [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-small_8xb128_in1k.py)    | [model](<>) |
+|  HorNet-S-GF\*   | From scratch |  224x224   |           |          |           |           |  [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-small-gf_8xb128_in1k.py)  | [model](<>) |
+|    HorNet-B\*    | From scratch |  224x224   |           |          |           |           |    [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-base_8xb128_in1k.py)    | [model](<>) |
+|  HorNet-B-GF\*   | From scratch |  224x224   |           |          |           |           |  [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-base-gf_8xb128_in1k.py)   | [model](<>) |
+|    HorNet-L\*    | From scratch |  224x224   |           |          |           |           |   [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-large_8xb128_in1k.py)    | [model](<>) |
+|  HorNet-L-GF\*   | From scratch |  224x224   |           |          |           |           |  [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-large-gf_8xb128_in1k.py)  | [model](<>) |
+| HorNet-L-GF384\* | From scratch |  224x224   |           |          |           |           | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-large-gf384_8xb128_in1k.py) | [model](<>) |
+
+\*Models with * are converted from [the official repo](https://github.com/raoyongming/HorNet). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.
+
+## Citation
+
+```
+@article{rao2022hornet,
+  title={HorNet: Efficient High-Order Spatial Interactions with Recursive Gated Convolutions},
+  author={Rao, Yongming and Zhao, Wenliang and Tang, Yansong and Zhou, Jie and Lim, Ser-Lam and Lu, Jiwen},
+  journal={arXiv preprint arXiv:2207.14284},
+  year={2022}
+}
+```

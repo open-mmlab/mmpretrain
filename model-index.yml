@@ -31,3 +31,4 @@ Import:
   - configs/csra/metafile.yml
   - configs/mvit/metafile.yml
   - configs/efficientformer/metafile.yml
+  - configs/hornet/metafile.yml
