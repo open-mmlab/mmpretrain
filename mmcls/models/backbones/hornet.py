@@ -289,7 +289,7 @@ class HorNet(BaseBackbone):
                         {'base_dim': 64,
                          'depths': [2, 3, 18, 2],
                          'orders': [2, 3, 4, 5],
-                         'gflayers': ['DWConv', 'DWConv' 'DWConv', 'DWConv'],
+                         'gflayers': ['DWConv', 'DWConv', 'DWConv', 'DWConv'],
                          'hs': [14, 14, 14, 14],
                          'ws': [8, 8, 8, 8],
                          's': 1/3}),
@@ -374,7 +374,7 @@ class HorNet(BaseBackbone):
 
         norm_layer = partial(
             HorNetLayerNorm, eps=1e-6, data_format='channels_first')
-        for i_layer in range(4):
+        for i_layer in out_indices:
             layer = norm_layer(dims[i_layer])
             layer_name = f'norm{i_layer}'
             self.add_module(layer_name, layer)
