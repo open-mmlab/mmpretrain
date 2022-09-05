@@ -4,7 +4,9 @@ from copy import deepcopy
 from itertools import chain
 from unittest import TestCase
 
+import pytest
 import torch
+from mmcv.utils import digit_version
 from mmcv.utils.parrots_wrapper import _BatchNorm
 from torch import nn
 
@@ -20,6 +22,9 @@ def check_norm_state(modules, train_state):
     return True
 
 
+@pytest.mark.skipif(
+    digit_version(torch.__version__) < digit_version('1.7.0'),
+    reason='torch.fft is not available before 1.7.0')
 class TestHorNet(TestCase):
 
     def setUp(self):

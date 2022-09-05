@@ -1,8 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+try:
+    import torch.fft
+    fft = True
+except ImportError:
+    fft = None
+
 from functools import partial
 
 import torch
-import torch.fft
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.checkpoint as checkpoint
@@ -390,6 +395,9 @@ class HorNet(BaseBackbone):
                  gap_before_final_norm=True,
                  init_cfg=None):
         super().__init__(init_cfg=init_cfg)
+        if fft is None:
+            raise RuntimeError(
+                'Failed to import torch.fft. Please install "torch>=1.7".')
 
         if isinstance(arch, str):
             arch = arch.lower()
