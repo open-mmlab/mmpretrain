@@ -1,10 +1,8 @@
 # Customize Training Schedule
 
-In our codebase, [default training schedules](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/schedules) have beed provided for common datasets such as CIFAR, ImageNet, etc. If we attempt to experiment on these datasets for higher accuracy or on different new methods and datasets, we might possibly need to modify the strategies.
+In our codebase, [default training schedules](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/schedules) have been provided for common datasets such as CIFAR, ImageNet, etc. If we attempt to experiment on these datasets for higher accuracy or on different new methods and datasets, we might possibly need to modify the strategies.
 
-In this tutorial, we will introduce how to modify configs to construct optimizers, use parameter-wise finely configuration, gradient clipping, gradient accumulation
-
-learning rate and momentum schedules, as well as how to use parameter-wise finely configuration, gradient clipping, gradient accumulation, and customize self-implemented methods for the project.
+In this tutorial, we will introduce how to modify configs to construct optimizers, use parameter-wise finely configuration, gradient clipping, gradient accumulation as well as customize learning rate and momentum schedules. Furthermore, introduce a template to customize self-implemented optimizationmethods for the project.
 
 <!-- TOC -->
 
@@ -25,11 +23,11 @@ learning rate and momentum schedules, as well as how to use parameter-wise finel
 
 ## Customize optimization
 
-We use a wrapper for major strategies of optimization, which includes choices of optimizer, choices of automatic mixed precision training, parameter-wise configurations, gradient clipping and accumulation.
+We use a `OptimWrapper` for major strategies of optimization, which includes choices of optimizer, choices of automatic mixed precision training, parameter-wise configurations, gradient clipping and accumulation. Details are seen below.
 
 ### Use optimizers supported by PyTorch
 
-We support all the optimizers implemented by PyTorch, and to use them, please change the `optimizer` field of config files. Refers to [List of optimizers supported by PyTorch](https://pytorch.org/docs/stable/optim.html#algorithms) for more details.
+We support all the optimizers implemented by PyTorch, and to use them, please change the `optimizer` field of config files.
 
 For example, if you want to use `SGD`, the modification in config file could be as the following. Notice that optimization related settings should all wrapped inside the `OptimWrapper`.
 
@@ -38,11 +36,28 @@ optimizer = dict(type='SGD', lr=0.0003, weight_decay=0.0001)
 optim_wrapper = dict(type='OptimWrapper', optimizer=optimizer)
 ```
 
+```{note}
+`type` in optimizer is not a constructor but a optimizer name in PyTorch.
+Refers to [List of optimizers supported by PyTorch](https://pytorch.org/docs/stable/optim.html#algorithms) for more choices.
+```
+
 To modify the learning rate of the model, just modify the `lr` in the config of optimizer.
 You can also directly set other arguments according to the [API doc](https://pytorch.org/docs/stable/optim.html?highlight=optim#module-torch.optim) of PyTorch.
 
-For example, if you want to use `Adam` with settings like `torch.optim.Adam(params, lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)` in PyTorch,
-and considering the `OptimWrapper` type is for default standard single precision training, we can omit the wrapper type here, therefore the config should looks like below.
+For example, if you want to use `Adam` with settings like `torch.optim.Adam(params, lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)` in PyTorch. You could use the config below:
+
+```python
+optimizer = dict(
+    type='Adam',
+    lr=0.001,
+    betas=(0.9, 0.999),
+    eps=1e-08,
+    weight_decay=0,
+    amsgrad=False)
+optim_wrapper = dict(type='OptimWrapper', optimizer=optimizer)
+```
+
+Considering the `OptimWrapper` type is for default standard single precision training, we can omit the wrapper type here, therefore the config could be further simplied below.
 
 ```python
 optim_wrapper = dict(
@@ -68,7 +83,7 @@ Alternatively, for conveniency, we can set `--amp` parameter to turn on the AMP 
 ### Parameter-wise finely configuration
 
 Some models may have parameter-specific settings for optimization, for example, no weight decay to the BatchNorm layers or using different learning rates for different network layers.
-To finely configure them, we can use the `paramwise_cfg` option in `optim_wrapper`.
+To finely configure them, we can use the `paramwise_cfg` argument in `optim_wrapper`.
 
 - **Set different hyper-parameter multipliers for different types of parameters.**
 
@@ -93,7 +108,7 @@ To finely configure them, we can use the `paramwise_cfg` option in `optim_wrappe
 
 - **Set different hyper-parameter multipliers for specific parameters.**
 
-  MMClassification can use `custom_keys` to specify different parameters to use different learning rates or weight decay.
+  MMClassification can use `custom_keys` in `paramwise_cfg` to specify different parameters to use different learning rates or weight decay.
 
   For example, to set all learning rates and weight decays of `backbone.layer0` to 0, the rest of `backbone` remains the same as optimizer and the learning rate of `head` to 0.001, use the configs below.
 
@@ -150,40 +165,40 @@ In training, the optimzation parameters such as learing rate, momentum, are usua
 
 ### Customize learning rate schedules
 
-#### Single learning rate schedule
+Learning rate schedulers are widely used to improve performance. We support most of the PyTorch schedulers, including `ExponentialLR`, `LinearLR`, `StepLR`, `MultiStepLR`, etc.
 
-Learning rate schedulers are widely used to improve performance. We support most of the PyTorch schedulers, including `ExponentialLR`, `LinearLR`, `StepLR`, `MultiStepLR`, etc. We use `MultiStepLR` as the default learning rate schedule for ResNet.
+- **Single learning rate schedule**
 
-For example:
+  In most cases, we use only one learning rate schedule for simplicity. For instance,`MultiStepLR` is used as the default learning rate schedule for ResNet. Here, `param_scheduler` is a dictionary.
 
-```python
-param_scheduler = dict(
-    type='MultiStepLR',
-    by_epoch=True,
-    milestones=[100, 150],
-    gamma=0.1)
-```
+  ```python
+  param_scheduler = dict(
+      type='MultiStepLR',
+      by_epoch=True,
+      milestones=[100, 150],
+      gamma=0.1)
+  ```
 
-Other supported learning rate schedules and detailed usages can be found [here](https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/scheduler/lr_scheduler.py), such as `CosineAnnealingLR` schedule:
+  Other supported learning rate schedules and detailed usages can be found [here](https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/scheduler/lr_scheduler.py), such as `CosineAnnealingLR` schedule:
 
-```python
-param_scheduler = dict(
-    type='CosineAnnealingLR',
-    by_epoch=True,
-    T_max=num_epochs)
-```
+  ```python
+  param_scheduler = dict(
+      type='CosineAnnealingLR',
+      by_epoch=True,
+      T_max=num_epochs)
+  ```
 
-#### Multiple learning rate schedules
+- **Multiple learning rate schedules**
 
-However, in some of the training cases, multiple learning rate schedules are applied for higher accuracy. For example ,in the early stage, training is easy to be volatile, and warmup is a technique to reduce volatility. The learning rate will increase gradually from a minor value to the expected value by warmup and decay afterwards by other schedules.
+  However, in some of the training cases, multiple learning rate schedules are applied for higher accuracy. For example ,in the early stage, training is easy to be volatile, and warmup is a technique to reduce volatility. The learning rate will increase gradually from a minor value to the expected value by warmup and decay afterwards by other schedules.
 
-In MMClassification, simply combines desired schedules in `param_scheduler` as a list can achieve the warmup strategy.
+  In MMClassification, simply combines desired schedules in `param_scheduler` as a list can achieve the warmup strategy. Here, `param_scheduler` is a list.
 
-Here are some examples:
+  Here are some examples:
 
-1. linear & warmup by iter
+  1. linear & warmup by iter
 
-   ```python
+  ```python
     param_scheduler = [
         # linear warm-up by iters
         dict(type='LinearLR',
@@ -197,11 +212,11 @@ Here are some examples:
             milestones=[8, 11],
             gamma=0.1)
     ]
-   ```
+  ```
 
-2. exp & warmup by epoch
+  2. exp & warmup by epoch
 
-   ```python
+  ```python
     param_scheduler = [
         # use exponential schedule in [0, 100) epochs
         dict(type='ExponentialLR',
@@ -216,13 +231,15 @@ Here are some examples:
             begin=100,
             end=600)
     ]
-   ```
+  ```
 
-Notice that, we use `begin` and `end` arguments here to assign the valid range, which is \[`begin`, `end`) for this schedule. And the range unit is defined by `by_epoch` argument. If the ranges for all schedules are not continuous, the learning rate will stay constant in ignored range, otherwise all valid schedulers will be executed in order in a specific stage, which behaves the same as PyTorch [`ChainedScheduler`](https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.ChainedScheduler.html#chainedscheduler).
+  Notice that, we use `begin` and `end` arguments here to assign the valid range, which is \[`begin`, `end`) for this schedule. And the range unit is defined by `by_epoch` argument.
 
-```{tip}
-In case that output learning rates are not as expected, after completing your configuration file，you could use [learning rate visualization tool](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#learning-rate-schedule-visualization) to draw the corresponding learning rate adjustment curve.
-```
+  If the ranges for all schedules are not continuous, the learning rate will stay constant in ignored range, otherwise all valid schedulers will be executed in order in a specific stage, which behaves the same as PyTorch [`ChainedScheduler`](https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.ChainedScheduler.html#chainedscheduler).
+
+  ```{tip}
+  In case that output learning rates are not as expected, after completing your configuration file，you could use [learning rate visualization tool](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#learning-rate-schedule-visualization) to draw the corresponding learning rate adjustment curve.
+  ```
 
 ### Customize momentum schedules
 
@@ -279,26 +296,28 @@ class MyOptimizer(Optimizer):
 
 To find the above module defined above, this module should be imported into the main namespace at first. There are two ways to achieve it.
 
-- Modify `mmcls/engine/optimizers/__init__.py` to import it into `optimizer` package.
+- Modify `mmcls/engine/optimizers/__init__.py` to import it into `optimizers` package.
 
   Create the `mmcls/engine/optimizers` folder and the `mmcls/engine/optimizers/__init__.py` file if they don't exist. The newly defined module should be imported in `mmcls/engine/optimizers/__init__.py` so that the registry will find the new module and add it:
 
-```python
-# In mmcls/engine/optimizers/__init__.py
-...
-from .my_optimizer import MyOptimizer # MyOptimizer maybe other class name
+  ```python
+  # In mmcls/engine/optimizers/__init__.py
+  ...
+  from .my_optimizer import MyOptimizer # MyOptimizer maybe other class name
 
-__all__ = [..., 'MyOptimizer']
-```
+  __all__ = [..., 'MyOptimizer']
+  ```
 
 - Use `custom_imports` in the config file to manually import it
 
-```python
-custom_imports = dict(imports=['mmcls.core.optimizer.my_optimizer'], allow_failed_imports=False)
-```
+  ```python
+  custom_imports = dict(
+    imports=['mmcls.engine.optimizers.my_optimizer'],
+    allow_failed_imports=False)
+  ```
 
-The module `mmcls.engine.optimizer.my_optimizer` will be imported at the beginning of the program and the class `MyOptimizer` is then automatically registered.
-Note that only the package containing the class `MyOptimizer` should be imported. `mmcls.engine.optimizer.my_optimizer.MyOptimizer` **cannot** be imported directly.
+The module `mmcls.engine.optimizers.my_optimizer` will be imported at the beginning of the program and the class `MyOptimizer` is then automatically registered.
+Note that only the package containing the class `MyOptimizer` should be imported. `mmcls.engine.optimizers.my_optimizer.MyOptimizer` **cannot** be imported directly.
 
 #### 3. Specify the optimizer in the config file
 
