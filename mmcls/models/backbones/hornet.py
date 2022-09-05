@@ -281,6 +281,9 @@ class HorNet(BaseBackbone):
             Default: ``(3, )``.
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
             memory while slowing down the training speed. Defaults to False.
+        gap_before_final_norm (bool): Whether to globally average the feature
+            map before the final norm layer. In the official repo, it's only
+            used in classification task. Defaults to True.
         init_cfg (dict, optional): The Config for initialization.
             Defaults to None.
     """
@@ -311,6 +314,7 @@ class HorNet(BaseBackbone):
                  layer_scale_init_value=1e-6,
                  out_indices=(3, ),
                  with_cp=False,
+                 gap_before_final_norm=True,
                  init_cfg=None):
         super().__init__(init_cfg=init_cfg)
 
@@ -329,6 +333,7 @@ class HorNet(BaseBackbone):
 
         self.out_indices = out_indices
         self.with_cp = with_cp
+        self.gap_before_final_norm = gap_before_final_norm
 
         dims = [
             self.arch_settings['base_dim'], self.arch_settings['base_dim'] * 2,
@@ -390,6 +395,11 @@ class HorNet(BaseBackbone):
                 x = self.stages[i](x)
             if i in self.out_indices:
                 norm_layer = getattr(self, f'norm{i}')
-                x_out = norm_layer(x)
-                outs.append(x_out)
+                if self.gap_before_final_norm:
+                    gap = x.mean([-2, -1], keepdim=True)
+                    outs.append(norm_layer(gap).flatten(1))
+                else:
+                    # The output of LayerNorm2d may be discontiguous, which
+                    # may cause some problem in the downstream tasks
+                    outs.append(norm_layer(x).contiguous())
         return tuple(outs)
