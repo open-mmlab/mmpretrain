@@ -11,7 +11,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.checkpoint as checkpoint
-from timm.models.layers import DropPath, trunc_normal_
+from mmcv.cnn.bricks import DropPath
 
 from mmcls.models.builder import BACKBONES
 from .base_backbone import BaseBackbone
@@ -93,7 +93,6 @@ class GlobalLocalFilter(nn.Module):
             groups=dim // 2)
         self.complex_weight = nn.Parameter(
             torch.randn(dim // 2, h, w, 2, dtype=torch.float32) * 0.02)
-        trunc_normal_(self.complex_weight, std=.02)
         self.pre_norm = HorNetLayerNorm(
             dim, eps=1e-6, data_format='channels_first')
         self.post_norm = HorNetLayerNorm(
