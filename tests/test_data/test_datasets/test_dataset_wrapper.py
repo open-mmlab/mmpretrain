@@ -184,7 +184,8 @@ def test_kfold_dataset(construct_dataset):
             assert gt_label == cat_ids_list[train_set.indices[i]]
         for i in range(len(test_set)):
             gt_label = test_set.get_gt_labels()[i]
-            assert gt_label == cat_ids_list[test_set.indices[i]]
+            assert np.array_equal(
+                np.array(gt_label), cat_ids_list[test_set.indices[i]])
 
     # test evaluate
     for test_set in test_datasets:
