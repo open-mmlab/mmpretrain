@@ -20,8 +20,8 @@ Models:
     In Collection: MobileOne
     Config: configs/mobileone/mobileone-s0_8xb128_in1k.py
     Metadata:
-      FLOPs: 1091227648
-      Parameters: 5293272
+      FLOPs: 1091227648  # 1.09G
+      Parameters: 5293272  # 5.29M
     Results:
     - Dataset: ImageNet-1k
       Task: Image Classification
