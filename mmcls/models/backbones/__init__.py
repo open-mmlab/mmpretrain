@@ -13,6 +13,7 @@ from .lenet import LeNet5
 from .mlp_mixer import MlpMixer
 from .mobilenet_v2 import MobileNetV2
 from .mobilenet_v3 import MobileNetV3
+from .mobileone import MobileOne
 from .mvit import MViT
 from .poolformer import PoolFormer
 from .regnet import RegNet
@@ -45,5 +46,6 @@ __all__ = [
     'Res2Net', 'RepVGG', 'Conformer', 'MlpMixer', 'DistilledVisionTransformer',
     'PCPVT', 'SVT', 'EfficientNet', 'ConvNeXt', 'HRNet', 'ResNetV1c',
     'ConvMixer', 'CSPDarkNet', 'CSPResNet', 'CSPResNeXt', 'CSPNet',
-    'RepMLPNet', 'PoolFormer', 'DenseNet', 'VAN', 'MViT', 'EfficientFormer'
+    'RepMLPNet', 'PoolFormer', 'DenseNet', 'VAN', 'MViT', 'EfficientFormer',
+    'MobileOne'
 ]
