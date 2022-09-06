@@ -37,7 +37,7 @@ class MobileOneBlock(BaseModule):
         deploy (bool): Whether the model structure is in the deployment mode.
             Defaults to False.
         init_cfg (dict or list[dict], optional): Initialization config dict.
-            Defaults to None
+            Defaults to None.
     """
 
     def __init__(self,
