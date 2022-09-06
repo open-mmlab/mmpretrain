@@ -143,6 +143,8 @@ pip3 install -e .
 - [x] [CSPNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/cspnet)
 - [x] [PoolFormer](https://github.com/open-mmlab/mmclassification/tree/master/configs/poolformer)
 - [x] [MViT](https://github.com/open-mmlab/mmclassification/tree/master/configs/mvit)
+- [x] [EfficientFormer](https://github.com/open-mmlab/mmclassification/tree/master/configs/efficientformer)
+- [x] [MobileOne](https://github.com/open-mmlab/mmclassification/tree/master/configs/mobileone)
 
 </details>
 
