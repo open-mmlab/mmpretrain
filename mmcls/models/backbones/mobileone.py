@@ -23,21 +23,21 @@ class MobileOneBlock(BaseModule):
         kernel_size (int): The kernel size of the convs in the block. If the
             kernel size is large than 1, there will be a ``branch_scale`` in
              the block.
-        num_convs (int): Number of conv branches in the block.
-        stride (int): Stride of convolution layers. Default: 1.
-        padding (int): Padding of the convolution layers. Default: 1.
-        dilation (int): Dilation of the convolution layers. Default: 1.
-        groups (int): Groups of the convolution layers. Default: 1.
+        num_convs (int): Number of the convolution branches in the block.
+        stride (int): Stride of convolution layers. Defaults to 1.
+        padding (int): Padding of the convolution layers. Defaults to 1.
+        dilation (int): Dilation of the convolution layers. Defaults to 1.
+        groups (int): Groups of the convolution layers. Defaults to 1.
         se_cfg (None or dict): The configuration of the se module.
-            Default: None.
-        norm_cfg (dict): dictionary to construct and config norm layer.
-            Default: dict(type='BN', requires_grad=True).
+            Defaults to None.
+        norm_cfg (dict): Configuration to construct and config norm layer.
+            Defaults to ``dict(type='BN')``.
         act_cfg (dict): Config dict for activation layer.
-            Default: dict(type='ReLU').
-        deploy (bool): Whether to switch the model structure to
-            deployment mode. Default: False.
+            Defaults to ``dict(type='ReLU')``.
+        deploy (bool): Whether the model structure is in the deployment mode.
+            Defaults to False.
         init_cfg (dict or list[dict], optional): Initialization config dict.
-            Default: None
+            Defaults to None
     """
 
     def __init__(self,
@@ -275,38 +275,38 @@ class MobileOne(BaseBackbone):
             have below keys:
 
             - num_blocks (Sequence[int]): Number of blocks in each stage.
-            - width_factor (Sequence[float]): Width deflator in each stage.
-            - num_conv_branches (Sequence[float]): Number of conv branches
-                 in each stage.
-            - num_se_blocks (Sequence[float]): Number of SE_layers in each
-                 stage, all the SE_layers are placed in blocks in the
-                 subsequent order of each stage.
+            - width_factor (Sequence[float]): Width factor in each stage.
+            - num_conv_branches (Sequence[int]): Number of conv branches
+              in each stage.
+            - num_se_blocks (Sequence[int]): Number of SE layers in each
+              stage, all the SE layers are placed in the subsequent order
+              in each stage.
 
-            Defaults to s0.
-
+            Defaults to 's0'.
         in_channels (int): Number of input image channels. Default: 3.
         out_indices (Sequence[int] | int): Output from which stages.
-            Default: (3, ).
+            Defaults to ``(3, )``.
         frozen_stages (int): Stages to be frozen (all param fixed). -1 means
-            not freezing any parameters. Default: -1.
-        conv_cfg (dict | None): The config dict for conv layers. Default: None.
+            not freezing any parameters. Defaults to -1.
+        conv_cfg (dict | None): The config dict for conv layers.
+            Defaults to None.
         norm_cfg (dict): The config dict for norm layers.
-            Default: dict(type='BN').
+            Defaults to ``dict(type='BN')``.
         act_cfg (dict): Config dict for activation layer.
-            Default: dict(type='ReLU').
+            Defaults to ``dict(type='ReLU')``.
         deploy (bool): Whether to switch the model structure to deployment
-            mode. Default: False.
+            mode. Defaults to False.
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm
-            and its variants only. Default: False.
+            and its variants only. Defaults to False.
         init_cfg (dict or list[dict], optional): Initialization config dict.
 
     Example:
         >>> from mmcls.models import MobileOne
         >>> import torch
+        >>> x = torch.rand(1, 3, 224, 224)
         >>> model = MobileOne("s0", out_indices=(0, 1, 2, 3))
         >>> model.eval()
-        >>> x = torch.rand(1, 3, 224, 224)
         >>> outputs = model(x)
         >>> for out in outputs:
         ...     print(tuple(out.shape))
@@ -507,7 +507,8 @@ class MobileOne(BaseBackbone):
                     m.eval()
 
     def switch_to_deploy(self):
-        """switch the mobile to deploy."""
+        """switch the model to deploy mode, which has smaller amount of
+        parameters and calculations."""
         for m in self.modules():
             if isinstance(m, MobileOneBlock):
                 m.switch_to_deploy()
