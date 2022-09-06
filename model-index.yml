@@ -28,3 +28,4 @@ Import:
   - configs/densenet/metafile.yml
   - configs/poolformer/metafile.yml
   - configs/inception_v3/metafile.yml
+  - configs/mobileone/metafile.yml

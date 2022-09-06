@@ -16,7 +16,7 @@ Collections:
     README: configs/inception_v3/README.md
     Code:
       URL: TODO
-      Version: TODO
+      Version: v1.0.0rc1
 
 Models:
   - Name: inception-v3_3rdparty_8xb32_in1k
