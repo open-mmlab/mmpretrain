@@ -33,8 +33,8 @@ The pre-trained models on ImageNet-21k are used to fine-tune on the downstream t
 
 |      Model       |   Pretrain   | resolution | Params(M) | Flops(G) |  Download   |
 | :--------------: | :----------: | :--------: | :-------: | :------: | :---------: |
-|    HorNet-L\*    | ImageNet-21k |  224x224   |   34.83   |  194.54  | [model](<>) |
-|  HorNet-L-GF\*   | ImageNet-21k |  224x224   |   34.58   |  196.29  | [model](<>) |
+|    HorNet-L\*    | ImageNet-21k |  224x224   |  194.54   |  34.83   | [model](<>) |
+|  HorNet-L-GF\*   | ImageNet-21k |  224x224   |  196.29   |  34.58   | [model](<>) |
 | HorNet-L-GF384\* | ImageNet-21k |  384x384   |  201.23   |  101.63  | [model](<>) |
 
 \*Models with * are converted from [the official repo](https://github.com/raoyongming/HorNet).
