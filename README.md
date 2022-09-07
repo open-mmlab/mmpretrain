@@ -58,20 +58,18 @@ The master branch works with **PyTorch 1.5+**.
 
 ## What's new
 
+**The MMClassification 1.0 is in developing!**
+
+We are developing MMClassification 1.0 by main force. Welcome to try it and give your suggestions! You can checkout to [the `1.x` branch](https://github.com/open-mmlab/mmclassification/tree/1.x), and read [the documentation site](https://mmclassification.readthedocs.io/en/1.x/).
+
+The MMClassification 1.0 is still in the release candidate, and it will last until the end of 2022. And we will still maintain 0.x version still at least until the end of 2023.
+
 v0.23.0 was released in 1/5/2022.
 Highlights of the new version:
 
 - Support **DenseNet**, **VAN** and **PoolFormer**, and provide pre-trained models.
 - Support training on IPU.
 - New style API docs, welcome [view it](https://mmclassification.readthedocs.io/en/master/api/models.html).
-
-v0.22.0 was released in 30/3/2022.
-
-Highlights of the new version:
-
-- Support a series of **CSP Network**, such as CSP-ResNet, CSP-ResNeXt and CSP-DarkNet.
-- A new `CustomDataset` class to help you **build dataset of yourself**!
-- Support new backbones - **ConvMixer**, **RepMLP** and new dataset - **CUB dataset**.
 
 Please refer to [changelog.md](docs/en/changelog.md) for more details and other release history.
 
