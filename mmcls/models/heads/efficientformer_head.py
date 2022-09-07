@@ -1,11 +1,20 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+<<<<<<< HEAD
 from typing import List, Tuple
+=======
+from typing import Tuple, List
+>>>>>>> 078eca7... add efficientformer
 
 import torch
 import torch.nn as nn
 
+<<<<<<< HEAD
 from mmcls.registry import MODELS
 from mmcls.structures import ClsDataSample
+=======
+from mmcls.structures import ClsDataSample
+from mmcls.registry import MODELS
+>>>>>>> 078eca7... add efficientformer
 from .cls_head import ClsHead
 
 
