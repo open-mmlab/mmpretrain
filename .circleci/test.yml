@@ -31,7 +31,7 @@ jobs:
           name: Check docstring coverage
           command: |
             pip install interrogate
-            interrogate -v --ignore-init-method --ignore-module --ignore-nested-functions --ignore-regex "__repr__" --fail-under 60 mmcls
+            interrogate -v --ignore-init-method --ignore-module --ignore-nested-functions --ignore-magic --ignore-regex "__repr__" --fail-under 60 mmcls
   build_cpu:
     parameters:
       # The python version must match available image tags in
@@ -41,8 +41,6 @@ jobs:
       torch:
         type: string
       torchvision:
-        type: string
-      mmcv:
         type: string
     docker:
       - image: cimg/python:<< parameters.python >>
@@ -57,31 +55,32 @@ jobs:
       - run:
           name: Configure Python & pip
           command: |
-            python -m pip install --upgrade pip
-            python -m pip install wheel
+            pip install --upgrade pip
+            pip install wheel
       - run:
           name: Install PyTorch
           command: |
             python -V
-            python -m pip install torch==<< parameters.torch >>+cpu torchvision==<< parameters.torchvision >>+cpu -f https://download.pytorch.org/whl/torch_stable.html
+            pip install torch==<< parameters.torch >>+cpu torchvision==<< parameters.torchvision >>+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - run:
           name: Install mmcls dependencies
           command: |
-            python -m pip install git+ssh://git@github.com/open-mmlab/mmengine.git@main
-            python -m pip install << parameters.mmcv >>
-            python -m pip install timm
-            python -m pip install -r requirements.txt
+            pip install git+https://github.com/open-mmlab/mmengine.git@main
+            pip install -U openmim
+            mim install 'mmcv >= 2.0.0rc1'
+            pip install timm
+            pip install -r requirements.txt
             python -c 'import mmcv; print(mmcv.__version__)'
       - run:
           name: Build and install
           command: |
-            python -m pip install -e .
+            pip install -e .
       - run:
           name: Run unittests
           command: |
-            python -m coverage run --branch --source mmcls -m pytest tests/
-            python -m coverage xml
-            python -m coverage report -m
+            coverage run --branch --source mmcls -m pytest tests/
+            coverage xml
+            coverage report -m
 
   build_cuda:
     machine:
@@ -96,15 +95,13 @@ jobs:
       cudnn:
         type: integer
         default: 7
-      mmcv:
-        type: string
     steps:
       - checkout
       - run:
           # Cloning repos in VM since Docker doesn't have access to the private key
           name: Clone Repos
           command: |
-            git clone -b main --depth 1 ssh://git@github.com/open-mmlab/mmengine.git /home/circleci/mmengine
+            git clone -b main --depth 1 https://github.com/open-mmlab/mmengine.git /home/circleci/mmengine
       - run:
           name: Build Docker image
           command: |
@@ -114,7 +111,8 @@ jobs:
           name: Install mmcls dependencies
           command: |
             docker exec mmcls pip install -e /mmengine
-            docker exec mmcls pip install << parameters.mmcv >>
+            docker exec mmcls pip install -U openmim
+            docker exec mmcls mim install 'mmcv >= 2.0.0rc1'
             docker exec mmcls pip install -r requirements.txt
             docker exec mmcls python -c 'import mmcv; print(mmcv.__version__)'
       - run:
@@ -124,7 +122,7 @@ jobs:
       - run:
           name: Run unittests
           command: |
-            docker exec mmcls python -m pytest tests/ --ignore tests/test_models/test_backbones/test_timm_backbone.py
+            docker exec mmcls python -m pytest tests/ -k 'not timm'
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
@@ -138,6 +136,7 @@ workflows:
             branches:
               ignore:
                 - dev-1.x
+                - 1.x
   pr_stage_test:
     when:
       not:
@@ -154,15 +153,13 @@ workflows:
           torch: 1.6.0
           torchvision: 0.7.0
           python: 3.6.9  # The lowest python 3.6.x version available on CircleCI images
-          mmcv: https://download.openmmlab.com/mmcv/dev-2.x/cpu/torch1.6.0/mmcv_full-2.0.0rc0-cp36-cp36m-manylinux1_x86_64.whl
           requires:
             - lint
       - build_cpu:
           name: maximum_version_cpu
-          torch: 1.9.0  # TODO: Update the version after mmcv provides more pre-compiled packages.
-          torchvision: 0.10.0
+          torch: 1.12.1
+          torchvision: 0.13.1
           python: 3.9.0
-          mmcv: https://download.openmmlab.com/mmcv/dev-2.x/cpu/torch1.9.0/mmcv_full-2.0.0rc0-cp39-cp39-manylinux1_x86_64.whl
           requires:
             - minimum_version_cpu
       - hold:
@@ -175,7 +172,6 @@ workflows:
           # Use double quotation mark to explicitly specify its type
           # as string instead of number
           cuda: "10.2"
-          mmcv: https://download.openmmlab.com/mmcv/dev-2.x/cu102/torch1.8.0/mmcv_full-2.0.0rc0-cp37-cp37m-manylinux1_x86_64.whl
           requires:
             - hold
   merge_stage_test:
@@ -188,7 +184,6 @@ workflows:
           torch: 1.6.0
           # Use double quotation mark to explicitly specify its type
           # as string instead of number
-          mmcv: https://download.openmmlab.com/mmcv/dev-2.x/cu101/torch1.6.0/mmcv_full-2.0.0rc0-cp37-cp37m-manylinux1_x86_64.whl
           cuda: "10.1"
           filters:
             branches:
