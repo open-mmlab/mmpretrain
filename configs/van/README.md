@@ -23,11 +23,20 @@ While originally designed for natural language processing (NLP) tasks, the self-
 | VAN-B2\* | From scratch |  224x224   |   26.58   |   5.03   |   82.80   |   96.21   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/van/van-b2_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/van/van-base_8xb128_in1k_20220501-6a4cc31b.pth) |
 | VAN-B3\* | From scratch |  224x224   |   44.77   |   8.99   |   83.86   |   96.73   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/van/van-b3_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/van/van-large_8xb128_in1k_20220501-f212ba21.pth) |
 | VAN-B4\* | From scratch |  224x224   |   60.28   |  12.22   |   84.13   |   96.86   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/van/van-b4_8xb128_in1k.py) |                              [model](<>)                              |
-| VAN-B4\* | ImageNet-21k |  224x224   |           |          |           |           | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/van/van-b4_8xb128_in1k.py) |                              [model](<>)                              |
-| VAN-B5\* | ImageNet-21k |  224x224   |           |          |           |           | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/van/van-b5_8xb128_in1k.py) |                              [model](<>)                              |
-| VAN-B6\* | ImageNet-21k |  224x224   |           |          |           |           | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/van/van-b6_8xb128_in1k.py) |                              [model](<>)                              |
 
 \*Models with * are converted from [the official repo](https://github.com/Visual-Attention-Network/VAN-Classification). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.
+
+### Pre-trained Models
+
+The pre-trained models on ImageNet-21k are used to fine-tune on the downstream tasks.
+
+|  Model   |   Pretrain   | resolution | Params(M) | Flops(G) |  Download   |
+| :------: | :----------: | :--------: | :-------: | :------: | :---------: |
+| VAN-B4\* | ImageNet-21k |  224x224   |   60.28   |  12.22   | [model](<>) |
+| VAN-B5\* | ImageNet-21k |  224x224   |   89.97   |  17.21   | [model](<>) |
+| VAN-B6\* | ImageNet-21k |  224x224   |   283.9   |  55.28   | [model](<>) |
+
+\*Models with * are converted from [the official repo](https://github.com/Visual-Attention-Network/VAN-Classification).
 
 ## Citation
 

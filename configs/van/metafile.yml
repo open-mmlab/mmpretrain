@@ -68,3 +68,16 @@ Models:
           Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/van/van-large_8xb128_in1k_20220501-f212ba21.pth
     Config: configs/van/van-b3_8xb128_in1k.py
+  - Name: van-b4_8xb128_in1k
+    Metadata:
+      FLOPs: 60280000              # 60.28 M
+      Parameters: 12220000000              # 12.22G
+    In Collection: Visual-Attention-Network
+    Results:
+        - Dataset: ImageNet-1k
+          Metrics:
+            Top 1 Accuracy: 84.13
+            Top 5 Accuracy: 96.86
+          Task: Image Classification
+    Weights:
+    Config: configs/van/van-b4_8xb128_in1k.py

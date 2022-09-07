@@ -329,7 +329,7 @@ class VAN(BaseBackbone):
                          'depths': [3, 3, 24, 3],
                          'ffn_ratios': [8, 8, 4, 4]}),
         **dict.fromkeys(['b6'],
-                        {'embed_dims': [96, 192, 480, 768],
+                        {'embed_dims': [96, 192, 384, 768],
                          'depths': [6, 6, 90, 6],
                          'ffn_ratios': [8, 8, 4, 4]}),
     }  # yapf: disable
