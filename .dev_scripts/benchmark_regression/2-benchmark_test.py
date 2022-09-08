@@ -82,7 +82,7 @@ def create_test_job_batch(commands, model_info, args, port, script_name):
 
     http_prefix = 'https://download.openmmlab.com/mmclassification/'
     if 's3://' in args.checkpoint_root:
-        from mmcv.fileio import FileClient
+        from mmengine.fileio import FileClient
         from petrel_client.common.exception import AccessDeniedError
         file_client = FileClient.infer_client(uri=args.checkpoint_root)
         checkpoint = file_client.join_path(
