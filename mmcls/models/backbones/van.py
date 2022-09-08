@@ -272,7 +272,7 @@ class VAN(BaseBackbone):
             - **ffn_ratios** (List[int]): The number of expansion ratio of
               feedforward network hidden layer channels.
 
-            Defaults to 'b0'.
+            Defaults to 'tiny'.
         patch_sizes (List[int | tuple]): The patch size in patch embeddings.
             Defaults to [7, 3, 3, 3].
         in_channels (int): The num of input channels. Defaults to 3.
@@ -351,7 +351,7 @@ class VAN(BaseBackbone):
     }  # yapf: disable
 
     def __init__(self,
-                 arch='b0',
+                 arch='tiny',
                  patch_sizes=[7, 3, 3, 3],
                  in_channels=3,
                  drop_rate=0.,
