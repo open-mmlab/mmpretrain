@@ -12,5 +12,6 @@ model = dict(
         cal_acc=False),
     init_cfg=[
         dict(type='TruncNormal', layer='Linear', std=0.02, bias=0.),
-        dict(type='Constant', layer='LayerNorm', val=1., bias=0.)
+        dict(type='Constant', layer='LayerNorm', val=1., bias=0.),
+        dict(type='Constant', layer=['LayerScale'], val=1e-6)
     ])

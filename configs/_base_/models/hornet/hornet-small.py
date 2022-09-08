@@ -12,7 +12,8 @@ model = dict(
         cal_acc=False),
     init_cfg=[
         dict(type='TruncNormal', layer='Linear', std=0.02, bias=0.),
-        dict(type='Constant', layer='LayerNorm', val=1., bias=0.)
+        dict(type='Constant', layer='LayerNorm', val=1., bias=0.),
+        dict(type='Constant', layer=['LayerScale'], val=1e-6)
     ],
     train_cfg=dict(augments=[
         dict(type='BatchMixup', alpha=0.8, num_classes=1000, prob=0.5),

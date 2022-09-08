@@ -14,6 +14,7 @@ import torch.utils.checkpoint as checkpoint
 from mmcv.cnn.bricks import DropPath
 
 from mmcls.models.builder import BACKBONES
+from ..utils import LayerScale
 from .base_backbone import BaseBackbone
 
 
@@ -199,8 +200,8 @@ class HorNetBlock(nn.Module):
         scale (float): Scaling parameter of gflayer outputs.
             Default to 1.0.
         drop_path_rate (float): Stochastic depth rate. Defaults to 0.
-        layer_scale_init_value (float): Init value for Layer Scale.
-            Default to 1e-6.
+        use_layer_scale (bool): Whether to use use_layer_scale in HorNet
+             block. Defaults to True.
     """
 
     def __init__(self,
@@ -211,7 +212,7 @@ class HorNetBlock(nn.Module):
                  w=8,
                  scale=1.0,
                  drop_path_rate=0.,
-                 layer_scale_init_value=1e-6):
+                 use_layer_scale=True):
         super().__init__()
         self.out_channels = dim
 
@@ -224,23 +225,17 @@ class HorNetBlock(nn.Module):
         self.act = nn.GELU()
         self.pwconv2 = nn.Linear(4 * dim, dim)
 
-        self.gamma1 = nn.Parameter(
-            layer_scale_init_value * torch.ones(dim),
-            requires_grad=True) if layer_scale_init_value > 0 else None
+        if use_layer_scale:
+            self.gamma1 = LayerScale(dim, data_format='channels_first')
+            self.gamma2 = LayerScale(dim)
+        else:
+            self.gamma1, self.gamma2 = nn.Identity(), nn.Identity()
 
-        self.gamma2 = nn.Parameter(
-            layer_scale_init_value * torch.ones((dim)),
-            requires_grad=True) if layer_scale_init_value > 0 else None
         self.drop_path = DropPath(
             drop_path_rate) if drop_path_rate > 0. else nn.Identity()
 
     def forward(self, x):
-        B, C, H, W = x.shape
-        if self.gamma1 is not None:
-            gamma1 = self.gamma1.view(C, 1, 1)
-        else:
-            gamma1 = 1
-        x = x + self.drop_path(gamma1 * self.gnconv(self.norm1(x)))
+        x = x + self.drop_path(self.gamma1(self.gnconv(self.norm1(x))))
 
         input = x
         x = x.permute(0, 2, 3, 1)  # (N, C, H, W) -> (N, H, W, C)
@@ -248,8 +243,7 @@ class HorNetBlock(nn.Module):
         x = self.pwconv1(x)
         x = self.act(x)
         x = self.pwconv2(x)
-        if self.gamma2 is not None:
-            x = self.gamma2 * x
+        x = self.gamma2(x)
         x = x.permute(0, 3, 1, 2)  # (N, H, W, C) -> (N, C, H, W)
 
         x = input + self.drop_path(x)
@@ -281,8 +275,8 @@ class HorNet(BaseBackbone):
             Defaults to 'tiny'.
         in_channels (int): Number of input image channels. Default to 3.
         drop_path_rate (float): Stochastic depth rate. Default to 0.
-        layer_scale_init_value (float): Init value for Layer Scale.
-            Default to 1e-6.
+        use_layer_scale (bool): Whether to use use_layer_scale in HorNet
+             block. Defaults to True.
         out_indices (Sequence[int]): Output from which stages.
             Default: ``(3, )``.
         frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
@@ -388,7 +382,7 @@ class HorNet(BaseBackbone):
                  arch='tiny',
                  in_channels=3,
                  drop_path_rate=0.,
-                 layer_scale_init_value=1e-6,
+                 use_layer_scale=True,
                  out_indices=(3, ),
                  frozen_stages=-1,
                  with_cp=False,
@@ -450,7 +444,7 @@ class HorNet(BaseBackbone):
                     w=self.arch_settings['ws'][i],
                     scale=self.arch_settings['scale'],
                     drop_path_rate=dpr[cur_block_idx + j],
-                    layer_scale_init_value=layer_scale_init_value)
+                    use_layer_scale=use_layer_scale)
                 for j in range(self.arch_settings['depths'][i])
             ])
             self.stages.append(stage)

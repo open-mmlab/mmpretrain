@@ -59,7 +59,7 @@ class TestHorNet(TestCase):
             'gflayers': ['DWConv', 'DWConv', 'DWConv', 'DWConv'],
             'hs': [14, 14, 14, 14],
             'ws': [8, 8, 8, 8],
-            's': 1 / 3
+            'scale': 1 / 3
         }
         model = HorNet(**cfg)
 
