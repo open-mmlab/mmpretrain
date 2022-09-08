@@ -148,8 +148,7 @@ class gnConv(nn.Module):
     def __init__(self, dim, order=5, gflayer='DWConv', h=14, w=8, scale=1.0):
         super().__init__()
         self.order = order
-        self.dims = [dim // 2**i for i in range(order)]
-        self.dims.reverse()
+        self.dims = [dim // 2**i for i in range(order)].reverse()
         self.proj_in = nn.Conv2d(dim, 2 * dim, 1)
 
         if gflayer == 'DWConv':
@@ -159,24 +158,24 @@ class gnConv(nn.Module):
 
         self.proj_out = nn.Conv2d(dim, dim, 1)
 
-        self.pws = nn.ModuleList([
+        self.projs = nn.ModuleList([
             nn.Conv2d(self.dims[i], self.dims[i + 1], 1)
             for i in range(order - 1)
         ])
 
         self.scale = scale
 
-    def forward(self, x, mask=None, dummy=False):
-        fused_x = self.proj_in(x)
-        pwa, abc = torch.split(fused_x, (self.dims[0], sum(self.dims)), dim=1)
+    def forward(self, x):
+        x = self.proj_in(x)
+        y, x = torch.split(x, (self.dims[0], sum(self.dims)), dim=1)
 
-        dw_abc = self.dwconv(abc) * self.scale
+        x = self.dwconv(x) * self.scale
 
-        dw_list = torch.split(dw_abc, self.dims, dim=1)
-        x = pwa * dw_list[0]
+        dw_list = torch.split(x, self.dims, dim=1)
+        x = y * dw_list[0]
 
         for i in range(self.order - 1):
-            x = self.pws[i](x) * dw_list[i + 1]
+            x = self.projs[i](x) * dw_list[i + 1]
 
         x = self.proj_out(x)
 
