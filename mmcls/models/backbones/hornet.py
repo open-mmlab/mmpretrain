@@ -132,7 +132,7 @@ class gnConv(nn.Module):
     Args:
         dim (int): Number of input channels.
         order (int): Order of gnConv.
-            Default to 5
+            Defaults to 5.
         gflayer (str): Name of gflayer choose from 'DWConv' and
             'GlobalLocalFilter'.
             Default to 'DWConv'
