@@ -417,11 +417,8 @@ class HorNet(BaseBackbone):
         self.with_cp = with_cp
         self.gap_before_final_norm = gap_before_final_norm
 
-        dims = [
-            self.arch_settings['base_dim'], self.arch_settings['base_dim'] * 2,
-            self.arch_settings['base_dim'] * 4,
-            self.arch_settings['base_dim'] * 8
-        ]
+        base_dim = self.arch_settings['base_dim']
+        dims = list(map(lambda x: 2**x * base_dim, range(4)))
 
         self.downsample_layers = nn.ModuleList()
         stem = nn.Sequential(
@@ -436,13 +433,13 @@ class HorNet(BaseBackbone):
             )
             self.downsample_layers.append(downsample_layer)
 
-        self.stages = nn.ModuleList()
-        dp_rates = [
-            x.item() for x in torch.linspace(0, drop_path_rate,
-                                             sum(self.arch_settings['depths']))
-        ]
+        total_depth = sum(self.arch_settings['depths'])
+        dpr = [
+            x.item() for x in torch.linspace(0, drop_path_rate, total_depth)
+        ]  # stochastic depth decay rule
 
-        cur = 0
+        cur_block_idx = 0
+        self.stages = nn.ModuleList()
         for i in range(4):
             stage = nn.Sequential(*[
                 HorNetBlock(
@@ -452,12 +449,12 @@ class HorNet(BaseBackbone):
                     h=self.arch_settings['hs'][i],
                     w=self.arch_settings['ws'][i],
                     scale=self.arch_settings['scale'],
-                    drop_path_rate=dp_rates[cur + j],
+                    drop_path_rate=dpr[cur_block_idx + j],
                     layer_scale_init_value=layer_scale_init_value)
                 for j in range(self.arch_settings['depths'][i])
             ])
             self.stages.append(stage)
-            cur += self.arch_settings['depths'][i]
+            cur_block_idx += self.arch_settings['depths'][i]
 
         norm_layer = partial(
             HorNetLayerNorm, eps=1e-6, data_format='channels_first')
