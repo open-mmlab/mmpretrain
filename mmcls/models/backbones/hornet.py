@@ -140,11 +140,11 @@ class gnConv(nn.Module):
             Default to 14.
         w (int): Width of complex_weight.
             Default to 8.
-        s (float): Scaling parameter of gflayer outputs.
+        scale (float): Scaling parameter of gflayer outputs.
             Default to 1.0.
     """
 
-    def __init__(self, dim, order=5, gflayer='DWConv', h=14, w=8, s=1.0):
+    def __init__(self, dim, order=5, gflayer='DWConv', h=14, w=8, scale=1.0):
         super().__init__()
         self.order = order
         self.dims = [dim // 2**i for i in range(order)]
@@ -163,7 +163,7 @@ class gnConv(nn.Module):
             for i in range(order - 1)
         ])
 
-        self.scale = s
+        self.scale = scale
 
     def forward(self, x, mask=None, dummy=False):
         fused_x = self.proj_in(x)
@@ -196,7 +196,7 @@ class HorNetBlock(nn.Module):
             Default to 14.
         w (int): Width of complex_weight.
             Default to 8.
-        s (float): Scaling parameter of gflayer outputs.
+        scale (float): Scaling parameter of gflayer outputs.
             Default to 1.0.
         drop_path_rate (float): Stochastic depth rate. Defaults to 0.
         layer_scale_init_value (float): Init value for Layer Scale.
@@ -209,7 +209,7 @@ class HorNetBlock(nn.Module):
                  gflayer='DWConv',
                  h=14,
                  w=8,
-                 s=1.0,
+                 scale=1.0,
                  drop_path_rate=0.,
                  layer_scale_init_value=1e-6):
         super().__init__()
@@ -217,7 +217,8 @@ class HorNetBlock(nn.Module):
 
         self.norm1 = HorNetLayerNorm(
             dim, eps=1e-6, data_format='channels_first')
-        self.gnconv = gnConv(dim, order, gflayer, h, w, s)  # depthwise conv
+        self.gnconv = gnConv(dim, order, gflayer, h, w,
+                             scale)  # depthwise conv
         self.norm2 = HorNetLayerNorm(dim, eps=1e-6)
         self.pwconv1 = nn.Linear(dim, 4 * dim)
         self.act = nn.GELU()
@@ -272,7 +273,7 @@ class HorNet(BaseBackbone):
             - **depths** (List[int]): The number of blocks in each stage.
             - **orders** (List[int]): The number of order of gnConv in each
                 stage.
-            - **s** (float): Scaling parameter of gflayer outputs.
+            - **scale** (float): Scaling parameter of gflayer outputs.
             - **hs** (List[int]): The number of h of gnConv in each stage.
             - **ws** (List[int]): The number of w of gnConv in each stage.
             - **gflayers** (List[str]): The name of gflayer of gnConv in each
@@ -302,7 +303,7 @@ class HorNet(BaseBackbone):
                          'gflayers': ['DWConv', 'DWConv', 'DWConv', 'DWConv'],
                          'hs': [14, 14, 14, 14],
                          'ws': [8, 8, 8, 8],
-                         's': 1 / 3}),
+                         'scale': 1 / 3}),
         **dict.fromkeys(['t-gf', 'tiny-gf'],
                         {'base_dim': 64,
                          'depths': [2, 3, 18, 2],
@@ -311,7 +312,7 @@ class HorNet(BaseBackbone):
                                       'GlobalLocalFilter'],
                          'hs': [14, 14, 14, 7],
                          'ws': [8, 8, 8, 4],
-                         's': 1 / 3}),
+                         'scale': 1 / 3}),
         **dict.fromkeys(['s', 'small'],
                         {'base_dim': 96,
                          'depths': [2, 3, 18, 2],
@@ -319,7 +320,7 @@ class HorNet(BaseBackbone):
                          'gflayers': ['DWConv', 'DWConv', 'DWConv', 'DWConv'],
                          'hs': [14, 14, 14, 14],
                          'ws': [8, 8, 8, 8],
-                         's': 1 / 3}),
+                         'scale': 1 / 3}),
         **dict.fromkeys(['s-gf', 'small-gf'],
                         {'base_dim': 96,
                          'depths': [2, 3, 18, 2],
@@ -328,7 +329,7 @@ class HorNet(BaseBackbone):
                                       'GlobalLocalFilter'],
                          'hs': [14, 14, 14, 7],
                          'ws': [8, 8, 8, 4],
-                         's': 1 / 3}),
+                         'scale': 1 / 3}),
         **dict.fromkeys(['b', 'base'],
                         {'base_dim': 128,
                          'depths': [2, 3, 18, 2],
@@ -345,7 +346,7 @@ class HorNet(BaseBackbone):
                                       'GlobalLocalFilter'],
                          'hs': [14, 14, 14, 7],
                          'ws': [8, 8, 8, 4],
-                         's': 1 / 3}),
+                         'scale': 1 / 3}),
         **dict.fromkeys(['b-gf384', 'base-gf384'],
                         {'base_dim': 128,
                          'depths': [2, 3, 18, 2],
@@ -354,7 +355,7 @@ class HorNet(BaseBackbone):
                                       'GlobalLocalFilter'],
                          'hs': [14, 14, 24, 13],
                          'ws': [8, 8, 12, 7],
-                         's': 1 / 3}),
+                         'scale': 1 / 3}),
         **dict.fromkeys(['l', 'large'],
                         {'base_dim': 192,
                          'depths': [2, 3, 18, 2],
@@ -362,7 +363,7 @@ class HorNet(BaseBackbone):
                          'gflayers': ['DWConv', 'DWConv', 'DWConv', 'DWConv'],
                          'hs': [14, 14, 14, 14],
                          'ws': [8, 8, 8, 8],
-                         's': 1 / 3}),
+                         'scale': 1 / 3}),
         **dict.fromkeys(['l-gf', 'large-gf'],
                         {'base_dim': 192,
                          'depths': [2, 3, 18, 2],
@@ -371,7 +372,7 @@ class HorNet(BaseBackbone):
                                       'GlobalLocalFilter'],
                          'hs': [14, 14, 14, 7],
                          'ws': [8, 8, 8, 4],
-                         's': 1 / 3}),
+                         'scale': 1 / 3}),
         **dict.fromkeys(['l-gf384', 'large-gf384'],
                         {'base_dim': 192,
                          'depths': [2, 3, 18, 2],
@@ -380,7 +381,7 @@ class HorNet(BaseBackbone):
                                       'GlobalLocalFilter'],
                          'hs': [14, 14, 24, 13],
                          'ws': [8, 8, 12, 7],
-                         's': 1 / 3}),
+                         'scale': 1 / 3}),
     }  # yapf: disable
 
     def __init__(self,
@@ -405,7 +406,7 @@ class HorNet(BaseBackbone):
             self.arch_settings = self.arch_zoo[arch]
         else:
             essential_keys = {
-                'base_dim', 'depths', 'orders', 'gflayers', 'hs', 'ws', 's'
+                'base_dim', 'depths', 'orders', 'gflayers', 'hs', 'ws', 'scale'
             }
             assert isinstance(arch, dict) and set(arch) == essential_keys, \
                 f'Custom arch needs a dict with keys {essential_keys}'
@@ -450,7 +451,7 @@ class HorNet(BaseBackbone):
                     gflayer=self.arch_settings['gflayers'][i],
                     h=self.arch_settings['hs'][i],
                     w=self.arch_settings['ws'][i],
-                    s=self.arch_settings['s'],
+                    scale=self.arch_settings['scale'],
                     drop_path_rate=dp_rates[cur + j],
                     layer_scale_init_value=layer_scale_init_value)
                 for j in range(self.arch_settings['depths'][i])
