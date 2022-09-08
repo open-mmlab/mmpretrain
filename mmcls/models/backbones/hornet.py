@@ -35,9 +35,9 @@ class HorNetLayerNorm(nn.Module):
 
     Args:
         normalized_shape (int or list or torch.Size): input shape from an
-            expected input of size
+            expected input of size.
         eps (float): a value added to the denominator for numerical stability.
-            Default to 1e-5
+            Default to 1e-5.
         data_format (str): The ordering of the dimensions in the inputs.
             channels_last corresponds to inputs with shape (batch_size, height,
             width, channels) while channels_first corresponds to inputs with
@@ -77,9 +77,9 @@ class GlobalLocalFilter(nn.Module):
     Args:
         dim (int): Number of input channels.
         h (int): Height of complex_weight.
-            Default to 14
+            Default to 14.
         w (int): Width of complex_weight.
-            Default to 8
+            Default to 8.
     """
 
     def __init__(self, dim, h=14, w=8):
@@ -135,13 +135,13 @@ class gnConv(nn.Module):
             Defaults to 5.
         gflayer (str): Name of gflayer choose from 'DWConv' and
             'GlobalLocalFilter'.
-            Default to 'DWConv'
+            Default to 'DWConv'.
         h (int): Height of complex_weight.
-            Default to 14
+            Default to 14.
         w (int): Width of complex_weight.
-            Default to 8
+            Default to 8.
         s (float): Scaling parameter of gflayer outputs.
-            Default to 1.0
+            Default to 1.0.
     """
 
     def __init__(self, dim, order=5, gflayer='DWConv', h=14, w=8, s=1.0):
@@ -188,19 +188,19 @@ class HorNetBlock(nn.Module):
     Args:
         dim (int): Number of input channels.
         order (int): Order of gnConv.
-            Default to 5
+            Default to 5.
         gflayer (str): Name of gflayer choose from 'DWConv' and
             'GlobalLocalFilter'.
-            Default to 'DWConv'
+            Default to 'DWConv'.
         h (int): Height of complex_weight.
-            Default to 14
+            Default to 14.
         w (int): Width of complex_weight.
-            Default to 8
+            Default to 8.
         s (float): Scaling parameter of gflayer outputs.
-            Default to 1.0
+            Default to 1.0.
         drop_path_rate (float): Stochastic depth rate. Defaults to 0.
         layer_scale_init_value (float): Init value for Layer Scale.
-            Default to 1e-6
+            Default to 1e-6.
     """
 
     def __init__(self,
@@ -278,7 +278,7 @@ class HorNet(BaseBackbone):
             - **gflayers** (List[str]): The name of gflayer of gnConv in each
                 stage. Choose from 'DWConv' and 'GlobalLocalFilter'.
             Defaults to 'tiny'.
-        in_chans (int): Number of input image channels. Default to 3
+        in_channels (int): Number of input image channels. Default to 3.
         drop_path_rate (float): Stochastic depth rate. Default to 0.
         layer_scale_init_value (float): Init value for Layer Scale.
             Default to 1e-6.
@@ -385,7 +385,7 @@ class HorNet(BaseBackbone):
 
     def __init__(self,
                  arch='tiny',
-                 in_chans=3,
+                 in_channels=3,
                  drop_path_rate=0.,
                  layer_scale_init_value=1e-6,
                  out_indices=(3, ),
@@ -424,7 +424,7 @@ class HorNet(BaseBackbone):
 
         self.downsample_layers = nn.ModuleList()
         stem = nn.Sequential(
-            nn.Conv2d(in_chans, dims[0], kernel_size=4, stride=4),
+            nn.Conv2d(in_channels, dims[0], kernel_size=4, stride=4),
             HorNetLayerNorm(dims[0], eps=1e-6, data_format='channels_first'))
         self.downsample_layers.append(stem)
         for i in range(3):
