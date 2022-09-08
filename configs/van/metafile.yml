@@ -18,8 +18,8 @@ Collections:
 Models:
   - Name: van-tiny_8xb128_in1k
     Metadata:
-      FLOPs: 4110000      # 4.11M
-      Parameters: 880000000   # 0.88G
+      FLOPs: 880000000   # 0.88G
+      Parameters: 4110000      # 4.11M
     In Collection: Visual-Attention-Network
     Results:
       - Dataset: ImageNet-1k
@@ -31,8 +31,8 @@ Models:
     Config: configs/van/van-tiny_8xb128_in1k.py
   - Name: van-small_8xb128_in1k
     Metadata:
-      FLOPs:  13860000          # 13.86M
-      Parameters: 2520000000    # 2.52G
+      FLOPs:  2520000000    # 2.52G
+      Parameters: 13860000          # 13.86M
     In Collection: Visual-Attention-Network
     Results:
         - Dataset: ImageNet-1k
@@ -44,8 +44,8 @@ Models:
     Config: configs/van/van-small_8xb128_in1k.py
   - Name: van-base_8xb128_in1k
     Metadata:
-      FLOPs: 26580000            # 26.58M
-      Parameters: 5030000000                # 5.03G
+      FLOPs: 5030000000                # 5.03G
+      Parameters: 26580000            # 26.58M
     In Collection: Visual-Attention-Network
     Results:
         - Dataset: ImageNet-1k
@@ -57,8 +57,8 @@ Models:
     Config: configs/van/van-base_8xb128_in1k.py
   - Name: van-large_8xb128_in1k
     Metadata:
-      FLOPs: 44770000              # 44.77 M
-      Parameters: 8990000000              # 8.99G
+      FLOPs: 8990000000              # 8.99G
+      Parameters: 44770000              # 44.77 M
     In Collection: Visual-Attention-Network
     Results:
         - Dataset: ImageNet-1k
@@ -70,8 +70,8 @@ Models:
     Config: configs/van/van-large_8xb128_in1k.py
   - Name: van-b0_8xb128_in1k
     Metadata:
-      FLOPs: 4110000      # 4.11M
-      Parameters: 880000000   # 0.88G
+      FLOPs: 880000000   # 0.88G
+      Parameters: 4110000      # 4.11M
     In Collection: Visual-Attention-Network
     Results:
       - Dataset: ImageNet-1k
@@ -83,8 +83,8 @@ Models:
     Config: configs/van/van-b0_8xb128_in1k.py
   - Name: van-b1_8xb128_in1k
     Metadata:
-      FLOPs:  13860000          # 13.86M
-      Parameters: 2520000000    # 2.52G
+      FLOPs:  2520000000    # 2.52G
+      Parameters: 13860000          # 13.86M
     In Collection: Visual-Attention-Network
     Results:
         - Dataset: ImageNet-1k
@@ -96,8 +96,8 @@ Models:
     Config: configs/van/van-b1_8xb128_in1k.py
   - Name: van-b2_8xb128_in1k
     Metadata:
-      FLOPs: 26580000            # 26.58M
-      Parameters: 5030000000                # 5.03G
+      FLOPs: 5030000000                # 5.03G
+      Parameters: 26580000            # 26.58M
     In Collection: Visual-Attention-Network
     Results:
         - Dataset: ImageNet-1k
@@ -109,8 +109,8 @@ Models:
     Config: configs/van/van-b2_8xb128_in1k.py
   - Name: van-b3_8xb128_in1k
     Metadata:
-      FLOPs: 44770000              # 44.77 M
-      Parameters: 8990000000              # 8.99G
+      FLOPs: 8990000000              # 8.99G
+      Parameters: 44770000              # 44.77 M
     In Collection: Visual-Attention-Network
     Results:
         - Dataset: ImageNet-1k
@@ -122,8 +122,8 @@ Models:
     Config: configs/van/van-b3_8xb128_in1k.py
   - Name: van-b4_8xb128_in1k
     Metadata:
-      FLOPs: 60280000              # 60.28 M
-      Parameters: 12220000000              # 12.22G
+      FLOPs: 12220000000              # 12.22G
+      Parameters: 60280000              # 60.28 M
     In Collection: Visual-Attention-Network
     Results:
         - Dataset: ImageNet-1k
