@@ -304,6 +304,22 @@ class VAN(BaseBackbone):
         (1, 256, 7, 7)
     """
     arch_zoo = {
+        **dict.fromkeys(['t', 'tiny'],
+                        {'embed_dims': [32, 64, 160, 256],
+                         'depths': [3, 3, 5, 2],
+                         'ffn_ratios': [8, 8, 4, 4]}),
+        **dict.fromkeys(['s', 'small'],
+                        {'embed_dims': [64, 128, 320, 512],
+                         'depths': [2, 2, 4, 2],
+                         'ffn_ratios': [8, 8, 4, 4]}),
+        **dict.fromkeys(['b', 'base'],
+                        {'embed_dims': [64, 128, 320, 512],
+                         'depths': [3, 3, 12, 3],
+                         'ffn_ratios': [8, 8, 4, 4]}),
+        **dict.fromkeys(['l', 'large'],
+                        {'embed_dims': [64, 128, 320, 512],
+                         'depths': [3, 5, 27, 3],
+                         'ffn_ratios': [8, 8, 4, 4]}),
         **dict.fromkeys(['b0'],
                         {'embed_dims': [32, 64, 160, 256],
                          'depths': [3, 3, 5, 2],

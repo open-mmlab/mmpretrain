@@ -23,7 +23,7 @@ def check_norm_state(modules, train_state):
 class TestVAN(TestCase):
 
     def setUp(self):
-        self.cfg = dict(arch='b0', drop_path_rate=0.1)
+        self.cfg = dict(arch='t', drop_path_rate=0.1)
 
     def test_arch(self):
         # Test invalid default arch
