@@ -5,6 +5,7 @@ try:
 except ImportError:
     fft = None
 
+import copy
 from functools import partial
 
 import torch
@@ -18,12 +19,12 @@ from ..utils import LayerScale
 from .base_backbone import BaseBackbone
 
 
-def get_dwconv(dim, kernel, bias):
+def get_dwconv(dim, kernel_size, bias=True):
     return nn.Conv2d(
         dim,
         dim,
-        kernel_size=kernel,
-        padding=(kernel - 1) // 2,
+        kernel_size=kernel_size,
+        padding=(kernel_size - 1) // 2,
         bias=bias,
         groups=dim)
 
@@ -134,27 +135,31 @@ class gnConv(nn.Module):
         dim (int): Number of input channels.
         order (int): Order of gnConv.
             Defaults to 5.
-        gflayer (str): Name of gflayer choose from 'DWConv' and
-            'GlobalLocalFilter'.
-            Default to 'DWConv'.
-        h (int): Height of complex_weight.
-            Default to 14.
-        w (int): Width of complex_weight.
-            Default to 8.
+        dw_cfg (dict): The Config for dw conv.
+            Default to dict(type='DW', kernel_size=7).
         scale (float): Scaling parameter of gflayer outputs.
             Default to 1.0.
     """
 
-    def __init__(self, dim, order=5, gflayer='DWConv', h=14, w=8, scale=1.0):
+    def __init__(self,
+                 dim,
+                 order=5,
+                 dw_cfg=dict(type='DW', kernel_size=7),
+                 scale=1.0):
         super().__init__()
         self.order = order
-        self.dims = [dim // 2**i for i in range(order)].reverse()
+        self.dims = [dim // 2**i for i in range(order)]
+        self.dims.reverse()
         self.proj_in = nn.Conv2d(dim, 2 * dim, 1)
 
-        if gflayer == 'DWConv':
-            self.dwconv = get_dwconv(sum(self.dims), 7, True)
-        elif gflayer == 'GlobalLocalFilter':
-            self.dwconv = GlobalLocalFilter(sum(self.dims), h=h, w=w)
+        cfg = copy.deepcopy(dw_cfg)
+        dw_type = cfg.pop('type')
+        assert dw_type in ['DW', 'GF'],\
+            'dw_type should be `DW` or `GF`'
+        if dw_type == 'DW':
+            self.dwconv = get_dwconv(sum(self.dims), **cfg)
+        elif dw_type == 'GF':
+            self.dwconv = GlobalLocalFilter(sum(self.dims), **cfg)
 
         self.proj_out = nn.Conv2d(dim, dim, 1)
 
@@ -189,13 +194,8 @@ class HorNetBlock(nn.Module):
         dim (int): Number of input channels.
         order (int): Order of gnConv.
             Default to 5.
-        gflayer (str): Name of gflayer choose from 'DWConv' and
-            'GlobalLocalFilter'.
-            Default to 'DWConv'.
-        h (int): Height of complex_weight.
-            Default to 14.
-        w (int): Width of complex_weight.
-            Default to 8.
+        dw_cfg (dict): The Config for dw conv.
+            Default to dict(type='DW', kernel_size=7).
         scale (float): Scaling parameter of gflayer outputs.
             Default to 1.0.
         drop_path_rate (float): Stochastic depth rate. Defaults to 0.
@@ -206,9 +206,7 @@ class HorNetBlock(nn.Module):
     def __init__(self,
                  dim,
                  order=5,
-                 gflayer='DWConv',
-                 h=14,
-                 w=8,
+                 dw_cfg=dict(type='DW', kernel_size=7),
                  scale=1.0,
                  drop_path_rate=0.,
                  use_layer_scale=True):
@@ -217,8 +215,7 @@ class HorNetBlock(nn.Module):
 
         self.norm1 = HorNetLayerNorm(
             dim, eps=1e-6, data_format='channels_first')
-        self.gnconv = gnConv(dim, order, gflayer, h, w,
-                             scale)  # depthwise conv
+        self.gnconv = gnConv(dim, order, dw_cfg, scale)  # depthwise conv
         self.norm2 = HorNetLayerNorm(dim, eps=1e-6)
         self.pwconv1 = nn.Linear(dim, 4 * dim)
         self.act = nn.GELU()
@@ -269,8 +266,7 @@ class HorNet(BaseBackbone):
             - **scale** (float): Scaling parameter of gflayer outputs.
             - **hs** (List[int]): The number of h of gnConv in each stage.
             - **ws** (List[int]): The number of w of gnConv in each stage.
-            - **gflayers** (List[str]): The name of gflayer of gnConv in each
-                stage. Choose from 'DWConv' and 'GlobalLocalFilter'.
+            - **dw_cfg** (List[dict]): The Config for dw conv.
             Defaults to 'tiny'.
         in_channels (int): Number of input image channels. Default to 3.
         drop_path_rate (float): Stochastic depth rate. Default to 0.
@@ -293,87 +289,91 @@ class HorNet(BaseBackbone):
                         {'base_dim': 64,
                          'depths': [2, 3, 18, 2],
                          'orders': [2, 3, 4, 5],
-                         'gflayers': ['DWConv', 'DWConv', 'DWConv', 'DWConv'],
-                         'hs': [14, 14, 14, 14],
-                         'ws': [8, 8, 8, 8],
+                         'dw_cfg': [dict(type='DW', kernel_size=7)] * 4,
                          'scale': 1 / 3}),
         **dict.fromkeys(['t-gf', 'tiny-gf'],
                         {'base_dim': 64,
                          'depths': [2, 3, 18, 2],
                          'orders': [2, 3, 4, 5],
-                         'gflayers': ['DWConv', 'DWConv', 'GlobalLocalFilter',
-                                      'GlobalLocalFilter'],
-                         'hs': [14, 14, 14, 7],
-                         'ws': [8, 8, 8, 4],
+                         'dw_cfg': [
+                             dict(type='DW', kernel_size=7),
+                             dict(type='DW', kernel_size=7),
+                             dict(type='GF', h=14, w=8),
+                             dict(type='GF', h=7, w=4)
+                         ],
                          'scale': 1 / 3}),
         **dict.fromkeys(['s', 'small'],
                         {'base_dim': 96,
                          'depths': [2, 3, 18, 2],
                          'orders': [2, 3, 4, 5],
-                         'gflayers': ['DWConv', 'DWConv', 'DWConv', 'DWConv'],
-                         'hs': [14, 14, 14, 14],
-                         'ws': [8, 8, 8, 8],
+                         'dw_cfg': [dict(type='DW', kernel_size=7)] * 4,
                          'scale': 1 / 3}),
         **dict.fromkeys(['s-gf', 'small-gf'],
                         {'base_dim': 96,
                          'depths': [2, 3, 18, 2],
                          'orders': [2, 3, 4, 5],
-                         'gflayers': ['DWConv', 'DWConv', 'GlobalLocalFilter',
-                                      'GlobalLocalFilter'],
-                         'hs': [14, 14, 14, 7],
-                         'ws': [8, 8, 8, 4],
+                         'dw_cfg': [
+                             dict(type='DW', kernel_size=7),
+                             dict(type='DW', kernel_size=7),
+                             dict(type='GF', h=14, w=8),
+                             dict(type='GF', h=7, w=4)
+                         ],
                          'scale': 1 / 3}),
         **dict.fromkeys(['b', 'base'],
                         {'base_dim': 128,
                          'depths': [2, 3, 18, 2],
                          'orders': [2, 3, 4, 5],
-                         'gflayers': ['DWConv', 'DWConv', 'DWConv', 'DWConv'],
-                         'hs': [14, 14, 14, 14],
-                         'ws': [8, 8, 8, 8],
+                         'dw_cfg': [dict(type='DW', kernel_size=7)] * 4,
                          's': 1 / 3}),
         **dict.fromkeys(['b-gf', 'base-gf'],
                         {'base_dim': 128,
                          'depths': [2, 3, 18, 2],
                          'orders': [2, 3, 4, 5],
-                         'gflayers': ['DWConv', 'DWConv', 'GlobalLocalFilter',
-                                      'GlobalLocalFilter'],
-                         'hs': [14, 14, 14, 7],
-                         'ws': [8, 8, 8, 4],
+                         'dw_cfg': [
+                             dict(type='DW', kernel_size=7),
+                             dict(type='DW', kernel_size=7),
+                             dict(type='GF', h=14, w=8),
+                             dict(type='GF', h=7, w=4)
+                         ],
                          'scale': 1 / 3}),
         **dict.fromkeys(['b-gf384', 'base-gf384'],
                         {'base_dim': 128,
                          'depths': [2, 3, 18, 2],
                          'orders': [2, 3, 4, 5],
-                         'gflayers': ['DWConv', 'DWConv', 'GlobalLocalFilter',
-                                      'GlobalLocalFilter'],
-                         'hs': [14, 14, 24, 13],
-                         'ws': [8, 8, 12, 7],
+                         'dw_cfg': [
+                             dict(type='DW', kernel_size=7),
+                             dict(type='DW', kernel_size=7),
+                             dict(type='GF', h=24, w=12),
+                             dict(type='GF', h=13, w=7)
+                         ],
                          'scale': 1 / 3}),
         **dict.fromkeys(['l', 'large'],
                         {'base_dim': 192,
                          'depths': [2, 3, 18, 2],
                          'orders': [2, 3, 4, 5],
-                         'gflayers': ['DWConv', 'DWConv', 'DWConv', 'DWConv'],
-                         'hs': [14, 14, 14, 14],
-                         'ws': [8, 8, 8, 8],
+                         'dw_cfg': [dict(type='DW', kernel_size=7)] * 4,
                          'scale': 1 / 3}),
         **dict.fromkeys(['l-gf', 'large-gf'],
                         {'base_dim': 192,
                          'depths': [2, 3, 18, 2],
                          'orders': [2, 3, 4, 5],
-                         'gflayers': ['DWConv', 'DWConv', 'GlobalLocalFilter',
-                                      'GlobalLocalFilter'],
-                         'hs': [14, 14, 14, 7],
-                         'ws': [8, 8, 8, 4],
+                         'dw_cfg': [
+                             dict(type='DW', kernel_size=7),
+                             dict(type='DW', kernel_size=7),
+                             dict(type='GF', h=14, w=8),
+                             dict(type='GF', h=7, w=4)
+                         ],
                          'scale': 1 / 3}),
         **dict.fromkeys(['l-gf384', 'large-gf384'],
                         {'base_dim': 192,
                          'depths': [2, 3, 18, 2],
                          'orders': [2, 3, 4, 5],
-                         'gflayers': ['DWConv', 'DWConv', 'GlobalLocalFilter',
-                                      'GlobalLocalFilter'],
-                         'hs': [14, 14, 24, 13],
-                         'ws': [8, 8, 12, 7],
+                         'dw_cfg': [
+                             dict(type='DW', kernel_size=7),
+                             dict(type='DW', kernel_size=7),
+                             dict(type='GF', h=24, w=12),
+                             dict(type='GF', h=13, w=7)
+                         ],
                          'scale': 1 / 3}),
     }  # yapf: disable
 
@@ -399,7 +399,7 @@ class HorNet(BaseBackbone):
             self.arch_settings = self.arch_zoo[arch]
         else:
             essential_keys = {
-                'base_dim', 'depths', 'orders', 'gflayers', 'hs', 'ws', 'scale'
+                'base_dim', 'depths', 'orders', 'dw_cfg', 'scale'
             }
             assert isinstance(arch, dict) and set(arch) == essential_keys, \
                 f'Custom arch needs a dict with keys {essential_keys}'
@@ -438,9 +438,7 @@ class HorNet(BaseBackbone):
                 HorNetBlock(
                     dim=dims[i],
                     order=self.arch_settings['orders'][i],
-                    gflayer=self.arch_settings['gflayers'][i],
-                    h=self.arch_settings['hs'][i],
-                    w=self.arch_settings['ws'][i],
+                    dw_cfg=self.arch_settings['dw_cfg'][i],
                     scale=self.arch_settings['scale'],
                     drop_path_rate=dpr[cur_block_idx + j],
                     use_layer_scale=use_layer_scale)

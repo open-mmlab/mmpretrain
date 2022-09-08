@@ -53,13 +53,19 @@ class TestHorNet(TestCase):
         depths = [2, 3, 18, 2]
         embed_dims = [base_dim, base_dim * 2, base_dim * 4, base_dim * 8]
         cfg['arch'] = {
-            'base_dim': base_dim,
-            'depths': depths,
+            'base_dim':
+            base_dim,
+            'depths':
+            depths,
             'orders': [2, 3, 4, 5],
-            'gflayers': ['DWConv', 'DWConv', 'DWConv', 'DWConv'],
-            'hs': [14, 14, 14, 14],
-            'ws': [8, 8, 8, 8],
-            'scale': 1 / 3
+            'dw_cfg': [
+                dict(type='DW', kernel_size=7),
+                dict(type='DW', kernel_size=7),
+                dict(type='GF', h=14, w=8),
+                dict(type='GF', h=7, w=4)
+            ],
+            'scale':
+            1 / 3
         }
         model = HorNet(**cfg)
 
