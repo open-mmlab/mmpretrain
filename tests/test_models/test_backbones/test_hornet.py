@@ -64,8 +64,6 @@ class TestHorNet(TestCase):
                 dict(type='GF', h=14, w=8),
                 dict(type='GF', h=7, w=4)
             ],
-            'scale':
-            1 / 3
         }
         model = HorNet(**cfg)
 

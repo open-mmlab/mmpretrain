@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+# Adapted from official impl at https://github.com/raoyongming/HorNet.
 try:
     import torch.fft
     fft = True
@@ -7,6 +8,7 @@ except ImportError:
 
 import copy
 from functools import partial
+from typing import Sequence
 
 import torch
 import torch.nn as nn
@@ -20,6 +22,7 @@ from .base_backbone import BaseBackbone
 
 
 def get_dwconv(dim, kernel_size, bias=True):
+    """build a pepth-wise convolution."""
     return nn.Conv2d(
         dim,
         dim,
@@ -39,12 +42,12 @@ class HorNetLayerNorm(nn.Module):
         normalized_shape (int or list or torch.Size): input shape from an
             expected input of size.
         eps (float): a value added to the denominator for numerical stability.
-            Default to 1e-5.
+            Defaults to 1e-5.
         data_format (str): The ordering of the dimensions in the inputs.
             channels_last corresponds to inputs with shape (batch_size, height,
             width, channels) while channels_first corresponds to inputs with
             shape (batch_size, channels, height, width).
-            Default to 'channels_last'.
+            Defaults to 'channels_last'.
     """
 
     def __init__(self,
@@ -79,9 +82,9 @@ class GlobalLocalFilter(nn.Module):
     Args:
         dim (int): Number of input channels.
         h (int): Height of complex_weight.
-            Default to 14.
+            Defaults to 14.
         w (int): Width of complex_weight.
-            Default to 8.
+            Defaults to 8.
     """
 
     def __init__(self, dim, h=14, w=8):
@@ -136,9 +139,9 @@ class gnConv(nn.Module):
         order (int): Order of gnConv.
             Defaults to 5.
         dw_cfg (dict): The Config for dw conv.
-            Default to dict(type='DW', kernel_size=7).
+            Defaults to ``dict(type='DW', kernel_size=7)``.
         scale (float): Scaling parameter of gflayer outputs.
-            Default to 1.0.
+            Defaults to 1.0.
     """
 
     def __init__(self,
@@ -193,11 +196,11 @@ class HorNetBlock(nn.Module):
     Args:
         dim (int): Number of input channels.
         order (int): Order of gnConv.
-            Default to 5.
+            Defaults to 5.
         dw_cfg (dict): The Config for dw conv.
-            Default to dict(type='DW', kernel_size=7).
+            Defaults to ``dict(type='DW', kernel_size=7)``.
         scale (float): Scaling parameter of gflayer outputs.
-            Default to 1.0.
+            Defaults to 1.0.
         drop_path_rate (float): Stochastic depth rate. Defaults to 0.
         use_layer_scale (bool): Whether to use use_layer_scale in HorNet
              block. Defaults to True.
@@ -215,7 +218,7 @@ class HorNetBlock(nn.Module):
 
         self.norm1 = HorNetLayerNorm(
             dim, eps=1e-6, data_format='channels_first')
-        self.gnconv = gnConv(dim, order, dw_cfg, scale)  # depthwise conv
+        self.gnconv = gnConv(dim, order, dw_cfg, scale)
         self.norm2 = HorNetLayerNorm(dim, eps=1e-6)
         self.pwconv1 = nn.Linear(dim, 4 * dim)
         self.act = nn.GELU()
@@ -263,13 +266,12 @@ class HorNet(BaseBackbone):
             - **depths** (List[int]): The number of blocks in each stage.
             - **orders** (List[int]): The number of order of gnConv in each
                 stage.
-            - **scale** (float): Scaling parameter of gflayer outputs.
-            - **hs** (List[int]): The number of h of gnConv in each stage.
-            - **ws** (List[int]): The number of w of gnConv in each stage.
             - **dw_cfg** (List[dict]): The Config for dw conv.
+
             Defaults to 'tiny'.
-        in_channels (int): Number of input image channels. Default to 3.
-        drop_path_rate (float): Stochastic depth rate. Default to 0.
+        in_channels (int): Number of input image channels. Defaults to 3.
+        drop_path_rate (float): Stochastic depth rate. Defaults to 0.
+        scale (float): Scaling parameter of gflayer outputs. Defaults to 1/3.
         use_layer_scale (bool): Whether to use use_layer_scale in HorNet
              block. Defaults to True.
         out_indices (Sequence[int]): Output from which stages.
@@ -289,8 +291,7 @@ class HorNet(BaseBackbone):
                         {'base_dim': 64,
                          'depths': [2, 3, 18, 2],
                          'orders': [2, 3, 4, 5],
-                         'dw_cfg': [dict(type='DW', kernel_size=7)] * 4,
-                         'scale': 1 / 3}),
+                         'dw_cfg': [dict(type='DW', kernel_size=7)] * 4}),
         **dict.fromkeys(['t-gf', 'tiny-gf'],
                         {'base_dim': 64,
                          'depths': [2, 3, 18, 2],
@@ -299,15 +300,12 @@ class HorNet(BaseBackbone):
                              dict(type='DW', kernel_size=7),
                              dict(type='DW', kernel_size=7),
                              dict(type='GF', h=14, w=8),
-                             dict(type='GF', h=7, w=4)
-                         ],
-                         'scale': 1 / 3}),
+                             dict(type='GF', h=7, w=4)]}),
         **dict.fromkeys(['s', 'small'],
                         {'base_dim': 96,
                          'depths': [2, 3, 18, 2],
                          'orders': [2, 3, 4, 5],
-                         'dw_cfg': [dict(type='DW', kernel_size=7)] * 4,
-                         'scale': 1 / 3}),
+                         'dw_cfg': [dict(type='DW', kernel_size=7)] * 4}),
         **dict.fromkeys(['s-gf', 'small-gf'],
                         {'base_dim': 96,
                          'depths': [2, 3, 18, 2],
@@ -316,15 +314,12 @@ class HorNet(BaseBackbone):
                              dict(type='DW', kernel_size=7),
                              dict(type='DW', kernel_size=7),
                              dict(type='GF', h=14, w=8),
-                             dict(type='GF', h=7, w=4)
-                         ],
-                         'scale': 1 / 3}),
+                             dict(type='GF', h=7, w=4)]}),
         **dict.fromkeys(['b', 'base'],
                         {'base_dim': 128,
                          'depths': [2, 3, 18, 2],
                          'orders': [2, 3, 4, 5],
-                         'dw_cfg': [dict(type='DW', kernel_size=7)] * 4,
-                         's': 1 / 3}),
+                         'dw_cfg': [dict(type='DW', kernel_size=7)] * 4}),
         **dict.fromkeys(['b-gf', 'base-gf'],
                         {'base_dim': 128,
                          'depths': [2, 3, 18, 2],
@@ -333,9 +328,7 @@ class HorNet(BaseBackbone):
                              dict(type='DW', kernel_size=7),
                              dict(type='DW', kernel_size=7),
                              dict(type='GF', h=14, w=8),
-                             dict(type='GF', h=7, w=4)
-                         ],
-                         'scale': 1 / 3}),
+                             dict(type='GF', h=7, w=4)]}),
         **dict.fromkeys(['b-gf384', 'base-gf384'],
                         {'base_dim': 128,
                          'depths': [2, 3, 18, 2],
@@ -344,15 +337,12 @@ class HorNet(BaseBackbone):
                              dict(type='DW', kernel_size=7),
                              dict(type='DW', kernel_size=7),
                              dict(type='GF', h=24, w=12),
-                             dict(type='GF', h=13, w=7)
-                         ],
-                         'scale': 1 / 3}),
+                             dict(type='GF', h=13, w=7)]}),
         **dict.fromkeys(['l', 'large'],
                         {'base_dim': 192,
                          'depths': [2, 3, 18, 2],
                          'orders': [2, 3, 4, 5],
-                         'dw_cfg': [dict(type='DW', kernel_size=7)] * 4,
-                         'scale': 1 / 3}),
+                         'dw_cfg': [dict(type='DW', kernel_size=7)] * 4}),
         **dict.fromkeys(['l-gf', 'large-gf'],
                         {'base_dim': 192,
                          'depths': [2, 3, 18, 2],
@@ -361,9 +351,7 @@ class HorNet(BaseBackbone):
                              dict(type='DW', kernel_size=7),
                              dict(type='DW', kernel_size=7),
                              dict(type='GF', h=14, w=8),
-                             dict(type='GF', h=7, w=4)
-                         ],
-                         'scale': 1 / 3}),
+                             dict(type='GF', h=7, w=4)]}),
         **dict.fromkeys(['l-gf384', 'large-gf384'],
                         {'base_dim': 192,
                          'depths': [2, 3, 18, 2],
@@ -372,15 +360,14 @@ class HorNet(BaseBackbone):
                              dict(type='DW', kernel_size=7),
                              dict(type='DW', kernel_size=7),
                              dict(type='GF', h=24, w=12),
-                             dict(type='GF', h=13, w=7)
-                         ],
-                         'scale': 1 / 3}),
+                             dict(type='GF', h=13, w=7)]}),
     }  # yapf: disable
 
     def __init__(self,
                  arch='tiny',
                  in_channels=3,
                  drop_path_rate=0.,
+                 scale=1 / 3,
                  use_layer_scale=True,
                  out_indices=(3, ),
                  frozen_stages=-1,
@@ -398,13 +385,12 @@ class HorNet(BaseBackbone):
                 f'Arch {arch} is not in default archs {set(self.arch_zoo)}'
             self.arch_settings = self.arch_zoo[arch]
         else:
-            essential_keys = {
-                'base_dim', 'depths', 'orders', 'dw_cfg', 'scale'
-            }
+            essential_keys = {'base_dim', 'depths', 'orders', 'dw_cfg'}
             assert isinstance(arch, dict) and set(arch) == essential_keys, \
                 f'Custom arch needs a dict with keys {essential_keys}'
             self.arch_settings = arch
 
+        self.scale = scale
         self.out_indices = out_indices
         self.frozen_stages = frozen_stages
         self.with_cp = with_cp
@@ -439,13 +425,26 @@ class HorNet(BaseBackbone):
                     dim=dims[i],
                     order=self.arch_settings['orders'][i],
                     dw_cfg=self.arch_settings['dw_cfg'][i],
-                    scale=self.arch_settings['scale'],
+                    scale=self.scale,
                     drop_path_rate=dpr[cur_block_idx + j],
                     use_layer_scale=use_layer_scale)
                 for j in range(self.arch_settings['depths'][i])
             ])
             self.stages.append(stage)
             cur_block_idx += self.arch_settings['depths'][i]
+
+        if isinstance(out_indices, int):
+            out_indices = [out_indices]
+        assert isinstance(out_indices, Sequence), \
+            f'"out_indices" must by a sequence or int, ' \
+            f'get {type(out_indices)} instead.'
+        out_indices = list(out_indices)
+        for i, index in enumerate(out_indices):
+            if index < 0:
+                out_indices[i] = len(self.stages) + index
+            assert 0 <= out_indices[i] <= len(self.stages), \
+                f'Invalid out_indices {index}.'
+        self.out_indices = out_indices
 
         norm_layer = partial(
             HorNetLayerNorm, eps=1e-6, data_format='channels_first')
