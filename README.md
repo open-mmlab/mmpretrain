@@ -144,6 +144,7 @@ Results and models are available in the [model zoo](https://mmclassification.rea
 - [x] [PoolFormer](https://github.com/open-mmlab/mmclassification/tree/master/configs/poolformer)
 - [x] [MViT](https://github.com/open-mmlab/mmclassification/tree/master/configs/mvit)
 - [x] [EfficientFormer](https://github.com/open-mmlab/mmclassification/tree/master/configs/efficientformer)
+- [x] [HorNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/hornet)
 
 </details>
 
