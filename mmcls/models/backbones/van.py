@@ -264,8 +264,8 @@ class VAN(BaseBackbone):
 
     Args:
         arch (str | dict): Visual Attention Network architecture.
-            If use string, choose from 'tiny', 'small', 'base' and 'large'.
-            If use dict, it should have below keys:
+            If use string, choose from 'b0', 'b1', b2', b3' and etc.,
+            if use dict, it should have below keys:
 
             - **embed_dims** (List[int]): The dimensions of embedding.
             - **depths** (List[int]): The number of blocks in each stage.
@@ -304,35 +304,19 @@ class VAN(BaseBackbone):
         (1, 256, 7, 7)
     """
     arch_zoo = {
-        **dict.fromkeys(['t', 'tiny'],
+        **dict.fromkeys(['b0', 't', 'tiny'],
                         {'embed_dims': [32, 64, 160, 256],
                          'depths': [3, 3, 5, 2],
                          'ffn_ratios': [8, 8, 4, 4]}),
-        **dict.fromkeys(['s', 'small'],
+        **dict.fromkeys(['b1', 's', 'small'],
                         {'embed_dims': [64, 128, 320, 512],
                          'depths': [2, 2, 4, 2],
                          'ffn_ratios': [8, 8, 4, 4]}),
-        **dict.fromkeys(['b', 'base'],
+        **dict.fromkeys(['b2', 'b', 'base'],
                         {'embed_dims': [64, 128, 320, 512],
                          'depths': [3, 3, 12, 3],
                          'ffn_ratios': [8, 8, 4, 4]}),
-        **dict.fromkeys(['l', 'large'],
-                        {'embed_dims': [64, 128, 320, 512],
-                         'depths': [3, 5, 27, 3],
-                         'ffn_ratios': [8, 8, 4, 4]}),
-        **dict.fromkeys(['b0'],
-                        {'embed_dims': [32, 64, 160, 256],
-                         'depths': [3, 3, 5, 2],
-                         'ffn_ratios': [8, 8, 4, 4]}),
-        **dict.fromkeys(['b1'],
-                        {'embed_dims': [64, 128, 320, 512],
-                         'depths': [2, 2, 4, 2],
-                         'ffn_ratios': [8, 8, 4, 4]}),
-        **dict.fromkeys(['b2'],
-                        {'embed_dims': [64, 128, 320, 512],
-                         'depths': [3, 3, 12, 3],
-                         'ffn_ratios': [8, 8, 4, 4]}),
-        **dict.fromkeys(['b3'],
+        **dict.fromkeys(['b3', 'l', 'large'],
                         {'embed_dims': [64, 128, 320, 512],
                          'depths': [3, 5, 27, 3],
                          'ffn_ratios': [8, 8, 4, 4]}),
