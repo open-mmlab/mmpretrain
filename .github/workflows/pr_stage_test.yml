@@ -82,6 +82,6 @@ jobs:
           pip install -r requirements.txt
       - name: Build and install
         run: pip install -e .
-      - name: Run unittests and generate coverage report
+      - name: Run unittests
         run: |
-          pytest tests/ -k 'not timm'
+          pytest tests/ -k 'not timm' --ignore tests/test_models/test_backbones
