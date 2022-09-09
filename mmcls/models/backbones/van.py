@@ -295,8 +295,7 @@ class VAN(BaseBackbone):
     Examples:
         >>> from mmcls.models import VAN
         >>> import torch
-        >>> cfg = dict(arch='tiny')
-        >>> model = VAN(**cfg)
+        >>> model = VAN(arch='b0')
         >>> inputs = torch.rand(1, 3, 224, 224)
         >>> outputs = model(inputs)
         >>> for out in outputs:
