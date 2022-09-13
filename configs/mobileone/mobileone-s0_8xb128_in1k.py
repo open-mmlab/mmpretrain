@@ -1,6 +1,4 @@
-_base_ = [
-    '../_base_/default_runtime.py'
-]
+_base_ = ['../_base_/default_runtime.py']
 
 # dataset settings
 dataset_type = 'ImageNet'
@@ -17,21 +15,14 @@ bgr_std = data_preprocessor['std'][::-1]
 
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(
-        type='RandomResizedCrop',
-        scale=224,
-        backend='pillow'),
+    dict(type='RandomResizedCrop', scale=224, backend='pillow'),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(type='PackClsInputs'),
 ]
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(
-        type='ResizeEdge',
-        scale=236,
-        edge='short',
-        backend='pillow'),
+    dict(type='ResizeEdge', scale=236, edge='short', backend='pillow'),
     dict(type='CenterCrop', crop_size=224),
     dict(type='PackClsInputs')
 ]
@@ -92,13 +83,14 @@ param_scheduler = [
         by_epoch=True,
         begin=5,
         end=300),
-    dict(type='LinearParamScheduler',
-         param_name='weight_decay',  # 调度 `optimizer.param_groups` 中名为 'weight_decay' 的变量
-         start_factor=1,
-         end_factor=0.1,
-         by_epoch=True,
-         begin=0,
-         end=300)
+    dict(
+        type='LinearParamScheduler',
+        param_name='weight_decay',
+        start_factor=1,
+        end_factor=0.1,
+        by_epoch=True,
+        begin=0,
+        end=300)
 ]
 
 # train, val, test setting
@@ -127,14 +119,12 @@ model = dict(
             label_smooth_val=0.1,
             mode='original',
         ),
-        topk=(1, 5),),
+        topk=(1, 5),
+    ),
     train_cfg=dict(augments=[
         dict(type='Mixup', alpha=0.1, num_classes=1000),
         dict(type='CutMix', alpha=1.0, num_classes=1000)
-    ])
-)
-
-
+    ]))
 
 # runtime setting
-custom_hooks = [dict(type='EMAHook', momentum=4e-5, priority='ABOVE_NORMAL')]
+custom_hooks = [dict(type='EMAHook', momentum=5e-4, priority='ABOVE_NORMAL')]
