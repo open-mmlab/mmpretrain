@@ -1,6 +1,6 @@
 # 使用现有模型推理
 
-MMClassification 在 [Model Zoo](../model_zoo.md) 中提供了用于分类的预训练模型。
+MMClassification 在 [Model Zoo](../modelzoo_statistics.md) 中提供了用于分类的预训练模型。
 本说明将展示**如何使用现有模型对给定图像进行推理**。
 
 至于如何在标准数据集上测试现有模型，请看这个[指南](./train_test.md#测试)

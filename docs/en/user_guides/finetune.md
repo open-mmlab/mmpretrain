@@ -3,7 +3,7 @@
 In most scenarios, we want to apply a model on new datasets without training from scratch, which might possibly introduce extra uncertainties about the model convergency and therefore, is time-consuming.
 The common sense is to learn from previous models trained on large dataset, which can hopefully provide better knowledge than a random beginner. Roughly speaking, this process is as known as fine-tuning.
 Classification models pre-trained on the ImageNet dataset have been demonstrated to be effective for other datasets and other downstream tasks.
-Hence, this tutorial provides instructions for users to use the models provided in the [Model Zoo](../model_zoo.md) for other datasets to obtain better performance.
+Hence, this tutorial provides instructions for users to use the models provided in the [Model Zoo](../modelzoo_statistics.md) for other datasets to obtain better performance.
 
 There are two steps to fine-tune a model on a new dataset.
 

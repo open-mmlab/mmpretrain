@@ -2,7 +2,7 @@
 
 To manage various configurations in a deep-learning experiment, we use a kind of config file to record all of
 these configurations. This config system has a modular and inheritance design, and more details can be found in
-[the tutorial in MMEngine](TODO).
+{external+mmengine:doc}`the tutorial in MMEngine <tutorials/config>`.
 
 Usually, we use python files as config file. All configuration files are placed under the [`configs`](https://github.com/open-mmlab/mmclassification/tree/1.x/configs) folder, and the directory structure is as follows:
 
@@ -64,7 +64,7 @@ This primitive config file includes a dict variable `model`, which mainly includ
 
 ```{note}
 Usually, we use the `type` field to specify the class of the component and use other fields to pass
-the initialization arguments of the class. The [registry tutorial](TODO) describes it in detail.
+the initialization arguments of the class. The {external+mmengine:doc}`registry tutorial <tutorials/registry>` describes it in detail.
 ```
 
 Following is the model primitive config of the ResNet50 config file in [`configs/_base_/models/resnet50.py`](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/_base_/models/resnet50.py):
@@ -178,12 +178,12 @@ test loops:
 
 - `optim_wrapper`: The settings of the optimizer wrapper. We use the optimizer wrapper to customize the
   optimization process.
-  - `optimizer`: Supports all `pytorch` optimizers, refers to the relevant [MMEngine documentation](TODO).
-  - `paramwise_cfg`: To set different optimization arguments according to the parameters' type or name, refer to the relevant [learning policy documentation](TODO).
+  - `optimizer`: Supports all `pytorch` optimizers, refers to the relevant {external+mmengine:doc}`MMEngine documentation <tutorials/optim_wrapper>`.
+  - `paramwise_cfg`: To set different optimization arguments according to the parameters' type or name, refer to the relevant [learning policy documentation](../advanced_guides/schedule.md).
   - `accumulative_counts`: Optimize parameters after several backward steps instead of one backward step. You
     can use it to simulate large batch size by small batch size.
-- `param_scheduler`: Optimizer parameters policy. You can use it to specify learning rate and momentum curves during training. See the [documentation](TODO) in MMEngine for more details.
-- `train_cfg | val_cfg | test_cfg`: The settings of the training, validation and test loops, refer to the relevant [MMEngine documentation](TODO).
+- `param_scheduler`: Optimizer parameters policy. You can use it to specify learning rate and momentum curves during training. See the {external+mmengine:doc}`documentation <tutorials/param_scheduler>` in MMEngine for more details.
+- `train_cfg | val_cfg | test_cfg`: The settings of the training, validation and test loops, refer to the relevant {external+mmengine:doc}`MMEngine documentation <design/runner>`.
 
 Following is the schedule primitive config of the ResNet50 config in [`configs/_base_/datasets/imagenet_bs32.py`](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/_base_/datasets/imagenet_bs32.py)：
 
@@ -348,7 +348,7 @@ test_dataloader = dict(dataset=dict(pipeline=val_pipeline))
 
 ### Ignore some fields in the base configs
 
-Sometimes, you need to set `_delete_=True` to ignore some domain content in the basic configuration file. You can refer to the [documentation in MMEngine](TODO) for more instructions.
+Sometimes, you need to set `_delete_=True` to ignore some domain content in the basic configuration file. You can refer to the {external+mmengine:doc}`documentation in MMEngine <tutorials/config>` for more instructions.
 
 The following is an example. If you want to use cosine schedule in the above ResNet50 case, just using inheritance and directly modifying it will report `get unexpected keyword 'step'` error, because the `'step'` field of the basic config in `param_scheduler` domain information is reserved, and you need to add `_delete_ =True` to ignore the content of `param_scheduler` related fields in the basic configuration file:
 
@@ -361,7 +361,7 @@ param_scheduler = dict(type='CosineAnnealingLR', by_epoch=True, _delete_=True)
 
 ### Use some fields in the base configs
 
-Sometimes, you may refer to some fields in the `_base_` config, to avoid duplication of definitions. You can refer to [MMEngine](TODO:) for some more instructions.
+Sometimes, you may refer to some fields in the `_base_` config, to avoid duplication of definitions. You can refer to {external+mmengine:doc}`MMEngine <tutorials/config>` for some more instructions.
 
 The following is an example of using auto augment in the training data preprocessing pipeline, refer to [`configs/resnest/resnest50_32xb64_in1k.py`](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnest/resnest50_32xb64_in1k.py). When defining `train_pipeline`, just add the definition file name of auto augment to `_base_`, and then use `_base_.auto_increasing_policies` to reference the variables in the primitive config:
 
