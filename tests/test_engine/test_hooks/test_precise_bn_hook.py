@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
-import shutil
+import logging
 import tempfile
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
@@ -8,6 +8,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import torch
 import torch.nn as nn
+from mmengine.logging import MMLogger
 from mmengine.model import BaseDataPreprocessor, BaseModel
 from mmengine.runner import Runner
 from torch.utils.data import DataLoader, Dataset
@@ -115,7 +116,7 @@ class TestPreciseBNHookHook(TestCase):
         )
         self.epoch_train_cfg = dict(by_epoch=True, max_epochs=1)
         self.iter_train_cfg = dict(by_epoch=False, max_iters=5)
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.TemporaryDirectory()
         self.preciseBN_cfg = copy.deepcopy(self.DEFAULT_ARGS)
 
         test_dataset = ExampleDataset()
@@ -125,7 +126,7 @@ class TestPreciseBNHookHook(TestCase):
     def test_construct(self):
         self.runner = Runner(
             model=self.model,
-            work_dir=self.tmpdir,
+            work_dir=self.tmpdir.name,
             train_dataloader=self.loader,
             train_cfg=self.epoch_train_cfg,
             log_level='WARNING',
@@ -160,7 +161,7 @@ class TestPreciseBNHookHook(TestCase):
         self.preciseBN_cfg['priority'] = 'ABOVE_NORMAL'
         self.runner = Runner(
             model=self.model,
-            work_dir=self.tmpdir,
+            work_dir=self.tmpdir.name,
             train_dataloader=self.loader,
             train_cfg=self.epoch_train_cfg,
             log_level='WARNING',
@@ -176,7 +177,7 @@ class TestPreciseBNHookHook(TestCase):
         self.preciseBN_cfg['priority'] = 'ABOVE_NORMAL'
         self.runner = Runner(
             model=self.model,
-            work_dir=self.tmpdir,
+            work_dir=self.tmpdir.name,
             train_dataloader=self.loader,
             train_cfg=self.epoch_train_cfg,
             log_level='WARNING',
@@ -213,7 +214,7 @@ class TestPreciseBNHookHook(TestCase):
         self.loader = DataLoader(test_dataset, batch_size=2)
         self.runner = Runner(
             model=self.model,
-            work_dir=self.tmpdir,
+            work_dir=self.tmpdir.name,
             train_dataloader=self.loader,
             train_cfg=self.iter_train_cfg,
             log_level='WARNING',
@@ -226,4 +227,8 @@ class TestPreciseBNHookHook(TestCase):
         self.runner.train()
 
     def tearDown(self) -> None:
-        shutil.rmtree(self.tmpdir)
+        # `FileHandler` should be closed in Windows, otherwise we cannot
+        # delete the temporary directory.
+        logging.shutdown()
+        MMLogger._instance_dict.clear()
+        self.tmpdir.cleanup()

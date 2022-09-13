@@ -2,6 +2,7 @@
 import os
 import os.path as osp
 import pickle
+import sys
 import tempfile
 from unittest import TestCase
 from unittest.mock import MagicMock, call, patch
@@ -141,12 +142,12 @@ class TestCustomDataset(TestBaseDataset):
         self.assertEqual(dataset.CLASSES, ('a', 'b'))  # auto infer classes
         self.assertGreaterEqual(
             dataset.get_data_info(0).items(), {
-                'img_path': osp.join(ASSETS_ROOT, 'a/1.JPG'),
+                'img_path': osp.join(ASSETS_ROOT, 'a', '1.JPG'),
                 'gt_label': 0
             }.items())
         self.assertGreaterEqual(
             dataset.get_data_info(2).items(), {
-                'img_path': osp.join(ASSETS_ROOT, 'b/subb/3.jpg'),
+                'img_path': osp.join(ASSETS_ROOT, 'b', 'subb', '3.jpg'),
                 'gt_label': 1
             }.items())
 
@@ -225,7 +226,7 @@ class TestCustomDataset(TestBaseDataset):
         self.assertEqual(len(dataset), 1)
         self.assertGreaterEqual(
             dataset.get_data_info(0).items(), {
-                'img_path': osp.join(ASSETS_ROOT, 'b/2.jpeg'),
+                'img_path': osp.join(ASSETS_ROOT, 'b', '2.jpeg'),
                 'gt_label': 1
             }.items())
 
@@ -631,12 +632,12 @@ class TestVOC(TestBaseDataset):
         # Test different backend
         cfg = {
             **self.DEFAULT_ARGS, 'lazy_init': True,
-            'data_root': 's3:/openmmlab/voc'
+            'data_root': 's3://openmmlab/voc'
         }
+        petrel_mock = MagicMock()
+        sys.modules['petrel_client'] = petrel_mock
         dataset = dataset_class(**cfg)
-        dataset._check_integrity = MagicMock(return_value=False)
-        with self.assertRaisesRegex(FileNotFoundError, 's3:/openmmlab/voc'):
-            dataset.full_init()
+        petrel_mock.client.Client.assert_called()
 
     def test_extra_repr(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
