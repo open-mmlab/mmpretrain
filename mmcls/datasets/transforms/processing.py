@@ -504,7 +504,8 @@ class RandomErasing(BaseTransform):
             'aspect_range should be positive.'
         assert aspect_range[0] <= aspect_range[1], \
             'In aspect_range (min, max), min should be smaller than max.'
-        assert mode in ['const', 'rand']
+        assert mode in ['const', 'rand'], \
+            'Please select `mode` from ["const", "rand"].'
         if isinstance(fill_color, Number):
             fill_color = [fill_color] * 3
         assert isinstance(fill_color, Sequence) and len(fill_color) == 3 \

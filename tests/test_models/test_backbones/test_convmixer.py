@@ -18,6 +18,7 @@ def test_assertion():
         ConvMixer(out_indices=-100)
 
 
+@torch.no_grad()  # To save memory
 def test_convmixer():
 
     # Test forward

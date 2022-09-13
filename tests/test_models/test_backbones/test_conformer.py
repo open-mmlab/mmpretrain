@@ -25,6 +25,7 @@ def check_norm_state(modules, train_state):
     return True
 
 
+@torch.no_grad()  # To save memory
 def test_conformer_backbone():
 
     cfg_ori = dict(
