@@ -2,9 +2,11 @@
 import torch
 import torch.nn.functional as F
 import torch.utils.checkpoint as cp
-from mmcv.cnn import build_activation_layer, build_conv_layer, build_norm_layer
+from mmcv.cnn import (ConvModule, build_activation_layer, build_conv_layer,
+                      build_norm_layer)
 from mmcv.runner import BaseModule, Sequential
 from mmcv.utils.parrots_wrapper import _BatchNorm
+from torch import nn
 
 from ..builder import BACKBONES
 from ..utils.se_layer import SELayer
@@ -254,6 +256,51 @@ class RepVGGBlock(BaseModule):
         return tmp_conv3x3
 
 
+class MTSPPF(nn.Module):
+    """MTSPPF block for YOLOX-PAI RepVGG backbone.
+
+    Args:
+        in_channels (int): The input channels of the block.
+        out_channels (int): The output channels of the block.
+        norm_cfg (dict): dictionary to construct and config norm layer.
+            Default: dict(type='BN').
+        act_cfg (dict): Config dict for activation layer.
+            Default: dict(type='ReLU').
+        kernel_size (int): Kernel size of pooling. Default: 5.
+    """
+
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 norm_cfg=dict(type='BN'),
+                 act_cfg=dict(type='ReLU'),
+                 kernel_size=5):
+        super().__init__()
+        hidden_features = in_channels // 2  # hidden channels
+        self.conv1 = ConvModule(
+            in_channels,
+            hidden_features,
+            1,
+            stride=1,
+            norm_cfg=norm_cfg,
+            act_cfg=act_cfg)
+        self.conv2 = ConvModule(
+            hidden_features * 4,
+            out_channels,
+            1,
+            stride=1,
+            norm_cfg=norm_cfg,
+            act_cfg=act_cfg)
+        self.maxpool = nn.MaxPool2d(
+            kernel_size=kernel_size, stride=1, padding=kernel_size // 2)
+
+    def forward(self, x):
+        x = self.conv1(x)
+        y1 = self.maxpool(x)
+        y2 = self.maxpool(y1)
+        return self.conv2(torch.cat([x, y1, y2, self.maxpool(y2)], 1))
+
+
 @BACKBONES.register_module()
 class RepVGG(BaseBackbone):
     """RepVGG backbone.
@@ -292,6 +339,7 @@ class RepVGG(BaseBackbone):
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm
             and its variants only. Default: False.
+        add_ppf (bool): Whether to use the MTSPPF block. Default: False.
         init_cfg (dict or list[dict], optional): Initialization config dict.
     """
 
@@ -400,6 +448,7 @@ class RepVGG(BaseBackbone):
                  with_cp=False,
                  deploy=False,
                  norm_eval=False,
+                 add_ppf=False,
                  init_cfg=[
                      dict(type='Kaiming', layer=['Conv2d']),
                      dict(
@@ -441,7 +490,7 @@ class RepVGG(BaseBackbone):
         self.with_cp = with_cp
         self.norm_eval = norm_eval
 
-        channels = min(64, int(base_channels * self.arch['width_factor'][0]))
+        channels = min(32, int(base_channels * self.arch['width_factor'][0]))
         self.stem = RepVGGBlock(
             self.in_channels,
             channels,
@@ -470,6 +519,16 @@ class RepVGG(BaseBackbone):
             self.stages.append(stage_name)
 
             channels = out_channels
+
+        if add_ppf:
+            self.ppf = MTSPPF(
+                out_channels,
+                out_channels,
+                norm_cfg=norm_cfg,
+                act_cfg=act_cfg,
+                kernel_size=5)
+        else:
+            self.ppf = None
 
     def _make_stage(self, in_channels, out_channels, num_blocks, stride,
                     dilation, next_create_block_idx, init_cfg):
@@ -507,6 +566,8 @@ class RepVGG(BaseBackbone):
         for i, stage_name in enumerate(self.stages):
             stage = getattr(self, stage_name)
             x = stage(x)
+            if i + 1 == len(self.stages) and self.ppf is not None:
+                x = self.ppf(x)
             if i in self.out_indices:
                 outs.append(x)
 

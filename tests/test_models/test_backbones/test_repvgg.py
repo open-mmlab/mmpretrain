@@ -275,6 +275,22 @@ def test_repvgg_backbone():
             torch.allclose(feat[i], feat_deploy[i])
         torch.allclose(pred, pred_deploy)
 
+    # Test RepVGG forward with add_ppf
+    model = RepVGG('A0', out_indices=(3, ), add_ppf=True)
+    model.init_weights()
+    model.train()
+
+    for m in model.modules():
+        if is_norm(m):
+            assert isinstance(m, _BatchNorm)
+
+    imgs = torch.randn(1, 3, 224, 224)
+    feat = model(imgs)
+    assert isinstance(feat, tuple)
+    assert len(feat) == 1
+    assert isinstance(feat[0], torch.Tensor)
+    assert feat[0].shape == torch.Size((1, 1280, 7, 7))
+
 
 def test_repvgg_load():
     # Test output before and load from deploy checkpoint
