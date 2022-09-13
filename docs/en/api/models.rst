@@ -71,6 +71,7 @@ Backbones
    HRNet
    InceptionV3
    LeNet5
+   MViT
    MlpMixer
    MobileNetV2
    MobileNetV3
