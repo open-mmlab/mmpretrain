@@ -346,7 +346,7 @@ def summary(models, args):
                     last=last,
                     last_epoch=len(val_logs),
                     best=best,
-                    best_epoch=best_epoch+1)
+                    best_epoch=best_epoch + 1)
         summary_data[model_name].update(summary)
 
     show_summary(summary_data)
