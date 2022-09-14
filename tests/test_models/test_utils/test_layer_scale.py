@@ -1,16 +1,19 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from copy import deepcopy
 from unittest import TestCase
 
 import torch
 
 from mmcls.models.utils import LayerScale
 
+
 class TestLayerScale(TestCase):
 
     def test_init(self):
         with self.assertRaisesRegex(AssertionError, "'data_format' could"):
-            cfg = dict(dim=10,data_format='BNC',)
+            cfg = dict(
+                dim=10,
+                data_format='BNC',
+            )
             LayerScale(**cfg)
 
         cfg = dict(dim=10)

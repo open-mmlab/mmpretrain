@@ -12,7 +12,6 @@ from mmcls.models.backbones.efficientformer import (AttentionWithBias, Flat,
 from mmcls.models.backbones.poolformer import Pooling
 
 
-
 class TestEfficientFormer(TestCase):
 
     def setUp(self):

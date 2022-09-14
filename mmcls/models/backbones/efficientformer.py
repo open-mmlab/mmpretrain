@@ -9,9 +9,9 @@ from mmcv.cnn.bricks import (ConvModule, DropPath, build_activation_layer,
 from mmengine.model import BaseModule, ModuleList, Sequential
 
 from mmcls.registry import MODELS
+from ..utils import LayerScale
 from .base_backbone import BaseBackbone
 from .poolformer import Pooling
-from ..utils import LayerScale
 
 
 class AttentionWithBias(BaseModule):

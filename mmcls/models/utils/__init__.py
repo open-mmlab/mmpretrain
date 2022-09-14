@@ -7,10 +7,10 @@ from .embed import (HybridEmbed, PatchEmbed, PatchMerging, resize_pos_embed,
                     resize_relative_position_bias_table)
 from .helpers import is_tracing, to_2tuple, to_3tuple, to_4tuple, to_ntuple
 from .inverted_residual import InvertedResidual
+from .layer_scale import LayerScale
 from .make_divisible import make_divisible
 from .position_encoding import ConditionalPositionEncoding
 from .se_layer import SELayer
-from .layer_scale import LayerScale
 
 __all__ = [
     'channel_shuffle', 'make_divisible', 'InvertedResidual', 'SELayer',
