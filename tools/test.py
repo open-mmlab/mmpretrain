@@ -2,9 +2,10 @@
 import argparse
 import os
 import os.path as osp
+from copy import deepcopy
 
 import mmengine
-from mmengine.config import Config, DictAction
+from mmengine.config import Config, ConfigDict, DictAction
 from mmengine.hooks import Hook
 from mmengine.runner import Runner
 
@@ -52,6 +53,10 @@ def parse_args():
         default=2,
         help='display time of every window. (second)')
     parser.add_argument(
+        '--no-pin-memory',
+        action='store_true',
+        help='whether to disable the pin_memory option in dataloaders.')
+    parser.add_argument(
         '--launcher',
         choices=['none', 'pytorch', 'slurm', 'mpi'],
         default='none',
@@ -65,6 +70,19 @@ def parse_args():
 
 def merge_args(cfg, args):
     """Merge CLI arguments to config."""
+    cfg.launcher = args.launcher
+
+    # work_dir is determined in this priority: CLI > segment in file > filename
+    if args.work_dir is not None:
+        # update configs according to CLI args if args.work_dir is not None
+        cfg.work_dir = args.work_dir
+    elif cfg.get('work_dir', None) is None:
+        # use config filename as default work_dir if cfg.work_dir is None
+        cfg.work_dir = osp.join('./work_dirs',
+                                osp.splitext(osp.basename(args.config))[0])
+
+    cfg.load_from = args.checkpoint
+
     # -------------------- visualization --------------------
     if args.show or (args.show_dir is not None):
         assert 'visualization' in cfg.default_hooks, \
@@ -87,6 +105,26 @@ def merge_args(cfg, args):
         else:
             cfg.test_evaluator = [cfg.test_evaluator, dump_metric]
 
+    # set dataloader args
+    default_dataloader_cfg = ConfigDict(
+        pin_memory=True,
+        collate_fn=dict(type='default_collate'),
+    )
+
+    def set_default_dataloader_cfg(cfg, field):
+        if cfg.get(field, None) is None:
+            return
+        dataloader_cfg = deepcopy(default_dataloader_cfg)
+        dataloader_cfg.update(cfg[field])
+        cfg[field] = dataloader_cfg
+        if args.no_pin_memory:
+            cfg[field]['pin_memory'] = False
+
+    set_default_dataloader_cfg(cfg, 'test_dataloader')
+
+    if args.cfg_options is not None:
+        cfg.merge_from_dict(args.cfg_options)
+
     return cfg
 
 
@@ -100,20 +138,6 @@ def main():
     # load config
     cfg = Config.fromfile(args.config)
     cfg = merge_args(cfg, args)
-    cfg.launcher = args.launcher
-    if args.cfg_options is not None:
-        cfg.merge_from_dict(args.cfg_options)
-
-    # work_dir is determined in this priority: CLI > segment in file > filename
-    if args.work_dir is not None:
-        # update configs according to CLI args if args.work_dir is not None
-        cfg.work_dir = args.work_dir
-    elif cfg.get('work_dir', None) is None:
-        # use config filename as default work_dir if cfg.work_dir is None
-        cfg.work_dir = osp.join('./work_dirs',
-                                osp.splitext(osp.basename(args.config))[0])
-
-    cfg.load_from = args.checkpoint
 
     # build the runner from config
     runner = Runner.from_cfg(cfg)

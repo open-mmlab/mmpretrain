@@ -4,11 +4,13 @@ import copy
 import os
 import os.path as osp
 
-from mmengine.config import Config, DictAction
+from mmengine.config import Config, ConfigDict, DictAction
 from mmengine.dist import sync_random_seed
 from mmengine.fileio import dump, load
 from mmengine.hooks import Hook
 from mmengine.runner import Runner, find_latest_checkpoint
+from mmengine.utils import digit_version
+from mmengine.utils.dl_utils import TORCH_VERSION
 
 from mmcls.utils import register_all_modules
 
@@ -58,6 +60,15 @@ def parse_args():
         action='store_true',
         help='whether to auto scale the learning rate according to the '
         'actual batch size and the original batch size.')
+    parser.add_argument(
+        '--no-pin-memory',
+        action='store_true',
+        help='whether to disable the pin_memory option in dataloaders.')
+    parser.add_argument(
+        '--no-persistent-workers',
+        action='store_true',
+        help='whether to disable the persistent_workers option in dataloaders.'
+    )
     parser.add_argument(
         '--cfg-options',
         nargs='+',
@@ -111,6 +122,30 @@ def merge_args(cfg, args):
     # enable auto scale learning rate
     if args.auto_scale_lr:
         cfg.auto_scale_lr.enable = True
+
+    # set dataloader args
+    default_dataloader_cfg = ConfigDict(
+        pin_memory=True,
+        persistent_workers=True,
+        collate_fn=dict(type='default_collate'),
+    )
+    if digit_version(TORCH_VERSION) < digit_version('1.8.0'):
+        default_dataloader_cfg.persistent_workers = False
+
+    def set_default_dataloader_cfg(cfg, field):
+        if cfg.get(field, None) is None:
+            return
+        dataloader_cfg = copy.deepcopy(default_dataloader_cfg)
+        dataloader_cfg.update(cfg[field])
+        cfg[field] = dataloader_cfg
+        if args.no_pin_memory:
+            cfg[field]['pin_memory'] = False
+        if args.no_persistent_workers:
+            cfg[field]['persistent_workers'] = False
+
+    set_default_dataloader_cfg(cfg, 'train_dataloader')
+    set_default_dataloader_cfg(cfg, 'val_dataloader')
+    set_default_dataloader_cfg(cfg, 'test_dataloader')
 
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
