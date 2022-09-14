@@ -11,7 +11,7 @@ from .layer_scale import LayerScale
 from .make_divisible import make_divisible
 from .position_encoding import ConditionalPositionEncoding
 from .se_layer import SELayer
-from .useful_layers import LayerScale
+from .layer_scale import LayerScale
 
 __all__ = [
     'channel_shuffle', 'make_divisible', 'InvertedResidual', 'SELayer',
