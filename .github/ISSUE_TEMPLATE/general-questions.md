@@ -1,5 +1,5 @@
 ---
-name: General questions
+name: 💬 General questions
 about: 'Ask general questions to get help '
 title: ''
 labels: help wanted

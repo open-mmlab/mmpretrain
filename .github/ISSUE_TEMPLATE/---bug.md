@@ -1,5 +1,5 @@
 ---
-name: 报告 Bug
+name: 🐞 报告 Bug
 about: 报告问题以帮助我们提升
 title: '[Bug]'
 labels: bug
