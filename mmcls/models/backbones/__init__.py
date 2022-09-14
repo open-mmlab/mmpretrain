@@ -18,6 +18,7 @@ from .mobilenet_v2 import MobileNetV2
 from .mobilenet_v3 import MobileNetV3
 from .mobileone import MobileOne
 from .mvit import MViT
+from .mobilevit import MobileViT
 from .poolformer import PoolFormer
 from .regnet import RegNet
 from .repmlp import RepMLPNet
@@ -89,4 +90,5 @@ __all__ = [
     'SwinTransformerV2',
     'MViT',
     'DeiT3',
+    'MobileViT',
 ]
