@@ -190,7 +190,7 @@ class MobileViT(BaseBackbone):
                  in_channels=3,
                  stem_channels=16,
                  last_exp_factor=4,
-                 out_indices=(5, ),
+                 out_indices=(4, ),
                  frozen_stages=-1,
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
@@ -305,6 +305,8 @@ class MobileViT(BaseBackbone):
         outs = []
         for i, layer in enumerate(self.layers):
             x = layer(x)
+            if i == len(self.layers) - 1:
+                x = self.conv_1x1_exp(x)
             if i in self.out_indices:
                 outs.append(x)
 
