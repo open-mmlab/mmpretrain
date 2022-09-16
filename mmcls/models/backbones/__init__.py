@@ -6,6 +6,7 @@ from .convnext import ConvNeXt
 from .cspnet import CSPDarkNet, CSPNet, CSPResNet, CSPResNeXt
 from .deit import DistilledVisionTransformer
 from .densenet import DenseNet
+from .edgenext import EdgeNeXt
 from .efficientnet import EfficientNet
 from .hrnet import HRNet
 from .inception_v3 import InceptionV3
@@ -43,5 +44,5 @@ __all__ = [
     'Conformer', 'MlpMixer', 'DistilledVisionTransformer', 'PCPVT', 'SVT',
     'EfficientNet', 'ConvNeXt', 'HRNet', 'ResNetV1c', 'ConvMixer',
     'CSPDarkNet', 'CSPResNet', 'CSPResNeXt', 'CSPNet', 'RepMLPNet',
-    'PoolFormer', 'DenseNet', 'VAN', 'InceptionV3'
+    'PoolFormer', 'DenseNet', 'VAN', 'InceptionV3', 'EdgeNeXt'
 ]
