@@ -39,7 +39,8 @@ mmclassification
 
 对于 MNIST，CIFAR10 和 CIFAR100，程序将会在需要的时候自动下载数据集。
 
-对于用户自定义数据集的准备，请参阅 [教程 2：如何增加新数据集](tutorials/new_dataset.md)
+对于用户自定义数据集的准备，请参阅 [教程 3：如何自定义数据集
+](tutorials/new_dataset.md)
 
 ## 使用预训练模型进行推理
 
