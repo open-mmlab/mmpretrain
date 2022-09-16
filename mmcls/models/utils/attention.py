@@ -8,9 +8,19 @@ import torch.nn.functional as F
 from mmcv.cnn.bricks.drop import build_dropout
 from mmengine.model import BaseModule
 from mmengine.model.weight_init import trunc_normal_
+from mmengine.utils import digit_version
 
 from mmcls.registry import MODELS
 from .helpers import to_2tuple
+
+# After pytorch v1.10.0, use torch.meshgrid without indexing
+# will raise extra warning. For more details,
+# refers to https://github.com/pytorch/pytorch/issues/50276
+if digit_version(torch.__version__) >= digit_version('1.10.0'):
+    from functools import partial
+    torch_meshgrid = partial(torch.meshgrid, indexing='ij')
+else:
+    torch_meshgrid = torch.meshgrid
 
 
 class WindowMSA(BaseModule):
@@ -187,7 +197,7 @@ class WindowMSAV2(BaseModule):
             self.window_size[1],
             dtype=torch.float32)
         relative_coords_table = torch.stack(
-            torch.meshgrid([relative_coords_h, relative_coords_w])).permute(
+            torch_meshgrid([relative_coords_h, relative_coords_w])).permute(
                 1, 2, 0).contiguous().unsqueeze(0)  # 1, 2*Wh-1, 2*Ww-1, 2
         if pretrained_window_size[0] > 0:
             relative_coords_table[:, :, :, 0] /= (
@@ -207,7 +217,7 @@ class WindowMSAV2(BaseModule):
         indexes_h = torch.arange(self.window_size[0])
         indexes_w = torch.arange(self.window_size[1])
         coordinates = torch.stack(
-            torch.meshgrid([indexes_h, indexes_w]), dim=0)  # 2, Wh, Ww
+            torch_meshgrid([indexes_h, indexes_w]), dim=0)  # 2, Wh, Ww
         coordinates = torch.flatten(coordinates, start_dim=1)  # 2, Wh*Ww
         # 2, Wh*Ww, Wh*Ww
         relative_coordinates = coordinates[:, :, None] - coordinates[:,
@@ -634,7 +644,7 @@ class BEiTAttention(BaseModule):
         coords_h = torch.arange(Wh)
         coords_w = torch.arange(Ww)
         # coords shape is (2, Wh, Ww)
-        coords = torch.stack(torch.meshgrid([coords_h, coords_w]))
+        coords = torch.stack(torch_meshgrid([coords_h, coords_w]))
         # coords_flatten shape is (2, Wh*Ww)
         coords_flatten = torch.flatten(coords, 1)
         relative_coords = (
