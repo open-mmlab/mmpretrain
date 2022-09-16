@@ -96,6 +96,8 @@ Backbones
    VAN
    VGG
    VisionTransformer
+   MobileOne
+   InceptionV3
 
 .. module:: mmcls.models.necks
 
