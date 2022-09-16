@@ -28,7 +28,7 @@ Models:
           Top 1 Accuracy: 82.84
           Top 5 Accuracy: 96.24
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/hornet/hornet-tiny_3rdparty_in1k_20220909-13316b34.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/hornet/hornet-tiny_3rdparty_in1k_20220915-0e8eedff.pth
     Config: configs/hornet/hornet-tiny_8xb128_in1k.py
   - Name: hornet-tiny-gf_3rdparty_in1k
     Metadata:
@@ -41,7 +41,7 @@ Models:
           Top 1 Accuracy: 82.98
           Top 5 Accuracy: 96.38
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/hornet/hornet-tiny-gf_3rdparty_in1k_20220909-954c0361.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/hornet/hornet-tiny-gf_3rdparty_in1k_20220915-4c35a66b.pth
     Config: configs/hornet/hornet-tiny-gf_8xb128_in1k.py
   - Name: hornet-small_3rdparty_in1k
     Metadata:
@@ -54,7 +54,7 @@ Models:
             Top 1 Accuracy: 83.79
             Top 5 Accuracy: 96.75
           Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/hornet/hornet-small_3rdparty_in1k_20220909-fab3bfc3.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/hornet/hornet-small_3rdparty_in1k_20220915-5935f60f.pth
     Config: configs/hornet/hornet-small_8xb64_in1k.py
   - Name: hornet-small-gf_3rdparty_in1k
     Metadata:
@@ -67,7 +67,7 @@ Models:
             Top 1 Accuracy: 83.98
             Top 5 Accuracy: 96.77
           Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/hornet/hornet-small-gf_3rdparty_in1k_20220909-cd269a14.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/hornet/hornet-small-gf_3rdparty_in1k_20220915-649ca492.pth
     Config: configs/hornet/hornet-small-gf_8xb64_in1k.py
   - Name: hornet-base_3rdparty_in1k
     Metadata:
@@ -80,7 +80,7 @@ Models:
             Top 1 Accuracy: 84.24
             Top 5 Accuracy: 96.94
           Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/hornet/hornet-base_3rdparty_in1k_20220909-41ea3439.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/hornet/hornet-base_3rdparty_in1k_20220915-a06176bb.pth
     Config: configs/hornet/hornet-base_8xb64_in1k.py
   - Name: hornet-base-gf_3rdparty_in1k
     Metadata:
@@ -93,5 +93,5 @@ Models:
             Top 1 Accuracy: 84.32
             Top 5 Accuracy: 96.95
           Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/hornet/hornet-base-gf_3rdparty_in1k_20220909-759d587c.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/hornet/hornet-base-gf_3rdparty_in1k_20220915-82c06fa7.pth
     Config: configs/hornet/hornet-base-gf_8xb64_in1k.py
