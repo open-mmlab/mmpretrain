@@ -86,9 +86,4 @@ class EfficientFormerClsHead(ClsHead):
                 "MMClassification doesn't support to train"
                 ' the distilled version EfficientFormer.')
         else:
-            # The part can be traced by torch.fx
-            cls_score = self(feats)
-
-            # The part can not be traced by torch.fx
-            losses = self._get_loss(cls_score, data_samples, **kwargs)
-            return losses
+            super().loss(feats, data_samples, **kwargs)
