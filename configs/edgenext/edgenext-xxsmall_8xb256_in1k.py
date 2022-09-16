@@ -4,7 +4,6 @@ _base_ = [
     '../_base_/default_runtime.py',
 ]
 
-
 # schedule setting
 optim_wrapper = dict(
     optimizer=dict(lr=6e-3),

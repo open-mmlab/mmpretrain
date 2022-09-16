@@ -9,14 +9,15 @@ from mmcv.cnn.bricks import DropPath, build_activation_layer, build_norm_layer
 from mmengine.model import BaseModule, ModuleList, Sequential
 from mmengine.registry import MODELS
 
-from .convnext import ConvNeXtBlock
 from ..utils import ChannelMultiheadAttention, PositionEncodingFourier
 from .base_backbone import BaseBackbone
+from .convnext import ConvNeXtBlock
 
 
 class SDTAEncoder(BaseModule):
     """A PyTorch implementation of split depth-wise transpose attention (SDTA)
     encoder.
+
     Inspiration from
     https://github.com/mmaaz60/EdgeNeXt
     Args:

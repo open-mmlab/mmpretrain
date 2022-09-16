@@ -7,6 +7,7 @@ import torch
 
 def convert_weights(weight):
     """Weight Converter.
+
     Converts the weights from timm to mmcls
     Args:
         weight (dict): weight dict from timm

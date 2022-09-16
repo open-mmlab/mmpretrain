@@ -46,6 +46,7 @@ class ConditionalPositionEncoding(BaseModule):
 
 class PositionEncodingFourier(BaseModule):
     """The Position Encoding Fourier (PEF) module.
+
     The PEF is adopted from EdgeNeXt <https://arxiv.org/abs/2206.10589>'_.
     Args:
         in_channels (int): Number of input channels.

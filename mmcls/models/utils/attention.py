@@ -517,6 +517,7 @@ class BEiTAttention(BaseModule):
 
 class ChannelMultiheadAttention(BaseModule):
     """Channel Multihead Self-attention Module.
+
     This module implements channel multi-head attention that supports different
     input dims and embed dims.
     Args:

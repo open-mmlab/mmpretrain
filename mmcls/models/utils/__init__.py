@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .attention import BEiTAttention, MultiheadAttention, ShiftWindowMSA, ChannelMultiheadAttention
+from .attention import (BEiTAttention, ChannelMultiheadAttention,
+                        MultiheadAttention, ShiftWindowMSA)
 from .batch_augments import CutMix, Mixup, RandomBatchAugment, ResizeMix
 from .channel_shuffle import channel_shuffle
 from .data_preprocessor import ClsDataPreprocessor
