@@ -7,12 +7,11 @@ import torch.nn as nn
 from mmcv.cnn.bricks import (ConvModule, DropPath, build_activation_layer,
                              build_norm_layer)
 from mmengine.model import BaseModule, ModuleList, Sequential
-from mmcls.registry import MODELS
 
+from mmcls.registry import MODELS
+from ..utils import LayerScale
 from .base_backbone import BaseBackbone
 from .poolformer import Pooling
-from ..utils import LayerScale
-
 
 
 class AttentionWithBias(BaseModule):
