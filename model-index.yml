@@ -28,4 +28,8 @@ Import:
   - configs/densenet/metafile.yml
   - configs/poolformer/metafile.yml
   - configs/inception_v3/metafile.yml
+<<<<<<< HEAD
   - configs/mobileone/metafile.yml
+=======
+  - configs/efficientformer/metafile.yml
+>>>>>>> 078eca7... add efficientformer

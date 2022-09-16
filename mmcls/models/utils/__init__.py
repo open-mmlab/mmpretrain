@@ -10,6 +10,7 @@ from .inverted_residual import InvertedResidual
 from .make_divisible import make_divisible
 from .position_encoding import ConditionalPositionEncoding
 from .se_layer import SELayer
+from .useful_layers import LayerScale
 
 __all__ = [
     'channel_shuffle', 'make_divisible', 'InvertedResidual', 'SELayer',
@@ -17,5 +18,6 @@ __all__ = [
     'PatchMerging', 'HybridEmbed', 'RandomBatchAugment', 'ShiftWindowMSA',
     'is_tracing', 'MultiheadAttention', 'ConditionalPositionEncoding',
     'resize_pos_embed', 'resize_relative_position_bias_table',
-    'ClsDataPreprocessor', 'Mixup', 'CutMix', 'ResizeMix', 'BEiTAttention'
+    'ClsDataPreprocessor', 'Mixup', 'CutMix', 'ResizeMix', 'BEiTAttention',
+    'LayerScale'
 ]
