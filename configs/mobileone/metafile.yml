@@ -1,0 +1,98 @@
+Collections:
+  - Name: MobileOne
+    Metadata:
+      Training Data: ImageNet-1k
+      Architecture:
+        - re-parameterization Convolution
+        - VGG-style Neural Network
+        - Depthwise Convolution
+        - Pointwise Convolution
+    Paper:
+      URL: https://arxiv.org/abs/2206.04040
+      Title: 'An Improved One millisecond Mobile Backbone'
+    README: configs/mobileone/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v1.0.0rc1/configs/mobileone/metafile.yml
+      Version: v1.0.0rc1
+
+Models:
+  - Name: mobileone-s0_3rdparty_8xb128_in1k
+    In Collection: MobileOne
+    Config: configs/mobileone/mobileone-s0_8xb128_in1k.py
+    Metadata:
+      FLOPs: 1091227648  # 1.09G
+      Parameters: 5293272  # 5.29M
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 71.36
+        Top 5 Accuracy: 89.87
+    Weights: https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s0_3rdparty_in1k_20220915-007ae971.pth
+    Converted From:
+      Weights: https://docs-assets.developer.apple.com/ml-research/datasets/mobileone/mobileone_s0_unfused.pth.tar
+      Code: https://github.com/apple/ml-mobileone
+  - Name: mobileone-s1_3rdparty_8xb128_in1k
+    In Collection: MobileOne
+    Config: configs/mobileone/mobileone-s1_8xb128_in1k.py
+    Metadata:
+      FLOPs: 863491328    # 8.6G
+      Parameters: 4825192  # 4.82M
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 75.76
+        Top 5 Accuracy: 92.77
+    Weights: https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s1_3rdparty_in1k_20220915-473c8469.pth
+    Converted From:
+      Weights: https://docs-assets.developer.apple.com/ml-research/datasets/mobileone/mobileone_s1_unfused.pth.tar
+      Code: https://github.com/apple/ml-mobileone
+  - Name: mobileone-s2_3rdparty_8xb128_in1k
+    In Collection: MobileOne
+    Config: configs/mobileone/mobileone-s2_8xb128_in1k.py
+    Metadata:
+      FLOPs: 1344083328
+      Parameters: 7884648
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 77.39
+        Top 5 Accuracy: 93.63
+    Weights: https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s2_3rdparty_in1k_20220915-ed2e4c30.pth
+    Converted From:
+      Weights: https://docs-assets.developer.apple.com/ml-research/datasets/mobileone/mobileone_s2_unfused.pth.tar
+      Code: https://github.com/apple/ml-mobileone
+  - Name: mobileone-s3_3rdparty_8xb128_in1k
+    In Collection: MobileOne
+    Config: configs/mobileone/mobileone-s3_8xb128_in1k.py
+    Metadata:
+      FLOPs: 1951043584
+      Parameters: 10170600
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 77.93
+        Top 5 Accuracy: 93.89
+    Weights: https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s3_3rdparty_in1k_20220915-84d6a02c.pth
+    Converted From:
+      Weights: https://docs-assets.developer.apple.com/ml-research/datasets/mobileone/mobileone_s3_unfused.pth.tar
+      Code: https://github.com/apple/ml-mobileone
+  - Name: mobileone-s4_3rdparty_8xb128_in1k
+    In Collection: MobileOne
+    Config: configs/mobileone/mobileone-s4_8xb128_in1k.py
+    Metadata:
+      FLOPs: 3052580688
+      Parameters: 14951248
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 79.30
+        Top 5 Accuracy: 94.37
+    Weights: https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s4_3rdparty_in1k_20220915-ce9509ee.pth
+    Converted From:
+      Weights: https://docs-assets.developer.apple.com/ml-research/datasets/mobileone/mobileone_s4_unfused.pth.tar
+      Code: https://github.com/apple/ml-mobileone
