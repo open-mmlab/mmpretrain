@@ -39,7 +39,7 @@ For ImageNet, it has multiple versions, but the most commonly used one is [ILSVR
 
 For MNIST, CIFAR10 and CIFAR100, the datasets will be downloaded and unzipped automatically if they are not found.
 
-For using custom datasets, please refer to [Tutorials 2: Adding New Dataset](tutorials/new_dataset.md).
+For using custom datasets, please refer to [Tutorial 3: Customize Dataset](tutorials/new_dataset.md).
 
 ## Inference with pretrained models
 
