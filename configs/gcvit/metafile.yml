@@ -1,0 +1,100 @@
+Collections:
+  - Name: GCViT
+    Metadata:
+      Training Data: ImageNet-1k
+      Architecture:
+        - Local MSA
+        - Global MSA
+        - Batch Normalization
+        - Average Pooling
+        - ReLU
+        - Residual Connection
+    Paper:
+      URL: https://arxiv.org/pdf/2206.09959.pdf
+      Title: "Global Context Vision Transformer"
+    README: configs/gcvit/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.20.1/mmcls/models/backbones/gcvit.py
+      Version: v0.1.0
+
+Models:
+  - Name: gcvit_xxtiny
+    Metadata:
+      FLOPs: 2.1G
+      Parameters: 12M
+    In Collection: gcvit
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 79.80
+          Top 5 Accuracy: 95.10
+        Task: Image Classification
+    Weights: TBD
+    Config: configs/gcvit/gcvit_xxtiny.py
+    Converted From:
+      Weights: https://drive.google.com/file/d/1Bfe63cGurkufL0mEUL05oposybbPnAom/view?usp=sharing
+      Code: https://github.com/NVlabs/GCVit
+  - Name: gcvit_xtiny
+    Metadata:
+      FLOPs: 2.6G
+      Parameters: 20M
+    In Collection: gcvit
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 82.04
+          Top 5 Accuracy: 95.994
+        Task: Image Classification
+    Weights: TBD
+    Config: configs/gcvit/gcvit_xtiny.py
+    Converted From:
+      Weights: https://drive.google.com/file/d/15kt8VOXdAH_jF77g7pEPk-ZmZF13sHRd/view?usp=sharing
+      Code: https://github.com/NVlabs/GCVit
+  - Name: gcvit_tiny
+    Metadata:
+      FLOPs: 4.7G
+      Parameters: 28M
+    In Collection: gcvit
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.39
+          Top 5 Accuracy: 96.40
+        Task: Image Classification
+    Weights: TBD
+    Config: configs/gcvit/gcvit_tiny.py
+    Converted From:
+      Weights: https://drive.google.com/file/d/1C9lLgykooDF6CxZDFDnUqw5lEqoFgULh/view?usp=sharing
+      Code: https://github.com/NVlabs/GCVit
+  - Name: gcvit_small
+    Metadata:
+      FLOPs: 8.5G
+      Parameters: 51M
+    In Collection: gcvit
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.95
+          Top 5 Accuracy: 96.66
+        Task: Image Classification
+    Weights: TBD
+    Config: configs/gcvit/gcvit_small.py
+    Converted From:
+      Weights: https://drive.google.com/file/d/1bfEJQNutyDkPHAkgYcKWhjVTT_ZnYXp4/view?usp=sharing
+      Code: https://github.com/NVlabs/GCVit
+  - Name: gcvit_base
+    Metadata:
+      FLOPs: 14.8G
+      Parameters: 90M
+    In Collection: gcvit
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 84.47
+          Top 5 Accuracy: 96.84
+        Task: Image Classification
+    Weights: TBD
+    Config: configs/gcvit/gcvit_base.py
+    Converted From:
+      Weights: https://drive.google.com/file/d/1PFugO7dqfS-eubZi-yksM_FcYvUNjXBn/view?usp=sharing
+      Code: https://github.com/NVlabs/GCVit

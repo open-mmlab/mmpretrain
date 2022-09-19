@@ -4,7 +4,7 @@ model = dict(
         type='GCViT', arch='base', drop_path_rate=0.1, init_cfg=None),
     neck=None,
     head=dict(
-        type='LinearClsHead_GCViT',
+        type='LinearClsHead',
         num_classes=1000,
         in_channels=1024,
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
