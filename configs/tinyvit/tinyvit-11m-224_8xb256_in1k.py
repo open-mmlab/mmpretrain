@@ -1,8 +1,6 @@
 _base_ = [
-    './tinyvit-5m-224_8xb256_in1k.py',
+    '../_base_/datasets/imagenet_bs32_pil_bicubic.py',
+    '../_base_/schedules/imagenet_bs1024_adamw_swin.py',
+    '../_base_/default_runtime.py',
+    '../_base_/models/tinyvit/tinyvit-11m-224.py',
 ]
-
-# Model settings
-model = dict(
-    backbone=dict(arch='tinyvit_11m_224', drop_path_rate=0.1),
-    head=dict(in_channels=448))

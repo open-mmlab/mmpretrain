@@ -82,7 +82,7 @@ Models:
       Code: https://github.com/microsoft/Cream/tree/main/TinyViT
   - Name: tinyvit-11m-224-distill_3rdparty_8xb256_in1k
     Metadata:
-      FLOPs: 255640144
+      FLOPs: 2050033664
       Parameters: 10996972
     In Collections: TinyViT
     Results:

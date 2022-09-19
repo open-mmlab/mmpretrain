@@ -1,12 +1,11 @@
 _base_ = [
-    './tinyvit-21m-224_8xb256_in1k.py',
+    '../_base_/datasets/imagenet_bs32_pil_bicubic.py',
+    '../_base_/schedules/imagenet_bs1024_adamw_swin.py',
+    '../_base_/default_runtime.py',
+    '../_base_/models/tinyvit/tinyvit-21m-384.py',
 ]
 
-# Model settings
-model = dict(
-    backbone=dict(arch='tinyvit_21m_384', drop_path_rate=0.1),
-    head=dict(in_channels=576))
-
+# data settings
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
