@@ -8,10 +8,10 @@ import mmcv
 import numpy as np
 from mmengine.config import Config, DictAction
 from mmengine.dataset import Compose
+from mmengine.utils import ProgressBar
 from mmengine.visualization import Visualizer
 
 from mmcls.datasets.builder import build_dataset
-from mmcls.registry import VISUALIZERS
 from mmcls.utils import register_all_modules
 from mmcls.visualization import ClsVisualizer
 from mmcls.visualization.cls_visualizer import _get_adaptive_scale
@@ -61,6 +61,11 @@ def parse_args():
         type=float,
         help='image rescale factor, which is useful if the output is too '
         'large or too small.')
+    parser.add_argument(
+        '--bgr2rgb',
+        default=False,
+        action='store_true',
+        help='flip the color channel order of images')
     parser.add_argument(
         '--cfg-options',
         nargs='+',
@@ -168,12 +173,13 @@ def main():
                                       intermediate_imgs)
 
     # init visualizer
-    visualizer: ClsVisualizer = VISUALIZERS.build(cfg.visualizer)
+    cfg.visualizer.pop('type')
+    visualizer = ClsVisualizer(**cfg.visualizer)
     visualizer.dataset_meta = dataset.metainfo
 
     # init visualization image number
     display_number = min(args.show_number, len(dataset))
-    progress_bar = mmcv.ProgressBar(display_number)
+    progress_bar = ProgressBar(display_number)
 
     for i, item in zip(range(display_number), dataset):
         rescale_factor = args.rescale_factor
@@ -195,11 +201,11 @@ def main():
 
         intermediate_imgs.clear()
 
-        data_sample = item['data_sample'].numpy()
+        data_sample = item['data_samples'].numpy()
 
         # get filename from dataset or just use index as filename
-        if hasattr(item['data_sample'], 'img_path'):
-            filename = osp.basename(item['data_sample'].img_path)
+        if hasattr(item['data_samples'], 'img_path'):
+            filename = osp.basename(item['data_samples'].img_path)
         else:
             # some dataset have not image path
             filename = f'{i}.jpg'
@@ -209,7 +215,7 @@ def main():
 
         visualizer.add_datasample(
             filename,
-            image[..., ::-1],
+            image if args.bgr2rgb else image[..., ::-1],
             data_sample,
             rescale_factor=rescale_factor,
             show=not args.not_show,

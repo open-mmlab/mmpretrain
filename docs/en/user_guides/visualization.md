@@ -2,29 +2,25 @@
 
 <!-- TOC -->
 
-- [Pipeline Visualization](#pipeline-visualization)
+- [Browse Dataset](#browse-dataset)
 - [Learning Rate Schedule Visualization](#learning-rate-schedule-visualization)
 - [Class Activation Map Visualization](#class-activation-map-visualization)
 - [FAQs](#faqs)
 
 <!-- TOC -->
 
-## Pipeline Visualization
+## Browse Dataset
 
 ```bash
-python tools/visualizations/vis_pipeline.py \
+python tools/visualizations/browse_dataset.py \
     ${CONFIG_FILE} \
     [--output-dir ${OUTPUT_DIR}] \
     [--phase ${DATASET_PHASE}] \
-    [--number ${BUNBER_IMAGES_DISPLAY}] \
-    [--skip-type ${SKIP_TRANSFORM_TYPE}] \
+    [--show-number ${NUMBER_IMAGES_DISPLAY}] \
+    [--show-interval ${SHOW-INTERRVAL}] \
     [--mode ${DISPLAY_MODE}] \
-    [--show] \
-    [--adaptive] \
-    [--min-edge-length ${MIN_EDGE_LENGTH}] \
-    [--max-edge-length ${MAX_EDGE_LENGTH}] \
-    [--bgr2rgb] \
-    [--window-size ${WINDOW_SIZE}] \
+    [--bgr2rgb]
+    [--rescale-factor ${RESCALE-FACTOR}] \
     [--cfg-options ${CFG_OPTIONS}]
 ```
 
@@ -32,64 +28,64 @@ python tools/visualizations/vis_pipeline.py \
 
 - `config` : The path of a model config file.
 - `--output-dir`: The output path for visualized images. If not specified, it will be set to `''`, which means not to save.
-- `--phase`: Phase of visualizing dataset，must be one of `[train, val, test]`. If not specified, it will be set to `train`.
-- `--number`: The number of samples to visualized. If not specified, display all images in the dataset.
-- `--skip-type`: The pipelines to be skipped. If not specified, it will be set to `['ToTensor', 'Normalize', 'ImageToTensor', 'Collect']`.
-- `--mode`: The display mode, can be one of `[original, pipeline, concat]`. If not specified, it will be set to `concat`.
-- `--show`: If set, display pictures in pop-up windows.
-- `--adaptive`: If set, adaptively resize images for better visualization.
-- `--min-edge-length`: The minimum edge length, used when `--adaptive` is set. When any side of the picture is smaller than `${MIN_EDGE_LENGTH}`, the picture will be enlarged while keeping the aspect ratio unchanged, and the short side will be aligned to `${MIN_EDGE_LENGTH}`. If not specified, it will be set to 200.
-- `--max-edge-length`: The maximum edge length, used when `--adaptive` is set. When any side of the picture is larger than `${MAX_EDGE_LENGTH}`, the picture will be reduced while keeping the aspect ratio unchanged, and the long side will be aligned to `${MAX_EDGE_LENGTH}`. If not specified, it will be set to 1000.
+- **`--phase`**: Phase of visualizing dataset，must be one of `['train', 'val', 'test']`. If not specified, it will be set to `'train'`.
+- **`--show-number`**: The number of samples to visualized. If not specified, display all images in the dataset.
+- `--show-interval`: The interval of show (s).
+- **`--mode`**: The display mode, can be one of `['original', 'transformed', 'concat', 'pipeline']`. If not specified, it will be set to `'transformed'`.
+- **`--rescale-factor`**: The image rescale factor, which is useful if the output is too large or too small.
 - `--bgr2rgb`: If set, flip the color channel order of images.
-- `--window-size`: The shape of the display window. If not specified, it will be set to `12*7`. If used, it must be in the format `'W*H'`.
-- `--cfg-options` : Modifications to the configuration file, refer to [Tutorial 1: Learn about Configs](https://mmclassification.readthedocs.io/en/latest/tutorials/config.html).
+- `--cfg-options` : Modifications to the configuration file, refer to [Learn about Configs](./config.html).
 
 ```{note}
+1. The `--mode` is about display mode, display original pictures or transformed pictures or comparison pictures:
+- "original" means show images load from disk;
+- "transformed" means to show images after transformed;
+- "concat" means show images stitched by "original" and "transformed" images;
+- "pipeline" means show all the intermediate images throghout the pipeline.
 
-1. If the `--mode` is not specified, it will be set to `concat` as default, get the pictures stitched together by original pictures and transformed pictures; if the `--mode` is set to `original`, get the original pictures; if the `--mode` is set to `transformed`, get the transformed pictures; if the `--mode` is set to `pipeline`, get all the intermediate images through the pipeline.
-
-2. When `--adaptive` option is set, images that are too large or too small will be automatically adjusted, you can use `--min-edge-length` and `--max-edge-length` to set the adjust size.
+2.  The `--rescale-factor` option is set when the label information is too large or too small relative to the picture. For example, when visualizing the CIFAR dataset, since the resolution of the image is very small, `--rescale-factor` can be set to 10.
 ```
 
 **Examples**：
 
-1. In **'original'** mode, visualize 100 original pictures in the `CIFAR100` validation set, then display and save them in the `./tmp` folder：
+1. In **'original'** mode:
 
 ```shell
-python ./tools/visualizations/vis_pipeline.py configs/resnet/resnet50_8xb16_cifar100.py --phase val --output-dir tmp --mode original --number 100  --show --adaptive --bgr2rgb
+python ./tools/visualizations/browse_dataset.py ./configs/resnet/ --phase val --output-dir tmp --mode original --show-number 100 --rescale-factor 10 --bgr2rgb
 ```
 
-<div align=center><img src="https://user-images.githubusercontent.com/18586273/146117528-1ec2d918-57f8-4ae4-8ca3-a8d31b602f64.jpg" style=" width: auto; height: 40%; "></div>
+<div align=center><img src="https://user-images.githubusercontent.com/18586273/190993839-216a7a1e-590e-47b9-92ae-08f87a7d58df.jpg" style=" width: auto; height: 40%; "></div>
 
-2. In **'transformed'** mode, visualize all the transformed pictures of the `ImageNet` training set and display them in pop-up windows：
+2. In **'transformed'** mode:
 
 ```shell
-python ./tools/visualizations/vis_pipeline.py ./configs/resnet/resnet50_8xb32_in1k.py --show --mode transformed
+python ./tools/visualizations/browse_dataset.py ./configs/resnet/resnet50_8xb32_in1k.py --show-number 100 --rescale-factor 2
 ```
 
-<div align=center><img src="https://user-images.githubusercontent.com/18586273/146117553-8006a4ba-e2fa-4f53-99bc-42a4b06e413f.jpg" style=" width: auto; height: 40%; "></div>
+<div align=center><img src="https://user-images.githubusercontent.com/18586273/190994696-737b09d9-d0fb-4593-94a2-4487121e0286.JPEG" style=" width: auto; height: 40%; "></div>
 
-3. In **'concat'** mode, visualize 10 pairs of origin and transformed images for comparison in the `ImageNet` train set and save them in the `./tmp` folder：
+3. In **'concat'** mode:
 
 ```shell
-python ./tools/visualizations/vis_pipeline.py configs/swin_transformer/swin_base_224_b16x64_300e_imagenet.py --phase train --output-dir tmp --number 10 --adaptive
+python ./tools/visualizations/browse_dataset.py configs/swin_transformer/swin-small_16xb64_in1k.py --show-number 10 --output-dir tmp  --mode concat
 ```
 
-<div align=center><img src="https://user-images.githubusercontent.com/18586273/146128259-0a369991-7716-411d-8c27-c6863e6d76ea.JPEG" style=" width: auto; height: 40%; "></div>
+<div align=center><img src="https://user-images.githubusercontent.com/18586273/190995078-3872feb2-d4e2-4727-a21b-7062d52f7d3e.JPEG" style=" width: auto; height: 40%; "></div>
 
-4. In **'pipeline'** mode, visualize all the intermediate pictures in the `ImageNet` train set through the pipeline：
+4. In **'pipeline'** mode：
 
 ```shell
-python ./tools/visualizations/vis_pipeline.py configs/swin_transformer/swin_base_224_b16x64_300e_imagenet.py --phase train --adaptive --mode pipeline --show
+python ./tools/visualizations/browse_dataset.py configs/swin_transformer/swin-small_16xb64_in1k.py --mode pipeline
 ```
 
-<div align=center><img src="https://user-images.githubusercontent.com/18586273/146128201-eb97c2aa-a615-4a81-a649-38db1c315d0e.JPEG" style=" width: auto; height: 40%; "></div>
+<div align=center><img src="https://user-images.githubusercontent.com/18586273/190995525-fac0220f-6630-4013-b94a-bc6de4fdff7a.JPEG" style=" width: auto; height: 40%; "></div>
 
 ## Learning Rate Schedule Visualization
 
 ```bash
-python tools/visualizations/vis_lr.py \
+python tools/visualizations/vis_scheduler.py \
     ${CONFIG_FILE} \
+    --param ${PARAMETER_NAME} \
     --dataset-size ${DATASET_SIZE} \
     --ngpus ${NUM_GPUs}
     --save-path ${SAVE_PATH} \
@@ -101,14 +97,15 @@ python tools/visualizations/vis_lr.py \
 
 **Description of all arguments**：
 
-- `config` :  The path of a model config file.
-- `dataset-size` : The size of the datasets. If set，`build_dataset` will be skipped and `${DATASET_SIZE}` will be used as the size. Default to use the function `build_dataset`.
-- `ngpus` : The number of GPUs used in training, default to be 1.
-- `save-path` : The learning rate curve plot save path, default not to save.
-- `title` : Title of figure. If not set, default to be config file name.
-- `style` : Style of plt. If not set, default to be `whitegrid`.
+- `config`: The path of a model config file.
+- `param`: The param to visualize its change curve, choose from "lr" and "momentum". Default to use "lr".
+- `dataset-size`: The size of the datasets. If set，`build_dataset` will be skipped and `${DATASET_SIZE}` will be used as the size. Default to use the function `build_dataset`.
+- `ngpus`: The number of GPUs used in training, default to be 1.
+- `save-path`: The learning rate curve plot save path, default not to save.
+- `title`: Title of figure. If not set, default to be config file name.
+- `style`: Style of plt. If not set, default to be `whitegrid`.
 - `window-size`: The shape of the display window. If not specified, it will be set to `12*7`. If used, it must be in the format `'W*H'`.
-- `cfg-options` : Modifications to the configuration file, refer to [Tutorial 1: Learn about Configs](https://mmclassification.readthedocs.io/en/latest/tutorials/config.html).
+- `cfg-options`: Modifications to the configuration file, refer to [Learn about Configs](./config.html).
 
 ```{note}
 Loading annotations maybe consume much time, you can directly specify the size of the dataset with `dataset-size` to save time.
