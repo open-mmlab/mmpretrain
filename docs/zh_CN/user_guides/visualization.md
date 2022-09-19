@@ -34,7 +34,7 @@ python tools/visualizations/browse_dataset.py \
 - **`--mode`**: 可视化的模式，只能为 `['original', 'transformed', 'concat', 'pipeline']` 之一。 默认为`'transformed'`.
 - **`--rescale-factor`**: 对可视化图片的放缩倍数，在图片过大或过小时设置。
 - `--bgr2rgb`: 将图片的颜色通道翻转。
-- `--cfg-options` : 对配置文件的修改，参考[学习配置文件](./config.html)。
+- `--cfg-options` : 对配置文件的修改，参考[学习配置文件](./config.md)。
 
 ```{note}
 
@@ -81,30 +81,32 @@ python ./tools/visualizations/browse_dataset.py configs/swin_transformer/swin-sm
 
 <div align=center><img src="https://user-images.githubusercontent.com/18586273/190995525-fac0220f-6630-4013-b94a-bc6de4fdff7a.JPEG" style=" width: auto; height: 40%; "></div>
 
-## 学习率策略可视化
+## 参数策略可视化
 
 ```bash
-python tools/visualizations/vis_lr.py \
+python tools/visualizations/vis_scheduler.py \
     ${CONFIG_FILE} \
-    [--dataset-size ${Dataset_Size}] \
+    [--param ${PARAMETER_NAME}] \
+    [--dataset-size ${DATASET_SIZE}] \
     [--ngpus ${NUM_GPUs}] \
     [--save-path ${SAVE_PATH}] \
     [--title ${TITLE}] \
     [--style ${STYLE}] \
     [--window-size ${WINDOW_SIZE}] \
-    [--cfg-options ${CFG_OPTIONS}] \
+    [--cfg-options]
 ```
 
 **所有参数的说明**：
 
 - `config` : 模型配置文件的路径。
-- `--dataset-size` : 数据集的大小。如果指定，`build_dataset` 将被跳过并使用这个大小作为数据集大小，默认使用 `build_dataset` 所得数据集的大小。
-- `--ngpus` : 使用 GPU 的数量。
+- **`param`**: 可视化参数名，只能为 `["lr", "momentum"]` 之一， 默认为 `"lr"`.
+- **`--dataset-size`** : 数据集的大小。如果指定，`build_dataset` 将被跳过并使用这个大小作为数据集大小，默认使用 `build_dataset` 所得数据集的大小。
+- **`--ngpus`** : 使用 GPU 的数量, 默认为1。
 - `--save-path` : 保存的可视化图片的路径，默认不保存。
 - `--title` : 可视化图片的标题，默认为配置文件名。
 - `--style` : 可视化图片的风格，默认为 `whitegrid`。
 - `--window-size`: 可视化窗口大小，如果没有指定，默认为 `12*7`。如果需要指定，按照格式 `'W*H'`。
-- `--cfg-options` : 对配置文件的修改，参考[教程 1：如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html)。
+- `--cfg-options` : 对配置文件的修改，参考[学习配置文件](./config.md)。
 
 ```{note}
 
@@ -115,18 +117,18 @@ python tools/visualizations/vis_lr.py \
 **示例**：
 
 ```bash
-python tools/visualizations/vis_lr.py configs/resnet/resnet50_b16x8_cifar100.py
+python tools/visualizations/vis_scheduler.py configs/resnet/resnet50_b16x8_cifar100.py
 ```
 
-<div align=center><img src="../_static/image/tools/visualization/lr_schedule1.png" style=" width: auto; height: 40%; "></div>
+<div align=center><img src="https://user-images.githubusercontent.com/18586273/191006713-023f065d-d366-4165-a52e-36176367506e.png" style=" width: auto; height: 40%; "></div>
 
 当数据集为 ImageNet 时，通过直接指定数据集大小来节约时间，并保存图片：
 
 ```bash
-python tools/visualizations/vis_lr.py configs/repvgg/repvgg-B3g4_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py --dataset-size 1281167 --ngpus 4 --save-path ./repvgg-B3g4_4xb64-lr.jpg
+python tools/visualizations/vis_scheduler.py configs/repvgg/repvgg-B3g4_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py --dataset-size 1281167 --ngpus 4 --save-path ./repvgg-B3g4_4xb64-lr.jpg
 ```
 
-<div align=center><img src="../_static/image/tools/visualization/lr_schedule2.png" style=" width: auto; height: 40%; "></div>
+<div align=center><img src="https://user-images.githubusercontent.com/18586273/191006721-0f680e07-355e-4cd6-889c-86c0cad9acb7.png" style=" width: auto; height: 40%; "></div>
 
 ## 类别激活图可视化
 

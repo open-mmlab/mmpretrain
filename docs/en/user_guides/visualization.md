@@ -3,7 +3,7 @@
 <!-- TOC -->
 
 - [Browse Dataset](#browse-dataset)
-- [Learning Rate Schedule Visualization](#learning-rate-schedule-visualization)
+- [Parameter Schedule Visualization](#parameter-schedule-visualization)
 - [Class Activation Map Visualization](#class-activation-map-visualization)
 - [FAQs](#faqs)
 
@@ -34,7 +34,7 @@ python tools/visualizations/browse_dataset.py \
 - **`--mode`**: The display mode, can be one of `['original', 'transformed', 'concat', 'pipeline']`. If not specified, it will be set to `'transformed'`.
 - **`--rescale-factor`**: The image rescale factor, which is useful if the output is too large or too small.
 - `--bgr2rgb`: If set, flip the color channel order of images.
-- `--cfg-options` : Modifications to the configuration file, refer to [Learn about Configs](./config.html).
+- `--cfg-options` : Modifications to the configuration file, refer to [Learn about Configs](./config.md).
 
 ```{note}
 1. The `--mode` is about display mode, display original pictures or transformed pictures or comparison pictures:
@@ -80,32 +80,32 @@ python ./tools/visualizations/browse_dataset.py configs/swin_transformer/swin-sm
 
 <div align=center><img src="https://user-images.githubusercontent.com/18586273/190995525-fac0220f-6630-4013-b94a-bc6de4fdff7a.JPEG" style=" width: auto; height: 40%; "></div>
 
-## Learning Rate Schedule Visualization
+## Parameter Schedule Visualization
 
 ```bash
 python tools/visualizations/vis_scheduler.py \
     ${CONFIG_FILE} \
-    --param ${PARAMETER_NAME} \
-    --dataset-size ${DATASET_SIZE} \
-    --ngpus ${NUM_GPUs}
-    --save-path ${SAVE_PATH} \
-    --title ${TITLE} \
-    --style ${STYLE} \
-    --window-size ${WINDOW_SIZE}
-    --cfg-options
+    [--param ${PARAMETER_NAME}] \
+    [--dataset-size ${DATASET_SIZE}] \
+    [--ngpus ${NUM_GPUs}] \
+    [--save-path ${SAVE_PATH}] \
+    [--title ${TITLE}] \
+    [--style ${STYLE}] \
+    [--window-size ${WINDOW_SIZE}] \
+    [--cfg-options]
 ```
 
 **Description of all arguments**：
 
 - `config`: The path of a model config file.
-- `param`: The param to visualize its change curve, choose from "lr" and "momentum". Default to use "lr".
-- `dataset-size`: The size of the datasets. If set，`build_dataset` will be skipped and `${DATASET_SIZE}` will be used as the size. Default to use the function `build_dataset`.
-- `ngpus`: The number of GPUs used in training, default to be 1.
-- `save-path`: The learning rate curve plot save path, default not to save.
-- `title`: Title of figure. If not set, default to be config file name.
-- `style`: Style of plt. If not set, default to be `whitegrid`.
-- `window-size`: The shape of the display window. If not specified, it will be set to `12*7`. If used, it must be in the format `'W*H'`.
-- `cfg-options`: Modifications to the configuration file, refer to [Learn about Configs](./config.html).
+- **`--param`**: The param to visualize its change curve, choose from "lr" and "momentum". Default to use "lr".
+- **`--dataset-size`**: The size of the datasets. If set，`build_dataset` will be skipped and `${DATASET_SIZE}` will be used as the size. Default to use the function `build_dataset`.
+- **`--ngpus`**: The number of GPUs used in training, default to be 1.
+- `--save-path`: The learning rate curve plot save path, default not to save.
+- `--title`: Title of figure. If not set, default to be config file name.
+- `--style`: Style of plt. If not set, default to be `whitegrid`.
+- `--window-size`: The shape of the display window. If not specified, it will be set to `12*7`. If used, it must be in the format `'W*H'`.
+- `--cfg-options`: Modifications to the configuration file, refer to [Learn about Configs](./config.md).
 
 ```{note}
 Loading annotations maybe consume much time, you can directly specify the size of the dataset with `dataset-size` to save time.
@@ -117,7 +117,7 @@ Loading annotations maybe consume much time, you can directly specify the size o
 python tools/visualizations/vis_lr.py configs/resnet/resnet50_b16x8_cifar100.py
 ```
 
-<div align=center><img src="../_static/image/tools/visualization/lr_schedule1.png" style=" width: auto; height: 40%; "></div>
+<div align=center><img src="https://user-images.githubusercontent.com/18586273/191006713-023f065d-d366-4165-a52e-36176367506e.png" style=" width: auto; height: 40%; "></div>
 
 When using ImageNet, directly specify the size of ImageNet, as below:
 
@@ -125,7 +125,7 @@ When using ImageNet, directly specify the size of ImageNet, as below:
 python tools/visualizations/vis_lr.py configs/repvgg/repvgg-B3g4_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py --dataset-size 1281167 --ngpus 4 --save-path ./repvgg-B3g4_4xb64-lr.jpg
 ```
 
-<div align=center><img src="../_static/image/tools/visualization/lr_schedule2.png" style=" width: auto; height: 40%; "></div>
+<div align=center><img src="https://user-images.githubusercontent.com/18586273/191006721-0f680e07-355e-4cd6-889c-86c0cad9acb7.png" style=" width: auto; height: 40%; "></div>
 
 ## Class Activation Map Visualization
 
