@@ -86,4 +86,4 @@ class EfficientFormerClsHead(ClsHead):
                 "MMClassification doesn't support to train"
                 ' the distilled version EfficientFormer.')
         else:
-            super().loss(feats, data_samples, **kwargs)
+            return super().loss(feats, data_samples, **kwargs)
