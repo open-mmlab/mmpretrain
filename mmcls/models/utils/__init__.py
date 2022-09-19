@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from .attention import (BEiTAttention, ChannelMultiheadAttention,
-                        MultiheadAttention, ShiftWindowMSA, WindowMSA,
-                        WindowMSAV2)
+                        MultiheadAttention, ShiftWindowMSA, TinyViTAttention,
+                        WindowMSA, WindowMSAV2)
 from .batch_augments import CutMix, Mixup, RandomBatchAugment, ResizeMix
 from .channel_shuffle import channel_shuffle
 from .data_preprocessor import ClsDataPreprocessor
@@ -16,32 +16,12 @@ from .position_encoding import (ConditionalPositionEncoding,
 from .se_layer import SELayer
 
 __all__ = [
-    'channel_shuffle',
-    'make_divisible',
-    'InvertedResidual',
-    'SELayer',
-    'to_ntuple',
-    'to_2tuple',
-    'to_3tuple',
-    'to_4tuple',
-    'PatchEmbed',
-    'PatchMerging',
-    'HybridEmbed',
-    'RandomBatchAugment',
-    'ShiftWindowMSA',
-    'is_tracing',
-    'MultiheadAttention',
-    'ConditionalPositionEncoding',
-    'resize_pos_embed',
-    'resize_relative_position_bias_table',
-    'ClsDataPreprocessor',
-    'Mixup',
-    'CutMix',
-    'ResizeMix',
-    'BEiTAttention',
-    'LayerScale',
-    'WindowMSA',
-    'WindowMSAV2',
-    'ChannelMultiheadAttention',
-    'PositionEncodingFourier',
+    'channel_shuffle', 'make_divisible', 'InvertedResidual', 'SELayer',
+    'to_ntuple', 'to_2tuple', 'to_3tuple', 'to_4tuple', 'PatchEmbed',
+    'PatchMerging', 'HybridEmbed', 'RandomBatchAugment', 'ShiftWindowMSA',
+    'is_tracing', 'MultiheadAttention', 'ConditionalPositionEncoding',
+    'resize_pos_embed', 'resize_relative_position_bias_table',
+    'ClsDataPreprocessor', 'Mixup', 'CutMix', 'ResizeMix', 'BEiTAttention',
+    'LayerScale', 'WindowMSA', 'WindowMSAV2', 'ChannelMultiheadAttention',
+    'PositionEncodingFourier', 'TinyViTAttention'
 ]

@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import itertools
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -788,4 +790,90 @@ class ChannelMultiheadAttention(BaseModule):
 
         if self.v_shortcut:
             x = qkv[2].squeeze(1) + x
+        return x
+
+
+class TinyViTAttention(BaseModule):
+    """TinyViT Attention.
+
+    Args:
+        dim (int): Number of input channels.
+        num_heads (int): Number of attention heads. Default: 8.
+        key_dim (int): Dimension of key. Default: None.
+        attn_ratio (int): Ratio of attention heads. Default: 8.
+        resolution (tuple[int]): Input resolution. Default: (16, 16).
+        init_cfg (dict, optional): The Config for initialization.
+    """
+
+    def __init__(self,
+                 dim,
+                 key_dim,
+                 num_heads=8,
+                 attn_ratio=4,
+                 resolution=(14, 14),
+                 init_cfg=None):
+        super().__init__(init_cfg=init_cfg)
+        # (h, w)
+        assert isinstance(resolution, tuple) and len(resolution) == 2
+        self.num_heads = num_heads
+        self.scale = key_dim**-0.5
+        self.key_dim = key_dim
+        self.nh_kd = nh_kd = key_dim * num_heads
+        self.d = int(attn_ratio * key_dim)
+        self.dh = int(attn_ratio * key_dim) * num_heads
+        self.attn_ratio = attn_ratio
+        h = self.dh + nh_kd * 2
+
+        self.norm = nn.LayerNorm(dim)
+        self.qkv = nn.Linear(dim, h)
+        self.proj = nn.Linear(self.dh, dim)
+
+        points = list(
+            itertools.product(range(resolution[0]), range(resolution[1])))
+        N = len(points)
+        attention_offsets = {}
+        idxs = []
+        for p1 in points:
+            for p2 in points:
+                offset = (abs(p1[0] - p2[0]), abs(p1[1] - p2[1]))
+                if offset not in attention_offsets:
+                    attention_offsets[offset] = len(attention_offsets)
+                idxs.append(attention_offsets[offset])
+        self.attention_biases = torch.nn.Parameter(
+            torch.zeros(num_heads, len(attention_offsets)))
+        self.register_buffer(
+            'attention_bias_idxs',
+            torch.LongTensor(idxs).view(N, N),
+            persistent=False)
+
+    @torch.no_grad()
+    def train(self, mode=True):
+        super().train(mode)
+        if mode and hasattr(self, 'ab'):
+            del self.ab
+        else:
+            self.ab = self.attention_biases[:, self.attention_bias_idxs]
+
+    def forward(self, x):  # x (B,N,C)
+        B, N, _ = x.shape
+
+        # Normalization
+        x = self.norm(x)
+
+        qkv = self.qkv(x)
+        # (B, N, num_heads, d)
+        q, k, v = qkv.view(B, N, self.num_heads,
+                           -1).split([self.key_dim, self.key_dim, self.d],
+                                     dim=3)
+        # (B, num_heads, N, d)
+        q = q.permute(0, 2, 1, 3)
+        k = k.permute(0, 2, 1, 3)
+        v = v.permute(0, 2, 1, 3)
+
+        attn = ((q @ k.transpose(-2, -1)) * self.scale +
+                (self.attention_biases[:, self.attention_bias_idxs]
+                 if self.training else self.ab))
+        attn = attn.softmax(dim=-1)
+        x = (attn @ v).transpose(1, 2).reshape(B, N, self.dh)
+        x = self.proj(x)
         return x
