@@ -5,7 +5,7 @@ This tutorial provides instructions for users to use the models provided in the 
 
 There are two steps to fine-tune a model on a new dataset.
 
-- Add support for the new dataset following [Tutorial 3: Adding New Dataset](new_dataset.md).
+- Add support for the new dataset following [Tutorial 3: Customize Dataset](new_dataset.md).
 - Modify the configs as will be discussed in this tutorial.
 
 Assume we have a ResNet-50 model pre-trained on the ImageNet-2012 dataset and want
