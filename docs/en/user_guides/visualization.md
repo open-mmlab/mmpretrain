@@ -14,36 +14,36 @@
 ```bash
 python tools/visualizations/browse_dataset.py \
     ${CONFIG_FILE} \
-    [--output-dir ${OUTPUT_DIR}] \
-    [--phase ${DATASET_PHASE}] \
-    [--show-number ${NUMBER_IMAGES_DISPLAY}] \
-    [--show-interval ${SHOW-INTERRVAL}] \
-    [--mode ${DISPLAY_MODE}] \
-    [--bgr2rgb]
-    [--rescale-factor ${RESCALE-FACTOR}] \
+    [-o, --output-dir ${OUTPUT_DIR}] \
+    [-p, --phase ${DATASET_PHASE}] \
+    [-n, --show-number ${NUMBER_IMAGES_DISPLAY}] \
+    [-i, --show-interval ${SHOW-INTERRVAL}] \
+    [-m, --mode ${DISPLAY_MODE}] \
+    [-r, --rescale-factor ${RESCALE-FACTOR}] \
+    [-c, --channel-order ${CHANNEL_ORDER}] \
     [--cfg-options ${CFG_OPTIONS}]
 ```
 
 **Description of all arguments**：
 
 - `config` : The path of a model config file.
-- `--output-dir`: The output path for visualized images. If not specified, it will be set to `''`, which means not to save.
-- **`--phase`**: Phase of visualizing dataset，must be one of `['train', 'val', 'test']`. If not specified, it will be set to `'train'`.
-- **`--show-number`**: The number of samples to visualized. If not specified, display all images in the dataset.
+- `-o, --output-dir`: The output path for visualized images. If not specified, it will be set to `''`, which means not to save.
+- **`-p, --phase`**: Phase of visualizing dataset，must be one of `['train', 'val', 'test']`. If not specified, it will be set to `'train'`.
+- **`-n, --show-number`**: The number of samples to visualized. If not specified, display all images in the dataset.
 - `--show-interval`: The interval of show (s).
-- **`--mode`**: The display mode, can be one of `['original', 'transformed', 'concat', 'pipeline']`. If not specified, it will be set to `'transformed'`.
-- **`--rescale-factor`**: The image rescale factor, which is useful if the output is too large or too small.
-- `--bgr2rgb`: If set, flip the color channel order of images.
+- **`-m, --mode`**: The display mode, can be one of `['original', 'transformed', 'concat', 'pipeline']`. If not specified, it will be set to `'transformed'`.
+- **`-r, --rescale-factor`**: The image rescale factor, which is useful if the output is too large or too small.
+- `-c, --channel-order`: The channel of the showing images, could be "BGR" or "RGB", If not specified, it will be set to 'BGR' (`LoadImageFromFile` of MMCV uses the backbend of `opencv` by default，which is in 'BRG' order.).
 - `--cfg-options` : Modifications to the configuration file, refer to [Learn about Configs](./config.md).
 
 ```{note}
-1. The `--mode` is about display mode, display original pictures or transformed pictures or comparison pictures:
+1. The `-m, --mode` is about display mode, display original pictures or transformed pictures or comparison pictures:
 - "original" means show images load from disk;
 - "transformed" means to show images after transformed;
 - "concat" means show images stitched by "original" and "transformed" images;
 - "pipeline" means show all the intermediate images throghout the pipeline.
 
-2.  The `--rescale-factor` option is set when the label information is too large or too small relative to the picture. For example, when visualizing the CIFAR dataset, since the resolution of the image is very small, `--rescale-factor` can be set to 10.
+2.  The `-r, --rescale-factor` option is set when the label information is too large or too small relative to the picture. For example, when visualizing the CIFAR dataset, since the resolution of the image is very small, `--rescale-factor` can be set to 10.
 ```
 
 **Examples**：
@@ -51,7 +51,7 @@ python tools/visualizations/browse_dataset.py \
 1. In **'original'** mode:
 
 ```shell
-python ./tools/visualizations/browse_dataset.py ./configs/resnet/ --phase val --output-dir tmp --mode original --show-number 100 --rescale-factor 10 --bgr2rgb
+python ./tools/visualizations/browse_dataset.py ./configs/resnet/resnet101_8xb16_cifar10.py -p val -o tmp -m original -n 100 -r 10 -c RGB
 ```
 
 <div align=center><img src="https://user-images.githubusercontent.com/18586273/190993839-216a7a1e-590e-47b9-92ae-08f87a7d58df.jpg" style=" width: auto; height: 40%; "></div>
@@ -59,7 +59,7 @@ python ./tools/visualizations/browse_dataset.py ./configs/resnet/ --phase val --
 2. In **'transformed'** mode:
 
 ```shell
-python ./tools/visualizations/browse_dataset.py ./configs/resnet/resnet50_8xb32_in1k.py --show-number 100 --rescale-factor 2
+python ./tools/visualizations/browse_dataset.py ./configs/resnet/resnet50_8xb32_in1k.py -n 100 -r 2
 ```
 
 <div align=center><img src="https://user-images.githubusercontent.com/18586273/190994696-737b09d9-d0fb-4593-94a2-4487121e0286.JPEG" style=" width: auto; height: 40%; "></div>
@@ -67,7 +67,7 @@ python ./tools/visualizations/browse_dataset.py ./configs/resnet/resnet50_8xb32_
 3. In **'concat'** mode:
 
 ```shell
-python ./tools/visualizations/browse_dataset.py configs/swin_transformer/swin-small_16xb64_in1k.py --show-number 10 --output-dir tmp  --mode concat
+python ./tools/visualizations/browse_dataset.py configs/swin_transformer/swin-small_16xb64_in1k.py -n 10 -m concat
 ```
 
 <div align=center><img src="https://user-images.githubusercontent.com/18586273/190995078-3872feb2-d4e2-4727-a21b-7062d52f7d3e.JPEG" style=" width: auto; height: 40%; "></div>
@@ -75,7 +75,7 @@ python ./tools/visualizations/browse_dataset.py configs/swin_transformer/swin-sm
 4. In **'pipeline'** mode：
 
 ```shell
-python ./tools/visualizations/browse_dataset.py configs/swin_transformer/swin-small_16xb64_in1k.py --mode pipeline
+python ./tools/visualizations/browse_dataset.py configs/swin_transformer/swin-small_16xb64_in1k.py -m pipeline
 ```
 
 <div align=center><img src="https://user-images.githubusercontent.com/18586273/190995525-fac0220f-6630-4013-b94a-bc6de4fdff7a.JPEG" style=" width: auto; height: 40%; "></div>
@@ -85,10 +85,10 @@ python ./tools/visualizations/browse_dataset.py configs/swin_transformer/swin-sm
 ```bash
 python tools/visualizations/vis_scheduler.py \
     ${CONFIG_FILE} \
-    [--param ${PARAMETER_NAME}] \
-    [--dataset-size ${DATASET_SIZE}] \
-    [--ngpus ${NUM_GPUs}] \
-    [--save-path ${SAVE_PATH}] \
+    [-p, --parameter ${PARAMETER_NAME}] \
+    [-d, --dataset-size ${DATASET_SIZE}] \
+    [-n, --ngpus ${NUM_GPUs}] \
+    [-s, --save-path ${SAVE_PATH}] \
     [--title ${TITLE}] \
     [--style ${STYLE}] \
     [--window-size ${WINDOW_SIZE}] \
@@ -98,23 +98,23 @@ python tools/visualizations/vis_scheduler.py \
 **Description of all arguments**：
 
 - `config`: The path of a model config file.
-- **`--param`**: The param to visualize its change curve, choose from "lr" and "momentum". Default to use "lr".
-- **`--dataset-size`**: The size of the datasets. If set，`build_dataset` will be skipped and `${DATASET_SIZE}` will be used as the size. Default to use the function `build_dataset`.
-- **`--ngpus`**: The number of GPUs used in training, default to be 1.
-- `--save-path`: The learning rate curve plot save path, default not to save.
+- **`-p, --parameter`**: The param to visualize its change curve, choose from "lr" and "momentum". Default to use "lr".
+- **`-d, --dataset-size`**: The size of the datasets. If set，`build_dataset` will be skipped and `${DATASET_SIZE}` will be used as the size. Default to use the function `build_dataset`.
+- **`-n, --ngpus`**: The number of GPUs used in training, default to be 1.
+- **`-s, --save-path`**: The learning rate curve plot save path, default not to save.
 - `--title`: Title of figure. If not set, default to be config file name.
 - `--style`: Style of plt. If not set, default to be `whitegrid`.
 - `--window-size`: The shape of the display window. If not specified, it will be set to `12*7`. If used, it must be in the format `'W*H'`.
 - `--cfg-options`: Modifications to the configuration file, refer to [Learn about Configs](./config.md).
 
 ```{note}
-Loading annotations maybe consume much time, you can directly specify the size of the dataset with `dataset-size` to save time.
+Loading annotations maybe consume much time, you can directly specify the size of the dataset with `-d, dataset-size` to save time.
 ```
 
 **Examples**：
 
 ```bash
-python tools/visualizations/vis_lr.py configs/resnet/resnet50_b16x8_cifar100.py
+python tools/visualizations/vis_scheduler.py configs/resnet/resnet50_b16x8_cifar100.py
 ```
 
 <div align=center><img src="https://user-images.githubusercontent.com/18586273/191006713-023f065d-d366-4165-a52e-36176367506e.png" style=" width: auto; height: 40%; "></div>
@@ -122,7 +122,7 @@ python tools/visualizations/vis_lr.py configs/resnet/resnet50_b16x8_cifar100.py
 When using ImageNet, directly specify the size of ImageNet, as below:
 
 ```bash
-python tools/visualizations/vis_lr.py configs/repvgg/repvgg-B3g4_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py --dataset-size 1281167 --ngpus 4 --save-path ./repvgg-B3g4_4xb64-lr.jpg
+python tools/visualizations/vis_scheduler.py configs/repvgg/repvgg-B3g4_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py -d 1281167 -n 4 -s ./repvgg-B3g4_4xb64-lr.jpg
 ```
 
 <div align=center><img src="https://user-images.githubusercontent.com/18586273/191006721-0f680e07-355e-4cd6-889c-86c0cad9acb7.png" style=" width: auto; height: 40%; "></div>
