@@ -6,14 +6,8 @@ optim_wrapper = dict(
 
 # learning policy
 param_scheduler = [
-    dict(
-        type='ConstantLR',
-        factor=0.1,
-        by_epoch=True,
-        begin=0,
-        end=5,
-        convert_to_iter_based=True),
-    dict(type='PolyLR', eta_min=0, by_epoch=True, begin=5, end=300)
+    dict(type='ConstantLR', factor=0.1, by_epoch=False, begin=0, end=5000),
+    dict(type='PolyLR', eta_min=0, by_epoch=False, begin=5000)
 ]
 
 # train, val, test setting
