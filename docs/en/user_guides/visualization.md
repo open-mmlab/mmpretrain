@@ -177,7 +177,7 @@ python tools/visualizations/vis_cam.py \
 - `--aug_smooth` : Whether to use TTA(Test Time Augment) to get CAM.
 - `--eigen_smooth` : Whether to use the principal component to reduce noise.
 - `--device` : The computing device used. Default to 'cpu'.
-- `--cfg-options` : Modifications to the configuration file, refer to [Tutorial 1: Learn about Configs](https://mmclassification.readthedocs.io/en/latest/tutorials/config.html).
+- `--cfg-options` : Modifications to the configuration file, refer to [Learn about Configs](./config.md).
 
 ```{note}
 The argument `--preview-model` can view all network layers names in the given model. It will be helpful if you know nothing about the model layers when setting `--target-layers`.
@@ -234,7 +234,7 @@ For example, the `backbone.layer4[-1]` is the same as `backbone.layer4.2` since 
    ```shell
    python tools/visualizations/vis_cam.py \
        demo/dog.jpg  \
-       configs/mobilenet_v3/mobilenet-v3-large_8xb32_in1k.py \
+       configs/mobilenet_v3/mobilenet-v3-large_8xb128_in1k.py \
        https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_large-3ea3c186.pth \
        --target-layers 'backbone.layer16' \
        --method LayerCAM \

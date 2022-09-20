@@ -180,7 +180,7 @@ python tools/visualizations/vis_cam.py \
 - `--num-extra-tokens`: `ViT` 类网络的额外的 tokens 通道数，默认使用主干网络的 `num_extra_tokens`。
 - `--aug-smooth`：是否使用测试时增强
 - `--device`：使用的计算设备，如果不设置，默认为'cpu'。
-- `--cfg-options`：对配置文件的修改，参考[教程 1：如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html)。
+- `--cfg-options`：对配置文件的修改，参考[学习配置文件](./config.md)。
 
 ```{note}
 在指定 `--target-layers` 时，如果不知道模型有哪些网络层，可使用命令行添加 `--preview-model` 查看所有网络层名称；
@@ -235,7 +235,7 @@ python tools/visualizations/vis_cam.py \
    ```shell
    python tools/visualizations/vis_cam.py \
        demo/dog.jpg  \
-       configs/mobilenet_v3/mobilenet-v3-large_8xb32_in1k.py \
+       configs/mobilenet_v3/mobilenet-v3-large_8xb128_in1k.py \
        https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_large-3ea3c186.pth \
        --target-layers 'backbone.layer16' \
        --method LayerCAM \
