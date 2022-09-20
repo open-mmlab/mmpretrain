@@ -92,6 +92,7 @@ Backbones
    ShuffleNetV1
    ShuffleNetV2
    SwinTransformer
+   SwinTransformerV2
    T2T_ViT
    TIMMBackbone
    TNT
@@ -168,6 +169,8 @@ Common Components
 
    InvertedResidual
    SELayer
+   WindowMSA
+   WindowMSAV2
    ShiftWindowMSA
    MultiheadAttention
    ConditionalPositionEncoding

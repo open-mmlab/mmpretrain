@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .attention import BEiTAttention, MultiheadAttention, ShiftWindowMSA
+from .attention import (BEiTAttention, MultiheadAttention, ShiftWindowMSA,
+                        WindowMSA, WindowMSAV2)
 from .batch_augments import CutMix, Mixup, RandomBatchAugment, ResizeMix
 from .channel_shuffle import channel_shuffle
 from .data_preprocessor import ClsDataPreprocessor
@@ -19,5 +20,5 @@ __all__ = [
     'is_tracing', 'MultiheadAttention', 'ConditionalPositionEncoding',
     'resize_pos_embed', 'resize_relative_position_bias_table',
     'ClsDataPreprocessor', 'Mixup', 'CutMix', 'ResizeMix', 'BEiTAttention',
-    'LayerScale'
+    'LayerScale', 'WindowMSA', 'WindowMSAV2'
 ]
