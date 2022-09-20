@@ -157,17 +157,9 @@ def build_reshape_transform(model, args):
     return _reshape_transform
 
 
-def apply_transforms(img_path, pipeline_cfg):
-    """Apply transforms."""
-    transforms = Compose(pipeline_cfg)
-    data = transforms({'img_path': img_path})
-    return data
-
-
 def init_cam(method, model, target_layers, use_cuda, reshape_transform):
     """Construct the CAM object once, In order to be compatible with mmcls,
     here we modify the ActivationsAndGradients object."""
-
     GradCAM_Class = METHOD_MAP[method.lower()]
     cam = GradCAM_Class(
         model=model, target_layers=target_layers, use_cuda=use_cuda)

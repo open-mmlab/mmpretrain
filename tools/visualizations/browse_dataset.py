@@ -72,8 +72,8 @@ def parse_args():
         '-c',
         default='BGR',
         choices=['BGR', 'RGB'],
-        help='The channel of the showing images, could be "BGR" or "RGB",'
-        'Defaults to "BGR".')
+        help='The channel order of the showing images, could be "BGR" '
+        'or "RGB", Defaults to "BGR".')
     parser.add_argument(
         '--cfg-options',
         nargs='+',
