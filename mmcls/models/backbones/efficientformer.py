@@ -345,7 +345,7 @@ class EfficientFormer(BaseBackbone):
     Args:
         arch (str | dict): The model's architecture. If string, it should be
             one of architecture in ``EfficientFormer.arch_settings``. And if dict,
-             it should include the following 4 keys:
+            it should include the following 4 keys:
 
             - layers (list[int]): Number of blocks at each stage.
             - embed_dims (list[int]): The number of channels at each stage.
@@ -359,9 +359,9 @@ class EfficientFormer(BaseBackbone):
         mlp_ratios (int): The dimension ratio of multi-head attention mechanism
             in ``Meta4D`` blocks. Defaults to 3.
         reshape_last_feat (bool): Whether to reshape the feature map from
-             (B, N, C) to (B, C, H, W) in the last stage, when the ``vit-num``
-              in ``arch`` is not 0. Defaults to False. Usually set to True
-              in downstream tasks.
+            (B, N, C) to (B, C, H, W) in the last stage, when the ``vit-num``
+            in ``arch`` is not 0. Defaults to False. Usually set to True
+            in downstream tasks.
         out_indices (Sequence[int]): Output from which stages.
             Defaults to -1.
         frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
@@ -371,34 +371,34 @@ class EfficientFormer(BaseBackbone):
         drop_rate (float): Dropout rate. Defaults to 0.
         drop_path_rate (float): Stochastic depth rate. Defaults to 0.
         use_layer_scale (bool): Whether to use use_layer_scale in MetaFormer
-             block. Defaults to True.
+            block. Defaults to True.
         init_cfg (dict, optional): Initialization config dict.
             Defaults to None.
 
-        Example:
-            >>> from mmcls.models import EfficientFormer
-            >>> import torch
-            >>> inputs = torch.rand((1, 3, 224, 224))
-            >>> # build EfficientFormer backbone for classification task
-            >>> model = EfficientFormer(arch="l1")
-            >>> model.eval()
-            >>> level_outputs = model(inputs)
-            >>> for level_out in level_outputs:
-            ...     print(tuple(level_out.shape))
-            (1, 448, 49)
-            >>> # build EfficientFormer backbone for downstream task
-            >>> model = EfficientFormer(
-            >>>    arch="l3",
-            >>>    out_indices=(0, 1, 2, 3),
-            >>>    reshape_last_feat=True)
-            >>> model.eval()
-            >>> level_outputs = model(inputs)
-            >>> for level_out in level_outputs:
-            ...     print(tuple(level_out.shape))
-            (1, 64, 56, 56)
-            (1, 128, 28, 28)
-            (1, 320, 14, 14)
-            (1, 512, 7, 7)
+    Example:
+        >>> from mmcls.models import EfficientFormer
+        >>> import torch
+        >>> inputs = torch.rand((1, 3, 224, 224))
+        >>> # build EfficientFormer backbone for classification task
+        >>> model = EfficientFormer(arch="l1")
+        >>> model.eval()
+        >>> level_outputs = model(inputs)
+        >>> for level_out in level_outputs:
+        ...     print(tuple(level_out.shape))
+        (1, 448, 49)
+        >>> # build EfficientFormer backbone for downstream task
+        >>> model = EfficientFormer(
+        >>>    arch="l3",
+        >>>    out_indices=(0, 1, 2, 3),
+        >>>    reshape_last_feat=True)
+        >>> model.eval()
+        >>> level_outputs = model(inputs)
+        >>> for level_out in level_outputs:
+        ...     print(tuple(level_out.shape))
+        (1, 64, 56, 56)
+        (1, 128, 28, 28)
+        (1, 320, 14, 14)
+        (1, 512, 7, 7)
     """  # noqa: E501
 
     # --layers: [x,x,x,x], numbers of layers for the four stages

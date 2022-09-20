@@ -58,11 +58,11 @@ class EfficientFormerClsHead(ClsHead):
         """The process before the final classification head.
 
         The input ``feats`` is a tuple of tensor, and each tensor is the
-        feature of a backbone stage. In ``LinearClsHead``, we just obtain the
-        feature of the last stage.
+        feature of a backbone stage. In :obj`EfficientFormerClsHead`, we just
+        obtain the feature of the last stage.
         """
-        # The LinearClsHead doesn't have other module, just return after
-        # unpacking.
+        # The EfficientFormerClsHead doesn't have other module, just return
+        # after unpacking.
         return feats[-1]
 
     def loss(self, feats: Tuple[torch.Tensor],

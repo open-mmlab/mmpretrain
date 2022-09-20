@@ -20,7 +20,7 @@ Models:
     Metadata:
       FLOPs: 1304601088     # 1.3G
       Parameters: 12278696   # 12M
-    In Collections: EfficientFormer
+    In Collection: EfficientFormer
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -37,7 +37,7 @@ Models:
       Training Data: ImageNet-1k
       FLOPs: 3737045760        # 3.7G
       Parameters: 31406000     # 31M
-    In Collections: EfficientFormer
+    In Collection: EfficientFormer
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -53,7 +53,7 @@ Models:
     Metadata:
       FLOPs: 10163951616      # 10.2G
       Parameters: 82229328    # 82M
-    In Collections: EfficientFormer
+    In Collection: EfficientFormer
     Results:
       - Dataset: ImageNet-1k
         Metrics:
