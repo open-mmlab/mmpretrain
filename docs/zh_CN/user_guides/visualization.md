@@ -3,7 +3,7 @@
 <!-- TOC -->
 
 - [浏览数据集](#浏览数据集)
-- [学习率策略可视化](#学习率策略可视化)
+- [优化器参数策略可视化](#优化器参数策略可视化)
 - [类别激活图可视化](#类别激活图可视化)
 - [常见问题](#常见问题)
 
@@ -17,9 +17,9 @@ python tools/visualizations/browse_dataset.py \
     [-o, --output-dir ${OUTPUT_DIR}] \
     [-p, --phase ${DATASET_PHASE}] \
     [-n, --show-number ${NUMBER_IMAGES_DISPLAY}] \
-    [-i, --show-interval ${SHOW-INTERRVAL}] \
+    [-i, --show-interval ${SHOW_INTERRVAL}] \
     [-m, --mode ${DISPLAY_MODE}] \
-    [-r, --rescale-factor ${RESCALE-FACTOR}] \
+    [-r, --rescale-factor ${RESCALE_FACTOR}] \
     [-c, --channel-order ${CHANNEL_ORDER}] \
     [--cfg-options ${CFG_OPTIONS}]
 ```
@@ -33,7 +33,7 @@ python tools/visualizations/browse_dataset.py \
 - `-i, --show-interval`: 浏览时，每张图片的停留间隔，单位为秒。
 - **`-m, --mode`**: 可视化的模式，只能为 `['original', 'transformed', 'concat', 'pipeline']` 之一。 默认为`'transformed'`.
 - **`-r, --rescale-factor`**: 对可视化图片的放缩倍数，在图片过大或过小时设置。
-- `-c, --channel-order`: 图片的通道顺序，为  `['BGR', 'RGB']` 之一，默认为 `'BGR'`（MMCV 中 `LoadImageFromFile` 默认使用 `opencv` 后端，图片的通道顺序为 'BGR'）。
+- `-c, --channel-order`: 图片的通道顺序，为  `['BGR', 'RGB']` 之一，默认为 `'BGR'`。
 - `--cfg-options` : 对配置文件的修改，参考[学习配置文件](./config.md)。
 
 ```{note}
@@ -44,7 +44,7 @@ python tools/visualizations/browse_dataset.py \
 - 如果 `--mode` 设置为 'concat'，获取原始图片和预处理后图片拼接的图片；
 - 如果 `--mode` 设置为 'pipeline'，则获得数据流水线所有中间过程图片。
 
-2. `-r, --rescale-factor` 在数据集中图片的分辨率过大或者过小时设置。比如在可视化 CIFAR 数据集时，由于图片的分辨率非常小，可将 `--rescale-factor` 设置为 10。
+2. `-r, --rescale-factor` 在数据集中图片的分辨率过大或者过小时设置。比如在可视化 CIFAR 数据集时，由于图片的分辨率非常小，可将 `-r, --rescale-factor` 设置为 10。
 ```
 
 **示例**：
@@ -52,8 +52,15 @@ python tools/visualizations/browse_dataset.py \
 1. **'original'** 模式 ：
 
 ```shell
-python ./tools/visualizations/browse_dataset.py ./configs/resnet/resnet101_8xb16_cifar10.py -p val -o tmp -m original -n 100 -r 10 -c RGB
+python ./tools/visualizations/browse_dataset.py ./configs/resnet/resnet101_8xb16_cifar10.py --phase val --output-dir tmp --mode original --show-number 100 --rescale-factor 10 --channel-order RGB
 ```
+
+- `--phase val`: 可视化验证集, 可简化为 `-p val`;
+- `--output-dir tmp`: 可视化结果保存在 "tmp" 文件夹, 可简化为 `-o tmp`;
+- `--mode original`: 可视化原图, 可简化为 `-m original`;
+- `--show-number 100`: 可视化100张图，可简化为 `-n 100`;
+- `--rescale-factor`: 图像放大10倍，可简化为 `-r 10`;
+- `--channel-order RGB`: 可视化图像的通道顺序为 "RGB", 可简化为 `-c RGB`。
 
 <div align=center><img src="https://user-images.githubusercontent.com/18586273/190993839-216a7a1e-590e-47b9-92ae-08f87a7d58df.jpg" style=" width: auto; height: 40%; "></div>
 
@@ -81,15 +88,15 @@ python ./tools/visualizations/browse_dataset.py configs/swin_transformer/swin-sm
 
 <div align=center><img src="https://user-images.githubusercontent.com/18586273/190995525-fac0220f-6630-4013-b94a-bc6de4fdff7a.JPEG" style=" width: auto; height: 40%; "></div>
 
-## 参数策略可视化
+## 优化器参数策略可视化
 
 ```bash
 python tools/visualizations/vis_scheduler.py \
     ${CONFIG_FILE} \
-    [--param ${PARAMETER_NAME}] \
-    [--dataset-size ${DATASET_SIZE}] \
-    [--ngpus ${NUM_GPUs}] \
-    [--save-path ${SAVE_PATH}] \
+    [-p, --parammeter ${PARAMETER_NAME}] \
+    [-d, --dataset-size ${DATASET_SIZE}] \
+    [-n, --ngpus ${NUM_GPUs}] \
+    [-s, --save-path ${SAVE_PATH}] \
     [--title ${TITLE}] \
     [--style ${STYLE}] \
     [--window-size ${WINDOW_SIZE}] \
@@ -125,7 +132,7 @@ python tools/visualizations/vis_scheduler.py configs/resnet/resnet50_b16x8_cifar
 当数据集为 ImageNet 时，通过直接指定数据集大小来节约时间，并保存图片：
 
 ```bash
-python tools/visualizations/vis_scheduler.py configs/repvgg/repvgg-B3g4_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py -d 1281167 -n 4 -s ./repvgg-B3g4_4xb64-lr.jpg
+python tools/visualizations/vis_scheduler.py configs/repvgg/repvgg-B3g4_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py --dataset-size 1281167 --ngpus 4 --save-path ./repvgg-B3g4_4xb64-lr.jpg
 ```
 
 <div align=center><img src="https://user-images.githubusercontent.com/18586273/191006721-0f680e07-355e-4cd6-889c-86c0cad9acb7.png" style=" width: auto; height: 40%; "></div>

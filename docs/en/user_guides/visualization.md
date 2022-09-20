@@ -17,9 +17,9 @@ python tools/visualizations/browse_dataset.py \
     [-o, --output-dir ${OUTPUT_DIR}] \
     [-p, --phase ${DATASET_PHASE}] \
     [-n, --show-number ${NUMBER_IMAGES_DISPLAY}] \
-    [-i, --show-interval ${SHOW-INTERRVAL}] \
+    [-i, --show-interval ${SHOW_INTERRVAL}] \
     [-m, --mode ${DISPLAY_MODE}] \
-    [-r, --rescale-factor ${RESCALE-FACTOR}] \
+    [-r, --rescale-factor ${RESCALE_FACTOR}] \
     [-c, --channel-order ${CHANNEL_ORDER}] \
     [--cfg-options ${CFG_OPTIONS}]
 ```
@@ -33,7 +33,7 @@ python tools/visualizations/browse_dataset.py \
 - `--show-interval`: The interval of show (s).
 - **`-m, --mode`**: The display mode, can be one of `['original', 'transformed', 'concat', 'pipeline']`. If not specified, it will be set to `'transformed'`.
 - **`-r, --rescale-factor`**: The image rescale factor, which is useful if the output is too large or too small.
-- `-c, --channel-order`: The channel of the showing images, could be "BGR" or "RGB", If not specified, it will be set to 'BGR' (`LoadImageFromFile` of MMCV uses the backbend of `opencv` by default，which is in 'BRG' order.).
+- `-c, --channel-order`: The channel of the showing images, could be "BGR" or "RGB", If not specified, it will be set to 'BGR'.
 - `--cfg-options` : Modifications to the configuration file, refer to [Learn about Configs](./config.md).
 
 ```{note}
@@ -51,8 +51,15 @@ python tools/visualizations/browse_dataset.py \
 1. In **'original'** mode:
 
 ```shell
-python ./tools/visualizations/browse_dataset.py ./configs/resnet/resnet101_8xb16_cifar10.py -p val -o tmp -m original -n 100 -r 10 -c RGB
+python ./tools/visualizations/browse_dataset.py ./configs/resnet/resnet101_8xb16_cifar10.py --phase val --output-dir tmp --mode original --show-number 100 --rescale-factor 10 --channel-order RGB
 ```
+
+- `--phase val`: Visual validation set, can be simplified to `-p val`;
+- `--output-dir tmp`: The visualization results are saved in the "tmp" folder, can be simplified to `-o tmp`;
+- `--mode original`: Visualize the original image, can be simplified to `-m original`;
+- `--show-number 100`: visualize 100 images, can be simplified to `-n 100`;
+- `--rescale-factor`: the image is enlarged by 10 times, can be simplified to `-r 10`;
+- `--channel-order RGB`: The channel order of the visualized image is "RGB", can be simplified to `-c RGB`.
 
 <div align=center><img src="https://user-images.githubusercontent.com/18586273/190993839-216a7a1e-590e-47b9-92ae-08f87a7d58df.jpg" style=" width: auto; height: 40%; "></div>
 
@@ -122,7 +129,7 @@ python tools/visualizations/vis_scheduler.py configs/resnet/resnet50_b16x8_cifar
 When using ImageNet, directly specify the size of ImageNet, as below:
 
 ```bash
-python tools/visualizations/vis_scheduler.py configs/repvgg/repvgg-B3g4_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py -d 1281167 -n 4 -s ./repvgg-B3g4_4xb64-lr.jpg
+python tools/visualizations/vis_scheduler.py configs/repvgg/repvgg-B3g4_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py --dataset-size 1281167 --ngpus 4 --save-path ./repvgg-B3g4_4xb64-lr.jpg
 ```
 
 <div align=center><img src="https://user-images.githubusercontent.com/18586273/191006721-0f680e07-355e-4cd6-889c-86c0cad9acb7.png" style=" width: auto; height: 40%; "></div>
