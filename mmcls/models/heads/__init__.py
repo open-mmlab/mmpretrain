@@ -3,7 +3,6 @@ from .cls_head import ClsHead
 from .conformer_head import ConformerHead
 from .deit_head import DeiTClsHead
 from .linear_head import LinearClsHead
-from .linear_head_gcvit import LinearClsHead_GCViT
 from .multi_label_cls_head import MultiLabelClsHead
 from .multi_label_linear_head import MultiLabelLinearClsHead
 from .stacked_head import StackedLinearClsHead
