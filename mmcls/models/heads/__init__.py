@@ -12,5 +12,5 @@ from .vision_transformer_head import VisionTransformerClsHead
 __all__ = [
     'ClsHead', 'LinearClsHead', 'StackedLinearClsHead', 'MultiLabelClsHead',
     'MultiLabelLinearClsHead', 'VisionTransformerClsHead', 'DeiTClsHead',
-    'ConformerHead', 'LinearClsHead_GCViT'
+    'ConformerHead'
 ]
