@@ -274,36 +274,37 @@ class HybridEmbed(BaseModule):
 
 
 class PatchMerging(BaseModule):
-    """Merge patch feature map. Modified from mmcv, which uses pre-norm layer
-    whereas Swin V2 uses post-norm here. Therefore, add extra parameter to
-    decide whether use post-norm or not.
+    """Merge patch feature map.
+
+    Modified from mmcv, and this module supports specifying whether to use
+    post-norm.
 
     This layer groups feature map by kernel_size, and applies norm and linear
-    layers to the grouped feature map ((used in Swin Transformer)).
-    Our implementation uses `nn.Unfold` to
-    merge patches, which is about 25% faster than the original
-    implementation. However, we need to modify pretrained
-    models for compatibility.
+    layers to the grouped feature map ((used in Swin Transformer)). Our
+    implementation uses :class:`torch.nn.Unfold` to merge patches, which is
+    about 25% faster than the original implementation. However, we need to
+    modify pretrained models for compatibility.
 
     Args:
-        in_channels (int): The num of input channels.
-            to gets fully covered by filter and stride you specified.
+        in_channels (int): The num of input channels. To gets fully covered
+            by filter and stride you specified.
         out_channels (int): The num of output channels.
         kernel_size (int | tuple, optional): the kernel size in the unfold
             layer. Defaults to 2.
         stride (int | tuple, optional): the stride of the sliding blocks in the
-            unfold layer. Defaults to None. (Would be set as `kernel_size`)
+            unfold layer. Defaults to None, which means to be set as
+            ``kernel_size``.
         padding (int | tuple | string ): The padding length of
             embedding conv. When it is a string, it means the mode
             of adaptive padding, support "same" and "corner" now.
             Defaults to "corner".
         dilation (int | tuple, optional): dilation parameter in the unfold
-            layer. Default: 1.
+            layer. Defaults to 1.
         bias (bool, optional): Whether to add bias in linear layer or not.
             Defaults to False.
         norm_cfg (dict, optional): Config dict for normalization layer.
-            Defaults to dict(type='LN').
-        is_post_norm (bool): Whether to use post normalization here.
+            Defaults to ``dict(type='LN')``.
+        use_post_norm (bool): Whether to use post normalization here.
             Defaults to False.
         init_cfg (dict, optional): The extra config for initialization.
             Defaults to None.
@@ -318,12 +319,12 @@ class PatchMerging(BaseModule):
                  dilation=1,
                  bias=False,
                  norm_cfg=dict(type='LN'),
-                 is_post_norm=False,
+                 use_post_norm=False,
                  init_cfg=None):
         super().__init__(init_cfg=init_cfg)
         self.in_channels = in_channels
         self.out_channels = out_channels
-        self.is_post_norm = is_post_norm
+        self.use_post_norm = use_post_norm
 
         if stride:
             stride = stride
@@ -358,7 +359,7 @@ class PatchMerging(BaseModule):
 
         if norm_cfg is not None:
             # build pre or post norm layer based on different channels
-            if self.is_post_norm:
+            if self.use_post_norm:
                 self.norm = build_norm_layer(norm_cfg, out_channels)[1]
             else:
                 self.norm = build_norm_layer(norm_cfg, sample_dim)[1]
@@ -409,7 +410,7 @@ class PatchMerging(BaseModule):
         output_size = (out_h, out_w)
         x = x.transpose(1, 2)  # B, H/2*W/2, 4*C
 
-        if self.is_post_norm:
+        if self.use_post_norm:
             # use post-norm here
             x = self.reduction(x)
             x = self.norm(x) if self.norm else x

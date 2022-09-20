@@ -187,16 +187,3 @@ class TestShiftWindowMSA(TestCase):
         # drop all attn output, output shuold be equal to proj.bias
         self.assertTrue(
             torch.allclose(attn(inputs, (14, 14)), torch.tensor(0.)))
-
-    def test_deprecation(self):
-        # test deprecated arguments
-        with pytest.warns(DeprecationWarning):
-            ShiftWindowMSA(
-                embed_dims=96,
-                num_heads=4,
-                window_size=7,
-                input_resolution=(14, 14))
-
-        with pytest.warns(DeprecationWarning):
-            ShiftWindowMSA(
-                embed_dims=96, num_heads=4, window_size=7, auto_pad=True)

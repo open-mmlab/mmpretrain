@@ -169,6 +169,8 @@ Common Components
 
    InvertedResidual
    SELayer
+   WindowMSA
+   WindowMSAV2
    ShiftWindowMSA
    MultiheadAttention
    ConditionalPositionEncoding

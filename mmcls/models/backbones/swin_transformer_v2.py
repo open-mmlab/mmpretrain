@@ -80,8 +80,7 @@ class SwinBlockV2(BaseModule):
         # use V2 attention implementation
         _attn_cfgs.update(
             window_msa=WindowMSAV2,
-            msa_cfg=dict(
-                pretrained_window_size=to_2tuple(pretrained_window_size)))
+            pretrained_window_size=to_2tuple(pretrained_window_size))
         self.attn = ShiftWindowMSA(**_attn_cfgs)
         self.norm1 = build_norm_layer(norm_cfg, embed_dims)[1]
 
@@ -247,7 +246,7 @@ class SwinTransformerV2(BaseBackbone):
             - **num_heads** (List[int]): The number of heads in attention
               modules of each stage.
             - **extra_norm_every_n_blocks** (int): Add extra norm at the end
-            of main branch every n blocks.
+              of main branch every n blocks.
 
             Defaults to 'tiny'.
         img_size (int | tuple): The expected input image shape. Because we
@@ -354,7 +353,7 @@ class SwinTransformerV2(BaseBackbone):
                  norm_eval=False,
                  pad_small_map=False,
                  norm_cfg=dict(type='LN'),
-                 stage_cfgs=dict(downsample_cfg=dict(is_post_norm=True)),
+                 stage_cfgs=dict(),
                  patch_cfg=dict(),
                  pretrained_window_sizes=[0, 0, 0, 0],
                  init_cfg=None):
@@ -446,6 +445,7 @@ class SwinTransformerV2(BaseBackbone):
                 'pad_small_map': pad_small_map,
                 'extra_norm_every_n_blocks': self.extra_norm_every_n_blocks,
                 'pretrained_window_size': pretrained_window_sizes[i],
+                'downsample_cfg': dict(use_post_norm=True),
                 **stage_cfg
             }
 

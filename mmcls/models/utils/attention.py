@@ -1,6 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import warnings
-
 import numpy as np
 import torch
 import torch.nn as nn
@@ -132,7 +130,6 @@ class WindowMSA(BaseModule):
         return (seq1[:, None] + seq2[None, :]).reshape(1, -1)
 
 
-@MODELS.register_module()
 class WindowMSAV2(BaseModule):
     """Window based multi-head self-attention (W-MSA) module with relative
     position bias.
@@ -145,13 +142,16 @@ class WindowMSAV2(BaseModule):
         embed_dims (int): Number of input channels.
         window_size (tuple[int]): The height and width of the window.
         num_heads (int): Number of attention heads.
-        qkv_bias (bool, optional): If True, add a learnable bias to q, k, v.
+        qkv_bias (bool): If True, add a learnable bias to q, k, v.
             Defaults to True.
-        attn_drop (float, optional): Dropout ratio of attention weight.
+        attn_drop (float): Dropout ratio of attention weight.
             Defaults to 0.
-        proj_drop (float, optional): Dropout ratio of output. Defaults to 0.
+        proj_drop (float): Dropout ratio of output. Defaults to 0.
+        cpb_mlp_hidden_dims (int): The hidden dimensions of the continuous
+            relative position bias network. Defaults to 512.
         pretrained_window_size (tuple(int)): The height and width of the window
-            in pre-training.
+            in pre-training. Defaults to (0, 0), which means not load
+            pretrained model.
         init_cfg (dict, optional): The extra config for initialization.
             Defaults to None.
     """
@@ -165,8 +165,7 @@ class WindowMSAV2(BaseModule):
                  proj_drop=0.,
                  cpb_mlp_hidden_dims=512,
                  pretrained_window_size=(0, 0),
-                 init_cfg=None,
-                 **kwargs):  # accept extra arguments
+                 init_cfg=None):
 
         super().__init__(init_cfg)
         self.embed_dims = embed_dims
@@ -313,13 +312,6 @@ class ShiftWindowMSA(BaseModule):
         window_size (int): The height and width of the window.
         shift_size (int, optional): The shift step of each window towards
             right-bottom. If zero, act as regular window-msa. Defaults to 0.
-        qkv_bias (bool, optional): If True, add a learnable bias to q, k, v.
-            Defaults to True
-        qk_scale (float | None, optional): Override default qk scale of
-            head_dim ** -0.5 if set. Defaults to None.
-        attn_drop (float, optional): Dropout ratio of attention weight.
-            Defaults to 0.0.
-        proj_drop (float, optional): Dropout ratio of output. Defaults to 0.
         dropout_layer (dict, optional): The dropout_layer used before output.
             Defaults to dict(type='DropPath', drop_prob=0.).
         pad_small_map (bool): If True, pad the small feature map to the window
@@ -327,10 +319,12 @@ class ShiftWindowMSA(BaseModule):
             avoid shifting window and shrink the window size to the size of
             feature map, which is common used in classification.
             Defaults to False.
-        version (str, optional): Version of implementation of Swin
-            Transformers. Defaults to `v1`.
+        window_msa (Callable): To build a window multi-head attention module.
+            Defaults to :class:`WindowMSA`.
         init_cfg (dict, optional): The extra config for initialization.
             Defaults to None.
+        **kwargs: Other keyword arguments to build the window multi-head
+            attention module.
     """
 
     def __init__(self,
@@ -338,42 +332,22 @@ class ShiftWindowMSA(BaseModule):
                  num_heads,
                  window_size,
                  shift_size=0,
-                 qkv_bias=True,
-                 qk_scale=None,
-                 attn_drop=0,
-                 proj_drop=0,
                  dropout_layer=dict(type='DropPath', drop_prob=0.),
                  pad_small_map=False,
-                 input_resolution=None,
-                 auto_pad=None,
                  window_msa=WindowMSA,
-                 msa_cfg=dict(),
-                 init_cfg=None):
+                 init_cfg=None,
+                 **kwargs):
         super().__init__(init_cfg)
-
-        if input_resolution is not None or auto_pad is not None:
-            warnings.warn(
-                'The ShiftWindowMSA in new version has supported auto padding '
-                'and dynamic input shape in all condition. And the argument '
-                '`auto_pad` and `input_resolution` have been deprecated.',
-                DeprecationWarning)
 
         self.shift_size = shift_size
         self.window_size = window_size
         assert 0 <= self.shift_size < self.window_size
 
-        assert issubclass(window_msa, BaseModule), \
-            'Expect Window based multi-head self-attention Module is type of' \
-            f'{type(BaseModule)}, but got {type(window_msa)}.'
         self.w_msa = window_msa(
             embed_dims=embed_dims,
-            window_size=to_2tuple(self.window_size),
             num_heads=num_heads,
-            qkv_bias=qkv_bias,
-            qk_scale=qk_scale,
-            attn_drop=attn_drop,
-            proj_drop=proj_drop,
-            **msa_cfg,
+            window_size=to_2tuple(self.window_size),
+            **kwargs,
         )
 
         self.drop = build_dropout(dropout_layer)
