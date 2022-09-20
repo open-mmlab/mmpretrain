@@ -8,13 +8,14 @@ from pathlib import Path
 
 import mmcv
 import numpy as np
-from mmcv import Config, DictAction
-from mmcv.utils import to_2tuple
+from mmcv.transforms import Compose
+from mmengine.config import Config, DictAction
+from mmengine.utils import to_2tuple
 from torch.nn import BatchNorm1d, BatchNorm2d, GroupNorm, LayerNorm
 
 from mmcls import digit_version
 from mmcls.apis import init_model
-from mmcls.datasets.pipelines import Compose
+from mmcls.utils import register_all_modules
 
 try:
     from pytorch_grad_cam import (EigenCAM, EigenGradCAM, GradCAM,
@@ -25,9 +26,6 @@ try:
 except ImportError:
     raise ImportError('Please run `pip install "grad-cam>=1.3.6"` to install '
                       '3rd party package pytorch_grad_cam.')
-
-# set of transforms, which just change data format, not change the pictures
-FORMAT_TRANSFORMS_SET = {'ToTensor', 'Normalize', 'ImageToTensor', 'Collect'}
 
 # Supported grad-cam type map
 METHOD_MAP = {
@@ -159,56 +157,16 @@ def build_reshape_transform(model, args):
     return _reshape_transform
 
 
-def apply_transforms(img_path, pipeline_cfg):
-    """Apply transforms pipeline and get both formatted data and the image
-    without formatting."""
-    data = dict(img_info=dict(filename=img_path), img_prefix=None)
-
-    def split_pipeline_cfg(pipeline_cfg):
-        """to split the transfoms into image_transforms and
-        format_transforms."""
-        image_transforms_cfg, format_transforms_cfg = [], []
-        if pipeline_cfg[0]['type'] != 'LoadImageFromFile':
-            pipeline_cfg.insert(0, dict(type='LoadImageFromFile'))
-        for transform in pipeline_cfg:
-            if transform['type'] in FORMAT_TRANSFORMS_SET:
-                format_transforms_cfg.append(transform)
-            else:
-                image_transforms_cfg.append(transform)
-        return image_transforms_cfg, format_transforms_cfg
-
-    image_transforms, format_transforms = split_pipeline_cfg(pipeline_cfg)
-    image_transforms = Compose(image_transforms)
-    format_transforms = Compose(format_transforms)
-
-    intermediate_data = image_transforms(data)
-    inference_img = copy.deepcopy(intermediate_data['img'])
-    format_data = format_transforms(intermediate_data)
-
-    return format_data, inference_img
-
-
-class MMActivationsAndGradients(ActivationsAndGradients):
-    """Activations and gradients manager for mmcls models."""
-
-    def __call__(self, x):
-        self.gradients = []
-        self.activations = []
-        return self.model(
-            x, return_loss=False, softmax=False, post_process=False)
-
-
 def init_cam(method, model, target_layers, use_cuda, reshape_transform):
     """Construct the CAM object once, In order to be compatible with mmcls,
     here we modify the ActivationsAndGradients object."""
-
     GradCAM_Class = METHOD_MAP[method.lower()]
     cam = GradCAM_Class(
         model=model, target_layers=target_layers, use_cuda=use_cuda)
     # Release the original hooks in ActivationsAndGradients to use
-    # MMActivationsAndGradients.
+    # ActivationsAndGradients.
     cam.activations_and_grads.release()
-    cam.activations_and_grads = MMActivationsAndGradients(
+    cam.activations_and_grads = ActivationsAndGradients(
         cam.model, cam.target_layers, reshape_transform)
 
     return cam
@@ -306,6 +264,7 @@ def main():
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
 
+    register_all_modules()
     # build the model from a config file and a checkpoint file
     model = init_model(cfg, args.checkpoint, device=args.device)
     if args.preview_model:
@@ -314,7 +273,10 @@ def main():
         return
 
     # apply transform and perpare data
-    data, src_img = apply_transforms(args.img, cfg.data.test.pipeline)
+    transforms = Compose(cfg.test_dataloader.dataset.pipeline)
+    data = transforms({'img_path': args.img})
+    src_img = copy.deepcopy(data['inputs']).numpy().transpose(1, 2, 0)
+    data = model.data_preprocessor(data, False)
 
     # build target layers
     if args.target_layers:
@@ -344,7 +306,7 @@ def main():
 
     # calculate cam grads and show|save the visualization image
     grayscale_cam = cam(
-        data['img'].unsqueeze(0),
+        data['inputs'].unsqueeze(0),
         targets,
         eigen_smooth=args.eigen_smooth,
         aug_smooth=args.aug_smooth)
