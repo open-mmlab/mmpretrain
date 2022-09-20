@@ -31,7 +31,7 @@ class TestAccuracy(TestCase):
         metric.process(None, pred)
         acc = metric.evaluate(6)
         self.assertIsInstance(acc, dict)
-        self.assertAlmostEqual(acc['accuracy/top1'], 2 / 6 * 100, places=4)
+        self.assertAlmostEqual(acc['Accuracy/top1'], 2 / 6 * 100, places=4)
 
         # Test with multiple thrs
         metric = METRICS.build(dict(type='Accuracy', thrs=(0., 0.6, None)))
@@ -39,12 +39,12 @@ class TestAccuracy(TestCase):
         acc = metric.evaluate(6)
         self.assertSetEqual(
             set(acc.keys()), {
-                'accuracy/top1_thr-0.00', 'accuracy/top1_thr-0.60',
-                'accuracy/top1_no-thr'
+                'Accuracy/top1_thr-0.00', 'Accuracy/top1_thr-0.60',
+                'Accuracy/top1_no-thr'
             })
 
         # Test with invalid topk
-        with self.assertRaisesRegex(ValueError, 'check the `val_evaluator`'):
+        with self.assertRaisesRegex(RuntimeError, 'selected index k out of'):
             metric = METRICS.build(dict(type='Accuracy', topk=(1, 5)))
             metric.process(None, pred)
             metric.evaluate(6)
@@ -56,7 +56,8 @@ class TestAccuracy(TestCase):
         metric.process(None, pred)
         acc = metric.evaluate(6)
         self.assertIsInstance(acc, dict)
-        self.assertAlmostEqual(acc['accuracy/top1'], 4 / 6 * 100, places=4)
+        self.assertAlmostEqual(
+            acc['Accuracy/top1_thr-0.00'], 4 / 6 * 100, places=4)
 
         # Test initialization
         metric = METRICS.build(dict(type='Accuracy', thrs=0.6))
@@ -83,26 +84,29 @@ class TestAccuracy(TestCase):
             [0.0, 0.0, 1.0],
         ]
 
+        accuracy = Accuracy(thrs=(0.6, ))
+
         # Test with score
-        acc = Accuracy.calculate(y_score, y_true, thrs=(0.6, ))
+        acc = accuracy.calculate(y_score, y_true)
         self.assertIsInstance(acc, list)
         self.assertIsInstance(acc[0], list)
         self.assertIsInstance(acc[0][0], torch.Tensor)
         self.assertTensorEqual(acc[0][0], 2 / 6 * 100)
 
         # Test with label
-        acc = Accuracy.calculate(y_label, y_true, thrs=(0.6, ))
+        acc = accuracy.calculate(y_label, y_true)
         self.assertIsInstance(acc, torch.Tensor)
         # the thrs will be ignored
         self.assertTensorEqual(acc, 4 / 6 * 100)
 
         # Test with invalid inputs
         with self.assertRaisesRegex(TypeError, "<class 'str'> is not"):
-            Accuracy.calculate(y_label, 'hi')
+            accuracy.calculate(y_label, 'hi')
 
         # Test with invalid topk
-        with self.assertRaisesRegex(ValueError, 'Top-5 accuracy .* is 3'):
-            Accuracy.calculate(y_score, y_true, topk=(1, 5))
+        with self.assertRaisesRegex(RuntimeError, 'selected index k out of'):
+            accuracy = Accuracy(topk=(1, 5))
+            accuracy.calculate(y_score, y_true)
 
     def assertTensorEqual(self,
                           tensor: torch.Tensor,

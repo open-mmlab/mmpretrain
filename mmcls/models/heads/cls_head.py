@@ -37,6 +37,8 @@ class ClsHead(BaseHead):
         self.loss_module = MODELS.build(loss)
         self.cal_acc = cal_acc
 
+        self.accuracy = Accuracy(topk=self.topk)
+
     def pre_logits(self, feats: Tuple[torch.Tensor]) -> torch.Tensor:
         """The process before the final classification head.
 
@@ -97,7 +99,7 @@ class ClsHead(BaseHead):
         if self.cal_acc:
             assert target.ndim == 1, 'If you enable batch augmentation ' \
                 'like mixup during training, `cal_acc` is pointless.'
-            acc = Accuracy.calculate(cls_score, target, topk=self.topk)
+            acc = self.accuracy.calculate(cls_score, target)
             losses.update(
                 {f'accuracy_top-{k}': a
                  for k, a in zip(self.topk, acc)})
