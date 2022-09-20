@@ -291,6 +291,30 @@ def test_repvgg_backbone():
     assert isinstance(feat[0], torch.Tensor)
     assert feat[0].shape == torch.Size((1, 1280, 7, 7))
 
+    # Test RepVGG forward with base_channels is None and arch['base_channels']
+    # is None
+    arch = dict(
+        num_blocks=[2, 4, 14, 1],
+        width_factor=[0.75, 0.75, 0.75, 2.5],
+        group_layer_map=None,
+        se_cfg=None,
+        min_stem_channels=64,
+        base_channels=None)
+    model = RepVGG(arch, out_indices=(3, ), add_ppf=True)
+    model.init_weights()
+    model.train()
+
+    for m in model.modules():
+        if is_norm(m):
+            assert isinstance(m, _BatchNorm)
+
+    imgs = torch.randn(1, 3, 224, 224)
+    feat = model(imgs)
+    assert isinstance(feat, tuple)
+    assert len(feat) == 1
+    assert isinstance(feat[0], torch.Tensor)
+    assert feat[0].shape == torch.Size((1, 1280, 7, 7))
+
 
 def test_repvgg_load():
     # Test output before and load from deploy checkpoint
