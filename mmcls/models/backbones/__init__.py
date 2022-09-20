@@ -44,5 +44,5 @@ __all__ = [
     'Conformer', 'MlpMixer', 'DistilledVisionTransformer', 'PCPVT', 'SVT',
     'EfficientNet', 'ConvNeXt', 'HRNet', 'ResNetV1c', 'ConvMixer',
     'CSPDarkNet', 'CSPResNet', 'CSPResNeXt', 'CSPNet', 'RepMLPNet',
-    'PoolFormer', 'DenseNet', 'VAN', 'InceptionV3', 'GCViT'
+    'PoolFormer', 'DenseNet', 'VAN', 'InceptionV3', 'MobileOne', 'GCViT'
 ]
