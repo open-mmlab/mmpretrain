@@ -289,7 +289,10 @@ class VisionTransformer(BaseBackbone):
                 'feedforward_channels': 4096
             }),
         **dict.fromkeys(
-            ['h', 'huge'], {
+            ['h', 'huge'],
+            {
+                # The same as the implementation in MAE
+                # <https://arxiv.org/abs/2111.06377>
                 'embed_dims': 1280,
                 'num_layers': 32,
                 'num_heads': 16,
