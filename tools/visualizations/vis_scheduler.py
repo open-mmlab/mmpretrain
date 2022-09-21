@@ -76,22 +76,30 @@ def parse_args():
         description='Visualize a Dataset Pipeline')
     parser.add_argument('config', help='config file path')
     parser.add_argument(
-        '--param',
+        '-p',
+        '--parameter',
         type=str,
         default='lr',
         choices=['lr', 'momentum'],
-        help='The param to visualize its change curve, choose from'
+        help='The parameter to visualize its change curve, choose from'
         '"lr" and "momentum". Defaults to "lr".')
     parser.add_argument(
+        '-d',
         '--dataset-size',
         type=int,
         help='The size of the dataset. If specify, `build_dataset` will '
         'be skipped and use this size as the dataset size.')
     parser.add_argument(
+        '-n',
         '--ngpus',
         type=int,
         default=1,
         help='The number of GPUs used in training.')
+    parser.add_argument(
+        '-s',
+        '--save-path',
+        type=Path,
+        help='The learning rate curve plot save path')
     parser.add_argument(
         '--log-level',
         default='WARNING',
@@ -100,10 +108,6 @@ def parse_args():
     parser.add_argument('--title', type=str, help='title of figure')
     parser.add_argument(
         '--style', type=str, default='whitegrid', help='style of plt')
-    parser.add_argument(
-        '--save-path',
-        type=Path,
-        help='The learning rate curve plot save path')
     parser.add_argument('--not-show', default=False, action='store_true')
     parser.add_argument(
         '--window-size',
@@ -166,6 +170,7 @@ def simulate_train(data_loader, cfg, by_epoch):
     param_record_hook = ParamRecordHook(by_epoch=by_epoch)
     default_hooks = dict(
         param_scheduler=cfg.default_hooks['param_scheduler'],
+        runtime_info=None,
         timer=None,
         logger=None,
         checkpoint=None,
@@ -246,12 +251,12 @@ def main():
 
     # simulation training process
     lr_list, momentum_list = simulate_train(data_loader, cfg, by_epoch)
-    if args.param == 'lr':
+    if args.parameter == 'lr':
         param_list = lr_list
     else:
         param_list = momentum_list
 
-    param_name = 'Learning Rate' if args.param == 'lr' else 'Momentum'
+    param_name = 'Learning Rate' if args.parameter == 'lr' else 'Momentum'
     plot_curve(param_list, args, param_name, len(data_loader), by_epoch)
 
     if args.save_path:

@@ -24,37 +24,42 @@ class LabelSmoothLoss(nn.Module):
         label_smooth_val (float): The degree of label smoothing.
         num_classes (int, optional): Number of classes. Defaults to None.
         mode (str): Refers to notes, Options are 'original', 'classy_vision',
-            'multi_label'. Defaults to 'original'
+            'multi_label'. Defaults to 'original'.
+        use_sigmoid (bool, optional): Whether the prediction uses sigmoid of
+            softmax. Defaults to None, which means to use sigmoid in
+            "multi_label" mode and not use in other modes.
         reduction (str): The method used to reduce the loss.
             Options are "none", "mean" and "sum". Defaults to 'mean'.
         loss_weight (float):  Weight of the loss. Defaults to 1.0.
 
     Notes:
-        if the mode is "original", this will use the same label smooth method
-        as the original paper as:
+        - if the mode is **"original"**, this will use the same label smooth
+          method as the original paper as:
 
-        .. math::
-            (1-\epsilon)\delta_{k, y} + \frac{\epsilon}{K}
+          .. math::
+              (1-\epsilon)\delta_{k, y} + \frac{\epsilon}{K}
 
-        where epsilon is the `label_smooth_val`, K is the num_classes and
-        delta(k,y) is Dirac delta, which equals 1 for k=y and 0 otherwise.
+          where :math:`\epsilon` is the ``label_smooth_val``, :math:`K` is the
+          ``num_classes`` and :math:`\delta_{k, y}` is Dirac delta, which
+          equals 1 for :math:`k=y` and 0 otherwise.
 
-        if the mode is "classy_vision", this will use the same label smooth
-        method as the facebookresearch/ClassyVision repo as:
+        - if the mode is **"classy_vision"**, this will use the same label
+          smooth method as the facebookresearch/ClassyVision repo as:
 
-        .. math::
-            \frac{\delta_{k, y} + \epsilon/K}{1+\epsilon}
+          .. math::
+              \frac{\delta_{k, y} + \epsilon/K}{1+\epsilon}
 
-        if the mode is "multi_label", this will accept labels from multi-label
-        task and smoothing them as:
+        - if the mode is **"multi_label"**, this will accept labels from
+          multi-label task and smoothing them as:
 
-        .. math::
-            (1-2\epsilon)\delta_{k, y} + \epsilon
+          .. math::
+              (1-2\epsilon)\delta_{k, y} + \epsilon
     """
 
     def __init__(self,
                  label_smooth_val,
                  num_classes=None,
+                 use_sigmoid=None,
                  mode='original',
                  reduction='mean',
                  loss_weight=1.0):
@@ -82,12 +87,21 @@ class LabelSmoothLoss(nn.Module):
         self._eps = label_smooth_val
         if mode == 'classy_vision':
             self._eps = label_smooth_val / (1 + label_smooth_val)
+
         if mode == 'multi_label':
-            self.ce = CrossEntropyLoss(use_sigmoid=True)
+            if not use_sigmoid:
+                from mmengine.logging import MMLogger
+                MMLogger.get_current_instance().warning(
+                    'For multi-label tasks, please set `use_sigmoid=True` '
+                    'to use binary cross entropy.')
             self.smooth_label = self.multilabel_smooth_label
+            use_sigmoid = True if use_sigmoid is None else use_sigmoid
         else:
-            self.ce = CrossEntropyLoss(use_soft=True)
             self.smooth_label = self.original_smooth_label
+            use_sigmoid = False if use_sigmoid is None else use_sigmoid
+
+        self.ce = CrossEntropyLoss(
+            use_sigmoid=use_sigmoid, use_soft=not use_sigmoid)
 
     def generate_one_hot_like_label(self, label):
         """This function takes one-hot or index label vectors and computes one-

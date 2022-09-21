@@ -65,13 +65,16 @@ Backbones
    ConvNeXt
    DenseNet
    DistilledVisionTransformer
+   EfficientFormer
    EfficientNet
    EdgeNeXt
    HRNet
+   InceptionV3
    LeNet5
    MlpMixer
    MobileNetV2
    MobileNetV3
+   MobileOne
    PCPVT
    PoolFormer
    RegNet
@@ -90,14 +93,13 @@ Backbones
    ShuffleNetV1
    ShuffleNetV2
    SwinTransformer
+   SwinTransformerV2
    T2T_ViT
    TIMMBackbone
    TNT
    VAN
    VGG
    VisionTransformer
-   MobileOne
-   InceptionV3
 
 .. module:: mmcls.models.necks
 
@@ -127,6 +129,7 @@ Heads
    LinearClsHead
    StackedLinearClsHead
    VisionTransformerClsHead
+   EfficientFormerClsHead
    DeiTClsHead
    ConformerHead
    MultiLabelClsHead
@@ -167,12 +170,15 @@ Common Components
 
    InvertedResidual
    SELayer
+   WindowMSA
+   WindowMSAV2
    ShiftWindowMSA
    MultiheadAttention
    ConditionalPositionEncoding
    PatchEmbed
    PatchMerging
    HybridEmbed
+   LayerScale
 
 .. _helpers:
 

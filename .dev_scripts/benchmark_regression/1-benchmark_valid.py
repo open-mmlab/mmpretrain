@@ -9,8 +9,10 @@ from typing import OrderedDict
 import mmcv
 import numpy as np
 import torch
-from mmengine import Config, MMLogger, Runner
-from mmengine.dataset import Compose
+from mmengine import Config, DictAction, MMLogger
+from mmengine.dataset import Compose, default_collate
+from mmengine.fileio import FileClient
+from mmengine.runner import Runner
 from modelindex.load_model_index import load
 from rich.console import Console
 from rich.table import Table
@@ -52,6 +54,16 @@ def parse_args():
         '--flops-str',
         action='store_true',
         help='Output FLOPs and params counts in a string form.')
+    parser.add_argument(
+        '--cfg-options',
+        nargs='+',
+        action=DictAction,
+        help='override some settings in the used config, the key-value pair '
+        'in xxx=yyy format will be merged into config file. If the value to '
+        'be overwritten is a list, it should be like key="[a,b]" or key=a,b '
+        'It also allows nested list/tuple values, e.g. key="[(a,b),(c,d)]" '
+        'Note that the quotation marks are necessary and that no white space '
+        'is allowed.')
     args = parser.parse_args()
     return args
 
@@ -62,6 +74,8 @@ def inference(config_file, checkpoint, work_dir, args, exp_name):
     cfg.load_from = checkpoint
     cfg.log_level = 'WARN'
     cfg.experiment_name = exp_name
+    if args.cfg_options is not None:
+        cfg.merge_from_dict(args.cfg_options)
 
     # build the data pipeline
     test_dataset = cfg.test_dataloader.dataset
@@ -72,7 +86,8 @@ def inference(config_file, checkpoint, work_dir, args, exp_name):
         test_dataset.pipeline.insert(1, dict(type='Resize', scale=32))
 
     data = Compose(test_dataset.pipeline)({'img_path': args.img})
-    resolution = tuple(data['inputs'].shape[1:])
+    data = default_collate([data])
+    resolution = tuple(data['inputs'].shape[-2:])
 
     runner: Runner = Runner.from_cfg(cfg)
     model = runner.model
@@ -83,26 +98,30 @@ def inference(config_file, checkpoint, work_dir, args, exp_name):
         if args.inference_time:
             time_record = []
             for _ in range(10):
+                model.val_step(data)  # warmup before profiling
+                torch.cuda.synchronize()
                 start = time()
-                model.val_step([data])
+                model.val_step(data)
+                torch.cuda.synchronize()
                 time_record.append((time() - start) * 1000)
             result['time_mean'] = np.mean(time_record[1:-1])
             result['time_std'] = np.std(time_record[1:-1])
         else:
-            model.val_step([data])
+            model.val_step(data)
 
     result['model'] = config_file.stem
 
     if args.flops:
-        from mmcv.cnn.utils import get_model_complexity_info
+        from fvcore.nn import FlopCountAnalysis, parameter_count
+        from fvcore.nn.print_model_statistics import _format_size
+        _format_size = _format_size if args.flops_str else lambda x: x
         with torch.no_grad():
             if hasattr(model, 'extract_feat'):
                 model.forward = model.extract_feat
-                flops, params = get_model_complexity_info(
-                    model,
-                    input_shape=(3, ) + resolution,
-                    print_per_layer_stat=False,
-                    as_strings=args.flops_str)
+                model.to('cpu')
+                inputs = (torch.randn((1, 3, *resolution)), )
+                flops = _format_size(FlopCountAnalysis(model, inputs).total())
+                params = _format_size(parameter_count(model)[''])
                 result['flops'] = flops if args.flops_str else int(flops)
                 result['params'] = params if args.flops_str else int(params)
             else:
@@ -184,7 +203,6 @@ def main(args):
         if args.checkpoint_root is not None:
             root = args.checkpoint_root
             if 's3://' in args.checkpoint_root:
-                from mmcv.fileio import FileClient
                 from petrel_client.common.exception import AccessDeniedError
                 file_client = FileClient.infer_client(uri=root)
                 checkpoint = file_client.join_path(
