@@ -125,6 +125,7 @@ mim install -e .
 - [x] [T2T-ViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/t2t_vit)
 - [x] [Twins](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/twins)
 - [x] [EfficientNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/efficientnet)
+- [x] [EdgeNeXt](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/edgenext)
 - [x] [ConvNeXt](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/convnext)
 - [x] [HRNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/hrnet)
 - [x] [VAN](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/van)

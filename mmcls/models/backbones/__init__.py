@@ -6,6 +6,7 @@ from .convnext import ConvNeXt
 from .cspnet import CSPDarkNet, CSPNet, CSPResNet, CSPResNeXt
 from .deit import DistilledVisionTransformer
 from .densenet import DenseNet
+from .edgenext import EdgeNeXt
 from .efficientformer import EfficientFormer
 from .efficientnet import EfficientNet
 from .hrnet import HRNet
@@ -39,13 +40,49 @@ from .vgg import VGG
 from .vision_transformer import VisionTransformer
 
 __all__ = [
-    'LeNet5', 'AlexNet', 'VGG', 'RegNet', 'ResNet', 'ResNeXt', 'ResNetV1d',
-    'ResNeSt', 'ResNet_CIFAR', 'SEResNet', 'SEResNeXt', 'ShuffleNetV1',
-    'ShuffleNetV2', 'MobileNetV2', 'MobileNetV3', 'VisionTransformer',
-    'SwinTransformer', 'TNT', 'TIMMBackbone', 'T2T_ViT', 'Res2Net', 'RepVGG',
-    'Conformer', 'MlpMixer', 'DistilledVisionTransformer', 'PCPVT', 'SVT',
-    'EfficientNet', 'ConvNeXt', 'HRNet', 'ResNetV1c', 'ConvMixer',
-    'CSPDarkNet', 'CSPResNet', 'CSPResNeXt', 'CSPNet', 'RepMLPNet',
-    'PoolFormer', 'DenseNet', 'VAN', 'InceptionV3', 'MobileOne',
-    'EfficientFormer', 'SwinTransformerV2'
+    'LeNet5',
+    'AlexNet',
+    'VGG',
+    'RegNet',
+    'ResNet',
+    'ResNeXt',
+    'ResNetV1d',
+    'ResNeSt',
+    'ResNet_CIFAR',
+    'SEResNet',
+    'SEResNeXt',
+    'ShuffleNetV1',
+    'ShuffleNetV2',
+    'MobileNetV2',
+    'MobileNetV3',
+    'VisionTransformer',
+    'SwinTransformer',
+    'TNT',
+    'TIMMBackbone',
+    'T2T_ViT',
+    'Res2Net',
+    'RepVGG',
+    'Conformer',
+    'MlpMixer',
+    'DistilledVisionTransformer',
+    'PCPVT',
+    'SVT',
+    'EfficientNet',
+    'ConvNeXt',
+    'HRNet',
+    'ResNetV1c',
+    'ConvMixer',
+    'EdgeNeXt',
+    'CSPDarkNet',
+    'CSPResNet',
+    'CSPResNeXt',
+    'CSPNet',
+    'RepMLPNet',
+    'PoolFormer',
+    'DenseNet',
+    'VAN',
+    'InceptionV3',
+    'MobileOne',
+    'EfficientFormer',
+    'SwinTransformerV2',
 ]

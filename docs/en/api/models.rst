@@ -67,6 +67,7 @@ Backbones
    DistilledVisionTransformer
    EfficientFormer
    EfficientNet
+   EdgeNeXt
    HRNet
    InceptionV3
    LeNet5
