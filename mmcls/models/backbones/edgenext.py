@@ -148,18 +148,23 @@ class SDTAEncoder(BaseModule):
 @MODELS.register_module()
 class EdgeNeXt(BaseBackbone):
     """EdgeNeXt.
-    A PyTorch implementation of : `EdgeNeXt: Efficiently
-    Amalgamated CNN-Transformer Architecture for Mobile Vision Applications
+
+    A PyTorch implementation of: `EdgeNeXt: Efficiently Amalgamated
+    CNN-Transformer Architecture for Mobile Vision Applications
     <https://arxiv.org/abs/2206.10589>`_
+
     Inspiration from
     https://github.com/mmaaz60/EdgeNeXt
+
     Args:
         arch (str | dict): The model's architecture. If string, it should be
             one of architectures in ``EdgeNeXt.arch_settings``.
-            And if dict, it should include the following two keys:
+            And if dict, it should include the following keys:
+
             - channels (list[int]): The number of channels at each stage.
             - depths (list[int]): The number of blocks at each stage.
             - num_heads (list[int]): The number of heads at each stage.
+
             Defaults to 'xxsmall'.
         in_channels (int): The number of input channels.
             Defaults to 3.

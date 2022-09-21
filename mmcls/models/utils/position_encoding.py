@@ -74,8 +74,11 @@ class PositionEncodingFourier(BaseModule):
         self.embed_dims = embed_dims
         self.dtype = dtype
 
-        dim_t = torch.arange(in_channels, dtype=self.dtype)
-        self.dim_t = temperature**(2 * (dim_t // 2) / in_channels)
+        dim_t = torch.div(
+            torch.arange(in_channels, dtype=self.dtype),
+            2,
+            rounding_mode='floor')
+        self.dim_t = temperature**(2 * dim_t / in_channels)
 
     def forward(self, bhw_shape):
         B, H, W = bhw_shape

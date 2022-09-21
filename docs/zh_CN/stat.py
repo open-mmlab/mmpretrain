@@ -88,8 +88,10 @@ def generate_paper_page(collection):
         # Replace relative link to GitHub link.
         name = matchobj.group(1)
         link = matchobj.group(2)
-        if not link.startswith('http') and (f.parent / link).exists():
-            rel_link = (f.parent / link).absolute().relative_to(MMCLS_ROOT)
+        if not link.startswith('http'):
+            assert (folder / link).exists(), \
+                f'Link not found:\n{collection.readme}: {link}'
+            rel_link = (folder / link).absolute().relative_to(MMCLS_ROOT)
             link = GITHUB_PREFIX + str(rel_link)
         return f'[{name}]({link})'
 
