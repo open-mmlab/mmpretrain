@@ -2,9 +2,9 @@ import logging
 import re
 import tempfile
 from argparse import ArgumentParser
+from collections import OrderedDict
 from pathlib import Path
 from time import time
-from typing import OrderedDict
 
 import mmcv
 import numpy as np

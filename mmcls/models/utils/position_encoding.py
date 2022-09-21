@@ -1,9 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
+from functools import partial
 
 import torch
 import torch.nn as nn
 from mmengine.model import BaseModule
+from mmengine.utils import digit_version
 
 
 class ConditionalPositionEncoding(BaseModule):
@@ -74,11 +76,12 @@ class PositionEncodingFourier(BaseModule):
         self.embed_dims = embed_dims
         self.dtype = dtype
 
-        dim_t = torch.div(
-            torch.arange(in_channels, dtype=self.dtype),
-            2,
-            rounding_mode='floor')
-        self.dim_t = temperature**(2 * dim_t / in_channels)
+        if digit_version(torch.__version__) < digit_version('1.8.0'):
+            floor_div = torch.floor_divide
+        else:
+            floor_div = partial(torch.div, rounding_mode='floor')
+        dim_t = torch.arange(in_channels, dtype=self.dtype)
+        self.dim_t = temperature**(2 * floor_div(dim_t, 2) / in_channels)
 
     def forward(self, bhw_shape):
         B, H, W = bhw_shape
