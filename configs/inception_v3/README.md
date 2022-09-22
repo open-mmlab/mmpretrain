@@ -16,9 +16,9 @@ Convolutional networks are at the core of most state-of-the-art computer vision 
 
 ### ImageNet-1k
 
-|     Model      | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                                   Config                                   |                                   Download                                    |
-| :------------: | :-------: | :------: | :-------: | :-------: | :------------------------------------------------------------------------: | :---------------------------------------------------------------------------: |
-| Inception V3\* |   23.83   |   5.75   |   77.57   |   93.58   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/inception_v3/inception-v3_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/inception-v3/inception-v3_3rdparty_8xb32_in1k_20220615-dcd4d910.pth) |
+|     Model      | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                 Config                 |                                                     Download                                                      |
+| :------------: | :-------: | :------: | :-------: | :-------: | :------------------------------------: | :---------------------------------------------------------------------------------------------------------------: |
+| Inception V3\* |   23.83   |   5.75   |   77.57   |   93.58   | [config](./inception-v3_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/inception-v3/inception-v3_3rdparty_8xb32_in1k_20220615-dcd4d910.pth) |
 
 *Models with * are converted from the [official repo](https://github.com/pytorch/vision/blob/main/torchvision/models/inception.py#L28). The config files of these models are only for inference. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 

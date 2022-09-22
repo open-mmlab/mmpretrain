@@ -16,11 +16,11 @@ Vision Transformers (ViT) have shown rapid progress in computer vision tasks, ac
 
 ### ImageNet-1k
 
-|        Model         | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                                 Config                                  |                                  Download                                  |
-| :------------------: | :-------: | :------: | :-------: | :-------: | :---------------------------------------------------------------------: | :------------------------------------------------------------------------: |
-| EfficientFormer-l1\* |   12.19   |   1.30   |   80.46   |   94.99   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/efficientformer/efficientformer-l1_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/efficientformer/efficientformer-l1_3rdparty_in1k_20220915-cc3e1ac6.pth) |
-| EfficientFormer-l3\* |   31.41   |   3.93   |   82.45   |   96.18   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/efficientformer/efficientformer-l3_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/efficientformer/efficientformer-l3_3rdparty_in1k_20220915-466793d6.pth) |
-| EfficientFormer-l7\* |   82.23   |  10.16   |   83.40   |   96.60   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/efficientformer/efficientformer-l7_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/efficientformer/efficientformer-l7_3rdparty_in1k_20220915-185e30af.pth) |
+|        Model         | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                    Config                     |                                               Download                                               |
+| :------------------: | :-------: | :------: | :-------: | :-------: | :-------------------------------------------: | :--------------------------------------------------------------------------------------------------: |
+| EfficientFormer-l1\* |   12.19   |   1.30   |   80.46   |   94.99   | [config](./efficientformer-l1_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/efficientformer/efficientformer-l1_3rdparty_in1k_20220915-cc3e1ac6.pth) |
+| EfficientFormer-l3\* |   31.41   |   3.93   |   82.45   |   96.18   | [config](./efficientformer-l3_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/efficientformer/efficientformer-l3_3rdparty_in1k_20220915-466793d6.pth) |
+| EfficientFormer-l7\* |   82.23   |  10.16   |   83.40   |   96.60   | [config](./efficientformer-l7_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/efficientformer/efficientformer-l7_3rdparty_in1k_20220915-185e30af.pth) |
 
 *Models with * are converted from the [official repo](https://github.com/snap-research/EfficientFormer). The config files of these models are only for inference. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 

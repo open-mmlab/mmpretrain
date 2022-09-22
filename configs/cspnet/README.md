@@ -20,11 +20,11 @@ Neural networks have enabled state-of-the-art approaches to achieve incredible r
 
 ### ImageNet-1k
 
-|     Model      |   Pretrain   | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                                Config                                |                                Download                                 |
-| :------------: | :----------: | :-------: | :------: | :-------: | :-------: | :------------------------------------------------------------------: | :---------------------------------------------------------------------: |
-| CSPDarkNet50\* | From scratch |   27.64   |   5.04   |   80.05   |   95.07   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/cspnet/cspdarknet50_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/cspnet/cspdarknet50_3rdparty_8xb32_in1k_20220329-bd275287.pth) |
-| CSPResNet50\*  | From scratch |   21.62   |   3.48   |   79.55   |   94.68   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/cspnet/cspresnet50_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/cspnet/cspresnet50_3rdparty_8xb32_in1k_20220329-dd6dddfb.pth) |
-| CSPResNeXt50\* | From scratch |   20.57   |   3.11   |   79.96   |   94.96   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/cspnet/cspresnext50_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/cspnet/cspresnext50_3rdparty_8xb32_in1k_20220329-2cc84d21.pth) |
+|     Model      |   Pretrain   | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                 Config                 |                                               Download                                                |
+| :------------: | :----------: | :-------: | :------: | :-------: | :-------: | :------------------------------------: | :---------------------------------------------------------------------------------------------------: |
+| CSPDarkNet50\* | From scratch |   27.64   |   5.04   |   80.05   |   95.07   | [config](./cspdarknet50_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/cspnet/cspdarknet50_3rdparty_8xb32_in1k_20220329-bd275287.pth) |
+| CSPResNet50\*  | From scratch |   21.62   |   3.48   |   79.55   |   94.68   | [config](./cspresnet50_8xb32_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/cspnet/cspresnet50_3rdparty_8xb32_in1k_20220329-dd6dddfb.pth) |
+| CSPResNeXt50\* | From scratch |   20.57   |   3.11   |   79.96   |   94.96   | [config](./cspresnext50_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/cspnet/cspresnext50_3rdparty_8xb32_in1k_20220329-2cc84d21.pth) |
 
 *Models with * are converted from the [timm repo](https://github.com/rwightman/pytorch-image-models). The config files of these models are only for inference. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 
