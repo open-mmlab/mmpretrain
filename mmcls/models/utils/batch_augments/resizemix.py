@@ -21,9 +21,6 @@ class ResizeMix(CutMix):
         alpha (float): Parameters for Beta distribution to generate the
             mixing ratio. It should be a positive number. More details
             can be found in :class:`Mixup`.
-        num_classes (int, optional): The number of classes. If not specified,
-            will try to get it from data samples during training.
-            Defaults to None.
         lam_min(float): The minimum value of lam. Defaults to 0.1.
         lam_max(float): The maximum value of lam. Defaults to 0.8.
         interpolation (str): algorithm used for upsampling:
@@ -57,17 +54,13 @@ class ResizeMix(CutMix):
 
     def __init__(self,
                  alpha: float,
-                 num_classes: Optional[int] = None,
                  lam_min: float = 0.1,
                  lam_max: float = 0.8,
                  interpolation: str = 'bilinear',
                  cutmix_minmax: Optional[List[float]] = None,
                  correct_lam: bool = True):
         super().__init__(
-            alpha=alpha,
-            num_classes=num_classes,
-            cutmix_minmax=cutmix_minmax,
-            correct_lam=correct_lam)
+            alpha=alpha, cutmix_minmax=cutmix_minmax, correct_lam=correct_lam)
         self.lam_min = lam_min
         self.lam_max = lam_max
         self.interpolation = interpolation

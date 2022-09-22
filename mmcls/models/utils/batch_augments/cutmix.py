@@ -24,9 +24,6 @@ class CutMix(Mixup):
         alpha (float): Parameters for Beta distribution to generate the
             mixing ratio. It should be a positive number. More details
             can be found in :class:`Mixup`.
-        num_classes (int, optional): The number of classes. If not specified,
-            will try to get it from data samples during training.
-            Defaults to None.
         cutmix_minmax (List[float], optional): The min/max area ratio of the
             patches. If not None, the bounding-box of patches is uniform
             sampled within this ratio range, and the ``alpha`` will be ignored.
@@ -49,10 +46,9 @@ class CutMix(Mixup):
 
     def __init__(self,
                  alpha: float,
-                 num_classes: Optional[int] = None,
                  cutmix_minmax: Optional[List[float]] = None,
                  correct_lam: bool = True):
-        super().__init__(alpha=alpha, num_classes=num_classes)
+        super().__init__(alpha=alpha)
 
         self.cutmix_minmax = cutmix_minmax
         self.correct_lam = correct_lam

@@ -9,20 +9,18 @@ from mmengine.structures import BaseDataElement, LabelData
 from mmengine.utils import is_str
 
 
-def format_label(value: Union[torch.Tensor, np.ndarray, Sequence, int],
-                 num_classes: int = None) -> LabelData:
-    """Convert label of various python types to :obj:`mmengine.LabelData`.
+def format_label(
+        value: Union[torch.Tensor, np.ndarray, Sequence, int]) -> torch.Tensor:
+    """Convert various python types to label-format tensor.
 
     Supported types are: :class:`numpy.ndarray`, :class:`torch.Tensor`,
     :class:`Sequence`, :class:`int`.
 
     Args:
         value (torch.Tensor | numpy.ndarray | Sequence | int): Label value.
-        num_classes (int, optional): The number of classes. If not None, set
-            it to the metainfo. Defaults to None.
 
     Returns:
-        :obj:`mmengine.LabelData`: The foramtted label data.
+        :obj:`torch.Tensor`: The foramtted label tensor.
     """
 
     # Handle single number
@@ -37,15 +35,36 @@ def format_label(value: Union[torch.Tensor, np.ndarray, Sequence, int],
         value = torch.LongTensor([value])
     elif not isinstance(value, torch.Tensor):
         raise TypeError(f'Type {type(value)} is not an available label type.')
+    assert value.ndim == 1, \
+        f'The dims of value should be 1, but got {value.ndim}.'
 
-    metainfo = {}
-    if num_classes is not None:
-        metainfo['num_classes'] = num_classes
-        if value.max() >= num_classes:
-            raise ValueError(f'The label data ({value}) should not '
-                             f'exceed num_classes ({num_classes}).')
-    label = LabelData(label=value, metainfo=metainfo)
-    return label
+    return value
+
+
+def format_score(
+        value: Union[torch.Tensor, np.ndarray, Sequence, int]) -> torch.Tensor:
+    """Convert various python types to score-format tensor.
+
+    Supported types are: :class:`numpy.ndarray`, :class:`torch.Tensor`,
+    :class:`Sequence`.
+
+    Args:
+        value (torch.Tensor | numpy.ndarray | Sequence): Score values.
+
+    Returns:
+        :obj:`torch.Tensor`: The foramtted score tensor.
+    """
+
+    if isinstance(value, np.ndarray):
+        value = torch.from_numpy(value).float()
+    elif isinstance(value, Sequence) and not is_str(value):
+        value = torch.tensor(value).float()
+    elif not isinstance(value, torch.Tensor):
+        raise TypeError(f'Type {type(value)} is not an available label type.')
+    assert value.ndim == 1, \
+        f'The dims of value should be 1, but got {value.ndim}.'
+
+    return value
 
 
 class ClsDataSample(BaseDataElement):
@@ -115,64 +134,50 @@ class ClsDataSample(BaseDataElement):
         self, value: Union[np.ndarray, torch.Tensor, Sequence[Number], Number]
     ) -> 'ClsDataSample':
         """Set label of ``gt_label``."""
-        label = format_label(value, self.get('num_classes'))
-        if 'gt_label' in self:
-            self.gt_label.label = label.label
-        else:
-            self.gt_label = label
+        label_data = getattr(self, '_gt_label', LabelData())
+        label_data.label = format_label(value)
+        self.gt_label = label_data
         return self
 
     def set_gt_score(self, value: torch.Tensor) -> 'ClsDataSample':
         """Set score of ``gt_label``."""
-        assert isinstance(value, torch.Tensor), \
-            f'The value should be a torch.Tensor but got {type(value)}.'
-        assert value.ndim == 1, \
-            f'The dims of value should be 1, but got {value.ndim}.'
-
-        if 'num_classes' in self:
-            assert value.size(0) == self.num_classes, \
-                f"The length of value ({value.size(0)}) doesn't "\
-                f'match the num_classes ({self.num_classes}).'
-            metainfo = {'num_classes': self.num_classes}
+        label_data = getattr(self, '_gt_label', LabelData())
+        label_data.score = format_score(value)
+        if hasattr(self, 'num_classes'):
+            assert len(label_data.score) == self.num_classes, \
+                f'The length of score {len(label_data.score)} should be '\
+                f'equal to the num_classes {self.num_classes}.'
         else:
-            metainfo = {'num_classes': value.size(0)}
-
-        if 'gt_label' in self:
-            self.gt_label.score = value
-        else:
-            self.gt_label = LabelData(score=value, metainfo=metainfo)
+            self.set_field(
+                name='num_classes',
+                value=len(label_data.score),
+                field_type='metainfo')
+        self.gt_label = label_data
         return self
 
     def set_pred_label(
         self, value: Union[np.ndarray, torch.Tensor, Sequence[Number], Number]
     ) -> 'ClsDataSample':
         """Set label of ``pred_label``."""
-        label = format_label(value, self.get('num_classes'))
-        if 'pred_label' in self:
-            self.pred_label.label = label.label
-        else:
-            self.pred_label = label
+        label_data = getattr(self, '_pred_label', LabelData())
+        label_data.label = format_label(value)
+        self.pred_label = label_data
         return self
 
     def set_pred_score(self, value: torch.Tensor) -> 'ClsDataSample':
         """Set score of ``pred_label``."""
-        assert isinstance(value, torch.Tensor), \
-            f'The value should be a torch.Tensor but got {type(value)}.'
-        assert value.ndim == 1, \
-            f'The dims of value should be 1, but got {value.ndim}.'
-
-        if 'num_classes' in self:
-            assert value.size(0) == self.num_classes, \
-                f"The length of value ({value.size(0)}) doesn't "\
-                f'match the num_classes ({self.num_classes}).'
-            metainfo = {'num_classes': self.num_classes}
+        label_data = getattr(self, '_pred_label', LabelData())
+        label_data.score = format_score(value)
+        if hasattr(self, 'num_classes'):
+            assert len(label_data.score) == self.num_classes, \
+                f'The length of score {len(label_data.score)} should be '\
+                f'equal to the num_classes {self.num_classes}.'
         else:
-            metainfo = {'num_classes': value.size(0)}
-
-        if 'pred_label' in self:
-            self.pred_label.score = value
-        else:
-            self.pred_label = LabelData(score=value, metainfo=metainfo)
+            self.set_field(
+                name='num_classes',
+                value=len(label_data.score),
+                field_type='metainfo')
+        self.pred_label = label_data
         return self
 
     @property
