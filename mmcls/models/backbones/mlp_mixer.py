@@ -3,11 +3,11 @@ from typing import Sequence
 
 import torch.nn as nn
 from mmcv.cnn import build_norm_layer
-from mmcv.cnn.bricks.transformer import FFN
+from mmcv.cnn.bricks.transformer import FFN, PatchEmbed
 from mmcv.runner.base_module import BaseModule, ModuleList
 
 from ..builder import BACKBONES
-from ..utils import PatchEmbed, to_2tuple
+from ..utils import to_2tuple
 from .base_backbone import BaseBackbone
 
 
@@ -105,10 +105,20 @@ class MlpMixer(BaseBackbone):
     <https://arxiv.org/pdf/2105.01601.pdf>`_
 
     Args:
-        arch (str | dict): MLP Mixer architecture
-            Defaults to 'b'.
-        img_size (int | tuple): Input image size.
-        patch_size (int | tuple): The patch size.
+        arch (str | dict): MLP Mixer architecture. If use string, choose from
+            'small', 'base' and 'large'. If use dict, it should have below
+            keys:
+
+            - **embed_dims** (int): The dimensions of embedding.
+            - **num_layers** (int): The number of MLP blocks.
+            - **tokens_mlp_dims** (int): The hidden dimensions for tokens FFNs.
+            - **channels_mlp_dims** (int): The The hidden dimensions for
+              channels FFNs.
+
+            Defaults to 'base'.
+        img_size (int | tuple): The input image shape. Defaults to 224.
+        patch_size (int | tuple): The patch size in patch embedding.
+            Defaults to 16.
         out_indices (Sequence | int): Output from which layer.
             Defaults to -1, means the last layer.
         drop_rate (float): Probability of an element to be zeroed.
@@ -149,7 +159,7 @@ class MlpMixer(BaseBackbone):
     }
 
     def __init__(self,
-                 arch='b',
+                 arch='base',
                  img_size=224,
                  patch_size=16,
                  out_indices=-1,
@@ -184,14 +194,16 @@ class MlpMixer(BaseBackbone):
         self.img_size = to_2tuple(img_size)
 
         _patch_cfg = dict(
-            img_size=img_size,
+            input_size=img_size,
             embed_dims=self.embed_dims,
-            conv_cfg=dict(
-                type='Conv2d', kernel_size=patch_size, stride=patch_size),
+            conv_type='Conv2d',
+            kernel_size=patch_size,
+            stride=patch_size,
         )
         _patch_cfg.update(patch_cfg)
         self.patch_embed = PatchEmbed(**_patch_cfg)
-        num_patches = self.patch_embed.num_patches
+        self.patch_resolution = self.patch_embed.init_out_size
+        num_patches = self.patch_resolution[0] * self.patch_resolution[1]
 
         if isinstance(out_indices, int):
             out_indices = [out_indices]
@@ -232,7 +244,10 @@ class MlpMixer(BaseBackbone):
         return getattr(self, self.norm1_name)
 
     def forward(self, x):
-        x = self.patch_embed(x)
+        assert x.shape[2:] == self.img_size, \
+            "The MLP-Mixer doesn't support dynamic input shape. " \
+            f'Please input images with shape {self.img_size}'
+        x, _ = self.patch_embed(x)
 
         outs = []
         for i, layer in enumerate(self.layers):

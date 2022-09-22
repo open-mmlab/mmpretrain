@@ -1,0 +1,61 @@
+Collections:
+  - Name: ConvMixer
+    Metadata:
+      Training Data: ImageNet-1k
+      Architecture:
+        - 1x1 Convolution
+        - LayerScale
+    Paper:
+      URL: https://arxiv.org/abs/2201.09792
+      Title: Patches Are All You Need?
+    README: configs/convmixer/README.md
+
+Models:
+  - Name: convmixer-768-32_10xb64_in1k
+    Metadata:
+      FLOPs: 19623051264
+      Parameters: 21110248
+    In Collections: ConvMixer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 80.16
+          Top 5 Accuracy: 95.08
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/convmixer/convmixer-768-32_3rdparty_10xb64_in1k_20220323-bca1f7b8.pth
+    Config: configs/convmixer/convmixer-768-32_10xb64_in1k.py
+    Converted From:
+      Weights: https://github.com/tmp-iclr/convmixer/releases/download/v1.0/convmixer_768_32_ks7_p7_relu.pth.tar
+      Code: https://github.com/locuslab/convmixer
+  - Name: convmixer-1024-20_10xb64_in1k
+    Metadata:
+      FLOPs: 5550112768
+      Parameters: 24383464
+    In Collections: ConvMixer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 76.94
+          Top 5 Accuracy: 93.36
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/convmixer/convmixer-1024-20_3rdparty_10xb64_in1k_20220323-48f8aeba.pth
+    Config: configs/convmixer/convmixer-1024-20_10xb64_in1k.py
+    Converted From:
+      Weights: https://github.com/tmp-iclr/convmixer/releases/download/v1.0/convmixer_1024_20_ks9_p14.pth.tar
+      Code: https://github.com/locuslab/convmixer
+  - Name: convmixer-1536-20_10xb64_in1k
+    Metadata:
+      FLOPs: 48713170944
+      Parameters: 51625960
+    In Collections: ConvMixer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 81.37
+          Top 5 Accuracy: 95.61
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/convmixer/convmixer-1536_20_3rdparty_10xb64_in1k_20220323-ea5786f3.pth
+    Config: configs/convmixer/convmixer-1536-20_10xb64_in1k.py
+    Converted From:
+      Weights: https://github.com/tmp-iclr/convmixer/releases/download/v1.0/convmixer_1536_20_ks9_p7.pth.tar
+      Code: https://github.com/locuslab/convmixer

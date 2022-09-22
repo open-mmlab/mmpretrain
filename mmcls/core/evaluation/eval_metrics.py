@@ -80,7 +80,7 @@ def precision_recall_f1(pred, target, average_mode='macro', thrs=0.):
     assert isinstance(pred, torch.Tensor), \
         (f'pred should be torch.Tensor or np.ndarray, but got {type(pred)}.')
     if isinstance(target, np.ndarray):
-        target = torch.from_numpy(target)
+        target = torch.from_numpy(target).long()
     assert isinstance(target, torch.Tensor), \
         f'target should be torch.Tensor or np.ndarray, ' \
         f'but got {type(target)}.'

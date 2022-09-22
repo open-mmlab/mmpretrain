@@ -14,3 +14,7 @@ article.pytorch-article .section :not(dt) > code {
   background-color: #f3f4f7;
   border-radius: 5px;
 }
+
+table.colwidths-auto td {
+  width: 50%
+}

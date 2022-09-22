@@ -133,8 +133,8 @@ class RandAugment(object):
         When magnitude_std=0, we calculate the magnitude as follows:
 
         .. math::
-            \text{magnitude} = \frac{\text{magnitude\_level}}
-            {\text{total\_level}} \times (\text{val2} - \text{val1})
+            \text{magnitude} = \frac{\text{magnitude_level}}
+            {\text{totallevel}} \times (\text{val2} - \text{val1})
             + \text{val1}
     """
 

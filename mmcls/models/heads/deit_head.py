@@ -9,6 +9,24 @@ from .vision_transformer_head import VisionTransformerClsHead
 
 @HEADS.register_module()
 class DeiTClsHead(VisionTransformerClsHead):
+    """Distilled Vision Transformer classifier head.
+
+    Comparing with the :class:`VisionTransformerClsHead`, this head adds an
+    extra linear layer to handle the dist token. The final classification score
+    is the average of both linear transformation results of ``cls_token`` and
+    ``dist_token``.
+
+    Args:
+        num_classes (int): Number of categories excluding the background
+            category.
+        in_channels (int): Number of channels in the input feature map.
+        hidden_dim (int): Number of the dimensions for hidden layer.
+            Defaults to None, which means no extra hidden layer.
+        act_cfg (dict): The activation config. Only available during
+            pre-training. Defaults to ``dict(type='Tanh')``.
+        init_cfg (dict): The extra initialization configs. Defaults to
+            ``dict(type='Constant', layer='Linear', val=0)``.
+    """
 
     def __init__(self, *args, **kwargs):
         super(DeiTClsHead, self).__init__(*args, **kwargs)

@@ -128,18 +128,19 @@ def inference(config_file, checkpoint, classes, args):
 
     if args.flops:
         from mmcv.cnn.utils import get_model_complexity_info
-        if hasattr(model, 'extract_feat'):
-            model.forward = model.extract_feat
-            flops, params = get_model_complexity_info(
-                model,
-                input_shape=(3, ) + resolution,
-                print_per_layer_stat=False,
-                as_strings=args.flops_str)
-            result['flops'] = flops if args.flops_str else int(flops)
-            result['params'] = params if args.flops_str else int(params)
-        else:
-            result['flops'] = ''
-            result['params'] = ''
+        with torch.no_grad():
+            if hasattr(model, 'extract_feat'):
+                model.forward = model.extract_feat
+                flops, params = get_model_complexity_info(
+                    model,
+                    input_shape=(3, ) + resolution,
+                    print_per_layer_stat=False,
+                    as_strings=args.flops_str)
+                result['flops'] = flops if args.flops_str else int(flops)
+                result['params'] = params if args.flops_str else int(params)
+            else:
+                result['flops'] = ''
+                result['params'] = ''
 
     return result
 
@@ -198,6 +199,9 @@ def main(args):
 
     summary_data = {}
     for model_name, model_info in models.items():
+
+        if model_info.config is None:
+            continue
 
         config = Path(model_info.config)
         assert config.exists(), f'{model_name}: {config} not found.'

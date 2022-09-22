@@ -9,20 +9,13 @@ import numpy as np
 import torch
 from mmcv import DictAction
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
-from mmcv.runner import get_dist_info, init_dist, load_checkpoint
+from mmcv.runner import (get_dist_info, init_dist, load_checkpoint,
+                         wrap_fp16_model)
 
 from mmcls.apis import multi_gpu_test, single_gpu_test
 from mmcls.datasets import build_dataloader, build_dataset
 from mmcls.models import build_classifier
-from mmcls.utils import setup_multi_processes
-
-# TODO import `wrap_fp16_model` from mmcv and delete them from mmcls
-try:
-    from mmcv.runner import wrap_fp16_model
-except ImportError:
-    warnings.warn('wrap_fp16_model from mmcls will be deprecated.'
-                  'Please install mmcv>=1.1.4.')
-    from mmcls.core import wrap_fp16_model
+from mmcls.utils import get_root_logger, setup_multi_processes
 
 
 def parse_args():
@@ -68,13 +61,6 @@ def parse_args():
         'Note that the quotation marks are necessary and that no white space '
         'is allowed.')
     parser.add_argument(
-        '--options',
-        nargs='+',
-        action=DictAction,
-        help='override some settings in the used config, the key-value pair '
-        'in xxx=yyy format will be merged into config file (deprecate), '
-        'change to --cfg-options instead.')
-    parser.add_argument(
         '--metric-options',
         nargs='+',
         action=DictAction,
@@ -89,27 +75,31 @@ def parse_args():
         help='custom options for show_result. key-value pair in xxx=yyy.'
         'Check available options in `model.show_result`.')
     parser.add_argument(
+        '--device', default=None, help='device used for testing. (Deprecated)')
+    parser.add_argument(
+        '--gpu-ids',
+        type=int,
+        nargs='+',
+        help='(Deprecated, please use --gpu-id) ids of gpus to use '
+        '(only applicable to non-distributed testing)')
+    parser.add_argument(
+        '--gpu-id',
+        type=int,
+        default=0,
+        help='id of gpu to use '
+        '(only applicable to non-distributed testing)')
+    parser.add_argument(
         '--launcher',
         choices=['none', 'pytorch', 'slurm', 'mpi'],
         default='none',
         help='job launcher')
-    parser.add_argument('--local_rank', type=int, default=0)
-    parser.add_argument(
-        '--device',
-        choices=['cpu', 'cuda'],
-        default='cuda',
-        help='device used for testing')
+    parser.add_argument('--local-rank', type=int, default=0)
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
 
-    if args.options and args.cfg_options:
-        raise ValueError(
-            '--options and --cfg-options cannot be both '
-            'specified, --options is deprecated in favor of --cfg-options')
-    if args.options:
-        warnings.warn('--options is deprecated in favor of --cfg-options')
-        args.cfg_options = args.options
+    assert args.metrics or args.out, \
+        'Please specify at least one of output path and evaluation metrics.'
 
     return args
 
@@ -128,10 +118,15 @@ def main():
     if cfg.get('cudnn_benchmark', False):
         torch.backends.cudnn.benchmark = True
     cfg.model.pretrained = None
-    cfg.data.test.test_mode = True
 
-    assert args.metrics or args.out, \
-        'Please specify at least one of output path and evaluation metrics.'
+    if args.gpu_ids is not None:
+        cfg.gpu_ids = args.gpu_ids[0:1]
+        warnings.warn('`--gpu-ids` is deprecated, please use `--gpu-id`. '
+                      'Because we only support single GPU mode in '
+                      'non-distributed testing. Use the first GPU '
+                      'in `gpu_ids` now.')
+    else:
+        cfg.gpu_ids = [args.gpu_id]
 
     # init distributed env first, since logger depends on the dist info.
     if args.launcher == 'none':
@@ -140,16 +135,32 @@ def main():
         distributed = True
         init_dist(args.launcher, **cfg.dist_params)
 
+    dataset = build_dataset(cfg.data.test, default_args=dict(test_mode=True))
+
     # build the dataloader
-    dataset = build_dataset(cfg.data.test)
-    # the extra round_up data will be removed during gpu/cpu collect
-    data_loader = build_dataloader(
-        dataset,
-        samples_per_gpu=cfg.data.samples_per_gpu,
-        workers_per_gpu=cfg.data.workers_per_gpu,
+    # The default loader config
+    loader_cfg = dict(
+        # cfg.gpus will be ignored if distributed
+        num_gpus=len(cfg.gpu_ids),
         dist=distributed,
-        shuffle=False,
-        round_up=True)
+        round_up=True,
+    )
+    # The overall dataloader settings
+    loader_cfg.update({
+        k: v
+        for k, v in cfg.data.items() if k not in [
+            'train', 'val', 'test', 'train_dataloader', 'val_dataloader',
+            'test_dataloader'
+        ]
+    })
+    test_loader_cfg = {
+        **loader_cfg,
+        'shuffle': False,  # Not shuffle by default
+        'sampler_cfg': None,  # Not use sampler by default
+        **cfg.data.get('test_dataloader', {}),
+    }
+    # the extra round_up data will be removed during gpu/cpu collect
+    data_loader = build_dataloader(dataset, **test_loader_cfg)
 
     # build the model and load checkpoint
     model = build_classifier(cfg.model)
@@ -171,7 +182,11 @@ def main():
         if args.device == 'cpu':
             model = model.cpu()
         else:
-            model = MMDataParallel(model, device_ids=[0])
+            model = MMDataParallel(model, device_ids=cfg.gpu_ids)
+            if not model.device_ids:
+                assert mmcv.digit_version(mmcv.__version__) >= (1, 4, 4), \
+                    'To test with CPU, please confirm your mmcv version ' \
+                    'is not lower than v1.4.4'
         model.CLASSES = CLASSES
         show_kwargs = {} if args.show_options is None else args.show_options
         outputs = single_gpu_test(model, data_loader, args.show, args.show_dir,
@@ -187,9 +202,13 @@ def main():
     rank, _ = get_dist_info()
     if rank == 0:
         results = {}
+        logger = get_root_logger()
         if args.metrics:
-            eval_results = dataset.evaluate(outputs, args.metrics,
-                                            args.metric_options)
+            eval_results = dataset.evaluate(
+                results=outputs,
+                metric=args.metrics,
+                metric_options=args.metric_options,
+                logger=logger)
             results.update(eval_results)
             for k, v in eval_results.items():
                 if isinstance(v, np.ndarray):

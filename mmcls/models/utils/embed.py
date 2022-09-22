@@ -1,10 +1,114 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import warnings
+
+import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from mmcv.cnn import build_conv_layer, build_norm_layer
 from mmcv.runner.base_module import BaseModule
 
 from .helpers import to_2tuple
+
+
+def resize_pos_embed(pos_embed,
+                     src_shape,
+                     dst_shape,
+                     mode='bicubic',
+                     num_extra_tokens=1):
+    """Resize pos_embed weights.
+
+    Args:
+        pos_embed (torch.Tensor): Position embedding weights with shape
+            [1, L, C].
+        src_shape (tuple): The resolution of downsampled origin training
+            image, in format (H, W).
+        dst_shape (tuple): The resolution of downsampled new training
+            image, in format (H, W).
+        mode (str): Algorithm used for upsampling. Choose one from 'nearest',
+            'linear', 'bilinear', 'bicubic' and 'trilinear'.
+            Defaults to 'bicubic'.
+        num_extra_tokens (int): The number of extra tokens, such as cls_token.
+            Defaults to 1.
+
+    Returns:
+        torch.Tensor: The resized pos_embed of shape [1, L_new, C]
+    """
+    if src_shape[0] == dst_shape[0] and src_shape[1] == dst_shape[1]:
+        return pos_embed
+    assert pos_embed.ndim == 3, 'shape of pos_embed must be [1, L, C]'
+    _, L, C = pos_embed.shape
+    src_h, src_w = src_shape
+    assert L == src_h * src_w + num_extra_tokens, \
+        f"The length of `pos_embed` ({L}) doesn't match the expected " \
+        f'shape ({src_h}*{src_w}+{num_extra_tokens}). Please check the' \
+        '`img_size` argument.'
+    extra_tokens = pos_embed[:, :num_extra_tokens]
+
+    src_weight = pos_embed[:, num_extra_tokens:]
+    src_weight = src_weight.reshape(1, src_h, src_w, C).permute(0, 3, 1, 2)
+
+    dst_weight = F.interpolate(
+        src_weight, size=dst_shape, align_corners=False, mode=mode)
+    dst_weight = torch.flatten(dst_weight, 2).transpose(1, 2)
+
+    return torch.cat((extra_tokens, dst_weight), dim=1)
+
+
+def resize_relative_position_bias_table(src_shape, dst_shape, table, num_head):
+    """Resize relative position bias table.
+
+    Args:
+        src_shape (int): The resolution of downsampled origin training
+            image, in format (H, W).
+        dst_shape (int): The resolution of downsampled new training
+            image, in format (H, W).
+        table (tensor): The relative position bias of the pretrained model.
+        num_head (int): Number of attention heads.
+
+    Returns:
+        torch.Tensor: The resized relative position bias table.
+    """
+    from scipy import interpolate
+
+    def geometric_progression(a, r, n):
+        return a * (1.0 - r**n) / (1.0 - r)
+
+    left, right = 1.01, 1.5
+    while right - left > 1e-6:
+        q = (left + right) / 2.0
+        gp = geometric_progression(1, q, src_shape // 2)
+        if gp > dst_shape // 2:
+            right = q
+        else:
+            left = q
+
+    dis = []
+    cur = 1
+    for i in range(src_shape // 2):
+        dis.append(cur)
+        cur += q**(i + 1)
+
+    r_ids = [-_ for _ in reversed(dis)]
+
+    x = r_ids + [0] + dis
+    y = r_ids + [0] + dis
+
+    t = dst_shape // 2.0
+    dx = np.arange(-t, t + 0.1, 1.0)
+    dy = np.arange(-t, t + 0.1, 1.0)
+
+    all_rel_pos_bias = []
+
+    for i in range(num_head):
+        z = table[:, i].view(src_shape, src_shape).float().numpy()
+        f_cubic = interpolate.interp2d(x, y, z, kind='cubic')
+        all_rel_pos_bias.append(
+            torch.Tensor(f_cubic(dx,
+                                 dy)).contiguous().view(-1,
+                                                        1).to(table.device))
+    new_rel_pos_bias = torch.cat(all_rel_pos_bias, dim=-1)
+    return new_rel_pos_bias
 
 
 class PatchEmbed(BaseModule):
@@ -32,6 +136,9 @@ class PatchEmbed(BaseModule):
                  conv_cfg=None,
                  init_cfg=None):
         super(PatchEmbed, self).__init__(init_cfg)
+        warnings.warn('The `PatchEmbed` in mmcls will be deprecated. '
+                      'Please use `mmcv.cnn.bricks.transformer.PatchEmbed`. '
+                      "It's more general and supports dynamic input shape")
 
         if isinstance(img_size, int):
             img_size = to_2tuple(img_size)
@@ -203,6 +310,10 @@ class PatchMerging(BaseModule):
                  norm_cfg=dict(type='LN'),
                  init_cfg=None):
         super().__init__(init_cfg)
+        warnings.warn('The `PatchMerging` in mmcls will be deprecated. '
+                      'Please use `mmcv.cnn.bricks.transformer.PatchMerging`. '
+                      "It's more general and supports dynamic input shape")
+
         H, W = input_resolution
         self.input_resolution = input_resolution
         self.in_channels = in_channels
