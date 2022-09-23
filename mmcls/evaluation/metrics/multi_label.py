@@ -404,7 +404,7 @@ def _average_precision(pred: torch.Tensor,
     pred_pos_nums[pred_pos_nums < eps] = eps
 
     tps[torch.logical_not(pos_inds)] = 0
-    precision = tps / pred_pos_nums
+    precision = tps / pred_pos_nums.float()
     ap = torch.sum(precision, 0) / max(total_pos, eps)
     return ap
 
