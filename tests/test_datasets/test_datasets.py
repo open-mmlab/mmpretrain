@@ -1010,7 +1010,7 @@ class TestInShop(TestBaseDataset):
         data_info = dataset[0]
         self.assertEqual(data_info['img_path'],
                          f'{self.root}/Img/12_3_back.jpg')
-        self.assertEqual(data_info['img_id'], 0)
+        self.assertEqual(data_info['sample_idx'], 0)
 
     def test_extra_repr(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)

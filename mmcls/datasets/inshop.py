@@ -121,7 +121,7 @@ class InShop(BaseDataset):
                 gt_label_gallery[item_id].append(gallery_num)
                 anno_gallery['data_list'].append({
                     'img_path': f'{self.data_root}/Img/{img_name}',
-                    'img_id': gallery_num
+                    'sample_idx': gallery_num
                 })
                 gallery_num += 1
             else:
