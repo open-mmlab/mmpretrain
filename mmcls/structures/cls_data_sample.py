@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
+from multiprocessing.reduction import ForkingPickler
 from numbers import Number
 from typing import Sequence, Union
 
@@ -203,3 +204,32 @@ class ClsDataSample(BaseDataElement):
     @pred_label.deleter
     def pred_label(self):
         del self._pred_label
+
+
+def _reduce_cls_datasample(data_sample):
+    """reduce ClsDataSample."""
+    attr_dict = data_sample.__dict__
+    convert_keys = []
+    for k, v in attr_dict.items():
+        if isinstance(v, LabelData):
+            attr_dict[k] = v.numpy()
+            convert_keys.append(k)
+    return _rebuild_cls_datasample, (attr_dict, convert_keys)
+
+
+def _rebuild_cls_datasample(attr_dict, convert_keys):
+    """rebuild ClsDataSample."""
+    data_sample = ClsDataSample()
+    for k in convert_keys:
+        attr_dict[k] = attr_dict[k].to_tensor()
+    data_sample.__dict__ = attr_dict
+    return data_sample
+
+
+# Due to the multi-processing strategy of PyTorch, ClsDataSample may consume
+# many file descriptors because it contains multiple LabelData with tensors.
+# Here we overwrite the reduce function of ClsDataSample in ForkingPickler and
+# convert these tensors to np.ndarray during pickling. It may influence the
+# performance of dataloader, but slightly because these tensors in LabelData
+# are very small.
+ForkingPickler.register(ClsDataSample, _reduce_cls_datasample)
