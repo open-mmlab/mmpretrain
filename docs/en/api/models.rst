@@ -120,6 +120,7 @@ Heads
    VisionTransformerClsHead
    DeiTClsHead
    ConformerHead
+   MultiTaskClsHead
 
 .. _losses:
 
