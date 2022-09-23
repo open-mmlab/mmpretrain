@@ -96,7 +96,7 @@ class MultiLabelMetric(BaseMetric):
         (tensor(62.5000), tensor(31.2500), tensor(39.1667), tensor(8))
         >>>
         >>> # ------------------- Use with Evalutor -------------------
-        >>> from mmcls.data import ClsDataSample
+        >>> from mmcls.structures import ClsDataSample
         >>> from mmengine.evaluator import Evaluator
         >>> data_sampels = [
         ...     ClsDataSample().set_pred_score(pred).set_gt_score(gt)
@@ -450,7 +450,7 @@ class AveragePrecision(BaseMetric):
         >>> AveragePrecision.calculate(y_pred, y_true)
         tensor(70.833)
         >>> # ------------------- Use with Evalutor -------------------
-        >>> from mmcls.data import ClsDataSample
+        >>> from mmcls.structures import ClsDataSample
         >>> from mmengine.evaluator import Evaluator
         >>> data_samples = [
         ...     ClsDataSample().set_pred_score(i).set_gt_score(j)
@@ -621,7 +621,7 @@ class RetrievalAveragePrecision(BaseMetric):
         >>> RetrievalAveragePrecision.calculate(index, label, k)
         16.746031746031745
         >>> # ------------------- Use with Evalutor -------------------
-        >>> from mmcls.data import ClsDataSample
+        >>> from mmcls.structures import ClsDataSample
         >>> from mmengine.evaluator import Evaluator
         >>> from tools.retrieval.test import cosine_similarity
         >>> # The `data_batch` won't be used in this case, just use a fake.
@@ -641,7 +641,7 @@ class RetrievalAveragePrecision(BaseMetric):
         >>> evaluator.evaluate(4)
     """
 
-    default_prefix: Optional[str] = 'multi-label'
+    default_prefix: Optional[str] = 'retrieval'
 
     def __init__(self,
                  max_predictions: int = 100,
@@ -669,7 +669,7 @@ class RetrievalAveragePrecision(BaseMetric):
             result = {
                 'pred_label': pred['pred_label'],
                 'gt_label': pred['gt_label'],
-                'score': pred['score']
+                'pred_score': pred['pred_label']['score']
             }
             self.results.append(result)
 
@@ -685,8 +685,9 @@ class RetrievalAveragePrecision(BaseMetric):
         """
         ap_list = []
         for res in self.results:
-            ap = self.calculate(res['pred_label'], res['gt_label'],
-                                self.max_predictions, self.option)
+            ap = self.calculate(res['pred_label']['label'],
+                                res['gt_label']['label'], self.max_predictions,
+                                self.option)
             ap_list.append(ap)
         result_metrics = dict()
         result_metrics[f'mAP@{self.max_predictions}'] = np.mean(ap_list)
