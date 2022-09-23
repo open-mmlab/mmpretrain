@@ -1,47 +1,139 @@
-# Tutorial 3: Adding New Dataset
+# Tutorial 3: Customize Dataset
 
-## Customize datasets by reorganizing data
+We support many common public datasets for image classification task, you can find them in
+[this page](https://mmclassification.readthedocs.io/en/latest/api/datasets.html).
+
+In this section, we demonstrate how to [use your own dataset](#use-your-own-dataset)
+and [use dataset wrapper](#use-dataset-wrapper).
+
+## Use your own dataset
 
 ### Reorganize dataset to existing format
 
-The simplest way is to convert your dataset to existing dataset formats (ImageNet).
+The simplest way to use your own dataset is to convert it to existing dataset formats.
 
-For training, it differentiates classes by folders. The directory of training data is as follows:
+For multi-class classification task, we recommend to use the format of
+[`CustomDataset`](https://mmclassification.readthedocs.io/en/latest/api/datasets.html#mmcls.datasets.CustomDataset).
+
+The `CustomDataset` supports two kinds of format:
+
+1. An annotation file is provided, and each line indicates a sample image.
+
+   The sample images can be organized in any structure, like:
+
+   ```
+   train/
+   ├── folder_1
+   │   ├── xxx.png
+   │   ├── xxy.png
+   │   └── ...
+   ├── 123.png
+   ├── nsdf3.png
+   └── ...
+   ```
+
+   And an annotation file records all paths of samples and corresponding
+   category index. The first column is the image path relative to the folder
+   (in this example, `train`) and the second column is the index of category:
+
+   ```
+   folder_1/xxx.png 0
+   folder_1/xxy.png 1
+   123.png 1
+   nsdf3.png 2
+   ...
+   ```
+
+   ```{note}
+   The value of the category indices should fall in range `[0, num_classes - 1]`.
+   ```
+
+2. The sample images are arranged in the special structure:
+
+   ```
+   train/
+   ├── cat
+   │   ├── xxx.png
+   │   ├── xxy.png
+   │   └── ...
+   │       └── xxz.png
+   ├── bird
+   │   ├── bird1.png
+   │   ├── bird2.png
+   │   └── ...
+   └── dog
+       ├── 123.png
+       ├── nsdf3.png
+       ├── ...
+       └── asd932_.png
+   ```
+
+   In this case, you don't need provide annotation file, and all images in the directory `cat` will be
+   recognized as samples of `cat`.
+
+Usually, we will split the whole dataset to three sub datasets: `train`, `val`
+and `test` for training, validation and test. And **every** sub dataset should
+be organized as one of the above structures.
+
+For example, the whole dataset is as below (using the first structure):
 
 ```
-imagenet
-├── ...
-├── train
-│   ├── n01440764
-│   │   ├── n01440764_10026.JPEG
-│   │   ├── n01440764_10027.JPEG
-│   │   ├── ...
-│   ├── ...
-│   ├── n15075141
-│   │   ├── n15075141_999.JPEG
-│   │   ├── n15075141_9993.JPEG
-│   │   ├── ...
+mmclassification
+└── data
+    └── my_dataset
+        ├── meta
+        │   ├── train.txt
+        │   ├── val.txt
+        │   └── test.txt
+        ├── train
+        ├── val
+        └── test
 ```
 
-For validation, we provide a annotation list. Each line of the list contrains a filename and its corresponding ground-truth labels. The format is as follows:
+And in your config file, you can modify the `data` field as below:
 
+```python
+...
+dataset_type = 'CustomDataset'
+classes = ['cat', 'bird', 'dog']  # The category names of your dataset
+
+data = dict(
+    train=dict(
+        type=dataset_type,
+        data_prefix='data/my_dataset/train',
+        ann_file='data/my_dataset/meta/train.txt',
+        classes=classes,
+        pipeline=train_pipeline
+    ),
+    val=dict(
+        type=dataset_type,
+        data_prefix='data/my_dataset/val',
+        ann_file='data/my_dataset/meta/val.txt',
+        classes=classes,
+        pipeline=test_pipeline
+    ),
+    test=dict(
+        type=dataset_type,
+        data_prefix='data/my_dataset/test',
+        ann_file='data/my_dataset/meta/test.txt',
+        classes=classes,
+        pipeline=test_pipeline
+    )
+)
+...
 ```
-ILSVRC2012_val_00000001.JPEG 65
-ILSVRC2012_val_00000002.JPEG 970
-ILSVRC2012_val_00000003.JPEG 230
-ILSVRC2012_val_00000004.JPEG 809
-ILSVRC2012_val_00000005.JPEG 516
-```
 
-Note: The value of ground-truth labels should fall in range `[0, num_classes - 1]`.
+### Create a new dataset class
 
-### An example of customized dataset
+You can write a new dataset class inherited from `BaseDataset`, and overwrite `load_annotations(self)`,
+like [CIFAR10](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/datasets/cifar.py) and
+[CustomDataset](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/datasets/custom.py).
 
-You can write a new Dataset class inherited from `BaseDataset`, and overwrite `load_annotations(self)`,
-like [CIFAR10](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/datasets/cifar.py) and [ImageNet](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/datasets/imagenet.py).
-Typically, this function returns a list, where each sample is a dict, containing necessary data information, e.g., `img` and `gt_label`.
+Typically, this function returns a list, where each sample is a dict, containing necessary data information,
+e.g., `img` and `gt_label`.
 
-Assume we are going to implement a `Filelist` dataset, which takes filelists for both training and testing. The format of annotation list is as follows:
+Assume we are going to implement a `Filelist` dataset, which takes filelists for both training and testing.
+The format of annotation list is as follows:
 
 ```
 000001.jpg 0
@@ -93,22 +185,24 @@ Then in the config, to use `Filelist` you can modify the config as the following
 ```python
 train = dict(
     type='Filelist',
-    ann_file = 'image_list.txt',
+    ann_file='image_list.txt',
     pipeline=train_pipeline
 )
 ```
 
-## Customize datasets by mixing dataset
+## Use dataset wrapper
 
-MMClassification also supports to mix dataset for training.
-Currently it supports to concat and repeat datasets.
+The dataset wrapper is a kind of class to change the behavior of dataset class, such as repeat the dataset or
+re-balance the samples of different categories.
 
 ### Repeat dataset
 
-We use `RepeatDataset` as wrapper to repeat the dataset. For example, suppose the original dataset is `Dataset_A`, to repeat it, the config looks like the following
+We use `RepeatDataset` as wrapper to repeat the dataset. For example, suppose the original dataset is
+`Dataset_A`, to repeat it, the config looks like the following
 
 ```python
-dataset_A_train = dict(
+data = dict(
+    train = dict(
         type='RepeatDataset',
         times=N,
         dataset=dict(  # This is the original config of Dataset_A
@@ -117,17 +211,19 @@ dataset_A_train = dict(
             pipeline=train_pipeline
         )
     )
+    ...
+)
 ```
 
 ### Class balanced dataset
 
-We use `ClassBalancedDataset` as wrapper to repeat the dataset based on category
-frequency. The dataset to repeat needs to instantiate function `self.get_cat_ids(idx)`
-to support `ClassBalancedDataset`.
-For example, to repeat `Dataset_A` with `oversample_thr=1e-3`, the config looks like the following
+We use `ClassBalancedDataset` as wrapper to repeat the dataset based on category frequency. The dataset to
+repeat needs to implement method `get_cat_ids(idx)` to support `ClassBalancedDataset`. For example, to repeat
+`Dataset_A` with `oversample_thr=1e-3`, the config looks like the following
 
 ```python
-dataset_A_train = dict(
+data = dict(
+    train = dict(
         type='ClassBalancedDataset',
         oversample_thr=1e-3,
         dataset=dict(  # This is the original config of Dataset_A
@@ -136,6 +232,8 @@ dataset_A_train = dict(
             pipeline=train_pipeline
         )
     )
+    ...
+)
 ```
 
-You may refer to [source code](https://github.com/open-mmlab/mmclassification/tree/master/mmcls/datasets/dataset_wrappers.py) for details.
+You may refer to [API reference](https://mmclassification.readthedocs.io/en/latest/api/datasets.html#mmcls.datasets.ClassBalancedDataset) for details.

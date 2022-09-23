@@ -33,6 +33,13 @@ class ImageClassifier(BaseClassifier):
             if augments_cfg is not None:
                 self.augments = Augments(augments_cfg)
 
+    def forward_dummy(self, img):
+        """Used for computing network flops.
+
+        See `mmclassificaiton/tools/analysis_tools/get_flops.py`
+        """
+        return self.extract_feat(img, stage='pre_logits')
+
     def extract_feat(self, img, stage='neck'):
         """Directly extract features from the specified stage.
 
@@ -123,7 +130,7 @@ class ImageClassifier(BaseClassifier):
                 Typically these should be mean centered and std scaled.
             gt_label (Tensor): It should be of shape (N, 1) encoding the
                 ground-truth label of input images for single label task. It
-                shoulf be of shape (N, C) encoding the ground-truth label
+                should be of shape (N, C) encoding the ground-truth label
                 of input images for multi-labels task.
         Returns:
             dict[str, Tensor]: a dictionary of loss components

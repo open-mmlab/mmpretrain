@@ -1,16 +1,60 @@
 # Changelog
 
+## v0.23.2(28/7/2022)
+
+### New Features
+
+- Support MPS device. ([#894](https://github.com/open-mmlab/mmclassification/pull/894))
+
+### Bug Fixes
+
+- Fix a bug in Albu which caused crashing. ([#918](https://github.com/open-mmlab/mmclassification/pull/918))
+
+## v0.23.1(2/6/2022)
+
+### New Features
+
+- Dedicated MMClsWandbHook for MMClassification (Weights and Biases Integration) ([#764](https://github.com/open-mmlab/mmclassification/pull/764))
+
+### Improvements
+
+- Use mdformat instead of markdownlint to format markdown. ([#844](https://github.com/open-mmlab/mmclassification/pull/844))
+
+### Bug Fixes
+
+- Fix wrong `--local_rank`.
+
+### Docs Update
+
+- Update install tutorials. ([#854](https://github.com/open-mmlab/mmclassification/pull/854))
+- Fix wrong link in README. ([#835](https://github.com/open-mmlab/mmclassification/pull/835))
+
+## v0.23.0(1/5/2022)
+
+### New Features
+
+- Support DenseNet. ([#750](https://github.com/open-mmlab/mmclassification/pull/750))
+- Support VAN. ([#739](https://github.com/open-mmlab/mmclassification/pull/739))
+
+### Improvements
+
+- Support training on IPU and add fine-tuning configs of ViT. ([#723](https://github.com/open-mmlab/mmclassification/pull/723))
+
+### Docs Update
+
+- New style API reference, and easier to use! Welcome [view it](https://mmclassification.readthedocs.io/en/master/api/models.html). ([#774](https://github.com/open-mmlab/mmclassification/pull/774))
+
 ## v0.22.1(15/4/2022)
 
 ### New Features
 
-- [Feature] Support resize relative position embedding in `SwinTransformer`. ([#749](https://github.com/open-mmlab/mmclassification/pull/749))
-- [Feature] Add PoolFormer backbone and checkpoints. ([#746](https://github.com/open-mmlab/mmclassification/pull/746))
+- \[Feature\] Support resize relative position embedding in `SwinTransformer`. ([#749](https://github.com/open-mmlab/mmclassification/pull/749))
+- \[Feature\] Add PoolFormer backbone and checkpoints. ([#746](https://github.com/open-mmlab/mmclassification/pull/746))
 
 ### Improvements
 
-- [Enhance] Improve CPE performance by reduce memory copy. ([#762](https://github.com/open-mmlab/mmclassification/pull/762))
-- [Enhance] Add extra dataloader settings in configs. ([#752](https://github.com/open-mmlab/mmclassification/pull/752))
+- \[Enhance\] Improve CPE performance by reduce memory copy. ([#762](https://github.com/open-mmlab/mmclassification/pull/762))
+- \[Enhance\] Add extra dataloader settings in configs. ([#752](https://github.com/open-mmlab/mmclassification/pull/752))
 
 ## v0.22.0(30/3/2022)
 
@@ -22,30 +66,29 @@
 
 ### New Features
 
-- [Feature] Add CSPNet and backbone and checkpoints ([#735](https://github.com/open-mmlab/mmclassification/pull/735))
-- [Feature] Add `CustomDataset`. ([#738](https://github.com/open-mmlab/mmclassification/pull/738))
-- [Feature] Add diff seeds to diff ranks.  ([#744](https://github.com/open-mmlab/mmclassification/pull/744))
-- [Feature] Support ConvMixer. ([#716](https://github.com/open-mmlab/mmclassification/pull/716))
-- [Feature] Our `dist_train` & `dist_test` tools support distributed training on multiple machines. ([#734](https://github.com/open-mmlab/mmclassification/pull/734))
-- [Feature] Add RepMLP backbone and checkpoints. ([#709](https://github.com/open-mmlab/mmclassification/pull/709))
-- [Feature] Support CUB dataset. ([#703](https://github.com/open-mmlab/mmclassification/pull/703))
-- [Feature] Support ResizeMix. ([#676](https://github.com/open-mmlab/mmclassification/pull/676))
-
+- \[Feature\] Add CSPNet and backbone and checkpoints ([#735](https://github.com/open-mmlab/mmclassification/pull/735))
+- \[Feature\] Add `CustomDataset`. ([#738](https://github.com/open-mmlab/mmclassification/pull/738))
+- \[Feature\] Add diff seeds to diff ranks.  ([#744](https://github.com/open-mmlab/mmclassification/pull/744))
+- \[Feature\] Support ConvMixer. ([#716](https://github.com/open-mmlab/mmclassification/pull/716))
+- \[Feature\] Our `dist_train` & `dist_test` tools support distributed training on multiple machines. ([#734](https://github.com/open-mmlab/mmclassification/pull/734))
+- \[Feature\] Add RepMLP backbone and checkpoints. ([#709](https://github.com/open-mmlab/mmclassification/pull/709))
+- \[Feature\] Support CUB dataset. ([#703](https://github.com/open-mmlab/mmclassification/pull/703))
+- \[Feature\] Support ResizeMix. ([#676](https://github.com/open-mmlab/mmclassification/pull/676))
 
 ### Improvements
 
-- [Enhance] Use `--a-b` instead of `--a_b` in arguments. ([#754](https://github.com/open-mmlab/mmclassification/pull/754))
-- [Enhance] Add `get_cat_ids` and `get_gt_labels` to KFoldDataset. ([#721](https://github.com/open-mmlab/mmclassification/pull/721))
-- [Enhance] Set torch seed in `worker_init_fn`. ([#733](https://github.com/open-mmlab/mmclassification/pull/733))
+- \[Enhance\] Use `--a-b` instead of `--a_b` in arguments. ([#754](https://github.com/open-mmlab/mmclassification/pull/754))
+- \[Enhance\] Add `get_cat_ids` and `get_gt_labels` to KFoldDataset. ([#721](https://github.com/open-mmlab/mmclassification/pull/721))
+- \[Enhance\] Set torch seed in `worker_init_fn`. ([#733](https://github.com/open-mmlab/mmclassification/pull/733))
 
 ### Bug Fixes
 
-- [Fix] Fix the discontiguous output feature map of ConvNeXt. ([#743](https://github.com/open-mmlab/mmclassification/pull/743))
+- \[Fix\] Fix the discontiguous output feature map of ConvNeXt. ([#743](https://github.com/open-mmlab/mmclassification/pull/743))
 
 ### Docs Update
 
-- [Docs] Add brief installation steps in README for copy&paste. ([#755](https://github.com/open-mmlab/mmclassification/pull/755))
-- [Docs] fix logo url link from mmocr to mmcls. ([#732](https://github.com/open-mmlab/mmclassification/pull/732))
+- \[Docs\] Add brief installation steps in README for copy&paste. ([#755](https://github.com/open-mmlab/mmclassification/pull/755))
+- \[Docs\] fix logo url link from mmocr to mmcls. ([#732](https://github.com/open-mmlab/mmclassification/pull/732))
 
 ## v0.21.0(04/03/2022)
 
@@ -148,18 +191,18 @@
 
 ### Improvements
 
-- [Reproduction] Reproduce RegNetX training accuracy. ([#587](https://github.com/open-mmlab/mmclassification/pull/587))
-- [Reproduction] Reproduce training results of T2T-ViT. ([#610](https://github.com/open-mmlab/mmclassification/pull/610))
-- [Enhance] Provide high-acc training settings of ResNet. ([#572](https://github.com/open-mmlab/mmclassification/pull/572))
-- [Enhance] Set a random seed when the user does not set a seed. ([#554](https://github.com/open-mmlab/mmclassification/pull/554))
-- [Enhance] Added `NumClassCheckHook` and unit tests. ([#559](https://github.com/open-mmlab/mmclassification/pull/559))
-- [Enhance] Enhance feature extraction function. ([#593](https://github.com/open-mmlab/mmclassification/pull/593))
-- [Enhance] Improve efficiency of precision, recall, f1_score and support. ([#595](https://github.com/open-mmlab/mmclassification/pull/595))
-- [Enhance] Improve accuracy calculation performance. ([#592](https://github.com/open-mmlab/mmclassification/pull/592))
-- [Refactor] Refactor `analysis_log.py`. ([#529](https://github.com/open-mmlab/mmclassification/pull/529))
-- [Refactor] Use new API of matplotlib to handle blocking input in visualization. ([#568](https://github.com/open-mmlab/mmclassification/pull/568))
-- [CI] Cancel previous runs that are not completed. ([#583](https://github.com/open-mmlab/mmclassification/pull/583))
-- [CI] Skip build CI if only configs or docs modification. ([#575](https://github.com/open-mmlab/mmclassification/pull/575))
+- \[Reproduction\] Reproduce RegNetX training accuracy. ([#587](https://github.com/open-mmlab/mmclassification/pull/587))
+- \[Reproduction\] Reproduce training results of T2T-ViT. ([#610](https://github.com/open-mmlab/mmclassification/pull/610))
+- \[Enhance\] Provide high-acc training settings of ResNet. ([#572](https://github.com/open-mmlab/mmclassification/pull/572))
+- \[Enhance\] Set a random seed when the user does not set a seed. ([#554](https://github.com/open-mmlab/mmclassification/pull/554))
+- \[Enhance\] Added `NumClassCheckHook` and unit tests. ([#559](https://github.com/open-mmlab/mmclassification/pull/559))
+- \[Enhance\] Enhance feature extraction function. ([#593](https://github.com/open-mmlab/mmclassification/pull/593))
+- \[Enhance\] Improve efficiency of precision, recall, f1_score and support. ([#595](https://github.com/open-mmlab/mmclassification/pull/595))
+- \[Enhance\] Improve accuracy calculation performance. ([#592](https://github.com/open-mmlab/mmclassification/pull/592))
+- \[Refactor\] Refactor `analysis_log.py`. ([#529](https://github.com/open-mmlab/mmclassification/pull/529))
+- \[Refactor\] Use new API of matplotlib to handle blocking input in visualization. ([#568](https://github.com/open-mmlab/mmclassification/pull/568))
+- \[CI\] Cancel previous runs that are not completed. ([#583](https://github.com/open-mmlab/mmclassification/pull/583))
+- \[CI\] Skip build CI if only configs or docs modification. ([#575](https://github.com/open-mmlab/mmclassification/pull/575))
 
 ### Bug Fixes
 
@@ -270,7 +313,7 @@
 
 - Fix TnT compatibility and verbose warning. ([#436](https://github.com/open-mmlab/mmclassification/pull/436))
 - Support setting `--out-items` in `tools/test.py`.  ([#437](https://github.com/open-mmlab/mmclassification/pull/437))
-- Add datetime info and saving model using torch<1.6 format. ([#439](https://github.com/open-mmlab/mmclassification/pull/439))
+- Add datetime info and saving model using torch\<1.6 format. ([#439](https://github.com/open-mmlab/mmclassification/pull/439))
 - Improve downstream repositories compatibility. ([#421](https://github.com/open-mmlab/mmclassification/pull/421))
 - Rename the option `--options` to `--cfg-options` in some tools. ([#425](https://github.com/open-mmlab/mmclassification/pull/425))
 - Add PyTorch 1.9 and Python 3.9 build workflow, and remove some CI. ([#422](https://github.com/open-mmlab/mmclassification/pull/422))
@@ -293,6 +336,7 @@
 ## v0.15.0(31/8/2021)
 
 ### Highlights
+
 - Support `hparams` argument in `AutoAugment` and `RandAugment` to provide hyperparameters for sub-policies.
 - Support custom squeeze channels in `SELayer`.
 - Support classwise weight in losses.
@@ -323,6 +367,7 @@
 ## v0.14.0(4/8/2021)
 
 ### Highlights
+
 - Add transformer-in-transformer backbone and pretrain checkpoints, refers to [the paper](https://arxiv.org/abs/2103.00112).
 - Add Chinese colab tutorial.
 - Provide dockerfile to build mmcls dev docker image.

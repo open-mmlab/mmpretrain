@@ -5,14 +5,13 @@ import warnings
 import numpy as np
 import torch
 import torch.distributed as dist
-from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import (DistSamplerSeedHook, Fp16OptimizerHook,
                          build_optimizer, build_runner, get_dist_info)
-from mmcv.runner.hooks import DistEvalHook, EvalHook
 
-from mmcls.core import DistOptimizerHook
+from mmcls.core import DistEvalHook, DistOptimizerHook, EvalHook
 from mmcls.datasets import build_dataloader, build_dataset
-from mmcls.utils import get_root_logger
+from mmcls.utils import (get_root_logger, wrap_distributed_model,
+                         wrap_non_distributed_model)
 
 
 def init_random_seed(seed=None, device='cuda'):
@@ -105,7 +104,7 @@ def train_model(model,
     # The default loader config
     loader_cfg = dict(
         # cfg.gpus will be ignored if distributed
-        num_gpus=len(cfg.gpu_ids),
+        num_gpus=cfg.ipu_replicas if device == 'ipu' else len(cfg.gpu_ids),
         dist=distributed,
         round_up=True,
         seed=cfg.get('seed'),
@@ -129,25 +128,15 @@ def train_model(model,
         find_unused_parameters = cfg.get('find_unused_parameters', False)
         # Sets the `find_unused_parameters` parameter in
         # torch.nn.parallel.DistributedDataParallel
-        model = MMDistributedDataParallel(
-            model.cuda(),
+        model = wrap_distributed_model(
+            model,
+            cfg.device,
             device_ids=[torch.cuda.current_device()],
             broadcast_buffers=False,
             find_unused_parameters=find_unused_parameters)
     else:
-        if device == 'cpu':
-            warnings.warn(
-                'The argument `device` is deprecated. To use cpu to train, '
-                'please refers to https://mmclassification.readthedocs.io/en'
-                '/latest/getting_started.html#train-a-model')
-            model = model.cpu()
-        else:
-            model = MMDataParallel(model, device_ids=cfg.gpu_ids)
-            if not model.device_ids:
-                from mmcv import __version__, digit_version
-                assert digit_version(__version__) >= (1, 4, 4), \
-                    'To train with CPU, please confirm your mmcv version ' \
-                    'is not lower than v1.4.4'
+        model = wrap_non_distributed_model(
+            model, cfg.device, device_ids=cfg.gpu_ids)
 
     # build runner
     optimizer = build_optimizer(model, cfg.optimizer)
@@ -160,6 +149,14 @@ def train_model(model,
         warnings.warn(
             'config is now expected to have a `runner` section, '
             'please set `runner` in your config.', UserWarning)
+
+    if device == 'ipu':
+        if not cfg.runner['type'].startswith('IPU'):
+            cfg.runner['type'] = 'IPU' + cfg.runner['type']
+        if 'options_cfg' not in cfg.runner:
+            cfg.runner['options_cfg'] = {}
+        cfg.runner['options_cfg']['replicationFactor'] = cfg.ipu_replicas
+        cfg.runner['fp16_cfg'] = cfg.get('fp16', None)
 
     runner = build_runner(
         cfg.runner,
@@ -177,8 +174,17 @@ def train_model(model,
     # fp16 setting
     fp16_cfg = cfg.get('fp16', None)
     if fp16_cfg is not None:
-        optimizer_config = Fp16OptimizerHook(
-            **cfg.optimizer_config, **fp16_cfg, distributed=distributed)
+        if device == 'ipu':
+            from mmcv.device.ipu import IPUFp16OptimizerHook
+            optimizer_config = IPUFp16OptimizerHook(
+                **cfg.optimizer_config,
+                loss_scale=fp16_cfg['loss_scale'],
+                distributed=distributed)
+        else:
+            optimizer_config = Fp16OptimizerHook(
+                **cfg.optimizer_config,
+                loss_scale=fp16_cfg['loss_scale'],
+                distributed=distributed)
     elif distributed and 'type' not in cfg.optimizer_config:
         optimizer_config = DistOptimizerHook(**cfg.optimizer_config)
     else:

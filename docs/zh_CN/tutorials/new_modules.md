@@ -12,8 +12,7 @@
 
 这里，我们以 ResNet_CIFAR 为例，展示了如何开发一个新的主干网络组件。
 
-ResNet_CIFAR 针对 CIFAR 32x32 的图像输入，将 ResNet 中 `kernel_size=7,
-stride=2` 的设置替换为 `kernel_size=3, stride=1`，并移除了 stem 层之后的
+ResNet_CIFAR 针对 CIFAR 32x32 的图像输入，将 ResNet 中 `kernel_size=7, stride=2` 的设置替换为 `kernel_size=3, stride=1`，并移除了 stem 层之后的
 `MaxPooling`，以避免传递过小的特征图到残差块中。
 
 它继承自 `ResNet` 并只修改了 stem 层。
@@ -103,42 +102,42 @@ model = dict(
 
 1. 创建一个新文件 `mmcls/models/necks/gap.py`
 
-    ```python
-    import torch.nn as nn
+   ```python
+   import torch.nn as nn
 
-    from ..builder import NECKS
+   from ..builder import NECKS
 
-    @NECKS.register_module()
-    class GlobalAveragePooling(nn.Module):
+   @NECKS.register_module()
+   class GlobalAveragePooling(nn.Module):
 
-        def __init__(self):
-            self.gap = nn.AdaptiveAvgPool2d((1, 1))
+       def __init__(self):
+           self.gap = nn.AdaptiveAvgPool2d((1, 1))
 
-        def forward(self, inputs):
-            # 简单起见，我们默认输入是一个张量
-            outs = self.gap(inputs)
-            outs = outs.view(inputs.size(0), -1)
-            return outs
-    ```
+       def forward(self, inputs):
+           # 简单起见，我们默认输入是一个张量
+           outs = self.gap(inputs)
+           outs = outs.view(inputs.size(0), -1)
+           return outs
+   ```
 
 2. 在 `mmcls/models/necks/__init__.py` 中导入新模块
 
-    ```python
-    ...
-    from .gap import GlobalAveragePooling
+   ```python
+   ...
+   from .gap import GlobalAveragePooling
 
-    __all__ = [
-        ..., 'GlobalAveragePooling'
-    ]
-    ```
+   __all__ = [
+       ..., 'GlobalAveragePooling'
+   ]
+   ```
 
 3. 修改配置文件以使用新的颈部组件
 
-    ```python
-    model = dict(
-        neck=dict(type='GlobalAveragePooling'),
-    )
-    ```
+   ```python
+   model = dict(
+       neck=dict(type='GlobalAveragePooling'),
+   )
+   ```
 
 ### 添加新的头部组件
 
@@ -149,52 +148,52 @@ model = dict(
 
 1. 创建一个文件 `mmcls/models/heads/linear_head.py`.
 
-    ```python
-    from ..builder import HEADS
-    from .cls_head import ClsHead
+   ```python
+   from ..builder import HEADS
+   from .cls_head import ClsHead
 
 
-    @HEADS.register_module()
-    class LinearClsHead(ClsHead):
+   @HEADS.register_module()
+   class LinearClsHead(ClsHead):
 
-        def __init__(self,
-                  num_classes,
-                  in_channels,
-                  loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
-                  topk=(1, )):
-            super(LinearClsHead, self).__init__(loss=loss, topk=topk)
-            self.in_channels = in_channels
-            self.num_classes = num_classes
+       def __init__(self,
+                 num_classes,
+                 in_channels,
+                 loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
+                 topk=(1, )):
+           super(LinearClsHead, self).__init__(loss=loss, topk=topk)
+           self.in_channels = in_channels
+           self.num_classes = num_classes
 
-            if self.num_classes <= 0:
-                raise ValueError(
-                    f'num_classes={num_classes} must be a positive integer')
+           if self.num_classes <= 0:
+               raise ValueError(
+                   f'num_classes={num_classes} must be a positive integer')
 
-            self._init_layers()
+           self._init_layers()
 
-        def _init_layers(self):
-            self.fc = nn.Linear(self.in_channels, self.num_classes)
+       def _init_layers(self):
+           self.fc = nn.Linear(self.in_channels, self.num_classes)
 
-        def init_weights(self):
-            normal_init(self.fc, mean=0, std=0.01, bias=0)
+       def init_weights(self):
+           normal_init(self.fc, mean=0, std=0.01, bias=0)
 
-        def forward_train(self, x, gt_label):
-            cls_score = self.fc(x)
-            losses = self.loss(cls_score, gt_label)
-            return losses
+       def forward_train(self, x, gt_label):
+           cls_score = self.fc(x)
+           losses = self.loss(cls_score, gt_label)
+           return losses
 
-    ```
+   ```
 
 2. 在 `mmcls/models/heads/__init__.py` 中导入这个模块
 
-    ```python
-    ...
-    from .linear_head import LinearClsHead
+   ```python
+   ...
+   from .linear_head import LinearClsHead
 
-    __all__ = [
-        ..., 'LinearClsHead'
-    ]
-    ```
+   __all__ = [
+       ..., 'LinearClsHead'
+   ]
+   ```
 
 3. 修改配置文件以使用新的头部组件。
 
@@ -228,54 +227,54 @@ model = dict(
 
 1. 创建一个新文件 `mmcls/models/losses/l1_loss.py`
 
-    ```python
-    import torch
-    import torch.nn as nn
+   ```python
+   import torch
+   import torch.nn as nn
 
-    from ..builder import LOSSES
-    from .utils import weighted_loss
+   from ..builder import LOSSES
+   from .utils import weighted_loss
 
-    @weighted_loss
-    def l1_loss(pred, target):
-        assert pred.size() == target.size() and target.numel() > 0
-        loss = torch.abs(pred - target)
-        return loss
+   @weighted_loss
+   def l1_loss(pred, target):
+       assert pred.size() == target.size() and target.numel() > 0
+       loss = torch.abs(pred - target)
+       return loss
 
-    @LOSSES.register_module()
-    class L1Loss(nn.Module):
+   @LOSSES.register_module()
+   class L1Loss(nn.Module):
 
-        def __init__(self, reduction='mean', loss_weight=1.0):
-            super(L1Loss, self).__init__()
-            self.reduction = reduction
-            self.loss_weight = loss_weight
+       def __init__(self, reduction='mean', loss_weight=1.0):
+           super(L1Loss, self).__init__()
+           self.reduction = reduction
+           self.loss_weight = loss_weight
 
-        def forward(self,
-                    pred,
-                    target,
-                    weight=None,
-                    avg_factor=None,
-                    reduction_override=None):
-            assert reduction_override in (None, 'none', 'mean', 'sum')
-            reduction = (
-                reduction_override if reduction_override else self.reduction)
-            loss = self.loss_weight * l1_loss(
-                pred, target, weight, reduction=reduction, avg_factor=avg_factor)
-            return loss
-    ```
+       def forward(self,
+                   pred,
+                   target,
+                   weight=None,
+                   avg_factor=None,
+                   reduction_override=None):
+           assert reduction_override in (None, 'none', 'mean', 'sum')
+           reduction = (
+               reduction_override if reduction_override else self.reduction)
+           loss = self.loss_weight * l1_loss(
+               pred, target, weight, reduction=reduction, avg_factor=avg_factor)
+           return loss
+   ```
 
 2. 在文件 `mmcls/models/losses/__init__.py` 中导入这个模块
 
-    ```python
-    ...
-    from .l1_loss import L1Loss, l1_loss
+   ```python
+   ...
+   from .l1_loss import L1Loss, l1_loss
 
-    __all__ = [
-        ..., 'L1Loss', 'l1_loss'
-    ]
-    ```
+   __all__ = [
+       ..., 'L1Loss', 'l1_loss'
+   ]
+   ```
 
 3. 修改配置文件中的 `loss` 字段以使用新的损失函数
 
-    ```python
-    loss=dict(type='L1Loss', loss_weight=1.0))
-    ```
+   ```python
+   loss=dict(type='L1Loss', loss_weight=1.0))
+   ```

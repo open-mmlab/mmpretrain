@@ -1,6 +1,7 @@
 # Visual Attention Network
 
 > [Visual Attention Network](https://arxiv.org/pdf/2202.09741v2.pdf)
+
 <!-- [ALGORITHM] -->
 
 ## Abstract
@@ -11,19 +12,18 @@ While originally designed for natural language processing (NLP) tasks, the self-
 <img src="https://user-images.githubusercontent.com/24734142/157409411-2f622ba7-553c-4702-91be-eba03f9ea04f.png" width="80%"/>
 </div>
 
-
 ## Results and models
 
 ### ImageNet-1k
 
-|   Model   |   Pretrain   | resolution  | Params(M) |  Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
-|:---------:|:------------:|:-----------:|:---------:|:---------:|:---------:|:---------:|:------:|:--------:|
-|  VAN-T\*   | From scratch |   224x224   |   4.11   |    0.88   |   75.41   |   93.02   |  [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/van/van-tiny_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/van/van-tiny_8xb128_in1k_20220427-8ac0feec.pth)  |
-|  VAN-S\*   | From scratch |   224x224   |   13.86   |    2.52   |   81.01   |    95.63   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/van/van-small_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/van/van-small_8xb128_in1k_20220427-bd6a9edd.pth)  |
-|  VAN-B\*   | From scratch |   224x224   |   26.58   |   5.03   |   82.80   |    96.21   |   [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/van/van-base_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/van/van-base_8xb128_in1k_20220427-5275471d.pth)  |
-|  VAN-L\* | From scratch |   224x224   |   44.77   |    8.99   |   83.86   |    96.73   |   [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/van/van-large_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/van/van-large_8xb128_in1k_20220427-56159105.pth)  |
+|  Model  |   Pretrain   | resolution | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                               Config                                |                               Download                                |
+| :-----: | :----------: | :--------: | :-------: | :------: | :-------: | :-------: | :-----------------------------------------------------------------: | :-------------------------------------------------------------------: |
+| VAN-T\* | From scratch |  224x224   |   4.11    |   0.88   |   75.41   |   93.02   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/van/van-tiny_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/van/van-tiny_8xb128_in1k_20220501-385941af.pth) |
+| VAN-S\* | From scratch |  224x224   |   13.86   |   2.52   |   81.01   |   95.63   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/van/van-small_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/van/van-small_8xb128_in1k_20220501-17bc91aa.pth) |
+| VAN-B\* | From scratch |  224x224   |   26.58   |   5.03   |   82.80   |   96.21   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/van/van-base_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/van/van-base_8xb128_in1k_20220501-6a4cc31b.pth) |
+| VAN-L\* | From scratch |  224x224   |   44.77   |   8.99   |   83.86   |   96.73   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/van/van-large_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/van/van-large_8xb128_in1k_20220501-f212ba21.pth) |
 
-*Models with \* are converted from [the official repo](https://github.com/Visual-Attention-Network/VAN-Classification). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.
+\*Models with * are converted from [the official repo](https://github.com/Visual-Attention-Network/VAN-Classification). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.
 
 ## Citation
 

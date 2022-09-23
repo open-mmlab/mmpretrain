@@ -6,7 +6,7 @@
 
 在新数据集上微调模型分为两步：
 
-- 按照 [教程 3：如何增加新数据集](new_dataset.md) 添加对新数据集的支持。
+- 按照 [教程 3：如何自定义数据集](new_dataset.md) 添加对新数据集的支持。
 - 按照本教程中讨论的内容修改配置文件
 
 假设我们现在有一个在 ImageNet-2012 数据集上训练好的 ResNet-50 模型，并且希望在
@@ -83,7 +83,7 @@ model = dict(
 
 ```{note}
 目前还不是所有的网络都支持 `frozen_stages` 参数，在使用之前，请先检查
-[文档](https://mmclassification.readthedocs.io/zh_CN/latest/api.html#module-mmcls.models.backbones)
+[文档](https://mmclassification.readthedocs.io/zh_CN/latest/api/models.html#backbones)
 以确认你所使用的主干网络是否支持。
 ```
 

@@ -72,9 +72,11 @@ You can switch between Chinese and English documentation in the lower-left corne
 
 .. toctree::
    :maxdepth: 1
-   :caption: Changelog
+   :caption: Notes
 
    changelog.md
+   compatibility.md
+   faq.md
 
 .. toctree::
    :caption: Language Switch

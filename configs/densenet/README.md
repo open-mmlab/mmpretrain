@@ -1,6 +1,7 @@
 # DenseNet
 
 > [Densely Connected Convolutional Networks](https://arxiv.org/abs/1608.06993)
+
 <!-- [ALGORITHM] -->
 
 ## Abstract
@@ -15,15 +16,14 @@ Recent work has shown that convolutional networks can be substantially deeper, m
 
 ### ImageNet-1k
 
-|      Model      | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
-|:---------------:|:---------:|:--------:|:---------:|:---------:|:------:|:--------:|
-| DenseNet121\*   | 7.98      | 2.88     | 74.96     | 92.21     | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/densenet/densenet121_4xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/densenet/densenet121_4xb256_in1k_20220426-07450f99.pth) |
-| DenseNet169\*   | 14.15     | 3.42     | 76.08     | 93.11     | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/densenet/densenet169_4xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/densenet/densenet169_4xb256_in1k_20220426-a2889902.pth) |
-| DenseNet201\*   | 20.01     | 4.37     | 77.32     | 93.64     | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/densenet/densenet201_4xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/densenet/densenet201_4xb256_in1k_20220426-05cae4ef.pth) |
-| DenseNet161\*   | 28.68     | 7.82     | 77.61     | 93.83     | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/densenet/densenet161_4xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/densenet/densenet161_4xb256_in1k_20220426-ee6a80a9.pth) |
+|     Model     | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                                   Config                                    |                                   Download                                    |
+| :-----------: | :-------: | :------: | :-------: | :-------: | :-------------------------------------------------------------------------: | :---------------------------------------------------------------------------: |
+| DenseNet121\* |   7.98    |   2.88   |   74.96   |   92.21   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/densenet/densenet121_4xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/densenet/densenet121_4xb256_in1k_20220426-07450f99.pth) |
+| DenseNet169\* |   14.15   |   3.42   |   76.08   |   93.11   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/densenet/densenet169_4xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/densenet/densenet169_4xb256_in1k_20220426-a2889902.pth) |
+| DenseNet201\* |   20.01   |   4.37   |   77.32   |   93.64   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/densenet/densenet201_4xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/densenet/densenet201_4xb256_in1k_20220426-05cae4ef.pth) |
+| DenseNet161\* |   28.68   |   7.82   |   77.61   |   93.83   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/densenet/densenet161_4xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/densenet/densenet161_4xb256_in1k_20220426-ee6a80a9.pth) |
 
-*Models with \* are converted from [pytorch](https://pytorch.org/vision/stable/models.html), guided by [original repo](https://github.com/liuzhuang13/DenseNet). The config files of these models are only for inference. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
-
+*Models with * are converted from [pytorch](https://pytorch.org/vision/stable/models.html), guided by [original repo](https://github.com/liuzhuang13/DenseNet). The config files of these models are only for inference. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 
 ## Citation
 

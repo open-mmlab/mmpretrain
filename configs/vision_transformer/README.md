@@ -1,6 +1,7 @@
 # Vision Transformer
 
 > [An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale](https://arxiv.org/pdf/2010.11929.pdf)
+
 <!-- [ALGORITHM] -->
 
 ## Abstract
@@ -23,23 +24,24 @@ pre-trained models and fine-tuned models.
 
 The pre-trained models on ImageNet-21k are used to fine-tune, and therefore don't have evaluation results.
 
-|   Model    | resolution  | Params(M) |  Flops(G) | Download |
-|:----------:|:-----------:|:---------:|:---------:|:--------:|
-|  ViT-B16\* |   224x224   |   86.86   |   33.03   | [model](https://download.openmmlab.com/mmclassification/v0/vit/pretrain/vit-base-p16_3rdparty_pt-64xb64_in1k-224_20210928-02284250.pth)|
-|  ViT-B32\* |   224x224   |   88.30   |    8.56   | [model](https://download.openmmlab.com/mmclassification/v0/vit/pretrain/vit-base-p32_3rdparty_pt-64xb64_in1k-224_20210928-eee25dd4.pth)|
-|  ViT-L16\* |   224x224   |  304.72   |  116.68   | [model](https://download.openmmlab.com/mmclassification/v0/vit/pretrain/vit-large-p16_3rdparty_pt-64xb64_in1k-224_20210928-0001f9a1.pth)|
+|   Model   | resolution | Params(M) | Flops(G) |                                                                 Download                                                                 |
+| :-------: | :--------: | :-------: | :------: | :--------------------------------------------------------------------------------------------------------------------------------------: |
+| ViT-B16\* |  224x224   |   86.86   |  33.03   | [model](https://download.openmmlab.com/mmclassification/v0/vit/pretrain/vit-base-p16_3rdparty_pt-64xb64_in1k-224_20210928-02284250.pth)  |
+| ViT-B32\* |  224x224   |   88.30   |   8.56   | [model](https://download.openmmlab.com/mmclassification/v0/vit/pretrain/vit-base-p32_3rdparty_pt-64xb64_in1k-224_20210928-eee25dd4.pth)  |
+| ViT-L16\* |  224x224   |  304.72   |  116.68  | [model](https://download.openmmlab.com/mmclassification/v0/vit/pretrain/vit-large-p16_3rdparty_pt-64xb64_in1k-224_20210928-0001f9a1.pth) |
 
-*Models with \* are converted from the [official repo](https://github.com/google-research/vision_transformer#available-vit-models).*
+*Models with * are converted from the [official repo](https://github.com/google-research/vision_transformer#available-vit-models).*
 
 ### ImageNet-1k
 
-|    Model   |  Pretrain    | resolution  | Params(M) |  Flops(G) | Top-1 (%) | Top-5 (%) |   Config   | Download |
-|:----------:|:------------:|:-----------:|:---------:|:---------:|:---------:|:---------:|:----------:|:--------:|
-|  ViT-B16\* | ImageNet-21k |   384x384   |   86.86   |   33.03   |   85.43   |   97.77   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/vision_transformer/vit-base-p16_ft-64xb64_in1k-384.py) | [model](https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-base-p16_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-98e8652b.pth)|
-|  ViT-B32\* | ImageNet-21k |   384x384   |   88.30   |    8.56   |   84.01   |   97.08   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/vision_transformer/vit-base-p32_ft-64xb64_in1k-384.py) | [model](https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-base-p32_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-9cea8599.pth)|
-|  ViT-L16\* | ImageNet-21k |   384x384   |  304.72   |  116.68   |   85.63   |   97.63   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/vision_transformer/vit-large-p16_ft-64xb64_in1k-384.py) | [model](https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-large-p16_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-b20ba619.pth)|
+|     Model     |   Pretrain   | resolution | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                              Config                              |                              Download                              |
+| :-----------: | :----------: | :--------: | :-------: | :------: | :-------: | :-------: | :--------------------------------------------------------------: | :----------------------------------------------------------------: |
+|   ViT-B16\*   | ImageNet-21k |  384x384   |   86.86   |  33.03   |   85.43   |   97.77   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/vision_transformer/vit-base-p16_ft-64xb64_in1k-384.py) | [model](https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-base-p16_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-98e8652b.pth) |
+|   ViT-B32\*   | ImageNet-21k |  384x384   |   88.30   |   8.56   |   84.01   |   97.08   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/vision_transformer/vit-base-p32_ft-64xb64_in1k-384.py) | [model](https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-base-p32_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-9cea8599.pth) |
+|   ViT-L16\*   | ImageNet-21k |  384x384   |  304.72   |  116.68  |   85.63   |   97.63   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/vision_transformer/vit-large-p16_ft-64xb64_in1k-384.py) | [model](https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-large-p16_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-b20ba619.pth) |
+| ViT-B16 (IPU) | ImageNet-21k |  224x224   |   86.86   |  33.03   |   81.22   |   95.56   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/vision_transformer/vit-base-p16_ft-4xb544-ipu_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/vit/vit-base-p16_ft-4xb544-ipu_in1k_20220603-c215811a.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/vit/vit-base-p16_ft-4xb544-ipu_in1k.log) |
 
-*Models with \* are converted from the [official repo](https://github.com/google-research/vision_transformer#available-vit-models). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
+*Models with * are converted from the [official repo](https://github.com/google-research/vision_transformer#available-vit-models). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 
 ## Citation
 

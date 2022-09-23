@@ -32,14 +32,15 @@ mmclassification
 
 1. 注册账号并登录 [下载页面](http://www.image-net.org/download-images)
 2. 获取 ILSVRC2012 下载链接并下载以下文件
-    - ILSVRC2012_img_train.tar (~138GB)
-    - ILSVRC2012_img_val.tar (~6.3GB)
+   - ILSVRC2012_img_train.tar (~138GB)
+   - ILSVRC2012_img_val.tar (~6.3GB)
 3. 解压下载的文件
 4. 使用 [该脚本](https://github.com/BVLC/caffe/blob/master/data/ilsvrc12/get_ilsvrc_aux.sh) 获取元数据
 
 对于 MNIST，CIFAR10 和 CIFAR100，程序将会在需要的时候自动下载数据集。
 
-对于用户自定义数据集的准备，请参阅 [教程 2：如何增加新数据集](tutorials/new_dataset.md)
+对于用户自定义数据集的准备，请参阅 [教程 3：如何自定义数据集
+](tutorials/new_dataset.md)
 
 ## 使用预训练模型进行推理
 
@@ -235,6 +236,7 @@ Params: 25.56 M
 ### 模型发布
 
 在发布模型之前，你也许会需要
+
 1. 转换模型权重至 CPU 张量
 2. 删除优化器状态
 3. 计算模型权重文件的哈希值，并添加至文件名之后

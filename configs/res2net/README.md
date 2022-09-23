@@ -1,6 +1,7 @@
 # Res2Net
 
 > [Res2Net: A New Multi-scale Backbone Architecture](https://arxiv.org/pdf/1904.01169.pdf)
+
 <!-- [ALGORITHM] -->
 
 ## Abstract
@@ -15,13 +16,13 @@ Representing features at multiple scales is of great importance for numerous vis
 
 ### ImageNet-1k
 
-|        Model          | resolution  | Params(M) |  Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
-|:---------------------:|:-----------:|:---------:|:---------:|:---------:|:---------:|:------:|:--------:|
-|  Res2Net-50-14w-8s\*  |   224x224   |   25.06   |    4.22   |   78.14   |   93.85   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/res2net/res2net50-w14-s8_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/res2net/res2net50-w14-s8_3rdparty_8xb32_in1k_20210927-bc967bf1.pth) &#124; [log]()|
-|  Res2Net-50-26w-8s\*  |   224x224   |   48.40   |    8.39   |   79.20   |   94.36   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/res2net/res2net50-w26-s8_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/res2net/res2net50-w26-s8_3rdparty_8xb32_in1k_20210927-f547a94b.pth) &#124; [log]()|
-|  Res2Net-101-26w-4s\* |   224x224   |   45.21   |    8.12   |   79.19   |   94.44   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/res2net/res2net101-w26-s4_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/res2net/res2net101-w26-s4_3rdparty_8xb32_in1k_20210927-870b6c36.pth) &#124; [log]()|
+|        Model         | resolution | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                               Config                               |                               Download                                |
+| :------------------: | :--------: | :-------: | :------: | :-------: | :-------: | :----------------------------------------------------------------: | :-------------------------------------------------------------------: |
+| Res2Net-50-14w-8s\*  |  224x224   |   25.06   |   4.22   |   78.14   |   93.85   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/res2net/res2net50-w14-s8_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/res2net/res2net50-w14-s8_3rdparty_8xb32_in1k_20210927-bc967bf1.pth) \| [log](<>) |
+| Res2Net-50-26w-8s\*  |  224x224   |   48.40   |   8.39   |   79.20   |   94.36   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/res2net/res2net50-w26-s8_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/res2net/res2net50-w26-s8_3rdparty_8xb32_in1k_20210927-f547a94b.pth) \| [log](<>) |
+| Res2Net-101-26w-4s\* |  224x224   |   45.21   |   8.12   |   79.19   |   94.44   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/res2net/res2net101-w26-s4_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/res2net/res2net101-w26-s4_3rdparty_8xb32_in1k_20210927-870b6c36.pth) \| [log](<>) |
 
-*Models with \* are converted from the [official repo](https://github.com/Res2Net/Res2Net-PretrainedModels). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
+*Models with * are converted from the [official repo](https://github.com/Res2Net/Res2Net-PretrainedModels). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 
 ## Citation
 

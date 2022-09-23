@@ -1,6 +1,7 @@
 # RepMLP
 
 > [RepMLP: Re-parameterizing Convolutions into Fully-connected Layers forImage Recognition](https://arxiv.org/abs/2105.01883)
+
 <!-- [ALGORITHM] -->
 
 ## Abstract
@@ -11,18 +12,16 @@ We propose RepMLP, a multi-layer-perceptron-style neural network building block 
 <img src="https://user-images.githubusercontent.com/18586273/155455288-a17a5c48-11af-4b74-995a-cf7183f0e2d2.png" width="80%"/>
 </div>
 
-
 ## Results and models
 
 ### ImageNet-1k
 
-|      Model     | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config | Download |
-|:--------------:|:---------:|:--------:|:---------:|:---------:|:------:|:--------:|
-|  RepMLP-B224\*  |  68.24   |  6.71    |  80.41    |  95.12    | [train_cfg](https://github.com/open-mmlab/mmclassification/blob/master/configs/repmlp/repmlp-base_8xb64_in1k.py) \| [deploy_cfg](https://github.com/open-mmlab/mmclassification/blob/master/configs/repmlp/repmlp-base_delopy_8xb64_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/repmlp/repmlp-base_3rdparty_8xb64_in1k_20220330-1cb1f11b.pth) |
-|  RepMLP-B256\*  |  96.45   |  9.69    |  81.11    |  95.5    | [train_cfg](https://github.com/open-mmlab/mmclassification/blob/master/configs/repmlp/repmlp-base_8xb64_in1k-256px.py) \| [deploy_cfg](https://github.com/open-mmlab/mmclassification/blob/master/configs/repmlp/repmlp-b256_deploy_8xb64_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/repmlp/repmlp-base_3rdparty_8xb64_in1k-256px_20220330-7c5a91ce.pth) |
+|     Model     | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                                   Config                                    |                                   Download                                    |
+| :-----------: | :-------: | :------: | :-------: | :-------: | :-------------------------------------------------------------------------: | :---------------------------------------------------------------------------: |
+| RepMLP-B224\* |   68.24   |   6.71   |   80.41   |   95.12   | [train_cfg](https://github.com/open-mmlab/mmclassification/blob/master/configs/repmlp/repmlp-base_8xb64_in1k.py) \| [deploy_cfg](https://github.com/open-mmlab/mmclassification/blob/master/configs/repmlp/repmlp-base_delopy_8xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repmlp/repmlp-base_3rdparty_8xb64_in1k_20220330-1cb1f11b.pth) |
+| RepMLP-B256\* |   96.45   |   9.69   |   81.11   |   95.5    | [train_cfg](https://github.com/open-mmlab/mmclassification/blob/master/configs/repmlp/repmlp-base_8xb64_in1k-256px.py) \| [deploy_cfg](https://github.com/open-mmlab/mmclassification/blob/master/configs/repmlp/repmlp-b256_deploy_8xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repmlp/repmlp-base_3rdparty_8xb64_in1k-256px_20220330-7c5a91ce.pth) |
 
-*Models with \* are converted from [the official repo.](https://github.com/DingXiaoH/RepMLP). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
-
+*Models with * are converted from [the official repo.](https://github.com/DingXiaoH/RepMLP). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 
 ## How to use
 
@@ -81,7 +80,6 @@ cfg = dict(
 classifier = build_classifier(cfg)
 classifier.backbone.switch_to_deploy()
 ```
-
 
 ## Citation
 

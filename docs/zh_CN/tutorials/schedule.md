@@ -60,15 +60,15 @@ lr_config = dict(policy='step', step=[100, 150])
 
 - ConsineAnnealing:
 
-    ```python
-    lr_config = dict(policy='CosineAnnealing', min_lr_ratio=1e-5)
-    ```
+  ```python
+  lr_config = dict(policy='CosineAnnealing', min_lr_ratio=1e-5)
+  ```
 
 - Poly:
 
-    ```python
-    lr_config = dict(policy='poly', power=0.9, min_lr=1e-4, by_epoch=False)
-    ```
+  ```python
+  lr_config = dict(policy='poly', power=0.9, min_lr=1e-4, by_epoch=False)
+  ```
 
 ### 定制学习率预热策略
 
@@ -85,28 +85,28 @@ lr_config = dict(policy='step', step=[100, 150])
 
 1. 逐**迭代次数**地**线性**预热
 
-    ```python
-    lr_config = dict(
-        policy='CosineAnnealing',
-        by_epoch=False,
-        min_lr_ratio=1e-2,
-        warmup='linear',
-        warmup_ratio=1e-3,
-        warmup_iters=20 * 1252,
-        warmup_by_epoch=False)
-    ```
+   ```python
+   lr_config = dict(
+       policy='CosineAnnealing',
+       by_epoch=False,
+       min_lr_ratio=1e-2,
+       warmup='linear',
+       warmup_ratio=1e-3,
+       warmup_iters=20 * 1252,
+       warmup_by_epoch=False)
+   ```
 
 2. 逐**轮次**地**指数**预热
 
-    ```python
-    lr_config = dict(
-        policy='CosineAnnealing',
-        min_lr=0,
-        warmup='exp',
-        warmup_iters=5,
-        warmup_ratio=0.1,
-        warmup_by_epoch=True)
-    ```
+   ```python
+   lr_config = dict(
+       policy='CosineAnnealing',
+       min_lr=0,
+       warmup='exp',
+       warmup_iters=5,
+       warmup_ratio=0.1,
+       warmup_by_epoch=True)
+   ```
 
 ```{tip}
 配置完成后，可以使用 MMClassification 提供的 [学习率可视化工具](https://mmclassification.readthedocs.io/zh_CN/latest/tools/visualization.html#id3) 画出对应学习率调整曲线。
@@ -143,45 +143,45 @@ momentum_config = dict(
 
 - 使用指定选项
 
-    MMClassification 提供了包括 `bias_lr_mult`、 `bias_decay_mult`、 `norm_decay_mult`、 `dwconv_decay_mult`、 `dcn_offset_lr_mult` 和 `bypass_duplicate` 选项，指定相关所有的 `bais`、 `norm`、 `dwconv`、 `dcn` 和 `bypass` 参数。例如令模型中所有的 BN 不进行参数衰减：
+  MMClassification 提供了包括 `bias_lr_mult`、 `bias_decay_mult`、 `norm_decay_mult`、 `dwconv_decay_mult`、 `dcn_offset_lr_mult` 和 `bypass_duplicate` 选项，指定相关所有的 `bais`、 `norm`、 `dwconv`、 `dcn` 和 `bypass` 参数。例如令模型中所有的 BN 不进行参数衰减：
 
-    ```python
-    optimizer = dict(
-        type='SGD',
-        lr=0.8,
-        weight_decay=1e-4,
-        paramwise_cfg=dict(norm_decay_mult=0.)
-    )
-    ```
+  ```python
+  optimizer = dict(
+      type='SGD',
+      lr=0.8,
+      weight_decay=1e-4,
+      paramwise_cfg=dict(norm_decay_mult=0.)
+  )
+  ```
 
 - 使用 `custom_keys` 指定参数
 
-    MMClassification 可通过 `custom_keys` 指定不同的参数使用不同的学习率或者权重衰减，例如对特定的参数不使用权重衰减：
+  MMClassification 可通过 `custom_keys` 指定不同的参数使用不同的学习率或者权重衰减，例如对特定的参数不使用权重衰减：
 
-    ```python
-    paramwise_cfg = dict(
-        custom_keys={
-            'backbone.cls_token': dict(decay_mult=0.0),
-            'backbone.pos_embed': dict(decay_mult=0.0)
-        })
+  ```python
+  paramwise_cfg = dict(
+      custom_keys={
+          'backbone.cls_token': dict(decay_mult=0.0),
+          'backbone.pos_embed': dict(decay_mult=0.0)
+      })
 
-    optimizer = dict(
-        type='SGD',
-        lr=0.8,
-        weight_decay=1e-4,
-        paramwise_cfg=paramwise_cfg)
-    ```
+  optimizer = dict(
+      type='SGD',
+      lr=0.8,
+      weight_decay=1e-4,
+      paramwise_cfg=paramwise_cfg)
+  ```
 
-    对 backbone 使用更小的学习率与衰减系数：
+  对 backbone 使用更小的学习率与衰减系数：
 
-    ```python
-    optimizer = dict(
-        type='SGD',
-        lr=0.8,
-        weight_decay=1e-4,
-        # backbone 的 'lr' and 'weight_decay' 分别为 0.1 * lr 和 0.9 * weight_decay
-        paramwise_cfg = dict(custom_keys={'backbone': dict(lr_mult=0.1, decay_mult=0.9)}))
-    ```
+  ```python
+  optimizer = dict(
+      type='SGD',
+      lr=0.8,
+      weight_decay=1e-4,
+      # backbone 的 'lr' and 'weight_decay' 分别为 0.1 * lr 和 0.9 * weight_decay
+      paramwise_cfg = dict(custom_keys={'backbone': dict(lr_mult=0.1, decay_mult=0.9)}))
+  ```
 
 ## 梯度裁剪与梯度累计
 
@@ -268,8 +268,8 @@ class MyOptimizer(Optimizer):
 
 - 修改 `mmcls/core/optimizer/__init__.py`，将其导入至 `optimizer` 包；再修改 `mmcls/core/__init__.py` 以导入 `optimizer` 包
 
-    创建 `mmcls/core/optimizer/__init__.py` 文件。
-    新定义的模块应导入到 `mmcls/core/optimizer/__init__.py` 中，以便注册器能找到新模块并将其添加：
+  创建 `mmcls/core/optimizer/__init__.py` 文件。
+  新定义的模块应导入到 `mmcls/core/optimizer/__init__.py` 中，以便注册器能找到新模块并将其添加：
 
 ```python
 # 在 mmcls/core/optimizer/__init__.py 中
