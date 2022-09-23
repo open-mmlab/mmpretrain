@@ -27,3 +27,7 @@ Inference
 ------------------
 
 .. autofunction:: inference_model
+
+.. autoclass:: ImageClassificationInferencer
+   :members:
+   :special-members: __call__
