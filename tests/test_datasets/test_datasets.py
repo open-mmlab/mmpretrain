@@ -873,3 +873,205 @@ class TestCUB(TestBaseDataset):
     @classmethod
     def tearDownClass(cls):
         cls.tmpdir.cleanup()
+
+
+class TestGLDv2Retrieval(TestBaseDataset):
+    DATASET_TYPE = 'GLDv2Retrieval'
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+
+        tmpdir = tempfile.TemporaryDirectory()
+        cls.tmpdir = tmpdir
+        cls.root = tmpdir.name
+
+        annotation_dir = osp.join(cls.root, 'metadata')
+        cls.annotation_dir = annotation_dir
+        if not osp.exists(annotation_dir):
+            os.mkdir(annotation_dir)
+
+        cls.train_clean_csv = 'train_clean.csv'
+        cls.train_full_csv = 'train.csv'
+        cls.index_csv = 'index.csv'
+        cls.test_full_csv = 'test.csv'
+        cls.test_sub_csv = 'retrieval_solution_v2.1.csv'
+
+        cls.DEFAULT_ARGS = dict(
+            data_root=cls.root,
+            mode='train',
+            train_set='clean',
+            test_set='public',
+            anno_prefix=annotation_dir)
+
+        with open(osp.join(annotation_dir, cls.train_clean_csv), 'w') as f:
+            f.write('\n'.join([
+                'landmark,images',
+                '1,0011 0012 0013',
+                '3,0031 0032 0033 0034',
+                '6,0061 0062',
+            ]))
+
+        with open(osp.join(annotation_dir, cls.train_full_csv), 'w') as f:
+            f.write('\n'.join([
+                'id,url,landmark_id',
+                '134543,http:xxx,1442',
+                '2324,http:xxx,14230',
+                '3234,http:xxx,24235',
+            ]))
+
+        with open(osp.join(annotation_dir, cls.index_csv), 'w') as f:
+            f.write('\n'.join(['id', '00d23', 'sd45a2', 'sa4d55asd']))
+            f.write('\n')
+
+        with open(osp.join(annotation_dir, cls.test_full_csv), 'w') as f:
+            f.write('\n'.join(['id', '00d23', 'sd45a2', 'sa4d55asd']))
+            f.write('\n')
+
+        with open(osp.join(annotation_dir, cls.test_sub_csv), 'w') as f:
+            f.write('\n'.join([
+                'id,images,Usage',
+                '0001,None,Ignored',
+                '0002,"00d23 sd45a2",Public',
+                '0003,"00d23 sd45a2",Private ',
+                '0004,sa4d55asd,Private ',
+            ]))
+            f.write('\n')
+
+    def test_initialize(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test with mode=train and train_set=clean
+        cfg = {**self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(dataset.mode, 'train')
+        self.assertEqual(dataset.train_set, 'clean')
+        self.assertFalse(dataset.test_mode)
+        self.assertEqual(dataset.anno_prefix, self.annotation_dir)
+
+        # Test with mode=train and train_set=full
+        cfg = {**self.DEFAULT_ARGS, 'train_set': 'full'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(dataset.mode, 'train')
+        self.assertEqual(dataset.train_set, 'full')
+        self.assertFalse(dataset.test_mode)
+        self.assertEqual(dataset.anno_prefix, self.annotation_dir)
+
+        # Test with mode=train and train_set=other
+        cfg = {**self.DEFAULT_ARGS, 'train_set': 'other'}
+        with self.assertRaisesRegex(ValueError, 'Invalid train_set'):
+            dataset_class(**cfg)
+
+        # Test with mode=index
+        cfg = {**self.DEFAULT_ARGS, 'mode': 'index'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(dataset.mode, 'index')
+        self.assertTrue(dataset.test_mode)
+        self.assertEqual(dataset.anno_prefix, self.annotation_dir)
+
+        # Test with mode=test and test_set=public
+        cfg = {**self.DEFAULT_ARGS, 'mode': 'test'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(dataset.mode, 'test')
+        self.assertTrue(dataset.test_mode)
+        self.assertEqual(dataset.test_set, 'public')
+        self.assertEqual(dataset.anno_prefix, self.annotation_dir)
+
+        # Test with mode=test and test_set=full
+        cfg = {**self.DEFAULT_ARGS, 'mode': 'test', 'test_set': 'full'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(dataset.mode, 'test')
+        self.assertTrue(dataset.test_mode)
+        self.assertEqual(dataset.test_set, 'full')
+        self.assertEqual(dataset.anno_prefix, self.annotation_dir)
+
+        # Test with mode=test and test_set=private
+        cfg = {**self.DEFAULT_ARGS, 'mode': 'test', 'test_set': 'private'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(dataset.mode, 'test')
+        self.assertTrue(dataset.test_mode)
+        self.assertEqual(dataset.test_set, 'private')
+        self.assertEqual(dataset.anno_prefix, self.annotation_dir)
+
+        # Test with mode=test and test_set=private
+        cfg = {**self.DEFAULT_ARGS, 'mode': 'test', 'test_set': 'private'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(dataset.mode, 'test')
+        self.assertTrue(dataset.test_mode)
+        self.assertEqual(dataset.test_set, 'private')
+        self.assertEqual(dataset.anno_prefix, self.annotation_dir)
+
+        # Test with mode=test and test_set=other
+        cfg = {**self.DEFAULT_ARGS, 'mode': 'test', 'test_set': 'other'}
+        with self.assertRaisesRegex(ValueError, 'Invalid test_set'):
+            dataset_class(**cfg)
+
+    def test_load_data_list(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test with mode=train and train_set=clean
+        cfg = {**self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 9)
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         osp.join(self.root, 'train/0/0/1/0011.jpg'))
+        self.assertEqual(data_info['gt_label'], 0)
+
+        # Test with mode=train and train_set=full
+        cfg = {**self.DEFAULT_ARGS, 'train_set': 'full'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 3)
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         osp.join(self.root, 'train/1/3/4/134543.jpg'))
+        self.assertEqual(data_info['gt_label'], 1442)
+
+        # Test with mode=index
+        cfg = {**self.DEFAULT_ARGS, 'mode': 'index'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 3)
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         osp.join(self.root, 'index/0/0/d/00d23.jpg'))
+
+        # Test with mode=test and test_set=full
+        cfg = {**self.DEFAULT_ARGS, 'mode': 'test', 'test_set': 'full'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 3)
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         osp.join(self.root, 'test/0/0/d/00d23.jpg'))
+
+        # Test with mode=test and test_set=public
+        cfg = {**self.DEFAULT_ARGS, 'mode': 'test', 'test_set': 'public'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 1)
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         osp.join(self.root, 'test/0/0/0/0002.jpg'))
+        self.assertEqual(data_info['gt_label'], [0, 1])
+
+        # Test with mode=test and test_set=private
+        cfg = {**self.DEFAULT_ARGS, 'mode': 'test', 'test_set': 'private'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 2)
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         osp.join(self.root, 'test/0/0/0/0003.jpg'))
+        self.assertEqual(data_info['gt_label'], [0, 1])
+        data_info = dataset[1]
+        self.assertEqual(data_info['img_path'],
+                         osp.join(self.root, 'test/0/0/0/0004.jpg'))
+        self.assertEqual(data_info['gt_label'], [2])
+
+    def test_extra_repr(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+        cfg = {**self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+
+        self.assertIn(f'Root of dataset: \t{dataset.data_root}', repr(dataset))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmpdir.cleanup()
