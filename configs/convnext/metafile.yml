@@ -49,6 +49,7 @@ Models:
       Code: https://github.com/facebookresearch/ConvNeXt
   - Name: convnext-small_3rdparty_32xb128_in1k
     Metadata:
+      Training Data: ImageNet-1k
       FLOPs: 8687008512
       Parameters: 50223688
     In Collection: ConvNeXt
@@ -82,6 +83,7 @@ Models:
       Code: https://github.com/facebookresearch/ConvNeXt
   - Name: convnext-base_3rdparty_32xb128_in1k
     Metadata:
+      Training Data: ImageNet-1k
       FLOPs: 15359124480
       Parameters: 88591464
     In Collection: ConvNeXt
@@ -145,6 +147,7 @@ Models:
       Code: https://github.com/facebookresearch/ConvNeXt
   - Name: convnext-large_3rdparty_64xb64_in1k
     Metadata:
+      Training Data: ImageNet-1k
       FLOPs: 34368026112
       Parameters: 197767336
     In Collection: ConvNeXt

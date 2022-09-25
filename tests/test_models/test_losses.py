@@ -247,6 +247,17 @@ def test_label_smooth_loss():
     correct = 0.2269  # from timm
     assert loss(cls_score, label) - correct <= 0.0001
 
+    loss_cfg = dict(
+        type='LabelSmoothLoss',
+        label_smooth_val=0.1,
+        mode='original',
+        use_sigmoid=True,
+        reduction='mean',
+        loss_weight=1.0)
+    loss = build_loss(loss_cfg)
+    correct = 0.3633  # from timm
+    assert loss(cls_score, label) - correct <= 0.0001
+
     # test classy_vision mode label smooth loss
     loss_cfg = dict(
         type='LabelSmoothLoss',

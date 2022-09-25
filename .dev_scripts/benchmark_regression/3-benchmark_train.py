@@ -3,20 +3,46 @@ import json
 import os
 import os.path as osp
 import re
+from collections import OrderedDict
 from datetime import datetime
 from pathlib import Path
 from zipfile import ZipFile
 
+import yaml
 from modelindex.load_model_index import load
 from rich.console import Console
 from rich.syntax import Syntax
 from rich.table import Table
 
 console = Console()
+MMCLS_ROOT = Path(__file__).absolute().parents[2]
+CYCLE_LEVELS = ['month', 'quarter', 'half-year', 'no-training']
 METRICS_MAP = {
     'Top 1 Accuracy': 'accuracy/top1',
     'Top 5 Accuracy': 'accuracy/top5'
 }
+
+
+class RangeAction(argparse.Action):
+
+    def __call__(self, parser, namespace, values: str, option_string):
+        matches = re.match(r'([><=]*)([-\w]+)', values)
+        if matches is None:
+            raise ValueError(f'Unavailable range option {values}')
+        symbol, range_str = matches.groups()
+        assert range_str in CYCLE_LEVELS, \
+            f'{range_str} are not in {CYCLE_LEVELS}.'
+        level = CYCLE_LEVELS.index(range_str)
+        symbol = symbol or '<='
+        ranges = set()
+        if '=' in symbol:
+            ranges.add(level)
+        if '>' in symbol:
+            ranges.update(range(level + 1, len(CYCLE_LEVELS)))
+        if '<' in symbol:
+            ranges.update(range(level))
+        assert len(ranges) > 0, 'No range are selected.'
+        setattr(namespace, self.dest, ranges)
 
 
 def parse_args():
@@ -32,6 +58,14 @@ def parse_args():
     parser.add_argument('--port', type=int, default=29666, help='dist port')
     parser.add_argument(
         '--models', nargs='+', type=str, help='Specify model names to run.')
+    parser.add_argument(
+        '--range',
+        type=str,
+        default={0},
+        action=RangeAction,
+        metavar='{month,quarter,half-year,no-training}',
+        help='The training benchmark range, "no-training" means all models '
+        "including those we haven't trained.")
     parser.add_argument(
         '--work-dir',
         default='work_dirs/benchmark_train',
@@ -63,18 +97,33 @@ def parse_args():
         '--save',
         action='store_true',
         help='Save the summary and archive log files.')
+    parser.add_argument(
+        '--cfg-options',
+        nargs='+',
+        type=str,
+        default=[],
+        help='Config options for all config files.')
 
     args = parser.parse_args()
     return args
+
+
+def get_gpu_number(model_info):
+    config = osp.basename(model_info.config)
+    matches = re.match(r'.*[-_](\d+)xb(\d+).*', config)
+    if matches is None:
+        raise ValueError(
+            'Cannot get gpu numbers from the config name {config}')
+    gpus = int(matches.groups()[0])
+    return gpus
 
 
 def create_train_job_batch(commands, model_info, args, port, script_name):
 
     fname = model_info.name
 
-    assert 'Gpus' in model_info.data, \
-        f"Haven't specify gpu numbers for {fname}"
-    gpus = model_info.data['Gpus']
+    gpus = get_gpu_number(model_info)
+    gpus_per_node = min(gpus, 8)
 
     config = Path(model_info.config)
     assert config.exists(), f'"{fname}": {config} not found.'
@@ -101,15 +150,17 @@ def create_train_job_batch(commands, model_info, args, port, script_name):
                   f'#SBATCH --output {work_dir}/job.%j.out\n'
                   f'#SBATCH --partition={args.partition}\n'
                   f'#SBATCH --job-name {job_name}\n'
-                  f'#SBATCH --gres=gpu:8\n'
+                  f'#SBATCH --gres=gpu:{gpus_per_node}\n'
                   f'{mail_cfg}{quota_cfg}'
-                  f'#SBATCH --ntasks-per-node=8\n'
+                  f'#SBATCH --ntasks-per-node={gpus_per_node}\n'
                   f'#SBATCH --ntasks={gpus}\n'
                   f'#SBATCH --cpus-per-task=5\n\n'
                   f'{runner} -u {script_name} {config} '
                   f'--work-dir={work_dir} --cfg-option '
-                  f'dist_params.port={port} '
-                  f'checkpoint_config.max_keep_ckpts=10 '
+                  f'env_cfg.dist_cfg.port={port} '
+                  f'{" ".join(args.cfg_options)} '
+                  f'default_hooks.checkpoint.max_keep_ckpts=2 '
+                  f'default_hooks.checkpoint.save_best="auto" '
                   f'--launcher={launcher}\n')
 
     with open(work_dir / 'job.sh', 'w') as f:
@@ -124,33 +175,16 @@ def create_train_job_batch(commands, model_info, args, port, script_name):
     return work_dir / 'job.sh'
 
 
-def train(args):
-    models_cfg = load(str(Path(__file__).parent / 'bench_train.yml'))
-    models_cfg.build_models_with_collections()
-    models = {model.name: model for model in models_cfg.models}
-
+def train(models, args):
     script_name = osp.join('tools', 'train.py')
     port = args.port
 
     commands = []
-    if args.models:
-        patterns = [re.compile(pattern) for pattern in args.models]
-        filter_models = {}
-        for k, v in models.items():
-            if any([re.match(pattern, k) for pattern in patterns]):
-                filter_models[k] = v
-        if len(filter_models) == 0:
-            print('No model found, please specify models in:')
-            print('\n'.join(models.keys()))
-            return
-        models = filter_models
 
     for model_info in models.values():
-        months = model_info.data.get('Months', range(1, 13))
-        if datetime.now().month in months:
-            script_path = create_train_job_batch(commands, model_info, args,
-                                                 port, script_name)
-            port += 1
+        script_path = create_train_job_batch(commands, model_info, args, port,
+                                             script_name)
+        port += 1
 
     command_str = '\n'.join(commands)
 
@@ -245,12 +279,14 @@ def show_summary(summary_data):
                 metric = summary[metric_key]
                 expect = metric['expect']
                 last = metric['last']
+                last_epoch = metric['last_epoch']
                 last_color = set_color(last, expect)
                 best = metric['best']
                 best_color = set_color(best, expect)
                 best_epoch = metric['best_epoch']
                 row.append(f'{expect:.2f}')
-                row.append(f'[{last_color}]{last:.2f}[/{last_color}]')
+                row.append(
+                    f'[{last_color}]{last:.2f}[/{last_color}] ({last_epoch})')
                 row.append(
                     f'[{best_color}]{best:.2f}[/{best_color}] ({best_epoch})')
         table.add_row(*row)
@@ -258,24 +294,10 @@ def show_summary(summary_data):
     console.print(table)
 
 
-def summary(args):
-    models_cfg = load(str(Path(__file__).parent / 'bench_train.yml'))
-    models = {model.name: model for model in models_cfg.models}
+def summary(models, args):
 
     work_dir = Path(args.work_dir)
     dir_map = {p.name: p for p in work_dir.iterdir() if p.is_dir()}
-
-    if args.models:
-        patterns = [re.compile(pattern) for pattern in args.models]
-        filter_models = {}
-        for k, v in models.items():
-            if any([re.match(pattern, k) for pattern in patterns]):
-                filter_models[k] = v
-        if len(filter_models) == 0:
-            print('No model found, please specify models in:')
-            print('\n'.join(models.keys()))
-            return
-        models = filter_models
 
     summary_data = {}
     for model_name, model_info in models.items():
@@ -287,17 +309,19 @@ def summary(args):
 
         # Skip if not found any vis_data folder.
         sub_dir = dir_map[model_name]
-        vis_folders = [d for d in sub_dir.iterdir() if d.is_dir()]
-        if len(vis_folders) == 0:
+        log_files = [f for f in sub_dir.glob('*/vis_data/scalars.json')]
+        if len(log_files) == 0:
             continue
-        log_file = sorted(vis_folders)[-1] / 'vis_data' / 'scalars.json'
-        if not log_file.exists():
-            continue
+        log_file = sorted(log_files)[-1]
 
         # parse train log
         with open(log_file) as f:
             json_logs = [json.loads(s) for s in f.readlines()]
-            val_logs = [log for log in json_logs if 'loss' not in log]
+            val_logs = [
+                log for log in json_logs
+                # TODO: need a better method to extract validate log
+                if 'loss' not in log and 'accuracy/top1' in log
+            ]
 
         if len(val_logs) == 0:
             continue
@@ -320,9 +344,10 @@ def summary(args):
                 summary[key_yml] = dict(
                     expect=expect_result,
                     last=last,
+                    last_epoch=len(val_logs),
                     best=best,
-                    best_epoch=best_epoch)
-        summary_data[model_name] = summary
+                    best_epoch=best_epoch + 1)
+        summary_data[model_name].update(summary)
 
     show_summary(summary_data)
     if args.save:
@@ -332,10 +357,39 @@ def summary(args):
 def main():
     args = parse_args()
 
+    model_index_file = MMCLS_ROOT / 'model-index.yml'
+    model_index = load(str(model_index_file))
+    model_index.build_models_with_collections()
+    all_models = {model.name: model for model in model_index.models}
+
+    with open(Path(__file__).parent / 'bench_train.yml', 'r') as f:
+        train_items = yaml.safe_load(f)
+    models = OrderedDict()
+    for item in train_items:
+        name = item['Name']
+        model_info = all_models[name]
+        model_info.cycle = item.get('Cycle', None)
+        cycle = getattr(model_info, 'cycle', 'month')
+        cycle_level = CYCLE_LEVELS.index(cycle)
+        if cycle_level in args.range:
+            models[name] = model_info
+
+    if args.models:
+        patterns = [re.compile(pattern) for pattern in args.models]
+        filter_models = {}
+        for k, v in models.items():
+            if any([re.match(pattern, k) for pattern in patterns]):
+                filter_models[k] = v
+        if len(filter_models) == 0:
+            print('No model found, please specify models in:')
+            print('\n'.join(models.keys()))
+            return
+        models = filter_models
+
     if args.summary:
-        summary(args)
+        summary(models, args)
     else:
-        train(args)
+        train(models, args)
 
 
 if __name__ == '__main__':
