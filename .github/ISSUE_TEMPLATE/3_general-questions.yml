@@ -1,0 +1,22 @@
+name: 💬 General questions
+description: Ask general questions to get help
+labels: ["help wanted"]
+
+body:
+  - type: checkboxes
+    attributes:
+      options:
+        - label: I have searched related issues but cannot get the expected help.
+          required: true
+        - label: I have read [the documentation](https://mmclassification.readthedocs.io/) and don't know what to do.
+          required: true
+
+  - type: textarea
+    id: describe
+    validations:
+      required: true
+    attributes:
+      label: Describe the question
+      placeholder: |
+        1. I have read the documentation but I still don't know how to use the functionality xxx.
+        2. Other questions.
