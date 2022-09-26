@@ -58,7 +58,7 @@ class GLDv2Retrieval(BaseDataset):
         **kwargs: Other keyword arguments in :class:`BaseDataset`.
 
     Examples:
-        >>> from mmcls.datasets import GLDv2
+        >>> from mmcls.datasets import GLDv2Retrieval as GLDv2
         >>> gld_train_cfg = dict(data_root='data/google-landmark', \
         >>> ... mode='train')
         >>> gld_train = GLDv2(**gld_train_cfg)
@@ -67,7 +67,7 @@ class GLDv2Retrieval(BaseDataset):
             Number of samples:  1580470
             The `CLASSES` meta info is not set.
             Root of dataset:    data/google-landmark-v2
-        >>> from mmcls.datasets import GLDv2
+        >>> from mmcls.datasets import GLDv2Retrieval as GLDv2
         >>> gld_train_cfg = dict(data_root='data/google-landmark', \
         >>> ... mode='train', train_set='full')
         >>> gld_train = GLDv2(**gld_train_cfg)
@@ -76,7 +76,7 @@ class GLDv2Retrieval(BaseDataset):
             Number of samples:  4132914
             The `CLASSES` meta info is not set.
             Root of dataset:    data/google-landmark-v2
-        >>> from mmcls.datasets import GLDv2
+        >>> from mmcls.datasets import GLDv2Retrieval as GLDv2
         >>> gld_index_cfg = dict(data_root='data/google-landmark',\
         >>> ... mode='index')
         >>> gld_index = GLDv2(**gld_index_cfg)
@@ -85,7 +85,7 @@ class GLDv2Retrieval(BaseDataset):
             Number of samples:  761757
             The `CLASSES` meta info is not set.
             Root of dataset:    data/google-landmark-v2
-        >>> from mmcls.datasets import GLDv2
+        >>> from mmcls.datasets import GLDv2Retrieval as GLDv2
         >>> gld_test_cfg = dict(data_root='data/google-landmark', \
         >>> ... mode='test')
         >>> gld_test = GLDv2(**gld_test_cfg)
@@ -94,7 +94,7 @@ class GLDv2Retrieval(BaseDataset):
             Number of samples:  117577
             The `CLASSES` meta info is not set.
             Root of dataset:    data/google-landmark-v2
-        >>> from mmcls.datasets import GLDv2
+        >>> from mmcls.datasets import GLDv2Retrieval as GLDv2
         >>> gld_test_cfg = dict(data_root='data/google-landmark', \
         >>> ... mode='test', test_set='public')
         >>> gld_test = GLDv2(**gld_test_cfg)
@@ -103,7 +103,7 @@ class GLDv2Retrieval(BaseDataset):
             Number of samples:  379
             The `CLASSES` meta info is not set.
             Root of dataset:    data/google-landmark-v2
-        >>> from mmcls.datasets import GLDv2
+        >>> from mmcls.datasets import GLDv2Retrieval as GLDv2
         >>> gld_test_cfg = dict(data_root='data/google-landmark', \
         >>> ... mode='test', test_set='private')
         >>> gld_test = GLDv2(**gld_test_cfg)
