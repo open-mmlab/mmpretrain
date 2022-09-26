@@ -15,13 +15,13 @@ Collections:
     README: configs/gcvit/README.md
     Code:
       URL: https://github.com/open-mmlab/mmclassification/blob/v0.20.1/mmcls/models/backbones/gcvit.py
-      Version: v0.1.0
+      Version: v1.0.0
 
 Models:
   - Name: gcvit_xxtiny
     Metadata:
-      FLOPs: 2.1G
-      Parameters: 12M
+      FLOPs: 2139234304
+      Parameters: 11995428
     In Collection: gcvit
     Results:
       - Dataset: ImageNet-1k
@@ -36,8 +36,8 @@ Models:
       Code: https://github.com/NVlabs/GCVit
   - Name: gcvit_xtiny
     Metadata:
-      FLOPs: 2.6G
-      Parameters: 20M
+      FLOPs: 2935728128
+      Parameters: 19981294
     In Collection: gcvit
     Results:
       - Dataset: ImageNet-1k
@@ -52,8 +52,8 @@ Models:
       Code: https://github.com/NVlabs/GCVit
   - Name: gcvit_tiny
     Metadata:
-      FLOPs: 4.7G
-      Parameters: 28M
+      FLOPs: 4790734848
+      Parameters: 28221974
     In Collection: gcvit
     Results:
       - Dataset: ImageNet-1k
@@ -68,8 +68,8 @@ Models:
       Code: https://github.com/NVlabs/GCVit
   - Name: gcvit_small
     Metadata:
-      FLOPs: 8.5G
-      Parameters: 51M
+      FLOPs: 8574144000
+      Parameters: 51092173
     In Collection: gcvit
     Results:
       - Dataset: ImageNet-1k
@@ -84,8 +84,8 @@ Models:
       Code: https://github.com/NVlabs/GCVit
   - Name: gcvit_base
     Metadata:
-      FLOPs: 14.8G
-      Parameters: 90M
+      FLOPs: 14875701248
+      Parameters: 90320836
     In Collection: gcvit
     Results:
       - Dataset: ImageNet-1k

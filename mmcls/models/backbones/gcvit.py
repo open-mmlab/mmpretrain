@@ -6,6 +6,7 @@ import torch
 import torch.nn as nn
 from mmengine.model.weight_init import trunc_normal_
 
+from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.registry import MODELS
 
 
@@ -330,7 +331,17 @@ class WindowAttention(nn.Module):
 
 class WindowAttentionGlobal(nn.Module):
     """Global window attention based on: "Hatamizadeh et al., Global Context
-    Vision Transformers <https://arxiv.org/abs/2206.09959>"."""
+    Vision Transformers <https://arxiv.org/abs/2206.09959>".
+
+    Args:
+            dim: feature size dimension.
+            num_heads: number of attention head.
+            window_size: window size.
+            qkv_bias: bool argument for query, key, value learnable bias.
+            qk_scale: bool argument to scaling query, key.
+            attn_drop: attention dropout rate.
+            proj_drop: output dropout rate.
+    """
 
     def __init__(
         self,
@@ -342,17 +353,6 @@ class WindowAttentionGlobal(nn.Module):
         attn_drop=0.,
         proj_drop=0.,
     ):
-        """
-        Args:
-            dim: feature size dimension.
-            num_heads: number of attention head.
-            window_size: window size.
-            qkv_bias: bool argument for query, key, value learnable bias.
-            qk_scale: bool argument to scaling query, key.
-            attn_drop: attention dropout rate.
-            proj_drop: output dropout rate.
-        """
-
         super().__init__()
         window_size = (window_size, window_size)
         self.window_size = window_size
@@ -411,7 +411,24 @@ class WindowAttentionGlobal(nn.Module):
 
 class GCViTBlock(nn.Module):
     """GCViT block based on: "Hatamizadeh et al., Global Context Vision
-    Transformers <https://arxiv.org/abs/2206.09959>"."""
+    Transformers <https://arxiv.org/abs/2206.09959>".
+
+    Args:
+        dim: feature size dimension.
+        input_resolution: input image resolution.
+        num_heads: number of attention head.
+        window_size: window size.
+        mlp_ratio: MLP ratio.
+        qkv_bias: bool argument for query, key, value learnable bias.
+        qk_scale: bool argument to scaling query, key.
+        drop: dropout rate.
+        attn_drop: attention dropout rate.
+        drop_path: drop path rate.
+        act_layer: activation function.
+        attention: attention block type.
+        norm_layer: normalization layer.
+        layer_scale: layer scaling coefficient.
+    """
 
     def __init__(
         self,
@@ -430,24 +447,6 @@ class GCViTBlock(nn.Module):
         norm_layer=nn.LayerNorm,
         layer_scale=None,
     ):
-        """
-        Args:
-            dim: feature size dimension.
-            input_resolution: input image resolution.
-            num_heads: number of attention head.
-            window_size: window size.
-            mlp_ratio: MLP ratio.
-            qkv_bias: bool argument for query, key, value learnable bias.
-            qk_scale: bool argument to scaling query, key.
-            drop: dropout rate.
-            attn_drop: attention dropout rate.
-            drop_path: drop path rate.
-            act_layer: activation function.
-            attention: attention block type.
-            norm_layer: normalization layer.
-            layer_scale: layer scaling coefficient.
-        """
-
         super().__init__()
         self.window_size = window_size
         self.norm1 = norm_layer(dim)
@@ -501,21 +500,20 @@ class GCViTBlock(nn.Module):
 
 class GlobalQueryGen(nn.Module):
     """Global query generator based on: "Hatamizadeh et al., Global Context
-    Vision Transformers <https://arxiv.org/abs/2206.09959>"."""
+    Vision Transformers <https://arxiv.org/abs/2206.09959>".
 
-    def __init__(self, dim, input_resolution, window_size, num_heads):
-        """
-        Args:
-            dim: feature size dimension.
-            input_resolution: input image resolution.
-            window_size: window size.
-            num_heads: number of heads.
+    Args:
+        dim: feature size dimension.
+        input_resolution: input image resolution.
+        window_size: window size.
+        num_heads: number of heads.
 
         For instance, repeating log(56/7) = 3 blocks,
         with input window dimension 56 and output window dimension 7 at
         down-sampling ratio 2. Please check Fig.5 of GC ViT paper for details.
-        """
+    """
 
+    def __init__(self, dim, input_resolution, window_size, num_heads):
         super().__init__()
         if input_resolution == 56:
             self.to_q_global = nn.Sequential(
@@ -558,7 +556,24 @@ class GlobalQueryGen(nn.Module):
 
 class GCViTLayer(nn.Module):
     """GCViT layer based on: "Hatamizadeh et al., Global Context Vision
-    Transformers <https://arxiv.org/abs/2206.09959>"."""
+    Transformers <https://arxiv.org/abs/2206.09959>".
+
+    Args:
+        dim: feature size dimension.
+        depth: number of layers in each stage.
+        input_resolution: input image resolution.
+        window_size: window size in each stage.
+        downsample: bool argument for down-sampling.
+        mlp_ratio: MLP ratio.
+        num_heads: number of heads in each stage.
+        qkv_bias: bool argument for query, key, value learnable bias.
+        qk_scale: bool argument to scaling query, key.
+        drop: dropout rate.
+        attn_drop: attention dropout rate.
+        drop_path: drop path rate.
+        norm_layer: normalization layer.
+        layer_scale: layer scaling coefficient.
+    """
 
     def __init__(self,
                  dim,
@@ -575,24 +590,6 @@ class GCViTLayer(nn.Module):
                  drop_path=0.,
                  norm_layer=nn.LayerNorm,
                  layer_scale=None):
-        """
-        Args:
-            dim: feature size dimension.
-            depth: number of layers in each stage.
-            input_resolution: input image resolution.
-            window_size: window size in each stage.
-            downsample: bool argument for down-sampling.
-            mlp_ratio: MLP ratio.
-            num_heads: number of heads in each stage.
-            qkv_bias: bool argument for query, key, value learnable bias.
-            qk_scale: bool argument to scaling query, key.
-            drop: dropout rate.
-            attn_drop: attention dropout rate.
-            drop_path: drop path rate.
-            norm_layer: normalization layer.
-            layer_scale: layer scaling coefficient.
-        """
-
         super().__init__()
         self.blocks = nn.ModuleList([
             GCViTBlock(
@@ -627,16 +624,32 @@ class GCViTLayer(nn.Module):
 
 
 @MODELS.register_module()
-class GCViT(nn.Module):
+class GCViT(BaseBackbone):
     """GCViT based on: "Hatamizadeh et al., Global Context Vision Transformers.
 
     <https://arxiv.org/abs/2206.09959>".
+
+    Args:
+        dim: feature size dimension.
+        depths: number of layers in each stage.
+        window_size: window size in each stage.
+        mlp_ratio: MLP ratio.
+        num_heads: number of heads in each stage.
+        resolution: input image resolution.
+        drop_path_rate: drop path rate.
+        in_chans: number of input channels.
+        num_classes: number of classes.
+        qkv_bias: bool argument for query, key, value learnable bias.
+        qk_scale: bool argument to scaling query, key.
+        drop_rate: dropout rate.
+        attn_drop_rate: attention dropout rate.
+        norm_layer: normalization layer.
+        layer_scale: layer scaling coefficient.
     """
     arch_zoo = {
         **dict.fromkeys(['xxt', 'xxtiny'],
                         {'depths': [2, 2, 6, 2],
                          'num_heads': [2, 4, 8, 16],
-                         'window_size': [7, 7, 14, 7],
                          'dim': 64,
                          'mlp_ratio': 3,
                          'drop_path_rate': 0.2,
@@ -645,7 +658,6 @@ class GCViT(nn.Module):
         **dict.fromkeys(['xt', 'xtiny'],
                         {'depths': [3, 4, 6, 5],
                          'num_heads': [2, 4, 8, 16],
-                         'window_size': [7, 7, 14, 7],
                          'dim': 64,
                          'mlp_ratio': 3,
                          'drop_path_rate': 0.2,
@@ -654,7 +666,6 @@ class GCViT(nn.Module):
         **dict.fromkeys(['t', 'tiny'],
                         {'depths': [3, 4, 19, 5],
                          'num_heads': [2, 4, 8, 16],
-                         'window_size': [7, 7, 14, 7],
                          'dim': 64,
                          'mlp_ratio': 3,
                          'drop_path_rate': 0.2,
@@ -663,7 +674,6 @@ class GCViT(nn.Module):
         **dict.fromkeys(['s', 'small'],
                         {'depths': [3, 4, 19, 5],
                          'num_heads': [3, 6, 12, 24],
-                         'window_size': [7, 7, 14, 7],
                          'dim': 96,
                          'mlp_ratio': 2,
                          'drop_path_rate': 0.3,
@@ -672,7 +682,6 @@ class GCViT(nn.Module):
         **dict.fromkeys(['b', 'base'],
                         {'depths': [3, 4, 19, 5],
                          'num_heads': [4, 8, 16, 32],
-                         'window_size': [7, 7, 14, 7],
                          'dim': 128,
                          'mlp_ratio': 2,
                          'drop_path_rate': 0.5,
@@ -698,25 +707,8 @@ class GCViT(nn.Module):
                  attn_drop_rate=0.,
                  norm_layer=nn.LayerNorm,
                  layer_scale=None,
+                 out_indices=[3],
                  **kwargs):
-        """
-        Args:
-            dim: feature size dimension.
-            depths: number of layers in each stage.
-            window_size: window size in each stage.
-            mlp_ratio: MLP ratio.
-            num_heads: number of heads in each stage.
-            resolution: input image resolution.
-            drop_path_rate: drop path rate.
-            in_chans: number of input channels.
-            num_classes: number of classes.
-            qkv_bias: bool argument for query, key, value learnable bias.
-            qk_scale: bool argument to scaling query, key.
-            drop_rate: dropout rate.
-            attn_drop_rate: attention dropout rate.
-            norm_layer: normalization layer.
-            layer_scale: layer scaling coefficient.
-        """
         super().__init__()
         if isinstance(arch, str):
             arch = arch.lower()
@@ -725,13 +717,13 @@ class GCViT(nn.Module):
             self.arch_settings = self.arch_zoo[arch]
             dim = self.arch_settings['dim']
             depths = self.arch_settings['depths']
-            window_size = self.arch_settings['window_size']
             mlp_ratio = self.arch_settings['mlp_ratio']
             num_heads = self.arch_settings['num_heads']
             drop_path_rate = self.arch_settings['drop_path_rate']
             layer_scale = self.arch_settings['layer_scale']
 
         num_features = int(dim * 2**(len(depths) - 1))
+        self.out_indices = out_indices
         self.num_classes = num_classes
         self.patch_embed = PatchEmbed(in_chans=in_chans, dim=dim)
         self.pos_drop = nn.Dropout(p=drop_rate)
@@ -773,20 +765,17 @@ class GCViT(nn.Module):
     def no_weight_decay_keywords(self):
         return {'rpb'}
 
-    def forward_features(self, x):
+    def forward(self, x):
         x = self.patch_embed(x)
         x = self.pos_drop(x)
-
-        for level in self.levels:
+        
+        outs = []
+        for i, level in enumerate(self.levels):
             x = level(x)
-
-        x = self.norm(x)
-        x = _to_channel_first(x)
-        x = self.avgpool(x)
-        x = torch.flatten(x, 1)
-        return x
-
-    def forward(self, x):
-        x = self.forward_features(x)
-        # x = self.head(x)
-        return [x]
+            if i in self.out_indices:
+                x = self.norm(x)
+                x = _to_channel_first(x)
+                x = self.avgpool(x)
+                x = torch.flatten(x, 1)
+                outs.append(x)
+        return outs
