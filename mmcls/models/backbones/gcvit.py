@@ -768,7 +768,6 @@ class GCViT(BaseBackbone):
     def forward(self, x):
         x = self.patch_embed(x)
         x = self.pos_drop(x)
-        
         outs = []
         for i, level in enumerate(self.levels):
             x = level(x)

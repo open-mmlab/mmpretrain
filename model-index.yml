@@ -33,3 +33,4 @@ Import:
   - configs/mobileone/metafile.yml
   - configs/efficientformer/metafile.yml
   - configs/swin_transformer_v2/metafile.yml
+  - configs/gcvit/metafile.yml

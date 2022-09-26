@@ -20,13 +20,13 @@ We propose global context vision transformer (GC ViT), a novel architecture that
 
 ### ImageNet-1k
 
-|        Model         |   Pretrain   | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                    Config                     |                                         Download                                         |
-| :------------------: | :----------: | :-------: | :------: | :-------: | :-------: | :-------------------------------------------: | :--------------------------------------------------------------------------------------: |
-|   GCViT-base\*    | From scratch |   90   |   14.8   |   84.47   |   96.84    |   [config](./gcvit_base.py) | [model]() |
-|  GCViT-small\* | From scratch |   51   |   8.5   |   83.95   |   96.65   | [config](./gcvit_small.py) | [model]() |
-|   GCViT-tiny\*   | From scratch |   28    |   4.7   |   83.40  |  96.40   |   [config](./gcvit_tiny.py)   | [model]() |
-|  GCViT-xtiny\*  | From scratch |   20    |  2.6   |   82.04   |   95.99   |  [config](./gcvit_xtiny.py)   | [model]() |
-| GCViT-xxtiny\*  | From scratch |   12    |  2.1   |   79.80    |   95.09   |  [config](./gcvit_xxtiny.py) | [model]() |
+|     Model      |   Pretrain   | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |           Config            |  Download   |
+| :------------: | :----------: | :-------: | :------: | :-------: | :-------: | :-------------------------: | :---------: |
+|  GCViT-base\*  | From scratch |    90     |   14.8   |   84.47   |   96.84   |  [config](./gcvit_base.py)  | [model](<>) |
+| GCViT-small\*  | From scratch |    51     |   8.5    |   83.95   |   96.65   | [config](./gcvit_small.py)  | [model](<>) |
+|  GCViT-tiny\*  | From scratch |    28     |   4.7    |   83.40   |   96.40   |  [config](./gcvit_tiny.py)  | [model](<>) |
+| GCViT-xtiny\*  | From scratch |    20     |   2.6    |   82.04   |   95.99   | [config](./gcvit_xtiny.py)  | [model](<>) |
+| GCViT-xxtiny\* | From scratch |    12     |   2.1    |   79.80   |   95.09   | [config](./gcvit_xxtiny.py) | [model](<>) |
 
 *Models with * are converted from the [official repo](https://github.com/NVlabs/GCVit). The config files of these models are only for inference. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 
