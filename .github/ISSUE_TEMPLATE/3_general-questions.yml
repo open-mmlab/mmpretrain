@@ -4,7 +4,9 @@ labels: ["help wanted"]
 
 body:
   - type: checkboxes
+    id: prerequisite
     attributes:
+      label: Prerequisite
       options:
         - label: I have searched related issues but cannot get the expected help.
           required: true

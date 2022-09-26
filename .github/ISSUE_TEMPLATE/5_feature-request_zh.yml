@@ -26,5 +26,6 @@ body:
   - type: checkboxes
     id: pr
     attributes:
+      label: 是否希望自己实现该功能？
       options:
         - label: 我希望自己来实现这一功能，并向 MMClassification 贡献代码！

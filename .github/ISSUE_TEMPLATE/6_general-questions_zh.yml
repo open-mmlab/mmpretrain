@@ -9,7 +9,9 @@ body:
         推荐使用英语模板 General question，以便你的问题帮助更多人。
 
   - type: checkboxes
+    id: prerequisite
     attributes:
+      label: 我已试图查询该问题
       options:
         - label: 我已经查阅了相关 issue，没有找到相关帮助。
           required: true

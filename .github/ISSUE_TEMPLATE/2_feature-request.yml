@@ -24,5 +24,6 @@ body:
   - type: checkboxes
     id: pr
     attributes:
+      label: Will you implement it?
       options:
         - label: I would like to implement this feature and create a PR!
