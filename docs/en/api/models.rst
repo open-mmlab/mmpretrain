@@ -88,6 +88,7 @@ Backbones
    VGG
    VisionTransformer
    EfficientFormer
+   HorNet
 
 .. _necks:
 
