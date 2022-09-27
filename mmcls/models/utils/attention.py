@@ -793,8 +793,10 @@ class ChannelMultiheadAttention(BaseModule):
         return x
 
 
-class TinyViTAttention(BaseModule):
-    """TinyViT Attention.
+class LeAttention(BaseModule):
+    """LeViT Attention. Multi-head attention with attention bias,  which is
+    proposed in `LeViT: a Vision Transformer in ConvNet’s Clothing for Faster
+    Inference<https://arxiv.org/abs/2104.01136>`_
 
     Args:
         dim (int): Number of input channels.

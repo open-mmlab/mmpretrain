@@ -4,6 +4,7 @@ model = dict(
     backbone=dict(
         type='TinyViT',
         arch='tinyvit_5m_224',
+        resolution=(224, 224),
         out_indices=(3, ),
         drop_path_rate=0.0,
         gap_before_final_norm=True,

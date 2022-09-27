@@ -9,7 +9,7 @@ from mmengine.model import BaseModule, ModuleList, Sequential
 from mmengine.registry import MODELS
 from torch.nn import functional as F
 
-from ..utils import TinyViTAttention
+from ..utils import LeAttention
 from .base_backbone import BaseBackbone
 
 
@@ -93,6 +93,10 @@ class PatchEmbed(BaseModule):
     Adapted from
     https://github.com/microsoft/Cream/blob/main/TinyViT/models/tiny_vit.py
 
+    Different from `mmcv.cnn.bricks.transformer.PatchEmbed`, this module use
+    Conv2d and BatchNorm2d to implement PatchEmbedding, and output shape is
+    (N, C, H, W).
+
     Args:
         in_channels (int): The number of input channels.
         embed_dim (int): The embedding dimension.
@@ -129,11 +133,14 @@ class PatchEmbed(BaseModule):
         return self.seq(x)
 
 
-class TinyViTPatchMerging(nn.Module):
+class PatchMerging(nn.Module):
     """Patch Merging for TinyViT.
 
     Adapted from
     https://github.com/microsoft/Cream/blob/main/TinyViT/models/tiny_vit.py
+
+    Different from `mmcls.models.utils.PatchMerging`, this module use Conv2d
+    and BatchNorm2d to implement PatchMerging.
 
     Args:
         in_channels (int): The number of input channels.
@@ -398,7 +405,7 @@ class TinyViTBlock(BaseModule):
         head_dim = in_channels // num_heads
 
         window_resolution = (window_size, window_size)
-        self.attn = TinyViTAttention(
+        self.attn = LeAttention(
             in_channels,
             head_dim,
             num_heads,
@@ -590,41 +597,41 @@ class TinyViT(BaseBackbone):
     """
     arch_settings = {
         'tinyvit_5m_224': {
-            'resolution': (224, 224),
             'channels': [64, 128, 160, 320],
             'num_heads': [2, 4, 5, 10],
             'window_sizes': [7, 7, 14, 7],
+            'depths': [2, 2, 6, 2],
         },
         'tinyvit_11m_224': {
-            'resolution': (224, 224),
             'channels': [64, 128, 256, 448],
             'num_heads': [2, 4, 8, 14],
             'window_sizes': [7, 7, 14, 7],
+            'depths': [2, 2, 6, 2],
         },
         'tinyvit_21m_224': {
-            'resolution': (224, 224),
             'channels': [96, 192, 384, 576],
             'num_heads': [3, 6, 12, 18],
             'window_sizes': [7, 7, 14, 7],
+            'depths': [2, 2, 6, 2],
         },
         'tinyvit_21m_384': {
-            'resolution': (384, 384),
             'channels': [96, 192, 384, 576],
             'num_heads': [3, 6, 12, 18],
             'window_sizes': [12, 12, 24, 12],
+            'depths': [2, 2, 6, 2],
         },
         'tinyvit_21m_512': {
-            'resolution': (512, 512),
             'channels': [96, 192, 384, 576],
             'num_heads': [3, 6, 12, 18],
             'window_sizes': [16, 16, 32, 16],
+            'depths': [2, 2, 6, 2],
         }
     }
 
     def __init__(self,
                  arch='tinyvit_5m_224',
+                 resolution=(224, 224),
                  in_channels=3,
-                 depths=[2, 2, 6, 2],
                  mlp_ratio=4.,
                  drop_rate=0.,
                  drop_path_rate=0.1,
@@ -647,15 +654,15 @@ class TinyViT(BaseBackbone):
             arch = self.arch_settings[arch]
         elif isinstance(arch, dict):
             assert 'channels' in arch and 'num_heads' in arch and \
-                'window_sizes' in arch and 'resolution' in arch, \
+                'window_sizes' in arch and 'depths' in arch, \
                 f'Th arch dict must have "channels", "num_heads", ' \
                 f'"window_sizes" keys, but got {arch.keys()}'
 
         self.channels = arch['channels']
         self.num_heads = arch['num_heads']
         self.widow_sizes = arch['window_sizes']
-        self.resolution = arch['resolution']
-        self.depths = depths
+        self.resolution = resolution
+        self.depths = arch['depths']
 
         self.num_stages = len(self.channels)
 
@@ -695,8 +702,7 @@ class TinyViT(BaseBackbone):
             curr_resolution = (patches_resolution[0] // (2**i),
                                patches_resolution[1] // (2**i))
             drop_path = dpr[sum(self.depths[:i]):sum(self.depths[:i + 1])]
-            downsample = TinyViTPatchMerging if (
-                i < self.num_stages - 1) else None
+            downsample = PatchMerging if (i < self.num_stages - 1) else None
             out_channels = self.channels[min(i + 1, self.num_stages - 1)]
             if i >= 1:
                 stage = BasicStage(
