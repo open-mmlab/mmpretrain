@@ -3,7 +3,7 @@ from typing import Callable, List, Optional, Union
 
 import torch
 import torch.distributed as dist
-from mmcv.runner import get_dist_info
+from mmengine.dist import get_dist_info
 from mmengine.runner import Runner
 from torch.utils.data import DataLoader
 
