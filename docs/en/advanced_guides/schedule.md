@@ -4,60 +4,49 @@ In our codebase, [default training schedules](https://github.com/open-mmlab/mmcl
 
 In this tutorial, we will introduce how to modify configs to construct optimizers, use parameter-wise finely configuration, gradient clipping, gradient accumulation as well as customize learning rate and momentum schedules. Furthermore, introduce a template to customize self-implemented optimizationmethods for the project.
 
-<!-- TOC -->
-
-- [Customize optimization](#customize-optimization)
-  - [Use optimizers supported by PyTorch](#use-optimizers-supported-by-pytorch)
-  - [Use AMP training](#use-amp-training)
-  - [Parameter-wise finely configuration](#parameter-wise-finely-configuration)
-  - [Gradient clipping](#gradient-clipping)
-  - [Gradient accumulation](#gradient-accumulation)
-- [Customize parameter schedules](#customize-parameter-schedules)
-  - [Customize learning rate schedules](#customize-learning-rate-schedules)
-  - [Customize momentum schedules](#customize-momentum-schedules)
-- [Customize self-implemented methods](#customize-self-implemented-methods)
-  - [Customize self-implemented optimizer](#customize-self-implemented-optimizer)
-  - [Customize optimizer constructor](#customize-optimizer-constructor)
-
-<!-- TOC -->
-
 ## Customize optimization
 
-We use a `OptimWrapper` for major strategies of optimization, which includes choices of optimizer, choices of automatic mixed precision training, parameter-wise configurations, gradient clipping and accumulation. Details are seen below.
+We use the `optim_wrapper` field to configure the strategies of optimization, which includes choices of optimizer, choices of automatic mixed precision training, parameter-wise configurations, gradient clipping and accumulation. Details are seen below.
 
 ### Use optimizers supported by PyTorch
 
 We support all the optimizers implemented by PyTorch, and to use them, please change the `optimizer` field of config files.
 
-For example, if you want to use `SGD`, the modification in config file could be as the following. Notice that optimization related settings should all wrapped inside the `OptimWrapper`.
+For example, if you want to use [`SGD`](torch.optim.SGD), the modification in config file could be as the following. Notice that optimization related settings should all wrapped inside the `optim_wrapper`.
 
 ```python
-optimizer = dict(type='SGD', lr=0.0003, weight_decay=0.0001)
-optim_wrapper = dict(type='OptimWrapper', optimizer=optimizer)
+optim_wrapper = dict(
+    type='OptimWrapper',
+    optimizer=dict(type='SGD', lr=0.0003, weight_decay=0.0001)
+)
 ```
 
 ```{note}
 `type` in optimizer is not a constructor but a optimizer name in PyTorch.
-Refers to [List of optimizers supported by PyTorch](https://pytorch.org/docs/stable/optim.html#algorithms) for more choices.
+Refers to {external+torch:ref}`List of optimizers supported by PyTorch <optim:algorithms>` for more choices.
 ```
 
 To modify the learning rate of the model, just modify the `lr` in the config of optimizer.
-You can also directly set other arguments according to the [API doc](https://pytorch.org/docs/stable/optim.html?highlight=optim#module-torch.optim) of PyTorch.
+You can also directly set other arguments according to the [API doc](torch.optim) of PyTorch.
 
-For example, if you want to use `Adam` with settings like `torch.optim.Adam(params, lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)` in PyTorch. You could use the config below:
+For example, if you want to use [`Adam`](torch.optim.Adam) with settings like `torch.optim.Adam(params, lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)` in PyTorch. You could use the config below:
 
 ```python
-optimizer = dict(
-    type='Adam',
-    lr=0.001,
-    betas=(0.9, 0.999),
-    eps=1e-08,
-    weight_decay=0,
-    amsgrad=False)
-optim_wrapper = dict(type='OptimWrapper', optimizer=optimizer)
+optim_wrapper = dict(
+    type='OptimWrapper',
+    optimizer = dict(
+        type='Adam',
+        lr=0.001,
+        betas=(0.9, 0.999),
+        eps=1e-08,
+        weight_decay=0,
+        amsgrad=False),
+)
 ```
 
-Considering the `OptimWrapper` type is for default standard single precision training, we can omit the wrapper type here, therefore the config could be further simplied below.
+````{note}
+The default type of `optim_wrapper` field is [`OptimWrapper`](mmengine.optim.OptimWrapper), therefore, you can
+omit the type field usually, like:
 
 ```python
 optim_wrapper = dict(
@@ -69,13 +58,14 @@ optim_wrapper = dict(
         weight_decay=0,
         amsgrad=False))
 ```
+````
 
 ### Use AMP training
 
 If we want to use the automatic mixed precision training, we can simply change the type of `optim_wrapper` to `AmpOptimWrapper` in config files.
 
 ```python
-optim_wrapper = dict(type='AmpOptimWrapper', optimizer=optimizer)
+optim_wrapper = dict(type='AmpOptimWrapper', optimizer=...)
 ```
 
 Alternatively, for conveniency, we can set `--amp` parameter to turn on the AMP option directly in the `tools/train.py` script. Refers to [Training and test](../user_guides/train_test.md) tutorial for details of starting a training.
@@ -104,7 +94,7 @@ To finely configure them, we can use the `paramwise_cfg` argument in `optim_wrap
   - `norm_decay_mult`: Multiplier for weight decay of weigh and bias of normalization layers. Defaults to 1.
   - `dwconv_decay_mult`: Multiplier for weight decay of depth-wise convolution layers. Defaults to 1.
   - `bypass_duplicate`: Whether to bypass duplicated parameters. Defaults to `False`.
-  - `dcn_offset_lr_mult`: Multiplier for learning rate of deformable convolution layers.Defaults to 1.
+  - `dcn_offset_lr_mult`: Multiplier for learning rate of deformable convolution layers. Defaults to 1.
 
 - **Set different hyper-parameter multipliers for specific parameters.**
 
@@ -127,7 +117,7 @@ To finely configure them, we can use the `paramwise_cfg` argument in `optim_wrap
 
 During the training process, the loss function may get close to a cliffy region and cause gradient explosion. And gradient clipping is helpful to stabilize the training process. More introduction can be found in [this page](https://paperswithcode.com/method/gradient-clipping).
 
-Currently we support `clip_grad` option in `optim_wrapper` for gradient clipping, refers to [PyTorch Documentation](https://pytorch.org/docs/stable/generated/torch.nn.utils.clip_grad_norm_.html).
+Currently we support `clip_grad` option in `optim_wrapper` for gradient clipping, refers to [PyTorch Documentation](torch.nn.utils.clip_grad_norm_).
 
 Here is an example:
 
@@ -167,9 +157,12 @@ In training, the optimzation parameters such as learing rate, momentum, are usua
 
 Learning rate schedulers are widely used to improve performance. We support most of the PyTorch schedulers, including `ExponentialLR`, `LinearLR`, `StepLR`, `MultiStepLR`, etc.
 
+All available learning rate scheduler can be found {external+mmengine:ref}`here <scheduler>`, and the
+names of learning rate schedulers end with `LR`.
+
 - **Single learning rate schedule**
 
-  In most cases, we use only one learning rate schedule for simplicity. For instance,`MultiStepLR` is used as the default learning rate schedule for ResNet. Here, `param_scheduler` is a dictionary.
+  In most cases, we use only one learning rate schedule for simplicity. For instance, [`MultiStepLR`](mmengine.optim.MultiStepLR) is used as the default learning rate schedule for ResNet. Here, `param_scheduler` is a dictionary.
 
   ```python
   param_scheduler = dict(
@@ -179,7 +172,7 @@ Learning rate schedulers are widely used to improve performance. We support most
       gamma=0.1)
   ```
 
-  Other supported learning rate schedules and detailed usages can be found [here](https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/scheduler/lr_scheduler.py), such as `CosineAnnealingLR` schedule:
+  Or, we want to use the [`CosineAnnealingLR`](mmengine.optim.CosineAnnealingLR) scheduler to decay the learning rate:
 
   ```python
   param_scheduler = dict(
@@ -190,13 +183,14 @@ Learning rate schedulers are widely used to improve performance. We support most
 
 - **Multiple learning rate schedules**
 
-  However, in some of the training cases, multiple learning rate schedules are applied for higher accuracy. For example ,in the early stage, training is easy to be volatile, and warmup is a technique to reduce volatility. The learning rate will increase gradually from a minor value to the expected value by warmup and decay afterwards by other schedules.
+  In some of the training cases, multiple learning rate schedules are applied for higher accuracy. For example ,in the early stage, training is easy to be volatile, and warmup is a technique to reduce volatility.
+  The learning rate will increase gradually from a minor value to the expected value by warmup and decay afterwards by other schedules.
 
-  In MMClassification, simply combines desired schedules in `param_scheduler` as a list can achieve the warmup strategy. Here, `param_scheduler` is a list.
+  In MMClassification, simply combines desired schedules in `param_scheduler` as a list can achieve the warmup strategy.
 
   Here are some examples:
 
-  1. linear & warmup by iter
+  1. linear warmup during the first 50 iters.
 
   ```python
     param_scheduler = [
@@ -204,7 +198,6 @@ Learning rate schedulers are widely used to improve performance. We support most
         dict(type='LinearLR',
             start_factor=0.001,
             by_epoch=False,  # by iters
-            begin=0,
             end=50),  # only warm up for first 50 iters
         # main learing rate schedule
         dict(type='MultiStepLR',
@@ -214,38 +207,36 @@ Learning rate schedulers are widely used to improve performance. We support most
     ]
   ```
 
-  2. exp & warmup by epoch
+  2. linear warmup and update lr by iter during the first 10 epochs.
 
   ```python
     param_scheduler = [
         # use exponential schedule in [0, 100) epochs
-        dict(type='ExponentialLR',
-            gamma=0.1,
+        dict(type='LinearLR',
+            start_factor=0.001,
             by_epoch=True,
-            begin=0,
-            end=100),
+            end=10,
+            convert_to_iter_based=True,  # Update learning rate by iter.
+        ),
         # use CosineAnnealing schedule in [100, 600) epochs
-        dict(type='CosineAnnealingLR',
-            T_max=800,
-            by_epoch=True,
-            begin=100,
-            end=600)
+        dict(type='CosineAnnealingLR', by_epoch=True, begin=10)
     ]
   ```
 
-  Notice that, we use `begin` and `end` arguments here to assign the valid range, which is \[`begin`, `end`) for this schedule. And the range unit is defined by `by_epoch` argument.
+  Notice that, we use `begin` and `end` arguments here to assign the valid range, which is \[`begin`, `end`) for this schedule. And the range unit is defined by `by_epoch` argument. If not specified, the `begin` is 0 and the `end` is the max epochs or iterations.
 
-  If the ranges for all schedules are not continuous, the learning rate will stay constant in ignored range, otherwise all valid schedulers will be executed in order in a specific stage, which behaves the same as PyTorch [`ChainedScheduler`](https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.ChainedScheduler.html#chainedscheduler).
+  If the ranges for all schedules are not continuous, the learning rate will stay constant in ignored range, otherwise all valid schedulers will be executed in order in a specific stage, which behaves the same as PyTorch [`ChainedScheduler`](torch.optim.lr_scheduler.ChainedScheduler).
 
   ```{tip}
-  In case that output learning rates are not as expected, after completing your configuration file，you could use [learning rate visualization tool](https://mmclassification.readthedocs.io/en/latest/tools/visualization.html#learning-rate-schedule-visualization) to draw the corresponding learning rate adjustment curve.
+  To check that the learning rate curve is as expected, after completing your configuration file，you could use [learning rate visualization tool](../user_guides/visualization.md#learning-rate-schedule-visualization) to draw the corresponding learning rate adjustment curve.
   ```
 
 ### Customize momentum schedules
 
-We support the momentum scheduler to modify the model's momentum according to learning rate, which could make the model converge in a faster way. The usage is the same as learning rate schedule's.
+We support using momentum schedulers to modify the optimizer's momentum according to learning rate, which could make the loss converge in a faster way. The usage is the same as learning rate schedulers.
 
-Supported momentum schedules and detailed usages can be found [here](https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/scheduler/momentum_scheduler.py). We just replace the `LR` in scheduler names to `Momentum`. In config file, the needed momentum schedule can be directly appended to the `param_scheduler` list.
+All available learning rate scheduler can be found {external+mmengine:ref}`here <scheduler>`, and the
+names of momentum rate schedulers end with `Momentum`.
 
 Here is an example:
 
@@ -262,43 +253,41 @@ param_scheduler = [
 ]
 ```
 
-## Customize self-implemented methods
-
-In academic research and industrial practice, it may be necessary to use optimization methods not implemented by MMClassification, and you can add them through the following methods.
+## Add new optimizers or constructors
 
 ```{note}
 This part will modify the MMClassification source code or add code to the MMClassification framework, beginners can skip it.
 ```
 
-### Customize self-implemented optimizer
+### Add new optimizers
 
-#### 1. Define a new optimizer
+In academic research and industrial practice, it may be necessary to use optimization methods not implemented by MMClassification, and you can add them through the following methods.
 
-A customized optimizer could be defined as below.
+#### 1. Implement a new optimizer
 
 Assume you want to add an optimizer named `MyOptimizer`, which has arguments `a`, `b`, and `c`.
-You need to create a new directory named `mmcls/engine/optimizers`.
-And then implement the new optimizer in a file, e.g., in `mmcls/engine/optimizers/my_optimizer.py`:
+You need to create a new file under `mmcls/engine/optimizers`, and implement the new optimizer in the file, for example, in `mmcls/engine/optimizers/my_optimizer.py`:
 
 ```python
-from mmengine.registry import OPTIMIZERS
 from torch.optim import Optimizer
+from mmcls.registry import OPTIMIZERS
 
 
 @OPTIMIZERS.register_module()
 class MyOptimizer(Optimizer):
 
     def __init__(self, a, b, c):
+        ...
 
+    def step(self, closure=None):
+        ...
 ```
 
-#### 2. Add the optimizer to registry
+#### 2. Import the optimizer
 
-To find the above module defined above, this module should be imported into the main namespace at first. There are two ways to achieve it.
+To find the above module defined above, this module should be imported during the running. There are two ways to achieve it.
 
-- Modify `mmcls/engine/optimizers/__init__.py` to import it into `optimizers` package.
-
-  Create the `mmcls/engine/optimizers` folder and the `mmcls/engine/optimizers/__init__.py` file if they don't exist. The newly defined module should be imported in `mmcls/engine/optimizers/__init__.py` so that the registry will find the new module and add it:
+- Import it in the `mmcls/engine/optimizers/__init__.py` to add it into the `mmcls.engine` package.
 
   ```python
   # In mmcls/engine/optimizers/__init__.py
@@ -308,12 +297,16 @@ To find the above module defined above, this module should be imported into the 
   __all__ = [..., 'MyOptimizer']
   ```
 
-- Use `custom_imports` in the config file to manually import it
+  During running, we will automatically import the `mmcls.engine` package and register the `MyOptimizer` at the
+  same time.
+
+- Use `custom_imports` in the config file to manually import it.
 
   ```python
   custom_imports = dict(
-    imports=['mmcls.engine.optimizers.my_optimizer'],
-    allow_failed_imports=False)
+      imports=['mmcls.engine.optimizers.my_optimizer'],
+      allow_failed_imports=False,
+  )
   ```
 
 The module `mmcls.engine.optimizers.my_optimizer` will be imported at the beginning of the program and the class `MyOptimizer` is then automatically registered.
@@ -321,42 +314,62 @@ Note that only the package containing the class `MyOptimizer` should be imported
 
 #### 3. Specify the optimizer in the config file
 
-Then you can use `MyOptimizer` in `optim_wrapper` field of config files.
-In the configs, the optimizers are defined by the field `optim_wrapper` like the following:
-
-```python
-optim_wrapper = dict(
-    optimizer=dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001))
-```
-
-To use your own optimizer, the field can be changed to
+Then you can use `MyOptimizer` in the `optim_wrapper.optimizer` field of config files.
 
 ```python
 optim_wrapper = dict(
     optimizer=dict(type='MyOptimizer', a=a_value, b=b_value, c=c_value))
 ```
 
-### Customize optimizer constructor
+### Add new optimizer constructors
 
-Some models may have some parameter-specific settings for optimization, e.g. weight decay for BatchNorm layers.
+Some models may have some parameter-specific settings for optimization, like different weight decay rate for all `BatchNorm` layers.
 
-Although our `DefaultOptimWrapperConstructor` is powerful, it may still not cover your need. If that, you can do those fine-grained parameter tuning through customizing optimizer constructor.
+Although we already can use [the `optim_wrapper.paramwise_cfg` field](#parameter-wise-finely-configuration) to
+configure various parameter-specific optimizer settings. It may still not cover your need.
+
+Of course, you can modify it. By default, we use the [`DefaultOptimWrapperConstructor`](mmengine.optim.DefaultOptimWrapperConstructor)
+class to deal with the construction of optimizer. And during the construction, it fine-grainedly configures the optimizer settings of
+different parameters according to the `paramwise_cfg`.
+
+You can overwrite these behaviors by add new optimizer constructors.
 
 ```python
+# In mmcls/engine/optimizers/my_optim_constructor.py
 from mmengine.optim import DefaultOptimWrapperConstructor
-from mmengine.registry import OPTIM_WRAPPER_CONSTRUCTORS
+from mmcls.registry import OPTIM_WRAPPER_CONSTRUCTORS
 
 
 @OPTIM_WRAPPER_CONSTRUCTORS.register_module()
-class MyOptimWrapperConstructor(DefaultOptimWrapperConstructor):
+class MyOptimWrapperConstructor:
 
     def __init__(self, optim_wrapper_cfg, paramwise_cfg=None):
         ...
 
-    def add_params(self, params, module, prefix='' ,lr=None):
-        """Add all parameters of module to the params list."""
+    def __call__(self, model):
         ...
-
 ```
 
 The default optimizer constructor is implemented [here](https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/optimizer/default_constructor.py), which could also serve as a template for new optimizer constructor.
+
+And then, import it and use it almost like [the optimizer tutorial](#add-new-optimizers).
+
+1. Import it in the `mmcls/engine/optimizers/__init__.py` to add it into the `mmcls.engine` package.
+
+   ```python
+   # In mmcls/engine/optimizers/__init__.py
+   ...
+   from .my_optim_constructor import MyOptimWrapperConstructor
+
+   __all__ = [..., 'MyOptimWrapperConstructor']
+   ```
+
+2. Use `MyOptimWrapperConstructor` in the `optim_wrapper.constructor` field of config files.
+
+   ```python
+   optim_wrapper = dict(
+       constructor=dict(type='MyOptimWrapperConstructor'),
+       optimizer=...,
+       paramwise_cfg=...,
+   )
+   ```
