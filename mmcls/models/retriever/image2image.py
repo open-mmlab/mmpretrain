@@ -54,16 +54,16 @@ class ImageToImageRetriever(BaseRetriever):
     """
 
     def __init__(self,
-                 backbone: dict,
-                 neck: Optional[dict] = None,
+                 prototype_encoder: dict,
                  head: Optional[dict] = None,
                  pretrained: Optional[str] = None,
                  train_cfg: Optional[dict] = None,
                  data_preprocessor: Optional[dict] = None,
                  dim: int = 512,
-                 k: int = -1,
+                 topk: int = -1,
                  prototype: Union[DataLoader, dict, str, torch.Tensor] = None,
                  init_cfg: Optional[dict] = None):
+
         if pretrained is not None:
             init_cfg = dict(type='Pretrained', checkpoint=pretrained)
 
@@ -77,41 +77,32 @@ class ImageToImageRetriever(BaseRetriever):
             data_preprocessor['batch_augments'] = train_cfg
 
         super(ImageToImageRetriever, self).__init__(
-            init_cfg=init_cfg, data_preprocessor=data_preprocessor)
+            encoder=prototype_encoder,
+            head=head,
+            prototype=prototype,
+            init_cfg=init_cfg,
+            data_preprocessor=data_preprocessor)
 
-        self.backbone = MODELS.build(backbone)
-
-        if neck is not None:
-            self.neck = MODELS.build(neck)
+        self.encoder = MODELS.build(prototype_encoder)
+        self.prototype_encoder = self.encoder
 
         if head is not None:
             self.head = MODELS.build(head)
 
-        self.prototype = prototype
         self.prototype_inited = False
         self.prototype_vecs = None
-        self.k = k
+        self.topk = topk
         self.dim = dim
-
-    @property
-    def with_neck(self) -> bool:
-        """Whether the classifier has a neck."""
-        return hasattr(self, 'neck') and self.neck is not None
-
-    @property
-    def with_head(self) -> bool:
-        """Whether the classifier has a head."""
-        return hasattr(self, 'head') and self.head is not None
 
     def forward(self,
                 inputs: torch.Tensor,
                 data_samples: Optional[List[ClsDataSample]] = None,
-                mode: str = 'feat'):
+                mode: str = 'tensor'):
         """The unified entry for a forward process in both training and test.
 
         The method should accept three modes: "feat", "predict" and "loss":
 
-        - "feat": Forward the whole network and return tensor without any
+        - "tensor": Forward the whole network and return tensor without any
           post-processing, same as a common nn.Module.
         - "predict": Forward and return the predictions, which are fully
           processed to a list of :obj:`ClsDataSample`.
@@ -132,12 +123,12 @@ class ImageToImageRetriever(BaseRetriever):
         Returns:
             The return type depends on ``mode``.
 
-            - If ``mode="feat"``, return a tensor.
+            - If ``mode="tensor"``, return a tensor.
             - If ``mode="predict"``, return a list of
               :obj:`mmcls.structures.ClsDataSample`.
             - If ``mode="loss"``, return a dict of tensor.
         """
-        if mode == 'feat':
+        if mode == 'tensor':
             return self.extract_feat(inputs)
         elif mode == 'loss':
             return self.loss(inputs, data_samples)
@@ -146,46 +137,18 @@ class ImageToImageRetriever(BaseRetriever):
         else:
             raise RuntimeError(f'Invalid mode "{mode}".')
 
-    def extract_feat(self, inputs, stage='neck'):
+    def extract_feat(self, inputs):
         """Extract features from the input tensor with shape (N, C, ...).
 
         Args:
             inputs (Tensor): A batch of inputs. The shape of it should be
                 ``(num_samples, num_channels, *img_shape)``.
-            stage (str): Which stage to output the feature. Choose from:
-
-                - "backbone": The output of backbone network. Returns a tuple
-                  including multiple stages features.
-                - "neck": The output of neck module. Returns a tuple including
-                  multiple stages features.
-                - "pre_logits": The feature before the final classification
-                  linear layer. Usually returns a tensor.
-
-                Defaults to "neck".
-
         Returns:
-            Tensor: The output of specified stage.
-            The output depends on detailed implementation. In general, the
-            output of backbone and neck is a tuple and the output of
-            pre_logits is a tensor.
-        """  # noqa: E501
-        assert stage in ['backbone', 'neck', 'pre_logits'], \
-            (f'Invalid output stage "{stage}", please choose from "backbone", '
-             '"neck" and "pre_logits"')
+            Tensor: The output of encoder.
+        """
 
-        x = self.backbone(inputs)
-
-        if stage == 'backbone':
-            return x
-
-        if self.with_neck:
-            x = self.neck(x)
-        if stage == 'neck':
-            return x
-
-        assert self.with_head and hasattr(self.head, 'pre_logits'), \
-            "No head or the head doesn't implement `pre_logits` method."
-        return self.head.pre_logits(x)
+        feat = self.encoder(inputs)
+        return feat
 
     def loss(self, inputs: torch.Tensor,
              data_samples: List[ClsDataSample]) -> dict:
@@ -236,12 +199,12 @@ class ImageToImageRetriever(BaseRetriever):
                 method of :attr:`head`.
         Returns:
             List[ClsDataSample]: the raw data_samples with
-            the predicted results
+                the predicted results
         """
         if not self.prototype_inited:
             self.prepare_prototype()
 
-        feats = self.extract_feat(inputs, stage='neck')
+        feats = self.extract_feat(inputs)
         if isinstance(feats, tuple):
             feats = feats[-1]
 
@@ -267,6 +230,36 @@ class ImageToImageRetriever(BaseRetriever):
         self.post_process(data_samples)
         return data_samples
 
+    def __get_prototype_from_dataloader(self, device):
+        data_loader = self.prototype
+        num = len(data_loader.dataset)
+
+        self.prototype_vecs = torch.zeros(num, self.dim)
+        self.prototype_vecs = self.prototype_vecs.to(device)
+
+        for data in data_loader:
+            batch_num = len(data['inputs'])
+            data = self.data_preprocessor(data, False)
+
+            if isinstance(data, dict):
+                out = self(**data, mode='tensor')
+            elif isinstance(data, (list, tuple)):
+                out = self(*data, mode='tensor')
+            else:
+                raise TypeError('Output of `data_preprocessor`'
+                                ' should be list, tuple or dict,'
+                                f' but got {type(data)}')
+            if isinstance(out, tuple):
+                out = out[-1]
+            for i in range(batch_num):
+                sample_idx = data['data_samples'][i].get('sample_idx')
+                self.prototype_vecs[sample_idx] = out[i]
+
+        rank, world_size = get_dist_info()
+        if world_size > 1:
+            dist.all_reduce(
+                self.prototype_vecs, dist.ReduceOp.SUM, async_op=True)
+
     @torch.no_grad()
     def prepare_prototype(self):
         """Used in meta testing. This function will be called before the meta
@@ -279,7 +272,7 @@ class ImageToImageRetriever(BaseRetriever):
             to the dataloader
         """
 
-        device = next(self.backbone.parameters()).device
+        device = next(self.encoder.parameters()).device
         if isinstance(self.prototype, torch.Tensor):
             self.prototype_vecs = self.prototype
             self.prototype_vecs = self.prototype_vecs.to(device)
@@ -290,45 +283,16 @@ class ImageToImageRetriever(BaseRetriever):
             self.prototype = Runner.build_dataloader(self.prototype)
 
         if isinstance(self.prototype, DataLoader):
-            data_loader = self.prototype
-            num = len(data_loader.dataset)
-
-            self.prototype_vecs = torch.zeros(num, self.dim)
-            self.prototype_vecs = self.prototype_vecs.to(device)
-
-            for data in data_loader:
-                batch_num = len(data['inputs'])
-                data = self.data_preprocessor(data, False)
-
-                if isinstance(data, dict):
-                    results = self(**data, mode='feat')
-                elif isinstance(data, (list, tuple)):
-                    results = self(*data, mode='feat')
-                else:
-                    raise TypeError('Output of `data_preprocessor`'
-                                    ' should be list, tuple or dict,'
-                                    f' but got {type(data)}')
-                out = results
-                if isinstance(out, tuple):
-                    out = out[-1]
-                for i in range(batch_num):
-                    sample_idx = data['data_samples'][i].get('sample_idx')
-                    self.prototype_vecs[sample_idx] = out[i]
-
-            rank, world_size = get_dist_info()
-            if world_size > 1:
-                dist.all_reduce(
-                    self.prototype_vecs, dist.ReduceOp.SUM, async_op=True)
-
+            self.__get_prototype_from_dataloader(device)
         self.prototype_inited = True
 
     def post_process(self, data_samples):
         """Intercept the topk results."""
-        if self.k == -1:
+        if self.topk == -1:
             return data_samples
         else:
-            k = min(self.k, data_samples[0].pred_label.score.shape[0])
+            topk = min(self.topk, data_samples[0].pred_label.score.shape[0])
             for data_sample in data_samples:
-                data_sample.set_pred_score(data_sample.pred_label.score[:k])
-                data_sample.set_pred_label(data_sample.pred_label.label[:k])
+                data_sample.set_pred_score(data_sample.pred_label.score[:topk])
+                data_sample.set_pred_label(data_sample.pred_label.label[:topk])
             return data_samples
