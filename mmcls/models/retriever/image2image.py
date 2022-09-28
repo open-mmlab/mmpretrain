@@ -17,16 +17,18 @@ class ImageToImageRetriever(BaseRetriever):
     """Image To Image Retrievers for supervised retrieval task.
 
     Args:
-        backbone (dict): The backbone module. See
-            :mod:`mmcls.models.backbones`.
-        neck (dict, optional): The neck module to process features from
-            backbone. See :mod:`mmcls.models.necks`. Defaults to None.
+        image_encoder (Union[dict, List[dict]]): The backbone module.
         head (dict, optional): The head module to do prediction and calculate
             loss from processed features. See :mod:`mmcls.models.heads`.
             Notice that if the head is not set, almost all methods cannot be
             used except :meth:`extract_feat`. Defaults to None.
         pretrained (str, optional): The pretrained checkpoint path, support
             local path and remote path. Defaults to None.
+        similarity_fn (Union[str, Callable]): The way that the similarity is
+            calculated. If the type of `similarity` is callable, it is used
+            directly as the measure function. If it is a string, the
+            appropriate method will be used.
+            Defaults to "cosine_similarity".
         train_cfg (dict, optional): The training setting. The acceptable
             fields are:
 
@@ -38,8 +40,8 @@ class ImageToImageRetriever(BaseRetriever):
             data. If None or no specified type, it will use
             "ClsDataPreprocessor" as type. See :class:`ClsDataPreprocessor` for
             more details. Defaults to None.
-        dim (int): The dimension of the extracted feature and the prototype.
-        k (int): Returns the topk of the retrieval result. -1 means return all.
+        topk (int): Returns the topk of the retrieval result. -1 means
+            return all.
             Defaults to -1.
         prototype (Union[DataLoader, dict, str, torch.Tensor]): Database to be
             retrieved. The following four types are supported.
@@ -54,12 +56,12 @@ class ImageToImageRetriever(BaseRetriever):
     """
 
     def __init__(self,
-                 prototype_encoder: dict,
+                 image_encoder: Union[dict, List[dict]],
                  head: Optional[dict] = None,
                  pretrained: Optional[str] = None,
+                 similarity_fn: Union[str, Callable] = 'cosine_similarity',
                  train_cfg: Optional[dict] = None,
                  data_preprocessor: Optional[dict] = None,
-                 dim: int = 512,
                  topk: int = -1,
                  prototype: Union[DataLoader, dict, str, torch.Tensor] = None,
                  init_cfg: Optional[dict] = None):
@@ -77,22 +79,36 @@ class ImageToImageRetriever(BaseRetriever):
             data_preprocessor['batch_augments'] = train_cfg
 
         super(ImageToImageRetriever, self).__init__(
-            encoder=prototype_encoder,
-            head=head,
-            prototype=prototype,
-            init_cfg=init_cfg,
-            data_preprocessor=data_preprocessor)
+            init_cfg=init_cfg, data_preprocessor=data_preprocessor)
 
-        self.encoder = MODELS.build(prototype_encoder)
-        self.prototype_encoder = self.encoder
+        self.image_encoder = MODELS.build(image_encoder)
 
         if head is not None:
             self.head = MODELS.build(head)
 
+        self.similarity = similarity_fn
+
+        self.prototype = prototype
         self.prototype_inited = False
         self.prototype_vecs = None
         self.topk = topk
-        self.dim = dim
+
+    @property
+    def similarity_fn(self):
+        """Returns a function that calculates the similarity."""
+        # If self.similarity_way is callable, return it directly
+        if isinstance(self.similarity, Callable):
+            return self.similarity
+
+        if self.similarity == 'cosine_similarity':
+            # a is a tensor with shape (N, C)
+            # b is a tensor with shape (M, C)
+            # "cosine_similarity" will get the matrix of similarity
+            # with shape (N, M)
+            return lambda a, b: torch.cosine_similarity(
+                a.unsqueeze(1), b.unsqueeze(0), dim=-1)
+        else:
+            raise RuntimeError(f'Invalid function "{self.similarity_way}".')
 
     def forward(self,
                 inputs: torch.Tensor,
@@ -147,7 +163,7 @@ class ImageToImageRetriever(BaseRetriever):
             Tensor: The output of encoder.
         """
 
-        feat = self.encoder(inputs)
+        feat = self.image_encoder(inputs)
         return feat
 
     def loss(self, inputs: torch.Tensor,
@@ -168,20 +184,21 @@ class ImageToImageRetriever(BaseRetriever):
 
     def matching(self,
                  inputs: torch.Tensor,
-                 fn: Callable,
                  data_samples: Optional[List[ClsDataSample]] = None):
         """Compare the prototype and calculate the similarity.
 
         Args:
             inputs (torch.Tensor): The input tensor with shape (N, C).
-            fn (Callable): Function to calculate the similarity between
-                the extracted feature of inputs and the prototype.
             data_samples (List[BaseDataElement], optional): The annotation
                 data of every samples. Defaults to None.
         Returns:
             dict: a dictionary of score and prediction label based on fn.
         """
-        sim, indices = fn(inputs, self.prototype_vecs)
+        sim, indices = torch.sort(
+            self.similarity_fn(inputs, self.prototype_vecs),
+            descending=True,
+            dim=-1,
+        )
         predictions = {'score': sim, 'pred_label': indices}
         return predictions
 
@@ -209,12 +226,7 @@ class ImageToImageRetriever(BaseRetriever):
             feats = feats[-1]
 
         # Matching of similarity
-        result = self.matching(
-            feats, lambda query, gallery: torch.sort(
-                torch.cosine_similarity(
-                    query.unsqueeze(1), gallery.unsqueeze(0), dim=-1),
-                dim=-1,
-                descending=True))
+        result = self.matching(feats)
 
         pred_scores = result['score']
         pred_labels = result['pred_label']
@@ -230,33 +242,27 @@ class ImageToImageRetriever(BaseRetriever):
         self.post_process(data_samples)
         return data_samples
 
-    def __get_prototype_from_dataloader(self, device):
+    def _get_prototype_from_dataloader(self, device):
         data_loader = self.prototype
         num = len(data_loader.dataset)
 
-        self.prototype_vecs = torch.zeros(num, self.dim)
-        self.prototype_vecs = self.prototype_vecs.to(device)
-
-        for data in data_loader:
-            batch_num = len(data['inputs'])
-            data = self.data_preprocessor(data, False)
-
-            if isinstance(data, dict):
-                out = self(**data, mode='tensor')
-            elif isinstance(data, (list, tuple)):
-                out = self(*data, mode='tensor')
-            else:
-                raise TypeError('Output of `data_preprocessor`'
-                                ' should be list, tuple or dict,'
-                                f' but got {type(data)}')
-            if isinstance(out, tuple):
-                out = out[-1]
+        self.prototype_vecs = None
+        for data_batch in data_loader:
+            batch_num = len(data_batch['inputs'])
+            data = self.data_preprocessor(data_batch, False)
+            feat = self.extract_feat(data['inputs'])
+            if isinstance(feat, tuple):
+                feat = feat[-1]
+            if self.prototype_vecs is None:
+                dim = feat.shape[-1]
+                self.prototype_vecs = torch.zeros(num, dim).to(device)
             for i in range(batch_num):
-                sample_idx = data['data_samples'][i].get('sample_idx')
-                self.prototype_vecs[sample_idx] = out[i]
+                sample_idx = data_batch['data_samples'][i].get('sample_idx')
+                self.prototype_vecs[sample_idx] = feat[i]
 
         rank, world_size = get_dist_info()
         if world_size > 1:
+            dist.barrier()
             dist.all_reduce(
                 self.prototype_vecs, dist.ReduceOp.SUM, async_op=True)
 
@@ -272,18 +278,16 @@ class ImageToImageRetriever(BaseRetriever):
             to the dataloader
         """
 
-        device = next(self.encoder.parameters()).device
+        device = next(self.image_encoder.parameters()).device
         if isinstance(self.prototype, torch.Tensor):
             self.prototype_vecs = self.prototype
             self.prototype_vecs = self.prototype_vecs.to(device)
         elif isinstance(self.prototype, str):
             self.prototype_vecs = torch.load(self.prototype).to(device)
-            self.prototype_vecs = self.prototype_vecs.to(device)
-        elif isinstance(self.prototype, dict):
+        if isinstance(self.prototype, dict):
             self.prototype = Runner.build_dataloader(self.prototype)
-
         if isinstance(self.prototype, DataLoader):
-            self.__get_prototype_from_dataloader(device)
+            self._get_prototype_from_dataloader(device)
         self.prototype_inited = True
 
     def post_process(self, data_samples):
@@ -296,3 +300,8 @@ class ImageToImageRetriever(BaseRetriever):
                 data_sample.set_pred_score(data_sample.pred_label.score[:topk])
                 data_sample.set_pred_label(data_sample.pred_label.label[:topk])
             return data_samples
+
+    def dump_prototype(self, path):
+        if not self.prototype_inited:
+            self.prepare_prototype()
+        torch.save(self.prototype_vecs, path)

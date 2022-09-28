@@ -1,15 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from abc import ABCMeta, abstractmethod
-from typing import Callable, List, Optional, Union
+from typing import List, Optional
 
 import torch
 from mmengine.model import BaseModel
 from mmengine.structures import BaseDataElement
-from torch.utils.data import DataLoader
 
 
 class BaseRetriever(BaseModel, metaclass=ABCMeta):
-    """Base class for meta metric based classifier.
+    """Base class for retriever.
 
     Args:
         init_cfg (dict, optional): Initialization config dict.
@@ -27,17 +26,10 @@ class BaseRetriever(BaseModel, metaclass=ABCMeta):
     """
 
     def __init__(self,
-                 encoder: dict,
-                 head: Optional[dict] = None,
-                 prototype: Union[DataLoader, dict, str, torch.Tensor] = None,
                  init_cfg: Optional[dict] = None,
                  data_preprocessor: Optional[dict] = None):
         super(BaseRetriever, self).__init__(
             init_cfg=init_cfg, data_preprocessor=data_preprocessor)
-
-        self.encoder = encoder
-        self.head = head
-        self.prototype = prototype
 
     @abstractmethod
     def forward(self,
@@ -118,16 +110,18 @@ class BaseRetriever(BaseModel, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
+    @property
+    def similarity_fn(self):
+        """Returns a function that calculates the similarity."""
+        raise NotImplementedError
+
     def matching(self,
                  inputs: torch.Tensor,
-                 fn: Callable,
                  data_samples: Optional[List[BaseDataElement]] = None):
         """Compare the prototype and calculate the similarity.
 
         Args:
             inputs (torch.Tensor): The input tensor with shape (N, C).
-            fn (Callable): Function to calculate the similarity between
-                the extracted feature of inputs and the prototype.
             data_samples (List[BaseDataElement], optional): The annotation
                 data of every samples. Defaults to None.
         """
@@ -135,4 +129,12 @@ class BaseRetriever(BaseModel, metaclass=ABCMeta):
 
     def prepare_prototype(self):
         """Preprocessing the prototype before predict."""
+        raise NotImplementedError
+
+    def dump_prototype(self, path):
+        """Save the features extracted from the prototype.
+
+        Args:
+            path (str): Path to save feature.
+        """
         raise NotImplementedError
