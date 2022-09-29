@@ -29,7 +29,7 @@ class MobileVitBlock(nn.Module):
             norm_cfg=dict(type='BN'),
             act_cfg=dict(type='Swish'),
             num_transformer_blocks: int = 2,
-            patch_size: int = 8,
+            patch_size: int = 2,
             num_heads: int = 4,
             drop_rate: float = 0.,
             attn_drop_rate=0.,
@@ -176,13 +176,22 @@ class MobileViT(BaseBackbone):
     # For `mobilenetv2` layer, the rest params from left to right are:
     #     out channels, stride, num of blocks, expand_ratio.
     # For `mobilevit` layer, the rest params from left to right are:
-    #     out channels, transformer_channels, ffn channels,
-    # stride, num of transformer blocks, expand_ratio.
+    #     out channels, stride, transformer_channels, ffn channels,
+    # num of transformer blocks, expand_ratio.
     arch_settings = {
         'small': [['mobilenetv2', 32, 1, 1, 4], ['mobilenetv2', 64, 2, 3, 4],
                   ['mobilevit', 96, 2, 144, 288, 2, 4],
                   ['mobilevit', 128, 2, 192, 384, 4, 4],
-                  ['mobilevit', 160, 2, 240, 480, 3, 4]]
+                  ['mobilevit', 160, 2, 240, 480, 3, 4]],
+        'x_small': [['mobilenetv2', 32, 1, 1, 4], ['mobilenetv2', 48, 2, 3, 4],
+                    ['mobilevit', 64, 2, 96, 192, 2, 4],
+                    ['mobilevit', 80, 2, 120, 240, 4, 4],
+                    ['mobilevit', 96, 2, 144, 288, 3, 4]],
+        'xx_small': [['mobilenetv2', 16, 1, 1, 2],
+                     ['mobilenetv2', 24, 2, 3, 2],
+                     ['mobilevit', 48, 2, 64, 128, 2, 2],
+                     ['mobilevit', 64, 2, 80, 160, 4, 2],
+                     ['mobilevit', 80, 2, 96, 192, 3, 2]]
     }
 
     def __init__(self,
@@ -268,6 +277,7 @@ class MobileViT(BaseBackbone):
                 out_channels=out_channels,
                 stride=stride,
                 expand_ratio=expand_ratio,
+                act_cfg=dict(type='Swish'),
             ))
         layer.append(
             MobileVitBlock(
@@ -296,6 +306,7 @@ class MobileViT(BaseBackbone):
                     out_channels=out_channels,
                     stride=stride,
                     expand_ratio=expand_ratio,
+                    act_cfg=dict(type='Swish'),
                 ))
             in_channels = out_channels
         return nn.Sequential(*layer), out_channels
