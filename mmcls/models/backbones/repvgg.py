@@ -1,6 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import warnings
-
 import torch
 import torch.nn.functional as F
 import torch.utils.checkpoint as cp
@@ -311,22 +309,24 @@ class RepVGG(BaseBackbone):
     <https://arxiv.org/abs/2101.03697>`_
 
     Args:
-        arch (str | dict): RepVGG architecture.
-            If it's a dict, it should contain the following keys:
+        arch (str | dict): RepVGG architecture. If use string,
+            choose from 'A0', 'A1`', 'A2', 'B0', 'B1', 'B1g2', 'B1g4', 'B2'
+            , 'B2g2', 'B2g4', 'B3', 'B3g2', 'B3g4'  or 'D2se'. If use dict,
+             it should have below keys:
 
             - num_blocks (Sequence[int]): Number of blocks in each stage.
             - width_factor (Sequence[float]): Width deflator in each stage.
             - group_layer_map (dict | None): RepVGG Block that declares
               the need to apply group convolution.
-            - se_cfg (dict | None): Se Layer config
-            - min_stem_channels (int): Minimum of stem channels.
-            - base_channels (int): Base channels of RepVGG backbone, work
-                with width_factor together. This has the second highest p
-                riority.
+            - se_cfg (dict | None): Se Layer config.
+            - stem_channels (int, optional): The stem channels, the final
+                 stem channels will be
+                 ``min(stem_channels, base_channels*width_factor[0])``.
+                If not set here, 64 is used by default in the code.
+
         in_channels (int): Number of input image channels. Default: 3.
-        base_channels (int): Base channels of RepVGG backbone, work
-            with width_factor together. This has the highest priority.
-            Default: None.
+        base_channels (int): Base channels of RepVGG backbone, work with
+            width_factor together. Defaults to 64.
         out_indices (Sequence[int]): Output from which stages. Default: (3, ).
         strides (Sequence[int]): Strides of the first block of each stage.
             Default: (2, 2, 2, 2).
@@ -360,127 +360,99 @@ class RepVGG(BaseBackbone):
             num_blocks=[2, 4, 14, 1],
             width_factor=[0.75, 0.75, 0.75, 2.5],
             group_layer_map=None,
-            se_cfg=None,
-            min_stem_channels=64,
-            base_channels=64),
+            se_cfg=None),
         'A1':
         dict(
             num_blocks=[2, 4, 14, 1],
             width_factor=[1, 1, 1, 2.5],
             group_layer_map=None,
-            se_cfg=None,
-            min_stem_channels=64,
-            base_channels=64),
+            se_cfg=None),
         'A2':
         dict(
             num_blocks=[2, 4, 14, 1],
             width_factor=[1.5, 1.5, 1.5, 2.75],
             group_layer_map=None,
-            se_cfg=None,
-            min_stem_channels=64,
-            base_channels=64),
+            se_cfg=None),
         'B0':
         dict(
             num_blocks=[4, 6, 16, 1],
             width_factor=[1, 1, 1, 2.5],
             group_layer_map=None,
             se_cfg=None,
-            min_stem_channels=64,
-            base_channels=64),
+            stem_channels=64),
         'B1':
         dict(
             num_blocks=[4, 6, 16, 1],
             width_factor=[2, 2, 2, 4],
             group_layer_map=None,
-            se_cfg=None,
-            min_stem_channels=64,
-            base_channels=64),
+            se_cfg=None),
         'B1g2':
         dict(
             num_blocks=[4, 6, 16, 1],
             width_factor=[2, 2, 2, 4],
             group_layer_map=g2_layer_map,
-            se_cfg=None,
-            min_stem_channels=64,
-            base_channels=64),
+            se_cfg=None),
         'B1g4':
         dict(
             num_blocks=[4, 6, 16, 1],
             width_factor=[2, 2, 2, 4],
             group_layer_map=g4_layer_map,
-            se_cfg=None,
-            min_stem_channels=64,
-            base_channels=64),
+            se_cfg=None),
         'B2':
         dict(
             num_blocks=[4, 6, 16, 1],
             width_factor=[2.5, 2.5, 2.5, 5],
             group_layer_map=None,
-            se_cfg=None,
-            min_stem_channels=64,
-            base_channels=64),
+            se_cfg=None),
         'B2g2':
         dict(
             num_blocks=[4, 6, 16, 1],
             width_factor=[2.5, 2.5, 2.5, 5],
             group_layer_map=g2_layer_map,
-            se_cfg=None,
-            min_stem_channels=64,
-            base_channels=64),
+            se_cfg=None),
         'B2g4':
         dict(
             num_blocks=[4, 6, 16, 1],
             width_factor=[2.5, 2.5, 2.5, 5],
             group_layer_map=g4_layer_map,
-            se_cfg=None,
-            min_stem_channels=64,
-            base_channels=64),
+            se_cfg=None),
         'B3':
         dict(
             num_blocks=[4, 6, 16, 1],
             width_factor=[3, 3, 3, 5],
             group_layer_map=None,
-            se_cfg=None,
-            min_stem_channels=64,
-            base_channels=64),
+            se_cfg=None),
         'B3g2':
         dict(
             num_blocks=[4, 6, 16, 1],
             width_factor=[3, 3, 3, 5],
             group_layer_map=g2_layer_map,
-            se_cfg=None,
-            min_stem_channels=64,
-            base_channels=64),
+            se_cfg=None),
         'B3g4':
         dict(
             num_blocks=[4, 6, 16, 1],
             width_factor=[3, 3, 3, 5],
             group_layer_map=g4_layer_map,
-            se_cfg=None,
-            min_stem_channels=64,
-            base_channels=64),
+            se_cfg=None),
         'D2se':
         dict(
             num_blocks=[8, 14, 24, 1],
             width_factor=[2.5, 2.5, 2.5, 5],
             group_layer_map=None,
-            se_cfg=dict(ratio=16, divisor=1),
-            min_stem_channels=64,
-            base_channels=64),
-        'small':
+            se_cfg=dict(ratio=16, divisor=1)),
+        'yolox-pai-small':
         dict(
             num_blocks=[3, 5, 7, 3],
             width_factor=[1, 1, 1, 1],
             group_layer_map=None,
             se_cfg=None,
-            min_stem_channels=32,
-            base_channels=32),
+            stem_channels=32),
     }
 
     def __init__(self,
                  arch,
                  in_channels=3,
-                 base_channels=None,
+                 base_channels=64,
                  out_indices=(3, ),
                  strides=(2, 2, 2, 2),
                  dilations=(1, 1, 1, 1),
@@ -519,18 +491,7 @@ class RepVGG(BaseBackbone):
         if arch['se_cfg'] is not None:
             assert isinstance(arch['se_cfg'], dict)
 
-        if base_channels is not None:
-            # This has the highest priority, and defaults to None.
-            self.base_channels = base_channels
-        elif arch['base_channels'] is not None:
-            # This has the second priority.
-            self.base_channels = arch['base_channels']
-        else:
-            warnings.warn(
-                '"base_channels" is None and arch["base_channels"] is None,'
-                ' then base_channels is set to 64.')
-            self.base_channels = 64
-
+        self.base_channels = base_channels
         self.arch = arch
         self.in_channels = in_channels
         self.out_indices = out_indices
@@ -544,8 +505,12 @@ class RepVGG(BaseBackbone):
         self.with_cp = with_cp
         self.norm_eval = norm_eval
 
-        channels = min(arch['min_stem_channels'],
-                       int(self.base_channels * self.arch['width_factor'][0]))
+        # defaults to 64 to prevert BC-breaking if stem_channels
+        # not in arch dict;
+        # the stem channels should not be larger than that of stage1.
+        channels = min(
+            arch.get('stem_channels', 64),
+            int(self.base_channels * self.arch['width_factor'][0]))
         self.stem = RepVGGBlock(
             self.in_channels,
             channels,
