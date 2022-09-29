@@ -311,7 +311,7 @@ class RepVGG(BaseBackbone):
     <https://arxiv.org/abs/2101.03697>`_
 
     Args:
-        arch (str | dict): The parameter of RepVGG.
+        arch (str | dict): RepVGG architecture.
             If it's a dict, it should contain the following keys:
 
             - num_blocks (Sequence[int]): Number of blocks in each stage.
