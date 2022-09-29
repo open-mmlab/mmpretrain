@@ -1,9 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Callable, List, Optional, Union
 
+import mmengine.dist as dist
 import torch
-import torch.distributed as dist
-from mmengine.dist import get_dist_info
 from mmengine.runner import Runner
 from torch.utils.data import DataLoader
 
@@ -107,7 +106,8 @@ class ImageToImageRetriever(BaseRetriever):
             # a is a tensor with shape (N, C)
             # b is a tensor with shape (M, C)
             # "cosine_similarity" will get the matrix of similarity
-            # with shape (N, M)
+            # with shape (N, M).
+            # The higher the score is, the more similar is
             return lambda a, b: torch.cosine_similarity(
                 a.unsqueeze(1), b.unsqueeze(0), dim=-1)
         else:
@@ -185,15 +185,11 @@ class ImageToImageRetriever(BaseRetriever):
         feats = self.extract_feat(inputs)
         return self.head.loss(feats, data_samples)
 
-    def matching(self,
-                 inputs: torch.Tensor,
-                 data_samples: Optional[List[ClsDataSample]] = None):
+    def matching(self, inputs: torch.Tensor):
         """Compare the prototype and calculate the similarity.
 
         Args:
             inputs (torch.Tensor): The input tensor with shape (N, C).
-            data_samples (List[BaseDataElement], optional): The annotation
-                data of every samples. Defaults to None.
         Returns:
             dict: a dictionary of score and prediction label based on fn.
         """
@@ -230,7 +226,10 @@ class ImageToImageRetriever(BaseRetriever):
 
         # Matching of similarity
         result = self.matching(feats)
+        return self._get_predictions(result, data_samples)
 
+    def _get_predictions(self, result, data_samples):
+        """Post-process the output of retriever."""
         pred_scores = result['score']
         pred_labels = result['pred_label']
         if data_samples is not None:
@@ -242,7 +241,11 @@ class ImageToImageRetriever(BaseRetriever):
             for score, label in zip(pred_scores, pred_labels):
                 data_samples.append(ClsDataSample().set_pred_score(
                     score).set_pred_label(label))
-        self.post_process(data_samples)
+        if self.topk != -1:
+            topk = min(self.topk, data_samples[0].pred_label.score.shape[0])
+            for data_sample in data_samples:
+                data_sample.set_pred_score(data_sample.pred_label.score[:topk])
+                data_sample.set_pred_label(data_sample.pred_label.label[:topk])
         return data_samples
 
     def _get_prototype_from_dataloader(self, device):
@@ -263,11 +266,13 @@ class ImageToImageRetriever(BaseRetriever):
                 sample_idx = data_batch['data_samples'][i].get('sample_idx')
                 self.prototype_vecs[sample_idx] = feat[i]
 
-        rank, world_size = get_dist_info()
+        rank, world_size = dist.get_dist_info()
         if world_size > 1:
             dist.barrier()
-            dist.all_reduce(
-                self.prototype_vecs, dist.ReduceOp.SUM, async_op=True)
+            assert self.prototype_vecs is not None, (
+                'There is a error with multi-gpu inference,'
+                ' please try single-gpu')
+            dist.all_reduce(self.prototype_vecs)
 
     @torch.no_grad()
     def prepare_prototype(self):
@@ -292,17 +297,6 @@ class ImageToImageRetriever(BaseRetriever):
         if isinstance(self.prototype, DataLoader):
             self._get_prototype_from_dataloader(device)
         self.prototype_inited = True
-
-    def post_process(self, data_samples):
-        """Intercept the topk results."""
-        if self.topk == -1:
-            return data_samples
-        else:
-            topk = min(self.topk, data_samples[0].pred_label.score.shape[0])
-            for data_sample in data_samples:
-                data_sample.set_pred_score(data_sample.pred_label.score[:topk])
-                data_sample.set_pred_label(data_sample.pred_label.label[:topk])
-            return data_samples
 
     def dump_prototype(self, path):
         """Save the features extracted from the prototype to the specific path.

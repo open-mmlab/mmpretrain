@@ -1,10 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from abc import ABCMeta, abstractmethod
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import torch
 from mmengine.model import BaseModel
 from mmengine.structures import BaseDataElement
+from torch.utils.data import DataLoader
 
 
 class BaseRetriever(BaseModel, metaclass=ABCMeta):
@@ -20,6 +21,14 @@ class BaseRetriever(BaseModel, metaclass=ABCMeta):
 
     Attributes:
         init_cfg (dict): Initialization config dict.
+        prototype (Union[DataLoader, dict, str, torch.Tensor]): Database to be
+            retrieved. The following four types are supported.
+
+            - DataLoader: The original dataloader serves as the prototype.
+            - dict: The configuration to construct Dataloader.
+            - str: The path of the saved vector.
+            - torch.Tensor: The saved tensor whose dimension should be dim.
+
         data_preprocessor (:obj:`mmengine.model.BaseDataPreprocessor`): An
             extra data pre-processing module, which processes data from
             dataloader to the format accepted by :meth:`forward`.
@@ -27,9 +36,11 @@ class BaseRetriever(BaseModel, metaclass=ABCMeta):
 
     def __init__(self,
                  init_cfg: Optional[dict] = None,
+                 prototype: Union[DataLoader, dict, str, torch.Tensor] = None,
                  data_preprocessor: Optional[dict] = None):
         super(BaseRetriever, self).__init__(
             init_cfg=init_cfg, data_preprocessor=data_preprocessor)
+        self.prototype = prototype
 
     @abstractmethod
     def forward(self,
@@ -110,20 +121,11 @@ class BaseRetriever(BaseModel, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    @property
-    def similarity_fn(self):
-        """Returns a function that calculates the similarity."""
-        raise NotImplementedError
-
-    def matching(self,
-                 inputs: torch.Tensor,
-                 data_samples: Optional[List[BaseDataElement]] = None):
+    def matching(self, inputs: torch.Tensor):
         """Compare the prototype and calculate the similarity.
 
         Args:
             inputs (torch.Tensor): The input tensor with shape (N, C).
-            data_samples (List[BaseDataElement], optional): The annotation
-                data of every samples. Defaults to None.
         """
         raise NotImplementedError
 

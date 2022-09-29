@@ -1,6 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved
+import warnings
+
 from mmengine.hooks import Hook
 
+from mmcls.models import BaseRetriever
 from mmcls.registry import HOOKS
 
 
@@ -13,5 +16,10 @@ class ResetPrototypeInitFlagHook(Hook):
     """
 
     def before_val(self, runner) -> None:
-        if hasattr(runner.model, 'prototype'):
-            runner.model.prototype_inited = False
+        if isinstance(runner.model, BaseRetriever):
+            if hasattr(runner.model, 'prototype_inited'):
+                runner.model.prototype_inited = False
+        else:
+            warnings.warn('Only the retriever can execute '
+                          'ResetPrototypeInitFlagHook, but got'
+                          f'{type(runner.model)}')
