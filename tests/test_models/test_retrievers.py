@@ -61,6 +61,7 @@ class TestImageToImageRetriever(TestCase):
 
         cls.fake_feat = torch.randn((10, 512))
         cls.feat_path = f'{cls.root}/feat.pth'
+        cls.save_feat_path = f'{cls.root}/save_feat_path.pth'
         torch.save(cls.fake_feat, cls.feat_path)
         cls.cub_dataloader = dict(
             batch_size=8,
@@ -304,7 +305,11 @@ class TestImageToImageRetriever(TestCase):
     def test_dump_prototype(self):
         cfg = ConfigDict(self.DEFAULT_ARGS)
         model = MODELS.build(cfg)
-        self.assertIsNone(model.dump_prototype(self.feat_path))
+        self.assertIsNone(model.dump_prototype(self.save_feat_path))
+
+        # Check whether the saved feature exists
+        feat = torch.load(self.save_feat_path)
+        self.assertEqual(feat.shape, (10, 512))
 
     @classmethod
     def tearDownClass(cls):

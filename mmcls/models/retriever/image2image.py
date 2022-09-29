@@ -14,20 +14,21 @@ from .base import BaseRetriever
 
 @MODELS.register_module()
 class ImageToImageRetriever(BaseRetriever):
-    """Image To Image Retrievers for supervised retrieval task.
+    """Image To Image Retriever for supervised retrieval task.
 
     Args:
-        image_encoder (Union[dict, List[dict]]): The backbone module.
-        head (dict, optional): The head module to do prediction and calculate
-            loss from processed features. See :mod:`mmcls.models.heads`.
-            Notice that if the head is not set, almost all methods cannot be
-            used except :meth:`extract_feat`. Defaults to None.
-        pretrained (str, optional): The pretrained checkpoint path, support
-            local path and remote path. Defaults to None.
-        similarity_fn (Union[str, Callable]): The way that the similarity is
-            calculated. If the type of `similarity` is callable, it is used
-            directly as the measure function. If it is a string, the
-            appropriate method will be used.
+        image_encoder (Union[dict, List[dict]]): Encoder for extracting
+            features.
+        head (dict, optional): The head module to calculate loss from
+            processed features. See :mod:`mmcls.models.heads`. Notice
+            that if the head is not set, `loss` method cannot be used.
+            Defaults to None.
+        pretrained (str, optional): The pretrained checkpoint path,
+            support local path and remote path. Defaults to None.
+        similarity_fn (Union[str, Callable]): The way that the similarity
+            is calculated. If `similarity` is callable, it is used directly
+            as the measure function. If it is a string, the appropriate
+            method will be used.
             Defaults to "cosine_similarity".
         train_cfg (dict, optional): The training setting. The acceptable
             fields are:
@@ -40,7 +41,7 @@ class ImageToImageRetriever(BaseRetriever):
             data. If None or no specified type, it will use
             "ClsDataPreprocessor" as type. See :class:`ClsDataPreprocessor` for
             more details. Defaults to None.
-        topk (int): Returns the topk of the retrieval result. -1 means
+        topk (int): Return the topk of the retrieval result. `-1` means
             return all.
             Defaults to -1.
         prototype (Union[DataLoader, dict, str, torch.Tensor]): Database to be
@@ -85,6 +86,8 @@ class ImageToImageRetriever(BaseRetriever):
 
         if head is not None:
             self.head = MODELS.build(head)
+        else:
+            self.head = None
 
         self.similarity = similarity_fn
 
@@ -116,7 +119,7 @@ class ImageToImageRetriever(BaseRetriever):
                 mode: str = 'tensor'):
         """The unified entry for a forward process in both training and test.
 
-        The method should accept three modes: "feat", "predict" and "loss":
+        The method should accept three modes: "tensor", "predict" and "loss":
 
         - "tensor": Forward the whole network and return tensor without any
           post-processing, same as a common nn.Module.
@@ -302,6 +305,11 @@ class ImageToImageRetriever(BaseRetriever):
             return data_samples
 
     def dump_prototype(self, path):
+        """Save the features extracted from the prototype to the specific path.
+
+        Args:
+            path (str): Path to save feature.
+        """
         if not self.prototype_inited:
             self.prepare_prototype()
         torch.save(self.prototype_vecs, path)

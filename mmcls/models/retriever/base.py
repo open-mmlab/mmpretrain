@@ -38,7 +38,7 @@ class BaseRetriever(BaseModel, metaclass=ABCMeta):
                 mode: str = 'loss'):
         """The unified entry for a forward process in both training and test.
 
-        The method should accept three modes: "feat", "predict" and "loss":
+        The method should accept three modes: "tensor", "predict" and "loss":
 
         - "tensor": Forward the whole network and return tensor without any
           post-processing, same as a common nn.Module.
@@ -132,7 +132,7 @@ class BaseRetriever(BaseModel, metaclass=ABCMeta):
         raise NotImplementedError
 
     def dump_prototype(self, path):
-        """Save the features extracted from the prototype.
+        """Save the features extracted from the prototype to the specific path.
 
         Args:
             path (str): Path to save feature.
