@@ -212,6 +212,7 @@ class MobileViT(BaseBackbone):
                          layer=['_BatchNorm', 'GroupNorm'])
                  ]):
         super(MobileViT, self).__init__(init_cfg)
+        assert arch in self.arch_settings
         arch_settings = self.arch_settings[arch]
         self.num_stages = len(arch_settings)
 
@@ -226,6 +227,11 @@ class MobileViT(BaseBackbone):
                 out_indices[i] = self.num_stages + index
                 assert out_indices[i] >= 0, f'Invalid out_indices {index}'
         self.out_indices = out_indices
+
+        if frozen_stages not in range(-1, self.num_stages):
+            raise ValueError('frozen_stages must be in range(-1, '
+                             f'{self.num_stages}). '
+                             f'But received {frozen_stages}')
         self.frozen_stages = frozen_stages
 
         _make_layer_func = {
@@ -310,6 +316,17 @@ class MobileViT(BaseBackbone):
                 ))
             in_channels = out_channels
         return nn.Sequential(*layer), out_channels
+
+    def _freeze_stages(self):
+        for i in range(0, self.frozen_stages):
+            layer = self.layers[i]
+            layer.eval()
+            for param in layer.parameters():
+                param.requires_grad = False
+
+    def train(self, mode=True):
+        super(MobileViT, self).train(mode)
+        self._freeze_stages()
 
     def forward(self, x):
         x = self.stem(x)
