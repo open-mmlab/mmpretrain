@@ -4,7 +4,8 @@ from unittest.mock import patch
 import pytest
 import torch
 
-from mmcls.models.heads import (ClsHead, ConformerHead, DeiTClsHead,
+from mmcls.models.heads import (ClsHead, ConformerHead, CSRAClsHead,
+                                DeiTClsHead, EfficientFormerClsHead,
                                 LinearClsHead, MultiLabelClsHead,
                                 MultiLabelLinearClsHead, StackedLinearClsHead,
                                 VisionTransformerClsHead)
@@ -317,3 +318,83 @@ def test_deit_head():
     # test assertion
     with pytest.raises(ValueError):
         DeiTClsHead(-1, 100)
+
+
+def test_efficientformer_head():
+    fake_features = (torch.rand(4, 64), )
+    fake_gt_label = torch.randint(0, 10, (4, ))
+
+    # Test without distillation head
+    head = EfficientFormerClsHead(
+        num_classes=10, in_channels=64, distillation=False)
+
+    # test EfficientFormer head forward
+    losses = head.forward_train(fake_features, fake_gt_label)
+    assert losses['loss'].item() > 0
+
+    # test simple_test with post_process
+    pred = head.simple_test(fake_features)
+    assert isinstance(pred, list) and len(pred) == 4
+    with patch('torch.onnx.is_in_onnx_export', return_value=True):
+        pred = head.simple_test(fake_features)
+        assert pred.shape == (4, 10)
+
+    # test simple_test without post_process
+    pred = head.simple_test(fake_features, post_process=False)
+    assert isinstance(pred, torch.Tensor) and pred.shape == (4, 10)
+    logits = head.simple_test(fake_features, softmax=False, post_process=False)
+    torch.testing.assert_allclose(pred, torch.softmax(logits, dim=1))
+
+    # test pre_logits
+    features = head.pre_logits(fake_features)
+    assert features is fake_features[0]
+
+    # Test without distillation head
+    head = EfficientFormerClsHead(num_classes=10, in_channels=64)
+    assert hasattr(head, 'head')
+    assert hasattr(head, 'dist_head')
+
+    # Test loss
+    with pytest.raises(NotImplementedError):
+        losses = head.forward_train(fake_features, fake_gt_label)
+
+    # test simple_test with post_process
+    pred = head.simple_test(fake_features)
+    assert isinstance(pred, list) and len(pred) == 4
+    with patch('torch.onnx.is_in_onnx_export', return_value=True):
+        pred = head.simple_test(fake_features)
+        assert pred.shape == (4, 10)
+
+    # test simple_test without post_process
+    pred = head.simple_test(fake_features, post_process=False)
+    assert isinstance(pred, torch.Tensor) and pred.shape == (4, 10)
+    logits = head.simple_test(fake_features, softmax=False, post_process=False)
+    torch.testing.assert_allclose(pred, torch.softmax(logits, dim=1))
+
+    # test pre_logits
+    features = head.pre_logits(fake_features)
+    assert features is fake_features[0]
+
+
+@pytest.mark.parametrize(
+    'feat', [torch.rand(4, 20, 20, 30), (torch.rand(4, 20, 20, 30), )])
+def test_csra_head(feat):
+    head = CSRAClsHead(num_classes=10, in_channels=20, num_heads=1, lam=0.1)
+    fake_gt_label = torch.randint(0, 2, (4, 10))
+
+    losses = head.forward_train(feat, fake_gt_label)
+    assert losses['loss'].item() > 0
+
+    # test simple_test with post_process
+    pred = head.simple_test(feat)
+    assert isinstance(pred, list) and len(pred) == 4
+    with patch('torch.onnx.is_in_onnx_export', return_value=True):
+        pred = head.simple_test(feat)
+        assert pred.shape == (4, 10)
+
+    # test pre_logits
+    features = head.pre_logits(feat)
+    if isinstance(feat, tuple):
+        torch.testing.assert_allclose(features, feat[0])
+    else:
+        torch.testing.assert_allclose(features, feat)

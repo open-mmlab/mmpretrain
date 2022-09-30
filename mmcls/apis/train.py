@@ -209,6 +209,7 @@ def train_model(model,
             **loader_cfg,
             'shuffle': False,  # Not shuffle by default
             'sampler_cfg': None,  # Not use sampler by default
+            'drop_last': False,  # Not drop last by default
             **cfg.data.get('val_dataloader', {}),
         }
         val_dataloader = build_dataloader(val_dataset, **val_loader_cfg)

@@ -1,0 +1,97 @@
+Collections:
+  - Name: HorNet
+    Metadata:
+      Training Data: ImageNet-1k
+      Training Techniques:
+        - AdamW
+        - Weight Decay
+      Architecture:
+        - HorNet
+        - gnConv
+    Paper:
+      URL: https://arxiv.org/pdf/2207.14284v2.pdf
+      Title: "HorNet: Efficient High-Order Spatial Interactions with Recursive Gated Convolutions"
+    README: configs/hornet/README.md
+    Code:
+      Version: v0.24.0
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.24.0/mmcls/models/backbones/hornet.py
+
+Models:
+  - Name: hornet-tiny_3rdparty_in1k
+    Metadata:
+      FLOPs: 3980000000   # 3.98G
+      Parameters: 22410000      # 22.41M
+    In Collection: HorNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 82.84
+          Top 5 Accuracy: 96.24
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/hornet/hornet-tiny_3rdparty_in1k_20220915-0e8eedff.pth
+    Config: configs/hornet/hornet-tiny_8xb128_in1k.py
+  - Name: hornet-tiny-gf_3rdparty_in1k
+    Metadata:
+      FLOPs: 3900000000   # 3.9G
+      Parameters: 22990000      # 22.99M
+    In Collection: HorNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 82.98
+          Top 5 Accuracy: 96.38
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/hornet/hornet-tiny-gf_3rdparty_in1k_20220915-4c35a66b.pth
+    Config: configs/hornet/hornet-tiny-gf_8xb128_in1k.py
+  - Name: hornet-small_3rdparty_in1k
+    Metadata:
+      FLOPs:  8830000000    # 8.83G
+      Parameters: 49530000          # 49.53M
+    In Collection: HorNet
+    Results:
+        - Dataset: ImageNet-1k
+          Metrics:
+            Top 1 Accuracy: 83.79
+            Top 5 Accuracy: 96.75
+          Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/hornet/hornet-small_3rdparty_in1k_20220915-5935f60f.pth
+    Config: configs/hornet/hornet-small_8xb64_in1k.py
+  - Name: hornet-small-gf_3rdparty_in1k
+    Metadata:
+      FLOPs:  8710000000    # 8.71G
+      Parameters: 50400000          # 50.4M
+    In Collection: HorNet
+    Results:
+        - Dataset: ImageNet-1k
+          Metrics:
+            Top 1 Accuracy: 83.98
+            Top 5 Accuracy: 96.77
+          Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/hornet/hornet-small-gf_3rdparty_in1k_20220915-649ca492.pth
+    Config: configs/hornet/hornet-small-gf_8xb64_in1k.py
+  - Name: hornet-base_3rdparty_in1k
+    Metadata:
+      FLOPs: 15590000000              # 15.59G
+      Parameters: 87260000            # 87.26M
+    In Collection: HorNet
+    Results:
+        - Dataset: ImageNet-1k
+          Metrics:
+            Top 1 Accuracy: 84.24
+            Top 5 Accuracy: 96.94
+          Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/hornet/hornet-base_3rdparty_in1k_20220915-a06176bb.pth
+    Config: configs/hornet/hornet-base_8xb64_in1k.py
+  - Name: hornet-base-gf_3rdparty_in1k
+    Metadata:
+      FLOPs: 15420000000              # 15.42G
+      Parameters: 88420000            # 88.42M
+    In Collection: HorNet
+    Results:
+        - Dataset: ImageNet-1k
+          Metrics:
+            Top 1 Accuracy: 84.32
+            Top 5 Accuracy: 96.95
+          Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/hornet/hornet-base-gf_3rdparty_in1k_20220915-82c06fa7.pth
+    Config: configs/hornet/hornet-base-gf_8xb64_in1k.py

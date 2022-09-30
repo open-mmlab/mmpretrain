@@ -39,6 +39,11 @@ VOC
 
 .. autoclass:: VOC
 
+StanfordCars Cars
+-----------------
+
+.. autoclass:: StanfordCars
+
 Base classes
 ------------
 

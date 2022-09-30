@@ -113,26 +113,12 @@ def pytorch2onnx(model,
         import onnxsim
         from mmcv import digit_version
 
-        min_required_version = '0.3.0'
-        assert digit_version(mmcv.__version__) >= digit_version(
+        min_required_version = '0.4.0'
+        assert digit_version(onnxsim.__version__) >= digit_version(
             min_required_version
-        ), f'Requires to install onnx-simplify>={min_required_version}'
+        ), f'Requires to install onnxsim>={min_required_version}'
 
-        if dynamic_axes:
-            input_shape = (input_shape[0], input_shape[1], input_shape[2] * 2,
-                           input_shape[3] * 2)
-        else:
-            input_shape = (input_shape[0], input_shape[1], input_shape[2],
-                           input_shape[3])
-        imgs = _demo_mm_inputs(input_shape, model.head.num_classes).pop('imgs')
-        input_dic = {'input': imgs.detach().cpu().numpy()}
-        input_shape_dic = {'input': list(input_shape)}
-
-        model_opt, check_ok = onnxsim.simplify(
-            output_file,
-            input_shapes=input_shape_dic,
-            input_data=input_dic,
-            dynamic_input_shape=dynamic_export)
+        model_opt, check_ok = onnxsim.simplify(output_file)
         if check_ok:
             onnx.save(model_opt, output_file)
             print(f'Successfully simplified ONNX model: {output_file}')

@@ -7,6 +7,7 @@ Import:
   - configs/shufflenet_v1/metafile.yml
   - configs/shufflenet_v2/metafile.yml
   - configs/swin_transformer/metafile.yml
+  - configs/swin_transformer_v2/metafile.yml
   - configs/vgg/metafile.yml
   - configs/repvgg/metafile.yml
   - configs/tnt/metafile.yml
@@ -27,3 +28,7 @@ Import:
   - configs/convmixer/metafile.yml
   - configs/densenet/metafile.yml
   - configs/poolformer/metafile.yml
+  - configs/csra/metafile.yml
+  - configs/mvit/metafile.yml
+  - configs/efficientformer/metafile.yml
+  - configs/hornet/metafile.yml

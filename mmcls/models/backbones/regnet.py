@@ -45,24 +45,31 @@ class RegNet(ResNet):
     Example:
         >>> from mmcls.models import RegNet
         >>> import torch
-        >>> self = RegNet(
-                arch=dict(
-                    w0=88,
-                    wa=26.31,
-                    wm=2.25,
-                    group_w=48,
-                    depth=25,
-                    bot_mul=1.0))
-        >>> self.eval()
         >>> inputs = torch.rand(1, 3, 32, 32)
-        >>> level_outputs = self.forward(inputs)
+        >>> # use str type 'arch'
+        >>> # Note that default out_indices is (3,)
+        >>> regnet_cfg = dict(arch='regnetx_4.0gf')
+        >>> model = RegNet(**regnet_cfg)
+        >>> model.eval()
+        >>> level_outputs = model(inputs)
         >>> for level_out in level_outputs:
         ...     print(tuple(level_out.shape))
-        (1, 96, 8, 8)
-        (1, 192, 4, 4)
-        (1, 432, 2, 2)
-        (1, 1008, 1, 1)
+            (1, 1360, 1, 1)
+        >>> # use dict type 'arch'
+        >>> arch_cfg =dict(w0=88, wa=26.31, wm=2.25,
+        >>> 		    group_w=48, depth=25, bot_mul=1.0)
+        >>> regnet_cfg = dict(arch=arch_cfg, out_indices=(0, 1, 2, 3))
+        >>> model = RegNet(**regnet_cfg)
+        >>> model.eval()
+        >>> level_outputs = model(inputs)
+        >>> for level_out in level_outputs:
+        ...     print(tuple(level_out.shape))
+            (1, 96, 8, 8)
+            (1, 192, 4, 4)
+            (1, 432, 2, 2)
+            (1, 1008, 1, 1)
     """
+
     arch_settings = {
         'regnetx_400mf':
         dict(w0=24, wa=24.48, wm=2.54, group_w=16, depth=22, bot_mul=1.0),
@@ -82,31 +89,33 @@ class RegNet(ResNet):
         dict(w0=168, wa=73.36, wm=2.37, group_w=112, depth=19, bot_mul=1.0),
     }
 
-    def __init__(self,
-                 arch,
-                 in_channels=3,
-                 stem_channels=32,
-                 base_channels=32,
-                 strides=(2, 2, 2, 2),
-                 dilations=(1, 1, 1, 1),
-                 out_indices=(3, ),
-                 style='pytorch',
-                 deep_stem=False,
-                 avg_down=False,
-                 frozen_stages=-1,
-                 conv_cfg=None,
-                 norm_cfg=dict(type='BN', requires_grad=True),
-                 norm_eval=False,
-                 with_cp=False,
-                 zero_init_residual=True,
-                 init_cfg=None):
+    def __init__(
+        self,
+        arch,
+        in_channels=3,
+        stem_channels=32,
+        base_channels=32,
+        strides=(2, 2, 2, 2),
+        dilations=(1, 1, 1, 1),
+        out_indices=(3, ),
+        style='pytorch',
+        deep_stem=False,
+        avg_down=False,
+        frozen_stages=-1,
+        conv_cfg=None,
+        norm_cfg=dict(type='BN', requires_grad=True),
+        norm_eval=False,
+        with_cp=False,
+        zero_init_residual=True,
+        init_cfg=None,
+    ):
         super(ResNet, self).__init__(init_cfg)
 
         # Generate RegNet parameters first
         if isinstance(arch, str):
-            assert arch in self.arch_settings, \
-                f'"arch": "{arch}" is not one of the' \
-                ' arch_settings'
+            assert arch in self.arch_settings, (
+                f'"arch": "{arch}" is not one of the'
+                ' arch_settings')
             arch = self.arch_settings[arch]
         elif not isinstance(arch, dict):
             raise TypeError('Expect "arch" to be either a string '
@@ -180,7 +189,8 @@ class RegNet(ResNet):
                 norm_cfg=self.norm_cfg,
                 base_channels=self.stage_widths[i],
                 groups=stage_groups,
-                width_per_group=group_width)
+                width_per_group=group_width,
+            )
             _in_channels = self.stage_widths[i]
             layer_name = f'layer{i + 1}'
             self.add_module(layer_name, res_layer)
@@ -198,7 +208,8 @@ class RegNet(ResNet):
             kernel_size=3,
             stride=2,
             padding=1,
-            bias=False)
+            bias=False,
+        )
         self.norm1_name, norm1 = build_norm_layer(
             self.norm_cfg, base_channels, postfix=1)
         self.add_module(self.norm1_name, norm1)

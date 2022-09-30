@@ -57,11 +57,12 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 
 ## 更新日志
 
-**MMClassification 1.0 正在开发中！**
+MMClassification 1.0 已经发布！目前仍在公测中，如果希望试用，请切换到 [1.x 分支](https://github.com/open-mmlab/mmclassification/tree/1.x)，并在[讨论版](https://github.com/open-mmlab/mmclassification/discussions) 参加开发讨论！
 
-我们目前正在主力开发 MMClassification 1.0。欢迎大家前来试用，并提出你的建议！请签出到 [`1.x` 分支](https://github.com/open-mmlab/mmclassification/tree/1.x)，并阅读[文档页面](https://mmclassification.readthedocs.io/zh_CN/1.x/)以进行试用。
+2022/9/30 发布了 v0.24.0 版本
 
-新版本目前仍处于公测期，公测将持续到 2022 年末。另外，至少截止 2023 年末，我们仍将保持对 0.x 版本的维护。
+- 支持了 **HorNet**，**EfficientFormerm**，**SwinTransformer V2**，**MViT** 等主干网络。
+- 支持了 Support Standford Cars 数据集。
 
 2022/5/1 发布了 v0.23.0 版本
 
@@ -78,7 +79,7 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 以下是安装的简要步骤：
 
 ```shell
-conda create -n open-mmlab python=3.8 pytorch=1.10 cudatoolkit=11.3 torchvision -c pytorch -y
+conda create -n open-mmlab python=3.8 pytorch=1.10 cudatoolkit=11.3 torchvision==0.11.0 -c pytorch -y
 conda activate open-mmlab
 pip3 install openmim
 mim install mmcv-full
@@ -140,6 +141,9 @@ pip3 install -e .
 - [x] [ConvMixer](https://github.com/open-mmlab/mmclassification/tree/master/configs/convmixer)
 - [x] [CSPNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/cspnet)
 - [x] [PoolFormer](https://github.com/open-mmlab/mmclassification/tree/master/configs/poolformer)
+- [x] [MViT](https://github.com/open-mmlab/mmclassification/tree/master/configs/mvit)
+- [x] [EfficientFormer](https://github.com/open-mmlab/mmclassification/tree/master/configs/efficientformer)
+- [x] [HorNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/hornet)
 
 </details>
 

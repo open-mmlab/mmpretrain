@@ -7,6 +7,7 @@ Collections:
         - Weight Decay
       Architecture:
         - Visual Attention Network
+        - LKA
     Paper:
       URL: https://arxiv.org/pdf/2202.09741v2.pdf
       Title: "Visual Attention Network"
@@ -16,10 +17,10 @@ Collections:
       Version: v0.23.0
 
 Models:
-  - Name: van-tiny_8xb128_in1k
+  - Name: van-b0_3rdparty_in1k
     Metadata:
-      FLOPs: 4110000      # 4.11M
-      Parameters: 880000000   # 0.88G
+      FLOPs: 880000000   # 0.88G
+      Parameters: 4110000      # 4.11M
     In Collection: Visual-Attention-Network
     Results:
       - Dataset: ImageNet-1k
@@ -28,11 +29,11 @@ Models:
           Top 5 Accuracy: 93.02
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/van/van-tiny_8xb128_in1k_20220501-385941af.pth
-    Config: configs/van/van-tiny_8xb128_in1k.py
-  - Name: van-small_8xb128_in1k
+    Config: configs/van/van-b0_8xb128_in1k.py
+  - Name: van-b1_3rdparty_in1k
     Metadata:
-      FLOPs:  13860000          # 13.86M
-      Parameters: 2520000000    # 2.52G
+      FLOPs:  2520000000    # 2.52G
+      Parameters: 13860000          # 13.86M
     In Collection: Visual-Attention-Network
     Results:
         - Dataset: ImageNet-1k
@@ -41,11 +42,11 @@ Models:
             Top 5 Accuracy: 95.63
           Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/van/van-small_8xb128_in1k_20220501-17bc91aa.pth
-    Config: configs/van/van-small_8xb128_in1k.py
-  - Name: van-base_8xb128_in1k
+    Config: configs/van/van-b1_8xb128_in1k.py
+  - Name: van-b2_3rdparty_in1k
     Metadata:
-      FLOPs: 26580000            # 26.58M
-      Parameters: 5030000000                # 5.03G
+      FLOPs: 5030000000                # 5.03G
+      Parameters: 26580000            # 26.58M
     In Collection: Visual-Attention-Network
     Results:
         - Dataset: ImageNet-1k
@@ -54,11 +55,11 @@ Models:
             Top 5 Accuracy: 96.21
           Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/van/van-base_8xb128_in1k_20220501-6a4cc31b.pth
-    Config: configs/van/van-base_8xb128_in1k.py
-  - Name: van-large_8xb128_in1k
+    Config: configs/van/van-b2_8xb128_in1k.py
+  - Name: van-b3_3rdparty_in1k
     Metadata:
-      FLOPs: 44770000              # 44.77 M
-      Parameters: 8990000000              # 8.99G
+      FLOPs: 8990000000              # 8.99G
+      Parameters: 44770000              # 44.77M
     In Collection: Visual-Attention-Network
     Results:
         - Dataset: ImageNet-1k
@@ -67,4 +68,17 @@ Models:
             Top 5 Accuracy: 96.73
           Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/van/van-large_8xb128_in1k_20220501-f212ba21.pth
-    Config: configs/van/van-large_8xb128_in1k.py
+    Config: configs/van/van-b3_8xb128_in1k.py
+  - Name: van-b4_3rdparty_in1k
+    Metadata:
+      FLOPs: 12220000000              # 12.22G
+      Parameters: 60280000              # 60.28M
+    In Collection: Visual-Attention-Network
+    Results:
+        - Dataset: ImageNet-1k
+          Metrics:
+            Top 1 Accuracy: 84.13
+            Top 5 Accuracy: 96.86
+          Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/van/van-b4_3rdparty_in1k_20220909-f4665b92.pth
+    Config: configs/van/van-b4_8xb128_in1k.py
