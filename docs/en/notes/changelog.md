@@ -1,5 +1,35 @@
 # Changelog
 
+## v1.0.0rc1(30/9/2022)
+
+### New Features
+
+- Support MViT for MMCLS 1.x ([#1023](https://github.com/open-mmlab/mmclassification/pull/1023))
+- Add ViT huge architecture. ([#1049](https://github.com/open-mmlab/mmclassification/pull/1049))
+- Support EdgeNeXt for dev-1.x. ([#1037](https://github.com/open-mmlab/mmclassification/pull/1037))
+- Support Swin Transformer V2 for MMCLS 1.x. ([#1029](https://github.com/open-mmlab/mmclassification/pull/1029))
+- Add efficientformer Backbone for MMCls 1.x. ([#1031](https://github.com/open-mmlab/mmclassification/pull/1031))
+- Add MobileOne Backbone For MMCls 1.x.  ([#1030](https://github.com/open-mmlab/mmclassification/pull/1030))
+- Support BEiT Transformer layer. ([#919](https://github.com/open-mmlab/mmclassification/pull/919))
+
+### Improvements
+
+- \[Refactor\] Fix visualization tools. ([#1045](https://github.com/open-mmlab/mmclassification/pull/1045))
+- \[Improve\] Update benchmark scripts ([#1028](https://github.com/open-mmlab/mmclassification/pull/1028))
+- \[Improve\] Update tools to enable `pin_memory` and `persistent_workers` by default. ([#1024](https://github.com/open-mmlab/mmclassification/pull/1024))
+- \[CI\] Update circle-ci and github workflow. ([#1018](https://github.com/open-mmlab/mmclassification/pull/1018))
+
+### Bug Fixes
+
+- Fix verify dataset tool in 1.x. ([#1062](https://github.com/open-mmlab/mmclassification/pull/1062))
+- Fix `loss_weight` in `LabelSmoothLoss`. ([#1058](https://github.com/open-mmlab/mmclassification/pull/1058))
+- Fix the output position of Swin-Transformer. ([#947](https://github.com/open-mmlab/mmclassification/pull/947))
+
+### Docs Update
+
+- Auto generate model summary table.  ([#1010](https://github.com/open-mmlab/mmclassification/pull/1010))
+- Refactor new modules tutorial. ([#998](https://github.com/open-mmlab/mmclassification/pull/998))
+
 ## v1.0.0rc0(31/8/2022)
 
 MMClassification 1.0.0rc0 is the first version of MMClassification 1.x, a part of the OpenMMLab 2.0 projects.
