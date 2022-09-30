@@ -58,6 +58,11 @@ The `1.x` branch works with **PyTorch 1.6+**.
 
 ## What's new
 
+v1.0.0rc1 was released in 30/9/2022.
+
+- Support MViT, EdgeNeXt, Swin-Transformer V2, EfficientFormer and MobileOne.
+- Support BEiT type transformer layer.
+
 v1.0.0rc0 was released in 31/8/2022.
 
 This release introduced a brand new and flexible training & test engine, but it's still in progress. Welcome

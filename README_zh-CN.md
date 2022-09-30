@@ -57,6 +57,11 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 
 ## 更新日志
 
+2022/9/30 发布了 v1.0.0rc1 版本
+
+- 支持了 MViT，EdgeNeXt，Swin-Transformer V2，EfficientFormer，MobileOne 等主干网络。
+- 支持了 BEiT 风格的 transformer 层。
+
 2022/8/31 发布了 v1.0.0rc0 版本
 
 这个版本引入一个全新的，可扩展性强的训练和测试引擎，但目前仍在开发中。欢迎根据[文档](https://mmclassification.readthedocs.io/zh_CN/1.x/)进行试用。
