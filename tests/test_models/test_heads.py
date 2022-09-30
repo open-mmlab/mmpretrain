@@ -24,6 +24,7 @@ def setup_seed(seed):
 
 class TestClsHead(TestCase):
     DEFAULT_ARGS = dict(type='ClsHead')
+    FAKE_FEATS = (torch.rand(4, 10), )
 
     def test_pre_logits(self):
         head = MODELS.build(self.DEFAULT_ARGS)
@@ -42,7 +43,7 @@ class TestClsHead(TestCase):
         self.assertIs(outs, feats[-1])
 
     def test_loss(self):
-        feats = (torch.rand(4, 10), )
+        feats = self.FAKE_FEATS
         data_samples = [ClsDataSample().set_gt_label(1) for _ in range(4)]
 
         # with cal_acc = False
@@ -96,6 +97,7 @@ class TestClsHead(TestCase):
 
 class TestLinearClsHead(TestCase):
     DEFAULT_ARGS = dict(type='LinearClsHead', in_channels=10, num_classes=5)
+    FAKE_FEATS = (torch.rand(4, 10), )
 
     def test_initialize(self):
         with self.assertRaisesRegex(ValueError, 'num_classes=-5 must be'):
@@ -423,6 +425,47 @@ class TestMultiLabelClsHead(TestCase):
             self.assertIs(sample, pred)
             self.assertIn('label', pred.pred_label)
             self.assertIn('score', pred.pred_label)
+
+
+class EfficientFormerClsHead(TestClsHead):
+    DEFAULT_ARGS = dict(
+        type='EfficientFormerClsHead',
+        in_channels=10,
+        num_classes=10,
+        distillation=False)
+    FAKE_FEATS = (torch.rand(4, 10), )
+
+    def test_forward(self):
+        # test with distillation head
+        cfg = copy.deepcopy(self.DEFAULT_ARGS)
+        cfg['distillation'] = True
+        head = MODELS.build(cfg)
+        self.assertTrue(hasattr(head, 'dist_head'))
+        feats = (torch.rand(4, 10), torch.rand(4, 10))
+        outs = head(feats)
+        self.assertEqual(outs.shape, (4, 10))
+
+        # test without distillation head
+        cfg = copy.deepcopy(self.DEFAULT_ARGS)
+        head = MODELS.build(cfg)
+        self.assertFalse(hasattr(head, 'dist_head'))
+        feats = (torch.rand(4, 10), torch.rand(4, 10))
+        outs = head(feats)
+        self.assertEqual(outs.shape, (4, 10))
+
+    def test_loss(self):
+        feats = (torch.rand(4, 10), )
+        data_samples = [ClsDataSample().set_gt_label(1) for _ in range(4)]
+
+        # test with distillation head
+        cfg = copy.deepcopy(self.DEFAULT_ARGS)
+        cfg['distillation'] = True
+        head = MODELS.build(cfg)
+        with self.assertRaisesRegex(NotImplementedError, 'MMClassification '):
+            head.loss(feats, data_samples)
+
+        # test without distillation head
+        super().test_loss()
 
 
 class TestMultiLabelLinearClsHead(TestMultiLabelClsHead):

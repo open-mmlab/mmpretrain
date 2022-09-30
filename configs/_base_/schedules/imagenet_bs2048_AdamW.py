@@ -11,25 +11,22 @@ optim_wrapper = dict(
 )
 
 # learning policy
+warmup_epochs = 15  # about 10000 iterations for ImageNet-1k
 param_scheduler = [
     # warm up learning rate scheduler
     dict(
         type='LinearLR',
         start_factor=1e-3,
         by_epoch=True,
-        begin=0,
-        # about 10000 iterations for ImageNet-1k
-        end=15,
+        end=warmup_epochs,
         # update by iter
         convert_to_iter_based=True),
     # main learning rate scheduler
     dict(
         type='CosineAnnealingLR',
-        T_max=285,
         eta_min=1e-5,
         by_epoch=True,
-        begin=15,
-        end=300)
+        begin=warmup_epochs)
 ]
 
 # train, val, test setting

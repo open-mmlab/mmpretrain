@@ -57,6 +57,11 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 
 ## 更新日志
 
+2022/9/30 发布了 v1.0.0rc1 版本
+
+- 支持了 MViT，EdgeNeXt，Swin-Transformer V2，EfficientFormer，MobileOne 等主干网络。
+- 支持了 BEiT 风格的 transformer 层。
+
 2022/8/31 发布了 v1.0.0rc0 版本
 
 这个版本引入一个全新的，可扩展性强的训练和测试引擎，但目前仍在开发中。欢迎根据[文档](https://mmclassification.readthedocs.io/zh_CN/1.x/)进行试用。
@@ -114,6 +119,7 @@ mim install -e .
 - [x] [MobileNetV2](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobilenet_v2)
 - [x] [MobileNetV3](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobilenet_v3)
 - [x] [Swin-Transformer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/swin_transformer)
+- [x] [Swin-Transformer V2](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/swin_transformer_v2)
 - [x] [RepVGG](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/repvgg)
 - [x] [Vision-Transformer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/vision_transformer)
 - [x] [Transformer-in-Transformer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/tnt)
@@ -124,6 +130,7 @@ mim install -e .
 - [x] [T2T-ViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/t2t_vit)
 - [x] [Twins](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/twins)
 - [x] [EfficientNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/efficientnet)
+- [x] [EdgeNeXt](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/edgenext)
 - [x] [ConvNeXt](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/convnext)
 - [x] [HRNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/hrnet)
 - [x] [VAN](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/van)
@@ -131,6 +138,9 @@ mim install -e .
 - [x] [CSPNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/cspnet)
 - [x] [PoolFormer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/poolformer)
 - [x] [Inception V3](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/inception_v3)
+- [x] [MobileOne](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobileone)
+- [x] [EfficientFormer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/efficientformer)
+- [x] [MViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mvit)
 
 </details>
 

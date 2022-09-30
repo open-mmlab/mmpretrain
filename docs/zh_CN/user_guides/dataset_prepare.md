@@ -282,10 +282,10 @@ MMCLassification 还是支持更多其他的数据集，可以通过查阅[数�
 
 ## 数据集包装
 
-MMEngine 中支持以下数据包装器，您可以参考 [MMEngine 教程](TODO:) 了解如何使用它。
+MMEngine 中支持以下数据包装器，您可以参考 {external+mmengine:doc}`MMEngine 教程 <advanced_tutorials/basedataset>` 了解如何使用它。
 
-- [ConcatDataset](https://github.com/open-mmlab/mmengine/blob/main/docs/zh_cn/tutorials/basedataset.md#concatdataset)
-- [RepeatDataset](https://github.com/open-mmlab/mmengine/blob/main/docs/zh_cn/tutorials/basedataset.md#repeatdataset)
-- [ClassBalanced](https://github.com/open-mmlab/mmengine/blob/main/docs/zh_cn/tutorials/basedataset.md#classbalanceddataset)
+- {external:py:class}`~mmengine.dataset.ConcatDataset`
+- {external:py:class}`~mmengine.dataset.RepeatDataset`
+- {external:py:class}`~mmengine.dataset.ClassBalancedDataset`
 
 除上述之外，MMClassification 还支持了[KFoldDataset](mmcls.datasets.KFoldDataset)，需用通过使用 `tools/kfold-cross-valid.py` 来使用它。

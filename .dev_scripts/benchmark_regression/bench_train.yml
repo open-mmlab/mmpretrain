@@ -1,88 +1,86 @@
-Models:
-  - Name: resnet50
-    Results:
-      - Dataset: ImageNet-1k
-        Metrics:
-          Top 1 Accuracy: 76.55
-          Top 5 Accuracy: 93.06
-    Config: configs/resnet/resnet50_8xb32_in1k.py
-    Gpus: 8
+- Name: mobilenet-v2_8xb32_in1k
+  Cycle: month
 
-  - Name: seresnet50
-    Results:
-      - Dataset: ImageNet-1k
-        Metrics:
-          Top 1 Accuracy: 77.74
-          Top 5 Accuracy: 93.84
-    Config: configs/seresnet/seresnet50_8xb32_in1k.py
-    Gpus: 8
+- Name: resnet50_8xb32_in1k
+  Cycle: month
 
-  - Name: vit-base
-    Results:
-      - Dataset: ImageNet-1k
-        Metrics:
-          Top 1 Accuracy: 82.37
-          Top 5 Accuracy: 96.15
-    Config: configs/vision_transformer/vit-base-p16_pt-32xb128-mae_in1k-224.py
-    Gpus: 32
+- Name: seresnet50_8xb32_in1k
+  Cycle: month
 
-  - Name: mobilenetv2
-    Results:
-      - Dataset: ImageNet-1k
-        Metrics:
-          Top 1 Accuracy: 71.86
-          Top 5 Accuracy: 90.42
-    Config: configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py
-    Gpus: 8
+- Name: swin-small_16xb64_in1k
+  Cycle: month
 
-  - Name: swin_tiny
-    Results:
-    - Dataset: ImageNet
-      Metrics:
-        Top 1 Accuracy: 81.18
-        Top 5 Accuracy: 95.61
-    Weights: https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin_tiny_224_b16x64_300e_imagenet_20210616_090925-66df6be6.pth
-    Config: configs/swin_transformer/swin-tiny_16xb64_in1k.py
-    Gpus: 16
+- Name: vit-base-p16_pt-32xb128-mae_in1k
+  Cycle: month
 
-  - Name: vgg16
-    Results:
-      - Dataset: ImageNet-1k
-        Metrics:
-          Top 1 Accuracy: 71.62
-          Top 5 Accuracy: 90.49
-    Config: configs/vgg/vgg16_8xb32_in1k.py
-    Gpus: 8
-    Months:
-      - 1
-      - 4
-      - 7
-      - 10
+- Name: resnet50_8xb256-rsb-a1-600e_in1k
+  Cycle: quarter
 
-  - Name: shufflenet_v2
-    Results:
-      - Dataset: ImageNet-1k
-        Metrics:
-          Top 1 Accuracy: 69.55
-          Top 5 Accuracy: 88.92
-    Config: configs/shufflenet_v2/shufflenet-v2-1x_16xb64_in1k.py
-    Gpus: 16
-    Months:
-      - 2
-      - 5
-      - 8
-      - 11
+- Name: resnext50-32x4d_8xb32_in1k
+  Cycle: quarter
 
-  - Name: resnet-rsb
-    Results:
-      - Dataset: ImageNet-1k
-        Metrics:
-          Top 1 Accuracy: 80.12
-          Top 5 Accuracy: 94.78
-    Config: configs/resnet/resnet50_8xb256-rsb-a1-600e_in1k.py
-    Gpus: 8
-    Months:
-      - 3
-      - 6
-      - 9
-      - 12
+- Name: shufflenet-v2-1x_16xb64_in1k
+  Cycle: quarter
+
+- Name: vgg16_8xb32_in1k
+  Cycle: quarter
+
+- Name: shufflenet-v1-1x_16xb64_in1k
+  Cycle: half-year
+
+- Name: t2t-vit-t-14_8xb64_in1k
+  Cycle: half-year
+
+- Name: regnetx-1.6gf_8xb128_in1k
+  Cycle: half-year
+
+- Name: van-small_8xb128_in1k
+  Cycle: no-training
+
+- Name: res2net50-w14-s8_3rdparty_8xb32_in1k
+  Cycle: no-training
+
+- Name: repvgg-A2_3rdparty_4xb64-coslr-120e_in1k
+  Cycle: no-training
+
+- Name: tnt-small-p16_3rdparty_in1k
+  Cycle: no-training
+
+- Name: mlp-mixer-base-p16_3rdparty_64xb64_in1k
+  Cycle: no-training
+
+- Name: conformer-small-p16_3rdparty_8xb128_in1k
+  Cycle: no-training
+
+- Name: twins-pcpvt-base_3rdparty_8xb128_in1k
+  Cycle: no-training
+
+- Name: efficientnet-b0_3rdparty_8xb32_in1k
+  Cycle: no-training
+
+- Name: convnext-small_3rdparty_32xb128_in1k
+  Cycle: no-training
+
+- Name: hrnet-w18_3rdparty_8xb32_in1k
+  Cycle: no-training
+
+- Name: repmlp-base_3rdparty_8xb64_in1k
+  Cycle: no-training
+
+- Name: wide-resnet50_3rdparty_8xb32_in1k
+  Cycle: no-training
+
+- Name: cspresnet50_3rdparty_8xb32_in1k
+  Cycle: no-training
+
+- Name: convmixer-768-32_10xb64_in1k
+  Cycle: no-training
+
+- Name: densenet169_4xb256_in1k
+  Cycle: no-training
+
+- Name: poolformer-s24_3rdparty_32xb128_in1k
+  Cycle: no-training
+
+- Name: inception-v3_3rdparty_8xb32_in1k
+  Cycle: no-training

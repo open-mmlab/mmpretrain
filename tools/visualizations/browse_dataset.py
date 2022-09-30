@@ -8,10 +8,10 @@ import mmcv
 import numpy as np
 from mmengine.config import Config, DictAction
 from mmengine.dataset import Compose
+from mmengine.utils import ProgressBar
 from mmengine.visualization import Visualizer
 
 from mmcls.datasets.builder import build_dataset
-from mmcls.registry import VISUALIZERS
 from mmcls.utils import register_all_modules
 from mmcls.visualization import ClsVisualizer
 from mmcls.visualization.cls_visualizer import _get_adaptive_scale
@@ -22,12 +22,14 @@ def parse_args():
     parser.add_argument('config', help='train config file path')
     parser.add_argument(
         '--output-dir',
+        '-o',
         default=None,
         type=str,
         help='If there is no display interface, you can save it.')
     parser.add_argument('--not-show', default=False, action='store_true')
     parser.add_argument(
         '--phase',
+        '-p',
         default='train',
         type=str,
         choices=['train', 'test', 'val'],
@@ -35,6 +37,7 @@ def parse_args():
         ' Defaults to "train".')
     parser.add_argument(
         '--show-number',
+        '-n',
         type=int,
         default=sys.maxsize,
         help='number of images selected to visualize, must bigger than 0. if '
@@ -42,11 +45,13 @@ def parse_args():
         'dataset; default "sys.maxsize", show all images in dataset')
     parser.add_argument(
         '--show-interval',
+        '-i',
         type=float,
         default=2,
         help='the interval of show (s)')
     parser.add_argument(
         '--mode',
+        '-m',
         default='transformed',
         type=str,
         choices=['original', 'transformed', 'concat', 'pipeline'],
@@ -58,9 +63,17 @@ def parse_args():
         'Defaults to "transformed".')
     parser.add_argument(
         '--rescale-factor',
+        '-r',
         type=float,
         help='image rescale factor, which is useful if the output is too '
         'large or too small.')
+    parser.add_argument(
+        '--channel-order',
+        '-c',
+        default='BGR',
+        choices=['BGR', 'RGB'],
+        help='The channel order of the showing images, could be "BGR" '
+        'or "RGB", Defaults to "BGR".')
     parser.add_argument(
         '--cfg-options',
         nargs='+',
@@ -168,12 +181,13 @@ def main():
                                       intermediate_imgs)
 
     # init visualizer
-    visualizer: ClsVisualizer = VISUALIZERS.build(cfg.visualizer)
+    cfg.visualizer.pop('type')
+    visualizer = ClsVisualizer(**cfg.visualizer)
     visualizer.dataset_meta = dataset.metainfo
 
     # init visualization image number
     display_number = min(args.show_number, len(dataset))
-    progress_bar = mmcv.ProgressBar(display_number)
+    progress_bar = ProgressBar(display_number)
 
     for i, item in zip(range(display_number), dataset):
         rescale_factor = args.rescale_factor
@@ -195,11 +209,11 @@ def main():
 
         intermediate_imgs.clear()
 
-        data_sample = item['data_sample'].numpy()
+        data_sample = item['data_samples'].numpy()
 
         # get filename from dataset or just use index as filename
-        if hasattr(item['data_sample'], 'img_path'):
-            filename = osp.basename(item['data_sample'].img_path)
+        if hasattr(item['data_samples'], 'img_path'):
+            filename = osp.basename(item['data_samples'].img_path)
         else:
             # some dataset have not image path
             filename = f'{i}.jpg'
@@ -209,7 +223,7 @@ def main():
 
         visualizer.add_datasample(
             filename,
-            image[..., ::-1],
+            image if args.channel_order == 'RGB' else image[..., ::-1],
             data_sample,
             rescale_factor=rescale_factor,
             show=not args.not_show,

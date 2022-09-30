@@ -28,3 +28,8 @@ Import:
   - configs/densenet/metafile.yml
   - configs/poolformer/metafile.yml
   - configs/inception_v3/metafile.yml
+  - configs/mvit/metafile.yml
+  - configs/edgenext/metafile.yml
+  - configs/mobileone/metafile.yml
+  - configs/efficientformer/metafile.yml
+  - configs/swin_transformer_v2/metafile.yml

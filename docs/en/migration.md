@@ -298,7 +298,7 @@ Changes in **`lr_config`**:
   functionality.
 
 The new schedulers combination mechanism is very flexible, and you can use it to design many kinds of learning
-rate / momentum curves. See [the tutorial](TODO) for more details.
+rate / momentum curves. See {external+mmengine:doc}`the tutorial <tutorials/param_scheduler>` for more details.
 
 <table class="docutils">
 <tr>
@@ -370,7 +370,7 @@ test_cfg = dict()  # Use the default test loop.
 </table>
 
 In fact, in OpenMMLab 2.0, we introduced `Loop` to control the behaviors in training, validation and test. And
-the functionalities of `Runner` are also changed. You can find more details in [the MMEngine tutorials](TODO).
+the functionalities of `Runner` are also changed. You can find more details in {external+mmengine:doc}`the MMEngine tutorials <tutorials/runner>`.
 
 ### Runtime settings
 
@@ -468,7 +468,7 @@ Changes in **`workflow`**: `workflow` related functionalities are removed.
 
 New field **`visualizer`**: The visualizer is a new design in OpenMMLab 2.0 architecture. We use a
 visualizer instance in the runner to handle results & log visualization and save to different backends.
-See the [MMEngine tutorial](TODO) for more details.
+See the {external+mmengine:doc}`MMEngine tutorial <advanced_tutorials/visualization>` for more details.
 
 ```python
 visualizer = dict(
@@ -481,7 +481,7 @@ visualizer = dict(
 )
 ```
 
-New field **`default_scope`**: The start point to search module for all registries. The `default_scope` in MMClassification is `mmcls`. See [the registry tutorial](TODO) for more details.
+New field **`default_scope`**: The start point to search module for all registries. The `default_scope` in MMClassification is `mmcls`. See {external+mmengine:doc}`the registry tutorial <tutorials/registry>` for more details.
 
 ## Packages
 

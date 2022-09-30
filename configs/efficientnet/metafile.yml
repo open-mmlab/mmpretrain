@@ -25,7 +25,7 @@ Models:
     Metadata:
       FLOPs: 16481180
       Parameters: 5288548
-    In Collections: EfficientNet
+    In Collection: EfficientNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -41,7 +41,7 @@ Models:
     Metadata:
       FLOPs: 16481180
       Parameters: 5288548
-    In Collections: EfficientNet
+    In Collection: EfficientNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -57,7 +57,7 @@ Models:
     Metadata:
       FLOPs: 16481180
       Parameters: 5288548
-    In Collections: EfficientNet
+    In Collection: EfficientNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -73,7 +73,7 @@ Models:
     Metadata:
       FLOPs: 27052224
       Parameters: 7794184
-    In Collections: EfficientNet
+    In Collection: EfficientNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -89,7 +89,7 @@ Models:
     Metadata:
       FLOPs: 27052224
       Parameters: 7794184
-    In Collections: EfficientNet
+    In Collection: EfficientNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -105,7 +105,7 @@ Models:
     Metadata:
       FLOPs: 27052224
       Parameters: 7794184
-    In Collections: EfficientNet
+    In Collection: EfficientNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -121,7 +121,7 @@ Models:
     Metadata:
       FLOPs: 34346386
       Parameters: 9109994
-    In Collections: EfficientNet
+    In Collection: EfficientNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -137,7 +137,7 @@ Models:
     Metadata:
       FLOPs: 34346386
       Parameters: 9109994
-    In Collections: EfficientNet
+    In Collection: EfficientNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -153,7 +153,7 @@ Models:
     Metadata:
       FLOPs: 34346386
       Parameters: 9109994
-    In Collections: EfficientNet
+    In Collection: EfficientNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -169,7 +169,7 @@ Models:
     Metadata:
       FLOPs: 58641904
       Parameters: 12233232
-    In Collections: EfficientNet
+    In Collection: EfficientNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -185,7 +185,7 @@ Models:
     Metadata:
       FLOPs: 58641904
       Parameters: 12233232
-    In Collections: EfficientNet
+    In Collection: EfficientNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -201,7 +201,7 @@ Models:
     Metadata:
       FLOPs: 58641904
       Parameters: 12233232
-    In Collections: EfficientNet
+    In Collection: EfficientNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -217,7 +217,7 @@ Models:
     Metadata:
       FLOPs: 121870624
       Parameters: 19341616
-    In Collections: EfficientNet
+    In Collection: EfficientNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -233,7 +233,7 @@ Models:
     Metadata:
       FLOPs: 121870624
       Parameters: 19341616
-    In Collections: EfficientNet
+    In Collection: EfficientNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -249,7 +249,7 @@ Models:
     Metadata:
       FLOPs: 121870624
       Parameters: 19341616
-    In Collections: EfficientNet
+    In Collection: EfficientNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -265,7 +265,7 @@ Models:
     Metadata:
       FLOPs: 243879440
       Parameters: 30389784
-    In Collections: EfficientNet
+    In Collection: EfficientNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -281,7 +281,7 @@ Models:
     Metadata:
       FLOPs: 243879440
       Parameters: 30389784
-    In Collections: EfficientNet
+    In Collection: EfficientNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -297,7 +297,7 @@ Models:
     Metadata:
       FLOPs: 243879440
       Parameters: 30389784
-    In Collections: EfficientNet
+    In Collection: EfficientNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -313,7 +313,7 @@ Models:
     Metadata:
       FLOPs: 412002408
       Parameters: 43040704
-    In Collections: EfficientNet
+    In Collection: EfficientNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -329,7 +329,7 @@ Models:
     Metadata:
       FLOPs: 412002408
       Parameters: 43040704
-    In Collections: EfficientNet
+    In Collection: EfficientNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -345,7 +345,7 @@ Models:
     Metadata:
       FLOPs: 715526512
       Parameters: 66347960
-    In Collections: EfficientNet
+    In Collection: EfficientNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -361,7 +361,7 @@ Models:
     Metadata:
       FLOPs: 715526512
       Parameters: 66347960
-    In Collections: EfficientNet
+    In Collection: EfficientNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -377,7 +377,7 @@ Models:
     Metadata:
       FLOPs: 1092755326
       Parameters: 87413142
-    In Collections: EfficientNet
+    In Collection: EfficientNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:

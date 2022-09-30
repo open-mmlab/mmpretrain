@@ -17,7 +17,7 @@ Models:
     Metadata:
       FLOPs: 5040000000
       Parameters: 27640000
-    In Collections: CSPNet
+    In Collection: CSPNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -34,7 +34,7 @@ Models:
       Training Data: ImageNet-1k
       FLOPs: 3480000000
       Parameters: 21620000
-    In Collections: CSPNet
+    In Collection: CSPNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -50,7 +50,7 @@ Models:
     Metadata:
       FLOPs: 3110000000
       Parameters: 20570000
-    In Collections: CSPNet
+    In Collection: CSPNet
     Results:
       - Dataset: ImageNet-1k
         Metrics:
