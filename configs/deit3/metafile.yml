@@ -1,0 +1,310 @@
+Collections:
+  - Name: DeiT3
+    Metadata:
+      Architecture:
+        - Attention Dropout
+        - Convolution
+        - Dense Connections
+        - Dropout
+        - GELU
+        - Layer Normalization
+        - Multi-Head Attention
+        - Scaled Dot-Product Attention
+        - Tanh Activation
+    Paper:
+      URL: https://arxiv.org/pdf/2204.07118.pdf
+      Title: 'DeiT III: Revenge of the ViT'
+    README: configs/deit3/README.md
+    Code:
+      URL:
+      Version:
+
+Models:
+  - Name: deit3-small-p16-3rdparty_in1k-224
+    In Collection: DeiT3
+    Metadata:
+      FLOPs: 4610000000
+      Parameters: 22060000
+      Training Data:
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 81.31
+        Top 5 Accuracy: 95.35
+    Weights:
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/deit/deit_3_small_224_1k.pth
+      Code: https://github.com/facebookresearch/deit/blob/main/models_v2.py#L171
+    Config: configs/deit3/deit3-small-p16-64xb64_in1k-224.py
+  - Name: deit3-small-p16-3rdparty_in1k-384
+    In Collection: DeiT3
+    Metadata:
+      FLOPs: 15520000000
+      Parameters: 22210000
+      Training Data:
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 83.20
+        Top 5 Accuracy: 96.55
+    Weights:
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/deit/deit_3_small_384_1k.pth
+      Code: https://github.com/facebookresearch/deit/blob/main/models_v2.py#L171
+    Config: configs/deit3/deit3-small-p16-64xb64_in1k-384.py
+  - Name: deit3-small-p16-3rdparty_in21k-224
+    In Collection: DeiT3
+    Metadata:
+      FLOPs: 4610000000
+      Parameters: 22060000
+      Training Data:
+        - ImageNet-21k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 82.76
+        Top 5 Accuracy: 96.70
+    Weights:
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/deit/deit_3_small_224_21k.pth
+      Code: https://github.com/facebookresearch/deit/blob/main/models_v2.py#L171
+    Config: configs/deit3/deit3-small-p16-64xb64_in1k-224.py
+  - Name: deit3-small-p16-3rdparty_in21k-384
+    In Collection: DeiT3
+    Metadata:
+      FLOPs: 15520000000
+      Parameters: 22210000
+      Training Data:
+        - ImageNet-21k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 84.28
+        Top 5 Accuracy: 97.32
+    Weights:
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/deit/deit_3_small_384_21k.pth
+      Code: https://github.com/facebookresearch/deit/blob/main/models_v2.py#L171
+    Config: configs/deit3/deit3-small-p16-64xb64_in1k-384.py
+  - Name: deit3-medium-p16-3rdparty_in1k-224
+    In Collection: DeiT3
+    Metadata:
+      FLOPs: 8000000000
+      Parameters: 82900000
+      Training Data:
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 82.90
+        Top 5 Accuracy: 96.26
+    Weights:
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/deit/deit_3_medium_224_1k.pth
+      Code: https://github.com/facebookresearch/deit/blob/main/models_v2.py#L171
+    Config: configs/deit3/deit3-medium-p16-64xb64_in1k-224.py
+  - Name: deit3-medium-p16-3rdparty_in21k-224
+    In Collection: DeiT3
+    Metadata:
+      FLOPs: 8000000000
+      Parameters: 82900000
+      Training Data:
+        - ImageNet-21k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 84.17
+        Top 5 Accuracy: 97.07
+    Weights:
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/deit/deit_3_medium_224_21k.pth
+      Code: https://github.com/facebookresearch/deit/blob/main/models_v2.py#L171
+    Config: configs/deit3/deit3-medium-p16-64xb64_in1k-224.py
+  - Name: deit3-base-p16-3rdparty_in1k-224
+    In Collection: DeiT3
+    Metadata:
+      FLOPs: 17580000000
+      Parameters: 86590000
+      Training Data:
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 83.68
+        Top 5 Accuracy: 96.55
+    Weights:
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/deit/deit_3_base_224_1k.pth
+      Code: https://github.com/facebookresearch/deit/blob/main/models_v2.py#L171
+    Config: configs/deit3/deit3-base-p16-64xb64_in1k-224.py
+  - Name: deit3-base-p16-3rdparty_in1k-384
+    In Collection: DeiT3
+    Metadata:
+      FLOPs: 55540000000
+      Parameters: 88880000
+      Training Data:
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 85.03
+        Top 5 Accuracy: 97.20
+    Weights:
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/deit/deit_3_base_384_1k.pth
+      Code: https://github.com/facebookresearch/deit/blob/main/models_v2.py#L171
+    Config: configs/deit3/deit3-base-p16-64xb32_in1k-384.py
+  - Name: deit3-base-p16-3rdparty_in21k-224
+    In Collection: DeiT3
+    Metadata:
+      FLOPs: 17580000000
+      Parameters: 86590000
+      Training Data:
+        - ImageNet-21k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 85.48
+        Top 5 Accuracy: 97.57
+    Weights:
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/deit/deit_3_base_224_21k.pth
+      Code: https://github.com/facebookresearch/deit/blob/main/models_v2.py#L171
+    Config: configs/deit3/deit3-base-p16-64xb64_in1k-224.py
+  - Name: deit3-base-p16-3rdparty_in21k-384
+    In Collection: DeiT3
+    Metadata:
+      FLOPs: 55540000000
+      Parameters: 88880000
+      Training Data:
+        - ImageNet-21k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 86.24
+        Top 5 Accuracy: 97.98
+    Weights:
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/deit/deit_3_base_384_21k.pth
+      Code: https://github.com/facebookresearch/deit/blob/main/models_v2.py#L171
+    Config: configs/deit3/deit3-base-p16-64xb32_in1k-384.py
+  - Name: deit3-large-p16-3rdparty_in1k-224
+    In Collection: DeiT3
+    Metadata:
+      FLOPs: 61600000000
+      Parameters: 304000000
+      Training Data:
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 84.63
+        Top 5 Accuracy: 96.95
+    Weights:
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/deit/deit_3_large_224_1k.pth
+      Code: https://github.com/facebookresearch/deit/blob/main/models_v2.py#L171
+    Config: configs/deit3/deit3-large-p16-64xb64_in1k-224.py
+  - Name: deit3-large-p16-3rdparty_in1k-384
+    In Collection: DeiT3
+    Metadata:
+      FLOPs: 191000000000
+      Parameters: 305000000
+      Training Data:
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 85.94
+        Top 5 Accuracy: 97.64
+    Weights:
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/deit/deit_3_large_384_1k.pth
+      Code: https://github.com/facebookresearch/deit/blob/main/models_v2.py#L171
+    Config: configs/deit3/deit3-large-p16-64xb16_in1k-384.py
+  - Name: deit3-large-p16-3rdparty_in21k-224
+    In Collection: DeiT3
+    Metadata:
+      FLOPs: 61600000000
+      Parameters: 304000000
+      Training Data:
+        - ImageNet-21k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 86.81
+        Top 5 Accuracy: 98.12
+    Weights:
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/deit/deit_3_large_224_21k.pth
+      Code: https://github.com/facebookresearch/deit/blob/main/models_v2.py#L171
+    Config: configs/deit3/deit3-large-p16-64xb64_in1k-224.py
+  - Name: deit3-large-p16-3rdparty_in21k-384
+    In Collection: DeiT3
+    Metadata:
+      FLOPs: 191000000000
+      Parameters: 305000000
+      Training Data:
+        - ImageNet-21k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 87.22
+        Top 5 Accuracy: 98.40
+    Weights:
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/deit/deit_3_large_384_21k.pth
+      Code: https://github.com/facebookresearch/deit/blob/main/models_v2.py#L171
+    Config: configs/deit3/deit3-large-p16-64xb16_in1k-384.py
+  - Name: deit3-huge-p14-3rdparty_in1k-224
+    In Collection: DeiT3
+    Metadata:
+      FLOPs: 167000000000
+      Parameters: 632000000
+      Training Data:
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 85.15
+        Top 5 Accuracy: 97.24
+    Weights:
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/deit/deit_3_huge_224_1k.pth
+      Code: https://github.com/facebookresearch/deit/blob/main/models_v2.py#L171
+    Config: configs/deit3/deit3-huge-p14-64xb32_in1k-224.py
+  - Name: deit3-huge-p14-3rdparty_in21k-224
+    In Collection: DeiT3
+    Metadata:
+      FLOPs: 167000000000
+      Parameters: 632000000
+      Training Data:
+        - ImageNet-21k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 86.90
+        Top 5 Accuracy: 98.14
+    Weights:
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/deit/deit_3_huge_224_1k.pth
+      Code: https://github.com/facebookresearch/deit/blob/main/models_v2.py#L171
+    Config: configs/deit3/deit3-huge-p14-64xb32_in1k-224.py

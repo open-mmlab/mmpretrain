@@ -133,3 +133,6 @@ venv.bak/
 *.pvti-journal
 /cache_engine
 /report
+
+# slurm
+*.out
