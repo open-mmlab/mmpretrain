@@ -283,7 +283,7 @@ optim_wrapper = dict(
         norm_decay_mult=0.0,
         bias_decay_mult=0.0,
     ),
-    clip_gard=dict(max_norm=1.0),
+    clip_grad=dict(max_norm=1.0),
 )
 ```
 
