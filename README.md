@@ -80,7 +80,7 @@ Please refer to [changelog.md](docs/en/changelog.md) for more details and other 
 Below are quick steps for installation:
 
 ```shell
-conda create -n open-mmlab python=3.8 pytorch=1.10 cudatoolkit=11.3 torchvision -c pytorch -y
+conda create -n open-mmlab python=3.8 pytorch=1.10 cudatoolkit=11.3 torchvision==0.11.0 -c pytorch -y
 conda activate open-mmlab
 pip3 install openmim
 mim install mmcv-full

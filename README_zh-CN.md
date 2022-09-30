@@ -80,7 +80,7 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 以下是安装的简要步骤：
 
 ```shell
-conda create -n open-mmlab python=3.8 pytorch=1.10 cudatoolkit=11.3 torchvision -c pytorch -y
+conda create -n open-mmlab python=3.8 pytorch=1.10 cudatoolkit=11.3 torchvision==0.11.0 -c pytorch -y
 conda activate open-mmlab
 pip3 install openmim
 mim install mmcv-full
