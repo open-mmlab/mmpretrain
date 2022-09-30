@@ -1,5 +1,49 @@
 # Changelog
 
+## v0.24.0(30/9/2022)
+
+### Highlights
+
+- Support HorNet, EfficientFormerm, SwinTransformer V2 and MViT backbones.
+- Support Standford Cars dataset.
+
+### New Features
+
+- Support HorNet Backbone. ([#1013](https://github.com/open-mmlab/mmclassification/pull/1013))
+- Support EfficientFormer. ([#954](https://github.com/open-mmlab/mmclassification/pull/954))
+- Support Stanford Cars dataset. ([#893](https://github.com/open-mmlab/mmclassification/pull/893))
+- Support CSRA head. ([#881](https://github.com/open-mmlab/mmclassification/pull/881))
+- Support Swin Transform V2. ([#799](https://github.com/open-mmlab/mmclassification/pull/799))
+- Support MViT and add checkpoints. ([#924](https://github.com/open-mmlab/mmclassification/pull/924))
+
+### Improvements
+
+- \[Improve\] replace loop of progressbar in api/test. ([#878](https://github.com/open-mmlab/mmclassification/pull/878))
+- \[Enhance\] RepVGG for YOLOX-PAI. ([#1025](https://github.com/open-mmlab/mmclassification/pull/1025))
+- \[Enhancement\] Update VAN. ([#1017](https://github.com/open-mmlab/mmclassification/pull/1017))
+- \[Refactor\] Re-write `get_sinusoid_encoding` from third-party implementation. ([#965](https://github.com/open-mmlab/mmclassification/pull/965))
+- \[Improve\] Upgrade onnxsim to v0.4.0. ([#915](https://github.com/open-mmlab/mmclassification/pull/915))
+- \[Improve\] Fixed typo in `RepVGG`. ([#985](https://github.com/open-mmlab/mmclassification/pull/985))
+- \[Improve\] Using `train_step` instead of `forward` in PreciseBNHook ([#964](https://github.com/open-mmlab/mmclassification/pull/964))
+- \[Improve\] Use `forward_dummy` to calculate FLOPS. ([#953](https://github.com/open-mmlab/mmclassification/pull/953))
+
+### Bug Fixes
+
+- Fix warning with `torch.meshgrid`. ([#860](https://github.com/open-mmlab/mmclassification/pull/860))
+- Add matplotlib minimum version requriments. ([#909](https://github.com/open-mmlab/mmclassification/pull/909))
+- val loader should not drop last by default. ([#857](https://github.com/open-mmlab/mmclassification/pull/857))
+- Fix config.device bug in toturial. ([#1059](https://github.com/open-mmlab/mmclassification/pull/1059))
+- Fix attenstion clamp max params ([#1034](https://github.com/open-mmlab/mmclassification/pull/1034))
+- Fix device mismatch in Swin-v2. ([#976](https://github.com/open-mmlab/mmclassification/pull/976))
+- Fix the output position of Swin-Transformer. ([#947](https://github.com/open-mmlab/mmclassification/pull/947))
+
+### Docs Update
+
+- Fix typo in config.md. ([#827](https://github.com/open-mmlab/mmclassification/pull/827))
+- Add version for torchvision to avoide error. ([#903](https://github.com/open-mmlab/mmclassification/pull/903))
+- Fixed typo for `--out-dir` option of analyze_results.py. ([#898](https://github.com/open-mmlab/mmclassification/pull/898))
+- Refine the docstring of RegNet ([#935](https://github.com/open-mmlab/mmclassification/pull/935))
+
 ## v0.23.2(28/7/2022)
 
 ### New Features
