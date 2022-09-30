@@ -16,7 +16,10 @@ from .vision_transformer import VisionTransformer
 
 
 class DeiT3FFN(BaseModule):
-    """Implements feed-forward networks (FFNs) with identity connection.
+    """FFN for DeiT3.
+
+    The differences between DeiT3FFN & FFN:
+        1. Use LayerScale.
 
     Args:
         embed_dims (int): The feature dimension. Same as
@@ -101,7 +104,11 @@ class DeiT3FFN(BaseModule):
 
 
 class DeiT3TransformerEncoderLayer(BaseModule):
-    """Implements one encoder layer in Vision Transformer.
+    """Implements one encoder layer in DeiT3.
+
+    The differences between DeiT3TransformerEncoderLayer &
+    TransformerEncoderLayer:
+        1. Use LayerScale.
 
     Args:
         embed_dims (int): The feature dimension
@@ -191,13 +198,18 @@ class DeiT3TransformerEncoderLayer(BaseModule):
 
 @MODELS.register_module()
 class DeiT3(VisionTransformer):
-    """Vision Transformer.
-    A PyTorch implement of : `An Image is Worth 16x16 Words: Transformers
-    for Image Recognition at Scale <https://arxiv.org/abs/2010.11929>`_
+    """DeiT3.
+    A PyTorch implement of : `DeiT III: Revenge of the ViT
+     <https://arxiv.org/pdf/2204.07118.pdf>`_
+
+    The differences between DeiT3 & VisionTransformer:
+        1. Use LayerScale.
+        2. Concat cls token after adding pos_embed.
+
     Args:
-        arch (str | dict): Vision Transformer architecture. If use string,
-            choose from 'small', 'base', 'large', 'deit-tiny', 'deit-small'
-            and 'deit-base'. If use dict, it should have below keys:
+        arch (str | dict): DeiT3 architecture. If use string,
+            choose from 'small', 'base', 'medium', 'large' and 'huge'.
+            If use dict, it should have below keys:
             - **embed_dims** (int): The dimensions of embedding.
             - **num_layers** (int): The number of transformer encoder layers.
             - **num_heads** (int): The number of heads in attention modules.
@@ -272,8 +284,9 @@ class DeiT3(VisionTransformer):
                 'feedforward_channels': 5120
             }),
     }
-    # Some structures have multiple extra tokens, like DeiT.
-    num_extra_tokens = 1  # cls_token
+    # not using num_extra_tokens in deit3 because adding cls tokens after
+    # adding pos_embed
+    num_extra_tokens = 0
 
     def __init__(self,
                  arch='base',
@@ -389,7 +402,7 @@ class DeiT3(VisionTransformer):
             self.patch_resolution,
             patch_resolution,
             mode=self.interpolate_mode,
-            num_extra_tokens=0)
+            num_extra_tokens=self.num_extra_tokens)
         x = self.drop_after_pos(x)
 
         # stole cls_tokens impl from Phil Wang, thanks
