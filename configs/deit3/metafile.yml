@@ -31,8 +31,8 @@ Models:
     - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
-        Top 1 Accuracy: 81.31
-        Top 5 Accuracy: 95.35
+        Top 1 Accuracy: 81.35
+        Top 5 Accuracy: 95.31
     Weights:
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/deit/deit_3_small_224_1k.pth
@@ -49,8 +49,8 @@ Models:
     - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
-        Top 1 Accuracy: 83.20
-        Top 5 Accuracy: 96.55
+        Top 1 Accuracy: 83.43
+        Top 5 Accuracy: 96.68
     Weights:
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/deit/deit_3_small_384_1k.pth
@@ -67,8 +67,8 @@ Models:
     - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
-        Top 1 Accuracy: 82.76
-        Top 5 Accuracy: 96.70
+        Top 1 Accuracy: 83.06
+        Top 5 Accuracy: 96.77
     Weights:
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/deit/deit_3_small_224_21k.pth
@@ -85,8 +85,8 @@ Models:
     - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
-        Top 1 Accuracy: 84.28
-        Top 5 Accuracy: 97.32
+        Top 1 Accuracy: 84.84
+        Top 5 Accuracy: 97.48
     Weights:
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/deit/deit_3_small_384_21k.pth
@@ -103,8 +103,8 @@ Models:
     - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
-        Top 1 Accuracy: 82.90
-        Top 5 Accuracy: 96.26
+        Top 1 Accuracy: 82.99
+        Top 5 Accuracy: 96.22
     Weights:
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/deit/deit_3_medium_224_1k.pth
@@ -121,8 +121,8 @@ Models:
     - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
-        Top 1 Accuracy: 84.17
-        Top 5 Accuracy: 97.07
+        Top 1 Accuracy: 84.56
+        Top 5 Accuracy: 97.19
     Weights:
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/deit/deit_3_medium_224_21k.pth
@@ -139,7 +139,7 @@ Models:
     - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
-        Top 1 Accuracy: 83.68
+        Top 1 Accuracy: 83.80
         Top 5 Accuracy: 96.55
     Weights:
     Converted From:
@@ -157,8 +157,8 @@ Models:
     - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
-        Top 1 Accuracy: 85.03
-        Top 5 Accuracy: 97.20
+        Top 1 Accuracy: 85.08
+        Top 5 Accuracy: 97.25
     Weights:
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/deit/deit_3_base_384_1k.pth
@@ -175,8 +175,8 @@ Models:
     - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
-        Top 1 Accuracy: 85.48
-        Top 5 Accuracy: 97.57
+        Top 1 Accuracy: 85.70
+        Top 5 Accuracy: 97.75
     Weights:
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/deit/deit_3_base_224_21k.pth
@@ -193,8 +193,8 @@ Models:
     - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
-        Top 1 Accuracy: 86.24
-        Top 5 Accuracy: 97.98
+        Top 1 Accuracy: 86.73
+        Top 5 Accuracy: 98.11
     Weights:
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/deit/deit_3_base_384_21k.pth
@@ -211,8 +211,8 @@ Models:
     - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
-        Top 1 Accuracy: 84.63
-        Top 5 Accuracy: 96.95
+        Top 1 Accuracy: 84.87
+        Top 5 Accuracy: 97.01
     Weights:
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/deit/deit_3_large_224_1k.pth
@@ -229,8 +229,8 @@ Models:
     - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
-        Top 1 Accuracy: 85.94
-        Top 5 Accuracy: 97.64
+        Top 1 Accuracy: 85.82
+        Top 5 Accuracy: 97.60
     Weights:
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/deit/deit_3_large_384_1k.pth
@@ -247,8 +247,8 @@ Models:
     - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
-        Top 1 Accuracy: 86.81
-        Top 5 Accuracy: 98.12
+        Top 1 Accuracy: 86.97
+        Top 5 Accuracy: 98.24
     Weights:
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/deit/deit_3_large_224_21k.pth
@@ -265,8 +265,8 @@ Models:
     - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
-        Top 1 Accuracy: 87.22
-        Top 5 Accuracy: 98.40
+        Top 1 Accuracy: 87.73
+        Top 5 Accuracy: 98.51
     Weights:
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/deit/deit_3_large_384_21k.pth
@@ -283,8 +283,8 @@ Models:
     - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
-        Top 1 Accuracy: 85.15
-        Top 5 Accuracy: 97.24
+        Top 1 Accuracy: 85.21
+        Top 5 Accuracy: 97.36
     Weights:
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/deit/deit_3_huge_224_1k.pth
@@ -301,8 +301,8 @@ Models:
     - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
-        Top 1 Accuracy: 86.90
-        Top 5 Accuracy: 98.14
+        Top 1 Accuracy: 87.19
+        Top 5 Accuracy: 98.26
     Weights:
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/deit/deit_3_huge_224_1k.pth
