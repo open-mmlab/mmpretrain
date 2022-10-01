@@ -88,4 +88,5 @@ __all__ = [
     'EfficientFormer',
     'SwinTransformerV2',
     'MViT',
+    'DeiT3',
 ]
