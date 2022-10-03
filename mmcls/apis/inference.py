@@ -80,9 +80,14 @@ def inference_model(model, img):
     # forward the model
     with torch.no_grad():
         prediction = model.val_step(data)[0].pred_label
+        pred_scores = prediction.score.tolist()
         pred_score = torch.max(prediction.score).item()
         pred_label = torch.argmax(prediction.score).item()
-        result = {'pred_label': pred_label, 'pred_score': float(pred_score)}
+        result = {
+            'pred_label': pred_label,
+            'pred_score': float(pred_score),
+            'pred_scores': pred_scores
+        }
     if hasattr(model, 'CLASSES'):
         result['pred_class'] = model.CLASSES[result['pred_label']]
     return result
