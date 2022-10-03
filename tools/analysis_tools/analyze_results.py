@@ -1,12 +1,16 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 import os.path as osp
+from pathlib import Path
 
+import torch
+import mmengine
 import mmcv
-from mmcv import DictAction
+from mmengine import DictAction
 
 from mmcls.datasets import build_dataset
-from mmcls.models import build_classifier
+from mmcls.visualization import ClsVisualizer
+from mmcls.structures import ClsDataSample
 
 
 def parse_args():
@@ -35,62 +39,50 @@ def parse_args():
     return args
 
 
-def save_imgs(result_dir, folder_name, results, model):
+def save_imgs(result_dir, folder_name, results, dataset):
     full_dir = osp.join(result_dir, folder_name)
-    mmcv.mkdir_or_exist(full_dir)
-    mmcv.dump(results, osp.join(full_dir, folder_name + '.json'))
+    vis = ClsVisualizer(
+        save_dir=full_dir, vis_backends=[dict(type='LocalVisBackend')]
+    )
+    vis.dataset_meta = {'classes': dataset.CLASSES}
 
     # save imgs
-    show_keys = ['pred_score', 'pred_class', 'gt_class']
     for result in results:
-        result_show = dict((k, v) for k, v in result.items() if k in show_keys)
-        outfile = osp.join(full_dir, osp.basename(result['filename']))
-        model.show_result(result['filename'], result_show, out_file=outfile)
+        data_sample = ClsDataSample().set_gt_label(
+            result['gt_label']
+            ).set_pred_label(
+                result['pred_label']
+                ).set_pred_score(torch.Tensor(result['pred_scores']))
+        img = mmcv.imread(result['img_path'], channel_order='rgb')
+        vis.add_datasample(result['filename'], img, data_sample)
+
+    mmengine.dump(results, osp.join(full_dir, folder_name + '.json'))
 
 
 def main():
     args = parse_args()
 
     # load test results
-    outputs = mmcv.load(args.result)
-    assert ('pred_score' in outputs and 'pred_class' in outputs
-            and 'pred_label' in outputs), \
-        'No "pred_label", "pred_score" or "pred_class" in result file, ' \
-        'please set "--out-items" in test.py'
+    outputs = mmengine.load(args.result)
 
-    cfg = mmcv.Config.fromfile(args.config)
+    cfg = mmengine.Config.fromfile(args.config)
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
 
-    model = build_classifier(cfg.model)
-
     # build the dataloader
-    dataset = build_dataset(cfg.data.test)
-    filenames = list()
-    for info in dataset.data_infos:
-        if info['img_prefix'] is not None:
-            filename = osp.join(info['img_prefix'],
-                                info['img_info']['filename'])
-        else:
-            filename = info['img_info']['filename']
-        filenames.append(filename)
-    gt_labels = list(dataset.get_gt_labels())
-    gt_classes = [dataset.CLASSES[x] for x in gt_labels]
+    cfg.test_dataloader.dataset.pipeline = []
+    dataset = build_dataset(cfg.test_dataloader.dataset)
 
-    outputs['filename'] = filenames
-    outputs['gt_label'] = gt_labels
-    outputs['gt_class'] = gt_classes
-
-    need_keys = [
-        'filename', 'gt_label', 'gt_class', 'pred_score', 'pred_label',
-        'pred_class'
-    ]
-    outputs = {k: v for k, v in outputs.items() if k in need_keys}
     outputs_list = list()
-    for i in range(len(gt_labels)):
+    for i in range(len(outputs)):
         output = dict()
-        for k in outputs.keys():
-            output[k] = outputs[k][i]
+        output['img_path'] = outputs[i]['img_path']
+        output['filename'] = Path(outputs[i]['img_path']).name
+        output['gt_label'] = int(outputs[i]['gt_label']['label'][0])
+        output['pred_score'] = float(torch.max(
+            outputs[i]['pred_label']['score']).item())
+        output['pred_scores'] = outputs[i]['pred_label']['score'].tolist()
+        output['pred_label'] = int(outputs[i]['pred_label']['label'][0])
         outputs_list.append(output)
 
     # sort result
@@ -107,8 +99,8 @@ def main():
     success = success[:args.topk]
     fail = fail[:args.topk]
 
-    save_imgs(args.out_dir, 'success', success, model)
-    save_imgs(args.out_dir, 'fail', fail, model)
+    save_imgs(args.out_dir, 'success', success, dataset)
+    save_imgs(args.out_dir, 'fail', fail, dataset)
 
 
 if __name__ == '__main__':
