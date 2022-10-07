@@ -34,7 +34,11 @@ class MultiTaskClsHead(BaseHead):
     def forward_train(self, x, gt_label, **kwargs):
         losses = dict()
         for task_name, head in self.sub_heads.items():
-            head_loss = head.forward_train(x, gt_label[task_name], **kwargs)
+            mask = kwargs['gt_mask'][task_name].tolist()
+            y = list(x)
+            y[0] = y[0][mask]
+            z = tuple(y)
+            head_loss = head.forward_train(z, gt_label[task_name][mask], **kwargs)
             for k, v in head_loss.items():
                 losses[f'{task_name}_{k}'] = v
         return losses
