@@ -39,10 +39,10 @@ result = inference_model(model, img_path)
 print(result)
 ```
 
-`result` 为一个包含了 `pred_label`, `pred_score` 和 `pred_score`的字典，结果如下:
+`result` 为一个包含了 `pred_label`, `pred_score`, `pred_scores` 和 `pred_class`的字典，结果如下:
 
 ```text
-{"pred_label":65,"pred_score":0.6649366617202759,"pred_score":"sea snake"}
+{"pred_label":65,"pred_score":0.6649366617202759,"pred_class":"sea snake", "pred_scores": [..., 0.6649366617202759, ...]}
 ```
 
 演示可以在 [demo/image_demo.py](https://github.com/open-mmlab/mmclassification/blob/1.x/demo/image_demo.py) 中找到。
