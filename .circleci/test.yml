@@ -32,7 +32,7 @@ jobs:
           command: |
             pip install interrogate
             interrogate -v --ignore-init-method --ignore-module --ignore-nested-functions --ignore-magic --ignore-regex "__repr__" --fail-under 60 mmcls
-  build_cpu:
+  build_cpu_with_timm:
     parameters:
       # The python version must match available image tags in
       # https://circleci.com/developer/images/image/cimg/python
@@ -79,6 +79,55 @@ jobs:
           name: Run unittests
           command: |
             coverage run --branch --source mmcls -m pytest tests/
+            coverage xml
+            coverage report -m
+
+  build_cpu:
+    parameters:
+      # The python version must match available image tags in
+      # https://circleci.com/developer/images/image/cimg/python
+      python:
+        type: string
+      torch:
+        type: string
+      torchvision:
+        type: string
+    docker:
+      - image: cimg/python:<< parameters.python >>
+    resource_class: large
+    steps:
+      - checkout
+      - run:
+          name: Install Libraries
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y libjpeg8-dev zlib1g-dev
+      - run:
+          name: Configure Python & pip
+          command: |
+            pip install --upgrade pip
+            pip install wheel
+      - run:
+          name: Install PyTorch
+          command: |
+            python -V
+            pip install torch==<< parameters.torch >>+cpu torchvision==<< parameters.torchvision >>+cpu -f https://download.pytorch.org/whl/torch_stable.html
+      - run:
+          name: Install mmcls dependencies
+          command: |
+            pip install git+https://github.com/open-mmlab/mmengine.git@main
+            pip install -U openmim
+            mim install 'mmcv >= 2.0.0rc1'
+            pip install -r requirements.txt
+            python -c 'import mmcv; print(mmcv.__version__)'
+      - run:
+          name: Build and install
+          command: |
+            pip install -e .
+      - run:
+          name: Run unittests
+          command: |
+            coverage run --branch --source mmcls -m pytest tests/ -k 'not timm'
             coverage xml
             coverage report -m
 
@@ -155,7 +204,7 @@ workflows:
           python: 3.6.9  # The lowest python 3.6.x version available on CircleCI images
           requires:
             - lint
-      - build_cpu:
+      - build_cpu_with_timm:
           name: maximum_version_cpu
           torch: 1.12.1
           torchvision: 0.13.1
