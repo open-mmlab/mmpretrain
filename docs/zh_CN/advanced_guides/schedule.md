@@ -4,61 +4,49 @@
 
 在本教程中，我们将介绍如何在运行自定义训练时，通过修改配置文件进行构造优化器、参数化精细配置、梯度裁剪、梯度累计以及定制动量调整策略等。同时也会通过模板简单介绍如何自定义开发优化器和构造器。
 
-<!-- TOC -->
-
-- [配置训练优化策略](#配置训练优化)
-  - [构造 PyTorch 内置优化器](#构造-pytorch-内置优化器)
-  - [混合精度训练](#混合精度训练)
-  - [参数化精细配置](#参数化精细配置)
-  - [梯度裁剪](#梯度裁剪)
-  - [梯度累计](#梯度累计)
-- [配置参数优化策略](<>)
-  - [配置学习率调整策略](#配置学习率调整策略)
-  - [配置动量调整策略](#配置动量调整策略)
-- [用户自定义优化方法](#用户自定义优化方法)
-  - [自定义优化器](#自定义优化器)
-  - [自定义优化器构造器](#自定义优化器构造器)
-
-<!-- TOC -->
-
 ## 配置训练优化策略
 
-我们通过 `OptimWrapper` 优化器封装来打包主要的优化策略，包括优化器的选择，混合精度训练的选择，参数化精细配置，梯度裁剪以及梯度累计。接下来将分别介绍这些内容。
+我们通过 `optim_wrapper` 来配置主要的优化策略，包括优化器的选择，混合精度训练的选择，参数化精细配置，梯度裁剪以及梯度累计。接下来将分别介绍这些内容。
 
 ### 构造 PyTorch 内置优化器
 
 MMClassification 支持 PyTorch 实现的所有优化器，仅需在配置文件中，指定优化器封装需要的 `optimizer` 字段。
 
-如果要使用 `SGD`，则修改如下。这里要注意所有优化相关的配置都需要封装在 `OptimWrapper` 配置里。
+如果要使用 [`SGD`](torch.optim.SGD)，则修改如下。这里要注意所有优化相关的配置都需要封装在 `optim_wrapper` 配置里。
 
 ```python
-optimizer = dict(type='SGD', lr=0.0003, weight_decay=0.0001)
-optim_wrapper = dict(type='OptimWrapper', optimizer=optimizer)
+optim_wrapper = dict(
+    type='OptimWrapper',
+    optimizer=dict(type='SGD', lr=0.0003, weight_decay=0.0001)
+)
 ```
 
 ```{note}
 配置文件中的 'type' 不是构造时的参数，而是 PyTorch 内置优化器的类名。
-更多优化器选择可以参考[PyTorch 支持的优化器列表](https://pytorch.org/docs/stable/optim.html#algorithms)。
+更多优化器选择可以参考{external+torch:ref}`PyTorch 支持的优化器列表<optim:algorithms>`。
 ```
 
 要修改模型的学习率，只需要在优化器的配置中修改 `lr` 即可。
-要配置其他参数，可直接根据 [PyTorch API 文档](https://pytorch.org/docs/stable/optim.html?highlight=optim#module-torch.optim) 进行。
+要配置其他参数，可直接根据 [PyTorch API 文档](torch.optim) 进行。
 
-例如，如果想使用 `Adam` 并设置参数为 `torch.optim.Adam(params, lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)`。
+例如，如果想使用 [`Adam`](torch.optim.Adam) 并设置参数为 `torch.optim.Adam(params, lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)`。
 则需要进行如下修改：
 
 ```python
-optimizer = dict(
-    type='Adam',
-    lr=0.001,
-    betas=(0.9, 0.999),
-    eps=1e-08,
-    weight_decay=0,
-    amsgrad=False)
-optim_wrapper = dict(type='OptimWrapper', optimizer=optimizer)
+optim_wrapper = dict(
+    type='OptimWrapper',
+    optimizer = dict(
+        type='Adam',
+        lr=0.001,
+        betas=(0.9, 0.999),
+        eps=1e-08,
+        weight_decay=0,
+        amsgrad=False),
+)
 ```
 
-另外考虑到对于单精度训练来说，优化器封装的默认类型就是 `OptimWrapper`，我们在这里可以直接省略，因此配置文件可以进一步简化为：
+````{note}
+考虑到对于单精度训练来说，优化器封装的默认类型就是 `OptimWrapper`，我们在这里可以直接省略，因此配置文件可以进一步简化为：
 
 ```python
 optim_wrapper = dict(
@@ -70,13 +58,14 @@ optim_wrapper = dict(
         weight_decay=0,
         amsgrad=False))
 ```
+````
 
 ### 混合精度训练
 
 如果我们想要使用混合精度训练（Automactic Mixed Precision），我们只需简单地将 `optim_wrapper` 的类型改为 `AmpOptimWrapper`。
 
 ```python
-optim_wrapper = dict(type='AmpOptimWrapper', optimizer=optimizer)
+optim_wrapper = dict(type='AmpOptimWrapper', optimizer=...)
 ```
 
 另外，为了方便，我们同时在启动训练脚本 `tools/train.py` 中提供了 `--amp` 参数作为开启混合精度训练的开关，更多细节可以参考[训练与测试](../user_guides/train_test.md)教程。
@@ -128,7 +117,7 @@ optim_wrapper = dict(type='AmpOptimWrapper', optimizer=optimizer)
 
 在训练过程中，损失函数可能接近于一些异常陡峭的区域，从而导致梯度爆炸。而梯度裁剪可以帮助稳定训练过程，更多介绍可以参见[该页面](https://paperswithcode.com/method/gradient-clipping)。
 
-目前我们支持在 `optim_wrapper` 字段中添加 `clip_grad` 参数来进行梯度裁剪，更详细的参数可参考 [PyTorch 文档](https://pytorch.org/docs/stable/generated/torch.nn.utils.clip_grad_norm_.html)。
+目前我们支持在 `optim_wrapper` 字段中添加 `clip_grad` 参数来进行梯度裁剪，更详细的参数可参考 [PyTorch 文档](torch.nn.utils.clip_grad_norm_)。
 
 用例如下：
 
@@ -172,7 +161,7 @@ optim_wrapper = dict(
 
 - **单个学习率策略**
 
-  多数情况下，我们使用单一学习率策略，这里 `param_scheduler` 会是一个字典。比如在默认的 ResNet 网络训练中，我们使用阶梯式的学习率衰减策略，配置文件为：
+  多数情况下，我们使用单一学习率策略，这里 `param_scheduler` 会是一个字典。比如在默认的 ResNet 网络训练中，我们使用阶梯式的学习率衰减策略 [`MultiStepLR`](mmengine.optim.MultiStepLR)，配置文件为：
 
   ```python
   param_scheduler = dict(
@@ -182,7 +171,7 @@ optim_wrapper = dict(
       gamma=0.1)
   ```
 
-  此外，我们也支持其他学习率调整方法，详情可见[这里](https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/scheduler/lr_scheduler.py)。这里以`CosineAnnealing` 为例：
+  或者我们想使用 [`CosineAnnealingLR`](mmengine.optim.CosineAnnealingLR) 来进行学习率衰减：
 
   ```python
   param_scheduler = dict(
@@ -193,13 +182,15 @@ optim_wrapper = dict(
 
 - **多个学习率策略**
 
-  然而在一些其他情况下，为了提高模型的精度，通常会使用多种学习率策略。例如，在训练的早期阶段，网络容易不稳定，而学习率的预热就是为了减少这种不稳定性。整个学习过程中，学习率将会通过预热从一个很小的值逐步提高到预定值，再会通过其他的策略进一步调整。
+  然而在一些其他情况下，为了提高模型的精度，通常会使用多种学习率策略。例如，在训练的早期阶段，网络容易不稳定，而学习率的预热就是为了减少这种不稳定性。
 
-  在 MMClassification 中，我们同样使用 `param_scheduler` ，将多种学习策略写成列表就可以完成上述预热策略的组合。注意到这里 `param_scheduler` 是一个列表。
+  整个学习过程中，学习率将会通过预热从一个很小的值逐步提高到预定值，再会通过其他的策略进一步调整。
+
+  在 MMClassification 中，我们同样使用 `param_scheduler` ，将多种学习策略写成列表就可以完成上述预热策略的组合。
 
   例如：
 
-  1. 逐**迭代次数**地**线性**预热
+  1. 在前50次迭代中逐**迭代次数**地**线性**预热
 
   ```python
     param_scheduler = [
@@ -207,7 +198,6 @@ optim_wrapper = dict(
         dict(type='LinearLR',
             start_factor=0.001,
             by_epoch=False,  # 逐迭代次数
-            begin=0,
             end=50),  # 只预热50次迭代次数
         # 主要的学习率策略
         dict(type='MultiStepLR',
@@ -217,36 +207,33 @@ optim_wrapper = dict(
     ]
   ```
 
-  2. 逐**轮次**地**指数**预热
+  2. 在前10轮迭代中逐**迭代次数**地**线性**预热
 
   ```python
     param_scheduler = [
-        # 在 [0, 100) 轮次中，通过指数预热
-        dict(type='ExponentialLR',
-            gamma=0.1,
-            by_epoch=True, # 逐轮次
-            begin=0,
-            end=100),
-        # 在 [100， 600) 轮次中，通过余弦退火衰减
-        dict(type='CosineAnnealingLR',
-            T_max=800,
+        # 在前10轮迭代中，逐迭代次数，线性预热
+        dict(type='LinearLR',
+            start_factor=0.001,
             by_epoch=True,
-            begin=100,
-            end=600)
+            end=10,
+            convert_to_iter_based=True,  # 逐迭代次数更新学习率.
+        ),
+        # 在 10 轮次后，通过余弦退火衰减
+        dict(type='CosineAnnealingLR', by_epoch=True, begin=10)
     ]
   ```
 
-  注意这里增加了 `begin` 和 `end` 参数，这两个参数指定了调度器的**生效区间**。生效区间通常只在多个调度器组合时才需要去设置，使用单个调度器时可以忽略。当指定了 `begin` 和 `end` 参数时，表示该调度器只在 \[begin, end) 区间内生效，其单位是由 `by_epoch` 参数决定。在组合不同调度器时，各调度器的 `by_epoch` 参数不必相同。
+  注意这里增加了 `begin` 和 `end` 参数，这两个参数指定了调度器的**生效区间**。生效区间通常只在多个调度器组合时才需要去设置，使用单个调度器时可以忽略。当指定了 `begin` 和 `end` 参数时，表示该调度器只在 \[begin, end) 区间内生效，其单位是由 `by_epoch` 参数决定。在组合不同调度器时，各调度器的 `by_epoch` 参数不必相同。如果没有指定的情况下，`begin` 为 0， `end` 为最大迭代轮次或者最大迭代次数。
 
-  如果相邻两个调度器的生效区间没有紧邻，而是有一段区间没有被覆盖，那么这段区间的学习率维持不变。而如果两个调度器的生效区间发生了重叠，则对多组调度器叠加使用，学习率的调整会按照调度器配置文件中的顺序触发（行为与 PyTorch 中 [`ChainedScheduler`](https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.ChainedScheduler.html#chainedscheduler) 一致）。
+  如果相邻两个调度器的生效区间没有紧邻，而是有一段区间没有被覆盖，那么这段区间的学习率维持不变。而如果两个调度器的生效区间发生了重叠，则对多组调度器叠加使用，学习率的调整会按照调度器配置文件中的顺序触发（行为与 PyTorch 中 [`ChainedScheduler`](torch.optim.lr_scheduler.ChainedScheduler) 一致）。
 
   ```{tip}
-  为了避免学习率的调整与预期不符， 配置完成后，可以使用 MMClassification 提供的 [学习率可视化工具](https://mmclassification.readthedocs.io/zh_CN/latest/tools/visualization.html#id3) 画出对应学习率调整曲线。
+  为了避免学习率曲线与预期不符， 配置完成后，可以使用 MMClassification 提供的 [学习率可视化工具](../user_guides/visualization.md#learning-rate-schedule-visualization) 画出对应学习率调整曲线。
   ```
 
 ### 配置动量调整策略
 
-MMClassification 支持动量调度器根据学习率修改模型的动量，从而使模型收敛更快。用法和学习率调度器一致。
+MMClassification 支持动量调度器根据学习率修改优化器的动量，从而使损失函数收敛更快。用法和学习率调度器一致。
 
 我们支持的动量策略和详细的使用细节可以参考[这里](https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/scheduler/momentum_scheduler.py)。我们只将调度器中的 `LR` 替换为了 `Momentum`，动量策略可以直接追加 `param_scheduler` 列表中。
 
@@ -265,19 +252,19 @@ param_scheduler = [
 ]
 ```
 
-## 用户自定义优化方法
-
-在学术研究和工业实践中，可能需要使用 MMClassification 未实现的优化方法，可以通过以下方法添加。
+## 新增优化器或者优化器构造器
 
 ```{note}
 本部分将修改 MMClassification 源码或者向 MMClassification 框架添加代码，初学者可跳过。
 ```
 
-### 自定义优化器
+### 新增优化器
+
+在学术研究和工业实践中，可能需要使用 MMClassification 未实现的优化方法，可以通过以下方法添加。
 
 #### 1. 定义一个新的优化器
 
-一个自定义的优化器可根据如下规则进行定制
+一个自定义的优化器可根据如下规则进行定制：
 
 假设我们想添加一个名为 `MyOptimzer` 的优化器，其拥有参数 `a`, `b` 和 `c`。
 可以创建一个名为 `mmcls/engine/optimizer` 的文件夹，并在目录下的一个文件，如 `mmcls/engine/optimizer/my_optimizer.py` 中实现该自定义优化器：
@@ -291,17 +278,17 @@ from torch.optim import Optimizer
 class MyOptimizer(Optimizer):
 
     def __init__(self, a, b, c):
+        ...
 
+    def step(self, closure=None):
+        ...
 ```
 
 #### 2. 注册优化器
 
 要注册上面定义的上述模块，首先需要将此模块导入到主命名空间中。有两种方法可以实现它。
 
-- 修改 `mmcls/engine/optimizers/__init__.py`，将其导入至 `optimizers` 包。
-
-  创建 `mmcls/engine/optimizers/__init__.py` 文件。
-  新定义的模块应导入到 `mmcls/engine/optimizers/__init__.py` 中，以便注册器能找到新模块并将其添加：
+- 修改 `mmcls/engine/optimizers/__init__.py`，将其导入至 `mmcls.engine` 包。
 
   ```python
   # 在 mmcls/engine/optimizers/__init__.py 中
@@ -311,56 +298,76 @@ class MyOptimizer(Optimizer):
   __all__ = [..., 'MyOptimizer']
   ```
 
+  在运行过程中，我们会自动导入 `mmcls.engine` 包并同时注册 `MyOptimizer`。
+
 - 在配置中使用 `custom_imports` 手动导入
 
   ```python
   custom_imports = dict(
-    imports=['mmcls.engine.optimizers.my_optimizer'],
-    allow_failed_imports=False)
+      imports=['mmcls.engine.optimizers.my_optimizer'],
+      allow_failed_imports=False,
+  )
   ```
 
-`mmcls.engine.optimizers.my_optimizer` 模块将会在程序开始阶段被导入，`MyOptimizer` 类会随之自动被注册。
-注意，只有包含 `MyOptmizer` 类的包会被导入。`mmcls.engine.optimizers.my_optimizer.MyOptimizer` **不会** 被直接导入。
+  `mmcls.engine.optimizers.my_optimizer` 模块将会在程序开始阶段被导入，`MyOptimizer` 类会随之自动被注册。
+  注意，这里只需要导入包含 `MyOptmizer` 类的包。如果填写`mmcls.engine.optimizers.my_optimizer.MyOptimizer` 则 **不会** 被直接导入。
 
 #### 3. 在配置文件中指定优化器
 
-之后，用户便可在配置文件的 `optim_wrapper` 域中使用 `MyOptimizer`。
-在配置中，优化器由 `optim_wrapper` 字段定义，如下所示：
-
-```python
-optim_wrapper = dict(
-    optimizer=dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001))
-```
-
-要使用自定义的优化器，可以将该字段更改为
+之后，用户便可在配置文件的 `optim_wrapper.optimizer` 域中使用 `MyOptimizer`：
 
 ```python
 optim_wrapper = dict(
     optimizer=dict(type='MyOptimizer', a=a_value, b=b_value, c=c_value))
 ```
 
-### 自定义优化器构造器
+### 新增优化器构造器
 
-某些模型可能具有一些特定于参数的设置以进行优化，例如 BatchNorm 层的权重衰减。
+某些模型可能具有一些特定于参数的设置以进行优化，例如 为所有 BatchNorm 层设置不同的权重衰减。
 
-虽然我们的 `DefaultOptimWrapperConstructor` 已经提供了这些强大的功能，但可能仍然无法覆盖需求。
-此时我们可以通过自定义优化器构造函数来进行其他细粒度的参数调整。
+Although we already can use [the `optim_wrapper.paramwise_cfg` field](#parameter-wise-finely-configuration) to
+configure various parameter-specific optimizer settings. It may still not cover your need.
+
+尽管我们已经可以使用 [`optim_wrapper.paramwise_cfg` 字段](#参数化精细配置)来配置特定参数的优化设置，但可能仍然无法覆盖你的需求。
+
+当然你可以在此基础上进行修改。我们默认使用 [`DefaultOptimWrapperConstructor`](mmengine.optim.DefaultOptimWrapperConstructor) 来构造优化器。在构造过程中，通过 `paramwise_cfg` 来精细化配置不同设置。这个默认构造器可以作为新优化器构造器实现的模板。
+
+我们可以新增一个优化器构造器来覆盖这些行为。
 
 ```python
+# 在 mmcls/engine/optimizers/my_optim_constructor.py 中
 from mmengine.optim import DefaultOptimWrapperConstructor
-from mmengine.registry import OPTIM_WRAPPER_CONSTRUCTORS
+from mmcls.registry import OPTIM_WRAPPER_CONSTRUCTORS
 
 
 @OPTIM_WRAPPER_CONSTRUCTORS.register_module()
-class MyOptimWrapperConstructor(DefaultOptimWrapperConstructor):
+class MyOptimWrapperConstructor:
 
     def __init__(self, optim_wrapper_cfg, paramwise_cfg=None):
         ...
 
-    def add_params(self, params, module, prefix='' ,lr=None):
-        """Add all parameters of module to the params list."""
+    def __call__(self, model):
         ...
-
 ```
 
-\[这里\]https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/optimizer/default_constructor.py)是我们默认的优化器构造器的实现，可以作为新优化器构造器实现的模板。
+接下来类似 [新增优化器教程](#新增优化器) 来导入并使用新的优化器构造器。
+
+1. 修改 `mmcls/engine/optimizers/__init__.py`，将其导入至 `mmcls.engine` 包。
+
+   ```python
+   # 在 mmcls/engine/optimizers/__init__.py 中
+   ...
+   from .my_optim_constructor import MyOptimWrapperConstructor
+
+   __all__ = [..., 'MyOptimWrapperConstructor']
+   ```
+
+2. 在配置文件的 `optim_wrapper.constructor` 字段中使用 `MyOptimWrapperConstructor` 。
+
+   ```python
+   optim_wrapper = dict(
+       constructor=dict(type='MyOptimWrapperConstructor'),
+       optimizer=...,
+       paramwise_cfg=...,
+   )
+   ```

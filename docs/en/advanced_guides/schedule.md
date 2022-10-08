@@ -211,14 +211,14 @@ names of learning rate schedulers end with `LR`.
 
   ```python
     param_scheduler = [
-        # use exponential schedule in [0, 100) epochs
+        # linear warm-up by epochs in [0, 10) epochs
         dict(type='LinearLR',
             start_factor=0.001,
             by_epoch=True,
             end=10,
             convert_to_iter_based=True,  # Update learning rate by iter.
         ),
-        # use CosineAnnealing schedule in [100, 600) epochs
+        # use CosineAnnealing schedule after 10 epochs
         dict(type='CosineAnnealingLR', by_epoch=True, begin=10)
     ]
   ```
@@ -297,8 +297,7 @@ To find the above module defined above, this module should be imported during th
   __all__ = [..., 'MyOptimizer']
   ```
 
-  During running, we will automatically import the `mmcls.engine` package and register the `MyOptimizer` at the
-  same time.
+  During running, we will automatically import the `mmcls.engine` package and register the `MyOptimizer` at the same time.
 
 - Use `custom_imports` in the config file to manually import it.
 
@@ -309,8 +308,8 @@ To find the above module defined above, this module should be imported during th
   )
   ```
 
-The module `mmcls.engine.optimizers.my_optimizer` will be imported at the beginning of the program and the class `MyOptimizer` is then automatically registered.
-Note that only the package containing the class `MyOptimizer` should be imported. `mmcls.engine.optimizers.my_optimizer.MyOptimizer` **cannot** be imported directly.
+  The module `mmcls.engine.optimizers.my_optimizer` will be imported at the beginning of the program and the class `MyOptimizer` is then automatically registered.
+  Note that only the package containing the class `MyOptimizer` should be imported. `mmcls.engine.optimizers.my_optimizer.MyOptimizer` **cannot** be imported directly.
 
 #### 3. Specify the optimizer in the config file
 
@@ -330,7 +329,7 @@ configure various parameter-specific optimizer settings. It may still not cover 
 
 Of course, you can modify it. By default, we use the [`DefaultOptimWrapperConstructor`](mmengine.optim.DefaultOptimWrapperConstructor)
 class to deal with the construction of optimizer. And during the construction, it fine-grainedly configures the optimizer settings of
-different parameters according to the `paramwise_cfg`.
+different parameters according to the `paramwise_cfg`，which could also serve as a template for new optimizer constructor.
 
 You can overwrite these behaviors by add new optimizer constructors.
 
@@ -349,8 +348,6 @@ class MyOptimWrapperConstructor:
     def __call__(self, model):
         ...
 ```
-
-The default optimizer constructor is implemented [here](https://github.com/open-mmlab/mmengine/blob/main/mmengine/optim/optimizer/default_constructor.py), which could also serve as a template for new optimizer constructor.
 
 And then, import it and use it almost like [the optimizer tutorial](#add-new-optimizers).
 
