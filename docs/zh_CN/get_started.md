@@ -47,7 +47,7 @@ conda install pytorch torchvision cpuonly -c pytorch
 
 ```shell
 pip install -U openmim
-mim install mmengine "mmcv-full>=2.0rc0"
+mim install mmengine "mmcv>=2.0rc0"
 ```
 
 **第 2 步** 安装 MMClassification
@@ -145,10 +145,10 @@ MMCV 包含 C++ 和 CUDA 扩展，因此其对 PyTorch 的依赖比较复杂。M
 要使用 pip 而不是 MIM 来安装 MMCV，请遵照 [MMCV 安装指南](https://mmcv.readthedocs.io/zh_CN/latest/get_started/installation.html)。
 它需要你用指定 url 的形式手动指定对应的 PyTorch 和 CUDA 版本。
 
-举个例子，如下命令将会安装基于 PyTorch 1.10.x 和 CUDA 11.3 编译的 mmcv-full。
+举个例子，如下命令将会安装基于 PyTorch 1.10.x 和 CUDA 11.3 编译的 mmcv。
 
 ```shell
-pip install "mmcv-full>=2.0rc0" -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.10/index.html
+pip install "mmcv>=2.0rc0" -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.10/index.html
 ```
 
 ### 在 CPU 环境中安装
@@ -166,7 +166,7 @@ MMClassification 中几乎所有的模型都不会依赖这些算子。
 
 ```shell
 !pip3 install openmim
-!mim install mmengine "mmcv-full>=2.0rc0"
+!mim install mmengine "mmcv>=2.0rc0"
 ```
 
 **第 2 步** 从源码安装 MMClassification
