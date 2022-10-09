@@ -198,23 +198,27 @@ class DeiT3TransformerEncoderLayer(BaseModule):
 
 @MODELS.register_module()
 class DeiT3(VisionTransformer):
-    """DeiT3.
+    """DeiT3 backbone.
+
     A PyTorch implement of : `DeiT III: Revenge of the ViT
-     <https://arxiv.org/pdf/2204.07118.pdf>`_
+    <https://arxiv.org/pdf/2204.07118.pdf>`_
 
     The differences between DeiT3 & VisionTransformer:
-        1. Use LayerScale.
-        2. Concat cls token after adding pos_embed.
+
+    1. Use LayerScale.
+    2. Concat cls token after adding pos_embed.
 
     Args:
         arch (str | dict): DeiT3 architecture. If use string,
             choose from 'small', 'base', 'medium', 'large' and 'huge'.
             If use dict, it should have below keys:
+
             - **embed_dims** (int): The dimensions of embedding.
             - **num_layers** (int): The number of transformer encoder layers.
             - **num_heads** (int): The number of heads in attention modules.
             - **feedforward_channels** (int): The hidden dimensions in
               feedforward modules.
+
             Defaults to 'base'.
         img_size (int | tuple): The expected input image shape. Because we
             support dynamic input shape, just set the argument to the most
