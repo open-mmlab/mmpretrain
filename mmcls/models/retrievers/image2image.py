@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import enum
 from typing import Callable, List, Optional, Union
 
 import mmengine.dist as dist
@@ -27,8 +28,7 @@ class ImageToImageRetriever(BaseRetriever):
         similarity_fn (Union[str, Callable]): The way that the similarity
             is calculated. If `similarity` is callable, it is used directly
             as the measure function. If it is a string, the appropriate
-            method will be used.
-            Defaults to "cosine_similarity".
+            method will be used. Defaults to "cosine_similarity".
         train_cfg (dict, optional): The training setting. The acceptable
             fields are:
 
@@ -41,8 +41,7 @@ class ImageToImageRetriever(BaseRetriever):
             "ClsDataPreprocessor" as type. See :class:`ClsDataPreprocessor` for
             more details. Defaults to None.
         topk (int): Return the topk of the retrieval result. `-1` means
-            return all.
-            Defaults to -1.
+            return all. Defaults to -1.
         prototype (Union[DataLoader, dict, str, torch.Tensor]): Database to be
             retrieved. The following four types are supported.
 
@@ -82,11 +81,7 @@ class ImageToImageRetriever(BaseRetriever):
             init_cfg=init_cfg, data_preprocessor=data_preprocessor)
 
         self.image_encoder = MODELS.build(image_encoder)
-
-        if head is not None:
-            self.head = MODELS.build(head)
-        else:
-            self.head = None
+        self.head = MODELS.build(head) if head else None
 
         self.similarity = similarity_fn
 
@@ -232,6 +227,11 @@ class ImageToImageRetriever(BaseRetriever):
         """Post-process the output of retriever."""
         pred_scores = result['score']
         pred_labels = result['pred_label']
+        if self.topk != -1:
+            topk = min(self.topk, pred_scores.size()[-1])
+            pred_scores = pred_scores[:, :topk]
+            pred_labels = pred_labels[:, :topk]
+
         if data_samples is not None:
             for data_sample, score, label in zip(data_samples, pred_scores,
                                                  pred_labels):
@@ -241,38 +241,30 @@ class ImageToImageRetriever(BaseRetriever):
             for score, label in zip(pred_scores, pred_labels):
                 data_samples.append(ClsDataSample().set_pred_score(
                     score).set_pred_label(label))
-        if self.topk != -1:
-            topk = min(self.topk, data_samples[0].pred_label.score.shape[0])
-            for data_sample in data_samples:
-                data_sample.set_pred_score(data_sample.pred_label.score[:topk])
-                data_sample.set_pred_label(data_sample.pred_label.label[:topk])
         return data_samples
 
-    def _get_prototype_from_dataloader(self, device):
+    def _get_prototype_vecs_from_dataloader(self):
+        """get prototype_vecs from dataloader"""
         data_loader = self.prototype
         num = len(data_loader.dataset)
 
-        self.prototype_vecs = None
+        prototype_vecs = None
         for data_batch in data_loader:
-            batch_num = len(data_batch['inputs'])
             data = self.data_preprocessor(data_batch, False)
-            feat = self.extract_feat(data['inputs'])
+            feat = self(**data)
             if isinstance(feat, tuple):
                 feat = feat[-1]
-            if self.prototype_vecs is None:
-                dim = feat.shape[-1]
-                self.prototype_vecs = torch.zeros(num, dim).to(device)
-            for i in range(batch_num):
-                sample_idx = data_batch['data_samples'][i].get('sample_idx')
-                self.prototype_vecs[sample_idx] = feat[i]
 
-        rank, world_size = dist.get_dist_info()
-        if world_size > 1:
-            dist.barrier()
-            assert self.prototype_vecs is not None, (
-                'There is a error with multi-gpu inference,'
-                ' please try single-gpu')
-            dist.all_reduce(self.prototype_vecs)
+            if prototype_vecs is None:
+                dim = feat.shape[-1]
+                prototype_vecs = torch.zeros(num, dim)
+            for i, data_sample in enumerate(data_batch['data_samples']):
+                sample_idx = data_sample.get('sample_idx')
+                prototype_vecs[sample_idx] = feat[i]
+        
+        assert prototype_vecs is not None
+        dist.all_reduce(prototype_vecs) 
+        return prototype_vecs
 
     @torch.no_grad()
     def prepare_prototype(self):
@@ -285,21 +277,22 @@ class ImageToImageRetriever(BaseRetriever):
         - Dataloader or config: Extract and save the feature vectors according
             to the dataloader
         """
-
         device = next(self.image_encoder.parameters()).device
         if isinstance(self.prototype, torch.Tensor):
             self.prototype_vecs = self.prototype
-            self.prototype_vecs = self.prototype_vecs.to(device)
         elif isinstance(self.prototype, str):
-            self.prototype_vecs = torch.load(self.prototype).to(device)
-        if isinstance(self.prototype, dict):
+            self.prototype_vecs = torch.load(self.prototype)
+        elif isinstance(self.prototype, dict):
             self.prototype = Runner.build_dataloader(self.prototype)
+
         if isinstance(self.prototype, DataLoader):
-            self._get_prototype_from_dataloader(device)
+            self.prototype_vecs = self._get_prototype_vecs_from_dataloader()
+        
+        self.prototype_vecs = self.prototype_vecs.to(device)
         self.prototype_inited = True
 
     def dump_prototype(self, path):
-        """Save the features extracted from the prototype to the specific path.
+        """Save the features extracted from the prototype to specific path.
 
         Args:
             path (str): Path to save feature.

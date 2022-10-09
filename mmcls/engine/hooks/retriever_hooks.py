@@ -9,10 +9,11 @@ from mmcls.registry import HOOKS
 
 @HOOKS.register_module()
 class ResetPrototypeInitFlagHook(Hook):
-    """The hook that resets the prototype's initialization flag.
+    """The hook to reset the prototype's initialization flag in retrievers.
 
-    During the training of the retriever, the parameters of encoder changes, so
-    the `prototype_inited` needs to be set to False before validation.
+    Since the encoders of the retriever changes during training, the prototype
+    changes accordingly. So the `prototype_inited` needs to be set to False
+    before validation.
     """
 
     def before_val(self, runner) -> None:
@@ -20,6 +21,6 @@ class ResetPrototypeInitFlagHook(Hook):
             if hasattr(runner.model, 'prototype_inited'):
                 runner.model.prototype_inited = False
         else:
-            warnings.warn('Only the retriever can execute '
-                          'ResetPrototypeInitFlagHook, but got'
-                          f'{type(runner.model)}')
+            warnings.warn(
+                'Only the retriever can execute `ResetPrototypeInitFlagHook`,'
+                f'but got {type(runner.model)}')

@@ -18,6 +18,13 @@ class BaseRetriever(BaseModel, metaclass=ABCMeta):
             data. If None, it will use "BaseDataPreprocessor" as type, see
             :class:`mmengine.model.BaseDataPreprocessor` for more details.
             Defaults to None.
+        prototype (Union[DataLoader, dict, str, torch.Tensor]): Database to be
+            retrieved. The following four types are supported.
+
+            - DataLoader: The original dataloader serves as the prototype.
+            - dict: The configuration to construct Dataloader.
+            - str: The path of the saved vector.
+            - torch.Tensor: The saved tensor whose dimension should be dim.
 
     Attributes:
         init_cfg (dict): Initialization config dict.
