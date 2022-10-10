@@ -367,21 +367,21 @@ class PCPVT(BaseModule):
             - strides (List[int]): The strides in each stage.
             - mlp_ratios (List[int]): The ratios of mlp in each stage.
             - sr_ratios (List[int]): The ratios of GSA-encoder layers in each
-                stage.
+              stage.
 
-        in_channels (int): Number of input channels. Default: 3.
+        in_channels (int): Number of input channels. Defaults to 3.
         out_indices (tuple[int]): Output from which stages.
-            Default: (3, ).
-        qkv_bias (bool): Enable bias for qkv if True. Default: False.
+            Defaults to ``(3, )``.
+        qkv_bias (bool): Enable bias for qkv if True. Defaults to False.
         drop_rate (float): Probability of an element to be zeroed.
-            Default 0.
+            Defaults to 0.
         attn_drop_rate (float): The drop out rate for attention layer.
-            Default 0.0
-        drop_path_rate (float): Stochastic depth rate. Default 0.0
+            Defaults to 0.0
+        drop_path_rate (float): Stochastic depth rate. Defaults to 0.0.
         norm_cfg (dict): Config dict for normalization layer.
-            Default: dict(type='LN')
+            Defaults to ``dict(type='LN')``.
         norm_after_stage(bool, List[bool]): Add extra norm after each stage.
-            Default False.
+            Defaults to False.
         init_cfg (dict, optional): The Config for initialization.
             Defaults to None.
 
@@ -613,22 +613,22 @@ class SVT(PCPVT):
             - strides (List[int]): The strides in each stage.
             - mlp_ratios (List[int]): The ratios of mlp in each stage.
             - sr_ratios (List[int]): The ratios of GSA-encoder layers in each
-                stage.
+              stage.
             - windiow_sizes (List[int]): The window sizes in LSA-encoder layers
-                in each stage.
+              in each stage.
 
-        in_channels (int): Number of input channels. Default: 3.
+        in_channels (int): Number of input channels. Defaults to 3.
         out_indices (tuple[int]): Output from which stages.
-            Default: (3, ).
-        qkv_bias (bool): Enable bias for qkv if True. Default: False.
-        drop_rate (float): Dropout rate. Default 0.
+            Defaults to (3, ).
+        qkv_bias (bool): Enable bias for qkv if True. Defaults to False.
+        drop_rate (float): Dropout rate. Defaults to 0.
         attn_drop_rate (float): Dropout ratio of attention weight.
-            Default 0.0
-        drop_path_rate (float): Stochastic depth rate. Default 0.2.
+            Defaults to 0.0
+        drop_path_rate (float): Stochastic depth rate. Defaults to 0.2.
         norm_cfg (dict): Config dict for normalization layer.
-            Default: dict(type='LN')
+            Defaults to ``dict(type='LN')``.
         norm_after_stage(bool, List[bool]): Add extra norm after each stage.
-            Default False.
+            Defaults to False.
         init_cfg (dict, optional): The Config for initialization.
             Defaults to None.
 
