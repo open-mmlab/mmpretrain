@@ -27,7 +27,6 @@ class BaseRetriever(BaseModel, metaclass=ABCMeta):
             - torch.Tensor: The saved tensor whose dimension should be dim.
 
     Attributes:
-        init_cfg (dict): Initialization config dict.
         prototype (Union[DataLoader, dict, str, torch.Tensor]): Database to be
             retrieved. The following four types are supported.
 
@@ -41,13 +40,17 @@ class BaseRetriever(BaseModel, metaclass=ABCMeta):
             dataloader to the format accepted by :meth:`forward`.
     """
 
-    def __init__(self,
-                 init_cfg: Optional[dict] = None,
-                 prototype: Union[DataLoader, dict, str, torch.Tensor] = None,
-                 data_preprocessor: Optional[dict] = None):
+    def __init__(
+        self,
+        prototype: Union[DataLoader, dict, str, torch.Tensor] = None,
+        data_preprocessor: Optional[dict] = None,
+        init_cfg: Optional[dict] = None,
+    ):
         super(BaseRetriever, self).__init__(
             init_cfg=init_cfg, data_preprocessor=data_preprocessor)
         self.prototype = prototype
+        self.prototype_inited = False
+        self.prototype_vecs = None
 
     @abstractmethod
     def forward(self,
@@ -86,7 +89,7 @@ class BaseRetriever(BaseModel, metaclass=ABCMeta):
         """
         pass
 
-    def extract_feat(self, inputs):
+    def extract_feat(self, inputs: torch.Tensor):
         """Extract features from the input tensor with shape (N, C, ...).
 
         The sub-classes are recommended to implement this method to extract

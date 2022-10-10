@@ -18,6 +18,14 @@ class ImageToImageRetriever(BaseRetriever):
     Args:
         image_encoder (Union[dict, List[dict]]): Encoder for extracting
             features.
+        prototype (Union[DataLoader, dict, str, torch.Tensor]): Database to be
+            retrieved. The following four types are supported.
+
+            - DataLoader: The original dataloader serves as the prototype.
+            - dict: The configuration to construct Dataloader.
+            - str: The path of the saved vector.
+            - torch.Tensor: The saved tensor whose dimension should be dim.
+
         head (dict, optional): The head module to calculate loss from
             processed features. See :mod:`mmcls.models.heads`. Notice
             that if the head is not set, `loss` method cannot be used.
@@ -41,27 +49,19 @@ class ImageToImageRetriever(BaseRetriever):
             more details. Defaults to None.
         topk (int): Return the topk of the retrieval result. `-1` means
             return all. Defaults to -1.
-        prototype (Union[DataLoader, dict, str, torch.Tensor]): Database to be
-            retrieved. The following four types are supported.
-
-            - DataLoader: The original dataloader serves as the prototype.
-            - dict: The configuration to construct Dataloader.
-            - str: The path of the saved vector.
-            - torch.Tensor: The saved tensor whose dimension should be dim.
-
         init_cfg (dict, optional): the config to control the initialization.
             Defaults to None.
     """
 
     def __init__(self,
                  image_encoder: Union[dict, List[dict]],
+                 prototype: Union[DataLoader, dict, str, torch.Tensor],
                  head: Optional[dict] = None,
                  pretrained: Optional[str] = None,
                  similarity_fn: Union[str, Callable] = 'cosine_similarity',
                  train_cfg: Optional[dict] = None,
                  data_preprocessor: Optional[dict] = None,
                  topk: int = -1,
-                 prototype: Union[DataLoader, dict, str, torch.Tensor] = None,
                  init_cfg: Optional[dict] = None):
 
         if pretrained is not None:
