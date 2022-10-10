@@ -126,6 +126,7 @@ mim install -e .
 - [x] [Res2Net](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/res2net)
 - [x] [MLP-Mixer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mlp_mixer)
 - [x] [DeiT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/deit)
+- [x] [DeiT-3](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/deit3)
 - [x] [Conformer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/conformer)
 - [x] [T2T-ViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/t2t_vit)
 - [x] [Twins](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/twins)

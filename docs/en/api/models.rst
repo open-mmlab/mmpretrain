@@ -64,6 +64,7 @@ Backbones
    ConvMixer
    ConvNeXt
    DenseNet
+   DeiT3
    DistilledVisionTransformer
    EfficientFormer
    EfficientNet

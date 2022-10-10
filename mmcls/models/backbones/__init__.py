@@ -5,6 +5,7 @@ from .convmixer import ConvMixer
 from .convnext import ConvNeXt
 from .cspnet import CSPDarkNet, CSPNet, CSPResNet, CSPResNeXt
 from .deit import DistilledVisionTransformer
+from .deit3 import DeiT3
 from .densenet import DenseNet
 from .edgenext import EdgeNeXt
 from .efficientformer import EfficientFormer
@@ -87,4 +88,5 @@ __all__ = [
     'EfficientFormer',
     'SwinTransformerV2',
     'MViT',
+    'DeiT3',
 ]

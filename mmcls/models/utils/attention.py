@@ -10,6 +10,7 @@ from mmengine.utils import digit_version
 
 from mmcls.registry import MODELS
 from .helpers import to_2tuple
+from .layer_scale import LayerScale
 
 # After pytorch v1.10.0, use torch.meshgrid without indexing
 # will raise extra warning. For more details,
@@ -511,6 +512,7 @@ class MultiheadAttention(BaseModule):
                  qk_scale=None,
                  proj_bias=True,
                  v_shortcut=False,
+                 use_layer_scale=False,
                  init_cfg=None):
         super(MultiheadAttention, self).__init__(init_cfg=init_cfg)
 
@@ -529,6 +531,11 @@ class MultiheadAttention(BaseModule):
 
         self.out_drop = build_dropout(dropout_layer)
 
+        if use_layer_scale:
+            self.gamma1 = LayerScale(embed_dims)
+        else:
+            self.gamma1 = nn.Identity()
+
     def forward(self, x):
         B, N, _ = x.shape
         qkv = self.qkv(x).reshape(B, N, 3, self.num_heads,
@@ -541,7 +548,7 @@ class MultiheadAttention(BaseModule):
 
         x = (attn @ v).transpose(1, 2).reshape(B, N, self.embed_dims)
         x = self.proj(x)
-        x = self.out_drop(self.proj_drop(x))
+        x = self.out_drop(self.gamma1(self.proj_drop(x)))
 
         if self.v_shortcut:
             x = v.squeeze(1) + x
