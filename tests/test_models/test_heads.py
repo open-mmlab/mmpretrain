@@ -482,8 +482,8 @@ class TestMultiLabelLinearClsHead(TestMultiLabelClsHead):
         head(feats)
 
 
-class TestArcFaceHead(TestCase):
-    DEFAULT_ARGS = dict(type='ArcFaceHead', in_channels=10, num_classes=5)
+class TestArcFaceClsHead(TestCase):
+    DEFAULT_ARGS = dict(type='ArcFaceClsHead', in_channels=10, num_classes=5)
 
     def test_initialize(self):
         with self.assertRaisesRegex(ValueError, 'num_classes=-5 must be'):
@@ -496,11 +496,6 @@ class TestArcFaceHead(TestCase):
         feats = (torch.rand(4, 10), torch.rand(4, 10))
         pre_logits = head.pre_logits(feats)
         self.assertIs(pre_logits, feats[-1])
-
-        # return the last item
-        feats = torch.rand(4, 10)
-        pre_logits = head.pre_logits(feats)
-        self.assertIs(pre_logits, feats)
 
     def test_forward(self):
         head = MODELS.build(self.DEFAULT_ARGS)
@@ -524,15 +519,3 @@ class TestArcFaceHead(TestCase):
         losses = head.loss(feats, data_samples)
         self.assertEqual(losses.keys(), {'loss'})
         self.assertGreater(losses['loss'].item(), 0)
-
-    def test_predict(self):
-        feats = (torch.rand(4, 10), )
-        #  test loss with used='before'
-        head = MODELS.build(self.DEFAULT_ARGS)
-        pred = head.predict(feats)
-        self.assertEqual(pred.shape, (4, 10))
-
-        #  test loss with used='after'
-        head = MODELS.build({**self.DEFAULT_ARGS, 'used': 'after'})
-        pred = head.predict(feats)
-        self.assertEqual(pred.shape, (4, 5))
