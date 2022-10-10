@@ -12,17 +12,17 @@ from .cls_head import ClsHead
 
 
 class NormLinear(nn.Linear):
-    """An enhanced linear layer, whcih could normalize
-    the input and the linear weight.
-    
+    """An enhanced linear layer, which could normalize the input and the linear
+    weight.
+
     Args:
         in_features (int): size of each input sample.
         out_features (int): size of each output sample
-        bias (bool): Whether there is bias. If set to ``False``, the 
+        bias (bool): Whether there is bias. If set to ``False``, the
             layer will not learn an additive bias. Defaults to ``True``.
-        feature_norm (bool): Whether to normalize the input feature. 
+        feature_norm (bool): Whether to normalize the input feature.
             Defaults to ``True``.
-        weight_norm (bool):Whether to normalize the weight. 
+        weight_norm (bool):Whether to normalize the weight.
             Defaults to ``True``.
     """
 
@@ -74,8 +74,6 @@ class ArcFaceClsHead(ClsHead):
                  easy_margin: bool = False,
                  ls_eps: float = 0.0,
                  bias: bool = False,
-                 feature_norm: bool = True,
-                 weight_norm: bool = True,
                  loss: dict = dict(type='CrossEntropyLoss', loss_weight=1.0),
                  init_cfg: Optional[dict] = None):
 
