@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import enum
 from typing import Callable, List, Optional, Union
 
 import mmengine.dist as dist
@@ -244,7 +243,7 @@ class ImageToImageRetriever(BaseRetriever):
         return data_samples
 
     def _get_prototype_vecs_from_dataloader(self):
-        """get prototype_vecs from dataloader"""
+        """get prototype_vecs from dataloader."""
         data_loader = self.prototype
         num = len(data_loader.dataset)
 
@@ -261,9 +260,9 @@ class ImageToImageRetriever(BaseRetriever):
             for i, data_sample in enumerate(data_batch['data_samples']):
                 sample_idx = data_sample.get('sample_idx')
                 prototype_vecs[sample_idx] = feat[i]
-        
+
         assert prototype_vecs is not None
-        dist.all_reduce(prototype_vecs) 
+        dist.all_reduce(prototype_vecs)
         return prototype_vecs
 
     @torch.no_grad()
@@ -287,7 +286,7 @@ class ImageToImageRetriever(BaseRetriever):
 
         if isinstance(self.prototype, DataLoader):
             self.prototype_vecs = self._get_prototype_vecs_from_dataloader()
-        
+
         self.prototype_vecs = self.prototype_vecs.to(device)
         self.prototype_inited = True
 
