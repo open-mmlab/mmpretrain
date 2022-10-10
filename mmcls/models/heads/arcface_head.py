@@ -12,7 +12,19 @@ from .cls_head import ClsHead
 
 
 class NormLinear(nn.Linear):
-    """ArcFace classifier head."""
+    """An enhanced linear layer, whcih could normalize
+    the input and the linear weight.
+    
+    Args:
+        in_features (int): size of each input sample.
+        out_features (int): size of each output sample
+        bias (bool): Whether there is bias. If set to ``False``, the 
+            layer will not learn an additive bias. Defaults to ``True``.
+        feature_norm (bool): Whether to normalize the input feature. 
+            Defaults to ``True``.
+        weight_norm (bool):Whether to normalize the weight. 
+            Defaults to ``True``.
+    """
 
     def __init__(self,
                  in_features: int,
@@ -48,10 +60,6 @@ class ArcFaceClsHead(ClsHead):
         easy_margin (bool): Avoid theta + m >= PI. Defaults to False.
         ls_eps (float): Label smoothing. Defaults to 0.
         bias (bool): Whether to use bias in norm layer. Defaults to False.
-        feature_norm (bool): Whether to normalize feature in norm layer.
-            Defaults to True.
-        weight_norm (bool): Whether to normalize weight in norm layer.
-            Defaults to True.
         loss (dict): Config of classification loss. Defaults to
             ``dict(type='CrossEntropyLoss', loss_weight=1.0)``.
         init_cfg (dict, optional): the config to control the initialization.
@@ -85,12 +93,7 @@ class ArcFaceClsHead(ClsHead):
         self.m = m
         self.ls_eps = ls_eps
 
-        self.norm_layer = NormLinear(
-            in_features=in_channels,
-            out_features=num_classes,
-            bias=bias,
-            feature_norm=feature_norm,
-            weight_norm=weight_norm)
+        self.norm_linear = NormLinear(in_channels, num_classes, bias=bias)
 
         self.easy_margin = easy_margin
         self.th = math.cos(math.pi - m)
@@ -115,7 +118,7 @@ class ArcFaceClsHead(ClsHead):
         pre_logits = self.pre_logits(feats)
 
         # cos=(a*b)/(||a||*||b||)
-        cosine = self.norm_layer(pre_logits)
+        cosine = self.norm_linear(pre_logits)
 
         if target is None:
             return self.s * cosine
