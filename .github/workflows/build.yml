@@ -29,24 +29,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build_without_timm:
+  build_with_timm:
     runs-on: ubuntu-latest
     env:
       UBUNTU_VERSION: ubuntu1804
     strategy:
       matrix:
         python-version: [3.6]
-        torch: [1.5.0, 1.8.0, 1.9.0]
+        torch: [1.8.0]
         include:
-          - torch: 1.5.0
-            torchvision: 0.6.0
-            torch_major: 1.5.0
           - torch: 1.8.0
             torchvision: 0.9.0
             torch_major: 1.8.0
-          - torch: 1.9.0
-            torchvision: 0.10.0
-            torch_major: 1.9.0
 
     steps:
       - uses: actions/checkout@v2
@@ -63,13 +57,26 @@ jobs:
       - name: Install mmcls dependencies
         run: |
           pip install -r requirements.txt
+      - name: Install timm
+        run: |
+          pip install timm
       - name: Build and install
         run: |
           rm -rf .eggs
           pip install -e . -U
       - name: Run unittests
         run: |
-          pytest tests/ --ignore tests/test_models/test_backbones/test_timm_backbone.py
+          coverage run --branch --source mmcls -m pytest tests/
+          coverage xml
+          coverage report -m --omit="mmcls/utils/*","mmcls/apis/*"
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          env_vars: OS,PYTHON
+          name: codecov-umbrella
+          fail_ci_if_error: false
 
   build:
     runs-on: ubuntu-latest
@@ -130,16 +137,13 @@ jobs:
       - name: Install mmcls dependencies
         run: |
           pip install -r requirements.txt
-      - name: Install timm
-        run: |
-          pip install timm
       - name: Build and install
         run: |
           rm -rf .eggs
           pip install -e . -U
       - name: Run unittests and generate coverage report
         run: |
-          coverage run --branch --source mmcls -m pytest tests/
+          coverage run --branch --source mmcls -m pytest tests/ -k "not timm"
           coverage xml
           coverage report -m --omit="mmcls/utils/*","mmcls/apis/*"
       - name: Upload coverage to Codecov
