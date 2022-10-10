@@ -122,6 +122,7 @@ And you can also configure a group of policies manually by selecting from the be
    Solarize
    SolarizeAdd
    Translate
+   BaseAugTransform
 
 Formatting
 ^^^^^^^^^^
