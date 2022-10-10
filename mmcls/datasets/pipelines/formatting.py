@@ -49,6 +49,38 @@ class FormatMultiTaskLabels:
 
     def __call__(self, results: Dict[str, Any]) -> Dict[str, Any]:
         gt_label = dict()
+        if self.tasks is None:
+            for k, v in results.items():
+                if k.endswith('_img_label'):
+                    task = k[:-10]
+                    gt_label[task] = to_tensor(v)
+        else:
+            for task in self.tasks:
+                label_key = task + '_img_label'
+                gt_label[task] = to_tensor(results[label_key])
+        results['gt_label'] = gt_label
+        return results
+
+    def __repr__(self):
+        return self.__class__.__name__ + f'(tasks={self.tasks})'
+
+
+
+@PIPELINES.register_module()
+class FormatMultiTaskLabelsMasked:
+    """Convert all image labels of multi-task dataset to a dict of tensor.
+
+    Args:
+        tasks (List[str], optional): The task names defined in the dataset.
+            If no set, try to match all keys with format ``xxx_img_label``.
+            Defaults to None.
+    """
+
+    def __init__(self, tasks: Optional[List[str]] = None):
+        self.tasks = tasks
+
+    def __call__(self, results: Dict[str, Any]) -> Dict[str, Any]:
+        gt_label = dict()
         gt_mask = dict()
         if self.tasks is None:
             for k, v in results.items():
@@ -58,15 +90,15 @@ class FormatMultiTaskLabels:
                 elif k.endswith('_mask'):
                     task = k[:-5]
                     gt_mask[task] = v
-
         else:
             for task in self.tasks:
                 label_key = task + '_img_label'
                 mask_key = task + '_mask'
                 gt_label[task] = to_tensor(results[label_key])
                 gt_mask[task] = results[mask_key]
-        results['gt_label'] = gt_label
-        results['gt_mask'] = gt_mask
+
+
+        results['gt_label'] = dict(label=gt_label,mask=gt_mask)
         return results
 
     def __repr__(self):
@@ -173,6 +205,7 @@ class Collect(object):
                             'img_norm_cfg')):
         self.keys = keys
         self.meta_keys = meta_keys
+
     def __call__(self, results):
         data = {}
         img_meta = {}

@@ -204,5 +204,6 @@ class CrossEntropyLoss(nn.Module):
             weight,
             class_weight=class_weight,
             reduction=reduction,
-            avg_factor=avg_factor)  # check with pierre
+            avg_factor=avg_factor,
+            **kwargs)
         return loss_cls

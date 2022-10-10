@@ -141,7 +141,7 @@ class ImageClassifier(BaseClassifier):
         x = self.extract_feat(img)
 
         losses = dict()
-        loss = self.head.forward_train(x, gt_label,**kwargs)
+        loss = self.head.forward_train(x, gt_label)
 
         losses.update(loss)
 
