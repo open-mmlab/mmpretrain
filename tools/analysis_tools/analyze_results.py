@@ -3,14 +3,14 @@ import argparse
 import os.path as osp
 from pathlib import Path
 
-import torch
-import mmengine
 import mmcv
+import mmengine
+import torch
 from mmengine import DictAction
 
 from mmcls.datasets import build_dataset
-from mmcls.visualization import ClsVisualizer
 from mmcls.structures import ClsDataSample
+from mmcls.visualization import ClsVisualizer
 
 
 def parse_args():
@@ -48,8 +48,7 @@ def parse_args():
 def save_imgs(result_dir, folder_name, results, dataset, rescale_factor=None):
     full_dir = osp.join(result_dir, folder_name)
     vis = ClsVisualizer(
-        save_dir=full_dir, vis_backends=[dict(type='LocalVisBackend')]
-    )
+        save_dir=full_dir, vis_backends=[dict(type='LocalVisBackend')])
     vis.dataset_meta = {'classes': dataset.CLASSES}
 
     # save imgs
