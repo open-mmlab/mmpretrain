@@ -24,12 +24,12 @@ def parse_args():
         default=20,
         type=int,
         help='Number of images to select for success/fail')
-    parser.add_argument( 
-        '--rescale-factor', 
-        '-r', 
-        type=float, 
-        help='image rescale factor, which is useful if the output is too ' 
-        'large or too small.') 
+    parser.add_argument(
+        '--rescale-factor',
+        '-r',
+        type=float,
+        help='image rescale factor, which is useful if the output is too '
+        'large or too small.')
     parser.add_argument(
         '--cfg-options',
         nargs='+',
@@ -96,8 +96,8 @@ def main():
         output = dict()
         output['sample_idx'] = outputs[i]['sample_idx']
         output['gt_label'] = outputs[i]['gt_label']['label']
-        output['pred_score'] = float(torch.max(
-            outputs[i]['pred_label']['score']).item())
+        output['pred_score'] = float(
+            torch.max(outputs[i]['pred_label']['score']).item())
         output['pred_scores'] = outputs[i]['pred_label']['score']
         output['pred_label'] = outputs[i]['pred_label']['label']
         outputs_list.append(output)
