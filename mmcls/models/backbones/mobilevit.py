@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
-from typing import Callable, Sequence
+from typing import Callable, Optional, Sequence
 
 import torch
 import torch.nn.functional as F
@@ -14,29 +14,60 @@ from .vision_transformer import TransformerEncoderLayer
 
 
 class MobileVitBlock(nn.Module):
-    """ MobileViT block
-        Paper: https://arxiv.org/abs/2110.02178?context=cs.LG
+    """MobileViT block.
+
+    According to the paper, the MobileViT block has a local representation.
+    a transformer-as-convolution layer which consists of a global
+    representation with unfolding and folding, and a final fusion layer.
+
+    Args:
+        in_channels (int): Number of input image channels.
+        transformer_dim (int): Number of transformer channels.
+        ffn_dim (int): Number of ffn channels in transformer block.
+        out_channels (int): Number of channels in output.
+        conv_ksize (int): Conv kernel size in local representation
+            and fusion. Defaults to 3.
+        conv_cfg (dict, optional): Config dict for convolution layer.
+            Defaults to None, which means using conv2d.
+        norm_cfg (dict, optional): Config dict for normalization layer.
+            Defaults to dict(type='BN').
+        act_cfg (dict, optional): Config dict for activation layer.
+            Defaults to dict(type='Swish').
+        num_transformer_blocks (int): Number of transformer blocks in
+            a MobileViT block. Defaults to 2.
+        patch_size (int): Patch size for unfolding and folding.
+             Defaults to 2.
+        num_heads (int): Number of heads in global representation.
+             Defaults to 4.
+        drop_rate (float): Probability of an element to be zeroed
+            after the feed forward layer. Defaults to 0.
+        attn_drop_rate (float): The drop out rate for attention output weights.
+            Defaults to 0.
+        drop_path_rate (float): Stochastic depth rate. Defaults to 0.
+        no_fusion (bool): Whether to remove the fusion layer.
+            Defaults to False.
+        transformer_norm_cfg (dict, optional): Config dict for normalization
+            layer in transformer. Defaults to dict(type='LN').
     """
 
     def __init__(
             self,
             in_channels: int,
-            transformer_dim,
-            ffn_dim,
-            out_channels,
+            transformer_dim: int,
+            ffn_dim: int,
+            out_channels: int,
             conv_ksize: int = 3,
-            conv_cfg=None,
-            norm_cfg=dict(type='BN'),
-            act_cfg=dict(type='Swish'),
+            conv_cfg: Optional[dict] = None,
+            norm_cfg: Optional[dict] = dict(type='BN'),
+            act_cfg: Optional[dict] = dict(type='Swish'),
             num_transformer_blocks: int = 2,
             patch_size: int = 2,
             num_heads: int = 4,
             drop_rate: float = 0.,
-            attn_drop_rate=0.,
-            drop_path_rate: int = 0.,
+            attn_drop_rate: float = 0.,
+            drop_path_rate: float = 0.,
             no_fusion: bool = False,
             transformer_norm_cfg: Callable = dict(type='LN'),
-            **kwargs,  # eat unused args
     ):
         super(MobileVitBlock, self).__init__()
 
@@ -152,25 +183,33 @@ class MobileVitBlock(nn.Module):
 class MobileViT(BaseBackbone):
     """MobileViT backbone.
 
+    A PyTorch implementation of : `MobileViT: Light-weight, General-purpose,
+    and Mobile-friendly Vision Transformer<https://arxiv.org/pdf/2110.02178.pdf>`_
+
+    Modified from the `official repo
+    <https://github.com/apple/ml-cvnets/blob/main/cvnets/models/classification/mobilevit.py>`_
+    and `timm
+    <https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/mobilevit.py>`_.
+
     Args:
-        widen_factor (float): Width multiplier, multiply number of
-            channels in each layer by this amount. Default: 1.0.
-        out_indices (None or Sequence[int]): Output from which stages.
-            Default: (7, ).
+        arch (str): Architecture of MobileViT. Basic archs are `small`,
+            `x_small`, `xx_small`. Defaults to `small`.
+        in_channels (int): Number of input image channels. Defaults to 3.
+        stem_channels (int): Channels of stem layer.  Defaults to 16.
+        last_exp_factor (int): Channels expand factor of last layer.
+            Defaults to 4.
+        out_indices (Sequence[int]): Output from which stages.
+            Defaults to (4, ).
         frozen_stages (int): Stages to be frozen (all param fixed).
-            Default: -1, which means not freezing any parameters.
+            Defaults to -1, which means not freezing any parameters.
         conv_cfg (dict, optional): Config dict for convolution layer.
-            Default: None, which means using conv2d.
-        norm_cfg (dict): Config dict for normalization layer.
-            Default: dict(type='BN').
-        act_cfg (dict): Config dict for activation layer.
-            Default: dict(type='ReLU6').
-        norm_eval (bool): Whether to set norm layers to eval mode, namely,
-            freeze running stats (mean and var). Note: Effect on Batch Norm
-            and its variants only. Default: False.
-        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
-            memory while slowing down the training speed. Default: False.
-    """
+            Defaults to None, which means using conv2d.
+        norm_cfg (dict, optional): Config dict for normalization layer.
+            Defaults to dict(type='BN').
+        act_cfg (dict, optional): Config dict for activation layer.
+            Defaults to dict(type='Swish').
+        init_cfg (dict, optional): Initialization config dict.
+    """  # noqa
 
     # Parameters to build layers. The first param is the type of layer.
     # For `mobilenetv2` layer, the rest params from left to right are:
@@ -276,6 +315,8 @@ class MobileViT(BaseBackbone):
                               ffn_dim,
                               num_transformer_blocks,
                               expand_ratio=4):
+        """Build mobilevit layer, which consists of one InvertedResidual and
+        one MobileVitBlock."""
         layer = []
         layer.append(
             InvertedResidual(
@@ -301,7 +342,8 @@ class MobileViT(BaseBackbone):
                                 stride,
                                 num_blocks,
                                 expand_ratio=4):
-
+        """Build mobilenetv2 layer, which consists of several InvertedResidual
+        layers."""
         layer = []
         for i in range(num_blocks):
             stride = stride if i == 0 else 1

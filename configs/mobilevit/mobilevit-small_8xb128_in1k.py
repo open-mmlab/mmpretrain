@@ -6,12 +6,11 @@ _base_ = [
 ]
 
 # no normalize for original implements
-# use bgr directly
 data_preprocessor = dict(
     # RGB format normalization parameters
     mean=[0, 0, 0],
     std=[255, 255, 255],
-    # convert image from BGR to RGB
+    # use bgr directly
     to_rgb=False,
 )
 
