@@ -24,6 +24,12 @@ def parse_args():
         default=20,
         type=int,
         help='Number of images to select for success/fail')
+    parser.add_argument( 
+        '--rescale-factor', 
+        '-r', 
+        type=float, 
+        help='image rescale factor, which is useful if the output is too ' 
+        'large or too small.') 
     parser.add_argument(
         '--cfg-options',
         nargs='+',
@@ -39,7 +45,7 @@ def parse_args():
     return args
 
 
-def save_imgs(result_dir, folder_name, results, dataset):
+def save_imgs(result_dir, folder_name, results, dataset, rescale_factor=None):
     full_dir = osp.join(result_dir, folder_name)
     vis = ClsVisualizer(
         save_dir=full_dir, vis_backends=[dict(type='LocalVisBackend')]
@@ -48,13 +54,26 @@ def save_imgs(result_dir, folder_name, results, dataset):
 
     # save imgs
     for result in results:
-        data_sample = ClsDataSample().set_gt_label(
-            result['gt_label']
-            ).set_pred_label(
-                result['pred_label']
-                ).set_pred_score(torch.Tensor(result['pred_scores']))
-        img = mmcv.imread(result['img_path'], channel_order='rgb')
-        vis.add_datasample(result['filename'], img, data_sample)
+        data_sample = ClsDataSample()\
+            .set_gt_label(result['gt_label'])\
+            .set_pred_label(result['pred_label'])\
+            .set_pred_score(result['pred_scores'])
+        data_info = dataset.get_data_info(result['sample_idx'])
+        if 'img' in data_info:
+            img = data_info['img']
+            name = str(result['sample_idx'])
+        elif 'img_path' in data_info:
+            img = mmcv.imread(data_info['img_path'], channel_order='rgb')
+            name = Path(data_info['img_path']).name
+        else:
+            raise ValueError('Cannot load images from the dataset infos.')
+        if rescale_factor is not None:
+            img = mmcv.imrescale(img, rescale_factor)
+        vis.add_datasample(name, img, data_sample)
+
+        for k, v in result.items():
+            if isinstance(v, torch.Tensor):
+                result[k] = v.tolist()
 
     mmengine.dump(results, osp.join(full_dir, folder_name + '.json'))
 
@@ -76,13 +95,12 @@ def main():
     outputs_list = list()
     for i in range(len(outputs)):
         output = dict()
-        output['img_path'] = outputs[i]['img_path']
-        output['filename'] = Path(outputs[i]['img_path']).name
-        output['gt_label'] = int(outputs[i]['gt_label']['label'][0])
+        output['sample_idx'] = outputs[i]['sample_idx']
+        output['gt_label'] = outputs[i]['gt_label']['label']
         output['pred_score'] = float(torch.max(
             outputs[i]['pred_label']['score']).item())
-        output['pred_scores'] = outputs[i]['pred_label']['score'].tolist()
-        output['pred_label'] = int(outputs[i]['pred_label']['label'][0])
+        output['pred_scores'] = outputs[i]['pred_label']['score']
+        output['pred_label'] = outputs[i]['pred_label']['label']
         outputs_list.append(output)
 
     # sort result
@@ -99,8 +117,8 @@ def main():
     success = success[:args.topk]
     fail = fail[:args.topk]
 
-    save_imgs(args.out_dir, 'success', success, dataset)
-    save_imgs(args.out_dir, 'fail', fail, dataset)
+    save_imgs(args.out_dir, 'success', success, dataset, args.rescale_factor)
+    save_imgs(args.out_dir, 'fail', fail, dataset, args.rescale_factor)
 
 
 if __name__ == '__main__':
