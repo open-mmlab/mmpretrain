@@ -3,8 +3,9 @@ ARG CUDA="10.2"
 ARG CUDNN="7"
 FROM pytorch/pytorch:${PYTORCH}-cuda${CUDA}-cudnn${CUDNN}-devel
 
+ARG MMENGINE="0.2.0"
 ARG MMCV="2.0.0rc1"
-ARG MMCLS="1.0.0rc1"
+ARG MMCLS="1.0.0rc2"
 
 ENV PYTHONUNBUFFERED TRUE
 
@@ -26,7 +27,7 @@ RUN pip install torchserve torch-model-archiver
 # MMLAB
 ARG PYTORCH
 ARG CUDA
-RUN pip install mmengine
+RUN pip install mmengine==${MMENGINE}
 RUN ["/bin/bash", "-c", "pip install mmcv==${MMCV} -f https://download.openmmlab.com/mmcv/dist/cu${CUDA//./}/torch${PYTORCH}/index.html"]
 RUN pip install mmcls==${MMCLS}
 

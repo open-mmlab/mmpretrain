@@ -58,6 +58,11 @@ The `1.x` branch works with **PyTorch 1.6+**.
 
 ## What's new
 
+v1.0.0rc2 was released in 12/10/2022.
+
+- Support Deit-3 backbone.
+- Fix MMEngine version requirements.
+
 v1.0.0rc1 was released in 30/9/2022.
 
 - Support MViT, EdgeNeXt, Swin-Transformer V2, EfficientFormer and MobileOne.
