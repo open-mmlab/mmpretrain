@@ -39,7 +39,7 @@ def init_model(config, checkpoint=None, device='cuda:0', options=None):
         checkpoint = load_checkpoint(model, checkpoint, map_location='cpu')
         if 'dataset_meta' in checkpoint.get('meta', {}):
             # mmcls 1.x
-            model.CLASSES = checkpoint['meta']['dataset_meta']
+            model.CLASSES = checkpoint['meta']['dataset_meta']['classes']
         elif 'CLASSES' in checkpoint.get('meta', {}):
             # mmcls < 1.x
             model.CLASSES = checkpoint['meta']['CLASSES']
