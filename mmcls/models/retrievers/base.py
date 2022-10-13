@@ -50,7 +50,6 @@ class BaseRetriever(BaseModel, metaclass=ABCMeta):
             init_cfg=init_cfg, data_preprocessor=data_preprocessor)
         self.prototype = prototype
         self.prototype_inited = False
-        self.prototype_vecs = None
 
     @abstractmethod
     def forward(self,

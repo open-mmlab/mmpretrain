@@ -8,6 +8,7 @@ from torch.utils.data import DataLoader
 
 from mmcls.registry import MODELS
 from mmcls.structures import ClsDataSample
+from mmcls.utils import track_on_main_process
 from .base import BaseRetriever
 
 
@@ -86,7 +87,6 @@ class ImageToImageRetriever(BaseRetriever):
 
         self.prototype = prototype
         self.prototype_inited = False
-        self.prototype_vecs = None
         self.topk = topk
 
     @property
@@ -248,7 +248,7 @@ class ImageToImageRetriever(BaseRetriever):
         num = len(data_loader.dataset)
 
         prototype_vecs = None
-        for data_batch in data_loader:
+        for data_batch in track_on_main_process(data_loader):
             data = self.data_preprocessor(data_batch, False)
             feat = self(**data)
             if isinstance(feat, tuple):
@@ -278,16 +278,17 @@ class ImageToImageRetriever(BaseRetriever):
         """
         device = next(self.image_encoder.parameters()).device
         if isinstance(self.prototype, torch.Tensor):
-            self.prototype_vecs = self.prototype
+            prototype_vecs = self.prototype
         elif isinstance(self.prototype, str):
-            self.prototype_vecs = torch.load(self.prototype)
+            prototype_vecs = torch.load(self.prototype)
         elif isinstance(self.prototype, dict):
             self.prototype = Runner.build_dataloader(self.prototype)
 
         if isinstance(self.prototype, DataLoader):
-            self.prototype_vecs = self._get_prototype_vecs_from_dataloader()
+            prototype_vecs = self._get_prototype_vecs_from_dataloader()
 
-        self.prototype_vecs = self.prototype_vecs.to(device)
+        self.register_buffer(
+            'prototype_vecs', prototype_vecs.to(device), persistent=False)
         self.prototype_inited = True
 
     def dump_prototype(self, path):
