@@ -37,7 +37,11 @@ def init_model(config, checkpoint=None, device='cuda:0', options=None):
         # Mapping the weights to GPU may cause unexpected video memory leak
         # which refers to https://github.com/open-mmlab/mmdetection/pull/6405
         checkpoint = load_checkpoint(model, checkpoint, map_location='cpu')
-        if 'CLASSES' in checkpoint.get('meta', {}):
+        if 'dataset_meta' in checkpoint.get('meta', {}):
+            # mmcls 1.x
+            model.CLASSES = checkpoint['meta']['dataset_meta']
+        elif 'CLASSES' in checkpoint.get('meta', {}):
+            # mmcls < 1.x
             model.CLASSES = checkpoint['meta']['CLASSES']
         else:
             from mmcls.datasets.categories import IMAGENET_CATEGORIES
