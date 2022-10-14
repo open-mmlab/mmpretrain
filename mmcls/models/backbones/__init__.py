@@ -10,6 +10,7 @@ from .densenet import DenseNet
 from .edgenext import EdgeNeXt
 from .efficientformer import EfficientFormer
 from .efficientnet import EfficientNet
+from .hornet import HorNet
 from .hrnet import HRNet
 from .inception_v3 import InceptionV3
 from .lenet import LeNet5
