@@ -1,5 +1,3 @@
-
-
 _base_ = [
     '../_base_/models/hornet/hornet-base.py',
     '../_base_/datasets/imagenet_bs64_swin_224.py',

@@ -16,8 +16,8 @@ import torch.nn.functional as F
 import torch.utils.checkpoint as checkpoint
 from mmcv.cnn.bricks import DropPath
 
-from mmcls.registry import MODELS
 from mmcls.models.backbones.base_backbone import BaseBackbone
+from mmcls.registry import MODELS
 from ..utils import LayerScale
 
 
@@ -34,6 +34,7 @@ def get_dwconv(dim, kernel_size, bias=True):
 
 class HorNetLayerNorm(nn.Module):
     """An implementation of LayerNorm of HorNet.
+
     The differences between HorNetLayerNorm & torch LayerNorm:
         1. Supports two data formats channels_last or channels_first.
     Args:
@@ -76,6 +77,7 @@ class HorNetLayerNorm(nn.Module):
 
 class GlobalLocalFilter(nn.Module):
     """A GlobalLocalFilter of HorNet.
+
     Args:
         dim (int): Number of input channels.
         h (int): Height of complex_weight.
@@ -130,6 +132,7 @@ class GlobalLocalFilter(nn.Module):
 
 class gnConv(nn.Module):
     """A gnConv of HorNet.
+
     Args:
         dim (int): Number of input channels.
         order (int): Order of gnConv.
@@ -188,6 +191,7 @@ class gnConv(nn.Module):
 
 class HorNetBlock(nn.Module):
     """A block of HorNet.
+
     Args:
         dim (int): Number of input channels.
         order (int): Order of gnConv.
