@@ -1,11 +1,14 @@
 # dataset settings
 dataset_type = 'VOC'
 data_preprocessor = dict(
+    num_classes=20,
     # RGB format normalization parameters
     mean=[123.675, 116.28, 103.53],
     std=[58.395, 57.12, 57.375],
     # convert image from BGR to RGB
     to_rgb=True,
+    # generate onehot-format labels for multi-label classification.
+    to_onehot=True,
 )
 
 train_pipeline = [

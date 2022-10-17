@@ -296,6 +296,7 @@ class SingleLabelMetric(BaseMetric):
                   true positives, false negatives and false positives.
 
             Defaults to "macro".
+        num_classes (Optional, int): The number of classes. Defaults to None.
         collect_device (str): Device name used for collecting results from
             different ranks during distributed training. Must be 'cpu' or
             'gpu'. Defaults to 'cpu'.
@@ -349,6 +350,7 @@ class SingleLabelMetric(BaseMetric):
                  thrs: Union[float, Sequence[Union[float, None]], None] = 0.,
                  items: Sequence[str] = ('precision', 'recall', 'f1-score'),
                  average: Optional[str] = 'macro',
+                 num_classes: Optional[int] = None,
                  collect_device: str = 'cpu',
                  prefix: Optional[str] = None) -> None:
         super().__init__(collect_device=collect_device, prefix=prefix)
@@ -365,6 +367,7 @@ class SingleLabelMetric(BaseMetric):
                 '"support".'
         self.items = tuple(items)
         self.average = average
+        self.num_classes = num_classes
 
     def process(self, data_batch, data_samples: Sequence[dict]):
         """Process one batch of data samples.
@@ -383,12 +386,14 @@ class SingleLabelMetric(BaseMetric):
             gt_label = data_sample['gt_label']
             if 'score' in pred_label:
                 result['pred_score'] = pred_label['score'].cpu()
-            elif ('num_classes' in pred_label):
-                result['pred_label'] = pred_label['label'].cpu()
-                result['num_classes'] = pred_label['num_classes']
             else:
-                raise ValueError('The `pred_label` in data_samples do not '
-                                 'have neither `score` nor `num_classes`.')
+                num_classes = self.num_classes or data_sample.get(
+                    'num_classes')
+                assert num_classes is not None, \
+                    'The `num_classes` must be specified if `pred_label` has '\
+                    'only `label`.'
+                result['pred_label'] = pred_label['label'].cpu()
+                result['num_classes'] = num_classes
             result['gt_label'] = gt_label['label'].cpu()
             # Save the result to `self.results`.
             self.results.append(result)

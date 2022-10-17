@@ -71,7 +71,7 @@ class TestClsDataPreprocessor(TestCase):
         inputs = processed_data['inputs']
         self.assertTrue((inputs >= -1).all())
         self.assertTrue((inputs <= 1).all())
-        self.assertNotIn('data_samples', processed_data)
+        self.assertIsNone(processed_data['data_samples'])
 
         data = {'inputs': torch.randint(0, 256, (1, 3, 224, 224))}
         inputs = processor(data)['inputs']
@@ -81,9 +81,10 @@ class TestClsDataPreprocessor(TestCase):
     def test_batch_augmentation(self):
         cfg = dict(
             type='ClsDataPreprocessor',
+            num_classes=10,
             batch_augments=dict(augments=[
-                dict(type='Mixup', alpha=0.8, num_classes=10),
-                dict(type='CutMix', alpha=1., num_classes=10)
+                dict(type='Mixup', alpha=0.8),
+                dict(type='CutMix', alpha=1.)
             ]))
         processor: ClsDataPreprocessor = MODELS.build(cfg)
         self.assertIsInstance(processor.batch_augments, RandomBatchAugment)
@@ -101,4 +102,4 @@ class TestClsDataPreprocessor(TestCase):
         data = {'inputs': [torch.randint(0, 256, (3, 224, 224))]}
         processed_data = processor(data, training=True)
         self.assertIn('inputs', processed_data)
-        self.assertNotIn('data_samples', processed_data)
+        self.assertIsNone(processed_data['data_samples'])

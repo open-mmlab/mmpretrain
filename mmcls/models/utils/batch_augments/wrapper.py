@@ -17,13 +17,16 @@ class RandomBatchAugment:
             augmentations. If None, choose evenly. Defaults to None.
 
     Example:
+        >>> import torch
+        >>> import torch.nn.functional as F
+        >>> from mmcls.models import RandomBatchAugment
         >>> augments_cfg = [
-        ...     dict(type='CutMix', alpha=1., num_classes=10),
-        ...     dict(type='Mixup', alpha=1., num_classes=10)
+        ...     dict(type='CutMix', alpha=1.),
+        ...     dict(type='Mixup', alpha=1.)
         ... ]
         >>> batch_augment = RandomBatchAugment(augments_cfg, probs=[0.5, 0.3])
-        >>> imgs = torch.randn(16, 3, 32, 32)
-        >>> label = torch.randint(0, 10, (16, ))
+        >>> imgs = torch.rand(16, 3, 32, 32)
+        >>> label = F.one_hot(torch.randint(0, 10, (16, )), num_classes=10)
         >>> imgs, label = batch_augment(imgs, label)
 
     .. note ::
@@ -59,13 +62,13 @@ class RandomBatchAugment:
 
         self.probs = probs
 
-    def __call__(self, inputs: torch.Tensor, data_samples: Union[list, None]):
+    def __call__(self, batch_input: torch.Tensor, batch_score: torch.Tensor):
         """Randomly apply batch augmentations to the batch inputs and batch
         data samples."""
         aug_index = np.random.choice(len(self.augments), p=self.probs)
         aug = self.augments[aug_index]
 
         if aug is not None:
-            return aug(inputs, data_samples)
+            return aug(batch_input, batch_score)
         else:
-            return inputs, data_samples
+            return batch_input, batch_score.float()

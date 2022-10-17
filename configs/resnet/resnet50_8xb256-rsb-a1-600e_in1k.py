@@ -19,8 +19,8 @@ model = dict(
             use_sigmoid=True,
         )),
     train_cfg=dict(augments=[
-        dict(type='Mixup', alpha=0.2, num_classes=1000),
-        dict(type='CutMix', alpha=1.0, num_classes=1000)
+        dict(type='Mixup', alpha=0.2),
+        dict(type='CutMix', alpha=1.0)
     ]),
 )
 
