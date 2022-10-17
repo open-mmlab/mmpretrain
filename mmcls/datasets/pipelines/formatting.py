@@ -86,19 +86,23 @@ class FormatMultiTaskLabelsMasked:
             for k, v in results.items():
                 if k.endswith('_img_label'):
                     task = k[:-10]
-                    gt_label[task] = to_tensor(v)
+                    if task not in gt_label.keys():
+                        gt_label[task] = dict(label=to_tensor(v))
+                    else:
+                        gt_label[task]['label'] = to_tensor(v)
                 elif k.endswith('_mask'):
                     task = k[:-5]
-                    gt_mask[task] = v
+                    if task not in gt_label.keys():
+                        gt_label[task] = dict(mask=v)
+                    else:
+                        gt_label[task]['mask'] = v
         else:
             for task in self.tasks:
                 label_key = task + '_img_label'
                 mask_key = task + '_mask'
-                gt_label[task] = to_tensor(results[label_key])
-                gt_mask[task] = results[mask_key]
+                gt_label[task] = dict(label=to_tensor(results[label_key]), mask=results[mask_key])
 
-
-        results['gt_label'] = dict(label=gt_label,mask=gt_mask)
+        results['gt_label'] = gt_label
         return results
 
     def __repr__(self):

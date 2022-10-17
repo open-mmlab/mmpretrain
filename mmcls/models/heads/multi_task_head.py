@@ -34,9 +34,9 @@ class MultiTaskClsHead(BaseHead):
     def forward_train(self, features, gt_label, **kwargs):
         losses = dict()
         for task_name, head in self.sub_heads.items():
-            if 'mask'  in gt_label.keys()  :
-              mask = gt_label['mask'][task_name]
-              label = gt_label['label'][task_name]
+            if 'mask'  in gt_label[task_name].keys()  :
+              mask = gt_label[task_name]['mask']
+              label = gt_label[task_name]['label']
             else: # a tensor
               label = gt_label[task_name]
               batch_n = label.shape[0]
