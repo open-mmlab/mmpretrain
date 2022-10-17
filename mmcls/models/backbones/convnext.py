@@ -36,8 +36,8 @@ class LayerNorm2d(nn.LayerNorm):
         assert x.dim() == 4, 'LayerNorm2d only supports inputs with shape ' \
             f'(N, C, H, W), but got tensor with shape {x.shape}'
         return F.layer_norm(
-            x.permute(0, 2, 3, 1), self.normalized_shape, self.weight,
-            self.bias, self.eps).permute(0, 3, 1, 2)
+            x.permute(0, 2, 3, 1).contiguous(), self.normalized_shape,
+            self.weight, self.bias, self.eps).permute(0, 3, 1, 2).contiguous()
 
 
 class ConvNeXtBlock(BaseModule):
