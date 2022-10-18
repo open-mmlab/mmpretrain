@@ -27,6 +27,34 @@ class SwitchTrainAugHook(Hook):
             Defaults to 'unchange', means not changing the train augments.
         loss (dict, str, optional): the new train loss.
             Defaults to 'unchange', means not changing the train loss.
+    
+    Example:
+        >>> # in config
+        >>> # deinfe new_train_pipeline, new_train_augments or new_loss
+        >>> custom_hooks = [                                                                                                                                                                              
+                dict(                                                                                                                                                                                     
+                    type='SwitchDataAugHook',                                                                                                                                                             
+                    action_epoch=37,                                                                                                                                                                      
+                    pipeline=new_train_pipeline,
+                    train_augments=new_train_augments,
+                    loss=new_loss),
+        >>> ]
+        >>>
+        >>> # switch data augments by epoch
+        >>> switch_hook = dict(
+        >>>                 type='SwitchTrainAugHook', 
+        >>>                 pipeline=new_pipeline, 
+        >>>                 action_epoch=5)
+        >>> runner.register_custom_hooks([switch_hook])
+        >>> 
+        >>> # switch train augments and loss by iter
+        >>> switch_hook = dict(
+        >>>                 type='SwitchTrainAugHook', 
+        >>>                 train_augments=new_train_augments,
+        >>>                 loss=new_loss,
+        >>>                 action_iter=5)
+        >>> runner.register_custom_hooks([switch_hook])
+
 
     Note:
         This hook would modify the ``model.data_preprocessor.batch_augments``
@@ -52,12 +80,12 @@ class SwitchTrainAugHook(Hook):
         if action_iter is not None:
             assert isinstance(action_iter, int) and action_iter >= 0, (
                 '`action_iter` must be a number larger than 0 in '
-                f'`SwitchTrainAugHook`, but got begin: {action_iter}')
+                f'`SwitchTrainAugHook`, but got action_iter: {action_iter}')
             self.by_epoch = False
         if action_epoch is not None:
             assert isinstance(action_epoch, int) and action_epoch >= 0, (
                 '`action_epoch` must be a number larger than 0 in '
-                f'`SwitchTrainAugHook`, but got begin: {action_epoch}')
+                f'`SwitchTrainAugHook`, but got action_epoch: {action_epoch}')
             self.by_epoch = True
 
         self.action_epoch = action_epoch
@@ -77,7 +105,7 @@ class SwitchTrainAugHook(Hook):
 
     def before_train(self, runner) -> None:
         """before run setting. If resume form a checkpoint, check whether is
-        the latest processed hook, if True, do the switch process before train.
+        the latest processed hook, if True, do the switch process.
 
         Args:
             runner (Runner): The runner of the training, validation or testing
@@ -90,7 +118,7 @@ class SwitchTrainAugHook(Hook):
             self._do_switch(runner, action_milestone_str)
 
     def before_train_epoch(self, runner):
-        """switch augments."""
+        """do before train epoch."""
         if self.by_epoch and runner.epoch + 1 == self.action_epoch:
             action_milestone_str = f' at Epoch {runner.epoch + 1}'
             self._do_switch(runner, action_milestone_str)
@@ -100,7 +128,7 @@ class SwitchTrainAugHook(Hook):
                          batch_idx: int,
                          data_batch: DATA_BATCH = None,
                          outputs: Optional[dict] = None) -> None:
-        """switch augments."""
+        """do before train iter."""
         if not self.by_epoch and runner.iter + 1 == self.action_iter:
             action_milestone_str = f' at Iter {runner.iter + 1}'
             self._do_switch(runner, action_milestone_str)
@@ -153,7 +181,7 @@ class SwitchTrainAugHook(Hook):
             runner.logger.info(f'Switch train loss{action_milestone_str}.')
 
     def _switch_batch_augments(self, runner):
-        """switch the train aug."""
+        """switch the train augments."""
         model = runner.model
         if is_model_wrapper(model):
             model = model.module
