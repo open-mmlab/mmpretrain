@@ -31,14 +31,13 @@ class SwitchTrainAugHook(Hook):
     Example:
         >>> # in config
         >>> # deinfe new_train_pipeline, new_train_augments or new_loss
-        >>> custom_hooks = [                                                                                                                                                                              
-                dict(                                                                                                                                                                                     
-                    type='SwitchDataAugHook',                                                                                                                                                             
-                    action_epoch=37,                                                                                                                                                                      
-                    pipeline=new_train_pipeline,
-                    train_augments=new_train_augments,
-                    loss=new_loss),
-        >>> ]
+        >>> custom_hooks = [
+        >>>             dict(                                                                                                                                                                                     
+        >>>                 type='SwitchDataAugHook',                                                                                                                                                             
+        >>>                 action_epoch=37,                                                                                                                                                                      
+        >>>                 pipeline=new_train_pipeline,
+        >>>                 train_augments=new_train_augments,
+        >>>                 loss=new_loss),]
         >>>
         >>> # switch data augments by epoch
         >>> switch_hook = dict(
