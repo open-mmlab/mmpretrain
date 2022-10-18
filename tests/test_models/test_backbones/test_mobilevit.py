@@ -26,6 +26,22 @@ def test_mobilevit():
     assert len(feat) == 1
     assert feat[0].shape == torch.Size([1, 640, 8, 8])
 
+    # Test custom arch
+    model = MobileViT(arch=[
+        ['mobilenetv2', 16, 1, 1, 2],
+        ['mobilenetv2', 24, 2, 3, 2],
+        ['mobilevit', 48, 2, 64, 128, 2, 2],
+        ['mobilevit', 64, 2, 80, 160, 4, 2],
+        ['mobilevit', 80, 2, 96, 192, 3, 2],
+    ])
+    model.init_weights()
+    model.train()
+
+    imgs = torch.randn(1, 3, 256, 256)
+    feat = model(imgs)
+    assert len(feat) == 1
+    assert feat[0].shape == torch.Size([1, 320, 8, 8])
+
     # Test last_exp_factor
     model = MobileViT(arch='small', last_exp_factor=8)
     model.init_weights()

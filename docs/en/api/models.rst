@@ -63,12 +63,12 @@ Backbones
    Conformer
    ConvMixer
    ConvNeXt
-   DenseNet
    DeiT3
+   DenseNet
    DistilledVisionTransformer
+   EdgeNeXt
    EfficientFormer
    EfficientNet
-   EdgeNeXt
    HRNet
    InceptionV3
    LeNet5
@@ -77,6 +77,7 @@ Backbones
    MobileNetV2
    MobileNetV3
    MobileOne
+   MobileViT
    PCPVT
    PoolFormer
    RegNet

@@ -184,7 +184,7 @@ class MobileViT(BaseBackbone):
     """MobileViT backbone.
 
     A PyTorch implementation of : `MobileViT: Light-weight, General-purpose,
-    and Mobile-friendly Vision Transformer<https://arxiv.org/pdf/2110.02178.pdf>`_
+    and Mobile-friendly Vision Transformer <https://arxiv.org/pdf/2110.02178.pdf>`_
 
     Modified from the `official repo
     <https://github.com/apple/ml-cvnets/blob/main/cvnets/models/classification/mobilevit.py>`_
@@ -192,8 +192,19 @@ class MobileViT(BaseBackbone):
     <https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/mobilevit.py>`_.
 
     Args:
-        arch (str): Architecture of MobileViT. Basic archs are `small`,
-            `x_small`, `xx_small`. Defaults to `small`.
+        arch (str | List[list]): Architecture of MobileViT.
+
+            - If a string, choose from "small", "x_small" and "xx_small".
+
+            - If a list, every item should be also a list, and the first item
+              of the sub-list can be chosen from "moblienetv2" and "mobilevit",
+              which indicates the type of this layer sequence. If "mobilenetv2",
+              the other items are the arguments of :attr:`~MobileViT.make_mobilenetv2_layer`
+              (except ``in_channels``) and if "mobilevit", the other items are
+              the arguments of :attr:`~MobileViT.make_mobilevit_layer`
+              (except ``in_channels``).
+
+            Defaults to "small".
         in_channels (int): Number of input image channels. Defaults to 3.
         stem_channels (int): Channels of stem layer.  Defaults to 16.
         last_exp_factor (int): Channels expand factor of last layer.
@@ -218,19 +229,27 @@ class MobileViT(BaseBackbone):
     #     out channels, stride, transformer_channels, ffn channels,
     # num of transformer blocks, expand_ratio.
     arch_settings = {
-        'small': [['mobilenetv2', 32, 1, 1, 4], ['mobilenetv2', 64, 2, 3, 4],
-                  ['mobilevit', 96, 2, 144, 288, 2, 4],
-                  ['mobilevit', 128, 2, 192, 384, 4, 4],
-                  ['mobilevit', 160, 2, 240, 480, 3, 4]],
-        'x_small': [['mobilenetv2', 32, 1, 1, 4], ['mobilenetv2', 48, 2, 3, 4],
-                    ['mobilevit', 64, 2, 96, 192, 2, 4],
-                    ['mobilevit', 80, 2, 120, 240, 4, 4],
-                    ['mobilevit', 96, 2, 144, 288, 3, 4]],
-        'xx_small': [['mobilenetv2', 16, 1, 1, 2],
-                     ['mobilenetv2', 24, 2, 3, 2],
-                     ['mobilevit', 48, 2, 64, 128, 2, 2],
-                     ['mobilevit', 64, 2, 80, 160, 4, 2],
-                     ['mobilevit', 80, 2, 96, 192, 3, 2]]
+        'small': [
+            ['mobilenetv2', 32, 1, 1, 4],
+            ['mobilenetv2', 64, 2, 3, 4],
+            ['mobilevit', 96, 2, 144, 288, 2, 4],
+            ['mobilevit', 128, 2, 192, 384, 4, 4],
+            ['mobilevit', 160, 2, 240, 480, 3, 4],
+        ],
+        'x_small': [
+            ['mobilenetv2', 32, 1, 1, 4],
+            ['mobilenetv2', 48, 2, 3, 4],
+            ['mobilevit', 64, 2, 96, 192, 2, 4],
+            ['mobilevit', 80, 2, 120, 240, 4, 4],
+            ['mobilevit', 96, 2, 144, 288, 3, 4],
+        ],
+        'xx_small': [
+            ['mobilenetv2', 16, 1, 1, 2],
+            ['mobilenetv2', 24, 2, 3, 2],
+            ['mobilevit', 48, 2, 64, 128, 2, 2],
+            ['mobilevit', 64, 2, 80, 160, 4, 2],
+            ['mobilevit', 80, 2, 96, 192, 3, 2],
+        ]
     }
 
     def __init__(self,
@@ -251,9 +270,15 @@ class MobileViT(BaseBackbone):
                          layer=['_BatchNorm', 'GroupNorm'])
                  ]):
         super(MobileViT, self).__init__(init_cfg)
-        assert arch in self.arch_settings
-        arch_settings = self.arch_settings[arch]
-        self.num_stages = len(arch_settings)
+        if isinstance(arch, str):
+            arch = arch.lower()
+            assert arch in self.arch_settings, \
+                f'Unavailable arch, please choose from ' \
+                f'({set(self.arch_settings)}) or pass a list.'
+            arch = self.arch_settings[arch]
+
+        self.arch = arch
+        self.num_stages = len(arch)
 
         # check out indices and frozen stages
         if isinstance(out_indices, int):
@@ -274,8 +299,8 @@ class MobileViT(BaseBackbone):
         self.frozen_stages = frozen_stages
 
         _make_layer_func = {
-            'mobilenetv2': self._make_mobilenetv2_layer,
-            'mobilevit': self._make_mobilevit_layer,
+            'mobilenetv2': self.make_mobilenetv2_layer,
+            'mobilevit': self.make_mobilevit_layer,
         }
 
         self.stem = ConvModule(
@@ -290,7 +315,7 @@ class MobileViT(BaseBackbone):
 
         in_channels = stem_channels
         layers = []
-        for i, layer_settings in enumerate(arch_settings):
+        for i, layer_settings in enumerate(arch):
             layer_type, settings = layer_settings[0], layer_settings[1:]
             layer, out_channels = _make_layer_func[layer_type](in_channels,
                                                                *settings)
@@ -308,15 +333,28 @@ class MobileViT(BaseBackbone):
             act_cfg=act_cfg)
 
     @staticmethod
-    def _make_mobilevit_layer(in_channels,
-                              out_channels,
-                              stride,
-                              transformer_dim,
-                              ffn_dim,
-                              num_transformer_blocks,
-                              expand_ratio=4):
+    def make_mobilevit_layer(in_channels,
+                             out_channels,
+                             stride,
+                             transformer_dim,
+                             ffn_dim,
+                             num_transformer_blocks,
+                             expand_ratio=4):
         """Build mobilevit layer, which consists of one InvertedResidual and
-        one MobileVitBlock."""
+        one MobileVitBlock.
+
+        Args:
+            in_channels (int): The input channels.
+            out_channels (int): The output channels.
+            stride (int): The stride of the first 3x3 convolution in the
+                ``InvertedResidual`` layers.
+            transformer_dim (int): The channels of the transformer layers.
+            ffn_dim (int): The mid-channels of the feedforward network in
+                transformer layers.
+            num_transformer_blocks (int): The number of transformer blocks.
+            expand_ratio (int): adjusts number of channels of the hidden layer
+                in ``InvertedResidual`` by this amount. Defaults to 4.
+        """
         layer = []
         layer.append(
             InvertedResidual(
@@ -337,13 +375,23 @@ class MobileViT(BaseBackbone):
         return nn.Sequential(*layer), out_channels
 
     @staticmethod
-    def _make_mobilenetv2_layer(in_channels,
-                                out_channels,
-                                stride,
-                                num_blocks,
-                                expand_ratio=4):
+    def make_mobilenetv2_layer(in_channels,
+                               out_channels,
+                               stride,
+                               num_blocks,
+                               expand_ratio=4):
         """Build mobilenetv2 layer, which consists of several InvertedResidual
-        layers."""
+        layers.
+
+        Args:
+            in_channels (int): The input channels.
+            out_channels (int): The output channels.
+            stride (int): The stride of the first 3x3 convolution in the
+                ``InvertedResidual`` layers.
+            num_blocks (int): The number of ``InvertedResidual`` blocks.
+            expand_ratio (int): adjusts number of channels of the hidden layer
+                in ``InvertedResidual`` by this amount. Defaults to 4.
+        """
         layer = []
         for i in range(num_blocks):
             stride = stride if i == 0 else 1
