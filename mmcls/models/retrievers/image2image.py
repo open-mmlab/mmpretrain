@@ -80,7 +80,7 @@ class ImageToImageRetriever(BaseRetriever):
 
         self.similarity = similarity_fn
 
-        assert isinstance(prototype, [str, torch.Tensor, dict, DataLoader]), (
+        assert isinstance(prototype, (str, torch.Tensor, dict, DataLoader)), (
             'The `prototype` in  `ImageToImageRetriever` must be a path, '
             'a torch.Tensor, a dataloader or a dataloader dict format config.')
         self.prototype = prototype
@@ -185,12 +185,10 @@ class ImageToImageRetriever(BaseRetriever):
         Returns:
             dict: a dictionary of score and prediction label based on fn.
         """
-        sim, indices = torch.sort(
-            self.similarity_fn(inputs, self.prototype_vecs),
-            descending=True,
-            dim=-1,
-        )
-        predictions = {'score': sim, 'pred_label': indices}
+        sim = self.similarity_fn(inputs, self.prototype_vecs)
+        sorted_sim, indices = torch.sort(sim, descending=True, dim=-1)
+        predictions = dict(
+            score=sim, pred_label=indices, pred_score=sorted_sim)
         return predictions
 
     def predict(self,
@@ -226,7 +224,6 @@ class ImageToImageRetriever(BaseRetriever):
         pred_labels = result['pred_label']
         if self.topk != -1:
             topk = min(self.topk, pred_scores.size()[-1])
-            pred_scores = pred_scores[:, :topk]
             pred_labels = pred_labels[:, :topk]
 
         if data_samples is not None:
