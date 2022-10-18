@@ -253,8 +253,7 @@ class TestSwitchTrainAugHook(TestCase):
         loader = DataLoader(
             ConcatDataset([ExampleDataset(),
                            ExampleDataset()]),
-            persistent_workers=True,
-            num_workers=1)
+            persistent_workers=True)
         runner.train_loop.dataloader = loader
         cfg = copy.deepcopy(self.DEFAULT_CFG)
         cfg['pipeline'] = [
