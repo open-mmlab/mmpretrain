@@ -252,8 +252,7 @@ class TestSwitchTrainAugHook(TestCase):
         runner = MagicMock()
         loader = DataLoader(
             ConcatDataset([ExampleDataset(),
-                           ExampleDataset()]),
-            persistent_workers=True)
+                           ExampleDataset()]))
         runner.train_loop.dataloader = loader
         cfg = copy.deepcopy(self.DEFAULT_CFG)
         cfg['pipeline'] = [
