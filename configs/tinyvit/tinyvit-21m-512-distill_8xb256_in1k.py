@@ -16,6 +16,6 @@ test_pipeline = [
     dict(type='PackClsInputs'),
 ]
 
-val_dataloader = dict(dataset=dict(pipeline=test_pipeline))
+val_dataloader = dict(batch_size=16, dataset=dict(pipeline=test_pipeline))
 
 test_dataloader = val_dataloader

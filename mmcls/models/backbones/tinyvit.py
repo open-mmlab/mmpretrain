@@ -157,7 +157,7 @@ class PatchMerging(nn.Module):
                  act_cfg=dict(type='GELU')):
         super().__init__()
 
-        self.resolution = resolution
+        self.img_size = resolution
 
         self.act = build_activation_layer(act_cfg)
         self.conv1 = ConvBN2d(in_channels, out_channels, kernel_size=1)
@@ -172,7 +172,7 @@ class PatchMerging(nn.Module):
 
     def forward(self, x):
         if len(x.shape) == 3:
-            H, W = self.resolution
+            H, W = self.img_size
             B = x.shape[0]
             x = x.view(B, H, W, -1).permute(0, 3, 1, 2)
         x = self.conv1(x)
@@ -391,7 +391,7 @@ class TinyViTBlock(BaseModule):
                  act_cfg=dict(type='GELU')):
         super().__init__()
         self.in_channels = in_channels
-        self.resolution = resolution
+        self.img_size = resolution
         self.num_heads = num_heads
         assert window_size > 0, 'window_size must be greater than 0'
         self.window_size = window_size
@@ -428,7 +428,7 @@ class TinyViTBlock(BaseModule):
             groups=in_channels)
 
     def forward(self, x):
-        H, W = self.resolution
+        H, W = self.img_size
         B, L, C = x.shape
         assert L == H * W, 'input feature has wrong size'
         res_x = x
@@ -596,41 +596,27 @@ class TinyViT(BaseBackbone):
             Default: None.
     """
     arch_settings = {
-        'tinyvit_5m_224': {
+        '5m': {
             'channels': [64, 128, 160, 320],
             'num_heads': [2, 4, 5, 10],
-            'window_sizes': [7, 7, 14, 7],
             'depths': [2, 2, 6, 2],
         },
-        'tinyvit_11m_224': {
+        '11m': {
             'channels': [64, 128, 256, 448],
             'num_heads': [2, 4, 8, 14],
-            'window_sizes': [7, 7, 14, 7],
             'depths': [2, 2, 6, 2],
         },
-        'tinyvit_21m_224': {
+        '21m': {
             'channels': [96, 192, 384, 576],
             'num_heads': [3, 6, 12, 18],
-            'window_sizes': [7, 7, 14, 7],
             'depths': [2, 2, 6, 2],
         },
-        'tinyvit_21m_384': {
-            'channels': [96, 192, 384, 576],
-            'num_heads': [3, 6, 12, 18],
-            'window_sizes': [12, 12, 24, 12],
-            'depths': [2, 2, 6, 2],
-        },
-        'tinyvit_21m_512': {
-            'channels': [96, 192, 384, 576],
-            'num_heads': [3, 6, 12, 18],
-            'window_sizes': [16, 16, 32, 16],
-            'depths': [2, 2, 6, 2],
-        }
     }
 
     def __init__(self,
                  arch='tinyvit_5m_224',
-                 resolution=(224, 224),
+                 img_size=(224, 224),
+                 window_size=[7, 7, 14, 7],
                  in_channels=3,
                  mlp_ratio=4.,
                  drop_rate=0.,
@@ -654,14 +640,14 @@ class TinyViT(BaseBackbone):
             arch = self.arch_settings[arch]
         elif isinstance(arch, dict):
             assert 'channels' in arch and 'num_heads' in arch and \
-                'window_sizes' in arch and 'depths' in arch, \
-                f'Th arch dict must have "channels", "num_heads", ' \
-                f'"window_sizes" keys, but got {arch.keys()}'
+                'depths' in arch, 'The arch dict must have' \
+                f'"channels", "num_heads", "window_sizes" ' \
+                f'keys, but got {arch.keys()}'
 
         self.channels = arch['channels']
         self.num_heads = arch['num_heads']
-        self.widow_sizes = arch['window_sizes']
-        self.resolution = resolution
+        self.widow_sizes = window_size
+        self.img_size = img_size
         self.depths = arch['depths']
 
         self.num_stages = len(self.channels)
@@ -684,7 +670,7 @@ class TinyViT(BaseBackbone):
         self.patch_embed = PatchEmbed(
             in_channels=in_channels,
             embed_dim=self.channels[0],
-            resolution=self.resolution,
+            resolution=self.img_size,
             act_cfg=dict(type='GELU'))
         patches_resolution = self.patch_embed.patches_resolution
 
