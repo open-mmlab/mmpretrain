@@ -65,6 +65,50 @@ class FormatMultiTaskLabels:
         return self.__class__.__name__ + f'(tasks={self.tasks})'
 
 
+
+@PIPELINES.register_module()
+class FormatMultiTaskLabelsMasked:
+    """Convert all image labels of multi-task dataset to a dict of tensor.
+
+    Args:
+        tasks (List[str], optional): The task names defined in the dataset.
+            If no set, try to match all keys with format ``xxx_img_label``.
+            Defaults to None.
+    """
+
+    def __init__(self, tasks: Optional[List[str]] = None):
+        self.tasks = tasks
+
+    def __call__(self, results: Dict[str, Any]) -> Dict[str, Any]:
+        gt_label = dict()
+        gt_mask = dict()
+        if self.tasks is None:
+            for k, v in results.items():
+                if k.endswith('_img_label'):
+                    task = k[:-10]
+                    if task not in gt_label.keys():
+                        gt_label[task] = dict(label=to_tensor(v))
+                    else:
+                        gt_label[task]['label'] = to_tensor(v)
+                elif k.endswith('_mask'):
+                    task = k[:-5]
+                    if task not in gt_label.keys():
+                        gt_label[task] = dict(mask=v)
+                    else:
+                        gt_label[task]['mask'] = v
+        else:
+            for task in self.tasks:
+                label_key = task + '_img_label'
+                mask_key = task + '_mask'
+                gt_label[task] = dict(label=to_tensor(results[label_key]), mask=results[mask_key])
+
+        results['gt_label'] = gt_label
+        return results
+
+    def __repr__(self):
+        return self.__class__.__name__ + f'(tasks={self.tasks})'
+
+
 @PIPELINES.register_module()
 class ToTensor(object):
 

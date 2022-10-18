@@ -31,10 +31,20 @@ class MultiTaskClsHead(BaseHead):
             sub_head = HEADS.build(head_cfg, default_args=common_cfg)
             self.sub_heads[task_name] = sub_head
 
-    def forward_train(self, x, gt_label, **kwargs):
+    def forward_train(self, features, gt_label, **kwargs):
         losses = dict()
         for task_name, head in self.sub_heads.items():
-            head_loss = head.forward_train(x, gt_label[task_name], **kwargs)
+            if 'mask'  in gt_label[task_name].keys()  :
+              mask = gt_label[task_name]['mask']
+              label = gt_label[task_name]['label']
+            else: # a tensor
+              label = gt_label[task_name]
+              batch_n = label.shape[0]
+              mask = to_tensor([True]*batch_n)
+            masked_features = tuple()
+            for feature in features :
+                masked_features = masked_features + (feature[mask],)
+            head_loss = head.forward_train(masked_features, label[mask], **kwargs)
             for k, v in head_loss.items():
                 losses[f'{task_name}_{k}'] = v
         return losses
