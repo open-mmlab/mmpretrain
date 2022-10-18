@@ -169,6 +169,7 @@ class PatchMerging(nn.Module):
             padding=1,
             groups=out_channels)
         self.conv3 = ConvBN2d(out_channels, out_channels, kernel_size=1)
+        self.out_resolution = (resolution[0] // 2, resolution[1] // 2)
 
     def forward(self, x):
         if len(x.shape) == 3:
@@ -299,8 +300,10 @@ class ConvStage(BaseModule):
                 in_channels=in_channels,
                 out_channels=out_channels,
                 act_cfg=act_cfg)
+            self.resolution = self.downsample.out_resolution
         else:
             self.downsample = None
+            self.resolution = resolution
 
     def forward(self, x):
         for block in self.blocks:
@@ -537,8 +540,10 @@ class BasicStage(BaseModule):
                 in_channels=in_channels,
                 out_channels=out_channels,
                 act_cfg=act_cfg)
+            self.resolution = self.downsample.out_resolution
         else:
             self.downsample = None
+            self.resolution = resolution
 
     def forward(self, x):
         for block in self.blocks:
@@ -563,7 +568,11 @@ class TinyViT(BaseBackbone):
 
     Args:
         arch (str | dict): The architecture of TinyViT.
-            Default: 'tinyvit_5m_224'.
+            Default: '5m'.
+        img_size (tuple | int): The resolution of the input image.
+            Default: (224, 224)
+        window_size (list): The size of the window.
+            Default: [7, 7, 14, 7]
         in_channels (int): The number of input channels.
             Default: 3.
         depths (list[int]): The depth of each stage.
@@ -614,7 +623,7 @@ class TinyViT(BaseBackbone):
     }
 
     def __init__(self,
-                 arch='tinyvit_5m_224',
+                 arch='5m',
                  img_size=(224, 224),
                  window_size=[7, 7, 14, 7],
                  in_channels=3,
@@ -720,7 +729,7 @@ class TinyViT(BaseBackbone):
 
             # add output norm
             if i in self.out_indices:
-                norm_layer = build_norm_layer(norm_cfg, channel)[1]
+                norm_layer = build_norm_layer(norm_cfg, out_channels)[1]
                 self.add_module(f'norm{i}', norm_layer)
 
     def set_layer_lr_decay(self, layer_lr_decay):
@@ -739,7 +748,12 @@ class TinyViT(BaseBackbone):
                     gap = x.mean(1)
                     outs.append(norm_layer(gap))
                 else:
-                    outs.append(norm_layer(x))
+                    out = norm_layer(x)
+                    # convert the (B,L,C) format into (B,C,H,W) format
+                    # which would be better for the downstream tasks.
+                    B, L, C = out.shape
+                    out = out.view(B, *stage.resolution, C)
+                    outs.append(out.permute(0, 3, 1, 2))
 
         return tuple(outs)
 
