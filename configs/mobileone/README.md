@@ -18,11 +18,11 @@ Efficient neural network backbones for mobile devices are often optimized for me
 
 |     Model      |            Params(M)            |            Flops(G)            | Top-1 (%) | Top-5 (%) |                        Config                        |                        Download                         |
 | :------------: | :-----------------------------: | :----------------------------: | :-------: | :-------: | :--------------------------------------------------: | :-----------------------------------------------------: |
-| MobileOne-s0\* |  5.29（train) \| 2.08 (deploy)  | 1.09 (train) \| 0.28 (deploy)  |   71.36   |   89.87   | [config (train)](./mobileone-s0_8xb128_in1k.py) \| [config (deploy)](./deploy/mobileone-s0_deploy_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s0_3rdparty_in1k_20220915-007ae971.pth) |
-| MobileOne-s1\* |  4.83 (train) \| 4.76 (deploy)  | 0.86 (train) \| 0.84 (deploy)  |   75.76   |   92.77   | [config (train)](./mobileone-s1_8xb128_in1k.py) \| [config (deploy)](./deploy/mobileone-s1_deploy_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s1_3rdparty_in1k_20220915-473c8469.pth) |
-| MobileOne-s2\* |  7.88 (train) \| 7.88 (deploy)  | 1.34 (train)  \| 1.31 (deploy) |   77.39   |   93.63   | [config (train)](./mobileone-s2_8xb128_in1k.py) \|[config (deploy)](./deploy/mobileone-s2_deploy_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s2_3rdparty_in1k_20220915-ed2e4c30.pth) |
-| MobileOne-s3\* | 10.17 (train) \| 10.08 (deploy) | 1.95 (train)  \| 1.91 (deploy) |   77.93   |   93.89   | [config (train)](./mobileone-s3_8xb128_in1k.py) \|[config (deploy)](./deploy/mobileone-s3_deploy_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s3_3rdparty_in1k_20220915-84d6a02c.pth) |
-| MobileOne-s4\* | 14.95 (train) \| 14.84 (deploy) | 3.05 (train) \| 3.00 (deploy)  |   79.30   |   94.37   | [config (train)](./mobileone-s4_8xb128_in1k.py) \|[config (deploy)](./deploy/mobileone-s4_deploy_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s4_3rdparty_in1k_20220915-ce9509ee.pth) |
+| MobileOne-s0\* |  5.29（train) \| 2.08 (deploy)  | 1.09 (train) \| 0.28 (deploy)  |   71.36   |   89.87   | [config (train)](./mobileone-s0_8xb32_in1k.py) \| [config (deploy)](./deploy/mobileone-s0_deploy_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s0_3rdparty_in1k_20220915-007ae971.pth) |
+| MobileOne-s1\* |  4.83 (train) \| 4.76 (deploy)  | 0.86 (train) \| 0.84 (deploy)  |   75.76   |   92.77   | [config (train)](./mobileone-s1_8xb32_in1k.py) \| [config (deploy)](./deploy/mobileone-s1_deploy_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s1_3rdparty_in1k_20220915-473c8469.pth) |
+| MobileOne-s2\* |  7.88 (train) \| 7.88 (deploy)  | 1.34 (train)  \| 1.31 (deploy) |   77.39   |   93.63   | [config (train)](./mobileone-s2_8xb32_in1k.py) \|[config (deploy)](./deploy/mobileone-s2_deploy_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s2_3rdparty_in1k_20220915-ed2e4c30.pth) |
+| MobileOne-s3\* | 10.17 (train) \| 10.08 (deploy) | 1.95 (train)  \| 1.91 (deploy) |   77.93   |   93.89   | [config (train)](./mobileone-s3_8xb32_in1k.py) \|[config (deploy)](./deploy/mobileone-s3_deploy_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s3_3rdparty_in1k_20220915-84d6a02c.pth) |
+| MobileOne-s4\* | 14.95 (train) \| 14.84 (deploy) | 3.05 (train) \| 3.00 (deploy)  |   79.30   |   94.37   | [config (train)](./mobileone-s4_8xb32_in1k.py) \|[config (deploy)](./deploy/mobileone-s4_deploy_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s4_3rdparty_in1k_20220915-ce9509ee.pth) |
 
 *Models with * are converted from the [official repo](https://github.com/apple/ml-mobileone). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 
@@ -45,7 +45,7 @@ python tools/convert_models/reparameterize_model.py ${CFG_PATH} ${SRC_CKPT_PATH}
 For example:
 
 ```shell
-python ./tools/convert_models/reparameterize_model.py ./configs/mobileone/mobileone-s0_8xb128_in1k.py https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s0_3rdparty_in1k_20220811-db5ce29b.pth ./mobileone_s0_deploy.pth
+python ./tools/convert_models/reparameterize_model.py ./configs/mobileone/mobileone-s0_8xb32_in1k.py https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s0_3rdparty_in1k_20220811-db5ce29b.pth ./mobileone_s0_deploy.pth
 ```
 
 To use reparameterized weights, the config file must switch to **the deploy config files**.
@@ -57,7 +57,7 @@ python tools/test.py ${Deploy_CFG} ${Deploy_Checkpoint} --metrics accuracy
 For example of using the reparameterized weights above:
 
 ```shell
-python ./tools/test.py ./configs/mobileone/deploy/mobileone-s0_deploy_8xb128_in1k.py  mobileone_s0_deploy.pth --metrics accuracy
+python ./tools/test.py ./configs/mobileone/deploy/mobileone-s0_deploy_8xb32_in1k.py  mobileone_s0_deploy.pth --metrics accuracy
 ```
 
 ### In the code
