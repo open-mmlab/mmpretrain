@@ -269,10 +269,7 @@ class TestSwitchTrainAugHook(TestCase):
 
         # test with RepeatDataset warpper
         runner = MagicMock()
-        loader = DataLoader(
-            RepeatDataset(ExampleDataset(), 3),
-            persistent_workers=True,
-            num_workers=1)
+        loader = DataLoader(RepeatDataset(ExampleDataset(), 3))
         runner.train_loop.dataloader = loader
         cfg = copy.deepcopy(self.DEFAULT_CFG)
         cfg['pipeline'] = [
