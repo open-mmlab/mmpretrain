@@ -147,6 +147,7 @@ mim install -e .
 - [x] [MobileOne](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobileone)
 - [x] [EfficientFormer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/efficientformer)
 - [x] [MViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mvit)
+- [x] [MobileViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobilevit)
 
 </details>
 
