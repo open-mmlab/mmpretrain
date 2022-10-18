@@ -1,6 +1,7 @@
 # dataset settings
 dataset_type = 'CIFAR100'
 data_preprocessor = dict(
+    num_classes=100,
     # RGB format normalization parameters
     mean=[129.304, 124.070, 112.434],
     std=[68.170, 65.392, 70.418],

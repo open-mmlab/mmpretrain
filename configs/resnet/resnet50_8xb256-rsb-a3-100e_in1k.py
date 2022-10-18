@@ -10,8 +10,8 @@ model = dict(
     backbone=dict(norm_cfg=dict(type='SyncBN', requires_grad=True)),
     head=dict(loss=dict(use_sigmoid=True)),
     train_cfg=dict(augments=[
-        dict(type='Mixup', alpha=0.1, num_classes=1000),
-        dict(type='CutMix', alpha=1.0, num_classes=1000)
+        dict(type='Mixup', alpha=0.1),
+        dict(type='CutMix', alpha=1.0)
     ]),
 )
 

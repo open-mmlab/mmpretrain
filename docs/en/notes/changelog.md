@@ -1,5 +1,24 @@
 # Changelog
 
+## v1.0.0rc2(12/10/2022)
+
+### New Features
+
+- \[Feature\] Support DeiT3. ([#1065](https://github.com/open-mmlab/mmclassification/pull/1065))
+
+### Improvements
+
+- \[Enhance\] Update `analyze_results.py` for dev-1.x. ([#1071](https://github.com/open-mmlab/mmclassification/pull/1071))
+- \[Enhance\] Get scores from inference api. ([#1070](https://github.com/open-mmlab/mmclassification/pull/1070))
+
+### Bug Fixes
+
+- \[Fix\] Update requirements. ([#1083](https://github.com/open-mmlab/mmclassification/pull/1083))
+
+### Docs Update
+
+- \[Docs\] Add 1x docs schedule. ([#1015](https://github.com/open-mmlab/mmclassification/pull/1015))
+
 ## v1.0.0rc1(30/9/2022)
 
 ### New Features
