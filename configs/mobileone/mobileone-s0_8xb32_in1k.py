@@ -1,56 +1,50 @@
 _base_ = [
     '../_base_/models/mobileone/mobileone_s0.py',
     '../_base_/datasets/imagenet_bs32_pil_resize.py',
+    '../_base_/schedules/imagenet_bs256_coslr_coswd_300e.py',
     '../_base_/default_runtime.py'
 ]
 
-# dataset settings
-train_dataloader = dict(batch_size=128)
-val_dataloader = dict(batch_size=128)
-test_dataloader = dict(batch_size=128)
-
 # schedule settings
-optim_wrapper = dict(
-    optimizer=dict(type='SGD', lr=0.1, momentum=0.9, weight_decay=0.0001),
-    paramwise_cfg=dict(bias_decay_mult=0., norm_decay_mult=0.),
-)
+optim_wrapper = dict(paramwise_cfg=dict(norm_decay_mult=0.))
 
-# learning policy
-param_scheduler = [
-    # warm up learning rate scheduler
-    dict(
-        type='LinearLR',
-        start_factor=0.001,
-        by_epoch=True,
-        begin=0,
-        end=5,
-        # update by iter
-        convert_to_iter_based=True),
-    # main learning rate scheduler
-    dict(
-        type='CosineAnnealingLR',
-        T_max=295,
-        eta_min=1.0e-6,
-        by_epoch=True,
-        begin=5,
-        end=300),
-    dict(
-        type='CosineAnnealingParamScheduler',
-        param_name='weight_decay',
-        eta_min=0.00001,
-        by_epoch=True,
-        begin=0,
-        end=300)
+val_dataloader = dict(batch_size=256)
+test_dataloader = dict(batch_size=256)
+
+base_train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='RandomResizedCrop', scale=224, backend='pillow'),
+    dict(type='RandomFlip', prob=0.5, direction='horizontal'),
+    dict(type='PackClsInputs')
 ]
 
-# train, val, test setting
-train_cfg = dict(by_epoch=True, max_epochs=300, val_interval=1)
-val_cfg = dict()
-test_cfg = dict()
+import copy  # noqa: E402
 
-# NOTE: `auto_scale_lr` is for automatically scaling LR,
-# based on the actual training batch size.
-auto_scale_lr = dict(base_batch_size=1024)
+# modify start epoch's RandomResizedCrop.scale to 160
+train_pipeline_1e = copy.deepcopy(base_train_pipeline)
+train_pipeline_1e[1]['scale'] = 160
+_base_.train_dataloader.dataset.pipeline = train_pipeline_1e
 
-# runtime setting
-custom_hooks = [dict(type='EMAHook', momentum=5e-4, priority='ABOVE_NORMAL')]
+# modify 37 epoch's RandomResizedCrop.scale to 192
+train_pipeline_37e = copy.deepcopy(base_train_pipeline)
+train_pipeline_37e[1]['scale'] = 192
+
+# modify 112 epoch's RandomResizedCrop.scale to 224
+train_pipeline_112e = copy.deepcopy(base_train_pipeline)
+train_pipeline_112e[1]['scale'] = 224
+
+custom_hooks = [
+    dict(
+        type='SwitchTrainAugHook',
+        action_epoch=37,
+        pipeline=train_pipeline_37e),
+    dict(
+        type='SwitchTrainAugHook',
+        action_epoch=112,
+        pipeline=train_pipeline_112e),
+    dict(
+        type='EMAHook',
+        momentum=5e-4,
+        priority='ABOVE_NORMAL',
+        update_buffers=True)
+]
