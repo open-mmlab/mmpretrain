@@ -31,12 +31,11 @@ class ImageToImageRetriever(BaseRetriever):
             processed features. See :mod:`mmcls.models.heads`. Notice
             that if the head is not set, `loss` method cannot be used.
             Defaults to None.
-        pretrained (str, optional): The pretrained checkpoint path,
-            support local path and remote path. Defaults to None.
         similarity_fn (Union[str, Callable]): The way that the similarity
             is calculated. If `similarity` is callable, it is used directly
             as the measure function. If it is a string, the appropriate
-            method will be used. Defaults to "cosine_similarity".
+            method will be used.  The larger the calculated value, the
+            greater the similarity. Defaults to "cosine_similarity".
         train_cfg (dict, optional): The training setting. The acceptable
             fields are:
 
@@ -58,15 +57,11 @@ class ImageToImageRetriever(BaseRetriever):
                  image_encoder: Union[dict, List[dict]],
                  prototype: Union[DataLoader, dict, str, torch.Tensor],
                  head: Optional[dict] = None,
-                 pretrained: Optional[str] = None,
                  similarity_fn: Union[str, Callable] = 'cosine_similarity',
                  train_cfg: Optional[dict] = None,
                  data_preprocessor: Optional[dict] = None,
                  topk: int = -1,
                  init_cfg: Optional[dict] = None):
-
-        if pretrained is not None:
-            init_cfg = dict(type='Pretrained', checkpoint=pretrained)
 
         if data_preprocessor is None:
             data_preprocessor = {}
@@ -85,6 +80,9 @@ class ImageToImageRetriever(BaseRetriever):
 
         self.similarity = similarity_fn
 
+        assert isinstance(prototype, [str, torch.Tensor, dict, DataLoader]), (
+            'The `prototype` in  `ImageToImageRetriever` must be a path, '
+            'a torch.Tensor, a dataloader or a dataloader dict format config.')
         self.prototype = prototype
         self.prototype_inited = False
         self.topk = topk
