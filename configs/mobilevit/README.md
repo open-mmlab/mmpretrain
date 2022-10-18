@@ -16,11 +16,11 @@ Light-weight convolutional neural networks (CNNs) are the de-facto for mobile vi
 
 ### ImageNet-1k
 
-|        Model        | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                                  Config                                  |                                  Download                                  |
-| :-----------------: | :-------: | :------: | :-------: | :-------: | :----------------------------------------------------------------------: | :------------------------------------------------------------------------: |
-| MobileViT-XXSmall\* |   1.27    |   0.42   |   69.02   |   88.91   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/mobilevit/mobilevit-xxsmall_8xb128_in1k.py) | [model]() |
-| MobileViT-XSmall\* |   2.32    |   1.05   |   74.75   |   92.32   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/mobilevit/mobilevit-xsmall_8xb128_in1k.py | [model]() |
-| MobileViT-Small\* |   5.58    |   2.03   |   78.25   |   94.09   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/mobilevit/mobilevit-small_8xb128_in1k.py) | [model]() |
+|        Model        | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                    Config                    |                                                Download                                                |
+| :-----------------: | :-------: | :------: | :-------: | :-------: | :------------------------------------------: | :----------------------------------------------------------------------------------------------------: |
+| MobileViT-XXSmall\* |   1.27    |   0.42   |   69.02   |   88.91   | [config](./mobilevit-xxsmall_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobilevit/mobilevit-xxsmall_3rdparty_in1k_20221018-77835605.pth) |
+| MobileViT-XSmall\*  |   2.32    |   1.05   |   74.75   |   92.32   | [config](./mobilevit-xsmall_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/mobilevit/mobilevit-xsmall_3rdparty_in1k_20221018-be39a6e7.pth) |
+|  MobileViT-Small\*  |   5.58    |   2.03   |   78.25   |   94.09   |  [config](./mobilevit-small_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/mobilevit/mobilevit-small_3rdparty_in1k_20221018-cb4f741c.pth) |
 
 *Models with * are converted from [ml-cvnets](https://github.com/apple/ml-cvnets). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 

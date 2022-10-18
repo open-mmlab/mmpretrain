@@ -21,7 +21,7 @@ Models:
           Top 1 Accuracy: 78.25
           Top 5 Accuracy: 94.09
         Task: Image Classification
-    Weights:
+    Weights: https://download.openmmlab.com/mmclassification/v0/mobilevit/mobilevit-small_3rdparty_in1k_20221018-cb4f741c.pth
     Config: configs/mobilevit/mobilevit-small_8xb128_in1k.py
     Converted From:
       Weights: https://docs-assets.developer.apple.com/ml-research/models/cvnets/classification/mobilevit_s.pt
@@ -37,12 +37,12 @@ Models:
           Top 1 Accuracy: 74.75
           Top 5 Accuracy: 92.32
         Task: Image Classification
-    Weights:
+    Weights: https://download.openmmlab.com/mmclassification/v0/mobilevit/mobilevit-xsmall_3rdparty_in1k_20221018-be39a6e7.pth
     Config: configs/mobilevit/mobilevit-xsmall_8xb128_in1k.py
     Converted From:
       Weights: https://docs-assets.developer.apple.com/ml-research/models/cvnets/classification/mobilevit_xs.pt
       Code: https://github.com/apple/ml-cvnets
-  - Name: mobilevit-xsmall_3rdparty_in1k
+  - Name: mobilevit-xxsmall_3rdparty_in1k
     Metadata:
       FLOPs: 420000000
       Parameters: 1270000
@@ -53,7 +53,7 @@ Models:
           Top 1 Accuracy: 69.02
           Top 5 Accuracy: 88.91
         Task: Image Classification
-    Weights:
+    Weights: https://download.openmmlab.com/mmclassification/v0/mobilevit/mobilevit-xxsmall_3rdparty_in1k_20221018-77835605.pth
     Config: configs/mobilevit/mobilevit-xxsmall_8xb128_in1k.py
     Converted From:
       Weights: https://docs-assets.developer.apple.com/ml-research/models/cvnets/classification/mobilevit_xxs.pt
