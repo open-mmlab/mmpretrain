@@ -233,8 +233,8 @@ These augmentations are usually only used during training, therefore, we use the
        neck=...,
        head=...,
        train_cfg=dict(augments=[
-           dict(type='Mixup', alpha=0.8, num_classes=num_classes),
-           dict(type='CutMix', alpha=1.0, num_classes=num_classes),
+           dict(type='Mixup', alpha=0.8),
+           dict(type='CutMix', alpha=1.0),
        ]),
    )
 
@@ -247,8 +247,8 @@ You can also speicy the probabilities of every batch augmentation by the ``probs
        neck=...,
        head=...,
        train_cfg=dict(augments=[
-           dict(type='Mixup', alpha=0.8, num_classes=num_classes),
-           dict(type='CutMix', alpha=1.0, num_classes=num_classes),
+           dict(type='Mixup', alpha=0.8),
+           dict(type='CutMix', alpha=1.0),
        ], probs=[0.3, 0.7])
    )
 

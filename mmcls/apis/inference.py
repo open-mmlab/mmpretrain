@@ -29,7 +29,6 @@ def init_model(config, checkpoint=None, device='cuda:0', options=None):
                         f'but got {type(config)}')
     if options is not None:
         config.merge_from_dict(options)
-    config.model.pretrained = None
     config.model.setdefault('data_preprocessor',
                             config.get('data_preprocessor', None))
     model = build_classifier(config.model)

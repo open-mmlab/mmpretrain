@@ -148,6 +148,7 @@ mim install -e .
 - [x] [EfficientFormer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/efficientformer)
 - [x] [MViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mvit)
 - [x] [HorNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/hornet)
+- [x] [MobileViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobilevit)
 
 </details>
 

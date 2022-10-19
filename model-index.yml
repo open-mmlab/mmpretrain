@@ -35,3 +35,4 @@ Import:
   - configs/swin_transformer_v2/metafile.yml
   - configs/deit3/metafile.yml
   - configs/hornet/metafile.yml
+  - configs/mobilevit/metafile.yml
