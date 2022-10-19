@@ -755,6 +755,8 @@ class DaViT(BaseBackbone):
                 'depth': depth,
                 'num_heads': num_heads,
                 'window_size': window_size,
+                'ffn_ratio': ffn_ratio,
+                'qkv_bias': qkv_bias,
                 'downsample': downsample,
                 'drop_paths': dpr[:depth],
                 'with_cp': with_cp,

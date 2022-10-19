@@ -1,11 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import math
 from copy import deepcopy
 from unittest import TestCase
 
 import torch
 
 from mmcls.models.backbones import DaViT
+from mmcls.models.backbones.davit import SpatialBlock
 
 
 class TestDaViT(TestCase):
@@ -39,18 +39,10 @@ class TestDaViT(TestCase):
         }
         model = DaViT(**cfg)
         self.assertEqual(model.embed_dims, 64)
-        self.assertEqual(model.num_layers, 5)
-        for layer in model.layers:
-            self.assertEqual(layer.attn.num_heads, 3)
-
-        # Test out_indices
-        cfg = deepcopy(self.cfg)
-        cfg['out_indices'] = {1: 1}
-        with self.assertRaisesRegex(AssertionError, "get <class 'dict'>"):
-            DaViT(**cfg)
-        cfg['out_indices'] = [0, 13]
-        with self.assertRaisesRegex(AssertionError, 'Invalid out_indices 13'):
-            DaViT(**cfg)
+        self.assertEqual(model.num_layers, 4)
+        for layer in model.stages:
+            self.assertEqual(
+                layer.blocks[0].spatial_block.attn.w_msa.num_heads, 3)
 
     def test_init_weights(self):
         # test weight init cfg
@@ -77,7 +69,7 @@ class TestDaViT(TestCase):
         outs = model(imgs)
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 1)
-        self.assertEqual(outs.shape, (1, 512, 14, 14))
+        self.assertEqual(outs[0].shape, (1, 768, 7, 7))
 
         # Test forward with multi out indices
         cfg = deepcopy(self.cfg)
@@ -86,8 +78,23 @@ class TestDaViT(TestCase):
         outs = model(imgs)
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 2)
-        self.assertEqual(outs[0].shape, (1, 256, 28, 28))
-        self.assertEqual(outs[1].shape, (1, 512, 14, 14))
+        self.assertEqual(outs[0].shape, (1, 384, 14, 14))
+        self.assertEqual(outs[1].shape, (1, 768, 7, 7))
+
+        # test with checkpoint forward
+        cfg = deepcopy(self.cfg)
+        cfg['with_cp'] = True
+        model = DaViT(**cfg)
+        for m in model.modules():
+            if isinstance(m, SpatialBlock):
+                self.assertTrue(m.with_cp)
+        model.init_weights()
+        model.train()
+
+        outs = model(imgs)
+        self.assertIsInstance(outs, tuple)
+        self.assertEqual(len(outs), 1)
+        self.assertEqual(outs[0].shape, (1, 768, 7, 7))
 
         # Test forward with dynamic input size
         imgs1 = torch.randn(1, 3, 224, 224)
@@ -99,6 +106,5 @@ class TestDaViT(TestCase):
             outs = model(imgs)
             self.assertIsInstance(outs, tuple)
             self.assertEqual(len(outs), 1)
-            expect_feat_shape = (math.ceil(imgs.shape[2] / 16),
-                                 math.ceil(imgs.shape[3] / 16))
-            self.assertEqual(outs[0].shape, (1, 512, *expect_feat_shape))
+            expect_feat_shape = (imgs.shape[2] // 32, imgs.shape[3] // 32)
+            self.assertEqual(outs[0].shape, (1, 768, *expect_feat_shape))
