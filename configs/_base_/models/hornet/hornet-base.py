@@ -16,6 +16,6 @@ model = dict(
         dict(type='Constant', layer=['LayerScale'], val=1e-6)
     ],
     train_cfg=dict(augments=[
-        dict(type='Mixup', alpha=0.8, num_classes=1000),
-        dict(type='CutMix', alpha=1.0, num_classes=1000)
+        dict(type='Mixup', alpha=0.8),
+        dict(type='CutMix', alpha=1.0)
     ]))
