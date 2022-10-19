@@ -8,7 +8,7 @@ _base_ = [
 # model setting
 model = dict(
     head=dict(hidden_dim=3072),
-    train_cfg=dict(augments=dict(type='Mixup', alpha=0.2, num_classes=1000)),
+    train_cfg=dict(augments=dict(type='Mixup', alpha=0.2)),
 )
 
 # schedule setting

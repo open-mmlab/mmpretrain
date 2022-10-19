@@ -3,6 +3,7 @@ dataset_type = 'ImageNet'
 
 # Google research usually use the below normalization setting.
 data_preprocessor = dict(
+    num_classes=1000,
     mean=[127.5, 127.5, 127.5],
     std=[127.5, 127.5, 127.5],
     # convert image from BGR to RGB

@@ -18,5 +18,5 @@ model = dict(
             num_classes=1000),
         topk=(1, 5),
     ),
-    train_cfg=dict(augments=dict(type='Mixup', alpha=0.2, num_classes=1000)),
+    train_cfg=dict(augments=dict(type='Mixup', alpha=0.2)),
 )

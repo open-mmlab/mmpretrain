@@ -71,7 +71,7 @@ model = dict(
     backbone=dict(
         type='ResNet',          # 主干网络类型
         # 除了 `type` 之外的所有字段都来自 `ResNet` 类的 __init__ 方法
-        # 您查阅 https://mmclassification.readthedocs.io/zh_CN/1.x/api/generated/mmcls.models.ResNet.html
+        # 可查阅 https://mmclassification.readthedocs.io/zh_CN/1.x/api/generated/mmcls.models.ResNet.html
         depth=50,
         num_stages=4,           # 主干网络状态(stages)的数目，这些状态产生的特征图作为后续的 head 的输入。
         out_indices=(3, ),      # 输出的特征图输出索引。
@@ -81,7 +81,7 @@ model = dict(
     head=dict(
         type='LinearClsHead',         # 分类颈网络类型
         # 除了 `type` 之外的所有字段都来自 `LinearClsHead` 类的 __init__ 方法
-        # 您查阅 https://mmclassification.readthedocs.io/zh_CN/1.x/api/generated/mmcls.models.LinearClsHead.html
+        # 可查阅 https://mmclassification.readthedocs.io/zh_CN/1.x/api/generated/mmcls.models.LinearClsHead.html
         num_classes=1000,
         in_channels=2048,
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0), # 损失函数配置信息
@@ -278,7 +278,7 @@ _base_ = './resnet50_8xb32_in1k.py'
 # 模型在之前的基础上使用 CutMix 训练增强
 model = dict(
     train_cfg=dict(
-        augments=dict(type='CutMix', alpha=1.0, num_classes=1000, prob=1.0)
+        augments=dict(type='CutMix', alpha=1.0)
     )
 )
 

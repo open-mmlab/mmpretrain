@@ -7,7 +7,6 @@ import torch
 
 from mmcls.models import Mixup, RandomBatchAugment
 from mmcls.registry import BATCH_AUGMENTS
-from mmcls.structures import ClsDataSample
 
 
 class TestRandomBatchAugment(TestCase):
@@ -54,7 +53,7 @@ class TestRandomBatchAugment(TestCase):
 
     def test_call(self):
         inputs = torch.rand(2, 3, 224, 224)
-        data_samples = [ClsDataSample().set_gt_label(1) for _ in range(2)]
+        scores = torch.rand(2, 10)
 
         augments = [
             dict(type='Mixup', alpha=1.),
@@ -64,18 +63,17 @@ class TestRandomBatchAugment(TestCase):
 
         with patch('numpy.random', np.random.RandomState(0)):
             batch_augments.augments[1] = MagicMock()
-            batch_augments(inputs, data_samples)
-            batch_augments.augments[1].assert_called_once_with(
-                inputs, data_samples)
+            batch_augments(inputs, scores)
+            batch_augments.augments[1].assert_called_once_with(inputs, scores)
 
         augments = [
             dict(type='Mixup', alpha=1.),
             dict(type='CutMix', alpha=0.8),
         ]
         batch_augments = RandomBatchAugment(augments, probs=[0.0, 0.0])
-        mixed_inputs, mixed_samples = batch_augments(inputs, data_samples)
+        mixed_inputs, mixed_samples = batch_augments(inputs, scores)
         self.assertIs(mixed_inputs, inputs)
-        self.assertIs(mixed_samples, data_samples)
+        self.assertIs(mixed_samples, scores)
 
 
 class TestMixup(TestCase):
@@ -86,45 +84,21 @@ class TestMixup(TestCase):
             cfg = {**self.DEFAULT_ARGS, 'alpha': 'unknown'}
             BATCH_AUGMENTS.build(cfg)
 
-        with self.assertRaises(AssertionError):
-            cfg = {**self.DEFAULT_ARGS, 'num_classes': 'unknown'}
-            BATCH_AUGMENTS.build(cfg)
-
     def test_call(self):
         inputs = torch.rand(2, 3, 224, 224)
-        data_samples = [
-            ClsDataSample(metainfo={
-                'num_classes': 10
-            }).set_gt_label(1) for _ in range(2)
-        ]
+        scores = torch.rand(2, 10)
 
-        # test get num_classes from data_samples
         mixup = BATCH_AUGMENTS.build(self.DEFAULT_ARGS)
-        mixed_inputs, mixed_samples = mixup(inputs, data_samples)
+        mixed_inputs, mixed_scores = mixup(inputs, scores)
         self.assertEqual(mixed_inputs.shape, (2, 3, 224, 224))
-        self.assertEqual(mixed_samples[0].gt_label.score.shape, (10, ))
-
-        with self.assertRaisesRegex(RuntimeError, 'Not specify'):
-            data_samples = [ClsDataSample().set_gt_label(1) for _ in range(2)]
-            mixup(inputs, data_samples)
+        self.assertEqual(mixed_scores.shape, (2, 10))
 
         # test binary classification
-        cfg = {**self.DEFAULT_ARGS, 'num_classes': 1}
-        mixup = BATCH_AUGMENTS.build(cfg)
-        data_samples = [ClsDataSample().set_gt_label([]) for _ in range(2)]
+        scores = torch.rand(2, 1)
 
-        mixed_inputs, mixed_samples = mixup(inputs, data_samples)
+        mixed_inputs, mixed_scores = mixup(inputs, scores)
         self.assertEqual(mixed_inputs.shape, (2, 3, 224, 224))
-        self.assertEqual(mixed_samples[0].gt_label.score.shape, (1, ))
-
-        # test multi-label classification
-        cfg = {**self.DEFAULT_ARGS, 'num_classes': 5}
-        mixup = BATCH_AUGMENTS.build(cfg)
-        data_samples = [ClsDataSample().set_gt_label([1, 2]) for _ in range(2)]
-
-        mixed_inputs, mixed_samples = mixup(inputs, data_samples)
-        self.assertEqual(mixed_inputs.shape, (2, 3, 224, 224))
-        self.assertEqual(mixed_samples[0].gt_label.score.shape, (5, ))
+        self.assertEqual(mixed_scores.shape, (2, 1))
 
 
 class TestCutMix(TestCase):
@@ -135,59 +109,36 @@ class TestCutMix(TestCase):
             cfg = {**self.DEFAULT_ARGS, 'alpha': 'unknown'}
             BATCH_AUGMENTS.build(cfg)
 
-        with self.assertRaises(AssertionError):
-            cfg = {**self.DEFAULT_ARGS, 'num_classes': 'unknown'}
-            BATCH_AUGMENTS.build(cfg)
-
     def test_call(self):
         inputs = torch.rand(2, 3, 224, 224)
-        data_samples = [
-            ClsDataSample(metainfo={
-                'num_classes': 10
-            }).set_gt_label(1) for _ in range(2)
-        ]
+        scores = torch.rand(2, 10)
 
         # test with cutmix_minmax
         cfg = {**self.DEFAULT_ARGS, 'cutmix_minmax': (0.1, 0.2)}
         cutmix = BATCH_AUGMENTS.build(cfg)
-        mixed_inputs, mixed_samples = cutmix(inputs, data_samples)
+        mixed_inputs, mixed_scores = cutmix(inputs, scores)
         self.assertEqual(mixed_inputs.shape, (2, 3, 224, 224))
-        self.assertEqual(mixed_samples[0].gt_label.score.shape, (10, ))
+        self.assertEqual(mixed_scores.shape, (2, 10))
 
         # test without correct_lam
         cfg = {**self.DEFAULT_ARGS, 'correct_lam': False}
         cutmix = BATCH_AUGMENTS.build(cfg)
-        mixed_inputs, mixed_samples = cutmix(inputs, data_samples)
+        mixed_inputs, mixed_scores = cutmix(inputs, scores)
         self.assertEqual(mixed_inputs.shape, (2, 3, 224, 224))
-        self.assertEqual(mixed_samples[0].gt_label.score.shape, (10, ))
+        self.assertEqual(mixed_scores.shape, (2, 10))
 
-        # test get num_classes from data_samples
+        # test default settings
         cutmix = BATCH_AUGMENTS.build(self.DEFAULT_ARGS)
-        mixed_inputs, mixed_samples = cutmix(inputs, data_samples)
+        mixed_inputs, mixed_scores = cutmix(inputs, scores)
         self.assertEqual(mixed_inputs.shape, (2, 3, 224, 224))
-        self.assertEqual(mixed_samples[0].gt_label.score.shape, (10, ))
-
-        with self.assertRaisesRegex(RuntimeError, 'Not specify'):
-            data_samples = [ClsDataSample().set_gt_label(1) for _ in range(2)]
-            cutmix(inputs, data_samples)
+        self.assertEqual(mixed_scores.shape, (2, 10))
 
         # test binary classification
-        cfg = {**self.DEFAULT_ARGS, 'num_classes': 1}
-        cutmix = BATCH_AUGMENTS.build(cfg)
-        data_samples = [ClsDataSample().set_gt_label([]) for _ in range(2)]
+        scores = torch.rand(2, 1)
 
-        mixed_inputs, mixed_samples = cutmix(inputs, data_samples)
+        mixed_inputs, mixed_scores = cutmix(inputs, scores)
         self.assertEqual(mixed_inputs.shape, (2, 3, 224, 224))
-        self.assertEqual(mixed_samples[0].gt_label.score.shape, (1, ))
-
-        # test multi-label classification
-        cfg = {**self.DEFAULT_ARGS, 'num_classes': 5}
-        cutmix = BATCH_AUGMENTS.build(cfg)
-        data_samples = [ClsDataSample().set_gt_label([1, 2]) for _ in range(2)]
-
-        mixed_inputs, mixed_samples = cutmix(inputs, data_samples)
-        self.assertEqual(mixed_inputs.shape, (2, 3, 224, 224))
-        self.assertEqual(mixed_samples[0].gt_label.score.shape, (5, ))
+        self.assertEqual(mixed_scores.shape, (2, 1))
 
 
 class TestResizeMix(TestCase):
@@ -198,42 +149,18 @@ class TestResizeMix(TestCase):
             cfg = {**self.DEFAULT_ARGS, 'alpha': 'unknown'}
             BATCH_AUGMENTS.build(cfg)
 
-        with self.assertRaises(AssertionError):
-            cfg = {**self.DEFAULT_ARGS, 'num_classes': 'unknown'}
-            BATCH_AUGMENTS.build(cfg)
-
     def test_call(self):
         inputs = torch.rand(2, 3, 224, 224)
-        data_samples = [
-            ClsDataSample(metainfo={
-                'num_classes': 10
-            }).set_gt_label(1) for _ in range(2)
-        ]
+        scores = torch.rand(2, 10)
 
-        # test get num_classes from data_samples
         mixup = BATCH_AUGMENTS.build(self.DEFAULT_ARGS)
-        mixed_inputs, mixed_samples = mixup(inputs, data_samples)
+        mixed_inputs, mixed_scores = mixup(inputs, scores)
         self.assertEqual(mixed_inputs.shape, (2, 3, 224, 224))
-        self.assertEqual(mixed_samples[0].gt_label.score.shape, (10, ))
-
-        with self.assertRaisesRegex(RuntimeError, 'Not specify'):
-            data_samples = [ClsDataSample().set_gt_label(1) for _ in range(2)]
-            mixup(inputs, data_samples)
+        self.assertEqual(mixed_scores.shape, (2, 10))
 
         # test binary classification
-        cfg = {**self.DEFAULT_ARGS, 'num_classes': 1}
-        mixup = BATCH_AUGMENTS.build(cfg)
-        data_samples = [ClsDataSample().set_gt_label([]) for _ in range(2)]
+        scores = torch.rand(2, 1)
 
-        mixed_inputs, mixed_samples = mixup(inputs, data_samples)
+        mixed_inputs, mixed_scores = mixup(inputs, scores)
         self.assertEqual(mixed_inputs.shape, (2, 3, 224, 224))
-        self.assertEqual(mixed_samples[0].gt_label.score.shape, (1, ))
-
-        # test multi-label classification
-        cfg = {**self.DEFAULT_ARGS, 'num_classes': 5}
-        mixup = BATCH_AUGMENTS.build(cfg)
-        data_samples = [ClsDataSample().set_gt_label([1, 2]) for _ in range(2)]
-
-        mixed_inputs, mixed_samples = mixup(inputs, data_samples)
-        self.assertEqual(mixed_inputs.shape, (2, 3, 224, 224))
-        self.assertEqual(mixed_samples[0].gt_label.score.shape, (5, ))
+        self.assertEqual(mixed_scores.shape, (2, 1))
