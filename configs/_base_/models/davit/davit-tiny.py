@@ -1,10 +1,7 @@
 model = dict(
     type='ImageClassifier',
     backbone=dict(
-        type='DaViT',
-        arch='t',
-        out_indices=(3, ),
-        drop_path_rate=0.1),
+        type='DaViT', arch='t', out_indices=(3, ), drop_path_rate=0.1),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
         type='LinearClsHead',

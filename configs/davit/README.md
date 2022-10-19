@@ -16,11 +16,11 @@ In this work, we introduce Dual Attention Vision Transformers (DaViT), a simple 
 
 ### ImageNet-1k
 
-|   Model   |   Pretrain   | resolution | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                      Config                      |                                        Download                                        |
-| :-------: | :----------: | :--------: | :-------: | :------: | :-------: | :-------: | :----------------------------------------------: | :------------------------------------------------------------------------------------: |
-| DaViT-T\* | From scratch |  224x224   |   28.36   |   4.54   |   82.24   |   96.13   |    [config](./davit-tiny_4xb256_in1k.py)    | [model]() |
-| DaViT-S\* | From scratch |  224x224   |   49.74   |   8.79   |   83.61   |   96.75   |   [config](./deit3-medium-p16_64xb64_in1k.py)    | [model]() |
-| DaViT-B\* | From scratch |  224x224   |   87.95   |   15.5   |   84.09   |   96.82   |    [config](./deit3-base-p16_64xb64_in1k.py)     | [model]() |
+|   Model   |   Pretrain   | resolution | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                   Config                    |  Download   |
+| :-------: | :----------: | :--------: | :-------: | :------: | :-------: | :-------: | :-----------------------------------------: | :---------: |
+| DaViT-T\* | From scratch |  224x224   |   28.36   |   4.54   |   82.24   |   96.13   |    [config](./davit-tiny_4xb256_in1k.py)    | [model](<>) |
+| DaViT-S\* | From scratch |  224x224   |   49.74   |   8.79   |   83.61   |   96.75   | [config](./deit3-medium-p16_64xb64_in1k.py) | [model](<>) |
+| DaViT-B\* | From scratch |  224x224   |   87.95   |   15.5   |   84.09   |   96.82   |  [config](./deit3-base-p16_64xb64_in1k.py)  | [model](<>) |
 
 *Models with * are converted from the [official repo](https://github.com/dingmyu/davit). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 
@@ -30,7 +30,7 @@ Note: Inference accuracy is a bit lower than paper result because of inference c
 
 ```
 @inproceedings{ding2022davit,
-    title={DaViT: Dual Attention Vision Transformer}, 
+    title={DaViT: Dual Attention Vision Transformer},
     author={Ding, Mingyu and Xiao, Bin and Codella, Noel and Luo, Ping and Wang, Jingdong and Yuan, Lu},
     booktitle={ECCV},
     year={2022},

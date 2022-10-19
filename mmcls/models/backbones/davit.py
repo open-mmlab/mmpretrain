@@ -1,20 +1,19 @@
-import itertools
+# Copyright (c) OpenMMLab. All rights reserved.
 from copy import deepcopy
-from typing import Tuple, Sequence
+from typing import Sequence, Tuple
 
 import torch
-import numpy as np
 import torch.nn as nn
-import torch.nn.functional as F
-from mmcv.cnn import build_norm_layer, build_conv_layer
+import torch.utils.checkpoint as cp
+from mmcv.cnn import build_conv_layer, build_norm_layer
 from mmcv.cnn.bricks import Conv2d
-from mmcv.cnn.bricks.transformer import FFN, PatchEmbed, AdaptivePadding
-from mmengine.utils import to_2tuple
+from mmcv.cnn.bricks.transformer import FFN, AdaptivePadding, PatchEmbed
 from mmengine.model import BaseModule, ModuleList
+from mmengine.utils import to_2tuple
 from mmengine.utils.dl_utils.parrots_wrapper import _BatchNorm
+
 from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.registry import MODELS
-
 from ..utils import ShiftWindowMSA
 
 
@@ -113,15 +112,16 @@ class ConvPosEnc(BaseModule):
         init_cfg (dict, optional): The extra config for initialization.
             Defaults to None.
     """
-    def __init__(self, embed_dims, kernel_size=3,
-                 init_cfg=None):
+
+    def __init__(self, embed_dims, kernel_size=3, init_cfg=None):
         super(ConvPosEnc, self).__init__(init_cfg)
-        self.proj = Conv2d(embed_dims,
-                              embed_dims,
-                              kernel_size,
-                              stride=1,
-                              padding=kernel_size // 2,
-                              groups=embed_dims)
+        self.proj = Conv2d(
+            embed_dims,
+            embed_dims,
+            kernel_size,
+            stride=1,
+            padding=kernel_size // 2,
+            groups=embed_dims)
 
     def forward(self, x, size: Tuple[int, int]):
         B, N, C = x.shape
@@ -158,6 +158,7 @@ class DaViTDownSample(BaseModule):
         init_cfg (dict, optional): The extra config for initialization.
             Defaults to None.
     """
+
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -205,7 +206,6 @@ class DaViTDownSample(BaseModule):
         else:
             self.norm = None
 
-
     def forward(self, x, input_size):
         if self.adaptive_padding:
             x = self.adaptive_padding(x)
@@ -232,8 +232,8 @@ class ChannelAttention(BaseModule):
         init_cfg (dict, optional): The extra config for initialization.
             Defaults to None.
     """
-    def __init__(self, embed_dims, num_heads=8, qkv_bias=False,
-                 init_cfg=None):
+
+    def __init__(self, embed_dims, num_heads=8, qkv_bias=False, init_cfg=None):
         super().__init__(init_cfg)
         self.embed_dims = embed_dims
         self.num_heads = num_heads
@@ -280,6 +280,7 @@ class ChannelBlock(BaseModule):
         init_cfg (dict, optional): The extra config for initialization.
             Defaults to None.
     """
+
     def __init__(self,
                  embed_dims,
                  num_heads,
@@ -295,9 +296,8 @@ class ChannelBlock(BaseModule):
 
         self.cpe1 = ConvPosEnc(embed_dims=embed_dims, kernel_size=3)
         self.norm1 = build_norm_layer(norm_cfg, embed_dims)[1]
-        self.attn = ChannelAttention(embed_dims,
-                                     num_heads=num_heads,
-                                     qkv_bias=qkv_bias)
+        self.attn = ChannelAttention(
+            embed_dims, num_heads=num_heads, qkv_bias=qkv_bias)
         self.cpe2 = ConvPosEnc(embed_dims=embed_dims, kernel_size=3)
 
         _ffn_cfgs = {
@@ -313,6 +313,7 @@ class ChannelBlock(BaseModule):
         self.ffn = FFN(**_ffn_cfgs)
 
     def forward(self, x, hw_shape):
+
         def _inner_forward(x):
             x = self.cpe1(x, hw_shape)
             identity = x
@@ -486,8 +487,7 @@ class DaViTBlock(BaseModule):
             attn_cfgs=attn_cfgs,
             ffn_cfgs=ffn_cfgs,
             norm_cfg=norm_cfg,
-            with_cp=with_cp
-        )
+            with_cp=with_cp)
         self.channel_block = ChannelBlock(
             embed_dims,
             num_heads,
@@ -496,8 +496,7 @@ class DaViTBlock(BaseModule):
             drop_path=drop_path,
             ffn_cfgs=ffn_cfgs,
             norm_cfg=norm_cfg,
-            with_cp=False
-        )
+            with_cp=False)
 
     def forward(self, x, hw_shape):
         x = self.spatial_block(x, hw_shape)
@@ -599,7 +598,7 @@ class DaViTBlockSequence(BaseModule):
 
 @MODELS.register_module()
 class DaViT(BaseBackbone):
-    """DaViT
+    """DaViT.
 
     A PyTorch implement of : `DaViT: Dual Attention Vision Transformers
     <https://arxiv.org/abs/2204.03645v1>`_
@@ -608,7 +607,7 @@ class DaViT(BaseBackbone):
     https://github.com/dingmyu/davit
 
     Args:
-        arch (str | dict): DaViT architecture. If use string, choose from 
+        arch (str | dict): DaViT architecture. If use string, choose from
             'tiny', 'small', 'base' and 'large', 'huge', 'giant'. If use dict,
             it should have below keys:
 
@@ -651,24 +650,21 @@ class DaViT(BaseBackbone):
             Defaults to None.
     """
     arch_zoo = {
-        **dict.fromkeys(
-            ['t', 'tiny'], {
-                'embed_dims': 96,
-                'depths': [1, 1, 3, 1],
-                'num_heads': [3, 6, 12, 24]
-            }),
-        **dict.fromkeys(
-            ['s', 'small'], {
-                'embed_dims': 96,
-                'depths': [1, 1, 9, 1],
-                'num_heads': [3, 6, 12, 24]
-            }),
-        **dict.fromkeys(
-            ['b', 'base'], {
-                'embed_dims': 128,
-                'depths': [1, 1, 9, 1],
-                'num_heads': [4, 8, 16, 32]
-            }),
+        **dict.fromkeys(['t', 'tiny'], {
+                            'embed_dims': 96,
+                            'depths': [1, 1, 3, 1],
+                            'num_heads': [3, 6, 12, 24]
+                        }),
+        **dict.fromkeys(['s', 'small'], {
+                            'embed_dims': 96,
+                            'depths': [1, 1, 9, 1],
+                            'num_heads': [3, 6, 12, 24]
+                        }),
+        **dict.fromkeys(['b', 'base'], {
+                            'embed_dims': 128,
+                            'depths': [1, 1, 9, 1],
+                            'num_heads': [4, 8, 16, 32]
+                        }),
         **dict.fromkeys(
             ['l', 'large'], {
                 'embed_dims': 192,
@@ -714,9 +710,7 @@ class DaViT(BaseBackbone):
                 f'Arch {arch} is not in default archs {set(self.arch_zoo)}'
             self.arch_settings = self.arch_zoo[arch]
         else:
-            essential_keys = {
-                'embed_dims', 'depths', 'num_heads'
-            }
+            essential_keys = {'embed_dims', 'depths', 'num_heads'}
             assert isinstance(arch, dict) and essential_keys <= set(arch), \
                 f'Custom arch needs a dict with keys {essential_keys}'
             self.arch_settings = arch
@@ -773,7 +767,7 @@ class DaViT(BaseBackbone):
 
             dpr = dpr[depth:]
             embed_dims.append(stage.out_channels)
-            
+
         self.num_features = embed_dims[:-1]
 
         # add a norm layer for each output

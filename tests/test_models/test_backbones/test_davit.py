@@ -1,12 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
-import os
-import tempfile
 from copy import deepcopy
 from unittest import TestCase
 
 import torch
-from mmengine.runner import load_checkpoint, save_checkpoint
 
 from mmcls.models.backbones import DaViT
 
@@ -14,8 +11,7 @@ from mmcls.models.backbones import DaViT
 class TestDaViT(TestCase):
 
     def setUp(self):
-        self.cfg = dict(
-            arch='t', patch_size=4, drop_path_rate=0.1)
+        self.cfg = dict(arch='t', patch_size=4, drop_path_rate=0.1)
 
     def test_structure(self):
         # Test invalid default arch
@@ -90,8 +86,8 @@ class TestDaViT(TestCase):
         outs = model(imgs)
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 2)
-        self.assertEqual(out[0].shape, (1, 256, 28, 28))
-        self.assertEqual(out[1].shape, (1, 512, 14, 14))
+        self.assertEqual(outs[0].shape, (1, 256, 28, 28))
+        self.assertEqual(outs[1].shape, (1, 512, 14, 14))
 
         # Test forward with dynamic input size
         imgs1 = torch.randn(1, 3, 224, 224)
@@ -105,5 +101,4 @@ class TestDaViT(TestCase):
             self.assertEqual(len(outs), 1)
             expect_feat_shape = (math.ceil(imgs.shape[2] / 16),
                                  math.ceil(imgs.shape[3] / 16))
-            self.assertEqual(patch_token.shape, (1, 512, *expect_feat_shape))
-            self.assertEqual(cls_token.shape, (1, 512))
+            self.assertEqual(outs[0].shape, (1, 512, *expect_feat_shape))

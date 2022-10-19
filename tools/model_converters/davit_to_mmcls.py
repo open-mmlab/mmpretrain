@@ -30,9 +30,13 @@ def convert_davit(ckpt):
             for num_stages in range(4):
                 for num_blocks in range(9):
                     if f'{num_stages}.{num_blocks}.0' in k:
-                        new_k = new_k.replace(f'{num_stages}.{num_blocks}.0', f'{num_stages}.blocks.{num_blocks}.spatial_block')
-                    elif f'{num_stages}.{num_blocks}.1'in k:
-                        new_k = new_k.replace(f'{num_stages}.{num_blocks}.1', f'{num_stages}.blocks.{num_blocks}.channel_block')
+                        new_k = new_k.replace(
+                            f'{num_stages}.{num_blocks}.0',
+                            f'{num_stages}.blocks.{num_blocks}.spatial_block')
+                    elif f'{num_stages}.{num_blocks}.1' in k:
+                        new_k = new_k.replace(
+                            f'{num_stages}.{num_blocks}.1',
+                            f'{num_stages}.blocks.{num_blocks}.channel_block')
             if 'cpe.0' in k:
                 new_k = new_k.replace('cpe.0', 'cpe1')
             elif 'cpe.1' in k:
@@ -41,7 +45,8 @@ def convert_davit(ckpt):
                 new_k = new_k.replace('mlp.fc1', 'ffn.layers.0.0')
                 new_k = new_k.replace('mlp.fc2', 'ffn.layers.1')
             if 'spatial_block.attn' in new_k:
-                new_k = new_k.replace('spatial_block.attn', 'spatial_block.attn.w_msa')
+                new_k = new_k.replace('spatial_block.attn',
+                                      'spatial_block.attn.w_msa')
         elif k.startswith('norms'):
             new_k = k.replace('norms', 'norm3')
         elif k.startswith('head'):
