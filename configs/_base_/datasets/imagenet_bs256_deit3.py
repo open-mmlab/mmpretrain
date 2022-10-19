@@ -20,7 +20,7 @@ train_pipeline = [
         backend='pillow',
         interpolation='bicubic'),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
-    dict(type='AutoAugment', policy='3-Augment'),
+    dict(type='AutoAugment', policies='3-Augment'),
     dict(type='ColorJitter', brightness=0.3, contrast=0.3, saturation=0.3),
     dict(type='PackClsInputs'),
 ]
@@ -33,7 +33,7 @@ test_pipeline = [
         edge='short',
         backend='pillow',
         interpolation='bicubic'),
-    dict(type='CenterCrop', crop_size=224),
+    dict(type='CenterCrop', crop_size=192),
     dict(type='PackClsInputs')
 ]
 
@@ -46,7 +46,7 @@ train_dataloader = dict(
         ann_file='meta/train.txt',
         data_prefix='train',
         pipeline=train_pipeline),
-    sampler=dict(type='DefaultSampler', shuffle=True),
+    sampler=dict(type='RepeatAugSampler', shuffle=True),
     persistent_workers=True,
 )
 

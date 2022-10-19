@@ -14,6 +14,7 @@ train_pipeline[1]['scale'] = 224
 
 test_pipeline = _base_['test_pipeline']
 test_pipeline[1]['scale'] = 224
+test_pipeline[2]['crop_size'] = 224
 
 train_dataloader = dict(dataset=dict(pipeline=train_pipeline))
 val_dataloader = dict(dataset=dict(pipeline=test_pipeline))

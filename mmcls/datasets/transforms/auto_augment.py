@@ -1148,7 +1148,7 @@ class GaussianBlur(BaseAugTransform):
         if self.random_disable():
             return results
 
-        if self.bits is not None:
+        if self.radius is not None:
             radius = self.radius
         else:
             radius = self.random_magnitude()

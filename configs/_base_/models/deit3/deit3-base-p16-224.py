@@ -11,8 +11,7 @@ model = dict(
         type='VisionTransformerClsHead',
         num_classes=1000,
         in_channels=768,
-        loss=dict(
-            type='LabelSmoothLoss', label_smooth_val=0.1, mode='original'),
+        loss=dict(type='CrossEntropyLoss', use_sigmoid=True),
     ),
     init_cfg=[
         dict(type='TruncNormal', layer='Linear', std=.02),
