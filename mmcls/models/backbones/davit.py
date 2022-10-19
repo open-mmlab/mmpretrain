@@ -513,6 +513,9 @@ class DaViTBlockSequence(BaseModule):
         depth (int): Number of successive DaViT blocks.
         num_heads (int): Number of attention heads.
         window_size (int): The height and width of the window. Defaults to 7.
+        ffn_ratio (float): The expansion ratio of feedforward network hidden
+            layer channels. Defaults to 4.
+        qkv_bias (bool): enable bias for qkv if True. Defaults to True.
         downsample (bool): Downsample the output of blocks by patch merging.
             Defaults to False.
         downsample_cfg (dict): The extra config of the patch merging layer.
@@ -537,6 +540,8 @@ class DaViTBlockSequence(BaseModule):
                  depth,
                  num_heads,
                  window_size=7,
+                 ffn_ratio=4.,
+                 qkv_bias=True,
                  downsample=False,
                  downsample_cfg=dict(),
                  drop_paths=0.,
@@ -559,6 +564,8 @@ class DaViTBlockSequence(BaseModule):
                 'embed_dims': embed_dims,
                 'num_heads': num_heads,
                 'window_size': window_size,
+                'ffn_ratio': ffn_ratio,
+                'qkv_bias': qkv_bias,
                 'drop_path': drop_paths[i],
                 'with_cp': with_cp,
                 'pad_small_map': pad_small_map,
