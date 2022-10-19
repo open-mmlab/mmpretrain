@@ -40,6 +40,7 @@ from .twins import PCPVT, SVT
 from .van import VAN
 from .vgg import VGG
 from .vision_transformer import VisionTransformer
+from .davit import DaViT
 
 __all__ = [
     'LeNet5',
@@ -89,4 +90,5 @@ __all__ = [
     'SwinTransformerV2',
     'MViT',
     'DeiT3',
+    'DaViT',
 ]
