@@ -22,6 +22,9 @@ from mmcls.models.utils.helpers import to_2tuple
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> add mixmim backbone
 class MixMIMWindowAttention(WindowMSA):
     def __init__(self,
                  embed_dims,
@@ -225,6 +228,7 @@ class MixMIMLayer(BaseModule):
 
 
 
+<<<<<<< HEAD
 class MixMIMWindowAttention(WindowMSA):
     def __init__(self,
                  embed_dims,
@@ -428,6 +432,8 @@ class MixMIMLayer(BaseModule):
 
 
 
+=======
+>>>>>>> add mixmim backbone
 =======
 >>>>>>> add mixmim backbone
 
