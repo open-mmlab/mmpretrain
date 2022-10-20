@@ -44,6 +44,7 @@ from .twins import PCPVT, SVT
 from .van import VAN
 from .vgg import VGG
 from .vision_transformer import VisionTransformer
+from .mixmim import MixMIMTransformer
 
 __all__ = [
     'LeNet5',
@@ -97,4 +98,5 @@ __all__ = [
     'HorNet',
     'MobileViT',
     'DaViT',
+    'MixMIMTransformer'
 ]
