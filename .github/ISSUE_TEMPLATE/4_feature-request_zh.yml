@@ -10,6 +10,17 @@ body:
 
         如果你已经实现了该功能，我们非常欢迎你直接创建一个新的 PR 来解决这个问题。创建 PR 的流程可以参考[文档](https://mmclassification.readthedocs.io/zh_CN/master/community/CONTRIBUTING.html)。
 
+  - type: dropdown
+    id: version
+    attributes:
+      label: 分支
+      description: 你正在使用的分支/版本是哪个？
+      options:
+        - master 分支 (0.24 或其他 0.x 版本)
+        - 1.x 分支 (1.0.0rc2 或其他 1.x 版本)
+    validations:
+      required: true
+
   - type: textarea
     id: describe
     validations:

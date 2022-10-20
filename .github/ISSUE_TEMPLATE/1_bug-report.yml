@@ -9,6 +9,17 @@ body:
         If you have already identified the reason, we strongly appreciate you creating a new PR according to [the tutorial](https://mmclassification.readthedocs.io/en/master/community/CONTRIBUTING.html)!
         If you need our help, please fill in the following form to help us to identify the bug.
 
+  - type: dropdown
+    id: version
+    attributes:
+      label: Branch
+      description: Which branch/version are you using?
+      options:
+        - master branch (0.24 or other 0.x version)
+        - 1.x branch (1.0.0rc2 or other 1.x version)
+    validations:
+      required: true
+
   - type: textarea
     id: describe
     validations:

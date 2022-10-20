@@ -8,6 +8,17 @@ body:
       value: |
         If you have already implemented the feature, we strongly appreciate you creating a new PR according to [the tutorial](https://mmclassification.readthedocs.io/en/master/community/CONTRIBUTING.html)!
 
+  - type: dropdown
+    id: version
+    attributes:
+      label: Branch
+      description: Which branch/version are you using?
+      options:
+        - master branch (0.24 or other 0.x version)
+        - 1.x branch (1.0.0rc2 or other 1.x version)
+    validations:
+      required: true
+
   - type: textarea
     id: describe
     validations:
