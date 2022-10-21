@@ -1,10 +1,14 @@
 model = dict(
     type='ImageClassifier',
-    backbone=dict(type='MViT', arch='base', drop_path_rate=0.3),
+    backbone=dict(
+        type='MViT',
+        arch='huge',
+        drop_path_rate=0.6,
+        dim_mul_in_attention=False),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
         type='LinearClsHead',
-        in_channels=768,
+        in_channels=1536,
         num_classes=1000,
         loss=dict(
             type='LabelSmoothLoss', label_smooth_val=0.1, mode='original'),
