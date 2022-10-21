@@ -102,7 +102,7 @@ Models:
     Results:
       - Dataset: CUB-200-2011
         Metrics:
-          Top 1 Accuracy: 
+          Top 1 Accuracy:
         Task: Image Classification
     Pretrain:
     Weights:
