@@ -69,6 +69,22 @@ Models:
     Converted From:
       Weights: https://storage.googleapis.com/cloud-tpu-checkpoints/efficientnet/advprop/efficientnet-b0.tar.gz
       Code: https://github.com/tensorflow/tpu/tree/master/models/official/efficientnet
+  - Name: efficientnet-b0_3rdparty-aa-noisystudent_in1k
+    Metadata:
+      FLOPs: 16481180
+      Parameters: 5288548
+    In Collection: EfficientNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 77.63
+          Top 5 Accuracy: 94.00
+        Task: Image Classification
+    Weights:
+    Config: configs/efficientnet/efficientnet-b0_8xb32_in1k.py
+    Converted From:
+      Weights: https://storage.googleapis.com/cloud-tpu-checkpoints/efficientnet/noisystudent/noisy_student_efficientnet-b0.tar.gz
+      Code: https://github.com/tensorflow/tpu/tree/master/models/official/efficientnet
   - Name: efficientnet-b1_3rdparty_8xb32_in1k
     Metadata:
       FLOPs: 27052224
@@ -116,6 +132,22 @@ Models:
     Config: configs/efficientnet/efficientnet-b1_8xb32-01norm_in1k.py
     Converted From:
       Weights: https://storage.googleapis.com/cloud-tpu-checkpoints/efficientnet/advprop/efficientnet-b1.tar.gz
+      Code: https://github.com/tensorflow/tpu/tree/master/models/official/efficientnet
+  - Name: efficientnet-b1_3rdparty-aa-noisystudent_in1k
+    Metadata:
+      FLOPs: 27052224
+      Parameters: 7794184
+    In Collection: EfficientNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 81.44
+          Top 5 Accuracy: 95.83
+        Task: Image Classification
+    Weights:
+    Config: configs/efficientnet/efficientnet-b1_8xb32_in1k.py
+    Converted From:
+      Weights: https://storage.googleapis.com/cloud-tpu-checkpoints/efficientnet/noisystudent/noisy_student_efficientnet-b1.tar.gz
       Code: https://github.com/tensorflow/tpu/tree/master/models/official/efficientnet
   - Name: efficientnet-b2_3rdparty_8xb32_in1k
     Metadata:
@@ -165,6 +197,22 @@ Models:
     Converted From:
       Weights: https://storage.googleapis.com/cloud-tpu-checkpoints/efficientnet/advprop/efficientnet-b2.tar.gz
       Code: https://github.com/tensorflow/tpu/tree/master/models/official/efficientnet
+  - Name: efficientnet-b2_3rdparty-aa-noisystudent_in1k
+    Metadata:
+      FLOPs: 34346386
+      Parameters: 9109994
+    In Collection: EfficientNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 82.47
+          Top 5 Accuracy: 96.23
+        Task: Image Classification
+    Weights:
+    Config: configs/efficientnet/efficientnet-b2_8xb32_in1k.py
+    Converted From:
+      Weights: https://storage.googleapis.com/cloud-tpu-checkpoints/efficientnet/noisystudent/noisy_student_efficientnet-b2.tar.gz
+      Code: https://github.com/tensorflow/tpu/tree/master/models/official/efficientnet
   - Name: efficientnet-b3_3rdparty_8xb32_in1k
     Metadata:
       FLOPs: 58641904
@@ -212,6 +260,22 @@ Models:
     Config: configs/efficientnet/efficientnet-b3_8xb32-01norm_in1k.py
     Converted From:
       Weights: https://storage.googleapis.com/cloud-tpu-checkpoints/efficientnet/advprop/efficientnet-b3.tar.gz
+      Code: https://github.com/tensorflow/tpu/tree/master/models/official/efficientnet
+  - Name: efficientnet-b3_3rdparty-aa-noisystudent_in1k
+    Metadata:
+      FLOPs: 58641904
+      Parameters: 12233232
+    In Collection: EfficientNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 84.02
+          Top 5 Accuracy: 96.89
+        Task: Image Classification
+    Weights:
+    Config: configs/efficientnet/efficientnet-b3_8xb32_in1k.py
+    Converted From:
+      Weights: https://storage.googleapis.com/cloud-tpu-checkpoints/efficientnet/noisystudent/noisy_student_efficientnet-b3.tar.gz
       Code: https://github.com/tensorflow/tpu/tree/master/models/official/efficientnet
   - Name: efficientnet-b4_3rdparty_8xb32_in1k
     Metadata:
@@ -261,6 +325,22 @@ Models:
     Converted From:
       Weights: https://storage.googleapis.com/cloud-tpu-checkpoints/efficientnet/advprop/efficientnet-b4.tar.gz
       Code: https://github.com/tensorflow/tpu/tree/master/models/official/efficientnet
+  - Name: efficientnet-b4_3rdparty-aa-noisystudent_in1k
+    Metadata:
+      FLOPs: 121870624
+      Parameters: 19341616
+    In Collection: EfficientNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 85.25
+          Top 5 Accuracy: 97.52
+        Task: Image Classification
+    Weights:
+    Config: configs/efficientnet/efficientnet-b4_8xb32_in1k.py
+    Converted From:
+      Weights: https://storage.googleapis.com/cloud-tpu-checkpoints/efficientnet/noisystudent/noisy_student_efficientnet-b4.tar.gz
+      Code: https://github.com/tensorflow/tpu/tree/master/models/official/efficientnet
   - Name: efficientnet-b5_3rdparty_8xb32_in1k
     Metadata:
       FLOPs: 243879440
@@ -309,6 +389,22 @@ Models:
     Converted From:
       Weights: https://storage.googleapis.com/cloud-tpu-checkpoints/efficientnet/advprop/efficientnet-b5.tar.gz
       Code: https://github.com/tensorflow/tpu/tree/master/models/official/efficientnet
+  - Name: efficientnet-b5_3rdparty-aa-noisystudent_in1k
+    Metadata:
+      FLOPs: 243879440
+      Parameters: 30389784
+    In Collection: EfficientNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 86.08
+          Top 5 Accuracy: 97.75
+        Task: Image Classification
+    Weights:
+    Config: configs/efficientnet/efficientnet-b5_8xb32_in1k.py
+    Converted From:
+      Weights: https://storage.googleapis.com/cloud-tpu-checkpoints/efficientnet/noisystudent/noisy_student_efficientnet-b5.tar.gz
+      Code: https://github.com/tensorflow/tpu/tree/master/models/official/efficientnet
   - Name: efficientnet-b6_3rdparty_8xb32-aa_in1k
     Metadata:
       FLOPs: 412002408
@@ -340,6 +436,22 @@ Models:
     Config: configs/efficientnet/efficientnet-b6_8xb32-01norm_in1k.py
     Converted From:
       Weights: https://storage.googleapis.com/cloud-tpu-checkpoints/efficientnet/advprop/efficientnet-b6.tar.gz
+      Code: https://github.com/tensorflow/tpu/tree/master/models/official/efficientnet
+  - Name: efficientnet-b6_3rdparty-aa-noisystudent_in1k
+    Metadata:
+      FLOPs: 412002408
+      Parameters: 43040704
+    In Collection: EfficientNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 86.47
+          Top 5 Accuracy: 97.87
+        Task: Image Classification
+    Weights:
+    Config: configs/efficientnet/efficientnet-b6_8xb32_in1k.py
+    Converted From:
+      Weights: https://storage.googleapis.com/cloud-tpu-checkpoints/efficientnet/noisystudent/noisy_student_efficientnet-b6.tar.gz
       Code: https://github.com/tensorflow/tpu/tree/master/models/official/efficientnet
   - Name: efficientnet-b7_3rdparty_8xb32-aa_in1k
     Metadata:
@@ -373,6 +485,22 @@ Models:
     Converted From:
       Weights: https://storage.googleapis.com/cloud-tpu-checkpoints/efficientnet/advprop/efficientnet-b7.tar.gz
       Code: https://github.com/tensorflow/tpu/tree/master/models/official/efficientnet
+  - Name: efficientnet-b7_3rdparty-aa-noisystudent_in1k
+    Metadata:
+      FLOPs: 715526512
+      Parameters: 66347960
+    In Collection: EfficientNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 86.83
+          Top 5 Accuracy: 98.08
+        Task: Image Classification
+    Weights:
+    Config: configs/efficientnet/efficientnet-b7_8xb32_in1k.py
+    Converted From:
+      Weights: https://storage.googleapis.com/cloud-tpu-checkpoints/efficientnet/noisystudent/noisy_student_efficientnet-b7.tar.gz
+      Code: https://github.com/tensorflow/tpu/tree/master/models/official/efficientnet
   - Name: efficientnet-b8_3rdparty_8xb32-aa-advprop_in1k
     Metadata:
       FLOPs: 1092755326
@@ -388,4 +516,36 @@ Models:
     Config: configs/efficientnet/efficientnet-b8_8xb32-01norm_in1k.py
     Converted From:
       Weights: https://storage.googleapis.com/cloud-tpu-checkpoints/efficientnet/advprop/efficientnet-b8.tar.gz
+      Code: https://github.com/tensorflow/tpu/tree/master/models/official/efficientnet
+  - Name: efficientnet-l2_3rdparty-aa-noisystudent_in1k
+    Metadata:
+      FLOPs: 174203533416
+      Parameters: 480309308
+    In Collection: EfficientNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 88.33
+          Top 5 Accuracy: 98.65
+        Task: Image Classification
+    Weights:
+    Config: configs/efficientnet/efficientnet-l2_8xb8_in1k.py
+    Converted From:
+      Weights: https://storage.googleapis.com/cloud-tpu-checkpoints/efficientnet/noisystudent/noisy_student_efficientnet-l2.tar.gz
+      Code: https://github.com/tensorflow/tpu/tree/master/models/official/efficientnet
+  - Name: efficientnet-l2-475_3rdparty-aa-noisystudent_in1k
+    Metadata:
+      FLOPs: 484984099280
+      Parameters: 480309308
+    In Collection: EfficientNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 88.18
+          Top 5 Accuracy: 98.55
+        Task: Image Classification
+    Weights:
+    Config: configs/efficientnet/efficientnet-l2-475_8xb32_in1k.py
+    Converted From:
+      Weights: https://storage.googleapis.com/cloud-tpu-checkpoints/efficientnet/noisystudent/noisy_student_efficientnet-l2_475.tar.gz
       Code: https://github.com/tensorflow/tpu/tree/master/models/official/efficientnet

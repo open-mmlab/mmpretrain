@@ -136,3 +136,10 @@ venv.bak/
 
 # slurm
 *.out
+
+# tensorflow
+*.tar.gz
+checkpoint
+model_params.txt
+*.ckpt*
+results.txt
