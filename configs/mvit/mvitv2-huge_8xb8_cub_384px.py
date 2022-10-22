@@ -11,6 +11,7 @@ model = dict(
     type='ImageClassifier',
     backbone=dict(
         with_cp=True,
+        dim_mul_in_attention=True,
         init_cfg=dict(
             type='Pretrained', checkpoint=checkpoint, prefix='backbone')),
     head=dict(num_classes=200, ))
