@@ -405,7 +405,6 @@ class MultiScaleBlock(BaseModule):
             self.init_out_size = input_size
 
     def forward(self, x, in_size):
-
         def _inner_forward(x):
             x_norm = self.norm1(x)
             x_attn, out_size = self.attn(x_norm, in_size)
