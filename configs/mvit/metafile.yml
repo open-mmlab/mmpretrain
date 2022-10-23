@@ -93,17 +93,3 @@ Models:
       Weights: https://dl.fbaipublicfiles.com/mvit/mvitv2_models/MViTv2_L_in1k.pyth
       Code: https://github.com/facebookresearch/mvit
     Config: configs/mvit/mvitv2-large_8xb256_in1k.py
-
-  - Name: mvitv2-huge_8xb8_cub_384px
-    Metadata:
-      FLOPs: 397906038048
-      Parameters: 673395592
-    In Collection: MViT V2
-    Results:
-      - Dataset: CUB-200-2011
-        Metrics:
-          Top 1 Accuracy: 
-        Task: Image Classification
-    Pretrain:
-    Weights:
-    Config: configs/mvit/mvitv2-huge_8xb8_cub_384px.py
