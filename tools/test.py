@@ -138,6 +138,7 @@ def main():
     # load config
     cfg = Config.fromfile(args.config)
     cfg = merge_args(cfg, args)
+    print(cfg)
 
     # build the runner from config
     runner = Runner.from_cfg(cfg)

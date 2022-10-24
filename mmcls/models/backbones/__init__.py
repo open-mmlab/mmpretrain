@@ -23,6 +23,7 @@ from .poolformer import PoolFormer
 from .regnet import RegNet
 from .repmlp import RepMLPNet
 from .repvgg import RepVGG
+from .replknet import RepLKNet
 from .res2net import Res2Net
 from .resnest import ResNeSt
 from .resnet import ResNet, ResNetV1c, ResNetV1d
