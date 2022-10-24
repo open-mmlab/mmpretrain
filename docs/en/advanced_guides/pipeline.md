@@ -67,9 +67,9 @@ train_pipeline = [
 ]
 ```
 
-Here is a heavy data augmentation recipe example used in [Swin-Transformer](#swin_transformer) training. To
-align with the official implementation, it specified `pillow` as the resize backend and `bicubic` as the
-resize algorithm. Moreover, it added [`RandAugment`](mmcls.datasets.transforms.RandAugment) and
+Here is a heavy data augmentation recipe example used in [Swin-Transformer](../papers/swin_transformer.md)
+training. To align with the official implementation, it specified `pillow` as the resize backend and `bicubic`
+as the resize algorithm. Moreover, it added [`RandAugment`](mmcls.datasets.transforms.RandAugment) and
 [`RandomErasing`](mmcls.datasets.transforms.RandomErasing) as extra data augmentation method.
 
 This configuration specified every detail of the data augmentation, and you can simply copy it to your own
