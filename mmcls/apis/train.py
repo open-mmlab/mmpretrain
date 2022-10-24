@@ -128,14 +128,9 @@ def train_model(model,
         find_unused_parameters = cfg.get('find_unused_parameters', False)
         # Sets the `find_unused_parameters` parameter in
         # torch.nn.parallel.DistributedDataParallel
-        if cfg.device == 'npu':
-            current_device = torch.npu.current_device()
-        else:
-            current_device = torch.cuda.current_device()
         model = wrap_distributed_model(
             model,
             cfg.device,
-            device_ids=[current_device],
             broadcast_buffers=False,
             find_unused_parameters=find_unused_parameters)
     else:

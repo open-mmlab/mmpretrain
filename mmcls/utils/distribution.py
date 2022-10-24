@@ -54,10 +54,14 @@ def wrap_distributed_model(model, device='cuda', *args, **kwargs):
     """
     if device == 'npu':
         from mmcv.device.npu import NPUDistributedDataParallel
-        model = NPUDistributedDataParallel(model.npu(), *args, **kwargs)
+        from torch.npu import current_device
+        model = NPUDistributedDataParallel(
+            model.npu(), *args, device_ids=[current_device()], **kwargs)
     elif device == 'cuda':
         from mmcv.parallel import MMDistributedDataParallel
-        model = MMDistributedDataParallel(model.cuda(), *args, **kwargs)
+        from torch.cuda import current_device
+        model = MMDistributedDataParallel(
+            model.cuda(), *args, device_ids=[current_device()], **kwargs)
     else:
         raise RuntimeError(f'Unavailable device "{device}"')
 
