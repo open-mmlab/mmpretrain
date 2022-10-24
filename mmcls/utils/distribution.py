@@ -16,7 +16,10 @@ def wrap_non_distributed_model(model, device='cuda', dim=0, *args, **kwargs):
     Returns:
         model(nn.Module): the model to be parallelized.
     """
-    if device == 'cuda':
+    if device == 'npu':
+        from mmcv.device.npu import NPUDataParallel
+        model = NPUDataParallel(model.npu(), dim=dim, *args, **kwargs)
+    elif device == 'cuda':
         from mmcv.parallel import MMDataParallel
         model = MMDataParallel(model.cuda(), dim=dim, *args, **kwargs)
     elif device == 'cpu':
@@ -49,9 +52,16 @@ def wrap_distributed_model(model, device='cuda', *args, **kwargs):
         .. [1] https://pytorch.org/docs/stable/generated/torch.nn.parallel.
                DistributedDataParallel.html
     """
-    if device == 'cuda':
+    if device == 'npu':
+        from mmcv.device.npu import NPUDistributedDataParallel
+        from torch.npu import current_device
+        model = NPUDistributedDataParallel(
+            model.npu(), *args, device_ids=[current_device()], **kwargs)
+    elif device == 'cuda':
         from mmcv.parallel import MMDistributedDataParallel
-        model = MMDistributedDataParallel(model.cuda(), *args, **kwargs)
+        from torch.cuda import current_device
+        model = MMDistributedDataParallel(
+            model.cuda(), *args, device_ids=[current_device()], **kwargs)
     else:
         raise RuntimeError(f'Unavailable device "{device}"')
 
