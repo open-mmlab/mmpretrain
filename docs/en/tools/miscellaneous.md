@@ -32,7 +32,7 @@ python tools/misc/print_config.py configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py
 `tools/misc/verify_dataset.py` can verify dataset, check whether there are broken pictures in the given dataset.
 
 ```shell
-python tools/print_config.py \
+python tools/misc/verify_dataset.py \
     ${CONFIG} \
     [--out-path ${OUT-PATH}] \
     [--phase ${PHASE}] \
