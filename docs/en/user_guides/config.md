@@ -1,7 +1,134 @@
 # Learn about Configs
 
-To manage various configurations in a deep-learning experiment, we use a kind of config file to record all of
-these configurations. This config system has a modular and inheritance design, and more details can be found in
+To manage various configurations in a deep-learning experiment, we use a kind of config file to record all of these configurations.
+
+Different from the argparser or file-based configuration(e.g., `json`, `yaml`), our configuration system has a **modular** and **inheritance** design. Below we will first elaborate on the philosophy of our configuration system, then present the structure of the configuration, followed by the best practice for configuration.
+
+<!-- TOC -->
+
+- [Learn about Configs](#learn-about-configs)
+  - [Philosophy of Configuration System](#philosophy-of-configuration-system)
+    - [Everything is Configurable](#everything-is-configurable)
+    - [Less Code, More Reuse](#less-new-code-more-reuse)
+    - [Happy Reading, Easy Coding](#happy-reading-easy-coding)
+  - [Overall of Config File](#overall-of-config-file)
+  - [Config Structure](#config-structure)
+    - [Model settings](#model-settings)
+    - [Data settings](#data-settings)
+    - [Schedule settings](#schedule-settings)
+    - [Runtime settings](#runtime-settings)
+  - [Inherit and Modify Config File](#inherit-and-modify-config-file)
+    - [Use intermediate variables in configs](#use-intermediate-variables-in-configs)
+    - [Ignore some fields in the base configs](#ignore-some-fields-in-the-base-configs)
+    - [Use some fields in the base configs](#use-some-fields-in-the-base-configs)
+  - [Modify Config in Command](#modify-config-in-command)
+
+<!-- TOC -->
+
+## Philosophy of Configuration System
+
+To help the readers to understand the design of our configuration system, we would like to introduce the goal of configuration first.
+
+### Everything is Configurable
+
+Before we dive into the details of MMClassification, please keep in mind, that our goal is to make everything related to an experiment configurable. This means, we can create an experiment like playing Lego bricks. To achieve this, we adopt the **register-build-run** logistic in the whole OpenMMLab projects.
+
+Typically, we already provide rich implementations of *dataset*, *transformation*, *network architecture*, *scheduler*, which have been registered in MMClassification.
+
+We mainly focus on the configuration for building essential modules of one experiment first. Let's take the dataset as the example. We can have a look what modules we have provided in MMClassification.
+
+```python
+import pprint
+from mmcls.utils import register_all_modules # register all MMClassification implemented modules
+from mmcls import registry
+
+register_all_modules()
+
+# list the supported datasets registered in `registry.DATASETS`
+ppritn.pprint(registry.DATASETS._module_dict)
+
+"""
+{'BaseDataset': <class 'mmcls.datasets.base_dataset.BaseDataset'>,
+ 'CIFAR10': <class 'mmcls.datasets.cifar.CIFAR10'>,
+ 'CIFAR100': <class 'mmcls.datasets.cifar.CIFAR100'>,
+ 'CUB': <class 'mmcls.datasets.cub.CUB'>,
+ 'CustomDataset': <class 'mmcls.datasets.custom.CustomDataset'>,
+ 'FashionMNIST': <class 'mmcls.datasets.mnist.FashionMNIST'>,
+ 'ImageNet': <class 'mmcls.datasets.imagenet.ImageNet'>,
+ 'ImageNet21k': <class 'mmcls.datasets.imagenet.ImageNet21k'>,
+ 'KFoldDataset': <class 'mmcls.datasets.dataset_wrappers.KFoldDataset'>,
+ 'MNIST': <class 'mmcls.datasets.mnist.MNIST'>,
+ 'MultiLabelDataset': <class 'mmcls.datasets.multi_label.MultiLabelDataset'>,
+ 'VOC': <class 'mmcls.datasets.voc.VOC'>}
+"""
+```
+
+You can refer to  [`registry`](https://github.com/open-mmlab/mmclassification/blob/1.x/mmcls/registry.py) for more information. To use our provided dataset, he only thing we need to do, is to specify the type and parameters in configuration file. The framework will build the corresponding modules by parsing the user specified configuration file.
+
+```python
+dataset_type = 'ImageNet'
+# preprocessing configuration
+data_preprocessor = dict(
+    # Input image data channels in 'RGB' order
+    mean=[123.675, 116.28, 103.53],    # Input image normalized channel mean in RGB order
+    std=[58.395, 57.12, 57.375],       # Input image normalized channel std in RGB order
+    to_rgb=True,                       # Whether to flip the channel from BGR to RGB or RGB to BGR
+)
+
+train_pipeline = [
+    dict(type='LoadImageFromFile'),     # read image
+    dict(type='RandomResizedCrop', scale=224),     # Random scaling and cropping
+    dict(type='RandomFlip', prob=0.5, direction='horizontal'),   # random horizontal flip
+    dict(type='PackClsInputs'),         # prepare images and labels
+]
+
+# Construct training set dataloader
+train_dataloader = dict(
+    batch_size=32,                     # batchsize per GPU
+    num_workers=5,                     # Number of workers to fetch data per GPU
+    dataset=dict(                      # training dataset
+        type=dataset_type,
+        data_root='data/imagenet',
+        ann_file='meta/train.txt',
+        data_prefix='train',
+        pipeline=train_pipeline),
+    sampler=dict(type='DefaultSampler', shuffle=True),   # default sampler
+    persistent_workers=True,                             # Whether to keep the process, can shorten the preparation time of each epoch
+)
+```
+
+We can follow the similar idea to specify the configuration for network architecture, scheduler, etc.
+
+### Less New Code, More Reuse
+
+We introduce the inheritance idea into the design of configuration system, where different methods may share the same dataset, model or scheduler. Thus we organize the configuration like this:
+
+```text
+MMClassification/
+    ├── configs/
+    │   ├── _base_/                       # primitive configuration folder
+    │   │   ├── datasets/                      # primitive datasets
+    │   │   ├── models/                        # primitive models
+    │   │   ├── schedules/                     # primitive schedules
+    │   │   └── default_runtime.py             # primitive runtime setting
+    │   ├── resnet/                       # ResNet Algorithms Folder
+    │   ├── ...
+    └── ...
+```
+
+In this way, each new added method can inherit the existing configuration in `_base_`, which also reduces the burden of writing configuration file, and enable us to conduct fair comparison easily.
+
+### Make Custom Dataset/Model/Optimization Flexible
+
+Equipped with such a configuration system, we are able to allow user to implement custom modules(dataset, model, optimization, etc). Once the user register their own implemented modules, it can be used easily by only set the suitable configurations. Moreover, the implemented custom modules could be easily used in other OpenMMLab projects without extra efforts, only need modify the configuration.
+
+### Happy Reading, Easy Coding
+
+The best practice for MMClassification is inheriting the configuration from `_base_` and only keep the incremental modification in the configuration file of one specific experiment. In this way, the configuration is user-friendly and could be followed easily.
+
+## Overall of Config File
+
+This config system has a modular and inheritance design, and more details can be found in
 {external+mmengine:doc}`the tutorial in MMEngine <tutorials/config>`.
 
 Usually, we use python files as config file. All configuration files are placed under the [`configs`](https://github.com/open-mmlab/mmclassification/tree/1.x/configs) folder, and the directory structure is as follows:
@@ -21,7 +148,13 @@ MMClassification/
     └── ...
 ```
 
-If you wish to inspect the config file, you may run `python tools/misc/print_config.py /PATH/TO/CONFIG` to see the complete config.
+```{note}
+If you wish to inspect the config file, you may run the following command to see the complete config:
+```
+
+```python
+python tools/misc/print_config.py /PATH/TO/CONFIG
+```
 
 This article mainly explains the structure of configuration files, and how to modify it based on the existing configuration files. We will take [ResNet50 config file](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnet/resnet50_8xb32_in1k.py) as an example and explain it line by line.
 
@@ -35,8 +168,6 @@ There are four kinds of basic component files in the `configs/_base_` folders, n
 - [runtime](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/_base_/default_runtime.py)
 
 We call all the config files in the `_base_` folder as _primitive_ config files. You can easily build your training config file by inheriting some primitive config files.
-
-For easy understanding, we use [ResNet50 config file](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnet/resnet50_8xb32_in1k.py) as an example and comment on each line.
 
 ```python
 _base_ = [                                    # This config file will inherit all config files in `_base_`.
@@ -393,7 +524,7 @@ train_pipeline = [
 train_dataloader = dict(dataset=dict(pipeline=train_pipeline))
 ```
 
-## Modify config in command
+## Modify Config in Command
 
 When you use the script "tools/train.py" or "tools/test.py" to submit tasks or use some other tools, they can directly modify the content of the configuration file used by specifying the `--cfg-options` argument.
 
