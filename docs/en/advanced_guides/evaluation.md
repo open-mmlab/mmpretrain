@@ -1,4 +1,4 @@
-# Custom evaluation metrics
+# Custom Evaluation Metrics
 
 In MMClassification, metrics are provided based on [`MMEngine: BaseMetric`](mmengine.evaluator.BaseMetric) and should be wrapped in [`MMEngine: Evaluator`](mmengine.evaluator.Evaluator) when starting a runner. To specify the desired metrics used in validation and testing, we have to modify the `val_evaluator` and `test_evaluator` fields in the config file.
 
@@ -26,7 +26,7 @@ Acc = \frac{TP+TN}{TP+FP+TN+FN}
 For multi-class classification, it is just the fraction of correct classifications in all classfications:
 
 ```{math}
-Acc = \frac{correct classifications}{all classifications}
+Acc = \frac{\text{correct classifications}}{\text{all classifications}}
 ```
 
 Besides the `topk` option for topk-accuracy, `Accuracy` also accept `thrs` options to calculate metric based on one or multiple threshold scores.
@@ -78,7 +78,7 @@ test_evaluator = val_evaluator
 
 `AveragePrecision` is used for multi-label task. Refers [the documentation](mmcls.evaluation.metrics.AveragePrecision) for more details of implementation.
 
-{math}`\P_n` and {math}`\R_n` are the precision and recall at cut-off `n` in the list respectively. Average precision is calculated by the following equation:
+{math}`P_n` and {math}`R_n` are the precision and recall at cut-off `n` in the list respectively. Average precision is calculated by the following equation:
 
 ```{math}
 \text{AP} = \sum_n (R_n - R_{n-1}) P_n
