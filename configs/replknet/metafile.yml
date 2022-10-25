@@ -18,15 +18,15 @@ Models:
     In Collection: RepLKNet
     Config: configs/replknet/replknet-31B_32xb64-coslr-300e_224_in1k.py
     Metadata:
-      FLOPs: 15300000000
-      Parameters: 79000000
+      FLOPs: 15636547584
+      Parameters: 79864168
     Results:
     - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
         Top 1 Accuracy: 83.48
         Top 5 Accuracy: 96.57
-    Weights: https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-A0_3rdparty_4xb64-coslr-120e_in1k_20210909-883ab98c.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/replknet/RepLKNet-31B_ImageNet-1K_224_20221024-debd6715.pth
     Converted From:
       Weights: https://drive.google.com/u/0/uc?id=1azQUiCxK9feYVkkrPqwVPBtNsTzDrX7S&export=download
       Code: https://github.com/DingXiaoH/RepLKNet-pytorch/blob/main/replknet.py
@@ -35,15 +35,15 @@ Models:
     In Collection: RepLKNet
     Config: configs/replknet/replknet-31B_32xb64-coslr-300e_384_in1k.py
     Metadata:
-      FLOPs: 45100000000
-      Parameters: 79000000
+      FLOPs: 45952303104
+      Parameters: 79864168
     Results:
     - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
         Top 1 Accuracy: 84.84
         Top 5 Accuracy: 97.34
-    Weights: https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-A0_3rdparty_4xb64-coslr-120e_in1k_20210909-883ab98c.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/replknet/RepLKNet-31B_ImageNet-1K_384_20221024-3d05883f.pth
     Converted From:
       Weights: https://drive.google.com/u/0/uc?id=1vo-P3XB6mRLUeDzmgv90dOu73uCeLfZN&export=download
       Code: https://github.com/DingXiaoH/RepLKNet-pytorch/blob/main/replknet.py
@@ -52,15 +52,15 @@ Models:
     In Collection: RepLKNet
     Config: configs/replknet/replknet-31B_32xb64-coslr-300e_224_in22kto1k.py
     Metadata:
-      FLOPs: 15300000000
-      Parameters: 79000000
+      FLOPs: 15636547584
+      Parameters: 79864168
     Results:
     - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
         Top 1 Accuracy: 85.20
         Top 5 Accuracy: 97.56
-    Weights: https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-A0_3rdparty_4xb64-coslr-120e_in1k_20210909-883ab98c.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/replknet/RepLKNet-31B_ImageNet-22K-to-1K_224_20221024-f68d7698.pth
     Converted From:
       Weights: https://drive.google.com/u/0/uc?id=1DslZ2voXZQR1QoFY9KnbsHAeF84hzS0s&export=download
       Code: https://github.com/DingXiaoH/RepLKNet-pytorch/blob/main/replknet.py
@@ -69,15 +69,15 @@ Models:
     In Collection: RepLKNet
     Config: configs/replknet/replknet-31B_32xb64-coslr-300e_384_in22kto1k.py
     Metadata:
-      FLOPs: 45100000000
-      Parameters: 79000000
+      FLOPs: 45952303104
+      Parameters: 79864168
     Results:
     - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
         Top 1 Accuracy: 85.99
         Top 5 Accuracy: 97.75
-    Weights: https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-A0_3rdparty_4xb64-coslr-120e_in1k_20210909-883ab98c.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/replknet/RepLKNet-31B_ImageNet-22K-to-1K_384_20221024-ca9f04ca.pth
     Converted From:
       Weights: https://drive.google.com/u/0/uc?id=1Sc46BWdXXm2fVP-K_hKKU_W8vAB-0duX&export=download
       Code: https://github.com/DingXiaoH/RepLKNet-pytorch/blob/main/replknet.py
@@ -86,15 +86,15 @@ Models:
     In Collection: RepLKNet
     Config: configs/replknet/replknet-31L_32xb64-coslr-300e_384_in22kto1k.py
     Metadata:
-      FLOPs: 96000000000
-      Parameters: 172000000
+      FLOPs: 97240006656
+      Parameters: 172671016
     Results:
     - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
         Top 1 Accuracy: 86.63
         Top 5 Accuracy: 98.00
-    Weights: https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-A0_3rdparty_4xb64-coslr-120e_in1k_20210909-883ab98c.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/replknet/RepLKNet-31L_ImageNet-22K-to-1K_384_20221024-6f8ee74d.pth
     Converted From:
       Weights: https://drive.google.com/u/0/uc?id=1JYXoNHuRvC33QV1pmpzMTKEni1hpWfBl&export=download
       Code: https://github.com/DingXiaoH/RepLKNet-pytorch/blob/main/replknet.py
@@ -103,15 +103,15 @@ Models:
     In Collection: RepLKNet
     Config: configs/replknet/replknet-XL_32xb64-coslr-300e_320_meg73mto1k.py
     Metadata:
-      FLOPs: 128700000000
-      Parameters: 335000000
+      FLOPs: 129570201600
+      Parameters: 335435752
     Results:
     - Dataset: ImageNet-1k
       Task: Image Classification
       Metrics:
         Top 1 Accuracy: 87.57
         Top 5 Accuracy: 98.39
-    Weights: https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-A0_3rdparty_4xb64-coslr-120e_in1k_20210909-883ab98c.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/replknet/RepLKNet-XL_MegData73M_ImageNet1K_20221024-664f2980.pth
     Converted From:
       Weights: https://drive.google.com/u/0/uc?id=1tPC60El34GntXByIRHb-z-Apm4Y5LX1T&export=download
       Code: https://github.com/DingXiaoH/RepLKNet-pytorch/blob/main/replknet.py

@@ -86,6 +86,7 @@ class ReparamLargeKernelConv(BaseModule):
         super(ReparamLargeKernelConv, self).__init__(init_cfg)
         self.kernel_size = kernel_size
         self.small_kernel = small_kernel
+        self.small_kernel_merged = small_kernel_merged
         # We assume the conv does not change the feature map size, so padding = k//2. Otherwise, you may configure padding as you wish, and change the padding of small_conv accordingly.
         padding = kernel_size // 2
         if small_kernel_merged:
@@ -118,6 +119,8 @@ class ReparamLargeKernelConv(BaseModule):
         return eq_k, eq_b
 
     def merge_kernel(self):
+        if self.small_kernel_merged:
+            return
         eq_k, eq_b = self.get_equivalent_kernel_bias()
         self.lkb_reparam = get_conv2d(in_channels=self.lkb_origin.conv.in_channels,
                                      out_channels=self.lkb_origin.conv.out_channels,
@@ -129,6 +132,8 @@ class ReparamLargeKernelConv(BaseModule):
         self.__delattr__('lkb_origin')
         if hasattr(self, 'small_conv'):
             self.__delattr__('small_conv')
+        
+        self.small_kernel_merged = True
 
 
 class ConvFFN(BaseModule):
@@ -176,7 +181,7 @@ class RepLKBlock(BaseModule):
         self.lk_nonlinear = build_activation_layer(act_cfg)
         self.prelkb_bn = build_norm_layer(norm_cfg, in_channels)[1]
         self.drop_path = DropPath(drop_prob=drop_path) if drop_path > 0. else nn.Identity()
-        print('drop path:', self.drop_path)
+        # print('drop path:', self.drop_path)
 
     def forward(self, x):
         out = self.prelkb_bn(x)
@@ -369,7 +374,7 @@ class RepLKNet(BaseBackbone):
             for param in self.stem.parameters():
                 param.requires_grad = False
         for i in range(self.frozen_stages):
-            stage = getattr(self, f'stages.{i}')
+            stage = self.stages[i]
             stage.eval()
             for param in stage.parameters():
                 param.requires_grad = False
