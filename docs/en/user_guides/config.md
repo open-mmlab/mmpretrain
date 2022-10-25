@@ -63,7 +63,7 @@ ppritn.pprint(registry.DATASETS._module_dict)
 """
 ```
 
-You can refer to  [`registry`](https://github.com/open-mmlab/mmclassification/blob/1.x/mmcls/registry.py) for more information. To use our provided dataset, he only thing we need to do, is to specify the type and parameters in configuration file. The framework will build the corresponding modules by parsing the user specified configuration file.
+You can refer to  [`registry`](https://github.com/open-mmlab/mmclassification/blob/1.x/mmcls/registry.py) for more information. To use our provided dataset, the only thing we need to do, is to specify the type and parameters in configuration file. The framework will build the corresponding modules by parsing the user specified configuration file.
 
 ```python
 dataset_type = 'ImageNet'
@@ -156,7 +156,7 @@ If you wish to inspect the config file, you may run the following command to see
 python tools/misc/print_config.py /PATH/TO/CONFIG
 ```
 
-This article mainly explains the structure of configuration files, and how to modify it based on the existing configuration files. We will take [ResNet50 config file](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnet/resnet50_8xb32_in1k.py) as an example and explain it line by line.
+In the following sections, we will explain the structure of configuration files, and how to modify it based on the existing configuration files. And We choose [ResNet50 config file](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnet/resnet50_8xb32_in1k.py) as an example and explain it line by line.
 
 ## Config Structure
 
