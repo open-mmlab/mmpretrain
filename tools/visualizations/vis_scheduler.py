@@ -205,7 +205,7 @@ def main():
                                 osp.splitext(osp.basename(args.config))[0])
 
     cfg.log_level = args.log_level
-    # register all modules in mmcls into the registries
+
     init_default_scope(scope=cfg.get('default_scope', 'mmcls'))
 
     # make sure save_root exists
