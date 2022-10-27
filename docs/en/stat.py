@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import re
+import warnings
 from collections import defaultdict
 from pathlib import Path
 
@@ -96,6 +97,28 @@ def generate_paper_page(collection):
         return f'[{name}]({link})'
 
     content = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', replace_link, readme)
+
+    def make_tabs(matchobj):
+        content = matchobj.group()
+        content = content.replace('<!-- [TABS-BEGIN] -->', '::::{tabs}')
+        content = content.replace('<!-- [TABS-END] -->', '::::')
+
+        tabs_list = re.split(r'\*\*(.*)\*\*', content)
+        for i in range(len(tabs_list)):
+            if i % 2 == 1:
+                tabs_list[i] = ':::{tab} ' + tabs_list[i]
+            elif i % 2 == 0 and i != 0:
+                tabs_list[i] = tabs_list[i] + ':::\n\n'
+
+        return ''.join(tabs_list)
+
+    if '<!-- [TABS-BEGIN] -->' in content and '<!-- [TABS-END] -->' in content:
+        # Make 'how to use' block a selctive tabs
+        try:
+            pattern = r'<!-- \[TABS-BEGIN\] -->([\d\D]*)<!-- \[TABS-END\] -->'
+            content = re.sub(pattern, make_tabs, content)
+        except Exception as e:
+            warnings.warn(f'Can not parse the TABS, get an error : {e}')
 
     with open(copy, 'w') as copy_file:
         copy_file.write(content)

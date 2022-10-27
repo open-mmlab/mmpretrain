@@ -4,13 +4,27 @@
 
 <!-- [ALGORITHM] -->
 
-## Abstract
+## Introduction
 
-This paper presents a new vision Transformer, called Swin Transformer, that capably serves as a general-purpose backbone for computer vision. Challenges in adapting Transformer from language to vision arise from differences between the two domains, such as large variations in the scale of visual entities and the high resolution of pixels in images compared to words in text. To address these differences, we propose a hierarchical Transformer whose representation is computed with **S**hifted **win**dows. The shifted windowing scheme brings greater efficiency by limiting self-attention computation to non-overlapping local windows while also allowing for cross-window connection. This hierarchical architecture has the flexibility to model at various scales and has linear computational complexity with respect to image size. These qualities of Swin Transformer make it compatible with a broad range of vision tasks, including image classification (87.3 top-1 accuracy on ImageNet-1K) and dense prediction tasks such as object detection (58.7 box AP and 51.1 mask AP on COCO test-dev) and semantic segmentation (53.5 mIoU on ADE20K val). Its performance surpasses the previous state-of-the-art by a large margin of +2.7 box AP and +2.6 mask AP on COCO, and +3.2 mIoU on ADE20K, demonstrating the potential of Transformer-based models as vision backbones. The hierarchical design and the shifted window approach also prove beneficial for all-MLP architectures.
+**Swin Transformer** (the name **Swin** stands for Shifted window) is initially described in [the paper](https://arxiv.org/pdf/2103.14030.pdf), which capably serves as a general-purpose backbone for computer vision. It is basically a hierarchical Transformer whose representation is computed with shifted windows. The shifted windowing scheme brings greater efficiency by limiting self-attention computation to non-overlapping local windows while also allowing for cross-window connection.
+
+Swin Transformer achieves strong performance on COCO object detection (58.7 box AP and 51.1 mask AP on test-dev) and ADE20K semantic segmentation (53.5 mIoU on val), surpassing previous models by a large margin.
 
 <div align=center>
 <img src="https://user-images.githubusercontent.com/26739999/142576715-14668c6b-5cb8-4de8-ac51-419fae773c90.png" width="90%"/>
 </div>
+
+## Abstract
+
+<details>
+
+<summary>Show the detailed Abstract</summary>
+
+<br>
+This paper presents a new vision Transformer, called Swin Transformer, that capably serves as a general-purpose backbone for computer vision. Challenges in adapting Transformer from language to vision arise from differences between the two domains, such as large variations in the scale of visual entities and the high resolution of pixels in images compared to words in text. To address these differences, we propose a hierarchical Transformer whose representation is computed with **Shifted windows**. The shifted windowing scheme brings greater efficiency by limiting self-attention computation to non-overlapping local windows while also allowing for cross-window connection. This hierarchical architecture has the flexibility to model at various scales and has linear computational complexity with respect to image size. These qualities of Swin Transformer make it compatible with a broad range of vision tasks, including image classification (87.3 top-1 accuracy on ImageNet-1K) and dense prediction tasks such as object detection (58.7 box AP and 51.1 mask AP on COCO test-dev) and semantic segmentation (53.5 mIoU on ADE20K val). Its performance surpasses the previous state-of-the-art by a large margin of +2.7 box AP and +2.6 mask AP on COCO, and +3.2 mIoU on ADE20K, demonstrating the potential of Transformer-based models as vision backbones. The hierarchical design and the shifted window approach also prove beneficial for all-MLP architectures.
+</br>
+
+</details>
 
 ## Results and models
 
@@ -47,6 +61,59 @@ The pre-trained models on ImageNet-21k are used to fine-tune, and therefore don'
 | Model  |                          Pretrain                           | resolution | Params(M) | Flops(G) | Top-1 (%) |                  Config                  |                          Download                           |
 | :----: | :---------------------------------------------------------: | :--------: | :-------: | :------: | :-------: | :--------------------------------------: | :---------------------------------------------------------: |
 | Swin-L | [ImageNet-21k](https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin-base_3rdparty_in21k-384px.pth) |  384x384   |  195.51   |  100.04  |   91.87   | [config](./swin-large_8xb8_cub_384px.py) | [model](https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin-large_8xb8_cub_384px_20220307-1bbaee6a.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/swin-transformer/swin-large_8xb8_cub_384px_20220307-1bbaee6a.log.json) |
+
+## How to use it?
+
+<!-- [TABS-BEGIN] -->
+
+**Predict image**
+
+```python
+>>> import torch
+>>> from mmcls.apis import init_model, inference_model
+>>>
+>>> model = init_model('configs/swin_transformer/swin-base_16xb64_in1k.py', 'https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin_tiny_patch4_window7_224-160bb0a5.pth')
+>>> predict = inference_model(model, 'demo/demo.JPEG')
+>>> print(predict['pred_class'])
+sea snake
+>>> print(predict['pred_score'])
+0.6649366617202759
+```
+
+**Use the model**
+
+```python
+>>> import torch
+>>> from mmcls.apis import init_model
+>>>
+>>> model = init_model('configs/swin_transformer/swin-base_16xb64_in1k.py', 'https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin_tiny_patch4_window7_224-160bb0a5.pth')
+>>> inputs = torch.rand(1, 3, 224, 224).to(model.data_preprocessor.device)
+>>> # To get classification scores.
+>>> out = model(inputs)
+>>> print(out.shape)
+torch.Size([1, 1000])
+>>> # To extract features.
+>>> outs = model.extract_feat(inputs)
+>>> print(outs[0].shape)
+torch.Size([1, 2048])
+```
+
+**Command**
+Place the ImageNet dataset to the `data/imagenet/` directory, or prepare datasets according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+
+Train:
+
+```shell
+python tools/train.py configs/swin_transformer/swin-base_16xb64_in1k.py
+```
+
+Test:
+
+```shell
+python tools/test.py configs/swin_transformer/swin-base_16xb64_in1k.py
+```
+
+<!-- [TABS-END] -->
 
 ## Citation
 
