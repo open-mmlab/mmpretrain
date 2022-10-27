@@ -613,48 +613,56 @@ class BEiTAttention(BaseModule):
         self.v_bias = nn.Parameter(torch.zeros(self.embed_dims))
 
     def _init_rel_pos_embedding(self):
-        Wh, Ww = self.window_size
-        # cls to token & token 2 cls & cls to cls
-        self.num_relative_distance = (2 * Wh - 1) * (2 * Ww - 1) + 3
-        # relative_position_bias_table shape is (2*Wh-1 * 2*Ww-1 + 3, nH)
-        self.relative_position_bias_table = nn.Parameter(
-            torch.zeros(self.num_relative_distance, self.num_heads))
+        if self.window_size:
+            Wh, Ww = self.window_size
+            # cls to token & token 2 cls & cls to cls
+            self.num_relative_distance = (2 * Wh - 1) * (2 * Ww - 1) + 3
+            # relative_position_bias_table shape is (2*Wh-1 * 2*Ww-1 + 3, nH)
+            self.relative_position_bias_table = nn.Parameter(
+                torch.zeros(self.num_relative_distance, self.num_heads))
 
-        # get pair-wise relative position index for
-        # each token inside the window
-        coords_h = torch.arange(Wh)
-        coords_w = torch.arange(Ww)
-        # coords shape is (2, Wh, Ww)
-        coords = torch.stack(torch_meshgrid([coords_h, coords_w]))
-        # coords_flatten shape is (2, Wh*Ww)
-        coords_flatten = torch.flatten(coords, 1)
-        relative_coords = (
-            coords_flatten[:, :, None] - coords_flatten[:, None, :])
-        # relative_coords shape is (Wh*Ww, Wh*Ww, 2)
-        relative_coords = relative_coords.permute(1, 2, 0).contiguous()
-        # shift to start from 0
-        relative_coords[:, :, 0] += Wh - 1
-        relative_coords[:, :, 1] += Ww - 1
-        relative_coords[:, :, 0] *= 2 * Ww - 1
-        relative_position_index = torch.zeros(
-            size=(Wh * Ww + 1, ) * 2, dtype=relative_coords.dtype)
-        # relative_position_index shape is (Wh*Ww, Wh*Ww)
-        relative_position_index[1:, 1:] = relative_coords.sum(-1)
-        relative_position_index[0, 0:] = self.num_relative_distance - 3
-        relative_position_index[0:, 0] = self.num_relative_distance - 2
-        relative_position_index[0, 0] = self.num_relative_distance - 1
+            # get pair-wise relative position index for
+            # each token inside the window
+            coords_h = torch.arange(Wh)
+            coords_w = torch.arange(Ww)
+            # coords shape is (2, Wh, Ww)
+            coords = torch.stack(torch_meshgrid([coords_h, coords_w]))
+            # coords_flatten shape is (2, Wh*Ww)
+            coords_flatten = torch.flatten(coords, 1)
+            relative_coords = (
+                coords_flatten[:, :, None] - coords_flatten[:, None, :])
+            # relative_coords shape is (Wh*Ww, Wh*Ww, 2)
+            relative_coords = relative_coords.permute(1, 2, 0).contiguous()
+            # shift to start from 0
+            relative_coords[:, :, 0] += Wh - 1
+            relative_coords[:, :, 1] += Ww - 1
+            relative_coords[:, :, 0] *= 2 * Ww - 1
+            relative_position_index = torch.zeros(
+                size=(Wh * Ww + 1, ) * 2, dtype=relative_coords.dtype)
+            # relative_position_index shape is (Wh*Ww, Wh*Ww)
+            relative_position_index[1:, 1:] = relative_coords.sum(-1)
+            relative_position_index[0, 0:] = self.num_relative_distance - 3
+            relative_position_index[0:, 0] = self.num_relative_distance - 2
+            relative_position_index[0, 0] = self.num_relative_distance - 1
 
-        self.register_buffer('relative_position_index',
-                             relative_position_index)
+            self.register_buffer('relative_position_index',
+                                 relative_position_index)
+        else:
+            self.window_size = None
+            self.relative_position_bias_table = None
+            self.relative_position_index = None
 
     def init_weights(self):
         super().init_weights()
-        trunc_normal_(self.relative_position_bias_table, std=0.02)
+        if self.window_size:
+            trunc_normal_(self.relative_position_bias_table, std=0.02)
 
-    def forward(self, x):
+    def forward(self, x, rel_pos_bias=None):
         """
         Args:
             x (tensor): input features with shape of (num_windows*B, N, C).
+            rel_pos_bias (tensor): input relative position bias with shape of
+                (num_heads, N, N).
         """
         B, N, C = x.shape
 
@@ -678,6 +686,10 @@ class BEiTAttention(BaseModule):
             relative_position_bias = relative_position_bias.permute(
                 2, 0, 1).contiguous()  # nH, Wh*Ww, Wh*Ww
             attn = attn + relative_position_bias.unsqueeze(0)
+
+        if rel_pos_bias is not None:
+            attn = attn + rel_pos_bias
+
         attn = attn.softmax(dim=-1)
         attn = self.attn_drop(attn)
         x = (attn @ v).transpose(1, 2).reshape(B, N, C)
