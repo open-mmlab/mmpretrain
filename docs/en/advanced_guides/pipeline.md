@@ -5,10 +5,10 @@
 In the [new dataset tutorial](./datasets.md), we know that the dataset class use the `load_data_list` method
 to initialize the entire dataset, and we save the information of every sample to a dict.
 
-Usually, to save memory usage, we won't load all images in the `load_data_list`, but only load when we use
-them. Moreover, we may want to do some random data augmentation during pick samples when training. Almost
-data loading, pre-processing, and formatting operations can be configured in MMClassification by the **data
-pipeline**.
+Usually, to save memory usage, we only load image paths and labels in the `load_data_list`, and load full
+image content when we use them. Moreover, we may want to do some random data augmentation during picking
+samples when training. Almost all data loading, pre-processing, and formatting operations can be configured in
+MMClassification by the **data pipeline**.
 
 The data pipeline means how to process the sample dict when indexing a sample from the dataset. And it
 consists of a sequence of data transforms. Each data transform takes a dict as input, processes it, and outputs a
@@ -30,7 +30,7 @@ All available data transforms in MMClassification can be found in the [data tran
 ## Modify the training/test pipeline
 
 The data pipeline in MMClassification is pretty flexible. You can control almost every step of the data
-preprocessing from the config file, but on the other hand, you may be confusing facing so many options.
+preprocessing from the config file, but on the other hand, you may be confused facing so many options.
 
 Here is a common practice and guidance for image classification tasks.
 
@@ -52,11 +52,10 @@ transform](#add-new-data-transforms) and add it at the beginning of the data pip
 ### Augmentation and other processing
 
 During training, we usually need to do data augmentation to avoid overfitting. During the test, we also need to do
-some data processing like resizing and cropping. These data transforms will be placed in the middle of the data
-pipeline.
+some data processing like resizing and cropping. These data transforms will be placed after the loading process.
 
 Here is a simple data augmentation recipe example. It will randomly resize and crop the input image to the
-specified scale, and randomly flip the image.
+specified scale, and randomly flip the image horizontally with probability.
 
 ```python
 train_pipeline = [
@@ -106,12 +105,12 @@ train_pipeline = [
 
 ```{note}
 Usually, the data augmentation part in the data pipeline handles only image-wise transforms, but not transforms
-like image normalization or mixup/cutmix. It's because we can do image normalization and mixup on batch data
+like image normalization or mixup/cutmix. It's because we can do image normalization and mixup/cutmix on batch data
 to accelerate. To configure image normalization and mixup/cutmix, please use the [data preprocessor]
 (mmcls.models.utils.data_preprocessor).
 ```
 
-### formatting
+### Formatting
 
 The formatting is to collect training data from the data information dict and convert these data to
 model-friendly format.
