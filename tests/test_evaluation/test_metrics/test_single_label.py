@@ -224,8 +224,10 @@ class TestSingleLabel(TestCase):
         self.assertAlmostEqual(res['single-label/f1-score'], 65.555, places=2)
 
         metric = METRICS.build(dict(type='SingleLabelMetric', thrs=(0., 0.6)))
-        with self.assertRaisesRegex(AssertionError, 'must be specified'):
+        with self.assertRaisesRegex(AssertionError,
+                                    'Please specify `num_classes`'):
             metric.process(None, pred_no_score)
+            metric.evaluate(6)
 
         # Test with empty items
         metric = METRICS.build(
@@ -262,7 +264,8 @@ class TestSingleLabel(TestCase):
         ]
 
         # Test with score
-        res = SingleLabelMetric.calculate(y_score, y_true, thrs=(0.6, ))
+        metric = SingleLabelMetric(thrs=(0.6, ))
+        res = metric.calculate(y_score, y_true)
         self.assertIsInstance(res, list)
         self.assertIsInstance(res[0], tuple)
         precision, recall, f1_score, support = res[0]
@@ -272,8 +275,9 @@ class TestSingleLabel(TestCase):
         self.assertTensorEqual(support, 6)
 
         # Test with label
-        res = SingleLabelMetric.calculate(y_label, y_true, num_classes=3)
-        self.assertIsInstance(res, tuple)
+        metric = SingleLabelMetric(num_classes=3)
+        res = metric.calculate(y_label, y_true)
+        self.assertIsInstance(res, list)
         precision, recall, f1_score, support = res
         # Expected values come from sklearn
         self.assertTensorEqual(precision, 77.7777)
@@ -283,7 +287,7 @@ class TestSingleLabel(TestCase):
 
         # Test with invalid inputs
         with self.assertRaisesRegex(TypeError, "<class 'str'> is not"):
-            SingleLabelMetric.calculate(y_label, 'hi')
+            metric.calculate(y_label, 'hi')
 
     def assertTensorEqual(self,
                           tensor: torch.Tensor,
