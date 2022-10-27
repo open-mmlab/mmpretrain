@@ -19,7 +19,7 @@ model = dict(
     ),
     neck=None,
     head=dict(
-        type='VisionTransformerClsHead',
+        type='LinearClsHead',
         num_classes=1000,
         in_channels=768,
         loss=dict(

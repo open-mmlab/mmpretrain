@@ -80,7 +80,7 @@ class VisionTransformerClsHead(ClsHead):
         obtain the feature of the last stage and forward in hidden layer if
         exists.
         """
-        cls_token = feats[-1]
+        _, cls_token = feats[-1]
         if self.hidden_dim is None:
             return cls_token
         else:
