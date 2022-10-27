@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Sequence
 from unittest import TestCase
 
 import numpy as np
@@ -38,15 +39,10 @@ class TestMultiLabel(TestCase):
             [0, 0.9, 0.6, 0],
             [0, 0, 0.2, 0.3],
         ])
-
+        metrics = MultiLabelMetric(num_classes=4)
         # Test with sequence of category indexes
-        res = MultiLabelMetric.calculate(
-            y_pred,
-            y_true,
-            pred_indices=True,
-            target_indices=True,
-            num_classes=4)
-        self.assertIsInstance(res, tuple)
+        res = metrics.calculate(y_pred, y_true)
+        self.assertIsInstance(res, Sequence)
         precision, recall, f1_score, support = res
         expect_precision = sklearn.metrics.precision_score(
             y_true_binary, y_pred_binary, average='macro') * 100
@@ -60,9 +56,8 @@ class TestMultiLabel(TestCase):
         self.assertTensorEqual(support, 7)
 
         # Test with onehot input
-        res = MultiLabelMetric.calculate(y_pred_binary,
-                                         torch.from_numpy(y_true_binary))
-        self.assertIsInstance(res, tuple)
+        res = metrics.calculate(y_pred_binary, torch.from_numpy(y_true_binary))
+        self.assertIsInstance(res, Sequence)
         precision, recall, f1_score, support = res
         # Expected values come from sklearn
         self.assertTensorEqual(precision, expect_precision)
@@ -71,9 +66,9 @@ class TestMultiLabel(TestCase):
         self.assertTensorEqual(support, 7)
 
         # Test with topk argument
-        res = MultiLabelMetric.calculate(
-            y_pred_score, y_true, target_indices=True, topk=1, num_classes=4)
-        self.assertIsInstance(res, tuple)
+        metrics = MultiLabelMetric(topk=1, num_classes=4)
+        res = metrics.calculate(y_pred_score, y_true)
+        self.assertIsInstance(res, Sequence)
         precision, recall, f1_score, support = res
         # Expected values come from sklearn
         top1_y_pred = np.array([
@@ -94,9 +89,9 @@ class TestMultiLabel(TestCase):
         self.assertTensorEqual(support, 7)
 
         # Test with thr argument
-        res = MultiLabelMetric.calculate(
-            y_pred_score, y_true, target_indices=True, thr=0.25, num_classes=4)
-        self.assertIsInstance(res, tuple)
+        metrics = MultiLabelMetric(thr=0.25, num_classes=4)
+        res = metrics.calculate(y_pred_score, y_true)
+        self.assertIsInstance(res, Sequence)
         precision, recall, f1_score, support = res
         # Expected values come from sklearn
         thr_y_pred = np.array([
@@ -118,23 +113,18 @@ class TestMultiLabel(TestCase):
 
         # Test with invalid inputs
         with self.assertRaisesRegex(TypeError, "<class 'str'> is not"):
-            MultiLabelMetric.calculate(y_pred, 'hi', num_classes=10)
-
-        # Test with invalid input
-        with self.assertRaisesRegex(AssertionError,
-                                    'Invalid `average` argument,'):
-            MultiLabelMetric.calculate(
-                y_pred, y_true, average='m', num_classes=10)
+            metrics.calculate(y_pred, 'hi')
 
         y_true_binary = np.array([[1, 0, 0, 0], [0, 1, 0, 1]])
         y_pred_binary = np.array([[1, 0, 0, 1], [1, 0, 1, 0], [0, 1, 1, 0]])
         # Test with invalid inputs
-        with self.assertRaisesRegex(AssertionError, 'The size of pred'):
-            MultiLabelMetric.calculate(y_pred_binary, y_true_binary)
+        with self.assertRaisesRegex(AssertionError,
+                                    'Number of samples does not match'):
+            metrics.calculate(y_pred_binary, y_true_binary)
 
         # Test with invalid inputs
-        with self.assertRaisesRegex(TypeError, 'The `pred` and `target` must'):
-            MultiLabelMetric.calculate(y_pred_binary, 5)
+        with self.assertRaisesRegex(TypeError, "'int' object is not iterable"):
+            metrics.calculate(y_pred_binary, 5)
 
     def test_evaluate(self):
         y_true = [[0], [1, 3], [0, 1, 2], [3]]
@@ -157,7 +147,7 @@ class TestMultiLabel(TestCase):
         ]
 
         # Test with default argument
-        evaluator = Evaluator(dict(type='MultiLabelMetric'))
+        evaluator = Evaluator(dict(type='MultiLabelMetric', num_classes=4))
         evaluator.process(pred)
         res = evaluator.evaluate(4)
         self.assertIsInstance(res, dict)
@@ -178,7 +168,8 @@ class TestMultiLabel(TestCase):
         self.assertEqual(res['multi-label/f1-score'], expect_f1)
 
         # Test with topk argument
-        evaluator = Evaluator(dict(type='MultiLabelMetric', topk=1))
+        evaluator = Evaluator(
+            dict(type='MultiLabelMetric', topk=1, num_classes=4))
         evaluator.process(pred)
         res = evaluator.evaluate(4)
         self.assertIsInstance(res, dict)
@@ -199,7 +190,8 @@ class TestMultiLabel(TestCase):
         self.assertEqual(res['multi-label/f1-score_top1'], expect_f1)
 
         # Test with both argument
-        evaluator = Evaluator(dict(type='MultiLabelMetric', thr=0.25, topk=1))
+        evaluator = Evaluator(
+            dict(type='MultiLabelMetric', thr=0.25, topk=1, num_classes=4))
         evaluator.process(pred)
         res = evaluator.evaluate(4)
         self.assertIsInstance(res, dict)
@@ -222,7 +214,8 @@ class TestMultiLabel(TestCase):
         self.assertEqual(res['multi-label/f1-score_thr-0.25'], expect_f1)
 
         # Test with average micro
-        evaluator = Evaluator(dict(type='MultiLabelMetric', average='micro'))
+        evaluator = Evaluator(
+            dict(type='MultiLabelMetric', average='micro', num_classes=4))
         evaluator.process(pred)
         res = evaluator.evaluate(4)
         self.assertIsInstance(res, dict)
@@ -241,7 +234,8 @@ class TestMultiLabel(TestCase):
             res['multi-label/f1-score_micro'], expect_f1, places=4)
 
         # Test with average None
-        evaluator = Evaluator(dict(type='MultiLabelMetric', average=None))
+        evaluator = Evaluator(
+            dict(type='MultiLabelMetric', average=None, num_classes=4))
         evaluator.process(pred)
         res = evaluator.evaluate(4)
         self.assertIsInstance(res, dict)
@@ -265,7 +259,8 @@ class TestMultiLabel(TestCase):
             for i, j in zip(y_pred_score, y_true_binary)
         ]
 
-        evaluator = Evaluator(dict(type='MultiLabelMetric', items=['support']))
+        evaluator = Evaluator(
+            dict(type='MultiLabelMetric', items=['support'], num_classes=4))
         evaluator.process(pred)
         res = evaluator.evaluate(4)
         self.assertIsInstance(res, dict)
@@ -351,8 +346,8 @@ class TestAveragePrecision(TestCase):
             [0.7, 0.5, 0.9, 0.3],
             [0.8, 0.1, 0.1, 0.2],
         ])
-
-        ap_score = AveragePrecision.calculate(y_pred, y_true)
+        metric = AveragePrecision()
+        ap_score = metric.calculate(y_pred, y_true)
         expect_ap = sklearn.metrics.average_precision_score(y_true,
                                                             y_pred) * 100
         self.assertTensorEqual(ap_score, expect_ap)
@@ -360,18 +355,18 @@ class TestAveragePrecision(TestCase):
         # Test with invalid inputs
         with self.assertRaisesRegex(AssertionError,
                                     'Invalid `average` argument,'):
-            AveragePrecision.calculate(y_pred, y_true, average='m')
+            AveragePrecision(average='m')
 
         y_true = np.array([[1, 0, 0, 0], [0, 1, 0, 1]])
         y_pred = np.array([[1, 0, 0, 1], [1, 0, 1, 0], [0, 1, 1, 0]])
         # Test with invalid inputs
         with self.assertRaisesRegex(AssertionError,
-                                    'Both `pred` and `target`'):
-            AveragePrecision.calculate(y_pred, y_true)
+                                    'Number of samples does not match'):
+            metric.calculate(y_pred, y_true)
 
         # Test with invalid inputs
-        with self.assertRaisesRegex(TypeError, "<class 'int'> is not an"):
-            AveragePrecision.calculate(y_pred, 5)
+        with self.assertRaisesRegex(TypeError, "'int' object is not iterable"):
+            metric.calculate(y_pred, 5)
 
     def assertTensorEqual(self,
                           tensor: torch.Tensor,
