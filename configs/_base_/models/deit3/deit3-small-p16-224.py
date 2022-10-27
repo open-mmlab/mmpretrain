@@ -12,13 +12,13 @@ model = dict(
         num_classes=1000,
         in_channels=384,
         loss=dict(type='CrossEntropyLoss', use_sigmoid=True),
+        init_cfg=None,
     ),
     init_cfg=[
         dict(type='TruncNormal', layer='Linear', std=.02),
         dict(type='Constant', layer='LayerNorm', val=1., bias=0.),
     ],
-    train_cfg=dict(
-        augments=[
-            dict(type='Mixup', alpha=0.8),
-            dict(type='CutMix', alpha=1.0)
-        ]))
+    train_cfg=dict(augments=[
+        dict(type='Mixup', alpha=0.8),
+        dict(type='CutMix', alpha=1.0)
+    ]))

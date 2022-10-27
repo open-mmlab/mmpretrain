@@ -12,7 +12,6 @@ from mmengine.utils import digit_version
 
 from mmcls.registry import MODELS
 from .helpers import to_2tuple
-from .layer_scale import LayerScale
 
 # After pytorch v1.10.0, use torch.meshgrid without indexing
 # will raise extra warning. For more details,
@@ -499,6 +498,8 @@ class MultiheadAttention(BaseModule):
         v_shortcut (bool): Add a shortcut from value to output. It's usually
             used if ``input_dims`` is different from ``embed_dims``.
             Defaults to False.
+        layer_scale (callable, optional): The layer scale module.
+            Defaults to None.
         init_cfg (dict, optional): The Config for initialization.
             Defaults to None.
     """
@@ -514,7 +515,7 @@ class MultiheadAttention(BaseModule):
                  qk_scale=None,
                  proj_bias=True,
                  v_shortcut=False,
-                 use_layer_scale=False,
+                 layer_scale=None,
                  init_cfg=None):
         super(MultiheadAttention, self).__init__(init_cfg=init_cfg)
 
@@ -533,8 +534,8 @@ class MultiheadAttention(BaseModule):
 
         self.out_drop = build_dropout(dropout_layer)
 
-        if use_layer_scale:
-            self.gamma1 = LayerScale(embed_dims)
+        if layer_scale is not None:
+            self.gamma1 = layer_scale(embed_dims)
         else:
             self.gamma1 = nn.Identity()
 

@@ -8,8 +8,8 @@ class LayerScale(nn.Module):
 
     Args:
         dim (int): Dimension of input features.
-        inplace (bool): inplace: can optionally do the
-            operation in-place. Defaults to False.
+        inplace (bool): Whether to do the operation inplace. Defaults to False.
+        init_values (float): The initialization value. Defaults to 1e-5.
         data_format (str): The input data format, could be 'channels_last'
              or 'channels_first', representing (B, C, H, W) and
              (B, N, C) format data respectively. Defaults to 'channels_last'.
@@ -18,13 +18,14 @@ class LayerScale(nn.Module):
     def __init__(self,
                  dim: int,
                  inplace: bool = False,
+                 init_values: float = 1e-5,
                  data_format: str = 'channels_last'):
         super().__init__()
         assert data_format in ('channels_last', 'channels_first'), \
             "'data_format' could only be channels_last or channels_first."
         self.inplace = inplace
         self.data_format = data_format
-        self.weight = nn.Parameter(torch.ones(dim) * 1e-5)
+        self.weight = nn.Parameter(torch.ones(dim) * init_values)
 
     def forward(self, x):
         if self.data_format == 'channels_first':
