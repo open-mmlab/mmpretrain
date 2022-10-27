@@ -4,7 +4,6 @@ from typing import List, Sequence, Tuple
 import torch
 import torch.nn as nn
 
-from mmcls.evaluation.metrics import Accuracy
 from mmcls.registry import MODELS
 from mmcls.structures import ClsDataSample
 from .cls_head import ClsHead
@@ -114,8 +113,7 @@ class ConformerHead(ClsHead):
         if self.cal_acc:
             assert target.ndim == 1, 'If you enable batch augmentation ' \
                 'like mixup during training, `cal_acc` is pointless.'
-            acc = Accuracy.calculate(
-                cls_score[0] + cls_score[1], target, topk=self.topk)
+            acc = self.accuracy.calculate(cls_score[0] + cls_score[1], target)
             losses.update(
                 {f'accuracy_top-{k}': a
                  for k, a in zip(self.topk, acc)})
