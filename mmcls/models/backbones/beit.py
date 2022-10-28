@@ -16,6 +16,7 @@ from .vision_transformer import TransformerEncoderLayer, VisionTransformer
 
 class RelativePositionBias(BaseModule):
     """Relative Position Bias.
+
     This module is copied from
     https://github.com/microsoft/unilm/blob/master/beit/modeling_finetune.py#L209.
 
