@@ -1,108 +1,62 @@
-# Custom Evaluation Metrics
+# Customize Evaluation Metrics
 
-In MMClassification, metrics are provided based on [`MMEngine: BaseMetric`](mmengine.evaluator.BaseMetric) and should be wrapped in [`MMEngine: Evaluator`](mmengine.evaluator.Evaluator) when starting a runner. To specify the desired metrics used in validation and testing, we have to modify the `val_evaluator` and `test_evaluator` fields in the config file.
+## Use metrics in MMClassification
 
-Here is an example for using basic `Accuracy` metric to evaluate the performance of single-label classification task.
+In MMClassification, we have provided multiple metrics for both single-label classification and multi-label
+classification:
 
-```python
-val_evaluator = dict(type='Accuracy', topk=(1, 5))
-test_evaluator = val_evaluator
-```
+**Single-label Classification**:
 
-For single-label classification task, metrics are relatively unified and simple. Accuracy is commonly used for most cases. Furthermore, precision, recall, f1-scores are computed as well for detailed analysis.
+- [`Accuracy`](mmcls.evaluation.Accuracy)
+- [`SingleLabelMetric`](mmcls.evaluation.SingleLabelMetric), including precision, recall, f1-score and
+  support.
 
-When it comes for multi-label classification task, additional average precision(AP) might be used.
+**Multi-label Classification**:
 
-Therefore, four metrics are supported in MMClassification and descrided as below:
+- [`AveragePrecision`](mmcls.evaluation.AveragePrecision), or AP (mAP).
+- [`MultiLabelMetric`](mmcls.evaluation.MultiLabelMetric), including precision, recall, f1-score and
+  support.
 
-## Accuracy
+To use these metrics during validation and testing, we need to modify the `val_evaluator` and `test_evaluator`
+fields in the config file.
 
-`Accuracy` is only used for single-label task. For binary classification, given the true positive(TP), false positive(FP), true negative(TN), false negative(FN), accuracy can be calculated by the following equation:
+Here is several examples:
 
-```{math}
-Acc = \frac{TP+TN}{TP+FP+TN+FN}
-```
+1. Calculate top-1 and top-5 accuracy during both validation and test.
 
-For multi-class classification, it is just the fraction of correct classifications in all classfications:
+   ```python
+   val_evaluator = dict(type='Accuracy', topk=(1, 5))
+   test_evaluator = val_evaluator
+   ```
 
-```{math}
-Acc = \frac{\text{correct classifications}}{\text{all classifications}}
-```
+2. Calculate top-1 accuracy, top-5 accuracy, precision and recall during both validation and test.
 
-Besides the `topk` option for topk-accuracy, `Accuracy` also accept `thrs` options to calculate metric based on one or multiple threshold scores.
+   ```python
+   val_evaluator = [
+     dict(type='Accuracy', topk=(1, 5)),
+     dict(type='SingleLabelMetric', items=['precision', 'recall']),
+   ]
+   test_evaluator = val_evaluator
+   ```
 
-```python
-# use one thr
-val_evaluator = dict(type='Accuracy', topk=(1, 5), thrs=0.5)
-test_evaluator = val_evaluator
-# or use sequence of thrs
-val_evaluator = dict(type='Accuracy', topk=(1, 5), thrs=(0.3, 0.8, None))
-test_evaluator = val_evaluator
-```
+3. Calculate mAP (mean AveragePrecision), CP (Class-wise mean Precision), CR (Class-wise mean Recall), CF
+   (Class-wise mean F1-score), OP (Overall mean Precision), OR (Overall mean Recall) and OF1 (Overall mean
+   F1-score).
 
-## SingleLabelMetric
+   ```python
+   val_evaluator = [
+     dict(type='AveragePrecision'),
+     dict(type='MultiLabelMetric', average='macro'),  # class-wise mean
+     dict(type='MultiLabelMetric', average='micro'),  # overall mean
+   ]
+   test_evaluator = val_evaluator
+   ```
 
-`SingleLabelMetric` is only used for single-label task obviously, and calculates precision(P), recall(R), f1-score and support simultaneously. Except for the support which means the total number of occurrences of each category in the targets, the rest metrics can be formulated use variables above:
-
-```{math}
-P = \frac{TP}{TP+FP}, R = \frac{TP}{TP+FN}, \text{F1-score} = \frac{2*R*P}{R+P}
-```
-
-In other words, precision is the fraction of correct predictions in all predictions, recall is the fraction of correct predictions in all targets.
-
-Here is an example of using `SingleLabelMetric` which only outputs precision and recall:
-
-```python
-val_evaluator = dict(
-    type='SingleLabelMetric', items=('precision, recall'))
-test_evaluator = val_evaluator
-```
-
-```{tip}
-`SingleLabelMetric` does not support `topk` option, and more options refers [the documentation](mmcls.evaluation.metrics.SingleLabelMetric) for more details.
-```
-
-## MultiLabelMetric
-
-`MultiLabelMetric` is used for multi-label task, and the detailed collection of metrics are the same as `SingleLabelMetric`. Refers [the documentation](mmcls.evaluation.metrics.MultiLabelMetric) for more details of implementation differences.
-
-Here is an example of using `MultiLabelMetric` which outputs precision, recall and f1-score as defaults, and with the `mirco` average method which refers for globally average rather than class-wise average:
-
-```python
-val_evaluator = dict(
-    type='MultiLabelMetric', average='mirco')
-test_evaluator = val_evaluator
-```
-
-## AveragePrecision
-
-`AveragePrecision` is used for multi-label task. Refers [the documentation](mmcls.evaluation.metrics.AveragePrecision) for more details of implementation.
-
-{math}`P_n` and {math}`R_n` are the precision and recall at cut-off `n` in the list respectively. Average precision is calculated by the following equation:
-
-```{math}
-\text{AP} = \sum_n (R_n - R_{n-1}) P_n
-```
-
-Here is an example of using `AveragePrecision` metric with the `mirco` average method.
-
-```python
-val_evaluator = dict(type='AveragePrecision', average='mirco')
-test_evaluator = val_evaluator
-```
-
-In addition, evaluator also supports multiple metrics, such as use `MultiLabelMetric` and `AveragePrecision` at the same time for better evaluation.
-
-```python
-val_evaluator = [dict(type='MultiLabelMetric'), dict(type='AveragePrecision')]
-test_evaluator = val_evaluator
-```
-
-## Customized Metric
+## Add new metrics
 
 MMClassification supports the implementation of customized evaluation metrics for users who pursue higher customization.
 
-You need to create a new file under `mmcls/evaluation/metrics`, and implement the new metric in the file, for example, in `mmcls/evaluation/metrics/my_metric.py`. And create a customized evaluation metric class `MyMetric` which inherits [`MMEngine: BaseMetric`](mmengine.evaluator.metrics.BaseMetric).
+You need to create a new file under `mmcls/evaluation/metrics`, and implement the new metric in the file, for example, in `mmcls/evaluation/metrics/my_metric.py`. And create a customized evaluation metric class `MyMetric` which inherits [`BaseMetric in MMEngine`](mmengine.evaluator.metrics.BaseMetric).
 
 The data format processing method `process` and the metric calculation method `compute_metrics` need to be overwritten respectively. Add it to the `METRICS` registry to implement any customized evaluation metric.
 
@@ -145,5 +99,5 @@ test_evaluator = val_evaluator
 ```
 
 ```{note}
-More details can be found in {external+mmengine:doc}`MMEngine Documentation: BaseMetric <design/evaluation>`.
+More details can be found in {external+mmengine:doc}`MMEngine Documentation: Evaluation <design/evaluation>`.
 ```
