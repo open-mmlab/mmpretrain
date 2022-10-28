@@ -16,12 +16,14 @@ We present the next generation of MobileNets based on a combination of complemen
 
 ### ImageNet-1k
 
-|        Model        | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                    Config                     |                                               Download                                                |
-| :-----------------: | :-------: | :------: | :-------: | :-------: | :-------------------------------------------: | :---------------------------------------------------------------------------------------------------: |
-| MobileNetV3-Small\* |   2.54    |   0.06   |   67.66   |   87.41   | [config](./mobilenet-v3-small_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_small-8427ecf0.pth) |
-| MobileNetV3-Large\* |   5.48    |   0.23   |   74.04   |   91.34   | [config](./mobilenet-v3-large_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_large-3ea3c186.pth) |
+|           Model           | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                             Config                             |                                    Download                                    |
+| :-----------------------: | :-------: | :------: | :-------: | :-------: | :------------------------------------------------------------: | :----------------------------------------------------------------------------: |
+|    MobileNetV3-Small\*    |   2.54    |   0.06   |   67.66   |   87.41   |   [config](./mobilenet_v3/mobilenet-v3-small_8xb128_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_small-8427ecf0.pth) |
+| MobileNetV3-Small-075\*\* |   2.04    |   0.04   |   65.23   |   85.44   | [config](./mobilenet_v3/mobilenet-v3-small-075_8xb128_in1k.py) |                                  [model](<>)                                   |
+| MobileNetV3-Small-050\*\* |   1.59    |   0.02   |   57.91   |   80.19   | [config](./mobilenet_v3/mobilenet-v3-small-050_8xb128_in1k.py) |                                  [model](<>)                                   |
+|    MobileNetV3-Large\*    |   5.48    |   0.23   |   74.04   |   91.34   |   [config](./mobilenet_v3/mobilenet-v3-large_8xb128_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_large-3ea3c186.pth) |
 
-*Models with * are converted from [torchvision](https://pytorch.org/vision/stable/_modules/torchvision/models/mobilenetv3.html). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
+\*Models with * are converted from [torchvision](https://pytorch.org/vision/stable/_modules/torchvision/models/mobilenetv3.html). *Models with \*\* are converted from [timm](https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/mobilenetv3.py). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 
 ## Citation
 
