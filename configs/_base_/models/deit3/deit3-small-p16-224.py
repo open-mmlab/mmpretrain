@@ -11,7 +11,7 @@ model = dict(
         type='VisionTransformerClsHead',
         num_classes=1000,
         in_channels=384,
-        loss=dict(type='CrossEntropyLoss', use_sigmoid=True),
+        loss=dict(type='BinaryCrossEntropyLoss', target_threshold=0.),
         init_cfg=None,
     ),
     init_cfg=[
