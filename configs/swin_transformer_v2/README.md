@@ -4,13 +4,37 @@
 
 <!-- [ALGORITHM] -->
 
-## Abstract
+## Introduction
 
-Large-scale NLP models have been shown to significantly improve the performance on language tasks with no signs of saturation. They also demonstrate amazing few-shot capabilities like that of human beings. This paper aims to explore large-scale models in computer vision. We tackle three major issues in training and application of large vision models, including training instability, resolution gaps between pre-training and fine-tuning, and hunger on labelled data. Three main techniques are proposed: 1) a residual-post-norm method combined with cosine attention to improve training stability; 2) A log-spaced continuous position bias method to effectively transfer models pre-trained using low-resolution images to downstream tasks with high-resolution inputs; 3) A self-supervised pre-training method, SimMIM, to reduce the needs of vast labeled images. Through these techniques, this paper successfully trained a 3 billion-parameter Swin Transformer V2 model, which is the largest dense vision model to date, and makes it capable of training with images of up to 1,536×1,536 resolution. It set new performance records on 4 representative vision tasks, including ImageNet-V2 image classification, COCO object detection, ADE20K semantic segmentation, and Kinetics-400 video action classification. Also note our training is much more efficient than that in Google's billion-level visual models, which consumes 40 times less labelled data and 40 times less training time.
+**Swin Transformer V2** is a work on the scale up visual model based on [Swin Transformer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/swin_transformer). In the visual field, We can not increase the performance by just simply scaling up the visual model like NLP models. The possible reasons mentioned in the article are:
+
+- Training instability when increasing the vision model
+- Migrating the model trained at low resolution to a larger scale resolution task
+- Too mush GPU memory
+
+To solve it, The following method improvements are proposed in the paper:
+
+- post normalization: layer normalization after self-attention layer and MLP block
+- scaled cosine attention approach: use cosine similarity to calculate the relationship between token pairs
+- log-spaced continuous position bias: redefine relative position encoding
 
 <div align=center>
 <img src="https://user-images.githubusercontent.com/42952108/180748696-ee7ed23d-7fee-4ccf-9eb5-f117db228a42.png" width="100%"/>
 </div>
+
+## Abstract
+
+<details>
+
+<summary>Show the detailed Abstract</summary>
+
+<br>
+
+Large-scale NLP models have been shown to significantly improve the performance on language tasks with no signs of saturation. They also demonstrate amazing few-shot capabilities like that of human beings. This paper aims to explore large-scale models in computer vision. We tackle three major issues in training and application of large vision models, including training instability, resolution gaps between pre-training and fine-tuning, and hunger on labelled data. Three main techniques are proposed: 1) a residual-post-norm method combined with cosine attention to improve training stability; 2) A log-spaced continuous position bias method to effectively transfer models pre-trained using low-resolution images to downstream tasks with high-resolution inputs; 3) A self-supervised pre-training method, SimMIM, to reduce the needs of vast labeled images. Through these techniques, this paper successfully trained a 3 billion-parameter Swin Transformer V2 model, which is the largest dense vision model to date, and makes it capable of training with images of up to 1,536×1,536 resolution. It set new performance records on 4 representative vision tasks, including ImageNet-V2 image classification, COCO object detection, ADE20K semantic segmentation, and Kinetics-400 video action classification. Also note our training is much more efficient than that in Google's billion-level visual models, which consumes 40 times less labelled data and 40 times less training time.
+
+</br>
+
+</details>
 
 ## Results and models
 
@@ -41,6 +65,59 @@ The pre-trained models on ImageNet-21k are used to fine-tune, and therefore don'
 *Models with * are converted from the [official repo](https://github.com/microsoft/Swin-Transformer#main-results-on-imagenet-with-pretrained-models). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 
 *ImageNet-21k pretrained models with input resolution of 256x256 and 384x384 both fine-tuned from the same pre-training model using a smaller input resolution of 192x192.*
+
+## How to use it?
+
+<!-- [TABS-BEGIN] -->
+
+**Predict image**
+
+```python
+>>> import torch
+>>> from mmcls.apis import init_model, inference_model
+>>>
+>>> model = init_model('configs/swin_transformer_v2/swinv2-tiny-w16_16xb64_in1k-256px.py', 'https://download.openmmlab.com/mmclassification/v0/swin-v2/swinv2-tiny-w16_3rdparty_in1k-256px_20220803-9651cdd7.pth')
+>>> predict = inference_model(model, 'demo/demo.JPEG')
+>>> print(predict['pred_class'])
+sea snake
+>>> print(predict['pred_score'])
+0.9504518508911133
+```
+
+**Use the model**
+
+```python
+>>> import torch
+>>> from mmcls.apis import init_model
+>>>
+>>> model = init_model('configs/swin_transformer_v2/swinv2-tiny-w16_16xb64_in1k-256px.py', 'https://download.openmmlab.com/mmclassification/v0/swin-v2/swinv2-tiny-w16_3rdparty_in1k-256px_20220803-9651cdd7.pth')
+>>> inputs = torch.rand(1, 3, 224, 224).to(model.data_preprocessor.device)
+>>> # To get classification scores.
+>>> out = model(inputs)
+>>> print(out.shape)
+torch.Size([1, 1000])
+>>> # To extract features.
+>>> outs = model.extract_feat(inputs)
+>>> print(outs[0].shape)
+torch.Size([1, 2048])
+```
+
+**Command**
+Place the ImageNet dataset to the `data/imagenet/` directory, or prepare datasets according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+
+Train:
+
+```shell
+python tools/train.py configs/swin_transformer_v2/swinv2-tiny-w16_16xb64_in1k-256px.py
+```
+
+Test:
+
+```shell
+python tools/test.py configs/swin_transformer_v2/swinv2-tiny-w16_16xb64_in1k-256px.py
+```
+
+<!-- [TABS-END] -->
 
 ## Citation
 
