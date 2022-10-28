@@ -115,6 +115,8 @@ python tools/test.py configs/swin_transformer/swin-base_16xb64_in1k.py
 
 <!-- [TABS-END] -->
 
+For more configurable parameters, please refer to [API](https://mmclassification.readthedocs.io/en/1.x/api/generated/mmcls.models.backbones.SwinTransformer.html#mmcls.models.backbones.SwinTransformer).
+
 ## Citation
 
 ```

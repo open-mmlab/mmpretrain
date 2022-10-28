@@ -119,6 +119,8 @@ python tools/test.py configs/swin_transformer_v2/swinv2-tiny-w16_16xb64_in1k-256
 
 <!-- [TABS-END] -->
 
+For more configurable parameters, please refer to [API](https://mmclassification.readthedocs.io/en/1.x/api/generated/mmcls.models.backbones.SwinTransformerV2.html#mmcls.models.backbones.SwinTransformerV2).
+
 ## Citation
 
 ```
