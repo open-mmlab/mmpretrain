@@ -4,6 +4,15 @@ _base_ = [
     '../_base_/default_runtime.py'
 ]
 
+data_preprocessor = dict(
+    num_classes=1000,
+    # RGB format normalization parameters
+    mean=[127.5, 127.5, 127.5],
+    std=[127.5, 127.5, 127.5],
+    # convert image from BGR to RGB
+    to_rgb=True,
+)
+
 model = dict(
     type='ImageClassifier',
     backbone=dict(
