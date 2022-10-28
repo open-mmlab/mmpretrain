@@ -4,7 +4,6 @@ from torch.utils.data import DistributedSampler as _DistributedSampler
 
 from mmcls.core.utils import sync_random_seed
 from mmcls.datasets import SAMPLERS
-from mmcls.utils import auto_select_device
 
 
 @SAMPLERS.register_module()
@@ -31,7 +30,7 @@ class DistributedSampler(_DistributedSampler):
         # in the same order based on the same seed. Then different ranks
         # could use different indices to select non-overlapped data from the
         # same data list.
-        self.seed = sync_random_seed(seed, device=auto_select_device())
+        self.seed = sync_random_seed(seed)
 
     def __iter__(self):
         # deterministically shuffle based on epoch
