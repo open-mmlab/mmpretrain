@@ -33,6 +33,8 @@
 [🆕 Update News](https://mmclassification.readthedocs.io/en/latest/changelog.html) |
 [🤔 Reporting Issues](https://github.com/open-mmlab/mmclassification/issues/new/choose)
 
+:point_right: **MMClassification 1.0 branch is in trial, welcome every to [try it](https://github.com/open-mmlab/mmclassification/tree/1.x) and [discuss with us](https://github.com/open-mmlab/mmclassification/discussions)!** :point_left:
+
 </div>
 
 ## Introduction
@@ -61,6 +63,11 @@ The master branch works with **PyTorch 1.5+**.
 The MMClassification 1.0 has released! It's still unstable and in release candidate. If you want to try it, go
 to [the 1.x branch](https://github.com/open-mmlab/mmclassification/tree/1.x) and discuss it with us in
 [the discussion](https://github.com/open-mmlab/mmclassification/discussions).
+
+v0.24.1 was released in 31/10/2022.
+Highlights of the new version:
+
+- Support HUAWEI Ascend device.
 
 v0.24.0 was released in 30/9/2022.
 Highlights of the new version:

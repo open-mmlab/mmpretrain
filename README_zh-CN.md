@@ -33,6 +33,10 @@
 [🆕 更新日志](https://mmclassification.readthedocs.io/en/latest/changelog.html) |
 [🤔 报告问题](https://github.com/open-mmlab/mmclassification/issues/new/choose)
 
+:point_right: **MMClassification 1.0 版本即将正式发布，欢迎大家 [试用](https://github.com/open-mmlab/mmclassification/tree/1.x) 并 [参与讨论](https://github.com/open-mmlab/mmclassification/discussions)！** :point_left:
+
+</div>
+
 </div>
 
 ## Introduction
@@ -59,14 +63,16 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 
 MMClassification 1.0 已经发布！目前仍在公测中，如果希望试用，请切换到 [1.x 分支](https://github.com/open-mmlab/mmclassification/tree/1.x)，并在[讨论版](https://github.com/open-mmlab/mmclassification/discussions) 参加开发讨论！
 
+2022/10/31 发布了 v0.24.1 版本
+
+- 支持了华为昇腾 NPU 设备。
+
 2022/9/30 发布了 v0.24.0 版本
 
 - 支持了 **HorNet**，**EfficientFormerm**，**SwinTransformer V2**，**MViT** 等主干网络。
 - 支持了 Support Standford Cars 数据集。
 
 2022/5/1 发布了 v0.23.0 版本
-
-新版本亮点：
 
 - 支持了 **DenseNet**，**VAN** 和 **PoolFormer** 三个网络，并提供了预训练模型。
 - 支持在 IPU 上进行训练。
