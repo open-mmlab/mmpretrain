@@ -99,6 +99,7 @@ def generate_paper_page(collection):
     content = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', replace_link, readme)
 
     def make_tabs(matchobj):
+        """modify the format from emphasis black symbol to tabs."""
         content = matchobj.group()
         content = content.replace('<!-- [TABS-BEGIN] -->', '::::{tabs}')
         content = content.replace('<!-- [TABS-END] -->', '::::')
@@ -113,7 +114,7 @@ def generate_paper_page(collection):
         return ''.join(tabs_list)
 
     if '<!-- [TABS-BEGIN] -->' in content and '<!-- [TABS-END] -->' in content:
-        # Make 'how to use' block a selctive tabs
+        # Make TABS block a selctive tabs
         try:
             pattern = r'<!-- \[TABS-BEGIN\] -->([\d\D]*)<!-- \[TABS-END\] -->'
             content = re.sub(pattern, make_tabs, content)
