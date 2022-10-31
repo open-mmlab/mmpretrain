@@ -8,9 +8,10 @@ from .multi_label_cls_head import MultiLabelClsHead
 from .multi_label_linear_head import MultiLabelLinearClsHead
 from .stacked_head import StackedLinearClsHead
 from .vision_transformer_head import VisionTransformerClsHead
+from .multi_task_head import MultiTaskClsHead
 
 __all__ = [
     'ClsHead', 'LinearClsHead', 'StackedLinearClsHead', 'MultiLabelClsHead',
     'MultiLabelLinearClsHead', 'VisionTransformerClsHead', 'DeiTClsHead',
-    'ConformerHead', 'EfficientFormerClsHead'
+    'ConformerHead', 'EfficientFormerClsHead','MultiTaskClsHead'
 ]
