@@ -155,12 +155,12 @@ class FormatMultiTaskLabelsMasked(BaseTransform):
                 'please make sure `LoadImageFromFile` has been added '
                 'in the data pipeline or images have been loaded in ')
 
-        data_samples = MultiTaskDataSample(self.tasks)
+        data_sample = MultiTaskDataSample(tasks = self.tasks)
         gt_label = {}
         for task in self.tasks:
             label_key = task + '_img_label'
             gt_label[task] = results[label_key]
-        data_samples.set_gt_label(gt_label)
+        data_sample.set_gt_label(gt_label)
 
         img_meta = {k: results[k] for k in self.meta_keys if k in results}
         data_sample.set_metainfo(img_meta)
