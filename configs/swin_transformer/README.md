@@ -98,7 +98,7 @@ torch.Size([1, 1000])
 torch.Size([1, 2048])
 ```
 
-**Command**
+**Train/Test Command**
 Place the ImageNet dataset to the `data/imagenet/` directory, or prepare datasets according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
 
 Train:
@@ -110,12 +110,12 @@ python tools/train.py configs/swin_transformer/swin-base_16xb64_in1k.py
 Test:
 
 ```shell
-python tools/test.py configs/swin_transformer/swin-base_16xb64_in1k.py
+python tools/test.py configs/swin_transformer/swin-base_16xb64_in1k.py https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin_tiny_patch4_window7_224-160bb0a5.pth
 ```
 
 <!-- [TABS-END] -->
 
-For more configurable parameters, please refer to [API](https://mmclassification.readthedocs.io/en/1.x/api/generated/mmcls.models.backbones.SwinTransformer.html#mmcls.models.backbones.SwinTransformer).
+For more configurable parameters, please refer to the [API](https://mmclassification.readthedocs.io/en/1.x/api/generated/mmcls.models.backbones.SwinTransformer.html#mmcls.models.backbones.SwinTransformer).
 
 ## Citation
 
