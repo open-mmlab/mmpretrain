@@ -104,8 +104,8 @@ def generate_paper_page(collection):
         content = content.replace('<!-- [TABS-BEGIN] -->', '')
         content = content.replace('<!-- [TABS-END] -->', '')
 
-        tabs_list = re.split(r'\*\*(.*)\*\*',
-                             content)  # split by "**{Tab Name}**"
+        # split the content by "**{Tab-Name}**""
+        tabs_list = re.split(r'\*\*(.*)\*\*', content)
         for i in range(len(tabs_list)):
             if i % 2 == 1:
                 tabs_list[
