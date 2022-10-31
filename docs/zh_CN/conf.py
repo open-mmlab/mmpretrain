@@ -43,13 +43,9 @@ release = get_version()
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.viewcode',
-    'myst_parser',
-    'sphinx_copybutton',
+    'sphinx.ext.autodoc', 'sphinx.ext.autosummary', 'sphinx.ext.intersphinx',
+    'sphinx.ext.napoleon', 'sphinx.ext.viewcode', 'myst_parser',
+    'sphinx_copybutton', 'sphinx_tabs.tabs'
 ]
 
 # Add any paths that contain templates here, relative to this directory.

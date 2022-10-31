@@ -101,17 +101,19 @@ def generate_paper_page(collection):
     def make_tabs(matchobj):
         """modify the format from emphasis black symbol to tabs."""
         content = matchobj.group()
-        content = content.replace('<!-- [TABS-BEGIN] -->', '::::{tabs}')
-        content = content.replace('<!-- [TABS-END] -->', '::::')
+        content = content.replace('<!-- [TABS-BEGIN] -->', '')
+        content = content.replace('<!-- [TABS-END] -->', '')
 
-        tabs_list = re.split(r'\*\*(.*)\*\*', content)
+        tabs_list = re.split(r'\*\*(.*)\*\*',
+                             content)  # split by "**{Tab Name}**"
         for i in range(len(tabs_list)):
             if i % 2 == 1:
-                tabs_list[i] = ':::{tab} ' + tabs_list[i]
+                tabs_list[
+                    i] = '\n:::{tab}  ' + f'{tabs_list[i]}\n'  # tab name line
             elif i % 2 == 0 and i != 0:
-                tabs_list[i] = tabs_list[i] + ':::\n\n'
+                tabs_list[i] = f'\n{tabs_list[i]}' + ':::\n'  # content line
 
-        return ''.join(tabs_list)
+        return '::::{tabs}\n' + ''.join(tabs_list) + '\n::::'
 
     if '<!-- [TABS-BEGIN] -->' in content and '<!-- [TABS-END] -->' in content:
         # Make TABS block a selctive tabs
