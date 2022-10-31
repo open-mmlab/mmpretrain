@@ -1,12 +1,15 @@
 # optimizer
 optim_wrapper = dict(
     optimizer=dict(
-        type='Lamb', lr=0.003, weight_decay=0.05, max_grad_norm=1.0),
+        type='Lamb', lr=0.003, weight_decay=0.05, max_grad_norm=1.0, eps=1e-8),
     # specific to vit pretrain
-    paramwise_cfg=dict(custom_keys={
-        '.cls_token': dict(decay_mult=0.0),
-        '.pos_embed': dict(decay_mult=0.0)
-    }),
+    paramwise_cfg=dict(
+        norm_decay_mult=0.0,
+        bias_decay_mult=0.0,
+        custom_keys={
+            '.cls_token': dict(decay_mult=0.0),
+            '.pos_embed': dict(decay_mult=0.0)
+        }),
 )
 
 # learning policy
@@ -19,7 +22,7 @@ param_scheduler = [
         begin=0,
         end=5,
         # update by iter
-        convert_to_iter_based=True),
+        convert_to_iter_based=False),
     # main learning rate scheduler
     dict(type='CosineAnnealingLR', by_epoch=True, begin=5)
 ]

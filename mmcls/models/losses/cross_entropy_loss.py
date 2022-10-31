@@ -33,6 +33,8 @@ def cross_entropy(pred,
     # element-wise losses
     loss = F.cross_entropy(pred, label, weight=class_weight, reduction='none')
 
+    avg_factor = avg_factor or pred.size(0)
+
     # apply weights and do the reduction
     if weight is not None:
         weight = weight.float()
@@ -70,6 +72,8 @@ def soft_cross_entropy(pred,
     if class_weight is not None:
         loss *= class_weight
     loss = loss.sum(dim=-1)
+
+    avg_factor = avg_factor or pred.size(0)
 
     # apply weights and do the reduction
     if weight is not None:

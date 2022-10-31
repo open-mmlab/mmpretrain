@@ -21,7 +21,10 @@ val_dataloader = dict(dataset=dict(pipeline=test_pipeline))
 test_dataloader = dict(dataset=dict(pipeline=test_pipeline))
 
 # schedule settings
-optim_wrapper = dict(optimizer=dict(lr=4e-3))
+lr = 4e-3
+optim_wrapper = dict(optimizer=dict(lr=lr))
+param_scheduler = _base_['param_scheduler']
+param_scheduler[0]['start_factor'] = 1e-6 / lr
 
 # runtime settings
 custom_hooks = [dict(type='EMAHook', momentum=4e-5, priority='ABOVE_NORMAL')]
