@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 import numpy as np
 import requests
 
-from mmcls.apis import inference_model, init_model, show_result_pyplot
+from mmcls.apis import inference_model, init_model
 
 
 def parse_args():
@@ -27,14 +27,12 @@ def main(args):
     # Inference single image by native apis.
     model = init_model(args.config, args.checkpoint, device=args.device)
     model_result = inference_model(model, args.img)
-    show_result_pyplot(model, args.img, model_result, title='pytorch_result')
 
     # Inference single image by torchserve engine.
     url = 'http://' + args.inference_addr + '/predictions/' + args.model_name
     with open(args.img, 'rb') as image:
         response = requests.post(url, image)
     server_result = response.json()
-    show_result_pyplot(model, args.img, server_result, title='server_result')
 
     assert np.allclose(model_result['pred_score'], server_result['pred_score'])
     print('Test complete, the results of PyTorch and TorchServe are the same.')

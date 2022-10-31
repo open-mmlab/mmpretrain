@@ -9,7 +9,9 @@ try:
     from model_archiver.model_packaging import package_model
     from model_archiver.model_packaging_utils import ModelExportUtils
 except ImportError:
-    package_model = None
+    raise ImportError(
+        'Please run `pip install torchserve torch-model-archiver"` to '
+        'install required third-party libraries.')
 
 
 def mmcls2torchserve(
