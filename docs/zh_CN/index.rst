@@ -79,6 +79,13 @@ You can switch between Chinese and English documentation in the lower-left corne
 
 
 .. toctree::
+   :maxdepth: 1
+   :caption: 设备支持
+
+   device/npu.md
+
+
+.. toctree::
    :caption: 语言切换
 
    English <https://mmclassification.readthedocs.io/en/latest/>
