@@ -7,13 +7,13 @@ from typing import Dict, List, Optional, Sequence
 
 import mmengine
 import numpy as np
+from mmcv.transforms import Compose
 from mmengine.fileio import FileClient
 from mmengine.utils.misc import is_list_of
 
 from .base_dataset import BaseDataset
 from .builder import DATASETS
 from .multi_label import MultiLabelDataset
-from mmcv.transforms import Compose
 
 
 def expanduser(path):
@@ -51,13 +51,13 @@ class MultiTaskDataset:
           "data_list": [
             {
               "img_path": "a.jpg",
-              "gender_img_label": 0,
-              "wear_img_label": [1, 0, 1, 0]
+              "gender": 0,
+              "wear": [1, 0, 1, 0]
             },
             {
               "img_path": "b.jpg",
-              "gender_img_label": 1,
-              "wear_img_label": [0, 1, 0, 1]
+              "gender": 1,
+              "wear": [0, 1, 0, 1]
             }
           ]
         }

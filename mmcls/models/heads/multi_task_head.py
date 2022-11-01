@@ -1,12 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmengine.model import ModuleDict
-from typing import List, Optional, Tuple, Union
+from typing import List, Tuple
+
 import torch
-import torch.nn.functional as F
-from .base_head import BaseHead
-from mmcls.structures import MultiTaskDataSample
+from mmengine.model import ModuleDict
 
 from mmcls.registry import MODELS
+from mmcls.structures import MultiTaskDataSample
+from .base_head import BaseHead
 
 
 @MODELS.register_module()
@@ -39,7 +39,7 @@ class MultiTaskClsHead(BaseHead):
         task_results = ()
         for task_name, head in self.sub_heads.items():
             head_res = head.forward(feats)
-            task_results = task_results + (head_res,)
+            task_results = task_results + (head_res, )
         return task_results
 
     def loss(self, feats: Tuple[torch.Tensor],
@@ -60,9 +60,9 @@ class MultiTaskClsHead(BaseHead):
         """
         losses = dict()
         for task_name, head in self.sub_heads.items():
-            """
-            if 'mask'  in gt_label[task_name].keys()  :
-              mask = gt_label[task_name]['mask']
+            """if 'mask'  in gt_label[task_name].keys()  :
+
+            mask = gt_label[task_name]['mask']
               label = gt_label[task_name]['label']
             else: # a tensor
               label = gt_label[task_name]
@@ -73,24 +73,28 @@ class MultiTaskClsHead(BaseHead):
             masked_data_samples = []
             for data_sample in data_samples:
                 sample_mask = data_sample.get_task_mask(task_name)
-                if sample_mask :
-                    masked_data_samples.append(data_sample.get_task_sample(task_name))
+                if sample_mask:
+                    sample = data_sample.get_task_sample(task_name)
+                    masked_data_samples.append(sample)
                 mask.append(sample_mask)
             masked_features = tuple()
             if type(feats) is tuple:
-                for feature in feats :
-                    masked_features = masked_features + (feature[mask],)
-            else :
+                for feature in feats:
+                    masked_features = masked_features + (feature[mask], )
+            else:
                 masked_features = feats[mask]
-            head_loss = head.loss(masked_features, masked_data_samples, **kwargs)
+            head_loss = head.loss(masked_features, masked_data_samples,
+                                  **kwargs)
+
             for k, v in head_loss.items():
                 losses[f'{task_name}_{k}'] = v
         return losses
 
     def predict(
-            self,
-            feats: Tuple[torch.Tensor],
-            data_samples: List[MultiTaskDataSample] = None) -> List[MultiTaskDataSample]:
+        self,
+        feats: Tuple[torch.Tensor],
+        data_samples: List[MultiTaskDataSample] = None
+    ) -> List[MultiTaskDataSample]:
         """Inference without augmentation.
 
         Args:
@@ -103,8 +107,8 @@ class MultiTaskClsHead(BaseHead):
                 the input data samples. Defaults to None.
 
         Returns:
-            List[MultiTaskDataSample]: A list of data samples which contains the
-            predicted results.
+            List[MultiTaskDataSample]: A list of data samples which contains
+            the predicted results.
         """
         # The part can be traced by torch.fx
         task_results = self(feats)
@@ -114,16 +118,15 @@ class MultiTaskClsHead(BaseHead):
         return predictions
 
     def _get_predictions(self, task_results, data_samples):
-        """Post-process the output of MultiTaskHead.
-        """
+        """Post-process the output of MultiTaskHead."""
         data_results = list(zip(*task_results))
-        if data_samples is None :
+        if data_samples is None:
             data_samples = []
             for data_result in data_results:
-                data_samples.append(MultiTaskDataSample().set_pred(data_result))
+                data_samples.append(
+                    MultiTaskDataSample().set_pred(data_result))
         else:
             for data_sample, data_result in zip(data_samples, data_results):
                 data_sample.set_pred(data_result)
-
 
         return data_samples

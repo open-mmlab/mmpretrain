@@ -81,7 +81,6 @@ class ClsHead(BaseHead):
                   data_samples: List[ClsDataSample], **kwargs):
         """Unpack data samples and compute loss."""
         # Unpack data samples and pack targets
-        print(data_samples[0])
         if 'score' in data_samples[0].gt_label:
             # Batch augmentation may convert labels to one-hot format scores.
             target = torch.stack([i.gt_label.score for i in data_samples])

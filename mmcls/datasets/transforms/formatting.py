@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import warnings
 from collections.abc import Sequence
-from typing import Any, Dict, List, Optional
+from typing import List
 
 import numpy as np
 import torch
@@ -10,7 +10,7 @@ from mmengine.utils import is_str
 from PIL import Image
 
 from mmcls.registry import TRANSFORMS
-from mmcls.structures import ClsDataSample , MultiTaskDataSample
+from mmcls.structures import ClsDataSample, MultiTaskDataSample
 
 
 def to_tensor(data):
@@ -110,7 +110,6 @@ class PackClsInputs(BaseTransform):
         return repr_str
 
 
-
 @TRANSFORMS.register_module()
 class FormatMultiTaskLabelsMasked(BaseTransform):
     """Convert all image labels of multi-task dataset to a dict of tensor.
@@ -132,15 +131,18 @@ class FormatMultiTaskLabelsMasked(BaseTransform):
             - ``flip_direction``: The flipping direction.
     """
 
-    def __init__(self, tasks: List[str],meta_keys=('sample_idx', 'img_path', 'ori_shape', 'img_shape',
-                                'scale_factor', 'flip', 'flip_direction')):
+    def __init__(self,
+                 tasks: List[str],
+                 meta_keys=('sample_idx', 'img_path', 'ori_shape', 'img_shape',
+                            'scale_factor', 'flip', 'flip_direction')):
         self.tasks = tasks
         self.meta_keys = meta_keys
 
     def transform(self, results: dict) -> dict:
         """Method to pack the input data.
-            result = {'img_path': 'a.png', 'task1_img_label': array(1), 'task3_img_label': array(3),
-                'img': array([[[  0,   0,   0])
+
+        result = {'img_path': 'a.png', 'task1': array(1), 'task3': array(3),
+            'img': array([[[  0,   0,   0])
         """
         packed_results = dict()
         if 'img' in results:
@@ -155,11 +157,11 @@ class FormatMultiTaskLabelsMasked(BaseTransform):
                 'please make sure `LoadImageFromFile` has been added '
                 'in the data pipeline or images have been loaded in ')
 
-        data_sample = MultiTaskDataSample(tasks = self.tasks)
+        data_sample = MultiTaskDataSample(tasks=self.tasks)
         gt_label = {}
         for task in self.tasks:
-            label_key = task + '_img_label'
-            gt_label[task] = results[label_key]
+            if task in results:
+                gt_label[task] = results[task]
         data_sample.set_gt_label(gt_label)
 
         img_meta = {k: results[k] for k in self.meta_keys if k in results}
@@ -169,6 +171,7 @@ class FormatMultiTaskLabelsMasked(BaseTransform):
 
     def __repr__(self):
         return self.__class__.__name__ + f'(tasks={self.tasks})'
+
 
 @TRANSFORMS.register_module()
 class Transpose(BaseTransform):
