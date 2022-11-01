@@ -54,7 +54,7 @@ class LinearReduction(BaseModule):
         """forward function.
 
         Args:
-            feats (Union[Tuple, torch.Tensor]): The features extracted from
+            inputs (Union[Tuple, torch.Tensor]): The features extracted from
                  the backbone. Multiple stage inputs are acceptable but only
                   the last stage will be used.
 
