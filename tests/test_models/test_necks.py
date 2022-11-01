@@ -132,5 +132,5 @@ def test_linear_reduction():
     # batch_size, out_features
     assert output[-1].shape == (1, 5)
 
-    with pytest.raises(TypeError):
+    with pytest.raises(AssertionError):
         neck([])
