@@ -98,14 +98,14 @@ def test_linear_reduction():
     fake_input = torch.rand(1, 10)
     output = neck(fake_input)
     # batch_size, out_features
-    assert output.shape == (1, 5)
+    assert output[-1].shape == (1, 5)
 
     # batch_size, in_features, feature_size(2)
     fake_input = (torch.rand(1, 20), torch.rand(1, 10))
 
     output = neck(fake_input)
     # batch_size, out_features
-    assert output.shape == (1, 5)
+    assert output[-1].shape == (1, 5)
 
     # test linear_reduction with `init_cfg`
     neck = LinearReduction(
@@ -123,14 +123,14 @@ def test_linear_reduction():
     fake_input = torch.rand(1, 10)
     output = neck(fake_input)
     # batch_size, out_features
-    assert output.shape == (1, 5)
+    assert output[-1].shape == (1, 5)
     #
     # # batch_size, in_features, feature_size(2)
     fake_input = (torch.rand(1, 20), torch.rand(1, 10))
 
     output = neck(fake_input)
     # batch_size, out_features
-    assert output.shape == (1, 5)
+    assert output[-1].shape == (1, 5)
 
     with pytest.raises(TypeError):
         neck([])
