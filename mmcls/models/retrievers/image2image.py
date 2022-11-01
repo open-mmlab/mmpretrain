@@ -103,7 +103,7 @@ class ImageToImageRetriever(BaseRetriever):
             return lambda a, b: torch.cosine_similarity(
                 a.unsqueeze(1), b.unsqueeze(0), dim=-1)
         else:
-            raise RuntimeError(f'Invalid function "{self.similarity_way}".')
+            raise RuntimeError(f'Invalid function "{self.similarity_fn}".')
 
     def forward(self,
                 inputs: torch.Tensor,
