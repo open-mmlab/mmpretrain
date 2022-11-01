@@ -94,4 +94,3 @@ def test_convnext():
     feat = model(imgs)
     assert len(feat) == 1
     assert feat[0].shape == torch.Size([1, 768])
-
