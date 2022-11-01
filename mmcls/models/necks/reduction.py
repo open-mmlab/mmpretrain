@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
-from typing import Optional
+from typing import Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -49,14 +49,23 @@ class LinearReduction(BaseModule):
         else:
             self.act = nn.Identity()
 
-    def forward(self, inputs):
+    def forward(self, inputs: Union[Tuple,
+                                    torch.Tensor]) -> Tuple[torch.Tensor]:
+        """forward function.
+
+        Args:
+            feats (Union[Tuple, torch.Tensor]): The features extracted from
+                 the backbone. Multiple stage inputs are acceptable but only
+                  the last stage will be used.
+
+        Returns:
+            Tuple(torch.Tensor)): A tuple of reducted features.
+        """
+        assert isinstance(inputs, (tuple, torch.Tensor)), (
+            'The inputs of `LinearReduction` neck  must be tuple or '
+            f'`torch.Tensor`, but get {type(inputs)}.')
         if isinstance(inputs, tuple):
             inputs = inputs[-1]
-        elif isinstance(inputs, torch.Tensor):
-            pass
-        else:
-            raise TypeError(f'neck inputs must be tuple or torch.tensor,'
-                            f' but get {type(inputs)}')
 
-        out = self.reduction(inputs)
-        return self.act(self.norm(out))
+        out = self.act(self.norm(self.reduction(inputs)))
+        return (out, )
