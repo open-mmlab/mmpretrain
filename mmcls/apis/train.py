@@ -131,7 +131,6 @@ def train_model(model,
         model = wrap_distributed_model(
             model,
             cfg.device,
-            device_ids=[torch.cuda.current_device()],
             broadcast_buffers=False,
             find_unused_parameters=find_unused_parameters)
     else:
@@ -173,6 +172,10 @@ def train_model(model,
 
     # fp16 setting
     fp16_cfg = cfg.get('fp16', None)
+
+    if fp16_cfg is None and device == 'npu':
+        fp16_cfg = {'loss_scale': 'dynamic'}
+
     if fp16_cfg is not None:
         if device == 'ipu':
             from mmcv.device.ipu import IPUFp16OptimizerHook

@@ -48,7 +48,6 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
-    'sphinx_markdown_tables',
     'myst_parser',
     'sphinx_copybutton',
 ]
@@ -214,7 +213,7 @@ intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
     'numpy': ('https://numpy.org/doc/stable', None),
     'torch': ('https://pytorch.org/docs/stable/', None),
-    'mmcv': ('https://mmcv.readthedocs.io/en/master/', None),
+    'mmcv': ('https://mmcv.readthedocs.io/zh_CN/latest/', None),
 }
 
 

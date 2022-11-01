@@ -9,12 +9,19 @@ pre {
     white-space: pre;
 }
 
-article.pytorch-article .section :not(dt) > code {
+article.pytorch-article section code {
   padding: .2em .4em;
   background-color: #f3f4f7;
   border-radius: 5px;
 }
 
-table.colwidths-auto td {
+/* Disable the change in tables */
+article.pytorch-article section table code {
+  padding: unset;
+  background-color: unset;
+  border-radius: unset;
+}
+
+table.autosummary td {
   width: 50%
 }
