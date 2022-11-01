@@ -35,6 +35,19 @@ Models:
     Converted From:
       Weights: https://download.pytorch.org/models/mobilenet_v3_small-047dcff4.pth
       Code: https://github.com/pytorch/vision/blob/main/torchvision/models/mobilenetv3.py
+  - Name: mobilenet-v3-small_in1k
+    Metadata:
+      FLOPs: 60000000
+      Parameters: 2540000
+    In Collection: MobileNet V3
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 66.68
+          Top 5 Accuracy: 86.74
+        Task: Image Classification
+    Weights: TODO
+    Config: configs/mobilenet_v3/mobilenet-v3-small_8xb128_in1k.py
   - Name: mobilenet-v3-small-075_3rdparty_in1k
     Metadata:
       FLOPs: 44791000
@@ -83,3 +96,16 @@ Models:
     Converted From:
       Weights: https://download.pytorch.org/models/mobilenet_v3_large-8738ca79.pth
       Code: https://github.com/pytorch/vision/blob/main/torchvision/models/mobilenetv3.py
+  - Name: mobilenet-v3-large_in1k
+    Metadata:
+      FLOPs: 230000000
+      Parameters: 5480000
+    In Collection: MobileNet V3
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 73.49
+          Top 5 Accuracy: 91.31
+        Task: Image Classification
+    Weights: TODO
+    Config: configs/mobilenet_v3/mobilenet-v3-large_8xb128_in1k.py
