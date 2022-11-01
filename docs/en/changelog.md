@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.24.1(31/10/2022)
+
+### New Features
+
+- Support mmcls with NPU backend. ([#1072](https://github.com/open-mmlab/mmclassification/pull/1072))
+
+### Bug Fixes
+
+- Fix performance issue in convnext DDP train. ([#1098](https://github.com/open-mmlab/mmclassification/pull/1098))
+
 ## v0.24.0(30/9/2022)
 
 ### Highlights
