@@ -4,6 +4,10 @@
 
 <!-- [ALGORITHM] -->
 
+## Introduction
+
+**ConvNeXt** is initially described in [A ConvNet for the 2020s](https://arxiv.org/abs/2201.03545v1), which is a pure convolutional model (ConvNet), inspired by the design of Vision Transformers. The ConvNeXt has the pyramid structure and achieve competitive  performance on various vision tasks, with simplicity and efficiency.
+
 ## Abstract
 
 <!-- [ABSTRACT] -->
@@ -46,6 +50,63 @@ The pre-trained models on ImageNet-1k or ImageNet-21k are used to fine-tune on t
 | ConvNeXt-XL\* | ImageNet-21k  |  350.20   |  60.93   |       [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-xlarge_3rdparty_in21k_20220124-f909bad7.pth)       |
 
 *Models with * are converted from the [official repo](https://github.com/facebookresearch/ConvNeXt).*
+
+## How to use it?
+
+<!-- [TABS-BEGIN] -->
+
+**Predict image**
+
+```python
+>>> import torch
+>>> from mmcls.apis import init_model, inference_model
+>>> from mmcls.utils import register_all_modules
+>>> register_all_modules()
+>>>
+>>> model = init_model('configs/convnext/convnext-tiny_32xb128_in1k.py', 'https://download.openmmlab.com/mmclassification/v0/convnext/convnext-tiny_3rdparty_32xb128-noema_in1k_20220222-2908964a.pth')
+>>> predict = inference_model(model, 'demo/demo.JPEG')
+>>> print(predict['pred_class'])
+sea snake
+>>> print(predict['pred_score'])
+0.9092751741409302 # to be updated
+```
+
+**Use the model**
+
+```python
+>>> import torch
+>>> from mmcls.apis import init_model
+>>>
+>>> model = init_model('configs/convnext/convnext-tiny_32xb128_in1k.py', 'https://download.openmmlab.com/mmclassification/v0/convnext/convnext-tiny_3rdparty_32xb128-noema_in1k_20220222-2908964a.pth')
+>>> inputs = torch.rand(1, 3, 224, 224).to(model.data_preprocessor.device)
+>>> # To get classification scores.
+>>> out = model(inputs)
+>>> print(out.shape)
+torch.Size([1, 1000])
+>>> # To extract features.
+>>> outs = model.extract_feat(inputs)
+>>> print(outs[0].shape)
+torch.Size([1, 768])
+```
+
+**Train/Test Command**
+
+Place the ImageNet dataset to the `data/imagenet/` directory, or prepare datasets according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+
+Train:
+
+````shell
+python tools/train.py configs/convnext/convnext-tiny_32xb128_in1k.py
+
+Test:
+
+```shell
+python tools/test.py configs/convnext/convnext-tiny_32xb128_in1k.py https://download.openmmlab.com/mmclassification/v0/convnext/convnext-tiny_3rdparty_32xb128-noema_in1k_20220222-2908964a.pth
+````
+
+<!-- [TABS-END] -->
+
+For more configurable parameters, please refer to the [API](https://mmclassification.readthedocs.io/en/1.x/api/generated/mmcls.models.backbones.ConvNeXt.html#mmcls.models.backbones.ConvNeXt).
 
 ## Citation
 
