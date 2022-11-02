@@ -32,18 +32,6 @@ class TestVisualizationHook(TestCase):
 
         self.tmpdir = tempfile.TemporaryDirectory()
 
-    def test_initialize(self):
-        # test file_client
-        cfg = dict(type='VisualizationHook')
-        hook = HOOKS.build(cfg)
-        self.assertIsNone(hook.file_client)
-
-        cfg = dict(type='VisualizationHook', out_dir=self.tmpdir.name)
-        hook = HOOKS.build(cfg)
-        self.assertIsNotNone(hook.file_client)
-
-        # test draw_args
-
     def test_draw_samples(self):
         # test enable=False
         cfg = dict(type='VisualizationHook', enable=False)

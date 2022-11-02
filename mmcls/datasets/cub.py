@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import List
 
-from mmengine import FileClient, list_from_file
+from mmengine import get_file_backend, list_from_file
 
 from mmcls.registry import DATASETS
 from .base_dataset import BaseDataset
@@ -78,10 +78,10 @@ class CUB(BaseDataset):
                  image_class_labels_file: str = 'image_class_labels.txt',
                  train_test_split_file: str = 'train_test_split.txt',
                  **kwargs):
-        self.file_client = FileClient.infer_client(uri=data_root)
-        self.image_class_labels_file = self.file_client.join_path(
+        self.backend = get_file_backend(data_root, enable_singleton=True)
+        self.image_class_labels_file = self.backend.join_path(
             data_root, image_class_labels_file)
-        self.train_test_split_file = self.file_client.join_path(
+        self.train_test_split_file = self.backend.join_path(
             data_root, train_test_split_file)
         super(CUB, self).__init__(
             ann_file=ann_file,
@@ -123,8 +123,8 @@ class CUB(BaseDataset):
                 # skip test samples when test_mode=False
                 continue
 
-            img_path = self.file_client.join_path(self.img_prefix,
-                                                  sample_dict[sample_id])
+            img_path = self.backend.join_path(self.img_prefix,
+                                              sample_dict[sample_id])
             gt_label = int(label_dict[sample_id]) - 1
             info = dict(img_path=img_path, gt_label=gt_label)
             data_list.append(info)
