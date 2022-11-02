@@ -161,7 +161,7 @@ class FormatMultiTaskLabelsMasked(BaseTransform):
         gt_label = {}
         for task in self.tasks:
             if task in results:
-                gt_label[task] = results[task]
+                gt_label[task] = to_tensor(results[task])
         data_sample.set_gt_label(gt_label)
 
         img_meta = {k: results[k] for k in self.meta_keys if k in results}
