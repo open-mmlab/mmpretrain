@@ -72,12 +72,12 @@ The pre-trained models on ImageNet-21k are used to fine-tune, and therefore don'
 >>> import torch
 >>> from mmcls.apis import init_model, inference_model
 >>>
->>> model = init_model('configs/swin_transformer/swin-base_16xb64_in1k.py', 'https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin_tiny_patch4_window7_224-160bb0a5.pth')
+>>> model = init_model('configs/swin_transformer/swin-tiny_16xb64_in1k.py', 'https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin_tiny_patch4_window7_224-160bb0a5.pth')
 >>> predict = inference_model(model, 'demo/demo.JPEG')
 >>> print(predict['pred_class'])
 sea snake
 >>> print(predict['pred_score'])
-0.6649366617202759
+0.9092751741409302
 ```
 
 **Use the model**
@@ -86,7 +86,7 @@ sea snake
 >>> import torch
 >>> from mmcls.apis import init_model
 >>>
->>> model = init_model('configs/swin_transformer/swin-base_16xb64_in1k.py', 'https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin_tiny_patch4_window7_224-160bb0a5.pth')
+>>> model = init_model('configs/swin_transformer/swin-tiny_16xb64_in1k.py', 'https://download.openmmlab.com/mmclassification/v0/swin-transformer/convert/swin_tiny_patch4_window7_224-160bb0a5.pth')
 >>> inputs = torch.rand(1, 3, 224, 224).to(model.data_preprocessor.device)
 >>> # To get classification scores.
 >>> out = model(inputs)
@@ -95,7 +95,7 @@ torch.Size([1, 1000])
 >>> # To extract features.
 >>> outs = model.extract_feat(inputs)
 >>> print(outs[0].shape)
-torch.Size([1, 2048])
+torch.Size([1, 768])
 ```
 
 **Train/Test Command**
