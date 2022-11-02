@@ -5,19 +5,26 @@ etc. In this tutorial, we will introduce how to configure these functionalities.
 
 <!-- TODO: Link to MMEngine docs instead of API reference after the MMEngine English docs is done. -->
 
-## Checkpoint Saving
+## Save Checkpoint
 
 The checkpoint saving functionality is a default hook during training. And you can configure it in the
 `default_hooks.checkpoint` field.
 
+```{note}
+The hook mechanism is widely used in all OpenMMLab libraries. Through hooks, you can plug in many
+functionalities without modifying the main execution logic of the runner.
+
+A detailed introduction of hooks can be found in {external+mmengine:doc}`Hooks <tutorials/hook>`.
+```
+
 **The default settings**
 
 ```python
-default_hooks = [
+default_hooks = dict(
     ...
     checkpoint = dict(type='CheckpointHook', interval=1)
     ...
-]
+)
 ```
 
 Here are some usual arguments, and all available arguments can be found in the [CheckpointHook](mmengine.hooks.CheckpointHook).
@@ -43,10 +50,11 @@ resume = False
 ```
 
 The `load_from` field can be either a local path or an HTTP path. And you can resume training from the checkpoint by
-speicfy `resume=True`.
+specify `resume=True`.
 
 ```{tip}
 You can also enable auto resuming from the latest checkpoint by specifying `load_from=None` and `resume=True`.
+Runner will find the latest checkpoint from the work directory automatically.
 ```
 
 If you are training models by our `tools/train.py` script, you can also use `--resume` argument to resume
@@ -89,28 +97,30 @@ In the `default_hooks.logger` field, you can specify the logging interval during
 available arguments can be found in the [LoggerHook docs](mmengine.hooks.LoggerHook).
 
 ```python
-default_hooks = [
+default_hooks = dict(
     ...
     # print log every 100 iterations.
     logger=dict(type='LoggerHook', interval=100),
     ...
-]
+)
 ```
 
 In the `log_processor` field, you can specify the log smooth method. Usually, we use a window with length of 10
 to smooth the log and output the mean value of all information. If you want to specify the smooth method of
 some information finely, see the [LogProcessor docs](mmengine.runner.LogProcessor).
 
+```python
+# The default setting, which will smooth the values in training log by a 10-length window.
+log_processor = dict(window_size=10)
+```
+
 In the `visualizer` field, you can specify multiple backends to save the log information, such as TensorBoard
 and WandB. More details can be found in the [Visualizer section](#visualizer).
 
 ## Custom Hooks
 
-The hook mechanism is widely used in all OpenMMLab libraries. Through hooks, you can plug in many
-functionalities without modifying the source code of the runner.
-
-A details introduction of hooks can be found in {external+mmengine:doc}`Hooks <tutorials/hook>`. And we have
-already implemented many hooks in MMEngine and MMClassification, such as:
+Many above functionalities are implemented by hooks, and you can also plug-in other custom hooks by modifying
+`custom_hooks` field. Here are some hooks in MMEngine and MMClassification that you can use directly, such as:
 
 - [EMAHook](mmengine.hooks.EMAHook)
 - [SyncBuffersHook](mmengine.hooks.SyncBuffersHook)
@@ -118,8 +128,8 @@ already implemented many hooks in MMEngine and MMClassification, such as:
 - [ClassNumCheckHook](mmcls.engine.hooks.ClassNumCheckHook)
 - ......
 
-You can directly use these hooks by modifying the `custom_hooks` field. For example, EMA (Exponential Moving
-Average) is widely used in the model training, and you can enable it as below:
+For example, EMA (Exponential Moving Average) is widely used in the model training, and you can enable it as
+below:
 
 ```python
 custom_hooks = [
@@ -127,7 +137,7 @@ custom_hooks = [
 ]
 ```
 
-## Validation Visualization
+## Visualize Validation
 
 The validation visualization functionality is a default hook during validation. And you can configure it in the
 `default_hooks.visualization` field.
@@ -143,7 +153,7 @@ default_hooks = dict(
 )
 ```
 
-This hook will select some images in the validation dataset, and tag the prediction result on these images
+This hook will select some images in the validation dataset, and tag the prediction results on these images
 during every validation process. You can use it to watch the varying of model performance on actual images
 during training.
 
@@ -153,7 +163,7 @@ visualization by specifying `rescale_factor=2.` or higher.
 ## Visualizer
 
 The visualizer is used to record all kinds of information during training and test, including logs, images and
-scalars.
+scalars. By default, the recorded information will be saved at the `vis_data` folder under the work directory.
 
 **Default settings:**
 
@@ -196,7 +206,7 @@ visualizer = dict(
 In the `env_cfg` field, you can configure some low-level parameters, like cuDNN, multi-process, and distributed
 communication.
 
-Please make sure you understand the meaning of these parameters before modifying them.
+**Please make sure you understand the meaning of these parameters before modifying them.**
 
 ```python
 env_cfg = dict(
@@ -217,12 +227,12 @@ env_cfg = dict(
 
    - `load_from`: If `resume=False`, only imports model weights, which is mainly used to load trained models;
      If `resume=True`, load all of the model weights, optimizer state, and other training information, which is
-     mainly used to resume training.
+     mainly used to resume interrupted training.
 
    - `init_cfg`: You can also specify `init=dict(type="Pretrained", checkpoint=xxx)` to load checkpoint, it
      means load the weights during model weights initialization. That is, it will be only done at the
      beginning of the training. It's mainly used to fine-tune a pre-trained model, and you can set it in
-     the backbone config to only load backbone weights, for example:
+     the backbone config and use `prefix` field to only load backbone weights, for example:
 
      ```python
      model = dict(
