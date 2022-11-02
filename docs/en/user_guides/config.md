@@ -10,6 +10,7 @@ Different from the argparser or file-based configuration(e.g., `json`, `yaml`), 
   - [Philosophy of Configuration System](#philosophy-of-configuration-system)
     - [Everything is Configurable](#everything-is-configurable)
     - [Less Code, More Reuse](#less-new-code-more-reuse)
+    - [Make Custom Dataset/Model/Optimization Flexible](#make-custom-datasetmodeloptimization-flexible)
     - [Happy Reading, Easy Coding](#happy-reading-easy-coding)
   - [Overall of Config File](#overall-of-config-file)
   - [Config Structure](#config-structure)
@@ -38,14 +39,28 @@ Typically, we already provide rich implementations of *dataset*, *transformation
 We mainly focus on the configuration for building essential modules of one experiment first. Let's take the dataset as the example. We can have a look what modules we have provided in MMClassification.
 
 ```python
-import pprint
-from mmcls.utils import register_all_modules # register all MMClassification implemented modules
-from mmcls import registry
+from mmcls.apis import list_registry
 
-register_all_modules()
+# list the all fields in registry
+list_registry()
+"""
+['BATCH_AUGMENTS',
+  'DATASETS',
+  'DATA_SAMPLERS',
+  'EVALUATORS',
+  'HOOKS',
+  'LOG_PROCESSORS',
+  'LOOPS',
+  'METRICS',
+  'MMENGINE_DATASETS',
+  'MMENGINE_DATA_SAMPLERS',
+  'MMENGINE_EVALUATOR',
+  'MMENGINE_HOOKS',
+  .......
+"""
 
 # list the supported datasets registered in `registry.DATASETS`
-ppritn.pprint(registry.DATASETS._module_dict)
+list_registry('DATASETS')
 
 """
 {'BaseDataset': <class 'mmcls.datasets.base_dataset.BaseDataset'>,
