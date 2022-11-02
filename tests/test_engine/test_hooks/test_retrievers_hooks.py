@@ -4,14 +4,14 @@ from unittest.mock import MagicMock
 
 import torch
 
-from mmcls.engine import ResetPrototypeInitFlagHook
+from mmcls.engine import PrepareProtoBeforeValLoopHook
 from mmcls.models.retrievers import BaseRetriever
 
 
 class ToyRetriever(BaseRetriever):
 
     def forward(self, inputs, data_samples=None, mode: str = 'loss'):
-        pass
+        self.prototype_inited is False
 
     def prepare_prototype(self):
         """Preprocessing the prototype before predict."""
@@ -19,15 +19,16 @@ class ToyRetriever(BaseRetriever):
         self.prototype_inited = True
 
 
-class TestClassNumCheckHook(TestCase):
+class TestPrepareProtBeforeValLoopHook(TestCase):
 
     def setUp(self):
-        self.hook = ResetPrototypeInitFlagHook()
+        self.hook = PrepareProtoBeforeValLoopHook
         self.runner = MagicMock()
         self.runner.model = ToyRetriever()
 
     def test_before_val(self):
         self.runner.model.prepare_prototype()
         self.assertTrue(self.runner.model.prototype_inited)
-        self.hook.before_val(self.runner)
-        self.assertFalse(self.runner.model.prototype_inited)
+        self.hook.before_val(self, self.runner)
+        self.assertIsNotNone(self.runner.model.prototype_vecs)
+        self.assertTrue(self.runner.model.prototype_inited)
