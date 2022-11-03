@@ -376,7 +376,7 @@ class RevVisionTransformer(BaseBackbone):
     }
     # Some structures have multiple extra tokens, like DeiT.
     # RevViT does not allow cls_token
-    num_extra_tokens = 0  # cls_token
+    num_extra_tokens = 1  # cls_token
 
     def __init__(
             self,
@@ -442,7 +442,7 @@ class RevVisionTransformer(BaseBackbone):
                 f'set output_cls_token to True, but got {with_cls_token}'
         self.with_cls_token = with_cls_token
         self.output_cls_token = output_cls_token
-        # self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dims))
+        self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dims))
 
         # Set position embedding
         self.interpolate_mode = interpolate_mode
@@ -499,10 +499,10 @@ class RevVisionTransformer(BaseBackbone):
             self.add_module(self.norm1_name, norm1)
 
         self.avg_token = avg_token
-        if avg_token:
-            self.norm2_name, norm2 = build_norm_layer(
-                norm_cfg, self.embed_dims, postfix=2)
-            self.add_module(self.norm2_name, norm2)
+        # if avg_token:
+        #     self.norm2_name, norm2 = build_norm_layer(
+        #         norm_cfg, self.embed_dims, postfix=2)
+        #     self.add_module(self.norm2_name, norm2)
         # freeze stages only when self.frozen_stages > 0
         if self.frozen_stages > 0:
             self._freeze_stages()
@@ -511,9 +511,9 @@ class RevVisionTransformer(BaseBackbone):
     def norm1(self):
         return getattr(self, self.norm1_name)
 
-    @property
-    def norm2(self):
-        return getattr(self, self.norm2_name)
+    # @property
+    # def norm2(self):
+    #     return getattr(self, self.norm2_name)
 
     def _prepare_pos_embed(self, state_dict, prefix, *args, **kwargs):
         name = prefix + 'pos_embed'
@@ -567,25 +567,25 @@ class RevVisionTransformer(BaseBackbone):
                 param.requires_grad = False
 
     def forward(self, x):
-        # B = x.shape[0]
+        B = x.shape[0]
         x, patch_resolution = self.patch_embed(x)
 
         # stole cls_tokens impl from Phil Wang, thanks
-        # cls_tokens = self.cls_token.expand(B, -1, -1)
-        # x = torch.cat((cls_tokens, x), dim=1)
+        cls_tokens = self.cls_token.expand(B, -1, -1)
+        x = torch.cat((cls_tokens, x), dim=1)
 
-        # x = x + resize_pos_embed(
-        #     self.pos_embed,
-        #     self.patch_resolution,
-        #     patch_resolution,
-        #     mode=self.interpolate_mode,
-        #     num_extra_tokens=self.num_extra_tokens)
-        x = x + self.pos_embed
+        x = x + resize_pos_embed(
+            self.pos_embed,
+            self.patch_resolution,
+            patch_resolution,
+            mode=self.interpolate_mode,
+            num_extra_tokens=self.num_extra_tokens)
+        # x = x + self.pos_embed
         x = self.drop_after_pos(x)
 
-        # if not self.with_cls_token:
-        #     # Remove class token for transformer encoder input
-        #     x = x[:, 1:]
+        if not self.with_cls_token:
+            # Remove class token for transformer encoder input
+            x = x[:, 1:]
 
         x = torch.cat([x, x], dim=-1)
 
@@ -602,7 +602,31 @@ class RevVisionTransformer(BaseBackbone):
         if self.final_norm:
             x = self.norm1(x)
         x = self.fusion_layer(x)
-        x = x.mean(1)
+
+        if self.with_cls_token:
+            # RevViT does not allow cls_token
+            raise NotImplementedError
+        else:
+            # (B, H, W, C)
+            _, __, C = x.shape
+            patch_token = x.reshape(B, *patch_resolution, C)
+            # (B, C, H, W)
+            patch_token = patch_token.permute(0, 3, 1, 2)
+            cls_token = None
+
+        if self.avg_token:
+            # (B, H, W, C)
+            patch_token = patch_token.permute(0, 2, 3, 1)
+            # (B, L, C) -> (B, C)
+            patch_token = patch_token.reshape(
+                B, patch_resolution[0] * patch_resolution[1], C).mean(dim=1)
+            # patch_token = self.norm2(patch_token)
+
+        if self.output_cls_token:
+            out = [patch_token, cls_token]
+        else:
+            out = patch_token
+
         # # >>>>>>>>>>>>>>>>>>
         # outs = []
         # for i, layer in enumerate(self.layers):
@@ -632,7 +656,7 @@ class RevVisionTransformer(BaseBackbone):
         #             out = patch_token
         #         outs.append(out)
 
-        return tuple([x])
+        return tuple([out])
 
     @staticmethod
     def _forward_vanilla_bp(hidden_state, layers, buffer=[]):
@@ -643,7 +667,8 @@ class RevVisionTransformer(BaseBackbone):
         # split into ffn state(ffn_out) and attention output(attn_out)
         ffn_out, attn_out = torch.chunk(hidden_state, 2, dim=-1)
         del hidden_state
-        for _, layer in enumerate(layers):
+
+        for i, layer in enumerate(layers):
             attn_out, ffn_out = layer(attn_out, ffn_out)
 
         return torch.cat([attn_out, ffn_out], dim=-1)
