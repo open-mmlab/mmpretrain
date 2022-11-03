@@ -99,6 +99,7 @@ torch.Size([1, 768])
 ```
 
 **Train/Test Command**
+
 Place the ImageNet dataset to the `data/imagenet/` directory, or prepare datasets according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
 
 Train:
