@@ -1,140 +1,15 @@
-# Visualization Tools
+# Class Activation Map(CAM) Visualization Tools
 
 <!-- TOC -->
 
-- [Browse Dataset](#browse-dataset)
-- [Parameter Schedule Visualization](#parameter-schedule-visualization)
 - [Class Activation Map Visualization](#class-activation-map-visualization)
-- [FAQs](#faqs)
+  - [Introduction of the CAM visualization tool](#introduction-of-the-cam-visualization-tool)
+  - [How to visualize the CAM of CNN(ResNet-50)](#how-to-visualize-the-cam-of-cnnresnet-50)
+  - [How to visualize the CAM of vision transformer](#how-to-visualize-the-cam-of-vision-transformer)
 
 <!-- TOC -->
 
-## Browse Dataset
-
-```bash
-python tools/visualizations/browse_dataset.py \
-    ${CONFIG_FILE} \
-    [-o, --output-dir ${OUTPUT_DIR}] \
-    [-p, --phase ${DATASET_PHASE}] \
-    [-n, --show-number ${NUMBER_IMAGES_DISPLAY}] \
-    [-i, --show-interval ${SHOW_INTERRVAL}] \
-    [-m, --mode ${DISPLAY_MODE}] \
-    [-r, --rescale-factor ${RESCALE_FACTOR}] \
-    [-c, --channel-order ${CHANNEL_ORDER}] \
-    [--cfg-options ${CFG_OPTIONS}]
-```
-
-**Description of all arguments**：
-
-- `config` : The path of a model config file.
-- `-o, --output-dir`: The output path for visualized images. If not specified, it will be set to `''`, which means not to save.
-- **`-p, --phase`**: Phase of visualizing dataset，must be one of `['train', 'val', 'test']`. If not specified, it will be set to `'train'`.
-- **`-n, --show-number`**: The number of samples to visualized. If not specified, display all images in the dataset.
-- `--show-interval`: The interval of show (s).
-- **`-m, --mode`**: The display mode, can be one of `['original', 'transformed', 'concat', 'pipeline']`. If not specified, it will be set to `'transformed'`.
-- **`-r, --rescale-factor`**: The image rescale factor, which is useful if the output is too large or too small.
-- `-c, --channel-order`: The channel of the showing images, could be "BGR" or "RGB", If not specified, it will be set to 'BGR'.
-- `--cfg-options` : Modifications to the configuration file, refer to [Learn about Configs](./config.md).
-
-```{note}
-1. The `-m, --mode` is about display mode, display original pictures or transformed pictures or comparison pictures:
-- "original" means show images load from disk;
-- "transformed" means to show images after transformed;
-- "concat" means show images stitched by "original" and "transformed" images;
-- "pipeline" means show all the intermediate images throghout the pipeline.
-
-2.  The `-r, --rescale-factor` option is set when the label information is too large or too small relative to the picture. For example, when visualizing the CIFAR dataset, since the resolution of the image is very small, `--rescale-factor` can be set to 10.
-```
-
-**Examples**：
-
-1. In **'original'** mode:
-
-```shell
-python ./tools/visualizations/browse_dataset.py ./configs/resnet/resnet101_8xb16_cifar10.py --phase val --output-dir tmp --mode original --show-number 100 --rescale-factor 10 --channel-order RGB
-```
-
-- `--phase val`: Visual validation set, can be simplified to `-p val`;
-- `--output-dir tmp`: The visualization results are saved in the "tmp" folder, can be simplified to `-o tmp`;
-- `--mode original`: Visualize the original image, can be simplified to `-m original`;
-- `--show-number 100`: visualize 100 images, can be simplified to `-n 100`;
-- `--rescale-factor`: the image is enlarged by 10 times, can be simplified to `-r 10`;
-- `--channel-order RGB`: The channel order of the visualized image is "RGB", can be simplified to `-c RGB`.
-
-<div align=center><img src="https://user-images.githubusercontent.com/18586273/190993839-216a7a1e-590e-47b9-92ae-08f87a7d58df.jpg" style=" width: auto; height: 40%; "></div>
-
-2. In **'transformed'** mode:
-
-```shell
-python ./tools/visualizations/browse_dataset.py ./configs/resnet/resnet50_8xb32_in1k.py -n 100 -r 2
-```
-
-<div align=center><img src="https://user-images.githubusercontent.com/18586273/190994696-737b09d9-d0fb-4593-94a2-4487121e0286.JPEG" style=" width: auto; height: 40%; "></div>
-
-3. In **'concat'** mode:
-
-```shell
-python ./tools/visualizations/browse_dataset.py configs/swin_transformer/swin-small_16xb64_in1k.py -n 10 -m concat
-```
-
-<div align=center><img src="https://user-images.githubusercontent.com/18586273/190995078-3872feb2-d4e2-4727-a21b-7062d52f7d3e.JPEG" style=" width: auto; height: 40%; "></div>
-
-4. In **'pipeline'** mode：
-
-```shell
-python ./tools/visualizations/browse_dataset.py configs/swin_transformer/swin-small_16xb64_in1k.py -m pipeline
-```
-
-<div align=center><img src="https://user-images.githubusercontent.com/18586273/190995525-fac0220f-6630-4013-b94a-bc6de4fdff7a.JPEG" style=" width: auto; height: 40%; "></div>
-
-## Parameter Schedule Visualization
-
-```bash
-python tools/visualizations/vis_scheduler.py \
-    ${CONFIG_FILE} \
-    [-p, --parameter ${PARAMETER_NAME}] \
-    [-d, --dataset-size ${DATASET_SIZE}] \
-    [-n, --ngpus ${NUM_GPUs}] \
-    [-s, --save-path ${SAVE_PATH}] \
-    [--title ${TITLE}] \
-    [--style ${STYLE}] \
-    [--window-size ${WINDOW_SIZE}] \
-    [--cfg-options]
-```
-
-**Description of all arguments**：
-
-- `config`: The path of a model config file.
-- **`-p, --parameter`**: The param to visualize its change curve, choose from "lr" and "momentum". Default to use "lr".
-- **`-d, --dataset-size`**: The size of the datasets. If set，`build_dataset` will be skipped and `${DATASET_SIZE}` will be used as the size. Default to use the function `build_dataset`.
-- **`-n, --ngpus`**: The number of GPUs used in training, default to be 1.
-- **`-s, --save-path`**: The learning rate curve plot save path, default not to save.
-- `--title`: Title of figure. If not set, default to be config file name.
-- `--style`: Style of plt. If not set, default to be `whitegrid`.
-- `--window-size`: The shape of the display window. If not specified, it will be set to `12*7`. If used, it must be in the format `'W*H'`.
-- `--cfg-options`: Modifications to the configuration file, refer to [Learn about Configs](./config.md).
-
-```{note}
-Loading annotations maybe consume much time, you can directly specify the size of the dataset with `-d, dataset-size` to save time.
-```
-
-**Examples**：
-
-```bash
-python tools/visualizations/vis_scheduler.py configs/resnet/resnet50_b16x8_cifar100.py
-```
-
-<div align=center><img src="https://user-images.githubusercontent.com/18586273/191006713-023f065d-d366-4165-a52e-36176367506e.png" style=" width: auto; height: 40%; "></div>
-
-When using ImageNet, directly specify the size of ImageNet, as below:
-
-```bash
-python tools/visualizations/vis_scheduler.py configs/repvgg/repvgg-B3g4_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py --dataset-size 1281167 --ngpus 4 --save-path ./repvgg-B3g4_4xb64-lr.jpg
-```
-
-<div align=center><img src="https://user-images.githubusercontent.com/18586273/191006721-0f680e07-355e-4cd6-889c-86c0cad9acb7.png" style=" width: auto; height: 40%; "></div>
-
-## Class Activation Map Visualization
+## Introduction of the CAM visualization tool
 
 MMClassification provides `tools\visualizations\vis_cam.py` tool to visualize class activation map. Please use `pip install "grad-cam>=1.3.6"` command to install [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam).
 
@@ -190,7 +65,7 @@ python tools/visualizations/vis_cam.py \
 The argument `--preview-model` can view all network layers names in the given model. It will be helpful if you know nothing about the model layers when setting `--target-layers`.
 ```
 
-**Examples(CNN)**：
+## How to visualize the CAM of CNN(ResNet-50)
 
 Here are some examples of `target-layers` in ResNet-50, which can be any module or layer:
 
@@ -252,7 +127,7 @@ For example, the `backbone.layer4[-1]` is the same as `backbone.layer4.2` since 
    | ------------------------------------ | --------------------------------------- | ------------------------------------------- | ----------------------------------------- | ----------------------------------------- |
    | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557492-98ac5ce0-61f9-4da9-8ea7-396d0b6a20fa.jpg' height="auto" width="160"></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557541-a4cf7d86-7267-46f9-937c-6f657ea661b4.jpg'  height="auto" width="145" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557547-2731b53e-e997-4dd2-a092-64739cc91959.jpg'  height="auto" width="145" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557545-8189524a-eb92-4cce-bf6a-760cab4a8065.jpg'  height="auto" width="145" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557548-c1e3f3ec-3c96-43d4-874a-3b33cd3351c5.jpg'  height="auto" width="145" ></div> |
 
-**Examples(Transformer)**：
+## How to visualize the CAM of vision transformer
 
 Here are some examples:
 
@@ -300,7 +175,3 @@ To exclude these extra tokens, we need know the number of extra tokens. Almost a
 | Image                                   | ResNet50                                   | ViT                                    | Swin                                    | T2T-ViT                                    |
 | --------------------------------------- | ------------------------------------------ | -------------------------------------- | --------------------------------------- | ------------------------------------------ |
 | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429496-628d3fb3-1f6e-41ff-aa5c-1b08c60c32a9.JPEG' height="auto" width="165" ></div> | <div align=center><img src=https://user-images.githubusercontent.com/18586273/144431491-a2e19fe3-5c12-4404-b2af-a9552f5a95d9.jpg  height="auto" width="150" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144436218-245a11de-6234-4852-9c08-ff5069f6a739.jpg' height="auto" width="150" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144436168-01b0e565-442c-4e1e-910c-17c62cff7cd3.jpg' height="auto" width="150" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144436198-51dbfbda-c48d-48cc-ae06-1a923d19b6f6.jpg' height="auto" width="150" ></div> |
-
-## FAQs
-
-- None

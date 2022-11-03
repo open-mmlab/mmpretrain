@@ -21,7 +21,9 @@ You can switch between Chinese and English documentation in the lower-left corne
    user_guides/config.md
    user_guides/finetune.md
    user_guides/analysis.md
-   user_guides/visualization.md
+   user_guides/dataset_visualization.md
+   user_guides/scheduler_visualization.md
+   user_guides/cam_visualization.md
    user_guides/useful_tools.md
 
 .. toctree::
