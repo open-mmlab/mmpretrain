@@ -48,6 +48,14 @@ class MultiTaskDataSample(BaseDataElement):
             self.gt_label = label
         return self
 
+    def set_pred_label(self, value: Dict) -> 'MultiTaskDataSample':
+        """Set label of ``pred_label``."""
+        if 'pred_label' in self:
+            self.pred_label.score = value
+        else:
+            self.pred_label = LabelData(score=value)
+        return self
+
     def get_task_mask(self, task_name):
         return task_name in self.gt_label
 
@@ -67,3 +75,15 @@ class MultiTaskDataSample(BaseDataElement):
     @gt_label.deleter
     def gt_label(self):
         del self._gt_label
+
+    @property
+    def pred_label(self):
+        return self._pred_label
+
+    @pred_label.setter
+    def pred_label(self, value: LabelData):
+        self.set_field(value, '_pred_label', dtype=LabelData)
+
+    @pred_label.deleter
+    def pred_label(self):
+        del self._pred_label

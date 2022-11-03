@@ -101,7 +101,6 @@ class PackClsInputs(BaseTransform):
         img_meta = {k: results[k] for k in self.meta_keys if k in results}
         data_sample.set_metainfo(img_meta)
         packed_results['data_samples'] = data_sample
-
         return packed_results
 
     def __repr__(self) -> str:

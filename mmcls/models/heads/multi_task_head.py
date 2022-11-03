@@ -124,9 +124,9 @@ class MultiTaskClsHead(BaseHead):
             data_samples = []
             for data_result in data_results:
                 data_samples.append(
-                    MultiTaskDataSample().set_pred(data_result))
+                    MultiTaskDataSample().set_pred_label(data_result))
         else:
             for data_sample, data_result in zip(data_samples, data_results):
-                data_sample.set_pred(data_result)
+                data_sample.set_pred_label(data_result)
 
         return data_samples
