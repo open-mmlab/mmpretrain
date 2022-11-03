@@ -39,15 +39,11 @@ class RevBackProp(Function):
         reversible layer implements its own forward pass logic.
         """
         buffer_layers.sort()
-
         x1, x2 = torch.chunk(x, 2, dim=-1)
-
         intermediate = []
 
         for layer in layers:
-
             x1, x2 = layer(x1, x2)
-
             if layer.layer_id in buffer_layers:
                 intermediate.extend([x1.detach(), x2.detach()])
 
@@ -71,23 +67,18 @@ class RevBackProp(Function):
         activation recomputation and grad calculation).
         """
         d_x1, d_x2 = torch.chunk(dx, 2, dim=-1)
-
         # retrieve params from ctx for backward
         x1, x2, *int_tensors = ctx.saved_tensors
-
         # no buffering
         if len(int_tensors) != 0:
             buffer_layers = int_tensors[0].tolist()
-
         else:
             buffer_layers = []
 
         layers = ctx.layers
 
         for _, layer in enumerate(layers[::-1]):
-
             if layer.layer_id in buffer_layers:
-
                 x1, x2, d_x1, d_x2 = layer.backward_pass(
                     y1=int_tensors[buffer_layers.index(layer.layer_id) * 2 +
                                    1],
@@ -96,9 +87,7 @@ class RevBackProp(Function):
                     d_y1=d_x1,
                     d_y2=d_x2,
                 )
-
             else:
-
                 x1, x2, d_x1, d_x2 = layer.backward_pass(
                     y1=x1,
                     y2=x2,
@@ -143,7 +132,6 @@ class RevTransformerEncoderLayer(BaseModule):
             num_heads=num_heads,
             attn_drop=attn_drop_rate,
             proj_drop=drop_rate,
-            # dropout_layer=None,
             qkv_bias=qkv_bias)
 
         self.norm2_name, norm2 = build_norm_layer(
@@ -155,8 +143,8 @@ class RevTransformerEncoderLayer(BaseModule):
             feedforward_channels=feedforward_channels,
             num_fcs=num_fcs,
             ffn_drop=drop_rate,
-            # dropout_layer=None,
-            act_cfg=act_cfg)
+            act_cfg=act_cfg,
+            add_identity=False)
 
         self.layer_id = layer_id
         self.seeds = {}
@@ -195,7 +183,7 @@ class RevTransformerEncoderLayer(BaseModule):
 
     def forward(self, x1, x2):
         """
-        Implementation of TransformerEncoderLayer:
+        Implementation of Reversible TransformerEncoderLayer
         ```
         x = x + self.attn(self.norm1(x))
         x = self.ffn(self.norm2(x), identity=x)
@@ -207,7 +195,6 @@ class RevTransformerEncoderLayer(BaseModule):
         # apply droppath on attention output
         self.seed_cuda('droppath')
         f_x2_dropped = build_dropout(self.drop_path_cfg)(f_x2)
-
         y1 = x1 + f_x2_dropped
 
         # free memory
@@ -220,7 +207,6 @@ class RevTransformerEncoderLayer(BaseModule):
         # apply droppath on ffn output
         torch.manual_seed(self.seeds['droppath'])
         g_y1_dropped = build_dropout(self.drop_path_cfg)(g_y1)
-
         # final output
         y2 = x2 + g_y1_dropped
 
@@ -581,18 +567,28 @@ class RevVisionTransformer(BaseBackbone):
                 param.requires_grad = False
 
     def forward(self, x):
-        _ = x.shape[0]
+        # B = x.shape[0]
         x, patch_resolution = self.patch_embed(x)
 
-        x = x + resize_pos_embed(
-            self.pos_embed,
-            self.patch_resolution,
-            patch_resolution,
-            mode=self.interpolate_mode,
-            num_extra_tokens=self.num_extra_tokens)
+        # stole cls_tokens impl from Phil Wang, thanks
+        # cls_tokens = self.cls_token.expand(B, -1, -1)
+        # x = torch.cat((cls_tokens, x), dim=1)
+
+        # x = x + resize_pos_embed(
+        #     self.pos_embed,
+        #     self.patch_resolution,
+        #     patch_resolution,
+        #     mode=self.interpolate_mode,
+        #     num_extra_tokens=self.num_extra_tokens)
+        x = x + self.pos_embed
         x = self.drop_after_pos(x)
 
+        # if not self.with_cls_token:
+        #     # Remove class token for transformer encoder input
+        #     x = x[:, 1:]
+
         x = torch.cat([x, x], dim=-1)
+
         # forward with different conditions
         if not self.training or self.no_custom_backward:
             # in eval/inference model
@@ -646,6 +642,7 @@ class RevVisionTransformer(BaseBackbone):
         """
         # split into ffn state(ffn_out) and attention output(attn_out)
         ffn_out, attn_out = torch.chunk(hidden_state, 2, dim=-1)
+        del hidden_state
         for _, layer in enumerate(layers):
             attn_out, ffn_out = layer(attn_out, ffn_out)
 

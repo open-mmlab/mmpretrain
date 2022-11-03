@@ -39,7 +39,7 @@ def convert_revvit(ckpt):
             new_k = k.replace('norm', 'ln1')
         else:
             new_k = k
-        
+
         if not new_k.startswith('head'):
             new_k = 'backbone.' + new_k
         new_ckpt[new_k] = new_v
