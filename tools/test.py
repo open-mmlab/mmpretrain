@@ -57,6 +57,13 @@ def parse_args():
         action='store_true',
         help='whether to disable the pin_memory option in dataloaders.')
     parser.add_argument(
+        '--tta',
+        action='store_true',
+        help='Whether to enable the Test-Time-Aug (TTA). If the config file '
+        'has `tta_pipeline` and `tta_model` fields, use them to determine the '
+        'TTA transforms and how to merge the TTA results. Otherwise, use flip '
+        'TTA by averaging classification score.')
+    parser.add_argument(
         '--launcher',
         choices=['none', 'pytorch', 'slurm', 'mpi'],
         default='none',
@@ -105,7 +112,27 @@ def merge_args(cfg, args):
         else:
             cfg.test_evaluator = [cfg.test_evaluator, dump_metric]
 
-    # set dataloader args
+    # -------------------- TTA related args --------------------
+    if args.tta:
+        if 'tta_model' not in cfg:
+            cfg.tta_model = dict(type='mmcls.AverageScoreTTAModel')
+        if 'tta_pipeline' not in cfg:
+            test_pipeline = cfg.test_dataloader.dataset.pipeline
+            cfg.tta_pipeline = deepcopy(test_pipeline)
+            flip_tta = dict(
+                type='TestTimeAug',
+                transforms=[
+                    [
+                        dict(type='RandomFlip', prob=1.),
+                        dict(type='RandomFlip', prob=0.)
+                    ],
+                    [test_pipeline[-1]],
+                ])
+            cfg.tta_pipeline[-1] = flip_tta
+        cfg.model = ConfigDict(**cfg.tta_model, module=cfg.model)
+        cfg.test_dataloader.dataset.pipeline = cfg.tta_pipeline
+
+    # ----------------- Default dataloader args -----------------
     default_dataloader_cfg = ConfigDict(
         pin_memory=True,
         collate_fn=dict(type='default_collate'),
