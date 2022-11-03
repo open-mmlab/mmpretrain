@@ -105,7 +105,7 @@ torch.Size([1, 1000])
 >>> # To extract features.
 >>> outs = model.extract_feat(inputs)
 >>> print(outs[0].shape)
-torch.Size([1, 768])
+torch.Size([1, 1280])
 ```
 
 **Train/Test Command**
