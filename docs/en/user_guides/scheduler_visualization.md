@@ -4,8 +4,6 @@
 
 - [Parameter Schedule Visualization](#parameter-schedule-visualization)
   - [How to plot the learning rate curve without training](#how-to-plot-the-learning-rate-curve-without-training)
-- [Class Activation Map Visualization](#class-activation-map-visualization)
-- [FAQs](#faqs)
 
 <!-- TOC -->
 

@@ -1,4 +1,4 @@
-# Class Activation Map(CAM) Visualization Tools
+# Class Activation Map(CAM) Visualization
 
 <!-- TOC -->
 
