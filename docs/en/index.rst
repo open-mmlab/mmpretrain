@@ -21,10 +21,17 @@ You can switch between Chinese and English documentation in the lower-left corne
    user_guides/config.md
    user_guides/finetune.md
    user_guides/analysis.md
-   user_guides/dataset_visualization.md
-   user_guides/scheduler_visualization.md
-   user_guides/cam_visualization.md
-   user_guides/useful_tools.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Useful Tools
+
+   useful_tools/dataset_visualization.md
+   useful_tools/scheduler_visualization.md
+   useful_tools/cam_visualization.md
+   useful_tools/print_config.md
+   useful_tools/verify_dataset.md
+   useful_tools/analysis.md
 
 .. toctree::
    :maxdepth: 1
