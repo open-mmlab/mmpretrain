@@ -28,7 +28,7 @@
 [![issue resolution](https://isitmaintained.com/badge/resolution/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
 
 [📘 Documentation](https://mmclassification.readthedocs.io/en/1.x/) |
-[🛠️ Installation](https://mmclassification.readthedocs.io/en/1.xget_started.html) |
+[🛠️ Installation](https://mmclassification.readthedocs.io/en/dev-1.x/get_started.html#installation) |
 [👀 Model Zoo](https://mmclassification.readthedocs.io/en/1.x/modelzoo_statistics.html) |
 [🆕 Update News](https://mmclassification.readthedocs.io/en/1.x/notes/changelog.html) |
 [🤔 Reporting Issues](https://github.com/open-mmlab/mmclassification/issues/new/choose)
