@@ -7,7 +7,6 @@ _base_ = [
 
 data = dict(samples_per_gpu=128)
 
-optimizer = dict(lr=4e-3)
-optimizer_config = dict(grad_clip=dict(max_norm=100.0), _delete_=True)
+optim_wrapper = dict(optimizer=dict(lr=4e-3), clip_grad=dict(max_norm=100.0))
 
 custom_hooks = [dict(type='EMAHook', momentum=4e-5, priority='ABOVE_NORMAL')]
