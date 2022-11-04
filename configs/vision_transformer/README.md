@@ -10,13 +10,82 @@
 
 The strategy works even better when coupled with large datasets pre-trainings. Because of its simplicity and effectiveness, some after works in classification field are originated from ViT. And even in recent multi-modality field, ViT-based method still plays a role in it.
 
-## Abstract
-
-While the Transformer architecture has become the de-facto standard for natural language processing tasks, its applications to computer vision remain limited. In vision, attention is either applied in conjunction with convolutional networks, or used to replace certain components of convolutional networks while keeping their overall structure in place. We show that this reliance on CNNs is not necessary and a pure transformer applied directly to sequences of image patches can perform very well on image classification tasks. When pre-trained on large amounts of data and transferred to multiple mid-sized or small image recognition benchmarks (ImageNet, CIFAR-100, VTAB, etc.), Vision Transformer (ViT) attains excellent results compared to state-of-the-art convolutional networks while requiring substantially fewer computational resources to train.
-
 <div align=center>
 <img src="https://user-images.githubusercontent.com/26739999/142579081-b5718032-6581-472b-8037-ea66aaa9e278.png" width="70%"/>
 </div>
+
+## Abstract
+
+<details>
+
+<summary>Show the paper's abstract</summary>
+
+<br>
+
+While the Transformer architecture has become the de-facto standard for natural language processing tasks, its applications to computer vision remain limited. In vision, attention is either applied in conjunction with convolutional networks, or used to replace certain components of convolutional networks while keeping their overall structure in place. We show that this reliance on CNNs is not necessary and a pure transformer applied directly to sequences of image patches can perform very well on image classification tasks. When pre-trained on large amounts of data and transferred to multiple mid-sized or small image recognition benchmarks (ImageNet, CIFAR-100, VTAB, etc.), Vision Transformer (ViT) attains excellent results compared to state-of-the-art convolutional networks while requiring substantially fewer computational resources to train.
+</br>
+
+</details>
+
+## How to use it?
+
+<!-- [TABS-BEGIN] -->
+
+**Predict image**
+
+```python
+>>> import torch
+>>> from mmcls.apis import init_model, inference_model
+>>>
+>>> model = init_model('configs/vision_transformer/vit-base-p16_pt-32xb128-mae_in1k-224.py', 'https://download.openmmlab.com/mmclassification/v0/vit/vit-base-p16_pt-32xb128-mae_in1k_20220623-4c544545.pth')
+>>> predict = inference_model(model, 'demo/demo.JPEG')
+>>> print(predict['pred_class'])
+sea snake
+>>> print(predict['pred_score'])
+0.9184340238571167
+```
+
+**Use the model**
+
+```python
+>>> import torch
+>>> from mmcls.apis import init_model
+>>>
+>>> model = init_model('configs/vision_transformer/vit-base-p16_pt-32xb128-mae_in1k-224.py', 'https://download.openmmlab.com/mmclassification/v0/vit/vit-base-p16_pt-32xb128-mae_in1k_20220623-4c544545.pth')
+>>> inputs = torch.rand(1, 3, 224, 224).to(model.data_preprocessor.device)
+>>> # To get classification scores.
+>>> out = model(inputs)
+>>> print(out.shape)
+torch.Size([1, 1000])
+>>> # To extract features.
+>>> outs = model.extract_feat(inputs)
+>>> # The patch token features
+>>> print(outs[0][0].shape)
+torch.Size([1, 768, 14, 14])
+>>> # The cls token features
+>>> print(outs[0][1].shape)
+torch.Size([1, 768])
+```
+
+**Train/Test Command**
+
+Place the ImageNet dataset to the `data/imagenet/` directory, or prepare datasets according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+
+Train:
+
+```shell
+python tools/train.py configs/vision_transformer/vit-base-p16_pt-32xb128-mae_in1k-224.py
+```
+
+Test:
+
+```shell
+python tools/test.py configs/vision_transformer/vit-base-p16_pt-32xb128-mae_in1k-224.py https://download.openmmlab.com/mmclassification/v0/vit/vit-base-p16_pt-32xb128-mae_in1k_20220623-4c544545.pth
+```
+
+<!-- [TABS-END] -->
+
+For more configurable parameters, please refer to the [API](https://mmclassification.readthedocs.io/en/1.x/api/generated/mmcls.models.backbones.VisionTransformer.html#mmcls.models.backbones.VisionTransformer).
 
 ## Results and models
 
@@ -49,66 +118,6 @@ The pre-trained models on ImageNet-21k are used to fine-tune, and therefore don'
 |   ViT-L16\*   | ImageNet-21k |  384x384   |  304.72   |  116.68  |   85.63   |   97.63   |   [config](./vit-large-p16_ft-64xb64_in1k-384.py)   | [model](https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-large-p16_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-b20ba619.pth) |
 
 *Models with * are converted from the [official repo](https://github.com/google-research/vision_transformer#available-vit-models). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
-
-## How to use it?
-
-**Predict image**
-
-```python
->>> import torch
->>> from mmcls.apis import init_model, inference_model
->>> from mmcls.utils import register_all_modules
->>> register_all_modules()
->>>
->>> model = init_model('configs/vision_transformer/vit-base-p16_pt-32xb128-mae_in1k-224.py', 'https://download.openmmlab.com/mmclassification/v0/vit/vit-base-p16_pt-32xb128-mae_in1k_20220623-4c544545.pth')
->>> predict = inference_model(model, 'demo/demo.JPEG')
->>> print(predict['pred_class'])
-sea snake
->>> print(predict['pred_score'])
-0.9184340238571167
-
-```
-
-**Use the model**
-
-```python
->>> import torch
->>> from mmcls.apis import init_model
->>> from mmcls.utils import register_all_modules
->>> register_all_modules()
->>>
->>> model = init_model('configs/vision_transformer/vit-base-p16_pt-32xb128-mae_in1k-224.py', 'https://download.openmmlab.com/mmclassification/v0/vit/vit-base-p16_pt-32xb128-mae_in1k_20220623-4c544545.pth')
->>> inputs = torch.rand(1, 3, 224, 224).to(model.data_preprocessor.device)
->>> # To get classification scores.
->>> out = model(inputs)
->>> print(out.shape)
-torch.Size([1, 1000])
->>> # To extract features.
->>> outs = model.extract_feat(inputs)
->>> # The patch token features
->>> print(outs[0][0].shape)
-torch.Size([1, 768, 14, 14])
->>> # The cls token features
->>> print(outs[0][1].shape)
-torch.Size([1, 768])
-```
-
-**Train/Test Command**
-Place the ImageNet dataset to the `data/imagenet/` directory, or prepare datasets according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
-
-Train:
-
-```shell
-python tools/train.py configs/vision_transformer/vit-base-p16_pt-32xb128-mae_in1k-224.py
-```
-
-Test:
-
-```shell
-python tools/test.py configs/vision_transformer/vit-base-p16_pt-32xb128-mae_in1k-224.py https://download.openmmlab.com/mmclassification/v0/vit/vit-base-p16_pt-32xb128-mae_in1k_20220623-4c544545.pth
-```
-
-For more configurable parameters, please refer to the [API](https://mmclassification.readthedocs.io/en/1.x/api/generated/mmcls.models.backbones.VisionTransformer.html#mmcls.models.backbones.VisionTransformer).
 
 ## Citation
 
