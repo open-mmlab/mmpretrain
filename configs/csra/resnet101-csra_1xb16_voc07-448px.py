@@ -44,7 +44,11 @@ train_pipeline = [
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='Resize', scale=448),
-    dict(type='PackClsInputs'),
+    dict(
+        type='PackClsInputs',
+        meta_keys=('sample_idx', 'img_path', 'ori_shape', 'img_shape',
+                   'scale_factor', 'flip', 'flip_direction',
+                   'gt_label_difficult')),
 ]
 
 train_dataloader = dict(dataset=dict(pipeline=train_pipeline))
@@ -58,7 +62,13 @@ optim_wrapper = dict(
     paramwise_cfg=dict(custom_keys={'head': dict(lr_mult=10)}))
 
 param_scheduler = [
-    dict(type='LinearLR', start_factor=1e-7, by_epoch=True, begin=0, end=1),
+    dict(
+        type='LinearLR',
+        start_factor=1e-7,
+        by_epoch=True,
+        begin=0,
+        end=1,
+        convert_to_iter_based=True),
     dict(type='MultiStepLR', by_epoch=True, milestones=[6], gamma=0.1)
 ]
 
