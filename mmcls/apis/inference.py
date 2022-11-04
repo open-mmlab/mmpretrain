@@ -7,6 +7,7 @@ from mmengine.dataset import Compose, pseudo_collate
 from mmengine.runner import load_checkpoint
 
 from mmcls.models import build_classifier
+from mmcls.utils import register_all_modules
 
 
 def init_model(config, checkpoint=None, device='cuda:0', options=None):
@@ -22,6 +23,7 @@ def init_model(config, checkpoint=None, device='cuda:0', options=None):
     Returns:
         nn.Module: The constructed classifier.
     """
+    register_all_modules()
     if isinstance(config, str):
         config = Config.fromfile(config)
     elif not isinstance(config, Config):

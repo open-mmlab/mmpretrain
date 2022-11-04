@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import re
+import warnings
 from collections import defaultdict
 from pathlib import Path
 
@@ -96,6 +97,30 @@ def generate_paper_page(collection):
         return f'[{name}]({link})'
 
     content = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', replace_link, readme)
+
+    def make_tabs(matchobj):
+        """modify the format from emphasis black symbol to tabs."""
+        content = matchobj.group()
+        content = content.replace('<!-- [TABS-BEGIN] -->', '')
+        content = content.replace('<!-- [TABS-END] -->', '')
+
+        # split the content by "**{Tab-Name}**""
+        splits = re.split(r'^\*\*(.*)\*\*$', content, flags=re.M)[1:]
+        tabs_list = []
+        for title, tab_content in zip(splits[::2], splits[1::2]):
+            title = ':::{tab} ' + title + '\n'
+            tab_content = tab_content.strip() + '\n:::\n'
+            tabs_list.append(title + tab_content)
+
+        return '::::{tabs}\n' + ''.join(tabs_list) + '::::'
+
+    if '<!-- [TABS-BEGIN] -->' in content and '<!-- [TABS-END] -->' in content:
+        # Make TABS block a selctive tabs
+        try:
+            pattern = r'<!-- \[TABS-BEGIN\] -->([\d\D]*?)<!-- \[TABS-END\] -->'
+            content = re.sub(pattern, make_tabs, content)
+        except Exception as e:
+            warnings.warn(f'Can not parse the TABS, get an error : {e}')
 
     with open(copy, 'w') as copy_file:
         copy_file.write(content)
