@@ -10,10 +10,7 @@ import numpy as np
 from mmcv.transforms import Compose
 from mmengine.fileio import FileClient
 from mmengine.utils.misc import is_list_of
-
-from .base_dataset import BaseDataset
 from .builder import DATASETS
-from .multi_label import MultiLabelDataset
 
 
 def expanduser(path):

@@ -161,7 +161,8 @@ class Accuracy_tasks(BaseMetric):
                     for j, thr in enumerate(self.thrs):
                         name = f'{task}_{k}'
                         if multi_thrs:
-                            name += '_no-thr' if thr is None else f'_thr-{thr:.2f}'
+                            name += '_no-thr' if thr is None else \
+                                            f'_thr-{thr:.2f}'
                         metrics[name] = acc[i][j].item()
 
             else:
@@ -433,7 +434,8 @@ class SingleLabelMetric_tasks(BaseMetric):
                 multi_thrs = len(self.thrs) > 1
                 for i, thr in enumerate(self.thrs):
                     if multi_thrs:
-                        suffix = '_no-thr' if thr is None else f'_thr-{thr:.2f}'
+                        suffix = '_no-thr' if thr is None \
+                                        else f'_thr-{thr:.2f}'
                     else:
                         suffix = ''
 
@@ -450,7 +452,7 @@ class SingleLabelMetric_tasks(BaseMetric):
                     result_metrics[task + k +
                                    '_classwise'] = v.cpu().detach().tolist()
                 elif self.average == 'micro':
-                    result_metrics[tasks + f'_{self.average}'] = v.item()
+                    result_metrics[task + f'_{self.average}'] = v.item()
                 else:
                     result_metrics[task + k] = v.item()
         return result_metrics
