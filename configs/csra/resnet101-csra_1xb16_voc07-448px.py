@@ -43,7 +43,7 @@ train_pipeline = [
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='ResizeEdge', scale=448, edge='short'),
+    dict(type='Resize', scale=448),
     dict(type='PackClsInputs'),
 ]
 
@@ -55,7 +55,6 @@ test_dataloader = val_dataloader
 # the lr of classifier.head is 10 * base_lr, which help convergence.
 optim_wrapper = dict(
     optimizer=dict(type='SGD', lr=0.0002, momentum=0.9, weight_decay=0.0001),
-    # specific to vit pretrain
     paramwise_cfg=dict(custom_keys={'head': dict(lr_mult=10)}))
 
 param_scheduler = [
@@ -64,3 +63,5 @@ param_scheduler = [
 ]
 
 train_cfg = dict(by_epoch=True, max_epochs=20, val_interval=1)
+val_cfg = dict()
+test_cfg = dict()

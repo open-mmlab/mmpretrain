@@ -68,7 +68,7 @@ class CSRAClsHead(MultiLabelClsHead):
     def forward(self, feats: Tuple[torch.Tensor]) -> torch.Tensor:
         """The forward process."""
         pre_logits = self.pre_logits(feats)
-        logit = torch.sum([head(pre_logits) for head in self.csra_heads])
+        logit = sum([head(pre_logits) for head in self.csra_heads])
         return logit
 
 
