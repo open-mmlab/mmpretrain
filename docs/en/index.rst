@@ -20,7 +20,6 @@ You can switch between Chinese and English documentation in the lower-left corne
    user_guides/train_test.md
    user_guides/config.md
    user_guides/finetune.md
-   user_guides/analysis.md
 
 .. toctree::
    :maxdepth: 1
@@ -31,7 +30,8 @@ You can switch between Chinese and English documentation in the lower-left corne
    useful_tools/cam_visualization.md
    useful_tools/print_config.md
    useful_tools/verify_dataset.md
-   useful_tools/analysis.md
+   useful_tools/log_results_analysis.md
+   useful_tools/complexity_analysis.md
 
 .. toctree::
    :maxdepth: 1
