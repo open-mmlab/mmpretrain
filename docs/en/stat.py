@@ -105,20 +105,19 @@ def generate_paper_page(collection):
         content = content.replace('<!-- [TABS-END] -->', '')
 
         # split the content by "**{Tab-Name}**""
-        tabs_list = re.split(r'\*\*(.*)\*\*', content)
-        for i in range(len(tabs_list)):
-            if i % 2 == 1:
-                tabs_list[
-                    i] = '\n:::{tab}  ' + f'{tabs_list[i]}\n'  # tab name line
-            elif i % 2 == 0 and i != 0:
-                tabs_list[i] = f'\n{tabs_list[i]}' + ':::\n'  # content line
+        splits = re.split(r'^\*\*(.*)\*\*$', content, flags=re.M)[1:]
+        tabs_list = []
+        for title, tab_content in zip(splits[::2], splits[1::2]):
+            title = ':::{tab} ' + title + '\n'
+            tab_content = tab_content.strip() + '\n:::\n'
+            tabs_list.append(title + tab_content)
 
-        return '::::{tabs}\n' + ''.join(tabs_list) + '\n::::'
+        return '::::{tabs}\n' + ''.join(tabs_list) + '::::'
 
     if '<!-- [TABS-BEGIN] -->' in content and '<!-- [TABS-END] -->' in content:
         # Make TABS block a selctive tabs
         try:
-            pattern = r'<!-- \[TABS-BEGIN\] -->([\d\D]*)<!-- \[TABS-END\] -->'
+            pattern = r'<!-- \[TABS-BEGIN\] -->([\d\D]*?)<!-- \[TABS-END\] -->'
             content = re.sub(pattern, make_tabs, content)
         except Exception as e:
             warnings.warn(f'Can not parse the TABS, get an error : {e}')
