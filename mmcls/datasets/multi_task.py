@@ -417,65 +417,7 @@ class MultiTaskDataset:
         """
         return self.prepare_data(idx)
 
-    def evaluate(self,
-                 results,
-                 metric=None,
-                 metric_options=None,
-                 indices=None,
-                 logger=None):
-        """Evaluate the dataset.
-
-        Args:
-            results (list): Testing results of the dataset.
-            metric (Dict[str, str | list[str]], optional): Metrics for each
-                task to be evaluated. Defaults to None, which means to use the
-                default metrics for every kinds of tasks.
-            metric_options (Dict[str, dict], optional): Options for calculating
-                metrics. Allowed keys for single-label tasks can be found in
-                the :class:`BaseDataset` and for multi-label tasks can be found
-                in the :class:`MultiLabelDataset`. Defaults to None.
-            indices (list, optional): The indices of samples corresponding to
-                the results. Defaults to None.
-            logger (logging.Logger | str, optional): Logger used for printing
-                related information during evaluation. Defaults to None.
-
-        Returns:
-            dict: evaluation results
-        """
-        eval_results = {}
-        gt_labels_dict = self.get_gt_labels()
-        results_dict = defaultdict(list)
-        for result in results:
-            for task in self.metainfo['tasks']:
-                name = task['name']
-                results_dict[name].append(result[name])
-
-        for task in self.metainfo['tasks']:
-            name = task['name']
-            task_type = task['type']
-            gt_labels = gt_labels_dict[name]
-            if indices is not None:
-                gt_labels = gt_labels[indices]
-            if task_type == 'single-label':
-                eval_func = BaseDataset.evaluate_single_label
-            elif task_type == 'multi-label':
-                eval_func = MultiLabelDataset.evaluate_multi_label
-
-            # To enable default values of `metric` and `metric_options`.
-            eval_args = dict(
-                results=np.vstack(results_dict[name]),
-                gt_labels=gt_labels,
-                logger=logger)
-            if metric is not None and name in metric:
-                eval_args['metric'] = metric[name]
-            if metric_options is not None and name in metric_options:
-                eval_args['metric_options'] = metric_options[name]
-
-            eval_result = eval_func(**eval_args)
-            for k, v in eval_result.items():
-                eval_results[f'{name}_{k}'] = v
-
-        return eval_results
+    
 
     def __repr__(self):
         """Print the basic information of the dataset.
