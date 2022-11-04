@@ -80,7 +80,7 @@ class Accuracy_tasks(BaseMetric):
                  thrs: Union[float, Sequence[Union[float, None]], None] = None,
                  collect_device: str = 'cpu',
                  prefix: Optional[str] = None,
-                 tasks = None) -> None:
+                 tasks=None) -> None:
         super().__init__(collect_device=collect_device, prefix=prefix)
 
         if isinstance(topk, int):
@@ -93,6 +93,7 @@ class Accuracy_tasks(BaseMetric):
         else:
             self.thrs = tuple(thrs)
         self.tasks = tasks
+
     def process(self, data_batch, data_samples: Sequence[dict]):
         """Process one batch of data samples.
 
@@ -121,7 +122,6 @@ class Accuracy_tasks(BaseMetric):
             for key in gt_label.keys():
                 result['gt_label'][key] = gt_label[key].cpu()
 
-
             # Save the result to `self.results`.
             self.results.append(result)
 
@@ -140,7 +140,7 @@ class Accuracy_tasks(BaseMetric):
         for task in self.tasks:
             targets = []
             preds = []
-            for res in results :
+            for res in results:
                 if task in res['gt_label'].keys():
                     index = self.tasks.index(task)
                     targets.append(res['gt_label'][task])
@@ -332,6 +332,7 @@ class SingleLabelMetric_tasks(BaseMetric):
         }
     """
     default_prefix: Optional[str] = 'single-label'
+
     def __init__(self,
                  tasks,
                  thrs: Union[float, Sequence[Union[float, None]], None] = 0.,
@@ -383,9 +384,9 @@ class SingleLabelMetric_tasks(BaseMetric):
             for key in gt_label.keys():
                 result['gt_label'][key] = gt_label[key].cpu()
 
-
             # Save the result to `self.results`.
             self.results.append(result)
+
     def compute_metrics(self, results: List):
         """Compute the metrics from processed results.
 
@@ -396,6 +397,7 @@ class SingleLabelMetric_tasks(BaseMetric):
             Dict: The computed metrics. The keys are the names of the metrics,
             and the values are corresponding results.
         """
+
         # NOTICE: don't access `self.results` from the method. `self.results`
         # are a list of results from multiple batch, while the input `results`
         # are the collected results.
@@ -411,12 +413,13 @@ class SingleLabelMetric_tasks(BaseMetric):
             if 'support' in self.items:
                 single_metrics['support'] = support
             return single_metrics
+
         result_metrics = dict()
         metrics = {}
         for task in self.tasks:
             targets = []
             preds = []
-            for res in results :
+            for res in results:
                 if task in res['gt_label'].keys():
                     index = self.tasks.index(task)
                     targets.append(res['gt_label'][task])
@@ -435,23 +438,21 @@ class SingleLabelMetric_tasks(BaseMetric):
                         suffix = ''
 
                     for k, v in pack_results(*metrics_list[i]).items():
-                        metrics[task+k + suffix] = v
+                        metrics[task + k + suffix] = v
 
             else:
                 pred = torch.cat(preds)
-                res = self.calculate(
-                    pred,
-                    target,
-                    average=self.average)
+                res = self.calculate(pred, target, average=self.average)
                 metrics = pack_results(*res)
             for k, v in metrics.items():
 
                 if self.average is None:
-                    result_metrics[task+k + '_classwise'] = v.cpu().detach().tolist()
+                    result_metrics[task + k +
+                                   '_classwise'] = v.cpu().detach().tolist()
                 elif self.average == 'micro':
                     result_metrics[tasks + f'_{self.average}'] = v.item()
                 else:
-                    result_metrics[task+k] = v.item()
+                    result_metrics[task + k] = v.item()
         return result_metrics
 
     @staticmethod

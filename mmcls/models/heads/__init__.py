@@ -13,5 +13,5 @@ from .multi_task_head import MultiTaskClsHead
 __all__ = [
     'ClsHead', 'LinearClsHead', 'StackedLinearClsHead', 'MultiLabelClsHead',
     'MultiLabelLinearClsHead', 'VisionTransformerClsHead', 'DeiTClsHead',
-    'ConformerHead', 'EfficientFormerClsHead','MultiTaskClsHead'
+    'ConformerHead', 'EfficientFormerClsHead', 'MultiTaskClsHead'
 ]

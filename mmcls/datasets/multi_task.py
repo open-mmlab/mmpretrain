@@ -417,8 +417,6 @@ class MultiTaskDataset:
         """
         return self.prepare_data(idx)
 
-    
-
     def __repr__(self):
         """Print the basic information of the dataset.
 
