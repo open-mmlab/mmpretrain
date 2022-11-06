@@ -72,7 +72,7 @@ Highlights of the new version:
 v0.24.0 was released in 30/9/2022.
 Highlights of the new version:
 
-- Support **HorNet**, **EfficientFormerm**, **SwinTransformer V2** and **MViT** backbones.
+- Support **HorNet**, **EfficientFormer**, **SwinTransformer V2** and **MViT** backbones.
 - Support Standford Cars dataset.
 
 v0.23.0 was released in 1/5/2022.
