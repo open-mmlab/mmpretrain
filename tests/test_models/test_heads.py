@@ -8,7 +8,7 @@ import torch
 from mmengine import is_seq_of
 
 from mmcls.registry import MODELS
-from mmcls.structures import ClsDataSample
+from mmcls.structures import ClsDataSample,MultiTaskDataSample
 from mmcls.utils import register_all_modules
 
 register_all_modules()
@@ -480,3 +480,41 @@ class TestMultiLabelLinearClsHead(TestMultiLabelClsHead):
         # return the last item (same as pre_logits)
         feats = (torch.rand(4, 10), torch.rand(4, 10))
         head(feats)
+
+class TestMultiTaskHead(TestCase):
+    DEFAULT_ARGS = dict(
+        type='MultiTaskHead',                                    # <- Head config, depends on #675
+        sub_heads={
+            'task1': dict(type='LinearClsHead', num_classes=3),
+            'task2': dict(type='LinearClsHead', num_classes=6),
+        },
+        common_cfg=dict(
+        in_channels=10,
+            loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
+        ),
+    )
+
+
+    def test_forward(self):
+        head = MODELS.build(self.DEFAULT_ARGS)
+        # return the last item (same as pre_logits)
+        feats = (torch.rand(4, 10),)
+        outs = head(feats)
+        self.assertEqual(outs[0].shape, (4, 3))
+        self.assertEqual(outs[1].shape, (4, 6))
+        self.assertTrue(isinstance(outs, tuple))
+
+
+    def test_loss(self):
+        feats = (torch.rand(4, 10),)
+        gt_label = {
+            'task1': torch.randint(0, 3, (4,)),
+            'task2': torch.randint(0, 6, (4,)),
+        }
+        data_samples = [MultiTaskDataSample(gt_label.keys()).set_gt_label(gt_label)]
+        # with cal_acc = False
+        head = MODELS.build(self.DEFAULT_ARGS)
+
+        losses = head.loss(feats, data_samples)
+        self.assertEqual(losses.keys(), {'loss'})
+        self.assertGreater(losses['loss'].item(), 0)

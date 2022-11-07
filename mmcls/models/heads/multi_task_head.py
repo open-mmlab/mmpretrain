@@ -10,7 +10,7 @@ from .base_head import BaseHead
 
 
 @MODELS.register_module()
-class MultiTaskClsHead(BaseHead):
+class MultiTaskHead(BaseHead):
     """Multi task head.
 
     Args:
@@ -23,7 +23,7 @@ class MultiTaskClsHead(BaseHead):
     """
 
     def __init__(self, sub_heads, common_cfg=dict(), init_cfg=None):
-        super(MultiTaskClsHead, self).__init__(init_cfg=init_cfg)
+        super(MultiTaskHead, self).__init__(init_cfg=init_cfg)
 
         assert isinstance(sub_heads, dict), 'The `sub_heads` argument' \
             "should be a dict, which's keys are task names and values are" \
