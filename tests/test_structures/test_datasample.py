@@ -7,11 +7,8 @@ from mmengine.structures import LabelData
 
 from mmcls.structures import ClsDataSample, MultiTaskDataSample
 
-
-class TestClsDataSample(TestCase):
-
-    def _test_set_label(self, key):
-        data_sample = ClsDataSample()
+class GenericTest(TestCase):
+    def _test_set_label(self,key,data_sample = ClsDataSample() ):
         method = getattr(data_sample, 'set_' + key)
         # Test number
         method(1)
@@ -73,6 +70,10 @@ class TestClsDataSample(TestCase):
         # Test unavailable label
         with self.assertRaisesRegex(ValueError, r'data .*[15].* should '):
             method(15)
+
+
+class TestClsDataSample(GenericTest):
+
 
     def test_set_gt_label(self):
         self._test_set_label('gt_label')
@@ -158,59 +159,9 @@ class TestClsDataSample(TestCase):
         self.assertEqual(data_sample.pred_label.num_classes, 5)
 
 
-class TestMultiTaskDataSample(TestCase):
-    def _test_set_label(self, key):
-        data_sample = MultiTaskDataSample().to_cls_data_samples()
-        method = getattr(data_sample, 'set_' + key)
-        # Test number
-        method(1)
-        self.assertIn(key, data_sample)
-        label = getattr(data_sample, key)
-        self.assertIsInstance(label, LabelData)
-        self.assertIsInstance(label.label, torch.LongTensor)
-
-        # Test tensor with single number
-        method(torch.tensor(2))
-        self.assertIn(key, data_sample)
-        label = getattr(data_sample, key)
-        self.assertIsInstance(label, LabelData)
-        self.assertIsInstance(label.label, torch.LongTensor)
-
-        # Test array with single number
-        method(np.array(3))
-        self.assertIn(key, data_sample)
-        label = getattr(data_sample, key)
-        self.assertIsInstance(label, LabelData)
-        self.assertIsInstance(label.label, torch.LongTensor)
-
-        # Test tensor
-        method(torch.tensor([1, 2, 3]))
-        self.assertIn(key, data_sample)
-        label = getattr(data_sample, key)
-        self.assertIsInstance(label, LabelData)
-        self.assertIsInstance(label.label, torch.Tensor)
-        self.assertTrue((label.label == torch.tensor([1, 2, 3])).all())
-
-        # Test array
-        method(np.array([1, 2, 3]))
-        self.assertIn(key, data_sample)
-        label = getattr(data_sample, key)
-        self.assertIsInstance(label, LabelData)
-        self.assertTrue((label.label == torch.tensor([1, 2, 3])).all())
-
-        # Test Sequence
-        method([1, 2, 3])
-        self.assertIn(key, data_sample)
-        label = getattr(data_sample, key)
-        self.assertIsInstance(label, LabelData)
-        self.assertTrue((label.label == torch.tensor([1, 2, 3])).all())
-
-        # Test unavailable type
-        with self.assertRaisesRegex(TypeError, "<class 'str'> is not"):
-            method('hi')
-
+class TestMultiTaskDataSample(GenericTest):
     def test_set_gt_label(self):
-        self._test_set_label('gt_label')
+        self._test_set_label(key='gt_label',data_sample=MultiTaskDataSample())
 
     def test_set_pred_label(self):
-        self._test_set_label('pred_label')
+        self._test_set_label(key='pred_label',data_sample=MultiTaskDataSample())
