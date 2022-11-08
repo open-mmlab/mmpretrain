@@ -97,6 +97,7 @@ def generate_paper_page(collection):
         return f'[{name}]({link})'
 
     content = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', replace_link, readme)
+    content = f'---\ngithub_page: /{collection.readme}\n---\n' + content
 
     def make_tabs(matchobj):
         """modify the format from emphasis black symbol to tabs."""

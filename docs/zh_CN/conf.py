@@ -115,6 +115,9 @@ html_theme_options = {
     # Specify the language of shared menu
     'menu_lang':
     'cn',
+    # Disable the default edit on GitHub
+    'default_edit_on_github':
+    False,
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -204,7 +207,7 @@ copybutton_prompt_is_regexp = True
 # Auto-generated header anchors
 myst_heading_anchors = 3
 # Enable "colon_fence" extension of myst.
-myst_enable_extensions = ['colon_fence']
+myst_enable_extensions = ['colon_fence', 'dollarmath']
 
 # Configuration for intersphinx
 intersphinx_mapping = {

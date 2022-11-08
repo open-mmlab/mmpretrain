@@ -67,6 +67,7 @@ def inference_model(model, img):
         result (dict): The classification results that contains
             `class_name`, `pred_label` and `pred_score`.
     """
+    register_all_modules()
     cfg = model.cfg
     # build the data pipeline
     test_pipeline_cfg = cfg.test_dataloader.dataset.pipeline
