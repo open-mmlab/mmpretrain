@@ -12,12 +12,20 @@ GITHUB_PREFIX = 'https://github.com/open-mmlab/mmclassification/blob/1.x/'
 MODELZOO_TEMPLATE = """
 # Model Zoo Summary
 
+In this page, we list [all algorithms](#all-supported-algorithms) we support. You can click the link to jump to the corresponding model pages.
+
+And we also list [all checkpoints](#all-checkpoints) we provide on various datasets. You can sort or search the table and use the link to jump to the model pages.
+
+## All supported algorithms
+
 * Number of papers: {num_papers}
 {type_msg}
 
 * Number of checkpoints: {num_ckpts}
 {paper_msg}
-"""
+
+## All checkpoints
+"""  # noqa: E501
 
 model_index = load(str(MMCLS_ROOT / 'model-index.yml'))
 
@@ -123,7 +131,7 @@ def generate_summary_table(models):
 
     with open('modelzoo_statistics.md', 'a') as f:
         for dataset, rows in dataset_rows.items():
-            f.write(f'\n## {dataset}\n')
+            f.write(f'\n### {dataset}\n')
             f.write("""```{table}\n:class: model-summary\n""")
             header = [
                 'Model',
