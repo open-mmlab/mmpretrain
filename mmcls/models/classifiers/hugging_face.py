@@ -13,6 +13,57 @@ from .base import BaseClassifier
 
 @MODELS.register_module()
 class HuggingFaceClassifier(BaseClassifier):
+    """Image classifiers for HuggingFace model.
+
+    This class accepts all positional and keyword arguments of the API
+    ``from_pretrained`` (when ``pretrained=True``) and ``from_config`` (when
+    ``pretrained=False``) of `transformers.AutoModelForImageClassification`_
+    and use it to create a model from hugging-face.
+
+    It can load checkpoints of hugging-face directly, and the saved checkpoints
+    also can be directly load by hugging-face.
+
+    Please confirm that you have installed ``transfromers`` if you want to use it.
+
+    .. _transformers.AutoModelForImageClassification:
+    https://huggingface.co/docs/transformers/main/en/model_doc/auto#transformers.AutoModelForImageClassification
+
+    Args:
+        model_name (str): The name of the model to use in hugging-face.
+        pretrained (bool): Whether to load pretrained checkpoint from
+            hugging-face. Defaults to False.
+        *args: Other positional arguments of the method
+            `from_pretrained` or `from_config`.
+        loss (dict): Config of classification loss. Defaults to
+            ``dict(type='CrossEntropyLoss', loss_weight=1.0)``.
+        train_cfg (dict, optional): The training setting. The acceptable
+            fields are:
+
+            - augments (List[dict]): The batch augmentation methods to use.
+              More details can be found in :mod:`mmcls.model.utils.augment`.
+
+            Defaults to None.
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+            memory while slowing down the training speed. Defaults to False.
+        data_preprocessor (dict, optional): The config for preprocessing input
+            data. If None or no specified type, it will use
+            "ClsDataPreprocessor" as type. See :class:`ClsDataPreprocessor` for
+            more details. Defaults to None.
+        init_cfg (dict, optional): the config to control the initialization.
+            Defaults to None.
+        **kwargs: Other keyword arguments of the method
+            `from_pretrained` or `from_config`.
+
+    Examples:
+        >>> import torch
+        >>> from mmcls.models import build_classifier
+        >>> cfg = dict(type='HuggingFaceClassifier', model_name='microsoft/resnet-50', pretrained=True)
+        >>> model = build_classifier(cfg)
+        >>> inputs = torch.rand(1, 3, 224, 224)
+        >>> out = model(inputs)
+        >>> print(out.shape)
+        torch.Size([1, 1000])
+    """  # noqa: E501
 
     def __init__(self,
                  model_name,
@@ -20,6 +71,7 @@ class HuggingFaceClassifier(BaseClassifier):
                  *model_args,
                  loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
                  train_cfg: Optional[dict] = None,
+                 with_cp: bool = False,
                  data_preprocessor: Optional[dict] = None,
                  init_cfg: Optional[dict] = None,
                  **kwargs):
@@ -43,14 +95,19 @@ class HuggingFaceClassifier(BaseClassifier):
             config = AutoConfig.from_pretrained(model_name, *model_args,
                                                 **kwargs)
             self.model = AutoModelForImageClassification.from_config(config)
+
         self.loss_module = MODELS.build(loss)
+
+        self.with_cp = with_cp
+        if self.with_cp:
+            self.model.gradient_checkpointing_enable()
 
         self._register_state_dict_hook(self._remove_state_dict_prefix)
         self._register_load_state_dict_pre_hook(self._add_state_dict_prefix)
 
     def forward(self, inputs, data_samples=None, mode='tensor'):
         if mode == 'tensor':
-            return self.model(inputs)
+            return self.model(inputs).logits
         elif mode == 'loss':
             return self.loss(inputs, data_samples)
         elif mode == 'predict':
@@ -62,7 +119,20 @@ class HuggingFaceClassifier(BaseClassifier):
         raise NotImplementedError(
             "The HuggingFaceClassifier doesn't support extract feature yet.")
 
-    def loss(self, inputs, data_samples, **kwargs):
+    def loss(self, inputs: torch.Tensor, data_samples: List[ClsDataSample],
+             **kwargs):
+        """Calculate losses from a batch of inputs and data samples.
+
+        Args:
+            inputs (torch.Tensor): The input tensor with shape
+                (N, C, ...) in general.
+            data_samples (List[ClsDataSample]): The annotation data of
+                every samples.
+            **kwargs: Other keyword arguments of the loss module.
+
+        Returns:
+            dict[str, Tensor]: a dictionary of loss components
+        """
         # The part can be traced by torch.fx
         cls_score = self.model(inputs).logits
 
@@ -88,9 +158,22 @@ class HuggingFaceClassifier(BaseClassifier):
 
         return losses
 
-    def predict(self, inputs, data_samples):
+    def predict(self,
+                inputs: torch.Tensor,
+                data_samples: Optional[List[ClsDataSample]] = None):
+        """Predict results from a batch of inputs.
+
+        Args:
+            inputs (torch.Tensor): The input tensor with shape
+                (N, C, ...) in general.
+            data_samples (List[ClsDataSample], optional): The annotation
+                data of every samples. Defaults to None.
+
+        Returns:
+            List[ClsDataSample]: The prediction results.
+        """
         # The part can be traced by torch.fx
-        cls_score = self(inputs).logits
+        cls_score = self.model(inputs).logits
 
         # The part can not be traced by torch.fx
         predictions = self._get_predictions(cls_score, data_samples)

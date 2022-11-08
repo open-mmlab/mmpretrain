@@ -13,11 +13,56 @@ from .base import BaseClassifier
 
 @MODELS.register_module()
 class TimmClassifier(BaseClassifier):
+    """Image classifiers for pytorch-image-models (timm) model.
+
+    This class accepts all positional and keyword arguments of the function
+    `timm.models.create_model <https://timm.fast.ai/create_model>`_ and use
+    it to create a model from pytorch-image-models.
+
+    It can load checkpoints of timm directly, and the saved checkpoints also
+    can be directly load by timm.
+
+    Please confirm that you have installed ``timm`` if you want to use it.
+
+    Args:
+        *args: All positional arguments of the function
+            `timm.models.create_model`.
+        loss (dict): Config of classification loss. Defaults to
+            ``dict(type='CrossEntropyLoss', loss_weight=1.0)``.
+        train_cfg (dict, optional): The training setting. The acceptable
+            fields are:
+
+            - augments (List[dict]): The batch augmentation methods to use.
+              More details can be found in :mod:`mmcls.model.utils.augment`.
+
+            Defaults to None.
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+            memory while slowing down the training speed. Defaults to False.
+        data_preprocessor (dict, optional): The config for preprocessing input
+            data. If None or no specified type, it will use
+            "ClsDataPreprocessor" as type. See :class:`ClsDataPreprocessor` for
+            more details. Defaults to None.
+        init_cfg (dict, optional): the config to control the initialization.
+            Defaults to None.
+        **kwargs: Other keyword arguments of the function
+            `timm.models.create_model`.
+
+    Examples:
+        >>> import torch
+        >>> from mmcls.models import build_classifier
+        >>> cfg = dict(type='TimmClassifier', model_name='resnet50', pretrained=True)
+        >>> model = build_classifier(cfg)
+        >>> inputs = torch.rand(1, 3, 224, 224)
+        >>> out = model(inputs)
+        >>> print(out.shape)
+        torch.Size([1, 1000])
+    """  # noqa: E501
 
     def __init__(self,
                  *args,
                  loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
                  train_cfg: Optional[dict] = None,
+                 with_cp: bool = False,
                  data_preprocessor: Optional[dict] = None,
                  init_cfg: Optional[dict] = None,
                  **kwargs):
@@ -35,6 +80,10 @@ class TimmClassifier(BaseClassifier):
         from timm.models import create_model
         self.model = create_model(*args, **kwargs)
         self.loss_module = MODELS.build(loss)
+
+        self.with_cp = with_cp
+        if self.with_cp:
+            self.model.set_grad_checkpointing()
 
         self._register_state_dict_hook(self._remove_state_dict_prefix)
         self._register_load_state_dict_pre_hook(self._add_state_dict_prefix)
@@ -57,7 +106,20 @@ class TimmClassifier(BaseClassifier):
                 f"The model {type(self.model)} doesn't support extract "
                 "feature because it don't have `forward_features` method.")
 
-    def loss(self, inputs, data_samples, **kwargs):
+    def loss(self, inputs: torch.Tensor, data_samples: List[ClsDataSample],
+             **kwargs):
+        """Calculate losses from a batch of inputs and data samples.
+
+        Args:
+            inputs (torch.Tensor): The input tensor with shape
+                (N, C, ...) in general.
+            data_samples (List[ClsDataSample]): The annotation data of
+                every samples.
+            **kwargs: Other keyword arguments of the loss module.
+
+        Returns:
+            dict[str, Tensor]: a dictionary of loss components
+        """
         # The part can be traced by torch.fx
         cls_score = self.model(inputs)
 
@@ -77,13 +139,25 @@ class TimmClassifier(BaseClassifier):
 
         # compute loss
         losses = dict()
-        loss = self.loss_module(
-            cls_score, target, avg_factor=cls_score.size(0), **kwargs)
+        loss = self.loss_module(cls_score, target, **kwargs)
         losses['loss'] = loss
 
         return losses
 
-    def predict(self, inputs, data_samples):
+    def predict(self,
+                inputs: torch.Tensor,
+                data_samples: Optional[List[ClsDataSample]] = None):
+        """Predict results from a batch of inputs.
+
+        Args:
+            inputs (torch.Tensor): The input tensor with shape
+                (N, C, ...) in general.
+            data_samples (List[ClsDataSample], optional): The annotation
+                data of every samples. Defaults to None.
+
+        Returns:
+            List[ClsDataSample]: The prediction results.
+        """
         # The part can be traced by torch.fx
         cls_score = self(inputs)
 
@@ -91,7 +165,7 @@ class TimmClassifier(BaseClassifier):
         predictions = self._get_predictions(cls_score, data_samples)
         return predictions
 
-    def _get_predictions(self, cls_score, data_samples):
+    def _get_predictions(self, cls_score, data_samples=None):
         """Post-process the output of head.
 
         Including softmax and set ``pred_label`` of data samples.
