@@ -14,7 +14,7 @@ class MultiTaskHead(BaseHead):
     """Multi task head.
 
     Args:
-        sub_heads (dict): Sub heads to use, the key will be use to rename the
+        task_heads (dict): Sub heads to use, the key will be use to rename the
             loss components.
         common_cfg (dict): The common settings for all heads. Defaults to an
             empty dict.
@@ -22,22 +22,22 @@ class MultiTaskHead(BaseHead):
             Defaults to None.
     """
 
-    def __init__(self, sub_heads, common_cfg=dict(), init_cfg=None):
+    def __init__(self, task_heads, common_cfg=dict(), init_cfg=None):
         super(MultiTaskHead, self).__init__(init_cfg=init_cfg)
 
-        assert isinstance(sub_heads, dict), 'The `sub_heads` argument' \
+        assert isinstance(task_heads, dict), 'The `task_heads` argument' \
             "should be a dict, which's keys are task names and values are" \
             'configs of head for the task.'
 
-        self.sub_heads = ModuleDict()
+        self.task_heads = ModuleDict()
 
-        for task_name, head_cfg in sub_heads.items():
+        for task_name, head_cfg in task_heads.items():
             sub_head = MODELS.build(head_cfg, default_args=common_cfg)
-            self.sub_heads[task_name] = sub_head
+            self.task_heads[task_name] = sub_head
 
     def forward(self, feats):
         task_results = ()
-        for task_name, head in self.sub_heads.items():
+        for task_name, head in self.task_heads.items():
             head_res = head.forward(feats)
             task_results = task_results + (head_res, )
         return task_results
@@ -59,7 +59,7 @@ class MultiTaskHead(BaseHead):
             dict[str, Tensor]: a dictionary of loss components
         """
         losses = dict()
-        for task_name, head in self.sub_heads.items():
+        for task_name, head in self.task_heads.items():
             """if 'mask'  in gt_label[task_name].keys()  :
 
             mask = gt_label[task_name]['mask']
