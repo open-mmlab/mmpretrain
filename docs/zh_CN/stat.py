@@ -13,12 +13,20 @@ GITHUB_PREFIX = 'https://github.com/open-mmlab/mmclassification/blob/1.x/'
 MODELZOO_TEMPLATE = """
 # 模型库统计
 
+在本页面中，我们列举了我们支持的[所有算法](#所有已支持的算法)。你可以点击链接跳转至对应的模型详情页面。
+
+另外，我们还列出了我们提供的[所有模型权重文件](#所有模型权重文件)。你可以使用排序和搜索功能找到需要的模型权重，并使用链接跳转至模型详情页面。
+
+## 所有已支持的算法
+
 * 论文数量：{num_papers}
 {type_msg}
 
 * 模型权重文件数量：{num_ckpts}
 {paper_msg}
-"""
+
+## 所有模型权重文件
+"""  # noqa: E501
 
 model_index = load(str(MMCLS_ROOT / 'model-index.yml'))
 
@@ -149,7 +157,7 @@ def generate_summary_table(models):
 
     with open('modelzoo_statistics.md', 'a') as f:
         for dataset, rows in dataset_rows.items():
-            f.write(f'\n## {dataset}\n')
+            f.write(f'\n### {dataset}\n')
             f.write("""```{table}\n:class: model-summary\n""")
             header = [
                 '模型',
