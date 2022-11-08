@@ -484,7 +484,7 @@ class TestMultiLabelLinearClsHead(TestMultiLabelClsHead):
 class TestMultiTaskHead(TestCase):
     DEFAULT_ARGS = dict(
         type='MultiTaskHead',                                    # <- Head config, depends on #675
-        sub_heads={
+        task_heads={
             'task1': dict(type='LinearClsHead', num_classes=3),
             'task2': dict(type='LinearClsHead', num_classes=6),
         },
