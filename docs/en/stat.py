@@ -14,7 +14,7 @@ MODELZOO_TEMPLATE = """
 
 In this page, we list [all algorithms](#all-supported-algorithms) we support. You can click the link to jump to the corresponding model pages.
 
-And we also list [all checkpoints](#all-checkpoints) we provide on various datasets. You can sort or search the table and use the link to jump to the model pages.
+And we also list [all checkpoints](#all-checkpoints) we provide. You can sort or search checkpoints in the table and click the corresponding link to model pages for more details.
 
 ## All supported algorithms
 
