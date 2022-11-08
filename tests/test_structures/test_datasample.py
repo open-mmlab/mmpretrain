@@ -5,7 +5,7 @@ import numpy as np
 import torch
 from mmengine.structures import LabelData
 
-from mmcls.structures import ClsDataSample
+from mmcls.structures import ClsDataSample, MultiTaskDataSample
 
 
 class TestClsDataSample(TestCase):
@@ -156,3 +156,61 @@ class TestClsDataSample(TestCase):
         data_sample = ClsDataSample()
         data_sample.set_pred_score(torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1]))
         self.assertEqual(data_sample.pred_label.num_classes, 5)
+
+
+class TestMultiTaskDataSample(TestCase):
+    def _test_set_label(self, key):
+        data_sample = MultiTaskDataSample().to_cls_data_samples()
+        method = getattr(data_sample, 'set_' + key)
+        # Test number
+        method(1)
+        self.assertIn(key, data_sample)
+        label = getattr(data_sample, key)
+        self.assertIsInstance(label, LabelData)
+        self.assertIsInstance(label.label, torch.LongTensor)
+
+        # Test tensor with single number
+        method(torch.tensor(2))
+        self.assertIn(key, data_sample)
+        label = getattr(data_sample, key)
+        self.assertIsInstance(label, LabelData)
+        self.assertIsInstance(label.label, torch.LongTensor)
+
+        # Test array with single number
+        method(np.array(3))
+        self.assertIn(key, data_sample)
+        label = getattr(data_sample, key)
+        self.assertIsInstance(label, LabelData)
+        self.assertIsInstance(label.label, torch.LongTensor)
+
+        # Test tensor
+        method(torch.tensor([1, 2, 3]))
+        self.assertIn(key, data_sample)
+        label = getattr(data_sample, key)
+        self.assertIsInstance(label, LabelData)
+        self.assertIsInstance(label.label, torch.Tensor)
+        self.assertTrue((label.label == torch.tensor([1, 2, 3])).all())
+
+        # Test array
+        method(np.array([1, 2, 3]))
+        self.assertIn(key, data_sample)
+        label = getattr(data_sample, key)
+        self.assertIsInstance(label, LabelData)
+        self.assertTrue((label.label == torch.tensor([1, 2, 3])).all())
+
+        # Test Sequence
+        method([1, 2, 3])
+        self.assertIn(key, data_sample)
+        label = getattr(data_sample, key)
+        self.assertIsInstance(label, LabelData)
+        self.assertTrue((label.label == torch.tensor([1, 2, 3])).all())
+
+        # Test unavailable type
+        with self.assertRaisesRegex(TypeError, "<class 'str'> is not"):
+            method('hi')
+
+    def test_set_gt_label(self):
+        self._test_set_label('gt_label')
+
+    def test_set_pred_label(self):
+        self._test_set_label('pred_label')
