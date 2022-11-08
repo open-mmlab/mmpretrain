@@ -52,8 +52,8 @@ class VOCMetricMixin:
                 result['gt_score'] = LabelData.label_to_onehot(
                     gt_label['label'], num_classes)
 
-            difficult_label = set(gt_label_difficult) - set(
-                gt_label_difficult) & set(gt_label['label'].tolist())
+            difficult_label = set(gt_label_difficult) - (
+                set(gt_label_difficult) & set(gt_label['label'].tolist()))
 
             # set difficult label for better eval
             if self.difficult_as_positive is None:
