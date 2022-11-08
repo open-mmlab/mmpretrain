@@ -64,6 +64,7 @@ test_dataloader = dict(
 # calculate precision_recall_f1 and mAP
 val_evaluator = [
     dict(type='VOCMultiLabelMetric'),
+    dict(type='VOCMultiLabelMetric', average='micro'),
     dict(type='VOCAveragePrecision')
 ]
 

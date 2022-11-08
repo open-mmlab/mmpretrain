@@ -90,7 +90,7 @@ class CSRAModule(BaseModule):
                  in_channels: int,
                  T: int,
                  lam: float,
-                 init_cfg=dict(type='Normal', layer='Linear', std=0.01)):
+                 init_cfg=None):
 
         super(CSRAModule, self).__init__(init_cfg=init_cfg)
         self.T = T  # temperature
