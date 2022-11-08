@@ -26,7 +26,7 @@ class HuggingFaceClassifier(BaseClassifier):
     Please confirm that you have installed ``transfromers`` if you want to use it.
 
     .. _transformers.AutoModelForImageClassification:
-    https://huggingface.co/docs/transformers/main/en/model_doc/auto#transformers.AutoModelForImageClassification
+        https://huggingface.co/docs/transformers/main/en/model_doc/auto#transformers.AutoModelForImageClassification
 
     Args:
         model_name (str): The name of the model to use in hugging-face.
