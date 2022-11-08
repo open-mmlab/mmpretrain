@@ -238,7 +238,7 @@ These augmentations are usually only used during training, therefore, we use the
        ]),
    )
 
-You can also speicy the probabilities of every batch augmentation by the ``probs`` field.
+You can also specify the probabilities of every batch augmentation by the ``probs`` field.
 
 .. code-block:: python
 

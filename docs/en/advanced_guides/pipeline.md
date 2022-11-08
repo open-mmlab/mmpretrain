@@ -1,127 +1,155 @@
-# Customize Data Pipeline (TODO)
+# Customize Data Pipeline
 
 ## Design of Data pipelines
 
-Following typical conventions, we use `Dataset` and `DataLoader` for data loading
-with multiple workers. Indexing `Dataset` returns a dict of data items corresponding to
-the arguments of models forward method.
+In the [new dataset tutorial](./datasets.md), we know that the dataset class use the `load_data_list` method
+to initialize the entire dataset, and we save the information of every sample to a dict.
 
-The data preparation pipeline and the dataset is decomposed. Usually a dataset
-defines how to process the annotations and a data pipeline defines all the steps to prepare a data dict.
-A pipeline consists of a sequence of operations. Each operation takes a dict as input and also output a dict for the next transform.
+Usually, to save memory usage, we only load image paths and labels in the `load_data_list`, and load full
+image content when we use them. Moreover, we may want to do some random data augmentation during picking
+samples when training. Almost all data loading, pre-processing, and formatting operations can be configured in
+MMClassification by the **data pipeline**.
 
-The operations are categorized into data loading, pre-processing and formatting.
+The data pipeline means how to process the sample dict when indexing a sample from the dataset. And it
+consists of a sequence of data transforms. Each data transform takes a dict as input, processes it, and outputs a
+dict for the next data transform.
 
-Here is an pipeline example for ResNet-50 training on ImageNet.
+Here is a data pipeline example for ResNet-50 training on ImageNet.
 
 ```python
-img_norm_cfg = dict(
-    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='RandomResizedCrop', size=224),
-    dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='ImageToTensor', keys=['img']),
-    dict(type='ToTensor', keys=['gt_label']),
-    dict(type='Collect', keys=['img', 'gt_label'])
-]
-test_pipeline = [
-    dict(type='LoadImageFromFile'),
-    dict(type='Resize', scale=256),
-    dict(type='CenterCrop', crop_size=224),
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='ImageToTensor', keys=['img']),
-    dict(type='Collect', keys=['img'])
+    dict(type='RandomResizedCrop', scale=224),
+    dict(type='RandomFlip', prob=0.5, direction='horizontal'),
+    dict(type='PackClsInputs'),
 ]
 ```
 
-For each operation, we list the related dict fields that are added/updated/removed.
-At the end of the pipeline, we use `Collect` to only retain the necessary items for forward computation.
+All available data transforms in MMClassification can be found in the [data transforms docs](mmcls.datasets.transforms).
 
-### Data loading
+## Modify the training/test pipeline
 
-`LoadImageFromFile`
+The data pipeline in MMClassification is pretty flexible. You can control almost every step of the data
+preprocessing from the config file, but on the other hand, you may be confused facing so many options.
 
-- add: img, img_shape, ori_shape
+Here is a common practice and guidance for image classification tasks.
 
-By default, `LoadImageFromFile` loads images from disk but it may lead to IO bottleneck for efficient small models.
-Various backends are supported by mmcv to accelerate this process. For example, if the training machines have setup
-[memcached](https://memcached.org/), we can revise the config as follows.
+### Loading
 
-```
-memcached_root = '/mnt/xxx/memcached_client/'
+At the beginning of a data pipeline, we usually need to load image data from the file path.
+[`LoadImageFromFile`](mmcv.transforms.LoadImageFromFile) is commonly used to do this task.
+
+```python
 train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    ...
+]
+```
+
+If you want to load data from files with special formats or special locations, you can [implement a new loading
+transform](#add-new-data-transforms) and add it at the beginning of the data pipeline.
+
+### Augmentation and other processing
+
+During training, we usually need to do data augmentation to avoid overfitting. During the test, we also need to do
+some data processing like resizing and cropping. These data transforms will be placed after the loading process.
+
+Here is a simple data augmentation recipe example. It will randomly resize and crop the input image to the
+specified scale, and randomly flip the image horizontally with probability.
+
+```python
+train_pipeline = [
+    ...
+    dict(type='RandomResizedCrop', scale=224),
+    dict(type='RandomFlip', prob=0.5, direction='horizontal'),
+    ...
+]
+```
+
+Here is a heavy data augmentation recipe example used in [Swin-Transformer](../papers/swin_transformer.md)
+training. To align with the official implementation, it specified `pillow` as the resize backend and `bicubic`
+as the resize algorithm. Moreover, it added [`RandAugment`](mmcls.datasets.transforms.RandAugment) and
+[`RandomErasing`](mmcls.datasets.transforms.RandomErasing) as extra data augmentation method.
+
+This configuration specified every detail of the data augmentation, and you can simply copy it to your own
+config file to apply the data augmentations of the Swin-Transformer.
+
+```python
+bgr_mean = [103.53, 116.28, 123.675]
+bgr_std = [57.375, 57.12, 58.395]
+
+train_pipeline = [
+    ...
+    dict(type='RandomResizedCrop', scale=224, backend='pillow', interpolation='bicubic'),
+    dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(
-        type='LoadImageFromFile',
-        file_client_args=dict(
-            backend='memcached',
-            server_list_cfg=osp.join(memcached_root, 'server_list.conf'),
-            client_cfg=osp.join(memcached_root, 'client.conf'))),
+        type='RandAugment',
+        policies='timm_increasing',
+        num_policies=2,
+        total_level=10,
+        magnitude_level=9,
+        magnitude_std=0.5,
+        hparams=dict(
+            pad_val=[round(x) for x in bgr_mean], interpolation='bicubic')),
+    dict(
+        type='RandomErasing',
+        erase_prob=0.25,
+        mode='rand',
+        min_area_ratio=0.02,
+        max_area_ratio=1 / 3,
+        fill_color=bgr_mean,
+        fill_std=bgr_std),
+    ...
 ]
 ```
 
-More supported backends can be found in [mmcv.fileio.FileClient](https://github.com/open-mmlab/mmcv/blob/master/mmcv/fileio/file_client.py).
-
-### Pre-processing
-
-`Resize`
-
-- add: scale, scale_idx, pad_shape, scale_factor, keep_ratio
-- update: img, img_shape
-
-`RandomFlip`
-
-- add: flip, flip_direction
-- update: img
-
-`RandomCrop`
-
-- update: img, pad_shape
-
-`Normalize`
-
-- add: img_norm_cfg
-- update: img
+```{note}
+Usually, the data augmentation part in the data pipeline handles only image-wise transforms, but not transforms
+like image normalization or mixup/cutmix. It's because we can do image normalization and mixup/cutmix on batch data
+to accelerate. To configure image normalization and mixup/cutmix, please use the [data preprocessor]
+(mmcls.models.utils.data_preprocessor).
+```
 
 ### Formatting
 
-`ToTensor`
+The formatting is to collect training data from the data information dict and convert these data to
+model-friendly format.
 
-- update: specified by `keys`.
+In most cases, you can simply use [`PackClsInputs`](mmcls.datasets.transforms.PackClsInputs), and it will
+convert the image in NumPy array format to PyTorch tensor, and pack the ground truth categories information and
+other meta information as a [`ClsDataSample`](mmcls.structures.ClsDataSample).
 
-`ImageToTensor`
+```python
+train_pipeline = [
+    ...
+    dict(type='PackClsInputs'),
+]
+```
 
-- update: specified by `keys`.
+## Add new data transforms
 
-`Collect`
-
-- remove: all other keys except for those specified by `keys`
-
-For more information about other data transformation classes, please refer to [Data Transforms](mmcls.datasets.transforms)
-
-## Extend and use custom pipelines
-
-1. Write a new pipeline in any file, e.g., `my_pipeline.py`, and place it in
-   the folder `mmcls/datasets/pipelines/`. The pipeline class needs to override
-   the `__call__` method which takes a dict as input and returns a dict.
+1. Write a new data transform in any file, e.g., `my_transform.py`, and place it in
+   the folder `mmcls/datasets/transforms/`. The data transform class needs to inherit
+   the [`mmcv.transforms.BaseTransform`](mmcv.transforms.BaseTransform) class and override
+   the `transform` method which takes a dict as input and returns a dict.
 
    ```python
-   from mmcls.datasets import PIPELINES
+   from mmcv.transforms import BaseTransform
+   from mmcls.datasets import TRANSFORMS
 
-   @PIPELINES.register_module()
-   class MyTransform(object):
+   @TRANSFORMS.register_module()
+   class MyTransform(BaseTransform):
 
-       def __call__(self, results):
-           # apply transforms on results['img']
+       def transform(self, results):
+           # Modify the data information dict `results`.
            return results
    ```
 
-2. Import the new class in `mmcls/datasets/pipelines/__init__.py`.
+2. Import the new class in the `mmcls/datasets/transforms/__init__.py`.
 
    ```python
    ...
-   from .my_pipeline import MyTransform
+   from .my_transform import MyTransform
 
    __all__ = [
        ..., 'MyTransform'
@@ -131,17 +159,10 @@ For more information about other data transformation classes, please refer to [D
 3. Use it in config files.
 
    ```python
-   img_norm_cfg = dict(
-       mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
    train_pipeline = [
-       dict(type='LoadImageFromFile'),
-       dict(type='RandomResizedCrop', size=224),
-       dict(type='RandomFlip', flip_prob=0.5, direction='horizontal'),
+       ...
        dict(type='MyTransform'),
-       dict(type='Normalize', **img_norm_cfg),
-       dict(type='ImageToTensor', keys=['img']),
-       dict(type='ToTensor', keys=['gt_label']),
-       dict(type='Collect', keys=['img', 'gt_label'])
+       ...
    ]
    ```
 

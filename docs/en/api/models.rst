@@ -69,6 +69,7 @@ Backbones
    EdgeNeXt
    EfficientFormer
    EfficientNet
+   HorNet
    HRNet
    InceptionV3
    LeNet5
