@@ -507,11 +507,14 @@ class TestMultiTaskHead(TestCase):
 
     def test_loss(self):
         feats = (torch.rand(4, 10),)
-        gt_label = {
-            'task1': torch.randint(0, 3, (4,)),
-            'task2': torch.randint(0, 6, (4,)),
-        }
-        data_samples = [MultiTaskDataSample(gt_label.keys()).set_gt_label(gt_label)]
+        data_samples = []
+        
+        for _ in range(self.BATCH_SIZE):
+          gt_label = {}
+          for task_name, _ in self.DEFAULT_ARGS.task_heads:
+            gt_label[task_name] = 1
+          data_sample = MultiTaskDataSample().set_gt_label(gt_label)
+          data_samples.append(data_sample)
         # with cal_acc = False
         head = MODELS.build(self.DEFAULT_ARGS)
 
