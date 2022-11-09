@@ -489,10 +489,19 @@ class TestArcFaceClsHead(TestCase):
         with self.assertRaisesRegex(ValueError, 'num_classes=-5 must be'):
             MODELS.build({**self.DEFAULT_ARGS, 'num_classes': -5})
 
+        with self.assertRaisesRegex(AssertionError):
+            MODELS.build({**self.DEFAULT_ARGS, 'num_subcenters': 0})
+
     def test_pre_logits(self):
         head = MODELS.build(self.DEFAULT_ARGS)
 
         # return the last item
+        feats = (torch.rand(4, 10), torch.rand(4, 10))
+        pre_logits = head.pre_logits(feats)
+        self.assertIs(pre_logits, feats[-1])
+
+        # Test with SubCenterArcFace
+        head = MODELS.build({**self.DEFAULT_ARGS, 'num_subcenters': 3})
         feats = (torch.rand(4, 10), torch.rand(4, 10))
         pre_logits = head.pre_logits(feats)
         self.assertIs(pre_logits, feats[-1])
@@ -510,12 +519,32 @@ class TestArcFaceClsHead(TestCase):
         outs = head(feats)
         self.assertEqual(outs.shape, (4, 5))
 
+        # Test with SubCenterArcFace
+        head = MODELS.build({**self.DEFAULT_ARGS, 'num_subcenters': 3})
+        # target is not None
+        feats = (torch.rand(4, 10), torch.rand(4, 10))
+        target = torch.zeros(4)
+        outs = head(feats, target)
+        self.assertEqual(outs.shape, (4, 5))
+
+        # target is None
+        feats = (torch.rand(4, 10), torch.rand(4, 10))
+        outs = head(feats)
+        self.assertEqual(outs.shape, (4, 5))
+
     def test_loss(self):
         feats = (torch.rand(4, 10), )
         data_samples = [ClsDataSample().set_gt_label(1) for _ in range(4)]
 
         # test loss with used='before'
         head = MODELS.build(self.DEFAULT_ARGS)
+        losses = head.loss(feats, data_samples)
+        self.assertEqual(losses.keys(), {'loss'})
+        self.assertGreater(losses['loss'].item(), 0)
+
+        # Test with SubCenterArcFace
+        head = MODELS.build({**self.DEFAULT_ARGS, 'num_subcenters': 3})
+        # test loss with used='before'
         losses = head.loss(feats, data_samples)
         self.assertEqual(losses.keys(), {'loss'})
         self.assertGreater(losses['loss'].item(), 0)
