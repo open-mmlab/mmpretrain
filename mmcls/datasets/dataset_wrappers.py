@@ -179,7 +179,7 @@ class ClassBalancedDataset(object):
 
         .. math::
             r(c) = \max(1, \sqrt{\frac{t}{f(c)}})
-       
+
        where :math:`t` is `oversample_thr`.
     3. For each image I and its labels :math:`L(I)`, compute the image-level
        repeat factor.
