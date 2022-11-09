@@ -1,0 +1,56 @@
+{
+  "metainfo": {
+    "tasks": [
+      {
+        "name": "gender",
+        "categories": [
+          "male",
+          "female"
+        ],
+        "type": "single-label"
+      },
+      {
+        "name": "wear",
+        "categories": [
+          "shirt",
+          "coat",
+          "jeans",
+          "pants"
+        ],
+        "type": "multi-label"
+      }
+    ]
+  },
+  "data_list": [
+    {
+      "img_path": "a/1.JPG",
+      "gt_label": {
+        "gender": 0
+      }
+    },
+    {
+      "img_path": "b/2.jpeg",
+      "gt_label": {
+        "gender": 0,
+        "wear": [
+          1,
+          0,
+          1,
+          0
+        ]
+      }
+    },
+    {
+      "img_path": "b/subb/3.jpg",
+      "gt_label": {
+        "gender": 1,
+        "wear": [
+          0,
+          1,
+          0,
+          1
+        ]
+      }
+    }
+  ]
+}

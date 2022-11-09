@@ -11,9 +11,10 @@ from .multi_label import MultiLabelDataset
 from .samplers import *  # noqa: F401,F403
 from .transforms import *  # noqa: F401,F403
 from .voc import VOC
+from .multi_task import MultiTaskDataset
 
 __all__ = [
     'BaseDataset', 'ImageNet', 'CIFAR10', 'CIFAR100', 'MNIST', 'FashionMNIST',
     'VOC', 'build_dataset', 'ImageNet21k', 'KFoldDataset', 'CUB',
-    'CustomDataset', 'MultiLabelDataset'
+    'CustomDataset', 'MultiLabelDataset' ,'MultiTaskDataset'
 ]
