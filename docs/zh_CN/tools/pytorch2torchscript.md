@@ -33,7 +33,7 @@ python tools/deployment/pytorch2torchscript.py \
 示例：
 
 ```bash
-python tools/deployment/pytorch2onnx.py \
+python tools/deployment/pytorch2torchscript.py \
     configs/resnet/resnet18_8xb16_cifar10.py \
     --checkpoint checkpoints/resnet/resnet18_b16x8_cifar10.pth \
     --output-file checkpoints/resnet/resnet18_b16x8_cifar10.pt \
