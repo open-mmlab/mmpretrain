@@ -5,7 +5,7 @@ from unittest import TestCase
 import torch
 from mmengine import ConfigDict
 
-from mmcls.models import AverageScoreTTAModel, ImageClassifier
+from mmcls.models import AverageClsScoreTTA, ImageClassifier
 from mmcls.registry import MODELS
 from mmcls.structures import ClsDataSample
 from mmcls.utils import register_all_modules
@@ -13,9 +13,9 @@ from mmcls.utils import register_all_modules
 register_all_modules()
 
 
-class TestAverageScoreTTAModel(TestCase):
+class TestAverageClsScoreTTA(TestCase):
     DEFAULT_ARGS = dict(
-        type='AverageScoreTTAModel',
+        type='AverageClsScoreTTA',
         module=dict(
             type='ImageClassifier',
             backbone=dict(type='ResNet', depth=18),
@@ -27,12 +27,12 @@ class TestAverageScoreTTAModel(TestCase):
                 loss=dict(type='CrossEntropyLoss'))))
 
     def test_initialize(self):
-        model: AverageScoreTTAModel = MODELS.build(self.DEFAULT_ARGS)
+        model: AverageClsScoreTTA = MODELS.build(self.DEFAULT_ARGS)
         self.assertIsInstance(model.module, ImageClassifier)
 
     def test_forward(self):
         inputs = torch.rand(1, 3, 224, 224)
-        model: AverageScoreTTAModel = MODELS.build(self.DEFAULT_ARGS)
+        model: AverageClsScoreTTA = MODELS.build(self.DEFAULT_ARGS)
 
         # The forward of TTA model should not be called.
         with self.assertRaisesRegex(NotImplementedError, 'will not be called'):
@@ -42,7 +42,7 @@ class TestAverageScoreTTAModel(TestCase):
         cfg = ConfigDict(deepcopy(self.DEFAULT_ARGS))
         cfg.module.data_preprocessor = dict(
             mean=[127.5, 127.5, 127.5], std=[127.5, 127.5, 127.5])
-        model: AverageScoreTTAModel = MODELS.build(cfg)
+        model: AverageClsScoreTTA = MODELS.build(cfg)
 
         img1 = torch.randint(0, 256, (1, 3, 224, 224))
         img2 = torch.randint(0, 256, (1, 3, 224, 224))

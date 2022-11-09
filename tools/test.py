@@ -115,7 +115,7 @@ def merge_args(cfg, args):
     # -------------------- TTA related args --------------------
     if args.tta:
         if 'tta_model' not in cfg:
-            cfg.tta_model = dict(type='mmcls.AverageScoreTTAModel')
+            cfg.tta_model = dict(type='mmcls.AverageClsScoreTTA')
         if 'tta_pipeline' not in cfg:
             test_pipeline = cfg.test_dataloader.dataset.pipeline
             cfg.tta_pipeline = deepcopy(test_pipeline)
