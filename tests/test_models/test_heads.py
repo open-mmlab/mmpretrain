@@ -501,15 +501,14 @@ class TestMultiTaskHead(TestCase):
                 task_heads = {
                     'task00': dict(type='LinearClsHead', num_classes=3),
                     'task01': dict(type='LinearClsHead', num_classes=6),
-                    },
-                common_cfg=dict(
-                    in_channels=10,
-                    loss=dict(type='CrossEntropyLoss', loss_weight=1.0)
-                    ),
+                    }
                 ),
-            'task1': dict(type='LinearClsHead', num_classes=6,in_channels=10,
-                        loss=dict(type='CrossEntropyLoss', loss_weight=1.0))
-        }
+            'task1': dict(type='LinearClsHead', num_classes=6)
+        },
+        common_cfg=dict(
+            in_channels=10,
+            loss=dict(type='CrossEntropyLoss', loss_weight=1.0)
+            ),
     )
     def test_forward(self):
         head = MODELS.build(self.DEFAULT_ARGS)
@@ -581,11 +580,10 @@ class TestMultiTaskHead(TestCase):
         data_samples = []
 
         for _ in range(4):
-            data_sample = MultiTaskDataSample([]).set_gt_label({})
+            data_sample = MultiTaskDataSample(['task0','task1']).set_gt_label({})
             data_samples.append(data_sample)
         # with cal_acc = False
         head = MODELS.build(self.DEFAULT_ARGS)
-
         losses = head.loss(feats, data_samples)
         self.assertEqual(losses.keys(), {'task0_loss','task1_loss'})
         self.assertEqual(losses['task0_loss'].item(), 0)
