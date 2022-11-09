@@ -161,16 +161,16 @@ class TestClsDataSample(GenericTest):
 
 class TestMultiTaskDataSample(GenericTest):
     def test_set_gt_label(self):
-        self._test_set_label(key='gt_label',data_sample=MultiTaskDataSample().to_cls_data_sample())
+        self._test_set_label(key='gt_label',data_sample=MultiTaskDataSample().to_cls_data_samples())
 
     def test_set_pred_label(self):
-        self._test_set_label(key='pred_label',data_sample=MultiTaskDataSample().to_cls_data_sample())
+        self._test_set_label(key='pred_label',data_sample=MultiTaskDataSample().to_cls_data_samples())
 
     def test_get_task_mask(self):
         data_samples = []
         gt_label = {}
         gt_label['task1'] = 1
-        data_sample = MultiTaskDataSample.(['task1']).to_cls_data_sample().set_gt_label(gt_label)
+        data_sample = MultiTaskDataSample(['task1']).to_cls_data_samples().set_gt_label(gt_label)
         data_samples.append(data_sample)
         self.assertTrue(data_samples.get_task_mask('task1'),True)
         self.assertFalse(data_samples.get_task_mask('task2'),False)
