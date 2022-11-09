@@ -7,8 +7,11 @@ from mmengine.structures import LabelData
 
 from mmcls.structures import ClsDataSample, MultiTaskDataSample
 
-class GenericTest(TestCase):
-    def _test_set_label(self,key,data_sample = ClsDataSample() ):
+
+
+class TestClsDataSample(TestCase):
+    def _test_set_label(self,key):
+        data_sample = ClsDataSample()
         method = getattr(data_sample, 'set_' + key)
         # Test number
         method(1)
@@ -70,10 +73,6 @@ class GenericTest(TestCase):
         # Test unavailable label
         with self.assertRaisesRegex(ValueError, r'data .*[15].* should '):
             method(15)
-
-
-class TestClsDataSample(GenericTest):
-
 
     def test_set_gt_label(self):
         self._test_set_label('gt_label')
@@ -159,18 +158,87 @@ class TestClsDataSample(GenericTest):
         self.assertEqual(data_sample.pred_label.num_classes, 5)
 
 
-class TestMultiTaskDataSample(GenericTest):
+class TestMultiTaskDataSample(TestCase):
+
+    def _test_set_label(self,key):
+        data_sample = MultiTaskDataSample()
+        data_sample2 = MultiTaskDataSample(metainfo={ 'task0': {'num_classes' :10}, 'task1': {'num_classes':3} })
+        method = getattr(data_sample, 'set_' + key)
+        # Test Dict without metainfo
+        method({'task0': 0,'task1':2})
+        self.assertIn(key, data_sample)
+        label = getattr(data_sample, key)
+        self.assertIsInstance(label, LabelData)
+
+        # Test empty Dict without metainfo
+        method({})
+        self.assertIn(key, data_sample)
+        label = getattr(data_sample, key)
+        self.assertIsInstance(label, LabelData)
+
+        # Test Dict with metainfo
+        method({'task0': 0,'task1':2})
+        self.assertIn(key, data_sample2)
+        label = getattr(data_sample2, key)
+        self.assertIsInstance(label, LabelData)
+
+        # Test empty Dict with metainfo
+        method({})
+        self.assertIn(key, data_sample2)
+        label = getattr(data_sample2, key)
+        self.assertIsInstance(label, LabelData)
+
+        # Test Dict with metainfo
+        method({'task0': 0,'task3':2})
+        self.assertIn(key, data_sample2)
+        with self.assertRaises(Exception):
+            getattr(data_sample2, key)
+
+
     def test_set_gt_label(self):
-        self._test_set_label(key='gt_label',data_sample=MultiTaskDataSample().to_cls_data_samples())
+        self._test_set_label(key='gt_label')
 
     def test_set_pred_label(self):
-        self._test_set_label(key='pred_label',data_sample=MultiTaskDataSample().to_cls_data_samples())
+        self._test_set_label(key='pred_label')
 
     def test_get_task_mask(self):
-        data_samples = []
         gt_label = {}
-        gt_label['task1'] = 1
-        data_sample = MultiTaskDataSample(['task1']).to_cls_data_samples().set_gt_label(gt_label)
-        data_samples.append(data_sample)
-        self.assertTrue(data_samples.get_task_mask('task1'),True)
-        self.assertFalse(data_samples.get_task_mask('task2'),False)
+        gt_label['task0'] = 1
+        data_sample = MultiTaskDataSample().set_gt_label(gt_label)
+        self.assertTrue(data_samples.get_task_mask('task0'),True)
+        self.assertTrue(data_samples.get_task_mask('task1'),False)
+
+    def test_to_target_data_sample(self):
+        gt_label = {}
+        gt_label['task0'] = 1
+        data_sample = MultiTaskDataSample().set_gt_label(gt_label)
+        target_data_sample = data_sample.to_target_data_sample('ClsDataSample', 'task0')
+        self.assertIsInstance(target_data_sample, ClsDataSample)
+        with self.assertRaises(Exception):
+            data_sample.to_target_data_sample('ClsDataSample', 'task1')
+
+        gt_label['task0'] = 'sd'
+        data_sample = MultiTaskDataSample().set_gt_label(gt_label)
+        with self.assertRaises(Exception):
+            data_sample.to_target_data_sample('ClsDataSample', 'task0')
+
+
+        gt_label['task0'] = 12
+        data_sample = MultiTaskDataSample(metainfo={ 'task0': {'num_classes':10}}).set_gt_label(gt_label)
+        with self.assertRaises(Exception):
+            data_sample.to_target_data_sample('ClsDataSample', 'task0')
+
+
+        with self.assertRaises(Exception):
+            data_sample.to_target_data_sample('MultiTaskDataSample', 'task0')
+
+        gt_label = {
+            'task0':{
+                'task00':0,
+                'task01':1
+            }
+        }
+
+        data_sample = MultiTaskDataSample().set_gt_label(gt_label)
+        target_data_sample = data_sample.to_target_data_sample('MultiTaskDataSample', 'task0')
+        self.assertIsInstance(target_data_sample, MultiTaskDataSample)
