@@ -9,7 +9,7 @@ from mmengine.evaluator import BaseMetric
 class MultiTasks(BaseMetric):
     """
 
-	"""
+    """
 
     def __init__(self,
                  task_metrics: Dict,
@@ -22,15 +22,14 @@ class MultiTasks(BaseMetric):
                 self.task_metrics[task_name])
 
     def process(self, data_batch, data_samples: Sequence[dict]):
-        """Process one batch of data samples.
-
-		The processed results should be stored in ``self.results``, which will
-		be used to computed the metrics when all batches have been processed.
-
-		Args:
-			data_batch: A batch of data from the dataloader.
-			data_samples (Sequence[dict]): A batch of outputs from the model.
-		"""
+        """
+        Process one batch of data samples.
+        The processed results should be stored in ``self.results``, which will
+        be used to computed the metrics when all batches have been processed.
+        Args:
+            data_batch: A batch of data from the dataloader.
+            data_samples (Sequence[dict]): A batch of outputs from the model.
+        """
         for task_name in self.task_metrics.keys():
             index = list(self.task_metrics.keys()).index(task_name)
             task_data_samples = []
@@ -48,20 +47,20 @@ class MultiTasks(BaseMetric):
                                                        task_data_samples)
 
     def compute_metrics(self, results: List):
-        """Compute the metrics from processed results.
+        """
+        Compute the metrics from processed results.
+        Args:
+            results (dict): The processed results of each batch.
 
-		Args:
-			results (dict): The processed results of each batch.
-
-		Returns:
-			Dict: The computed metrics. The keys are the names of the metrics,
-			and the values are corresponding results.
-		"""
+        Returns:
+            Dict: The computed metrics. The keys are the names of the metrics,
+            and the values are corresponding results.
+        """
         # NOTICE: don't access `self.results` from the method.
         Output = {}
         print(results)
         for task_name in self.task_metrics.keys():
-            Output[f'{metric}_{task_name}'] = globals()[
+            Output[f'metric_{task_name}'] = globals()[
                 "metric_%s" % task_name].compute_metrics(results)
 
         return Output
@@ -69,11 +68,14 @@ class MultiTasks(BaseMetric):
     def evaluate(self, size):
         metrics = {}
         for task_name in self.task_metrics:
-            result = globals()["metric_%s" % task_name].evaluate(size)
+            results = globals()["metric_%s" % task_name].evaluate(size)
             for key, value in results:
                 name = f'{task_name}_{key}'
                 if name in results:
-                    # Inspired from https://github.com/open-mmlab/mmengine/blob/ed20a9cba52ceb371f7c825131636b9e2747172e/mmengine/evaluator/evaluator.py#L84-L87
+                    """
+                     Inspired from https://github.com/open-mmlab/mmengine/
+                     blob/ed20a9cba52ceb371f7c825131636b9e2747172e/mmengine/evaluator/evaluator.py#L84-L87
+                    """
                     raise ValueError(
                         'There are multiple metric results with the same '
                         f'metric name {name}. Please make sure all metrics '
