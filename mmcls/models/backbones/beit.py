@@ -8,6 +8,7 @@ from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.drop import build_dropout
 from mmcv.cnn.bricks.transformer import FFN, PatchEmbed
 from mmengine.model import BaseModule, ModuleList
+from mmengine.model.weight_init import trunc_normal_
 
 from mmcls.registry import MODELS
 from ..utils import BEiTAttention, resize_pos_embed, to_2tuple
@@ -168,18 +169,27 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
         dropout_layer = dict(type='DropPath', drop_prob=drop_path_rate)
         self.drop_path = build_dropout(
             dropout_layer) if dropout_layer else nn.Identity()
-        self.gamma_1 = nn.Parameter(
-            layer_scale_init_value * torch.ones((embed_dims)),
-            requires_grad=True)
-        self.gamma_2 = nn.Parameter(
-            layer_scale_init_value * torch.ones((embed_dims)),
-            requires_grad=True)
+
+        if layer_scale_init_value > 0:
+            self.gamma_1 = nn.Parameter(
+                layer_scale_init_value * torch.ones((embed_dims)),
+                requires_grad=True)
+            self.gamma_2 = nn.Parameter(
+                layer_scale_init_value * torch.ones((embed_dims)),
+                requires_grad=True)
+        else:
+            self.gamma_1, self.gamma_2 = None, None
 
     def forward(self, x: torch.Tensor,
                 rel_pos_bias: torch.Tensor) -> torch.Tensor:
-        x = x + self.drop_path(
-            self.gamma_1 * self.attn(self.norm1(x), rel_pos_bias=rel_pos_bias))
-        x = x + self.drop_path(self.gamma_2 * self.ffn(self.norm2(x)))
+        if self.gamma_1 is None:
+            x = x + self.drop_path(
+                self.attn(self.norm1(x), rel_pos_bias=rel_pos_bias))
+            x = x + self.drop_path(self.ffn(self.norm2(x)))
+        else:
+            x = x + self.drop_path(self.gamma_1 * self.attn(
+                self.norm1(x), rel_pos_bias=rel_pos_bias))
+            x = x + self.drop_path(self.gamma_2 * self.ffn(self.norm2(x)))
         return x
 
 
@@ -325,6 +335,17 @@ class BEiT(VisionTransformer):
         # freeze stages only when self.frozen_stages > 0
         if self.frozen_stages > 0:
             self._freeze_stages()
+
+    def init_weights(self):
+        super(VisionTransformer, self).init_weights()
+
+        if (isinstance(self.init_cfg, dict)
+                and self.init_cfg['type'] == 'Pretrained'):
+            # Suppress default init if use pretrained model.
+            return
+
+        if self.pos_embed is not None:
+            trunc_normal_(self.pos_embed, std=0.02)
 
     def forward(self, x):
         B = x.shape[0]
