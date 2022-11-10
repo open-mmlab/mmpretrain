@@ -1,8 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Dict, Sequence, List
-from mmcls.registry import METRICS
-from mmengine.registry import METRICS as mmengineMetrics
+from typing import Dict, List, Sequence
+
 from mmengine.evaluator import BaseMetric
+from mmengine.registry import METRICS as mmengineMetrics
+
+from mmcls.registry import METRICS
 
 
 @METRICS.register_module()
