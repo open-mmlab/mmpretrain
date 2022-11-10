@@ -1,63 +1,31 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
-from typing import List, Optional, Tuple
+import pickle
+from ctypes import Union
+from typing import List, Optional, Sequence, Tuple
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from mmengine.fileio import list_from_file
 from mmengine.runner import autocast
+from mmengine.structures import LabelData
 
 from mmcls.registry import MODELS
 from mmcls.structures import ClsDataSample
 from .cls_head import ClsHead
 
 
-class NormLinear(nn.Linear):
-    """An enhanced linear layer, which could normalize the input and the linear
-    weight.
-
-    Args:
-        in_features (int): size of each input sample.
-        out_features (int): size of each output sample.
-        bias (bool): Whether there is bias. If set to ``False``, the
-            layer will not learn an additive bias. Defaults to ``True``.
-        feature_norm (bool): Whether to normalize the input feature.
-            Defaults to ``True``.
-        weight_norm (bool):Whether to normalize the weight.
-            Defaults to ``True``.
-    """
-
-    def __init__(self,
-                 in_features: int,
-                 out_features: int,
-                 bias: bool = False,
-                 feature_norm: bool = True,
-                 weight_norm: bool = True):
-
-        super().__init__(in_features, out_features, bias=bias)
-        self.weight_norm = weight_norm
-        self.feature_norm = feature_norm
-
-    def forward(self, input: torch.Tensor) -> torch.Tensor:
-        if self.feature_norm:
-            input = F.normalize(input)
-        if self.weight_norm:
-            weight = F.normalize(self.weight)
-        else:
-            weight = self.weight
-        return F.linear(input, weight, self.bias)
-
-
-class NormLinearWithKSubCenter(NormLinear):
-    """An enhanced linear layer with k sub-center, which could normalize the
-    input and the linear weight.
+class NormProduct(nn.Linear):
+    """An enhanced linear layer with k clustering centers to calculate product
+    between normalized input and linear weight.
 
     Args:
         in_features (int): size of each input sample.
         out_features (int): size of each output sample
+        k (int): The number of clustering centers. Defaults to 3.
         bias (bool): Whether there is bias. If set to ``False``, the
             layer will not learn an additive bias. Defaults to ``True``.
-        k (int): The number of clustering centers. Defaults to 3.
         feature_norm (bool): Whether to normalize the input feature.
             Defaults to ``True``.
         weight_norm (bool):Whether to normalize the weight.
@@ -67,8 +35,8 @@ class NormLinearWithKSubCenter(NormLinear):
     def __init__(self,
                  in_features: int,
                  out_features: int,
+                 k=1,
                  bias: bool = False,
-                 k=3,
                  feature_norm: bool = True,
                  weight_norm: bool = True):
 
@@ -105,11 +73,15 @@ class ArcFaceClsHead(ClsHead):
             category.
         in_channels (int): Number of channels in the input feature map.
         num_subcenters (int): Number of subcenters. Defaults to 1.
-        s (float): Norm of input feature. Defaults to 30.0.
-        m (float): Margin. Defaults to 0.5.
+        scale (float): Scale factor of output logit. Defaults to 30.0.
+        margin (float): The penalty margin. Could be the fllowing formats:
+
+            - float: The penalty margin.
+            - Sequence: The category-based penalty margins.
+            - str: a '.txt' or '.pkl' file that contains the penalty margins.
+
+            Defaults to 0.5.
         easy_margin (bool): Avoid theta + m >= PI. Defaults to False.
-        ls_eps (float): Label smoothing. Defaults to 0.
-        bias (bool): Whether to use bias in norm layer. Defaults to False.
         loss (dict): Config of classification loss. Defaults to
             ``dict(type='CrossEntropyLoss', loss_weight=1.0)``.
         init_cfg (dict, optional): the config to control the initialization.
@@ -120,39 +92,47 @@ class ArcFaceClsHead(ClsHead):
                  num_classes: int,
                  in_channels: int,
                  num_subcenters: int = 1,
-                 s: float = 30.0,
-                 m: float = 0.50,
+                 scale: float = 30.0,
+                 margin: Union[float, Sequence, str] = 0.50,
                  easy_margin: bool = False,
-                 ls_eps: float = 0.0,
-                 bias: bool = False,
                  loss: dict = dict(type='CrossEntropyLoss', loss_weight=1.0),
                  init_cfg: Optional[dict] = None):
 
         super(ArcFaceClsHead, self).__init__(init_cfg=init_cfg)
         self.loss_module = MODELS.build(loss)
 
+        assert num_subcenters >= 1 and num_classes >= 0
         self.in_channels = in_channels
         self.num_classes = num_classes
-
-        if self.num_classes <= 0:
-            raise ValueError(
-                f'num_classes={num_classes} must be a positive integer')
-
         self.num_subcenters = num_subcenters
-        self.s = s
-        self.m = m
-        self.ls_eps = ls_eps
-
-        assert num_subcenters >= 1
-        if num_subcenters == 1:
-            self.norm_linear = NormLinear(in_channels, num_classes, bias=bias)
-        else:
-            self.norm_linear = NormLinearWithKSubCenter(
-                in_channels, num_classes, k=num_subcenters, bias=bias)
-
+        self.scale = scale
         self.easy_margin = easy_margin
-        self.th = math.cos(math.pi - m)
-        self.mm = math.sin(math.pi - m) * m
+        self.with_adaptive_margin = not isinstance(margin, float)
+
+        self.norm_product = NormProduct(in_channels, num_classes,
+                                        num_subcenters)
+
+        if not self.with_adaptive_margin:
+            self.margin = margin
+            self.threshold = math.cos(math.pi - margin)
+            self.mm = math.sin(math.pi - margin) * margin  # the fixd penalty
+
+        if isinstance(margin, float):
+            margins = [margin] * num_classes
+        elif isinstance(margin, str) and margin.endswith('.txt'):
+            margins = [float(item) for item in list_from_file(margin)]
+        elif isinstance(margin, str) and margin.endswith('.pkl'):
+            with open(margin, 'r') as pkl_file:
+                margins = pickle.load(pkl_file)
+        else:
+            assert isinstance(margin, Sequence), (
+                'the attr `margin` in ``ArcFaceClsHead`` should be float,'
+                ' Sequence, or .txt, .pkl file contain sequence data.')
+
+        assert len(margins) == num_classes, \
+            'The size of margin must be equal with num_classes.'
+        margins = torch.tensor(margins).float()
+        self.register_buffer('margins', margins)
 
     def pre_logits(self, feats: Tuple[torch.Tensor]) -> torch.Tensor:
         """The process before the final classification head.
@@ -169,16 +149,30 @@ class ArcFaceClsHead(ClsHead):
                 feats: Tuple[torch.Tensor],
                 target: Optional[torch.Tensor] = None) -> torch.Tensor:
         """The forward process."""
+
+        assert target.dim() == 1 or (
+            target.dim() == 2 and target.shape[1] == 1), \
+            '``ArcFaceClsHead`` only support index format target.'
+
         with autocast(enabled=False):
             pre_logits = self.pre_logits(feats)
 
-            # cos=(a*b)/(||a||*||b||)
-            cosine = self.norm_linear(pre_logits)
+            # cos(theta_yj) = (x/||x||) * (W/||W||)
+            cosine = self.norm_product(pre_logits)
 
             if target is None:
-                return self.s * cosine
+                return self.scale * cosine
 
-            phi = torch.cos(torch.acos(cosine) + self.m)
+            if self.with_adaptive_margin:
+                margin = self.margins[target].unsqueeze(1)
+                mm = torch.sin(math.pi - margin) * margin
+                threshold = torch.cos(math.pi - margin)
+            else:
+                margin = self.margin
+                mm = self.threshold
+                threshold = self.threshold
+
+            phi = torch.cos(torch.acos(cosine) + margin)
 
             if self.easy_margin:
                 # when cosine>0, choose phi
@@ -187,16 +181,12 @@ class ArcFaceClsHead(ClsHead):
             else:
                 # when cos>th, choose phi
                 # when cos<=th, choose cosine-mm
-                phi = torch.where(cosine > self.th, phi, cosine - self.mm)
+                phi = torch.where(cosine > threshold, phi, cosine - mm)
 
-            one_hot = torch.zeros(cosine.size(), device=pre_logits.device)
-            one_hot.scatter_(1, target.view(-1, 1).long(), 1)
-            if self.ls_eps > 0:
-                one_hot = (
-                    1 - self.ls_eps) * one_hot + self.ls_eps / self.num_classes
+            target = LabelData.label_to_onehot(target, cosine.size())
+            output = (target * phi) + ((1.0 - target) * cosine)
 
-            output = (one_hot * phi) + ((1.0 - one_hot) * cosine)
-        return output * self.s
+        return output * self.scale
 
     def loss(self, feats: Tuple[torch.Tensor],
              data_samples: List[ClsDataSample], **kwargs) -> dict:
@@ -215,11 +205,7 @@ class ArcFaceClsHead(ClsHead):
             dict[str, Tensor]: a dictionary of loss components
         """
 
-        if 'score' in data_samples[0].gt_label:
-            # Batch augmentation may convert labels to one-hot format scores.
-            target = torch.stack([i.gt_label.score for i in data_samples])
-        else:
-            target = torch.cat([i.gt_label.label for i in data_samples])
+        target = torch.cat([i.gt_label.label for i in data_samples])
 
         # The part can be traced by torch.fx
         cls_score = self(feats, target)
