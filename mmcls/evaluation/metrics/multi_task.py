@@ -9,8 +9,7 @@ from mmcls.registry import METRICS
 
 @METRICS.register_module()
 class MultiTasks(BaseMetric):
-    """a
-    """
+    """a."""
 
     def __init__(self,
                  task_metrics: Dict,
@@ -24,6 +23,7 @@ class MultiTasks(BaseMetric):
 
     def process(self, data_batch, data_samples: Sequence[dict]):
         """Process one batch of data samples.
+
         The processed results should be stored in ``self.results``, which will
         be used to computed the metrics when all batches have been processed.
         Args:
@@ -71,9 +71,9 @@ class MultiTasks(BaseMetric):
             for key, value in results:
                 name = f'{task_name}_{key}'
                 if name in results:
-                    """Inspired from https://github.com/open-mmlab/mmengine/
-                     blob/ed20a9cba52ceb371f7c825131636b9e2747172e/mmengine/evaluator/evaluator.py#L84-L87
-                    """
+                    """Inspired from https://github.com/open-mmlab/mmengine/ bl
+                    ob/ed20a9cba52ceb371f7c825131636b9e2747172e/mmengine/evalua
+                    tor/evaluator.py#L84-L87."""
                     raise ValueError(
                         'There are multiple metric results with the same '
                         f'metric name {name}. Please make sure all metrics '

@@ -54,8 +54,7 @@ def _precision_recall_f1_support(pred_positive, gt_positive, average):
 
 @METRICS.register_module()
 class Accuracy_tasks(BaseMetric):
-    """
-    Top-k accuracy evaluation metric.
+    """Top-k accuracy evaluation metric.
 
     Args:
         topk (int | Sequence[int]): If the predictions in ``topk``
