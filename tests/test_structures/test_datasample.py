@@ -169,7 +169,7 @@ class TestMultiTaskDataSample(TestCase):
         self.assertIn(key, data_sample)
         label = getattr(data_sample, key)
         self.assertIsInstance(label, LabelData)
-        self.assertEqual(getattr(label,'task0'),0)
+        self.assertEqual(label.label['task0'],0)
 
         # Test empty Dict without metainfo
         method({})
@@ -177,7 +177,7 @@ class TestMultiTaskDataSample(TestCase):
         label = getattr(data_sample, key)
         self.assertIsInstance(label, LabelData)
         with self.assertRaises(Exception):
-            getattr(label,'task0')
+            label.label['task0']
 
         data_sample2 = MultiTaskDataSample(metainfo={ 'task0': {'num_classes' :10}, 'task1': {'num_classes':3} })
         method2 = getattr(data_sample2, 'set_' + key)
@@ -194,25 +194,29 @@ class TestMultiTaskDataSample(TestCase):
         label = getattr(data_sample2, key)
         self.assertIsInstance(label, LabelData)
         with self.assertRaises(Exception):
-            getattr(label,'task0')
+            label.label['task0']
 
         # Test Dict with metainfo
         with self.assertRaises(Exception):
             method2({'task0': 0,'task3':2})
 
-
     def test_set_gt_label(self):
         self._test_set_label(key='gt_label')
 
-    def test_set_pred_label(self):
-        self._test_set_label(key='pred_label')
+
+    def test_set_pred_score(self):
+        data_sample = MultiTaskDataSample()
+        data_sample.set_pred_score(torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1]))
+        self.assertIn('score', data_sample.pred_label)
+        torch.testing.assert_allclose(data_sample.pred_label.score,
+                                      [0.1, 0.1, 0.6, 0.1, 0.1])
 
     def test_get_task_mask(self):
         gt_label = {}
         gt_label['task0'] = 1
         data_sample = MultiTaskDataSample().set_gt_label(gt_label)
-        self.assertTrue(data_samples.get_task_mask('task0'),True)
-        self.assertTrue(data_samples.get_task_mask('task1'),False)
+        self.assertTrue(data_sample.get_task_mask('task0'),True)
+        self.assertFalse(data_sample.get_task_mask('task1'),True)
 
     def test_to_target_data_sample(self):
         gt_label = {}
@@ -223,7 +227,7 @@ class TestMultiTaskDataSample(TestCase):
         with self.assertRaises(Exception):
             data_sample.to_target_data_sample('ClsDataSample', 'task1')
 
-        gt_label['task0'] = 'sd'
+        gt_label['task0'] = 'hi'
         data_sample = MultiTaskDataSample().set_gt_label(gt_label)
         with self.assertRaises(Exception):
             data_sample.to_target_data_sample('ClsDataSample', 'task0')

@@ -7,16 +7,11 @@ from mmengine.structures import BaseDataElement, LabelData
 from .cls_data_sample import ClsDataSample
 
 
-def format_task_label(value: Dict, tasks: List[str]) -> LabelData:
+def format_task_label(value: Dict ,metainfo : Dict = None) -> LabelData:
     """Convert label of various python types to :obj:`mmengine.LabelData`.
 
-    Supported types are: :class:`numpy.ndarray`, :class:`torch.Tensor`,
-    :class:`Sequence`, :class:`int`.
-
     Args:
-        value (torch.Tensor | numpy.ndarray | Sequence | int): Label value.
-        num_classes (int, optional): The number of classes. If not None, set
-            it to the metainfo. Defaults to None.
+        value : dict of  Label value.
 
     Returns:
         :obj:`mmengine.LabelData`: The foramtted label data.
@@ -26,76 +21,79 @@ def format_task_label(value: Dict, tasks: List[str]) -> LabelData:
 
     task_label = dict()
     for (key, val) in value.items():
-        if key not in tasks:
-            raise Exception(f'invalid task {key}.')
+        if key not in metainfo.keys() and metainfo != {}:
+            raise Exception(f'Type {key} is not in metainfo.')
         task_label[key] = val
-    label = LabelData(**task_label)
+    label = LabelData(label=task_label,metainfo=metainfo)
     return label
 
 
 class MultiTaskDataSample(BaseDataElement):
 
-    def __init__(self, tasks=None):
-        super(MultiTaskDataSample, self).__init__()
-        self.tasks = tasks
-
-    def to_cls_data_samples(self):
-
-        def set_gt_label(self, value: Dict) -> 'MultiTaskDataSample':
-            """Set label of ``gt_label``."""
-            label = format_task_label(value, self.tasks)
-            if 'gt_label' in self:
-                self.gt_label.label = label.label
-            else:
-                self.gt_label = label
-            return self
-
-        def set_pred_label(self, value: Dict) -> 'MultiTaskDataSample':
-            """Set label of ``pred_label``."""
-            if 'pred_label' in self:
-                self.pred_label.score = value
-            else:
-                self.pred_label = LabelData(score=value)
-            return self
-
-        def get_task_mask(self, task_name):
-            return task_name in self.gt_label
-
-        def get_task_sample(self, task_name):
-            label = getattr(self.gt_label, task_name)
-            label_task = ClsDataSample().set_gt_label(label)
-            return label_task
-
-        @property
-        def gt_label(self):
-            return self._gt_label
-
-        @gt_label.setter
-        def gt_label(self, value: LabelData):
-            self.set_field(value, '_gt_label', dtype=LabelData)
-
-        @gt_label.deleter
-        def gt_label(self):
-            del self._gt_label
-
-        @property
-        def pred_label(self):
-            return self._pred_label
-
-        @pred_label.setter
-        def pred_label(self, value: LabelData):
-            self.set_field(value, '_pred_label', dtype=LabelData)
-
-        @pred_label.deleter
-        def pred_label(self):
-            del self._pred_label
-
+    def set_gt_label(self, value: Dict) -> 'MultiTaskDataSample':
+        """Set label of ``gt_label``."""
+        label = format_task_label(value , self.metainfo)
+        if 'gt_label' in self:
+            self.gt_label.label = label.label
+        else:
+            self.gt_label = label
         return self
-        
-    @staticmethod
-    def to_target_samples(self, target_type):
-        return self.data_samples_map[target_type]()
+
+    def set_pred_score(self, value: Dict) -> 'MultiTaskDataSample':
+        """Set label of ``pred_score``."""
+        if 'pred_score' in self:
+            self.pred_label.score = value
+        else:
+            self.pred_label = LabelData(score=value)
+        return self
+
+    def get_task_mask(self, task_name):
+        return task_name in self.gt_label.label
+
+    """
+    def get_task_sample(self, task_name):
+        label = self.gt_label.label[task_name]
+        label_task = ClsDataSample().set_gt_label(label)
+        return label_task
+    """
+    @property
+    def gt_label(self):
+        return self._gt_label
+
+    @gt_label.setter
+    def gt_label(self, value: LabelData):
+        self.set_field(value, '_gt_label', dtype=LabelData)
+
+    @gt_label.deleter
+    def gt_label(self):
+        del self._gt_label
+
+    @property
+    def pred_score(self):
+        return self._pred_label
+
+    @pred_score.setter
+    def pred_score(self, value: LabelData):
+        self.set_field(value, '_pred_label', dtype=LabelData)
+
+    @pred_score.deleter
+    def pred_score(self):
+        del self._pred_label
+
+    def to_cls_data_samples(self,task_name):
+        label = self.gt_label.label[task_name]
+        label_task = ClsDataSample(metainfo=self.metainfo.get(task_name,{})).set_gt_label(value=label)
+        return label_task
+
+    def to_multi_task_data_sample(self,task_name):
+        label = self.gt_label.label[task_name]
+        label_task = MultiTaskDataSample().set_gt_label(value=label)
+        return label_task
+
+    def to_target_data_sample(self, target_type,task_name):
+        return self.data_samples_map[target_type](self,task_name)
 
     data_samples_map = {
-        'ClsDataSamples': to_cls_data_samples,
+        'ClsDataSample': to_cls_data_samples,
+        'MultiTaskDataSample' : to_multi_task_data_sample
     }
