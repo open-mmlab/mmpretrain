@@ -12,7 +12,6 @@ from mmcls.structures import ClsDataSample, MultiTaskDataSample
 class TestClsDataSample(TestCase):
 
     def _test_set_label(self, key):
-
         data_sample = ClsDataSample()
         method = getattr(data_sample, 'set_' + key)
         # Test number
