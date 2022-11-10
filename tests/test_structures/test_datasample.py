@@ -10,7 +10,9 @@ from mmcls.structures import ClsDataSample, MultiTaskDataSample
 
 
 class TestClsDataSample(TestCase):
+
     def _test_set_label(self,key):
+        
         data_sample = ClsDataSample()
         method = getattr(data_sample, 'set_' + key)
         # Test number
@@ -162,37 +164,42 @@ class TestMultiTaskDataSample(TestCase):
 
     def _test_set_label(self,key):
         data_sample = MultiTaskDataSample()
-        data_sample2 = MultiTaskDataSample(metainfo={ 'task0': {'num_classes' :10}, 'task1': {'num_classes':3} })
         method = getattr(data_sample, 'set_' + key)
         # Test Dict without metainfo
         method({'task0': 0,'task1':2})
         self.assertIn(key, data_sample)
         label = getattr(data_sample, key)
         self.assertIsInstance(label, LabelData)
+        self.assertEqual(getattr(label,'task0'),0)
 
         # Test empty Dict without metainfo
         method({})
         self.assertIn(key, data_sample)
         label = getattr(data_sample, key)
         self.assertIsInstance(label, LabelData)
+        with self.assertRaises(Exception):
+            getattr(label,'task0')
+
+        data_sample2 = MultiTaskDataSample(metainfo={ 'task0': {'num_classes' :10}, 'task1': {'num_classes':3} })
+        method2 = getattr(data_sample2, 'set_' + key)
 
         # Test Dict with metainfo
-        method({'task0': 0,'task1':2})
+        method2({'task0': 0,'task1':2})
         self.assertIn(key, data_sample2)
         label = getattr(data_sample2, key)
         self.assertIsInstance(label, LabelData)
 
         # Test empty Dict with metainfo
-        method({})
+        method2({})
         self.assertIn(key, data_sample2)
         label = getattr(data_sample2, key)
         self.assertIsInstance(label, LabelData)
+        with self.assertRaises(Exception):
+            getattr(label,'task0')
 
         # Test Dict with metainfo
-        method({'task0': 0,'task3':2})
-        self.assertIn(key, data_sample2)
         with self.assertRaises(Exception):
-            getattr(data_sample2, key)
+            method2({'task0': 0,'task3':2})
 
 
     def test_set_gt_label(self):
