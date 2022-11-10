@@ -489,7 +489,7 @@ class TestArcFaceClsHead(TestCase):
         with self.assertRaisesRegex(ValueError, 'num_classes=-5 must be'):
             MODELS.build({**self.DEFAULT_ARGS, 'num_classes': -5})
 
-        with self.assertRaisesRegex(AssertionError):
+        with self.assertRaises(AssertionError):
             MODELS.build({**self.DEFAULT_ARGS, 'num_subcenters': 0})
 
     def test_pre_logits(self):
