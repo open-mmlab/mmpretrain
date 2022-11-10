@@ -32,7 +32,10 @@ class MultiTaskHead(BaseHead):
         self.task_heads = ModuleDict()
 
         for task_name, head_cfg in task_heads.items():
-            sub_head = MODELS.build(head_cfg, default_args=common_cfg)
+            if head_cfg['type'] != 'MultiTaskHead':
+                sub_head = MODELS.build(head_cfg, default_args=common_cfg)
+            else:
+                sub_head = MODELS.build(head_cfg, common_cfg)
             self.task_heads[task_name] = sub_head
 
     def forward(self, feats):
