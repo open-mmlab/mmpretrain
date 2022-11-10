@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from typing import Dict, List
+from typing import Dict
 
 from mmengine.structures import BaseDataElement, LabelData
 
