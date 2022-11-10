@@ -43,7 +43,7 @@ class MultiTasks(BaseMetric):
                     data_sample['pred_label']['score'] = data_sample[
                         'pred_label']['score'][index]
                     task_data_samples.append(data_sample)
-            globals()["metric_%s" % task_name].process(data_batch,
+            globals()['metric_%s' % task_name].process(data_batch,
                                                        task_data_samples)
 
     def compute_metrics(self, results: List):
@@ -61,14 +61,14 @@ class MultiTasks(BaseMetric):
         print(results)
         for task_name in self.task_metrics.keys():
             Output[f'metric_{task_name}'] = globals()[
-                "metric_%s" % task_name].compute_metrics(results)
+                'metric_%s' % task_name].compute_metrics(results)
 
         return Output
 
     def evaluate(self, size):
         metrics = {}
         for task_name in self.task_metrics:
-            results = globals()["metric_%s" % task_name].evaluate(size)
+            results = globals()['metric_%s' % task_name].evaluate(size)
             for key, value in results:
                 name = f'{task_name}_{key}'
                 if name in results:
