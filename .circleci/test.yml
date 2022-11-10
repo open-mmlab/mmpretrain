@@ -32,7 +32,7 @@ jobs:
           command: |
             pip install interrogate
             interrogate -v --ignore-init-method --ignore-module --ignore-nested-functions --ignore-magic --ignore-regex "__repr__" --fail-under 60 mmcls
-  build_cpu_with_timm:
+  build_cpu_with_3rdparty:
     parameters:
       # The python version must match available image tags in
       # https://circleci.com/developer/images/image/cimg/python
@@ -69,6 +69,7 @@ jobs:
             pip install -U openmim
             mim install 'mmcv >= 2.0.0rc1'
             pip install timm
+            pip install transformers
             pip install -r requirements.txt
             python -c 'import mmcv; print(mmcv.__version__)'
       - run:
@@ -127,7 +128,7 @@ jobs:
       - run:
           name: Run unittests
           command: |
-            coverage run --branch --source mmcls -m pytest tests/ -k 'not timm'
+            coverage run --branch --source mmcls -m pytest tests/
             coverage xml
             coverage report -m
 
@@ -171,7 +172,7 @@ jobs:
       - run:
           name: Run unittests
           command: |
-            docker exec mmcls python -m pytest tests/ -k 'not timm'
+            docker exec mmcls python -m pytest tests/
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
@@ -204,7 +205,7 @@ workflows:
           python: 3.6.9  # The lowest python 3.6.x version available on CircleCI images
           requires:
             - lint
-      - build_cpu_with_timm:
+      - build_cpu_with_3rdparty:
           name: maximum_version_cpu
           torch: 1.12.1
           torchvision: 0.13.1

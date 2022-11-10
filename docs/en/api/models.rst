@@ -44,6 +44,8 @@ Classifiers
 
     BaseClassifier
     ImageClassifier
+    TimmClassifier
+    HuggingFaceClassifier
 
 .. module:: mmcls.models.backbones
 
