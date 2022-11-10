@@ -7,7 +7,7 @@ from mmengine.structures import BaseDataElement, LabelData
 from .cls_data_sample import ClsDataSample
 
 
-def format_task_label(value: Dict ,metainfo : Dict = None) -> LabelData:
+def format_task_label(value: Dict, metainfo: Dict = None) -> LabelData:
     """Convert label of various python types to :obj:`mmengine.LabelData`.
 
     Args:
@@ -24,7 +24,7 @@ def format_task_label(value: Dict ,metainfo : Dict = None) -> LabelData:
         if key not in metainfo.keys() and metainfo != {}:
             raise Exception(f'Type {key} is not in metainfo.')
         task_label[key] = val
-    label = LabelData(label=task_label,metainfo=metainfo)
+    label = LabelData(label=task_label, metainfo=metainfo)
     return label
 
 
@@ -32,7 +32,7 @@ class MultiTaskDataSample(BaseDataElement):
 
     def set_gt_label(self, value: Dict) -> 'MultiTaskDataSample':
         """Set label of ``gt_label``."""
-        label = format_task_label(value , self.metainfo)
+        label = format_task_label(value, self.metainfo)
         if 'gt_label' in self:
             self.gt_label.label = label.label
         else:
@@ -56,6 +56,7 @@ class MultiTaskDataSample(BaseDataElement):
         label_task = ClsDataSample().set_gt_label(label)
         return label_task
     """
+
     @property
     def gt_label(self):
         return self._gt_label
@@ -80,20 +81,22 @@ class MultiTaskDataSample(BaseDataElement):
     def pred_score(self):
         del self._pred_label
 
-    def to_cls_data_samples(self,task_name):
+    def to_cls_data_samples(self, task_name):
         label = self.gt_label.label[task_name]
-        label_task = ClsDataSample(metainfo=self.metainfo.get(task_name,{})).set_gt_label(value=label)
+        label_task = ClsDataSample(
+            metainfo=self.metainfo.get(task_name, {})).set_gt_label(
+                value=label)
         return label_task
 
-    def to_multi_task_data_sample(self,task_name):
+    def to_multi_task_data_sample(self, task_name):
         label = self.gt_label.label[task_name]
         label_task = MultiTaskDataSample().set_gt_label(value=label)
         return label_task
 
-    def to_target_data_sample(self, target_type,task_name):
-        return self.data_samples_map[target_type](self,task_name)
+    def to_target_data_sample(self, target_type, task_name):
+        return self.data_samples_map[target_type](self, task_name)
 
     data_samples_map = {
         'ClsDataSample': to_cls_data_samples,
-        'MultiTaskDataSample' : to_multi_task_data_sample
+        'MultiTaskDataSample': to_multi_task_data_sample
     }
