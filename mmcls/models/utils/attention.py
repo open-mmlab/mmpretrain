@@ -586,6 +586,7 @@ class BEiTAttention(BaseModule):
                  qk_scale=None,
                  attn_drop_rate=0.,
                  proj_drop_rate=0.,
+                 is_cls_token=True,
                  init_cfg=None,
                  **kwargs):
         super().__init__(init_cfg=init_cfg)
@@ -594,6 +595,7 @@ class BEiTAttention(BaseModule):
         head_embed_dims = embed_dims // num_heads
         self.bias = bias
         self.scale = qk_scale or head_embed_dims**-0.5
+        self.is_cls_token = is_cls_token
 
         qkv_bias = bias
         if bias == 'qv_bias':
@@ -677,6 +679,8 @@ class BEiTAttention(BaseModule):
                     Wh * Ww + 1, Wh * Ww + 1, -1)
             relative_position_bias = relative_position_bias.permute(
                 2, 0, 1).contiguous()  # nH, Wh*Ww, Wh*Ww
+            if not self.is_cls_token:
+                relative_position_bias = relative_position_bias[:, 1:, 1:]
             attn = attn + relative_position_bias.unsqueeze(0)
         attn = attn.softmax(dim=-1)
         attn = self.attn_drop(attn)

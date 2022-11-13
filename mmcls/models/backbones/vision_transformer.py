@@ -406,6 +406,27 @@ class VisionTransformer(BaseBackbone):
                 f'Invalid out_indices {index}'
         self.out_indices = out_indices
 
+        self._build_layers(drop_rate, drop_path_rate, qkv_bias, norm_cfg,
+                           beit_style, layer_scale_init_value, layer_cfgs)
+
+        self.frozen_stages = frozen_stages
+        self.final_norm = final_norm
+        if final_norm:
+            self.norm1_name, norm1 = build_norm_layer(
+                norm_cfg, self.embed_dims, postfix=1)
+            self.add_module(self.norm1_name, norm1)
+
+        self.avg_token = avg_token
+        if avg_token:
+            self.norm2_name, norm2 = build_norm_layer(
+                norm_cfg, self.embed_dims, postfix=2)
+            self.add_module(self.norm2_name, norm2)
+        # freeze stages only when self.frozen_stages > 0
+        if self.frozen_stages > 0:
+            self._freeze_stages()
+
+    def _build_layers(self, drop_rate, drop_path_rate, qkv_bias, norm_cfg,
+                      beit_style, layer_scale_init_value, layer_cfgs):
         # stochastic depth decay rule
         dpr = np.linspace(0, drop_path_rate, self.num_layers)
 
@@ -432,22 +453,6 @@ class VisionTransformer(BaseBackbone):
                 self.layers.append(BEiTTransformerEncoderLayer(**_layer_cfg))
             else:
                 self.layers.append(TransformerEncoderLayer(**_layer_cfg))
-
-        self.frozen_stages = frozen_stages
-        self.final_norm = final_norm
-        if final_norm:
-            self.norm1_name, norm1 = build_norm_layer(
-                norm_cfg, self.embed_dims, postfix=1)
-            self.add_module(self.norm1_name, norm1)
-
-        self.avg_token = avg_token
-        if avg_token:
-            self.norm2_name, norm2 = build_norm_layer(
-                norm_cfg, self.embed_dims, postfix=2)
-            self.add_module(self.norm2_name, norm2)
-        # freeze stages only when self.frozen_stages > 0
-        if self.frozen_stages > 0:
-            self._freeze_stages()
 
     @property
     def norm1(self):
