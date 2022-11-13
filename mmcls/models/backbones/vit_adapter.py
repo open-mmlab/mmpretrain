@@ -751,6 +751,7 @@ class VitAdapter(VisionTransformer):
                  use_extra_extractor=True,
                  out_indices=(0, 1, 2, 3),
                  adapter_settings=None,
+                 with_cp=False,
                  **kwargs):
 
         if isinstance(arch, str):
@@ -803,6 +804,7 @@ class VitAdapter(VisionTransformer):
                 norm_cfg=norm_cfg,
                 with_ffn=with_adapter_ffn,
                 ffn_ratio=adapter_ffn_ratio,
+                with_cp=with_cp,
                 extra_extractor=((True if i == len(self.interaction_indexes) -
                                   1 else False) and use_extra_extractor))
             for i in range(len(self.interaction_indexes))
