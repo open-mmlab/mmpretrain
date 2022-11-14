@@ -100,7 +100,7 @@ class MultiTaskHead(BaseHead):
                 head_loss = head.loss(masked_features, masked_data_samples,
                             **kwargs)
             else:
-                head_loss = {'loss': 0}
+                head_loss = {'loss': torch.tensor(0)}
             for k, v in head_loss.items():
                 losses[f'{task_name}_{k}'] = v
         return losses

@@ -588,8 +588,8 @@ class TestMultiTaskHead(TestCase):
         losses = head.loss(feats, data_samples)
         print(losses)
         self.assertEqual(losses.keys(), {'task0_loss', 'task1_loss'})
-        self.assertEqual(losses['task0_loss'], 0)
-        self.assertEqual(losses['task1_loss'], 0)
+        self.assertEqual(losses['task0_loss'].item(), 0)
+        self.assertEqual(losses['task1_loss'].item(), 0)
 
     def test_nested_multi_task_loss(self):
 
