@@ -340,7 +340,8 @@ class VisionTransformer(BaseBackbone):
 
         if not (isinstance(self.init_cfg, dict)
                 and self.init_cfg['type'] == 'Pretrained'):
-            trunc_normal_(self.pos_embed, std=0.02)
+            if self.pos_embed is not None:
+                trunc_normal_(self.pos_embed, std=0.02)
 
     def _prepare_pos_embed(self, state_dict, prefix, *args, **kwargs):
         name = prefix + 'pos_embed'

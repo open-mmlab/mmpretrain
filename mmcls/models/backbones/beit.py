@@ -8,7 +8,6 @@ from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.drop import build_dropout
 from mmcv.cnn.bricks.transformer import FFN, PatchEmbed
 from mmengine.model import BaseModule, ModuleList
-from mmengine.model.weight_init import trunc_normal_
 
 from mmcls.registry import MODELS
 from ..utils import BEiTAttention, resize_pos_embed, to_2tuple
@@ -264,21 +263,17 @@ class BEiT(VisionTransformer):
         self.output_cls_token = output_cls_token
         self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dims))
 
-        # Set position embedding
         self.interpolate_mode = interpolate_mode
-        self.pos_embed = nn.Parameter(
-            torch.zeros(1, num_patches + self.num_extra_tokens,
-                        self.embed_dims))
-        self._register_load_state_dict_pre_hook(self._prepare_pos_embed)
 
-        self.drop_after_pos = nn.Dropout(p=drop_rate)
-
+        # Set position embedding
         if use_abs_pos_emb:
             self.pos_embed = nn.Parameter(
                 torch.zeros(1, num_patches + self.num_extra_tokens,
                             self.embed_dims))
+            self._register_load_state_dict_pre_hook(self._prepare_pos_embed)
         else:
             self.pos_embed = None
+        self.drop_after_pos = nn.Dropout(p=drop_rate)
 
         if use_shared_rel_pos_bias:
             self.rel_pos_bias = RelativePositionBias(
@@ -332,20 +327,10 @@ class BEiT(VisionTransformer):
             self.norm2_name, norm2 = build_norm_layer(
                 norm_cfg, self.embed_dims, postfix=2)
             self.add_module(self.norm2_name, norm2)
+
         # freeze stages only when self.frozen_stages > 0
         if self.frozen_stages > 0:
             self._freeze_stages()
-
-    def init_weights(self):
-        super(VisionTransformer, self).init_weights()
-
-        if (isinstance(self.init_cfg, dict)
-                and self.init_cfg['type'] == 'Pretrained'):
-            # Suppress default init if use pretrained model.
-            return
-
-        if self.pos_embed is not None:
-            trunc_normal_(self.pos_embed, std=0.02)
 
     def forward(self, x):
         B = x.shape[0]
