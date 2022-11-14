@@ -168,7 +168,7 @@ class TestMultiTaskDataSample(TestCase):
         self.assertIn(key, data_sample)
         label = getattr(data_sample, key)
         self.assertIsInstance(label, LabelData)
-        self.assertEqual(label.label['task0'], 0)
+        self.assertEqual(label['task0'], 0)
 
         # Test empty Dict without metainfo
         method({})
