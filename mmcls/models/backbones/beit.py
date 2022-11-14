@@ -158,8 +158,7 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
                 feedforward_channels=feedforward_channels,
                 num_fcs=num_fcs,
                 ffn_drop=drop_rate,
-                dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate)
-                if drop_path_rate > 0 else None,
+                dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
                 act_cfg=act_cfg))
         self.ffn = FFN(**ffn_cfg)
 
@@ -210,7 +209,6 @@ class BEiT(VisionTransformer):
                  drop_path_rate=0,
                  norm_cfg=dict(type='LN', eps=1e-6),
                  final_norm=False,
-                 with_cls_token=True,
                  avg_token=True,
                  frozen_stages=-1,
                  output_cls_token=False,
@@ -256,10 +254,6 @@ class BEiT(VisionTransformer):
         num_patches = self.patch_resolution[0] * self.patch_resolution[1]
 
         # Set cls token
-        if output_cls_token:
-            assert with_cls_token is True, f'with_cls_token must be True if' \
-                f'set output_cls_token to True, but got {with_cls_token}'
-        self.with_cls_token = with_cls_token
         self.output_cls_token = output_cls_token
         self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dims))
 
@@ -349,10 +343,6 @@ class BEiT(VisionTransformer):
                 num_extra_tokens=self.num_extra_tokens)
         x = self.drop_after_pos(x)
 
-        if not self.with_cls_token:
-            # Remove class token for transformer encoder input
-            x = x[:, 1:]
-
         rel_pos_bias = self.rel_pos_bias() \
             if self.rel_pos_bias is not None else None
 
@@ -365,14 +355,10 @@ class BEiT(VisionTransformer):
 
             if i in self.out_indices:
                 B, _, C = x.shape
-                if self.with_cls_token:
-                    patch_token = x[:, 1:].reshape(B, *patch_resolution, C)
-                    patch_token = patch_token.permute(0, 3, 1, 2)
-                    cls_token = x[:, 0]
-                else:
-                    patch_token = x.reshape(B, *patch_resolution, C)
-                    patch_token = patch_token.permute(0, 3, 1, 2)
-                    cls_token = None
+                patch_token = x[:, 1:].reshape(B, *patch_resolution, C)
+                patch_token = patch_token.permute(0, 3, 1, 2)
+                cls_token = x[:, 0]
+
                 if self.avg_token:
                     patch_token = patch_token.permute(0, 2, 3, 1)
                     patch_token = patch_token.reshape(
