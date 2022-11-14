@@ -200,7 +200,7 @@ class TestMultiTaskDataSample(TestCase):
         label = getattr(data_sample2, key)
         self.assertIsInstance(label, LabelData)
         with self.assertRaises(Exception):
-            label.label['task0']
+            label['task0']
 
         # Test Dict with metainfo
         with self.assertRaises(Exception):
