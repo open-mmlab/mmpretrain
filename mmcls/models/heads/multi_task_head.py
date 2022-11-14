@@ -11,7 +11,7 @@ from .base_head import BaseHead
 
 def mmtask_convertor(func, task_name, data_samples):
     target_type = func.__annotations__['data_samples'].__args__[0].__name__
-    data_samples = data_samples.to_target_samples(target_type, task_name)
+    data_samples = data_samples.to_target_data_sample(target_type, task_name)
 
     return data_samples
 
@@ -71,15 +71,6 @@ class MultiTaskHead(BaseHead):
         """
         losses = dict()
         for task_name, head in self.task_heads.items():
-            """if 'mask'  in gt_label[task_name].keys()  :
-
-            mask = gt_label[task_name]['mask']
-              label = gt_label[task_name]['label']
-            else: # a tensor
-              label = gt_label[task_name]
-              batch_n = label.shape[0]
-              mask = to_tensor([True]*batch_n)
-            """
             mask = []
             masked_data_samples = []
             for data_sample in data_samples:
@@ -139,9 +130,9 @@ class MultiTaskHead(BaseHead):
             data_samples = []
             for data_result in data_results:
                 data_samples.append(
-                    MultiTaskDataSample().set_pred_label(data_result))
+                    MultiTaskDataSample().set_pred_task(data_result))
         else:
             for data_sample, data_result in zip(data_samples, data_results):
-                data_sample.set_pred_label(data_result)
+                data_sample.set_pred_task(data_result)
 
         return data_samples

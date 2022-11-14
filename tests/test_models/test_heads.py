@@ -530,8 +530,7 @@ class TestMultiTaskHead(TestCase):
             gt_label = {}
             for task_name in self.DEFAULT_ARGS['task_heads']:
                 gt_label[task_name] = 1
-            data_sample = MultiTaskDataSample(
-                self.DEFAULT_ARGS['task_heads'].keys()).set_gt_label(gt_label)
+            data_sample = MultiTaskDataSample().set_gt_task(gt_label)
             data_samples.append(data_sample)
         # with cal_acc = False
         head = MODELS.build(self.DEFAULT_ARGS)
@@ -550,8 +549,7 @@ class TestMultiTaskHead(TestCase):
             gt_label = {}
             for task_name in self.DEFAULT_ARGS['task_heads']:
                 gt_label[task_name] = 1
-            data_sample = MultiTaskDataSample(
-                self.DEFAULT_ARGS['task_heads'].keys()).set_gt_label(gt_label)
+            data_sample = MultiTaskDataSample().set_gt_task(gt_label)
             data_samples.append(data_sample)
         head = MODELS.build(self.DEFAULT_ARGS)
         # with without data_samples
@@ -580,8 +578,7 @@ class TestMultiTaskHead(TestCase):
         data_samples = []
 
         for _ in range(4):
-            data_sample = MultiTaskDataSample(['task0',
-                                               'task1']).set_gt_label({})
+            data_sample = MultiTaskDataSample().set_gt_task({})
             data_samples.append(data_sample)
         # with cal_acc = False
         head = MODELS.build(self.DEFAULT_ARGS)
@@ -605,8 +602,7 @@ class TestMultiTaskHead(TestCase):
         feats = (torch.rand(4, 10), )
         gt_label = {'task0': 1, 'task1': 1}
         head = MODELS.build(self.DEFAULT_ARGS2)
-        data_sample = MultiTaskDataSample(
-            self.DEFAULT_ARGS['task_heads'].keys()).set_gt_label(gt_label)
+        data_sample = MultiTaskDataSample().set_gt_task(gt_label)
         with self.assertRaises(Exception):
             head.loss(feats, data_sample)
 
@@ -614,7 +610,6 @@ class TestMultiTaskHead(TestCase):
         feats = (torch.rand(4, 10), )
         gt_label = {'task0': {'task00': 1, 'task01': 1}, 'task1': 1}
         head = MODELS.build(self.DEFAULT_ARGS)
-        data_sample = MultiTaskDataSample(
-            self.DEFAULT_ARGS['task_heads'].keys()).set_gt_label(gt_label)
+        data_sample = MultiTaskDataSample().set_gt_task(gt_label)
         with self.assertRaises(Exception):
             head.loss(feats, data_sample)
