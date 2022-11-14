@@ -5,7 +5,7 @@ import numpy as np
 import torch
 from mmengine.structures import LabelData
 
-from mmcls.structures import ClsDataSample
+from mmcls.structures import ClsDataSample, MultiTaskDataSample
 
 
 class TestClsDataSample(TestCase):
@@ -156,3 +156,116 @@ class TestClsDataSample(TestCase):
         data_sample = ClsDataSample()
         data_sample.set_pred_score(torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1]))
         self.assertEqual(data_sample.pred_label.num_classes, 5)
+
+
+class TestMultiTaskDataSample(TestCase):
+
+    def _test_set_label(self, key):
+        data_sample = MultiTaskDataSample()
+        method = getattr(data_sample, 'set_' + key)
+        # Test Dict without metainfo
+        method({'task0': 0, 'task1': 2})
+        self.assertIn(key, data_sample)
+        label = getattr(data_sample, key)
+        self.assertIsInstance(label, LabelData)
+        self.assertEqual(getattr(label, 'task0'), 0)
+
+        # Test empty Dict without metainfo
+        method({})
+        self.assertIn(key, data_sample)
+        label = getattr(data_sample, key)
+        self.assertIsInstance(label, LabelData)
+        with self.assertRaises(Exception):
+            getattr(label, 'task0')
+
+        data_sample2 = MultiTaskDataSample(metainfo={
+            'task0': {
+                'num_classes': 10
+            },
+            'task1': {
+                'num_classes': 3
+            }
+        })
+        method2 = getattr(data_sample2, 'set_' + key)
+
+        # Test Dict with metainfo
+        method2({'task0': 0, 'task1': 2})
+        self.assertIn(key, data_sample2)
+        label = getattr(data_sample2, key)
+        self.assertIsInstance(label, LabelData)
+
+        # Test empty Dict with metainfo
+        method2({})
+        self.assertIn(key, data_sample2)
+        label = getattr(data_sample2, key)
+        self.assertIsInstance(label, LabelData)
+        with self.assertRaises(Exception):
+            getattr(label, 'task0')
+
+        # Test Dict with metainfo
+        with self.assertRaises(Exception):
+            method2({'task0': 0, 'task3': 2})
+
+    def test_set_gt_label(self):
+        self._test_set_label(key='gt_task')
+
+    def test_set_pred_task(self):
+        data_sample = MultiTaskDataSample()
+        data_sample.set_pred_task(
+            {'task0': torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1])})
+        self.assertIn('task0', data_sample.pred_task)
+        torch.testing.assert_allclose(
+            getattr(data_sample.pred_task, 'task0'), [0.1, 0.1, 0.6, 0.1, 0.1])
+
+    def test_get_task_mask(self):
+        gt_label = {}
+        gt_label['task0'] = 1
+        data_sample = MultiTaskDataSample().set_gt_task(gt_label)
+        self.assertTrue(data_sample.get_task_mask('task0'), True)
+        self.assertFalse(data_sample.get_task_mask('task1'), True)
+
+    def test_to_target_data_sample(self):
+        gt_label = {}
+        gt_label['task0'] = 1
+        data_sample = MultiTaskDataSample().set_gt_task(gt_label)
+        data_sample.set_pred_task(
+            {'task0': torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1])})
+        target_data_sample = data_sample.to_target_data_sample(
+            'ClsDataSample', 'task0')
+        self.assertIsInstance(target_data_sample, ClsDataSample)
+        with self.assertRaises(Exception):
+            data_sample.to_target_data_sample('ClsDataSample', 'task1')
+
+        gt_label['task0'] = 'hi'
+        data_sample = MultiTaskDataSample().set_gt_task(gt_label)
+        data_sample.set_pred_task(
+            {'task0': torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1])})
+        with self.assertRaises(Exception):
+            data_sample.to_target_data_sample('ClsDataSample', 'task0')
+
+        gt_label['task0'] = 12
+        data_sample = MultiTaskDataSample(metainfo={
+            'task0': {
+                'num_classes': 10
+            }
+        }).set_gt_task(gt_label)
+        data_sample.set_pred_task(
+            {'task0': torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1])})
+        with self.assertRaises(Exception):
+            data_sample.to_target_data_sample('ClsDataSample', 'task0')
+
+        with self.assertRaises(Exception):
+            data_sample.to_target_data_sample('MultiTaskDataSample', 'task0')
+
+        gt_label = {'task0': {'task00': 0, 'task01': 1}}
+        pred_task = {
+            'task0': {
+                'task00': torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1]),
+                'task01': torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1])
+            }
+        }
+        data_sample = MultiTaskDataSample().set_gt_task(gt_label)
+        data_sample.set_pred_task(pred_task)
+        target_data_sample = data_sample.to_target_data_sample(
+            'MultiTaskDataSample', 'task0')
+        self.assertIsInstance(target_data_sample, MultiTaskDataSample)
