@@ -537,6 +537,7 @@ class TestMultiTaskHead(TestCase):
         head = MODELS.build(self.DEFAULT_ARGS)
 
         losses = head.loss(feats, data_samples)
+        print(losses)
         self.assertEqual(losses.keys(), {'task0_loss', 'task1_loss'})
         self.assertGreater(losses['task0_loss'].item(), 0)
         self.assertGreater(losses['task1_loss'].item(), 0)
@@ -585,9 +586,10 @@ class TestMultiTaskHead(TestCase):
         # with cal_acc = False
         head = MODELS.build(self.DEFAULT_ARGS)
         losses = head.loss(feats, data_samples)
+        print(losses)
         self.assertEqual(losses.keys(), {'task0_loss', 'task1_loss'})
-        self.assertEqual(losses['task0_loss'].item(), 0)
-        self.assertEqual(losses['task1_loss'].item(), 0)
+        self.assertEqual(losses['task0_loss'], 0)
+        self.assertEqual(losses['task1_loss'], 0)
 
     def test_nested_multi_task_loss(self):
 

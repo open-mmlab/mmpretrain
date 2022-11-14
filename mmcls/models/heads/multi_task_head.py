@@ -96,9 +96,11 @@ class MultiTaskHead(BaseHead):
                     masked_features = masked_features + (feature[mask], )
             else:
                 masked_features = feats[mask]
-            head_loss = head.loss(masked_features, masked_data_samples,
-                                  **kwargs)
-
+            if len(masked_data_samples) > 0:
+                head_loss = head.loss(masked_features, masked_data_samples,
+                            **kwargs)
+            else:
+                head_loss = {'loss': 0}
             for k, v in head_loss.items():
                 losses[f'{task_name}_{k}'] = v
         return losses
