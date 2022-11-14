@@ -212,7 +212,7 @@ class TestMultiTaskDataSample(TestCase):
     def test_set_pred_task(self):
         data_sample = MultiTaskDataSample()
         data_sample.set_pred_task(
-            {"task0": torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1])})
+            {'task0': torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1])})
         self.assertIn('task0', data_sample.pred_task)
         torch.testing.assert_allclose(
             getattr(data_sample.pred_task, 'task0'), [0.1, 0.1, 0.6, 0.1, 0.1])
@@ -239,7 +239,7 @@ class TestMultiTaskDataSample(TestCase):
         gt_label['task0'] = 'hi'
         data_sample = MultiTaskDataSample().set_gt_task(gt_label)
         data_sample.set_pred_task(
-            {"task0": torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1])})
+            {'task0': torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1])})
         with self.assertRaises(Exception):
             data_sample.to_target_data_sample('ClsDataSample', 'task0')
 
@@ -250,7 +250,7 @@ class TestMultiTaskDataSample(TestCase):
             }
         }).set_gt_task(gt_label)
         data_sample.set_pred_task(
-            {"task0": torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1])})
+            {'task0': torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1])})
         with self.assertRaises(Exception):
             data_sample.to_target_data_sample('ClsDataSample', 'task0')
 
