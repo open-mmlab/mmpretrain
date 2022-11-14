@@ -23,6 +23,7 @@ class MultiTasks(BaseMetric):
 
     def process(self, data_batch, data_samples: Sequence[dict]):
         """Process one batch of data samples.
+
         The processed results should be stored in ``self.results``, which will
         be used to computed the metrics when all batches have been processed.
         Args:
@@ -47,6 +48,7 @@ class MultiTasks(BaseMetric):
 
     def compute_metrics(self, results: List):
         """Compute the metrics from processed results.
+
         Args:
             results (dict): The processed results of each batch.
         Returns:
