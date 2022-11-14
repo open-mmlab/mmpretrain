@@ -168,7 +168,7 @@ class TestMultiTaskDataSample(TestCase):
         self.assertIn(key, data_sample)
         label = getattr(data_sample, key)
         self.assertIsInstance(label, LabelData)
-        self.assertEqual(label['task0'], 0)
+        self.assertEqual(getattr(label, 'task0'), 0)
 
         # Test empty Dict without metainfo
         method({})
@@ -176,7 +176,7 @@ class TestMultiTaskDataSample(TestCase):
         label = getattr(data_sample, key)
         self.assertIsInstance(label, LabelData)
         with self.assertRaises(Exception):
-            label['task0']
+            getattr(label, 'task0')
 
         data_sample2 = MultiTaskDataSample(metainfo={
             'task0': {
@@ -200,7 +200,7 @@ class TestMultiTaskDataSample(TestCase):
         label = getattr(data_sample2, key)
         self.assertIsInstance(label, LabelData)
         with self.assertRaises(Exception):
-            label['task0']
+            getattr(label, 'task0')
 
         # Test Dict with metainfo
         with self.assertRaises(Exception):

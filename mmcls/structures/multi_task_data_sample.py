@@ -24,7 +24,7 @@ def format_task_label(value: Dict, metainfo: Dict = None) -> LabelData:
         if key not in metainfo.keys() and metainfo != {}:
             raise Exception(f'Type {key} is not in metainfo.')
         task_label[key] = val
-    label = LabelData(label=task_label, metainfo=metainfo)
+    label = LabelData(**task_label)
     return label
 
 
@@ -83,14 +83,14 @@ class MultiTaskDataSample(BaseDataElement):
         del self._pred_task
     """
     def to_cls_data_samples(self, task_name):
-        label = self.gt_task[task_name]
+        label = getattr(self.gt_task, task_name)
         label_task = ClsDataSample(
             metainfo=self.metainfo.get(task_name, {})).set_gt_label(
                 value=label)
         return label_task
 
     def to_multi_task_data_sample(self, task_name):
-        label = self.gt_task[task_name]
+        label = getattr(self.gt_task, task_name)
         label_task = MultiTaskDataSample().set_gt_task(value=label)
         return label_task
 
