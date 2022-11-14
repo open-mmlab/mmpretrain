@@ -171,6 +171,7 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
             bias=bias)
         self.attn = BEiTAttention(**attn_cfg)
 
+<<<<<<< HEAD
         ffn_cfg = dict(
             embed_dims=embed_dims,
             feedforward_channels=feedforward_channels,
@@ -178,6 +179,17 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
             ffn_drop=drop_rate,
             dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
             act_cfg=act_cfg)
+=======
+        # overwrite the default ffn layer in TransformerEncoderLayer
+        ffn_cfg.update(
+            dict(
+                embed_dims=embed_dims,
+                feedforward_channels=feedforward_channels,
+                num_fcs=num_fcs,
+                ffn_drop=drop_rate,
+                dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
+                act_cfg=act_cfg))
+>>>>>>> add ut
         self.ffn = FFN(**ffn_cfg)
 
         # NOTE: drop path for stochastic depth, we shall see if
@@ -283,7 +295,6 @@ class BEiT(VisionTransformer):
                  drop_path_rate=0,
                  norm_cfg=dict(type='LN', eps=1e-6),
                  final_norm=False,
-                 with_cls_token=True,
                  avg_token=True,
                  frozen_stages=-1,
                  output_cls_token=False,
@@ -329,10 +340,6 @@ class BEiT(VisionTransformer):
         num_patches = self.patch_resolution[0] * self.patch_resolution[1]
 
         # Set cls token
-        if output_cls_token:
-            assert with_cls_token is True, f'with_cls_token must be True if' \
-                f'set output_cls_token to True, but got {with_cls_token}'
-        self.with_cls_token = with_cls_token
         self.output_cls_token = output_cls_token
         self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dims))
 
@@ -433,10 +440,13 @@ class BEiT(VisionTransformer):
         rel_pos_bias = self.rel_pos_bias() \
             if self.rel_pos_bias is not None else None
 
+<<<<<<< HEAD
         if not self.with_cls_token:
             # Remove class token for transformer encoder input
             x = x[:, 1:]
 
+=======
+>>>>>>> add ut
         outs = []
         for i, layer in enumerate(self.layers):
             x = layer(x, rel_pos_bias)
@@ -446,6 +456,7 @@ class BEiT(VisionTransformer):
 
             if i in self.out_indices:
                 B, _, C = x.shape
+<<<<<<< HEAD
                 if self.with_cls_token:
                     patch_token = x[:, 1:].reshape(B, *patch_resolution, C)
                     patch_token = patch_token.permute(0, 3, 1, 2)
@@ -454,6 +465,11 @@ class BEiT(VisionTransformer):
                     patch_token = x.reshape(B, *patch_resolution, C)
                     patch_token = patch_token.permute(0, 3, 1, 2)
                     cls_token = None
+=======
+                patch_token = x[:, 1:].reshape(B, *patch_resolution, C)
+                patch_token = patch_token.permute(0, 3, 1, 2)
+                cls_token = x[:, 0]
+>>>>>>> add ut
 
                 if self.avg_token:
                     patch_token = patch_token.permute(0, 2, 3, 1)
