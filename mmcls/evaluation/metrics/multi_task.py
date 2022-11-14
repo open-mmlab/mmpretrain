@@ -44,7 +44,7 @@ class MultiTasks(BaseMetric):
                     data_sample['pred_label']['score'] = data_sample[
                         'pred_label']['score'][index]
                     task_data_samples.append(data_sample)
-            globals()["metric_%s" % task_name].process(data_batch,
+            globals()['metric_%s' % task_name].process(data_batch,
                                                        task_data_samples)
 
     def compute_metrics(self, results: List):
@@ -61,19 +61,21 @@ class MultiTasks(BaseMetric):
         Output = {}
         print(results)
         for task_name in self.task_metrics.keys():
-            Output[f'{metric}_{task_name}'] = globals()[
-                "metric_%s" % task_name].compute_metrics(results)
+            Output[f'metric_{task_name}'] = globals()[
+                'metric_%s' % task_name].compute_metrics(results)
 
         return Output
 
     def evaluate(self, size):
         metrics = {}
         for task_name in self.task_metrics:
-            result = globals()["metric_%s" % task_name].evaluate(size)
+            results = globals()['metric_%s' % task_name].evaluate(size)
             for key, value in results:
                 name = f'{task_name}_{key}'
                 if name in results:
-                    # Inspired from https://github.com/open-mmlab/mmengine/blob/ed20a9cba52ceb371f7c825131636b9e2747172e/mmengine/evaluator/evaluator.py#L84-L87
+                    """Inspired from https://github.com/open-mmlab/mmengine/ bl
+                    ob/ed20a9cba52ceb371f7c825131636b9e2747172e/mmengine/evalua
+                    tor/evaluator.py#L84-L87."""
                     raise ValueError(
                         'There are multiple metric results with the same '
                         f'metric name {name}. Please make sure all metrics '
