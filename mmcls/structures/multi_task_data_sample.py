@@ -90,7 +90,7 @@ class MultiTaskDataSample(BaseDataElement):
         return label_task
 
     def to_multi_task_data_sample(self, task_name):
-        label = self.gt_task.label[task_name]
+        label = self.gt_task[task_name]
         label_task = MultiTaskDataSample().set_gt_task(value=label)
         return label_task
 
