@@ -34,7 +34,7 @@ class MultiTaskDataSample(BaseDataElement):
         """Set label of ``gt_task``."""
         label = format_task_label(value, self.metainfo)
         if 'gt_task' in self:
-            self.gt_task.label = label.label
+            self.gt_task = label
         else:
             self.gt_task = label
         return self
