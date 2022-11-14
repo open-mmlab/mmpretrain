@@ -178,6 +178,8 @@ class ConvNeXt(BaseBackbone):
         gap_before_final_norm (bool): Whether to globally average the feature
             map before the final norm layer. In the official repo, it's only
             used in classification task. Defaults to True.
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+            memory while slowing down the training speed. Defaults to False.
         init_cfg (dict, optional): Initialization config dict
     """  # noqa: E501
     arch_settings = {
