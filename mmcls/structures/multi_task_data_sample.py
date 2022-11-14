@@ -42,7 +42,7 @@ class MultiTaskDataSample(BaseDataElement):
     """
     def set_pred_task(self, value: Dict) -> 'MultiTaskDataSample':
         if 'pred_task' in self:
-            self.pred_task.score = value
+            self.pred_task = value
         else:
             self.pred_task = LabelData(score=value)
         return self
