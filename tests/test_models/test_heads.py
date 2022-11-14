@@ -536,7 +536,6 @@ class TestMultiTaskHead(TestCase):
         head = MODELS.build(self.DEFAULT_ARGS)
 
         losses = head.loss(feats, data_samples)
-        print(losses)
         self.assertEqual(losses.keys(), {'task0_loss', 'task1_loss'})
         self.assertGreater(losses['task0_loss'].item(), 0)
         self.assertGreater(losses['task1_loss'].item(), 0)
@@ -556,14 +555,14 @@ class TestMultiTaskHead(TestCase):
         predictions = head.predict(feats)
         self.assertTrue(is_seq_of(predictions, MultiTaskDataSample))
         for pred in predictions:
-            self.assertIn('score', pred.pred_label)
+            self.assertIn('task0', pred.pred_task)
 
         # with with data_samples
         predictions = head.predict(feats, data_samples)
         self.assertTrue(is_seq_of(predictions, MultiTaskDataSample))
         for sample, pred in zip(data_samples, predictions):
             self.assertIs(sample, pred)
-            self.assertIn('score', pred.pred_label)
+            self.assertIn('task0', pred.pred_task)
 
     def test_loss_invalid_data_sample_task_name(self):
         for _ in range(4):
@@ -583,7 +582,6 @@ class TestMultiTaskHead(TestCase):
         # with cal_acc = False
         head = MODELS.build(self.DEFAULT_ARGS)
         losses = head.loss(feats, data_samples)
-        print(losses)
         self.assertEqual(losses.keys(), {'task0_loss', 'task1_loss'})
         self.assertEqual(losses['task0_loss'].item(), 0)
         self.assertEqual(losses['task1_loss'].item(), 0)
@@ -594,8 +592,7 @@ class TestMultiTaskHead(TestCase):
         # return the last item (same as pre_logits)
         feats = (torch.rand(4, 10), )
         outs = head(feats)
-        self.assertEqual(outs[1].shape, (4, 6))
-        self.assertTrue(isinstance(outs[0], tuple))
+        self.assertEqual(outs[0][1].shape, (4, 6))
         self.assertTrue(isinstance(outs, tuple))
 
     def test_nested_invalid_sample(self):

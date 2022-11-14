@@ -78,7 +78,6 @@ class MultiTaskHead(BaseHead):
                 if sample_mask:
                     sample = mmtask_convertor(head.loss, task_name,
                                               data_sample)
-                    sample = data_sample.get_task_sample(task_name)
                     masked_data_samples.append(sample)
                 mask.append(sample_mask)
             masked_features = tuple()
@@ -89,7 +88,7 @@ class MultiTaskHead(BaseHead):
                 masked_features = feats[mask]
             if len(masked_data_samples) > 0:
                 head_loss = head.loss(masked_features, masked_data_samples,
-                            **kwargs)
+                                      **kwargs)
             else:
                 head_loss = {'loss': torch.tensor(0)}
             for k, v in head_loss.items():
@@ -125,14 +124,16 @@ class MultiTaskHead(BaseHead):
 
     def _get_predictions(self, task_results, data_samples):
         """Post-process the output of MultiTaskHead."""
-        data_results = list(zip(*task_results))
+        preds_dict = dict(zip(self.task_heads.keys(), list(task_results)))
         if data_samples is None:
             data_samples = []
-            for data_result in data_results:
-                data_samples.append(
-                    MultiTaskDataSample().set_pred_task(data_result))
+            data_samples.append(
+                MultiTaskDataSample().set_pred_task(preds_dict))
         else:
-            for data_sample, data_result in zip(data_samples, data_results):
-                data_sample.set_pred_task(data_result)
+            pred_dicts = [
+                dict(zip(preds_dict, t)) for t in zip(*preds_dict.values())
+            ]
+            for data_sample, pred_dict in zip(data_samples, pred_dicts):
+                data_sample.set_pred_task(pred_dict)
 
         return data_samples
