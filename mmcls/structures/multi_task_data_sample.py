@@ -44,7 +44,7 @@ class MultiTaskDataSample(BaseDataElement):
         if 'pred_task' in self:
             self.pred_task = value
         else:
-            self.pred_task = LabelData(score=value)
+            self.pred_task = LabelData(**value)
         return self
     """
     def get_task_mask(self, task_name):
