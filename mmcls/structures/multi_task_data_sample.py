@@ -48,7 +48,7 @@ class MultiTaskDataSample(BaseDataElement):
         return self
     """
     def get_task_mask(self, task_name):
-        return task_name in self.gt_task.label
+        return task_name in self.gt_task
 
     """
     def get_task_sample(self, task_name):
