@@ -211,11 +211,11 @@ class TestMultiTaskDataSample(TestCase):
 
     def test_set_pred_task(self):
         data_sample = MultiTaskDataSample()
-        data_sample.set_pred_task({
-            "task0": torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1])})
+        data_sample.set_pred_task(
+            {"task0": torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1])})
         self.assertIn('task0', data_sample.pred_task)
-        torch.testing.assert_allclose(getattr(data_sample.pred_task, 'task0'),
-                                      [0.1, 0.1, 0.6, 0.1, 0.1])
+        torch.testing.assert_allclose(
+            getattr(data_sample.pred_task, 'task0'), [0.1, 0.1, 0.6, 0.1, 0.1])
 
     def test_get_task_mask(self):
         gt_label = {}
@@ -228,8 +228,8 @@ class TestMultiTaskDataSample(TestCase):
         gt_label = {}
         gt_label['task0'] = 1
         data_sample = MultiTaskDataSample().set_gt_task(gt_label)
-        data_sample.set_pred_task({
-            "task0": torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1])})
+        data_sample.set_pred_task(
+            {'task0': torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1])})
         target_data_sample = data_sample.to_target_data_sample(
             'ClsDataSample', 'task0')
         self.assertIsInstance(target_data_sample, ClsDataSample)
@@ -238,8 +238,8 @@ class TestMultiTaskDataSample(TestCase):
 
         gt_label['task0'] = 'hi'
         data_sample = MultiTaskDataSample().set_gt_task(gt_label)
-        data_sample.set_pred_task({
-            "task0": torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1])})
+        data_sample.set_pred_task(
+            {"task0": torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1])})
         with self.assertRaises(Exception):
             data_sample.to_target_data_sample('ClsDataSample', 'task0')
 
@@ -249,8 +249,8 @@ class TestMultiTaskDataSample(TestCase):
                 'num_classes': 10
             }
         }).set_gt_task(gt_label)
-        data_sample.set_pred_task({
-            "task0": torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1])})
+        data_sample.set_pred_task(
+            {"task0": torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1])})
         with self.assertRaises(Exception):
             data_sample.to_target_data_sample('ClsDataSample', 'task0')
 
@@ -258,9 +258,10 @@ class TestMultiTaskDataSample(TestCase):
             data_sample.to_target_data_sample('MultiTaskDataSample', 'task0')
 
         gt_label = {'task0': {'task00': 0, 'task01': 1}}
-        pred_task = {'task0': {
-            "task00": torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1]),
-            "task01": torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1])
+        pred_task = {
+            'task0': {
+                'task00': torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1]),
+                'task01': torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1])
             }
         }
         data_sample = MultiTaskDataSample().set_gt_task(gt_label)

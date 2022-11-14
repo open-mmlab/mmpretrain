@@ -37,6 +37,7 @@ class MultiTaskDataSample(BaseDataElement):
         return self
 
     def set_pred_task(self, value: Dict) -> 'MultiTaskDataSample':
+        """Set score of ``pred_task``."""
         self.pred_task = LabelData(**value)
         return self
 
