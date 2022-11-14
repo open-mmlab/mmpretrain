@@ -69,8 +69,7 @@ class MultiTaskDataSample(BaseDataElement):
         del self._pred_task
 
     def to_cls_data_sample(self, task_name):
-        task_sample = ClsDataSample(
-            metainfo=self.metainfo.get(task_name, {}))
+        task_sample = ClsDataSample(metainfo=self.metainfo.get(task_name, {}))
         if hasattr(self, '_gt_task'):
             gt_task = getattr(self.gt_task, task_name)
             task_sample.set_gt_label(value=gt_task)
