@@ -242,9 +242,8 @@ class TestMultiTaskDataSample(TestCase):
         target_data_sample = data_sample.to_target_data_sample(
             'ClsDataSample', 'task0')
         self.assertIsInstance(target_data_sample, ClsDataSample)
-
         # set just pred_task
-        data_sample = MultiTaskDataSample().set_gt_task(gt_label)
+        data_sample = MultiTaskDataSample()
         data_sample.set_pred_task(
             {'task0': torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1])})
         target_data_sample = data_sample.to_target_data_sample(

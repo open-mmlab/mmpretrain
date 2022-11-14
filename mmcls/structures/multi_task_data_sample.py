@@ -76,16 +76,18 @@ class MultiTaskDataSample(BaseDataElement):
             task_sample.set_gt_label(value=gt_task)
         if hasattr(self, '_pred_task'):
             pred_task = getattr(self.pred_task, task_name)
-            task_sample.set_pred_label(value=pred_task)
+            task_sample.set_pred_score(value=pred_task)
         return task_sample
 
     def to_multi_task_data_sample(self, task_name):
-        gt_task = getattr(self.gt_task, task_name)
-        pred_task = getattr(self.pred_task, task_name)
         task_sample = MultiTaskDataSample(
-            metainfo=self.metainfo.get(task_name, {})).set_gt_task(
-                value=gt_task)
-        task_sample.set_pred_task(value=pred_task)
+            metainfo=self.metainfo.get(task_name, {}))
+        if hasattr(self, '_gt_task'):
+            gt_task = getattr(self.gt_task, task_name)
+            task_sample.set_gt_task(value=gt_task)
+        if hasattr(self, '_pred_task'):
+            pred_task = getattr(self.pred_task, task_name)
+            task_sample.set_pred_task(value=pred_task)
         return task_sample
 
     def to_target_data_sample(self, target_type, task_name):
