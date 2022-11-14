@@ -227,6 +227,7 @@ class TestMultiTaskDataSample(TestCase):
     def test_to_target_data_sample(self):
         gt_label = {}
         gt_label['task0'] = 1
+        # set gt_task and pred_task
         data_sample = MultiTaskDataSample().set_gt_task(gt_label)
         data_sample.set_pred_task(
             {'task0': torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1])})
@@ -235,6 +236,26 @@ class TestMultiTaskDataSample(TestCase):
         self.assertIsInstance(target_data_sample, ClsDataSample)
         with self.assertRaises(Exception):
             data_sample.to_target_data_sample('ClsDataSample', 'task1')
+
+        # set just gt_task
+        data_sample = MultiTaskDataSample().set_gt_task(gt_label)
+        target_data_sample = data_sample.to_target_data_sample(
+            'ClsDataSample', 'task0')
+        self.assertIsInstance(target_data_sample, ClsDataSample)
+
+        # set just pred_task
+        data_sample = MultiTaskDataSample().set_gt_task(gt_label)
+        data_sample.set_pred_task(
+            {'task0': torch.tensor([0.1, 0.1, 0.6, 0.1, 0.1])})
+        target_data_sample = data_sample.to_target_data_sample(
+            'ClsDataSample', 'task0')
+        self.assertIsInstance(target_data_sample, ClsDataSample)
+
+        # No set
+        data_sample = MultiTaskDataSample().set_gt_task(gt_label)
+        target_data_sample = data_sample.to_target_data_sample(
+            'ClsDataSample', 'task0')
+        self.assertIsInstance(target_data_sample, ClsDataSample)
 
         gt_label['task0'] = 'hi'
         data_sample = MultiTaskDataSample().set_gt_task(gt_label)
