@@ -9,6 +9,13 @@ from mmcls.structures import MultiTaskDataSample
 from .base_head import BaseHead
 
 
+def mmtask_convertor(func, task_name, data_samples):
+    target_type = func.__annotations__['data_samples'].__args__[0].__name__
+    data_samples = data_samples.to_target_samples(target_type, task_name)
+
+    return data_samples
+
+
 @MODELS.register_module()
 class MultiTaskHead(BaseHead):
     """Multi task head.
@@ -35,7 +42,8 @@ class MultiTaskHead(BaseHead):
             if head_cfg['type'] != 'MultiTaskHead':
                 sub_head = MODELS.build(head_cfg, default_args=common_cfg)
             else:
-                sub_head = MODELS.build(head_cfg, common_cfg)
+                sub_head = MODELS.build(
+                    head_cfg, default_args={'common_cfg': common_cfg})
             self.task_heads[task_name] = sub_head
 
     def forward(self, feats):
@@ -77,6 +85,8 @@ class MultiTaskHead(BaseHead):
             for data_sample in data_samples:
                 sample_mask = data_sample.get_task_mask(task_name)
                 if sample_mask:
+                    sample = mmtask_convertor(head.loss, task_name,
+                                              data_sample)
                     sample = data_sample.get_task_sample(task_name)
                     masked_data_samples.append(sample)
                 mask.append(sample_mask)
