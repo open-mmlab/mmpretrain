@@ -655,10 +655,6 @@ class BEiTAttention(BaseModule):
             self.window_size = None
             self.relative_position_bias_table = None
             self.relative_position_index = None
-        else:
-            self.window_size = None
-            self.relative_position_bias_table = None
-            self.relative_position_index = None
 
     def init_weights(self):
         super().init_weights()

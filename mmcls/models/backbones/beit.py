@@ -137,6 +137,7 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
                  layer_scale_init_value: float,
                  window_size: Tuple[int, int],
                  use_rel_pos_bias: bool,
+                 use_rel_pos_bias: bool,
                  drop_rate: float = 0.,
                  attn_drop_rate: float = 0.,
                  drop_path_rate: float = 0.,
@@ -171,7 +172,6 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
             bias=bias)
         self.attn = BEiTAttention(**attn_cfg)
 
-<<<<<<< HEAD
         ffn_cfg = dict(
             embed_dims=embed_dims,
             feedforward_channels=feedforward_channels,
@@ -179,17 +179,6 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
             ffn_drop=drop_rate,
             dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
             act_cfg=act_cfg)
-=======
-        # overwrite the default ffn layer in TransformerEncoderLayer
-        ffn_cfg.update(
-            dict(
-                embed_dims=embed_dims,
-                feedforward_channels=feedforward_channels,
-                num_fcs=num_fcs,
-                ffn_drop=drop_rate,
-                dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
-                act_cfg=act_cfg))
->>>>>>> add ut
         self.ffn = FFN(**ffn_cfg)
 
         # NOTE: drop path for stochastic depth, we shall see if
@@ -361,12 +350,19 @@ class BEiT(VisionTransformer):
             'to True at the same time')
         self.use_rel_pos_bias = use_rel_pos_bias
 
+        assert not (use_rel_pos_bias and use_shared_rel_pos_bias), (
+            '`use_rel_pos_bias` and `use_shared_rel_pos_bias` cannot be set '
+            'to True at the same time')
+        self.use_rel_pos_bias = use_rel_pos_bias
+
         if use_shared_rel_pos_bias:
             self.rel_pos_bias = RelativePositionBias(
                 window_size=self.patch_resolution,
                 num_heads=self.arch_settings['num_heads'])
         else:
             self.rel_pos_bias = None
+        self._register_load_state_dict_pre_hook(
+            self._prepare_relative_position_bias_table)
         self._register_load_state_dict_pre_hook(
             self._prepare_relative_position_bias_table)
 
@@ -440,13 +436,10 @@ class BEiT(VisionTransformer):
         rel_pos_bias = self.rel_pos_bias() \
             if self.rel_pos_bias is not None else None
 
-<<<<<<< HEAD
         if not self.with_cls_token:
             # Remove class token for transformer encoder input
             x = x[:, 1:]
 
-=======
->>>>>>> add ut
         outs = []
         for i, layer in enumerate(self.layers):
             x = layer(x, rel_pos_bias)
@@ -456,7 +449,6 @@ class BEiT(VisionTransformer):
 
             if i in self.out_indices:
                 B, _, C = x.shape
-<<<<<<< HEAD
                 if self.with_cls_token:
                     patch_token = x[:, 1:].reshape(B, *patch_resolution, C)
                     patch_token = patch_token.permute(0, 3, 1, 2)
@@ -465,11 +457,9 @@ class BEiT(VisionTransformer):
                     patch_token = x.reshape(B, *patch_resolution, C)
                     patch_token = patch_token.permute(0, 3, 1, 2)
                     cls_token = None
-=======
                 patch_token = x[:, 1:].reshape(B, *patch_resolution, C)
                 patch_token = patch_token.permute(0, 3, 1, 2)
                 cls_token = x[:, 0]
->>>>>>> add ut
 
                 if self.avg_token:
                     patch_token = patch_token.permute(0, 2, 3, 1)
