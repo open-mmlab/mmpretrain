@@ -30,9 +30,14 @@ class RelativePositionBias(BaseModule):
     """
 
     def __init__(
+        
         self,
+       
         window_size: Sequence[int],
+       
         num_heads: int,
+        with_cls_token: bool = True,
+    ,
         with_cls_token: bool = True,
     ) -> None:
         super().__init__()
@@ -284,6 +289,7 @@ class BEiT(VisionTransformer):
                  drop_path_rate=0,
                  norm_cfg=dict(type='LN', eps=1e-6),
                  final_norm=False,
+                 with_cls_token=True,
                  avg_token=True,
                  frozen_stages=-1,
                  output_cls_token=False,
@@ -329,6 +335,10 @@ class BEiT(VisionTransformer):
         num_patches = self.patch_resolution[0] * self.patch_resolution[1]
 
         # Set cls token
+        if output_cls_token:
+            assert with_cls_token is True, f'with_cls_token must be True if' \
+                f'set output_cls_token to True, but got {with_cls_token}'
+        self.with_cls_token = with_cls_token
         self.output_cls_token = output_cls_token
         self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dims))
 
@@ -340,15 +350,9 @@ class BEiT(VisionTransformer):
                 torch.zeros(1, num_patches + self.num_extra_tokens,
                             self.embed_dims))
             self._register_load_state_dict_pre_hook(self._prepare_pos_embed)
-            self._register_load_state_dict_pre_hook(self._prepare_pos_embed)
         else:
             self.pos_embed = None
         self.drop_after_pos = nn.Dropout(p=drop_rate)
-
-        assert not (use_rel_pos_bias and use_shared_rel_pos_bias), (
-            '`use_rel_pos_bias` and `use_shared_rel_pos_bias` cannot be set '
-            'to True at the same time')
-        self.use_rel_pos_bias = use_rel_pos_bias
 
         assert not (use_rel_pos_bias and use_shared_rel_pos_bias), (
             '`use_rel_pos_bias` and `use_shared_rel_pos_bias` cannot be set '
@@ -361,8 +365,6 @@ class BEiT(VisionTransformer):
                 num_heads=self.arch_settings['num_heads'])
         else:
             self.rel_pos_bias = None
-        self._register_load_state_dict_pre_hook(
-            self._prepare_relative_position_bias_table)
         self._register_load_state_dict_pre_hook(
             self._prepare_relative_position_bias_table)
 
@@ -440,6 +442,10 @@ class BEiT(VisionTransformer):
             # Remove class token for transformer encoder input
             x = x[:, 1:]
 
+        if not self.with_cls_token:
+            # Remove class token for transformer encoder input
+            x = x[:, 1:]
+
         outs = []
         for i, layer in enumerate(self.layers):
             x = layer(x, rel_pos_bias)
@@ -457,9 +463,6 @@ class BEiT(VisionTransformer):
                     patch_token = x.reshape(B, *patch_resolution, C)
                     patch_token = patch_token.permute(0, 3, 1, 2)
                     cls_token = None
-                patch_token = x[:, 1:].reshape(B, *patch_resolution, C)
-                patch_token = patch_token.permute(0, 3, 1, 2)
-                cls_token = x[:, 0]
 
                 if self.avg_token:
                     patch_token = patch_token.permute(0, 2, 3, 1)
