@@ -52,7 +52,7 @@ class Adan(Optimizer):
 
     def __init__(self, params, lr=1e-3, betas=(0.98, 0.92, 0.99),
                  eps=1e-8, weight_decay=0.0, max_grad_norm=0.0,
-                 no_prox=False, foreach: bool=True):
+                 no_prox=False, foreach: bool = True):
         if not 0.0 <= max_grad_norm:
             raise ValueError("Invalid Max grad norm: {}".format(max_grad_norm))
         if not 0.0 <= lr:
@@ -113,7 +113,7 @@ class Adan(Optimizer):
             global_grad_norm = torch.sqrt(global_grad_norm) + group['eps']
 
             clip_global_grad_norm = \
-                torch.clamp(max_grad_norm/global_grad_norm, max=1.0) 
+                torch.clamp(max_grad_norm / global_grad_norm, max=1.0)
         else:
             clip_global_grad_norm = 1.0
 
@@ -219,7 +219,7 @@ def _single_tensor_adan(
 
         grad = grad.mul_(clip_global_grad_norm)
         copy_grads.append(grad.clone())
-  
+
         diff = grad - pre_grad
         update = grad + beta2 * diff
 
@@ -279,7 +279,8 @@ def _multi_tensor_adan(
     torch._foreach_add_(exp_avg_diffs, diff, alpha=1 - beta2)  # diff_t
 
     torch._foreach_mul_(exp_avg_sqs, beta3)
-    torch._foreach_addcmul_(exp_avg_sqs, update, update, value=1 - beta3)  # n_t
+    torch._foreach_addcmul_(exp_avg_sqs, 
+                            update, update, value=1 - beta3)  # n_t 
 
     denom = torch._foreach_sqrt(exp_avg_sqs)
     torch._foreach_div_(denom, bias_correction3_sqrt)
@@ -290,7 +291,8 @@ def _multi_tensor_adan(
     # beta2 * diff / bias_correction2 != diff * (beta2 / bias_correction2)  # noqa
     # using faster version by default. uncomment for tests to pass
     # torch._foreach_add_(update, torch._foreach_div(torch._foreach_mul(exp_avg_diffs, beta2), bias_correction2))  # noqa
-    torch._foreach_add_(update, torch._foreach_mul(exp_avg_diffs, beta2 / bias_correction2))
+    torch._foreach_add_(update, 
+                        torch._foreach_mul(exp_avg_diffs, beta2 / bias_correction2)) 
     torch._foreach_div_(update, denom)
 
     if no_prox:
@@ -300,4 +302,5 @@ def _multi_tensor_adan(
         torch._foreach_add_(params, update, alpha=-lr)
         torch._foreach_div_(params, 1 + lr * weight_decay)
     return copy_grads
-    
+
+
