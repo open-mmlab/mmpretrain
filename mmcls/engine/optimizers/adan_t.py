@@ -29,7 +29,7 @@ class Adan(Optimizer):
     Implements a pytorch variant of Adan
 
     Adan was proposed in
-    Adan:Adaptive Nesterov Momentum Algorithm for Faster Optimizing Deep Models.
+    Adan : Adaptive Nesterov Momentum Algorithm for Faster Optimizing Deep Models. # noqa
     https://arxiv.org/abs/2208.06677
     Arguments:
         params (iterable): iterable of parameters to optimize
@@ -52,7 +52,7 @@ class Adan(Optimizer):
 
     def __init__(self, params, lr=1e-3, betas=(0.98, 0.92, 0.99),
                  eps=1e-8, weight_decay=0.0, max_grad_norm=0.0,
-                 no_prox = False, foreach: bool = True):
+                 no_prox=False, foreach: bool=True):
         if not 0.0 <= max_grad_norm:
             raise ValueError("Invalid Max grad norm: {}".format(max_grad_norm))
         if not 0.0 <= lr:
@@ -60,11 +60,11 @@ class Adan(Optimizer):
         if not 0.0 <= eps:
             raise ValueError("Invalid epsilon value: {}".format(eps))
         if not 0.0 <= betas[0] < 1.0:
-            raise ValueError("Invalid beta parameter at index 0: {}".format(betas[0])) # noqa
+            raise ValueError("Invalid beta parameter at index 0: {}".format(betas[0]))  # noqa
         if not 0.0 <= betas[1] < 1.0:
-            raise ValueError("Invalid beta parameter at index 1: {}".format(betas[1])) # noqa
+            raise ValueError("Invalid beta parameter at index 1: {}".format(betas[1]))  # noqa
         if not 0.0 <= betas[2] < 1.0:
-            raise ValueError("Invalid beta parameter at index 2: {}".format(betas[2])) # noqa
+            raise ValueError("Invalid beta parameter at index 2: {}".format(betas[2]))  # noqa
         defaults = dict(lr=lr, betas=betas, eps=eps,
                         weight_decay=weight_decay,
                         max_grad_norm=max_grad_norm,
@@ -110,10 +110,10 @@ class Adan(Optimizer):
                         grad = p.grad
                         global_grad_norm.add_(grad.pow(2).sum())
 
-            global_grad_norm = torch.sqrt(global_grad_norm)
+            global_grad_norm = torch.sqrt(global_grad_norm) + group['eps']
 
             clip_global_grad_norm = \
-                torch.clamp(max_grad_norm/(global_grad_norm + group['eps']), max=1.0)
+                torch.clamp(max_grad_norm/global_grad_norm, max=1.0) 
         else:
             clip_global_grad_norm = 1.0
 
@@ -124,7 +124,7 @@ class Adan(Optimizer):
             exp_avg_sqs = []
             exp_avg_diffs = []
             pre_grads = []
-            
+
             beta1, beta2, beta3 = group['betas']
             # assume same step across group now to simplify things
             # per parameter step can be easily support
@@ -151,7 +151,7 @@ class Adan(Optimizer):
                     state['exp_avg_diff'] = torch.zeros_like(p)
 
                 if 'pre_grad' not in state or group['step'] == 1:
-                    # at first step grad wouldn't be clipped 
+                    # at first step grad wouldn't be clipped
                     # by `clip_global_grad_norm`
                     # this is only to simplify implementation
                     state['pre_grad'] = p.grad
@@ -188,6 +188,7 @@ class Adan(Optimizer):
             for p, copy_grad in zip(params_with_grad, copy_grads):
                 self.state[p]['pre_grad'] = copy_grad
 
+
 def _single_tensor_adan(
     params: List[Tensor],
     grads: List[Tensor],
@@ -218,17 +219,17 @@ def _single_tensor_adan(
 
         grad = grad.mul_(clip_global_grad_norm)
         copy_grads.append(grad.clone())
-        
+  
         diff = grad - pre_grad
         update = grad + beta2 * diff
-        
+
         exp_avg.mul_(beta1).add_(grad, alpha=1 - beta1)  # m_t
         exp_avg_diff.mul_(beta2).add_(diff, alpha=1 - beta2)  # diff_t
         exp_avg_sq.mul_(beta3).addcmul_(update, update, value=1 - beta3)  # n_t
 
-        denom = ((exp_avg_sq).sqrt() / bias_correction3_sqrt).add_(eps)
-        update = ((exp_avg / bias_correction1 + \
-                beta2 * exp_avg_diff / bias_correction2)).div_(denom)
+        denom = (exp_avg_sq.sqrt() / bias_correction3_sqrt).add_(eps)
+        update = (exp_avg / bias_correction1 + \
+                  beta2 * exp_avg_diff / bias_correction2).div_(denom)
 
         if no_prox:
             param.mul_(1 - lr * weight_decay)
@@ -237,6 +238,7 @@ def _single_tensor_adan(
             param.add_(update, alpha=-lr)
             param.div_(1 + lr * weight_decay)
     return copy_grads
+
 
 def _multi_tensor_adan(
     params: List[Tensor],
@@ -263,32 +265,31 @@ def _multi_tensor_adan(
     copy_grads = [g.clone() for g in grads]
 
     diff = torch._foreach_sub(grads, pre_grads)
-    # NOTE: line below while looking identical gives different result, 
+    # NOTE: line below while looking identical gives different result,
     # due to float precision errors.
-    # using mul+add produces identical results to single-tensor, 
+    # using mul+add produces identical results to single-tensor,
     # using add+alpha doesn't
     # update = torch._foreach_add(grads, torch._foreach_mul(diff, beta2))
     update = torch._foreach_add(grads, diff, alpha=beta2)
 
     torch._foreach_mul_(exp_avgs, beta1)
-    torch._foreach_add_(exp_avgs, grads, alpha=1 - beta1) # m_t
+    torch._foreach_add_(exp_avgs, grads, alpha=1 - beta1)  # m_t
 
     torch._foreach_mul_(exp_avg_diffs, beta2)
-    torch._foreach_add_(exp_avg_diffs, diff, alpha=1 - beta2) # diff_t
+    torch._foreach_add_(exp_avg_diffs, diff, alpha=1 - beta2)  # diff_t
 
     torch._foreach_mul_(exp_avg_sqs, beta3)
-    torch._foreach_addcmul_(exp_avg_sqs, update, update, value=1 - beta3) # n_t
+    torch._foreach_addcmul_(exp_avg_sqs, update, update, value=1 - beta3)  # n_t
 
     denom = torch._foreach_sqrt(exp_avg_sqs)
     torch._foreach_div_(denom, bias_correction3_sqrt)
     torch._foreach_add_(denom, eps)
 
     update = torch._foreach_div(exp_avgs, bias_correction1)
-    # NOTE: same issue as above. 
-    # beta2 * diff / bias_correction2 != diff * (beta2 / bias_correction2)
+    # NOTE: same issue as above.
+    # beta2 * diff / bias_correction2 != diff * (beta2 / bias_correction2)  # noqa
     # using faster version by default. uncomment for tests to pass
-    # torch._foreach_add_(update, 
-    #       torch._foreach_div(torch._foreach_mul(exp_avg_diffs, beta2), bias_correction2))
+    # torch._foreach_add_(update, torch._foreach_div(torch._foreach_mul(exp_avg_diffs, beta2), bias_correction2))  # noqa
     torch._foreach_add_(update, torch._foreach_mul(exp_avg_diffs, beta2 / bias_correction2))
     torch._foreach_div_(update, denom)
 
@@ -299,3 +300,4 @@ def _multi_tensor_adan(
         torch._foreach_add_(params, update, alpha=-lr)
         torch._foreach_div_(params, 1 + lr * weight_decay)
     return copy_grads
+    
