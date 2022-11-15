@@ -228,8 +228,8 @@ def _single_tensor_adan(
         exp_avg_sq.mul_(beta3).addcmul_(update, update, value=1 - beta3)  # n_t
 
         denom = (exp_avg_sq.sqrt() / bias_correction3_sqrt).add_(eps)
-        update = (exp_avg / bias_correction1 + \
-                  beta2 * exp_avg_diff / bias_correction2).div_(denom)
+        update = exp_avg / bias_correction1
+        update.add_(beta2 * exp_avg_diff / bias_correction2).div_(denom)
 
         if no_prox:
             param.mul_(1 - lr * weight_decay)
@@ -279,8 +279,8 @@ def _multi_tensor_adan(
     torch._foreach_add_(exp_avg_diffs, diff, alpha=1 - beta2)  # diff_t
 
     torch._foreach_mul_(exp_avg_sqs, beta3)
-    torch._foreach_addcmul_(exp_avg_sqs, 
-                            update, update, value=1 - beta3)  # n_t 
+    torch._foreach_addcmul_(exp_avg_sqs,
+                            update, update, value=1 - beta3)  # n_t
 
     denom = torch._foreach_sqrt(exp_avg_sqs)
     torch._foreach_div_(denom, bias_correction3_sqrt)
@@ -291,8 +291,9 @@ def _multi_tensor_adan(
     # beta2 * diff / bias_correction2 != diff * (beta2 / bias_correction2)  # noqa
     # using faster version by default. uncomment for tests to pass
     # torch._foreach_add_(update, torch._foreach_div(torch._foreach_mul(exp_avg_diffs, beta2), bias_correction2))  # noqa
-    torch._foreach_add_(update, 
-                        torch._foreach_mul(exp_avg_diffs, beta2 / bias_correction2)) 
+    torch._foreach_add_(update,
+                        torch._foreach_mul(exp_avg_diffs,
+                        beta2 / bias_correction2))
     torch._foreach_div_(update, denom)
 
     if no_prox:
@@ -302,5 +303,3 @@ def _multi_tensor_adan(
         torch._foreach_add_(params, update, alpha=-lr)
         torch._foreach_div_(params, 1 + lr * weight_decay)
     return copy_grads
-
-
