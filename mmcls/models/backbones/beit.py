@@ -105,8 +105,8 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
             after the feed forward layer. Defaults to 0.
         window_size (tuple[int]): The height and width of the window.
             Defaults to None.
-        use_rel_pos_bias (bool): Whether to use unique relative postion bias,
-            if False, use shared relative postion bias defined in backbone.
+        use_rel_pos_bias (bool): Whether to use unique relative position bias,
+            if False, use shared relative position bias defined in backbone.
         attn_drop_rate (float): The drop out rate for attention layer.
             Defaults to 0.0.
         drop_path_rate (float): Stochastic depth rate. Default 0.0.
@@ -426,7 +426,7 @@ class BEiT(VisionTransformer):
             logger.info('Expand the shared relative position embedding to '
                         'each transformer block.')
             rel_pos_bias = state_dict[
-                "rel_pos_bias.relative_position_bias_table"]
+                'rel_pos_bias.relative_position_bias_table']
             for i in range(self.num_layers):
                 state_dict[
                     f'layers.{i}.attn.relative_position_bias_table'] = \

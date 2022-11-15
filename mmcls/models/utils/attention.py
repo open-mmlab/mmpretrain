@@ -565,8 +565,8 @@ class BEiTAttention(BaseModule):
         embed_dims (int): Number of input channels.
         num_heads (int): Number of attention heads.
         window_size (tuple[int]): The height and width of the window.
-        use_rel_pos_bias (bool): Whether to use unique relative postion bias,
-            if False, use shared relative postion bias defined in backbone.
+        use_rel_pos_bias (bool): Whether to use unique relative position bias,
+            if False, use shared relative position bias defined in backbone.
         bias (str): The option to add leanable bias for q, k, v. If bias is
             True, it will add leanable bias. If bias is 'qv_bias', it will only
             add leanable bias for q, v. If bias is False, it will not add bias
