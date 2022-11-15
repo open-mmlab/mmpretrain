@@ -574,6 +574,8 @@ class BEiTAttention(BaseModule):
         attn_drop_rate (float): Dropout ratio of attention weight.
             Default: 0.0
         proj_drop_rate (float): Dropout ratio of output. Default: 0.
+        is_cls_token (bool): The option to use cls token. If False,
+            drop cls token's relative_position_bias_table. Default to True.
         init_cfg (dict | None, optional): The Config for initialization.
             Default: None.
     """

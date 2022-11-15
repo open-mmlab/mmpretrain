@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
 import warnings
-from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
@@ -9,8 +8,7 @@ import torch.nn.functional as F
 import torch.utils.checkpoint as cp
 from mmcv.cnn import Conv2d, build_activation_layer, build_norm_layer
 from mmcv.cnn.bricks import DropPath
-from mmcv.cnn.bricks.drop import build_dropout
-from mmcv.cnn.bricks.transformer import FFN, AdaptivePadding
+from mmcv.cnn.bricks.transformer import AdaptivePadding
 from mmengine.model import BaseModule, ModuleList
 from torch import nn
 
@@ -24,246 +22,9 @@ except ImportError:
     from mmcv.cnn.bricks.transformer import MultiScaleDeformableAttention
 
 from mmcls.registry import MODELS
-from ..utils import BEiTAttention, LayerScale, resize_pos_embed
-from .vision_transformer import TransformerEncoderLayer, VisionTransformer
-
-
-class ViTAdapterTransformerEncoderLayer(TransformerEncoderLayer):
-    """Implements one encoder layer in Vision Transformer.
-
-    Args:
-        embed_dims (int): The feature dimension
-        num_heads (int): Parallel attention heads
-        feedforward_channels (int): The hidden dimension for FFNs
-        drop_rate (float): Probability of an element to be zeroed
-            after the feed forward layer. Defaults to 0.
-        attn_drop_rate (float): The drop out rate for attention output weights.
-            Defaults to 0.
-        drop_path_rate (float): Stochastic depth rate. Defaults to 0.
-        num_fcs (int): The number of fully-connected layers for FFNs.
-            Defaults to 2.
-        qkv_bias (bool): enable bias for qkv if True. Defaults to True.
-        act_cfg (dict): The activation config for FFNs.
-            Defaluts to ``dict(type='GELU')``.
-        norm_cfg (dict): Config dict for normalization layer.
-            Defaults to ``dict(type='LN')``.
-        init_cfg (dict, optional): Initialization config dict.
-            Defaults to None.
-    """
-
-    def __init__(self, *args, window_size=0, **kwargs):
-        super(ViTAdapterTransformerEncoderLayer,
-              self).__init__(*args, **kwargs)
-
-        self.window_size = window_size
-
-    @staticmethod
-    def window_reverse(windows, H, W, window_size):
-        B = int(windows.shape[0] / (H * W / window_size / window_size))
-        x = windows.view(B, H // window_size, W // window_size, window_size,
-                         window_size, -1)
-        x = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(B, H, W, -1)
-        return x
-
-    @staticmethod
-    def window_partition(x, window_size):
-        B, H, W, C = x.shape
-        x = x.view(B, H // window_size, window_size, W // window_size,
-                   window_size, C)
-        windows = x.permute(0, 1, 3, 2, 4, 5).contiguous()
-        windows = windows.view(-1, window_size, window_size, C)
-        return windows
-
-    def forward(self, x, hw_shape):
-        shortcut = x
-        x = self.norm1(x)
-        if self.window_size > 0:
-            B, L, C = x.shape
-            H, W = hw_shape
-            assert L == H * W, \
-                f"The query length {L} doesn't match the input " \
-                f'shape ({H}, {W}).'
-
-            x = x.view(B, H, W, C)
-
-            window_size = self.window_size
-            pad_r = (window_size - W % window_size) % window_size
-            pad_b = (window_size - H % window_size) % window_size
-            x = F.pad(x, (0, 0, 0, pad_r, 0, pad_b))
-
-            H_pad, W_pad = x.shape[1], x.shape[2]
-
-            # nW*B, window_size, window_size, C
-            x = self.window_partition(x, window_size)
-            # nW*B, window_size*window_size, C
-            x = x.view(-1, window_size**2, C)
-
-        x = self.attn(x)
-
-        if self.window_size > 0:
-            # merge windows
-            x = x.view(-1, window_size, window_size, C)
-            # B H' W' C
-            x = self.window_reverse(x, H_pad, W_pad, window_size)
-
-            if H != H_pad or W != W_pad:
-                x = x[:, :H, :W, :].contiguous()
-
-            x = x.view(B, H * W, C)
-
-        x = shortcut + x
-        x = self.ffn(self.norm2(x), identity=x)
-        return x
-
-
-class ViTAdapterBEiTTransformerEncoderLayer(ViTAdapterTransformerEncoderLayer):
-    """Implements one encoder layer in BEiT.
-
-    Comparing with conventional ``TransformerEncoderLayer``, this module
-    adds weights to the shortcut connection. In addition, ``BEiTAttention``
-    is used to replace the original ``MultiheadAttention`` in
-    ``TransformerEncoderLayer``.
-
-    Args:
-        embed_dims (int): The feature dimension.
-        num_heads (int): Parallel attention heads.
-        feedforward_channels (int): The hidden dimension for FFNs.
-        layer_scale_init_value (float): The initialization value for
-            the learnable scaling of attention and FFN.
-        drop_rate (float): Probability of an element to be zeroed
-            after the feed forward layer. Defaults to 0.
-        window_size (tuple[int]): The height and width of the window.
-            Defaults to None.
-        attn_drop_rate (float): The drop out rate for attention layer.
-            Defaults to 0.0.
-        drop_path_rate (float): Stochastic depth rate. Default 0.0.
-        num_fcs (int): The number of fully-connected layers for FFNs.
-            Defaults to 2.
-        bias (bool | str): The option to add leanable bias for q, k, v. If bias
-            is True, it will add leanable bias. If bias is 'qv_bias', it will
-            only add leanable bias for q, v. If bias is False, it will not add
-            bias for q, k, v. Default to 'qv_bias'.
-        act_cfg (dict): The activation config for FFNs.
-            Defaults to ``dict(type='GELU')``.
-        norm_cfg (dict): Config dict for normalization layer.
-            Defaults to dict(type='LN').
-        attn_cfg (dict): The configuration for the attention layer.
-            Defaults to an empty dict.
-        ffn_cfg (dict): The configuration for the ffn layer.
-            Defaults to ``dict(add_identity=False)``.
-        init_cfg (dict or List[dict], optional): Initialization config dict.
-            Defaults to None.
-    """
-
-    def __init__(self,
-                 embed_dims: int,
-                 num_heads: int,
-                 feedforward_channels: int,
-                 layer_scale_init_value: float,
-                 beit_window_size: Tuple[int, int],
-                 window_size=0,
-                 drop_rate: float = 0.,
-                 attn_drop_rate: float = 0.,
-                 drop_path_rate: float = 0.,
-                 num_fcs: int = 2,
-                 bias: Union[str, bool] = 'qv_bias',
-                 act_cfg: dict = dict(type='GELU'),
-                 norm_cfg: dict = dict(type='LN'),
-                 attn_cfg: dict = dict(),
-                 ffn_cfg: dict = dict(add_identity=False),
-                 init_cfg: Optional[Union[Dict, List[Dict]]] = None) -> None:
-        attn_cfg.update(dict(window_size=beit_window_size, qk_scale=None))
-
-        super().__init__(
-            embed_dims=embed_dims,
-            num_heads=num_heads,
-            feedforward_channels=feedforward_channels,
-            attn_drop_rate=attn_drop_rate,
-            drop_path_rate=0.,
-            drop_rate=0.,
-            num_fcs=num_fcs,
-            qkv_bias=bias,
-            act_cfg=act_cfg,
-            norm_cfg=norm_cfg,
-            init_cfg=init_cfg)
-
-        self.window_size = window_size
-
-        # overwrite the default attention layer in TransformerEncoderLayer
-        attn_cfg.update(
-            dict(
-                embed_dims=embed_dims,
-                num_heads=num_heads,
-                attn_drop=attn_drop_rate,
-                proj_drop=drop_rate,
-                bias=bias,
-                is_cls_token=False))
-        self.attn = BEiTAttention(**attn_cfg)
-
-        # overwrite the default ffn layer in TransformerEncoderLayer
-        ffn_cfg.update(
-            dict(
-                embed_dims=embed_dims,
-                feedforward_channels=feedforward_channels,
-                num_fcs=num_fcs,
-                ffn_drop=drop_rate,
-                dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate)
-                if drop_path_rate > 0 else None,
-                act_cfg=act_cfg))
-        self.ffn = FFN(**ffn_cfg)
-
-        # NOTE: drop path for stochastic depth, we shall see if
-        # this is better than dropout here
-        dropout_layer = dict(type='DropPath', drop_prob=drop_path_rate)
-        self.drop_path = build_dropout(
-            dropout_layer) if dropout_layer else nn.Identity()
-        self.gamma_1 = nn.Parameter(
-            layer_scale_init_value * torch.ones((embed_dims)),
-            requires_grad=True)
-        self.gamma_2 = nn.Parameter(
-            layer_scale_init_value * torch.ones((embed_dims)),
-            requires_grad=True)
-
-    def forward(self, x, hw_shape):
-        shortcut = x
-        x = self.norm1(x)
-        if self.window_size > 0:
-            B, L, C = x.shape
-            H, W = hw_shape
-            assert L == H * W,\
-                f"The query length {L} doesn't match the input "\
-                f'shape ({H}, {W}).'
-
-            x = x.view(B, H, W, C)
-
-            window_size = self.window_size
-            pad_r = (window_size - W % window_size) % window_size
-            pad_b = (window_size - H % window_size) % window_size
-            x = F.pad(x, (0, 0, 0, pad_r, 0, pad_b))
-
-            H_pad, W_pad = x.shape[1], x.shape[2]
-
-            # nW*B, window_size, window_size, C
-            x = self.window_partition(x, window_size)
-            # nW*B, window_size*window_size, C
-            x = x.view(-1, window_size**2, C)
-
-        x = self.attn(x)
-
-        if self.window_size > 0:
-            # merge windows
-            x = x.view(-1, window_size, window_size, C)
-            # B H' W' C
-            x = self.window_reverse(x, H_pad, W_pad, window_size)
-
-            if H != H_pad or W != W_pad:
-                x = x[:, :H, :W, :].contiguous()
-
-            x = x.view(B, H * W, C)
-
-        x = shortcut + self.drop_path(self.gamma_1 * x)
-        x = x + self.drop_path(self.gamma_2 * self.ffn(self.norm2(x)))
-        return x
+from ..utils import LayerScale, resize_pos_embed
+from .vision_transformer import (BEiTTransformerEncoderLayer,
+                                 TransformerEncoderLayer, VisionTransformer)
 
 
 def get_reference_points(spatial_shapes, device):
@@ -310,7 +71,7 @@ def deform_inputs(x):
 
 
 class VitAdapterFFN(BaseModule):
-    """An implementation of VitAdapterFFN of VitAdapter.
+    """An implementation of VitAdapterFFN in VitAdapter.
 
     The differences between MixFFN & FFN:
         1. Introduce VitAdapterDWConv to encode positional information.
@@ -356,15 +117,30 @@ class VitAdapterFFN(BaseModule):
 
 
 class VitAdapterDWConv(BaseModule):
+    """An implementation of VitAdapterDWConv in VitAdapter.
 
-    def __init__(self, dim=768, init_cfg=None):
+    The differences between VitAdapterDWConv & DWConv:
+        1. Split multi stage features then apply DWConv.
+
+    Args:
+        dim (int): The feature dimension.
+        init_cfg (obj:`mmcv.ConfigDict`): The Config for initialization.
+            Default: None.
+    """
+
+    def __init__(self,
+                 dim=768,
+                 kernel_size=3,
+                 stride=1,
+                 padding=1,
+                 init_cfg=None):
         super().__init__(init_cfg)
         self.dwconv = Conv2d(
             in_channels=dim,
             out_channels=dim,
-            kernel_size=3,
-            stride=1,
-            padding=1,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=padding,
             bias=True,
             groups=dim)
 
@@ -388,16 +164,42 @@ class VitAdapterDWConv(BaseModule):
 
 
 class Extractor(BaseModule):
+    """Multi Scale Feature Extractor in ViT-Adapter.
+
+    Args:
+        embed_dims (int): The feature dimension.
+        num_heads (int): Parallel attention heads. Defaults to 6.
+        num_points (int): The number of sampling points for each query in each
+            head of MultiScaleDeformableAttention. Defaults to 4.
+        num_levels (int): The number of feature map used in
+            Attention. Defaults to 1.
+        drop_rate (float): Probability of an element to be zeroed
+            after the feed forward layer. Defaults to 0.
+        drop_path_rate (float): stochastic depth rate. Defaults to 0.
+        with_ffn (bool): The option to use ffn. If True, it use ffn.
+            Default to True.
+        ffn_ratio (float): The number of expansion ratio of feedforward
+            network hidden layer channels. Default to 0.25.
+        use_extra_extractor (bool): The option to use extra Extractor in
+            InteractionBlock. If True, it use extra Extractor.
+            Default to False.
+        norm_cfg (dict): Config dict for normalization.
+            Defaults to ``dict(type='LN', eps=1e-06)``.
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+            memory while slowing down the training speed. Defaults to False.
+        init_cfg (dict, optional): Initialization config dict.
+            Defaults to None.
+    """
 
     def __init__(self,
                  embed_dims,
                  num_heads=6,
                  num_points=4,
                  num_levels=1,
-                 with_ffn=True,
-                 ffn_ratio=0.25,
                  drop_rate=0.,
                  drop_path_rate=0.,
+                 with_ffn=True,
+                 ffn_ratio=0.25,
                  norm_cfg=dict(type='LN', eps=1e-06),
                  with_cp=False,
                  init_cfg=None):
@@ -452,6 +254,22 @@ class Extractor(BaseModule):
 
 
 class Injector(BaseModule):
+    """Spatial Feature Injector in ViT-Adapter.
+
+    Args:
+        embed_dims (int): The feature dimension.
+        num_heads (int): Parallel attention heads. Defaults to 6.
+        num_points (int): The number of sampling points for each query in each
+            head of MultiScaleDeformableAttention. Defaults to 4.
+        num_levels (int): The number of feature map used in
+            Attention. Defaults to 1.
+        norm_cfg (dict): Config dict for normalization.
+            Defaults to ``dict(type='LN', eps=1e-06)``.
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+            memory while slowing down the training speed. Defaults to False.
+        init_cfg (dict, optional): Initialization config dict.
+            Defaults to None.
+    """
 
     def __init__(self,
                  embed_dims,
@@ -496,17 +314,41 @@ class Injector(BaseModule):
 
 
 class InteractionBlock(BaseModule):
+    """InteractionBlock in ViT-Adapter.
+
+    Args:
+        embed_dims (int): The feature dimension.
+        num_heads (int): Parallel attention heads. Defaults to 6.
+        num_points (int): The number of sampling points for each query in each
+            head of MultiScaleDeformableAttention. Defaults to 4.
+        drop_rate (float): Probability of an element to be zeroed
+            after the feed forward layer. Defaults to 0.
+        drop_path_rate (float): stochastic depth rate. Defaults to 0.
+        with_ffn (bool): The option to use ffn. If True, it use ffn.
+            Default to True.
+        ffn_ratio (float): The number of expansion ratio of feedforward
+            network hidden layer channels. Default to 0.25.
+        use_extra_extractor (bool): The option to use extra Extractor in
+            InteractionBlock. If True, it use extra Extractor.
+            Default to False.
+        norm_cfg (dict): Config dict for normalization.
+            Defaults to ``dict(type='LN', eps=1e-06)``.
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+            memory while slowing down the training speed. Defaults to False.
+        init_cfg (dict, optional): Initialization config dict.
+            Defaults to None.
+    """
 
     def __init__(self,
                  embed_dims,
                  num_heads=6,
                  num_points=4,
-                 norm_cfg=dict(type='LN', eps=1e-06),
                  drop_rate=0.,
                  drop_path_rate=0.,
                  with_ffn=True,
                  ffn_ratio=0.25,
-                 extra_extractor=False,
+                 use_extra_extractor=False,
+                 norm_cfg=dict(type='LN', eps=1e-06),
                  with_cp=False,
                  init_cfg=None):
         super().__init__(init_cfg)
@@ -529,7 +371,7 @@ class InteractionBlock(BaseModule):
             drop_rate=drop_rate,
             drop_path_rate=drop_path_rate,
             with_cp=with_cp)
-        if extra_extractor:
+        if use_extra_extractor:
             self.extra_extractors = nn.Sequential(*[
                 Extractor(
                     embed_dims=embed_dims,
@@ -574,12 +416,29 @@ class InteractionBlock(BaseModule):
 
 
 class SpatialPriorModule(BaseModule):
+    """SpatialPriorModule in ViT-Adapter.
+
+    Args:
+        patch_size (int | tuple): The patch size in patch embedding.
+        embed_dims (int): The feature dimension.
+        hidden_dims (int): Hidden dimension. Defaults to 64.
+        drop_path_rate (float): stochastic depth rate. Defaults to 0.
+        norm_cfg (dict): Config dict for normalization.
+            Defaults to ``dict(type='BN')``.
+        act_cfg (dict): The activation config.
+            Defaluts to ``dict(type='ReLU')``.
+        padding (str): Support "same" and "corner", "corner" mode
+            would pad zero to bottom right, and "same" mode would
+            pad zero around input. Default to "corner".
+        init_cfg (dict, optional): Initialization config dict.
+            Defaults to None.
+    """
 
     def __init__(self,
                  patch_size,
-                 inplanes=64,
-                 embed_dim=384,
-                 norm_cfg=dict(type='SyncBN'),
+                 embed_dims,
+                 hidden_dims=64,
+                 norm_cfg=dict(type='BN'),
                  act_cfg=dict(type='ReLU'),
                  padding='corner',
                  init_cfg=None):
@@ -590,81 +449,87 @@ class SpatialPriorModule(BaseModule):
 
         self.stem = nn.Sequential(*[
             Conv2d(
-                3, inplanes, kernel_size=3, stride=2, padding=1, bias=False),
-            build_norm_layer(norm_cfg, inplanes)[1],
+                3, hidden_dims, kernel_size=3, stride=2, padding=1,
+                bias=False),
+            build_norm_layer(norm_cfg, hidden_dims)[1],
             build_activation_layer(act_cfg),
             Conv2d(
-                inplanes,
-                inplanes,
+                hidden_dims,
+                hidden_dims,
                 kernel_size=3,
                 stride=1,
                 padding=1,
                 bias=False),
-            build_norm_layer(norm_cfg, inplanes)[1],
+            build_norm_layer(norm_cfg, hidden_dims)[1],
             build_activation_layer(act_cfg),
             Conv2d(
-                inplanes,
-                inplanes,
+                hidden_dims,
+                hidden_dims,
                 kernel_size=3,
                 stride=1,
                 padding=1,
                 bias=False),
-            build_norm_layer(norm_cfg, inplanes)[1],
+            build_norm_layer(norm_cfg, hidden_dims)[1],
             build_activation_layer(act_cfg),
             nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         ])
         self.conv2 = nn.Sequential(*[
             Conv2d(
-                inplanes,
-                2 * inplanes,
+                hidden_dims,
+                2 * hidden_dims,
                 kernel_size=3,
                 stride=2,
                 padding=1,
                 bias=False),
-            build_norm_layer(norm_cfg, 2 * inplanes)[1],
+            build_norm_layer(norm_cfg, 2 * hidden_dims)[1],
             build_activation_layer(act_cfg),
         ])
         self.conv3 = nn.Sequential(*[
             Conv2d(
-                2 * inplanes,
-                4 * inplanes,
+                2 * hidden_dims,
+                4 * hidden_dims,
                 kernel_size=3,
                 stride=2,
                 padding=1,
                 bias=False),
-            build_norm_layer(norm_cfg, 4 * inplanes)[1],
+            build_norm_layer(norm_cfg, 4 * hidden_dims)[1],
             build_activation_layer(act_cfg),
         ])
         self.conv4 = nn.Sequential(*[
             nn.Conv2d(
-                4 * inplanes,
-                4 * inplanes,
+                4 * hidden_dims,
+                4 * hidden_dims,
                 kernel_size=3,
                 stride=2,
                 padding=1,
                 bias=False),
-            build_norm_layer(norm_cfg, 4 * inplanes)[1],
+            build_norm_layer(norm_cfg, 4 * hidden_dims)[1],
             build_activation_layer(act_cfg),
         ])
         self.fc1 = Conv2d(
-            inplanes, embed_dim, kernel_size=1, stride=1, padding=0, bias=True)
+            hidden_dims,
+            embed_dims,
+            kernel_size=1,
+            stride=1,
+            padding=0,
+            bias=True)
         self.fc2 = Conv2d(
-            2 * inplanes,
-            embed_dim,
+            2 * hidden_dims,
+            embed_dims,
             kernel_size=1,
             stride=1,
             padding=0,
             bias=True)
         self.fc3 = Conv2d(
-            4 * inplanes,
-            embed_dim,
+            4 * hidden_dims,
+            embed_dims,
             kernel_size=1,
             stride=1,
             padding=0,
             bias=True)
         self.fc4 = Conv2d(
-            4 * inplanes,
-            embed_dim,
+            4 * hidden_dims,
+            embed_dims,
             kernel_size=1,
             stride=1,
             padding=0,
@@ -692,6 +557,55 @@ class SpatialPriorModule(BaseModule):
 
 @MODELS.register_module()
 class VitAdapter(VisionTransformer):
+    """ViT-Adapter.
+
+    A PyTorch implement of : `Vision Transformer Adapter for Dense Predictions
+    <https://arxiv.org/abs/2205.08534>`_
+
+    Args:
+        arch (str | dict): Vision Transformer architecture. If use string,
+            choose from 'small', 'base', 'large', 'deit-tiny', 'deit-small'
+            and 'deit-base'. If use dict, it should have below keys:
+
+            - **embed_dims** (int): The dimensions of embedding.
+            - **num_layers** (int): The number of transformer encoder layers.
+            - **num_heads** (int): The number of heads in attention modules.
+            - **feedforward_channels** (int): The hidden dimensions in
+              feedforward modules.
+            - **interaction_indexes** (ListList[[int]]): The indexes of each
+              interaction block.
+            - **window_size** (int): The height and width of the window.
+            - **window_block_indexes** (int): The indexes of window attention
+              blocks.
+
+            Defaults to 'base'.
+        patch_size (int | tuple): The patch size in patch embedding.
+            Defaults to 16.
+        out_indices (Sequence | int): Output from which stages.
+            Defaults to -1, means the last stage.
+        drop_path_rate (float): stochastic depth rate. Defaults to 0.
+        norm_cfg (dict): Config dict for normalization layer of
+            Vision Transformer. Defaults to ``dict(type='LN')``.
+        spm_norm_cfg (dict): Config dict for normalization layer of Adapter.
+            Defaults to ``dict(type='BN')``.
+        spm_hidden_dims (int): Hidden dimension for SpatialPriorModule.
+            Defaults to 64.
+        deform_num_points (int): The number of sampling points for
+            each query in each head of MultiScaleDeformableAttention.
+            Default to 4.
+        deform_num_heads (int): Parallel attention heads of
+            MultiScaleDeformableAttention. Default to 64.
+        with_adapter_ffn (bool): The option to use ffn for adapter. If True,
+            it use ffn. Default to True.
+        add_vit_feature (bool): The option to add vit feature to adapter
+            feature. If True, it add vit feature. Default to True.
+        adapter_ffn_ratio (float): The number of expansion ratio of feedforward
+            network hidden layer channels of adapter. Default to 0.25.
+        use_extra_extractor (bool): The option to use extra Extractor in
+            InteractionBlock. If True, it use extra Extractor. Default to True.
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+            memory while slowing down the training speed. Defaults to False.
+    """
     adapter_zoo = {
         **dict.fromkeys(
             ['s', 'small'],
@@ -739,18 +653,17 @@ class VitAdapter(VisionTransformer):
                  *args,
                  arch='base',
                  patch_size=16,
+                 out_indices=(0, 1, 2, 3),
                  drop_path_rate=0.,
                  norm_cfg=dict(type='LN', eps=1e-6),
                  spm_norm_cfg=dict(type='BN'),
-                 spm_inplane=64,
+                 spm_hidden_dims=64,
                  deform_num_points=4,
                  deform_num_heads=6,
                  with_adapter_ffn=True,
                  add_vit_feature=True,
                  adapter_ffn_ratio=0.25,
                  use_extra_extractor=True,
-                 out_indices=(0, 1, 2, 3),
-                 adapter_settings=None,
                  with_cp=False,
                  **kwargs):
 
@@ -764,11 +677,11 @@ class VitAdapter(VisionTransformer):
                 'interaction_indexes', 'window_size', 'window_block_indexes'
             }
             assert isinstance(
-                adapter_settings, dict
-                ) and essential_keys <= set(adapter_settings), \
+                arch, dict
+                ) and essential_keys <= set(arch), \
                 'Custom adapter_settings needs a dict with keys' \
                 f'{essential_keys}'
-            self.adapter_settings = adapter_settings
+            self.adapter_settings = arch
 
         self.window_size = self.adapter_settings['window_size']
         self.window_block_indexes = self.adapter_settings[
@@ -792,8 +705,8 @@ class VitAdapter(VisionTransformer):
         self.level_embed = nn.Parameter(torch.zeros(3, self.embed_dims))
         self.spm = SpatialPriorModule(
             patch_size,
-            inplanes=spm_inplane,
-            embed_dim=self.embed_dims,
+            self.embed_dims,
+            hidden_dims=spm_hidden_dims,
             norm_cfg=spm_norm_cfg)
         self.interactions = nn.Sequential(*[
             InteractionBlock(
@@ -805,16 +718,16 @@ class VitAdapter(VisionTransformer):
                 with_ffn=with_adapter_ffn,
                 ffn_ratio=adapter_ffn_ratio,
                 with_cp=with_cp,
-                extra_extractor=((True if i == len(self.interaction_indexes) -
-                                  1 else False) and use_extra_extractor))
+                use_extra_extractor=(
+                    (True if i == len(self.interaction_indexes) -
+                     1 else False) and use_extra_extractor))
             for i in range(len(self.interaction_indexes))
         ])
 
         self.up = nn.ConvTranspose2d(self.embed_dims, self.embed_dims, 2, 2)
-        self.norm1 = build_norm_layer(spm_norm_cfg, self.embed_dims)[1]
-        self.norm2 = build_norm_layer(spm_norm_cfg, self.embed_dims)[1]
-        self.norm3 = build_norm_layer(spm_norm_cfg, self.embed_dims)[1]
-        self.norm4 = build_norm_layer(spm_norm_cfg, self.embed_dims)[1]
+        for i in out_indices:
+            norm_layer = build_norm_layer(spm_norm_cfg, self.embed_dims)[1]
+            self.add_module(f'norm{i}', norm_layer)
 
     def _build_layers(self, drop_rate, drop_path_rate, qkv_bias, norm_cfg,
                       beit_style, layer_scale_init_value, layer_cfgs):
@@ -834,20 +747,24 @@ class VitAdapter(VisionTransformer):
                 drop_path_rate=dpr[i],
                 qkv_bias=qkv_bias,
                 norm_cfg=norm_cfg,
-                window_size=0
-                if i not in self.window_block_indexes else self.window_size)
+            )
             _layer_cfg.update(layer_cfgs[i])
             if beit_style:
                 _layer_cfg.update(
                     dict(
                         layer_scale_init_value=layer_scale_init_value,
-                        beit_window_size=self.patch_resolution))
+                        is_cls_token=False,
+                        use_window_attention=i in self.window_block_indexes,
+                        window_size=self.patch_resolution
+                        if i not in self.window_block_indexes else
+                        (self.window_size, self.window_size)))
                 _layer_cfg.pop('qkv_bias')
-                self.layers.append(
-                    ViTAdapterBEiTTransformerEncoderLayer(**_layer_cfg))
+                self.layers.append(BEiTTransformerEncoderLayer(**_layer_cfg))
             else:
-                self.layers.append(
-                    ViTAdapterTransformerEncoderLayer(**_layer_cfg))
+                _layer_cfg.update(
+                    dict(window_size=0 if i not in
+                         self.window_block_indexes else self.window_size))
+                self.layers.append(TransformerEncoderLayer(**_layer_cfg))
 
     def forward(self, x):
         deform_inputs1, deform_inputs2 = deform_inputs(x)
@@ -923,8 +840,11 @@ class VitAdapter(VisionTransformer):
             c4 = c4 + x4
 
         # Final Norm
-        f1 = self.norm1(c1)
-        f2 = self.norm2(c2)
-        f3 = self.norm3(c3)
-        f4 = self.norm4(c4)
-        return tuple([f1, f2, f3, f4])
+        outs = []
+        for i, c in enumerate([c1, c2, c3, c4]):
+            if i in self.out_indices:
+                norm_layer = getattr(self, f'norm{i}')
+                out = norm_layer(c)
+                outs.append(out)
+
+        return tuple(outs)

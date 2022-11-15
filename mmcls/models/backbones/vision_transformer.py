@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Sequence, Tuple, Union
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.drop import build_dropout
 from mmcv.cnn.bricks.transformer import FFN, PatchEmbed
@@ -31,6 +32,11 @@ class TransformerEncoderLayer(BaseModule):
         num_fcs (int): The number of fully-connected layers for FFNs.
             Defaults to 2.
         qkv_bias (bool): enable bias for qkv if True. Defaults to True.
+        window_size (int): The height and width of the window for
+            TransformerEncoderLayer. This implementation is based on
+            `ViTDet <https://arxiv.org/abs/2203.16527>`_
+            If window_size == 0, it use normal TransformerEncoderLayer.
+            Defaults to 0.
         act_cfg (dict): The activation config for FFNs.
             Defaluts to ``dict(type='GELU')``.
         norm_cfg (dict): Config dict for normalization layer.
@@ -48,12 +54,14 @@ class TransformerEncoderLayer(BaseModule):
                  drop_path_rate=0.,
                  num_fcs=2,
                  qkv_bias=True,
+                 window_size=0,
                  act_cfg=dict(type='GELU'),
                  norm_cfg=dict(type='LN'),
                  init_cfg=None):
         super(TransformerEncoderLayer, self).__init__(init_cfg=init_cfg)
 
         self.embed_dims = embed_dims
+        self.window_size = window_size
 
         self.norm1_name, norm1 = build_norm_layer(
             norm_cfg, self.embed_dims, postfix=1)
@@ -94,8 +102,64 @@ class TransformerEncoderLayer(BaseModule):
                 nn.init.xavier_uniform_(m.weight)
                 nn.init.normal_(m.bias, std=1e-6)
 
-    def forward(self, x):
-        x = x + self.attn(self.norm1(x))
+    @staticmethod
+    def window_reverse(windows, H, W, window_size):
+        B = int(windows.shape[0] / (H * W / window_size / window_size))
+        x = windows.view(B, H // window_size, W // window_size, window_size,
+                         window_size, -1)
+        x = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(B, H, W, -1)
+        return x
+
+    @staticmethod
+    def window_partition(x, window_size):
+        B, H, W, C = x.shape
+        x = x.view(B, H // window_size, window_size, W // window_size,
+                   window_size, C)
+        windows = x.permute(0, 1, 3, 2, 4, 5).contiguous()
+        windows = windows.view(-1, window_size, window_size, C)
+        return windows
+
+    def forward(self, x, hw_shape=None):
+        shortcut = x
+        x = self.norm1(x)
+        if self.window_size > 0:
+            assert hw_shape is not None, \
+                'hw_shape is None is not supported when ' \
+                'TransformerEncoderLayer with window_size != 0'
+            B, L, C = x.shape
+            H, W = hw_shape
+            assert L == H * W, \
+                f"The query length {L} doesn't match the input " \
+                f'shape ({H}, {W}).'
+
+            x = x.view(B, H, W, C)
+
+            window_size = self.window_size
+            pad_r = (window_size - W % window_size) % window_size
+            pad_b = (window_size - H % window_size) % window_size
+            x = F.pad(x, (0, 0, 0, pad_r, 0, pad_b))
+
+            H_pad, W_pad = x.shape[1], x.shape[2]
+
+            # nW*B, window_size, window_size, C
+            x = self.window_partition(x, window_size)
+            # nW*B, window_size*window_size, C
+            x = x.view(-1, window_size**2, C)
+
+        x = self.attn(x)
+
+        if self.window_size > 0:
+            # merge windows
+            x = x.view(-1, window_size, window_size, C)
+            # B H' W' C
+            x = self.window_reverse(x, H_pad, W_pad, window_size)
+
+            if H != H_pad or W != W_pad:
+                x = x[:, :H, :W, :].contiguous()
+
+            x = x.view(B, H * W, C)
+
+        x = shortcut + x
         x = self.ffn(self.norm2(x), identity=x)
         return x
 
@@ -118,6 +182,12 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
             after the feed forward layer. Defaults to 0.
         window_size (tuple[int]): The height and width of the window.
             Defaults to None.
+        use_window_attention (bool): The option to use window attention.
+            This implementation is based on
+            `ViTDet <https://arxiv.org/abs/2203.16527>`_
+            If True, it use window attention. Default to False.
+        is_cls_token (bool): The option to use cls token. If False,
+            drop cls token's relative_position_bias_table. Default to True.
         attn_drop_rate (float): The drop out rate for attention layer.
             Defaults to 0.0.
         drop_path_rate (float): Stochastic depth rate. Default 0.0.
@@ -145,6 +215,8 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
                  feedforward_channels: int,
                  layer_scale_init_value: float,
                  window_size: Tuple[int, int],
+                 use_window_attention: bool = False,
+                 is_cls_token: bool = True,
                  drop_rate: float = 0.,
                  attn_drop_rate: float = 0.,
                  drop_path_rate: float = 0.,
@@ -155,7 +227,11 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
                  attn_cfg: dict = dict(),
                  ffn_cfg: dict = dict(add_identity=False),
                  init_cfg: Optional[Union[Dict, List[Dict]]] = None) -> None:
-        attn_cfg.update(dict(window_size=window_size, qk_scale=None))
+        attn_cfg.update(
+            dict(
+                window_size=window_size,
+                qk_scale=None,
+                is_cls_token=is_cls_token))
 
         super().__init__(
             embed_dims=embed_dims,
@@ -169,6 +245,8 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
             act_cfg=act_cfg,
             norm_cfg=norm_cfg,
             init_cfg=init_cfg)
+        self.window_size = window_size
+        self.use_window_attention = use_window_attention
 
         # overwrite the default attention layer in TransformerEncoderLayer
         attn_cfg.update(
@@ -204,8 +282,46 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
             layer_scale_init_value * torch.ones((embed_dims)),
             requires_grad=True)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = x + self.drop_path(self.gamma_1 * self.attn(self.norm1(x)))
+    def forward(self, x, hw_shape):
+        shortcut = x
+        x = self.norm1(x)
+        print(x.shape)
+        if self.use_window_attention:
+            B, L, C = x.shape
+            H, W = hw_shape
+            assert L == H * W,\
+                f"The query length {L} doesn't match the input "\
+                f'shape ({H}, {W}).'
+
+            x = x.view(B, H, W, C)
+
+            assert self.window_size[0] == self.window_size[1]
+            window_size = self.window_size[0]
+            pad_r = (window_size - W % window_size) % window_size
+            pad_b = (window_size - H % window_size) % window_size
+            x = F.pad(x, (0, 0, 0, pad_r, 0, pad_b))
+
+            H_pad, W_pad = x.shape[1], x.shape[2]
+
+            # nW*B, window_size, window_size, C
+            x = self.window_partition(x, window_size)
+            # nW*B, window_size*window_size, C
+            x = x.view(-1, window_size**2, C)
+
+        x = self.attn(x)
+
+        if self.use_window_attention:
+            # merge windows
+            x = x.view(-1, window_size, window_size, C)
+            # B H' W' C
+            x = self.window_reverse(x, H_pad, W_pad, window_size)
+
+            if H != H_pad or W != W_pad:
+                x = x[:, :H, :W, :].contiguous()
+
+            x = x.view(B, H * W, C)
+
+        x = shortcut + self.drop_path(self.gamma_1 * x)
         x = x + self.drop_path(self.gamma_2 * self.ffn(self.norm2(x)))
         return x
 
