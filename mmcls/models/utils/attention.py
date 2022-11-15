@@ -565,6 +565,8 @@ class BEiTAttention(BaseModule):
         embed_dims (int): Number of input channels.
         num_heads (int): Number of attention heads.
         window_size (tuple[int]): The height and width of the window.
+        use_rel_pos_bias (bool): Whether to use unique relative postion bias,
+            if False, use shared relative postion bias defined in backbone.
         bias (str): The option to add leanable bias for q, k, v. If bias is
             True, it will add leanable bias. If bias is 'qv_bias', it will only
             add leanable bias for q, v. If bias is False, it will not add bias
@@ -582,6 +584,7 @@ class BEiTAttention(BaseModule):
                  embed_dims,
                  num_heads,
                  window_size,
+                 use_rel_pos_bias,
                  bias='qv_bias',
                  qk_scale=None,
                  attn_drop_rate=0.,
@@ -601,6 +604,7 @@ class BEiTAttention(BaseModule):
             qkv_bias = False
 
         self.window_size = window_size
+        self.use_rel_pos_bias = use_rel_pos_bias
         self._init_rel_pos_embedding()
 
         self.qkv = nn.Linear(embed_dims, embed_dims * 3, bias=qkv_bias)
@@ -613,7 +617,7 @@ class BEiTAttention(BaseModule):
         self.v_bias = nn.Parameter(torch.zeros(self.embed_dims))
 
     def _init_rel_pos_embedding(self):
-        if self.window_size:
+        if self.use_rel_pos_bias:
             Wh, Ww = self.window_size
             # cls to token & token 2 cls & cls to cls
             self.num_relative_distance = (2 * Wh - 1) * (2 * Ww - 1) + 3
@@ -654,7 +658,7 @@ class BEiTAttention(BaseModule):
 
     def init_weights(self):
         super().init_weights()
-        if self.window_size:
+        if self.use_rel_pos_bias:
             trunc_normal_(self.relative_position_bias_table, std=0.02)
 
     def forward(self, x, rel_pos_bias=None):
@@ -688,6 +692,7 @@ class BEiTAttention(BaseModule):
             attn = attn + relative_position_bias.unsqueeze(0)
 
         if rel_pos_bias is not None:
+            # use shared relative position bias
             attn = attn + rel_pos_bias
 
         attn = attn.softmax(dim=-1)

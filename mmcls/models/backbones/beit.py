@@ -10,7 +10,8 @@ from mmcv.cnn.bricks.transformer import FFN, PatchEmbed
 from mmengine.model import BaseModule, ModuleList
 
 from mmcls.registry import MODELS
-from ..utils import BEiTAttention, resize_pos_embed, to_2tuple
+from ..utils import (BEiTAttention, resize_pos_embed,
+                     resize_relative_position_bias_table, to_2tuple)
 from .vision_transformer import TransformerEncoderLayer, VisionTransformer
 
 
@@ -89,6 +90,8 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
             after the feed forward layer. Defaults to 0.
         window_size (tuple[int]): The height and width of the window.
             Defaults to None.
+        use_rel_pos_bias (bool): Whether to use unique relative postion bias,
+            if False, use shared relative postion bias defined in backbone.
         attn_drop_rate (float): The drop out rate for attention layer.
             Defaults to 0.0.
         drop_path_rate (float): Stochastic depth rate. Default 0.0.
@@ -116,6 +119,7 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
                  feedforward_channels: int,
                  layer_scale_init_value: float,
                  window_size: Tuple[int, int],
+                 use_rel_pos_bias: bool,
                  drop_rate: float = 0.,
                  attn_drop_rate: float = 0.,
                  drop_path_rate: float = 0.,
@@ -126,7 +130,11 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
                  attn_cfg: dict = dict(),
                  ffn_cfg: dict = dict(add_identity=False),
                  init_cfg: Optional[Union[dict, List[dict]]] = None) -> None:
-        attn_cfg.update(dict(window_size=window_size, qk_scale=None))
+        attn_cfg.update(
+            dict(
+                window_size=window_size,
+                use_rel_pos_bias=use_rel_pos_bias,
+                qk_scale=None))
 
         super().__init__(
             embed_dims=embed_dims,
@@ -269,12 +277,19 @@ class BEiT(VisionTransformer):
             self.pos_embed = None
         self.drop_after_pos = nn.Dropout(p=drop_rate)
 
+        assert not (use_rel_pos_bias and use_shared_rel_pos_bias), (
+            '`use_rel_pos_bias` and `use_shared_rel_pos_bias` cannot be set '
+            'to True at the same time')
+        self.use_rel_pos_bias = use_rel_pos_bias
+
         if use_shared_rel_pos_bias:
             self.rel_pos_bias = RelativePositionBias(
                 window_size=self.patch_resolution,
                 num_heads=self.arch_settings['num_heads'])
         else:
             self.rel_pos_bias = None
+        self._register_load_state_dict_pre_hook(
+            self._prepare_relative_position_bias_table)
 
         if isinstance(out_indices, int):
             out_indices = [out_indices]
@@ -301,8 +316,8 @@ class BEiT(VisionTransformer):
                 feedforward_channels=self.
                 arch_settings['feedforward_channels'],
                 layer_scale_init_value=layer_scale_init_value,
-                window_size=self.patch_resolution
-                if use_rel_pos_bias else None,
+                window_size=self.patch_resolution,
+                use_rel_pos_bias=use_rel_pos_bias,
                 drop_rate=drop_rate,
                 drop_path_rate=dpr[i],
                 norm_cfg=norm_cfg)
@@ -372,3 +387,49 @@ class BEiT(VisionTransformer):
                 outs.append(out)
 
         return tuple(outs)
+
+    def _prepare_relative_position_bias_table(self, state_dict, prefix, *args,
+                                              **kwargs):
+        from mmengine.logging import MMLogger
+        logger = MMLogger.get_current_instance()
+
+        if self.use_rel_pos_bias and 'rel_pos_bias.relative_position_bias_table' in state_dict:  # noqa:E501
+            logger.info('Expand the shared relative position embedding to '
+                        'each transformer block.')
+            rel_pos_bias = state_dict[
+                "rel_pos_bias.relative_position_bias_table"]
+            for i in range(self.num_layers):
+                state_dict[
+                    f'layers.{i}.attn.relative_position_bias_table'] = \
+                        rel_pos_bias.clone()
+            state_dict.pop('rel_pos_bias.relative_position_bias_table')
+
+        state_dict_model = self.state_dict()
+        all_keys = list(state_dict_model.keys())
+        for key in all_keys:
+            if 'relative_position_bias_table' in key:
+                ckpt_key = prefix + key
+                if ckpt_key not in state_dict:
+                    continue
+                rel_pos_bias_pretrained = state_dict[ckpt_key]
+                rel_pos_bias_current = state_dict_model[key]
+                L1, nH1 = rel_pos_bias_pretrained.size()
+                L2, nH2 = rel_pos_bias_current.size()
+                src_size = int((L1 - 3)**0.5)
+                dst_size = int((L2 - 3)**0.5)
+                if L1 != L2:
+                    extra_tokens = rel_pos_bias_pretrained[-3:, :]
+                    rel_pos_bias = rel_pos_bias_pretrained[:-3, :]
+
+                    new_rel_pos_bias = resize_relative_position_bias_table(
+                        src_size, dst_size, rel_pos_bias, nH1)
+                    new_rel_pos_bias = torch.cat(
+                        (new_rel_pos_bias, extra_tokens), dim=0)
+                    logger.info('Resize the relative_position_bias_table from '
+                                f'{state_dict[ckpt_key].shape} to '
+                                f'{new_rel_pos_bias.shape}')
+                    state_dict[ckpt_key] = new_rel_pos_bias
+
+                    # The index buffer need to be re-generated.
+                    index_buffer = ckpt_key.replace('bias_table', 'index')
+                    del state_dict[index_buffer]
