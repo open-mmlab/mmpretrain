@@ -297,7 +297,7 @@ def _multi_tensor_adan(
     torch._foreach_div_(update, denom)
 
     if no_prox:
-        torch._foreach_mul_(params, 1 - lr * weight_decay) 
+        torch._foreach_mul_(params, 1 - lr * weight_decay)
     else:
         torch._foreach_add_(params, update, alpha=-lr)
         torch._foreach_div_(params, 1 + lr * weight_decay)
