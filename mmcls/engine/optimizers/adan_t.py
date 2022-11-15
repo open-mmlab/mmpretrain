@@ -29,30 +29,30 @@ class Adan(Optimizer):
     Implements a pytorch variant of Adan
 
     Adan was proposed in
-    Adan: Adaptive Nesterov Momentum Algorithm for Faster Optimizing Deep Models.
+    Adan:Adaptive Nesterov Momentum Algorithm for Faster Optimizing Deep Models.
     https://arxiv.org/abs/2208.06677
     Arguments:
-        params (iterable): iterable of parameters to optimize 
+        params (iterable): iterable of parameters to optimize
             or dicts defining parameter groups.
         lr (float, optional): learning rate. (default: 1e-3)
-        betas (Tuple[float, float, flot], optional): coefficients used 
-            for computing running averages of gradient. 
+        betas (Tuple[float, float, flot], optional): coefficients used
+            for computing running averages of gradient.
             (default: (0.98, 0.92, 0.99))
-        eps (float, optional): term added to the denominator to improve 
+        eps (float, optional): term added to the denominator to improve
             numerical stability. (default: 1e-8)
-        weight_decay (float, optional): decoupled weight decay 
+        weight_decay (float, optional): decoupled weight decay
             (L2 penalty) (default: 0)
-        max_grad_norm (float, optional): value used to clip 
+        max_grad_norm (float, optional): value used to clip
             global grad norm (default: 0.0 no clip)
-        no_prox (bool): how to perform the decoupled weight decay 
+        no_prox (bool): how to perform the decoupled weight decay
             (default: False)
-        foreach (bool): if True would use torch._foreach implementation. 
+        foreach (bool): if True would use torch._foreach implementation.
             It's faster but uses slightly more memory.
     """
 
-    def __init__(self, params, lr = 1e-3, betas= (0.98, 0.92, 0.99), 
-                eps = 1e-8, weight_decay = 0.0, max_grad_norm = 0.0, 
-                no_prox = False, foreach: bool = True):
+    def __init__(self, params, lr=1e-3, betas=(0.98, 0.92, 0.99),
+                 eps=1e-8, weight_decay=0.0, max_grad_norm=0.0,
+                 no_prox = False, foreach: bool = True):
         if not 0.0 <= max_grad_norm:
             raise ValueError("Invalid Max grad norm: {}".format(max_grad_norm))
         if not 0.0 <= lr:
@@ -60,15 +60,15 @@ class Adan(Optimizer):
         if not 0.0 <= eps:
             raise ValueError("Invalid epsilon value: {}".format(eps))
         if not 0.0 <= betas[0] < 1.0:
-            raise ValueError("Invalid beta parameter at index 0: {}".format(betas[0]))
+            raise ValueError("Invalid beta parameter at index 0: {}".format(betas[0])) # noqa
         if not 0.0 <= betas[1] < 1.0:
-            raise ValueError("Invalid beta parameter at index 1: {}".format(betas[1]))
+            raise ValueError("Invalid beta parameter at index 1: {}".format(betas[1])) # noqa
         if not 0.0 <= betas[2] < 1.0:
-            raise ValueError("Invalid beta parameter at index 2: {}".format(betas[2]))
-        defaults = dict(lr = lr, betas = betas, eps = eps,
-                        weight_decay = weight_decay,
-                        max_grad_norm = max_grad_norm, 
-                        no_prox = no_prox, foreach = foreach)
+            raise ValueError("Invalid beta parameter at index 2: {}".format(betas[2])) # noqa
+        defaults = dict(lr=lr, betas=betas, eps=eps,
+                        weight_decay=weight_decay,
+                        max_grad_norm=max_grad_norm,
+                        no_prox=no_prox, foreach=foreach)
         super().__init__(params, defaults)
 
     def __setstate__(self, state):
@@ -102,7 +102,7 @@ class Adan(Optimizer):
             global_grad_norm = torch.zeros(1, device=device)
 
             max_grad_norm = torch.tensor(self.defaults['max_grad_norm'],
-                                        device=device)
+                                         device=device)
             for group in self.param_groups:
 
                 for p in group['params']:
@@ -112,8 +112,8 @@ class Adan(Optimizer):
 
             global_grad_norm = torch.sqrt(global_grad_norm)
 
-            clip_global_grad_norm = torch.clamp(max_grad_norm / \
-                                    (global_grad_norm + group['eps']), max=1.0)
+            clip_global_grad_norm = \
+                torch.clamp(max_grad_norm/(global_grad_norm + group['eps']), max=1.0)
         else:
             clip_global_grad_norm = 1.0
 
