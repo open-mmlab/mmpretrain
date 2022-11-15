@@ -106,6 +106,7 @@ Backbones
    VAN
    VGG
    VisionTransformer
+   VitAdapter
 
 .. module:: mmcls.models.necks
 
