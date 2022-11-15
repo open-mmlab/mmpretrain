@@ -27,15 +27,24 @@ class RelativePositionBias(BaseModule):
         num_heads (int): The number of head in multi-head attention.
     """
 
-    def __init__(self, window_size: Sequence[int], num_heads: int) -> None:
+    def __init__(
+        self,
+        window_size: Sequence[int],
+        num_heads: int,
+        with_cls_token: bool = True,
+    ) -> None:
         super().__init__()
         self.window_size = window_size
-        self.num_relative_distance = (2 * window_size[0] -
-                                      1) * (2 * window_size[1] - 1) + 3
+        if with_cls_token:
+            num_extra_tokens = 3
+        else:
+            num_extra_tokens = 0
+        # cls to token & token to cls & cls to cls
+        self.num_relative_distance = (2 * window_size[0] - 1) * (
+            2 * window_size[1] - 1) + num_extra_tokens
         self.relative_position_bias_table = nn.Parameter(
             torch.zeros(self.num_relative_distance,
                         num_heads))  # 2*Wh-1 * 2*Ww-1, nH
-        # cls to token & token 2 cls & cls to cls
 
         # get pair-wise relative position index for each
         # token inside the window
@@ -50,14 +59,20 @@ class RelativePositionBias(BaseModule):
         relative_coords[:, :, 0] += window_size[0] - 1  # shift to start from 0
         relative_coords[:, :, 1] += window_size[1] - 1
         relative_coords[:, :, 0] *= 2 * window_size[1] - 1
-        relative_position_index = torch.zeros(
-            size=(window_size[0] * window_size[1] + 1, ) * 2,
-            dtype=relative_coords.dtype)
-        relative_position_index[1:,
-                                1:] = relative_coords.sum(-1)  # Wh*Ww, Wh*Ww
-        relative_position_index[0, 0:] = self.num_relative_distance - 3
-        relative_position_index[0:, 0] = self.num_relative_distance - 2
-        relative_position_index[0, 0] = self.num_relative_distance - 1
+        if with_cls_token:
+            relative_position_index = torch.zeros(
+                size=(window_size[0] * window_size[1] + 1, ) * 2,
+                dtype=relative_coords.dtype)
+            relative_position_index[1:, 1:] = relative_coords.sum(
+                -1)  # Wh*Ww, Wh*Ww
+            relative_position_index[0, 0:] = self.num_relative_distance - 3
+            relative_position_index[0:, 0] = self.num_relative_distance - 2
+            relative_position_index[0, 0] = self.num_relative_distance - 1
+        else:
+            relative_position_index = torch.zeros(
+                size=(window_size[0] * window_size[1], ) * 2,
+                dtype=relative_coords.dtype)
+            relative_position_index = relative_coords.sum(-1)  # Wh*Ww, Wh*Ww
 
         self.register_buffer('relative_position_index',
                              relative_position_index)
@@ -217,6 +232,7 @@ class BEiT(VisionTransformer):
                  drop_path_rate=0,
                  norm_cfg=dict(type='LN', eps=1e-6),
                  final_norm=False,
+                 with_cls_token=True,
                  avg_token=True,
                  frozen_stages=-1,
                  output_cls_token=False,
@@ -262,6 +278,10 @@ class BEiT(VisionTransformer):
         num_patches = self.patch_resolution[0] * self.patch_resolution[1]
 
         # Set cls token
+        if output_cls_token:
+            assert with_cls_token is True, f'with_cls_token must be True if' \
+                f'set output_cls_token to True, but got {with_cls_token}'
+        self.with_cls_token = with_cls_token
         self.output_cls_token = output_cls_token
         self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dims))
 
@@ -361,6 +381,10 @@ class BEiT(VisionTransformer):
         rel_pos_bias = self.rel_pos_bias() \
             if self.rel_pos_bias is not None else None
 
+        if not self.with_cls_token:
+            # Remove class token for transformer encoder input
+            x = x[:, 1:]
+
         outs = []
         for i, layer in enumerate(self.layers):
             x = layer(x, rel_pos_bias)
@@ -370,9 +394,14 @@ class BEiT(VisionTransformer):
 
             if i in self.out_indices:
                 B, _, C = x.shape
-                patch_token = x[:, 1:].reshape(B, *patch_resolution, C)
-                patch_token = patch_token.permute(0, 3, 1, 2)
-                cls_token = x[:, 0]
+                if self.with_cls_token:
+                    patch_token = x[:, 1:].reshape(B, *patch_resolution, C)
+                    patch_token = patch_token.permute(0, 3, 1, 2)
+                    cls_token = x[:, 0]
+                else:
+                    patch_token = x.reshape(B, *patch_resolution, C)
+                    patch_token = patch_token.permute(0, 3, 1, 2)
+                    cls_token = None
 
                 if self.avg_token:
                     patch_token = patch_token.permute(0, 2, 3, 1)
