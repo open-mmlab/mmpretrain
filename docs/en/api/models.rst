@@ -44,6 +44,8 @@ Classifiers
 
     BaseClassifier
     ImageClassifier
+    TimmClassifier
+    HuggingFaceClassifier
 
 .. module:: mmcls.models.backbones
 
@@ -70,6 +72,7 @@ Backbones
    EdgeNeXt
    EfficientFormer
    EfficientNet
+   HorNet
    HRNet
    InceptionV3
    LeNet5

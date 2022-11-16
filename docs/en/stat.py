@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import re
+import warnings
 from collections import defaultdict
 from pathlib import Path
 
@@ -12,12 +13,20 @@ GITHUB_PREFIX = 'https://github.com/open-mmlab/mmclassification/blob/1.x/'
 MODELZOO_TEMPLATE = """
 # Model Zoo Summary
 
+In this page, we list [all algorithms](#all-supported-algorithms) we support. You can click the link to jump to the corresponding model pages.
+
+And we also list [all checkpoints](#all-checkpoints) we provide. You can sort or search checkpoints in the table and click the corresponding link to model pages for more details.
+
+## All supported algorithms
+
 * Number of papers: {num_papers}
 {type_msg}
 
 * Number of checkpoints: {num_ckpts}
 {paper_msg}
-"""
+
+## All checkpoints
+"""  # noqa: E501
 
 model_index = load(str(MMCLS_ROOT / 'model-index.yml'))
 
@@ -96,6 +105,31 @@ def generate_paper_page(collection):
         return f'[{name}]({link})'
 
     content = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', replace_link, readme)
+    content = f'---\ngithub_page: /{collection.readme}\n---\n' + content
+
+    def make_tabs(matchobj):
+        """modify the format from emphasis black symbol to tabs."""
+        content = matchobj.group()
+        content = content.replace('<!-- [TABS-BEGIN] -->', '')
+        content = content.replace('<!-- [TABS-END] -->', '')
+
+        # split the content by "**{Tab-Name}**""
+        splits = re.split(r'^\*\*(.*)\*\*$', content, flags=re.M)[1:]
+        tabs_list = []
+        for title, tab_content in zip(splits[::2], splits[1::2]):
+            title = ':::{tab} ' + title + '\n'
+            tab_content = tab_content.strip() + '\n:::\n'
+            tabs_list.append(title + tab_content)
+
+        return '::::{tabs}\n' + ''.join(tabs_list) + '::::'
+
+    if '<!-- [TABS-BEGIN] -->' in content and '<!-- [TABS-END] -->' in content:
+        # Make TABS block a selctive tabs
+        try:
+            pattern = r'<!-- \[TABS-BEGIN\] -->([\d\D]*?)<!-- \[TABS-END\] -->'
+            content = re.sub(pattern, make_tabs, content)
+        except Exception as e:
+            warnings.warn(f'Can not parse the TABS, get an error : {e}')
 
     with open(copy, 'w') as copy_file:
         copy_file.write(content)
@@ -123,7 +157,7 @@ def generate_summary_table(models):
 
     with open('modelzoo_statistics.md', 'a') as f:
         for dataset, rows in dataset_rows.items():
-            f.write(f'\n## {dataset}\n')
+            f.write(f'\n### {dataset}\n')
             f.write("""```{table}\n:class: model-summary\n""")
             header = [
                 'Model',
