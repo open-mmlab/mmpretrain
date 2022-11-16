@@ -234,8 +234,9 @@ class TestMultiTaskDataSample(TestCase):
         target_data_sample = data_sample.to_target_data_sample(
             'ClsDataSample', 'task0')
         self.assertIsInstance(target_data_sample, ClsDataSample)
-        with self.assertRaises(Exception):
-            data_sample.to_target_data_sample('ClsDataSample', 'task1')
+        target_data_sample1 = data_sample.to_target_data_sample(
+            'ClsDataSample', 'task1')
+        self.assertIsInstance(target_data_sample1, ClsDataSample)
 
         # set just gt_task
         data_sample = MultiTaskDataSample().set_gt_task(gt_label)

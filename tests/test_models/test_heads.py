@@ -536,7 +536,10 @@ class TestMultiTaskHead(TestCase):
         head = MODELS.build(self.DEFAULT_ARGS)
 
         losses = head.loss(feats, data_samples)
-        self.assertEqual(losses.keys(), {'task0_loss', 'task1_loss'})
+        self.assertEqual(
+            losses.keys(),
+            {'task0_loss', 'task0_mask_size', 'task1_loss', 'task1_mask_size'})
+        print(losses)
         self.assertGreater(losses['task0_loss'].item(), 0)
         self.assertGreater(losses['task1_loss'].item(), 0)
 
@@ -582,7 +585,10 @@ class TestMultiTaskHead(TestCase):
         # with cal_acc = False
         head = MODELS.build(self.DEFAULT_ARGS)
         losses = head.loss(feats, data_samples)
-        self.assertEqual(losses.keys(), {'task0_loss', 'task1_loss'})
+        self.assertEqual(
+            losses.keys(),
+            {'task0_loss', 'task0_mask_size', 'task1_loss', 'task1_mask_size'})
+        print(losses)
         self.assertEqual(losses['task0_loss'].item(), 0)
         self.assertEqual(losses['task1_loss'].item(), 0)
 

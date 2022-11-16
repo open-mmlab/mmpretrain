@@ -1,13 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 from typing import Dict
-
+import torch
 from mmengine.structures import BaseDataElement, LabelData
 
 from .cls_data_sample import ClsDataSample
 
 
-def format_task_label(value: Dict, metainfo: Dict = None) -> LabelData:
+def format_task_label(value: Dict, metainfo: Dict = {}) -> LabelData:
     """Convert label of various python types to :obj:`mmengine.LabelData`.
 
     Args:
@@ -21,7 +21,7 @@ def format_task_label(value: Dict, metainfo: Dict = None) -> LabelData:
 
     task_label = dict()
     for (key, val) in value.items():
-        if key not in metainfo.keys() and metainfo != {}:
+        if metainfo != {} and key not in metainfo.keys():
             raise Exception(f'Type {key} is not in metainfo.')
         task_label[key] = val
     label = LabelData(**task_label)
@@ -71,10 +71,10 @@ class MultiTaskDataSample(BaseDataElement):
     def to_cls_data_sample(self, task_name):
         task_sample = ClsDataSample(metainfo=self.metainfo.get(task_name, {}))
         if hasattr(self, '_gt_task'):
-            gt_task = getattr(self.gt_task, task_name)
+            gt_task = getattr(self.gt_task, task_name, torch.tensor([]))
             task_sample.set_gt_label(value=gt_task)
         if hasattr(self, '_pred_task'):
-            pred_task = getattr(self.pred_task, task_name)
+            pred_task = getattr(self.pred_task, task_name, torch.tensor([]))
             task_sample.set_pred_score(value=pred_task)
         return task_sample
 
