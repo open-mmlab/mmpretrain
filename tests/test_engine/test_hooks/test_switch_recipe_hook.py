@@ -17,7 +17,7 @@ from mmengine.runner import Runner
 from mmengine.utils import digit_version
 from torch.utils.data import DataLoader
 
-from mmcls.engine import SwitchTrainAugHook
+from mmcls.engine import SwitchRecipeHook
 from mmcls.models.losses import LabelSmoothLoss
 from mmcls.models.utils.batch_augments import CutMix, Mixup, RandomBatchAugment
 from mmcls.structures import ClsDataSample
@@ -65,7 +65,7 @@ class ExampleDataset(BaseDataset):
         return 10
 
 
-class TestSwitchTrainAugHook(TestCase):
+class TestSwitchRecipeHook(TestCase):
     DEFAULT_CFG = dict(action_epoch=1, action_iter=None)
 
     def setUp(self):
@@ -85,30 +85,30 @@ class TestSwitchTrainAugHook(TestCase):
         cfg = copy.deepcopy(self.DEFAULT_CFG)
         cfg['action_iter'] = 3
         with self.assertRaises(ValueError):
-            SwitchTrainAugHook(**cfg)
+            SwitchRecipeHook(**cfg)
 
         # check action_epoch and action_iter both None
         cfg = copy.deepcopy(self.DEFAULT_CFG)
         cfg['action_epoch'] = None
         with self.assertRaises(ValueError):
-            SwitchTrainAugHook(**cfg)
+            SwitchRecipeHook(**cfg)
 
         # check action_epoch > 0
         cfg = copy.deepcopy(self.DEFAULT_CFG)
         cfg['action_epoch'] = -1
         with self.assertRaises(AssertionError):
-            SwitchTrainAugHook(**cfg)
+            SwitchRecipeHook(**cfg)
 
         # check action_iter > 0
         cfg = copy.deepcopy(self.DEFAULT_CFG)
         cfg['action_epoch'] = None
         cfg['action_iter'] = '3'
         with self.assertRaises(AssertionError):
-            SwitchTrainAugHook(**cfg)
+            SwitchRecipeHook(**cfg)
 
         # test by_epoch is True
         cfg = copy.deepcopy(self.DEFAULT_CFG)
-        hook_obj = SwitchTrainAugHook(**cfg)
+        hook_obj = SwitchRecipeHook(**cfg)
         self.assertTrue(hook_obj.by_epoch)
         self.assertEqual(hook_obj.action_epoch, 1)
         self.assertEqual(hook_obj.action_iter, None)
@@ -120,7 +120,7 @@ class TestSwitchTrainAugHook(TestCase):
         cfg = copy.deepcopy(self.DEFAULT_CFG)
         cfg['action_epoch'] = None
         cfg['action_iter'] = 3
-        hook_obj = SwitchTrainAugHook(**cfg)
+        hook_obj = SwitchRecipeHook(**cfg)
         self.assertFalse(hook_obj.by_epoch)
         self.assertEqual(hook_obj.action_epoch, None)
         self.assertEqual(hook_obj.action_iter, 3)
@@ -129,7 +129,7 @@ class TestSwitchTrainAugHook(TestCase):
         cfg = copy.deepcopy(self.DEFAULT_CFG)
         cfg['pipeline'] = [dict(type='LoadImageFromFile')]
         cfg['loss'] = dict(type='LabelSmoothLoss', label_smooth_val=0.1)
-        hook_obj = SwitchTrainAugHook(**cfg)
+        hook_obj = SwitchRecipeHook(**cfg)
         self.assertIsInstance(hook_obj.pipeline, BaseTransform)
         self.assertIsInstance(hook_obj.loss, LabelSmoothLoss)
 
@@ -141,7 +141,7 @@ class TestSwitchTrainAugHook(TestCase):
             dict(type='CutMix', alpha=1.0)
         ])
         cfg['train_augments'] = train_cfg
-        hook_obj = SwitchTrainAugHook(**cfg)
+        hook_obj = SwitchRecipeHook(**cfg)
         self.assertIsInstance(hook_obj.pipeline, BaseTransform)
         self.assertIsInstance(hook_obj.train_augments, RandomBatchAugment)
 
@@ -149,9 +149,9 @@ class TestSwitchTrainAugHook(TestCase):
         # test call once in epoch loop
         runner = self.init_runner()
         switch_hook_cfg1 = copy.deepcopy(self.DEFAULT_CFG)
-        switch_hook_cfg1['type'] = 'SwitchTrainAugHook'
+        switch_hook_cfg1['type'] = 'SwitchRecipeHook'
         runner.register_custom_hooks([switch_hook_cfg1])
-        with patch.object(SwitchTrainAugHook, '_do_switch') as mock:
+        with patch.object(SwitchRecipeHook, '_do_switch') as mock:
             runner.train()
             mock.assert_called_once()
 
@@ -163,7 +163,7 @@ class TestSwitchTrainAugHook(TestCase):
         switch_hook_cfg3['action_epoch'] = 3
         runner.register_custom_hooks(
             [switch_hook_cfg1, switch_hook_cfg2, switch_hook_cfg3])
-        with patch.object(SwitchTrainAugHook, '_do_switch') as mock:
+        with patch.object(SwitchRecipeHook, '_do_switch') as mock:
             runner.train()
             self.assertEqual(mock.call_count, 3)
 
@@ -171,11 +171,11 @@ class TestSwitchTrainAugHook(TestCase):
         # test call once in iter loop
         runner = self.init_runner(by_epoch=False)
         switch_hook_cfg1 = copy.deepcopy(self.DEFAULT_CFG)
-        switch_hook_cfg1['type'] = 'SwitchTrainAugHook'
+        switch_hook_cfg1['type'] = 'SwitchRecipeHook'
         switch_hook_cfg1['action_epoch'] = None
         switch_hook_cfg1['action_iter'] = 1
         runner.register_custom_hooks([switch_hook_cfg1])
-        with patch.object(SwitchTrainAugHook, '_do_switch') as mock:
+        with patch.object(SwitchRecipeHook, '_do_switch') as mock:
             runner.train()
             mock.assert_called_once()
 
@@ -187,7 +187,7 @@ class TestSwitchTrainAugHook(TestCase):
         switch_hook_cfg3['action_iter'] = 3
         runner.register_custom_hooks(
             [switch_hook_cfg1, switch_hook_cfg2, switch_hook_cfg3])
-        with patch.object(SwitchTrainAugHook, '_do_switch') as mock:
+        with patch.object(SwitchRecipeHook, '_do_switch') as mock:
             runner.train()
             self.assertEqual(mock.call_count, 3)
 
@@ -200,9 +200,9 @@ class TestSwitchTrainAugHook(TestCase):
             dict(type='CutMix', alpha=0.9)
         ])
         cfg['train_augments'] = train_cfg
-        hook_obj = SwitchTrainAugHook(**cfg)
-        with patch.object(SwitchTrainAugHook, '_switch_train_loss') as m_loss:
-            with patch.object(SwitchTrainAugHook,
+        hook_obj = SwitchRecipeHook(**cfg)
+        with patch.object(SwitchRecipeHook, '_switch_train_loss') as m_loss:
+            with patch.object(SwitchRecipeHook,
                               '_switch_train_loader_pipeline') as m_pipe:
                 hook_obj._do_switch(runner)
                 m_loss.assert_not_called()
@@ -219,10 +219,10 @@ class TestSwitchTrainAugHook(TestCase):
         runner = MagicMock()
         cfg = copy.deepcopy(self.DEFAULT_CFG)
         cfg['pipeline'] = [dict(type='LoadImageFromFile')]
-        hook_obj = SwitchTrainAugHook(**cfg)
-        with patch.object(SwitchTrainAugHook,
+        hook_obj = SwitchRecipeHook(**cfg)
+        with patch.object(SwitchRecipeHook,
                           '_switch_batch_augments') as m_batch:
-            with patch.object(SwitchTrainAugHook,
+            with patch.object(SwitchRecipeHook,
                               '_switch_train_loss') as m_loss:
                 hook_obj._do_switch(runner)
                 m_batch.assert_not_called()
@@ -242,7 +242,7 @@ class TestSwitchTrainAugHook(TestCase):
                 dict(type='LoadImageFromFile'),
                 dict(type='Resize', scale=256)
             ]
-            hook_obj = SwitchTrainAugHook(**cfg)
+            hook_obj = SwitchRecipeHook(**cfg)
             hook_obj._do_switch(runner)
             runner_pipeline = runner.train_loop.dataloader.dataset.pipeline
             self.assertIsInstance(runner_pipeline, BaseTransform)
@@ -259,7 +259,7 @@ class TestSwitchTrainAugHook(TestCase):
             dict(type='LoadImageFromFile'),
             dict(type='Resize', scale=256)
         ]
-        hook_obj = SwitchTrainAugHook(**cfg)
+        hook_obj = SwitchRecipeHook(**cfg)
         hook_obj._do_switch(runner)
         for i in range(2):
             runner_dataset = runner.train_loop.dataloader.dataset.datasets[i]
@@ -276,7 +276,7 @@ class TestSwitchTrainAugHook(TestCase):
             dict(type='LoadImageFromFile'),
             dict(type='Resize', scale=256)
         ]
-        hook_obj = SwitchTrainAugHook(**cfg)
+        hook_obj = SwitchRecipeHook(**cfg)
         hook_obj._do_switch(runner)
         runner_pipeline = runner.train_loop.dataloader.dataset.dataset.pipeline
         self.assertIsInstance(runner_pipeline, BaseTransform)
@@ -286,10 +286,10 @@ class TestSwitchTrainAugHook(TestCase):
         runner = MagicMock()
         cfg = copy.deepcopy(self.DEFAULT_CFG)
         cfg['loss'] = dict(type='LabelSmoothLoss', label_smooth_val=0.2)
-        hook_obj = SwitchTrainAugHook(**cfg)
-        with patch.object(SwitchTrainAugHook,
+        hook_obj = SwitchRecipeHook(**cfg)
+        with patch.object(SwitchRecipeHook,
                           '_switch_batch_augments') as m_batch:
-            with patch.object(SwitchTrainAugHook,
+            with patch.object(SwitchRecipeHook,
                               '_switch_train_loader_pipeline') as m_pipe:
                 hook_obj._do_switch(runner)
                 m_batch.assert_not_called()
@@ -304,12 +304,12 @@ class TestSwitchTrainAugHook(TestCase):
         cfg['pipeline'] = [dict(type='LoadImageFromFile')]
         cfg['loss'] = dict(type='LabelSmoothLoss', label_smooth_val=0.2)
         cfg['train_augments'] = dict(augments=[dict(type='Mixup', alpha=0.5)])
-        hook_obj = SwitchTrainAugHook(**cfg)
-        with patch.object(SwitchTrainAugHook,
+        hook_obj = SwitchRecipeHook(**cfg)
+        with patch.object(SwitchRecipeHook,
                           '_switch_batch_augments') as m_batch:
-            with patch.object(SwitchTrainAugHook,
+            with patch.object(SwitchRecipeHook,
                               '_switch_train_loader_pipeline') as m_pipe:
-                with patch.object(SwitchTrainAugHook,
+                with patch.object(SwitchRecipeHook,
                                   '_switch_train_loss') as m_loss:
                     hook_obj._do_switch(runner)
                     m_batch.assert_called_once()
@@ -325,8 +325,8 @@ class TestSwitchTrainAugHook(TestCase):
     def test_before_train(self):
         # test not resume
         runner = self.init_runner(resume=False, epoch=2)
-        hook_obj1 = SwitchTrainAugHook(action_epoch=4)
-        hook_obj2 = SwitchTrainAugHook(action_epoch=7)
+        hook_obj1 = SwitchRecipeHook(action_epoch=4)
+        hook_obj2 = SwitchRecipeHook(action_epoch=7)
         runner.register_custom_hooks([hook_obj1, hook_obj2])
         mock_hook1 = self.create_patch(hook_obj1, '_do_switch')
         mock_hook2 = self.create_patch(hook_obj2, '_do_switch')
@@ -336,8 +336,8 @@ class TestSwitchTrainAugHook(TestCase):
 
         # test resume from no processed switch hook
         runner = self.init_runner(resume=True, epoch=2)
-        hook_obj1 = SwitchTrainAugHook(action_epoch=4)
-        hook_obj2 = SwitchTrainAugHook(action_epoch=7)
+        hook_obj1 = SwitchRecipeHook(action_epoch=4)
+        hook_obj2 = SwitchRecipeHook(action_epoch=7)
         runner.register_custom_hooks([hook_obj1, hook_obj2])
         mock_hook1 = self.create_patch(hook_obj1, '_do_switch')
         mock_hook2 = self.create_patch(hook_obj2, '_do_switch')
@@ -347,9 +347,9 @@ class TestSwitchTrainAugHook(TestCase):
 
         # test resume from epoch processed switch hook
         runner = self.init_runner(resume=True, epoch=5)
-        hook_obj1 = SwitchTrainAugHook(action_epoch=2)
-        hook_obj2 = SwitchTrainAugHook(action_epoch=7)
-        hook_obj3 = SwitchTrainAugHook(action_epoch=3)
+        hook_obj1 = SwitchRecipeHook(action_epoch=2)
+        hook_obj2 = SwitchRecipeHook(action_epoch=7)
+        hook_obj3 = SwitchRecipeHook(action_epoch=3)
         runner.register_custom_hooks([hook_obj1, hook_obj2, hook_obj3])
         mock_hook1 = self.create_patch(hook_obj1, '_do_switch')
         mock_hook2 = self.create_patch(hook_obj2, '_do_switch')
@@ -361,9 +361,9 @@ class TestSwitchTrainAugHook(TestCase):
 
         # test resume from iter processed switch hook
         runner = self.init_runner(resume=True, iter=15, by_epoch=False)
-        hook_obj1 = SwitchTrainAugHook(action_iter=2)
-        hook_obj2 = SwitchTrainAugHook(action_iter=12)
-        hook_obj3 = SwitchTrainAugHook(action_epoch=18)
+        hook_obj1 = SwitchRecipeHook(action_iter=2)
+        hook_obj2 = SwitchRecipeHook(action_iter=12)
+        hook_obj3 = SwitchRecipeHook(action_epoch=18)
         runner.register_custom_hooks([hook_obj1, hook_obj2, hook_obj3])
         mock_hook1 = self.create_patch(hook_obj1, '_do_switch')
         mock_hook2 = self.create_patch(hook_obj2, '_do_switch')
@@ -375,9 +375,9 @@ class TestSwitchTrainAugHook(TestCase):
 
         # test resume from epoch loop and iter hook
         runner = self.init_runner(resume=True, epoch=1)  # i epoch = 5 iter
-        hook_obj1 = SwitchTrainAugHook(action_iter=2)
-        hook_obj2 = SwitchTrainAugHook(action_iter=15)
-        hook_obj3 = SwitchTrainAugHook(action_iter=7)
+        hook_obj1 = SwitchRecipeHook(action_iter=2)
+        hook_obj2 = SwitchRecipeHook(action_iter=15)
+        hook_obj3 = SwitchRecipeHook(action_iter=7)
         runner.register_custom_hooks([hook_obj1, hook_obj2, hook_obj3])
         mock_hook1 = self.create_patch(hook_obj1, '_do_switch')
         mock_hook2 = self.create_patch(hook_obj2, '_do_switch')

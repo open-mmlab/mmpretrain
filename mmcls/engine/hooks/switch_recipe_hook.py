@@ -12,19 +12,19 @@ DATA_BATCH = Optional[Sequence[dict]]
 
 
 @HOOKS.register_module()
-class SwitchTrainAugHook(Hook):
-    """switch configuration during the training, including data pipeline, batch
-    augments and loss.
+class SwitchRecipeHook(Hook):
+    """switch recipe during the training loop, including data pipeline, batch
+    augments and loss currently.
 
     Args:
-        action_epoch (int): switch train augments at the epoch of action_epoch.
+        action_epoch (int): switch train recipe at the epoch of action_epoch.
             Defaults to None.
-        action_iter (int): switch train augments at the iter of action_iter.
+        action_iter (int): switch train recipe at the iter of action_iter.
             Defaults to None.
-        pipeline (dict, str, optional): the new train pipeline.
-            Defaults to 'unchange', means not changing the train pipeline.
+        pipeline (dict, str, optional): the new train data pipeline.
+            Defaults to 'unchange', means not changing the train data pipeline.
         train_augments (dict, str, optional): the new train augments.
-            Defaults to 'unchange', means not changing the train augments.
+            Defaults to 'unchange', means not changing the batch augments.
         loss (dict, str, optional): the new train loss.
             Defaults to 'unchange', means not changing the train loss.
 
@@ -33,7 +33,7 @@ class SwitchTrainAugHook(Hook):
         >>> # deinfe new_train_pipeline, new_train_augments or new_loss
         >>> custom_hooks = [
         >>>             dict(
-        >>>                 type='SwitchTrainAugHook',
+        >>>                 type='SwitchRecipeHook',
         >>>                 action_epoch=37,
         >>>                 pipeline=new_train_pipeline,
         >>>                 train_augments=new_train_augments,
@@ -41,14 +41,14 @@ class SwitchTrainAugHook(Hook):
         >>>
         >>> # switch data augments by epoch
         >>> switch_hook = dict(
-        >>>                 type='SwitchTrainAugHook',
+        >>>                 type='SwitchRecipeHook',
         >>>                 pipeline=new_pipeline,
         >>>                 action_epoch=5)
         >>> runner.register_custom_hooks([switch_hook])
         >>>
         >>> # switch train augments and loss by iter
         >>> switch_hook = dict(
-        >>>                 type='SwitchTrainAugHook',
+        >>>                 type='SwitchRecipeHook',
         >>>                 train_augments=new_train_augments,
         >>>                 loss=new_loss,
         >>>                 action_iter=5)
@@ -71,20 +71,20 @@ class SwitchTrainAugHook(Hook):
 
         if action_iter is None and action_epoch is None:
             raise ValueError('one of `action_iter` and `action_epoch` '
-                             'must be set in `SwitchTrainAugHook`.')
+                             'must be set in `SwitchRecipeHook`.')
         if action_iter is not None and action_epoch is not None:
             raise ValueError('`action_iter` and `action_epoch` should '
-                             'not be both set in `SwitchTrainAugHook`.')
+                             'not be both set in `SwitchRecipeHook`.')
 
         if action_iter is not None:
             assert isinstance(action_iter, int) and action_iter >= 0, (
                 '`action_iter` must be a number larger than 0 in '
-                f'`SwitchTrainAugHook`, but got action_iter: {action_iter}')
+                f'`SwitchRecipeHook`, but got action_iter: {action_iter}')
             self.by_epoch = False
         if action_epoch is not None:
             assert isinstance(action_epoch, int) and action_epoch >= 0, (
                 '`action_epoch` must be a number larger than 0 in '
-                f'`SwitchTrainAugHook`, but got action_epoch: {action_epoch}')
+                f'`SwitchRecipeHook`, but got action_epoch: {action_epoch}')
             self.by_epoch = True
 
         self.action_epoch = action_epoch
@@ -137,7 +137,7 @@ class SwitchTrainAugHook(Hook):
         # collect all the switch_hook with the same class name in a list.
         switch_hook_objs = [
             hook_obj for hook_obj in runner._hooks
-            if isinstance(hook_obj, SwitchTrainAugHook)
+            if isinstance(hook_obj, SwitchRecipeHook)
         ]
 
         # get the latest swict hook based on the current iter.
