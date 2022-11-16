@@ -46,6 +46,7 @@ test_pipeline = [
     dict(type='Resize', scale=448),
     dict(
         type='PackClsInputs',
+        # `gt_label_difficult` is needed for VOC evaluation
         meta_keys=('sample_idx', 'img_path', 'ori_shape', 'img_shape',
                    'scale_factor', 'flip', 'flip_direction',
                    'gt_label_difficult')),

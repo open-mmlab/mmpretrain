@@ -29,6 +29,12 @@ class VOC(MultiLabelDataset):
         │   └── ...
         └── ImageSets (directory contains various imageset file)
 
+    Extra difficult label is in VOC annotations, we will use
+    `gt_label_difficult` to record the difficult labels in each sample
+    and corresponding evaluation should take care of this field
+    to calculate metrics. Usually, difficult labels are reckoned as
+    negative in defaults.
+
     Args:
         data_root (str): The root directory for VOC dataset.
         image_set_path (str): The path of image set, The file which

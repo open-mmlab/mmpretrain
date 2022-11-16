@@ -52,6 +52,11 @@ class VOCMetricMixin:
                 result['gt_score'] = LabelData.label_to_onehot(
                     gt_label['label'], num_classes)
 
+            # VOC annotation labels all the objects in a single image
+            # therefore, some categories are appeared both in
+            # difficult objects and non-difficult objects.
+            # Here we reckon those labels which are only exists in difficult
+            # objects as difficult labels.
             difficult_label = set(gt_label_difficult) - (
                 set(gt_label_difficult) & set(gt_label['label'].tolist()))
 
