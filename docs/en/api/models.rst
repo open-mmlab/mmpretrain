@@ -65,6 +65,7 @@ Backbones
    Conformer
    ConvMixer
    ConvNeXt
+   DaViT
    DeiT3
    DenseNet
    DistilledVisionTransformer

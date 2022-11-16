@@ -37,3 +37,4 @@ Import:
   - configs/deit3/metafile.yml
   - configs/hornet/metafile.yml
   - configs/mobilevit/metafile.yml
+  - configs/davit/metafile.yml

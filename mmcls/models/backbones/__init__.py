@@ -4,6 +4,7 @@ from .conformer import Conformer
 from .convmixer import ConvMixer
 from .convnext import ConvNeXt
 from .cspnet import CSPDarkNet, CSPNet, CSPResNet, CSPResNeXt
+from .davit import DaViT
 from .deit import DistilledVisionTransformer
 from .deit3 import DeiT3
 from .densenet import DenseNet
@@ -93,4 +94,5 @@ __all__ = [
     'DeiT3',
     'HorNet',
     'MobileViT',
+    'DaViT',
 ]
