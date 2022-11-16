@@ -34,7 +34,7 @@ def loss_convertor(func, task_name):
         if len(task_data_samples) == 0:
             return {'loss': torch.tensor(0), 'mask_size': torch.tensor(0)}
         loss_output = func(masked_inputs, task_data_samples, **kwargs)
-        loss_output['mask_size'] = sum(mask)
+        loss_output['mask_size'] = torch.tensor(sum(mask))
         return loss_output
 
     return wrapped
