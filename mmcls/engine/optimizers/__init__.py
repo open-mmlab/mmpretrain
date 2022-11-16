@@ -1,8 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .lamb import Lamb
 from .adan_t import Adan
+from .lamb import Lamb
 
-__all__ = [
-    'Lamb',
-    'Adan'
-]
+__all__ = ['Lamb', 'Adan']
