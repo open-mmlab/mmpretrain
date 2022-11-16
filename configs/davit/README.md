@@ -16,11 +16,11 @@ In this work, we introduce Dual Attention Vision Transformers (DaViT), a simple 
 
 ### ImageNet-1k
 
-|   Model   |   Pretrain   | resolution | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                   Config                    |  Download   |
-| :-------: | :----------: | :--------: | :-------: | :------: | :-------: | :-------: | :-----------------------------------------: | :---------: |
-| DaViT-T\* | From scratch |  224x224   |   28.36   |   4.54   |   82.24   |   96.13   |    [config](./davit-tiny_4xb256_in1k.py)    | [model](<>) |
-| DaViT-S\* | From scratch |  224x224   |   49.74   |   8.79   |   83.61   |   96.75   | [config](./deit3-medium-p16_64xb64_in1k.py) | [model](<>) |
-| DaViT-B\* | From scratch |  224x224   |   87.95   |   15.5   |   84.09   |   96.82   |  [config](./deit3-base-p16_64xb64_in1k.py)  | [model](<>) |
+|   Model   |   Pretrain   | resolution | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                 Config                 |                                             Download                                             |
+| :-------: | :----------: | :--------: | :-------: | :------: | :-------: | :-------: | :------------------------------------: | :----------------------------------------------------------------------------------------------: |
+| DaViT-T\* | From scratch |  224x224   |   28.36   |   4.54   |   82.24   |   96.13   | [config](./davit-tiny_4xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/davit/davit-tiny_3rdparty_in1k_20221116-700fdf7d.pth) |
+| DaViT-S\* | From scratch |  224x224   |   49.74   |   8.79   |   83.61   |   96.75   | [config](./davit-small_4xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/davit/davit-small_3rdparty_in1k_20221116-51a849a6.pth) |
+| DaViT-B\* | From scratch |  224x224   |   87.95   |   15.5   |   84.09   |   96.82   | [config](./davit-base_4xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/davit/davit-base_3rdparty_in1k_20221116-19e0d956.pth) |
 
 *Models with * are converted from the [official repo](https://github.com/dingmyu/davit). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 
