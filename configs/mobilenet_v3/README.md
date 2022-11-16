@@ -16,12 +16,18 @@ We present the next generation of MobileNets based on a combination of complemen
 
 ### ImageNet-1k
 
-|        Model        | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                    Config                     |                                               Download                                                |
-| :-----------------: | :-------: | :------: | :-------: | :-------: | :-------------------------------------------: | :---------------------------------------------------------------------------------------------------: |
-| MobileNetV3-Small\* |   2.54    |   0.06   |   67.66   |   87.41   | [config](./mobilenet-v3-small_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_small-8427ecf0.pth) |
-| MobileNetV3-Large\* |   5.48    |   0.23   |   74.04   |   91.34   | [config](./mobilenet-v3-large_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_large-3ea3c186.pth) |
+|           Model           | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                      Config                       |                                          Download                                           |
+| :-----------------------: | :-------: | :------: | :-------: | :-------: | :-----------------------------------------------: | :-----------------------------------------------------------------------------------------: |
+| MobileNetV3-Small-050\*\* |   1.59    |   0.02   |   57.91   |   80.19   | [config](./mobilenet-v3-small-050_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small-050_3rdparty_in1k_20221114-e0b86be1.pth) |
+| MobileNetV3-Small-075\*\* |   2.04    |   0.04   |   65.23   |   85.44   | [config](./mobilenet-v3-small-075_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small-075_3rdparty_in1k_20221114-2011fa76.pth) |
+|     MobileNetV3-Small     |   2.54    |   0.06   |   66.68   |   86.74   |   [config](./mobilenet-v3-small_8xb128_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small_8xb128_in1k_20221114-bd1bfcde.log.json) |
+|    MobileNetV3-Small\*    |   2.54    |   0.06   |   67.66   |   87.41   |   [config](./mobilenet-v3-small_8xb128_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_small-8427ecf0.pth) |
+|     MobileNetV3-Large     |   5.48    |   0.23   |   73.49   |   91.31   |   [config](./mobilenet-v3-large_8xb128_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-large_8xb128_in1k_20221114-0ed9ed9a.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-large_8xb128_in1k_20221114-0ed9ed9a.log.json) |
+|    MobileNetV3-Large\*    |   5.48    |   0.23   |   74.04   |   91.34   |   [config](./mobilenet-v3-large_8xb128_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/convert/mobilenet_v3_large-3ea3c186.pth) |
 
-*Models with * are converted from [torchvision](https://pytorch.org/vision/stable/_modules/torchvision/models/mobilenetv3.html). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
+We cannot reproduce the performances provided by TorchVision with the [training script](https://github.com/pytorch/vision/tree/master/references/classification#mobilenetv3-large--small), and the accuracy results we got are 65.5±0.5% and 73.39% for small and large model respectively. Here we provide checkpoints trained by MMClassification that outperform the aforementioned results, and the original checkpoints provided by TorchVision.
+
+*Models with * are converted from [torchvision](https://pytorch.org/vision/stable/_modules/torchvision/models/mobilenetv3.html). Models with \*\* are converted from [timm](https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/mobilenetv3.py). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 
 ## Citation
 

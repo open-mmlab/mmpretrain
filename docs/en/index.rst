@@ -32,7 +32,7 @@ You can switch between Chinese and English documentation in the lower-left corne
    advanced_guides/pipeline.md
    advanced_guides/modules.md
    advanced_guides/schedule.md
-   advanced_guides/hook.md
+   advanced_guides/runtime.md
    advanced_guides/evaluation.md
    advanced_guides/data_flow.md
    advanced_guides/convention.md

@@ -7,6 +7,7 @@ from mmengine.dataset import Compose, pseudo_collate
 from mmengine.runner import load_checkpoint
 
 from mmcls.models import build_classifier
+from mmcls.utils import register_all_modules
 
 
 def init_model(config, checkpoint=None, device='cuda:0', options=None):
@@ -22,6 +23,7 @@ def init_model(config, checkpoint=None, device='cuda:0', options=None):
     Returns:
         nn.Module: The constructed classifier.
     """
+    register_all_modules()
     if isinstance(config, str):
         config = Config.fromfile(config)
     elif not isinstance(config, Config):
@@ -29,7 +31,6 @@ def init_model(config, checkpoint=None, device='cuda:0', options=None):
                         f'but got {type(config)}')
     if options is not None:
         config.merge_from_dict(options)
-    config.model.pretrained = None
     config.model.setdefault('data_preprocessor',
                             config.get('data_preprocessor', None))
     model = build_classifier(config.model)
@@ -66,6 +67,7 @@ def inference_model(model, img):
         result (dict): The classification results that contains
             `class_name`, `pred_label` and `pred_score`.
     """
+    register_all_modules()
     cfg = model.cfg
     # build the data pipeline
     test_pipeline_cfg = cfg.test_dataloader.dataset.pipeline

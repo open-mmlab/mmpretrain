@@ -1,8 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import unittest
 from unittest import TestCase
 from unittest.mock import MagicMock
 
 import torch
+import torch.nn as nn
 from mmengine import ConfigDict
 
 from mmcls.models import ImageClassifier
@@ -11,6 +13,22 @@ from mmcls.structures import ClsDataSample
 from mmcls.utils import register_all_modules
 
 register_all_modules()
+
+
+def has_timm() -> bool:
+    try:
+        import timm  # noqa: F401
+        return True
+    except ImportError:
+        return False
+
+
+def has_huggingface() -> bool:
+    try:
+        import transformers  # noqa: F401
+        return True
+    except ImportError:
+        return False
 
 
 class TestImageClassifier(TestCase):
@@ -212,3 +230,245 @@ class TestImageClassifier(TestCase):
 
         predictions = model.test_step(data)
         self.assertEqual(predictions[0].pred_label.score.shape, (10, ))
+
+
+@unittest.skipIf(not has_timm(), 'timm is not installed.')
+class TestTimmClassifier(TestCase):
+    DEFAULT_ARGS = dict(
+        type='TimmClassifier',
+        model_name='resnet18',
+        loss=dict(type='CrossEntropyLoss'),
+    )
+
+    def test_initialize(self):
+        model = MODELS.build(self.DEFAULT_ARGS)
+        assert isinstance(model.model, nn.Module)
+
+        # test set batch augmentation from train_cfg
+        cfg = {
+            **self.DEFAULT_ARGS, 'train_cfg':
+            dict(augments=dict(type='Mixup', alpha=1.))
+        }
+        model: ImageClassifier = MODELS.build(cfg)
+        self.assertIsNotNone(model.data_preprocessor.batch_augments)
+
+        cfg = {**self.DEFAULT_ARGS, 'train_cfg': dict()}
+        model: ImageClassifier = MODELS.build(cfg)
+        self.assertIsNone(model.data_preprocessor.batch_augments)
+
+    def test_loss(self):
+        inputs = torch.rand(1, 3, 224, 224)
+        data_samples = [ClsDataSample().set_gt_label(1)]
+
+        model: ImageClassifier = MODELS.build(self.DEFAULT_ARGS)
+        losses = model.loss(inputs, data_samples)
+        self.assertGreater(losses['loss'].item(), 0)
+
+    def test_predict(self):
+        inputs = torch.rand(1, 3, 224, 224)
+        data_samples = [ClsDataSample().set_gt_label(1)]
+
+        model: ImageClassifier = MODELS.build(self.DEFAULT_ARGS)
+        predictions = model.predict(inputs)
+        self.assertEqual(predictions[0].pred_label.score.shape, (1000, ))
+
+        predictions = model.predict(inputs, data_samples)
+        self.assertEqual(predictions[0].pred_label.score.shape, (1000, ))
+        self.assertEqual(data_samples[0].pred_label.score.shape, (1000, ))
+        torch.testing.assert_allclose(data_samples[0].pred_label.score,
+                                      predictions[0].pred_label.score)
+
+    def test_forward(self):
+        inputs = torch.rand(1, 3, 224, 224)
+        data_samples = [ClsDataSample().set_gt_label(1)]
+        model: ImageClassifier = MODELS.build(self.DEFAULT_ARGS)
+
+        # test pure forward
+        outs = model(inputs)
+        self.assertIsInstance(outs, torch.Tensor)
+
+        # test forward train
+        losses = model(inputs, data_samples, mode='loss')
+        self.assertGreater(losses['loss'].item(), 0)
+
+        # test forward test
+        predictions = model(inputs, mode='predict')
+        self.assertEqual(predictions[0].pred_label.score.shape, (1000, ))
+
+        predictions = model(inputs, data_samples, mode='predict')
+        self.assertEqual(predictions[0].pred_label.score.shape, (1000, ))
+        self.assertEqual(data_samples[0].pred_label.score.shape, (1000, ))
+        torch.testing.assert_allclose(data_samples[0].pred_label.score,
+                                      predictions[0].pred_label.score)
+
+        # test forward with invalid mode
+        with self.assertRaisesRegex(RuntimeError, 'Invalid mode "unknown"'):
+            model(inputs, mode='unknown')
+
+    def test_train_step(self):
+        cfg = {
+            **self.DEFAULT_ARGS, 'data_preprocessor':
+            dict(mean=[127.5, 127.5, 127.5], std=[127.5, 127.5, 127.5])
+        }
+        model: ImageClassifier = MODELS.build(cfg)
+
+        data = {
+            'inputs': torch.randint(0, 256, (1, 3, 224, 224)),
+            'data_samples': [ClsDataSample().set_gt_label(1)]
+        }
+
+        optim_wrapper = MagicMock()
+        log_vars = model.train_step(data, optim_wrapper)
+        self.assertIn('loss', log_vars)
+        optim_wrapper.update_params.assert_called_once()
+
+    def test_val_step(self):
+        cfg = {
+            **self.DEFAULT_ARGS, 'data_preprocessor':
+            dict(mean=[127.5, 127.5, 127.5], std=[127.5, 127.5, 127.5])
+        }
+        model: ImageClassifier = MODELS.build(cfg)
+
+        data = {
+            'inputs': torch.randint(0, 256, (1, 3, 224, 224)),
+            'data_samples': [ClsDataSample().set_gt_label(1)]
+        }
+
+        predictions = model.val_step(data)
+        self.assertEqual(predictions[0].pred_label.score.shape, (1000, ))
+
+    def test_test_step(self):
+        cfg = {
+            **self.DEFAULT_ARGS, 'data_preprocessor':
+            dict(mean=[127.5, 127.5, 127.5], std=[127.5, 127.5, 127.5])
+        }
+        model: ImageClassifier = MODELS.build(cfg)
+
+        data = {
+            'inputs': torch.randint(0, 256, (1, 3, 224, 224)),
+            'data_samples': [ClsDataSample().set_gt_label(1)]
+        }
+
+        predictions = model.test_step(data)
+        self.assertEqual(predictions[0].pred_label.score.shape, (1000, ))
+
+
+@unittest.skipIf(not has_huggingface(), 'huggingface is not installed.')
+class TestHuggingFaceClassifier(TestCase):
+    DEFAULT_ARGS = dict(
+        type='HuggingFaceClassifier',
+        model_name='microsoft/resnet-18',
+        loss=dict(type='CrossEntropyLoss'),
+    )
+
+    def test_initialize(self):
+        model = MODELS.build(self.DEFAULT_ARGS)
+        assert isinstance(model.model, nn.Module)
+
+        # test set batch augmentation from train_cfg
+        cfg = {
+            **self.DEFAULT_ARGS, 'train_cfg':
+            dict(augments=dict(type='Mixup', alpha=1.))
+        }
+        model: ImageClassifier = MODELS.build(cfg)
+        self.assertIsNotNone(model.data_preprocessor.batch_augments)
+
+        cfg = {**self.DEFAULT_ARGS, 'train_cfg': dict()}
+        model: ImageClassifier = MODELS.build(cfg)
+        self.assertIsNone(model.data_preprocessor.batch_augments)
+
+    def test_loss(self):
+        inputs = torch.rand(1, 3, 224, 224)
+        data_samples = [ClsDataSample().set_gt_label(1)]
+
+        model: ImageClassifier = MODELS.build(self.DEFAULT_ARGS)
+        losses = model.loss(inputs, data_samples)
+        self.assertGreater(losses['loss'].item(), 0)
+
+    def test_predict(self):
+        inputs = torch.rand(1, 3, 224, 224)
+        data_samples = [ClsDataSample().set_gt_label(1)]
+
+        model: ImageClassifier = MODELS.build(self.DEFAULT_ARGS)
+        predictions = model.predict(inputs)
+        self.assertEqual(predictions[0].pred_label.score.shape, (1000, ))
+
+        predictions = model.predict(inputs, data_samples)
+        self.assertEqual(predictions[0].pred_label.score.shape, (1000, ))
+        self.assertEqual(data_samples[0].pred_label.score.shape, (1000, ))
+        torch.testing.assert_allclose(data_samples[0].pred_label.score,
+                                      predictions[0].pred_label.score)
+
+    def test_forward(self):
+        inputs = torch.rand(1, 3, 224, 224)
+        data_samples = [ClsDataSample().set_gt_label(1)]
+        model: ImageClassifier = MODELS.build(self.DEFAULT_ARGS)
+
+        # test pure forward
+        outs = model(inputs)
+        self.assertIsInstance(outs, torch.Tensor)
+
+        # test forward train
+        losses = model(inputs, data_samples, mode='loss')
+        self.assertGreater(losses['loss'].item(), 0)
+
+        # test forward test
+        predictions = model(inputs, mode='predict')
+        self.assertEqual(predictions[0].pred_label.score.shape, (1000, ))
+
+        predictions = model(inputs, data_samples, mode='predict')
+        self.assertEqual(predictions[0].pred_label.score.shape, (1000, ))
+        self.assertEqual(data_samples[0].pred_label.score.shape, (1000, ))
+        torch.testing.assert_allclose(data_samples[0].pred_label.score,
+                                      predictions[0].pred_label.score)
+
+        # test forward with invalid mode
+        with self.assertRaisesRegex(RuntimeError, 'Invalid mode "unknown"'):
+            model(inputs, mode='unknown')
+
+    def test_train_step(self):
+        cfg = {
+            **self.DEFAULT_ARGS, 'data_preprocessor':
+            dict(mean=[127.5, 127.5, 127.5], std=[127.5, 127.5, 127.5])
+        }
+        model: ImageClassifier = MODELS.build(cfg)
+
+        data = {
+            'inputs': torch.randint(0, 256, (1, 3, 224, 224)),
+            'data_samples': [ClsDataSample().set_gt_label(1)]
+        }
+
+        optim_wrapper = MagicMock()
+        log_vars = model.train_step(data, optim_wrapper)
+        self.assertIn('loss', log_vars)
+        optim_wrapper.update_params.assert_called_once()
+
+    def test_val_step(self):
+        cfg = {
+            **self.DEFAULT_ARGS, 'data_preprocessor':
+            dict(mean=[127.5, 127.5, 127.5], std=[127.5, 127.5, 127.5])
+        }
+        model: ImageClassifier = MODELS.build(cfg)
+
+        data = {
+            'inputs': torch.randint(0, 256, (1, 3, 224, 224)),
+            'data_samples': [ClsDataSample().set_gt_label(1)]
+        }
+
+        predictions = model.val_step(data)
+        self.assertEqual(predictions[0].pred_label.score.shape, (1000, ))
+
+    def test_test_step(self):
+        cfg = {
+            **self.DEFAULT_ARGS, 'data_preprocessor':
+            dict(mean=[127.5, 127.5, 127.5], std=[127.5, 127.5, 127.5])
+        }
+        model: ImageClassifier = MODELS.build(cfg)
+
+        data = {
+            'inputs': torch.randint(0, 256, (1, 3, 224, 224)),
+            'data_samples': [ClsDataSample().set_gt_label(1)]
+        }
+
+        predictions = model.test_step(data)
+        self.assertEqual(predictions[0].pred_label.score.shape, (1000, ))

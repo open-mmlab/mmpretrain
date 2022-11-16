@@ -151,7 +151,7 @@ class ClsDataPreprocessor(BaseDataPreprocessor):
                                  self.pad_value)
 
         data_samples = data.get('data_samples', None)
-        if data_samples is not None:
+        if data_samples is not None and 'gt_label' in data_samples[0]:
             gt_labels = [sample.gt_label for sample in data_samples]
             batch_label, label_indices = cat_batch_labels(
                 gt_labels, device=self.device)

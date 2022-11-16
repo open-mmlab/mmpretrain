@@ -44,6 +44,8 @@ Classifiers
 
     BaseClassifier
     ImageClassifier
+    TimmClassifier
+    HuggingFaceClassifier
 
 .. module:: mmcls.models.backbones
 
@@ -63,12 +65,13 @@ Backbones
    Conformer
    ConvMixer
    ConvNeXt
-   DenseNet
    DeiT3
+   DenseNet
    DistilledVisionTransformer
+   EdgeNeXt
    EfficientFormer
    EfficientNet
-   EdgeNeXt
+   HorNet
    HRNet
    InceptionV3
    LeNet5
@@ -77,6 +80,7 @@ Backbones
    MobileNetV2
    MobileNetV3
    MobileOne
+   MobileViT
    PCPVT
    PoolFormer
    RegNet

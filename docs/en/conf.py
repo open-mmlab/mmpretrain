@@ -43,13 +43,9 @@ release = get_version()
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.viewcode',
-    'myst_parser',
-    'sphinx_copybutton',
+    'sphinx.ext.autodoc', 'sphinx.ext.autosummary', 'sphinx.ext.intersphinx',
+    'sphinx.ext.napoleon', 'sphinx.ext.viewcode', 'myst_parser',
+    'sphinx_copybutton', 'sphinx_tabs.tabs'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -118,15 +114,24 @@ html_theme_options = {
     ],
     # Specify the language of shared menu
     'menu_lang':
-    'en'
+    'en',
+    # Disable the default edit on GitHub
+    'default_edit_on_github':
+    False,
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
-html_css_files = ['css/readthedocs.css']
-html_js_files = ['js/custom.js']
+html_css_files = [
+    'https://cdn.datatables.net/v/bs4/dt-1.12.1/datatables.min.css',
+    'css/readthedocs.css'
+]
+html_js_files = [
+    'https://cdn.datatables.net/v/bs4/dt-1.12.1/datatables.min.js',
+    'js/custom.js'
+]
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
@@ -221,7 +226,7 @@ copybutton_prompt_is_regexp = True
 # Auto-generated header anchors
 myst_heading_anchors = 3
 # Enable "colon_fence" extension of myst.
-myst_enable_extensions = ['colon_fence']
+myst_enable_extensions = ['colon_fence', 'dollarmath']
 
 # Configuration for intersphinx
 intersphinx_mapping = {

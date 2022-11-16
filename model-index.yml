@@ -1,5 +1,6 @@
 Import:
   - configs/mobilenet_v2/metafile.yml
+  - configs/mobilenet_v3/metafile.yml
   - configs/resnet/metafile.yml
   - configs/res2net/metafile.yml
   - configs/resnext/metafile.yml
@@ -34,3 +35,5 @@ Import:
   - configs/efficientformer/metafile.yml
   - configs/swin_transformer_v2/metafile.yml
   - configs/deit3/metafile.yml
+  - configs/hornet/metafile.yml
+  - configs/mobilevit/metafile.yml

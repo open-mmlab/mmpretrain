@@ -144,7 +144,7 @@ def show_summary(summary_data, args):
     if args.inference_time:
         table.add_column('Inference Time (std) (ms/im)')
     if args.flops:
-        table.add_column('Flops', justify='right')
+        table.add_column('Flops', justify='right', width=11)
         table.add_column('Params', justify='right')
 
     for model_name, summary in summary_data.items():
