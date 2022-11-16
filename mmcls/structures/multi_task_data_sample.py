@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 from typing import Dict
+
 import torch
 from mmengine.structures import BaseDataElement, LabelData
 

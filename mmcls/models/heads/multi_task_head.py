@@ -32,7 +32,7 @@ def loss_convertor(func, task_name):
         else:
             masked_inputs = inputs[mask]
         if len(task_data_samples) == 0:
-            return {'loss': torch.tensor(0), 'mask_size': 'all'}
+            return {'loss': torch.tensor(0), 'mask_size': torch.tensor(0)}
         loss_output = func(masked_inputs, task_data_samples, **kwargs)
         loss_output['mask_size'] = sum(mask)
         return loss_output
@@ -112,10 +112,6 @@ class MultiTaskHead(BaseHead):
         losses = dict()
         for task_name, head in self.task_heads.items():
             head_loss = head.loss(feats, data_samples, **kwargs)
-            """
-            else:
-                head_loss = {f'{task_name}_loss': torch.tensor(0)}
-            """
             for k, v in head_loss.items():
                 losses[f'{task_name}_{k}'] = v
         return losses
