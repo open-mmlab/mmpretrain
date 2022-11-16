@@ -12,21 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import math
+from typing import List
+
 import torch
 from torch import Tensor
 from torch.optim.optimizer import Optimizer
-
-from typing import List
 
 from mmcls.registry import OPTIMIZERS
 
 
 @OPTIMIZERS.register_module()
 class Adan(Optimizer):
-    """
-    Implements a pytorch variant of Adan
+    """Implements a pytorch variant of Adan.
 
     Adan was proposed in
     Adan : Adaptive Nesterov Momentum Algorithm for Faster Optimizing Deep Models. # noqa
@@ -50,25 +48,38 @@ class Adan(Optimizer):
             It's faster but uses slightly more memory.
     """
 
-    def __init__(self, params, lr=1e-3, betas=(0.98, 0.92, 0.99),
-                 eps=1e-8, weight_decay=0.0, max_grad_norm=0.0,
-                 no_prox=False, foreach: bool = True):
+    def __init__(self,
+                 params,
+                 lr=1e-3,
+                 betas=(0.98, 0.92, 0.99),
+                 eps=1e-8,
+                 weight_decay=0.0,
+                 max_grad_norm=0.0,
+                 no_prox=False,
+                 foreach: bool = True):
         if not 0.0 <= max_grad_norm:
-            raise ValueError("Invalid Max grad norm: {}".format(max_grad_norm))
+            raise ValueError('Invalid Max grad norm: {}'.format(max_grad_norm))
         if not 0.0 <= lr:
-            raise ValueError("Invalid learning rate: {}".format(lr))
+            raise ValueError('Invalid learning rate: {}'.format(lr))
         if not 0.0 <= eps:
-            raise ValueError("Invalid epsilon value: {}".format(eps))
+            raise ValueError('Invalid epsilon value: {}'.format(eps))
         if not 0.0 <= betas[0] < 1.0:
-            raise ValueError("Invalid beta parameter at index 0: {}".format(betas[0]))  # noqa
+            raise ValueError('Invalid beta parameter at index 0: {}'.format(
+                betas[0]))
         if not 0.0 <= betas[1] < 1.0:
-            raise ValueError("Invalid beta parameter at index 1: {}".format(betas[1]))  # noqa
+            raise ValueError('Invalid beta parameter at index 1: {}'.format(
+                betas[1]))
         if not 0.0 <= betas[2] < 1.0:
-            raise ValueError("Invalid beta parameter at index 2: {}".format(betas[2]))  # noqa
-        defaults = dict(lr=lr, betas=betas, eps=eps,
-                        weight_decay=weight_decay,
-                        max_grad_norm=max_grad_norm,
-                        no_prox=no_prox, foreach=foreach)
+            raise ValueError('Invalid beta parameter at index 2: {}'.format(
+                betas[2]))
+        defaults = dict(
+            lr=lr,
+            betas=betas,
+            eps=eps,
+            weight_decay=weight_decay,
+            max_grad_norm=max_grad_norm,
+            no_prox=no_prox,
+            foreach=foreach)
         super().__init__(params, defaults)
 
     def __setstate__(self, state):
@@ -94,15 +105,13 @@ class Adan(Optimizer):
 
     @torch.no_grad()
     def step(self):
-        """
-            Performs a single optimization step.
-        """
+        """Performs a single optimization step."""
         if self.defaults['max_grad_norm'] > 0:
             device = self.param_groups[0]['params'][0].device
             global_grad_norm = torch.zeros(1, device=device)
 
-            max_grad_norm = torch.tensor(self.defaults['max_grad_norm'],
-                                         device=device)
+            max_grad_norm = torch.tensor(
+                self.defaults['max_grad_norm'], device=device)
             for group in self.param_groups:
 
                 for p in group['params']:
@@ -134,9 +143,9 @@ class Adan(Optimizer):
             else:
                 group['step'] = 1
 
-            bias_correction1 = 1.0 - beta1 ** group['step']
-            bias_correction2 = 1.0 - beta2 ** group['step']
-            bias_correction3 = 1.0 - beta3 ** group['step']
+            bias_correction1 = 1.0 - beta1**group['step']
+            bias_correction2 = 1.0 - beta2**group['step']
+            bias_correction3 = 1.0 - beta3**group['step']
 
             for p in group['params']:
                 if p.grad is None:
@@ -180,7 +189,7 @@ class Adan(Optimizer):
                 no_prox=group['no_prox'],
                 clip_global_grad_norm=clip_global_grad_norm,
             )
-            if group["foreach"]:
+            if group['foreach']:
                 copy_grads = _multi_tensor_adan(**kwargs)
             else:
                 copy_grads = _single_tensor_adan(**kwargs)
@@ -279,8 +288,8 @@ def _multi_tensor_adan(
     torch._foreach_add_(exp_avg_diffs, diff, alpha=1 - beta2)  # diff_t
 
     torch._foreach_mul_(exp_avg_sqs, beta3)
-    torch._foreach_addcmul_(exp_avg_sqs,
-                            update, update, value=1 - beta3)  # n_t
+    torch._foreach_addcmul_(
+        exp_avg_sqs, update, update, value=1 - beta3)  # n_t
 
     denom = torch._foreach_sqrt(exp_avg_sqs)
     torch._foreach_div_(denom, bias_correction3_sqrt)
@@ -291,9 +300,8 @@ def _multi_tensor_adan(
     # beta2 * diff / bias_correction2 != diff * (beta2 / bias_correction2)  # noqa
     # using faster version by default. uncomment for tests to pass
     # torch._foreach_add_(update, torch._foreach_div(torch._foreach_mul(exp_avg_diffs, beta2), bias_correction2))  # noqa
-    torch._foreach_add_(update,
-                        torch._foreach_mul(exp_avg_diffs,
-                                           beta2 / bias_correction2))
+    torch._foreach_add_(
+        update, torch._foreach_mul(exp_avg_diffs, beta2 / bias_correction2))
     torch._foreach_div_(update, denom)
 
     if no_prox:
