@@ -12,48 +12,49 @@ from mmengine.utils.dl_utils.parrots_wrapper import _BatchNorm
 from mmcls.registry import MODELS
 from .base_backbone import BaseBackbone
 
+def conv_bn(in_channels, out_channels, kernel_size, stride, padding, groups, dilation=1, norm_cfg=dict(type='BN')):
+    """Construct a sequential conv and bn.
 
-def get_conv2d(in_channels, out_channels, kernel_size, stride, padding, dilation, groups, bias):
-    if type(kernel_size) is int:
-        use_large_impl = kernel_size > 5
-    else:
-        assert len(kernel_size) == 2 and kernel_size[0] == kernel_size[1]
-        use_large_impl = kernel_size[0] > 5
-    has_large_impl = 'LARGE_KERNEL_CONV_IMPL' in os.environ
-    if has_large_impl and in_channels == out_channels and out_channels == groups and use_large_impl and stride == 1 and padding == kernel_size // 2 and dilation == 1:
-        sys.path.append(os.environ['LARGE_KERNEL_CONV_IMPL'])
-        #   Please follow the instructions https://github.com/DingXiaoH/RepLKNet-pytorch/blob/main/README.md
-        #   export LARGE_KERNEL_CONV_IMPL=absolute_path_to_where_you_cloned_the_example (i.e., depthwise_conv2d_implicit_gemm.py)
-        # TODO more efficient PyTorch implementations of large-kernel convolutions. Pull requests are welcomed.
-        # Or you may try MegEngine. We have integrated an efficient implementation into MegEngine and it will automatically use it.
-        from depthwise_conv2d_implicit_gemm import DepthWiseConv2dImplicitGEMM
-        return DepthWiseConv2dImplicitGEMM(in_channels, kernel_size, bias=bias)
-    else:
-        return nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, stride=stride,
-                         padding=padding, dilation=dilation, groups=groups, bias=bias)
+    Args:
+        in_channels (int): Dimension of input features.
+        out_channels (int): Dimension of output features.
+        kernel_size (int): kernel_size of the convolution.
+        stride (int): stride of the convolution.
+        padding (int): stride of the convolution.
+        groups (int): groups of the convolution.
+        dilation (int): dilation of the convolution. Default to 1.
+        norm_cfg (dict): dictionary to construct and config norm layer.
+            Default to  ``dict(type='BN', requires_grad=True)``.
 
-use_sync_bn = False
-
-def enable_sync_bn():
-    global use_sync_bn
-    use_sync_bn = True
-
-def get_bn(channels):
-    if use_sync_bn:
-        return nn.SyncBatchNorm(channels)
-    else:
-        return nn.BatchNorm2d(channels)
-
-def conv_bn(in_channels, out_channels, kernel_size, stride, padding, groups, dilation=1):
+    Returns:
+        nn.Sequential(): A conv layer and a batch norm layer. 
+        
+    """
     if padding is None:
         padding = kernel_size // 2
     result = nn.Sequential()
-    result.add_module('conv', get_conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size,
-                                         stride=stride, padding=padding, dilation=dilation, groups=groups, bias=False))
-    result.add_module('bn', get_bn(out_channels))
+    result.add_module('conv', nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, stride=stride,
+                                        padding=padding, dilation=dilation, groups=groups, bias=False))
+    result.add_module('bn', build_norm_layer(norm_cfg, out_channels)[1])
     return result
 
 def conv_bn_relu(in_channels, out_channels, kernel_size, stride, padding, groups, dilation=1):
+    """Construct a sequential conv, bn and relu.
+
+    Args:
+        in_channels (int): Dimension of input features.
+        out_channels (int): Dimension of output features.
+        kernel_size (int): kernel_size of the convolution.
+        stride (int): stride of the convolution.
+        padding (int): stride of the convolution.
+        groups (int): groups of the convolution.
+        dilation (int): dilation of the convolution. Default to 1.
+
+    Returns:
+        nn.Sequential(): A conv layer, batch norm layer and a relu function. 
+        
+    """
+
     if padding is None:
         padding = kernel_size // 2
     result = conv_bn(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size,
@@ -62,6 +63,17 @@ def conv_bn_relu(in_channels, out_channels, kernel_size, stride, padding, groups
     return result
 
 def fuse_bn(conv, bn):
+    """Fuse the parameters in a branch with a conv and bn.
+
+    Args:
+        conv (nn.Conv2d): The convolution module to fuse.
+        bn (nn.BatchNorm2d): The batch normalization to fuse.
+
+    Returns:
+        tuple[torch.Tensor, torch.Tensor]: The parameters obtained after
+        fusing the parameters of conv and bn in one branch.
+        The first element is the weight and the second is the bias.
+    """
     kernel = conv.weight
     running_mean = bn.running_mean
     running_var = bn.running_var
@@ -74,6 +86,23 @@ def fuse_bn(conv, bn):
 
 
 class ReparamLargeKernelConv(BaseModule):
+    """Super large kernel implemented by with large convolutions.
+
+    Input: Tensor with shape [B, C, H, W].
+    Output: Tensor with shape [B, C, H, W].
+
+    Args:
+        in_channels (int): Dimension of input features.
+        out_channels (int): Dimension of output features.
+        kernel_size (int): kernel_size of the large convolution.
+        stride (int): stride of the large convolution.
+        groups (int): groups of the large convolution.
+        small_kernel (int): kernel_size of the small convolution.
+        small_kernel_merged (bool): Whether to switch the model structure to
+            deployment mode (merge the small kernel to the large kernel). Default to  False.
+        init_cfg (dict or list[dict], optional): Initialization config dict.
+            Defaults to None
+    """
 
     def __init__(self, 
                  in_channels, 
@@ -90,8 +119,8 @@ class ReparamLargeKernelConv(BaseModule):
         # We assume the conv does not change the feature map size, so padding = k//2. Otherwise, you may configure padding as you wish, and change the padding of small_conv accordingly.
         padding = kernel_size // 2
         if small_kernel_merged:
-            self.lkb_reparam = get_conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size,
-                                          stride=stride, padding=padding, dilation=1, groups=groups, bias=True)
+            self.lkb_reparam = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size, stride=stride,
+                                         padding=padding, dilation=1, groups=groups, bias=True)
         else:
             self.lkb_origin = conv_bn(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size,
                                       stride=stride, padding=padding, dilation=1, groups=groups)
@@ -119,14 +148,17 @@ class ReparamLargeKernelConv(BaseModule):
         return eq_k, eq_b
 
     def merge_kernel(self):
+        """Switch the model structure from training mode to deployment mode."""
         if self.small_kernel_merged:
             return
         eq_k, eq_b = self.get_equivalent_kernel_bias()
-        self.lkb_reparam = get_conv2d(in_channels=self.lkb_origin.conv.in_channels,
-                                     out_channels=self.lkb_origin.conv.out_channels,
-                                     kernel_size=self.lkb_origin.conv.kernel_size, stride=self.lkb_origin.conv.stride,
-                                     padding=self.lkb_origin.conv.padding, dilation=self.lkb_origin.conv.dilation,
+        self.lkb_reparam = nn.Conv2d(in_channels=self.lkb_origin.conv.in_channels, 
+                                     out_channels=self.lkb_origin.conv.out_channels, 
+                                     kernel_size=self.lkb_origin.conv.kernel_size, 
+                                     stride=self.lkb_origin.conv.stride,
+                                     padding=self.lkb_origin.conv.padding, dilation=self.lkb_origin.conv.dilation, 
                                      groups=self.lkb_origin.conv.groups, bias=True)
+                         
         self.lkb_reparam.weight.data = eq_k
         self.lkb_reparam.bias.data = eq_b
         self.__delattr__('lkb_origin')
@@ -137,6 +169,23 @@ class ReparamLargeKernelConv(BaseModule):
 
 
 class ConvFFN(BaseModule):
+    """Mlp implemented by with 1*1 convolutions.
+
+    Input: Tensor with shape [B, C, H, W].
+    Output: Tensor with shape [B, C, H, W].
+
+    Args:
+        in_channels (int): Dimension of input features.
+        internal_channels (int): Dimension of hidden features.
+        out_channels (int): Dimension of output features.
+        drop_path (float): Stochastic depth rate. Defaults to 0.
+        norm_cfg (dict): dictionary to construct and config norm layer.
+            Default to  ``dict(type='BN', requires_grad=True)``.
+        act_cfg (dict): The config dict for activation between pointwise
+            convolution. Defaults to ``dict(type='GELU')``.
+        init_cfg (dict or list[dict], optional): Initialization config dict.
+            Defaults to None.
+    """
 
     def __init__(self, 
                  in_channels, 
@@ -162,6 +211,23 @@ class ConvFFN(BaseModule):
 
 
 class RepLKBlock(BaseModule):
+    """RepLKBlock for RepLKNet backbone.
+
+    Args:
+        in_channels (int): The input channels of the block.
+        dw_channels (int): The intermediate channels of the block, i.e., input channels of the large kernel convolution.
+        block_lk_size (int): size of the super large kernel. Defaults: 31.
+        small_kernel (int): size of the parallel small kernel. Defaults: 5.
+        drop_path (float): Stochastic depth rate. Defaults: 0.
+        small_kernel_merged (bool): Whether to switch the model structure to
+            deployment mode (merge the small kernel to the large kernel). Default to  False.
+        norm_cfg (dict): dictionary to construct and config norm layer.
+            Default to  ``dict(type='BN', requires_grad=True)``.
+        act_cfg (dict): Config dict for activation layer.
+            Default to  ``dict(type='ReLU')``.
+        init_cfg (dict or list[dict], optional): Initialization config dict.
+            Default to  None
+    """
 
     def __init__(self, 
                  in_channels, 
@@ -193,6 +259,29 @@ class RepLKBlock(BaseModule):
 
 
 class RepLKNetStage(BaseModule):
+    """
+    generate RepLKNet blocks for a stage
+    return: RepLKNet blocks
+
+    Args:
+        channels (int): The input channels of the stage.
+        num_blocks (int): The number of blocks of the stage. 
+        stage_lk_size (int): size of the super large kernel. Defaults: 31.
+        drop_path (float): Stochastic depth rate. Defaults: 0.
+        small_kernel (int): size of the parallel small kernel. Defaults: 5.
+        dw_ratio (float): The intermediate channels expansion ratio of the block. Defaults: 1.
+        ffn_ratio (float): Mlp expansion ratio. Defaults to 4.
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+            memory while slowing down the training speed. Default to  False.
+        small_kernel_merged (bool): Whether to switch the model structure to
+            deployment mode (merge the small kernel to the large kernel). Default to  False.
+        norm_intermediate_features (bool): Construct and config norm layer or not. Using True will 
+            normalize the intermediate features for downstream dense prediction tasks. 
+        norm_cfg (dict): dictionary to construct and config norm layer.
+            Default to  ``dict(type='BN', requires_grad=True)``.
+        init_cfg (dict or list[dict], optional): Initialization config dict.
+            Default to  None
+    """
 
     def __init__(self, 
                  channels, 
@@ -236,6 +325,45 @@ class RepLKNetStage(BaseModule):
 
 @MODELS.register_module()
 class RepLKNet(BaseBackbone):
+    """RepLKNet backbone.
+
+    A PyTorch impl of : `Scaling Up Your Kernels to 31x31: Revisiting Large Kernel Design in CNNs
+    <https://arxiv.org/abs/2203.06717>`_
+
+    Args:
+        arch (str | dict): The parameter of RepLKNet.
+            If it's a dict, it should contain the following keys:
+
+            - large_kernel_sizes (Sequence[int]): Large kernel size in each stage.
+            - layers (Sequence[int]): Number of blocks in each stage.
+            - channels (Sequence[int]): Number of channels in each stage.
+            - small_kernel (int): size of the parallel small kernel.
+            - dw_ratio (float): The intermediate channels expansion ratio of the block. 
+        in_channels (int): Number of input image channels. Default to  3.
+        ffn_ratio (float): Mlp expansion ratio. Defaults to 4.
+        out_indices (Sequence[int]): Output from which stages. Default to  (3, ).
+        strides (Sequence[int]): Strides of the first block of each stage.
+            Default to  (2, 2, 2, 2).
+        dilations (Sequence[int]): Dilation of each stage.
+            Default to  (1, 1, 1, 1).
+        frozen_stages (int): Stages to be frozen (all param fixed). -1 means
+            not freezing any parameters. Default to  -1.
+        conv_cfg (dict | None): The config dict for conv layers. Default to  None.
+        norm_cfg (dict): The config dict for norm layers.
+            Default to  ``dict(type='BN')``.
+        act_cfg (dict): Config dict for activation layer.
+            Default to  ``dict(type='ReLU')``.
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+            memory while slowing down the training speed. Default to  False.
+        deploy (bool): Whether to switch the model structure to deployment
+            mode. Default to  False.
+        norm_intermediate_features (bool): Construct and config norm layer or not. Using True will 
+            normalize the intermediate features for downstream dense prediction tasks. 
+        norm_eval (bool): Whether to set norm layers to eval mode, namely,
+            freeze running stats (mean and var). Note: Effect on Batch Norm
+            and its variants only. Default to  False.
+        init_cfg (dict or list[dict], optional): Initialization config dict.    
+    """
 
     arch_settings = {
         '31B':
@@ -311,12 +439,9 @@ class RepLKNet(BaseBackbone):
         self.drop_path_rate = drop_path_rate
         self.small_kernel_merged = small_kernel_merged
         self.norm_eval = norm_eval
-        self.use_sync_bn = use_sync_bn
         self.norm_intermediate_features = norm_intermediate_features
 
         self.out_indices = out_indices
-        if use_sync_bn:
-            enable_sync_bn()
 
         base_width = self.arch['channels'][0]
         self.norm_intermediate_features = norm_intermediate_features
@@ -407,45 +532,13 @@ class RepLKNet(BaseBackbone):
                 conv = m[0]
                 bn = m[1]
                 fused_kernel, fused_bias = fuse_bn(conv, bn)
-                fused_conv = get_conv2d(conv.in_channels, conv.out_channels, kernel_size=conv.kernel_size,
+                fused_conv = nn.Conv2d(conv.in_channels, conv.out_channels, kernel_size=conv.kernel_size,
                                         stride=conv.stride,
                                         padding=conv.padding, dilation=conv.dilation, groups=conv.groups, bias=True)
                 fused_conv.weight.data = fused_kernel
                 fused_conv.bias.data = fused_bias
                 m[0] = fused_conv
                 m[1] = nn.Identity()
-
-
-# def create_RepLKNet31B(drop_path_rate=0.3, num_classes=1000, with_cp=True, small_kernel_merged=False):
-#     return RepLKNet(arch='31B')
-
-# def create_RepLKNet31L(drop_path_rate=0.3, num_classes=1000, with_cp=True, small_kernel_merged=False):
-#     return RepLKNet(large_kernel_sizes=[31,29,27,13], layers=[2,2,18,2], channels=[192,384,768,1536],
-#                     drop_path_rate=drop_path_rate, small_kernel=5, num_classes=num_classes, with_cp=with_cp,
-#                     small_kernel_merged=small_kernel_merged)
-
-# def create_RepLKNetXL(drop_path_rate=0.3, num_classes=1000, with_cp=True, small_kernel_merged=False):
-#     return RepLKNet(large_kernel_sizes=[27,27,27,13], layers=[2,2,18,2], channels=[256,512,1024,2048],
-#                     drop_path_rate=drop_path_rate, small_kernel=None, dw_ratio=1.5,
-#                     num_classes=num_classes, with_cp=with_cp,
-#                     small_kernel_merged=small_kernel_merged)
-
-# if __name__ == '__main__':
-#     model = create_RepLKNet31B(small_kernel_merged=False)
-#     model.eval()
-#     print('------------------- training-time model -------------')
-#     for i in model.state_dict().keys():
-#         print(i)
-#     print(model)
-    # x = torch.randn(2, 3, 224, 224)
-    # origin_y = model(x)
-    # model.switch_to_deploy()
-    # print('------------------- after re-param -------------')
-    # print(model)
-    # reparam_y = model(x)
-    # print('------------------- the difference is ------------------------')
-    # print((origin_y - reparam_y).abs().sum())
-
 
 
 
