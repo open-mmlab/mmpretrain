@@ -122,7 +122,7 @@ and WandB. More details can be found in the [Visualizer section](#visualizer).
 Many above functionalities are implemented by hooks, and you can also plug-in other custom hooks by modifying
 `custom_hooks` field. Here are some hooks in MMEngine and MMClassification that you can use directly, such as:
 
-- [EMAHook](mmengine.hooks.EMAHook)
+- [EMAHook](mmcls.engine.hooks.EMAHook)
 - [SyncBuffersHook](mmengine.hooks.SyncBuffersHook)
 - [EmptyCacheHook](mmengine.hooks.EmptyCacheHook)
 - [ClassNumCheckHook](mmcls.engine.hooks.ClassNumCheckHook)
