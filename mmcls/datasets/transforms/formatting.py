@@ -110,7 +110,7 @@ class PackClsInputs(BaseTransform):
 
 
 @TRANSFORMS.register_module()
-class FormatMultiTaskLabelsMasked(BaseTransform):
+class FormatMultiTaskLabels(BaseTransform):
     """Convert all image labels of multi-task dataset to a dict of tensor.
 
     Args:
@@ -140,7 +140,7 @@ class FormatMultiTaskLabelsMasked(BaseTransform):
     def transform(self, results: dict) -> dict:
         """Method to pack the input data.
 
-        result = {'img_path': 'a.png', 'task1': array(1), 'task3': array(3),
+        result = {'img_path': 'a.png', 'task1': 1, 'task3': 3,
             'img': array([[[  0,   0,   0])
         """
         packed_results = dict()
@@ -161,7 +161,7 @@ class FormatMultiTaskLabelsMasked(BaseTransform):
         for task in self.tasks:
             if task in results:
                 gt_label[task] = to_tensor(results[task])
-        data_sample.set_gt_label(gt_label)
+        data_sample.set_gt_task(gt_label)
 
         img_meta = {k: results[k] for k in self.meta_keys if k in results}
         data_sample.set_metainfo(img_meta)
