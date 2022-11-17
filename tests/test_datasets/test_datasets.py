@@ -7,6 +7,7 @@ import tempfile
 from unittest import TestCase
 from unittest.mock import MagicMock, call, patch
 
+import mmcv
 import numpy as np
 from mmengine.logging import MMLogger
 from mmengine.registry import TRANSFORMS
@@ -890,96 +891,10 @@ class TestMultiTaskDataset(TestCase):
         # Test default behavior
         dataset = dataset_class(**self.DEFAULT_ARGS)
         metainfo = {
-            'tasks': [{
-                'name': 'gender',
-                'categories': ['male', 'female'],
-                'type': 'single-label'
-            }, {
-                'name': 'wear',
-                'categories': ['shirt', 'coat', 'jeans', 'pants'],
-                'type': 'multi-label'
-            }]
+            'tasks': ['gender', 'wear']
         }
         self.assertDictEqual(dataset.metainfo, metainfo)
-        self.assertEqual(
-            dataset.CLASSES, {
-                'gender': ['male', 'female'],
-                'wear': ['shirt', 'coat', 'jeans', 'pants']
-            })
         self.assertFalse(dataset.test_mode)
-
-        # Test manually specify setting metainfo
-        metainfo = {
-            'tasks': [{
-                'name': 'gender',
-                'categories': ['a', 'b'],
-                'type': 'single-label'
-            }, {
-                'name': 'wear',
-                'categories': ['c', 'd', 'e'],
-                'type': 'multi-label'
-            }]
-        }
-        cfg = {**self.DEFAULT_ARGS, 'metainfo': metainfo}
-        dataset = dataset_class(**cfg)
-        self.assertDictEqual(dataset.metainfo, metainfo)
-        self.assertDictEqual(dataset.CLASSES, {
-            'gender': ['a', 'b'],
-            'wear': ['c', 'd', 'e']
-        })
-
-        # Test invalid metainfo
-        cfg = {**self.DEFAULT_ARGS, 'metainfo': ['a', 'b']}
-        with self.assertRaisesRegex(AssertionError, "got <class 'list'>"):
-            dataset_class(**cfg)
-
-        # Test annotation file without metainfo
-        tmpdir = tempfile.TemporaryDirectory()
-        new_annotation = mmcv.load(dataset.ann_file)
-        del new_annotation['metainfo']
-        new_ann_file = osp.abspath(osp.join(tmpdir.name, 'ann_file.json'))
-        mmcv.dump(new_annotation, new_ann_file)
-        cfg = {**self.DEFAULT_ARGS, 'ann_file': new_ann_file}
-        with self.assertRaisesRegex(AssertionError, 'specify the `tasks`'):
-            dataset_class(**cfg)
-
-        # Test wrong task type
-        cfg['metainfo'] = {'tasks': [['a', 'b'], ['d', 'e']]}
-        with self.assertRaisesRegex(AssertionError, 'should be a dict'):
-            dataset_class(**cfg)
-
-        # Test incomplete metainfo
-        cfg['metainfo'] = {
-            'tasks': [{
-                'name': 'gender',
-                'categories': ['a', 'b'],
-            }]
-        }
-        with self.assertRaisesRegex(AssertionError, 'Missing "type"'):
-            dataset_class(**cfg)
-
-        tmpdir.cleanup()
-
-    def test_data_root(self):
-        dataset_class = DATASETS.get(self.DATASET_TYPE)
-
-        # Test relative ann_file
-        cfg = {**self.DEFAULT_ARGS, 'ann_file': 'multi-task.json'}
-        dataset = dataset_class(**cfg)
-        self.assertEqual(dataset.data_root, ASSETS_ROOT)
-        self.assertEqual(dataset.ann_file,
-                         osp.join(dataset.data_root, 'multi-task.json'))
-
-        # Test relative data_prefix
-        cfg = {**self.DEFAULT_ARGS, 'data_prefix': 'train'}
-        dataset = dataset_class(**cfg)
-        self.assertEqual(dataset.data_prefix,
-                         osp.join(dataset.data_root, 'train'))
-
-        # Test no data_prefix
-        cfg = {**self.DEFAULT_ARGS, 'data_prefix': None}
-        dataset = dataset_class(**cfg)
-        self.assertEqual(dataset.data_prefix, dataset.data_root)
 
     def test_parse_data_info(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
@@ -987,78 +902,29 @@ class TestMultiTaskDataset(TestCase):
 
         data = dataset.parse_data_info({
             'img_path': 'a.jpg',
-            "gt_label":{"gender": 0}
+            'gt_label': {"gender": 0}
         })
         self.assertDictContainsSubset(
             {
                 'img_path': ASSETS_ROOT+'/a.jpg',
-                'gender': 0
+                'gt_label': {"gender": 0}
             }, data)
-        np.testing.assert_equal(data['gender'],0)
-
-
-        # Test invalid type
-        with self.assertRaisesRegex(AssertionError, "got <class 'str'>"):
-            dataset.parse_data_info('hi')
+        np.testing.assert_equal(data['gender'], 0)
 
         # Test missing path
         with self.assertRaisesRegex(AssertionError, 'have `img_path` field'):
             dataset.parse_data_info({
-                "gt_label":{
+                'gt_label': {
                     'gender': 0,
                     'wear': [1, 0, 1, 0]
                     }
             })
 
-
-        # Test invalid label type
-        with self.assertRaisesRegex(AssertionError, 'a single number'):
-            dataset.parse_data_info({
-                'img_path': 'a.jpg',
-                "gt_label":{
-                    'gender': [0, 1],
-                    'wear': [1, 0, 1, 0]
-                    }
-            })
-        with self.assertRaisesRegex(AssertionError, 'one-hot format'):
-            dataset.parse_data_info({
-                'img_path': 'a.jpg',
-                "gt_label":{
-                    'gender': 0,
-                    'wear': [1, 2, 3, 4]
-                }
-            })
-
-    def test_get_cat_ids(self):
-        dataset_class = DATASETS.get(self.DATASET_TYPE)
-        dataset = dataset_class(**self.DEFAULT_ARGS)
-
-        cat_ids = dataset.get_cat_ids(1)
-        self.assertIsInstance(cat_ids, dict)
-        self.assertDictEqual(cat_ids, dict(gender=[0], wear=[0, 2]))
-
-    def test_class_to_idx(self):
-        dataset_class = DATASETS.get(self.DATASET_TYPE)
-        dataset = dataset_class(**self.DEFAULT_ARGS)
-
-        self.assertDictEqual(
-            dataset.class_to_idx,
-            dict(
-                gender={
-                    'male': 0,
-                    'female': 1
-                },
-                wear={
-                    'shirt': 0,
-                    'coat': 1,
-                    'jeans': 2,
-                    'pants': 3
-                }))
     def test_repr(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
         dataset = dataset_class(**self.DEFAULT_ARGS)
 
         task_doc = ('    For 2 tasks\n'
-                    '        gender (2 categories, single-label)\n'
-                    '        wear (4 categories, multi-label)')
+                    '        gender \n'
+                    '        wear ')
         self.assertIn(task_doc, repr(dataset))
