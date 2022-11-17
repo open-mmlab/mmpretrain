@@ -47,13 +47,11 @@ train_pipeline_1e[3]['magnitude_level'] *= 0.3
 
 custom_hooks = [
     dict(
-        type='SwitchTrainAugHook',
-        action_epoch=37,
-        pipeline=train_pipeline_37e),
-    dict(
-        type='SwitchTrainAugHook',
-        action_epoch=112,
-        pipeline=train_pipeline_112e),
+        type='SwitchRecipeHook',
+        schedule=[
+            dict(action_epoch=37, pipeline=train_pipeline_37e),
+            dict(action_epoch=112, pipeline=train_pipeline_112e),
+        ]),
     dict(
         type='EMAHook',
         momentum=5e-4,
