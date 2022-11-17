@@ -53,9 +53,13 @@ class NormProduct(nn.Linear):
         else:
             weight = self.weight
         cosine_all = F.linear(input, weight, self.bias)
-        cosine_all = cosine_all.view(-1, self.out_features, self.k)
-        cosine, _ = torch.max(cosine_all, dim=2)
-        return cosine
+
+        if self.k == 1:
+            return cosine_all
+        else:
+            cosine_all = cosine_all.view(-1, self.out_features, self.k)
+            cosine, _ = torch.max(cosine_all, dim=2)
+            return cosine
 
 
 @MODELS.register_module()

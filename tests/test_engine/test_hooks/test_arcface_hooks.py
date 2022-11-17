@@ -62,7 +62,7 @@ class TestSetCountPowAdvMarginsHook(TestCase):
                 type='MultiStepLR', milestones=[1, 2], gamma=0.1),
             default_scope='mmcls',
             default_hooks=default_hooks,
-            experiment_name='test_construct',
+            experiment_name='test_construct_with_arcface',
             custom_hooks=[self.DEFAULT_HOOK_CFG])
 
         default_margins = torch.tensor([0.5] * 5)
@@ -96,7 +96,7 @@ class TestSetCountPowAdvMarginsHook(TestCase):
                 type='MultiStepLR', milestones=[1, 2], gamma=0.1),
             default_scope='mmcls',
             default_hooks=default_hooks,
-            experiment_name='test_construct_no_arcface',
+            experiment_name='test_construct_wo_arcface',
             custom_hooks=[self.DEFAULT_HOOK_CFG])
         with self.assertRaises(ValueError):
             self.runner.call_hook('before_train')
