@@ -1,229 +1,169 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional, Sequence
+from collections import OrderedDict
+from copy import deepcopy
 
 from mmcv.transforms import Compose
 from mmengine.hooks import Hook
 from mmengine.model import is_model_wrapper
 
 from mmcls.models.utils import RandomBatchAugment
-from mmcls.registry import HOOKS, MODELS
-
-DATA_BATCH = Optional[Sequence[dict]]
+from mmcls.registry import HOOKS, MODEL_WRAPPERS, MODELS
 
 
 @HOOKS.register_module()
 class SwitchRecipeHook(Hook):
-    """switch recipe during the training loop, including data pipeline, batch
+    """switch recipe during the training loop, including train pipeline, batch
     augments and loss currently.
 
     Args:
-        action_epoch (int): switch train recipe at the epoch of action_epoch.
-            Defaults to None.
-        action_iter (int): switch train recipe at the iter of action_iter.
-            Defaults to None.
-        pipeline (dict, str, optional): the new train data pipeline.
-            Defaults to 'unchange', means not changing the train data pipeline.
-        train_augments (dict, str, optional): the new train augments.
-            Defaults to 'unchange', means not changing the batch augments.
-        loss (dict, str, optional): the new train loss.
-            Defaults to 'unchange', means not changing the train loss.
+        schedule (list): Every item of the schedule list should be a dict, and
+            the dict should have ``action_epoch`` and some of
+            ``train_pipeline``, ``train_augments`` and ``loss`` keys:
+
+            - ``action_epoch`` (int): switch training recipe at which epoch.
+            - ``train_pipeline`` (list, optional): The new data pipeline of the
+              train dataset. If not specified, keep the original settings.
+            - ``batch_augments`` (dict | None, optional): The new batch
+              augmentations of during training. See :mod:`Batch Augmentations
+              <mmcls.models.utils.batch_augments>` for more details. If None,
+              disable batch augmentations. If not specified, keep the original
+              settings.
+            - ``loss`` (dict, optional): The new loss module config. If not
+              specified, keep the original settings.
 
     Example:
-        >>> # in config
-        >>> # deinfe new_train_pipeline, new_train_augments or new_loss
-        >>> custom_hooks = [
-        >>>             dict(
-        >>>                 type='SwitchRecipeHook',
-        >>>                 action_epoch=37,
-        >>>                 pipeline=new_train_pipeline,
-        >>>                 train_augments=new_train_augments,
-        >>>                 loss=new_loss),]
-        >>>
-        >>> # switch data augments by epoch
-        >>> switch_hook = dict(
-        >>>                 type='SwitchRecipeHook',
-        >>>                 pipeline=new_pipeline,
-        >>>                 action_epoch=5)
-        >>> runner.register_custom_hooks([switch_hook])
-        >>>
-        >>> # switch train augments and loss by iter
-        >>> switch_hook = dict(
-        >>>                 type='SwitchRecipeHook',
-        >>>                 train_augments=new_train_augments,
-        >>>                 loss=new_loss,
-        >>>                 action_iter=5)
-        >>> runner.register_custom_hooks([switch_hook])
+        To use this hook in config files.
 
+        .. code:: python
 
-    Note:
-        This hook would modify the ``model.data_preprocessor.batch_augments``
-        , ``runner.train_loop.dataloader.dataset.pipeline`` and
-        ``runner.model.head.loss`` fields.
+            custom_hooks = [
+                dict(
+                    type='SwitchRecipeHook',
+                    schedule=[
+                        dict(
+                            action_epoch=30,
+                            train_pipeline=pipeline_after_30e,
+                            batch_augments=batch_augments_after_30e,
+                            loss=loss_after_30e,
+                        ),
+                        dict(
+                            action_epoch=60,
+                            # Disable batch augmentations after 60e
+                            # and keep other settings.
+                            batch_augments=None,
+                        ),
+                    ]
+                )
+            ]
     """
     priority = 'NORMAL'
 
-    def __init__(self,
-                 action_epoch=None,
-                 action_iter=None,
-                 pipeline='unchange',
-                 train_augments='unchange',
-                 loss='unchange'):
+    def __init__(self, schedule):
+        recipes = {}
+        for recipe in schedule:
+            assert 'action_epoch' in recipe, \
+                'Please set `action_epoch` in every item ' \
+                'of the `schedule` in the SwitchRecipeHook.'
+            recipe = deepcopy(recipe)
+            if 'train_pipeline' in recipe:
+                recipe['train_pipeline'] = Compose(recipe['train_pipeline'])
+            if 'batch_augments' in recipe:
+                batch_augments = recipe['batch_augments']
+                if isinstance(batch_augments, dict):
+                    batch_augments = RandomBatchAugment(**batch_augments)
+                recipe['batch_augments'] = batch_augments
+            if 'loss' in recipe:
+                loss = recipe['loss']
+                if isinstance(loss, dict):
+                    loss = MODELS.build(loss)
+                recipe['loss'] = loss
 
-        if action_iter is None and action_epoch is None:
-            raise ValueError('one of `action_iter` and `action_epoch` '
-                             'must be set in `SwitchRecipeHook`.')
-        if action_iter is not None and action_epoch is not None:
-            raise ValueError('`action_iter` and `action_epoch` should '
-                             'not be both set in `SwitchRecipeHook`.')
-
-        if action_iter is not None:
-            assert isinstance(action_iter, int) and action_iter >= 0, (
-                '`action_iter` must be a number larger than 0 in '
-                f'`SwitchRecipeHook`, but got action_iter: {action_iter}')
-            self.by_epoch = False
-        if action_epoch is not None:
-            assert isinstance(action_epoch, int) and action_epoch >= 0, (
-                '`action_epoch` must be a number larger than 0 in '
-                f'`SwitchRecipeHook`, but got action_epoch: {action_epoch}')
-            self.by_epoch = True
-
-        self.action_epoch = action_epoch
-        self.action_iter = action_iter
-
-        self.pipeline = pipeline
-        if pipeline != 'unchange':
-            self.pipeline = Compose(pipeline)
-        self._restart_dataloader = False
-
-        self.train_augments = train_augments
-        if train_augments is not None and train_augments != 'unchange':
-            self.train_augments = RandomBatchAugment(**train_augments)
-
-        self.loss = MODELS.build(loss) if loss != 'unchange' else loss
+            action_epoch = recipe.pop('action_epoch')
+            assert action_epoch not in recipes, \
+                f'The `action_epoch` {action_epoch} is repeated ' \
+                'in the SwitchRecipeHook.'
+            recipes[action_epoch] = recipe
+        self.schedule = OrderedDict(sorted(recipes.items()))
 
     def before_train(self, runner) -> None:
-        """before run setting. If resume form a checkpoint, check whether is
-        the latest processed hook, if True, do the switch process.
+        """before run setting. If resume form a checkpoint, do all switch
+        before the current epoch.
 
         Args:
             runner (Runner): The runner of the training, validation or testing
                 process.
         """
-        # if this hook is the latest switch hook obj in the previously
-        # unfinished tasks, then do the switch process before train
-        if runner._resume and self._is_lastest_switch_hook(runner):
-            action_milestone_str = ' after resume'
-            self._do_switch(runner, action_milestone_str)
+        if runner._resume:
+            for action_epoch, recipe in self.schedule.items():
+                if action_epoch >= runner.epoch + 1:
+                    break
+                self._do_switch(runner, recipe,
+                                f' (resume recipe of epoch {action_epoch})')
 
     def before_train_epoch(self, runner):
         """do before train epoch."""
-        if self.by_epoch and runner.epoch + 1 == self.action_epoch:
-            action_milestone_str = f' at Epoch {runner.epoch + 1}'
-            self._do_switch(runner, action_milestone_str)
+        recipe = self.schedule.get(runner.epoch + 1, None)
+        if recipe is not None:
+            self._do_switch(runner, recipe, f' at epoch {runner.epoch + 1}')
 
-    def after_train_iter(self,
-                         runner,
-                         batch_idx: int,
-                         data_batch: DATA_BATCH = None,
-                         outputs: Optional[dict] = None) -> None:
-        """do before train iter."""
-        if not self.by_epoch and runner.iter + 1 == self.action_iter:
-            action_milestone_str = f' at Iter {runner.iter + 1}'
-            self._do_switch(runner, action_milestone_str)
-
-    def _is_lastest_switch_hook(self, runner):
-        """a helper function to judge if this hook is the latest processed
-        switch hooks with the same class name in a runner."""
-        # collect all the switch_hook with the same class name in a list.
-        switch_hook_objs = [
-            hook_obj for hook_obj in runner._hooks
-            if isinstance(hook_obj, SwitchRecipeHook)
-        ]
-
-        # get the latest swict hook based on the current iter.
-        dataset_length = len(runner.train_loop.dataloader)
-        cur_iter = runner.train_loop.iter
-
-        min_gap, min_gap_idx = float('inf'), -1
-        for i, switch_hook_obj in enumerate(switch_hook_objs):
-            # use iter to calculate
-            if switch_hook_obj.by_epoch:
-                exe_iter = switch_hook_obj.action_epoch * dataset_length
-            else:
-                exe_iter = switch_hook_obj.action_iter
-
-            gap = cur_iter - exe_iter
-            if gap < 0:
-                # this hook have not beend executed
-                continue
-            elif gap > 0 and min_gap > gap:
-                # this hook have been executed and is closer to cur iter
-                min_gap = gap
-                min_gap_idx = i
-
-        # return if self is the latest executed switch hook
-        return min_gap_idx != -1 and self is switch_hook_objs[min_gap_idx]
-
-    def _do_switch(self, runner, action_milestone_str=''):
+    def _do_switch(self, runner, recipe, extra_info=''):
         """do the switch aug process."""
-        if self.train_augments != 'unchange':
-            self._switch_batch_augments(runner)
-            runner.logger.info(f'Switch train aug{action_milestone_str}.')
+        if 'batch_augments' in recipe:
+            self._switch_batch_augments(runner, recipe['batch_augments'])
+            runner.logger.info(f'Switch batch augments{extra_info}.')
 
-        if self.pipeline != 'unchange':
-            self._switch_train_loader_pipeline(runner)
-            runner.logger.info(f'Switch train pipeline{action_milestone_str}.')
+        if 'train_pipeline' in recipe:
+            self._switch_train_pipeline(runner, recipe['train_pipeline'])
+            runner.logger.info(f'Switch train pipeline{extra_info}.')
 
-        if self.loss != 'unchange':
-            self._switch_train_loss(runner)
-            runner.logger.info(f'Switch train loss{action_milestone_str}.')
+        if 'loss' in recipe:
+            self._switch_loss(runner, recipe['loss'])
+            runner.logger.info(f'Switch loss{extra_info}.')
 
-    def _switch_batch_augments(self, runner):
+    @staticmethod
+    def _switch_batch_augments(runner, batch_augments):
         """switch the train augments."""
         model = runner.model
         if is_model_wrapper(model):
             model = model.module
 
-        model.data_preprocessor.batch_augments = self.train_augments
+        model.data_preprocessor.batch_augments = batch_augments
 
-    def _switch_train_loader_pipeline(self, runner):
+    @staticmethod
+    def _switch_train_pipeline(runner, train_pipeline):
         """switch the train loader dataset pipeline."""
+
+        def switch_pipeline(dataset, pipeline):
+            if hasattr(dataset, 'pipeline'):
+                # for usual dataset
+                dataset.pipeline = pipeline
+            elif hasattr(dataset, 'datasets'):
+                # for concat dataset wrapper
+                for ds in dataset.datasets:
+                    switch_pipeline(ds, pipeline)
+            elif hasattr(dataset, 'dataset'):
+                # for other dataset wrappers
+                switch_pipeline(dataset.dataset, pipeline)
+            else:
+                raise RuntimeError(
+                    'Cannot access the `pipeline` of the dataset.')
+
         train_loader = runner.train_loop.dataloader
-        if hasattr(train_loader.dataset, 'pipeline'):
-            # for dataset
-            if self.pipeline is not None:
-                train_loader.dataset.pipeline = self.pipeline
-        elif hasattr(train_loader.dataset, 'datasets'):
-            # for concat dataset wrappers
-            for ds in train_loader.dataset.datasets:
-                ds.pipeline = self.pipeline
-        elif hasattr(train_loader.dataset.dataset, 'pipeline'):
-            # for other dataset wrappers
-            train_loader.dataset.dataset.pipeline = self.pipeline
-        else:
-            raise ValueError(
-                'train_loader.dataset or train_loader.dataset.dataset'
-                ' must have pipeline')
+        switch_pipeline(train_loader.dataset, train_pipeline)
 
-        # The dataset pipeline cannot be updated when persistent_workers
-        # is True, so we need to force the dataloader's multi-process
-        # restart. This is a very hacky approach.
-        if hasattr(train_loader, 'persistent_workers'
-                   ) and train_loader.persistent_workers is True:
-            train_loader._DataLoader__initialized = False
-            train_loader._iterator = None
-            self._restart_dataloader = True
-        else:
-            # Once the restart is complete, we need to restore
-            # the initialization flag.
-            if self._restart_dataloader:
-                train_loader._DataLoader__initialized = True
+        # To restart the iterator of dataloader when `persistent_workers=True`
+        train_loader._iterator = None
 
-    def _switch_train_loss(self, runner):
-        """switch the train loss."""
+    @staticmethod
+    def _switch_loss(runner, loss_module):
+        """switch the loss module."""
         model = runner.model
-        if is_model_wrapper(model):
+        if is_model_wrapper(model, MODEL_WRAPPERS):
             model = model.module
 
-        assert hasattr(model.head, 'loss')
-        model.head.loss = self.loss
+        if hasattr(model, 'loss_module'):
+            model.loss_module = loss_module
+        elif hasattr(model, 'head') and hasattr(model.head, 'loss_module'):
+            model.head.loss_module = loss_module
+        else:
+            raise RuntimeError('Cannot access the `loss_module` of the model.')

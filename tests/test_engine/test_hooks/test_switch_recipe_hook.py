@@ -1,429 +1,365 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import copy
 import logging
-import random
+import os.path as osp
 import tempfile
 from typing import List
 from unittest import TestCase
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import torch
 import torch.nn as nn
-from mmcv.transforms import BaseTransform
+from mmcv.transforms import Compose
 from mmengine.dataset import BaseDataset, ConcatDataset, RepeatDataset
 from mmengine.logging import MMLogger
 from mmengine.model import BaseDataPreprocessor, BaseModel
+from mmengine.optim import OptimWrapper
 from mmengine.runner import Runner
-from mmengine.utils import digit_version
-from torch.utils.data import DataLoader
 
 from mmcls.engine import SwitchRecipeHook
+from mmcls.models import CrossEntropyLoss
+from mmcls.models.heads.cls_head import ClsHead
 from mmcls.models.losses import LabelSmoothLoss
-from mmcls.models.utils.batch_augments import CutMix, Mixup, RandomBatchAugment
-from mmcls.structures import ClsDataSample
+from mmcls.models.utils.batch_augments import RandomBatchAugment
 from mmcls.utils import register_all_modules
 
 register_all_modules()
 
 
-class MockDataPreprocessor(BaseDataPreprocessor):
-    """mock preprocessor that do nothing."""
+class SimpleDataPreprocessor(BaseDataPreprocessor):
+
+    def __init__(self):
+        super().__init__()
+        self.batch_augments = None
 
     def forward(self, data, training):
 
-        return data['imgs'], ClsDataSample()
+        data = self.cast_data(data)
+        assert 'inputs' in data, 'No `input` in data.'
+        inputs = data['inputs']
+        labels = data['labels']
+
+        if self.batch_augments is not None and training:
+            inputs, labels = self.batch_augments(inputs, labels)
+
+        return {'inputs': inputs, 'labels': labels}
 
 
-class ExampleModel(BaseModel):
+class SimpleModel(BaseModel):
 
     def __init__(self):
-        super(ExampleModel, self).__init__()
-        self.data_preprocessor = MockDataPreprocessor()
-        self.conv = nn.Linear(1, 1)
-        self.bn = nn.BatchNorm1d(1)
-        self.test_cfg = None
+        super().__init__()
+        self.data_preprocessor = SimpleDataPreprocessor()
+        self.gap = nn.AdaptiveAvgPool2d((1, 1))
+        self.fc = nn.Linear(3, 10)
+        self.loss_module = CrossEntropyLoss(use_soft=True)
 
-    def forward(self, batch_inputs, data_samples, mode='tensor'):
-        batch_inputs = batch_inputs.to(next(self.parameters()).device)
-        return self.bn(self.conv(batch_inputs))
-
-    def train_step(self, data, optim_wrapper):
-        outputs = {'loss': 0.5, 'num_samples': 1}
-        return outputs
+    def forward(self, inputs, labels, mode='tensor'):
+        if mode == 'loss':
+            score = self.fc(self.gap(inputs).view(inputs.size(0), -1))
+            loss = self.loss_module(score, labels)
+            return {'loss': loss}
+        else:
+            return None
 
 
 class ExampleDataset(BaseDataset):
 
     def load_data_list(self) -> List[dict]:
-        return [i for i in range(10)]
-
-    def __getitem__(self, idx):
-        results = dict(imgs=torch.tensor([1.0], dtype=torch.float32))
-        return results
-
-    def __len__(self):
-        return 10
+        return [{
+            'inputs': torch.rand(3, 12, 12),
+            'labels': torch.rand(10),
+        } for _ in range(10)]
 
 
 class TestSwitchRecipeHook(TestCase):
-    DEFAULT_CFG = dict(action_epoch=1, action_iter=None)
 
     def setUp(self):
-        # optimizer
-        self.optim_wrapper = dict(optimizer=dict(type='SGD', lr=0.1))
-        # learning policy
-        self.epochscheduler = dict(
-            type='MultiStepLR', by_epoch=True, milestones=[1])
-        self.iterscheduler = dict(
-            type='MultiStepLR', by_epoch=False, milestones=[1])
-
         self.tmpdir = tempfile.TemporaryDirectory()
-        self.loader = DataLoader(ExampleDataset(), batch_size=2)
-
-    def test_init(self):
-        # check action_epoch and action_iter both set
-        cfg = copy.deepcopy(self.DEFAULT_CFG)
-        cfg['action_iter'] = 3
-        with self.assertRaises(ValueError):
-            SwitchRecipeHook(**cfg)
-
-        # check action_epoch and action_iter both None
-        cfg = copy.deepcopy(self.DEFAULT_CFG)
-        cfg['action_epoch'] = None
-        with self.assertRaises(ValueError):
-            SwitchRecipeHook(**cfg)
-
-        # check action_epoch > 0
-        cfg = copy.deepcopy(self.DEFAULT_CFG)
-        cfg['action_epoch'] = -1
-        with self.assertRaises(AssertionError):
-            SwitchRecipeHook(**cfg)
-
-        # check action_iter > 0
-        cfg = copy.deepcopy(self.DEFAULT_CFG)
-        cfg['action_epoch'] = None
-        cfg['action_iter'] = '3'
-        with self.assertRaises(AssertionError):
-            SwitchRecipeHook(**cfg)
-
-        # test by_epoch is True
-        cfg = copy.deepcopy(self.DEFAULT_CFG)
-        hook_obj = SwitchRecipeHook(**cfg)
-        self.assertTrue(hook_obj.by_epoch)
-        self.assertEqual(hook_obj.action_epoch, 1)
-        self.assertEqual(hook_obj.action_iter, None)
-        self.assertEqual(hook_obj.pipeline, 'unchange')
-        self.assertEqual(hook_obj.train_augments, 'unchange')
-        self.assertEqual(hook_obj.loss, 'unchange')
-
-        # test by_epoch is False
-        cfg = copy.deepcopy(self.DEFAULT_CFG)
-        cfg['action_epoch'] = None
-        cfg['action_iter'] = 3
-        hook_obj = SwitchRecipeHook(**cfg)
-        self.assertFalse(hook_obj.by_epoch)
-        self.assertEqual(hook_obj.action_epoch, None)
-        self.assertEqual(hook_obj.action_iter, 3)
-
-        # test pipeline, loss
-        cfg = copy.deepcopy(self.DEFAULT_CFG)
-        cfg['pipeline'] = [dict(type='LoadImageFromFile')]
-        cfg['loss'] = dict(type='LabelSmoothLoss', label_smooth_val=0.1)
-        hook_obj = SwitchRecipeHook(**cfg)
-        self.assertIsInstance(hook_obj.pipeline, BaseTransform)
-        self.assertIsInstance(hook_obj.loss, LabelSmoothLoss)
-
-        # test pieline is [], and train_augments
-        cfg = copy.deepcopy(self.DEFAULT_CFG)
-        cfg['pipeline'] = []
-        train_cfg = dict(augments=[
-            dict(type='Mixup', alpha=0.8),
-            dict(type='CutMix', alpha=1.0)
-        ])
-        cfg['train_augments'] = train_cfg
-        hook_obj = SwitchRecipeHook(**cfg)
-        self.assertIsInstance(hook_obj.pipeline, BaseTransform)
-        self.assertIsInstance(hook_obj.train_augments, RandomBatchAugment)
-
-    def test_before_train_epoch(self):
-        # test call once in epoch loop
-        runner = self.init_runner()
-        switch_hook_cfg1 = copy.deepcopy(self.DEFAULT_CFG)
-        switch_hook_cfg1['type'] = 'SwitchRecipeHook'
-        runner.register_custom_hooks([switch_hook_cfg1])
-        with patch.object(SwitchRecipeHook, '_do_switch') as mock:
-            runner.train()
-            mock.assert_called_once()
-
-        # test mutil call in epoch loop
-        runner = self.init_runner()
-        switch_hook_cfg2 = copy.deepcopy(switch_hook_cfg1)
-        switch_hook_cfg3 = copy.deepcopy(switch_hook_cfg1)
-        switch_hook_cfg2['action_epoch'] = 2
-        switch_hook_cfg3['action_epoch'] = 3
-        runner.register_custom_hooks(
-            [switch_hook_cfg1, switch_hook_cfg2, switch_hook_cfg3])
-        with patch.object(SwitchRecipeHook, '_do_switch') as mock:
-            runner.train()
-            self.assertEqual(mock.call_count, 3)
-
-    def test_before_train_iter(self):
-        # test call once in iter loop
-        runner = self.init_runner(by_epoch=False)
-        switch_hook_cfg1 = copy.deepcopy(self.DEFAULT_CFG)
-        switch_hook_cfg1['type'] = 'SwitchRecipeHook'
-        switch_hook_cfg1['action_epoch'] = None
-        switch_hook_cfg1['action_iter'] = 1
-        runner.register_custom_hooks([switch_hook_cfg1])
-        with patch.object(SwitchRecipeHook, '_do_switch') as mock:
-            runner.train()
-            mock.assert_called_once()
-
-        # test mutil call in iter loop
-        runner = self.init_runner(by_epoch=False)
-        switch_hook_cfg2 = copy.deepcopy(switch_hook_cfg1)
-        switch_hook_cfg3 = copy.deepcopy(switch_hook_cfg1)
-        switch_hook_cfg2['action_iter'] = 2
-        switch_hook_cfg3['action_iter'] = 3
-        runner.register_custom_hooks(
-            [switch_hook_cfg1, switch_hook_cfg2, switch_hook_cfg3])
-        with patch.object(SwitchRecipeHook, '_do_switch') as mock:
-            runner.train()
-            self.assertEqual(mock.call_count, 3)
-
-    def test_do_switch(self):
-        # test switch train augments
-        runner = MagicMock()
-        cfg = copy.deepcopy(self.DEFAULT_CFG)
-        train_cfg = dict(augments=[
-            dict(type='Mixup', alpha=0.5),
-            dict(type='CutMix', alpha=0.9)
-        ])
-        cfg['train_augments'] = train_cfg
-        hook_obj = SwitchRecipeHook(**cfg)
-        with patch.object(SwitchRecipeHook, '_switch_train_loss') as m_loss:
-            with patch.object(SwitchRecipeHook,
-                              '_switch_train_loader_pipeline') as m_pipe:
-                hook_obj._do_switch(runner)
-                m_loss.assert_not_called()
-                m_pipe.assert_not_called()
-                runner_batchaug = runner.model.data_preprocessor.batch_augments
-                self.assertIsInstance(runner_batchaug, RandomBatchAugment)
-                self.assertEqual(len(runner_batchaug.augments), 2)
-                self.assertIsInstance(runner_batchaug.augments[0], Mixup)
-                self.assertEqual(runner_batchaug.augments[0].alpha, 0.5)
-                self.assertIsInstance(runner_batchaug.augments[1], CutMix)
-                self.assertEqual(runner_batchaug.augments[1].alpha, 0.9)
-
-        # test switch data aug
-        runner = MagicMock()
-        cfg = copy.deepcopy(self.DEFAULT_CFG)
-        cfg['pipeline'] = [dict(type='LoadImageFromFile')]
-        hook_obj = SwitchRecipeHook(**cfg)
-        with patch.object(SwitchRecipeHook,
-                          '_switch_batch_augments') as m_batch:
-            with patch.object(SwitchRecipeHook,
-                              '_switch_train_loss') as m_loss:
-                hook_obj._do_switch(runner)
-                m_batch.assert_not_called()
-                m_loss.assert_not_called()
-                runner_pipeline = runner.train_loop.dataloader.dataset.pipeline
-                self.assertIsInstance(runner_pipeline, BaseTransform)
-                self.assertEqual(len(runner_pipeline.transforms), 1)
-
-        # test with persistent_workers=True
-        if digit_version(torch.__version__) >= digit_version('1.8.0'):
-            runner = MagicMock()
-            loader = DataLoader(
-                ExampleDataset(), persistent_workers=True, num_workers=1)
-            runner.train_loop.dataloader = loader
-            cfg = copy.deepcopy(self.DEFAULT_CFG)
-            cfg['pipeline'] = [
-                dict(type='LoadImageFromFile'),
-                dict(type='Resize', scale=256)
-            ]
-            hook_obj = SwitchRecipeHook(**cfg)
-            hook_obj._do_switch(runner)
-            runner_pipeline = runner.train_loop.dataloader.dataset.pipeline
-            self.assertIsInstance(runner_pipeline, BaseTransform)
-            self.assertEqual(len(runner_pipeline.transforms), 2)
-
-        # test with ConcatDataset warpper
-        runner = MagicMock()
-        loader = DataLoader(
-            ConcatDataset([ExampleDataset(),
-                           ExampleDataset()]))
-        runner.train_loop.dataloader = loader
-        cfg = copy.deepcopy(self.DEFAULT_CFG)
-        cfg['pipeline'] = [
-            dict(type='LoadImageFromFile'),
-            dict(type='Resize', scale=256)
-        ]
-        hook_obj = SwitchRecipeHook(**cfg)
-        hook_obj._do_switch(runner)
-        for i in range(2):
-            runner_dataset = runner.train_loop.dataloader.dataset.datasets[i]
-            runner_pipeline = runner_dataset.pipeline
-            self.assertIsInstance(runner_pipeline, BaseTransform)
-            self.assertEqual(len(runner_pipeline.transforms), 2)
-
-        # test with RepeatDataset warpper
-        runner = MagicMock()
-        loader = DataLoader(RepeatDataset(ExampleDataset(), 3))
-        runner.train_loop.dataloader = loader
-        cfg = copy.deepcopy(self.DEFAULT_CFG)
-        cfg['pipeline'] = [
-            dict(type='LoadImageFromFile'),
-            dict(type='Resize', scale=256)
-        ]
-        hook_obj = SwitchRecipeHook(**cfg)
-        hook_obj._do_switch(runner)
-        runner_pipeline = runner.train_loop.dataloader.dataset.dataset.pipeline
-        self.assertIsInstance(runner_pipeline, BaseTransform)
-        self.assertEqual(len(runner_pipeline.transforms), 2)
-
-        # test switch loss
-        runner = MagicMock()
-        cfg = copy.deepcopy(self.DEFAULT_CFG)
-        cfg['loss'] = dict(type='LabelSmoothLoss', label_smooth_val=0.2)
-        hook_obj = SwitchRecipeHook(**cfg)
-        with patch.object(SwitchRecipeHook,
-                          '_switch_batch_augments') as m_batch:
-            with patch.object(SwitchRecipeHook,
-                              '_switch_train_loader_pipeline') as m_pipe:
-                hook_obj._do_switch(runner)
-                m_batch.assert_not_called()
-                m_pipe.assert_not_called()
-                runner_loss = runner.model.head.loss
-                self.assertIsInstance(runner_loss, nn.Module)
-                self.assertTrue(runner_loss.label_smooth_val, 0.2)
-
-        # test both
-        runner = MagicMock()
-        cfg = copy.deepcopy(self.DEFAULT_CFG)
-        cfg['pipeline'] = [dict(type='LoadImageFromFile')]
-        cfg['loss'] = dict(type='LabelSmoothLoss', label_smooth_val=0.2)
-        cfg['train_augments'] = dict(augments=[dict(type='Mixup', alpha=0.5)])
-        hook_obj = SwitchRecipeHook(**cfg)
-        with patch.object(SwitchRecipeHook,
-                          '_switch_batch_augments') as m_batch:
-            with patch.object(SwitchRecipeHook,
-                              '_switch_train_loader_pipeline') as m_pipe:
-                with patch.object(SwitchRecipeHook,
-                                  '_switch_train_loss') as m_loss:
-                    hook_obj._do_switch(runner)
-                    m_batch.assert_called_once()
-                    m_pipe.assert_called_once()
-                    m_loss.assert_called_once()
-
-    def create_patch(self, object, name):
-        patcher = patch.object(object, name)
-        thing = patcher.start()
-        self.addCleanup(patcher.stop)
-        return thing
-
-    def test_before_train(self):
-        # test not resume
-        runner = self.init_runner(resume=False, epoch=2)
-        hook_obj1 = SwitchRecipeHook(action_epoch=4)
-        hook_obj2 = SwitchRecipeHook(action_epoch=7)
-        runner.register_custom_hooks([hook_obj1, hook_obj2])
-        mock_hook1 = self.create_patch(hook_obj1, '_do_switch')
-        mock_hook2 = self.create_patch(hook_obj2, '_do_switch')
-        runner.call_hook('before_train')
-        mock_hook1.assert_not_called()
-        mock_hook2.assert_not_called()
-
-        # test resume from no processed switch hook
-        runner = self.init_runner(resume=True, epoch=2)
-        hook_obj1 = SwitchRecipeHook(action_epoch=4)
-        hook_obj2 = SwitchRecipeHook(action_epoch=7)
-        runner.register_custom_hooks([hook_obj1, hook_obj2])
-        mock_hook1 = self.create_patch(hook_obj1, '_do_switch')
-        mock_hook2 = self.create_patch(hook_obj2, '_do_switch')
-        runner.call_hook('before_train')
-        mock_hook1.assert_not_called()
-        mock_hook2.assert_not_called()
-
-        # test resume from epoch processed switch hook
-        runner = self.init_runner(resume=True, epoch=5)
-        hook_obj1 = SwitchRecipeHook(action_epoch=2)
-        hook_obj2 = SwitchRecipeHook(action_epoch=7)
-        hook_obj3 = SwitchRecipeHook(action_epoch=3)
-        runner.register_custom_hooks([hook_obj1, hook_obj2, hook_obj3])
-        mock_hook1 = self.create_patch(hook_obj1, '_do_switch')
-        mock_hook2 = self.create_patch(hook_obj2, '_do_switch')
-        mock_hook3 = self.create_patch(hook_obj3, '_do_switch')
-        runner.call_hook('before_train')
-        mock_hook1.assert_not_called()
-        mock_hook2.assert_not_called()
-        mock_hook3.assert_called_once()
-
-        # test resume from iter processed switch hook
-        runner = self.init_runner(resume=True, iter=15, by_epoch=False)
-        hook_obj1 = SwitchRecipeHook(action_iter=2)
-        hook_obj2 = SwitchRecipeHook(action_iter=12)
-        hook_obj3 = SwitchRecipeHook(action_epoch=18)
-        runner.register_custom_hooks([hook_obj1, hook_obj2, hook_obj3])
-        mock_hook1 = self.create_patch(hook_obj1, '_do_switch')
-        mock_hook2 = self.create_patch(hook_obj2, '_do_switch')
-        mock_hook3 = self.create_patch(hook_obj3, '_do_switch')
-        runner.call_hook('before_train')
-        mock_hook1.assert_not_called()
-        mock_hook2.assert_called_once()
-        mock_hook3.assert_not_called()
-
-        # test resume from epoch loop and iter hook
-        runner = self.init_runner(resume=True, epoch=1)  # i epoch = 5 iter
-        hook_obj1 = SwitchRecipeHook(action_iter=2)
-        hook_obj2 = SwitchRecipeHook(action_iter=15)
-        hook_obj3 = SwitchRecipeHook(action_iter=7)
-        runner.register_custom_hooks([hook_obj1, hook_obj2, hook_obj3])
-        mock_hook1 = self.create_patch(hook_obj1, '_do_switch')
-        mock_hook2 = self.create_patch(hook_obj2, '_do_switch')
-        mock_hook3 = self.create_patch(hook_obj3, '_do_switch')
-        runner.call_hook('before_train')
-        mock_hook1.assert_called_once()
-        mock_hook2.assert_not_called()
-        mock_hook3.assert_not_called()
-
-    def init_runner(self, resume=False, epoch=None, iter=None, by_epoch=True):
-        if by_epoch:
-            runner = Runner(
-                model=ExampleModel(),
-                work_dir=self.tmpdir.name,
-                train_dataloader=self.loader,
-                optim_wrapper=self.optim_wrapper,
-                param_scheduler=self.epochscheduler,
-                train_cfg=dict(by_epoch=True, max_epochs=3),
-                default_hooks=dict(logger=None),
-                log_processor=dict(window_size=1),
-                experiment_name=f'test_{resume}_{random.random()}',
-                default_scope='mmcls')
-        else:
-            runner = Runner(
-                model=ExampleModel(),
-                work_dir=self.tmpdir.name,
-                train_dataloader=self.loader,
-                optim_wrapper=self.optim_wrapper,
-                param_scheduler=self.iterscheduler,
-                train_cfg=dict(by_epoch=False, max_iters=3),
-                default_hooks=dict(logger=None),
-                log_processor=dict(window_size=1),
-                experiment_name=f'test_{resume}_{random.random()}',
-                default_scope='mmcls')
-        runner._resume = resume
-        dataset_length = len(self.loader)
-        if epoch and by_epoch:
-            runner.train_loop._epoch = epoch
-            runner.train_loop._iter = epoch * dataset_length
-        if iter and not by_epoch:
-            runner.train_loop._iter = iter
-        return runner
 
     def tearDown(self) -> None:
-        # `FileHandler` should be closed in Windows, otherwise we cannot
-        # delete the temporary directory.
         logging.shutdown()
         MMLogger._instance_dict.clear()
         self.tmpdir.cleanup()
+
+    def test_init(self):
+        # test `action_epoch` is set
+        with self.assertRaisesRegex(AssertionError, 'Please set'):
+            SwitchRecipeHook([dict(batch_augments=None)])
+
+        # test `action_epoch` is not repeated
+        with self.assertRaisesRegex(AssertionError, 'is repeated'):
+            SwitchRecipeHook([dict(action_epoch=1), dict(action_epoch=1)])
+
+        # test recipe build
+        hook = SwitchRecipeHook([
+            dict(
+                action_epoch=1,
+                train_pipeline=[dict(type='LoadImageFromFile')],
+                loss=dict(type='LabelSmoothLoss', label_smooth_val=0.1),
+                batch_augments=dict(augments=dict(type='Mixup', alpha=0.8)),
+            )
+        ])
+        self.assertIn(1, hook.schedule)
+        self.assertIsInstance(hook.schedule[1]['train_pipeline'], Compose)
+        self.assertIsInstance(hook.schedule[1]['loss'], LabelSmoothLoss)
+        self.assertIsInstance(hook.schedule[1]['batch_augments'],
+                              RandomBatchAugment)
+
+        # test recipe build with instance
+        hook = SwitchRecipeHook([
+            dict(
+                action_epoch=1,
+                train_pipeline=[MagicMock()],
+                loss=MagicMock(),
+                batch_augments=MagicMock(),
+            )
+        ])
+        self.assertIn(1, hook.schedule)
+        self.assertIsInstance(hook.schedule[1]['train_pipeline'], Compose)
+        self.assertIsInstance(hook.schedule[1]['loss'], MagicMock)
+        self.assertIsInstance(hook.schedule[1]['batch_augments'], MagicMock)
+
+        # test empty pieline and train_augments
+        hook = SwitchRecipeHook(
+            [dict(action_epoch=1, train_pipeline=[], batch_augments=None)])
+        self.assertIn(1, hook.schedule)
+        self.assertIsInstance(hook.schedule[1]['train_pipeline'], Compose)
+        self.assertIsNone(hook.schedule[1]['batch_augments'])
+
+    def test_do_switch(self):
+        device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+        model = SimpleModel().to(device)
+
+        loss = CrossEntropyLoss(use_soft=True)
+        loss.forward = MagicMock(
+            side_effect=lambda x, y: CrossEntropyLoss.forward(loss, x, y))
+        batch_augments = RandomBatchAugment(dict(type='Mixup', alpha=0.5))
+        switch_hook = SwitchRecipeHook([
+            dict(
+                action_epoch=2,
+                train_pipeline=[MagicMock(side_effect=lambda x: x)],
+                loss=loss,
+                batch_augments=MagicMock(
+                    side_effect=lambda x, y: batch_augments(x, y)),
+            )
+        ])
+
+        runner = Runner(
+            model=model,
+            train_dataloader=dict(
+                dataset=ExampleDataset(),
+                sampler=dict(type='DefaultSampler', shuffle=True),
+                batch_size=5,
+                num_workers=0,
+                collate_fn=dict(type='default_collate'),
+            ),
+            optim_wrapper=OptimWrapper(
+                optimizer=torch.optim.Adam(model.parameters(), lr=0.)),
+            train_cfg=dict(by_epoch=True, max_epochs=2, val_interval=10),
+            work_dir=self.tmpdir.name,
+            default_hooks=dict(logger=None),
+            custom_hooks=[switch_hook],
+            default_scope='mmcls',
+            experiment_name='test_switch')
+        runner.train()
+        self.assertEqual(switch_hook.schedule[2]['batch_augments'].call_count,
+                         2)
+        self.assertEqual(switch_hook.schedule[2]['loss'].forward.call_count, 2)
+        self.assertEqual(
+            switch_hook.schedule[2]['train_pipeline'].transforms[0].call_count,
+            10)
+
+        switch_hook = SwitchRecipeHook([
+            dict(
+                action_epoch=2,
+                train_pipeline=[MagicMock(return_value={})],
+            )
+        ])
+
+        runner = Runner(
+            model=model,
+            train_dataloader=dict(
+                dataset=ExampleDataset(),
+                sampler=dict(type='DefaultSampler', shuffle=True),
+                batch_size=5,
+                num_workers=2,
+                persistent_workers=True,
+                collate_fn=dict(type='default_collate'),
+            ),
+            optim_wrapper=OptimWrapper(
+                optimizer=torch.optim.Adam(model.parameters(), lr=0.)),
+            train_cfg=dict(by_epoch=True, max_epochs=2, val_interval=10),
+            work_dir=self.tmpdir.name,
+            default_hooks=dict(logger=None),
+            custom_hooks=[switch_hook],
+            default_scope='mmcls',
+            experiment_name='test_switch_multi_workers')
+        with self.assertRaisesRegex(AssertionError, 'No `input` in data.'):
+            # If the pipeline switch works, the data_preprocessor cannot
+            # receive `inputs`.
+            runner.train()
+
+    def test_resume(self):
+        device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+        model = SimpleModel().to(device)
+
+        loss = CrossEntropyLoss(use_soft=True)
+        loss.forward = MagicMock(
+            side_effect=lambda x, y: CrossEntropyLoss.forward(loss, x, y))
+        batch_augments = RandomBatchAugment(dict(type='Mixup', alpha=0.5))
+        switch_hook = SwitchRecipeHook([
+            dict(
+                action_epoch=1,
+                train_pipeline=[MagicMock(side_effect=lambda x: x)]),
+            dict(action_epoch=2, loss=loss),
+            dict(
+                action_epoch=4,
+                batch_augments=MagicMock(
+                    side_effect=lambda x, y: batch_augments(x, y)),
+            ),
+        ])
+
+        runner = Runner(
+            model=model,
+            train_dataloader=dict(
+                dataset=ExampleDataset(),
+                sampler=dict(type='DefaultSampler', shuffle=True),
+                batch_size=5,
+                num_workers=0,
+                collate_fn=dict(type='default_collate'),
+            ),
+            optim_wrapper=OptimWrapper(
+                optimizer=torch.optim.Adam(model.parameters(), lr=0.)),
+            train_cfg=dict(by_epoch=True, max_epochs=2, val_interval=10),
+            work_dir=self.tmpdir.name,
+            default_hooks=dict(logger=None),
+            custom_hooks=[switch_hook],
+            default_scope='mmcls',
+            experiment_name='test_resume1')
+        runner.train()
+
+        runner = Runner(
+            model=model,
+            train_dataloader=dict(
+                dataset=ExampleDataset(),
+                sampler=dict(type='DefaultSampler', shuffle=True),
+                batch_size=5,
+                num_workers=0,
+                collate_fn=dict(type='default_collate'),
+            ),
+            optim_wrapper=OptimWrapper(
+                optimizer=torch.optim.Adam(model.parameters(), lr=0.)),
+            train_cfg=dict(by_epoch=True, max_epochs=4, val_interval=10),
+            resume=True,
+            load_from=osp.join(self.tmpdir.name, 'epoch_2.pth'),
+            work_dir=self.tmpdir.name,
+            default_hooks=dict(logger=None),
+            custom_hooks=[switch_hook],
+            default_scope='mmcls',
+            experiment_name='test_resume2')
+
+        with self.assertLogs(runner.logger, 'INFO') as logs:
+            runner.train()
+        prefix = 'INFO:mmengine:'
+        self.assertIn(
+            prefix + 'Switch train pipeline (resume recipe of epoch 1).',
+            logs.output)
+        self.assertIn(prefix + 'Switch loss (resume recipe of epoch 2).',
+                      logs.output)
+        self.assertIn(prefix + 'Switch batch augments at epoch 4.',
+                      logs.output)
+
+    def test_switch_train_pipeline(self):
+        device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+        model = SimpleModel().to(device)
+
+        runner = Runner(
+            model=model,
+            train_dataloader=dict(
+                dataset=ConcatDataset([ExampleDataset(),
+                                       ExampleDataset()]),
+                sampler=dict(type='DefaultSampler', shuffle=True),
+                batch_size=5,
+                num_workers=0,
+                collate_fn=dict(type='default_collate'),
+            ),
+            optim_wrapper=OptimWrapper(
+                optimizer=torch.optim.Adam(model.parameters(), lr=0.)),
+            train_cfg=dict(by_epoch=True, max_epochs=2, val_interval=10),
+            work_dir=self.tmpdir.name,
+            default_hooks=dict(logger=None),
+            default_scope='mmcls',
+            experiment_name='test_concat_dataset')
+        pipeline = MagicMock()
+        SwitchRecipeHook._switch_train_pipeline(runner, pipeline)
+        self.assertIs(runner.train_dataloader.dataset.datasets[0].pipeline,
+                      pipeline)
+        self.assertIs(runner.train_dataloader.dataset.datasets[1].pipeline,
+                      pipeline)
+
+        runner = Runner(
+            model=model,
+            train_dataloader=dict(
+                dataset=RepeatDataset(ExampleDataset(), 3),
+                sampler=dict(type='DefaultSampler', shuffle=True),
+                batch_size=5,
+                num_workers=0,
+                collate_fn=dict(type='default_collate'),
+            ),
+            optim_wrapper=OptimWrapper(
+                optimizer=torch.optim.Adam(model.parameters(), lr=0.)),
+            train_cfg=dict(by_epoch=True, max_epochs=2, val_interval=10),
+            work_dir=self.tmpdir.name,
+            default_hooks=dict(logger=None),
+            default_scope='mmcls',
+            experiment_name='test_repeat_dataset')
+        pipeline = MagicMock()
+        SwitchRecipeHook._switch_train_pipeline(runner, pipeline)
+        self.assertIs(runner.train_dataloader.dataset.dataset.pipeline,
+                      pipeline)
+
+    def test_switch_loss(self):
+        device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+        model = SimpleModel().to(device)
+
+        runner = Runner(
+            model=model,
+            train_dataloader=dict(
+                dataset=ExampleDataset(),
+                sampler=dict(type='DefaultSampler', shuffle=True),
+                batch_size=5,
+                num_workers=0,
+                collate_fn=dict(type='default_collate'),
+            ),
+            optim_wrapper=OptimWrapper(
+                optimizer=torch.optim.Adam(model.parameters(), lr=0.)),
+            train_cfg=dict(by_epoch=True, max_epochs=2, val_interval=10),
+            work_dir=self.tmpdir.name,
+            default_hooks=dict(logger=None),
+            default_scope='mmcls',
+            experiment_name='test_model_loss')
+        loss = CrossEntropyLoss(use_soft=True)
+        SwitchRecipeHook._switch_loss(runner, loss)
+        self.assertIs(runner.model.loss_module, loss)
+
+        model.add_module('head', ClsHead())
+        del model.loss_module
+        runner = Runner(
+            model=model,
+            train_dataloader=dict(
+                dataset=ExampleDataset(),
+                sampler=dict(type='DefaultSampler', shuffle=True),
+                batch_size=5,
+                num_workers=0,
+                collate_fn=dict(type='default_collate'),
+            ),
+            optim_wrapper=OptimWrapper(
+                optimizer=torch.optim.Adam(model.parameters(), lr=0.)),
+            train_cfg=dict(by_epoch=True, max_epochs=2, val_interval=10),
+            work_dir=self.tmpdir.name,
+            default_hooks=dict(logger=None),
+            default_scope='mmcls',
+            experiment_name='test_head_loss')
+        loss = CrossEntropyLoss(use_soft=True)
+        SwitchRecipeHook._switch_loss(runner, loss)
+        self.assertIs(runner.model.head.loss_module, loss)
