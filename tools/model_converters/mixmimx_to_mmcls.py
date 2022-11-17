@@ -13,7 +13,7 @@ def correct_unfold_reduction_order(x: torch.Tensor):
     x = x[:, [0, 2, 1, 3], :].transpose(1,2).reshape(out_channel, in_channel)
     return x
 
-def correct_unfold_norm_order(x):
+def correct_unfold_norm_order(x: torch.Tensor):
     in_channel = x.shape[0]
     x = x.reshape(4, in_channel // 4)
     x = x[[0, 2, 1, 3], :].transpose(0,1).reshape(in_channel)
