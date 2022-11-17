@@ -1,5 +1,5 @@
 _base_ = [
-    '../_base_/models/mixmim/mixmim_base.py'
+    '../_base_/models/mixmim/mixmim_base.py',
     '../_base_/datasets/imagenet_bs64_swin_224.py',
     '../_base_/schedules/imagenet_bs256.py',
     '../_base_/default_runtime.py'
@@ -29,7 +29,7 @@ test_pipeline = [
     dict(type='LoadImageFromFile', file_client_args=file_client_args),
     dict(
         type='ResizeEdge',
-        scale=219,
+        scale=256,
         edge='short',
         backend='pillow',
         interpolation='bicubic'),
