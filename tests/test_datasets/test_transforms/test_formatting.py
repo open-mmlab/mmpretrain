@@ -144,14 +144,13 @@ class FormatMultiTaskLabels(unittest.TestCase):
             'scale_factor': 1.0,
             'flip': False,
             'img': mmcv.imread(img_path),
-            'task1': 1,
-            'task3': 3,
+            'gt_label': {
+                'task1': 1,
+                'task3': 3
+            },
         }
 
-        cfg = dict(
-            type='FormatMultiTaskLabels',
-            tasks=['task1', 'task2', 'task3']
-            )
+        cfg = dict(type='FormatMultiTaskLabels', )
         transform = TRANSFORMS.build(cfg)
         results = transform(copy.deepcopy(data))
         self.assertIn('inputs', results)
@@ -170,10 +169,10 @@ class FormatMultiTaskLabels(unittest.TestCase):
 
         # Test without `img` and `gt_label`
         del data['img']
-        del data['task1']
+        del data['gt_label']
         with self.assertWarnsRegex(Warning, 'Cannot get "img"'):
             results = transform(copy.deepcopy(data))
-            self.assertNotIn('task1', results['data_samples'])
+            self.assertNotIn('gt_label', results['data_samples'])
 
     def test_repr(self):
         cfg = dict(type='PackClsInputs', meta_keys=['flip', 'img_shape'])
