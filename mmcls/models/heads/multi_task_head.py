@@ -9,12 +9,58 @@ from mmcls.structures import MultiTaskDataSample
 from .base_head import BaseHead
 
 
+def loss_convertor(func, task_name):
+    target_type = func.__annotations__['data_samples'].__args__[0].__name__
+
+    # data_samples = data_samples.to_target_data_sample(target_type, task_name)
+
+    def wrapped(inputs, data_samples, **kwargs):
+        mask = []
+        task_data_samples = []
+        for data_sample in data_samples:
+            if isinstance(data_sample, MultiTaskDataSample):
+                sample_mask = data_sample.get_task_mask(task_name)
+                mask.append(sample_mask)
+                if sample_mask:
+                    task_data_samples.append(
+                        data_sample.to_target_data_sample(
+                            target_type, task_name))
+        masked_inputs = tuple()
+        if type(inputs) is tuple:
+            for input in inputs:
+                masked_inputs = masked_inputs + (input[mask], )
+        else:
+            masked_inputs = inputs[mask]
+        if len(task_data_samples) == 0:
+            return {'loss': torch.tensor(0), 'mask_size': torch.tensor(0)}
+        loss_output = func(masked_inputs, task_data_samples, **kwargs)
+        loss_output['mask_size'] = torch.tensor(sum(mask))
+        return loss_output
+
+    return wrapped
+
+
+def predict_convertor(func, task_name):
+    target_type = func.__annotations__['data_samples'].__args__[0].__name__
+
+    def wrapped(inputs, data_samples, **kwargs):
+        if data_samples is None:
+            return func(inputs, data_samples, **kwargs)
+        task_data_samples = [
+            data_sample.to_target_data_sample(target_type, task_name)
+            for data_sample in data_samples
+        ]
+        return func(inputs, task_data_samples, **kwargs)
+
+    return wrapped
+
+
 @MODELS.register_module()
 class MultiTaskHead(BaseHead):
     """Multi task head.
 
     Args:
-        sub_heads (dict): Sub heads to use, the key will be use to rename the
+        task_heads (dict): Sub heads to use, the key will be use to rename the
             loss components.
         common_cfg (dict): The common settings for all heads. Defaults to an
             empty dict.
@@ -22,22 +68,29 @@ class MultiTaskHead(BaseHead):
             Defaults to None.
     """
 
-    def __init__(self, sub_heads, common_cfg=dict(), init_cfg=None):
+    def __init__(self, task_heads, common_cfg=dict(), init_cfg=None):
         super(MultiTaskHead, self).__init__(init_cfg=init_cfg)
 
-        assert isinstance(sub_heads, dict), 'The `sub_heads` argument' \
+        assert isinstance(task_heads, dict), 'The `task_heads` argument' \
             "should be a dict, which's keys are task names and values are" \
             'configs of head for the task.'
 
-        self.sub_heads = ModuleDict()
+        self.task_heads = ModuleDict()
 
-        for task_name, head_cfg in sub_heads.items():
-            sub_head = MODELS.build(head_cfg, default_args=common_cfg)
-            self.sub_heads[task_name] = sub_head
+        for task_name, head_cfg in task_heads.items():
+            if head_cfg['type'] != 'MultiTaskHead':
+                sub_head = MODELS.build(head_cfg, default_args=common_cfg)
+            else:
+                sub_head = MODELS.build(
+                    head_cfg, default_args={'common_cfg': common_cfg})
+            sub_head.loss = loss_convertor(sub_head.loss, task_name)
+            sub_head.predict = predict_convertor(sub_head.predict, task_name)
+            self.task_heads[task_name] = sub_head
 
     def forward(self, feats):
+        """The forward process."""
         task_results = ()
-        for task_name, head in self.sub_heads.items():
+        for task_name, head in self.task_heads.items():
             head_res = head.forward(feats)
             task_results = task_results + (head_res, )
         return task_results
@@ -48,44 +101,17 @@ class MultiTaskHead(BaseHead):
 
         Args:
             feats (tuple[Tensor]): The features extracted from the backbone.
-                Multiple stage inputs are acceptable but only the last stage
-                will be used to classify. The shape of every item should be
-                ``(num_samples, num_classes)``.
             data_samples (List[MultiTaskDataSample]): The annotation data of
                 every samples.
             **kwargs: Other keyword arguments to forward the loss module.
 
         Returns:
-            dict[str, Tensor]: a dictionary of loss components
+            dict[str, Tensor]: a dictionary of loss components, each task loss
+                key will be prefixed by the task_name like "task1_loss"
         """
         losses = dict()
-        for task_name, head in self.sub_heads.items():
-            """if 'mask'  in gt_label[task_name].keys()  :
-
-            mask = gt_label[task_name]['mask']
-              label = gt_label[task_name]['label']
-            else: # a tensor
-              label = gt_label[task_name]
-              batch_n = label.shape[0]
-              mask = to_tensor([True]*batch_n)
-            """
-            mask = []
-            masked_data_samples = []
-            for data_sample in data_samples:
-                sample_mask = data_sample.get_task_mask(task_name)
-                if sample_mask:
-                    sample = data_sample.get_task_sample(task_name)
-                    masked_data_samples.append(sample)
-                mask.append(sample_mask)
-            masked_features = tuple()
-            if type(feats) is tuple:
-                for feature in feats:
-                    masked_features = masked_features + (feature[mask], )
-            else:
-                masked_features = feats[mask]
-            head_loss = head.loss(masked_features, masked_data_samples,
-                                  **kwargs)
-
+        for task_name, head in self.task_heads.items():
+            head_loss = head.loss(feats, data_samples, **kwargs)
             for k, v in head_loss.items():
                 losses[f'{task_name}_{k}'] = v
         return losses
@@ -99,9 +125,6 @@ class MultiTaskHead(BaseHead):
 
         Args:
             feats (tuple[Tensor]): The features extracted from the backbone.
-                Multiple stage inputs are acceptable but only the last stage
-                will be used to classify. The shape of every item should be
-                ``(num_samples, num_classes)``.
             data_samples (List[MultiTaskDataSample], optional): The annotation
                 data of every samples. If not None, set ``pred_label`` of
                 the input data samples. Defaults to None.
@@ -111,22 +134,25 @@ class MultiTaskHead(BaseHead):
             the predicted results.
         """
         # The part can be traced by torch.fx
-        task_results = self(feats)
-
+        predictions_ = dict()
+        for task_name, head in self.task_heads.items():
+            predictions_[task_name] = head.predict(feats, data_samples)
         # The part can not be traced by torch.fx
-        predictions = self._get_predictions(task_results, data_samples)
+        predictions = self._get_predictions(predictions_, data_samples)
         return predictions
 
-    def _get_predictions(self, task_results, data_samples):
+    def _get_predictions(self, preds_dict, data_samples):
         """Post-process the output of MultiTaskHead."""
-        data_results = list(zip(*task_results))
+        pred_dicts = [
+            dict(zip(preds_dict, t)) for t in zip(*preds_dict.values())
+        ]
         if data_samples is None:
             data_samples = []
-            for data_result in data_results:
+            for pred_dict in pred_dicts:
                 data_samples.append(
-                    MultiTaskDataSample().set_pred_label(data_result))
+                    MultiTaskDataSample().set_pred_task(pred_dict))
         else:
-            for data_sample, data_result in zip(data_samples, data_results):
-                data_sample.set_pred_label(data_result)
+            for data_sample, pred_dict in zip(data_samples, pred_dicts):
+                data_sample.set_pred_task(pred_dict)
 
         return data_samples
