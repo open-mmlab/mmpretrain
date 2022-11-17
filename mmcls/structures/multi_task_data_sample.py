@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from typing import Dict
+from typing import Dict, Union
 
 import torch
 from mmengine.structures import BaseDataElement, LabelData
@@ -39,13 +39,16 @@ class MultiTaskDataSample(BaseDataElement):
 
     def set_pred_task(self, value: Dict) -> 'MultiTaskDataSample':
         """Set score of ``pred_task``."""
-        if list(value.values())[0] == torch.tensor:
-            self.pred_task = LabelData(**value)
-        else:
-            new_value = {}
-            for key in value.keys():
+        new_value = {}
+        for key in value.keys():
+            type_value = type(value[key]).__name__
+            if type_value == 'Tensor' or type_value == 'dict':
+                new_value[key] = value[key]
+            elif type_value in self.data_samples_map.keys():
                 new_value[key] = self.from_target_data_sample(
-                    type(value[key]).__name__, (value[key]))
+                    type_value, (value[key]))
+            else:
+                raise Exception(type_value + 'is not supported')
             self.pred_task = LabelData(**new_value)
         return self
 
@@ -98,19 +101,24 @@ class MultiTaskDataSample(BaseDataElement):
         return task_sample
 
     def to_target_data_sample(self, target_type, task_name):
-        return self.data_samples_map[target_type](self, task_name)
-
-    data_samples_map = {
-        'ClsDataSample': to_cls_data_sample,
-        'MultiTaskDataSample': to_multi_task_data_sample
-    }
+        return self.data_samples_map[target_type]['to'](self, task_name)
 
     def from_target_data_sample(self, target_type, value):
-        return self.data_samples_map2[target_type](self, value)
+        return self.data_samples_map[target_type]['from'](self, value)
 
     def from_cls_data_sample(self, value):
         return value.pred_label.score
 
-    data_samples_map2 = {
-        'ClsDataSample': from_cls_data_sample,
+    def from_multi_task_data_sample(self, value):
+        return value.pred_task
+
+    data_samples_map = {
+        'ClsDataSample': {
+            'to': to_cls_data_sample,
+            'from': from_cls_data_sample
+        },
+        'MultiTaskDataSample': {
+            'to': to_multi_task_data_sample,
+            'from': from_multi_task_data_sample
+        },
     }
