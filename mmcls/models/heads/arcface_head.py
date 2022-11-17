@@ -67,6 +67,56 @@ class ArcFaceClsHead(ClsHead):
     `Sub-center ArcFace: Boosting Face Recognition by Large-Scale Noisy Web
     Faces <https://link.springer.com/chapter/10.1007/978-3-030-58621-8_43>`_
 
+    Example:
+        To use ArcFace in config files.
+
+        1. use vanilla ArcFace
+
+        .. code:: python
+            mode = dict(
+                backbone = xxx,
+                neck = xxxx,
+                head=dict(
+                    type='ArcFaceClsHead',
+                    num_classes=5000,
+                    in_channels=1024,
+                    loss = dict(type='CrossEntropyLoss', loss_weight=1.0),
+                    init_cfg=None),
+            )
+
+        2. use SubCenterArcFace with 3 sub-centers
+
+        .. code:: python
+            mode = dict(
+                backbone = xxx,
+                neck = xxxx,
+                head=dict(
+                    type='ArcFaceClsHead',
+                    num_classes=5000,
+                    in_channels=1024,
+                    num_subcenters=3,
+                    loss = dict(type='CrossEntropyLoss', loss_weight=1.0),
+                    init_cfg=None),
+            )
+
+        3. use SubCenterArcFace With CountPowerAdaptiveMargins
+
+        .. code:: python
+            mode = dict(
+                backbone = xxx,
+                neck = xxxx,
+                head=dict(
+                    type='ArcFaceClsHead',
+                    num_classes=5000,
+                    in_channels=1024,
+                    num_subcenters=3,
+                    loss = dict(type='CrossEntropyLoss', loss_weight=1.0),
+                    init_cfg=None),
+            )
+
+            custom_hooks = [dict(type='SetCountPowAdvMarginsHook')]
+
+
     Args:
         num_classes (int): Number of categories excluding the background
             category.
@@ -78,8 +128,8 @@ class ArcFaceClsHead(ClsHead):
             - float: The margin, would be same for all the categories.
             - Sequence[float]: The category-based margins list.
             - str: A '.txt' file path which contains a list. Each line
-                represents the margin of a category, and the number in the
-                 i-th row indicates the margin of the i-th class.
+              represents the margin of a category, and the number in the
+              i-th row indicates the margin of the i-th class.
 
             Defaults to 0.5.
         easy_margin (bool): Avoid theta + m >= PI. Defaults to False.
