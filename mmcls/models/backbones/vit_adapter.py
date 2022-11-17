@@ -6,7 +6,8 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import torch.utils.checkpoint as cp
-from mmcv.cnn import Conv2d, build_activation_layer, build_norm_layer
+from mmcv.cnn import (Conv2d, ConvModule, build_activation_layer,
+                      build_norm_layer)
 from mmcv.cnn.bricks import DropPath
 from mmcv.cnn.bricks.transformer import AdaptivePadding
 from mmengine.model import BaseModule, ModuleList
@@ -448,92 +449,64 @@ class SpatialPriorModule(BaseModule):
             kernel_size=patch_size, stride=patch_size, padding=padding)
 
         self.stem = nn.Sequential(*[
-            Conv2d(
-                3, hidden_dims, kernel_size=3, stride=2, padding=1,
-                bias=False),
-            build_norm_layer(norm_cfg, hidden_dims)[1],
-            build_activation_layer(act_cfg),
-            Conv2d(
+            ConvModule(
+                3,
+                hidden_dims,
+                3,
+                stride=2,
+                padding=1,
+                norm_cfg=norm_cfg,
+                act_cfg=act_cfg),
+            ConvModule(
                 hidden_dims,
                 hidden_dims,
-                kernel_size=3,
+                3,
                 stride=1,
                 padding=1,
-                bias=False),
-            build_norm_layer(norm_cfg, hidden_dims)[1],
-            build_activation_layer(act_cfg),
-            Conv2d(
+                norm_cfg=norm_cfg,
+                act_cfg=act_cfg),
+            ConvModule(
                 hidden_dims,
                 hidden_dims,
-                kernel_size=3,
+                3,
                 stride=1,
                 padding=1,
-                bias=False),
-            build_norm_layer(norm_cfg, hidden_dims)[1],
-            build_activation_layer(act_cfg),
+                norm_cfg=norm_cfg,
+                act_cfg=act_cfg),
             nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         ])
-        self.conv2 = nn.Sequential(*[
-            Conv2d(
-                hidden_dims,
-                2 * hidden_dims,
-                kernel_size=3,
-                stride=2,
-                padding=1,
-                bias=False),
-            build_norm_layer(norm_cfg, 2 * hidden_dims)[1],
-            build_activation_layer(act_cfg),
-        ])
-        self.conv3 = nn.Sequential(*[
-            Conv2d(
-                2 * hidden_dims,
-                4 * hidden_dims,
-                kernel_size=3,
-                stride=2,
-                padding=1,
-                bias=False),
-            build_norm_layer(norm_cfg, 4 * hidden_dims)[1],
-            build_activation_layer(act_cfg),
-        ])
-        self.conv4 = nn.Sequential(*[
-            nn.Conv2d(
-                4 * hidden_dims,
-                4 * hidden_dims,
-                kernel_size=3,
-                stride=2,
-                padding=1,
-                bias=False),
-            build_norm_layer(norm_cfg, 4 * hidden_dims)[1],
-            build_activation_layer(act_cfg),
-        ])
-        self.fc1 = Conv2d(
+        self.conv2 = ConvModule(
             hidden_dims,
-            embed_dims,
-            kernel_size=1,
-            stride=1,
-            padding=0,
-            bias=True)
-        self.fc2 = Conv2d(
             2 * hidden_dims,
-            embed_dims,
-            kernel_size=1,
-            stride=1,
-            padding=0,
-            bias=True)
+            3,
+            stride=2,
+            padding=1,
+            norm_cfg=norm_cfg,
+            act_cfg=act_cfg)
+        self.conv3 = ConvModule(
+            2 * hidden_dims,
+            4 * hidden_dims,
+            3,
+            stride=2,
+            padding=1,
+            norm_cfg=norm_cfg,
+            act_cfg=act_cfg)
+        self.conv4 = ConvModule(
+            4 * hidden_dims,
+            4 * hidden_dims,
+            3,
+            stride=2,
+            padding=1,
+            norm_cfg=norm_cfg,
+            act_cfg=act_cfg)
+        self.fc1 = Conv2d(
+            hidden_dims, embed_dims, kernel_size=1, stride=1, padding=0)
+        self.fc2 = Conv2d(
+            2 * hidden_dims, embed_dims, kernel_size=1, stride=1, padding=0)
         self.fc3 = Conv2d(
-            4 * hidden_dims,
-            embed_dims,
-            kernel_size=1,
-            stride=1,
-            padding=0,
-            bias=True)
+            4 * hidden_dims, embed_dims, kernel_size=1, stride=1, padding=0)
         self.fc4 = Conv2d(
-            4 * hidden_dims,
-            embed_dims,
-            kernel_size=1,
-            stride=1,
-            padding=0,
-            bias=True)
+            4 * hidden_dims, embed_dims, kernel_size=1, stride=1, padding=0)
 
     def forward(self, x):
         x = self.adaptive_padding(x)
