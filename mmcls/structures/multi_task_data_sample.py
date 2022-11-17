@@ -39,7 +39,14 @@ class MultiTaskDataSample(BaseDataElement):
 
     def set_pred_task(self, value: Dict) -> 'MultiTaskDataSample':
         """Set score of ``pred_task``."""
-        self.pred_task = LabelData(**value)
+        if list(value.values())[0] == torch.tensor:
+            self.pred_task = LabelData(**value)
+        else:
+            new_value = {}
+            for key in value.keys():
+                new_value[key] = self.from_target_data_sample(
+                    type(value[key]).__name__, (value[key]))
+            self.pred_task = LabelData(**new_value)
         return self
 
     def get_task_mask(self, task_name):
@@ -96,4 +103,14 @@ class MultiTaskDataSample(BaseDataElement):
     data_samples_map = {
         'ClsDataSample': to_cls_data_sample,
         'MultiTaskDataSample': to_multi_task_data_sample
+    }
+
+    def from_target_data_sample(self, target_type, value):
+        return self.data_samples_map2[target_type](self, value)
+
+    def from_cls_data_sample(self, value):
+        return value.pred_label.score
+
+    data_samples_map2 = {
+        'ClsDataSample': from_cls_data_sample,
     }

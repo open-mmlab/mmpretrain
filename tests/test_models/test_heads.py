@@ -539,7 +539,6 @@ class TestMultiTaskHead(TestCase):
         self.assertEqual(
             losses.keys(),
             {'task0_loss', 'task0_mask_size', 'task1_loss', 'task1_mask_size'})
-        print(losses)
         self.assertGreater(losses['task0_loss'].item(), 0)
         self.assertGreater(losses['task1_loss'].item(), 0)
 
@@ -559,6 +558,9 @@ class TestMultiTaskHead(TestCase):
         self.assertTrue(is_seq_of(predictions, MultiTaskDataSample))
         for pred in predictions:
             self.assertIn('task0', pred.pred_task)
+        task0_sample = predictions[0].to_target_data_sample(
+            'ClsDataSample', 'task0')
+        self.assertTrue(type(task0_sample.pred_label.score), 'torch.tensor')
 
         # with with data_samples
         predictions = head.predict(feats, data_samples)
@@ -588,7 +590,6 @@ class TestMultiTaskHead(TestCase):
         self.assertEqual(
             losses.keys(),
             {'task0_loss', 'task0_mask_size', 'task1_loss', 'task1_mask_size'})
-        print(losses)
         self.assertEqual(losses['task0_loss'].item(), 0)
         self.assertEqual(losses['task1_loss'].item(), 0)
 
