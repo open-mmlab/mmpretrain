@@ -1,24 +1,9 @@
 {
   "metainfo": {
     "tasks": [
-      {
-        "name": "gender",
-        "categories": [
-          "male",
-          "female"
-        ],
-        "type": "single-label"
-      },
-      {
-        "name": "wear",
-        "categories": [
-          "shirt",
-          "coat",
-          "jeans",
-          "pants"
-        ],
-        "type": "multi-label"
-      }
+      "gender",
+      "wear",
+
     ]
   },
   "data_list": [

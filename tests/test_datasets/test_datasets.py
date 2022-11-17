@@ -7,7 +7,6 @@ import tempfile
 from unittest import TestCase
 from unittest.mock import MagicMock, call, patch
 
-import mmcv
 import numpy as np
 from mmengine.logging import MMLogger
 from mmengine.registry import TRANSFORMS
@@ -928,3 +927,19 @@ class TestMultiTaskDataset(TestCase):
                     '        gender \n'
                     '        wear ')
         self.assertIn(task_doc, repr(dataset))
+
+    def test_load_data_list(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test default behavior
+        dataset = dataset_class(**self.DEFAULT_ARGS)
+
+        data = dataset.load_data_list(self.DEFAULT_ARGS['ann_file'])
+
+        np.testing.assertIsInstance(data, list)
+        np.testing.assert_equal(len(data), 4)
+        np.testing.assert_equal(data[0]['gt_label'], {"gender": 0})
+        np.testing.assert_equal(data[1]['gt_label'], {
+            "gender": 0,
+            "wear": [1, 0, 1, 0]
+            })
