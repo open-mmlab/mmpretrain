@@ -187,7 +187,7 @@ class TestSwitchRecipeHook(TestCase):
                 dataset=ExampleDataset(),
                 sampler=dict(type='DefaultSampler', shuffle=True),
                 batch_size=5,
-                num_workers=2,
+                num_workers=1,
                 persistent_workers=True,
                 collate_fn=dict(type='default_collate'),
             ),
