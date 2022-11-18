@@ -1,15 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
 import os.path as osp
-from collections import defaultdict
 from os import PathLike
-from typing import Dict, List, Optional, Sequence
+from typing import Optional, Sequence
 
 import mmengine
-import numpy as np
 from mmcv.transforms import Compose
 from mmengine.fileio import FileClient
-from mmengine.utils.misc import is_list_of
 
 from .builder import DATASETS
 
@@ -38,24 +35,24 @@ class MultiTaskDataset:
           "metainfo": {
             "tasks":
               [
-                {"name": "gender",
-                 "type": "single-label",
-                 "categories": ["male", "female"]},
-                {"name": "wear",
-                 "type": "multi-label",
-                 "categories": ["shirt", "coat", "jeans", "pants"]}
+              'gender'
+              'wear'
               ]
           },
           "data_list": [
             {
               "img_path": "a.jpg",
-              "gender": 0,
-              "wear": [1, 0, 1, 0]
+              gt_label:{
+                  "gender": 0,
+                  "wear": [1, 0, 1, 0]
+                }
             },
             {
               "img_path": "b.jpg",
-              "gender": 1,
-              "wear": [0, 1, 0, 1]
+              gt_label:{
+                  "gender": 1,
+                  "wear": [1, 0, 1, 0]
+                }
             }
           ]
         }
@@ -212,18 +209,6 @@ class MultiTaskDataset:
 
         metainfo.update(in_metainfo)
 
-        # Format check
-        assert 'tasks' in metainfo, \
-            'Please specify the `tasks` in the `metainfo` argument or ' \
-            'the `metainfo` field in the annotation file.'
-        tasks = metainfo['tasks']
-        assert is_list_of(tasks, dict), \
-            'Every task of `tasks` in the `metainfo` should be a dict.'
-        for task in tasks:
-            for field in ['name', 'categories', 'type']:
-                assert field in task, \
-                    f'Missing "{field}" in some tasks meta information.'
-
         return metainfo
 
     def load_data_list(self, ann_file, metainfo_override=None):
@@ -282,44 +267,10 @@ class MultiTaskDataset:
         assert 'img_path' in raw_data, \
             "The item doesn't have `img_path` field."
         data = dict(
-            img_prefix=self.data_root,
-            img_info=dict(filename=raw_data['img_path']),
+            img_path=self._join_root(raw_data['img_path']),
+            gt_label=raw_data['gt_label'],
         )
-
-        for task in self._metainfo['tasks']:
-            label_key = task['name'] + '_img_label'
-            task_type = task['type']
-            assert label_key in raw_data, \
-                f"The item doesn't have `{label_key}` field."
-            if task_type == 'single-label':
-                data[label_key] = np.array(raw_data[label_key], dtype=np.int64)
-                assert data[label_key].ndim == 0, \
-                    'The label of single-label task should be a single number.'
-            elif task_type == 'multi-label':
-                data[label_key] = np.array(raw_data[label_key], dtype=np.int8)
-                assert (data[label_key] <= 1).all(), \
-                    'The label of multi-label task should be one-hot format.'
-
         return data
-
-    @property
-    def class_to_idx(self):
-        """Map mapping class name to class index.
-
-        Returns:
-            Dict[str, dict]: The mapping from class name to class index of
-            each tasks.
-        """
-
-        mapping_dict = {}
-        for task in self.metainfo['tasks']:
-            name = task['name']
-            categories = task['categories']
-            mapping_dict[name] = {
-                category: i
-                for i, category in enumerate(categories)
-            }
-        return mapping_dict
 
     @property
     def metainfo(self) -> dict:
@@ -330,57 +281,6 @@ class MultiTaskDataset:
             annotation file and metainfo argument during instantiation.
         """
         return copy.deepcopy(self._metainfo)
-
-    @property
-    def CLASSES(self) -> dict:
-        """Get the classes information of dataset.
-
-        Returns:
-            Dict[str, list]: The categories list for each task.
-        """
-        return {
-            task['name']: task['categories']
-            for task in self._metainfo['tasks']
-        }
-
-    def get_gt_labels(self):
-        """Get all ground-truth labels (categories).
-
-        Returns:
-            Dict[str, np.ndarray]: categories of all images for each task.
-        """
-
-        gt_labels_dict = defaultdict(list)
-        for data in self.data_list:
-            for task in self.metainfo['tasks']:
-                name = task['name']
-                gt_labels_dict[name].append(data[f'{name}_img_label'])
-        for k, v in gt_labels_dict.items():
-            gt_labels_dict[k] = np.array(v)
-        return dict(gt_labels_dict)
-
-    def get_cat_ids(self, idx: int) -> Dict[str, List[int]]:
-        """Get the category ids by index.
-
-        Args:
-            idx (int): Index of data.
-
-        Returns:
-            Dict[str, List[int]]: Image category ids of specified index for
-            each task.
-        """
-        data = self.data_list[idx]
-        cat_ids_dict = {}
-        for task in self.metainfo['tasks']:
-            name = task['name']
-            task_type = task['type']
-            gt_label = data[f'{name}_img_label']
-            if task_type == 'single-label':
-                cat_ids_dict[name] = [int(gt_label)]
-            elif task_type == 'multi-label':
-                cat_ids_dict[name] = np.where(gt_label == 1)[0].tolist()
-
-        return cat_ids_dict
 
     def prepare_data(self, idx):
         """Get data processed by ``self.pipeline``.
@@ -432,8 +332,7 @@ class MultiTaskDataset:
         tasks = self.metainfo['tasks']
         body.append(f'For {len(tasks)} tasks')
         for task in tasks:
-            body.append(f'    {task["name"]} ({len(task["categories"])} '
-                        f'categories, {task["type"]})')
+            body.append(f' {task} ')
         # ----------------------------------------------------
 
         if len(self.pipeline.transforms) > 0:
