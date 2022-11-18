@@ -237,11 +237,11 @@ def test_replknet_backbone():
     # Test RepLKNet forward
     model_test_settings = [
         dict(model_name='31B', out_sizes=(128, 256, 512, 1024)),
-        dict(model_name='31L', out_sizes=(192, 384, 768, 1536)),
-        dict(model_name='XL', out_sizes=(256, 512, 1024, 2048))
+        # dict(model_name='31L', out_sizes=(192, 384, 768, 1536)),
+        # dict(model_name='XL', out_sizes=(256, 512, 1024, 2048))
     ]
 
-    choose_models = ['31B', '31L', 'XL']
+    choose_models = ['31B']
     # Test RepLKNet model forward
     for model_test_setting in model_test_settings:
         if model_test_setting['model_name'] not in choose_models:
