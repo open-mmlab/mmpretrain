@@ -212,18 +212,6 @@ class MultiTaskDataset:
 
         metainfo.update(in_metainfo)
 
-        # Format check
-        assert 'tasks' in metainfo, \
-            'Please specify the `tasks` in the `metainfo` argument or ' \
-            'the `metainfo` field in the annotation file.'
-        tasks = metainfo['tasks']
-        assert is_list_of(tasks, dict), \
-            'Every task of `tasks` in the `metainfo` should be a dict.'
-        for task in tasks:
-            for field in ['name', 'categories', 'type']:
-                assert field in task, \
-                    f'Missing "{field}" in some tasks meta information.'
-
         return metainfo
 
     def load_data_list(self, ann_file, metainfo_override=None):
@@ -282,24 +270,9 @@ class MultiTaskDataset:
         assert 'img_path' in raw_data, \
             "The item doesn't have `img_path` field."
         data = dict(
-            img_prefix=self.data_root,
-            img_info=dict(filename=raw_data['img_path']),
+            img_path=self._join_root(raw_data['img_path']),
+            gt_label=raw_data['gt_label'],
         )
-
-        for task in self._metainfo['tasks']:
-            label_key = task['name'] + '_img_label'
-            task_type = task['type']
-            assert label_key in raw_data, \
-                f"The item doesn't have `{label_key}` field."
-            if task_type == 'single-label':
-                data[label_key] = np.array(raw_data[label_key], dtype=np.int64)
-                assert data[label_key].ndim == 0, \
-                    'The label of single-label task should be a single number.'
-            elif task_type == 'multi-label':
-                data[label_key] = np.array(raw_data[label_key], dtype=np.int8)
-                assert (data[label_key] <= 1).all(), \
-                    'The label of multi-label task should be one-hot format.'
-
         return data
 
     @property
@@ -362,8 +335,7 @@ class MultiTaskDataset:
         tasks = self.metainfo['tasks']
         body.append(f'For {len(tasks)} tasks')
         for task in tasks:
-            body.append(f'    {task["name"]} ({len(task["categories"])} '
-                        f'categories, {task["type"]})')
+            body.append(f' {task} ')
         # ----------------------------------------------------
 
         if len(self.pipeline.transforms) > 0:

@@ -2,8 +2,7 @@
   "metainfo": {
     "tasks": [
       "gender",
-      "wear",
-
+      "wear"
     ]
   },
   "data_list": [

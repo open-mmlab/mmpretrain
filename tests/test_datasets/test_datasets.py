@@ -889,9 +889,7 @@ class TestMultiTaskDataset(TestCase):
 
         # Test default behavior
         dataset = dataset_class(**self.DEFAULT_ARGS)
-        metainfo = {
-            'tasks': ['gender', 'wear']
-        }
+        metainfo = {'tasks': ['gender', 'wear']}
         self.assertDictEqual(dataset.metainfo, metainfo)
         self.assertFalse(dataset.test_mode)
 
@@ -901,31 +899,32 @@ class TestMultiTaskDataset(TestCase):
 
         data = dataset.parse_data_info({
             'img_path': 'a.jpg',
-            'gt_label': {"gender": 0}
+            'gt_label': {
+                'gender': 0
+            }
         })
         self.assertDictContainsSubset(
             {
-                'img_path': ASSETS_ROOT+'/a.jpg',
-                'gt_label': {"gender": 0}
+                'img_path': ASSETS_ROOT + '/a.jpg',
+                'gt_label': {
+                    'gender': 0
+                }
             }, data)
-        np.testing.assert_equal(data['gender'], 0)
+        np.testing.assert_equal(data['gt_label']['gender'], 0)
 
         # Test missing path
         with self.assertRaisesRegex(AssertionError, 'have `img_path` field'):
-            dataset.parse_data_info({
-                'gt_label': {
+            dataset.parse_data_info(
+                {'gt_label': {
                     'gender': 0,
                     'wear': [1, 0, 1, 0]
-                    }
-            })
+                }})
 
     def test_repr(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
         dataset = dataset_class(**self.DEFAULT_ARGS)
 
-        task_doc = ('    For 2 tasks\n'
-                    '        gender \n'
-                    '        wear ')
+        task_doc = ('For 2 tasks\n     gender \n     wear ')
         self.assertIn(task_doc, repr(dataset))
 
     def test_load_data_list(self):
@@ -935,11 +934,10 @@ class TestMultiTaskDataset(TestCase):
         dataset = dataset_class(**self.DEFAULT_ARGS)
 
         data = dataset.load_data_list(self.DEFAULT_ARGS['ann_file'])
-
-        np.testing.assertIsInstance(data, list)
-        np.testing.assert_equal(len(data), 4)
+        self.assertIsInstance(data, list)
+        np.testing.assert_equal(len(data), 3)
         np.testing.assert_equal(data[0]['gt_label'], {"gender": 0})
         np.testing.assert_equal(data[1]['gt_label'], {
-            "gender": 0,
-            "wear": [1, 0, 1, 0]
-            })
+            'gender': 0,
+            'wear': [1, 0, 1, 0]
+        })
