@@ -1,3 +1,5 @@
+from mmcls.models import build_classifier
+
 model = dict(
     type='ImageClassifier',
     backbone=dict(
@@ -14,8 +16,6 @@ model = dict(
         topk=(1, 5),
     ))
 
-
-from mmcls.models import build_classifier
 if __name__ == '__main__':
     # model.pop('type')
     model = build_classifier(model)

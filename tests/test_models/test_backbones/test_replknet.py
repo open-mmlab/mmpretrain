@@ -10,8 +10,7 @@ from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from mmcls.models.backbones import RepLKNet
-from mmcls.models.backbones.replknet import ReparamLargeKernelConv, ReparamLargeKernelConv
-from mmcls.models.utils import SELayer
+from mmcls.models.backbones.replknet import ReparamLargeKernelConv
 
 
 def check_norm_state(modules, train_state):
@@ -37,8 +36,10 @@ def is_replk_block(modules):
 
 
 def test_replknet_replkblock():
-    # Test ReparamLargeKernelConv with in_channels != out_channels, kernel_size = 31, stride = 1, groups=in_channels, small_kernel = 5
-    block = ReparamLargeKernelConv(5, 10, kernel_size=31, stride=1, groups=5, small_kernel=5)
+    # Test ReparamLargeKernelConv with in_channels != out_channels,
+    # kernel_size = 31, stride = 1, groups=in_channels, small_kernel = 5
+    block = ReparamLargeKernelConv(
+        5, 10, kernel_size=31, stride=1, groups=5, small_kernel=5)
     block.eval()
     x = torch.randn(1, 5, 64, 64)
     x_out_not_deploy = block(x)
@@ -53,8 +54,10 @@ def test_replknet_replkblock():
     assert x_out_deploy.shape == torch.Size((1, 10, 64, 64))
     assert torch.allclose(x_out_not_deploy, x_out_deploy, atol=1e-5, rtol=1e-4)
 
-    # Test ReparamLargeKernelConv with in_channels == out_channels, kernel_size = 31, stride = 1, groups=in_channels, small_kernel = 5
-    block = ReparamLargeKernelConv(12, 12, kernel_size=31, stride=1, groups=12, small_kernel=5)
+    # Test ReparamLargeKernelConv with in_channels == out_channels,
+    # kernel_size = 31, stride = 1, groups=in_channels, small_kernel = 5
+    block = ReparamLargeKernelConv(
+        12, 12, kernel_size=31, stride=1, groups=12, small_kernel=5)
     block.eval()
     x = torch.randn(1, 12, 64, 64)
     x_out_not_deploy = block(x)
@@ -69,8 +72,10 @@ def test_replknet_replkblock():
     assert x_out_deploy.shape == torch.Size((1, 12, 64, 64))
     assert torch.allclose(x_out_not_deploy, x_out_deploy, atol=1e-5, rtol=1e-4)
 
-    # Test ReparamLargeKernelConv with in_channels == out_channels, kernel_size = 31, stride = 2, groups=in_channels, small_kernel = 5
-    block = ReparamLargeKernelConv(16, 16, kernel_size=31, stride=2, groups=16, small_kernel=5)
+    # Test ReparamLargeKernelConv with in_channels == out_channels,
+    # kernel_size = 31, stride = 2, groups=in_channels, small_kernel = 5
+    block = ReparamLargeKernelConv(
+        16, 16, kernel_size=31, stride=2, groups=16, small_kernel=5)
     block.eval()
     x = torch.randn(1, 16, 64, 64)
     x_out_not_deploy = block(x)
@@ -85,8 +90,10 @@ def test_replknet_replkblock():
     assert x_out_deploy.shape == torch.Size((1, 16, 32, 32))
     assert torch.allclose(x_out_not_deploy, x_out_deploy, atol=1e-5, rtol=1e-4)
 
-    # Test ReparamLargeKernelConv with in_channels == out_channels, kernel_size = 27, stride = 1, groups=in_channels, small_kernel = 5
-    block = ReparamLargeKernelConv(12, 12, kernel_size=27, stride=1, groups=12, small_kernel=5)
+    # Test ReparamLargeKernelConv with in_channels == out_channels,
+    # kernel_size = 27, stride = 1, groups=in_channels, small_kernel = 5
+    block = ReparamLargeKernelConv(
+        12, 12, kernel_size=27, stride=1, groups=12, small_kernel=5)
     block.eval()
     x = torch.randn(1, 12, 48, 48)
     x_out_not_deploy = block(x)
@@ -101,8 +108,10 @@ def test_replknet_replkblock():
     assert x_out_deploy.shape == torch.Size((1, 12, 48, 48))
     assert torch.allclose(x_out_not_deploy, x_out_deploy, atol=1e-5, rtol=1e-4)
 
-    # Test ReparamLargeKernelConv with in_channels == out_channels, kernel_size = 31, stride = 1, groups=in_channels, small_kernel = 7
-    block = ReparamLargeKernelConv(12, 12, kernel_size=31, stride=1, groups=12, small_kernel=7)
+    # Test ReparamLargeKernelConv with in_channels == out_channels,
+    # kernel_size = 31, stride = 1, groups=in_channels, small_kernel = 7
+    block = ReparamLargeKernelConv(
+        12, 12, kernel_size=31, stride=1, groups=12, small_kernel=7)
     block.eval()
     x = torch.randn(1, 12, 64, 64)
     x_out_not_deploy = block(x)
@@ -118,7 +127,14 @@ def test_replknet_replkblock():
     assert torch.allclose(x_out_not_deploy, x_out_deploy, atol=1e-5, rtol=1e-4)
 
     # Test ReparamLargeKernelConv with deploy == True
-    block = ReparamLargeKernelConv(8, 8, kernel_size=31, stride=1, groups=8, small_kernel=5, small_kernel_merged=True)
+    block = ReparamLargeKernelConv(
+        8,
+        8,
+        kernel_size=31,
+        stride=1,
+        groups=8,
+        small_kernel=5,
+        small_kernel_merged=True)
     assert isinstance(block.lkb_reparam, nn.Conv2d)
     assert not hasattr(block, 'lkb_origin')
     assert not hasattr(block, 'small_conv')
@@ -148,13 +164,22 @@ def test_replknet_backbone():
 
     with pytest.raises(KeyError):
         # arch must have num_blocks and width_factor
-        arch = dict(large_kernel_sizes=[31, 29, 27, 13], layers=[2, 2, 18, 2], channels=[128, 256, 512, 1024])
+        arch = dict(
+            large_kernel_sizes=[31, 29, 27, 13],
+            layers=[2, 2, 18, 2],
+            channels=[128, 256, 512, 1024])
         RepLKNet(arch=arch)
 
-    # len(arch['large_kernel_sizes']) == arch['layers']) == len(arch['channels'])
+    # len(arch['large_kernel_sizes']) == arch['layers'])
+    # == len(arch['channels'])
     # == len(strides) == len(dilations)
     with pytest.raises(AssertionError):
-        arch = dict(large_kernel_sizes=[31, 29, 27, 13], layers=[2, 2, 18, 2], channels=[128, 256, 1024], small_kernel=5, dw_ratio=1)
+        arch = dict(
+            large_kernel_sizes=[31, 29, 27, 13],
+            layers=[2, 2, 18, 2],
+            channels=[128, 256, 1024],
+            small_kernel=5,
+            dw_ratio=1)
         RepLKNet(arch=arch)
 
     # len(strides) must equal to 4
@@ -268,7 +293,8 @@ def test_replknet_load():
     model.eval()
     outputs = model(inputs)
 
-    model_deploy = RepLKNet('31B', out_indices=(0, 1, 2, 3), small_kernel_merged=True)
+    model_deploy = RepLKNet(
+        '31B', out_indices=(0, 1, 2, 3), small_kernel_merged=True)
     model_deploy.eval()
     save_checkpoint(model.state_dict(), ckpt_path)
     load_checkpoint(model_deploy, ckpt_path, strict=True)

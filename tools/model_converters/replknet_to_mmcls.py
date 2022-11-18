@@ -15,12 +15,10 @@ def convert(src, dst):
         splited_key = key.split('.')
         print(splited_key)
         splited_key = [
-            'backbone.stem' if i[:4] == 'stem' else i
-            for i in splited_key
+            'backbone.stem' if i[:4] == 'stem' else i for i in splited_key
         ]
         splited_key = [
-            'backbone.stages' if i[:6] == 'stages' else i
-            for i in splited_key
+            'backbone.stages' if i[:6] == 'stages' else i for i in splited_key
         ]
         splited_key = [
             'backbone.transitions' if i[:11] == 'transitions' else i
@@ -31,8 +29,7 @@ def convert(src, dst):
             for i in splited_key
         ]
         splited_key = [
-            'head.fc' if i[:4] == 'head' else i
-            for i in splited_key
+            'head.fc' if i[:4] == 'head' else i for i in splited_key
         ]
 
         new_key = '.'.join(splited_key)

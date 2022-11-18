@@ -5,7 +5,6 @@ _base_ = [
     '../_base_/default_runtime.py'
 ]
 
-
 # schedule settings
 param_scheduler = dict(
     type='CosineAnnealingLR', T_max=300, by_epoch=True, begin=0, end=300)

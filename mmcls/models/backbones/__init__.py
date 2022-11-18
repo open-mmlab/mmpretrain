@@ -21,9 +21,9 @@ from .mobilevit import MobileViT
 from .mvit import MViT
 from .poolformer import PoolFormer
 from .regnet import RegNet
+from .replknet import RepLKNet
 from .repmlp import RepMLPNet
 from .repvgg import RepVGG
-from .replknet import RepLKNet
 from .res2net import Res2Net
 from .resnest import ResNeSt
 from .resnet import ResNet, ResNetV1c, ResNetV1d
@@ -81,6 +81,7 @@ __all__ = [
     'CSPResNet',
     'CSPResNeXt',
     'CSPNet',
+    'RepLKNet',
     'RepMLPNet',
     'PoolFormer',
     'DenseNet',
