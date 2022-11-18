@@ -1,15 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
 import os.path as osp
-from collections import defaultdict
 from os import PathLike
-from typing import Dict, List, Optional, Sequence
+from typing import Optional, Sequence
 
 import mmengine
-import numpy as np
 from mmcv.transforms import Compose
 from mmengine.fileio import FileClient
-from mmengine.utils.misc import is_list_of
 
 from .builder import DATASETS
 
