@@ -71,6 +71,12 @@ class ExampleDataset(BaseDataset):
         } for _ in range(10)]
 
 
+class EmptyTransform:
+
+    def __call__(self, results):
+        return {}
+
+
 class TestSwitchRecipeHook(TestCase):
 
     def setUp(self):
@@ -169,12 +175,11 @@ class TestSwitchRecipeHook(TestCase):
             switch_hook.schedule[2]['train_pipeline'].transforms[0].call_count,
             10)
 
-        switch_hook = SwitchRecipeHook([
-            dict(
+        switch_hook = SwitchRecipeHook(
+            [dict(
                 action_epoch=2,
-                train_pipeline=[MagicMock(return_value={})],
-            )
-        ])
+                train_pipeline=[EmptyTransform()],
+            )])
 
         runner = Runner(
             model=model,
