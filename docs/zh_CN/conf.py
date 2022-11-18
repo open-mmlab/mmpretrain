@@ -238,7 +238,7 @@ napoleon_custom_sections = [
 # Disable docstring inheritance
 autodoc_inherit_docstrings = False
 # Mock some imports during generate API docs.
-autodoc_mock_imports = ['mmcv._ext', 'matplotlib']
+autodoc_mock_imports = ['mmcv._ext', 'matplotlib', 'rich']
 # Disable displaying type annotations, these can be very verbose
 autodoc_typehints = 'none'
 
