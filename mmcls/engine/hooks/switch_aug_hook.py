@@ -143,7 +143,6 @@ class SwitchTrainAugHook(Hook):
         # get the latest swict hook based on the current iter.
         dataset_length = len(runner.train_loop.dataloader)
         cur_iter = runner.train_loop.iter
-
         min_gap, min_gap_idx = float('inf'), -1
         for i, switch_hook_obj in enumerate(switch_hook_objs):
             # use iter to calculate
@@ -173,7 +172,6 @@ class SwitchTrainAugHook(Hook):
         if self.pipeline != 'unchange':
             self._switch_train_loader_pipeline(runner)
             runner.logger.info(f'Switch train pipeline{action_milestone_str}.')
-
         if self.loss != 'unchange':
             self._switch_train_loss(runner)
             runner.logger.info(f'Switch train loss{action_milestone_str}.')
