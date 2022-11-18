@@ -156,7 +156,7 @@ class FormatMultiTaskLabels(BaseTransform):
                 'please make sure `LoadImageFromFile` has been added '
                 'in the data pipeline or images have been loaded in ')
 
-        data_sample = MultiTaskDataSample(tasks=self.tasks)
+        data_sample = MultiTaskDataSample(metainfo=self.tasks)
         if 'gt_label' in results:
             gt_label = results['gt_label']
             data_sample.set_gt_task(gt_label)
