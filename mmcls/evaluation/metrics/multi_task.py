@@ -57,7 +57,6 @@ class MultiTasks(BaseMetric):
         """
         # NOTICE: don't access `self.results` from the method.
         Output = {}
-        print(results)
         for task_name in self.task_metrics.keys():
             Output[f'metric_{task_name}'] = globals()[
                 'metric_%s' % task_name].compute_metrics(results)
