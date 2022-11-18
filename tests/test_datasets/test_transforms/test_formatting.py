@@ -175,7 +175,12 @@ class FormatMultiTaskLabels(unittest.TestCase):
             self.assertNotIn('gt_label', results['data_samples'])
 
     def test_repr(self):
-        cfg = dict(type='PackClsInputs', meta_keys=['flip', 'img_shape'])
+        cfg = dict(
+            type='FormatMultiTaskLabels',
+            meta_keys=['img_shape']
+        )
         transform = TRANSFORMS.build(cfg)
         self.assertEqual(
-            repr(transform), "PackClsInputs(meta_keys=['flip', 'img_shape'])")
+            repr(transform),
+            "FormatMultiTaskLabels(meta_keys=['img_shape'])(tasks=None)"
+            )

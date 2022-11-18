@@ -131,10 +131,10 @@ class FormatMultiTaskLabels(BaseTransform):
     """
 
     def __init__(self,
-                 tasks: List[str] = None,
+                 metainfo: List[str] = None,
                  meta_keys=('sample_idx', 'img_path', 'ori_shape', 'img_shape',
                             'scale_factor', 'flip', 'flip_direction')):
-        self.tasks = tasks
+        self.metainfo = metainfo
         self.meta_keys = meta_keys
 
     def transform(self, results: dict) -> dict:
@@ -156,7 +156,7 @@ class FormatMultiTaskLabels(BaseTransform):
                 'please make sure `LoadImageFromFile` has been added '
                 'in the data pipeline or images have been loaded in ')
 
-        data_sample = MultiTaskDataSample(metainfo=self.tasks)
+        data_sample = MultiTaskDataSample(metainfo=self.metainfo)
         if 'gt_label' in results:
             gt_label = results['gt_label']
             data_sample.set_gt_task(gt_label)
@@ -167,7 +167,10 @@ class FormatMultiTaskLabels(BaseTransform):
         return packed_results
 
     def __repr__(self):
-        return self.__class__.__name__ + f'(tasks={self.tasks})'
+        repr = self.__class__.__name__
+        repr += f'(meta_keys={self.meta_keys})'
+        repr += f'(tasks={self.metainfo})'
+        return repr
 
 
 @TRANSFORMS.register_module()
