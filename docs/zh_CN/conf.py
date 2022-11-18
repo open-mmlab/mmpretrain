@@ -43,9 +43,15 @@ release = get_version()
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc', 'sphinx.ext.autosummary', 'sphinx.ext.intersphinx',
-    'sphinx.ext.napoleon', 'sphinx.ext.viewcode', 'myst_parser',
-    'sphinx_copybutton', 'sphinx_tabs.tabs'
+    'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.viewcode',
+    'myst_parser',
+    'sphinx_copybutton',
+    'sphinx_tabs.tabs',
+    'notfound.extension',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -235,6 +241,15 @@ autodoc_inherit_docstrings = False
 autodoc_mock_imports = ['mmcv._ext', 'matplotlib']
 # Disable displaying type annotations, these can be very verbose
 autodoc_typehints = 'none'
+
+# The not found page
+notfound_page = """
+<h1>未找到页面</h1>
+<p>未找到你要打开的页面。</p>
+<p>如果你是从旧版本文档跳转至此，可能是对应的页面被移动了。请从右侧的目录中寻找新版本文档，或者跳转至<a href="./index.html">首页</a>。</p>
+<p>如果你找不到希望打开的文档，欢迎在<a href="https://github.com/open-mmlab/mmclassification/discussions">讨论区</a>与大家进行讨论！</p>
+"""  # noqa: E501
+notfound_context = {'title': '未找到页面', 'body': notfound_page}
 
 
 def builder_inited_handler(app):

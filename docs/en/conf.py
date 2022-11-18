@@ -43,9 +43,15 @@ release = get_version()
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc', 'sphinx.ext.autosummary', 'sphinx.ext.intersphinx',
-    'sphinx.ext.napoleon', 'sphinx.ext.viewcode', 'myst_parser',
-    'sphinx_copybutton', 'sphinx_tabs.tabs'
+    'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.viewcode',
+    'myst_parser',
+    'sphinx_copybutton',
+    'sphinx_tabs.tabs',
+    'notfound.extension',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -248,6 +254,15 @@ autodoc_inherit_docstrings = False
 autodoc_mock_imports = ['mmcv._ext', 'matplotlib']
 # Disable displaying type annotations, these can be very verbose
 autodoc_typehints = 'none'
+
+# The not found page
+notfound_page = """
+<h1>Page Not Found</h1>
+<p>The page you are looking for cannot be found.</p>
+<p>If you come from the legacy documentation, the page link may be moved. You can look for it in the content table right, or go to <a href="./index.html">the homepage</a>.</p>
+<p>If you cannot find documentation you want, you can also go to <a href="https://github.com/open-mmlab/mmclassification/discussions">the Discussions</a> to discuss with everyone!</p>
+"""  # noqa: E501
+notfound_context = {'title': 'Page Not Found', 'body': notfound_page}
 
 
 def builder_inited_handler(app):
