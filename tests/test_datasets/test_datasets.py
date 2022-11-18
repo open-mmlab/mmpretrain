@@ -452,7 +452,7 @@ class TestCIFAR10(TestBaseDataset):
         cfg = {**self.DEFAULT_ARGS, 'lazy_init': True}
         dataset = dataset_class(**cfg)
 
-        self.assertIn(f'Prefix of data: \t{dataset.data_prefix['root']}',
+        self.assertIn(f"Prefix of data: \t{dataset.data_prefix['root']}",
                       repr(dataset))
 
     @classmethod
@@ -770,7 +770,7 @@ class TestMNIST(TestBaseDataset):
         cfg = {**self.DEFAULT_ARGS, 'lazy_init': True}
         dataset = dataset_class(**cfg)
 
-        self.assertIn(f'Prefix of data: \t{dataset.data_prefix['root']}',
+        self.assertIn(f"Prefix of data: \t{dataset.data_prefix['root']}",
                       repr(dataset))
 
     @classmethod
