@@ -1,143 +1,6 @@
-# 可视化工具
+# 类别激活图（CAM）可视化
 
-<!-- TOC -->
-
-- [浏览数据集](#浏览数据集)
-- [优化器参数策略可视化](#优化器参数策略可视化)
-- [类别激活图可视化](#类别激活图可视化)
-- [常见问题](#常见问题)
-
-<!-- TOC -->
-
-## 浏览数据集
-
-```bash
-python tools/visualizations/browse_dataset.py \
-    ${CONFIG_FILE} \
-    [-o, --output-dir ${OUTPUT_DIR}] \
-    [-p, --phase ${DATASET_PHASE}] \
-    [-n, --show-number ${NUMBER_IMAGES_DISPLAY}] \
-    [-i, --show-interval ${SHOW_INTERRVAL}] \
-    [-m, --mode ${DISPLAY_MODE}] \
-    [-r, --rescale-factor ${RESCALE_FACTOR}] \
-    [-c, --channel-order ${CHANNEL_ORDER}] \
-    [--cfg-options ${CFG_OPTIONS}]
-```
-
-**所有参数的说明**：
-
-- `config` : 模型配置文件的路径。
-- `-o, --output-dir`: 保存图片文件夹，如果没有指定，默认为 `''`,表示不保存。
-- **`-p, --phase`**: 可视化数据集的阶段，只能为 `['train', 'val', 'test']` 之一，默认为 `'train'`。
-- **`-n, --show-number`**: 可视化样本数量。如果没有指定，默认展示数据集的所有图片。
-- `-i, --show-interval`: 浏览时，每张图片的停留间隔，单位为秒。
-- **`-m, --mode`**: 可视化的模式，只能为 `['original', 'transformed', 'concat', 'pipeline']` 之一。 默认为`'transformed'`.
-- **`-r, --rescale-factor`**: 对可视化图片的放缩倍数，在图片过大或过小时设置。
-- `-c, --channel-order`: 图片的通道顺序，为  `['BGR', 'RGB']` 之一，默认为 `'BGR'`。
-- `--cfg-options` : 对配置文件的修改，参考[学习配置文件](./config.md)。
-
-```{note}
-
-1. `-m, --mode` 用于设置可视化的模式，默认设置为 'transformed'。
-- 如果 `--mode` 设置为 'original'，则获取原始图片；
-- 如果 `--mode` 设置为 'transformed'，则获取预处理后的图片；
-- 如果 `--mode` 设置为 'concat'，获取原始图片和预处理后图片拼接的图片；
-- 如果 `--mode` 设置为 'pipeline'，则获得数据流水线所有中间过程图片。
-
-2. `-r, --rescale-factor` 在数据集中图片的分辨率过大或者过小时设置。比如在可视化 CIFAR 数据集时，由于图片的分辨率非常小，可将 `-r, --rescale-factor` 设置为 10。
-```
-
-**示例**：
-
-1. **'original'** 模式 ：
-
-```shell
-python ./tools/visualizations/browse_dataset.py ./configs/resnet/resnet101_8xb16_cifar10.py --phase val --output-dir tmp --mode original --show-number 100 --rescale-factor 10 --channel-order RGB
-```
-
-- `--phase val`: 可视化验证集, 可简化为 `-p val`;
-- `--output-dir tmp`: 可视化结果保存在 "tmp" 文件夹, 可简化为 `-o tmp`;
-- `--mode original`: 可视化原图, 可简化为 `-m original`;
-- `--show-number 100`: 可视化100张图，可简化为 `-n 100`;
-- `--rescale-factor`: 图像放大10倍，可简化为 `-r 10`;
-- `--channel-order RGB`: 可视化图像的通道顺序为 "RGB", 可简化为 `-c RGB`。
-
-<div align=center><img src="https://user-images.githubusercontent.com/18586273/190993839-216a7a1e-590e-47b9-92ae-08f87a7d58df.jpg" style=" width: auto; height: 40%; "></div>
-
-2. **'transformed'** 模式 ：
-
-```shell
-python ./tools/visualizations/browse_dataset.py ./configs/resnet/resnet50_8xb32_in1k.py -n 100 -r 2
-```
-
-<div align=center><img src="https://user-images.githubusercontent.com/18586273/190994696-737b09d9-d0fb-4593-94a2-4487121e0286.JPEG" style=" width: auto; height: 40%; "></div>
-
-3. **'concat'** 模式 ：
-
-```shell
-python ./tools/visualizations/browse_dataset.py configs/swin_transformer/swin-small_16xb64_in1k.py -n 10 -m concat
-```
-
-<div align=center><img src="https://user-images.githubusercontent.com/18586273/190995078-3872feb2-d4e2-4727-a21b-7062d52f7d3e.JPEG" style=" width: auto; height: 40%; "></div>
-
-4. **'pipeline'** 模式 ：
-
-```shell
-python ./tools/visualizations/browse_dataset.py configs/swin_transformer/swin-small_16xb64_in1k.py -m pipeline
-```
-
-<div align=center><img src="https://user-images.githubusercontent.com/18586273/190995525-fac0220f-6630-4013-b94a-bc6de4fdff7a.JPEG" style=" width: auto; height: 40%; "></div>
-
-## 优化器参数策略可视化
-
-```bash
-python tools/visualizations/vis_scheduler.py \
-    ${CONFIG_FILE} \
-    [-p, --parammeter ${PARAMETER_NAME}] \
-    [-d, --dataset-size ${DATASET_SIZE}] \
-    [-n, --ngpus ${NUM_GPUs}] \
-    [-s, --save-path ${SAVE_PATH}] \
-    [--title ${TITLE}] \
-    [--style ${STYLE}] \
-    [--window-size ${WINDOW_SIZE}] \
-    [--cfg-options]
-```
-
-**所有参数的说明**：
-
-- `config` : 模型配置文件的路径。
-- **`-p, parameter`**: 可视化参数名，只能为 `["lr", "momentum"]` 之一， 默认为 `"lr"`.
-- **`-d, --dataset-size`**: 数据集的大小。如果指定，`build_dataset` 将被跳过并使用这个大小作为数据集大小，默认使用 `build_dataset` 所得数据集的大小。
-- **`-n, --ngpus`**: 使用 GPU 的数量, 默认为1。
-- **`-s, --save-path`**: 保存的可视化图片的路径，默认不保存。
-- `--title`: 可视化图片的标题，默认为配置文件名。
-- `--style`: 可视化图片的风格，默认为 `whitegrid`。
-- `--window-size`: 可视化窗口大小，如果没有指定，默认为 `12*7`。如果需要指定，按照格式 `'W*H'`。
-- `--cfg-options`: 对配置文件的修改，参考[学习配置文件](./config.md)。
-
-```{note}
-
-部分数据集在解析标注阶段比较耗时，可直接将 `-d, dataset-size` 指定数据集的大小，以节约时间。
-
-```
-
-**示例**：
-
-```bash
-python tools/visualizations/vis_scheduler.py configs/resnet/resnet50_b16x8_cifar100.py
-```
-
-<div align=center><img src="https://user-images.githubusercontent.com/18586273/191006713-023f065d-d366-4165-a52e-36176367506e.png" style=" width: auto; height: 40%; "></div>
-
-当数据集为 ImageNet 时，通过直接指定数据集大小来节约时间，并保存图片：
-
-```bash
-python tools/visualizations/vis_scheduler.py configs/repvgg/repvgg-B3g4_4xb64-autoaug-lbs-mixup-coslr-200e_in1k.py --dataset-size 1281167 --ngpus 4 --save-path ./repvgg-B3g4_4xb64-lr.jpg
-```
-
-<div align=center><img src="https://user-images.githubusercontent.com/18586273/191006721-0f680e07-355e-4cd6-889c-86c0cad9acb7.png" style=" width: auto; height: 40%; "></div>
-
-## 类别激活图可视化
+## 类别激活图可视化工具介绍
 
 MMClassification 提供 `tools\visualizations\vis_cam.py` 工具来可视化类别激活图。请使用 `pip install "grad-cam>=1.3.6"` 安装依赖的 [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam)。
 
@@ -187,13 +50,13 @@ python tools/visualizations/vis_cam.py \
 - `--num-extra-tokens`: `ViT` 类网络的额外的 tokens 通道数，默认使用主干网络的 `num_extra_tokens`。
 - `--aug-smooth`：是否使用测试时增强
 - `--device`：使用的计算设备，如果不设置，默认为'cpu'。
-- `--cfg-options`：对配置文件的修改，参考[学习配置文件](./config.md)。
+- `--cfg-options`：对配置文件的修改，参考[学习配置文件](../user_guides/config.md)。
 
 ```{note}
 在指定 `--target-layers` 时，如果不知道模型有哪些网络层，可使用命令行添加 `--preview-model` 查看所有网络层名称；
 ```
 
-**示例（CNN）**：
+## 如何可视化 CNN 网络的类别激活图（如 ResNet-50）
 
 `--target-layers` 在 `Resnet-50` 中的一些示例如下:
 
@@ -253,7 +116,7 @@ python tools/visualizations/vis_cam.py \
    | ------------------------------------ | --------------------------------------- | ------------------------------------------- | ----------------------------------------- | ----------------------------------------- |
    | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557492-98ac5ce0-61f9-4da9-8ea7-396d0b6a20fa.jpg' height="auto" width="160"></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557541-a4cf7d86-7267-46f9-937c-6f657ea661b4.jpg'  height="auto" width="145" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557547-2731b53e-e997-4dd2-a092-64739cc91959.jpg'  height="auto" width="145" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557545-8189524a-eb92-4cce-bf6a-760cab4a8065.jpg'  height="auto" width="145" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144557548-c1e3f3ec-3c96-43d4-874a-3b33cd3351c5.jpg'  height="auto" width="145" ></div> |
 
-**示例（Transformer）**：
+## 如何可视化 Transformer 类型网络的类别激活图
 
 `--target-layers` 在 Transformer-based 网络中的一些示例如下:
 
@@ -301,7 +164,3 @@ python tools/visualizations/vis_cam.py \
 | Image                                   | ResNet50                                   | ViT                                    | Swin                                    | T2T-ViT                                    |
 | --------------------------------------- | ------------------------------------------ | -------------------------------------- | --------------------------------------- | ------------------------------------------ |
 | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144429496-628d3fb3-1f6e-41ff-aa5c-1b08c60c32a9.JPEG' height="auto" width="165" ></div> | <div align=center><img src=https://user-images.githubusercontent.com/18586273/144431491-a2e19fe3-5c12-4404-b2af-a9552f5a95d9.jpg  height="auto" width="150" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144436218-245a11de-6234-4852-9c08-ff5069f6a739.jpg' height="auto" width="150" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144436168-01b0e565-442c-4e1e-910c-17c62cff7cd3.jpg' height="auto" width="150" ></div> | <div align=center><img src='https://user-images.githubusercontent.com/18586273/144436198-51dbfbda-c48d-48cc-ae06-1a923d19b6f6.jpg' height="auto" width="150" ></div> |
-
-## 常见问题
-
-- 无

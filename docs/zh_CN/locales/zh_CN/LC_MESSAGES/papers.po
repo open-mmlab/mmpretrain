@@ -1,0 +1,902 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2020, OpenMMLab
+# This file is distributed under the same license as the MMClassification
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2021.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: MMClassification \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-12-14 17:43+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.1\n"
+
+#: ../../papers/conformer.md:1
+msgid ""
+"Conformer: Local Features Coupling Global Representations for Visual "
+"Recognition"
+msgstr ""
+
+#: ../../papers/conformer.md:5 ../../papers/mlp_mixer.md:5
+#: ../../papers/mobilenet_v2.md:5 ../../papers/mobilenet_v3.md:5
+#: ../../papers/regnet.md:5 ../../papers/repvgg.md:5 ../../papers/res2net.md:5
+#: ../../papers/resnet.md:5 ../../papers/resnext.md:5
+#: ../../papers/seresnet.md:5 ../../papers/shufflenet_v1.md:5
+#: ../../papers/shufflenet_v2.md:5 ../../papers/swin_transformer.md:5
+#: ../../papers/t2t_vit.md:5 ../../papers/tnt.md:4 ../../papers/vgg.md:5
+#: ../../papers/vision_transformer.md:5
+msgid "Abstract"
+msgstr ""
+
+#: ../../papers/conformer.md:8
+#, python-format
+msgid ""
+"Within Convolutional Neural Network (CNN), the convolution operations are"
+" good at extracting local features but experience difficulty to capture "
+"global representations. Within visual transformer, the cascaded self-"
+"attention modules can capture long-distance feature dependencies but "
+"unfortunately deteriorate local feature details. In this paper, we "
+"propose a hybrid network structure, termed Conformer, to take advantage "
+"of convolutional operations and self-attention mechanisms for enhanced "
+"representation learning. Conformer roots in the Feature Coupling Unit "
+"(FCU), which fuses local features and global representations under "
+"different resolutions in an interactive fashion. Conformer adopts a "
+"concurrent structure so that local features and global representations "
+"are retained to the maximum extent. Experiments show that Conformer, "
+"under the comparable parameter complexity, outperforms the visual "
+"transformer (DeiT-B) by 2.3% on ImageNet. On MSCOCO, it outperforms "
+"ResNet-101 by 3.7% and 3.6% mAPs for object detection and instance "
+"segmentation, respectively, demonstrating the great potential to be a "
+"general backbone network."
+msgstr ""
+
+#: ../../papers/conformer.md:15 ../../papers/mlp_mixer.md:14
+#: ../../papers/mobilenet_v2.md:16 ../../papers/mobilenet_v3.md:14
+#: ../../papers/regnet.md:14 ../../papers/repvgg.md:14
+#: ../../papers/res2net.md:14 ../../papers/resnet.md:16
+#: ../../papers/resnext.md:14 ../../papers/seresnet.md:14
+#: ../../papers/shufflenet_v1.md:14 ../../papers/shufflenet_v2.md:14
+#: ../../papers/swin_transformer.md:14 ../../papers/t2t_vit.md:14
+#: ../../papers/tnt.md:13 ../../papers/vgg.md:14
+#: ../../papers/vision_transformer.md:14
+msgid "Citation"
+msgstr ""
+
+#: ../../papers/conformer.md:26 ../../papers/mobilenet_v2.md:30
+#: ../../papers/mobilenet_v3.md:62 ../../papers/regnet.md:111
+#: ../../papers/resnet.md:27 ../../papers/resnext.md:25
+#: ../../papers/seresnet.md:25 ../../papers/shufflenet_v1.md:25
+#: ../../papers/shufflenet_v2.md:25 ../../papers/swin_transformer.md:128
+#: ../../papers/t2t_vit.md:75 ../../papers/tnt.md:56 ../../papers/vgg.md:25
+msgid "Results and models"
+msgstr ""
+
+#: ../../papers/conformer.md:28
+msgid ""
+"Some pre-trained models are converted from [official "
+"repo](https://github.com/pengzhiliang/Conformer)."
+msgstr ""
+
+#: ../../papers/conformer.md:30 ../../papers/mlp_mixer.md:30
+#: ../../papers/swin_transformer.md ../../papers/t2t_vit.md:28
+msgid "ImageNet-1k"
+msgstr ""
+
+#: ../../papers/conformer.md:84 ../../papers/mlp_mixer.md:66
+#: ../../papers/repvgg.md:164 ../../papers/res2net.md:74
+#: ../../papers/t2t_vit.md:73 ../../papers/tnt.md:54
+#: ../../papers/vision_transformer.md:69 ../../papers/vision_transformer.md:83
+msgid "*Models with \\* are converted from other repos.*"
+msgstr ""
+
+#: ../../papers/mlp_mixer.md:1
+msgid "MLP-Mixer: An all-MLP Architecture for Vision"
+msgstr ""
+
+#: ../../papers/mlp_mixer.md:7
+msgid ""
+"Convolutional Neural Networks (CNNs) are the go-to model for computer "
+"vision. Recently, attention-based networks, such as the Vision "
+"Transformer, have also become popular. In this paper we show that while "
+"convolutions and attention are both sufficient for good performance, "
+"neither of them are necessary. We present MLP-Mixer, an architecture "
+"based exclusively on multi-layer perceptrons (MLPs). MLP-Mixer contains "
+"two types of layers: one with MLPs applied independently to image patches"
+" (i.e. \"mixing\" the per-location features), and one with MLPs applied "
+"across patches (i.e. \"mixing\" spatial information). When trained on "
+"large datasets, or with modern regularization schemes, MLP-Mixer attains "
+"competitive scores on image classification benchmarks, with pre-training "
+"and inference cost comparable to state-of-the-art models. We hope that "
+"these results spark further research beyond the realms of well "
+"established CNNs and Transformers."
+msgstr ""
+
+#: ../../papers/mlp_mixer.md:26 ../../papers/mobilenet_v3.md:25
+#: ../../papers/regnet.md:26 ../../papers/repvgg.md:25
+#: ../../papers/res2net.md:25 ../../papers/swin_transformer.md:24
+#: ../../papers/t2t_vit.md:24 ../../papers/tnt.md:25
+#: ../../papers/vision_transformer.md:32
+msgid "Pretrain model"
+msgstr ""
+
+#: ../../papers/mlp_mixer.md:28
+msgid ""
+"The pre-trained modles are converted from "
+"[timm](https://github.com/rwightman/pytorch-image-"
+"models/blob/master/timm/models/mlp_mixer.py)."
+msgstr ""
+
+#: ../../papers/mobilenet_v2.md:1
+msgid "MobileNetV2: Inverted Residuals and Linear Bottlenecks"
+msgstr ""
+
+#: ../../papers/mobilenet_v2.md:7
+msgid ""
+"In this paper we describe a new mobile architecture, MobileNetV2, that "
+"improves the state of the art performance of mobile models on multiple "
+"tasks and benchmarks as well as across a spectrum of different model "
+"sizes. We also describe efficient ways of applying these mobile models to"
+" object detection in a novel framework we call SSDLite. Additionally, we "
+"demonstrate how to build mobile semantic segmentation models through a "
+"reduced form of DeepLabv3 which we call Mobile DeepLabv3."
+msgstr ""
+
+#: ../../papers/mobilenet_v2.md:9
+msgid ""
+"The MobileNetV2 architecture is based on an inverted residual structure "
+"where the input and output of the residual block are thin bottleneck "
+"layers opposite to traditional residual models which use expanded "
+"representations in the input an MobileNetV2 uses lightweight depthwise "
+"convolutions to filter features in the intermediate expansion layer. "
+"Additionally, we find that it is important to remove non-linearities in "
+"the narrow layers in order to maintain representational power. We "
+"demonstrate that this improves performance and provide an intuition that "
+"led to this design. Finally, our approach allows decoupling of the "
+"input/output domains from the expressiveness of the transformation, which"
+" provides a convenient framework for further analysis. We measure our "
+"performance on Imagenet classification, COCO object detection, VOC image "
+"segmentation. We evaluate the trade-offs between accuracy, and number of "
+"operations measured by multiply-adds (MAdd), as well as the number of "
+"parameters"
+msgstr ""
+
+#: ../../papers/mobilenet_v2.md:32 ../../papers/mobilenet_v3.md:29
+#: ../../papers/regnet.md:30 ../../papers/resnet.md:119
+#: ../../papers/resnext.md:27 ../../papers/seresnet.md:27
+#: ../../papers/shufflenet_v1.md:27 ../../papers/shufflenet_v2.md:27
+#: ../../papers/tnt.md:29 ../../papers/vgg.md:27
+msgid "ImageNet"
+msgstr ""
+
+#: ../../papers/mobilenet_v3.md:1
+msgid "Searching for MobileNetV3"
+msgstr ""
+
+#: ../../papers/mobilenet_v3.md:7
+#, python-format
+msgid ""
+"We present the next generation of MobileNets based on a combination of "
+"complementary search techniques as well as a novel architecture design. "
+"MobileNetV3 is tuned to mobile phone CPUs through a combination of "
+"hardware-aware network architecture search (NAS) complemented by the "
+"NetAdapt algorithm and then subsequently improved through novel "
+"architecture advances. This paper starts the exploration of how automated"
+" search algorithms and network design can work together to harness "
+"complementary approaches improving the overall state of the art. Through "
+"this process we create two new MobileNet models for release: "
+"MobileNetV3-Large and MobileNetV3-Small which are targeted for high and "
+"low resource use cases. These models are then adapted and applied to the "
+"tasks of object detection and semantic segmentation. For the task of "
+"semantic segmentation (or any dense pixel prediction), we propose a new "
+"efficient segmentation decoder Lite Reduced Atrous Spatial Pyramid "
+"Pooling (LR-ASPP). We achieve new state of the art results for mobile "
+"classification, detection and segmentation. MobileNetV3-Large is 3.2\\% "
+"more accurate on ImageNet classification while reducing latency by 15\\% "
+"compared to MobileNetV2. MobileNetV3-Small is 4.6\\% more accurate while "
+"reducing latency by 5\\% compared to MobileNetV2. MobileNetV3-Large "
+"detection is 25\\% faster at roughly the same accuracy as MobileNetV2 on "
+"COCO detection. MobileNetV3-Large LR-ASPP is 30\\% faster than "
+"MobileNetV2 R-ASPP at similar accuracy for Cityscapes segmentation."
+msgstr ""
+
+#: ../../papers/mobilenet_v3.md:27
+msgid ""
+"The pre-trained modles are converted from "
+"[torchvision](https://pytorch.org/vision/stable/_modules/torchvision/models/mobilenetv3.html)."
+msgstr ""
+
+#: ../../papers/mobilenet_v3.md:64 ../../papers/regnet.md:113
+#: ../../papers/t2t_vit.md:77 ../../papers/tnt.md:58
+msgid "Waiting for adding."
+msgstr ""
+
+#: ../../papers/regnet.md:1
+msgid "Designing Network Design Spaces"
+msgstr ""
+
+#: ../../papers/regnet.md:7
+msgid ""
+"In this work, we present a new network design paradigm. Our goal is to "
+"help advance the understanding of network design and discover design "
+"principles that generalize across settings. Instead of focusing on "
+"designing individual network instances, we design network design spaces "
+"that parametrize populations of networks. The overall process is "
+"analogous to classic manual design of networks, but elevated to the "
+"design space level. Using our methodology we explore the structure aspect"
+" of network design and arrive at a low-dimensional design space "
+"consisting of simple, regular networks that we call RegNet. The core "
+"insight of the RegNet parametrization is surprisingly simple: widths and "
+"depths of good networks can be explained by a quantized linear function. "
+"We analyze the RegNet design space and arrive at interesting findings "
+"that do not match the current practice of network design. The RegNet "
+"design space provides simple and fast networks that work well across a "
+"wide range of flop regimes. Under comparable training settings and flops,"
+" the RegNet models outperform the popular EfficientNet models while being"
+" up to 5x faster on GPUs."
+msgstr ""
+
+#: ../../papers/regnet.md:28
+msgid ""
+"The pre-trained modles are converted from [model zoo of "
+"pycls](https://github.com/facebookresearch/pycls/blob/master/MODEL_ZOO.md)."
+msgstr ""
+
+#: ../../papers/repvgg.md:1
+msgid "Repvgg: Making vgg-style convnets great again"
+msgstr ""
+
+#: ../../papers/repvgg.md:7
+#, python-format
+msgid ""
+"We present a simple but powerful architecture of convolutional neural "
+"network, which has a VGG-like inference-time body composed of nothing but"
+" a stack of 3x3 convolution and ReLU, while the training-time model has a"
+" multi-branch topology. Such decoupling of the training-time and "
+"inference-time architecture is realized by a structural re-"
+"parameterization technique so that the model is named RepVGG. On "
+"ImageNet, RepVGG reaches over 80% top-1 accuracy, which is the first time"
+" for a plain model, to the best of our knowledge. On NVIDIA 1080Ti GPU, "
+"RepVGG models run 83% faster than ResNet-50 or 101% faster than "
+"ResNet-101 with higher accuracy and show favorable accuracy-speed trade-"
+"off compared to the state-of-the-art models like EfficientNet and RegNet."
+msgstr ""
+
+#: ../../papers/repvgg.md:166
+msgid "Reparameterize RepVGG"
+msgstr ""
+
+#: ../../papers/repvgg.md:168
+msgid ""
+"The checkpoints provided are all in `train` form. Use the reparameterize "
+"tool to switch them to more efficient `deploy` form, which not only has "
+"fewer parameters but also less calculations."
+msgstr ""
+
+#: ../../papers/repvgg.md:174
+msgid ""
+"`${CFG_PATH}` is the config file, `${SRC_CKPT_PATH}` is the source "
+"chenpoint file, `${TARGET_CKPT_PATH}` is the target deploy weight file "
+"path."
+msgstr ""
+
+#: ../../papers/repvgg.md:176
+msgid ""
+"To use reparameterized repvgg weight, the config file must switch to [the"
+" deploy config files](https://github.com/open-"
+"mmlab/mmclassification/blob/master/zh_CN/../../configs/repvgg/deploy) as "
+"below:"
+msgstr ""
+
+#: ../../papers/res2net.md:1
+msgid "Res2Net: A New Multi-scale Backbone Architecture"
+msgstr ""
+
+#: ../../papers/res2net.md:7
+msgid ""
+"Representing features at multiple scales is of great importance for "
+"numerous vision tasks. Recent advances in backbone convolutional neural "
+"networks (CNNs) continually demonstrate stronger multi-scale "
+"representation ability, leading to consistent performance gains on a wide"
+" range of applications. However, most existing methods represent the "
+"multi-scale features in a layer-wise manner. In this paper, we propose a "
+"novel building block for CNNs, namely Res2Net, by constructing "
+"hierarchical residual-like connections within one single residual block. "
+"The Res2Net represents multi-scale features at a granular level and "
+"increases the range of receptive fields for each network layer. The "
+"proposed Res2Net block can be plugged into the state-of-the-art backbone "
+"CNN models, e.g., ResNet, ResNeXt, and DLA. We evaluate the Res2Net block"
+" on all these models and demonstrate consistent performance gains over "
+"baseline models on widely-used datasets, e.g., CIFAR-100 and ImageNet. "
+"Further ablation studies and experimental results on representative "
+"computer vision tasks, i.e., object detection, class activation mapping, "
+"and salient object detection, further verify the superiority of the "
+"Res2Net over the state-of-the-art baseline methods."
+msgstr ""
+
+#: ../../papers/res2net.md:27
+msgid ""
+"The pre-trained models are converted from [official "
+"repo](https://github.com/Res2Net/Res2Net-PretrainedModels)."
+msgstr ""
+
+#: ../../papers/res2net.md:29 ../../papers/swin_transformer.md:28
+#: ../../papers/swin_transformer.md:130 ../../papers/vision_transformer.md:76
+msgid "ImageNet 1k"
+msgstr ""
+
+#: ../../papers/resnet.md:1
+msgid "Deep Residual Learning for Image Recognition"
+msgstr ""
+
+#: ../../papers/resnet.md:7
+#, python-format
+msgid ""
+"Deeper neural networks are more difficult to train. We present a residual"
+" learning framework to ease the training of networks that are "
+"substantially deeper than those used previously. We explicitly "
+"reformulate the layers as learning residual functions with reference to "
+"the layer inputs, instead of learning unreferenced functions. We provide "
+"comprehensive empirical evidence showing that these residual networks are"
+" easier to optimize, and can gain accuracy from considerably increased "
+"depth. On the ImageNet dataset we evaluate residual nets with a depth of "
+"up to 152 layers---8x deeper than VGG nets but still having lower "
+"complexity. An ensemble of these residual nets achieves 3.57% error on "
+"the ImageNet test set. This result won the 1st place on the ILSVRC 2015 "
+"classification task. We also present analysis on CIFAR-10 with 100 and "
+"1000 layers."
+msgstr ""
+
+#: ../../papers/resnet.md:9
+#, python-format
+msgid ""
+"The depth of representations is of central importance for many visual "
+"recognition tasks. Solely due to our extremely deep representations, we "
+"obtain a 28% relative improvement on the COCO object detection dataset. "
+"Deep residual nets are foundations of our submissions to ILSVRC & COCO "
+"2015 competitions, where we also won the 1st places on the tasks of "
+"ImageNet detection, ImageNet localization, COCO detection, and COCO "
+"segmentation."
+msgstr ""
+
+#: ../../papers/resnet.md:29
+msgid "Cifar10"
+msgstr ""
+
+#: ../../papers/resnet.md:92
+msgid "Cifar100"
+msgstr ""
+
+#: ../../papers/resnext.md:1
+msgid "Aggregated Residual Transformations for Deep Neural Networks"
+msgstr ""
+
+#: ../../papers/resnext.md:7
+msgid ""
+"We present a simple, highly modularized network architecture for image "
+"classification. Our network is constructed by repeating a building block "
+"that aggregates a set of transformations with the same topology. Our "
+"simple design results in a homogeneous, multi-branch architecture that "
+"has only a few hyper-parameters to set. This strategy exposes a new "
+"dimension, which we call \"cardinality\" (the size of the set of "
+"transformations), as an essential factor in addition to the dimensions of"
+" depth and width. On the ImageNet-1K dataset, we empirically show that "
+"even under the restricted condition of maintaining complexity, increasing"
+" cardinality is able to improve classification accuracy. Moreover, "
+"increasing cardinality is more effective than going deeper or wider when "
+"we increase the capacity. Our models, named ResNeXt, are the foundations "
+"of our entry to the ILSVRC 2016 classification task in which we secured "
+"2nd place. We further investigate ResNeXt on an ImageNet-5K set and the "
+"COCO detection set, also showing better results than its ResNet "
+"counterpart. The code and models are publicly available online."
+msgstr ""
+
+#: ../../papers/seresnet.md:1
+msgid "Squeeze-and-Excitation Networks"
+msgstr ""
+
+#: ../../papers/seresnet.md:7
+msgid ""
+"The central building block of convolutional neural networks (CNNs) is the"
+" convolution operator, which enables networks to construct informative "
+"features by fusing both spatial and channel-wise information within local"
+" receptive fields at each layer. A broad range of prior research has "
+"investigated the spatial component of this relationship, seeking to "
+"strengthen the representational power of a CNN by enhancing the quality "
+"of spatial encodings throughout its feature hierarchy. In this work, we "
+"focus instead on the channel relationship and propose a novel "
+"architectural unit, which we term the \"Squeeze-and-Excitation\" (SE) "
+"block, that adaptively recalibrates channel-wise feature responses by "
+"explicitly modelling interdependencies between channels. We show that "
+"these blocks can be stacked together to form SENet architectures that "
+"generalise extremely effectively across different datasets. We further "
+"demonstrate that SE blocks bring significant improvements in performance "
+"for existing state-of-the-art CNNs at slight additional computational "
+"cost. Squeeze-and-Excitation Networks formed the foundation of our ILSVRC"
+" 2017 classification submission which won first place and reduced the "
+"top-5 error to 2.251%, surpassing the winning entry of 2016 by a relative"
+" improvement of ~25%."
+msgstr ""
+
+#: ../../papers/shufflenet_v1.md:1
+msgid ""
+"ShuffleNet: An Extremely Efficient Convolutional Neural Network for "
+"Mobile Devices"
+msgstr ""
+
+#: ../../papers/shufflenet_v1.md:7
+msgid ""
+"We introduce an extremely computation-efficient CNN architecture named "
+"ShuffleNet, which is designed specially for mobile devices with very "
+"limited computing power (e.g., 10-150 MFLOPs). The new architecture "
+"utilizes two new operations, pointwise group convolution and channel "
+"shuffle, to greatly reduce computation cost while maintaining accuracy. "
+"Experiments on ImageNet classification and MS COCO object detection "
+"demonstrate the superior performance of ShuffleNet over other structures,"
+" e.g. lower top-1 error (absolute 7.8%) than recent MobileNet on ImageNet"
+" classification task, under the computation budget of 40 MFLOPs. On an "
+"ARM-based mobile device, ShuffleNet achieves ~13x actual speedup over "
+"AlexNet while maintaining comparable accuracy."
+msgstr ""
+
+#: ../../papers/shufflenet_v2.md:1
+msgid "Shufflenet v2: Practical guidelines for efficient cnn architecture design"
+msgstr ""
+
+#: ../../papers/shufflenet_v2.md:7
+msgid ""
+"Currently, the neural network architecture design is mostly guided by the"
+" *indirect* metric of computation complexity, i.e., FLOPs. However, the "
+"*direct* metric, e.g., speed, also depends on the other factors such as "
+"memory access cost and platform characterics. Thus, this work proposes to"
+" evaluate the direct metric on the target platform, beyond only "
+"considering FLOPs. Based on a series of controlled experiments, this work"
+" derives several practical *guidelines* for efficient network design. "
+"Accordingly, a new architecture is presented, called *ShuffleNet V2*. "
+"Comprehensive ablation experiments verify that our model is the state-of-"
+"the-art in terms of speed and accuracy tradeoff."
+msgstr ""
+
+#: ../../papers/swin_transformer.md:1
+msgid "Swin Transformer: Hierarchical Vision Transformer using Shifted Windows"
+msgstr ""
+
+#: ../../papers/swin_transformer.md:7
+msgid ""
+"This paper presents a new vision Transformer, called Swin Transformer, "
+"that capably serves as a general-purpose backbone for computer vision. "
+"Challenges in adapting Transformer from language to vision arise from "
+"differences between the two domains, such as large variations in the "
+"scale of visual entities and the high resolution of pixels in images "
+"compared to words in text. To address these differences, we propose a "
+"hierarchical Transformer whose representation is computed with "
+"**S**hifted **win**dows. The shifted windowing scheme brings greater "
+"efficiency by limiting self-attention computation to non-overlapping "
+"local windows while also allowing for cross-window connection. This "
+"hierarchical architecture has the flexibility to model at various scales "
+"and has linear computational complexity with respect to image size. These"
+" qualities of Swin Transformer make it compatible with a broad range of "
+"vision tasks, including image classification (87.3 top-1 accuracy on "
+"ImageNet-1K) and dense prediction tasks such as object detection (58.7 "
+"box AP and 51.1 mask AP on COCO test-dev) and semantic segmentation (53.5"
+" mIoU on ADE20K val). Its performance surpasses the previous state-of-"
+"the-art by a large margin of +2.7 box AP and +2.6 mask AP on COCO, and "
+"+3.2 mIoU on ADE20K, demonstrating the potential of Transformer-based "
+"models as vision backbones. The hierarchical design and the shifted "
+"window approach also prove beneficial for all-MLP architectures."
+msgstr ""
+
+#: ../../papers/swin_transformer.md:26
+msgid ""
+"The pre-trained modles are converted from [model zoo of Swin "
+"Transformer](https://github.com/microsoft/Swin-Transformer#main-results-"
+"on-imagenet-with-pretrained-models)."
+msgstr ""
+
+#: ../../papers/swin_transformer.md ../../papers/vision_transformer.md
+msgid "Model"
+msgstr ""
+
+#: ../../papers/swin_transformer.md ../../papers/vision_transformer.md
+msgid "Pretrain"
+msgstr ""
+
+#: ../../papers/swin_transformer.md ../../papers/vision_transformer.md
+msgid "resolution"
+msgstr ""
+
+#: ../../papers/swin_transformer.md ../../papers/vision_transformer.md
+msgid "Params(M)"
+msgstr ""
+
+#: ../../papers/swin_transformer.md ../../papers/vision_transformer.md
+msgid "Flops(G)"
+msgstr ""
+
+#: ../../papers/swin_transformer.md ../../papers/vision_transformer.md
+msgid "Top-1 (%)"
+msgstr ""
+
+#: ../../papers/swin_transformer.md ../../papers/vision_transformer.md
+msgid "Top-5 (%)"
+msgstr ""
+
+#: ../../papers/swin_transformer.md ../../papers/vision_transformer.md
+msgid "Config"
+msgstr ""
+
+#: ../../papers/swin_transformer.md ../../papers/vision_transformer.md
+msgid "Download"
+msgstr ""
+
+#: ../../papers/swin_transformer.md
+msgid "Swin-T"
+msgstr ""
+
+#: ../../papers/swin_transformer.md
+msgid "224x224"
+msgstr ""
+
+#: ../../papers/swin_transformer.md
+msgid "28.29"
+msgstr ""
+
+#: ../../papers/swin_transformer.md
+msgid "4.36"
+msgstr ""
+
+#: ../../papers/swin_transformer.md
+msgid "81.18"
+msgstr ""
+
+#: ../../papers/swin_transformer.md
+msgid "95.61"
+msgstr ""
+
+#: ../../papers/swin_transformer.md
+msgid ""
+"[config](https://github.com/open-"
+"mmlab/mmclassification/blob/master/configs/swin_transformer/swin-"
+"tiny_16xb64_in1k.py)"
+msgstr ""
+
+#: ../../papers/swin_transformer.md
+msgid ""
+"[model](https://download.openmmlab.com/mmclassification/v0/swin-"
+"transformer/swin_tiny_224_b16x64_300e_imagenet_20210616_090925-66df6be6.pth)"
+"  &#124; [log](https://download.openmmlab.com/mmclassification/v0/swin-"
+"transformer/swin_tiny_224_b16x64_300e_imagenet_20210616_090925.log.json)"
+msgstr ""
+
+#: ../../papers/swin_transformer.md
+msgid "Swin-S"
+msgstr ""
+
+#: ../../papers/swin_transformer.md
+msgid "49.61"
+msgstr ""
+
+#: ../../papers/swin_transformer.md
+msgid "8.52"
+msgstr ""
+
+#: ../../papers/swin_transformer.md
+msgid "83.02"
+msgstr ""
+
+#: ../../papers/swin_transformer.md
+msgid "96.29"
+msgstr ""
+
+#: ../../papers/swin_transformer.md
+msgid ""
+"[config](https://github.com/open-"
+"mmlab/mmclassification/blob/master/configs/swin_transformer/swin-"
+"small_16xb64_in1k.py)"
+msgstr ""
+
+#: ../../papers/swin_transformer.md
+msgid ""
+"[model](https://download.openmmlab.com/mmclassification/v0/swin-"
+"transformer/swin_small_224_b16x64_300e_imagenet_20210615_110219-7f9d988b.pth)"
+"  &#124; [log](https://download.openmmlab.com/mmclassification/v0/swin-"
+"transformer/swin_small_224_b16x64_300e_imagenet_20210615_110219.log.json)"
+msgstr ""
+
+#: ../../papers/swin_transformer.md
+msgid "Swin-B"
+msgstr ""
+
+#: ../../papers/swin_transformer.md
+msgid "87.77"
+msgstr ""
+
+#: ../../papers/swin_transformer.md
+msgid "15.14"
+msgstr ""
+
+#: ../../papers/swin_transformer.md
+msgid "83.36"
+msgstr ""
+
+#: ../../papers/swin_transformer.md
+msgid "96.44"
+msgstr ""
+
+#: ../../papers/swin_transformer.md
+msgid ""
+"[config](https://github.com/open-"
+"mmlab/mmclassification/blob/master/configs/swin_transformer/swin_base_224_b16x64_300e_imagenet.py)"
+msgstr ""
+
+#: ../../papers/swin_transformer.md
+msgid ""
+"[model](https://download.openmmlab.com/mmclassification/v0/swin-"
+"transformer/swin_base_224_b16x64_300e_imagenet_20210616_190742-93230b0d.pth)"
+"  &#124; [log](https://download.openmmlab.com/mmclassification/v0/swin-"
+"transformer/swin_base_224_b16x64_300e_imagenet_20210616_190742.log.json)"
+msgstr ""
+
+#: ../../papers/t2t_vit.md:1
+msgid "Tokens-to-Token ViT: Training Vision Transformers from Scratch on ImageNet"
+msgstr ""
+
+#: ../../papers/t2t_vit.md:7
+#, python-format
+msgid ""
+"Transformers, which are popular for language modeling, have been explored"
+" for solving vision tasks recently, \\eg, the Vision Transformer (ViT) "
+"for image classification. The ViT model splits each image into a sequence"
+" of tokens with fixed length and then applies multiple Transformer layers"
+" to model their global relation for classification. However, ViT achieves"
+" inferior performance to CNNs when trained from scratch on a midsize "
+"dataset like ImageNet. We find it is because: 1) the simple tokenization "
+"of input images fails to model the important local structure such as "
+"edges and lines among neighboring pixels, leading to low training sample "
+"efficiency; 2) the redundant attention backbone design of ViT leads to "
+"limited feature richness for fixed computation budgets and limited "
+"training samples. To overcome such limitations, we propose a new Tokens-"
+"To-Token Vision Transformer (T2T-ViT), which incorporates 1) a layer-wise"
+" Tokens-to-Token (T2T) transformation to progressively structurize the "
+"image to tokens by recursively aggregating neighboring Tokens into one "
+"Token (Tokens-to-Token), such that local structure represented by "
+"surrounding tokens can be modeled and tokens length can be reduced; 2) an"
+" efficient backbone with a deep-narrow structure for vision transformer "
+"motivated by CNN architecture design after empirical study. Notably, T2T-"
+"ViT reduces the parameter count and MACs of vanilla ViT by half, while "
+"achieving more than 3.0\\% improvement when trained from scratch on "
+"ImageNet. It also outperforms ResNets and achieves comparable performance"
+" with MobileNets by directly training on ImageNet. For example, T2T-ViT "
+"with comparable size to ResNet50 (21.5M parameters) can achieve 83.3\\% "
+"top1 accuracy in image resolution 384×384 on ImageNet."
+msgstr ""
+
+#: ../../papers/t2t_vit.md:26
+msgid ""
+"The pre-trained models are converted from [official "
+"repo](https://github.com/yitu-opensource/T2T-ViT/tree/main#2-t2t-vit-"
+"models)."
+msgstr ""
+
+#: ../../papers/tnt.md:1
+msgid "Transformer in Transformer"
+msgstr ""
+
+#: ../../papers/tnt.md:6
+#, python-format
+msgid ""
+"Transformer is a new kind of neural architecture which encodes the input "
+"data as powerful features via the attention mechanism. Basically, the "
+"visual transformers first divide the input images into several local "
+"patches and then calculate both representations and their relationship. "
+"Since natural images are of high complexity with abundant detail and "
+"color information, the granularity of the patch dividing is not fine "
+"enough for excavating features of objects in different scales and "
+"locations. In this paper, we point out that the attention inside these "
+"local patches are also essential for building visual transformers with "
+"high performance and we explore a new architecture, namely, Transformer "
+"iN Transformer (TNT). Specifically, we regard the local patches (e.g., "
+"16×16) as \"visual sentences\" and present to further divide them into "
+"smaller patches (e.g., 4×4) as \"visual words\". The attention of each "
+"word will be calculated with other words in the given visual sentence "
+"with negligible computational costs. Features of both words and sentences"
+" will be aggregated to enhance the representation ability. Experiments on"
+" several benchmarks demonstrate the effectiveness of the proposed TNT "
+"architecture, e.g., we achieve an 81.5% top-1 accuracy on the ImageNet, "
+"which is about 1.7% higher than that of the state-of-the-art visual "
+"transformer with similar computational cost."
+msgstr ""
+
+#: ../../papers/tnt.md:27
+msgid ""
+"The pre-trained modles are converted from "
+"[timm](https://github.com/rwightman/pytorch-image-models/)."
+msgstr ""
+
+#: ../../papers/vgg.md:1
+msgid "Very Deep Convolutional Networks for Large-Scale Image Recognition"
+msgstr ""
+
+#: ../../papers/vgg.md:7
+msgid ""
+"In this work we investigate the effect of the convolutional network depth"
+" on its accuracy in the large-scale image recognition setting. Our main "
+"contribution is a thorough evaluation of networks of increasing depth "
+"using an architecture with very small (3x3) convolution filters, which "
+"shows that a significant improvement on the prior-art configurations can "
+"be achieved by pushing the depth to 16-19 weight layers. These findings "
+"were the basis of our ImageNet Challenge 2014 submission, where our team "
+"secured the first and the second places in the localisation and "
+"classification tracks respectively. We also show that our representations"
+" generalise well to other datasets, where they achieve state-of-the-art "
+"results. We have made our two best-performing ConvNet models publicly "
+"available to facilitate further research on the use of deep visual "
+"representations in computer vision."
+msgstr ""
+
+#: ../../papers/vision_transformer.md:1
+msgid "An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale"
+msgstr ""
+
+#: ../../papers/vision_transformer.md:7
+msgid ""
+"While the Transformer architecture has become the de-facto standard for "
+"natural language processing tasks, its applications to computer vision "
+"remain limited. In vision, attention is either applied in conjunction "
+"with convolutional networks, or used to replace certain components of "
+"convolutional networks while keeping their overall structure in place. We"
+" show that this reliance on CNNs is not necessary and a pure transformer "
+"applied directly to sequences of image patches can perform very well on "
+"image classification tasks. When pre-trained on large amounts of data and"
+" transferred to multiple mid-sized or small image recognition benchmarks "
+"(ImageNet, CIFAR-100, VTAB, etc.), Vision Transformer (ViT) attains "
+"excellent results compared to state-of-the-art convolutional networks "
+"while requiring substantially fewer computational resources to train."
+msgstr ""
+
+#: ../../papers/vision_transformer.md:26
+msgid ""
+"The training step of Vision Transformers is divided into two steps. The "
+"first step is training the model on a large dataset, like ImageNet-21k, "
+"and get the pretrain model. And the second step is training the model on "
+"the target dataset, like ImageNet-1k, and get the finetune model. Here, "
+"we provide both pretrain models and finetune models."
+msgstr ""
+
+#: ../../papers/vision_transformer.md:34
+msgid ""
+"The pre-trained models are converted from [model zoo of Google "
+"Research](https://github.com/google-research/vision_transformer"
+"#available-vit-models)."
+msgstr ""
+
+#: ../../papers/vision_transformer.md:36
+msgid "ImageNet 21k"
+msgstr ""
+
+#: ../../papers/vision_transformer.md:72
+msgid "Finetune model"
+msgstr ""
+
+#: ../../papers/vision_transformer.md:74
+msgid ""
+"The finetune models are converted from [model zoo of Google "
+"Research](https://github.com/google-research/vision_transformer"
+"#available-vit-models)."
+msgstr ""
+
+#: ../../papers/vision_transformer.md
+msgid "ViT-B16\\*"
+msgstr ""
+
+#: ../../papers/vision_transformer.md
+msgid "ImageNet-21k"
+msgstr ""
+
+#: ../../papers/vision_transformer.md
+msgid "384x384"
+msgstr ""
+
+#: ../../papers/vision_transformer.md
+msgid "86.86"
+msgstr ""
+
+#: ../../papers/vision_transformer.md
+msgid "33.03"
+msgstr ""
+
+#: ../../papers/vision_transformer.md
+msgid "85.43"
+msgstr ""
+
+#: ../../papers/vision_transformer.md
+msgid "97.77"
+msgstr ""
+
+#: ../../papers/vision_transformer.md
+msgid ""
+"[config](https://github.com/open-"
+"mmlab/mmclassification/blob/master/configs/vision_transformer/vit-base-"
+"p16_ft-64xb64_in1k-384.py)"
+msgstr ""
+
+#: ../../papers/vision_transformer.md
+msgid ""
+"[model](https://download.openmmlab.com/mmclassification/v0/vit/finetune"
+"/vit-base-p16_in21k-pre-3rdparty_ft-"
+"64xb64_in1k-384_20210928-98e8652b.pth)"
+msgstr ""
+
+#: ../../papers/vision_transformer.md
+msgid "ViT-B32\\*"
+msgstr ""
+
+#: ../../papers/vision_transformer.md
+msgid "88.30"
+msgstr ""
+
+#: ../../papers/vision_transformer.md
+msgid "8.56"
+msgstr ""
+
+#: ../../papers/vision_transformer.md
+msgid "84.01"
+msgstr ""
+
+#: ../../papers/vision_transformer.md
+msgid "97.08"
+msgstr ""
+
+#: ../../papers/vision_transformer.md
+msgid ""
+"[config](https://github.com/open-"
+"mmlab/mmclassification/blob/master/configs/vision_transformer/vit-base-"
+"p32_ft-64xb64_in1k-384.py)"
+msgstr ""
+
+#: ../../papers/vision_transformer.md
+msgid ""
+"[model](https://download.openmmlab.com/mmclassification/v0/vit/finetune"
+"/vit-base-p32_in21k-pre-3rdparty_ft-"
+"64xb64_in1k-384_20210928-9cea8599.pth)"
+msgstr ""
+
+#: ../../papers/vision_transformer.md
+msgid "ViT-L16\\*"
+msgstr ""
+
+#: ../../papers/vision_transformer.md
+msgid "304.72"
+msgstr ""
+
+#: ../../papers/vision_transformer.md
+msgid "116.68"
+msgstr ""
+
+#: ../../papers/vision_transformer.md
+msgid "85.63"
+msgstr ""
+
+#: ../../papers/vision_transformer.md
+msgid "97.63"
+msgstr ""
+
+#: ../../papers/vision_transformer.md
+msgid ""
+"[config](https://github.com/open-"
+"mmlab/mmclassification/blob/master/configs/vision_transformer/vit-large-"
+"p16_ft-64xb64_in1k-384.py)"
+msgstr ""
+
+#: ../../papers/vision_transformer.md
+msgid ""
+"[model](https://download.openmmlab.com/mmclassification/v0/vit/finetune"
+"/vit-large-p16_in21k-pre-3rdparty_ft-"
+"64xb64_in1k-384_20210928-b20ba619.pth)"
+msgstr ""

@@ -228,7 +228,7 @@ optim_wrapper = dict(
   如果相邻两个调度器的生效区间没有紧邻，而是有一段区间没有被覆盖，那么这段区间的学习率维持不变。而如果两个调度器的生效区间发生了重叠，则对多组调度器叠加使用，学习率的调整会按照调度器配置文件中的顺序触发（行为与 PyTorch 中 [`ChainedScheduler`](torch.optim.lr_scheduler.ChainedScheduler) 一致）。
 
   ```{tip}
-  为了避免学习率曲线与预期不符， 配置完成后，可以使用 MMClassification 提供的 [学习率可视化工具](../user_guides/visualization.md#learning-rate-schedule-visualization) 画出对应学习率调整曲线。
+  为了避免学习率曲线与预期不符， 配置完成后，可以使用 MMClassification 提供的 [学习率可视化工具](../useful_tools/scheduler_visualization.md) 画出对应学习率调整曲线。
   ```
 
 ### 配置动量调整策略
@@ -324,9 +324,6 @@ optim_wrapper = dict(
 ### 新增优化器构造器
 
 某些模型可能具有一些特定于参数的设置以进行优化，例如 为所有 BatchNorm 层设置不同的权重衰减。
-
-Although we already can use [the `optim_wrapper.paramwise_cfg` field](#parameter-wise-finely-configuration) to
-configure various parameter-specific optimizer settings. It may still not cover your need.
 
 尽管我们已经可以使用 [`optim_wrapper.paramwise_cfg` 字段](#参数化精细配置)来配置特定参数的优化设置，但可能仍然无法覆盖你的需求。
 

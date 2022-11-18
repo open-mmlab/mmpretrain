@@ -68,7 +68,7 @@ source_suffix = {
 language = 'zh_CN'
 
 # The master toctree document.
-master_doc = 'index'
+root_doc = 'index'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -88,8 +88,6 @@ html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 # documentation.
 #
 html_theme_options = {
-    'logo_url':
-    'https://mmclassification.readthedocs.io/zh_CN/latest/',
     'menu': [
         {
             'name': 'GitHub',
@@ -168,7 +166,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'mmcls.tex', 'MMClassification Documentation', author,
+    (root_doc, 'mmcls.tex', 'MMClassification Documentation', author,
      'manual'),
 ]
 
@@ -176,8 +174,8 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, 'mmcls', 'MMClassification Documentation', [author],
-              1)]
+man_pages = [(root_doc, 'mmcls', 'MMClassification Documentation', [author], 1)
+             ]
 
 # -- Options for Texinfo output ----------------------------------------------
 
@@ -185,7 +183,7 @@ man_pages = [(master_doc, 'mmcls', 'MMClassification Documentation', [author],
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'mmcls', 'MMClassification Documentation', author, 'mmcls',
+    (root_doc, 'mmcls', 'MMClassification Documentation', author, 'mmcls',
      'OpenMMLab image classification toolbox and benchmark.', 'Miscellaneous'),
 ]
 
@@ -243,13 +241,7 @@ autodoc_mock_imports = ['mmcv._ext', 'matplotlib', 'rich']
 autodoc_typehints = 'none'
 
 # The not found page
-notfound_page = """
-<h1>未找到页面</h1>
-<p>未找到你要打开的页面。</p>
-<p>如果你是从旧版本文档跳转至此，可能是对应的页面被移动了。请从右侧的目录中寻找新版本文档，或者跳转至<a href="./index.html">首页</a>。</p>
-<p>如果你找不到希望打开的文档，欢迎在<a href="https://github.com/open-mmlab/mmclassification/discussions">讨论区</a>与大家进行讨论！</p>
-"""  # noqa: E501
-notfound_context = {'title': '未找到页面', 'body': notfound_page}
+notfound_template = '404.html'
 
 
 def builder_inited_handler(app):

@@ -228,7 +228,7 @@ names of learning rate schedulers end with `LR`.
   If the ranges for all schedules are not continuous, the learning rate will stay constant in ignored range, otherwise all valid schedulers will be executed in order in a specific stage, which behaves the same as PyTorch [`ChainedScheduler`](torch.optim.lr_scheduler.ChainedScheduler).
 
   ```{tip}
-  To check that the learning rate curve is as expected, after completing your configuration file，you could use [optimizer parameter visualization tool](../user_guides/visualization.md#parameter-schedule-visualization) to draw the corresponding learning rate adjustment curve.
+  To check that the learning rate curve is as expected, after completing your configuration file，you could use [optimizer parameter visualization tool](../useful_tools/scheduler_visualization.md) to draw the corresponding learning rate adjustment curve.
   ```
 
 ### Customize momentum schedules

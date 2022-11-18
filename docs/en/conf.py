@@ -68,7 +68,7 @@ source_suffix = {
 language = 'en'
 
 # The master toctree document.
-master_doc = 'index'
+root_doc = 'index'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -88,8 +88,6 @@ html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 # documentation.
 #
 html_theme_options = {
-    'logo_url':
-    'https://mmclassification.readthedocs.io/en/latest/',
     'menu': [
         {
             'name': 'GitHub',
@@ -181,7 +179,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'mmcls.tex', 'MMClassification Documentation', author,
+    (root_doc, 'mmcls.tex', 'MMClassification Documentation', author,
      'manual'),
 ]
 
@@ -189,8 +187,8 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, 'mmcls', 'MMClassification Documentation', [author],
-              1)]
+man_pages = [(root_doc, 'mmcls', 'MMClassification Documentation', [author], 1)
+             ]
 
 # -- Options for Texinfo output ----------------------------------------------
 
@@ -198,7 +196,7 @@ man_pages = [(master_doc, 'mmcls', 'MMClassification Documentation', [author],
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'mmcls', 'MMClassification Documentation', author, 'mmcls',
+    (root_doc, 'mmcls', 'MMClassification Documentation', author, 'mmcls',
      'OpenMMLab image classification toolbox and benchmark.', 'Miscellaneous'),
 ]
 
@@ -256,13 +254,7 @@ autodoc_mock_imports = ['mmcv._ext', 'matplotlib', 'rich']
 autodoc_typehints = 'none'
 
 # The not found page
-notfound_page = """
-<h1>Page Not Found</h1>
-<p>The page you are looking for cannot be found.</p>
-<p>If you come from the legacy documentation, the page link may be moved. You can look for it in the content table right, or go to <a href="./index.html">the homepage</a>.</p>
-<p>If you cannot find documentation you want, you can also go to <a href="https://github.com/open-mmlab/mmclassification/discussions">the Discussions</a> to discuss with everyone!</p>
-"""  # noqa: E501
-notfound_context = {'title': 'Page Not Found', 'body': notfound_page}
+notfound_template = '404.html'
 
 
 def builder_inited_handler(app):

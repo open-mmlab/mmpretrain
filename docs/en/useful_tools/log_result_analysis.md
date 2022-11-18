@@ -1,17 +1,5 @@
 # Log and Results Analysis
 
-<!-- TOC -->
-
-- [Log Analysis](#log-analysis)
-  - [Introduction of log analysis tool](#introduction-of-log-analysis-tool)
-  - [How to plot the loss/accuracy curve](#how-to-plot-the-lossaccuracy-curve)
-  - [How to calculate training time](#how-to-calculate-training-time)
-- [Result Analysis](#result-analysis)
-  - [Evaluate Results](#evaluate-results)
-  - [View Typical Results](#view-typical-results)
-
-<!-- TOC -->
-
 ## Log Analysis
 
 ### Introduction of log analysis tool
@@ -128,7 +116,7 @@ Description of all arguments:
 - `config` : The path of the model config file.
 - `result`:  The Output result file in json/pickle format from `tools/test.py`.
 - `--metrics` : Evaluation metrics, the acceptable values depend on the dataset.
-- `--cfg-options`: If specified, the key-value pair config will be merged into the config file, for more details please refer to [Learn about Configs](./config.md)
+- `--cfg-options`: If specified, the key-value pair config will be merged into the config file, for more details please refer to [Learn about Configs](../user_guides/config.md)
 - `--metric-options`: If specified, the key-value pair arguments will be passed to the `metric_options` argument of dataset's `evaluate` function.
 
 ```{note}
@@ -160,7 +148,7 @@ python tools/analysis_tools/analyze_results.py \
 - `result`:  Output result file in json/pickle format from `tools/test.py`.
 - `--out_dir`: Directory to store output files.
 - `--topk`: The number of images in successful or failed prediction with the highest `topk` scores to save. If not specified, it will be set to 20.
-- `--cfg-options`: If specified, the key-value pair config will be merged into the config file, for more details please refer to [Learn about Configs](./config.md)
+- `--cfg-options`: If specified, the key-value pair config will be merged into the config file, for more details please refer to [Learn about Configs](../user_guides/config.md)
 
 ```{note}
 In `tools/test.py`, we support using `--out-items` option to select which kind of results will be saved. Please ensure the result file includes "pred_score", "pred_label" and "pred_class" to use this tool.
