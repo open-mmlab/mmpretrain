@@ -9,7 +9,6 @@ Import:
   - configs/swin_transformer/metafile.yml
   - configs/vgg/metafile.yml
   - configs/repvgg/metafile.yml
-  - configs/replknet/metafile.yml
   - configs/tnt/metafile.yml
   - configs/vision_transformer/metafile.yml
   - configs/t2t_vit/metafile.yml
@@ -36,3 +35,4 @@ Import:
   - configs/swin_transformer_v2/metafile.yml
   - configs/deit3/metafile.yml
   - configs/mobilevit/metafile.yml
+  - configs/replknet/metafile.yml

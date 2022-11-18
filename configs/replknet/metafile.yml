@@ -14,9 +14,9 @@ Collections:
       Version: v1.0.0rc3
 
 Models:
-  - Name: replknet-31B_3rdparty_32xb64-coslr-300e_224_in1k
+  - Name: replknet-31B_3rdparty_in1k
     In Collection: RepLKNet
-    Config: configs/replknet/replknet-31B_32xb64-coslr-300e_224_in1k.py
+    Config: configs/replknet/replknet-31B_32xb64_in1k.py
     Metadata:
       FLOPs: 15636547584
       Parameters: 79864168
@@ -26,14 +26,14 @@ Models:
       Metrics:
         Top 1 Accuracy: 83.48
         Top 5 Accuracy: 96.57
-    Weights: https://download.openmmlab.com/mmclassification/v0/replknet/RepLKNet-31B_ImageNet-1K_224_20221024-debd6715.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31B_3rdparty_in1k_20221118-fd08e268.pth
     Converted From:
       Weights: https://drive.google.com/u/0/uc?id=1azQUiCxK9feYVkkrPqwVPBtNsTzDrX7S&export=download
       Code: https://github.com/DingXiaoH/RepLKNet-pytorch/blob/main/replknet.py
 
-  - Name: replknet-31B_3rdparty_32xb64-coslr-300e_384_in1k
+  - Name: replknet-31B_3rdparty_in1k-384px
     In Collection: RepLKNet
-    Config: configs/replknet/replknet-31B_32xb64-coslr-300e_384_in1k.py
+    Config: configs/replknet/replknet-31B_32xb64_in1k-384px.py
     Metadata:
       FLOPs: 45952303104
       Parameters: 79864168
@@ -43,15 +43,18 @@ Models:
       Metrics:
         Top 1 Accuracy: 84.84
         Top 5 Accuracy: 97.34
-    Weights: https://download.openmmlab.com/mmclassification/v0/replknet/RepLKNet-31B_ImageNet-1K_384_20221024-3d05883f.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31B_3rdparty_in1k-384px_20221118-03a170ce.pth
     Converted From:
       Weights: https://drive.google.com/u/0/uc?id=1vo-P3XB6mRLUeDzmgv90dOu73uCeLfZN&export=download
       Code: https://github.com/DingXiaoH/RepLKNet-pytorch/blob/main/replknet.py
 
-  - Name: replknet-31B_3rdparty_32xb64-coslr-300e_224_in22kto1k
+  - Name: replknet-31B_in21k-pre_3rdparty_in1k
     In Collection: RepLKNet
-    Config: configs/replknet/replknet-31B_32xb64-coslr-300e_224_in22kto1k.py
+    Config: configs/replknet/replknet-31B_32xb64_in1k.py
     Metadata:
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
       FLOPs: 15636547584
       Parameters: 79864168
     Results:
@@ -60,15 +63,18 @@ Models:
       Metrics:
         Top 1 Accuracy: 85.20
         Top 5 Accuracy: 97.56
-    Weights: https://download.openmmlab.com/mmclassification/v0/replknet/RepLKNet-31B_ImageNet-22K-to-1K_224_20221024-f68d7698.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31B_in21k-pre_3rdparty_in1k_20221118-54ed5c46.pth
     Converted From:
       Weights: https://drive.google.com/u/0/uc?id=1DslZ2voXZQR1QoFY9KnbsHAeF84hzS0s&export=download
       Code: https://github.com/DingXiaoH/RepLKNet-pytorch/blob/main/replknet.py
 
-  - Name: replknet-31B_3rdparty_32xb64-coslr-300e_384_in22kto1k
+  - Name: replknet-31B_in21k-pre_3rdparty_in1k-384px
     In Collection: RepLKNet
-    Config: configs/replknet/replknet-31B_32xb64-coslr-300e_384_in22kto1k.py
+    Config: configs/replknet/replknet-31B_32xb64_in1k-384px.py
     Metadata:
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
       FLOPs: 45952303104
       Parameters: 79864168
     Results:
@@ -77,15 +83,18 @@ Models:
       Metrics:
         Top 1 Accuracy: 85.99
         Top 5 Accuracy: 97.75
-    Weights: https://download.openmmlab.com/mmclassification/v0/replknet/RepLKNet-31B_ImageNet-22K-to-1K_384_20221024-ca9f04ca.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31B_in21k-pre_3rdparty_in1k-384px_20221118-76c92b24.pth
     Converted From:
       Weights: https://drive.google.com/u/0/uc?id=1Sc46BWdXXm2fVP-K_hKKU_W8vAB-0duX&export=download
       Code: https://github.com/DingXiaoH/RepLKNet-pytorch/blob/main/replknet.py
 
-  - Name: replknet-31L_3rdparty_32xb64-coslr-300e_384_in22kto1k
+  - Name: replknet-31L_in21k-pre_3rdparty_in1k-384px
     In Collection: RepLKNet
-    Config: configs/replknet/replknet-31L_32xb64-coslr-300e_384_in22kto1k.py
+    Config: configs/replknet/replknet-31L_32xb64_in1k-384px.py
     Metadata:
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
       FLOPs: 97240006656
       Parameters: 172671016
     Results:
@@ -94,15 +103,18 @@ Models:
       Metrics:
         Top 1 Accuracy: 86.63
         Top 5 Accuracy: 98.00
-    Weights: https://download.openmmlab.com/mmclassification/v0/replknet/RepLKNet-31L_ImageNet-22K-to-1K_384_20221024-6f8ee74d.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31L_in21k-pre_3rdparty_in1k-384px_20221118-dc3fc07c.pth
     Converted From:
       Weights: https://drive.google.com/u/0/uc?id=1JYXoNHuRvC33QV1pmpzMTKEni1hpWfBl&export=download
       Code: https://github.com/DingXiaoH/RepLKNet-pytorch/blob/main/replknet.py
 
-  - Name: replknet-XL_3rdparty_32xb64-coslr-300e_320_meg73mto1k
+  - Name: replknet-XL_meg73m-pre_3rdparty_in1k-320px
     In Collection: RepLKNet
-    Config: configs/replknet/replknet-XL_32xb64-coslr-300e_320_meg73mto1k.py
+    Config: configs/replknet/replknet-XL_32xb64_in1k-320px.py
     Metadata:
+      Training Data:
+        - MegData-73M
+        - ImageNet-1k
       FLOPs: 129570201600
       Parameters: 335435752
     Results:
@@ -111,7 +123,7 @@ Models:
       Metrics:
         Top 1 Accuracy: 87.57
         Top 5 Accuracy: 98.39
-    Weights: https://download.openmmlab.com/mmclassification/v0/replknet/RepLKNet-XL_MegData73M_ImageNet1K_20221024-664f2980.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/replknet/replknet-XL_meg73m-pre_3rdparty_in1k-320px_20221118-88259b1d.pth
     Converted From:
       Weights: https://drive.google.com/u/0/uc?id=1tPC60El34GntXByIRHb-z-Apm4Y5LX1T&export=download
       Code: https://github.com/DingXiaoH/RepLKNet-pytorch/blob/main/replknet.py
