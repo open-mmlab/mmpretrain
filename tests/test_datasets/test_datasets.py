@@ -79,7 +79,7 @@ class TestBaseDataset(TestCase):
         else:
             self.assertIn('The `CLASSES` meta info is not set.', repr(dataset))
 
-        self.assertIn("Haven't been initialized", repr(dataset))
+        self.assertIn('Haven\'t been initialized', repr(dataset))
         dataset.full_init()
         self.assertIn(f'Number of samples: \t{len(dataset)}', repr(dataset))
 
@@ -452,7 +452,7 @@ class TestCIFAR10(TestBaseDataset):
         cfg = {**self.DEFAULT_ARGS, 'lazy_init': True}
         dataset = dataset_class(**cfg)
 
-        self.assertIn(f'Prefix of data: \t{dataset.data_prefix["root"]}',
+        self.assertIn(f'Prefix of data: \t{dataset.data_prefix['root']}',
                       repr(dataset))
 
     @classmethod
@@ -597,7 +597,7 @@ class TestVOC(TestBaseDataset):
         }
         dataset = dataset_class(**cfg)
 
-        self.assertIn("Haven't been initialized", repr(dataset))
+        self.assertIn('Haven\'t been initialized', repr(dataset))
         dataset.full_init()
         self.assertIn(f'Number of samples: \t{len(dataset)}', repr(dataset))
 
@@ -770,7 +770,7 @@ class TestMNIST(TestBaseDataset):
         cfg = {**self.DEFAULT_ARGS, 'lazy_init': True}
         dataset = dataset_class(**cfg)
 
-        self.assertIn(f'Prefix of data: \t{dataset.data_prefix["root"]}',
+        self.assertIn(f'Prefix of data: \t{dataset.data_prefix['root']}',
                       repr(dataset))
 
     @classmethod
@@ -936,7 +936,7 @@ class TestMultiTaskDataset(TestCase):
         data = dataset.load_data_list(self.DEFAULT_ARGS['ann_file'])
         self.assertIsInstance(data, list)
         np.testing.assert_equal(len(data), 3)
-        np.testing.assert_equal(data[0]['gt_label'], {"gender": 0})
+        np.testing.assert_equal(data[0]['gt_label'], {'gender': 0})
         np.testing.assert_equal(data[1]['gt_label'], {
             'gender': 0,
             'wear': [1, 0, 1, 0]
