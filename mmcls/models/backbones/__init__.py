@@ -15,6 +15,7 @@ from .hornet import HorNet
 from .hrnet import HRNet
 from .inception_v3 import InceptionV3
 from .lenet import LeNet5
+from .mixmim import MixMIMTransformer
 from .mlp_mixer import MlpMixer
 from .mobilenet_v2 import MobileNetV2
 from .mobilenet_v3 import MobileNetV3
@@ -44,9 +45,6 @@ from .twins import PCPVT, SVT
 from .van import VAN
 from .vgg import VGG
 from .vision_transformer import VisionTransformer
-from .mixmim import MixMIMTransformer
-
-
 
 __all__ = [
     'LeNet5',
@@ -86,7 +84,6 @@ __all__ = [
     'CSPResNet',
     'CSPResNeXt',
     'CSPNet',
-    'RepLKNet',
     'RepMLPNet',
     'PoolFormer',
     'DenseNet',
