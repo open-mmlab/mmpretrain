@@ -23,6 +23,10 @@ neural networks with comparable model sizes (e.g., ViT-B) among MIM methods.
 Besides, its transferring performances on the other 6 datasets show MixMIM has
 better FLOPs / performance tradeoff than previous MIM methods
 
+<div align=center>
+<img src="https://user-images.githubusercontent.com/56866854/202853730-d26fb3d7-e5e8-487a-aad5-e3d4600cef87.png"/>
+</div>
+
 ## Models
 
 |    Model    | Params(M) | Pretrain Epochs | Flops(G) | Top-1 (%) | Top-5 (%) |                      Config                      |         Download          |
