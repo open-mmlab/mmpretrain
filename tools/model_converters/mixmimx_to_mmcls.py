@@ -74,23 +74,8 @@ def convert_mixmim(ckpt):
     return new_ckpt
 
 
-def convert_official_mixmim(ckpt):
 
-    new_ckpt = OrderedDict()
-    for k, v in list(ckpt.items()):
-        new_v = v        
-        
-        if not k.startswith("head"):
-            new_k = "backbone." + k
-        else:
-            new_k = k.replace("head.", "head.fc.")
-            
-        new_ckpt[new_k] = new_v
-        
-    return new_ckpt
-        
-        
-
+    
 
 def main():
     parser = argparse.ArgumentParser(
