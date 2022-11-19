@@ -154,16 +154,16 @@ class MixMIMBlock(TransformerEncoderLayer):
         return windows
 
     def forward(self, x, attn_mask=None):
-        H, W = self.input_resolution # √
-        B, L, C = x.shape # √
+        H, W = self.input_resolution
+        B, L, C = x.shape 
 
-        shortcut = x # √
-        x = self.norm1(x) # √
-        x = x.view(B, H, W, C) # √
+        shortcut = x 
+        x = self.norm1(x) 
+        x = x.view(B, H, W, C) 
 
         # partition windows
-        x_windows = self.window_partition(x, self.window_size)  # nW*B, window_size, window_size, C  # √
-        x_windows = x_windows.view(-1, self.window_size * self.window_size, C)  # nW*B, window_size*window_size, C # √
+        x_windows = self.window_partition(x, self.window_size)  # nW*B, window_size, window_size, C  
+        x_windows = x_windows.view(-1, self.window_size * self.window_size, C)  # nW*B, window_size*window_size, C 
         if attn_mask is not None:
             attn_mask = attn_mask.repeat(B, 1, 1)   # B, N, 1
             attn_mask = attn_mask.view(B, H, W, 1)
@@ -171,17 +171,17 @@ class MixMIMBlock(TransformerEncoderLayer):
             attn_mask = attn_mask.view(-1, self.window_size * self.window_size, 1)
 
         # W-MSA/SW-MSA
-        attn_windows = self.attn(x_windows, mask=attn_mask)  # nW*B, window_size*window_size, C # √
+        attn_windows = self.attn(x_windows, mask=attn_mask)  # nW*B, window_size*window_size, C 
 
         # merge windows
-        attn_windows = attn_windows.view(-1, self.window_size, self.window_size, C) # √
-        x = self.window_reverse(attn_windows, H, W, self.window_size)  # B H' W' C # √
+        attn_windows = attn_windows.view(-1, self.window_size, self.window_size, C) 
+        x = self.window_reverse(attn_windows, H, W, self.window_size)  # B H' W' C 
 
-        x = x.view(B, H * W, C) # √
+        x = x.view(B, H * W, C) 
 
-        x = shortcut + self.drop_path(x) # √
+        x = shortcut + self.drop_path(x) 
 
-        x = self.ffn(self.norm2(x), identity=x)  # ffn contains DropPath # √
+        x = self.ffn(self.norm2(x), identity=x)  # ffn contains DropPath 
 
         return x
 
@@ -219,7 +219,7 @@ class MixMIMLayer(BaseModule):
             if self.use_checkpoint:
                 x = checkpoint(blk, x, attn_mask)
             else:
-                x = blk(x, attn_mask=attn_mask) # √ # 第二个layer出现小误差第一个block
+                x = blk(x, attn_mask=attn_mask) 
         if self.downsample is not None:
             x, _ = self.downsample(x, self.input_resolution) # The PatchMerging operation in mmcv is different from that in timm. we need to modify pretrained parameters first
         return x
@@ -339,13 +339,11 @@ class MixMIMTransformer(BaseBackbone):
 
 
     def forward(self, x: torch.Tensor):
-
         x, _ = self.patch_embed(x)
-        # √
+        
         x = x + self.absolute_pos_embed
-        # √
         x = self.drop_after_pos(x)
-        # √
+
         for layer in self.layers:
             x = layer(x, attn_mask=None) 
             
