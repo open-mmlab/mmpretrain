@@ -14,6 +14,7 @@ from .hornet import HorNet
 from .hrnet import HRNet
 from .inception_v3 import InceptionV3
 from .lenet import LeNet5
+from .mixmim import MixMIMTransformer
 from .mlp_mixer import MlpMixer
 from .mobilenet_v2 import MobileNetV2
 from .mobilenet_v3 import MobileNetV3
@@ -42,59 +43,16 @@ from .twins import PCPVT, SVT
 from .van import VAN
 from .vgg import VGG
 from .vision_transformer import VisionTransformer
-from .mixmim import MixMIMTransformer
-
-
 
 __all__ = [
-    'LeNet5',
-    'AlexNet',
-    'VGG',
-    'RegNet',
-    'ResNet',
-    'ResNeXt',
-    'ResNetV1d',
-    'ResNeSt',
-    'ResNet_CIFAR',
-    'SEResNet',
-    'SEResNeXt',
-    'ShuffleNetV1',
-    'ShuffleNetV2',
-    'MobileNetV2',
-    'MobileNetV3',
-    'VisionTransformer',
-    'SwinTransformer',
-    'TNT',
-    'TIMMBackbone',
-    'T2T_ViT',
-    'Res2Net',
-    'RepVGG',
-    'Conformer',
-    'MlpMixer',
-    'DistilledVisionTransformer',
-    'PCPVT',
-    'SVT',
-    'EfficientNet',
-    'ConvNeXt',
-    'HRNet',
-    'ResNetV1c',
-    'ConvMixer',
-    'EdgeNeXt',
-    'CSPDarkNet',
-    'CSPResNet',
-    'CSPResNeXt',
-    'CSPNet',
-    'RepMLPNet',
-    'PoolFormer',
-    'DenseNet',
-    'VAN',
-    'InceptionV3',
-    'MobileOne',
-    'EfficientFormer',
-    'SwinTransformerV2',
-    'MViT',
-    'DeiT3',
-    'HorNet',
-    'MobileViT',
-    'MixMIMTransformer'
+    'LeNet5', 'AlexNet', 'VGG', 'RegNet', 'ResNet', 'ResNeXt', 'ResNetV1d',
+    'ResNeSt', 'ResNet_CIFAR', 'SEResNet', 'SEResNeXt', 'ShuffleNetV1',
+    'ShuffleNetV2', 'MobileNetV2', 'MobileNetV3', 'VisionTransformer',
+    'SwinTransformer', 'TNT', 'TIMMBackbone', 'T2T_ViT', 'Res2Net', 'RepVGG',
+    'Conformer', 'MlpMixer', 'DistilledVisionTransformer', 'PCPVT', 'SVT',
+    'EfficientNet', 'ConvNeXt', 'HRNet', 'ResNetV1c', 'ConvMixer', 'EdgeNeXt',
+    'CSPDarkNet', 'CSPResNet', 'CSPResNeXt', 'CSPNet', 'RepMLPNet',
+    'PoolFormer', 'DenseNet', 'VAN', 'InceptionV3', 'MobileOne',
+    'EfficientFormer', 'SwinTransformerV2', 'MViT', 'DeiT3', 'HorNet',
+    'MobileViT', 'MixMIMTransformer'
 ]
