@@ -45,7 +45,7 @@ from .van import VAN
 from .vgg import VGG
 from .vision_transformer import VisionTransformer
 from .mixmim import MixMIMTransformer
-from .mixmim_official import MixMIMFT
+
 
 __all__ = [
     'LeNet5',
