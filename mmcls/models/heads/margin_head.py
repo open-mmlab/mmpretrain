@@ -129,7 +129,7 @@ class ArcFaceClsHead(ClsHead):
             category.
         in_channels (int): Number of channels in the input feature map.
         num_subcenters (int): Number of subcenters. Defaults to 1.
-        scale (float): Scale factor of output logit. Defaults to 30.0.
+        scale (float): Scale factor of output logit. Defaults to 64.0.
         margins (float): The penalty margin. Could be the fllowing formats:
 
             - float: The margin, would be same for all the categories.
@@ -150,7 +150,7 @@ class ArcFaceClsHead(ClsHead):
                  num_classes: int,
                  in_channels: int,
                  num_subcenters: int = 1,
-                 scale: float = 30.0,
+                 scale: float = 64.,
                  margins: Optional[Union[float, Sequence[float], str]] = 0.50,
                  easy_margin: bool = False,
                  loss: dict = dict(type='CrossEntropyLoss', loss_weight=1.0),
@@ -183,9 +183,11 @@ class ArcFaceClsHead(ClsHead):
 
         self.register_buffer(
             'margins', torch.tensor(margins).float(), persistent=False)
-        mm = torch.sin(math.pi - self.margins) * self.margins
+        # To make `phi` monotonic decreasing, refers to
+        # https://github.com/deepinsight/insightface/issues/108
+        sinm_m = torch.sin(math.pi - self.margins) * self.margins
         threshold = torch.cos(math.pi - self.margins)
-        self.register_buffer('mm', mm, persistent=False)
+        self.register_buffer('sinm_m', sinm_m, persistent=False)
         self.register_buffer('threshold', threshold, persistent=False)
 
     def set_margins(self, margins: Union[Sequence[float], float]) -> None:
@@ -202,8 +204,8 @@ class ArcFaceClsHead(ClsHead):
 
         self.margins = torch.tensor(
             margins, device=self.margins.device, dtype=torch.float32)
-        self.mm = torch.sin(math.pi - self.margins) * self.margins
-        self.threshold = torch.cos(math.pi - self.margins)
+        self.sinm_m = torch.sin(self.margins) * self.margins
+        self.threshold = -torch.cos(self.margins)
 
     def pre_logits(self, feats: Tuple[torch.Tensor]) -> torch.Tensor:
         """The process before the final classification head.
@@ -216,7 +218,7 @@ class ArcFaceClsHead(ClsHead):
         # unpacking.
         return feats[-1]
 
-    def _get_logit_with_arc_margin(self, pre_logits, target):
+    def _get_logit_with_margin(self, pre_logits, target):
         """add arc margin to the cosine in target index.
 
         The target must be in index format.
@@ -234,7 +236,8 @@ class ArcFaceClsHead(ClsHead):
         else:
             # when cos>th, choose phi
             # when cos<=th, choose cosine-mm
-            phi = torch.where(cosine > self.threshold, phi, cosine - self.mm)
+            phi = torch.where(cosine > self.threshold, phi,
+                              cosine - self.sinm_m)
 
         target = convert_to_one_hot(target, self.num_classes)
         output = target * phi + (1 - target) * cosine
@@ -244,6 +247,7 @@ class ArcFaceClsHead(ClsHead):
                 feats: Tuple[torch.Tensor],
                 target: Optional[torch.Tensor] = None) -> torch.Tensor:
         """The forward process."""
+        # Disable AMP
         with autocast(enabled=False):
             pre_logits = self.pre_logits(feats)
 
@@ -254,7 +258,7 @@ class ArcFaceClsHead(ClsHead):
             else:
                 # when training, add a margin to the pre_logits where target is
                 # True, then logit is the cosine between W and new pre_logits
-                logit = self._get_logit_with_arc_margin(pre_logits, target)
+                logit = self._get_logit_with_margin(pre_logits, target)
 
         return self.scale * logit
 
