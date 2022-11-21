@@ -202,18 +202,36 @@ def test_repvgg_backbone():
     # Test RepVGG forward with layer 3 forward
     model = RepVGG('A0', out_indices=(3, ))
     model.init_weights()
-    model.train()
+    model.eval()
 
     for m in model.modules():
         if is_norm(m):
             assert isinstance(m, _BatchNorm)
 
-    imgs = torch.randn(1, 3, 224, 224)
+    imgs = torch.randn(1, 3, 32, 32)
     feat = model(imgs)
     assert isinstance(feat, tuple)
     assert len(feat) == 1
     assert isinstance(feat[0], torch.Tensor)
-    assert feat[0].shape == torch.Size((1, 1280, 7, 7))
+    assert feat[0].shape == torch.Size((1, 1280, 1, 1))
+
+    # Test with custom arch
+    cfg = dict(
+        num_blocks=[3, 5, 7, 3],
+        width_factor=[1, 1, 1, 1],
+        group_layer_map=None,
+        se_cfg=None,
+        stem_channels=16)
+    model = RepVGG(arch=cfg, out_indices=(3, ))
+    model.eval()
+    assert model.stem.out_channels == min(16, 64 * 1)
+
+    imgs = torch.randn(1, 3, 32, 32)
+    feat = model(imgs)
+    assert isinstance(feat, tuple)
+    assert len(feat) == 1
+    assert isinstance(feat[0], torch.Tensor)
+    assert feat[0].shape == torch.Size((1, 512, 1, 1))
 
     # Test RepVGG forward
     model_test_settings = [
@@ -233,7 +251,7 @@ def test_repvgg_backbone():
         dict(model_name='D2se', out_sizes=(160, 320, 640, 2560))
     ]
 
-    choose_models = ['A0', 'B1', 'B1g2', 'D2se']
+    choose_models = ['A0', 'B1', 'B1g2']
     # Test RepVGG model forward
     for model_test_setting in model_test_settings:
         if model_test_setting['model_name'] not in choose_models:
@@ -241,23 +259,23 @@ def test_repvgg_backbone():
         model = RepVGG(
             model_test_setting['model_name'], out_indices=(0, 1, 2, 3))
         model.init_weights()
+        model.eval()
 
         # Test Norm
         for m in model.modules():
             if is_norm(m):
                 assert isinstance(m, _BatchNorm)
 
-        model.train()
-        imgs = torch.randn(1, 3, 224, 224)
+        imgs = torch.randn(1, 3, 32, 32)
         feat = model(imgs)
         assert feat[0].shape == torch.Size(
-            (1, model_test_setting['out_sizes'][0], 56, 56))
+            (1, model_test_setting['out_sizes'][0], 8, 8))
         assert feat[1].shape == torch.Size(
-            (1, model_test_setting['out_sizes'][1], 28, 28))
+            (1, model_test_setting['out_sizes'][1], 4, 4))
         assert feat[2].shape == torch.Size(
-            (1, model_test_setting['out_sizes'][2], 14, 14))
+            (1, model_test_setting['out_sizes'][2], 2, 2))
         assert feat[3].shape == torch.Size(
-            (1, model_test_setting['out_sizes'][3], 7, 7))
+            (1, model_test_setting['out_sizes'][3], 1, 1))
 
         # Test eval of "train" mode and "deploy" mode
         gap = nn.AdaptiveAvgPool2d(output_size=(1))
@@ -275,11 +293,49 @@ def test_repvgg_backbone():
             torch.allclose(feat[i], feat_deploy[i])
         torch.allclose(pred, pred_deploy)
 
+    # Test RepVGG forward with add_ppf
+    model = RepVGG('A0', out_indices=(3, ), add_ppf=True)
+    model.init_weights()
+    model.train()
+
+    for m in model.modules():
+        if is_norm(m):
+            assert isinstance(m, _BatchNorm)
+
+    imgs = torch.randn(1, 3, 64, 64)
+    feat = model(imgs)
+    assert isinstance(feat, tuple)
+    assert len(feat) == 1
+    assert isinstance(feat[0], torch.Tensor)
+    assert feat[0].shape == torch.Size((1, 1280, 2, 2))
+
+    # Test RepVGG forward with 'stem_channels' not in arch
+    arch = dict(
+        num_blocks=[2, 4, 14, 1],
+        width_factor=[0.75, 0.75, 0.75, 2.5],
+        group_layer_map=None,
+        se_cfg=None)
+    model = RepVGG(arch, add_ppf=True)
+    model.stem.in_channels = min(64, 64 * 0.75)
+    model.init_weights()
+    model.train()
+
+    for m in model.modules():
+        if is_norm(m):
+            assert isinstance(m, _BatchNorm)
+
+    imgs = torch.randn(1, 3, 64, 64)
+    feat = model(imgs)
+    assert isinstance(feat, tuple)
+    assert len(feat) == 1
+    assert isinstance(feat[0], torch.Tensor)
+    assert feat[0].shape == torch.Size((1, 1280, 2, 2))
+
 
 def test_repvgg_load():
     # Test output before and load from deploy checkpoint
     model = RepVGG('A1', out_indices=(0, 1, 2, 3))
-    inputs = torch.randn((1, 3, 224, 224))
+    inputs = torch.randn((1, 3, 32, 32))
     ckpt_path = os.path.join(tempfile.gettempdir(), 'ckpt.pth')
     model.switch_to_deploy()
     model.eval()

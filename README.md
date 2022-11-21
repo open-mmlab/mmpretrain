@@ -28,7 +28,7 @@
 [![issue resolution](https://isitmaintained.com/badge/resolution/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
 
 [📘 Documentation](https://mmclassification.readthedocs.io/en/1.x/) |
-[🛠️ Installation](https://mmclassification.readthedocs.io/en/1.xget_started.html) |
+[🛠️ Installation](https://mmclassification.readthedocs.io/en/dev-1.x/get_started.html#installation) |
 [👀 Model Zoo](https://mmclassification.readthedocs.io/en/1.x/modelzoo_statistics.html) |
 [🆕 Update News](https://mmclassification.readthedocs.io/en/1.x/notes/changelog.html) |
 [🤔 Reporting Issues](https://github.com/open-mmlab/mmclassification/issues/new/choose)
@@ -148,7 +148,9 @@ Results and models are available in the [model zoo](https://mmclassification.rea
 - [x] [MobileOne](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobileone)
 - [x] [EfficientFormer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/efficientformer)
 - [x] [MViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mvit)
+- [x] [HorNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/hornet)
 - [x] [MobileViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobilevit)
+- [x] [DaViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/davit)
 - [x] [RepLKNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/replknet)
 
 </details>
@@ -185,6 +187,7 @@ This project is released under the [Apache 2.0 license](LICENSE).
 - [MMEngine](https://github.com/open-mmlab/mmengine): OpenMMLab foundational library for training deep learning models.
 - [MMCV](https://github.com/open-mmlab/mmcv): OpenMMLab foundational library for computer vision.
 - [MIM](https://github.com/open-mmlab/mim): MIM installs OpenMMLab packages.
+- [MMEval](https://github.com/open-mmlab/mmeval): A unified evaluation library for multiple machine learning libraries.
 - [MMClassification](https://github.com/open-mmlab/mmclassification): OpenMMLab image classification toolbox and benchmark.
 - [MMDetection](https://github.com/open-mmlab/mmdetection): OpenMMLab detection toolbox and benchmark.
 - [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): OpenMMLab's next-generation platform for general 3D object detection.

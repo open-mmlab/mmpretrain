@@ -4,4 +4,5 @@ myst-parser
 git+https://github.com/open-mmlab/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
 sphinx==4.5.0
 sphinx-copybutton
+sphinx-tabs
 tabulate

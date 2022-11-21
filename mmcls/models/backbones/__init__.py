@@ -4,12 +4,14 @@ from .conformer import Conformer
 from .convmixer import ConvMixer
 from .convnext import ConvNeXt
 from .cspnet import CSPDarkNet, CSPNet, CSPResNet, CSPResNeXt
+from .davit import DaViT
 from .deit import DistilledVisionTransformer
 from .deit3 import DeiT3
 from .densenet import DenseNet
 from .edgenext import EdgeNeXt
 from .efficientformer import EfficientFormer
 from .efficientnet import EfficientNet
+from .hornet import HorNet
 from .hrnet import HRNet
 from .inception_v3 import InceptionV3
 from .lenet import LeNet5
@@ -92,5 +94,7 @@ __all__ = [
     'SwinTransformerV2',
     'MViT',
     'DeiT3',
+    'HorNet',
     'MobileViT',
+    'DaViT',
 ]
