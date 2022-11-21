@@ -14,10 +14,9 @@ from .multi_label_cls_head import MultiLabelClsHead
 class CSRAClsHead(MultiLabelClsHead):
     """Class-specific residual attention classifier head.
 
-    Residual Attention: A Simple but Effective Method for Multi-Label
-                        Recognition (ICCV 2021)
-    Please refer to the `paper <https://arxiv.org/abs/2108.02456>`__ for
-    details.
+    Please refer to the `Residual Attention: A Simple but Effective Method for
+    Multi-Label Recognition (ICCV 2021) <https://arxiv.org/abs/2108.02456>`_
+    for details.
 
     Args:
         num_classes (int): Number of categories.
@@ -26,8 +25,8 @@ class CSRAClsHead(MultiLabelClsHead):
         loss (dict): Config of classification loss.
         lam (float): Lambda that combines global average and max pooling
             scores.
-        init_cfg (dict | optional): The extra init config of layers.
-            Defaults to use dict(type='Normal', layer='Linear', std=0.01).
+        init_cfg (dict, optional): The extra init config of layers.
+            Defaults to use ``dict(type='Normal', layer='Linear', std=0.01)``.
     """
     temperature_settings = {  # softmax temperature settings
         1: [1],

@@ -17,7 +17,7 @@ Models:
     Metadata:
       FLOPs: 4120000000
       Parameters: 23550000
-    In Collections: CSRA
+    In Collection: CSRA
     Results:
       - Dataset: PASCAL VOC 2007
         Metrics:
