@@ -151,6 +151,7 @@ Results and models are available in the [model zoo](https://mmclassification.rea
 - [x] [HorNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/hornet)
 - [x] [MobileViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobilevit)
 - [x] [DaViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/davit)
+- [x] [RepLKNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/replknet)
 
 </details>
 

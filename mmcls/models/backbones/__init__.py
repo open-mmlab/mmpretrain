@@ -23,6 +23,7 @@ from .mobilevit import MobileViT
 from .mvit import MViT
 from .poolformer import PoolFormer
 from .regnet import RegNet
+from .replknet import RepLKNet
 from .repmlp import RepMLPNet
 from .repvgg import RepVGG
 from .res2net import Res2Net
@@ -82,6 +83,7 @@ __all__ = [
     'CSPResNet',
     'CSPResNeXt',
     'CSPNet',
+    'RepLKNet',
     'RepMLPNet',
     'PoolFormer',
     'DenseNet',

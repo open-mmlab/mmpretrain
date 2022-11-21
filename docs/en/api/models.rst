@@ -85,6 +85,7 @@ Backbones
    PCPVT
    PoolFormer
    RegNet
+   RepLKNet
    RepMLPNet
    RepVGG
    Res2Net
