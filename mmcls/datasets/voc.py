@@ -2,7 +2,7 @@
 import xml.etree.ElementTree as ET
 from typing import List, Optional, Union
 
-from mmengine import FileClient, list_from_file
+from mmengine import get_file_backend, list_from_file
 
 from mmcls.registry import DATASETS
 from .base_dataset import expanduser
@@ -72,9 +72,8 @@ class VOC(MultiLabelDataset):
                 ' False.'
 
         self.data_root = data_root
-        self.file_client = FileClient.infer_client(uri=data_root)
-        self.image_set_path = self.file_client.join_path(
-            data_root, image_set_path)
+        self.backend = get_file_backend(data_root, enable_singleton=True)
+        self.image_set_path = self.backend.join_path(data_root, image_set_path)
 
         super().__init__(
             ann_file='',
@@ -94,8 +93,8 @@ class VOC(MultiLabelDataset):
 
     def _get_labels_from_xml(self, img_id):
         """Get gt_labels and labels_difficult from xml file."""
-        xml_path = self.file_client.join_path(self.ann_prefix, f'{img_id}.xml')
-        content = self.file_client.get(xml_path)
+        xml_path = self.backend.join_path(self.ann_prefix, f'{img_id}.xml')
+        content = self.backend.get(xml_path)
         root = ET.fromstring(content)
 
         labels, labels_difficult = set(), set()
@@ -120,8 +119,7 @@ class VOC(MultiLabelDataset):
         img_ids = list_from_file(self.image_set_path)
 
         for img_id in img_ids:
-            img_path = self.file_client.join_path(self.img_prefix,
-                                                  f'{img_id}.jpg')
+            img_path = self.backend.join_path(self.img_prefix, f'{img_id}.jpg')
 
             labels, labels_difficult = None, None
             if self.ann_prefix is not None:
