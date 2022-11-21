@@ -26,8 +26,8 @@ class ExampleDataset(Dataset):
         return 10
 
 
-class TestSetCountPowAdvMarginsHook(TestCase):
-    DEFAULT_HOOK_CFG = dict(type='SetCountPowAdvMarginsHook')
+class TestSetAdaptiveMarginsHook(TestCase):
+    DEFAULT_HOOK_CFG = dict(type='SetAdaptiveMarginsHook')
     DEFAULT_MODEL = dict(
         type='ImageClassifier',
         backbone=dict(
