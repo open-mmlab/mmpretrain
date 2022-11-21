@@ -250,7 +250,7 @@ class HorNetBlock(nn.Module):
 
 @MODELS.register_module()
 class HorNet(BaseBackbone):
-    """HorNet.
+    """HorNet backbone.
 
     A PyTorch implementation of paper `HorNet: Efficient High-Order Spatial
     Interactions with Recursive Gated Convolutions
@@ -262,6 +262,7 @@ class HorNet(BaseBackbone):
 
             If use string, choose from 'tiny', 'small', 'base' and 'large'.
             If use dict, it should have below keys:
+
             - **base_dim** (int): The base dimensions of embedding.
             - **depths** (List[int]): The number of blocks in each stage.
             - **orders** (List[int]): The number of order of gnConv in each
@@ -273,7 +274,7 @@ class HorNet(BaseBackbone):
         drop_path_rate (float): Stochastic depth rate. Defaults to 0.
         scale (float): Scaling parameter of gflayer outputs. Defaults to 1/3.
         use_layer_scale (bool): Whether to use use_layer_scale in HorNet
-             block. Defaults to True.
+            block. Defaults to True.
         out_indices (Sequence[int]): Output from which stages.
             Default: ``(3, )``.
         frozen_stages (int): Stages to be frozen (stop grad and set eval mode).

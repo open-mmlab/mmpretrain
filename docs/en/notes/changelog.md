@@ -1,5 +1,62 @@
 # Changelog
 
+## v1.0.0rc3(21/11/2022)
+
+### Highlights
+
+- Add **Switch Recipe** Hook, Now we can modify training pipeline, mixup and loss settings during training, see [#1101](https://github.com/open-mmlab/mmclassification/pull/1101).
+- Add **TIMM and HuggingFace** wrappers. Now you can train/use models in TIMM/HuggingFace directly, see [#1102](https://github.com/open-mmlab/mmclassification/pull/1102).
+- Support **retrieval tasks**, see [#1055](https://github.com/open-mmlab/mmclassification/pull/1055).
+- Reproduce **mobileone** training accuracy. See [#1191](https://github.com/open-mmlab/mmclassification/pull/1191)
+
+### New Features
+
+- Add checkpoints from EfficientNets NoisyStudent & L2. ([#1122](https://github.com/open-mmlab/mmclassification/pull/1122))
+- Migrate CSRA head to 1.x. ([#1177](https://github.com/open-mmlab/mmclassification/pull/1177))
+- Support RepLKnet backbone. ([#1129](https://github.com/open-mmlab/mmclassification/pull/1129))
+- Add Switch Recipe Hook. ([#1101](https://github.com/open-mmlab/mmclassification/pull/1101))
+- Add adan optimizer. ([#1180](https://github.com/open-mmlab/mmclassification/pull/1180))
+- Support DaViT. ([#1105](https://github.com/open-mmlab/mmclassification/pull/1105))
+- Support Activation Checkpointing for ConvNeXt. ([#1153](https://github.com/open-mmlab/mmclassification/pull/1153))
+- Add TIMM and HuggingFace wrappers to build classifiers from them directly. ([#1102](https://github.com/open-mmlab/mmclassification/pull/1102))
+- Add reduction for neck ([#978](https://github.com/open-mmlab/mmclassification/pull/978))
+- Support HorNet Backbone for dev1.x. ([#1094](https://github.com/open-mmlab/mmclassification/pull/1094))
+- Add arcface head. ([#926](https://github.com/open-mmlab/mmclassification/pull/926))
+- Add Base Retriever and Image2Image Retriever for retrieval tasks. ([#1055](https://github.com/open-mmlab/mmclassification/pull/1055))
+- Support MobileViT backbone. ([#1068](https://github.com/open-mmlab/mmclassification/pull/1068))
+
+### Improvements
+
+- \[Refactor\] Refactor to use new fileio API in MMEngine. ([#1176](https://github.com/open-mmlab/mmclassification/pull/1176))
+- \[Enhance\] Reproduce mobileone training accuracy. ([#1191](https://github.com/open-mmlab/mmclassification/pull/1191))
+- \[Enhance\] add deleting params info in swinv2. ([#1142](https://github.com/open-mmlab/mmclassification/pull/1142))
+- \[Enhance\] Add more mobilenetv3 pretrains. ([#1154](https://github.com/open-mmlab/mmclassification/pull/1154))
+- \[Enhancement\] RepVGG for YOLOX-PAI for dev-1.x. ([#1126](https://github.com/open-mmlab/mmclassification/pull/1126))
+- \[Improve\] Speed up data preprocessor. ([#1064](https://github.com/open-mmlab/mmclassification/pull/1064))
+
+### Bug Fixes
+
+- Fix the torchserve. ([#1143](https://github.com/open-mmlab/mmclassification/pull/1143))
+- Fix configs due to api refactor of `num_classes`. ([#1184](https://github.com/open-mmlab/mmclassification/pull/1184))
+- Update mmcls2torchserve. ([#1189](https://github.com/open-mmlab/mmclassification/pull/1189))
+- Fix for `inference_model` cannot get classes information in checkpoint. ([#1093](https://github.com/open-mmlab/mmclassification/pull/1093))
+
+### Docs Update
+
+- Add not-found page extension. ([#1207](https://github.com/open-mmlab/mmclassification/pull/1207))
+- update visualization doc. ([#1160](https://github.com/open-mmlab/mmclassification/pull/1160))
+- Support sort and search the Model Summary table. ([#1100](https://github.com/open-mmlab/mmclassification/pull/1100))
+- Improve the ResNet model page. ([#1118](https://github.com/open-mmlab/mmclassification/pull/1118))
+- update the readme of convnext. ([#1156](https://github.com/open-mmlab/mmclassification/pull/1156))
+- Fix the installation docs link in README. ([#1164](https://github.com/open-mmlab/mmclassification/pull/1164))
+- Improve ViT and MobileViT model pages. ([#1155](https://github.com/open-mmlab/mmclassification/pull/1155))
+- Improve Swin Doc and Add Tabs enxtation. ([#1145](https://github.com/open-mmlab/mmclassification/pull/1145))
+- Add MMEval projects link in README. ([#1162](https://github.com/open-mmlab/mmclassification/pull/1162))
+- Add runtime configuration docs. ([#1128](https://github.com/open-mmlab/mmclassification/pull/1128))
+- Add custom evaluation docs ([#1130](https://github.com/open-mmlab/mmclassification/pull/1130))
+- Add custom pipeline docs. ([#1124](https://github.com/open-mmlab/mmclassification/pull/1124))
+- Add MMYOLO projects link in MMCLS1.x. ([#1117](https://github.com/open-mmlab/mmclassification/pull/1117))
+
 ## v1.0.0rc2(12/10/2022)
 
 ### New Features

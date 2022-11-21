@@ -34,7 +34,6 @@ train_dataloader = dict(
         image_set_path='ImageSets/Layout/val.txt',
         pipeline=train_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=True),
-    persistent_workers=True,
 )
 
 val_dataloader = dict(
@@ -46,7 +45,6 @@ val_dataloader = dict(
         image_set_path='ImageSets/Layout/val.txt',
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
-    persistent_workers=True,
 )
 
 test_dataloader = dict(
@@ -58,7 +56,6 @@ test_dataloader = dict(
         image_set_path='ImageSets/Layout/val.txt',
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
-    persistent_workers=True,
 )
 
 # calculate precision_recall_f1 and mAP
