@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 
+import rich
 from mmengine import Config, DictAction
 
 
@@ -28,7 +29,7 @@ def main():
     cfg = Config.fromfile(args.config)
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
-    print(f'Config:\n{cfg.pretty_text}')
+    rich.print(cfg.pretty_text)
 
 
 if __name__ == '__main__':
