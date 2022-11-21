@@ -181,18 +181,29 @@ class ArcFaceClsHead(ClsHead):
         assert len(margins) == num_classes, \
             'The length of margins must be equal with num_classes.'
 
-        self.register_buffer('margins', torch.tensor(margins).float())
-        # a fixed margin when theta + m >= PI
-        self.mm = torch.sin(math.pi - self.margins) * self.margins
-        self.threshold = torch.cos(math.pi - self.margins)
+        self.register_buffer(
+            'margins', torch.tensor(margins).float(), persistent=False)
+        mm = torch.sin(math.pi - self.margins) * self.margins
+        self.register_buffer('mm', mm, persistent=False)
+        threshold = torch.cos(math.pi - self.margins)
+        self.register_buffer('threshold', threshold, persistent=False)
 
-    def set_margins(self, margins: Sequence[Union[float, int]]) -> None:
+    def set_margins(self, margins: Union[Sequence[float], float]) -> None:
+        """set margins of arcface head.
+
+        Args:
+            margins (Union[Sequence[float], float]): The marigins.
+        """
+        if isinstance(margins, float):
+            margins = [margins] * self.num_classes
         assert is_seq_of(list(margins), float), (
             f'margins must be Sequence[Union(float, int)], get {margins}')
 
         self.margins = torch.tensor(margins).float()
         self.margins = self.margins.to(
             next(self.norm_product.parameters()).device)
+        self.mm = torch.sin(math.pi - self.margins) * self.margins
+        self.threshold = torch.cos(math.pi - self.margins)
 
     def pre_logits(self, feats: Tuple[torch.Tensor]) -> torch.Tensor:
         """The process before the final classification head.
@@ -206,12 +217,13 @@ class ArcFaceClsHead(ClsHead):
         return feats[-1]
 
     def _get_logit_with_arc_margin(self, pre_logits, target):
-        """add arc margin to the cosine in target index."""
-        # if target is in index format, change  it to one-hot format.
-        if target.dim() == 1 or (target.dim() == 2 and target.shape[1] == 1):
-            target = convert_to_one_hot(target, self.num_classes)
+        """add arc margin to the cosine in target index.
 
-        # cos(theta_yj) = (x/||x||) * (W/||W||)
+        The target must be in index format.
+        """
+        assert target.dim() == 1 or (target.dim() == 2
+                                     and target.shape[1] == 1), (
+                                         'The target must be in index format.')
         cosine = self.norm_product(pre_logits)
         phi = torch.cos(torch.acos(cosine) + self.margins)
 
@@ -224,7 +236,8 @@ class ArcFaceClsHead(ClsHead):
             # when cos<=th, choose cosine-mm
             phi = torch.where(cosine > self.threshold, phi, cosine - self.mm)
 
-        output = (target * phi) + ((1.0 - target.gt(0).int()) * cosine)
+        target = convert_to_one_hot(target, self.num_classes)
+        output = target * phi + (1 - target) * cosine
         return output
 
     def forward(self,
@@ -262,15 +275,16 @@ class ArcFaceClsHead(ClsHead):
             dict[str, Tensor]: a dictionary of loss components
         """
         # Unpack data samples and pack targets
+        label_target = torch.cat([i.gt_label.label for i in data_samples])
         if 'score' in data_samples[0].gt_label:
             # Batch augmentation may convert labels to one-hot format scores.
             target = torch.stack([i.gt_label.score for i in data_samples])
         else:
             # change the labels to to one-hot format scores.
-            target = torch.cat([i.gt_label.label for i in data_samples])
+            target = label_target
 
         # the index format target would be used
-        cls_score = self(feats, target)
+        cls_score = self(feats, label_target)
 
         # compute loss
         losses = dict()
