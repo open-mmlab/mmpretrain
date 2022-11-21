@@ -1,14 +1,5 @@
 # Dataset Visualization
 
-<!-- TOC -->
-
-- [Introduce the dataset visualization tool](#introduce-the-dataset-visualization-tool)
-- [How to visualize the original image](#how-to-visualize-the-original-image)
-- [How to visualize the transformed images](#how-to-visualize-the-transformed-images)
-- [How to visualize the transformed images and original images together](#how-to-visualize-the-transformed-images-and-original-images-together)
-
-<!-- TOC -->
-
 ## Introduce the dataset visualization tool
 
 ```bash
@@ -34,7 +25,7 @@ python tools/visualizations/browse_dataset.py \
 - **`-m, --mode`**: The display mode, can be one of `['original', 'transformed', 'concat', 'pipeline']`. If not specified, it will be set to `'transformed'`.
 - **`-r, --rescale-factor`**: The image rescale factor, which is useful if the output is too large or too small.
 - `-c, --channel-order`: The channel of the showing images, could be "BGR" or "RGB", If not specified, it will be set to 'BGR'.
-- `--cfg-options` : Modifications to the configuration file, refer to [Learn about Configs](./config.md).
+- `--cfg-options` : Modifications to the configuration file, refer to [Learn about Configs](../user_guides/config.md).
 
 ```{note}
 1. The `-m, --mode` is about display mode, display original pictures or transformed pictures or comparison pictures:

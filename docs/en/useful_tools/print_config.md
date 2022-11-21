@@ -14,7 +14,7 @@ python tools/misc/print_config.py ${CONFIG} [--cfg-options ${CFG_OPTIONS}]
 Description of all arguments:
 
 - `config` : The path of the model config file.
-- `--cfg-options`: If specified, the key-value pair config will be merged into the config file, for more details please refer to [Learn about Configs](./config.md)
+- `--cfg-options`: If specified, the key-value pair config will be merged into the config file, for more details please refer to [Learn about Configs](../user_guides/config.md)
 
 ## Examples
 
