@@ -30,5 +30,7 @@ Multi Label Metric
    :toctree: generated
    :nosignatures:
 
-   MultiLabelMetric
    AveragePrecision
+   MultiLabelMetric
+   VOCAveragePrecision
+   VOCMultiLabelMetric
