@@ -22,7 +22,7 @@ class NormProduct(nn.Linear):
     Args:
         in_features (int): size of each input sample.
         out_features (int): size of each output sample
-        k (int): The number of clustering centers. Defaults to 3.
+        k (int): The number of clustering centers. Defaults to 1.
         bias (bool): Whether there is bias. If set to ``False``, the
             layer will not learn an additive bias. Defaults to ``True``.
         feature_norm (bool): Whether to normalize the input feature.
@@ -63,7 +63,7 @@ class ArcFaceClsHead(ClsHead):
     """ArcFace classifier head.
 
     A PyTorch implementation of paper `ArcFace: Additive Angular Margin Loss
-     for Deep Face Recognition <https://arxiv.org/abs/1801.07698>`_ and
+    for Deep Face Recognition <https://arxiv.org/abs/1801.07698>`_ and
     `Sub-center ArcFace: Boosting Face Recognition by Large-Scale Noisy Web
     Faces <https://link.springer.com/chapter/10.1007/978-3-030-58621-8_43>`_
 
@@ -73,6 +73,7 @@ class ArcFaceClsHead(ClsHead):
         1. use vanilla ArcFace
 
         .. code:: python
+
             mode = dict(
                 backbone = xxx,
                 neck = xxxx,
@@ -87,6 +88,7 @@ class ArcFaceClsHead(ClsHead):
         2. use SubCenterArcFace with 3 sub-centers
 
         .. code:: python
+
             mode = dict(
                 backbone = xxx,
                 neck = xxxx,
@@ -102,6 +104,7 @@ class ArcFaceClsHead(ClsHead):
         3. use SubCenterArcFace With CountPowerAdaptiveMargins
 
         .. code:: python
+
             mode = dict(
                 backbone = xxx,
                 neck = xxxx,
