@@ -4,6 +4,7 @@ from .conformer import Conformer
 from .convmixer import ConvMixer
 from .convnext import ConvNeXt
 from .cspnet import CSPDarkNet, CSPNet, CSPResNet, CSPResNeXt
+from .davit import DaViT
 from .deit import DistilledVisionTransformer
 from .deit3 import DeiT3
 from .densenet import DenseNet
@@ -22,6 +23,7 @@ from .mobilevit import MobileViT
 from .mvit import MViT
 from .poolformer import PoolFormer
 from .regnet import RegNet
+from .replknet import RepLKNet
 from .repmlp import RepMLPNet
 from .repvgg import RepVGG
 from .res2net import Res2Net
@@ -81,6 +83,7 @@ __all__ = [
     'CSPResNet',
     'CSPResNeXt',
     'CSPNet',
+    'RepLKNet',
     'RepMLPNet',
     'PoolFormer',
     'DenseNet',
@@ -93,4 +96,5 @@ __all__ = [
     'DeiT3',
     'HorNet',
     'MobileViT',
+    'DaViT',
 ]

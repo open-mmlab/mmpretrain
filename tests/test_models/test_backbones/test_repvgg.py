@@ -342,6 +342,7 @@ def test_repvgg_load():
     outputs = model(inputs)
 
     model_deploy = RepVGG('A1', out_indices=(0, 1, 2, 3), deploy=True)
+    model_deploy.eval()
     save_checkpoint(model.state_dict(), ckpt_path)
     load_checkpoint(model_deploy, ckpt_path, strict=True)
 

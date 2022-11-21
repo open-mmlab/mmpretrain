@@ -45,7 +45,7 @@ jobs:
         run: pip install -e .
       - name: Run unittests and generate coverage report
         run: |
-          coverage run --branch --source mmcls -m pytest tests/ -k 'not timm'
+          coverage run --branch --source mmcls -m pytest tests/
           coverage xml
           coverage report -m
       # Upload coverage report for python3.7 && pytorch1.8.1 cpu
@@ -84,4 +84,4 @@ jobs:
         run: pip install -e .
       - name: Run unittests
         run: |
-          pytest tests/ -k 'not timm' --ignore tests/test_models/test_backbones
+          pytest tests/ --ignore tests/test_models/test_backbones
