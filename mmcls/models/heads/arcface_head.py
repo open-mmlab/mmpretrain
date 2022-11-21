@@ -1,8 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
-import pickle
-from ctypes import Union
-from typing import List, Optional, Sequence, Tuple
+from typing import List, Optional, Sequence, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -10,6 +8,7 @@ import torch.nn.functional as F
 from mmengine.fileio import list_from_file
 from mmengine.runner import autocast
 from mmengine.structures import LabelData
+from mmengine.utils import is_seq_of
 
 from mmcls.registry import MODELS
 from mmcls.structures import ClsDataSample
@@ -74,11 +73,13 @@ class ArcFaceClsHead(ClsHead):
         in_channels (int): Number of channels in the input feature map.
         num_subcenters (int): Number of subcenters. Defaults to 1.
         scale (float): Scale factor of output logit. Defaults to 30.0.
-        margin (float): The penalty margin. Could be the fllowing formats:
+        margins (float): The penalty margin. Could be the fllowing formats:
 
-            - float: The penalty margin.
-            - Sequence: The category-based penalty margins.
-            - str: a '.txt' or '.pkl' file that contains the penalty margins.
+            - float: The margin, would be same for all the categories.
+            - Sequence[float]: The category-based margins list.
+            - str: A '.txt' file path which contains a list. Each line
+                represents the margin of a category, and the number in the
+                 i-th row indicates the margin of the i-th class.
 
             Defaults to 0.5.
         easy_margin (bool): Avoid theta + m >= PI. Defaults to False.
@@ -93,7 +94,7 @@ class ArcFaceClsHead(ClsHead):
                  in_channels: int,
                  num_subcenters: int = 1,
                  scale: float = 30.0,
-                 margin: Union[float, Sequence, str] = 0.50,
+                 margins: Optional[Union[float, Sequence[float], str]] = 0.50,
                  easy_margin: bool = False,
                  loss: dict = dict(type='CrossEntropyLoss', loss_weight=1.0),
                  init_cfg: Optional[dict] = None):
@@ -107,32 +108,31 @@ class ArcFaceClsHead(ClsHead):
         self.num_subcenters = num_subcenters
         self.scale = scale
         self.easy_margin = easy_margin
-        self.with_adaptive_margin = not isinstance(margin, float)
 
         self.norm_product = NormProduct(in_channels, num_classes,
                                         num_subcenters)
 
-        if not self.with_adaptive_margin:
-            self.margin = margin
-            self.threshold = math.cos(math.pi - margin)
-            self.mm = math.sin(math.pi - margin) * margin  # the fixd penalty
-
-        if isinstance(margin, float):
-            margins = [margin] * num_classes
-        elif isinstance(margin, str) and margin.endswith('.txt'):
-            margins = [float(item) for item in list_from_file(margin)]
-        elif isinstance(margin, str) and margin.endswith('.pkl'):
-            with open(margin, 'r') as pkl_file:
-                margins = pickle.load(pkl_file)
+        if isinstance(margins, float):
+            margins = [margins] * num_classes
+        elif isinstance(margins, str) and margins.endswith('.txt'):
+            margins = [float(item) for item in list_from_file(margins)]
         else:
-            assert isinstance(margin, Sequence), (
-                'the attr `margin` in ``ArcFaceClsHead`` should be float,'
-                ' Sequence, or .txt, .pkl file contain sequence data.')
+            assert is_seq_of(list(margins), (float, int)), (
+                'the attribute `margins` in ``ArcFaceClsHead`` should be a '
+                ' float, a Sequence of float, or a ".txt" file path.')
 
         assert len(margins) == num_classes, \
-            'The size of margin must be equal with num_classes.'
-        margins = torch.tensor(margins).float()
-        self.register_buffer('margins', margins)
+            'The length of margins must be equal with num_classes.'
+
+        self.register_buffer('margins', torch.tensor(margins).float())
+
+    def set_margins(self, margins: Sequence[Union[float, int]]) -> None:
+        assert is_seq_of(list(margins), float), (
+            f'margins must be Sequence[Union(float, int)], get {margins}')
+
+        self.margins = torch.tensor(margins).float()
+        self.margins = self.margins.to(
+            next(self.norm_product.parameters()).device)
 
     def pre_logits(self, feats: Tuple[torch.Tensor]) -> torch.Tensor:
         """The process before the final classification head.
@@ -145,48 +145,53 @@ class ArcFaceClsHead(ClsHead):
         # unpacking.
         return feats[-1]
 
+    def _get_logit_with_arc_margin(self, pre_logits, target):
+        """add arc margin to the cosine in target index."""
+        # the target must be in index format
+        assert target.dim() == 1 or  \
+            (target.dim() == 2 and target.shape[1] == 1), \
+            '``ArcFaceClsHead`` only support index format target.'
+
+        cosine = self.norm_product(pre_logits)
+
+        target = target.long()
+        margin = self.margins[target].unsqueeze(1)
+        # a fixed margin when theta + m >= PI
+        mm = torch.sin(math.pi - margin) * margin
+        threshold = torch.cos(math.pi - margin)
+
+        phi = torch.cos(torch.acos(cosine) + margin)
+
+        if self.easy_margin:
+            # when cosine>0, choose phi
+            # when cosine<=0, choose cosine
+            phi = torch.where(cosine > 0, phi, cosine)
+        else:
+            # when cos>th, choose phi
+            # when cos<=th, choose cosine-mm
+            phi = torch.where(cosine > threshold, phi, cosine - mm)
+
+        target = LabelData.label_to_onehot(target, cosine.size()[-1])
+        output = (target * phi) + ((1.0 - target) * cosine)
+        return output
+
     def forward(self,
                 feats: Tuple[torch.Tensor],
                 target: Optional[torch.Tensor] = None) -> torch.Tensor:
         """The forward process."""
-
-        assert target.dim() == 1 or (
-            target.dim() == 2 and target.shape[1] == 1), \
-            '``ArcFaceClsHead`` only support index format target.'
-
         with autocast(enabled=False):
             pre_logits = self.pre_logits(feats)
 
-            # cos(theta_yj) = (x/||x||) * (W/||W||)
-            cosine = self.norm_product(pre_logits)
-
             if target is None:
-                return self.scale * cosine
-
-            if self.with_adaptive_margin:
-                margin = self.margins[target].unsqueeze(1)
-                mm = torch.sin(math.pi - margin) * margin
-                threshold = torch.cos(math.pi - margin)
+                # when eval, logit is the cosine between W and pre_logits;
+                # cos(theta_yj) = (x/||x||) * (W/||W||)
+                logit = self.norm_product(pre_logits)
             else:
-                margin = self.margin
-                mm = self.threshold
-                threshold = self.threshold
+                # when training, add a margin to the pre_logits where target is
+                # True, then logit is the cosine between W and new pre_logits
+                logit = self._get_logit_with_arc_margin(pre_logits, target)
 
-            phi = torch.cos(torch.acos(cosine) + margin)
-
-            if self.easy_margin:
-                # when cosine>0, choose phi
-                # when cosine<=0, choose cosine
-                phi = torch.where(cosine > 0, phi, cosine)
-            else:
-                # when cos>th, choose phi
-                # when cos<=th, choose cosine-mm
-                phi = torch.where(cosine > threshold, phi, cosine - mm)
-
-            target = LabelData.label_to_onehot(target, cosine.size())
-            output = (target * phi) + ((1.0 - target) * cosine)
-
-        return output * self.scale
+        return self.scale * logit
 
     def loss(self, feats: Tuple[torch.Tensor],
              data_samples: List[ClsDataSample], **kwargs) -> dict:
@@ -204,11 +209,16 @@ class ArcFaceClsHead(ClsHead):
         Returns:
             dict[str, Tensor]: a dictionary of loss components
         """
+        label_target = torch.cat([i.gt_label.label for i in data_samples])
+        # Unpack data samples and pack targets
+        if 'score' in data_samples[0].gt_label:
+            # Batch augmentation may convert labels to one-hot format scores.
+            target = torch.stack([i.gt_label.score for i in data_samples])
+        else:
+            target = label_target
 
-        target = torch.cat([i.gt_label.label for i in data_samples])
-
-        # The part can be traced by torch.fx
-        cls_score = self(feats, target)
+        # the index format target would be used
+        cls_score = self(feats, label_target)
 
         # compute loss
         losses = dict()

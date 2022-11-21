@@ -1,6 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
+import os
 import random
+import tempfile
 from unittest import TestCase
 
 import numpy as np
@@ -486,11 +488,36 @@ class TestArcFaceClsHead(TestCase):
     DEFAULT_ARGS = dict(type='ArcFaceClsHead', in_channels=10, num_classes=5)
 
     def test_initialize(self):
-        with self.assertRaisesRegex(ValueError, 'num_classes=-5 must be'):
+        with self.assertRaises(AssertionError):
             MODELS.build({**self.DEFAULT_ARGS, 'num_classes': -5})
 
         with self.assertRaises(AssertionError):
             MODELS.build({**self.DEFAULT_ARGS, 'num_subcenters': 0})
+
+        # Test margins
+        with self.assertRaises(AssertionError):
+            MODELS.build({**self.DEFAULT_ARGS, 'margins': dict()})
+
+        with self.assertRaises(AssertionError):
+            MODELS.build({**self.DEFAULT_ARGS, 'margins': [0.1] * 4})
+
+        with self.assertRaises(AssertionError):
+            MODELS.build({**self.DEFAULT_ARGS, 'margins': [0.1] * 4 + ['0.1']})
+
+        arcface = MODELS.build(self.DEFAULT_ARGS)
+        torch.allclose(arcface.margins, torch.tensor([0.5] * 5))
+
+        arcface = MODELS.build({**self.DEFAULT_ARGS, 'margins': [0.1] * 5})
+        torch.allclose(arcface.margins, torch.tensor([0.1] * 5))
+
+        margins = [0.1, 0.2, 0.3, 0.4, 5]
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            tmp_path = os.path.join(tmpdirname, 'margins.txt')
+            with open(tmp_path, 'w') as tmp_file:
+                for m in margins:
+                    tmp_file.write(f'{m}\n')
+            arcface = MODELS.build({**self.DEFAULT_ARGS, 'margins': tmp_path})
+            torch.allclose(arcface.margins, torch.tensor(margins))
 
     def test_pre_logits(self):
         head = MODELS.build(self.DEFAULT_ARGS)
@@ -510,7 +537,7 @@ class TestArcFaceClsHead(TestCase):
         head = MODELS.build(self.DEFAULT_ARGS)
         # target is not None
         feats = (torch.rand(4, 10), torch.rand(4, 10))
-        target = torch.zeros(4)
+        target = torch.zeros(4).long()
         outs = head(feats, target)
         self.assertEqual(outs.shape, (4, 5))
 
