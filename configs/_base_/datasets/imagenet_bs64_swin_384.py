@@ -36,7 +36,6 @@ train_dataloader = dict(
         data_prefix='train',
         pipeline=train_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=True),
-    persistent_workers=True,
 )
 
 val_dataloader = dict(
@@ -49,7 +48,6 @@ val_dataloader = dict(
         data_prefix='val',
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
-    persistent_workers=True,
 )
 val_evaluator = dict(type='Accuracy', topk=(1, 5))
 

@@ -517,7 +517,7 @@ Models:
     Converted From:
       Weights: https://storage.googleapis.com/cloud-tpu-checkpoints/efficientnet/advprop/efficientnet-b8.tar.gz
       Code: https://github.com/tensorflow/tpu/tree/master/models/official/efficientnet
-  - Name: efficientnet-l2_3rdparty-ra-noisystudent_in1k
+  - Name: efficientnet-l2_3rdparty-ra-noisystudent_in1k-800px
     Metadata:
       FLOPs: 174203533416
       Parameters: 480309308
@@ -529,7 +529,7 @@ Models:
           Top 5 Accuracy: 98.65
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/efficientnet/efficientnet-l2_3rdparty-ra-noisystudent_in1k_20221103-be73be13.pth
-    Config: configs/efficientnet/efficientnet-l2_8xb8_in1k.py
+    Config: configs/efficientnet/efficientnet-l2_8xb8_in1k-800px.py
     Converted From:
       Weights: https://storage.googleapis.com/cloud-tpu-checkpoints/efficientnet/noisystudent/noisy_student_efficientnet-l2.tar.gz
       Code: https://github.com/tensorflow/tpu/tree/master/models/official/efficientnet
