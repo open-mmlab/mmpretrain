@@ -142,6 +142,7 @@ Heads
    ConformerHead
    MultiLabelClsHead
    MultiLabelLinearClsHead
+   CSRAClsHead
 
 .. module:: mmcls.models.losses
 
