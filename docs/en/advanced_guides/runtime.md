@@ -33,7 +33,7 @@ Here are some usual arguments, and all available arguments can be found in the [
 - **`by_epoch`** (bool): Whether the **`interval`** is by epoch or by iteration. Defaults to `True`.
 - **`out_dir`** (str): The root directory to save checkpoints. If not specified, the checkpoints will be saved in the work directory. If specified, the checkpoints will be saved in the sub-folder of the **`out_dir`**.
 - **`max_keep_ckpts`** (int): The maximum checkpoints to keep. In some cases, we want only the latest few checkpoints and would like to delete old ones to save disk space. Defaults to -1, which means unlimited.
-- **`save_best`** (str, List\[str\]): If specified, it will save the checkpoint with the best evaluation result.
+- **`save_best`** (str, List[str]): If specified, it will save the checkpoint with the best evaluation result.
   Usually, you can simply use `save_best="auto"` to automatically select the evaluation metric. And if you
   want more advanced configuration, please refer to the [CheckpointHook docs](mmengine.hooks.CheckpointHook).
 

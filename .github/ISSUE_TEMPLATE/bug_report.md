@@ -10,7 +10,7 @@ assignees: ''
 
 A clear and concise description of what the bug is.
 
-\[here\]
+[here]
 
 ### To Reproduce
 
@@ -23,7 +23,7 @@ The command you executed.
 ### Post related information
 
 1. The output of `pip list | grep "mmcv\|mmcls\|^torch"`
-   \[here\]
+   [here]
 2. Your config file if you modified it or created a new one.
 
 ```python
@@ -31,12 +31,12 @@ The command you executed.
 ```
 
 3. Your train log file if you meet the problem during training.
-   \[here\]
+   [here]
 4. Other code you modified in the `mmcls` folder.
-   \[here\]
+   [here]
 
 ### Additional context
 
 Add any other context about the problem here.
 
-\[here\]
+[here]
