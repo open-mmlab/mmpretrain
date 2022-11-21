@@ -285,7 +285,6 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
     def forward(self, x, hw_shape):
         shortcut = x
         x = self.norm1(x)
-        print(x.shape)
         if self.use_window_attention:
             B, L, C = x.shape
             H, W = hw_shape
