@@ -184,8 +184,8 @@ class ArcFaceClsHead(ClsHead):
         self.register_buffer(
             'margins', torch.tensor(margins).float(), persistent=False)
         mm = torch.sin(math.pi - self.margins) * self.margins
-        self.register_buffer('mm', mm, persistent=False)
         threshold = torch.cos(math.pi - self.margins)
+        self.register_buffer('mm', mm, persistent=False)
         self.register_buffer('threshold', threshold, persistent=False)
 
     def set_margins(self, margins: Union[Sequence[float], float]) -> None:
@@ -196,12 +196,12 @@ class ArcFaceClsHead(ClsHead):
         """
         if isinstance(margins, float):
             margins = [margins] * self.num_classes
-        assert is_seq_of(list(margins), float), (
-            f'margins must be Sequence[Union(float, int)], get {margins}')
+        assert is_seq_of(
+            list(margins), float) and (len(margins) == self.num_classes), (
+                f'margins must be Sequence[Union(float, int)], get {margins}')
 
-        self.margins = torch.tensor(margins).float()
-        self.margins = self.margins.to(
-            next(self.norm_product.parameters()).device)
+        self.margins = torch.tensor(
+            margins, device=self.margins.device, dtype=torch.float32)
         self.mm = torch.sin(math.pi - self.margins) * self.margins
         self.threshold = torch.cos(math.pi - self.margins)
 
@@ -221,9 +221,9 @@ class ArcFaceClsHead(ClsHead):
 
         The target must be in index format.
         """
-        assert target.dim() == 1 or (target.dim() == 2
-                                     and target.shape[1] == 1), (
-                                         'The target must be in index format.')
+        assert target.dim() == 1 or (
+            target.dim() == 2 and target.shape[1] == 1), \
+            'The target must be in index format.'
         cosine = self.norm_product(pre_logits)
         phi = torch.cos(torch.acos(cosine) + self.margins)
 
