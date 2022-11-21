@@ -3,14 +3,15 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from mmengine.config import Config
-from mmengine.utils import mkdir_or_exist
+import mmengine
 
 try:
     from model_archiver.model_packaging import package_model
     from model_archiver.model_packaging_utils import ModelExportUtils
 except ImportError:
-    package_model = None
+    raise ImportError(
+        'Please run `pip install torchserve torch-model-archiver"` to '
+        'install required third-party libraries.')
 
 
 def mmcls2torchserve(
@@ -44,9 +45,9 @@ def mmcls2torchserve(
             If True, if there is an existing `{model_name}.mar`
             file under `output_folder` it will be overwritten.
     """
-    mkdir_or_exist(output_folder)
+    mmengine.mkdir_or_exist(output_folder)
 
-    config = Config.fromfile(config_file)
+    config = mmengine.Config.fromfile(config_file)
 
     with TemporaryDirectory() as tmpdir:
         config.dump(f'{tmpdir}/config.py')

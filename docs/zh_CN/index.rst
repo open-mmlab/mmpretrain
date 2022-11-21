@@ -32,6 +32,7 @@ You can switch between Chinese and English documentation in the lower-left corne
    useful_tools/verify_dataset.md
    useful_tools/log_result_analysis.md
    useful_tools/complexity_analysis.md
+   useful_tools/model_serving.md
 
 .. toctree::
    :maxdepth: 1
