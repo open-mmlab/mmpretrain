@@ -26,6 +26,7 @@ def find_folders(
         - folders: The name of sub folders under the root.
         - folder_to_idx: The map from folder name to class idx.
     """
+    # Pre-build file backend to prevent verbose file backend inference.
     backend = backend or get_file_backend(root, enable_singleton=True)
     folders = list(
         backend.list_dir_or_file(
@@ -63,6 +64,7 @@ def get_samples(
     """
     samples = []
     available_classes = set()
+    # Pre-build file backend to prevent verbose file backend inference.
     backend = backend or get_file_backend(root, enable_singleton=True)
 
     for folder_name in sorted(list(folder_to_idx.keys())):
@@ -221,6 +223,7 @@ class CustomDataset(BaseDataset):
             lines = list_from_file(self.ann_file)
             samples = [x.strip().rsplit(' ', 1) for x in lines]
 
+        # Pre-build file backend to prevent verbose file backend inference.
         backend = get_file_backend(self.img_prefix, enable_singleton=True)
         data_list = []
         for filename, gt_label in samples:
