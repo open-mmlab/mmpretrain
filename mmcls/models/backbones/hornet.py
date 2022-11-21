@@ -250,13 +250,16 @@ class HorNetBlock(nn.Module):
 
 @MODELS.register_module()
 class HorNet(BaseBackbone):
-    """HorNet
-    A PyTorch impl of : `HorNet: Efficient High-Order Spatial Interactions
-    with Recursive Gated Convolutions`
-    Inspiration from
-    https://github.com/raoyongming/HorNet
+    """HorNet.
+
+    A PyTorch implementation of paper `HorNet: Efficient High-Order Spatial
+    Interactions with Recursive Gated Convolutions
+    <https://arxiv.org/abs/2207.14284>`_ .
+    Inspiration from https://github.com/raoyongming/HorNet
+
     Args:
         arch (str | dict): HorNet architecture.
+
             If use string, choose from 'tiny', 'small', 'base' and 'large'.
             If use dict, it should have below keys:
             - **base_dim** (int): The base dimensions of embedding.
@@ -264,6 +267,7 @@ class HorNet(BaseBackbone):
             - **orders** (List[int]): The number of order of gnConv in each
                 stage.
             - **dw_cfg** (List[dict]): The Config for dw conv.
+
             Defaults to 'tiny'.
         in_channels (int): Number of input image channels. Defaults to 3.
         drop_path_rate (float): Stochastic depth rate. Defaults to 0.

@@ -140,6 +140,7 @@ Heads
    EfficientFormerClsHead
    DeiTClsHead
    ConformerHead
+   ArcFaceClsHead
    MultiLabelClsHead
    MultiLabelLinearClsHead
    CSRAClsHead
