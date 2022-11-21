@@ -2,13 +2,12 @@
 from typing import Dict, List, Sequence
 
 from mmengine.evaluator import BaseMetric
+from mmcls.registry import METRICS as mmclsMetrics
 from mmengine.registry import METRICS as mmengineMetrics
 
-from mmcls.registry import METRICS
 
-
-@METRICS.register_module()
-class MultiTasks(BaseMetric):
+@mmclsMetrics.register_module()
+class MultiTaskMetric(BaseMetric):
     """a."""
 
     def __init__(self,

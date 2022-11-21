@@ -8,7 +8,7 @@ from mmcls.registry import METRICS
 from mmcls.structures import MultiTaskDataSample
 
 
-class TestAccuracy(TestCase):
+class MultiTasksMetric(TestCase):
 
     pred = [
         MultiTaskDataSample().set_pred_task(i).set_gt_task(
@@ -30,6 +30,9 @@ class TestAccuracy(TestCase):
                 dict(type='Accuracy', topk=(1, 3)),
                 dict(type='precision', topk=(1, 3))]
             }
+
+    def test_init_(self):
+        metrics = MultiTasksMetric(self.task_metrics)
 
     def test_compute_metrics(self):
         results = [
