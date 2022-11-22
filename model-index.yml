@@ -38,3 +38,4 @@ Import:
   - configs/hornet/metafile.yml
   - configs/mobilevit/metafile.yml
   - configs/davit/metafile.yml
+  - configs/focalnet/metafile.yml

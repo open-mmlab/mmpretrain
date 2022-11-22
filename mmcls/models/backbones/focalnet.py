@@ -9,10 +9,13 @@ from mmcv.cnn import (Conv2d, ConvModule, build_activation_layer,
                       build_conv_layer, build_norm_layer)
 from mmcv.cnn.bricks.drop import build_dropout
 from mmcv.cnn.bricks.transformer import FFN, AdaptivePadding, PatchEmbed
+from mmengine.logging import MMLogger
 from mmengine.model import BaseModule, ModuleList
+from mmengine.runner.checkpoint import CheckpointLoader
 from mmengine.utils import to_2tuple
-from mmengine.utils.dl_utils.parrots_wrapper import _BatchNorm
+from torch.nn import functional as F
 
+from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.registry import MODELS
 from ..utils import LayerScale
 
@@ -36,13 +39,13 @@ class FocalModulation(BaseModule):
                  focal_window=7,
                  focal_factor=2,
                  act_cfg=dict(type='GELU'),
-                 with_cp=False,
+                 normalize_modulator=False,
                  norm_cfg=None,
                  init_cfg=None):
 
         super().__init__(init_cfg)
         self.embed_dims = embed_dims
-        self.with_cp = with_cp
+        self.normalize_modulator = normalize_modulator
 
         # specific args for focalv3
         self.focal_level = focal_level
@@ -60,9 +63,9 @@ class FocalModulation(BaseModule):
         self.focal_layers = ModuleList()
 
         if norm_cfg is not None:
-            self.norm = build_norm_layer(norm_cfg, embed_dims)[1]
+            self.ln = build_norm_layer(norm_cfg, embed_dims)[1]
         else:
-            self.norm = None
+            self.ln = None
 
         for k in range(self.focal_level):
             kernel_size = self.focal_factor * k + self.focal_window
@@ -78,7 +81,7 @@ class FocalModulation(BaseModule):
                     act_cfg=act_cfg))
 
     def forward(self, x):
-        B, nH, nW, C = x.shape
+        C = x.shape[-1]
         x = self.f(x)
         x = x.permute(0, 3, 1, 2).contiguous()
         q, ctx, gates = torch.split(x, (C, C, self.focal_level + 1), 1)
@@ -90,9 +93,12 @@ class FocalModulation(BaseModule):
         ctx_global = self.act(ctx.mean(2, keepdim=True).mean(3, keepdim=True))
         ctx_all = ctx_all + ctx_global * gates[:, self.focal_level:]
 
+        if self.normalize_modulator:
+            ctx_all = ctx_all / (self.focal_level + 1)
+
         x_out = q * self.h(ctx_all)
         x_out = x_out.permute(0, 2, 3, 1).contiguous()
-        x_out = self.norm(x_out) if self.norm else x_out
+        x_out = self.ln(x_out) if self.ln else x_out
         x_out = self.proj(x_out)
         x_out = self.proj_drop(x_out)
 
@@ -104,7 +110,7 @@ class FocalModulationBlock(BaseModule):
 
     Args:
         embed_dims (int): The feature dimension
-        ffn_ratio (float): Ratio of mlp hidden dim to embedding dim.
+        ffn_ratio (float): Ratio of ffn hidden dim to embedding dim.
         drop_rate (float): Dropout rate. Defaults to 0.0.
         drop_path_rate (float): Stochastic depth rate. Defaults to 0.
         focal_level (int): number of focal levels. Defaults to 2.
@@ -126,6 +132,8 @@ class FocalModulationBlock(BaseModule):
                  focal_window=9,
                  use_layer_scale=False,
                  use_postln=False,
+                 normalize_modulator=False,
+                 use_postln_in_modulation=False,
                  act_cfg=dict(type='GELU'),
                  norm_cfg=dict(type='LN'),
                  with_cp=False,
@@ -147,11 +155,12 @@ class FocalModulationBlock(BaseModule):
             focal_window=self.focal_window,
             focal_level=self.focal_level,
             drop_rate=drop_rate,
-            norm_cfg=dict(type='LN') if use_postln else None)
+            normalize_modulator=normalize_modulator,
+            norm_cfg=dict(type='LN') if use_postln_in_modulation else None)
 
         dropout_layer = dict(type='DropPath', drop_prob=drop_path_rate)
         self.drop_path = build_dropout(
-            dropout_layer) if dropout_layer else nn.Identity()
+            dropout_layer) if drop_path_rate > 0 else nn.Identity()
 
         self.norm2_name, norm2 = build_norm_layer(
             norm_cfg, self.embed_dims, postfix=2)
@@ -162,7 +171,8 @@ class FocalModulationBlock(BaseModule):
             embed_dims=embed_dims,
             feedforward_channels=mlp_hidden_dim,
             act_cfg=act_cfg,
-            ffn_drop=drop_rate)
+            ffn_drop=drop_rate,
+            add_identity=False)
 
         if use_layer_scale:
             self.gamma1 = LayerScale(embed_dims)
@@ -192,8 +202,11 @@ class FocalModulationBlock(BaseModule):
             x = x if not self.use_postln else self.ln1(x)
 
             # FFN
-            x = shortcut + self.drop_path(self.gamma_1(x))
-            x = x + self.drop_path(self.gamma_2(self.mlp(self.norm2(x))))
+            x = shortcut + self.drop_path(self.gamma1(x))
+            if self.use_postln:
+                x = x + self.drop_path(self.gamma2(self.ln2(self.ffn(x))))
+            else:
+                x = x + self.drop_path(self.gamma2(self.ffn(self.ln2(x))))
 
             return x
 
@@ -211,7 +224,7 @@ class BasicLayer(BaseModule):
     Args:
         dim (int): Number of feature channels
         depth (int): Depths of this stage.
-        mlp_ratio (float): Ratio of mlp hidden dim to embedding dim.
+        ffn_ratio (float): Ratio of ffn hidden dim to embedding dim.
             Default: 4.
         drop (float, optional): Dropout rate. Default: 0.0
         drop_path (float | tuple[float], optional): Stochastic depth rate.
@@ -242,6 +255,8 @@ class BasicLayer(BaseModule):
                  use_conv_embed=False,
                  use_layer_scale=False,
                  use_postln=False,
+                 normalize_modulator=False,
+                 use_postln_in_modulation=False,
                  block_cfgs=dict(),
                  with_cp=False,
                  init_cfg=None):
@@ -268,6 +283,8 @@ class BasicLayer(BaseModule):
                 'norm_cfg': norm_cfg,
                 'use_postln': use_postln,
                 'with_cp': with_cp,
+                'normalize_modulator': normalize_modulator,
+                'use_postln_in_modulation': use_postln_in_modulation,
                 **block_cfgs[i]
             }
             block = FocalModulationBlock(**_block_cfg)
@@ -311,6 +328,7 @@ class BasicLayer(BaseModule):
         for blk in self.blocks:
             x = blk(x, in_shape)
         if self.downsample is not None and do_downsample:
+            x = x.transpose(1, 2).reshape(x.shape[0], -1, *in_shape)
             x, out_shape = self.downsample(x, in_shape)
         else:
             out_shape = in_shape
@@ -324,7 +342,7 @@ class BasicLayer(BaseModule):
             return self.embed_dims
 
 
-class ConvPatchEmbed(BaseModule):
+class ConvPatchEmbed(PatchEmbed):
     """Image to Patch Embedding.
 
     We use a conv layer to implement PatchEmbed.
@@ -420,7 +438,7 @@ class ConvPatchEmbed(BaseModule):
 
 
 @MODELS.register_module()
-class FocalNet(BaseModule):
+class FocalNet(BaseBackbone):
     """FocalNet backbone.
     Args:
         pretrain_img_size (int): Input image size for training the pretrained
@@ -430,7 +448,7 @@ class FocalNet(BaseModule):
         embed_dim (int): Number of linear projection output channels.
             Default: 96.
         depths (tuple[int]): Depths of each FocalNet stage.
-        mlp_ratio (float): Ratio of mlp hidden dim to embedding dim.
+        ffn_ratio (float): Ratio of ffn hidden dim to embedding dim.
             Default: 4.
         drop_rate (float): Dropout rate.
         drop_path_rate (float): Stochastic depth rate. Default: 0.2.
@@ -457,7 +475,166 @@ class FocalNet(BaseModule):
                 'depths': [2, 2, 6, 2],
                 'focal_levels': [2, 2, 2, 2],
                 'focal_windows': [3, 3, 3, 3],
-                'num_heads': [3, 6, 12, 24]
+                'num_heads': [3, 6, 12, 24],
+                'use_conv_embed': False,
+                'use_postln': False,
+                'use_layer_scale': False,
+                'normalize_modulator': False,
+                'use_postln_in_modulation': False,
+            }),
+        **dict.fromkeys(
+            ['t-lrf', 'tiny-lrf'], {
+                'embed_dims': 96,
+                'ffn_ratio': 4.,
+                'depths': [2, 2, 6, 2],
+                'focal_levels': [3, 3, 3, 3],
+                'focal_windows': [3, 3, 3, 3],
+                'num_heads': [3, 6, 12, 24],
+                'use_conv_embed': False,
+                'use_postln': False,
+                'use_layer_scale': False,
+                'normalize_modulator': False,
+                'use_postln_in_modulation': False,
+            }),
+        **dict.fromkeys(
+            ['s-srf', 'small-srf'], {
+                'embed_dims': 96,
+                'ffn_ratio': 4.,
+                'depths': [2, 2, 18, 2],
+                'focal_levels': [2, 2, 2, 2],
+                'focal_windows': [3, 3, 3, 3],
+                'num_heads': [3, 6, 12, 24],
+                'use_conv_embed': False,
+                'use_postln': False,
+                'use_layer_scale': False,
+                'normalize_modulator': False,
+                'use_postln_in_modulation': False,
+            }),
+        **dict.fromkeys(
+            ['s-lrf', 'small-lrf'], {
+                'embed_dims': 96,
+                'ffn_ratio': 4.,
+                'depths': [2, 2, 18, 2],
+                'focal_levels': [3, 3, 3, 3],
+                'focal_windows': [3, 3, 3, 3],
+                'num_heads': [3, 6, 12, 24],
+                'use_conv_embed': False,
+                'use_postln': False,
+                'use_layer_scale': False,
+                'normalize_modulator': False,
+                'use_postln_in_modulation': False,
+            }),
+        **dict.fromkeys(
+            ['b-srf', 'base-srf'], {
+                'embed_dims': 128,
+                'ffn_ratio': 4.,
+                'depths': [2, 2, 18, 2],
+                'focal_levels': [2, 2, 2, 2],
+                'focal_windows': [3, 3, 3, 3],
+                'num_heads': [3, 6, 12, 24],
+                'use_conv_embed': False,
+                'use_postln': False,
+                'use_layer_scale': False,
+                'normalize_modulator': False,
+                'use_postln_in_modulation': False,
+            }),
+        **dict.fromkeys(
+            ['b-lrf', 'base-lrf'], {
+                'embed_dims': 128,
+                'ffn_ratio': 4.,
+                'depths': [2, 2, 18, 2],
+                'focal_levels': [3, 3, 3, 3],
+                'focal_windows': [3, 3, 3, 3],
+                'num_heads': [3, 6, 12, 24],
+                'use_conv_embed': False,
+                'use_postln': False,
+                'use_layer_scale': False,
+                'normalize_modulator': False,
+                'use_postln_in_modulation': False,
+            }),
+        **dict.fromkeys(
+            ['l-fl3', 'large-fl3'], {
+                'embed_dims': 192,
+                'ffn_ratio': 4.,
+                'depths': [2, 2, 18, 2],
+                'focal_levels': [3, 3, 3, 3],
+                'focal_windows': [5, 5, 5, 5],
+                'num_heads': [3, 6, 12, 24],
+                'use_conv_embed': True,
+                'use_postln': True,
+                'use_layer_scale': True,
+                'normalize_modulator': False,
+                'use_postln_in_modulation': False,
+            }),
+        **dict.fromkeys(
+            ['l-fl4', 'large-fl4'], {
+                'embed_dims': 192,
+                'ffn_ratio': 4.,
+                'depths': [2, 2, 18, 2],
+                'focal_levels': [4, 4, 4, 4],
+                'focal_windows': [3, 3, 3, 3],
+                'num_heads': [3, 6, 12, 24],
+                'use_conv_embed': True,
+                'use_postln': True,
+                'use_layer_scale': True,
+                'normalize_modulator': True,
+                'use_postln_in_modulation': False,
+            }),
+        **dict.fromkeys(
+            ['xl-fl3', 'xlarge-fl3'], {
+                'embed_dims': 256,
+                'ffn_ratio': 4.,
+                'depths': [2, 2, 18, 2],
+                'focal_levels': [3, 3, 3, 3],
+                'focal_windows': [5, 5, 5, 5],
+                'num_heads': [3, 6, 12, 24],
+                'use_conv_embed': True,
+                'use_postln': True,
+                'use_layer_scale': True,
+                'normalize_modulator': False,
+                'use_postln_in_modulation': False,
+            }),
+        **dict.fromkeys(
+            ['xl-fl4', 'xlarge-fl4'], {
+                'embed_dims': 256,
+                'ffn_ratio': 4.,
+                'depths': [2, 2, 18, 2],
+                'focal_levels': [4, 4, 4, 4],
+                'focal_windows': [3, 3, 3, 3],
+                'num_heads': [3, 6, 12, 24],
+                'use_conv_embed': True,
+                'use_postln': True,
+                'use_layer_scale': True,
+                'normalize_modulator': False,
+                'use_postln_in_modulation': False,
+            }),
+        **dict.fromkeys(
+            ['h-fl3', 'huge-fl3'], {
+                'embed_dims': 352,
+                'ffn_ratio': 4.,
+                'depths': [2, 2, 18, 2],
+                'focal_levels': [3, 3, 3, 3],
+                'focal_windows': [3, 3, 3, 3],
+                'num_heads': [3, 6, 12, 24],
+                'use_conv_embed': True,
+                'use_postln': True,
+                'use_layer_scale': True,
+                'normalize_modulator': False,
+                'use_postln_in_modulation': True,
+            }),
+        **dict.fromkeys(
+            ['h-fl4', 'huge-fl4'], {
+                'embed_dims': 352,
+                'ffn_ratio': 4.,
+                'depths': [2, 2, 18, 2],
+                'focal_levels': [4, 4, 4, 4],
+                'focal_windows': [3, 3, 3, 3],
+                'num_heads': [3, 6, 12, 24],
+                'use_conv_embed': True,
+                'use_postln': True,
+                'use_layer_scale': True,
+                'normalize_modulator': False,
+                'use_postln_in_modulation': True,
             }),
     }
 
@@ -471,10 +648,7 @@ class FocalNet(BaseModule):
                  out_indices=(3, ),
                  out_after_downsample=False,
                  frozen_stages=-1,
-                 use_conv_embed=False,
-                 use_postln=False,
                  with_cp=False,
-                 use_layer_scale=False,
                  stage_cfgs=dict(),
                  patch_cfg=dict(),
                  init_cfg=None):
@@ -486,7 +660,10 @@ class FocalNet(BaseModule):
             self.arch_settings = self.arch_zoo[arch]
         else:
             essential_keys = {
-                'embed_dims', 'num_layers', 'num_heads', 'feedforward_channels'
+                'embed_dims', 'ffn_ratio', 'depths', 'focal_levels',
+                'focal_windows', 'num_heads', 'use_conv_embed', 'use_postln',
+                'use_layer_scale', 'normalize_modulator',
+                'use_postln_in_modulation'
             }
             assert isinstance(arch, dict) and essential_keys <= set(arch), \
                 f'Custom arch needs a dict with keys {essential_keys}'
@@ -502,7 +679,7 @@ class FocalNet(BaseModule):
 
         # split image into non-overlapping patches
         # Set patch embedding
-        if use_conv_embed:
+        if self.arch_settings['use_conv_embed']:
             _patch_cfg = dict(
                 in_channels=in_channels,
                 input_size=None,
@@ -547,18 +724,36 @@ class FocalNet(BaseModule):
                 stage_cfg = deepcopy(stage_cfgs)
             downsample = True if i < self.num_layers - 1 else False
             _stage_cfg = {
-                'embed_dims': int(self.embed_dims * 2**i),
-                'depth': depth,
-                'ffn_ratio': self.arch_settings['ffn_ratio'],
-                'drop_rate': drop_rate,
-                'drop_paths': dpr[:depth],
-                'norm_cfg': norm_cfg,
-                'downsample': downsample,
-                'focal_level': focal_level,
-                'focal_window': focal_window,
-                'use_layer_scale': use_layer_scale,
-                'use_postln': use_postln,
-                'with_cp': with_cp,
+                'embed_dims':
+                int(self.embed_dims * 2**i),
+                'depth':
+                depth,
+                'ffn_ratio':
+                self.arch_settings['ffn_ratio'],
+                'drop_rate':
+                drop_rate,
+                'drop_paths':
+                dpr[:depth],
+                'norm_cfg':
+                norm_cfg,
+                'downsample':
+                downsample,
+                'focal_level':
+                focal_level,
+                'focal_window':
+                focal_window,
+                'use_conv_embed':
+                self.arch_settings['use_conv_embed'],
+                'use_layer_scale':
+                self.arch_settings['use_layer_scale'],
+                'use_postln':
+                self.arch_settings['use_postln'],
+                'normalize_modulator':
+                self.arch_settings['normalize_modulator'],
+                'use_postln_in_modulation':
+                self.arch_settings['use_postln_in_modulation'],
+                'with_cp':
+                with_cp,
                 **stage_cfg
             }
             layer = BasicLayer(**_stage_cfg)
@@ -599,6 +794,133 @@ class FocalNet(BaseModule):
                 for param in getattr(self, f'norm{i}').parameters():
                     param.requires_grad = False
 
+    def init_weights(self):
+        logger = MMLogger.get_current_instance()
+        if self.init_cfg is None or 'checkpoint' not in self.init_cfg:
+            super().init_weights()
+        else:
+            ckpt = CheckpointLoader.load_checkpoint(
+                self.init_cfg.checkpoint, logger=logger, map_location='cpu')
+            if 'state_dict' in ckpt:
+                state_dict = ckpt['state_dict']
+            elif 'model' in ckpt:
+                state_dict = ckpt['model']
+            else:
+                state_dict = ckpt
+
+            prefix = self.init_cfg.get('prefix', None)
+            if prefix is not None:
+                if not prefix.endswith('.'):
+                    prefix += '.'
+                prefix_len = len(prefix)
+
+                state_dict = {
+                    k[prefix_len:]: v
+                    for k, v in state_dict.items() if k.startswith(prefix)
+                }
+
+                assert state_dict, f'{prefix} is not in the pretrained model'
+
+            focal_layers_keys = [
+                k for k in state_dict.keys()
+                if ('focal_layers' in k and 'bias' not in k)
+            ]
+            for table_key in focal_layers_keys:
+                if table_key not in self.state_dict():
+                    continue
+                table_pretrained = state_dict[table_key]
+                table_current = self.state_dict()[table_key]
+
+                if len(table_pretrained.shape) != 4:
+                    L1 = table_pretrained.shape[1]
+                    L2 = table_current.shape[1]
+
+                    if L1 != L2:
+                        S1 = int(L1**0.5)
+                        S2 = int(L2**0.5)
+                        table_pretrained_resized = F.interpolate(
+                            table_pretrained.view(1, 1, S1, S1),
+                            size=(S2, S2),
+                            mode='bicubic')
+                        state_dict[table_key] = table_pretrained_resized.view(
+                            1, L2) * L1 / L2
+                else:
+                    fsize1 = table_pretrained.shape[2]
+                    fsize2 = table_current.shape[2]
+
+                    # NOTE: different from interpolation used in
+                    # self-attention, we use padding or clipping for focal conv
+                    if fsize1 < fsize2:
+                        table_pretrained_resized = torch.zeros(
+                            table_current.shape)
+                        table_pretrained_resized[:, :, (fsize2 - fsize1) //
+                                                 2:-(fsize2 - fsize1) // 2,
+                                                 (fsize2 - fsize1) //
+                                                 2:-(fsize2 - fsize1) //
+                                                 2] = table_pretrained
+                        state_dict[table_key] = table_pretrained_resized
+                    elif fsize1 > fsize2:
+                        table_pretrained_resized = table_pretrained[:, :, (
+                            fsize1 - fsize2) // 2:-(fsize1 - fsize2) // 2, (
+                                fsize1 - fsize2) // 2:-(fsize1 - fsize2) // 2]
+                        state_dict[table_key] = table_pretrained_resized
+
+            f_layers_keys = [
+                k for k in state_dict.keys() if ('modulation.f' in k)
+            ]
+            for table_key in f_layers_keys:
+                if table_key not in self.state_dict():
+                    continue
+                table_pretrained = state_dict[table_key]
+                table_current = self.state_dict()[table_key]
+                if table_pretrained.shape != table_current.shape:
+                    if len(table_pretrained.shape) == 2:
+                        # for linear weights
+                        dim = table_pretrained.shape[1]
+                        assert table_current.shape[1] == dim
+                        L1 = table_pretrained.shape[0]
+                        L2 = table_current.shape[0]
+
+                        if L1 < L2:
+                            table_pretrained_resized = torch.zeros(
+                                table_current.shape)
+                            # copy for linear project
+                            (table_pretrained_resized[:2 * dim]
+                             ) = table_pretrained[:2 * dim]
+                            # copy for global token gating
+                            table_pretrained_resized[-1] = table_pretrained[-1]
+                            # copy for first multiple focal levels
+                            table_pretrained_resized[2 * dim:2 * dim + (
+                                L1 - 2 * dim - 1)] = table_pretrained[2 *
+                                                                      dim:-1]
+                            # reassign pretrained weights
+                            state_dict[table_key] = table_pretrained_resized
+                        elif L1 > L2:
+                            raise NotImplementedError
+                    elif len(table_pretrained.shape) == 1:
+                        # for linear bias
+                        L1 = table_pretrained.shape[0]
+                        L2 = table_current.shape[0]
+                        if L1 < L2:
+                            table_pretrained_resized = torch.zeros(
+                                table_current.shape)
+                            # copy for linear project
+                            (table_pretrained_resized[:2 * dim]
+                             ) = table_pretrained[:2 * dim]
+                            # copy for global token gating
+                            table_pretrained_resized[-1] = table_pretrained[-1]
+                            # copy for first multiple focal levels
+                            table_pretrained_resized[2 * dim:2 * dim + (
+                                L1 - 2 * dim - 1)] = table_pretrained[2 *
+                                                                      dim:-1]
+                            # reassign pretrained weights
+                            state_dict[table_key] = table_pretrained_resized
+                        elif L1 > L2:
+                            raise NotImplementedError
+
+            # load state_dict
+            self.load_state_dict(state_dict, False)
+
     def forward(self, x):
         """Forward function."""
         x, hw_shape = self.patch_embed(x)
@@ -617,15 +939,11 @@ class FocalNet(BaseModule):
                                                              2).contiguous()
                 outs.append(out)
             if layer.downsample is not None and not self.out_after_downsample:
-                x, hw_shape = layer.downsample(x, hw_shape)
+                x = x.transpose(1, 2).reshape(x.shape[0], -1, *hw_shape)
+                x, hw_shape = layer.downsample(x)
 
         return tuple(outs)
 
     def train(self, mode=True):
         super(FocalNet, self).train(mode)
         self._freeze_stages()
-        if mode and self.norm_eval:
-            for m in self.modules():
-                # trick: eval have effect on BatchNorm only
-                if isinstance(m, _BatchNorm):
-                    m.eval()

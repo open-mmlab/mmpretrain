@@ -1,0 +1,96 @@
+Collections:
+  - Name: FocalNet
+    Metadata:
+      Training Data: ImageNet-1k
+      Training Techniques:
+        - AdamW
+        - Weight Decay
+      Architecture:
+        - FocalNet
+    Paper:
+      URL: https://arxiv.org/abs/2203.11926
+      Title: "Focal Modulation Networks"
+    README: configs/focalnet/README.md
+    Code:
+      Version:
+      URL:
+
+Models:
+  - Name: focalnet-tiny-srf_3rdparty_in1k
+    Metadata:
+      FLOPs: 4419916032   # 4.42G
+      Parameters: 28427116      # 28.43M
+    In Collection: FocalNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 82.05
+          Top 5 Accuracy: 95.95
+        Task: Image Classification
+    Weights:
+    Config: configs/focalnet/focalnet-tiny-srf_8xb64_in1k.py
+  - Name: focalnet-tiny-lrf_3rdparty_in1k
+    Metadata:
+      FLOPs: 4491416832   # 4.49G
+      Parameters: 28647928      # 28.64M
+    In Collection: FocalNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 82.07
+          Top 5 Accuracy: 95.88
+        Task: Image Classification
+    Weights:
+    Config: configs/focalnet/focalnet-tiny-lrf_8xb64_in1k.py
+  - Name: focalnet-small-srf_3rdparty_in1k
+    Metadata:
+      FLOPs: 8624163072   # 8.62G
+      Parameters: 49891216      # 48.49M
+    In Collection: FocalNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.37
+          Top 5 Accuracy: 96.44
+        Task: Image Classification
+    Weights:
+    Config: configs/focalnet/focalnet-small-srf_8xb64_in1k.py
+  - Name: focalnet-small-lrf_3rdparty_in1k
+    Metadata:
+      FLOPs: 8740822272   # 8.74G
+      Parameters: 50342440      # 50.34M
+    In Collection: FocalNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.52
+          Top 5 Accuracy: 96.47
+        Task: Image Classification
+    Weights:
+    Config: configs/focalnet/focalnet-small-lrf_8xb64_in1k.py
+  - Name: focalnet-base-srf_3rdparty_in1k
+    Metadata:
+      FLOPs: 15275330560   # 15.28G
+      Parameters: 88148144      # 88.15M
+    In Collection: FocalNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.70
+          Top 5 Accuracy: 96.61
+        Task: Image Classification
+    Weights:
+    Config: configs/focalnet/focalnet-base-srf_8xb64_in1k.py
+  - Name: focalnet-base-lrf_3rdparty_in1k
+    Metadata:
+      FLOPs: 15430876160   # 15.43G
+      Parameters: 88749768      # 88.75M
+    In Collection: FocalNet
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.75
+          Top 5 Accuracy: 96.60
+        Task: Image Classification
+    Weights:
+    Config: configs/focalnet/focalnet-base-lrf_8xb64_in1k.py
