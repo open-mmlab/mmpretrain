@@ -195,10 +195,7 @@ def main():
                                   **show_kwargs)
     else:
         model = wrap_distributed_model(
-            model,
-            device=cfg.device,
-            device_ids=[int(os.environ['LOCAL_RANK'])],
-            broadcast_buffers=False)
+            model, device=cfg.device, broadcast_buffers=False)
         outputs = multi_gpu_test(model, data_loader, args.tmpdir,
                                  args.gpu_collect)
 
