@@ -110,7 +110,7 @@ class PackClsInputs(BaseTransform):
 
 
 @TRANSFORMS.register_module()
-class FormatMultiTaskLabelsMasked(BaseTransform):
+class FormatMultiTaskLabels(BaseTransform):
     """Convert all image labels of multi-task dataset to a dict of tensor.
 
     Args:
@@ -131,16 +131,16 @@ class FormatMultiTaskLabelsMasked(BaseTransform):
     """
 
     def __init__(self,
-                 tasks: List[str],
+                 metainfo: List[str] = None,
                  meta_keys=('sample_idx', 'img_path', 'ori_shape', 'img_shape',
                             'scale_factor', 'flip', 'flip_direction')):
-        self.tasks = tasks
+        self.metainfo = metainfo
         self.meta_keys = meta_keys
 
     def transform(self, results: dict) -> dict:
         """Method to pack the input data.
 
-        result = {'img_path': 'a.png', 'task1': array(1), 'task3': array(3),
+        result = {'img_path': 'a.png', 'gt_label': {'task1': 1, 'task3': 3},
             'img': array([[[  0,   0,   0])
         """
         packed_results = dict()
@@ -156,12 +156,10 @@ class FormatMultiTaskLabelsMasked(BaseTransform):
                 'please make sure `LoadImageFromFile` has been added '
                 'in the data pipeline or images have been loaded in ')
 
-        data_sample = MultiTaskDataSample(tasks=self.tasks)
-        gt_label = {}
-        for task in self.tasks:
-            if task in results:
-                gt_label[task] = to_tensor(results[task])
-        data_sample.set_gt_label(gt_label)
+        data_sample = MultiTaskDataSample(metainfo=self.metainfo)
+        if 'gt_label' in results:
+            gt_label = results['gt_label']
+            data_sample.set_gt_task(gt_label)
 
         img_meta = {k: results[k] for k in self.meta_keys if k in results}
         data_sample.set_metainfo(img_meta)
@@ -169,7 +167,10 @@ class FormatMultiTaskLabelsMasked(BaseTransform):
         return packed_results
 
     def __repr__(self):
-        return self.__class__.__name__ + f'(tasks={self.tasks})'
+        repr = self.__class__.__name__
+        repr += f'(meta_keys={self.meta_keys})'
+        repr += f'(tasks={self.metainfo})'
+        return repr
 
 
 @TRANSFORMS.register_module()
