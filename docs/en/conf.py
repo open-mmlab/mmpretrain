@@ -1,3 +1,4 @@
+# flake8: noqa
 # Configuration file for the Sphinx documentation builder.
 #
 # This file only contains a selection of the most common options. For a full
@@ -87,41 +88,58 @@ html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
+# yapf: disable
 html_theme_options = {
-    'logo_url':
-    'https://mmclassification.readthedocs.io/en/latest/',
+    'logo_url': 'https://mmclassification.readthedocs.io/en/latest/',
     'menu': [
         {
             'name': 'GitHub',
             'url': 'https://github.com/open-mmlab/mmclassification'
         },
         {
-            'name':
-            'Colab Tutorials',
+            'name': 'Colab Tutorials',
             'children': [
                 {
-                    'name':
-                    'Train and inference with shell commands',
-                    'url':
-                    'https://colab.research.google.com/github/'
-                    'open-mmlab/mmclassification/blob/master/docs/en/'
-                    'tutorials/MMClassification_tools.ipynb',
+                    'name': 'Train and inference with shell commands',
+                    'url': 'https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/en/tutorials/MMClassification_tools.ipynb',
                 },
                 {
-                    'name':
-                    'Train and inference with Python APIs',
-                    'url':
-                    'https://colab.research.google.com/github/'
-                    'open-mmlab/mmclassification/blob/master/docs/en/'
-                    'tutorials/MMClassification_python.ipynb',
+                    'name': 'Train and inference with Python APIs',
+                    'url': 'https://colab.research.google.com/github/open-mmlab/mmclassification/blob/master/docs/en/tutorials/MMClassification_python.ipynb',
                 },
             ]
         },
+        {
+            'name': 'Version',
+            'children': [
+                {
+                    'name': 'MMClassification 0.x',
+                    'url': 'https://mmclassification.readthedocs.io/en/latest/',
+                    'description': 'master branch'
+                },
+                {
+                    'name': 'MMClassification 1.x',
+                    'url': 'https://mmclassification.readthedocs.io/en/dev-1.x/',
+                    'description': '1.x branch'
+                },
+            ],
+        }
     ],
     # Specify the language of shared menu
-    'menu_lang':
-    'en'
+    'menu_lang': 'en',
+    'header_note': {
+        'content':
+        'You are reading the documentation for MMClassification 0.x, which '
+        'will soon be deprecated at the end of 2022. We recommend you upgrade '
+        'to MMClassification 1.0 to enjoy fruitful new features and better '
+        'performance brought by OpenMMLab 2.0. Check the '
+        '<a href="https://mmclassification.readthedocs.io/en/dev-1.x/get_started.html#installation">installation tutorial</a>, '
+        '<a href="https://mmclassification.readthedocs.io/en/dev-1.x/migration.html">migration tutorial</a> '
+        'and <a href="https://mmclassification.readthedocs.io/en/dev-1.x/notes/changelog.html">changelog</a> '
+        'for more details.',
+    }
 }
+# yapf: enable
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
