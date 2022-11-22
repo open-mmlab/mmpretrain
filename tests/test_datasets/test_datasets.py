@@ -988,9 +988,8 @@ class TestInShop(TestBaseDataset):
         dataset = dataset_class(**cfg)
         self.assertEqual(len(dataset), 2)
         data_info = dataset[0]
-        self.assertEqual(
-            data_info['img_path'],
-            os.path.join(self.root, 'Img', 'img', '02_1_front.jpg'))
+        self.assertEqual(data_info['img_path'],
+                         os.path.join(self.root, 'Img/img', '02_1_front.jpg'))
         self.assertEqual(data_info['gt_label'], 0)
 
         # Test with mode=query
@@ -998,9 +997,8 @@ class TestInShop(TestBaseDataset):
         dataset = dataset_class(**cfg)
         self.assertEqual(len(dataset), 3)
         data_info = dataset[0]
-        self.assertEqual(
-            data_info['img_path'],
-            os.path.join(self.root, 'Img', 'img', '13_1_front.jpg'))
+        self.assertEqual(data_info['img_path'],
+                         os.path.join(self.root, 'Img/img', '13_1_front.jpg'))
         self.assertEqual(data_info['gt_label'], [0, 1])
 
         # Test with mode=gallery
@@ -1010,7 +1008,7 @@ class TestInShop(TestBaseDataset):
         data_info = dataset[0]
         self.assertEqual(
             data_info['img_path'],
-            os.path.join(self.root, self.root, 'Img', 'img', '12_3_back.jpg'))
+            os.path.join(self.root, self.root, 'Img/img', '12_3_back.jpg'))
         self.assertEqual(data_info['sample_idx'], 0)
 
     def test_extra_repr(self):
