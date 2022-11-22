@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmengine import FileClient
+from mmengine import get_file_backend, list_from_file
 
 from mmcls.registry import DATASETS
 from .base_dataset import BaseDataset
@@ -9,30 +9,33 @@ from .base_dataset import BaseDataset
 class InShop(BaseDataset):
     """InShop Dataset for Image Retrieval.
 
-    Please download the images from
+    Please download the images from the homepage
     'https://mmlab.ie.cuhk.edu.hk/projects/DeepFashion/InShopRetrieval.html'
-    and organize them as follows:
+    (In-shop Clothes Retrieval Benchmark -> Img -> img.zip,
+    Eval/list_eval_partition.txt), and organize them as follows way: ::
 
         In-shop Clothes Retrieval Benchmark (data_root)/
-           ├── Anno /
            ├── Eval /
+           │    └── list_eval_partition.txt (ann_file)
            ├── Img
-           │   └── img/
+           │    └── img/ (img_prefix)
            ├── README.txt
-           └── list_eval_partition.txt (ann_file)
+           └── .....
 
     Args:
-        data_root (str): The root directory for dataset
-        mode (str): The value is in 'train', 'query' and 'gallery'.
+        data_root (str): The root directory for dataset.
+        split (str): Choose from 'train', 'query' and 'gallery'.
             Defaults to 'train'.
+        data_prefix (str | dict): Prefix for training data. 
+            Defaults to 'Img/img'.
         ann_file (str): Annotation file path, path relative to
-            ``data_root``. Defaults to 'list_eval_partition.txt'.
+            ``data_root``. Defaults to 'Eval/list_eval_partition.txt'.
         **kwargs: Other keyword arguments in :class:`BaseDataset`.
 
     Examples:
         >>> from mmcls.datasets import InShop
         >>> inshop_train_cfg = dict(data_root='data/inshop', \
-        >>> ... mode='train')
+        >>> ... split='train')
         >>> inshop_train = InShop(**inshop_train_cfg)
         >>> inshop_train
         Dataset InShop
@@ -41,7 +44,7 @@ class InShop(BaseDataset):
             Root of dataset:    data/inshop
         >>> from mmcls.datasets import InShop
         >>> inshop_query_cfg = dict(data_root='data/inshop', \
-        >>> ... mode='query')
+        >>> ... split='query')
         >>> inshop_query = InShop(**inshop_query_cfg)
         >>> inshop_query
         Dataset InShop
@@ -50,7 +53,7 @@ class InShop(BaseDataset):
             Root of dataset:    data/inshop
         >>> from mmcls.datasets import InShop
         >>> inshop_gallery_cfg = dict(data_root='data/inshop',\
-        >>> ... mode='gallery')
+        >>> ... split='gallery')
         >>> inshop_gallery = InShop(**inshop_gallery_cfg)
         >>> inshop_gallery
         Dataset InShop
@@ -60,31 +63,29 @@ class InShop(BaseDataset):
     """
 
     def __init__(self,
-                 data_root: str = 'data/inshop',
-                 mode: str = 'train',
-                 ann_file: str = 'list_eval_partition.txt',
+                 data_root: str,
+                 split: str = 'train',
+                 data_prefix: str = 'Img/img',
+                 ann_file: str = 'Eval/list_eval_partition.txt',
                  **kwargs):
 
-        assert mode in ['train', 'query', 'gallery'], \
-            '``{}`` is an illegal mode'.format(mode)
-        test_mode = False if mode == 'train' else True
-        self.file_client = FileClient.infer_client(uri=data_root)
-        self.ann_file = self.file_client.join_path(data_root, ann_file)
-        self.data_root = data_root
-        self.mode = mode
+        assert split in ('train', 'query', 'gallery'), "'split' of `InShop`" \
+            f" must be one of ['train', 'query', 'gallery'], bu get '{split}'"
+        self.backend = get_file_backend(data_root, enable_singleton=True)
         super().__init__(
             data_root=data_root,
-            test_mode=test_mode,
+            data_prefix=data_prefix,
             ann_file=ann_file,
             **kwargs)
 
+        self.split = split
+
     def _process_annotations(self):
-        path = self.file_client.join_path(self.data_root, self.ann_file)
+        ann_path = self.backend.join_path(self.data_root, self.ann_file)
         anno_train = {'metainfo': {}, 'data_list': []}
         anno_query = {'metainfo': {}, 'data_list': []}
         anno_gallery = {'metainfo': {}, 'data_list': []}
-        lines = self.file_client.get_text(path).strip()
-        lines = lines.split('\n')
+        lines = list_from_file(ann_path)
 
         # item_id to label, each item corresponds to one class label
         class_num = 0
@@ -142,12 +143,12 @@ class InShop(BaseDataset):
             else:
                 continue
 
-        if self.mode == 'train':
+        if self.split == 'train':
             anno_train['metainfo']['class_number'] = class_num
             anno_train['metainfo']['sample_number'] = \
                 len(anno_train['data_list'])
             return anno_train
-        elif self.mode == 'query':
+        elif self.split == 'query':
             anno_query['metainfo']['sample_number'] = query_num
             return anno_query
         else:
@@ -163,8 +164,8 @@ class InShop(BaseDataset):
         data_info = self._process_annotations()
         data_list = data_info['data_list']
         for data in data_list:
-            data['img_path'] = self.file_client.join_path(
-                self.data_root, data['img_path'])
+            data['img_path'] = self.backend.join_path(self.data_root,
+                                                      data['img_path'])
         return data_list
 
     def extra_repr(self):
