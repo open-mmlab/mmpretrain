@@ -13,59 +13,35 @@ from .single_label import _precision_recall_f1_support, to_tensor
 
 @METRICS.register_module()
 class MultiLabelMetric(BaseMetric):
-    r"""A collection of precision, recall, f1-score and support for
-    multi-label tasks.
-
-    The collection of metrics is for single-label multi-class classification.
-    And all these metrics are based on the confusion matrix of every category:
-
-    .. image:: ../../_static/image/confusion-matrix.png
-       :width: 60%
-       :align: center
-
-    All metrics can be formulated use variables above:
-
-    **Precision** is the fraction of correct predictions in all predictions:
-
-    .. math::
-        \text{Precision} = \frac{TP}{TP+FP}
-
-    **Recall** is the fraction of correct predictions in all targets:
-
-    .. math::
-        \text{Recall} = \frac{TP}{TP+FN}
-
-    **F1-score** is the harmonic mean of the precision and recall:
-
-    .. math::
-        \text{F1-score} = \frac{2\times\text{Recall}\times\text{Precision}}{\text{Recall}+\text{Precision}}
-
-    **Support** is the number of samples:
-
-    .. math::
-        \text{Support} = TP + TN + FN + FP
-
+    """A collection of metrics for multi-label multi-class classification task
+    based on confusion matrix.
+    It includes precision, recall, f1-score and support.
     Args:
         thr (float, optional): Predictions with scores under the threshold
             are considered as negative. If None, the ``topk`` predictions will
             be considered as positive. If the ``topk`` is also None, use
             ``thr=0.5`` as default. Defaults to None.
         topk (int, optional): Predictions with the k-th highest scores are
-            considered as positive. If None, use ``thr`` to determine positive
-            predictions. If both ``thr`` and ``topk`` are not None, use
-            ``thr``. Defaults to None.
-        items (Sequence[str]): The detailed metric items to evaluate, select
-            from "precision", "recall", "f1-score" and "support".
-            Defaults to ``('precision', 'recall', 'f1-score')``.
-        average (str | None): How to calculate the final metrics from the
-            confusion matrix of every category. It supports three modes:
-
-            - `"macro"`: Calculate metrics for each category, and calculate
-              the mean value over all categories.
-            - `"micro"`: Average the confusion matrix over all categories and
-              calculate metrics on the mean confusion matrix.
-            - `None`: Calculate metrics of every category and output directly.
-
+            considered as positive. Defaults to None.
+        items (Sequence[str]): The detailed metric items to evaluate. Here is
+            the available options:
+                - `"precision"`: The ratio tp / (tp + fp) where tp is the
+                  number of true positives and fp the number of false
+                  positives.
+                - `"recall"`: The ratio tp / (tp + fn) where tp is the number
+                  of true positives and fn the number of false negatives.
+                - `"f1-score"`: The f1-score is the harmonic mean of the
+                  precision and recall.
+                - `"support"`: The total number of positive of each category
+                  in the target.
+            Defaults to ('precision', 'recall', 'f1-score').
+        average (str | None): The average method. It supports three average
+            modes:
+                - `"macro"`: Calculate metrics for each category, and calculate
+                  the mean value over all categories.
+                - `"micro"`: Calculate metrics globally by counting the total
+                  true positives, false negatives and false positives.
+                - `None`: Return scores of all categories.
             Defaults to "macro".
         collect_device (str): Device name used for collecting results from
             different ranks during distributed training. Must be 'cpu' or
@@ -74,7 +50,6 @@ class MultiLabelMetric(BaseMetric):
             names to disambiguate homonymous metrics of different evaluators.
             If prefix is not provided in the argument, self.default_prefix
             will be used instead. Defaults to None.
-
     Examples:
         >>> import torch
         >>> from mmcls.evaluation import MultiLabelMetric
@@ -174,7 +149,6 @@ class MultiLabelMetric(BaseMetric):
 
         The processed results should be stored in ``self.results``, which will
         be used to computed the metrics when all batches have been processed.
-
         Args:
             data_batch: A batch of data from the dataloader.
             data_samples (Sequence[dict]): A batch of outputs from the model.
@@ -201,7 +175,6 @@ class MultiLabelMetric(BaseMetric):
 
         Args:
             results (list): The processed results of each batch.
-
         Returns:
             Dict: The computed metrics. The keys are the names of the metrics,
             and the values are corresponding results.
@@ -265,7 +238,6 @@ class MultiLabelMetric(BaseMetric):
         num_classes: Optional[int] = None
     ) -> Union[torch.Tensor, List[torch.Tensor]]:
         """Calculate the precision, recall, f1-score.
-
         Args:
             pred (torch.Tensor | np.ndarray | Sequence): The prediction
                 results. A :obj:`torch.Tensor` or :obj:`np.ndarray` with
@@ -284,14 +256,12 @@ class MultiLabelMetric(BaseMetric):
             average (str | None): How to calculate the final metrics from
                 the confusion matrix of every category. It supports three
                 modes:
-
-                - `"macro"`: Calculate metrics for each category, and calculate
-                  the mean value over all categories.
-                - `"micro"`: Average the confusion matrix over all categories
-                  and calculate metrics on the mean confusion matrix.
-                - `None`: Calculate metrics of every category and output
-                  directly.
-
+                    - `"macro"`: Calculate metrics for each category, and
+                      calculate the mean value over all categories.
+                    - `"micro"`: Calculate metrics globally by counting the
+                      total true positives, false negatives and false
+                      positives.
+                    - `None`: Return scores of all categories.
                 Defaults to "macro".
             thr (float, optional): Predictions with scores under the thresholds
                 are considered as negative. Defaults to None.
@@ -300,14 +270,11 @@ class MultiLabelMetric(BaseMetric):
             num_classes (Optional, int): The number of classes. If the ``pred``
                 is indices instead of onehot, this argument is required.
                 Defaults to None.
-
         Returns:
             Tuple: The tuple contains precision, recall and f1-score.
             And the type of each item is:
-
             - torch.Tensor: A tensor for each metric. The shape is (1, ) if
               ``average`` is not None, and (C, ) if ``average`` is None.
-
         Notes:
             If both ``thr`` and ``topk`` are set, use ``thr` to determine
             positive predictions. If neither is set, use ``thr=0.5`` as
@@ -374,22 +341,17 @@ class MultiLabelMetric(BaseMetric):
 def _average_precision(pred: torch.Tensor,
                        target: torch.Tensor) -> torch.Tensor:
     r"""Calculate the average precision for a single class.
-
     AP summarizes a precision-recall curve as the weighted mean of maximum
     precisions obtained for any r'>r, where r is the recall:
-
     .. math::
         \text{AP} = \sum_n (R_n - R_{n-1}) P_n
-
     Note that no approximation is involved since the curve is piecewise
     constant.
-
     Args:
         pred (torch.Tensor): The model prediction with shape
             ``(N, num_classes)``.
         target (torch.Tensor): The target of predictions with shape
             ``(N, num_classes)``.
-
     Returns:
         torch.Tensor: average precision result.
     """
@@ -429,26 +391,12 @@ def _average_precision(pred: torch.Tensor,
 
 @METRICS.register_module()
 class AveragePrecision(BaseMetric):
-    r"""Calculate the average precision with respect of classes.
-
-    AveragePrecision (AP) summarizes a precision-recall curve as the weighted
-    mean of maximum precisions obtained for any r'>r, where r is the recall:
-
-    .. math::
-        \text{AP} = \sum_n (R_n - R_{n-1}) P_n
-
-    Note that no approximation is involved since the curve is piecewise
-    constant.
-
+    """Calculate the average precision with respect of classes.
     Args:
-        average (str | None): How to calculate the final metrics from
-            every category. It supports two modes:
-
-            - `"macro"`: Calculate metrics for each category, and calculate
-              the mean value over all categories. The result of this mode
-              is also called **mAP**.
-            - `None`: Calculate metrics of every category and output directly.
-
+        average (str | None): The average method. It supports two modes:
+                - `"macro"`: Calculate metrics for each category, and calculate
+                  the mean value over all categories.
+                - `None`: Return scores of all categories.
             Defaults to "macro".
         collect_device (str): Device name used for collecting results from
             different ranks during distributed training. Must be 'cpu' or
@@ -457,13 +405,11 @@ class AveragePrecision(BaseMetric):
             names to disambiguate homonymous metrics of different evaluators.
             If prefix is not provided in the argument, self.default_prefix
             will be used instead. Defaults to None.
-
     References
     ----------
     .. [1] `Wikipedia entry for the Average precision
            <https://en.wikipedia.org/w/index.php?title=Information_retrieval&
            oldid=793358396#Average_precision>`_
-
     Examples:
         >>> import torch
         >>> from mmcls.evaluation import AveragePrecision
@@ -509,7 +455,6 @@ class AveragePrecision(BaseMetric):
 
         The processed results should be stored in ``self.results``, which will
         be used to computed the metrics when all batches have been processed.
-
         Args:
             data_batch: A batch of data from the dataloader.
             data_samples (Sequence[dict]): A batch of outputs from the model.
@@ -537,7 +482,6 @@ class AveragePrecision(BaseMetric):
 
         Args:
             results (list): The processed results of each batch.
-
         Returns:
             Dict: The computed metrics. The keys are the names of the metrics,
             and the values are corresponding results.
@@ -566,59 +510,28 @@ class AveragePrecision(BaseMetric):
                   target: Union[torch.Tensor, np.ndarray],
                   average: Optional[str] = 'macro') -> torch.Tensor:
         r"""Calculate the average precision for a single class.
-
+        AP summarizes a precision-recall curve as the weighted mean of maximum
+        precisions obtained for any r'>r, where r is the recall:
+        .. math::
+            \text{AP} = \sum_n (R_n - R_{n-1}) P_n
+        Note that no approximation is involved since the curve is piecewise
+        constant.
         Args:
             pred (torch.Tensor | np.ndarray): The model predictions with
                 shape ``(N, num_classes)``.
             target (torch.Tensor | np.ndarray): The target of predictions
                 with shape ``(N, num_classes)``.
             average (str | None): The average method. It supports two modes:
-
-                - `"macro"`: Calculate metrics for each category, and calculate
-                  the mean value over all categories. The result of this mode
-                  is also called mAP.
-                - `None`: Calculate metrics of every category and output
-                  directly.
-
+                    - `"macro"`: Calculate metrics for each category, and
+                      calculate the mean value over all categories.
+                    - `None`: Return scores of all categories.
                 Defaults to "macro".
-
         Returns:
             torch.Tensor: the average precision of all classes.
         """
-        average_options = ['macro', 'retrieval', None]
-        assert average in average_options, \
-            f'Invalid `average` argument, ' \
-            f'please specify from {average_options}.'
-
-        if average == 'retrieval':
-            # 对于图像检索，需要计算mAP@k。对于一个样本，对数据库所有图像对比，
-            # 根据相似度排序，取出前k个检索图像。根据标签会得到0/1的度量标准。
-            # 例如，对于图像A，检索出前k个图像是[A1, B2, A2, C3, F2]
-            # 那么，得到的预测结果是[1, 0, 1, 0, 0]，计算AP@5
-            # 对所有样本均计算，求平均就是mAP@k。
-            # 在该参数下，需要先把所有样本的0-1串计算出来，传入target中。
-            # 参考以下Google中的MeanAveragePrecision方法。
-            # https://github.com/tensorflow/models/blob/master/research/delf/delf/python/datasets/google_landmarks_dataset/metrics.py
-
-            sample_num, rank_num = target.shape  # 样本数，mAP@k中的``k``
-            ap = pred.new_zeros(sample_num)  # 每个样本的AP@k值
-            for sample_id in range(sample_num):
-                p = 0
-                right_index = target[sample_id].cpu().numpy().astype('int64')
-                right_index = np.array(right_index, dtype=bool)
-                positive_ranks = np.arange(rank_num)[right_index]
-                right_num = positive_ranks.shape[0]
-                if right_num == 0:
-                    ap[sample_id] = 0
-                    continue
-                recall_step = 1.0 / right_num
-                for i, rank in enumerate(positive_ranks):
-                    p1 = i / rank if rank > 0 else 1
-                    p2 = (i + 1) / (rank + 1)
-                    p += (p1 + p2) * recall_step / 2
-                    # p += p2 * recall_step  # 另外一种方式
-                ap[sample_id] = p
-            return ap.mean() * 100.0
+        average_options = ['macro', None]
+        assert average in average_options, 'Invalid `average` argument, ' \
+            f'please specicy from {average_options}.'
 
         pred = to_tensor(pred)
         target = to_tensor(target)
@@ -634,11 +547,122 @@ class AveragePrecision(BaseMetric):
         else:
             return ap * 100
 
+
+@METRICS.register_module()
+class RetrievalAveragePrecision(BaseMetric):
+    """Calculate the average precision for image retrieval.
+
+    Thanks to ``https://github.com/tensorflow/models/tree/master/
+    research/delf/delf/python/datasets`` for reference. You can
+    visit this url for more.
+
+    Args:
+        max_predictions (int): For retrieval tasks,  this parameter is
+            `k` in mAP@k. Defaults to '100'.
+        option (str): The compute method. It supports two modes:
+            - `"standard"`: The finite sum method which is common in
+                information retrieval literature.
+            - `"average"`: Integrates over the precision-recall curve by
+                averaging two adjacent precision points, then multiplying
+                by the recall step, which is the convention for the Revisited
+                Oxford/Paris datasets.
+            Defaults to '"stanford"'.
+        collect_device (str): Device name used for collecting results from
+            different ranks during distributed training. Must be 'cpu' or
+            'gpu'. Defaults to 'cpu'.
+        prefix (str, optional): The prefix that will be added in the metric
+            names to disambiguate homonymous metrics of different evaluators.
+            If prefix is not provided in the argument, self.default_prefix
+            will be used instead. Defaults to None.
+
+    Examples:
+        >>> import torch
+        >>> from mmcls.evaluation import RetrievalAveragePrecision
+        >>> # --------------------- The Basic Usage ---------------------
+        >>> index = torch.Tensor([idx for idx in range(100)])
+        >>> label = torch.Tensor([0, 3, 6, 8, 35,
+        ...                        101, 102, 103, 104, 105,
+        ...                        201, 202, 203, 204, 205])
+        >>> k = 100
+        >>> RetrievalAveragePrecision.calculate_retrieval(index, label, k)
+        16.746031746031745
+        >>> # ------------------- Use with Evalutor -------------------
+        >>> from mmcls.data import ClsDataSample
+        >>> from mmengine.evaluator import Evaluator
+        >>> from tools.retrieval.test import cosine_similarity
+        >>> # The `data_batch` won't be used in this case, just use a fake.
+        >>> data_batch = [
+        ...     {'inputs': None, 'data_sample': ClsDataSample()}
+        ...     for i in range(4)]
+        >>> query_feature = torch.randn(1, 10)
+        >>> gallery_feature = torch.randn(5, 10)
+        >>> sim, indices = cosine_similarity(sample_feature,
+        ...                                  gallery_features)
+        >>> target = data_batch[i]['data_sample'].gt_label.label
+        >>> predictions = [{'score': sim,
+        ...                 'pred_label': indices,
+        ...                 'gt_label': target}]
+        >>> evaluator = Evaluator(metrics=AveragePrecision())
+        >>> evaluator.process(data_batch, predictions)
+        >>> evaluator.evaluate(4)
+    """
+
+    default_prefix: Optional[str] = 'multi-label'
+
+    def __init__(self,
+                 max_predictions: int = 100,
+                 option: str = 'standard',
+                 collect_device: str = 'cpu',
+                 prefix: Optional[str] = None) -> None:
+
+        super().__init__(collect_device=collect_device, prefix=prefix)
+
+        self.max_predictions = max_predictions
+        self.option = option
+
+    def process(self, data_batch: Sequence[dict], predictions: Sequence[dict]):
+        """Process one batch of data and predictions.
+
+        The processed results should be stored in ``self.results``, which will
+        be used to computed the metrics when all batches have been processed.
+
+        Args:
+            data_batch (Sequence[dict]): A batch of data from the dataloader.
+            predictions (Sequence[dict]): A batch of outputs from the model.
+        """
+
+        for pred in predictions:
+            result = {
+                'pred_label': pred['pred_label'],
+                'gt_label': pred['gt_label'],
+                'score': pred['score']
+            }
+            self.results.append(result)
+
+    def compute_metrics(self, results: List):
+        """Compute the metrics from processed results.
+
+        Args:
+            results (list): The processed results of each batch.
+
+        Returns:
+            Dict: The computed metrics. The keys are the names of the metrics,
+            and the values are corresponding results.
+        """
+        ap_list = []
+        for res in self.results:
+            ap = self.calculate(res['pred_label'], res['gt_label'],
+                                self.max_predictions, self.option)
+            ap_list.append(ap)
+        result_metrics = dict()
+        result_metrics[f'mAP@{self.max_predictions}'] = np.mean(ap_list)
+        return result_metrics
+
     @staticmethod
-    def calculate_retrieval(sorted_sim_indices: torch.Tensor,
-                            target: torch.Tensor,
-                            max_predictions: int,
-                            option: str = 'standard') -> float:
+    def calculate(sorted_sim_indices: torch.Tensor,
+                  target: torch.Tensor,
+                  max_predictions: int,
+                  option: str = 'standard') -> float:
         r"""Calculate the average precision for a single sample.
 
         .. math::
@@ -671,18 +695,6 @@ class AveragePrecision(BaseMetric):
 
         Returns:
             float: the average precision of the query image.
-
-        Examples:
-            >>> import torch
-            >>> from mmcls.evaluation import AveragePrecision
-
-            >>> index = torch.Tensor([idx for idx in range(100)])
-            >>> label = torch.Tensor([0, 3, 6, 8, 35,
-            ...                        101, 102, 103, 104, 105,
-            ...                        201, 202, 203, 204, 205])
-            >>> k = 100
-            >>> AveragePrecision.calculate_retrieval(index, label, k)
-            0.16746031746031745
         """
         options = ['standard', 'average']
         assert option in options, \
@@ -711,4 +723,4 @@ class AveragePrecision(BaseMetric):
                 prediction = (left_precision + right_precision) / 2
                 ap += prediction
         ap = ap / num_expected_retrieved
-        return ap
+        return ap * 100
