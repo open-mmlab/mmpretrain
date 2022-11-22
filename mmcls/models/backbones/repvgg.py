@@ -309,43 +309,48 @@ class RepVGG(BaseBackbone):
     <https://arxiv.org/abs/2101.03697>`_
 
     Args:
-        arch (str | dict): RepVGG architecture. If use string,
-            choose from 'A0', 'A1`', 'A2', 'B0', 'B1', 'B1g2', 'B1g4', 'B2'
-            , 'B2g2', 'B2g4', 'B3', 'B3g2', 'B3g4'  or 'D2se'. If use dict,
-             it should have below keys:
-            - num_blocks (Sequence[int]): Number of blocks in each stage.
-            - width_factor (Sequence[float]): Width deflator in each stage.
-            - group_layer_map (dict | None): RepVGG Block that declares
+        arch (str | dict): RepVGG architecture. If use string, choose from
+            'A0', 'A1`', 'A2', 'B0', 'B1', 'B1g2', 'B1g4', 'B2', 'B2g2',
+            'B2g4', 'B3', 'B3g2', 'B3g4'  or 'D2se'. If use dict, it should
+            have below keys:
+
+            - **num_blocks** (Sequence[int]): Number of blocks in each stage.
+            - **width_factor** (Sequence[float]): Width deflator in each stage.
+            - **group_layer_map** (dict | None): RepVGG Block that declares
               the need to apply group convolution.
-            - se_cfg (dict | None): Se Layer config.
-            - stem_channels (int, optional): The stem channels, the final
-                 stem channels will be
-                 ``min(stem_channels, base_channels*width_factor[0])``.
-                If not set here, 64 is used by default in the code.
-        in_channels (int): Number of input image channels. Default: 3.
+            - **se_cfg** (dict | None): SE Layer config.
+            - **stem_channels** (int, optional): The stem channels, the final
+              stem channels will be
+              ``min(stem_channels, base_channels*width_factor[0])``.
+              If not set here, 64 is used by default in the code.
+
+        in_channels (int): Number of input image channels. Defaults to 3.
         base_channels (int): Base channels of RepVGG backbone, work with
             width_factor together. Defaults to 64.
-        out_indices (Sequence[int]): Output from which stages. Default: (3, ).
+        out_indices (Sequence[int]): Output from which stages.
+            Defaults to ``(3, )``.
         strides (Sequence[int]): Strides of the first block of each stage.
-            Default: (2, 2, 2, 2).
+            Defaults to ``(2, 2, 2, 2)``.
         dilations (Sequence[int]): Dilation of each stage.
-            Default: (1, 1, 1, 1).
+            Defaults to ``(1, 1, 1, 1)``.
         frozen_stages (int): Stages to be frozen (all param fixed). -1 means
-            not freezing any parameters. Default: -1.
-        conv_cfg (dict | None): The config dict for conv layers. Default: None.
+            not freezing any parameters. Defaults to -1.
+        conv_cfg (dict | None): The config dict for conv layers.
+            Defaults to None.
         norm_cfg (dict): The config dict for norm layers.
-            Default: dict(type='BN').
+            Defaults to ``dict(type='BN')``.
         act_cfg (dict): Config dict for activation layer.
-            Default: dict(type='ReLU').
+            Defaults to ``dict(type='ReLU')``.
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
-            memory while slowing down the training speed. Default: False.
+            memory while slowing down the training speed. Defaults to False.
         deploy (bool): Whether to switch the model structure to deployment
-            mode. Default: False.
+            mode. Defaults to False.
         norm_eval (bool): Whether to set norm layers to eval mode, namely,
             freeze running stats (mean and var). Note: Effect on Batch Norm
-            and its variants only. Default: False.
-        add_ppf (bool): Whether to use the MTSPPF block. Default: False.
+            and its variants only. Defaults to False.
+        add_ppf (bool): Whether to use the MTSPPF block. Defaults to False.
         init_cfg (dict or list[dict], optional): Initialization config dict.
+            Defaults to None.
     """
 
     groupwise_layers = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26]

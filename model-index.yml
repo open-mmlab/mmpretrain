@@ -39,3 +39,5 @@ Import:
   - configs/mobilevit/metafile.yml
   - configs/davit/metafile.yml
   - configs/focalnet/metafile.yml
+  - configs/replknet/metafile.yml
+  - configs/csra/metafile.yml

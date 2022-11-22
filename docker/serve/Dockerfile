@@ -3,9 +3,13 @@ ARG CUDA="10.2"
 ARG CUDNN="7"
 FROM pytorch/pytorch:${PYTORCH}-cuda${CUDA}-cudnn${CUDNN}-devel
 
-ARG MMENGINE="0.2.0"
+# fetch the key refer to https://forums.developer.nvidia.com/t/18-04-cuda-docker-image-is-broken/212892/9
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub 32
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
+
+ARG MMENGINE="0.3.1"
 ARG MMCV="2.0.0rc1"
-ARG MMCLS="1.0.0rc2"
+ARG MMCLS="1.0.0rc3"
 
 ENV PYTHONUNBUFFERED TRUE
 
@@ -23,6 +27,7 @@ RUN export FORCE_CUDA=1
 
 # TORCHSEVER
 RUN pip install torchserve torch-model-archiver
+RUN pip install nvgpu
 
 # MMLAB
 ARG PYTORCH

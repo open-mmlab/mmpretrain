@@ -10,7 +10,7 @@ import urllib.error
 import urllib.request
 import zipfile
 
-from mmengine.fileio.file_client import FileClient
+from mmengine.fileio import LocalBackend, get_file_backend
 
 __all__ = [
     'rm_suffix', 'check_integrity', 'download_and_extract_archive',
@@ -25,16 +25,16 @@ def rm_suffix(s, suffix=None):
         return s[:s.rfind(suffix)]
 
 
-def calculate_md5(fpath: str,
-                  file_client: FileClient = None,
-                  chunk_size: int = 1024 * 1024):
+def calculate_md5(fpath: str, chunk_size: int = 1024 * 1024):
     md5 = hashlib.md5()
-    if file_client is None or file_client.name == 'HardDiskBackend':
+    backend = get_file_backend(fpath, enable_singleton=True)
+    if isinstance(backend, LocalBackend):
+        # Enable chunk update for local file.
         with open(fpath, 'rb') as f:
             for chunk in iter(lambda: f.read(chunk_size), b''):
                 md5.update(chunk)
     else:
-        md5.update(file_client.get(fpath))
+        md5.update(backend.get(fpath))
     return md5.hexdigest()
 
 

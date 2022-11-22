@@ -43,9 +43,15 @@ release = get_version()
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc', 'sphinx.ext.autosummary', 'sphinx.ext.intersphinx',
-    'sphinx.ext.napoleon', 'sphinx.ext.viewcode', 'myst_parser',
-    'sphinx_copybutton', 'sphinx_tabs.tabs'
+    'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.viewcode',
+    'myst_parser',
+    'sphinx_copybutton',
+    'sphinx_tabs.tabs',
+    'notfound.extension',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -62,7 +68,7 @@ source_suffix = {
 language = 'zh_CN'
 
 # The master toctree document.
-master_doc = 'index'
+root_doc = 'index'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -82,8 +88,6 @@ html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 # documentation.
 #
 html_theme_options = {
-    'logo_url':
-    'https://mmclassification.readthedocs.io/zh_CN/latest/',
     'menu': [
         {
             'name': 'GitHub',
@@ -162,7 +166,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'mmcls.tex', 'MMClassification Documentation', author,
+    (root_doc, 'mmcls.tex', 'MMClassification Documentation', author,
      'manual'),
 ]
 
@@ -170,8 +174,8 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, 'mmcls', 'MMClassification Documentation', [author],
-              1)]
+man_pages = [(root_doc, 'mmcls', 'MMClassification Documentation', [author], 1)
+             ]
 
 # -- Options for Texinfo output ----------------------------------------------
 
@@ -179,7 +183,7 @@ man_pages = [(master_doc, 'mmcls', 'MMClassification Documentation', [author],
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'mmcls', 'MMClassification Documentation', author, 'mmcls',
+    (root_doc, 'mmcls', 'MMClassification Documentation', author, 'mmcls',
      'OpenMMLab image classification toolbox and benchmark.', 'Miscellaneous'),
 ]
 
@@ -232,9 +236,12 @@ napoleon_custom_sections = [
 # Disable docstring inheritance
 autodoc_inherit_docstrings = False
 # Mock some imports during generate API docs.
-autodoc_mock_imports = ['mmcv._ext', 'matplotlib']
+autodoc_mock_imports = ['mmcv._ext', 'matplotlib', 'rich']
 # Disable displaying type annotations, these can be very verbose
 autodoc_typehints = 'none'
+
+# The not found page
+notfound_template = '404.html'
 
 
 def builder_inited_handler(app):

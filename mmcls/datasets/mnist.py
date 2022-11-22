@@ -1,11 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import codecs
 from typing import List, Optional
+from urllib.parse import urljoin
 
 import mmengine.dist as dist
 import numpy as np
 import torch
-from mmengine import FileClient
+from mmengine.fileio import LocalBackend, exists, get_file_backend, join_path
 
 from mmcls.registry import DATASETS
 from .base_dataset import BaseDataset
@@ -67,10 +68,10 @@ class MNIST(BaseDataset):
     def load_data_list(self):
         """Load images and ground truth labels."""
         root = self.data_prefix['root']
-        file_client = FileClient.infer_client(uri=root)
+        backend = get_file_backend(root, enable_singleton=True)
 
         if dist.is_main_process() and not self._check_exists():
-            if file_client.name != 'HardDiskBackend':
+            if not isinstance(backend, LocalBackend):
                 raise RuntimeError(f'The dataset on {root} is not integrated, '
                                    f'please manually handle it.')
 
@@ -93,10 +94,9 @@ class MNIST(BaseDataset):
             file_list = self.test_list
 
         # load data from SN3 files
-        imgs = read_image_file(
-            file_client.join_path(root, rm_suffix(file_list[0][0])))
+        imgs = read_image_file(join_path(root, rm_suffix(file_list[0][0])))
         gt_labels = read_label_file(
-            file_client.join_path(root, rm_suffix(file_list[1][0])))
+            join_path(root, rm_suffix(file_list[1][0])))
 
         data_infos = []
         for img, gt_label in zip(imgs, gt_labels):
@@ -108,28 +108,23 @@ class MNIST(BaseDataset):
     def _check_exists(self):
         """Check the exists of data files."""
         root = self.data_prefix['root']
-        file_client = FileClient.infer_client(uri=root)
 
         for filename, _ in (self.train_list + self.test_list):
             # get extracted filename of data
             extract_filename = rm_suffix(filename)
-            fpath = file_client.join_path(root, extract_filename)
-            if not file_client.exists(fpath):
+            fpath = join_path(root, extract_filename)
+            if not exists(fpath):
                 return False
         return True
 
     def _download(self):
         """Download and extract data files."""
         root = self.data_prefix['root']
-        file_client = FileClient.infer_client(uri=root)
 
         for filename, md5 in (self.train_list + self.test_list):
-            url = file_client.join_path(self.url_prefix, filename)
+            url = urljoin(self.url_prefix, filename)
             download_and_extract_archive(
-                url,
-                download_root=self.data_prefix['root'],
-                filename=filename,
-                md5=md5)
+                url, download_root=root, filename=filename, md5=md5)
 
     def extra_repr(self) -> List[str]:
         """The extra repr information of the dataset."""

@@ -29,7 +29,7 @@ repos:
     rev: 0.7.9
     hooks:
       - id: mdformat
-        args: ["--number", "--table-width", "200", '--disable-escape', 'backslash']
+        args: ["--number", "--table-width", "200", '--disable-escape', 'backslash', '--disable-escape', 'link-enclosure']
         additional_dependencies:
           - "mdformat-openmmlab>=0.0.4"
           - mdformat_frontmatter
