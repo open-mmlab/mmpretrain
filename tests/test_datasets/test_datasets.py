@@ -933,9 +933,10 @@ class TestInShop(TestBaseDataset):
         tmpdir = tempfile.TemporaryDirectory()
         cls.tmpdir = tmpdir
         cls.root = tmpdir.name
-        cls.list_eval_partition = 'list_eval_partition.txt'
-        cls.DEFAULT_ARGS = dict(data_root=cls.root, mode='train')
+        cls.list_eval_partition = 'Eval/list_eval_partition.txt'
+        cls.DEFAULT_ARGS = dict(data_root=cls.root, split='train')
         cls.ann_file = osp.join(cls.root, cls.list_eval_partition)
+        os.makedirs(osp.join(cls.root, 'Eval'))
         with open(cls.ann_file, 'w') as f:
             f.write('\n'.join([
                 '8',
@@ -956,30 +957,27 @@ class TestInShop(TestBaseDataset):
         # Test with mode=train
         cfg = {**self.DEFAULT_ARGS}
         dataset = dataset_class(**cfg)
-        self.assertEqual(dataset.mode, 'train')
-        self.assertFalse(dataset.test_mode)
+        self.assertEqual(dataset.split, 'train')
         self.assertEqual(dataset.data_root, self.root)
         self.assertEqual(dataset.ann_file, self.ann_file)
 
         # Test with mode=query
-        cfg = {**self.DEFAULT_ARGS, 'mode': 'query'}
+        cfg = {**self.DEFAULT_ARGS, 'split': 'query'}
         dataset = dataset_class(**cfg)
-        self.assertEqual(dataset.mode, 'query')
-        self.assertTrue(dataset.test_mode)
+        self.assertEqual(dataset.split, 'query')
         self.assertEqual(dataset.data_root, self.root)
         self.assertEqual(dataset.ann_file, self.ann_file)
 
         # Test with mode=gallery
-        cfg = {**self.DEFAULT_ARGS, 'mode': 'gallery'}
+        cfg = {**self.DEFAULT_ARGS, 'split': 'gallery'}
         dataset = dataset_class(**cfg)
-        self.assertEqual(dataset.mode, 'gallery')
-        self.assertTrue(dataset.test_mode)
+        self.assertEqual(dataset.split, 'gallery')
         self.assertEqual(dataset.data_root, self.root)
         self.assertEqual(dataset.ann_file, self.ann_file)
 
         # Test with mode=other
-        cfg = {**self.DEFAULT_ARGS, 'mode': 'other'}
-        with self.assertRaisesRegex(AssertionError, 'illegal mode'):
+        cfg = {**self.DEFAULT_ARGS, 'split': 'other'}
+        with self.assertRaisesRegex(AssertionError, "'split' of `InS"):
             dataset_class(**cfg)
 
     def test_load_data_list(self):
@@ -991,25 +989,25 @@ class TestInShop(TestBaseDataset):
         self.assertEqual(len(dataset), 2)
         data_info = dataset[0]
         self.assertEqual(data_info['img_path'],
-                         f'{self.root}/Img/02_1_front.jpg')
+                         f'{self.root}/Img/img/02_1_front.jpg')
         self.assertEqual(data_info['gt_label'], 0)
 
         # Test with mode=query
-        cfg = {**self.DEFAULT_ARGS, 'mode': 'query'}
+        cfg = {**self.DEFAULT_ARGS, 'split': 'query'}
         dataset = dataset_class(**cfg)
         self.assertEqual(len(dataset), 3)
         data_info = dataset[0]
         self.assertEqual(data_info['img_path'],
-                         f'{self.root}/Img/13_1_front.jpg')
+                         f'{self.root}/Img/img/13_1_front.jpg')
         self.assertEqual(data_info['gt_label'], [0, 1])
 
         # Test with mode=gallery
-        cfg = {**self.DEFAULT_ARGS, 'mode': 'gallery'}
+        cfg = {**self.DEFAULT_ARGS, 'split': 'gallery'}
         dataset = dataset_class(**cfg)
         self.assertEqual(len(dataset), 3)
         data_info = dataset[0]
         self.assertEqual(data_info['img_path'],
-                         f'{self.root}/Img/12_3_back.jpg')
+                         f'{self.root}/Img/img/12_3_back.jpg')
         self.assertEqual(data_info['sample_idx'], 0)
 
     def test_extra_repr(self):
