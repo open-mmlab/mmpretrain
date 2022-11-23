@@ -3,16 +3,15 @@ from unittest import TestCase
 
 import torch
 
-from mmcls.evaluation.metrics import MultiTaskMetric
-from mmcls.registry import METRICS
+from mmcls.evaluation.metrics import (MultiTasksMetric, Accuracy, SingleLabelMetric)
 from mmcls.structures import MultiTaskDataSample
 
 
-class MultiTasksMetric(TestCase):
+class MultiTaskMetric(TestCase):
 
     pred = [
         MultiTaskDataSample().set_pred_task(i).set_gt_task(
-            k).to_dict() for i, j, k in zip([
+            k).to_dict() for i,  k in zip([
                 {
                     'task0': torch.tensor([0.7, 0.0, 0.3]),
                     'task1': torch.tensor([0.5, 0.2, 0.3])
@@ -28,11 +27,16 @@ class MultiTasksMetric(TestCase):
             'task0': [dict(type='Accuracy', topk=(1, ))],
             'task1': [
                 dict(type='Accuracy', topk=(1, 3)),
-                dict(type='precision', topk=(1, 3))]
+                dict(type='SingleLabelMetric', items=['precision', 'recall'])
+                ]
             }
 
-    def test_init_(self):
+    def test_init(self):
         metrics = MultiTasksMetric(self.task_metrics)
+        self.assertIsInstance(metrics.Accuracy_task0, Accuracy)
+        self.assertIsInstance(
+            metrics.SingleLabelMetric_task1, SingleLabelMetric
+        )
 
     def test_compute_metrics(self):
         results = [
@@ -51,43 +55,19 @@ class MultiTasksMetric(TestCase):
                 },
              }
         ]
-        output = MultiTaskMetric.compute_metrics(results)
+        output = MultiTasksMetric(
+            task_metrics=self.task_metrics).compute_metrics(results)
         self.assertIsInstance(output, dict)
         self.assertAlmostEqual(output['task0_accuracy/top1'], 1 / 2 * 100)
-        self.assertGreater(output['task0_accuracy/top1'], 0)
+        self.assertGreater(output['task1_precision/top1'], 0)
 
     def test_evaluate(self):
         """Test using the metric in the same way as Evalutor."""
 
         # Test with score (use score instead of label if score exists)
-        metric = METRICS.build(dict(type='Accuracy', thrs=0.6))
+        metric = MultiTasksMetric(self.task_metrics)
         metric.process(None, self.pred)
-        acc = metric.evaluate(2)
-        self.assertIsInstance(acc, dict)
-        self.assertAlmostEqual(acc['task0_accuracy/top1'], 2 / 6 * 100)
-
-        # Test with multiple thrs
-        metric = METRICS.build(dict(type='Accuracy', thrs=(0., 0.6, None)))
-        metric.process(None, self.pred)
-        acc = metric.evaluate(2)
-        self.assertSetEqual(
-            set(acc.keys()), {
-                'accuracy/top1_thr-0.00', 'accuracy/top1_thr-0.60',
-                'accuracy/top1_no-thr'
-            })
-
-        # Test with invalid topk
-        with self.assertRaisesRegex(ValueError, 'check the `val_evaluator`'):
-            metric = METRICS.build(dict(type='Accuracy', topk=(1, 5)))
-            metric.process(None, self.pred)
-            metric.evaluate(2)
-
-        # Test initialization
-        metric = METRICS.build(dict(type='Accuracy', thrs=0.6))
-        self.assertTupleEqual(metric.thrs, (0.6, ))
-        metric = METRICS.build(dict(type='Accuracy', thrs=[0.6]))
-        self.assertTupleEqual(metric.thrs, (0.6, ))
-        metric = METRICS.build(dict(type='Accuracy', topk=5))
-        self.assertTupleEqual(metric.topk, (5, ))
-        metric = METRICS.build(dict(type='Accuracy', topk=[5]))
-        self.assertTupleEqual(metric.topk, (5, ))
+        results = metric.evaluate(2)
+        self.assertIsInstance(results, dict)
+        self.assertAlmostEqual(results['task0_accuracy/top1'], 2 / 6 * 100)
+        self.assertGreater(results['task1_precision/top1'], 0)
