@@ -42,8 +42,8 @@ class MultiTaskMetric(TestCase):
             {
                 'task0': torch.tensor([0.0, 0.0, 1.0]),
                 'task1': {
-                    "task10": torch.tensor([0.1, 0.6, 0.3]),
-                    "task11": torch.tensor([0.5, 0.2, 0.3])
+                    'task10': torch.tensor([0.1, 0.6, 0.3]),
+                    'task11': torch.tensor([0.5, 0.2, 0.3])
                 }
             },
         ], [{
@@ -55,8 +55,8 @@ class MultiTaskMetric(TestCase):
         }, {
             'task0': 2,
             'task1': {
-                "task10": 1,
-                "task11": 0
+                'task10': 1,
+                'task11': 0
             }
         }])
     ]
@@ -73,11 +73,11 @@ class MultiTaskMetric(TestCase):
     task_metrics2 = {
         'task0': [dict(type='Accuracy', topk=(1, ))],
         'task1': {
-            "task10": [
+            'task10': [
                 dict(type='Accuracy', topk=(1, 3)),
                 dict(type='SingleLabelMetric', items=['precision'])
             ],
-            "task11": [dict(type='Accuracy', topk=(1, ))]
+            'task11': [dict(type='Accuracy', topk=(1, ))]
         }
     }
 

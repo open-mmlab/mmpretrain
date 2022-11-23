@@ -116,7 +116,7 @@ class MultiTasksMetric(BaseMetric):
                         metric.process(data_batch, task_data_sample_dicts)
 
     def compute_metrics(self, results: list) -> dict:
-        raise Exception("compute metrics should not be used here directly")
+        raise Exception('compute metrics should not be used here directly')
 
     def evaluate(self, size):
         """Evaluate the model performance of the whole dataset after processing
