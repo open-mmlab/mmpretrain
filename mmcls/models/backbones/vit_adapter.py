@@ -212,6 +212,7 @@ class Extractor(BaseModule):
             num_levels=num_levels,
             num_heads=num_heads,
             num_points=num_points,
+            dropout=0.0,
             batch_first=True)
         self.with_cp = with_cp
         mlp_hidden_dim = int(embed_dims * ffn_ratio)

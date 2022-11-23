@@ -54,6 +54,7 @@ class TransformerEncoderLayer(BaseModule):
                  drop_path_rate=0.,
                  num_fcs=2,
                  qkv_bias=True,
+                 use_layer_scale=True,
                  window_size=0,
                  act_cfg=dict(type='GELU'),
                  norm_cfg=dict(type='LN'),
@@ -73,7 +74,8 @@ class TransformerEncoderLayer(BaseModule):
             attn_drop=attn_drop_rate,
             proj_drop=drop_rate,
             dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
-            qkv_bias=qkv_bias)
+            qkv_bias=qkv_bias,
+            use_layer_scale=use_layer_scale)
 
         self.norm2_name, norm2 = build_norm_layer(
             norm_cfg, self.embed_dims, postfix=2)
@@ -85,6 +87,7 @@ class TransformerEncoderLayer(BaseModule):
             num_fcs=num_fcs,
             ffn_drop=drop_rate,
             dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
+            use_layer_scale=use_layer_scale,
             act_cfg=act_cfg)
 
     @property
@@ -455,6 +458,7 @@ class VisionTransformer(BaseBackbone):
                  output_cls_token=True,
                  beit_style=False,
                  layer_scale_init_value=0.1,
+                 use_layer_scale=False,
                  interpolate_mode='bicubic',
                  patch_cfg=dict(),
                  layer_cfgs=dict(),
@@ -522,7 +526,8 @@ class VisionTransformer(BaseBackbone):
         self.out_indices = out_indices
 
         self._build_layers(drop_rate, drop_path_rate, qkv_bias, norm_cfg,
-                           beit_style, layer_scale_init_value, layer_cfgs)
+                           beit_style, layer_scale_init_value, layer_cfgs,
+                           use_layer_scale)
 
         self.frozen_stages = frozen_stages
         self.final_norm = final_norm
@@ -541,7 +546,8 @@ class VisionTransformer(BaseBackbone):
             self._freeze_stages()
 
     def _build_layers(self, drop_rate, drop_path_rate, qkv_bias, norm_cfg,
-                      beit_style, layer_scale_init_value, layer_cfgs):
+                      beit_style, layer_scale_init_value, layer_cfgs,
+                      use_layer_scale):
         # stochastic depth decay rule
         dpr = np.linspace(0, drop_path_rate, self.num_layers)
 
@@ -567,6 +573,7 @@ class VisionTransformer(BaseBackbone):
                 _layer_cfg.pop('qkv_bias')
                 self.layers.append(BEiTTransformerEncoderLayer(**_layer_cfg))
             else:
+                _layer_cfg.update(dict(use_layer_scale=use_layer_scale))
                 self.layers.append(TransformerEncoderLayer(**_layer_cfg))
 
     @property
