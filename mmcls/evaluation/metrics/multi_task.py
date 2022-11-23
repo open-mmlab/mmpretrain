@@ -1,14 +1,37 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Dict, Sequence
+from typing import Dict, List, Sequence
 
 from mmengine.evaluator import BaseMetric
+
 from mmcls.registry import METRICS
 from mmcls.structures import MultiTaskDataSample
 
 
 @METRICS.register_module()
 class MultiTasksMetric(BaseMetric):
-    """a."""
+    """Metrics for MultiTask
+    Args:
+        task_metrics(dict): a dictionary in the keys are the names of the tasks
+            and the values is a list of the metric corresponds to this task
+    Examples:
+        task_metrics = {
+            'task0': [dict(type='Accuracy', topk=(1, ))],
+            'task1': [
+                dict(type='Accuracy', topk=(1, 3)),
+                dict(type='SingleLabelMetric', items=['precision', 'recall'])
+            ]
+        }
+        task_metrics2 = {
+            'task0': [dict(type='Accuracy', topk=(1, ))],
+            'task1': {
+                "task10": [
+                    dict(type='Accuracy', topk=(1, 3)),
+                    dict(type='SingleLabelMetric', items=['precision'])
+                ],
+                "task11": [dict(type='Accuracy', topk=(1, ))]
+            }
+        }
+    """
 
     def __init__(self,
                  task_metrics: Dict,
@@ -29,8 +52,14 @@ class MultiTasksMetric(BaseMetric):
                         self._metrics[task_name + '_' + task_name2].append(
                             METRICS.build(metric))
 
-    def pre_process_nested(self, data_samples, task_name):
-        """
+    def pre_process_nested(self,
+                           data_samples: List[MultiTaskDataSample],
+                           task_name):
+        """Retrieve data_samples corresponds to the task_name for a data_sample
+        type MultiTaskDataSample Args :
+
+        data_samples (List[MultiTaskDataSample]):The annotation data of
+        every samples. task_name (str)
         """
         task_data_sample = []
         for data_sample in data_samples:
@@ -39,8 +68,14 @@ class MultiTasksMetric(BaseMetric):
                                                   task_name))
         return task_data_sample
 
-    def pre_process_cls(self, data_samples, task_name):
-        """
+    def pre_process_cls(self,
+                        data_samples: List[MultiTaskDataSample],
+                        task_name):
+        """retrieve data_samples corresponds to the task_name for a data_sample
+        type ClsDataSample Args :
+
+        data_samples (List[MultiTaskDataSample]):The annotation data of
+        every samples. task_name (str)
         """
         task_data_sample_dicts = []
         for data_sample in data_samples:
@@ -84,6 +119,20 @@ class MultiTasksMetric(BaseMetric):
         raise Exception("compute metrics should not be used here directly")
 
     def evaluate(self, size):
+        """Evaluate the model performance of the whole dataset after processing
+        all batches.
+
+        Args:
+            size (int): Length of the entire validation dataset. When batch
+                size > 1, the dataloader may pad some data samples to make
+                sure all ranks have the same length of dataset slice. The
+                ``collect_results`` function will drop the padded data based on
+                this size.
+        Returns:
+            dict: Evaluation metrics dict on the val dataset. The keys are
+            task_name + the names of the metrics, and the values
+            are corresponding results.
+        """
         metrics = {}
         for task_name in self._metrics:
             for metric in self._metrics[task_name]:
@@ -94,9 +143,9 @@ class MultiTasksMetric(BaseMetric):
                 for key in results:
                     name = f'{task_name}_{key}'
                     if name in results:
-                        """Inspired from https://github.com/open-mmlab/mmengine/ bl
-                        ob/ed20a9cba52ceb371f7c825131636b9e2747172e/mmengine/evalua
-                        tor/evaluator.py#L84-L87."""
+                        """Inspired from https://github.com/open-
+                        mmlab/mmengine/ bl ob/ed20a9cba52ceb371f7c825131636b9e2
+                        747172e/mmengine/evalua tor/evaluator.py#L84-L87."""
                         raise ValueError(
                             'There are multiple metric results with the same'
                             f'metric name {name}. Please make sure all metrics'

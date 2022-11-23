@@ -3,8 +3,7 @@ from unittest import TestCase
 
 import torch
 
-from mmcls.evaluation.metrics import (MultiTasksMetric, Accuracy,
-                                      SingleLabelMetric)
+from mmcls.evaluation.metrics import MultiTasksMetric
 from mmcls.structures import MultiTaskDataSample
 
 
