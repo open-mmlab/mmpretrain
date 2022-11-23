@@ -154,6 +154,7 @@ class Accuracy(BaseMetric):
         """
         # NOTICE: don't access `self.results` from the method.
         metrics = {}
+        
         # concat
         target = torch.cat([res['gt_label'] for res in results])
         if 'pred_score' in results[0]:
