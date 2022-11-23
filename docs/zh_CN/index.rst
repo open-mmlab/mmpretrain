@@ -1,10 +1,6 @@
 欢迎来到 MMClassification 中文教程！
 ==========================================
 
-You can switch between Chinese and English documentation in the lower-left corner of the layout.
-
-您可以在页面左下角切换中英文文档。
-
 .. toctree::
    :maxdepth: 1
    :caption: 开始你的第一步

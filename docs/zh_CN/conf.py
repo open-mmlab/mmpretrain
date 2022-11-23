@@ -1,3 +1,4 @@
+# flake8: noqa
 # Configuration file for the Sphinx documentation builder.
 #
 # This file only contains a selection of the most common options. For a full
@@ -86,7 +87,7 @@ html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#
+# yapf: disable
 html_theme_options = {
     'menu': [
         {
@@ -94,35 +95,32 @@ html_theme_options = {
             'url': 'https://github.com/open-mmlab/mmclassification'
         },
         {
-            'name':
-            'Colab 教程',
+            'name': 'Colab 教程',
             'children': [
-                {
-                    'name':
-                    '用命令行工具训练和推理',
-                    'url':
-                    'https://colab.research.google.com/github/'
-                    'open-mmlab/mmclassification/blob/master/docs/zh_CN/'
-                    'tutorials/MMClassification_tools_cn.ipynb',
-                },
-                {
-                    'name':
-                    '用 Python API 训练和推理',
-                    'url':
-                    'https://colab.research.google.com/github/'
-                    'open-mmlab/mmclassification/blob/master/docs/zh_CN/'
-                    'tutorials/MMClassification_python_cn.ipynb',
-                },
+                {'name': '用命令行工具训练和推理',
+                 'url': 'https://colab.research.google.com/github/mzr1996/mmclassification-tutorial/blob/master/1.x/MMClassification_tools.ipynb'},
+                {'name': '用 Python API 训练和推理',
+                 'url': 'https://colab.research.google.com/github/mzr1996/mmclassification-tutorial/blob/master/1.x/MMClassification_python.ipynb'},
             ]
         },
+        {
+            'name': 'Version',
+            'children': [
+                {'name': 'MMClassification 0.x',
+                 'url': 'https://mmclassification.readthedocs.io/zh_CN/latest/',
+                 'description': 'master branch'},
+                {'name': 'MMClassification 1.x',
+                 'url': 'https://mmclassification.readthedocs.io/zh_CN/dev-1.x/',
+                 'description': '1.x branch'},
+            ],
+        }
     ],
     # Specify the language of shared menu
-    'menu_lang':
-    'cn',
+    'menu_lang': 'cn',
     # Disable the default edit on GitHub
-    'default_edit_on_github':
-    False,
+    'default_edit_on_github': False,
 }
+# yapf: enable
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -245,7 +243,8 @@ notfound_template = '404.html'
 
 
 def builder_inited_handler(app):
-    subprocess.run(['./stat.py'])
+    if subprocess.run(['./stat.py']).returncode != 0:
+        raise RuntimeError('Failed to run the script `stat.py`.')
 
 
 def setup(app):
