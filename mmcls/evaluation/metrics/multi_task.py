@@ -52,8 +52,7 @@ class MultiTasksMetric(BaseMetric):
                         self._metrics[task_name + '_' + task_name2].append(
                             METRICS.build(metric))
 
-    def pre_process_nested(self,
-                           data_samples: List[MultiTaskDataSample],
+    def pre_process_nested(self, data_samples: List[MultiTaskDataSample],
                            task_name):
         """Retrieve data_samples corresponds to the task_name for a data_sample
         type MultiTaskDataSample Args :
@@ -68,10 +67,9 @@ class MultiTasksMetric(BaseMetric):
                                                   task_name))
         return task_data_sample
 
-    def pre_process_cls(self,
-                        data_samples: List[MultiTaskDataSample],
+    def pre_process_cls(self, data_samples: List[MultiTaskDataSample],
                         task_name):
-        """retrieve data_samples corresponds to the task_name for a data_sample
+        """Retrieve data_samples corresponds to the task_name for a data_sample
         type ClsDataSample Args :
 
         data_samples (List[MultiTaskDataSample]):The annotation data of
