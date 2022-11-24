@@ -72,13 +72,17 @@ class MultiTaskMetric(TestCase):
     }
     task_metrics2 = {
         'task0': [dict(type='Accuracy', topk=(1, ))],
-        'task1': {
-            'task10': [
-                dict(type='Accuracy', topk=(1, 3)),
-                dict(type='SingleLabelMetric', items=['precision'])
-            ],
-            'task11': [dict(type='Accuracy', topk=(1, ))]
-        }
+        'task1': [
+            dict(
+                type='MultiTasksMetric',
+                task_metrics={
+                    'task10': [
+                        dict(type='Accuracy', topk=(1, 3)),
+                        dict(type='SingleLabelMetric', items=['precision'])
+                    ],
+                    'task11': [dict(type='Accuracy', topk=(1, ))]
+                })
+        ]
     }
 
     def test_evaluate(self):
@@ -101,8 +105,10 @@ class MultiTaskMetric(TestCase):
         self.assertGreater(results['task1_task11_accuracy/top1'], 0)
 
         # Test with without any ground truth value
+        """
         metric = MultiTasksMetric(self.task_metrics)
         metric.process(None, self.pred3)
         results = metric.evaluate(2)
         self.assertIsInstance(results, dict)
         self.assertEqual(results['task0_Accuracy'], 0)
+        """

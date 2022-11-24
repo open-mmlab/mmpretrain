@@ -41,30 +41,23 @@ class MultiTasksMetric(BaseMetric):
 
         self._metrics = {}
         for task_name in self.task_metrics.keys():
-            if type(self.task_metrics[task_name]) == list:
-                self._metrics[task_name] = []
-                for metric in self.task_metrics[task_name]:
-                    self._metrics[task_name].append(METRICS.build(metric))
-            elif type(self.task_metrics[task_name]) == dict:
-                for task_name2 in self.task_metrics[task_name].keys():
-                    self._metrics[task_name + '_' + task_name2] = []
-                    for metric in self.task_metrics[task_name][task_name2]:
-                        self._metrics[task_name + '_' + task_name2].append(
-                            METRICS.build(metric))
+            self._metrics[task_name] = []
+            for metric in self.task_metrics[task_name]:
+                self._metrics[task_name].append(METRICS.build(metric))
 
     def pre_process_nested(self, data_samples: List[MultiTaskDataSample],
                            task_name):
         """Retrieve data_samples corresponds to the task_name for a data_sample
         type MultiTaskDataSample Args :
 
-        data_samples (List[MultiTaskDataSample]):The annotation data of
-        every samples. task_name (str)
+        data_samples (List[MultiTaskDataSample]):The annotation data of every
+        samples. task_name (str)
         """
         task_data_sample = []
         for data_sample in data_samples:
             task_data_sample.append(
                 data_sample.to_target_data_sample('MultiTaskDataSample',
-                                                  task_name))
+                                                  task_name).to_dict())
         return task_data_sample
 
     def pre_process_cls(self, data_samples: List[MultiTaskDataSample],
@@ -72,8 +65,8 @@ class MultiTasksMetric(BaseMetric):
         """Retrieve data_samples corresponds to the task_name for a data_sample
         type ClsDataSample Args :
 
-        data_samples (List[MultiTaskDataSample]):The annotation data of
-        every samples. task_name (str)
+        data_samples (List[MultiTaskDataSample]):The annotation data of every
+        samples. task_name (str)
         """
         task_data_sample_dicts = []
         for data_sample in data_samples:
@@ -99,18 +92,14 @@ class MultiTasksMetric(BaseMetric):
                         data_sample['pred_task']))
         for task_name in self.task_metrics.keys():
             if type(self.task_metrics[task_name]) != dict:
-                task_data_sample_dicts = self.pre_process_cls(
-                    data_sample_instances, task_name)
-                # à reflichir
                 for metric in self._metrics[task_name]:
-                    metric.process(data_batch, task_data_sample_dicts)
-            else:
-                task_data_sample = self.pre_process_nested(
-                    data_sample_instances, task_name)
-                for task_name2 in self.task_metrics[task_name]:
-                    task_data_sample_dicts = self.pre_process_cls(
-                        task_data_sample, task_name2)
-                    for metric in self._metrics[task_name + '_' + task_name2]:
+                    if metric.__class__.__name__ != 'MultiTasksMetric':
+                        task_data_sample_dicts = self.pre_process_cls(
+                            data_sample_instances, task_name)
+                        metric.process(data_batch, task_data_sample_dicts)
+                    else:
+                        task_data_sample_dicts = self.pre_process_nested(
+                            data_sample_instances, task_name)
                         metric.process(data_batch, task_data_sample_dicts)
 
     def compute_metrics(self, results: list) -> dict:
@@ -134,10 +123,7 @@ class MultiTasksMetric(BaseMetric):
         metrics = {}
         for task_name in self._metrics:
             for metric in self._metrics[task_name]:
-                if metric.results:
-                    results = metric.evaluate(size)
-                else:
-                    results = {metric.__class__.__name__: 0}
+                results = metric.evaluate(size)
                 for key in results:
                     name = f'{task_name}_{key}'
                     if name in results:
