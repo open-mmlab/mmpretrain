@@ -3,7 +3,8 @@ import pytest
 import torch
 
 from mmcls.models.necks import (GeneralizedMeanPooling, GlobalAveragePooling,
-                                HRFuseScales, LinearReduction)
+                                HRFuseScales, LinearReduction,
+                                TransformerTokenMergeNeck)
 
 
 def test_gap_neck():
@@ -134,3 +135,16 @@ def test_linear_reduction():
 
     with pytest.raises(AssertionError):
         neck([])
+
+
+def test_transformer_token_merge_neck():
+    # test invalid input
+    with pytest.raises(AssertionError):
+        neck = TransformerTokenMergeNeck(mode='xx')
+
+    neck = TransformerTokenMergeNeck(mode='concat')
+
+    # test fake patch_token and cls_token
+    fake_input = [[torch.rand(1, 8, 14, 14), torch.rand(1, 8)]]
+    output = neck(fake_input)
+    assert output[0].shape == (1, 16)
