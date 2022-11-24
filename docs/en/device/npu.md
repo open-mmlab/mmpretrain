@@ -1,22 +1,46 @@
+- [NPU (HUAWEI Ascend)](#npu-huawei-ascend)
+  - [Usage](#usage)
+    - [General Usage](#general-usage)
+    - [High-performance Usage on ARM server](#high-performance-usage-on-arm-server)
+  - [Verified Models](#verified-models)
+
 # NPU (HUAWEI Ascend)
 
 ## Usage
+
+### General Usage
 
 Please install MMCV with NPU device support according to {external+mmcv:doc}`the tutorial <get_started/build>`.
 
 Here we use 8 NPUs on your computer to train the model with the following command:
 
 ```shell
-bash tools/dist_train.sh configs/resnet/resnet50_8xb32_in1k.py 8 --device npu
+bash ./tools/dist_train.sh configs/resnet/resnet50_8xb32_in1k.py 8 --device npu
 ```
 
 Also, you can use only one NPU to train the model with the following command:
 
 ```shell
-python tools/train.py configs/resnet/resnet50_8xb32_in1k.py --device npu
+python ./tools/train.py configs/resnet/resnet50_8xb32_in1k.py --device npu
 ```
 
-## Verified Models
+### High-performance Usage on ARM server
+
+Since the scheduling ability of ARM CPUs when processing resource preemption is not as good as that of X86 CPUs during multi-card training, we provide a high-performance startup script to accelerate training with the following command:
+
+```shell
+# The script under the 8 cards of a single machine is shown here
+bash tools/dist_train_arm.sh configs/resnet/resnet50_8xb32_in1k.py 8 --device npu --cfg-options data.workers_per_gpu=$(($(nproc)/8))
+```
+
+For resnet50 8 NPUs training with batch_size(data.samples_per_gpu)=512, the performance data is shown below:
+
+| CPU                 | Start Script              |   IterTime(s)    |
+| :------------------ | :------------------------ | :--------------: |
+| ARM(Kunpeng920 \*4) | ./tools/dist_train.sh     |  ~0.9(0.85-1.0)  |
+| ARM(Kunpeng920 \*4) | ./tools/dist_train_arm.sh | ~0.8(0.78s-0.85) |
+
+## Models Results
 
 |                            Model                            | Top-1 (%) | Top-5 (%) |                            Config                            |                            Download                             |
 | :---------------------------------------------------------: | :-------: | :-------: | :----------------------------------------------------------: | :-------------------------------------------------------------: |
