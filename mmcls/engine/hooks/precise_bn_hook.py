@@ -123,8 +123,8 @@ def update_bn_stats(
         prog_bar = ProgressBar(num_iter)
 
     for data in itertools.islice(loader, num_iter):
-        batch_inputs, data_samples = model.data_preprocessor(data, False)
-        model(batch_inputs, data_samples)
+        data = model.data_preprocessor(data, False)
+        model(**data)
 
         for i, bn in enumerate(bn_layers):
             running_means[i] += bn.running_mean / num_iter
