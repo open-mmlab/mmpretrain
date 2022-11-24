@@ -162,6 +162,71 @@ class RandomCrop(BaseTransform):
 
 
 @TRANSFORMS.register_module()
+class VisionRRC(BaseTransform):
+    """Crop the given image to random scale and aspect ratio.
+
+    A crop of random size (default: of 0.08 to 1.0) of the original size and a
+    random aspect ratio (default: of 3/4 to 4/3) of the original aspect ratio
+    is made. This crop is finally resized to given size.
+
+    **Required Keys:**
+
+    - img
+
+    **Modified Keys:**
+
+    - img
+    - img_shape
+
+    Args:
+        scale (sequence | int): Desired output scale of the crop. If size is an
+            int instead of sequence like (h, w), a square crop (size, size) is
+            made.
+        crop_ratio_range (tuple): Range of the random size of the cropped
+            image compared to the original image. Defaults to (0.08, 1.0).
+        aspect_ratio_range (tuple): Range of the random aspect ratio of the
+            cropped image compared to the original image.
+            Defaults to (3. / 4., 4. / 3.).
+        max_attempts (int): Maximum number of attempts before falling back to
+            Central Crop. Defaults to 10.
+        interpolation (str): Interpolation method, accepted values are
+            'nearest', 'bilinear', 'bicubic', 'area', 'lanczos'. Defaults to
+            'bilinear'.
+        backend (str): The image resize backend type, accepted values are
+            'cv2' and 'pillow'. Defaults to 'cv2'.
+    """
+
+    def __init__(
+        self,
+        scale: Union[Sequence, int],
+    ) -> None:
+        from torchvision.transforms import RandomResizedCrop
+        self.rrc = RandomResizedCrop(scale)
+
+    def transform(self, results: dict) -> dict:
+        """Transform function to randomly resized crop images.
+
+        Args:
+            results (dict): Result dict from loading pipeline.
+
+        Returns:
+            dict: Randomly resized cropped results, 'img_shape'
+                key in result dict is updated according to crop size.
+        """
+        import cv2
+        import numpy
+        from PIL import Image
+        img = results['img']
+        image = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+        image = self.rrc(image)
+        img = cv2.cvtColor(numpy.asarray(image), cv2.COLOR_RGB2BGR)
+        results['img'] = img
+        results['img_shape'] = img.shape
+
+        return results
+
+
+@TRANSFORMS.register_module()
 class RandomResizedCrop(BaseTransform):
     """Crop the given image to random scale and aspect ratio.
 

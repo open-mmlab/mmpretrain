@@ -60,7 +60,7 @@ Use `backbone.switch_to_deploy()` or `classificer.backbone.switch_to_deploy()` t
 ```python
 from mmcls.models import build_backbone
 
-backbone_cfg=dict(type='RepVGG',arch='A0'),
+backbone_cfg=dict(type='RepVGG',arch='A0')
 backbone = build_backbone(backbone_cfg)
 backbone.switch_to_deploy()
 ```

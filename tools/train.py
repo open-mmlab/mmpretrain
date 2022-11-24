@@ -132,37 +132,6 @@ def merge_args(cfg, args):
     set_default_dataloader_cfg(cfg, 'val_dataloader')
     set_default_dataloader_cfg(cfg, 'test_dataloader')
 
-    if cfg.train_dataloader.dataset.pipeline[0]['type'] == 'LoadImageFromFile':
-        cfg.train_dataloader.dataset.pipeline[0] = dict(
-            type='LoadImageFromFile',
-            file_client_args=dict(
-                backend='petrel',
-                path_mapping={
-                    './data/': 'openmmlab:s3://openmmlab/datasets/classification/',
-                    'data/': 'openmmlab:s3://openmmlab/datasets/classification/',
-                }
-            ))
-    if cfg.val_dataloader.dataset.pipeline[0]['type'] == 'LoadImageFromFile':
-        cfg.val_dataloader.dataset.pipeline[0] = dict(
-                type='LoadImageFromFile',
-                file_client_args=dict(
-                        backend='petrel',
-                        path_mapping={
-                            './data/': 'openmmlab:s3://openmmlab/datasets/classification/',
-                            'data/': 'openmmlab:s3://openmmlab/datasets/classification/',
-                        }
-                    ))
-    if cfg.test_dataloader.dataset.pipeline[0]['type'] == 'LoadImageFromFile':
-        cfg.test_dataloader.dataset.pipeline[0] = dict(
-            type='LoadImageFromFile',
-            file_client_args=dict(
-                backend='petrel',
-                path_mapping={
-                    './data/': 'openmmlab:s3://openmmlab/datasets/classification/',
-                    'data/': 'openmmlab:s3://openmmlab/datasets/classification/',
-                    }
-                ))
-
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
 

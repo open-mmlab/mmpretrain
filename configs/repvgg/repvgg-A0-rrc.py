@@ -25,3 +25,12 @@ param_scheduler = dict(
     convert_to_iter_based=True)
 
 train_cfg = dict(by_epoch=True, max_epochs=120)
+
+train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(type='VisionRRC', scale=224),
+    dict(type='RandomFlip', prob=0.5, direction='horizontal'),
+    dict(type='PackClsInputs'),
+]
+
+train_dataloader = dict(dataset=dict(pipeline=train_pipeline), )

@@ -5,7 +5,11 @@ _base_ = [
 
 # schedule settings
 param_scheduler = dict(
-    type='CosineAnnealingLR', T_max=120, by_epoch=True, begin=0, end=120，convert_to_iter_based=True)
+    type='CosineAnnealingLR',
+    T_max=120,
+    by_epoch=True,
+    begin=0,
+    end=120,
+    convert_to_iter_based=True)
 
 train_cfg = dict(by_epoch=True, max_epochs=120)
-
