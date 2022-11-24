@@ -16,7 +16,8 @@ def convert_classifier_to_deploy(model, checkpoint, save_path):
         f' But {model.backbone.__class__} does not have.'
 
     model.backbone.switch_to_deploy()
-    torch.save(model.state_dict(), save_path)
+    checkpoint['state_dict'] = model.state_dict()
+    torch.save(checkpoint, save_path)
 
     print('Done! Save at path "{}"'.format(save_path))
 
@@ -47,7 +48,7 @@ def main():
         args.config_path, checkpoint=args.checkpoint_path, device='cpu')
     assert isinstance(model, ImageClassifier), \
         '`model` must be a `mmcls.classifiers.ImageClassifier` instance.'
-    
+
     checkpoint = torch.load(args.checkpoint_path)
     convert_classifier_to_deploy(model, checkpoint, args.save_path)
 
