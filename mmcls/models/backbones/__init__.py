@@ -96,5 +96,4 @@ __all__ = [
     'DeiT3',
     'HorNet',
     'MobileViT',
-    'MixMIMTransformer'
 ]
