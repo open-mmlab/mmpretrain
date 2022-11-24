@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Tuple
 
 import torch
 from mmengine.model import BaseModule
@@ -9,21 +9,24 @@ from mmcls.registry import MODELS
 
 @MODELS.register_module()
 class TransformerTokenMergeNeck(BaseModule):
-    """
-
+    """Neck for merging cls_token and patch_token from ViT based backbones.
 
     Args:
-        mode:
+        mode (str): Merge mode. Defaults to 'concat'.
+        init_cfg (dict, optional): dictionary to initialize weights.
+            Defaults to None.
     """
 
-    def __init__(self, mode: str = 'concat', init_cfg: Optional[dict] = None):
+    def __init__(self,
+                 mode: str = 'concat',
+                 init_cfg: Optional[dict] = None) -> None:
         super().__init__(init_cfg=init_cfg)
         assert mode in ['concat'], \
             f'Currently, TransformerTokenMergeNeck only supports "concat" ' \
             f'mode, but the input mode is "{mode}".'
         self.mode = mode
 
-    def forward(self, inputs: Sequence[torch.Tensor]):
+    def forward(self, inputs: Sequence[torch.Tensor]) -> Tuple[torch.Tensor]:
         outs = []
         for i in range(len(inputs)):
             patch_token, cls_token = inputs[i][0], inputs[i][1]
