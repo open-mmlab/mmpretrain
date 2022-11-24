@@ -37,19 +37,7 @@ conda install pytorch torchvision cpuonly -c pytorch
 
 # Installation
 
-We recommend that users follow our best practices to install MMClassification. However, the whole process is highly customizable. See [Customize Installation](#customize-installation) section for more information.
-
 ## Best Practices
-
-**Step 1.** Install [MIM](https://github.com/open-mmlab/mim).
-
-> *mim is a light-weight command-line tool to setup appropriate environment for OpenMMLab repositories according to PyTorch and CUDA version. It also has some useful functions for deep-learning experiments.*
-
-```shell
-pip install -U openmim
-```
-
-**Step 2.** Install MMClassification.
 
 According to your needs, we support two install modes:
 
@@ -63,15 +51,11 @@ In this case, install mmcls from source:
 ```shell
 git clone -b 1.x https://github.com/open-mmlab/mmclassification.git
 cd mmclassification
-mim install -e .
-# "-e" means installing a project in editable mode,
-# thus any local modifications made to the code will take effect without reinstallation.
+pip install -U openmim && mim install -e .
 ```
 
-Optionally, if you want to contribute to MMClassification or experience experimental functions, please checkout to the `dev-1.x` branch:
-
-```shell
-git checkout dev-1.x
+```{note}
+`"-e"` means installing a project in editable mode, thus any local modifications made to the code will take effect without reinstallation.
 ```
 
 ### Install as a Python package
@@ -79,7 +63,11 @@ git checkout dev-1.x
 Just install with mim.
 
 ```shell
-mim install "mmcls>=1.0.0rc0"
+pip install -U openmim && mim install "mmcls>=1.0.0rc0"
+```
+
+```{note}
+`mim` is a light-weight command-line tool to setup appropriate environment for OpenMMLab repositories according to PyTorch and CUDA version. It also has some useful functions for deep-learning experiments.
 ```
 
 ## Verify the installation

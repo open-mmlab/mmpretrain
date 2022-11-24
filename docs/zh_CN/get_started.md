@@ -43,16 +43,6 @@ conda install pytorch torchvision cpuonly -c pytorch
 
 ## 最佳实践
 
-**第 1 步** 安装 [MIM](https://github.com/open-mmlab/mim)
-
-> *mim 是一个轻量级的命令行工具，可以根据 PyTorch 和 CUDA 版本为 OpenMMLab 算法库配置合适的环境。同时它也提供了一些对于深度学习实验很有帮助的功能。*
-
-```shell
-pip install -U openmim
-```
-
-**第 2 步** 安装 MMClassification
-
 根据具体需求，我们支持两种安装模式：
 
 - [从源码安装（推荐）](#从源码安装)：希望基于 MMClassification 框架开发自己的图像分类任务，需要添加新的功能，比如新的模型或是数据集，或者使用我们提供的各种工具。
@@ -65,14 +55,11 @@ pip install -U openmim
 ```shell
 git clone -b 1.x https://github.com/open-mmlab/mmclassification.git
 cd mmclassification
-mim install -e .
-# "-e" 表示以可编辑形式安装，这样可以在不重新安装的情况下，让本地修改直接生效
+pip install -U openmim && mim install -e .
 ```
 
-另外，如果你希望向 MMClassification 贡献代码，或者使用试验中的功能，请签出到 `dev-1.x` 分支。
-
-```shell
-git checkout dev-1.x
+```{note}
+`"-e"` 表示以可编辑形式安装，这样可以在不重新安装的情况下，让本地修改直接生效
 ```
 
 ### 作为 Python 包安装
@@ -80,7 +67,11 @@ git checkout dev-1.x
 直接使用 mim 安装即可。
 
 ```shell
-mim install "mmcls>=1.0rc0"
+pip install -U openmim && mim install "mmcls>=1.0rc0"
+```
+
+```{note}
+`mim` 是一个轻量级的命令行工具，可以根据 PyTorch 和 CUDA 版本为 OpenMMLab 算法库配置合适的环境。同时它也提供了一些对于深度学习实验很有帮助的功能。
 ```
 
 ## 验证安装
