@@ -91,15 +91,20 @@ class MultiTasksMetric(BaseMetric):
                     data_sample['gt_task']).set_pred_task(
                         data_sample['pred_task']))
         for task_name in self.task_metrics.keys():
+            filtered_data_samples = []
+            for data_sample in data_sample_instances:
+                sample_mask = data_sample.get_task_mask(task_name)
+                if sample_mask:
+                    filtered_data_samples.append(data_sample)
             if type(self.task_metrics[task_name]) != dict:
                 for metric in self._metrics[task_name]:
                     if metric.__class__.__name__ != 'MultiTasksMetric':
                         task_data_sample_dicts = self.pre_process_cls(
-                            data_sample_instances, task_name)
+                            filtered_data_samples, task_name)
                         metric.process(data_batch, task_data_sample_dicts)
                     else:
                         task_data_sample_dicts = self.pre_process_nested(
-                            data_sample_instances, task_name)
+                            filtered_data_samples, task_name)
                         metric.process(data_batch, task_data_sample_dicts)
 
     def compute_metrics(self, results: list) -> dict:
