@@ -43,11 +43,12 @@ conda install pytorch torchvision cpuonly -c pytorch
 
 ## 最佳实践
 
-**第 1 步** 使用 [MIM](https://github.com/open-mmlab/mim) 安装 [MMEngine](https://github.com/open-mmlab/mmengine) 和 [MMCV](https://github.com/open-mmlab/mmcv)
+**第 1 步** 安装 [MIM](https://github.com/open-mmlab/mim)
+
+> *mim 是一个轻量级的命令行工具，可以根据 PyTorch 和 CUDA 版本为 OpenMMLab 算法库配置合适的环境。同时它也提供了一些对于深度学习实验很有帮助的功能。*
 
 ```shell
 pip install -U openmim
-mim install mmengine "mmcv>=2.0rc0"
 ```
 
 **第 2 步** 安装 MMClassification
@@ -62,11 +63,9 @@ mim install mmengine "mmcv>=2.0rc0"
 这种情况下，从源码按如下方式安装 mmcls：
 
 ```shell
-git clone https://github.com/open-mmlab/mmclassification.git
+git clone -b 1.x https://github.com/open-mmlab/mmclassification.git
 cd mmclassification
-git checkout 1.x
-pip install -v -e .
-# "-v" 表示输出更多安装相关的信息
+mim install -e .
 # "-e" 表示以可编辑形式安装，这样可以在不重新安装的情况下，让本地修改直接生效
 ```
 
@@ -78,10 +77,10 @@ git checkout dev-1.x
 
 ### 作为 Python 包安装
 
-直接使用 pip 安装即可。
+直接使用 mim 安装即可。
 
 ```shell
-pip install "mmcls>=1.0rc0"
+mim install "mmcls>=1.0rc0"
 ```
 
 ## 验证安装
@@ -137,58 +136,13 @@ inference_model(model, 'demo/demo.JPEG')
 的配置相匹配（如用 `conda install` 安装 PyTorch 时指定的 cudatoolkit 版本）。
 ```
 
-### 不使用 MIM 安装 MMCV
-
-MMCV 包含 C++ 和 CUDA 扩展，因此其对 PyTorch 的依赖比较复杂。MIM 会自动解析这些
-依赖，选择合适的 MMCV 预编译包，使安装更简单，但它并不是必需的。
-
-要使用 pip 而不是 MIM 来安装 MMCV，请遵照 [MMCV 安装指南](https://mmcv.readthedocs.io/zh_CN/latest/get_started/installation.html)。
-它需要你用指定 url 的形式手动指定对应的 PyTorch 和 CUDA 版本。
-
-举个例子，如下命令将会安装基于 PyTorch 1.10.x 和 CUDA 11.3 编译的 mmcv。
-
-```shell
-pip install "mmcv>=2.0rc0" -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.10/index.html
-```
-
 ### 在 CPU 环境中安装
 
 MMClassification 可以仅在 CPU 环境中安装，在 CPU 模式下，你可以完成训练、测试和模型推理等所有操作。
 
-在 CPU 模式下，MMCV 的部分功能将不可用，通常是一些 GPU 编译的算子。不过不用担心，
-MMClassification 中几乎所有的模型都不会依赖这些算子。
-
 ### 在 Google Colab 中安装
 
-[Google Colab](https://research.google.com/) 通常已经包含了 PyTorch 环境，因此我们只需要安装 MMCV 和 MMClassification 即可，命令如下：
-
-**第 1 步** 使用 [MIM](https://github.com/open-mmlab/mim) 安装 [MMEngine](https://github.com/open-mmlab/mmengine) 和 [MMCV](https://github.com/open-mmlab/mmcv)
-
-```shell
-!pip3 install openmim
-!mim install mmengine "mmcv>=2.0rc0"
-```
-
-**第 2 步** 从源码安装 MMClassification
-
-```shell
-!git clone https://github.com/open-mmlab/mmclassification.git
-%cd mmclassification
-!git checkout 1.x
-!pip install -e .
-```
-
-**第 3 步** 验证
-
-```python
-import mmcls
-print(mmcls.__version__)
-# 预期输出： 1.0.0rc0 或更新的版本号
-```
-
-```{note}
-在 Jupyter 中，感叹号 `!` 用于执行外部命令，而 `%cd` 是一个[魔术命令](https://ipython.readthedocs.io/en/stable/interactive/magics.html#magic-cd)，用于切换 Python 的工作路径。
-```
+参考 [Colab 教程](https://colab.research.google.com/github/mzr1996/mmclassification-tutorial/blob/master/1.x/MMClassification_tools.ipynb) 安装即可。
 
 ### 通过 Docker 使用 MMClassification
 
