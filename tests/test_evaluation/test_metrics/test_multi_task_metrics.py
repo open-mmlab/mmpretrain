@@ -61,7 +61,7 @@ class MultiTaskMetric(TestCase):
         }])
     ]
 
-    pred3 = [MultiTaskDataSample()]
+    pred3 = [MultiTaskDataSample().to_dict()]
 
     task_metrics = {
         'task0': [dict(type='Accuracy', topk=(1, ))],
