@@ -373,7 +373,8 @@ class VisionTransformer(BaseBackbone):
 
     def _freeze_stages(self):
         # freeze position embedding
-        self.pos_embed.requires_grad = False
+        if self.pos_embed is not None:
+            self.pos_embed.requires_grad = False
         # set dropout to eval model
         self.drop_after_pos.eval()
         # freeze patch embedding
