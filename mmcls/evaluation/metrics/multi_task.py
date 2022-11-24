@@ -14,7 +14,10 @@ class MultiTasksMetric(BaseMetric):
         task_metrics(dict): a dictionary in the keys are the names of the tasks
             and the values is a list of the metric corresponds to this task
     Examples:
-        task_metrics = {
+        >>> import torch
+        >>> from mmcls.evaluation import MultiTasksMetric
+        >>> # -------------------- The Basic Usage --------------------
+        >>>task_metrics = {
             'task0': [dict(type='Accuracy', topk=(1, ))],
             'task1': [
                 dict(type='Accuracy', topk=(1, 3)),
@@ -31,6 +34,32 @@ class MultiTasksMetric(BaseMetric):
                 'task11': [dict(type='Accuracy', topk=(1, ))]
             }
         }
+        >>>pred = [
+            MultiTaskDataSample().set_pred_task(i).set_gt_task(k).to_dict()
+            for i, k in zip([
+                {
+                    'task0': torch.tensor([0.7, 0.0, 0.3]),
+                    'task1': torch.tensor([0.5, 0.2, 0.3])
+                },
+                {
+                    'task0': torch.tensor([0.0, 0.0, 1.0]),
+                    'task1': torch.tensor([0.0, 0.0, 1.0])
+                },
+            ], [{
+                'task0': 0,
+                'task1': 2
+            }, {
+                'task0': 2,
+                'task1': 2
+            }])
+        ]
+        >>>metric = MultiTasksMetric(self.task_metrics)
+        >>>metric.process(None, self.pred)
+        >>>metric.evaluate(2)
+        {'task0_accuracy/top1': 100.0, 'task1_accuracy/top1': 50.0,
+        'task1_accuracy/top3': 100.0, 'task1_single-label/precision':
+         33.33333206176758, 'task1_single-label/recall': 16.66666603088379}
+
     """
 
     def __init__(self,
@@ -98,6 +127,13 @@ class MultiTasksMetric(BaseMetric):
                     filtered_data_samples.append(data_sample)
             if type(self.task_metrics[task_name]) != dict:
                 for metric in self._metrics[task_name]:
+                    # Current implementation is only comptaible
+                    # With 2 types of metrics :
+                    # * Cls Metrics
+                    # * Nested Cls Metrics
+                    # In order to make it work with other
+                    # non-cls heads/metrics, one will have to
+                    # override the current implementation
                     if metric.__class__.__name__ != 'MultiTasksMetric':
                         task_data_sample_dicts = self.pre_process_cls(
                             filtered_data_samples, task_name)
@@ -122,7 +158,7 @@ class MultiTasksMetric(BaseMetric):
                 this size.
         Returns:
             dict: Evaluation metrics dict on the val dataset. The keys are
-            task_name + the names of the metrics, and the values
+            "{task_name}_{metric_name}" , and the values
             are corresponding results.
         """
         metrics = {}

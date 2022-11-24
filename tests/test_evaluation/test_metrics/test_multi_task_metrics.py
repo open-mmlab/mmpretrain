@@ -92,6 +92,7 @@ class MultiTaskMetric(TestCase):
         metric = MultiTasksMetric(self.task_metrics)
         metric.process(None, self.pred)
         results = metric.evaluate(2)
+        print(results)
         self.assertIsInstance(results, dict)
         self.assertAlmostEqual(results['task0_accuracy/top1'], 100)
         self.assertGreater(results['task1_single-label/precision'], 0)
