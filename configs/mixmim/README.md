@@ -7,8 +7,8 @@
 In this study, we propose Mixed and Masked Image Modeling (MixMIM), a
 simple but efficient MIM method that is applicable to various hierarchical Vision
 Transformers. Existing MIM methods replace a random subset of input tokens with
-a special \[MASK\] symbol and aim at reconstructing original image tokens from
-the corrupted image. However, we find that using the \[MASK\] symbol greatly
+a special [MASK] symbol and aim at reconstructing original image tokens from
+the corrupted image. However, we find that using the [MASK] symbol greatly
 slows down the training and causes training-finetuning inconsistency, due to the
 large masking ratio (e.g., 40% in BEiT). In contrast, we replace the masked tokens
 of one image with visible tokens of another image, i.e., creating a mixed image.
