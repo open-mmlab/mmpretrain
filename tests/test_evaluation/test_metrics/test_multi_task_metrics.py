@@ -105,10 +105,8 @@ class MultiTaskMetric(TestCase):
         self.assertGreater(results['task1_task11_accuracy/top1'], 0)
 
         # Test with without any ground truth value
-        """
         metric = MultiTasksMetric(self.task_metrics)
         metric.process(None, self.pred3)
         results = metric.evaluate(2)
         self.assertIsInstance(results, dict)
         self.assertEqual(results['task0_Accuracy'], 0)
-        """

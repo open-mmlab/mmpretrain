@@ -24,11 +24,11 @@ class MultiTasksMetric(BaseMetric):
         task_metrics2 = {
             'task0': [dict(type='Accuracy', topk=(1, ))],
             'task1': {
-                "task10": [
+                'task10': [
                     dict(type='Accuracy', topk=(1, 3)),
                     dict(type='SingleLabelMetric', items=['precision'])
                 ],
-                "task11": [dict(type='Accuracy', topk=(1, ))]
+                'task11': [dict(type='Accuracy', topk=(1, ))]
             }
         }
     """
@@ -123,7 +123,11 @@ class MultiTasksMetric(BaseMetric):
         metrics = {}
         for task_name in self._metrics:
             for metric in self._metrics[task_name]:
-                results = metric.evaluate(size)
+                name = metric.__class__.__name__
+                if name == 'MultiTasksMetric' or metric.results:
+                    results = metric.evaluate(size)
+                else:
+                    results = {metric.__class__.__name__: 0}
                 for key in results:
                     name = f'{task_name}_{key}'
                     if name in results:
