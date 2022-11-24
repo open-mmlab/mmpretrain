@@ -1,9 +1,3 @@
-- [NPU (HUAWEI Ascend)](#npu-huawei-ascend)
-  - [Usage](#usage)
-    - [General Usage](#general-usage)
-    - [High-performance Usage on ARM server](#high-performance-usage-on-arm-server)
-  - [Verified Models](#verified-models)
-
 # NPU (HUAWEI Ascend)
 
 ## Usage
