@@ -16,12 +16,11 @@ We introduce a self-supervised vision representation model BEiT, which stands fo
 
 ### ImageNet-1k
 
-|    Model    |   Pretrain   | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                 Config                 | Download  |
-| :---------: | :----------: | :-------: | :------: | :-------: | :-------: | :------------------------------------: | :-------: |
-| BEiT-base\* | ImageNet-21k |   86.86   |  33.03   |   85.28   |   97.59   | [config](./bei-base-p16_8xb64_in1k.py) | [model]() |
+|    Model    |   Pretrain   | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                 Config                  |                                                Download                                                 |
+| :---------: | :----------: | :-------: | :------: | :-------: | :-------: | :-------------------------------------: | :-----------------------------------------------------------------------------------------------------: |
+| BEiT-base\* | ImageNet-21k |   86.53   |  17.58   |   85.28   |   97.59   | [config](./beit-base-p16_8xb64_in1k.py) | [model](http://download.openmmlab.com/mmclassification/v0/beit/beit-base_3rdparty_in1k_20221114-c0a4df23.pth) |
 
-
-*Models with * are converted from the [official repo](https://conversationhub.blob.core.windows.net/beit-share-public/beit/beit_base_patch16_224_pt22k_ft22kto1k.pth). The config files of these models are only for inference. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
+*Models with * are converted from the [official repo](https://github.com/microsoft/unilm/tree/master/beit). The config files of these models are only for inference. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 
 For BEiT self-supervised learning algorithm, welcome to [MMSelfSup page](https://github.com/open-mmlab/mmselfsup/tree/dev-1.x/configs/selfsup/beit) to get more information.
 

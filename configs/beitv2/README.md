@@ -16,10 +16,9 @@ Masked image modeling (MIM) has demonstrated impressive results in self-supervis
 
 ### ImageNet-1k
 
-|     Model     |   Pretrain   | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                  Config                   | Download  |
-| :-----------: | :----------: | :-------: | :------: | :-------: | :-------: | :---------------------------------------: | :-------: |
-| BEiTv2-base\* | ImageNet-21k |   86.86   |  33.03   |   86.47   |   97.99   | [config](./beitv2-base-p16_8xb64_in1k.py) | [model]() |
-
+|     Model     |   Pretrain   | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                  Config                   |                                              Download                                               |
+| :-----------: | :----------: | :-------: | :------: | :-------: | :-------: | :---------------------------------------: | :-------------------------------------------------------------------------------------------------: |
+| BEiTv2-base\* | ImageNet-21k |   86.53   |  17.58   |   86.47   |   97.99   | [config](./beitv2-base-p16_8xb64_in1k.py) | [model](http://download.openmmlab.com/mmclassification/v0/beit/beitv2-base_3rdparty_in1k_20221114-73e11905.pth) |
 
 *Models with * are converted from the [official repo](https://github.com/microsoft/unilm/tree/master/beit2). The config files of these models are only for inference. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 
