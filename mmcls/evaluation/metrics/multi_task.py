@@ -35,7 +35,7 @@ class MultiTasksMetric(BaseMetric):
                 'task1': torch.tensor([0.0, 0.0, 1.0])
                 },
                 'pred_task' : {'task0:2 , task2:2'}
-            },
+            }
         ]
         >>>metric = MultiTasksMetric(self.task_metrics)
         >>>metric.process(None, self.pred)
