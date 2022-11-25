@@ -23,22 +23,26 @@ class MultiTasksMetric(BaseMetric):
         }
         >>>pred = [
             {
-            'gt_task'{
+            'gt_task': {
                 'task0': torch.tensor([0.7, 0.0, 0.3]),
                 'task1': torch.tensor([0.5, 0.2, 0.3])
                 },
-            'pred_task' : {'task0:0 , task2:2'}
+            'pred_task': {
+                'task0':torch.tensor(0),
+                'task2':torch.tensor(2)'}
             },
             {
-              'gt_task':
+            'gt_task':{
                 'task0': torch.tensor([0.0, 0.0, 1.0]),
                 'task1': torch.tensor([0.0, 0.0, 1.0])
                 },
-                'pred_task' : {'task0:2 , task2:2'}
+            'pred_task': {
+                'task0':torch.tensor(2),
+                'task2':torch.tensor(2)'}
             }
         ]
-        >>>metric = MultiTasksMetric(self.task_metrics)
-        >>>metric.process(None, self.pred)
+        >>>metric = MultiTasksMetric(task_metrics)
+        >>>metric.process(None, pred)
         >>>metric.evaluate(2)
         {
           'task0_accuracy/top1': 100.0,
