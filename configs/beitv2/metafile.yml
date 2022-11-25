@@ -12,8 +12,8 @@ Collections:
         - Scaled Dot-Product Attention
         - Tanh Activation
     Paper:
-      URL: https://arxiv.org/abs/2106.08254
-      Title: 'BEiT: BERT Pre-Training of Image Transformers'
+      URL: https://arxiv.org/abs/2208.06366
+      Title: 'BEiT v2: Masked Image Modeling with Vector-Quantized Visual Tokenizers'
     README: configs/beitv2/README.md
     Code:
       URL: https://github.com/open-mmlab/mmclassification/blob/dev-1.x/mmcls/models/backbones/beit.py
