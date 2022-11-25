@@ -39,9 +39,11 @@ class MultiTasksMetric(BaseMetric):
         >>>metric = MultiTasksMetric(self.task_metrics)
         >>>metric.process(None, self.pred)
         >>>metric.evaluate(2)
-        {'task0_accuracy/top1': 100.0,
-        'task1_accuracy/top1': 50.0,
-        'task1_accuracy/top3': 100.0}
+        {
+          'task0_accuracy/top1': 100.0,
+          'task1_accuracy/top1': 50.0,
+          'task1_accuracy/top3': 100.0
+        }
 
     """
 
