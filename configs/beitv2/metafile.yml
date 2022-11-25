@@ -1,0 +1,41 @@
+Collections:
+  - Name: BEiTv2
+    Metadata:
+      Architecture:
+        - Attention Dropout
+        - Convolution
+        - Dense Connections
+        - Dropout
+        - GELU
+        - Layer Normalization
+        - Multi-Head Attention
+        - Scaled Dot-Product Attention
+        - Tanh Activation
+    Paper:
+      URL: https://arxiv.org/abs/2106.08254
+      Title: 'BEiT: BERT Pre-Training of Image Transformers'
+    README: configs/beitv2/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/dev-1.x/mmcls/models/backbones/beit.py
+      Version: v1.0.0rc4
+
+Models:
+  - Name: beitv2-base-p16_8xb64_in1k
+    In Collection: BEiTv2
+    Metadata:
+      FLOPs: 33030000000
+      Parameters: 86860000
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 86.47
+        Top 5 Accuracy: 97.99
+    Weights: 
+    Converted From:
+      Weights: https://conversationhub.blob.core.windows.net/beit-share-public/beitv2/beitv2_base_patch16_224_pt1k_ft21kto1k.pth
+      Code: https://github.com/microsoft/unilm/tree/master/beit2
+    Config: configs/vision_transformer/beitv2-base-p16_8xb64_in1k.py
