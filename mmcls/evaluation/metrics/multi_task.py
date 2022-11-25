@@ -23,7 +23,7 @@ class MultiTasksMetric(BaseMetric):
         }
         >>>pred = [
             {
-            'gt_tassk'{
+            'gt_task'{
                 'task0': torch.tensor([0.7, 0.0, 0.3]),
                 'task1': torch.tensor([0.5, 0.2, 0.3])
                 },
