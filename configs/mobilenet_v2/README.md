@@ -6,19 +6,25 @@
 
 ## Introduction
 
-**MobileNet V2** is initially described in [the paper](https://arxiv.org/pdf/1801.04381.pdf), which improves the state of the art performance of mobile models on multiple tasks. It is based on an inverted residual structure where the input and output of the residual block are thin bottleneck layers. The intermediate expansion layer uses lightweight depthwise convolutions to filter features as a source of non-linearity.
-
-The author of MobileNet V2 measure its performance on Imagenet classification, COCO object detection, and VOC image segmentation.
+**MobileNet V2** is initially described in [the paper](https://arxiv.org/pdf/1801.04381.pdf), which improves the state of the art performance of mobile models on multiple tasks. MobileNetV2 is an improvement on V1. Its new ideas include Linear Bottleneck and Inverted Residuals, and is based on an inverted residual structure where the input and output of the residual block are thin bottleneck layers. The intermediate expansion layer uses lightweight depthwise convolutions to filter features as a source of non-linearity. The author of MobileNet V2 measure its performance on Imagenet classification, COCO object detection, and VOC image segmentation.
 
 <div align=center>
-<img src="https://user-images.githubusercontent.com/26739999/142563365-7a9ea577-8f79-4c21-a750-ebcaad9bcc2f.png" width="90%"/>
+<img src="https://user-images.githubusercontent.com/26739999/142563365-7a9ea577-8f79-4c21-a750-ebcaad9bcc2f.png" width="60%"/>
 </div>
 
 ## Abstract
 
+<details>
+
+<summary>Show the paper's abstract</summary>
+
+<br>
 In this paper we describe a new mobile architecture, MobileNetV2, that improves the state of the art performance of mobile models on multiple tasks and benchmarks as well as across a spectrum of different model sizes. We also describe efficient ways of applying these mobile models to object detection in a novel framework we call SSDLite. Additionally, we demonstrate how to build mobile semantic segmentation models through a reduced form of DeepLabv3 which we call Mobile DeepLabv3.
 
-The MobileNetV2 architecture is based on an inverted residual structure where the input and output of the residual block are thin bottleneck layers opposite to traditional residual models which use expanded representations in the input an MobileNetV2 uses lightweight depthwise convolutions to filter features in the intermediate expansion layer. Additionally, we find that it is important to remove non-linearities in the narrow layers in order to maintain representational power. We demonstrate that this improves performance and provide an intuition that led to this design. Finally, our approach allows decoupling of the input/output domains from the expressiveness of the transformation, which provides a convenient framework for further analysis. We measure our performance on Imagenet classification, COCO object detection, VOC image segmentation. We evaluate the trade-offs between accuracy, and number of operations measured by multiply-adds (MAdd), as well as the number of parameters
+The MobileNetV2 architecture is based on an inverted residual structure where the input and output of the residual block are thin bottleneck layers opposite to traditional residual models which use expanded representations in the input an MobileNetV2 uses lightweight depthwise convolutions to filter features in the intermediate expansion layer. Additionally, we find that it is important to remove non-linearities in the narrow layers in order to maintain representational power. We demonstrate that this improves performance and provide an intuition that led to this design. Finally, our approach allows decoupling of the input/output domains from the expressiveness of the transformation, which provides a convenient framework for further analysis. We measure our performance on Imagenet classification, COCO object detection, VOC image segmentation. We evaluate the trade-offs between accuracy, and number of operations measured by multiply-adds (MAdd), as well as the number of parameters.
+</br>
+
+</details>
 
 ## How to use it?
 

@@ -6,17 +6,23 @@
 
 ## Introduction
 
-**MobileNet V3** is initially described in [the paper](https://arxiv.org/pdf/1905.02244.pdf), which improves the state of the art performance of mobile models based on a combination of complementary search techniques as well as a novel architecture design. The author create two new MobileNet models for release: MobileNetV3-Large and MobileNetV3-Small which are targeted for high and low resource use cases. These models are then adapted and applied to the tasks of object detection and semantic segmentation.
-
-The author of MobileNet V3 measure its performance on Imagenet classification, COCO object detection, and Cityscapes segmentation.
+**MobileNet V3** is initially described in [the paper](https://arxiv.org/pdf/1905.02244.pdf). MobileNetV3 parameters are obtained by NAS (network architecture search) search, and some practical results of V1 and V2 are inherited, and the attention mechanism of SE channel is attracted, which can be considered as a masterpiece. The author create two new MobileNet models for release: MobileNetV3-Large and MobileNetV3-Small which are targeted for high and low resource use cases. These models are then adapted and applied to the tasks of object detection and semantic segmentation. The author of MobileNet V3 measure its performance on Imagenet classification, COCO object detection, and Cityscapes segmentation.
 
 <div align=center>
-<img src="https://user-images.githubusercontent.com/26739999/142563801-ef4feacc-ecd7-4d14-a411-8c9d63571749.png" width="90%"/>
+<img src="https://user-images.githubusercontent.com/26739999/142563801-ef4feacc-ecd7-4d14-a411-8c9d63571749.png" width="60%"/>
 </div>
 
 ## Abstract
 
+<details>
+
+<summary>Show the paper's abstract</summary>
+
+<br>
 We present the next generation of MobileNets based on a combination of complementary search techniques as well as a novel architecture design. MobileNetV3 is tuned to mobile phone CPUs through a combination of hardware-aware network architecture search (NAS) complemented by the NetAdapt algorithm and then subsequently improved through novel architecture advances. This paper starts the exploration of how automated search algorithms and network design can work together to harness complementary approaches improving the overall state of the art. Through this process we create two new MobileNet models for release: MobileNetV3-Large and MobileNetV3-Small which are targeted for high and low resource use cases. These models are then adapted and applied to the tasks of object detection and semantic segmentation. For the task of semantic segmentation (or any dense pixel prediction), we propose a new efficient segmentation decoder Lite Reduced Atrous Spatial Pyramid Pooling (LR-ASPP). We achieve new state of the art results for mobile classification, detection and segmentation. MobileNetV3-Large is 3.2% more accurate on ImageNet classification while reducing latency by 15% compared to MobileNetV2. MobileNetV3-Small is 4.6% more accurate while reducing latency by 5% compared to MobileNetV2. MobileNetV3-Large detection is 25% faster at roughly the same accuracy as MobileNetV2 on COCO detection. MobileNetV3-Large LR-ASPP is 30% faster than MobileNetV2 R-ASPP at similar accuracy for Cityscapes segmentation.
+</br>
+
+</details>
 
 ## How to use it?
 
