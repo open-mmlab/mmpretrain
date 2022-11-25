@@ -36,6 +36,6 @@ Models:
         Top 5 Accuracy: 97.59
     Weights: 
     Converted From:
-      Weights: https://console.cloud.google.com/storage/browser/_details/vit_models/augreg/B_16-i21k-300ep-lr_0.001-aug_medium1-wd_0.1-do_0.0-sd_0.0--imagenet2012-steps_20k-lr_0.03-res_384.npz
+      Weights: https://conversationhub.blob.core.windows.net/beit-share-public/beit/beit_base_patch16_224_pt22k_ft22kto1k.pth
       Code: https://github.com/microsoft/unilm/tree/master/beit
     Config: configs/vision_transformer/beit-base-p16_8xb64_in1k.py
