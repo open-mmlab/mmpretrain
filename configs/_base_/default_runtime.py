@@ -46,3 +46,6 @@ load_from = None
 
 # whether to resume training from the loaded checkpoint
 resume = False
+
+# Defaults to use random seed and disable `deterministic`
+randomness = dict(seed=None, deterministic=False)

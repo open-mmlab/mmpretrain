@@ -4,7 +4,7 @@ import os
 
 import numpy as np
 import torch
-from mmcv.runner import Sequential
+from mmengine.model import Sequential
 from tensorflow.python.training import py_checkpoint_reader
 
 from mmcls.models.backbones.efficientnet import EfficientNet
@@ -27,7 +27,7 @@ def read_ckpt(ckpt):
     return weights
 
 
-def map_key(weight):
+def map_key(weight, l2_flag):
     m = dict()
     has_expand_conv = set()
     is_MBConv = set()
@@ -59,6 +59,8 @@ def map_key(weight):
             idx2key.append('{}'.format(idx))
 
     for k, v in weight.items():
+        if l2_flag:
+            k = k.replace('/ExponentialMovingAverage', '')
 
         if 'Exponential' in k or 'RMS' in k:
             continue
@@ -204,6 +206,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('infile', type=str, help='Path to the ckpt.')
     parser.add_argument('outfile', type=str, help='Output file.')
+    parser.add_argument(
+        '--l2',
+        action='store_true',
+        help='If true convert ExponentialMovingAverage weights. '
+        'l2 arch should use it.')
     args = parser.parse_args()
     assert args.outfile
 
@@ -211,5 +218,5 @@ if __name__ == '__main__':
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     weights = read_ckpt(args.infile)
-    weights = map_key(weights)
+    weights = map_key(weights, args.l2)
     torch.save(weights, args.outfile)

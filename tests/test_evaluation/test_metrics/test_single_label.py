@@ -212,7 +212,9 @@ class TestSingleLabel(TestCase):
         pred_no_score = copy.deepcopy(pred)
         for sample in pred_no_score:
             del sample['pred_label']['score']
-        metric = METRICS.build(dict(type='SingleLabelMetric', thrs=(0., 0.6)))
+            del sample['num_classes']
+        metric = METRICS.build(
+            dict(type='SingleLabelMetric', thrs=(0., 0.6), num_classes=3))
         metric.process(None, pred_no_score)
         res = metric.evaluate(6)
         self.assertIsInstance(res, dict)
@@ -221,14 +223,13 @@ class TestSingleLabel(TestCase):
         self.assertAlmostEqual(res['single-label/recall'], 72.222, places=2)
         self.assertAlmostEqual(res['single-label/f1-score'], 65.555, places=2)
 
-        pred_no_num_classes = copy.deepcopy(pred_no_score)
-        for sample in pred_no_num_classes:
-            del sample['pred_label']['num_classes']
-        with self.assertRaisesRegex(ValueError, 'neither `score` nor'):
-            metric.process(None, pred_no_num_classes)
+        metric = METRICS.build(dict(type='SingleLabelMetric', thrs=(0., 0.6)))
+        with self.assertRaisesRegex(AssertionError, 'must be specified'):
+            metric.process(None, pred_no_score)
 
         # Test with empty items
-        metric = METRICS.build(dict(type='SingleLabelMetric', items=tuple()))
+        metric = METRICS.build(
+            dict(type='SingleLabelMetric', items=tuple(), num_classes=3))
         metric.process(None, pred)
         res = metric.evaluate(6)
         self.assertIsInstance(res, dict)

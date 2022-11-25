@@ -220,13 +220,14 @@ class ImageClassifier(BaseClassifier):
         return self.head.loss(feats, data_samples)
 
     def predict(self,
-                inputs: tuple,
+                inputs: torch.Tensor,
                 data_samples: Optional[List[ClsDataSample]] = None,
                 **kwargs) -> List[ClsDataSample]:
-        """Predict results from the extracted features.
+        """Predict results from a batch of inputs.
 
         Args:
-            inputs (tuple): The features extracted from the backbone.
+            inputs (torch.Tensor): The input tensor with shape
+                (N, C, ...) in general.
             data_samples (List[ClsDataSample], optional): The annotation
                 data of every samples. Defaults to None.
             **kwargs: Other keyword arguments accepted by the ``predict``

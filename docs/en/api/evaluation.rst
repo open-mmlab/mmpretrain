@@ -29,6 +29,9 @@ Multi Label Metric
 .. autosummary::
    :toctree: generated
    :nosignatures:
+   :template: classtemplate.rst
 
-   MultiLabelMetric
    AveragePrecision
+   MultiLabelMetric
+   VOCAveragePrecision
+   VOCMultiLabelMetric

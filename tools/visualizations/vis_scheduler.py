@@ -41,6 +41,7 @@ class ParamRecordHook(Hook):
         self.by_epoch = by_epoch
         self.lr_list = []
         self.momentum_list = []
+        self.wd_list = []
         self.task_id = 0
         self.progress = Progress(BarColumn(), MofNCompleteColumn(),
                                  TextColumn('{task.description}'))
@@ -66,6 +67,8 @@ class ParamRecordHook(Hook):
         self.lr_list.append(runner.optim_wrapper.get_lr()['lr'][0])
         self.momentum_list.append(
             runner.optim_wrapper.get_momentum()['momentum'][0])
+        self.wd_list.append(
+            runner.optim_wrapper.param_groups[0]['weight_decay'])
 
     def after_train(self, runner):
         self.progress.stop()
@@ -80,9 +83,9 @@ def parse_args():
         '--parameter',
         type=str,
         default='lr',
-        choices=['lr', 'momentum'],
+        choices=['lr', 'momentum', 'wd'],
         help='The parameter to visualize its change curve, choose from'
-        '"lr" and "momentum". Defaults to "lr".')
+        '"lr", "wd" and "momentum". Defaults to "lr".')
     parser.add_argument(
         '-d',
         '--dataset-size',
@@ -192,7 +195,12 @@ def simulate_train(data_loader, cfg, by_epoch):
 
     runner.train()
 
-    return param_record_hook.lr_list, param_record_hook.momentum_list
+    param_dict = dict(
+        lr=param_record_hook.lr_list,
+        momentum=param_record_hook.momentum_list,
+        wd=param_record_hook.wd_list)
+
+    return param_dict
 
 
 def main():
@@ -250,13 +258,15 @@ def main():
     rich.print(dataset_info + '\n')
 
     # simulation training process
-    lr_list, momentum_list = simulate_train(data_loader, cfg, by_epoch)
-    if args.parameter == 'lr':
-        param_list = lr_list
-    else:
-        param_list = momentum_list
+    param_dict = simulate_train(data_loader, cfg, by_epoch)
+    param_list = param_dict[args.parameter]
 
-    param_name = 'Learning Rate' if args.parameter == 'lr' else 'Momentum'
+    if args.parameter == 'lr':
+        param_name = 'Learning Rate'
+    elif args.parameter == 'momentum':
+        param_name = 'Momentum'
+    else:
+        param_name = 'Weight Decay'
     plot_curve(param_list, args, param_name, len(data_loader), by_epoch)
 
     if args.save_path:

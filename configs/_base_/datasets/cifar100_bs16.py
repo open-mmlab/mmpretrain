@@ -1,6 +1,7 @@
 # dataset settings
 dataset_type = 'CIFAR100'
 data_preprocessor = dict(
+    num_classes=100,
     # RGB format normalization parameters
     mean=[129.304, 124.070, 112.434],
     std=[68.170, 65.392, 70.418],
@@ -26,7 +27,6 @@ train_dataloader = dict(
         test_mode=False,
         pipeline=train_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=True),
-    persistent_workers=True,
 )
 
 val_dataloader = dict(
@@ -38,7 +38,6 @@ val_dataloader = dict(
         test_mode=True,
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
-    persistent_workers=True,
 )
 val_evaluator = dict(type='Accuracy', topk=(1, ))
 

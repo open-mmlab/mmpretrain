@@ -142,7 +142,7 @@ Formatting
 MMCV transforms
 ^^^^^^^^^^^^^^^
 
-We also provides many transforms in MMCV. You can use them directly in the config files. Here are some frequently used transforms, and the whole transforms list can be found in :external:mod:`mmcv.transforms`.
+We also provides many transforms in MMCV. You can use them directly in the config files. Here are some frequently used transforms, and the whole transforms list can be found in :external+mmcv:doc:`api/transforms`.
 
 .. list-table::
    :widths: 50 50
@@ -233,12 +233,12 @@ These augmentations are usually only used during training, therefore, we use the
        neck=...,
        head=...,
        train_cfg=dict(augments=[
-           dict(type='Mixup', alpha=0.8, num_classes=num_classes),
-           dict(type='CutMix', alpha=1.0, num_classes=num_classes),
+           dict(type='Mixup', alpha=0.8),
+           dict(type='CutMix', alpha=1.0),
        ]),
    )
 
-You can also speicy the probabilities of every batch augmentation by the ``probs`` field.
+You can also specify the probabilities of every batch augmentation by the ``probs`` field.
 
 .. code-block:: python
 
@@ -247,8 +247,8 @@ You can also speicy the probabilities of every batch augmentation by the ``probs
        neck=...,
        head=...,
        train_cfg=dict(augments=[
-           dict(type='Mixup', alpha=0.8, num_classes=num_classes),
-           dict(type='CutMix', alpha=1.0, num_classes=num_classes),
+           dict(type='Mixup', alpha=0.8),
+           dict(type='CutMix', alpha=1.0),
        ], probs=[0.3, 0.7])
    )
 

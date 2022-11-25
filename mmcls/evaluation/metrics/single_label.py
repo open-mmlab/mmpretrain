@@ -28,6 +28,13 @@ def _precision_recall_f1_support(pred_positive, gt_positive, average):
     assert average in average_options, 'Invalid `average` argument, ' \
         f'please specicy from {average_options}.'
 
+    # ignore -1 target such as difficult sample that is not wanted
+    # in evaluation results.
+    # only for calculate multi-label without affecting single-label behavior
+    ignored_index = gt_positive == -1
+    pred_positive[ignored_index] = 0
+    gt_positive[ignored_index] = 0
+
     class_correct = (pred_positive & gt_positive)
     if average == 'micro':
         tp_sum = class_correct.sum()
@@ -54,15 +61,25 @@ def _precision_recall_f1_support(pred_positive, gt_positive, average):
 
 @METRICS.register_module()
 class Accuracy(BaseMetric):
-    """Top-k accuracy evaluation metric.
+    r"""Accuracy evaluation metric.
+
+    For either binary classification or multi-class classification, the
+    accuracy is the fraction of correct predictions in all predictions:
+
+    .. math::
+
+        \text{Accuracy} = \frac{N_{\text{correct}}}{N_{\text{all}}}
 
     Args:
-        topk (int | Sequence[int]): If the predictions in ``topk``
-            matches the target, the predictions will be regarded as
-            correct ones. Defaults to 1.
-        thrs (Sequence[float | None] | float | None): Predictions with scores
-            under the thresholds are considered negative. None means no
-            thresholds. Defaults to 0.
+        topk (int | Sequence[int]): If the ground truth label matches one of
+            the best **k** predictions, the sample will be regard as a positive
+            prediction. If the parameter is a tuple, all of top-k accuracy will
+            be calculated and outputted together. Defaults to 1.
+        thrs (Sequence[float | None] | float | None): If a float, predictions
+            with score lower than the threshold will be regard as the negative
+            prediction. If None, not apply threshold. If the parameter is a
+            tuple, accuracy based on all thresholds will be calculated and
+            outputted together. Defaults to 0.
         collect_device (str): Device name used for collecting results from
             different ranks during distributed training. Must be 'cpu' or
             'gpu'. Defaults to 'cpu'.
@@ -262,40 +279,59 @@ class Accuracy(BaseMetric):
 
 @METRICS.register_module()
 class SingleLabelMetric(BaseMetric):
-    """A collection of metrics for single-label multi-class classification task
-    based on confusion matrix.
+    r"""A collection of precision, recall, f1-score and support for
+    single-label tasks.
 
-    It includes precision, recall, f1-score and support. Comparing with
-    :class:`Accuracy`, these metrics doesn't support topk, but supports
-    various average mode.
+    The collection of metrics is for single-label multi-class classification.
+    And all these metrics are based on the confusion matrix of every category:
+
+    .. image:: ../../_static/image/confusion-matrix.png
+       :width: 60%
+       :align: center
+
+    All metrics can be formulated use variables above:
+
+    **Precision** is the fraction of correct predictions in all predictions:
+
+    .. math::
+        \text{Precision} = \frac{TP}{TP+FP}
+
+    **Recall** is the fraction of correct predictions in all targets:
+
+    .. math::
+        \text{Recall} = \frac{TP}{TP+FN}
+
+    **F1-score** is the harmonic mean of the precision and recall:
+
+    .. math::
+        \text{F1-score} = \frac{2\times\text{Recall}\times\text{Precision}}{\text{Recall}+\text{Precision}}
+
+    **Support** is the number of samples:
+
+    .. math::
+        \text{Support} = TP + TN + FN + FP
 
     Args:
-        thrs (Sequence[float | None] | float | None): Predictions with scores
-            under the thresholds are considered negative. None means no
-            thresholds. Defaults to 0.
-        items (Sequence[str]): The detailed metric items to evaluate. Here is
-            the available options:
+        thrs (Sequence[float | None] | float | None): If a float, predictions
+            with score lower than the threshold will be regard as the negative
+            prediction. If None, only the top-1 prediction will be regard as
+            the positive prediction. If the parameter is a tuple, accuracy
+            based on all thresholds will be calculated and outputted together.
+            Defaults to 0.
+        items (Sequence[str]): The detailed metric items to evaluate, select
+            from "precision", "recall", "f1-score" and "support".
+            Defaults to ``('precision', 'recall', 'f1-score')``.
+        average (str | None): How to calculate the final metrics from the
+            confusion matrix of every category. It supports three modes:
 
-                - `"precision"`: The ratio tp / (tp + fp) where tp is the
-                  number of true positives and fp the number of false
-                  positives.
-                - `"recall"`: The ratio tp / (tp + fn) where tp is the number
-                  of true positives and fn the number of false negatives.
-                - `"f1-score"`: The f1-score is the harmonic mean of the
-                  precision and recall.
-                - `"support"`: The total number of occurrences of each category
-                  in the target.
-
-            Defaults to ('precision', 'recall', 'f1-score').
-        average (str, optional): The average method. If None, the scores
-            for each class are returned. And it supports two average modes:
-
-                - `"macro"`: Calculate metrics for each category, and calculate
-                  the mean value over all categories.
-                - `"micro"`: Calculate metrics globally by counting the total
-                  true positives, false negatives and false positives.
+            - `"macro"`: Calculate metrics for each category, and calculate
+              the mean value over all categories.
+            - `"micro"`: Average the confusion matrix over all categories and
+              calculate metrics on the mean confusion matrix.
+            - `None`: Calculate metrics of every category and output directly.
 
             Defaults to "macro".
+        num_classes (int, optional): The number of classes. Defaults to None.
         collect_device (str): Device name used for collecting results from
             different ranks during distributed training. Must be 'cpu' or
             'gpu'. Defaults to 'cpu'.
@@ -342,13 +378,14 @@ class SingleLabelMetric(BaseMetric):
             'single-label/recall_classwise': [18.5, 18.5, 17.0, 20.0, 18.0],
             'single-label/f1-score_classwise': [19.7, 18.6, 17.1, 19.7, 17.0]
         }
-    """
+    """  # noqa: E501
     default_prefix: Optional[str] = 'single-label'
 
     def __init__(self,
                  thrs: Union[float, Sequence[Union[float, None]], None] = 0.,
                  items: Sequence[str] = ('precision', 'recall', 'f1-score'),
                  average: Optional[str] = 'macro',
+                 num_classes: Optional[int] = None,
                  collect_device: str = 'cpu',
                  prefix: Optional[str] = None) -> None:
         super().__init__(collect_device=collect_device, prefix=prefix)
@@ -365,6 +402,7 @@ class SingleLabelMetric(BaseMetric):
                 '"support".'
         self.items = tuple(items)
         self.average = average
+        self.num_classes = num_classes
 
     def process(self, data_batch, data_samples: Sequence[dict]):
         """Process one batch of data samples.
@@ -383,12 +421,14 @@ class SingleLabelMetric(BaseMetric):
             gt_label = data_sample['gt_label']
             if 'score' in pred_label:
                 result['pred_score'] = pred_label['score'].cpu()
-            elif ('num_classes' in pred_label):
-                result['pred_label'] = pred_label['label'].cpu()
-                result['num_classes'] = pred_label['num_classes']
             else:
-                raise ValueError('The `pred_label` in data_samples do not '
-                                 'have neither `score` nor `num_classes`.')
+                num_classes = self.num_classes or data_sample.get(
+                    'num_classes')
+                assert num_classes is not None, \
+                    'The `num_classes` must be specified if `pred_label` has '\
+                    'only `label`.'
+                result['pred_label'] = pred_label['label'].cpu()
+                result['num_classes'] = num_classes
             result['gt_label'] = gt_label['label'].cpu()
             # Save the result to `self.results`.
             self.results.append(result)
@@ -478,14 +518,16 @@ class SingleLabelMetric(BaseMetric):
                 the thresholds are considered negative. It's only used
                 when ``pred`` is scores. None means no thresholds.
                 Defaults to (0., ).
-            average (str, optional): The average method. If None, the scores
-                for each class are returned. And it supports two average modes:
+            average (str | None): How to calculate the final metrics from
+                the confusion matrix of every category. It supports three
+                modes:
 
-                    - `"macro"`: Calculate metrics for each category, and
-                      calculate the mean value over all categories.
-                    - `"micro"`: Calculate metrics globally by counting the
-                      total true positives, false negatives and false
-                      positives.
+                - `"macro"`: Calculate metrics for each category, and calculate
+                  the mean value over all categories.
+                - `"micro"`: Average the confusion matrix over all categories
+                  and calculate metrics on the mean confusion matrix.
+                - `None`: Calculate metrics of every category and output
+                  directly.
 
                 Defaults to "macro".
             num_classes (Optional, int): The number of classes. If the ``pred``

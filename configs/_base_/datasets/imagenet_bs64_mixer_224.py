@@ -3,6 +3,7 @@ dataset_type = 'ImageNet'
 
 # Google research usually use the below normalization setting.
 data_preprocessor = dict(
+    num_classes=1000,
     mean=[127.5, 127.5, 127.5],
     std=[127.5, 127.5, 127.5],
     # convert image from BGR to RGB
@@ -33,7 +34,6 @@ train_dataloader = dict(
         data_prefix='train',
         pipeline=train_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=True),
-    persistent_workers=True,
 )
 
 val_dataloader = dict(
@@ -46,7 +46,6 @@ val_dataloader = dict(
         data_prefix='val',
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
-    persistent_workers=True,
 )
 val_evaluator = dict(type='Accuracy', topk=(1, 5))
 

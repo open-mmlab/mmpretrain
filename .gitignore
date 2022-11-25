@@ -76,6 +76,9 @@ docs/zh_CN/_model_zoo.rst
 docs/zh_CN/modelzoo_statistics.md
 docs/zh_CN/papers/
 docs/zh_CN/api/generated/
+docs/zh_CN/locales/
+!docs/zh_CN/locales/zh_CN/LC_MESSAGES/api.po
+!docs/zh_CN/locales/zh_CN/LC_MESSAGES/papers.po
 
 # PyBuilder
 target/
@@ -136,3 +139,10 @@ venv.bak/
 
 # slurm
 *.out
+
+# tensorflow
+*.tar.gz
+checkpoint
+model_params.txt
+*.ckpt*
+results.txt
