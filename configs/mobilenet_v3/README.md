@@ -57,7 +57,7 @@ torch.Size([1, 1000])
 >>> # To extract features.
 >>> outs = model.extract_feat(inputs)
 >>> print(outs[0].shape)
-torch.Size([1, 576])
+torch.Size([1, 288])
 ```
 
 **Train/Test Command**
@@ -78,7 +78,7 @@ python tools/test.py configs/mobilenet_v3/mobilenet-v3-small_8xb128_in1k.py http
 
 <!-- [TABS-END] -->
 
-For more configurable parameters, please refer to the [API](https://mmclassification.readthedocs.io/en/1.x/api/generated/mmcls.models.backbones.MobileNetV2.html#mmcls.models.backbones.MobileNetV2).
+For more configurable parameters, please refer to the [API](https://mmclassification.readthedocs.io/en/1.x/api/generated/mmcls.models.backbones.MobileNetV3.html#mmcls.models.backbones.MobileNetV3).
 
 ## Results and models
 
