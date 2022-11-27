@@ -705,8 +705,7 @@ class VitAdapter(VisionTransformer):
             self.add_module(f'norm{i}', norm_layer)
 
     def _build_layers(self, drop_rate, drop_path_rate, qkv_bias, norm_cfg,
-                      beit_style, layer_scale_init_value, layer_cfgs,
-                      use_layer_scale):
+                      beit_style, layer_scale_init_value, layer_cfgs):
         # stochastic depth decay rule
         dpr = np.linspace(0, drop_path_rate, self.num_layers)
 
@@ -723,12 +722,11 @@ class VitAdapter(VisionTransformer):
                 drop_path_rate=dpr[i],
                 qkv_bias=qkv_bias,
                 norm_cfg=norm_cfg,
-            )
+                layer_scale_init_value=layer_scale_init_value)
             _layer_cfg.update(layer_cfgs[i])
             if beit_style:
                 _layer_cfg.update(
                     dict(
-                        layer_scale_init_value=layer_scale_init_value,
                         is_cls_token=False,
                         use_window_attention=i in self.window_block_indexes,
                         window_size=self.patch_resolution
@@ -738,10 +736,8 @@ class VitAdapter(VisionTransformer):
                 self.layers.append(BEiTTransformerEncoderLayer(**_layer_cfg))
             else:
                 _layer_cfg.update(
-                    dict(
-                        use_layer_scale=use_layer_scale,
-                        window_size=0 if i not in self.window_block_indexes
-                        else self.window_size))
+                    dict(window_size=0 if i not in
+                         self.window_block_indexes else self.window_size))
                 self.layers.append(TransformerEncoderLayer(**_layer_cfg))
 
     def forward(self, x):

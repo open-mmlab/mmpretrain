@@ -4,13 +4,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn.bricks.drop import build_dropout
+from mmcv.cnn.bricks.scale import LayerScale
 from mmengine.model import BaseModule
 from mmengine.model.weight_init import trunc_normal_
 from mmengine.utils import digit_version
 
 from mmcls.registry import MODELS
 from .helpers import to_2tuple
-from .layer_scale import LayerScale
 
 # After pytorch v1.10.0, use torch.meshgrid without indexing
 # will raise extra warning. For more details,
