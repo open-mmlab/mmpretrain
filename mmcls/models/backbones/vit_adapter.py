@@ -290,6 +290,7 @@ class Injector(BaseModule):
             num_levels=num_levels,
             num_heads=num_heads,
             num_points=num_points,
+            dropout=0.0,
             batch_first=True)
         self.gamma = LayerScale(embed_dims)
 
