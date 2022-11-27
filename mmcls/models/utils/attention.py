@@ -512,7 +512,7 @@ class MultiheadAttention(BaseModule):
                  qk_scale=None,
                  proj_bias=True,
                  v_shortcut=False,
-                 use_layer_scale=False,
+                 layer_scale_init_value=0.,
                  init_cfg=None):
         super(MultiheadAttention, self).__init__(init_cfg=init_cfg)
 
@@ -531,8 +531,8 @@ class MultiheadAttention(BaseModule):
 
         self.out_drop = build_dropout(dropout_layer)
 
-        if use_layer_scale:
-            self.gamma1 = LayerScale(embed_dims)
+        if layer_scale_init_value > 0:
+            self.gamma1 = LayerScale(embed_dims, scale=layer_scale_init_value)
         else:
             self.gamma1 = nn.Identity()
 
