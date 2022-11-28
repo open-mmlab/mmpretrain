@@ -5,6 +5,7 @@ _base_ = [
     '../_base_/default_runtime.py'
 ]
 
+model = dict(backbone=dict(arch='A2'), head=dict(in_channels=1408))
 # schedule settings
 optim_wrapper = dict(
     paramwise_cfg=dict(

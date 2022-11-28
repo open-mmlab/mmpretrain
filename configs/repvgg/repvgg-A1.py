@@ -4,7 +4,7 @@ _base_ = [
     '../_base_/schedules/imagenet_bs256_coslr.py',
     '../_base_/default_runtime.py'
 ]
-
+model = dict(backbone=dict(arch='A1'))
 # schedule settings
 optim_wrapper = dict(
     paramwise_cfg=dict(

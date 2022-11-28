@@ -33,4 +33,6 @@ train_pipeline = [
     dict(type='PackClsInputs'),
 ]
 
+default_hooks = dict(checkpoint=dict(type='CheckpointHook', interval=1, max_keep_ckpts=3))
+
 train_dataloader = dict(dataset=dict(pipeline=train_pipeline), )
