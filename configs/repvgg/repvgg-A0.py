@@ -26,5 +26,5 @@ param_scheduler = dict(
 
 train_cfg = dict(by_epoch=True, max_epochs=120)
 
-default_hooks = dict(checkpoint=dict(type='CheckpointHook', interval=1, max_keep_ckpts=3))
-
+default_hooks = dict(
+    checkpoint=dict(type='CheckpointHook', interval=1, max_keep_ckpts=3))
