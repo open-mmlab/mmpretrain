@@ -143,9 +143,6 @@ class VisionTransformer(BaseBackbone):
             -1 means not freezing any parameters. Defaults to -1.
         output_cls_token (bool): Whether output the cls_token. If set True,
             ``with_cls_token`` must be True. Defaults to True.
-        beit_style (bool): Whether or not use BEiT-style. Defaults to False.
-        layer_scale_init_value (float): The initialization value for
-            the learnable scaling of attention and FFN. Defaults to 0.1.
         interpolate_mode (str): Select the interpolate mode for position
             embeding vector resize. Defaults to "bicubic".
         patch_cfg (dict): Configs of patch embeding. Defaults to an empty dict.

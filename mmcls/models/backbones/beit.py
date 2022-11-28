@@ -220,6 +220,60 @@ class BEiT(VisionTransformer):
 
     A PyTorch implement of : `BEiT: BERT Pre-Training of Image Transformers
     <https://arxiv.org/abs/2106.08254>`_
+
+    Args:
+        arch (str | dict): BEiT architecture. If use string, choose from
+        'base', 'large'. If use dict, it should have below keys:
+
+            - **embed_dims** (int): The dimensions of embedding.
+            - **num_layers** (int): The number of transformer encoder layers.
+            - **num_heads** (int): The number of heads in attention modules.
+            - **feedforward_channels** (int): The hidden dimensions in
+              feedforward modules.
+
+            Defaults to 'base'.
+        img_size (int | tuple): The expected input image shape. Because we
+            support dynamic input shape, just set the argument to the most
+            common input image shape. Defaults to 224.
+        patch_size (int | tuple): The patch size in patch embedding.
+            Defaults to 16.
+        in_channels (int): The num of input channels. Defaults to 3.
+        out_indices (Sequence | int): Output from which stages.
+            Defaults to -1, means the last stage.
+        drop_rate (float): Probability of an element to be zeroed.
+            Defaults to 0.
+        drop_path_rate (float): stochastic depth rate. Defaults to 0.
+        qkv_bias (bool): Whether to add bias for qkv in attention modules.
+            Defaults to True.
+        norm_cfg (dict): Config dict for normalization layer.
+            Defaults to ``dict(type='LN')``.
+        final_norm (bool): Whether to add a additional layer to normalize
+            final feature map. Defaults to True.
+        with_cls_token (bool): Whether concatenating class token into image
+            tokens as transformer input. Defaults to True.
+        avg_token (bool): Whether or not to use the mean patch token for
+            classification. If True, the model will only take the average
+            of all patch tokens. Defaults to False.
+        frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
+            -1 means not freezing any parameters. Defaults to -1.
+        output_cls_token (bool): Whether output the cls_token. If set True,
+            ``with_cls_token`` must be True. Defaults to True.
+        use_abs_pos_emb (bool): Use position embedding like vanilla ViT.
+            Defaults to False.
+        use_rel_pos_bias (bool): Use relative position embedding in each
+            transformer encoder layer. Defaults to True.
+        use_shared_rel_pos_bias (bool): Use shared relative position embedding,
+            all transformer encoder layers share the same relative position
+            embedding. Defaults to False.
+        layer_scale_init_value (float): The initialization value for
+            the learnable scaling of attention and FFN. Defaults to 0.1.
+        interpolate_mode (str): Select the interpolate mode for position
+            embeding vector resize. Defaults to "bicubic".
+        patch_cfg (dict): Configs of patch embeding. Defaults to an empty dict.
+        layer_cfgs (Sequence | dict): Configs of each transformer layer in
+            encoder. Defaults to an empty dict.
+        init_cfg (dict, optional): Initialization config dict.
+            Defaults to None.
     """
 
     def __init__(self,
