@@ -25,11 +25,18 @@ class FocalModulation(BaseModule):
 
     Args:
         embed_dims (int): The feature dimension
-        proj_drop (float, optional): Dropout ratio of output. Default: 0.0
-        focal_level (int): Number of focal levels
-        focal_window (int): Focal window size at focal level 1
-        focal_factor (int, default=2): Step to increase the focal window
-        use_postln (bool, default=False): Whether use post-modulation layernorm
+        drop_rate (float): Dropout rate. Defaults to 0.0.
+        focal_level (int): Number of focal levels. Defaults to 2.
+        focal_window (int): Focal window size at focal level 1. Defaults to 7.
+        focal_factor (int): Step to increase the focal window. Defaults to 2.
+        act_cfg (dict, optional): The activation config for FFNs.
+            Default: dict(type='GELU').
+        normalize_modulator (bool): Whether to use normalize modulator.
+             Defaults to False.
+        norm_cfg (dict, optional): Config dict for normalization layer.
+            Defaults to None.
+        init_cfg (dict, optional): Initialization config dict.
+            Defaults to None.
     """
 
     def __init__(self,
@@ -47,7 +54,6 @@ class FocalModulation(BaseModule):
         self.embed_dims = embed_dims
         self.normalize_modulator = normalize_modulator
 
-        # specific args for focalv3
         self.focal_level = focal_level
         self.focal_window = focal_window
         self.focal_factor = focal_factor
@@ -111,14 +117,25 @@ class FocalModulationBlock(BaseModule):
     Args:
         embed_dims (int): The feature dimension
         ffn_ratio (float): Ratio of ffn hidden dim to embedding dim.
+            Defaults to 4.0.
         drop_rate (float): Dropout rate. Defaults to 0.0.
-        drop_path_rate (float): Stochastic depth rate. Defaults to 0.
-        focal_level (int): number of focal levels. Defaults to 2.
-        focal_window (int): focal kernel size at level 1. Defaults to 9.
+        drop_path_rate (float): Stochastic depth rate. Defaults to 0.0.
+        focal_level (int): Number of focal levels. Defaults to 2.
+        focal_window (int): Focal window size at focal level 1. Defaults to 9.
+        use_layer_scale (bool): Whether to use use_layer_scale in
+            FocalModulationBlock. Defaults to False.
+        use_postln (bool): Whether to use post-LN in FocalModulationBlock.
+            If flase, it uses pre-LN. Defaults to False.
+        normalize_modulator (bool): Whether to use normalize modulator.
+             Defaults to False.
+        use_postln_in_modulation (bool): Whether to use LN in FocalModulation.
+            Defaults to False.
         act_cfg (dict): The activation config for FFNs.
             Defaluts to ``dict(type='GELU')``.
         norm_cfg (dict): Config dict for normalization layer.
             Defaults to ``dict(type='LN')``.
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+            memory while slowing down the training speed. Defaults to False.
         init_cfg (dict, optional): Initialization config dict.
             Defaults to None.
     """
@@ -181,27 +198,20 @@ class FocalModulationBlock(BaseModule):
             self.gamma1, self.gamma2 = nn.Identity(), nn.Identity()
 
     def forward(self, x, hw_shape):
-        """Forward function.
-
-        Args:
-            x: Input feature, tensor size (B, H*W, C).
-            H, W: Spatial resolution of the input feature.
-        """
 
         def _inner_forward(x):
             B, L, C = x.shape
             H, W = hw_shape
-            assert L == H * W, 'input feature has wrong size'
+            assert L == H * W, f"The query length {L} doesn't match the input"\
+                f' shape ({H}, {W}).'
 
             shortcut = x
             x = x if self.use_postln else self.ln1(x)
             x = x.view(B, H, W, C)
 
-            # FM
             x = self.modulation(x).view(B, H * W, C)
             x = x if not self.use_postln else self.ln1(x)
 
-            # FFN
             x = shortcut + self.drop_path(self.gamma1(x))
             if self.use_postln:
                 x = x + self.drop_path(self.gamma2(self.ln2(self.ffn(x))))
@@ -222,23 +232,36 @@ class BasicLayer(BaseModule):
     """A basic focal modulation layer for one stage.
 
     Args:
-        dim (int): Number of feature channels
-        depth (int): Depths of this stage.
+        embed_dims (int): The feature dimension
+        depth (int): The number of blocks in this stage.
         ffn_ratio (float): Ratio of ffn hidden dim to embedding dim.
-            Default: 4.
-        drop (float, optional): Dropout rate. Default: 0.0
-        drop_path (float | tuple[float], optional): Stochastic depth rate.
-            Default: 0.0
-        norm_layer (nn.Module, optional): Normalization layer.
-            Default: nn.LayerNorm
-        downsample (nn.Module | None, optional): Downsample layer at the end
-            of the layer. Default: None
-        focal_level (int): Number of focal levels
-        focal_window (int): Focal window size at focal level 1
-        use_conv_embed (bool): Use overlapped convolution for patch embedding
-            or now. Default: False
-        with_cp (bool): Whether to use checkpointing to save memory.
-            Default: False.
+            Defaults to 4.0.
+        drop_rate (float): Dropout rate. Defaults to 0.0.
+        drop_paths (Sequence[float] | float): The drop path rate in each block.
+            Defaults to 0.0.
+        norm_cfg (dict): Config dict for normalization layer.
+            Defaults to ``dict(type='LN')``.
+        downsample (bool): Downsample the output of blocks. Defaults to False.
+        downsample_cfg (dict): The extra config of the downsample layer.
+            Defaults to empty dict.
+        focal_level (int): Number of focal levels. Defaults to 2.
+        focal_window (int): Focal window size at focal level 1. Defaults to 9.
+        use_overlapped_embed (bool): Whether to use overlapped convolution for
+            downsample. Defaults to False.
+        use_layer_scale (bool): Whether to use use_layer_scale in
+            FocalModulationBlock. Defaults to False.
+        use_postln (bool): Whether to use post-LN in FocalModulationBlock.
+            If flase, it uses pre-LN. Defaults to False.
+        normalize_modulator (bool): Whether to use normalize modulator.
+             Defaults to False.
+        use_postln_in_modulation (bool): Whether to use LN in FocalModulation.
+            Defaults to False.
+        block_cfgs (Sequence[dict] | dict): The extra config of each block.
+            Defaults to empty dicts.
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+            memory while slowing down the training speed. Defaults to False.
+        init_cfg (dict, optional): Initialization config dict.
+            Defaults to None.
     """
 
     def __init__(self,
@@ -250,9 +273,9 @@ class BasicLayer(BaseModule):
                  norm_cfg=dict(type='LN'),
                  downsample=False,
                  downsample_cfg=dict(),
-                 focal_window=9,
                  focal_level=2,
-                 use_conv_embed=False,
+                 focal_window=9,
+                 use_overlapped_embed=False,
                  use_layer_scale=False,
                  use_postln=False,
                  normalize_modulator=False,
@@ -277,8 +300,8 @@ class BasicLayer(BaseModule):
                 'ffn_ratio': ffn_ratio,
                 'drop_rate': drop_rate,
                 'drop_path_rate': drop_paths[i],
-                'focal_window': focal_window,
                 'focal_level': focal_level,
+                'focal_window': focal_window,
                 'use_layer_scale': use_layer_scale,
                 'norm_cfg': norm_cfg,
                 'use_postln': use_postln,
@@ -291,7 +314,7 @@ class BasicLayer(BaseModule):
             self.blocks.append(block)
 
         if downsample:
-            if use_conv_embed:
+            if use_overlapped_embed:
                 _downsample_cfg = dict(
                     in_channels=embed_dims,
                     input_size=None,
@@ -302,7 +325,7 @@ class BasicLayer(BaseModule):
                     stride=2,
                     norm_cfg=dict(type='LN'),
                     **downsample_cfg)
-                self.downsample = ConvPatchEmbed(**_downsample_cfg)
+                self.downsample = OverlappedPatchEmbed(**_downsample_cfg)
             else:
                 _downsample_cfg = dict(
                     in_channels=embed_dims,
@@ -318,13 +341,6 @@ class BasicLayer(BaseModule):
             self.downsample = None
 
     def forward(self, x, in_shape, do_downsample=True):
-        """Forward function.
-
-        Args:
-            x: Input feature, tensor size (B, H*W, C).
-            H, W: Spatial resolution of the input feature.
-        """
-
         for blk in self.blocks:
             x = blk(x, in_shape)
         if self.downsample is not None and do_downsample:
@@ -342,40 +358,41 @@ class BasicLayer(BaseModule):
             return self.embed_dims
 
 
-class ConvPatchEmbed(PatchEmbed):
-    """Image to Patch Embedding.
+class OverlappedPatchEmbed(PatchEmbed):
+    """Image to Patch Embedding with overlapped convolution.
 
-    We use a conv layer to implement PatchEmbed.
+    The differences between OverlappedPatchEmbed & PatchEmbed:
+        1. Use adaptive_padding & padding in projection for overlapped
+           convolution.
+
     Args:
-        in_channels (int): The num of input channels. Default: 3
-        embed_dims (int): The dimensions of embedding. Default: 768
+        in_channels (int): The num of input channels. Defaults to 3.
+        embed_dims (int): The dimensions of embedding. Defaults to 768.
         conv_type (str): The type of convolution
-            to generate patch embedding. Default: "Conv2d".
-        kernel_size (int): The kernel_size of embedding conv. Default: 16.
+            to generate patch embedding. Defaults to "Conv2d".
+        kernel_size (int): The kernel_size of embedding conv. Defaults to 7.
         stride (int): The slide stride of embedding conv.
-            Default: 16.
-        padding (int | tuple | string): The padding length of
-            embedding conv. When it is a string, it means the mode
-            of adaptive padding, support "same" and "corner" now.
-            Default: "corner".
-        dilation (int): The dilation rate of embedding conv. Default: 1.
-        bias (bool): Bias of embed conv. Default: True.
+            Defaults to 4.
+        padding (int | tuple): The padding length of embedding conv.
+            Defaults to 3.
+        dilation (int): The dilation rate of embedding conv. Defaults to 1.
+        bias (bool): Bias of embed conv. Defaults to True.
         norm_cfg (dict, optional): Config dict for normalization layer.
-            Default: None.
+            Defaults to None.
         input_size (int | tuple | None): The size of input, which will be
             used to calculate the out size. Only works when `dynamic_size`
-            is False. Default: None.
-        init_cfg (`mmcv.ConfigDict`, optional): The Config for initialization.
-            Default: None.
+            is False. Defaults to None.
+        init_cfg (dict, optional): Initialization config dict.
+            Defaults to None.
     """
 
     def __init__(self,
                  in_channels=3,
                  embed_dims=768,
                  conv_type='Conv2d',
-                 kernel_size=16,
-                 stride=16,
-                 padding='corner',
+                 kernel_size=7,
+                 stride=4,
+                 padding=3,
                  dilation=1,
                  bias=True,
                  norm_cfg=None,
@@ -439,33 +456,62 @@ class ConvPatchEmbed(PatchEmbed):
 
 @MODELS.register_module()
 class FocalNet(BaseBackbone):
-    """FocalNet backbone.
+    """FocalNet.
+
+    A PyTorch implement of :
+    `Focal Modulation Networks <https://arxiv.org/abs/2203.11926>`_
+
+    Inspiration from
+    https://github.com/microsoft/FocalNet
+
     Args:
-        pretrain_img_size (int): Input image size for training the pretrained
-            model, used in absolute position embedding. Default 224.
-        patch_size (int | tuple(int)): Patch size. Default: 4.
-        in_chans (int): Number of input image channels. Default: 3.
-        embed_dim (int): Number of linear projection output channels.
-            Default: 96.
-        depths (tuple[int]): Depths of each FocalNet stage.
-        ffn_ratio (float): Ratio of ffn hidden dim to embedding dim.
-            Default: 4.
-        drop_rate (float): Dropout rate.
-        drop_path_rate (float): Stochastic depth rate. Default: 0.2.
-        norm_layer (nn.Module): Normalization layer. Default: nn.LayerNorm.
-        patch_norm (bool): If True, add normalization after patch embedding.
-            Default: True.
+        arch (str | dict): FocalNet architecture. If use string, choose
+            from 'tiny-srf', 'tiny-lrf', 'small-srf', 'small-lrf', 'base-srf',
+            'base-lrf', 'large-fl3', 'large-fl4', 'xlarge-fl3', 'xlarge-fl4',
+            'huge-fl3' and 'huge-fl4'. If use dict, it should
+            have below keys:
+
+            - **embed_dims** (int): The dimensions of embedding.
+            - **ffn_ratio** (float): The ratio of ffn hidden dim to embedding
+                dim.
+            - **depths** (List[int]): The number of blocks in each stage.
+            - **focal_levels** (List[int]): The number of focal levels of each
+                stage.
+            - **focal_windows** (List[int]): The number of focal window sizes
+                at first focal level of each stage.
+            - **use_overlapped_embed** (bool): Whether to use overlapped
+                convolution for patch embed and downsample.
+            - **use_postln** (bool): WWhether to use post-LN in
+                FocalModulationBlock. If flase, it uses pre-LN.
+            - **use_layer_scale** (bool): Whether to use use_layer_scale.
+            - **normalize_modulator** (bool): Whether to use normalize
+                modulator.
+            - **use_postln_in_modulation** (bool): Whether to use LN in
+                FocalModulation.
+
+            Defaults to 't-srf'.
+        patch_size (int | tuple): The patch size in patch embedding.
+            Defaults to 4.
+        in_channels (int): The num of input channels. Defaults to 3.
+        drop_rate (float): Dropout rate. Defaults to 0.0.
+        drop_paths (Sequence[float] | float): The drop path rate in each block.
+            Defaults to 0.0.
+        norm_cfg (dict): Config dict for normalization layer.
+            Defaults to ``dict(type='LN')``.
         out_indices (Sequence[int]): Output from which stages.
+            Default: ``(3, )``.
+        out_after_downsample (bool): Whether to output the feature map of a
+            stage after the following downsample layer. Defaults to False.
         frozen_stages (int): Stages to be frozen (stop grad and set eval mode).
-            -1 means not freezing any parameters.
-        focal_levels (Sequence[int]): Number of focal levels at four stages
-        focal_windows (Sequence[int]): Focal window sizes at first focal level
-            at four stages
-        use_conv_embed (bool): Whether use overlapped convolution for patch
-            embedding
-        use_checkpoint (bool): Whether to use checkpointing to save memory.
-            Default: False.
-        patch_cfg (dict): Configs of patch embeding. Defaults to an empty dict.
+            -1 means not freezing any parameters. Defaults to -1.
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+            memory while slowing down the training speed. Defaults to False.
+        stage_cfgs (Sequence[dict] | dict): Extra config dict for each
+            stage. Defaults to an empty dict.
+        patch_cfg (dict): Extra config dict for patch embedding.
+            Defaults to an empty dict.
+        init_cfg (dict, optional): The Config for initialization.
+            Defaults to None.
     """
     arch_zoo = {
         **dict.fromkeys(
@@ -475,8 +521,7 @@ class FocalNet(BaseBackbone):
                 'depths': [2, 2, 6, 2],
                 'focal_levels': [2, 2, 2, 2],
                 'focal_windows': [3, 3, 3, 3],
-                'num_heads': [3, 6, 12, 24],
-                'use_conv_embed': False,
+                'use_overlapped_embed': False,
                 'use_postln': False,
                 'use_layer_scale': False,
                 'normalize_modulator': False,
@@ -489,8 +534,7 @@ class FocalNet(BaseBackbone):
                 'depths': [2, 2, 6, 2],
                 'focal_levels': [3, 3, 3, 3],
                 'focal_windows': [3, 3, 3, 3],
-                'num_heads': [3, 6, 12, 24],
-                'use_conv_embed': False,
+                'use_overlapped_embed': False,
                 'use_postln': False,
                 'use_layer_scale': False,
                 'normalize_modulator': False,
@@ -503,8 +547,7 @@ class FocalNet(BaseBackbone):
                 'depths': [2, 2, 18, 2],
                 'focal_levels': [2, 2, 2, 2],
                 'focal_windows': [3, 3, 3, 3],
-                'num_heads': [3, 6, 12, 24],
-                'use_conv_embed': False,
+                'use_overlapped_embed': False,
                 'use_postln': False,
                 'use_layer_scale': False,
                 'normalize_modulator': False,
@@ -517,8 +560,7 @@ class FocalNet(BaseBackbone):
                 'depths': [2, 2, 18, 2],
                 'focal_levels': [3, 3, 3, 3],
                 'focal_windows': [3, 3, 3, 3],
-                'num_heads': [3, 6, 12, 24],
-                'use_conv_embed': False,
+                'use_overlapped_embed': False,
                 'use_postln': False,
                 'use_layer_scale': False,
                 'normalize_modulator': False,
@@ -531,8 +573,7 @@ class FocalNet(BaseBackbone):
                 'depths': [2, 2, 18, 2],
                 'focal_levels': [2, 2, 2, 2],
                 'focal_windows': [3, 3, 3, 3],
-                'num_heads': [3, 6, 12, 24],
-                'use_conv_embed': False,
+                'use_overlapped_embed': False,
                 'use_postln': False,
                 'use_layer_scale': False,
                 'normalize_modulator': False,
@@ -545,8 +586,7 @@ class FocalNet(BaseBackbone):
                 'depths': [2, 2, 18, 2],
                 'focal_levels': [3, 3, 3, 3],
                 'focal_windows': [3, 3, 3, 3],
-                'num_heads': [3, 6, 12, 24],
-                'use_conv_embed': False,
+                'use_overlapped_embed': False,
                 'use_postln': False,
                 'use_layer_scale': False,
                 'normalize_modulator': False,
@@ -559,8 +599,7 @@ class FocalNet(BaseBackbone):
                 'depths': [2, 2, 18, 2],
                 'focal_levels': [3, 3, 3, 3],
                 'focal_windows': [5, 5, 5, 5],
-                'num_heads': [3, 6, 12, 24],
-                'use_conv_embed': True,
+                'use_overlapped_embed': True,
                 'use_postln': True,
                 'use_layer_scale': True,
                 'normalize_modulator': False,
@@ -573,8 +612,7 @@ class FocalNet(BaseBackbone):
                 'depths': [2, 2, 18, 2],
                 'focal_levels': [4, 4, 4, 4],
                 'focal_windows': [3, 3, 3, 3],
-                'num_heads': [3, 6, 12, 24],
-                'use_conv_embed': True,
+                'use_overlapped_embed': True,
                 'use_postln': True,
                 'use_layer_scale': True,
                 'normalize_modulator': True,
@@ -587,8 +625,7 @@ class FocalNet(BaseBackbone):
                 'depths': [2, 2, 18, 2],
                 'focal_levels': [3, 3, 3, 3],
                 'focal_windows': [5, 5, 5, 5],
-                'num_heads': [3, 6, 12, 24],
-                'use_conv_embed': True,
+                'use_overlapped_embed': True,
                 'use_postln': True,
                 'use_layer_scale': True,
                 'normalize_modulator': False,
@@ -601,8 +638,7 @@ class FocalNet(BaseBackbone):
                 'depths': [2, 2, 18, 2],
                 'focal_levels': [4, 4, 4, 4],
                 'focal_windows': [3, 3, 3, 3],
-                'num_heads': [3, 6, 12, 24],
-                'use_conv_embed': True,
+                'use_overlapped_embed': True,
                 'use_postln': True,
                 'use_layer_scale': True,
                 'normalize_modulator': False,
@@ -615,8 +651,7 @@ class FocalNet(BaseBackbone):
                 'depths': [2, 2, 18, 2],
                 'focal_levels': [3, 3, 3, 3],
                 'focal_windows': [3, 3, 3, 3],
-                'num_heads': [3, 6, 12, 24],
-                'use_conv_embed': True,
+                'use_overlapped_embed': True,
                 'use_postln': True,
                 'use_layer_scale': True,
                 'normalize_modulator': False,
@@ -629,8 +664,7 @@ class FocalNet(BaseBackbone):
                 'depths': [2, 2, 18, 2],
                 'focal_levels': [4, 4, 4, 4],
                 'focal_windows': [3, 3, 3, 3],
-                'num_heads': [3, 6, 12, 24],
-                'use_conv_embed': True,
+                'use_overlapped_embed': True,
                 'use_postln': True,
                 'use_layer_scale': True,
                 'normalize_modulator': False,
@@ -661,7 +695,7 @@ class FocalNet(BaseBackbone):
         else:
             essential_keys = {
                 'embed_dims', 'ffn_ratio', 'depths', 'focal_levels',
-                'focal_windows', 'num_heads', 'use_conv_embed', 'use_postln',
+                'focal_windows', 'use_overlapped_embed', 'use_postln',
                 'use_layer_scale', 'normalize_modulator',
                 'use_postln_in_modulation'
             }
@@ -677,9 +711,7 @@ class FocalNet(BaseBackbone):
         self.out_after_downsample = out_after_downsample
         self.frozen_stages = frozen_stages
 
-        # split image into non-overlapping patches
-        # Set patch embedding
-        if self.arch_settings['use_conv_embed']:
+        if self.arch_settings['use_overlapped_embed']:
             _patch_cfg = dict(
                 in_channels=in_channels,
                 input_size=None,
@@ -691,7 +723,7 @@ class FocalNet(BaseBackbone):
                 norm_cfg=dict(type='LN'),
             )
             _patch_cfg.update(patch_cfg)
-            self.patch_embed = ConvPatchEmbed(**_patch_cfg)
+            self.patch_embed = OverlappedPatchEmbed(**_patch_cfg)
         else:
             _patch_cfg = dict(
                 in_channels=in_channels,
@@ -712,7 +744,6 @@ class FocalNet(BaseBackbone):
             x.item() for x in torch.linspace(0, drop_path_rate, total_depth)
         ]  # stochastic depth decay rule
 
-        # build layers
         self.layers = ModuleList()
         embed_dims = [self.embed_dims]
         for i, (depth, focal_level, focal_window) in enumerate(
@@ -742,8 +773,8 @@ class FocalNet(BaseBackbone):
                 focal_level,
                 'focal_window':
                 focal_window,
-                'use_conv_embed':
-                self.arch_settings['use_conv_embed'],
+                'use_overlapped_embed':
+                self.arch_settings['use_overlapped_embed'],
                 'use_layer_scale':
                 self.arch_settings['use_layer_scale'],
                 'use_postln':
