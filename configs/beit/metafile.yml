@@ -20,7 +20,7 @@ Collections:
       Version: v1.0.0rc4
 
 Models:
-  - Name: beitv1-base_3rdparty_in1k
+  - Name: beit-base_3rdparty_in1k
     In Collection: BEiT
     Metadata:
       FLOPs: 17581219584
@@ -34,7 +34,7 @@ Models:
       Metrics:
         Top 1 Accuracy: 85.28
         Top 5 Accuracy: 97.59
-    Weights: http://download.openmmlab.com/mmclassification/v0/beit/beitv1-base_3rdparty_in1k_20221114-c0a4df23.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/beit/beit-base_3rdparty_in1k_20221114-c0a4df23.pth
     Converted From:
       Weights: https://conversationhub.blob.core.windows.net/beit-share-public/beit/beit_base_patch16_224_pt22k_ft22kto1k.pth
       Code: https://github.com/microsoft/unilm/tree/master/beit
