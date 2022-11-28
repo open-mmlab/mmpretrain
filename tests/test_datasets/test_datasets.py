@@ -905,7 +905,7 @@ class TestMultiTaskDataset(TestCase):
         })
         self.assertDictContainsSubset(
             {
-                'img_path': ASSETS_ROOT + '\\a.jpg',
+                'img_path': os.path.join(ASSETS_ROOT, 'a.jpg'),
                 'gt_label': {
                     'gender': 0
                 }
