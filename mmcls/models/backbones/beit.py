@@ -215,6 +215,8 @@ class BEiT(VisionTransformer):
 
     A PyTorch implement of : `BEiT: BERT Pre-Training of Image Transformers
     <https://arxiv.org/abs/2106.08254>`_
+    A PyTorch implement of : `BEiT v2: Masked Image Modeling with
+    Vector-Quantized Visual Tokenizers <https://arxiv.org/abs/2208.06366>`_
 
     Args:
         arch (str | dict): BEiT architecture. If use string, choose from
