@@ -1,8 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import torch
-import torch.nn as nn
 
 from mmcls.registry import MODELS
 from mmcls.structures import ClsDataSample
@@ -16,7 +15,10 @@ class EfficientFormerClsHead(ClsHead):
     Args:
         num_classes (int): Number of categories excluding the background
             category.
-        in_channels (int): Number of channels in the input feature map.
+        in_channels (int, optional): Number of channels in the input feature
+            map. If in_channels is None, it uses LazyLinear, init_cfg is
+            ignored and in_channels is calculated automatically.
+            Defaults to None.
         distillation (bool): Whether use a additional distilled head.
             Defaults to True.
         init_cfg (dict): The extra initialization configs. Defaults to
@@ -24,14 +26,19 @@ class EfficientFormerClsHead(ClsHead):
     """
 
     def __init__(self,
-                 num_classes,
-                 in_channels,
-                 distillation=True,
-                 init_cfg=dict(type='Normal', layer='Linear', std=0.01),
+                 num_classes: int,
+                 in_channels: Optional[int] = None,
+                 distillation: bool = True,
+                 init_cfg: Optional[dict] = dict(
+                     type='Normal', layer='Linear', std=0.01),
                  *args,
                  **kwargs):
+        skip_init_weights = in_channels is None
         super(EfficientFormerClsHead, self).__init__(
-            init_cfg=init_cfg, *args, **kwargs)
+            skip_init_weights=skip_init_weights,
+            init_cfg=init_cfg,
+            *args,
+            **kwargs)
         self.in_channels = in_channels
         self.num_classes = num_classes
         self.dist = distillation
@@ -40,9 +47,10 @@ class EfficientFormerClsHead(ClsHead):
             raise ValueError(
                 f'num_classes={num_classes} must be a positive integer')
 
-        self.head = nn.Linear(self.in_channels, self.num_classes)
+        self.head = self._create_linear(self.in_channels, self.num_classes)
         if self.dist:
-            self.dist_head = nn.Linear(self.in_channels, self.num_classes)
+            self.dist_head = self._create_linear(self.in_channels,
+                                                 self.num_classes)
 
     def forward(self, feats: Tuple[torch.Tensor]) -> torch.Tensor:
         """The forward process."""

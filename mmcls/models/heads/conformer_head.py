@@ -1,8 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import List, Sequence, Tuple
+from typing import List, Optional, Sequence, Tuple
 
 import torch
-import torch.nn as nn
 
 from mmcls.evaluation.metrics import Accuracy
 from mmcls.registry import MODELS
@@ -17,8 +16,10 @@ class ConformerHead(ClsHead):
     Args:
         num_classes (int): Number of categories excluding the background
             category.
-        in_channels (Sequence[int]): Number of channels in the input
-            feature map.
+        in_channels (Sequence[int], optional): Number of channels in the input
+            feature map. If in_channels is None, it uses LazyLinear, init_cfg
+            is ignored and in_channels is calculated automatically.
+            Defaults to None.
         init_cfg (dict | optional): The extra init config of layers.
             Defaults to use ``dict(type='Normal', layer='Linear', std=0.01)``.
     """
@@ -26,10 +27,14 @@ class ConformerHead(ClsHead):
     def __init__(
             self,
             num_classes: int,
-            in_channels: Sequence[int],  # [conv_dim, trans_dim]
-            init_cfg: dict = dict(type='TruncNormal', layer='Linear', std=.02),
+            # [conv_dim, trans_dim]
+            in_channels: Optional[Sequence[int]] = None,
+            init_cfg: Optional[dict] = dict(
+                type='TruncNormal', layer='Linear', std=.02),
             **kwargs):
-        super(ConformerHead, self).__init__(init_cfg=init_cfg, **kwargs)
+        skip_init_weights = in_channels is None
+        super(ConformerHead, self).__init__(
+            skip_init_weights=skip_init_weights, init_cfg=init_cfg, **kwargs)
 
         self.in_channels = in_channels
         self.num_classes = num_classes
@@ -39,8 +44,12 @@ class ConformerHead(ClsHead):
             raise ValueError(
                 f'num_classes={num_classes} must be a positive integer')
 
-        self.conv_cls_head = nn.Linear(self.in_channels[0], num_classes)
-        self.trans_cls_head = nn.Linear(self.in_channels[1], num_classes)
+        self.conv_cls_head = self._create_linear(
+            self.in_channels if
+            (self.in_channels is None) else self.in_channels[0], num_classes)
+        self.trans_cls_head = self._create_linear(
+            self.in_channels if
+            (self.in_channels is None) else self.in_channels[1], num_classes)
 
     def pre_logits(self, feats: Tuple[List[torch.Tensor]]) -> torch.Tensor:
         """The process before the final classification head.

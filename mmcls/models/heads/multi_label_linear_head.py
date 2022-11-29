@@ -2,7 +2,6 @@
 from typing import Dict, Optional, Tuple
 
 import torch
-import torch.nn as nn
 
 from mmcls.registry import MODELS
 from .multi_label_cls_head import MultiLabelClsHead
@@ -30,14 +29,19 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
 
     def __init__(self,
                  num_classes: int,
-                 in_channels: int,
+                 in_channels: Optional[int] = None,
                  loss: Dict = dict(type='CrossEntropyLoss', use_sigmoid=True),
                  thr: Optional[float] = None,
                  topk: Optional[int] = None,
                  init_cfg: Optional[dict] = dict(
                      type='Normal', layer='Linear', std=0.01)):
+        skip_init_weights = in_channels is None
         super(MultiLabelLinearClsHead, self).__init__(
-            loss=loss, thr=thr, topk=topk, init_cfg=init_cfg)
+            loss=loss,
+            thr=thr,
+            topk=topk,
+            skip_init_weights=skip_init_weights,
+            init_cfg=init_cfg)
 
         assert num_classes > 0, f'num_classes ({num_classes}) must be a ' \
             'positive integer.'
@@ -45,7 +49,7 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
         self.in_channels = in_channels
         self.num_classes = num_classes
 
-        self.fc = nn.Linear(self.in_channels, self.num_classes)
+        self.fc = self._create_linear(self.in_channels, self.num_classes)
 
     def pre_logits(self, feats: Tuple[torch.Tensor]) -> torch.Tensor:
         """The process before the final classification head.

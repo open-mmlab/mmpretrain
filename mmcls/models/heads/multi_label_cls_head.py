@@ -22,6 +22,8 @@ class MultiLabelClsHead(BaseHead):
             considered as positive. Defaults to None.
         init_cfg (dict, optional): The extra init config of layers.
             Defaults to None.
+        skip_init_weights (bool): Whether to skip init_weights. When using Lazy
+            modules, it should be skipped. Defaults to False.
 
     Notes:
         If both ``thr`` and ``topk`` are set, use ``thr` to determine
@@ -33,8 +35,10 @@ class MultiLabelClsHead(BaseHead):
                  loss: Dict = dict(type='CrossEntropyLoss', use_sigmoid=True),
                  thr: Optional[float] = None,
                  topk: Optional[int] = None,
-                 init_cfg: Optional[dict] = None):
-        super(MultiLabelClsHead, self).__init__(init_cfg=init_cfg)
+                 init_cfg: Optional[dict] = None,
+                 skip_init_weights: bool = None):
+        super(MultiLabelClsHead, self).__init__(
+            skip_init_weights=skip_init_weights, init_cfg=init_cfg)
 
         self.loss_module = MODELS.build(loss)
 

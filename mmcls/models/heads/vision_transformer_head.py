@@ -20,7 +20,10 @@ class VisionTransformerClsHead(ClsHead):
     Args:
         num_classes (int): Number of categories excluding the background
             category.
-        in_channels (int): Number of channels in the input feature map.
+        in_channels (int, optional): Number of channels in the input feature
+            map. If in_channels is None, it uses LazyLinear, init_cfg is
+            ignored and in_channels is calculated automatically.
+            Defaults to None.
         hidden_dim (int, optional): Number of the dimensions for hidden layer.
             Defaults to None, which means no extra hidden layer.
         act_cfg (dict): The activation config. Only available during
@@ -31,13 +34,14 @@ class VisionTransformerClsHead(ClsHead):
 
     def __init__(self,
                  num_classes: int,
-                 in_channels: int,
+                 in_channels: Optional[int] = None,
                  hidden_dim: Optional[int] = None,
                  act_cfg: dict = dict(type='Tanh'),
                  init_cfg: dict = dict(type='Constant', layer='Linear', val=0),
                  **kwargs):
+        skip_init_weights = in_channels is None
         super(VisionTransformerClsHead, self).__init__(
-            init_cfg=init_cfg, **kwargs)
+            skip_init_weights=skip_init_weights, init_cfg=init_cfg, **kwargs)
         self.in_channels = in_channels
         self.num_classes = num_classes
         self.hidden_dim = hidden_dim
@@ -52,10 +56,13 @@ class VisionTransformerClsHead(ClsHead):
     def _init_layers(self):
         """"Init hidden layer if exists."""
         if self.hidden_dim is None:
-            layers = [('head', nn.Linear(self.in_channels, self.num_classes))]
+            layers = [('head',
+                       self._create_linear(self.in_channels,
+                                           self.num_classes))]
         else:
             layers = [
-                ('pre_logits', nn.Linear(self.in_channels, self.hidden_dim)),
+                ('pre_logits',
+                 self._create_linear(self.in_channels, self.hidden_dim)),
                 ('act', build_activation_layer(self.act_cfg)),
                 ('head', nn.Linear(self.hidden_dim, self.num_classes)),
             ]
