@@ -58,6 +58,7 @@ Backbones
    :template: classtemplate.rst
 
    AlexNet
+   BEiT
    CSPDarkNet
    CSPNet
    CSPResNeXt

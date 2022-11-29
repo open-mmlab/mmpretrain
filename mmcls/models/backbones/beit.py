@@ -25,6 +25,8 @@ class RelativePositionBias(BaseModule):
         window_size (Sequence[int]): The window size of the relative
             position bias.
         num_heads (int): The number of head in multi-head attention.
+        with_cls_token (bool): To indicate the backbone has cls_token or not.
+            Defaults to True.
     """
 
     def __init__(
@@ -145,12 +147,6 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
                  attn_cfg: dict = dict(),
                  ffn_cfg: dict = dict(add_identity=False),
                  init_cfg: Optional[Union[dict, List[dict]]] = None) -> None:
-        attn_cfg.update(
-            dict(
-                window_size=window_size,
-                use_rel_pos_bias=use_rel_pos_bias,
-                qk_scale=None))
-
         super().__init__(
             embed_dims=embed_dims,
             num_heads=num_heads,
@@ -164,25 +160,24 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
             norm_cfg=norm_cfg,
             init_cfg=init_cfg)
 
-        # overwrite the default attention layer in TransformerEncoderLayer
-        attn_cfg.update(
-            dict(
-                embed_dims=embed_dims,
-                num_heads=num_heads,
-                attn_drop=attn_drop_rate,
-                proj_drop=drop_rate,
-                bias=bias))
+        attn_cfg = dict(
+            window_size=window_size,
+            use_rel_pos_bias=use_rel_pos_bias,
+            qk_scale=None,
+            embed_dims=embed_dims,
+            num_heads=num_heads,
+            attn_drop=attn_drop_rate,
+            proj_drop=drop_rate,
+            bias=bias)
         self.attn = BEiTAttention(**attn_cfg)
 
-        # overwrite the default ffn layer in TransformerEncoderLayer
-        ffn_cfg.update(
-            dict(
-                embed_dims=embed_dims,
-                feedforward_channels=feedforward_channels,
-                num_fcs=num_fcs,
-                ffn_drop=drop_rate,
-                dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
-                act_cfg=act_cfg))
+        ffn_cfg = dict(
+            embed_dims=embed_dims,
+            feedforward_channels=feedforward_channels,
+            num_fcs=num_fcs,
+            ffn_drop=drop_rate,
+            dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
+            act_cfg=act_cfg)
         self.ffn = FFN(**ffn_cfg)
 
         # NOTE: drop path for stochastic depth, we shall see if
