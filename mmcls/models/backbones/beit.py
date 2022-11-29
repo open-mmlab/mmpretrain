@@ -30,14 +30,9 @@ class RelativePositionBias(BaseModule):
     """
 
     def __init__(
-        
         self,
-       
         window_size: Sequence[int],
-       
         num_heads: int,
-        with_cls_token: bool = True,
-    ,
         with_cls_token: bool = True,
     ) -> None:
         super().__init__()
@@ -141,7 +136,6 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
                  feedforward_channels: int,
                  layer_scale_init_value: float,
                  window_size: Tuple[int, int],
-                 use_rel_pos_bias: bool,
                  use_rel_pos_bias: bool,
                  drop_rate: float = 0.,
                  attn_drop_rate: float = 0.,
@@ -437,10 +431,6 @@ class BEiT(VisionTransformer):
 
         rel_pos_bias = self.rel_pos_bias() \
             if self.rel_pos_bias is not None else None
-
-        if not self.with_cls_token:
-            # Remove class token for transformer encoder input
-            x = x[:, 1:]
 
         if not self.with_cls_token:
             # Remove class token for transformer encoder input
