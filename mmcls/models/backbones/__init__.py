@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from .alexnet import AlexNet
+from .beit import BEiT
 from .conformer import Conformer
 from .convmixer import ConvMixer
 from .convnext import ConvNeXt
@@ -97,4 +98,5 @@ __all__ = [
     'HorNet',
     'MobileViT',
     'DaViT',
+    'BEiT',
 ]
