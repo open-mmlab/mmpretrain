@@ -70,6 +70,7 @@ test_pipeline = [
 ]
 
 train_dataloader = dict(
+    num_workers=12,
     dataset=dict(pipeline=train_pipeline),
     sampler=dict(type='RepeatAugSampler', shuffle=True))
 val_dataloader = dict(dataset=dict(pipeline=test_pipeline))
