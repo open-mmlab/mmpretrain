@@ -440,7 +440,6 @@ class BEiT(VisionTransformer):
 
         outs = []
         for i, layer in enumerate(self.layers):
-            breakpoint()
             x = layer(x, rel_pos_bias)
 
             if i == len(self.layers) - 1 and self.final_norm:
