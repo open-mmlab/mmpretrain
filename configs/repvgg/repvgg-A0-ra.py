@@ -8,7 +8,7 @@ model = dict(
     type='ImageClassifier',
     backbone=dict(
         type='RepVGG',
-        arch='L2se',
+        arch='A0',
         out_indices=(3, ),
     ),
     neck=dict(type='GlobalAveragePooling'),
@@ -23,10 +23,6 @@ model = dict(
             num_classes=1000),
         topk=(1, 5),
     ),
-    train_cfg=dict(augments=[
-        dict(type='Mixup', alpha=0.8),
-        dict(type='CutMix', alpha=1.0)
-    ]),
 )
 
 # schedule settings
@@ -52,14 +48,14 @@ bgr_std = data_preprocessor['std'][::-1]
 
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='RandomResizedCrop', scale=256),
+    dict(type='RandomResizedCrop', scale=192),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(
         type='RandAugment',
         policies='timm_increasing',
         num_policies=2,
         total_level=10,
-        magnitude_level=9,
+        magnitude_level=3,
         magnitude_std=0.5,
         hparams=dict(
             pad_val=[round(x) for x in bgr_mean], interpolation='bicubic')),
@@ -68,8 +64,8 @@ train_pipeline = [
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='ResizeEdge', scale=336, edge='short'),
-    dict(type='CenterCrop', crop_size=320),
+    dict(type='ResizeEdge', scale=232, edge='short'),
+    dict(type='CenterCrop', crop_size=224),
     dict(type='PackClsInputs'),
 ]
 
