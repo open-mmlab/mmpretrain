@@ -7,6 +7,9 @@ import mmcv
 from mmcv.cnn import build_conv_layer, build_norm_layer, Linear
 from mmengine.model import BaseModule
 
+from mmcls.models.heads.levit_head import LeViTClsHead
+from mmcls.registry import MODELS
+
 
 # from mmcls.models.heads import
 
@@ -113,26 +116,6 @@ def build_linear_bn(
     b = bn.bias - bn.running_mean * bn.weight / \
         (bn.running_var + bn.eps) ** 0.5
     m = Linear(w.size(1), w.size(0))
-    m.weight.data.copy_(w)
-    m.bias.data.copy_(b)
-    return m
-
-
-def build_bn_linear(in_feature, out_feature, bias=True, std=0.02):
-    bn = torch.nn.BatchNorm1d(in_feature)
-    linear = Linear(in_feature, out_feature, bias=bias)
-    nn.init.trunc_normal_(linear.weight, std)
-    if bias:
-        nn.init.constant_(linear.bias, 0)
-    w = bn.weight / (bn.running_var + bn.eps) ** 0.5
-    b = bn.bias - bn.running_mean * \
-        bn.weight / (bn.running_var + bn.eps) ** 0.5
-    w = linear.weight * w[None, :]
-    if linear.bias is None:
-        b = b @ linear.weight.T
-    else:
-        b = (linear.weight @ b[:, None]).view(-1) + linear.bias
-    m = torch.nn.Linear(w.size(1), w.size(0))
     m.weight.data.copy_(w)
     m.bias.data.copy_(b)
     return m
@@ -325,6 +308,7 @@ class AttentionSubsample(torch.nn.Module):
         return x
 
 
+@MODELS.register_module()
 class LeViT(BaseModule):
     """ Vision Transformer with support for patch or hybrid CNN input stage
     """
@@ -332,8 +316,6 @@ class LeViT(BaseModule):
     def __init__(self,
                  img_size=224,
                  patch_size=16,
-                 in_chans=3,
-                 num_classes=1000,
                  embed_dim=[192],
                  key_dim=[64],
                  depth=[12],
@@ -344,18 +326,16 @@ class LeViT(BaseModule):
                  down_ops=[],
                  attention_activation=torch.nn.Hardswish,
                  mlp_activation=torch.nn.Hardswish,
-                 distillation=True,
                  drop_path=0,
                  out_indices=(2,)):
         super(LeViT, self).__init__()
 
         self.out_indices = out_indices
 
-        self.num_classes = num_classes
         self.num_features = embed_dim[-1]
         self.embed_dim = embed_dim
-        self.distillation = distillation
-
+        if not hybrid_backbone:
+            hybrid_backbone = hybrid_cnn(embed_dim[0], activation=torch.nn.Hardswish)
         self.patch_embed = hybrid_backbone
         self.blocks = [[]]
         self.size = []
@@ -423,33 +403,49 @@ class LeViT(BaseModule):
         return tuple(outs)
 
 
-class levit_head(BaseModule):
-    def __init__(self, num_classes=1000, distillation=True):
-        super(levit_head, self).__init__()
-        self.num_classes = num_classes
-        self.distillation = distillation
-        self.head = build_bn_linear(
-            embed_dim[-1], num_classes) if num_classes > 0 else torch.nn.Identity()
-        if distillation:
-            self.head_dist = build_bn_linear(
-                embed_dim[-1], num_classes) if num_classes > 0 else torch.nn.Identity()
+class Model(BaseModule):
+    def __init__(self,
+                 patch_size=16,
+                 embed_dim=None,
+                 num_heads=None,
+                 key_dim=None,
+                 depth=None,
+                 attn_ratio=[2, 2, 2],
+                 mlp_ratio=[2, 2, 2],
+                 down_ops=None,
+                 attention_activation=torch.nn.Hardswish,
+                 mlp_activation=torch.nn.Hardswish,
+                 hybrid_backbone=None,
+                 num_classes=1000,
+                 drop_path=0,
+                 distillation=True
+                 ):
+        super(Model, self).__init__()
+        self.backbone = LeViT(
+            patch_size=patch_size,
+            embed_dim=embed_dim,
+            num_heads=num_heads,
+            key_dim=key_dim,
+            depth=depth,
+            attn_ratio=attn_ratio,
+            mlp_ratio=mlp_ratio,
+            down_ops=down_ops,
+            attention_activation=attention_activation,
+            mlp_activation=mlp_activation,
+            hybrid_backbone=hybrid_backbone,
+            drop_path=drop_path,
+        )
+        self.head = LeViTClsHead(num_classes=num_classes, distillation=distillation, in_channels=embed_dim[-1])
 
     def forward(self, x):
+        x = self.backbone(x)[-1]
         B, C, W, H = x.shape
         x = x.permute(0, 2, 1, 3).reshape(B, W * H, C)
-        x = x.mean(1)  # 2 384
-        if self.distillation:
-            x = self.head(x), self.head_dist(x)  # 2 16 384 -> 2 1000
-            if not self.training:
-                x = (x[0] + x[1]) / 2
-        else:
-            x = self.head(x)
+        x = self.head(x)
         return x
 
 
-if __name__ == '__main__':
-    from torchsummary import summary
-
+def get_LeViT_model(params_name='LeViT_128S'):
     specification = {
         'LeViT_128S': {
             'C': '128_256_384', 'D': 16, 'N': '4_6_8', 'X': '2_3_4', 'drop_path': 0},
@@ -463,19 +459,19 @@ if __name__ == '__main__':
             'C': '384_512_768', 'D': 32, 'N': '6_9_12', 'X': '4_4_4', 'drop_path': 0.1},
     }
 
-    params = specification['LeViT_256']
+    params = specification[params_name]
 
     C = params['C']  # embed_dim
     N = params['N']  # num_heads
     X = params['X']  # depth
-    D = params['D']  # mlp_ratio
+    D = params['D']  # key_dim
     drop_path = params['drop_path']
 
     embed_dim = [int(x) for x in C.split('_')]
     num_heads = [int(x) for x in N.split('_')]
     depth = [int(x) for x in X.split('_')]
     act = torch.nn.Hardswish
-    model = LeViT(
+    model = Model(
         patch_size=16,
         embed_dim=embed_dim,
         num_heads=num_heads,
@@ -495,12 +491,4 @@ if __name__ == '__main__':
         drop_path=drop_path,
         distillation=True
     )
-
-    print(model)
-    summary(model, (3, 224, 224), device='cpu')
-    x = torch.rand((1, 3, 224, 224))
-    x = model(x)
-    print(x[0].size())
-    head = levit_head()
-    x = head(x[0])
-    print(x[0].size())
+    return model
