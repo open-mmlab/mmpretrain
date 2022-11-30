@@ -399,7 +399,7 @@ class VisionTransformer(BaseBackbone):
         # stole cls_tokens impl from Phil Wang, thanks
         cls_tokens = self.cls_token.expand(B, -1, -1)
         x = torch.cat((cls_tokens, x), dim=1)
-        x = x + resize_pos_embed(
+        x += resize_pos_embed(
             self.pos_embed,
             self.patch_resolution,
             patch_resolution,

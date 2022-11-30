@@ -322,8 +322,11 @@ class LeViT(BaseModule):
                  attention_activation=torch.nn.Hardswish,
                  mlp_activation=torch.nn.Hardswish,
                  distillation=True,
-                 drop_path=0):
+                 drop_path=0,
+                 out_indices=(0,1,2)):
         super(LeViT, self).__init__()
+
+        self.out_indices=out_indices
 
         self.num_classes = num_classes
         self.num_features = embed_dim[-1]
@@ -331,14 +334,14 @@ class LeViT(BaseModule):
         self.distillation = distillation
 
         self.patch_embed = hybrid_backbone
+        self.blocks = [[]]
 
-        self.blocks = []
         down_ops.append([''])
         resolution = img_size // patch_size
         for i, (ed, kd, dpth, nh, ar, mr, do) in enumerate(
                 zip(embed_dim, key_dim, depth, num_heads, attn_ratio, mlp_ratio, down_ops)):
             for _ in range(dpth):
-                self.blocks.append(
+                self.blocks[-1].append(
                     Residual(Attention(
                         ed, kd, nh,
                         attn_ratio=ar,
@@ -347,14 +350,14 @@ class LeViT(BaseModule):
                     ), drop_path))
                 if mr > 0:
                     # h = int(ed * mr)
-                    self.blocks.append(
-                        Residual(nn.Sequential(
-                            MLP(ed, mr, mlp_activation),
-                        ), drop_path))
+                    self.blocks[-1].append(
+                        Residual(
+                            MLP(ed, mr, mlp_activation), drop_path))
             if do[0] == 'Subsample':
                 # ('Subsample',key_dim, num_heads, attn_ratio, mlp_ratio, stride)
                 resolution_ = (resolution - 1) // do[5] + 1
-                self.blocks.append(
+                self.blocks.append([])
+                self.blocks[-1].append(
                     AttentionSubsample(
                         *embed_dim[i:i + 2], key_dim=do[1], num_heads=do[2],
                         attn_ratio=do[3],
@@ -365,13 +368,16 @@ class LeViT(BaseModule):
                 resolution = resolution_
                 if do[4] > 0:  # mlp_ratio
                     h = int(embed_dim[i + 1] * do[4])
-                    self.blocks.append(
+                    self.blocks[-1].append(
                         Residual(nn.Sequential(
                             build_linear_bn(embed_dim[i + 1], h),
                             mlp_activation(),
                             build_linear_bn(
                                 h, embed_dim[i + 1], bn_weight_init=0)), drop_path))
-        self.blocks = nn.Sequential(*self.blocks)
+        self.blocks = [nn.Sequential(*i) for i in self.blocks]
+        self.stage = nn.Sequential()
+        for i in range(len(self.blocks)):
+            self.stage.add_module('%d' % i, self.blocks[i])
 
     @torch.jit.ignore
     def no_weight_decay(self):
@@ -380,7 +386,13 @@ class LeViT(BaseModule):
     def forward(self, x):
         x = self.patch_embed(x)  # 2 3 224 224 -> 2 128 14 14
         x = x.flatten(2).transpose(1, 2)  # 2 128 14 14 -> 2 128 196 -> 2 196 128
-        x = self.blocks(x)  # 2 196 128 -> 2 16 384
+        # x = self.blocks(x)  # 2 196 128 -> 2 16 384
+        # x = self.stage(x)
+        outs = []
+        for i, layer_name in enumerate(self.stage):
+            x = layer_name(x)
+            if i in self.out_indices:
+                outs.append(x)
         return x
 
 
@@ -400,7 +412,7 @@ if __name__ == '__main__':
             'C': '384_512_768', 'D': 32, 'N': '6_9_12', 'X': '4_4_4', 'drop_path': 0.1},
     }
 
-    params = specification['LeViT_128S']
+    params = specification['LeViT_256']
 
     C = params['C']
     N = params['N']
@@ -435,6 +447,9 @@ if __name__ == '__main__':
 
     print(model)
     summary(model, (3, 224, 224), device='cpu')
+    x = torch.rand((1, 3, 224, 224))
+    x = model(x)
+    print(x.size())
 
     # hybrid_backbone = hybrid_cnn(128)
     # print(hybrid_backbone)
