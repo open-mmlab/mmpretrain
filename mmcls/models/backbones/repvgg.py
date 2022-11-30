@@ -102,6 +102,13 @@ class RepVGGBlock(BaseModule):
             self.branch_1x1 = self.create_conv_bn(kernel_size=1)
 
         if se_cfg is not None:
+            self.se_position = 'before_relu'
+            if 'position' in se_cfg:
+                self.se_position = se_cfg.pop('position')
+            assert self.se_position in ('before_relu', 'after_relu'), \
+                "se_cfg['position'] must be one of ['before_relu'," \
+                f" 'after_relu'], but get '{se_cfg['position']}'"
+
             self.se_layer = SELayer(channels=out_channels, **se_cfg)
         else:
             self.se_layer = None
@@ -142,9 +149,6 @@ class RepVGGBlock(BaseModule):
             inner_out = self.branch_3x3(inputs) + self.branch_1x1(
                 inputs) + branch_norm_out
 
-            if self.se_cfg is not None:
-                inner_out = self.se_layer(inner_out)
-
             return inner_out
 
         if self.with_cp and x.requires_grad:
@@ -152,7 +156,13 @@ class RepVGGBlock(BaseModule):
         else:
             out = _inner_forward(x)
 
+        if self.se_cfg is not None and self.se_position == 'before_relu':
+            out = self.se_layer(out)
+
         out = self.act(out)
+
+        if self.se_cfg is not None and self.se_position == 'after_relu':
+            out = self.se_layer(out)
 
         return out
 
@@ -443,6 +453,12 @@ class RepVGG(BaseBackbone):
             width_factor=[2.5, 2.5, 2.5, 5],
             group_layer_map=None,
             se_cfg=dict(ratio=16, divisor=1)),
+        'L2se':
+        dict(
+            num_blocks=[8, 14, 24, 1],
+            width_factor=[2.5, 2.5, 2.5, 5],
+            group_layer_map=None,
+            se_cfg=dict(ratio=16, divisor=1, position='after_relu')),
         'yolox-pai-small':
         dict(
             num_blocks=[3, 5, 7, 3],
