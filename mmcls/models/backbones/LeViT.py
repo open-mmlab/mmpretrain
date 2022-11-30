@@ -8,6 +8,8 @@ from mmcv.cnn import build_conv_layer, build_norm_layer, Linear
 from mmengine.model import BaseModule
 
 
+# from mmcls.models.heads import
+
 class hybrid_cnn(BaseModule):
     def __init__(self,
                  embed_dim,
@@ -111,6 +113,26 @@ def build_linear_bn(
     b = bn.bias - bn.running_mean * bn.weight / \
         (bn.running_var + bn.eps) ** 0.5
     m = Linear(w.size(1), w.size(0))
+    m.weight.data.copy_(w)
+    m.bias.data.copy_(b)
+    return m
+
+
+def build_bn_linear(in_feature, out_feature, bias=True, std=0.02):
+    bn = torch.nn.BatchNorm1d(in_feature)
+    linear = Linear(in_feature, out_feature, bias=bias)
+    nn.init.trunc_normal_(linear.weight, std)
+    if bias:
+        nn.init.constant_(linear.bias, 0)
+    w = bn.weight / (bn.running_var + bn.eps) ** 0.5
+    b = bn.bias - bn.running_mean * \
+        bn.weight / (bn.running_var + bn.eps) ** 0.5
+    w = linear.weight * w[None, :]
+    if linear.bias is None:
+        b = b @ linear.weight.T
+    else:
+        b = (linear.weight @ b[:, None]).view(-1) + linear.bias
+    m = torch.nn.Linear(w.size(1), w.size(0))
     m.weight.data.copy_(w)
     m.bias.data.copy_(b)
     return m
@@ -307,7 +329,8 @@ class LeViT(BaseModule):
     """ Vision Transformer with support for patch or hybrid CNN input stage
     """
 
-    def __init__(self, img_size=224,
+    def __init__(self,
+                 img_size=224,
                  patch_size=16,
                  in_chans=3,
                  num_classes=1000,
@@ -323,10 +346,10 @@ class LeViT(BaseModule):
                  mlp_activation=torch.nn.Hardswish,
                  distillation=True,
                  drop_path=0,
-                 out_indices=(0,1,2)):
+                 out_indices=(2,)):
         super(LeViT, self).__init__()
 
-        self.out_indices=out_indices
+        self.out_indices = out_indices
 
         self.num_classes = num_classes
         self.num_features = embed_dim[-1]
@@ -335,6 +358,7 @@ class LeViT(BaseModule):
 
         self.patch_embed = hybrid_backbone
         self.blocks = [[]]
+        self.size = []
 
         down_ops.append([''])
         resolution = img_size // patch_size
@@ -355,6 +379,7 @@ class LeViT(BaseModule):
                             MLP(ed, mr, mlp_activation), drop_path))
             if do[0] == 'Subsample':
                 # ('Subsample',key_dim, num_heads, attn_ratio, mlp_ratio, stride)
+                self.size.append(resolution)
                 resolution_ = (resolution - 1) // do[5] + 1
                 self.blocks.append([])
                 self.blocks[-1].append(
@@ -367,17 +392,15 @@ class LeViT(BaseModule):
                         resolution_=resolution_))
                 resolution = resolution_
                 if do[4] > 0:  # mlp_ratio
-                    h = int(embed_dim[i + 1] * do[4])
                     self.blocks[-1].append(
                         Residual(nn.Sequential(
-                            build_linear_bn(embed_dim[i + 1], h),
-                            mlp_activation(),
-                            build_linear_bn(
-                                h, embed_dim[i + 1], bn_weight_init=0)), drop_path))
+                            MLP(embed_dim[i + 1], do[4], mlp_activation)
+                        ), drop_path))
         self.blocks = [nn.Sequential(*i) for i in self.blocks]
-        self.stage = nn.Sequential()
+        self.size.append(resolution)
+        self.stages = nn.Sequential()
         for i in range(len(self.blocks)):
-            self.stage.add_module('%d' % i, self.blocks[i])
+            self.stages.add_module('%d' % i, self.blocks[i])
 
     @torch.jit.ignore
     def no_weight_decay(self):
@@ -389,10 +412,38 @@ class LeViT(BaseModule):
         # x = self.blocks(x)  # 2 196 128 -> 2 16 384
         # x = self.stage(x)
         outs = []
-        for i, layer_name in enumerate(self.stage):
+        print(self.size)
+        for i, layer_name in enumerate(self.stages):
             x = layer_name(x)
+            B, _, C = x.shape
             if i in self.out_indices:
+                x = x.reshape(B, self.size[i], self.size[i], C).permute(0, 3, 1, 2)
                 outs.append(x)
+                x = x.permute(0, 2, 1, 3).reshape(B, self.size[i] * self.size[i], C)
+        return tuple(outs)
+
+
+class levit_head(BaseModule):
+    def __init__(self, num_classes=1000, distillation=True):
+        super(levit_head, self).__init__()
+        self.num_classes = num_classes
+        self.distillation = distillation
+        self.head = build_bn_linear(
+            embed_dim[-1], num_classes) if num_classes > 0 else torch.nn.Identity()
+        if distillation:
+            self.head_dist = build_bn_linear(
+                embed_dim[-1], num_classes) if num_classes > 0 else torch.nn.Identity()
+
+    def forward(self, x):
+        B, C, W, H = x.shape
+        x = x.permute(0, 2, 1, 3).reshape(B, W * H, C)
+        x = x.mean(1)  # 2 384
+        if self.distillation:
+            x = self.head(x), self.head_dist(x)  # 2 16 384 -> 2 1000
+            if not self.training:
+                x = (x[0] + x[1]) / 2
+        else:
+            x = self.head(x)
         return x
 
 
@@ -414,10 +465,10 @@ if __name__ == '__main__':
 
     params = specification['LeViT_256']
 
-    C = params['C']
-    N = params['N']
-    X = params['X']
-    D = params['D']
+    C = params['C']  # embed_dim
+    N = params['N']  # num_heads
+    X = params['X']  # depth
+    D = params['D']  # mlp_ratio
     drop_path = params['drop_path']
 
     embed_dim = [int(x) for x in C.split('_')]
@@ -449,22 +500,7 @@ if __name__ == '__main__':
     summary(model, (3, 224, 224), device='cpu')
     x = torch.rand((1, 3, 224, 224))
     x = model(x)
-    print(x.size())
-
-    # hybrid_backbone = hybrid_cnn(128)
-    # print(hybrid_backbone)
-    # summary(hybrid_backbone, (3, 224, 224), device='cpu')
-    #
-    # attention = Residual(
-    #     Attention(dim=128, key_dim=16, num_heads=4, attn_ratio=2, activation=nn.Hardswish(), resolution=14), 0)
-    # # att = Attention(dim=256, key_dim=8, activation=nn.Hardswish())
-    # print(attention)
-    # summary(attention, (196, 128), device='cpu')
-    #
-    # mlp = Residual(MLP(embed_dim=128, mlp_ratio=2, mlp_activation=nn.Hardswish()), 0)
-    # print(mlp)
-    # summary(mlp, (196, 128), device='cpu')
-    #
-    # attentionsub = AttentionSubsample(in_dim=128, key_dim=16, out_dim=256, attn_ratio=4, activation=nn.Hardswish())
-    # print(attentionsub)
-    # summary(attentionsub, (196, 128), device='cpu')
+    print(x[0].size())
+    head = levit_head()
+    x = head(x[0])
+    print(x[0].size())
