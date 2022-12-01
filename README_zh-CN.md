@@ -158,6 +158,7 @@ mim install -e .
 - [x] [MobileViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobilevit)
 - [x] [DaViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/davit)
 - [x] [RepLKNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/replknet)
+- [x] [MixMIM](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mixmim)
 
 </details>
 

@@ -1,0 +1,39 @@
+Collections:
+  - Name: MixMIM
+    Metadata:
+      Architecture:
+        - Attention Dropout
+        - Convolution
+        - Dense Connections
+        - Dropout
+        - GELU
+        - Layer Normalization
+        - Multi-Head Attention
+        - Scaled Dot-Product Attention
+        - Tanh Activation
+    Paper:
+      URL: https://arxiv.org/abs/2205.13137
+      Title: 'MixMIM: Mixed and Masked Image Modeling for Efficient Visual Representation Learning'
+    README: configs/mixmim/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/dev-1.x/mmcls/models/backbones/mixmim.py
+      Version: v1.0.0rc4
+
+Models:
+  - Name: mixmim-base-p16_8xb64-pt300e-in1k.py
+    In Collection: MixMIM
+    Metadata:
+      FLOPs: 16352000000 ## 16.3G
+      Parameters: 88344000 # 88M
+      Training Data:
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 84.6
+        Top 5 Accuracy: 97.0
+    Weights: https://download.openmmlab.com/mmclassification/v0/beit/beit-base_3rdparty_in1k_20221114-c0a4df23.pth
+    Converted From:
+      Code: https://github.com/Sense-X/MixMIM
+    Config: configs/mixmim/mixmim-base-p16_8xb64-pt300e-in1k.py

@@ -2,6 +2,8 @@
 
 > [MixMIM: Mixed and Masked Image Modeling for Efficient Visual Representation Learning](https://arxiv.org/abs/2205.13137)
 
+<!-- [ALGORITHM] -->
+
 ## Abstract
 
 In this study, we propose Mixed and Masked Image Modeling (MixMIM), a
@@ -29,9 +31,13 @@ better FLOPs / performance tradeoff than previous MIM methods
 
 ## Models
 
-|    Model    | Params(M) | Pretrain Epochs | Flops(G) | Top-1 (%) | Top-5 (%) |                      Config                      |         Download          |
-| :---------: | :-------: | :-------------: | :------: | :-------: | :-------: | :----------------------------------------------: | :-----------------------: |
-| MixMIM-Base |    88     |      1.08       |   300    |   84.6    |   97.0    | [config](./mixmim-base-p16_8xb64-pt300e-in1k.py) | [model](<>)  \| [log](<>) |
+|     Model     | Params(M) | Pretrain Epochs | Flops(G) | Top-1 (%) | Top-5 (%) |                      Config                      |         Download          |
+| :-----------: | :-------: | :-------------: | :------: | :-------: | :-------: | :----------------------------------------------: | :-----------------------: |
+| MixMIM-Base\* |    88     |       300       |   16.3   |   84.6    |   97.0    | [config](./mixmim-base-p16_8xb64-pt300e-in1k.py) | [model](<>)  \| [log](<>) |
+
+*Models with * are converted from the [official repo](https://github.com/Sense-X/MixMIM). The config files of these models are only for inference.*
+
+For MixMIM self-supervised learning algorithm, welcome to [MMSelfSup page](https://github.com/open-mmlab/mmselfsup/tree/dev-1.x/configs/selfsup/MixMIM) to get more information.
 
 ## How to use it?
 
@@ -44,7 +50,7 @@ python ./tools/test.py configs/mixmim/mixmim-base-p16_8xb64-pt300e-in1k.py  mixm
 
 ## Citation
 
-```
+```bibtex
 @article{MixMIM2022,
   author  = {Jihao Liu, Xin Huang, Yu Liu, Hongsheng Li},
   journal = {arXiv:2205.13137},
