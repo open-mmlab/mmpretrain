@@ -489,6 +489,10 @@ class BEiT(VisionTransformer):
         state_dict_model = self.state_dict()
         all_keys = list(state_dict_model.keys())
         for key in all_keys:
+            # The index buffer need to be re-generated.
+            if "relative_position_index" in key and key in state_dict:
+                state_dict.pop(key)
+
             if 'relative_position_bias_table' in key:
                 ckpt_key = prefix + key
                 if ckpt_key not in state_dict:
@@ -511,7 +515,3 @@ class BEiT(VisionTransformer):
                                 f'{state_dict[ckpt_key].shape} to '
                                 f'{new_rel_pos_bias.shape}')
                     state_dict[ckpt_key] = new_rel_pos_bias
-
-                    # The index buffer need to be re-generated.
-                    index_buffer = ckpt_key.replace('bias_table', 'index')
-                    del state_dict[index_buffer]
