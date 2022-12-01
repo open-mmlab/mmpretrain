@@ -1,0 +1,41 @@
+Collections:
+  - Name: BEiT
+    Metadata:
+      Architecture:
+        - Attention Dropout
+        - Convolution
+        - Dense Connections
+        - Dropout
+        - GELU
+        - Layer Normalization
+        - Multi-Head Attention
+        - Scaled Dot-Product Attention
+        - Tanh Activation
+    Paper:
+      URL: https://arxiv.org/abs/2106.08254
+      Title: 'BEiT: BERT Pre-Training of Image Transformers'
+    README: configs/beit/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/dev-1.x/mmcls/models/backbones/beit.py
+      Version: v1.0.0rc4
+
+Models:
+  - Name: beit-base_3rdparty_in1k
+    In Collection: BEiT
+    Metadata:
+      FLOPs: 17581219584
+      Parameters: 86530984
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 85.28
+        Top 5 Accuracy: 97.59
+    Weights: https://download.openmmlab.com/mmclassification/v0/beit/beit-base_3rdparty_in1k_20221114-c0a4df23.pth
+    Converted From:
+      Weights: https://conversationhub.blob.core.windows.net/beit-share-public/beit/beit_base_patch16_224_pt22k_ft22kto1k.pth
+      Code: https://github.com/microsoft/unilm/tree/master/beit
+    Config: configs/beit/beit-base-p16_8xb64_in1k.py
