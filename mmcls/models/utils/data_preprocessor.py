@@ -8,7 +8,8 @@ import torch.nn.functional as F
 from mmengine.model import BaseDataPreprocessor, stack_batch
 
 from mmcls.registry import MODELS
-from mmcls.structures import (batch_label_to_onehot, cat_batch_labels,
+from mmcls.structures import (ClsDataSample, MultiTaskDataSample,
+                              batch_label_to_onehot, cat_batch_labels,
                               stack_batch_scores, tensor_split)
 from .batch_augments import RandomBatchAugment
 
@@ -151,7 +152,9 @@ class ClsDataPreprocessor(BaseDataPreprocessor):
                                  self.pad_value)
 
         data_samples = data.get('data_samples', None)
-        if data_samples is not None and 'gt_label' in data_samples[0]:
+        sample_item = data_samples[0] if data_samples is not None else None
+        if isinstance(sample_item,
+                      ClsDataSample) and 'gt_label' in sample_item:
             gt_labels = [sample.gt_label for sample in data_samples]
             batch_label, label_indices = cat_batch_labels(
                 gt_labels, device=self.device)
@@ -181,5 +184,7 @@ class ClsDataPreprocessor(BaseDataPreprocessor):
             if batch_score is not None:
                 for sample, score in zip(data_samples, batch_score):
                     sample.set_gt_score(score)
+        elif isinstance(sample_item, MultiTaskDataSample):
+            data_samples = self.cast_data(data_samples)
 
         return {'inputs': inputs, 'data_samples': data_samples}

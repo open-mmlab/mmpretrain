@@ -122,7 +122,7 @@ class MultiTasksMetric(BaseMetric):
                     # In order to make it work with other
                     # non-cls heads/metrics, one will have to
                     # override the current implementation
-                    if metric.__class__.__name__ != 'MultiTasksMetric':
+                    if not isinstance(metric, MultiTasksMetric):
                         task_data_sample_dicts = self.pre_process_cls(
                             filtered_data_samples, task_name)
                         metric.process(data_batch, task_data_sample_dicts)
@@ -132,7 +132,8 @@ class MultiTasksMetric(BaseMetric):
                         metric.process(data_batch, task_data_sample_dicts)
 
     def compute_metrics(self, results: list) -> dict:
-        raise Exception('compute metrics should not be used here directly')
+        raise NotImplementedError(
+            'compute metrics should not be used here directly')
 
     def evaluate(self, size):
         """Evaluate the model performance of the whole dataset after processing

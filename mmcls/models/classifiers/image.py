@@ -2,6 +2,7 @@
 from typing import List, Optional
 
 import torch
+import torch.nn as nn
 
 from mmcls.registry import MODELS
 from mmcls.structures import ClsDataSample
@@ -61,13 +62,19 @@ class ImageClassifier(BaseClassifier):
         super(ImageClassifier, self).__init__(
             init_cfg=init_cfg, data_preprocessor=data_preprocessor)
 
-        self.backbone = MODELS.build(backbone)
+        def build_module(module):
+            if isinstance(module, nn.Module):
+                return module
+            else:
+                return MODELS.build(module)
+
+        self.backbone: nn.Module = build_module(backbone)
 
         if neck is not None:
-            self.neck = MODELS.build(neck)
+            self.neck: nn.Module = build_module(neck)
 
         if head is not None:
-            self.head = MODELS.build(head)
+            self.head: nn.Module = build_module(head)
 
     def forward(self,
                 inputs: torch.Tensor,
