@@ -5,7 +5,7 @@ if __name__ == '__main__':
     from torchsummary import summary
 
     model = get_LeViT_model('LeViT_256')
-    params1 = torch.load('./new_params.pth')
+    params1 = torch.load('./levit-256-p16.pth')
     model.load_state_dict(params1)
     model.eval()
     x = torch.ones((1, 3, 224, 224))

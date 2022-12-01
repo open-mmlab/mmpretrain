@@ -1,101 +1,84 @@
 _base_ = [
     '../_base_/models/levit-256-p16.py',
     '../_base_/datasets/imagenet_bs64_pil_resize_autoaug.py',
-    '../_base_/default_runtime.py'
+    '../_base_/default_runtime.py',
+    '../_base_/schedules/imagenet_bs256.py'
 ]
 
-# # specific to vit pretrain
-# paramwise_cfg = dict(custom_keys={
-#     '.cls_token': dict(decay_mult=0.0),
-#     '.pos_embed': dict(decay_mult=0.0)
-# })
+dataset_type = 'ImageNet'
+data_preprocessor = dict(
+    num_classes=1000,
+    # RGB format normalization parameters
+    mean=[123.675, 116.28, 103.53],
+    std=[58.395, 57.12, 57.375],
+    # convert image from BGR to RGB
+    to_rgb=True,
+)
+
+bgr_mean = data_preprocessor['mean'][::-1]
+bgr_std = data_preprocessor['std'][::-1]
+
+train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(
+        type='RandomResizedCrop',
+        scale=224,
+        backend='pillow',
+        interpolation='bicubic'),
+    dict(type='RandomFlip', prob=0.5, direction='horizontal'),
+    dict(
+        type='AutoAugment',
+        policies='imagenet',
+        hparams=dict(
+            pad_val=[round(x) for x in bgr_mean], interpolation='bicubic')),
+    dict(type='PackClsInputs'),
+]
+
+test_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(
+        type='ResizeEdge',
+        scale=256,
+        edge='short',
+        backend='pillow',
+        interpolation='bicubic'),
+    dict(type='CenterCrop', crop_size=224),
+    dict(type='PackClsInputs'),
+]
+
+train_dataloader = dict(
+    batch_size=64,
+    num_workers=4,
+    dataset=dict(
+        type=dataset_type,
+        data_root=r'E:\imagenet',
+        ann_file='meta/train.txt',
+        data_prefix='train',
+        pipeline=train_pipeline),
+    sampler=dict(type='DefaultSampler', shuffle=True),
+)
+
+val_dataloader = dict(
+    batch_size=256,
+    num_workers=4,
+    dataset=dict(
+        type=dataset_type,
+        data_root=r'E:\imagenet',
+        ann_file='meta/val.txt',
+        data_prefix='ILSVRC2012_img_val',
+        pipeline=test_pipeline),
+    sampler=dict(type='DefaultSampler', shuffle=False),
+)
+val_evaluator = dict(type='Accuracy', topk=(1, 5))
+
+# If you want standard test, please manually configure the test dataset
+test_dataloader = val_dataloader
+test_evaluator = val_evaluator
+
+# optim_wrapper = dict(clip_grad=dict(max_norm=1.0))
 #
-# img_norm_cfg = dict(
-#     mean=[127.5, 127.5, 127.5], std=[127.5, 127.5, 127.5], to_rgb=True)
-#
-# train_pipeline = [
-#     dict(type='LoadImageFromFile'),
-#     dict(type='RandomResizedCrop', scale=224, backend='pillow'),
-#     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
-#     dict(type='Normalize', **img_norm_cfg),
-#     dict(type='ImageToTensor', keys=['img']),
-#     dict(type='ToTensor', keys=['gt_label']),
-#     dict(type='ToHalf', keys=['img']),
-#     dict(type='Collect', keys=['img', 'gt_label'])
-# ]
-#
-# test_pipeline = [
-#     dict(type='LoadImageFromFile'),
-#     dict(type='Resize', scale=(224, -1), keep_ratio=True, backend='pillow'),
-#     dict(type='CenterCrop', crop_size=224),
-#     dict(type='Normalize', **img_norm_cfg),
-#     dict(type='ImageToTensor', keys=['img']),
-#     dict(type='ToHalf', keys=['img']),
-#     dict(type='Collect', keys=['img'])
-# ]
-#
-# # change batch size
-# data = dict(
-#     samples_per_gpu=1,
-#     workers_per_gpu=1,
-#     drop_last=True,
-#     train=dict(pipeline=train_pipeline),
-#     train_dataloader=dict(mode='async'),
-#     val=dict(pipeline=test_pipeline, ),
-#     val_dataloader=dict(samples_per_gpu=1, workers_per_gpu=1),
-#     test=dict(pipeline=test_pipeline),
-#     test_dataloader=dict(samples_per_gpu=1, workers_per_gpu=1))
-#
-# # optimizer
-# optimizer = dict(
-#     type='SGD',
-#     lr=0.08,
-#     weight_decay=1e-5,
-#     momentum=0.9,
-#     paramwise_cfg=paramwise_cfg,
-# )
-#
-# # learning policy
-# param_scheduler = [
-#     dict(type='LinearLR', start_factor=0.02, by_epoch=False, begin=0, end=800),
-#     dict(
-#         type='CosineAnnealingLR',
-#         T_max=4200,
-#         by_epoch=False,
-#         begin=800,
-#         end=5000)
-# ]
-#
-# # ipu cfg
-# # model partition config
-# ipu_model_cfg = dict(
-#     train_split_edges=[
-#         dict(layer_to_call='backbone.patch_embed', ipu_id=0),
-#         dict(layer_to_call='backbone.layers.3', ipu_id=1),
-#         dict(layer_to_call='backbone.layers.6', ipu_id=2),
-#         dict(layer_to_call='backbone.layers.9', ipu_id=3)
-#     ],
-#     train_ckpt_nodes=['backbone.layers.{}'.format(i) for i in range(12)])
-#
-# # device config
-# options_cfg = dict(
-#     randomSeed=42,
-#     partialsType='half',
-#     train_cfg=dict(
+# train_cfg=dict(
 #         executionStrategy='SameAsIpu',
 #         Training=dict(gradientAccumulation=32),
 #         availableMemoryProportion=[0.3, 0.3, 0.3, 0.3],
-#     ),
-#     eval_cfg=dict(deviceIterations=1, ),
-# )
-#
-# # add model partition config and device config to runner
-# runner = dict(
-#     type='IterBasedRunner',
-#     ipu_model_cfg=ipu_model_cfg,
-#     options_cfg=options_cfg,
-#     max_iters=5000)
-#
-# default_hooks = dict(checkpoint=dict(type='CheckpointHook', interval=1000))
-#
-# # fp16 = dict(loss_scale=256.0, velocity_accum_type='half', accum_type='half')
+#     )

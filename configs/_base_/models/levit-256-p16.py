@@ -25,7 +25,7 @@ model = dict(
         type='LeViTClsHead',
         num_classes=1000,
         in_channels=512,
-        distillation=False,
+        distillation=True,
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
         topk=(1, 5),
     ))

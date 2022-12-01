@@ -9,23 +9,23 @@ from mmcls.registry import MODELS
 
 
 def build_bn_linear(in_feature, out_feature, bias=True, std=0.02):
-    bn = nn.BatchNorm1d(in_feature)
+    # bn = nn.BatchNorm1d(in_feature)
     linear = Linear(in_feature, out_feature, bias=bias)
-    nn.init.trunc_normal_(linear.weight, std)
-    if bias:
-        nn.init.constant_(linear.bias, 0)
-    w = bn.weight / (bn.running_var + bn.eps) ** 0.5
-    b = bn.bias - bn.running_mean * \
-        bn.weight / (bn.running_var + bn.eps) ** 0.5
-    w = linear.weight * w[None, :]
-    if linear.bias is None:
-        b = b @ linear.weight.T
-    else:
-        b = (linear.weight @ b[:, None]).view(-1) + linear.bias
-    m = torch.nn.Linear(w.size(1), w.size(0))
-    m.weight.data.copy_(w)
-    m.bias.data.copy_(b)
-    return m
+    # nn.init.trunc_normal_(linear.weight, std)
+    # if bias:
+    #     nn.init.constant_(linear.bias, 0)
+    # w = bn.weight / (bn.running_var + bn.eps) ** 0.5
+    # b = bn.bias - bn.running_mean * \
+    #     bn.weight / (bn.running_var + bn.eps) ** 0.5
+    # w = linear.weight * w[None, :]
+    # if linear.bias is None:
+    #     b = b @ linear.weight.T
+    # else:
+    #     b = (linear.weight @ b[:, None]).view(-1) + linear.bias
+    # m = torch.nn.Linear(w.size(1), w.size(0))
+    # m.weight.data.copy_(w)
+    # m.bias.data.copy_(b)
+    return linear
 
 
 @MODELS.register_module()

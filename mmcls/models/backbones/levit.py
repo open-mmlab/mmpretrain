@@ -88,18 +88,18 @@ def build_conv_bn(
         padding=pad,
         dilation=dilation,
         groups=groups,
-        bias=False
+        bias=True
     )
-    w = bn.weight / (bn.running_var + bn.eps) ** 0.5
-    w = conv.weight * w[:, None, None, None]
-    b = bn.bias - bn.running_mean * bn.weight / \
-        (bn.running_var + bn.eps) ** 0.5
-    m = build_conv_layer(conv_cfg, w.size(1) * conv.groups, w.size(
-        0), w.shape[2:], stride=conv.stride, padding=conv.padding, dilation=conv.dilation,
-                         groups=conv.groups)
-    m.weight.data.copy_(w)
-    m.bias.data.copy_(b)
-    return m
+    # w = bn.weight / (bn.running_var + bn.eps) ** 0.5
+    # w = conv.weight * w[:, None, None, None]
+    # b = bn.bias - bn.running_mean * bn.weight / \
+    #     (bn.running_var + bn.eps) ** 0.5
+    # m = build_conv_layer(conv_cfg, w.size(1) * conv.groups, w.size(
+    #     0), w.shape[2:], stride=conv.stride, padding=conv.padding, dilation=conv.dilation,
+    #                      groups=conv.groups)
+    # m.weight.data.copy_(w)
+    # m.bias.data.copy_(b)
+    return conv
 
 
 def build_linear_bn(
@@ -108,18 +108,18 @@ def build_linear_bn(
         bn_weight_init=1,
         norm_cfg=dict(type='BN1d')
 ):
-    linear = Linear(in_feature, out_feature, bias=False)
-    _, bn = build_norm_layer(norm_cfg, out_feature)
-    torch.nn.init.constant_(bn.weight, bn_weight_init)
-    torch.nn.init.constant_(bn.bias, 0)
-    w = bn.weight / (bn.running_var + bn.eps) ** 0.5
-    w = linear.weight * w[:, None]
-    b = bn.bias - bn.running_mean * bn.weight / \
-        (bn.running_var + bn.eps) ** 0.5
-    m = Linear(w.size(1), w.size(0))
-    m.weight.data.copy_(w)
-    m.bias.data.copy_(b)
-    return m
+    linear = Linear(in_feature, out_feature, bias=True)
+    # _, bn = build_norm_layer(norm_cfg, out_feature)
+    # torch.nn.init.constant_(bn.weight, bn_weight_init)
+    # torch.nn.init.constant_(bn.bias, 0)
+    # w = bn.weight / (bn.running_var + bn.eps) ** 0.5
+    # w = linear.weight * w[:, None]
+    # b = bn.bias - bn.running_mean * bn.weight / \
+    #     (bn.running_var + bn.eps) ** 0.5
+    # m = Linear(w.size(1), w.size(0))
+    # m.weight.data.copy_(w)
+    # m.bias.data.copy_(b)
+    return linear
 
 
 class Residual(BaseModule):
