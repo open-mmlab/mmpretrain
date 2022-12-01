@@ -27,10 +27,15 @@ def build_bn_linear(in_feature, out_feature, bias=True, std=0.02):
     m.bias.data.copy_(b)
     return m
 
+
 @MODELS.register_module()
 class LeViTClsHead(ClsHead):
-    def __init__(self, num_classes=1000, distillation=True, in_channels=None):
+    def __init__(self, num_classes=1000, distillation=True, in_channels=None,
+                 loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
+                 topk=(1,)):
         super(LeViTClsHead, self).__init__()
+        self.topk = topk
+        self.loss_module = MODELS.build(loss)
         self.num_classes = num_classes
         self.distillation = distillation
         self.head = build_bn_linear(
@@ -40,6 +45,9 @@ class LeViTClsHead(ClsHead):
                 in_channels, num_classes) if num_classes > 0 else nn.Identity()
 
     def forward(self, x):
+        x = x[-1]
+        B, C, W, H = x.shape
+        x = x.permute(0, 2, 3, 1).reshape(B, W * H, C)
         x = x.mean(1)  # 2 384
         if self.distillation:
             x = self.head(x), self.head_dist(x)  # 2 16 384 -> 2 1000

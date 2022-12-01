@@ -7,6 +7,7 @@ import mmcv
 from mmcv.cnn import build_conv_layer, build_norm_layer, Linear
 from mmengine.model import BaseModule
 
+from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.models.heads.levit_head import LeViTClsHead
 from mmcls.registry import MODELS
 
@@ -174,7 +175,7 @@ class Attention(BaseModule):
 
     @torch.no_grad()
     def train(self, mode=True):
-        super(Attention).train(mode)
+        super(Attention, self).train(mode)
         if mode and hasattr(self, 'ab'):
             del self.ab
         else:
@@ -201,7 +202,7 @@ class Attention(BaseModule):
         return x
 
 
-class MLP(BaseModule):
+class MLP(nn.Sequential):
     def __init__(self,
                  embed_dim,
                  mlp_ratio,
@@ -233,7 +234,7 @@ class Subsample(BaseModule):
         return x
 
 
-class AttentionSubsample(torch.nn.Module):
+class AttentionSubsample(nn.Sequential):
     def __init__(self, in_dim, out_dim, key_dim, num_heads=8,
                  attn_ratio=2,
                  activation=None,
@@ -309,7 +310,7 @@ class AttentionSubsample(torch.nn.Module):
 
 
 @MODELS.register_module()
-class LeViT(BaseModule):
+class LeViT(BaseBackbone):
     """ Vision Transformer with support for patch or hybrid CNN input stage
     """
 
@@ -392,14 +393,14 @@ class LeViT(BaseModule):
         # x = self.blocks(x)  # 2 196 128 -> 2 16 384
         # x = self.stage(x)
         outs = []
-        print(self.size)
+        # print(self.size)
         for i, layer_name in enumerate(self.stages):
             x = layer_name(x)
             B, _, C = x.shape
             if i in self.out_indices:
-                x = x.reshape(B, self.size[i], self.size[i], C).permute(0, 3, 1, 2)
-                outs.append(x)
-                x = x.permute(0, 2, 1, 3).reshape(B, self.size[i] * self.size[i], C)
+                out = x.reshape(B, self.size[i], self.size[i], C).permute(0, 3, 1, 2)
+                outs.append(out)
+                # out = out.permute(0, 2, 3, 1).reshape(B, self.size[i] * self.size[i], C)
         return tuple(outs)
 
 
@@ -438,9 +439,9 @@ class Model(BaseModule):
         self.head = LeViTClsHead(num_classes=num_classes, distillation=distillation, in_channels=embed_dim[-1])
 
     def forward(self, x):
-        x = self.backbone(x)[-1]
-        B, C, W, H = x.shape
-        x = x.permute(0, 2, 1, 3).reshape(B, W * H, C)
+        x = self.backbone(x)
+        # B, C, W, H = x.shape
+        # x = x.permute(0, 2, 1, 3).reshape(B, W * H, C)
         x = self.head(x)
         return x
 
