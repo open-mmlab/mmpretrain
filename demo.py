@@ -5,12 +5,14 @@ if __name__ == '__main__':
     from torchsummary import summary
 
     model = get_LeViT_model('LeViT_256')
-    params1 = torch.load('./levit-256-p16.pth')
-    model.load_state_dict(params1)
     model.eval()
-    x = torch.ones((1, 3, 224, 224))
-    x = model(x)
-    print(x.size())
+    summary(model, (3, 224, 224), device='cpu')
+    # params1 = torch.load('./levit-256-p16.pth')
+    # model.load_state_dict(params1)
+    # model.eval()
+    # x = torch.ones((1, 3, 224, 224))
+    # x = model(x)
+    # print(x.size())
 
     # params = torch.load('./params.pth')
     #

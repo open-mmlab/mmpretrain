@@ -39,17 +39,17 @@ class hybrid_cnn(BaseModule):
 
         # self.patch_embed.add_module()
         for i in range(len(self.input_channels)):
-            conv_bn = build_conv_bn(self.input_channels[i],
-                                    self.output_channels[i],
-                                    kernel_size=kernel_size,
-                                    stride=stride,
-                                    pad=pad,
-                                    dilation=dilation,
-                                    groups=groups,
-                                    bn_weight_init=bn_weight_init,
-                                    conv_cfg=conv_cfg,
-                                    norm_cfg=norm_cfg,
-                                    )
+            conv_bn = Conv_BN(self.input_channels[i],
+                              self.output_channels[i],
+                              kernel_size=kernel_size,
+                              stride=stride,
+                              pad=pad,
+                              dilation=dilation,
+                              groups=groups,
+                              bn_weight_init=bn_weight_init,
+                              conv_cfg=conv_cfg,
+                              norm_cfg=norm_cfg,
+                              )
             self.patch_embed.add_module('%d' % (2 * i), conv_bn)
             if i < len(self.input_channels) - 1:
                 self.patch_embed.add_module('%d' % (i * 2 + 1), activation())
@@ -59,67 +59,80 @@ class hybrid_cnn(BaseModule):
         return x
 
 
-def build_conv_bn(
-        in_channel,
-        out_channel,
-        kernel_size=3,
-        stride=2,
-        pad=1,
-        dilation=1,
-        groups=1,
-        bn_weight_init=1,
-        conv_cfg=None,
-        norm_cfg=dict(type='BN'),
-):
-    # super(Conv_BN, self).__init__()
-    conv_cfg = conv_cfg
-    norm_cfg = norm_cfg
-    input_channel = in_channel
-    output_channel = out_channel
-    _, bn = build_norm_layer(norm_cfg, output_channel)
-    torch.nn.init.constant_(bn.weight, bn_weight_init)
-    torch.nn.init.constant_(bn.bias, 0)
-    conv = build_conv_layer(
-        conv_cfg,
-        input_channel,
-        output_channel,
-        kernel_size=kernel_size,
-        stride=stride,
-        padding=pad,
-        dilation=dilation,
-        groups=groups,
-        bias=True
-    )
-    # w = bn.weight / (bn.running_var + bn.eps) ** 0.5
-    # w = conv.weight * w[:, None, None, None]
-    # b = bn.bias - bn.running_mean * bn.weight / \
-    #     (bn.running_var + bn.eps) ** 0.5
-    # m = build_conv_layer(conv_cfg, w.size(1) * conv.groups, w.size(
-    #     0), w.shape[2:], stride=conv.stride, padding=conv.padding, dilation=conv.dilation,
-    #                      groups=conv.groups)
-    # m.weight.data.copy_(w)
-    # m.bias.data.copy_(b)
-    return conv
+class Conv_BN(nn.Sequential):
+    def __init__(self,
+                 in_channel,
+                 out_channel,
+                 kernel_size=3,
+                 stride=2,
+                 pad=1,
+                 dilation=1,
+                 groups=1,
+                 bn_weight_init=1,
+                 conv_cfg=None,
+                 norm_cfg=dict(type='BN'),
+                 ):
+        super(Conv_BN, self).__init__()
+        conv_cfg = conv_cfg
+        norm_cfg = norm_cfg
+        input_channel = in_channel
+        output_channel = out_channel
+        _, bn = build_norm_layer(norm_cfg, input_channel)
+        torch.nn.init.constant_(bn.weight, bn_weight_init)
+        torch.nn.init.constant_(bn.bias, 0)
+        self.bn = bn
+        self.conv = build_conv_layer(
+            conv_cfg,
+            input_channel,
+            output_channel,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=pad,
+            dilation=dilation,
+            groups=groups,
+            bias=False
+        )
+
+    def fuse(self):
+        w = self.bn.weight / (self.bn.running_var + self.bn.eps) ** 0.5
+        w = self.conv.weight * w[:, None, None, None]
+        b = self.bn.bias - self.bn.running_mean * self.bn.weight / \
+            (self.bn.running_var + self.bn.eps) ** 0.5
+        m = build_conv_layer(self.conv_cfg, w.size(1) * self.conv.groups, w.size(
+            0), w.shape[2:], stride=self.conv.stride, padding=self.conv.padding, dilation=self.conv.dilation,
+                             groups=self.conv.groups)
+        m.weight.data.copy_(w)
+        m.bias.data.copy_(b)
+        return m
 
 
-def build_linear_bn(
-        in_feature,
-        out_feature,
-        bn_weight_init=1,
-        norm_cfg=dict(type='BN1d')
-):
-    linear = Linear(in_feature, out_feature, bias=True)
-    # _, bn = build_norm_layer(norm_cfg, out_feature)
-    # torch.nn.init.constant_(bn.weight, bn_weight_init)
-    # torch.nn.init.constant_(bn.bias, 0)
-    # w = bn.weight / (bn.running_var + bn.eps) ** 0.5
-    # w = linear.weight * w[:, None]
-    # b = bn.bias - bn.running_mean * bn.weight / \
-    #     (bn.running_var + bn.eps) ** 0.5
-    # m = Linear(w.size(1), w.size(0))
-    # m.weight.data.copy_(w)
-    # m.bias.data.copy_(b)
-    return linear
+class Linear_BN(nn.Sequential):
+    def __init__(self,
+                 in_feature,
+                 out_feature,
+                 bn_weight_init=1,
+                 norm_cfg=dict(type='BN1d')
+                 ):
+        super(Linear_BN, self).__init__()
+        self.linear = Linear(in_feature, out_feature, bias=False)
+        _, bn = build_norm_layer(norm_cfg, out_feature)
+        torch.nn.init.constant_(bn.weight, bn_weight_init)
+        torch.nn.init.constant_(bn.bias, 0)
+        self.bn = bn
+
+    def fuse(self):
+        w = self.bn.weight / (self.bn.running_var + self.bn.eps) ** 0.5
+        w = self.linear.weight * w[:, None]
+        b = self.bn.bias - self.bn.running_mean * self.bn.weight / \
+            (self.bn.running_var + self.bn.eps) ** 0.5
+        m = Linear(w.size(1), w.size(0))
+        m.weight.data.copy_(w)
+        m.bias.data.copy_(b)
+        return m
+
+    def forward(self, x):
+        x = self.linear(x)
+        return self.bn(x.flatten(0, 1)).reshape_as(x)
 
 
 class Residual(BaseModule):
@@ -154,8 +167,8 @@ class Attention(BaseModule):
         self.dh = int(attn_ratio * key_dim) * num_heads
         self.attn_ratio = attn_ratio
         h = self.dh + nh_kd * 2
-        self.qkv = build_linear_bn(dim, h)
-        self.proj = nn.Sequential(activation(), build_linear_bn(
+        self.qkv = Linear_BN(dim, h)
+        self.proj = nn.Sequential(activation(), Linear_BN(
             self.dh, dim, bn_weight_init=0))
 
         points = list(itertools.product(range(resolution), range(resolution)))
@@ -210,9 +223,9 @@ class MLP(nn.Sequential):
                  ):
         super(MLP, self).__init__()
         h = embed_dim * mlp_ratio
-        self.linear1 = build_linear_bn(embed_dim, h)
+        self.linear1 = Linear_BN(embed_dim, h)
         self.activation = mlp_activation()
-        self.linear2 = build_linear_bn(h, embed_dim, bn_weight_init=0)
+        self.linear2 = Linear_BN(h, embed_dim, bn_weight_init=0)
 
     def forward(self, x):
         x = self.linear1(x)
@@ -251,12 +264,12 @@ class AttentionSubsample(nn.Sequential):
         self.resolution_ = resolution_
         self.resolution_2 = resolution_ ** 2
         h = self.dh + nh_kd
-        self.kv = build_linear_bn(in_dim, h)
+        self.kv = Linear_BN(in_dim, h)
 
         self.q = nn.Sequential(
             Subsample(stride, resolution),
-            build_linear_bn(in_dim, nh_kd))
-        self.proj = nn.Sequential(activation(), build_linear_bn(
+            Linear_BN(in_dim, nh_kd))
+        self.proj = nn.Sequential(activation(), Linear_BN(
             self.dh, out_dim))
 
         self.stride = stride
@@ -440,8 +453,9 @@ class Model(BaseModule):
 
     def forward(self, x):
         x = self.backbone(x)
-        # B, C, W, H = x.shape
-        # x = x.permute(0, 2, 1, 3).reshape(B, W * H, C)
+        x = x[-1]
+        B, C, W, H = x.shape
+        x = x.permute(0, 2, 3, 1).reshape(B, W * H, C)
         x = self.head(x)
         return x
 
