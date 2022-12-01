@@ -490,7 +490,7 @@ class BEiT(VisionTransformer):
         all_keys = list(state_dict_model.keys())
         for key in all_keys:
             # The index buffer need to be re-generated.
-            if "relative_position_index" in key and key in state_dict:
+            if 'relative_position_index' in key and key in state_dict:
                 state_dict.pop(key)
 
             if 'relative_position_bias_table' in key:
