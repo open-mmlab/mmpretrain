@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
-import warnings
 
 import numpy as np
 import torch
@@ -10,17 +9,9 @@ from mmcv.cnn import (Conv2d, ConvModule, build_activation_layer,
                       build_norm_layer)
 from mmcv.cnn.bricks import DropPath
 from mmcv.cnn.bricks.transformer import AdaptivePadding
+from mmcv.ops.multi_scale_deform_attn import MultiScaleDeformableAttention
 from mmengine.model import BaseModule, ModuleList
 from torch import nn
-
-try:
-    from mmcv.ops.multi_scale_deform_attn import MultiScaleDeformableAttention
-
-except ImportError:
-    warnings.warn(
-        '`MultiScaleDeformableAttention` in MMCV has been moved to '
-        '`mmcv.ops.multi_scale_deform_attn`, please update your MMCV')
-    from mmcv.cnn.bricks.transformer import MultiScaleDeformableAttention
 
 from mmcls.registry import MODELS
 from ..utils import LayerScale, resize_pos_embed
@@ -181,6 +172,8 @@ class Extractor(BaseModule):
             Default to True.
         ffn_ratio (float): The number of expansion ratio of feedforward
             network hidden layer channels. Default to 0.25.
+        value_proj_ratio (float): The expansion ratio of value_proj.
+            Defaults to 1.0.
         use_extra_extractor (bool): The option to use extra Extractor in
             InteractionBlock. If True, it use extra Extractor.
             Default to False.
@@ -201,6 +194,7 @@ class Extractor(BaseModule):
                  drop_path_rate=0.,
                  with_ffn=True,
                  ffn_ratio=0.25,
+                 value_proj_ratio=1.0,
                  norm_cfg=dict(type='LN', eps=1e-06),
                  with_cp=False,
                  init_cfg=None):
@@ -213,7 +207,8 @@ class Extractor(BaseModule):
             num_heads=num_heads,
             num_points=num_points,
             dropout=0.0,
-            batch_first=True)
+            batch_first=True,
+            value_proj_ratio=value_proj_ratio)
         self.with_cp = with_cp
         mlp_hidden_dim = int(embed_dims * ffn_ratio)
         if with_ffn:
@@ -265,6 +260,8 @@ class Injector(BaseModule):
             head of MultiScaleDeformableAttention. Defaults to 4.
         num_levels (int): The number of feature map used in
             Attention. Defaults to 1.
+        value_proj_ratio (float): The expansion ratio of value_proj.
+            Defaults to 1.0.
         norm_cfg (dict): Config dict for normalization.
             Defaults to ``dict(type='LN', eps=1e-06)``.
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
@@ -278,6 +275,7 @@ class Injector(BaseModule):
                  num_heads=6,
                  num_points=4,
                  num_levels=1,
+                 value_proj_ratio=1.0,
                  norm_cfg=dict(type='LN', eps=1e-06),
                  with_cp=False,
                  init_cfg=None):
@@ -291,7 +289,8 @@ class Injector(BaseModule):
             num_heads=num_heads,
             num_points=num_points,
             dropout=0.0,
-            batch_first=True)
+            batch_first=True,
+            value_proj_ratio=value_proj_ratio)
         self.gamma = LayerScale(embed_dims)
 
     def forward(self, query, reference_points, feat, spatial_shapes,
@@ -331,6 +330,8 @@ class InteractionBlock(BaseModule):
             Default to True.
         ffn_ratio (float): The number of expansion ratio of feedforward
             network hidden layer channels. Default to 0.25.
+        value_proj_ratio (float): The expansion ratio of value_proj.
+            Defaults to 1.0.
         use_extra_extractor (bool): The option to use extra Extractor in
             InteractionBlock. If True, it use extra Extractor.
             Default to False.
@@ -350,6 +351,7 @@ class InteractionBlock(BaseModule):
                  drop_path_rate=0.,
                  with_ffn=True,
                  ffn_ratio=0.25,
+                 value_proj_ratio=1.0,
                  use_extra_extractor=False,
                  norm_cfg=dict(type='LN', eps=1e-06),
                  with_cp=False,
@@ -361,6 +363,7 @@ class InteractionBlock(BaseModule):
             num_levels=3,
             num_heads=num_heads,
             num_points=num_points,
+            value_proj_ratio=value_proj_ratio,
             norm_cfg=norm_cfg,
             with_cp=with_cp)
         self.extractor = Extractor(
@@ -371,6 +374,7 @@ class InteractionBlock(BaseModule):
             norm_cfg=norm_cfg,
             with_ffn=with_ffn,
             ffn_ratio=ffn_ratio,
+            value_proj_ratio=value_proj_ratio,
             drop_rate=drop_rate,
             drop_path_rate=drop_path_rate,
             with_cp=with_cp)
@@ -383,6 +387,7 @@ class InteractionBlock(BaseModule):
                     norm_cfg=norm_cfg,
                     with_ffn=with_ffn,
                     ffn_ratio=ffn_ratio,
+                    value_proj_ratio=value_proj_ratio,
                     drop_rate=drop_rate,
                     drop_path_rate=drop_path_rate,
                     with_cp=with_cp) for _ in range(2)
@@ -552,6 +557,7 @@ class VitAdapter(VisionTransformer):
             - **window_size** (int): The height and width of the window.
             - **window_block_indexes** (int): The indexes of window attention
               blocks.
+            - **value_proj_ratio** (float): The expansion ratio of value_proj.
 
             Defaults to 'base'.
         patch_size (int | tuple): The patch size in patch embedding.
@@ -588,7 +594,8 @@ class VitAdapter(VisionTransformer):
                 'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 11]],
                 'window_size': 14,
                 # 2, 5, 8 11 for global attention
-                'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10]
+                'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10],
+                'value_proj_ratio': 1.0
             }),
         **dict.fromkeys(
             ['b', 'base'],
@@ -596,7 +603,8 @@ class VitAdapter(VisionTransformer):
                 'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 11]],
                 'window_size': 14,
                 # 2, 5, 8 11 for global attention
-                'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10]
+                'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10],
+                'value_proj_ratio': 0.5
             }),
         **dict.fromkeys(
             ['deit-t', 'deit-tiny'],
@@ -604,7 +612,8 @@ class VitAdapter(VisionTransformer):
                 'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 11]],
                 'window_size': 14,
                 # 2, 5, 8 11 for global attention
-                'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10]
+                'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10],
+                'value_proj_ratio': 1.0
             }),
         **dict.fromkeys(
             ['deit-s', 'deit-small'],
@@ -612,7 +621,8 @@ class VitAdapter(VisionTransformer):
                 'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 11]],
                 'window_size': 14,
                 # 2, 5, 8 11 for global attention
-                'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10]
+                'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10],
+                'value_proj_ratio': 1.0
             }),
         **dict.fromkeys(
             ['deit-b', 'deit-base'],
@@ -620,7 +630,8 @@ class VitAdapter(VisionTransformer):
                 'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 11]],
                 'window_size': 14,
                 # 2, 5, 8 11 for global attention
-                'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10]
+                'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10],
+                'value_proj_ratio': 0.5
             }),
     }
 
@@ -661,6 +672,9 @@ class VitAdapter(VisionTransformer):
         self.window_size = self.adapter_settings['window_size']
         self.window_block_indexes = self.adapter_settings[
             'window_block_indexes']
+        self.window_block_indexes = self.adapter_settings[
+            'window_block_indexes']
+        self.value_proj_ratio = self.adapter_settings['value_proj_ratio']
 
         super().__init__(
             *args,
@@ -692,6 +706,7 @@ class VitAdapter(VisionTransformer):
                 norm_cfg=norm_cfg,
                 with_ffn=with_adapter_ffn,
                 ffn_ratio=adapter_ffn_ratio,
+                value_proj_ratio=self.value_proj_ratio,
                 with_cp=with_cp,
                 use_extra_extractor=(
                     (True if i == len(self.interaction_indexes) -
