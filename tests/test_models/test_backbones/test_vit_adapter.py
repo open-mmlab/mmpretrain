@@ -35,7 +35,8 @@ class TestVitAdapter(TestCase):
                 'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 15]],
                 'window_size': 14,
                 'window_block_indexes':
-                [0, 1, 3, 4, 6, 7, 9, 10, 11, 12, 13, 14]
+                [0, 1, 3, 4, 6, 7, 9, 10, 11, 12, 13, 14],
+                'value_proj_ratio': 1.0
             }
             VitAdapter(**cfg)
 
@@ -48,7 +49,8 @@ class TestVitAdapter(TestCase):
             'feedforward_channels': 1024,
             'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 15]],
             'window_size': 14,
-            'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10, 11, 12, 13, 14]
+            'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10, 11, 12, 13, 14],
+            'value_proj_ratio': 1.0
         }
         cfg['deform_num_heads'] = 16
         model = VitAdapter(**cfg)
