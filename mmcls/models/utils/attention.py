@@ -11,6 +11,7 @@ from mmengine.utils import digit_version
 
 from mmcls.registry import MODELS
 from .helpers import to_2tuple
+from .layer_scale import LayerScale as MMCLSLayerScale
 
 # After pytorch v1.10.0, use torch.meshgrid without indexing
 # will raise extra warning. For more details,
@@ -497,6 +498,10 @@ class MultiheadAttention(BaseModule):
         v_shortcut (bool): Add a shortcut from value to output. It's usually
             used if ``input_dims`` is different from ``embed_dims``.
             Defaults to False.
+        layer_scale_init_value (float): Initial value of scale factor in
+            LayerScale. Defaults to 0.0.
+        use_layer_scale (bool): Whether to use layer_scale. This is a duplicate
+            of the mmcv LS and will be removed. Defaults to False.
         init_cfg (dict, optional): The Config for initialization.
             Defaults to None.
     """
@@ -513,6 +518,7 @@ class MultiheadAttention(BaseModule):
                  proj_bias=True,
                  v_shortcut=False,
                  layer_scale_init_value=0.,
+                 use_layer_scale=False,
                  init_cfg=None):
         super(MultiheadAttention, self).__init__(init_cfg=init_cfg)
 
@@ -533,6 +539,9 @@ class MultiheadAttention(BaseModule):
 
         if layer_scale_init_value > 0:
             self.gamma1 = LayerScale(embed_dims, scale=layer_scale_init_value)
+        elif use_layer_scale:
+            # todo: delete mmcls LS.
+            self.gamma1 = MMCLSLayerScale(embed_dims)
         else:
             self.gamma1 = nn.Identity()
 
