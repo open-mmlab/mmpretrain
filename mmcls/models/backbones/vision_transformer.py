@@ -30,6 +30,8 @@ class TransformerEncoderLayer(BaseModule):
         num_fcs (int): The number of fully-connected layers for FFNs.
             Defaults to 2.
         qkv_bias (bool): enable bias for qkv if True. Defaults to True.
+        layer_scale_init_value (float): Initial value of scale factor in
+            LayerScale. Defaults to 0.0.
         window_size (int): The height and width of the window for
             TransformerEncoderLayer. This implementation is based on
             `ViTDet <https://arxiv.org/abs/2203.16527>`_
@@ -212,6 +214,8 @@ class VisionTransformer(BaseBackbone):
             ``with_cls_token`` must be True. Defaults to True.
         interpolate_mode (str): Select the interpolate mode for position
             embeding vector resize. Defaults to "bicubic".
+        layer_scale_init_value (float): Initial value of scale factor in
+            LayerScale. Defaults to 0.0.
         patch_cfg (dict): Configs of patch embeding. Defaults to an empty dict.
         layer_cfgs (Sequence | dict): Configs of each transformer layer in
             encoder. Defaults to an empty dict.
