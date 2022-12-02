@@ -589,29 +589,48 @@ class VitAdapter(VisionTransformer):
     """
     adapter_zoo = {
         **dict.fromkeys(
-            ['s', 'small'],
-            {
-                'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 11]],
-                'window_size': 14,
-                # 2, 5, 8 11 for global attention
-                'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10],
-                'value_proj_ratio': 1.0
-            }),
-        **dict.fromkeys(
             ['b', 'base'],
             {
                 'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 11]],
                 'window_size': 14,
-                # 2, 5, 8 11 for global attention
+                # 2, 5, 8, 11 for global attention
                 'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10],
                 'value_proj_ratio': 0.5
+            }),
+        **dict.fromkeys(
+            ['l', 'large'],
+            {
+                'interaction_indexes': [[0, 5], [6, 11], [12, 17], [18, 23]],
+                'window_size':
+                14,
+                # 5, 11, 17, 23 for global attention
+                'window_block_indexes': [
+                    0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 18, 19,
+                    20, 21, 22
+                ],
+                'value_proj_ratio':
+                0.5
+            }),
+        **dict.fromkeys(
+            ['h', 'huge'],
+            {
+                'interaction_indexes': [[0, 7], [8, 15], [16, 23], [24, 31]],
+                'window_size':
+                14,
+                # 7, 15, 23, 31 for global attention
+                'window_block_indexes': [
+                    0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18,
+                    19, 20, 21, 22, 24, 25, 26, 27, 28, 29, 30
+                ],
+                'value_proj_ratio':
+                0.5
             }),
         **dict.fromkeys(
             ['deit-t', 'deit-tiny'],
             {
                 'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 11]],
                 'window_size': 14,
-                # 2, 5, 8 11 for global attention
+                # 2, 5, 8, 11 for global attention
                 'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10],
                 'value_proj_ratio': 1.0
             }),
@@ -620,7 +639,7 @@ class VitAdapter(VisionTransformer):
             {
                 'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 11]],
                 'window_size': 14,
-                # 2, 5, 8 11 for global attention
+                # 2, 5, 8, 11 for global attention
                 'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10],
                 'value_proj_ratio': 1.0
             }),
@@ -629,11 +648,11 @@ class VitAdapter(VisionTransformer):
             {
                 'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 11]],
                 'window_size': 14,
-                # 2, 5, 8 11 for global attention
+                # 2, 5, 8, 11 for global attention
                 'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10],
                 'value_proj_ratio': 0.5
             }),
-    }
+    }  # yapf: disable
 
     def __init__(self,
                  *args,
