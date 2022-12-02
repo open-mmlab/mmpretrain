@@ -51,9 +51,8 @@ class TestPackClsInputs(unittest.TestCase):
         # Test without `img` and `gt_label`
         del data['img']
         del data['gt_label']
-        with self.assertWarnsRegex(Warning, 'Cannot get "img"'):
-            results = transform(copy.deepcopy(data))
-            self.assertNotIn('gt_label', results['data_samples'])
+        results = transform(copy.deepcopy(data))
+        self.assertNotIn('gt_label', results['data_samples'])
 
     def test_repr(self):
         cfg = dict(type='PackClsInputs', meta_keys=['flip', 'img_shape'])
@@ -132,7 +131,7 @@ class TestCollect(unittest.TestCase):
         self.assertEqual(repr(transform), "Collect(keys=['img'])")
 
 
-class FormatMultiTaskLabels(unittest.TestCase):
+class TestPackMultiTaskInputs(unittest.TestCase):
 
     def test_transform(self):
         img_path = osp.join(osp.dirname(__file__), '../../data/color.jpg')
@@ -150,15 +149,16 @@ class FormatMultiTaskLabels(unittest.TestCase):
             },
         }
 
-        cfg = dict(type='FormatMultiTaskLabels', )
+        cfg = dict(type='PackMultiTaskInputs', )
         transform = TRANSFORMS.build(cfg)
         results = transform(copy.deepcopy(data))
         self.assertIn('inputs', results)
         self.assertIsInstance(results['inputs'], torch.Tensor)
         self.assertIn('data_samples', results)
         self.assertIsInstance(results['data_samples'], MultiTaskDataSample)
-        self.assertIn('flip', results['data_samples'].metainfo_keys())
-        self.assertIsInstance(results['data_samples'].gt_task, LabelData)
+        self.assertIn('flip', results['data_samples'].task1.metainfo_keys())
+        self.assertIsInstance(results['data_samples'].task1.gt_label,
+                              LabelData)
 
         # Test grayscale image
         data['img'] = data['img'].mean(-1)
@@ -170,13 +170,13 @@ class FormatMultiTaskLabels(unittest.TestCase):
         # Test without `img` and `gt_label`
         del data['img']
         del data['gt_label']
-        with self.assertWarnsRegex(Warning, 'Cannot get "img"'):
-            results = transform(copy.deepcopy(data))
-            self.assertNotIn('gt_label', results['data_samples'])
+        results = transform(copy.deepcopy(data))
+        self.assertNotIn('gt_label', results['data_samples'])
 
     def test_repr(self):
-        cfg = dict(type='FormatMultiTaskLabels', meta_keys=['img_shape'])
+        cfg = dict(type='PackMultiTaskInputs', meta_keys=['img_shape'])
         transform = TRANSFORMS.build(cfg)
-        self.assertEqual(
-            repr(transform),
-            "FormatMultiTaskLabels(meta_keys=['img_shape'])(tasks=None)")
+        rep = 'PackMultiTaskInputs(task_handlers={},'
+        rep += ' multi_task_fields=(\'gt_label\',),'
+        rep += ' meta_keys=[\'img_shape\'])'
+        self.assertEqual(repr(transform), rep)

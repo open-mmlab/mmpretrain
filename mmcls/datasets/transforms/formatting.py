@@ -155,9 +155,10 @@ class PackMultiTaskInputs(BaseTransform):
 
         task_results = defaultdict(dict)
         for field in self.multi_task_fields:
-            value = results.pop(field)
-            for k, v in value.items():
-                task_results[k].update({field: v})
+            if field in results:
+                value = results.pop(field)
+                for k, v in value.items():
+                    task_results[k].update({field: v})
 
         data_sample = MultiTaskDataSample()
         for task_name, task_result in task_results.items():
