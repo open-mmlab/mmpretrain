@@ -1,16 +1,17 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import warnings
+from os import PathLike
 
 import torch
 from mmengine.config import Config
-from mmengine.dataset import Compose, pseudo_collate
+from mmengine.dataset import Compose, default_collate
+from mmengine.registry import DefaultScope
 from mmengine.runner import load_checkpoint
 
 from mmcls.models import build_classifier
-from mmcls.utils import register_all_modules
 
 
-def init_model(config, checkpoint=None, device='cuda:0', options=None):
+def init_model(config, checkpoint=None, device=None, options=None):
     """Initialize a classifier from config file.
 
     Args:
@@ -23,8 +24,7 @@ def init_model(config, checkpoint=None, device='cuda:0', options=None):
     Returns:
         nn.Module: The constructed classifier.
     """
-    register_all_modules()
-    if isinstance(config, str):
+    if isinstance(config, (str, PathLike)):
         config = Config.fromfile(config)
     elif not isinstance(config, Config):
         raise TypeError('config must be a filename or Config object, '
@@ -67,7 +67,6 @@ def inference_model(model, img):
         result (dict): The classification results that contains
             `class_name`, `pred_label` and `pred_score`.
     """
-    register_all_modules()
     cfg = model.cfg
     # build the data pipeline
     test_pipeline_cfg = cfg.test_dataloader.dataset.pipeline
@@ -79,9 +78,10 @@ def inference_model(model, img):
         if test_pipeline_cfg[0]['type'] == 'LoadImageFromFile':
             test_pipeline_cfg.pop(0)
         data = dict(img=img)
-    test_pipeline = Compose(test_pipeline_cfg)
+    with DefaultScope.overwrite_default_scope('mmcls'):
+        test_pipeline = Compose(test_pipeline_cfg)
     data = test_pipeline(data)
-    data = pseudo_collate([data])
+    data = default_collate([data])
 
     # forward the model
     with torch.no_grad():
