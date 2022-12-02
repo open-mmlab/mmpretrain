@@ -1,6 +1,6 @@
 _base_ = [
     '../_base_/models/levit-256-p16.py',
-    '../_base_/datasets/imagenet_bs64_pil_resize_autoaug.py',
+    '../_base_/datasets/imagenet_bs64_swin_224.py',
     '../_base_/default_runtime.py',
     '../_base_/schedules/imagenet_bs256.py'
 ]
@@ -27,10 +27,22 @@ train_pipeline = [
         interpolation='bicubic'),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(
-        type='AutoAugment',
-        policies='imagenet',
+        type='RandAugment',
+        policies='timm_increasing',
+        num_policies=2,
+        total_level=10,
+        magnitude_level=9,
+        magnitude_std=0.5,
         hparams=dict(
             pad_val=[round(x) for x in bgr_mean], interpolation='bicubic')),
+    dict(
+        type='RandomErasing',
+        erase_prob=0.25,
+        mode='rand',
+        min_area_ratio=0.02,
+        max_area_ratio=1 / 3,
+        fill_color=bgr_mean,
+        fill_std=bgr_std),
     dict(type='PackClsInputs'),
 ]
 
@@ -59,7 +71,7 @@ train_dataloader = dict(
 )
 
 val_dataloader = dict(
-    batch_size=256,
+    batch_size=64,
     num_workers=4,
     dataset=dict(
         type=dataset_type,

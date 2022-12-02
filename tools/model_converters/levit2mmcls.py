@@ -13,17 +13,26 @@ def convert_levit(args, ckpt):
 
     for k, v in list(ckpt.items()):
         new_v = v
-        if k.startswith('head'):
-            new_k = k.replace('head.', 'head.fc.')
+        if k.startswith('head_dist'):
+            k = k.replace('.l.','.linear.')
+            new_k = k.replace('head_dist.', 'head.head_dist.')
             new_ckpt[new_k] = new_v
             continue
-        elif k.startswith('patch_embeds'):
-            if 'proj.' in k:
-                new_k = k.replace('proj.', 'projection.')
-            else:
-                new_k = k
+        elif k.startswith('head'):
+            new_k = k.replace('head.l.', 'head.head.')
+            new_ckpt[new_k] = new_v
+            continue
+        elif k.startswith('patch_embed'):
+            strs = k.split('.')
+            new_k = "%s.%s.%s.%s" % (strs[0], strs[0], strs[1], strs[-1])
         elif k.startswith('blocks'):
+            strs = k.split('.')
             k = k.replace('blocks', 'stages')
+            nums = int(strs[1])
+            # new_k = "%s.%s.%s.%s.%s" % strs(nums//)
+            # if ('attention' not in k) or ('qkv' not in k) or ('proj' not in k):
+
+
             # Union
             if 'mlp.fc1' in k:
                 new_k = k.replace('mlp.fc1', 'ffn.layers.0.0')

@@ -1,9 +1,7 @@
 import itertools
-
-import torch.nn as nn
 import torch
+import torch.nn as nn
 
-import mmcv
 from mmcv.cnn import build_conv_layer, build_norm_layer, Linear
 from mmengine.model import BaseModule
 
@@ -11,8 +9,6 @@ from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.models.heads.levit_head import LeViTClsHead
 from mmcls.registry import MODELS
 
-
-# from mmcls.models.heads import
 
 class hybrid_cnn(BaseModule):
     def __init__(self,
@@ -73,18 +69,17 @@ class Conv_BN(nn.Sequential):
                  norm_cfg=dict(type='BN'),
                  ):
         super(Conv_BN, self).__init__()
-        conv_cfg = conv_cfg
-        norm_cfg = norm_cfg
-        input_channel = in_channel
-        output_channel = out_channel
-        _, bn = build_norm_layer(norm_cfg, input_channel)
+        self.conv_cfg = conv_cfg
+        self.norm_cfg = norm_cfg
+        self.input_channel = in_channel
+        self.output_channel = out_channel
+        _, bn = build_norm_layer(norm_cfg, out_channel)
         torch.nn.init.constant_(bn.weight, bn_weight_init)
         torch.nn.init.constant_(bn.bias, 0)
-        self.bn = bn
         self.conv = build_conv_layer(
             conv_cfg,
-            input_channel,
-            output_channel,
+            in_channel,
+            out_channel,
             kernel_size=kernel_size,
             stride=stride,
             padding=pad,
@@ -92,8 +87,11 @@ class Conv_BN(nn.Sequential):
             groups=groups,
             bias=False
         )
+        self.bn = bn
 
+    @torch.no_grad()
     def fuse(self):
+        device = next(self.conv.parameters()).device
         w = self.bn.weight / (self.bn.running_var + self.bn.eps) ** 0.5
         w = self.conv.weight * w[:, None, None, None]
         b = self.bn.bias - self.bn.running_mean * self.bn.weight / \
@@ -103,6 +101,8 @@ class Conv_BN(nn.Sequential):
                              groups=self.conv.groups)
         m.weight.data.copy_(w)
         m.bias.data.copy_(b)
+
+        m.to(device)
         return m
 
 
@@ -114,13 +114,16 @@ class Linear_BN(nn.Sequential):
                  norm_cfg=dict(type='BN1d')
                  ):
         super(Linear_BN, self).__init__()
-        self.linear = Linear(in_feature, out_feature, bias=False)
+        linear = Linear(in_feature, out_feature, bias=False)
         _, bn = build_norm_layer(norm_cfg, out_feature)
         torch.nn.init.constant_(bn.weight, bn_weight_init)
         torch.nn.init.constant_(bn.bias, 0)
+        self.linear = linear
         self.bn = bn
 
+    @torch.no_grad()
     def fuse(self):
+        device = next(self.linear.parameters()).device
         w = self.bn.weight / (self.bn.running_var + self.bn.eps) ** 0.5
         w = self.linear.weight * w[:, None]
         b = self.bn.bias - self.bn.running_mean * self.bn.weight / \
@@ -128,11 +131,13 @@ class Linear_BN(nn.Sequential):
         m = Linear(w.size(1), w.size(0))
         m.weight.data.copy_(w)
         m.bias.data.copy_(b)
+        m.to(device)
         return m
 
     def forward(self, x):
         x = self.linear(x)
-        return self.bn(x.flatten(0, 1)).reshape_as(x)
+        x = self.bn(x.flatten(0, 1)).reshape_as(x)
+        return x
 
 
 class Residual(BaseModule):
@@ -416,6 +421,23 @@ class LeViT(BaseBackbone):
                 # out = out.permute(0, 2, 3, 1).reshape(B, self.size[i] * self.size[i], C)
         return tuple(outs)
 
+    def train(self, mode):
+        if not mode:
+            replace_batchnorm(self)
+        super(LeViT, self).train()
+
+
+def replace_batchnorm(net):
+    for child_name, child in net.named_children():
+        if hasattr(child, 'fuse'):
+            setattr(net, child_name, child.fuse())
+        elif isinstance(child, torch.nn.Conv2d):
+            child.bias = torch.nn.Parameter(torch.zeros(child.weight.size(0)))
+        elif isinstance(child, torch.nn.BatchNorm2d):
+            setattr(net, child_name, torch.nn.Identity())
+        else:
+            replace_batchnorm(child)
+
 
 class Model(BaseModule):
     def __init__(self,
@@ -453,9 +475,8 @@ class Model(BaseModule):
 
     def forward(self, x):
         x = self.backbone(x)
-        x = x[-1]
-        B, C, W, H = x.shape
-        x = x.permute(0, 2, 3, 1).reshape(B, W * H, C)
+        # B, C, W, H = x.shape
+        # x = x.permute(0, 2, 3, 1).reshape(B, W * H, C)
         x = self.head(x)
         return x
 
