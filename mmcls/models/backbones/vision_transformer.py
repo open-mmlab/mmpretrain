@@ -184,6 +184,16 @@ class VisionTransformer(BaseBackbone):
                 'feedforward_channels': 5120
             }),
         **dict.fromkeys(
+            ['eva-g', 'eva-giant'],
+            {
+                # The same as the implementation in MAE
+                # <https://arxiv.org/abs/2111.06377>
+                'embed_dims': 1408,
+                'num_layers': 40,
+                'num_heads': 16,
+                'feedforward_channels': 6144
+            }),
+        **dict.fromkeys(
             ['deit-t', 'deit-tiny'], {
                 'embed_dims': 192,
                 'num_layers': 12,
