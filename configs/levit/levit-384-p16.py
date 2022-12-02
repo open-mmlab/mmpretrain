@@ -5,6 +5,22 @@ _base_ = [
     '../_base_/schedules/imagenet_bs256.py'
 ]
 
+model = dict(
+    backbone=dict(
+        drop_path=0.1,
+        embed_dim=[384, 512, 768],
+        num_heads=[6, 9, 12],
+        down_ops=[
+            # ('Subsample',key_dim, num_heads, attn_ratio, mlp_ratio, stride)
+            ['Subsample', 32, 12, 4, 2, 2],
+            ['Subsample', 32, 16, 4, 2, 2],
+        ]
+    ),
+    head=dict(
+        in_channels=768,
+    )
+)
+
 dataset_type = 'ImageNet'
 data_preprocessor = dict(
     num_classes=1000,
@@ -71,7 +87,7 @@ train_dataloader = dict(
 )
 
 val_dataloader = dict(
-    batch_size=64,
+    batch_size=128,
     num_workers=4,
     dataset=dict(
         type=dataset_type,

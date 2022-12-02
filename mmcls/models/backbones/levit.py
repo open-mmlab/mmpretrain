@@ -33,7 +33,6 @@ class hybrid_cnn(BaseModule):
 
         self.patch_embed = nn.Sequential()
 
-        # self.patch_embed.add_module()
         for i in range(len(self.input_channels)):
             conv_bn = Conv_BN(self.input_channels[i],
                               self.output_channels[i],
@@ -354,7 +353,7 @@ class LeViT(BaseBackbone):
         self.num_features = embed_dim[-1]
         self.embed_dim = embed_dim
         if not hybrid_backbone:
-            hybrid_backbone = hybrid_cnn(embed_dim[0], activation=torch.nn.Hardswish)
+            hybrid_backbone = hybrid_cnn(embed_dim[0])
         self.patch_embed = hybrid_backbone
         self.blocks = [[]]
         self.size = []
@@ -411,7 +410,6 @@ class LeViT(BaseBackbone):
         # x = self.blocks(x)  # 2 196 128 -> 2 16 384
         # x = self.stage(x)
         outs = []
-        # print(self.size)
         for i, layer_name in enumerate(self.stages):
             x = layer_name(x)
             B, _, C = x.shape
