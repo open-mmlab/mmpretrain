@@ -31,3 +31,7 @@ img.align-center {
   margin-left: auto;
   margin-right: auto;
 }
+
+article.pytorch-article p.rubric {
+  font-weight: bold;
+}

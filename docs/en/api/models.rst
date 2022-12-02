@@ -58,6 +58,7 @@ Backbones
    :template: classtemplate.rst
 
    AlexNet
+   BEiT
    CSPDarkNet
    CSPNet
    CSPResNeXt
@@ -85,6 +86,7 @@ Backbones
    PCPVT
    PoolFormer
    RegNet
+   RepLKNet
    RepMLPNet
    RepVGG
    Res2Net
@@ -140,8 +142,10 @@ Heads
    EfficientFormerClsHead
    DeiTClsHead
    ConformerHead
+   ArcFaceClsHead
    MultiLabelClsHead
    MultiLabelLinearClsHead
+   CSRAClsHead
 
 .. module:: mmcls.models.losses
 

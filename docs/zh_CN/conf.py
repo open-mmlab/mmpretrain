@@ -1,3 +1,4 @@
+# flake8: noqa
 # Configuration file for the Sphinx documentation builder.
 #
 # This file only contains a selection of the most common options. For a full
@@ -43,9 +44,15 @@ release = get_version()
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc', 'sphinx.ext.autosummary', 'sphinx.ext.intersphinx',
-    'sphinx.ext.napoleon', 'sphinx.ext.viewcode', 'myst_parser',
-    'sphinx_copybutton', 'sphinx_tabs.tabs'
+    'sphinx.ext.autodoc',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.napoleon',
+    'sphinx.ext.viewcode',
+    'myst_parser',
+    'sphinx_copybutton',
+    'sphinx_tabs.tabs',
+    'notfound.extension',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -62,7 +69,7 @@ source_suffix = {
 language = 'zh_CN'
 
 # The master toctree document.
-master_doc = 'index'
+root_doc = 'index'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -80,45 +87,40 @@ html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#
+# yapf: disable
 html_theme_options = {
-    'logo_url':
-    'https://mmclassification.readthedocs.io/zh_CN/latest/',
     'menu': [
         {
             'name': 'GitHub',
             'url': 'https://github.com/open-mmlab/mmclassification'
         },
         {
-            'name':
-            'Colab 教程',
+            'name': 'Colab 教程',
             'children': [
-                {
-                    'name':
-                    '用命令行工具训练和推理',
-                    'url':
-                    'https://colab.research.google.com/github/'
-                    'open-mmlab/mmclassification/blob/master/docs/zh_CN/'
-                    'tutorials/MMClassification_tools_cn.ipynb',
-                },
-                {
-                    'name':
-                    '用 Python API 训练和推理',
-                    'url':
-                    'https://colab.research.google.com/github/'
-                    'open-mmlab/mmclassification/blob/master/docs/zh_CN/'
-                    'tutorials/MMClassification_python_cn.ipynb',
-                },
+                {'name': '用命令行工具训练和推理',
+                 'url': 'https://colab.research.google.com/github/mzr1996/mmclassification-tutorial/blob/master/1.x/MMClassification_tools.ipynb'},
+                {'name': '用 Python API 训练和推理',
+                 'url': 'https://colab.research.google.com/github/mzr1996/mmclassification-tutorial/blob/master/1.x/MMClassification_python.ipynb'},
             ]
         },
+        {
+            'name': 'Version',
+            'children': [
+                {'name': 'MMClassification 0.x',
+                 'url': 'https://mmclassification.readthedocs.io/zh_CN/latest/',
+                 'description': 'master branch'},
+                {'name': 'MMClassification 1.x',
+                 'url': 'https://mmclassification.readthedocs.io/zh_CN/dev-1.x/',
+                 'description': '1.x branch'},
+            ],
+        }
     ],
     # Specify the language of shared menu
-    'menu_lang':
-    'cn',
+    'menu_lang': 'cn',
     # Disable the default edit on GitHub
-    'default_edit_on_github':
-    False,
+    'default_edit_on_github': False,
 }
+# yapf: enable
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -162,7 +164,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'mmcls.tex', 'MMClassification Documentation', author,
+    (root_doc, 'mmcls.tex', 'MMClassification Documentation', author,
      'manual'),
 ]
 
@@ -170,8 +172,8 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, 'mmcls', 'MMClassification Documentation', [author],
-              1)]
+man_pages = [(root_doc, 'mmcls', 'MMClassification Documentation', [author], 1)
+             ]
 
 # -- Options for Texinfo output ----------------------------------------------
 
@@ -179,7 +181,7 @@ man_pages = [(master_doc, 'mmcls', 'MMClassification Documentation', [author],
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'mmcls', 'MMClassification Documentation', author, 'mmcls',
+    (root_doc, 'mmcls', 'MMClassification Documentation', author, 'mmcls',
      'OpenMMLab image classification toolbox and benchmark.', 'Miscellaneous'),
 ]
 
@@ -232,13 +234,17 @@ napoleon_custom_sections = [
 # Disable docstring inheritance
 autodoc_inherit_docstrings = False
 # Mock some imports during generate API docs.
-autodoc_mock_imports = ['mmcv._ext', 'matplotlib']
+autodoc_mock_imports = ['mmcv._ext', 'matplotlib', 'rich']
 # Disable displaying type annotations, these can be very verbose
 autodoc_typehints = 'none'
 
+# The not found page
+notfound_template = '404.html'
+
 
 def builder_inited_handler(app):
-    subprocess.run(['./stat.py'])
+    if subprocess.run(['./stat.py']).returncode != 0:
+        raise RuntimeError('Failed to run the script `stat.py`.')
 
 
 def setup(app):

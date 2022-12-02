@@ -28,6 +28,13 @@ def _precision_recall_f1_support(pred_positive, gt_positive, average):
     assert average in average_options, 'Invalid `average` argument, ' \
         f'please specicy from {average_options}.'
 
+    # ignore -1 target such as difficult sample that is not wanted
+    # in evaluation results.
+    # only for calculate multi-label without affecting single-label behavior
+    ignored_index = gt_positive == -1
+    pred_positive[ignored_index] = 0
+    gt_positive[ignored_index] = 0
+
     class_correct = (pred_positive & gt_positive)
     if average == 'micro':
         tp_sum = class_correct.sum()

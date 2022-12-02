@@ -1,12 +1,5 @@
 # Hyper-parameter Scheduler Visualization
 
-<!-- TOC -->
-
-- [Parameter Schedule Visualization](#parameter-schedule-visualization)
-  - [How to plot the learning rate curve without training](#how-to-plot-the-learning-rate-curve-without-training)
-
-<!-- TOC -->
-
 This tool aims to help the user to check the hyper-parameter scheduler of the optimizer(without training), which support the "learning rate" or "momentum"
 
 ## Introduce the scheduler visualization tool
@@ -34,7 +27,7 @@ python tools/visualizations/vis_scheduler.py \
 - `--title`: Title of figure. If not set, default to be config file name.
 - `--style`: Style of plt. If not set, default to be `whitegrid`.
 - `--window-size`: The shape of the display window. If not specified, it will be set to `12*7`. If used, it must be in the format `'W*H'`.
-- `--cfg-options`: Modifications to the configuration file, refer to [Learn about Configs](./config.md).
+- `--cfg-options`: Modifications to the configuration file, refer to [Learn about Configs](../user_guides/config.md).
 
 ```{note}
 Loading annotations maybe consume much time, you can directly specify the size of the dataset with `-d, dataset-size` to save time.

@@ -57,6 +57,13 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 
 ## 更新日志
 
+2022/11/21 发布了 v1.0.0rc3 版本
+
+- 添加了 **Switch Recipe Hook**，现在我们可以在训练过程中修改数据增强、Mixup设置、loss设置等
+- 添加了 **TIMM 和 HuggingFace** 包装器，现在我们可以直接训练、使用 TIMM 和 HuggingFace 中的模型
+- 支持了检索任务
+- 复现了 **MobileOne** 训练精度
+
 2022/10/12 发布了 v1.0.0rc2 版本
 
 - 支持了 Deit-3 主干网络
@@ -150,6 +157,8 @@ mim install -e .
 - [x] [HorNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/hornet)
 - [x] [MobileViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobilevit)
 - [x] [DaViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/davit)
+- [x] [RepLKNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/replknet)
+- [x] [BEiT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/beit) / [BEiT v2](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/beitv2)
 
 </details>
 

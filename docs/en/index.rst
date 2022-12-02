@@ -1,10 +1,6 @@
 Welcome to MMClassification's documentation!
 ============================================
 
-You can switch between Chinese and English documentation in the lower-left corner of the layout.
-
-您可以在页面左下角切换中英文文档。
-
 .. toctree::
    :maxdepth: 1
    :caption: Get Started
@@ -30,8 +26,9 @@ You can switch between Chinese and English documentation in the lower-left corne
    useful_tools/cam_visualization.md
    useful_tools/print_config.md
    useful_tools/verify_dataset.md
-   useful_tools/log_results_analysis.md
+   useful_tools/log_result_analysis.md
    useful_tools/complexity_analysis.md
+   useful_tools/model_serving.md
 
 .. toctree::
    :maxdepth: 1

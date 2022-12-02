@@ -400,6 +400,12 @@ def _average_precision(pred: torch.Tensor,
     # a small value for division by zero errors
     eps = torch.finfo(torch.float32).eps
 
+    # get rid of -1 target such as difficult sample
+    # that is not wanted in evaluation results.
+    valid_index = target > -1
+    pred = pred[valid_index]
+    target = target[valid_index]
+
     # sort examples
     sorted_pred_inds = torch.argsort(pred, dim=0, descending=True)
     sorted_target = target[sorted_pred_inds]

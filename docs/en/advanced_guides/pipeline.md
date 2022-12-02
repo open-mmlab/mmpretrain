@@ -168,4 +168,4 @@ train_pipeline = [
 
 ## Pipeline visualization
 
-After designing data pipelines, you can use the [visualization tools](../user_guides/visualization.md) to view the performance.
+After designing data pipelines, you can use the [visualization tools](../useful_tools/dataset_visualization.md) to view the performance.

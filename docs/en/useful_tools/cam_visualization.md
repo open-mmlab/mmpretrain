@@ -1,14 +1,5 @@
 # Class Activation Map(CAM) Visualization
 
-<!-- TOC -->
-
-- [Class Activation Map Visualization](#class-activation-map-visualization)
-  - [Introduction of the CAM visualization tool](#introduction-of-the-cam-visualization-tool)
-  - [How to visualize the CAM of CNN(ResNet-50)](#how-to-visualize-the-cam-of-cnnresnet-50)
-  - [How to visualize the CAM of vision transformer](#how-to-visualize-the-cam-of-vision-transformer)
-
-<!-- TOC -->
-
 ## Introduction of the CAM visualization tool
 
 MMClassification provides `tools\visualizations\vis_cam.py` tool to visualize class activation map. Please use `pip install "grad-cam>=1.3.6"` command to install [pytorch-grad-cam](https://github.com/jacobgil/pytorch-grad-cam).
@@ -59,7 +50,7 @@ python tools/visualizations/vis_cam.py \
 - `--aug_smooth` : Whether to use TTA(Test Time Augment) to get CAM.
 - `--eigen_smooth` : Whether to use the principal component to reduce noise.
 - `--device` : The computing device used. Default to 'cpu'.
-- `--cfg-options` : Modifications to the configuration file, refer to [Learn about Configs](./config.md).
+- `--cfg-options` : Modifications to the configuration file, refer to [Learn about Configs](../user_guides/config.md).
 
 ```{note}
 The argument `--preview-model` can view all network layers names in the given model. It will be helpful if you know nothing about the model layers when setting `--target-layers`.
