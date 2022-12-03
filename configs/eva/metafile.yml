@@ -1,0 +1,60 @@
+Collections:
+  - Name: EVA
+    Metadata:
+      Architecture:
+        - Attention Dropout
+        - Convolution
+        - Dense Connections
+        - Dropout
+        - GELU
+        - Layer Normalization
+        - Multi-Head Attention
+        - Scaled Dot-Product Attention
+        - Tanh Activation
+    Paper:
+      URL: https://arxiv.org/abs/2211.07636
+      Title: 'EVA: Exploring the Limits of Masked Visual Representation Learning at Scale'
+    README: configs/beit/README.md
+    Code:
+      URL:
+      Version:
+
+Models:
+  - Name: eva-g-336_3rdparty_in1k
+    In Collection: BEiT
+    Metadata:
+      FLOPs: 620642757504
+      Parameters: 1013005672
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 89.61
+        Top 5 Accuracy: 98.93
+    Weights:
+    Converted From:
+      Weights: https://huggingface.co/BAAI/EVA/blob/main/eva_21k_1k_336px_psz14_ema_89p6.pt
+      Code: https://github.com/baaivision/EVA
+    Config: configs/eva/eva-g-336_8xb16_in1k.py
+  - Name: eva-g-560_3rdparty_in1k
+    In Collection: BEiT
+    Metadata:
+      FLOPs: 1906761591680
+      Parameters: 1014447464
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 89.71
+        Top 5 Accuracy: 98.96
+    Weights:
+    Converted From:
+      Weights: https://huggingface.co/BAAI/EVA/blob/main/eva_21k_1k_560px_psz14_ema_89p7.pt
+      Code: https://github.com/baaivision/EVA
+    Config: configs/eva/eva-g-560_8xb16_in1k.py

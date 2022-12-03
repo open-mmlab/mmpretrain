@@ -171,14 +171,15 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
             bias=bias)
         self.attn = BEiTAttention(**attn_cfg)
 
-        ffn_cfg = dict(
+        _ffn_cfg = dict(
             embed_dims=embed_dims,
             feedforward_channels=feedforward_channels,
             num_fcs=num_fcs,
             ffn_drop=drop_rate,
             dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
             act_cfg=act_cfg)
-        self.ffn = FFN(**ffn_cfg)
+        _ffn_cfg.update(ffn_cfg)
+        self.ffn = FFN(**_ffn_cfg)
 
         # NOTE: drop path for stochastic depth, we shall see if
         # this is better than dropout here

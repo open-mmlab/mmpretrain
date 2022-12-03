@@ -42,3 +42,4 @@ Import:
   - configs/csra/metafile.yml
   - configs/beit/metafile.yml
   - configs/beitv2/metafile.yml
+  - configs/eva/metafile.yml
