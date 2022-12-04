@@ -1,0 +1,16 @@
+version: '2.4'
+
+services:
+  accv:
+    build: docker/
+    runtime: nvidia
+    container_name: accv
+    tty: true
+    volumes:
+      - /Your/Path/To/ACCV_workshop/:/working
+    working_dir: /working
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - PYTHONPATH=/working:$PYTHONPATH
+    ipc: host

@@ -1,0 +1,5 @@
+albumentations==1.1.0
+mmcls>=1.0.0rc3
+mmcv>=2.0.0rc3
+mmengine>=0.0.0rc3
+mmselfsup>=1.0.0rc3
