@@ -47,6 +47,44 @@ Models:
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/convnext/convnext_tiny_1k_224.pth
       Code: https://github.com/facebookresearch/ConvNeXt
+  - Name: convnext-tiny_in21k-pre_3rdparty_32xb128_in1k
+    Metadata:
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+      FLOPs: 4457472768
+      Parameters: 28589128
+    In Collection: ConvNeXt
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 82.90
+          Top 5 Accuracy: 96.62
+        Task: Image Classification
+    Weights:
+    Config: configs/convnext/convnext-tiny_32xb128_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnext_tiny_22k_1k_224.pth
+      Code: https://github.com/facebookresearch/ConvNeXt
+  - Name: convnext-tiny_in21k-pre_3rdparty_32xb128_in1k-384px
+    Metadata:
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+      FLOPs: 13135236864
+      Parameters: 28589128
+    In Collection: ConvNeXt
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 84.11
+          Top 5 Accuracy: 97.14
+        Task: Image Classification
+    Weights:
+    Config: configs/convnext/convnext-tiny_32xb128_in1k-384px.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnext_tiny_22k_1k_384.pth
+      Code: https://github.com/facebookresearch/ConvNeXt
   - Name: convnext-small_3rdparty_32xb128_in1k
     Metadata:
       Training Data: ImageNet-1k
@@ -80,6 +118,44 @@ Models:
     Config: configs/convnext/convnext-small_32xb128_in1k.py
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/convnext/convnext_small_1k_224.pth
+      Code: https://github.com/facebookresearch/ConvNeXt
+  - Name: convnext-small_in21k-pre_3rdparty_32xb128_in1k
+    Metadata:
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+      FLOPs: 8687008512
+      Parameters: 50223688
+    In Collection: ConvNeXt
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 84.59
+          Top 5 Accuracy: 97.41
+        Task: Image Classification
+    Weights:
+    Config: configs/convnext/convnext-small_32xb128_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnext_small_22k_1k_224.pth
+      Code: https://github.com/facebookresearch/ConvNeXt
+  - Name: convnext-small_in21k-pre_3rdparty_32xb128_in1k-384px
+    Metadata:
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+      FLOPs: 25580818176
+      Parameters: 50223688
+    In Collection: ConvNeXt
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 85.75
+          Top 5 Accuracy: 97.88
+        Task: Image Classification
+    Weights:
+    Config: configs/convnext/convnext-small_32xb128_in1k-384px.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnext_small_22k_1k_384.pth
       Code: https://github.com/facebookresearch/ConvNeXt
   - Name: convnext-base_3rdparty_32xb128_in1k
     Metadata:
@@ -115,6 +191,23 @@ Models:
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/convnext/convnext_base_1k_224.pth
       Code: https://github.com/facebookresearch/ConvNeXt
+  - Name: convnext-base_3rdparty_32xb128_in1k-384px
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 45205885952
+      Parameters: 88591464
+    In Collection: ConvNeXt
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 85.10
+          Top 5 Accuracy: 97.34
+        Task: Image Classification
+    Weights:
+    Config: configs/convnext/convnext-base_32xb128_in1k-384px.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnext_base_1k_384.pth
+      Code: https://github.com/facebookresearch/ConvNeXt
   - Name: convnext-base_3rdparty_in21k
     Metadata:
       Training Data: ImageNet-21k
@@ -145,6 +238,25 @@ Models:
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/convnext/convnext_base_22k_1k_224.pth
       Code: https://github.com/facebookresearch/ConvNeXt
+  - Name: convnext-base_in21k-pre-3rdparty_32xb128_in1k-384px
+    Metadata:
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+      FLOPs: 45205885952
+      Parameters: 88591464
+    In Collection: ConvNeXt
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 86.82
+          Top 5 Accuracy: 98.25
+        Task: Image Classification
+    Weights:
+    Config: configs/convnext/convnext-base_32xb128_in1k-384px.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnext_base_22k_1k_384.pth
+      Code: https://github.com/facebookresearch/ConvNeXt
   - Name: convnext-large_3rdparty_64xb64_in1k
     Metadata:
       Training Data: ImageNet-1k
@@ -161,6 +273,23 @@ Models:
     Config: configs/convnext/convnext-large_64xb64_in1k.py
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/convnext/convnext_large_1k_224_ema.pth
+      Code: https://github.com/facebookresearch/ConvNeXt
+  - Name: convnext-large_3rdparty_64xb64_in1k-384px
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 101103214080
+      Parameters: 197767336
+    In Collection: ConvNeXt
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 85.50
+          Top 5 Accuracy: 97.59
+        Task: Image Classification
+    Weights:
+    Config: configs/convnext/convnext-large_64xb64_in1k-384px.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnext_large_1k_384.pth
       Code: https://github.com/facebookresearch/ConvNeXt
   - Name: convnext-large_3rdparty_in21k
     Metadata:
@@ -192,6 +321,25 @@ Models:
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/convnext/convnext_large_22k_1k_224.pth
       Code: https://github.com/facebookresearch/ConvNeXt
+  - Name: convnext-large_in21k-pre-3rdparty_64xb64_in1k-384px
+    Metadata:
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+      FLOPs: 101103214080
+      Parameters: 197767336
+    In Collection: ConvNeXt
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 87.46
+          Top 5 Accuracy: 98.37
+        Task: Image Classification
+    Weights:
+    Config: configs/convnext/convnext-large_64xb64_in1k-384px.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnext_large_22k_1k_384.pth
+      Code: https://github.com/facebookresearch/ConvNeXt
   - Name: convnext-xlarge_3rdparty_in21k
     Metadata:
       Training Data: ImageNet-21k
@@ -221,4 +369,23 @@ Models:
     Config: configs/convnext/convnext-xlarge_64xb64_in1k.py
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/convnext/convnext_xlarge_22k_1k_224_ema.pth
+      Code: https://github.com/facebookresearch/ConvNeXt
+  - Name: convnext-xlarge_in21k-pre-3rdparty_64xb64_in1k-384px
+    Metadata:
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+      FLOPs: 179196798976
+      Parameters: 350196968
+    In Collection: ConvNeXt
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 87.76
+          Top 5 Accuracy: 98.55
+        Task: Image Classification
+    Weights:
+    Config: configs/convnext/convnext-xlarge_64xb64_in1k-384px.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnext_xlarge_22k_1k_384_ema.pth
       Code: https://github.com/facebookresearch/ConvNeXt
