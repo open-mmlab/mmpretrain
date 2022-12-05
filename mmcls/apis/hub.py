@@ -51,8 +51,8 @@ class ModelHub:
             if metainfo.name in cls._models_dict:
                 raise ValueError(
                     'The model name {} is conflict in {} and {}.'.format(
-                        model_name, metainfo.filepath,
-                        cls._models_dict[model_name].filepath))
+                        model_name, osp.abspath(metainfo.filepath),
+                        osp.abspath(cls._models_dict[model_name].filepath)))
             metainfo.config = _expand_config_path(metainfo, config_prefix)
             cls._models_dict[model_name] = metainfo
 

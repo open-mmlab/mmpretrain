@@ -24,7 +24,7 @@ class TestModelHub(TestCase):
             osp.abspath(
                 osp.join(osp.dirname(model_index_path), 'test_config.py')))
 
-        with self.assertRaisesRegex(ValueError, model_index_path):
+        with self.assertRaisesRegex(ValueError, 'meta.yml'):
             # test name conflict
             ModelHub.register_model_index(model_index_path)
 
