@@ -160,26 +160,28 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
             norm_cfg=norm_cfg,
             init_cfg=init_cfg)
 
-        attn_cfg.update(
-            dict(
-                window_size=window_size,
-                use_rel_pos_bias=use_rel_pos_bias,
-                qk_scale=None,
-                embed_dims=embed_dims,
-                num_heads=num_heads,
-                attn_drop=attn_drop_rate,
-                proj_drop=drop_rate,
-                bias=bias))
+        attn_cfg = {
+            'window_size': window_size,
+            'use_rel_pos_bias': use_rel_pos_bias,
+            'qk_scale': None,
+            'embed_dims': embed_dims,
+            'num_heads': num_heads,
+            'attn_drop': attn_drop_rate,
+            'proj_drop': drop_rate,
+            'bias': bias,
+            **attn_cfg,
+        }
         self.attn = BEiTAttention(**attn_cfg)
 
-        ffn_cfg.update(
-            dict(
-                embed_dims=embed_dims,
-                feedforward_channels=feedforward_channels,
-                num_fcs=num_fcs,
-                ffn_drop=drop_rate,
-                dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
-                act_cfg=act_cfg))
+        ffn_cfg = {
+            'embed_dims': embed_dims,
+            'feedforward_channels': feedforward_channels,
+            'num_fcs': num_fcs,
+            'ffn_drop': drop_rate,
+            'dropout_layer': dict(type='DropPath', drop_prob=drop_path_rate),
+            'act_cfg': act_cfg,
+            **ffn_cfg,
+        }
         self.ffn = FFN(**ffn_cfg)
 
         # NOTE: drop path for stochastic depth, we shall see if
