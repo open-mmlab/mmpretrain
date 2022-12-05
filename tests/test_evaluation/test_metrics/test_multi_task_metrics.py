@@ -78,7 +78,6 @@ class MultiTaskMetric(TestCase):
                     sample[task_name][task_name2] = task_sample.to_dict()
         pred2.append(sample)
 
-    print(pred2)
     pred3 = [MultiTaskDataSample().to_dict()]
 
     task_metrics = {
