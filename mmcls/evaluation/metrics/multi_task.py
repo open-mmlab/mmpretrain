@@ -72,13 +72,10 @@ class MultiTasksMetric(BaseMetric):
         """
         for task_name in self.task_metrics.keys():
             filtered_data_samples = []
-            filtered_data_batch = []
             for data_sample in data_samples:
                 sample_mask = task_name in data_sample
                 if sample_mask:
                     filtered_data_samples.append(data_sample[task_name])
-                    if data_batch is not None:
-                        filtered_data_batch.append(data_batch[task_name])
             for metric in self._metrics[task_name]:
                 # Current implementation is only comptaible
                 # With 2 types of metrics :
@@ -87,7 +84,7 @@ class MultiTasksMetric(BaseMetric):
                 # In order to make it work with other
                 # non-cls heads/metrics, one will have to
                 # override the current implementation
-                metric.process(filtered_data_batch, filtered_data_samples)
+                metric.process(data_batch, filtered_data_samples)
 
     def compute_metrics(self, results: list) -> dict:
         raise NotImplementedError(
