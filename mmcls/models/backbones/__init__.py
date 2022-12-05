@@ -12,6 +12,7 @@ from .densenet import DenseNet
 from .edgenext import EdgeNeXt
 from .efficientformer import EfficientFormer
 from .efficientnet import EfficientNet
+from .efficientnet_v2 import EfficientNetV2
 from .hornet import HorNet
 from .hrnet import HRNet
 from .inception_v3 import InceptionV3
@@ -75,6 +76,7 @@ __all__ = [
     'PCPVT',
     'SVT',
     'EfficientNet',
+    'EfficientNetV2',
     'ConvNeXt',
     'HRNet',
     'ResNetV1c',
