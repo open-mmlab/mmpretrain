@@ -70,7 +70,6 @@ class MultiTasksMetric(BaseMetric):
             data_batch: A batch of data from the dataloader.
             data_samples (Sequence[dict]): A batch of outputs from the model.
         """
-        raise Exception(data_batch)
         for task_name in self.task_metrics.keys():
             filtered_data_samples = []
             filtered_data_batch = []
