@@ -3,7 +3,7 @@ import os.path as osp
 
 import numpy as np
 from mmcv.runner import HOOKS, BaseRunner
-from mmcv.runner.dist_utils import master_only
+from mmcv.runner.dist_utils import get_dist_info, master_only
 from mmcv.runner.hooks.checkpoint import CheckpointHook
 from mmcv.runner.hooks.evaluation import DistEvalHook, EvalHook
 from mmcv.runner.hooks.logger.wandb import WandbLoggerHook
@@ -190,7 +190,6 @@ class MMClsWandbHook(WandbLoggerHook):
             # Log the evaluation table
             self._log_eval_table(runner.epoch + 1)
 
-    @master_only
     def after_train_iter(self, runner):
         if self.get_mode(runner) == 'train':
             # An ugly patch. The iter-based eval hook will call the
@@ -200,6 +199,10 @@ class MMClsWandbHook(WandbLoggerHook):
             return super(MMClsWandbHook, self).after_train_iter(runner)
         else:
             super(MMClsWandbHook, self).after_train_iter(runner)
+
+        rank, _ = get_dist_info()
+        if rank != 0:
+            return
 
         if self.by_epoch:
             return
