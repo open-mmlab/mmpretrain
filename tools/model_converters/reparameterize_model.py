@@ -8,7 +8,7 @@ from mmcls.apis import init_model
 from mmcls.models.classifiers import ImageClassifier
 
 
-def convert_classifier_to_deploy(model, save_path):
+def convert_classifier_to_deploy(model, checkpoint, save_path):
     print('Converting...')
     assert hasattr(model, 'backbone') and \
         hasattr(model.backbone, 'switch_to_deploy'), \
@@ -16,7 +16,8 @@ def convert_classifier_to_deploy(model, save_path):
         f' But {model.backbone.__class__} does not have.'
 
     model.backbone.switch_to_deploy()
-    torch.save(model.state_dict(), save_path)
+    checkpoint['state_dict'] = model.state_dict()
+    torch.save(checkpoint, save_path)
 
     print('Done! Save at path "{}"'.format(save_path))
 
@@ -48,7 +49,8 @@ def main():
     assert isinstance(model, ImageClassifier), \
         '`model` must be a `mmcls.classifiers.ImageClassifier` instance.'
 
-    convert_classifier_to_deploy(model, args.save_path)
+    checkpoint = torch.load(args.checkpoint_path)
+    convert_classifier_to_deploy(model, checkpoint, args.save_path)
 
 
 if __name__ == '__main__':
