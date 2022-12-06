@@ -86,9 +86,8 @@ class ClsDataPreprocessor(BaseDataPreprocessor):
                 from mmengine.logging import MMLogger
                 MMLogger.get_current_instance().info(
                     'Because batch augmentations are enabled, the data '
-                    'preprocessor automatically enables the `to_onehot` '
-                    'option to generate one-hot format labels.')
-                self.to_onehot = True
+                    'preprocessor automatically enables the `to_onehot` option'
+                    ' to generate one-hot format labels during training.')
         else:
             self.batch_augments = None
 
@@ -156,8 +155,16 @@ class ClsDataPreprocessor(BaseDataPreprocessor):
             batch_label, label_indices = cat_batch_labels(
                 gt_labels, device=self.device)
 
+            # enable the to_onehot option when using batch_augments during
+            # training, if self.to_onehot is False, disable the to_onehot
+            # when testing.
+            if training and self.batch_augments is not None:
+                to_onehot = True
+            else:
+                to_onehot = self.to_onehot
+
             batch_score = stack_batch_scores(gt_labels, device=self.device)
-            if batch_score is None and self.to_onehot:
+            if batch_score is None and to_onehot:
                 assert batch_label is not None, \
                     'Cannot generate onehot format labels because no labels.'
                 num_classes = self.num_classes or data_samples[0].get(

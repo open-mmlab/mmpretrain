@@ -10,7 +10,11 @@ from mmcls.models import build_classifier
 from mmcls.utils import register_all_modules
 
 
-def init_model(config, checkpoint=None, device='cuda:0', options=None):
+def init_model(config,
+               checkpoint=None,
+               device='cuda:0',
+               classes=None,
+               options=None):
     """Initialize a classifier from config file.
 
     Args:
@@ -18,6 +22,8 @@ def init_model(config, checkpoint=None, device='cuda:0', options=None):
             object.
         checkpoint (str, optional): Checkpoint path. If left as None, the model
             will not load any weights.
+        classes (List[str], optional): Class names. If left as None, the model
+            will get classes from checkpoint or set default ImageNet1k classes.
         options (dict): Options to override some settings in the used config.
 
     Returns:
@@ -38,18 +44,7 @@ def init_model(config, checkpoint=None, device='cuda:0', options=None):
         # Mapping the weights to GPU may cause unexpected video memory leak
         # which refers to https://github.com/open-mmlab/mmdetection/pull/6405
         checkpoint = load_checkpoint(model, checkpoint, map_location='cpu')
-        if 'dataset_meta' in checkpoint.get('meta', {}):
-            # mmcls 1.x
-            model.CLASSES = checkpoint['meta']['dataset_meta']['classes']
-        elif 'CLASSES' in checkpoint.get('meta', {}):
-            # mmcls < 1.x
-            model.CLASSES = checkpoint['meta']['CLASSES']
-        else:
-            from mmcls.datasets.categories import IMAGENET_CATEGORIES
-            warnings.simplefilter('once')
-            warnings.warn('Class names are not saved in the checkpoint\'s '
-                          'meta data, use imagenet by default.')
-            model.CLASSES = IMAGENET_CATEGORIES
+    _set_model_classes(model, classes, checkpoint)  # set attr model.CLASSES
     model.cfg = config  # save the config in the model for convenience
     model.to(device)
     model.eval()
@@ -88,12 +83,36 @@ def inference_model(model, img):
         prediction = model.val_step(data)[0].pred_label
         pred_scores = prediction.score.tolist()
         pred_score = torch.max(prediction.score).item()
-        pred_label = torch.argmax(prediction.score).item()
+        pred_label = prediction.label.item()
         result = {
             'pred_label': pred_label,
             'pred_score': float(pred_score),
             'pred_scores': pred_scores
         }
-    if hasattr(model, 'CLASSES'):
+    if hasattr(model, 'CLASSES') and model.CLASSES is not None:
         result['pred_class'] = model.CLASSES[result['pred_label']]
     return result
+
+
+def _set_model_classes(model, classes, checkpoint):
+    """set."""
+    if classes is not None:
+        # set to classes if classes is set.
+        model.CLASSES = classes
+    elif checkpoint is not None:
+        # load CLASSES from checkpoint
+        meta_info = checkpoint.get('meta', {})
+        if 'dataset_meta' in meta_info and 'classes' in meta_info[
+                'dataset_meta']:
+            # mmcls 1.x
+            model.CLASSES = meta_info['dataset_meta']['classes']
+        elif 'CLASSES' in meta_info:
+            # mmcls < 1.x
+            model.CLASSES = meta_info['CLASSES']
+    else:
+        # set to default ImageNet-1k classes names
+        from mmcls.datasets.categories import IMAGENET_CATEGORIES
+        warnings.simplefilter('once')
+        warnings.warn('Class names are not saved in the checkpoint\'s '
+                      'meta data, use imagenet by default.')
+        model.CLASSES = IMAGENET_CATEGORIES
