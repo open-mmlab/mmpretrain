@@ -64,6 +64,12 @@ The MMClassification 1.0 has released! It's still unstable and in release candid
 to [the 1.x branch](https://github.com/open-mmlab/mmclassification/tree/1.x) and discuss it with us in
 [the discussion](https://github.com/open-mmlab/mmclassification/discussions).
 
+v0.25.0 was released in 06/12/2022.
+Highlights of the new version:
+
+- Support MLU backend.
+- Add `dist_train_arm.sh` for ARM device.
+
 v0.24.1 was released in 31/10/2022.
 Highlights of the new version:
 
@@ -74,13 +80,6 @@ Highlights of the new version:
 
 - Support **HorNet**, **EfficientFormerm**, **SwinTransformer V2** and **MViT** backbones.
 - Support Standford Cars dataset.
-
-v0.23.0 was released in 1/5/2022.
-Highlights of the new version:
-
-- Support **DenseNet**, **VAN** and **PoolFormer**, and provide pre-trained models.
-- Support training on IPU.
-- New style API docs, welcome [view it](https://mmclassification.readthedocs.io/en/master/api/models.html).
 
 Please refer to [changelog.md](docs/en/changelog.md) for more details and other release history.
 
