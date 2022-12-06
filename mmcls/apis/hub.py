@@ -2,29 +2,19 @@
 import copy
 import fnmatch
 import os.path as osp
+import warnings
 from os import PathLike
 from pathlib import Path
 from typing import List, Union
 
 from mmengine.config import Config
+from mmengine.runner import load_checkpoint
 from mmengine.utils import get_installed_path
 from modelindex.load_model_index import load
 from modelindex.models.Model import Model
 
-from .inference import init_model
-
-
-def _expand_config_path(metainfo: Model,
-                        config_prefix: Union[str, PathLike] = None):
-    if config_prefix is None:
-        config_prefix = osp.dirname(metainfo.filepath)
-
-    if metainfo.config is None or osp.isabs(metainfo.config):
-        config_path: str = metainfo.config
-    else:
-        config_path = osp.abspath(osp.join(config_prefix, metainfo.config))
-
-    return config_path
+import mmcls.models  # noqa: F401
+from mmcls.registry import MODELS
 
 
 class ModelHub:
@@ -53,7 +43,7 @@ class ModelHub:
                     'The model name {} is conflict in {} and {}.'.format(
                         model_name, osp.abspath(metainfo.filepath),
                         osp.abspath(cls._models_dict[model_name].filepath)))
-            metainfo.config = _expand_config_path(metainfo, config_prefix)
+            metainfo.config = cls._expand_config_path(metainfo, config_prefix)
             cls._models_dict[model_name] = metainfo
 
     @classmethod
@@ -74,12 +64,72 @@ class ModelHub:
             metainfo.config = Config.fromfile(metainfo.config)
         return metainfo
 
+    @staticmethod
+    def _expand_config_path(metainfo: Model,
+                            config_prefix: Union[str, PathLike] = None):
+        if config_prefix is None:
+            config_prefix = osp.dirname(metainfo.filepath)
+
+        if metainfo.config is None or osp.isabs(metainfo.config):
+            config_path: str = metainfo.config
+        else:
+            config_path = osp.abspath(osp.join(config_prefix, metainfo.config))
+
+        return config_path
+
 
 # register models in mmcls
 mmcls_root = Path(get_installed_path('mmcls'))
 model_index_path = mmcls_root / '.mim' / 'model-index.yml'
 ModelHub.register_model_index(
     model_index_path, config_prefix=mmcls_root / '.mim')
+
+
+def init_model(config, checkpoint=None, device=None, **kwargs):
+    """Initialize a classifier from config file.
+
+    Args:
+        config (str | :obj:`mmengine.Config`): Config file path or the config
+            object.
+        checkpoint (str, optional): Checkpoint path. If left as None, the model
+            will not load any weights.
+        device (str | torch.device | None): Transfer the model to the target
+            device. Defaults to None.
+        **kwargs: Other keyword arguments of the model config.
+
+    Returns:
+        nn.Module: The constructed model.
+    """
+    if isinstance(config, (str, PathLike)):
+        config = Config.fromfile(config)
+    elif not isinstance(config, Config):
+        raise TypeError('config must be a filename or Config object, '
+                        f'but got {type(config)}')
+    if kwargs:
+        config.merge_from_dict({'model': kwargs})
+    config.model.setdefault('data_preprocessor',
+                            config.get('data_preprocessor', None))
+    model = MODELS.build(config.model)
+    if checkpoint is not None:
+        # Mapping the weights to GPU may cause unexpected video memory leak
+        # which refers to https://github.com/open-mmlab/mmdetection/pull/6405
+        checkpoint = load_checkpoint(model, checkpoint, map_location='cpu')
+        if 'dataset_meta' in checkpoint.get('meta', {}):
+            # mmcls 1.x
+            model.CLASSES = checkpoint['meta']['dataset_meta']['classes']
+        elif 'CLASSES' in checkpoint.get('meta', {}):
+            # mmcls < 1.x
+            model.CLASSES = checkpoint['meta']['CLASSES']
+        else:
+            from mmcls.datasets.categories import IMAGENET_CATEGORIES
+            warnings.simplefilter('once')
+            warnings.warn('Class names are not saved in the checkpoint\'s '
+                          'meta data, use imagenet by default.')
+            model.CLASSES = IMAGENET_CATEGORIES
+    model.cfg = config  # save the config in the model for convenience
+    model.to(device)
+    model.eval()
+    return model
 
 
 def get_model(model_name, pretrained=False, device=None, **kwargs):
@@ -134,8 +184,7 @@ def get_model(model_name, pretrained=False, device=None, **kwargs):
     if metainfo.config is None:
         raise ValueError(
             f"The model {model_name} doesn't support building by now.")
-    model = init_model(
-        metainfo.config, ckpt, device=device, options=dict(model=kwargs))
+    model = init_model(metainfo.config, ckpt, device=device, **kwargs)
     return model
 
 

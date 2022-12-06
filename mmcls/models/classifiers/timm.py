@@ -4,6 +4,7 @@ from collections import OrderedDict
 from typing import List, Optional
 
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 
 from mmcls.registry import MODELS
@@ -79,7 +80,10 @@ class TimmClassifier(BaseClassifier):
             init_cfg=init_cfg, data_preprocessor=data_preprocessor)
         from timm.models import create_model
         self.model = create_model(*args, **kwargs)
-        self.loss_module = MODELS.build(loss)
+
+        if not isinstance(loss, nn.Module):
+            loss = MODELS.build(loss)
+        self.loss_module = loss
 
         self.with_cp = with_cp
         if self.with_cp:
