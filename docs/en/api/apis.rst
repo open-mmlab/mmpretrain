@@ -13,12 +13,17 @@ These are some high-level APIs for classification tasks.
    :local:
    :backlinks: top
 
+Model
+------------------
+
+.. autofunction:: list_models
+
+.. autofunction:: get_model
+
+.. autofunction:: init_model
+
+
 Inference
 ------------------
 
-.. autosummary::
-   :toctree: generated
-   :nosignatures:
-
-   init_model
-   inference_model
+.. autofunction:: inference_model
