@@ -33,7 +33,7 @@ Models:
       Metrics:
         Top 1 Accuracy: 84.6
         Top 5 Accuracy: 97.0
-    Weights: https://download.openmmlab.com/mmclassification/v0/beit/beit-base_3rdparty_in1k_20221114-c0a4df23.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/mixmim/mixmim-base_3rdparty_in1k_20221206-e40e2c8c.pth
     Converted From:
       Code: https://github.com/Sense-X/MixMIM
     Config: configs/mixmim/mixmim-base-p16_8xb64-pt300e-in1k.py

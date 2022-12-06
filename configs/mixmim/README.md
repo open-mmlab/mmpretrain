@@ -31,9 +31,9 @@ better FLOPs / performance tradeoff than previous MIM methods
 
 ## Models
 
-|     Model     | Params(M) | Pretrain Epochs | Flops(G) | Top-1 (%) | Top-5 (%) |                      Config                      |         Download          |
-| :-----------: | :-------: | :-------------: | :------: | :-------: | :-------: | :----------------------------------------------: | :-----------------------: |
-| MixMIM-Base\* |    88     |       300       |   16.3   |   84.6    |   97.0    | [config](./mixmim-base-p16_8xb64-pt300e-in1k.py) | [model](<>)  \| [log](<>) |
+|     Model     | Params(M) | Pretrain Epochs | Flops(G) | Top-1 (%) | Top-5 (%) |                      Config                      |                                         Download                                          |
+| :-----------: | :-------: | :-------------: | :------: | :-------: | :-------: | :----------------------------------------------: | :---------------------------------------------------------------------------------------: |
+| MixMIM-Base\* |    88     |       300       |   16.3   |   84.6    |   97.0    | [config](./mixmim-base-p16_8xb64-pt300e-in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mixmim/mixmim-base_3rdparty_in1k_20221206-e40e2c8c.pth) |
 
 *Models with * are converted from the [official repo](https://github.com/Sense-X/MixMIM). The config files of these models are only for inference.*
 
@@ -44,7 +44,7 @@ For MixMIM self-supervised learning algorithm, welcome to [MMSelfSup page](https
 ### Inference
 
 ```python
-python ./tools/test.py configs/mixmim/mixmim-base-p16_8xb64-pt300e-in1k.py  mixmim-base-p16_8xb64-pt300e-in1k_checkpoint.pth
+python ./tools/test.py configs/mixmim/mixmim-base-p16_8xb64-pt300e-in1k.py  https://download.openmmlab.com/mmclassification/v0/mixmim/mixmim-base_3rdparty_in1k_20221206-e40e2c8c.pth
 
 ```
 
