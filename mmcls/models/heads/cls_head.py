@@ -138,14 +138,16 @@ class ClsHead(BaseHead):
         pred_scores = F.softmax(cls_score, dim=1)
         pred_labels = pred_scores.argmax(dim=1, keepdim=True).detach()
 
-        if data_samples is not None:
-            for data_sample, score, label in zip(data_samples, pred_scores,
-                                                 pred_labels):
-                data_sample.set_pred_score(score).set_pred_label(label)
-        else:
-            data_samples = []
-            for score, label in zip(pred_scores, pred_labels):
-                data_samples.append(ClsDataSample().set_pred_score(
-                    score).set_pred_label(label))
+        out_data_samples = []
+        if data_samples is None:
+            data_samples = [None for _ in range(pred_scores.size(0))]
 
-        return data_samples
+        for data_sample, score, label in zip(data_samples, pred_scores,
+                                             pred_labels):
+            data_sample_ = data_sample
+            if data_sample is None:
+                data_sample_ = ClsDataSample()
+
+            data_sample_.set_pred_score(score).set_pred_label(label)
+            out_data_samples.append(data_sample_)
+        return out_data_samples
