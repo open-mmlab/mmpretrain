@@ -319,10 +319,12 @@ class EfficientNetV2(BaseBackbone):
         # self.head = nn.Sequential(head)
 
     def forward(self, x: Tensor) -> Tensor:
+        outs = []
         for i, layer in enumerate(self.layers):
             x = layer(x)
         # x = self.head(x)
-        return x
+        outs.append(x)
+        return tuple(outs)
 
     def _freeze_stages(self):
         for i in range(self.frozen_stages):
