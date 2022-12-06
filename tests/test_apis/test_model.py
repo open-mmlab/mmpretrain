@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 from mmengine import Config
 
-from mmcls import ModelHub, get_model, list_models
+from mmcls.apis import ModelHub, get_model, init_model, list_models
 from mmcls.models import ImageClassifier, MobileNetV2
 
 
@@ -57,7 +57,7 @@ class TestHubAPIs(TestCase):
         self.assertIsInstance(model, ImageClassifier)
         self.assertIsInstance(model.backbone, MobileNetV2)
 
-        with patch('mmcls.apis.hub.init_model') as mock:
+        with patch('mmcls.apis.model.init_model') as mock:
             model = get_model('mobilenet-v2_8xb32_in1k', pretrained=True)
             model = get_model('mobilenet-v2_8xb32_in1k', pretrained='test.pth')
 
@@ -71,3 +71,21 @@ class TestHubAPIs(TestCase):
 
         with self.assertRaisesRegex(ValueError, "doesn't support building"):
             get_model('swinv2-base-w12_3rdparty_in21k-192px')
+
+    def test_init_model(self):
+        # test init from config object
+        cfg = ModelHub.get('mobilenet-v2_8xb32_in1k').config
+        model = init_model(cfg)
+        self.assertIsInstance(model, ImageClassifier)
+        self.assertIsInstance(model.backbone, MobileNetV2)
+
+        # test init from config file
+        cfg = ModelHub._models_dict['mobilenet-v2_8xb32_in1k'].config
+        self.assertIsInstance(cfg, str)
+        model = init_model(cfg)
+        self.assertIsInstance(model, ImageClassifier)
+        self.assertIsInstance(model.backbone, MobileNetV2)
+
+        # test modify configs of the model
+        model = init_model(cfg, head=dict(num_classes=10))
+        self.assertEqual(model.head.num_classes, 10)
