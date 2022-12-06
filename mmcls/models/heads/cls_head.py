@@ -110,7 +110,7 @@ class ClsHead(BaseHead):
     def predict(
             self,
             feats: Tuple[torch.Tensor],
-            data_samples: List[ClsDataSample|None] = None) -> List[ClsDataSample]:
+            data_samples: List[ClsDataSample | None] = None) -> List[ClsDataSample]:
         """Inference without augmentation.
 
         Args:
@@ -118,7 +118,7 @@ class ClsHead(BaseHead):
                 Multiple stage inputs are acceptable but only the last stage
                 will be used to classify. The shape of every item should be
                 ``(num_samples, num_classes)``.
-            data_samples (List[ClsDataSample|None], optional): The annotation
+            data_samples (List[ClsDataSample | None], optional): The annotation
                 data of every samples. If not None, set ``pred_label`` of
                 the input data samples. Defaults to None.
 
