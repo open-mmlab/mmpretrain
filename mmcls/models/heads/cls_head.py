@@ -2,6 +2,7 @@
 from typing import List, Optional, Tuple, Union
 
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 
 from mmcls.evaluation.metrics import Accuracy
@@ -34,7 +35,9 @@ class ClsHead(BaseHead):
         super(ClsHead, self).__init__(init_cfg=init_cfg)
 
         self.topk = topk
-        self.loss_module = MODELS.build(loss)
+        if not isinstance(loss, nn.Module):
+            loss = MODELS.build(loss)
+        self.loss_module = loss
         self.cal_acc = cal_acc
 
     def pre_logits(self, feats: Tuple[torch.Tensor]) -> torch.Tensor:

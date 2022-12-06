@@ -40,3 +40,5 @@ Import:
   - configs/davit/metafile.yml
   - configs/replknet/metafile.yml
   - configs/csra/metafile.yml
+  - configs/beit/metafile.yml
+  - configs/beitv2/metafile.yml
