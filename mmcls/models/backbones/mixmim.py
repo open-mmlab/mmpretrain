@@ -17,7 +17,9 @@ from mmcls.registry import MODELS
 
 
 class MixMIMWindowAttention(WindowMSA):
-    """MixMIM Window Attention.
+    """MixMIM Window Attention. Compared with WindowMSA, we add some
+    modifications in ``forward`` to meet the requirement of MixMIM during
+    pretraining.
 
     Implements one windown attention in MixMIM.
     Args:
@@ -228,7 +230,7 @@ class MixMIMBlock(TransformerEncoderLayer):
 
 
 class MixMIMLayer(BaseModule):
-    """MixMIM Layer. Implements one layer in MixMIM.
+    """Implements one MixMIM layer, which may contains several MixMIM blocks.
 
     Args:
         embed_dims (int): The feature dimension.
