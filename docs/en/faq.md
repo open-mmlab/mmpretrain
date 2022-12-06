@@ -18,7 +18,8 @@ and make sure you fill in all required information in the template.
   | MMClassification version |      MMCV version      |
   | :----------------------: | :--------------------: |
   |           dev            |  mmcv>=1.7.0, \<1.9.0  |
-  |     0.24.1 (master)      |  mmcv>=1.4.2, \<1.9.0  |
+  |     0.25.0 (master)      |  mmcv>=1.4.2, \<1.9.0  |
+  |          0.24.1          |  mmcv>=1.4.2, \<1.9.0  |
   |          0.23.2          |  mmcv>=1.4.2, \<1.7.0  |
   |          0.22.1          |  mmcv>=1.4.2, \<1.6.0  |
   |          0.21.0          | mmcv>=1.4.2, \<=1.5.0  |
