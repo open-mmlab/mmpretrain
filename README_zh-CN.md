@@ -59,7 +59,7 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 
 2022/12/06 发布了 v1.0.0rc4 版本
 
-- 新的 API 用以方便地获取 MMClassification 中预定义的模型。详见 [#1236](https://github.com/open-mmlab/mmclassification/pull/1236)。
+- 更新了主要 API 接口，用以方便地获取 MMClassification 中预定义的模型。详见 [#1236](https://github.com/open-mmlab/mmclassification/pull/1236)。
 - 重构 BEiT 主干网络结构，并支持 v1 和 v2 模型的推理。
 
 2022/11/21 发布了 v1.0.0rc3 版本

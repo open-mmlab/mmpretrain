@@ -60,7 +60,7 @@ The `1.x` branch works with **PyTorch 1.6+**.
 
 v1.0.0rc4 was released in 06/12/2022.
 
-- New API to get pre-defined models of MMClassification. See [#1236](https://github.com/open-mmlab/mmclassification/pull/1236) for more details.
+- Upgrade API to get pre-defined models of MMClassification. See [#1236](https://github.com/open-mmlab/mmclassification/pull/1236) for more details.
 - Refactor BEiT backbone and support v1/v2 inference. See [#1144](https://github.com/open-mmlab/mmclassification/pull/1144).
 
 v1.0.0rc3 was released in 21/11/2022.
