@@ -1,5 +1,5 @@
 _base_ = [
-    '../_base_/models/efficientnet_v2/efficientnet_v2_m.py',
+    '../_base_/models/efficientnet_v2/efficientnet_v2_xl.py',
     '../_base_/datasets/imagenet_bs32.py',
     '../_base_/schedules/imagenet_bs256.py',
     '../_base_/default_runtime.py',
