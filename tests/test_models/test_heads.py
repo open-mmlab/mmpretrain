@@ -491,10 +491,8 @@ class TestMultiTaskHead(TestCase):
             'task0': dict(type='LinearClsHead', num_classes=3),
             'task1': dict(type='LinearClsHead', num_classes=6),
         },
-        common_cfg=dict(
-            in_channels=10,
-            loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
-        ),
+        in_channels=10,
+        loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
     )
 
     DEFAULT_ARGS2 = dict(
@@ -510,9 +508,8 @@ class TestMultiTaskHead(TestCase):
             'task1':
             dict(type='LinearClsHead', num_classes=6)
         },
-        common_cfg=dict(
-            in_channels=10,
-            loss=dict(type='CrossEntropyLoss', loss_weight=1.0)),
+        in_channels=10,
+        loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
     )
 
     def test_forward(self):
@@ -520,19 +517,19 @@ class TestMultiTaskHead(TestCase):
         # return the last item (same as pre_logits)
         feats = (torch.rand(4, 10), )
         outs = head(feats)
-        self.assertEqual(outs[0].shape, (4, 3))
-        self.assertEqual(outs[1].shape, (4, 6))
-        self.assertTrue(isinstance(outs, tuple))
+        self.assertEqual(outs['task0'].shape, (4, 3))
+        self.assertEqual(outs['task1'].shape, (4, 6))
+        self.assertTrue(isinstance(outs, dict))
 
     def test_loss(self):
         feats = (torch.rand(4, 10), )
         data_samples = []
 
         for _ in range(4):
-            gt_label = {}
+            data_sample = MultiTaskDataSample()
             for task_name in self.DEFAULT_ARGS['task_heads']:
-                gt_label[task_name] = 1
-            data_sample = MultiTaskDataSample().set_gt_task(gt_label)
+                task_sample = ClsDataSample().set_gt_label(1)
+                data_sample.set_field(task_sample, task_name)
             data_samples.append(data_sample)
         # with cal_acc = False
         head = MODELS.build(self.DEFAULT_ARGS)
@@ -549,19 +546,18 @@ class TestMultiTaskHead(TestCase):
         data_samples = []
 
         for _ in range(4):
-            gt_label = {}
+            data_sample = MultiTaskDataSample()
             for task_name in self.DEFAULT_ARGS['task_heads']:
-                gt_label[task_name] = 1
-            data_sample = MultiTaskDataSample().set_gt_task(gt_label)
+                task_sample = ClsDataSample().set_gt_label(1)
+                data_sample.set_field(task_sample, task_name)
             data_samples.append(data_sample)
         head = MODELS.build(self.DEFAULT_ARGS)
         # with without data_samples
         predictions = head.predict(feats)
         self.assertTrue(is_seq_of(predictions, MultiTaskDataSample))
         for pred in predictions:
-            self.assertIn('task0', pred.pred_task)
-        task0_sample = predictions[0].to_target_data_sample(
-            'ClsDataSample', 'task0')
+            self.assertIn('task0', pred)
+        task0_sample = predictions[0].task0
         self.assertTrue(type(task0_sample.pred_label.score), 'torch.tensor')
 
         # with with data_samples
@@ -569,22 +565,14 @@ class TestMultiTaskHead(TestCase):
         self.assertTrue(is_seq_of(predictions, MultiTaskDataSample))
         for sample, pred in zip(data_samples, predictions):
             self.assertIs(sample, pred)
-            self.assertIn('task0', pred.pred_task)
-
-    def test_loss_invalid_data_sample_task_name(self):
-        for _ in range(4):
-            gt_label = {}
-            for task_name in self.DEFAULT_ARGS['task_heads']:
-                gt_label[task_name] = 1
-            with self.assertRaises(Exception):
-                MultiTaskDataSample(['task0', 'task3']).set_gt_label(gt_label)
+            self.assertIn('task0', pred)
 
     def test_loss_empty_data_sample(self):
         feats = (torch.rand(4, 10), )
         data_samples = []
 
         for _ in range(4):
-            data_sample = MultiTaskDataSample().set_gt_task({})
+            data_sample = MultiTaskDataSample()
             data_samples.append(data_sample)
         # with cal_acc = False
         head = MODELS.build(self.DEFAULT_ARGS)
@@ -601,14 +589,18 @@ class TestMultiTaskHead(TestCase):
         # return the last item (same as pre_logits)
         feats = (torch.rand(4, 10), )
         outs = head(feats)
-        self.assertEqual(outs[0][1].shape, (4, 6))
-        self.assertTrue(isinstance(outs, tuple))
+        self.assertEqual(outs['task0']['task01'].shape, (4, 6))
+        self.assertTrue(isinstance(outs, dict))
+        self.assertTrue(isinstance(outs['task0'], dict))
 
     def test_nested_invalid_sample(self):
         feats = (torch.rand(4, 10), )
         gt_label = {'task0': 1, 'task1': 1}
         head = MODELS.build(self.DEFAULT_ARGS2)
-        data_sample = MultiTaskDataSample().set_gt_task(gt_label)
+        data_sample = MultiTaskDataSample()
+        for task_name in gt_label:
+            task_sample = ClsDataSample().set_gt_label(gt_label[task_name])
+            data_sample.set_field(task_sample, task_name)
         with self.assertRaises(Exception):
             head.loss(feats, data_sample)
 
@@ -616,7 +608,14 @@ class TestMultiTaskHead(TestCase):
         feats = (torch.rand(4, 10), )
         gt_label = {'task0': {'task00': 1, 'task01': 1}, 'task1': 1}
         head = MODELS.build(self.DEFAULT_ARGS)
-        data_sample = MultiTaskDataSample().set_gt_task(gt_label)
+        data_sample = MultiTaskDataSample()
+        task_sample = ClsDataSample().set_gt_label(gt_label['task1'])
+        data_sample.set_field(task_sample, 'task1')
+        data_sample.set_field(MultiTaskDataSample(), 'task0')
+        for task_name in gt_label['task0']:
+            task_sample = ClsDataSample().set_gt_label(
+                gt_label['task0'][task_name])
+            data_sample.task0.set_field(task_sample, task_name)
         with self.assertRaises(Exception):
             head.loss(feats, data_sample)
 

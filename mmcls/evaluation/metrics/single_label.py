@@ -150,14 +150,18 @@ class Accuracy(BaseMetric):
         for data_sample in data_samples:
             result = dict()
             pred_label = data_sample['pred_label']
-            gt_label = data_sample['gt_label']
-            if 'score' in pred_label:
-                result['pred_score'] = pred_label['score'].cpu()
-            else:
-                result['pred_label'] = pred_label['label'].cpu()
-            result['gt_label'] = gt_label['label'].cpu()
-            # Save the result to `self.results`.
-            self.results.append(result)
+            # when predictions is called without data_sample in input
+            # it is create empty one without gt_labl those can not use
+            # by metric
+            if 'gt_label' in data_sample:
+                gt_label = data_sample['gt_label']
+                if 'score' in pred_label:
+                    result['pred_score'] = pred_label['score'].cpu()
+                else:
+                    result['pred_label'] = pred_label['label'].cpu()
+                result['gt_label'] = gt_label['label'].cpu()
+                # Save the result to `self.results`.
+                self.results.append(result)
 
     def compute_metrics(self, results: List):
         """Compute the metrics from processed results.
@@ -418,20 +422,24 @@ class SingleLabelMetric(BaseMetric):
         for data_sample in data_samples:
             result = dict()
             pred_label = data_sample['pred_label']
-            gt_label = data_sample['gt_label']
-            if 'score' in pred_label:
-                result['pred_score'] = pred_label['score'].cpu()
-            else:
-                num_classes = self.num_classes or data_sample.get(
-                    'num_classes')
-                assert num_classes is not None, \
-                    'The `num_classes` must be specified if `pred_label` has '\
-                    'only `label`.'
-                result['pred_label'] = pred_label['label'].cpu()
-                result['num_classes'] = num_classes
-            result['gt_label'] = gt_label['label'].cpu()
-            # Save the result to `self.results`.
-            self.results.append(result)
+            # when predictions is called without data_sample in input
+            # it is create empty one without gt_labl those can not use
+            # by metric
+            if 'gt_label' in data_sample:
+                gt_label = data_sample['gt_label']
+                if 'score' in pred_label:
+                    result['pred_score'] = pred_label['score'].cpu()
+                else:
+                    num_classes = self.num_classes or data_sample.get(
+                        'num_classes')
+                    assert num_classes is not None, \
+                        'The `num_classes` must be specified if `pred_label` '\
+                        'has only `label`.'
+                    result['pred_label'] = pred_label['label'].cpu()
+                    result['num_classes'] = num_classes
+                result['gt_label'] = gt_label['label'].cpu()
+                # Save the result to `self.results`.
+                self.results.append(result)
 
     def compute_metrics(self, results: List):
         """Compute the metrics from processed results.

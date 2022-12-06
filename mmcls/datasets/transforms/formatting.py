@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import warnings
+from collections import defaultdict
 from collections.abc import Sequence
-from typing import List
+from functools import partial
 
 import numpy as np
 import torch
@@ -86,12 +86,6 @@ class PackClsInputs(BaseTransform):
                 img = np.expand_dims(img, -1)
             img = np.ascontiguousarray(img.transpose(2, 0, 1))
             packed_results['inputs'] = to_tensor(img)
-        else:
-            warnings.warn(
-                'Cannot get "img" in the input dict of `PackClsInputs`,'
-                'please make sure `LoadImageFromFile` has been added '
-                'in the data pipeline or images have been loaded in '
-                'the dataset.')
 
         data_sample = ClsDataSample()
         if 'gt_label' in results:
@@ -110,7 +104,7 @@ class PackClsInputs(BaseTransform):
 
 
 @TRANSFORMS.register_module()
-class FormatMultiTaskLabels(BaseTransform):
+class PackMultiTaskInputs(BaseTransform):
     """Convert all image labels of multi-task dataset to a dict of tensor.
 
     Args:
@@ -131,11 +125,17 @@ class FormatMultiTaskLabels(BaseTransform):
     """
 
     def __init__(self,
-                 metainfo: List[str] = None,
+                 task_handlers=dict(),
+                 multi_task_fields=('gt_label', ),
                  meta_keys=('sample_idx', 'img_path', 'ori_shape', 'img_shape',
                             'scale_factor', 'flip', 'flip_direction')):
-        self.metainfo = metainfo
+        self.multi_task_fields = multi_task_fields
         self.meta_keys = meta_keys
+        self.task_handlers = defaultdict(
+            partial(PackClsInputs, meta_keys=meta_keys))
+        for task_name, task_handler in task_handlers.items():
+            self.task_handlers[task_name] = TRANSFORMS.build(
+                dict(type=task_handler, meta_keys=meta_keys))
 
     def transform(self, results: dict) -> dict:
         """Method to pack the input data.
@@ -144,32 +144,40 @@ class FormatMultiTaskLabels(BaseTransform):
             'img': array([[[  0,   0,   0])
         """
         packed_results = dict()
+        results = results.copy()
+
         if 'img' in results:
-            img = results['img']
+            img = results.pop('img')
             if len(img.shape) < 3:
                 img = np.expand_dims(img, -1)
             img = np.ascontiguousarray(img.transpose(2, 0, 1))
             packed_results['inputs'] = to_tensor(img)
-        else:
-            warnings.warn(
-                'Cannot get "img" in the input dict of `PackClsInputs`,'
-                'please make sure `LoadImageFromFile` has been added '
-                'in the data pipeline or images have been loaded in ')
 
-        data_sample = MultiTaskDataSample(metainfo=self.metainfo)
-        if 'gt_label' in results:
-            gt_label = results['gt_label']
-            data_sample.set_gt_task(gt_label)
+        task_results = defaultdict(dict)
+        for field in self.multi_task_fields:
+            if field in results:
+                value = results.pop(field)
+                for k, v in value.items():
+                    task_results[k].update({field: v})
 
-        img_meta = {k: results[k] for k in self.meta_keys if k in results}
-        data_sample.set_metainfo(img_meta)
+        data_sample = MultiTaskDataSample()
+        for task_name, task_result in task_results.items():
+            task_handler = self.task_handlers[task_name]
+            task_pack_result = task_handler({**results, **task_result})
+            data_sample.set_field(task_pack_result['data_samples'], task_name)
+
         packed_results['data_samples'] = data_sample
         return packed_results
 
     def __repr__(self):
         repr = self.__class__.__name__
-        repr += f'(meta_keys={self.meta_keys})'
-        repr += f'(tasks={self.metainfo})'
+        task_handlers = {
+            name: handler.__class__.__name__
+            for name, handler in self.task_handlers.items()
+        }
+        repr += f'(task_handlers={task_handlers}, '
+        repr += f'multi_task_fields={self.multi_task_fields}, '
+        repr += f'meta_keys={self.meta_keys})'
         return repr
 
 

@@ -1,7 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import List, Tuple
+from typing import List, Sequence, Tuple
 
 import torch
+import torch.nn as nn
 from mmengine.model import ModuleDict
 
 from mmcls.registry import MODELS
@@ -9,51 +10,33 @@ from mmcls.structures import MultiTaskDataSample
 from .base_head import BaseHead
 
 
-def loss_convertor(func, task_name):
-    target_type = func.__annotations__['data_samples'].__args__[0].__name__
-
-    # data_samples = data_samples.to_target_data_sample(target_type, task_name)
+def loss_convertor(loss_func, task_name):
 
     def wrapped(inputs, data_samples, **kwargs):
-        mask = []
+        mask = torch.empty(len(data_samples), dtype=torch.bool)
         task_data_samples = []
-        for data_sample in data_samples:
-            if isinstance(data_sample, MultiTaskDataSample):
-                sample_mask = data_sample.get_task_mask(task_name)
-                mask.append(sample_mask)
-                if sample_mask:
-                    task_data_samples.append(
-                        data_sample.to_target_data_sample(
-                            target_type, task_name))
-        masked_inputs = tuple()
-        if type(inputs) is tuple:
-            for input in inputs:
-                masked_inputs = masked_inputs + (input[mask], )
-        else:
-            masked_inputs = inputs[mask]
+        for i, data_sample in enumerate(data_samples):
+            assert isinstance(data_sample, MultiTaskDataSample)
+            sample_mask = task_name in data_sample
+            mask[i] = sample_mask
+            if sample_mask:
+                task_data_samples.append(data_sample.get(task_name))
+
         if len(task_data_samples) == 0:
-            return {
-                'loss': torch.tensor(float(0)),
-                'mask_size': torch.tensor(float(0))
-            }
-        loss_output = func(masked_inputs, task_data_samples, **kwargs)
-        loss_output['mask_size'] = torch.tensor(float(sum(mask)))
+            return {'loss': torch.tensor(0.), 'mask_size': torch.tensor(0.)}
+
+        # Mask the inputs of the task
+        def mask_inputs(inputs, mask):
+            if isinstance(inputs, Sequence):
+                return type(inputs)(
+                    [mask_inputs(input, mask) for input in inputs])
+            elif isinstance(inputs, torch.Tensor):
+                return inputs[mask]
+
+        masked_inputs = mask_inputs(inputs, mask)
+        loss_output = loss_func(masked_inputs, task_data_samples, **kwargs)
+        loss_output['mask_size'] = mask.sum().to(torch.float)
         return loss_output
-
-    return wrapped
-
-
-def predict_convertor(func, task_name):
-    target_type = func.__annotations__['data_samples'].__args__[0].__name__
-
-    def wrapped(inputs, data_samples, **kwargs):
-        if data_samples is None:
-            return func(inputs, data_samples, **kwargs)
-        task_data_samples = [
-            data_sample.to_target_data_sample(target_type, task_name)
-            for data_sample in data_samples
-        ]
-        return func(inputs, task_data_samples, **kwargs)
 
     return wrapped
 
@@ -71,7 +54,7 @@ class MultiTaskHead(BaseHead):
             Defaults to None.
     """
 
-    def __init__(self, task_heads, common_cfg=dict(), init_cfg=None):
+    def __init__(self, task_heads, init_cfg=None, **kwargs):
         super(MultiTaskHead, self).__init__(init_cfg=init_cfg)
 
         assert isinstance(task_heads, dict), 'The `task_heads` argument' \
@@ -80,23 +63,18 @@ class MultiTaskHead(BaseHead):
 
         self.task_heads = ModuleDict()
 
-        for task_name, head_cfg in task_heads.items():
-            if head_cfg['type'] != 'MultiTaskHead':
-                sub_head = MODELS.build(head_cfg, default_args=common_cfg)
-            else:
-                sub_head = MODELS.build(
-                    head_cfg, default_args={'common_cfg': common_cfg})
+        for task_name, sub_head in task_heads.items():
+            if not isinstance(sub_head, nn.Module):
+                sub_head = MODELS.build(sub_head, default_args=kwargs)
             sub_head.loss = loss_convertor(sub_head.loss, task_name)
-            sub_head.predict = predict_convertor(sub_head.predict, task_name)
             self.task_heads[task_name] = sub_head
 
     def forward(self, feats):
         """The forward process."""
-        task_results = ()
-        for task_name, head in self.task_heads.items():
-            head_res = head.forward(feats)
-            task_results = task_results + (head_res, )
-        return task_results
+        return {
+            task_name: head(feats)
+            for task_name, head in self.task_heads.items()
+        }
 
     def loss(self, feats: Tuple[torch.Tensor],
              data_samples: List[MultiTaskDataSample], **kwargs) -> dict:
@@ -136,26 +114,25 @@ class MultiTaskHead(BaseHead):
             List[MultiTaskDataSample]: A list of data samples which contains
             the predicted results.
         """
-        # The part can be traced by torch.fx
-        predictions_ = dict()
-        for task_name, head in self.task_heads.items():
-            predictions_[task_name] = head.predict(feats, data_samples)
-        # The part can not be traced by torch.fx
-        predictions = self._get_predictions(predictions_, data_samples)
-        return predictions
+        predictions_dict = dict()
 
-    def _get_predictions(self, preds_dict, data_samples):
-        """Post-process the output of MultiTaskHead."""
-        pred_dicts = [
-            dict(zip(preds_dict, t)) for t in zip(*preds_dict.values())
-        ]
+        for task_name, head in self.task_heads.items():
+            if data_samples is None:
+                task_samples = None
+            else:
+                task_samples = [item.get(task_name) for item in data_samples]
+            task_samples = head.predict(feats, task_samples)
+            batch_size = len(task_samples)
+            predictions_dict[task_name] = task_samples
+
         if data_samples is None:
-            data_samples = []
-            for pred_dict in pred_dicts:
-                data_samples.append(
-                    MultiTaskDataSample().set_pred_task(pred_dict))
-        else:
-            for data_sample, pred_dict in zip(data_samples, pred_dicts):
-                data_sample.set_pred_task(pred_dict)
+            data_samples = [MultiTaskDataSample() for _ in range(batch_size)]
+
+        for task_name, task_samples in predictions_dict.items():
+            for data_sample, task_sample in zip(data_samples, task_samples):
+                if task_name in data_sample:
+                    data_sample.get(task_name).update(task_sample)
+                else:
+                    data_sample.set_field(task_sample, task_name)
 
         return data_samples

@@ -4,13 +4,13 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='Resize', scale=(256, 200), backend='pillow'),
     dict(type='CenterCrop', crop_size=224),
-    dict(type='FormatMultiTaskLabels'),
+    dict(type='PackMultiTaskInputs'),
 ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='Resize', scale=(256, 200), backend='pillow'),
     dict(type='CenterCrop', crop_size=224),
-    dict(type='FormatMultiTaskLabels')
+    dict(type='PackMultiTaskInputs')
 ]
 
 train_dataloader = dict(

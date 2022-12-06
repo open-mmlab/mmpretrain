@@ -18,8 +18,6 @@ model = dict(
             'humanitarian': dict(type='LinearClsHead', num_classes=4),
             'disaster_types': dict(type='LinearClsHead', num_classes=7)
         },
-        common_cfg=dict(
-            in_channels=1280,
-            loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
-        ),
+        in_channels=1280,
+        loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
     ))

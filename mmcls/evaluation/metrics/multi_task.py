@@ -1,10 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Dict, List, Sequence
+from typing import Dict, Sequence
 
 from mmengine.evaluator import BaseMetric
 
 from mmcls.registry import METRICS
-from mmcls.structures import MultiTaskDataSample
 
 
 @METRICS.register_module()
@@ -62,36 +61,6 @@ class MultiTasksMetric(BaseMetric):
             for metric in self.task_metrics[task_name]:
                 self._metrics[task_name].append(METRICS.build(metric))
 
-    def pre_process_nested(self, data_samples: List[MultiTaskDataSample],
-                           task_name):
-        """Retrieve data_samples corresponds to the task_name for a data_sample
-        type MultiTaskDataSample Args :
-
-        data_samples (List[MultiTaskDataSample]):The annotation data of every
-        samples. task_name (str)
-        """
-        task_data_sample = []
-        for data_sample in data_samples:
-            task_data_sample.append(
-                data_sample.to_target_data_sample('MultiTaskDataSample',
-                                                  task_name).to_dict())
-        return task_data_sample
-
-    def pre_process_cls(self, data_samples: List[MultiTaskDataSample],
-                        task_name):
-        """Retrieve data_samples corresponds to the task_name for a data_sample
-        type ClsDataSample Args :
-
-        data_samples (List[MultiTaskDataSample]):The annotation data of every
-        samples. task_name (str)
-        """
-        task_data_sample_dicts = []
-        for data_sample in data_samples:
-            task_data_sample_dicts.append(
-                data_sample.to_target_data_sample('ClsDataSample',
-                                                  task_name).to_dict())
-        return task_data_sample_dicts
-
     def process(self, data_batch, data_samples: Sequence[dict]):
         """Process one batch of data samples.
 
@@ -101,38 +70,25 @@ class MultiTasksMetric(BaseMetric):
             data_batch: A batch of data from the dataloader.
             data_samples (Sequence[dict]): A batch of outputs from the model.
         """
-        data_sample_instances = []
-        for data_sample in data_samples:
-            if 'gt_task' in data_sample:
-                data_sample_instances.append(MultiTaskDataSample().set_gt_task(
-                    data_sample['gt_task']).set_pred_task(
-                        data_sample['pred_task']))
         for task_name in self.task_metrics.keys():
             filtered_data_samples = []
-            for data_sample in data_sample_instances:
-                sample_mask = data_sample.get_task_mask(task_name)
+            for data_sample in data_samples:
+                sample_mask = task_name in data_sample
                 if sample_mask:
-                    filtered_data_samples.append(data_sample)
-            if type(self.task_metrics[task_name]) != dict:
-                for metric in self._metrics[task_name]:
-                    # Current implementation is only comptaible
-                    # With 2 types of metrics :
-                    # * Cls Metrics
-                    # * Nested Cls Metrics
-                    # In order to make it work with other
-                    # non-cls heads/metrics, one will have to
-                    # override the current implementation
-                    if metric.__class__.__name__ != 'MultiTasksMetric':
-                        task_data_sample_dicts = self.pre_process_cls(
-                            filtered_data_samples, task_name)
-                        metric.process(data_batch, task_data_sample_dicts)
-                    else:
-                        task_data_sample_dicts = self.pre_process_nested(
-                            filtered_data_samples, task_name)
-                        metric.process(data_batch, task_data_sample_dicts)
+                    filtered_data_samples.append(data_sample[task_name])
+            for metric in self._metrics[task_name]:
+                # Current implementation is only comptaible
+                # With 2 types of metrics :
+                # * Cls Metrics
+                # * Nested Cls Metrics
+                # In order to make it work with other
+                # non-cls heads/metrics, one will have to
+                # override the current implementation
+                metric.process(data_batch, filtered_data_samples)
 
     def compute_metrics(self, results: list) -> dict:
-        raise Exception('compute metrics should not be used here directly')
+        raise NotImplementedError(
+            'compute metrics should not be used here directly')
 
     def evaluate(self, size):
         """Evaluate the model performance of the whole dataset after processing
