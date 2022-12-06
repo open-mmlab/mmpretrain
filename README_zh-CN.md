@@ -63,6 +63,11 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 
 MMClassification 1.0 已经发布！目前仍在公测中，如果希望试用，请切换到 [1.x 分支](https://github.com/open-mmlab/mmclassification/tree/1.x)，并在[讨论版](https://github.com/open-mmlab/mmclassification/discussions) 参加开发讨论！
 
+2022/12/06 发布了 v0.25.0 版本
+
+- 支持 MLU 设备
+- 添加了用于 ARM 设备训练的 `dist_train_arm.sh`
+
 2022/10/31 发布了 v0.24.1 版本
 
 - 支持了华为昇腾 NPU 设备。
