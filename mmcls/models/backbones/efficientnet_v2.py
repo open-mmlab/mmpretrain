@@ -242,6 +242,7 @@ class EfficientNetV2(BaseBackbone):
 <<<<<<< HEAD
                  num_features: int = 1280,
 <<<<<<< HEAD
+<<<<<<< HEAD
                  drop_connect_rate: float = 0.0,
 =======
 =======
@@ -252,6 +253,9 @@ class EfficientNetV2(BaseBackbone):
 =======
                  drop_connect_rate: float = 0.2,
 >>>>>>> 4a4058c... update config file
+=======
+                 drop_connect_rate: float = 0.0,
+>>>>>>> 6ed2461... update model file
                  frozen_stages: int = 0,
                  norm_eval: bool = False,
                  with_cp: bool = False,
