@@ -341,6 +341,8 @@ class EfficientNetV2(BaseBackbone):
     def forward(self, x: Tensor) -> Tensor:
         outs = []
         for i, layer in enumerate(self.layers):
+            if i == 0:
+                x = x + layer(x)
             x = layer(x)
         # x = self.head(x)
         outs.append(x)
