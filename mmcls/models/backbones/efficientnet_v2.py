@@ -1,9 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from functools import partial
-from typing import Callable, Optional
+from typing import Callable, Optional, Tuple, List
 
+import torch
 import torch.nn as nn
-import torch.nn.functional
+import torch.nn.functional as F
+import math
 from mmcv.cnn.bricks import DropPath
 from mmengine.model import Sequential
 from torch import Tensor
@@ -11,6 +13,37 @@ from torch import Tensor
 from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.registry import MODELS
 
+
+# Calculate asymmetric TensorFlow-like 'SAME' padding for a convolution
+def get_same_padding(x: int, k: int, s: int, d: int):
+    return max((math.ceil(x / s) - 1) * s + (k - 1) * d + 1 - x, 0)
+
+# Dynamically pad input x with 'SAME' padding for conv with specified args
+def pad_same(x, k: List[int], s: List[int], d: List[int] = (1, 1), value: float = 0):
+    ih, iw = x.size()[-2:]
+    pad_h, pad_w = get_same_padding(ih, k[0], s[0], d[0]), get_same_padding(iw, k[1], s[1], d[1])
+    if pad_h > 0 or pad_w > 0:
+        x = F.pad(x, [pad_w // 2, pad_w - pad_w // 2, pad_h // 2, pad_h - pad_h // 2], value=value)
+    return x
+
+def conv2d_same(
+        x, weight: torch.Tensor, bias: Optional[torch.Tensor] = None, stride: Tuple[int, int] = (1, 1),
+        padding: Tuple[int, int] = (0, 0), dilation: Tuple[int, int] = (1, 1), groups: int = 1):
+    x = pad_same(x, weight.shape[-2:], stride, dilation)
+    return F.conv2d(x, weight, bias, stride, (0, 0), dilation, groups)
+
+
+class Conv2dSame(nn.Conv2d):
+    """ Tensorflow like 'SAME' convolution wrapper for 2D convolutions
+    """
+
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1,
+                 padding=0, dilation=1, groups=1, bias=True):
+        super(Conv2dSame, self).__init__(
+            in_channels, out_channels, kernel_size, stride, 0, dilation, groups, bias)
+
+    def forward(self, x):
+        return conv2d_same(x, self.weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
 
 class ConvBNAct(nn.Module):
 
@@ -31,14 +64,22 @@ class ConvBNAct(nn.Module):
         if activation_layer is None:
             activation_layer = nn.SiLU  # alias Swish
 
-        self.conv = nn.Conv2d(
-            in_channels=in_planes,
-            out_channels=out_planes,
-            kernel_size=kernel_size,
-            stride=stride,
-            padding=padding,
-            groups=groups,
-            bias=False)
+        if stride == 1:
+            self.conv = nn.Conv2d(
+                in_channels=in_planes,
+                out_channels=out_planes,
+                kernel_size=kernel_size,
+                stride=stride,
+                padding=padding,
+                groups=groups,
+                bias=False)
+        elif stride == 2:
+            self.conv = Conv2dSame(
+                in_channels=in_planes,
+                out_channels=out_planes,
+                kernel_size=kernel_size,
+                stride=stride,
+                bias=False)
 
         self.bn = norm_layer(out_planes)
         self.act = activation_layer(inplace=True)
@@ -78,15 +119,13 @@ class MBConv(nn.Module):
 
     def __init__(self, kernel_size: int, input_c: int, out_c: int,
                  expand_ratio: int, stride: int, se_ratio: float,
-                 padding: int, drop_rate: float,
-                 norm_layer: Callable[..., nn.Module]):
+                 drop_rate: float, norm_layer: Callable[..., nn.Module]):
         super(MBConv, self).__init__()
 
         if stride not in [1, 2]:
             raise ValueError('illegal stride value.')
 
         self.has_shortcut = (stride == 1 and input_c == out_c)
-        self.padding = padding
 
         activation_layer = nn.SiLU  # alias Swish
         expanded_c = input_c * expand_ratio
@@ -108,7 +147,6 @@ class MBConv(nn.Module):
             kernel_size=kernel_size,
             stride=stride,
             groups=expanded_c,
-            padding=self.padding,
             norm_layer=norm_layer,
             activation_layer=activation_layer)
 
@@ -150,15 +188,13 @@ class FusedMBConv(nn.Module):
 
     def __init__(self, kernel_size: int, input_c: int, out_c: int,
                  expand_ratio: int, stride: int, se_ratio: float,
-                 padding: int, drop_rate: float,
-                 norm_layer: Callable[..., nn.Module]):
+                 drop_rate: float, norm_layer: Callable[..., nn.Module]):
         super(FusedMBConv, self).__init__()
 
         assert stride in [1, 2]
         assert se_ratio == 0
 
         self.has_shortcut = stride == 1 and input_c == out_c
-        self.padding = padding
         self.drop_rate = drop_rate
 
         self.has_expansion = expand_ratio != 1
@@ -174,7 +210,6 @@ class FusedMBConv(nn.Module):
                 expanded_c,
                 kernel_size=kernel_size,
                 stride=stride,
-                padding=self.padding,
                 norm_layer=norm_layer,
                 activation_layer=activation_layer)
 
@@ -300,7 +335,6 @@ class EfficientNetV2(BaseBackbone):
                        expand_ratio=cnf[3],
                        stride=cnf[2] if i == 0 else 1,
                        se_ratio=cnf[-2],
-                       padding=0 if cnf[2] == 2 and i == 0 else 1,
                        drop_rate=drop_connect_rate * block_id / total_blocks,
                        norm_layer=norm_layer))
                 block_id += 1
