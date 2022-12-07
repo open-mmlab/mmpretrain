@@ -39,7 +39,7 @@ class ConvBNAct(nn.Module):
             bias=False)
 
         self.bn = norm_layer(out_planes)
-        self.act = activation_layer()
+        self.act = activation_layer(inplace=True)
 
     def forward(self, x):
         result = self.conv(x)
@@ -59,7 +59,7 @@ class SqueezeExcite(nn.Module):
         super(SqueezeExcite, self).__init__()
         squeeze_c = int(input_c * se_ratio)
         self.conv_reduce = nn.Conv2d(expand_c, squeeze_c, 1)
-        self.act1 = nn.SiLU()  # alias Swish
+        self.act1 = nn.SiLU(inplace=True)  # alias Swish
         self.conv_expand = nn.Conv2d(squeeze_c, expand_c, 1)
         self.act2 = nn.Sigmoid()
 
