@@ -259,6 +259,7 @@ class EfficientNetV2(BaseBackbone):
                          val=1)
                  ]):
         super(EfficientNetV2, self).__init__(init_cfg)
+        model_cnf = self.arch_settings[model_cnf]
 
         self.frozen_stages = frozen_stages
         self.norm_eval = norm_eval
