@@ -19,6 +19,7 @@ class ConvBNAct(nn.Module):
                  kernel_size: int = 3,
                  stride: int = 1,
                  groups: int = 1,
+                 skip: bool = False,
                  norm_layer: Optional[Callable[..., nn.Module]] = None,
                  activation_layer: Optional[Callable[..., nn.Module]] = None):
         super(ConvBNAct, self).__init__()
@@ -40,11 +41,14 @@ class ConvBNAct(nn.Module):
 
         self.bn = norm_layer(out_planes)
         self.act = activation_layer(inplace=True)
+        self.has_skip = skip and stride == 1 and in_planes == out_planes
 
     def forward(self, x):
         result = self.conv(x)
         result = self.bn(result)
         result = self.act(result)
+        if self.has_skip:
+            result = result + x
 
         return result
 
@@ -295,20 +299,28 @@ class EfficientNetV2(BaseBackbone):
         total_blocks = sum([i[0] for i in model_cnf])
         block_id = 0
 
-        for cnf in model_cnf:
+        for idx,cnf in enumerate(model_cnf):
             blocks = []
             repeats = cnf[0]
             op = FusedMBConv if cnf[-1] == 0 else MBConv
             for i in range(repeats):
-                blocks.append(
-                    op(kernel_size=cnf[1],
-                       input_c=cnf[4] if i == 0 else cnf[5],
-                       out_c=cnf[5],
-                       expand_ratio=cnf[3],
-                       stride=cnf[2] if i == 0 else 1,
-                       se_ratio=cnf[-2],
-                       drop_rate=drop_connect_rate * block_id / total_blocks,
-                       norm_layer=norm_layer))
+                if idx == 0:
+                    blocks.append(
+                        ConvBNAct(in_planes=cnf[4] if i == 0 else cnf[5],
+                                  out_planes=cnf[5],
+                                  kernel_size=3,
+                                  stride=cnf[2] if i == 0 else 1,
+                                  skip=True))
+                else:
+                    blocks.append(
+                        op(kernel_size=cnf[1],
+                           input_c=cnf[4] if i == 0 else cnf[5],
+                           out_c=cnf[5],
+                           expand_ratio=cnf[3],
+                           stride=cnf[2] if i == 0 else 1,
+                           se_ratio=cnf[-2],
+                           drop_rate=drop_connect_rate * block_id / total_blocks,
+                           norm_layer=norm_layer))
                 block_id += 1
             self.layers.append(Sequential(*blocks))
 
@@ -343,7 +355,8 @@ class EfficientNetV2(BaseBackbone):
         for i, layer in enumerate(self.layers):
             if i == 0:
                 x = x + layer(x)
-            x = layer(x)
+            else:
+                x = layer(x)
         # x = self.head(x)
         outs.append(x)
         return tuple(outs)
