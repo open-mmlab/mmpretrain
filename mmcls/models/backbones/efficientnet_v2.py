@@ -314,6 +314,7 @@ class EfficientNetV2(BaseBackbone):
 
     def forward(self, x: Tensor) -> Tensor:
         outs = []
+        x = self.stem(x)
         x = self.blocks(x)
         x = self.head(x)
         outs.append(x)
