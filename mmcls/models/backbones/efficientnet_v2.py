@@ -58,7 +58,7 @@ class ConvBNAct(nn.Module):
                  activation_layer: Optional[Callable[..., nn.Module]] = None):
         super(ConvBNAct, self).__init__()
 
-        # padding = (kernel_size - 1) // 2
+        padding = (kernel_size - 1) // 2
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         if activation_layer is None:
@@ -79,6 +79,7 @@ class ConvBNAct(nn.Module):
                 out_channels=out_planes,
                 kernel_size=kernel_size,
                 stride=stride,
+                groups=groups,
                 bias=False)
 
         self.bn = norm_layer(out_planes)
@@ -317,7 +318,6 @@ class EfficientNetV2(BaseBackbone):
                 stem_filter_num,
                 kernel_size=3,
                 stride=2,
-                padding=0,
                 norm_layer=norm_layer))  # active function default to SiLU
 
         total_blocks = sum([i[0] for i in model_cnf])
