@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from functools import partial
 from typing import Callable, Optional
+from collections import OrderedDict
 
 import torch.nn as nn
 from mmcv.cnn.bricks import DropPath
@@ -238,6 +239,7 @@ class EfficientNetV2(BaseBackbone):
 
     def __init__(self,
                  model_cnf: str = 's',
+                 num_features: int = 1280,
                  drop_connect_rate: float = 0.2,
                  frozen_stages: int = 0,
                  norm_eval: bool = False,
@@ -284,6 +286,14 @@ class EfficientNetV2(BaseBackbone):
                 block_id += 1
         self.blocks = nn.Sequential(*blocks)
 
+        head_input_c = model_cnf[-1][-3]
+        head = OrderedDict()
+        head.update({"project_conv": ConvBNAct(head_input_c,
+                                               num_features,
+                                               kernel_size=1,
+                                               norm_layer=norm_layer)})
+        self.head = nn.Sequential(head)
+
         # head = OrderedDict()
         # num_classes = 1000
         # head.update({"project_conv": ConvBNAct(head_input_c,
@@ -305,7 +315,7 @@ class EfficientNetV2(BaseBackbone):
     def forward(self, x: Tensor) -> Tensor:
         outs = []
         x = self.blocks(x)
-        # x = self.head(x)
+        x = self.head(x)
         outs.append(x)
         return tuple(outs)
 
