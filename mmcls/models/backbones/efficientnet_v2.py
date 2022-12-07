@@ -124,6 +124,8 @@ class MBConv(nn.Module):
         self.drop_rate = drop_rate
         if self.has_shortcut and drop_rate > 0:
             self.dropout = DropPath(drop_rate)
+        else:
+            self.dropout = nn.Identity()
 
     def forward(self, x: Tensor) -> Tensor:
         result = self.expand_conv(x)
@@ -190,6 +192,8 @@ class FusedMBConv(nn.Module):
         self.drop_rate = drop_rate
         if self.has_shortcut and drop_rate > 0:
             self.dropout = DropPath(drop_rate)
+        else:
+            self.dropout = nn.Identity()
 
     def forward(self, x: Tensor) -> Tensor:
         if self.has_expansion:
@@ -239,7 +243,7 @@ class EfficientNetV2(BaseBackbone):
     def __init__(self,
                  model_cnf: str = 's',
                  num_features: int = 1280,
-                 drop_connect_rate: float = 0.2,
+                 drop_connect_rate: float = 0.0,
                  frozen_stages: int = 0,
                  norm_eval: bool = False,
                  with_cp: bool = False,
