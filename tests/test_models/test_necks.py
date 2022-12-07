@@ -61,6 +61,15 @@ def test_gem_neck():
     assert output[0].shape == (1, 8)
     assert output[1].shape == (1, 16)
 
+    # test gem_neck with p_trainable=False
+    neck = GeneralizedMeanPooling(p_trainable=False)
+    # batch_size, num_features, feature_size(2)
+    fake_input = torch.rand(1, 16, 24, 24)
+
+    output = neck(fake_input)
+    # batch_size, num_features
+    assert output.shape == (1, 16)
+
     with pytest.raises(AssertionError):
         # p must be a value greater then 1
         GeneralizedMeanPooling(p=0.5)
