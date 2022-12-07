@@ -160,24 +160,28 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
             norm_cfg=norm_cfg,
             init_cfg=init_cfg)
 
-        attn_cfg = dict(
-            window_size=window_size,
-            use_rel_pos_bias=use_rel_pos_bias,
-            qk_scale=None,
-            embed_dims=embed_dims,
-            num_heads=num_heads,
-            attn_drop=attn_drop_rate,
-            proj_drop=drop_rate,
-            bias=bias)
+        attn_cfg = {
+            'window_size': window_size,
+            'use_rel_pos_bias': use_rel_pos_bias,
+            'qk_scale': None,
+            'embed_dims': embed_dims,
+            'num_heads': num_heads,
+            'attn_drop': attn_drop_rate,
+            'proj_drop': drop_rate,
+            'bias': bias,
+            **attn_cfg,
+        }
         self.attn = BEiTAttention(**attn_cfg)
 
-        ffn_cfg = dict(
-            embed_dims=embed_dims,
-            feedforward_channels=feedforward_channels,
-            num_fcs=num_fcs,
-            ffn_drop=drop_rate,
-            dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
-            act_cfg=act_cfg)
+        ffn_cfg = {
+            'embed_dims': embed_dims,
+            'feedforward_channels': feedforward_channels,
+            'num_fcs': num_fcs,
+            'ffn_drop': drop_rate,
+            'dropout_layer': dict(type='DropPath', drop_prob=drop_path_rate),
+            'act_cfg': act_cfg,
+            **ffn_cfg,
+        }
         self.ffn = FFN(**ffn_cfg)
 
         # NOTE: drop path for stochastic depth, we shall see if
@@ -483,6 +487,7 @@ class BEiT(VisionTransformer):
                     f'layers.{i}.attn.relative_position_bias_table'] = \
                         rel_pos_bias.clone()
             state_dict.pop('rel_pos_bias.relative_position_bias_table')
+            state_dict.pop('rel_pos_bias.relative_position_index')
 
         state_dict_model = self.state_dict()
         all_keys = list(state_dict_model.keys())
@@ -512,4 +517,5 @@ class BEiT(VisionTransformer):
 
                     # The index buffer need to be re-generated.
                     index_buffer = ckpt_key.replace('bias_table', 'index')
-                    del state_dict[index_buffer]
+                    if index_buffer in state_dict:
+                        del state_dict[index_buffer]

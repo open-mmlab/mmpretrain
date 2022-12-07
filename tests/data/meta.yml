@@ -1,0 +1,13 @@
+Models:
+  - Name: test_model
+    Metadata:
+      FLOPs: 319000000
+      Parameters: 3500000
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 71.86
+          Top 5 Accuracy: 90.42
+        Task: Image Classification
+    Weights: test_weight.pth
+    Config: test_config.py
