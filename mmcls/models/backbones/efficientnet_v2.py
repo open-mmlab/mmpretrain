@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from functools import partial
 from typing import Callable, Optional
+from collections import OrderedDict
 
 import torch.nn as nn
 from mmcv.cnn.bricks import DropPath
@@ -255,54 +256,47 @@ class EfficientNetV2(BaseBackbone):
                          val=1)
                  ]):
         super(EfficientNetV2, self).__init__(init_cfg)
+        model_cnf = self.arch_settings[model_cnf]
 
         self.frozen_stages = frozen_stages
         self.norm_eval = norm_eval
         self.with_cp = with_cp
 
-        self.layers = nn.ModuleList()
-        model_cnf = self.arch_settings[model_cnf]
-
-        for cnf in model_cnf:
-            assert len(cnf) == 8
-
         norm_layer = partial(nn.BatchNorm2d, eps=1e-3, momentum=0.1)
+
         stem_filter_num = model_cnf[0][4]
-        self.layers.append(
-            ConvBNAct(
-                3,
-                stem_filter_num,
-                kernel_size=3,
-                stride=2,
-                norm_layer=norm_layer))  # active function default to SiLU
+
+        self.stem = ConvBNAct(3,
+                              stem_filter_num,
+                              kernel_size=3,
+                              stride=2,
+                              norm_layer=norm_layer)  # 激活函数默认是SiLU
 
         total_blocks = sum([i[0] for i in model_cnf])
         block_id = 0
-
+        blocks = []
         for cnf in model_cnf:
-            blocks = []
             repeats = cnf[0]
             op = FusedMBConv if cnf[-1] == 0 else MBConv
             for i in range(repeats):
-                blocks.append(
-                    op(kernel_size=cnf[1],
-                       input_c=cnf[4] if i == 0 else cnf[5],
-                       out_c=cnf[5],
-                       expand_ratio=cnf[3],
-                       stride=cnf[2] if i == 0 else 1,
-                       se_ratio=cnf[-2],
-                       drop_rate=drop_connect_rate * block_id / total_blocks,
-                       norm_layer=norm_layer))
+                blocks.append(op(kernel_size=cnf[1],
+                                 input_c=cnf[4] if i == 0 else cnf[5],
+                                 out_c=cnf[5],
+                                 expand_ratio=cnf[3],
+                                 stride=cnf[2] if i == 0 else 1,
+                                 se_ratio=cnf[-2],
+                                 drop_rate=drop_connect_rate * block_id / total_blocks,
+                                 norm_layer=norm_layer))
                 block_id += 1
-            self.layers.append(Sequential(*blocks))
+        self.blocks = nn.Sequential(*blocks)
 
         head_input_c = model_cnf[-1][-3]
-        self.layers.append(
-            ConvBNAct(
-                head_input_c,
-                num_features,
-                kernel_size=1,
-                norm_layer=norm_layer))
+        head = OrderedDict()
+        head.update({"project_conv": ConvBNAct(head_input_c,
+                                               num_features,
+                                               kernel_size=1,
+                                               norm_layer=norm_layer)})
+        self.head = nn.Sequential(head)
 
         # head = OrderedDict()
         # num_classes = 1000
@@ -324,9 +318,9 @@ class EfficientNetV2(BaseBackbone):
 
     def forward(self, x: Tensor) -> Tensor:
         outs = []
-        for i, layer in enumerate(self.layers):
-            x = layer(x)
-        # x = self.head(x)
+        x = self.stem(x)
+        x = self.blocks(x)
+        x = self.head(x)
         outs.append(x)
         return tuple(outs)
 
