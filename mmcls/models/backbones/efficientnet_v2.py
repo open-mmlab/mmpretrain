@@ -124,6 +124,8 @@ class MBConv(nn.Module):
         self.drop_rate = drop_rate
         if self.has_shortcut and drop_rate > 0:
             self.dropout = DropPath(drop_rate)
+        else:
+            self.dropout = nn.Identity()
 
     def forward(self, x: Tensor) -> Tensor:
         result = self.expand_conv(x)
@@ -132,8 +134,8 @@ class MBConv(nn.Module):
         result = self.project_conv(result)
 
         if self.has_shortcut:
-            if self.drop_rate > 0:
-                result = self.dropout(result)
+            # if self.drop_rate > 0:
+            result = self.dropout(result)
             result += x
 
         return result
@@ -190,6 +192,8 @@ class FusedMBConv(nn.Module):
         self.drop_rate = drop_rate
         if self.has_shortcut and drop_rate > 0:
             self.dropout = DropPath(drop_rate)
+        else:
+            self.dropout = nn.Identity()
 
     def forward(self, x: Tensor) -> Tensor:
         if self.has_expansion:
@@ -199,8 +203,8 @@ class FusedMBConv(nn.Module):
             result = self.project_conv(x)
 
         if self.has_shortcut:
-            if self.drop_rate > 0:
-                result = self.dropout(result)
+            # if self.drop_rate > 0:
+            result = self.dropout(result)
 
             result += x
 
