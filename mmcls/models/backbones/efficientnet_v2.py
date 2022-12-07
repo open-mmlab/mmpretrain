@@ -10,7 +10,7 @@ from torch import Tensor
 
 from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.registry import MODELS
-nn.Conv2d()
+
 
 class ConvBNAct(nn.Module):
 
