@@ -3,13 +3,14 @@ from functools import partial
 from typing import Callable, Optional
 
 import torch.nn as nn
+import torch.nn.functional
 from mmcv.cnn.bricks import DropPath
 from mmengine.model import Sequential
 from torch import Tensor
 
 from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.registry import MODELS
-
+nn.Conv2d()
 
 class ConvBNAct(nn.Module):
 
@@ -19,11 +20,12 @@ class ConvBNAct(nn.Module):
                  kernel_size: int = 3,
                  stride: int = 1,
                  groups: int = 1,
+                 padding: int = 1,
                  norm_layer: Optional[Callable[..., nn.Module]] = None,
                  activation_layer: Optional[Callable[..., nn.Module]] = None):
         super(ConvBNAct, self).__init__()
 
-        padding = (kernel_size - 1) // 2
+        # padding = (kernel_size - 1) // 2
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         if activation_layer is None:
@@ -76,13 +78,15 @@ class MBConv(nn.Module):
 
     def __init__(self, kernel_size: int, input_c: int, out_c: int,
                  expand_ratio: int, stride: int, se_ratio: float,
-                 drop_rate: float, norm_layer: Callable[..., nn.Module]):
+                 padding: int, drop_rate: float,
+                 norm_layer: Callable[..., nn.Module]):
         super(MBConv, self).__init__()
 
         if stride not in [1, 2]:
             raise ValueError('illegal stride value.')
 
         self.has_shortcut = (stride == 1 and input_c == out_c)
+        self.padding = padding
 
         activation_layer = nn.SiLU  # alias Swish
         expanded_c = input_c * expand_ratio
@@ -104,6 +108,7 @@ class MBConv(nn.Module):
             kernel_size=kernel_size,
             stride=stride,
             groups=expanded_c,
+            padding=self.padding,
             norm_layer=norm_layer,
             activation_layer=activation_layer)
 
@@ -145,13 +150,15 @@ class FusedMBConv(nn.Module):
 
     def __init__(self, kernel_size: int, input_c: int, out_c: int,
                  expand_ratio: int, stride: int, se_ratio: float,
-                 drop_rate: float, norm_layer: Callable[..., nn.Module]):
+                 padding: int, drop_rate: float,
+                 norm_layer: Callable[..., nn.Module]):
         super(FusedMBConv, self).__init__()
 
         assert stride in [1, 2]
         assert se_ratio == 0
 
         self.has_shortcut = stride == 1 and input_c == out_c
+        self.padding = padding
         self.drop_rate = drop_rate
 
         self.has_expansion = expand_ratio != 1
@@ -167,6 +174,7 @@ class FusedMBConv(nn.Module):
                 expanded_c,
                 kernel_size=kernel_size,
                 stride=stride,
+                padding=self.padding,
                 norm_layer=norm_layer,
                 activation_layer=activation_layer)
 
@@ -274,6 +282,7 @@ class EfficientNetV2(BaseBackbone):
                 stem_filter_num,
                 kernel_size=3,
                 stride=2,
+                padding=0,
                 norm_layer=norm_layer))  # active function default to SiLU
 
         total_blocks = sum([i[0] for i in model_cnf])
@@ -291,6 +300,7 @@ class EfficientNetV2(BaseBackbone):
                        expand_ratio=cnf[3],
                        stride=cnf[2] if i == 0 else 1,
                        se_ratio=cnf[-2],
+                       padding=0 if cnf[2] == 2 and i == 0 else 1,
                        drop_rate=drop_connect_rate * block_id / total_blocks,
                        norm_layer=norm_layer))
                 block_id += 1
