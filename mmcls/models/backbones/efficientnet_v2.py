@@ -239,7 +239,7 @@ class EfficientNetV2(BaseBackbone):
     def __init__(self,
                  model_cnf: str = 's',
                  num_features: int = 1280,
-                 drop_connect_rate: float = 0.2,
+                 drop_connect_rate: float = 0.0,
                  frozen_stages: int = 0,
                  norm_eval: bool = False,
                  with_cp: bool = False,
