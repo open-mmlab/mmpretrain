@@ -75,7 +75,9 @@ class MultiLabelLinearClsHead(MultiLabelClsHead):
         cls_score = self.fc(x)
 
         if sigmoid:
-            pred = torch.sigmoid(cls_score) if cls_score is not None else None
+            # Convert to full precision because sigmoid is sensitive.
+            pred = torch.sigmoid(
+                cls_score.float()) if cls_score is not None else None
         else:
             pred = cls_score
 
