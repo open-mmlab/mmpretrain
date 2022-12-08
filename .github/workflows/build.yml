@@ -35,7 +35,7 @@ jobs:
       UBUNTU_VERSION: ubuntu1804
     strategy:
       matrix:
-        python-version: [3.6]
+        python-version: [3.8]
         torch: [1.8.0]
         include:
           - torch: 1.8.0
@@ -84,43 +84,24 @@ jobs:
       UBUNTU_VERSION: ubuntu1804
     strategy:
       matrix:
-        python-version: [3.7]
-        torch: [1.5.0, 1.6.0, 1.7.0, 1.8.0, 1.9.0]
+        torch: [1.5.0, 1.8.0, 1.10.0, 1.13.0]
         include:
           - torch: 1.5.0
             torchvision: 0.6.0
             torch_major: 1.5.0
-          - torch: 1.6.0
-            torchvision: 0.7.0
-            torch_major: 1.6.0
-          - torch: 1.7.0
-            torchvision: 0.8.1
-            torch_major: 1.7.0
+            python-version: '3.7'
           - torch: 1.8.0
             torchvision: 0.9.0
             torch_major: 1.8.0
-          - torch: 1.8.0
-            torchvision: 0.9.0
-            torch_major: 1.8.0
-            python-version: 3.8
-          - torch: 1.8.0
-            torchvision: 0.9.0
-            torch_major: 1.8.0
-            python-version: 3.9
-          - torch: 1.9.0
-            torchvision: 0.10.0
-            torch_major: 1.9.0
+            python-version: '3.8'
           - torch: 1.10.0
             torchvision: 0.11.1
             torch_major: 1.10.0
-          - torch: 1.10.0
-            torchvision: 0.11.1
-            torch_major: 1.10.0
-            python-version: 3.8
-          - torch: 1.10.0
-            torchvision: 0.11.1
-            torch_major: 1.10.0
-            python-version: 3.9
+            python-version: '3.9'
+          - torch: 1.13.0
+            torchvision: 0.14.0
+            torch_major: 1.13.0
+            python-version: '3.10'
 
     steps:
       - uses: actions/checkout@v2
