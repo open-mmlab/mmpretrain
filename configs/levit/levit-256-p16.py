@@ -1,8 +1,7 @@
 _base_ = [
     '../_base_/models/levit-256-p16.py',
     '../_base_/datasets/imagenet_bs64_swin_224.py',
-    '../_base_/default_runtime.py',
-    '../_base_/schedules/imagenet_bs256.py'
+    '../_base_/default_runtime.py', '../_base_/schedules/imagenet_bs256.py'
 ]
 
 dataset_type = 'ImageNet'
@@ -64,8 +63,8 @@ train_dataloader = dict(
     dataset=dict(
         type=dataset_type,
         data_root=r'E:\imagenet',
-        ann_file='meta/train.txt',
-        data_prefix='train',
+        ann_file='meta/val.txt',
+        data_prefix='ILSVRC2012_img_val',
         pipeline=train_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=True),
 )
