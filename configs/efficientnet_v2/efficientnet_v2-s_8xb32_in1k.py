@@ -6,16 +6,26 @@ _base_ = [
 ]
 
 # dataset settings
+dataset_type = 'ImageNet'
+data_preprocessor = dict(
+    num_classes=1000,
+    # RGB format normalization parameters
+    mean=[127.5, 127.5, 127.5],
+    std=[127.5, 127.5, 127.5],
+    # convert image from BGR to RGB
+    to_rgb=True,
+)
+
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='EfficientNetRandomCrop', scale=300),
+    dict(type='EfficientNetRandomCrop', scale=300, crop_padding=0),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(type='PackClsInputs'),
 ]
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='EfficientNetCenterCrop', crop_size=384),
+    dict(type='EfficientNetCenterCrop', crop_size=384, crop_padding=0),
     dict(type='PackClsInputs'),
 ]
 
