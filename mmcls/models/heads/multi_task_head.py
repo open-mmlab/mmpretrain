@@ -130,6 +130,10 @@ class MultiTaskHead(BaseHead):
 
         for task_name, task_samples in predictions_dict.items():
             for data_sample, task_sample in zip(data_samples, task_samples):
+                task_sample.set_field(
+                    task_name in data_sample,
+                    'eval_mask',
+                    field_type='metainfo')
                 if task_name in data_sample:
                     data_sample.get(task_name).update(task_sample)
                 else:

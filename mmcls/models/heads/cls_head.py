@@ -110,7 +110,7 @@ class ClsHead(BaseHead):
     def predict(
         self,
         feats: Tuple[torch.Tensor],
-        data_samples: List[ClsDataSample | None] = None
+        data_samples: List[Union[ClsDataSample, None]] = None
     ) -> List[ClsDataSample]:
         """Inference without augmentation.
 

@@ -73,17 +73,10 @@ class MultiTasksMetric(BaseMetric):
         for task_name in self.task_metrics.keys():
             filtered_data_samples = []
             for data_sample in data_samples:
-                sample_mask = task_name in data_sample
-                if sample_mask:
+                eval_mask = data_sample[task_name]['eval_mask']
+                if eval_mask:
                     filtered_data_samples.append(data_sample[task_name])
             for metric in self._metrics[task_name]:
-                # Current implementation is only comptaible
-                # With 2 types of metrics :
-                # * Cls Metrics
-                # * Nested Cls Metrics
-                # In order to make it work with other
-                # non-cls heads/metrics, one will have to
-                # override the current implementation
                 metric.process(data_batch, filtered_data_samples)
 
     def compute_metrics(self, results: list) -> dict:
