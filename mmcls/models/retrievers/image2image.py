@@ -3,6 +3,7 @@ from typing import Callable, List, Optional, Union
 
 import mmengine.dist as dist
 import torch
+import torch.nn as nn
 from mmengine.runner import Runner
 from torch.utils.data import DataLoader
 
@@ -75,8 +76,13 @@ class ImageToImageRetriever(BaseRetriever):
         super(ImageToImageRetriever, self).__init__(
             init_cfg=init_cfg, data_preprocessor=data_preprocessor)
 
-        self.image_encoder = MODELS.build(image_encoder)
-        self.head = MODELS.build(head) if head else None
+        if not isinstance(image_encoder, nn.Module):
+            image_encoder = MODELS.build(image_encoder)
+        if head is not None and not isinstance(head, nn.Module):
+            head = MODELS.build(head)
+
+        self.image_encoder = image_encoder
+        self.head = head
 
         self.similarity = similarity_fn
 
