@@ -134,5 +134,7 @@ class MultiTaskHead(BaseHead):
                     data_sample.get(task_name).update(task_sample)
                 else:
                     data_sample.set_field(task_sample, task_name)
-
+                label = data_sample.get(task_name)
+                task_sample.set_field(
+                    'gt_label' in label, 'eval_mask', field_type='metainfo')
         return data_samples

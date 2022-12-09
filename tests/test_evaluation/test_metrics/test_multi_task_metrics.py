@@ -4,11 +4,11 @@ from unittest import TestCase
 import torch
 
 from mmcls.evaluation.metrics import MultiTasksMetric
-from mmcls.structures import ClsDataSample, MultiTaskDataSample
+from mmcls.structures import ClsDataSample
 
 
 class MultiTaskMetric(TestCase):
-    data = zip([
+    data_pred = [
         {
             'task0': torch.tensor([0.7, 0.0, 0.3]),
             'task1': torch.tensor([0.5, 0.2, 0.3])
@@ -17,21 +17,23 @@ class MultiTaskMetric(TestCase):
             'task0': torch.tensor([0.0, 0.0, 1.0]),
             'task1': torch.tensor([0.0, 0.0, 1.0])
         },
-    ], [{
-        'task0': 0,
-        'task1': 2
-    }, {
-        'task0': 2,
-        'task1': 2
-    }])
-    pred = []
-    for score, label in data:
+    ]
+    data_gt = [{'task0': 0, 'task1': 2}, {'task1': 2}]
+
+    preds = []
+    for i, pred in enumerate(data_pred):
         sample = {}
-        for task_name in score:
-            task_sample = ClsDataSample().set_pred_score(score[task_name])
-            task_sample.set_gt_label(label[task_name])
+        for task_name in pred:
+            task_sample = ClsDataSample().set_pred_score(pred[task_name])
+            if task_name in data_gt[i]:
+                task_sample.set_gt_label(data_gt[i][task_name])
+                task_sample.set_field(True, 'eval_mask', field_type='metainfo')
+            else:
+                task_sample.set_field(
+                    False, 'eval_mask', field_type='metainfo')
             sample[task_name] = task_sample.to_dict()
-        pred.append(sample)
+
+        preds.append(sample)
     data2 = zip([
         {
             'task0': torch.tensor([0.7, 0.0, 0.3]),
@@ -69,17 +71,20 @@ class MultiTaskMetric(TestCase):
                 task_sample = ClsDataSample().set_pred_score(score[task_name])
                 task_sample.set_gt_label(label[task_name])
                 sample[task_name] = task_sample.to_dict()
+                sample[task_name]['eval_mask'] = True
             else:
                 sample[task_name] = {}
+                sample[task_name]['eval_mask'] = True
                 for task_name2 in score[task_name]:
                     task_sample = ClsDataSample().set_pred_score(
                         score[task_name][task_name2])
                     task_sample.set_gt_label(label[task_name][task_name2])
                     sample[task_name][task_name2] = task_sample.to_dict()
+                    sample[task_name][task_name2]['eval_mask'] = True
+
         pred2.append(sample)
 
-    pred3 = [MultiTaskDataSample().to_dict()]
-
+    pred3 = [{'task0': {'eval_mask': False}, 'task1': {'eval_mask': False}}]
     task_metrics = {
         'task0': [dict(type='Accuracy', topk=(1, ))],
         'task1': [
@@ -107,7 +112,7 @@ class MultiTaskMetric(TestCase):
 
         # Test with score (use score instead of label if score exists)
         metric = MultiTasksMetric(self.task_metrics)
-        metric.process(None, self.pred)
+        metric.process(None, self.preds)
         results = metric.evaluate(2)
         self.assertIsInstance(results, dict)
         self.assertAlmostEqual(results['task0_accuracy/top1'], 100)
