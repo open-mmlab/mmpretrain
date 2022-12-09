@@ -1,7 +1,7 @@
 # model settings
 model = dict(
     type='ImageClassifier',
-    backbone=dict(type='EfficientNetV2', model_cnf='s'),
+    backbone=dict(type='EfficientNetV2', arch='s'),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
         type='LinearClsHead',
