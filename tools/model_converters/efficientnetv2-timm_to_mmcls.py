@@ -1,0 +1,92 @@
+# Copyright (c) OpenMMLab. All rights reserved.
+import argparse
+import os.path as osp
+
+import mmengine
+import torch
+from mmengine.runner import CheckpointLoader
+
+
+def convert_efficientnetv2_timm(param):
+    # main change_key
+    param_lst = list(param.keys())
+    op = str(int(param_lst[-9][7]) + 2)
+    new_key = dict()
+    for name in param_lst:
+        data = param[name]
+        if 'blocks' not in name:
+            if 'conv_stem' in name:
+                name = name.replace('conv_stem', 'backbone.layers.0.conv')
+            if 'bn1' in name:
+                name = name.replace('bn1', 'backbone.layers.0.bn')
+            if 'conv_head' in name:
+                # if efficientnet-v2_s/base/b1/b2/b3，op = 7; if m/l/xl，op = 8
+                name = name.replace('conv_head', f'backbone.layers.{op}.conv')
+            if 'bn2' in name:
+                name = name.replace('bn2', f'backbone.layers.{op}.bn')
+            if 'classifier' in name:
+                name = name.replace('classifier', 'head.fc')
+        else:
+            operater = int(name[7])
+            if operater == 0:
+                name = name[:7] + str(operater + 1) + name[8:]
+                name = name.replace('blocks', 'backbone.layers')
+                if 'conv' in name:
+                    name = name.replace('conv', 'project_conv.conv')
+                if 'bn1' in name:
+                    name = name.replace('bn1', 'project_conv.bn')
+            elif operater < 3:
+                name = name[:7] + str(operater + 1) + name[8:]
+                name = name.replace('blocks', 'backbone.layers')
+                if 'conv_exp' in name:
+                    name = name.replace('conv_exp', 'expand_conv.conv')
+                if 'conv_pwl' in name:
+                    name = name.replace('conv_pwl', 'project_conv.conv')
+                if 'bn1' in name:
+                    name = name.replace('bn1', 'expand_conv.bn')
+                if 'bn2' in name:
+                    name = name.replace('bn2', 'project_conv.bn')
+            else:
+                name = name[:7] + str(operater + 1) + name[8:]
+                name = name.replace('blocks', 'backbone.layers')
+                if 'conv_pwl' in name:
+                    name = name.replace('conv_pwl', 'project_conv.conv')
+                if 'conv_pw' in name:
+                    name = name.replace('conv_pw', 'expand_conv.conv')
+                if 'conv_dw' in name:
+                    name = name.replace('conv_dw', 'dwconv.conv')
+                if 'bn1' in name:
+                    name = name.replace('bn1', 'expand_conv.bn')
+                if 'bn2' in name:
+                    name = name.replace('bn2', 'dwconv.bn')
+                if 'bn3' in name:
+                    name = name.replace('bn3', 'project_conv.bn')
+        new_key[name] = data
+    return new_key
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='Convert keys in pretrained van models to mmcls style.')
+    parser.add_argument('src', help='src model path or url')
+    # The dst path must be a full path of the new checkpoint.
+    parser.add_argument('dst', help='save path')
+    args = parser.parse_args()
+
+    checkpoint = CheckpointLoader.load_checkpoint(args.src, map_location='cpu')
+
+    if 'state_dict' in checkpoint:
+        state_dict = checkpoint['state_dict']
+    else:
+        state_dict = checkpoint
+
+    weight = convert_efficientnetv2_timm(state_dict)
+    mmengine.mkdir_or_exist(osp.dirname(args.dst))
+    torch.save(weight, args.dst)
+
+    print('Done!!')
+
+
+if __name__ == '__main__':
+    main()
+
