@@ -1,0 +1,41 @@
+Collections:
+  - Name: BEiTv2
+    Metadata:
+      Architecture:
+        - Attention Dropout
+        - Convolution
+        - Dense Connections
+        - Dropout
+        - GELU
+        - Layer Normalization
+        - Multi-Head Attention
+        - Scaled Dot-Product Attention
+        - Tanh Activation
+    Paper:
+      URL: https://arxiv.org/abs/2208.06366
+      Title: 'BEiT v2: Masked Image Modeling with Vector-Quantized Visual Tokenizers'
+    README: configs/beitv2/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/dev-1.x/mmcls/models/backbones/beit.py
+      Version: v1.0.0rc4
+
+Models:
+  - Name: beitv2-base_3rdparty_in1k
+    In Collection: BEiTv2
+    Metadata:
+      FLOPs: 17581219584
+      Parameters: 86530984
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 86.47
+        Top 5 Accuracy: 97.99
+    Weights: https://download.openmmlab.com/mmclassification/v0/beit/beitv2-base_3rdparty_in1k_20221114-73e11905.pth
+    Converted From:
+      Weights: https://conversationhub.blob.core.windows.net/beit-share-public/beitv2/beitv2_base_patch16_224_pt1k_ft21kto1k.pth
+      Code: https://github.com/microsoft/unilm/tree/master/beit2
+    Config: configs/beitv2/beitv2-base-p16_8xb64_in1k.py

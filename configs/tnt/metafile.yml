@@ -1,0 +1,29 @@
+Collections:
+  - Name: Transformer in Transformer
+    Metadata:
+      Training Data: ImageNet-1k
+    Paper:
+      URL: https://arxiv.org/abs/2103.00112
+      Title: "Transformer in Transformer"
+    README: configs/tnt/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.15.0/mmcls/models/backbones/tnt.py#L203
+      Version: v0.15.0
+
+Models:
+  - Name: tnt-small-p16_3rdparty_in1k
+    Metadata:
+      FLOPs: 3360000000
+      Parameters: 23760000
+    In Collection: Transformer in Transformer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 81.52
+          Top 5 Accuracy: 95.73
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/tnt/tnt-small-p16_3rdparty_in1k_20210903-c56ee7df.pth
+    Config: configs/tnt/tnt-s-p16_16xb64_in1k.py
+    Converted From:
+      Weights: https://github.com/contrastive/pytorch-image-models/releases/download/TNT/tnt_s_patch16_224.pth.tar
+      Code: https://github.com/contrastive/pytorch-image-models/blob/809271b0f3e5d9be4e11c0c5cec1dbba8b5e2c60/timm/models/tnt.py#L144

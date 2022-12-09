@@ -1,0 +1,78 @@
+Collections:
+  - Name: Conformer
+    Metadata:
+      Training Data: ImageNet-1k
+      Architecture:
+        - Layer Normalization
+        - Scaled Dot-Product Attention
+        - Dropout
+    Paper:
+      URL: https://arxiv.org/abs/2105.03889
+      Title: "Conformer: Local Features Coupling Global Representations for Visual Recognition"
+    README: configs/conformer/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.19.0/mmcls/models/backbones/conformer.py
+      Version: v0.19.0
+
+Models:
+  - Name: conformer-tiny-p16_3rdparty_8xb128_in1k
+    In Collection: Conformer
+    Config: configs/conformer/conformer-tiny-p16_8xb128_in1k.py
+    Metadata:
+      FLOPs: 4899611328
+      Parameters: 23524704
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 81.31
+          Top 5 Accuracy: 95.60
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/conformer/conformer-tiny-p16_3rdparty_8xb128_in1k_20211206-f6860372.pth
+    Converted From:
+      Weights: https://drive.google.com/file/d/19SxGhKcWOR5oQSxNUWUM2MGYiaWMrF1z/view?usp=sharing
+      Code: https://github.com/pengzhiliang/Conformer/blob/main/models.py#L65
+  - Name: conformer-small-p16_3rdparty_8xb128_in1k
+    In Collection: Conformer
+    Config: configs/conformer/conformer-small-p16_8xb128_in1k.py
+    Metadata:
+      FLOPs: 10311309312
+      Parameters: 37673424
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.32
+          Top 5 Accuracy: 96.46
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/conformer/conformer-small-p16_3rdparty_8xb128_in1k_20211206-3065dcf5.pth
+    Converted From:
+      Weights: https://drive.google.com/file/d/1mpOlbLaVxOfEwV4-ha78j_1Ebqzj2B83/view?usp=sharing
+      Code: https://github.com/pengzhiliang/Conformer/blob/main/models.py#L73
+  - Name: conformer-small-p32_8xb128_in1k
+    In Collection: Conformer
+    Config: configs/conformer/conformer-small-p32_8xb128_in1k.py
+    Metadata:
+      FLOPs: 7087281792
+      Parameters: 38853072
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 81.96
+          Top 5 Accuracy: 96.02
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/conformer/conformer-small-p32_8xb128_in1k_20211206-947a0816.pth
+  - Name: conformer-base-p16_3rdparty_8xb128_in1k
+    In Collection: Conformer
+    Config: configs/conformer/conformer-base-p16_8xb128_in1k.py
+    Metadata:
+      FLOPs: 22892078080
+      Parameters: 83289136
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.82
+          Top 5 Accuracy: 96.59
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/conformer/conformer-base-p16_3rdparty_8xb128_in1k_20211206-bfdf8637.pth
+    Converted From:
+      Weights: https://drive.google.com/file/d/1oeQ9LSOGKEUaYGu7WTlUGl3KDsQIi0MA/view?usp=sharing
+      Code: https://github.com/pengzhiliang/Conformer/blob/main/models.py#L89

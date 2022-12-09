@@ -1,0 +1,70 @@
+Collections:
+  - Name: Visual-Attention-Network
+    Metadata:
+      Training Data: ImageNet-1k
+      Training Techniques:
+        - AdamW
+        - Weight Decay
+      Architecture:
+        - Visual Attention Network
+    Paper:
+      URL: https://arxiv.org/pdf/2202.09741v2.pdf
+      Title: "Visual Attention Network"
+    README: configs/van/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.23.0/mmcls/models/backbones/van.py
+      Version: v0.23.0
+
+Models:
+  - Name: van-tiny_8xb128_in1k
+    Metadata:
+      Parameters: 4110000      # 4.11M
+      FLOPs: 880000000   # 0.88G
+    In Collection: Visual-Attention-Network
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 75.41
+          Top 5 Accuracy: 93.02
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/van/van-tiny_8xb128_in1k_20220501-385941af.pth
+    Config: configs/van/van-tiny_8xb128_in1k.py
+  - Name: van-small_8xb128_in1k
+    Metadata:
+      Parameters:  13860000          # 13.86M
+      FLOPs: 2520000000    # 2.52G
+    In Collection: Visual-Attention-Network
+    Results:
+        - Dataset: ImageNet-1k
+          Metrics:
+            Top 1 Accuracy: 81.01
+            Top 5 Accuracy: 95.63
+          Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/van/van-small_8xb128_in1k_20220501-17bc91aa.pth
+    Config: configs/van/van-small_8xb128_in1k.py
+  - Name: van-base_8xb128_in1k
+    Metadata:
+      Parameters: 26580000            # 26.58M
+      FLOPs: 5030000000                # 5.03G
+    In Collection: Visual-Attention-Network
+    Results:
+        - Dataset: ImageNet-1k
+          Metrics:
+            Top 1 Accuracy: 82.80
+            Top 5 Accuracy: 96.21
+          Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/van/van-base_8xb128_in1k_20220501-6a4cc31b.pth
+    Config: configs/van/van-base_8xb128_in1k.py
+  - Name: van-large_8xb128_in1k
+    Metadata:
+      Parameters: 44770000              # 44.77 M
+      FLOPs: 8990000000              # 8.99G
+    In Collection: Visual-Attention-Network
+    Results:
+        - Dataset: ImageNet-1k
+          Metrics:
+            Top 1 Accuracy: 83.86
+            Top 5 Accuracy: 96.73
+          Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/van/van-large_8xb128_in1k_20220501-f212ba21.pth
+    Config: configs/van/van-large_8xb128_in1k.py

@@ -1,0 +1,34 @@
+Collections:
+  - Name: MobileNet V2
+    Metadata:
+      Training Data: ImageNet-1k
+      Training Techniques:
+        - SGD with Momentum
+        - Weight Decay
+      Training Resources: 8x V100 GPUs
+      Epochs: 300
+      Batch Size: 256
+      Architecture:
+        - MobileNet V2
+    Paper:
+      URL: https://arxiv.org/abs/1801.04381
+      Title: "MobileNetV2: Inverted Residuals and Linear Bottlenecks"
+    README: configs/mobilenet_v2/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.15.0/mmcls/models/backbones/mobilenet_v2.py#L101
+      Version: v0.15.0
+
+Models:
+  - Name: mobilenet-v2_8xb32_in1k
+    Metadata:
+      FLOPs: 319000000
+      Parameters: 3500000
+    In Collection: MobileNet V2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 71.86
+          Top 5 Accuracy: 90.42
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/mobilenet_v2/mobilenet_v2_batch256_imagenet_20200708-3b2dc3af.pth
+    Config: configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py

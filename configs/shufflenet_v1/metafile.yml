@@ -1,0 +1,35 @@
+Collections:
+  - Name: Shufflenet V1
+    Metadata:
+      Training Data: ImageNet-1k
+      Training Techniques:
+        - SGD with Momentum
+        - Weight Decay
+        - No BN decay
+      Training Resources: 8x 1080 GPUs
+      Epochs: 300
+      Batch Size: 1024
+      Architecture:
+        - Shufflenet V1
+    Paper:
+      URL: https://openaccess.thecvf.com/content_cvpr_2018/html/Zhang_ShuffleNet_An_Extremely_CVPR_2018_paper.html
+      Title: "ShuffleNet: An Extremely Efficient Convolutional Neural Network for Mobile Devices"
+    README: configs/shufflenet_v1/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.15.0/mmcls/models/backbones/shufflenet_v1.py#L152
+      Version: v0.15.0
+
+Models:
+  - Name: shufflenet-v1-1x_16xb64_in1k
+    Metadata:
+      FLOPs: 146000000
+      Parameters: 1870000
+    In Collection: Shufflenet V1
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 68.13
+          Top 5 Accuracy: 87.81
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/shufflenet_v1/shufflenet_v1_batch1024_imagenet_20200804-5d6cec73.pth
+    Config: configs/shufflenet_v1/shufflenet-v1-1x_16xb64_in1k.py
