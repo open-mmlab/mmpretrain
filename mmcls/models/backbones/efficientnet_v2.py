@@ -1,11 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import math
 from functools import partial
-from typing import Callable, Optional, Tuple, List
+from typing import Callable, List, Optional, Tuple
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import math
 from mmcv.cnn.bricks import DropPath
 from mmengine.model import Sequential
 from torch import Tensor
@@ -14,36 +14,60 @@ from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.registry import MODELS
 
 
+# Copy from timm
 # Calculate asymmetric TensorFlow-like 'SAME' padding for a convolution
 def get_same_padding(x: int, k: int, s: int, d: int):
     return max((math.ceil(x / s) - 1) * s + (k - 1) * d + 1 - x, 0)
 
+
 # Dynamically pad input x with 'SAME' padding for conv with specified args
-def pad_same(x, k: List[int], s: List[int], d: List[int] = (1, 1), value: float = 0):
+def pad_same(x,
+             k: List[int],
+             s: List[int],
+             d: List[int] = (1, 1),
+             value: float = 0):
     ih, iw = x.size()[-2:]
-    pad_h, pad_w = get_same_padding(ih, k[0], s[0], d[0]), get_same_padding(iw, k[1], s[1], d[1])
+    pad_h, pad_w = get_same_padding(ih, k[0], s[0], d[0]), get_same_padding(
+        iw, k[1], s[1], d[1])
     if pad_h > 0 or pad_w > 0:
-        x = F.pad(x, [pad_w // 2, pad_w - pad_w // 2, pad_h // 2, pad_h - pad_h // 2], value=value)
+        x = F.pad(
+            x,
+            [pad_w // 2, pad_w - pad_w // 2, pad_h // 2, pad_h - pad_h // 2],
+            value=value)
     return x
 
-def conv2d_same(
-        x, weight: torch.Tensor, bias: Optional[torch.Tensor] = None, stride: Tuple[int, int] = (1, 1),
-        padding: Tuple[int, int] = (0, 0), dilation: Tuple[int, int] = (1, 1), groups: int = 1):
+
+def conv2d_same(x,
+                weight: torch.Tensor,
+                bias: Optional[torch.Tensor] = None,
+                stride: Tuple[int, int] = (1, 1),
+                padding: Tuple[int, int] = (0, 0),
+                dilation: Tuple[int, int] = (1, 1),
+                groups: int = 1):
     x = pad_same(x, weight.shape[-2:], stride, dilation)
     return F.conv2d(x, weight, bias, stride, (0, 0), dilation, groups)
 
 
 class Conv2dSame(nn.Conv2d):
-    """ Tensorflow like 'SAME' convolution wrapper for 2D convolutions
-    """
+    """Tensorflow like 'SAME' convolution wrapper for 2D convolutions."""
 
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1,
-                 padding=0, dilation=1, groups=1, bias=True):
-        super(Conv2dSame, self).__init__(
-            in_channels, out_channels, kernel_size, stride, 0, dilation, groups, bias)
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 kernel_size,
+                 stride=1,
+                 padding=0,
+                 dilation=1,
+                 groups=1,
+                 bias=True):
+        super(Conv2dSame,
+              self).__init__(in_channels, out_channels, kernel_size, stride, 0,
+                             dilation, groups, bias)
 
     def forward(self, x):
-        return conv2d_same(x, self.weight, self.bias, self.stride, self.padding, self.dilation, self.groups)
+        return conv2d_same(x, self.weight, self.bias, self.stride,
+                           self.padding, self.dilation, self.groups)
+
 
 class ConvBNAct(nn.Module):
 
@@ -339,7 +363,7 @@ class EfficientNetV2(BaseBackbone):
         total_blocks = sum([i[0] for i in model_cnf])
         block_id = 0
 
-        for idx,cnf in enumerate(model_cnf):
+        for idx, cnf in enumerate(model_cnf):
             blocks = []
             repeats = cnf[0]
             op = FusedMBConv if cnf[-1] == 0 else MBConv
@@ -364,29 +388,10 @@ class EfficientNetV2(BaseBackbone):
                 kernel_size=1,
                 norm_layer=norm_layer))
 
-        # head = OrderedDict()
-        # num_classes = 1000
-        # head.update({"project_conv": ConvBNAct(head_input_c,
-        #                                        num_features,
-        #                                        kernel_size=1,
-        #                                        norm_layer=norm_layer)})
-        # 激活函数默认是SiLU
-        #
-        # head.update({"avgpool": nn.AdaptiveAvgPool2d(1)})
-        # head.update({"flatten": nn.Flatten()})
-        #
-        # if dropout_rate > 0:
-        #     head.update({"dropout": nn.Dropout(p=dropout_rate,
-        #                   inplace=True)})
-        # head.update({"classifier": nn.Linear(num_features, num_classes)})
-        #
-        # self.head = nn.Sequential(head)
-
     def forward(self, x: Tensor) -> Tensor:
         outs = []
         for i, layer in enumerate(self.layers):
             x = layer(x)
-        # x = self.head(x)
         outs.append(x)
         return tuple(outs)
 
