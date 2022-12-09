@@ -155,7 +155,7 @@ class MBConv(nn.Module):
         activation_layer = nn.SiLU  # alias Swish
         expanded_c = input_c * expand_ratio
 
-        # 在EfficientNetV2中，MBConv中不存在expansion=1的情况所以conv_pw肯定存在
+        # in EfficientNetV2，MBConv's expansion!=1
         assert expand_ratio != 1
         # Point-wise expansion
         self.expand_conv = ConvBNAct(
@@ -184,11 +184,11 @@ class MBConv(nn.Module):
             out_planes=out_c,
             kernel_size=1,
             norm_layer=norm_layer,
-            activation_layer=nn.Identity)  # 注意这里没有激活函数，传入Identity
+            activation_layer=nn.Identity)  # no active function，is Identity
 
         self.out_channels = out_c
 
-        # 只有在使用shortcut连接时才使用dropout层
+        # only has_shortcut , need dropout layer
         self.drop_rate = drop_rate
         if self.has_shortcut and drop_rate > 0:
             self.dropout = DropPath(drop_rate)
@@ -227,7 +227,7 @@ class FusedMBConv(nn.Module):
         activation_layer = nn.SiLU  # alias Swish
         expanded_c = input_c * expand_ratio
 
-        # 只有当expand ratio不等于1时才有expand conv
+        # when expand ratio!=1, need expand conv
         if self.has_expansion:
             # Expansion convolution
             self.expand_conv = ConvBNAct(
@@ -243,20 +243,20 @@ class FusedMBConv(nn.Module):
                 out_c,
                 kernel_size=1,
                 norm_layer=norm_layer,
-                activation_layer=nn.Identity)  # 注意没有激活函数
+                activation_layer=nn.Identity)  # no active
         else:
-            # 当只有project_conv时的情况
+            # only project_conv
             self.project_conv = ConvBNAct(
                 input_c,
                 out_c,
                 kernel_size=kernel_size,
                 stride=stride,
                 norm_layer=norm_layer,
-                activation_layer=activation_layer)  # 注意有激活函数
+                activation_layer=activation_layer)  # has active
 
         self.out_channels = out_c
 
-        # 只有在使用shortcut连接时才使用dropout层
+        # only has_shortcut , need dropout layer
         self.drop_rate = drop_rate
         if self.has_shortcut and drop_rate > 0:
             self.dropout = DropPath(drop_rate)
@@ -282,8 +282,9 @@ class FusedMBConv(nn.Module):
 @MODELS.register_module()
 class EfficientNetV2(BaseBackbone):
     # repeat, kernel, stride, expansion, in_c, out_c, se_ratio, operator
+    # b0 is same as base
     arch_settings = {
-        'base': [[1, 3, 1, 1, 16, 16, 0, 0], [2, 3, 2, 4, 16, 32, 0, 0],
+        'base': [[1, 3, 1, 1, 32, 16, 0, 0], [2, 3, 2, 4, 16, 32, 0, 0],
                  [2, 3, 2, 4, 32, 48, 0, 0], [3, 3, 2, 4, 48, 96, 0.25, 1],
                  [5, 3, 1, 6, 96, 112, 0.25, 1],
                  [8, 3, 2, 6, 112, 192, 0.25, 1]],
@@ -293,29 +294,50 @@ class EfficientNetV2(BaseBackbone):
               [15, 3, 2, 6, 160, 256, 0.25, 1]],
         'm': [[3, 3, 1, 1, 24, 24, 0, 0], [5, 3, 2, 4, 24, 48, 0, 0],
               [5, 3, 2, 4, 48, 80, 0, 0], [7, 3, 2, 4, 80, 160, 0.25, 1],
-              [14, 3, 1, 6, 160, 176, 0.25,
-               1], [18, 3, 2, 6, 176, 304, 0.25, 1],
+              [14, 3, 1, 6, 160, 176, 0.25, 1],
+              [18, 3, 2, 6, 176, 304, 0.25, 1],
               [5, 3, 1, 6, 304, 512, 0.25, 1]],
         'l': [[4, 3, 1, 1, 32, 32, 0, 0], [7, 3, 2, 4, 32, 64, 0, 0],
               [7, 3, 2, 4, 64, 96, 0, 0], [10, 3, 2, 4, 96, 192, 0.25, 1],
-              [19, 3, 1, 6, 192, 224, 0.25,
-               1], [25, 3, 2, 6, 224, 384, 0.25, 1],
+              [19, 3, 1, 6, 192, 224, 0.25, 1],
+              [25, 3, 2, 6, 224, 384, 0.25, 1],
               [7, 3, 1, 6, 384, 640, 0.25, 1]],
         'xl': [[4, 3, 1, 1, 32, 32, 0, 0], [8, 3, 2, 4, 32, 64, 0, 0],
                [8, 3, 2, 4, 64, 96, 0, 0], [16, 3, 2, 4, 96, 192, 0.25, 1],
                [24, 3, 1, 6, 192, 256, 0.25, 1],
                [32, 3, 2, 6, 256, 512, 0.25, 1],
                [8, 3, 1, 6, 512, 640, 0.25, 1]],
+        'b0': [[1, 3, 1, 1, 32, 16, 0, 0], [2, 3, 2, 4, 16, 32, 0, 0],
+               [2, 3, 2, 4, 32, 48, 0, 0], [3, 3, 2, 4, 48, 96, 0.25, 1],
+               [5, 3, 1, 6, 96, 112, 0.25, 1],
+               [8, 3, 2, 6, 112, 192, 0.25, 1]],
+        'b1': [[2, 3, 1, 1, 32, 16, 0, 0], [3, 3, 2, 4, 16, 32, 0, 0],
+               [3, 3, 2, 4, 32, 48, 0, 0], [4, 3, 2, 4, 48, 96, 0.25, 1],
+               [6, 3, 1, 6, 96, 112, 0.25, 1],
+               [9, 3, 2, 6, 112, 192, 0.25, 1]],
+        'b2': [[2, 3, 1, 1, 32, 16, 0, 0], [3, 3, 2, 4, 16, 32, 0, 0],
+               [3, 3, 2, 4, 32, 56, 0, 0], [4, 3, 2, 4, 56, 104, 0.25, 1],
+               [6, 3, 1, 6, 104, 120, 0.25, 1],
+               [10, 3, 2, 6, 120, 208, 0.25, 1]],
+        'b3': [[2, 3, 1, 1, 40, 16, 0, 0], [3, 3, 2, 4, 16, 40, 0, 0],
+               [3, 3, 2, 4, 40, 56, 0, 0], [5, 3, 2, 4, 56, 112, 0.25, 1],
+               [7, 3, 1, 6, 112, 136, 0.25, 1],
+               [12, 3, 2, 6, 136, 232, 0.25, 1]]
     }
 
     def __init__(self,
+<<<<<<< HEAD
                  model_cnf: str = 's',
 <<<<<<< HEAD
 <<<<<<< HEAD
+=======
+                 arch: str = 's',
+>>>>>>> 54e3689... add config file and modify arch
                  num_features: int = 1280,
 <<<<<<< HEAD
 <<<<<<< HEAD
                  drop_connect_rate: float = 0.0,
+<<<<<<< HEAD
 =======
 =======
                  num_features: int = 1280,
@@ -328,6 +350,9 @@ class EfficientNetV2(BaseBackbone):
 =======
                  drop_connect_rate: float = 0.0,
 >>>>>>> 6ed2461... update model file
+=======
+                 out_indices=(6,),
+>>>>>>> 54e3689... add config file and modify arch
                  frozen_stages: int = 0,
                  norm_eval: bool = False,
                  with_cp: bool = False,
@@ -340,18 +365,19 @@ class EfficientNetV2(BaseBackbone):
                  ]):
         super(EfficientNetV2, self).__init__(init_cfg)
 
+        self.out_indices = out_indices
         self.frozen_stages = frozen_stages
         self.norm_eval = norm_eval
         self.with_cp = with_cp
 
         self.layers = nn.ModuleList()
-        model_cnf = self.arch_settings[model_cnf]
+        arch = self.arch_settings[arch]
 
-        for cnf in model_cnf:
+        for cnf in arch:
             assert len(cnf) == 8
 
         norm_layer = partial(nn.BatchNorm2d, eps=1e-3, momentum=0.1)
-        stem_filter_num = model_cnf[0][4]
+        stem_filter_num = arch[0][4]
         self.layers.append(
             ConvBNAct(
                 3,
@@ -360,10 +386,10 @@ class EfficientNetV2(BaseBackbone):
                 stride=2,
                 norm_layer=norm_layer))  # active function default to SiLU
 
-        total_blocks = sum([i[0] for i in model_cnf])
+        total_blocks = sum([i[0] for i in arch])
         block_id = 0
 
-        for idx, cnf in enumerate(model_cnf):
+        for idx, cnf in enumerate(arch):
             blocks = []
             repeats = cnf[0]
             op = FusedMBConv if cnf[-1] == 0 else MBConv
@@ -380,7 +406,7 @@ class EfficientNetV2(BaseBackbone):
                 block_id += 1
             self.layers.append(Sequential(*blocks))
 
-        head_input_c = model_cnf[-1][-3]
+        head_input_c = arch[-1][-3]
         self.layers.append(
             ConvBNAct(
                 head_input_c,
