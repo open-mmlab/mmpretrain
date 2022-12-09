@@ -425,8 +425,8 @@ class SingleLabelMetric(BaseMetric):
                 num_classes = self.num_classes or data_sample.get(
                     'num_classes')
                 assert num_classes is not None, \
-                    'The `num_classes` must be specified if `pred_label` '\
-                    'has only `label`.'
+                    'The `num_classes` must be specified if `pred_label` has '\
+                    'only `label`.'
                 result['pred_label'] = pred_label['label'].cpu()
                 result['num_classes'] = num_classes
             result['gt_label'] = gt_label['label'].cpu()
