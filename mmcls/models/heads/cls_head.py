@@ -144,10 +144,9 @@ class ClsHead(BaseHead):
 
         for data_sample, score, label in zip(data_samples, pred_scores,
                                              pred_labels):
-            data_sample_ = data_sample
             if data_sample is None:
-                data_sample_ = ClsDataSample()
+                data_sample = ClsDataSample()
 
-            data_sample_.set_pred_score(score).set_pred_label(label)
-            out_data_samples.append(data_sample_)
+            data_sample.set_pred_score(score).set_pred_label(label)
+            out_data_samples.append(data_sample)
         return out_data_samples
