@@ -1,4 +1,0 @@
-mmcv>=2.0.0rc1
-mmengine
-torch
-torchvision
