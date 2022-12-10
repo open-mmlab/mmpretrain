@@ -5,278 +5,143 @@ from typing import Callable, List, Optional, Tuple
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from mmcv.cnn.bricks import DropPath
-from mmengine.model import Sequential
+import torch.utils.checkpoint as cp
+from mmcv.cnn.bricks import DropPath, ConvModule
+from mmengine.model import BaseModule, Sequential
 from torch import Tensor
 
 from mmcls.models.backbones.base_backbone import BaseBackbone
+from mmcls.models.utils import InvertedResidual, SELayer, make_divisible
 from mmcls.registry import MODELS
 
 
-# Copy from timm
-# Calculate asymmetric TensorFlow-like 'SAME' padding for a convolution
-def get_same_padding(x: int, k: int, s: int, d: int):
-    return max((math.ceil(x / s) - 1) * s + (k - 1) * d + 1 - x, 0)
+# copy from efficientnetv1
+class EdgeResidual(BaseModule):
+    """Edge Residual Block.
+
+    Args:
+        in_channels (int): The input channels of this module.
+        out_channels (int): The output channels of this module.
+        mid_channels (int): The input channels of the second convolution.
+        kernel_size (int): The kernel size of the first convolution.
+            Defaults to 3.
+        stride (int): The stride of the first convolution. Defaults to 1.
+        se_cfg (dict, optional): Config dict for se layer. Defaults to None,
+            which means no se layer.
+        with_residual (bool): Use residual connection. Defaults to True.
+        conv_cfg (dict, optional): Config dict for convolution layer.
+            Defaults to None, which means using conv2d.
+        norm_cfg (dict): Config dict for normalization layer.
+            Defaults to ``dict(type='BN')``.
+        act_cfg (dict): Config dict for activation layer.
+            Defaults to ``dict(type='ReLU')``.
+        drop_path_rate (float): stochastic depth rate. Defaults to 0.
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+            memory while slowing down the training speed. Defaults to False.
+        init_cfg (dict | list[dict], optional): Initialization config dict.
+    """
+
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 mid_channels,
+                 kernel_size=3,
+                 stride=1,
+                 se_cfg=None,
+                 with_residual=True,
+                 conv_cfg=None,
+                 norm_cfg=dict(type='BN'),
+                 act_cfg=dict(type='ReLU'),
+                 drop_path_rate=0.,
+                 with_cp=False,
+                 init_cfg=None):
+        super(EdgeResidual, self).__init__(init_cfg=init_cfg)
+        assert stride in [1, 2]
+        self.with_cp = with_cp
+        self.drop_path = DropPath(
+            drop_path_rate) if drop_path_rate > 0 else nn.Identity()
+        self.with_se = se_cfg is not None
+        self.with_residual = (
+                stride == 1 and in_channels == out_channels and with_residual)
+
+        if self.with_se:
+            assert isinstance(se_cfg, dict)
+
+        self.conv1 = ConvModule(
+            in_channels=in_channels,
+            out_channels=mid_channels,
+            kernel_size=kernel_size,
+            stride=1,
+            padding=kernel_size // 2,
+            conv_cfg=conv_cfg,
+            norm_cfg=norm_cfg,
+            act_cfg=act_cfg)
+
+        if self.with_se:
+            self.se = SELayer(**se_cfg)
+
+        self.conv2 = ConvModule(
+            in_channels=mid_channels,
+            out_channels=out_channels,
+            kernel_size=1,
+            stride=stride,
+            padding=0,
+            conv_cfg=conv_cfg,
+            norm_cfg=norm_cfg,
+            act_cfg=None)
+
+    def forward(self, x):
+
+        def _inner_forward(x):
+            out = x
+            out = self.conv1(out)
+
+            if self.with_se:
+                out = self.se(out)
+
+            out = self.conv2(out)
+
+            if self.with_residual:
+                return x + self.drop_path(out)
+            else:
+                return out
+
+        if self.with_cp and x.requires_grad:
+            out = cp.checkpoint(_inner_forward, x)
+        else:
+            out = _inner_forward(x)
+
+        return out
 
 
-# Dynamically pad input x with 'SAME' padding for conv with specified args
-def pad_same(x,
-             k: List[int],
-             s: List[int],
-             d: List[int] = (1, 1),
-             value: float = 0):
-    ih, iw = x.size()[-2:]
-    pad_h, pad_w = get_same_padding(ih, k[0], s[0], d[0]), get_same_padding(
-        iw, k[1], s[1], d[1])
-    if pad_h > 0 or pad_w > 0:
-        x = F.pad(
-            x,
-            [pad_w // 2, pad_w - pad_w // 2, pad_h // 2, pad_h - pad_h // 2],
-            value=value)
-    return x
-
-
-def conv2d_same(x,
-                weight: torch.Tensor,
-                bias: Optional[torch.Tensor] = None,
-                stride: Tuple[int, int] = (1, 1),
-                padding: Tuple[int, int] = (0, 0),
-                dilation: Tuple[int, int] = (1, 1),
-                groups: int = 1):
-    x = pad_same(x, weight.shape[-2:], stride, dilation)
-    return F.conv2d(x, weight, bias, stride, (0, 0), dilation, groups)
-
-
-class Conv2dSame(nn.Conv2d):
-    """Tensorflow like 'SAME' convolution wrapper for 2D convolutions."""
-
+class ConvWSkip(BaseModule):
     def __init__(self,
                  in_channels,
                  out_channels,
                  kernel_size,
                  stride=1,
-                 padding=0,
-                 dilation=1,
-                 groups=1,
-                 bias=True):
-        super(Conv2dSame,
-              self).__init__(in_channels, out_channels, kernel_size, stride, 0,
-                             dilation, groups, bias)
-
-    def forward(self, x):
-        return conv2d_same(x, self.weight, self.bias, self.stride,
-                           self.padding, self.dilation, self.groups)
-
-
-class ConvBNAct(nn.Module):
-
-    def __init__(self,
-                 in_planes: int,
-                 out_planes: int,
-                 kernel_size: int = 3,
-                 stride: int = 1,
-                 groups: int = 1,
-                 padding: int = 1,
-                 norm_layer: Optional[Callable[..., nn.Module]] = None,
-                 activation_layer: Optional[Callable[..., nn.Module]] = None):
-        super(ConvBNAct, self).__init__()
-
-        padding = (kernel_size - 1) // 2
-        if norm_layer is None:
-            norm_layer = nn.BatchNorm2d
-        if activation_layer is None:
-            activation_layer = nn.SiLU  # alias Swish
-
-        if stride == 1:
-            self.conv = nn.Conv2d(
-                in_channels=in_planes,
-                out_channels=out_planes,
-                kernel_size=kernel_size,
-                stride=stride,
-                padding=padding,
-                groups=groups,
-                bias=False)
-        elif stride == 2:
-            self.conv = Conv2dSame(
-                in_channels=in_planes,
-                out_channels=out_planes,
-                kernel_size=kernel_size,
-                stride=stride,
-                groups=groups,
-                bias=False)
-
-        self.bn = norm_layer(out_planes)
-        self.act = activation_layer(inplace=True)
-
-    def forward(self, x):
-        result = self.conv(x)
-        result = self.bn(result)
-        result = self.act(result)
-
-        return result
-
-
-class SqueezeExcite(nn.Module):
-
-    def __init__(
-            self,
-            input_c: int,  # block input channel
-            expand_c: int,  # block expand channel
-            se_ratio: float = 0.25):
-        super(SqueezeExcite, self).__init__()
-        squeeze_c = int(input_c * se_ratio)
-        self.conv_reduce = nn.Conv2d(expand_c, squeeze_c, 1)
-        self.act1 = nn.SiLU(inplace=True)  # alias Swish
-        self.conv_expand = nn.Conv2d(squeeze_c, expand_c, 1)
-        self.act2 = nn.Sigmoid()
-
-    def forward(self, x: Tensor) -> Tensor:
-        scale = x.mean((2, 3), keepdim=True)
-        scale = self.conv_reduce(scale)
-        scale = self.act1(scale)
-        scale = self.conv_expand(scale)
-        scale = self.act2(scale)
-        return scale * x
-
-
-class MBConv(nn.Module):
-
-    def __init__(self, kernel_size: int, input_c: int, out_c: int,
-                 expand_ratio: int, stride: int, se_ratio: float,
-                 drop_rate: float, norm_layer: Callable[..., nn.Module]):
-        super(MBConv, self).__init__()
-
-        if stride not in [1, 2]:
-            raise ValueError('illegal stride value.')
-
-        self.has_shortcut = (stride == 1 and input_c == out_c)
-
-        activation_layer = nn.SiLU  # alias Swish
-        expanded_c = input_c * expand_ratio
-
-        # in EfficientNetV2，MBConv's expansion!=1
-        assert expand_ratio != 1
-        # Point-wise expansion
-        self.expand_conv = ConvBNAct(
-            input_c,
-            expanded_c,
-            kernel_size=1,
-            norm_layer=norm_layer,
-            activation_layer=activation_layer)
-
-        # Depth-wise convolution
-        self.dwconv = ConvBNAct(
-            expanded_c,
-            expanded_c,
+                 skip=True,
+                 drop_path_rate=0.,
+                 conv_cfg=dict(type='Conv2dAdaptivePadding'),
+                 norm_cfg=dict(type='BN', eps=1e-3, momentum=0.1),
+                 act_cfg=dict(type='Swish')):
+        self.conv = ConvModule(
+            in_channels=in_channels,
+            out_channels=out_channels,
             kernel_size=kernel_size,
             stride=stride,
-            groups=expanded_c,
-            norm_layer=norm_layer,
-            activation_layer=activation_layer)
+            conv_cfg=conv_cfg,
+            norm_cfg=norm_cfg,
+            act_cfg=act_cfg)
+        self.has_skip = skip and stride == 1 and in_channels == out_channels
+        self.drop_path = DropPath(drop_path_rate) if drop_path_rate else nn.Identity()
 
-        self.se = SqueezeExcite(input_c, expanded_c,
-                                se_ratio) if se_ratio > 0 else nn.Identity()
-
-        # Point-wise linear projection
-        self.project_conv = ConvBNAct(
-            expanded_c,
-            out_planes=out_c,
-            kernel_size=1,
-            norm_layer=norm_layer,
-            activation_layer=nn.Identity)  # no active function，is Identity
-
-        self.out_channels = out_c
-
-        # only has_shortcut , need dropout layer
-        self.drop_rate = drop_rate
-        if self.has_shortcut and drop_rate > 0:
-            self.dropout = DropPath(drop_rate)
-        else:
-            self.dropout = nn.Identity()
-
-    def forward(self, x: Tensor) -> Tensor:
-        result = self.expand_conv(x)
-        result = self.dwconv(result)
-        result = self.se(result)
-        result = self.project_conv(result)
-
-        if self.has_shortcut:
-            if self.drop_rate > 0:
-                result = self.dropout(result)
-            result += x
-
-        return result
-
-
-class FusedMBConv(nn.Module):
-
-    def __init__(self, kernel_size: int, input_c: int, out_c: int,
-                 expand_ratio: int, stride: int, se_ratio: float,
-                 drop_rate: float, norm_layer: Callable[..., nn.Module]):
-        super(FusedMBConv, self).__init__()
-
-        assert stride in [1, 2]
-        assert se_ratio == 0
-
-        self.has_shortcut = stride == 1 and input_c == out_c
-        self.drop_rate = drop_rate
-
-        self.has_expansion = expand_ratio != 1
-
-        activation_layer = nn.SiLU  # alias Swish
-        expanded_c = input_c * expand_ratio
-
-        # when expand ratio!=1, need expand conv
-        if self.has_expansion:
-            # Expansion convolution
-            self.expand_conv = ConvBNAct(
-                input_c,
-                expanded_c,
-                kernel_size=kernel_size,
-                stride=stride,
-                norm_layer=norm_layer,
-                activation_layer=activation_layer)
-
-            self.project_conv = ConvBNAct(
-                expanded_c,
-                out_c,
-                kernel_size=1,
-                norm_layer=norm_layer,
-                activation_layer=nn.Identity)  # no active
-        else:
-            # only project_conv
-            self.project_conv = ConvBNAct(
-                input_c,
-                out_c,
-                kernel_size=kernel_size,
-                stride=stride,
-                norm_layer=norm_layer,
-                activation_layer=activation_layer)  # has active
-
-        self.out_channels = out_c
-
-        # only has_shortcut , need dropout layer
-        self.drop_rate = drop_rate
-        if self.has_shortcut and drop_rate > 0:
-            self.dropout = DropPath(drop_rate)
-        else:
-            self.dropout = nn.Identity()
-
-    def forward(self, x: Tensor) -> Tensor:
-        if self.has_expansion:
-            result = self.expand_conv(x)
-            result = self.project_conv(result)
-        else:
-            result = self.project_conv(x)
-
-        if self.has_shortcut:
-            if self.drop_rate > 0:
-                result = self.dropout(result)
-
-            result += x
-
-        return result
+    def forward(self, x):
+        shortcut = x
+        x = self.conv(x)
+        if self.has_skip:
+            x = self.drop_path(x) + shortcut
+        return x
 
 
 @MODELS.register_module()
@@ -327,10 +192,12 @@ class EfficientNetV2(BaseBackbone):
 
     def __init__(self,
                  arch: str = 's',
-                 num_features: int = 1280,
-                 drop_connect_rate: float = 0.0,
+                 out_channels: int = 1280,
                  out_indices=(6,),
                  frozen_stages: int = 0,
+                 conv_cfg=dict(type='Conv2dAdaptivePadding'),
+                 norm_cfg=dict(type='BN', eps=1e-3, momentum=0.1),
+                 act_cfg=dict(type='Swish'),
                  norm_eval: bool = False,
                  with_cp: bool = False,
                  init_cfg=[
@@ -341,55 +208,100 @@ class EfficientNetV2(BaseBackbone):
                          val=1)
                  ]):
         super(EfficientNetV2, self).__init__(init_cfg)
-
+        assert arch in self.arch_settings, \
+            f'"{arch}" is not one of the arch_settings ' \
+            f'({", ".join(self.arch_settings.keys())})'
+        self.arch = self.arch_settings[arch]
         self.out_indices = out_indices
         self.frozen_stages = frozen_stages
         self.norm_eval = norm_eval
         self.with_cp = with_cp
 
         self.layers = nn.ModuleList()
-        arch = self.arch_settings[arch]
-
-        for cnf in arch:
-            assert len(cnf) == 8
-
-        norm_layer = partial(nn.BatchNorm2d, eps=1e-3, momentum=0.1)
-        stem_filter_num = arch[0][4]
+        self.in_channels = arch[0][4]
+        self.out_channels = out_channels
+        self.conv_cfg = conv_cfg
+        self.norm_cfg = norm_cfg
+        self.act_cfg = act_cfg
         self.layers.append(
-            ConvBNAct(
-                3,
-                stem_filter_num,
+            ConvModule(
+                in_channels=3,
+                out_channels=self.in_channels,
                 kernel_size=3,
                 stride=2,
-                norm_layer=norm_layer))  # active function default to SiLU
-
-        total_blocks = sum([i[0] for i in arch])
-        block_id = 0
-
-        for idx, cnf in enumerate(arch):
-            blocks = []
-            repeats = cnf[0]
-            op = FusedMBConv if cnf[-1] == 0 else MBConv
-            for i in range(repeats):
-                blocks.append(
-                    op(kernel_size=cnf[1],
-                       input_c=cnf[4] if i == 0 else cnf[5],
-                       out_c=cnf[5],
-                       expand_ratio=cnf[3],
-                       stride=cnf[2] if i == 0 else 1,
-                       se_ratio=cnf[-2],
-                       drop_rate=drop_connect_rate * block_id / total_blocks,
-                       norm_layer=norm_layer))
-                block_id += 1
-            self.layers.append(Sequential(*blocks))
-
-        head_input_c = arch[-1][-3]
+                conv_cfg=self.conv_cfg,
+                norm_cfg=self.norm_cfg,
+                act_cfg=self.act_cfg))  # the first conv not in arch
+        self.make_layer()
         self.layers.append(
-            ConvBNAct(
-                head_input_c,
-                num_features,
+            ConvModule(
+                in_channels=self.in_channels,
+                out_channels=self.out_channels,
                 kernel_size=1,
-                norm_layer=norm_layer))
+                stride=1,
+                conv_cfg=self.conv_cfg,
+                norm_cfg=self.norm_cfg,
+                act_cfg=self.act_cfg))  # the last conv not in arch
+
+    def make_layer(self):
+        layer_setting = self.arch
+
+        total_num_blocks = sum([x[0] for x in layer_setting])
+        block_idx = 0
+        dpr = [
+            x.item()
+            for x in torch.linspace(0, self.drop_path_rate, total_num_blocks)
+        ]  # stochastic depth decay rule
+
+        for layer_cfg in layer_setting:
+            layer = []
+            (repeat, kernel_size, stride, expand_ratio, _, out_channels,
+             se_ratio, block_type) = layer_cfg
+            for i in range(repeat):
+                stride = stride if i == 0 else 1
+                if expand_ratio == 1 and block_type == 0:
+                    layer.append(ConvWSkip
+                        (in_channels=self.in_channels,
+                         out_channels=out_channels,
+                         kernel_size=kernel_size,
+                         stride=stride,
+                         skip=True,
+                         drop_path_rate=dpr[block_idx],
+                         conv_cfg=self.conv_cfg,
+                         norm_cfg=self.norm_cfg,
+                         act_cfg=self.act_cfg))
+                    self.in_channels = out_channels
+                else:
+                    mid_channels = int(self.in_channels * expand_ratio)
+                    if se_ratio <= 0:
+                        se_cfg = None
+                    else:
+                        se_cfg = dict(
+                            channels=mid_channels,
+                            ratio=expand_ratio * (1.0/se_ratio),
+                            divisor=1,
+                            act_cfg=(self.act_cfg, dict(type='Sigmoid')))
+                    if block_type == 0:
+                        se_cfg = None
+                        block = EdgeResidual
+                    else:
+                        block = InvertedResidual
+                    layer.append(
+                        block(
+                            in_channels=self.in_channels,
+                            out_channels=out_channels,
+                            mid_channels=mid_channels,
+                            kernel_size=kernel_size,
+                            stride=stride,
+                            se_cfg=se_cfg,
+                            conv_cfg=self.conv_cfg,
+                            norm_cfg=self.norm_cfg,
+                            act_cfg=self.act_cfg,
+                            drop_path_rate=dpr[block_idx],
+                            with_cp=self.with_cp))
+                    self.in_channels = out_channels
+                block_idx += 1
+            self.layers.append(Sequential(*layer))
 
     def forward(self, x: Tensor) -> Tensor:
         outs = []
