@@ -124,7 +124,9 @@ class ConvWSkip(BaseModule):
                  drop_path_rate=0.,
                  conv_cfg=dict(type='Conv2dAdaptivePadding'),
                  norm_cfg=dict(type='BN', eps=1e-3, momentum=0.1),
-                 act_cfg=dict(type='Swish')):
+                 act_cfg=dict(type='Swish'),
+                 init_cfg=None):
+        super(ConvWSkip, self).__init__(init_cfg=init_cfg)
         self.conv = ConvModule(
             in_channels=in_channels,
             out_channels=out_channels,
