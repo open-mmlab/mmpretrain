@@ -11,7 +11,7 @@ from mmengine.model import BaseModule, Sequential
 from torch import Tensor
 
 from mmcls.models.backbones.base_backbone import BaseBackbone
-from mmcls.models.utils import InvertedResidual, SELayer, make_divisible
+from mmcls.models.utils import InvertedResidual, SELayer
 from mmcls.registry import MODELS
 
 
@@ -192,6 +192,7 @@ class EfficientNetV2(BaseBackbone):
 
     def __init__(self,
                  arch: str = 's',
+                 drop_path_rate: float = 0.,
                  out_channels: int = 1280,
                  out_indices=(6,),
                  frozen_stages: int = 0,
@@ -212,13 +213,14 @@ class EfficientNetV2(BaseBackbone):
             f'"{arch}" is not one of the arch_settings ' \
             f'({", ".join(self.arch_settings.keys())})'
         self.arch = self.arch_settings[arch]
+        self.drop_path_rate = drop_path_rate
         self.out_indices = out_indices
         self.frozen_stages = frozen_stages
         self.norm_eval = norm_eval
         self.with_cp = with_cp
 
         self.layers = nn.ModuleList()
-        self.in_channels = arch[0][4]
+        self.in_channels = self.arch[0][4]
         self.out_channels = out_channels
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
