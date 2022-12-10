@@ -11,7 +11,7 @@ from mmengine.model import BaseModule, Sequential
 from torch import Tensor
 
 from mmcls.models.backbones.base_backbone import BaseBackbone
-from mmcls.models.utils import InvertedResidual, SELayer, make_divisible
+from mmcls.models.utils import InvertedResidual, SELayer
 from mmcls.registry import MODELS
 
 
@@ -198,6 +198,7 @@ class EfficientNetV2(BaseBackbone):
 =======
                  arch: str = 's',
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 54e3689... add config file and modify arch
                  num_features: int = 1280,
 <<<<<<< HEAD
@@ -218,6 +219,9 @@ class EfficientNetV2(BaseBackbone):
 >>>>>>> 6ed2461... update model file
 =======
 =======
+=======
+                 drop_path_rate: float = 0.,
+>>>>>>> e5d0bf1... add the file about convert_pth from timm to mmcls
                  out_channels: int = 1280,
 >>>>>>> 73d03c1... update efficientnetv2 model file with mmcls style
                  out_indices=(6,),
@@ -240,13 +244,14 @@ class EfficientNetV2(BaseBackbone):
             f'"{arch}" is not one of the arch_settings ' \
             f'({", ".join(self.arch_settings.keys())})'
         self.arch = self.arch_settings[arch]
+        self.drop_path_rate = drop_path_rate
         self.out_indices = out_indices
         self.frozen_stages = frozen_stages
         self.norm_eval = norm_eval
         self.with_cp = with_cp
 
         self.layers = nn.ModuleList()
-        self.in_channels = arch[0][4]
+        self.in_channels = self.arch[0][4]
         self.out_channels = out_channels
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
