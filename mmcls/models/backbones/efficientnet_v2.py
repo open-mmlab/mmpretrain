@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import math
 from functools import partial
 from typing import Callable, List, Optional, Tuple
 
@@ -96,7 +95,7 @@ class EfficientNetV2(BaseBackbone):
     def __init__(self,
                  arch: str = 's',
                  drop_path_rate: float = 0.,
-                 out_indices: tuple = (-1,),
+                 out_indices: Tuple = (-1,),
                  frozen_stages: int = 0,
                  conv_cfg=dict(type='Conv2dAdaptivePadding'),
                  norm_cfg=dict(type='BN', eps=1e-3, momentum=0.1),
