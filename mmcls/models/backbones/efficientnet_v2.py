@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import math
 from functools import partial
 from typing import Callable, List, Optional, Tuple
 
@@ -125,6 +124,7 @@ class EfficientNetV2(BaseBackbone):
 =======
                  drop_path_rate: float = 0.,
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> e5d0bf1... add the file about convert_pth from timm to mmcls
                  out_channels: int = 1280,
 >>>>>>> 73d03c1... update efficientnetv2 model file with mmcls style
@@ -133,6 +133,9 @@ class EfficientNetV2(BaseBackbone):
 =======
                  out_indices: tuple = (-1,),
 >>>>>>> 98a7520... update model file
+=======
+                 out_indices: Tuple = (-1,),
+>>>>>>> fe32728... update model file
                  frozen_stages: int = 0,
                  conv_cfg=dict(type='Conv2dAdaptivePadding'),
                  norm_cfg=dict(type='BN', eps=1e-3, momentum=0.1),
