@@ -16,7 +16,7 @@ from mmcls.models.utils import InvertedResidual, SELayer
 from mmcls.registry import MODELS
 
 
-class ConvWSkip(BaseModule):
+class ConvWithSkip(BaseModule):
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -28,7 +28,7 @@ class ConvWSkip(BaseModule):
                  norm_cfg=dict(type='BN', eps=1e-3, momentum=0.1),
                  act_cfg=dict(type='Swish'),
                  init_cfg=None):
-        super(ConvWSkip, self).__init__(init_cfg=init_cfg)
+        super(ConvWithSkip, self).__init__(init_cfg=init_cfg)
         self.conv = ConvModule(
             in_channels=in_channels,
             out_channels=out_channels,
@@ -197,7 +197,7 @@ class EfficientNetV2(BaseBackbone):
             for i in range(repeat):
                 stride = stride if i == 0 else 1
                 if expand_ratio == 1 and block_type == 0:
-                    layer.append(ConvWSkip
+                    layer.append(ConvWithSkip
                         (in_channels=self.in_channels,
                          out_channels=out_channels,
                          kernel_size=kernel_size,
