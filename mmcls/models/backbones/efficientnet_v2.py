@@ -5,14 +5,13 @@ from typing import Callable, List, Optional, Tuple
 
 import torch
 import torch.nn as nn
-import torch.utils.checkpoint as cp
 from mmcv.cnn.bricks import DropPath, ConvModule
 from mmengine.model import BaseModule, Sequential
 from torch import Tensor
 
 from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.models.backbones.efficientnet import EdgeResidual
-from mmcls.models.utils import InvertedResidual, SELayer
+from mmcls.models.utils import InvertedResidual
 from mmcls.registry import MODELS
 
 
@@ -125,11 +124,15 @@ class EfficientNetV2(BaseBackbone):
 =======
 =======
                  drop_path_rate: float = 0.,
+<<<<<<< HEAD
 >>>>>>> e5d0bf1... add the file about convert_pth from timm to mmcls
                  out_channels: int = 1280,
 >>>>>>> 73d03c1... update efficientnetv2 model file with mmcls style
                  out_indices=(6,),
 >>>>>>> 54e3689... add config file and modify arch
+=======
+                 out_indices: tuple = (-1,),
+>>>>>>> 98a7520... update model file
                  frozen_stages: int = 0,
                  conv_cfg=dict(type='Conv2dAdaptivePadding'),
                  norm_cfg=dict(type='BN', eps=1e-3, momentum=0.1),
@@ -156,7 +159,7 @@ class EfficientNetV2(BaseBackbone):
 
         self.layers = nn.ModuleList()
         self.in_channels = self.arch[0][4]
-        self.out_channels = out_channels
+        self.out_channels = 1280
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
         self.act_cfg = act_cfg
