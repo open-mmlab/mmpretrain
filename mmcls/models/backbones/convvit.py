@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from functools import partial
 from typing import Sequence, Union, Tuple, Optional
 
 import torch
@@ -6,26 +7,28 @@ import torch.nn as nn
 import numpy as np
 from mmcv.cnn.bricks.transformer import PatchEmbed
 from mmcv.cnn.bricks import DropPath, build_norm_layer, build_activation_layer
-from mmcv.runner.base_module import BaseModule
+from mmengine.model import BaseModule
+from mmengine.model.weight_init import trunc_normal_
 
-from ..utils import to_2tuple
+from ..utils import to_2tuple, resize_pos_embed
 from ..builder import BACKBONES
 from .base_backbone import BaseBackbone
 from .vision_transformer import TransformerEncoderLayer
 
 
 class ConvMlp(BaseModule):
-    """Implements the Mlp part for ConvBlock. The main difference is ConvMlp
-    implies N, C, H, W input format.
+    """Implements the Mlp part for ConvBlock. The main difference from a 
+    regular Mlp block is that ConvMlp implies N, C, H, W input format.
 
     Args:
         embed_dims (int): the feature dimension
         feedforward_channels (int): the MLP hidden feature dimension
         drop_rate (float): probability of an element to be zeroed between
             two fully-connected layers. defaults to 0.
-        act_cfg (dict): config for the activation between the two 
+        act_cfg (dict): config for the activation between the two
             fully-connected layers. defaults to ``dict(type='GELU')``.
-        init_cfg (dict, optional): initialization config dict. defaults to None.
+        init_cfg (dict, optional): initialization config dict. defaults to
+            None.
     """
 
     def __init__(self,
@@ -33,16 +36,16 @@ class ConvMlp(BaseModule):
                  feedforward_channels: int,
                  drop_rate: float = 0.,
                  act_cfg: dict = dict(type='GELU'),
-                 init_cfg: Optional[dict] = None):
+                 init_cfg: Optional[dict] = None) -> None:
         super().__init__(init_cfg=init_cfg)
 
         self.fc1 = nn.Conv2d(embed_dims, feedforward_channels, 1)
         self.act = build_activation_layer(act_cfg)
-        self.dropout = (
-            nn.Dropout(drop_rate) if drop_rate > 0. else nn.Identity())
+        self.dropout = \
+            nn.Dropout(drop_rate) if drop_rate > 0. else nn.Identity()
         self.fc2 = nn.Conv2d(feedforward_channels, embed_dims, 1)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.fc1(x)
         x = self.act(x)
         x = self.dropout(x)
@@ -72,7 +75,7 @@ class ConvBlock(BaseModule):
                  drop_path_rate: float = 0.,
                  act_cfg: dict = dict(type='GELU'),
                  norm_cfg: dict = dict(type='LN'),
-                 init_cfg=None):
+                 init_cfg: Optional[dict] = None) -> None:
         super(ConvBlock, self).__init__(init_cfg=init_cfg)
 
         self.norm1_name, norm1 = build_norm_layer(
@@ -100,14 +103,14 @@ class ConvBlock(BaseModule):
             act_cfg=act_cfg)
 
     @property
-    def norm1(self):
+    def norm1(self) -> nn.Module:
         return getattr(self, self.norm1_name)
 
     @property
-    def norm2(self):
+    def norm2(self) -> nn.Module:
         return getattr(self, self.norm2_name)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         x_id = x
 
         x = self.norm1(x)
@@ -126,10 +129,11 @@ class ConvBlock(BaseModule):
 
         return x
 
+
 @BACKBONES.register_module()
 class ConvViT(BaseBackbone):
     """ConvViT, a mixed convolution-transformer architecture.
-    
+
     An implementation of  ConvViT architecture, as used in MCMAE (previously 
     known as ConvMAE, https://arxiv.org/abs/2205.03892)
 
@@ -148,8 +152,8 @@ class ConvViT(BaseBackbone):
             defaults to 'base'.
         img_size (int | tuple[int]): the expected input image shape. defaults
             to 224.
-        patch_size (int | tuple[int]): the patch size used to downsample spatial
-            size before each stage. defaults to [4, 2, 2].
+        patch_size (int | tuple[int]): the patch size used to downsample
+            spatial size before each stage. defaults to [4, 2, 2].
         in_channels (int): the number of input channels. defaults to 3.
         out_indices (int | Sequence[int]): indices for blocks of whose outputs
             the final output consists of. defaults to -1 (last block only).
@@ -175,15 +179,41 @@ class ConvViT(BaseBackbone):
             convolutional layer. defaults to an empty dict.
         act_cfg (dict): configs for the activation function. default is 
             ``dict(type='GELU')``.
-        init_cfg (dict, optional): initialization config dict. defaults to None.
+        init_cfg (dict, optional): initialization config dict. defaults to
+            None.
     """
     arch_zoo = {
         **dict.fromkeys(
             ['b', 'base'], {
+                'patch_size': [4, 2, 2],
                 'embed_dims': [256, 384, 768],
                 'num_layers': [2, 2, 11],
                 'num_heads': 12,
                 'feedforward_channels': [256 * 4, 384 * 4, 768 * 4],
+            }),
+        **dict.fromkeys(
+            ['l', 'large'], {
+                'patch_size': [4, 2, 2],
+                'embed_dims': [384, 768, 1024],
+                'num_layers': [2, 2, 23],
+                'num_heads': 16,
+                'feedforward_channels': [384 * 4, 768 * 4, 1024 * 4],
+            }),
+        **dict.fromkeys(
+            ['h', 'huge'], {
+                'patch_size': [7, 1, 2],
+                'embed_dim': [768, 1024, 1280],
+                'num_layers': [2, 2, 31],
+                'num_heads': 16,
+                'feedforward_channels': [768 * 4, 1024 * 4, 1280 * 4],
+            }),
+        **dict.fromkeys(
+            ['g', 'giant'], {
+                'patch_size': [7, 1, 2],
+                'embed_dim': [1024, 1280, 1408],
+                'num_layers': [3, 3, 38],
+                'num_heads': 16,
+                'feedforward_channels': [1024 * 4, 1280 * 4, 1408 * 4],
             }),
     }
 
@@ -203,7 +233,7 @@ class ConvViT(BaseBackbone):
                  patch_cfg: dict = dict(),
                  layer_cfgs: Union[dict, Sequence[dict]] = dict(),
                  act_cfg: dict = dict(type='GELU'),
-                 init_cfg: Optional[dict] = None):
+                 init_cfg: Optional[dict] = None) -> None:
         super(ConvViT, self).__init__(init_cfg)
 
         essential_keys = {
@@ -239,7 +269,7 @@ class ConvViT(BaseBackbone):
         dpr = np.linspace(0, drop_path_rate, sum(num_layers))
 
         self.patch_embeds = nn.ModuleList([])
-        self.blocks = nn.ModuleList([])
+        self.layers = nn.ModuleList([])
         self.patch_embed_act = build_activation_layer(act_cfg)
 
         stage_img_size = img_size
@@ -248,7 +278,9 @@ class ConvViT(BaseBackbone):
         for stage_idx in range(num_stages):
             _patch_cfg = dict(
                 in_channels=(
-                    in_channels if stage_idx == 0 else embed_dims[stage_idx - 1]
+                    in_channels
+                    if stage_idx == 0 else
+                    embed_dims[stage_idx - 1]
                 ),
                 input_size=stage_img_size,
                 embed_dims=embed_dims[stage_idx],
@@ -266,7 +298,6 @@ class ConvViT(BaseBackbone):
                 self.patch_embeds.append(
                     nn.Linear(embed_dims[stage_idx], embed_dims[stage_idx]))
 
-
             blocks = []
             for layer_idx in range(num_layers[stage_idx]):
                 global_layer_idx = sum(num_layers[:stage_idx]) + layer_idx
@@ -276,7 +307,7 @@ class ConvViT(BaseBackbone):
                     drop_rate=drop_rate,
                     drop_path_rate=dpr[global_layer_idx],
                     act_cfg=act_cfg)
-                if stage_idx >= 2: # transformer stage
+                if stage_idx >= 2:  # transformer stage
                     layer_class = TransformerEncoderLayer
                     _layer_cfg.update(
                         num_heads=num_heads,
@@ -285,7 +316,7 @@ class ConvViT(BaseBackbone):
                     )
                     self.pos_embed = nn.Parameter(
                         torch.zeros(1, *stage_img_size, embed_dims[stage_idx]))
-                else: # conv stage
+                else:  # conv stage
                     layer_class = ConvBlock
                     layer_conv_norm_cfg = conv_norm_cfg.copy()
                     _layer_cfg.update(
@@ -293,7 +324,7 @@ class ConvViT(BaseBackbone):
                         )
                 _layer_cfg.update(layer_cfgs[global_layer_idx])
                 blocks.append(layer_class(**_layer_cfg))
-            self.blocks.append(nn.ModuleList(blocks))
+            self.layers.append(nn.ModuleList(blocks))
         
         self._register_load_state_dict_pre_hook(self._prepare_pos_embed)
 
@@ -312,17 +343,18 @@ class ConvViT(BaseBackbone):
             nn.Dropout(p=drop_rate) if drop_rate > 0. else nn.Identity())
 
     @property
-    def norm1(self):
+    def norm1(self) -> nn.Module:
         return getattr(self, self.norm1_name)
 
-    def init_weights(self):
+    def init_weights(self) -> None:
         super().init_weights()
         if not (isinstance(self.init_cfg, dict) and \
                 self.init_cfg['type'] == 'Pretrained'):
             trunc_normal_(self.pos_embed, std=0.02)
 
-    def _prepare_pos_embed(self, state_dict, prefix, *args, **kwargs):
-        num_stages = len(self.blocks)
+    def _prepare_pos_embed(self, state_dict: dict, prefix: str,
+            *args, **kwargs) -> None:
+        num_stages = len(self.layers)
         name = prefix + 'pos_embed'
         if name not in state_dict:
             return
@@ -340,42 +372,45 @@ class ConvViT(BaseBackbone):
                 self.pos_embeds[i].shape[1:-1],
                 self.interpolate_mode, 0)
 
-    def forward(self, x):
+    def _convert_nlc_to_nchw(self, x: torch.Tensor,
+            stage_out_size: Sequence[int]) -> torch.Tensor:
+        x = x.view(x.size(0), *stage_out_size, x.size(-1))
+        x = x.permute(0, -1, *range(1, x.ndim - 1)).contiguous()
+        return x
+
+    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor]:
         outs = []
 
-        for stage_idx in range(len(self.blocks)):
-            stage_type = 'c' if stage_idx < 2 else 't'
+        for stage_idx in range(len(self.layers)):
+            stage_type = 'conv' if stage_idx < 2 else 'transformer'
 
             x, stage_out_size = self.patch_embeds[stage_idx](x)
             x = self.patch_embed_act(x)
-            def convert_nlc_to_nchw(x):
-                x = x.view(x.size(0), *stage_out_size, x.size(-1))
-                x = x.permute(0, -1, *range(1, x.ndim - 1)).contiguous()
-                return x
 
-            if stage_type == 't':
+            if stage_type == 'transformer':
                 x = self.patch_embeds[3](x)
                 x = x + self.pos_embed.flatten(1, -2)
                 x = self.drop_after_pos(x)
-            elif stage_type  == 'c':
-                x = convert_nlc_to_nchw(x)
+            elif stage_type  == 'conv':
+                x = self._convert_nlc_to_nchw(x, stage_out_size)
             else:
                 raise NotImplementedError()
 
-            for layer_idx, block in enumerate(self.blocks[stage_idx]):
+            for layer_idx, block in enumerate(self.layers[stage_idx]):
                 global_layer_idx = sum(
-                    [len(x) for x in self.blocks[:stage_idx]]) + layer_idx
+                    [len(x) for x in self.layers[:stage_idx]]) + layer_idx
                 x = block(x)
-                if global_layer_idx == sum([len(x) for x in self.blocks]) - 1 \
+                if global_layer_idx == sum([len(x) for x in self.layers]) - 1 \
                         and self.final_norm:
                     x = self.norm1(x)
                 if global_layer_idx in self.out_indices:                  
                     outs.append({
-                        't': convert_nlc_to_nchw,
-                        'c': lambda x: x,
+                        'transformer': partial(self._convert_nlc_to_nchw,
+                            stage_out_size=stage_out_size),
+                        'conv': lambda x: x,
                         }[stage_type](x))
 
-            if stage_type == 't':
-                x = convert_nlc_to_nchw(x)
+            if stage_type == 'transformer':
+                x = self._convert_nlc_to_nchw(x, stage_out_size)
 
         return tuple(outs)
