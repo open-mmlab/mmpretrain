@@ -64,7 +64,7 @@ For detailed finetuning and inference code, please refer to [this repo](https://
 
 ![image](https://user-images.githubusercontent.com/18586273/205498027-def99b0d-a99a-470b-b292-8d5fc83111fc.png)
 
-#### Used but no improvement
+#### Used but no improvements
 
 1. Retrieval Paradigm
 2. EfficientNetv2
