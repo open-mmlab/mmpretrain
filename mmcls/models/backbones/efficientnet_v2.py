@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from functools import partial
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple, Sequence
 
 import torch
 import torch.nn as nn
@@ -48,48 +48,59 @@ class ConvWithSkip(BaseModule):
 
 @MODELS.register_module()
 class EfficientNetV2(BaseBackbone):
-    # repeat, kernel, stride, expansion, in_c, out_c, se_ratio, operator
+    # repeat, kernel, stride, expansion, in_c, out_c, se_ratio, block_type
+    # if block_type==0, is MBConv; if block_type==1, is FusedMBConv ,
+    # if block_type==-1, is ConvWithSkip; if block_type==-2, is ConvModule
     # b0 is same as base
     arch_settings = {
         'base': [[1, 3, 1, 1, 32, 16, 0, -1], [2, 3, 2, 4, 16, 32, 0, 0],
                  [2, 3, 2, 4, 32, 48, 0, 0], [3, 3, 2, 4, 48, 96, 0.25, 1],
                  [5, 3, 1, 6, 96, 112, 0.25, 1],
-                 [8, 3, 2, 6, 112, 192, 0.25, 1]],
+                 [8, 3, 2, 6, 112, 192, 0.25, 1],
+                 [1, 1, 1, 1, 192, 1280, 0, -2]],
         's': [[2, 3, 1, 1, 24, 24, 0, -1], [4, 3, 2, 4, 24, 48, 0, 0],
               [4, 3, 2, 4, 48, 64, 0, 0], [6, 3, 2, 4, 64, 128, 0.25, 1],
               [9, 3, 1, 6, 128, 160, 0.25, 1],
-              [15, 3, 2, 6, 160, 256, 0.25, 1]],
+              [15, 3, 2, 6, 160, 256, 0.25, 1],
+              [1, 1, 1, 1, 256, 1280, 0, -2]],
         'm': [[3, 3, 1, 1, 24, 24, 0, -1], [5, 3, 2, 4, 24, 48, 0, 0],
               [5, 3, 2, 4, 48, 80, 0, 0], [7, 3, 2, 4, 80, 160, 0.25, 1],
               [14, 3, 1, 6, 160, 176, 0.25, 1],
               [18, 3, 2, 6, 176, 304, 0.25, 1],
-              [5, 3, 1, 6, 304, 512, 0.25, 1]],
+              [5, 3, 1, 6, 304, 512, 0.25, 1],
+              [1, 1, 1, 1, 512, 1280, 0, -2]],
         'l': [[4, 3, 1, 1, 32, 32, 0, -1], [7, 3, 2, 4, 32, 64, 0, 0],
               [7, 3, 2, 4, 64, 96, 0, 0], [10, 3, 2, 4, 96, 192, 0.25, 1],
               [19, 3, 1, 6, 192, 224, 0.25, 1],
               [25, 3, 2, 6, 224, 384, 0.25, 1],
-              [7, 3, 1, 6, 384, 640, 0.25, 1]],
+              [7, 3, 1, 6, 384, 640, 0.25, 1],
+              [1, 1, 1, 1, 640, 1280, 0, -2]],
         'xl': [[4, 3, 1, 1, 32, 32, 0, -1], [8, 3, 2, 4, 32, 64, 0, 0],
                [8, 3, 2, 4, 64, 96, 0, 0], [16, 3, 2, 4, 96, 192, 0.25, 1],
                [24, 3, 1, 6, 192, 256, 0.25, 1],
                [32, 3, 2, 6, 256, 512, 0.25, 1],
-               [8, 3, 1, 6, 512, 640, 0.25, 1]],
+               [8, 3, 1, 6, 512, 640, 0.25, 1],
+               [1, 1, 1, 1, 640, 1280, 0, -2]],
         'b0': [[1, 3, 1, 1, 32, 16, 0, -1], [2, 3, 2, 4, 16, 32, 0, 0],
                [2, 3, 2, 4, 32, 48, 0, 0], [3, 3, 2, 4, 48, 96, 0.25, 1],
                [5, 3, 1, 6, 96, 112, 0.25, 1],
-               [8, 3, 2, 6, 112, 192, 0.25, 1]],
+               [8, 3, 2, 6, 112, 192, 0.25, 1],
+               [1, 1, 1, 1, 192, 1280, 0, -2]],
         'b1': [[2, 3, 1, 1, 32, 16, 0, -1], [3, 3, 2, 4, 16, 32, 0, 0],
                [3, 3, 2, 4, 32, 48, 0, 0], [4, 3, 2, 4, 48, 96, 0.25, 1],
                [6, 3, 1, 6, 96, 112, 0.25, 1],
-               [9, 3, 2, 6, 112, 192, 0.25, 1]],
+               [9, 3, 2, 6, 112, 192, 0.25, 1],
+               [1, 1, 1, 1, 192, 1280, 0, -2]],
         'b2': [[2, 3, 1, 1, 32, 16, 0, -1], [3, 3, 2, 4, 16, 32, 0, 0],
                [3, 3, 2, 4, 32, 56, 0, 0], [4, 3, 2, 4, 56, 104, 0.25, 1],
                [6, 3, 1, 6, 104, 120, 0.25, 1],
-               [10, 3, 2, 6, 120, 208, 0.25, 1]],
+               [10, 3, 2, 6, 120, 208, 0.25, 1],
+               [1, 1, 1, 1, 208, 1408, 0, -2]],
         'b3': [[2, 3, 1, 1, 40, 16, 0, -1], [3, 3, 2, 4, 16, 40, 0, 0],
                [3, 3, 2, 4, 40, 56, 0, 0], [5, 3, 2, 4, 56, 112, 0.25, 1],
                [7, 3, 1, 6, 112, 136, 0.25, 1],
-               [12, 3, 2, 6, 136, 232, 0.25, 1]]
+               [12, 3, 2, 6, 136, 232, 0.25, 1],
+               [1, 1, 1, 1, 232, 1536, 0, -2]]
     }
 
     def __init__(self,
@@ -115,14 +126,18 @@ class EfficientNetV2(BaseBackbone):
             f'({", ".join(self.arch_settings.keys())})'
         self.arch = self.arch_settings[arch]
         self.drop_path_rate = drop_path_rate
-        self.out_indices = out_indices
         self.frozen_stages = frozen_stages
         self.norm_eval = norm_eval
         self.with_cp = with_cp
 
         self.layers = nn.ModuleList()
+        block_cfg_last = self.arch[-1]
+        assert block_cfg_last[-1] == -2, \
+            f'the last block_type must be -2 ,'\
+            f'It is conv module. but ' \
+            f'get block_type={block_cfg_last[-1]}'
         self.in_channels = self.arch[0][4]
-        self.out_channels = 1280
+        self.out_channels = block_cfg_last[5]
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
         self.act_cfg = act_cfg
@@ -140,14 +155,27 @@ class EfficientNetV2(BaseBackbone):
             ConvModule(
                 in_channels=self.in_channels,
                 out_channels=self.out_channels,
-                kernel_size=1,
-                stride=1,
+                kernel_size=block_cfg_last[1],
+                stride=block_cfg_last[2],
                 conv_cfg=self.conv_cfg,
                 norm_cfg=self.norm_cfg,
-                act_cfg=self.act_cfg))  # the last conv not in arch
+                act_cfg=self.act_cfg))
+
+        if isinstance(out_indices, int):
+            out_indices = [out_indices]
+        assert isinstance(out_indices, Sequence), \
+            f'"out_indices" must by a sequence or int, ' \
+            f'get {type(out_indices)} instead.'
+        out_indices = list(out_indices)
+        for i, index in enumerate(out_indices):
+            if index < 0:
+                out_indices[i] = len(self.layers) + index
+            assert 0 <= out_indices[i] <= len(self.layers), \
+                f'Invalid out_indices {index}.'
+        self.out_indices = out_indices
 
     def make_layer(self):
-        layer_setting = self.arch
+        layer_setting = self.arch[:-1]
 
         total_num_blocks = sum([x[0] for x in layer_setting])
         block_idx = 0
@@ -206,11 +234,13 @@ class EfficientNetV2(BaseBackbone):
                 block_idx += 1
             self.layers.append(Sequential(*layer))
 
-    def forward(self, x: Tensor) -> Tensor:
+    def forward(self, x):
         outs = []
         for i, layer in enumerate(self.layers):
             x = layer(x)
-        outs.append(x)
+            if i in self.out_indices:
+                outs.append(x)
+
         return tuple(outs)
 
     def _freeze_stages(self):
