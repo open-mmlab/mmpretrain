@@ -71,6 +71,6 @@ For detailed finetuning and inference code, please refer to [this repo](https://
 
 #### Not used but worth to do
 
-1. DiVE for Long tail Problem;
+1. Try [DiVE](https://arxiv.org/abs/2103.15042) algorithm to improve performance in long tail dataset;
 2. Use SimMIM to pre-train Swin-v2 on the competition dataset
 3. refine the re-distribute-label tool
