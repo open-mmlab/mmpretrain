@@ -38,7 +38,7 @@ For detailed finetuning and inference code, please refer to [this repo](https://
 - ViT(MAE-pre-train)   # Pretrained from [**MMSelfSup**](https://github.com/open-mmlab/mmselfsup/tree/dev-1.x/projects/fgia_accv2022_1st).
 - Swin-v2(SimMIM-pre-train)   # From [MMCls-swin_transformer_v2](https://github.com/open-mmlab/mmclassification/tree/dev-1.x/configs/swin_transformer_v2).
 
-**The architectures we use **
+\*\*The architectures we use \*\*
 
 - ViT + CE-loss + post-LongTail-Adjusment
 - ViT + SubCenterArcFaceWithAdvMargin(CE)
