@@ -9,7 +9,8 @@ from mmcv.cnn.bricks.transformer import FFN, PatchEmbed
 from mmengine.model import BaseModule, ModuleList
 from mmengine.model.weight_init import trunc_normal_
 
-from mmcls.registry import MODELS
+from mmcls.utils import get_root_logger
+from ..builder import MODELS
 from ..utils import MultiheadAttention, resize_pos_embed, to_2tuple
 from .base_backbone import BaseBackbone
 
@@ -236,6 +237,7 @@ class VisionTransformer(BaseBackbone):
                  interpolate_mode='bicubic',
                  patch_cfg=dict(),
                  layer_cfgs=dict(),
+                 pre_norm=False,
                  init_cfg=None):
         super(VisionTransformer, self).__init__(init_cfg)
 
@@ -264,6 +266,7 @@ class VisionTransformer(BaseBackbone):
             conv_type='Conv2d',
             kernel_size=patch_size,
             stride=patch_size,
+            bias=not pre_norm, # disable bias if pre_norm is used(e.g., CLIP)
         )
         _patch_cfg.update(patch_cfg)
         self.patch_embed = PatchEmbed(**_patch_cfg)
@@ -319,6 +322,13 @@ class VisionTransformer(BaseBackbone):
             self.layers.append(TransformerEncoderLayer(**_layer_cfg))
 
         self.frozen_stages = frozen_stages
+        if pre_norm:
+            _, norm_layer = build_norm_layer(
+                norm_cfg, self.embed_dims, postfix=1)
+        else:
+            norm_layer = nn.Identity()
+        self.add_module('pre_norm', norm_layer)
+
         self.final_norm = final_norm
         if final_norm:
             self.norm1_name, norm1 = build_norm_layer(
@@ -417,6 +427,7 @@ class VisionTransformer(BaseBackbone):
             num_extra_tokens=self.num_extra_tokens)
         x = self.drop_after_pos(x)
 
+        x = self.pre_norm(x)
         if not self.with_cls_token:
             # Remove class token for transformer encoder input
             x = x[:, 1:]
