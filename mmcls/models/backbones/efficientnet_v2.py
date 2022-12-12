@@ -3,10 +3,10 @@ from functools import partial
 from typing import Callable, List, Optional, Tuple, Sequence
 
 import torch
+from torch import Tensor
 import torch.nn as nn
 from mmcv.cnn.bricks import DropPath, ConvModule
 from mmengine.model import BaseModule, Sequential
-from torch import Tensor
 
 from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.models.backbones.efficientnet import EdgeResidual as FusedMBConv
@@ -234,7 +234,7 @@ class EfficientNetV2(BaseBackbone):
                 block_idx += 1
             self.layers.append(Sequential(*layer))
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tuple[Tensor]:
         outs = []
         for i, layer in enumerate(self.layers):
             x = layer(x)
