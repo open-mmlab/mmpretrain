@@ -29,7 +29,7 @@ For detailed finetuning and inference code, refer to [this repo](https://github.
 
 ## Description
 
-### Overview Flow
+### Overview of Our Solution
 
 ![image](https://user-images.githubusercontent.com/18586273/205498371-31dbc1f4-5814-44bc-904a-f0d32515c7dd.png)
 
