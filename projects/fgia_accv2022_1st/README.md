@@ -1,6 +1,6 @@
 # Solution of FGIA ACCV 2022(1st Place)
 
-This is fine-tuning solution of the 1st Place Solution for Webly-supervised Fine-grained Recognition, refer to the ACCV workshop competition in https://www.cvmart.net/race/10412/base.
+This is fine-tuning part of the 1st Place Solution for Webly-supervised Fine-grained Recognition, refer to the ACCV workshop competition in https://www.cvmart.net/race/10412/base.
 
 ## Result
 
