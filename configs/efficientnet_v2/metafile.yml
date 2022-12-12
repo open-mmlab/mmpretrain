@@ -1,0 +1,21 @@
+Collections:
+  - Name: EfficientNetV2
+    Metadata:
+      Training Data: ImageNet-1k
+      Architecture:
+        - 1x1 Convolution
+        - Average Pooling
+        - Convolution
+        - Dense Connections
+        - Dropout
+        - Inverted Residual Block
+        - RMSProp
+        - Squeeze-and-Excitation Block
+        - Swish
+    Paper:
+      URL: https://arxiv.org/abs/1905.11946v5
+      Title: "EfficientNetV2: Smaller Models and Faster Training"
+    README: configs/efficientnet_v2/README.md
+    Code:
+      Version: v0.20.1
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.20.1/mmcls/models/backbones/efficientnet_v2.py
