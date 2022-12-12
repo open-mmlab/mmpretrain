@@ -9,8 +9,8 @@ from mmengine.model import BaseModule, Sequential
 from torch import Tensor
 
 from mmcls.models.backbones.base_backbone import BaseBackbone
-from mmcls.models.backbones.efficientnet import EdgeResidual
-from mmcls.models.utils import InvertedResidual
+from mmcls.models.backbones.efficientnet import EdgeResidual as FusedMBConv
+from mmcls.models.utils import InvertedResidual as MBConv
 from mmcls.registry import MODELS
 
 
@@ -214,9 +214,9 @@ class EfficientNetV2(BaseBackbone):
                             act_cfg=(self.act_cfg, dict(type='Sigmoid')))
                     if block_type == 0:
                         se_cfg = None
-                        block = EdgeResidual
+                        block = FusedMBConv
                     else:
-                        block = InvertedResidual
+                        block = MBConv
                     layer.append(
                         block(
                             in_channels=self.in_channels,
