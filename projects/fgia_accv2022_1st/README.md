@@ -2,8 +2,6 @@
 
 This is the 1st Place Solution for Webly-supervised Fine-grained Recognition, refer to the ACCV workshop competition in https://www.cvmart.net/race/10412/base.
 
-Mainly done by [Ezra-Yu](https://github.com/Ezra-Yu), [Yuan Liu](https://github.com/YuanLiuuuuuu) and [Songyang Zhang](https://github.com/tonysy), base on [**MMClassifiion**](https://github.com/open-mmlab/mmclassification) 与 [**MMSelfSup**](https://github.com/open-mmlab/mmselfsup). please flork and star them if you think they are useful.
-
 ## Result
 
 <details>
@@ -27,7 +25,7 @@ Mainly done by [Ezra-Yu](https://github.com/Ezra-Yu), [Yuan Liu](https://github.
 ## Reproduce / 复现
 
 For detailed self-supervised pretrain code, please refer to [MMselfSup](https://github.com/open-mmlab/mmselfsup/tree/dev-1.x/projects/fgia_accv2022_1st).
-For detailed finetuning and inference code, refer to [this repo](https://github.com/Ezra-Yu/ACCV_workshop).
+For detailed finetuning and inference code, refer to [this repo](https://github.com/Ezra-Yu/ACCV2022_FGIA_1st).
 
 ## Description
 
@@ -37,7 +35,7 @@ For detailed finetuning and inference code, refer to [this repo](https://github.
 
 ### Model Select
 
-- ViT(MAE-pt)   # Pretrained from [**MMSelfSup**](https://github.com/open-mmlab/mmselfsup).
+- ViT(MAE-pt)   # Pretrained from [**MMSelfSup**](https://github.com/open-mmlab/mmselfsup/tree/dev-1.x/projects/fgia_accv2022_1st).
 - Swin(21kpt)   # From [MMCls-swin_transformer_v2](https://github.com/open-mmlab/mmclassification/tree/dev-1.x/configs/swin_transformer_v2).
 
 **Main Arch**
