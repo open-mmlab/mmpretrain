@@ -49,7 +49,7 @@ class ConvWithSkip(BaseModule):
 @MODELS.register_module()
 class EfficientNetV2(BaseBackbone):
     # repeat, kernel, stride, expansion, in_c, out_c, se_ratio, block_type
-    # if block_type==0, is MBConv; if block_type==1, is FusedMBConv ,
+    # if block_type==0, is FusedMBConv; if block_type==1, is MBConv,
     # if block_type==-1, is ConvWithSkip; if block_type==-2, is ConvModule
     # b0 is same as base
     arch_settings = {
