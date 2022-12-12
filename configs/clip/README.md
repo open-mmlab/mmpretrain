@@ -1,4 +1,4 @@
-# ConvMixer
+# CLIP
 
 > [Learning Transferable Visual Models From Natural Language Supervision](https://arxiv.org/abs/2103.00020)
 
@@ -13,20 +13,31 @@ State-of-the-art computer vision systems are trained to predict a fixed set of p
 <!-- [IMAGE] -->
 
 <div align=center>
-<img src="https://user-images.githubusercontent.com/42952108/156284977-abf2245e-d9ba-4e0d-8e10-c0664a20f4c8.png" width="100%"/>
+<img src="https://raw.githubusercontent.com/Scarecrow0/figures_cache/main/clip_main_fig.png" width="100%"/>
 </div>
 
 ## Results and models
 
 ### ImageNet-1k
 
-|        Model        | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                                  Config                                  |                                  Download                                  |
-| :-----------------: | :-------: | :------: | :-------: | :-------: | :----------------------------------------------------------------------: | :------------------------------------------------------------------------: |
-| ConvMixer-768/32\*  |   21.11   |  19.62   |   80.16   |   95.08   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/convmixer/convmixer-768-32_10xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/convmixer/convmixer-768-32_3rdparty_10xb64_in1k_20220323-bca1f7b8.pth) |
-| ConvMixer-1024/20\* |   24.38   |   5.55   |   76.94   |   93.36   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/convmixer/convmixer-1024-20_10xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/convmixer/convmixer-1024-20_3rdparty_10xb64_in1k_20220323-48f8aeba.pth) |
-| ConvMixer-1536/20\* |   51.63   |  48.71   |   81.37   |   95.61   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/convmixer/convmixer-1536-20_10xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/convmixer/convmixer-1536_20_3rdparty_10xb64_in1k_20220323-ea5786f3.pth) |
+| Model                                           | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config                          | Download                                            |
+| :---------------------------------------------- | --------: | -------: | --------: | --------: | :------------------------------ | :-------------------------------------------------- |
+| vit_base_patch16_clip_384.openai_ft_in12k_in1k  |     86.57 |    49.37 |     86.87 |     98.05 | vit-base-p16_pt-64xb64_in1k-384 | vit_base_patch16_clip_384.openai_ft_in12k_in1k.bin  |
+| vit_base_patch32_clip_384.openai_ft_in12k_in1k  |     88.22 |    12.66 |     85.13 |     97.42 | vit-base-p32_pt-64xb64_in1k-384 | vit_base_patch32_clip_384.openai_ft_in12k_in1k.bin  |
+| vit_base_patch16_clip_224.laion2b_ft_in1k       |     86.57 |    16.86 |     85.49 |     97.59 | vit-base-p16_pt-64xb64_in1k-224 | vit_base_patch16_clip_224.laion2b_ft_in1k.bin       |
+| vit_base_patch32_clip_224.laion2b_ft_in12k_in1k |     88.22 |     4.36 |     83.06 |     96.49 | vit-base-p32_pt-64xb64_in1k-224 | vit_base_patch32_clip_224.laion2b_ft_in12k_in1k.bin |
+| vit_base_patch16_clip_224.laion2b_ft_in12k_in1k |     86.57 |    16.86 |     86.02 |     97.76 | vit-base-p16_pt-64xb64_in1k-224 | vit_base_patch16_clip_224.laion2b_ft_in12k_in1k.bin |
+| vit_base_patch16_clip_224.openai_ft_in1k        |     86.57 |    16.86 |      85.3 |      97.5 | vit-base-p16_pt-64xb64_in1k-224 | vit_base_patch16_clip_224.openai_ft_in1k.bin        |
+| vit_base_patch32_clip_224.openai_ft_in1k        |     88.22 |     4.36 |     81.77 |     95.89 | vit-base-p32_pt-64xb64_in1k-224 | vit_base_patch32_clip_224.openai_ft_in1k.bin        |
+| vit_base_patch16_clip_384.laion2b_ft_in1k       |     86.57 |    49.37 |     86.52 |     97.97 | vit-base-p16_pt-64xb64_in1k-384 | vit_base_patch16_clip_384.laion2b_ft_in1k.bin       |
+| vit_base_patch32_clip_384.laion2b_ft_in12k_in1k |     88.22 |    12.66 |     85.39 |     97.67 | vit-base-p32_pt-64xb64_in1k-384 | vit_base_patch32_clip_384.laion2b_ft_in12k_in1k.bin |
+| vit_base_patch16_clip_384.openai_ft_in1k        |     86.57 |    49.37 |     86.25 |      97.9 | vit-base-p16_pt-64xb64_in1k-384 | vit_base_patch16_clip_384.openai_ft_in1k.bin        |
+| vit_base_patch32_clip_448.laion2b_ft_in12k_in1k |     88.22 |     17.2 |     85.76 |     97.63 | vit-base-p32_pt-64xb64_in1k-448 | vit_base_patch32_clip_448.laion2b_ft_in12k_in1k.bin |
+| vit_base_patch16_clip_384.laion2b_ft_in12k_in1k |     86.57 |    49.37 |     87.17 |     98.02 | vit-base-p16_pt-64xb64_in1k-384 | vit_base_patch16_clip_384.laion2b_ft_in12k_in1k.bin |
+| vit_base_patch16_clip_224.openai_ft_in12k_in1k  |     86.57 |    16.86 |     85.99 |     97.72 | vit-base-p16_pt-64xb64_in1k-224 | vit_base_patch16_clip_224.openai_ft_in12k_in1k.bin  |
+| vit_base_patch32_clip_224.laion2b_ft_in1k       |     88.22 |     4.36 |     82.46 |     96.12 | vit-base-p32_pt-64xb64_in1k-224 | vit_base_patch32_clip_224.laion2b_ft_in1k.bin       |
 
-*Models with * are converted from the [official repo](https://github.com/locuslab/convmixer). The config files of these models are only for inference. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
+*Models with * are converted from the [official repo](https://github.com/rwightman/pytorch-image-models). The config files of these models are only for inference. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 
 ## Citation
 
