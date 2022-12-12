@@ -35,7 +35,7 @@ For detailed finetuning and inference code, please refer to [this repo](https://
 
 ### Our Model
 
-- ViT(MAE-pt)   # Pretrained from [**MMSelfSup**](https://github.com/open-mmlab/mmselfsup/tree/dev-1.x/projects/fgia_accv2022_1st).
+- ViT(MAE-pre-train)   # Pretrained from [**MMSelfSup**](https://github.com/open-mmlab/mmselfsup/tree/dev-1.x/projects/fgia_accv2022_1st).
 - Swin(21kpt)   # From [MMCls-swin_transformer_v2](https://github.com/open-mmlab/mmclassification/tree/dev-1.x/configs/swin_transformer_v2).
 
 **Main Arch**
