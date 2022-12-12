@@ -21,7 +21,7 @@ Collections:
 
 Models:
   - Name: eva-g-336_3rdparty_in1k
-    In Collection: BEiT
+    In Collection: EVA
     Metadata:
       FLOPs: 620642757504
       Parameters: 1013005672
@@ -40,7 +40,7 @@ Models:
       Code: https://github.com/baaivision/EVA
     Config: configs/eva/eva-g-336_8xb16_in1k.py
   - Name: eva-g-560_3rdparty_in1k
-    In Collection: BEiT
+    In Collection: EVA
     Metadata:
       FLOPs: 1906761591680
       Parameters: 1014447464
@@ -58,3 +58,79 @@ Models:
       Weights: https://huggingface.co/BAAI/EVA/blob/main/eva_21k_1k_560px_psz14_ema_89p7.pt
       Code: https://github.com/baaivision/EVA
     Config: configs/eva/eva-g-560_8xb16_in1k.py
+  - Name: eva-l-336_3rdparty_in1k
+    In Collection: EVA
+    Metadata:
+      FLOPs: 191100916736
+      Parameters: 304531432
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 88.66
+        Top 5 Accuracy: 98.75
+    Weights:
+    Converted From:
+      Weights: https://huggingface.co/BAAI/EVA/blob/main/eva_l_psz14_336px_1k_ft_88p65.pt
+      Code: https://github.com/baaivision/EVA
+    Config: configs/eva/eva-l-336_8xb16_in1k.py
+  - Name: eva-l-336_in21k-pre-3rdparty_in1k
+    In Collection: EVA
+    Metadata:
+      FLOPs: 191100916736
+      Parameters: 304531432
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 89.17
+        Top 5 Accuracy: 98.86
+    Weights:
+    Converted From:
+      Weights: https://huggingface.co/BAAI/EVA/blob/main/eva_l_psz14_336px_21k_to_1k_ft_89p2.pt
+      Code: https://github.com/baaivision/EVA
+    Config: configs/eva/eva-l-336_8xb16_in1k.py
+  - Name: eva-l-196_3rdparty_in1k
+    In Collection: EVA
+    Metadata:
+      FLOPs: 61565981696
+      Parameters: 304142312
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 88.58
+        Top 5 Accuracy: 98.65
+    Weights:
+    Converted From:
+      Weights: https://huggingface.co/BAAI/EVA/blob/main/eva_l_psz14_196px_1k_ft_88p0.pt
+      Code: https://github.com/baaivision/EVA
+    Config: configs/eva/eva-l-196_8xb16_in1k.py
+  - Name: eva-l-196_in21k-pre-3rdparty_in1k
+    In Collection: EVA
+    Metadata:
+      FLOPs: 61565981696
+      Parameters: 304142312
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 87.94
+        Top 5 Accuracy: 98.50
+    Weights:
+    Converted From:
+      Weights: https://huggingface.co/BAAI/EVA/blob/main/eva_l_psz14_196px_21k_to_1k_ft_88p6.pt
+      Code: https://github.com/baaivision/EVA
+    Config: configs/eva/eva-l-196_8xb16_in1k.py

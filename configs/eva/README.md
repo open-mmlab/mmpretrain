@@ -27,9 +27,11 @@ The pre-trained models on merged-30M are used to fine-tune, and therefore don't 
 
 The pre-trained models on ImageNet-21k are used to fine-tune, and therefore don't have evaluation results.
 
-| Model |  Pretrain  | resolution |  Download   |
-| :---: | :--------: | :--------: | :---------: |
-| EVA-G | merged-30M |  224x224   | [model](<>) |
+|    Model    |     Pretrain     | resolution |  Download   |
+| :---------: | :--------------: | :--------: | :---------: |
+|    EVA-G    |    merged-30M    |  224x224   | [model](<>) |
+| EVA-L (MIM) |   From scratch   |  224x224   | [model](<>) |
+|    EVA-L    | ImageNet-21k-MIM |  224x224   | [model](<>) |
 
 ### ImageNet-1k
 
@@ -37,6 +39,10 @@ The pre-trained models on ImageNet-21k are used to fine-tune, and therefore don'
 | :---: | :-----------------------: | :--------: | :-------: | :------: | :-------: | :-------: | :---------------------------------: | :---------: |
 | EVA-G | merged-30M + ImageNet-21k |  336x336   |  1013.01  |  620.64  |   89.61   |   98.93   | [config](./eva-g-336_8xb16_in1k.py) | [model](<>) |
 | EVA-G | merged-30M + ImageNet-21k |  560x560   |  1014.45  | 1906.76  |   89.71   |   98.96   | [config](./eva-g-560_8xb16_in1k.py) | [model](<>) |
+| EVA-L |       ImageNet-21k        |  336x336   |  304.53   |  191.10  |   89.17   |   98.86   | [config](./eva-l-336_8xb16_in1k.py) | [model](<>) |
+| EVA-L |     ImageNet-21k-MIM      |  336x336   |  304.53   |  191.10  |   88.66   |   98.75   | [config](./eva-l-336_8xb16_in1k.py) | [model](<>) |
+| EVA-L |       ImageNet-21k        |  196x196   |  304.14   |  61.57   |   88.58   |   98.65   | [config](./eva-l-196_8xb16_in1k.py) | [model](<>) |
+| EVA-L |     ImageNet-21k-MIM      |  196x196   |  304.14   |  61.57   |   87.94   |   98.50   | [config](./eva-l-196_8xb16_in1k.py) | [model](<>) |
 
 *Models with * are converted from the [official repo](https://github.com/baaivision/EVA). The config files of these models are only for inference.*
 
