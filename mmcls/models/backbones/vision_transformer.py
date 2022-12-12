@@ -9,7 +9,6 @@ from mmcv.cnn.bricks.transformer import FFN, PatchEmbed
 from mmengine.model import BaseModule, ModuleList
 from mmengine.model.weight_init import trunc_normal_
 
-from mmcls.utils import get_root_logger
 from ..builder import MODELS
 from ..utils import MultiheadAttention, resize_pos_embed, to_2tuple
 from .base_backbone import BaseBackbone
@@ -266,7 +265,7 @@ class VisionTransformer(BaseBackbone):
             conv_type='Conv2d',
             kernel_size=patch_size,
             stride=patch_size,
-            bias=not pre_norm, # disable bias if pre_norm is used(e.g., CLIP)
+            bias=not pre_norm,  # disable bias if pre_norm is used(e.g., CLIP)
         )
         _patch_cfg.update(patch_cfg)
         self.patch_embed = PatchEmbed(**_patch_cfg)

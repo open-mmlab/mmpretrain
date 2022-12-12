@@ -3,19 +3,10 @@
 # dataset settings
 dataset_type = 'ImageNet'
 img_norm_cfg = dict(
-    mean=[
-        0.48145466*255,
-        0.4578275*255,
-        0.40821073*255
-    ],
-    std=[
-        0.26862954*255,
-        0.26130258*255,
-        0.27577711*255
-    ],
-    to_rgb=True
-)
-image_size= 384
+    mean=[0.48145466 * 255, 0.4578275 * 255, 0.40821073 * 255],
+    std=[0.26862954 * 255, 0.26130258 * 255, 0.27577711 * 255],
+    to_rgb=True)
+image_size = 384
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
@@ -60,7 +51,6 @@ test_pipeline = [
     dict(type='ImageToTensor', keys=['img']),
     dict(type='Collect', keys=['img'])
 ]
-
 
 data = dict(
     samples_per_gpu=64,

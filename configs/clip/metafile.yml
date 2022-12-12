@@ -1,7 +1,6 @@
 Collections:
   - Name: CLIP
     Metadata:
-      Training Data: ImageNet-1k
       Architecture:
         - Attention Dropout
         - Convolution
@@ -17,14 +16,16 @@ Collections:
       Title: Learning Transferable Visual Models From Natural Language Supervision
     README: configs/clip/README.md
 
-Models:  
+Models:
   - Name: vit_base_patch16_clip_384.openai_ft_in12k_in1k
     Metadata:
       FLOPs: 49370078208.0
       Parameters: 86568424
     In Collections: CLIP
     Results:
-      - Dataset: ImageNet-1k
+        Training Data:
+          - ImageNet-21k
+          - ImageNet-1k
         Metrics:
           Top 1 Accuracy: 86.87
           Top 5 Accuracy: 98.05
@@ -41,7 +42,9 @@ Models:
       Parameters: 88225000
     In Collections: CLIP
     Results:
-      - Dataset: ImageNet-1k
+        Training Data:
+          - ImageNet-21k
+          - ImageNet-1k
         Metrics:
           Top 1 Accuracy: 85.13
           Top 5 Accuracy: 97.42
@@ -75,7 +78,9 @@ Models:
       Parameters: 88225000
     In Collections: CLIP
     Results:
-      - Dataset: ImageNet-1k
+        Training Data:
+          - ImageNet-21k
+          - ImageNet-1k
         Metrics:
           Top 1 Accuracy: 83.06
           Top 5 Accuracy: 96.49
@@ -92,7 +97,9 @@ Models:
       Parameters: 86568424
     In Collections: CLIP
     Results:
-      - Dataset: ImageNet-1k
+        Training Data:
+          - ImageNet-21k
+          - ImageNet-1k
         Metrics:
           Top 1 Accuracy: 86.02
           Top 5 Accuracy: 97.76
@@ -160,7 +167,9 @@ Models:
       Parameters: 88225000
     In Collections: CLIP
     Results:
-      - Dataset: ImageNet-1k
+        Training Data:
+          - ImageNet-21k
+          - ImageNet-1k
         Metrics:
           Top 1 Accuracy: 85.39
           Top 5 Accuracy: 97.67
@@ -194,7 +203,9 @@ Models:
       Parameters: 88225000
     In Collections: CLIP
     Results:
-      - Dataset: ImageNet-1k
+        Training Data:
+          - ImageNet-21k
+          - ImageNet-1k
         Metrics:
           Top 1 Accuracy: 85.76
           Top 5 Accuracy: 97.63
@@ -211,7 +222,9 @@ Models:
       Parameters: 86568424
     In Collections: CLIP
     Results:
-      - Dataset: ImageNet-1k
+        Training Data:
+          - ImageNet-21k
+          - ImageNet-1k
         Metrics:
           Top 1 Accuracy: 87.17
           Top 5 Accuracy: 98.02
@@ -228,7 +241,9 @@ Models:
       Parameters: 86568424
     In Collections: CLIP
     Results:
-      - Dataset: ImageNet-1k
+        Training Data:
+          - ImageNet-21k
+          - ImageNet-1k
         Metrics:
           Top 1 Accuracy: 85.99
           Top 5 Accuracy: 97.72
@@ -255,4 +270,3 @@ Models:
     Converted From:
       Weights: https://huggingface.co/timm/vit_base_patch32_clip_224.laion2b_ft_in1k
       Code: https://github.com/rwightman/pytorch-image-models
-
