@@ -1,4 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+"""
+convert the weights of efficientnetv2 in
+timm(https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py)
+to mmcls format.
+"""
 import argparse
 import os.path as osp
 
