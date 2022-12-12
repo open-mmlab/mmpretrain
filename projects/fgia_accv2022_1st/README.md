@@ -25,7 +25,7 @@ This is the 1st Place Solution for Webly-supervised Fine-grained Recognition, re
 ## Reproduce / 复现
 
 For detailed self-supervised pretrain code, please refer to [MMSelfSup](https://github.com/open-mmlab/mmselfsup/tree/dev-1.x/projects/fgia_accv2022_1st).
-For detailed finetuning and inference code, refer to [this repo](https://github.com/Ezra-Yu/ACCV2022_FGIA_1st).
+For detailed finetuning and inference code, please refer to [this repo](https://github.com/Ezra-Yu/ACCV2022_FGIA_1st).
 
 ## Description
 
