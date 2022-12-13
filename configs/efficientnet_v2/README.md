@@ -31,9 +31,25 @@ With progressive learning, our EfficientNetV2 significantly outperforms previous
 
 ### ImageNet-1k
 
-In the result table
+|        Model         | Params(M) | Flops(B) | Top-1 (%) | Top-5 (%) |                    Config                     |                                               Download                                               |
+| :------------------: | :-------: | :------: | :-------: | :-------: | :-------------------------------------------: | :--------------------------------------------------------------------------------------------------: |
+| EfficientNetV2-s |   21.5   |   8.4   |   83.86   |   96.63   | [config](./efficientnet_v2-s_8xb32_in1k.py) | [model]() |
+| EfficientNetV2-m |   54.1   |   24.7   |   84.12   |   96.78   | [config](./efficientnet_v2-m_8xb32_in1k.py) | [model]() |
+| EfficientNetV2-l |   119.5   |  56.3   |   85.45   |   97.28   | [config](./efficientnet_v2-l_8xb32_in1k.py) | [model]() |
+| EfficientNetV2-b0 |   7.1   |  0.72   |   78.48   |   94.26   | [config](./efficientnet_v2-b0_8xb32_in1k.py) | [model]() |
+| EfficientNetV2-b1 |   8.1   |  1.2   |   79.20   |   94.55   | [config](./efficientnet_v2-b1_8xb32_in1k.py) | [model]() |
+| EfficientNetV2-b2 |   10.1   |  1.7   |   79.89   |   94.81   | [config](./efficientnet_v2-b2_8xb32_in1k.py) | [model]() |
+| EfficientNetV2-b3 |   14.4   |  3.0   |   81.61   |   95.69   | [config](./efficientnet_v2-b3_8xb32_in1k.py) | [model]() |
 
 
+### ImageNet21K pretrained and Finetune in ImageNet-1k
+
+|        Model         | Params(M) | Flops(B) | Top-1 (%) | Top-5 (%) |                    Config                     |                                               Download                                               |
+| :------------------: | :-------: | :------: | :-------: | :-------: | :-------------------------------------------: | :--------------------------------------------------------------------------------------------------: |
+| EfficientNetV2-s |   21.5   |   8.4   |   83.86   |   97.14   | [config](./efficientnet_v2-s_8xb32_in21ft1k.py) | [model]() |
+| EfficientNetV2-m |   54.1   |   24.7   |   85.41   |   97.68   | [config](./efficientnet_v2-m_8xb32_in21ft1k.py) | [model]() |
+| EfficientNetV2-l |   119.5   |  56.3   |   86.25   |   97.95   | [config](./efficientnet_v2-l_8xb32_in21ft1k.py) | [model]() |
+| EfficientNetV2-xl |   -   |  -   |   86.26   |   97.73   | [config](./efficientnet_v2-xl_8xb32_in21ft1k.py) | [model]() |
 
 
 ## How to use it?
@@ -46,12 +62,12 @@ In the result table
 >>> import torch
 >>> from mmcls.apis import init_model, inference_model
 >>>
->>> model = init_model('configs/efficientnet/efficientnet-b0_8xb32_in1k.py', "https://download.openmmlab.com/mmclassification/v0/efficientnet/efficientnet-b0_3rdparty_8xb32_in1k_20220119-a7e2a0b1.pth")
+>>> model = init_model('configs/efficientnet/efficientnet-b0_8xb32_in1k.py', ckpt_path)
 >>> predict = inference_model(model, 'demo/demo.JPEG')
 >>> print(predict['pred_class'])
 sea snake
 >>> print(predict['pred_score'])
-0.6968820691108704
+0.3147328197956085
 ```
 
 **Use the model**
