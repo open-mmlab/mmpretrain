@@ -56,8 +56,3 @@ custom_hooks = [
         interval=1,
         priority='ABOVE_NORMAL')
 ]
-
-model_wrapper_cfg = dict(
-    type='MMDistributedDataParallel',
-    broadcast_buffers=True,
-    find_unused_parameters=False)
