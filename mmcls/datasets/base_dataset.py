@@ -145,8 +145,9 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         Returns:
             dict: evaluation results
         """
+        maxk = min(5, len(results[0]))
         if metric_options is None:
-            metric_options = {'topk': (1, 5)}
+            metric_options = {'topk': (1, maxk)}
         if isinstance(metric, str):
             metrics = [metric]
         else:
@@ -167,7 +168,7 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         if len(invalid_metrics) != 0:
             raise ValueError(f'metric {invalid_metrics} is not supported.')
 
-        topk = metric_options.get('topk', (1, 5))
+        topk = metric_options.get('topk', (1, maxk))
         thrs = metric_options.get('thrs')
         average_mode = metric_options.get('average_mode', 'macro')
 
