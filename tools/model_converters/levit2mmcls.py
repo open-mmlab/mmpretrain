@@ -25,7 +25,6 @@ def convert_levit(args, ckpt):
 
     change_dict = {}
     for i in range(len(keys)):
-        # print('\"%s\": \"%s\",' % (keys[i], keys1[i]))
         change_dict[keys1[i]] = keys[i]
 
     with torch.no_grad():
@@ -41,7 +40,7 @@ def main():
     parser.add_argument('src', help='src model path or url')
     # The dst path must be a full path of the new checkpoint.
     parser.add_argument('dst', help='save path')
-    parser.add_argument('type',default='LeViT-256',help='模型的种类(128S、128等)')
+    parser.add_argument('type', default='LeViT-256', help='模型的种类(128S、128等)')
     args = parser.parse_args()
 
     checkpoint = torch.load(args.src, map_location='cpu')
@@ -59,4 +58,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

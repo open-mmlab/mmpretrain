@@ -1,9 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import itertools
+
 import torch
 import torch.nn as nn
-
-from mmcv.cnn import build_conv_layer, build_norm_layer, Linear
+from mmcv.cnn import Linear, build_conv_layer, build_norm_layer
 from mmengine.model import BaseModule
 
 from mmcls.models.backbones.base_backbone import BaseBackbone
@@ -12,40 +12,47 @@ from mmcls.registry import MODELS
 
 
 class hybrid_cnn(BaseModule):
-    def __init__(self,
-                 embed_dim,
-                 kernel_size=3,
-                 stride=2,
-                 pad=1,
-                 dilation=1,
-                 groups=1,
-                 bn_weight_init=1,
-                 activation=nn.Hardswish,
-                 conv_cfg=None,
-                 norm_cfg=dict(type='BN'),
-                 init_cfg=None,
-                 ):
+
+    def __init__(
+            self,
+            embed_dim,
+            kernel_size=3,
+            stride=2,
+            pad=1,
+            dilation=1,
+            groups=1,
+            bn_weight_init=1,
+            activation=nn.Hardswish,
+            conv_cfg=None,
+            norm_cfg=dict(type='BN'),
+            init_cfg=None,
+    ):
         super(hybrid_cnn, self).__init__(init_cfg=init_cfg)
 
-        self.input_channels = [3, embed_dim // 8, embed_dim // 4, embed_dim // 2]
-        self.output_channels = [embed_dim // 8, embed_dim // 4, embed_dim // 2, embed_dim]
+        self.input_channels = [
+            3, embed_dim // 8, embed_dim // 4, embed_dim // 2
+        ]
+        self.output_channels = [
+            embed_dim // 8, embed_dim // 4, embed_dim // 2, embed_dim
+        ]
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
 
         self.patch_embed = nn.Sequential()
 
         for i in range(len(self.input_channels)):
-            conv_bn = Conv_BN(self.input_channels[i],
-                              self.output_channels[i],
-                              kernel_size=kernel_size,
-                              stride=stride,
-                              pad=pad,
-                              dilation=dilation,
-                              groups=groups,
-                              bn_weight_init=bn_weight_init,
-                              conv_cfg=conv_cfg,
-                              norm_cfg=norm_cfg,
-                              )
+            conv_bn = Conv_BN(
+                self.input_channels[i],
+                self.output_channels[i],
+                kernel_size=kernel_size,
+                stride=stride,
+                pad=pad,
+                dilation=dilation,
+                groups=groups,
+                bn_weight_init=bn_weight_init,
+                conv_cfg=conv_cfg,
+                norm_cfg=norm_cfg,
+            )
             self.patch_embed.add_module('%d' % (2 * i), conv_bn)
             if i < len(self.input_channels) - 1:
                 self.patch_embed.add_module('%d' % (i * 2 + 1), activation())
@@ -56,18 +63,20 @@ class hybrid_cnn(BaseModule):
 
 
 class Conv_BN(nn.Sequential):
-    def __init__(self,
-                 in_channel,
-                 out_channel,
-                 kernel_size=3,
-                 stride=2,
-                 pad=1,
-                 dilation=1,
-                 groups=1,
-                 bn_weight_init=1,
-                 conv_cfg=None,
-                 norm_cfg=dict(type='BN'),
-                 ):
+
+    def __init__(
+            self,
+            in_channel,
+            out_channel,
+            kernel_size=3,
+            stride=2,
+            pad=1,
+            dilation=1,
+            groups=1,
+            bn_weight_init=1,
+            conv_cfg=None,
+            norm_cfg=dict(type='BN'),
+    ):
         super(Conv_BN, self).__init__()
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
@@ -85,20 +94,25 @@ class Conv_BN(nn.Sequential):
             padding=pad,
             dilation=dilation,
             groups=groups,
-            bias=False
-        )
+            bias=False)
         self.bn = bn
 
     @torch.no_grad()
     def fuse(self):
         device = next(self.conv.parameters()).device
-        w = self.bn.weight / (self.bn.running_var + self.bn.eps) ** 0.5
+        w = self.bn.weight / (self.bn.running_var + self.bn.eps)**0.5
         w = self.conv.weight * w[:, None, None, None]
         b = self.bn.bias - self.bn.running_mean * self.bn.weight / \
             (self.bn.running_var + self.bn.eps) ** 0.5
-        m = build_conv_layer(self.conv_cfg, w.size(1) * self.conv.groups, w.size(
-            0), w.shape[2:], stride=self.conv.stride, padding=self.conv.padding, dilation=self.conv.dilation,
-                             groups=self.conv.groups)
+        m = build_conv_layer(
+            self.conv_cfg,
+            w.size(1) * self.conv.groups,
+            w.size(0),
+            w.shape[2:],
+            stride=self.conv.stride,
+            padding=self.conv.padding,
+            dilation=self.conv.dilation,
+            groups=self.conv.groups)
         m.weight.data.copy_(w)
         m.bias.data.copy_(b)
 
@@ -107,12 +121,12 @@ class Conv_BN(nn.Sequential):
 
 
 class Linear_BN(nn.Sequential):
+
     def __init__(self,
                  in_feature,
                  out_feature,
                  bn_weight_init=1,
-                 norm_cfg=dict(type='BN1d')
-                 ):
+                 norm_cfg=dict(type='BN1d')):
         super(Linear_BN, self).__init__()
         linear = Linear(in_feature, out_feature, bias=False)
         _, bn = build_norm_layer(norm_cfg, out_feature)
@@ -124,7 +138,7 @@ class Linear_BN(nn.Sequential):
     @torch.no_grad()
     def fuse(self):
         device = next(self.linear.parameters()).device
-        w = self.bn.weight / (self.bn.running_var + self.bn.eps) ** 0.5
+        w = self.bn.weight / (self.bn.running_var + self.bn.eps)**0.5
         w = self.linear.weight * w[:, None]
         b = self.bn.bias - self.bn.running_mean * self.bn.weight / \
             (self.bn.running_var + self.bn.eps) ** 0.5
@@ -141,6 +155,7 @@ class Linear_BN(nn.Sequential):
 
 
 class Residual(BaseModule):
+
     def __init__(self, block, drop):
         super(Residual, self).__init__()
         self.block = block
@@ -148,24 +163,27 @@ class Residual(BaseModule):
 
     def forward(self, x):
         if self.training and self.drop > 0:
-            return x + self.block(x) * torch.rand(x.size(0), 1, 1,
-                                                  device=x.device).ge_(self.drop).div(1 - self.drop).detach()
+            return x + self.block(x) * torch.rand(
+                x.size(0), 1, 1, device=x.device).ge_(
+                    self.drop).div(1 - self.drop).detach()
         else:
             return x + self.block(x)  # add操作
 
 
 class Attention(BaseModule):
-    def __init__(self,
-                 dim,
-                 key_dim,
-                 num_heads=8,
-                 attn_ratio=4,
-                 activation=None,
-                 resolution=14,
-                 ):
+
+    def __init__(
+        self,
+        dim,
+        key_dim,
+        num_heads=8,
+        attn_ratio=4,
+        activation=None,
+        resolution=14,
+    ):
         super(Attention, self).__init__()
         self.num_heads = num_heads
-        self.scale = key_dim ** -0.5
+        self.scale = key_dim**-0.5
         self.key_dim = key_dim
         self.nh_kd = nh_kd = key_dim * num_heads
         self.d = int(attn_ratio * key_dim)
@@ -173,8 +191,8 @@ class Attention(BaseModule):
         self.attn_ratio = attn_ratio
         h = self.dh + nh_kd * 2
         self.qkv = Linear_BN(dim, h)
-        self.proj = nn.Sequential(activation(), Linear_BN(
-            self.dh, dim, bn_weight_init=0))
+        self.proj = nn.Sequential(activation(),
+                                  Linear_BN(self.dh, dim, bn_weight_init=0))
 
         points = list(itertools.product(range(resolution), range(resolution)))
         N = len(points)
@@ -202,30 +220,33 @@ class Attention(BaseModule):
     def forward(self, x):  # x (B,N,C)
         B, N, C = x.shape  # 2 196 128
         qkv = self.qkv(x)  # 2 196 128
-        q, k, v = qkv.view(B, N, self.num_heads, -
-        1).split([self.key_dim, self.key_dim, self.d], dim=3)  # q 2 196 4 16 ; k 2 196 4 16; v 2 196 4 32
+        q, k, v = qkv.view(B, N, self.num_heads, -1).split(
+            [self.key_dim, self.key_dim, self.d],
+            dim=3)  # q 2 196 4 16 ; k 2 196 4 16; v 2 196 4 32
         q = q.permute(0, 2, 1, 3)  # 2 4 196 16
         k = k.permute(0, 2, 1, 3)
         v = v.permute(0, 2, 1, 3)
 
-        attn = (
-                (q @ k.transpose(-2, -1)) * self.scale  # 2 4 196 16 * 2 4 16 196 -> 2 4 196 196
-                +
-                (self.attention_biases[:, self.attention_bias_idxs]
-                 if self.training else self.ab)
-        )
+        attn = ((q @ k.transpose(-2, -1)) *
+                self.scale  # 2 4 196 16 * 2 4 16 196 -> 2 4 196 196
+                + (self.attention_biases[:, self.attention_bias_idxs]
+                   if self.training else self.ab))
         attn = attn.softmax(dim=-1)  # 2 4 196 196 -> 2 4 196 196
-        x = (attn @ v).transpose(1, 2).reshape(B, N, self.dh)  # 2 4 196 196 * 2 4 196 32 -> 2 4 196 32 -> 2 196 128
+        x = (attn @ v).transpose(1, 2).reshape(
+            B, N,
+            self.dh)  # 2 4 196 196 * 2 4 196 32 -> 2 4 196 32 -> 2 196 128
         x = self.proj(x)
         return x
 
 
 class MLP(nn.Sequential):
-    def __init__(self,
-                 embed_dim,
-                 mlp_ratio,
-                 mlp_activation,
-                 ):
+
+    def __init__(
+        self,
+        embed_dim,
+        mlp_ratio,
+        mlp_activation,
+    ):
         super(MLP, self).__init__()
         h = embed_dim * mlp_ratio
         self.linear1 = Linear_BN(embed_dim, h)
@@ -240,6 +261,7 @@ class MLP(nn.Sequential):
 
 
 class Subsample(BaseModule):
+
     def __init__(self, stride, resolution):
         super(Subsample, self).__init__()
         self.stride = stride
@@ -247,41 +269,47 @@ class Subsample(BaseModule):
 
     def forward(self, x):
         B, N, C = x.shape  # 2 196 128
-        x = x.view(B, self.resolution, self.resolution, C)[  # 2 196 128 -> 2 14 14 128  -> 2 7 7 128
-            :, ::self.stride, ::self.stride].reshape(B, -1, C)  # # 2 14 14 128 > 2 49 128
+        x = x.view(B, self.resolution, self.resolution,
+                   C)[  # 2 196 128 -> 2 14 14 128  -> 2 7 7 128
+                       :, ::self.stride, ::self.stride].reshape(
+                           B, -1, C)  # # 2 14 14 128 > 2 49 128
         return x
 
 
 class AttentionSubsample(nn.Sequential):
-    def __init__(self, in_dim, out_dim, key_dim, num_heads=8,
+
+    def __init__(self,
+                 in_dim,
+                 out_dim,
+                 key_dim,
+                 num_heads=8,
                  attn_ratio=2,
                  activation=None,
                  stride=2,
-                 resolution=14, resolution_=7):
+                 resolution=14,
+                 resolution_=7):
         super(AttentionSubsample, self).__init__()
         self.num_heads = num_heads
-        self.scale = key_dim ** -0.5
+        self.scale = key_dim**-0.5
         self.key_dim = key_dim
         self.nh_kd = nh_kd = key_dim * num_heads
         self.d = int(attn_ratio * key_dim)
         self.dh = int(attn_ratio * key_dim) * self.num_heads
         self.attn_ratio = attn_ratio
         self.resolution_ = resolution_
-        self.resolution_2 = resolution_ ** 2
+        self.resolution_2 = resolution_**2
         h = self.dh + nh_kd
         self.kv = Linear_BN(in_dim, h)
 
         self.q = nn.Sequential(
-            Subsample(stride, resolution),
-            Linear_BN(in_dim, nh_kd))
-        self.proj = nn.Sequential(activation(), Linear_BN(
-            self.dh, out_dim))
+            Subsample(stride, resolution), Linear_BN(in_dim, nh_kd))
+        self.proj = nn.Sequential(activation(), Linear_BN(self.dh, out_dim))
 
         self.stride = stride
         self.resolution = resolution
         points = list(itertools.product(range(resolution), range(resolution)))
-        points_ = list(itertools.product(
-            range(resolution_), range(resolution_)))
+        points_ = list(
+            itertools.product(range(resolution_), range(resolution_)))
         N = len(points)
         N_ = len(points_)
         attention_offsets = {}
@@ -289,9 +317,8 @@ class AttentionSubsample(nn.Sequential):
         for p1 in points_:
             for p2 in points:
                 size = 1
-                offset = (
-                    abs(p1[0] * stride - p2[0] + (size - 1) / 2),
-                    abs(p1[1] * stride - p2[1] + (size - 1) / 2))
+                offset = (abs(p1[0] * stride - p2[0] + (size - 1) / 2),
+                          abs(p1[1] * stride - p2[1] + (size - 1) / 2))
                 if offset not in attention_offsets:
                     attention_offsets[offset] = len(attention_offsets)
                 idxs.append(attention_offsets[offset])
@@ -310,8 +337,8 @@ class AttentionSubsample(nn.Sequential):
 
     def forward(self, x):
         B, N, C = x.shape
-        k, v = self.kv(x).view(B, N, self.num_heads, -
-        1).split([self.key_dim, self.d], dim=3)
+        k, v = self.kv(x).view(B, N, self.num_heads,
+                               -1).split([self.key_dim, self.d], dim=3)
         k = k.permute(0, 2, 1, 3)  # BHNC
         v = v.permute(0, 2, 1, 3)  # BHNC
         q = self.q(x).view(B, self.resolution_2, self.num_heads,
@@ -329,8 +356,7 @@ class AttentionSubsample(nn.Sequential):
 
 @MODELS.register_module()
 class LeViT(BaseBackbone):
-    """ Vision Transformer with support for patch or hybrid CNN input stage
-    """
+    """Vision Transformer with support for patch or hybrid CNN input stage."""
 
     def __init__(self,
                  img_size=224,
@@ -346,7 +372,7 @@ class LeViT(BaseBackbone):
                  attention_activation=torch.nn.Hardswish,
                  mlp_activation=torch.nn.Hardswish,
                  drop_path=0,
-                 out_indices=(2,)):
+                 out_indices=(2, )):
         super(LeViT, self).__init__()
 
         self.out_indices = out_indices
@@ -362,20 +388,23 @@ class LeViT(BaseBackbone):
         down_ops.append([''])
         resolution = img_size // patch_size
         for i, (ed, kd, dpth, nh, ar, mr, do) in enumerate(
-                zip(embed_dim, key_dim, depth, num_heads, attn_ratio, mlp_ratio, down_ops)):
+                zip(embed_dim, key_dim, depth, num_heads, attn_ratio,
+                    mlp_ratio, down_ops)):
             for _ in range(dpth):
                 self.blocks[-1].append(
-                    Residual(Attention(
-                        ed, kd, nh,
-                        attn_ratio=ar,
-                        activation=attention_activation,
-                        resolution=resolution,
-                    ), drop_path))
+                    Residual(
+                        Attention(
+                            ed,
+                            kd,
+                            nh,
+                            attn_ratio=ar,
+                            activation=attention_activation,
+                            resolution=resolution,
+                        ), drop_path))
                 if mr > 0:
                     # h = int(ed * mr)
                     self.blocks[-1].append(
-                        Residual(
-                            MLP(ed, mr, mlp_activation), drop_path))
+                        Residual(MLP(ed, mr, mlp_activation), drop_path))
             if do[0] == 'Subsample':
                 # ('Subsample',key_dim, num_heads, attn_ratio, mlp_ratio, stride)
                 self.size.append(resolution)
@@ -383,7 +412,9 @@ class LeViT(BaseBackbone):
                 self.blocks.append([])
                 self.blocks[-1].append(
                     AttentionSubsample(
-                        *embed_dim[i:i + 2], key_dim=do[1], num_heads=do[2],
+                        *embed_dim[i:i + 2],
+                        key_dim=do[1],
+                        num_heads=do[2],
                         attn_ratio=do[3],
                         activation=attention_activation,
                         stride=do[5],
@@ -392,18 +423,15 @@ class LeViT(BaseBackbone):
                 resolution = resolution_
                 if do[4] > 0:  # mlp_ratio
                     self.blocks[-1].append(
-                        Residual(nn.Sequential(
-                            MLP(embed_dim[i + 1], do[4], mlp_activation)
-                        ), drop_path))
+                        Residual(
+                            nn.Sequential(
+                                MLP(embed_dim[i + 1], do[4], mlp_activation)),
+                            drop_path))
         self.blocks = [nn.Sequential(*i) for i in self.blocks]
         self.size.append(resolution)
         self.stages = nn.Sequential()
         for i in range(len(self.blocks)):
             self.stages.add_module('%d' % i, self.blocks[i])
-
-    @torch.jit.ignore
-    def no_weight_decay(self):
-        return {x for x in self.state_dict().keys() if 'attention_biases' in x}
 
     def forward(self, x):
         x = self.patch_embed(x)  # 2 3 224 224 -> 2 128 14 14
@@ -415,7 +443,8 @@ class LeViT(BaseBackbone):
             x = layer_name(x)
             B, _, C = x.shape
             if i in self.out_indices:
-                out = x.reshape(B, self.size[i], self.size[i], C).permute(0, 3, 1, 2)
+                out = x.reshape(B, self.size[i], self.size[i],
+                                C).permute(0, 3, 1, 2)
                 outs.append(out)
                 # out = out.permute(0, 2, 3, 1).reshape(B, self.size[i] * self.size[i], C)
         return tuple(outs)
@@ -424,6 +453,7 @@ class LeViT(BaseBackbone):
         if not mode:
             replace_batchnorm(self)
         super(LeViT, self).train()
+        self.to(next(self.patch_embed.patch_embed.parameters()).device)
 
 
 def replace_batchnorm(net):
@@ -439,6 +469,7 @@ def replace_batchnorm(net):
 
 
 class Model(BaseModule):
+
     def __init__(self,
                  patch_size=16,
                  embed_dim=None,
@@ -453,8 +484,7 @@ class Model(BaseModule):
                  hybrid_backbone=None,
                  num_classes=1000,
                  drop_path=0,
-                 distillation=True
-                 ):
+                 distillation=True):
         super(Model, self).__init__()
         self.backbone = LeViT(
             patch_size=patch_size,
@@ -470,7 +500,10 @@ class Model(BaseModule):
             hybrid_backbone=hybrid_backbone,
             drop_path=drop_path,
         )
-        self.head = LeViTClsHead(num_classes=num_classes, distillation=distillation, in_channels=embed_dim[-1])
+        self.head = LeViTClsHead(
+            num_classes=num_classes,
+            distillation=distillation,
+            in_channels=embed_dim[-1])
 
     def forward(self, x):
         x = self.backbone(x)
@@ -483,15 +516,40 @@ class Model(BaseModule):
 def get_LeViT_model(params_name='LeViT_128S'):
     specification = {
         'LeViT_128S': {
-            'C': '128_256_384', 'D': 16, 'N': '4_6_8', 'X': '2_3_4', 'drop_path': 0},
+            'C': '128_256_384',
+            'D': 16,
+            'N': '4_6_8',
+            'X': '2_3_4',
+            'drop_path': 0
+        },
         'LeViT_128': {
-            'C': '128_256_384', 'D': 16, 'N': '4_8_12', 'X': '4_4_4', 'drop_path': 0},
+            'C': '128_256_384',
+            'D': 16,
+            'N': '4_8_12',
+            'X': '4_4_4',
+            'drop_path': 0
+        },
         'LeViT_192': {
-            'C': '192_288_384', 'D': 32, 'N': '3_5_6', 'X': '4_4_4', 'drop_path': 0},
+            'C': '192_288_384',
+            'D': 32,
+            'N': '3_5_6',
+            'X': '4_4_4',
+            'drop_path': 0
+        },
         'LeViT_256': {
-            'C': '256_384_512', 'D': 32, 'N': '4_6_8', 'X': '4_4_4', 'drop_path': 0},
+            'C': '256_384_512',
+            'D': 32,
+            'N': '4_6_8',
+            'X': '4_4_4',
+            'drop_path': 0
+        },
         'LeViT_384': {
-            'C': '384_512_768', 'D': 32, 'N': '6_9_12', 'X': '4_4_4', 'drop_path': 0.1},
+            'C': '384_512_768',
+            'D': 32,
+            'N': '6_9_12',
+            'X': '4_4_4',
+            'drop_path': 0.1
+        },
     }
 
     params = specification[params_name]
@@ -524,6 +582,5 @@ def get_LeViT_model(params_name='LeViT_128S'):
         hybrid_backbone=hybrid_cnn(embed_dim[0], activation=act),
         num_classes=1000,
         drop_path=drop_path,
-        distillation=True
-    )
+        distillation=True)
     return model

@@ -1,15 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
 import torch.nn as nn
-
 from mmcv.cnn import Linear
-from mmengine.model import BaseModule
 
 from mmcls.models.heads import ClsHead
 from mmcls.registry import MODELS
 
 
 class BN_Linear(nn.Sequential):
+
     def __init__(self, in_feature, out_feature, bias=True, std=0.02):
         super(BN_Linear, self).__init__()
         bn = nn.BatchNorm1d(in_feature)
@@ -23,7 +22,7 @@ class BN_Linear(nn.Sequential):
     @torch.no_grad()
     def fuse(self):
         device = next(self.linear.parameters()).device
-        w = self.bn.weight / (self.bn.running_var + self.bn.eps) ** 0.5
+        w = self.bn.weight / (self.bn.running_var + self.bn.eps)**0.5
         b = self.bn.bias - self.bn.running_mean * \
             self.bn.weight / (self.bn.running_var + self.bn.eps) ** 0.5
         w = self.linear.weight * w[None, :]
@@ -40,9 +39,13 @@ class BN_Linear(nn.Sequential):
 
 @MODELS.register_module()
 class LeViTClsHead(ClsHead):
-    def __init__(self, num_classes=1000, distillation=True, in_channels=None,
+
+    def __init__(self,
+                 num_classes=1000,
+                 distillation=True,
+                 in_channels=None,
                  loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
-                 topk=(1,)):
+                 topk=(1, )):
         super(LeViTClsHead, self).__init__()
         self.topk = topk
         self.loss_module = MODELS.build(loss)
@@ -52,10 +55,11 @@ class LeViTClsHead(ClsHead):
             in_channels, num_classes) if num_classes > 0 else nn.Identity()
         if distillation:
             self.head_dist = BN_Linear(
-                in_channels, num_classes) if num_classes > 0 else nn.Identity()
+                in_channels,
+                num_classes) if num_classes > 0 else nn.Identity()
 
     def forward(self, x):
-        x = x[-1]
+        x = self.pre_logits(x)
         B, C, W, H = x.shape
         x = x.permute(0, 2, 3, 1).reshape(B, W * H, C)
         x = x.mean(1)  # 2 384
