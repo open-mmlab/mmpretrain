@@ -1,9 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from functools import partial
+import warnings
 from typing import Callable, List, Optional, Tuple, Sequence
 
 import torch
-from debugpy.common.log import warning
 from torch import Tensor
 import torch.nn as nn
 from mmcv.cnn.bricks import DropPath, ConvModule
@@ -17,18 +16,19 @@ from mmcls.registry import MODELS
 
 class EnhancedConvModule(ConvModule):
     """Conv with short-cut and droppath."""
-    def __init__(self,*args, has_skip=False, drop_path_rate=0, **args):
-        super()._init__(*args, **args)
+
+    def __init__(self, *args, has_skip=False, drop_path_rate=0, **kwargs):
+        super().__init__(*args, **kwargs)
         # some assert lines
         self.has_skip = has_skip
         if self.has_skip:
-            assert stride == 1 and in_channels == out_channels, (
+            assert self.stride == (1, 1) and self.in_channels == self.out_channels, (
                 "the stride must be 1 and the in_C must be equal with"
                 " out_C, when `skip` is True in `ConvWithSkip` .")
         self.drop_path = DropPath(drop_path_rate) if drop_path_rate else nn.Identity()
-        if self.has_skip and self.inplace :
+        if self.has_skip and self.inplace:
             self.inplace = False
-            warning.warn("if there has short-cut in `EnhanceConv`, in place would be False.")
+            warnings.warn("if there has short-cut in `EnhanceConv`, in place would be False.")
 
     def forward(self,
                 x: torch.Tensor,
@@ -47,38 +47,6 @@ class EnhancedConvModule(ConvModule):
         if self.has_skip:
             x = self.drop_path(x) + short_cut
         return x
-
-
-# class ConvWithSkip(BaseModule):
-#     def __init__(self,
-#                  in_channels,
-#                  out_channels,
-#                  kernel_size,
-#                  stride=1,
-#                  skip=True,
-#                  drop_path_rate=0.,
-#                  conv_cfg=dict(type='Conv2dAdaptivePadding'),
-#                  norm_cfg=dict(type='BN', eps=1e-3, momentum=0.1),
-#                  act_cfg=dict(type='Swish'),
-#                  init_cfg=None):
-#         super(ConvWithSkip, self).__init__(init_cfg=init_cfg)
-#         self.conv = ConvModule(
-#             in_channels=in_channels,
-#             out_channels=out_channels,
-#             kernel_size=kernel_size,
-#             stride=stride,
-#             conv_cfg=conv_cfg,
-#             norm_cfg=norm_cfg,
-#             act_cfg=act_cfg)
-#         self.has_skip = skip and stride == 1 and in_channels == out_channels
-#         self.drop_path = DropPath(drop_path_rate) if drop_path_rate else nn.Identity()
-#
-#     def forward(self, x):
-#         shortcut = x
-#         x = self.conv(x)
-#         if self.has_skip:
-#             x = self.drop_path(x) + shortcut
-#         return x
 
 
 @MODELS.register_module()
@@ -168,7 +136,7 @@ class EfficientNetV2(BaseBackbone):
         self.layers = nn.ModuleList()
         block_cfg_last = self.arch[-1]
         assert block_cfg_last[-1] == -2, \
-            f'the last block_type must be -2 ,'\
+            f'the last block_type must be -2 ,' \
             f'It is conv module. but ' \
             f'get block_type={block_cfg_last[-1]}'
         self.in_channels = self.arch[0][4]
@@ -228,15 +196,15 @@ class EfficientNetV2(BaseBackbone):
                 if block_type == -1:
                     if stride == 1 and self.in_channels == out_channels:
                         layer.append(EnhancedConvModule
-                            (in_channels=self.in_channels,
-                             out_channels=out_channels,
-                             kernel_size=kernel_size,
-                             stride=stride,
-                             has_skip=True,
-                             drop_path_rate=dpr[block_idx],
-                             conv_cfg=self.conv_cfg,
-                             norm_cfg=self.norm_cfg,
-                             act_cfg=self.act_cfg))
+                                     (in_channels=self.in_channels,
+                                      out_channels=out_channels,
+                                      kernel_size=kernel_size,
+                                      has_skip=True,
+                                      drop_path_rate=dpr[block_idx],
+                                      stride=stride,
+                                      conv_cfg=self.conv_cfg,
+                                      norm_cfg=self.norm_cfg,
+                                      act_cfg=self.act_cfg))
                         self.in_channels = out_channels
                     else:
                         layer.append(ConvModule(
@@ -255,7 +223,7 @@ class EfficientNetV2(BaseBackbone):
                     else:
                         se_cfg = dict(
                             channels=mid_channels,
-                            ratio=expand_ratio * (1.0/se_ratio),
+                            ratio=expand_ratio * (1.0 / se_ratio),
                             divisor=1,
                             act_cfg=(self.act_cfg, dict(type='Sigmoid')))
                     if block_type == 0:
