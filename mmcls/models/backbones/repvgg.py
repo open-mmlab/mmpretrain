@@ -453,12 +453,6 @@ class RepVGG(BaseBackbone):
             width_factor=[2.5, 2.5, 2.5, 5],
             group_layer_map=None,
             se_cfg=dict(ratio=16, divisor=1)),
-        'L2se':
-        dict(
-            num_blocks=[8, 14, 24, 1],
-            width_factor=[2.5, 2.5, 2.5, 5],
-            group_layer_map=None,
-            se_cfg=dict(ratio=16, divisor=1, position='after_relu')),
         'yolox-pai-small':
         dict(
             num_blocks=[3, 5, 7, 3],
