@@ -111,6 +111,8 @@ def main():
                 plt.show()
     if len(root) > 0:
         root.draw_tree(with_value=True)
+        print("Above parameters didn't pass the test, "
+              'and the values are their similarity score.')
     else:
         print('The distributions of all weights are the same.')
 

@@ -35,6 +35,10 @@ def parse_args():
         '--number',
         action='store_true',
         help='Mark all parameters and their index number.')
+    parser.add_argument(
+        '--node',
+        type=str,
+        help='Show the sub-tree of a node, like "backbone.layers".')
     args = parser.parse_args()
     return args
 
@@ -158,6 +162,10 @@ def main():
 
     para_index = 0
     mark_width = math.floor(math.log(len(state_dict), 10) + 1)
+    if args.node is not None:
+        for key in args.node.split('.'):
+            root = root[key]
+
     for line in root.iter_tree(
             max_depth=args.depth,
             full_name=args.full_name,

@@ -73,21 +73,22 @@ def add_models(metafile, readme):
 
     datasets = defaultdict(list)
     for model in models:
-        if model.results is None and 'in21k' in model.name.split('_')[-1]:
-            # No results on ImageNet-21k pretrained model.
-            datasets['ImageNet-21k'].append(model)
+        if model.results is None:
+            # No results on pretrained model.
+            datasets['Pre-trained Models'].append(model)
         else:
             datasets[model.results[0].dataset].append(model)
 
     for dataset, models in datasets.items():
-        if dataset == 'ImageNet-21k':
+        if dataset == 'Pre-trained Models':
             readme.append(f'### {dataset}\n')
             readme.append(
-                'The pre-trained models on ImageNet-21k are used to fine-tune, '
-                "and therefore don't have evaluation results.\n")
+                'The pre-trained models are only used to fine-tune, '
+                "and therefore cannot be trained and don't have evaluation results.\n"
+            )
             readme.append(
-                '|         Model         | Params(M) | Flops(G) | Config | Download |\n'
-                '|:---------------------:|:---------:|:--------:|:------:|:--------:|'
+                '|         Model         |  Pretrain | Params(M) | Flops(G) | Config | Download |\n'
+                '|:---------------------:|:---------:|:---------:|:--------:|:------:|:--------:|'
             )
             converted_from = None
             for model in models:
