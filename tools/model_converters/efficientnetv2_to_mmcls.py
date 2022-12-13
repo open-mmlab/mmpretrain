@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 """
 convert the weights of efficientnetv2 in
-timm(https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py)
+timm(https://github.com/rwightman/pytorch-image-models)
 to mmcls format.
 """
 import argparse
@@ -37,9 +37,9 @@ def convert_from_efficientnetv2_timm(param):
                 name = name[:7] + str(operater + 1) + name[8:]
                 name = name.replace('blocks', 'backbone.layers')
                 if 'conv' in name:
-                    name = name.replace('conv', 'conv.conv')
+                    name = name.replace('conv', 'conv')
                 if 'bn1' in name:
-                    name = name.replace('bn1', 'conv.bn')
+                    name = name.replace('bn1', 'bn')
             elif operater < 3:
                 name = name[:7] + str(operater + 1) + name[8:]
                 name = name.replace('blocks', 'backbone.layers')
