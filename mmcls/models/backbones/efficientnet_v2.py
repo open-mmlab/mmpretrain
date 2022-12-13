@@ -36,7 +36,7 @@ class EnhancedConvModule(ConvModule):
                 norm: bool = True) -> torch.Tensor:
         short_cut = x
         for layer in self.order:
-           if layer == 'conv':
+            if layer == 'conv':
                 if self.with_explicit_padding:
                     x = self.padding_layer(x)
                 x = self.conv(x)
