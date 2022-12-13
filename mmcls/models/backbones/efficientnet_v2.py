@@ -3,6 +3,7 @@ from functools import partial
 from typing import Callable, List, Optional, Tuple, Sequence
 
 import torch
+from debugpy.common.log import warning
 from torch import Tensor
 import torch.nn as nn
 from mmcv.cnn.bricks import DropPath, ConvModule
@@ -14,36 +15,70 @@ from mmcls.models.utils import InvertedResidual as MBConv
 from mmcls.registry import MODELS
 
 
-class ConvWithSkip(BaseModule):
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 kernel_size,
-                 stride=1,
-                 skip=True,
-                 drop_path_rate=0.,
-                 conv_cfg=dict(type='Conv2dAdaptivePadding'),
-                 norm_cfg=dict(type='BN', eps=1e-3, momentum=0.1),
-                 act_cfg=dict(type='Swish'),
-                 init_cfg=None):
-        super(ConvWithSkip, self).__init__(init_cfg=init_cfg)
-        self.conv = ConvModule(
-            in_channels=in_channels,
-            out_channels=out_channels,
-            kernel_size=kernel_size,
-            stride=stride,
-            conv_cfg=conv_cfg,
-            norm_cfg=norm_cfg,
-            act_cfg=act_cfg)
-        self.has_skip = skip and stride == 1 and in_channels == out_channels
-        self.drop_path = DropPath(drop_path_rate) if drop_path_rate else nn.Identity()
-
-    def forward(self, x):
-        shortcut = x
-        x = self.conv(x)
+class EnhancedConvModule(ConvModule):
+    """Conv with short-cut and droppath."""
+    def __init__(self,*args, has_skip=False, drop_path_rate=0, **args):
+        super()._init__(*args, **args)
+        # some assert lines
+        self.has_skip = has_skip
         if self.has_skip:
-            x = self.drop_path(x) + shortcut
+            assert stride == 1 and in_channels == out_channels, (
+                "the stride must be 1 and the in_C must be equal with"
+                " out_C, when `skip` is True in `ConvWithSkip` .")
+        self.drop_path = DropPath(drop_path_rate) if drop_path_rate else nn.Identity()
+        if self.has_skip and self.inplace :
+            self.inplace = False
+            warning.warn("if there has short-cut in `EnhanceConv`, in place would be False.")
+
+    def forward(self,
+                x: torch.Tensor,
+                activate: bool = True,
+                norm: bool = True) -> torch.Tensor:
+        short_cut = x
+        for layer in self.order:
+           if layer == 'conv':
+                if self.with_explicit_padding:
+                    x = self.padding_layer(x)
+                x = self.conv(x)
+            elif layer == 'norm' and norm and self.with_norm:
+                x = self.norm(x)
+            elif layer == 'act' and activate and self.with_activation:
+                x = self.activate(x)
+        if self.has_skip:
+            x = self.drop_path(x) + short_cut
         return x
+
+
+# class ConvWithSkip(BaseModule):
+#     def __init__(self,
+#                  in_channels,
+#                  out_channels,
+#                  kernel_size,
+#                  stride=1,
+#                  skip=True,
+#                  drop_path_rate=0.,
+#                  conv_cfg=dict(type='Conv2dAdaptivePadding'),
+#                  norm_cfg=dict(type='BN', eps=1e-3, momentum=0.1),
+#                  act_cfg=dict(type='Swish'),
+#                  init_cfg=None):
+#         super(ConvWithSkip, self).__init__(init_cfg=init_cfg)
+#         self.conv = ConvModule(
+#             in_channels=in_channels,
+#             out_channels=out_channels,
+#             kernel_size=kernel_size,
+#             stride=stride,
+#             conv_cfg=conv_cfg,
+#             norm_cfg=norm_cfg,
+#             act_cfg=act_cfg)
+#         self.has_skip = skip and stride == 1 and in_channels == out_channels
+#         self.drop_path = DropPath(drop_path_rate) if drop_path_rate else nn.Identity()
+#
+#     def forward(self, x):
+#         shortcut = x
+#         x = self.conv(x)
+#         if self.has_skip:
+#             x = self.drop_path(x) + shortcut
+#         return x
 
 
 @MODELS.register_module()
@@ -191,17 +226,28 @@ class EfficientNetV2(BaseBackbone):
             for i in range(repeat):
                 stride = stride if i == 0 else 1
                 if block_type == -1:
-                    layer.append(ConvWithSkip
-                        (in_channels=self.in_channels,
-                         out_channels=out_channels,
-                         kernel_size=kernel_size,
-                         stride=stride,
-                         skip=True,
-                         drop_path_rate=dpr[block_idx],
-                         conv_cfg=self.conv_cfg,
-                         norm_cfg=self.norm_cfg,
-                         act_cfg=self.act_cfg))
-                    self.in_channels = out_channels
+                    if stride == 1 and self.in_channels == out_channels:
+                        layer.append(EnhancedConvModule
+                            (in_channels=self.in_channels,
+                             out_channels=out_channels,
+                             kernel_size=kernel_size,
+                             stride=stride,
+                             has_skip=True,
+                             drop_path_rate=dpr[block_idx],
+                             conv_cfg=self.conv_cfg,
+                             norm_cfg=self.norm_cfg,
+                             act_cfg=self.act_cfg))
+                        self.in_channels = out_channels
+                    else:
+                        layer.append(ConvModule(
+                            in_channels=self.in_channels,
+                            out_channels=out_channels,
+                            kernel_size=kernel_size,
+                            stride=stride,
+                            conv_cfg=self.conv_cfg,
+                            norm_cfg=self.norm_cfg,
+                            act_cfg=self.act_cfg))
+                        self.in_channels = out_channels
                 else:
                     mid_channels = int(self.in_channels * expand_ratio)
                     if se_ratio <= 0:
