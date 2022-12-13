@@ -5,6 +5,9 @@ _base_ = [
     '../_base_/default_runtime.py'
 ]
 
+val_dataloader = dict(batch_size=256)
+test_dataloader = dict(batch_size=256)
+
 # schedule settings
 optim_wrapper = dict(
     paramwise_cfg=dict(
@@ -26,14 +29,5 @@ param_scheduler = dict(
 
 train_cfg = dict(by_epoch=True, max_epochs=120)
 
-train_pipeline = [
-    dict(type='LoadImageFromFile'),
-    dict(type='VisionRRC', scale=224),
-    dict(type='RandomFlip', prob=0.5, direction='horizontal'),
-    dict(type='PackClsInputs'),
-]
-
 default_hooks = dict(
     checkpoint=dict(type='CheckpointHook', interval=1, max_keep_ckpts=3))
-
-train_dataloader = dict(dataset=dict(pipeline=train_pipeline), )
