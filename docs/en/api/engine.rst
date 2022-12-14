@@ -33,6 +33,7 @@ Hooks
    VisualizationHook
    PrepareProtoBeforeValLoopHook
    SetAdaptiveMarginsHook
+   EMAHook
 
 .. module:: mmcls.engine.optimizers
 
