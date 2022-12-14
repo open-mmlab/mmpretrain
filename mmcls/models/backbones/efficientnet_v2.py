@@ -128,6 +128,10 @@ class EfficientNetV2(BaseBackbone):
             f'"{arch}" is not one of the arch_settings ' \
             f'({", ".join(self.arch_settings.keys())})'
         self.arch = self.arch_settings[arch]
+        if frozen_stages not in range(len(self.arch) + 1):
+            raise ValueError('frozen_stages must be in range(0, '
+                             f'{len(self.arch)}). '
+                             f'But received {frozen_stages}')
         self.drop_path_rate = drop_path_rate
         self.frozen_stages = frozen_stages
         self.norm_eval = norm_eval
