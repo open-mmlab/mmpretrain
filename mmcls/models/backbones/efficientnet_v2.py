@@ -56,6 +56,7 @@ class EfficientNetV2(BaseBackbone):
     Args:
         arch (str): Architecture of efficientnetv2. Defaults to s.
         drop_path_rate (float): The ratio of the stochastic depth.
+            Defaults to 0.0.
         out_indices (Sequence[int]): Output from which stages.
             Defaults to (-1, ).
         frozen_stages (int): Stages to be frozen (all param fixed).
