@@ -28,7 +28,7 @@ CUDA_VISIBLE_DEVICES=-1 python tools/train.py ${CONFIG_FILE} [ARGS]
 | `--amp`                               | 启用混合精度训练。                                                                                                                                                  |
 | `--no-validate`                       | **不建议** 在训练过程中不进行验证集上的精度验证。                                                                                                                   |
 | `--auto-scale-lr`                     | 自动根据实际的批次大小（batch size）和预设的批次大小对学习率进行缩放。                                                                                              |
-| `--cfg-options CFG_OPTIONS`           | 重载配置文件中的一些设置。使用类似 `xxx=yyy` 的键值对形式指定，这些设置会被融合入从配置文件读取的配置。你可以使用 `key="[a,b]"` 或者 `key=a,b` 的格式来指定列表格式的值，且支持嵌套，例如 \`key="\[(a,b),(c,d)\]"，这里的引号是不可省略的。另外每个重载项内部不可出现空格。 |
+| `--cfg-options CFG_OPTIONS`           | 重载配置文件中的一些设置。使用类似 `xxx=yyy` 的键值对形式指定，这些设置会被融合入从配置文件读取的配置。你可以使用 `key="[a,b]"` 或者 `key=a,b` 的格式来指定列表格式的值，且支持嵌套，例如 \`key="[(a,b),(c,d)]"，这里的引号是不可省略的。另外每个重载项内部不可出现空格。 |
 | `--launcher {none,pytorch,slurm,mpi}` | 启动器，默认为 "none"。                                                                                                                                             |
 
 ### 单机多卡训练
@@ -141,7 +141,7 @@ CUDA_VISIBLE_DEVICES=-1 python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [
 | `--work-dir WORK_DIR`                 | 用来保存测试指标结果的文件夹。                                                                                                                                      |
 | `--out OUT`                           | 用来保存测试指标结果的文件。                                                                                                                                        |
 | `--dump DUMP`                         | 用来保存所有模型输出的文件，这些数据可以用于离线测评。                                                                                                              |
-| `--cfg-options CFG_OPTIONS`           | 重载配置文件中的一些设置。使用类似 `xxx=yyy` 的键值对形式指定，这些设置会被融合入从配置文件读取的配置。你可以使用 `key="[a,b]"` 或者 `key=a,b` 的格式来指定列表格式的值，且支持嵌套，例如 \`key="\[(a,b),(c,d)\]"，这里的引号是不可省略的。另外每个重载项内部不可出现空格。 |
+| `--cfg-options CFG_OPTIONS`           | 重载配置文件中的一些设置。使用类似 `xxx=yyy` 的键值对形式指定，这些设置会被融合入从配置文件读取的配置。你可以使用 `key="[a,b]"` 或者 `key=a,b` 的格式来指定列表格式的值，且支持嵌套，例如 \`key="[(a,b),(c,d)]"，这里的引号是不可省略的。另外每个重载项内部不可出现空格。 |
 | `--show-dir SHOW_DIR`                 | 用于保存可视化预测结果图像的文件夹。                                                                                                                                |
 | `--show`                              | 在窗口中显示预测结果图像。                                                                                                                                          |
 | `--interval INTERVAL`                 | 每隔多少样本进行一次预测结果可视化。                                                                                                                                |

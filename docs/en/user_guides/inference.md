@@ -38,10 +38,10 @@ model = init_model(config_path, checkpoint_path, device="cpu")  # device can be 
 result = inference_model(model, img_path)
 ```
 
-`result` is a dictionary containing `pred_label`, `pred_score` and `pred_score`, the result is as follows:
+`result` is a dictionary containing `pred_label`, `pred_score`, `pred_scores` and `pred_class`, the result is as follows:
 
 ```text
-{"pred_label":65,"pred_score":0.6649366617202759,"pred_class":"sea snake"}
+{"pred_label":65,"pred_score":0.6649366617202759,"pred_class":"sea snake", "pred_scores": [..., 0.6649366617202759, ...]}
 ```
 
 An image demo can be found in [demo/image_demo.py](https://github.com/open-mmlab/mmclassification/blob/1.x/demo/image_demo.py).

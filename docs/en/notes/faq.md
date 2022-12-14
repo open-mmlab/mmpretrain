@@ -17,8 +17,9 @@ and make sure you fill in all required information in the template.
 
   | MMClassification version |      MMCV version      |
   | :----------------------: | :--------------------: |
-  |      1.0.0rc0 (1.x)      |     mmcv>=2.0.0rc1     |
-  |     0.23.1 (master)      |  mmcv>=1.4.2, \<1.6.0  |
+  |      1.0.0rc4 (1.x)      |     mmcv>=2.0.0rc1     |
+  |     0.24.0 (master)      |  mmcv>=1.4.2, \<1.7.0  |
+  |          0.23.1          |  mmcv>=1.4.2, \<1.6.0  |
   |          0.22.1          |  mmcv>=1.4.2, \<1.6.0  |
   |          0.21.0          | mmcv>=1.4.2, \<=1.5.0  |
   |          0.20.1          | mmcv>=1.4.2, \<=1.5.0  |

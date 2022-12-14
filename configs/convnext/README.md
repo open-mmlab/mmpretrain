@@ -4,17 +4,84 @@
 
 <!-- [ALGORITHM] -->
 
-## Abstract
+## Introduction
 
-<!-- [ABSTRACT] -->
-
-The "Roaring 20s" of visual recognition began with the introduction of Vision Transformers (ViTs), which quickly superseded ConvNets as the state-of-the-art image classification model. A vanilla ViT, on the other hand, faces difficulties when applied to general computer vision tasks such as object detection and semantic segmentation. It is the hierarchical Transformers (e.g., Swin Transformers) that reintroduced several ConvNet priors, making Transformers practically viable as a generic vision backbone and demonstrating remarkable performance on a wide variety of vision tasks. However, the effectiveness of such hybrid approaches is still largely credited to the intrinsic superiority of Transformers, rather than the inherent inductive biases of convolutions. In this work, we reexamine the design spaces and test the limits of what a pure ConvNet can achieve. We gradually "modernize" a standard ResNet toward the design of a vision Transformer, and discover several key components that contribute to the performance difference along the way. The outcome of this exploration is a family of pure ConvNet models dubbed ConvNeXt. Constructed entirely from standard ConvNet modules, ConvNeXts compete favorably with Transformers in terms of accuracy and scalability, achieving 87.8% ImageNet top-1 accuracy and outperforming Swin Transformers on COCO detection and ADE20K segmentation, while maintaining the simplicity and efficiency of standard ConvNets.
+**ConvNeXt** is initially described in [A ConvNet for the 2020s](https://arxiv.org/abs/2201.03545v1), which is a pure convolutional model (ConvNet), inspired by the design of Vision Transformers. The ConvNeXt has the pyramid structure and achieve competitive  performance on various vision tasks, with simplicity and efficiency.
 
 <!-- [IMAGE] -->
 
 <div align=center>
 <img src="https://user-images.githubusercontent.com/8370623/148624004-e9581042-ea4d-4e10-b3bd-42c92b02053b.png" width="100%"/>
 </div>
+
+## Abstract
+
+<details>
+
+<summary>Show the paper's abstract</summary>
+
+<!-- [ABSTRACT] -->
+
+<br>
+The "Roaring 20s" of visual recognition began with the introduction of Vision Transformers (ViTs), which quickly superseded ConvNets as the state-of-the-art image classification model. A vanilla ViT, on the other hand, faces difficulties when applied to general computer vision tasks such as object detection and semantic segmentation. It is the hierarchical Transformers (e.g., Swin Transformers) that reintroduced several ConvNet priors, making Transformers practically viable as a generic vision backbone and demonstrating remarkable performance on a wide variety of vision tasks. However, the effectiveness of such hybrid approaches is still largely credited to the intrinsic superiority of Transformers, rather than the inherent inductive biases of convolutions. In this work, we reexamine the design spaces and test the limits of what a pure ConvNet can achieve. We gradually "modernize" a standard ResNet toward the design of a vision Transformer, and discover several key components that contribute to the performance difference along the way. The outcome of this exploration is a family of pure ConvNet models dubbed ConvNeXt. Constructed entirely from standard ConvNet modules, ConvNeXts compete favorably with Transformers in terms of accuracy and scalability, achieving 87.8% ImageNet top-1 accuracy and outperforming Swin Transformers on COCO detection and ADE20K segmentation, while maintaining the simplicity and efficiency of standard ConvNets.
+</br>
+
+</details>
+
+## How to use it?
+
+<!-- [TABS-BEGIN] -->
+
+**Predict image**
+
+```python
+>>> import torch
+>>> from mmcls.apis import init_model, inference_model
+>>>
+>>> model = init_model('configs/convnext/convnext-tiny_32xb128_in1k.py', 'https://download.openmmlab.com/mmclassification/v0/convnext/convnext-tiny_3rdparty_32xb128-noema_in1k_20220222-2908964a.pth')
+>>> predict = inference_model(model, 'demo/demo.JPEG')
+>>> print(predict['pred_class'])
+sea snake
+>>> print(predict['pred_score'])
+0.8915778398513794
+```
+
+**Use the model**
+
+```python
+>>> import torch
+>>> from mmcls.apis import init_model
+>>>
+>>> model = init_model('configs/convnext/convnext-tiny_32xb128_in1k.py', 'https://download.openmmlab.com/mmclassification/v0/convnext/convnext-tiny_3rdparty_32xb128-noema_in1k_20220222-2908964a.pth')
+>>> inputs = torch.rand(1, 3, 224, 224).to(model.data_preprocessor.device)
+>>> # To get classification scores.
+>>> out = model(inputs)
+>>> print(out.shape)
+torch.Size([1, 1000])
+>>> # To extract features.
+>>> outs = model.extract_feat(inputs)
+>>> print(outs[0].shape)
+torch.Size([1, 768])
+```
+
+**Train/Test Command**
+
+Place the ImageNet dataset to the `data/imagenet/` directory, or prepare datasets according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+
+Train:
+
+````shell
+python tools/train.py configs/convnext/convnext-tiny_32xb128_in1k.py
+
+Test:
+
+```shell
+python tools/test.py configs/convnext/convnext-tiny_32xb128_in1k.py https://download.openmmlab.com/mmclassification/v0/convnext/convnext-tiny_3rdparty_32xb128-noema_in1k_20220222-2908964a.pth
+````
+
+<!-- [TABS-END] -->
+
+For more configurable parameters, please refer to the [API](https://mmclassification.readthedocs.io/en/1.x/api/generated/mmcls.models.backbones.ConvNeXt.html#mmcls.models.backbones.ConvNeXt).
 
 ## Results and models
 

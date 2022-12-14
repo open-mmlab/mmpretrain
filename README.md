@@ -28,7 +28,7 @@
 [![issue resolution](https://isitmaintained.com/badge/resolution/open-mmlab/mmclassification.svg)](https://github.com/open-mmlab/mmclassification/issues)
 
 [📘 Documentation](https://mmclassification.readthedocs.io/en/1.x/) |
-[🛠️ Installation](https://mmclassification.readthedocs.io/en/1.xget_started.html) |
+[🛠️ Installation](https://mmclassification.readthedocs.io/en/dev-1.x/get_started.html#installation) |
 [👀 Model Zoo](https://mmclassification.readthedocs.io/en/1.x/modelzoo_statistics.html) |
 [🆕 Update News](https://mmclassification.readthedocs.io/en/1.x/notes/changelog.html) |
 [🤔 Reporting Issues](https://github.com/open-mmlab/mmclassification/issues/new/choose)
@@ -58,7 +58,17 @@ The `1.x` branch works with **PyTorch 1.6+**.
 
 ## What's new
 
-v1.0.0rc0 was released in 31/8/2022.
+v1.0.0rc4 was released in 06/12/2022.
+
+- Upgrade API to get pre-defined models of MMClassification. See [#1236](https://github.com/open-mmlab/mmclassification/pull/1236) for more details.
+- Refactor BEiT backbone and support v1/v2 inference. See [#1144](https://github.com/open-mmlab/mmclassification/pull/1144).
+
+v1.0.0rc3 was released in 21/11/2022.
+
+- Add **Switch Recipe** Hook, Now we can modify training pipeline, mixup and loss settings during training, see [#1101](https://github.com/open-mmlab/mmclassification/pull/1101).
+- Add **TIMM and HuggingFace** wrappers. Now you can train/use models in TIMM/HuggingFace directly, see [#1102](https://github.com/open-mmlab/mmclassification/pull/1102).
+- Support **retrieval tasks**, see [#1055](https://github.com/open-mmlab/mmclassification/pull/1055).
+- Reproduce **mobileone** training accuracy. See [#1191](https://github.com/open-mmlab/mmclassification/pull/1191)
 
 This release introduced a brand new and flexible training & test engine, but it's still in progress. Welcome
 to try according to [the documentation](https://mmclassification.readthedocs.io/en/1.x/).
@@ -122,6 +132,7 @@ Results and models are available in the [model zoo](https://mmclassification.rea
 - [x] [Res2Net](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/res2net)
 - [x] [MLP-Mixer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mlp_mixer)
 - [x] [DeiT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/deit)
+- [x] [DeiT-3](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/deit3)
 - [x] [Conformer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/conformer)
 - [x] [T2T-ViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/t2t_vit)
 - [x] [Twins](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/twins)
@@ -137,6 +148,11 @@ Results and models are available in the [model zoo](https://mmclassification.rea
 - [x] [MobileOne](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobileone)
 - [x] [EfficientFormer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/efficientformer)
 - [x] [MViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mvit)
+- [x] [HorNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/hornet)
+- [x] [MobileViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobilevit)
+- [x] [DaViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/davit)
+- [x] [RepLKNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/replknet)
+- [x] [BEiT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/beit) / [BEiT v2](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/beitv2)
 
 </details>
 
@@ -172,10 +188,12 @@ This project is released under the [Apache 2.0 license](LICENSE).
 - [MMEngine](https://github.com/open-mmlab/mmengine): OpenMMLab foundational library for training deep learning models.
 - [MMCV](https://github.com/open-mmlab/mmcv): OpenMMLab foundational library for computer vision.
 - [MIM](https://github.com/open-mmlab/mim): MIM installs OpenMMLab packages.
+- [MMEval](https://github.com/open-mmlab/mmeval): A unified evaluation library for multiple machine learning libraries.
 - [MMClassification](https://github.com/open-mmlab/mmclassification): OpenMMLab image classification toolbox and benchmark.
 - [MMDetection](https://github.com/open-mmlab/mmdetection): OpenMMLab detection toolbox and benchmark.
 - [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): OpenMMLab's next-generation platform for general 3D object detection.
 - [MMRotate](https://github.com/open-mmlab/mmrotate): OpenMMLab rotated object detection toolbox and benchmark.
+- [MMYOLO](https://github.com/open-mmlab/mmyolo): OpenMMLab YOLO series toolbox and benchmark.
 - [MMSegmentation](https://github.com/open-mmlab/mmsegmentation): OpenMMLab semantic segmentation toolbox and benchmark.
 - [MMOCR](https://github.com/open-mmlab/mmocr): OpenMMLab text detection, recognition, and understanding toolbox.
 - [MMPose](https://github.com/open-mmlab/mmpose): OpenMMLab pose estimation toolbox and benchmark.

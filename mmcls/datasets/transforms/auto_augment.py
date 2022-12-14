@@ -362,7 +362,7 @@ class Shear(BaseAugTransform):
 
     Args:
         magnitude (int | float | None): The magnitude used for shear. If None,
-            generate from ``magnitude_range``, see :class:`AugTransform`.
+            generate from ``magnitude_range``, see :class:`BaseAugTransform`.
             Defaults to None.
         pad_val (int, Sequence[int]): Pixel pad_val value for constant fill.
             If a sequence of length 3, it is used to pad_val R, G, B channels
@@ -375,7 +375,7 @@ class Shear(BaseAugTransform):
             negative, which should be in range [0,1]. Defaults to 0.5.
         interpolation (str): Interpolation method. Options are 'nearest',
             'bilinear', 'bicubic', 'area', 'lanczos'. Defaults to 'bicubic'.
-        **kwargs: Other keyword arguments of :class:`AugTransform`.
+        **kwargs: Other keyword arguments of :class:`BaseAugTransform`.
     """
 
     def __init__(self,
@@ -444,7 +444,7 @@ class Translate(BaseAugTransform):
             that the offset is calculated by magnitude * size in the
             corresponding direction. With a magnitude of 1, the whole image
             will be moved out of the range. If None, generate from
-            ``magnitude_range``, see :class:`AugTransform`.
+            ``magnitude_range``, see :class:`BaseAugTransform`.
         pad_val (int, Sequence[int]): Pixel pad_val value for constant fill.
             If a sequence of length 3, it is used to pad_val R, G, B channels
             respectively. Defaults to 128.
@@ -456,7 +456,7 @@ class Translate(BaseAugTransform):
             negative, which should be in range [0,1]. Defaults to 0.5.
         interpolation (str): Interpolation method. Options are 'nearest',
             'bilinear', 'bicubic', 'area', 'lanczos'. Defaults to 'nearest'.
-        **kwargs: Other keyword arguments of :class:`AugTransform`.
+        **kwargs: Other keyword arguments of :class:`BaseAugTransform`.
     """
 
     def __init__(self,
@@ -528,7 +528,8 @@ class Rotate(BaseAugTransform):
     Args:
         angle (float, optional): The angle used for rotate. Positive values
             stand for clockwise rotation. If None, generate from
-            ``magnitude_range``, see :class:`AugTransform`. Defaults to None.
+            ``magnitude_range``, see :class:`BaseAugTransform`.
+            Defaults to None.
         center (tuple[float], optional): Center point (w, h) of the rotation in
             the source image. If None, the center of the image will be used.
             Defaults to None.
@@ -542,7 +543,7 @@ class Rotate(BaseAugTransform):
             negative, which should be in range [0,1]. Defaults to 0.5.
         interpolation (str): Interpolation method. Options are 'nearest',
             'bilinear', 'bicubic', 'area', 'lanczos'. Defaults to 'nearest'.
-        **kwargs: Other keyword arguments of :class:`AugTransform`.
+        **kwargs: Other keyword arguments of :class:`BaseAugTransform`.
     """
 
     def __init__(self,
@@ -610,7 +611,7 @@ class AutoContrast(BaseAugTransform):
     Args:
         prob (float): The probability for performing auto contrast
             therefore should be in range [0, 1]. Defaults to 0.5.
-        **kwargs: Other keyword arguments of :class:`AugTransform`.
+        **kwargs: Other keyword arguments of :class:`BaseAugTransform`.
     """
 
     def __init__(self, prob: float = 0.5, **kwargs):
@@ -640,7 +641,7 @@ class Invert(BaseAugTransform):
     Args:
         prob (float): The probability for performing invert therefore should
              be in range [0, 1]. Defaults to 0.5.
-        **kwargs: Other keyword arguments of :class:`AugTransform`.
+        **kwargs: Other keyword arguments of :class:`BaseAugTransform`.
     """
 
     def __init__(self, prob: float = 0.5, **kwargs):
@@ -670,7 +671,7 @@ class Equalize(BaseAugTransform):
     Args:
         prob (float): The probability for performing equalize therefore should
              be in range [0, 1]. Defaults to 0.5.
-        **kwargs: Other keyword arguments of :class:`AugTransform`.
+        **kwargs: Other keyword arguments of :class:`BaseAugTransform`.
     """
 
     def __init__(self, prob: float = 0.5, **kwargs):
@@ -700,10 +701,10 @@ class Solarize(BaseAugTransform):
     Args:
         thr (int | float | None): The threshold above which the pixels value
             will be inverted. If None, generate from ``magnitude_range``,
-            see :class:`AugTransform`. Defaults to None.
+            see :class:`BaseAugTransform`. Defaults to None.
         prob (float): The probability for solarizing therefore should be in
             range [0, 1]. Defaults to 0.5.
-        **kwargs: Other keyword arguments of :class:`AugTransform`.
+        **kwargs: Other keyword arguments of :class:`BaseAugTransform`.
     """
 
     def __init__(self,
@@ -746,12 +747,12 @@ class SolarizeAdd(BaseAugTransform):
     Args:
         magnitude (int | float | None): The value to be added to pixels below
             the thr. If None, generate from ``magnitude_range``, see
-            :class:`AugTransform`. Defaults to None.
+            :class:`BaseAugTransform`. Defaults to None.
         thr (int | float): The threshold below which the pixels value will be
             adjusted.
         prob (float): The probability for solarizing therefore should be in
             range [0, 1]. Defaults to 0.5.
-        **kwargs: Other keyword arguments of :class:`AugTransform`.
+        **kwargs: Other keyword arguments of :class:`BaseAugTransform`.
     """
 
     def __init__(self,
@@ -801,10 +802,11 @@ class Posterize(BaseAugTransform):
     Args:
         bits (int, optional): Number of bits for each pixel in the output img,
             which should be less or equal to 8. If None, generate from
-            ``magnitude_range``, see :class:`AugTransform`. Defaults to None.
+            ``magnitude_range``, see :class:`BaseAugTransform`.
+            Defaults to None.
         prob (float): The probability for posterizing therefore should be in
             range [0, 1]. Defaults to 0.5.
-        **kwargs: Other keyword arguments of :class:`AugTransform`.
+        **kwargs: Other keyword arguments of :class:`BaseAugTransform`.
     """
 
     def __init__(self,
@@ -855,7 +857,7 @@ class Contrast(BaseAugTransform):
             contrast. A positive magnitude would enhance the contrast and
             a negative magnitude would make the image grayer. A magnitude=0
             gives the origin img. If None, generate from ``magnitude_range``,
-            see :class:`AugTransform`. Defaults to None.
+            see :class:`BaseAugTransform`. Defaults to None.
         prob (float): The probability for performing contrast adjusting
             therefore should be in range [0, 1]. Defaults to 0.5.
         random_negative_prob (float): The probability that turns the magnitude
@@ -908,12 +910,12 @@ class ColorTransform(BaseAugTransform):
             A positive magnitude would enhance the color and a negative
             magnitude would make the image grayer. A magnitude=0 gives the
             origin img. If None, generate from ``magnitude_range``, see
-            :class:`AugTransform`. Defaults to None.
+            :class:`BaseAugTransform`. Defaults to None.
         prob (float): The probability for performing ColorTransform therefore
             should be in range [0, 1]. Defaults to 0.5.
         random_negative_prob (float): The probability that turns the magnitude
             negative, which should be in range [0,1]. Defaults to 0.5.
-        **kwargs: Other keyword arguments of :class:`AugTransform`.
+        **kwargs: Other keyword arguments of :class:`BaseAugTransform`.
     """
 
     def __init__(self,
@@ -962,12 +964,12 @@ class Brightness(BaseAugTransform):
             brightness. A positive magnitude would enhance the brightness and a
             negative magnitude would make the image darker. A magnitude=0 gives
             the origin img. If None, generate from ``magnitude_range``, see
-            :class:`AugTransform`. Defaults to None.
+            :class:`BaseAugTransform`. Defaults to None.
         prob (float): The probability for performing brightness adjusting
             therefore should be in range [0, 1]. Defaults to 0.5.
         random_negative_prob (float): The probability that turns the magnitude
             negative, which should be in range [0,1]. Defaults to 0.5.
-        **kwargs: Other keyword arguments of :class:`AugTransform`.
+        **kwargs: Other keyword arguments of :class:`BaseAugTransform`.
     """
 
     def __init__(self,
@@ -1016,12 +1018,12 @@ class Sharpness(BaseAugTransform):
             sharpness. A positive magnitude would enhance the sharpness and a
             negative magnitude would make the image bulr. A magnitude=0 gives
             the origin img. If None, generate from ``magnitude_range``, see
-            :class:`AugTransform`. Defaults to None.
+            :class:`BaseAugTransform`. Defaults to None.
         prob (float): The probability for performing sharpness adjusting
             therefore should be in range [0, 1]. Defaults to 0.5.
         random_negative_prob (float): The probability that turns the magnitude
             negative, which should be in range [0,1]. Defaults to 0.5.
-        **kwargs: Other keyword arguments of :class:`AugTransform`.
+        **kwargs: Other keyword arguments of :class:`BaseAugTransform`.
     """
 
     def __init__(self,
@@ -1069,13 +1071,13 @@ class Cutout(BaseAugTransform):
         shape (int | tuple(int) | None): Expected cutout shape (h, w).
             If given as a single value, the value will be used for both h and
             w. If None, generate from ``magnitude_range``, see
-            :class:`AugTransform`. Defaults to None.
+            :class:`BaseAugTransform`. Defaults to None.
         pad_val (int, Sequence[int]): Pixel pad_val value for constant fill.
             If it is a sequence, it must have the same length with the image
             channels. Defaults to 128.
         prob (float): The probability for performing cutout therefore should
             be in range [0, 1]. Defaults to 0.5.
-        **kwargs: Other keyword arguments of :class:`AugTransform`.
+        **kwargs: Other keyword arguments of :class:`BaseAugTransform`.
     """
 
     def __init__(self,

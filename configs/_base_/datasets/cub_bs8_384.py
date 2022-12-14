@@ -1,6 +1,7 @@
 # dataset settings
 dataset_type = 'CUB'
 data_preprocessor = dict(
+    num_classes=200,
     # RGB format normalization parameters
     mean=[123.675, 116.28, 103.53],
     std=[58.395, 57.12, 57.375],
@@ -32,7 +33,6 @@ train_dataloader = dict(
         test_mode=False,
         pipeline=train_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=True),
-    persistent_workers=True,
 )
 
 val_dataloader = dict(
@@ -44,7 +44,6 @@ val_dataloader = dict(
         test_mode=True,
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
-    persistent_workers=True,
 )
 val_evaluator = dict(type='Accuracy', topk=(1, ))
 

@@ -57,6 +57,18 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 
 ## 更新日志
 
+2022/12/06 发布了 v1.0.0rc4 版本
+
+- 更新了主要 API 接口，用以方便地获取 MMClassification 中预定义的模型。详见 [#1236](https://github.com/open-mmlab/mmclassification/pull/1236)。
+- 重构 BEiT 主干网络结构，并支持 v1 和 v2 模型的推理。
+
+2022/11/21 发布了 v1.0.0rc3 版本
+
+- 添加了 **Switch Recipe Hook**，现在我们可以在训练过程中修改数据增强、Mixup设置、loss设置等
+- 添加了 **TIMM 和 HuggingFace** 包装器，现在我们可以直接训练、使用 TIMM 和 HuggingFace 中的模型
+- 支持了检索任务
+- 复现了 **MobileOne** 训练精度
+
 2022/8/31 发布了 v1.0.0rc0 版本
 
 这个版本引入一个全新的，可扩展性强的训练和测试引擎，但目前仍在开发中。欢迎根据[文档](https://mmclassification.readthedocs.io/zh_CN/1.x/)进行试用。
@@ -121,6 +133,7 @@ mim install -e .
 - [x] [Res2Net](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/res2net)
 - [x] [MLP-Mixer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mlp_mixer)
 - [x] [DeiT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/deit)
+- [x] [DeiT-3](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/deit3)
 - [x] [Conformer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/conformer)
 - [x] [T2T-ViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/t2t_vit)
 - [x] [Twins](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/twins)
@@ -136,6 +149,11 @@ mim install -e .
 - [x] [MobileOne](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobileone)
 - [x] [EfficientFormer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/efficientformer)
 - [x] [MViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mvit)
+- [x] [HorNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/hornet)
+- [x] [MobileViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobilevit)
+- [x] [DaViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/davit)
+- [x] [RepLKNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/replknet)
+- [x] [BEiT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/beit) / [BEiT v2](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/beitv2)
 
 </details>
 
@@ -171,10 +189,12 @@ MMClassification 是一款由不同学校和公司共同贡献的开源项目。
 - [MMEngine](https://github.com/open-mmlab/mmengine): OpenMMLab 深度学习模型训练基础库
 - [MMCV](https://github.com/open-mmlab/mmcv): OpenMMLab 计算机视觉基础库
 - [MIM](https://github.com/open-mmlab/mim): MIM 是 OpenMMlab 项目、算法、模型的统一入口
+- [MMEval](https://github.com/open-mmlab/mmeval): 统一开放的跨框架算法评测库
 - [MMClassification](https://github.com/open-mmlab/mmclassification): OpenMMLab 图像分类工具箱
 - [MMDetection](https://github.com/open-mmlab/mmdetection): OpenMMLab 目标检测工具箱
 - [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): OpenMMLab 新一代通用 3D 目标检测平台
 - [MMRotate](https://github.com/open-mmlab/mmrotate): OpenMMLab 旋转框检测工具箱与测试基准
+- [MMYOLO](https://github.com/open-mmlab/mmyolo): OpenMMLab YOLO 系列工具箱与测试基准
 - [MMSegmentation](https://github.com/open-mmlab/mmsegmentation): OpenMMLab 语义分割工具箱
 - [MMOCR](https://github.com/open-mmlab/mmocr): OpenMMLab 全流程文字检测识别理解工具包
 - [MMPose](https://github.com/open-mmlab/mmpose): OpenMMLab 姿态估计工具箱

@@ -1,15 +1,24 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from .alexnet import AlexNet
+from .beit import BEiT
 from .conformer import Conformer
 from .convmixer import ConvMixer
 from .convnext import ConvNeXt
 from .cspnet import CSPDarkNet, CSPNet, CSPResNet, CSPResNeXt
+from .davit import DaViT
 from .deit import DistilledVisionTransformer
+from .deit3 import DeiT3
 from .densenet import DenseNet
 from .edgenext import EdgeNeXt
 from .efficientformer import EfficientFormer
 from .efficientnet import EfficientNet
 from .gcvit import GCViT
+from .hornet import HorNet
+<<<<<<< HEAD
+from .gcvit import GCViT
+=======
+from .hornet import HorNet
+>>>>>>> 1c6b077bb17e35d04575402fbb4e0cfa8a982a58
 from .hrnet import HRNet
 from .inception_v3 import InceptionV3
 from .lenet import LeNet5
@@ -17,9 +26,11 @@ from .mlp_mixer import MlpMixer
 from .mobilenet_v2 import MobileNetV2
 from .mobilenet_v3 import MobileNetV3
 from .mobileone import MobileOne
+from .mobilevit import MobileViT
 from .mvit import MViT
 from .poolformer import PoolFormer
 from .regnet import RegNet
+from .replknet import RepLKNet
 from .repmlp import RepMLPNet
 from .repvgg import RepVGG
 from .res2net import Res2Net
@@ -79,6 +90,7 @@ __all__ = [
     'CSPResNet',
     'CSPResNeXt',
     'CSPNet',
+    'RepLKNet',
     'RepMLPNet',
     'PoolFormer',
     'DenseNet',
@@ -88,5 +100,19 @@ __all__ = [
     'EfficientFormer',
     'SwinTransformerV2',
     'MViT',
+    'DeiT3',
+    'HorNet',
+    'MobileViT',
+    'DaViT',
+    'BEiT',
     'GCViT',
+<<<<<<< HEAD
+    'GCViT',
+=======
+    'DeiT3',
+    'HorNet',
+    'MobileViT',
+    'DaViT',
+    'BEiT',
+>>>>>>> 1c6b077bb17e35d04575402fbb4e0cfa8a982a58
 ]

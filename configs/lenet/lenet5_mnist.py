@@ -10,7 +10,7 @@ model = dict(
 
 # dataset settings
 dataset_type = 'MNIST'
-data_preprocessor = dict(mean=[33.46], std=[78.87])
+data_preprocessor = dict(mean=[33.46], std=[78.87], num_classes=10)
 
 pipeline = [dict(type='Resize', scale=32), dict(type='PackClsInputs')]
 
@@ -22,7 +22,6 @@ train_dataloader = dict(
     num_workers=2,
     dataset=dict(**common_data_cfg, test_mode=False),
     sampler=dict(type='DefaultSampler', shuffle=True),
-    persistent_workers=True,
 )
 
 val_dataloader = dict(
@@ -30,7 +29,6 @@ val_dataloader = dict(
     num_workers=2,
     dataset=dict(**common_data_cfg, test_mode=True),
     sampler=dict(type='DefaultSampler', shuffle=False),
-    persistent_workers=True,
 )
 val_evaluator = dict(type='Accuracy', topk=(1, ))
 

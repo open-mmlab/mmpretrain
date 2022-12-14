@@ -289,7 +289,7 @@ _base_ = './resnet50_8xb32_in1k.py'
 # using CutMix batch augment
 model = dict(
     train_cfg=dict(
-        augments=dict(type='CutMix', alpha=1.0, num_classes=1000, prob=1.0)
+        augments=dict(type='CutMix', alpha=1.0)
     )
 )
 

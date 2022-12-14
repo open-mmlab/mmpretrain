@@ -8,6 +8,8 @@ import torch.nn.functional as F
 from mmengine.model import BaseDataPreprocessor, stack_batch
 
 from mmcls.registry import MODELS
+from mmcls.structures import (batch_label_to_onehot, cat_batch_labels,
+                              stack_batch_scores, tensor_split)
 from .batch_augments import RandomBatchAugment
 
 
@@ -42,6 +44,9 @@ class ClsDataPreprocessor(BaseDataPreprocessor):
         pad_value (Number): The padded pixel value. Defaults to 0.
         to_rgb (bool): whether to convert image from BGR to RGB.
             Defaults to False.
+        to_onehot (bool): Whether to generate one-hot format gt-labels and set
+            to data samples. Defaults to False.
+        num_classes (int, optional): The number of classes. Defaults to None.
         batch_augments (dict, optional): The batch augmentations settings,
             including "augments" and "probs". For more details, see
             :class:`mmcls.models.RandomBatchAugment`.
@@ -53,11 +58,15 @@ class ClsDataPreprocessor(BaseDataPreprocessor):
                  pad_size_divisor: int = 1,
                  pad_value: Number = 0,
                  to_rgb: bool = False,
+                 to_onehot: bool = False,
+                 num_classes: Optional[int] = None,
                  batch_augments: Optional[dict] = None):
         super().__init__()
         self.pad_size_divisor = pad_size_divisor
         self.pad_value = pad_value
         self.to_rgb = to_rgb
+        self.to_onehot = to_onehot
+        self.num_classes = num_classes
 
         if mean is not None:
             assert std is not None, 'To enable the normalization in ' \
@@ -73,6 +82,13 @@ class ClsDataPreprocessor(BaseDataPreprocessor):
 
         if batch_augments is not None:
             self.batch_augments = RandomBatchAugment(**batch_augments)
+            if not self.to_onehot:
+                from mmengine.logging import MMLogger
+                MMLogger.get_current_instance().info(
+                    'Because batch augmentations are enabled, the data '
+                    'preprocessor automatically enables the `to_onehot` '
+                    'option to generate one-hot format labels.')
+                self.to_onehot = True
         else:
             self.batch_augments = None
 
@@ -87,8 +103,7 @@ class ClsDataPreprocessor(BaseDataPreprocessor):
         Returns:
             dict: Data in the same format as the model input.
         """
-        data = self.cast_data(data)
-        inputs = data['inputs']
+        inputs = self.cast_data(data['inputs'])
 
         if isinstance(inputs, torch.Tensor):
             # The branch if use `default_collate` as the collate_fn in the
@@ -135,12 +150,36 @@ class ClsDataPreprocessor(BaseDataPreprocessor):
             inputs = stack_batch(processed_inputs, self.pad_size_divisor,
                                  self.pad_value)
 
-        # ----- Batch Aug ----
-        if training and self.batch_augments is not None:
-            data_samples = data['data_samples']
-            inputs, data_samples = self.batch_augments(inputs, data_samples)
-            data['data_samples'] = data_samples
+        data_samples = data.get('data_samples', None)
+        if data_samples is not None and 'gt_label' in data_samples[0]:
+            gt_labels = [sample.gt_label for sample in data_samples]
+            batch_label, label_indices = cat_batch_labels(
+                gt_labels, device=self.device)
 
-        data['inputs'] = inputs
+            batch_score = stack_batch_scores(gt_labels, device=self.device)
+            if batch_score is None and self.to_onehot:
+                assert batch_label is not None, \
+                    'Cannot generate onehot format labels because no labels.'
+                num_classes = self.num_classes or data_samples[0].get(
+                    'num_classes')
+                assert num_classes is not None, \
+                    'Cannot generate one-hot format labels because not set ' \
+                    '`num_classes` in `data_preprocessor`.'
+                batch_score = batch_label_to_onehot(batch_label, label_indices,
+                                                    num_classes)
 
-        return data
+            # ----- Batch Augmentations ----
+            if training and self.batch_augments is not None:
+                inputs, batch_score = self.batch_augments(inputs, batch_score)
+
+            # ----- scatter labels and scores to data samples ---
+            if batch_label is not None:
+                for sample, label in zip(
+                        data_samples, tensor_split(batch_label,
+                                                   label_indices)):
+                    sample.set_gt_label(label)
+            if batch_score is not None:
+                for sample, score in zip(data_samples, batch_score):
+                    sample.set_gt_score(score)
+
+        return {'inputs': inputs, 'data_samples': data_samples}

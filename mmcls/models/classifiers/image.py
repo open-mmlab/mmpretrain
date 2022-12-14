@@ -2,6 +2,7 @@
 from typing import List, Optional
 
 import torch
+import torch.nn as nn
 
 from mmcls.registry import MODELS
 from mmcls.structures import ClsDataSample
@@ -61,13 +62,16 @@ class ImageClassifier(BaseClassifier):
         super(ImageClassifier, self).__init__(
             init_cfg=init_cfg, data_preprocessor=data_preprocessor)
 
-        self.backbone = MODELS.build(backbone)
+        if not isinstance(backbone, nn.Module):
+            backbone = MODELS.build(backbone)
+        if neck is not None and not isinstance(neck, nn.Module):
+            neck = MODELS.build(neck)
+        if head is not None and not isinstance(head, nn.Module):
+            head = MODELS.build(head)
 
-        if neck is not None:
-            self.neck = MODELS.build(neck)
-
-        if head is not None:
-            self.head = MODELS.build(head)
+        self.backbone = backbone
+        self.neck = neck
+        self.head = head
 
     def forward(self,
                 inputs: torch.Tensor,
@@ -220,13 +224,14 @@ class ImageClassifier(BaseClassifier):
         return self.head.loss(feats, data_samples)
 
     def predict(self,
-                inputs: tuple,
+                inputs: torch.Tensor,
                 data_samples: Optional[List[ClsDataSample]] = None,
                 **kwargs) -> List[ClsDataSample]:
-        """Predict results from the extracted features.
+        """Predict results from a batch of inputs.
 
         Args:
-            inputs (tuple): The features extracted from the backbone.
+            inputs (torch.Tensor): The input tensor with shape
+                (N, C, ...) in general.
             data_samples (List[ClsDataSample], optional): The annotation
                 data of every samples. Defaults to None.
             **kwargs: Other keyword arguments accepted by the ``predict``

@@ -1,8 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .auto_augment import (AutoAugment, AutoContrast, Brightness,
-                           ColorTransform, Contrast, Cutout, Equalize, Invert,
-                           Posterize, RandAugment, Rotate, Sharpness, Shear,
-                           Solarize, SolarizeAdd, Translate)
+from .auto_augment import (AutoAugment, AutoContrast, BaseAugTransform,
+                           Brightness, ColorTransform, Contrast, Cutout,
+                           Equalize, Invert, Posterize, RandAugment, Rotate,
+                           Sharpness, Shear, Solarize, SolarizeAdd, Translate)
 from .formatting import Collect, PackClsInputs, ToNumpy, ToPIL, Transpose
 from .processing import (Albumentations, ColorJitter, EfficientNetCenterCrop,
                          EfficientNetRandomCrop, Lighting, RandomCrop,
@@ -15,5 +15,5 @@ __all__ = [
     'Contrast', 'Brightness', 'Sharpness', 'AutoAugment', 'SolarizeAdd',
     'Cutout', 'RandAugment', 'Lighting', 'ColorJitter', 'RandomErasing',
     'PackClsInputs', 'Albumentations', 'EfficientNetRandomCrop',
-    'EfficientNetCenterCrop', 'ResizeEdge'
+    'EfficientNetCenterCrop', 'ResizeEdge', 'BaseAugTransform'
 ]

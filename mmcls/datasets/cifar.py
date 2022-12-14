@@ -4,7 +4,8 @@ from typing import List, Optional
 
 import mmengine.dist as dist
 import numpy as np
-from mmengine import FileClient
+from mmengine.fileio import (LocalBackend, exists, get, get_file_backend,
+                             join_path)
 
 from mmcls.registry import DATASETS
 from .base_dataset import BaseDataset
@@ -73,21 +74,17 @@ class CIFAR10(BaseDataset):
 
     def load_data_list(self):
         """Load images and ground truth labels."""
-        root_prefix = self.data_prefix['root']
-        file_client = FileClient.infer_client(uri=root_prefix)
+        root = self.data_prefix['root']
+        backend = get_file_backend(root, enable_singleton=True)
 
         if dist.is_main_process() and not self._check_integrity():
-            if file_client.name != 'HardDiskBackend':
-                raise RuntimeError(
-                    f'The dataset on {root_prefix} is not integrated, '
-                    f'please manually handle it.')
+            if not isinstance(backend, LocalBackend):
+                raise RuntimeError(f'The dataset on {root} is not integrated, '
+                                   f'please manually handle it.')
 
             if self.download:
                 download_and_extract_archive(
-                    self.url,
-                    root_prefix,
-                    filename=self.filename,
-                    md5=self.tgz_md5)
+                    self.url, root, filename=self.filename, md5=self.tgz_md5)
             else:
                 raise RuntimeError(
                     f'Cannot find {self.__class__.__name__} dataset in '
@@ -109,10 +106,8 @@ class CIFAR10(BaseDataset):
 
         # load the picked numpy arrays
         for file_name, _ in downloaded_list:
-            file_path = file_client.join_path(root_prefix, self.base_folder,
-                                              file_name)
-            content = file_client.get(file_path)
-            entry = pickle.loads(content, encoding='latin1')
+            file_path = join_path(root, self.base_folder, file_name)
+            entry = pickle.loads(get(file_path), encoding='latin1')
             imgs.append(entry['data'])
             if 'labels' in entry:
                 gt_labels.extend(entry['labels'])
@@ -136,32 +131,26 @@ class CIFAR10(BaseDataset):
     def _load_meta(self):
         """Load categories information from metafile."""
         root = self.data_prefix['root']
-        file_client = FileClient.infer_client(uri=root)
 
-        path = file_client.join_path(root, self.base_folder,
-                                     self.meta['filename'])
+        path = join_path(root, self.base_folder, self.meta['filename'])
         md5 = self.meta.get('md5', None)
-        if not file_client.exists(path) or (md5 is not None
-                                            and not check_md5(path, md5)):
+        if not exists(path) or (md5 is not None and not check_md5(path, md5)):
             raise RuntimeError(
                 'Dataset metadata file not found or corrupted.' +
                 ' You can use `download=True` to download it')
-        content = file_client.get(path)
-        data = pickle.loads(content, encoding='latin1')
+        data = pickle.loads(get(path), encoding='latin1')
         self._metainfo.setdefault('classes', data[self.meta['key']])
 
     def _check_integrity(self):
         """Check the integrity of data files."""
         root = self.data_prefix['root']
-        file_client = FileClient.infer_client(uri=root)
 
         for fentry in (self.train_list + self.test_list):
             filename, md5 = fentry[0], fentry[1]
-            fpath = file_client.join_path(root, self.base_folder, filename)
-            if not file_client.exists(fpath):
+            fpath = join_path(root, self.base_folder, filename)
+            if not exists(fpath):
                 return False
-            if md5 is not None and not check_md5(
-                    fpath, md5, file_client=file_client):
+            if md5 is not None and not check_md5(fpath, md5):
                 return False
         return True
 

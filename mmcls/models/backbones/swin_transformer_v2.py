@@ -546,6 +546,13 @@ class SwinTransformerV2(BaseBackbone):
 
     def _delete_reinit_params(self, state_dict, prefix, *args, **kwargs):
         # delete relative_position_index since we always re-init it
+        from mmengine.logging import MMLogger
+        logger = MMLogger.get_current_instance()
+        logger.info(
+            'Delete `relative_position_index` and `relative_coords_table` '
+            'since we always re-init these params according to the '
+            '`window_size`, which might cause unwanted but unworried '
+            'warnings when loading checkpoint.')
         relative_position_index_keys = [
             k for k in state_dict.keys() if 'relative_position_index' in k
         ]
