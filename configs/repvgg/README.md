@@ -123,7 +123,11 @@ python tools/test.py configs/repvgg/repvgg-A0_deploy_in1k.py repvgg_A0_deploy.pt
 
 For more configurable parameters, please refer to the [API](https://mmclassification.readthedocs.io/en/1.x/api/generated/mmcls.models.backbones.RepVGG.html#mmcls.models.backbones.RepVGG).
 
-### Reparameterize Tool
+<details>
+
+<summary><b>How to use the reparameterize tool</b>(click to show)</summary>
+
+<br>
 
 Use provided tool to reparameterize the given model and save the checkpoint:
 
@@ -136,8 +140,10 @@ python tools/convert_models/reparameterize_model.py ${CFG_PATH} ${SRC_CKPT_PATH}
 For example:
 
 ```shell
+# download the weight
 wget https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-A0_8xb32_in1k_20221213-60ae8e23.pth
-python ./tools/convert_models/reparameterize_model.py configs/repvgg/repvgg-a0_8xb32_in1k.py repvgg-A0_8xb32_in1k_20221213-60ae8e23.pth mrepvgg-A0_deploy.pth
+# reparameterize unfused weight to fused weight
+python ./tools/convert_models/reparameterize_model.py configs/repvgg/repvgg-a0_8xb32_in1k.py repvgg-A0_8xb32_in1k_20221213-60ae8e23.pth repvgg-A0_deploy.pth
 ```
 
 To use reparameterized weights, the config file must switch to **the deploy config files** as [the deploy_A0 example](./repvgg-A0_deploy_in1k.py) or add `--cfg-options model.backbone.deploy=True` in command.
@@ -145,14 +151,27 @@ To use reparameterized weights, the config file must switch to **the deploy conf
 For example of using the reparameterized weights above:
 
 ```shell
-python ./tools/test.py ./configs/repvgg/repvgg-A0_deploy_in1k.py  mobileone_s0_deploy.pth
+python ./tools/test.py ./configs/repvgg/repvgg-A0_deploy_in1k.py  repvgg-A0_deploy.pth
 ```
 
-or
+You can get other deploy configs by modifying the [A0_deploy example](./repvgg-A0_deploy_in1k.py):
+
+```text
+# in repvgg-A0_deploy_in1k.py
+_base_ = '../repvgg-A0_8xb32_in1k.py'  # basic A0 config
+
+model = dict(backbone=dict(deploy=True))  # switch model into deploy mode
+```
+
+or add `--cfg-options model.backbone.deploy=True` in command as following：
 
 ```shell
 python tools/test.py configs/repvgg/repvgg-A0_8xb32_in1k.py repvgg_A0_deploy.pth --cfg-options model.backbone.deploy=True
 ```
+
+</br>
+
+</details>
 
 ## Results and models
 
@@ -160,17 +179,17 @@ python tools/test.py configs/repvgg/repvgg-A0_8xb32_in1k.py repvgg_A0_deploy.pth
 
 |            Model            |   Pretrain   | <p> Params(M) <br>（train\|deploy) </p> | <p> Flops(G)  <br>（train\|deploy)  </p> | Top-1 (%) | Top-5 (%) |             Config              |             Download              |
 | :-------------------------: | :----------: | :-------------------------------------: | :--------------------------------------: | :-------: | :-------: | :-----------------------------: | :-------------------------------: |
-|    repvgg-A0_8xb32_in1k     | From scratch |              9.11 \| 8.31               |               1.53 \| 1.36               |   72.37   |   90.56   | [config](./repvgg-A0_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-A0_8xb32_in1k_20221213-60ae8e23.pth) |
-|    repvgg-A1_8xb32_in1k     | From scratch |             14.09  \| 12.79             |               2.65 \| 2.37               |   74.47   |   91.85   | [config](./repvgg-A1_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-A1_8xb32_in1k_20221213-f81bf3df.pth) |
-|    repvgg-A2_8xb32_in1k     | From scratch |             28.21   \| 25.5             |             5.72    \| 5.12              |   76.49   |   93.09   | [config](./repvgg-A2_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-A2_8xb32_in1k_20221213-a8767caf.pth) |
-|    repvgg-B0_8xb32_in1k     | From scratch |            15.82   \| 14.34             |              3.43   \| 3.06              |   75.27   |   92.21   | [config](./repvgg-B0_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-B0_8xb32_in1k_20221213-5091ecc7.pth) |
-|    repvgg-B1_8xb32_in1k     | From scratch |            57.42   \| 51.83             |             13.20   \| 11.81             |   78.19   |   94.04   | [config](./repvgg-B1_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-B1_8xb32_in1k_20221213-d17c45e7.pth) |
-|   repvgg-B1g2_8xb32_in1k    | From scratch |            45.78   \| 41.36             |              9.86   \| 8.80              |   77.87   |   93.99   | [config](./repvgg-B1g2_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-B1g2_8xb32_in1k_20221213-ae6428fd.pth) |
-|   repvgg-B1g4_8xb32_in1k    | From scratch |            39.97   \| 36.13             |              8.19   \| 7.30              |   77.81   |   93.77   | [config](./repvgg-B1g4_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-B1g4_8xb32_in1k_20221213-a7a4aaea.pth) |
-|    repvgg-B2_8xb32_in1k     | From scratch |            89.02   \| 80.32             |              20.5   \| 18.4              |   78.58   |   94.23   | [config](./repvgg-B2_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-B2_8xb32_in1k_20221213-d8b420ef.pth) |
-|   repvgg-B2g4_8xb32_in1k    | From scratch |            61.76   \| 55.78             |              12.7   \| 11.3              |   79.44   |   94.72   | [config](./repvgg-B2g4_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-B2g4_8xb32_in1k_20221213-0c1990eb.pth) |
-|    repvgg-B3_8xb32_in1k     | From scratch |           123.09   \| 110.96            |              29.2   \| 26.2              |   80.58   |   95.33   | [config](./repvgg-B3_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-B3_8xb32_in1k_20221213-927a329a.pth) |
-|   repvgg-B3g4_8xb32_in1k    | From scratch |            83.83   \| 75.63             |              18.0   \| 16.1              |   80.26   |   95.15   | [config](./repvgg-B3g4_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-B3g4_8xb32_in1k_20221213-e01cb280.pth) |
+|    repvgg-A0_8xb32_in1k     | From scratch |              9.11 \| 8.31               |               1.53 \| 1.36               |   72.37   |   90.56   | [config](./repvgg-A0_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-A0_8xb32_in1k_20221213-60ae8e23.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-A0_8xb32_in1k_20221213-60ae8e23.log) |
+|    repvgg-A1_8xb32_in1k     | From scratch |             14.09  \| 12.79             |               2.65 \| 2.37               |   74.47   |   91.85   | [config](./repvgg-A1_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-A1_8xb32_in1k_20221213-f81bf3df.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-A1_8xb32_in1k_20221213-f81bf3df.log) |
+|    repvgg-A2_8xb32_in1k     | From scratch |             28.21   \| 25.5             |             5.72    \| 5.12              |   76.49   |   93.09   | [config](./repvgg-A2_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-A2_8xb32_in1k_20221213-a8767caf.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-A2_8xb32_in1k_20221213-a8767caf.log) |
+|    repvgg-B0_8xb32_in1k     | From scratch |            15.82   \| 14.34             |              3.43   \| 3.06              |   75.27   |   92.21   | [config](./repvgg-B0_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-B0_8xb32_in1k_20221213-5091ecc7.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-B0_8xb32_in1k_20221213-5091ecc7.log) |
+|    repvgg-B1_8xb32_in1k     | From scratch |            57.42   \| 51.83             |             13.20   \| 11.81             |   78.19   |   94.04   | [config](./repvgg-B1_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-B1_8xb32_in1k_20221213-d17c45e7.pth)   \| [log](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-B1_8xb32_in1k_20221213-d17c45e7.log) |
+|   repvgg-B1g2_8xb32_in1k    | From scratch |            45.78   \| 41.36             |              9.86   \| 8.80              |   77.87   |   93.99   | [config](./repvgg-B1g2_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-B1g2_8xb32_in1k_20221213-ae6428fd.pth)  \| [log](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-B1g2_8xb32_in1k_20221213-ae6428fd.log) |
+|   repvgg-B1g4_8xb32_in1k    | From scratch |            39.97   \| 36.13             |              8.19   \| 7.30              |   77.81   |   93.77   | [config](./repvgg-B1g4_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-B1g4_8xb32_in1k_20221213-a7a4aaea.pth)  \| [log](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-B1g4_8xb32_in1k_20221213-a7a4aaea.log) |
+|    repvgg-B2_8xb32_in1k     | From scratch |            89.02   \| 80.32             |              20.5   \| 18.4              |   78.58   |   94.23   | [config](./repvgg-B2_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-B2_8xb32_in1k_20221213-d8b420ef.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-B2_8xb32_in1k_20221213-d8b420ef.log) |
+|   repvgg-B2g4_8xb32_in1k    | From scratch |            61.76   \| 55.78             |              12.7   \| 11.3              |   79.44   |   94.72   | [config](./repvgg-B2g4_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-B2g4_8xb32_in1k_20221213-0c1990eb.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-B2g4_8xb32_in1k_20221213-0c1990eb.log) |
+|    repvgg-B3_8xb32_in1k     | From scratch |           123.09   \| 110.96            |              29.2   \| 26.2              |   80.58   |   95.33   | [config](./repvgg-B3_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-B3_8xb32_in1k_20221213-927a329a.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-B3_8xb32_in1k_20221213-927a329a.log) |
+|   repvgg-B3g4_8xb32_in1k    | From scratch |            83.83   \| 75.63             |              18.0   \| 16.1              |   80.26   |   95.15   | [config](./repvgg-B3g4_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-B3g4_8xb32_in1k_20221213-e01cb280.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-B3g4_8xb32_in1k_20221213-e01cb280.log) |
 | repvgg-D2se_3rdparty_in1k\* | From scratch |           133.33   \| 120.39            |              36.6   \| 32.8              |   81.81   |   95.94   | [config](./repvgg-D2se_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-D2se_3rdparty_4xb64-autoaug-lbs-mixup-coslr-200e_in1k_20210909-cf3139b7.pth) |
 
 *Models with * are converted from the [official repo](https://github.com/DingXiaoH/RepVGG/blob/9f272318abfc47a2b702cd0e916fca8d25d683e7/repvgg.py#L250). The config files of these models are only for inference. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
