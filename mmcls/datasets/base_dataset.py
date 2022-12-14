@@ -145,9 +145,9 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         Returns:
             dict: evaluation results
         """
-        maxk = min(5, len(results[0]))
+        default_topk = (1, 5) if len(results[0]) > 5 else (1, )
         if metric_options is None:
-            metric_options = {'topk': (1, maxk)}
+            metric_options = {'topk': default_topk}
         if isinstance(metric, str):
             metrics = [metric]
         else:
