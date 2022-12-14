@@ -13,9 +13,187 @@ Collections:
         - Squeeze-and-Excitation Block
         - Swish
     Paper:
-      URL: https://arxiv.org/abs/1905.11946v5
+      URL: https://arxiv.org/abs/2104.00298
       Title: "EfficientNetV2: Smaller Models and Faster Training"
     README: configs/efficientnet_v2/README.md
     Code:
       Version: v0.20.1
       URL: https://github.com/open-mmlab/mmclassification/blob/v0.20.1/mmcls/models/backbones/efficientnet_v2.py
+
+Models:
+  - Name: efficientnet_v2-s_3rdparty_8xb32_in1k
+    Metadata:
+      FLOPs: 8.4B
+      Parameters: 21.5M
+    In Collection: EfficientNetV2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.86
+          Top 5 Accuracy: 96.63
+        Task: Image Classification
+    Weights:
+    Config: configs/efficientnet_v2/efficientnet_v2-s_8xb32_in1k.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_s-eb54923e.pth
+      Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
+  - Name: efficientnet_v2-m_3rdparty_8xb32_in1k
+    Metadata:
+      FLOPs: 24.7B
+      Parameters: 54.1M
+    In Collection: EfficientNetV2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 84.12
+          Top 5 Accuracy: 96.78
+        Task: Image Classification
+    Weights:
+    Config: configs/efficientnet_v2/efficientnet_v2-m_8xb32_in1k.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_m-cc09e0cd.pth
+      Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
+  - Name: efficientnet_v2-l_3rdparty_8xb32_in1k
+    Metadata:
+      FLOPs: 56.3B
+      Parameters: 119.5M
+    In Collection: EfficientNetV2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 85.45
+          Top 5 Accuracy: 97.28
+        Task: Image Classification
+    Weights:
+    Config: configs/efficientnet_v2/efficientnet_v2-l_8xb32_in1k.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_l-d664b728.pth
+      Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
+  - Name: efficientnet_v2-s_3rdparty_8xb32_in21ft1k
+    Metadata:
+      FLOPs: 8.4B
+      Parameters: 21.5M
+    In Collection: EfficientNetV2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.86
+          Top 5 Accuracy: 97.14
+        Task: Image Classification
+    Weights:
+    Config: configs/efficientnet_v2/efficientnet_v2-s_8xb32_in21ft1k.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_s_21ft1k-d7dafa41.pth
+      Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
+  - Name: efficientnet_v2-m_3rdparty_8xb32_in21ft1k
+    Metadata:
+      FLOPs: 24.7B
+      Parameters: 54.1M
+    In Collection: EfficientNetV2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 85.41
+          Top 5 Accuracy: 97.68
+        Task: Image Classification
+    Weights:
+    Config: configs/efficientnet_v2/efficientnet_v2-m_8xb32_in21ft1k.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_m_21ft1k-bf41664a.pth
+      Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
+  - Name: efficientnet_v2-l_3rdparty_8xb32_in21ft1k
+    Metadata:
+      FLOPs: 56.3B
+      Parameters: 119.5M
+    In Collection: EfficientNetV2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 86.25
+          Top 5 Accuracy: 97.95
+        Task: Image Classification
+    Weights:
+    Config: configs/efficientnet_v2/efficientnet_v2-l_8xb32_in21ft1k.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_l_21ft1k-60127a9d.pth
+      Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
+  - Name: efficientnet_v2-xl_3rdparty_8xb32_in21ft1k
+    Metadata:
+      FLOPs:
+      Parameters:
+    In Collection: EfficientNetV2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 86.26
+          Top 5 Accuracy: 97.73
+        Task: Image Classification
+    Weights:
+    Config: configs/efficientnet_v2/efficientnet_v2-xl_8xb32_in21ft1k.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_xl_in21ft1k-06c35c48.pth
+      Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
+  - Name: efficientnet_v2-b0_3rdparty_8xb32_in1k
+    Metadata:
+      FLOPs: 0.72B
+      Parameters: 7.1M
+    In Collection: EfficientNetV2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 78.48
+          Top 5 Accuracy: 94.26
+        Task: Image Classification
+    Weights:
+    Config: configs/efficientnet_v2/efficientnet_v2-b0_8xb32_in1k.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_b0-c7cc451f.pth
+      Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
+  - Name: efficientnet_v2-b1_3rdparty_8xb32_in1k
+    Metadata:
+      FLOPs: 1.2B
+      Parameters: 8.1M
+    In Collection: EfficientNetV2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 79.20
+          Top 5 Accuracy: 94.55
+        Task: Image Classification
+    Weights:
+    Config: configs/efficientnet_v2/efficientnet_v2-b0_8xb32_in1k.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_b1-be6e41b0.pth
+      Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
+  - Name: efficientnet_v2-b2_3rdparty_8xb32_in1k
+    Metadata:
+      FLOPs: 1.7B
+      Parameters: 10.1M
+    In Collection: EfficientNetV2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 79.89
+          Top 5 Accuracy: 94.81
+        Task: Image Classification
+    Weights:
+    Config: configs/efficientnet_v2/efficientnet_v2-b2_8xb32_in1k.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_b2-847de54e.pth
+      Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
+  - Name: efficientnet_v2-b3_3rdparty_8xb32_in1k
+    Metadata:
+      FLOPs: 3.0B
+      Parameters: 14.4M
+    In Collection: EfficientNetV2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 81.61
+          Top 5 Accuracy: 95.69
+        Task: Image Classification
+    Weights:
+    Config: configs/efficientnet_v2/efficientnet_v2-b3_8xb32_in1k.py
+    Converted From:
+      Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_b3-57773f13.pth
+      Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
