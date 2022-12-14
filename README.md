@@ -153,6 +153,7 @@ Results and models are available in the [model zoo](https://mmclassification.rea
 - [x] [DaViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/davit)
 - [x] [RepLKNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/replknet)
 - [x] [BEiT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/beit) / [BEiT v2](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/beitv2)
+- [x] [EVA](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/eva)
 
 </details>
 
