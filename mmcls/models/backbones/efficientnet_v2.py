@@ -53,25 +53,25 @@ class EnhancedConvModule(ConvModule):
 class EfficientNetV2(BaseBackbone):
     """EfficientNet backbone.
 
-        Args:
-            arch (str): Architecture of efficientnetv2. Defaults to s.
-            drop_path_rate (float): The ratio of the stochastic depth.
-            out_indices (Sequence[int]): Output from which stages.
-                Defaults to (-1, ).
-            frozen_stages (int): Stages to be frozen (all param fixed).
-                Defaults to 0, which means not freezing any parameters.
-            conv_cfg (dict): Config dict for convolution layer.
-                Defaults to None, which means using conv2d.
-            norm_cfg (dict): Config dict for normalization layer.
-                Defaults to dict(type='BN').
-            act_cfg (dict): Config dict for activation layer.
-                Defaults to dict(type='Swish').
-            norm_eval (bool): Whether to set norm layers to eval mode, namely,
-                freeze running stats (mean and var). Note: Effect on Batch Norm
-                and its variants only. Defaults to False.
-            with_cp (bool): Use checkpoint or not. Using checkpoint will save some
-                memory while slowing down the training speed. Defaults to False.
-        """
+    Args:
+        arch (str): Architecture of efficientnetv2. Defaults to s.
+        drop_path_rate (float): The ratio of the stochastic depth.
+        out_indices (Sequence[int]): Output from which stages.
+            Defaults to (-1, ).
+        frozen_stages (int): Stages to be frozen (all param fixed).
+            Defaults to 0, which means not freezing any parameters.
+        conv_cfg (dict): Config dict for convolution layer.
+            Defaults to None, which means using conv2d.
+        norm_cfg (dict): Config dict for normalization layer.
+            Defaults to dict(type='BN').
+        act_cfg (dict): Config dict for activation layer.
+            Defaults to dict(type='Swish').
+        norm_eval (bool): Whether to set norm layers to eval mode, namely,
+            freeze running stats (mean and var). Note: Effect on Batch Norm
+            and its variants only. Defaults to False.
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+            memory while slowing down the training speed. Defaults to False.
+    """
 
     # Parameters to build layers.
     # arch_setting: b0 is same as base
