@@ -23,7 +23,7 @@ def check_norm_state(modules, train_state):
     return True
 
 
-def test_efficientnet_backbone():
+def test_efficientnet_v2_backbone():
     archs = ['s', 'm', 'l', 'xl', 'b0', 'b1', 'b2', 'b3']
     with pytest.raises(TypeError):
         # pretrained must be a string path
