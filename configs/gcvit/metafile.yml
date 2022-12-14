@@ -30,7 +30,7 @@ Models:
           Top 5 Accuracy: 95.10
         Task: Image Classification
     Weights: TBD
-    Config: configs/gcvit/gcvit_xxtiny.py
+    Config: configs/gcvit/gcvit_xxtiny_8xb64_in1k.py
     Converted From:
       Weights: https://drive.google.com/file/d/1Bfe63cGurkufL0mEUL05oposybbPnAom/view?usp=sharing
       Code: https://github.com/NVlabs/GCVit
@@ -46,7 +46,7 @@ Models:
           Top 5 Accuracy: 95.994
         Task: Image Classification
     Weights: TBD
-    Config: configs/gcvit/gcvit_xtiny.py
+    Config: configs/gcvit/gcvit_xtiny_8xb64_in1k.py
     Converted From:
       Weights: https://drive.google.com/file/d/15kt8VOXdAH_jF77g7pEPk-ZmZF13sHRd/view?usp=sharing
       Code: https://github.com/NVlabs/GCVit
@@ -62,7 +62,7 @@ Models:
           Top 5 Accuracy: 96.40
         Task: Image Classification
     Weights: TBD
-    Config: configs/gcvit/gcvit_tiny.py
+    Config: configs/gcvit/gcvit_tiny_8xb64_in1k.py
     Converted From:
       Weights: https://drive.google.com/file/d/1C9lLgykooDF6CxZDFDnUqw5lEqoFgULh/view?usp=sharing
       Code: https://github.com/NVlabs/GCVit
@@ -78,7 +78,7 @@ Models:
           Top 5 Accuracy: 96.66
         Task: Image Classification
     Weights: TBD
-    Config: configs/gcvit/gcvit_small.py
+    Config: configs/gcvit/gcvit_small_8xb64_in1k.py
     Converted From:
       Weights: https://drive.google.com/file/d/1bfEJQNutyDkPHAkgYcKWhjVTT_ZnYXp4/view?usp=sharing
       Code: https://github.com/NVlabs/GCVit
@@ -94,7 +94,7 @@ Models:
           Top 5 Accuracy: 96.84
         Task: Image Classification
     Weights: TBD
-    Config: configs/gcvit/gcvit_base.py
+    Config: configs/gcvit/gcvit_base_8xb64_in1k.py
     Converted From:
       Weights: https://drive.google.com/file/d/1PFugO7dqfS-eubZi-yksM_FcYvUNjXBn/view?usp=sharing
       Code: https://github.com/NVlabs/GCVit

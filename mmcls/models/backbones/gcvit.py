@@ -6,6 +6,9 @@ import torch
 import torch.nn as nn
 from mmengine.model.weight_init import trunc_normal_
 
+from mmcv.cnn.bricks import DropPath
+from mmcls.models.utils.attention import ShiftWindowMSA
+from mmcls.models.utils.attention import WindowMSA
 from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.registry import MODELS
 
@@ -24,22 +27,6 @@ def drop_path(x,
     if keep_prob > 0.0 and scale_by_keep:
         random_tensor.div_(keep_prob)
     return x * random_tensor
-
-
-class DropPath(nn.Module):
-    """Drop paths (Stochastic Depth) per sample  (when applied in main path of
-    residual blocks)."""
-
-    def __init__(self, drop_prob: float = 0., scale_by_keep: bool = True):
-        super(DropPath, self).__init__()
-        self.drop_prob = drop_prob
-        self.scale_by_keep = scale_by_keep
-
-    def forward(self, x):
-        return drop_path(x, self.drop_prob, self.training, self.scale_by_keep)
-
-    def extra_repr(self):
-        return f'drop_prob={round(self.drop_prob,3):0.3f}'
 
 
 def _to_channel_last(x):
@@ -62,40 +49,6 @@ def _to_channel_first(x):
         x: (B, C, H, W)
     """
     return x.permute(0, 3, 1, 2)
-
-
-def window_partition(x, window_size, h_w, w_w):
-    """
-    Args:
-        x: (B, H, W, C)
-        window_size: window size
-
-    Returns:
-        local window features (num_windows*B, window_size, window_size, C)
-    """
-    B, H, W, C = x.shape
-    x = x.view(B, h_w, window_size, w_w, window_size, C)
-    windows = x.permute(0, 1, 3, 2, 4,
-                        5).contiguous().view(-1, window_size, window_size, C)
-    return windows
-
-
-def window_reverse(windows, window_size, H, W, h_w, w_w):
-    """
-    Args:
-        windows: local window features
-           (num_windows*B, window_size, window_size, C)
-        window_size: Window size
-        H: Height of image
-        W: Width of image
-
-    Returns:
-        x: (B, H, W, C)
-    """
-    B = int(windows.shape[0] / (H * W / window_size / window_size))
-    x = windows.view(B, h_w, w_w, window_size, window_size, -1)
-    x = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(B, H, W, -1)
-    return x
 
 
 class Mlp(nn.Module):
@@ -247,86 +200,86 @@ class FeatExtract(nn.Module):
         return x
 
 
-class WindowAttention(nn.Module):
-    """Local window attention based on: "Liu et al., Swin Transformer:
-    Hierarchical Vision Transformer using Shifted Windows.
+# class WindowAttention(nn.Module):
+#     """Local window attention based on: "Liu et al., Swin Transformer:
+#     Hierarchical Vision Transformer using Shifted Windows.
 
-    <https://arxiv.org/abs/2103.14030>"
-    """
+#     <https://arxiv.org/abs/2103.14030>"
+#     """
 
-    def __init__(
-        self,
-        dim,
-        num_heads,
-        window_size,
-        qkv_bias=True,
-        qk_scale=None,
-        attn_drop=0.,
-        proj_drop=0.,
-    ):
-        """
-        Args:
-            dim: feature size dimension.
-            num_heads: number of attention head.
-            window_size: window size.
-            qkv_bias: bool argument for query, key, value learnable bias.
-            qk_scale: bool argument to scaling query, key.
-            attn_drop: attention dropout rate.
-            proj_drop: output dropout rate.
-        """
+#     def __init__(
+#         self,
+#         dim,
+#         num_heads,
+#         window_size,
+#         qkv_bias=True,
+#         qk_scale=None,
+#         attn_drop=0.,
+#         proj_drop=0.,
+#     ):
+#         """
+#         Args:
+#             dim: feature size dimension.
+#             num_heads: number of attention head.
+#             window_size: window size.
+#             qkv_bias: bool argument for query, key, value learnable bias.
+#             qk_scale: bool argument to scaling query, key.
+#             attn_drop: attention dropout rate.
+#             proj_drop: output dropout rate.
+#         """
 
-        super().__init__()
-        window_size = (window_size, window_size)
-        self.window_size = window_size
-        self.num_heads = num_heads
-        head_dim = torch.div(dim, num_heads, rounding_mode='floor')
-        self.scale = qk_scale or head_dim**-0.5
-        self.relative_position_bias_table = nn.Parameter(
-            torch.zeros((2 * window_size[0] - 1) * (2 * window_size[1] - 1),
-                        num_heads))
-        coords_h = torch.arange(self.window_size[0])
-        coords_w = torch.arange(self.window_size[1])
-        coords = torch.stack(torch.meshgrid([coords_h, coords_w]))
-        coords_flatten = torch.flatten(coords, 1)
-        relative_coords = coords_flatten[:, :, None] - coords_flatten[:,
-                                                                      None, :]
-        relative_coords = relative_coords.permute(1, 2, 0).contiguous()
-        relative_coords[:, :, 0] += self.window_size[0] - 1
-        relative_coords[:, :, 1] += self.window_size[1] - 1
-        relative_coords[:, :, 0] *= 2 * self.window_size[1] - 1
-        relative_position_index = relative_coords.sum(-1)
-        self.register_buffer('relative_position_index',
-                             relative_position_index)
-        self.qkv = nn.Linear(dim, dim * 3, bias=qkv_bias)
-        self.attn_drop = nn.Dropout(attn_drop)
-        self.proj = nn.Linear(dim, dim)
-        self.proj_drop = nn.Dropout(proj_drop)
+#         super().__init__()
+#         window_size = (window_size, window_size)
+#         self.window_size = window_size
+#         self.num_heads = num_heads
+#         head_dim = torch.div(dim, num_heads, rounding_mode='floor')
+#         self.scale = qk_scale or head_dim**-0.5
+#         self.relative_position_bias_table = nn.Parameter(
+#             torch.zeros((2 * window_size[0] - 1) * (2 * window_size[1] - 1),
+#                         num_heads))
+#         coords_h = torch.arange(self.window_size[0])
+#         coords_w = torch.arange(self.window_size[1])
+#         coords = torch.stack(torch.meshgrid([coords_h, coords_w]))
+#         coords_flatten = torch.flatten(coords, 1)
+#         relative_coords = coords_flatten[:, :, None] - coords_flatten[:,
+#                                                                       None, :]
+#         relative_coords = relative_coords.permute(1, 2, 0).contiguous()
+#         relative_coords[:, :, 0] += self.window_size[0] - 1
+#         relative_coords[:, :, 1] += self.window_size[1] - 1
+#         relative_coords[:, :, 0] *= 2 * self.window_size[1] - 1
+#         relative_position_index = relative_coords.sum(-1)
+#         self.register_buffer('relative_position_index',
+#                              relative_position_index)
+#         self.qkv = nn.Linear(dim, dim * 3, bias=qkv_bias)
+#         self.attn_drop = nn.Dropout(attn_drop)
+#         self.proj = nn.Linear(dim, dim)
+#         self.proj_drop = nn.Dropout(proj_drop)
 
-        trunc_normal_(self.relative_position_bias_table, std=.02)
-        self.softmax = nn.Softmax(dim=-1)
+#         trunc_normal_(self.relative_position_bias_table, std=.02)
+#         self.softmax = nn.Softmax(dim=-1)
 
-    def forward(self, x, q_global):
-        B_, N, C = x.shape
-        head_dim = torch.div(C, self.num_heads, rounding_mode='floor')
-        qkv = self.qkv(x).reshape(B_, N, 3, self.num_heads,
-                                  head_dim).permute(2, 0, 3, 1, 4)
-        q, k, v = qkv[0], qkv[1], qkv[2]
-        q = q * self.scale
-        attn = (q @ k.transpose(-2, -1))
-        relative_position_bias = self.relative_position_bias_table[
-            self.relative_position_index.view(-1)].view(
-                self.window_size[0] * self.window_size[1],
-                self.window_size[0] * self.window_size[1], -1)
-        relative_position_bias = relative_position_bias.permute(
-            2, 0, 1).contiguous()
-        attn = attn + relative_position_bias.unsqueeze(0)
-        attn = self.softmax(attn)
-        attn = self.attn_drop(attn)
+#     def forward(self, x, q_global):
+#         B_, N, C = x.shape
+#         head_dim = torch.div(C, self.num_heads, rounding_mode='floor')
+#         qkv = self.qkv(x).reshape(B_, N, 3, self.num_heads,
+#                                   head_dim).permute(2, 0, 3, 1, 4)
+#         q, k, v = qkv[0], qkv[1], qkv[2]
+#         q = q * self.scale
+#         attn = (q @ k.transpose(-2, -1))
+#         relative_position_bias = self.relative_position_bias_table[
+#             self.relative_position_index.view(-1)].view(
+#                 self.window_size[0] * self.window_size[1],
+#                 self.window_size[0] * self.window_size[1], -1)
+#         relative_position_bias = relative_position_bias.permute(
+#             2, 0, 1).contiguous()
+#         attn = attn + relative_position_bias.unsqueeze(0)
+#         attn = self.softmax(attn)
+#         attn = self.attn_drop(attn)
 
-        x = (attn @ v).transpose(1, 2).reshape(B_, N, C)
-        x = self.proj(x)
-        x = self.proj_drop(x)
-        return x
+#         x = (attn @ v).transpose(1, 2).reshape(B_, N, C)
+#         x = self.proj(x)
+#         x = self.proj_drop(x)
+#         return x
 
 
 class WindowAttentionGlobal(nn.Module):
@@ -487,12 +440,10 @@ class GCViTBlock(nn.Module):
         B, H, W, C = x.shape
         shortcut = x
         x = self.norm1(x)
-        h_w = torch.div(H, self.window_size, rounding_mode='floor')
-        w_w = torch.div(W, self.window_size, rounding_mode='floor')
-        x_windows = window_partition(x, self.window_size, h_w, w_w)
+        x_windows = ShiftWindowMSA.window_partition(x, self.window_size)
         x_windows = x_windows.view(-1, self.window_size * self.window_size, C)
         attn_windows = self.attn(x_windows, q_global)
-        x = window_reverse(attn_windows, self.window_size, H, W, h_w, w_w)
+        x = ShiftWindowMSA.window_reverse(attn_windows, H, W, self.window_size)
         x = shortcut + self.drop_path(self.gamma1 * x)
         x = x + self.drop_path(self.gamma2 * self.mlp(self.norm2(x)))
         return x
@@ -599,7 +550,7 @@ class GCViTLayer(nn.Module):
                 mlp_ratio=mlp_ratio,
                 qkv_bias=qkv_bias,
                 qk_scale=qk_scale,
-                attention=WindowAttention if
+                attention=WindowMSA if
                 (i % 2 == 0) else WindowAttentionGlobal,
                 drop=drop,
                 attn_drop=attn_drop,
