@@ -51,10 +51,40 @@ class EnhancedConvModule(ConvModule):
 
 @MODELS.register_module()
 class EfficientNetV2(BaseBackbone):
-    # repeat, kernel, stride, expansion, in_c, out_c, se_ratio, block_type
-    # if block_type==0, is FusedMBConv; if block_type==1, is MBConv,
-    # if block_type==-1, is ConvWithSkip; if block_type==-2, is ConvModule
-    # b0 is same as base
+    """EfficientNet backbone.
+
+        Args:
+            arch (str): Architecture of efficientnetv2. Defaults to s.
+            drop_path_rate (float): The ratio of the stochastic depth.
+            out_indices (Sequence[int]): Output from which stages.
+                Defaults to (-1, ).
+            frozen_stages (int): Stages to be frozen (all param fixed).
+                Defaults to 0, which means not freezing any parameters.
+            conv_cfg (dict): Config dict for convolution layer.
+                Defaults to None, which means using conv2d.
+            norm_cfg (dict): Config dict for normalization layer.
+                Defaults to dict(type='BN').
+            act_cfg (dict): Config dict for activation layer.
+                Defaults to dict(type='Swish').
+            norm_eval (bool): Whether to set norm layers to eval mode, namely,
+                freeze running stats (mean and var). Note: Effect on Batch Norm
+                and its variants only. Defaults to False.
+            with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+                memory while slowing down the training speed. Defaults to False.
+        """
+
+    # Parameters to build layers.
+    # arch_setting: b0 is same as base
+    # 8 parameters are needed to construct a layer, From left to right:
+    # - repeat: The repeat number of the block in the layer
+    # - kernel_size: The kernel size of the layer
+    # - stride: The stride of the first block of the layer
+    # - expand_ratio: The expand_ratio of the mid_channels
+    # - in_channel: The number of in_channels of the layer
+    # - out_channel: The number of out_channels of the layer
+    # - se_ratio: The sequeeze ratio of SELayer.
+    # - block_type: -2: ConvModule, -1: EnhancedConvModule,
+    #                0: FusedMBConv, 1: MBConv
     arch_settings = {
         'base': [[1, 3, 1, 1, 32, 16, 0, -1], [2, 3, 2, 4, 16, 32, 0, 0],
                  [2, 3, 2, 4, 32, 48, 0, 0], [3, 3, 2, 4, 48, 96, 0.25, 1],
@@ -109,7 +139,7 @@ class EfficientNetV2(BaseBackbone):
     def __init__(self,
                  arch: str = 's',
                  drop_path_rate: float = 0.,
-                 out_indices: Tuple = (-1,),
+                 out_indices: Sequence[int] = (-1,),
                  frozen_stages: int = 0,
                  conv_cfg=dict(type='Conv2dAdaptivePadding'),
                  norm_cfg=dict(type='BN', eps=1e-3, momentum=0.1),
