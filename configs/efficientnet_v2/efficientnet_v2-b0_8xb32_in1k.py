@@ -23,7 +23,7 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='RandomResizedCrop',
-        scale=224,
+        scale=192,
         backend='pillow',
         interpolation='bicubic'),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
