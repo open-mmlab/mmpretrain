@@ -5,9 +5,6 @@ _base_ = [
     '../_base_/default_runtime.py',
 ]
 
-bgr_mean = data_preprocessor['mean'][::-1]
-bgr_std = data_preprocessor['std'][::-1]
-
 # dataset settings
 dataset_type = 'ImageNet'
 data_preprocessor = dict(
@@ -18,6 +15,9 @@ data_preprocessor = dict(
     # convert image from BGR to RGB
     to_rgb=True,
 )
+
+bgr_mean = data_preprocessor['mean'][::-1]
+bgr_std = data_preprocessor['std'][::-1]
 
 train_pipeline = [
     dict(type='LoadImageFromFile'),
