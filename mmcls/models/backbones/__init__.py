@@ -14,11 +14,6 @@ from .efficientformer import EfficientFormer
 from .efficientnet import EfficientNet
 from .gcvit import GCViT
 from .hornet import HorNet
-<<<<<<< HEAD
-from .gcvit import GCViT
-=======
-from .hornet import HorNet
->>>>>>> 1c6b077bb17e35d04575402fbb4e0cfa8a982a58
 from .hrnet import HRNet
 from .inception_v3 import InceptionV3
 from .lenet import LeNet5
@@ -106,13 +101,9 @@ __all__ = [
     'DaViT',
     'BEiT',
     'GCViT',
-<<<<<<< HEAD
-    'GCViT',
-=======
     'DeiT3',
     'HorNet',
     'MobileViT',
     'DaViT',
     'BEiT',
->>>>>>> 1c6b077bb17e35d04575402fbb4e0cfa8a982a58
 ]
