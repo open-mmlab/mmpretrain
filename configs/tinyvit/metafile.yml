@@ -18,7 +18,7 @@ Models:
     Metadata:
       FLOPs: 1286655360
       Parameters: 5392764
-    In Collections: TinyViT
+    In Collection: TinyViT
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -34,7 +34,7 @@ Models:
     Metadata:
       FLOPs: 2050033664
       Parameters: 10996972
-    In Collections: TinyViT
+    In Collection: TinyViT
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -50,7 +50,7 @@ Models:
     Metadata:
       FLOPs: 4301124096
       Parameters: 21198568
-    In Collections: TinyViT
+    In Collection: TinyViT
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -66,7 +66,7 @@ Models:
     Metadata:
       FLOPs: 1286655360
       Parameters: 5392764
-    In Collections: TinyViT
+    In Collection: TinyViT
     Results:
       - Dataset:
           - ImageNet-1k
@@ -84,7 +84,7 @@ Models:
     Metadata:
       FLOPs: 2050033664
       Parameters: 10996972
-    In Collections: TinyViT
+    In Collection: TinyViT
     Results:
       - Dataset:
           - ImageNet-1k
@@ -102,7 +102,7 @@ Models:
     Metadata:
       FLOPs: 4301124096
       Parameters: 21198568
-    In Collections: TinyViT
+    In Collection: TinyViT
     Results:
       - Dataset:
           - ImageNet-1k
@@ -120,7 +120,7 @@ Models:
     Metadata:
       FLOPs: 13848250176
       Parameters: 21230488
-    In Collections: TinyViT
+    In Collection: TinyViT
     Results:
       - Dataset:
           - ImageNet-1k
@@ -138,7 +138,7 @@ Models:
     Metadata:
       FLOPs: 27151420224
       Parameters: 21268120
-    In Collections: TinyViT
+    In Collection: TinyViT
     Results:
       - Dataset:
           - ImageNet-1k
