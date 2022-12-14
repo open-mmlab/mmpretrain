@@ -24,7 +24,40 @@ def convert_weights(model):
             temp['head.fc.' + k[5:]] = v
         else:
             temp['backbone.' + k] = v
-    result['state_dict'] = temp
+    
+    temp2 = dict()
+    for k, v in temp.items():
+        if k.find("conv_down.conv.2.") != -1:
+            start_pos = k.find("conv_down.conv.2.")
+            str_before = k[:start_pos+len("conv_down.conv.2.")]
+            str_after = k[start_pos+len("conv_down.conv.2."):]
+            if str_after == "fc.0.weight":
+                new_key = str_before + "conv1.conv.weight"
+            elif str_after == "fc.2.weight":
+                new_key = str_before + "conv2.conv.weight"
+            temp2[new_key] = v.unsqueeze(2).unsqueeze(3)
+        elif k.find("q_global_gen.to_q_global.") != -1 and k.find("fc") != -1:
+            start_pos = k.find("q_global_gen.to_q_global.")
+            str_before = k[:start_pos+len("q_global_gen.to_q_global.0.conv.2.")]
+            str_after = k[start_pos+len("q_global_gen.to_q_global.0.conv.2."):]
+            if str_after == "fc.0.weight":
+                new_key = str_before + "conv1.conv.weight"
+            elif str_after == "fc.2.weight":
+                new_key = str_before + "conv2.conv.weight"
+            temp2[new_key] = v.unsqueeze(2).unsqueeze(3)
+        elif k.find("downsample.conv.2.") != -1:
+            start_pos = k.find("downsample.conv.2.")
+            str_before = k[:start_pos+len("downsample.conv.2.")]
+            str_after = k[start_pos+len("downsample.conv.2."):]
+            if str_after == "fc.0.weight":
+                new_key = str_before + "conv1.conv.weight"
+            elif str_after == "fc.2.weight":
+                new_key = str_before + "conv2.conv.weight"
+            temp2[new_key] = v.unsqueeze(2).unsqueeze(3)
+        else:
+            temp2[k] = v
+    
+    result['state_dict'] = temp2
     return result
 
 

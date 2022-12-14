@@ -9,6 +9,7 @@ from mmengine.model.weight_init import trunc_normal_
 from mmcv.cnn.bricks import DropPath
 from mmcls.models.utils.attention import ShiftWindowMSA
 from mmcls.models.utils.attention import WindowMSA
+from mmcls.models.utils.se_layer import SELayer
 from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.registry import MODELS
 
@@ -86,30 +87,6 @@ class Mlp(nn.Module):
         return x
 
 
-class SE(nn.Module):
-    """Squeeze and excitation block."""
-
-    def __init__(self, inp, oup, expansion=0.25):
-        """
-        Args:
-            inp: input features dimension.
-            oup: output features dimension.
-            expansion: expansion ratio.
-        """
-
-        super().__init__()
-        self.avg_pool = nn.AdaptiveAvgPool2d(1)
-        self.fc = nn.Sequential(
-            nn.Linear(oup, int(inp * expansion), bias=False), nn.GELU(),
-            nn.Linear(int(inp * expansion), oup, bias=False), nn.Sigmoid())
-
-    def forward(self, x):
-        b, c, _, _ = x.size()
-        y = self.avg_pool(x).view(b, c)
-        y = self.fc(y).view(b, c, 1, 1)
-        return x * y
-
-
 class ReduceSize(nn.Module):
     """Down-sampling block based on: "Hatamizadeh et al., Global Context Vision
     Transformers <https://arxiv.org/abs/2206.09959>"."""
@@ -126,7 +103,8 @@ class ReduceSize(nn.Module):
         self.conv = nn.Sequential(
             nn.Conv2d(dim, dim, 3, 1, 1, groups=dim, bias=False),
             nn.GELU(),
-            SE(dim, dim),
+            SELayer(channels=dim, ratio=4, bias=False, 
+                act_cfg=(dict(type='GELU'), dict(type='Sigmoid')),), 
             nn.Conv2d(dim, dim, 1, 1, 0, bias=False),
         )
         if keep_dim:
@@ -185,7 +163,8 @@ class FeatExtract(nn.Module):
         self.conv = nn.Sequential(
             nn.Conv2d(dim, dim, 3, 1, 1, groups=dim, bias=False),
             nn.GELU(),
-            SE(dim, dim),
+            SELayer(channels=dim, ratio=4, bias=False,
+                act_cfg=(dict(type='GELU'), dict(type='Sigmoid')),), 
             nn.Conv2d(dim, dim, 1, 1, 0, bias=False),
         )
         if not keep_dim:
@@ -198,88 +177,6 @@ class FeatExtract(nn.Module):
         if not self.keep_dim:
             x = self.pool(x)
         return x
-
-
-# class WindowAttention(nn.Module):
-#     """Local window attention based on: "Liu et al., Swin Transformer:
-#     Hierarchical Vision Transformer using Shifted Windows.
-
-#     <https://arxiv.org/abs/2103.14030>"
-#     """
-
-#     def __init__(
-#         self,
-#         dim,
-#         num_heads,
-#         window_size,
-#         qkv_bias=True,
-#         qk_scale=None,
-#         attn_drop=0.,
-#         proj_drop=0.,
-#     ):
-#         """
-#         Args:
-#             dim: feature size dimension.
-#             num_heads: number of attention head.
-#             window_size: window size.
-#             qkv_bias: bool argument for query, key, value learnable bias.
-#             qk_scale: bool argument to scaling query, key.
-#             attn_drop: attention dropout rate.
-#             proj_drop: output dropout rate.
-#         """
-
-#         super().__init__()
-#         window_size = (window_size, window_size)
-#         self.window_size = window_size
-#         self.num_heads = num_heads
-#         head_dim = torch.div(dim, num_heads, rounding_mode='floor')
-#         self.scale = qk_scale or head_dim**-0.5
-#         self.relative_position_bias_table = nn.Parameter(
-#             torch.zeros((2 * window_size[0] - 1) * (2 * window_size[1] - 1),
-#                         num_heads))
-#         coords_h = torch.arange(self.window_size[0])
-#         coords_w = torch.arange(self.window_size[1])
-#         coords = torch.stack(torch.meshgrid([coords_h, coords_w]))
-#         coords_flatten = torch.flatten(coords, 1)
-#         relative_coords = coords_flatten[:, :, None] - coords_flatten[:,
-#                                                                       None, :]
-#         relative_coords = relative_coords.permute(1, 2, 0).contiguous()
-#         relative_coords[:, :, 0] += self.window_size[0] - 1
-#         relative_coords[:, :, 1] += self.window_size[1] - 1
-#         relative_coords[:, :, 0] *= 2 * self.window_size[1] - 1
-#         relative_position_index = relative_coords.sum(-1)
-#         self.register_buffer('relative_position_index',
-#                              relative_position_index)
-#         self.qkv = nn.Linear(dim, dim * 3, bias=qkv_bias)
-#         self.attn_drop = nn.Dropout(attn_drop)
-#         self.proj = nn.Linear(dim, dim)
-#         self.proj_drop = nn.Dropout(proj_drop)
-
-#         trunc_normal_(self.relative_position_bias_table, std=.02)
-#         self.softmax = nn.Softmax(dim=-1)
-
-#     def forward(self, x, q_global):
-#         B_, N, C = x.shape
-#         head_dim = torch.div(C, self.num_heads, rounding_mode='floor')
-#         qkv = self.qkv(x).reshape(B_, N, 3, self.num_heads,
-#                                   head_dim).permute(2, 0, 3, 1, 4)
-#         q, k, v = qkv[0], qkv[1], qkv[2]
-#         q = q * self.scale
-#         attn = (q @ k.transpose(-2, -1))
-#         relative_position_bias = self.relative_position_bias_table[
-#             self.relative_position_index.view(-1)].view(
-#                 self.window_size[0] * self.window_size[1],
-#                 self.window_size[0] * self.window_size[1], -1)
-#         relative_position_bias = relative_position_bias.permute(
-#             2, 0, 1).contiguous()
-#         attn = attn + relative_position_bias.unsqueeze(0)
-#         attn = self.softmax(attn)
-#         attn = self.attn_drop(attn)
-
-#         x = (attn @ v).transpose(1, 2).reshape(B_, N, C)
-#         x = self.proj(x)
-#         x = self.proj_drop(x)
-#         return x
 
 
 class WindowAttentionGlobal(nn.Module):
@@ -307,7 +204,6 @@ class WindowAttentionGlobal(nn.Module):
         proj_drop=0.,
     ):
         super().__init__()
-        window_size = (window_size, window_size)
         self.window_size = window_size
         self.num_heads = num_heads
         head_dim = torch.div(dim, num_heads, rounding_mode='floor')
@@ -407,7 +303,7 @@ class GCViTBlock(nn.Module):
         self.attn = attention(
             dim,
             num_heads=num_heads,
-            window_size=window_size,
+            window_size=(window_size, window_size),
             qkv_bias=qkv_bias,
             qk_scale=qk_scale,
             attn_drop=attn_drop,
@@ -442,7 +338,10 @@ class GCViTBlock(nn.Module):
         x = self.norm1(x)
         x_windows = ShiftWindowMSA.window_partition(x, self.window_size)
         x_windows = x_windows.view(-1, self.window_size * self.window_size, C)
-        attn_windows = self.attn(x_windows, q_global)
+        if isinstance(self.attn, WindowAttentionGlobal):
+            attn_windows = self.attn(x_windows, q_global)
+        else:
+            attn_windows = self.attn(x_windows)
         x = ShiftWindowMSA.window_reverse(attn_windows, H, W, self.window_size)
         x = shortcut + self.drop_path(self.gamma1 * x)
         x = x + self.drop_path(self.gamma2 * self.mlp(self.norm2(x)))
