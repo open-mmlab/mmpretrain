@@ -9,7 +9,7 @@ from mmcv.cnn.bricks.transformer import FFN, PatchEmbed
 from mmengine.model import BaseModule, ModuleList
 from mmengine.model.weight_init import trunc_normal_
 
-from ..builder import MODELS
+from mmcls.registry import MODELS
 from ..utils import MultiheadAttention, resize_pos_embed, to_2tuple
 from .base_backbone import BaseBackbone
 

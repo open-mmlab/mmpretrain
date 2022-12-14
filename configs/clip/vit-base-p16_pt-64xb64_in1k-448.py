@@ -1,5 +1,6 @@
 _base_ = [
-    '../_base_/models/vit-base-p16.py', './vit_base_448_dataproc.py',
+    '../_base_/models/vit-base-p16.py',
+    '../_base_/datasets/imagenet_bs64_clip_448.py',
     '../_base_/schedules/imagenet_bs4096_AdamW.py',
     '../_base_/default_runtime.py'
 ]
