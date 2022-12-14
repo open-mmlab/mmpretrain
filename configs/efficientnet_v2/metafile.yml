@@ -23,8 +23,8 @@ Collections:
 Models:
   - Name: efficientnet_v2-s_3rdparty_8xb32_in1k
     Metadata:
-      FLOPs: 8.4B
-      Parameters: 21.5M
+      FLOPs: 9719420928
+      Parameters: 21458488
     In Collection: EfficientNetV2
     Results:
       - Dataset: ImageNet-1k
@@ -39,8 +39,8 @@ Models:
       Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
   - Name: efficientnet_v2-m_3rdparty_8xb32_in1k
     Metadata:
-      FLOPs: 24.7B
-      Parameters: 54.1M
+      FLOPs: 26880363584
+      Parameters: 54139356
     In Collection: EfficientNetV2
     Results:
       - Dataset: ImageNet-1k
@@ -55,8 +55,8 @@ Models:
       Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
   - Name: efficientnet_v2-l_3rdparty_8xb32_in1k
     Metadata:
-      FLOPs: 56.3B
-      Parameters: 119.5M
+      FLOPs: 60142387008
+      Parameters: 118515272
     In Collection: EfficientNetV2
     Results:
       - Dataset: ImageNet-1k
@@ -71,8 +71,8 @@ Models:
       Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
   - Name: efficientnet_v2-s_3rdparty_8xb32_in21ft1k
     Metadata:
-      FLOPs: 8.4B
-      Parameters: 21.5M
+      FLOPs: 9719420928
+      Parameters: 21458488
     In Collection: EfficientNetV2
     Results:
       - Dataset: ImageNet-1k
@@ -87,8 +87,8 @@ Models:
       Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
   - Name: efficientnet_v2-m_3rdparty_8xb32_in21ft1k
     Metadata:
-      FLOPs: 24.7B
-      Parameters: 54.1M
+      FLOPs: 26880363584
+      Parameters: 54139356
     In Collection: EfficientNetV2
     Results:
       - Dataset: ImageNet-1k
@@ -103,8 +103,8 @@ Models:
       Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
   - Name: efficientnet_v2-l_3rdparty_8xb32_in21ft1k
     Metadata:
-      FLOPs: 56.3B
-      Parameters: 119.5M
+      FLOPs: 60142387008
+      Parameters: 118515272
     In Collection: EfficientNetV2
     Results:
       - Dataset: ImageNet-1k
@@ -119,8 +119,8 @@ Models:
       Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
   - Name: efficientnet_v2-xl_3rdparty_8xb32_in21ft1k
     Metadata:
-      FLOPs:
-      Parameters:
+      FLOPs: 98341230592
+      Parameters: 208119808
     In Collection: EfficientNetV2
     Results:
       - Dataset: ImageNet-1k
@@ -135,8 +135,8 @@ Models:
       Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
   - Name: efficientnet_v2-b0_3rdparty_8xb32_in1k
     Metadata:
-      FLOPs: 0.72B
-      Parameters: 7.1M
+      FLOPs: 919843360
+      Parameters: 7139704
     In Collection: EfficientNetV2
     Results:
       - Dataset: ImageNet-1k
@@ -151,8 +151,8 @@ Models:
       Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
   - Name: efficientnet_v2-b1_3rdparty_8xb32_in1k
     Metadata:
-      FLOPs: 1.2B
-      Parameters: 8.1M
+      FLOPs: 1438287552
+      Parameters: 8141052
     In Collection: EfficientNetV2
     Results:
       - Dataset: ImageNet-1k
@@ -161,14 +161,14 @@ Models:
           Top 5 Accuracy: 94.55
         Task: Image Classification
     Weights:
-    Config: configs/efficientnet_v2/efficientnet_v2-b0_8xb32_in1k.py
+    Config: configs/efficientnet_v2/efficientnet_v2-b1_8xb32_in1k.py
     Converted From:
       Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_b1-be6e41b0.pth
       Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
   - Name: efficientnet_v2-b2_3rdparty_8xb32_in1k
     Metadata:
-      FLOPs: 1.7B
-      Parameters: 10.1M
+      FLOPs: 1986433080
+      Parameters: 10096086
     In Collection: EfficientNetV2
     Results:
       - Dataset: ImageNet-1k
@@ -183,8 +183,8 @@ Models:
       Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
   - Name: efficientnet_v2-b3_3rdparty_8xb32_in1k
     Metadata:
-      FLOPs: 3.0B
-      Parameters: 14.4M
+      FLOPs: 3498068400
+      Parameters: 14358406
     In Collection: EfficientNetV2
     Results:
       - Dataset: ImageNet-1k
