@@ -704,7 +704,6 @@ class BEiTAttention(BaseModule):
                 2, 0, 1).contiguous()  # nH, Wh*Ww, Wh*Ww
             if not self.is_cls_token:
                 relative_position_bias = relative_position_bias[:, 1:, 1:]
-            print('a', attn.shape, relative_position_bias.unsqueeze(0).shape)
             attn = attn + relative_position_bias.unsqueeze(0)
 
         if rel_pos_bias is not None:
