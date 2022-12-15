@@ -188,28 +188,9 @@ workflows:
             requires:
               - lint
         - build:
-            name: build_py36_torch1.6
-            torch: 1.6.0
-            torchvision: 0.7.0
-            requires:
-              - lint
-        - build:
             name: build_py36_torch1.7
             torch: 1.7.0
             torchvision: 0.8.1
-            requires:
-              - lint
-        - build:
-            name: build_py36_torch1.8
-            torch: 1.8.0
-            torchvision: 0.9.0
-            requires:
-              - lint
-        - build:
-            name: build_py39_torch1.8
-            torch: 1.8.0
-            torchvision: 0.9.0
-            python: "3.9.0"
             requires:
               - lint
         - build:
@@ -219,21 +200,10 @@ workflows:
             python: "3.9.0"
             requires:
               - lint
-        - build:
-            name: build_py39_torch1.10
-            torch: 1.10.0
-            torchvision: 0.11.1
-            python: "3.9.0"
-            requires:
-              - lint
         - build_with_cuda:
             name: build_py36_torch1.6_cu101
             requires:
               - build_with_timm
               - build_py36_torch1.5
-              - build_py36_torch1.6
               - build_py36_torch1.7
-              - build_py36_torch1.8
-              - build_py39_torch1.8
               - build_py39_torch1.9
-              - build_py39_torch1.10

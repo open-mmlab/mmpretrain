@@ -82,7 +82,8 @@ class MultiLabelClsHead(BaseHead):
             x = x[-1]
 
         if sigmoid:
-            pred = torch.sigmoid(x) if x is not None else None
+            # Convert to full precision because sigmoid is sensitive.
+            pred = torch.sigmoid(x.float()) if x is not None else None
         else:
             pred = x
 
