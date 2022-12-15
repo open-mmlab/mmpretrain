@@ -74,8 +74,8 @@ def convert_from_efficientnetv2_timm(param):
 
 def main():
     parser = argparse.ArgumentParser(
-        description=
-        'Convert pretrained efficientnetv2 models in timm to mmcls style.')
+        description='Convert pretrained efficientnetv2 '
+        'models in timm to mmcls style.')
     parser.add_argument('src', help='src model path or url')
     # The dst path must be a full path of the new checkpoint.
     parser.add_argument('dst', help='save path')

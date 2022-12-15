@@ -31,26 +31,24 @@ With progressive learning, our EfficientNetV2 significantly outperforms previous
 
 ### ImageNet-1k
 
-|        Model         | Params(M) | Flops(B) | Top-1 (%) | Top-5 (%) |                    Config                     |                                               Download                                               |
-| :------------------: | :-------: | :------: | :-------: | :-------: | :-------------------------------------------: | :--------------------------------------------------------------------------------------------------: |
-| EfficientNetV2-s |   21.5   |   8.4   |   83.86   |   96.63   | [config](./efficientnet_v2-s_8xb32_in1k.py) | [model]() |
-| EfficientNetV2-m |   54.1   |   24.7   |   84.12   |   96.78   | [config](./efficientnet_v2-m_8xb32_in1k.py) | [model]() |
-| EfficientNetV2-l |   119.5   |  56.3   |   85.45   |   97.28   | [config](./efficientnet_v2-l_8xb32_in1k.py) | [model]() |
-| EfficientNetV2-b0 |   7.1   |  0.72   |   78.48   |   94.26   | [config](./efficientnet_v2-b0_8xb32_in1k.py) | [model]() |
-| EfficientNetV2-b1 |   8.1   |  1.2   |   79.20   |   94.55   | [config](./efficientnet_v2-b1_8xb32_in1k.py) | [model]() |
-| EfficientNetV2-b2 |   10.1   |  1.7   |   79.89   |   94.81   | [config](./efficientnet_v2-b2_8xb32_in1k.py) | [model]() |
-| EfficientNetV2-b3 |   14.4   |  3.0   |   81.61   |   95.69   | [config](./efficientnet_v2-b3_8xb32_in1k.py) | [model]() |
-
+|       Model       | Params(M) | Flops(B) | Top-1 (%) | Top-5 (%) |                    Config                    |  Download   |
+| :---------------: | :-------: | :------: | :-------: | :-------: | :------------------------------------------: | :---------: |
+| EfficientNetV2-s  |   21.5    |   8.4    |   83.86   |   96.63   | [config](./efficientnet_v2-s_8xb32_in1k.py)  | [model](<>) |
+| EfficientNetV2-m  |   54.1    |   24.7   |   84.12   |   96.78   | [config](./efficientnet_v2-m_8xb32_in1k.py)  | [model](<>) |
+| EfficientNetV2-l  |   119.5   |   56.3   |   85.45   |   97.28   | [config](./efficientnet_v2-l_8xb32_in1k.py)  | [model](<>) |
+| EfficientNetV2-b0 |    7.1    |   0.72   |   78.48   |   94.26   | [config](./efficientnet_v2-b0_8xb32_in1k.py) | [model](<>) |
+| EfficientNetV2-b1 |    8.1    |   1.2    |   79.20   |   94.55   | [config](./efficientnet_v2-b1_8xb32_in1k.py) | [model](<>) |
+| EfficientNetV2-b2 |   10.1    |   1.7    |   79.89   |   94.81   | [config](./efficientnet_v2-b2_8xb32_in1k.py) | [model](<>) |
+| EfficientNetV2-b3 |   14.4    |   3.0    |   81.61   |   95.69   | [config](./efficientnet_v2-b3_8xb32_in1k.py) | [model](<>) |
 
 ### ImageNet21K pretrained and Finetune in ImageNet-1k
 
-|        Model         | Params(M) | Flops(B) | Top-1 (%) | Top-5 (%) |                    Config                     |                                               Download                                               |
-| :------------------: | :-------: | :------: | :-------: | :-------: | :-------------------------------------------: | :--------------------------------------------------------------------------------------------------: |
-| EfficientNetV2-s |   21.5   |   8.4   |   83.86   |   97.14   | [config](./efficientnet_v2-s_8xb32_in21ft1k.py) | [model]() |
-| EfficientNetV2-m |   54.1   |   24.7   |   85.41   |   97.68   | [config](./efficientnet_v2-m_8xb32_in21ft1k.py) | [model]() |
-| EfficientNetV2-l |   119.5   |  56.3   |   86.25   |   97.95   | [config](./efficientnet_v2-l_8xb32_in21ft1k.py) | [model]() |
-| EfficientNetV2-xl |   -   |  -   |   86.26   |   97.73   | [config](./efficientnet_v2-xl_8xb32_in21ft1k.py) | [model]() |
-
+|       Model       | Params(M) | Flops(B) | Top-1 (%) | Top-5 (%) |                      Config                      |  Download   |
+| :---------------: | :-------: | :------: | :-------: | :-------: | :----------------------------------------------: | :---------: |
+| EfficientNetV2-s  |   21.5    |   8.4    |   83.86   |   97.14   | [config](./efficientnet_v2-s_8xb32_in21ft1k.py)  | [model](<>) |
+| EfficientNetV2-m  |   54.1    |   24.7   |   85.41   |   97.68   | [config](./efficientnet_v2-m_8xb32_in21ft1k.py)  | [model](<>) |
+| EfficientNetV2-l  |   119.5   |   56.3   |   86.25   |   97.95   | [config](./efficientnet_v2-l_8xb32_in21ft1k.py)  | [model](<>) |
+| EfficientNetV2-xl |     -     |    -     |   86.26   |   97.73   | [config](./efficientnet_v2-xl_8xb32_in21ft1k.py) | [model](<>) |
 
 ## How to use it?
 
@@ -120,4 +118,3 @@ For more configurable parameters, please refer to the [API](https://mmclassifica
   organization={PMLR}
 }
 ```
-

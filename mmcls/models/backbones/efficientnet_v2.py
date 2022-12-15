@@ -1,12 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import warnings
-from typing import Callable, List, Optional, Tuple, Sequence
+from typing import Sequence, Tuple
 
 import torch
-from torch import Tensor
 import torch.nn as nn
-from mmcv.cnn.bricks import DropPath, ConvModule
-from mmengine.model import BaseModule, Sequential
+from mmcv.cnn.bricks import ConvModule, DropPath
+from mmengine.model import Sequential
+from torch import Tensor
 
 from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.models.backbones.efficientnet import EdgeResidual as FusedMBConv
@@ -22,13 +22,17 @@ class EnhancedConvModule(ConvModule):
         # some assert lines
         self.has_skip = has_skip
         if self.has_skip:
-            assert self.stride == (1, 1) and self.in_channels == self.out_channels, (
-                "the stride must be 1 and the in_C must be equal with"
-                " out_C, when `skip` is True in `ConvWithSkip` .")
-        self.drop_path = DropPath(drop_path_rate) if drop_path_rate else nn.Identity()
+            assert self.stride == (
+                1, 1) and self.in_channels == self.out_channels, (
+                    'the stride must be 1 and the'
+                    ' in_C must be equal with'
+                    ' out_C, when `skip` is True in `ConvWithSkip` .')
+        self.drop_path = DropPath(
+            drop_path_rate) if drop_path_rate else nn.Identity()
         if self.has_skip and self.inplace:
             self.inplace = False
-            warnings.warn("if there has short-cut in `EnhanceConv`, in place would be False.")
+            warnings.warn('if there has short-cut in `EnhanceConv`,'
+                          ' in place would be False.')
 
     def forward(self,
                 x: torch.Tensor,
@@ -89,51 +93,47 @@ class EfficientNetV2(BaseBackbone):
     arch_settings = {
         'base': [[1, 3, 1, 1, 32, 16, 0, -1], [2, 3, 2, 4, 16, 32, 0, 0],
                  [2, 3, 2, 4, 32, 48, 0, 0], [3, 3, 2, 4, 48, 96, 0.25, 1],
-                 [5, 3, 1, 6, 96, 112, 0.25, 1],
-                 [8, 3, 2, 6, 112, 192, 0.25, 1],
+                 [5, 3, 1, 6, 96, 112, 0.25,
+                  1], [8, 3, 2, 6, 112, 192, 0.25, 1],
                  [1, 1, 1, 1, 192, 1280, 0, -2]],
         's': [[2, 3, 1, 1, 24, 24, 0, -1], [4, 3, 2, 4, 24, 48, 0, 0],
               [4, 3, 2, 4, 48, 64, 0, 0], [6, 3, 2, 4, 64, 128, 0.25, 1],
-              [9, 3, 1, 6, 128, 160, 0.25, 1],
-              [15, 3, 2, 6, 160, 256, 0.25, 1],
+              [9, 3, 1, 6, 128, 160, 0.25,
+               1], [15, 3, 2, 6, 160, 256, 0.25, 1],
               [1, 1, 1, 1, 256, 1280, 0, -2]],
         'm': [[3, 3, 1, 1, 24, 24, 0, -1], [5, 3, 2, 4, 24, 48, 0, 0],
               [5, 3, 2, 4, 48, 80, 0, 0], [7, 3, 2, 4, 80, 160, 0.25, 1],
-              [14, 3, 1, 6, 160, 176, 0.25, 1],
-              [18, 3, 2, 6, 176, 304, 0.25, 1],
-              [5, 3, 1, 6, 304, 512, 0.25, 1],
-              [1, 1, 1, 1, 512, 1280, 0, -2]],
+              [14, 3, 1, 6, 160, 176, 0.25,
+               1], [18, 3, 2, 6, 176, 304, 0.25, 1],
+              [5, 3, 1, 6, 304, 512, 0.25, 1], [1, 1, 1, 1, 512, 1280, 0, -2]],
         'l': [[4, 3, 1, 1, 32, 32, 0, -1], [7, 3, 2, 4, 32, 64, 0, 0],
               [7, 3, 2, 4, 64, 96, 0, 0], [10, 3, 2, 4, 96, 192, 0.25, 1],
-              [19, 3, 1, 6, 192, 224, 0.25, 1],
-              [25, 3, 2, 6, 224, 384, 0.25, 1],
-              [7, 3, 1, 6, 384, 640, 0.25, 1],
-              [1, 1, 1, 1, 640, 1280, 0, -2]],
+              [19, 3, 1, 6, 192, 224, 0.25,
+               1], [25, 3, 2, 6, 224, 384, 0.25, 1],
+              [7, 3, 1, 6, 384, 640, 0.25, 1], [1, 1, 1, 1, 640, 1280, 0, -2]],
         'xl': [[4, 3, 1, 1, 32, 32, 0, -1], [8, 3, 2, 4, 32, 64, 0, 0],
                [8, 3, 2, 4, 64, 96, 0, 0], [16, 3, 2, 4, 96, 192, 0.25, 1],
                [24, 3, 1, 6, 192, 256, 0.25, 1],
-               [32, 3, 2, 6, 256, 512, 0.25, 1],
-               [8, 3, 1, 6, 512, 640, 0.25, 1],
+               [32, 3, 2, 6, 256, 512, 0.25,
+                1], [8, 3, 1, 6, 512, 640, 0.25, 1],
                [1, 1, 1, 1, 640, 1280, 0, -2]],
         'b0': [[1, 3, 1, 1, 32, 16, 0, -1], [2, 3, 2, 4, 16, 32, 0, 0],
                [2, 3, 2, 4, 32, 48, 0, 0], [3, 3, 2, 4, 48, 96, 0.25, 1],
-               [5, 3, 1, 6, 96, 112, 0.25, 1],
-               [8, 3, 2, 6, 112, 192, 0.25, 1],
+               [5, 3, 1, 6, 96, 112, 0.25, 1], [8, 3, 2, 6, 112, 192, 0.25, 1],
                [1, 1, 1, 1, 192, 1280, 0, -2]],
         'b1': [[2, 3, 1, 1, 32, 16, 0, -1], [3, 3, 2, 4, 16, 32, 0, 0],
                [3, 3, 2, 4, 32, 48, 0, 0], [4, 3, 2, 4, 48, 96, 0.25, 1],
-               [6, 3, 1, 6, 96, 112, 0.25, 1],
-               [9, 3, 2, 6, 112, 192, 0.25, 1],
+               [6, 3, 1, 6, 96, 112, 0.25, 1], [9, 3, 2, 6, 112, 192, 0.25, 1],
                [1, 1, 1, 1, 192, 1280, 0, -2]],
         'b2': [[2, 3, 1, 1, 32, 16, 0, -1], [3, 3, 2, 4, 16, 32, 0, 0],
                [3, 3, 2, 4, 32, 56, 0, 0], [4, 3, 2, 4, 56, 104, 0.25, 1],
-               [6, 3, 1, 6, 104, 120, 0.25, 1],
-               [10, 3, 2, 6, 120, 208, 0.25, 1],
+               [6, 3, 1, 6, 104, 120, 0.25,
+                1], [10, 3, 2, 6, 120, 208, 0.25, 1],
                [1, 1, 1, 1, 208, 1408, 0, -2]],
         'b3': [[2, 3, 1, 1, 40, 16, 0, -1], [3, 3, 2, 4, 16, 40, 0, 0],
                [3, 3, 2, 4, 40, 56, 0, 0], [5, 3, 2, 4, 56, 112, 0.25, 1],
-               [7, 3, 1, 6, 112, 136, 0.25, 1],
-               [12, 3, 2, 6, 136, 232, 0.25, 1],
+               [7, 3, 1, 6, 112, 136, 0.25,
+                1], [12, 3, 2, 6, 136, 232, 0.25, 1],
                [1, 1, 1, 1, 232, 1536, 0, -2]]
     }
 
@@ -171,6 +171,7 @@ class EfficientNetV2(BaseBackbone):
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> e5d0bf1... add the file about convert_pth from timm to mmcls
                  out_channels: int = 1280,
 >>>>>>> 73d03c1... update efficientnetv2 model file with mmcls style
@@ -185,6 +186,9 @@ class EfficientNetV2(BaseBackbone):
 =======
                  out_indices: Sequence[int] = (-1,),
 >>>>>>> 2704866... update model file docs
+=======
+                 out_indices: Sequence[int] = (-1, ),
+>>>>>>> 5dc32cf... pass pre-commit hook
                  frozen_stages: int = 0,
                  conv_cfg=dict(type='Conv2dAdaptivePadding'),
                  norm_cfg=dict(type='BN', eps=1e-3, momentum=0.1),
@@ -274,26 +278,28 @@ class EfficientNetV2(BaseBackbone):
                 stride = stride if i == 0 else 1
                 if block_type == -1:
                     if stride == 1 and self.in_channels == out_channels:
-                        layer.append(EnhancedConvModule
-                                     (in_channels=self.in_channels,
-                                      out_channels=out_channels,
-                                      kernel_size=kernel_size,
-                                      has_skip=True,
-                                      drop_path_rate=dpr[block_idx],
-                                      stride=stride,
-                                      conv_cfg=self.conv_cfg,
-                                      norm_cfg=self.norm_cfg,
-                                      act_cfg=self.act_cfg))
+                        layer.append(
+                            EnhancedConvModule(
+                                in_channels=self.in_channels,
+                                out_channels=out_channels,
+                                kernel_size=kernel_size,
+                                has_skip=True,
+                                drop_path_rate=dpr[block_idx],
+                                stride=stride,
+                                conv_cfg=self.conv_cfg,
+                                norm_cfg=self.norm_cfg,
+                                act_cfg=self.act_cfg))
                         self.in_channels = out_channels
                     else:
-                        layer.append(ConvModule(
-                            in_channels=self.in_channels,
-                            out_channels=out_channels,
-                            kernel_size=kernel_size,
-                            stride=stride,
-                            conv_cfg=self.conv_cfg,
-                            norm_cfg=self.norm_cfg,
-                            act_cfg=self.act_cfg))
+                        layer.append(
+                            ConvModule(
+                                in_channels=self.in_channels,
+                                out_channels=out_channels,
+                                kernel_size=kernel_size,
+                                stride=stride,
+                                conv_cfg=self.conv_cfg,
+                                norm_cfg=self.norm_cfg,
+                                act_cfg=self.act_cfg))
                         self.in_channels = out_channels
                 else:
                     mid_channels = int(self.in_channels * expand_ratio)
