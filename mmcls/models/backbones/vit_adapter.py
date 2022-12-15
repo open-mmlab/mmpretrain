@@ -680,7 +680,8 @@ class VitAdapter(VisionTransformer):
             self.adapter_settings = self.adapter_zoo[arch]
         else:
             essential_keys = {
-                'interaction_indexes', 'window_size', 'window_block_indexes'
+                'interaction_indexes', 'window_size', 'window_block_indexes',
+                'value_proj_ratio'
             }
             assert isinstance(
                 arch, dict
@@ -690,8 +691,6 @@ class VitAdapter(VisionTransformer):
             self.adapter_settings = arch
 
         self.window_size = self.adapter_settings['window_size']
-        self.window_block_indexes = self.adapter_settings[
-            'window_block_indexes']
         self.window_block_indexes = self.adapter_settings[
             'window_block_indexes']
         self.value_proj_ratio = self.adapter_settings['value_proj_ratio']
@@ -864,11 +863,9 @@ class BEiTAdapter(BEiT):
             - **num_heads** (int): The number of heads in attention modules.
             - **feedforward_channels** (int): The hidden dimensions in
               feedforward modules.
-            - **interaction_indexes** (ListList[[int]]): The indexes of each
+            - **interaction_indexes** (List[List[int]]): The indexes of each
               interaction block.
-            - **window_size** (int): The height and width of the window.
-            - **window_block_indexes** (int): The indexes of window attention
-              blocks.
+            - **window_size** (List[int]): The height and width of the window.
             - **value_proj_ratio** (float): The expansion ratio of value_proj.
 
             Defaults to 'base'.
@@ -904,64 +901,10 @@ class BEiTAdapter(BEiT):
             ['b', 'base'],
             {
                 'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 11]],
-                'window_size': 14,
-                # 2, 5, 8, 11 for global attention
-                'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10],
-                'value_proj_ratio': 0.5
-            }),
-        **dict.fromkeys(
-            ['l', 'large'],
-            {
-                'interaction_indexes': [[0, 5], [6, 11], [12, 17], [18, 23]],
-                'window_size':
-                14,
-                # 5, 11, 17, 23 for global attention
-                'window_block_indexes': [
-                    0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 18, 19,
-                    20, 21, 22
-                ],
-                'value_proj_ratio':
-                0.5
-            }),
-        **dict.fromkeys(
-            ['h', 'huge'],
-            {
-                'interaction_indexes': [[0, 7], [8, 15], [16, 23], [24, 31]],
-                'window_size':
-                14,
-                # 7, 15, 23, 31 for global attention
-                'window_block_indexes': [
-                    0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18,
-                    19, 20, 21, 22, 24, 25, 26, 27, 28, 29, 30
-                ],
-                'value_proj_ratio':
-                0.5
-            }),
-        **dict.fromkeys(
-            ['deit-t', 'deit-tiny'],
-            {
-                'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 11]],
-                'window_size': 14,
-                # 2, 5, 8, 11 for global attention
-                'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10],
-                'value_proj_ratio': 1.0
-            }),
-        **dict.fromkeys(
-            ['deit-s', 'deit-small'],
-            {
-                'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 11]],
-                'window_size': 14,
-                # 2, 5, 8, 11 for global attention
-                'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10],
-                'value_proj_ratio': 1.0
-            }),
-        **dict.fromkeys(
-            ['deit-b', 'deit-base'],
-            {
-                'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 11]],
-                'window_size': 14,
-                # 2, 5, 8, 11 for global attention
-                'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10],
+                'window_size': [14, 14, 14, 14, 14, 56,
+                                14, 14, 14, 14, 14, 56,
+                                14, 14, 14, 14, 14, 56,
+                                14, 14, 14, 14, 14, 56],
                 'value_proj_ratio': 0.5
             }),
     }  # yapf: disable
@@ -991,7 +934,7 @@ class BEiTAdapter(BEiT):
             self.adapter_settings = self.adapter_zoo[arch]
         else:
             essential_keys = {
-                'interaction_indexes', 'window_size', 'window_block_indexes'
+                'interaction_indexes', 'window_size', 'value_proj_ratio'
             }
             assert isinstance(
                 arch, dict
@@ -1001,10 +944,6 @@ class BEiTAdapter(BEiT):
             self.adapter_settings = arch
 
         self.window_size = self.adapter_settings['window_size']
-        self.window_block_indexes = self.adapter_settings[
-            'window_block_indexes']
-        self.window_block_indexes = self.adapter_settings[
-            'window_block_indexes']
         self.value_proj_ratio = self.adapter_settings['value_proj_ratio']
 
         super().__init__(
@@ -1077,11 +1016,9 @@ class BEiTAdapter(BEiT):
                 drop_rate=drop_rate,
                 drop_path_rate=dpr[i],
                 norm_cfg=norm_cfg,
-                use_window_attention=i in self.window_block_indexes,
+                use_window_attention=True,
                 is_cls_token=False,
-                window_size=self.patch_resolution
-                if i not in self.window_block_indexes else
-                (self.window_size, self.window_size))
+                window_size=(self.window_size[i], self.window_size[i]))
             _layer_cfg.update(layer_cfgs[i])
             self.layers.append(BEiTTransformerEncoderLayer(**_layer_cfg))
 

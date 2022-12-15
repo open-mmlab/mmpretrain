@@ -163,9 +163,7 @@ class TestBEiTAdapter(TestCase):
                 'num_heads': 16,
                 'feedforward_channels': 4096,
                 'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 15]],
-                'window_size': 14,
-                'window_block_indexes':
-                [0, 1, 3, 4, 6, 7, 9, 10, 11, 12, 13, 14],
+                'window_size': [14 for _ in range(24)],
                 'value_proj_ratio': 1.0
             }
             BEiTAdapter(**cfg)
@@ -178,8 +176,7 @@ class TestBEiTAdapter(TestCase):
             'num_heads': 16,
             'feedforward_channels': 1024,
             'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 15]],
-            'window_size': 14,
-            'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10, 11, 12, 13, 14],
+            'window_size': [14 for _ in range(24)],
             'value_proj_ratio': 1.0
         }
         cfg['deform_num_heads'] = 16
@@ -249,12 +246,12 @@ class TestBEiTAdapter(TestCase):
             self.assertEqual(out.shape, (1, 768, 56 // stride, 56 // stride))
 
         # Test forward with dynamic input size
-        for img_size in [(224, 224), (256, 256), (256, 309)]:
-            cfg = deepcopy(self.cfg)
-            cfg['img_size'] = img_size
-            model = BEiTAdapter(**cfg)
-
-            imgs = torch.randn(1, 3, *img_size)
+        imgs1 = torch.randn(1, 3, 224, 224)
+        imgs2 = torch.randn(1, 3, 256, 256)
+        imgs3 = torch.randn(1, 3, 256, 309)
+        cfg = deepcopy(self.cfg)
+        model = BEiTAdapter(**cfg)
+        for imgs in [imgs1, imgs2, imgs3]:
             outs = model(imgs)
             self.assertIsInstance(outs, tuple)
             self.assertEqual(len(outs), 4)
