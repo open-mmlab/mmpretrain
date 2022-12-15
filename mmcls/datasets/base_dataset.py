@@ -168,7 +168,7 @@ class BaseDataset(Dataset, metaclass=ABCMeta):
         if len(invalid_metrics) != 0:
             raise ValueError(f'metric {invalid_metrics} is not supported.')
 
-        topk = metric_options.get('topk', (1, default_topk))
+        topk = metric_options.get('topk', default_topk)
         thrs = metric_options.get('thrs')
         average_mode = metric_options.get('average_mode', 'macro')
 
