@@ -1,4 +1,4 @@
-Collections:
+Collection:
   - Name: CLIP
     Metadata:
       Architecture:
@@ -20,7 +20,7 @@ Models:
     Metadata:
       FLOPs: 49370078208.0
       Parameters: 86568424
-    In Collections: CLIP
+    In Collection: CLIP
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -37,7 +37,7 @@ Models:
     Metadata:
       FLOPs: 4364335104.0
       Parameters: 88225000
-    In Collections: CLIP
+    In Collection: CLIP
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -54,7 +54,7 @@ Models:
     Metadata:
       FLOPs: 49370078208.0
       Parameters: 86568424
-    In Collections: CLIP
+    In Collection: CLIP
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -71,7 +71,7 @@ Models:
     Metadata:
       FLOPs: 16855600128.0
       Parameters: 86568424
-    In Collections: CLIP
+    In Collection: CLIP
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -88,7 +88,7 @@ Models:
     Metadata:
       FLOPs: 16855600128.0
       Parameters: 86568424
-    In Collections: CLIP
+    In Collection: CLIP
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -105,7 +105,7 @@ Models:
     Metadata:
       FLOPs: 49370078208.0
       Parameters: 86568424
-    In Collections: CLIP
+    In Collection: CLIP
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -122,7 +122,7 @@ Models:
     Metadata:
       FLOPs: 12661054464.0
       Parameters: 88225000
-    In Collections: CLIP
+    In Collection: CLIP
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -139,7 +139,7 @@ Models:
     Metadata:
       FLOPs: 16855600128.0
       Parameters: 86568424
-    In Collections: CLIP
+    In Collection: CLIP
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -156,7 +156,7 @@ Models:
     Metadata:
       FLOPs: 4364335104.0
       Parameters: 88225000
-    In Collections: CLIP
+    In Collection: CLIP
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -173,7 +173,7 @@ Models:
     Metadata:
       FLOPs: 16855600128.0
       Parameters: 86568424
-    In Collections: CLIP
+    In Collection: CLIP
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -190,7 +190,7 @@ Models:
     Metadata:
       FLOPs: 49370078208.0
       Parameters: 86568424
-    In Collections: CLIP
+    In Collection: CLIP
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -207,7 +207,7 @@ Models:
     Metadata:
       FLOPs: 4364335104.0
       Parameters: 88225000
-    In Collections: CLIP
+    In Collection: CLIP
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -224,7 +224,7 @@ Models:
     Metadata:
       FLOPs: 17202416640.0
       Parameters: 88225000
-    In Collections: CLIP
+    In Collection: CLIP
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -241,7 +241,7 @@ Models:
     Metadata:
       FLOPs: 12661054464.0
       Parameters: 88225000
-    In Collections: CLIP
+    In Collection: CLIP
     Results:
       - Dataset: ImageNet-1k
         Metrics:
