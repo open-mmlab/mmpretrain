@@ -39,18 +39,19 @@ The checkpoints provided are all `training-time` models. Use the reparameterize 
 Use `classifier.backbone.switch_to_deploy()` interface to switch the RepVGG models into inference mode.
 
 ```python
->>> from mmcls import ImageClassificationInferencer
+>>> import torch
+>>> from mmcls.apis import init_model, inference_model
 >>>
->>> inferencer = ImageClassificationInferencer("repvgg-a0_8xb32_in1k")
->>> results = inferencer('demo/demo.JPEG')
->>> print(results['pred_class'], results['pred_score'])
-('sea snake', 0.8338906168937683)
+>>> model = init_model('configs/repvgg/repvgg-A0_8xb32_in1k.py', 'https://download.openmmlab.com/mmclassification/v0/repvgg/repvgg-A0_8xb32_in1k_20221213-60ae8e23.pth')
+>>> results = inference_model(model, 'demo/demo.JPEG')
+>>> print( (results['pred_class'], results['pred_score']) )
+('sea snake' 0.8338906168937683)
 >>>
 >>> # switch to deploy mode
->>> inferencer.model.backbone.switch_to_deploy()
->>> results = inferencer('demo/demo.JPEG')
->>> print(results['pred_class'], results['pred_score'])
-('sea snake', 0.833891749382019)
+>>> model.backbone.switch_to_deploy()
+>>> results = inference_model(model, 'demo/demo.JPEG')
+>>> print( (results['pred_class'], results['pred_score']) )
+('sea snake', 0.7883061170578003)
 ```
 
 **Use the model**
@@ -125,7 +126,7 @@ For more configurable parameters, please refer to the [API](https://mmclassifica
 
 <details>
 
-<summary><b>How to use the reparameterize tool</b>(click to show)</summary>
+<summary><b>How to use the reparameterisation tool</b>(click to show)</summary>
 
 <br>
 
