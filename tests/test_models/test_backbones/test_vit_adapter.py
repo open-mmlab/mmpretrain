@@ -245,6 +245,16 @@ class TestBEiTAdapter(TestCase):
         for stride, out in zip([1, 2, 4, 8], outs):
             self.assertEqual(out.shape, (1, 768, 56 // stride, 56 // stride))
 
+        # Test forward with layer scale
+        cfg = deepcopy(self.cfg)
+        cfg['layer_scale_init_value'] = 1.0
+        model = BEiTAdapter(**cfg)
+        outs = model(imgs)
+        self.assertIsInstance(outs, tuple)
+        self.assertEqual(len(outs), 4)
+        for stride, out in zip([1, 2, 4, 8], outs):
+            self.assertEqual(out.shape, (1, 768, 56 // stride, 56 // stride))
+
         # Test forward with dynamic input size
         imgs1 = torch.randn(1, 3, 224, 224)
         imgs2 = torch.randn(1, 3, 256, 256)

@@ -252,7 +252,7 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
 
             x = x.view(B, H * W, C)
 
-        if self.gamma_1 is None:
+        if self.gamma_1 is not None:
             x = shortcut + self.drop_path(self.gamma_1 * x)
             x = x + self.drop_path(self.gamma_2 * self.ffn(self.norm2(x)))
         else:
