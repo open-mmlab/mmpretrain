@@ -4,6 +4,7 @@ from typing import List, Optional, Sequence, Tuple, Union
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.drop import build_dropout
 from mmcv.cnn.bricks.transformer import FFN, PatchEmbed
@@ -146,6 +147,8 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
                  norm_cfg: dict = dict(type='LN'),
                  attn_cfg: dict = dict(),
                  ffn_cfg: dict = dict(add_identity=False),
+                 use_window_attention: bool = False,
+                 is_cls_token: bool = True,
                  init_cfg: Optional[Union[dict, List[dict]]] = None) -> None:
         super().__init__(
             embed_dims=embed_dims,
@@ -160,6 +163,9 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
             norm_cfg=norm_cfg,
             init_cfg=init_cfg)
 
+        self.use_window_attention = use_window_attention
+        self.window_size = window_size
+
         attn_cfg = {
             'window_size': window_size,
             'use_rel_pos_bias': use_rel_pos_bias,
@@ -169,6 +175,7 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
             'attn_drop': attn_drop_rate,
             'proj_drop': drop_rate,
             'bias': bias,
+            'is_cls_token': is_cls_token,
             **attn_cfg,
         }
         self.attn = BEiTAttention(**attn_cfg)
@@ -200,16 +207,58 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
         else:
             self.gamma_1, self.gamma_2 = None, None
 
-    def forward(self, x: torch.Tensor,
-                rel_pos_bias: torch.Tensor) -> torch.Tensor:
+    def forward(self,
+                x: torch.Tensor,
+                rel_pos_bias: torch.Tensor,
+                hw_shape=None) -> torch.Tensor:
+        shortcut = x
+        x = self.norm1(x)
+
+        if self.use_window_attention:
+            assert hw_shape is not None, \
+                'hw_shape is None is not supported when ' \
+                'BEiTTransformerEncoderLayer with use_window_attention'
+            B, L, C = x.shape
+            H, W = hw_shape
+            assert L == H * W,\
+                f"The query length {L} doesn't match the input "\
+                f'shape ({H}, {W}).'
+
+            x = x.view(B, H, W, C)
+
+            assert self.window_size[0] == self.window_size[1]
+            window_size = self.window_size[0]
+            pad_r = (window_size - W % window_size) % window_size
+            pad_b = (window_size - H % window_size) % window_size
+            x = F.pad(x, (0, 0, 0, pad_r, 0, pad_b))
+
+            H_pad, W_pad = x.shape[1], x.shape[2]
+
+            # nW*B, window_size, window_size, C
+            x = self.window_partition(x, window_size)
+            # nW*B, window_size*window_size, C
+            x = x.view(-1, window_size**2, C)
+
+        x = self.attn(x, rel_pos_bias=rel_pos_bias)
+
+        if self.use_window_attention:
+            # merge windows
+            x = x.view(-1, window_size, window_size, C)
+            # B H' W' C
+            x = self.window_reverse(x, H_pad, W_pad, window_size)
+
+            if H != H_pad or W != W_pad:
+                x = x[:, :H, :W, :].contiguous()
+
+            x = x.view(B, H * W, C)
+
         if self.gamma_1 is None:
-            x = x + self.drop_path(
-                self.attn(self.norm1(x), rel_pos_bias=rel_pos_bias))
-            x = x + self.drop_path(self.ffn(self.norm2(x)))
-        else:
-            x = x + self.drop_path(self.gamma_1 * self.attn(
-                self.norm1(x), rel_pos_bias=rel_pos_bias))
+            x = shortcut + self.drop_path(self.gamma_1 * x)
             x = x + self.drop_path(self.gamma_2 * self.ffn(self.norm2(x)))
+        else:
+            x = shortcut + self.drop_path(x)
+            x = x + self.drop_path(self.ffn(self.norm2(x)))
+
         return x
 
 
@@ -378,6 +427,41 @@ class BEiT(VisionTransformer):
                 f'Invalid out_indices {index}'
         self.out_indices = out_indices
 
+        self._build_layers(
+            drop_rate,
+            drop_path_rate,
+            norm_cfg,
+            layer_scale_init_value,
+            layer_cfgs,
+            use_rel_pos_bias,
+        )
+
+        self.frozen_stages = frozen_stages
+        self.final_norm = final_norm
+        if final_norm:
+            self.norm1_name, norm1 = build_norm_layer(
+                norm_cfg, self.embed_dims, postfix=1)
+            self.add_module(self.norm1_name, norm1)
+
+        self.avg_token = avg_token
+        if avg_token:
+            self.norm2_name, norm2 = build_norm_layer(
+                norm_cfg, self.embed_dims, postfix=2)
+            self.add_module(self.norm2_name, norm2)
+
+        # freeze stages only when self.frozen_stages > 0
+        if self.frozen_stages > 0:
+            self._freeze_stages()
+
+    def _build_layers(
+        self,
+        drop_rate,
+        drop_path_rate,
+        norm_cfg,
+        layer_scale_init_value,
+        layer_cfgs,
+        use_rel_pos_bias,
+    ):
         # stochastic depth decay rule
         dpr = np.linspace(0, drop_path_rate, self.num_layers)
 
@@ -398,23 +482,6 @@ class BEiT(VisionTransformer):
                 norm_cfg=norm_cfg)
             _layer_cfg.update(layer_cfgs[i])
             self.layers.append(BEiTTransformerEncoderLayer(**_layer_cfg))
-
-        self.frozen_stages = frozen_stages
-        self.final_norm = final_norm
-        if final_norm:
-            self.norm1_name, norm1 = build_norm_layer(
-                norm_cfg, self.embed_dims, postfix=1)
-            self.add_module(self.norm1_name, norm1)
-
-        self.avg_token = avg_token
-        if avg_token:
-            self.norm2_name, norm2 = build_norm_layer(
-                norm_cfg, self.embed_dims, postfix=2)
-            self.add_module(self.norm2_name, norm2)
-
-        # freeze stages only when self.frozen_stages > 0
-        if self.frozen_stages > 0:
-            self._freeze_stages()
 
     def forward(self, x):
         B = x.shape[0]

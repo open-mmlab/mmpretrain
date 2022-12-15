@@ -46,7 +46,7 @@ from .twins import PCPVT, SVT
 from .van import VAN
 from .vgg import VGG
 from .vision_transformer import VisionTransformer
-from .vit_adapter import VitAdapter
+from .vit_adapter import BEiTAdapter, VitAdapter
 
 __all__ = [
     'LeNet5',
@@ -103,4 +103,5 @@ __all__ = [
     'DaViT',
     'BEiT',
     'RevVisionTransformer',
+    'BEiTAdapter',
 ]

@@ -15,6 +15,7 @@ from torch import nn
 
 from mmcls.registry import MODELS
 from ..utils import LayerScale, resize_pos_embed
+from .beit import BEiT, BEiTTransformerEncoderLayer
 from .vision_transformer import TransformerEncoderLayer, VisionTransformer
 
 
@@ -394,7 +395,8 @@ class InteractionBlock(BaseModule):
         else:
             self.extra_extractors = None
 
-    def forward(self, x, c, blocks, deform_inputs1, deform_inputs2, hw_shape):
+    def forward(self, x, c, blocks, deform_inputs1, deform_inputs2, hw_shape,
+                **block_kwargs):
         x = self.injector(
             query=x,
             reference_points=deform_inputs1[0],
@@ -402,7 +404,7 @@ class InteractionBlock(BaseModule):
             spatial_shapes=deform_inputs1[1],
             level_start_index=deform_inputs1[2])
         for blk in blocks:
-            x = blk(x, hw_shape)
+            x = blk(x, hw_shape=hw_shape, **block_kwargs)
         c = self.extractor(
             query=c,
             reference_points=deform_inputs2[0],
@@ -797,6 +799,339 @@ class VitAdapter(VisionTransformer):
             indexes = self.interaction_indexes[i]
             x, c = layer(x, c, self.layers[indexes[0]:indexes[-1] + 1],
                          deform_inputs1, deform_inputs2, hw_shape)
+
+        # Split & Reshape
+        c2 = c[:, 0:c2.size(1), :]
+        c3 = c[:, c2.size(1):c2.size(1) + c3.size(1), :]
+        c4 = c[:, c2.size(1) + c3.size(1):, :]
+
+        c2 = c2.transpose(1, 2).view(B, self.embed_dims, hw_shape[0] * 2,
+                                     hw_shape[1] * 2).contiguous()
+        c3 = c3.transpose(1, 2).view(B, self.embed_dims,
+                                     *hw_shape).contiguous()
+        c4 = c4.transpose(1, 2).view(B, self.embed_dims, hw_shape[0] // 2,
+                                     hw_shape[1] // 2).contiguous()
+        c1 = self.up(c2) + c1
+
+        if self.add_vit_feature:
+            x3 = x.transpose(1, 2).view(B, self.embed_dims,
+                                        *hw_shape).contiguous()
+            x1 = F.interpolate(
+                x3,
+                size=(c1.size(2), c1.size(3)),
+                mode='bilinear',
+                align_corners=False)
+            x2 = F.interpolate(
+                x3,
+                size=(c2.size(2), c2.size(3)),
+                mode='bilinear',
+                align_corners=False)
+            x4 = F.interpolate(
+                x3,
+                size=(c4.size(2), c4.size(3)),
+                mode='bilinear',
+                align_corners=False)
+            c1 = c1 + x1
+            c2 = c2 + x2
+            c3 = c3 + x3
+            c4 = c4 + x4
+
+        # Final Norm
+        outs = []
+        for i, c in enumerate([c1, c2, c3, c4]):
+            if i in self.out_indices:
+                norm_layer = getattr(self, f'norm{i}')
+                out = norm_layer(c)
+                outs.append(out)
+
+        return tuple(outs)
+
+
+@MODELS.register_module()
+class BEiTAdapter(BEiT):
+    """ViT-Adapter.
+
+    A PyTorch implement of : `Vision Transformer Adapter for Dense Predictions
+    <https://arxiv.org/abs/2205.08534>`_
+
+    Args:
+        arch (str | dict): Vision Transformer architecture. If use string,
+            choose from 'small', 'base', 'large', 'deit-tiny', 'deit-small'
+            and 'deit-base'. If use dict, it should have below keys:
+
+            - **embed_dims** (int): The dimensions of embedding.
+            - **num_layers** (int): The number of transformer encoder layers.
+            - **num_heads** (int): The number of heads in attention modules.
+            - **feedforward_channels** (int): The hidden dimensions in
+              feedforward modules.
+            - **interaction_indexes** (ListList[[int]]): The indexes of each
+              interaction block.
+            - **window_size** (int): The height and width of the window.
+            - **window_block_indexes** (int): The indexes of window attention
+              blocks.
+            - **value_proj_ratio** (float): The expansion ratio of value_proj.
+
+            Defaults to 'base'.
+        patch_size (int | tuple): The patch size in patch embedding.
+            Defaults to 16.
+        out_indices (Sequence | int): Output from which stages.
+            Defaults to -1, means the last stage.
+        drop_path_rate (float): stochastic depth rate. Defaults to 0.
+        norm_cfg (dict): Config dict for normalization layer of
+            Vision Transformer. Defaults to ``dict(type='LN')``.
+        spm_norm_cfg (dict): Config dict for normalization layer of Adapter.
+            Defaults to ``dict(type='BN')``.
+        spm_hidden_dims (int): Hidden dimension for SpatialPriorModule.
+            Defaults to 64.
+        deform_num_points (int): The number of sampling points for
+            each query in each head of MultiScaleDeformableAttention.
+            Default to 4.
+        deform_num_heads (int): Parallel attention heads of
+            MultiScaleDeformableAttention. Default to 64.
+        with_adapter_ffn (bool): The option to use ffn for adapter. If True,
+            it use ffn. Default to True.
+        add_vit_feature (bool): The option to add vit feature to adapter
+            feature. If True, it add vit feature. Default to True.
+        adapter_ffn_ratio (float): The number of expansion ratio of feedforward
+            network hidden layer channels of adapter. Default to 0.25.
+        use_extra_extractor (bool): The option to use extra Extractor in
+            InteractionBlock. If True, it use extra Extractor. Default to True.
+        with_cp (bool): Use checkpoint or not. Using checkpoint will save some
+            memory while slowing down the training speed. Defaults to False.
+    """
+    adapter_zoo = {
+        **dict.fromkeys(
+            ['b', 'base'],
+            {
+                'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 11]],
+                'window_size': 14,
+                # 2, 5, 8, 11 for global attention
+                'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10],
+                'value_proj_ratio': 0.5
+            }),
+        **dict.fromkeys(
+            ['l', 'large'],
+            {
+                'interaction_indexes': [[0, 5], [6, 11], [12, 17], [18, 23]],
+                'window_size':
+                14,
+                # 5, 11, 17, 23 for global attention
+                'window_block_indexes': [
+                    0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 18, 19,
+                    20, 21, 22
+                ],
+                'value_proj_ratio':
+                0.5
+            }),
+        **dict.fromkeys(
+            ['h', 'huge'],
+            {
+                'interaction_indexes': [[0, 7], [8, 15], [16, 23], [24, 31]],
+                'window_size':
+                14,
+                # 7, 15, 23, 31 for global attention
+                'window_block_indexes': [
+                    0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18,
+                    19, 20, 21, 22, 24, 25, 26, 27, 28, 29, 30
+                ],
+                'value_proj_ratio':
+                0.5
+            }),
+        **dict.fromkeys(
+            ['deit-t', 'deit-tiny'],
+            {
+                'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 11]],
+                'window_size': 14,
+                # 2, 5, 8, 11 for global attention
+                'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10],
+                'value_proj_ratio': 1.0
+            }),
+        **dict.fromkeys(
+            ['deit-s', 'deit-small'],
+            {
+                'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 11]],
+                'window_size': 14,
+                # 2, 5, 8, 11 for global attention
+                'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10],
+                'value_proj_ratio': 1.0
+            }),
+        **dict.fromkeys(
+            ['deit-b', 'deit-base'],
+            {
+                'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 11]],
+                'window_size': 14,
+                # 2, 5, 8, 11 for global attention
+                'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10],
+                'value_proj_ratio': 0.5
+            }),
+    }  # yapf: disable
+
+    def __init__(self,
+                 *args,
+                 arch='base',
+                 patch_size=16,
+                 out_indices=(0, 1, 2, 3),
+                 drop_path_rate=0.,
+                 norm_cfg=dict(type='LN', eps=1e-6),
+                 spm_norm_cfg=dict(type='BN'),
+                 spm_hidden_dims=64,
+                 deform_num_points=4,
+                 deform_num_heads=6,
+                 with_adapter_ffn=True,
+                 add_vit_feature=True,
+                 adapter_ffn_ratio=0.25,
+                 use_extra_extractor=True,
+                 with_cp=False,
+                 **kwargs):
+
+        if isinstance(arch, str):
+            arch = arch.lower()
+            assert arch in set(self.adapter_zoo), \
+                f'Arch {arch} is not in default archs {set(self.adapter_zoo)}'
+            self.adapter_settings = self.adapter_zoo[arch]
+        else:
+            essential_keys = {
+                'interaction_indexes', 'window_size', 'window_block_indexes'
+            }
+            assert isinstance(
+                arch, dict
+                ) and essential_keys <= set(arch), \
+                'Custom adapter_settings needs a dict with keys' \
+                f'{essential_keys}'
+            self.adapter_settings = arch
+
+        self.window_size = self.adapter_settings['window_size']
+        self.window_block_indexes = self.adapter_settings[
+            'window_block_indexes']
+        self.window_block_indexes = self.adapter_settings[
+            'window_block_indexes']
+        self.value_proj_ratio = self.adapter_settings['value_proj_ratio']
+
+        super().__init__(
+            *args,
+            arch=arch,
+            patch_size=patch_size,
+            with_cls_token=False,
+            output_cls_token=False,
+            drop_path_rate=drop_path_rate,
+            norm_cfg=norm_cfg,
+            out_indices=out_indices,
+            final_norm=False,
+            avg_token=False,
+            **kwargs)
+
+        self.interaction_indexes = self.adapter_settings['interaction_indexes']
+        self.add_vit_feature = add_vit_feature
+
+        self.level_embed = nn.Parameter(torch.zeros(3, self.embed_dims))
+        self.spm = SpatialPriorModule(
+            patch_size,
+            self.embed_dims,
+            hidden_dims=spm_hidden_dims,
+            norm_cfg=spm_norm_cfg)
+        self.interactions = nn.Sequential(*[
+            InteractionBlock(
+                embed_dims=self.embed_dims,
+                num_heads=deform_num_heads,
+                num_points=deform_num_points,
+                drop_path_rate=drop_path_rate,
+                norm_cfg=norm_cfg,
+                with_ffn=with_adapter_ffn,
+                ffn_ratio=adapter_ffn_ratio,
+                value_proj_ratio=self.value_proj_ratio,
+                with_cp=with_cp,
+                use_extra_extractor=(
+                    (True if i == len(self.interaction_indexes) -
+                     1 else False) and use_extra_extractor))
+            for i in range(len(self.interaction_indexes))
+        ])
+
+        self.up = nn.ConvTranspose2d(self.embed_dims, self.embed_dims, 2, 2)
+        for i in out_indices:
+            norm_layer = build_norm_layer(spm_norm_cfg, self.embed_dims)[1]
+            self.add_module(f'norm{i}', norm_layer)
+
+    def _build_layers(
+        self,
+        drop_rate,
+        drop_path_rate,
+        norm_cfg,
+        layer_scale_init_value,
+        layer_cfgs,
+        use_rel_pos_bias,
+    ):
+        # stochastic depth decay rule
+        dpr = np.linspace(0, drop_path_rate, self.num_layers)
+
+        self.layers = ModuleList()
+        if isinstance(layer_cfgs, dict):
+            layer_cfgs = [layer_cfgs] * self.num_layers
+        for i in range(self.num_layers):
+            _layer_cfg = dict(
+                embed_dims=self.embed_dims,
+                num_heads=self.arch_settings['num_heads'],
+                feedforward_channels=self.
+                arch_settings['feedforward_channels'],
+                layer_scale_init_value=layer_scale_init_value,
+                use_rel_pos_bias=use_rel_pos_bias,
+                drop_rate=drop_rate,
+                drop_path_rate=dpr[i],
+                norm_cfg=norm_cfg,
+                use_window_attention=i in self.window_block_indexes,
+                is_cls_token=False,
+                window_size=self.patch_resolution
+                if i not in self.window_block_indexes else
+                (self.window_size, self.window_size))
+            _layer_cfg.update(layer_cfgs[i])
+            self.layers.append(BEiTTransformerEncoderLayer(**_layer_cfg))
+
+    def forward(self, x):
+        deform_inputs1, deform_inputs2 = deform_inputs(x)
+
+        # SPM forward
+        c1, c2, c3, c4 = self.spm(x)
+
+        # add level embed
+        c2 = c2 + self.level_embed[0]
+        c3 = c3 + self.level_embed[1]
+        c4 = c4 + self.level_embed[2]
+        c = torch.cat([c2, c3, c4], dim=1)
+
+        # Patch Embedding forward
+        B = x.shape[0]
+        x, hw_shape = self.patch_embed(x)
+
+        # stole cls_tokens impl from Phil Wang, thanks
+        cls_tokens = self.cls_token.expand(B, -1, -1)
+        x = torch.cat((cls_tokens, x), dim=1)
+
+        if self.pos_embed is not None:
+            x = x + resize_pos_embed(
+                self.pos_embed,
+                self.patch_resolution,
+                hw_shape,
+                mode=self.interpolate_mode,
+                num_extra_tokens=self.num_extra_tokens)
+        x = self.drop_after_pos(x)
+
+        rel_pos_bias = self.rel_pos_bias() \
+            if self.rel_pos_bias is not None else None
+
+        if not self.with_cls_token:
+            # Remove class token for transformer encoder input
+            x = x[:, 1:]
+
+        # Interaction
+        for i, layer in enumerate(self.interactions):
+            indexes = self.interaction_indexes[i]
+            x, c = layer(
+                x,
+                c,
+                self.layers[indexes[0]:indexes[-1] + 1],
+                deform_inputs1,
+                deform_inputs2,
+                hw_shape,
+                rel_pos_bias=rel_pos_bias)
 
         # Split & Reshape
         c2 = c[:, 0:c2.size(1), :]
