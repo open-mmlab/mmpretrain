@@ -117,11 +117,7 @@ class MultiTaskHead(BaseHead):
         predictions_dict = dict()
 
         for task_name, head in self.task_heads.items():
-            if data_samples is None:
-                task_samples = None
-            else:
-                task_samples = [item.get(task_name) for item in data_samples]
-            task_samples = head.predict(feats, task_samples)
+            task_samples = head.predict(feats)
             batch_size = len(task_samples)
             predictions_dict[task_name] = task_samples
 
@@ -131,10 +127,11 @@ class MultiTaskHead(BaseHead):
         for task_name, task_samples in predictions_dict.items():
             for data_sample, task_sample in zip(data_samples, task_samples):
                 task_sample.set_field(
-                    task_name in data_sample,
+                    task_name in data_sample.tasks,
                     'eval_mask',
                     field_type='metainfo')
-                if task_name in data_sample:
+
+                if task_name in data_sample.tasks:
                     data_sample.get(task_name).update(task_sample)
                 else:
                     data_sample.set_field(task_sample, task_name)
