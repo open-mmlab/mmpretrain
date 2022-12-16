@@ -356,19 +356,19 @@ class MixMIMTransformer(BaseBackbone):
     """
     arch_settings = {
         **dict.fromkeys(
-            ['B', 'base'], {
+            ['b', 'base'], {
                 'embed_dims': 128,
                 'depths': [2, 2, 18, 2],
                 'num_heads': [4, 8, 16, 32]
             }),
         **dict.fromkeys(
-            ['L', 'large'], {
+            ['l', 'large'], {
                 'embed_dims': 192,
                 'depths': [2, 2, 18, 2],
                 'num_heads': [6, 12, 24, 48]
             }),
         **dict.fromkeys(
-            ['H', 'huge'], {
+            ['h', 'huge'], {
                 'embed_dims': 352,
                 'depths': [2, 2, 18, 2],
                 'num_heads': [11, 22, 44, 88]
@@ -393,6 +393,20 @@ class MixMIMTransformer(BaseBackbone):
         init_cfg: Optional[dict] = None,
     ) -> None:
         super(MixMIMTransformer, self).__init__(init_cfg=init_cfg)
+        
+        if isinstance(arch, str):
+            arch = arch.lower()
+            assert arch in set(self.arch_zoo), \
+                f'Arch {arch} is not in default archs {set(self.arch_zoo)}'
+            self.arch_settings = self.arch_zoo[arch]
+        else:
+            essential_keys = {
+                'embed_dims', 'num_layers', 'num_heads', 'feedforward_channels'
+            }
+            assert isinstance(arch, dict) and essential_keys <= set(arch), \
+                f'Custom arch needs a dict with keys {essential_keys}'
+            self.arch_settings = arch        
+        
 
         self.embed_dims = self.arch_settings[arch]['embed_dims']
         self.depths = self.arch_settings[arch]['depths']
