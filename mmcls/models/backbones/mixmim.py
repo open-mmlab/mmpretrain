@@ -393,7 +393,7 @@ class MixMIMTransformer(BaseBackbone):
         init_cfg: Optional[dict] = None,
     ) -> None:
         super(MixMIMTransformer, self).__init__(init_cfg=init_cfg)
-        
+
         if isinstance(arch, str):
             arch = arch.lower()
             assert arch in set(self.arch_zoo), \
@@ -405,8 +405,7 @@ class MixMIMTransformer(BaseBackbone):
             }
             assert isinstance(arch, dict) and essential_keys <= set(arch), \
                 f'Custom arch needs a dict with keys {essential_keys}'
-            self.arch_settings = arch        
-        
+            self.arch_settings = arch
 
         self.embed_dims = self.arch_settings[arch]['embed_dims']
         self.depths = self.arch_settings[arch]['depths']
