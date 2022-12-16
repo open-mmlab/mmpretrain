@@ -4,9 +4,6 @@ import mmcv
 import numpy as np
 from matplotlib.backend_bases import CloseEvent
 
-# A small value
-EPS = 1e-2
-
 
 def color_val_matplotlib(color):
     """Convert various input in BGR order to normalized RGB matplotlib color
@@ -247,11 +244,10 @@ class ImshowInfosContextManager(BaseFigureContextManager):
         width, height = img.shape[1], img.shape[0]
         img = np.ascontiguousarray(img)
 
-        # add a small EPS to avoid precision lost due to matplotlib's
+        # there might be a 1px precision lost due to matplotlib's
         # truncation (https://github.com/matplotlib/matplotlib/issues/15363)
         dpi = self.fig_save.get_dpi()
-        self.fig_save.set_size_inches((width + EPS) / dpi,
-                                      (height + EPS) / dpi)
+        self.fig_save.set_size_inches(width / dpi, height / dpi)
 
         for k, v in infos.items():
             if isinstance(v, float):
@@ -267,7 +263,12 @@ class ImshowInfosContextManager(BaseFigureContextManager):
         self.ax_save.imshow(img)
         stream, _ = self.fig_save.canvas.print_to_buffer()
         buffer = np.frombuffer(stream, dtype='uint8')
-        img_rgba = buffer.reshape(height, width, 4)
+
+        # for 1px precision lost, we don't use origin height and width
+        # to reshape the buffer instead we use the figure bbox height and width
+        img_rgba = buffer.reshape(
+            int(self.fig_save.bbox.height), int(self.fig_save.bbox.width), 4)
+
         rgb, _ = np.split(img_rgba, [3], axis=2)
         img_save = rgb.astype('uint8')
         img_save = mmcv.rgb2bgr(img_save)
