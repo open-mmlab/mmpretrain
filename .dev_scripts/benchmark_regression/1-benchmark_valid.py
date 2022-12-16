@@ -12,11 +12,12 @@ import torch
 from mmengine import Config, DictAction, MMLogger
 from mmengine.dataset import Compose, default_collate
 from mmengine.fileio import FileClient
-from mmengine.runner import Runner
+from mmengine.runner import Runner, load_checkpoint
 from modelindex.load_model_index import load
 from rich.console import Console
 from rich.table import Table
 
+from mmcls.apis import init_model
 from mmcls.datasets import CIFAR10, CIFAR100, ImageNet
 from mmcls.utils import register_all_modules
 from mmcls.visualization import ClsVisualizer
@@ -82,20 +83,27 @@ def inference(config_file, checkpoint, work_dir, args, exp_name):
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
 
-    # build the data pipeline
-    test_dataset = cfg.test_dataloader.dataset
-    if test_dataset.pipeline[0]['type'] != 'LoadImageFromFile':
-        test_dataset.pipeline.insert(0, dict(type='LoadImageFromFile'))
-    if test_dataset.type in ['CIFAR10', 'CIFAR100']:
-        # The image shape of CIFAR is (32, 32, 3)
-        test_dataset.pipeline.insert(1, dict(type='Resize', scale=32))
+    if 'test_dataloader' in cfg:
+        # build the data pipeline
+        test_dataset = cfg.test_dataloader.dataset
+        if test_dataset.pipeline[0]['type'] != 'LoadImageFromFile':
+            test_dataset.pipeline.insert(0, dict(type='LoadImageFromFile'))
+        if test_dataset.type in ['CIFAR10', 'CIFAR100']:
+            # The image shape of CIFAR is (32, 32, 3)
+            test_dataset.pipeline.insert(1, dict(type='Resize', scale=32))
 
-    data = Compose(test_dataset.pipeline)({'img_path': args.img})
-    data = default_collate([data] * args.batch_size)
-    resolution = tuple(data['inputs'].shape[-2:])
-
-    runner: Runner = Runner.from_cfg(cfg)
-    model = runner.model
+        data = Compose(test_dataset.pipeline)({'img_path': args.img})
+        data = default_collate([data] * args.batch_size)
+        resolution = tuple(data['inputs'].shape[-2:])
+        model = Runner.from_cfg(cfg).model
+        forward = model.val_step
+    else:
+        # For configs only for get model.
+        model = init_model(cfg)
+        load_checkpoint(model, checkpoint, map_location='cpu')
+        data = torch.empty(1, 3, 224, 224).to(model.data_preprocessor.device)
+        resolution = (224, 224)
+        forward = model.extract_feat
 
     # forward the model
     result = {'resolution': resolution}
@@ -103,16 +111,16 @@ def inference(config_file, checkpoint, work_dir, args, exp_name):
         if args.inference_time:
             time_record = []
             for _ in range(10):
-                model.val_step(data)  # warmup before profiling
+                forward(data)  # warmup before profiling
                 torch.cuda.synchronize()
                 start = time()
-                model.val_step(data)
+                forward(data)
                 torch.cuda.synchronize()
                 time_record.append((time() - start) / args.batch_size * 1000)
             result['time_mean'] = np.mean(time_record[1:-1])
             result['time_std'] = np.std(time_record[1:-1])
         else:
-            model.val_step(data)
+            forward(data)
 
     result['model'] = config_file.stem
 
@@ -144,8 +152,8 @@ def show_summary(summary_data, args):
     if args.inference_time:
         table.add_column('Inference Time (std) (ms/im)')
     if args.flops:
-        table.add_column('Flops', justify='right', width=11)
-        table.add_column('Params', justify='right')
+        table.add_column('Flops', justify='right', width=13)
+        table.add_column('Params', justify='right', width=11)
 
     for model_name, summary in summary_data.items():
         row = [model_name]

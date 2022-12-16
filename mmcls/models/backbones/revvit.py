@@ -1,56 +1,155 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import sys
 from typing import Sequence
 
 import numpy as np
 import torch
-import torch.nn as nn
 from mmcv.cnn import build_norm_layer
+from mmcv.cnn.bricks.drop import build_dropout
 from mmcv.cnn.bricks.transformer import FFN, PatchEmbed
 from mmengine.model import BaseModule, ModuleList
 from mmengine.model.weight_init import trunc_normal_
+from torch import nn
+from torch.autograd import Function as Function
 
+from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.registry import MODELS
 from ..utils import MultiheadAttention, resize_pos_embed, to_2tuple
-from .base_backbone import BaseBackbone
 
 
-class TransformerEncoderLayer(BaseModule):
-    """Implements one encoder layer in Vision Transformer.
+class RevBackProp(Function):
+    """Custom Backpropagation function to allow (A) flushing memory in forward
+    and (B) activation recomputation reversibly in backward for gradient
+    calculation.
+
+    Inspired by
+    https://github.com/RobinBruegger/RevTorch/blob/master/revtorch/revtorch.py
+    """
+
+    @staticmethod
+    def forward(
+            ctx,
+            x,
+            layers,
+            buffer_layers,  # List of layer ids for int activation to buffer
+    ):
+        """Reversible Forward pass.
+
+        Any intermediate activations from `buffer_layers` are cached in ctx for
+        forward pass. This is not necessary for standard usecases. Each
+        reversible layer implements its own forward pass logic.
+        """
+        buffer_layers.sort()
+        x1, x2 = torch.chunk(x, 2, dim=-1)
+        intermediate = []
+
+        for layer in layers:
+            x1, x2 = layer(x1, x2)
+            if layer.layer_id in buffer_layers:
+                intermediate.extend([x1.detach(), x2.detach()])
+
+        if len(buffer_layers) == 0:
+            all_tensors = [x1.detach(), x2.detach()]
+        else:
+            intermediate = [torch.LongTensor(buffer_layers), *intermediate]
+            all_tensors = [x1.detach(), x2.detach(), *intermediate]
+
+        ctx.save_for_backward(*all_tensors)
+        ctx.layers = layers
+
+        return torch.cat([x1, x2], dim=-1)
+
+    @staticmethod
+    def backward(ctx, dx):
+        """Reversible Backward pass.
+
+        Any intermediate activations from `buffer_layers` are recovered from
+        ctx. Each layer implements its own loic for backward pass (both
+        activation recomputation and grad calculation).
+        """
+        d_x1, d_x2 = torch.chunk(dx, 2, dim=-1)
+        # retrieve params from ctx for backward
+        x1, x2, *int_tensors = ctx.saved_tensors
+        # no buffering
+        if len(int_tensors) != 0:
+            buffer_layers = int_tensors[0].tolist()
+        else:
+            buffer_layers = []
+
+        layers = ctx.layers
+
+        for _, layer in enumerate(layers[::-1]):
+            if layer.layer_id in buffer_layers:
+                x1, x2, d_x1, d_x2 = layer.backward_pass(
+                    y1=int_tensors[buffer_layers.index(layer.layer_id) * 2 +
+                                   1],
+                    y2=int_tensors[buffer_layers.index(layer.layer_id) * 2 +
+                                   2],
+                    d_y1=d_x1,
+                    d_y2=d_x2,
+                )
+            else:
+                x1, x2, d_x1, d_x2 = layer.backward_pass(
+                    y1=x1,
+                    y2=x2,
+                    d_y1=d_x1,
+                    d_y2=d_x2,
+                )
+
+        dx = torch.cat([d_x1, d_x2], dim=-1)
+
+        del int_tensors
+        del d_x1, d_x2, x1, x2
+
+        return dx, None, None
+
+
+class RevTransformerEncoderLayer(BaseModule):
+    """Reversible Transformer Encoder Layer.
+
+    This module is a building block of Reversible Transformer Encoder,
+    which support backpropagation without storing activations.
+    The residual connection is not applied to the FFN layer.
 
     Args:
-        embed_dims (int): The feature dimension
-        num_heads (int): Parallel attention heads
-        feedforward_channels (int): The hidden dimension for FFNs
-        drop_rate (float): Probability of an element to be zeroed
-            after the feed forward layer. Defaults to 0.
-        attn_drop_rate (float): The drop out rate for attention output weights.
-            Defaults to 0.
-        drop_path_rate (float): Stochastic depth rate. Defaults to 0.
-        num_fcs (int): The number of fully-connected layers for FFNs.
-            Defaults to 2.
-        qkv_bias (bool): enable bias for qkv if True. Defaults to True.
+        embed_dims (int): The feature dimension.
+        num_heads (int): Parallel attention heads.
+        feedforward_channels (int): The hidden dimension for FFNs.
+        drop_rate (float): Probability of an element to be zeroed.
+            Default: 0.0
+        attn_drop_rate (float): The drop out rate for attention layer.
+            Default: 0.0
+        drop_path_rate (float): stochastic depth rate.
+            Default 0.0
+        num_fcs (int): The number of linear in FFN
+            Default: 2
+        qkv_bias (bool): enable bias for qkv if True.
+            Default: True
         act_cfg (dict): The activation config for FFNs.
-            Defaluts to ``dict(type='GELU')``.
+            Default: dict(type='GELU')
         norm_cfg (dict): Config dict for normalization layer.
-            Defaults to ``dict(type='LN')``.
-        init_cfg (dict, optional): Initialization config dict.
-            Defaults to None.
+            Default: dict(type='LN')
+        layer_id (int): The layer id of current layer. Used in RevBackProp.
+            Default: 0
+        init_cfg (dict or list[dict], optional): Initialization config dict.
     """
 
     def __init__(self,
-                 embed_dims,
-                 num_heads,
-                 feedforward_channels,
-                 drop_rate=0.,
-                 attn_drop_rate=0.,
-                 drop_path_rate=0.,
-                 num_fcs=2,
-                 qkv_bias=True,
-                 act_cfg=dict(type='GELU'),
-                 norm_cfg=dict(type='LN'),
+                 embed_dims: int,
+                 num_heads: int,
+                 feedforward_channels: int,
+                 drop_rate: float = 0.,
+                 attn_drop_rate: float = 0.,
+                 drop_path_rate: float = 0.,
+                 num_fcs: int = 2,
+                 qkv_bias: bool = True,
+                 act_cfg: dict = dict(type='GELU'),
+                 norm_cfg: dict = dict(type='LN'),
+                 layer_id: int = 0,
                  init_cfg=None):
-        super(TransformerEncoderLayer, self).__init__(init_cfg=init_cfg)
+        super(RevTransformerEncoderLayer, self).__init__(init_cfg=init_cfg)
 
+        self.drop_path_cfg = dict(type='DropPath', drop_prob=drop_path_rate)
         self.embed_dims = embed_dims
 
         self.norm1_name, norm1 = build_norm_layer(
@@ -62,7 +161,6 @@ class TransformerEncoderLayer(BaseModule):
             num_heads=num_heads,
             attn_drop=attn_drop_rate,
             proj_drop=drop_rate,
-            dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
             qkv_bias=qkv_bias)
 
         self.norm2_name, norm2 = build_norm_layer(
@@ -74,8 +172,11 @@ class TransformerEncoderLayer(BaseModule):
             feedforward_channels=feedforward_channels,
             num_fcs=num_fcs,
             ffn_drop=drop_rate,
-            dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
-            act_cfg=act_cfg)
+            act_cfg=act_cfg,
+            add_identity=False)
+
+        self.layer_id = layer_id
+        self.seeds = {}
 
     @property
     def norm1(self):
@@ -86,24 +187,157 @@ class TransformerEncoderLayer(BaseModule):
         return getattr(self, self.norm2_name)
 
     def init_weights(self):
-        super(TransformerEncoderLayer, self).init_weights()
+        super(RevTransformerEncoderLayer, self).init_weights()
         for m in self.ffn.modules():
             if isinstance(m, nn.Linear):
                 nn.init.xavier_uniform_(m.weight)
                 nn.init.normal_(m.bias, std=1e-6)
 
-    def forward(self, x):
+    def seed_cuda(self, key):
+        """Fix seeds to allow for stochastic elements such as dropout to be
+        reproduced exactly in activation recomputation in the backward pass."""
+        # randomize seeds
+        # use cuda generator if available
+        if (hasattr(torch.cuda, 'default_generators')
+                and len(torch.cuda.default_generators) > 0):
+            # GPU
+            device_idx = torch.cuda.current_device()
+            seed = torch.cuda.default_generators[device_idx].seed()
+        else:
+            # CPU
+            seed = int(torch.seed() % sys.maxsize)
+
+        self.seeds[key] = seed
+        torch.manual_seed(self.seeds[key])
+
+    def forward(self, x1, x2):
+        """
+        Implementation of Reversible TransformerEncoderLayer
+
+        `
         x = x + self.attn(self.norm1(x))
         x = self.ffn(self.norm2(x), identity=x)
-        return x
+        `
+        """
+        self.seed_cuda('attn')
+        # attention output
+        f_x2 = self.attn(self.norm1(x2))
+        # apply droppath on attention output
+        self.seed_cuda('droppath')
+        f_x2_dropped = build_dropout(self.drop_path_cfg)(f_x2)
+        y1 = x1 + f_x2_dropped
+
+        # free memory
+        if self.training:
+            del x1
+
+        # ffn output
+        self.seed_cuda('ffn')
+        g_y1 = self.ffn(self.norm2(y1))
+        # apply droppath on ffn output
+        torch.manual_seed(self.seeds['droppath'])
+        g_y1_dropped = build_dropout(self.drop_path_cfg)(g_y1)
+        # final output
+        y2 = x2 + g_y1_dropped
+
+        # free memory
+        if self.training:
+            del x2
+
+        return y1, y2
+
+    def backward_pass(self, y1, y2, d_y1, d_y2):
+        """Activation re-compute with the following equation.
+
+        x2 = y2 - g(y1), g = FFN
+        x1 = y1 - f(x2), f = MSHA
+        """
+
+        # temporarily record intermediate activation for G
+        # and use them for gradient calculation of G
+        with torch.enable_grad():
+            y1.requires_grad = True
+
+            torch.manual_seed(self.seeds['ffn'])
+            g_y1 = self.ffn(self.norm2(y1))
+
+            torch.manual_seed(self.seeds['droppath'])
+            g_y1 = build_dropout(self.drop_path_cfg)(g_y1)
+
+            g_y1.backward(d_y2, retain_graph=True)
+
+        # activate recomputation is by design and not part of
+        # the computation graph in forward pass
+        with torch.no_grad():
+            x2 = y2 - g_y1
+            del g_y1
+
+            d_y1 = d_y1 + y1.grad
+            y1.grad = None
+
+        # record F activation and calculate gradients on F
+        with torch.enable_grad():
+            x2.requires_grad = True
+
+            torch.manual_seed(self.seeds['attn'])
+            f_x2 = self.attn(self.norm1(x2))
+
+            torch.manual_seed(self.seeds['droppath'])
+            f_x2 = build_dropout(self.drop_path_cfg)(f_x2)
+
+            f_x2.backward(d_y1, retain_graph=True)
+
+        # propagate reverse computed activations at the
+        # start of the previous block
+        with torch.no_grad():
+            x1 = y1 - f_x2
+            del f_x2, y1
+
+            d_y2 = d_y2 + x2.grad
+
+            x2.grad = None
+            x2 = x2.detach()
+
+        return x1, x2, d_y1, d_y2
+
+
+class TwoStreamFusion(nn.Module):
+    """A general constructor for neural modules fusing two equal sized tensors
+    in forward.
+
+    Args:
+        mode (str): The mode of fusion. Options are 'add', 'max', 'min',
+            'avg', 'concat'.
+    """
+
+    def __init__(self, mode: str):
+        super().__init__()
+        self.mode = mode
+
+        if mode == 'add':
+            self.fuse_fn = lambda x: torch.stack(x).sum(dim=0)
+        elif mode == 'max':
+            self.fuse_fn = lambda x: torch.stack(x).max(dim=0).values
+        elif mode == 'min':
+            self.fuse_fn = lambda x: torch.stack(x).min(dim=0).values
+        elif mode == 'avg':
+            self.fuse_fn = lambda x: torch.stack(x).mean(dim=0)
+        elif mode == 'concat':
+            self.fuse_fn = lambda x: torch.cat(x, dim=-1)
+        else:
+            raise NotImplementedError
+
+    def forward(self, x):
+        # split the tensor into two halves in the channel dimension
+        x = torch.chunk(x, 2, dim=2)
+        return self.fuse_fn(x)
 
 
 @MODELS.register_module()
-class VisionTransformer(BaseBackbone):
-    """Vision Transformer.
+class RevVisionTransformer(BaseBackbone):
+    """Reversible Vision Transformer.
 
-    A PyTorch implement of : `An Image is Worth 16x16 Words: Transformers
-    for Image Recognition at Scale <https://arxiv.org/abs/2010.11929>`_
+    A PyTorch implementation of : `Reversible Vision Transformers <https://openaccess.thecvf.com/content/CVPR2022/papers/Mangalam_Reversible_Vision_Transformers_CVPR_2022_paper.pdf>`_ # noqa: E501
 
     Args:
         arch (str | dict): Vision Transformer architecture. If use string,
@@ -148,6 +382,10 @@ class VisionTransformer(BaseBackbone):
         patch_cfg (dict): Configs of patch embeding. Defaults to an empty dict.
         layer_cfgs (Sequence | dict): Configs of each transformer layer in
             encoder. Defaults to an empty dict.
+        fusion_mode (str): The fusion mode of transformer layers.
+            Defaults to 'concat'.
+        no_custom_backward (bool): Whether to use custom backward.
+            Defaults to False.
         init_cfg (dict, optional): Initialization config dict.
             Defaults to None.
     """
@@ -182,16 +420,6 @@ class VisionTransformer(BaseBackbone):
                 'num_layers': 32,
                 'num_heads': 16,
                 'feedforward_channels': 5120
-            }),
-        **dict.fromkeys(
-            ['eva-g', 'eva-giant'],
-            {
-                # The implementation in EVA
-                # <https://arxiv.org/abs/2211.07636>
-                'embed_dims': 1408,
-                'num_layers': 40,
-                'num_heads': 16,
-                'feedforward_channels': 6144
             }),
         **dict.fromkeys(
             ['deit-t', 'deit-tiny'], {
@@ -229,15 +457,17 @@ class VisionTransformer(BaseBackbone):
                  qkv_bias=True,
                  norm_cfg=dict(type='LN', eps=1e-6),
                  final_norm=True,
-                 with_cls_token=True,
-                 avg_token=False,
+                 with_cls_token=False,
+                 avg_token=True,
                  frozen_stages=-1,
-                 output_cls_token=True,
+                 output_cls_token=False,
                  interpolate_mode='bicubic',
                  patch_cfg=dict(),
                  layer_cfgs=dict(),
+                 fusion_mode='concat',
+                 no_custom_backward=False,
                  init_cfg=None):
-        super(VisionTransformer, self).__init__(init_cfg)
+        super(RevVisionTransformer, self).__init__(init_cfg)
 
         if isinstance(arch, str):
             arch = arch.lower()
@@ -255,6 +485,7 @@ class VisionTransformer(BaseBackbone):
         self.embed_dims = self.arch_settings['embed_dims']
         self.num_layers = self.arch_settings['num_layers']
         self.img_size = to_2tuple(img_size)
+        self.no_custom_backward = no_custom_backward
 
         # Set patch embedding
         _patch_cfg = dict(
@@ -275,6 +506,8 @@ class VisionTransformer(BaseBackbone):
             assert with_cls_token is True, f'with_cls_token must be True if' \
                 f'set output_cls_token to True, but got {with_cls_token}'
         self.with_cls_token = with_cls_token
+        assert with_cls_token is False, 'with_cls_token=True is not supported'
+
         self.output_cls_token = output_cls_token
         self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dims))
 
@@ -298,6 +531,8 @@ class VisionTransformer(BaseBackbone):
             assert 0 <= out_indices[i] <= self.num_layers, \
                 f'Invalid out_indices {index}'
         self.out_indices = out_indices
+        assert out_indices == [-1] or out_indices == [self.num_layers - 1], \
+            f'only support output last layer current, but got {out_indices}'
 
         # stochastic depth decay rule
         dpr = np.linspace(0, drop_path_rate, self.num_layers)
@@ -314,22 +549,23 @@ class VisionTransformer(BaseBackbone):
                 drop_rate=drop_rate,
                 drop_path_rate=dpr[i],
                 qkv_bias=qkv_bias,
+                layer_id=i,
                 norm_cfg=norm_cfg)
             _layer_cfg.update(layer_cfgs[i])
-            self.layers.append(TransformerEncoderLayer(**_layer_cfg))
+            self.layers.append(RevTransformerEncoderLayer(**_layer_cfg))
+
+        # fusion operation for the final output
+        self.fusion_layer = TwoStreamFusion(mode=fusion_mode)
 
         self.frozen_stages = frozen_stages
         self.final_norm = final_norm
         if final_norm:
             self.norm1_name, norm1 = build_norm_layer(
-                norm_cfg, self.embed_dims, postfix=1)
+                norm_cfg, self.embed_dims * 2, postfix=1)
             self.add_module(self.norm1_name, norm1)
 
         self.avg_token = avg_token
-        if avg_token:
-            self.norm2_name, norm2 = build_norm_layer(
-                norm_cfg, self.embed_dims, postfix=2)
-            self.add_module(self.norm2_name, norm2)
+
         # freeze stages only when self.frozen_stages > 0
         if self.frozen_stages > 0:
             self._freeze_stages()
@@ -338,17 +574,11 @@ class VisionTransformer(BaseBackbone):
     def norm1(self):
         return getattr(self, self.norm1_name)
 
-    @property
-    def norm2(self):
-        return getattr(self, self.norm2_name)
-
     def init_weights(self):
-        super(VisionTransformer, self).init_weights()
-
+        super(RevVisionTransformer, self).init_weights()
         if not (isinstance(self.init_cfg, dict)
                 and self.init_cfg['type'] == 'Pretrained'):
-            if self.pos_embed is not None:
-                trunc_normal_(self.pos_embed, std=0.02)
+            trunc_normal_(self.pos_embed, std=0.02)
 
     def _prepare_pos_embed(self, state_dict, prefix, *args, **kwargs):
         name = prefix + 'pos_embed'
@@ -380,8 +610,7 @@ class VisionTransformer(BaseBackbone):
 
     def _freeze_stages(self):
         # freeze position embedding
-        if self.pos_embed is not None:
-            self.pos_embed.requires_grad = False
+        self.pos_embed.requires_grad = False
         # set dropout to eval model
         self.drop_after_pos.eval()
         # freeze patch embedding
@@ -389,7 +618,7 @@ class VisionTransformer(BaseBackbone):
         for param in self.patch_embed.parameters():
             param.requires_grad = False
         # freeze cls_token
-        self.cls_token.requires_grad = False
+        # self.cls_token.requires_grad = False
         # freeze layers
         for i in range(1, self.frozen_stages + 1):
             m = self.layers[i - 1]
@@ -409,6 +638,7 @@ class VisionTransformer(BaseBackbone):
         # stole cls_tokens impl from Phil Wang, thanks
         cls_tokens = self.cls_token.expand(B, -1, -1)
         x = torch.cat((cls_tokens, x), dim=1)
+
         x = x + resize_pos_embed(
             self.pos_embed,
             self.patch_resolution,
@@ -421,33 +651,58 @@ class VisionTransformer(BaseBackbone):
             # Remove class token for transformer encoder input
             x = x[:, 1:]
 
-        outs = []
-        for i, layer in enumerate(self.layers):
-            x = layer(x)
+        x = torch.cat([x, x], dim=-1)
 
-            if i == len(self.layers) - 1 and self.final_norm:
-                x = self.norm1(x)
+        # forward with different conditions
+        if not self.training or self.no_custom_backward:
+            # in eval/inference model
+            executing_fn = RevVisionTransformer._forward_vanilla_bp
+        else:
+            # use custom backward when self.training=True.
+            executing_fn = RevBackProp.apply
 
-            if i in self.out_indices:
-                B, _, C = x.shape
-                if self.with_cls_token:
-                    patch_token = x[:, 1:].reshape(B, *patch_resolution, C)
-                    patch_token = patch_token.permute(0, 3, 1, 2)
-                    cls_token = x[:, 0]
-                else:
-                    patch_token = x.reshape(B, *patch_resolution, C)
-                    patch_token = patch_token.permute(0, 3, 1, 2)
-                    cls_token = None
-                if self.avg_token:
-                    patch_token = patch_token.permute(0, 2, 3, 1)
-                    patch_token = patch_token.reshape(
-                        B, patch_resolution[0] * patch_resolution[1],
-                        C).mean(dim=1)
-                    patch_token = self.norm2(patch_token)
-                if self.output_cls_token:
-                    out = [patch_token, cls_token]
-                else:
-                    out = patch_token
-                outs.append(out)
+        x = executing_fn(x, self.layers, [])
 
-        return tuple(outs)
+        if self.final_norm:
+            x = self.norm1(x)
+        x = self.fusion_layer(x)
+
+        if self.with_cls_token:
+            # RevViT does not allow cls_token
+            raise NotImplementedError
+        else:
+            # (B, H, W, C)
+            _, __, C = x.shape
+            patch_token = x.reshape(B, *patch_resolution, C)
+            # (B, C, H, W)
+            patch_token = patch_token.permute(0, 3, 1, 2)
+            cls_token = None
+
+        if self.avg_token:
+            # (B, H, W, C)
+            patch_token = patch_token.permute(0, 2, 3, 1)
+            # (B, L, C) -> (B, C)
+            patch_token = patch_token.reshape(
+                B, patch_resolution[0] * patch_resolution[1], C).mean(dim=1)
+
+        if self.output_cls_token:
+            out = [patch_token, cls_token]
+        else:
+            out = patch_token
+
+        return tuple([out])
+
+    @staticmethod
+    def _forward_vanilla_bp(hidden_state, layers, buffer=[]):
+        """Using reversible layers without reversible backpropagation.
+
+        Debugging purpose only. Activated with self.no_custom_backward
+        """
+        # split into ffn state(ffn_out) and attention output(attn_out)
+        ffn_out, attn_out = torch.chunk(hidden_state, 2, dim=-1)
+        del hidden_state
+
+        for _, layer in enumerate(layers):
+            attn_out, ffn_out = layer(attn_out, ffn_out)
+
+        return torch.cat([attn_out, ffn_out], dim=-1)

@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-# by lihao
-# Reproduction for GCViT
+from typing import Sequence
 
 import torch
 import torch.nn as nn
@@ -12,22 +11,6 @@ from mmcls.models.utils.attention import WindowMSA
 from mmcls.models.utils.se_layer import SELayer
 from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.registry import MODELS
-
-
-def drop_path(x,
-              drop_prob: float = 0.,
-              training: bool = False,
-              scale_by_keep: bool = True):
-
-    if drop_prob == 0. or not training:
-        return x
-    keep_prob = 1 - drop_prob
-    shape = (x.shape[0], ) + (1, ) * (
-        x.ndim - 1)  # work with diff dim tensors, not just 2D ConvNets
-    random_tensor = x.new_empty(shape).bernoulli_(keep_prob)
-    if keep_prob > 0.0 and scale_by_keep:
-        random_tensor.div_(keep_prob)
-    return x * random_tensor
 
 
 def _to_channel_last(x):
@@ -565,14 +548,25 @@ class GCViT(BaseBackbone):
             assert arch in set(self.arch_zoo), \
                 f'Arch {arch} is not in default archs {set(self.arch_zoo)}'
             self.arch_settings = self.arch_zoo[arch]
-            dim = self.arch_settings['dim']
-            depths = self.arch_settings['depths']
-            mlp_ratio = self.arch_settings['mlp_ratio']
-            num_heads = self.arch_settings['num_heads']
-            drop_path_rate = self.arch_settings['drop_path_rate']
-            layer_scale = self.arch_settings['layer_scale']
+        else: 
+            essential_keys = {
+                'depths', 'num_heads', 'dim', 'mlp_ratio', 
+                'drop_path_rate', 'layer_scale'
+            }
+            assert isinstance(arch, dict) and essential_keys <= set(arch), \
+                f'Custom arch needs a dict with keys {essential_keys}'
+            self.arch_settings = arch
+        dim = self.arch_settings['dim']
+        depths = self.arch_settings['depths']
+        mlp_ratio = self.arch_settings['mlp_ratio']
+        num_heads = self.arch_settings['num_heads']
+        drop_path_rate = self.arch_settings['drop_path_rate']
+        layer_scale = self.arch_settings['layer_scale']
 
         num_features = int(dim * 2**(len(depths) - 1))
+        assert isinstance(out_indices, Sequence), \
+            f'"out_indices" must by a sequence or int, ' \
+            f'get {type(out_indices)} instead.'
         self.out_indices = out_indices
         self.num_classes = num_classes
         self.patch_embed = PatchEmbed(in_chans=in_chans, dim=dim)

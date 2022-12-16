@@ -73,8 +73,8 @@ Backbones
    EdgeNeXt
    EfficientFormer
    EfficientNet
-   HorNet
    HRNet
+   HorNet
    InceptionV3
    LeNet5
    MViT
@@ -96,6 +96,7 @@ Backbones
    ResNetV1c
    ResNetV1d
    ResNet_CIFAR
+   RevVisionTransformer
    SEResNeXt
    SEResNet
    SVT
