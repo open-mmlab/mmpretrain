@@ -354,7 +354,7 @@ class MixMIMTransformer(BaseBackbone):
         init_cfg (dict, optional): Initialization config dict.
             Defaults to None.
     """
-    arch_settings = {
+    arch_zoo = {
         **dict.fromkeys(
             ['b', 'base'], {
                 'embed_dims': 128,
@@ -407,9 +407,9 @@ class MixMIMTransformer(BaseBackbone):
                 f'Custom arch needs a dict with keys {essential_keys}'
             self.arch_settings = arch
 
-        self.embed_dims = self.arch_settings[arch]['embed_dims']
-        self.depths = self.arch_settings[arch]['depths']
-        self.num_heads = self.arch_settings[arch]['num_heads']
+        self.embed_dims = self.arch_settings['embed_dims']
+        self.depths = self.arch_settings['depths']
+        self.num_heads = self.arch_settings['num_heads']
 
         self.encoder_stride = 32
 
