@@ -36,6 +36,16 @@ class BN_Linear(nn.Sequential):
         m.to(device)
         return m
 
+def replace_batchnorm(net):
+    for child_name, child in net.named_children():
+        if hasattr(child, 'fuse'):
+            setattr(net, child_name, child.fuse())
+        elif isinstance(child, torch.nn.Conv2d):
+            child.bias = torch.nn.Parameter(torch.zeros(child.weight.size(0)))
+        elif isinstance(child, torch.nn.BatchNorm2d):
+            setattr(net, child_name, torch.nn.Identity())
+        else:
+            replace_batchnorm(child)
 
 @MODELS.register_module()
 class LeViTClsHead(ClsHead):
@@ -45,12 +55,14 @@ class LeViTClsHead(ClsHead):
                  distillation=True,
                  in_channels=None,
                  loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
-                 topk=(1, )):
+                 topk=(1, ),
+                 deploy=False):
         super(LeViTClsHead, self).__init__()
         self.topk = topk
         self.loss_module = MODELS.build(loss)
         self.num_classes = num_classes
         self.distillation = distillation
+        self.deploy=deploy
         self.head = BN_Linear(
             in_channels, num_classes) if num_classes > 0 else nn.Identity()
         if distillation:
@@ -60,9 +72,9 @@ class LeViTClsHead(ClsHead):
 
     def forward(self, x):
         x = self.pre_logits(x)
-        B, C, W, H = x.shape
-        x = x.permute(0, 2, 3, 1).reshape(B, W * H, C)
-        x = x.mean(1)  # 2 384
+        # B, C, W, H = x.shape
+        # x = x.permute(0, 2, 3, 1).reshape(B, W * H, C)
+        # x = x.mean(1)  # 2 384
         if self.distillation:
             x = self.head(x), self.head_dist(x)  # 2 16 384 -> 2 1000
             if not self.training:
@@ -70,3 +82,8 @@ class LeViTClsHead(ClsHead):
         else:
             x = self.head(x)
         return x
+    def train(self, mode):
+        if (not mode) and self.deploy:
+            replace_batchnorm(self)
+        super(LeViTClsHead, self).train(mode)
+        self.to(next(self.parameters()).device)

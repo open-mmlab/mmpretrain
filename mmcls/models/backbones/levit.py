@@ -372,7 +372,8 @@ class LeViT(BaseBackbone):
                  attention_activation=torch.nn.Hardswish,
                  mlp_activation=torch.nn.Hardswish,
                  drop_path=0,
-                 out_indices=(2, )):
+                 out_indices=(2, ),
+                 deploy=False):
         super(LeViT, self).__init__()
 
         self.out_indices = out_indices
@@ -384,6 +385,7 @@ class LeViT(BaseBackbone):
         self.patch_embed = hybrid_backbone
         self.blocks = [[]]
         self.size = []
+        self.deploy = deploy
 
         down_ops.append([''])
         resolution = img_size // patch_size
@@ -436,8 +438,6 @@ class LeViT(BaseBackbone):
     def forward(self, x):
         x = self.patch_embed(x)  # 2 3 224 224 -> 2 128 14 14
         x = x.flatten(2).transpose(1, 2)  # 2 128 14 14 -> 2 128 196 -> 2 196 128
-        # x = self.blocks(x)  # 2 196 128 -> 2 16 384
-        # x = self.stage(x)
         outs = []
         for i, layer_name in enumerate(self.stages):
             x = layer_name(x)
@@ -450,10 +450,11 @@ class LeViT(BaseBackbone):
         return tuple(outs)
 
     def train(self, mode):
-        if not mode:
+        if (not mode) and self.deploy:
+            device = next(self.parameters()).device
             replace_batchnorm(self)
-        super(LeViT, self).train()
-        self.to(next(self.patch_embed.patch_embed.parameters()).device)
+            self.to(device)
+        super(LeViT, self).train(mode)
 
 
 def replace_batchnorm(net):
@@ -582,5 +583,5 @@ def get_LeViT_model(params_name='LeViT_128S'):
         hybrid_backbone=hybrid_cnn(embed_dim[0], activation=act),
         num_classes=1000,
         drop_path=drop_path,
-        distillation=True)
+        distillation=False)
     return model
