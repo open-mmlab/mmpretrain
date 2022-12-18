@@ -20,7 +20,7 @@ Collections:
       Version: v1.0.0rc4
 
 Models:
-  - Name: mixmim-base-p16_8xb64-pt300e-in1k.py
+  - Name: mixmim-base_3rdparty_in1k.py
     In Collection: MixMIM
     Metadata:
       FLOPs: 16352000000 ## 16.3G
@@ -36,4 +36,4 @@ Models:
     Weights: https://download.openmmlab.com/mmclassification/v0/mixmim/mixmim-base_3rdparty_in1k_20221206-e40e2c8c.pth
     Converted From:
       Code: https://github.com/Sense-X/MixMIM
-    Config: configs/mixmim/mixmim-base-p16_8xb64-pt300e-in1k.py
+    Config: configs/mixmim/mixmim-base_3rdparty_in1k.py

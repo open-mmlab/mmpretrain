@@ -17,8 +17,10 @@ from mmcls.registry import MODELS
 
 
 class MixMIMWindowAttention(WindowMSA):
-    """MixMIM Window Attention. Compared with WindowMSA, we add some
-    modifications in ``forward`` to meet the requirement of MixMIM during
+    """MixMIM Window Attention.
+
+    Compared with WindowMSA, we add some modifications
+    in ``forward`` to meet the requirement of MixMIM during
     pretraining.
 
     Implements one windown attention in MixMIM.
@@ -320,16 +322,20 @@ class MixMIMLayer(BaseModule):
 @MODELS.register_module()
 class MixMIMTransformer(BaseBackbone):
     """MixMIM backbone.
+
     A PyTorch implement of : ` MixMIM: Mixed and Masked Image
     Modeling for Efficient Visual Representation Learning
     <https://arxiv.org/abs/2205.13137>`_
+
     Args:
         arch (str | dict): MixMIM architecture. If use string,
             choose from 'base','large' and 'huge'.
             If use dict, it should have below keys:
+
             - **embed_dims** (int): The dimensions of embedding.
             - **depths** (int): The number of transformer encoder layers.
             - **num_heads** (int): The number of heads in attention modules.
+
             Defaults to 'base'.
         mlp_ratio (int): The mlp ratio in FFN.  Defaults to 4.
         img_size (int | tuple): The expected input image shape. Because we
@@ -474,16 +480,6 @@ class MixMIMTransformer(BaseBackbone):
 
     def init_weights(self):
         super(MixMIMTransformer, self).init_weights()
-
-    def _init_weights(self, m):
-        if isinstance(m, nn.Linear):
-            # we use xavier_uniform following official JAX ViT:
-            torch.nn.init.xavier_uniform_(m.weight)
-            if isinstance(m, nn.Linear) and m.bias is not None:
-                nn.init.constant_(m.bias, 0)
-        elif isinstance(m, nn.LayerNorm):
-            nn.init.constant_(m.bias, 0)
-            nn.init.constant_(m.weight, 1.0)
 
     def forward(self, x: torch.Tensor):
         x, _ = self.patch_embed(x)
