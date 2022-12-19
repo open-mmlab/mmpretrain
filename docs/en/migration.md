@@ -481,7 +481,7 @@ visualizer = dict(
 )
 ```
 
-New field **`default_scope`**: The start point to search module for all registries. The `default_scope` in MMClassification is `mmcls`. See {external+mmengine:doc}`the registry tutorial <tutorials/registry>` for more details.
+New field **`default_scope`**: The start point to search module for all registries. The `default_scope` in MMClassification is `mmcls`. See {external+mmengine:doc}`the registry tutorial <advanced_tutorials/registry>` for more details.
 
 ## Packages
 
