@@ -68,9 +68,7 @@ Models:
       Parameters: 5392764
     In Collection: TinyViT
     Results:
-      - Dataset:
-          - ImageNet-1k
-          - ImageNet-21k
+      - Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 80.71
           Top 5 Accuracy: 95.57
@@ -86,9 +84,7 @@ Models:
       Parameters: 10996972
     In Collection: TinyViT
     Results:
-      - Dataset:
-          - ImageNet-1k
-          - ImageNet-21k
+      - Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 83.19
           Top 5 Accuracy: 96.53
@@ -104,9 +100,7 @@ Models:
       Parameters: 21198568
     In Collection: TinyViT
     Results:
-      - Dataset:
-          - ImageNet-1k
-          - ImageNet-21k
+      - Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 84.85
           Top 5 Accuracy: 97.27
@@ -122,9 +116,7 @@ Models:
       Parameters: 21230488
     In Collection: TinyViT
     Results:
-      - Dataset:
-          - ImageNet-1k
-          - ImageNet-21k
+      - Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 86.21
           Top 5 Accuracy: 97.77
@@ -140,9 +132,7 @@ Models:
       Parameters: 21268120
     In Collection: TinyViT
     Results:
-      - Dataset:
-          - ImageNet-1k
-          - ImageNet-21k
+      - Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 86.44
           Top 5 Accuracy: 97.89
