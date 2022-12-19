@@ -12,6 +12,7 @@ from .densenet import DenseNet
 from .edgenext import EdgeNeXt
 from .efficientformer import EfficientFormer
 from .efficientnet import EfficientNet
+from .gcvit import GCViT
 from .hornet import HorNet
 from .hrnet import HRNet
 from .inception_v3 import InceptionV3
@@ -95,6 +96,12 @@ __all__ = [
     'EfficientFormer',
     'SwinTransformerV2',
     'MViT',
+    'DeiT3',
+    'HorNet',
+    'MobileViT',
+    'DaViT',
+    'BEiT',
+    'GCViT',
     'DeiT3',
     'HorNet',
     'MobileViT',
