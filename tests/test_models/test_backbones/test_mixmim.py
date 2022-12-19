@@ -34,7 +34,7 @@ class TestMixMIM(TestCase):
         cfg = deepcopy(self.cfg)
         model = MixMIMTransformer(**cfg)
         outs = model(imgs)
-        self.assertIsInstance(outs, list)
+        self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 1)
         averaged_token = outs[-1]
         self.assertEqual(averaged_token.shape, (1, 1024))
