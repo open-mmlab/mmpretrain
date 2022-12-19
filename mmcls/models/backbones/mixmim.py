@@ -478,9 +478,6 @@ class MixMIMTransformer(BaseBackbone):
 
         _, self.norm = build_norm_layer(norm_cfg, self.num_features)
 
-    def init_weights(self):
-        super(MixMIMTransformer, self).init_weights()
-
     def forward(self, x: torch.Tensor):
         x, _ = self.patch_embed(x)
 
@@ -494,4 +491,4 @@ class MixMIMTransformer(BaseBackbone):
         x = self.avgpool(x.transpose(1, 2))  # B C 1
         x = torch.flatten(x, 1)
 
-        return [x]
+        return (x, )
