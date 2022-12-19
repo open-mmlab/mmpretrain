@@ -41,7 +41,7 @@ def test_efficientnet_v2_backbone():
 
     # Test EfficientNetV2
     model = EfficientNetV2()
-    # model.init_weights()
+    model.init_weights()
     model.train()
     x = torch.rand((1, 3, 224, 224))
     model(x)
@@ -49,7 +49,7 @@ def test_efficientnet_v2_backbone():
     # Test EfficientNetV2 with first stage frozen
     frozen_stages = 7
     model = EfficientNetV2(arch='b0', frozen_stages=frozen_stages)
-    # model.init_weights()
+    model.init_weights()
     model.train()
     for i in range(frozen_stages):
         layer = model.layers[i]
@@ -61,14 +61,14 @@ def test_efficientnet_v2_backbone():
 
     # Test EfficientNetV2 with norm eval
     model = EfficientNetV2(norm_eval=True)
-    # model.init_weights()
+    model.init_weights()
     model.train()
     assert check_norm_state(model.modules(), False)
 
     # Test EfficientNetV2 forward with 'b0' arch
     out_channels = [32, 16, 32, 48, 96, 112, 192, 1280]
     model = EfficientNetV2(arch='b0', out_indices=(0, 1, 2, 3, 4, 5, 6, 7))
-    # model.init_weights()
+    model.init_weights()
     model.train()
 
     imgs = torch.randn(1, 3, 224, 224)
@@ -92,7 +92,7 @@ def test_efficientnet_v2_backbone():
     for m in model.modules():
         if is_norm(m):
             assert isinstance(m, GroupNorm)
-    # model.init_weights()
+    model.init_weights()
     model.train()
 
     imgs = torch.randn(1, 3, 64, 64)
@@ -110,7 +110,7 @@ def test_efficientnet_v2_backbone():
     # Test EfficientNetV2 forward with 'm' arch
     out_channels = [24, 24, 48, 80, 160, 176, 304, 512, 1280]
     model = EfficientNetV2(arch='m', out_indices=(0, 1, 2, 3, 4, 5, 6, 7, 8))
-    # model.init_weights()
+    model.init_weights()
     model.train()
 
     imgs = torch.randn(1, 3, 64, 64)
@@ -135,7 +135,7 @@ def test_efficientnet_v2_backbone():
     for m in model.modules():
         if is_norm(m):
             assert isinstance(m, GroupNorm)
-    # model.init_weights()
+    model.init_weights()
     model.train()
 
     imgs = torch.randn(1, 3, 64, 64)

@@ -178,61 +178,10 @@ class EfficientNetV2(BaseBackbone):
     }
 
     def __init__(self,
-<<<<<<< HEAD
-                 model_cnf: str = 's',
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
                  arch: str = 's',
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> 54e3689... add config file and modify arch
-                 num_features: int = 1280,
-<<<<<<< HEAD
-<<<<<<< HEAD
-                 drop_connect_rate: float = 0.0,
-<<<<<<< HEAD
-=======
-=======
-                 num_features: int = 1280,
->>>>>>> 317303a... update model file
-                 drop_connect_rate: float = 0.2,
->>>>>>> 8ba74dd... update model file
-=======
-                 drop_connect_rate: float = 0.2,
->>>>>>> 4a4058c... update config file
-=======
-                 drop_connect_rate: float = 0.0,
->>>>>>> 6ed2461... update model file
-=======
-=======
-=======
-=======
                  in_channels: int = 3,
->>>>>>> 76bac5e... refactor efficientnetv2
                  drop_path_rate: float = 0.,
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> e5d0bf1... add the file about convert_pth from timm to mmcls
-                 out_channels: int = 1280,
->>>>>>> 73d03c1... update efficientnetv2 model file with mmcls style
-                 out_indices=(6,),
->>>>>>> 54e3689... add config file and modify arch
-=======
-                 out_indices: tuple = (-1,),
->>>>>>> 98a7520... update model file
-=======
-                 out_indices: Tuple = (-1,),
->>>>>>> fe32728... update model file
-=======
-                 out_indices: Sequence[int] = (-1,),
->>>>>>> 2704866... update model file docs
-=======
                  out_indices: Sequence[int] = (-1, ),
->>>>>>> 5dc32cf... pass pre-commit hook
                  frozen_stages: int = 0,
                  conv_cfg=dict(type='Conv2dAdaptivePadding'),
                  norm_cfg=dict(type='BN', eps=1e-3, momentum=0.1),
