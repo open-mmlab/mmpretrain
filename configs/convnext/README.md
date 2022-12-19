@@ -36,9 +36,9 @@ The "Roaring 20s" of visual recognition began with the introduction of Vision Tr
 
 ```python
 >>> import torch
->>> from mmcls.apis import init_model, inference_model
+>>> from mmcls.apis import get_model, inference_model
 >>>
->>> model = init_model('configs/convnext/convnext-tiny_32xb128_in1k.py', 'https://download.openmmlab.com/mmclassification/v0/convnext/convnext-tiny_3rdparty_32xb128-noema_in1k_20220222-2908964a.pth')
+>>> model = get_model('convnext-tiny_32xb128_in1k', pretrained=True)
 >>> predict = inference_model(model, 'demo/demo.JPEG')
 >>> print(predict['pred_class'])
 sea snake
@@ -50,10 +50,10 @@ sea snake
 
 ```python
 >>> import torch
->>> from mmcls.apis import init_model
+>>> from mmcls.apis import get_model
 >>>
->>> model = init_model('configs/convnext/convnext-tiny_32xb128_in1k.py', 'https://download.openmmlab.com/mmclassification/v0/convnext/convnext-tiny_3rdparty_32xb128-noema_in1k_20220222-2908964a.pth')
->>> inputs = torch.rand(1, 3, 224, 224).to(model.data_preprocessor.device)
+>>> model = get_model('convnext-tiny_32xb128_in1k', pretrained=True)
+>>> inputs = torch.rand(1, 3, 224, 224))
 >>> # To get classification scores.
 >>> out = model(inputs)
 >>> print(out.shape)
@@ -85,43 +85,45 @@ For more configurable parameters, please refer to the [API](https://mmclassifica
 
 ## Results and models
 
-### ImageNet-1k
-
-|     Model     |   Pretrain   | resolution | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                     Config                      |                                      Download                                       |
-| :-----------: | :----------: | :--------: | :-------: | :------: | :-------: | :-------: | :---------------------------------------------: | :---------------------------------------------------------------------------------: |
-| ConvNeXt-T\*  | From scratch |  224x224   |   28.59   |   4.46   |   82.05   |   95.86   |    [config](./convnext-tiny_32xb128_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-tiny_3rdparty_32xb128_in1k_20220124-18abde00.pth) |
-| ConvNeXt-T\*  | ImageNet-21k |  224x224   |   28.59   |   4.46   |   82.90   |   96.62   |    [config](./convnext-tiny_32xb128_in1k.py)    |                                     [model](<>)                                     |
-| ConvNeXt-T\*  | ImageNet-21k |  384x384   |   28.59   |  13.13   |   84.11   |   97.14   | [config](./convnext-tiny_32xb128_in1k-384px.py) |                                     [model](<>)                                     |
-| ConvNeXt-S\*  | From scratch |  224x224   |   50.22   |   8.69   |   83.13   |   96.44   |   [config](./convnext-small_32xb128_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-small_3rdparty_32xb128_in1k_20220124-d39b5192.pth) |
-| ConvNeXt-S\*  | ImageNet-21k |  224x224   |   50.22   |   8.69   |   84.59   |   97.41   |   [config](./convnext-small_32xb128_in1k.py)    |                                     [model](<>)                                     |
-| ConvNeXt-S\*  | ImageNet-21k |  384x384   |   50.22   |  25.58   |   85.75   |   97.88   |   [config](./convnext-small_32xb128_in1k.py)    |                                     [model](<>)                                     |
-| ConvNeXt-B\*  | From scratch |  224x224   |   88.59   |  15.36   |   83.85   |   96.74   |    [config](./convnext-base_32xb128_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-base_3rdparty_32xb128_in1k_20220124-d0915162.pth) |
-| ConvNeXt-B\*  | From scratch |  384x384   |   88.59   |  45.21   |   85.10   |   97.34   | [config](./convnext-base_32xb128_in1k-384px.py) |                                     [model](<>)                                     |
-| ConvNeXt-B\*  | ImageNet-21k |  224x224   |   88.59   |  15.36   |   85.81   |   97.86   |    [config](./convnext-base_32xb128_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-base_in21k-pre-3rdparty_32xb128_in1k_20220124-eb2d6ada.pth) |
-| ConvNeXt-B\*  | ImageNet-21k |  384x384   |   88.59   |  45.21   |   86.82   |   98.25   | [config](./convnext-base_32xb128_in1k-384px.py) |                                     [model](<>)                                     |
-| ConvNeXt-L\*  | From scratch |  224x224   |  197.77   |  34.37   |   84.30   |   96.89   |    [config](./convnext-large_64xb64_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-large_3rdparty_64xb64_in1k_20220124-f8a0ded0.pth) |
-| ConvNeXt-L\*  | From scratch |  384x384   |  197.77   |  101.10  |   85.50   |   97.59   | [config](./convnext-large_64xb64_in1k-384px.py) |                                     [model](<>)                                     |
-| ConvNeXt-L\*  | ImageNet-21k |  224x224   |  197.77   |  34.37   |   86.61   |   98.04   |    [config](./convnext-large_64xb64_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-large_in21k-pre-3rdparty_64xb64_in1k_20220124-2412403d.pth) |
-| ConvNeXt-L\*  | ImageNet-21k |  384x384   |  197.77   |  101.10  |   87.46   |   98.37   |  [config](./convnext-large_64xb64_in1k-384.py)  |                                     [model](<>)                                     |
-| ConvNeXt-XL\* | ImageNet-21k |  224x224   |  350.20   |  60.93   |   86.97   |   98.20   |   [config](./convnext-xlarge_64xb64_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-xlarge_in21k-pre-3rdparty_64xb64_in1k_20220124-76b6863d.pth) |
-| ConvNeXt-XL\* | ImageNet-21k |  384x384   |  350.20   |  179.20  |   87.76   |   98.55   | [config](./convnext-xlarge_64xb64_in1k-384.py)  |                                     [model](<>)                                     |
-
-*Models with * are converted from the [official repo](https://github.com/facebookresearch/ConvNeXt). The config files of these models are only for inference. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
-
 ### Pre-trained Models
 
 The pre-trained models on ImageNet-1k or ImageNet-21k are used to fine-tune on the downstream tasks.
 
-|     Model     | Training Data | Params(M) | Flops(G) |                                                               Download                                                                |
-| :-----------: | :-----------: | :-------: | :------: | :-----------------------------------------------------------------------------------------------------------------------------------: |
-| ConvNeXt-T\*  |  ImageNet-1k  |   28.59   |   4.46   | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-tiny_3rdparty_32xb128-noema_in1k_20220222-2908964a.pth)  |
-| ConvNeXt-S\*  |  ImageNet-1k  |   50.22   |   8.69   | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-small_3rdparty_32xb128-noema_in1k_20220222-fa001ca5.pth) |
-| ConvNeXt-B\*  |  ImageNet-1k  |   88.59   |  15.36   | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-base_3rdparty_32xb128-noema_in1k_20220222-dba4f95f.pth)  |
-| ConvNeXt-B\*  | ImageNet-21k  |   88.59   |  15.36   |        [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-base_3rdparty_in21k_20220124-13b83eec.pth)        |
-| ConvNeXt-L\*  | ImageNet-21k  |  197.77   |  34.37   |       [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-large_3rdparty_in21k_20220124-41b5a79f.pth)        |
-| ConvNeXt-XL\* | ImageNet-21k  |  350.20   |  60.93   |       [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-xlarge_3rdparty_in21k_20220124-f909bad7.pth)       |
+| Model                                              | Training Data | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                                                Download                                                |
+| :------------------------------------------------- | :-----------: | :-------: | :------: | :-------: | :-------: | :----------------------------------------------------------------------------------------------------: |
+| ConvNeXt-T (`convnext-tiny_32xb128-noema_in1k`)    |  ImageNet-1k  |   28.59   |   4.46   |   81.95   |   95.89   | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-tiny_32xb128-noema_in1k_20221208-5d4509c7.pth) |
+| ConvNeXt-S (`convnext-small_32xb128-noema_in1k`)   |  ImageNet-1k  |   50.22   |   8.69   |   83.21   |   96.48   | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-small_32xb128-noema_in1k_20221208-4a618995.pth) |
+| ConvNeXt-B (`convnext-base_32xb128-noema_in1k`)    |  ImageNet-1k  |   88.59   |  15.36   |   83.64   |   96.61   | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-base_32xb128-noema_in1k_20221208-f8182678.pth) |
+| ConvNeXt-B\* (`convnext-base_3rdparty-noema_in1k`) |  ImageNet-1k  |   88.59   |  15.36   |   83.71   |   96.60   | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-base_3rdparty_32xb128-noema_in1k_20220222-dba4f95f.pth) |
+| ConvNeXt-B\* (`convnext-base_3rdparty_in21k`)      | ImageNet-21k  |   88.59   |  15.36   |    N/A    |    N/A    | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-base_3rdparty_in21k_20220124-13b83eec.pth) |
+| ConvNeXt-L\* (`convnext-large_3rdparty_in21k`)     | ImageNet-21k  |  197.77   |  34.37   |    N/A    |    N/A    | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-large_3rdparty_in21k_20220124-41b5a79f.pth) |
+| ConvNeXt-XL\* (`convnext-xlarge_3rdparty_in21k`)   | ImageNet-21k  |  350.20   |  60.93   |    N/A    |    N/A    | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-xlarge_3rdparty_in21k_20220124-f909bad7.pth) |
 
 *Models with * are converted from the [official repo](https://github.com/facebookresearch/ConvNeXt).*
+
+### ImageNet-1k
+
+| Model                                          |   Pretrain   | resolution | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                     Config                      |                      Download                      |
+| :--------------------------------------------- | :----------: | :--------: | :-------: | :------: | :-------: | :-------: | :---------------------------------------------: | :------------------------------------------------: |
+| ConvNeXt-T (`convnext-tiny_32xb128_in1k`)      | From scratch |  224x224   |   28.59   |   4.46   |   82.14   |   96.06   |    [config](./convnext-tiny_32xb128_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-tiny_32xb128_in1k_20221207-998cf3e9.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-tiny_32xb128_in1k_20221207-998cf3e9.log.json) |
+| ConvNeXt-T\* (`convnext-tiny_in21k-pre_3rdparty_in1k`) | ImageNet-21k |  224x224   |   28.59   |   4.46   |   82.90   |   96.62   |    [config](./convnext-tiny_32xb128_in1k.py)    |                    [model](<>)                     |
+| ConvNeXt-T\* (`convnext-tiny_in21k-pre_3rdparty_in1k-384px`) | ImageNet-21k |  384x384   |   28.59   |  13.13   |   84.11   |   97.14   | [config](./convnext-tiny_32xb128_in1k-384px.py) |                    [model](<>)                     |
+| ConvNeXt-S (`convnext-small_32xb128_in1k`)     | From scratch |  224x224   |   50.22   |   8.69   |   83.16   |   96.56   |   [config](./convnext-small_32xb128_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-small_32xb128_in1k_20221207-4ab7052c.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-small_32xb128_in1k_20221207-4ab7052c.log.json) |
+| ConvNeXt-S\* (`convnext-small_in21k-pre_3rdparty_in1k`) | ImageNet-21k |  224x224   |   50.22   |   8.69   |   84.59   |   97.41   |   [config](./convnext-small_32xb128_in1k.py)    |                    [model](<>)                     |
+| ConvNeXt-S\* (`convnext-small_in21k-pre_3rdparty_in1k-384px`) | ImageNet-21k |  384x384   |   50.22   |  25.58   |   85.75   |   97.88   |   [config](./convnext-small_32xb128_in1k.py)    |                    [model](<>)                     |
+| ConvNeXt-B (`convnext-base_32xb128_in1k`)      | From scratch |  224x224   |   88.59   |  15.36   |   83.66   |   96.74   |    [config](./convnext-base_32xb128_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-base_32xb128_in1k_20221207-fbdb5eb9.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-base_32xb128_in1k_20221207-fbdb5eb9.log.json) |
+| ConvNeXt-B\* (`convnext-base_3rdparty_in1k`)   | From scratch |  224x224   |   88.59   |  15.36   |   83.85   |   96.74   |    [config](./convnext-base_32xb128_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-base_3rdparty_32xb128_in1k_20220124-d0915162.pth) |
+| ConvNeXt-B (`convnext-base_3rdparty_in1k-384px`)\* | From scratch |  384x384   |   88.59   |  45.21   |   85.10   |   97.34   | [config](./convnext-base_32xb128_in1k-384px.py) |                    [model](<>)                     |
+| ConvNeXt-B\* (`convnext-base_in21k-pre_3rdparty_in1k`) | ImageNet 21k |  224x224   |   88.59   |  15.36   |   85.81   |   97.86   |    [config](./convnext-base_32xb128_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-base_in21k-pre-3rdparty_32xb128_in1k_20220124-eb2d6ada.pth) |
+| ConvNeXt-B\* (`convnext-base_in21k-pre-3rdparty_in1k-384px`) | ImageNet-21k |  384x384   |   88.59   |  45.21   |   86.82   |   98.25   | [config](./convnext-base_32xb128_in1k-384px.py) |                    [model](<>)                     |
+| ConvNeXt-L\* (`convnext-large_3rdparty_in1k`)  | From scratch |  224x224   |  197.77   |  34.37   |   84.30   |   96.89   |    [config](./convnext-large_64xb64_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-large_3rdparty_64xb64_in1k_20220124-f8a0ded0.pth) |
+| ConvNeXt-L\* (`convnext-large_3rdparty_in1k-384px`) | From scratch |  384x384   |  197.77   |  101.10  |   85.50   |   97.59   | [config](./convnext-large_64xb64_in1k-384px.py) |                    [model](<>)                     |
+| ConvNeXt-L\* (`convnext-large_in21k-pre_3rdparty_in1k`) | ImageNet 21k |  224x224   |  197.77   |  34.37   |   86.61   |   98.04   |    [config](./convnext-large_64xb64_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-large_in21k-pre-3rdparty_64xb64_in1k_20220124-2412403d.pth) |
+| ConvNeXt-L (`convnext-large_in21k-pre-3rdparty_in1k-384px`)\* | ImageNet-21k |  384x384   |  197.77   |  101.10  |   87.46   |   98.37   |  [config](./convnext-large_64xb64_in1k-384.py)  |                    [model](<>)                     |
+| ConvNeXt-XL\* (`convnext-xlarge_in21k-pre_3rdparty_in1k`) | ImageNet 21k |  224x224   |  350.20   |  60.93   |   86.97   |   98.20   |   [config](./convnext-xlarge_64xb64_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/convnext/convnext-xlarge_in21k-pre-3rdparty_64xb64_in1k_20220124-76b6863d.pth) |
+| ConvNeXt-XL\* (`convnext-xlarge_in21k-pre-3rdparty_in1k-384px`) | ImageNet-21k |  384x384   |  350.20   |  179.20  |   87.76   |   98.55   | [config](./convnext-xlarge_64xb64_in1k-384.py)  |                    [model](<>)                     |
+
+*Models with * are converted from the [official repo](https://github.com/facebookresearch/ConvNeXt). The config files of these models are only for inference. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 
 ## Citation
 

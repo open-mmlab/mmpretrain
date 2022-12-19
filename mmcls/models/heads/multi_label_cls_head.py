@@ -2,6 +2,7 @@
 from typing import Dict, List, Optional, Tuple
 
 import torch
+import torch.nn as nn
 from mmengine.structures import LabelData
 
 from mmcls.registry import MODELS
@@ -36,7 +37,9 @@ class MultiLabelClsHead(BaseHead):
                  init_cfg: Optional[dict] = None):
         super(MultiLabelClsHead, self).__init__(init_cfg=init_cfg)
 
-        self.loss_module = MODELS.build(loss)
+        if not isinstance(loss, nn.Module):
+            loss = MODELS.build(loss)
+        self.loss_module = loss
 
         if thr is None and topk is None:
             thr = 0.5
