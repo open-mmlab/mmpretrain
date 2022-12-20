@@ -20,22 +20,22 @@ State-of-the-art computer vision systems are trained to predict a fixed set of p
 
 ### ImageNet-1k
 
-| Model                                                  | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config                          | Download                                            |
-| :----------------------------------------------------- | --------: | -------: | --------: | --------: | :------------------------------ | :-------------------------------------------------- |
-| clip-vit-base-p16_laion2b_3rdparty_ft_in1k-384px       |     86.57 |    49.37 |     86.52 |     97.97 | vit-base-p16_pt-64xb64_in1k-384 | vit_base_patch16_clip_384.laion2b_ft_in1k.bin       |
-| clip-vit-base-p32_laion2b_3rdparty_ft_in1k-224px       |     88.22 |     4.36 |     82.46 |     96.12 | vit-base-p32_pt-64xb64_in1k-224 | vit_base_patch32_clip_224.laion2b_ft_in1k.bin       |
-| clip-vit-base-p16_openai_3rdparty_ft_in12k_in1k-384px  |     86.57 |    49.37 |     86.87 |     98.05 | vit-base-p16_pt-64xb64_in1k-384 | vit_base_patch16_clip_384.openai_ft_in12k_in1k.bin  |
-| clip-vit-base-p16_openai_3rdparty_ft_in12k_in1k-224px  |     86.57 |    16.86 |     85.99 |     97.72 | vit-base-p16_pt-64xb64_in1k-224 | vit_base_patch16_clip_224.openai_ft_in12k_in1k.bin  |
-| clip-vit-base-p16_laion2b_3rdparty_ft_in1k-224px       |     86.57 |    16.86 |     85.49 |     97.59 | vit-base-p16_pt-64xb64_in1k-224 | vit_base_patch16_clip_224.laion2b_ft_in1k.bin       |
-| clip-vit-base-p16_laion2b_3rdparty_ft_in12k_in1k-384px |     86.57 |    49.37 |     87.17 |     98.02 | vit-base-p16_pt-64xb64_in1k-384 | vit_base_patch16_clip_384.laion2b_ft_in12k_in1k.bin |
-| clip-vit-base-p32_openai_3rdparty_ft_in12k_in1k-384px  |     88.22 |    12.66 |     85.13 |     97.42 | vit-base-p32_pt-64xb64_in1k-384 | vit_base_patch32_clip_384.openai_ft_in12k_in1k.bin  |
-| clip-vit-base-p16_laion2b_3rdparty_ft_in12k_in1k-224px |     86.57 |    16.86 |     86.02 |     97.76 | vit-base-p16_pt-64xb64_in1k-224 | vit_base_patch16_clip_224.laion2b_ft_in12k_in1k.bin |
-| clip-vit-base-p32_openai_3rdparty_ft_in1k-224px        |     88.22 |     4.36 |     81.77 |     95.89 | vit-base-p32_pt-64xb64_in1k-224 | vit_base_patch32_clip_224.openai_ft_in1k.bin        |
-| clip-vit-base-p16_openai_3rdparty_ft_in1k-224px        |     86.57 |    16.86 |      85.3 |      97.5 | vit-base-p16_pt-64xb64_in1k-224 | vit_base_patch16_clip_224.openai_ft_in1k.bin        |
-| clip-vit-base-p16_openai_3rdparty_ft_in1k-384px        |     86.57 |    49.37 |     86.25 |      97.9 | vit-base-p16_pt-64xb64_in1k-384 | vit_base_patch16_clip_384.openai_ft_in1k.bin        |
-| clip-vit-base-p32_laion2b_3rdparty_ft_in12k_in1k-224px |     88.22 |     4.36 |     83.06 |     96.49 | vit-base-p32_pt-64xb64_in1k-224 | vit_base_patch32_clip_224.laion2b_ft_in12k_in1k.bin |
-| clip-vit-base-p32_laion2b_3rdparty_ft_in12k_in1k-448px |     88.22 |     17.2 |     85.76 |     97.63 | vit-base-p32_pt-64xb64_in1k-448 | vit_base_patch32_clip_448.laion2b_ft_in12k_in1k.bin |
-| clip-vit-base-p32_laion2b_3rdparty_ft_in12k_in1k-384px |     88.22 |    12.66 |     85.39 |     97.67 | vit-base-p32_pt-64xb64_in1k-384 | vit_base_patch32_clip_384.laion2b_ft_in12k_in1k.bin |
+| Model                                               | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) | Config                            | Download                                            |
+| :-------------------------------------------------- | --------: | -------: | --------: | --------: | :-------------------------------- | :-------------------------------------------------- |
+| clip-vit-base-p16_laion2b_3rdparty_in1k-384px       |     86.57 |    49.37 |     86.52 |     97.97 | vit-base-p16_pt-64xb64_in1k-384px | vit_base_patch16_clip_384.laion2b_ft_in1k.bin       |
+| clip-vit-base-p32_laion2b_3rdparty_in1k             |     88.22 |     4.36 |     82.46 |     96.12 | vit-base-p32_pt-64xb64_in1k       | vit_base_patch32_clip_224.laion2b_ft_in1k.bin       |
+| clip-vit-base-p16_openai_3rdparty_in12k_in1k-384px  |     86.57 |    49.37 |     86.87 |     98.05 | vit-base-p16_pt-64xb64_in1k-384px | vit_base_patch16_clip_384.openai_ft_in12k_in1k.bin  |
+| clip-vit-base-p16_openai_3rdparty_in12k_in1k        |     86.57 |    16.86 |     85.99 |     97.72 | vit-base-p16_pt-64xb64_in1k       | vit_base_patch16_clip_224.openai_ft_in12k_in1k.bin  |
+| clip-vit-base-p16_laion2b_3rdparty_in1k             |     86.57 |    16.86 |     85.49 |     97.59 | vit-base-p16_pt-64xb64_in1k       | vit_base_patch16_clip_224.laion2b_ft_in1k.bin       |
+| clip-vit-base-p16_laion2b_3rdparty_in12k_in1k-384px |     86.57 |    49.37 |     87.17 |     98.02 | vit-base-p16_pt-64xb64_in1k-384px | vit_base_patch16_clip_384.laion2b_ft_in12k_in1k.bin |
+| clip-vit-base-p32_openai_3rdparty_in12k_in1k-384px  |     88.22 |    12.66 |     85.13 |     97.42 | vit-base-p32_pt-64xb64_in1k-384px | vit_base_patch32_clip_384.openai_ft_in12k_in1k.bin  |
+| clip-vit-base-p16_laion2b_3rdparty_in12k_in1k       |     86.57 |    16.86 |     86.02 |     97.76 | vit-base-p16_pt-64xb64_in1k       | vit_base_patch16_clip_224.laion2b_ft_in12k_in1k.bin |
+| clip-vit-base-p32_openai_3rdparty_in1k              |     88.22 |     4.36 |     81.77 |     95.89 | vit-base-p32_pt-64xb64_in1k       | vit_base_patch32_clip_224.openai_ft_in1k.bin        |
+| clip-vit-base-p16_openai_3rdparty_in1k              |     86.57 |    16.86 |      85.3 |      97.5 | vit-base-p16_pt-64xb64_in1k       | vit_base_patch16_clip_224.openai_ft_in1k.bin        |
+| clip-vit-base-p16_openai_3rdparty_in1k-384px        |     86.57 |    49.37 |     86.25 |      97.9 | vit-base-p16_pt-64xb64_in1k-384px | vit_base_patch16_clip_384.openai_ft_in1k.bin        |
+| clip-vit-base-p32_laion2b_3rdparty_in12k_in1k       |     88.22 |     4.36 |     83.06 |     96.49 | vit-base-p32_pt-64xb64_in1k       | vit_base_patch32_clip_224.laion2b_ft_in12k_in1k.bin |
+| clip-vit-base-p32_laion2b_3rdparty_in12k_in1k-448px |     88.22 |     17.2 |     85.76 |     97.63 | vit-base-p32_pt-64xb64_in1k-448px | vit_base_patch32_clip_448.laion2b_ft_in12k_in1k.bin |
+| clip-vit-base-p32_laion2b_3rdparty_in12k_in1k-384px |     88.22 |    12.66 |     85.39 |     97.67 | vit-base-p32_pt-64xb64_in1k-384px | vit_base_patch32_clip_384.laion2b_ft_in12k_in1k.bin |
 
 *Models with * are converted from the [official repo](https://github.com/rwightman/pytorch-image-models). The config files of these models are only for inference. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
 
