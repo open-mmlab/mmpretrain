@@ -1,8 +1,9 @@
-_base_ = ['efficientnetv2-s_8xb32_in1k-384px.py',]
+_base_ = [
+    'efficientnetv2-s_8xb32_in1k-384px.py',
+]
 
 # model setting
-model=dict(backbone=dict(arch='l'),)
-
+model = dict(backbone=dict(arch='l'), )
 
 train_pipeline = [
     dict(type='LoadImageFromFile'),

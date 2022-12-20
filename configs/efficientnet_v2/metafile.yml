@@ -211,45 +211,45 @@ Models:
       Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
   - Name: efficientnetv2-s_3rdparty_in21k
     Metadata:
-      FLOPs: 9719420928
-      Parameters: 21458488
+      FLOPs: 3309720768
+      Parameters: 48158371
     In Collection: EfficientNetV2
     Results: null
     Weights: https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-s_3rdparty_in21k_20221220-c0572b56.pth
-    Config: configs/efficientnet_v2/efficientnetv2-s_8xb32_in1k-384px.py
+    Config: configs/efficientnet_v2/efficientnetv2-s_8xb32_in21k.py
     Converted From:
       Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_s_21k-6337ad01.pth
       Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
   - Name: efficientnetv2-m_3rdparty_in21k
     Metadata:
-      FLOPs: 26880363584
-      Parameters: 54139356
+      FLOPs: 5861638208
+      Parameters: 80839239
     In Collection: EfficientNetV2
     Results: null
     Weights: https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-m_3rdparty_in21k_20221220-073e944c.pth
-    Config: configs/efficientnet_v2/efficientnetv2-m_8xb32_in1k-480px.py
+    Config: configs/efficientnet_v2/efficientnetv2-m_8xb32_in21k.py
     Converted From:
       Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_m_21k-361418a2.pth
       Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
   - Name: efficientnetv2-l_3rdparty_in21k
     Metadata:
-      FLOPs: 60142387008
-      Parameters: 118515272
+      FLOPs: 13114950464
+      Parameters: 145215155
     In Collection: EfficientNetV2
     Results: null
     Weights: https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-l_3rdparty_in21k_20221220-f28f91e1.pth
-    Config: configs/efficientnet_v2/efficientnetv2-l_8xb32_in1k-480px.py
+    Config: configs/efficientnet_v2/efficientnetv2-l_8xb32_in21k.py
     Converted From:
       Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_l_21k-91a19ec9.pth
       Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
   - Name: efficientnetv2-xl_3rdparty_in21k
     Metadata:
-      FLOPs: 98341230592
-      Parameters: 208119808
+      FLOPs: 18855244288
+      Parameters: 234819691
     In Collection: EfficientNetV2
     Results: null
     Weights: https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-xl_3rdparty_in21k_20221220-b2c9329c.pth
-    Config: configs/efficientnet_v2/efficientnetv2-xl_8xb32_in1k-512px.py
+    Config: configs/efficientnet_v2/efficientnetv2-xl_8xb32_in21k.py
     Converted From:
       Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_xl_in21k-fd7e8abf.pth
       Code: https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py
