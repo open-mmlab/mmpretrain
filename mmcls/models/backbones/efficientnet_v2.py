@@ -274,7 +274,8 @@ class EfficientNetV2(BaseBackbone):
                             has_skip=has_skip,
                             drop_path_rate=droppath_rate,
                             stride=stride,
-                            conv_cfg=self.conv_cfg,
+                            padding=1,
+                            conv_cfg=None,
                             norm_cfg=self.norm_cfg,
                             act_cfg=self.act_cfg))
                     in_channels = out_channels

@@ -64,7 +64,7 @@ class InvertedResidual(BaseModule):
                 kernel_size=1,
                 stride=1,
                 padding=0,
-                conv_cfg=conv_cfg,
+                conv_cfg=None,
                 norm_cfg=norm_cfg,
                 act_cfg=act_cfg)
         self.depthwise_conv = ConvModule(
@@ -74,7 +74,7 @@ class InvertedResidual(BaseModule):
             stride=stride,
             padding=kernel_size // 2,
             groups=mid_channels,
-            conv_cfg=conv_cfg,
+            conv_cfg=conv_cfg if stride==2 else None,
             norm_cfg=norm_cfg,
             act_cfg=act_cfg)
         if self.with_se:
@@ -85,7 +85,7 @@ class InvertedResidual(BaseModule):
             kernel_size=1,
             stride=1,
             padding=0,
-            conv_cfg=conv_cfg,
+            conv_cfg=None,
             norm_cfg=norm_cfg,
             act_cfg=None)
 

@@ -69,9 +69,9 @@ class EdgeResidual(BaseModule):
             in_channels=in_channels,
             out_channels=mid_channels,
             kernel_size=kernel_size,
-            stride=1,
+            stride=stride,
             padding=kernel_size // 2,
-            conv_cfg=conv_cfg,
+            conv_cfg=conv_cfg if stride==2 else None,
             norm_cfg=norm_cfg,
             act_cfg=act_cfg)
 
@@ -82,9 +82,9 @@ class EdgeResidual(BaseModule):
             in_channels=mid_channels,
             out_channels=out_channels,
             kernel_size=1,
-            stride=stride,
+            stride=1,
             padding=0,
-            conv_cfg=conv_cfg,
+            conv_cfg=None,
             norm_cfg=norm_cfg,
             act_cfg=None)
 
