@@ -36,6 +36,7 @@ class BN_Linear(nn.Sequential):
         m.to(device)
         return m
 
+
 def replace_batchnorm(net):
     for child_name, child in net.named_children():
         if hasattr(child, 'fuse'):
@@ -46,6 +47,7 @@ def replace_batchnorm(net):
             setattr(net, child_name, torch.nn.Identity())
         else:
             replace_batchnorm(child)
+
 
 @MODELS.register_module()
 class LeViTClsHead(ClsHead):
@@ -62,7 +64,7 @@ class LeViTClsHead(ClsHead):
         self.loss_module = MODELS.build(loss)
         self.num_classes = num_classes
         self.distillation = distillation
-        self.deploy=deploy
+        self.deploy = deploy
         self.head = BN_Linear(
             in_channels, num_classes) if num_classes > 0 else nn.Identity()
         if distillation:
@@ -82,6 +84,7 @@ class LeViTClsHead(ClsHead):
         else:
             x = self.head(x)
         return x
+
     def train(self, mode):
         if (not mode) and self.deploy:
             replace_batchnorm(self)

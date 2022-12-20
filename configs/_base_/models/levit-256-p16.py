@@ -23,7 +23,12 @@ model = dict(
         type='LeViTClsHead',
         num_classes=1000,
         in_channels=512,
-        distillation=True,
-        loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
+        distillation=False,
+        loss=dict(
+            type='LabelSmoothLoss', label_smooth_val=0.1, loss_weight=1.0),
         topk=(1, 5),
-    ))
+    ),
+    train_cfg=dict(augments=[
+        dict(type='Mixup', alpha=0.8),
+        dict(type='CutMix', alpha=1.0),
+    ]))

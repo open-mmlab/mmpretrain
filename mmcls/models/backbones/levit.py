@@ -437,7 +437,8 @@ class LeViT(BaseBackbone):
 
     def forward(self, x):
         x = self.patch_embed(x)  # 2 3 224 224 -> 2 128 14 14
-        x = x.flatten(2).transpose(1, 2)  # 2 128 14 14 -> 2 128 196 -> 2 196 128
+        x = x.flatten(2).transpose(1,
+                                   2)  # 2 128 14 14 -> 2 128 196 -> 2 196 128
         outs = []
         for i, layer_name in enumerate(self.stages):
             x = layer_name(x)
