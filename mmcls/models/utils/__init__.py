@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .attention import (BEiTAttention, ChannelMultiheadAttention,
+from .attention import (BEiTAttention, ChannelMultiheadAttention, LeAttention,
                         LePEAttention, MultiheadAttention, ShiftWindowMSA,
                         WindowMSA, WindowMSAV2)
 from .batch_augments import CutMix, Mixup, RandomBatchAugment, ResizeMix
