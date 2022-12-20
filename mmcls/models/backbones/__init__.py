@@ -42,6 +42,7 @@ from .swin_transformer import SwinTransformer
 from .swin_transformer_v2 import SwinTransformerV2
 from .t2t_vit import T2T_ViT
 from .timm_backbone import TIMMBackbone
+from .tinyvit import TinyViT
 from .tnt import TNT
 from .twins import PCPVT, SVT
 from .van import VAN
@@ -103,4 +104,5 @@ __all__ = [
     'BEiT',
     'RevVisionTransformer',
     'MixMIMTransformer',
+    'TinyViT',
 ]

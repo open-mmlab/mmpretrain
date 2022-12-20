@@ -2,10 +2,12 @@
 model = dict(
     type='ImageClassifier',
     backbone=dict(
-        type='ConvNeXt',
-        arch='xlarge',
+        type='TinyViT',
+        arch='11m',
+        img_size=(224, 224),
+        window_size=[7, 7, 14, 7],
         out_indices=(3, ),
-        drop_path_rate=0.5,
+        drop_path_rate=0.1,
         gap_before_final_norm=True,
         init_cfg=[
             dict(
@@ -18,12 +20,6 @@ model = dict(
     head=dict(
         type='LinearClsHead',
         num_classes=1000,
-        in_channels=2048,
-        loss=dict(
-            type='LabelSmoothLoss', label_smooth_val=0.1, mode='original'),
-    ),
-    train_cfg=dict(augments=[
-        dict(type='Mixup', alpha=0.8),
-        dict(type='CutMix', alpha=1.0),
-    ]),
-)
+        in_channels=448,
+        loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
+    ))
