@@ -278,7 +278,7 @@ class EfficientNetV2(BaseBackbone):
                             act_cfg=self.act_cfg))
                     in_channels = out_channels
                 else:
-                    mid_channels = int(self.in_channels * expand_ratio)
+                    mid_channels = int(in_channels * expand_ratio)
                     se_cfg = None
                     if block_type != 0 and se_ratio > 0:
                         se_cfg = dict(

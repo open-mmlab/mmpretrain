@@ -1,20 +1,7 @@
-_base_ = [
-    '../_base_/models/efficientnet_v2/efficientnet_v2_l.py',
-    '../_base_/datasets/imagenet_bs32.py',
-    '../_base_/schedules/imagenet_bs256.py',
-    '../_base_/default_runtime.py',
-]
+_base_ = ['efficientnetv2-s_8xb32_in1k-384px.py',]
 
-# dataset settings
-dataset_type = 'ImageNet'
-data_preprocessor = dict(
-    num_classes=1000,
-    # RGB format normalization parameters
-    mean=[127.5, 127.5, 127.5],
-    std=[127.5, 127.5, 127.5],
-    # convert image from BGR to RGB
-    to_rgb=True,
-)
+# model setting
+model=dict(backbone=dict(arch='m'),)
 
 train_pipeline = [
     dict(type='LoadImageFromFile'),

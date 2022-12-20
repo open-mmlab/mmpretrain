@@ -24,7 +24,6 @@ def check_norm_state(modules, train_state):
 
 
 def test_efficientnet_v2_backbone():
-    archs = ['s', 'm', 'l', 'xl', 'b0', 'b1', 'b2', 'b3']
     with pytest.raises(TypeError):
         # pretrained must be a string path
         model = EfficientNetV2()
@@ -34,10 +33,9 @@ def test_efficientnet_v2_backbone():
         # arch must in arc_settings
         EfficientNetV2(arch='others')
 
-    for arch in archs:
-        with pytest.raises(ValueError):
-            # frozen_stages must less than 8
-            EfficientNetV2(arch=arch, frozen_stages=12)
+    with pytest.raises(ValueError):
+        # frozen_stages must less than 8
+        EfficientNetV2(arch='b1', frozen_stages=12)
 
     # Test EfficientNetV2
     model = EfficientNetV2()

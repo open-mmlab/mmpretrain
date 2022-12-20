@@ -1,20 +1,18 @@
-_base_ = [
-    '../_base_/models/efficientnet_v2/efficientnet_v2_b3.py',
-    '../_base_/datasets/imagenet_bs32.py',
-    '../_base_/schedules/imagenet_bs256.py',
-    '../_base_/default_runtime.py',
-]
+_base_ = ["./efficientnetv2-b0_8xb32_in1k.py"]
+
+# model setting
+model=dict(backbone=dict(arch='b2'), head=dict(in_channels=1408,))
 
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='EfficientNetRandomCrop', scale=240),
+    dict(type='EfficientNetRandomCrop', scale=208),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(type='PackClsInputs'),
 ]
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='EfficientNetCenterCrop', crop_size=300),
+    dict(type='EfficientNetCenterCrop', crop_size=260),
     dict(type='PackClsInputs'),
 ]
 

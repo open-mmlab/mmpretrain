@@ -4,51 +4,13 @@
 
 <!-- [ALGORITHM] -->
 
-## Introduction
-
-[EfficientNetV2](https://arxiv.org/abs/2104.00298) are a family of image classification models, which achieve better parameter efficiency and faster training speed than prior arts.  Built upon [EfficientNetV1](https://arxiv.org/abs/1905.11946), our EfficientNetV2 models use neural architecture search (NAS) to jointly optimize model size and training speed, and are scaled up in a way for faster training and inference speed.
-
-<img src="./graph/train_params.png" width="50%" />
-
-Here are the comparison on parameters and flops:
-
-<img src="./graph/param_flops.png" width="80%" />
-
 ## Abstract
 
-<details>
+This paper introduces EfficientNetV2, a new family of convolutional networks that have faster training speed and better parameter efficiency than previous models. To develop this family of models, we use a combination of training-aware neural architecture search and scaling, to jointly optimize training speed and parameter efficiency. The models were searched from the search space enriched with new ops such as Fused-MBConv. Our experiments show that EfficientNetV2 models train much faster than state-of-the-art models while being up to 6.8x smaller.   Our training can be further sped up by progressively increasing the image size during training, but it often causes a drop in accuracy. To compensate for this accuracy drop, we propose to adaptively adjust regularization (e.g., dropout and data augmentation) as well, such that we can achieve both fast training and good accuracy.   With progressive learning, our EfficientNetV2 significantly outperforms previous models on ImageNet and CIFAR/Cars/Flowers datasets. By pretraining on the same ImageNet21k, our EfficientNetV2 achieves 87.3% top-1 accuracy on ImageNet ILSVRC2012, outperforming the recent ViT by 2.0% accuracy while training 5x-11x faster using the same computing resources. Code will be available at https://github.com/google/automl/tree/master/efficientnetv2.
 
-<summary>Click to show the detailed Abstract</summary>
-
-<br>
-This paper introduces EfficientNetV2, a new family of convolutional networks that have faster training speed and better parameter efficiency than previous models. To develop this family of models, we use a combination of training-aware neural architecture search and scaling, to jointly optimize training speed and parameter efficiency. The models were searched from the search space enriched with new ops such as Fused-MBConv. Our experiments show that EfficientNetV2 models train much faster than state-of-the-art models while being up to 6.8x smaller.
-Our training can be further sped up by progressively increasing the image size during training, but it often causes a drop in accuracy. To compensate for this accuracy drop, we propose to adaptively adjust regularization (e.g., dropout and data augmentation) as well, such that we can achieve both fast training and good accuracy.
-With progressive learning, our EfficientNetV2 significantly outperforms previous models on ImageNet and CIFAR/Cars/Flowers datasets. By pretraining on the same ImageNet21k, our EfficientNetV2 achieves 87.3% top-1 accuracy on ImageNet ILSVRC2012, outperforming the recent ViT by 2.0% accuracy while training 5x-11x faster using the same computing resources. Code will be available at this https URL.
-
-</details>
-
-## Results and models
-
-### ImageNet-1k
-
-|       Model       | Params(M) | Flops(B) | Top-1 (%) | Top-5 (%) |                    Config                    |  Download   |
-| :---------------: | :-------: | :------: | :-------: | :-------: | :------------------------------------------: | :---------: |
-| EfficientNetV2-s  |   21.5    |   8.4    |   83.86   |   96.63   | [config](./efficientnet_v2-s_8xb32_in1k.py)  | [model](<>) |
-| EfficientNetV2-m  |   54.1    |   24.7   |   84.12   |   96.78   | [config](./efficientnet_v2-m_8xb32_in1k.py)  | [model](<>) |
-| EfficientNetV2-l  |   119.5   |   56.3   |   85.45   |   97.28   | [config](./efficientnet_v2-l_8xb32_in1k.py)  | [model](<>) |
-| EfficientNetV2-b0 |    7.1    |   0.72   |   78.48   |   94.26   | [config](./efficientnet_v2-b0_8xb32_in1k.py) | [model](<>) |
-| EfficientNetV2-b1 |    8.1    |   1.2    |   79.20   |   94.55   | [config](./efficientnet_v2-b1_8xb32_in1k.py) | [model](<>) |
-| EfficientNetV2-b2 |   10.1    |   1.7    |   79.89   |   94.81   | [config](./efficientnet_v2-b2_8xb32_in1k.py) | [model](<>) |
-| EfficientNetV2-b3 |   14.4    |   3.0    |   81.61   |   95.69   | [config](./efficientnet_v2-b3_8xb32_in1k.py) | [model](<>) |
-
-### ImageNet21K pretrained and Finetune in ImageNet-1k
-
-|       Model       | Params(M) | Flops(B) | Top-1 (%) | Top-5 (%) |                      Config                      |  Download   |
-| :---------------: | :-------: | :------: | :-------: | :-------: | :----------------------------------------------: | :---------: |
-| EfficientNetV2-s  |   21.5    |   8.4    |   83.86   |   97.14   | [config](./efficientnet_v2-s_8xb32_in21ft1k.py)  | [model](<>) |
-| EfficientNetV2-m  |   54.1    |   24.7   |   85.41   |   97.68   | [config](./efficientnet_v2-m_8xb32_in21ft1k.py)  | [model](<>) |
-| EfficientNetV2-l  |   119.5   |   56.3   |   86.25   |   97.95   | [config](./efficientnet_v2-l_8xb32_in21ft1k.py)  | [model](<>) |
-| EfficientNetV2-xl |     -     |    -     |   86.26   |   97.73   | [config](./efficientnet_v2-xl_8xb32_in21ft1k.py) | [model](<>) |
+<div align=center>
+<img src="https://user-images.githubusercontent.com/18586273/208616931-0c5107f1-f08c-48d3-8694-7a6eaf227dc2.png" width="50%"/>
+</div>
 
 ## How to use it?
 
@@ -60,7 +22,7 @@ With progressive learning, our EfficientNetV2 significantly outperforms previous
 >>> import torch
 >>> from mmcls.apis import init_model, inference_model
 >>>
->>> model = init_model('configs/efficientnet/efficientnet-b0_8xb32_in1k.py', ckpt_path)
+>>> model = init_model('configs/efficientnet_v2/efficientnetv2-b0_8xb32_in1k.py', "https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-b0_8xb32_in1k_20221219-9689f21f.pth")
 >>> predict = inference_model(model, 'demo/demo.JPEG')
 >>> print(predict['pred_class'])
 sea snake
@@ -72,9 +34,10 @@ sea snake
 
 ```python
 >>> import torch
->>> from mmcls.apis import init_model
+>>> from mmcls import get_model
 >>>
->>> model = init_model('configs/efficientnet_v2/efficientnet_v2-b0_8xb32_in1k.py', "")
+>>> model = get_model("efficientnetv2-b0_3rdparty_in1k", pretrained=True)
+>>> model.eval()
 >>> inputs = torch.rand(1, 3, 224, 224).to(model.data_preprocessor.device)
 >>> # To get classification scores.
 >>> out = model(inputs)
@@ -93,22 +56,55 @@ Place the ImageNet dataset to the `data/imagenet/` directory, or prepare dataset
 Train:
 
 ```shell
-python tools/train.py configs/efficientnet_v2/efficientnet_v2-b0_8xb32_in1k.py
+python tools/train.py configs/efficientnet_v2/efficientnetv2-b0_8xb32_in1k.py
 ```
 
 Test:
 
 ```shell
-python tools/test.py configs/efficientnet_v2/efficientnet_v2-b0_8xb32_in1k.py
+python tools/test.py configs/efficientnet_v2/efficientnetv2-b0_8xb32_in1k.py https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-b0_8xb32_in1k_20221219-9689f21f.pth
 ```
 
 <!-- [TABS-END] -->
 
-For more configurable parameters, please refer to the [API](https://mmclassification.readthedocs.io/en/1.x/api/generated/mmcls.models.backbones.EfficientNet.html#mmcls.models.backbones.EfficientNet).
+For more configurable parameters, please refer to the [API](https://mmclassification.readthedocs.io/en/1.x/api/generated/mmcls.models.backbones.EfficientNetV2.html#mmcls.models.backbones.EfficientNetV2).
+
+## Results and models
+
+### ImageNet-1k
+
+|                    Model                    |   Pretrain   | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                      Config                       |                           Download                            |
+| :-----------------------------------------: | :----------: | :-------: | :------: | :-------: | :-------: | :-----------------------------------------------: | :-----------------------------------------------------------: |
+|       efficientnetv2-b0_3rdparty_in1k       | From scratch |   7.14    |   0.92   |   78.47   |   94.25   |    [config](./efficientnetv2-b0_8xb32_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-b0_8xb32_in1k_20221219-9689f21f.pth) |
+|       efficientnetv2-b1_3rdparty_in1k       | From scratch |   8.14    |   1.44   |   79.20   |   94.54   |    [config](./efficientnetv2-b1_8xb32_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-b1_8xb32_in1k_20221219-eff50d09.pth) |
+|       efficientnetv2-b2_3rdparty_in1k       | From scratch |   10.10   |   1.99   |   79.89   |   94.81   |    [config](./efficientnetv2-b2_8xb32_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-b2_8xb32_in1k_20221219-8fdece38.pth) |
+|       efficientnetv2-b3_3rdparty_in1k       | From scratch |   14.36   |   3.50   |   81.61   |   95.69   |    [config](./efficientnetv2-b3_8xb32_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-b3_8xb32_in1k_20221219-32ff31d2.pth) |
+|      efficientnetv2-s_3rdparty_in1k\*       | From scratch |   21.46   |   9.72   |   83.86   |   96.63   | [config](./efficientnetv2-s_8xb32_in1k-384px.py)  | [model](https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-s_3rdparty_in1k_20221220-f0eaff9d.pth) |
+|      efficientnetv2-m_3rdparty_in1k\*       | From scratch |   54.14   |  26.88   |   84.12   |   96.78   | [config](./efficientnetv2-m_8xb32_in1k-480px.py)  | [model](https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-m_3rdparty_in1k_20221220-9dc0c729.pth) |
+|      efficientnetv2-l_3rdparty_in1k\*       | From scratch |  118.52   |  60.14   |   85.45   |   97.28   | [config](./efficientnetv2-l_8xb32_in1k-480px.py)  | [model](https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-l_3rdparty_in1k_20221220-5c3bac0f.pth) |
+| efficientnetv2-s_in21k-pre_3rdparty_in1k\*  | ImageNet 21k |   21.46   |   9.72   |   83.86   |   97.14   | [config](./efficientnetv2-s_8xb32_in1k-384px.py)  | [model](https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-s_in21k-pre-3rdparty_in1k_20221220-297d2114.pth) |
+| efficientnetv2-m_in21k-pre_3rdparty_in1k\*  | ImageNet 21k |   54.14   |  26.88   |   85.41   |   97.68   | [config](./efficientnetv2-m_8xb32_in1k-480px.py)  | [model](https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-m_in21k-pre-3rdparty_in1k_20221220-7def8f96.pth) |
+| efficientnetv2-l_in21k-pre_3rdparty_in1k\*  | ImageNet 21k |  118.52   |  60.14   |   86.25   |   97.95   | [config](./efficientnetv2-l_8xb32_in1k-480px.py)  | [model](https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-l_in21k-pre-3rdparty_in1k_20221220-c4e56c9c.pth) |
+| efficientnetv2-xl_in21k-pre_3rdparty_in1k\* | ImageNet 21k |  208.12   |  98.34   |   86.26   |   97.73   | [config](./efficientnetv2-xl_8xb32_in1k-512px.py) | [model](https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-xl_in21k-pre-3rdparty_in1k_20221220-0157157f.pth) |
+
+*Models with * are converted from the [official repo](https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py). The config files of these models are only for inference. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
+
+### Pre-trained Models
+
+The pre-trained models are only used to fine-tune, and therefore cannot be trained and don't have evaluation results.
+
+|               Model                | Pretrain | Params(M) |                     Flops(G)                      |                                            Config                                            | Download |
+| :--------------------------------: | :------: | :-------: | :-----------------------------------------------: | :------------------------------------------------------------------------------------------: | :------: |
+| efficientnetv2-s_3rdparty_in21k\*  |  21.46   |   9.72    | [config](./efficientnetv2-s_8xb32_in1k-384px.py)  | [model](https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-s_3rdparty_in21k_20221220-c0572b56.pth) |          |
+| efficientnetv2-m_3rdparty_in21k\*  |  54.14   |   26.88   | [config](./efficientnetv2-m_8xb32_in1k-480px.py)  | [model](https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-m_3rdparty_in21k_20221220-073e944c.pth) |          |
+| efficientnetv2-l_3rdparty_in21k\*  |  118.52  |   60.14   | [config](./efficientnetv2-l_8xb32_in1k-480px.py)  | [model](https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-l_3rdparty_in21k_20221220-f28f91e1.pth) |          |
+| efficientnetv2-xl_3rdparty_in21k\* |  208.12  |   98.34   | [config](./efficientnetv2-xl_8xb32_in1k-512px.py) | [model](https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-xl_3rdparty_in21k_20221220-b2c9329c.pth) |          |
+
+*Models with * are converted from the [official repo](https://github.com/rwightman/pytorch-image-models/blob/main/timm/models/efficientnet.py).*
 
 ## Citation
 
-```
+```bibtex
 @inproceedings{tan2021efficientnetv2,
   title={Efficientnetv2: Smaller models and faster training},
   author={Tan, Mingxing and Le, Quoc},
