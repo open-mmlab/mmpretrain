@@ -79,7 +79,7 @@ class EnhancedConvModule(ConvModule):
 class EfficientNetV2(BaseBackbone):
     """EfficientNetV2 backbone.
 
-    A PyTorch implementation of EfficientFormer introduced by:
+    A PyTorch implementation of EfficientNetV2 introduced by:
     `EfficientNetV2: Smaller Models and Faster Training
     <https://arxiv.org/abs/2104.00298>`_
 
@@ -218,9 +218,10 @@ class EfficientNetV2(BaseBackbone):
         self.norm_cfg = norm_cfg
         self.act_cfg = act_cfg
 
-        # make the layers
         self.make_layers()
 
+        # there len(slef.arch) + 2 layers in the backbone
+        # including: the first + len(self.arch) layers + the last
         if isinstance(out_indices, int):
             out_indices = [out_indices]
         assert isinstance(out_indices, Sequence), \
