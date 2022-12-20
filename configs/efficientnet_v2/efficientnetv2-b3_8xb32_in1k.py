@@ -12,7 +12,7 @@ train_pipeline = [
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='EfficientNetCenterCrop', crop_size=300),
+    dict(type='EfficientNetCenterCrop', crop_size=300, crop_padding=0),
     dict(type='PackClsInputs'),
 ]
 
