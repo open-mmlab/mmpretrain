@@ -157,7 +157,9 @@ class ArcFaceClsHead(ClsHead):
                  init_cfg: Optional[dict] = None):
 
         super(ArcFaceClsHead, self).__init__(init_cfg=init_cfg)
-        self.loss_module = MODELS.build(loss)
+        if not isinstance(loss, nn.Module):
+            loss = MODELS.build(loss)
+        self.loss_module = loss
 
         assert num_subcenters >= 1 and num_classes >= 0
         self.in_channels = in_channels

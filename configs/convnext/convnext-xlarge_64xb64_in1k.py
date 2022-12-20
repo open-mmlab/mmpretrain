@@ -11,11 +11,11 @@ train_dataloader = dict(batch_size=64)
 # schedule setting
 optim_wrapper = dict(
     optimizer=dict(lr=4e-3),
-    clip_grad=dict(max_norm=5.0),
+    clip_grad=None,
 )
 
 # runtime setting
-custom_hooks = [dict(type='EMAHook', momentum=4e-5, priority='ABOVE_NORMAL')]
+custom_hooks = [dict(type='EMAHook', momentum=1e-4, priority='ABOVE_NORMAL')]
 
 # NOTE: `auto_scale_lr` is for automatically scaling LR
 # based on the actual training batch size.

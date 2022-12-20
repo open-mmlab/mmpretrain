@@ -75,6 +75,7 @@ class TestBEiT(TestCase):
             self.assertEqual(layer.attn.embed_dims, 768)
             self.assertEqual(layer.attn.num_heads, 12)
             self.assertEqual(layer.ffn.feedforward_channels, 3072)
+            self.assertFalse(layer.ffn.add_identity)
             self.assertAlmostEqual(layer.ffn.dropout_layer.drop_prob, dpr)
             dpr += dpr_inc
 

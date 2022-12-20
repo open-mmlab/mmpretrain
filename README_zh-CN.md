@@ -57,22 +57,17 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 
 ## 更新日志
 
+2022/12/06 发布了 v1.0.0rc4 版本
+
+- 更新了主要 API 接口，用以方便地获取 MMClassification 中预定义的模型。详见 [#1236](https://github.com/open-mmlab/mmclassification/pull/1236)。
+- 重构 BEiT 主干网络结构，并支持 v1 和 v2 模型的推理。
+
 2022/11/21 发布了 v1.0.0rc3 版本
 
 - 添加了 **Switch Recipe Hook**，现在我们可以在训练过程中修改数据增强、Mixup设置、loss设置等
 - 添加了 **TIMM 和 HuggingFace** 包装器，现在我们可以直接训练、使用 TIMM 和 HuggingFace 中的模型
 - 支持了检索任务
 - 复现了 **MobileOne** 训练精度
-
-2022/10/12 发布了 v1.0.0rc2 版本
-
-- 支持了 Deit-3 主干网络
-- 修复了 MMEngine 版本依赖问题
-
-2022/9/30 发布了 v1.0.0rc1 版本
-
-- 支持了 MViT，EdgeNeXt，Swin-Transformer V2，EfficientFormer，MobileOne 等主干网络。
-- 支持了 BEiT 风格的 transformer 层。
 
 2022/8/31 发布了 v1.0.0rc0 版本
 
@@ -159,6 +154,8 @@ mim install -e .
 - [x] [DaViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/davit)
 - [x] [RepLKNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/replknet)
 - [x] [BEiT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/beit) / [BEiT v2](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/beitv2)
+- [x] [EVA](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/eva)
+- [x] [MixMIM](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mixmim)
 
 </details>
 

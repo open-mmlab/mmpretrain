@@ -24,7 +24,6 @@ def check_norm_state(modules, train_state):
 
 
 def test_efficientnet_v2_backbone():
-    archs = ['s', 'm', 'l', 'xl', 'b0', 'b1', 'b2', 'b3']
     with pytest.raises(TypeError):
         # pretrained must be a string path
         model = EfficientNetV2()
@@ -34,15 +33,16 @@ def test_efficientnet_v2_backbone():
         # arch must in arc_settings
         EfficientNetV2(arch='others')
 
-    for arch in archs:
-        with pytest.raises(ValueError):
-            # frozen_stages must less than 8
-            EfficientNetV2(arch=arch, frozen_stages=12)
+    with pytest.raises(ValueError):
+        # frozen_stages must less than 8
+        EfficientNetV2(arch='b1', frozen_stages=12)
 
     # Test EfficientNetV2
     model = EfficientNetV2()
     model.init_weights()
     model.train()
+    x = torch.rand((1, 3, 224, 224))
+    model(x)
 
     # Test EfficientNetV2 with first stage frozen
     frozen_stages = 7
@@ -93,17 +93,17 @@ def test_efficientnet_v2_backbone():
     model.init_weights()
     model.train()
 
-    imgs = torch.randn(1, 3, 224, 224)
+    imgs = torch.randn(1, 3, 64, 64)
     feat = model(imgs)
     assert len(feat) == 8
-    assert feat[0].shape == torch.Size([1, out_channels[0], 112, 112])
-    assert feat[1].shape == torch.Size([1, out_channels[1], 112, 112])
-    assert feat[2].shape == torch.Size([1, out_channels[2], 56, 56])
-    assert feat[3].shape == torch.Size([1, out_channels[3], 28, 28])
-    assert feat[4].shape == torch.Size([1, out_channels[4], 14, 14])
-    assert feat[5].shape == torch.Size([1, out_channels[5], 14, 14])
-    assert feat[6].shape == torch.Size([1, out_channels[6], 7, 7])
-    assert feat[7].shape == torch.Size([1, out_channels[7], 7, 7])
+    assert feat[0].shape == torch.Size([1, out_channels[0], 32, 32])
+    assert feat[1].shape == torch.Size([1, out_channels[1], 32, 32])
+    assert feat[2].shape == torch.Size([1, out_channels[2], 16, 16])
+    assert feat[3].shape == torch.Size([1, out_channels[3], 8, 8])
+    assert feat[4].shape == torch.Size([1, out_channels[4], 4, 4])
+    assert feat[5].shape == torch.Size([1, out_channels[5], 4, 4])
+    assert feat[6].shape == torch.Size([1, out_channels[6], 2, 2])
+    assert feat[7].shape == torch.Size([1, out_channels[7], 2, 2])
 
     # Test EfficientNetV2 forward with 'm' arch
     out_channels = [24, 24, 48, 80, 160, 176, 304, 512, 1280]
@@ -111,18 +111,18 @@ def test_efficientnet_v2_backbone():
     model.init_weights()
     model.train()
 
-    imgs = torch.randn(1, 3, 224, 224)
+    imgs = torch.randn(1, 3, 64, 64)
     feat = model(imgs)
     assert len(feat) == 9
-    assert feat[0].shape == torch.Size([1, out_channels[0], 112, 112])
-    assert feat[1].shape == torch.Size([1, out_channels[1], 112, 112])
-    assert feat[2].shape == torch.Size([1, out_channels[2], 56, 56])
-    assert feat[3].shape == torch.Size([1, out_channels[3], 28, 28])
-    assert feat[4].shape == torch.Size([1, out_channels[4], 14, 14])
-    assert feat[5].shape == torch.Size([1, out_channels[5], 14, 14])
-    assert feat[6].shape == torch.Size([1, out_channels[6], 7, 7])
-    assert feat[7].shape == torch.Size([1, out_channels[7], 7, 7])
-    assert feat[8].shape == torch.Size([1, out_channels[8], 7, 7])
+    assert feat[0].shape == torch.Size([1, out_channels[0], 32, 32])
+    assert feat[1].shape == torch.Size([1, out_channels[1], 32, 32])
+    assert feat[2].shape == torch.Size([1, out_channels[2], 16, 16])
+    assert feat[3].shape == torch.Size([1, out_channels[3], 8, 8])
+    assert feat[4].shape == torch.Size([1, out_channels[4], 4, 4])
+    assert feat[5].shape == torch.Size([1, out_channels[5], 4, 4])
+    assert feat[6].shape == torch.Size([1, out_channels[6], 2, 2])
+    assert feat[7].shape == torch.Size([1, out_channels[7], 2, 2])
+    assert feat[8].shape == torch.Size([1, out_channels[8], 2, 2])
 
     # Test EfficientNetV2 forward with 'm' arch and GroupNorm
     out_channels = [24, 24, 48, 80, 160, 176, 304, 512, 1280]
@@ -136,15 +136,15 @@ def test_efficientnet_v2_backbone():
     model.init_weights()
     model.train()
 
-    imgs = torch.randn(1, 3, 224, 224)
+    imgs = torch.randn(1, 3, 64, 64)
     feat = model(imgs)
     assert len(feat) == 9
-    assert feat[0].shape == torch.Size([1, out_channels[0], 112, 112])
-    assert feat[1].shape == torch.Size([1, out_channels[1], 112, 112])
-    assert feat[2].shape == torch.Size([1, out_channels[2], 56, 56])
-    assert feat[3].shape == torch.Size([1, out_channels[3], 28, 28])
-    assert feat[4].shape == torch.Size([1, out_channels[4], 14, 14])
-    assert feat[5].shape == torch.Size([1, out_channels[5], 14, 14])
-    assert feat[6].shape == torch.Size([1, out_channels[6], 7, 7])
-    assert feat[7].shape == torch.Size([1, out_channels[7], 7, 7])
-    assert feat[8].shape == torch.Size([1, out_channels[8], 7, 7])
+    assert feat[0].shape == torch.Size([1, out_channels[0], 32, 32])
+    assert feat[1].shape == torch.Size([1, out_channels[1], 32, 32])
+    assert feat[2].shape == torch.Size([1, out_channels[2], 16, 16])
+    assert feat[3].shape == torch.Size([1, out_channels[3], 8, 8])
+    assert feat[4].shape == torch.Size([1, out_channels[4], 4, 4])
+    assert feat[5].shape == torch.Size([1, out_channels[5], 4, 4])
+    assert feat[6].shape == torch.Size([1, out_channels[6], 2, 2])
+    assert feat[7].shape == torch.Size([1, out_channels[7], 2, 2])
+    assert feat[8].shape == torch.Size([1, out_channels[8], 2, 2])

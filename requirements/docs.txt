@@ -1,7 +1,7 @@
 docutils==0.17.1
 modelindex
 myst-parser
-git+https://github.com/open-mmlab/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
+git+https://github.com/mzr1996/pytorch_sphinx_theme.git#egg=pytorch_sphinx_theme
 sphinx==4.5.0
 sphinx-copybutton
 sphinx-notfound-page

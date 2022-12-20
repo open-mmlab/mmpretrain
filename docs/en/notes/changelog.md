@@ -1,5 +1,32 @@
 # Changelog
 
+## v1.0.0rc4(06/12/2022)
+
+### Highlights
+
+- Upgrade API to get pre-defined models of MMClassification. See [#1236](https://github.com/open-mmlab/mmclassification/pull/1236) for more details.
+- Refactor BEiT backbone and support v1/v2 inference. See [#1144](https://github.com/open-mmlab/mmclassification/pull/1144).
+
+### New Features
+
+- Support getting model from the name defined in the model-index file. ([#1236](https://github.com/open-mmlab/mmclassification/pull/1236))
+
+### Improvements
+
+- Support evaluate on both EMA and non-EMA models. ([#1204](https://github.com/open-mmlab/mmclassification/pull/1204))
+- Refactor BEiT backbone and support v1/v2 inference. ([#1144](https://github.com/open-mmlab/mmclassification/pull/1144))
+
+### Bug Fixes
+
+- Fix `reparameterize_model.py` doesn't save meta info. ([#1221](https://github.com/open-mmlab/mmclassification/pull/1221))
+- Fix dict update in BEiT. ([#1234](https://github.com/open-mmlab/mmclassification/pull/1234))
+
+### Docs Update
+
+- Update install tutorial. ([#1223](https://github.com/open-mmlab/mmclassification/pull/1223))
+- Update MobileNetv2 & MobileNetv3 readme. ([#1222](https://github.com/open-mmlab/mmclassification/pull/1222))
+- Add version selection in the banner. ([#1217](https://github.com/open-mmlab/mmclassification/pull/1217))
+
 ## v1.0.0rc3(21/11/2022)
 
 ### Highlights

@@ -58,17 +58,17 @@ The `1.x` branch works with **PyTorch 1.6+**.
 
 ## What's new
 
+v1.0.0rc4 was released in 06/12/2022.
+
+- Upgrade API to get pre-defined models of MMClassification. See [#1236](https://github.com/open-mmlab/mmclassification/pull/1236) for more details.
+- Refactor BEiT backbone and support v1/v2 inference. See [#1144](https://github.com/open-mmlab/mmclassification/pull/1144).
+
 v1.0.0rc3 was released in 21/11/2022.
 
 - Add **Switch Recipe** Hook, Now we can modify training pipeline, mixup and loss settings during training, see [#1101](https://github.com/open-mmlab/mmclassification/pull/1101).
 - Add **TIMM and HuggingFace** wrappers. Now you can train/use models in TIMM/HuggingFace directly, see [#1102](https://github.com/open-mmlab/mmclassification/pull/1102).
 - Support **retrieval tasks**, see [#1055](https://github.com/open-mmlab/mmclassification/pull/1055).
 - Reproduce **mobileone** training accuracy. See [#1191](https://github.com/open-mmlab/mmclassification/pull/1191)
-
-v1.0.0rc2 was released in 12/10/2022.
-
-- Support Deit-3 backbone.
-- Fix MMEngine version requirements.
 
 This release introduced a brand new and flexible training & test engine, but it's still in progress. Welcome
 to try according to [the documentation](https://mmclassification.readthedocs.io/en/1.x/).
@@ -153,6 +153,9 @@ Results and models are available in the [model zoo](https://mmclassification.rea
 - [x] [DaViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/davit)
 - [x] [RepLKNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/replknet)
 - [x] [BEiT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/beit) / [BEiT v2](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/beitv2)
+- [x] [EVA](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/eva)
+- [x] [MixMIM](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mixmim)
+- [x] [EfficientNetV2](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/efficientnet_v2)
 
 </details>
 
