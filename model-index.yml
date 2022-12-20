@@ -45,4 +45,8 @@ Import:
   - configs/beitv2/metafile.yml
   - configs/eva/metafile.yml
   - configs/revvit/metafile.yml
+<<<<<<< HEAD
   - configs/mixmim/metafile.yml
+=======
+  - configs/cswin/metafile.yml
+>>>>>>> add CSWin

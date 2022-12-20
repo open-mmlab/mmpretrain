@@ -5,6 +5,7 @@ from .conformer import Conformer
 from .convmixer import ConvMixer
 from .convnext import ConvNeXt
 from .cspnet import CSPDarkNet, CSPNet, CSPResNet, CSPResNeXt
+from .cswin import CSWinTransformer
 from .davit import DaViT
 from .deit import DistilledVisionTransformer
 from .deit3 import DeiT3
@@ -105,4 +106,5 @@ __all__ = [
     'RevVisionTransformer',
     'MixMIMTransformer',
     'TinyViT',
+    'CSWinTransformer'
 ]
