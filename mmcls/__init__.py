@@ -6,7 +6,8 @@ from mmengine.utils import digit_version
 from .apis import *  # noqa: F401, F403
 from .version import __version__
 
-mmcv_minimum_version = '2.0.0rc1'
+# mmcv_minimum_version = '2.0.0rc1'
+mmcv_minimum_version = '1.7.0'
 mmcv_maximum_version = '2.0.0'
 mmcv_version = digit_version(mmcv.__version__)
 

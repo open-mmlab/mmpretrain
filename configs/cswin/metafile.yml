@@ -1,0 +1,117 @@
+Collections:
+  - Name: CSWin-Transformer
+    Metadata:
+      Training Data: ImageNet-1k
+      Training Techniques:
+        - AdamW
+        - Weight Decay
+      Training Resources: 16x V100 GPUs
+      Epochs: 300
+      Batch Size: 1024
+      Architecture:
+        - Cross-Shaped Window Self-Attention
+    Paper:
+      URL: https://https://arxiv.org/pdf/2107.00652.pdf
+      Title: "CSWin Transformer: A General Vision Transformer Backbone with Cross-Shaped Windows"
+    README: configs/cswin/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/v0.15.0/mmcls/models/backbones/swin_transformer.py#L176
+      Version: v0.15.0
+
+Models:
+  - Name: cswin-tiny_3rdparty_in1k
+    Metadata:
+      FLOPs: 4340525056
+      Parameters: 22320552
+    In Collection: CSWin-Transformer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 82.66
+          Top 5 Accuracy: 96.27
+        Task: Image Classification
+    Weights: ""
+    Converted From:
+      Weights: https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_tiny_patch4_window7_224.pth
+      Code: https://github.com/microsoft/CSWin-Transformer
+    Config: configs/cswin/cswin-tiny_b64_in1k.py
+  - Name: cswin-small_3rdparty_in1k
+    Metadata:
+      FLOPs: 6826821120
+      Parameters: 34643304
+    In Collection: CSWin-Transformer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.58
+          Top 5 Accuracy: 96.55
+        Task: Image Classification
+    Weights: ""
+    Converted From:
+      Weights: https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_tiny_patch4_window7_224.pth
+      Code: https://github.com/microsoft/CSWin-Transformer
+    Config: configs/cswin/cswin-small_b64_in1k.py
+  - Name: cswin-base_3rdparty_in1k
+    Metadata:
+      FLOPs: 14994508032
+      Parameters: 77382184
+    In Collection: CSWin-Transformer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 84.11
+          Top 5 Accuracy: 96.92
+        Task: Image Classification
+    Weights: ""
+    Converted From:
+      Weights: https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_tiny_patch4_window7_224.pth
+      Code: https://github.com/microsoft/CSWin-Transformer
+    Config: configs/cswin/cswin-base_b64_in1k.py
+  - Name: cswin-base_3rdparty_in1k-384px
+    Metadata:
+      FLOPs: 47080230912
+      Parameters: 77382184
+    In Collection: CSWin-Transformer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 85.52
+          Top 5 Accuracy: 97.53
+        Task: Image Classification
+    Weights: ""
+    Converted From:
+      Weights: https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_tiny_patch4_window7_224.pth
+      Code: https://github.com/microsoft/CSWin-Transformer
+    Config: configs/cswin/cswin-base_b64_in1k-384px.py
+  - Name: cswin-large_3rdparty_in1k
+    Metadata:
+      FLOPs: 33188883840
+      Parameters: 173262664
+    In Collection: CSWin-Transformer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 86.35
+          Top 5 Accuracy: 97.98
+        Task: Image Classification
+    Weights: ""
+    Converted From:
+      Weights: https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_tiny_patch4_window7_224.pth
+      Code: https://github.com/microsoft/CSWin-Transformer
+    Config: configs/cswin/cswin-large_b64_in1k.py
+  - Name: cswin-large_3rdparty_in1k-384px
+    Metadata:
+      FLOPs: 102056785920
+      Parameters: 173262664
+    In Collection: CSWin-Transformer
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 87.49
+          Top 5 Accuracy: 98.36
+        Task: Image Classification
+    Weights: ""
+    Converted From:
+      Weights: https://github.com/SwinTransformer/storage/releases/download/v1.0.0/swin_tiny_patch4_window7_224.pth
+      Code: https://github.com/microsoft/CSWin-Transformer
+    Config: configs/cswin/cswin-large_b64_in1k-384px.py
