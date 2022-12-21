@@ -74,7 +74,7 @@ class InvertedResidual(BaseModule):
             stride=stride,
             padding=kernel_size // 2,
             groups=mid_channels,
-            conv_cfg=conv_cfg if stride==2 else None,
+            conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
             act_cfg=act_cfg)
         if self.with_se:

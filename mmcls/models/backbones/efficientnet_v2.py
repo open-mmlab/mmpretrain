@@ -289,6 +289,7 @@ class EfficientNetV2(BaseBackbone):
                             divisor=1,
                             act_cfg=(self.act_cfg, dict(type='Sigmoid')))
                     block = FusedMBConv if block_type == 0 else MBConv
+                    conv_cfg = self.conv_cfg if stride == 2 else None
                     layer.append(
                         block(
                             in_channels=in_channels,
@@ -297,7 +298,7 @@ class EfficientNetV2(BaseBackbone):
                             kernel_size=kernel_size,
                             stride=stride,
                             se_cfg=se_cfg,
-                            conv_cfg=self.conv_cfg,
+                            conv_cfg=conv_cfg,
                             norm_cfg=self.norm_cfg,
                             act_cfg=self.act_cfg,
                             drop_path_rate=dpr[block_idx],

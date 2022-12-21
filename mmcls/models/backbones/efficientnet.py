@@ -71,7 +71,7 @@ class EdgeResidual(BaseModule):
             kernel_size=kernel_size,
             stride=stride,
             padding=kernel_size // 2,
-            conv_cfg=conv_cfg if stride==2 else None,
+            conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
             act_cfg=act_cfg)
 
