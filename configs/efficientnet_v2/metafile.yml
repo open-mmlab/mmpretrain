@@ -147,7 +147,7 @@ Models:
           Top 1 Accuracy: 84.29
           Top 5 Accuracy: 97.26
         Task: Image Classification
-    Weights: https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-s_in21k-pre-3rdparty_in1k_20221220-7a7c847.pth
+    Weights: https://download.openmmlab.com/mmclassification/v0/efficientnetv2/efficientnetv2-s_in21k-pre-3rdparty_in1k_20221220-7a7c8475.pth
     Config: configs/efficientnet_v2/efficientnetv2-s_8xb32_in1k-384px.py
     Converted From:
       Weights: https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-effv2-weights/tf_efficientnetv2_s_21ft1k-d7dafa41.pth
