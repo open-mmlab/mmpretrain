@@ -45,4 +45,5 @@ Import:
   - configs/beitv2/metafile.yml
   - configs/eva/metafile.yml
   - configs/revvit/metafile.yml
+  - configs/clip/metafile.yml
   - configs/mixmim/metafile.yml
