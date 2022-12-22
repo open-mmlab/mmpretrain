@@ -26,17 +26,20 @@ If you install mmdeploy prebuilt package, please also clone its repository by 'g
 
 ## Convert model
 
-Take `resnet18` model for example, you can convert it to onnx model by following:
+Suppose mmclassification and mmdeploy repositories are in the same directory, and the working directory is the root path of mmclassification.
+
+Take a pretrained [resnet18](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnet/resnet18_8xb32_in1k.py) model on imagenet as an example.
+You can download its checkpoint from [here](https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth), and then convert it to onnx model as follows:
 
 ```python
 from mmdeploy.apis import torch2onnx
 from mmdeploy.backend.sdk.export_info import export2SDK
 
-img = 'mmclassification/demo/demo.JPEG'
+img = 'demo/demo.JPEG'
 work_dir = 'mmdeploy_models/mmcls/onnx'
 save_file = 'end2end.onnx'
-deploy_cfg = 'mmdeploy/configs/mmcls/classification_onnxruntime_dynamic.py'
-model_cfg = 'mmclassification/mmcls/configs/resnet/resnet18_8xb32_in1k.py'
+deploy_cfg = '../mmdeploy/configs/mmcls/classification_onnxruntime_dynamic.py'
+model_cfg = 'configs/resnet/resnet18_8xb32_in1k.py'
 model_checkpoint = 'resnet18_8xb32_in1k_20210831-fbbb1da6.pth'
 device = 'cpu'
 
@@ -97,11 +100,11 @@ from mmdeploy.apis.utils import build_task_processor
 from mmdeploy.utils import get_input_shape, load_config
 import torch
 
-deploy_cfg = 'mmdeploy/configs/mmcls/classification_onnxruntime_dynamic.py'
-model_cfg = 'mmclassification/mmcls/configs/resnet/resnet18_8xb32_in1k.py'
+deploy_cfg = '../mmdeploy/configs/mmcls/classification_onnxruntime_dynamic.py'
+model_cfg = 'configs/resnet/resnet18_8xb32_in1k.py'
 device = 'cpu'
-backend_model = ['./mmdeploy_models/mmcls/onnx/end2end.onnx']
-image = 'mmclassification/demo/cat-dog.png'
+backend_model = ['mmdeploy_models/mmcls/onnx/end2end.onnx']
+image = 'demo/cat-dog.png'
 
 # read deploy_cfg and model_cfg
 deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
@@ -135,10 +138,10 @@ You can also perform SDK model inference like following,
 from mmdeploy_python import Classifier
 import cv2
 
-img = cv2.imread('mmclassification/demo/cat-dog.png')
+img = cv2.imread('demo/cat-dog.png')
 
 # create a classifier
-classifier = Classifier(model_path='./mmdeploy_models/mmcls/onnx', device_name='cpu', device_id=0)
+classifier = Classifier(model_path='mmdeploy_models/mmcls/onnx', device_name='cpu', device_id=0)
 # perform inference
 result = classifier(img)
 # show inference result

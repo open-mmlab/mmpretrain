@@ -25,17 +25,20 @@ ______________________________________________________________________
 
 ## 模型转换
 
-以下，我们将演示如何把 `resnet18` 转换为 onnx 模型。
+假设在安装步骤中，mmclassification 和 mmdeploy 代码库在同级目录下，并且当前的工作目录为 mmclassification 的根目录，
+那么以 [resnet18](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnet/resnet18_8xb32_in1k.py) 在 imagenet 上的预训练模型为例，
+你可以从[此处](https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth)下载对应的 checkpoint，
+并使用以下代码将之转换为 onnx 模型：
 
 ```python
 from mmdeploy.apis import torch2onnx
 from mmdeploy.backend.sdk.export_info import export2SDK
 
-img = 'mmclassification/demo/demo.JPEG'
+img = 'demo/demo.JPEG'
 work_dir = 'mmdeploy_models/mmcls/onnx'
 save_file = 'end2end.onnx'
-deploy_cfg = 'mmdeploy/configs/mmcls/classification_onnxruntime_dynamic.py'
-model_cfg = 'mmclassification/mmcls/configs/resnet/resnet18_8xb32_in1k.py'
+deploy_cfg = '../mmdeploy/configs/mmcls/classification_onnxruntime_dynamic.py'
+model_cfg = 'configs/resnet/resnet18_8xb32_in1k.py'
 model_checkpoint = 'resnet18_8xb32_in1k_20210831-fbbb1da6.pth'
 device = 'cpu'
 
@@ -74,7 +77,7 @@ classification_{backend}-{precision}_{static | dynamic}_{shape}.py
 上例中的`mmdeploy_models/mmcls/onnx`，结构如下：
 
 ```
-mmdeploy_models/mmcls/ort
+mmdeploy_models/mmcls/onnx
 ├── deploy.json
 ├── detail.json
 ├── end2end.onnx
@@ -99,11 +102,11 @@ from mmdeploy.apis.utils import build_task_processor
 from mmdeploy.utils import get_input_shape, load_config
 import torch
 
-deploy_cfg = 'mmdeploy/configs/mmcls/classification_onnxruntime_dynamic.py'
-model_cfg = 'mmclassification/mmcls/configs/resnet/resnet18_8xb32_in1k.py'
+deploy_cfg = '../mmdeploy/configs/mmcls/classification_onnxruntime_dynamic.py'
+model_cfg = 'configs/resnet/resnet18_8xb32_in1k.py'
 device = 'cpu'
-backend_model = ['./mmdeploy_models/mmcls/onnx/end2end.onnx']
-image = 'mmclassification/demo/cat-dog.png'
+backend_model = ['mmdeploy_models/mmcls/onnx/end2end.onnx']
+image = 'demo/cat-dog.png'
 
 # read deploy_cfg and model_cfg
 deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
@@ -137,10 +140,10 @@ task_processor.visualize(
 from mmdeploy_python import Classifier
 import cv2
 
-img = cv2.imread('mmclassification/demo/cat-dog.png')
+img = cv2.imread('demo/cat-dog.png')
 
 # create a classifier
-classifier = Classifier(model_path='./mmdeploy_models/mmcls/onnx', device_name='cpu', device_id=0)
+classifier = Classifier(model_path='mmdeploy_models/mmcls/onnx', device_name='cpu', device_id=0)
 # perform inference
 result = classifier(img)
 # show inference result
