@@ -5,6 +5,7 @@ from .cifar import CIFAR10, CIFAR100
 from .cub import CUB
 from .custom import CustomDataset
 from .dataset_wrappers import KFoldDataset
+from .google_landmark_v2_retrieval import GLDv2Retrieval
 from .imagenet import ImageNet, ImageNet21k
 from .mnist import MNIST, FashionMNIST
 from .multi_label import MultiLabelDataset
@@ -15,5 +16,5 @@ from .voc import VOC
 __all__ = [
     'BaseDataset', 'ImageNet', 'CIFAR10', 'CIFAR100', 'MNIST', 'FashionMNIST',
     'VOC', 'build_dataset', 'ImageNet21k', 'KFoldDataset', 'CUB',
-    'CustomDataset', 'MultiLabelDataset'
+    'CustomDataset', 'MultiLabelDataset', 'GLDv2Retrieval'
 ]
