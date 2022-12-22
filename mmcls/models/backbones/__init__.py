@@ -16,6 +16,7 @@ from .hornet import HorNet
 from .hrnet import HRNet
 from .inception_v3 import InceptionV3
 from .lenet import LeNet5
+from .mixmim import MixMIMTransformer
 from .mlp_mixer import MlpMixer
 from .mobilenet_v2 import MobileNetV2
 from .mobilenet_v3 import MobileNetV3
@@ -41,6 +42,7 @@ from .swin_transformer import SwinTransformer
 from .swin_transformer_v2 import SwinTransformerV2
 from .t2t_vit import T2T_ViT
 from .timm_backbone import TIMMBackbone
+from .tinyvit import TinyViT
 from .tnt import TNT
 from .twins import PCPVT, SVT
 from .van import VAN
@@ -101,4 +103,6 @@ __all__ = [
     'DaViT',
     'BEiT',
     'RevVisionTransformer',
+    'MixMIMTransformer',
+    'TinyViT',
 ]
