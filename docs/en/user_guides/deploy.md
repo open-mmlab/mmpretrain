@@ -1,19 +1,17 @@
 # Deployment
 
-- [Deployment](#deployment)
-  - [Installation](#installation)
-  - [Convert model](#convert-model)
-  - [Model Specification](#model-specification)
-  - [Model inference](#model-inference)
-    - [Backend model inference](#backend-model-inference)
-    - [SDK model inference](#sdk-model-inference)
-  - [Supported models](#supported-models)
-
-______________________________________________________________________
-
-
 The deployment of OpenMMLab codebases, including MMClassification, MMDetection and so on are supported by [MMDeploy](https://github.com/open-mmlab/mmdeploy).
 The latest deployment guide for MMClassification can be found from [here](https://mmdeploy.readthedocs.io/en/1.x/04-supported-codebases/mmcls.html).
+
+This tutorial is organized as follows:
+
+- [Installation](#installation)
+- [Convert model](#convert-model)
+- [Model Specification](#model-specification)
+- [Model inference](#model-inference)
+  - [Backend model inference](#backend-model-inference)
+  - [SDK model inference](#sdk-model-inference)
+- [Supported models](#supported-models)
 
 ## Installation
 
