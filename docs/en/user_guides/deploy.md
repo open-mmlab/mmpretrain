@@ -21,7 +21,6 @@ Please follow the [quick guide](https://github.com/open-mmlab/mmclassification/t
 If you install mmdeploy prebuilt package, please also clone its repository by 'git clone https://github.com/open-mmlab/mmdeploy.git --depth=1' to get the deployment config files.
 ```
 
-
 ## Convert model
 
 Suppose mmclassification and mmdeploy repositories are in the same directory, and the working directory is the root path of mmclassification.
