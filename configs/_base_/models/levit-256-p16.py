@@ -14,8 +14,8 @@ model = dict(
         mlp_ratio=[2, 2, 2],
         down_ops=[
             # ('Subsample',key_dim, num_heads, attn_ratio, mlp_ratio, stride)
-            ['Subsample', 32, 8, 4, 2, 2],
-            ['Subsample', 32, 12, 4, 2, 2],
+            ['Subsample', 32, 256 // 32, 4, 2, 2],
+            ['Subsample', 32, 384 // 32, 4, 2, 2],
         ],
         out_indices=(2, )),
     neck=dict(type='GlobalAveragePooling'),

@@ -7,12 +7,13 @@ _base_ = [
 
 model = dict(
     backbone=dict(
-        drop_path=0.1,
-        embed_dim=[384, 512, 768],
-        num_heads=[6, 9, 12],
+        embed_dim=[128, 256, 384],
+        num_heads=[4, 6, 8],
+        depth=[2, 3, 4],
+        key_dim=[16, 16, 16],
         down_ops=[
             # ('Subsample',key_dim, num_heads, attn_ratio, mlp_ratio, stride)
-            ['Subsample', 32, 384 // 32, 4, 2, 2],
-            ['Subsample', 32, 512 // 32, 4, 2, 2],
+            ['Subsample', 16, 128 // 16, 4, 2, 2],
+            ['Subsample', 16, 256 // 16, 4, 2, 2],
         ]),
-    head=dict(in_channels=768, ))
+    head=dict(in_channels=384, ))
