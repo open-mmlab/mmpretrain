@@ -584,5 +584,5 @@ def get_LeViT_model(params_name='LeViT_128S'):
         hybrid_backbone=hybrid_cnn(embed_dim[0], activation=act),
         num_classes=1000,
         drop_path=drop_path,
-        distillation=False)
+        distillation=True)
     return model

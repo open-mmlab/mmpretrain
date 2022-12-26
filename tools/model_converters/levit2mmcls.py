@@ -5,32 +5,57 @@ from collections import OrderedDict
 
 import mmengine
 import torch
-from mmengine.runner import load_checkpoint
-
-from mmcls.models.backbones.levit import get_LeViT_model
 
 
 def convert_levit(args, ckpt):
+    new_ckpt = OrderedDict()
+    stage = 0
+    block = 0
+    change = True
+    for k, v in list(ckpt.items()):
+        new_v = v
+        if k.startswith('head_dist'):
+            new_k = k.replace('head_dist.', 'head.head_dist.')
+            new_k = new_k.replace('.l.', '.linear.')
+            new_ckpt[new_k] = new_v
+            continue
+        elif k.startswith('head'):
+            new_k = k.replace('head.', 'head.head.')
+            new_k = new_k.replace('.l.', '.linear.')
+            new_ckpt[new_k] = new_v
+            continue
+        elif k.startswith('patch_embed'):
+            new_k = k.replace('patch_embed.',
+                              'patch_embed.patch_embed.').replace(
+                                  '.c.', '.conv.')
+        elif k.startswith('blocks'):
+            strs = k.split('.')
+            # new_k = k.replace('.c.', '.').replace('.bn.', '.')
+            new_k = k
+            if '.m.' in k:
+                new_k = new_k.replace('.m.0', '.m.linear1')
+                new_k = new_k.replace('.m.2', '.m.linear2')
+                new_k = new_k.replace('.m.', '.block.')
+                # new_k = new_k.replace('blocks.%s.' % (strs[1]), 'stages.%d.%d.' % (stage, int(strs[1]) - block))
+                change = True
+            elif change:
+                stage += 1
+                block = int(strs[1])
+                change = False
+                # new_k = "stages.%d.%d.%s.%s" % (stage, int(strs[1]) - block, strs[2], strs[-1])
+            new_k = new_k.replace(
+                'blocks.%s.' % (strs[1]),
+                'stages.%d.%d.' % (stage, int(strs[1]) - block))
+            new_k = new_k.replace('.c.', '.linear.')
+            if stage > 0 and (int(strs[1]) - block) == 1:
+                new_k = new_k.replace('.block.', '.block.0.')
+        else:
+            new_k = k
+        # print(new_k)
+        new_k = 'backbone.' + new_k
+        new_ckpt[new_k] = new_v
 
-    model = get_LeViT_model(args.type)
-    origin = ckpt
-    new = model.state_dict()
-    keys = []
-    keys1 = []
-
-    for key, _ in origin.items():
-        keys.append(key)
-    for key, _ in new.items():
-        keys1.append(key)
-
-    change_dict = {}
-    for i in range(len(keys)):
-        change_dict[keys1[i]] = keys[i]
-
-    with torch.no_grad():
-        for name, param in new.items():
-            param.copy_(origin[change_dict[name]])
-    return new
+    return new_ckpt
 
 
 def main():
@@ -40,7 +65,6 @@ def main():
     parser.add_argument('src', help='src model path or url')
     # The dst path must be a full path of the new checkpoint.
     parser.add_argument('dst', help='save path')
-    parser.add_argument('type', default='LeViT_256', help='模型的种类(128S、128等)')
     args = parser.parse_args()
 
     checkpoint = torch.load(args.src, map_location='cpu')
