@@ -36,13 +36,11 @@ def convert_levit(args, ckpt):
                 new_k = new_k.replace('.m.0', '.m.linear1')
                 new_k = new_k.replace('.m.2', '.m.linear2')
                 new_k = new_k.replace('.m.', '.block.')
-                # new_k = new_k.replace('blocks.%s.' % (strs[1]), 'stages.%d.%d.' % (stage, int(strs[1]) - block))
                 change = True
             elif change:
                 stage += 1
                 block = int(strs[1])
                 change = False
-                # new_k = "stages.%d.%d.%s.%s" % (stage, int(strs[1]) - block, strs[2], strs[-1])
             new_k = new_k.replace(
                 'blocks.%s.' % (strs[1]),
                 'stages.%d.%d.' % (stage, int(strs[1]) - block))

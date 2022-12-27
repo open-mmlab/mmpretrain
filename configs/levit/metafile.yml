@@ -1,0 +1,100 @@
+Collections:
+  - Name: LeViT
+    Metadata:
+      Training Data: ImageNet-1k
+      Training Techniques:
+        - AdamW
+        - Weight Decay
+      Architecture:
+        - LeViT MLP
+        - LeViT attention
+        - Attention bias
+    Paper:
+      URL: https://arxiv.org/pdf/2104.01136.pdf
+      Title: a Vision Transformer in ConvNet’s Clothing for Faster Inference
+    README: configs/levit/README.md
+    Code:
+      Version: v1.0.0rc4
+      URL: https://github.com/open-mmlab/mmclassification/blob/dev-1.x/mmcls/models/backbones/levit.py
+
+Models:
+  - Name: levit-128S_3rdparty_in1k
+    Metadata:
+      FLOPs: 304000000
+      Parameters: 7756000
+    In Collections: LeViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 76.52
+          Top 5 Accuracy: 92.90
+        Task: Image Classification
+    Weights: None
+    Config: configs/levit/deploy/levit-128s-p16.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/LeViT/LeViT-128S-96703c44.pth
+      Code: https://github.com/facebookresearch/LeViT
+  - Name: levit-128_3rdparty_in1k
+    Metadata:
+      FLOPs: 405000000
+      Parameters: 9189000
+    In Collections: LeViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 78.58
+          Top 5 Accuracy: 93.94
+        Task: Image Classification
+    Weights: None
+    Config: configs/levit/deploy/levit-128-p16.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/LeViT/LeViT-128-b88c2750.pth
+      Code: https://github.com/facebookresearch/LeViT
+  - Name: levit-192_3rdparty_in1k
+    Metadata:
+      FLOPs: 656000000
+      Parameters: 10919000
+    In Collections: LeViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 79.87
+          Top 5 Accuracy: 94.75
+        Task: Image Classification
+    Weights: None
+    Config: configs/levit/deploy/levit-192-p16.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/LeViT/LeViT-256-13b5763e.pth
+      Code: https://github.com/facebookresearch/LeViT
+  - Name: levit-256_3rdparty_in1k
+    Metadata:
+      FLOPs: 1126000000
+      Parameters: 18856000
+    In Collections: LeViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 81.59
+          Top 5 Accuracy: 95.45
+        Task: Image Classification
+    Weights: None
+    Config: configs/levit/deploy/levit-256-p16_deploy_4xb256_autoaug-mixup-lbs-coslr-1000e_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/LeViT/LeViT-256-13b5763e.pth
+      Code: https://github.com/facebookresearch/LeViT
+  - Name: levit-384_3rdparty_in1k
+    Metadata:
+      FLOPs: 2350000000
+      Parameters: 39074000
+    In Collections: LeViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 82.59
+          Top 5 Accuracy: 95.96
+        Task: Image Classification
+    Weights: None
+    Config: configs/levit/deploy/levit-384-p16.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/LeViT/LeViT-256-13b5763e.pth
+      Code: https://github.com/facebookresearch/LeViT

@@ -408,7 +408,6 @@ class LeViT(BaseBackbone):
                     self.blocks[-1].append(
                         Residual(MLP(ed, mr, mlp_activation), drop_path))
             if do[0] == 'Subsample':
-                # ('Subsample',key_dim, num_heads, attn_ratio, mlp_ratio, stride)
                 self.size.append(resolution)
                 resolution_ = (resolution - 1) // do[5] + 1
                 self.blocks.append([])
@@ -447,7 +446,6 @@ class LeViT(BaseBackbone):
                 out = x.reshape(B, self.size[i], self.size[i],
                                 C).permute(0, 3, 1, 2)
                 outs.append(out)
-                # out = out.permute(0, 2, 3, 1).reshape(B, self.size[i] * self.size[i], C)
         return tuple(outs)
 
     def train(self, mode):
@@ -584,5 +582,5 @@ def get_LeViT_model(params_name='LeViT_128S'):
         hybrid_backbone=hybrid_cnn(embed_dim[0], activation=act),
         num_classes=1000,
         drop_path=drop_path,
-        distillation=True)
+        distillation=False)
     return model

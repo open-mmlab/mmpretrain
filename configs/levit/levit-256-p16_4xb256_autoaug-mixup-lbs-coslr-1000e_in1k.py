@@ -59,7 +59,7 @@ test_pipeline = [
 ]
 
 train_dataloader = dict(
-    batch_size=64,
+    batch_size=256,
     num_workers=4,
     dataset=dict(
         type=dataset_type,
@@ -71,7 +71,7 @@ train_dataloader = dict(
 )
 
 val_dataloader = dict(
-    batch_size=64,
+    batch_size=256,
     num_workers=4,
     dataset=dict(
         type=dataset_type,
@@ -90,7 +90,7 @@ test_evaluator = val_evaluator
 optim_wrapper = dict(
     optimizer=dict(
         type='AdamW',
-        lr=5e-4 * 256 / 512.0,
+        lr=5e-4 * 256 * 4 / 512.0,
         weight_decay=0.025,
         eps=1e-8,
         betas=(0.9, 0.999)),
@@ -109,9 +109,9 @@ param_scheduler = [
     # warm up learning rate scheduler
     dict(
         type='LinearLR',
-        start_factor=1e-6 / (5e-4 * 256 / 512.0),
+        start_factor=1e-6 / (5e-4 * 256 * 4 / 512.0),
         by_epoch=True,
-        end=5,
+        end=6,
         # update by iter
         # convert_to_iter_based=True
     ),

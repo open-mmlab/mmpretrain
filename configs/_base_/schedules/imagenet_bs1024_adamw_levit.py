@@ -1,5 +1,5 @@
 # for batch in each gpu is 256, 4 gpu
-# lr = 5e-4 * 256 / 512 = 0.001
+# lr = 5e-4 * 256 * 4 / 512 = 0.001
 optim_wrapper = dict(
     optimizer=dict(
         type='AdamW',
