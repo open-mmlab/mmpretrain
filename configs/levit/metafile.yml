@@ -11,7 +11,7 @@ Collections:
         - Attention bias
     Paper:
       URL: https://arxiv.org/pdf/2104.01136.pdf
-      Title: a Vision Transformer in ConvNet’s Clothing for Faster Inference
+      Title: LeViT:a Vision Transformer in ConvNet’s Clothing for Faster Inference
     README: configs/levit/README.md
     Code:
       Version: v1.0.0rc4
@@ -64,7 +64,7 @@ Models:
     Weights: None
     Config: configs/levit/deploy/levit-192-p16.py
     Converted From:
-      Weights: https://dl.fbaipublicfiles.com/LeViT/LeViT-256-13b5763e.pth
+      Weights: https://dl.fbaipublicfiles.com/LeViT/LeViT-192-92712e41.pth
       Code: https://github.com/facebookresearch/LeViT
   - Name: levit-256_3rdparty_in1k
     Metadata:
@@ -96,5 +96,5 @@ Models:
     Weights: None
     Config: configs/levit/deploy/levit-384-p16.py
     Converted From:
-      Weights: https://dl.fbaipublicfiles.com/LeViT/LeViT-256-13b5763e.pth
+      Weights: https://dl.fbaipublicfiles.com/LeViT/LeViT-384-9bdaf2e2.pth
       Code: https://github.com/facebookresearch/LeViT
