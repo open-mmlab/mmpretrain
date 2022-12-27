@@ -3,8 +3,8 @@ Collections:
     Metadata:
       Training Data: ImageNet-1k
       Architecture:
-        - LeViT MLP
-        - LeViT attention
+        - 1x1 Convolution
+        - LeViT Attention Block
         - Attention bias
     Paper:
       URL: https://arxiv.org/pdf/2104.01136.pdf
@@ -19,7 +19,7 @@ Models:
     Metadata:
       FLOPs: 304000000
       Parameters: 7756000
-    In Collections: LeViT
+    In Collection: LeViT
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -35,7 +35,7 @@ Models:
     Metadata:
       FLOPs: 405000000
       Parameters: 9189000
-    In Collections: LeViT
+    In Collection: LeViT
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -51,7 +51,7 @@ Models:
     Metadata:
       FLOPs: 656000000
       Parameters: 10919000
-    In Collections: LeViT
+    In Collection: LeViT
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -67,7 +67,7 @@ Models:
     Metadata:
       FLOPs: 1126000000
       Parameters: 18856000
-    In Collections: LeViT
+    In Collection: LeViT
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -83,7 +83,7 @@ Models:
     Metadata:
       FLOPs: 2350000000
       Parameters: 39074000
-    In Collections: LeViT
+    In Collection: LeViT
     Results:
       - Dataset: ImageNet-1k
         Metrics:
