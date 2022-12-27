@@ -5,7 +5,6 @@ Collections:
       Architecture:
         - 1x1 Convolution
         - LeViT Attention Block
-        - Attention bias
     Paper:
       URL: https://arxiv.org/pdf/2104.01136.pdf
       Title: LeViT:a Vision Transformer in ConvNet’s Clothing for Faster Inference
@@ -19,7 +18,7 @@ Models:
     Metadata:
       FLOPs: 304000000
       Parameters: 7756000
-    In Collection: LeViT
+    In Collections: LeViT
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -35,7 +34,7 @@ Models:
     Metadata:
       FLOPs: 405000000
       Parameters: 9189000
-    In Collection: LeViT
+    In Collections: LeViT
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -51,7 +50,7 @@ Models:
     Metadata:
       FLOPs: 656000000
       Parameters: 10919000
-    In Collection: LeViT
+    In Collections: LeViT
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -67,7 +66,7 @@ Models:
     Metadata:
       FLOPs: 1126000000
       Parameters: 18856000
-    In Collection: LeViT
+    In Collections: LeViT
     Results:
       - Dataset: ImageNet-1k
         Metrics:
@@ -83,7 +82,7 @@ Models:
     Metadata:
       FLOPs: 2350000000
       Parameters: 39074000
-    In Collection: LeViT
+    In Collections: LeViT
     Results:
       - Dataset: ImageNet-1k
         Metrics:
