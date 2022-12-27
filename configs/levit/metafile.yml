@@ -2,9 +2,6 @@ Collections:
   - Name: LeViT
     Metadata:
       Training Data: ImageNet-1k
-      Training Techniques:
-        - AdamW
-        - Weight Decay
       Architecture:
         - LeViT MLP
         - LeViT attention
@@ -14,7 +11,7 @@ Collections:
       Title: LeViT:a Vision Transformer in ConvNet’s Clothing for Faster Inference
     README: configs/levit/README.md
     Code:
-      Version: v1.0.0rc4
+      Version: v1.0.0rc3
       URL: https://github.com/open-mmlab/mmclassification/blob/dev-1.x/mmcls/models/backbones/levit.py
 
 Models:
