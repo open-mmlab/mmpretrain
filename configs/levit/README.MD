@@ -14,6 +14,8 @@ We design a family of image classification architectures that optimize the trade
 
 ## Results and models
 
+### ImageNet-1k
+
 |   Model    | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                                 Config                                 |  Download   |
 | :--------: | :-------: | :------: | :-------: | :-------: | :--------------------------------------------------------------------: | :---------: |
 | LeViT-128S |   7.75    |  0.304   |   76.52   |   92.90   |                     [config](./levit-128s-p16.py)                      | [model](<>) |
