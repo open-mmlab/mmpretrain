@@ -8,7 +8,7 @@ Collections:
     Paper:
       URL: https://arxiv.org/pdf/2104.01136.pdf
       Title: "LeViT: a Vision Transformer in ConvNet’s Clothing for Faster Inference"
-    README: configs/levit/README.md
+    README: configs/levit/README.MD
     Code:
       URL: https://github.com/open-mmlab/mmclassification/blob/dev-1.x/mmcls/models/backbones/levit.py
       Version: v1.0.0rc3
