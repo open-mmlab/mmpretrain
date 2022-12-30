@@ -58,6 +58,14 @@ The `1.x` branch works with **PyTorch 1.6+**.
 
 ## What's new
 
+v1.0.0rc5 was released in 30/12/2022
+
+- Support **EVA**, **RevViT**, **EfficientnetV2**, **CLIP**, **TinyViT** and **MixMIM** backbones.
+- Reproduce the training accuracy of **ConvNeXt** and **RepVGG**.
+- Support **multi-task** training and testing. See [#1229](https://github.com/open-mmlab/mmclassification/pull/1229) for more details.
+- Support Test-time Augmentation. See [#1161](https://github.com/open-mmlab/mmclassification/pull/1161) for
+  more details.
+
 v1.0.0rc4 was released in 06/12/2022.
 
 - Upgrade API to get pre-defined models of MMClassification. See [#1236](https://github.com/open-mmlab/mmclassification/pull/1236) for more details.
