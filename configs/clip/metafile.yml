@@ -1,0 +1,296 @@
+Collections:
+  - Name: CLIP
+    Metadata:
+      Architecture:
+        - Attention Dropout
+        - Convolution
+        - Dense Connections
+        - Dropout
+        - GELU
+        - Layer Normalization
+        - Multi-Head Attention
+        - Scaled Dot-Product Attention
+        - Tanh Activation
+    Paper:
+      Title: Learning Transferable Visual Models From Natural Language Supervision
+      URL: https://arxiv.org/abs/2201.09792
+    README: configs/clip/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/dev-1.x/mmcls/models/backbones/vision_transformer.py
+      Version: v1.0.0
+
+Models:
+  - Name: clip-vit-base-p32_laion2b-in12k-pre_3rdparty_in1k
+    Metadata:
+      FLOPs: 4364335104
+      Parameters: 88225000
+      Training Data:
+        - LAION-2B
+        - ImageNet-12k
+        - ImageNet-1k
+    In Collection: CLIP
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.06
+          Top 5 Accuracy: 96.49
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/clip/clip-vit-base-p32_laion2b-in12k-pre_3rdparty_in1k_20221220-b384e830.pth
+    Config: configs/clip/vit-base-p32_pt-64xb64_in1k.py
+    Converted From:
+      Code: https://github.com/rwightman/pytorch-image-models
+      Weights: https://huggingface.co/timm/vit_base_patch32_clip_224.laion2b_ft_in12k_in1k
+  - Name: clip-vit-base-p32_laion2b-pre_3rdparty_in1k
+    Metadata:
+      FLOPs: 4364335104
+      Parameters: 88225000
+      Training Data:
+        - LAION-2B
+        - ImageNet-1k
+    In Collection: CLIP
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 82.46
+          Top 5 Accuracy: 96.12
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/clip/clip-vit-base-p32_laion2b-pre_3rdparty_in1k_20221220-194df57f.pth
+    Config: configs/clip/vit-base-p32_pt-64xb64_in1k.py
+    Converted From:
+      Code: https://github.com/rwightman/pytorch-image-models
+      Weights: https://huggingface.co/timm/vit_base_patch32_clip_224.laion2b_ft_in1k
+  - Name: clip-vit-base-p32_openai-pre_3rdparty_in1k
+    Metadata:
+      FLOPs: 4364335104
+      Parameters: 88225000
+      Training Data:
+        - OpenAI
+        - ImageNet-1k
+    In Collection: CLIP
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 81.77
+          Top 5 Accuracy: 95.89
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/clip/clip-vit-base-p32_openai-pre_3rdparty_in1k_20221220-a0182ba9.pth
+    Config: configs/clip/vit-base-p32_pt-64xb64_in1k.py
+    Converted From:
+      Code: https://github.com/rwightman/pytorch-image-models
+      Weights: https://huggingface.co/timm/vit_base_patch32_clip_224.openai_ft_in1k
+  - Name: clip-vit-base-p32_laion2b-in12k-pre_3rdparty_in1k-384px
+    Metadata:
+      FLOPs: 12661054464
+      Parameters: 88225000
+      Training Data:
+        - LAION-2B
+        - ImageNet-12k
+        - ImageNet-1k
+    In Collection: CLIP
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 85.39
+          Top 5 Accuracy: 97.67
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/clip/clip-vit-base-p32_laion2b-in12k-pre_3rdparty_in1k-384px_20221220-c7757552.pth
+    Config: configs/clip/vit-base-p32_pt-64xb64_in1k-384px.py
+    Converted From:
+      Code: https://github.com/rwightman/pytorch-image-models
+      Weights: https://huggingface.co/timm/vit_base_patch32_clip_384.laion2b_ft_in12k_in1k
+  - Name: clip-vit-base-p32_openai-in12k-pre_3rdparty_in1k-384px
+    Metadata:
+      FLOPs: 12661054464
+      Parameters: 88225000
+      Training Data:
+        - OpenAI
+        - ImageNet-12k
+        - ImageNet-1k
+    In Collection: CLIP
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 85.13
+          Top 5 Accuracy: 97.42
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/clip/clip-vit-base-p32_openai-in12k-pre_3rdparty_in1k-384px_20221220-dc2e49ea.pth
+    Config: configs/clip/vit-base-p32_pt-64xb64_in1k-384px.py
+    Converted From:
+      Code: https://github.com/rwightman/pytorch-image-models
+      Weights: https://huggingface.co/timm/vit_base_patch32_clip_384.openai_ft_in12k_in1k
+  - Name: clip-vit-base-p16_laion2b-in12k-pre_3rdparty_in1k
+    Metadata:
+      FLOPs: 16855600128
+      Parameters: 86568424
+      Training Data:
+        - LAION-2B
+        - ImageNet-12k
+        - ImageNet-1k
+    In Collection: CLIP
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 86.02
+          Top 5 Accuracy: 97.76
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/clip/clip-vit-base-p16_laion2b-in12k-pre_3rdparty_in1k_20221220-a5e31f8c.pth
+    Config: configs/clip/vit-base-p16_pt-64xb64_in1k.py
+    Converted From:
+      Code: https://github.com/rwightman/pytorch-image-models
+      Weights: https://huggingface.co/timm/vit_base_patch16_clip_224.laion2b_ft_in12k_in1k
+  - Name: clip-vit-base-p16_laion2b-pre_3rdparty_in1k
+    Metadata:
+      FLOPs: 16855600128
+      Parameters: 86568424
+      Training Data:
+        - LAION-2B
+        - ImageNet-1k
+    In Collection: CLIP
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 85.49
+          Top 5 Accuracy: 97.59
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/clip/clip-vit-base-p16_laion2b-pre_3rdparty_in1k_20221220-5e24ff58.pth
+    Config: configs/clip/vit-base-p16_pt-64xb64_in1k.py
+    Converted From:
+      Code: https://github.com/rwightman/pytorch-image-models
+      Weights: https://huggingface.co/timm/vit_base_patch16_clip_224.laion2b_ft_in1k
+  - Name: clip-vit-base-p16_openai-in12k-pre_3rdparty_in1k
+    Metadata:
+      FLOPs: 16855600128
+      Parameters: 86568424
+      Training Data:
+        - OpenAI
+        - ImageNet-12k
+        - ImageNet-1k
+    In Collection: CLIP
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 85.99
+          Top 5 Accuracy: 97.72
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/clip/clip-vit-base-p16_openai-in12k-pre_3rdparty_in1k_20221220-90d930a8.pth
+    Config: configs/clip/vit-base-p16_pt-64xb64_in1k.py
+    Converted From:
+      Code: https://github.com/rwightman/pytorch-image-models
+      Weights: https://huggingface.co/timm/vit_base_patch16_clip_224.openai_ft_in12k_in1k
+  - Name: clip-vit-base-p16_openai-pre_3rdparty_in1k
+    Metadata:
+      FLOPs: 16855600128
+      Parameters: 86568424
+      Training Data:
+        - OpenAI
+        - ImageNet-1k
+    In Collection: CLIP
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 85.3
+          Top 5 Accuracy: 97.5
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/clip/clip-vit-base-p16_openai-pre_3rdparty_in1k_20221220-c7d9c899.pth
+    Config: configs/clip/vit-base-p16_pt-64xb64_in1k.py
+    Converted From:
+      Code: https://github.com/rwightman/pytorch-image-models
+      Weights: https://huggingface.co/timm/vit_base_patch16_clip_224.openai_ft_in1k
+  - Name: clip-vit-base-p32_laion2b-in12k-pre_3rdparty_in1k-448px
+    Metadata:
+      FLOPs: 17202416640
+      Parameters: 88225000
+      Training Data:
+        - LAION-2B
+        - ImageNet-12k
+        - ImageNet-1k
+    In Collection: CLIP
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 85.76
+          Top 5 Accuracy: 97.63
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/clip/clip-vit-base-p32_laion2b-in12k-pre_3rdparty_in1k-448px_20221220-ca404a7d.pth
+    Config: configs/clip/vit-base-p32_pt-64xb64_in1k-448px.py
+    Converted From:
+      Code: https://github.com/rwightman/pytorch-image-models
+      Weights: https://huggingface.co/timm/vit_base_patch32_clip_448.laion2b_ft_in12k_in1k
+  - Name: clip-vit-base-p16_laion2b-in12k-pre_3rdparty_in1k-384px
+    Metadata:
+      FLOPs: 49370078208
+      Parameters: 86568424
+      Training Data:
+        - LAION-2B
+        - ImageNet-12k
+        - ImageNet-1k
+    In Collection: CLIP
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 87.17
+          Top 5 Accuracy: 98.02
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/clip/clip-vit-base-p16_laion2b-in12k-pre_3rdparty_in1k-384px_20221220-84ed0cc0.pth
+    Config: configs/clip/vit-base-p16_pt-64xb64_in1k-384px.py
+    Converted From:
+      Code: https://github.com/rwightman/pytorch-image-models
+      Weights: https://huggingface.co/timm/vit_base_patch16_clip_384.laion2b_ft_in12k_in1k
+  - Name: clip-vit-base-p16_laion2b-pre_3rdparty_in1k-384px
+    Metadata:
+      FLOPs: 49370078208
+      Parameters: 86568424
+      Training Data:
+        - LAION-2B
+        - ImageNet-1k
+    In Collection: CLIP
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 86.52
+          Top 5 Accuracy: 97.97
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/clip/clip-vit-base-p16_laion2b-pre_3rdparty_in1k-384px_20221220-558ed826.pth
+    Config: configs/clip/vit-base-p16_pt-64xb64_in1k-384px.py
+    Converted From:
+      Code: https://github.com/rwightman/pytorch-image-models
+      Weights: https://huggingface.co/timm/vit_base_patch16_clip_384.laion2b_ft_in1k
+  - Name: clip-vit-base-p16_openai-in12k-pre_3rdparty_in1k-384px
+    Metadata:
+      FLOPs: 49370078208
+      Parameters: 86568424
+      Training Data:
+        - OpenAI
+        - ImageNet-12k
+        - ImageNet-1k
+    In Collection: CLIP
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 86.87
+          Top 5 Accuracy: 98.05
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/clip/clip-vit-base-p16_openai-in12k-pre_3rdparty_in1k-384px_20221220-8df86b74.pth
+    Config: configs/clip/vit-base-p16_pt-64xb64_in1k-384px.py
+    Converted From:
+      Code: https://github.com/rwightman/pytorch-image-models
+      Weights: https://huggingface.co/timm/vit_base_patch16_clip_384.openai_ft_in12k_in1k
+  - Name: clip-vit-base-p16_openai-pre_3rdparty_in1k-384px
+    Metadata:
+      FLOPs: 49370078208
+      Parameters: 86568424
+      Training Data:
+        - OpenAI
+        - ImageNet-1k
+    In Collection: CLIP
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 86.25
+          Top 5 Accuracy: 97.9
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/clip/clip-vit-base-p16_openai-pre_3rdparty_in1k-384px_20221220-eb012e87.pth
+    Config: configs/clip/vit-base-p16_pt-64xb64_in1k-384px.py
+    Converted From:
+      Code: https://github.com/rwightman/pytorch-image-models
+      Weights: https://huggingface.co/timm/vit_base_patch16_clip_384.openai_ft_in1k
