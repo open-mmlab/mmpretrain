@@ -265,9 +265,14 @@ class ImshowInfosContextManager(BaseFigureContextManager):
             y += row_width
 
         self.ax_save.imshow(img)
-        stream, _ = self.fig_save.canvas.print_to_buffer()
+        stream, (buffer_w, buffer_h) = self.fig_save.canvas.print_to_buffer()
         buffer = np.frombuffer(stream, dtype='uint8')
-        img_rgba = buffer.reshape(height, width, 4)
+
+        # The `EPS` won't solve all precision lost problems, therefore we don't
+        # use origin height and width to reshape the buffer but use the buffer
+        # shape. These may cause shape difference between the input and output.
+        img_rgba = buffer.reshape(buffer_h, buffer_w, 4)
+
         rgb, _ = np.split(img_rgba, [3], axis=2)
         img_save = rgb.astype('uint8')
         img_save = mmcv.rgb2bgr(img_save)
