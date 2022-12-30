@@ -47,3 +47,4 @@ Import:
   - configs/revvit/metafile.yml
   - configs/clip/metafile.yml
   - configs/mixmim/metafile.yml
+  - configs/efficientnet_v2/metafile.yml
