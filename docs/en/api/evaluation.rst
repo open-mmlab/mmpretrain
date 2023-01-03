@@ -22,6 +22,7 @@ Single Label Metric
 
    Accuracy
    SingleLabelMetric
+   ConfusionMatrix
 
 Multi Label Metric
 ----------------------
