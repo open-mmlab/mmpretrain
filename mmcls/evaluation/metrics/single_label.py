@@ -651,7 +651,7 @@ class ConfusionMatrix(BaseMetric):
             pred = data_sample['pred_label']
             gt_label = data_sample['gt_label']['label']
             if 'score' in pred:
-                pred_label = pred['score'].argmax(keepdim=True)
+                pred_label = pred['score'].argmax(dim=0, keepdim=True)
                 self.num_classes = pred['score'].size(0)
             else:
                 pred_label = pred['label']
