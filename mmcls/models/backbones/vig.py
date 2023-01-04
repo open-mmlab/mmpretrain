@@ -3,6 +3,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from mmcv.cnn import build_activation_layer, build_conv_layer, build_norm_layer
 from mmcv.cnn.bricks import DropPath
 from mmengine.model import Sequential
 
@@ -168,50 +169,18 @@ class DenseDilatedKnnGraph(nn.Module):
         return self._dilated(edge_index)
 
 
-def act_layer(act, inplace=False, neg_slope=0.2, n_prelu=1):
-    # activation layer
-
-    act = act.lower()
-    if act == 'relu':
-        layer = nn.ReLU(inplace)
-    elif act == 'leakyrelu':
-        layer = nn.LeakyReLU(neg_slope, inplace)
-    elif act == 'prelu':
-        layer = nn.PReLU(num_parameters=n_prelu, init=neg_slope)
-    elif act == 'gelu':
-        layer = nn.GELU()
-    elif act == 'hswish':
-        layer = nn.Hardswish(inplace)
-    else:
-        raise NotImplementedError('activation layer [%s] is not found' % act)
-    return layer
-
-
-def norm_layer(norm, nc):
-    # normalization layer 2d
-    norm = norm.lower()
-    if norm == 'batch':
-        layer = nn.BatchNorm2d(nc, affine=True)
-    elif norm == 'instance':
-        layer = nn.InstanceNorm2d(nc, affine=False)
-    else:
-        raise NotImplementedError('normalization layer [%s] is not found' %
-                                  norm)
-    return layer
-
-
 class BasicConv(Sequential):
 
-    def __init__(self, channels, act='relu', norm=None, bias=True, drop=0.):
+    def __init__(self, channels, act, bias=True, drop=0.):
         m = []
         for i in range(1, len(channels)):
             m.append(
-                nn.Conv2d(
-                    channels[i - 1], channels[i], 1, bias=bias, groups=4))
-            if norm is not None and norm.lower() != 'none':
-                m.append(norm_layer(norm, channels[-1]))
-            if act is not None and act.lower() != 'none':
-                m.append(act_layer(act))
+                build_conv_layer(
+                    None, channels[i - 1], channels[i], 1, bias=bias,
+                    groups=4))
+            m.append(
+                build_norm_layer(dict(type='BN'), num_features=channels[-1]))
+            m.append(build_activation_layer(dict(type=act)))
             if drop > 0:
                 m.append(nn.Dropout2d(drop))
 
@@ -413,7 +382,6 @@ class Grapher(nn.Module):
                  dilation=1,
                  conv='edge',
                  act='relu',
-                 norm=None,
                  bias=True,
                  stochastic=False,
                  epsilon=0.0,
@@ -426,15 +394,15 @@ class Grapher(nn.Module):
         self.n = n
         self.r = r
         self.fc1 = Sequential(
-            nn.Conv2d(in_channels, in_channels, 1, stride=1, padding=0),
-            nn.BatchNorm2d(in_channels),
+            build_conv_layer(None, in_channels, in_channels, 1, stride=1),
+            build_norm_layer(dict(type='BN'), num_features=in_channels),
         )
         self.graph_conv = DyGraphConv2d(in_channels, in_channels * 2, k,
-                                        dilation, conv, act, norm, bias,
-                                        stochastic, epsilon, r)
+                                        dilation, conv, act, bias, stochastic,
+                                        epsilon, r)
         self.fc2 = Sequential(
-            nn.Conv2d(in_channels * 2, in_channels, 1, stride=1, padding=0),
-            nn.BatchNorm2d(in_channels),
+            build_conv_layer(None, in_channels * 2, in_channels, 1, stride=1),
+            build_norm_layer(dict(type='BN'), num_features=in_channels),
         )
         self.drop_path = DropPath(
             drop_path) if drop_path > 0. else nn.Identity()
@@ -487,13 +455,13 @@ class FFN(nn.Module):
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
         self.fc1 = Sequential(
-            nn.Conv2d(in_features, hidden_features, 1, stride=1, padding=0),
-            nn.BatchNorm2d(hidden_features),
+            build_conv_layer(None, in_features, hidden_features, 1, stride=1),
+            build_norm_layer(dict(type='BN'), num_features=hidden_features),
         )
-        self.act = act_layer(act)
+        self.act = build_activation_layer(dict(type=act))
         self.fc2 = Sequential(
-            nn.Conv2d(hidden_features, out_features, 1, stride=1, padding=0),
-            nn.BatchNorm2d(out_features),
+            build_conv_layer(None, hidden_features, out_features, 1, stride=1),
+            build_norm_layer(dict(type='BN'), num_features=out_features),
         )
         self.drop_path = DropPath(
             drop_path) if drop_path > 0. else nn.Identity()
@@ -512,23 +480,27 @@ class Stem(nn.Module):
     Overlap: https://arxiv.org/pdf/2106.13797.pdf
     """
 
-    def __init__(self, in_dim=3, out_dim=768, act='relu'):
+    def __init__(self, in_dim=3, out_dim=768, act=dict(type='GELU')):
         super().__init__()
         self.convs = Sequential(
-            nn.Conv2d(in_dim, out_dim // 8, 3, stride=2, padding=1),
-            nn.BatchNorm2d(out_dim // 8),
-            act_layer(act),
-            nn.Conv2d(out_dim // 8, out_dim // 4, 3, stride=2, padding=1),
-            nn.BatchNorm2d(out_dim // 4),
-            act_layer(act),
-            nn.Conv2d(out_dim // 4, out_dim // 2, 3, stride=2, padding=1),
-            nn.BatchNorm2d(out_dim // 2),
-            act_layer(act),
-            nn.Conv2d(out_dim // 2, out_dim, 3, stride=2, padding=1),
-            nn.BatchNorm2d(out_dim),
-            act_layer(act),
-            nn.Conv2d(out_dim, out_dim, 3, stride=1, padding=1),
-            nn.BatchNorm2d(out_dim),
+            build_conv_layer(
+                None, in_dim, out_dim // 8, 3, stride=2, padding=1),
+            build_norm_layer(dict(type='BN'), num_features=out_dim // 8),
+            build_activation_layer(act),
+            build_conv_layer(
+                None, out_dim // 8, out_dim // 4, 3, stride=2, padding=1),
+            build_norm_layer(dict(type='BN'), num_features=out_dim // 4),
+            build_activation_layer(act),
+            build_conv_layer(
+                None, out_dim // 4, out_dim // 2, 3, stride=2, padding=1),
+            build_norm_layer(dict(type='BN'), num_features=out_dim // 2),
+            build_activation_layer(act),
+            build_conv_layer(
+                None, out_dim // 2, out_dim, 3, stride=2, padding=1),
+            build_norm_layer(dict(type='BN'), num_features=out_dim),
+            build_activation_layer(act),
+            build_conv_layer(None, out_dim, out_dim, 3, stride=1, padding=1),
+            build_norm_layer(dict(type='BN'), num_features=out_dim),
         )
 
     def forward(self, x):
@@ -539,7 +511,7 @@ class Stem(nn.Module):
 @MODELS.register_module()
 class Vig(BaseBackbone):
 
-    def __init__(self, channels, k, act, norm, bias, epsilon, use_dilation,
+    def __init__(self, channels, k, act, bias, epsilon, use_dilation,
                  use_stochastic, conv, n_blocks, drop_path, dropout, n_classes,
                  relative_pos):
         super(Vig, self).__init__()
@@ -563,7 +535,6 @@ class Vig(BaseBackbone):
                         min(i // 4 + 1, max_dilation),
                         conv,
                         act,
-                        norm,
                         bias,
                         use_stochastic,
                         epsilon,
@@ -582,7 +553,6 @@ class Vig(BaseBackbone):
                         1,
                         conv,
                         act,
-                        norm,
                         bias,
                         use_stochastic,
                         epsilon,
@@ -594,9 +564,10 @@ class Vig(BaseBackbone):
             ])
 
         self.prediction = Sequential(
-            nn.Conv2d(channels, 1024, 1, bias=True), nn.BatchNorm2d(1024),
-            act_layer(act), nn.Dropout(dropout),
-            nn.Conv2d(1024, n_classes, 1, bias=True))
+            build_conv_layer(None, channels, 1024, 1, bias=True),
+            build_norm_layer(dict(type='BN'), 1024),
+            build_activation_layer(act), nn.Dropout(dropout),
+            build_conv_layer(None, 1024, n_classes, 1, bias=True))
 
     def forward(self, inputs):
         x = self.stem(inputs) + self.pos_embed
