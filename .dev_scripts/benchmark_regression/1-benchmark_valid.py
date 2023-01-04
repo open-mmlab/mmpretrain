@@ -96,6 +96,7 @@ def inference(config_file, checkpoint, work_dir, args, exp_name):
         data = default_collate([data] * args.batch_size)
         resolution = tuple(data['inputs'].shape[-2:])
         model = Runner.from_cfg(cfg).model
+        load_checkpoint(model, checkpoint, map_location='cpu')
         forward = model.val_step
     else:
         # For configs only for get model.
