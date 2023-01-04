@@ -219,14 +219,9 @@ class MRConv2d(nn.Module):
     """Max-Relative Graph Convolution (Paper: https://arxiv.org/abs/1904.03751)
     for dense data type."""
 
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 act='relu',
-                 norm=None,
-                 bias=True):
+    def __init__(self, in_channels, out_channels, act='relu', bias=True):
         super(MRConv2d, self).__init__()
-        self.nn = BasicConv([in_channels * 2, out_channels], act, norm, bias)
+        self.nn = BasicConv([in_channels * 2, out_channels], act, bias)
 
     def forward(self, x, edge_index, y=None):
         x_i = batched_index_select(x, edge_index[1])
@@ -245,14 +240,9 @@ class EdgeConv2d(nn.Module):
     """Edge convolution layer (with activation, batch normalization) for dense
     data type."""
 
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 act='relu',
-                 norm=None,
-                 bias=True):
+    def __init__(self, in_channels, out_channels, act='relu', bias=True):
         super(EdgeConv2d, self).__init__()
-        self.nn = BasicConv([in_channels * 2, out_channels], act, norm, bias)
+        self.nn = BasicConv([in_channels * 2, out_channels], act, bias)
 
     def forward(self, x, edge_index, y=None):
         x_i = batched_index_select(x, edge_index[1])
@@ -269,15 +259,10 @@ class GraphSAGE(nn.Module):
     """GraphSAGE Graph Convolution (Paper: https://arxiv.org/abs/1706.02216)
     for dense data type."""
 
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 act='relu',
-                 norm=None,
-                 bias=True):
+    def __init__(self, in_channels, out_channels, act='relu', bias=True):
         super(GraphSAGE, self).__init__()
-        self.nn1 = BasicConv([in_channels, in_channels], act, norm, bias)
-        self.nn2 = BasicConv([in_channels * 2, out_channels], act, norm, bias)
+        self.nn1 = BasicConv([in_channels, in_channels], act, bias)
+        self.nn2 = BasicConv([in_channels * 2, out_channels], act, bias)
 
     def forward(self, x, edge_index, y=None):
         if y is not None:
@@ -292,14 +277,9 @@ class GINConv2d(nn.Module):
     """GIN Graph Convolution (Paper: https://arxiv.org/abs/1810.00826) for
     dense data type."""
 
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 act='relu',
-                 norm=None,
-                 bias=True):
+    def __init__(self, in_channels, out_channels, act='relu', bias=True):
         super(GINConv2d, self).__init__()
-        self.nn = BasicConv([in_channels, out_channels], act, norm, bias)
+        self.nn = BasicConv([in_channels, out_channels], act, bias)
         eps_init = 0.0
         self.eps = nn.Parameter(torch.Tensor([eps_init]))
 
@@ -320,17 +300,16 @@ class GraphConv2d(nn.Module):
                  out_channels,
                  conv='edge',
                  act='relu',
-                 norm=None,
                  bias=True):
         super(GraphConv2d, self).__init__()
         if conv == 'edge':
-            self.gconv = EdgeConv2d(in_channels, out_channels, act, norm, bias)
+            self.gconv = EdgeConv2d(in_channels, out_channels, act, bias)
         elif conv == 'mr':
-            self.gconv = MRConv2d(in_channels, out_channels, act, norm, bias)
+            self.gconv = MRConv2d(in_channels, out_channels, act, bias)
         elif conv == 'sage':
-            self.gconv = GraphSAGE(in_channels, out_channels, act, norm, bias)
+            self.gconv = GraphSAGE(in_channels, out_channels, act, bias)
         elif conv == 'gin':
-            self.gconv = GINConv2d(in_channels, out_channels, act, norm, bias)
+            self.gconv = GINConv2d(in_channels, out_channels, act, bias)
         else:
             raise NotImplementedError('conv:{} is not supported'.format(conv))
 
@@ -348,13 +327,12 @@ class DyGraphConv2d(GraphConv2d):
                  dilation=1,
                  conv='edge',
                  act='relu',
-                 norm=None,
                  bias=True,
                  stochastic=False,
                  epsilon=0.0,
                  r=1):
         super(DyGraphConv2d, self).__init__(in_channels, out_channels, conv,
-                                            act, norm, bias)
+                                            act, bias)
         self.k = k
         self.d = dilation
         self.r = r

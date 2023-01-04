@@ -5,7 +5,6 @@ model = dict(
         channels=192,
         k=9,
         act='gelu',
-        norm='batch',
         bias=True,
         use_dilation=True,
         epsilon=0.2,

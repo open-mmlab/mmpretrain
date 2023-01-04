@@ -6,7 +6,6 @@ model = dict(
         k=9,
         conv='mr',
         act='gelu',
-        norm='batch',
         bias=True,
         dropout=0.0,
         epsilon=0.2,
