@@ -47,11 +47,11 @@ class Downsample(nn.Module):
 
 
 @MODELS.register_module()
-class pyramid_vig(torch.nn.Module):
+class Pyramid_Vig(torch.nn.Module):
 
     def __init__(self, channels, k, act, norm, bias, epsilon, use_stochastic,
                  conv, drop_path, dropout, blocks, n_classes):
-        super(pyramid_vig, self).__init__()
+        super(Pyramid_Vig, self).__init__()
 
         self.n_blocks = sum(blocks)
         channels = channels

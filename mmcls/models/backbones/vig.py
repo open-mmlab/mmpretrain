@@ -3,8 +3,10 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from timm.models.layers import DropPath
+from mmcv.cnn.bricks import DropPath
+from mmengine.model import Sequential
 
+from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.registry import MODELS
 
 
@@ -198,7 +200,7 @@ def norm_layer(norm, nc):
     return layer
 
 
-class BasicConv(nn.Sequential):
+class BasicConv(Sequential):
 
     def __init__(self, channels, act='relu', norm=None, bias=True, drop=0.):
         m = []
@@ -423,14 +425,14 @@ class Grapher(nn.Module):
         self.channels = in_channels
         self.n = n
         self.r = r
-        self.fc1 = nn.Sequential(
+        self.fc1 = Sequential(
             nn.Conv2d(in_channels, in_channels, 1, stride=1, padding=0),
             nn.BatchNorm2d(in_channels),
         )
         self.graph_conv = DyGraphConv2d(in_channels, in_channels * 2, k,
                                         dilation, conv, act, norm, bias,
                                         stochastic, epsilon, r)
-        self.fc2 = nn.Sequential(
+        self.fc2 = Sequential(
             nn.Conv2d(in_channels * 2, in_channels, 1, stride=1, padding=0),
             nn.BatchNorm2d(in_channels),
         )
@@ -484,12 +486,12 @@ class FFN(nn.Module):
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
-        self.fc1 = nn.Sequential(
+        self.fc1 = Sequential(
             nn.Conv2d(in_features, hidden_features, 1, stride=1, padding=0),
             nn.BatchNorm2d(hidden_features),
         )
         self.act = act_layer(act)
-        self.fc2 = nn.Sequential(
+        self.fc2 = Sequential(
             nn.Conv2d(hidden_features, out_features, 1, stride=1, padding=0),
             nn.BatchNorm2d(out_features),
         )
@@ -512,7 +514,7 @@ class Stem(nn.Module):
 
     def __init__(self, in_dim=3, out_dim=768, act='relu'):
         super().__init__()
-        self.convs = nn.Sequential(
+        self.convs = Sequential(
             nn.Conv2d(in_dim, out_dim // 8, 3, stride=2, padding=1),
             nn.BatchNorm2d(out_dim // 8),
             act_layer(act),
@@ -535,12 +537,12 @@ class Stem(nn.Module):
 
 
 @MODELS.register_module()
-class vig(torch.nn.Module):
+class Vig(BaseBackbone):
 
     def __init__(self, channels, k, act, norm, bias, epsilon, use_dilation,
                  use_stochastic, conv, n_blocks, drop_path, dropout, n_classes,
                  relative_pos):
-        super(vig, self).__init__()
+        super(Vig, self).__init__()
         self.n_blocks = n_blocks
         self.stem = Stem(out_dim=channels, act=act)
         dpr = [x.item() for x in torch.linspace(0, drop_path, self.n_blocks)
@@ -553,8 +555,8 @@ class vig(torch.nn.Module):
         self.pos_embed = nn.Parameter(torch.zeros(1, channels, 14, 14))
 
         if use_dilation:
-            self.backbone = nn.Sequential(*[
-                nn.Sequential(
+            self.backbone = Sequential(*[
+                Sequential(
                     Grapher(
                         channels,
                         num_knn[i],
@@ -572,8 +574,8 @@ class vig(torch.nn.Module):
                 for i in range(self.n_blocks)
             ])
         else:
-            self.backbone = nn.Sequential(*[
-                nn.Sequential(
+            self.backbone = Sequential(*[
+                Sequential(
                     Grapher(
                         channels,
                         num_knn[i],
@@ -591,7 +593,7 @@ class vig(torch.nn.Module):
                 for i in range(self.n_blocks)
             ])
 
-        self.prediction = nn.Sequential(
+        self.prediction = Sequential(
             nn.Conv2d(channels, 1024, 1, bias=True), nn.BatchNorm2d(1024),
             act_layer(act), nn.Dropout(dropout),
             nn.Conv2d(1024, n_classes, 1, bias=True))
