@@ -1,0 +1,8 @@
+python tools/test.py configs/vig/vig_ti_imagenet.py ../vig_checkpoint_covert/vig_ti.pth
+python tools/test.py configs/vig/vig_s_imagenet.py ../vig_checkpoint_covert/vig_s.pth
+python tools/test.py configs/vig/vig_b_imagenet.py ../vig_checkpoint_covert/vig_b.pth
+
+python tools/test.py configs/vig/pvig_ti_imagenet.py ../vig_checkpoint_covert/pvig_ti.pth
+python tools/test.py configs/vig/pvig_s_imagenet.py ../vig_checkpoint_covert/pvig_s.pth
+python tools/test.py configs/vig/pvig_m_imagenet.py ../vig_checkpoint_covert/pvig_m.pth
+python tools/test.py configs/vig/pvig_b_imagenet.py ../vig_checkpoint_covert/pvig_b.pth
