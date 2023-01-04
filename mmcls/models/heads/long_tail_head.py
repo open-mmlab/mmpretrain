@@ -39,12 +39,11 @@ class LogitAdjustLinearClsHead(LinearClsHead):
     """
 
     def __init__(self,
-                 *args,
                  enable_post_hoc_adjustment: bool = True,
                  enable_loss_adjustment: bool = False,
                  pow: float = 1.0,
                  **kwargs):
-        super(LinearClsHead, self).__init__(*args, **kwargs)
+        super(LogitAdjustLinearClsHead, self).__init__(**kwargs)
 
         if enable_post_hoc_adjustment and enable_loss_adjustment:
             raise ValueError(
@@ -60,18 +59,16 @@ class LogitAdjustLinearClsHead(LinearClsHead):
         self.pow = pow
         self._adjustments = None
 
-    @property
-    def adjustments(self, ) -> torch.Tensor:
+    def adjustments(self) -> torch.Tensor:
         """get adjustments."""
         if self._adjustments is None:
             try:
                 # try to get dataset gt_labels from Messagehub.
                 gt_labels = MessageHub.get_current_instance().get_info(
-                    'dataset_gt_labels')
+                    'gt_labels')
             except KeyError:
                 raise RuntimeError(
-                    'Please set ```train_dataloader=dict(...,dataset=dict('
-                    '..., global_gt_labels=True, ...,))``` in config to '
+                    'Please set `````` in config to '
                     "send  'dataset_gt_labels' info to MessageHub.")
 
             label_count = np.bincount(gt_labels)
@@ -79,8 +76,7 @@ class LogitAdjustLinearClsHead(LinearClsHead):
 
             self._adjustments = torch.from_numpy(
                 np.log(freq**self.pow + 1e-12))
-            self._adjustments.to(self.device)
-
+            self._adjustments.to(self.fc.weight.device)
         return self._adjustments
 
     def forward(self, feats: Tuple[torch.Tensor]) -> torch.Tensor:
@@ -92,7 +88,7 @@ class LogitAdjustLinearClsHead(LinearClsHead):
         # if enable loss adjustment, logits add adjustments in
         # both ``loss`` and ``predict`` process.
         if self.enable_loss_adjustment:
-            cls_score += self.adjustments
+            cls_score += self.adjustments().to(cls_score.device)
 
         return cls_score
 
@@ -120,7 +116,7 @@ class LogitAdjustLinearClsHead(LinearClsHead):
 
         # if enable post-hoc, logits minus adjustments in ``predict``.
         if self.enable_post_hoc_adjustment:
-            cls_score -= self.adjustments
+            cls_score -= self.adjustments().to(cls_score.device)
 
         # The part can not be traced by torch.fx
         predictions = self._get_predictions(cls_score, data_samples)

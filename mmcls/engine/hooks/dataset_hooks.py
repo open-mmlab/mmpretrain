@@ -33,7 +33,7 @@ class SendDatasetInfoMessageHubHook(Hook):
             raise ValueError(
                 f'`keys` must be str of seq of str, but get {type(keys)}')
 
-        for key in self.keys():
+        for key in self.keys:
             assert key in self.accept_keys, (
                 f"key must be in {self.accept_keys}, but get '{key}'.")
 
@@ -56,7 +56,8 @@ class SendDatasetInfoMessageHubHook(Hook):
 
         for key in self.keys:
             if key == 'gt_labels':
-                gt_labels = train_dataset.gt_labels()
+                print(train_dataset)
+                gt_labels = train_dataset.get_gt_labels()
                 MessageHub.get_current_instance().update_info(
                     'gt_labels', gt_labels)
             elif key == 'file_paths':
