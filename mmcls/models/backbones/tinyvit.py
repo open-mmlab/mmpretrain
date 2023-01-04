@@ -6,9 +6,9 @@ import torch.nn as nn
 import torch.utils.checkpoint as checkpoint
 from mmcv.cnn.bricks import DropPath, build_activation_layer, build_norm_layer
 from mmengine.model import BaseModule, ModuleList, Sequential
-from mmengine.registry import MODELS
 from torch.nn import functional as F
 
+from mmcls.registry import MODELS
 from ..utils import LeAttention
 from .base_backbone import BaseBackbone
 
