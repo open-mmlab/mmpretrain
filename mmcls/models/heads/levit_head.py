@@ -7,10 +7,10 @@ from mmcls.models.heads import ClsHead
 from mmcls.registry import MODELS
 
 
-class BN_Linear(nn.Sequential):
+class BatchNormLinear(nn.Sequential):
 
     def __init__(self, in_feature, out_feature, bias=True, std=0.02):
-        super(BN_Linear, self).__init__()
+        super(BatchNormLinear, self).__init__()
         bn = nn.BatchNorm1d(in_feature)
         linear = Linear(in_feature, out_feature, bias=bias)
         nn.init.trunc_normal_(linear.weight, std)
@@ -65,10 +65,10 @@ class LeViTClsHead(ClsHead):
         self.num_classes = num_classes
         self.distillation = distillation
         self.deploy = deploy
-        self.head = BN_Linear(
+        self.head = BatchNormLinear(
             in_channels, num_classes) if num_classes > 0 else nn.Identity()
         if distillation:
-            self.head_dist = BN_Linear(
+            self.head_dist = BatchNormLinear(
                 in_channels,
                 num_classes) if num_classes > 0 else nn.Identity()
 

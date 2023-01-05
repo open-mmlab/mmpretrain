@@ -10,7 +10,7 @@ from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.registry import MODELS
 
 
-class hybrid_cnn(BaseModule):
+class HybridBackbone(BaseModule):
 
     def __init__(
             self,
@@ -26,7 +26,7 @@ class hybrid_cnn(BaseModule):
             norm_cfg=dict(type='BN'),
             init_cfg=None,
     ):
-        super(hybrid_cnn, self).__init__(init_cfg=init_cfg)
+        super(HybridBackbone, self).__init__(init_cfg=init_cfg)
 
         self.input_channels = [
             3, embed_dim // 8, embed_dim // 4, embed_dim // 2
@@ -40,7 +40,7 @@ class hybrid_cnn(BaseModule):
         self.patch_embed = nn.Sequential()
 
         for i in range(len(self.input_channels)):
-            conv_bn = Conv_BN(
+            conv_bn = ConvalutionBatchNorm(
                 self.input_channels[i],
                 self.output_channels[i],
                 kernel_size=kernel_size,
@@ -61,7 +61,7 @@ class hybrid_cnn(BaseModule):
         return x
 
 
-class Conv_BN(nn.Sequential):
+class ConvalutionBatchNorm(nn.Sequential):
 
     def __init__(
             self,
@@ -76,7 +76,7 @@ class Conv_BN(nn.Sequential):
             conv_cfg=None,
             norm_cfg=dict(type='BN'),
     ):
-        super(Conv_BN, self).__init__()
+        super(ConvalutionBatchNorm, self).__init__()
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
         self.input_channel = in_channel
@@ -119,14 +119,14 @@ class Conv_BN(nn.Sequential):
         return m
 
 
-class Linear_BN(nn.Sequential):
+class LinearBatchNorm(nn.Sequential):
 
     def __init__(self,
                  in_feature,
                  out_feature,
                  bn_weight_init=1,
                  norm_cfg=dict(type='BN1d')):
-        super(Linear_BN, self).__init__()
+        super(LinearBatchNorm, self).__init__()
         linear = Linear(in_feature, out_feature, bias=False)
         _, bn = build_norm_layer(norm_cfg, out_feature)
         torch.nn.init.constant_(bn.weight, bn_weight_init)
@@ -189,9 +189,9 @@ class Attention(BaseModule):
         self.dh = int(attn_ratio * key_dim) * num_heads
         self.attn_ratio = attn_ratio
         h = self.dh + nh_kd * 2
-        self.qkv = Linear_BN(dim, h)
-        self.proj = nn.Sequential(activation(),
-                                  Linear_BN(self.dh, dim, bn_weight_init=0))
+        self.qkv = LinearBatchNorm(dim, h)
+        self.proj = nn.Sequential(
+            activation(), LinearBatchNorm(self.dh, dim, bn_weight_init=0))
 
         points = list(itertools.product(range(resolution), range(resolution)))
         N = len(points)
@@ -248,9 +248,9 @@ class MLP(nn.Sequential):
     ):
         super(MLP, self).__init__()
         h = embed_dim * mlp_ratio
-        self.linear1 = Linear_BN(embed_dim, h)
+        self.linear1 = LinearBatchNorm(embed_dim, h)
         self.activation = mlp_activation()
-        self.linear2 = Linear_BN(h, embed_dim, bn_weight_init=0)
+        self.linear2 = LinearBatchNorm(h, embed_dim, bn_weight_init=0)
 
     def forward(self, x):
         x = self.linear1(x)
@@ -298,11 +298,12 @@ class AttentionSubsample(nn.Sequential):
         self.resolution_ = resolution_
         self.resolution_2 = resolution_**2
         h = self.dh + nh_kd
-        self.kv = Linear_BN(in_dim, h)
+        self.kv = LinearBatchNorm(in_dim, h)
 
         self.q = nn.Sequential(
-            Subsample(stride, resolution), Linear_BN(in_dim, nh_kd))
-        self.proj = nn.Sequential(activation(), Linear_BN(self.dh, out_dim))
+            Subsample(stride, resolution), LinearBatchNorm(in_dim, nh_kd))
+        self.proj = nn.Sequential(activation(),
+                                  LinearBatchNorm(self.dh, out_dim))
 
         self.stride = stride
         self.resolution = resolution
@@ -380,7 +381,7 @@ class LeViT(BaseBackbone):
         self.num_features = embed_dim[-1]
         self.embed_dim = embed_dim
         if not hybrid_backbone:
-            hybrid_backbone = hybrid_cnn(embed_dim[0])
+            hybrid_backbone = HybridBackbone(embed_dim[0])
         self.patch_embed = hybrid_backbone
         self.blocks = [[]]
         self.size = []
