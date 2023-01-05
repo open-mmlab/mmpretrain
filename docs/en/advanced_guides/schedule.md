@@ -1,6 +1,6 @@
 # Customize Training Schedule
 
-In our codebase, [default training schedules](https://github.com/open-mmlab/mmclassification/blob/master/configs/_base_/schedules) have been provided for common datasets such as CIFAR, ImageNet, etc. If we attempt to experiment on these datasets for higher accuracy or on different new methods and datasets, we might possibly need to modify the strategies.
+In our codebase, [default training schedules](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/_base_/schedules) have been provided for common datasets such as CIFAR, ImageNet, etc. If we attempt to experiment on these datasets for higher accuracy or on different new methods and datasets, we might possibly need to modify the strategies.
 
 In this tutorial, we will introduce how to modify configs to construct optimizers, use parameter-wise finely configuration, gradient clipping, gradient accumulation as well as customize learning rate and momentum schedules. Furthermore, introduce a template to customize self-implemented optimizationmethods for the project.
 
@@ -223,12 +223,12 @@ names of learning rate schedulers end with `LR`.
     ]
   ```
 
-  Notice that, we use `begin` and `end` arguments here to assign the valid range, which is \[`begin`, `end`) for this schedule. And the range unit is defined by `by_epoch` argument. If not specified, the `begin` is 0 and the `end` is the max epochs or iterations.
+  Notice that, we use `begin` and `end` arguments here to assign the valid range, which is [`begin`, `end`) for this schedule. And the range unit is defined by `by_epoch` argument. If not specified, the `begin` is 0 and the `end` is the max epochs or iterations.
 
   If the ranges for all schedules are not continuous, the learning rate will stay constant in ignored range, otherwise all valid schedulers will be executed in order in a specific stage, which behaves the same as PyTorch [`ChainedScheduler`](torch.optim.lr_scheduler.ChainedScheduler).
 
   ```{tip}
-  To check that the learning rate curve is as expected, after completing your configuration file，you could use [learning rate visualization tool](../user_guides/visualization.md#learning-rate-schedule-visualization) to draw the corresponding learning rate adjustment curve.
+  To check that the learning rate curve is as expected, after completing your configuration file，you could use [optimizer parameter visualization tool](../useful_tools/scheduler_visualization.md) to draw the corresponding learning rate adjustment curve.
   ```
 
 ### Customize momentum schedules

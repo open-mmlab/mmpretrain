@@ -142,7 +142,7 @@ Formatting
 MMCV transforms
 ^^^^^^^^^^^^^^^
 
-We also provides many transforms in MMCV. You can use them directly in the config files. Here are some frequently used transforms, and the whole transforms list can be found in :external:mod:`mmcv.transforms`.
+We also provides many transforms in MMCV. You can use them directly in the config files. Here are some frequently used transforms, and the whole transforms list can be found in :external+mmcv:doc:`api/transforms`.
 
 .. list-table::
    :widths: 50 50
@@ -238,7 +238,7 @@ These augmentations are usually only used during training, therefore, we use the
        ]),
    )
 
-You can also speicy the probabilities of every batch augmentation by the ``probs`` field.
+You can also specify the probabilities of every batch augmentation by the ``probs`` field.
 
 .. code-block:: python
 

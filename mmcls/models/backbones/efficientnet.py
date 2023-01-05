@@ -69,7 +69,7 @@ class EdgeResidual(BaseModule):
             in_channels=in_channels,
             out_channels=mid_channels,
             kernel_size=kernel_size,
-            stride=1,
+            stride=stride,
             padding=kernel_size // 2,
             conv_cfg=conv_cfg,
             norm_cfg=norm_cfg,
@@ -82,9 +82,9 @@ class EdgeResidual(BaseModule):
             in_channels=mid_channels,
             out_channels=out_channels,
             kernel_size=1,
-            stride=stride,
+            stride=1,
             padding=0,
-            conv_cfg=conv_cfg,
+            conv_cfg=None,
             norm_cfg=norm_cfg,
             act_cfg=None)
 
@@ -246,6 +246,7 @@ class EfficientNet(BaseBackbone):
         'b6': (1.8, 2.6, 528),
         'b7': (2.0, 3.1, 600),
         'b8': (2.2, 3.6, 672),
+        'l2': (4.3, 5.3, 800),
         'es': (1.0, 1.0, 224),
         'em': (1.0, 1.1, 240),
         'el': (1.2, 1.4, 300)
@@ -273,7 +274,9 @@ class EfficientNet(BaseBackbone):
             f'"{arch}" is not one of the arch_settings ' \
             f'({", ".join(self.arch_settings.keys())})'
         self.arch_setting = self.arch_settings[arch]
-        self.layer_setting = self.layer_settings[arch[:1]]
+        # layer_settings of arch='l2' is 'b'
+        self.layer_setting = self.layer_settings['b' if arch ==
+                                                 'l2' else arch[:1]]
         for index in out_indices:
             if index not in range(0, len(self.layer_setting)):
                 raise ValueError('the item in out_indices must in '

@@ -43,6 +43,28 @@ class MobileNetV3(BaseBackbone):
                   [5, 288, 96, True, 'HSwish', 2],
                   [5, 576, 96, True, 'HSwish', 1],
                   [5, 576, 96, True, 'HSwish', 1]],
+        'small_075': [[3, 16, 16, True, 'ReLU', 2],
+                      [3, 72, 24, False, 'ReLU', 2],
+                      [3, 88, 24, False, 'ReLU', 1],
+                      [5, 96, 32, True, 'HSwish', 2],
+                      [5, 192, 32, True, 'HSwish', 1],
+                      [5, 192, 32, True, 'HSwish', 1],
+                      [5, 96, 40, True, 'HSwish', 1],
+                      [5, 120, 40, True, 'HSwish', 1],
+                      [5, 240, 72, True, 'HSwish', 2],
+                      [5, 432, 72, True, 'HSwish', 1],
+                      [5, 432, 72, True, 'HSwish', 1]],
+        'small_050': [[3, 16, 8, True, 'ReLU', 2],
+                      [3, 40, 16, False, 'ReLU', 2],
+                      [3, 56, 16, False, 'ReLU', 1],
+                      [5, 64, 24, True, 'HSwish', 2],
+                      [5, 144, 24, True, 'HSwish', 1],
+                      [5, 144, 24, True, 'HSwish', 1],
+                      [5, 72, 24, True, 'HSwish', 1],
+                      [5, 72, 24, True, 'HSwish', 1],
+                      [5, 144, 48, True, 'HSwish', 2],
+                      [5, 288, 48, True, 'HSwish', 1],
+                      [5, 288, 48, True, 'HSwish', 1]],
         'large': [[3, 16, 16, False, 'ReLU', 1],
                   [3, 64, 24, False, 'ReLU', 2],
                   [3, 72, 24, False, 'ReLU', 1],
@@ -79,7 +101,7 @@ class MobileNetV3(BaseBackbone):
         super(MobileNetV3, self).__init__(init_cfg)
         assert arch in self.arch_settings
         if out_indices is None:
-            out_indices = (12, ) if arch == 'small' else (16, )
+            out_indices = (12, ) if 'small' in arch else (16, )
         for order, index in enumerate(out_indices):
             if index not in range(0, len(self.arch_settings[arch]) + 2):
                 raise ValueError(
@@ -156,7 +178,7 @@ class MobileNetV3(BaseBackbone):
         # TODO: No dilation
         layer = ConvModule(
             in_channels=in_channels,
-            out_channels=576 if self.arch == 'small' else 960,
+            out_channels=mid_channels,
             kernel_size=1,
             stride=1,
             padding=0,

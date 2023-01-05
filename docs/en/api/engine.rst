@@ -31,6 +31,9 @@ Hooks
    ClassNumCheckHook
    PreciseBNHook
    VisualizationHook
+   PrepareProtoBeforeValLoopHook
+   SetAdaptiveMarginsHook
+   EMAHook
 
 .. module:: mmcls.engine.optimizers
 

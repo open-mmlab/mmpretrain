@@ -13,38 +13,58 @@ from .single_label import _precision_recall_f1_support, to_tensor
 
 @METRICS.register_module()
 class MultiLabelMetric(BaseMetric):
-    """A collection of metrics for multi-label multi-class classification task
-    based on confusion matrix.
+    r"""A collection of precision, recall, f1-score and support for
+    multi-label tasks.
 
-    It includes precision, recall, f1-score and support.
+    The collection of metrics is for single-label multi-class classification.
+    And all these metrics are based on the confusion matrix of every category:
+
+    .. image:: ../../_static/image/confusion-matrix.png
+       :width: 60%
+       :align: center
+
+    All metrics can be formulated use variables above:
+
+    **Precision** is the fraction of correct predictions in all predictions:
+
+    .. math::
+        \text{Precision} = \frac{TP}{TP+FP}
+
+    **Recall** is the fraction of correct predictions in all targets:
+
+    .. math::
+        \text{Recall} = \frac{TP}{TP+FN}
+
+    **F1-score** is the harmonic mean of the precision and recall:
+
+    .. math::
+        \text{F1-score} = \frac{2\times\text{Recall}\times\text{Precision}}{\text{Recall}+\text{Precision}}
+
+    **Support** is the number of samples:
+
+    .. math::
+        \text{Support} = TP + TN + FN + FP
 
     Args:
-        thr (float, optional): Predictions with scores under the thresholds
-            are considered as negative. Defaults to None.
+        thr (float, optional): Predictions with scores under the threshold
+            are considered as negative. If None, the ``topk`` predictions will
+            be considered as positive. If the ``topk`` is also None, use
+            ``thr=0.5`` as default. Defaults to None.
         topk (int, optional): Predictions with the k-th highest scores are
-            considered as positive. Defaults to None.
-        items (Sequence[str]): The detailed metric items to evaluate. Here is
-            the available options:
+            considered as positive. If None, use ``thr`` to determine positive
+            predictions. If both ``thr`` and ``topk`` are not None, use
+            ``thr``. Defaults to None.
+        items (Sequence[str]): The detailed metric items to evaluate, select
+            from "precision", "recall", "f1-score" and "support".
+            Defaults to ``('precision', 'recall', 'f1-score')``.
+        average (str | None): How to calculate the final metrics from the
+            confusion matrix of every category. It supports three modes:
 
-                - `"precision"`: The ratio tp / (tp + fp) where tp is the
-                  number of true positives and fp the number of false
-                  positives.
-                - `"recall"`: The ratio tp / (tp + fn) where tp is the number
-                  of true positives and fn the number of false negatives.
-                - `"f1-score"`: The f1-score is the harmonic mean of the
-                  precision and recall.
-                - `"support"`: The total number of positive of each category
-                  in the target.
-
-            Defaults to ('precision', 'recall', 'f1-score').
-        average (str | None): The average method. It supports three average
-            modes:
-
-                - `"macro"`: Calculate metrics for each category, and calculate
-                  the mean value over all categories.
-                - `"micro"`: Calculate metrics globally by counting the total
-                  true positives, false negatives and false positives.
-                - `None`: Return scores of all categories.
+            - `"macro"`: Calculate metrics for each category, and calculate
+              the mean value over all categories.
+            - `"micro"`: Average the confusion matrix over all categories and
+              calculate metrics on the mean confusion matrix.
+            - `None`: Calculate metrics of every category and output directly.
 
             Defaults to "macro".
         collect_device (str): Device name used for collecting results from
@@ -261,15 +281,16 @@ class MultiLabelMetric(BaseMetric):
             target_indices (bool): Whether the ``target`` is a sequence of
                 category index labels. If True, ``num_classes`` must be set.
                 Defaults to False.
-            average (str | None): The average method. It supports three average
+            average (str | None): How to calculate the final metrics from
+                the confusion matrix of every category. It supports three
                 modes:
 
-                    - `"macro"`: Calculate metrics for each category, and
-                      calculate the mean value over all categories.
-                    - `"micro"`: Calculate metrics globally by counting the
-                      total true positives, false negatives and false
-                      positives.
-                    - `None`: Return scores of all categories.
+                - `"macro"`: Calculate metrics for each category, and calculate
+                  the mean value over all categories.
+                - `"micro"`: Average the confusion matrix over all categories
+                  and calculate metrics on the mean confusion matrix.
+                - `None`: Calculate metrics of every category and output
+                  directly.
 
                 Defaults to "macro".
             thr (float, optional): Predictions with scores under the thresholds
@@ -379,6 +400,12 @@ def _average_precision(pred: torch.Tensor,
     # a small value for division by zero errors
     eps = torch.finfo(torch.float32).eps
 
+    # get rid of -1 target such as difficult sample
+    # that is not wanted in evaluation results.
+    valid_index = target > -1
+    pred = pred[valid_index]
+    target = target[valid_index]
+
     # sort examples
     sorted_pred_inds = torch.argsort(pred, dim=0, descending=True)
     sorted_target = target[sorted_pred_inds]
@@ -402,14 +429,25 @@ def _average_precision(pred: torch.Tensor,
 
 @METRICS.register_module()
 class AveragePrecision(BaseMetric):
-    """Calculate the average precision with respect of classes.
+    r"""Calculate the average precision with respect of classes.
+
+    AveragePrecision (AP) summarizes a precision-recall curve as the weighted
+    mean of maximum precisions obtained for any r'>r, where r is the recall:
+
+    .. math::
+        \text{AP} = \sum_n (R_n - R_{n-1}) P_n
+
+    Note that no approximation is involved since the curve is piecewise
+    constant.
 
     Args:
-        average (str | None): The average method. It supports two modes:
+        average (str | None): How to calculate the final metrics from
+            every category. It supports two modes:
 
-                - `"macro"`: Calculate metrics for each category, and calculate
-                  the mean value over all categories.
-                - `None`: Return scores of all categories.
+            - `"macro"`: Calculate metrics for each category, and calculate
+              the mean value over all categories. The result of this mode
+              is also called **mAP**.
+            - `None`: Calculate metrics of every category and output directly.
 
             Defaults to "macro".
         collect_device (str): Device name used for collecting results from
@@ -529,15 +567,6 @@ class AveragePrecision(BaseMetric):
                   average: Optional[str] = 'macro') -> torch.Tensor:
         r"""Calculate the average precision for a single class.
 
-        AP summarizes a precision-recall curve as the weighted mean of maximum
-        precisions obtained for any r'>r, where r is the recall:
-
-        .. math::
-            \text{AP} = \sum_n (R_n - R_{n-1}) P_n
-
-        Note that no approximation is involved since the curve is piecewise
-        constant.
-
         Args:
             pred (torch.Tensor | np.ndarray): The model predictions with
                 shape ``(N, num_classes)``.
@@ -545,9 +574,11 @@ class AveragePrecision(BaseMetric):
                 with shape ``(N, num_classes)``.
             average (str | None): The average method. It supports two modes:
 
-                    - `"macro"`: Calculate metrics for each category, and
-                      calculate the mean value over all categories.
-                    - `None`: Return scores of all categories.
+                - `"macro"`: Calculate metrics for each category, and calculate
+                  the mean value over all categories. The result of this mode
+                  is also called mAP.
+                - `None`: Calculate metrics of every category and output
+                  directly.
 
                 Defaults to "macro".
 

@@ -5,7 +5,7 @@ import numpy as np
 import torch
 from mmengine.structures import LabelData
 
-from mmcls.structures import ClsDataSample
+from mmcls.structures import ClsDataSample, MultiTaskDataSample
 
 
 class TestClsDataSample(TestCase):
@@ -122,3 +122,20 @@ class TestClsDataSample(TestCase):
         with self.assertRaisesRegex(AssertionError, 'but got 2'):
             data_sample.set_pred_score(
                 torch.tensor([[0.1, 0.1, 0.6, 0.1, 0.1]]))
+
+
+class TestMultiTaskDataSample(TestCase):
+
+    def test_multi_task_data_sample(self):
+        gt_label = {'task0': {'task00': 1, 'task01': 1}, 'task1': 1}
+        data_sample = MultiTaskDataSample()
+        task_sample = ClsDataSample().set_gt_label(gt_label['task1'])
+        data_sample.set_field(task_sample, 'task1')
+        data_sample.set_field(MultiTaskDataSample(), 'task0')
+        for task_name in gt_label['task0']:
+            task_sample = ClsDataSample().set_gt_label(
+                gt_label['task0'][task_name])
+            data_sample.task0.set_field(task_sample, task_name)
+        self.assertIsInstance(data_sample.task0, MultiTaskDataSample)
+        self.assertIsInstance(data_sample.task1, ClsDataSample)
+        self.assertIsInstance(data_sample.task0.task00, ClsDataSample)

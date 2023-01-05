@@ -3,7 +3,7 @@ import math
 import os.path as osp
 from typing import Optional, Sequence
 
-from mmengine import FileClient
+from mmengine.fileio import join_path
 from mmengine.hooks import Hook
 from mmengine.runner import EpochBasedTrainLoop, Runner
 from mmengine.visualization import Visualizer
@@ -45,10 +45,6 @@ class VisualizationHook(Hook):
         self.interval = interval
         self.show = show
         self.out_dir = out_dir
-        if out_dir is not None:
-            self.file_client = FileClient.infer_client(uri=out_dir)
-        else:
-            self.file_client = None
 
         self.draw_args = {**kwargs, 'show': show}
 
@@ -89,8 +85,8 @@ class VisualizationHook(Hook):
 
             draw_args = self.draw_args
             if self.out_dir is not None:
-                draw_args['out_file'] = self.file_client.join_path(
-                    self.out_dir, f'{sample_name}_{step}.png')
+                draw_args['out_file'] = join_path(self.out_dir,
+                                                  f'{sample_name}_{step}.png')
 
             self._visualizer.add_datasample(
                 sample_name,

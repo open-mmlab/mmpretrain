@@ -1,20 +1,24 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
 
-import mmengine
-from mmengine import FileClient
+from mmengine.fileio import (BaseStorageBackend, get_file_backend,
+                             list_from_file)
 from mmengine.logging import MMLogger
 
 from mmcls.registry import DATASETS
 from .base_dataset import BaseDataset
 
 
-def find_folders(root: str,
-                 file_client: FileClient) -> Tuple[List[str], Dict[str, int]]:
+def find_folders(
+    root: str,
+    backend: Optional[BaseStorageBackend] = None
+) -> Tuple[List[str], Dict[str, int]]:
     """Find classes by folders under a root.
 
     Args:
         root (string): root directory of folders
+        backend (BaseStorageBackend | None): The file backend of the root.
+            If None, auto infer backend from the root path. Defaults to None.
 
     Returns:
         Tuple[List[str], Dict[str, int]]:
@@ -22,8 +26,10 @@ def find_folders(root: str,
         - folders: The name of sub folders under the root.
         - folder_to_idx: The map from folder name to class idx.
     """
+    # Pre-build file backend to prevent verbose file backend inference.
+    backend = backend or get_file_backend(root, enable_singleton=True)
     folders = list(
-        file_client.list_dir_or_file(
+        backend.list_dir_or_file(
             root,
             list_dir=True,
             list_file=False,
@@ -34,8 +40,12 @@ def find_folders(root: str,
     return folders, folder_to_idx
 
 
-def get_samples(root: str, folder_to_idx: Dict[str, int],
-                is_valid_file: Callable, file_client: FileClient):
+def get_samples(
+    root: str,
+    folder_to_idx: Dict[str, int],
+    is_valid_file: Callable,
+    backend: Optional[BaseStorageBackend] = None,
+):
     """Make dataset by walking all images under a root.
 
     Args:
@@ -43,6 +53,8 @@ def get_samples(root: str, folder_to_idx: Dict[str, int],
         folder_to_idx (dict): the map from class name to class idx
         is_valid_file (Callable): A function that takes path of a file
             and check if the file is a valid sample file.
+        backend (BaseStorageBackend | None): The file backend of the root.
+            If None, auto infer backend from the root path. Defaults to None.
 
     Returns:
         Tuple[list, set]:
@@ -52,19 +64,20 @@ def get_samples(root: str, folder_to_idx: Dict[str, int],
     """
     samples = []
     available_classes = set()
+    # Pre-build file backend to prevent verbose file backend inference.
+    backend = backend or get_file_backend(root, enable_singleton=True)
 
     for folder_name in sorted(list(folder_to_idx.keys())):
-        _dir = file_client.join_path(root, folder_name)
-        files = list(
-            file_client.list_dir_or_file(
-                _dir,
-                list_dir=False,
-                list_file=True,
-                recursive=True,
-            ))
+        _dir = backend.join_path(root, folder_name)
+        files = backend.list_dir_or_file(
+            _dir,
+            list_dir=False,
+            list_file=True,
+            recursive=True,
+        )
         for file in sorted(list(files)):
             if is_valid_file(file):
-                path = file_client.join_path(folder_name, file)
+                path = backend.join_path(folder_name, file)
                 item = (path, folder_to_idx[folder_name])
                 samples.append(item)
                 available_classes.add(folder_name)
@@ -169,14 +182,13 @@ class CustomDataset(BaseDataset):
         if not lazy_init:
             self.full_init()
 
-    def _find_samples(self, file_client):
+    def _find_samples(self):
         """find samples from ``data_prefix``."""
-        classes, folder_to_idx = find_folders(self.img_prefix, file_client)
+        classes, folder_to_idx = find_folders(self.img_prefix)
         samples, empty_classes = get_samples(
             self.img_prefix,
             folder_to_idx,
             is_valid_file=self.is_valid_file,
-            file_client=file_client,
         )
 
         if len(samples) == 0:
@@ -205,24 +217,17 @@ class CustomDataset(BaseDataset):
 
     def load_data_list(self):
         """Load image paths and gt_labels."""
-        if self.img_prefix:
-            file_client = FileClient.infer_client(uri=self.img_prefix)
-
         if not self.ann_file:
-            samples = self._find_samples(file_client)
+            samples = self._find_samples()
         else:
-            lines = mmengine.list_from_file(self.ann_file)
+            lines = list_from_file(self.ann_file)
             samples = [x.strip().rsplit(' ', 1) for x in lines]
 
-        def add_prefix(filename, prefix=''):
-            if not prefix:
-                return filename
-            else:
-                return file_client.join_path(prefix, filename)
-
+        # Pre-build file backend to prevent verbose file backend inference.
+        backend = get_file_backend(self.img_prefix, enable_singleton=True)
         data_list = []
         for filename, gt_label in samples:
-            img_path = add_prefix(filename, self.img_prefix)
+            img_path = backend.join_path(self.img_prefix, filename)
             info = {'img_path': img_path, 'gt_label': int(gt_label)}
             data_list.append(info)
         return data_list

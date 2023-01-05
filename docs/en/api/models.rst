@@ -44,6 +44,8 @@ Classifiers
 
     BaseClassifier
     ImageClassifier
+    TimmClassifier
+    HuggingFaceClassifier
 
 .. module:: mmcls.models.backbones
 
@@ -56,6 +58,7 @@ Backbones
    :template: classtemplate.rst
 
    AlexNet
+   BEiT
    CSPDarkNet
    CSPNet
    CSPResNeXt
@@ -63,13 +66,16 @@ Backbones
    Conformer
    ConvMixer
    ConvNeXt
+   DaViT
    DeiT3
    DenseNet
    DistilledVisionTransformer
    EdgeNeXt
    EfficientFormer
    EfficientNet
+   EfficientNetV2
    HRNet
+   HorNet
    InceptionV3
    LeNet5
    MViT
@@ -81,6 +87,7 @@ Backbones
    PCPVT
    PoolFormer
    RegNet
+   RepLKNet
    RepMLPNet
    RepVGG
    Res2Net
@@ -90,6 +97,7 @@ Backbones
    ResNetV1c
    ResNetV1d
    ResNet_CIFAR
+   RevVisionTransformer
    SEResNeXt
    SEResNet
    SVT
@@ -135,8 +143,10 @@ Heads
    EfficientFormerClsHead
    DeiTClsHead
    ConformerHead
+   ArcFaceClsHead
    MultiLabelClsHead
    MultiLabelLinearClsHead
+   CSRAClsHead
 
 .. module:: mmcls.models.losses
 
