@@ -127,6 +127,8 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
             Defaults to an empty dict.
         ffn_cfg (dict): The configuration for the ffn layer.
             Defaults to ``dict(add_identity=False)``.
+        with_cls_token (bool): To indicate the backbone has cls_token or not.
+            Defaults to True.
         init_cfg (dict or List[dict], optional): Initialization config dict.
             Defaults to None.
     """
@@ -148,7 +150,7 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
                  attn_cfg: dict = dict(),
                  ffn_cfg: dict = dict(add_identity=False),
                  use_window_attention: bool = False,
-                 is_cls_token: bool = True,
+                 with_cls_token: bool = True,
                  init_cfg: Optional[Union[dict, List[dict]]] = None) -> None:
         super().__init__(
             embed_dims=embed_dims,
@@ -175,7 +177,7 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
             'attn_drop': attn_drop_rate,
             'proj_drop': drop_rate,
             'bias': bias,
-            'is_cls_token': is_cls_token,
+            'with_cls_token': with_cls_token,
             **attn_cfg,
         }
         self.attn = BEiTAttention(**attn_cfg)
@@ -409,7 +411,8 @@ class BEiT(VisionTransformer):
         if use_shared_rel_pos_bias:
             self.rel_pos_bias = RelativePositionBias(
                 window_size=self.patch_resolution,
-                num_heads=self.arch_settings['num_heads'])
+                num_heads=self.arch_settings['num_heads'],
+                with_cls_token=with_cls_token)
         else:
             self.rel_pos_bias = None
         self._register_load_state_dict_pre_hook(
@@ -479,7 +482,8 @@ class BEiT(VisionTransformer):
                 use_rel_pos_bias=use_rel_pos_bias,
                 drop_rate=drop_rate,
                 drop_path_rate=dpr[i],
-                norm_cfg=norm_cfg)
+                norm_cfg=norm_cfg,
+                with_cls_token=self.with_cls_token)
             _layer_cfg.update(layer_cfgs[i])
             self.layers.append(BEiTTransformerEncoderLayer(**_layer_cfg))
 

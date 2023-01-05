@@ -1017,8 +1017,8 @@ class BEiTAdapter(BEiT):
                 drop_path_rate=dpr[i],
                 norm_cfg=norm_cfg,
                 use_window_attention=True,
-                is_cls_token=False,
-                window_size=(self.window_size[i], self.window_size[i]))
+                window_size=(self.window_size[i], self.window_size[i]),
+                with_cls_token=self.with_cls_token)
             _layer_cfg.update(layer_cfgs[i])
             self.layers.append(BEiTTransformerEncoderLayer(**_layer_cfg))
 
