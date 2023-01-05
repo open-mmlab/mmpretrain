@@ -29,7 +29,7 @@ The pre-trained models on ImageNet-21k are used to fine-tune, and therefore don'
 | :------------: | :--------: | :-------: | :------: | :---------: |
 | MViTv2-base\*  |  224x224   |   51.47   |  10.20   | [model](<>) |
 | MViTv2-large\* |  224x224   |  217.99   |  42.10   | [model](<>) |
-| MViTv2-huge\*  |  224x224   |  673.39   |  397.91  | [model](<>) |
+| MViTv2-huge\*  |  224x224   |  665.34   |  119.92  | [model](<>) |
 
 ### ImageNet-1k
 
