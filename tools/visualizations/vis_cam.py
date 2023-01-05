@@ -10,6 +10,7 @@ import mmcv
 import numpy as np
 from mmcv.transforms import Compose
 from mmengine.config import Config, DictAction
+from mmengine.dataset import default_collate
 from mmengine.utils import to_2tuple
 from torch.nn import BatchNorm1d, BatchNorm2d, GroupNorm, LayerNorm
 
@@ -276,7 +277,7 @@ def main():
     transforms = Compose(cfg.test_dataloader.dataset.pipeline)
     data = transforms({'img_path': args.img})
     src_img = copy.deepcopy(data['inputs']).numpy().transpose(1, 2, 0)
-    data = model.data_preprocessor(data, False)
+    data = model.data_preprocessor(default_collate([data]), False)
 
     # build target layers
     if args.target_layers:
@@ -306,7 +307,7 @@ def main():
 
     # calculate cam grads and show|save the visualization image
     grayscale_cam = cam(
-        data['inputs'].unsqueeze(0),
+        data['inputs'],
         targets,
         eigen_smooth=args.eigen_smooth,
         aug_smooth=args.aug_smooth)

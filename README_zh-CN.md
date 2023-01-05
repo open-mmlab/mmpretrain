@@ -57,6 +57,13 @@ MMClassification 是一款基于 PyTorch 的开源图像分类工具箱，是 [O
 
 ## 更新日志
 
+2022/12/30 发布了 v1.0.0rc5 版本
+
+- 支持了**EVA**, **RevViT**, **EfficientnetV2**, **CLIP**, **TinyViT** 和 **MixMIM** 等骨干网络结构
+- 复现了 ConvNeXt 和 RepVGG 的训练精度。
+- 支持了 **多任务** 训练和测试，详见 [#1229](https://github.com/open-mmlab/mmclassification/pull/1229)
+- 支持了测试时增强（TTA），详见 [#1161](https://github.com/open-mmlab/mmclassification/pull/1161)
+
 2022/12/06 发布了 v1.0.0rc4 版本
 
 - 更新了主要 API 接口，用以方便地获取 MMClassification 中预定义的模型。详见 [#1236](https://github.com/open-mmlab/mmclassification/pull/1236)。
@@ -155,6 +162,7 @@ mim install -e .
 - [x] [RepLKNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/replknet)
 - [x] [BEiT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/beit) / [BEiT v2](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/beitv2)
 - [x] [EVA](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/eva)
+- [x] [MixMIM](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mixmim)
 
 </details>
 

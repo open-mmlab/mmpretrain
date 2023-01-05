@@ -13,6 +13,7 @@ Import:
   - configs/tnt/metafile.yml
   - configs/vision_transformer/metafile.yml
   - configs/t2t_vit/metafile.yml
+  - configs/tinyvit/metafile.yml
   - configs/mlp_mixer/metafile.yml
   - configs/conformer/metafile.yml
   - configs/regnet/metafile.yml
@@ -44,3 +45,6 @@ Import:
   - configs/beitv2/metafile.yml
   - configs/eva/metafile.yml
   - configs/revvit/metafile.yml
+  - configs/clip/metafile.yml
+  - configs/mixmim/metafile.yml
+  - configs/efficientnet_v2/metafile.yml
