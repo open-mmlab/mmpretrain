@@ -6,7 +6,8 @@ from pathlib import Path
 import yaml
 from prompt_toolkit import ANSI
 from prompt_toolkit import prompt as _prompt
-from prompt_toolkit.completion import PathCompleter, WordCompleter
+from prompt_toolkit.completion import (FuzzyCompleter, FuzzyWordCompleter,
+                                       PathCompleter)
 from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Confirm, Prompt
@@ -18,7 +19,7 @@ To display metafile or fill missing fields of the metafile.
 
 MMCLS_ROOT = Path(__file__).absolute().parents[1].resolve().absolute()
 console = Console()
-dataset_completer = WordCompleter(
+dataset_completer = FuzzyWordCompleter(
     ['ImageNet-1k', 'ImageNet-21k', 'CIFAR-10', 'CIFAR-100'])
 
 
@@ -50,7 +51,7 @@ def prompt(message,
     if default is None and out == '':
         return None
     else:
-        return out
+        return out.strip()
 
 
 class MyDumper(yaml.Dumper):
@@ -176,7 +177,7 @@ def fill_model(model: dict, defaults: dict):
     if config is None:
         config = prompt(
             'Please input the [red]config[/] file path: ',
-            completer=PathCompleter())
+            completer=FuzzyCompleter(PathCompleter()))
         if config is not None:
             config = str(Path(config).absolute().relative_to(MMCLS_ROOT))
     model['Config'] = config
@@ -223,7 +224,7 @@ def fill_model(model: dict, defaults: dict):
             completer=dataset_completer)
         if test_dataset is not None:
             task = Prompt.ask(
-                'Please input the [red]test task[/]: ',
+                'Please input the [red]test task[/]',
                 default='Image Classification')
             if task == 'Image Classification':
                 metrics = {}
@@ -264,7 +265,7 @@ def fill_model(model: dict, defaults: dict):
             converted_from['Weights'] = prompt(
                 'Please fill the original checkpoint download link: ')
             converted_from['Code'] = Prompt.ask(
-                'Please fill the original repository link: ',
+                'Please fill the original repository link',
                 default=defaults.get('Convert From.Code', None))
             defaults['Convert From.Code'] = converted_from['Code']
             model['Converted From'] = converted_from
