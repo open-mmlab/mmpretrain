@@ -2,22 +2,29 @@
 import torch
 import torch.nn as nn
 from mmcv.cnn import Linear
+from mmengine.model import BaseModule
 
 from mmcls.models.heads import ClsHead
 from mmcls.registry import MODELS
 
 
-class BatchNormLinear(nn.Sequential):
+class BatchNormLinear(BaseModule):
 
     def __init__(self, in_feature, out_feature, bias=True, std=0.02):
         super(BatchNormLinear, self).__init__()
         bn = nn.BatchNorm1d(in_feature)
         linear = Linear(in_feature, out_feature, bias=bias)
-        nn.init.trunc_normal_(linear.weight, std)
+        self.std = std
         if bias:
             nn.init.constant_(linear.bias, 0)
         self.bn = bn
         self.linear = linear
+
+    def init_weights(self):
+        super(BatchNormLinear, self).init_weights()
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.trunc_normal_(m.weight, std=self.std)
 
     @torch.no_grad()
     def fuse(self):
