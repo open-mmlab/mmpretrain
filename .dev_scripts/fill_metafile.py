@@ -1,25 +1,16 @@
 import argparse
 import copy
-import pkg_resources
 from functools import partial
 from pathlib import Path
 
 import yaml
+from prompt_toolkit import ANSI
+from prompt_toolkit import prompt as _prompt
+from prompt_toolkit.completion import PathCompleter, WordCompleter
 from rich.console import Console
 from rich.panel import Panel
 from rich.prompt import Confirm, Prompt
 from rich.syntax import Syntax
-
-from mmcls import digit_version
-
-if digit_version(pkg_resources.get_distribution(
-        'rich').version) < digit_version('12.0'):
-    # The rich is not compatible with readline
-    # see https://github.com/Textualize/rich/issues/2293
-    # To use readline, you need `pip install rich<12.0`
-    import readline
-    readline.set_completer_delims('\t')
-    readline.parse_and_bind('tab: complete')
 
 prog_description = """\
 To display metafile or fill missing fields of the metafile.
@@ -27,6 +18,39 @@ To display metafile or fill missing fields of the metafile.
 
 MMCLS_ROOT = Path(__file__).absolute().parents[1].resolve().absolute()
 console = Console()
+dataset_completer = WordCompleter(
+    ['ImageNet-1k', 'ImageNet-21k', 'CIFAR-10', 'CIFAR-100'])
+
+
+def prompt(message,
+           allow_empty=True,
+           default=None,
+           multiple=False,
+           completer=None):
+    with console.capture() as capture:
+        console.print(message, end='')
+
+    message = ANSI(capture.get())
+    ask = partial(
+        _prompt, message=message, default=default or '', completer=completer)
+
+    out = ask()
+
+    if multiple:
+        outs = []
+        while out != '':
+            outs.append(out)
+            out = ask()
+        return outs
+
+    if not allow_empty and out == '':
+        while out == '':
+            out = ask()
+
+    if default is None and out == '':
+        return None
+    else:
+        return out
 
 
 class MyDumper(yaml.Dumper):
@@ -87,44 +111,45 @@ def get_flops(config_path):
         model.forward = model.extract_feat
         model.to('cpu')
         inputs = (torch.randn((1, 3, *resolution)), )
-        flops = FlopCountAnalysis(model, inputs).total()
+        analyzer = FlopCountAnalysis(model, inputs)
+        analyzer.unsupported_ops_warnings(False)
+        analyzer.uncalled_modules_warnings(False)
+        flops = analyzer.total()
         params = parameter_count(model)['']
     return int(flops), int(params)
 
 
 def fill_collection(collection: dict):
     if collection.get('Name') is None:
-        name = Prompt.ask('Please input the collection [red]name[/]')
-        while name == '':
-            name = Prompt.ask('Please input the collection [red]name[/]')
+        name = prompt(
+            'Please input the collection [red]name[/]: ', allow_empty=False)
         collection['Name'] = name
 
     if collection.get('Metadata', {}).get('Architecture') is None:
-        architecture = []
-        arch = Prompt.ask('Please input the model [red]architecture[/] '
-                          '(input empty to finish)')
-        while arch != '':
-            architecture.append(arch)
-            arch = Prompt.ask('Please input the model [red]architecture[/] '
-                              '(input empty to finish)')
+        architecture = prompt(
+            'Please input the model [red]architecture[/] '
+            '(input empty to finish): ',
+            multiple=True)
         if len(architecture) > 0:
             collection.setdefault('Metadata', {})
             collection['Metadata']['Architecture'] = architecture
 
     if collection.get('Paper', {}).get('Title') is None:
-        title = Prompt.ask('Please input the [red]paper title[/]') or None
+        title = prompt('Please input the [red]paper title[/]: ')
     else:
         title = collection['Paper']['Title']
     if collection.get('Paper', {}).get('URL') is None:
-        url = Prompt.ask('Please input the [red]paper url[/]') or None
+        url = prompt('Please input the [red]paper url[/]: ')
     else:
         url = collection['Paper']['URL']
     paper = dict(Title=title, URL=url)
     collection['Paper'] = paper
 
     if collection.get('README') is None:
-        readme = Prompt.ask(
-            'Please input the [red]README[/] file path') or None
+        readme = prompt(
+            'Please input the [red]README[/] file path: ',
+            completer=PathCompleter(file_filter=lambda name: Path(name).is_dir(
+            ) or 'README.md' in name))
         if readme is not None:
             collection['README'] = str(
                 Path(readme).absolute().relative_to(MMCLS_ROOT))
@@ -141,89 +166,82 @@ def fill_collection(collection: dict):
 
 def fill_model(model: dict, defaults: dict):
     if model.get('Name') is None:
-        name = Prompt.ask('Please input the model [red]name[/]')
-        while name == '':
-            name = Prompt.ask('Please input the model [red]name[/]')
+        name = prompt(
+            'Please input the model [red]name[/]: ', allow_empty=False)
         model['Name'] = name
 
     model['In Collection'] = defaults.get('In Collection')
 
     config = model.get('Config')
     if config is None:
-        config = Prompt.ask(
-            'Please input the [red]config[/] file path') or None
+        config = prompt(
+            'Please input the [red]config[/] file path: ',
+            completer=PathCompleter())
         if config is not None:
             config = str(Path(config).absolute().relative_to(MMCLS_ROOT))
     model['Config'] = config
 
-    if model.get('Metadata', {}).get('Training Data') is None:
-        training_data = []
-        dataset = Prompt.ask('Please input all [red]training dataset[/], '
-                             'include pre-training (input empty to finish)')
-        while dataset != '':
-            training_data.append(dataset)
-            dataset = Prompt.ask(
-                'Please input all [red]training dataset[/], '
-                'include pre-training (input empty to finish)')
-        if len(training_data) > 1:
-            model.setdefault('Metadata', {})
-            model['Metadata']['Training Data'] = training_data
-        elif len(training_data) == 1:
-            model.setdefault('Metadata', {})
-            model['Metadata']['Training Data'] = training_data[0]
-
     flops = model.get('Metadata', {}).get('FLOPs')
     params = model.get('Metadata', {}).get('Parameters')
-    if flops is None:
-        if model.get('Config') is None:
-            flops = Prompt.ask('Please specify the [red]FLOPs[/] manually '
-                               'since no config file.') or None
-            if flops is not None:
-                flops = int(flops)
-    if params is None:
-        if model.get('Config') is None:
-            params = Prompt.ask(
-                'Please specify the [red]number of parameters[/] '
-                'manually since no config file') or None
-            if params is not None:
-                params = int(params)
     if model.get('Config') is not None and (
             MMCLS_ROOT / model['Config']).exists() and (flops is None
                                                         or params is None):
-        flops, params = get_flops(str(MMCLS_ROOT / model['Config']))
+        try:
+            print('Automatically compute FLOPs and Parameters from config.')
+            flops, params = get_flops(str(MMCLS_ROOT / model['Config']))
+        except Exception:
+            print('Failed to compute FLOPs and Parameters.')
+
+    if flops is None:
+        flops = prompt('Please specify the [red]FLOPs[/]: ')
+        if flops is not None:
+            flops = int(flops)
+    if params is None:
+        params = prompt('Please specify the [red]number of parameters[/]: ')
+        if params is not None:
+            params = int(params)
+
     model.setdefault('Metadata', {})
     model['Metadata'].setdefault('FLOPs', flops)
     model['Metadata'].setdefault('Parameters', params)
 
+    if model.get('Metadata', {}).get('Training Data') is None:
+        training_data = prompt(
+            'Please input all [red]training dataset[/], '
+            'include pre-training (input empty to finish): ',
+            completer=dataset_completer,
+            multiple=True)
+        if len(training_data) > 1:
+            model['Metadata']['Training Data'] = training_data
+        elif len(training_data) == 1:
+            model['Metadata']['Training Data'] = training_data[0]
+
     results = model.get('Results')
     if results is None:
-        test_dataset = Prompt.ask(
-            'Please input the [red]test dataset[/]') or None
+        test_dataset = prompt(
+            'Please input the [red]test dataset[/]: ',
+            completer=dataset_completer)
         if test_dataset is not None:
             task = Prompt.ask(
-                'Please input the [red]test task[/]',
+                'Please input the [red]test task[/]: ',
                 default='Image Classification')
             if task == 'Image Classification':
                 metrics = {}
-                top1 = Prompt.ask(
-                    'Please input the [red]top-1 accuracy[/]') or None
-                top5 = Prompt.ask(
-                    'Please input the [red]top-5 accuracy[/]') or None
+                top1 = prompt('Please input the [red]top-1 accuracy[/]: ')
+                top5 = prompt('Please input the [red]top-5 accuracy[/]: ')
                 if top1 is not None:
                     metrics['Top 1 Accuracy'] = round(float(top1), 2)
                 if top5 is not None:
                     metrics['Top 5 Accuracy'] = round(float(top5), 2)
             else:
-                metrics = {}
-                metric = Prompt.ask(
+                metrics_list = prompt(
                     'Please input the [red]metrics[/] like "mAP=94.98" '
-                    '(input empty to finish)')
-                while metric != '':
+                    '(input empty to finish): ',
+                    multiple=True)
+                metrics = {}
+                for metric in metrics_list:
                     k, v = metric.split('=')[:2]
                     metrics[k] = round(float(v), 2)
-                    metric = Prompt.ask(
-                        'Please input the [red]metrics[/] like "mAP=94.98" '
-                        '(input empty to finish)')
             if len(metrics) > 0:
                 results = [{
                     'Dataset': test_dataset,
@@ -234,8 +252,7 @@ def fill_model(model: dict, defaults: dict):
 
     weights = model.get('Weights')
     if weights is None:
-        weights = Prompt.ask(
-            'Please input the [red]checkpoint download link[/]') or None
+        weights = prompt('Please input the [red]checkpoint download link[/]: ')
     model['Weights'] = weights
 
     if model.get('Converted From') is None and model.get(
@@ -244,14 +261,14 @@ def fill_model(model: dict, defaults: dict):
                 'Is the checkpoint is converted from [red]other repository[/]?'
         ):
             converted_from = {}
-            converted_from['Weights'] = Prompt.ask(
-                'Please fill the original checkpoint download link')
+            converted_from['Weights'] = prompt(
+                'Please fill the original checkpoint download link: ')
             converted_from['Code'] = Prompt.ask(
-                'Please fill the original repository link',
+                'Please fill the original repository link: ',
                 default=defaults.get('Convert From.Code', None))
             defaults['Convert From.Code'] = converted_from['Code']
             model['Converted From'] = converted_from
-    else:
+    elif model.get('Converted From', {}).get('Code') is not None:
         defaults['Convert From.Code'] = model['Converted From']['Code']
 
     order = [

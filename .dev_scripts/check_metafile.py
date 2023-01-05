@@ -17,7 +17,7 @@ MMCLS_ROOT = Path(__file__).absolute().parents[1]
 def parse_args():
     parser = argparse.ArgumentParser(description=prog_description)
     parser.add_argument(
-        'metafile', type=Path, help='The path of the matafile.')
+        'metafile', type=Path, nargs='+', help='The path of the matafile.')
     parser.add_argument(
         '--Wall',
         '-w',
@@ -75,9 +75,7 @@ def check_model(model: Model, wall=True):
                   f'same as the model name {model.name}.')
 
 
-def main():
-    args = parse_args()
-    metafile: Path = args.metafile
+def main(metafile: Path, args):
     if metafile.name != 'metafile.yml':
         # Avoid checking other yaml file.
         return
@@ -106,4 +104,6 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    args = parse_args()
+    for metafile in args.metafile:
+        main(metafile, args)

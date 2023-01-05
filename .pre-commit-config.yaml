@@ -55,7 +55,7 @@ repos:
         description: Check the format of metafile
         entry: python .dev_scripts/check_metafile.py
         language: python
-        files: \.(yml)$
+        files: (metafile)\.(yml)$
         additional_dependencies:
           - modelindex
   # - repo: local
