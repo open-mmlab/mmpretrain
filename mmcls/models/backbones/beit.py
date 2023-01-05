@@ -127,6 +127,10 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
             Defaults to an empty dict.
         ffn_cfg (dict): The configuration for the ffn layer.
             Defaults to ``dict(add_identity=False)``.
+        use_window_attention (bool): Whether to use window attention in
+            BEiTTransformerEncoderLayer. This implementation is based on
+            `ViTDet <https://arxiv.org/abs/2203.16527>`_
+            Defaults to False.
         with_cls_token (bool): To indicate the backbone has cls_token or not.
             Defaults to True.
         init_cfg (dict or List[dict], optional): Initialization config dict.
