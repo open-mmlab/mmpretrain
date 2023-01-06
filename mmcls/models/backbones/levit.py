@@ -3,7 +3,7 @@ import itertools
 
 import torch
 import torch.nn as nn
-from mmcv.cnn import Linear, build_conv_layer, build_norm_layer
+from mmcv.cnn import Linear, build_norm_layer
 from mmengine.model import BaseModule
 
 from mmcls.models.backbones.base_backbone import BaseBackbone
@@ -40,7 +40,7 @@ class HybridBackbone(BaseModule):
         self.patch_embed = nn.Sequential()
 
         for i in range(len(self.input_channels)):
-            conv_bn = ConvalutionBatchNorm(
+            conv_bn = ConvolutionBatchNorm(
                 self.input_channels[i],
                 self.output_channels[i],
                 kernel_size=kernel_size,
@@ -61,7 +61,7 @@ class HybridBackbone(BaseModule):
         return x
 
 
-class ConvalutionBatchNorm(BaseModule):
+class ConvolutionBatchNorm(BaseModule):
 
     def __init__(
             self,
@@ -76,15 +76,13 @@ class ConvalutionBatchNorm(BaseModule):
             conv_cfg=None,
             norm_cfg=dict(type='BN'),
     ):
-        super(ConvalutionBatchNorm, self).__init__()
-        self.conv_cfg = conv_cfg
+        super(ConvolutionBatchNorm, self).__init__()
         self.norm_cfg = norm_cfg
         self.input_channel = in_channel
         self.output_channel = out_channel
         _, bn = build_norm_layer(norm_cfg, out_channel)
         self.bn_weight_init = bn_weight_init
-        self.conv = build_conv_layer(
-            conv_cfg,
+        self.conv = nn.Conv2d(
             in_channel,
             out_channel,
             kernel_size=kernel_size,
@@ -96,7 +94,7 @@ class ConvalutionBatchNorm(BaseModule):
         self.bn = bn
 
     def init_weights(self):
-        super(ConvalutionBatchNorm, self).init_weights()
+        super(ConvolutionBatchNorm, self).init_weights()
         for m in self.modules():
             if isinstance(m, nn.BatchNorm2d):
                 torch.nn.init.constant_(m.weight, self.bn_weight_init)
@@ -109,8 +107,7 @@ class ConvalutionBatchNorm(BaseModule):
         w = self.conv.weight * w[:, None, None, None]
         b = self.bn.bias - self.bn.running_mean * self.bn.weight / \
             (self.bn.running_var + self.bn.eps) ** 0.5
-        m = build_conv_layer(
-            self.conv_cfg,
+        m = nn.Conv2d(
             w.size(1) * self.conv.groups,
             w.size(0),
             w.shape[2:],
