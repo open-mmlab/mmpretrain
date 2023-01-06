@@ -1,3 +1,4 @@
+# flake8: noqa
 # Configuration file for the Sphinx documentation builder.
 #
 # This file only contains a selection of the most common options. For a full
@@ -86,7 +87,7 @@ html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#
+# yapf: disable
 html_theme_options = {
     'menu': [
         {
@@ -94,35 +95,32 @@ html_theme_options = {
             'url': 'https://github.com/open-mmlab/mmclassification'
         },
         {
-            'name':
-            'Colab Tutorials',
+            'name': 'Colab Tutorials',
             'children': [
-                {
-                    'name':
-                    'Train and inference with shell commands',
-                    'url':
-                    'https://colab.research.google.com/github/'
-                    'open-mmlab/mmclassification/blob/master/docs/en/'
-                    'tutorials/MMClassification_tools.ipynb',
-                },
-                {
-                    'name':
-                    'Train and inference with Python APIs',
-                    'url':
-                    'https://colab.research.google.com/github/'
-                    'open-mmlab/mmclassification/blob/master/docs/en/'
-                    'tutorials/MMClassification_python.ipynb',
-                },
+                {'name': 'Train and inference with shell commands',
+                 'url': 'https://colab.research.google.com/github/mzr1996/mmclassification-tutorial/blob/master/1.x/MMClassification_tools.ipynb'},
+                {'name': 'Train and inference with Python APIs',
+                 'url': 'https://colab.research.google.com/github/mzr1996/mmclassification-tutorial/blob/master/1.x/MMClassification_python.ipynb'},
             ]
         },
+        {
+            'name': 'Version',
+            'children': [
+                {'name': 'MMClassification 0.x',
+                 'url': 'https://mmclassification.readthedocs.io/en/latest/',
+                 'description': 'master branch'},
+                {'name': 'MMClassification 1.x',
+                 'url': 'https://mmclassification.readthedocs.io/en/dev-1.x/',
+                 'description': '1.x branch'},
+            ],
+        }
     ],
     # Specify the language of shared menu
-    'menu_lang':
-    'en',
+    'menu_lang': 'en',
     # Disable the default edit on GitHub
-    'default_edit_on_github':
-    False,
+    'default_edit_on_github': False,
 }
+# yapf: enable
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -156,23 +154,6 @@ latex_elements = {
     # Additional stuff for the LaTeX preamble.
     #
     # 'preamble': '',
-    'preamble':
-    r'''
-\hypersetup{unicode=true}
-\usepackage{CJKutf8}
-\DeclareUnicodeCharacter{00A0}{\nobreakspace}
-\DeclareUnicodeCharacter{2203}{\ensuremath{\exists}}
-\DeclareUnicodeCharacter{2200}{\ensuremath{\forall}}
-\DeclareUnicodeCharacter{2286}{\ensuremath{\subseteq}}
-\DeclareUnicodeCharacter{2713}{x}
-\DeclareUnicodeCharacter{27FA}{\ensuremath{\Longleftrightarrow}}
-\DeclareUnicodeCharacter{221A}{\ensuremath{\sqrt{}}}
-\DeclareUnicodeCharacter{221B}{\ensuremath{\sqrt[3]{}}}
-\DeclareUnicodeCharacter{2295}{\ensuremath{\oplus}}
-\DeclareUnicodeCharacter{2297}{\ensuremath{\otimes}}
-\begin{CJK}{UTF8}{gbsn}
-\AtEndDocument{\end{CJK}}
-''',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
@@ -258,7 +239,8 @@ notfound_template = '404.html'
 
 
 def builder_inited_handler(app):
-    subprocess.run(['./stat.py'])
+    if subprocess.run(['./stat.py']).returncode != 0:
+        raise RuntimeError('Failed to run the script `stat.py`.')
 
 
 def setup(app):

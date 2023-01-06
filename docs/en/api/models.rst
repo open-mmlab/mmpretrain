@@ -58,6 +58,7 @@ Backbones
    :template: classtemplate.rst
 
    AlexNet
+   BEiT
    CSPDarkNet
    CSPNet
    CSPResNeXt
@@ -72,9 +73,10 @@ Backbones
    EdgeNeXt
    EfficientFormer
    EfficientNet
+   EfficientNetV2
    FocalNet
-   HorNet
    HRNet
+   HorNet
    InceptionV3
    LeNet5
    MViT
@@ -96,6 +98,7 @@ Backbones
    ResNetV1c
    ResNetV1d
    ResNet_CIFAR
+   RevVisionTransformer
    SEResNeXt
    SEResNet
    SVT

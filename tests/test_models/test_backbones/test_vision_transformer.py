@@ -73,6 +73,12 @@ class TestVisionTransformer(TestCase):
             self.assertAlmostEqual(layer.ffn.dropout_layer.drop_prob, dpr)
             dpr += dpr_inc
 
+        # Test model structure:  prenorm
+        cfg = deepcopy(self.cfg)
+        cfg['pre_norm'] = True
+        model = VisionTransformer(**cfg)
+        self.assertNotEqual(model.pre_norm.__class__, torch.nn.Identity)
+
     def test_init_weights(self):
         # test weight init cfg
         cfg = deepcopy(self.cfg)

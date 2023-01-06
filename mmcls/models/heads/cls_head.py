@@ -2,6 +2,7 @@
 from typing import List, Optional, Tuple, Union
 
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 
 from mmcls.evaluation.metrics import Accuracy
@@ -34,7 +35,9 @@ class ClsHead(BaseHead):
         super(ClsHead, self).__init__(init_cfg=init_cfg)
 
         self.topk = topk
-        self.loss_module = MODELS.build(loss)
+        if not isinstance(loss, nn.Module):
+            loss = MODELS.build(loss)
+        self.loss_module = loss
         self.cal_acc = cal_acc
 
     def pre_logits(self, feats: Tuple[torch.Tensor]) -> torch.Tensor:
@@ -105,9 +108,10 @@ class ClsHead(BaseHead):
         return losses
 
     def predict(
-            self,
-            feats: Tuple[torch.Tensor],
-            data_samples: List[ClsDataSample] = None) -> List[ClsDataSample]:
+        self,
+        feats: Tuple[torch.Tensor],
+        data_samples: List[Union[ClsDataSample, None]] = None
+    ) -> List[ClsDataSample]:
         """Inference without augmentation.
 
         Args:
@@ -115,7 +119,7 @@ class ClsHead(BaseHead):
                 Multiple stage inputs are acceptable but only the last stage
                 will be used to classify. The shape of every item should be
                 ``(num_samples, num_classes)``.
-            data_samples (List[ClsDataSample], optional): The annotation
+            data_samples (List[ClsDataSample | None], optional): The annotation
                 data of every samples. If not None, set ``pred_label`` of
                 the input data samples. Defaults to None.
 
@@ -138,14 +142,15 @@ class ClsHead(BaseHead):
         pred_scores = F.softmax(cls_score, dim=1)
         pred_labels = pred_scores.argmax(dim=1, keepdim=True).detach()
 
-        if data_samples is not None:
-            for data_sample, score, label in zip(data_samples, pred_scores,
-                                                 pred_labels):
-                data_sample.set_pred_score(score).set_pred_label(label)
-        else:
-            data_samples = []
-            for score, label in zip(pred_scores, pred_labels):
-                data_samples.append(ClsDataSample().set_pred_score(
-                    score).set_pred_label(label))
+        out_data_samples = []
+        if data_samples is None:
+            data_samples = [None for _ in range(pred_scores.size(0))]
 
-        return data_samples
+        for data_sample, score, label in zip(data_samples, pred_scores,
+                                             pred_labels):
+            if data_sample is None:
+                data_sample = ClsDataSample()
+
+            data_sample.set_pred_score(score).set_pred_label(label)
+            out_data_samples.append(data_sample)
+        return out_data_samples

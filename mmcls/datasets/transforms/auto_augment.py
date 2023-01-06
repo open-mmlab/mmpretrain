@@ -7,10 +7,9 @@ from typing import List, Optional, Sequence, Tuple, Union
 
 import mmcv
 import numpy as np
-from mmcv import BaseTransform, RandomChoice
-from mmcv.transforms import Compose
+from mmcv.transforms import BaseTransform, Compose, RandomChoice
 from mmcv.transforms.utils import cache_randomness
-from mmengine import is_list_of, is_seq_of
+from mmengine.utils import is_list_of, is_seq_of
 
 from mmcls.registry import TRANSFORMS
 

@@ -1,5 +1,68 @@
 # Changelog
 
+## v1.0.0rc5(30/12/2022)
+
+### Highlights
+
+- Support EVA, RevViT, EfficientnetV2, CLIP, TinyViT and MixMIM backbones.
+- Reproduce the training accuracy of ConvNeXt and RepVGG.
+- Support multi-task training and testing.
+- Support Test-time Augmentation.
+
+### New Features
+
+- [Feature] Add EfficientnetV2 Backbone. ([#1253](https://github.com/open-mmlab/mmclassification/pull/1253))
+- [Feature] Support TTA and add `--tta` in `tools/test.py`. ([#1161](https://github.com/open-mmlab/mmclassification/pull/1161))
+- [Feature] Support Multi-task. ([#1229](https://github.com/open-mmlab/mmclassification/pull/1229))
+- [Feature] Add clip backbone. ([#1258](https://github.com/open-mmlab/mmclassification/pull/1258))
+- [Feature] Add mixmim backbone with checkpoints. ([#1224](https://github.com/open-mmlab/mmclassification/pull/1224))
+- [Feature] Add TinyViT for dev-1.x. ([#1042](https://github.com/open-mmlab/mmclassification/pull/1042))
+- [Feature] Add some scripts for development. ([#1257](https://github.com/open-mmlab/mmclassification/pull/1257))
+- [Feature] Support EVA. ([#1239](https://github.com/open-mmlab/mmclassification/pull/1239))
+- [Feature] Implementation of RevViT. ([#1127](https://github.com/open-mmlab/mmclassification/pull/1127))
+
+### Improvements
+
+- [Reproduce] Reproduce RepVGG  Training Accuracy. ([#1264](https://github.com/open-mmlab/mmclassification/pull/1264))
+- [Enhance] Support ConvNeXt More Weights. ([#1240](https://github.com/open-mmlab/mmclassification/pull/1240))
+- [Reproduce] Update ConvNeXt config files. ([#1256](https://github.com/open-mmlab/mmclassification/pull/1256))
+- [CI] Update CI to test PyTorch 1.13.0. ([#1260](https://github.com/open-mmlab/mmclassification/pull/1260))
+- [Project] Add ACCV workshop 1st Solution. ([#1245](https://github.com/open-mmlab/mmclassification/pull/1245))
+- [Project] Add Example project. ([#1254](https://github.com/open-mmlab/mmclassification/pull/1254))
+
+### Bug Fixes
+
+- [Fix] Fix imports in transforms. ([#1255](https://github.com/open-mmlab/mmclassification/pull/1255))
+- [Fix] Fix CAM visualization. ([#1248](https://github.com/open-mmlab/mmclassification/pull/1248))
+- [Fix] Fix the requirements and lazy register mmcls models. ([#1275](https://github.com/open-mmlab/mmclassification/pull/1275))
+
+## v1.0.0rc4(06/12/2022)
+
+### Highlights
+
+- Upgrade API to get pre-defined models of MMClassification. See [#1236](https://github.com/open-mmlab/mmclassification/pull/1236) for more details.
+- Refactor BEiT backbone and support v1/v2 inference. See [#1144](https://github.com/open-mmlab/mmclassification/pull/1144).
+
+### New Features
+
+- Support getting model from the name defined in the model-index file. ([#1236](https://github.com/open-mmlab/mmclassification/pull/1236))
+
+### Improvements
+
+- Support evaluate on both EMA and non-EMA models. ([#1204](https://github.com/open-mmlab/mmclassification/pull/1204))
+- Refactor BEiT backbone and support v1/v2 inference. ([#1144](https://github.com/open-mmlab/mmclassification/pull/1144))
+
+### Bug Fixes
+
+- Fix `reparameterize_model.py` doesn't save meta info. ([#1221](https://github.com/open-mmlab/mmclassification/pull/1221))
+- Fix dict update in BEiT. ([#1234](https://github.com/open-mmlab/mmclassification/pull/1234))
+
+### Docs Update
+
+- Update install tutorial. ([#1223](https://github.com/open-mmlab/mmclassification/pull/1223))
+- Update MobileNetv2 & MobileNetv3 readme. ([#1222](https://github.com/open-mmlab/mmclassification/pull/1222))
+- Add version selection in the banner. ([#1217](https://github.com/open-mmlab/mmclassification/pull/1217))
+
 ## v1.0.0rc3(21/11/2022)
 
 ### Highlights

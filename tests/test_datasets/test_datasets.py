@@ -9,9 +9,8 @@ from unittest.mock import MagicMock, call, patch
 
 import numpy as np
 from mmengine.logging import MMLogger
-from mmengine.registry import TRANSFORMS
 
-from mmcls.registry import DATASETS
+from mmcls.registry import DATASETS, TRANSFORMS
 from mmcls.utils import register_all_modules
 
 register_all_modules()
@@ -79,7 +78,7 @@ class TestBaseDataset(TestCase):
         else:
             self.assertIn('The `CLASSES` meta info is not set.', repr(dataset))
 
-        self.assertIn("Haven't been initialized", repr(dataset))
+        self.assertIn('Haven\'t been initialized', repr(dataset))
         dataset.full_init()
         self.assertIn(f'Number of samples: \t{len(dataset)}', repr(dataset))
 
@@ -452,7 +451,7 @@ class TestCIFAR10(TestBaseDataset):
         cfg = {**self.DEFAULT_ARGS, 'lazy_init': True}
         dataset = dataset_class(**cfg)
 
-        self.assertIn(f'Prefix of data: \t{dataset.data_prefix["root"]}',
+        self.assertIn(f"Prefix of data: \t{dataset.data_prefix['root']}",
                       repr(dataset))
 
     @classmethod
@@ -597,7 +596,7 @@ class TestVOC(TestBaseDataset):
         }
         dataset = dataset_class(**cfg)
 
-        self.assertIn("Haven't been initialized", repr(dataset))
+        self.assertIn('Haven\'t been initialized', repr(dataset))
         dataset.full_init()
         self.assertIn(f'Number of samples: \t{len(dataset)}', repr(dataset))
 
@@ -770,7 +769,7 @@ class TestMNIST(TestBaseDataset):
         cfg = {**self.DEFAULT_ARGS, 'lazy_init': True}
         dataset = dataset_class(**cfg)
 
-        self.assertIn(f'Prefix of data: \t{dataset.data_prefix["root"]}',
+        self.assertIn(f"Prefix of data: \t{dataset.data_prefix['root']}",
                       repr(dataset))
 
     @classmethod
@@ -874,3 +873,70 @@ class TestCUB(TestBaseDataset):
     @classmethod
     def tearDownClass(cls):
         cls.tmpdir.cleanup()
+
+
+class TestMultiTaskDataset(TestCase):
+    DATASET_TYPE = 'MultiTaskDataset'
+
+    DEFAULT_ARGS = dict(
+        data_root=ASSETS_ROOT,
+        ann_file=osp.join(ASSETS_ROOT, 'multi-task.json'),
+        pipeline=[])
+
+    def test_metainfo(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test default behavior
+        dataset = dataset_class(**self.DEFAULT_ARGS)
+        metainfo = {'tasks': ['gender', 'wear']}
+        self.assertDictEqual(dataset.metainfo, metainfo)
+        self.assertFalse(dataset.test_mode)
+
+    def test_parse_data_info(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+        dataset = dataset_class(**self.DEFAULT_ARGS)
+
+        data = dataset.parse_data_info({
+            'img_path': 'a.jpg',
+            'gt_label': {
+                'gender': 0
+            }
+        })
+        self.assertDictContainsSubset(
+            {
+                'img_path': os.path.join(ASSETS_ROOT, 'a.jpg'),
+                'gt_label': {
+                    'gender': 0
+                }
+            }, data)
+        np.testing.assert_equal(data['gt_label']['gender'], 0)
+
+        # Test missing path
+        with self.assertRaisesRegex(AssertionError, 'have `img_path` field'):
+            dataset.parse_data_info(
+                {'gt_label': {
+                    'gender': 0,
+                    'wear': [1, 0, 1, 0]
+                }})
+
+    def test_repr(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+        dataset = dataset_class(**self.DEFAULT_ARGS)
+
+        task_doc = ('For 2 tasks\n     gender \n     wear ')
+        self.assertIn(task_doc, repr(dataset))
+
+    def test_load_data_list(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test default behavior
+        dataset = dataset_class(**self.DEFAULT_ARGS)
+
+        data = dataset.load_data_list(self.DEFAULT_ARGS['ann_file'])
+        self.assertIsInstance(data, list)
+        np.testing.assert_equal(len(data), 3)
+        np.testing.assert_equal(data[0]['gt_label'], {'gender': 0})
+        np.testing.assert_equal(data[1]['gt_label'], {
+            'gender': 0,
+            'wear': [1, 0, 1, 0]
+        })

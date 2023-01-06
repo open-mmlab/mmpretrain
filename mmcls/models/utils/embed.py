@@ -50,9 +50,11 @@ def resize_pos_embed(pos_embed,
     src_weight = pos_embed[:, num_extra_tokens:]
     src_weight = src_weight.reshape(1, src_h, src_w, C).permute(0, 3, 1, 2)
 
+    # The cubic interpolate algorithm only accepts float32
     dst_weight = F.interpolate(
-        src_weight, size=dst_shape, align_corners=False, mode=mode)
+        src_weight.float(), size=dst_shape, align_corners=False, mode=mode)
     dst_weight = torch.flatten(dst_weight, 2).transpose(1, 2)
+    dst_weight = dst_weight.to(src_weight.dtype)
 
     return torch.cat((extra_tokens, dst_weight), dim=1)
 
