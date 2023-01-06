@@ -1,0 +1,433 @@
+Collections:
+  - Name: ConvNeXt V2
+    Metadata:
+      Architecture:
+        - Global Response Normalization
+    Paper:
+      Title: Co-designing and Scaling ConvNets with Masked Autoencoders
+      URL: http://arxiv.org/abs/2301.00808
+    README: configs/convnext_v2/README.md
+
+Models:
+  - Name: convnext-v2-atto_3rdparty-fcmae_in1k
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 551718080
+      Parameters: 3708400
+    In Collection: ConvNeXt V2
+    Results: null
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-atto_3rdparty-fcmae_in1k_20230104-07514db4.pth
+    Config: configs/convnext_v2/convnext-v2-atto_32xb32_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnextv2/pt_only/convnextv2_atto_1k_224_fcmae.pt
+      Code: https://github.com/facebookresearch/ConvNeXt-V2
+  - Name: convnext-v2-atto_fcmae-pre_3rdparty_in1k
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 551718080
+      Parameters: 3708400
+    In Collection: ConvNeXt V2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 76.64
+          Top 5 Accuracy: 93.04
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-atto_fcmae-pre_3rdparty_in1k_20230104-23765f83.pth
+    Config: configs/convnext_v2/convnext-v2-atto_32xb32_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnextv2/im1k/convnextv2_atto_1k_224_ema.pt
+      Code: https://github.com/facebookresearch/ConvNeXt-V2
+  - Name: convnext-v2-femto_3rdparty-fcmae_in1k
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 784892544
+      Parameters: 5233240
+    In Collection: ConvNeXt V2
+    Results: null
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-femto_3rdparty-fcmae_in1k_20230104-adbe2082.pth
+    Config: configs/convnext_v2/convnext-v2-femto_32xb32_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnextv2/pt_only/convnextv2_femto_1k_224_fcmae.pt
+      Code: https://github.com/facebookresearch/ConvNeXt-V2
+  - Name: convnext-v2-femto_fcmae-pre_3rdparty_in1k
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 784892544
+      Parameters: 5233240
+    In Collection: ConvNeXt V2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 78.48
+          Top 5 Accuracy: 93.98
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-femto_fcmae-pre_3rdparty_in1k_20230104-92a75d75.pth
+    Config: configs/convnext_v2/convnext-v2-femto_32xb32_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnextv2/im1k/convnextv2_femto_1k_224_ema.pt
+      Code: https://github.com/facebookresearch/ConvNeXt-V2
+  - Name: convnext-v2-pico_3rdparty-fcmae_in1k
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 1374072320
+      Parameters: 9066280
+    In Collection: ConvNeXt V2
+    Results: null
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-pico_3rdparty-fcmae_in1k_20230104-147b1b59.pth
+    Config: configs/convnext_v2/convnext-v2-pico_32xb32_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnextv2/pt_only/convnextv2_pico_1k_224_fcmae.pt
+      Code: https://github.com/facebookresearch/ConvNeXt-V2
+  - Name: convnext-v2-pico_fcmae-pre_3rdparty_in1k
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 1374072320
+      Parameters: 9066280
+    In Collection: ConvNeXt V2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 80.31
+          Top 5 Accuracy: 95.08
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-pico_fcmae-pre_3rdparty_in1k_20230104-d20263ca.pth
+    Config: configs/convnext_v2/convnext-v2-pico_32xb32_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnextv2/im1k/convnextv2_pico_1k_224_ema.pt
+      Code: https://github.com/facebookresearch/ConvNeXt-V2
+  - Name: convnext-v2-nano_3rdparty-fcmae_in1k
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 2454926720
+      Parameters: 15623800
+    In Collection: ConvNeXt V2
+    Results: null
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-nano_3rdparty-fcmae_in1k_20230104-3dd1f29e.pth
+    Config: configs/convnext_v2/convnext-v2-nano_32xb32_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnextv2/pt_only/convnextv2_nano_1k_224_fcmae.pt
+      Code: https://github.com/facebookresearch/ConvNeXt-V2
+  - Name: convnext-v2-nano_fcmae-pre_3rdparty_in1k
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 2454926720
+      Parameters: 15623800
+    In Collection: ConvNeXt V2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 81.86
+          Top 5 Accuracy: 95.75
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-nano_fcmae-pre_3rdparty_in1k_20230104-fe1aaaf2.pth
+    Config: configs/convnext_v2/convnext-v2-nano_32xb32_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnextv2/im1k/convnextv2_nano_1k_224_ema.pt
+      Code: https://github.com/facebookresearch/ConvNeXt-V2
+  - Name: convnext-v2-nano_fcmae-in21k-pre_3rdparty_in1k
+    Metadata:
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+      FLOPs: 2454926720
+      Parameters: 15623800
+    In Collection: ConvNeXt V2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 82.04
+          Top 5 Accuracy: 96.16
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-nano_fcmae-in21k-pre_3rdparty_in1k_20230104-91fa8ae2.pth
+    Config: configs/convnext_v2/convnext-v2-nano_32xb32_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnextv2/im22k/convnextv2_nano_22k_224_ema.pt
+      Code: https://github.com/facebookresearch/ConvNeXt-V2
+  - Name: convnext-v2-tiny_3rdparty-fcmae_in1k
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 4469631744
+      Parameters: 28635496
+    In Collection: ConvNeXt V2
+    Results: null
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-tiny_3rdparty-fcmae_in1k_20230104-80513adc.pth
+    Config: configs/convnext_v2/convnext-v2-tiny_32xb32_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnextv2/pt_only/convnextv2_tiny_1k_224_fcmae.pt
+      Code: https://github.com/facebookresearch/ConvNeXt-V2
+  - Name: convnext-v2-tiny_fcmae-pre_3rdparty_in1k
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 4469631744
+      Parameters: 28635496
+    In Collection: ConvNeXt V2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 82.94
+          Top 5 Accuracy: 96.29
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-tiny_fcmae-pre_3rdparty_in1k_20230104-471a86de.pth
+    Config: configs/convnext_v2/convnext-v2-tiny_32xb32_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnextv2/im1k/convnextv2_tiny_1k_224_ema.pt
+      Code: https://github.com/facebookresearch/ConvNeXt-V2
+  - Name: convnext-v2-tiny_fcmae-in21k-pre_3rdparty_in1k
+    Metadata:
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+      FLOPs: 4469631744
+      Parameters: 28635496
+    In Collection: ConvNeXt V2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.89
+          Top 5 Accuracy: 96.96
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-tiny_fcmae-in21k-pre_3rdparty_in1k_20230104-8cc8b8f2.pth
+    Config: configs/convnext_v2/convnext-v2-tiny_32xb32_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnextv2/im22k/convnextv2_tiny_22k_224_ema.pt
+      Code: https://github.com/facebookresearch/ConvNeXt-V2
+  - Name: convnext-v2-nano_fcmae-in21k-pre_3rdparty_in1k-384px
+    Metadata:
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+      FLOPs: 7214472320
+      Parameters: 15623800
+    In Collection: ConvNeXt V2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.36
+          Top 5 Accuracy: 96.75
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-nano_fcmae-in21k-pre_3rdparty_in1k-384px_20230104-f951ae87.pth
+    Config: configs/convnext_v2/convnext-v2-nano_32xb32_in1k-384px.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnextv2/im22k/convnextv2_nano_22k_384_ema.pt
+      Code: https://github.com/facebookresearch/ConvNeXt-V2
+  - Name: convnext-v2-tiny_fcmae-in21k-pre_3rdparty_in1k-384px
+    Metadata:
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+      FLOPs: 13135236864
+      Parameters: 28635496
+    In Collection: ConvNeXt V2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 85.09
+          Top 5 Accuracy: 97.63
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-tiny_fcmae-in21k-pre_3rdparty_in1k-384px_20230104-d8579f84.pth
+    Config: configs/convnext_v2/convnext-v2-tiny_32xb32_in1k-384px.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnextv2/im22k/convnextv2_tiny_22k_384_ema.pt
+      Code: https://github.com/facebookresearch/ConvNeXt-V2
+  - Name: convnext-v2-base_3rdparty-fcmae_in1k
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 15382561792
+      Parameters: 88717800
+    In Collection: ConvNeXt V2
+    Results: null
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-base_3rdparty-fcmae_in1k_20230104-8a798eaf.pth
+    Config: configs/convnext_v2/convnext-v2-base_32xb32_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnextv2/pt_only/convnextv2_base_1k_224_fcmae.pt
+      Code: https://github.com/facebookresearch/ConvNeXt-V2
+  - Name: convnext-v2-base_fcmae-pre_3rdparty_in1k
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 15382561792
+      Parameters: 88717800
+    In Collection: ConvNeXt V2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 84.87
+          Top 5 Accuracy: 97.08
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-base_fcmae-pre_3rdparty_in1k_20230104-00a70fa4.pth
+    Config: configs/convnext_v2/convnext-v2-base_32xb32_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnextv2/im1k/convnextv2_base_1k_224_ema.pt
+      Code: https://github.com/facebookresearch/ConvNeXt-V2
+  - Name: convnext-v2-base_fcmae-in21k-pre_3rdparty_in1k
+    Metadata:
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+      FLOPs: 15382561792
+      Parameters: 88717800
+    In Collection: ConvNeXt V2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 86.74
+          Top 5 Accuracy: 98.02
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-base_fcmae-in21k-pre_3rdparty_in1k_20230104-c48d16a5.pth
+    Config: configs/convnext_v2/convnext-v2-base_32xb32_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnextv2/im22k/convnextv2_base_22k_224_ema.pt
+      Code: https://github.com/facebookresearch/ConvNeXt-V2
+  - Name: convnext-v2-large_3rdparty-fcmae_in1k
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 34403182080
+      Parameters: 197956840
+    In Collection: ConvNeXt V2
+    Results: null
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-large_3rdparty-fcmae_in1k_20230104-bf38df92.pth
+    Config: configs/convnext_v2/convnext-v2-large_32xb32_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnextv2/pt_only/convnextv2_large_1k_224_fcmae.pt
+      Code: https://github.com/facebookresearch/ConvNeXt-V2
+  - Name: convnext-v2-large_fcmae-pre_3rdparty_in1k
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 34403182080
+      Parameters: 197956840
+    In Collection: ConvNeXt V2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 85.76
+          Top 5 Accuracy: 97.59
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-large_fcmae-pre_3rdparty_in1k_20230104-ef393013.pth
+    Config: configs/convnext_v2/convnext-v2-large_32xb32_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnextv2/im1k/convnextv2_large_1k_224_ema.pt
+      Code: https://github.com/facebookresearch/ConvNeXt-V2
+  - Name: convnext-v2-large_fcmae-in21k-pre_3rdparty_in1k
+    Metadata:
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+      FLOPs: 34403182080
+      Parameters: 197956840
+    In Collection: ConvNeXt V2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 87.26
+          Top 5 Accuracy: 98.24
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-large_fcmae-in21k-pre_3rdparty_in1k_20230104-d9c4dc0c.pth
+    Config: configs/convnext_v2/convnext-v2-large_32xb32_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnextv2/im22k/convnextv2_large_22k_224_ema.pt
+      Code: https://github.com/facebookresearch/ConvNeXt-V2
+  - Name: convnext-v2-base_fcmae-in21k-pre_3rdparty_in1k-384px
+    Metadata:
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+      FLOPs: 45205885952
+      Parameters: 88717800
+    In Collection: ConvNeXt V2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 87.63
+          Top 5 Accuracy: 98.42
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-base_fcmae-in21k-pre_3rdparty_in1k-384px_20230104-379425cc.pth
+    Config: configs/convnext_v2/convnext-v2-base_32xb32_in1k-384px.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnextv2/im22k/convnextv2_base_22k_384_ema.pt
+      Code: https://github.com/facebookresearch/ConvNeXt-V2
+  - Name: convnext-v2-large_fcmae-in21k-pre_3rdparty_in1k-384px
+    Metadata:
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+      FLOPs: 101103214080
+      Parameters: 197956840
+    In Collection: ConvNeXt V2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 88.18
+          Top 5 Accuracy: 98.52
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-large_fcmae-in21k-pre_3rdparty_in1k-384px_20230104-9139a1f3.pth
+    Config: configs/convnext_v2/convnext-v2-large_32xb32_in1k-384px.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnextv2/im22k/convnextv2_large_22k_384_ema.pt
+      Code: https://github.com/facebookresearch/ConvNeXt-V2
+  - Name: convnext-v2-huge_3rdparty-fcmae_in1k
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 114998639360
+      Parameters: 660289640
+    In Collection: ConvNeXt V2
+    Results: null
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-huge_3rdparty-fcmae_in1k_20230104-fe43ae6c.pth
+    Config: configs/convnext_v2/convnext-v2-huge_32xb32_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnextv2/pt_only/convnextv2_huge_1k_224_fcmae.pt
+      Code: https://github.com/facebookresearch/ConvNeXt-V2
+  - Name: convnext-v2-huge_fcmae-pre_3rdparty_in1k
+    Metadata:
+      Training Data: ImageNet-1k
+      FLOPs: 114998639360
+      Parameters: 660289640
+    In Collection: ConvNeXt V2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 86.25
+          Top 5 Accuracy: 97.75
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-huge_fcmae-pre_3rdparty_in1k_20230104-f795e5b8.pth
+    Config: configs/convnext_v2/convnext-v2-huge_32xb32_in1k.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnextv2/im1k/convnextv2_huge_1k_224_ema.pt
+      Code: https://github.com/facebookresearch/ConvNeXt-V2
+  - Name: convnext-v2-huge_fcmae-in21k-pre_3rdparty_in1k-384px
+    Metadata:
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+      FLOPs: 337955157760
+      Parameters: 660289640
+    In Collection: ConvNeXt V2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 88.68
+          Top 5 Accuracy: 98.73
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-huge_fcmae-in21k-pre_3rdparty_in1k-384px_20230104-02a4eb35.pth
+    Config: configs/convnext_v2/convnext-v2-huge_32xb32_in1k-384px.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnextv2/im22k/convnextv2_huge_22k_384_ema.pt
+      Code: https://github.com/facebookresearch/ConvNeXt-V2
+  - Name: convnext-v2-huge_fcmae-in21k-pre_3rdparty_in1k-512px
+    Metadata:
+      Training Data:
+        - ImageNet-21k
+        - ImageNet-1k
+      FLOPs: 600809158400
+      Parameters: 660289640
+    In Collection: ConvNeXt V2
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 88.86
+          Top 5 Accuracy: 98.74
+        Task: Image Classification
+    Weights: https://download.openmmlab.com/mmclassification/v0/convnext-v2/convnext-v2-huge_fcmae-in21k-pre_3rdparty_in1k-512px_20230104-ce32e63c.pth
+    Config: configs/convnext_v2/convnext-v2-huge_32xb32_in1k-512px.py
+    Converted From:
+      Weights: https://dl.fbaipublicfiles.com/convnext/convnextv2/im22k/convnextv2_huge_22k_512_ema.pt
+      Code: https://github.com/facebookresearch/ConvNeXt-V2
