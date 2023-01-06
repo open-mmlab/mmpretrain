@@ -190,9 +190,6 @@ def get_model(model_name, pretrained=False, device=None, **kwargs):
     else:
         ckpt = None
 
-    if metainfo.config is None:
-        raise ValueError(
-            f"The model {model_name} doesn't support building by now.")
     model = init_model(metainfo.config, ckpt, device=device, **kwargs)
     return model
 
