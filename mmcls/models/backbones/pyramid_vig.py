@@ -2,10 +2,11 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from mmcv.cnn import build_activation_layer, build_conv_layer
 from torch.nn import Sequential as Seq
 
 from mmcls.registry import MODELS
-from .vig import FFN, Grapher, act_layer
+from .vig import FFN, Grapher
 
 
 class Stem(nn.Module):
@@ -16,13 +17,15 @@ class Stem(nn.Module):
     def __init__(self, img_size=224, in_dim=3, out_dim=768, act='relu'):
         super().__init__()
         self.convs = nn.Sequential(
-            nn.Conv2d(in_dim, out_dim // 2, 3, stride=2, padding=1),
+            build_conv_layer(
+                None, in_dim, out_dim // 2, 3, stride=2, padding=1),
             nn.BatchNorm2d(out_dim // 2),
-            act_layer(act),
-            nn.Conv2d(out_dim // 2, out_dim, 3, stride=2, padding=1),
+            build_activation_layer(dict(type=act)),
+            build_conv_layer(
+                None, out_dim // 2, out_dim, 3, stride=2, padding=1),
             nn.BatchNorm2d(out_dim),
-            act_layer(act),
-            nn.Conv2d(out_dim, out_dim, 3, stride=1, padding=1),
+            build_activation_layer(dict(type=act)),
+            build_conv_layer(None, out_dim, out_dim, 3, stride=1, padding=1),
             nn.BatchNorm2d(out_dim),
         )
 
@@ -37,7 +40,7 @@ class Downsample(nn.Module):
     def __init__(self, in_dim=3, out_dim=768):
         super().__init__()
         self.conv = nn.Sequential(
-            nn.Conv2d(in_dim, out_dim, 3, stride=2, padding=1),
+            build_conv_layer(None, in_dim, out_dim, 3, stride=2, padding=1),
             nn.BatchNorm2d(out_dim),
         )
 
@@ -47,11 +50,11 @@ class Downsample(nn.Module):
 
 
 @MODELS.register_module()
-class Pyramid_Vig(torch.nn.Module):
+class pyramid_vig(torch.nn.Module):
 
     def __init__(self, channels, k, act, norm, bias, epsilon, use_stochastic,
                  conv, drop_path, dropout, blocks, n_classes):
-        super(Pyramid_Vig, self).__init__()
+        super(pyramid_vig, self).__init__()
 
         self.n_blocks = sum(blocks)
         channels = channels
@@ -99,9 +102,10 @@ class Pyramid_Vig(torch.nn.Module):
         self.backbone = Seq(*self.backbone)
 
         self.prediction = Seq(
-            nn.Conv2d(channels[-1], 1024, 1, bias=True), nn.BatchNorm2d(1024),
-            act_layer(act), nn.Dropout(dropout),
-            nn.Conv2d(1024, n_classes, 1, bias=True))
+            build_conv_layer(None, channels[-1], 1024, 1, bias=True),
+            nn.BatchNorm2d(1024), build_activation_layer(dict(type=act)),
+            nn.Dropout(dropout),
+            build_conv_layer(None, 1024, n_classes, 1, bias=True))
 
     def forward(self, inputs):
         x = self.stem(inputs) + self.pos_embed
