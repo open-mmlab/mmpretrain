@@ -17,22 +17,22 @@ class ImbalancedDatasetMixin:
     """A mixin class for Imbalance Dataset.
 
     Args:
-        imbalance_ratio (int): imbalance ratio, representing the ratio between
+        imb_ratio (int): imbalance ratio, representing the ratio between
             the sample size of the most sampled class and the sample size of
             the least sampled class. Defaults to 10.
-        imbalance_type (str): imbalance type, choose from 'exp' and 'step'.
+        imb_type (str): imbalance type, choose from 'exp' and 'step'.
             Defaults to 'exp'.
     """
 
     def __init__(self,
                  *args,
-                 imbalance_ratio: int = 10,
-                 imbalance_type: str = 'exp',
+                 imb_ratio: int = 10,
+                 imb_type: str = 'exp',
                  **kwargs):
-        assert imbalance_ratio > 0 and isinstance(imbalance_ratio, int)
-        assert imbalance_type in ('exp', 'step')
-        self.imbalance_ratio = 1 / imbalance_ratio
-        self.imbalance_type = imbalance_type
+        assert imb_ratio > 0 and isinstance(imb_ratio, int)
+        assert imb_type in ('exp', 'step')
+        self.imb_ratio = 1 / imb_ratio
+        self.imb_type = imb_type
 
         super().__init__(*args, **kwargs)
 
@@ -72,8 +72,8 @@ class ImbalancedDatasetMixin:
         class2sampeId_dict = self._get_class_dict(data_list)
         num_class, num_samle = len(class2sampeId_dict), len(data_list)
         img_num_per_cls = self._get_img_num_per_cls(num_class, num_samle,
-                                                    self.imbalance_type,
-                                                    self.imbalance_ratio)
+                                                    self.imb_type,
+                                                    self.imb_ratio)
         new_data_list = []
         classes = list(class2sampeId_dict.keys())
         for the_class, the_img_num in zip(classes, img_num_per_cls):
@@ -271,10 +271,7 @@ class CIFAR100(CIFAR10):
 
 
 @DATASETS.register_module()
-class LongTailCIFAR100(
-        ImbalancedDatasetMixin,
-        CIFAR100,
-):
+class LongTailCIFAR100(ImbalancedDatasetMixin, CIFAR100):
     """`Long Tail CIFAR100 <https://www.cs.toronto.edu/~kriz/cifar.html>`_
     Dataset.
 
@@ -288,10 +285,10 @@ class LongTailCIFAR100(
             Defaults to ''.
         download (bool): Whether to download the dataset if not exists.
             Defaults to True.
-        imbalance_ratio (int): imbalance ratio, representing the ratio between
+        imb_ratio (int): imbalance ratio, representing the ratio between
             the sample size of the most sampled class and the sample size of
             the least sampled class. Defaults to 10.
-        imbalance_type (str): imbalance type, choose from 'exp' and 'step'.
+        imb_type (str): imbalance type, choose from 'exp' and 'step'.
             Defaults to 'exp'.
         **kwargs: Other keyword arguments in :class:`BaseDataset`.
     """
@@ -315,10 +312,10 @@ class LongTailCIFAR10(ImbalancedDatasetMixin, CIFAR10):
             Defaults to ''.
         download (bool): Whether to download the dataset if not exists.
             Defaults to True.
-        imbalance_ratio (int): imbalance ratio, representing the ratio between
+        imb_ratio (int): imbalance ratio, representing the ratio between
             the sample size of the most sampled class and the sample size of
             the least sampled class. Defaults to 10.
-        imbalance_type (str): imbalance type, choose from 'exp' and 'step'.
+        imb_type (str): imbalance type, choose from 'exp' and 'step'.
             Defaults to 'exp'.
         **kwargs: Other keyword arguments in :class:`BaseDataset`.
     """

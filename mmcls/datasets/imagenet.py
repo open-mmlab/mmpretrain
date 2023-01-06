@@ -49,9 +49,6 @@ class ImageNet(CustomDataset):
 class LongTailImageNet(ImbalancedDatasetMixin, ImageNet):
     """`Long Tail ImageNet <http://www.image-net.org>`_ Dataset.
 
-    The dataset supports two kinds of annotation format. More details can be
-    found in :class:`CustomDataset`.
-
     Args:
         ann_file (str): Annotation file path. Defaults to ''.
         metainfo (dict, optional): Meta information for dataset, such as class
@@ -59,10 +56,10 @@ class LongTailImageNet(ImbalancedDatasetMixin, ImageNet):
         data_root (str): The root directory for ``data_prefix`` and
             ``ann_file``. Defaults to ''.
         data_prefix (str | dict): Prefix for training data. Defaults to ''.
-        imbalance_ratio (int): imbalance ratio, representing the ratio between
+        imb_ratio (int): imbalance ratio, representing the ratio between
             the sample size of the most sampled class and the sample size of
             the least sampled class. Defaults to 10.
-        imbalance_type (str): imbalance type, choose from 'exp' and 'step'.
+        imb_type (str): imbalance type, choose from 'exp' and 'step'.
             Defaults to 'exp'.
         **kwargs: Other keyword arguments in :class:`CustomDataset` and
             :class:`BaseDataset`.

@@ -18,7 +18,7 @@ param_scheduler = dict(
     gamma=0.2,
 )
 
-train_dataloader = dict(dataset=dict(imbalance_ratio=10))
+train_dataloader = dict(dataset=dict(imb_ratio=10))
 
 default_hooks = dict(
     checkpoint=dict(type='CheckpointHook', interval=1, max_keep_ckpts=3))
