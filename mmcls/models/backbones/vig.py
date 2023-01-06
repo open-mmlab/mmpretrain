@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import build_activation_layer, build_conv_layer
-from timm.models.layers import DropPath
+from mmcv.cnn.bricks import DropPath
 
 from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.registry import MODELS
@@ -528,12 +528,29 @@ class Stem(nn.Module):
 
 @MODELS.register_module()
 class vig(BaseBackbone):
+    # n_blocks,channels
+    arch_settings = {'ti': [12, 192], 's': [16, 320], 'b': [16, 640]}
 
-    def __init__(self, channels, k, act, norm, bias, epsilon, use_dilation,
-                 use_stochastic, conv, n_blocks, drop_path, dropout, n_classes,
-                 relative_pos):
+    def __init__(self,
+                 model_cnf,
+                 k,
+                 act,
+                 norm,
+                 bias,
+                 epsilon,
+                 use_dilation,
+                 use_stochastic,
+                 conv,
+                 drop_path,
+                 dropout,
+                 n_classes,
+                 relative_pos,
+                 norm_eval=False,
+                 frozen_stages=0):
         super(vig, self).__init__()
-        self.n_blocks = n_blocks
+        model_cnf = self.arch_settings[model_cnf]
+        self.n_blocks = model_cnf[0]
+        channels = model_cnf[1]
         self.stem = Stem(out_dim=channels, act=act)
         dpr = [x.item() for x in torch.linspace(0, drop_path, self.n_blocks)
                ]  # stochastic depth decay rule
@@ -541,9 +558,9 @@ class vig(BaseBackbone):
             int(x.item()) for x in torch.linspace(k, 2 * k, self.n_blocks)
         ]  # number of knn's k
         max_dilation = 196 // max(num_knn)
-
+        self.norm_eval = norm_eval
         self.pos_embed = nn.Parameter(torch.zeros(1, channels, 14, 14))
-
+        self.frozen_stages = frozen_stages
         if use_dilation:
             self.backbone = nn.Sequential(*[
                 nn.Sequential(
@@ -601,3 +618,20 @@ class vig(BaseBackbone):
         x = self.prediction(x).squeeze(-1).squeeze(-1)
         outs.append(x)
         return outs
+
+    def _freeze_stages(self):
+        self.stem.eval()
+        for i in range(self.frozen_stages):
+            m = self.backbone[i]
+            m.eval()
+            for param in m.parameters():
+                param.requires_grad = False
+
+    def train(self, mode=True):
+        super(vig, self).train(mode)
+        self._freeze_stages()
+        if mode and self.norm_eval:
+            for m in self.modules():
+                # trick: eval have effect on BatchNorm only
+                if isinstance(m, nn.BatchNorm2d):
+                    m.eval()

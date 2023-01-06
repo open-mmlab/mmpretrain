@@ -52,13 +52,33 @@ class Downsample(nn.Module):
 
 @MODELS.register_module()
 class pyramid_vig(BaseBackbone):
+    # blocks, channels
+    arch_settings = {
+        'ti': [[2, 2, 6, 2], [48, 96, 240, 384]],
+        's': [[2, 2, 6, 2], [80, 160, 400, 640]],
+        'm': [[2, 2, 16, 2], [96, 192, 384, 768]],
+        'b': [[2, 2, 18, 2], [128, 256, 512, 1024]]
+    }
 
-    def __init__(self, channels, k, act, norm, bias, epsilon, use_stochastic,
-                 conv, drop_path, dropout, blocks, n_classes):
+    def __init__(self,
+                 model_cnf,
+                 k,
+                 act,
+                 norm,
+                 bias,
+                 epsilon,
+                 use_stochastic,
+                 conv,
+                 drop_path,
+                 dropout,
+                 n_classes,
+                 norm_eval=False,
+                 frozen_stages=0):
         super(pyramid_vig, self).__init__()
-
+        model_cnf = self.arch_settings[model_cnf]
+        blocks = model_cnf[0]
         self.n_blocks = sum(blocks)
-        channels = channels
+        channels = model_cnf[1]
         reduce_ratios = [4, 2, 1, 1]
         dpr = [x.item() for x in torch.linspace(0, drop_path, self.n_blocks)
                ]  # stochastic depth decay rule
@@ -108,6 +128,9 @@ class pyramid_vig(BaseBackbone):
             nn.Dropout(dropout),
             build_conv_layer(None, 1024, n_classes, 1, bias=True))
 
+        self.norm_eval = norm_eval
+        self.frozen_stages = frozen_stages
+
     def forward(self, inputs):
         outs = []
         x = self.stem(inputs) + self.pos_embed
@@ -120,3 +143,20 @@ class pyramid_vig(BaseBackbone):
         x = self.prediction(x).squeeze(-1).squeeze(-1)
         outs.append(x)
         return outs
+
+    def _freeze_stages(self):
+        self.stem.eval()
+        for i in range(self.frozen_stages):
+            m = self.backbone[i]
+            m.eval()
+            for param in m.parameters():
+                param.requires_grad = False
+
+    def train(self, mode=True):
+        super(pyramid_vig, self).train(mode)
+        self._freeze_stages()
+        if mode and self.norm_eval:
+            for m in self.modules():
+                # trick: eval have effect on BatchNorm only
+                if isinstance(m, nn.BatchNorm2d):
+                    m.eval()
