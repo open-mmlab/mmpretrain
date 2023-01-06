@@ -116,7 +116,7 @@ class TestMViT(TestCase):
             self.assertEqual(out.shape,
                              (1, 96 * stride, 56 // stride, 56 // stride))
 
-        if digit_version(torch.__version__) < digit_version('1.8.2'):
+        if digit_version(torch.__version__) >= digit_version('1.9.0'):
             # test with checkpoint forward
             cfg = deepcopy(self.cfg)
             cfg['with_cp'] = True
