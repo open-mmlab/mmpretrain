@@ -23,7 +23,7 @@ Models:
       Code: https://github.com/facebookresearch/ConvNeXt-V2
   - Name: convnext-v2-atto_fcmae-pre_3rdparty_in1k
     Metadata:
-      Training Data: Imagenet-1k
+      Training Data: ImageNet-1k
       FLOPs: 551718080
       Parameters: 3708400
     In Collection: ConvNeXt V2

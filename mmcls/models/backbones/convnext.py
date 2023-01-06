@@ -128,15 +128,19 @@ class ConvNeXtBlock(BaseModule):
 
 @MODELS.register_module()
 class ConvNeXt(BaseBackbone):
-    """ConvNeXt.
+    """ConvNeXt v1&v2 backbone.
 
-    A PyTorch implementation of : `A ConvNet for the 2020s
-    <https://arxiv.org/pdf/2201.03545.pdf>`_
+    A PyTorch implementation of `A ConvNet for the 2020s
+    <https://arxiv.org/abs/2201.03545>`_ and
+    `ConvNeXt V2: Co-designing and Scaling ConvNets with Masked Autoencoders
+    <http://arxiv.org/abs/2301.00808>`_
 
     Modified from the `official repo
     <https://github.com/facebookresearch/ConvNeXt/blob/main/models/convnext.py>`_
     and `timm
     <https://github.com/rwightman/pytorch-image-models/blob/master/timm/models/convnext.py>`_.
+
+    To use ConvNeXt v2, please set ``use_grn=True`` and ``layer_scale_init_value=0.``.
 
     Args:
         arch (str | dict): The model's architecture. If string, it should be
@@ -156,6 +160,8 @@ class ConvNeXt(BaseBackbone):
             convolution. Defaults to ``dict(type='GELU')``.
         linear_pw_conv (bool): Whether to use linear layer to do pointwise
             convolution. Defaults to True.
+        use_grn (bool): Whether to add Global Response Normalization in the
+            blocks. Defaults to False.
         drop_path_rate (float): Stochastic depth rate. Defaults to 0.
         layer_scale_init_value (float): Init value for Layer Scale.
             Defaults to 1e-6.
