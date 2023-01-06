@@ -879,3 +879,121 @@ class LeAttention(BaseModule):
         x = (attn @ v).transpose(1, 2).reshape(B, N, self.dh)
         x = self.proj(x)
         return x
+
+
+class LePEAttention(BaseModule):
+    """LePEAttention, which is proposed in `CSWin Transformer: A General Vision
+    Transformer Backbone with Cross-Shaped Windows.
+
+    <https://arxiv.org/abs/2107.00652>`_
+
+    Args:
+        embed_dims (int): Number of input channels.
+        mode (int): The mode of split.
+        split_size (int): The split size. Defaults to 7.
+        num_heads (int): Number of heads. Defaults to 8.
+        ffn_ratio (float): The expansion ratio of feedforward network hidden
+            layer channels. Defaults to 4..
+        attn_drop (float): Dropout rate of the dropout layer after the
+            attention calculation of query and key. Defaults to 0.
+        init_cfg (dict, optional): The extra config for initialization.
+            Defaults to None.
+    """
+
+    def __init__(self,
+                 embed_dims,
+                 mode,
+                 split_size=7,
+                 num_heads=8,
+                 attn_drop=0.,
+                 qk_scale=None,
+                 init_cfg=None):
+        super().__init__(init_cfg)
+        self.embed_dims = embed_dims
+        self.split_size = split_size
+        self.num_heads = num_heads
+        head_dim = embed_dims // num_heads
+        # NOTE scale factor was wrong in my original version,
+        # can set manually to be compat with prev weights
+        self.scale = qk_scale or head_dim**-0.5
+        assert mode in (0, 1)
+        self.mode = mode
+        self.get_v = nn.Conv2d(
+            embed_dims,
+            embed_dims,
+            kernel_size=3,
+            stride=1,
+            padding=1,
+            groups=embed_dims)
+        self.attn_drop = nn.Dropout(attn_drop)
+
+    def img2windows(self, img, H_sp, W_sp):
+        B, C, H, W = img.shape
+        img_reshape = img.view(B, C, H // H_sp, H_sp, W // W_sp, W_sp)
+        img_perm = img_reshape.permute(0, 2, 4, 3, 5, 1).contiguous().reshape(
+            -1, H_sp * W_sp, C)
+        return img_perm
+
+    def windows2img(self, img_splits_hw, H_sp, W_sp, H, W):
+        B = int(img_splits_hw.shape[0] / (H * W / H_sp / W_sp))
+
+        img = img_splits_hw.view(B, H // H_sp, W // W_sp, H_sp, W_sp, -1)
+        img = img.permute(0, 1, 3, 2, 4, 5).contiguous().view(B, H, W, -1)
+        return img
+
+    def im2cswin(self, x, hw_shape):
+        B, _, C = x.shape
+        H, W = hw_shape
+        x = x.transpose(-2, -1).contiguous().view(B, C, H, W)
+        if self.mode == 0:
+            H_sp, W_sp = H, self.split_size
+        else:
+            H_sp, W_sp = self.split_size, W
+        x = self.img2windows(x, H_sp, W_sp)
+        x = x.reshape(-1, H_sp * W_sp, self.num_heads,
+                      C // self.num_heads).permute(0, 2, 1, 3).contiguous()
+        return x
+
+    def get_lepe(self, x, hw_shape, func):
+        B, _, C = x.shape
+        H, W = hw_shape
+        x = x.transpose(-2, -1).contiguous().view(B, C, H, W)
+        if self.mode == 0:
+            H_sp, W_sp = H, self.split_size
+        else:
+            H_sp, W_sp = self.split_size, W
+        x = x.view(B, C, H // H_sp, H_sp, W // W_sp, W_sp)
+        x = x.permute(0, 2, 4, 1, 3, 5).contiguous().reshape(-1, C, H_sp, W_sp)
+        lepe = func(x)
+        lepe = lepe.reshape(-1, self.num_heads, C // self.num_heads,
+                            H_sp * W_sp).permute(0, 1, 3, 2).contiguous()
+        x = x.reshape(-1, self.num_heads, C // self.num_heads,
+                      H_sp * W_sp).permute(0, 1, 3, 2).contiguous()
+        return x, lepe
+
+    def forward(self, qkv, hw_shape):
+        q, k, v = qkv[0], qkv[1], qkv[2]
+        H, W = hw_shape
+        B, L, C = q.shape
+        assert L == H * W, 'flatten img_tokens has wrong size'
+
+        q = self.im2cswin(q, hw_shape)
+        k = self.im2cswin(k, hw_shape)
+        v, lepe = self.get_lepe(v, hw_shape, self.get_v)
+
+        if self.mode == 0:
+            H_sp, W_sp = H, self.split_size
+        else:
+            H_sp, W_sp = self.split_size, W
+
+        q = q * self.scale
+        attn = (q @ k.transpose(-2, -1))
+        attn = nn.functional.softmax(attn, dim=-1, dtype=attn.dtype)
+        attn = self.attn_drop(attn)
+
+        x = (attn @ v) + lepe
+        x = x.transpose(1, 2).reshape(-1, H_sp * W_sp, C)
+
+        x = self.windows2img(x, H_sp, W_sp, H, W).view(B, -1, C)
+
+        return x

@@ -3,7 +3,7 @@ import pytest
 import torch
 
 from mmcls.models.necks import (GeneralizedMeanPooling, GlobalAveragePooling,
-                                HRFuseScales, LinearReduction)
+                                GroupNeck, HRFuseScales, LinearReduction)
 
 
 def test_gap_neck():
@@ -134,3 +134,25 @@ def test_linear_reduction():
 
     with pytest.raises(AssertionError):
         neck([])
+
+
+def test_group_neck():
+
+    # test GroupNeck
+    neck = GroupNeck(
+        embed_dims=16,
+        num_heads=2,
+    )
+    # batch_size, num_features, feature_size(2)
+    fake_input = (torch.rand(1, 16, 24, 24), )
+
+    output = neck(fake_input)
+    # batch_size, num_features
+    assert output[0].shape == (1, 16)
+
+    # test tuple input
+    fake_input = (torch.rand(1, 8, 24, 24), torch.rand(1, 16, 24, 24))
+
+    with pytest.raises(AssertionError):
+        # p must be a value greater then 1
+        neck(fake_input)

@@ -74,6 +74,7 @@ Backbones
    EfficientFormer
    EfficientNet
    EfficientNetV2
+   GPViT
    HRNet
    HorNet
    InceptionV3

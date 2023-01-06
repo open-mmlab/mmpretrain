@@ -164,6 +164,7 @@ Results and models are available in the [model zoo](https://mmclassification.rea
 - [x] [EVA](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/eva)
 - [x] [MixMIM](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mixmim)
 - [x] [EfficientNetV2](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/efficientnet_v2)
+- [x] [GPViT](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/gpvit)
 
 </details>
 
