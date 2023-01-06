@@ -5,14 +5,14 @@ model = dict(
         arch='h',
         img_size=224,
         patch_size=14,
-        drop_path_rate=0.55),
+        drop_path_rate=0.6),
     neck=None,
     head=dict(
         type='VisionTransformerClsHead',
         num_classes=1000,
         in_channels=1280,
-        loss=dict(
-            type='LabelSmoothLoss', label_smooth_val=0.1, mode='original'),
+        loss=dict(type='BinaryCrossEntropyLoss', target_threshold=0.),
+        init_cfg=None,
     ),
     init_cfg=[
         dict(type='TruncNormal', layer='Linear', std=.02),

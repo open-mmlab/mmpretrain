@@ -6,9 +6,10 @@ optim_wrapper = dict(
     paramwise_cfg=dict(
         norm_decay_mult=0.0,
         bias_decay_mult=0.0,
+        flat_decay_mult=0.0,
         custom_keys={
             '.cls_token': dict(decay_mult=0.0),
-            '.pos_embed': dict(decay_mult=0.0)
+            '.pos_embed': dict(decay_mult=0.0),
         }),
 )
 
@@ -17,7 +18,7 @@ param_scheduler = [
     # warm up learning rate scheduler
     dict(
         type='LinearLR',
-        start_factor=3e-4,
+        start_factor=1e-6 / 0.003,
         by_epoch=True,
         begin=0,
         end=5,

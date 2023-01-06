@@ -5,9 +5,6 @@ _base_ = [
     '../_base_/default_runtime.py'
 ]
 
-# model settings
-model = dict(backbone=dict(drop_path_rate=0.05))
-
 # dataset settings
 train_pipeline = _base_['train_pipeline']
 train_pipeline[1]['scale'] = 224
@@ -25,6 +22,3 @@ lr = 4e-3
 optim_wrapper = dict(optimizer=dict(lr=lr))
 param_scheduler = _base_['param_scheduler']
 param_scheduler[0]['start_factor'] = 1e-6 / lr
-
-# runtime settings
-custom_hooks = [dict(type='EMAHook', momentum=4e-5, priority='ABOVE_NORMAL')]

@@ -2,10 +2,14 @@
 optim_wrapper = dict(
     optimizer=dict(type='AdamW', lr=0.003, weight_decay=0.3),
     # specific to vit pretrain
-    paramwise_cfg=dict(custom_keys={
-        '.cls_token': dict(decay_mult=0.0),
-        '.pos_embed': dict(decay_mult=0.0)
-    }),
+    paramwise_cfg=dict(
+        norm_decay_mult=0.0,
+        bias_decay_mult=0.0,
+        flat_decay_mult=0.0,
+        custom_keys={
+            '.cls_token': dict(decay_mult=0.0),
+            '.pos_embed': dict(decay_mult=0.0)
+        }),
 )
 
 # learning policy
@@ -15,17 +19,14 @@ param_scheduler = [
         type='LinearLR',
         start_factor=1e-4,
         by_epoch=True,
-        begin=0,
         end=30,
         # update by iter
         convert_to_iter_based=True),
     # main learning rate scheduler
     dict(
         type='CosineAnnealingLR',
-        T_max=270,
         by_epoch=True,
         begin=30,
-        end=300,
     )
 ]
 
