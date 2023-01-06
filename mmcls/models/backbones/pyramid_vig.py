@@ -5,6 +5,7 @@ import torch.nn.functional as F
 from mmcv.cnn import build_activation_layer, build_conv_layer
 from torch.nn import Sequential as Seq
 
+from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.registry import MODELS
 from .vig import FFN, Grapher
 
@@ -50,7 +51,7 @@ class Downsample(nn.Module):
 
 
 @MODELS.register_module()
-class pyramid_vig(torch.nn.Module):
+class pyramid_vig(BaseBackbone):
 
     def __init__(self, channels, k, act, norm, bias, epsilon, use_stochastic,
                  conv, drop_path, dropout, blocks, n_classes):
@@ -108,11 +109,14 @@ class pyramid_vig(torch.nn.Module):
             build_conv_layer(None, 1024, n_classes, 1, bias=True))
 
     def forward(self, inputs):
+        outs = []
         x = self.stem(inputs) + self.pos_embed
 
         for i in range(len(self.backbone)):
             x = self.backbone[i](x)
+            outs.append(x)
 
         x = F.adaptive_avg_pool2d(x, 1)
         x = self.prediction(x).squeeze(-1).squeeze(-1)
-        return (x, )
+        outs.append(x)
+        return outs

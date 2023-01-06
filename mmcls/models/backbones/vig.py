@@ -6,6 +6,7 @@ import torch.nn.functional as F
 from mmcv.cnn import build_activation_layer, build_conv_layer
 from timm.models.layers import DropPath
 
+from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.registry import MODELS
 
 
@@ -526,7 +527,7 @@ class Stem(nn.Module):
 
 
 @MODELS.register_module()
-class vig(torch.nn.Module):
+class vig(BaseBackbone):
 
     def __init__(self, channels, k, act, norm, bias, epsilon, use_dilation,
                  use_stochastic, conv, n_blocks, drop_path, dropout, n_classes,
@@ -589,11 +590,14 @@ class vig(torch.nn.Module):
             build_conv_layer(None, 1024, n_classes, 1, bias=True))
 
     def forward(self, inputs):
+        outs = []
         x = self.stem(inputs) + self.pos_embed
 
         for i in range(self.n_blocks):
             x = self.backbone[i](x)
+            outs.append(x)
 
         x = F.adaptive_avg_pool2d(x, 1)
         x = self.prediction(x).squeeze(-1).squeeze(-1)
-        return (x, )
+        outs.append(x)
+        return outs
