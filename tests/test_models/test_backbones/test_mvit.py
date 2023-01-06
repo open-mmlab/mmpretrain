@@ -116,22 +116,25 @@ class TestMViT(TestCase):
             self.assertEqual(out.shape,
                              (1, 96 * stride, 56 // stride, 56 // stride))
 
+        # test with checkpoint forward
+        cfg = deepcopy(self.cfg)
+        cfg['with_cp'] = True
+        model = MViT(**cfg)
+        for m in model.modules():
+            if isinstance(m, MultiScaleBlock):
+                self.assertTrue(m.with_cp)
+        model.init_weights()
+        model.train()
         if digit_version(torch.__version__) >= digit_version('1.9.0'):
-            # test with checkpoint forward
-            cfg = deepcopy(self.cfg)
-            cfg['with_cp'] = True
-            model = MViT(**cfg)
-            for m in model.modules():
-                if isinstance(m, MultiScaleBlock):
-                    self.assertTrue(m.with_cp)
-            model.init_weights()
-            model.train()
-
             outs = model(imgs)
             self.assertIsInstance(outs, tuple)
             self.assertEqual(len(outs), 1)
             patch_token = outs[-1]
             self.assertEqual(patch_token.shape, (1, 768, 7, 7))
+        else:
+            with self.assertRaisesRegex(
+                    AssertionError, 'torch.utils.checkpoint does not support'):
+                outs = model(imgs)
 
         # Test forward with dynamic input size
         imgs1 = torch.randn(1, 3, 224, 224)

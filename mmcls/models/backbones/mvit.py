@@ -11,7 +11,7 @@ from mmcv.cnn.bricks import DropPath
 from mmcv.cnn.bricks.transformer import PatchEmbed
 from mmengine.model import BaseModule, ModuleList
 from mmengine.model.weight_init import trunc_normal_
-from mmengine.utils import to_2tuple
+from mmengine.utils import digit_version, to_2tuple
 
 from ..builder import BACKBONES
 from ..utils import resize_pos_embed
@@ -599,6 +599,11 @@ class MViT(BaseBackbone):
         self.use_abs_pos_embed = use_abs_pos_embed
         self.interpolate_mode = interpolate_mode
         self.with_cp = with_cp
+        if with_cp:
+            assert digit_version(
+                torch.__version__) >= digit_version('1.9.0'), \
+                'torch.utils.checkpoint does not support no tensor output'  \
+                'before 1.9.0.'
 
         if isinstance(out_scales, int):
             out_scales = [out_scales]
