@@ -5,11 +5,12 @@ from typing import Sequence
 
 import torch
 import torch.nn as nn
-from mmcv.cnn.bricks import DropPath, build_activation_layer, build_norm_layer
+from mmcv.cnn.bricks import DropPath
 from mmengine.model import BaseModule, ModuleList, Sequential
-from mmengine.registry import MODELS
 
-from ..utils import ChannelMultiheadAttention, PositionEncodingFourier
+from mmcls.registry import MODELS
+from ..utils import (ChannelMultiheadAttention, PositionEncodingFourier,
+                     build_norm_layer)
 from .base_backbone import BaseBackbone
 from .convnext import ConvNeXtBlock
 
@@ -81,7 +82,7 @@ class SDTAEncoder(BaseModule):
         self.pos_embed = PositionEncodingFourier(
             embed_dims=in_channel) if use_pos_emb else None
 
-        self.norm_csa = build_norm_layer(norm_cfg, in_channel)[1]
+        self.norm_csa = build_norm_layer(norm_cfg, in_channel)
         self.gamma_csa = nn.Parameter(
             layer_scale_init_value * torch.ones(in_channel),
             requires_grad=True) if layer_scale_init_value > 0 else None
@@ -92,9 +93,9 @@ class SDTAEncoder(BaseModule):
             attn_drop=attn_drop,
             proj_drop=proj_drop)
 
-        self.norm = build_norm_layer(norm_cfg, in_channel)[1]
+        self.norm = build_norm_layer(norm_cfg, in_channel)
         self.pointwise_conv1 = nn.Linear(in_channel, mlp_ratio * in_channel)
-        self.act = build_activation_layer(act_cfg)
+        self.act = MODELS.build(act_cfg)
         self.pointwise_conv2 = nn.Linear(mlp_ratio * in_channel, in_channel)
         self.gamma = nn.Parameter(
             layer_scale_init_value * torch.ones(in_channel),
@@ -298,7 +299,7 @@ class EdgeNeXt(BaseBackbone):
         self.downsample_layers = ModuleList()
         stem = nn.Sequential(
             nn.Conv2d(in_channels, self.channels[0], kernel_size=4, stride=4),
-            build_norm_layer(norm_cfg, self.channels[0])[1],
+            build_norm_layer(norm_cfg, self.channels[0]),
         )
         self.downsample_layers.append(stem)
 
@@ -310,7 +311,7 @@ class EdgeNeXt(BaseBackbone):
 
             if i >= 1:
                 downsample_layer = nn.Sequential(
-                    build_norm_layer(norm_cfg, self.channels[i - 1])[1],
+                    build_norm_layer(norm_cfg, self.channels[i - 1]),
                     nn.Conv2d(
                         self.channels[i - 1],
                         channels,
@@ -354,7 +355,7 @@ class EdgeNeXt(BaseBackbone):
             if i in self.out_indices:
                 out_norm_cfg = dict(type='LN') if self.gap_before_final_norm \
                     else norm_cfg
-                norm_layer = build_norm_layer(out_norm_cfg, channels)[1]
+                norm_layer = build_norm_layer(out_norm_cfg, channels)
                 self.add_module(f'norm{i}', norm_layer)
 
     def init_weights(self) -> None:
