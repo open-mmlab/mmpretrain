@@ -889,7 +889,9 @@ class LePEAttention(BaseModule):
 
     Args:
         embed_dims (int): Number of input channels.
-        mode (int): The mode of split.
+        mode (int): The mode of split. 0 or 1. 0 is
+            `H_sp, W_sp = H, self.split_size` and 1 is
+            `H_sp, W_sp = self.split_size, W`.
         split_size (int): The split size. Defaults to 7.
         num_heads (int): Number of heads. Defaults to 8.
         ffn_ratio (float): The expansion ratio of feedforward network hidden
