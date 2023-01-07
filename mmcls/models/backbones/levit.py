@@ -156,7 +156,7 @@ class Residual(BaseModule):
                 x.size(0), 1, 1, device=x.device).ge_(
                     self.drop).div(1 - self.drop).detach()
         else:
-            return x + self.block(x)  # add操作
+            return x + self.block(x)  # add
 
 
 class Attention(BaseModule):
@@ -257,11 +257,11 @@ class Subsample(BaseModule):
         self.resolution = resolution
 
     def forward(self, x):
-        B, N, C = x.shape  # 2 196 128
-        x = x.view(B, self.resolution, self.resolution,
-                   C)[  # 2 196 128 -> 2 14 14 128  -> 2 7 7 128
-                       :, ::self.stride, ::self.stride].reshape(
-                           B, -1, C)  # # 2 14 14 128 > 2 49 128
+        B, _, C = x.shape
+        # B, N, C -> B, H, W, C
+        x = x.view(B, self.resolution, self.resolution, C)
+        x = x[:, ::self.stride, ::self.stride]
+        x = x.reshape(B, -1, C)  # B, H', W', C -> B, N', C
         return x
 
 
@@ -286,7 +286,6 @@ class AttentionSubsample(nn.Sequential):
         self.dh = int(attn_ratio * key_dim) * self.num_heads
         self.attn_ratio = attn_ratio
         self.resolution_ = resolution_
-        self.resolution_2 = resolution_**2
         h = self.dh + nh_kd
         self.kv = LinearBatchNorm(in_dim, h)
 
@@ -331,7 +330,7 @@ class AttentionSubsample(nn.Sequential):
                                -1).split([self.key_dim, self.d], dim=3)
         k = k.permute(0, 2, 1, 3)  # BHNC
         v = v.permute(0, 2, 1, 3)  # BHNC
-        q = self.q(x).view(B, self.resolution_2, self.num_heads,
+        q = self.q(x).view(B, self.resolution_**2, self.num_heads,
                            self.key_dim).permute(0, 2, 1, 3)
 
         attn = (q @ k.transpose(-2, -1)) * self.scale + \
@@ -348,61 +347,58 @@ class AttentionSubsample(nn.Sequential):
 class LeViT(BaseBackbone):
     """Vision Transformer with support for patch or hybrid CNN input stage."""
     arch_zoo = {
-        **dict.fromkeys(
-            ['128s'], {
-                'embed_dim': [128, 256, 384],
-                'num_heads': [4, 6, 8],
-                'depth': [2, 3, 4],
-                'key_dim': [16, 16, 16],
-                'down_ops': [['Subsample', 16, 128 // 16, 4, 2, 2],
-                             ['Subsample', 16, 256 // 16, 4, 2, 2]]
-            }),
-        **dict.fromkeys(
-            ['128'], {
-                'embed_dim': [128, 256, 384],
-                'num_heads': [4, 8, 12],
-                'depth': [4, 4, 4],
-                'key_dim': [16, 16, 16],
-                'down_ops': [['Subsample', 16, 128 // 16, 4, 2, 2],
-                             ['Subsample', 16, 256 // 16, 4, 2, 2]]
-            }),
-        **dict.fromkeys(
-            ['192'], {
-                'embed_dim': [192, 288, 384],
-                'num_heads': [3, 5, 6],
-                'depth': [4, 4, 4],
-                'key_dim': [32, 32, 32],
-                'down_ops': [['Subsample', 32, 192 // 32, 4, 2, 2],
-                             ['Subsample', 32, 288 // 32, 4, 2, 2]]
-            }),
-        **dict.fromkeys(
-            ['256'], {
-                'embed_dim': [256, 384, 512],
-                'num_heads': [4, 6, 8],
-                'depth': [4, 4, 4],
-                'key_dim': [32, 32, 32],
-                'down_ops': [['Subsample', 32, 256 // 32, 4, 2, 2],
-                             ['Subsample', 32, 384 // 32, 4, 2, 2]]
-            }),
-        **dict.fromkeys(
-            ['384'], {
-                'embed_dim': [384, 512, 768],
-                'num_heads': [6, 9, 12],
-                'depth': [4, 4, 4],
-                'key_dim': [32, 32, 32],
-                'down_ops': [
-                    ['Subsample', 32, 384 // 32, 4, 2, 2],
-                    ['Subsample', 32, 512 // 32, 4, 2, 2],
-                ]
-            }),
+        '128s': {
+            'embed_dim': [128, 256, 384],
+            'num_heads': [4, 6, 8],
+            'depth': [2, 3, 4],
+            'key_dim': [16, 16, 16],
+            # ('Subsample',key_dim, num_heads,
+            # attn_ratio, mlp_ratio, stride)
+            'down_ops': [['Subsample', 16, 128 // 16, 4, 2, 2],
+                         ['Subsample', 16, 256 // 16, 4, 2, 2]]
+        },
+        '128': {
+            'embed_dim': [128, 256, 384],
+            'num_heads': [4, 8, 12],
+            'depth': [4, 4, 4],
+            'key_dim': [16, 16, 16],
+            'down_ops': [['Subsample', 16, 128 // 16, 4, 2, 2],
+                         ['Subsample', 16, 256 // 16, 4, 2, 2]]
+        },
+        '192': {
+            'embed_dim': [192, 288, 384],
+            'num_heads': [3, 5, 6],
+            'depth': [4, 4, 4],
+            'key_dim': [32, 32, 32],
+            'down_ops': [['Subsample', 32, 192 // 32, 4, 2, 2],
+                         ['Subsample', 32, 288 // 32, 4, 2, 2]]
+        },
+        '256': {
+            'embed_dim': [256, 384, 512],
+            'num_heads': [4, 6, 8],
+            'depth': [4, 4, 4],
+            'key_dim': [32, 32, 32],
+            'down_ops': [['Subsample', 32, 256 // 32, 4, 2, 2],
+                         ['Subsample', 32, 384 // 32, 4, 2, 2]]
+        },
+        '384': {
+            'embed_dim': [384, 512, 768],
+            'num_heads': [6, 9, 12],
+            'depth': [4, 4, 4],
+            'key_dim': [32, 32, 32],
+            'down_ops': [
+                ['Subsample', 32, 384 // 32, 4, 2, 2],
+                ['Subsample', 32, 512 // 32, 4, 2, 2],
+            ]
+        },
     }
 
     def __init__(self,
                  arch='128s',
                  img_size=224,
                  patch_size=16,
-                 attn_ratio=[2],
-                 mlp_ratio=[2],
+                 attn_ratio=2,
+                 mlp_ratio=2,
                  hybrid_backbone=None,
                  attention_activation=torch.nn.Hardswish,
                  mlp_activation=torch.nn.Hardswish,
@@ -441,10 +437,9 @@ class LeViT(BaseBackbone):
 
         self.down_ops.append([''])
         resolution = img_size // patch_size
-        for i, (embed_dim, key_dim, depth, num_heads, attn_ratio, mlp_ratio,
-                down_ops) in enumerate(
-                    zip(self.embed_dims, self.key_dim, self.depth,
-                        self.num_heads, attn_ratio, mlp_ratio, self.down_ops)):
+        for i, (embed_dim, key_dim, depth, num_heads, down_ops) in \
+                enumerate(zip(self.embed_dims, self.key_dim, self.depth,
+                              self.num_heads, self.down_ops)):
             for _ in range(depth):
                 self.blocks[-1].append(
                     Residual(

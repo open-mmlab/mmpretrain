@@ -7,8 +7,8 @@ model = dict(
         img_size=224,
         patch_size=16,
         drop_path=0,
-        attn_ratio=[2, 2, 2],
-        mlp_ratio=[2, 2, 2],
+        attn_ratio=2,
+        mlp_ratio=2,
         out_indices=(2, )),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
