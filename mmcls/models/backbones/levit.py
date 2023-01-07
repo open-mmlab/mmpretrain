@@ -3,7 +3,7 @@ import itertools
 
 import torch
 import torch.nn as nn
-from mmcv.cnn import Linear, build_norm_layer
+from mmcv.cnn import Linear, build_norm_layer, fuse_conv_bn
 from mmengine.model import BaseModule
 
 from mmcls.models.backbones.base_backbone import BaseBackbone
@@ -49,7 +49,6 @@ class HybridBackbone(BaseModule):
                 dilation=dilation,
                 groups=groups,
                 bn_weight_init=bn_weight_init,
-                conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
             )
             self.patch_embed.add_module('%d' % (2 * i), conv_bn)
@@ -73,7 +72,6 @@ class ConvolutionBatchNorm(BaseModule):
             dilation=1,
             groups=1,
             bn_weight_init=1,
-            conv_cfg=None,
             norm_cfg=dict(type='BN'),
     ):
         super(ConvolutionBatchNorm, self).__init__()
@@ -102,24 +100,7 @@ class ConvolutionBatchNorm(BaseModule):
 
     @torch.no_grad()
     def fuse(self):
-        device = next(self.conv.parameters()).device
-        w = self.bn.weight / (self.bn.running_var + self.bn.eps)**0.5
-        w = self.conv.weight * w[:, None, None, None]
-        b = self.bn.bias - self.bn.running_mean * self.bn.weight / \
-            (self.bn.running_var + self.bn.eps) ** 0.5
-        m = nn.Conv2d(
-            w.size(1) * self.conv.groups,
-            w.size(0),
-            w.shape[2:],
-            stride=self.conv.stride,
-            padding=self.conv.padding,
-            dilation=self.conv.dilation,
-            groups=self.conv.groups)
-        m.weight.data.copy_(w)
-        m.bias.data.copy_(b)
-
-        m.to(device)
-        return m
+        return fuse_conv_bn(self).conv
 
 
 class LinearBatchNorm(BaseModule):
