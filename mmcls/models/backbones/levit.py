@@ -352,10 +352,7 @@ class LeViT(BaseBackbone):
             'num_heads': [4, 6, 8],
             'depth': [2, 3, 4],
             'key_dim': [16, 16, 16],
-            # ('Subsample',key_dim, num_heads,
-            # attn_ratio, mlp_ratio, stride)
-            'down_ops': [['Subsample', 16, 128 // 16, 4, 2, 2],
-                         ['Subsample', 16, 256 // 16, 4, 2, 2]]
+            'down_ops': [[16, 4, 2, 2], [16, 4, 2, 2]]
         },
         '128': {
             'embed_dim': [128, 256, 384],
@@ -399,6 +396,7 @@ class LeViT(BaseBackbone):
                  patch_size=16,
                  attn_ratio=2,
                  mlp_ratio=2,
+                 down_ops=[[16, 4, 2, 2], [16, 4, 2, 2]],
                  hybrid_backbone=None,
                  attention_activation=torch.nn.Hardswish,
                  mlp_activation=torch.nn.Hardswish,
@@ -425,7 +423,7 @@ class LeViT(BaseBackbone):
         self.num_heads = self.arch_settings['num_heads']
         self.depth = self.arch_settings['depth']
         self.key_dim = self.arch_settings['key_dim']
-        self.down_ops = self.arch_settings['down_ops']
+        self.down_ops = down_ops
 
         self.num_features = self.embed_dims[-1]
         if not hybrid_backbone:
@@ -440,6 +438,7 @@ class LeViT(BaseBackbone):
         for i, (embed_dim, key_dim, depth, num_heads, down_ops) in \
                 enumerate(zip(self.embed_dims, self.key_dim, self.depth,
                               self.num_heads, self.down_ops)):
+            # print('-----------------', i, '-------------------')
             for _ in range(depth):
                 self.blocks[-1].append(
                     Residual(
@@ -457,26 +456,26 @@ class LeViT(BaseBackbone):
                         Residual(
                             MLP(embed_dim, mlp_ratio, mlp_activation),
                             drop_path))
-            if down_ops[0] == 'Subsample':
+            if i < len(self.depth) - 1:
                 self.size.append(resolution)
-                resolution_ = (resolution - 1) // down_ops[5] + 1
+                resolution_ = (resolution - 1) // down_ops[3] + 1
                 self.blocks.append([])
                 self.blocks[-1].append(
                     AttentionSubsample(
                         *self.embed_dims[i:i + 2],
-                        key_dim=down_ops[1],
-                        num_heads=down_ops[2],
-                        attn_ratio=down_ops[3],
+                        key_dim=down_ops[0],
+                        num_heads=embed_dim // down_ops[0],
+                        attn_ratio=down_ops[1],
                         activation=attention_activation,
-                        stride=down_ops[5],
+                        stride=down_ops[3],
                         resolution=resolution,
                         resolution_=resolution_))
                 resolution = resolution_
-                if down_ops[4] > 0:  # mlp_ratio
+                if down_ops[2] > 0:  # mlp_ratio
                     self.blocks[-1].append(
                         Residual(
                             nn.Sequential(
-                                MLP(self.embed_dims[i + 1], down_ops[4],
+                                MLP(self.embed_dims[i + 1], down_ops[2],
                                     mlp_activation)), drop_path))
         self.blocks = [nn.Sequential(*i) for i in self.blocks]
         self.size.append(resolution)
