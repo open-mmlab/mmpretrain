@@ -11,12 +11,12 @@ import numpy as np
 from mmcv.transforms import Compose
 from mmengine.config import Config, DictAction
 from mmengine.dataset import default_collate
+from mmengine.registry import init_default_scope
 from mmengine.utils import to_2tuple
 from torch.nn import BatchNorm1d, BatchNorm2d, GroupNorm, LayerNorm
 
 from mmcls import digit_version
 from mmcls.apis import init_model
-from mmcls.utils import register_all_modules
 
 try:
     from pytorch_grad_cam import (EigenCAM, EigenGradCAM, GradCAM,
@@ -265,7 +265,7 @@ def main():
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
 
-    register_all_modules()
+    init_default_scope('mmcls')
     # build the model from a config file and a checkpoint file
     model = init_model(cfg, args.checkpoint, device=args.device)
     if args.preview_model:

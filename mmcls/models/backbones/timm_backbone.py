@@ -67,8 +67,7 @@ class TIMMBackbone(BaseBackbone):
             import timm
         except ImportError:
             raise ImportError(
-                'Failed to import timm. Please run "pip install timm". '
-                '"pip install dataclasses" may also be needed for Python 3.6.')
+                'Failed to import timm. Please run "pip install timm".')
 
         if not isinstance(pretrained, bool):
             raise TypeError('pretrained must be bool, not str for model path')
