@@ -2,13 +2,12 @@
 import torch
 import torch.nn as nn
 from mmcv.cnn import Linear
-from mmengine.model import BaseModule
 
 from mmcls.models.heads import ClsHead
 from mmcls.registry import MODELS
 
 
-class BatchNormLinear(BaseModule):
+class BatchNormLinear(nn.Sequential):
 
     def __init__(self, in_feature, out_feature, bias=True, std=0.02):
         super(BatchNormLinear, self).__init__()

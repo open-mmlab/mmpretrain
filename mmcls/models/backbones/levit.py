@@ -60,7 +60,7 @@ class HybridBackbone(BaseModule):
         return x
 
 
-class ConvolutionBatchNorm(BaseModule):
+class ConvolutionBatchNorm(nn.Sequential):
 
     def __init__(
             self,
@@ -96,7 +96,7 @@ class ConvolutionBatchNorm(BaseModule):
         return fuse_conv_bn(self).conv
 
 
-class LinearBatchNorm(BaseModule):
+class LinearBatchNorm(nn.Sequential):
 
     def __init__(self,
                  in_feature,
@@ -262,7 +262,7 @@ class AttentionSubsample(nn.Sequential):
                  activation=None,
                  stride=2,
                  resolution=14,
-                 resolution_=7):
+                 sub_resolution=7):
         super(AttentionSubsample, self).__init__()
         self.num_heads = num_heads
         self.scale = key_dim**-0.5
@@ -271,7 +271,7 @@ class AttentionSubsample(nn.Sequential):
         self.d = int(attn_ratio * key_dim)
         self.dh = int(attn_ratio * key_dim) * self.num_heads
         self.attn_ratio = attn_ratio
-        self.resolution_ = resolution_
+        self.sub_resolution = sub_resolution
         h = self.dh + nh_kd
         self.kv = LinearBatchNorm(in_dim, h)
 
@@ -283,13 +283,13 @@ class AttentionSubsample(nn.Sequential):
         self.stride = stride
         self.resolution = resolution
         points = list(itertools.product(range(resolution), range(resolution)))
-        points_ = list(
-            itertools.product(range(resolution_), range(resolution_)))
+        sub_points = list(
+            itertools.product(range(sub_resolution), range(sub_resolution)))
         N = len(points)
-        N_ = len(points_)
+        N_sub = len(sub_points)
         attention_offsets = {}
         idxs = []
-        for p1 in points_:
+        for p1 in sub_points:
             for p2 in points:
                 size = 1
                 offset = (abs(p1[0] * stride - p2[0] + (size - 1) / 2),
@@ -300,7 +300,7 @@ class AttentionSubsample(nn.Sequential):
         self.attention_biases = torch.nn.Parameter(
             torch.zeros(num_heads, len(attention_offsets)))
         self.register_buffer('attention_bias_idxs',
-                             torch.LongTensor(idxs).view(N_, N))
+                             torch.LongTensor(idxs).view(N_sub, N))
 
     @torch.no_grad()
     def train(self, mode=True):
@@ -316,7 +316,7 @@ class AttentionSubsample(nn.Sequential):
                                -1).split([self.key_dim, self.d], dim=3)
         k = k.permute(0, 2, 1, 3)  # BHNC
         v = v.permute(0, 2, 1, 3)  # BHNC
-        q = self.q(x).view(B, self.resolution_**2, self.num_heads,
+        q = self.q(x).view(B, self.sub_resolution**2, self.num_heads,
                            self.key_dim).permute(0, 2, 1, 3)
 
         attn = (q @ k.transpose(-2, -1)) * self.scale + \
@@ -345,24 +345,21 @@ class LeViT(BaseBackbone):
             'num_heads': [4, 8, 12],
             'depth': [4, 4, 4],
             'key_dim': [16, 16, 16],
-            'down_ops': [['Subsample', 16, 128 // 16, 4, 2, 2],
-                         ['Subsample', 16, 256 // 16, 4, 2, 2]]
+            'down_ops': [[16, 4, 2, 2], [16, 4, 2, 2]]
         },
         '192': {
             'embed_dim': [192, 288, 384],
             'num_heads': [3, 5, 6],
             'depth': [4, 4, 4],
             'key_dim': [32, 32, 32],
-            'down_ops': [['Subsample', 32, 192 // 32, 4, 2, 2],
-                         ['Subsample', 32, 288 // 32, 4, 2, 2]]
+            'down_ops': [[32, 4, 2, 2], [32, 4, 2, 2]]
         },
         '256': {
             'embed_dim': [256, 384, 512],
             'num_heads': [4, 6, 8],
             'depth': [4, 4, 4],
             'key_dim': [32, 32, 32],
-            'down_ops': [['Subsample', 32, 256 // 32, 4, 2, 2],
-                         ['Subsample', 32, 384 // 32, 4, 2, 2]]
+            'down_ops': [[32, 4, 2, 2], [32, 4, 2, 2]]
         },
         '384': {
             'embed_dim': [384, 512, 768],
@@ -370,8 +367,8 @@ class LeViT(BaseBackbone):
             'depth': [4, 4, 4],
             'key_dim': [32, 32, 32],
             'down_ops': [
-                ['Subsample', 32, 384 // 32, 4, 2, 2],
-                ['Subsample', 32, 512 // 32, 4, 2, 2],
+                [32, 4, 2, 2],
+                [32, 4, 2, 2],
             ]
         },
     }
@@ -388,7 +385,7 @@ class LeViT(BaseBackbone):
                  mlp_activation=torch.nn.Hardswish,
                  out_indices=(2, ),
                  deploy=False,
-                 drop_path=0):
+                 drop_path_rate=0):
         super(LeViT, self).__init__()
 
         if isinstance(arch, str):
@@ -419,7 +416,7 @@ class LeViT(BaseBackbone):
         self.size = []
         self.deploy = deploy
 
-        self.down_ops.append([''])
+        self.down_ops.append([])
         resolution = img_size // patch_size
         for i, (embed_dim, key_dim, depth, num_heads, down_ops) in \
                 enumerate(zip(self.embed_dims, self.key_dim, self.depth,
@@ -435,16 +432,16 @@ class LeViT(BaseBackbone):
                             attn_ratio=attn_ratio,
                             activation=attention_activation,
                             resolution=resolution,
-                        ), drop_path))
+                        ), drop_path_rate))
                 if mlp_ratio > 0:
                     # h = int(embed_dim * mlp_ratio)
                     self.blocks[-1].append(
                         Residual(
                             MLP(embed_dim, mlp_ratio, mlp_activation),
-                            drop_path))
+                            drop_path_rate))
             if i < len(self.depth) - 1:
                 self.size.append(resolution)
-                resolution_ = (resolution - 1) // down_ops[3] + 1
+                sub_resolution = (resolution - 1) // down_ops[3] + 1
                 self.blocks.append([])
                 self.blocks[-1].append(
                     AttentionSubsample(
@@ -455,14 +452,14 @@ class LeViT(BaseBackbone):
                         activation=attention_activation,
                         stride=down_ops[3],
                         resolution=resolution,
-                        resolution_=resolution_))
-                resolution = resolution_
+                        sub_resolution=sub_resolution))
+                resolution = sub_resolution
                 if down_ops[2] > 0:  # mlp_ratio
                     self.blocks[-1].append(
                         Residual(
                             nn.Sequential(
                                 MLP(self.embed_dims[i + 1], down_ops[2],
-                                    mlp_activation)), drop_path))
+                                    mlp_activation)), drop_path_rate))
         self.blocks = [nn.Sequential(*i) for i in self.blocks]
         self.size.append(resolution)
         self.stages = nn.Sequential()
