@@ -20,12 +20,6 @@ class BatchNormLinear(BaseModule):
         self.bn = bn
         self.linear = linear
 
-    def init_weights(self):
-        super(BatchNormLinear, self).init_weights()
-        for m in self.modules():
-            if isinstance(m, nn.Linear):
-                nn.init.trunc_normal_(m.weight, std=self.std)
-
     @torch.no_grad()
     def fuse(self):
         device = next(self.linear.parameters()).device

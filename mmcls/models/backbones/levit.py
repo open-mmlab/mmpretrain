@@ -91,13 +91,6 @@ class ConvolutionBatchNorm(BaseModule):
             bias=False)
         self.bn = bn
 
-    def init_weights(self):
-        super(ConvolutionBatchNorm, self).init_weights()
-        for m in self.modules():
-            if isinstance(m, nn.BatchNorm2d):
-                torch.nn.init.constant_(m.weight, self.bn_weight_init)
-                torch.nn.init.constant_(m.bias, 0)
-
     @torch.no_grad()
     def fuse(self):
         return fuse_conv_bn(self).conv
@@ -116,13 +109,6 @@ class LinearBatchNorm(BaseModule):
         self.bn_weight_init = bn_weight_init
         self.linear = linear
         self.bn = bn
-
-    def init_weights(self):
-        super(LinearBatchNorm, self).init_weights()
-        for m in self.modules():
-            if isinstance(m, nn.BatchNorm2d):
-                torch.nn.init.constant_(m.weight, self.bn_weight_init)
-                torch.nn.init.constant_(m.bias, 0)
 
     @torch.no_grad()
     def fuse(self):
