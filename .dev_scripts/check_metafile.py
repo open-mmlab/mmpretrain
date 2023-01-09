@@ -68,6 +68,11 @@ def check_model(model: Model, wall=True):
         return f'{model.name}: The config {model.config} is not found.'
     if model.in_collection is None:
         return f'{model.name}: No `In Collection` field.'
+
+    if wall and model.data.get(
+            'Converted From') is not None and '3rdparty' not in model.name:
+        print(f'WARN: The model name {model.name} should include '
+              "'3rdparty' since it's converted from other repository.")
     if wall and model.weights is not None and model.weights.endswith('.pth'):
         basename = model.weights.rsplit('/', 1)[-1]
         if not basename.startswith(model.name):
