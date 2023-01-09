@@ -8,5 +8,6 @@ _base_ = [
 model = dict(
     backbone=dict(
         arch='384',
-        drop_path=0.1,
-    ), head=dict(in_channels=768, ))
+        drop_path_rate=0.1,
+    ),
+    head=dict(in_channels=768, ))

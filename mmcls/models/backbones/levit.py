@@ -186,6 +186,7 @@ class Attention(BaseModule):
 
     @torch.no_grad()
     def train(self, mode=True):
+        """change the mode of model."""
         super(Attention, self).train(mode)
         if mode and hasattr(self, 'ab'):
             del self.ab
