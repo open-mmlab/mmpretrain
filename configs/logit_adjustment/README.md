@@ -1,4 +1,4 @@
-# Logit-Adjustment (Long-tail)
+# Long-tail Logit Adjustment
 
 > [Long-tail Learning via Logit Adjustment](https://arxiv.org/abs/2007.07314)
 
@@ -16,24 +16,24 @@ Real-world classification problems typically exhibit an imbalanced or long-taile
 
 ### Cifar10-LT
 
-|  Imbalance-ratio   |  200  |  100  |  50   |  10   |                                                           Config (imb-ratio=10)                                                           |
-| :----------------: | :---: | :---: | :---: | :---: | :---------------------------------------------------------------------------------------------------------------------------------------: |
-|      Baseline      | 72.56 | 77.49 | 81.57 | 89.36 |     [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/logit_adjustment/resnet34_8xb16_cifar10-lt-rho10.py)      |
-| Posthoc-adjustment | 76.49 | 80.25 | 83.90 | 89.89 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/logit_adjustment/resnet34-loss-adj_8xb16_cifar10-lt-rho10.py) |
-|  Loss-adjustment   | 76.20 | 80.24 | 84.24 | 90.55 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/logit_adjustment/resnet34-loss-adj_8xb16_cifar10-lt-rho10.py) |
+|  Imbalance-ratio   |  200  |  100  |  50   |  10   |                              Config (imb-ratio=10)                               |
+| :----------------: | :---: | :---: | :---: | :---: | :------------------------------------------------------------------------------: |
+|      Baseline      | 73.08 | 77.54 | 81.84 | 89.36 |     [config](./configs/logit_adjustment/resnet34_8xb16_cifar10-lt-rho10.py)      |
+| Posthoc-adjustment | 76.59 | 80.67 | 83.98 | 90.01 | [config](./configs/logit_adjustment/resnet34-loss-adj_8xb16_cifar10-lt-rho10.py) |
+|  Loss-adjustment   | 76.19 | 80.26 | 83.41 | 90.93 | [config](./configs/logit_adjustment/resnet34-loss-adj_8xb16_cifar10-lt-rho10.py) |
 
 ### Cifar100-LT
 
-|  Imbalance-ratio   |  200  |  100  |  50   |  10   |                                                           Config (imb-ratio=10)                                                            |
-| :----------------: | :---: | :---: | :---: | :---: | :----------------------------------------------------------------------------------------------------------------------------------------: |
-|      Baseline      | 40.48 | 44.77 | 51.11 | 64.14 |     [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/logit_adjustment/resnet34_8xb16_cifar100-lt-rho10.py)      |
-| Posthoc-adjustment | 43.82 | 48.43 | 54.19 | 65.28 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/logit_adjustment/resnet34-loss-adj_8xb16_cifar100-lt-rho10.py) |
-|  Loss-adjustment   | 44.17 | 48.92 | 53.69 | 65.85 | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/logit_adjustment/resnet34-loss-adj_8xb16_cifar100-lt-rho10.py) |
+|  Imbalance-ratio   |  200  |  100  |  50   |  10   |                               Config (imb-ratio=10)                               |
+| :----------------: | :---: | :---: | :---: | :---: | :-------------------------------------------------------------------------------: |
+|      Baseline      | 41.22 | 45.98 | 51.87 | 64.75 |     [config](./configs/logit_adjustment/resnet34_8xb16_cifar100-lt-rho10.py)      |
+| Posthoc-adjustment | 44.64 | 49.92 | 54.91 | 65.99 | [config](./configs/logit_adjustment/resnet34-loss-adj_8xb16_cifar100-lt-rho10.py) |
+|  Loss-adjustment   | 44.14 | 48.53 | 54.35 | 65.75 | [config](./configs/logit_adjustment/resnet34-loss-adj_8xb16_cifar100-lt-rho10.py) |
 
-All `imb_ratio` in the given configs are 10, if you want to modify it, you can modify in config file or add `--cfg-option train_dataloader.dataset.imb_ratio={$imb-ratio}` in the end of your command lines.
+All `imb_ratio` in the given configs are 10, if you want to modify it, you can modify in config file or add `--cfg-option train_dataloader.dataset.imb_ratio={$YOUR-IMB-RATIO}` in the end of your command lines.
 
 ```{note}
-When using post-hoc logit adjustemnt, retraining from scratch is not necessary. You can just use the post-hoc configs to load checkpoints trained from non-logit-adjustemnt.
+When using post-hoc logit adjustemnt, re-training from scratch is not necessary. You can just use the post-hoc configs to load checkpoints trained from non-logit-adjustemnt(baseline).
 ```
 
 ## Citation
