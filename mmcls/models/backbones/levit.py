@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import itertools
+from typing import Sequence
 
 import torch
 import torch.nn as nn
@@ -375,12 +376,11 @@ class LeViT(BaseBackbone):
     }
 
     def __init__(self,
-                 arch='128s',
+                 arch,
                  img_size=224,
                  patch_size=16,
                  attn_ratio=2,
                  mlp_ratio=2,
-                 down_ops=[[16, 4, 2, 2], [16, 4, 2, 2]],
                  hybrid_backbone=None,
                  attention_activation=torch.nn.Hardswish,
                  mlp_activation=torch.nn.Hardswish,
@@ -394,20 +394,23 @@ class LeViT(BaseBackbone):
             assert arch in set(self.arch_zoo), \
                 f'Arch {arch} is not in default archs {set(self.arch_zoo)}'
             self.arch_settings = self.arch_zoo[arch]
-        else:
+        elif isinstance(arch, dict):
             essential_keys = {
                 'embed_dim', 'num_heads', 'depth', 'key_dim', 'down_ops'
             }
             assert isinstance(arch, dict) and set(arch) == essential_keys, \
                 f'Custom arch needs a dict with keys {essential_keys}'
             self.arch_settings = arch
+        else:
+            raise TypeError('Expect "arch" to be either a string '
+                            f'or a dict, got {type(arch)}')
 
-        self.out_indices = out_indices
         self.embed_dims = self.arch_settings['embed_dim']
         self.num_heads = self.arch_settings['num_heads']
         self.depth = self.arch_settings['depth']
         self.key_dim = self.arch_settings['key_dim']
-        self.down_ops = down_ops
+        self.down_ops = self.arch_settings['down_ops']
+        self.drop_path_rate = drop_path_rate
 
         self.num_features = self.embed_dims[-1]
         if not hybrid_backbone:
@@ -433,13 +436,13 @@ class LeViT(BaseBackbone):
                             attn_ratio=attn_ratio,
                             activation=attention_activation,
                             resolution=resolution,
-                        ), drop_path_rate))
+                        ), self.drop_path_rate))
                 if mlp_ratio > 0:
                     # h = int(embed_dim * mlp_ratio)
                     self.blocks[-1].append(
                         Residual(
                             MLP(embed_dim, mlp_ratio, mlp_activation),
-                            drop_path_rate))
+                            self.drop_path_rate))
             if i < len(self.depth) - 1:
                 self.size.append(resolution)
                 sub_resolution = (resolution - 1) // down_ops[3] + 1
@@ -460,12 +463,33 @@ class LeViT(BaseBackbone):
                         Residual(
                             nn.Sequential(
                                 MLP(self.embed_dims[i + 1], down_ops[2],
-                                    mlp_activation)), drop_path_rate))
+                                    mlp_activation)), self.drop_path_rate))
         self.blocks = [nn.Sequential(*i) for i in self.blocks]
         self.size.append(resolution)
         self.stages = nn.Sequential()
         for i in range(len(self.blocks)):
             self.stages.add_module('%d' % i, self.blocks[i])
+
+        if isinstance(out_indices, int):
+            out_indices = [out_indices]
+        assert isinstance(out_indices, Sequence), \
+            f'"out_indices" must by a sequence or int, ' \
+            f'get {type(out_indices)} instead.'
+        for i, index in enumerate(out_indices):
+            assert 0 <= out_indices[i] < len(self.stages), \
+                f'Invalid out_indices {index}.'
+        out_indices = list(out_indices)
+
+        self.out_indices = out_indices
+
+        if self.deploy:
+            replace_batchnorm(self)
+
+    def switch_to_deploy(self):
+        if self.deploy:
+            return
+        replace_batchnorm(self)
+        self.deploy = True
 
     def forward(self, x):
         x = self.patch_embed(x)  # 2 3 224 224 -> 2 128 14 14
@@ -481,7 +505,7 @@ class LeViT(BaseBackbone):
                 outs.append(out)
         return tuple(outs)
 
-    def train(self, mode):
+    def train(self, mode=True):
         if (not mode) and self.deploy:
             device = next(self.parameters()).device
             replace_batchnorm(self)

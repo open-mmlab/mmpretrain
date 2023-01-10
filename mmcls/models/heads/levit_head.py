@@ -71,6 +71,14 @@ class LeViTClsHead(ClsHead):
             self.head_dist = BatchNormLinear(
                 in_channels,
                 num_classes) if num_classes > 0 else nn.Identity()
+        if self.deploy:
+            replace_batchnorm(self)
+
+    def switch_to_deploy(self):
+        if self.deploy:
+            return
+        replace_batchnorm(self)
+        self.deploy = True
 
     def forward(self, x):
         x = self.pre_logits(x)
@@ -85,7 +93,7 @@ class LeViTClsHead(ClsHead):
             x = self.head(x)
         return x
 
-    def train(self, mode):
+    def train(self, mode=True):
         if (not mode) and self.deploy:
             replace_batchnorm(self)
         super(LeViTClsHead, self).train(mode)

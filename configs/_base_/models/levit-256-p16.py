@@ -9,7 +9,6 @@ model = dict(
         drop_path_rate=0,
         attn_ratio=2,
         mlp_ratio=2,
-        down_ops=[[16, 4, 2, 2], [16, 4, 2, 2]],
         out_indices=(2, )),
     neck=dict(type='GlobalAveragePooling'),
     head=dict(
