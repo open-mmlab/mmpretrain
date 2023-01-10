@@ -3,7 +3,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmcv.cnn import build_activation_layer, build_conv_layer
+from mmcv.cnn import build_activation_layer, build_conv_layer, build_norm_layer
 from mmcv.cnn.bricks import DropPath
 
 from mmcls.models.backbones.base_backbone import BaseBackbone
@@ -168,19 +168,6 @@ class DenseDilatedKnnGraph(nn.Module):
         return self._dilated(edge_index)
 
 
-def norm_layer(norm, nc):
-    # normalization layer 2d
-    norm = norm.lower()
-    if norm == 'batch':
-        layer = nn.BatchNorm2d(nc, affine=True)
-    elif norm == 'instance':
-        layer = nn.InstanceNorm2d(nc, affine=False)
-    else:
-        raise NotImplementedError('normalization layer [%s] is not found' %
-                                  norm)
-    return layer
-
-
 class BasicConv(nn.Sequential):
 
     def __init__(self, channels, act='relu', norm=None, bias=True, drop=0.):
@@ -190,8 +177,8 @@ class BasicConv(nn.Sequential):
                 build_conv_layer(
                     None, channels[i - 1], channels[i], 1, bias=bias,
                     groups=4))
-            if norm is not None and norm.lower() != 'none':
-                m.append(norm_layer(norm, channels[-1]))
+            if norm is not None:
+                m.append(build_norm_layer(norm, channels[-1])[1])
             if act is not None:
                 m.append(build_activation_layer(act))
             if drop > 0:
@@ -411,7 +398,7 @@ class Grapher(nn.Module):
         self.fc1 = nn.Sequential(
             build_conv_layer(
                 None, in_channels, in_channels, 1, stride=1, padding=0),
-            nn.BatchNorm2d(in_channels),
+            build_norm_layer(dict(type='BN'), in_channels)[1],
         )
         self.graph_conv = DyGraphConv2d(in_channels, in_channels * 2, k,
                                         dilation, conv, act, norm, bias,
@@ -419,7 +406,7 @@ class Grapher(nn.Module):
         self.fc2 = nn.Sequential(
             build_conv_layer(
                 None, in_channels * 2, in_channels, 1, stride=1, padding=0),
-            nn.BatchNorm2d(in_channels),
+            build_norm_layer(dict(type='BN'), in_channels)[1],
         )
         self.drop_path = DropPath(
             drop_path) if drop_path > 0. else nn.Identity()
@@ -474,13 +461,13 @@ class FFN(nn.Module):
         self.fc1 = nn.Sequential(
             build_conv_layer(
                 None, in_features, hidden_features, 1, stride=1, padding=0),
-            nn.BatchNorm2d(hidden_features),
+            build_norm_layer(dict(type='BN'), hidden_features)[1],
         )
         self.act = build_activation_layer(act)
         self.fc2 = nn.Sequential(
             build_conv_layer(
                 None, hidden_features, out_features, 1, stride=1, padding=0),
-            nn.BatchNorm2d(out_features),
+            build_norm_layer(dict(type='BN'), out_features)[1],
         )
         self.drop_path = DropPath(
             drop_path) if drop_path > 0. else nn.Identity()
@@ -504,22 +491,22 @@ class Stem(nn.Module):
         self.convs = nn.Sequential(
             build_conv_layer(
                 None, in_dim, out_dim // 8, 3, stride=2, padding=1),
-            nn.BatchNorm2d(out_dim // 8),
+            build_norm_layer(dict(type='BN'), out_dim // 8),
             build_activation_layer(act),
             build_conv_layer(
                 None, out_dim // 8, out_dim // 4, 3, stride=2, padding=1),
-            nn.BatchNorm2d(out_dim // 4),
+            build_norm_layer(dict(type='BN'), out_dim // 4),
             build_activation_layer(act),
             build_conv_layer(
                 None, out_dim // 4, out_dim // 2, 3, stride=2, padding=1),
-            nn.BatchNorm2d(out_dim // 2),
+            build_norm_layer(dict(type='BN'), out_dim // 2),
             build_activation_layer(act),
             build_conv_layer(
                 None, out_dim // 2, out_dim, 3, stride=2, padding=1),
-            nn.BatchNorm2d(out_dim),
+            build_norm_layer(dict(type='BN'), out_dim),
             build_activation_layer(act),
             build_conv_layer(None, out_dim, out_dim, 3, stride=1, padding=1),
-            nn.BatchNorm2d(out_dim),
+            build_norm_layer(dict(type='BN'), out_dim),
         )
 
     def forward(self, x):
@@ -536,7 +523,7 @@ class Vig(BaseBackbone):
                  arch,
                  k=9,
                  act_cfg=dict(type='GELU'),
-                 norm_cfg='batch',
+                 norm_cfg=dict(type='BN'),
                  graph_conv_bias=True,
                  graph_conv_type='mr',
                  epsilon=0.2,
@@ -603,8 +590,8 @@ class Vig(BaseBackbone):
 
         self.prediction = nn.Sequential(
             build_conv_layer(None, channels, 1024, 1, bias=True),
-            nn.BatchNorm2d(1024), build_activation_layer(act_cfg),
-            nn.Dropout(dropout),
+            build_norm_layer(dict(type='BN'), 1024),
+            build_activation_layer(act_cfg), nn.Dropout(dropout),
             build_conv_layer(None, 1024, n_classes, 1, bias=True))
 
     def forward(self, inputs):

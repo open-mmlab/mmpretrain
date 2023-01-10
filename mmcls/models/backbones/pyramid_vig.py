@@ -2,7 +2,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmcv.cnn import build_activation_layer, build_conv_layer
+from mmcv.cnn import build_activation_layer, build_conv_layer, build_norm_layer
 from torch.nn import Sequential as Seq
 
 from mmcls.models.backbones.base_backbone import BaseBackbone
@@ -20,14 +20,14 @@ class Stem(nn.Module):
         self.convs = nn.Sequential(
             build_conv_layer(
                 None, in_dim, out_dim // 2, 3, stride=2, padding=1),
-            nn.BatchNorm2d(out_dim // 2),
+            build_norm_layer(dict(type='BN'), out_dim // 2)[1],
             build_activation_layer(act),
             build_conv_layer(
                 None, out_dim // 2, out_dim, 3, stride=2, padding=1),
-            nn.BatchNorm2d(out_dim),
+            build_norm_layer(dict(type='BN'), out_dim)[1],
             build_activation_layer(act),
             build_conv_layer(None, out_dim, out_dim, 3, stride=1, padding=1),
-            nn.BatchNorm2d(out_dim),
+            build_norm_layer(dict(type='BN'), out_dim)[1],
         )
 
     def forward(self, x):
@@ -42,7 +42,7 @@ class Downsample(nn.Module):
         super().__init__()
         self.conv = nn.Sequential(
             build_conv_layer(None, in_dim, out_dim, 3, stride=2, padding=1),
-            nn.BatchNorm2d(out_dim),
+            build_norm_layer(dict(type='BN'), out_dim)[1],
         )
 
     def forward(self, x):
@@ -64,7 +64,7 @@ class PyramidVig(BaseBackbone):
                  arch,
                  k=9,
                  act_cfg=dict(type='GELU'),
-                 norm_cfg='batch',
+                 norm_cfg=dict(type='BN'),
                  graph_conv_bias=True,
                  graph_conv_type='mr',
                  epsilon=0.2,
@@ -125,8 +125,8 @@ class PyramidVig(BaseBackbone):
 
         self.prediction = Seq(
             build_conv_layer(None, channels[-1], 1024, 1, bias=True),
-            nn.BatchNorm2d(1024), build_activation_layer(act_cfg),
-            nn.Dropout(dropout),
+            build_norm_layer(dict(type='BN'), 1024)[1],
+            build_activation_layer(act_cfg), nn.Dropout(dropout),
             build_conv_layer(None, 1024, n_classes, 1, bias=True))
 
         self.norm_eval = norm_eval
