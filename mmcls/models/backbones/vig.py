@@ -192,8 +192,8 @@ class BasicConv(nn.Sequential):
                     groups=4))
             if norm is not None and norm.lower() != 'none':
                 m.append(norm_layer(norm, channels[-1]))
-            if act is not None and act.lower() != 'none':
-                m.append(build_activation_layer(dict(type=act)))
+            if act is not None:
+                m.append(build_activation_layer(act))
             if drop > 0:
                 m.append(nn.Dropout2d(drop))
 
@@ -345,7 +345,8 @@ class GraphConv2d(nn.Module):
         elif conv == 'gin':
             self.gconv = GINConv2d(in_channels, out_channels, act, norm, bias)
         else:
-            raise NotImplementedError('conv:{} is not supported'.format(conv))
+            raise NotImplementedError(
+                'graph_conv_type:{} is not supported'.format(conv))
 
     def forward(self, x, edge_index, y=None):
         return self.gconv(x, edge_index, y)
@@ -475,7 +476,7 @@ class FFN(nn.Module):
                 None, in_features, hidden_features, 1, stride=1, padding=0),
             nn.BatchNorm2d(hidden_features),
         )
-        self.act = build_activation_layer(dict(type=act))
+        self.act = build_activation_layer(act)
         self.fc2 = nn.Sequential(
             build_conv_layer(
                 None, hidden_features, out_features, 1, stride=1, padding=0),
@@ -504,19 +505,19 @@ class Stem(nn.Module):
             build_conv_layer(
                 None, in_dim, out_dim // 8, 3, stride=2, padding=1),
             nn.BatchNorm2d(out_dim // 8),
-            build_activation_layer(dict(type=act)),
+            build_activation_layer(act),
             build_conv_layer(
                 None, out_dim // 8, out_dim // 4, 3, stride=2, padding=1),
             nn.BatchNorm2d(out_dim // 4),
-            build_activation_layer(dict(type=act)),
+            build_activation_layer(act),
             build_conv_layer(
                 None, out_dim // 4, out_dim // 2, 3, stride=2, padding=1),
             nn.BatchNorm2d(out_dim // 2),
-            build_activation_layer(dict(type=act)),
+            build_activation_layer(act),
             build_conv_layer(
                 None, out_dim // 2, out_dim, 3, stride=2, padding=1),
             nn.BatchNorm2d(out_dim),
-            build_activation_layer(dict(type=act)),
+            build_activation_layer(act),
             build_conv_layer(None, out_dim, out_dim, 3, stride=1, padding=1),
             nn.BatchNorm2d(out_dim),
         )
@@ -533,25 +534,25 @@ class Vig(BaseBackbone):
 
     def __init__(self,
                  arch,
-                 k,
-                 act,
-                 norm,
-                 bias,
-                 epsilon,
-                 use_dilation,
-                 use_stochastic,
-                 conv,
-                 drop_path,
-                 dropout,
-                 n_classes,
-                 relative_pos,
+                 k=9,
+                 act_cfg=dict(type='GELU'),
+                 norm_cfg='batch',
+                 graph_conv_bias=True,
+                 graph_conv_type='mr',
+                 epsilon=0.2,
+                 use_dilation=True,
+                 use_stochastic=False,
+                 drop_path=0.,
+                 dropout=0.,
+                 n_classes=1000,
+                 relative_pos=False,
                  norm_eval=False,
                  frozen_stages=0):
         super(Vig, self).__init__()
         arch = self.arch_settings[arch]
         self.n_blocks = arch[0]
         channels = arch[1]
-        self.stem = Stem(out_dim=channels, act=act)
+        self.stem = Stem(out_dim=channels, act=act_cfg)
         dpr = [x.item() for x in torch.linspace(0, drop_path, self.n_blocks)
                ]  # stochastic depth decay rule
         num_knn = [
@@ -568,16 +569,16 @@ class Vig(BaseBackbone):
                         channels,
                         num_knn[i],
                         min(i // 4 + 1, max_dilation),
-                        conv,
-                        act,
-                        norm,
-                        bias,
+                        graph_conv_type,
+                        act_cfg,
+                        norm_cfg,
+                        graph_conv_bias,
                         use_stochastic,
                         epsilon,
                         1,
                         drop_path=dpr[i],
                         relative_pos=relative_pos),
-                    FFN(channels, channels * 4, act=act, drop_path=dpr[i]))
+                    FFN(channels, channels * 4, act=act_cfg, drop_path=dpr[i]))
                 for i in range(self.n_blocks)
             ])
         else:
@@ -587,22 +588,22 @@ class Vig(BaseBackbone):
                         channels,
                         num_knn[i],
                         1,
-                        conv,
-                        act,
-                        norm,
-                        bias,
+                        graph_conv_type,
+                        act_cfg,
+                        norm_cfg,
+                        graph_conv_bias,
                         use_stochastic,
                         epsilon,
                         1,
                         drop_path=dpr[i],
                         relative_pos=relative_pos),
-                    FFN(channels, channels * 4, act=act, drop_path=dpr[i]))
+                    FFN(channels, channels * 4, act=act_cfg, drop_path=dpr[i]))
                 for i in range(self.n_blocks)
             ])
 
         self.prediction = nn.Sequential(
             build_conv_layer(None, channels, 1024, 1, bias=True),
-            nn.BatchNorm2d(1024), build_activation_layer(dict(type=act)),
+            nn.BatchNorm2d(1024), build_activation_layer(act_cfg),
             nn.Dropout(dropout),
             build_conv_layer(None, 1024, n_classes, 1, bias=True))
 

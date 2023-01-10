@@ -21,11 +21,11 @@ class Stem(nn.Module):
             build_conv_layer(
                 None, in_dim, out_dim // 2, 3, stride=2, padding=1),
             nn.BatchNorm2d(out_dim // 2),
-            build_activation_layer(dict(type=act)),
+            build_activation_layer(act),
             build_conv_layer(
                 None, out_dim // 2, out_dim, 3, stride=2, padding=1),
             nn.BatchNorm2d(out_dim),
-            build_activation_layer(dict(type=act)),
+            build_activation_layer(act),
             build_conv_layer(None, out_dim, out_dim, 3, stride=1, padding=1),
             nn.BatchNorm2d(out_dim),
         )
@@ -62,18 +62,19 @@ class PyramidVig(BaseBackbone):
 
     def __init__(self,
                  arch,
-                 k,
-                 act,
-                 norm,
-                 bias,
-                 epsilon,
-                 use_stochastic,
-                 conv,
-                 drop_path,
-                 dropout,
-                 n_classes,
+                 k=9,
+                 act_cfg=dict(type='GELU'),
+                 norm_cfg='batch',
+                 graph_conv_bias=True,
+                 graph_conv_type='mr',
+                 epsilon=0.2,
+                 use_stochastic=False,
+                 drop_path=0.,
+                 dropout=0.,
+                 n_classes=1000,
                  norm_eval=False,
                  frozen_stages=0):
+
         super(PyramidVig, self).__init__()
         arch = self.arch_settings[arch]
         blocks = arch[0]
@@ -86,7 +87,7 @@ class PyramidVig(BaseBackbone):
                    ]  # number of knn's k
         max_dilation = 49 // max(num_knn)
 
-        self.stem = Stem(out_dim=channels[0], act=act)
+        self.stem = Stem(out_dim=channels[0], act=act_cfg)
         self.pos_embed = nn.Parameter(
             torch.zeros(1, channels[0], 224 // 4, 224 // 4))
         HW = 224 // 4 * 224 // 4
@@ -104,10 +105,10 @@ class PyramidVig(BaseBackbone):
                             channels[i],
                             num_knn[idx],
                             min(idx // 4 + 1, max_dilation),
-                            conv,
-                            act,
-                            norm,
-                            bias,
+                            graph_conv_type,
+                            act_cfg,
+                            norm_cfg,
+                            graph_conv_bias,
                             use_stochastic,
                             epsilon,
                             reduce_ratios[i],
@@ -116,7 +117,7 @@ class PyramidVig(BaseBackbone):
                             relative_pos=True),
                         FFN(channels[i],
                             channels[i] * 4,
-                            act=act,
+                            act=act_cfg,
                             drop_path=dpr[idx]))
                 ]
                 idx += 1
@@ -124,7 +125,7 @@ class PyramidVig(BaseBackbone):
 
         self.prediction = Seq(
             build_conv_layer(None, channels[-1], 1024, 1, bias=True),
-            nn.BatchNorm2d(1024), build_activation_layer(dict(type=act)),
+            nn.BatchNorm2d(1024), build_activation_layer(act_cfg),
             nn.Dropout(dropout),
             build_conv_layer(None, 1024, n_classes, 1, bias=True))
 
