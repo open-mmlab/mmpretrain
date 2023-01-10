@@ -92,9 +92,3 @@ class LeViTClsHead(ClsHead):
         else:
             x = self.head(x)
         return x
-
-    def train(self, mode=True):
-        if (not mode) and self.deploy:
-            replace_batchnorm(self)
-        super(LeViTClsHead, self).train(mode)
-        self.to(next(self.parameters()).device)

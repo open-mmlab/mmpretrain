@@ -505,13 +505,6 @@ class LeViT(BaseBackbone):
                 outs.append(out)
         return tuple(outs)
 
-    def train(self, mode=True):
-        if (not mode) and self.deploy:
-            device = next(self.parameters()).device
-            replace_batchnorm(self)
-            self.to(device)
-        super(LeViT, self).train(mode)
-
 
 def replace_batchnorm(net):
     for child_name, child in net.named_children():
