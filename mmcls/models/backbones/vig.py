@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import build_activation_layer, build_conv_layer, build_norm_layer
 from mmcv.cnn.bricks import DropPath
+from mmengine.model import Sequential
 
 from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.registry import MODELS
@@ -168,7 +169,7 @@ class DenseDilatedKnnGraph(nn.Module):
         return self._dilated(edge_index)
 
 
-class BasicConv(nn.Sequential):
+class BasicConv(Sequential):
 
     def __init__(self, channels, act='relu', norm=None, bias=True, drop=0.):
         m = []
@@ -395,7 +396,7 @@ class Grapher(nn.Module):
         self.channels = in_channels
         self.n = n
         self.r = r
-        self.fc1 = nn.Sequential(
+        self.fc1 = Sequential(
             build_conv_layer(
                 None, in_channels, in_channels, 1, stride=1, padding=0),
             build_norm_layer(dict(type='BN'), in_channels)[1],
@@ -403,7 +404,7 @@ class Grapher(nn.Module):
         self.graph_conv = DyGraphConv2d(in_channels, in_channels * 2, k,
                                         dilation, conv, act, norm, bias,
                                         stochastic, epsilon, r)
-        self.fc2 = nn.Sequential(
+        self.fc2 = Sequential(
             build_conv_layer(
                 None, in_channels * 2, in_channels, 1, stride=1, padding=0),
             build_norm_layer(dict(type='BN'), in_channels)[1],
@@ -458,13 +459,13 @@ class FFN(nn.Module):
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
-        self.fc1 = nn.Sequential(
+        self.fc1 = Sequential(
             build_conv_layer(
                 None, in_features, hidden_features, 1, stride=1, padding=0),
             build_norm_layer(dict(type='BN'), hidden_features)[1],
         )
         self.act = build_activation_layer(act)
-        self.fc2 = nn.Sequential(
+        self.fc2 = Sequential(
             build_conv_layer(
                 None, hidden_features, out_features, 1, stride=1, padding=0),
             build_norm_layer(dict(type='BN'), out_features)[1],
@@ -488,7 +489,7 @@ class Stem(nn.Module):
 
     def __init__(self, in_dim=3, out_dim=768, act='relu'):
         super().__init__()
-        self.convs = nn.Sequential(
+        self.convs = Sequential(
             build_conv_layer(
                 None, in_dim, out_dim // 8, 3, stride=2, padding=1),
             build_norm_layer(dict(type='BN'), out_dim // 8)[1],
@@ -551,8 +552,8 @@ class Vig(BaseBackbone):
         self.pos_embed = nn.Parameter(torch.zeros(1, channels, 14, 14))
         self.frozen_stages = frozen_stages
         if use_dilation:
-            self.backbone = nn.Sequential(*[
-                nn.Sequential(
+            self.backbone = Sequential(*[
+                Sequential(
                     Grapher(
                         channels,
                         num_knn[i],
@@ -570,8 +571,8 @@ class Vig(BaseBackbone):
                 for i in range(self.n_blocks)
             ])
         else:
-            self.backbone = nn.Sequential(*[
-                nn.Sequential(
+            self.backbone = Sequential(*[
+                Sequential(
                     Grapher(
                         channels,
                         num_knn[i],
@@ -589,9 +590,9 @@ class Vig(BaseBackbone):
                 for i in range(self.n_blocks)
             ])
 
-        self.prediction = nn.Sequential(
+        self.prediction = Sequential(
             build_conv_layer(None, channels, 1024, 1, bias=True),
-            build_norm_layer(dict(type='BN'), 1024),
+            build_norm_layer(dict(type='BN'), 1024)[1],
             build_activation_layer(act_cfg), nn.Dropout(dropout),
             build_conv_layer(None, 1024, n_classes, 1, bias=True))
 

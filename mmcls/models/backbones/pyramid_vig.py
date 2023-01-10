@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn import build_activation_layer, build_conv_layer, build_norm_layer
-from torch.nn import Sequential as Seq
+from mmengine.model import Sequential
 
 from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.registry import MODELS
@@ -17,7 +17,7 @@ class Stem(nn.Module):
 
     def __init__(self, img_size=224, in_dim=3, out_dim=768, act='relu'):
         super().__init__()
-        self.convs = nn.Sequential(
+        self.convs = Sequential(
             build_conv_layer(
                 None, in_dim, out_dim // 2, 3, stride=2, padding=1),
             build_norm_layer(dict(type='BN'), out_dim // 2)[1],
@@ -40,7 +40,7 @@ class Downsample(nn.Module):
 
     def __init__(self, in_dim=3, out_dim=768):
         super().__init__()
-        self.conv = nn.Sequential(
+        self.conv = Sequential(
             build_conv_layer(None, in_dim, out_dim, 3, stride=2, padding=1),
             build_norm_layer(dict(type='BN'), out_dim)[1],
         )
@@ -100,7 +100,7 @@ class PyramidVig(BaseBackbone):
                 HW = HW // 4
             for j in range(blocks[i]):
                 self.backbone += [
-                    Seq(
+                    Sequential(
                         Grapher(
                             channels[i],
                             num_knn[idx],
@@ -121,9 +121,9 @@ class PyramidVig(BaseBackbone):
                             drop_path=dpr[idx]))
                 ]
                 idx += 1
-        self.backbone = Seq(*self.backbone)
+        self.backbone = Sequential(*self.backbone)
 
-        self.prediction = Seq(
+        self.prediction = Sequential(
             build_conv_layer(None, channels[-1], 1024, 1, bias=True),
             build_norm_layer(dict(type='BN'), 1024)[1],
             build_activation_layer(act_cfg), nn.Dropout(dropout),
