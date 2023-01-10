@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All right reserved.
 import re
-from collections import OrderedDict
 from typing import List, Optional
 
 import torch
