@@ -192,7 +192,7 @@ class TimmClassifier(BaseClassifier):
     def _remove_state_dict_prefix(module, state_dict, prefix, local_metadata):
         for k in list(state_dict.keys()):
             new_key = re.sub(f'^{prefix}model.', prefix, k)
-            # Only delete the key that different from its new_key
+            # Only delete the key that different from its new_key.
             if new_key != k:
                 # Modify the `state_dict` directly to avoid invalid changes
                 # when recursively calling the `state_dict` function in
@@ -207,7 +207,7 @@ class TimmClassifier(BaseClassifier):
         new_prefix = prefix + 'model.'
         for k in list(state_dict.keys()):
             new_key = re.sub(f'^{prefix}', new_prefix, k)
-            # Only delete the key that different from its new_key
+            # Only delete the key that different from its new_key.
             if new_key != k:
                 state_dict[new_key] = state_dict[k]
                 del state_dict[k]
