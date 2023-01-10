@@ -491,7 +491,10 @@ class SingleLabelMetric(BaseMetric):
         for k, v in metrics.items():
 
             if self.average is None:
-                result_metrics[k + '_classwise'] = v.cpu().detach().tolist()
+                result_metrics[k + '_classwise'] = {
+                    k: val
+                    for k, val in enumerate(v.cpu().tolist())
+                }
             elif self.average == 'micro':
                 result_metrics[k + f'_{self.average}'] = v.item()
             else:
@@ -740,6 +743,7 @@ class ConfusionMatrix(BaseMetric):
         import matplotlib.pyplot as plt
 
         fig, ax = plt.subplots(figsize=(10, 10))
+        ax: plt.Axes
 
         num_classes = confusion_matrix.size(0)
 
@@ -777,10 +781,12 @@ class ConfusionMatrix(BaseMetric):
             ylabel='True label',
             xlabel='Predicted label',
         )
+        ax.invert_yaxis()
+        ax.xaxis.tick_top()
 
         ax.set_ylim((num_classes - 0.5, -0.5))
         # Automatically rotate the x labels.
-        fig.autofmt_xdate()
+        fig.autofmt_xdate(ha='center')
 
         if show:
             plt.show()
