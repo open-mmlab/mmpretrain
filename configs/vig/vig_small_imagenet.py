@@ -1,5 +1,5 @@
 _base_ = [
-    '../_base_/models/Vig/vig_small.py',
+    '../_base_/models/vig/vig_small.py',
     '../_base_/schedules/imagenet_bs256.py',
     '../_base_/default_runtime.py',
 ]
