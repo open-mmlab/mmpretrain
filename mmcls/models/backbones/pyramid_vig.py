@@ -73,9 +73,9 @@ class PyramidVig(BaseBackbone):
                  dropout=0.,
                  n_classes=1000,
                  norm_eval=False,
-                 frozen_stages=0):
-
-        super(PyramidVig, self).__init__()
+                 frozen_stages=0,
+                 init_cfg=None):
+        super().__init__(init_cfg=init_cfg)
         arch = self.arch_settings[arch]
         blocks = arch[0]
         self.n_blocks = sum(blocks)

@@ -491,22 +491,22 @@ class Stem(nn.Module):
         self.convs = nn.Sequential(
             build_conv_layer(
                 None, in_dim, out_dim // 8, 3, stride=2, padding=1),
-            build_norm_layer(dict(type='BN'), out_dim // 8),
+            build_norm_layer(dict(type='BN'), out_dim // 8)[1],
             build_activation_layer(act),
             build_conv_layer(
                 None, out_dim // 8, out_dim // 4, 3, stride=2, padding=1),
-            build_norm_layer(dict(type='BN'), out_dim // 4),
+            build_norm_layer(dict(type='BN'), out_dim // 4)[1],
             build_activation_layer(act),
             build_conv_layer(
                 None, out_dim // 4, out_dim // 2, 3, stride=2, padding=1),
-            build_norm_layer(dict(type='BN'), out_dim // 2),
+            build_norm_layer(dict(type='BN'), out_dim // 2)[1],
             build_activation_layer(act),
             build_conv_layer(
                 None, out_dim // 2, out_dim, 3, stride=2, padding=1),
-            build_norm_layer(dict(type='BN'), out_dim),
+            build_norm_layer(dict(type='BN'), out_dim)[1],
             build_activation_layer(act),
             build_conv_layer(None, out_dim, out_dim, 3, stride=1, padding=1),
-            build_norm_layer(dict(type='BN'), out_dim),
+            build_norm_layer(dict(type='BN'), out_dim)[1],
         )
 
     def forward(self, x):
@@ -534,8 +534,9 @@ class Vig(BaseBackbone):
                  n_classes=1000,
                  relative_pos=False,
                  norm_eval=False,
-                 frozen_stages=0):
-        super(Vig, self).__init__()
+                 frozen_stages=0,
+                 init_cfg=None):
+        super().__init__(init_cfg=init_cfg)
         arch = self.arch_settings[arch]
         self.n_blocks = arch[0]
         channels = arch[1]
