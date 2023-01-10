@@ -1,8 +1,8 @@
 model = dict(
     type='ImageClassifier',
     backbone=dict(
-        type='vig',
-        model_cnf='s',
+        type='Vig',
+        model_cnf='base',
         k=9,
         act='GELU',
         norm='batch',

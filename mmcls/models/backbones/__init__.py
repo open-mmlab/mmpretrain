@@ -25,7 +25,7 @@ from .mobileone import MobileOne
 from .mobilevit import MobileViT
 from .mvit import MViT
 from .poolformer import PoolFormer
-from .pyramid_vig import pyramid_vig
+from .pyramid_vig import PyramidVig
 from .regnet import RegNet
 from .replknet import RepLKNet
 from .repmlp import RepMLPNet
@@ -49,7 +49,7 @@ from .tnt import TNT
 from .twins import PCPVT, SVT
 from .van import VAN
 from .vgg import VGG
-from .vig import vig
+from .vig import Vig
 from .vision_transformer import VisionTransformer
 
 __all__ = [
@@ -109,6 +109,6 @@ __all__ = [
     'RevVisionTransformer',
     'MixMIMTransformer',
     'TinyViT',
-    'vig',
-    'pyramid_vig',
+    'Vig',
+    'PyramidVig',
 ]

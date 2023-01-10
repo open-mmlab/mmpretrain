@@ -2,8 +2,8 @@
 model = dict(
     type='ImageClassifier',
     backbone=dict(
-        type='pyramid_vig',
-        model_cnf='ti',
+        type='PyramidVig',
+        model_cnf='medium',
         k=9,
         conv='mr',
         act='GELU',

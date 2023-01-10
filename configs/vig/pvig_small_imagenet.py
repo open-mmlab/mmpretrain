@@ -1,5 +1,5 @@
 _base_ = [
-    '../_base_/models/vig/pyramid_vig_b.py',
+    '../_base_/models/Vig/pyramid_vig_small.py',
     '../_base_/schedules/imagenet_bs256.py',
     '../_base_/default_runtime.py',
 ]
@@ -26,7 +26,7 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='ResizeEdge',
-        scale=235,
+        scale=248,
         edge='short',
         backend='pillow',
         interpolation='bicubic'),

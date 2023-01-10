@@ -1,5 +1,5 @@
 _base_ = [
-    '../_base_/models/vig/vig_b.py',
+    '../_base_/models/Vig/pyramid_vig_medium.py',
     '../_base_/schedules/imagenet_bs256.py',
     '../_base_/default_runtime.py',
 ]
@@ -18,12 +18,6 @@ randomness = dict(seed=0)
 
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(
-        type='ResizeEdge',
-        scale=248,
-        edge='short',
-        backend='pillow',
-        interpolation='bicubic'),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(type='PackClsInputs'),
 ]

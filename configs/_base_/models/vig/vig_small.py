@@ -1,19 +1,21 @@
-# model settings
 model = dict(
     type='ImageClassifier',
     backbone=dict(
-        type='pyramid_vig',
-        model_cnf='s',
+        type='Vig',
+        model_cnf='small',
         k=9,
-        conv='mr',
         act='GELU',
         norm='batch',
         bias=True,
-        dropout=0.0,
+        use_dilation=True,
         epsilon=0.2,
         use_stochastic=False,
-        drop_path=0,
-        n_classes=1000),
+        conv='mr',
+        drop_path=0.0,
+        dropout=0.0,
+        n_classes=1000,
+        relative_pos=False),
+    neck=None,
     head=dict(
         type='ClsHead',
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0),

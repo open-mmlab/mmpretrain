@@ -527,12 +527,12 @@ class Stem(nn.Module):
 
 
 @MODELS.register_module()
-class vig(BaseBackbone):
+class Vig(BaseBackbone):
     # n_blocks,channels
-    arch_settings = {'ti': [12, 192], 's': [16, 320], 'b': [16, 640]}
+    arch_settings = {'tiny': [12, 192], 'small': [16, 320], 'base': [16, 640]}
 
     def __init__(self,
-                 model_cnf,
+                 arch,
                  k,
                  act,
                  norm,
@@ -547,10 +547,10 @@ class vig(BaseBackbone):
                  relative_pos,
                  norm_eval=False,
                  frozen_stages=0):
-        super(vig, self).__init__()
-        model_cnf = self.arch_settings[model_cnf]
-        self.n_blocks = model_cnf[0]
-        channels = model_cnf[1]
+        super(Vig, self).__init__()
+        arch = self.arch_settings[arch]
+        self.n_blocks = arch[0]
+        channels = arch[1]
         self.stem = Stem(out_dim=channels, act=act)
         dpr = [x.item() for x in torch.linspace(0, drop_path, self.n_blocks)
                ]  # stochastic depth decay rule
@@ -628,7 +628,7 @@ class vig(BaseBackbone):
                 param.requires_grad = False
 
     def train(self, mode=True):
-        super(vig, self).train(mode)
+        super(Vig, self).train(mode)
         self._freeze_stages()
         if mode and self.norm_eval:
             for m in self.modules():

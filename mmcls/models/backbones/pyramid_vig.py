@@ -51,17 +51,17 @@ class Downsample(nn.Module):
 
 
 @MODELS.register_module()
-class pyramid_vig(BaseBackbone):
+class PyramidVig(BaseBackbone):
     # blocks, channels
     arch_settings = {
-        'ti': [[2, 2, 6, 2], [48, 96, 240, 384]],
-        's': [[2, 2, 6, 2], [80, 160, 400, 640]],
-        'm': [[2, 2, 16, 2], [96, 192, 384, 768]],
-        'b': [[2, 2, 18, 2], [128, 256, 512, 1024]]
+        'tiny': [[2, 2, 6, 2], [48, 96, 240, 384]],
+        'small': [[2, 2, 6, 2], [80, 160, 400, 640]],
+        'medium': [[2, 2, 16, 2], [96, 192, 384, 768]],
+        'base': [[2, 2, 18, 2], [128, 256, 512, 1024]]
     }
 
     def __init__(self,
-                 model_cnf,
+                 arch,
                  k,
                  act,
                  norm,
@@ -74,11 +74,11 @@ class pyramid_vig(BaseBackbone):
                  n_classes,
                  norm_eval=False,
                  frozen_stages=0):
-        super(pyramid_vig, self).__init__()
-        model_cnf = self.arch_settings[model_cnf]
-        blocks = model_cnf[0]
+        super(PyramidVig, self).__init__()
+        arch = self.arch_settings[arch]
+        blocks = arch[0]
         self.n_blocks = sum(blocks)
-        channels = model_cnf[1]
+        channels = arch[1]
         reduce_ratios = [4, 2, 1, 1]
         dpr = [x.item() for x in torch.linspace(0, drop_path, self.n_blocks)
                ]  # stochastic depth decay rule
@@ -153,7 +153,7 @@ class pyramid_vig(BaseBackbone):
                 param.requires_grad = False
 
     def train(self, mode=True):
-        super(pyramid_vig, self).train(mode)
+        super(PyramidVig, self).train(mode)
         self._freeze_stages()
         if mode and self.norm_eval:
             for m in self.modules():
