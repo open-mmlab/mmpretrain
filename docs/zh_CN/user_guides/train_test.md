@@ -139,8 +139,8 @@ CUDA_VISIBLE_DEVICES=-1 python tools/test.py ${CONFIG_FILE} ${CHECKPOINT_FILE} [
 | `CONFIG_FILE`                         | 配置文件的路径。                                                                                                                                                    |
 | `CHECKPOINT_FILE`                     | 权重文件路径（支持 http 链接，你可以在[这里](https://mmclassification.readthedocs.io/en/1.x/modelzoo_statistics.html)寻找需要的权重文件）。                         |
 | `--work-dir WORK_DIR`                 | 用来保存测试指标结果的文件夹。                                                                                                                                      |
-| `--out OUT`                           | 用来保存测试指标结果的文件。                                                                                                                                        |
-| `--dump DUMP`                         | 用来保存所有模型输出的文件，这些数据可以用于离线测评。                                                                                                              |
+| `--out OUT`                           | 用来保存测试输出的文件。                                                                                                                                            |
+| `--out-item OUT_ITEM`                 | 指定测试输出文件的内容，可以为 "pred" 或 "metrics"，其中 "pred" 表示保存所有模型输出，这些数据可以用于离线测评；"metrics" 表示输出测试指标。默认为 "pred"。         |
 | `--cfg-options CFG_OPTIONS`           | 重载配置文件中的一些设置。使用类似 `xxx=yyy` 的键值对形式指定，这些设置会被融合入从配置文件读取的配置。你可以使用 `key="[a,b]"` 或者 `key=a,b` 的格式来指定列表格式的值，且支持嵌套，例如 \`key="[(a,b),(c,d)]"，这里的引号是不可省略的。另外每个重载项内部不可出现空格。 |
 | `--show-dir SHOW_DIR`                 | 用于保存可视化预测结果图像的文件夹。                                                                                                                                |
 | `--show`                              | 在窗口中显示预测结果图像。                                                                                                                                          |
