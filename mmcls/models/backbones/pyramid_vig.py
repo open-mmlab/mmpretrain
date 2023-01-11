@@ -123,13 +123,6 @@ class PyramidVig(BaseBackbone):
                 ]
                 idx += 1
         self.stage_blocks = Sequential(*self.stage_blocks)
-
-        self.prediction = Sequential(
-            build_conv_layer(None, channels[-1], 1024, 1, bias=True),
-            build_norm_layer(dict(type='BN'), 1024)[1],
-            build_activation_layer(act_cfg), nn.Dropout(dropout),
-            build_conv_layer(None, 1024, n_classes, 1, bias=True))
-
         self.norm_eval = norm_eval
         self.frozen_stages = frozen_stages
 
@@ -142,7 +135,6 @@ class PyramidVig(BaseBackbone):
             outs.append(x)
 
         x = F.adaptive_avg_pool2d(x, 1)
-        x = self.prediction(x).squeeze(-1).squeeze(-1)
         outs.append(x)
         return outs
 

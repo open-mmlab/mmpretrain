@@ -7,14 +7,17 @@ import torch
 
 def convert(src, dst):
     state = torch.load(src)
-    newstate = collections.OrderedDict()
+    new_state = collections.OrderedDict()
     for key in state.keys():
-        newkey = key
-        if 'stage_blocks' in newkey:
-            newkey = newkey.replace('stage_blocks', 'stage_blocks')
-        newkey = 'stage_blocks.' + newkey
-        newstate[newkey] = state[key]
-    torch.save(newstate, dst)
+        new_key = key
+        if 'backbone' in new_key:
+            new_key = new_key.replace('backbone', 'stage_blocks')
+        new_key = 'backbone.' + new_key
+        if 'prediction' in new_key:
+            new_key = new_key.replace('prediction', 'classifier')
+            new_key = new_key.replace('backbone', 'head')
+        new_state[new_key] = state[key]
+    torch.save(new_state, dst)
 
 
 def main():

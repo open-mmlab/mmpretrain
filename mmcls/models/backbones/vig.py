@@ -590,12 +590,6 @@ class Vig(BaseBackbone):
                 for i in range(self.n_blocks)
             ])
 
-        self.prediction = Sequential(
-            build_conv_layer(None, channels, 1024, 1, bias=True),
-            build_norm_layer(dict(type='BN'), 1024)[1],
-            build_activation_layer(act_cfg), nn.Dropout(dropout),
-            build_conv_layer(None, 1024, n_classes, 1, bias=True))
-
     def forward(self, inputs):
         outs = []
         x = self.stem(inputs) + self.pos_embed
@@ -605,7 +599,7 @@ class Vig(BaseBackbone):
             outs.append(x)
 
         x = F.adaptive_avg_pool2d(x, 1)
-        x = self.prediction(x).squeeze(-1).squeeze(-1)
+        # x = self.classifier(x).squeeze(-1).squeeze(-1)
         outs.append(x)
         return outs
 
