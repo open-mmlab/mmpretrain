@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
 import torch.nn as nn
-from mmcv.cnn import Linear
+from mmcv.cnn import Linear, build_norm_layer
 
 from mmcls.models.heads import ClsHead
 from mmcls.registry import MODELS
@@ -9,9 +9,14 @@ from mmcls.registry import MODELS
 
 class BatchNormLinear(nn.Sequential):
 
-    def __init__(self, in_feature, out_feature, bias=True, std=0.02):
+    def __init__(self,
+                 in_feature,
+                 out_feature,
+                 bias=True,
+                 std=0.02,
+                 norm_cfg=dict(type='BN1d')):
         super(BatchNormLinear, self).__init__()
-        bn = nn.BatchNorm1d(in_feature)
+        _, bn = build_norm_layer(norm_cfg, in_feature)
         linear = Linear(in_feature, out_feature, bias=bias)
         self.std = std
         if bias:
