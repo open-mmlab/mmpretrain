@@ -7,9 +7,6 @@ from unittest.mock import ANY, patch
 import numpy as np
 
 from mmcls.registry import TRANSFORMS
-from mmcls.utils import register_all_modules
-
-register_all_modules()
 
 
 def construct_toy_data():

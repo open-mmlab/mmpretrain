@@ -111,7 +111,6 @@ def init_model(config, checkpoint=None, device=None, **kwargs):
     config.model.setdefault('data_preprocessor',
                             config.get('data_preprocessor', None))
 
-    import mmcls.models  # noqa: F401
     from mmcls.registry import MODELS
 
     model = MODELS.build(config.model)
