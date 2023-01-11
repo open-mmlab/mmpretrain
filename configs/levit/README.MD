@@ -18,11 +18,11 @@ We design a family of image classification architectures that optimize the trade
 
 |   Model    | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                                 Config                                 |
 | :--------: | :-------: | :------: | :-------: | :-------: | :--------------------------------------------------------------------: |
-| LeViT-128S |   7.75    |  0.304   |   76.52   |   92.90   |                     [config](./levit-128s-p16.py)                      |
-| LeViT-128  |   9.19    |  0.405   |   78.58   |   93.94   |                      [config](./levit-128-p16.py)                      |
-| LeViT-192  |   10.91   |  0.656   |   79.87   |   94.75   |                      [config](./levit-192-p16.py)                      |
-| LeViT-256  |   18.86   |  1.126   |   81.59   |   95.45   | [config](./levit-256-p16_4xb256_autoaug-mixup-lbs-coslr-1000e_in1k.py) |
-| LeViT-384  |   39.07   |  2.350   |   82.59   |   95.96   |                      [config](./levit-384-p16.py)                      |
+| LeViT-128S |   7.39    |  0.310   |   76.24   |   92.84   |                     [config](./levit-128s-p16.py)                      |
+| LeViT-128  |   8.82    |  0.413   |   78.43   |   93.86   |                      [config](./levit-128-p16.py)                      |
+| LeViT-192  |   10.56   |  0.668   |   79.73   |   94.64   |                      [config](./levit-192-p16.py)                      |
+| LeViT-256  |   18.38   |  1.142   |   81.14   |   95.14   | [config](./levit-256-p16_4xb256_autoaug-mixup-lbs-coslr-1000e_in1k.py) |
+| LeViT-384  |   38.36   |  2.373   |   82.16   |   95.59   |                      [config](./levit-384-p16.py)                      |
 
 ## Citation
 

@@ -16,81 +16,76 @@ Collections:
 Models:
   - Name: levit-128S_3rdparty_in1k
     Metadata:
-      FLOPs: 304000000
-      Parameters: 7756000
+      FLOPs: 310342496
+      Parameters: 7391290
     In Collection: LeViT
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 76.52
-          Top 5 Accuracy: 92.90
+          Top 1 Accuracy: 76.24
+          Top 5 Accuracy: 92.84
         Task: Image Classification
-    Weights: None
-    Config: configs/levit/deploy/levit-128s-p16.py
+    Config: configs/levit/levit-128s-p16.py
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/LeViT/LeViT-128S-96703c44.pth
       Code: https://github.com/facebookresearch/LeViT
   - Name: levit-128_3rdparty_in1k
     Metadata:
-      FLOPs: 405000000
-      Parameters: 9189000
+      FLOPs: 413060992
+      Parameters: 8828168
     In Collection: LeViT
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 78.58
-          Top 5 Accuracy: 93.94
+          Top 1 Accuracy: 78.43
+          Top 5 Accuracy: 93.86
         Task: Image Classification
-    Weights: None
-    Config: configs/levit/deploy/levit-128-p16.py
+    Config: configs/levit/levit-128-p16.py
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/LeViT/LeViT-128-b88c2750.pth
       Code: https://github.com/facebookresearch/LeViT
   - Name: levit-192_3rdparty_in1k
     Metadata:
-      FLOPs: 656000000
-      Parameters: 10919000
+      FLOPs: 667860704
+      Parameters: 10561301
     In Collection: LeViT
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 79.87
-          Top 5 Accuracy: 94.75
+          Top 1 Accuracy: 79.73
+          Top 5 Accuracy: 94.64
         Task: Image Classification
-    Weights: None
-    Config: configs/levit/deploy/levit-192-p16.py
+    Config: configs/levit/levit-192-p16.py
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/LeViT/LeViT-192-92712e41.pth
       Code: https://github.com/facebookresearch/LeViT
   - Name: levit-256_3rdparty_in1k
     Metadata:
-      FLOPs: 1126000000
-      Parameters: 18856000
+      FLOPs: 1141625216
+      Parameters: 18379852
     In Collection: LeViT
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 81.59
-          Top 5 Accuracy: 95.45
+          Top 1 Accuracy: 81.14
+          Top 5 Accuracy: 95.14
         Task: Image Classification
-    Weights: None
-    Config: configs/levit/deploy/levit-256-p16_deploy_4xb256_autoaug-mixup-lbs-coslr-1000e_in1k.py
+    Config: configs/levit/levit-256-p16_4xb256_autoaug-mixup-lbs-coslr-1000e_in1k.py
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/LeViT/LeViT-256-13b5763e.pth
       Code: https://github.com/facebookresearch/LeViT
   - Name: levit-384_3rdparty_in1k
     Metadata:
-      FLOPs: 2350000000
-      Parameters: 39074000
+      FLOPs: 2372941568
+      Parameters: 38358300
     In Collection: LeViT
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 82.59
-          Top 5 Accuracy: 95.96
+          Top 1 Accuracy: 82.16
+          Top 5 Accuracy: 95.59
         Task: Image Classification
-    Weights: None
-    Config: configs/levit/deploy/levit-384-p16.py
+    Config: configs/levit/levit-384-p16.py
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/LeViT/LeViT-384-9bdaf2e2.pth
       Code: https://github.com/facebookresearch/LeViT
