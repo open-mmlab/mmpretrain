@@ -10,9 +10,9 @@ def convert(src, dst):
     newstate = collections.OrderedDict()
     for key in state.keys():
         newkey = key
-        # if 'gconv.' in newkey:
-        #     newkey = newkey.replace('gconv.', '')
-        newkey = 'backbone.' + newkey
+        if 'stage_blocks' in newkey:
+            newkey = newkey.replace('stage_blocks', 'stage_blocks')
+        newkey = 'stage_blocks.' + newkey
         newstate[newkey] = state[key]
     torch.save(newstate, dst)
 

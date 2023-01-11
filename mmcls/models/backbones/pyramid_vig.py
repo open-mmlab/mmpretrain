@@ -92,14 +92,15 @@ class PyramidVig(BaseBackbone):
             torch.zeros(1, channels[0], 224 // 4, 224 // 4))
         HW = 224 // 4 * 224 // 4
 
-        self.backbone = nn.ModuleList([])
+        self.stage_blocks = nn.ModuleList([])
         idx = 0
         for i in range(len(blocks)):
             if i > 0:
-                self.backbone.append(Downsample(channels[i - 1], channels[i]))
+                self.stage_blocks.append(
+                    Downsample(channels[i - 1], channels[i]))
                 HW = HW // 4
             for j in range(blocks[i]):
-                self.backbone += [
+                self.stage_blocks += [
                     Sequential(
                         Grapher(
                             channels[i],
@@ -121,7 +122,7 @@ class PyramidVig(BaseBackbone):
                             drop_path=dpr[idx]))
                 ]
                 idx += 1
-        self.backbone = Sequential(*self.backbone)
+        self.stage_blocks = Sequential(*self.stage_blocks)
 
         self.prediction = Sequential(
             build_conv_layer(None, channels[-1], 1024, 1, bias=True),
@@ -136,8 +137,8 @@ class PyramidVig(BaseBackbone):
         outs = []
         x = self.stem(inputs) + self.pos_embed
 
-        for i in range(len(self.backbone)):
-            x = self.backbone[i](x)
+        for i in range(len(self.stage_blocks)):
+            x = self.stage_blocks[i](x)
             outs.append(x)
 
         x = F.adaptive_avg_pool2d(x, 1)
@@ -148,7 +149,7 @@ class PyramidVig(BaseBackbone):
     def _freeze_stages(self):
         self.stem.eval()
         for i in range(self.frozen_stages):
-            m = self.backbone[i]
+            m = self.stage_blocks[i]
             m.eval()
             for param in m.parameters():
                 param.requires_grad = False

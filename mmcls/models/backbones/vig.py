@@ -552,7 +552,7 @@ class Vig(BaseBackbone):
         self.pos_embed = nn.Parameter(torch.zeros(1, channels, 14, 14))
         self.frozen_stages = frozen_stages
         if use_dilation:
-            self.backbone = Sequential(*[
+            self.stage_blocks = Sequential(*[
                 Sequential(
                     Grapher(
                         channels,
@@ -571,7 +571,7 @@ class Vig(BaseBackbone):
                 for i in range(self.n_blocks)
             ])
         else:
-            self.backbone = Sequential(*[
+            self.stage_blocks = Sequential(*[
                 Sequential(
                     Grapher(
                         channels,
@@ -601,7 +601,7 @@ class Vig(BaseBackbone):
         x = self.stem(inputs) + self.pos_embed
 
         for i in range(self.n_blocks):
-            x = self.backbone[i](x)
+            x = self.stage_blocks[i](x)
             outs.append(x)
 
         x = F.adaptive_avg_pool2d(x, 1)
@@ -612,7 +612,7 @@ class Vig(BaseBackbone):
     def _freeze_stages(self):
         self.stem.eval()
         for i in range(self.frozen_stages):
-            m = self.backbone[i]
+            m = self.stage_blocks[i]
             m.eval()
             for param in m.parameters():
                 param.requires_grad = False
