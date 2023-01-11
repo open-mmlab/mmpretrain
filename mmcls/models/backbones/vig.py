@@ -220,12 +220,7 @@ class MRConv2d(nn.Module):
     """Max-Relative Graph Convolution (Paper: https://arxiv.org/abs/1904.03751)
     for dense data type."""
 
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 act='relu',
-                 norm=None,
-                 bias=True):
+    def __init__(self, in_channels, out_channels, act, norm=None, bias=True):
         super(MRConv2d, self).__init__()
         self.nn = BasicConv([in_channels * 2, out_channels], act, norm, bias)
 
@@ -246,12 +241,7 @@ class EdgeConv2d(nn.Module):
     """Edge convolution layer (with activation, batch normalization) for dense
     data type."""
 
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 act='relu',
-                 norm=None,
-                 bias=True):
+    def __init__(self, in_channels, out_channels, act, norm=None, bias=True):
         super(EdgeConv2d, self).__init__()
         self.nn = BasicConv([in_channels * 2, out_channels], act, norm, bias)
 
@@ -270,12 +260,7 @@ class GraphSAGE(nn.Module):
     """GraphSAGE Graph Convolution (Paper: https://arxiv.org/abs/1706.02216)
     for dense data type."""
 
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 act='relu',
-                 norm=None,
-                 bias=True):
+    def __init__(self, in_channels, out_channels, act, norm=None, bias=True):
         super(GraphSAGE, self).__init__()
         self.nn1 = BasicConv([in_channels, in_channels], act, norm, bias)
         self.nn2 = BasicConv([in_channels * 2, out_channels], act, norm, bias)
@@ -293,12 +278,7 @@ class GINConv2d(nn.Module):
     """GIN Graph Convolution (Paper: https://arxiv.org/abs/1810.00826) for
     dense data type."""
 
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 act='relu',
-                 norm=None,
-                 bias=True):
+    def __init__(self, in_channels, out_channels, act, norm=None, bias=True):
         super(GINConv2d, self).__init__()
         self.nn = BasicConv([in_channels, out_channels], act, norm, bias)
         eps_init = 0.0
@@ -319,8 +299,8 @@ class GraphConv2d(nn.Module):
     def __init__(self,
                  in_channels,
                  out_channels,
-                 conv='edge',
-                 act='relu',
+                 conv,
+                 act,
                  norm=None,
                  bias=True):
         super(GraphConv2d, self).__init__()
@@ -382,8 +362,8 @@ class Grapher(nn.Module):
                  in_channels,
                  k=9,
                  dilation=1,
-                 conv='edge',
-                 act='relu',
+                 conv='mr',
+                 act=dict(type='GELU'),
                  norm=None,
                  bias=True,
                  stochastic=False,
@@ -454,7 +434,7 @@ class FFN(nn.Module):
                  in_features,
                  hidden_features=None,
                  out_features=None,
-                 act='relu',
+                 act=dict(type='GELU'),
                  drop_path=0.0):
         super().__init__()
         out_features = out_features or in_features
@@ -531,8 +511,6 @@ class Vig(BaseBackbone):
                  use_dilation=True,
                  use_stochastic=False,
                  drop_path=0.,
-                 dropout=0.,
-                 n_classes=1000,
                  relative_pos=False,
                  norm_eval=False,
                  frozen_stages=0,
@@ -599,7 +577,6 @@ class Vig(BaseBackbone):
             outs.append(x)
 
         x = F.adaptive_avg_pool2d(x, 1)
-        # x = self.classifier(x).squeeze(-1).squeeze(-1)
         outs.append(x)
         return outs
 

@@ -12,7 +12,6 @@ model = dict(
         use_dilation=True,
         use_stochastic=False,
         drop_path=0.,
-        dropout=0.,
         relative_pos=False,
         norm_eval=False,
         frozen_stages=0),
