@@ -491,10 +491,7 @@ class SingleLabelMetric(BaseMetric):
         for k, v in metrics.items():
 
             if self.average is None:
-                result_metrics[k + '_classwise'] = {
-                    k: val
-                    for k, val in enumerate(v.cpu().tolist())
-                }
+                result_metrics[k + '_classwise'] = v.cpu().detach().tolist()
             elif self.average == 'micro':
                 result_metrics[k + f'_{self.average}'] = v.item()
             else:
@@ -743,7 +740,6 @@ class ConfusionMatrix(BaseMetric):
         import matplotlib.pyplot as plt
 
         fig, ax = plt.subplots(figsize=(10, 10))
-        ax: plt.Axes
 
         num_classes = confusion_matrix.size(0)
 
