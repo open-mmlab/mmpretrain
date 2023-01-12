@@ -108,7 +108,8 @@ def merge_args(cfg, args):
             'The dump file must be a pkl file.'
         dump_metric = dict(type='DumpResults', out_file_path=args.dump)
         if isinstance(cfg.test_evaluator, (list, tuple)):
-            cfg.test_evaluator = list(cfg.test_evaluator).append(dump_metric)
+            cfg.test_evaluator = list(cfg.test_evaluator)
+            cfg.test_evaluator.append(dump_metric)
         else:
             cfg.test_evaluator = [cfg.test_evaluator, dump_metric]
 
@@ -164,7 +165,11 @@ def main():
 
     # load config
     cfg = Config.fromfile(args.config)
+    assert 'test_evaluator' in cfg and cfg['test_evaluator'] is not None
+
     cfg = merge_args(cfg, args)
+    assert 'test_evaluator' in cfg and cfg['test_evaluator'] is not None
+
 
     # build the runner from config
     runner = Runner.from_cfg(cfg)
