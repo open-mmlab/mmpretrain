@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+# modified from
+# https://github.com/huawei-noah/Efficient-AI-Backbones/tree/master/vig_pytorch
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
