@@ -165,11 +165,8 @@ def main():
 
     # load config
     cfg = Config.fromfile(args.config)
-    assert 'test_evaluator' in cfg and cfg['test_evaluator'] is not None
 
     cfg = merge_args(cfg, args)
-    assert 'test_evaluator' in cfg and cfg['test_evaluator'] is not None
-
 
     # build the runner from config
     runner = Runner.from_cfg(cfg)
