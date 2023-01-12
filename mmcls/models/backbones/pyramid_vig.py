@@ -103,21 +103,21 @@ class PyramidVig(BaseBackbone):
                 self.stage_blocks += [
                     Sequential(
                         Grapher(
-                            channels[i],
-                            num_knn[idx],
-                            min(idx // 4 + 1, max_dilation),
-                            graph_conv_type,
-                            act_cfg,
-                            norm_cfg,
-                            graph_conv_bias,
-                            use_stochastic,
-                            epsilon,
-                            reduce_ratios[i],
+                            in_channels=channels[i],
+                            k=num_knn[idx],
+                            dilation=min(idx // 4 + 1, max_dilation),
+                            conv=graph_conv_type,
+                            act=act_cfg,
+                            norm=norm_cfg,
+                            bias=graph_conv_bias,
+                            stochastic=use_stochastic,
+                            epsilon=epsilon,
+                            r=reduce_ratios[i],
                             n=HW,
                             drop_path=dpr[idx],
                             relative_pos=True),
-                        FFN(channels[i],
-                            channels[i] * 4,
+                        FFN(in_features=channels[i],
+                            hidden_features=channels[i] * 4,
                             act=act_cfg,
                             drop_path=dpr[idx]))
                 ]

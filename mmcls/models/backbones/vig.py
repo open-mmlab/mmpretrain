@@ -92,6 +92,15 @@ def xy_pairwise_distance(x, y):
         x_square = torch.sum(torch.mul(x, x), dim=-1, keepdim=True)
         y_square = torch.sum(torch.mul(y, y), dim=-1, keepdim=True)
         return x_square + xy_inner + y_square.transpose(2, 1)
+        return xy_inner
+
+
+# 在DenseDilatedKnnGraph中使用了归一化，所有特征相当于落在一个超球面上，这时两两特征之间的距离和夹角是一一对应的，
+# 我们能否直接使用cos也就是点积代替距离呢？这样能节省一点计算量。但是测试结果有微小的差别，我认为是计算精度导致的。
+# def xy_pairwise_distance(x, y):
+#     with torch.no_grad():
+#         xy_inner = -2 * torch.matmul(x, y.transpose(2, 1))
+#         return xy_inner
 
 
 def xy_dense_knn_matrix(x, y, k=16, relative_pos=None):
@@ -331,7 +340,7 @@ class DyGraphConv2d(GraphConv2d):
                  k=9,
                  dilation=1,
                  conv='edge',
-                 act='relu',
+                 act=dict(type='GELU'),
                  norm=None,
                  bias=True,
                  stochastic=False,
@@ -431,6 +440,8 @@ class Grapher(nn.Module):
 
 
 class FFN(nn.Module):
+    """"out_features = out_features or in_features\n
+        hidden_features = hidden_features or in_features"""
 
     def __init__(self,
                  in_features,
@@ -531,44 +542,28 @@ class Vig(BaseBackbone):
         self.norm_eval = norm_eval
         self.pos_embed = nn.Parameter(torch.zeros(1, channels, 14, 14))
         self.frozen_stages = frozen_stages
-        if use_dilation:
-            self.stage_blocks = Sequential(*[
-                Sequential(
-                    Grapher(
-                        channels,
-                        num_knn[i],
-                        min(i // 4 + 1, max_dilation),
-                        graph_conv_type,
-                        act_cfg,
-                        norm_cfg,
-                        graph_conv_bias,
-                        use_stochastic,
-                        epsilon,
-                        1,
-                        drop_path=dpr[i],
-                        relative_pos=relative_pos),
-                    FFN(channels, channels * 4, act=act_cfg, drop_path=dpr[i]))
-                for i in range(self.n_blocks)
-            ])
-        else:
-            self.stage_blocks = Sequential(*[
-                Sequential(
-                    Grapher(
-                        channels,
-                        num_knn[i],
-                        1,
-                        graph_conv_type,
-                        act_cfg,
-                        norm_cfg,
-                        graph_conv_bias,
-                        use_stochastic,
-                        epsilon,
-                        1,
-                        drop_path=dpr[i],
-                        relative_pos=relative_pos),
-                    FFN(channels, channels * 4, act=act_cfg, drop_path=dpr[i]))
-                for i in range(self.n_blocks)
-            ])
+        # i在循环里面，无法直接拿出来
+        # dilation = min(i // 4 + 1, max_dilation) if use_dilation else 1
+        self.stage_blocks = Sequential(*[
+            Sequential(
+                Grapher(
+                    in_channels=channels,
+                    k=num_knn[i],
+                    dilation=min(i // 4 +
+                                 1, max_dilation) if use_dilation else 1,
+                    conv=graph_conv_type,
+                    act=act_cfg,
+                    norm=norm_cfg,
+                    bias=graph_conv_bias,
+                    stochastic=use_stochastic,
+                    epsilon=epsilon,
+                    drop_path=dpr[i],
+                    relative_pos=relative_pos),
+                FFN(in_features=channels,
+                    hidden_features=channels * 4,
+                    act=act_cfg,
+                    drop_path=dpr[i])) for i in range(self.n_blocks)
+        ])
 
     def forward(self, inputs):
         outs = []
