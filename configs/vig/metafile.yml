@@ -1,0 +1,27 @@
+Collections:
+  - Name: VIG
+    Metadata:
+      Training Data: ImageNet-1k
+      Architecture:
+        - VIG
+    Paper:
+      URL: https://arxiv.org/abs/2206.00272
+      Title: "Vision GNN: An Image is Worth Graph of Nodes"
+    README: configs/vig/README.md
+    Code:
+      URL:
+      Version:
+
+Models:
+  - Name:
+    Metadata:
+      FLOPs:
+      Parameters:
+    In Collection: VIG
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy:
+          Top 5 Accuracy:
+        Task: Image Classification
+    Weights:
