@@ -11,9 +11,6 @@ from mmengine import is_seq_of
 
 from mmcls.registry import MODELS
 from mmcls.structures import ClsDataSample, MultiTaskDataSample
-from mmcls.utils import register_all_modules
-
-register_all_modules()
 
 
 def setup_seed(seed):

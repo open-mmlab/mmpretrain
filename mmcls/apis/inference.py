@@ -22,8 +22,6 @@ def inference_model(model: 'BaseModel', img: Union[str, np.ndarray]):
     from mmengine.dataset import Compose, default_collate
     from mmengine.registry import DefaultScope
 
-    import mmcls.datasets  # noqa: F401
-
     cfg = model.cfg
     # build the data pipeline
     test_pipeline_cfg = cfg.test_dataloader.dataset.pipeline

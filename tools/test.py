@@ -9,8 +9,6 @@ from mmengine.config import Config, ConfigDict, DictAction
 from mmengine.hooks import Hook
 from mmengine.runner import Runner
 
-from mmcls.utils import register_all_modules
-
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -108,7 +106,8 @@ def merge_args(cfg, args):
             'The dump file must be a pkl file.'
         dump_metric = dict(type='DumpResults', out_file_path=args.dump)
         if isinstance(cfg.test_evaluator, (list, tuple)):
-            cfg.test_evaluator = list(cfg.test_evaluator).append(dump_metric)
+            cfg.test_evaluator = list(cfg.test_evaluator)
+            cfg.test_evaluator.append(dump_metric)
         else:
             cfg.test_evaluator = [cfg.test_evaluator, dump_metric]
 
@@ -158,12 +157,10 @@ def merge_args(cfg, args):
 def main():
     args = parse_args()
 
-    # register all modules in mmcls into the registries
-    # do not init the default scope here because it will be init in the runner
-    register_all_modules(init_default_scope=False)
-
     # load config
     cfg = Config.fromfile(args.config)
+
+    # merge cli arguments to config
     cfg = merge_args(cfg, args)
 
     # build the runner from config

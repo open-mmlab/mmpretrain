@@ -9,12 +9,9 @@ from unittest.mock import MagicMock, call, patch
 
 import numpy as np
 from mmengine.logging import MMLogger
-from mmengine.registry import TRANSFORMS
 
-from mmcls.registry import DATASETS
-from mmcls.utils import register_all_modules
+from mmcls.registry import DATASETS, TRANSFORMS
 
-register_all_modules()
 ASSETS_ROOT = osp.abspath(osp.join(osp.dirname(__file__), '../data/dataset'))
 
 

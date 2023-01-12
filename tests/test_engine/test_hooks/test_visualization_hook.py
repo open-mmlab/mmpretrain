@@ -10,10 +10,7 @@ from mmengine.runner import EpochBasedTrainLoop, IterBasedTrainLoop
 from mmcls.engine import VisualizationHook
 from mmcls.registry import HOOKS
 from mmcls.structures import ClsDataSample
-from mmcls.utils import register_all_modules
 from mmcls.visualization import ClsVisualizer
-
-register_all_modules()
 
 
 class TestVisualizationHook(TestCase):

@@ -8,9 +8,6 @@ from mmengine.evaluator import Evaluator
 
 from mmcls.evaluation.metrics import AveragePrecision, MultiLabelMetric
 from mmcls.structures import ClsDataSample
-from mmcls.utils import register_all_modules
-
-register_all_modules()
 
 
 class TestMultiLabel(TestCase):

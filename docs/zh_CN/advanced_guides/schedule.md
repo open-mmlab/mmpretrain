@@ -270,7 +270,7 @@ param_scheduler = [
 可以创建一个名为 `mmcls/engine/optimizer` 的文件夹，并在目录下的一个文件，如 `mmcls/engine/optimizer/my_optimizer.py` 中实现该自定义优化器：
 
 ```python
-from mmengine.registry import OPTIMIZERS
+from mmcls.registry import OPTIMIZERS
 from torch.optim import Optimizer
 
 
