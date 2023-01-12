@@ -156,7 +156,7 @@ Models:
           Top 1 Accuracy: 83.8
           Top 5 Accuracy: 96.55
     Weights: https://download.openmmlab.com/mmclassification/v0/deit3/deit3-base-p16_3rdparty_in1k_20221008-60b8c8bf.pth
-    Config: configs/deit3/deit3-base-p16_8xb256_in21k-224px.py
+    Config: configs/deit3/deit3-base-p16_8xb64-ft_in1k-224px.py
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/deit/deit_3_base_224_1k.pth
       Code: https://github.com/facebookresearch/deit/blob/main/models_v2.py#L171
