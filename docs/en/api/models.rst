@@ -159,6 +159,7 @@ Losses
    :template: classtemplate.rst
 
    CrossEntropyLoss
+   BinaryCrossEntropyLoss
    LabelSmoothLoss
    FocalLoss
    AsymmetricLoss

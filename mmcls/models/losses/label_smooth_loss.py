@@ -30,7 +30,7 @@ class LabelSmoothLoss(nn.Module):
             cross entropy. Defaults to None, means True for 'multi_label' mode,
             and False for other mode.
         **kwargs: If ``use_sigmoid=False``, accepts other keyword arguments
-            of :class:`CrossEntropyLoss`. If ``use_sigmoid=True`, accepts
+            of :class:`CrossEntropyLoss`. If ``use_sigmoid=True``, accepts
             other keyword arguments of :class:`BinaryCrossEntropyLoss`.
 
     Notes:
@@ -122,7 +122,7 @@ class LabelSmoothLoss(nn.Module):
                 with shape (N, \*).
             **kwargs: If ``self.use_sigmoid=False``, accepts other keyword
                 arguments of :meth:`CrossEntropyLoss.forward`. If
-                ``self.use_sigmoid=True`, accepts other keyword arguments of
+                ``self.use_sigmoid=True``, accepts other keyword arguments of
                 :meth:`BinaryCrossEntropyLoss.forward`.
 
         Returns:
