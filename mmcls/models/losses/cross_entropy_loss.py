@@ -143,6 +143,8 @@ class CrossEntropyLoss(nn.Module):
     Args:
         use_sigmoid (bool): Whether the prediction uses sigmoid
             of softmax. Defaults to False.
+            .. deprecated:
+                Use :class:`BinaryCrossEntropyLoss` instead.
         use_soft (bool): Whether to use the soft version of CrossEntropyLoss.
             Defaults to False.
         reduction (str): The method used to reduce the loss.
@@ -153,6 +155,8 @@ class CrossEntropyLoss(nn.Module):
         pos_weight (List[float], optional): The positive weight for each
             class with shape (C), C is the number of classes. Only enabled in
             BCE loss when ``use_sigmoid`` is True. Default None.
+            .. deprecated:
+                Use :class:`BinaryCrossEntropyLoss` instead.
     """
 
     def __init__(self,
@@ -174,6 +178,12 @@ class CrossEntropyLoss(nn.Module):
                 'The `sigmoid=True` option of `CrossEntropyLoss` is '
                 'deprecated. Please use `BinaryCrossEntropyLoss` instead',
                 DeprecationWarning)
+
+        accept_reduction = {'none', 'mean', 'sum'}
+        assert reduction in accept_reduction, \
+            f'LabelSmoothLoss supports reduction {accept_reduction}, ' \
+            f'but gets {reduction}.'
+        self.reduction = reduction
 
         self.reduction = reduction
         self.loss_weight = loss_weight

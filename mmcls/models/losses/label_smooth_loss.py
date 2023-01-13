@@ -27,7 +27,8 @@ class LabelSmoothLoss(nn.Module):
             'multi_label'. Defaults to 'original'.
         use_sigmoid (bool, optional): If True, do sigmoid before calculating
             cross entropy (i.e. BCE). If False, do softmax before calculating
-            cross entropy. Defaults to False.
+            cross entropy. Defaults to None, means True for 'multi_label' mode,
+            and False for other mode.
         **kwargs: If ``use_sigmoid=False``, accepts other keyword arguments
             of :class:`CrossEntropyLoss`. If ``use_sigmoid=True`, accepts
             other keyword arguments of :class:`BinaryCrossEntropyLoss`.
@@ -82,8 +83,10 @@ class LabelSmoothLoss(nn.Module):
 
         if mode == 'multi_label':
             self.smooth_label = self.multilabel_smooth_label
+            use_sigmoid = True if use_sigmoid is None else use_sigmoid
         else:
             self.smooth_label = self.original_smooth_label
+            use_sigmoid = False if use_sigmoid is None else use_sigmoid
 
         if use_sigmoid:
             self.ce = BinaryCrossEntropyLoss(**kwargs)
