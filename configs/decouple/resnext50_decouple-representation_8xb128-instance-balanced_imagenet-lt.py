@@ -4,3 +4,4 @@ _base_ = [
     '../_base_/schedules/imagenet-lt_bs512_coslr_90e.py',
     '../_base_/default_runtime.py'
 ]
+default_hooks = dict(checkpoint=dict(type='CheckpointHook', interval=30))

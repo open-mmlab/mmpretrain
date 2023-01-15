@@ -13,8 +13,12 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='RandomResizedCrop', scale=224),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
-    dict(type='ColorJitter', brightness=0.4, contrast=0.4, saturation=0.4,
-         hue=0),
+    dict(
+        type='ColorJitter',
+        brightness=0.4,
+        contrast=0.4,
+        saturation=0.4,
+        hue=0),
     dict(type='PackClsInputs'),
 ]
 
@@ -32,7 +36,7 @@ train_dataset = dict(
     pipeline=train_pipeline)
 
 train_dataloader = dict(
-    batch_size=512,
+    batch_size=400,
     num_workers=12,
     dataset=train_dataset,
     sampler=dict(type='DefaultSampler', shuffle=True),
