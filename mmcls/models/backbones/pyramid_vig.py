@@ -17,7 +17,7 @@ class Stem(nn.Module):
     Overlap: https://arxiv.org/pdf/2106.13797.pdf
     """
 
-    def __init__(self, img_size=224, in_dim=3, out_dim=768, act='relu'):
+    def __init__(self, img_size=224, in_dim=3, out_dim=768, act=dict('GELU')):
         super().__init__()
         self.convs = Sequential(
             build_conv_layer(
@@ -54,6 +54,27 @@ class Downsample(nn.Module):
 
 @MODELS.register_module()
 class PyramidVig(BaseBackbone):
+    """PyramidVig backbone.
+
+    Args:
+        arch(str): Vision GNN architecture,
+            choose from 'tiny', 'small' and 'base'.
+        k(int): number of knn's k.
+        act_cfg (dict): The config of activative functions.
+            Defaults to ``dict(type='GELU'))``.
+        norm_cfg (dict): The config of normalization layers.
+            Defaults to ``dict(type='BN', eps=1e-6)``.
+        graph_conv_bias(bool): Whether to use bias in BasicConv.
+        graph_conv_type(str): Types of graph convolution，
+            choose from 'edge', 'mr', 'sage' and 'gin'.
+             Defaults to 'mr'.
+        epsilon(float): Probability of random arrangement in KNN.
+            Defaults to 0.2.
+            It only works when use_dilation=True and use_stochastic=True.
+        use_stochastic(bool): Whether to use stochastic in KNN.
+            Defaults to False.
+        drop_path(float): stochastic depth decay rule.Defaults to 0.
+    """
     # blocks, channels
     arch_settings = {
         'tiny': [[2, 2, 6, 2], [48, 96, 240, 384]],

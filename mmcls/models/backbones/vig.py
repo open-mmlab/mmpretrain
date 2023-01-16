@@ -84,6 +84,7 @@ def xy_pairwise_distance(x, y):
 
     Args:
         x: tensor (batch_size, num_points, num_dims)
+        y: tensor (batch_size, num_points, num_dims)
     Returns:
         pairwise distance: (batch_size, num_points, num_points)
     """
@@ -92,7 +93,6 @@ def xy_pairwise_distance(x, y):
         x_square = torch.sum(torch.mul(x, x), dim=-1, keepdim=True)
         y_square = torch.sum(torch.mul(y, y), dim=-1, keepdim=True)
         return x_square + xy_inner + y_square.transpose(2, 1)
-        return xy_inner
 
 
 # 在DenseDilatedKnnGraph中使用了归一化，所有特征相当于落在一个超球面上，这时两两特征之间的距离和夹角是一一对应的，
@@ -108,7 +108,9 @@ def xy_dense_knn_matrix(x, y, k=16, relative_pos=None):
 
     Args:
         x: (batch_size, num_dims, num_points, 1)
+        y: (batch_size, num_dims, num_points, 1)
         k: int
+        relative_pos:Whether to use relative_pos
     Returns:
         nearest neighbors:
         (batch_size, num_points, k) (batch_size, num_points, k)
@@ -182,7 +184,7 @@ class DenseDilatedKnnGraph(nn.Module):
 
 class BasicConv(Sequential):
 
-    def __init__(self, channels, act='relu', norm=None, bias=True, drop=0.):
+    def __init__(self, channels, act, norm=None, bias=True, drop=0.):
         m = []
         for i in range(1, len(channels)):
             m.append(
@@ -344,7 +346,7 @@ class DyGraphConv2d(GraphConv2d):
                  norm=None,
                  bias=True,
                  stochastic=False,
-                 epsilon=0.0,
+                 epsilon=0.2,
                  r=1):
         super(DyGraphConv2d, self).__init__(in_channels, out_channels, conv,
                                             act, norm, bias)
@@ -378,7 +380,7 @@ class Grapher(nn.Module):
                  norm=None,
                  bias=True,
                  stochastic=False,
-                 epsilon=0.0,
+                 epsilon=0.2,
                  r=1,
                  n=196,
                  drop_path=0.0,
@@ -480,7 +482,7 @@ class Stem(nn.Module):
     Overlap: https://arxiv.org/pdf/2106.13797.pdf
     """
 
-    def __init__(self, in_dim=3, out_dim=768, act='relu'):
+    def __init__(self, in_dim=3, out_dim=768, act=dict(type=('GELU'))):
         super().__init__()
         self.convs = Sequential(
             build_conv_layer(
@@ -510,6 +512,32 @@ class Stem(nn.Module):
 
 @MODELS.register_module()
 class Vig(BaseBackbone):
+    """VIG backbone.
+
+    Args:
+        arch(str): Vision GNN architecture,
+            choose from 'tiny', 'small' and 'base'.
+        k(int): number of knn's k.
+        act_cfg (dict): The config of activative functions.
+            Defaults to ``dict(type='GELU'))``.
+        norm_cfg (dict): The config of normalization layers.
+            Defaults to ``dict(type='BN', eps=1e-6)``.
+        graph_conv_bias(bool): Whether to use bias in BasicConv.
+        graph_conv_type(str): Types of graph convolution，
+            choose from 'edge', 'mr', 'sage' and 'gin'.
+             Defaults to 'mr'.
+        epsilon(float): Probability of random arrangement in KNN.
+            Defaults to 0.2.
+            It only works when use_dilation=True and use_stochastic=True.
+        use_dilation(bool): Whether to use dilation in KNN.
+            Defaults to True.
+        use_stochastic(bool): Whether to use stochastic in KNN.
+            Defaults to False.
+        drop_path(float): stochastic depth decay rule.Defaults to 0.
+        relative_pos(bool): Whether to use relative position embedding.
+            Defaults to False.
+    """
+
     # n_blocks,channels
     arch_settings = {'tiny': [12, 192], 'small': [16, 320], 'base': [16, 640]}
 
