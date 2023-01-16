@@ -135,15 +135,15 @@ class DenseDilated(nn.Module):
     edge_index: (2, batch_size, num_points, k)
     """
 
-    def __init__(self, k=9, dilation=1, stochastic=False, epsilon=0.0):
+    def __init__(self, k=9, dilation=1, use_stochastic=False, epsilon=0.0):
         super(DenseDilated, self).__init__()
         self.dilation = dilation
-        self.stochastic = stochastic
+        self.use_stochastic = use_stochastic
         self.epsilon = epsilon
         self.k = k
 
     def forward(self, edge_index):
-        if self.stochastic:
+        if self.use_stochastic:
             if torch.rand(1) < self.epsilon and self.training:
                 num = self.k * self.dilation
                 randnum = torch.randperm(num)[:self.k]
@@ -158,13 +158,13 @@ class DenseDilated(nn.Module):
 class DenseDilatedKnnGraph(nn.Module):
     """Find the neighbors' indices based on dilated knn."""
 
-    def __init__(self, k=9, dilation=1, stochastic=False, epsilon=0.0):
+    def __init__(self, k=9, dilation=1, use_stochastic=False, epsilon=0.0):
         super(DenseDilatedKnnGraph, self).__init__()
         self.dilation = dilation
-        self.stochastic = stochastic
+        self.use_stochastic = use_stochastic
         self.epsilon = epsilon
         self.k = k
-        self._dilated = DenseDilated(k, dilation, stochastic, epsilon)
+        self._dilated = DenseDilated(k, dilation, use_stochastic, epsilon)
 
     def forward(self, x, y=None, relative_pos=None):
         if y is not None:
@@ -184,17 +184,26 @@ class DenseDilatedKnnGraph(nn.Module):
 
 class BasicConv(Sequential):
 
-    def __init__(self, channels, act, norm=None, bias=True, drop=0.):
+    def __init__(self,
+                 channels,
+                 act_cfg,
+                 norm_cfg=None,
+                 graph_conv_bias=True,
+                 drop=0.):
         m = []
         for i in range(1, len(channels)):
             m.append(
                 build_conv_layer(
-                    None, channels[i - 1], channels[i], 1, bias=bias,
+                    None,
+                    channels[i - 1],
+                    channels[i],
+                    1,
+                    bias=graph_conv_bias,
                     groups=4))
-            if norm is not None:
-                m.append(build_norm_layer(norm, channels[-1])[1])
-            if act is not None:
-                m.append(build_activation_layer(act))
+            if norm_cfg is not None:
+                m.append(build_norm_layer(norm_cfg, channels[-1])[1])
+            if act_cfg is not None:
+                m.append(build_activation_layer(act_cfg))
             if drop > 0:
                 m.append(nn.Dropout2d(drop))
 
@@ -233,9 +242,15 @@ class MRConv2d(nn.Module):
     """Max-Relative Graph Convolution (Paper: https://arxiv.org/abs/1904.03751)
     for dense data type."""
 
-    def __init__(self, in_channels, out_channels, act, norm=None, bias=True):
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 act_cfg,
+                 norm_cfg=None,
+                 graph_conv_bias=True):
         super(MRConv2d, self).__init__()
-        self.nn = BasicConv([in_channels * 2, out_channels], act, norm, bias)
+        self.nn = BasicConv([in_channels * 2, out_channels], act_cfg, norm_cfg,
+                            graph_conv_bias)
 
     def forward(self, x, edge_index, y=None):
         x_i = batched_index_select(x, edge_index[1])
@@ -254,9 +269,15 @@ class EdgeConv2d(nn.Module):
     """Edge convolution layer (with activation, batch normalization) for dense
     data type."""
 
-    def __init__(self, in_channels, out_channels, act, norm=None, bias=True):
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 act_cfg,
+                 norm_cfg=None,
+                 graph_conv_bias=True):
         super(EdgeConv2d, self).__init__()
-        self.nn = BasicConv([in_channels * 2, out_channels], act, norm, bias)
+        self.nn = BasicConv([in_channels * 2, out_channels], act_cfg, norm_cfg,
+                            graph_conv_bias)
 
     def forward(self, x, edge_index, y=None):
         x_i = batched_index_select(x, edge_index[1])
@@ -273,10 +294,17 @@ class GraphSAGE(nn.Module):
     """GraphSAGE Graph Convolution (Paper: https://arxiv.org/abs/1706.02216)
     for dense data type."""
 
-    def __init__(self, in_channels, out_channels, act, norm=None, bias=True):
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 act_cfg,
+                 norm_cfg=None,
+                 graph_conv_bias=True):
         super(GraphSAGE, self).__init__()
-        self.nn1 = BasicConv([in_channels, in_channels], act, norm, bias)
-        self.nn2 = BasicConv([in_channels * 2, out_channels], act, norm, bias)
+        self.nn1 = BasicConv([in_channels, in_channels], act_cfg, norm_cfg,
+                             graph_conv_bias)
+        self.nn2 = BasicConv([in_channels * 2, out_channels], act_cfg,
+                             norm_cfg, graph_conv_bias)
 
     def forward(self, x, edge_index, y=None):
         if y is not None:
@@ -291,9 +319,15 @@ class GINConv2d(nn.Module):
     """GIN Graph Convolution (Paper: https://arxiv.org/abs/1810.00826) for
     dense data type."""
 
-    def __init__(self, in_channels, out_channels, act, norm=None, bias=True):
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 act_cfg,
+                 norm_cfg=None,
+                 graph_conv_bias=True):
         super(GINConv2d, self).__init__()
-        self.nn = BasicConv([in_channels, out_channels], act, norm, bias)
+        self.nn = BasicConv([in_channels, out_channels], act_cfg, norm_cfg,
+                            graph_conv_bias)
         eps_init = 0.0
         self.eps = nn.Parameter(torch.Tensor([eps_init]))
 
@@ -312,22 +346,26 @@ class GraphConv2d(nn.Module):
     def __init__(self,
                  in_channels,
                  out_channels,
-                 conv,
-                 act,
-                 norm=None,
-                 bias=True):
+                 graph_conv_type,
+                 act_cfg,
+                 norm_cfg=None,
+                 graph_conv_bias=True):
         super(GraphConv2d, self).__init__()
-        if conv == 'edge':
-            self.gconv = EdgeConv2d(in_channels, out_channels, act, norm, bias)
-        elif conv == 'mr':
-            self.gconv = MRConv2d(in_channels, out_channels, act, norm, bias)
-        elif conv == 'sage':
-            self.gconv = GraphSAGE(in_channels, out_channels, act, norm, bias)
-        elif conv == 'gin':
-            self.gconv = GINConv2d(in_channels, out_channels, act, norm, bias)
+        if graph_conv_type == 'edge':
+            self.gconv = EdgeConv2d(in_channels, out_channels, act_cfg,
+                                    norm_cfg, graph_conv_bias)
+        elif graph_conv_type == 'mr':
+            self.gconv = MRConv2d(in_channels, out_channels, act_cfg, norm_cfg,
+                                  graph_conv_bias)
+        elif graph_conv_type == 'sage':
+            self.gconv = GraphSAGE(in_channels, out_channels, act_cfg,
+                                   norm_cfg, graph_conv_bias)
+        elif graph_conv_type == 'gin':
+            self.gconv = GINConv2d(in_channels, out_channels, act_cfg,
+                                   norm_cfg, graph_conv_bias)
         else:
             raise NotImplementedError(
-                'graph_conv_type:{} is not supported'.format(conv))
+                'graph_conv_type:{} is not supported'.format(graph_conv_type))
 
     def forward(self, x, edge_index, y=None):
         return self.gconv(x, edge_index, y)
@@ -341,20 +379,21 @@ class DyGraphConv2d(GraphConv2d):
                  out_channels,
                  k=9,
                  dilation=1,
-                 conv='edge',
-                 act=dict(type='GELU'),
-                 norm=None,
-                 bias=True,
-                 stochastic=False,
+                 graph_conv_type='mr',
+                 act_cfg=dict(type='GELU'),
+                 norm_cfg=None,
+                 graph_conv_bias=True,
+                 use_stochastic=False,
                  epsilon=0.2,
                  r=1):
-        super(DyGraphConv2d, self).__init__(in_channels, out_channels, conv,
-                                            act, norm, bias)
+        super(DyGraphConv2d,
+              self).__init__(in_channels, out_channels, graph_conv_type,
+                             act_cfg, norm_cfg, graph_conv_bias)
         self.k = k
         self.d = dilation
         self.r = r
-        self.dilated_knn_graph = DenseDilatedKnnGraph(k, dilation, stochastic,
-                                                      epsilon)
+        self.dilated_knn_graph = DenseDilatedKnnGraph(k, dilation,
+                                                      use_stochastic, epsilon)
 
     def forward(self, x, relative_pos=None):
         B, C, H, W = x.shape
@@ -375,11 +414,11 @@ class Grapher(nn.Module):
                  in_channels,
                  k=9,
                  dilation=1,
-                 conv='mr',
-                 act=dict(type='GELU'),
-                 norm=None,
-                 bias=True,
-                 stochastic=False,
+                 graph_conv_type='mr',
+                 act_cfg=dict(type='GELU'),
+                 norm_cfg=None,
+                 graph_conv_bias=True,
+                 use_stochastic=False,
                  epsilon=0.2,
                  r=1,
                  n=196,
@@ -395,8 +434,9 @@ class Grapher(nn.Module):
             build_norm_layer(dict(type='BN'), in_channels)[1],
         )
         self.graph_conv = DyGraphConv2d(in_channels, in_channels * 2, k,
-                                        dilation, conv, act, norm, bias,
-                                        stochastic, epsilon, r)
+                                        dilation, graph_conv_type, act_cfg,
+                                        norm_cfg, graph_conv_bias,
+                                        use_stochastic, epsilon, r)
         self.fc2 = Sequential(
             build_conv_layer(
                 None, in_channels * 2, in_channels, 1, stride=1, padding=0),
@@ -449,7 +489,7 @@ class FFN(nn.Module):
                  in_features,
                  hidden_features=None,
                  out_features=None,
-                 act=dict(type='GELU'),
+                 act_cfg=dict(type='GELU'),
                  drop_path=0.0):
         super().__init__()
         out_features = out_features or in_features
@@ -459,7 +499,7 @@ class FFN(nn.Module):
                 None, in_features, hidden_features, 1, stride=1, padding=0),
             build_norm_layer(dict(type='BN'), hidden_features)[1],
         )
-        self.act = build_activation_layer(act)
+        self.act = build_activation_layer(act_cfg)
         self.fc2 = Sequential(
             build_conv_layer(
                 None, hidden_features, out_features, 1, stride=1, padding=0),
@@ -482,25 +522,25 @@ class Stem(nn.Module):
     Overlap: https://arxiv.org/pdf/2106.13797.pdf
     """
 
-    def __init__(self, in_dim=3, out_dim=768, act=dict(type=('GELU'))):
+    def __init__(self, in_dim=3, out_dim=768, act_cfg=dict(type=('GELU'))):
         super().__init__()
         self.convs = Sequential(
             build_conv_layer(
                 None, in_dim, out_dim // 8, 3, stride=2, padding=1),
             build_norm_layer(dict(type='BN'), out_dim // 8)[1],
-            build_activation_layer(act),
+            build_activation_layer(act_cfg),
             build_conv_layer(
                 None, out_dim // 8, out_dim // 4, 3, stride=2, padding=1),
             build_norm_layer(dict(type='BN'), out_dim // 4)[1],
-            build_activation_layer(act),
+            build_activation_layer(act_cfg),
             build_conv_layer(
                 None, out_dim // 4, out_dim // 2, 3, stride=2, padding=1),
             build_norm_layer(dict(type='BN'), out_dim // 2)[1],
-            build_activation_layer(act),
+            build_activation_layer(act_cfg),
             build_conv_layer(
                 None, out_dim // 2, out_dim, 3, stride=2, padding=1),
             build_norm_layer(dict(type='BN'), out_dim)[1],
-            build_activation_layer(act),
+            build_activation_layer(act_cfg),
             build_conv_layer(None, out_dim, out_dim, 3, stride=1, padding=1),
             build_norm_layer(dict(type='BN'), out_dim)[1],
         )
@@ -560,7 +600,7 @@ class Vig(BaseBackbone):
         arch = self.arch_settings[arch]
         self.n_blocks = arch[0]
         channels = arch[1]
-        self.stem = Stem(out_dim=channels, act=act_cfg)
+        self.stem = Stem(out_dim=channels, act_cfg=act_cfg)
         dpr = [x.item() for x in torch.linspace(0, drop_path, self.n_blocks)
                ]  # stochastic depth decay rule
         num_knn = [
@@ -579,17 +619,17 @@ class Vig(BaseBackbone):
                     k=num_knn[i],
                     dilation=min(i // 4 +
                                  1, max_dilation) if use_dilation else 1,
-                    conv=graph_conv_type,
-                    act=act_cfg,
-                    norm=norm_cfg,
-                    bias=graph_conv_bias,
-                    stochastic=use_stochastic,
+                    graph_conv_type=graph_conv_type,
+                    act_cfg=act_cfg,
+                    norm_cfg=norm_cfg,
+                    graph_conv_bias=graph_conv_bias,
+                    use_stochastic=use_stochastic,
                     epsilon=epsilon,
                     drop_path=dpr[i],
                     relative_pos=relative_pos),
                 FFN(in_features=channels,
                     hidden_features=channels * 4,
-                    act=act_cfg,
+                    act_cfg=act_cfg,
                     drop_path=dpr[i])) for i in range(self.n_blocks)
         ])
 

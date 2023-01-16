@@ -17,17 +17,21 @@ class Stem(nn.Module):
     Overlap: https://arxiv.org/pdf/2106.13797.pdf
     """
 
-    def __init__(self, img_size=224, in_dim=3, out_dim=768, act=dict('GELU')):
+    def __init__(self,
+                 img_size=224,
+                 in_dim=3,
+                 out_dim=768,
+                 act_cfg=dict(type='GELU')):
         super().__init__()
         self.convs = Sequential(
             build_conv_layer(
                 None, in_dim, out_dim // 2, 3, stride=2, padding=1),
             build_norm_layer(dict(type='BN'), out_dim // 2)[1],
-            build_activation_layer(act),
+            build_activation_layer(act_cfg),
             build_conv_layer(
                 None, out_dim // 2, out_dim, 3, stride=2, padding=1),
             build_norm_layer(dict(type='BN'), out_dim)[1],
-            build_activation_layer(act),
+            build_activation_layer(act_cfg),
             build_conv_layer(None, out_dim, out_dim, 3, stride=1, padding=1),
             build_norm_layer(dict(type='BN'), out_dim)[1],
         )
@@ -108,7 +112,7 @@ class PyramidVig(BaseBackbone):
                    ]  # number of knn's k
         max_dilation = 49 // max(num_knn)
 
-        self.stem = Stem(out_dim=channels[0], act=act_cfg)
+        self.stem = Stem(out_dim=channels[0], act_cfg=act_cfg)
         self.pos_embed = nn.Parameter(
             torch.zeros(1, channels[0], 224 // 4, 224 // 4))
         HW = 224 // 4 * 224 // 4
@@ -127,11 +131,11 @@ class PyramidVig(BaseBackbone):
                             in_channels=channels[i],
                             k=num_knn[idx],
                             dilation=min(idx // 4 + 1, max_dilation),
-                            conv=graph_conv_type,
-                            act=act_cfg,
-                            norm=norm_cfg,
-                            bias=graph_conv_bias,
-                            stochastic=use_stochastic,
+                            graph_conv_type=graph_conv_type,
+                            act_cfg=act_cfg,
+                            norm_cfg=norm_cfg,
+                            graph_conv_bias=graph_conv_bias,
+                            use_stochastic=use_stochastic,
                             epsilon=epsilon,
                             r=reduce_ratios[i],
                             n=HW,
@@ -139,7 +143,7 @@ class PyramidVig(BaseBackbone):
                             relative_pos=True),
                         FFN(in_features=channels[i],
                             hidden_features=channels[i] * 4,
-                            act=act_cfg,
+                            act_cfg=act_cfg,
                             drop_path=dpr[idx]))
                 ]
                 idx += 1
