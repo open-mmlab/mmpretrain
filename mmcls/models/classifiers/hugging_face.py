@@ -4,6 +4,7 @@ from collections import OrderedDict
 from typing import List, Optional
 
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 
 from mmcls.registry import MODELS
@@ -96,7 +97,9 @@ class HuggingFaceClassifier(BaseClassifier):
                                                 **kwargs)
             self.model = AutoModelForImageClassification.from_config(config)
 
-        self.loss_module = MODELS.build(loss)
+        if not isinstance(loss, nn.Module):
+            loss = MODELS.build(loss)
+        self.loss_module = loss
 
         self.with_cp = with_cp
         if self.with_cp:

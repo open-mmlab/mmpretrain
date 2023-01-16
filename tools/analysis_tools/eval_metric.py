@@ -1,15 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
-import itertools
-import json
-from unittest.mock import MagicMock
 
 import mmengine
 import rich
 from mmengine import Config, DictAction
 from mmengine.evaluator import Evaluator
-
-from mmcls.utils import register_all_modules
+from mmengine.registry import init_default_scope
 
 
 def parse_args():
@@ -34,20 +30,18 @@ def parse_args():
 def main():
     args = parse_args()
 
-    register_all_modules()
-
     # load config
     cfg = Config.fromfile(args.config)
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
 
+    init_default_scope('mmcls')  # Use mmcls as default scope.
+
     predictions = mmengine.load(args.pkl_results)
 
     evaluator = Evaluator(cfg.test_evaluator)
-    # dataset is not needed, use an endless iterator to mock it.
-    fake_dataset = itertools.repeat({'data_sample': MagicMock()})
-    eval_results = evaluator.offline_evaluate(fake_dataset, predictions)
-    rich.print_json(json.dumps(eval_results))
+    eval_results = evaluator.offline_evaluate(predictions, None)
+    rich.print(eval_results)
 
 
 if __name__ == '__main__':

@@ -188,6 +188,7 @@ Models:
     In Collection: Swin-Transformer V2
     Results: null
     Weights: https://download.openmmlab.com/mmclassification/v0/swin-v2/pretrain/swinv2-base-w12_3rdparty_in21k-192px_20220803-f7dc9763.pth
+    Config: configs/swin_transformer_v2/swinv2-base-w12_8xb128_in21k-192px.py
     Converted From:
       Weights: https://github.com/SwinTransformer/storage/releases/download/v2.0.0/swinv2_base_patch4_window12_192_22k.pth
       Code: https://github.com/microsoft/Swin-Transformer
@@ -199,6 +200,7 @@ Models:
     In Collection: Swin-Transformer V2
     Results: null
     Weights: https://download.openmmlab.com/mmclassification/v0/swin-v2/pretrain/swinv2-large-w12_3rdparty_in21k-192px_20220803-d9073fee.pth
+    Config: configs/swin_transformer_v2/swinv2-large-w12_8xb128_in21k-192px.py
     Converted From:
       Weights: https://github.com/SwinTransformer/storage/releases/download/v2.0.0/swinv2_large_patch4_window12_192_22k.pth
       Code: https://github.com/microsoft/Swin-Transformer

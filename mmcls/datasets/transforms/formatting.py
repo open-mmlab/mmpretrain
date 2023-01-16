@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import warnings
+from collections import defaultdict
 from collections.abc import Sequence
+from functools import partial
 
 import numpy as np
 import torch
@@ -9,7 +10,7 @@ from mmengine.utils import is_str
 from PIL import Image
 
 from mmcls.registry import TRANSFORMS
-from mmcls.structures import ClsDataSample
+from mmcls.structures import ClsDataSample, MultiTaskDataSample
 
 
 def to_tensor(data):
@@ -85,12 +86,6 @@ class PackClsInputs(BaseTransform):
                 img = np.expand_dims(img, -1)
             img = np.ascontiguousarray(img.transpose(2, 0, 1))
             packed_results['inputs'] = to_tensor(img)
-        else:
-            warnings.warn(
-                'Cannot get "img" in the input dict of `PackClsInputs`,'
-                'please make sure `LoadImageFromFile` has been added '
-                'in the data pipeline or images have been loaded in '
-                'the dataset.')
 
         data_sample = ClsDataSample()
         if 'gt_label' in results:
@@ -100,13 +95,90 @@ class PackClsInputs(BaseTransform):
         img_meta = {k: results[k] for k in self.meta_keys if k in results}
         data_sample.set_metainfo(img_meta)
         packed_results['data_samples'] = data_sample
-
         return packed_results
 
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
         repr_str += f'(meta_keys={self.meta_keys})'
         return repr_str
+
+
+@TRANSFORMS.register_module()
+class PackMultiTaskInputs(BaseTransform):
+    """Convert all image labels of multi-task dataset to a dict of tensor.
+
+    Args:
+        tasks (List[str]): The task names defined in the dataset.
+        meta_keys(Sequence[str]): The meta keys to be saved in the
+            ``metainfo`` of the packed ``data_samples``.
+            Defaults to a tuple includes keys:
+
+            - ``sample_idx``: The id of the image sample.
+            - ``img_path``: The path to the image file.
+            - ``ori_shape``: The original shape of the image as a tuple (H, W).
+            - ``img_shape``: The shape of the image after the pipeline as a
+              tuple (H, W).
+            - ``scale_factor``: The scale factor between the resized image and
+              the original image.
+            - ``flip``: A boolean indicating if image flip transform was used.
+            - ``flip_direction``: The flipping direction.
+    """
+
+    def __init__(self,
+                 task_handlers=dict(),
+                 multi_task_fields=('gt_label', ),
+                 meta_keys=('sample_idx', 'img_path', 'ori_shape', 'img_shape',
+                            'scale_factor', 'flip', 'flip_direction')):
+        self.multi_task_fields = multi_task_fields
+        self.meta_keys = meta_keys
+        self.task_handlers = defaultdict(
+            partial(PackClsInputs, meta_keys=meta_keys))
+        for task_name, task_handler in task_handlers.items():
+            self.task_handlers[task_name] = TRANSFORMS.build(
+                dict(type=task_handler, meta_keys=meta_keys))
+
+    def transform(self, results: dict) -> dict:
+        """Method to pack the input data.
+
+        result = {'img_path': 'a.png', 'gt_label': {'task1': 1, 'task3': 3},
+            'img': array([[[  0,   0,   0])
+        """
+        packed_results = dict()
+        results = results.copy()
+
+        if 'img' in results:
+            img = results.pop('img')
+            if len(img.shape) < 3:
+                img = np.expand_dims(img, -1)
+            img = np.ascontiguousarray(img.transpose(2, 0, 1))
+            packed_results['inputs'] = to_tensor(img)
+
+        task_results = defaultdict(dict)
+        for field in self.multi_task_fields:
+            if field in results:
+                value = results.pop(field)
+                for k, v in value.items():
+                    task_results[k].update({field: v})
+
+        data_sample = MultiTaskDataSample()
+        for task_name, task_result in task_results.items():
+            task_handler = self.task_handlers[task_name]
+            task_pack_result = task_handler({**results, **task_result})
+            data_sample.set_field(task_pack_result['data_samples'], task_name)
+
+        packed_results['data_samples'] = data_sample
+        return packed_results
+
+    def __repr__(self):
+        repr = self.__class__.__name__
+        task_handlers = {
+            name: handler.__class__.__name__
+            for name, handler in self.task_handlers.items()
+        }
+        repr += f'(task_handlers={task_handlers}, '
+        repr += f'multi_task_fields={self.multi_task_fields}, '
+        repr += f'meta_keys={self.meta_keys})'
+        return repr
 
 
 @TRANSFORMS.register_module()

@@ -16,8 +16,6 @@ from mmengine.runner import Runner
 from mmengine.visualization import Visualizer
 from rich.progress import BarColumn, MofNCompleteColumn, Progress, TextColumn
 
-from mmcls.utils import register_all_modules
-
 
 class SimpleModel(BaseModel):
     """simple model that do nothing in train_step."""
@@ -214,8 +212,6 @@ def main():
                                 osp.splitext(osp.basename(args.config))[0])
 
     cfg.log_level = args.log_level
-    # register all modules in mmcls into the registries
-    register_all_modules()
 
     # make sure save_root exists
     if args.save_path and not args.save_path.parent.exists():

@@ -20,9 +20,6 @@ from mmcls.models import CrossEntropyLoss
 from mmcls.models.heads.cls_head import ClsHead
 from mmcls.models.losses import LabelSmoothLoss
 from mmcls.models.utils.batch_augments import RandomBatchAugment
-from mmcls.utils import register_all_modules
-
-register_all_modules()
 
 
 class SimpleDataPreprocessor(BaseDataPreprocessor):

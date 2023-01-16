@@ -9,6 +9,7 @@ from .margin_head import ArcFaceClsHead
 from .multi_label_cls_head import MultiLabelClsHead
 from .multi_label_csra_head import CSRAClsHead
 from .multi_label_linear_head import MultiLabelLinearClsHead
+from .multi_task_head import MultiTaskHead
 from .stacked_head import StackedLinearClsHead
 from .vision_transformer_head import VisionTransformerClsHead
 
@@ -16,5 +17,5 @@ __all__ = [
     'ClsHead', 'LinearClsHead', 'StackedLinearClsHead', 'MultiLabelClsHead',
     'MultiLabelLinearClsHead', 'VisionTransformerClsHead', 'DeiTClsHead',
     'ConformerHead', 'EfficientFormerClsHead', 'ArcFaceClsHead', 'CSRAClsHead',
-    'DisAlignLinearClsHead'
+    'DisAlignLinearClsHead','MultiTaskHead'
 ]

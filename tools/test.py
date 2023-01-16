@@ -9,8 +9,6 @@ from mmengine.config import Config, ConfigDict, DictAction
 from mmengine.hooks import Hook
 from mmengine.runner import Runner
 
-from mmcls.utils import register_all_modules
-
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -57,6 +55,13 @@ def parse_args():
         action='store_true',
         help='whether to disable the pin_memory option in dataloaders.')
     parser.add_argument(
+        '--tta',
+        action='store_true',
+        help='Whether to enable the Test-Time-Aug (TTA). If the config file '
+        'has `tta_pipeline` and `tta_model` fields, use them to determine the '
+        'TTA transforms and how to merge the TTA results. Otherwise, use flip '
+        'TTA by averaging classification score.')
+    parser.add_argument(
         '--launcher',
         choices=['none', 'pytorch', 'slurm', 'mpi'],
         default='none',
@@ -101,11 +106,32 @@ def merge_args(cfg, args):
             'The dump file must be a pkl file.'
         dump_metric = dict(type='DumpResults', out_file_path=args.dump)
         if isinstance(cfg.test_evaluator, (list, tuple)):
-            cfg.test_evaluator = list(cfg.test_evaluator).append(dump_metric)
+            cfg.test_evaluator = list(cfg.test_evaluator)
+            cfg.test_evaluator.append(dump_metric)
         else:
             cfg.test_evaluator = [cfg.test_evaluator, dump_metric]
 
-    # set dataloader args
+    # -------------------- TTA related args --------------------
+    if args.tta:
+        if 'tta_model' not in cfg:
+            cfg.tta_model = dict(type='mmcls.AverageClsScoreTTA')
+        if 'tta_pipeline' not in cfg:
+            test_pipeline = cfg.test_dataloader.dataset.pipeline
+            cfg.tta_pipeline = deepcopy(test_pipeline)
+            flip_tta = dict(
+                type='TestTimeAug',
+                transforms=[
+                    [
+                        dict(type='RandomFlip', prob=1.),
+                        dict(type='RandomFlip', prob=0.)
+                    ],
+                    [test_pipeline[-1]],
+                ])
+            cfg.tta_pipeline[-1] = flip_tta
+        cfg.model = ConfigDict(**cfg.tta_model, module=cfg.model)
+        cfg.test_dataloader.dataset.pipeline = cfg.tta_pipeline
+
+    # ----------------- Default dataloader args -----------------
     default_dataloader_cfg = ConfigDict(
         pin_memory=True,
         collate_fn=dict(type='default_collate'),
@@ -131,12 +157,10 @@ def merge_args(cfg, args):
 def main():
     args = parse_args()
 
-    # register all modules in mmcls into the registries
-    # do not init the default scope here because it will be init in the runner
-    register_all_modules(init_default_scope=False)
-
     # load config
     cfg = Config.fromfile(args.config)
+
+    # merge cli arguments to config
     cfg = merge_args(cfg, args)
 
     # build the runner from config

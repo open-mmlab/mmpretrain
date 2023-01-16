@@ -14,9 +14,6 @@ from torch.utils.data import DataLoader, Dataset
 from mmcls.datasets.transforms import PackClsInputs
 from mmcls.registry import MODELS
 from mmcls.structures import ClsDataSample
-from mmcls.utils import register_all_modules
-
-register_all_modules()
 
 
 class ExampleDataset(Dataset):

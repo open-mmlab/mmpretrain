@@ -1,4 +1,4 @@
-var collapsedSections = ['Model zoo'];
+var collapsedSections = ['实用工具', '进阶教程', '模型库', '其他说明'];
 
 $(document).ready(function () {
   $('.model-summary').DataTable({

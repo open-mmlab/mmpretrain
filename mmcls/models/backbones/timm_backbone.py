@@ -1,9 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-try:
-    import timm
-except ImportError:
-    timm = None
-
 import warnings
 
 from mmengine.logging import MMLogger
@@ -68,10 +63,12 @@ class TIMMBackbone(BaseBackbone):
                  in_channels=3,
                  init_cfg=None,
                  **kwargs):
-        if timm is None:
-            raise RuntimeError(
-                'Failed to import timm. Please run "pip install timm". '
-                '"pip install dataclasses" may also be needed for Python 3.6.')
+        try:
+            import timm
+        except ImportError:
+            raise ImportError(
+                'Failed to import timm. Please run "pip install timm".')
+
         if not isinstance(pretrained, bool):
             raise TypeError('pretrained must be bool, not str for model path')
         if features_only and checkpoint_path:

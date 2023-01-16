@@ -2,7 +2,7 @@
 
 In this section we demonstrate how to prepare an environment with PyTorch.
 
-MMClassification works on Linux, Windows and macOS. It requires Python 3.6+, CUDA 9.2+ and PyTorch 1.6+.
+MMClassification works on Linux, Windows and macOS. It requires Python 3.7+, CUDA 9.2+ and PyTorch 1.6+.
 
 ```{note}
 If you are experienced with PyTorch and have already installed it, just skip this part and jump to the [next section](#installation). Otherwise, you can follow these steps for the preparation.
@@ -37,18 +37,7 @@ conda install pytorch torchvision cpuonly -c pytorch
 
 # Installation
 
-We recommend that users follow our best practices to install MMClassification. However, the whole process is highly customizable. See [Customize Installation](#customize-installation) section for more information.
-
 ## Best Practices
-
-**Step 1.** Install [MMEngine](https://github.com/open-mmlab/mmengine) and [MMCV](https://github.com/open-mmlab/mmcv) using [MIM](https://github.com/open-mmlab/mim).
-
-```shell
-pip install -U openmim
-mim install mmengine "mmcv>=2.0.0rc1"
-```
-
-**Step 2.** Install MMClassification.
 
 According to your needs, we support two install modes:
 
@@ -60,27 +49,25 @@ According to your needs, we support two install modes:
 In this case, install mmcls from source:
 
 ```shell
-git clone https://github.com/open-mmlab/mmclassification.git
+git clone -b 1.x https://github.com/open-mmlab/mmclassification.git
 cd mmclassification
-git checkout 1.x
-pip install -v -e .
-# "-v" means verbose, or more output
-# "-e" means installing a project in editable mode,
-# thus any local modifications made to the code will take effect without reinstallation.
+pip install -U openmim && mim install -e .
 ```
 
-Optionally, if you want to contribute to MMClassification or experience experimental functions, please checkout to the `dev-1.x` branch:
-
-```shell
-git checkout dev-1.x
+```{note}
+`"-e"` means installing a project in editable mode, thus any local modifications made to the code will take effect without reinstallation.
 ```
 
 ### Install as a Python package
 
-Just install with pip.
+Just install with mim.
 
 ```shell
-pip install "mmcls>=1.0.0rc0"
+pip install -U openmim && mim install "mmcls>=1.0.0rc0"
+```
+
+```{note}
+`mim` is a light-weight command-line tool to setup appropriate environment for OpenMMLab repositories according to PyTorch and CUDA version. It also has some useful functions for deep-learning experiments.
 ```
 
 ## Verify the installation
@@ -106,13 +93,9 @@ You will see the output result dict including `pred_label`, `pred_score` and `pr
 Option (b). If you install mmcls as a python package, open your python interpreter and copy&paste the following codes.
 
 ```python
-from mmcls.apis import init_model, inference_model
-from mmcls.utils import register_all_modules
+from mmcls import get_model, inference_model
 
-config_file = 'resnet50_8xb32_in1k.py'
-checkpoint_file = 'resnet50_8xb32_in1k_20210831-ea4938fc.pth'
-register_all_modules()  # register all modules and set mmcls as the default scope.
-model = init_model(config_file, checkpoint_file, device='cpu')  # or device='cuda:0'
+model = get_model('resnet18_8xb32_in1k', device='cpu')  # or device='cuda:0'
 inference_model(model, 'demo/demo.JPEG')
 ```
 
@@ -139,65 +122,17 @@ and its version should match the CUDA version of PyTorch. i.e., the specified
 version of cudatoolkit in `conda install` command.
 ```
 
-### Install MMCV without MIM
-
-MMCV contains C++ and CUDA extensions, thus depending on PyTorch in a complex
-way. MIM solves such dependencies automatically and makes the installation
-easier. However, it is not a must.
-
-To install MMCV with pip instead of MIM, please follow {external+mmcv:doc}`MMCV installation guides <get_started/installation>`.
-This requires manually specifying a find-url based on PyTorch version and its CUDA version.
-
-For example, the following command install mmcv built for PyTorch 1.10.x and CUDA 11.3.
-
-```shell
-pip install "mmcv>=2.0.0rc1" -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.10/index.html
-```
-
 ### Install on CPU-only platforms
 
 MMClassification can be built for CPU only environment. In CPU mode you can train, test or inference a model.
 
-Some functionalities are gone in this mode, usually GPU-compiled ops. But don't
-worry, almost all models in MMClassification don't depends on these ops.
-
 ### Install on Google Colab
 
-[Google Colab](https://research.google.com/) usually has PyTorch installed,
-thus we only need to install MMCV and MMClassification with the following
-commands.
-
-**Step 1.** Install [MMEngine](https://github.com/open-mmlab/mmengine) and [MMCV](https://github.com/open-mmlab/mmcv) using [MIM](https://github.com/open-mmlab/mim).
-
-```shell
-!pip3 install openmim
-!mim install mmengine "mmcv>=2.0.0rc1"
-```
-
-**Step 2.** Install MMClassification from the source.
-
-```shell
-!git clone https://github.com/open-mmlab/mmclassification.git
-%cd mmclassification
-!git checkout 1.x
-!pip install -e .
-```
-
-**Step 3.** Verification.
-
-```python
-import mmcls
-print(mmcls.__version__)
-# Example output: 1.0.0rc0 or newer
-```
-
-```{note}
-Within Jupyter, the exclamation mark `!` is used to call external executables and `%cd` is a [magic command](https://ipython.readthedocs.io/en/stable/interactive/magics.html#magic-cd) to change the current working directory of Python.
-```
+See [the Colab tutorial](https://colab.research.google.com/github/mzr1996/mmclassification-tutorial/blob/master/1.x/MMClassification_tools.ipynb).
 
 ### Using MMClassification with Docker
 
-We provide a [Dockerfile](https://github.com/open-mmlab/mmclassification/blob/master/docker/Dockerfile)
+We provide a [Dockerfile](https://github.com/open-mmlab/mmclassification/blob/1.x/docker/Dockerfile)
 to build an image. Ensure that your [docker version](https://docs.docker.com/engine/install/) >=19.03.
 
 ```shell

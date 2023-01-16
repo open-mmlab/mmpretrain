@@ -169,12 +169,12 @@ if __name__ == '__main__':
         keywords='computer vision, image classification',
         packages=find_packages(exclude=('configs', 'tools', 'demo')),
         include_package_data=True,
+        python_requires='>=3.7',
         classifiers=[
             'Development Status :: 4 - Beta',
             'License :: OSI Approved :: Apache Software License',
             'Operating System :: OS Independent',
             'Programming Language :: Python :: 3',
-            'Programming Language :: Python :: 3.6',
             'Programming Language :: Python :: 3.7',
             'Programming Language :: Python :: 3.8',
             'Programming Language :: Python :: 3.9',
