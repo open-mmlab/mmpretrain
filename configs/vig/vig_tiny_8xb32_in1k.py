@@ -24,10 +24,13 @@ train_pipeline = [
         edge='short',
         backend='pillow',
         interpolation='bicubic'),
+    dict(type='CenterCrop', crop_size=224),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(type='PackClsInputs'),
 ]
 
+# 源代码中使用了crop_pct，但没有在mmcls中找到类似方法。
+# 这里假设原图片大小为224，直接缩放后进行中心裁剪。（其他配置文件类似）
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(

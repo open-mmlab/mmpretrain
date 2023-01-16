@@ -3,7 +3,7 @@ Collections:
     Metadata:
       Training Data: ImageNet-1k
       Architecture:
-        - VIG
+        - Vision GNN
     Paper:
       URL: https://arxiv.org/abs/2206.00272
       Title: "Vision GNN: An Image is Worth Graph of Nodes"
@@ -13,15 +13,115 @@ Collections:
       Version:
 
 Models:
-  - Name:
+  - Name: vig_tiny_8xb32_in1k.py
     Metadata:
-      FLOPs:
-      Parameters:
+      FLOPs: 1309000000  #1.309G
+      Parameters: 7185000  #7.185M
     In Collection: VIG
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy:
-          Top 5 Accuracy:
+          Top 1 Accuracy: 74.31
+          Top 5 Accuracy: 92.32
         Task: Image Classification
     Weights:
+    Config: configs/vig/vig_tiny_8xb32_in1k.py
+    Converted From:
+      Weights: https://github.com/huawei-noah/Efficient-AI-Backbones/releases/download/vig/vig_ti_74.5.pth
+      Code: https://github.com/huawei-noah/Efficient-AI-Backbones/tree/master/vig_pytorch
+  - Name: vig_small_8xb32_in1k.py
+    Metadata:
+      FLOPs: 4535000000  #4.535G
+      Parameters: 22748000  #22.748M
+    In Collection: VIG
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 80.57
+          Top 5 Accuracy: 95.23
+        Task: Image Classification
+    Weights:
+    Config: configs/vig/vig_small_8xb32_in1k.py
+    Converted From:
+      Weights: https://github.com/huawei-noah/Efficient-AI-Backbones/releases/download/vig/vig_s_80.6.pth
+      Code: https://github.com/huawei-noah/Efficient-AI-Backbones/tree/master/vig_pytorch
+  - Name: vig_base_8xb32_in1k.py
+    Metadata:
+      FLOPs: 17681000000  #17.681G
+      Parameters: 20685000  #20.685M
+    In Collection: VIG
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 82.51
+          Top 5 Accuracy: 96.04
+        Task: Image Classification
+    Weights:
+    Config: configs/vig/vig_base_8xb32_in1k.py
+    Converted From:
+      Weights: https://github.com/huawei-noah/Efficient-AI-Backbones/releases/download/vig/vig_b_82.6.pth
+      Code: https://github.com/huawei-noah/Efficient-AI-Backbones/tree/master/vig_pytorch
+  - Name: pvig_tiny_8xb32_in1k.py
+    Metadata:
+      FLOPs: 1714000000 #1.714G
+      Parameters: 9458000  #9.458M
+    In Collection: VIG
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 78.44
+          Top 5 Accuracy: 94.36
+        Task: Image Classification
+    Weights:
+    Config: configs/vig/pvig_tiny_8xb32_in1k.py
+    Converted From:
+      Weights: https://github.com/huawei-noah/Efficient-AI-Backbones/releases/download/pyramid-vig/pvig_ti_78.5.pth.tar
+      Code: https://github.com/huawei-noah/Efficient-AI-Backbones/tree/master/vig_pytorch
+  - Name: pvig_small_8xb32_in1k.py
+    Metadata:
+      FLOPs: 4572000000 #4.572G
+      Parameters: 29024000 #29.024M
+    In Collection: VIG
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 81.94
+          Top 5 Accuracy: 95.98
+        Task: Image Classification
+    Weights:
+    Config: configs/vig/pvig_small_8xb32_in1k.py
+    Converted From:
+      Weights: https://github.com/huawei-noah/Efficient-AI-Backbones/releases/download/pyramid-vig/pvig_s_82.1.pth.tar
+      Code: https://github.com/huawei-noah/Efficient-AI-Backbones/tree/master/vig_pytorch
+  - Name: pvig_medium_8xb32_in1k.py
+    Metadata:
+      FLOPs: 8886000000 #8.886G
+      Parameters: 51682000 #51.682M
+    In Collection: VIG
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 82.96
+          Top 5 Accuracy: 96.36
+        Task: Image Classification
+    Weights:
+    Config: configs/vig/pvig_medium_8xb32_in1k.py
+    Converted From:
+      Weights: https://github.com/huawei-noah/Efficient-AI-Backbones/releases/download/pyramid-vig/pvig_m_83.1.pth.tar
+      Code: https://github.com/huawei-noah/Efficient-AI-Backbones/tree/master/vig_pytorch
+  - Name: pvig_base_8xb32_in1k.py
+    Metadata:
+      FLOPs: 16861000000 #16.861G
+      Parameters: 95213000 #95.213M
+    In Collection: VIG
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.49
+          Top 5 Accuracy: 96.56
+        Task: Image Classification
+    Weights:
+    Config: configs/vig/pvig_base_8xb32_in1k.py
+    Converted From:
+      Weights: https://github.com/huawei-noah/Efficient-AI-Backbones/releases/download/pyramid-vig/pvig_b_83.66.pth.tar
+      Code: https://github.com/huawei-noah/Efficient-AI-Backbones/tree/master/vig_pytorch
