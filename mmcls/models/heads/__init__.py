@@ -17,5 +17,5 @@ __all__ = [
     'ClsHead', 'LinearClsHead', 'StackedLinearClsHead', 'MultiLabelClsHead',
     'MultiLabelLinearClsHead', 'VisionTransformerClsHead', 'DeiTClsHead',
     'ConformerHead', 'EfficientFormerClsHead', 'ArcFaceClsHead', 'CSRAClsHead',
-    'DisAlignLinearClsHead','MultiTaskHead'
+    'DisAlignLinearClsHead', 'MultiTaskHead'
 ]
