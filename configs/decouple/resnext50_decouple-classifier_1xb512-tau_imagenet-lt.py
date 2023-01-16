@@ -4,3 +4,5 @@ _base_ = [
     '../_base_/schedules/imagenet-lt_bs512_coslr_90e.py',
     '../_base_/default_runtime.py'
 ]
+
+custom_hooks = [dict(type='TauNormHook', tau=0.7)]

@@ -9,7 +9,7 @@ train_dataloader = dict(
     dataset=dict(
         _delete_=True,
         type='ClassBalancedDataset',
-        oversample_thr=0.005,
+        oversample_thr=0.01,
         dataset={{_base_.train_dataset}}), )
 
 train_epochs = 10
@@ -21,14 +21,9 @@ param_scheduler = dict(T_max=train_epochs)
 train_cfg = dict(max_epochs=train_epochs)
 
 model = dict(
-    backbone=dict(
-        frozen_stages=4,
-        init_cfg=dict(
-            type='Pretrained',
-            checkpoint=('work_dirs/resnext50_decouple-representation'
-                        '_8xb128-instance-balanced_imagenet-lt/epoch_90.pth'),
-            prefix='backbone',
-        )),
+    pretrained=('work_dirs/resnext50_decouple-representation'
+                '_8xb128-instance-balanced_imagenet-lt/epoch_90.pth'),
+    backbone=dict(frozen_stages=4),
     head=dict(
         type='LWSHead',
         num_classes=1000,
@@ -37,4 +32,4 @@ model = dict(
         topk=(1, 5),
     ))
 
-default_hooks = dict(checkpoint=dict(type='CheckpointHook', interval=2))
+default_hooks = dict(checkpoint=dict(type='CheckpointHook', interval=10))
