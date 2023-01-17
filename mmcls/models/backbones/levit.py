@@ -1,10 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import itertools
-from typing import Sequence
 
 import torch
 import torch.nn as nn
-from mmcv.cnn import fuse_conv_bn
+from mmcv.cnn import build_activation_layer, fuse_conv_bn
 from mmcv.cnn.bricks import DropPath
 from mmengine.model import BaseModule, Sequential
 
@@ -23,7 +22,7 @@ class HybridBackbone(BaseModule):
             pad=1,
             dilation=1,
             groups=1,
-            activation=nn.Hardswish,
+            act_cfg=dict(type='HSwish'),
             conv_cfg=None,
             norm_cfg=dict(type='BN'),
             init_cfg=None,
@@ -54,7 +53,8 @@ class HybridBackbone(BaseModule):
             )
             self.patch_embed.add_module('%d' % (2 * i), conv_bn)
             if i < len(self.input_channels) - 1:
-                self.patch_embed.add_module('%d' % (i * 2 + 1), activation())
+                self.patch_embed.add_module('%d' % (i * 2 + 1),
+                                            build_activation_layer(act_cfg))
 
     def forward(self, x):
         x = self.patch_embed(x)
@@ -145,13 +145,13 @@ class Residual(BaseModule):
 class Attention(BaseModule):
 
     def __init__(
-        self,
-        dim,
-        key_dim,
-        num_heads=8,
-        attn_ratio=4,
-        activation=None,
-        resolution=14,
+            self,
+            dim,
+            key_dim,
+            num_heads=8,
+            attn_ratio=4,
+            act_cfg=dict(type='HSwish'),
+            resolution=14,
     ):
         super(Attention, self).__init__()
         self.num_heads = num_heads
@@ -163,7 +163,8 @@ class Attention(BaseModule):
         self.attn_ratio = attn_ratio
         h = self.dh + nh_kd * 2
         self.qkv = LinearBatchNorm(dim, h)
-        self.proj = nn.Sequential(activation(), LinearBatchNorm(self.dh, dim))
+        self.proj = nn.Sequential(
+            build_activation_layer(act_cfg), LinearBatchNorm(self.dh, dim))
 
         points = list(itertools.product(range(resolution), range(resolution)))
         N = len(points)
@@ -213,16 +214,11 @@ class Attention(BaseModule):
 
 class MLP(nn.Sequential):
 
-    def __init__(
-        self,
-        embed_dim,
-        mlp_ratio,
-        mlp_activation,
-    ):
+    def __init__(self, embed_dim, mlp_ratio, act_cfg=dict(type='HSwish')):
         super(MLP, self).__init__()
         h = embed_dim * mlp_ratio
         self.linear1 = LinearBatchNorm(embed_dim, h)
-        self.activation = mlp_activation()
+        self.activation = build_activation_layer(act_cfg)
         self.linear2 = LinearBatchNorm(h, embed_dim)
 
     def forward(self, x):
@@ -256,7 +252,7 @@ class AttentionSubsample(nn.Sequential):
                  key_dim,
                  num_heads=8,
                  attn_ratio=2,
-                 activation=None,
+                 act_cfg=dict(type='HSwish'),
                  stride=2,
                  resolution=14):
         super(AttentionSubsample, self).__init__()
@@ -273,8 +269,8 @@ class AttentionSubsample(nn.Sequential):
 
         self.q = nn.Sequential(
             Subsample(stride, resolution), LinearBatchNorm(in_dim, nh_kd))
-        self.proj = nn.Sequential(activation(),
-                                  LinearBatchNorm(self.dh, out_dim))
+        self.proj = nn.Sequential(
+            build_activation_layer(act_cfg), LinearBatchNorm(self.dh, out_dim))
 
         self.stride = stride
         self.resolution = resolution
@@ -328,36 +324,72 @@ class AttentionSubsample(nn.Sequential):
 
 @MODELS.register_module()
 class LeViT(BaseBackbone):
-    """Vision Transformer with support for patch or hybrid CNN input stage."""
+    """LeViT backbone.
+
+    A PyTorch implementation of `LeViT: A Vision Transformer in ConvNet's
+    Clothing for Faster Inference <https://arxiv.org/abs/2104.01136>`_
+
+    Modified from the official implementation:
+    https://github.com/facebookresearch/LeViT
+
+    Args:
+        arch (str | dict): LeViT architecture.
+
+            If use string, choose from '128s', '128', '192', '256' and '384'.
+            If use dict, it should have below keys:
+
+            - **embed_dims** (List[int]): The embed dimensions of each stage.
+            - **key_dims** (List[int]): The embed dimensions of the key in the
+              attention layers of each stage.
+            - **num_heads** (List[int]): The number of heads in each stage.
+            - **depths** (List[int]): The number of blocks in each stage.
+
+        img_size (int): Input image size
+        patch_size (int | tuple): The patch size. Deault to 16
+        attn_ratio (int): Ratio of hidden dimensions of the value in attention
+            layers. Defaults to 2.
+        mlp_ratio (int): Ratio of hidden dimensions in MLP layers.
+            Defaults to 2.
+        act_cfg (dict): The config of activation functions.
+            Defaults to ``dict(type='HSwish')``.
+        hybrid_backbone (callable): A callable object to build the patch embed
+            module. Defaults to use :class:`HybridBackbone`.
+        out_indices (Sequence | int): Output from which stages.
+            Defaults to -1, means the last stage.
+        deploy (bool): Whether to switch the model structure to
+            deployment mode. Defaults to False.
+        init_cfg (dict or list[dict], optional): Initialization config dict.
+            Defaults to None.
+    """
     arch_zoo = {
         '128s': {
             'embed_dims': [128, 256, 384],
             'num_heads': [4, 6, 8],
-            'depth': [2, 3, 4],
+            'depths': [2, 3, 4],
             'key_dims': [16, 16, 16],
         },
         '128': {
             'embed_dims': [128, 256, 384],
             'num_heads': [4, 8, 12],
-            'depth': [4, 4, 4],
+            'depths': [4, 4, 4],
             'key_dims': [16, 16, 16],
         },
         '192': {
             'embed_dims': [192, 288, 384],
             'num_heads': [3, 5, 6],
-            'depth': [4, 4, 4],
+            'depths': [4, 4, 4],
             'key_dims': [32, 32, 32],
         },
         '256': {
             'embed_dims': [256, 384, 512],
             'num_heads': [4, 6, 8],
-            'depth': [4, 4, 4],
+            'depths': [4, 4, 4],
             'key_dims': [32, 32, 32],
         },
         '384': {
             'embed_dims': [384, 512, 768],
             'num_heads': [6, 9, 12],
-            'depth': [4, 4, 4],
+            'depths': [4, 4, 4],
             'key_dims': [32, 32, 32],
         },
     }
@@ -368,8 +400,8 @@ class LeViT(BaseBackbone):
                  patch_size=16,
                  attn_ratio=2,
                  mlp_ratio=2,
-                 attention_activation=torch.nn.Hardswish,
-                 mlp_activation=torch.nn.Hardswish,
+                 act_cfg=dict(type='HSwish'),
+                 hybrid_backbone=HybridBackbone,
                  out_indices=-1,
                  deploy=False,
                  drop_path_rate=0,
@@ -393,18 +425,17 @@ class LeViT(BaseBackbone):
         self.embed_dims = self.arch['embed_dims']
         self.num_heads = self.arch['num_heads']
         self.key_dims = self.arch['key_dims']
-        self.depth = self.arch['depth']
+        self.depths = self.arch['depths']
         self.num_stages = len(self.embed_dims)
         self.drop_path_rate = drop_path_rate
 
-        self.patch_embed = HybridBackbone(self.embed_dims[0])
-        self.deploy = deploy
+        self.patch_embed = hybrid_backbone(self.embed_dims[0])
 
         self.stages = Sequential()
         self.resolutions = []
         resolution = img_size // patch_size
         for i, (embed_dims, key_dims, depth, num_heads) in enumerate(
-                zip(self.embed_dims, self.key_dims, self.depth,
+                zip(self.embed_dims, self.key_dims, self.depths,
                     self.num_heads)):
             stage = Sequential()
             if i > 0:
@@ -414,7 +445,7 @@ class LeViT(BaseBackbone):
                     key_dim=key_dims,
                     num_heads=self.embed_dims[i - 1] // key_dims,
                     attn_ratio=4,
-                    activation=attention_activation,
+                    act_cfg=act_cfg,
                     stride=2,
                     resolution=resolution)
                 stage.append(downsample)
@@ -422,7 +453,7 @@ class LeViT(BaseBackbone):
                 if mlp_ratio > 0:  # mlp_ratio
                     stage.append(
                         Residual(
-                            MLP(embed_dims, mlp_ratio, mlp_activation),
+                            MLP(embed_dims, mlp_ratio, act_cfg=act_cfg),
                             self.drop_path_rate))
             self.resolutions.append(resolution)
             for _ in range(depth):
@@ -433,30 +464,33 @@ class LeViT(BaseBackbone):
                             key_dims,
                             num_heads,
                             attn_ratio=attn_ratio,
-                            activation=attention_activation,
+                            act_cfg=act_cfg,
                             resolution=resolution,
                         ), self.drop_path_rate))
                 if mlp_ratio > 0:
                     stage.append(
                         Residual(
-                            MLP(embed_dims, mlp_ratio, mlp_activation),
+                            MLP(embed_dims, mlp_ratio, act_cfg=act_cfg),
                             self.drop_path_rate))
 
             self.stages.append(stage)
 
         if isinstance(out_indices, int):
             out_indices = [out_indices]
-        assert isinstance(out_indices, Sequence), \
-            f'"out_indices" must by a sequence or int, ' \
-            f'get {type(out_indices)} instead.'
+        elif isinstance(out_indices, tuple):
+            out_indices = list(out_indices)
+        elif not isinstance(out_indices, list):
+            raise TypeError('"out_indices" must by a list, tuple or int, '
+                            f'get {type(out_indices)} instead.')
         for i, index in enumerate(out_indices):
+            if index < 0:
+                out_indices[i] = self.num_stages + index
             assert 0 <= out_indices[i] < self.num_stages, \
                 f'Invalid out_indices {index}.'
-        out_indices = list(out_indices)
-
         self.out_indices = out_indices
 
-        if self.deploy:
+        self.deploy = False
+        if deploy:
             self.switch_to_deploy()
 
     def switch_to_deploy(self):

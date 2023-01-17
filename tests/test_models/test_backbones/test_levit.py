@@ -36,7 +36,7 @@ def is_levit_block(modules):
 
 
 def test_levit_attention():
-    block = Attention(128, 16, 4, 2, activation=torch.nn.Hardswish)
+    block = Attention(128, 16, 4, 2, act_cfg=dict(type='HSwish'))
     block.eval()
     x = torch.randn(1, 196, 128)
     y = block(x)
@@ -62,16 +62,15 @@ def test_levit():
         LeViT(arch=arch)
 
     # Test out_indices not type of int or Sequence
-    with pytest.raises(AssertionError):
+    with pytest.raises(TypeError):
         LeViT('128s', out_indices=dict())
 
     # Test max(out_indices) < len(arch['num_blocks'])
     with pytest.raises(AssertionError):
         LeViT('128s', out_indices=(3, ))
 
-    # Test max(out_indices) > 0
-    with pytest.raises(AssertionError):
-        LeViT('128s', out_indices=(-1, ))
+    model = LeViT('128s', out_indices=(-1, ))
+    assert model.out_indices == [2]
 
     model = LeViT(arch='256', drop_path_rate=0.1)
     model.eval()
@@ -79,14 +78,15 @@ def test_levit():
     assert model.embed_dims == [256, 384, 512]
     assert model.num_heads == [4, 6, 8]
     assert model.depth == [4, 4, 4]
-    assert model.down_ops == [[32, 4, 2, 2], [32, 4, 2, 2], []]
     assert model.drop_path_rate == 0.1
     assert isinstance(model.stages[0][0].block.qkv, levit.LinearBatchNorm)
     assert isinstance(model.patch_embed.patch_embed[0],
                       levit.ConvolutionBatchNorm)
 
     model = LeViT(
-        arch='128s', hybrid_backbone=nn.Conv2d(128, 128, kernel_size=2))
+        arch='128s',
+        hybrid_backbone=lambda embed_dims: nn.Conv2d(
+            embed_dims, embed_dims, kernel_size=2))
     model.eval()
     assert isinstance(model.patch_embed, nn.Conv2d)
 
