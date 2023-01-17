@@ -4,11 +4,13 @@ from typing import Sequence
 
 import torch
 import torch.nn as nn
-from mmcv.cnn import Linear, build_norm_layer, fuse_conv_bn
-from mmengine.model import BaseModule
+from mmcv.cnn import fuse_conv_bn
+from mmcv.cnn.bricks import DropPath
+from mmengine.model import BaseModule, Sequential
 
 from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.registry import MODELS
+from ..utils import build_norm_layer
 
 
 class HybridBackbone(BaseModule):
@@ -21,7 +23,6 @@ class HybridBackbone(BaseModule):
             pad=1,
             dilation=1,
             groups=1,
-            bn_weight_init=1,
             activation=nn.Hardswish,
             conv_cfg=None,
             norm_cfg=dict(type='BN'),
@@ -49,7 +50,6 @@ class HybridBackbone(BaseModule):
                 pad=pad,
                 dilation=dilation,
                 groups=groups,
-                bn_weight_init=bn_weight_init,
                 norm_cfg=norm_cfg,
             )
             self.patch_embed.add_module('%d' % (2 * i), conv_bn)
@@ -61,7 +61,7 @@ class HybridBackbone(BaseModule):
         return x
 
 
-class ConvolutionBatchNorm(nn.Sequential):
+class ConvolutionBatchNorm(BaseModule):
 
     def __init__(
             self,
@@ -72,15 +72,9 @@ class ConvolutionBatchNorm(nn.Sequential):
             pad=1,
             dilation=1,
             groups=1,
-            bn_weight_init=1,
             norm_cfg=dict(type='BN'),
     ):
         super(ConvolutionBatchNorm, self).__init__()
-        self.norm_cfg = norm_cfg
-        self.input_channel = in_channel
-        self.output_channel = out_channel
-        _, bn = build_norm_layer(norm_cfg, out_channel)
-        self.bn_weight_init = bn_weight_init
         self.conv = nn.Conv2d(
             in_channel,
             out_channel,
@@ -90,60 +84,62 @@ class ConvolutionBatchNorm(nn.Sequential):
             dilation=dilation,
             groups=groups,
             bias=False)
-        self.bn = bn
+        self.bn = build_norm_layer(norm_cfg, out_channel)
+
+    def forward(self, x):
+        x = self.conv(x)
+        x = self.bn(x)
+        return x
 
     @torch.no_grad()
     def fuse(self):
         return fuse_conv_bn(self).conv
 
 
-class LinearBatchNorm(nn.Sequential):
+class LinearBatchNorm(BaseModule):
 
-    def __init__(self,
-                 in_feature,
-                 out_feature,
-                 bn_weight_init=1,
-                 norm_cfg=dict(type='BN1d')):
+    def __init__(self, in_feature, out_feature, norm_cfg=dict(type='BN1d')):
         super(LinearBatchNorm, self).__init__()
-        linear = Linear(in_feature, out_feature, bias=False)
-        _, bn = build_norm_layer(norm_cfg, out_feature)
-        self.bn_weight_init = bn_weight_init
-        self.linear = linear
-        self.bn = bn
-
-    @torch.no_grad()
-    def fuse(self):
-        device = next(self.linear.parameters()).device
-        w = self.bn.weight / (self.bn.running_var + self.bn.eps)**0.5
-        w = self.linear.weight * w[:, None]
-        b = self.bn.bias - self.bn.running_mean * self.bn.weight / \
-            (self.bn.running_var + self.bn.eps) ** 0.5
-        m = Linear(w.size(1), w.size(0))
-        m.weight.data.copy_(w)
-        m.bias.data.copy_(b)
-        m.to(device)
-        return m
+        self.linear = nn.Linear(in_feature, out_feature, bias=False)
+        self.bn = build_norm_layer(norm_cfg, out_feature)
 
     def forward(self, x):
         x = self.linear(x)
         x = self.bn(x.flatten(0, 1)).reshape_as(x)
         return x
 
+    @torch.no_grad()
+    def fuse(self):
+        w = self.bn.weight / (self.bn.running_var + self.bn.eps)**0.5
+        w = self.linear.weight * w[:, None]
+        b = self.bn.bias - self.bn.running_mean * self.bn.weight / \
+            (self.bn.running_var + self.bn.eps) ** 0.5
+
+        factory_kwargs = {
+            'device': self.linear.weight.device,
+            'dtype': self.linear.weight.dtype
+        }
+        bias = nn.Parameter(
+            torch.empty(self.linear.out_features, **factory_kwargs))
+        self.linear.register_parameter('bias', bias)
+        self.linear.weight.data.copy_(w)
+        self.linear.bias.data.copy_(b)
+        return self.linear
+
 
 class Residual(BaseModule):
 
-    def __init__(self, block, drop):
+    def __init__(self, block, drop_path_rate=0.):
         super(Residual, self).__init__()
         self.block = block
-        self.drop = drop
+        if drop_path_rate > 0:
+            self.drop_path = DropPath(drop_path_rate)
+        else:
+            self.drop_path = nn.Identity()
 
     def forward(self, x):
-        if self.training and self.drop > 0:
-            return x + self.block(x) * torch.rand(
-                x.size(0), 1, 1, device=x.device).ge_(
-                    self.drop).div(1 - self.drop).detach()
-        else:
-            return x + self.block(x)  # add
+        x = x + self.drop_path(self.block(x))
+        return x
 
 
 class Attention(BaseModule):
@@ -167,8 +163,7 @@ class Attention(BaseModule):
         self.attn_ratio = attn_ratio
         h = self.dh + nh_kd * 2
         self.qkv = LinearBatchNorm(dim, h)
-        self.proj = nn.Sequential(
-            activation(), LinearBatchNorm(self.dh, dim, bn_weight_init=0))
+        self.proj = nn.Sequential(activation(), LinearBatchNorm(self.dh, dim))
 
         points = list(itertools.product(range(resolution), range(resolution)))
         N = len(points)
@@ -228,7 +223,7 @@ class MLP(nn.Sequential):
         h = embed_dim * mlp_ratio
         self.linear1 = LinearBatchNorm(embed_dim, h)
         self.activation = mlp_activation()
-        self.linear2 = LinearBatchNorm(h, embed_dim, bn_weight_init=0)
+        self.linear2 = LinearBatchNorm(h, embed_dim)
 
     def forward(self, x):
         x = self.linear1(x)
@@ -263,8 +258,7 @@ class AttentionSubsample(nn.Sequential):
                  attn_ratio=2,
                  activation=None,
                  stride=2,
-                 resolution=14,
-                 sub_resolution=7):
+                 resolution=14):
         super(AttentionSubsample, self).__init__()
         self.num_heads = num_heads
         self.scale = key_dim**-0.5
@@ -273,7 +267,7 @@ class AttentionSubsample(nn.Sequential):
         self.d = int(attn_ratio * key_dim)
         self.dh = int(attn_ratio * key_dim) * self.num_heads
         self.attn_ratio = attn_ratio
-        self.sub_resolution = sub_resolution
+        self.sub_resolution = (resolution - 1) // stride + 1
         h = self.dh + nh_kd
         self.kv = LinearBatchNorm(in_dim, h)
 
@@ -286,7 +280,8 @@ class AttentionSubsample(nn.Sequential):
         self.resolution = resolution
         points = list(itertools.product(range(resolution), range(resolution)))
         sub_points = list(
-            itertools.product(range(sub_resolution), range(sub_resolution)))
+            itertools.product(
+                range(self.sub_resolution), range(self.sub_resolution)))
         N = len(points)
         N_sub = len(sub_points)
         attention_offsets = {}
@@ -336,42 +331,34 @@ class LeViT(BaseBackbone):
     """Vision Transformer with support for patch or hybrid CNN input stage."""
     arch_zoo = {
         '128s': {
-            'embed_dim': [128, 256, 384],
+            'embed_dims': [128, 256, 384],
             'num_heads': [4, 6, 8],
             'depth': [2, 3, 4],
-            'key_dim': [16, 16, 16],
-            'down_ops': [[16, 4, 2, 2], [16, 4, 2, 2]]
+            'key_dims': [16, 16, 16],
         },
         '128': {
-            'embed_dim': [128, 256, 384],
+            'embed_dims': [128, 256, 384],
             'num_heads': [4, 8, 12],
             'depth': [4, 4, 4],
-            'key_dim': [16, 16, 16],
-            'down_ops': [[16, 4, 2, 2], [16, 4, 2, 2]]
+            'key_dims': [16, 16, 16],
         },
         '192': {
-            'embed_dim': [192, 288, 384],
+            'embed_dims': [192, 288, 384],
             'num_heads': [3, 5, 6],
             'depth': [4, 4, 4],
-            'key_dim': [32, 32, 32],
-            'down_ops': [[32, 4, 2, 2], [32, 4, 2, 2]]
+            'key_dims': [32, 32, 32],
         },
         '256': {
-            'embed_dim': [256, 384, 512],
+            'embed_dims': [256, 384, 512],
             'num_heads': [4, 6, 8],
             'depth': [4, 4, 4],
-            'key_dim': [32, 32, 32],
-            'down_ops': [[32, 4, 2, 2], [32, 4, 2, 2]]
+            'key_dims': [32, 32, 32],
         },
         '384': {
-            'embed_dim': [384, 512, 768],
+            'embed_dims': [384, 512, 768],
             'num_heads': [6, 9, 12],
             'depth': [4, 4, 4],
-            'key_dim': [32, 32, 32],
-            'down_ops': [
-                [32, 4, 2, 2],
-                [32, 4, 2, 2],
-            ]
+            'key_dims': [32, 32, 32],
         },
     }
 
@@ -381,94 +368,81 @@ class LeViT(BaseBackbone):
                  patch_size=16,
                  attn_ratio=2,
                  mlp_ratio=2,
-                 hybrid_backbone=None,
                  attention_activation=torch.nn.Hardswish,
                  mlp_activation=torch.nn.Hardswish,
-                 out_indices=(2, ),
+                 out_indices=-1,
                  deploy=False,
-                 drop_path_rate=0):
-        super(LeViT, self).__init__()
+                 drop_path_rate=0,
+                 init_cfg=None):
+        super(LeViT, self).__init__(init_cfg=init_cfg)
 
         if isinstance(arch, str):
             arch = arch.lower()
             assert arch in set(self.arch_zoo), \
                 f'Arch {arch} is not in default archs {set(self.arch_zoo)}'
-            self.arch_settings = self.arch_zoo[arch]
+            self.arch = self.arch_zoo[arch]
         elif isinstance(arch, dict):
-            essential_keys = {
-                'embed_dim', 'num_heads', 'depth', 'key_dim', 'down_ops'
-            }
+            essential_keys = {'embed_dim', 'num_heads', 'depth', 'key_dim'}
             assert isinstance(arch, dict) and set(arch) == essential_keys, \
                 f'Custom arch needs a dict with keys {essential_keys}'
-            self.arch_settings = arch
+            self.arch = arch
         else:
             raise TypeError('Expect "arch" to be either a string '
                             f'or a dict, got {type(arch)}')
 
-        self.embed_dims = self.arch_settings['embed_dim']
-        self.num_heads = self.arch_settings['num_heads']
-        self.depth = self.arch_settings['depth']
-        self.key_dim = self.arch_settings['key_dim']
-        self.down_ops = self.arch_settings['down_ops']
+        self.embed_dims = self.arch['embed_dims']
+        self.num_heads = self.arch['num_heads']
+        self.key_dims = self.arch['key_dims']
+        self.depth = self.arch['depth']
+        self.num_stages = len(self.embed_dims)
         self.drop_path_rate = drop_path_rate
 
-        self.num_features = self.embed_dims[-1]
-        if not hybrid_backbone:
-            hybrid_backbone = HybridBackbone(self.embed_dims[0])
-        self.patch_embed = hybrid_backbone
-        self.blocks = [[]]
-        self.size = []
+        self.patch_embed = HybridBackbone(self.embed_dims[0])
         self.deploy = deploy
 
-        self.down_ops.append([])
+        self.stages = Sequential()
+        self.resolutions = []
         resolution = img_size // patch_size
-        for i, (embed_dim, key_dim, depth, num_heads, down_ops) in \
-                enumerate(zip(self.embed_dims, self.key_dim, self.depth,
-                              self.num_heads, self.down_ops)):
-            # print('-----------------', i, '-------------------')
+        for i, (embed_dims, key_dims, depth, num_heads) in enumerate(
+                zip(self.embed_dims, self.key_dims, self.depth,
+                    self.num_heads)):
+            stage = Sequential()
+            if i > 0:
+                downsample = AttentionSubsample(
+                    in_dim=self.embed_dims[i - 1],
+                    out_dim=embed_dims,
+                    key_dim=key_dims,
+                    num_heads=self.embed_dims[i - 1] // key_dims,
+                    attn_ratio=4,
+                    activation=attention_activation,
+                    stride=2,
+                    resolution=resolution)
+                stage.append(downsample)
+                resolution = downsample.sub_resolution
+                if mlp_ratio > 0:  # mlp_ratio
+                    stage.append(
+                        Residual(
+                            MLP(embed_dims, mlp_ratio, mlp_activation),
+                            self.drop_path_rate))
+            self.resolutions.append(resolution)
             for _ in range(depth):
-                self.blocks[-1].append(
+                stage.append(
                     Residual(
                         Attention(
-                            embed_dim,
-                            key_dim,
+                            embed_dims,
+                            key_dims,
                             num_heads,
                             attn_ratio=attn_ratio,
                             activation=attention_activation,
                             resolution=resolution,
                         ), self.drop_path_rate))
                 if mlp_ratio > 0:
-                    # h = int(embed_dim * mlp_ratio)
-                    self.blocks[-1].append(
+                    stage.append(
                         Residual(
-                            MLP(embed_dim, mlp_ratio, mlp_activation),
+                            MLP(embed_dims, mlp_ratio, mlp_activation),
                             self.drop_path_rate))
-            if i < len(self.depth) - 1:
-                self.size.append(resolution)
-                sub_resolution = (resolution - 1) // down_ops[3] + 1
-                self.blocks.append([])
-                self.blocks[-1].append(
-                    AttentionSubsample(
-                        *self.embed_dims[i:i + 2],
-                        key_dim=down_ops[0],
-                        num_heads=embed_dim // down_ops[0],
-                        attn_ratio=down_ops[1],
-                        activation=attention_activation,
-                        stride=down_ops[3],
-                        resolution=resolution,
-                        sub_resolution=sub_resolution))
-                resolution = sub_resolution
-                if down_ops[2] > 0:  # mlp_ratio
-                    self.blocks[-1].append(
-                        Residual(
-                            nn.Sequential(
-                                MLP(self.embed_dims[i + 1], down_ops[2],
-                                    mlp_activation)), self.drop_path_rate))
-        self.blocks = [nn.Sequential(*i) for i in self.blocks]
-        self.size.append(resolution)
-        self.stages = nn.Sequential()
-        for i in range(len(self.blocks)):
-            self.stages.add_module('%d' % i, self.blocks[i])
+
+            self.stages.append(stage)
 
         if isinstance(out_indices, int):
             out_indices = [out_indices]
@@ -476,43 +450,39 @@ class LeViT(BaseBackbone):
             f'"out_indices" must by a sequence or int, ' \
             f'get {type(out_indices)} instead.'
         for i, index in enumerate(out_indices):
-            assert 0 <= out_indices[i] < len(self.stages), \
+            assert 0 <= out_indices[i] < self.num_stages, \
                 f'Invalid out_indices {index}.'
         out_indices = list(out_indices)
 
         self.out_indices = out_indices
 
         if self.deploy:
-            replace_batchnorm(self)
+            self.switch_to_deploy()
 
     def switch_to_deploy(self):
         if self.deploy:
             return
-        replace_batchnorm(self)
+        fuse_parameters(self)
         self.deploy = True
 
     def forward(self, x):
-        x = self.patch_embed(x)  # 2 3 224 224 -> 2 128 14 14
-        x = x.flatten(2).transpose(1,
-                                   2)  # 2 128 14 14 -> 2 128 196 -> 2 196 128
+        x = self.patch_embed(x)
+        x = x.flatten(2).transpose(1, 2)  # B, C, H, W -> B, L, C
         outs = []
-        for i, layer_name in enumerate(self.stages):
-            x = layer_name(x)
+        for i, stage in enumerate(self.stages):
+            x = stage(x)
             B, _, C = x.shape
             if i in self.out_indices:
-                out = x.reshape(B, self.size[i], self.size[i],
-                                C).permute(0, 3, 1, 2)
+                out = x.reshape(B, self.resolutions[i], self.resolutions[i], C)
+                out = out.permute(0, 3, 1, 2).contiguous()
                 outs.append(out)
+
         return tuple(outs)
 
 
-def replace_batchnorm(net):
-    for child_name, child in net.named_children():
+def fuse_parameters(module):
+    for child_name, child in module.named_children():
         if hasattr(child, 'fuse'):
-            setattr(net, child_name, child.fuse())
-        elif isinstance(child, torch.nn.Conv2d):
-            child.bias = torch.nn.Parameter(torch.zeros(child.weight.size(0)))
-        elif isinstance(child, torch.nn.BatchNorm2d):
-            setattr(net, child_name, torch.nn.Identity())
+            setattr(module, child_name, child.fuse())
         else:
-            replace_batchnorm(child)
+            fuse_parameters(child)

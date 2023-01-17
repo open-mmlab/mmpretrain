@@ -45,8 +45,6 @@ def convert_levit(args, ckpt):
                 'blocks.%s.' % (strs[1]),
                 'stages.%d.%d.' % (stage, int(strs[1]) - block))
             new_k = new_k.replace('.c.', '.linear.')
-            if stage > 0 and (int(strs[1]) - block) == 1:
-                new_k = new_k.replace('.block.', '.block.0.')
         else:
             new_k = k
         # print(new_k)

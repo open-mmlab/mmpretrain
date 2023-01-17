@@ -6,18 +6,19 @@ Collections:
         - 1x1 Convolution
         - LeViT Attention Block
     Paper:
-      URL: https://arxiv.org/pdf/2104.01136.pdf
-      Title: "LeViT: a Vision Transformer in ConvNet’s Clothing for Faster Inference"
-    README: configs/levit/README.MD
+      Title: "LeViT: a Vision Transformer in ConvNet\u2019s Clothing for Faster Inference"
+      URL: https://arxiv.org/abs/2104.01136
+    README: configs/levit/README.md
     Code:
       URL: https://github.com/open-mmlab/mmclassification/blob/dev-1.x/mmcls/models/backbones/levit.py
-      Version: v1.0.0rc3
+      Version: v1.0.0rc5
 
 Models:
-  - Name: levit-128S_3rdparty_in1k
+  - Name: levit-128s_3rdparty_in1k
     Metadata:
       FLOPs: 310342496
       Parameters: 7391290
+      Training Data: ImageNet-1k
     In Collection: LeViT
     Results:
       - Dataset: ImageNet-1k
@@ -25,7 +26,8 @@ Models:
           Top 1 Accuracy: 76.24
           Top 5 Accuracy: 92.84
         Task: Image Classification
-    Config: configs/levit/levit-128s-p16.py
+    Weights: https://download.openmmlab.com/mmclassification/v0/levit/levit-128s_3rdparty_in1k_20230117-e9fbd209.pth
+    Config: configs/levit/levit-128s_8xb256_in1k.py
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/LeViT/LeViT-128S-96703c44.pth
       Code: https://github.com/facebookresearch/LeViT
@@ -33,6 +35,7 @@ Models:
     Metadata:
       FLOPs: 413060992
       Parameters: 8828168
+      Training Data: ImageNet-1k
     In Collection: LeViT
     Results:
       - Dataset: ImageNet-1k
@@ -40,7 +43,8 @@ Models:
           Top 1 Accuracy: 78.43
           Top 5 Accuracy: 93.86
         Task: Image Classification
-    Config: configs/levit/levit-128-p16.py
+    Weights: https://download.openmmlab.com/mmclassification/v0/levit/levit-128_3rdparty_in1k_20230117-3be02a02.pth
+    Config: configs/levit/levit-128_8xb256_in1k.py
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/LeViT/LeViT-128-b88c2750.pth
       Code: https://github.com/facebookresearch/LeViT
@@ -48,6 +52,7 @@ Models:
     Metadata:
       FLOPs: 667860704
       Parameters: 10561301
+      Training Data: ImageNet-1k
     In Collection: LeViT
     Results:
       - Dataset: ImageNet-1k
@@ -55,7 +60,8 @@ Models:
           Top 1 Accuracy: 79.73
           Top 5 Accuracy: 94.64
         Task: Image Classification
-    Config: configs/levit/levit-192-p16.py
+    Weights: https://download.openmmlab.com/mmclassification/v0/levit/levit-192_3rdparty_in1k_20230117-8217a0f9.pth
+    Config: configs/levit/levit-192_8xb256_in1k.py
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/LeViT/LeViT-192-92712e41.pth
       Code: https://github.com/facebookresearch/LeViT
@@ -63,6 +69,7 @@ Models:
     Metadata:
       FLOPs: 1141625216
       Parameters: 18379852
+      Training Data: ImageNet-1k
     In Collection: LeViT
     Results:
       - Dataset: ImageNet-1k
@@ -70,7 +77,8 @@ Models:
           Top 1 Accuracy: 81.14
           Top 5 Accuracy: 95.14
         Task: Image Classification
-    Config: configs/levit/levit-256-p16_4xb256_autoaug-mixup-lbs-coslr-1000e_in1k.py
+    Weights: https://download.openmmlab.com/mmclassification/v0/levit/levit-256_3rdparty_in1k_20230117-5ae2ce7d.pth
+    Config: configs/levit/levit-256_8xb256_in1k.py
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/LeViT/LeViT-256-13b5763e.pth
       Code: https://github.com/facebookresearch/LeViT
@@ -78,6 +86,7 @@ Models:
     Metadata:
       FLOPs: 2372941568
       Parameters: 38358300
+      Training Data: ImageNet-1k
     In Collection: LeViT
     Results:
       - Dataset: ImageNet-1k
@@ -85,7 +94,8 @@ Models:
           Top 1 Accuracy: 82.16
           Top 5 Accuracy: 95.59
         Task: Image Classification
-    Config: configs/levit/levit-384-p16.py
+    Weights: https://download.openmmlab.com/mmclassification/v0/levit/levit-384_3rdparty_in1k_20230117-f3539cce.pth
+    Config: configs/levit/levit-384_8xb256_in1k.py
     Converted From:
       Weights: https://dl.fbaipublicfiles.com/LeViT/LeViT-384-9bdaf2e2.pth
       Code: https://github.com/facebookresearch/LeViT

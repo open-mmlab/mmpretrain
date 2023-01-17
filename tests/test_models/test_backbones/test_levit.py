@@ -75,7 +75,7 @@ def test_levit():
 
     model = LeViT(arch='256', drop_path_rate=0.1)
     model.eval()
-    assert model.key_dim == [32, 32, 32]
+    assert model.key_dims == [32, 32, 32]
     assert model.embed_dims == [256, 384, 512]
     assert model.num_heads == [4, 6, 8]
     assert model.depth == [4, 4, 4]
