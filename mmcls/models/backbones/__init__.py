@@ -49,6 +49,7 @@ from .tnt import TNT
 from .twins import PCPVT, SVT
 from .van import VAN
 from .vgg import VGG
+from .vig import PyramidVig, Vig
 from .vision_transformer import VisionTransformer
 
 __all__ = [
@@ -109,4 +110,6 @@ __all__ = [
     'MixMIMTransformer',
     'TinyViT',
     'LeViT',
+    'Vig',
+    'PyramidVig',
 ]
