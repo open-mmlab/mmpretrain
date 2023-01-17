@@ -22,8 +22,8 @@ Models:
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 74.31
-          Top 5 Accuracy: 92.32
+          Top 1 Accuracy: 74.40
+          Top 5 Accuracy: 92.34
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/vig/vig-tiny_3rdparty_in1k_20230117-6414c684.pth
     Config: configs/vig/vig-tiny_8xb128_in1k.py
@@ -39,8 +39,8 @@ Models:
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 80.57
-          Top 5 Accuracy: 95.23
+          Top 1 Accuracy: 80.61
+          Top 5 Accuracy: 95.28
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/vig/vig-small_3rdparty_in1k_20230117-5338bf3b.pth
     Config: configs/vig/vig-small_8xb128_in1k.py
@@ -56,7 +56,7 @@ Models:
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 82.51
+          Top 1 Accuracy: 82.62
           Top 5 Accuracy: 96.04
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/vig/vig-base_3rdparty_in1k_20230117-92f6f12f.pth
@@ -73,8 +73,8 @@ Models:
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 78.44
-          Top 5 Accuracy: 94.36
+          Top 1 Accuracy: 78.38
+          Top 5 Accuracy: 94.38
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/vig/pvig-tiny_3rdparty_in1k_20230117-eb77347d.pth
     Config: configs/vig/pvig-tiny_8xb128_in1k.py
@@ -90,8 +90,8 @@ Models:
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 81.94
-          Top 5 Accuracy: 95.98
+          Top 1 Accuracy: 82.00
+          Top 5 Accuracy: 95.97
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/vig/pvig-small_3rdparty_in1k_20230117-9433dc96.pth
     Config: configs/vig/pvig-small_8xb128_in1k.py
@@ -107,8 +107,8 @@ Models:
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 82.96
-          Top 5 Accuracy: 96.36
+          Top 1 Accuracy: 83.12
+          Top 5 Accuracy: 96.35
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/vig/pvig-medium_3rdparty_in1k_20230117-21057a6d.pth
     Config: configs/vig/pvig-medium_8xb128_in1k.py
@@ -124,8 +124,8 @@ Models:
     Results:
       - Dataset: ImageNet-1k
         Metrics:
-          Top 1 Accuracy: 83.49
-          Top 5 Accuracy: 96.56
+          Top 1 Accuracy: 83.59
+          Top 5 Accuracy: 96.52
         Task: Image Classification
     Weights: https://download.openmmlab.com/mmclassification/v0/vig/pvig-base_3rdparty_in1k_20230117-dbab3c85.pth
     Config: configs/vig/pvig-base_8xb128_in1k.py
