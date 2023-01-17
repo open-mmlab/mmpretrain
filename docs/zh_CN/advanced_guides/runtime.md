@@ -8,7 +8,6 @@
 
 权重文件保存功能是一个默认训练钩子。你可以在配置文件的`default_hooks.checkpoint`字段中对其配置。
 
-
 ```{note}
 钩子机制在 OpenMMLab 开源算法库中应用非常广泛。通过钩子，你可以在不修改运行器的主要执行逻辑的情况下插入许多功能。
 
@@ -78,7 +77,6 @@ randomness = dict(seed=None, deterministic=False)
 
 为了使实验更具可重复性，你可以指定一个种子并设置`deterministic=True`。
 `deterministic`选项的使用效果可以在[这里](https://pytorch.org/docs/stable/notes/randomness.html#cuda-convolution-benchmarking)找到。
-
 
 ## 日志配置
 
@@ -216,7 +214,7 @@ env_cfg = dict(
 
 ## FAQ
 
-1. ** `load_from` 和 `init_cfg` 之间的关系是什么？**
+1. \*\* `load_from` 和 `init_cfg` 之间的关系是什么？\*\*
 
    - `load_from`: 如果`resume=False`，只导入模型权重，主要用于加载训练过的模型；
      如果`resume=True`，加载所有的模型权重、优化器状态和其他训练信息，这主要用于恢复中断的训练。
@@ -238,14 +236,14 @@ env_cfg = dict(
 
      参见 [微调模型](../user_guides/finetune.md) 以了解更多关于模型微调的细节。
 
-2. ** `default_hooks` 和 `custom_hooks` 之间有什么区别？**
-   
+2. \*\* `default_hooks` 和 `custom_hooks` 之间有什么区别？\*\*
+
    几乎没有区别。通常，`default_hooks` 字段用于指定几乎所有实验都会使用的钩子，
    而`custom_hooks`字段只用于一些实验。
 
    另一个区别是 `default_hooks` 是一个字典，而 `custom_hooks` 是一个列表，请不要混淆。
 
-3. ** 在训练期间，我没有收到训练日志，这是什么原因？ **
+3. \*\* 在训练期间，我没有收到训练日志，这是什么原因？ \*\*
 
    如果你的训练数据集很小，而批处理量却很大，我们默认的日志间隔可能太大，无法记录你的训练日志。
 
@@ -258,4 +256,3 @@ env_cfg = dict(
        ...
    )
    ```
-
