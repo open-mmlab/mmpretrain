@@ -148,4 +148,3 @@ checkpoint
 model_params.txt
 *.ckpt*
 results.txt
-/tools/work_dirs/
