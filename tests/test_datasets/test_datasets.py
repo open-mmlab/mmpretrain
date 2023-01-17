@@ -923,18 +923,102 @@ class TestMultiTaskDataset(TestCase):
 
         task_doc = ('For 2 tasks\n     gender \n     wear ')
         self.assertIn(task_doc, repr(dataset))
+class TestInShop(TestBaseDataset):
+    DATASET_TYPE = 'InShop'
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+
+        tmpdir = tempfile.TemporaryDirectory()
+        cls.tmpdir = tmpdir
+        cls.root = tmpdir.name
+        cls.list_eval_partition = 'list_eval_partition.txt'
+        cls.DEFAULT_ARGS = dict(data_root=cls.root, mode='train')
+        cls.ann_file = osp.join(cls.root, cls.list_eval_partition)
+        with open(cls.ann_file, 'w') as f:
+            f.write('\n'.join([
+                '8',
+                'image_name item_id evaluation_status',
+                '02_1_front.jpg id_00000002 train',
+                '02_2_side.jpg id_00000002 train',
+                '12_3_back.jpg id_00007982 gallery',
+                '12_7_additional.jpg id_00007982 gallery',
+                '13_1_front.jpg id_00007982 query',
+                '13_2_side.jpg id_00007983 gallery',
+                '13_3_back.jpg id_00007983 query ',
+                '13_7_additional.jpg id_00007983 query',
+            ]))
+
+    def test_initialize(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test with mode=train
+        cfg = {**self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(dataset.mode, 'train')
+        self.assertFalse(dataset.test_mode)
+        self.assertEqual(dataset.data_root, self.root)
+        self.assertEqual(dataset.ann_file, self.ann_file)
+
+        # Test with mode=query
+        cfg = {**self.DEFAULT_ARGS, 'mode': 'query'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(dataset.mode, 'query')
+        self.assertTrue(dataset.test_mode)
+        self.assertEqual(dataset.data_root, self.root)
+        self.assertEqual(dataset.ann_file, self.ann_file)
+
+        # Test with mode=gallery
+        cfg = {**self.DEFAULT_ARGS, 'mode': 'gallery'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(dataset.mode, 'gallery')
+        self.assertTrue(dataset.test_mode)
+        self.assertEqual(dataset.data_root, self.root)
+        self.assertEqual(dataset.ann_file, self.ann_file)
+
+        # Test with mode=other
+        cfg = {**self.DEFAULT_ARGS, 'mode': 'other'}
+        with self.assertRaisesRegex(AssertionError, 'illegal mode'):
+            dataset_class(**cfg)
 
     def test_load_data_list(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)
 
-        # Test default behavior
-        dataset = dataset_class(**self.DEFAULT_ARGS)
+        # Test with mode=train
+        cfg = {**self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 2)
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         f'{self.root}/Img/02_1_front.jpg')
+        self.assertEqual(data_info['gt_label'], 0)
 
-        data = dataset.load_data_list(self.DEFAULT_ARGS['ann_file'])
-        self.assertIsInstance(data, list)
-        np.testing.assert_equal(len(data), 3)
-        np.testing.assert_equal(data[0]['gt_label'], {'gender': 0})
-        np.testing.assert_equal(data[1]['gt_label'], {
-            'gender': 0,
-            'wear': [1, 0, 1, 0]
-        })
+        # Test with mode=query
+        cfg = {**self.DEFAULT_ARGS, 'mode': 'query'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 3)
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         f'{self.root}/Img/13_1_front.jpg')
+        self.assertEqual(data_info['gt_label'], [0, 1])
+
+        # Test with mode=gallery
+        cfg = {**self.DEFAULT_ARGS, 'mode': 'gallery'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 3)
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         f'{self.root}/Img/12_3_back.jpg')
+        self.assertEqual(data_info['img_id'], 0)
+
+    def test_extra_repr(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+        cfg = {**self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+
+        self.assertIn(f'Root of dataset: \t{dataset.data_root}', repr(dataset))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmpdir.cleanup()
