@@ -16,13 +16,15 @@ We design a family of image classification architectures that optimize the trade
 
 ### ImageNet-1k
 
-|   Model    | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                                 Config                                 |
-| :--------: | :-------: | :------: | :-------: | :-------: | :--------------------------------------------------------------------: |
-| LeViT-128S |   7.39    |  0.310   |   76.24   |   92.84   |                     [config](./levit-128s-p16.py)                      |
-| LeViT-128  |   8.82    |  0.413   |   78.43   |   93.86   |                      [config](./levit-128-p16.py)                      |
-| LeViT-192  |   10.56   |  0.668   |   79.73   |   94.64   |                      [config](./levit-192-p16.py)                      |
-| LeViT-256  |   18.38   |  1.142   |   81.14   |   95.14   | [config](./levit-256-p16_4xb256_autoaug-mixup-lbs-coslr-1000e_in1k.py) |
-| LeViT-384  |   38.36   |  2.373   |   82.16   |   95.59   |                      [config](./levit-384-p16.py)                      |
+|           Model            |   Pretrain   | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                             Config                             |                             Download                              |
+| :------------------------: | :----------: | :-------: | :------: | :-------: | :-------: | :------------------------------------------------------------: | :---------------------------------------------------------------: |
+| levit-128s_3rdparty_in1k\* | From scratch |   7.39    |   0.31   |   76.51   |   92.90   | [config](./levit-128s_8xb256_in1k.py) \| [deploy](./deploy/levit-128s_8xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/levit/levit-128s_3rdparty_in1k_20230117-e9fbd209.pth) |
+| levit-128_3rdparty_in1k\*  | From scratch |   8.83    |   0.41   |   78.58   |   93.95   | [config](./levit-128_8xb256_in1k.py) \| [deploy](./deploy/levit-128_8xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/levit/levit-128_3rdparty_in1k_20230117-3be02a02.pth) |
+| levit-192_3rdparty_in1k\*  | From scratch |   10.56   |   0.67   |   79.86   |   94.75   | [config](./levit-192_8xb256_in1k.py) \| [deploy](./deploy/levit-192_8xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/levit/levit-192_3rdparty_in1k_20230117-8217a0f9.pth) |
+| levit-256_3rdparty_in1k\*  | From scratch |   18.38   |   1.14   |   81.59   |   95.46   | [config](./levit-256_8xb256_in1k.py) \| [deploy](./deploy/levit-256_8xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/levit/levit-256_3rdparty_in1k_20230117-5ae2ce7d.pth) |
+| levit-384_3rdparty_in1k\*  | From scratch |   38.36   |   2.37   |   82.59   |   95.95   | [config](./levit-384_8xb256_in1k.py) \| [deploy](./deploy/levit-384_8xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/levit/levit-384_3rdparty_in1k_20230117-f3539cce.pth) |
+
+*Models with * are converted from the [official repo](https://github.com/facebookresearch/LeViT). The config files of these models are only for inference. All these models are trained by distillation on RegNet, and MMClassification doesn't support distillation by now. See [MMRazor](https://github.com/open-mmlab/mmrazor) for model distillation.*
 
 ## Citation
 
