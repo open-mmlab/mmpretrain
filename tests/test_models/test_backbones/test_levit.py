@@ -77,7 +77,7 @@ def test_levit():
     assert model.key_dims == [32, 32, 32]
     assert model.embed_dims == [256, 384, 512]
     assert model.num_heads == [4, 6, 8]
-    assert model.depth == [4, 4, 4]
+    assert model.depths == [4, 4, 4]
     assert model.drop_path_rate == 0.1
     assert isinstance(model.stages[0][0].block.qkv, levit.LinearBatchNorm)
     assert isinstance(model.patch_embed.patch_embed[0],

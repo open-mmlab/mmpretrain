@@ -38,7 +38,7 @@ class HybridBackbone(BaseModule):
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
 
-        self.patch_embed = nn.Sequential()
+        self.patch_embed = Sequential()
 
         for i in range(len(self.input_channels)):
             conv_bn = ConvolutionBatchNorm(
@@ -431,13 +431,13 @@ class LeViT(BaseBackbone):
 
         self.patch_embed = hybrid_backbone(self.embed_dims[0])
 
-        self.stages = Sequential()
         self.resolutions = []
         resolution = img_size // patch_size
+        stages = []
         for i, (embed_dims, key_dims, depth, num_heads) in enumerate(
                 zip(self.embed_dims, self.key_dims, self.depths,
                     self.num_heads)):
-            stage = Sequential()
+            blocks = []
             if i > 0:
                 downsample = AttentionSubsample(
                     in_dim=self.embed_dims[i - 1],
@@ -448,16 +448,16 @@ class LeViT(BaseBackbone):
                     act_cfg=act_cfg,
                     stride=2,
                     resolution=resolution)
-                stage.append(downsample)
+                blocks.append(downsample)
                 resolution = downsample.sub_resolution
                 if mlp_ratio > 0:  # mlp_ratio
-                    stage.append(
+                    blocks.append(
                         Residual(
                             MLP(embed_dims, mlp_ratio, act_cfg=act_cfg),
                             self.drop_path_rate))
             self.resolutions.append(resolution)
             for _ in range(depth):
-                stage.append(
+                blocks.append(
                     Residual(
                         Attention(
                             embed_dims,
@@ -468,12 +468,13 @@ class LeViT(BaseBackbone):
                             resolution=resolution,
                         ), self.drop_path_rate))
                 if mlp_ratio > 0:
-                    stage.append(
+                    blocks.append(
                         Residual(
                             MLP(embed_dims, mlp_ratio, act_cfg=act_cfg),
                             self.drop_path_rate))
 
-            self.stages.append(stage)
+            stages.append(Sequential(*blocks))
+        self.stages = Sequential(*stages)
 
         if isinstance(out_indices, int):
             out_indices = [out_indices]
