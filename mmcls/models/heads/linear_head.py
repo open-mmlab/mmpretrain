@@ -89,8 +89,8 @@ class LWSHead(LinearClsHead):
                  init_cfg: Optional[dict] = dict(
                      type='Normal', layer='Linear', std=0.01),
                  **kwargs):
-        super(LWSHead, self).__init__(num_classes, in_channels,
-                                      init_cfg=init_cfg, **kwargs)
+        super(LWSHead, self).__init__(
+            num_classes, in_channels, init_cfg=init_cfg, **kwargs)
 
         self.scales = Parameter(torch.ones(num_classes))
         for param_name, param in self.fc.named_parameters():
