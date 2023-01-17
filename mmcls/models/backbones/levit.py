@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 from mmcv.cnn import build_activation_layer, fuse_conv_bn
 from mmcv.cnn.bricks import DropPath
-from mmengine.model import BaseModule, Sequential
+from mmengine.model import BaseModule, ModuleList, Sequential
 
 from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.registry import MODELS
@@ -433,7 +433,7 @@ class LeViT(BaseBackbone):
 
         self.resolutions = []
         resolution = img_size // patch_size
-        stages = []
+        self.stages = ModuleList()
         for i, (embed_dims, key_dims, depth, num_heads) in enumerate(
                 zip(self.embed_dims, self.key_dims, self.depths,
                     self.num_heads)):
@@ -473,8 +473,7 @@ class LeViT(BaseBackbone):
                             MLP(embed_dims, mlp_ratio, act_cfg=act_cfg),
                             self.drop_path_rate))
 
-            stages.append(Sequential(*blocks))
-        self.stages = Sequential(*stages)
+            self.stages.append(Sequential(*blocks))
 
         if isinstance(out_indices, int):
             out_indices = [out_indices]
