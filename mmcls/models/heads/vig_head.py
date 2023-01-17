@@ -1,10 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional, Tuple
+from typing import Tuple
 
 import torch
 import torch.nn as nn
-from mmcv.cnn import build_activation_layer, build_conv_layer, build_norm_layer
-from mmengine.model import Sequential
+from mmcv.cnn import build_activation_layer
 
 from mmcls.registry import MODELS
 from .cls_head import ClsHead
@@ -12,21 +11,36 @@ from .cls_head import ClsHead
 
 @MODELS.register_module()
 class VigClsHead(ClsHead):
+    """The classification head for Vision GNN.
+
+    Args:
+        num_classes (int): Number of categories excluding the background
+            category.
+        in_channels (int): Number of channels in the input feature map.
+        hidden_dim (int): The number of middle channels. Defaults to 1024.
+        act_cfg (dict): The config of activation function.
+            Defaults to ``dict(type='GELU')``.
+        dropout (float): The dropout rate.
+        loss (dict): Config of classification loss. Defaults to
+            ``dict(type='CrossEntropyLoss', loss_weight=1.0)``.
+        init_cfg (dict, optional): the config to control the initialization.
+            Defaults to None.
+    """
 
     def __init__(self,
                  num_classes: int,
                  in_channels: int,
-                 hidden_dim: Optional[int] = 1024,
+                 hidden_dim: int = 1024,
                  act_cfg: dict = dict(type='GELU'),
-                 dropout=0,
+                 dropout: float = 0.,
                  **kwargs):
-        super(VigClsHead, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
-        self.classifier = Sequential(
-            build_conv_layer(None, in_channels, hidden_dim, 1, bias=True),
-            build_norm_layer(dict(type='BN'), hidden_dim)[1],
-            build_activation_layer(act_cfg), nn.Dropout(dropout),
-            build_conv_layer(None, hidden_dim, num_classes, 1, bias=True))
+        self.fc1 = nn.Linear(in_channels, hidden_dim)
+        self.bn = nn.BatchNorm1d(hidden_dim)
+        self.act = build_activation_layer(act_cfg)
+        self.drop = nn.Dropout(dropout)
+        self.fc2 = nn.Linear(hidden_dim, num_classes)
 
     def pre_logits(self, feats: Tuple[torch.Tensor]) -> torch.Tensor:
         """The process before the final classification head.
@@ -35,12 +49,17 @@ class VigClsHead(ClsHead):
         feature of a stage_blocks stage. In ``VigClsHead``, we just obtain the
         feature of the last stage.
         """
+        feats = feats[-1]
+        feats = self.fc1(feats)
+        feats = self.bn(feats)
+        feats = self.act(feats)
+        feats = self.drop(feats)
 
-        return feats[-1]
+        return feats
 
     def forward(self, feats: Tuple[torch.Tensor]) -> torch.Tensor:
         """The forward process."""
         pre_logits = self.pre_logits(feats)
         # The final classification head.
-        cls_score = self.classifier(pre_logits)
-        return cls_score.squeeze(-1).squeeze(-1)
+        cls_score = self.fc2(pre_logits)
+        return cls_score

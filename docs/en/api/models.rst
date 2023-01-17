@@ -86,6 +86,7 @@ Backbones
    MobileViT
    PCPVT
    PoolFormer
+   PyramidVig
    RegNet
    RepLKNet
    RepMLPNet
@@ -110,6 +111,7 @@ Backbones
    TNT
    VAN
    VGG
+   Vig
    VisionTransformer
 
 .. module:: mmcls.models.necks

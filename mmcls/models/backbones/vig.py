@@ -1,16 +1,20 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # modified from
 # https://github.com/huawei-noah/Efficient-AI-Backbones/tree/master/vig_pytorch
+from typing import Sequence
+
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmcv.cnn import build_activation_layer, build_conv_layer, build_norm_layer
+from mmcv.cnn import build_activation_layer
 from mmcv.cnn.bricks import DropPath
-from mmengine.model import Sequential
+from mmengine.model import ModuleList, Sequential
+from torch.nn.modules.batchnorm import _BatchNorm
 
 from mmcls.models.backbones.base_backbone import BaseBackbone
 from mmcls.registry import MODELS
+from ..utils import build_norm_layer
 
 
 def get_2d_relative_pos_embed(embed_dim, grid_size):
@@ -65,7 +69,7 @@ def get_1d_sincos_pos_embed_from_grid(embed_dim, pos):
     out: (M, D)
     """
     assert embed_dim % 2 == 0
-    omega = np.arange(embed_dim // 2, dtype=np.float)
+    omega = np.arange(embed_dim // 2, dtype=np.float32)
     omega /= embed_dim / 2.
     omega = 1. / 10000**omega  # (D/2,)
 
@@ -93,14 +97,6 @@ def xy_pairwise_distance(x, y):
         x_square = torch.sum(torch.mul(x, x), dim=-1, keepdim=True)
         y_square = torch.sum(torch.mul(y, y), dim=-1, keepdim=True)
         return x_square + xy_inner + y_square.transpose(2, 1)
-
-
-# 在DenseDilatedKnnGraph中使用了归一化，所有特征相当于落在一个超球面上，这时两两特征之间的距离和夹角是一一对应的，
-# 我们能否直接使用cos也就是点积代替距离呢？这样能节省一点计算量。但是测试结果有微小的差别，我认为是计算精度导致的。
-# def xy_pairwise_distance(x, y):
-#     with torch.no_grad():
-#         xy_inner = -2 * torch.matmul(x, y.transpose(2, 1))
-#         return xy_inner
 
 
 def xy_dense_knn_matrix(x, y, k=16, relative_pos=None):
@@ -193,15 +189,14 @@ class BasicConv(Sequential):
         m = []
         for i in range(1, len(channels)):
             m.append(
-                build_conv_layer(
-                    None,
+                nn.Conv2d(
                     channels[i - 1],
                     channels[i],
                     1,
                     bias=graph_conv_bias,
                     groups=4))
             if norm_cfg is not None:
-                m.append(build_norm_layer(norm_cfg, channels[-1])[1])
+                m.append(build_norm_layer(norm_cfg, channels[-1]))
             if act_cfg is not None:
                 m.append(build_activation_layer(act_cfg))
             if drop > 0:
@@ -429,25 +424,22 @@ class Grapher(nn.Module):
         self.n = n
         self.r = r
         self.fc1 = Sequential(
-            build_conv_layer(
-                None, in_channels, in_channels, 1, stride=1, padding=0),
-            build_norm_layer(dict(type='BN'), in_channels)[1],
+            nn.Conv2d(in_channels, in_channels, 1, stride=1, padding=0),
+            build_norm_layer(dict(type='BN'), in_channels),
         )
         self.graph_conv = DyGraphConv2d(in_channels, in_channels * 2, k,
                                         dilation, graph_conv_type, act_cfg,
                                         norm_cfg, graph_conv_bias,
                                         use_stochastic, epsilon, r)
         self.fc2 = Sequential(
-            build_conv_layer(
-                None, in_channels * 2, in_channels, 1, stride=1, padding=0),
-            build_norm_layer(dict(type='BN'), in_channels)[1],
+            nn.Conv2d(in_channels * 2, in_channels, 1, stride=1, padding=0),
+            build_norm_layer(dict(type='BN'), in_channels),
         )
         self.drop_path = DropPath(
             drop_path) if drop_path > 0. else nn.Identity()
 
         self.relative_pos = None
         if relative_pos:
-            print('using relative_pos')
             relative_pos_tensor = torch.from_numpy(
                 np.float32(
                     get_2d_relative_pos_embed(in_channels, int(
@@ -495,15 +487,13 @@ class FFN(nn.Module):
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
         self.fc1 = Sequential(
-            build_conv_layer(
-                None, in_features, hidden_features, 1, stride=1, padding=0),
-            build_norm_layer(dict(type='BN'), hidden_features)[1],
+            nn.Conv2d(in_features, hidden_features, 1, stride=1, padding=0),
+            build_norm_layer(dict(type='BN'), hidden_features),
         )
         self.act = build_activation_layer(act_cfg)
         self.fc2 = Sequential(
-            build_conv_layer(
-                None, hidden_features, out_features, 1, stride=1, padding=0),
-            build_norm_layer(dict(type='BN'), out_features)[1],
+            nn.Conv2d(hidden_features, out_features, 1, stride=1, padding=0),
+            build_norm_layer(dict(type='BN'), out_features),
         )
         self.drop_path = DropPath(
             drop_path) if drop_path > 0. else nn.Identity()
@@ -517,73 +507,60 @@ class FFN(nn.Module):
         return x
 
 
-class Stem(nn.Module):
-    """ Image to Visual Word Embedding
-    Overlap: https://arxiv.org/pdf/2106.13797.pdf
-    """
-
-    def __init__(self, in_dim=3, out_dim=768, act_cfg=dict(type=('GELU'))):
-        super().__init__()
-        self.convs = Sequential(
-            build_conv_layer(
-                None, in_dim, out_dim // 8, 3, stride=2, padding=1),
-            build_norm_layer(dict(type='BN'), out_dim // 8)[1],
-            build_activation_layer(act_cfg),
-            build_conv_layer(
-                None, out_dim // 8, out_dim // 4, 3, stride=2, padding=1),
-            build_norm_layer(dict(type='BN'), out_dim // 4)[1],
-            build_activation_layer(act_cfg),
-            build_conv_layer(
-                None, out_dim // 4, out_dim // 2, 3, stride=2, padding=1),
-            build_norm_layer(dict(type='BN'), out_dim // 2)[1],
-            build_activation_layer(act_cfg),
-            build_conv_layer(
-                None, out_dim // 2, out_dim, 3, stride=2, padding=1),
-            build_norm_layer(dict(type='BN'), out_dim)[1],
-            build_activation_layer(act_cfg),
-            build_conv_layer(None, out_dim, out_dim, 3, stride=1, padding=1),
-            build_norm_layer(dict(type='BN'), out_dim)[1],
-        )
-
-    def forward(self, x):
-        x = self.convs(x)
-        return x
-
-
 @MODELS.register_module()
 class Vig(BaseBackbone):
-    """VIG backbone.
+    """Vision GNN backbone.
+
+    A PyTorch implementation of `Vision GNN: An Image is Worth Graph of Nodes
+    <https://arxiv.org/abs/2206.00272>`_.
+
+    Modified from the official implementation
+    https://github.com/huawei-noah/Efficient-AI-Backbones/tree/master/vig_pytorch
 
     Args:
         arch(str): Vision GNN architecture,
             choose from 'tiny', 'small' and 'base'.
-        k(int): number of knn's k.
+        in_channels (int): The number of channels of input images.
+            Defaults to 3.
+        k (int): The number of KNN's k. Defaults to 9.
+        out_indices (Sequence | int): Output from which blocks.
+            Defaults to -1, means the last block.
         act_cfg (dict): The config of activative functions.
             Defaults to ``dict(type='GELU'))``.
         norm_cfg (dict): The config of normalization layers.
             Defaults to ``dict(type='BN', eps=1e-6)``.
-        graph_conv_bias(bool): Whether to use bias in BasicConv.
-        graph_conv_type(str): Types of graph convolution，
-            choose from 'edge', 'mr', 'sage' and 'gin'.
-             Defaults to 'mr'.
-        epsilon(float): Probability of random arrangement in KNN.
+        graph_conv_bias (bool): Whether to use bias in the convolution
+            layers in Grapher. Defaults to True.
+        graph_conv_type (str): The type of graph convolution，choose
+            from 'edge', 'mr', 'sage' and 'gin'. Defaults to 'mr'.
+        epsilon (float): Probability of random arrangement in KNN. It only
+            works when ``use_dilation=True`` and ``use_stochastic=True``.
             Defaults to 0.2.
-            It only works when use_dilation=True and use_stochastic=True.
-        use_dilation(bool): Whether to use dilation in KNN.
-            Defaults to True.
+        use_dilation(bool): Whether to use dilation in KNN. Defaults to True.
         use_stochastic(bool): Whether to use stochastic in KNN.
             Defaults to False.
-        drop_path(float): stochastic depth decay rule.Defaults to 0.
+        drop_path (float): stochastic depth rate. Default 0.0
         relative_pos(bool): Whether to use relative position embedding.
             Defaults to False.
-    """
+        norm_eval (bool): Whether to set the normalization layer to eval mode.
+            Defaults to False.
+        frozen_stages (int): Blocks to be frozen (all param fixed).
+            Defaults to 0, which means not freezing any parameters.
+        init_cfg (dict, optional): The initialization configs.
+            Defaults to None.
+    """  # noqa: E501
 
-    # n_blocks,channels
-    arch_settings = {'tiny': [12, 192], 'small': [16, 320], 'base': [16, 640]}
+    arch_settings = {
+        'tiny': dict(num_blocks=12, channels=192),
+        'small': dict(num_blocks=16, channels=320),
+        'base': dict(num_blocks=16, channels=640),
+    }
 
     def __init__(self,
                  arch,
+                 in_channels=3,
                  k=9,
+                 out_indices=-1,
                  act_cfg=dict(type='GELU'),
                  norm_cfg=dict(type='BN'),
                  graph_conv_bias=True,
@@ -598,21 +575,49 @@ class Vig(BaseBackbone):
                  init_cfg=None):
         super().__init__(init_cfg=init_cfg)
         arch = self.arch_settings[arch]
-        self.n_blocks = arch[0]
-        channels = arch[1]
-        self.stem = Stem(out_dim=channels, act_cfg=act_cfg)
-        dpr = [x.item() for x in torch.linspace(0, drop_path, self.n_blocks)
-               ]  # stochastic depth decay rule
+        self.num_blocks = arch['num_blocks']
+        channels = arch['channels']
+
+        if isinstance(out_indices, int):
+            out_indices = [out_indices]
+        assert isinstance(out_indices, Sequence), \
+            f'"out_indices" must by a sequence or int, ' \
+            f'get {type(out_indices)} instead.'
+        for i, index in enumerate(out_indices):
+            if index < 0:
+                out_indices[i] = self.num_blocks + index
+            assert 0 <= out_indices[i] <= self.num_blocks, \
+                f'Invalid out_indices {index}'
+        self.out_indices = out_indices
+
+        self.stem = Sequential(
+            nn.Conv2d(in_channels, channels // 8, 3, stride=2, padding=1),
+            build_norm_layer(norm_cfg, channels // 8),
+            build_activation_layer(act_cfg),
+            nn.Conv2d(channels // 8, channels // 4, 3, stride=2, padding=1),
+            build_norm_layer(norm_cfg, channels // 4),
+            build_activation_layer(act_cfg),
+            nn.Conv2d(channels // 4, channels // 2, 3, stride=2, padding=1),
+            build_norm_layer(norm_cfg, channels // 2),
+            build_activation_layer(act_cfg),
+            nn.Conv2d(channels // 2, channels, 3, stride=2, padding=1),
+            build_norm_layer(norm_cfg, channels),
+            build_activation_layer(act_cfg),
+            nn.Conv2d(channels, channels, 3, stride=1, padding=1),
+            build_norm_layer(norm_cfg, channels),
+        )
+
+        # stochastic depth decay rule
+        dpr = [x.item() for x in torch.linspace(0, drop_path, self.num_blocks)]
+        # number of knn's k
         num_knn = [
-            int(x.item()) for x in torch.linspace(k, 2 * k, self.n_blocks)
-        ]  # number of knn's k
+            int(x.item()) for x in torch.linspace(k, 2 * k, self.num_blocks)
+        ]
         max_dilation = 196 // max(num_knn)
-        self.norm_eval = norm_eval
+
         self.pos_embed = nn.Parameter(torch.zeros(1, channels, 14, 14))
-        self.frozen_stages = frozen_stages
-        # i在循环里面，无法直接拿出来
-        # dilation = min(i // 4 + 1, max_dilation) if use_dilation else 1
-        self.stage_blocks = Sequential(*[
+
+        self.blocks = ModuleList([
             Sequential(
                 Grapher(
                     in_channels=channels,
@@ -630,25 +635,28 @@ class Vig(BaseBackbone):
                 FFN(in_features=channels,
                     hidden_features=channels * 4,
                     act_cfg=act_cfg,
-                    drop_path=dpr[i])) for i in range(self.n_blocks)
+                    drop_path=dpr[i])) for i in range(self.num_blocks)
         ])
+
+        self.norm_eval = norm_eval
+        self.frozen_stages = frozen_stages
 
     def forward(self, inputs):
         outs = []
         x = self.stem(inputs) + self.pos_embed
 
-        for i in range(self.n_blocks):
-            x = self.stage_blocks[i](x)
-            outs.append(x)
+        for i, block in enumerate(self.blocks):
+            x = block(x)
 
-        x = F.adaptive_avg_pool2d(x, 1)
-        outs.append(x)
-        return outs
+            if i in self.out_indices:
+                outs.append(x)
+
+        return tuple(outs)
 
     def _freeze_stages(self):
         self.stem.eval()
         for i in range(self.frozen_stages):
-            m = self.stage_blocks[i]
+            m = self.blocks[i]
             m.eval()
             for param in m.parameters():
                 param.requires_grad = False
@@ -659,5 +667,184 @@ class Vig(BaseBackbone):
         if mode and self.norm_eval:
             for m in self.modules():
                 # trick: eval have effect on BatchNorm only
-                if isinstance(m, nn.BatchNorm2d):
+                if isinstance(m, _BatchNorm):
+                    m.eval()
+
+
+@MODELS.register_module()
+class PyramidVig(BaseBackbone):
+    """Pyramid Vision GNN backbone.
+
+    A PyTorch implementation of `Vision GNN: An Image is Worth Graph of Nodes
+    <https://arxiv.org/abs/2206.00272>`_.
+
+    Modified from the official implementation
+    https://github.com/huawei-noah/Efficient-AI-Backbones/tree/master/vig_pytorch
+
+    Args:
+        arch (str): Vision GNN architecture, choose from 'tiny',
+            'small' and 'base'.
+        in_channels (int): The number of channels of input images.
+            Defaults to 3.
+        k (int): The number of KNN's k. Defaults to 9.
+        out_indices (Sequence | int): Output from which stages.
+            Defaults to -1, means the last stage.
+        act_cfg (dict): The config of activative functions.
+            Defaults to ``dict(type='GELU'))``.
+        norm_cfg (dict): The config of normalization layers.
+            Defaults to ``dict(type='BN')``.
+        graph_conv_bias (bool): Whether to use bias in the convolution
+            layers in Grapher. Defaults to True.
+        graph_conv_type (str): The type of graph convolution，choose
+            from 'edge', 'mr', 'sage' and 'gin'. Defaults to 'mr'.
+        epsilon (float): Probability of random arrangement in KNN. It only
+            works when ``use_stochastic=True``. Defaults to 0.2.
+        use_stochastic (bool): Whether to use stochastic in KNN.
+            Defaults to False.
+        drop_path (float): stochastic depth rate. Default 0.0
+        norm_eval (bool): Whether to set the normalization layer to eval mode.
+            Defaults to False.
+        frozen_stages (int): Stages to be frozen (all param fixed).
+            Defaults to 0, which means not freezing any parameters.
+        init_cfg (dict, optional): The initialization configs.
+            Defaults to None.
+    """  # noqa: E501
+    arch_settings = {
+        'tiny': dict(blocks=[2, 2, 6, 2], channels=[48, 96, 240, 384]),
+        'small': dict(blocks=[2, 2, 6, 2], channels=[80, 160, 400, 640]),
+        'medium': dict(blocks=[2, 2, 16, 2], channels=[96, 192, 384, 768]),
+        'base': dict(blocks=[2, 2, 18, 2], channels=[128, 256, 512, 1024]),
+    }
+
+    def __init__(self,
+                 arch,
+                 in_channels=3,
+                 k=9,
+                 out_indices=-1,
+                 act_cfg=dict(type='GELU'),
+                 norm_cfg=dict(type='BN'),
+                 graph_conv_bias=True,
+                 graph_conv_type='mr',
+                 epsilon=0.2,
+                 use_stochastic=False,
+                 drop_path=0.,
+                 norm_eval=False,
+                 frozen_stages=0,
+                 init_cfg=None):
+        super().__init__(init_cfg=init_cfg)
+        arch = self.arch_settings[arch]
+        self.blocks = arch['blocks']
+        self.num_blocks = sum(self.blocks)
+        self.num_stages = len(self.blocks)
+        channels = arch['channels']
+        self.channels = channels
+
+        if isinstance(out_indices, int):
+            out_indices = [out_indices]
+        assert isinstance(out_indices, Sequence), \
+            f'"out_indices" must by a sequence or int, ' \
+            f'get {type(out_indices)} instead.'
+        for i, index in enumerate(out_indices):
+            if index < 0:
+                out_indices[i] = self.num_stages + index
+            assert 0 <= out_indices[i] <= self.num_stages, \
+                f'Invalid out_indices {index}'
+        self.out_indices = out_indices
+
+        self.stem = Sequential(
+            nn.Conv2d(in_channels, channels[0] // 2, 3, stride=2, padding=1),
+            build_norm_layer(norm_cfg, channels[0] // 2),
+            build_activation_layer(act_cfg),
+            nn.Conv2d(channels[0] // 2, channels[0], 3, stride=2, padding=1),
+            build_norm_layer(norm_cfg, channels[0]),
+            build_activation_layer(act_cfg),
+            nn.Conv2d(channels[0], channels[0], 3, stride=1, padding=1),
+            build_norm_layer(norm_cfg, channels[0]),
+        )
+
+        # stochastic depth decay rule
+        dpr = [x.item() for x in torch.linspace(0, drop_path, self.num_blocks)]
+        # number of knn's k
+        num_knn = [
+            int(x.item()) for x in torch.linspace(k, k, self.num_blocks)
+        ]
+        max_dilation = 49 // max(num_knn)
+
+        self.pos_embed = nn.Parameter(
+            torch.zeros(1, channels[0], 224 // 4, 224 // 4))
+        HW = 224 // 4 * 224 // 4
+        reduce_ratios = [4, 2, 1, 1]
+
+        self.stages = ModuleList()
+        block_idx = 0
+        for stage_idx, num_blocks in enumerate(self.blocks):
+            mid_channels = channels[stage_idx]
+            reduce_ratio = reduce_ratios[stage_idx]
+            blocks = Sequential()
+            if stage_idx > 0:
+                blocks.append(
+                    Sequential(
+                        nn.Conv2d(
+                            self.channels[stage_idx - 1],
+                            mid_channels,
+                            kernel_size=3,
+                            stride=2,
+                            padding=1),
+                        build_norm_layer(norm_cfg, mid_channels),
+                    ))
+                HW = HW // 4
+            for _ in range(num_blocks):
+                blocks.append(
+                    Sequential(
+                        Grapher(
+                            in_channels=mid_channels,
+                            k=num_knn[block_idx],
+                            dilation=min(block_idx // 4 + 1, max_dilation),
+                            graph_conv_type=graph_conv_type,
+                            act_cfg=act_cfg,
+                            norm_cfg=norm_cfg,
+                            graph_conv_bias=graph_conv_bias,
+                            use_stochastic=use_stochastic,
+                            epsilon=epsilon,
+                            r=reduce_ratio,
+                            n=HW,
+                            drop_path=dpr[block_idx],
+                            relative_pos=True),
+                        FFN(in_features=mid_channels,
+                            hidden_features=mid_channels * 4,
+                            act_cfg=act_cfg,
+                            drop_path=dpr[block_idx])))
+                block_idx += 1
+            self.stages.append(blocks)
+
+        self.norm_eval = norm_eval
+        self.frozen_stages = frozen_stages
+
+    def forward(self, inputs):
+        outs = []
+        x = self.stem(inputs) + self.pos_embed
+
+        for i, blocks in enumerate(self.stages):
+            x = blocks(x)
+
+            if i in self.out_indices:
+                outs.append(x)
+
+        return tuple(outs)
+
+    def _freeze_stages(self):
+        self.stem.eval()
+        for i in range(self.frozen_stages):
+            m = self.stages[i]
+            m.eval()
+            for param in m.parameters():
+                param.requires_grad = False
+
+    def train(self, mode=True):
+        super(PyramidVig, self).train(mode)
+        self._freeze_stages()
+        if mode and self.norm_eval:
+            for m in self.modules():
+                # trick: eval have effect on BatchNorm only
+                if isinstance(m, _BatchNorm):
                     m.eval()
