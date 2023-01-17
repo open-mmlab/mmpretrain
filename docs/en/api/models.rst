@@ -78,6 +78,7 @@ Backbones
    HorNet
    InceptionV3
    LeNet5
+   LeViT
    MViT
    MlpMixer
    MobileNetV2

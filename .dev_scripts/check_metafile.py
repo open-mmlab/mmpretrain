@@ -100,7 +100,7 @@ def main(metafile: Path, args):
     collection_err = check_collection(modelindex)
     if collection_err is not None:
         raise ValueError(f'The `Collections` in the {metafile} is wrong:'
-                         '\n\t{collection_err}')
+                         f'\n\t{collection_err}')
     for model in modelindex.models:
         model_err = check_model(model, args.Wall)
         if model_err is not None:

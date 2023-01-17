@@ -580,9 +580,11 @@ class Vig(BaseBackbone):
 
         if isinstance(out_indices, int):
             out_indices = [out_indices]
-        assert isinstance(out_indices, Sequence), \
-            f'"out_indices" must by a sequence or int, ' \
-            f'get {type(out_indices)} instead.'
+        elif isinstance(out_indices, tuple):
+            out_indices = list(out_indices)
+        elif not isinstance(out_indices, list):
+            raise TypeError('"out_indices" must by a tuple, list or int, '
+                            f'get {type(out_indices)} instead.')
         for i, index in enumerate(out_indices):
             if index < 0:
                 out_indices[i] = self.num_blocks + index
@@ -780,7 +782,7 @@ class PyramidVig(BaseBackbone):
         for stage_idx, num_blocks in enumerate(self.blocks):
             mid_channels = channels[stage_idx]
             reduce_ratio = reduce_ratios[stage_idx]
-            blocks = Sequential()
+            blocks = []
             if stage_idx > 0:
                 blocks.append(
                     Sequential(
@@ -815,7 +817,7 @@ class PyramidVig(BaseBackbone):
                             act_cfg=act_cfg,
                             drop_path=dpr[block_idx])))
                 block_idx += 1
-            self.stages.append(blocks)
+            self.stages.append(Sequential(*blocks))
 
         self.norm_eval = norm_eval
         self.frozen_stages = frozen_stages

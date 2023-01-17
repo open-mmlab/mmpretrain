@@ -3,6 +3,7 @@ from .cls_head import ClsHead
 from .conformer_head import ConformerHead
 from .deit_head import DeiTClsHead
 from .efficientformer_head import EfficientFormerClsHead
+from .levit_head import LeViTClsHead
 from .linear_head import LinearClsHead
 from .margin_head import ArcFaceClsHead
 from .multi_label_cls_head import MultiLabelClsHead
@@ -26,5 +27,6 @@ __all__ = [
     'ArcFaceClsHead',
     'CSRAClsHead',
     'MultiTaskHead',
+    'LeViTClsHead',
     'VigClsHead',
 ]
