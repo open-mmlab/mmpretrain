@@ -923,6 +923,8 @@ class TestMultiTaskDataset(TestCase):
 
         task_doc = ('For 2 tasks\n     gender \n     wear ')
         self.assertIn(task_doc, repr(dataset))
+
+
 class TestInShop(TestBaseDataset):
     DATASET_TYPE = 'InShop'
 
