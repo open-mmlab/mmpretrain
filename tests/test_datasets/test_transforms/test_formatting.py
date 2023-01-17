@@ -10,10 +10,7 @@ from mmengine.structures import LabelData
 from PIL import Image
 
 from mmcls.registry import TRANSFORMS
-from mmcls.structures import ClsDataSample
-from mmcls.utils import register_all_modules
-
-register_all_modules()
+from mmcls.structures import ClsDataSample, MultiTaskDataSample
 
 
 class TestPackClsInputs(unittest.TestCase):
@@ -51,9 +48,8 @@ class TestPackClsInputs(unittest.TestCase):
         # Test without `img` and `gt_label`
         del data['img']
         del data['gt_label']
-        with self.assertWarnsRegex(Warning, 'Cannot get "img"'):
-            results = transform(copy.deepcopy(data))
-            self.assertNotIn('gt_label', results['data_samples'])
+        results = transform(copy.deepcopy(data))
+        self.assertNotIn('gt_label', results['data_samples'])
 
     def test_repr(self):
         cfg = dict(type='PackClsInputs', meta_keys=['flip', 'img_shape'])
@@ -130,3 +126,54 @@ class TestCollect(unittest.TestCase):
         cfg = dict(type='Collect', keys=['img'])
         transform = TRANSFORMS.build(cfg)
         self.assertEqual(repr(transform), "Collect(keys=['img'])")
+
+
+class TestPackMultiTaskInputs(unittest.TestCase):
+
+    def test_transform(self):
+        img_path = osp.join(osp.dirname(__file__), '../../data/color.jpg')
+        data = {
+            'sample_idx': 1,
+            'img_path': img_path,
+            'ori_shape': (300, 400),
+            'img_shape': (300, 400),
+            'scale_factor': 1.0,
+            'flip': False,
+            'img': mmcv.imread(img_path),
+            'gt_label': {
+                'task1': 1,
+                'task3': 3
+            },
+        }
+
+        cfg = dict(type='PackMultiTaskInputs', )
+        transform = TRANSFORMS.build(cfg)
+        results = transform(copy.deepcopy(data))
+        self.assertIn('inputs', results)
+        self.assertIsInstance(results['inputs'], torch.Tensor)
+        self.assertIn('data_samples', results)
+        self.assertIsInstance(results['data_samples'], MultiTaskDataSample)
+        self.assertIn('flip', results['data_samples'].task1.metainfo_keys())
+        self.assertIsInstance(results['data_samples'].task1.gt_label,
+                              LabelData)
+
+        # Test grayscale image
+        data['img'] = data['img'].mean(-1)
+        results = transform(copy.deepcopy(data))
+        self.assertIn('inputs', results)
+        self.assertIsInstance(results['inputs'], torch.Tensor)
+        self.assertEqual(results['inputs'].shape, (1, 300, 400))
+
+        # Test without `img` and `gt_label`
+        del data['img']
+        del data['gt_label']
+        results = transform(copy.deepcopy(data))
+        self.assertNotIn('gt_label', results['data_samples'])
+
+    def test_repr(self):
+        cfg = dict(type='PackMultiTaskInputs', meta_keys=['img_shape'])
+        transform = TRANSFORMS.build(cfg)
+        rep = 'PackMultiTaskInputs(task_handlers={},'
+        rep += ' multi_task_fields=(\'gt_label\',),'
+        rep += ' meta_keys=[\'img_shape\'])'
+        self.assertEqual(repr(transform), rep)

@@ -1,16 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Union
+from typing import TYPE_CHECKING, Union
 
 import numpy as np
 import torch
-from mmengine.dataset import Compose, default_collate
-from mmengine.model import BaseModel
-from mmengine.registry import DefaultScope
 
-import mmcls.datasets  # noqa: F401
+if TYPE_CHECKING:
+    from mmengine.model import BaseModel
 
 
-def inference_model(model: BaseModel, img: Union[str, np.ndarray]):
+def inference_model(model: 'BaseModel', img: Union[str, np.ndarray]):
     """Inference image(s) with the classifier.
 
     Args:
@@ -21,6 +19,9 @@ def inference_model(model: BaseModel, img: Union[str, np.ndarray]):
         result (dict): The classification results that contains
             `class_name`, `pred_label` and `pred_score`.
     """
+    from mmengine.dataset import Compose, default_collate
+    from mmengine.registry import DefaultScope
+
     cfg = model.cfg
     # build the data pipeline
     test_pipeline_cfg = cfg.test_dataloader.dataset.pipeline

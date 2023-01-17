@@ -10,6 +10,7 @@ optim_wrapper = dict(
     paramwise_cfg=dict(
         norm_decay_mult=0.0,
         bias_decay_mult=0.0,
+        flat_decay_mult=0.0,
         custom_keys={
             '.absolute_pos_embed': dict(decay_mult=0.0),
             '.relative_position_bias_table': dict(decay_mult=0.0)
