@@ -50,7 +50,7 @@ CUB
 .. autoclass:: CUB
 
 Retrieval
----
+---------
 
 .. autoclass:: InShop
 
