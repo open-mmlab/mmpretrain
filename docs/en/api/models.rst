@@ -79,6 +79,7 @@ Backbones
    HorNet
    InceptionV3
    LeNet5
+   LeViT
    MViT
    MlpMixer
    MobileNetV2
@@ -87,6 +88,7 @@ Backbones
    MobileViT
    PCPVT
    PoolFormer
+   PyramidVig
    RegNet
    RepLKNet
    RepMLPNet
@@ -111,6 +113,7 @@ Backbones
    TNT
    VAN
    VGG
+   Vig
    VisionTransformer
 
 .. module:: mmcls.models.necks

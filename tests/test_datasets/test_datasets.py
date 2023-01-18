@@ -11,9 +11,7 @@ import numpy as np
 from mmengine.logging import MMLogger
 
 from mmcls.registry import DATASETS, TRANSFORMS
-from mmcls.utils import register_all_modules
 
-register_all_modules()
 ASSETS_ROOT = osp.abspath(osp.join(osp.dirname(__file__), '../data/dataset'))
 
 

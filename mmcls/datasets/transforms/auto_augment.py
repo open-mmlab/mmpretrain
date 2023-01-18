@@ -65,8 +65,9 @@ class AutoAugment(RandomChoice):
         self.hparams = hparams
         self.policies = [[merge_hparams(t, hparams) for t in sub]
                          for sub in policies]
+        transforms = [[TRANSFORMS.build(t) for t in sub] for sub in policies]
 
-        super().__init__(transforms=self.policies)
+        super().__init__(transforms=transforms)
 
     def __repr__(self) -> str:
         policies_str = ''

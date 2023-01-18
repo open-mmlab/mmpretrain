@@ -9,34 +9,25 @@ MMClassification 在 [Model Zoo](../modelzoo_statistics.md) 中提供了用于�
 
 MMClassification 为图像推理提供高级 Python API：
 
-- [init_model](mmcls.apis.init_model): 初始化一个模型。
-- [inference_model](mmcls.apis.inference_model)：对给定图片进行推理。
+- [`get_model`](mmcls.apis.get_model): 根据名称获取一个模型。
+- [`init_model`](mmcls.apis.init_model): 根据配置文件和权重文件初始化一个模型。
+- [`inference_model`](mmcls.apis.inference_model)：对给定图片进行推理。
 
 下面是一个示例，如何使用一个 ImageNet-1k 预训练权重初始化模型并推理给定图像。
 
 ```{note}
-如果您将 mmcls 当作第三方库使用，需要下载样例中的配置文件以及样例图片。
-
-运行 'mim download mmcls --config resnet50_8xb32_in1k --dest .' 下载所需配置文件。
-
-运行 'wget https://github.com/open-mmlab/mmclassification/blob/master/demo/demo.JPEG' 下载所需图片。
+可以运行 `wget https://github.com/open-mmlab/mmclassification/raw/master/demo/demo.JPEG` 下载样例图片，或使用其他图片。
 ```
 
 ```python
-from mmcls.apis import inference_model, init_model
-from mmcls.utils import register_all_modules
+from mmcls import get_model, inference_model
 
-config_path = './configs/resnet/resnet50_8xb32_in1k.py'
-checkpoint_path = 'https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb32_in1k_20210831-ea4938fc.pth' # 也可以设置为一个本地的路径
-img_path = 'demo/demo.JPEG'   # 可以指定自己的图片路径
+img_path = 'demo.JPEG'   # 可以指定自己的图片路径
 
-# 注册
-register_all_modules()                 # 将所有模块注册在默认 mmcls 域中
 # 构建模型
-model = init_model(config_path, checkpoint_path, device="cpu") # `device` 可以为 'cuda:0'
+model = get_model('resnet50_8xb32_in1k', pretrained=True, device="cpu")  # `device` 可以为 'cuda:0'
 # 执行推理
 result = inference_model(model, img_path)
-print(result)
 ```
 
 `result` 为一个包含了 `pred_label`, `pred_score`, `pred_scores` 和 `pred_class`的字典，结果如下:
