@@ -924,6 +924,20 @@ class TestMultiTaskDataset(TestCase):
         task_doc = ('For 2 tasks\n     gender \n     wear ')
         self.assertIn(task_doc, repr(dataset))
 
+    def test_load_data_list(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test default behavior
+        dataset = dataset_class(**self.DEFAULT_ARGS)
+        data = dataset.load_data_list(self.DEFAULT_ARGS['ann_file'])
+        self.assertIsInstance(data, list)
+        np.testing.assert_equal(len(data), 3)
+        np.testing.assert_equal(data[0]['gt_label'], {'gender': 0})
+        np.testing.assert_equal(data[1]['gt_label'], {
+            'gender': 0,
+            'wear': [1, 0, 1, 0]
+        })
+
 
 class TestInShop(TestBaseDataset):
     DATASET_TYPE = 'InShop'
