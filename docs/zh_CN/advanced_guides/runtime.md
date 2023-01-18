@@ -1,12 +1,12 @@
-# 自定义实验运行参数
+# 自定义运行参数
 
-模型运行参数配置包括许多有用的功能，如权重文件保存、日志配置等等，在本教程中，我们将介绍如何配置这些功能。
+运行参数配置包括许多有用的功能，如权重文件保存、日志配置等等，在本教程中，我们将介绍如何配置这些功能。
 
 <!-- TODO: Link to MMEngine docs instead of API reference after the MMEngine English docs is done. -->
 
 ## 保存权重文件
 
-权重文件保存功能是一个默认训练钩子。你可以在配置文件的`default_hooks.checkpoint`字段中对其配置。
+权重文件保存功能是一个在训练阶段默认注册的钩子， 你可以通过配置文件中的 `default_hooks.checkpoint` 字段设配它。
 
 ```{note}
 钩子机制在 OpenMMLab 开源算法库中应用非常广泛。通过钩子，你可以在不修改运行器的主要执行逻辑的情况下插入许多功能。
@@ -24,7 +24,7 @@ default_hooks = dict(
 )
 ```
 
-下面是一些常用的参数，所有可用的参数都可以在[权重文件钩子(CheckpointHook)](mmengine.hooks.CheckpointHook)中找到。
+下面是一些[权重文件钩子(CheckpointHook)](mmengine.hooks.CheckpointHook)的常用可配置参数。
 
 - **`interval`** (int): 文件保存周期。如果使用-1，它将永远不会保存权重。
 - **`by_epoch`** (bool): 选择 **`interval`** 是基于epoch还是基于iteration， 默认为 `True`.
@@ -36,7 +36,7 @@ default_hooks = dict(
 
 ## 权重加载 / 断点训练
 
-在配置文件中，你可以指定模型权重加载和断点继续训练的功能，如下所示:
+在配置文件中，你可以加载指定模型权重或者断点继续训练，如下所示:
 
 ```python
 # 从指定权重文件加载
@@ -53,7 +53,7 @@ resume = False
 Runner执行器将自动从工作目录中找到最新的权重文件。
 ```
 
-如果你用我们的`tools/train.py`脚本来训练模型，你也可以使用`--resume`参数来恢复训练，而不用手动修改配置文件。
+如果你用我们的`tools/train.py`脚本来训练模型，你只需使用 `--resume` 参数来恢复训练，就不用手动修改配置文件了。如下所示:
 
 ```bash
 # 自动从最新的断点恢复
@@ -65,7 +65,7 @@ python tools/train.py configs/resnet/resnet50_8xb32_in1k.py --resume checkpoints
 
 ## 随机性(Randomness)配置
 
-在 `randomness` 字段配置中，我们提供了一些选项让使实验尽可能是可复现的。
+为了让实验尽可能是可复现的， 我们在 `randomness` 字段中提供了一些控制随机性的选项。
 
 默认情况下，我们不会在配置文件中指定随机数种子，在每次实验中，程序会生成一个不同的随机数种子。
 
@@ -123,7 +123,7 @@ log_processor = dict(window_size=10)
 - [ClassNumCheckHook](mmcls.engine.hooks.ClassNumCheckHook)
 - ......
 
-例如，EMA（Exponential Moving Average）在模型训练中被广泛使用，你可以如下方式启用它：
+例如，EMA（Exponential Moving Average）在模型训练中被广泛使用，你可以以下方式启用它：
 
 ```python
 custom_hooks = [
@@ -150,7 +150,8 @@ default_hooks = dict(
 这个钩子将在验证数据集中选择一部分图像，在每次验证过程中记录并可视化它们的预测结果。
 你可以用它来观察训练期间模型在实际图像上的性能变化。
 
-此外，如果你的验证数据集中的图像很小（\<100），你可以指定 rescale_factor 来缩放它们，如 `rescale_factor=2.` 。
+此外，如果你的验证数据集中的图像很小（\<100， 如Cifra数据集），
+你可以指定 rescale_factor 来缩放它们，如 `rescale_factor=2.`, 将可视化的图像放大两倍。
 
 ## Visualizer
 
