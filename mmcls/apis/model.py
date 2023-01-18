@@ -131,7 +131,7 @@ def init_model(config, checkpoint=None, device=None, **kwargs):
             pass
         elif 'dataset_meta' in checkpoint.get('meta', {}):
             # mmcls 1.x
-            model.CLASSES = checkpoint['meta']['dataset_meta']['classes']
+            model.CLASSES = checkpoint['meta']['dataset_meta'].get('classes')
         elif 'CLASSES' in checkpoint.get('meta', {}):
             # mmcls < 1.x
             model.CLASSES = checkpoint['meta']['CLASSES']

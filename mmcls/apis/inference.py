@@ -9,6 +9,7 @@ from mmengine.config import Config
 from mmengine.dataset import Compose, default_collate
 from mmengine.infer import BaseInferencer
 from mmengine.model import BaseModel
+from mmengine.runner import load_checkpoint
 
 from mmcls.registry import TRANSFORMS
 from mmcls.structures import ClsDataSample
@@ -18,13 +19,15 @@ ModelType = Union[BaseModel, str, Config]
 InputType = Union[str, np.ndarray]
 
 
-def inference_model(model: ModelType, img: InputType):
+def inference_model(model: ModelType, img: InputType, device=None):
     """Inference an image with the classifier.
 
     Args:
         model (BaseModel | str | Config): The loaded classifier or the model
             name or the config of the model.
         img (str | ndarray): The image filename or loaded image.
+        device (str, optional): Device to run inference. If None, use CPU or
+            the device of the input model. Defaults to None.
 
     Returns:
         result (dict): The classification results that contains:
@@ -33,8 +36,13 @@ def inference_model(model: ModelType, img: InputType):
         - ``pred_class``: The predicted category.
         - ``pred_label``: The predicted index of the category.
         - ``pred_score``: The score of the predicted category.
+
+    Note:
+        This function is reserved for compatibility and demo on a single image.
+        We suggest to use :class:`ImageClassificationInferencer`, which is more
+        powerful and configurable.
     """
-    inferencer = ImageClassificationInferencer(model)
+    inferencer = ImageClassificationInferencer(model, device=device)
     return inferencer(img)[0]
 
 
@@ -49,23 +57,49 @@ class ImageClassificationInferencer(BaseInferencer):
         weights (str, optional): Path to the checkpoint. If None, it will try
             to find a pre-defined weight from the model you specified
             (only work if the ``model`` is a model name). Defaults to None.
-        device (str, optional): Device to run inference. If None, use CPU.
-            Defaults to None.
+        device (str, optional): Device to run inference. If None, use CPU or
+            the device of the input model. Defaults to None.
+
+    Example:
+        1. Use a pre-trained model in MMClassification to inference an image.
+
+           >>> from mmcls import ImageClassificationInferencer
+           >>> inferencer = ImageClassificationInferencer('resnet50_8xb32_in1k')
+           >>> inferencer('demo/demo.JPEG')
+           [{'pred_score': array([...]),
+             'pred_label': 65,
+             'pred_score': 0.6649367809295654,
+             'pred_class': 'sea snake'}]
+
+        2. Use a config file and checkpoint to inference multiple images on GPU,
+           and save the visualization results in a folder.
+
+           >>> from mmcls import ImageClassificationInferencer
+           >>> inferencer = ImageClassificationInferencer(
+                   model='configs/resnet/resnet50_8xb32_in1k.py',
+                   weights='https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb32_in1k_20210831-ea4938fc.pth',
+                   device='cuda')
+           >>> inferencer(['demo/dog.jpg', 'demo/bird.JPEG'], show_dir="./visualize/")
     """  # noqa: E501
 
     visualize_kwargs: set = {
         'rescale_factor', 'draw_score', 'show', 'show_dir'
     }
 
-    def __init__(self,
-                 model: ModelType,
-                 weights: Optional[str] = None,
-                 device: Union[str, torch.device, None] = None) -> None:
+    def __init__(
+        self,
+        model: ModelType,
+        weights: Optional[str] = None,
+        device: Union[str, torch.device, None] = None,
+        classes=None,
+    ) -> None:
         if isinstance(model, BaseModel):
+            if weights is not None:
+                load_checkpoint(model, weights, map_location='cpu')
             model = model.to(device)
         elif isinstance(model, str) and not Path(model).is_file():
             # Get model from model name
-            pretrained = weights or True
+            pretrained = weights if weights is not None else True
             model = get_model(model, pretrained=pretrained, device=device)
         elif isinstance(model, (Config, str)):
             # Get model from config
@@ -84,7 +118,35 @@ class ImageClassificationInferencer(BaseInferencer):
         self.collate_fn = default_collate
         self.visualizer = None
 
-        self.classes = getattr(self.model, 'CLASSES', None)
+        self.classes = classes or getattr(self.model, 'CLASSES', None)
+
+    def __call__(self,
+                 inputs: List[InputType],
+                 return_datasamples: bool = False,
+                 batch_size: int = 1,
+                 **kwargs) -> dict:
+        """Call the inferencer.
+
+        Args:
+            inputs (InputsType): Inputs for the inferencer.
+            return_datasamples (bool): Whether to return results as
+                :obj:`BaseDataElement`. Defaults to False.
+            batch_size (int): Batch size. Defaults to 1.
+            rescale_factor (float, optional): Rescale the image by the rescale
+                factor for visualization. This is helpful when the image is too
+                large or too small for visualization. Defaults to None.
+            draw_score (bool): Whether to draw the prediction scores
+                of prediction categories. Defaults to True.
+            show (bool): Whether to display the visualization result in a
+                window. Defaults to False.
+            show_dir (str, optional): If not None, save the visualization
+                results in the specified directory. Defaults to None.
+
+        Returns:
+            list: The inference results.
+        """
+        return super().__call__(inputs, return_datasamples, batch_size,
+                                **kwargs)
 
     def _init_pipeline(self, cfg: Config) -> Callable:
         test_pipeline_cfg = cfg.test_dataloader.dataset.pipeline
@@ -99,6 +161,8 @@ class ImageClassificationInferencer(BaseInferencer):
 
         def load_image(input_):
             img = imread(input_)
+            if img is None:
+                raise ValueError(f'Failed to read image {input_}.')
             return dict(
                 img=img,
                 img_shape=img.shape[:2],
@@ -113,7 +177,7 @@ class ImageClassificationInferencer(BaseInferencer):
     def visualize(self,
                   ori_inputs: List[InputType],
                   preds: List[ClsDataSample],
-                  show: bool = True,
+                  show: bool = False,
                   rescale_factor: Optional[float] = None,
                   draw_score=True,
                   show_dir=None):
@@ -161,8 +225,8 @@ class ImageClassificationInferencer(BaseInferencer):
     def postprocess(self,
                     preds: List[ClsDataSample],
                     visualization: List[np.ndarray],
-                    return_datasample=False) -> dict:
-        if return_datasample:
+                    return_datasamples=False) -> dict:
+        if return_datasamples:
             return preds
 
         results = []
