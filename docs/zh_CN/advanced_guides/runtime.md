@@ -1,6 +1,6 @@
 # 自定义实验运行参数
 
-模型运行参数文件包括许多有用的功能，如权重文件保存、日志配置等等，在本教程中，我们将介绍如何配置这些功能。
+模型运行参数配置包括许多有用的功能，如权重文件保存、日志配置等等，在本教程中，我们将介绍如何配置这些功能。
 
 <!-- TODO: Link to MMEngine docs instead of API reference after the MMEngine English docs is done. -->
 
@@ -28,8 +28,8 @@ default_hooks = dict(
 
 - **`interval`** (int): 文件保存周期。如果使用-1，它将永远不会保存权重。
 - **`by_epoch`** (bool): 选择 **`interval`** 是基于epoch还是基于iteration， 默认为 `True`.
-- **`out_dir`** (str): 保存检查点的根目录。如果不指定，检查点将被保存在工作目录中。如果指定，检查点将被保存在 **`out_dir`** 的子文件夹中。
-- **`max_keep_ckpts`** (int): 要保留的权重文件数量。在某些情况下，我们只想要最近的几个检查点，并希望删除旧的检查点以节省磁盘空间。默认为-1，也就是无限制。
+- **`out_dir`** (str): 保存权重文件的根目录。如果不指定，检查点将被保存在工作目录中。如果指定，检查点将被保存在 **`out_dir`** 的子文件夹中。
+- **`max_keep_ckpts`** (int): 要保留的权重文件数量。在某些情况下，为了节省磁盘空间，我们希望只保留最近的几个权重文件。默认为-1，也就是无限制。
 - **`save_best`** (str, List[str]): 如果指定，它将保存具有最佳评估结果的权重。
   通常情况下，你可以直接使用`save_best="auto"`来自动选择评估指标。
   而如果你想要更高级的配置，请参考[权重文件钩子(CheckpointHook)](mmengine.hooks.CheckpointHook)。
@@ -65,7 +65,7 @@ python tools/train.py configs/resnet/resnet50_8xb32_in1k.py --resume checkpoints
 
 ## 随机性(Randomness)配置
 
-在 `randomness` 字段配置中，我们提供了一些选项，以使实验尽可能的可重复。
+在 `randomness` 字段配置中，我们提供了一些选项让使实验尽可能是可复现的。
 
 默认情况下，我们不会在配置文件中指定随机数种子，在每次实验中，程序会生成一个不同的随机数种子。
 
@@ -75,14 +75,14 @@ python tools/train.py configs/resnet/resnet50_8xb32_in1k.py --resume checkpoints
 randomness = dict(seed=None, deterministic=False)
 ```
 
-为了使实验更具可重复性，你可以指定一个种子并设置`deterministic=True`。
+为了使实验更具可复现性，你可以指定一个种子并设置`deterministic=True`。
 `deterministic`选项的使用效果可以在[这里](https://pytorch.org/docs/stable/notes/randomness.html#cuda-convolution-benchmarking)找到。
 
 ## 日志配置
 
 日志的配置与多个字段有关。
 
-在`log_level`字段中，你可以指定全局日志级别。参见 {external+python:ref}`Logging Levels<levels>` 以获得级别列表。
+在`log_level`字段中，你可以指定全局日志级别。参见 {external+python:ref}`Logging Levels<levels>` 以获得日志级别列表。
 
 ```python
 log_level = 'INFO'
@@ -131,9 +131,9 @@ custom_hooks = [
 ]
 ```
 
-## 可视化验证(Visualize Validation)
+## 验证可视化
 
-验证的可视化功能是验证过程中的一个默认注册的钩子。
+验证可视化钩子是一个验证过程中默认注册的钩子。
 你可以在 `default_hooks.visualization` 字段中来配置它。
 
 默认情况下，我们禁用这个钩子，你可以通过指定`enable=True`来启用它。而更多的参数可以在
@@ -147,10 +147,10 @@ default_hooks = dict(
 )
 ```
 
-这个钩子将在验证数据集中选择一些图像，并在每次验证过程中对这些图像的预测结果进行标记。
+这个钩子将在验证数据集中选择一部分图像，在每次验证过程中记录并可视化它们的预测结果。
 你可以用它来观察训练期间模型在实际图像上的性能变化。
 
-此外，如果你的验证数据集中的图像很小（\<100），你可以在可视化之前通过指定 `rescale_factor=2.` 或更高来重新缩放它们。
+此外，如果你的验证数据集中的图像很小（\<100），你可以指定 rescale_factor 来缩放它们，如 `rescale_factor=2.` 。
 
 ## Visualizer
 
@@ -214,14 +214,14 @@ env_cfg = dict(
 
 ## FAQ
 
-1. \*\* `load_from` 和 `init_cfg` 之间的关系是什么？\*\*
+1. **`load_from` 和 `init_cfg` 之间的关系是什么？**
 
    - `load_from`: 如果`resume=False`，只导入模型权重，主要用于加载训练过的模型；
-     如果`resume=True`，加载所有的模型权重、优化器状态和其他训练信息，这主要用于恢复中断的训练。
+     如果 `resume=True` ，加载所有的模型权重、优化器状态和其他训练信息，主要用于恢复中断的训练。
 
    - `init_cfg`: 你也可以指定`init=dict(type="Pretrained", checkpoint=xxx)`来加载权重，
-     这意味着在模型权重初始化时加载权重。 也就是说，它只在训练的开始阶段进行。
-     它主要用于微调预训练的模型，你可以在骨干配置中设置它，并使用`prefix` 字段来只加载骨干权重，例如：
+     表示在模型权重初始化时加载权重，通常在训练的开始阶段执行。
+     主要用于微调预训练模型，你可以在骨干网络的配置中配置它，还可以使用 `prefix` 字段来只加载对应的权重，例如：
 
      ```python
      model = dict(
@@ -236,14 +236,14 @@ env_cfg = dict(
 
      参见 [微调模型](../user_guides/finetune.md) 以了解更多关于模型微调的细节。
 
-2. \*\* `default_hooks` 和 `custom_hooks` 之间有什么区别？\*\*
+2. **`default_hooks` 和 `custom_hooks` 之间有什么区别？**
 
    几乎没有区别。通常，`default_hooks` 字段用于指定几乎所有实验都会使用的钩子，
-   而`custom_hooks`字段只用于一些实验。
+   而 `custom_hooks` 字段指部分实验特有的钩子。
 
    另一个区别是 `default_hooks` 是一个字典，而 `custom_hooks` 是一个列表，请不要混淆。
 
-3. \*\* 在训练期间，我没有收到训练日志，这是什么原因？ \*\*
+3. **在训练期间，我没有收到训练日志，这是什么原因？**
 
    如果你的训练数据集很小，而批处理量却很大，我们默认的日志间隔可能太大，无法记录你的训练日志。
 
