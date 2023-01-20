@@ -14,19 +14,8 @@ from .stacked_head import StackedLinearClsHead
 from .vision_transformer_head import VisionTransformerClsHead
 
 __all__ = [
-    'ClsHead',
-    'LinearClsHead',
-    'StackedLinearClsHead',
-    'MultiLabelClsHead',
-    'MultiLabelLinearClsHead',
-    'VisionTransformerClsHead',
-    'DeiTClsHead',
-    'ConformerHead',
-    'EfficientFormerClsHead',
-    'ArcFaceClsHead',
-    'CSRAClsHead',
-    'MultiTaskHead',
-    'LeViTClsHead',
-    'VigClsHead',
-    'DisAlignLinearClsHead'
+    'ClsHead', 'LinearClsHead', 'StackedLinearClsHead', 'MultiLabelClsHead',
+    'MultiLabelLinearClsHead', 'VisionTransformerClsHead', 'DeiTClsHead',
+    'ConformerHead', 'EfficientFormerClsHead', 'ArcFaceClsHead', 'CSRAClsHead',
+    'MultiTaskHead', 'LeViTClsHead', 'VigClsHead', 'DisAlignLinearClsHead'
 ]
