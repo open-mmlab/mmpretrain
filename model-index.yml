@@ -51,4 +51,3 @@ Import:
   - configs/convnext_v2/metafile.yml
   - configs/levit/metafile.yml
   - configs/vig/metafile.yml
-  - configs/disalign/metafile.yml
