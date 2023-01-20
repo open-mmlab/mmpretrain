@@ -1,0 +1,47 @@
+Collections:
+  - Name: Disalign
+    Metadata:
+      Training Data: ImageNet-LT
+      Training Techniques:
+        - SGD with Momentum
+        - Weight Decay
+      Training Resources: 8x RTX3090 GPUs
+      Epochs: 100
+      Batch Size: 256
+      Architecture:
+        - ResNeXt
+    Paper:
+      URL: https://openaccess.thecvf.com/content/CVPR2021/papers/Zhang_Distribution_Alignment_A_Unified_Framework_for_Long-Tail_Visual_Recognition_CVPR_2021_paper.pdf
+      Title: "Distribution Alignment: A Unified Framework for Long-tail Visual Recognition"
+    README: configs/disalign/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/pull/1317
+      Version: v0.1.0
+
+Models:
+  - Name: resnext50-32x4d_8xb32_in1k_imagenet_lt_cj
+    Metadata:
+      FLOPs: 4.257G
+      Parameters: 25.029G
+    In Collection: ResNeXt
+    Results:
+      - Dataset: ImageNet-LT
+        Metrics:
+          Top 1 Accuracy: 44.21
+          Top 5 Accuracy: 69.66
+        Task: Image Classification
+    Weights: https://pan.baidu.com/s/16y9dYqTlk1L-CsHDnEJElw
+    Config: configs/disalign/resnext50-32x4d_8xb32_in1k_imagenet_lt_cj.py
+  - Name: resnext50-32x4d_8xb32_in1k_imagenet_lt_cj
+    Metadata:
+      FLOPs: 4.257G
+      Parameters: 25.033M
+    In Collection: ResNeXt
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 48.08
+          Top 5 Accuracy: 72.66
+        Task: Image Classification
+    Weights: https://pan.baidu.com/s/16y9dYqTlk1L-CsHDnEJElw
+    Config: configs/disalign/resnext50-32x4d_8xb32_in1k_imagenet_lt_disalign_final_cj.py
