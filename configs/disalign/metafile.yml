@@ -21,8 +21,8 @@ Collections:
 Models:
   - Name: resnext50-32x4d_8xb32_in1k_imagenet_lt_cj
     Metadata:
-      FLOPs: 4.257G
-      Parameters: 25.029G
+      FLOPs: 4257000000
+      Parameters: 25029000000
     In Collection: ResNeXt
     Results:
       - Dataset: ImageNet-LT
@@ -34,8 +34,8 @@ Models:
     Config: configs/disalign/resnext50-32x4d_8xb32_in1k_imagenet_lt_cj.py
   - Name: resnext50-32x4d_8xb32_in1k_imagenet_lt_cj
     Metadata:
-      FLOPs: 4.257G
-      Parameters: 25.033M
+      FLOPs: 4257000000
+      Parameters: 25033000000
     In Collection: ResNeXt
     Results:
       - Dataset: ImageNet-1k
