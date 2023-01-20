@@ -49,4 +49,3 @@ Import:
   - configs/mixmim/metafile.yml
   - configs/efficientnet_v2/metafile.yml
   - configs/convnext_v2/metafile.yml
-  - configs/disalign/metafile.yml
