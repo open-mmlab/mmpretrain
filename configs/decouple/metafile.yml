@@ -1,0 +1,67 @@
+Collections:
+  - Name: Decouple
+    Metadata:
+      Training Data: ImageNet-LT
+      Architecture:
+        - Classifier Re-training (cRT)
+        - τ-normalized classifier (τ-normalized)
+        - Learnable weight scaling (LWS)
+    Paper:
+      URL: https://arxiv.org/abs/1910.09217
+      Title: 'Decoupling Representation and Classifier for Long-Tailed Recognition'
+    README: configs/decouple/README.md
+    Code:
+      Version: v1.0.0rc4
+      URL:
+        - https://github.com/open-mmlab/mmclassification/blob/v1.0.0rc4/mmcls/models/heads/linear_head.py
+        - https://github.com/open-mmlab/mmclassification/blob/v1.0.0rc4/mmcls/engine/hooks/tau_norm_hook.py
+
+Models:
+  - Name: resnext50_decouple-representation_8xb128-instance-balanced_imagenet-lt
+    Metadata:
+      FLOPs: 5561000000
+      Parameters: 25029000
+    In Collection: Decouple
+    Results:
+      - Dataset: ImageNet-LT
+        Metrics:
+          Top 1 Accuracy: 46.15
+        Task: Image Classification
+    Weights: https://drive.google.com/file/d/1RNoW9KkMI07wdyEmYtmibvDkxGM_D3yx/view?usp=sharing
+    Config: configs/decouple/resnext50_decouple-representation_8xb128-instance-balanced_imagenet-lt.py
+  - Name: resnext50_decouple-classifier_8xb128-crt_imagenet-lt
+    Metadata:
+      FLOPs: 5561000000
+      Parameters: 25029000
+    In Collection: Decouple
+    Results:
+      - Dataset: ImageNet-LT
+        Metrics:
+          Top 1 Accuracy: 48.40
+        Task: Image Classification
+    Weights: https://drive.google.com/file/d/1TD6NXzdpQGuyHx2MbDVXyQn0KOBHVYlv/view?usp=sharing
+    Config: configs/decouple/resnext50_decouple-classifier_8xb128-crt_imagenet-lt.py
+  - Name: resnext50_decouple-classifier_1xb512-tau_imagenet-lt
+    Metadata:
+      FLOPs: 5561000000
+      Parameters: 25029000
+    In Collection: Decouple
+    Results:
+      - Dataset: ImageNet-LT
+        Metrics:
+          Top 1 Accuracy: 50.25
+        Task: Image Classification
+    Weights: https://drive.google.com/file/d/1RNoW9KkMI07wdyEmYtmibvDkxGM_D3yx/view?usp=sharing
+    Config: configs/decouple/resnext50_decouple-classifier_1xb512-tau_imagenet-lt.py
+  - Name: resnext50_decouple-classifier_8xb128-lws_imagenet-lt
+    Metadata:
+      FLOPs: 5561000000
+      Parameters: 25300000
+    In Collection: Decouple
+    Results:
+      - Dataset: ImageNet-LT
+        Metrics:
+          Top 1 Accuracy: 48.47
+        Task: Image Classification
+    Weights: https://drive.google.com/file/d/1XUyaJ4GKtF_vMsijsKFQISg9rP-xyO0e/view?usp=share_link
+    Config: configs/decouple/resnext50_decouple-classifier_8xb128-lws_imagenet-lt.py
