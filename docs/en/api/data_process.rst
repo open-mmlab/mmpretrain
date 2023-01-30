@@ -56,6 +56,7 @@ Processing and Augmentation
 .. autosummary::
    :toctree: generated
    :nosignatures:
+   :template: data_transform.rst
 
    Albumentations
    ColorJitter
@@ -75,6 +76,7 @@ augmentation transforms, such as ``AutoAugment`` and ``RandAugment``.
 .. autosummary::
    :toctree: generated
    :nosignatures:
+   :template: data_transform.rst
 
    AutoAugment
    RandAugment
@@ -104,6 +106,7 @@ And you can also configure a group of policies manually by selecting from the be
 .. autosummary::
    :toctree: generated
    :nosignatures:
+   :template: data_transform.rst
 
    AutoContrast
    Brightness
@@ -127,6 +130,7 @@ Formatting
 .. autosummary::
    :toctree: generated
    :nosignatures:
+   :template: data_transform.rst
 
    Collect
    PackClsInputs
