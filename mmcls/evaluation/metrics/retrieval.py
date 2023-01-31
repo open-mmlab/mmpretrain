@@ -128,8 +128,7 @@ class RetrievalRecall(BaseMetric):
         """
         result_metrics = dict()
         for i, k in enumerate(self.topk):
-            recall_at_k = sum([res[i].item()
-                               for res in self.results]) / len(results)
+            recall_at_k = sum([r[i].item() for r in results]) / len(results)
             result_metrics[f'Recall@{k}'] = recall_at_k
 
         return result_metrics

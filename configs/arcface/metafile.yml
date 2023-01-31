@@ -13,7 +13,7 @@ Collections:
       URL: https://github.com/open-mmlab/mmclassification/blob/v1.0.0rc3/mmcls/models/heads/margin_head.py
 
 Models:
-  - Name: resnet50-mil-arcface_inshop
+  - Name: resnet50-arcface_inshop
     Metadata:
       FLOPs: 16571226112
       Parameters: 31693888
@@ -21,7 +21,7 @@ Models:
     Results:
       - Dataset: InShop
         Metrics:
-          Recall@1: 87.22
+          Recall@1: 87.04
         Task: Metric Learning
-    Weights:
-    Config: configs/arcface/resnet50-mil-arcface_8xb32_inshop.py
+    Weights: https://download.openmmlab.com/mmclassification/v0/arcface/resnet50-arcface_inshop_20230131-b54efbf2.pth
+    Config: configs/arcface/resnet50-arcface_8xb32_inshop.py

@@ -37,7 +37,7 @@ default_hooks = dict(
 
 # optimizer
 optim_wrapper = dict(
-    optimizer=dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0005))
+    optimizer=dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0005, nesterov=True))
 
 auto_scale_lr = dict(enable=True, base_batch_size=256)
 
