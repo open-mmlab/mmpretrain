@@ -207,7 +207,7 @@
            pre_logits = self.pre_logits(feats)
 
            # 完成最后的分类头
-           cls_score = self.fc(pre_logits)
+           cls_score = self.fc2(pre_logits)
            return cls_score
    ```
 
