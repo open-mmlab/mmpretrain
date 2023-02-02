@@ -73,13 +73,13 @@ class TestRetrievalRecall(TestCase):
 
         # test with topk is 5
         y_pred = np.array([np.linspace(0.95, 0.05, 10)] * 2)
-        recall_score = RetrievalRecall.calculate(y_pred, y_true, topk=5)
+        recall_score = RetrievalRecall.calculate(y_pred, y_true, topk=2)
         expect_recall = 100.
         self.assertEqual(recall_score[0].item(), expect_recall)
 
-        # test with topk is (1, 2)
+        # test with topk is (1, 5)
         y_pred = np.array([np.linspace(0.95, 0.05, 10)] * 2)
-        recall_score = RetrievalRecall.calculate(y_pred, y_true, topk=(1, 2))
+        recall_score = RetrievalRecall.calculate(y_pred, y_true, topk=(1, 5))
         expect_recalls = [50., 100.]
         self.assertEqual(len(recall_score), len(expect_recalls))
         for i in range(len(expect_recalls)):

@@ -37,8 +37,35 @@ default_hooks = dict(
 
 # optimizer
 optim_wrapper = dict(
-    optimizer=dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0005, nesterov=True))
+    optimizer=dict(
+        type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0005, nesterov=True))
+
+# learning policy
+param_scheduler = [
+    # warm up learning rate scheduler
+    dict(
+        type='LinearLR',
+        start_factor=0.01,
+        by_epoch=True,
+        begin=0,
+        end=5,
+        # update by iter
+        convert_to_iter_based=True),
+    # main learning rate scheduler
+    dict(
+        type='CosineAnnealingLR',
+        T_max=45,
+        by_epoch=True,
+        begin=5,
+        end=50,
+    )
+]
+
+train_cfg = dict(by_epoch=True, max_epochs=50, val_interval=1)
 
 auto_scale_lr = dict(enable=True, base_batch_size=256)
 
-custom_hooks = [dict(type='PrepareProtoBeforeValLoopHook')]
+custom_hooks = [
+    dict(type='PrepareProtoBeforeValLoopHook'),
+    dict(type='SyncBuffersHook')
+]

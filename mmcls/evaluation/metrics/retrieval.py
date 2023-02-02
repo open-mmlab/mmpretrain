@@ -93,28 +93,25 @@ class RetrievalRecall(BaseMetric):
             data_batch (Sequence[dict]): A batch of data from the dataloader.
             predictions (Sequence[dict]): A batch of outputs from the model.
         """
-        batch_pred_score, batch_gt_score = [], []
         for data_sample in data_samples:
             pred_label = data_sample['pred_label']
             gt_label = data_sample['gt_label']
 
-            batch_pred_score.append(pred_label['score'].clone())
-            num_classes = pred_label['score'].size()[-1]
-
+            pred = pred_label['score'].clone()
             if 'score' in gt_label:
-                batch_gt_score.append(gt_label['score'].clone())
+                target = gt_label['score'].clone()
             else:
-                batch_gt_score.append(
-                    LabelData.label_to_onehot(gt_label['label'], num_classes))
+                num_classes = pred_label['score'].size()[-1]
+                target = LabelData.label_to_onehot(gt_label['label'],
+                                                   num_classes)
 
-        # Because the retrieval logit vector will be much larger compared to
-        # the normal classification, to save resources, the evaluation results
-        # are computed each batch here and then reduce all results at the end.
-        target = torch.stack(batch_gt_score)
-        pred = torch.stack(batch_pred_score)
-        result = RetrievalRecall.calculate(pred, target, topk=self.topk)
-
-        self.results.append(result)
+            # Because the retrieval output logit vector will be much larger
+            # compared to the normal classification, to save resources, the
+            # evaluation results are computed each batch here and then reduce
+            #  all results at the end.
+            result = RetrievalRecall.calculate(
+                pred.unsqueeze(0), target.unsqueeze(0), topk=self.topk)
+            self.results.append(result)
 
     def compute_metrics(self, results: List):
         """Compute the metrics from processed results.

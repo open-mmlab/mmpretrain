@@ -9,7 +9,7 @@ data_preprocessor = dict(
 
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='Resize', scale=600),
+    dict(type='Resize', scale=512),
     dict(type='RandomCrop', crop_size=448),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(type='PackClsInputs'),
@@ -17,7 +17,7 @@ train_pipeline = [
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='Resize', scale=600),
+    dict(type='Resize', scale=512),
     dict(type='CenterCrop', crop_size=448),
     dict(type='PackClsInputs'),
 ]
