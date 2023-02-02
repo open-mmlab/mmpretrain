@@ -88,6 +88,9 @@ class Accuracy(BaseMetric):
             names to disambiguate homonymous metrics of different evaluators.
             If prefix is not provided in the argument, self.default_prefix
             will be used instead. Defaults to None.
+        meta_file_path (str, optional): The path of the meta file. This file
+            will be used in evaluating the fine-tuned model on OOD dataset,
+            e.g. ImageNet-A. Defaults to None.
 
     Examples:
         >>> import torch
@@ -124,7 +127,8 @@ class Accuracy(BaseMetric):
                  topk: Union[int, Sequence[int]] = (1, ),
                  thrs: Union[float, Sequence[Union[float, None]], None] = 0.,
                  collect_device: str = 'cpu',
-                 prefix: Optional[str] = None) -> None:
+                 prefix: Optional[str] = None,
+                 meta_file_path: Optional[str] = None) -> None:
         super().__init__(collect_device=collect_device, prefix=prefix)
 
         if isinstance(topk, int):
@@ -136,6 +140,18 @@ class Accuracy(BaseMetric):
             self.thrs = (thrs, )
         else:
             self.thrs = tuple(thrs)
+
+        # generate label mask
+        if meta_file_path is not None:
+            with open(meta_file_path, 'r') as f:
+                labels = [
+                    int(item.strip().split()[-1]) for item in f.readlines()
+                ]
+            label_dict = {label: 1 for label in labels}
+            self.label_mask = torch.tensor(
+                [1 if i in label_dict else 0 for i in range(1000)]).cpu()
+        else:
+            self.label_mask = torch.tensor([1] * 1000).cpu()
 
     def process(self, data_batch, data_samples: Sequence[dict]):
         """Process one batch of data samples.
@@ -153,7 +169,8 @@ class Accuracy(BaseMetric):
             pred_label = data_sample['pred_label']
             gt_label = data_sample['gt_label']
             if 'score' in pred_label:
-                result['pred_score'] = pred_label['score'].cpu()
+                result['pred_score'] = pred_label['score'].cpu(
+                ) * self.label_mask
             else:
                 result['pred_label'] = pred_label['label'].cpu()
             result['gt_label'] = gt_label['label'].cpu()
