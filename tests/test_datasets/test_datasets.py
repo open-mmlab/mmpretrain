@@ -957,14 +957,14 @@ class TestInShop(TestBaseDataset):
             f.write('\n'.join([
                 '8',
                 'image_name item_id evaluation_status',
-                'img/02_1_front.jpg id_00000002 train',
-                'img/02_2_side.jpg id_00000002 train',
-                'img/12_3_back.jpg id_00007982 gallery',
-                'img/12_7_additional.jpg id_00007982 gallery',
-                'img/13_1_front.jpg id_00007982 query',
-                'img/13_2_side.jpg id_00007983 gallery',
-                'img/13_3_back.jpg id_00007983 query ',
-                'img/13_7_additional.jpg id_00007983 query',
+                f'{osp.join("img", "02_1_front.jpg")} id_00000002 train',
+                f'{osp.join("img", "02_2_side.jpg")} id_00000002 train',
+                f'{osp.join("img", "12_3_back.jpg")} id_00007982 gallery',
+                f'{osp.join("img", "12_7_addition.jpg")} id_00007982 gallery',
+                f'{osp.join("img", "13_1_front.jpg")} id_00007982 query',
+                f'{osp.join("img", "13_2_side.jpg")} id_00007983 gallery',
+                f'{osp.join("img", "13_3_back.jpg")} id_00007983 query ',
+                f'{osp.join("img", "13_7_additional.jpg")} id_00007983 query',
             ]))
 
     def test_initialize(self):
