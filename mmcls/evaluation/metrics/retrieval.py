@@ -30,6 +30,8 @@ class RetrievalRecall(BaseMetric):
             will be used instead. Defaults to None.
 
     Examples:
+        Use in the code:
+
         >>> import torch
         >>> from mmcls.evaluation import RetrievalRecall
         >>> # -------------------- The Basic Usage --------------------
@@ -61,10 +63,9 @@ class RetrievalRecall(BaseMetric):
 
         Use in OpenMMLab configs:
 
-        ```python
-        dict(type='RetrievalRecall', topk=(1, 5))
-        ```
+        .. code:: python
 
+            dict(type='RetrievalRecall', topk=(1, 5))
     """
     default_prefix: Optional[str] = 'retrieval'
 

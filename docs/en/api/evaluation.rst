@@ -34,7 +34,7 @@ Multi Label Metric
    VOCAveragePrecision
    VOCMultiLabelMetric
 
-Retriever Metric
+Retrieval Metric
 ----------------------
 
 .. autosummary::
@@ -42,4 +42,4 @@ Retriever Metric
    :nosignatures:
    :template: classtemplate.rst
 
-   RetrieverRecall
+   RetrievalRecall
