@@ -228,3 +228,53 @@ It's because our training schedule is for a batch size of 128. If using 8 GPUs,
 just use `batch_size=16` config in the base config file for every GPU, and the total batch
 size will be 128. But if using one GPU, you need to change it to 128 manually to
 match the training schedule.
+
+## Evaluate the fine-tuned model on ImageNet variants
+
+It's a common practice to evaluate the ImageNet-(1K, 21K) fine-tuned model the ImageNet-1K validation set. This set
+shares similar data distribution with the training set, but in real world, the inference data is more likely to share
+different data distribution with the training set. To have a full evaluation of model's performance on
+out-of-distribution datasets, research community introduces the ImageNet-variant datasets, which shares different data
+distribution with that of ImageNet-(1K, 21K). Currently, MMClassification supports evaluating the fine-tuned model on
+[ImageNet-A](https://arxiv.org/pdf/1907.07174v4.pdf), [ImageNet-R](https://arxiv.org/pdf/2006.16241v3.pdf), and
+[ImageNet-S](https://arxiv.org/pdf/2106.03149v3.pdf). You can follow these steps below to have a try:
+
+### Prepare the datasets
+
+You can download these datasets from [OpenDataLab](https://opendatalab.com/) and refactor these datasets under the
+`data` folder in the following format:
+
+```text
+   imagenet-a
+        ├── meta
+        │   └── val.txt
+        ├── val
+   imagenet-r
+        ├── meta
+        │   └── val.txt
+        ├── val/
+   imagenet-s
+        ├── meta
+        │   └── val.txt
+        ├── val/
+```
+
+`val.txt` is the annotation file, which should have the same style as that of ImageNet-1K. You can refer to
+[prepare_dataset](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html) to generate the
+annotation file.
+
+### Modify the config file
+
+There are few modifications to the config file, but change the `data_root` of the test dataloader and pass the
+annotation file to the `test_evaluator`.
+
+```python
+test_dataloader=dict(dataset=dict(data_root='data/imagenet-x'))
+test_evaluator=dict(meta_file_path='data/imagenet-x/meta/val.txt')
+
+```
+
+### Start test
+
+This step is the common test step, you can follow this [guide](https://mmclassification.readthedocs.io/en/1.x/user_guides/train_test.html)
+to evaluate your fine-tuned model on out-of-distribution datasets.
