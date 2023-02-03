@@ -1,0 +1,27 @@
+Collections:
+  - Name: CheXNet
+    Metadata:
+      Training Data: ImageNet-1k
+      Architecture:
+        - DenseBlock
+    Paper:
+      URL: https://arxiv.org/abs/1711.05225v3
+      Title: "CheXNet: Radiologist-Level Pneumonia Detection on Chest X-Rays with Deep Learning"
+    README: configs/chexnet/README.md
+
+Models:
+  - Name: chexnet_nih-chestxrays
+    Metadata:
+      FLOPs: 2864522752
+      Parameters: 6968206
+    In Collection: CheXNet
+    Results:
+      - Dataset: NIHChestXRays
+        Metrics:
+          ROCAUC: 84.52
+        Task: Image Classification
+    Weights:
+    Config: configs/chexnet/chexnet_2xb256_nih_chestxrays.py
+    Converted From:
+      Weights: https://github.com/arnoweng/CheXNet/blob/master/model.pth.tar
+      Code: https://github.com/pytorch/vision/blob/main/torchvision/models/densenet.py

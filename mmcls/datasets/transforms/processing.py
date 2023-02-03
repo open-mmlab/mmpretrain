@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import copy
 import inspect
 import math
 import numbers
@@ -8,6 +9,8 @@ from typing import Dict, List, Optional, Sequence, Tuple, Union
 import mmcv
 import mmengine
 import numpy as np
+import torch
+import torchvision.transforms.functional as F
 from mmcv.transforms import BaseTransform
 from mmcv.transforms.utils import cache_randomness
 
@@ -1191,4 +1194,73 @@ class Albumentations(BaseTransform):
         """
         repr_str = self.__class__.__name__
         repr_str += f'(transforms={repr(self.transforms)})'
+        return repr_str
+
+
+@TRANSFORMS.register_module()
+class TenCropTestTimeAug(BaseTransform):
+    """TenCrop Test-time augmentation transform. An example configuration is as
+    followed:
+
+    .. code-block::
+        dict(type='TenCropTestTimeAug',
+             size=224,
+             transforms=dict(type='PackClsInputs'))
+    After that, results are wrapped into lists of the same length as below:
+    .. code-block::
+        dict(
+            inputs=[...],
+            data_samples=[...]
+        )
+    The length of ``inputs`` and ``data_samples`` are both 10.
+    Required Keys:
+    - Depending on the requirements of the ``transforms`` parameter.
+    Modified Keys:
+    - All output keys of each transform.
+    Args:
+        size (sequence or int): Desired output size of the crop. If size is an
+            int instead of sequence like (h, w), a square crop (size, size) is
+            made. If provided a sequence of length 1, it will be interpreted as
+            (size[0], size[0]).
+        transforms (dict): Transforms to be applied to data sampled
+            from dataset.
+        vertical_flip (bool): Use vertical flipping instead of horizontal
+    """
+
+    def __init__(self, size, transforms: dict, vertical_flip: bool = False):
+        self.size = size
+        self.transforms = TRANSFORMS.build(transforms)
+        self.vertical_flip = vertical_flip
+
+    def transform(self, results: dict) -> dict:
+        """Apply TenCrop and transforms defined in :attr:`transforms` to the
+        results.
+
+        Args:
+            results (dict): Result dict contains the data to transform.
+        Returns:
+            dict: The augmented data, where each value is wrapped
+            into a list.
+        """
+
+        results_list = []  # type: ignore
+        imgs = F.ten_crop(
+            torch.Tensor(results['img']).permute(2, 0, 1), self.size,
+            self.vertical_flip)
+        for img in imgs:
+            result = copy.deepcopy(results)
+            result['img'] = img.permute(1, 2, 0).numpy()
+            result = self.transforms(result)
+            results_list.append(result)
+
+        aug_data_dict = {
+            key: [item[key] for item in results_list]  # type: ignore
+            for key in results_list[0]  # type: ignore
+        }
+        return aug_data_dict
+
+    def __repr__(self) -> str:
+        repr_str = self.__class__.__name__
+        repr_str += f'(size={self.size}, vertical_flip={self.vertical_flip},\n'
+        repr_str += f'transforms={repr(self.transforms)})'
         return repr_str

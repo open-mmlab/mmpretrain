@@ -129,6 +129,7 @@ venv.bak/
 /projects/*/data
 /mmcls/.mim
 .DS_Store
+tmp*
 
 # Pytorch
 *.pth
