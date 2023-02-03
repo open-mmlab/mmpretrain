@@ -16,8 +16,8 @@ We develop an algorithm that can detect pneumonia from chest X-rays at a level e
 
 ### ImageNet-1k
 
-| Model                                       |  Pretrain   | Params(M) | Flops(G) | ROCAUC |                  Config                   |  Download   |
-| :------------------------------------------ | :---------: | :-------: | :------: | :----: | :---------------------------------------: | :---------: |
-| CheXNet (`chexnet_2xb256_nih_chestxrays`)\* | ImageNet-1k |           |          | 84.52  | [config](./eva-g-p14_8xb16_in1k-336px.py) | [model](<>) |
+| Model                                      |  Pretrain   | Params(M) | Flops(G) | ROCAUC |                  Config                   |  Download   |
+| :----------------------------------------- | :---------: | :-------: | :------: | :----: | :---------------------------------------: | :---------: |
+| CheXNet (`chexnet_1xb16_nih_chestxrays`)\* | ImageNet-1k |           |          | 84.52  | [config](./eva-g-p14_8xb16_in1k-336px.py) | [model](<>) |
 
 *Models with * are converted from the [repo](https://github.com/arnoweng/CheXNet). The config files of these models are only for inference.*

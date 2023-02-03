@@ -21,7 +21,7 @@ Models:
           ROCAUC: 84.52
         Task: Image Classification
     Weights:
-    Config: configs/chexnet/chexnet_2xb256_nih_chestxrays.py
+    Config: configs/chexnet/chexnet_1xb16_nih_chestxrays.py
     Converted From:
       Weights: https://github.com/arnoweng/CheXNet/blob/master/model.pth.tar
       Code: https://github.com/pytorch/vision/blob/main/torchvision/models/densenet.py
