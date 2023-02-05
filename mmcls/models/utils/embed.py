@@ -161,7 +161,7 @@ class PatchEmbed(BaseModule):
         _conv_cfg.update(conv_cfg)
         self.projection = build_conv_layer(_conv_cfg, in_channels, embed_dims)
 
-        # Calculate how many patches a input image is splited to.
+        # Calculate how many patches a input image is splitted to.
         h_out, w_out = [(self.img_size[i] + 2 * self.projection.padding[i] -
                          self.projection.dilation[i] *
                          (self.projection.kernel_size[i] - 1) - 1) //
