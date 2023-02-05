@@ -22,7 +22,7 @@ You can use `wget https://github.com/open-mmlab/mmclassification/raw/master/demo
 ```python
 from mmcls import get_model, inference_model
 
-img_path = 'demo.JPEG'   # you can specify your own picture path
+img_path = './demo/demo.JPEG'   # you can specify your own picture path, here the default root path is the mmclassification
 
 # build the model from a config file and a checkpoint file
 model = get_model('resnet50_8xb32_in1k', pretrained=True, device="cpu")  # device can be 'cuda:0'
