@@ -26,7 +26,7 @@ able at https://github.com/facebookresearch/classifier-balancing.
 | :----------: | :-------: | :------: | :-------: | :-----------------------------------------------------------------------------------: | :---------: |
 |    Joint     |   25.03   |   5.56   |   46.15   | [config](./resnext50_decouple-representation_8xb128-instance-balanced_imagenet-lt.py) | [model](<>) |
 |     cRT      |   25.03   |   5.56   |   48.40   |          [config](./resnext50_decouple-classifier_8xb128-crt_imagenet-lt.py)          | [model](<>) |
-| τ-normalized |   25.03   |   5.56   |   50.25   |          [config](./resnext50_decouple-classifier_1xb512-tau_imagenet-lt.py)          | [model](<>) |
+| τ-normalized |   25.03   |   5.56   |   50.29   |          [config](./resnext50_decouple-classifier_1xb512-tau_imagenet-lt.py)          | [model](<>) |
 |     LWS      |   25.03   |   5.56   |   48.47   |          [config](./resnext50_decouple-classifier_8xb128-lws_imagenet-lt.py)          | [model](<>) |
 
 Note: cRT、LWS Inference accuracy is a bit lower than paper result Due to the difference between our implementation and the paper's implementation of class-balanced sampling.

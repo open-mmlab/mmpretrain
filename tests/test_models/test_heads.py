@@ -121,6 +121,44 @@ class TestLinearClsHead(TestCase):
         self.assertEqual(outs.shape, (4, 5))
 
 
+class TestTauNormHead(TestLinearClsHead):
+    DEFAULT_ARGS = dict(
+        type='TauNormHead', in_channels=10, num_classes=5, tau=1)
+    FAKE_FEATS = (torch.rand(4, 10), )
+
+    def test_initialize(self):
+        with self.assertRaisesRegex(ValueError, 'num_classes=-5 must be'):
+            MODELS.build({**self.DEFAULT_ARGS, 'num_classes': -5})
+        # test tau norm head tau
+        head = MODELS.build(self.DEFAULT_ARGS)
+        assert hasattr(head, 'tau')
+
+    def test_train(self):
+        head = MODELS.build(self.DEFAULT_ARGS)
+        head.train(False)
+        assert hasattr(head, 'normed_weights')
+
+    def test_pnorm(self):
+        eps = 1e-10
+        weights = torch.rand(4, 10)
+        head = MODELS.build(self.DEFAULT_ARGS)
+        normed_weights = head.pnorm(weights, 1)
+        assert torch.sum(
+            torch.abs(torch.norm(normed_weights, 2, 1) - 1) < eps) == 4
+
+
+class TestLWSHead(TestLinearClsHead):
+    DEFAULT_ARGS = dict(type='LWSHead', in_channels=10, num_classes=5)
+    FAKE_FEATS = (torch.rand(4, 10), )
+
+    def test_initialize(self):
+        with self.assertRaisesRegex(ValueError, 'num_classes=-5 must be'):
+            MODELS.build({**self.DEFAULT_ARGS, 'num_classes': -5})
+        # test tau norm head tau
+        head = MODELS.build(self.DEFAULT_ARGS)
+        assert hasattr(head, 'scales')
+
+
 class TestVisionTransformerClsHead(TestCase):
     DEFAULT_ARGS = dict(
         type='VisionTransformerClsHead', in_channels=10, num_classes=5)

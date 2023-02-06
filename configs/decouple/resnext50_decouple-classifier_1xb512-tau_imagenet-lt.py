@@ -5,4 +5,12 @@ _base_ = [
     '../_base_/default_runtime.py'
 ]
 
-custom_hooks = [dict(type='TauNormHook', tau=0.7)]
+model = dict(
+    head=dict(
+        type='TauNormHead',
+        num_classes=1000,
+        in_channels=2048,
+        tau=0.7,
+        loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
+        topk=(1, 5),
+    ))
