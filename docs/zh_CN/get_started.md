@@ -105,6 +105,11 @@ inference_model(model, 'demo/demo.JPEG')
 
 你会看到输出一个字典，包含预测的标签、得分及类别名。
 
+```{note}
+以上示例中，`resnet18_8xb32_in1k` 是模型名称。你可以使用 [`mmcls.list_models`](mmcls.apis.list_models) 接口来
+浏览所有的模型，或者在[模型汇总](./modelzoo_statistics.md)页面进行查找。
+```
+
 ## 自定义安装
 
 ### CUDA 版本

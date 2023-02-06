@@ -93,6 +93,11 @@ inference_model(model, 'demo/demo.JPEG')
 
 You will see a dict printed, including the predicted label, score and category name.
 
+```{note}
+The `resnet18_8xb32_in1k` is the model name, and you can use [`mmcls.list_models`](mmcls.apis.list_models) to
+explore all models, or search them on the [Model Zoo Summary](./modelzoo_statistics.md)
+```
+
 ## Customize Installation
 
 ### CUDA versions
