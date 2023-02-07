@@ -1,8 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import csv
+from io import StringIO
 from typing import List
 
-import pandas as pd
-from mmengine import get_file_backend, list_from_file
+from mmengine import fileio, get_file_backend, list_from_file
 
 from mmcls.registry import DATASETS
 from .categories import NIHChestXRays_CATEGORIES
@@ -39,21 +40,23 @@ class NIHChestXRays(MultiLabelDataset):
 
 
     Examples:
-        >>> from mmcls.datasets import CUB
-        >>> cub_train_cfg = dict(data_root='data/CUB_200_2011', test_mode=True)
-        >>> cub_train = CUB(**cub_train_cfg)
-        >>> cub_train
-        Dataset CUB
-        Number of samples:  5994
-        Number of categories:       200
-        Root of dataset:    data/CUB_200_2011
-        >>> cub_test_cfg = dict(data_root='data/CUB_200_2011', test_mode=True)
-        >>> cub_test = CUB(**cub_test_cfg)
-        >>> cub_test
-        Dataset CUB
-        Number of samples:  5794
-        Number of categories:       200
-        Root of dataset:    data/CUB_200_2011
+        >>> from mmcls.datasets import NIHChestXRays
+        >>> nih_train_cfg = dict(data_root='data/nih-chestxrays',
+        >>>                      train_test_split_file='train_val_list.txt')
+        >>> nih_train = NIHChestXRays(**nih_train_cfg)
+        >>> nih_train
+        Dataset NIHChestXRays
+            Number of samples:  86524
+            Number of categories:       14
+            Root of dataset:    data/nih-chestxrays
+        >>> nih_test_cfg = dict(data_root='data/nih-chestxrays',
+        >>>                     train_test_split_file='test_list.txt')
+        >>> nih_test = NIHChestXRays(**nih_test_cfg)
+        >>> nih_test
+        Dataset NIHChestXRays
+            Number of samples:  25596
+            Number of categories:       14
+            Root of dataset:    data/nih-chestxrays
     """  # noqa: E501
 
     METAINFO = {'classes': NIHChestXRays_CATEGORIES}
@@ -73,21 +76,30 @@ class NIHChestXRays(MultiLabelDataset):
             data_prefix=data_prefix,
             **kwargs)
 
+    def _load_csv_ann(self, csv_file):
+        ann_dict = dict()
+        data = fileio.get(csv_file)
+        data = StringIO(data.decode('utf-8'), newline='')
+        csv_reader = csv.reader(data)
+
+        for row in csv_reader:
+            # the format of the csv file:
+            # Image Index, Finding Labels, .......
+            ann_dict[row[0]] = row[1]
+        return ann_dict
+
     def load_data_list(self):
         """Load images and ground truth labels."""
-        anns = pd.read_csv(self.ann_file)
-
+        anns = self._load_csv_ann(self.ann_file)
         filenames = list_from_file(self.train_test_split_file)
 
         data_list = []
         for img_path in filenames:
-            labels = anns[anns['Image Index'] ==
-                          img_path]['Finding Labels'].values
-            assert len(labels) == 1
+            # finding_labels are joined by '|' like fllowing:
             # 'Cardiomegaly|Emphysema' -> ['Cardiomegaly', 'Emphysema']
-            labels = labels[0].split('|')
+            finding_labels = anns[img_path].split('|')
             gt_labels = set()
-            for label in labels:
+            for label in finding_labels:
                 if label != 'No Finding':
                     gt_labels.add(self.CLASSES.index(label))
 
