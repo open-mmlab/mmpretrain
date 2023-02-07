@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
 from typing import List, Optional, Union
+
 from pycocotools.coco import COCO as _COCO
 
 from mmcls.registry import DATASETS
@@ -54,9 +55,9 @@ class COCO(MultiLabelDataset):
                  **kwargs):
         if isinstance(data_prefix, str):
             data_prefix = dict(img_path=expanduser(data_prefix))
-            
+
         assert 'val2017' in data_prefix or 'train2017' in data_prefix
-        
+
         data_root = os.path.dirname(data_prefix)
         self.data_prefix = data_prefix
         self.ann_file = ann_file
@@ -69,29 +70,27 @@ class COCO(MultiLabelDataset):
             test_mode=test_mode,
             **kwargs)
 
-
     def _get_labels_from_coco(self, img_id):
         """Get gt_labels and labels_crowd from COCO object."""
-        
+
         info = self.coco.loadImgs([img_id])[0]
         ann_ids = self.coco.getAnnIds(imgIds=[img_id])
         ann_info = self.coco.loadAnns(ann_ids)
         labels = [self.cat2label[ann['category_id']] for ann in ann_info]
         labels_crowd = [
-                self.cat2label[ann['category_id']] for ann in ann_info
-                if ann['iscrowd']
-            ]
-        
+            self.cat2label[ann['category_id']] for ann in ann_info
+            if ann['iscrowd']
+        ]
+
         labels, labels_crowd = set(labels), set(labels_crowd)
         img_path = info['file_name']
 
         return list(labels), list(labels_crowd), img_path
 
-
     def load_data_list(self):
         """Load images and ground truth labels."""
         data_list = []
-        
+
         self.coco = _COCO(self.ann_file)
         # The order of returned `cat_ids` will not
         # change with the order of the CLASSES
@@ -100,9 +99,9 @@ class COCO(MultiLabelDataset):
         self.img_ids = self.coco.getImgIds()
 
         for img_id in self.img_ids:
-            
+
             labels, labels_crowd, img_path = self._get_labels_from_coco(img_id)
-            
+
             img_path = os.path.join(self.data_prefix['img_path'], img_path)
 
             info = dict(

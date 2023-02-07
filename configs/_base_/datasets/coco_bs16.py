@@ -33,7 +33,7 @@ train_dataloader = dict(
     dataset=dict(
         type=dataset_type,
         ann_file=data_root + 'annotations/instances_val2017.json',
-        data_prefix=data_root + 'val2017/',
+        data_prefix=data_root + 'train2017/',
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=True),
 )
