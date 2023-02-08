@@ -168,6 +168,7 @@ class Accuracy(BaseMetric):
             result = dict()
             pred_label = data_sample['pred_label']
             gt_label = data_sample['gt_label']
+            result['img_path'] = data_sample['img_path']
             if 'score' in pred_label:
                 result['pred_score'] = pred_label['score'].cpu(
                 ) * self.label_mask
