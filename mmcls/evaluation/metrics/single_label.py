@@ -602,9 +602,11 @@ class ConfusionMatrix(BaseMetric):
             will be used instead. Defaults to None.
 
     Examples:
+
+        1. The basic usage.
+
         >>> import torch
         >>> from mmcls.evaluation import ConfusionMatrix
-        >>> # -------------------- The Basic Usage --------------------
         >>> y_pred = [0, 1, 1, 3]
         >>> y_true = [0, 2, 1, 3]
         >>> ConfusionMatrix.calculate(y_pred, y_true, num_classes=4)
@@ -619,22 +621,13 @@ class ConfusionMatrix(BaseMetric):
         >>> matrix = ConfusionMatrix.calculate(y_score, y_true)
         >>> ConfusionMatrix().plot(matrix)
         >>> plt.show()
-        >>>
-        >>> # ------------------- Use with Evalutor -------------------
-        >>> from mmcls.structures import ClsDataSample
-        >>> from mmengine.evaluator import Evaluator
-        >>> data_samples = [
-        ...     ClsDataSample().set_gt_label(i%5).set_pred_score(torch.rand(5))
-        ...     for i in range(1000)
-        ... ]
-        >>> evaluator = Evaluator(metrics=ConfusionMatrix())
-        >>> evaluator.process(data_samples)
-        >>> evaluator.evaluate(1000)
-        {'confusion_matrix/result': tensor([[37, 37, 48, 43, 35],
-                 [35, 51, 32, 46, 36],
-                 [45, 28, 39, 42, 46],
-                 [42, 40, 40, 35, 43],
-                 [40, 39, 41, 37, 43]])}
+
+        2. In the config file
+
+        .. code:: python
+
+            val_evaluator = dict(type='ConfusionMatrix')
+            test_evaluator = dict(type='ConfusionMatrix')
     """  # noqa: E501
     default_prefix = 'confusion_matrix'
 
