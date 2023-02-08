@@ -19,7 +19,6 @@ Single Label Metric
 .. autosummary::
    :toctree: generated
    :nosignatures:
-   :template: classtemplate.rst
 
    Accuracy
    SingleLabelMetric
@@ -29,7 +28,6 @@ Multi Label Metric
 .. autosummary::
    :toctree: generated
    :nosignatures:
-   :template: classtemplate.rst
 
    AveragePrecision
    MultiLabelMetric

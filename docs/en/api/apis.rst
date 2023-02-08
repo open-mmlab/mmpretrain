@@ -16,14 +16,26 @@ These are some high-level APIs for classification tasks.
 Model
 ------------------
 
-.. autofunction:: list_models
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
 
-.. autofunction:: get_model
-
-.. autofunction:: init_model
-
+   list_models
+   get_model
+   init_model
 
 Inference
 ------------------
 
-.. autofunction:: inference_model
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: callable.rst
+
+   ImageClassificationInferencer
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+
+   inference_model
