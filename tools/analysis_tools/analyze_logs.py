@@ -2,37 +2,40 @@
 import argparse
 import os
 import re
+from itertools import groupby
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 from mmcls.utils import load_json_log
 
-TEST_METRICS = ('precision', 'recall', 'f1_score', 'support', 'mAP', 'CP',
-                'CR', 'CF1', 'OP', 'OR', 'OF1', 'accuracy')
-
 
 def cal_train_time(log_dicts, args):
     """Compute the average time per training iteration."""
     for i, log_dict in enumerate(log_dicts):
         print(f'{"-" * 5}Analyze train time of {args.json_logs[i]}{"-" * 5}')
-        all_times = []
-        for epoch in log_dict.keys():
-            if args.include_outliers:
-                all_times.append(log_dict[epoch]['time'])
-            else:
-                all_times.append(log_dict[epoch]['time'][1:])
-        all_times = np.array(all_times)
-        epoch_ave_time = all_times.mean(-1)
-        slowest_epoch = epoch_ave_time.argmax()
-        fastest_epoch = epoch_ave_time.argmin()
-        std_over_epoch = epoch_ave_time.std()
-        print(f'slowest epoch {slowest_epoch + 1}, '
-              f'average time is {epoch_ave_time[slowest_epoch]:.4f}')
-        print(f'fastest epoch {fastest_epoch + 1}, '
-              f'average time is {epoch_ave_time[fastest_epoch]:.4f}')
-        print(f'time std over epochs is {std_over_epoch:.4f}')
-        print(f'average iter time: {np.mean(all_times):.4f} s/iter')
+        train_logs = log_dict['train']
+
+        if 'epoch' in train_logs[0]:
+            epoch_ave_times = []
+            for _, logs in groupby(train_logs, lambda log: log['epoch']):
+                if args.include_outliers:
+                    all_time = np.array([log['time'] for log in logs])
+                else:
+                    all_time = np.array([log['time'] for log in logs])[1:]
+                epoch_ave_times.append(all_time.mean())
+            epoch_ave_times = np.array(epoch_ave_times)
+            slowest_epoch = epoch_ave_times.argmax()
+            fastest_epoch = epoch_ave_times.argmin()
+            std_over_epoch = epoch_ave_times.std()
+            print(f'slowest epoch {slowest_epoch + 1}, '
+                  f'average time is {epoch_ave_times[slowest_epoch]:.4f}')
+            print(f'fastest epoch {fastest_epoch + 1}, '
+                  f'average time is {epoch_ave_times[fastest_epoch]:.4f}')
+            print(f'time std over epochs is {std_over_epoch:.4f}')
+
+        avg_iter_time = np.array([log['time'] for log in train_logs]).mean()
+        print(f'average iter time: {avg_iter_time:.4f} s/iter')
         print()
 
 
@@ -52,35 +55,27 @@ def get_legends(args):
     return legend
 
 
-def plot_phase_train(metric, log_dict, epochs, curve_label, json_log):
-    """plot phase of train cruve."""
-    if metric not in log_dict[epochs[0]]:
-        raise KeyError(f'{json_log} does not contain metric {metric}'
-                       f' in train mode')
-    xs, ys = [], []
-    for epoch in epochs:
-        iters = log_dict[epoch]['iter']
-        if log_dict[epoch]['mode'][-1] == 'val':
-            iters = iters[:-1]
-        num_iters_per_epoch = iters[-1]
-        assert len(iters) > 0, (
-            'The training log is empty, please try to reduce the '
-            'interval of log in config file.')
-        xs.append(np.array(iters) / num_iters_per_epoch + (epoch - 1))
-        ys.append(np.array(log_dict[epoch][metric][:len(iters)]))
-    xs = np.concatenate(xs)
-    ys = np.concatenate(ys)
-    plt.xlabel('Epochs')
+def plot_phase_train(metric, train_logs, curve_label):
+    """plot phase of train curve."""
+    xs = np.array([log['step'] for log in train_logs])
+    ys = np.array([log[metric] for log in train_logs])
+
+    if 'epoch' in train_logs[0]:
+        scale_factor = train_logs[-1]['step'] / train_logs[-1]['epoch']
+        xs = xs / scale_factor
+        plt.xlabel('Epochs')
+    else:
+        plt.xlabel('Iters')
+
     plt.plot(xs, ys, label=curve_label, linewidth=0.75)
 
 
-def plot_phase_val(metric, log_dict, epochs, curve_label, json_log):
-    """plot phase of val cruves."""
-    # some epoch may not have evaluation. as [(train, 5),(val, 1)]
-    xs = [e for e in epochs if metric in log_dict[e]]
-    ys = [log_dict[e][metric] for e in xs if metric in log_dict[e]]
-    assert len(xs) > 0, (f'{json_log} does not contain metric {metric}')
-    plt.xlabel('Epochs')
+def plot_phase_val(metric, val_logs, curve_label):
+    """plot phase of val curve."""
+    xs = np.array([log['step'] for log in val_logs])
+    ys = np.array([log[metric] for log in val_logs])
+
+    plt.xlabel('Steps')
     plt.plot(xs, ys, label=curve_label, linewidth=0.75)
 
 
@@ -88,16 +83,23 @@ def plot_curve_helper(log_dicts, metrics, args, legend):
     """plot curves from log_dicts by metrics."""
     num_metrics = len(metrics)
     for i, log_dict in enumerate(log_dicts):
-        epochs = list(log_dict.keys())
-        for j, metric in enumerate(metrics):
+        for j, key in enumerate(metrics):
             json_log = args.json_logs[i]
-            print(f'plot curve of {json_log}, metric is {metric}')
+            print(f'plot curve of {json_log}, metric is {key}')
             curve_label = legend[i * num_metrics + j]
-            if any(m in metric for m in TEST_METRICS):
-                plot_phase_val(metric, log_dict, epochs, curve_label, json_log)
+
+            train_keys = {} if len(log_dict['train']) == 0 else set(
+                log_dict['train'][0].keys()) - {'step', 'epoch'}
+            val_keys = {} if len(log_dict['val']) == 0 else set(
+                log_dict['val'][0].keys()) - {'step'}
+
+            if key in val_keys:
+                plot_phase_val(key, log_dict['val'], curve_label)
+            elif key in train_keys:
+                plot_phase_train(key, log_dict['train'], curve_label)
             else:
-                plot_phase_train(metric, log_dict, epochs, curve_label,
-                                 json_log)
+                raise ValueError(f'Invalid key "{key}", please choose from '
+                                 f'{set.union(train_keys, val_keys)}.')
             plt.legend()
 
 
@@ -208,7 +210,10 @@ def main():
 
     log_dicts = [load_json_log(json_log) for json_log in json_logs]
 
-    eval(args.task)(log_dicts, args)
+    if args.task == 'cal_train_time':
+        cal_train_time(log_dicts, args)
+    elif args.task == 'plot_curve':
+        plot_curve(log_dicts, args)
 
 
 if __name__ == '__main__':
