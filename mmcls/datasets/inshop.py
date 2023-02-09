@@ -147,13 +147,6 @@ class InShop(BaseDataset):
         """
         data_info = self._process_annotations()
         data_list = data_info['data_list']
-<<<<<<< HEAD
-        for data in data_list:
-            data['img_path'] = self.backend.join_path(self.data_root,
-                                                      data['img_path'])
-=======
-
->>>>>>> 7cb8d1db... fix dataset
         return data_list
 
     def extra_repr(self):
