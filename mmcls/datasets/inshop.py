@@ -1,8 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from mmengine import get_file_backend, list_from_file
 
+from mmcls.datasets.base_dataset import BaseDataset
 from mmcls.registry import DATASETS
-from .base_dataset import BaseDataset
 
 
 @DATASETS.register_module()
@@ -21,7 +21,6 @@ class InShop(BaseDataset):
            │    └── img/ (img_prefix)
            ├── README.txt
            └── .....
-
     Args:
         data_root (str): The root directory for dataset.
         split (str): Choose from 'train', 'query' and 'gallery'.
@@ -31,7 +30,6 @@ class InShop(BaseDataset):
         ann_file (str): Annotation file path, path relative to
             ``data_root``. Defaults to 'Eval/list_eval_partition.txt'.
         **kwargs: Other keyword arguments in :class:`BaseDataset`.
-
     Examples:
         >>> from mmcls.datasets import InShop
         >>>
@@ -66,7 +64,7 @@ class InShop(BaseDataset):
     def __init__(self,
                  data_root: str,
                  split: str = 'train',
-                 data_prefix: str = 'Img/img',
+                 data_prefix: str = 'Img',
                  ann_file: str = 'Eval/list_eval_partition.txt',
                  **kwargs):
 

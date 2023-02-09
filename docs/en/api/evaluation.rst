@@ -33,3 +33,13 @@ Multi Label Metric
    MultiLabelMetric
    VOCAveragePrecision
    VOCMultiLabelMetric
+
+Retriever Metric
+----------------------
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: classtemplate.rst
+
+   RetrieverRecall
