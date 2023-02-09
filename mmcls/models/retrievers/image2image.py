@@ -243,9 +243,9 @@ class ImageToImageRetriever(BaseRetriever):
                     score).set_pred_label(label))
         return data_samples
 
-    def _get_prototype_vecs_from_dataloader(self):
+    def _get_prototype_vecs_from_dataloader(self, data_loader):
         """get prototype_vecs from dataloader."""
-        data_loader = self.prototype
+        self.eval()
         num = len(data_loader.dataset)
 
         prototype_vecs = None
@@ -282,11 +282,9 @@ class ImageToImageRetriever(BaseRetriever):
             prototype_vecs = self.prototype
         elif isinstance(self.prototype, str):
             prototype_vecs = torch.load(self.prototype)
-        elif isinstance(self.prototype, dict):
-            self.prototype = Runner.build_dataloader(self.prototype)
-
-        if isinstance(self.prototype, DataLoader):
-            prototype_vecs = self._get_prototype_vecs_from_dataloader()
+        elif isinstance(self.prototype, (dict, DataLoader)):
+            loader = Runner.build_dataloader(self.prototype)
+            prototype_vecs = self._get_prototype_vecs_from_dataloader(loader)
 
         self.register_buffer(
             'prototype_vecs', prototype_vecs.to(device), persistent=False)

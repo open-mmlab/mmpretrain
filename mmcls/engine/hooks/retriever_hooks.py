@@ -2,6 +2,7 @@
 import warnings
 
 from mmengine.hooks import Hook
+from mmengine.model import is_model_wrapper
 
 from mmcls.models import BaseRetriever
 from mmcls.registry import HOOKS
@@ -17,10 +18,14 @@ class PrepareProtoBeforeValLoopHook(Hook):
     """
 
     def before_val(self, runner) -> None:
-        if isinstance(runner.model, BaseRetriever):
-            if hasattr(runner.model, 'prepare_prototype'):
-                runner.model.prepare_prototype()
+        model = runner.model
+        if is_model_wrapper(model):
+            model = model.module
+
+        if isinstance(model, BaseRetriever):
+            if hasattr(model, 'prepare_prototype'):
+                model.prepare_prototype()
         else:
             warnings.warn(
-                'Only the retrievers can execute PrepareRetrieverPrototypeHook'
-                f', but got {type(runner.model)}')
+                'Only the `mmcls.models.retrievers.BaseRetriever` can execute '
+                f'`PrepareRetrieverPrototypeHook`, but got `{type(model)}`')
