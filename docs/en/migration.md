@@ -576,7 +576,7 @@ Changes in [heads](mmcls.models.heads):
 | :--------------------------: | :-------------------------------------------------------------------------------------------------------------- |
 |        `collect_env`         | No changes                                                                                                      |
 |      `get_root_logger`       | Removed, use [`mmengine.logging.MMLogger.get_current_instance`](mmengine.logging.MMLogger.get_current_instance) |
-|       `load_json_log`        | Waiting for support                                                                                             |
+|       `load_json_log`        | The output format changed.                                                                                      |
 |   `setup_multi_processes`    | Removed, use [`mmengine.utils.dl_utils.set_multi_processing`](mmengine.utils.dl_utils.set_multi_processing).    |
 | `wrap_non_distributed_model` | Removed, we auto wrap the model in the runner.                                                                  |
 |   `wrap_distributed_model`   | Removed, we auto wrap the model in the runner.                                                                  |
