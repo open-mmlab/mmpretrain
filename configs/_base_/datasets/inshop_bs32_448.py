@@ -23,8 +23,8 @@ test_pipeline = [
 ]
 
 train_dataloader = dict(
-    batch_size=8,
-    num_workers=2,
+    batch_size=32,
+    num_workers=4,
     dataset=dict(
         type=dataset_type,
         data_root='data/inshop',
@@ -34,8 +34,8 @@ train_dataloader = dict(
 )
 
 query_dataloader = dict(
-    batch_size=8,
-    num_workers=2,
+    batch_size=32,
+    num_workers=4,
     dataset=dict(
         type=dataset_type,
         data_root='data/inshop',
@@ -45,8 +45,8 @@ query_dataloader = dict(
 )
 
 gallery_dataloader = dict(
-    batch_size=8,
-    num_workers=2,
+    batch_size=32,
+    num_workers=4,
     dataset=dict(
         type=dataset_type,
         data_root='data/inshop',
