@@ -88,9 +88,9 @@ class Accuracy(BaseMetric):
             names to disambiguate homonymous metrics of different evaluators.
             If prefix is not provided in the argument, self.default_prefix
             will be used instead. Defaults to None.
-        meta_file_path (str, optional): The path of the meta file. This file
-            will be used in evaluating the fine-tuned model on OOD dataset,
-            e.g. ImageNet-A. Defaults to None.
+        ano_file_path (str, optional): The path of the annotation file. This
+            file will be used in evaluating the fine-tuned model on OOD
+            dataset, e.g. ImageNet-A. Defaults to None.
 
     Examples:
         >>> import torch
@@ -128,7 +128,7 @@ class Accuracy(BaseMetric):
                  thrs: Union[float, Sequence[Union[float, None]], None] = 0.,
                  collect_device: str = 'cpu',
                  prefix: Optional[str] = None,
-                 meta_file_path: Optional[str] = None) -> None:
+                 anno_file_path: Optional[str] = None) -> None:
         super().__init__(collect_device=collect_device, prefix=prefix)
 
         if isinstance(topk, int):
@@ -142,8 +142,8 @@ class Accuracy(BaseMetric):
             self.thrs = tuple(thrs)
 
         # generate label mask
-        if meta_file_path is not None:
-            with open(meta_file_path, 'r') as f:
+        if anno_file_path is not None:
+            with open(anno_file_path, 'r') as f:
                 labels = [
                     int(item.strip().split()[-1]) for item in f.readlines()
                 ]

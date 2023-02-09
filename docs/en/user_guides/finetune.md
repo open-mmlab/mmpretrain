@@ -271,10 +271,12 @@ annotation file to the `test_evaluator`.
 ```python
 test_dataloader=dict(dataset=dict(data_root='data/imagenet-x'))
 test_evaluator=dict(meta_file_path='data/imagenet-x/meta/val.txt')
-
 ```
 
 ### Start test
 
 This step is the common test step, you can follow this [guide](https://mmclassification.readthedocs.io/en/1.x/user_guides/train_test.html)
 to evaluate your fine-tuned model on out-of-distribution datasets.
+
+To make it easier, we also provide an off-the-shelf [config file](https://github.com/open-mmlab/mmclassification/tree/dev-1.x/projects/example_project/ood_eval/vit_ood-eval_toy)
+and you can have a try.
