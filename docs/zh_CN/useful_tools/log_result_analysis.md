@@ -29,7 +29,7 @@ python tools/analysis_tools/analyze_logs.py plot_curve  \
 - `--backend` : matplotlib 的绘图后端，默认由 matplotlib 自动选择。
 - `--style` : 绘图配色风格，默认为 `whitegrid`。
 - `--out` : 保存分析图片的路径，如不指定则不保存。
-- `--window-size`: 可视化窗口大小，如果没有指定，默认为  `'12*7'`。如果需要指定，需按照格式 `'W*H'`。  
+- `--window-size`: 可视化窗口大小，如果没有指定，默认为  `'12*7'`。如果需要指定，需按照格式 `'W*H'`。
 
 ```{note}
 The `--style` option depends on `seaborn` package, please install it before setting it.

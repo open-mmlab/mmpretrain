@@ -67,5 +67,5 @@ Activation: 23.895M
 此工具仍处于试验阶段，我们不保证该数字正确无误。您最好将结果用于简单比较，但在技术报告或论文中采用该结果之前，请仔细检查。
 
 - FLOPs 与输入的尺寸有关，而参数量与输入尺寸无关。默认输入尺寸为 (1, 3, 224, 224)
-- 一些运算不会被计入 FLOPs 的统计中，例如 GN 和自定义运算。详细信息请参考 [`mmcv.cnn.get_model_complexity_info()`](
+- 一些运算不会被计入 FLOPs 的统计中，例如某些自定义运算。详细信息请参考 [`fvcore.nn.flop_count._DEFAULT_SUPPORTED_OPS`](https://github.com/facebookresearch/fvcore/blob/main/fvcore/nn/flop_count.py)。
 ```

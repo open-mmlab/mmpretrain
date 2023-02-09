@@ -22,4 +22,3 @@ python tools/misc/print_config.py ${CONFIG} [--cfg-options ${CFG_OPTIONS}]
 ```shell
 python tools/misc/print_config.py configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py
 ```
-
