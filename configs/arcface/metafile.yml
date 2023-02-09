@@ -1,19 +1,19 @@
 Collections:
   - Name: ArcFace
     Metadata:
-      Training Data: PASCAL VOC 2007
+      Training Data: InShop
       Architecture:
-        - Class-specific Residual Attention
+        - Additive Angular Margin Loss
     Paper:
       URL: https://arxiv.org/abs/1801.07698
       Title: 'ArcFace: Additive Angular Margin Loss for Deep Face Recognition'
     README: configs/arcface/README.md
     Code:
-      Version:
-      URL:
+      Version: v1.0.0rc3
+      URL: https://github.com/open-mmlab/mmclassification/blob/v1.0.0rc3/mmcls/models/heads/margin_head.py
 
 Models:
-  - Name: resnet50-mil-arcface_8xb8_inshop
+  - Name: resnet50-mil-arcface_inshop
     Metadata:
       FLOPs: 16571226112
       Parameters: 31693888
@@ -21,7 +21,7 @@ Models:
     Results:
       - Dataset: InShop
         Metrics:
-          Recall@1: 94.98
+          Recall@1: 87.22
         Task: Metric Learning
     Weights:
-    Config: configs/arcface/resnet50-mil-arcface_8xb8_inshop.py
+    Config: configs/arcface/resnet50-mil-arcface_8xb32_inshop.py

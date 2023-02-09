@@ -18,7 +18,7 @@ Recently, a popular line of research in face recognition is adopting margins in 
 
 |     Model      |                      Pretrain                      | Params(M) | Flops(G) |  Recall@1  |                      Config                       |                      Download                       |
 | :------------: | :------------------------------------------------: | :-------: | :------: | :---: | :-----: | :-----: | :-----------------------------------------------: | :-------------------------------------------------: |
-| Resnet50-ArcFace | [ImageNet-21k-mill](https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_3rdparty-mill_in21k_20220331-faac000b.pth) |   31.69   |   16.48   |    | [config](./resnet50-mil-arcface_1xb32_inshop.py) | [model](<>) | [log](<>) |
+| Resnet50-ArcFace | [ImageNet-21k-mill](https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_3rdparty-mill_in21k_20220331-faac000b.pth) |   31.69   |   16.48   |  87.22  | [config](./resnet50-mil-arcface_1xb32_inshop.py) | [model](https://download.openmmlab.com/mmclassification/v0/arcface/) | [log](https://download.openmmlab.com/mmclassification/v0/arcface/) |
 
 ## Citation
 

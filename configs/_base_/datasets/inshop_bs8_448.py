@@ -29,7 +29,6 @@ train_dataloader = dict(
         type=dataset_type,
         data_root='data/inshop',
         split='train',
-        test_mode=False,
         pipeline=train_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=True),
 )
@@ -41,7 +40,6 @@ query_dataloader = dict(
         type=dataset_type,
         data_root='data/inshop',
         split='query',
-        test_mode=True,
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
 )
@@ -53,7 +51,6 @@ gallery_dataloader = dict(
         type=dataset_type,
         data_root='data/inshop',
         split='gallery',
-        test_mode=True,
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
 )

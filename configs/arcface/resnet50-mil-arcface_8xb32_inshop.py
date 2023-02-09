@@ -4,6 +4,11 @@ _base_ = [
     '../_base_/default_runtime.py',
 ]
 
+train_dataloader = dict(batch_size=32, num_workers=8)
+gallery_dataloader = dict(batch_size=32, num_workers=8)
+val_dataloader = dict(batch_size=32, num_workers=8)
+test_dataloader = dict(batch_size=32, num_workers=8)
+
 pretrained = 'https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_3rdparty-mill_in21k_20220331-faac000b.pth'  # noqa
 model = dict(
     type='ImageToImageRetriever',
@@ -24,18 +29,7 @@ model = dict(
         in_channels=2048,
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
         init_cfg=None),
-    prototype={{_base_.gallery_dataloader}})
-
-train_dataloader = dict(batch_size=32, num_workers=8)
-
-optim_wrapper = dict(
-    optimizer=dict(
-        _delete_=True,
-        type='AdamW',
-        lr=5e-4,
-        weight_decay=0.05,
-        eps=1e-8,
-        betas=(0.9, 0.999)))
+    prototype=gallery_dataloader)
 
 # runtime settings
 default_hooks = dict(
@@ -52,5 +46,5 @@ default_hooks = dict(
 auto_scale_lr = dict(enable=True, base_batch_size=64)
 
 custom_hooks = [
-    dict(type='PrepareProtoBeforeValLoopHook', priority=48),
+    dict(type='PrepareProtoBeforeValLoopHook')
 ]

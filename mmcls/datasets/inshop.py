@@ -64,7 +64,7 @@ class InShop(BaseDataset):
     def __init__(self,
                  data_root: str,
                  split: str = 'train',
-                 data_prefix: str = 'Img',
+                 data_prefix: str = 'Img/img',
                  ann_file: str = 'Eval/list_eval_partition.txt',
                  **kwargs):
 
