@@ -89,6 +89,8 @@ class mCE(Accuracy):
         # compute mCE
         mce_for_each_category = []
         for key in pred_each_category.keys():
+            if key not in self.ce_alexnet.keys():
+                continue
             target_current_category = target_each_category[key]
             pred_current_category = pred_each_category[key]
             try:
