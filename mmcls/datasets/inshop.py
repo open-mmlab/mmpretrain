@@ -14,6 +14,8 @@ class InShop(BaseDataset):
     (In-shop Clothes Retrieval Benchmark -> Img -> img.zip,
     Eval/list_eval_partition.txt), and organize them as follows way: ::
 
+    In-shop dataset directory: ::
+
         In-shop Clothes Retrieval Benchmark (data_root)/
            ├── Eval /
            │    └── list_eval_partition.txt (ann_file)
@@ -21,6 +23,7 @@ class InShop(BaseDataset):
            │    └── img/
            ├── README.txt
            └── .....
+
     Args:
         data_root (str): The root directory for dataset.
         split (str): Choose from 'train', 'query' and 'gallery'.
@@ -30,6 +33,7 @@ class InShop(BaseDataset):
         ann_file (str): Annotation file path, path relative to
             ``data_root``. Defaults to 'Eval/list_eval_partition.txt'.
         **kwargs: Other keyword arguments in :class:`BaseDataset`.
+
     Examples:
         >>> from mmcls.datasets import InShop
         >>>
