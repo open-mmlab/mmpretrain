@@ -39,7 +39,7 @@ test_cfg = dict()
 auto_scale_lr = dict(base_batch_size=128)
 # dataset settings
 
-train_dataloader = dict(batch_size=64*8)
+train_dataloader = dict(batch_size=64 * 8)
 
 default_hooks = dict(
     # save last three checkpoints

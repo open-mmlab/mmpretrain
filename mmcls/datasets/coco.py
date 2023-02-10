@@ -1,6 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os
+import time
 from typing import List
+
+from mmengine.fileio import get_file_backend, load
 
 from mmcls.registry import DATASETS
 from .categories import COCO_CATEGORITES
@@ -90,26 +92,45 @@ class CocoDataset(MultiLabelDataset):
 
     def load_data_list(self):
         """Load images and ground truth labels."""
+        self.backend = get_file_backend(self.ann_file, enable_singleton=True)
+
         try:
             from pycocotools.coco import COCO as _COCO
         except ImportError:
             raise ModuleNotFoundError(
                 'please run `pip install pycocotools` to install 3rd package.')
 
-        data_list = []
+        class MMClsCOCO(_COCO):
+            """the difference with pycocotools.COCO is loading ann_file."""
 
-        self.coco = _COCO(self.ann_file)
+            def __init__(self, annotation_file=None):
+                super().__init__()
+                if annotation_file is not None:
+                    print('loading annotations into memory...')
+                    tic = time.time()
+                    # use `mmengint.fileio.load`` here to handle different
+                    # file backend, such as ceph, local....
+                    dataset = load(annotation_file)
+                    assert type(dataset) == dict, (
+                        f'annotation file format {type(dataset)} not supported'
+                    )
+                    print('Done (t={:0.2f}s)'.format(time.time() - tic))
+                    self.dataset = dataset
+                    self.createIndex()
+
+        self.coco = MMClsCOCO(self.ann_file)
         # The order of returned `cat_ids` will not
         # change with the order of the CLASSES
         self.cat_ids = self.coco.getCatIds(catNms=self.METAINFO['classes'])
         self.cat2label = {cat_id: i for i, cat_id in enumerate(self.cat_ids)}
         self.img_ids = self.coco.getImgIds()
 
+        data_list = []
         for img_id in self.img_ids:
 
             labels, labels_crowd, img_path = self._get_labels_from_coco(img_id)
-
-            img_path = os.path.join(self.data_prefix['img_path'], img_path)
+            img_path = self.backend.join_path(self.data_prefix['img_path'],
+                                              img_path)
 
             info = dict(
                 img_path=img_path,
