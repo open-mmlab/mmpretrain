@@ -32,8 +32,9 @@ train_dataloader = dict(
     num_workers=5,
     dataset=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/instances_val2017.json',
-        data_prefix=data_root + 'train2017/',
+        data_root=data_root,
+        ann_file='annotations/instances_val2017.json',
+        data_prefix='train2017/',
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=True),
 )
@@ -43,8 +44,9 @@ val_dataloader = dict(
     num_workers=5,
     dataset=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/instances_val2017.json',
-        data_prefix=data_root + 'val2017/',
+        data_root=data_root,
+        ann_file='annotations/instances_val2017.json',
+        data_prefix='val2017/',
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
 )
@@ -54,8 +56,9 @@ test_dataloader = dict(
     num_workers=5,
     dataset=dict(
         type=dataset_type,
-        ann_file=data_root + 'annotations/instances_val2017.json',
-        data_prefix=data_root + 'val2017/',
+        data_root=data_root,
+        ann_file='annotations/instances_val2017.json',
+        data_prefix='val2017/',
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
 )
