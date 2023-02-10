@@ -2,7 +2,7 @@
 from .base_dataset import BaseDataset
 from .builder import build_dataset
 from .cifar import CIFAR10, CIFAR100
-from .coco import COCO
+from .coco import CocoDataset
 from .cub import CUB
 from .custom import CustomDataset
 from .dataset_wrappers import KFoldDataset
@@ -19,5 +19,5 @@ __all__ = [
     'BaseDataset', 'ImageNet', 'CIFAR10', 'CIFAR100', 'MNIST', 'FashionMNIST',
     'VOC', 'build_dataset', 'ImageNet21k', 'KFoldDataset', 'CUB',
     'CustomDataset', 'MultiLabelDataset', 'MultiTaskDataset', 'InShop',
-    'COCO'
+    'CocoDataset'
 ]

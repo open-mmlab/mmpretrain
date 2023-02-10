@@ -1,17 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
-from typing import List, Optional, Union
-
-from pycocotools.coco import COCO as _COCO
+from typing import List
 
 from mmcls.registry import DATASETS
-from .base_dataset import expanduser
 from .categories import COCO_CATEGORITES
 from .multi_label import MultiLabelDataset
 
 
 @DATASETS.register_module()
-class COCO(MultiLabelDataset):
+class CocoDataset(MultiLabelDataset):
     """`COCO2017 <https://cocodataset.org/#download>`_ Dataset.
 
     After decompression, the dataset directory structure is as follows:
@@ -27,7 +24,8 @@ class COCO(MultiLabelDataset):
         │   ├── xxx.jpg
         │   ├── xxy.jpg
         │   └── ...
-        └── annotations (directory contains COCO annotation JSON file)
+        ├──annotations (directory contains COCO annotation JSON file)
+        └── ...
 
     Extra iscrowd label is in COCO annotations, we will use
     `gt_label_crowd` to record the crowd labels in each sample
@@ -36,6 +34,8 @@ class COCO(MultiLabelDataset):
     negative in defaults.
 
     Args:
+        data_root (str): The root directory for ``data_prefix`` and
+            ``ann_file``. Defaults to ''.
         data_prefix (str): the prefix of data path for COCO dataset.
         ann_file (str): coco annotation file path.
         test_mode (bool): ``test_mode=True`` means in test phase.
@@ -43,32 +43,33 @@ class COCO(MultiLabelDataset):
         metainfo (dict, optional): Meta information for dataset, such as
             categories information. Defaults to None.
         **kwargs: Other keyword arguments in :class:`BaseDataset`.
+
+    Examples:
+        >>> mmcls.datasets import CocoDataset
+        >>> coco_train_cfg = dict(data_root='./data/coco/',
+        >>>                       ann_file='annotations/instances_train2017.json',
+        >>>                       data_prefix='train2017/')
+        >>> coco_train = CocoDataset(**coco_train_cfg)
+        >>> coco_train
+        Dataset CocoDataset
+            Number of samples:  118287
+            Number of categories:       80
+            Prefix of images:   ./data/coco/train2017/
+            Path of annotation file:    ./data/coco/annotations/instances_train2017.json
+        >>> coco_test_cfg = dict(data_root='./data/coco/',
+        >>>                      ann_file='annotations/instances_val2017.json',
+        >>>                      data_prefix='val2017/',
+        >>>                      test_mode=True)
+        >>> coco_test = CocoDataset(**coco_test_cfg)
+        >>> coco_test
+        Dataset CocoDataset
+            Number of samples:  5000
+            Number of categories:       80
+            Prefix of images:   ./data/coco/val2017/
+            Path of annotation file:    ./data/coco/annotations/instances_val2017.json
     """  # noqa: E501
 
     METAINFO = {'classes': COCO_CATEGORITES}
-
-    def __init__(self,
-                 data_prefix: str,
-                 ann_file: str,
-                 test_mode: bool = False,
-                 metainfo: Optional[dict] = None,
-                 **kwargs):
-        if isinstance(data_prefix, str):
-            data_prefix = dict(img_path=expanduser(data_prefix))
-
-        assert 'val2017' in data_prefix or 'train2017' in data_prefix
-
-        data_root = os.path.dirname(data_prefix)
-        self.data_prefix = data_prefix
-        self.ann_file = ann_file
-
-        super().__init__(
-            ann_file=ann_file,
-            data_root=data_root,
-            metainfo=metainfo,
-            data_prefix=data_prefix,
-            test_mode=test_mode,
-            **kwargs)
 
     def _get_labels_from_coco(self, img_id):
         """Get gt_labels and labels_crowd from COCO object."""
@@ -89,6 +90,12 @@ class COCO(MultiLabelDataset):
 
     def load_data_list(self):
         """Load images and ground truth labels."""
+        try:
+            from pycocotools.coco import COCO as _COCO
+        except ImportError:
+            raise ModuleNotFoundError(
+                'please run `pip install pycocotools` to install 3rd package.')
+
         data_list = []
 
         self.coco = _COCO(self.ann_file)
