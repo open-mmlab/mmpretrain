@@ -23,6 +23,7 @@ Single Label Metric
    Accuracy
    SingleLabelMetric
    ConfusionMatrix
+   mCE
 
 Multi Label Metric
 ----------------------

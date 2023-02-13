@@ -128,7 +128,7 @@ class Accuracy(BaseMetric):
                  thrs: Union[float, Sequence[Union[float, None]], None] = 0.,
                  collect_device: str = 'cpu',
                  prefix: Optional[str] = None,
-                 anno_file_path: Optional[str] = None) -> None:
+                 ann_file_path: Optional[str] = None) -> None:
         super().__init__(collect_device=collect_device, prefix=prefix)
 
         if isinstance(topk, int):
@@ -142,8 +142,8 @@ class Accuracy(BaseMetric):
             self.thrs = tuple(thrs)
 
         # generate label mask
-        if anno_file_path is not None:
-            with open(anno_file_path, 'r') as f:
+        if ann_file_path is not None:
+            with open(ann_file_path, 'r') as f:
                 labels = [
                     int(item.strip().split()[-1]) for item in f.readlines()
                 ]

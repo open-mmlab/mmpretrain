@@ -31,6 +31,33 @@ def get_ce_alexnet() -> dict:
 
 @METRICS.register_module()
 class mCE(Accuracy):
+    """Mean Corruption Error (mCE) metric.
+
+    The mCE metric is proposed in `Benchmarking Neural Network Robustness to
+    Common Corruptions and Perturbations
+    <https://openreview.net/pdf?id=HJz6tiCqYm>`_.
+
+    Args:
+        topk (int | Sequence[int]): If the ground truth label matches one of
+            the best **k** predictions, the sample will be regard as a positive
+            prediction. If the parameter is a tuple, all of top-k accuracy will
+            be calculated and outputted together. Defaults to 1.
+        thrs (Sequence[float | None] | float | None): If a float, predictions
+            with score lower than the threshold will be regard as the negative
+            prediction. If None, not apply threshold. If the parameter is a
+            tuple, accuracy based on all thresholds will be calculated and
+            outputted together. Defaults to 0.
+        collect_device (str): Device name used for collecting results from
+            different ranks during distributed training. Must be 'cpu' or
+            'gpu'. Defaults to 'cpu'.
+        prefix (str, optional): The prefix that will be added in the metric
+            names to disambiguate homonymous metrics of different evaluators.
+            If prefix is not provided in the argument, self.default_prefix
+            will be used instead. Defaults to None.
+        ano_file_path (str, optional): The path of the annotation file. This
+            file will be used in evaluating the fine-tuned model on OOD
+            dataset, e.g. ImageNet-A. Defaults to None.
+    """
 
     def __init__(
         self,
@@ -38,14 +65,14 @@ class mCE(Accuracy):
         thrs: Union[float, Sequence[Union[float, None]], None] = 0.,
         collect_device: str = 'cpu',
         prefix: Optional[str] = None,
-        meta_file_path: Optional[str] = None,
+        ann_file_path: Optional[str] = None,
     ) -> None:
         super().__init__(
             topk=topk,
             thrs=thrs,
             collect_device=collect_device,
             prefix=prefix,
-            meta_file_path=meta_file_path)
+            ann_file_path=ann_file_path)
         self.ce_alexnet = get_ce_alexnet()
 
     def compute_metrics(self, results: List) -> dict:
