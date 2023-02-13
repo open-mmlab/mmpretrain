@@ -334,8 +334,8 @@ class ResLayer(nn.Sequential):
             layer. Default: None
         norm_cfg (dict): dictionary to construct and config norm layer.
             Default: dict(type='BN')
-        drop_path_rate (np.ndarray): stochastic depth rate.
-            Default: np.array([0.0])
+        drop_path_rate (float or np.ndarray): stochastic depth rate.
+            Default: 0.
     """
 
     def __init__(self,
@@ -348,12 +348,17 @@ class ResLayer(nn.Sequential):
                  avg_down=False,
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
-                 drop_path_rate=np.array([0.0]),
+                 drop_path_rate=0.0,
                  **kwargs):
         self.block = block
         self.expansion = get_expansion(block, expansion)
-        if drop_path_rate.shape[0] != num_blocks:
-            drop_path_rate.repeat(num_blocks)
+
+        if isinstance(drop_path_rate, float):
+            drop_path_rate = np.array([drop_path_rate])
+            drop_path_rate = drop_path_rate.repeat(num_blocks)
+
+        assert drop_path_rate.shape[
+            0] == num_blocks, 'Please check the length of drop_path_rate'
 
         downsample = None
         if stride != 1 or in_channels != out_channels:
