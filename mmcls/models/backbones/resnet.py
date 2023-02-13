@@ -353,8 +353,7 @@ class ResLayer(nn.Sequential):
         self.block = block
         self.expansion = get_expansion(block, expansion)
         if drop_path_rate.shape[0] != num_blocks:
-            drop_path_rate.repeat(num_blocks // drop_path_rate.shape[0])
-        assert drop_path_rate.shape[0]
+            drop_path_rate.repeat(num_blocks)
 
         downsample = None
         if stride != 1 or in_channels != out_channels:
