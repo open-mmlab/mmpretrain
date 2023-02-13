@@ -235,9 +235,10 @@ It's a common practice to evaluate the ImageNet-(1K, 21K) fine-tuned model the I
 shares similar data distribution with the training set, but in real world, the inference data is more likely to share
 different data distribution with the training set. To have a full evaluation of model's performance on
 out-of-distribution datasets, research community introduces the ImageNet-variant datasets, which shares different data
-distribution with that of ImageNet-(1K, 21K). Currently, MMClassification supports evaluating the fine-tuned model on
-[ImageNet-A](https://arxiv.org/pdf/1907.07174v4.pdf), [ImageNet-R](https://arxiv.org/pdf/2006.16241v3.pdf), and
-[ImageNet-S](https://arxiv.org/pdf/2106.03149v3.pdf). You can follow these steps below to have a try:
+distribution with that of ImageNet-(1K, 21K)., MMClassification supports evaluating the fine-tuned model on
+[ImageNet-A](https://arxiv.org/pdf/1907.07174v4.pdf), [ImageNet-R](https://arxiv.org/pdf/2006.16241v3.pdf),
+[ImageNet-C](https://arxiv.org/pdf/1903.12261v1.pdf), and [ImageNet-S](https://arxiv.org/pdf/2106.03149v3.pdf).
+You can follow these steps below to have a try:
 
 ### Prepare the datasets
 
@@ -257,6 +258,10 @@ You can download these datasets from [OpenDataLab](https://opendatalab.com/) and
         ├── meta
         │   └── val.txt
         ├── val/
+   imagenet-c
+        ├── meta
+        │   └── val.txt
+        ├── val/
 ```
 
 `val.txt` is the annotation file, which should have the same style as that of ImageNet-1K. You can refer to
@@ -269,6 +274,8 @@ There are few modifications to the config file, but change the `data_root` of th
 annotation file to the `test_evaluator`.
 
 ```python
+# You should replace imagenet-x below with imagenet-c, imagenet-r, imagenet-a
+# or imagenet-s
 test_dataloader=dict(dataset=dict(data_root='data/imagenet-x'))
 test_evaluator=dict(meta_file_path='data/imagenet-x/meta/val.txt')
 ```
@@ -278,5 +285,4 @@ test_evaluator=dict(meta_file_path='data/imagenet-x/meta/val.txt')
 This step is the common test step, you can follow this [guide](https://mmclassification.readthedocs.io/en/1.x/user_guides/train_test.html)
 to evaluate your fine-tuned model on out-of-distribution datasets.
 
-To make it easier, we also provide an off-the-shelf [config file](https://github.com/open-mmlab/mmclassification/tree/dev-1.x/projects/example_project/ood_eval/vit_ood-eval_toy)
-and you can have a try.
+To make it easier, we also provide an off-the-shelf config files, for [ImageNet-C](https://github.com/open-mmlab/mmclassification/tree/dev-1.x/projects/example_project/ood_eval/vit_ood-eval_toy-example.py) and [ImageNet-C](https://github.com/open-mmlab/mmclassification/tree/dev-1.x/projects/example_project/ood_eval/vit_ood-eval_toy-example_imagnet-c.py), and you can have a try.

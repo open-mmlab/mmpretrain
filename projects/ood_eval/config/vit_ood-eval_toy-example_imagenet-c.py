@@ -104,10 +104,7 @@ val_dataloader = dict(
         ],
         _scope_='mmcls'),
     sampler=dict(type='DefaultSampler', shuffle=False, _scope_='mmcls'))
-val_evaluator = dict(
-    type='mCE',
-    topk=(1, 5),
-    _scope_='mmcls')
+val_evaluator = dict(type='mCE', topk=(1, 5), _scope_='mmcls')
 test_dataloader = dict(
     batch_size=128,
     num_workers=5,

@@ -1,6 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from unittest import TestCase
+
 import torch
+
 from mmcls.registry import METRICS
 
 
