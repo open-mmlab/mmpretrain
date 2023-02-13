@@ -334,6 +334,8 @@ class ResLayer(nn.Sequential):
             layer. Default: None
         norm_cfg (dict): dictionary to construct and config norm layer.
             Default: dict(type='BN')
+        drop_path_rate (np.ndarray): stochastic depth rate.
+            Default: np.array([0.0])
     """
 
     def __init__(self,
@@ -341,15 +343,18 @@ class ResLayer(nn.Sequential):
                  num_blocks,
                  in_channels,
                  out_channels,
-                 drop_path_rate,
                  expansion=None,
                  stride=1,
                  avg_down=False,
                  conv_cfg=None,
                  norm_cfg=dict(type='BN'),
+                 drop_path_rate=np.array([0.0]),
                  **kwargs):
         self.block = block
         self.expansion = get_expansion(block, expansion)
+        if drop_path_rate.shape[0] != num_blocks:
+            drop_path_rate.repeat(num_blocks // drop_path_rate.shape[0])
+        assert drop_path_rate.shape[0]
 
         downsample = None
         if stride != 1 or in_channels != out_channels:
