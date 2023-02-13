@@ -65,7 +65,7 @@ class RetrievalRecall(BaseMetric):
 
         .. code:: python
 
-            dict(type='RetrievalRecall', topk=(1, 5))
+            val/test_evaluator = dict(type='RetrievalRecall', topk=(1, 5))
     """
     default_prefix: Optional[str] = 'retrieval'
 
