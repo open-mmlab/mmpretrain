@@ -186,15 +186,15 @@ class RetrievalRecall(BaseMetric):
 
 
 def _format_pred(label, topk=None, is_indices=False):
-    """format various label to List[indeices]."""
+    """format various label to List[indices]."""
     if is_indices:
         assert isinstance(label, Sequence),  \
-                '`pred` must be Sequeue of indices when' \
+                '`pred` must be Sequence of indices when' \
                 f' `pred_indices` set to True, but get {type(label)}'
         for i, sample_pred in enumerate(label):
             assert is_seq_of(sample_pred, int) or isinstance(
                 sample_pred, (np.ndarray, torch.Tensor)), \
-                '`pred` should be Sequeue of indices when `pred_indices`' \
+                '`pred` should be Sequence of indices when `pred_indices`' \
                 f'set to True. but pred[{i}] is {sample_pred}'
             if topk:
                 label[i] = sample_pred[:min(topk, len(sample_pred))]
@@ -203,23 +203,23 @@ def _format_pred(label, topk=None, is_indices=False):
         label = torch.from_numpy(label)
     elif not isinstance(label, torch.Tensor):
         raise TypeError(f'The pred must be type of torch.tensor, '
-                        f'np.ndarray or Sequeue but get {type(label)}.')
+                        f'np.ndarray or Sequence but get {type(label)}.')
     topk = topk if topk else label.size()[-1]
     _, indices = label.topk(topk)
     return indices
 
 
 def _format_target(label, is_indices=False):
-    """format various label to List[indeices]."""
+    """format various label to List[indices]."""
     if is_indices:
         assert isinstance(label, Sequence),  \
-                '`target` must be Sequeue of indices when' \
+                '`target` must be Sequence of indices when' \
                 f' `target_indices` set to True, but get {type(label)}'
         for i, sample_gt in enumerate(label):
             assert is_seq_of(sample_gt, int) or isinstance(
                 sample_gt, (np.ndarray, torch.Tensor)), \
-                '`target` should be Sequeue of indices when `target_indices`' \
-                f'set to True. but target[{i}] is {sample_gt}'
+                '`target` should be Sequence of indices when ' \
+                f'`target_indices` set to True. but target[{i}] is {sample_gt}'
         return label
 
     if isinstance(label, np.ndarray):
@@ -228,7 +228,7 @@ def _format_target(label, is_indices=False):
         label = torch.tensor(label)
     elif not isinstance(label, torch.Tensor):
         raise TypeError(f'The pred must be type of torch.tensor, '
-                        f'np.ndarray or Sequeue but get {type(label)}.')
+                        f'np.ndarray or Sequence but get {type(label)}.')
 
     indices = [LabelData.onehot_to_label(sample_gt) for sample_gt in label]
     return indices
