@@ -266,6 +266,16 @@ class ImageToImageRetriever(BaseRetriever):
         dist.all_reduce(prototype_vecs)
         return prototype_vecs
 
+    def _get_prototype_vecs_from_path(self, proto_path):
+        """get prototype_vecs from prototype path."""
+        data = [None]
+        if dist.is_main_process():
+            data[0] = torch.load(proto_path)
+        dist.broadcast_object_list(data, src=0)
+        prototype_vecs = data[0]
+        assert prototype_vecs is not None
+        return prototype_vecs
+
     @torch.no_grad()
     def prepare_prototype(self):
         """Used in meta testing. This function will be called before the meta
@@ -281,7 +291,7 @@ class ImageToImageRetriever(BaseRetriever):
         if isinstance(self.prototype, torch.Tensor):
             prototype_vecs = self.prototype
         elif isinstance(self.prototype, str):
-            prototype_vecs = torch.load(self.prototype)
+            prototype_vecs = self._get_prototype_vecs_from_path(self.prototype)
         elif isinstance(self.prototype, (dict, DataLoader)):
             loader = Runner.build_dataloader(self.prototype)
             prototype_vecs = self._get_prototype_vecs_from_dataloader(loader)
