@@ -25,7 +25,9 @@ class TestCorruptionError(TestCase):
                 'label': torch.tensor([0]),
                 'score': torch.tensor([0.7, 0.0, 0.3])
             },
-            'gt_label': {'label': torch.tensor([0])},
+            'gt_label': {
+                'label': torch.tensor([0])
+            },
             'img_path': 'a/b/c/gaussian_noise'
         } for i in range(10)]
         mCE_metrics.process(None, results)
