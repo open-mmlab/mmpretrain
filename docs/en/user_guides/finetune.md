@@ -236,8 +236,8 @@ shares similar data distribution with the training set, but in real world, the i
 different data distribution with the training set. To have a full evaluation of model's performance on
 out-of-distribution datasets, research community introduces the ImageNet-variant datasets, which shares different data
 distribution with that of ImageNet-(1K, 21K)., MMClassification supports evaluating the fine-tuned model on
-[ImageNet-A](https://arxiv.org/pdf/1907.07174v4.pdf), [ImageNet-R](https://arxiv.org/pdf/2006.16241v3.pdf),
-[ImageNet-C](https://arxiv.org/pdf/1903.12261v1.pdf), and [ImageNet-S](https://arxiv.org/pdf/2106.03149v3.pdf).
+[ImageNet-Adversarial (A)](https://arxiv.org/abs/1907.07174), [ImageNet-Rendition (R)](https://arxiv.org/abs/2006.16241),
+[ImageNet-Corruption (C)](https://arxiv.org/abs/1903.12261), and [ImageNet-Sketch (S)](https://arxiv.org/abs/1905.13549).
 You can follow these steps below to have a try:
 
 ### Prepare the datasets

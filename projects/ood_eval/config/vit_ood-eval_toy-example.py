@@ -3,8 +3,6 @@ data_preprocessor = dict(
     mean=[123.675, 116.28, 103.53],
     std=[58.395, 57.12, 57.375],
     to_rgb=True)
-bgr_mean = [103.53, 116.28, 123.675]
-bgr_std = [57.375, 57.12, 58.395]
 train_pipeline = [
     dict(type='LoadImageFromFile', file_client_args=dict(backend='disk')),
     dict(
@@ -107,7 +105,7 @@ val_dataloader = dict(
 val_evaluator = dict(
     type='Accuracy',
     topk=(1, 5),
-    anno_file_path='data/imagenet-r/meta/val.txt',
+    anno_file='data/imagenet-r/meta/val.txt',
     _scope_='mmcls')
 test_dataloader = dict(
     batch_size=128,
@@ -223,4 +221,3 @@ model = dict(
         dict(type='Mixup', alpha=0.8),
         dict(type='CutMix', alpha=1.0)
     ]))
-file_client_args = dict(backend='disk')

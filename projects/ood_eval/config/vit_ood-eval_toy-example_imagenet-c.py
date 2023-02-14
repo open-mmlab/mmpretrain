@@ -3,8 +3,6 @@ data_preprocessor = dict(
     mean=[123.675, 116.28, 103.53],
     std=[58.395, 57.12, 57.375],
     to_rgb=True)
-bgr_mean = [103.53, 116.28, 123.675]
-bgr_std = [57.375, 57.12, 58.395]
 train_pipeline = [
     dict(type='LoadImageFromFile', file_client_args=dict(backend='disk')),
     dict(
@@ -104,7 +102,7 @@ val_dataloader = dict(
         ],
         _scope_='mmcls'),
     sampler=dict(type='DefaultSampler', shuffle=False, _scope_='mmcls'))
-val_evaluator = dict(type='mCE', topk=(1, 5), _scope_='mmcls')
+val_evaluator = dict(type='CorruptionError', topk=(1, 5), _scope_='mmcls')
 test_dataloader = dict(
     batch_size=128,
     num_workers=5,
@@ -219,4 +217,3 @@ model = dict(
         dict(type='Mixup', alpha=0.8),
         dict(type='CutMix', alpha=1.0)
     ]))
-file_client_args = dict(backend='disk')

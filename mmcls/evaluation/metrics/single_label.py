@@ -88,7 +88,7 @@ class Accuracy(BaseMetric):
             names to disambiguate homonymous metrics of different evaluators.
             If prefix is not provided in the argument, self.default_prefix
             will be used instead. Defaults to None.
-        ano_file_path (str, optional): The path of the annotation file. This
+        ano_file (str, optional): The path of the annotation file. This
             file will be used in evaluating the fine-tuned model on OOD
             dataset, e.g. ImageNet-A. Defaults to None.
 
@@ -128,7 +128,7 @@ class Accuracy(BaseMetric):
                  thrs: Union[float, Sequence[Union[float, None]], None] = 0.,
                  collect_device: str = 'cpu',
                  prefix: Optional[str] = None,
-                 ann_file_path: Optional[str] = None) -> None:
+                 ann_file: Optional[str] = None) -> None:
         super().__init__(collect_device=collect_device, prefix=prefix)
 
         if isinstance(topk, int):
@@ -141,17 +141,16 @@ class Accuracy(BaseMetric):
         else:
             self.thrs = tuple(thrs)
 
-        # generate label mask
-        if ann_file_path is not None:
-            with open(ann_file_path, 'r') as f:
+        # generate index candidates for ImageNet-A, ImageNet-R, ImageNet-S
+        if ann_file is not None:
+            with open(ann_file, 'r') as f:
                 labels = [
                     int(item.strip().split()[-1]) for item in f.readlines()
                 ]
             label_dict = {label: 1 for label in labels}
-            self.label_mask = torch.tensor(
-                [1 if i in label_dict else 0 for i in range(1000)]).cpu()
+            self.index_candidates = [key for key in label_dict.keys()]
         else:
-            self.label_mask = torch.tensor([1] * 1000).cpu()
+            self.index_candidates = None
 
     def process(self, data_batch, data_samples: Sequence[dict]):
         """Process one batch of data samples.
@@ -168,10 +167,16 @@ class Accuracy(BaseMetric):
             result = dict()
             pred_label = data_sample['pred_label']
             gt_label = data_sample['gt_label']
-            result['img_path'] = data_sample['img_path']
             if 'score' in pred_label:
-                result['pred_score'] = pred_label['score'].cpu(
-                ) * self.label_mask
+                if self.index_candidates is not None:
+                    pred_label['score'] = pred_label['score'].cpu()
+                    # Since we only compute the topk across the candidate
+                    # indices, we need to add 1 to the score of the candidates
+                    # to ensure that the candidates are in the topk.
+                    pred_label['score'][
+                        ..., self.index_candidates] = pred_label['score'][
+                            ..., self.index_candidates] + 1.0
+                result['pred_score'] = pred_label['score']
             else:
                 result['pred_label'] = pred_label['label'].cpu()
             result['gt_label'] = gt_label['label'].cpu()

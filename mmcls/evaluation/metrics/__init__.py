@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .mce import mCE
+from .corruption_error import CorruptionError
 from .multi_label import AveragePrecision, MultiLabelMetric
 from .multi_task import MultiTasksMetric
 from .retrieval import RetrievalRecall
@@ -9,5 +9,5 @@ from .voc_multi_label import VOCAveragePrecision, VOCMultiLabelMetric
 __all__ = [
     'Accuracy', 'SingleLabelMetric', 'MultiLabelMetric', 'AveragePrecision',
     'MultiTasksMetric', 'VOCAveragePrecision', 'VOCMultiLabelMetric',
-    'ConfusionMatrix', 'RetrievalRecall', 'mCE'
+    'ConfusionMatrix', 'RetrievalRecall', 'CorruptionError'
 ]

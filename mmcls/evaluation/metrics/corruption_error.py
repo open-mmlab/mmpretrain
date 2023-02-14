@@ -30,12 +30,12 @@ def get_ce_alexnet() -> dict:
 
 
 @METRICS.register_module()
-class mCE(Accuracy):
+class CorruptionError(Accuracy):
     """Mean Corruption Error (mCE) metric.
 
     The mCE metric is proposed in `Benchmarking Neural Network Robustness to
     Common Corruptions and Perturbations
-    <https://openreview.net/pdf?id=HJz6tiCqYm>`_.
+    <https://arxiv.org/abs/1903.12261>`_.
 
     Args:
         topk (int | Sequence[int]): If the ground truth label matches one of
@@ -54,7 +54,7 @@ class mCE(Accuracy):
             names to disambiguate homonymous metrics of different evaluators.
             If prefix is not provided in the argument, self.default_prefix
             will be used instead. Defaults to None.
-        ano_file_path (str, optional): The path of the annotation file. This
+        ano_file (str, optional): The path of the annotation file. This
             file will be used in evaluating the fine-tuned model on OOD
             dataset, e.g. ImageNet-A. Defaults to None.
     """
@@ -65,15 +65,41 @@ class mCE(Accuracy):
         thrs: Union[float, Sequence[Union[float, None]], None] = 0.,
         collect_device: str = 'cpu',
         prefix: Optional[str] = None,
-        ann_file_path: Optional[str] = None,
+        ann_file: Optional[str] = None,
     ) -> None:
         super().__init__(
             topk=topk,
             thrs=thrs,
             collect_device=collect_device,
             prefix=prefix,
-            ann_file_path=ann_file_path)
+            ann_file=ann_file)
         self.ce_alexnet = get_ce_alexnet()
+
+    def process(self, data_batch, data_samples: Sequence[dict]) -> None:
+        """Process one batch of data samples.
+
+        The processed results should be stored in ``self.results``, which will
+        be used to computed the metrics when all batches have been processed.
+        The difference between this method and ``process`` in ``Accuracy`` is
+        that the ``img_path`` is extracted from the ``data_batch`` and stored
+        in the ``self.results``.
+
+        Args:
+            data_batch: A batch of data from the dataloader.
+            data_samples (Sequence[dict]): A batch of outputs from the model.
+        """
+        for data_sample in data_samples:
+            result = dict()
+            pred_label = data_sample['pred_label']
+            gt_label = data_sample['gt_label']
+            result['img_path'] = data_sample['img_path']
+            if 'score' in pred_label:
+                result['pred_score'] = pred_label['score']
+            else:
+                result['pred_label'] = pred_label['label'].cpu()
+            result['gt_label'] = gt_label['label'].cpu()
+            # Save the result to `self.results`.
+            self.results.append(result)
 
     def compute_metrics(self, results: List) -> dict:
         """Compute the metrics from processed results.
