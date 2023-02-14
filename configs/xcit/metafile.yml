@@ -1,0 +1,559 @@
+Collections:
+  - Name: XCiT
+    Metadata:
+      Architecture:
+        - Class Attention
+        - Local Patch Interaction
+        - Cross-Covariance Attention
+    Paper:
+      Title: 'XCiT: Cross-Covariance Image Transformers'
+      URL: https://arxiv.org/abs/2106.09681
+    README: configs/xcit/README.md
+
+Models:
+  - Name: xcit-nano-12-p16_3rdparty_in1k
+    Metadata:
+      FLOPs: 557074560
+      Parameters: 3053224
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-nano-12-p16_3rdparty_in1k_20230213-ed776c38.pth
+    Config: configs/xcit/xcit-nano-12-p16_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_nano_12_p16_224.pth
+  - Name: xcit-nano-12-p16_3rdparty-dist_in1k
+    Metadata:
+      FLOPs: 557074560
+      Parameters: 3053224
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-nano-12-p16_3rdparty-dist_in1k_20230213-fb247f7b.pth
+    Config: configs/xcit/xcit-nano-12-p16_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_nano_12_p16_224_dist.pth
+  - Name: xcit-tiny-12-p16_3rdparty_in1k
+    Metadata:
+      FLOPs: 1239698112
+      Parameters: 6716272
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-tiny-12-p16_3rdparty_in1k_20230213-82c547ca.pth
+    Config: configs/xcit/xcit-tiny-12-p16_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_tiny_12_p16_224.pth
+  - Name: xcit-tiny-12-p16_3rdparty-dist_in1k
+    Metadata:
+      FLOPs: 1239698112
+      Parameters: 6716272
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-tiny-12-p16_3rdparty-dist_in1k_20230213-d5fde0a3.pth
+    Config: configs/xcit/xcit-tiny-12-p16_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_tiny_12_p16_224_dist.pth
+  - Name: xcit-nano-12-p16_3rdparty-dist_in1k-384px
+    Metadata:
+      FLOPs: 1636347520
+      Parameters: 3053224
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-nano-12-p16_3rdparty-dist_in1k-384px_20230213-712db4d4.pth
+    Config: configs/xcit/xcit-nano-12-p16_8xb128_in1k-384px.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_nano_12_p16_384_dist.pth
+  - Name: xcit-nano-12-p8_3rdparty_in1k
+    Metadata:
+      FLOPs: 2156861056
+      Parameters: 3049016
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-nano-12-p8_3rdparty_in1k_20230213-3370c293.pth
+    Config: configs/xcit/xcit-nano-12-p8_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_nano_12_p8_224.pth
+  - Name: xcit-nano-12-p8_3rdparty-dist_in1k
+    Metadata:
+      FLOPs: 2156861056
+      Parameters: 3049016
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-nano-12-p8_3rdparty-dist_in1k_20230213-2f87d2b3.pth
+    Config: configs/xcit/xcit-nano-12-p8_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_nano_12_p8_224_dist.pth
+  - Name: xcit-tiny-24-p16_3rdparty_in1k
+    Metadata:
+      FLOPs: 2339305152
+      Parameters: 12116896
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-tiny-24-p16_3rdparty_in1k_20230213-366c1cd0.pth
+    Config: configs/xcit/xcit-tiny-24-p16_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_tiny_24_p16_224.pth
+  - Name: xcit-tiny-24-p16_3rdparty-dist_in1k
+    Metadata:
+      FLOPs: 2339305152
+      Parameters: 12116896
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-tiny-24-p16_3rdparty-dist_in1k_20230213-b472e80a.pth
+    Config: configs/xcit/xcit-tiny-24-p16_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_tiny_24_p16_224_dist.pth
+  - Name: xcit-tiny-12-p16_3rdparty-dist_in1k-384px
+    Metadata:
+      FLOPs: 3641468352
+      Parameters: 6716272
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-tiny-12-p16_3rdparty-dist_in1k-384px_20230213-00a20023.pth
+    Config: configs/xcit/xcit-tiny-12-p16_8xb128_in1k-384px.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_tiny_12_p16_384_dist.pth
+  - Name: xcit-tiny-12-p8_3rdparty_in1k
+    Metadata:
+      FLOPs: 4807399872
+      Parameters: 6706504
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-tiny-12-p8_3rdparty_in1k_20230213-8b02f8f5.pth
+    Config: configs/xcit/xcit-tiny-12-p8_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_tiny_12_p8_224.pth
+  - Name: xcit-tiny-12-p8_3rdparty-dist_in1k
+    Metadata:
+      FLOPs: 4807399872
+      Parameters: 6706504
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-tiny-12-p8_3rdparty-dist_in1k_20230213-f3f9b44f.pth
+    Config: configs/xcit/xcit-tiny-12-p8_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_tiny_12_p8_224_dist.pth
+  - Name: xcit-small-12-p16_3rdparty_in1k
+    Metadata:
+      FLOPs: 4814951808
+      Parameters: 26253304
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-small-12-p16_3rdparty_in1k_20230213-d36779d2.pth
+    Config: configs/xcit/xcit-small-12-p16_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_small_12_p16_224.pth
+  - Name: xcit-small-12-p16_3rdparty-dist_in1k
+    Metadata:
+      FLOPs: 4814951808
+      Parameters: 26253304
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-small-12-p16_3rdparty-dist_in1k_20230213-c95bbae1.pth
+    Config: configs/xcit/xcit-small-12-p16_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_small_12_p16_224_dist.pth
+  - Name: xcit-nano-12-p8_3rdparty-dist_in1k-384px
+    Metadata:
+      FLOPs: 6337760896
+      Parameters: 3049016
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-nano-12-p8_3rdparty-dist_in1k-384px_20230213-09d925ef.pth
+    Config: configs/xcit/xcit-nano-12-p8_8xb128_in1k-384px.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_nano_12_p8_384_dist.pth
+  - Name: xcit-tiny-24-p16_3rdparty-dist_in1k-384px
+    Metadata:
+      FLOPs: 6872966592
+      Parameters: 12116896
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-tiny-24-p16_3rdparty-dist_in1k-384px_20230213-20e13917.pth
+    Config: configs/xcit/xcit-tiny-24-p16_8xb128_in1k-384px.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_tiny_24_p16_384_dist.pth
+  - Name: xcit-small-24-p16_3rdparty_in1k
+    Metadata:
+      FLOPs: 9095064960
+      Parameters: 47671384
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-small-24-p16_3rdparty_in1k_20230213-40febe38.pth
+    Config: configs/xcit/xcit-small-24-p16_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_small_24_p16_224.pth
+  - Name: xcit-small-24-p16_3rdparty-dist_in1k
+    Metadata:
+      FLOPs: 9095064960
+      Parameters: 47671384
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-small-24-p16_3rdparty-dist_in1k_20230213-130d7262.pth
+    Config: configs/xcit/xcit-small-24-p16_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_small_24_p16_224_dist.pth
+  - Name: xcit-tiny-24-p8_3rdparty_in1k
+    Metadata:
+      FLOPs: 9205828032
+      Parameters: 12107128
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-tiny-24-p8_3rdparty_in1k_20230213-4b9ba392.pth
+    Config: configs/xcit/xcit-tiny-24-p8_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_tiny_24_p8_224.pth
+  - Name: xcit-tiny-24-p8_3rdparty-dist_in1k
+    Metadata:
+      FLOPs: 9205828032
+      Parameters: 12107128
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-tiny-24-p8_3rdparty-dist_in1k_20230213-ad9c44b0.pth
+    Config: configs/xcit/xcit-tiny-24-p8_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_tiny_24_p8_224_dist.pth
+  - Name: xcit-tiny-12-p8_3rdparty-dist_in1k-384px
+    Metadata:
+      FLOPs: 14126142912
+      Parameters: 6706504
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-tiny-12-p8_3rdparty-dist_in1k-384px_20230213-a072174a.pth
+    Config: configs/xcit/xcit-tiny-12-p8_8xb128_in1k-384px.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_tiny_12_p8_384_dist.pth
+  - Name: xcit-small-12-p16_3rdparty-dist_in1k-384px
+    Metadata:
+      FLOPs: 14143179648
+      Parameters: 26253304
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-small-12-p16_3rdparty-dist_in1k-384px_20230213-ba36c982.pth
+    Config: configs/xcit/xcit-small-12-p16_8xb128_in1k-384px.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_small_12_p16_384_dist.pth
+  - Name: xcit-medium-24-p16_3rdparty_in1k
+    Metadata:
+      FLOPs: 16129561088
+      Parameters: 84395752
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-medium-24-p16_3rdparty_in1k_20230213-ad0aa92e.pth
+    Config: configs/xcit/xcit-medium-24-p16_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_medium_24_p16_224.pth
+  - Name: xcit-medium-24-p16_3rdparty-dist_in1k
+    Metadata:
+      FLOPs: 16129561088
+      Parameters: 84395752
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-medium-24-p16_3rdparty-dist_in1k_20230213-aca5cd0c.pth
+    Config: configs/xcit/xcit-medium-24-p16_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_medium_24_p16_224_dist.pth
+  - Name: xcit-small-12-p8_3rdparty_in1k
+    Metadata:
+      FLOPs: 18691601280
+      Parameters: 26213032
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-small-12-p8_3rdparty_in1k_20230213-9e364ce3.pth
+    Config: configs/xcit/xcit-small-12-p8_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_small_12_p8_224.pth
+  - Name: xcit-small-12-p8_3rdparty-dist_in1k
+    Metadata:
+      FLOPs: 18691601280
+      Parameters: 26213032
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-small-12-p8_3rdparty-dist_in1k_20230213-71886580.pth
+    Config: configs/xcit/xcit-small-12-p8_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_small_12_p8_224_dist.pth
+  - Name: xcit-small-24-p16_3rdparty-dist_in1k-384px
+    Metadata:
+      FLOPs: 26721471360
+      Parameters: 47671384
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-small-24-p16_3rdparty-dist_in1k-384px_20230213-28fa2d0e.pth
+    Config: configs/xcit/xcit-small-24-p16_8xb128_in1k-384px.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_small_24_p16_384_dist.pth
+  - Name: xcit-tiny-24-p8_3rdparty-dist_in1k-384px
+    Metadata:
+      FLOPs: 27052135872
+      Parameters: 12107128
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-tiny-24-p8_3rdparty-dist_in1k-384px_20230213-30d5e5ec.pth
+    Config: configs/xcit/xcit-tiny-24-p8_8xb128_in1k-384px.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_tiny_24_p8_384_dist.pth
+  - Name: xcit-small-24-p8_3rdparty_in1k
+    Metadata:
+      FLOPs: 35812053888
+      Parameters: 47631112
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-small-24-p8_3rdparty_in1k_20230213-280ebcc7.pth
+    Config: configs/xcit/xcit-small-24-p8_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_small_24_p8_224.pth
+  - Name: xcit-small-24-p8_3rdparty-dist_in1k
+    Metadata:
+      FLOPs: 35812053888
+      Parameters: 47631112
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-small-24-p8_3rdparty-dist_in1k_20230213-f2773c78.pth
+    Config: configs/xcit/xcit-small-24-p8_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_small_24_p8_224_dist.pth
+  - Name: xcit-large-24-p16_3rdparty_in1k
+    Metadata:
+      FLOPs: 35855948544
+      Parameters: 189096136
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-large-24-p16_3rdparty_in1k_20230214-d29d2529.pth
+    Config: configs/xcit/xcit-large-24-p16_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_large_24_p16_224.pth
+  - Name: xcit-large-24-p16_3rdparty-dist_in1k
+    Metadata:
+      FLOPs: 35855948544
+      Parameters: 189096136
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-large-24-p16_3rdparty-dist_in1k_20230214-4fea599c.pth
+    Config: configs/xcit/xcit-large-24-p16_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_large_24_p16_224_dist.pth
+  - Name: xcit-medium-24-p16_3rdparty-dist_in1k-384px
+    Metadata:
+      FLOPs: 47388932608
+      Parameters: 84395752
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-medium-24-p16_3rdparty-dist_in1k-384px_20230214-6c23a201.pth
+    Config: configs/xcit/xcit-medium-24-p16_8xb128_in1k-384px.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_medium_24_p16_384_dist.pth
+  - Name: xcit-small-12-p8_3rdparty-dist_in1k-384px
+    Metadata:
+      FLOPs: 54923537280
+      Parameters: 26213032
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-small-12-p8_3rdparty-dist_in1k-384px_20230214-9f2178bc.pth
+    Config: configs/xcit/xcit-small-12-p8_8xb128_in1k-384px.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_small_12_p8_384_dist.pth
+  - Name: xcit-medium-24-p8_3rdparty_in1k
+    Metadata:
+      FLOPs: 63524706816
+      Parameters: 84323624
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-medium-24-p8_3rdparty_in1k_20230214-c362850b.pth
+    Config: configs/xcit/xcit-medium-24-p8_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_medium_24_p8_224.pth
+  - Name: xcit-medium-24-p8_3rdparty-dist_in1k
+    Metadata:
+      FLOPs: 63524706816
+      Parameters: 84323624
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-medium-24-p8_3rdparty-dist_in1k_20230214-625c953b.pth
+    Config: configs/xcit/xcit-medium-24-p8_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_medium_24_p8_224_dist.pth
+  - Name: xcit-small-24-p8_3rdparty-dist_in1k-384px
+    Metadata:
+      FLOPs: 105236704128
+      Parameters: 47631112
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-small-24-p8_3rdparty-dist_in1k-384px_20230214-57298eca.pth
+    Config: configs/xcit/xcit-small-24-p8_8xb128_in1k-384px.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_small_24_p8_384_dist.pth
+  - Name: xcit-large-24-p16_3rdparty-dist_in1k-384px
+    Metadata:
+      FLOPs: 105345095424
+      Parameters: 189096136
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-large-24-p16_3rdparty-dist_in1k-384px_20230214-bd515a34.pth
+    Config: configs/xcit/xcit-large-24-p16_8xb128_in1k-384px.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_large_24_p16_384_dist.pth
+  - Name: xcit-large-24-p8_3rdparty_in1k
+    Metadata:
+      FLOPs: 141225699072
+      Parameters: 188932648
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-large-24-p8_3rdparty_in1k_20230214-08f2f664.pth
+    Config: configs/xcit/xcit-large-24-p8_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_large_24_p8_224.pth
+  - Name: xcit-large-24-p8_3rdparty-dist_in1k
+    Metadata:
+      FLOPs: 141225699072
+      Parameters: 188932648
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-large-24-p8_3rdparty-dist_in1k_20230214-8c092b34.pth
+    Config: configs/xcit/xcit-large-24-p8_8xb128_in1k.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_large_24_p8_224_dist.pth
+  - Name: xcit-medium-24-p8_3rdparty-dist_in1k-384px
+    Metadata:
+      FLOPs: 186672626176
+      Parameters: 84323624
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-medium-24-p8_3rdparty-dist_in1k-384px_20230214-5db925e0.pth
+    Config: configs/xcit/xcit-medium-24-p8_8xb128_in1k-384px.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_medium_24_p8_384_dist.pth
+  - Name: xcit-large-24-p8_3rdparty-dist_in1k-384px
+    Metadata:
+      FLOPs: 415003137792
+      Parameters: 188932648
+      Training Data: ImageNet-1k
+    In Collection: XCiT
+    Results:
+      - Dataset: ImageNet-1k
+    Weights: https://download.openmmlab.com/mmclassification/v0/xcit/xcit-large-24-p8_3rdparty-dist_in1k-384px_20230214-9f718b1a.pth
+    Config: configs/xcit/xcit-large-24-p8_8xb128_in1k-384px.py
+    Converted From:
+      Code: https://github.com/facebookresearch/xcit
+      Weights: https://dl.fbaipublicfiles.com/xcit/xcit_large_24_p8_384_dist.pth

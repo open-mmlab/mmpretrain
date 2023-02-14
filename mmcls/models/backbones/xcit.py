@@ -16,7 +16,7 @@ from ..utils import build_norm_layer, to_2tuple
 from .base_backbone import BaseBackbone
 
 
-class ClassAttn(BaseModule):
+class ClassAttntion(BaseModule):
     """Class Attention Module.
 
     A PyTorch implementation of Class Attention Module introduced by:
@@ -46,7 +46,7 @@ class ClassAttn(BaseModule):
                  proj_drop: float = 0.,
                  init_cfg=None):
 
-        super(ClassAttn, self).__init__(init_cfg=init_cfg)
+        super(ClassAttntion, self).__init__(init_cfg=init_cfg)
         self.num_heads = num_heads
         head_dim = dim // num_heads
         self.scale = head_dim**-0.5
@@ -54,12 +54,14 @@ class ClassAttn(BaseModule):
         self.q = nn.Linear(dim, dim, bias=qkv_bias)
         self.k = nn.Linear(dim, dim, bias=qkv_bias)
         self.v = nn.Linear(dim, dim, bias=qkv_bias)
+
         self.attn_drop = nn.Dropout(attn_drop)
         self.proj = nn.Linear(dim, dim)
         self.proj_drop = nn.Dropout(proj_drop)
 
     def forward(self, x):
         B, N, C = x.shape
+        # We only need to calculate query of cls token.
         q = self.q(x[:, 0]).unsqueeze(1).reshape(B, 1, self.num_heads,
                                                  C // self.num_heads).permute(
                                                      0, 2, 1, 3)
@@ -264,7 +266,7 @@ class ClassAttentionBlock(BaseModule):
 
         self.norm1 = build_norm_layer(norm_cfg, dim)
 
-        self.attn = ClassAttn(
+        self.attn = ClassAttntion(
             dim,
             num_heads=num_heads,
             qkv_bias=qkv_bias,
@@ -550,8 +552,9 @@ class XCiT(BaseBackbone):
             cls_token in the CA. Defaults to False.
         out_indices (Sequence[int]): Output from which layers.
             Defaults to (-1, ).
-        frozen_stages (int): Layers to be frozen (all param fixed).
-            Defaults to 0, which means not freezing any parameters.
+        frozen_stages (int): Layers to be frozen (all param fixed), and 0
+            means to freeze the stem stage. Defaults to -1, which means
+            not freeze any parameters.
         bn_norm_cfg (dict): Config dict for the batch norm layers in LPI and
             ConvPatchEmbed. Defaults to ``dict(type='BN')``.
         norm_cfg (dict): Config dict for normalization layer.
@@ -580,7 +583,7 @@ class XCiT(BaseBackbone):
                  out_type: str = 'cls_token',
                  out_indices: Sequence[int] = (-1, ),
                  final_norm: bool = True,
-                 frozen_stages: int = 0,
+                 frozen_stages: int = -1,
                  bn_norm_cfg=dict(type='BN'),
                  norm_cfg=dict(type='LN', eps=1e-6),
                  act_cfg=dict(type='GELU'),
@@ -664,9 +667,9 @@ class XCiT(BaseBackbone):
                 f'Invalid out_indices {index}.'
         self.out_indices = out_indices
 
-        if frozen_stages not in range(self.num_layers + 1):
-            raise ValueError(f'frozen_stages must be in [0, {self.num_layers}]'
-                             f'but get {frozen_stages}')
+        if frozen_stages > self.num_layers + 1:
+            raise ValueError('frozen_stages must be less than '
+                             f'{self.num_layers} but get {frozen_stages}')
         self.frozen_stages = frozen_stages
 
     def init_weights(self):
@@ -678,6 +681,9 @@ class XCiT(BaseBackbone):
         trunc_normal_(self.cls_token, std=.02)
 
     def _freeze_stages(self):
+        if self.frozen_stages < 0:
+            return
+
         # freeze position embedding
         if self.use_pos_embed:
             self.pos_embed.eval()
