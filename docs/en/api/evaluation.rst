@@ -23,7 +23,7 @@ Single Label Metric
    Accuracy
    SingleLabelMetric
    ConfusionMatrix
-   mCE
+   CorruptionError
 
 Multi Label Metric
 ----------------------

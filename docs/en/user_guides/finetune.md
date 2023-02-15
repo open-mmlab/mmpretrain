@@ -231,7 +231,7 @@ match the training schedule.
 
 ## Evaluate the fine-tuned model on ImageNet variants
 
-It's a common practice to evaluate the ImageNet-(1K, 21K) fine-tuned model the ImageNet-1K validation set. This set
+It's a common practice to evaluate the ImageNet-(1K, 21K) fine-tuned model on the ImageNet-1K validation set. This set
 shares similar data distribution with the training set, but in real world, the inference data is more likely to share
 different data distribution with the training set. To have a full evaluation of model's performance on
 out-of-distribution datasets, research community introduces the ImageNet-variant datasets, which shares different data
@@ -268,7 +268,12 @@ You can download these datasets from [OpenDataLab](https://opendatalab.com/) and
 [prepare_dataset](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html) to generate the
 annotation file.
 
-### Modify the config file
+### Configure the dataset and test evaluator
+
+Once the dataset is ready, you need to configure the `dataset` and `test_evaluator`. You have two options to
+write the default settings:
+
+#### 1. Change the configuration file directly
 
 There are few modifications to the config file, but change the `data_root` of the test dataloader and pass the
 annotation file to the `test_evaluator`.
@@ -277,7 +282,16 @@ annotation file to the `test_evaluator`.
 # You should replace imagenet-x below with imagenet-c, imagenet-r, imagenet-a
 # or imagenet-s
 test_dataloader=dict(dataset=dict(data_root='data/imagenet-x'))
-test_evaluator=dict(meta_file_path='data/imagenet-x/meta/val.txt')
+test_evaluator=dict(ann_file='data/imagenet-x/meta/val.txt')
+```
+
+#### 2. Overwrite the default settings from command line
+
+For example, you can overwrite the default settings by passing `--cfg-options`:
+
+```bash
+--cfg-options test_dataloader.dataset.data_root='data/imagenet-x' \
+              test_evaluator.ann_file='data/imagenet-x/meta/val.txt'
 ```
 
 ### Start test

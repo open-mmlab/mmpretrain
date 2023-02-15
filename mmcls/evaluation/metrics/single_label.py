@@ -60,6 +60,26 @@ def _precision_recall_f1_support(pred_positive, gt_positive, average):
     return precision, recall, f1_score, support
 
 
+def _generate_candidate_indices(ann_file: str = None) -> Optional[list]:
+    """generate index candidates for ImageNet-A, ImageNet-R, ImageNet-S.
+
+    Args:
+        ann_file (str, optional): The path of the annotation file. This
+            file will be used in evaluating the fine-tuned model on OOD
+            dataset, e.g. ImageNet-A. Defaults to None.
+
+    Returns:
+        Optional[list]: index candidates for ImageNet-A, ImageNet-R, ImageNet-S
+    """
+    if ann_file is not None:
+        with open(ann_file, 'r') as f:
+            labels = [int(item.strip().split()[-1]) for item in f.readlines()]
+        label_dict = {label: 1 for label in labels}
+        return label_dict
+    else:
+        return None
+
+
 @METRICS.register_module()
 class Accuracy(BaseMetric):
     r"""Accuracy evaluation metric.
@@ -88,7 +108,7 @@ class Accuracy(BaseMetric):
             names to disambiguate homonymous metrics of different evaluators.
             If prefix is not provided in the argument, self.default_prefix
             will be used instead. Defaults to None.
-        ano_file (str, optional): The path of the annotation file. This
+        ann_file (str, optional): The path of the annotation file. This
             file will be used in evaluating the fine-tuned model on OOD
             dataset, e.g. ImageNet-A. Defaults to None.
 
@@ -142,15 +162,7 @@ class Accuracy(BaseMetric):
             self.thrs = tuple(thrs)
 
         # generate index candidates for ImageNet-A, ImageNet-R, ImageNet-S
-        if ann_file is not None:
-            with open(ann_file, 'r') as f:
-                labels = [
-                    int(item.strip().split()[-1]) for item in f.readlines()
-                ]
-            label_dict = {label: 1 for label in labels}
-            self.index_candidates = [key for key in label_dict.keys()]
-        else:
-            self.index_candidates = None
+        self.index_candidates = _generate_candidate_indices(ann_file)
 
     def process(self, data_batch, data_samples: Sequence[dict]):
         """Process one batch of data samples.

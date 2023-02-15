@@ -7,7 +7,7 @@ from mmcls.registry import METRICS
 from .single_label import Accuracy
 
 
-def get_ce_alexnet() -> dict:
+def _get_ce_alexnet() -> dict:
     """Returns Corruption Error values for AlexNet."""
     ce_alexnet = dict()
     ce_alexnet['gaussian_noise'] = 0.886428
@@ -73,7 +73,7 @@ class CorruptionError(Accuracy):
             collect_device=collect_device,
             prefix=prefix,
             ann_file=ann_file)
-        self.ce_alexnet = get_ce_alexnet()
+        self.ce_alexnet = _get_ce_alexnet()
 
     def process(self, data_batch, data_samples: Sequence[dict]) -> None:
         """Process one batch of data samples.
