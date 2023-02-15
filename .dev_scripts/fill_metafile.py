@@ -1,5 +1,6 @@
 import argparse
 import copy
+import re
 from functools import partial
 from pathlib import Path
 
@@ -70,6 +71,7 @@ def parse_args():
     parser.add_argument('--out', '-o', type=Path, help='The output path.')
     parser.add_argument(
         '--view', action='store_true', help='Only pretty print the metafile.')
+    parser.add_argument('--csv', type=str, help='Use a csv to update models.')
     args = parser.parse_args()
     return args
 
@@ -165,14 +167,17 @@ def fill_collection(collection: dict):
     return collection
 
 
-def fill_model(model: dict, defaults: dict):
+def fill_model_by_prompt(model: dict, defaults: dict):
+    # Name
     if model.get('Name') is None:
         name = prompt(
             'Please input the model [red]name[/]: ', allow_empty=False)
         model['Name'] = name
 
+    # In Collection
     model['In Collection'] = defaults.get('In Collection')
 
+    # Config
     config = model.get('Config')
     if config is None:
         config = prompt(
@@ -182,6 +187,7 @@ def fill_model(model: dict, defaults: dict):
             config = str(Path(config).absolute().relative_to(MMCLS_ROOT))
     model['Config'] = config
 
+    # Metadata.Flops, Metadata.Parameters
     flops = model.get('Metadata', {}).get('FLOPs')
     params = model.get('Metadata', {}).get('Parameters')
     if model.get('Config') is not None and (
@@ -280,6 +286,100 @@ def fill_model(model: dict, defaults: dict):
     return model
 
 
+def update_model_by_dict(model: dict, update_dict: dict, defaults: dict):
+    # Name
+    if 'name override' in update_dict:
+        model['Name'] = update_dict['name override']
+
+    # In Collection
+    model['In Collection'] = defaults.get('In Collection')
+
+    # Config
+    if 'config' in update_dict:
+        config = update_dict['config'].strip()
+        config = str(Path(config).absolute().relative_to(MMCLS_ROOT))
+        config_updated = (config != model.get('Config'))
+        model['Config'] = config
+    else:
+        config_updated = False
+
+    # Metadata.Flops, Metadata.Parameters
+    flops = model.get('Metadata', {}).get('FLOPs')
+    params = model.get('Metadata', {}).get('Parameters')
+    if config_updated and (flops is None or params is None):
+        print(f'Automatically compute FLOPs and Parameters of {model["Name"]}')
+        flops, params = get_flops(str(MMCLS_ROOT / model['Config']))
+
+    model.setdefault('Metadata', {})
+    model['Metadata']['FLOPs'] = flops
+    model['Metadata']['Parameters'] = params
+
+    # Metadata.Training Data
+    if 'metadata.training data' in update_dict:
+        train_data = update_dict['metadata.training data'].strip()
+        train_data = re.split(r'\s+', train_data)
+        if len(train_data) > 1:
+            model['Metadata']['Training Data'] = train_data
+        elif len(train_data) == 1:
+            model['Metadata']['Training Data'] = train_data[0]
+
+    # Results.Dataset
+    if 'results.dataset' in update_dict:
+        test_data = update_dict['results.dataset'].strip()
+        results = model.get('Results') or [{}]
+        result = results[0]
+        result['Dataset'] = test_data
+        model['Results'] = results
+
+    # Results.Metrics.Top 1 Accuracy
+    result = None
+    if 'results.metrics.top 1 accuracy' in update_dict:
+        top1 = update_dict['results.metrics.top 1 accuracy']
+        results = model.get('Results') or [{}]
+        result = results[0]
+        result.setdefault('Metrics', {})
+        result['Metrics']['Top 1 Accuracy'] = round(float(top1), 2)
+        task = 'Image Classification'
+        model['Results'] = results
+
+    # Results.Metrics.Top 5 Accuracy
+    if 'results.metrics.top 5 accuracy' in update_dict:
+        top5 = update_dict['results.metrics.top 5 accuracy']
+        results = model.get('Results') or [{}]
+        result = results[0]
+        result.setdefault('Metrics', {})
+        result['Metrics']['Top 5 Accuracy'] = round(float(top5), 2)
+        task = 'Image Classification'
+        model['Results'] = results
+
+    if result is not None:
+        result['Metrics']['Task'] = task
+
+    # Weights
+    if 'weights' in update_dict:
+        weights = update_dict['weights'].strip()
+        model['Weights'] = weights
+
+    # Converted From.Code
+    if 'converted from.code' in update_dict:
+        from_code = update_dict['converted from.code'].strip()
+        model.setdefault('Converted From', {})
+        model['Converted From']['Code'] = from_code
+
+    # Converted From.Weights
+    if 'converted from.weights' in update_dict:
+        from_weight = update_dict['converted from.weights'].strip()
+        model.setdefault('Converted From', {})
+        model['Converted From']['Weights'] = from_weight
+
+    order = [
+        'Name', 'Metadata', 'In Collection', 'Results', 'Weights', 'Config',
+        'Converted From'
+    ]
+    model = {k: model[k] for k in sorted(model.keys(), key=order.index)}
+    return model
+
+
 def format_collection(collection: dict):
     yaml_str = yaml_dump(collection)
     return Panel(
@@ -325,35 +425,44 @@ def main():
     models = content.get('Models', [])
     updated_models = []
 
-    try:
+    if args.csv is not None:
+        import pandas as pd
+        df = pd.read_csv(args.csv).rename(columns=lambda x: x.strip().lower())
+        assert df['name'].is_unique, 'The csv has duplicated model names.'
+        models_dict = {item['Name']: item for item in models}
+        for update_dict in df.to_dict('records'):
+            assert 'name' in update_dict, 'The csv must have the `Name` field.'
+            model_name = update_dict['name'].strip()
+            model = models_dict.pop(model_name, {'Name': model_name})
+            model = update_model_by_dict(model, update_dict, model_defaults)
+            updated_models.append(model)
+        updated_models.extend(models_dict.values())
+    else:
         for model in models:
             console.print(format_model(model))
             ori_model = copy.deepcopy(model)
-            model = fill_model(model, model_defaults)
+            model = fill_model_by_prompt(model, model_defaults)
             if ori_model != model:
                 console.print(format_model(model))
             updated_models.append(model)
 
         while Confirm.ask('Add new model?'):
-            model = fill_model({}, model_defaults)
+            model = fill_model_by_prompt({}, model_defaults)
             updated_models.append(model)
-    finally:
-        # Save updated models even error happened.
-        updated_models.sort(key=lambda item: (item.get('Metadata', {}).get(
-            'FLOPs', 0), len(item['Name'])))
-        if args.out is not None:
-            with open(args.out, 'w') as f:
-                yaml_dump({'Collections': [collection]}, f)
-                f.write('\n')
-                yaml_dump({'Models': updated_models}, f)
-        else:
-            modelindex = {
-                'Collections': [collection],
-                'Models': updated_models
-            }
-            yaml_str = yaml_dump(modelindex)
-            console.print(Syntax(yaml_str, 'yaml', background_color='default'))
-            console.print('Specify [red]`--out`[/] to dump to file.')
+
+    # Save updated models even error happened.
+    updated_models.sort(key=lambda item: (item.get('Metadata', {}).get(
+        'FLOPs', 0), len(item['Name'])))
+    if args.out is not None:
+        with open(args.out, 'w') as f:
+            yaml_dump({'Collections': [collection]}, f)
+            f.write('\n')
+            yaml_dump({'Models': updated_models}, f)
+    else:
+        modelindex = {'Collections': [collection], 'Models': updated_models}
+        yaml_str = yaml_dump(modelindex)
+        console.print(Syntax(yaml_str, 'yaml', background_color='default'))
+        console.print('Specify [red]`--out`[/] to dump to file.')
 
 
 if __name__ == '__main__':
