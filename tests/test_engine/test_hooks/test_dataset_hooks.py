@@ -1,11 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import logging
+import tempfile
 from unittest import TestCase
-from unittest.mock import MagicMock
 
 import numpy as np
 import torch
 import torch.nn as nn
-from mmengine.logging import MessageHub
+from mmengine.logging import MessageHub, MMLogger
 from mmengine.model import BaseModel
 from mmengine.optim import OptimWrapper
 from mmengine.runner import Runner
@@ -42,6 +43,14 @@ class ExampleDataset(BaseDataset):
 
 class TestPushDataInfoToMessageHubHook(TestCase):
 
+    def setUp(self):
+        self.tmpdir = tempfile.TemporaryDirectory()
+
+    def tearDown(self) -> None:
+        logging.shutdown()
+        MMLogger._instance_dict.clear()
+        self.tmpdir.cleanup()
+
     def test_init(self):
         with self.assertRaisesRegex(ValueError, '`keys` must be str'):
             PushDataInfoToMessageHubHook(keys=1)
@@ -73,7 +82,7 @@ class TestPushDataInfoToMessageHubHook(TestCase):
             optim_wrapper=OptimWrapper(
                 optimizer=torch.optim.Adam(model.parameters(), lr=0.)),
             train_cfg=dict(by_epoch=True, max_epochs=2, val_interval=10),
-            work_dir=MagicMock(),
+            work_dir=self.tmpdir.name,
             default_hooks=dict(logger=None),
             custom_hooks=[],
             default_scope='mmcls',

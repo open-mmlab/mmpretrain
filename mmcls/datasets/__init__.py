@@ -1,12 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from .base_dataset import BaseDataset
 from .builder import build_dataset
-from .cifar import CIFAR10, CIFAR100, LongTailCIFAR10, LongTailCIFAR100
+from .cifar import CIFAR10, CIFAR100
 from .cub import CUB
 from .custom import CustomDataset
 from .dataset_wrappers import KFoldDataset
-from .imagenet import ImageNet, ImageNet21k, LongTailImageNet
+from .imagenet import ImageNet, ImageNet21k
 from .inshop import InShop
+from .long_tail import LongTailCIFAR10, LongTailCIFAR100, LongTailImageNet
 from .mnist import MNIST, FashionMNIST
 from .multi_label import MultiLabelDataset
 from .multi_task import MultiTaskDataset

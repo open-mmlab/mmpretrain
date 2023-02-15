@@ -5,7 +5,6 @@ from mmengine.logging import MMLogger
 
 from mmcls.registry import DATASETS
 from .categories import IMAGENET_CATEGORIES
-from .cifar import ImbalancedDatasetMixin
 from .custom import CustomDataset
 
 
@@ -43,30 +42,6 @@ class ImageNet(CustomDataset):
             data_root=data_root,
             data_prefix=data_prefix,
             **kwargs)
-
-
-@DATASETS.register_module()
-class LongTailImageNet(ImbalancedDatasetMixin, ImageNet):
-    """`Long Tail ImageNet <http://www.image-net.org>`_ Dataset.
-
-    Args:
-        ann_file (str): Annotation file path. Defaults to ''.
-        metainfo (dict, optional): Meta information for dataset, such as class
-            information. Defaults to None.
-        data_root (str): The root directory for ``data_prefix`` and
-            ``ann_file``. Defaults to ''.
-        data_prefix (str | dict): Prefix for training data. Defaults to ''.
-        imb_ratio (int): imbalance ratio, representing the ratio between
-            the sample size of the most sampled class and the sample size of
-            the least sampled class. Defaults to 10.
-        imb_type (str): imbalance type, choose from 'exp' and 'step'.
-            Defaults to 'exp'.
-        **kwargs: Other keyword arguments in :class:`CustomDataset` and
-            :class:`BaseDataset`.
-    """  # noqa: E501
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 
 
 @DATASETS.register_module()
