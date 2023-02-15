@@ -37,9 +37,9 @@ You can download these datasets from [OpenDataLab](https://opendatalab.com/) and
 [prepare_dataset](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html) to generate the
 annotation file.
 
-### Configure the dataset and test evaluator 
+### Configure the dataset and test evaluator
 
-Once the dataset is ready, you need to configure the ``dataset`` and ``test_evaluator``. You have two options to
+Once the dataset is ready, you need to configure the `dataset` and `test_evaluator`. You have two options to
 write the default settings:
 
 #### 1. Change the configuration file directly
@@ -56,7 +56,7 @@ test_evaluator=dict(ann_file='data/imagenet-x/meta/val.txt')
 
 #### 2. Overwrite the default settings from command line
 
-For example, you can overwrite the default settings by passing ``--cfg-options``:
+For example, you can overwrite the default settings by passing `--cfg-options`:
 
 ```bash
 --cfg-options test_dataloader.dataset.data_root='data/imagenet-x' \
