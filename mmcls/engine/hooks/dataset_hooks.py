@@ -19,26 +19,23 @@ class PushDataInfoToMessageHubHook(Hook):
             to the MessageHub.
     """
     priority = 'NORMAL'
-    accept_keys = {'gt_labels', 'file_paths'}
+    accept_keys = {'gt_labels', 'img_paths'}
 
-    def __init__(
-        self,
-        keys: Union[str, List[str]],
-    ):
+    def __init__(self, keys: Union[str, List[str]]):
         if isinstance(keys, str):
             self.keys = [keys]
         elif is_seq_of(keys, str):
             self.keys = keys
         else:
             raise ValueError(
-                f'`keys` must be str of seq of str, but get {type(keys)}')
+                f'`keys` must be str or seq of str, but get {type(keys)}')
 
         for key in self.keys:
             assert key in self.accept_keys, (
                 f"key must be in {self.accept_keys}, but get '{key}'.")
 
     def before_run(self, runner) -> None:
-        """Create an ema copy of the model.
+        """push dataset information to the MessageHub.
 
         Args:
             runner (Runner): The runner of the training process.
@@ -50,7 +47,10 @@ class PushDataInfoToMessageHubHook(Hook):
                     'dataset' in runner._train_dataloader, (
                         'Please set `train_dataloader.dataset` in config.')
             train_dataset_cfg = runner._train_dataloader['dataset']
-            train_dataset = DATASETS.build(train_dataset_cfg)
+            if isinstance(train_dataset_cfg, dict):
+                train_dataset = DATASETS.build(train_dataset_cfg)
+            else:
+                train_dataset = train_dataset_cfg
         else:
             raise ValueError('Error type of `train_cfg` attr in config.')
 
@@ -59,9 +59,7 @@ class PushDataInfoToMessageHubHook(Hook):
                 gt_labels = train_dataset.get_gt_labels()
                 MessageHub.get_current_instance().update_info(
                     'gt_labels', gt_labels)
-            elif key == 'file_paths':
-                file_paths = [
-                    data['file_path'] for data in train_dataset.data_list
-                ]
+            elif key == 'img_paths':
+                img_paths = train_dataset.get_img_paths()
                 MessageHub.get_current_instance().update_info(
-                    'file_paths', file_paths)
+                    'img_paths', img_paths)

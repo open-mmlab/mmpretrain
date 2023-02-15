@@ -8,6 +8,7 @@ from unittest import TestCase
 import numpy as np
 import torch
 from mmengine import is_seq_of
+from mmengine.logging import MessageHub
 
 from mmcls.registry import MODELS
 from mmcls.structures import ClsDataSample, MultiTaskDataSample
@@ -96,7 +97,8 @@ class TestClsHead(TestCase):
 
 class TestLinearClsHead(TestCase):
     DEFAULT_ARGS = dict(type='LinearClsHead', in_channels=10, num_classes=5)
-    FAKE_FEATS = (torch.rand(4, 10), )
+    N_SAMPLES = 4
+    FAKE_FEATS = (torch.rand(N_SAMPLES, 10), )
 
     def test_initialize(self):
         with self.assertRaisesRegex(ValueError, 'num_classes=-5 must be'):
@@ -106,16 +108,18 @@ class TestLinearClsHead(TestCase):
         head = MODELS.build(self.DEFAULT_ARGS)
 
         # return the last item
-        feats = (torch.rand(4, 10), torch.rand(4, 10))
+        feats = (torch.rand(self.N_SAMPLES,
+                            10), torch.rand(self.N_SAMPLES, 10))
         pre_logits = head.pre_logits(feats)
         self.assertIs(pre_logits, feats[-1])
 
     def test_forward(self):
         head = MODELS.build(self.DEFAULT_ARGS)
 
-        feats = (torch.rand(4, 10), torch.rand(4, 10))
+        feats = (torch.rand(self.N_SAMPLES,
+                            10), torch.rand(self.N_SAMPLES, 10))
         outs = head(feats)
-        self.assertEqual(outs.shape, (4, 5))
+        self.assertEqual(outs.shape, (self.N_SAMPLES, 5))
 
 
 class TestVisionTransformerClsHead(TestCase):
@@ -708,3 +712,97 @@ class TestArcFaceClsHead(TestCase):
         losses = head.loss(feats, data_samples)
         self.assertEqual(losses.keys(), {'loss'})
         self.assertGreater(losses['loss'].item(), 0)
+
+
+class TestLogitAdjustLinearClsHead(TestLinearClsHead):
+    DEFAULT_ARGS = dict(
+        type='LogitAdjustLinearClsHead',
+        in_channels=10,
+        num_classes=5,
+        enable_posthoc_adjustment=True)
+    N_SAMPLES = 12
+    FAKE_FEATS = (torch.rand(N_SAMPLES, 10), )
+
+    def test_initialize(self):
+        with self.assertRaisesRegex(ValueError, '`enable_posthoc_adj'):
+            MODELS.build(
+                dict(
+                    type='LogitAdjustLinearClsHead',
+                    in_channels=10,
+                    num_classes=5,
+                    enable_posthoc_adjustment=False))
+
+        with self.assertRaisesRegex(ValueError, '`enable_posthoc_adj'):
+            MODELS.build({
+                **self.DEFAULT_ARGS,
+                'enable_posthoc_adjustment': True,
+                'enable_loss_adjustment': True,
+            })
+
+        with self.assertRaisesRegex(ValueError, 'num_classes=-5 must be'):
+            MODELS.build({
+                **self.DEFAULT_ARGS, 'enable_posthoc_adjustment': True,
+                'num_classes': -5
+            })
+
+        lt_head = MODELS.build(self.DEFAULT_ARGS)
+        self.assertEqual(lt_head._adjustments, None)
+
+    def test_get_adjustments(self):
+        lt_head = MODELS.build(self.DEFAULT_ARGS)
+
+        with self.assertRaises(RuntimeError):
+            lt_head.get_adjustments()
+
+        gt_labels = np.array([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 0, 1])
+        MessageHub.get_current_instance().update_info('gt_labels', gt_labels)
+        adjustments = lt_head.get_adjustments()
+        freq = [3 / 12, 3 / 12, 2 / 12, 2 / 12, 2 / 12]
+        except_adjustments = torch.log(torch.tensor(freq) + 1e-12).to(
+            torch.float64)
+        assert torch.allclose(adjustments, except_adjustments)
+
+    def test_loss(self):
+        lt_head = MODELS.build({
+            **self.DEFAULT_ARGS, 'enable_loss_adjustment': True,
+            'enable_posthoc_adjustment': False
+        })
+        Linear_ARGS = dict(type='LinearClsHead', in_channels=10, num_classes=5)
+        l_head = MODELS.build(Linear_ARGS)
+        lt_head.fc = l_head.fc
+
+        gt_labels = np.array([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 0, 1])
+        MessageHub.get_current_instance().update_info('gt_labels', gt_labels)
+
+        feats = (torch.rand(self.N_SAMPLES,
+                            10), torch.rand(self.N_SAMPLES, 10))
+        data_samples = [
+            ClsDataSample().set_gt_label(1) for _ in range(self.N_SAMPLES)
+        ]
+        lt_losses = lt_head.loss(feats, data_samples)
+        self.assertEqual(lt_losses.keys(), {'loss'})
+        self.assertGreater(lt_losses['loss'].item(), 0)
+        l_losses = l_head.loss(feats, data_samples)
+        self.assertNotEqual(lt_losses['loss'].item(), l_losses['loss'].item())
+
+    def test_predict(self):
+        lt_head = MODELS.build({**self.DEFAULT_ARGS})
+        Linear_ARGS = dict(type='LinearClsHead', in_channels=10, num_classes=5)
+        l_head = MODELS.build(Linear_ARGS)
+        feats = (torch.rand(self.N_SAMPLES,
+                            10), torch.rand(self.N_SAMPLES, 10))
+        lt_head.fc = l_head.fc
+
+        gt_labels = np.array([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 0, 1])
+        MessageHub.get_current_instance().update_info('gt_labels', gt_labels)
+
+        lt_predictions = lt_head.predict(feats)
+        self.assertTrue(is_seq_of(lt_predictions, ClsDataSample))
+        for pred in lt_predictions:
+            self.assertIn('label', pred.pred_label)
+            self.assertIn('score', pred.pred_label)
+
+        l_predictions = l_head.predict(feats)
+        for l_pred, lt_pred in zip(l_predictions, lt_predictions):
+            assert not torch.allclose(l_pred.pred_label.score,
+                                      lt_pred.pred_label.score)

@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import math
 import os
 import os.path as osp
 import pickle
@@ -412,13 +413,13 @@ class TestCIFAR10(TestBaseDataset):
 
         # Test automatically download
         with patch(
-                'mmcls.datasets.cifar.download_and_extract_archive') as mock:
+                'mmcls.datasets.cifar.download_and_extract_archive') as mock2:
             cfg = {**self.DEFAULT_ARGS, 'lazy_init': True, 'test_mode': True}
             dataset = dataset_class(**cfg)
             dataset.test_list = [['invalid_batch', None]]
             with self.assertRaisesRegex(AssertionError, 'Download failed'):
                 dataset.full_init()
-            mock.assert_called_once_with(
+            mock2.assert_called_once_with(
                 dataset.url,
                 dataset.data_prefix['root'],
                 filename=dataset.filename,
@@ -459,6 +460,10 @@ class TestCIFAR10(TestBaseDataset):
 
 class TestCIFAR100(TestCIFAR10):
     DATASET_TYPE = 'CIFAR100'
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmpdir.cleanup()
 
 
 class TestMultiLabelDataset(TestBaseDataset):
@@ -721,7 +726,7 @@ class TestMNIST(TestBaseDataset):
 
         # Test automatically download
         with patch(
-                'mmcls.datasets.mnist.download_and_extract_archive') as mock:
+                'mmcls.datasets.mnist.download_and_extract_archive') as mock3:
             cfg = {**self.DEFAULT_ARGS, 'lazy_init': True, 'test_mode': True}
             dataset = dataset_class(**cfg)
             dataset.train_list = [['invalid_train_file', None]]
@@ -740,7 +745,7 @@ class TestMNIST(TestBaseDataset):
                     filename=dataset.test_list[0][0],
                     md5=None)
             ]
-            mock.assert_has_calls(calls)
+            mock3.assert_has_calls(calls)
 
         with self.assertRaisesRegex(RuntimeError, '`download=True`'):
             cfg = {
@@ -1039,3 +1044,172 @@ class TestInShop(TestBaseDataset):
     @classmethod
     def tearDownClass(cls):
         cls.tmpdir.cleanup()
+
+
+class TestLongTailCIFAR10(TestCIFAR10):
+    DATASET_TYPE = 'LongTailCIFAR10'
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        tmpdir = tempfile.TemporaryDirectory()
+        cls.tmpdir = tmpdir
+        data_prefix = tmpdir.name
+        cls.DEFAULT_ARGS = dict(
+            data_prefix=data_prefix, pipeline=[], test_mode=False, imb_ratio=5)
+
+        dataset_class = DATASETS.get(cls.DATASET_TYPE)
+        base_folder = osp.join(data_prefix, dataset_class.base_folder)
+        os.mkdir(base_folder)
+
+        cls.fake_imgs = np.random.randint(
+            0, 255, size=(36, 3 * 32 * 32), dtype=np.uint8)
+        cls.fake_labels = np.arange(36) % 6
+        cls.fake_classes = [0, 1, 2, 3, 4, 5]
+
+        batch1 = dict(
+            data=cls.fake_imgs[:15], labels=cls.fake_labels[:15].tolist())
+        with open(osp.join(base_folder, 'data_batch_1'), 'wb') as f:
+            f.write(pickle.dumps(batch1))
+
+        batch2 = dict(
+            data=cls.fake_imgs[15:30], labels=cls.fake_labels[15:30].tolist())
+        with open(osp.join(base_folder, 'data_batch_2'), 'wb') as f:
+            f.write(pickle.dumps(batch2))
+
+        test_batch = dict(
+            data=cls.fake_imgs[30:], fine_labels=cls.fake_labels[30:].tolist())
+        with open(osp.join(base_folder, 'test_batch'), 'wb') as f:
+            f.write(pickle.dumps(test_batch))
+
+        meta = {dataset_class.meta['key']: cls.fake_classes}
+        meta_filename = dataset_class.meta['filename']
+        with open(osp.join(base_folder, meta_filename), 'wb') as f:
+            f.write(pickle.dumps(meta))
+
+        dataset_class.train_list = [['data_batch_1', None],
+                                    ['data_batch_2', None]]
+        dataset_class.test_list = [['test_batch', None]]
+        dataset_class.meta['md5'] = None
+
+    def test_initialize(self):
+        super().test_initialize()
+
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test imb_type
+        cfg = {**self.DEFAULT_ARGS, 'imb_type': 'cos'}
+        with self.assertRaises(AssertionError):
+            dataset_class(**cfg)
+
+        # Test imb_ratio
+        cfg = {**self.DEFAULT_ARGS, 'imb_ratio': 0.1}
+        with self.assertRaises(AssertionError):
+            dataset_class(**cfg)
+
+    def test_load_data_list(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test default behavior
+        dataset = dataset_class(**self.DEFAULT_ARGS)
+        expcet_gt_label_nums = [
+            math.ceil(5 * (0.2**(i / 5))) for i in range(6)
+        ]
+        expcet_gt_labels = []
+        for i, count in enumerate(expcet_gt_label_nums):
+            expcet_gt_labels.extend([i] * count)
+        self.assertEqual(len(dataset), len(expcet_gt_labels))
+        assert np.equal(dataset.get_gt_labels(),
+                        np.array(expcet_gt_labels)).all()
+        self.assertEqual(dataset.CLASSES, dataset_class.METAINFO['classes'])
+
+        # Test with step mode
+        cfg = {**self.DEFAULT_ARGS, 'imb_type': 'step'}
+        dataset = dataset_class(**cfg)
+        expcet_gt_label_nums = [5, 5, 4, 3, 2, 1]
+        expcet_gt_labels = []
+        for i, count in enumerate(expcet_gt_label_nums):
+            expcet_gt_labels.extend([i] * count)
+        self.assertEqual(len(dataset), len(expcet_gt_labels))
+        assert np.equal(dataset.get_gt_labels(),
+                        np.array(expcet_gt_labels)).all()
+        self.assertEqual(dataset.CLASSES, dataset_class.METAINFO['classes'])
+
+        # Test with test_mode=True
+        cfg = {**self.DEFAULT_ARGS, 'test_mode': True}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 6)
+
+        data_info = dataset[0]
+        fake_img = self.fake_imgs[30].reshape(3, 32, 32).transpose(1, 2, 0)
+        np.testing.assert_equal(data_info['img'], fake_img)
+        np.testing.assert_equal(data_info['gt_label'], self.fake_labels[30])
+
+        # Test load meta
+        cfg = {**self.DEFAULT_ARGS, 'lazy_init': True}
+        dataset = dataset_class(**cfg)
+        dataset._metainfo = {}
+        dataset.full_init()
+        self.assertEqual(dataset.CLASSES, self.fake_classes)
+
+        # Test automatically download
+        with patch(
+                'mmcls.datasets.cifar.download_and_extract_archive') as mock4:
+            cfg = {**self.DEFAULT_ARGS, 'lazy_init': True, 'test_mode': True}
+            dataset = dataset_class(**cfg)
+            dataset.test_list = [['invalid_batch', None]]
+            with self.assertRaisesRegex(AssertionError, 'Download failed'):
+                dataset.full_init()
+            mock4.assert_called_once_with(
+                dataset.url,
+                dataset.data_prefix['root'],
+                filename=dataset.filename,
+                md5=dataset.tgz_md5)
+
+        with self.assertRaisesRegex(RuntimeError, '`download=True`'):
+            cfg = {
+                **self.DEFAULT_ARGS, 'lazy_init': True,
+                'test_mode': True,
+                'download': False
+            }
+            dataset = dataset_class(**cfg)
+            dataset.test_list = [['test_batch', 'invalid_md5']]
+            dataset.full_init()
+
+        # Test different backend
+        cfg = {
+            **self.DEFAULT_ARGS, 'lazy_init': True,
+            'data_prefix': 'http://openmmlab/cifar'
+        }
+        dataset = dataset_class(**cfg)
+        dataset._check_integrity = MagicMock(return_value=False)
+        with self.assertRaisesRegex(RuntimeError, 'http://openmmlab/cifar'):
+            dataset.full_init()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmpdir.cleanup()
+
+
+class TestLongTailCIFAR100(TestLongTailCIFAR10):
+    DATASET_TYPE = 'LongTailCIFAR100'
+
+
+class TestLongTailImageNet(TestImageNet):
+    DATASET_TYPE = 'LongTailImageNet'
+
+    DEFAULT_ARGS = dict(data_root=ASSETS_ROOT, ann_file='ann.txt')
+
+    def test_initialize(self):
+        super().test_initialize()
+
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test imb_type
+        cfg = {**self.DEFAULT_ARGS, 'imb_type': 'cos'}
+        with self.assertRaises(AssertionError):
+            dataset_class(**cfg)
+
+        # Test imb_ratio
+        cfg = {**self.DEFAULT_ARGS, 'imb_ratio': 0.1}
+        with self.assertRaises(AssertionError):
+            dataset_class(**cfg)

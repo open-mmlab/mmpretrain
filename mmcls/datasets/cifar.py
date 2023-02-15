@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import math
 import pickle
 from typing import List, Optional
 
@@ -51,37 +52,42 @@ class ImbalancedDatasetMixin:
             if cat_id not in class_dict:
                 class_dict[cat_id] = []
             class_dict[cat_id].append(i)
-        return class_dict
+        sorted_class_dict = sorted(
+            class_dict.items(), key=lambda x: len(x[1]), reverse=True)
+        return sorted_class_dict
 
-    def _get_img_num_per_cls(self, cls_num, sample_num, imb_type, imb_factor):
-        img_max = sample_num / cls_num
-        img_num_per_cls = []
+    def _get_sample_num_per_cls(self, class_sampeIds_list, imb_type,
+                                imb_factor):
+        cls_idx_list = [item[0] for item in class_sampeIds_list]
+        cls_num = len(cls_idx_list)
+        sample_num_list = [len(item[1]) for item in class_sampeIds_list]
+        sample_num_max = sample_num_list[0]
+        sample_num_each_cls = []
         if imb_type == 'exp':
-            for cls_idx in range(cls_num):
-                num = img_max * (imb_factor**(cls_idx / (cls_num - 1.0)))
-                img_num_per_cls.append(int(num))
+            for i, cls_idx in enumerate(cls_idx_list):
+                num = sample_num_max * (imb_factor**(i / (cls_num - 1.0)))
+                sample_num_each_cls.append(math.ceil(num))
         elif imb_type == 'step':
-            for cls_idx in range(cls_num // 2):
-                img_num_per_cls.append(int(img_max))
-            for cls_idx in range(cls_num // 2):
-                img_num_per_cls.append(int(img_max * imb_factor))
-        return img_num_per_cls
+            for i, cls_idx in enumerate(cls_idx_list):
+                # in 'step' mode, sample_num_each_cls is an equivariate series
+                k = (1 - imb_factor) / (cls_num - 1.0)
+                num = math.ceil(sample_num_max * (1 - k * i))
+                sample_num_each_cls.append(num)
+        return sample_num_each_cls
 
     def _gen_imbalanced_data_list(self, data_list):
         """generate new imbalanced data_list from data_list."""
-        class2sampeId_dict = self._get_class_dict(data_list)
-        num_class, num_samle = len(class2sampeId_dict), len(data_list)
-        img_num_per_cls = self._get_img_num_per_cls(num_class, num_samle,
-                                                    self.imb_type,
-                                                    self.imb_ratio)
+        class_sampeIds_list = self._get_class_dict(data_list)
+        img_num_per_cls = self._get_sample_num_per_cls(class_sampeIds_list,
+                                                       self.imb_type,
+                                                       self.imb_ratio)
         new_data_list = []
-        classes = list(class2sampeId_dict.keys())
-        for the_class, the_img_num in zip(classes, img_num_per_cls):
-            all_samples_of_the_class = class2sampeId_dict[the_class]
+        for i, (the_class, the_sampeIds) in enumerate(class_sampeIds_list):
+            the_sample_num = img_num_per_cls[i]
             np.random.seed(the_class)
-            np.random.shuffle(all_samples_of_the_class)
-            reserve_samples = all_samples_of_the_class[:the_img_num]
-            for idx in reserve_samples:
+            np.random.shuffle(the_sampeIds)
+            reserved_samples = the_sampeIds[:the_sample_num]
+            for idx in reserved_samples:
                 new_data_list.append(data_list[idx])
 
         return new_data_list

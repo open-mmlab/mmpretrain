@@ -45,12 +45,11 @@ class LogitAdjustLinearClsHead(LinearClsHead):
         super(LogitAdjustLinearClsHead, self).__init__(**kwargs)
 
         if enable_posthoc_adjustment and enable_loss_adjustment:
-            raise ValueError(
-                'Only one of the `enable_post_adjustment` '
-                'and `enable_loss_adjustment` can be set to True.')
+            raise ValueError('`enable_posthoc_adjustment` and '
+                             '`enable_loss_adjustment` cannot both be True.')
         if not enable_posthoc_adjustment and not enable_loss_adjustment:
             raise ValueError(
-                'One of the `enable_post_adjustment` '
+                'One of the `enable_posthoc_adjustment` '
                 'and `enable_loss_adjustment` must be set to True.')
 
         self.enable_posthoc_adjustment = enable_posthoc_adjustment
