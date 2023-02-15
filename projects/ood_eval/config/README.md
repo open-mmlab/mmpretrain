@@ -56,7 +56,7 @@ test_evaluator=dict(ann_file='data/imagenet-x/meta/val.txt')
 
 #### 2. Overwrite the default settings from command line
 
-For example, you can overwrite the default setings by passing ``--cfg-options``:
+For example, you can overwrite the default settings by passing ``--cfg-options``:
 
 ```bash
 --cfg-options test_dataloader.dataset.data_root='data/imagenet-x' \
