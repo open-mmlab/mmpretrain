@@ -112,6 +112,7 @@ Backbones
    VGG
    Vig
    VisionTransformer
+   XCiT
 
 .. module:: mmcls.models.necks
 

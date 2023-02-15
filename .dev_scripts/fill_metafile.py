@@ -332,22 +332,28 @@ def update_model_by_dict(model: dict, update_dict: dict, defaults: dict):
         model['Results'] = results
 
     # Results.Metrics.Top 1 Accuracy
+    result = None
     if 'results.metrics.top 1 accuracy' in update_dict:
-        top1 = update_dict['results.metrics.top 1 accuracy'].strip()
+        top1 = update_dict['results.metrics.top 1 accuracy']
         results = model.get('Results') or [{}]
         result = results[0]
+        result.setdefault('Metrics', {})
         result['Metrics']['Top 1 Accuracy'] = round(float(top1), 2)
-        result['Metrics']['Task'] = 'Image Classification'
+        task = 'Image Classification'
         model['Results'] = results
 
     # Results.Metrics.Top 5 Accuracy
     if 'results.metrics.top 5 accuracy' in update_dict:
-        top5 = update_dict['results.metrics.top 5 accuracy'].strip()
+        top5 = update_dict['results.metrics.top 5 accuracy']
         results = model.get('Results') or [{}]
         result = results[0]
+        result.setdefault('Metrics', {})
         result['Metrics']['Top 5 Accuracy'] = round(float(top5), 2)
-        result['Metrics']['Task'] = 'Image Classification'
+        task = 'Image Classification'
         model['Results'] = results
+
+    if result is not None:
+        result['Metrics']['Task'] = task
 
     # Weights
     if 'weights' in update_dict:
