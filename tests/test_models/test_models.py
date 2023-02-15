@@ -20,8 +20,8 @@ class Cfg:
 
 
 test_list = [
-    Cfg(name='xcit-nano-12-p16_3rdparty_in1k', backbone=mmcls.models.XCiT),
-    Cfg(name='xcit-small-12-p8_3rdparty-dist_in1k-384px',
+    Cfg(name='xcit-small-12-p16_3rdparty_in1k', backbone=mmcls.models.XCiT),
+    Cfg(name='xcit-nano-12-p8_3rdparty-dist_in1k-384px',
         backbone=mmcls.models.XCiT,
         input_shape=(1, 3, 384, 384)),
 ]
