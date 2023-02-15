@@ -10,10 +10,16 @@ from mmcv.cnn.bricks import ConvModule, DropPath
 from mmcv.cnn.bricks.transformer import FFN
 from mmengine.model import BaseModule, Sequential
 from mmengine.model.weight_init import trunc_normal_
+from mmengine.utils import digit_version
 
 from mmcls.registry import MODELS
 from ..utils import build_norm_layer, to_2tuple
 from .base_backbone import BaseBackbone
+
+if digit_version(torch.__version__) < digit_version('1.8.0'):
+    floor_div = torch.floor_divide
+else:
+    floor_div = partial(torch.div, rounding_mode='floor')
 
 
 class ClassAttntion(BaseModule):
@@ -131,7 +137,7 @@ class PositionalEncodingFourier(BaseModule):
         x_embed = x_embed / (x_embed[:, :, -1:] + self.eps) * self.scale
 
         dim_t = torch.arange(self.hidden_dim, device=device).float()
-        dim_t = torch.div(dim_t, 2, rounding_mode='floor')
+        dim_t = floor_div(dim_t, 2)
         dim_t = self.temperature**(2 * dim_t / self.hidden_dim)
 
         pos_x = x_embed[:, :, :, None] / dim_t
