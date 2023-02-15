@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from .attention import (BEiTAttention, ChannelMultiheadAttention, LeAttention,
-                        MultiheadAttention, ShiftWindowMSA, WindowMSA,
-                        WindowMSAV2)
+                        LePEAttention, MultiheadAttention, ShiftWindowMSA,
+                        WindowMSA, WindowMSAV2)
 from .batch_augments import CutMix, Mixup, RandomBatchAugment, ResizeMix
 from .channel_shuffle import channel_shuffle
 from .data_preprocessor import ClsDataPreprocessor
@@ -25,5 +25,5 @@ __all__ = [
     'ClsDataPreprocessor', 'Mixup', 'CutMix', 'ResizeMix', 'BEiTAttention',
     'LayerScale', 'WindowMSA', 'WindowMSAV2', 'ChannelMultiheadAttention',
     'PositionEncodingFourier', 'LeAttention', 'GRN', 'LayerNorm2d',
-    'build_norm_layer'
+    'build_norm_layer', 'LePEAttention'
 ]

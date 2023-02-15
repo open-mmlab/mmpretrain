@@ -48,6 +48,7 @@ Import:
   - configs/clip/metafile.yml
   - configs/mixmim/metafile.yml
   - configs/efficientnet_v2/metafile.yml
+  - configs/gpvit/metafile.yml
   - configs/convnext_v2/metafile.yml
   - configs/levit/metafile.yml
   - configs/vig/metafile.yml

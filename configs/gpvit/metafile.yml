@@ -1,0 +1,97 @@
+Collections:
+  - Name: GPViT
+    Metadata:
+      Architecture:
+        - Attention Dropout
+        - Convolution
+        - Dense Connections
+        - Dropout
+        - GELU
+        - Layer Normalization
+        - Multi-Head Attention
+        - Scaled Dot-Product Attention
+        - Tanh Activation
+    Paper:
+      URL: https://arxiv.org/abs/2212.06795
+      Title: 'GPViT: A High Resolution Non-Hierarchical Vision Transformer with Group Propagation'
+    README: configs/gpvit/README.md
+    Code:
+      URL:
+      Version:
+
+Models:
+  - Name: gpvit-l1_3rdparty_in1k
+    In Collection: GPViT
+    Metadata:
+      FLOPs: 6128166584
+      Parameters: 9589848
+      Training Data:
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 80.46
+        Top 5 Accuracy: 95.32
+    Weights:
+    Converted From:
+      Weights: https://github.com/ChenhongyiYang/GPViT/releases/download/v0.0.1/gpvit_l1_in1k_300e.pth
+      Code: https://github.com/ChenhongyiYang/GPViT
+    Config: configs/gpvit/gpvit-l1_16xb128_in1k.py
+
+  - Name: gpvit-l2_3rdparty_in1k
+    In Collection: GPViT
+    Metadata:
+      FLOPs: 15703843084
+      Parameters: 24162680
+      Training Data:
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 83.19
+        Top 5 Accuracy: 96.53
+    Weights:
+    Converted From:
+      Weights: https://github.com/ChenhongyiYang/GPViT/releases/download/v0.0.1/gpvit_l2_in1k_300e.pth
+      Code: https://github.com/ChenhongyiYang/GPViT
+    Config: configs/gpvit/gpvit-l2_16xb128_in1k.py
+
+  - Name: gpvit-l3_3rdparty_in1k
+    In Collection: GPViT
+    Metadata:
+      FLOPs: 23502227968
+      Parameters: 36654056
+      Training Data:
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 83.71
+        Top 5 Accuracy: 96.78
+    Weights:
+    Converted From:
+      Weights: https://github.com/ChenhongyiYang/GPViT/releases/download/v0.0.1/gpvit_l3_in1k_300e.pth
+      Code: https://github.com/ChenhongyiYang/GPViT
+    Config: configs/gpvit/gpvit-l3_16xb128_in1k.py
+
+  - Name: gpvit-l4_3rdparty_in1k
+    In Collection: GPViT
+    Metadata:
+      FLOPs: 48243896832
+      Parameters: 75484456
+      Training Data:
+        - ImageNet-1k
+    Results:
+    - Dataset: ImageNet-1k
+      Task: Image Classification
+      Metrics:
+        Top 1 Accuracy: 84.13
+        Top 5 Accuracy: 96.82
+    Weights:
+    Converted From:
+      Weights: https://github.com/ChenhongyiYang/GPViT/releases/download/v0.0.1/gpvit_l4_in1k_300e.pth
+      Code: https://github.com/ChenhongyiYang/GPViT
+    Config: configs/gpvit/gpvit-l4_16xb128_in1k.py
