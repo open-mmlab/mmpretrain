@@ -1,10 +1,10 @@
 # dataset settings
-dataset_type = 'CIFAR100'
+dataset_type = 'CIFAR10'
 data_preprocessor = dict(
-    num_classes=100,
+    num_classes=10,
     # RGB format normalization parameters
-    mean=[129.304, 124.070, 112.434],
-    std=[68.170, 65.392, 70.418],
+    mean=[125.307, 122.961, 113.8575],
+    std=[51.5865, 50.847, 51.255],
     # loaded images are already RGB format
     to_rgb=False)
 
@@ -22,8 +22,8 @@ train_dataloader = dict(
     batch_size=16,
     num_workers=2,
     dataset=dict(
-        type='LongTailCIFAR100',
-        data_prefix='data/cifar100',
+        type='LongTailCIFAR10',
+        data_prefix='data/cifar10',
         test_mode=False,
         pipeline=train_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=True),
@@ -34,7 +34,7 @@ val_dataloader = dict(
     num_workers=2,
     dataset=dict(
         type=dataset_type,
-        data_prefix='data/cifar100/',
+        data_prefix='data/cifar10/',
         test_mode=True,
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),

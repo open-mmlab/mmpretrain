@@ -1,5 +1,5 @@
 _base_ = [
-    '../_base_/models/resnet50_cifar.py',
+    '../_base_/models/resnet34_cifar.py',
     '../_base_/datasets/cifar100-lt_bs16.py',
     '../_base_/schedules/cifar10_bs128.py',
     '../_base_/default_runtime.py',
@@ -17,3 +17,13 @@ param_scheduler = dict(
     milestones=[60, 120, 160],
     gamma=0.2,
 )
+
+train_dataloader = dict(dataset=dict(imbalance_ratio=100))
+
+default_hooks = dict(
+    checkpoint=dict(type='CheckpointHook', interval=1, max_keep_ckpts=3))
+
+custom_hooks = [
+    dict(type='PushDataInfoToMessageHubHook', keys=['gt_labels']),
+    dict(type='SyncBuffersHook')
+]

@@ -13,6 +13,80 @@ from .categories import CIFAR10_CATEGORIES, CIFAR100_CATEGORIES
 from .utils import check_md5, download_and_extract_archive
 
 
+class ImbalancedDatasetMixin:
+    """A mixin class for Imbalance Dataset.
+
+    Args:
+        imbalance_ratio (int): imbalance ratio, representing the ratio between
+            the sample size of the most sampled class and the sample size of
+            the least sampled class. Defaults to 10.
+        imbalance_type (str): imbalance type, choose from 'exp' and 'step'.
+            Defaults to 'exp'.
+    """
+
+    def __init__(self,
+                 *args,
+                 imbalance_ratio: int = 10,
+                 imbalance_type: str = 'exp',
+                 **kwargs):
+        assert imbalance_ratio > 0 and isinstance(imbalance_ratio, int)
+        assert imbalance_type in ('exp', 'step')
+        self.imbalance_ratio = 1 / imbalance_ratio
+        self.imbalance_type = imbalance_type
+
+        super().__init__(*args, **kwargs)
+
+    def load_data_list(self):
+        """Load images and ground truth labels."""
+        data_list = super().load_data_list()
+        # only unbalanced sampling of the training dataset
+        if not self.test_mode:
+            data_list = self._gen_imbalanced_data_list(data_list)
+        return data_list
+
+    def _get_class_dict(self, data_list):
+        class_dict = dict()
+        for i, anno in enumerate(data_list):
+            cat_id = anno['gt_label']
+            if cat_id not in class_dict:
+                class_dict[cat_id] = []
+            class_dict[cat_id].append(i)
+        return class_dict
+
+    def _get_img_num_per_cls(self, cls_num, sample_num, imb_type, imb_factor):
+        img_max = sample_num / cls_num
+        img_num_per_cls = []
+        if imb_type == 'exp':
+            for cls_idx in range(cls_num):
+                num = img_max * (imb_factor**(cls_idx / (cls_num - 1.0)))
+                img_num_per_cls.append(int(num))
+        elif imb_type == 'step':
+            for cls_idx in range(cls_num // 2):
+                img_num_per_cls.append(int(img_max))
+            for cls_idx in range(cls_num // 2):
+                img_num_per_cls.append(int(img_max * imb_factor))
+        return img_num_per_cls
+
+    def _gen_imbalanced_data_list(self, data_list):
+        """generate new imbalanced data_list from data_list."""
+        class2sampeId_dict = self._get_class_dict(data_list)
+        num_class, num_samle = len(class2sampeId_dict), len(data_list)
+        img_num_per_cls = self._get_img_num_per_cls(num_class, num_samle,
+                                                    self.imbalance_type,
+                                                    self.imbalance_ratio)
+        new_data_list = []
+        classes = list(class2sampeId_dict.keys())
+        for the_class, the_img_num in zip(classes, img_num_per_cls):
+            all_samples_of_the_class = class2sampeId_dict[the_class]
+            np.random.seed(the_class)
+            np.random.shuffle(all_samples_of_the_class)
+            reserve_samples = all_samples_of_the_class[:the_img_num]
+            for idx in reserve_samples:
+                new_data_list.append(data_list[idx])
+
+        return new_data_list
+
+
 @DATASETS.register_module()
 class CIFAR10(BaseDataset):
     """`CIFAR10 <https://www.cs.toronto.edu/~kriz/cifar.html>`_ Dataset.
@@ -197,8 +271,11 @@ class CIFAR100(CIFAR10):
 
 
 @DATASETS.register_module()
-class IMBALANCECIFAR100(CIFAR100):
-    """`IMBALANCE CIFAR100 <https://www.cs.toronto.edu/~kriz/cifar.html>`_
+class LongTailCIFAR100(
+        ImbalancedDatasetMixin,
+        CIFAR100,
+):
+    """`Long Tail CIFAR100 <https://www.cs.toronto.edu/~kriz/cifar.html>`_
     Dataset.
 
     Args:
@@ -211,66 +288,40 @@ class IMBALANCECIFAR100(CIFAR100):
             Defaults to ''.
         download (bool): Whether to download the dataset if not exists.
             Defaults to True.
+        imbalance_ratio (int): imbalance ratio, representing the ratio between
+            the sample size of the most sampled class and the sample size of
+            the least sampled class. Defaults to 10.
+        imbalance_type (str): imbalance type, choose from 'exp' and 'step'.
+            Defaults to 'exp'.
         **kwargs: Other keyword arguments in :class:`BaseDataset`.
     """
 
-    def __init__(self,
-                 *args,
-                 imbalance_ratio=10,
-                 imbalance_type='exp',
-                 **kwargs):
-        assert imbalance_ratio > 0 and isinstance(imbalance_ratio, int)
-        assert imbalance_type in ('exp', 'step')
-        self.imbalance_ratio = 1 / imbalance_ratio
-        self.imbalance_type = imbalance_type
-
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def load_data_list(self):
-        """Load images and ground truth labels."""
-        data_list = super().load_data_list()
-        if self.test_mode is False and self.imbalance_ratio is not None:
-            data_list = self._gen_imbalanced_data_list(data_list)
-        return data_list
 
-    def _get_class_dict(self, data_list):
-        class_dict = dict()
-        for i, anno in enumerate(data_list):
-            cat_id = anno['gt_label']
-            if cat_id not in class_dict:
-                class_dict[cat_id] = []
-            class_dict[cat_id].append(i)
-        return class_dict
+@DATASETS.register_module()
+class LongTailCIFAR10(ImbalancedDatasetMixin, CIFAR10):
+    """`Long Tail CIFAR10 <https://www.cs.toronto.edu/~kriz/cifar.html>`_
+    Dataset.
 
-    def _get_img_num_per_cls(self, cls_num, sample_num, imb_type, imb_factor):
-        img_max = sample_num / cls_num
-        img_num_per_cls = []
-        if imb_type == 'exp':
-            for cls_idx in range(cls_num):
-                num = img_max * (imb_factor**(cls_idx / (cls_num - 1.0)))
-                print(cls_idx, num)
-                img_num_per_cls.append(int(num))
-        elif imb_type == 'step':
-            for cls_idx in range(cls_num // 2):
-                img_num_per_cls.append(int(img_max))
-            for cls_idx in range(cls_num // 2):
-                img_num_per_cls.append(int(img_max * imb_factor))
-        return img_num_per_cls
+    Args:
+        data_prefix (str): Prefix for data.
+        test_mode (bool): ``test_mode=True`` means in test phase.
+            It determines to use the training set or test set.
+        metainfo (dict, optional): Meta information for dataset, such as
+            categories information. Defaults to None.
+        data_root (str): The root directory for ``data_prefix``.
+            Defaults to ''.
+        download (bool): Whether to download the dataset if not exists.
+            Defaults to True.
+        imbalance_ratio (int): imbalance ratio, representing the ratio between
+            the sample size of the most sampled class and the sample size of
+            the least sampled class. Defaults to 10.
+        imbalance_type (str): imbalance type, choose from 'exp' and 'step'.
+            Defaults to 'exp'.
+        **kwargs: Other keyword arguments in :class:`BaseDataset`.
+    """
 
-    def _gen_imbalanced_data_list(self, data_list):
-        class2sampeId_dict = self._get_class_dict(data_list)
-        num_class, num_samle = len(class2sampeId_dict), len(data_list)
-        img_num_per_cls = self._get_img_num_per_cls(num_class, num_samle,
-                                                    self.imbalance_type,
-                                                    self.imbalance_ratio)
-        new_data_list = []
-        classes = list(class2sampeId_dict.keys())
-        for the_class, the_img_num in zip(classes, img_num_per_cls):
-            all_samples_of_the_class = class2sampeId_dict[the_class]
-            np.random.seed(the_class)
-            np.random.shuffle(all_samples_of_the_class)
-            reserve_samples = all_samples_of_the_class[:the_img_num]
-            for idx in reserve_samples:
-                new_data_list.append(data_list[idx])
-
-        return new_data_list
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)

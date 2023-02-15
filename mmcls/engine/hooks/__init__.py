@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from .class_num_check_hook import ClassNumCheckHook
-from .dataset_hooks import SendDatasetInfoMessageHubHook
+from .dataset_hooks import PushDataInfoToMessageHubHook
 from .ema_hook import EMAHook
 from .margin_head_hooks import SetAdaptiveMarginsHook
 from .precise_bn_hook import PreciseBNHook
@@ -11,5 +11,5 @@ from .visualization_hook import VisualizationHook
 __all__ = [
     'ClassNumCheckHook', 'PreciseBNHook', 'VisualizationHook',
     'SwitchRecipeHook', 'PrepareProtoBeforeValLoopHook',
-    'SetAdaptiveMarginsHook', 'EMAHook', 'SendDatasetInfoMessageHubHook'
+    'SetAdaptiveMarginsHook', 'EMAHook', 'PushDataInfoToMessageHubHook'
 ]

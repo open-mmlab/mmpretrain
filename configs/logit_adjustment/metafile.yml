@@ -1,0 +1,9 @@
+Collections:
+  - Name: Logit Adjustment
+    Paper:
+      URL: https://arxiv.org/abs/2007.07314
+      Title: "Long-Tail Learning via Logit Adjustment"
+    README: configs/logit_adjustment/README.md
+    Code:
+      URL: https://github.com/open-mmlab/mmclassification/blob/dev-1.x/mmcls/models/heads/long_tail_head.py
+      Version: v1.0.0rc5

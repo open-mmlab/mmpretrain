@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from .base_dataset import BaseDataset
 from .builder import build_dataset
-from .cifar import CIFAR10, CIFAR100, IMBALANCECIFAR100
+from .cifar import CIFAR10, CIFAR100, LongTailCIFAR10, LongTailCIFAR100
 from .cub import CUB
 from .custom import CustomDataset
 from .dataset_wrappers import KFoldDataset
@@ -18,5 +18,5 @@ __all__ = [
     'BaseDataset', 'ImageNet', 'CIFAR10', 'CIFAR100', 'MNIST', 'FashionMNIST',
     'VOC', 'build_dataset', 'ImageNet21k', 'KFoldDataset', 'CUB',
     'CustomDataset', 'MultiLabelDataset', 'MultiTaskDataset', 'InShop',
-    'IMBALANCECIFAR100'
+    'LongTailCIFAR100', 'LongTailCIFAR10'
 ]

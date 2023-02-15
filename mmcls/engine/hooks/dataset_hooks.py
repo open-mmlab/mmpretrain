@@ -11,11 +11,11 @@ from mmcls.registry import DATASETS
 
 
 @HOOKS.register_module()
-class SendDatasetInfoMessageHubHook(Hook):
-    """A Hook to send information to the MessageHub.
+class PushDataInfoToMessageHubHook(Hook):
+    """A Hook to push dataset information to the MessageHub.
 
     Args:
-        keys (str | List[str]): the key of information to send
+        keys (str | List[str]): the keys of information to push
             to the MessageHub.
     """
     priority = 'NORMAL'
@@ -56,7 +56,6 @@ class SendDatasetInfoMessageHubHook(Hook):
 
         for key in self.keys:
             if key == 'gt_labels':
-                print(train_dataset)
                 gt_labels = train_dataset.get_gt_labels()
                 MessageHub.get_current_instance().update_info(
                     'gt_labels', gt_labels)
