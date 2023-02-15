@@ -35,7 +35,7 @@ You can download these datasets from [OpenDataLab](https://opendatalab.com/) and
 
 `val.txt` is the annotation file, which should have the same style as that of ImageNet-1K. You can refer to
 [prepare_dataset](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html) to generate the
-annotation file.
+annotation file or you can refer to this [script](https://github.com/open-mmlab/mmclassification/tree/dev-1.x/projects/example_project/ood_eval/generate_imagenet_variant_annotation.py).
 
 ### Configure the dataset and test evaluator
 
