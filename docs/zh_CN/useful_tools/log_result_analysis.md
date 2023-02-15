@@ -48,18 +48,13 @@ python tools/analysis_tools/analyze_logs.py plot_curve your_log_json --keys loss
 #### 绘制某日志文件对应的 top-1 和 top-5 准确率曲线图，并将曲线图导出为 results.jpg 文件。
 
 ```shell
-python tools/analysis_tools/analyze_logs.py plot_curve your_log_json --keys accuracy_top-1 accuracy_top-5  --legend top1 top5 --out results.jpg
+python tools/analysis_tools/analyze_logs.py plot_curve your_log_json --keys accuracy/top1 accuracy/top5  --legend top1 top5 --out results.jpg
 ```
 
 #### 在同一图像内绘制两份日志文件对应的 top-1 准确率曲线图。
 
 ```shell
 python tools/analysis_tools/analyze_logs.py plot_curve log1.json log2.json --keys accuracy_top-1 --legend exp1 exp2
-```
-
-```{note}
-The tool will automatically select to find keys in training logs or validation logs according to the keys.
-Therefore, if you add a custom evaluation metric, please also add the key to `TEST_METRICS` in this tool.
 ```
 
 ### 如何统计训练时间
@@ -74,19 +69,19 @@ python tools/analysis_tools/analyze_logs.py cal_train_time \
 
 **所有参数的说明：**
 
-- `json_logs` : 模型配置文件的路径（可同时传入多个，使用空格分开）。
-- `--include-outliers` :如果指定，将不会排除每个轮次中第一轮迭代的记录（有时第一轮迭代会耗时较长）。
+- `json_logs`：模型配置文件的路径（可同时传入多个，使用空格分开）。
+- `--include-outliers`：如果指定，将不会排除每个轮次中第一个时间记录（有时第一轮迭代会耗时较长）。
 
 **示例：**
 
 ```shell
-python tools/analysis_tools/analyze_logs.py cal_train_time work_dirs/some_exp/20200422_153324.log.json
+python tools/analysis_tools/analyze_logs.py cal_train_time work_dirs/your_exp/20230206_181002/vis_data/scalars.json
 ```
 
 预计输出结果如下所示：
 
 ```text
------Analyze train time of work_dirs/some_exp/20200422_153324.log.json-----
+-----Analyze train time of work_dirs/your_exp/20230206_181002/vis_data/scalars.json-----
 slowest epoch 68, average time is 0.3818
 fastest epoch 1, average time is 0.3694
 time std over epochs is 0.0020
@@ -95,7 +90,7 @@ average iter time: 0.3777 s/iter
 
 ## 结果分析
 
-利用  `tools/test.py`的`--out` ，w我们可以将所有的样本的推理结果保存到输出 文件中。利用这一文件，我们可以进行进一步的分析。
+利用 `tools/test.py` 的`--out`，我们可以将所有的样本的推理结果保存到输出文件中。利用这一文件，我们可以进行进一步的分析。
 
 ### 如何进行离线度量评估
 
@@ -103,29 +98,36 @@ average iter time: 0.3777 s/iter
 
 ```shell
 python tools/analysis_tools/eval_metric.py \
-      ${CONFIG} \
       ${RESULT} \
-      [--metrics ${METRICS}]  \
-      [--cfg-options ${CFG_OPTIONS}] \
-      [--metric-options ${METRIC_OPTIONS}]
+      [--metric ${METRIC_OPTIONS} ...]  \
 ```
 
 **所有参数说明**：
 
-- `config` : 配置文件的路径。
-- `result`:  `tools/test.py`的输出结果文件。
-- `--metrics` : 评估的衡量指标，可接受的值取决于数据集类。
-- `--cfg-options`:额外的配置选项，会被合入配置文件，参考[教程 1：如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html)。
-- `--metric-options`:如果指定了，这些选项将被传递给数据集 `evaluate` 函数的 `metric_options` 参数。
+- `result`：`tools/test.py` 输出的结果文件。
+- `--metric`：用于评估结果的指标，请至少指定一个指标，并且你可以通过指定多个 `--metric` 来同时计算多个指标。
+
+请参考[评估文档](mmcls.evaluation)选择可用的评估指标和对应的选项。
 
 ```{note}
-In `tools/test.py`, we support using `--out-items` option to select which kind of results will be saved. Please ensure the result file includes "class_scores" to use this tool.
+在 `tools/test.py` 中，我们支持使用 `--out-item` 选项来选择保存何种结果至输出文件。
+请确保没有额外指定 `--out-item`，或指定了 `--out-item=pred`。
 ```
 
 **示例**:
 
 ```shell
-python tools/analysis_tools/eval_metric.py configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py your_result.pkl --metrics accuracy --metric-options "topk=(1,5)"
+# 获取结果文件
+python tools/test.py configs/resnet/resnet18_8xb16_cifar10.py \
+    https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_b16x8_cifar10_20210528-bd6371c8.pth \
+    --out results.pkl
+
+# 计算 top-1 和 top-5 准确率
+python tools/analysis_tools/eval_metric.py results.pkl --metric type=Accuracy topk=1,5
+
+# 计算准确率、精确度、召回率、F1-score
+python tools/analysis_tools/eval_metric.py results.pkl --metric type=Accuracy \
+    --metric type=SingleLabelMetric items=precision,recall,f1-score
 ```
 
 ### 如何将预测结果可视化
@@ -138,27 +140,37 @@ python tools/analysis_tools/analyze_results.py \
       ${RESULT} \
       [--out-dir ${OUT_DIR}] \
       [--topk ${TOPK}] \
+      [--rescale-factor ${RESCALE_FACTOR}] \
       [--cfg-options ${CFG_OPTIONS}]
 ```
 
 **所有参数说明：**:
 
-- `config` : 配置文件的路径。
-- `result`:  `tools/test.py`的输出结果文件。
-- `--out_dir`:保存结果分析的文件夹路径。
-- `--topk`: 分别保存多少张预测成功/失败的图像。如果不指定，默认为 `20`。
-- `--cfg-options`: 额外的配置选项，会被合入配置文件，参考[教程 1：如何编写配置文件](https://mmclassification.readthedocs.io/zh_CN/latest/tutorials/config.html)。
+- `config`：配置文件的路径。
+- `result`：`tools/test.py`的输出结果文件。
+- `--out_dir`：保存结果分析的文件夹路径。
+- `--topk`：分别保存多少张预测成功/失败的图像。如果不指定，默认为 `20`。
+- `--rescale-factor`：图像的缩放系数，如果样本图像过大或过小时可以使用（过小的图像可能导致结果标签非常模糊）。
+- `--cfg-options`：额外的配置选项，会被合入配置文件，参考[学习配置文件](../user_guides/config.md)。
 
 ```{note}
-In `tools/test.py`, we support using `--out-items` option to select which kind of results will be saved. Please ensure the result file includes "pred_score", "pred_label" and "pred_class" to use this tool.
+在 `tools/test.py` 中，我们支持使用 `--out-item` 选项来选择保存何种结果至输出文件。
+请确保没有额外指定 `--out-item`，或指定了 `--out-item=pred`。
 ```
 
 **示例**:
 
 ```shell
+# 获取预测结果文件
+python tools/test.py configs/resnet/resnet18_8xb16_cifar10.py \
+    https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_b16x8_cifar10_20210528-bd6371c8.pth \
+    --out results.pkl
+
+# 保存预测成功/失败的图像中，得分最高的前 10 张，并在可视化时将输出图像放大 10 倍。
 python tools/analysis_tools/analyze_results.py \
-       configs/resnet/resnet50_b32x8_imagenet.py \
-       result.pkl \
-       --out_dir results \
-       --topk 50
+       configs/resnet/resnet18_8xb16_cifar10.py \
+       results.pkl \
+       --out-dir output \
+       --topk 10 \
+       --rescale-factor 10
 ```

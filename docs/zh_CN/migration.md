@@ -564,7 +564,7 @@ visualizer = dict(
 | :--------------------------: | :------------------------------------------------------------------------------------------------------------ |
 |        `collect_env`         | 无变动                                                                                                        |
 |      `get_root_logger`       | 移除，使用 [`mmengine.logging.MMLogger.get_current_instance`](mmengine.logging.MMLogger.get_current_instance) |
-|       `load_json_log`        | 待支持                                                                                                        |
+|       `load_json_log`        | 输出格式发生变化。                                                                                            |
 |   `setup_multi_processes`    | 移除，使用 [`mmengine.utils.dl_utils.set_multi_processing`](mmengine.utils.dl_utils.set_multi_processing)     |
 | `wrap_non_distributed_model` | 移除，现在 runner 会自动包装模型。                                                                            |
 |   `wrap_distributed_model`   | 移除，现在 runner 会自动包装模型。                                                                            |
