@@ -5,6 +5,7 @@ from .deit_head import DeiTClsHead
 from .efficientformer_head import EfficientFormerClsHead
 from .levit_head import LeViTClsHead
 from .linear_head import LinearClsHead
+from .long_tail_head import LogitAdjustLinearClsHead
 from .margin_head import ArcFaceClsHead
 from .multi_label_cls_head import MultiLabelClsHead
 from .multi_label_csra_head import CSRAClsHead
