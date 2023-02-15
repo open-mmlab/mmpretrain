@@ -11,8 +11,8 @@ from .linear_head import LinearClsHead
 
 
 @MODELS.register_module()
-class AdjustLogitLinearClsHead(LinearClsHead):
-    """Linear classifier head.
+class LogitAdjustLinearClsHead(LinearClsHead):
+    """logit adjustment Linear classifier head.
 
     A PyTorch implementation of paper `Long-tail learning via logit
     adjustment <https://arxiv.org/abs/2007.07314>`_.
@@ -66,11 +66,12 @@ class AdjustLogitLinearClsHead(LinearClsHead):
         if self._adjustments is None:
             try:
                 # try to get dataset gt_labels from Messagehub.
-                gt_labels = MessageHub.get_info('dataset_gt_labels')
+                gt_labels = MessageHub.get_current_instance().get_info(
+                    'dataset_gt_labels')
             except KeyError:
                 raise RuntimeError(
                     'Please set ```train_dataloader=dict(...,dataset=dict('
-                    '..., global_gt_labels = True, ...,))``` in config to '
+                    '..., global_gt_labels=True, ...,))``` in config to '
                     "send  'dataset_gt_labels' info to MessageHub.")
 
             label_count = np.bincount(gt_labels)
