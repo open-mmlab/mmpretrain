@@ -37,6 +37,7 @@ Multi Label Metric
 
 Retrieval Metric
 ----------------------
+<<<<<<< HEAD
 
 .. autosummary::
    :toctree: generated
@@ -44,3 +45,10 @@ Retrieval Metric
    :template: classtemplate.rst
 
    RetrievalRecall
+=======
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+
+   RetrievalAveragePrecision
+>>>>>>> 544324a... refactor retrieval metric

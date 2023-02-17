@@ -30,6 +30,10 @@ class RetrievalRecall(BaseMetric):
             If prefix is not provided in the argument, self.default_prefix
             will be used instead. Defaults to None.
 
+    References:
+        [1] `Wikipedia entry for the Average precision <https://en.wikipedia.
+        org/wiki/Evaluation_measures_(information_retrieval)#Average_precision>`_
+
     Examples:
         Use in the code:
 

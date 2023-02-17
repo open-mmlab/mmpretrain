@@ -12,4 +12,5 @@ __all__ = [
     'Accuracy', 'SingleLabelMetric', 'MultiLabelMetric', 'AveragePrecision',
     'MultiTasksMetric', 'VOCAveragePrecision', 'VOCMultiLabelMetric',
     'ConfusionMatrix', 'RetrievalRecall', 'RetrievalAveragePrecision'
+    'VOCAveragePrecision', 'VOCMultiLabelMetric', 'RetrievalAveragePrecision'
 ]
