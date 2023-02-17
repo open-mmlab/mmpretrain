@@ -31,7 +31,7 @@ jobs:
           name: Check docstring coverage
           command: |
             pip install interrogate
-            interrogate -v --ignore-init-method --ignore-module --ignore-nested-functions --ignore-magic --ignore-regex "__repr__" --fail-under 60 mmcls
+            interrogate -v --ignore-init-method --ignore-module --ignore-nested-functions --ignore-magic --ignore-regex "__repr__" --fail-under 60 mmpretrain
   build_cpu_with_3rdparty:
     parameters:
       # The python version must match available image tags in
@@ -63,7 +63,7 @@ jobs:
             python -V
             pip install torch==<< parameters.torch >>+cpu torchvision==<< parameters.torchvision >>+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - run:
-          name: Install mmcls dependencies
+          name: Install mmpretrain dependencies
           command: |
             pip install git+https://github.com/open-mmlab/mmengine.git@main
             pip install -U openmim
@@ -79,7 +79,7 @@ jobs:
       - run:
           name: Run unittests
           command: |
-            coverage run --branch --source mmcls -m pytest tests/
+            coverage run --branch --source mmpretrain -m pytest tests/
             coverage xml
             coverage report -m
 
@@ -114,7 +114,7 @@ jobs:
             python -V
             pip install torch==<< parameters.torch >>+cpu torchvision==<< parameters.torchvision >>+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - run:
-          name: Install mmcls dependencies
+          name: Install mmpretrain dependencies
           command: |
             pip install git+https://github.com/open-mmlab/mmengine.git@main
             pip install -U openmim
@@ -128,7 +128,7 @@ jobs:
       - run:
           name: Run unittests
           command: |
-            coverage run --branch --source mmcls -m pytest tests/
+            coverage run --branch --source mmpretrain -m pytest tests/
             coverage xml
             coverage report -m
 
@@ -155,24 +155,24 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            docker build .circleci/docker -t mmcls:gpu --build-arg PYTORCH=<< parameters.torch >> --build-arg CUDA=<< parameters.cuda >> --build-arg CUDNN=<< parameters.cudnn >>
-            docker run --gpus all -t -d -v /home/circleci/project:/mmcls -v /home/circleci/mmengine:/mmengine -w /mmcls --name mmcls mmcls:gpu
+            docker build .circleci/docker -t mmpretrain:gpu --build-arg PYTORCH=<< parameters.torch >> --build-arg CUDA=<< parameters.cuda >> --build-arg CUDNN=<< parameters.cudnn >>
+            docker run --gpus all -t -d -v /home/circleci/project:/mmpretrain -v /home/circleci/mmengine:/mmengine -w /mmpretrain --name mmpretrain mmpretrain:gpu
       - run:
-          name: Install mmcls dependencies
+          name: Install mmpretrain dependencies
           command: |
-            docker exec mmcls pip install -e /mmengine
-            docker exec mmcls pip install -U openmim
-            docker exec mmcls mim install 'mmcv >= 2.0.0rc1'
-            docker exec mmcls pip install -r requirements.txt
-            docker exec mmcls python -c 'import mmcv; print(mmcv.__version__)'
+            docker exec mmpretrain pip install -e /mmengine
+            docker exec mmpretrain pip install -U openmim
+            docker exec mmpretrain mim install 'mmcv >= 2.0.0rc1'
+            docker exec mmpretrain pip install -r requirements.txt
+            docker exec mmpretrain python -c 'import mmcv; print(mmcv.__version__)'
       - run:
           name: Build and install
           command: |
-            docker exec mmcls pip install -e .
+            docker exec mmpretrain pip install -e .
       - run:
           name: Run unittests
           command: |
-            docker exec mmcls python -m pytest tests/
+            docker exec mmpretrain python -m pytest tests/
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows

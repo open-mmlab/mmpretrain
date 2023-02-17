@@ -41,4 +41,4 @@ jobs:
       - name: Build and install
         run: mim install -e .
       - name: test commands of mim
-        run: mim search mmcls
+        run: mim search mmpretrain

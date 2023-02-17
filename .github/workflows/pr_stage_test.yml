@@ -35,7 +35,7 @@ jobs:
         run: pip install pip --upgrade
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
-      - name: Install mmcls dependencies
+      - name: Install mmpretrain dependencies
         run: |
           pip install git+https://github.com/open-mmlab/mmengine.git@main
           pip install -U openmim
@@ -45,7 +45,7 @@ jobs:
         run: pip install -e .
       - name: Run unittests and generate coverage report
         run: |
-          coverage run --branch --source mmcls -m pytest tests/
+          coverage run --branch --source mmpretrain -m pytest tests/
           coverage xml
           coverage report -m
       # Upload coverage report for python3.7 && pytorch1.8.1 cpu
@@ -74,7 +74,7 @@ jobs:
         run: python -m pip install pip --upgrade
       - name: Install PyTorch
         run: pip install torch==1.8.2+${{matrix.platform}} torchvision==0.9.2+${{matrix.platform}} -f https://download.pytorch.org/whl/lts/1.8/torch_lts.html
-      - name: Install mmcls dependencies
+      - name: Install mmpretrain dependencies
         run: |
           pip install git+https://github.com/open-mmlab/mmengine.git@main
           pip install -U openmim
