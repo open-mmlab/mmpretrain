@@ -52,6 +52,8 @@ CUB
 Retrieval
 ---------
 
+.. autoclass:: CustomRetrievalDataset
+
 .. autoclass:: InShop
 
 Base classes

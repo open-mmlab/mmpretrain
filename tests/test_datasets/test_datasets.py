@@ -13,6 +13,8 @@ from mmengine.logging import MMLogger
 from mmcls.registry import DATASETS, TRANSFORMS
 
 ASSETS_ROOT = osp.abspath(osp.join(osp.dirname(__file__), '../data/dataset'))
+RETRIEVAL_ASSETS_ROOT = osp.abspath(
+    osp.join(osp.dirname(__file__), '../data/dataset_retrieval'))
 
 
 class TestBaseDataset(TestCase):
@@ -1039,3 +1041,74 @@ class TestInShop(TestBaseDataset):
     @classmethod
     def tearDownClass(cls):
         cls.tmpdir.cleanup()
+
+
+class TestCustomRetrievalDataset(TestCustomDataset):
+    DATASET_TYPE = 'CustomRetrievalDataset'
+
+    DEFAULT_ARGS = dict(data_root=RETRIEVAL_ASSETS_ROOT)
+
+    def test_load_data_list(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # test load
+        cfg = {
+            **self.DEFAULT_ARGS,
+            'data_prefix': RETRIEVAL_ASSETS_ROOT,
+        }
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 3)
+        self.assertEqual(dataset.CLASSES, ('a', 'b'))  # auto infer classes
+        self.assertGreaterEqual(
+            dataset.get_data_info(0).items(), {
+                'img_path': osp.join(RETRIEVAL_ASSETS_ROOT, 'train/a',
+                                     '1.JPG'),
+                'gt_label': 0
+            }.items())
+        self.assertGreaterEqual(
+            dataset.get_data_info(2).items(), {
+                'img_path':
+                osp.join(RETRIEVAL_ASSETS_ROOT, 'train/b', 'subb', '3.jpg'),
+                'gt_label':
+                1
+            }.items())
+
+        # test extensions filter
+        cfg = {
+            **self.DEFAULT_ARGS, 'data_prefix':
+            dict(img_path=RETRIEVAL_ASSETS_ROOT),
+            'extensions': ('.txt', )
+        }
+        with self.assertRaisesRegex(RuntimeError,
+                                    'Supported extensions are: .txt'):
+            dataset_class(**cfg)
+
+        cfg = {
+            **self.DEFAULT_ARGS, 'data_prefix': RETRIEVAL_ASSETS_ROOT,
+            'extensions': ('.jpeg', )
+        }
+        logger = MMLogger.get_current_instance()
+        with self.assertLogs(logger, 'WARN') as log:
+            dataset = dataset_class(**cfg)
+        self.assertIn('Supported extensions are: .jpeg', log.output[0])
+        self.assertEqual(len(dataset), 1)
+        self.assertGreaterEqual(
+            dataset.get_data_info(0).items(), {
+                'img_path': osp.join(RETRIEVAL_ASSETS_ROOT, 'train/b',
+                                     '2.jpeg'),
+                'gt_label': 1
+            }.items())
+
+        # test classes check
+        cfg = {
+            **self.DEFAULT_ARGS,
+            'data_prefix': RETRIEVAL_ASSETS_ROOT,
+            'classes': ('apple', 'banana'),
+        }
+        dataset = dataset_class(**cfg)
+        self.assertEqual(dataset.CLASSES, ('apple', 'banana'))
+
+        cfg['classes'] = ['apple', 'banana', 'dog']
+        with self.assertRaisesRegex(AssertionError,
+                                    r"\(2\) doesn't match .* classes \(3\)"):
+            dataset_class(**cfg)
