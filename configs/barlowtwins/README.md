@@ -24,8 +24,8 @@ The classification benchmarks includes 1 downstream task datasets, **ImageNet**.
 
 The **Feature1 - Feature5** don't have the GlobalAveragePooling, the feature map is pooled to the specific dimensions and then follows a Linear layer to do the classification. Please refer to [resnet50_mhead_8xb32-steplr-90e.py](https://github.com/open-mmlab/mmselfsup/blob/1.x/configs/benchmarks/classification/imagenet/resnet50_mhead_linear-8xb32-steplr-90e_in1k.py) for details of config.
 
-| Self-Supervised Config                                                                                                                                                     | Feature1 | Feature2 | Feature3 | Feature4 | Feature5 |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------- | -------- | -------- | -------- |
+| Self-Supervised Config                                                                                                                                           | Feature1 | Feature2 | Feature3 | Feature4 | Feature5 |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------- | -------- | -------- | -------- |
 | [barlowtwins_resnet50_8xb256-coslr-300e_in1k](https://github.com/open-mmlab/mmselfsup/blob/1.x/configs/selfsup/barlowtwins/barlowtwins_resnet50_8xb256-coslr-300e_in1k.py) | 15.51    | 33.98    | 45.96    | 61.90    | 71.01    |
 
 <table class="docutils">
