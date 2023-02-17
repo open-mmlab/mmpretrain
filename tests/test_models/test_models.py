@@ -4,8 +4,8 @@ from dataclasses import dataclass
 import pytest
 import torch
 
-import mmcls.models
-from mmcls.apis import ModelHub, get_model
+import mmpretrain.models
+from mmpretrain.apis import ModelHub, get_model
 
 
 @dataclass
@@ -20,9 +20,10 @@ class Cfg:
 
 
 test_list = [
-    Cfg(name='xcit-small-12-p16_3rdparty_in1k', backbone=mmcls.models.XCiT),
+    Cfg(name='xcit-small-12-p16_3rdparty_in1k',
+        backbone=mmpretrain.models.XCiT),
     Cfg(name='xcit-nano-12-p8_3rdparty-dist_in1k-384px',
-        backbone=mmcls.models.XCiT,
+        backbone=mmpretrain.models.XCiT,
         input_shape=(1, 3, 384, 384)),
 ]
 
@@ -33,7 +34,7 @@ def test_build(cfg: Cfg):
         return
 
     model_name = cfg.name
-    ModelHub._register_mmcls_models()
+    ModelHub._register_mmpretrain_models()
     assert ModelHub.has(model_name)
 
     model = get_model(model_name)

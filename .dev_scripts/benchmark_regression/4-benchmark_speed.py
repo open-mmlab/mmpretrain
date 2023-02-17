@@ -18,9 +18,9 @@ from modelindex.load_model_index import load
 from rich.console import Console
 from rich.table import Table
 
-from mmcls.datasets.builder import build_dataloader
-from mmcls.datasets.pipelines import Compose
-from mmcls.models.builder import build_classifier
+from mmpretrain.datasets.builder import build_dataloader
+from mmpretrain.datasets.pipelines import Compose
+from mmpretrain.models.builder import build_classifier
 
 console = Console()
 MMCLS_ROOT = Path(__file__).absolute().parents[2]

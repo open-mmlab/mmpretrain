@@ -3,7 +3,7 @@ from unittest import TestCase
 
 import torch
 
-from mmcls.models.utils import LayerScale
+from mmpretrain.models.utils import LayerScale
 
 
 class TestLayerScale(TestCase):

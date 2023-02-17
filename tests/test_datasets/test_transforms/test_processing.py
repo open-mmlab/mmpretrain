@@ -8,7 +8,7 @@ import albumentations
 import mmengine
 import numpy as np
 
-from mmcls.registry import TRANSFORMS
+from mmpretrain.registry import TRANSFORMS
 
 
 def construct_toy_data():
@@ -560,7 +560,7 @@ class TestColorJitter(TestCase):
         cfg = {**self.DEFAULT_ARGS, 'contrast': 0.}
         transform = TRANSFORMS.build(cfg)
         with patch('numpy.random', np.random.RandomState(0)):
-            mmcv_module = 'mmcls.datasets.transforms.processing.mmcv'
+            mmcv_module = 'mmpretrain.datasets.transforms.processing.mmcv'
             call_list = [
                 call.adjust_color(ANY, alpha=ANY),
                 call.adjust_hue(ANY, ANY),
@@ -753,8 +753,8 @@ class TestAlbumentations(TestCase):
                 p=0.1),
         ]
         cfg['transforms'] = nested_transform_cfg
-        mmcls_module = TRANSFORMS.build(cfg)
-        mmcls_module(results)
+        mmpretrain_module = TRANSFORMS.build(cfg)
+        mmpretrain_module(results)
 
         # test to be same with albumentations 3rd package
         np.random.seed(0)
@@ -777,9 +777,10 @@ class TestAlbumentations(TestCase):
             dict(type='HorizontalFlip', p=0.5),
             dict(type='RandomBrightnessContrast', p=0.2)
         ]
-        mmcls_module = TRANSFORMS.build(cfg)
-        transformed_image_mmcls = mmcls_module(results)['img']
-        assert np.equal(transformed_image_3rd, transformed_image_mmcls).all()
+        mmpretrain_module = TRANSFORMS.build(cfg)
+        transformed_image_mmpretrain = mmpretrain_module(results)['img']
+        assert np.equal(transformed_image_3rd,
+                        transformed_image_mmpretrain).all()
 
         # Test class obj case
         results = dict(img=np.random.randint(0, 256, (200, 300, 3), np.uint8))

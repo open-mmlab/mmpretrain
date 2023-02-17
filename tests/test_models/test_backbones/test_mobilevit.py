@@ -2,7 +2,7 @@
 import pytest
 import torch
 
-from mmcls.models.backbones import MobileViT
+from mmpretrain.models.backbones import MobileViT
 
 
 def test_assertion():

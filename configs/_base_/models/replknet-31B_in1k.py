@@ -1,4 +1,4 @@
-from mmcls.models import build_classifier
+from mmpretrain.models import build_classifier
 
 model = dict(
     type='ImageClassifier',

@@ -8,9 +8,9 @@ import mmengine
 import torch
 from mmengine import DictAction
 
-from mmcls.datasets import build_dataset
-from mmcls.structures import ClsDataSample
-from mmcls.visualization import ClsVisualizer
+from mmpretrain.datasets import build_dataset
+from mmpretrain.structures import ClsDataSample
+from mmpretrain.visualization import ClsVisualizer
 
 
 def parse_args():

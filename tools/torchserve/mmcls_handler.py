@@ -6,7 +6,7 @@ import mmcv
 import torch
 from ts.torch_handler.base_handler import BaseHandler
 
-from mmcls.apis import inference_model, init_model
+from mmpretrain.apis import inference_model, init_model
 
 
 class MMclsHandler(BaseHandler):

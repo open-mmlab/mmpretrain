@@ -9,8 +9,9 @@ from torch import nn
 from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from mmcls.models.backbones import levit
-from mmcls.models.backbones.levit import Attention, AttentionSubsample, LeViT
+from mmpretrain.models.backbones import levit
+from mmpretrain.models.backbones.levit import (Attention, AttentionSubsample,
+                                               LeViT)
 
 
 def check_norm_state(modules, train_state):

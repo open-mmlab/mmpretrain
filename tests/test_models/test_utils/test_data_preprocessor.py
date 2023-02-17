@@ -3,9 +3,9 @@ from unittest import TestCase
 
 import torch
 
-from mmcls.models import ClsDataPreprocessor, RandomBatchAugment
-from mmcls.registry import MODELS
-from mmcls.structures import ClsDataSample
+from mmpretrain.models import ClsDataPreprocessor, RandomBatchAugment
+from mmpretrain.registry import MODELS
+from mmpretrain.structures import ClsDataSample
 
 
 class TestClsDataPreprocessor(TestCase):

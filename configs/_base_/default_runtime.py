@@ -1,5 +1,5 @@
-# defaults to use registries in mmcls
-default_scope = 'mmcls'
+# defaults to use registries in mmpretrain
+default_scope = 'mmpretrain'
 
 # configure default hooks
 default_hooks = dict(

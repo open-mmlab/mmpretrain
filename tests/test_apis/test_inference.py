@@ -6,11 +6,11 @@ from unittest.mock import ANY, MagicMock, patch
 
 from mmcv.image import imread
 
-from mmcls.apis import (ImageClassificationInferencer, ModelHub, get_model,
-                        inference_model)
-from mmcls.models import MobileNetV3
-from mmcls.structures import ClsDataSample
-from mmcls.visualization import ClsVisualizer
+from mmpretrain.apis import (ImageClassificationInferencer, ModelHub,
+                             get_model, inference_model)
+from mmpretrain.models import MobileNetV3
+from mmpretrain.structures import ClsDataSample
+from mmpretrain.visualization import ClsVisualizer
 
 MODEL = 'mobilenet-v3-small-050_3rdparty_in1k'
 WEIGHT = 'https://download.openmmlab.com/mmclassification/v0/mobilenet_v3/mobilenet-v3-small-050_3rdparty_in1k_20221114-e0b86be1.pth'  # noqa: E501

@@ -5,13 +5,13 @@ from unittest.mock import patch
 
 from mmengine import Config
 
-from mmcls.apis import ModelHub, get_model, init_model, list_models
-from mmcls.models import ImageClassifier, MobileNetV2
+from mmpretrain.apis import ModelHub, get_model, init_model, list_models
+from mmpretrain.models import ImageClassifier, MobileNetV2
 
 
 class TestModelHub(TestCase):
 
-    def test_mmcls_models(self):
+    def test_mmpretrain_models(self):
         self.assertIn('resnet18_8xb32_in1k', ModelHub._models_dict)
 
     def test_register_model_index(self):
@@ -57,7 +57,7 @@ class TestHubAPIs(TestCase):
         self.assertIsInstance(model, ImageClassifier)
         self.assertIsInstance(model.backbone, MobileNetV2)
 
-        with patch('mmcls.apis.model.init_model') as mock:
+        with patch('mmpretrain.apis.model.init_model') as mock:
             model = get_model('mobilenet-v2_8xb32_in1k', pretrained=True)
             model = get_model('mobilenet-v2_8xb32_in1k', pretrained='test.pth')
 

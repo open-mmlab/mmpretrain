@@ -12,7 +12,7 @@ except ImportError:
 from fvcore.nn.print_model_statistics import _format_size
 from mmengine import Config
 
-from mmcls.models import build_classifier
+from mmpretrain.models import build_classifier
 
 
 def parse_args():

@@ -2,7 +2,7 @@
 import pytest
 import torch
 
-from mmcls.models.backbones import ConvNeXt
+from mmpretrain.models.backbones import ConvNeXt
 
 
 def test_assertion():

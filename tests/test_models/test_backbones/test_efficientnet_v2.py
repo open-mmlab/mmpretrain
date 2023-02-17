@@ -4,7 +4,7 @@ import torch
 from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from mmcls.models.backbones import EfficientNetV2
+from mmpretrain.models.backbones import EfficientNetV2
 
 
 def is_norm(modules):

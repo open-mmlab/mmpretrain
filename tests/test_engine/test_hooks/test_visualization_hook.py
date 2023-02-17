@@ -7,10 +7,10 @@ from unittest.mock import ANY, MagicMock, patch
 import torch
 from mmengine.runner import EpochBasedTrainLoop, IterBasedTrainLoop
 
-from mmcls.engine import VisualizationHook
-from mmcls.registry import HOOKS
-from mmcls.structures import ClsDataSample
-from mmcls.visualization import ClsVisualizer
+from mmpretrain.engine import VisualizationHook
+from mmpretrain.registry import HOOKS
+from mmpretrain.structures import ClsDataSample
+from mmpretrain.visualization import ClsVisualizer
 
 
 class TestVisualizationHook(TestCase):

@@ -16,7 +16,7 @@ from mmengine.runner import Runner
 from mmengine.testing import assert_allclose
 from torch.utils.data import Dataset
 
-from mmcls.engine import EMAHook
+from mmpretrain.engine import EMAHook
 
 
 class SimpleModel(BaseModel):
@@ -88,7 +88,7 @@ class TestEMAHook(TestCase):
             load_from=self.ckpt,
             default_hooks=dict(logger=None),
             custom_hooks=[ema_hook],
-            default_scope='mmcls',
+            default_scope='mmpretrain',
             experiment_name='load_state_dict')
         runner.train()
         assert_allclose(runner.model.para, torch.tensor([1.], device=device))
@@ -113,7 +113,7 @@ class TestEMAHook(TestCase):
             load_from=self.ckpt,
             default_hooks=dict(logger=None),
             custom_hooks=[dict(type='EMAHook')],
-            default_scope='mmcls',
+            default_scope='mmpretrain',
             experiment_name='validate_on_ema')
         runner.val()
         evaluator.metrics[0].process.assert_has_calls([
@@ -138,7 +138,7 @@ class TestEMAHook(TestCase):
             load_from=self.ckpt,
             default_hooks=dict(logger=None),
             custom_hooks=[dict(type='EMAHook')],
-            default_scope='mmcls',
+            default_scope='mmpretrain',
             experiment_name='test_on_ema')
         runner.test()
         evaluator.metrics[0].process.assert_has_calls([
@@ -163,7 +163,7 @@ class TestEMAHook(TestCase):
             load_from=self.ckpt,
             default_hooks=dict(logger=None),
             custom_hooks=[dict(type='EMAHook', evaluate_on_origin=True)],
-            default_scope='mmcls',
+            default_scope='mmpretrain',
             experiment_name='validate_on_ema_false',
         )
         runner.val()
@@ -187,7 +187,7 @@ class TestEMAHook(TestCase):
             load_from=self.ckpt,
             default_hooks=dict(logger=None),
             custom_hooks=[dict(type='EMAHook', evaluate_on_origin=True)],
-            default_scope='mmcls',
+            default_scope='mmpretrain',
             experiment_name='test_on_ema_false',
         )
         runner.test()
@@ -212,7 +212,7 @@ class TestEMAHook(TestCase):
                 load_from=self.ckpt,
                 default_hooks=dict(logger=None),
                 custom_hooks=[dict(type='EMAHook', evaluate_on_ema=False)],
-                default_scope='mmcls',
+                default_scope='mmpretrain',
                 experiment_name='not_test_on_ema')
         runner.test()
         evaluator.metrics[0].process.assert_has_calls([

@@ -3,7 +3,7 @@
 import pytest
 import torch
 
-from mmcls.models.backbones import TinyViT
+from mmpretrain.models.backbones import TinyViT
 
 
 def test_assertion():

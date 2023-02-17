@@ -9,9 +9,9 @@ from torch import nn
 from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from mmcls.models.backbones import MobileOne
-from mmcls.models.backbones.mobileone import MobileOneBlock
-from mmcls.models.utils import SELayer
+from mmpretrain.models.backbones import MobileOne
+from mmpretrain.models.backbones.mobileone import MobileOneBlock
+from mmpretrain.models.utils import SELayer
 
 
 def check_norm_state(modules, train_state):

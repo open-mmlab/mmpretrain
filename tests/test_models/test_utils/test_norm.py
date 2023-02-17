@@ -4,7 +4,7 @@ from unittest import TestCase
 import torch
 import torch.nn.functional as F
 
-from mmcls.models.utils import GRN, LayerNorm2d
+from mmpretrain.models.utils import GRN, LayerNorm2d
 
 
 class TestGRN(TestCase):

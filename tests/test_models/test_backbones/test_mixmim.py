@@ -4,7 +4,7 @@ from unittest import TestCase
 
 import torch
 
-from mmcls.models.backbones import MixMIMTransformer
+from mmpretrain.models.backbones import MixMIMTransformer
 
 
 class TestMixMIM(TestCase):

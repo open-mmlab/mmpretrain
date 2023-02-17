@@ -22,12 +22,12 @@ sys.path.insert(0, os.path.abspath('../../'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'MMClassification'
+project = 'MMPretrain'
 copyright = '2020, OpenMMLab'
-author = 'MMClassification Authors'
+author = 'MMPretrain Authors'
 
 # The full version, including alpha/beta/rc tags
-version_file = '../../mmcls/version.py'
+version_file = '../../mmpretrain/version.py'
 
 
 def get_version():
@@ -92,25 +92,25 @@ html_theme_options = {
     'menu': [
         {
             'name': 'GitHub',
-            'url': 'https://github.com/open-mmlab/mmclassification'
+            'url': 'https://github.com/open-mmlab/mmpretrain'
         },
         {
             'name': 'Colab Tutorials',
             'children': [
                 {'name': 'Train and inference with shell commands',
-                 'url': 'https://colab.research.google.com/github/mzr1996/mmclassification-tutorial/blob/master/1.x/MMClassification_tools.ipynb'},
+                 'url': 'https://colab.research.google.com/github/mzr1996/mmpretrain-tutorial/blob/master/1.x/MMPretrain_tools.ipynb'},
                 {'name': 'Train and inference with Python APIs',
-                 'url': 'https://colab.research.google.com/github/mzr1996/mmclassification-tutorial/blob/master/1.x/MMClassification_python.ipynb'},
+                 'url': 'https://colab.research.google.com/github/mzr1996/mmpretrain-tutorial/blob/master/1.x/MMPretrain_python.ipynb'},
             ]
         },
         {
             'name': 'Version',
             'children': [
-                {'name': 'MMClassification 0.x',
-                 'url': 'https://mmclassification.readthedocs.io/en/latest/',
+                {'name': 'MMPretrain 0.x',
+                 'url': 'https://mmpretrain.readthedocs.io/en/latest/',
                  'description': 'master branch'},
-                {'name': 'MMClassification 1.x',
-                 'url': 'https://mmclassification.readthedocs.io/en/dev-1.x/',
+                {'name': 'MMPretrain 1.x',
+                 'url': 'https://mmpretrain.readthedocs.io/en/dev-1.x/',
                  'description': '1.x branch'},
             ],
         }
@@ -138,7 +138,7 @@ html_js_files = [
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'mmclsdoc'
+htmlhelp_basename = 'mmpretraindoc'
 
 # -- Options for LaTeX output ------------------------------------------------
 
@@ -160,16 +160,14 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (root_doc, 'mmcls.tex', 'MMClassification Documentation', author,
-     'manual'),
+    (root_doc, 'mmpretrain.tex', 'MMPretrain Documentation', author, 'manual'),
 ]
 
 # -- Options for manual page output ------------------------------------------
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(root_doc, 'mmcls', 'MMClassification Documentation', [author], 1)
-             ]
+man_pages = [(root_doc, 'mmpretrain', 'MMPretrain Documentation', [author], 1)]
 
 # -- Options for Texinfo output ----------------------------------------------
 
@@ -177,7 +175,7 @@ man_pages = [(root_doc, 'mmcls', 'MMClassification Documentation', [author], 1)
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (root_doc, 'mmcls', 'MMClassification Documentation', author, 'mmcls',
+    (root_doc, 'mmpretrain', 'MMPretrain Documentation', author, 'mmpretrain',
      'OpenMMLab image classification toolbox and benchmark.', 'Miscellaneous'),
 ]
 

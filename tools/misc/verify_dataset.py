@@ -7,8 +7,8 @@ from pathlib import Path
 from mmengine import (Config, DictAction, track_parallel_progress,
                       track_progress)
 
-from mmcls.datasets import build_dataset
-from mmcls.registry import TRANSFORMS
+from mmpretrain.datasets import build_dataset
+from mmpretrain.registry import TRANSFORMS
 
 
 def parse_args():

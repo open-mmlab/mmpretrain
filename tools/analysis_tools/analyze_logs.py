@@ -7,7 +7,7 @@ from itertools import groupby
 import matplotlib.pyplot as plt
 import numpy as np
 
-from mmcls.utils import load_json_log
+from mmpretrain.utils import load_json_log
 
 
 def cal_train_time(log_dicts, args):

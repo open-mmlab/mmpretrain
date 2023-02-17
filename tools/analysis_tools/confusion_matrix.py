@@ -7,9 +7,9 @@ from mmengine.config import Config, DictAction
 from mmengine.evaluator import Evaluator
 from mmengine.runner import Runner
 
-from mmcls.evaluation import ConfusionMatrix
-from mmcls.registry import DATASETS
-from mmcls.utils import register_all_modules
+from mmpretrain.evaluation import ConfusionMatrix
+from mmpretrain.registry import DATASETS
+from mmpretrain.utils import register_all_modules
 
 
 def parse_args():
@@ -54,7 +54,7 @@ def parse_args():
 def main():
     args = parse_args()
 
-    # register all modules in mmcls into the registries
+    # register all modules in mmpretrain into the registries
     # do not init the default scope here because it will be init in the runner
     register_all_modules(init_default_scope=False)
 

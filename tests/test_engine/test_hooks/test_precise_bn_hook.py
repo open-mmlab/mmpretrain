@@ -13,8 +13,8 @@ from mmengine.model import BaseDataPreprocessor, BaseModel
 from mmengine.runner import Runner
 from torch.utils.data import DataLoader, Dataset
 
-from mmcls.registry import HOOKS
-from mmcls.structures import ClsDataSample
+from mmpretrain.registry import HOOKS
+from mmpretrain.structures import ClsDataSample
 
 
 class ExampleDataset(Dataset):
@@ -129,7 +129,7 @@ class TestPreciseBNHookHook(TestCase):
             log_level='WARNING',
             optim_wrapper=self.optim_wrapper,
             param_scheduler=self.epoch_param_scheduler,
-            default_scope='mmcls',
+            default_scope='mmpretrain',
             default_hooks=self.default_hooks,
             experiment_name='test_construct',
             custom_hooks=None)
@@ -164,7 +164,7 @@ class TestPreciseBNHookHook(TestCase):
             log_level='WARNING',
             optim_wrapper=self.optim_wrapper,
             param_scheduler=self.epoch_param_scheduler,
-            default_scope='mmcls',
+            default_scope='mmpretrain',
             default_hooks=self.default_hooks,
             experiment_name='test_after_train_epoch_multi_machines',
             custom_hooks=[self.preciseBN_cfg])
@@ -180,7 +180,7 @@ class TestPreciseBNHookHook(TestCase):
             log_level='WARNING',
             optim_wrapper=self.optim_wrapper,
             param_scheduler=self.epoch_param_scheduler,
-            default_scope='mmcls',
+            default_scope='mmpretrain',
             default_hooks=self.default_hooks,
             experiment_name='test_after_train_epoch',
             custom_hooks=[self.preciseBN_cfg])
@@ -217,7 +217,7 @@ class TestPreciseBNHookHook(TestCase):
             log_level='WARNING',
             optim_wrapper=self.optim_wrapper,
             param_scheduler=self.iter_param_scheduler,
-            default_scope='mmcls',
+            default_scope='mmpretrain',
             default_hooks=self.default_hooks,
             experiment_name='test_after_train_iter',
             custom_hooks=[self.preciseBN_cfg])

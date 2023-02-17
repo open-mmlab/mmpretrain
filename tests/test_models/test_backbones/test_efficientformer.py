@@ -6,10 +6,10 @@ import torch
 from mmcv.cnn import ConvModule
 from torch import nn
 
-from mmcls.models.backbones import EfficientFormer
-from mmcls.models.backbones.efficientformer import (AttentionWithBias, Flat,
-                                                    Meta3D, Meta4D)
-from mmcls.models.backbones.poolformer import Pooling
+from mmpretrain.models.backbones import EfficientFormer
+from mmpretrain.models.backbones.efficientformer import (AttentionWithBias,
+                                                         Flat, Meta3D, Meta4D)
+from mmpretrain.models.backbones.poolformer import Pooling
 
 
 class TestEfficientFormer(TestCase):

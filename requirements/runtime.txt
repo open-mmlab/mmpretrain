@@ -1,5 +1,7 @@
+attrs
+einops
+importlib-metadata;python_version<'3.8'
 matplotlib
 modelindex
 numpy
-packaging
 rich

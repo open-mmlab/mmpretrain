@@ -2,7 +2,7 @@
 import pytest
 import torch
 
-from mmcls.models.backbones import EdgeNeXt
+from mmpretrain.models.backbones import EdgeNeXt
 
 
 def test_assertion():

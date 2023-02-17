@@ -9,7 +9,7 @@ from tabulate import tabulate
 
 MMCLS_ROOT = Path(__file__).absolute().parents[2]
 PAPERS_ROOT = Path('papers')  # Path to save generated paper pages.
-GITHUB_PREFIX = 'https://github.com/open-mmlab/mmclassification/blob/1.x/'
+GITHUB_PREFIX = 'https://github.com/open-mmlab/mmpretrain/blob/1.x/'
 MODELZOO_TEMPLATE = """
 # 模型库统计
 

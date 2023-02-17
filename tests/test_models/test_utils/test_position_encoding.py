@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
 
-from mmcls.models.utils import ConditionalPositionEncoding
+from mmpretrain.models.utils import ConditionalPositionEncoding
 
 
 def test_conditional_position_encoding_module():

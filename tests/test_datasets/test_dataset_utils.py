@@ -6,8 +6,8 @@ from unittest.mock import patch
 
 import pytest
 
-from mmcls.datasets.utils import (check_integrity, open_maybe_compressed_file,
-                                  rm_suffix)
+from mmpretrain.datasets.utils import (check_integrity,
+                                       open_maybe_compressed_file, rm_suffix)
 
 
 def test_dataset_utils():

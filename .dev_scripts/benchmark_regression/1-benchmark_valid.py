@@ -17,10 +17,10 @@ from modelindex.load_model_index import load
 from rich.console import Console
 from rich.table import Table
 
-from mmcls.apis import init_model
-from mmcls.datasets import CIFAR10, CIFAR100, ImageNet
-from mmcls.utils import register_all_modules
-from mmcls.visualization import ClsVisualizer
+from mmpretrain.apis import init_model
+from mmpretrain.datasets import CIFAR10, CIFAR100, ImageNet
+from mmpretrain.utils import register_all_modules
+from mmpretrain.visualization import ClsVisualizer
 
 console = Console()
 MMCLS_ROOT = Path(__file__).absolute().parents[2]

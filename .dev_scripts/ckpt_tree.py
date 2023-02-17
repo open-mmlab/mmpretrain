@@ -47,7 +47,7 @@ def ckpt_to_state_dict(checkpoint, key=None):
     if key is not None:
         state_dict = checkpoint[key]
     elif 'state_dict' in checkpoint:
-        # try mmcls style
+        # try mmpretrain style
         state_dict = checkpoint['state_dict']
     elif 'model' in checkpoint:
         state_dict = checkpoint['model']
@@ -149,7 +149,7 @@ def main():
     if args.path.suffix in ['.json', '.py', '.yml']:
         from mmengine.runner import get_state_dict
 
-        from mmcls.apis import init_model
+        from mmpretrain.apis import init_model
         model = init_model(args.path, device='cpu')
         state_dict = get_state_dict(model)
     else:

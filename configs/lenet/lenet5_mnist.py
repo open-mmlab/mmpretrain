@@ -51,7 +51,7 @@ val_cfg = dict()
 test_cfg = dict()
 
 # runtime settings
-default_scope = 'mmcls'
+default_scope = 'mmpretrain'
 
 default_hooks = dict(
     # record the time of every iteration.

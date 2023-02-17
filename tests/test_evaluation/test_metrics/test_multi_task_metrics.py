@@ -3,8 +3,8 @@ from unittest import TestCase
 
 import torch
 
-from mmcls.evaluation.metrics import MultiTasksMetric
-from mmcls.structures import ClsDataSample
+from mmpretrain.evaluation.metrics import MultiTasksMetric
+from mmpretrain.structures import ClsDataSample
 
 
 class MultiTaskMetric(TestCase):

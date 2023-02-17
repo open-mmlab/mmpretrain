@@ -2,8 +2,8 @@
 import pytest
 import torch
 
-from mmcls.models.backbones import VGG
-from mmcls.models.utils import HybridEmbed, PatchEmbed, PatchMerging
+from mmpretrain.models.backbones import VGG
+from mmpretrain.models.utils import HybridEmbed, PatchEmbed, PatchMerging
 
 
 def cal_unfold_dim(dim, kernel_size, stride, padding=0, dilation=1):

@@ -2,7 +2,7 @@
 import pytest
 import torch
 
-from mmcls.models import build_loss
+from mmpretrain.models import build_loss
 
 
 def test_asymmetric_loss():

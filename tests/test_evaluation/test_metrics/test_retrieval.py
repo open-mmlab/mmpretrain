@@ -4,9 +4,9 @@ from unittest import TestCase
 import numpy as np
 import torch
 
-from mmcls.evaluation.metrics import RetrievalRecall
-from mmcls.registry import METRICS
-from mmcls.structures import ClsDataSample
+from mmpretrain.evaluation.metrics import RetrievalRecall
+from mmpretrain.registry import METRICS
+from mmpretrain.structures import ClsDataSample
 
 
 class TestRetrievalRecall(TestCase):

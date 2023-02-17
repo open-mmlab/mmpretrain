@@ -84,8 +84,8 @@ def get_flops(config_path):
     from mmengine.dataset import Compose
     from mmengine.registry import DefaultScope
 
-    import mmcls.datasets  # noqa: F401
-    from mmcls.apis import init_model
+    import mmpretrain.datasets  # noqa: F401
+    from mmpretrain.apis import init_model
 
     cfg = Config.fromfile(config_path)
 
@@ -98,7 +98,7 @@ def get_flops(config_path):
             # The image shape of CIFAR is (32, 32, 3)
             test_dataset.pipeline.insert(1, dict(type='Resize', scale=32))
 
-        with DefaultScope.overwrite_default_scope('mmcls'):
+        with DefaultScope.overwrite_default_scope('mmpretrain'):
             data = Compose(test_dataset.pipeline)({
                 'img':
                 np.random.randint(0, 256, (224, 224, 3), dtype=np.uint8)

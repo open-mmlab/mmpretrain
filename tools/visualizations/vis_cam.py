@@ -15,8 +15,8 @@ from mmengine.registry import init_default_scope
 from mmengine.utils import to_2tuple
 from torch.nn import BatchNorm1d, BatchNorm2d, GroupNorm, LayerNorm
 
-from mmcls import digit_version
-from mmcls.apis import init_model
+from mmpretrain import digit_version
+from mmpretrain.apis import init_model
 
 try:
     from pytorch_grad_cam import (EigenCAM, EigenGradCAM, GradCAM,
@@ -159,8 +159,8 @@ def build_reshape_transform(model, args):
 
 
 def init_cam(method, model, target_layers, use_cuda, reshape_transform):
-    """Construct the CAM object once, In order to be compatible with mmcls,
-    here we modify the ActivationsAndGradients object."""
+    """Construct the CAM object once, In order to be compatible with
+    mmpretrain, here we modify the ActivationsAndGradients object."""
     GradCAM_Class = METHOD_MAP[method.lower()]
     cam = GradCAM_Class(
         model=model, target_layers=target_layers, use_cuda=use_cuda)
@@ -265,7 +265,7 @@ def main():
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
 
-    init_default_scope('mmcls')
+    init_default_scope('mmpretrain')
     # build the model from a config file and a checkpoint file
     model = init_model(cfg, args.checkpoint, device=args.device)
     if args.preview_model:

@@ -2,7 +2,7 @@
 import os.path as osp
 import tempfile
 
-from mmcls.utils import load_json_log
+from mmpretrain.utils import load_json_log
 
 
 def test_load_json_log():

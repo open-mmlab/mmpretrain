@@ -7,7 +7,7 @@ from unittest import TestCase
 import torch
 from mmengine.runner import load_checkpoint, save_checkpoint
 
-from mmcls.models.backbones import RepMLPNet
+from mmpretrain.models.backbones import RepMLPNet
 
 
 class TestRepMLP(TestCase):

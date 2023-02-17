@@ -1,5 +1,5 @@
-from mmcls.models import ResNet
-from mmcls.registry import MODELS
+from mmpretrain.models import ResNet
+from mmpretrain.registry import MODELS
 
 
 # Register your model to the `MODELS`.
@@ -12,7 +12,7 @@ class ExampleNet(ResNet):
 
     def __init__(self, **kwargs) -> None:
         print('#############################\n'
-              '#  Hello MMClassification!  #\n'
+              '#     Hello MMPretrain!     #\n'
               '#############################')
         super().__init__(**kwargs)
 

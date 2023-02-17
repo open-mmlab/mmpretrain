@@ -15,11 +15,11 @@ from mmengine.model import BaseDataPreprocessor, BaseModel
 from mmengine.optim import OptimWrapper
 from mmengine.runner import Runner
 
-from mmcls.engine import SwitchRecipeHook
-from mmcls.models import CrossEntropyLoss
-from mmcls.models.heads.cls_head import ClsHead
-from mmcls.models.losses import LabelSmoothLoss
-from mmcls.models.utils.batch_augments import RandomBatchAugment
+from mmpretrain.engine import SwitchRecipeHook
+from mmpretrain.models import CrossEntropyLoss
+from mmpretrain.models.heads.cls_head import ClsHead
+from mmpretrain.models.losses import LabelSmoothLoss
+from mmpretrain.models.utils.batch_augments import RandomBatchAugment
 
 
 class SimpleDataPreprocessor(BaseDataPreprocessor):
@@ -162,7 +162,7 @@ class TestSwitchRecipeHook(TestCase):
             work_dir=self.tmpdir.name,
             default_hooks=dict(logger=None),
             custom_hooks=[switch_hook],
-            default_scope='mmcls',
+            default_scope='mmpretrain',
             experiment_name='test_switch')
         runner.train()
         self.assertEqual(switch_hook.schedule[2]['batch_augments'].call_count,
@@ -197,7 +197,7 @@ class TestSwitchRecipeHook(TestCase):
         #     work_dir=self.tmpdir.name,
         #     default_hooks=dict(logger=None),
         #     custom_hooks=[switch_hook],
-        #     default_scope='mmcls',
+        #     default_scope='mmpretrain',
         #     experiment_name='test_switch_multi_workers')
         # with self.assertRaisesRegex(AssertionError, 'No `input` in data.'):
         #     # If the pipeline switch works, the data_preprocessor cannot
@@ -239,7 +239,7 @@ class TestSwitchRecipeHook(TestCase):
             work_dir=self.tmpdir.name,
             default_hooks=dict(logger=None),
             custom_hooks=[switch_hook],
-            default_scope='mmcls',
+            default_scope='mmpretrain',
             experiment_name='test_resume1')
         runner.train()
 
@@ -260,7 +260,7 @@ class TestSwitchRecipeHook(TestCase):
             work_dir=self.tmpdir.name,
             default_hooks=dict(logger=None),
             custom_hooks=[switch_hook],
-            default_scope='mmcls',
+            default_scope='mmpretrain',
             experiment_name='test_resume2')
 
         with self.assertLogs(runner.logger, 'INFO') as logs:
@@ -293,7 +293,7 @@ class TestSwitchRecipeHook(TestCase):
             train_cfg=dict(by_epoch=True, max_epochs=2, val_interval=10),
             work_dir=self.tmpdir.name,
             default_hooks=dict(logger=None),
-            default_scope='mmcls',
+            default_scope='mmpretrain',
             experiment_name='test_concat_dataset')
         pipeline = MagicMock()
         SwitchRecipeHook._switch_train_pipeline(runner, pipeline)
@@ -316,7 +316,7 @@ class TestSwitchRecipeHook(TestCase):
             train_cfg=dict(by_epoch=True, max_epochs=2, val_interval=10),
             work_dir=self.tmpdir.name,
             default_hooks=dict(logger=None),
-            default_scope='mmcls',
+            default_scope='mmpretrain',
             experiment_name='test_repeat_dataset')
         pipeline = MagicMock()
         SwitchRecipeHook._switch_train_pipeline(runner, pipeline)
@@ -341,7 +341,7 @@ class TestSwitchRecipeHook(TestCase):
             train_cfg=dict(by_epoch=True, max_epochs=2, val_interval=10),
             work_dir=self.tmpdir.name,
             default_hooks=dict(logger=None),
-            default_scope='mmcls',
+            default_scope='mmpretrain',
             experiment_name='test_model_loss')
         loss = CrossEntropyLoss(use_soft=True)
         SwitchRecipeHook._switch_loss(runner, loss)
@@ -363,7 +363,7 @@ class TestSwitchRecipeHook(TestCase):
             train_cfg=dict(by_epoch=True, max_epochs=2, val_interval=10),
             work_dir=self.tmpdir.name,
             default_hooks=dict(logger=None),
-            default_scope='mmcls',
+            default_scope='mmpretrain',
             experiment_name='test_head_loss')
         loss = CrossEntropyLoss(use_soft=True)
         SwitchRecipeHook._switch_loss(runner, loss)

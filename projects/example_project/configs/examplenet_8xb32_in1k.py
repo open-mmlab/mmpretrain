@@ -1,5 +1,5 @@
 # Directly inherit the entire recipe you want to use.
-_base_ = 'mmcls::resnet/resnet50_8xb32_in1k.py'
+_base_ = 'mmpretrain::resnet/resnet50_8xb32_in1k.py'
 
 # This line is to import your own modules.
 custom_imports = dict(imports='models')

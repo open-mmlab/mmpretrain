@@ -9,8 +9,8 @@ import numpy as np
 import torch
 from mmengine import is_seq_of
 
-from mmcls.registry import MODELS
-from mmcls.structures import ClsDataSample, MultiTaskDataSample
+from mmpretrain.registry import MODELS
+from mmpretrain.structures import ClsDataSample, MultiTaskDataSample
 
 
 def setup_seed(seed):
@@ -460,7 +460,7 @@ class EfficientFormerClsHead(TestClsHead):
         cfg = copy.deepcopy(self.DEFAULT_ARGS)
         cfg['distillation'] = True
         head = MODELS.build(cfg)
-        with self.assertRaisesRegex(NotImplementedError, 'MMClassification '):
+        with self.assertRaisesRegex(NotImplementedError, 'MMPretrain '):
             head.loss(feats, data_samples)
 
         # test without distillation head

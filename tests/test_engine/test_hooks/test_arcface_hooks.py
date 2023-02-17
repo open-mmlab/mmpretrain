@@ -60,7 +60,7 @@ class TestSetAdaptiveMarginsHook(TestCase):
                 optimizer=dict(type='SGD', lr=0.1, momentum=0.9)),
             param_scheduler=dict(
                 type='MultiStepLR', milestones=[1, 2], gamma=0.1),
-            default_scope='mmcls',
+            default_scope='mmpretrain',
             default_hooks=default_hooks,
             experiment_name='test_construct_with_arcface',
             custom_hooks=[self.DEFAULT_HOOK_CFG])
@@ -94,7 +94,7 @@ class TestSetAdaptiveMarginsHook(TestCase):
                 optimizer=dict(type='SGD', lr=0.1, momentum=0.9)),
             param_scheduler=dict(
                 type='MultiStepLR', milestones=[1, 2], gamma=0.1),
-            default_scope='mmcls',
+            default_scope='mmpretrain',
             default_hooks=default_hooks,
             experiment_name='test_construct_wo_arcface',
             custom_hooks=[self.DEFAULT_HOOK_CFG])

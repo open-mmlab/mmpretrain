@@ -4,8 +4,8 @@ from unittest import TestCase
 import torch
 from mmengine.structures import LabelData
 
-from mmcls.structures import (batch_label_to_onehot, cat_batch_labels,
-                              stack_batch_scores, tensor_split)
+from mmpretrain.structures import (batch_label_to_onehot, cat_batch_labels,
+                                   stack_batch_scores, tensor_split)
 
 
 class TestStructureUtils(TestCase):

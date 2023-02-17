@@ -55,7 +55,7 @@ def state_dict_from_cfg_or_ckpt(path, state_key=None):
     if path.suffix in ['.json', '.py', '.yml']:
         from mmengine.runner import get_state_dict
 
-        from mmcls.apis import init_model
+        from mmpretrain.apis import init_model
         model = init_model(path, device='cpu')
         model.init_weights()
         return get_state_dict(model)

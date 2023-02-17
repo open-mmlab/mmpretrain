@@ -11,9 +11,9 @@ from mmengine import ConfigDict
 from mmengine.dataset.utils import default_collate
 from torch.utils.data import DataLoader, Dataset
 
-from mmcls.datasets.transforms import PackClsInputs
-from mmcls.registry import MODELS
-from mmcls.structures import ClsDataSample
+from mmpretrain.datasets.transforms import PackClsInputs
+from mmpretrain.registry import MODELS
+from mmpretrain.structures import ClsDataSample
 
 
 class ExampleDataset(Dataset):

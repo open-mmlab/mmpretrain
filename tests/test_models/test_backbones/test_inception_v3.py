@@ -4,8 +4,8 @@ from unittest import TestCase
 
 import torch
 
-from mmcls.models import InceptionV3
-from mmcls.models.backbones.inception_v3 import InceptionAux
+from mmpretrain.models import InceptionV3
+from mmpretrain.models.backbones.inception_v3 import InceptionAux
 
 
 class TestInceptionV3(TestCase):

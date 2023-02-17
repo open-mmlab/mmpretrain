@@ -8,7 +8,7 @@ from unittest import TestCase
 import torch
 from mmengine.runner import load_checkpoint, save_checkpoint
 
-from mmcls.models.backbones import VisionTransformer
+from mmpretrain.models.backbones import VisionTransformer
 from .utils import timm_resize_pos_embed
 
 

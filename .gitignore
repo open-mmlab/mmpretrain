@@ -127,7 +127,7 @@ venv.bak/
 /work_dirs
 /projects/*/work_dirs
 /projects/*/data
-/mmcls/.mim
+/mmpretrain/.mim
 .DS_Store
 
 # Pytorch

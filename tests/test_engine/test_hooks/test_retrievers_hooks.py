@@ -4,8 +4,8 @@ from unittest.mock import MagicMock
 
 import torch
 
-from mmcls.engine import PrepareProtoBeforeValLoopHook
-from mmcls.models.retrievers import BaseRetriever
+from mmpretrain.engine import PrepareProtoBeforeValLoopHook
+from mmpretrain.models.retrievers import BaseRetriever
 
 
 class ToyRetriever(BaseRetriever):

@@ -2,7 +2,7 @@
 # The basic forward/backward tests are in ../test_models.py
 import torch
 
-from mmcls.apis import get_model
+from mmpretrain.apis import get_model
 
 
 def test_out_type():

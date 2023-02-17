@@ -8,7 +8,7 @@ import torch
 from mmengine.utils.dl_utils.parrots_wrapper import _BatchNorm
 from torch import nn
 
-from mmcls.models.backbones import VAN
+from mmpretrain.models.backbones import VAN
 
 
 def check_norm_state(modules, train_state):

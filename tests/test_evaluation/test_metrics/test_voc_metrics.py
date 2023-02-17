@@ -5,8 +5,11 @@ import numpy as np
 import sklearn.metrics
 import torch
 from mmengine.evaluator import Evaluator
+from mmengine.registry import init_default_scope
 
-from mmcls.structures import ClsDataSample
+from mmpretrain.structures import ClsDataSample
+
+init_default_scope('mmpretrain')
 
 
 class TestVOCMultiLabel(TestCase):

@@ -3,7 +3,7 @@ import pytest
 import torch
 from mmengine.utils.dl_utils.parrots_wrapper import _BatchNorm
 
-from mmcls.models.backbones import Res2Net
+from mmpretrain.models.backbones import Res2Net
 
 
 def check_norm_state(modules, train_state):

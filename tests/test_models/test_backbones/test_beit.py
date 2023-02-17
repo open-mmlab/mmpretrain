@@ -4,7 +4,7 @@ from unittest import TestCase
 
 import torch
 
-from mmcls.models.backbones import BEiT
+from mmpretrain.models.backbones import BEiT
 
 
 class TestBEiT(TestCase):

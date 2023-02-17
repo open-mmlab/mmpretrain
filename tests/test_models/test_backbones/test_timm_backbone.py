@@ -6,7 +6,7 @@ import torch
 from torch import nn
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from mmcls.models.backbones import TIMMBackbone
+from mmpretrain.models.backbones import TIMMBackbone
 
 
 def has_timm() -> bool:

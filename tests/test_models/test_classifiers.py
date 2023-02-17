@@ -7,9 +7,9 @@ import torch
 import torch.nn as nn
 from mmengine import ConfigDict
 
-from mmcls.models import ImageClassifier
-from mmcls.registry import MODELS
-from mmcls.structures import ClsDataSample
+from mmpretrain.models import ImageClassifier
+from mmpretrain.registry import MODELS
+from mmpretrain.structures import ClsDataSample
 
 
 def has_timm() -> bool:

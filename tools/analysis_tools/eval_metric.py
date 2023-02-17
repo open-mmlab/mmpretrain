@@ -6,10 +6,10 @@ import rich
 from mmengine import DictAction
 from mmengine.evaluator import Evaluator
 
-from mmcls.registry import METRICS
+from mmpretrain.registry import METRICS
 
 HELP_URL = (
-    'https://mmclassification.readthedocs.io/en/dev-1.x/useful_tools/'
+    'https://mmpretrain.readthedocs.io/en/dev-1.x/useful_tools/'
     'log_result_analysis.html#how-to-conduct-offline-metric-evaluation')
 
 prog_description = f"""\

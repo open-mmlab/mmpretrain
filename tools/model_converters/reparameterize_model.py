@@ -4,8 +4,8 @@ from pathlib import Path
 
 import torch
 
-from mmcls.apis import init_model
-from mmcls.models.classifiers import ImageClassifier
+from mmpretrain.apis import init_model
+from mmpretrain.models.classifiers import ImageClassifier
 
 
 def convert_classifier_to_deploy(model, checkpoint, save_path):
@@ -47,7 +47,7 @@ def main():
     model = init_model(
         args.config_path, checkpoint=args.checkpoint_path, device='cpu')
     assert isinstance(model, ImageClassifier), \
-        '`model` must be a `mmcls.classifiers.ImageClassifier` instance.'
+        '`model` must be a `mmpretrain.classifiers.ImageClassifier` instance.'
 
     checkpoint = torch.load(args.checkpoint_path)
     convert_classifier_to_deploy(model, checkpoint, args.save_path)

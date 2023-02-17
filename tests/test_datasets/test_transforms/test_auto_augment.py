@@ -6,7 +6,7 @@ from unittest.mock import ANY, patch
 
 import numpy as np
 
-from mmcls.registry import TRANSFORMS
+from mmpretrain.registry import TRANSFORMS
 
 
 def construct_toy_data():

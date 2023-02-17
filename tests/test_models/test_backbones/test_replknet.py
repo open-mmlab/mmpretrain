@@ -9,8 +9,8 @@ from torch import nn
 from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from mmcls.models.backbones import RepLKNet
-from mmcls.models.backbones.replknet import ReparamLargeKernelConv
+from mmpretrain.models.backbones import RepLKNet
+from mmpretrain.models.backbones.replknet import ReparamLargeKernelConv
 
 
 def check_norm_state(modules, train_state):

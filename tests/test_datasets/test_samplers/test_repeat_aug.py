@@ -7,9 +7,9 @@ from unittest.mock import patch
 import torch
 from mmengine.logging import MMLogger
 
-from mmcls.datasets import RepeatAugSampler
+from mmpretrain.datasets import RepeatAugSampler
 
-file = 'mmcls.datasets.samplers.repeat_aug.'
+file = 'mmpretrain.datasets.samplers.repeat_aug.'
 
 
 class MockDist:

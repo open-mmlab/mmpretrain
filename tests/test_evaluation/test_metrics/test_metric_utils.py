@@ -2,7 +2,7 @@
 import pytest
 import torch
 
-from mmcls.models.losses.utils import convert_to_one_hot
+from mmpretrain.models.losses.utils import convert_to_one_hot
 
 
 def ori_convert_to_one_hot(targets: torch.Tensor, classes) -> torch.Tensor:

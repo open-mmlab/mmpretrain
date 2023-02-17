@@ -234,7 +234,7 @@ def main():
         raise ValueError('please set `train_cfg`.')
 
     if args.dataset_size is None and by_epoch:
-        from mmcls.datasets import build_dataset
+        from mmpretrain.datasets import build_dataset
         dataset_size = len(build_dataset(cfg.train_dataloader.dataset))
     else:
         dataset_size = args.dataset_size or batch_size

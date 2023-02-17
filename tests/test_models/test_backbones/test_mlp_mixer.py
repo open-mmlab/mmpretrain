@@ -6,7 +6,7 @@ import torch
 from torch.nn.modules import GroupNorm
 from torch.nn.modules.batchnorm import _BatchNorm
 
-from mmcls.models.backbones import MlpMixer
+from mmpretrain.models.backbones import MlpMixer
 
 
 def is_norm(modules):

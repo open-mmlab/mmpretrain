@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 import numpy as np
 import requests
 
-from mmcls.apis import inference_model, init_model
+from mmpretrain.apis import inference_model, init_model
 
 
 def parse_args():

@@ -10,7 +10,7 @@ from mmengine.utils import digit_version
 from mmengine.utils.dl_utils.parrots_wrapper import _BatchNorm
 from torch import nn
 
-from mmcls.models.backbones import HorNet
+from mmpretrain.models.backbones import HorNet
 
 
 def check_norm_state(modules, train_state):

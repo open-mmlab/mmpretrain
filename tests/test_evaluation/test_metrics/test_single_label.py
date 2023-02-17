@@ -5,10 +5,10 @@ from unittest import TestCase
 import numpy as np
 import torch
 
-from mmcls.evaluation.metrics import (Accuracy, ConfusionMatrix,
-                                      SingleLabelMetric)
-from mmcls.registry import METRICS
-from mmcls.structures import ClsDataSample
+from mmpretrain.evaluation.metrics import (Accuracy, ConfusionMatrix,
+                                           SingleLabelMetric)
+from mmpretrain.registry import METRICS
+from mmpretrain.structures import ClsDataSample
 
 
 class TestAccuracy(TestCase):

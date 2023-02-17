@@ -9,8 +9,8 @@ import torch
 from mmengine.structures import LabelData
 from PIL import Image
 
-from mmcls.registry import TRANSFORMS
-from mmcls.structures import ClsDataSample, MultiTaskDataSample
+from mmpretrain.registry import TRANSFORMS
+from mmpretrain.structures import ClsDataSample, MultiTaskDataSample
 
 
 class TestPackClsInputs(unittest.TestCase):

@@ -10,7 +10,7 @@ from unittest.mock import MagicMock, call, patch
 import numpy as np
 from mmengine.logging import MMLogger
 
-from mmcls.registry import DATASETS, TRANSFORMS
+from mmpretrain.registry import DATASETS, TRANSFORMS
 
 ASSETS_ROOT = osp.abspath(osp.join(osp.dirname(__file__), '../data/dataset'))
 
@@ -411,8 +411,8 @@ class TestCIFAR10(TestBaseDataset):
             dataset.full_init()
 
         # Test automatically download
-        with patch(
-                'mmcls.datasets.cifar.download_and_extract_archive') as mock:
+        with patch('mmpretrain.datasets.cifar.download_and_extract_archive'
+                   ) as mock:
             cfg = {**self.DEFAULT_ARGS, 'lazy_init': True, 'test_mode': True}
             dataset = dataset_class(**cfg)
             dataset.test_list = [['invalid_batch', None]]
@@ -720,8 +720,8 @@ class TestMNIST(TestBaseDataset):
         np.testing.assert_equal(data_info['gt_label'], self.fake_label)
 
         # Test automatically download
-        with patch(
-                'mmcls.datasets.mnist.download_and_extract_archive') as mock:
+        with patch('mmpretrain.datasets.mnist.download_and_extract_archive'
+                   ) as mock:
             cfg = {**self.DEFAULT_ARGS, 'lazy_init': True, 'test_mode': True}
             dataset = dataset_class(**cfg)
             dataset.train_list = [['invalid_train_file', None]]

@@ -4,8 +4,8 @@ from unittest import TestCase
 
 import torch
 
-from mmcls.models.backbones import DaViT
-from mmcls.models.backbones.davit import SpatialBlock
+from mmpretrain.models.backbones import DaViT
+from mmpretrain.models.backbones.davit import SpatialBlock
 
 
 class TestDaViT(TestCase):

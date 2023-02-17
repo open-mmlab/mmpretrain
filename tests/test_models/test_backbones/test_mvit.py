@@ -5,7 +5,7 @@ from unittest import TestCase
 
 import torch
 
-from mmcls.models import MViT
+from mmpretrain.models import MViT
 
 
 class TestMViT(TestCase):

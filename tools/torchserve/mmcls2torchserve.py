@@ -14,7 +14,7 @@ except ImportError:
         'install required third-party libraries.')
 
 
-def mmcls2torchserve(
+def mmpretrain2torchserve(
     config_file: str,
     checkpoint_file: str,
     output_folder: str,
@@ -22,15 +22,14 @@ def mmcls2torchserve(
     model_version: str = '1.0',
     force: bool = False,
 ):
-    """Converts mmclassification model (config + checkpoint) to TorchServe
-    `.mar`.
+    """Converts mmpretrain model (config + checkpoint) to TorchServe `.mar`.
 
     Args:
         config_file:
-            In MMClassification config format.
+            In MMPretrain config format.
             The contents vary for each task repository.
         checkpoint_file:
-            In MMClassification checkpoint format.
+            In MMPretrain checkpoint format.
             The contents vary for each task repository.
         output_folder:
             Folder where `{model_name}.mar` will be created.
@@ -56,7 +55,7 @@ def mmcls2torchserve(
             **{
                 'model_file': f'{tmpdir}/config.py',
                 'serialized_file': checkpoint_file,
-                'handler': f'{Path(__file__).parent}/mmcls_handler.py',
+                'handler': f'{Path(__file__).parent}/mmpretrain_handler.py',
                 'model_name': model_name or Path(checkpoint_file).stem,
                 'version': model_version,
                 'export_path': output_folder,
@@ -72,7 +71,7 @@ def mmcls2torchserve(
 
 def parse_args():
     parser = ArgumentParser(
-        description='Convert mmcls models to TorchServe `.mar` format.')
+        description='Convert mmpretrain models to TorchServe `.mar` format.')
     parser.add_argument('config', type=str, help='config file path')
     parser.add_argument('checkpoint', type=str, help='checkpoint file path')
     parser.add_argument(
@@ -109,5 +108,5 @@ if __name__ == '__main__':
         raise ImportError('`torch-model-archiver` is required.'
                           'Try: pip install torch-model-archiver')
 
-    mmcls2torchserve(args.config, args.checkpoint, args.output_folder,
-                     args.model_name, args.model_version, args.force)
+    mmpretrain2torchserve(args.config, args.checkpoint, args.output_folder,
+                          args.model_name, args.model_version, args.force)

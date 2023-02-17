@@ -12,9 +12,9 @@ from mmengine.registry import init_default_scope
 from mmengine.utils import ProgressBar
 from mmengine.visualization import Visualizer
 
-from mmcls.datasets.builder import build_dataset
-from mmcls.visualization import ClsVisualizer
-from mmcls.visualization.cls_visualizer import _get_adaptive_scale
+from mmpretrain.datasets.builder import build_dataset
+from mmpretrain.visualization import ClsVisualizer
+from mmpretrain.visualization.cls_visualizer import _get_adaptive_scale
 
 
 def parse_args():
@@ -170,7 +170,7 @@ def main():
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
 
-    init_default_scope('mmcls')  # Use mmcls as default scope.
+    init_default_scope('mmpretrain')  # Use mmpretrain as default scope.
 
     dataset_cfg = cfg.get(args.phase + '_dataloader').get('dataset')
     dataset = build_dataset(dataset_cfg)
