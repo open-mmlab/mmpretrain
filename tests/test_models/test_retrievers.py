@@ -58,7 +58,6 @@ class TestImageToImageRetriever(TestCase):
         self.assertEqual(type(model.prototype), torch.Tensor)
         self.assertFalse(model.prototype_inited)
         self.assertIsInstance(model.similarity_fn, Callable)
-        self.assertEqual(model.topk, -1)
 
         # test prototype is str
         cfg = {**self.DEFAULT_ARGS, 'prototype': './proto.pth'}
@@ -184,13 +183,7 @@ class TestImageToImageRetriever(TestCase):
         torch.testing.assert_allclose(data_samples[0].pred_label.score,
                                       predictions[0].pred_label.score)
 
-        # k is not -1
-        cfg = {**self.DEFAULT_ARGS, 'topk': 2}
-        model = MODELS.build(cfg)
-
-        predictions = model.predict(inputs)
-        self.assertEqual(predictions[0].pred_label.score.shape, (10, ))
-
+        # test data_samples is not None
         predictions = model.predict(inputs, data_samples)
         assert predictions is data_samples
         self.assertEqual(data_samples[0].pred_label.score.shape, (10, ))
