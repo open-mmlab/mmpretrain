@@ -1,7 +1,12 @@
 # dataset settings
-dataset_type = 'mmcls.ImageNet'
+dataset_type = 'ImageNet'
 data_root = 'data/imagenet/'
 file_client_args = dict(backend='disk')
+data_preprocessor = dict(
+    type='CAEDataPreprocessor',
+    mean=[124, 117, 104],
+    std=[59, 58, 58],
+    bgr_to_rgb=True)
 
 train_pipeline = [
     dict(type='LoadImageFromFile', file_client_args=file_client_args),

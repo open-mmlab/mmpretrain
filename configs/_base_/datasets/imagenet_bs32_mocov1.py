@@ -1,7 +1,11 @@
 # dataset settings
-dataset_type = 'mmcls.ImageNet'
+dataset_type = 'ImageNet'
 data_root = 'data/imagenet/'
-file_client_args = dict(backend='disk')
+data_preprocessor = dict(
+    type='SelfSupDataPreprocessor',
+    mean=[123.675, 116.28, 103.53],
+    std=[58.395, 57.12, 57.375],
+    bgr_to_rgb=True)
 
 view_pipeline = [
     dict(type='RandomResizedCrop', size=224, scale=(0.2, 1.)),
@@ -14,9 +18,8 @@ view_pipeline = [
         hue=0.4),
     dict(type='RandomFlip', prob=0.5),
 ]
-
 train_pipeline = [
-    dict(type='LoadImageFromFile', file_client_args=file_client_args),
+    dict(type='LoadImageFromFile'),
     dict(type='MultiView', num_views=2, transforms=[view_pipeline]),
     dict(type='PackSelfSupInputs', meta_keys=['img_path'])
 ]
