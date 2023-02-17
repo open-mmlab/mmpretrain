@@ -1061,14 +1061,14 @@ class TestCustomRetrievalDataset(TestCustomDataset):
         self.assertEqual(dataset.CLASSES, ('a', 'b'))  # auto infer classes
         self.assertGreaterEqual(
             dataset.get_data_info(0).items(), {
-                'img_path': osp.join(RETRIEVAL_ASSETS_ROOT, 'train/a',
+                'img_path': osp.join(RETRIEVAL_ASSETS_ROOT, 'train', 'a',
                                      '1.JPG'),
                 'gt_label': 0
             }.items())
         self.assertGreaterEqual(
             dataset.get_data_info(2).items(), {
                 'img_path':
-                osp.join(RETRIEVAL_ASSETS_ROOT, 'train/b', 'subb', '3.jpg'),
+                osp.join(RETRIEVAL_ASSETS_ROOT, 'train', 'b', 'subb', '3.jpg'),
                 'gt_label':
                 1
             }.items())
@@ -1094,7 +1094,7 @@ class TestCustomRetrievalDataset(TestCustomDataset):
         self.assertEqual(len(dataset), 1)
         self.assertGreaterEqual(
             dataset.get_data_info(0).items(), {
-                'img_path': osp.join(RETRIEVAL_ASSETS_ROOT, 'train/b',
+                'img_path': osp.join(RETRIEVAL_ASSETS_ROOT, 'train', 'b',
                                      '2.jpeg'),
                 'gt_label': 1
             }.items())
