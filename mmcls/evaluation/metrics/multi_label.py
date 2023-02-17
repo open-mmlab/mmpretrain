@@ -552,8 +552,8 @@ class AveragePrecision(BaseMetric):
 class RetrievalAveragePrecision(BaseMetric):
     """Calculate the average precision for image retrieval.
 
-    Thanks to ``https://github.com/tensorflow/models/tree/master/
-    research/delf/delf/python/datasets`` for reference. You can
+    Thanks to <https://github.com/tensorflow/models/tree/master/
+    research/delf/delf/python/datasets> for reference. You can
     visit this url for more.
 
     Args:
