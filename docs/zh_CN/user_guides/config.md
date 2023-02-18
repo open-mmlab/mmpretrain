@@ -1,6 +1,6 @@
 # 学习配置文件
 
-为了管理深度学习实验的各种设置，我们使用配置文件来记录所有这些配置。这种配置文件系统具有模块化和继承特性，更多细节可以在{external+mmengine:doc}`MMEngine 中的教程 <tutorials/config>`。
+为了管理深度学习实验的各种设置，我们使用配置文件来记录所有这些配置。这种配置文件系统具有模块化和继承特性，更多细节可以在{external+mmengine:doc}`MMEngine 中的教程 <advanced_tutorials/config>`。
 
 MMClassification 主要使用 python 文件作为配置文件，所有配置文件都放置在 [`configs`](https://github.com/open-mmlab/mmclassification/tree/1.x/configs) 文件夹下，目录结构如下所示:
 
@@ -337,7 +337,7 @@ test_dataloader = dict(dataset=dict(pipeline=val_pipeline))
 
 ### 忽略基础配置文件里的部分内容
 
-有时，您需要设置 `_delete_=True` 去忽略基础配置文件里的一些域内容。可以查看 {external+mmengine:doc}`MMEngine 文档 <tutorials/config>` 进一步了解该设计。
+有时，您需要设置 `_delete_=True` 去忽略基础配置文件里的一些域内容。可以查看 {external+mmengine:doc}`MMEngine 文档 <advanced_tutorials/config>` 进一步了解该设计。
 
 以下是一个简单应用案例。 如果在上述 ResNet50 案例中 使用余弦调度 ,使用继承并直接修改会报 `get unexcepected keyword 'step'` 错, 因为基础配置文件 `param_scheduler` 域信息的 `'step'` 字段被保留下来了，需要加入 `_delete_=True` 去忽略基础配置文件里的 `param_scheduler` 相关域内容：
 
@@ -350,7 +350,7 @@ param_scheduler = dict(type='CosineAnnealingLR', by_epoch=True, _delete_=True)
 
 ### 引用基础配置文件里的变量
 
-有时，您可以引用 `_base_` 配置信息的一些域内容，这样可以避免重复定义。可以查看 {external+mmengine:doc}`MMEngine 文档 <tutorials/config>` 进一步了解该设计。
+有时，您可以引用 `_base_` 配置信息的一些域内容，这样可以避免重复定义。可以查看 {external+mmengine:doc}`MMEngine 文档 <advanced_tutorials/config>` 进一步了解该设计。
 
 以下是一个简单应用案例，在训练数据预处理流水线中使用 `auto augment` 数据增强，参考配置文件 [`configs/resnest/resnest50_32xb64_in1k.py`](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnest/resnest50_32xb64_in1k.py)。 在定义 `train_pipeline` 时，可以直接在 `_base_` 中加入定义 auto augment 数据增强的文件命名，再通过 `{{_base_.auto_increasing_policies}}` 引用变量：
 

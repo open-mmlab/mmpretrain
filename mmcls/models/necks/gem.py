@@ -22,20 +22,20 @@ class GeneralizedMeanPooling(nn.Module):
     has a batch dimension of size 1, which can lead to unexpected errors.
 
     Args:
-        p (float): Parameter value.
-            Default: 3.
-        eps (float): epsilon.
-            Default: 1e-6
-        clamp (bool): Use clamp before pooling.
-            Default: True
+        p (float): Parameter value. Defaults to 3.
+        eps (float): epsilon. Defaults to 1e-6.
+        clamp (bool): Use clamp before pooling. Defaults to True
+        p_trainable (bool): Toggle whether Parameter p is trainable or not.
+            Defaults to True.
     """
 
-    def __init__(self, p=3., eps=1e-6, clamp=True):
+    def __init__(self, p=3., eps=1e-6, clamp=True, p_trainable=True):
         assert p >= 1, "'p' must be a value greater than 1"
         super(GeneralizedMeanPooling, self).__init__()
-        self.p = Parameter(torch.ones(1) * p)
+        self.p = Parameter(torch.ones(1) * p, requires_grad=p_trainable)
         self.eps = eps
         self.clamp = clamp
+        self.p_trainable = p_trainable
 
     def forward(self, inputs):
         if isinstance(inputs, tuple):

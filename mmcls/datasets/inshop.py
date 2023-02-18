@@ -1,8 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from mmengine import get_file_backend, list_from_file
 
+from mmcls.datasets.base_dataset import BaseDataset
 from mmcls.registry import DATASETS
-from .base_dataset import BaseDataset
 
 
 @DATASETS.register_module()
@@ -14,11 +14,13 @@ class InShop(BaseDataset):
     (In-shop Clothes Retrieval Benchmark -> Img -> img.zip,
     Eval/list_eval_partition.txt), and organize them as follows way: ::
 
+    In-shop dataset directory: ::
+
         In-shop Clothes Retrieval Benchmark (data_root)/
            ├── Eval /
            │    └── list_eval_partition.txt (ann_file)
-           ├── Img
-           │    └── img/ (img_prefix)
+           ├── Img (img_prefix)
+           │    └── img/
            ├── README.txt
            └── .....
 
@@ -27,7 +29,7 @@ class InShop(BaseDataset):
         split (str): Choose from 'train', 'query' and 'gallery'.
             Defaults to 'train'.
         data_prefix (str | dict): Prefix for training data.
-            Defaults to 'Img/img'.
+            Defaults to 'Img'.
         ann_file (str): Annotation file path, path relative to
             ``data_root``. Defaults to 'Eval/list_eval_partition.txt'.
         **kwargs: Other keyword arguments in :class:`BaseDataset`.
@@ -66,7 +68,7 @@ class InShop(BaseDataset):
     def __init__(self,
                  data_root: str,
                  split: str = 'train',
-                 data_prefix: str = 'Img/img',
+                 data_prefix: str = 'Img',
                  ann_file: str = 'Eval/list_eval_partition.txt',
                  **kwargs):
 
@@ -149,9 +151,6 @@ class InShop(BaseDataset):
         """
         data_info = self._process_annotations()
         data_list = data_info['data_list']
-        for data in data_list:
-            data['img_path'] = self.backend.join_path(self.data_root,
-                                                      data['img_path'])
         return data_list
 
     def extra_repr(self):

@@ -959,14 +959,14 @@ class TestInShop(TestBaseDataset):
             f.write('\n'.join([
                 '8',
                 'image_name item_id evaluation_status',
-                '02_1_front.jpg id_00000002 train',
-                '02_2_side.jpg id_00000002 train',
-                '12_3_back.jpg id_00007982 gallery',
-                '12_7_additional.jpg id_00007982 gallery',
-                '13_1_front.jpg id_00007982 query',
-                '13_2_side.jpg id_00007983 gallery',
-                '13_3_back.jpg id_00007983 query ',
-                '13_7_additional.jpg id_00007983 query',
+                f'{osp.join("img", "02_1_front.jpg")} id_00000002 train',
+                f'{osp.join("img", "02_2_side.jpg")} id_00000002 train',
+                f'{osp.join("img", "12_3_back.jpg")} id_00007982 gallery',
+                f'{osp.join("img", "12_7_addition.jpg")} id_00007982 gallery',
+                f'{osp.join("img", "13_1_front.jpg")} id_00007982 query',
+                f'{osp.join("img", "13_2_side.jpg")} id_00007983 gallery',
+                f'{osp.join("img", "13_3_back.jpg")} id_00007983 query ',
+                f'{osp.join("img", "13_7_additional.jpg")} id_00007983 query',
             ]))
 
     def test_initialize(self):
@@ -1006,8 +1006,9 @@ class TestInShop(TestBaseDataset):
         dataset = dataset_class(**cfg)
         self.assertEqual(len(dataset), 2)
         data_info = dataset[0]
-        self.assertEqual(data_info['img_path'],
-                         os.path.join(self.root, 'Img/img', '02_1_front.jpg'))
+        self.assertEqual(
+            data_info['img_path'],
+            os.path.join(self.root, 'Img', 'img', '02_1_front.jpg'))
         self.assertEqual(data_info['gt_label'], 0)
 
         # Test with mode=query
@@ -1015,8 +1016,9 @@ class TestInShop(TestBaseDataset):
         dataset = dataset_class(**cfg)
         self.assertEqual(len(dataset), 3)
         data_info = dataset[0]
-        self.assertEqual(data_info['img_path'],
-                         os.path.join(self.root, 'Img/img', '13_1_front.jpg'))
+        self.assertEqual(
+            data_info['img_path'],
+            os.path.join(self.root, 'Img', 'img', '13_1_front.jpg'))
         self.assertEqual(data_info['gt_label'], [0, 1])
 
         # Test with mode=gallery
@@ -1026,7 +1028,7 @@ class TestInShop(TestBaseDataset):
         data_info = dataset[0]
         self.assertEqual(
             data_info['img_path'],
-            os.path.join(self.root, self.root, 'Img/img', '12_3_back.jpg'))
+            os.path.join(self.root, 'Img', 'img', '12_3_back.jpg'))
         self.assertEqual(data_info['sample_idx'], 0)
 
     def test_extra_repr(self):

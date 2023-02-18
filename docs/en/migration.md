@@ -121,7 +121,7 @@ test_dataloader = val_dataloader
 
 Changes in **`pipeline`**:
 
-- The original formatting transforms **`ToTensor`**、**`ImageToTensor`**、**`Collect`** are combined as [`PackClsInputs`](mmcls.datasets.transforms.PackClsInputs).
+- The original formatting transforms **`ToTensor`**, **`ImageToTensor`** and **`Collect`** are combined as [`PackClsInputs`](mmcls.datasets.transforms.PackClsInputs).
 - We don't recommend to do **`Normalize`** in the dataset pipeline. Please remove it from pipelines and set it in the `data_preprocessor` field.
 - The argument `flip_prob` in [**`RandomFlip`**](mmcv.transforms.RandomFlip) is renamed to `flip`.
 - The argument `size` in [**`RandomCrop`**](mmcls.datasets.transforms.RandomCrop) is renamed to `crop_size`.
@@ -182,7 +182,7 @@ Changes in **`evaluation`**:
   The `interval` is moved to `train_cfg.val_interval`, see [the schedule settings](./user_guides/config.md#schedule-settings) and the `save_best`
   is moved to `default_hooks.checkpoint.save_best`, see [the runtime settings](./user_guides/config.md#runtime-settings).
 - The 'accuracy' metric is renamed to [`Accuracy`](mmcls.evaluation.Accuracy).
-- The 'precision'，'recall'，'f1-score' and 'support' are combined as [`SingleLabelMetric`](mmcls.evaluation.SingleLabelMetric), and use `items` argument to specify to calculate which metric.
+- The 'precision', 'recall', 'f1-score' and 'support' are combined as [`SingleLabelMetric`](mmcls.evaluation.SingleLabelMetric), and use `items` argument to specify to calculate which metric.
 - The 'mAP' is renamed to [`AveragePrecision`](mmcls.evaluation.AveragePrecision).
 - The 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1' are combined as [`MultiLabelMetric`](mmcls.evaluation.MultiLabelMetric), and use `items` and `average` arguments to specify to calculate which metric.
 
@@ -370,7 +370,7 @@ test_cfg = dict()  # Use the default test loop.
 </table>
 
 In fact, in OpenMMLab 2.0, we introduced `Loop` to control the behaviors in training, validation and test. And
-the functionalities of `Runner` are also changed. You can find more details in {external+mmengine:doc}`the MMEngine tutorials <tutorials/runner>`.
+the functionalities of `Runner` are also changed. You can find more details in {external+mmengine:doc}`the MMEngine tutorials <design/runner>`.
 
 ### Runtime settings
 
@@ -489,16 +489,16 @@ New field **`default_scope`**: The start point to search module for all registri
 
 The documentation can be found [here](mmcls.apis).
 
-|       Function       | Changes                                         |
-| :------------------: | :---------------------------------------------- |
-|     `init_model`     | No changes                                      |
-|  `inference_model`   | No changes                                      |
-|    `train_model`     | Removed, use `runner.train` to train.           |
-|   `multi_gpu_test`   | Removed, use `runner.test` to test.             |
-|  `single_gpu_test`   | Removed, use `runner.test` to test.             |
-| `show_result_pyplot` | Waiting for support.                            |
-|  `set_random_seed`   | Removed, use `mmengine.runner.set_random_seed`. |
-|  `init_random_seed`  | Removed, use `mmengine.dist.sync_random_seed`.  |
+|       Function       | Changes                                                                                                                                |
+| :------------------: | :------------------------------------------------------------------------------------------------------------------------------------- |
+|     `init_model`     | No changes                                                                                                                             |
+|  `inference_model`   | No changes. But we recommend to use [`mmcls.ImageClassificationInferencer`](mmcls.apis.ImageClassificationInferencer) instead.         |
+|    `train_model`     | Removed, use `runner.train` to train.                                                                                                  |
+|   `multi_gpu_test`   | Removed, use `runner.test` to test.                                                                                                    |
+|  `single_gpu_test`   | Removed, use `runner.test` to test.                                                                                                    |
+| `show_result_pyplot` | Removed, use [`mmcls.ImageClassificationInferencer`](mmcls.apis.ImageClassificationInferencer) to inference model and show the result. |
+|  `set_random_seed`   | Removed, use `mmengine.runner.set_random_seed`.                                                                                        |
+|  `init_random_seed`  | Removed, use `mmengine.dist.sync_random_seed`.                                                                                         |
 
 ### `mmcls.core`
 
@@ -572,15 +572,15 @@ Changes in [heads](mmcls.models.heads):
 
 ### `mmcls.utils`
 
-|           Function           | Changes                                                       |
-| :--------------------------: | :------------------------------------------------------------ |
-|        `collect_env`         | No changes                                                    |
-|      `get_root_logger`       | Removed, use `mmengine.MMLogger.get_current_instance`         |
-|       `load_json_log`        | Waiting for support                                           |
-|   `setup_multi_processes`    | Removed, use `mmengine.utils.dl_utils.setup_multi_processes`. |
-| `wrap_non_distributed_model` | Removed, we auto wrap the model in the runner.                |
-|   `wrap_distributed_model`   | Removed, we auto wrap the model in the runner.                |
-|     `auto_select_device`     | Removed, we auto select the device in the runner.             |
+|           Function           | Changes                                                                                                         |
+| :--------------------------: | :-------------------------------------------------------------------------------------------------------------- |
+|        `collect_env`         | No changes                                                                                                      |
+|      `get_root_logger`       | Removed, use [`mmengine.logging.MMLogger.get_current_instance`](mmengine.logging.MMLogger.get_current_instance) |
+|       `load_json_log`        | The output format changed.                                                                                      |
+|   `setup_multi_processes`    | Removed, use [`mmengine.utils.dl_utils.set_multi_processing`](mmengine.utils.dl_utils.set_multi_processing).    |
+| `wrap_non_distributed_model` | Removed, we auto wrap the model in the runner.                                                                  |
+|   `wrap_distributed_model`   | Removed, we auto wrap the model in the runner.                                                                  |
+|     `auto_select_device`     | Removed, we auto select the device in the runner.                                                               |
 
 ### Other changes
 

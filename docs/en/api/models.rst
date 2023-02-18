@@ -40,7 +40,6 @@ Classifiers
 .. autosummary::
    :toctree: generated
    :nosignatures:
-   :template: classtemplate.rst
 
     BaseClassifier
     ImageClassifier
@@ -55,7 +54,6 @@ Backbones
 .. autosummary::
    :toctree: generated
    :nosignatures:
-   :template: classtemplate.rst
 
    AlexNet
    BEiT
@@ -114,6 +112,7 @@ Backbones
    VGG
    Vig
    VisionTransformer
+   XCiT
 
 .. module:: mmcls.models.necks
 
@@ -123,7 +122,6 @@ Necks
 .. autosummary::
    :toctree: generated
    :nosignatures:
-   :template: classtemplate.rst
 
    GlobalAveragePooling
    GeneralizedMeanPooling
@@ -137,7 +135,6 @@ Heads
 .. autosummary::
    :toctree: generated
    :nosignatures:
-   :template: classtemplate.rst
 
    ClsHead
    LinearClsHead
@@ -159,7 +156,6 @@ Losses
 .. autosummary::
    :toctree: generated
    :nosignatures:
-   :template: classtemplate.rst
 
    CrossEntropyLoss
    LabelSmoothLoss
@@ -182,7 +178,6 @@ Common Components
 .. autosummary::
    :toctree: generated
    :nosignatures:
-   :template: classtemplate.rst
 
    InvertedResidual
    SELayer

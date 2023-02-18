@@ -5,6 +5,6 @@ import rich.progress as progress
 
 def track_on_main_process(sequence, *args, **kwargs):
     if not dist.is_main_process():
-        return sequence
-
-    yield from progress.track(sequence, *args, **kwargs)
+        yield from sequence
+    else:
+        yield from progress.track(sequence, *args, **kwargs)

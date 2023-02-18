@@ -26,7 +26,6 @@ Hooks
 .. autosummary::
    :toctree: generated
    :nosignatures:
-   :template: classtemplate.rst
 
    ClassNumCheckHook
    PreciseBNHook
@@ -43,6 +42,5 @@ Optimizers
 .. autosummary::
    :toctree: generated
    :nosignatures:
-   :template: classtemplate.rst
 
    Lamb
