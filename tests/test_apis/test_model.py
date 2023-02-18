@@ -69,9 +69,6 @@ class TestHubAPIs(TestCase):
         with self.assertRaisesRegex(ValueError, 'Failed to find'):
             get_model('unknown-model')
 
-        with self.assertRaisesRegex(ValueError, "doesn't support building"):
-            get_model('swinv2-base-w12_3rdparty_in21k-192px')
-
     def test_init_model(self):
         # test init from config object
         cfg = ModelHub.get('mobilenet-v2_8xb32_in1k').config

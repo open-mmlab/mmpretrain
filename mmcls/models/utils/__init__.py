@@ -11,6 +11,7 @@ from .helpers import is_tracing, to_2tuple, to_3tuple, to_4tuple, to_ntuple
 from .inverted_residual import InvertedResidual
 from .layer_scale import LayerScale
 from .make_divisible import make_divisible
+from .norm import GRN, LayerNorm2d, build_norm_layer
 from .position_encoding import (ConditionalPositionEncoding,
                                 PositionEncodingFourier)
 from .se_layer import SELayer
@@ -23,5 +24,6 @@ __all__ = [
     'resize_pos_embed', 'resize_relative_position_bias_table',
     'ClsDataPreprocessor', 'Mixup', 'CutMix', 'ResizeMix', 'BEiTAttention',
     'LayerScale', 'WindowMSA', 'WindowMSAV2', 'ChannelMultiheadAttention',
-    'PositionEncodingFourier', 'LeAttention'
+    'PositionEncodingFourier', 'LeAttention', 'GRN', 'LayerNorm2d',
+    'build_norm_layer'
 ]

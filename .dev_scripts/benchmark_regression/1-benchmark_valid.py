@@ -96,14 +96,18 @@ def inference(config_file, checkpoint, work_dir, args, exp_name):
         data = default_collate([data] * args.batch_size)
         resolution = tuple(data['inputs'].shape[-2:])
         model = Runner.from_cfg(cfg).model
+        model.eval()
         forward = model.val_step
     else:
         # For configs only for get model.
         model = init_model(cfg)
-        load_checkpoint(model, checkpoint, map_location='cpu')
+        model.eval()
         data = torch.empty(1, 3, 224, 224).to(model.data_preprocessor.device)
         resolution = (224, 224)
         forward = model.extract_feat
+
+    if checkpoint is not None:
+        load_checkpoint(model, checkpoint, map_location='cpu')
 
     # forward the model
     result = {'resolution': resolution}

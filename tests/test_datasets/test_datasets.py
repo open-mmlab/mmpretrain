@@ -9,12 +9,9 @@ from unittest.mock import MagicMock, call, patch
 
 import numpy as np
 from mmengine.logging import MMLogger
-from mmengine.registry import TRANSFORMS
 
-from mmcls.registry import DATASETS
-from mmcls.utils import register_all_modules
+from mmcls.registry import DATASETS, TRANSFORMS
 
-register_all_modules()
 ASSETS_ROOT = osp.abspath(osp.join(osp.dirname(__file__), '../data/dataset'))
 
 
@@ -932,7 +929,6 @@ class TestMultiTaskDataset(TestCase):
 
         # Test default behavior
         dataset = dataset_class(**self.DEFAULT_ARGS)
-
         data = dataset.load_data_list(self.DEFAULT_ARGS['ann_file'])
         self.assertIsInstance(data, list)
         np.testing.assert_equal(len(data), 3)
@@ -941,3 +937,105 @@ class TestMultiTaskDataset(TestCase):
             'gender': 0,
             'wear': [1, 0, 1, 0]
         })
+
+
+class TestInShop(TestBaseDataset):
+    DATASET_TYPE = 'InShop'
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+
+        tmpdir = tempfile.TemporaryDirectory()
+        cls.tmpdir = tmpdir
+        cls.root = tmpdir.name
+        cls.list_eval_partition = 'Eval/list_eval_partition.txt'
+        cls.DEFAULT_ARGS = dict(data_root=cls.root, split='train')
+        cls.ann_file = osp.join(cls.root, cls.list_eval_partition)
+        os.makedirs(osp.join(cls.root, 'Eval'))
+        with open(cls.ann_file, 'w') as f:
+            f.write('\n'.join([
+                '8',
+                'image_name item_id evaluation_status',
+                f'{osp.join("img", "02_1_front.jpg")} id_00000002 train',
+                f'{osp.join("img", "02_2_side.jpg")} id_00000002 train',
+                f'{osp.join("img", "12_3_back.jpg")} id_00007982 gallery',
+                f'{osp.join("img", "12_7_addition.jpg")} id_00007982 gallery',
+                f'{osp.join("img", "13_1_front.jpg")} id_00007982 query',
+                f'{osp.join("img", "13_2_side.jpg")} id_00007983 gallery',
+                f'{osp.join("img", "13_3_back.jpg")} id_00007983 query ',
+                f'{osp.join("img", "13_7_additional.jpg")} id_00007983 query',
+            ]))
+
+    def test_initialize(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test with mode=train
+        cfg = {**self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(dataset.split, 'train')
+        self.assertEqual(dataset.data_root, self.root)
+        self.assertEqual(dataset.ann_file, self.ann_file)
+
+        # Test with mode=query
+        cfg = {**self.DEFAULT_ARGS, 'split': 'query'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(dataset.split, 'query')
+        self.assertEqual(dataset.data_root, self.root)
+        self.assertEqual(dataset.ann_file, self.ann_file)
+
+        # Test with mode=gallery
+        cfg = {**self.DEFAULT_ARGS, 'split': 'gallery'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(dataset.split, 'gallery')
+        self.assertEqual(dataset.data_root, self.root)
+        self.assertEqual(dataset.ann_file, self.ann_file)
+
+        # Test with mode=other
+        cfg = {**self.DEFAULT_ARGS, 'split': 'other'}
+        with self.assertRaisesRegex(AssertionError, "'split' of `InS"):
+            dataset_class(**cfg)
+
+    def test_load_data_list(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test with mode=train
+        cfg = {**self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 2)
+        data_info = dataset[0]
+        self.assertEqual(
+            data_info['img_path'],
+            os.path.join(self.root, 'Img', 'img', '02_1_front.jpg'))
+        self.assertEqual(data_info['gt_label'], 0)
+
+        # Test with mode=query
+        cfg = {**self.DEFAULT_ARGS, 'split': 'query'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 3)
+        data_info = dataset[0]
+        self.assertEqual(
+            data_info['img_path'],
+            os.path.join(self.root, 'Img', 'img', '13_1_front.jpg'))
+        self.assertEqual(data_info['gt_label'], [0, 1])
+
+        # Test with mode=gallery
+        cfg = {**self.DEFAULT_ARGS, 'split': 'gallery'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 3)
+        data_info = dataset[0]
+        self.assertEqual(
+            data_info['img_path'],
+            os.path.join(self.root, 'Img', 'img', '12_3_back.jpg'))
+        self.assertEqual(data_info['sample_idx'], 0)
+
+    def test_extra_repr(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+        cfg = {**self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+
+        self.assertIn(f'Root of dataset: \t{dataset.data_root}', repr(dataset))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmpdir.cleanup()

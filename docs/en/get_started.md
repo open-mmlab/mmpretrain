@@ -2,7 +2,7 @@
 
 In this section we demonstrate how to prepare an environment with PyTorch.
 
-MMClassification works on Linux, Windows and macOS. It requires Python 3.6+, CUDA 9.2+ and PyTorch 1.6+.
+MMClassification works on Linux, Windows and macOS. It requires Python 3.7+, CUDA 9.2+ and PyTorch 1.6+.
 
 ```{note}
 If you are experienced with PyTorch and have already installed it, just skip this part and jump to the [next section](#installation). Otherwise, you can follow these steps for the preparation.
@@ -74,18 +74,10 @@ pip install -U openmim && mim install "mmcls>=1.0.0rc0"
 
 To verify whether MMClassification is installed correctly, we provide some sample codes to run an inference demo.
 
-**Step 1.** We need to download config and checkpoint files.
-
-```shell
-mim download mmcls --config resnet50_8xb32_in1k --dest .
-```
-
-**Step 2.** Verify the inference demo.
-
 Option (a). If you install mmcls from the source, just run the following command:
 
 ```shell
-python demo/image_demo.py demo/demo.JPEG resnet50_8xb32_in1k.py resnet50_8xb32_in1k_20210831-ea4938fc.pth --device cpu
+python demo/image_demo.py demo/demo.JPEG resnet18_8xb32_in1k --device cpu
 ```
 
 You will see the output result dict including `pred_label`, `pred_score` and `pred_class` in your terminal.
@@ -93,17 +85,18 @@ You will see the output result dict including `pred_label`, `pred_score` and `pr
 Option (b). If you install mmcls as a python package, open your python interpreter and copy&paste the following codes.
 
 ```python
-from mmcls.apis import init_model, inference_model
-from mmcls.utils import register_all_modules
+from mmcls import get_model, inference_model
 
-config_file = 'resnet50_8xb32_in1k.py'
-checkpoint_file = 'resnet50_8xb32_in1k_20210831-ea4938fc.pth'
-register_all_modules()  # register all modules and set mmcls as the default scope.
-model = init_model(config_file, checkpoint_file, device='cpu')  # or device='cuda:0'
+model = get_model('resnet18_8xb32_in1k', device='cpu')  # or device='cuda:0'
 inference_model(model, 'demo/demo.JPEG')
 ```
 
 You will see a dict printed, including the predicted label, score and category name.
+
+```{note}
+The `resnet18_8xb32_in1k` is the model name, and you can use [`mmcls.list_models`](mmcls.apis.list_models) to
+explore all models, or search them on the [Model Zoo Summary](./modelzoo_statistics.md)
+```
 
 ## Customize Installation
 

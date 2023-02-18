@@ -85,6 +85,11 @@ class ModelHub:
                 model_index_path, config_prefix=mmcls_root / '.mim')
             cls.__mmcls_registered = True
 
+    @classmethod
+    def has(cls, model_name):
+        """Whether a model name is in the ModelHub."""
+        return model_name in cls._models_dict
+
 
 def init_model(config, checkpoint=None, device=None, **kwargs):
     """Initialize a classifier from config file.
@@ -103,7 +108,9 @@ def init_model(config, checkpoint=None, device=None, **kwargs):
     """
     if isinstance(config, (str, PathLike)):
         config = Config.fromfile(config)
-    elif not isinstance(config, Config):
+    elif isinstance(config, Config):
+        config = copy.deepcopy(config)
+    else:
         raise TypeError('config must be a filename or Config object, '
                         f'but got {type(config)}')
     if kwargs:
@@ -111,7 +118,6 @@ def init_model(config, checkpoint=None, device=None, **kwargs):
     config.model.setdefault('data_preprocessor',
                             config.get('data_preprocessor', None))
 
-    import mmcls.models  # noqa: F401
     from mmcls.registry import MODELS
 
     model = MODELS.build(config.model)
@@ -125,7 +131,7 @@ def init_model(config, checkpoint=None, device=None, **kwargs):
             pass
         elif 'dataset_meta' in checkpoint.get('meta', {}):
             # mmcls 1.x
-            model.CLASSES = checkpoint['meta']['dataset_meta']['classes']
+            model.CLASSES = checkpoint['meta']['dataset_meta'].get('classes')
         elif 'CLASSES' in checkpoint.get('meta', {}):
             # mmcls < 1.x
             model.CLASSES = checkpoint['meta']['CLASSES']
@@ -190,9 +196,6 @@ def get_model(model_name, pretrained=False, device=None, **kwargs):
     else:
         ckpt = None
 
-    if metainfo.config is None:
-        raise ValueError(
-            f"The model {model_name} doesn't support building by now.")
     model = init_model(metainfo.config, ckpt, device=device, **kwargs)
     return model
 

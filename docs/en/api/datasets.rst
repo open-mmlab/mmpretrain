@@ -49,6 +49,11 @@ CUB
 
 .. autoclass:: CUB
 
+Retrieval
+---------
+
+.. autoclass:: InShop
+
 Base classes
 ------------
 

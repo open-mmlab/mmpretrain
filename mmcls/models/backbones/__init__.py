@@ -17,6 +17,7 @@ from .hornet import HorNet
 from .hrnet import HRNet
 from .inception_v3 import InceptionV3
 from .lenet import LeNet5
+from .levit import LeViT
 from .mixmim import MixMIMTransformer
 from .mlp_mixer import MlpMixer
 from .mobilenet_v2 import MobileNetV2
@@ -48,8 +49,10 @@ from .tnt import TNT
 from .twins import PCPVT, SVT
 from .van import VAN
 from .vgg import VGG
+from .vig import PyramidVig, Vig
 from .vision_transformer import VisionTransformer
 from .vit_adapter import BEiTAdapter, VitAdapter
+from .xcit import XCiT
 
 __all__ = [
     'LeNet5',
@@ -110,4 +113,8 @@ __all__ = [
     'BEiTAdapter',
     'MixMIMTransformer',
     'TinyViT',
+    'LeViT',
+    'Vig',
+    'PyramidVig',
+    'XCiT',
 ]

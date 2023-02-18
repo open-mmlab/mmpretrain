@@ -19,19 +19,28 @@ Single Label Metric
 .. autosummary::
    :toctree: generated
    :nosignatures:
-   :template: classtemplate.rst
 
    Accuracy
    SingleLabelMetric
+   ConfusionMatrix
 
 Multi Label Metric
 ----------------------
 .. autosummary::
    :toctree: generated
    :nosignatures:
-   :template: classtemplate.rst
 
    AveragePrecision
    MultiLabelMetric
    VOCAveragePrecision
    VOCMultiLabelMetric
+
+Retrieval Metric
+----------------------
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: classtemplate.rst
+
+   RetrievalRecall

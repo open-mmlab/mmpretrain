@@ -7,9 +7,6 @@ import torch
 from mmengine.evaluator import Evaluator
 
 from mmcls.structures import ClsDataSample
-from mmcls.utils import register_all_modules
-
-register_all_modules()
 
 
 class TestVOCMultiLabel(TestCase):

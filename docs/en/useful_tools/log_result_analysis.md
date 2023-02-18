@@ -48,18 +48,13 @@ python tools/analysis_tools/analyze_logs.py plot_curve your_log_json --keys loss
 #### Plot the top-1 accuracy and top-5 accuracy curves, and save the figure to results.jpg.
 
 ```shell
-python tools/analysis_tools/analyze_logs.py plot_curve your_log_json --keys accuracy_top-1 accuracy_top-5  --legend top1 top5 --out results.jpg
+python tools/analysis_tools/analyze_logs.py plot_curve your_log_json --keys accuracy/top1 accuracy/top5  --legend top1 top5 --out results.jpg
 ```
 
 #### Compare the top-1 accuracy of two log files in the same figure.
 
 ```shell
 python tools/analysis_tools/analyze_logs.py plot_curve log1.json log2.json --keys accuracy_top-1 --legend exp1 exp2
-```
-
-```{note}
-The tool will automatically select to find keys in training logs or validation logs according to the keys.
-Therefore, if you add a custom evaluation metric, please also add the key to `TEST_METRICS` in this tool.
 ```
 
 ### How to calculate training time
@@ -75,18 +70,18 @@ python tools/analysis_tools/analyze_logs.py cal_train_time \
 **Description of all arguments**:
 
 - `json_logs` : The paths of the log files, separate multiple files by spaces.
-- `--include-outliers` : If set, include the first iteration in each epoch (Sometimes the time of first iterations is longer).
+- `--include-outliers` : If set, include the first time record in each epoch (Sometimes the time of the first iteration is longer).
 
 Example:
 
 ```shell
-python tools/analysis_tools/analyze_logs.py cal_train_time work_dirs/some_exp/20200422_153324.log.json
+python tools/analysis_tools/analyze_logs.py cal_train_time work_dirs/your_exp/20230206_181002/vis_data/scalars.json
 ```
 
 The output is expected to be like the below.
 
 ```text
------Analyze train time of work_dirs/some_exp/20200422_153324.log.json-----
+-----Analyze train time of work_dirs/your_exp/20230206_181002/vis_data/scalars.json-----
 slowest epoch 68, average time is 0.3818
 fastest epoch 1, average time is 0.3694
 time std over epochs is 0.0020
@@ -104,34 +99,42 @@ We provide `tools/analysis_tools/eval_metric.py` to enable the user evaluate the
 
 ```shell
 python tools/analysis_tools/eval_metric.py \
-      ${CONFIG} \
       ${RESULT} \
-      [--metrics ${METRICS}]  \
-      [--cfg-options ${CFG_OPTIONS}] \
-      [--metric-options ${METRIC_OPTIONS}]
+      [--metric ${METRIC_OPTIONS} ...] \
 ```
 
 Description of all arguments:
 
-- `config` : The path of the model config file.
-- `result`:  The Output result file in json/pickle format from `tools/test.py`.
-- `--metrics` : Evaluation metrics, the acceptable values depend on the dataset.
-- `--cfg-options`: If specified, the key-value pair config will be merged into the config file, for more details please refer to [Learn about Configs](../user_guides/config.md)
-- `--metric-options`: If specified, the key-value pair arguments will be passed to the `metric_options` argument of dataset's `evaluate` function.
+- `result`:  The output result file in pickle format from `tools/test.py`.
+- `--metric`: The metric and options to evaluate the results. You need to specify at least one metric and you
+  can also specify multiple `--metric` to use multiple metrics.
+
+Please refer the [Metric Documentation](mmcls.evaluation) to find the available metrics and options.
 
 ```{note}
-In `tools/test.py`, we support using `--out-items` option to select which kind of results will be saved. Please ensure the result file includes "class_scores" to use this tool.
+In `tools/test.py`, we support using `--out-item` option to select which kind of results will be saved.
+Please ensure the `--out-item` is not specified or `--out-item=pred` to use this tool.
 ```
 
 **Examples**:
 
 ```shell
-python tools/analysis_tools/eval_metric.py configs/t2t_vit/t2t-vit-t-14_8xb64_in1k.py your_result.pkl --metrics accuracy --metric-options "topk=(1,5)"
+# Get the prediction results
+python tools/test.py configs/resnet/resnet18_8xb16_cifar10.py \
+    https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_b16x8_cifar10_20210528-bd6371c8.pth \
+    --out results.pkl
+
+# Eval the top-1 and top-5 accuracy
+python tools/analysis_tools/eval_metric.py results.pkl --metric type=Accuracy topk=1,5
+
+# Eval accuracy, precision, recall and f1-score
+python tools/analysis_tools/eval_metric.py results.pkl --metric type=Accuracy \
+    --metric type=SingleLabelMetric items=precision,recall,f1-score
 ```
 
 ### How to visualize the prediction results
 
-We can also use this tool `tools/analysis_tools/analyze_results.py` to save the images with the highest scores in successful or failed prediction.
+We can use `tools/analysis_tools/analyze_results.py` to save the images with the highest scores in successful or failed prediction.
 
 ```shell
 python tools/analysis_tools/analyze_results.py \
@@ -139,6 +142,7 @@ python tools/analysis_tools/analyze_results.py \
       ${RESULT} \
       [--out-dir ${OUT_DIR}] \
       [--topk ${TOPK}] \
+      [--rescale-factor ${RESCALE_FACTOR}] \
       [--cfg-options ${CFG_OPTIONS}]
 ```
 
@@ -148,18 +152,28 @@ python tools/analysis_tools/analyze_results.py \
 - `result`:  Output result file in json/pickle format from `tools/test.py`.
 - `--out_dir`: Directory to store output files.
 - `--topk`: The number of images in successful or failed prediction with the highest `topk` scores to save. If not specified, it will be set to 20.
+- `--rescale-factor`: Image rescale factor, which is useful if the output is too large or too small (Too small
+  images may cause the prediction tag is too vague).
 - `--cfg-options`: If specified, the key-value pair config will be merged into the config file, for more details please refer to [Learn about Configs](../user_guides/config.md)
 
 ```{note}
-In `tools/test.py`, we support using `--out-items` option to select which kind of results will be saved. Please ensure the result file includes "pred_score", "pred_label" and "pred_class" to use this tool.
+In `tools/test.py`, we support using `--out-item` option to select which kind of results will be saved.
+Please ensure the `--out-item` is not specified or `--out-item=pred` to use this tool.
 ```
 
 **Examples**:
 
 ```shell
+# Get the prediction results
+python tools/test.py configs/resnet/resnet18_8xb16_cifar10.py \
+    https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_b16x8_cifar10_20210528-bd6371c8.pth \
+    --out results.pkl
+
+# Save the top-10 successful and failed predictions. And enlarge the sample images by 10 times.
 python tools/analysis_tools/analyze_results.py \
-       configs/resnet/resnet50_b32x8_imagenet.py \
-       result.pkl \
-       --out_dir results \
-       --topk 50
+       configs/resnet/resnet18_8xb16_cifar10.py \
+       results.pkl \
+       --out-dir output \
+       --topk 10 \
+       --rescale-factor 10
 ```

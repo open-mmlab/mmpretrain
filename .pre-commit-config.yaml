@@ -5,7 +5,7 @@ repos:
     hooks:
       - id: flake8
   - repo: https://github.com/PyCQA/isort
-    rev: 5.10.1
+    rev: 5.11.5
     hooks:
       - id: isort
   - repo: https://github.com/pre-commit/mirrors-yapf
@@ -48,6 +48,16 @@ repos:
     hooks:
     -   id: check-copyright
         args: ["mmcls", "tests", "demo", "tools", "--excludes", "mmcls/.mim/", "--ignore-file-not-found-error"]
+  - repo: local
+    hooks:
+      - id: metafile
+        name: metafile
+        description: Check the format of metafile
+        entry: python .dev_scripts/check_metafile.py
+        language: python
+        files: (metafile)\.(yml)$
+        additional_dependencies:
+          - modelindex
   # - repo: local
   #   hooks:
   #     - id: clang-format

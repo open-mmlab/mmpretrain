@@ -12,8 +12,6 @@ from mmengine.runner import Runner, find_latest_checkpoint
 from mmengine.utils import digit_version
 from mmengine.utils.dl_utils import TORCH_VERSION
 
-from mmcls.utils import register_all_modules
-
 EXP_INFO_FILE = 'kfold_exp.json'
 
 prog_description = """K-Fold cross-validation.
@@ -221,10 +219,6 @@ def train_single_fold(cfg, num_splits, fold, resume_ckpt=None):
 
 def main():
     args = parse_args()
-
-    # register all modules in mmcls into the registries
-    # do not init the default scope here because it will be init in the runner
-    register_all_modules(init_default_scope=False)
 
     # load config
     cfg = Config.fromfile(args.config)

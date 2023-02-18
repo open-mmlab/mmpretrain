@@ -5,9 +5,9 @@ from typing import Callable, Optional, Sequence
 import torch
 import torch.nn.functional as F
 from mmcv.cnn import ConvModule, build_norm_layer
-from mmengine.registry import MODELS
 from torch import nn
 
+from mmcls.registry import MODELS
 from .base_backbone import BaseBackbone
 from .mobilenet_v2 import InvertedResidual
 from .vision_transformer import TransformerEncoderLayer

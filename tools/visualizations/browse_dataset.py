@@ -8,11 +8,11 @@ import mmcv
 import numpy as np
 from mmengine.config import Config, DictAction
 from mmengine.dataset import Compose
+from mmengine.registry import init_default_scope
 from mmengine.utils import ProgressBar
 from mmengine.visualization import Visualizer
 
 from mmcls.datasets.builder import build_dataset
-from mmcls.utils import register_all_modules
 from mmcls.visualization import ClsVisualizer
 from mmcls.visualization.cls_visualizer import _get_adaptive_scale
 
@@ -170,8 +170,7 @@ def main():
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
 
-    # register all modules in mmcls into the registries
-    register_all_modules()
+    init_default_scope('mmcls')  # Use mmcls as default scope.
 
     dataset_cfg = cfg.get(args.phase + '_dataloader').get('dataset')
     dataset = build_dataset(dataset_cfg)

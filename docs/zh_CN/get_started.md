@@ -2,7 +2,7 @@
 
 在本节中，我们将演示如何准备 PyTorch 相关的依赖环境。
 
-MMClassification 适用于 Linux、Windows 和 macOS。它需要 Python 3.6+、CUDA 9.2+ 和 PyTorch 1.6+。
+MMClassification 适用于 Linux、Windows 和 macOS。它需要 Python 3.7+、CUDA 9.2+ 和 PyTorch 1.6+。
 
 ```{note}
 如果你对配置 PyTorch 环境已经很熟悉，并且已经完成了配置，可以直接进入[下一节](#安装)。
@@ -97,17 +97,18 @@ python demo/image_demo.py demo/demo.JPEG resnet50_8xb32_in1k.py resnet50_8xb32_i
 如果你是**作为 Python 包安装**，那么可以打开你的 Python 解释器，并粘贴如下代码：
 
 ```python
-from mmcls.apis import init_model, inference_model
-from mmcls.utils import register_all_modules
+from mmcls import get_model, inference_model
 
-config_file = 'resnet50_8xb32_in1k.py'
-checkpoint_file = 'resnet50_8xb32_in1k_20210831-ea4938fc.pth'
-register_all_modules()  # 注册所有模块，并将 mmcls 设为默认 scope。
-model = init_model(config_file, checkpoint_file, device='cpu')  # 或者 device='cuda:0'
+model = get_model('resnet18_8xb32_in1k', device='cpu')  # 或者 device='cuda:0'
 inference_model(model, 'demo/demo.JPEG')
 ```
 
 你会看到输出一个字典，包含预测的标签、得分及类别名。
+
+```{note}
+以上示例中，`resnet18_8xb32_in1k` 是模型名称。你可以使用 [`mmcls.list_models`](mmcls.apis.list_models) 接口来
+浏览所有的模型，或者在[模型汇总](./modelzoo_statistics.md)页面进行查找。
+```
 
 ## 自定义安装
 

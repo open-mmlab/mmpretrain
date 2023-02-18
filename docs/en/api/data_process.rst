@@ -55,8 +55,8 @@ Processing and Augmentation
 
 .. autosummary::
    :toctree: generated
-   :template: classtemplate.rst
    :nosignatures:
+   :template: data_transform.rst
 
    Albumentations
    ColorJitter
@@ -75,8 +75,8 @@ augmentation transforms, such as ``AutoAugment`` and ``RandAugment``.
 
 .. autosummary::
    :toctree: generated
-   :template: classtemplate.rst
    :nosignatures:
+   :template: data_transform.rst
 
    AutoAugment
    RandAugment
@@ -106,7 +106,7 @@ And you can also configure a group of policies manually by selecting from the be
 .. autosummary::
    :toctree: generated
    :nosignatures:
-   :template: classtemplate.rst
+   :template: data_transform.rst
 
    AutoContrast
    Brightness
@@ -129,8 +129,8 @@ Formatting
 
 .. autosummary::
    :toctree: generated
-   :template: classtemplate.rst
    :nosignatures:
+   :template: data_transform.rst
 
    Collect
    PackClsInputs
@@ -213,7 +213,6 @@ Note that the ``model.data_preprocessor`` has higher priority than ``data_prepro
 .. autosummary::
    :toctree: generated
    :nosignatures:
-   :template: classtemplate.rst
 
    ClsDataPreprocessor
 
@@ -257,7 +256,7 @@ Here is a list of batch augmentations can be used in MMClassification.
 .. autosummary::
    :toctree: generated
    :nosignatures:
-   :template: classtemplate.rst
+   :template: callable.rst
 
    Mixup
    CutMix

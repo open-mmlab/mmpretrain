@@ -11,9 +11,6 @@ from PIL import Image
 
 from mmcls.registry import TRANSFORMS
 from mmcls.structures import ClsDataSample, MultiTaskDataSample
-from mmcls.utils import register_all_modules
-
-register_all_modules()
 
 
 class TestPackClsInputs(unittest.TestCase):

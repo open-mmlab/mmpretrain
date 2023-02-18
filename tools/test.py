@@ -6,10 +6,8 @@ from copy import deepcopy
 
 import mmengine
 from mmengine.config import Config, ConfigDict, DictAction
-from mmengine.hooks import Hook
+from mmengine.evaluator import DumpResults
 from mmengine.runner import Runner
-
-from mmcls.utils import register_all_modules
 
 
 def parse_args():
@@ -20,11 +18,12 @@ def parse_args():
     parser.add_argument(
         '--work-dir',
         help='the directory to save the file containing evaluation metrics')
-    parser.add_argument('--out', help='the file to save metric results.')
+    parser.add_argument('--out', help='the file to output results.')
     parser.add_argument(
-        '--dump',
-        type=str,
-        help='dump predictions to a pickle file for offline evaluation')
+        '--out-item',
+        choices=['metrics', 'pred'],
+        help='To output whether metrics or predictions. '
+        'Defaults to output predictions.')
     parser.add_argument(
         '--cfg-options',
         nargs='+',
@@ -102,16 +101,6 @@ def merge_args(cfg, args):
         cfg.default_hooks.visualization.out_dir = args.show_dir
         cfg.default_hooks.visualization.interval = args.interval
 
-    # -------------------- Dump predictions --------------------
-    if args.dump is not None:
-        assert args.dump.endswith(('.pkl', '.pickle')), \
-            'The dump file must be a pkl file.'
-        dump_metric = dict(type='DumpResults', out_file_path=args.dump)
-        if isinstance(cfg.test_evaluator, (list, tuple)):
-            cfg.test_evaluator = list(cfg.test_evaluator).append(dump_metric)
-        else:
-            cfg.test_evaluator = [cfg.test_evaluator, dump_metric]
-
     # -------------------- TTA related args --------------------
     if args.tta:
         if 'tta_model' not in cfg:
@@ -158,29 +147,28 @@ def merge_args(cfg, args):
 def main():
     args = parse_args()
 
-    # register all modules in mmcls into the registries
-    # do not init the default scope here because it will be init in the runner
-    register_all_modules(init_default_scope=False)
+    if args.out is None and args.out_item is not None:
+        raise ValueError('Please use `--out` argument to specify the '
+                         'path of the output file before using `--out-item`.')
 
     # load config
     cfg = Config.fromfile(args.config)
+
+    # merge cli arguments to config
     cfg = merge_args(cfg, args)
 
     # build the runner from config
     runner = Runner.from_cfg(cfg)
 
-    if args.out:
-
-        class SaveMetricHook(Hook):
-
-            def after_test_epoch(self, _, metrics=None):
-                if metrics is not None:
-                    mmengine.dump(metrics, args.out)
-
-        runner.register_hook(SaveMetricHook(), 'LOWEST')
+    if args.out and args.out_item in ['pred', None]:
+        runner.test_evaluator.metrics.append(
+            DumpResults(out_file_path=args.out))
 
     # start testing
-    runner.test()
+    metrics = runner.test()
+
+    if args.out and args.out_item == 'metrics':
+        mmengine.dump(metrics, args.out)
 
 
 if __name__ == '__main__':

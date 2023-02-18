@@ -7,7 +7,7 @@ import mmengine
 import numpy as np
 from mmengine.dataset import BaseDataset as _BaseDataset
 
-from .builder import DATASETS
+from mmcls.registry import DATASETS, TRANSFORMS
 
 
 def expanduser(path):
@@ -89,6 +89,13 @@ class BaseDataset(_BaseDataset):
         ann_file = expanduser(ann_file)
         metainfo = self._compat_classes(metainfo, classes)
 
+        transforms = []
+        for transform in pipeline:
+            if isinstance(transform, dict):
+                transforms.append(TRANSFORMS.build(transform))
+            else:
+                transforms.append(transform)
+
         super().__init__(
             ann_file=ann_file,
             metainfo=metainfo,
@@ -97,7 +104,7 @@ class BaseDataset(_BaseDataset):
             filter_cfg=filter_cfg,
             indices=indices,
             serialize_data=serialize_data,
-            pipeline=pipeline,
+            pipeline=transforms,
             test_mode=test_mode,
             lazy_init=lazy_init,
             max_refetch=max_refetch)
