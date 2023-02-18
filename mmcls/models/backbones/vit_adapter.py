@@ -20,6 +20,8 @@ from .vision_transformer import TransformerEncoderLayer, VisionTransformer
 
 
 def get_reference_points(spatial_shapes, device):
+    """Create reference points for Injector's and Extractor's
+    MultiScaleDeformableAttention."""
     reference_points_list = []
     for H_, W_ in spatial_shapes:
         ref_y, ref_x = torch.meshgrid(
@@ -37,6 +39,7 @@ def get_reference_points(spatial_shapes, device):
 
 
 def deform_inputs(x):
+    """Create deform inputs for InteractionBlock."""
     h, w = x.shape[2:]
     spatial_shapes = torch.as_tensor(
         [(int(math.ceil(h / 16) * i), int(math.ceil(w / 16) * i))
@@ -65,8 +68,9 @@ def deform_inputs(x):
 class VitAdapterFFN(BaseModule):
     """An implementation of VitAdapterFFN in VitAdapter.
 
-    The differences between MixFFN & FFN:
-        1. Introduce VitAdapterDWConv to encode positional information.
+    The differences between VitAdapterFFN & FFN:
+        1. VitAdapterFFN introduces VitAdapterDWConv to encode positional
+           information.
 
     Args:
         embed_dims (int): The feature dimension. Same as

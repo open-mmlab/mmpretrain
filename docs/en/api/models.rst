@@ -57,6 +57,7 @@ Backbones
 
    AlexNet
    BEiT
+   BEiTAdapter
    CSPDarkNet
    CSPNet
    CSPResNeXt
