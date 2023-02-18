@@ -435,7 +435,6 @@ class SpatialPriorModule(BaseModule):
         patch_size (int | tuple): The patch size in patch embedding.
         embed_dims (int): The feature dimension.
         hidden_dims (int): Hidden dimension. Defaults to 64.
-        drop_path_rate (float): stochastic depth rate. Defaults to 0.
         norm_cfg (dict): Config dict for normalization.
             Defaults to ``dict(type='BN')``.
         act_cfg (dict): The activation config.
@@ -448,6 +447,7 @@ class SpatialPriorModule(BaseModule):
     """
 
     def __init__(self,
+                 in_channels,
                  patch_size,
                  embed_dims,
                  hidden_dims=64,
@@ -462,7 +462,7 @@ class SpatialPriorModule(BaseModule):
 
         self.stem = nn.Sequential(*[
             ConvModule(
-                3,
+                in_channels,
                 hidden_dims,
                 3,
                 stride=2,
@@ -567,6 +567,7 @@ class VitAdapter(VisionTransformer):
             Defaults to 'base'.
         patch_size (int | tuple): The patch size in patch embedding.
             Defaults to 16.
+        in_channels (int): The num of input channels. Defaults to 3.
         out_indices (Sequence | int): Output from which stages.
             Defaults to -1, means the last stage.
         drop_path_rate (float): stochastic depth rate. Defaults to 0.
@@ -663,6 +664,7 @@ class VitAdapter(VisionTransformer):
                  *args,
                  arch='base',
                  patch_size=16,
+                 in_channels=3,
                  out_indices=(0, 1, 2, 3),
                  drop_path_rate=0.,
                  norm_cfg=dict(type='LN', eps=1e-6),
@@ -703,6 +705,7 @@ class VitAdapter(VisionTransformer):
             *args,
             arch=arch,
             patch_size=patch_size,
+            in_channels=in_channels,
             with_cls_token=False,
             output_cls_token=False,
             drop_path_rate=drop_path_rate,
@@ -716,6 +719,7 @@ class VitAdapter(VisionTransformer):
 
         self.level_embed = nn.Parameter(torch.zeros(3, self.embed_dims))
         self.spm = SpatialPriorModule(
+            in_channels,
             patch_size,
             self.embed_dims,
             hidden_dims=spm_hidden_dims,
@@ -875,6 +879,7 @@ class BEiTAdapter(BEiT):
             Defaults to 'base'.
         patch_size (int | tuple): The patch size in patch embedding.
             Defaults to 16.
+        in_channels (int): The num of input channels. Defaults to 3.
         out_indices (Sequence | int): Output from which stages.
             Defaults to -1, means the last stage.
         drop_path_rate (float): stochastic depth rate. Defaults to 0.
@@ -917,6 +922,7 @@ class BEiTAdapter(BEiT):
                  *args,
                  arch='base',
                  patch_size=16,
+                 in_channels=3,
                  out_indices=(0, 1, 2, 3),
                  drop_path_rate=0.,
                  norm_cfg=dict(type='LN', eps=1e-6),
@@ -954,6 +960,7 @@ class BEiTAdapter(BEiT):
             *args,
             arch=arch,
             patch_size=patch_size,
+            in_channels=in_channels,
             with_cls_token=False,
             output_cls_token=False,
             drop_path_rate=drop_path_rate,
@@ -968,6 +975,7 @@ class BEiTAdapter(BEiT):
 
         self.level_embed = nn.Parameter(torch.zeros(3, self.embed_dims))
         self.spm = SpatialPriorModule(
+            in_channels,
             patch_size,
             self.embed_dims,
             hidden_dims=spm_hidden_dims,
