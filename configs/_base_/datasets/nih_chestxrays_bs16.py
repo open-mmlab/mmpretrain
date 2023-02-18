@@ -64,8 +64,9 @@ test_dataloader = dict(
     num_workers=4,
     dataset=dict(
         type=dataset_type,
-        data_root='data/VOCdevkit/VOC2007',
-        image_set_path='ImageSets/Layout/val.txt',
+        data_root='data/nih-chestxrays',
+        ann_file='Data_Entry_2017.csv',
+        train_test_split_file='test_list.txt',
         pipeline=test_pipeline),
     sampler=dict(type='DefaultSampler', shuffle=False),
 )
