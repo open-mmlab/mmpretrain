@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import List, Optional, Sequence, Union
-from copy import deepcopy
 
 import mmengine
 import numpy as np
@@ -193,15 +192,11 @@ class RetrievalRecall(BaseMetric):
 @METRICS.register_module()
 class RetrievalAveragePrecision(BaseMetric):
     r"""Calculate the average precision for image retrieval.
+
     Args:
         topk (int, optional): Predictions with the k-th highest scores are
-            considered as positive. Defaults to None.
-        average (str | None): The average method. It supports two modes:
-            - 'macro': Calculate metrics for each category, and calculate the
-              mean value over all categories.
-            - None: Return scores of all categories.
-            Defaults to "macro".
-        mode (str): The mode to calculate AP, choose from
+            considered as positive.
+        mode (str, optional): The mode to calculate AP, choose from
                 'IR'(information retrieval) and 'integrate'. Defaults to 'IR'.
         collect_device (str): Device name used for collecting results from
             different ranks during distributed training. Must be 'cpu' or
@@ -210,6 +205,7 @@ class RetrievalAveragePrecision(BaseMetric):
             names to disambiguate homonymous metrics of different evaluators.
             If prefix is not provided in the argument, self.default_prefix
             will be used instead. Defaults to None.
+
     Note:
         If the ``mode`` set to 'IR', use the stanford AP calculation of
         information retrieval as in wikipedia page; if set to 'integrate',
@@ -217,13 +213,16 @@ class RetrievalAveragePrecision(BaseMetric):
         by averaging two adjacent precision points, then multiplying by the
         recall step like mAP in Detection task. This is the convention for
         the Revisited Oxford/Paris datasets.
+
     References:
         [1] `Wikipedia entry for the Average precision <https://en.wikipedia.
         org/wiki/Evaluation_measures_(information_retrieval)#Average_precision>`_
         [2] `The Oxford Buildings Dataset <https://www.robots.ox.ac.uk/~vgg/
         data/oxbuildings/`_
+
     Examples:
         1. To use the `RetrievalAveragePrecision` in the code:
+
         >>> import torch
         >>> from mmcls.evaluation import RetrievalAveragePrecision
         >>> index = [ torch.Tensor([idx for idx in range(100)]) ] * 3
@@ -235,26 +234,23 @@ class RetrievalAveragePrecision(BaseMetric):
         >>> # calculate category-wise AP
         >>> RetrievalAveragePrecision.calculate(index, label, 10, average=None)
         [44.14682539682539, 20.833333333333332, 5.555555555555555]
+
         2. To use the `RetrievalAveragePrecision` in OpenMMLab config files:
+
         .. code:: python
-            val_evaluator = dict(
-                type='RetrievalAveragePrecision', topk=100)
+            val_evaluator = dict(type='RetrievalAveragePrecision', topk=10)
+            test_evaluator = val_evaluator
     """
 
     default_prefix: Optional[str] = 'retrieval'
 
     def __init__(self,
-                 topk: Optional[int],
-                 average: Optional[str] = 'macro',
-                 mode: str = 'IR',
+                 topk: Optional[int] = None,
+                 mode: Optional[str] = 'IR',
                  collect_device: str = 'cpu',
                  prefix: Optional[str] = None) -> None:
-        if topk <= 0:
+        if topk is None or (isinstance(topk, int) and topk <= 0):
             raise ValueError('`topk` must be a ingter larger than 0.')
-
-        average_options = ['macro', None]
-        assert average in average_options, 'Invalid `average` argument, ' \
-            f'please specicy from {average_options}.'
 
         mode_options = ['IR', 'integrate']
         assert mode in mode_options, \
@@ -262,65 +258,66 @@ class RetrievalAveragePrecision(BaseMetric):
 
         self.topk = topk
         self.mode = mode
-        self.average = average
         super().__init__(collect_device=collect_device, prefix=prefix)
 
     def process(self, data_batch: Sequence[dict],
                 data_samples: Sequence[dict]):
         """Process one batch of data and predictions.
+
         The processed results should be stored in ``self.results``, which will
         be used to computed the metrics when all batches have been processed.
+
         Args:
             data_batch (Sequence[dict]): A batch of data from the dataloader.
             predictions (Sequence[dict]): A batch of outputs from the model.
         """
-        batch_pred_score, batch_gt_score = [], []
         for data_sample in data_samples:
             pred_label = data_sample['pred_label']
             gt_label = data_sample['gt_label']
 
-            batch_pred_score.append(pred_label['score'].clone())
-            num_classes = pred_label['score'].size()[-1]
-
+            pred = pred_label['score'].clone()
             if 'score' in gt_label:
-                batch_gt_score.append(gt_label['score'].clone())
+                target = gt_label['score'].clone()
             else:
-                batch_gt_score.append(
-                    LabelData.label_to_onehot(gt_label['label'], num_classes))
+                num_classes = pred_label['score'].size()[-1]
+                target = LabelData.label_to_onehot(gt_label['label'],
+                                                   num_classes)
 
-        target = torch.stack(batch_gt_score)
-        pred = torch.stack(batch_pred_score)
-        result = RetrievalAveragePrecision.calculate(
-            pred, target, topk=self.topk, average=None, mode=self.mode)
-
-        self.results.extend(result.tolist())
+            # Because the retrieval output logit vector will be much larger
+            # compared to the normal classification, to save resources, the
+            # evaluation results are computed each batch here and then reduce
+            #  all results at the end.
+            result = RetrievalAveragePrecision.calculate(
+                pred.unsqueeze(0),
+                target.unsqueeze(0),
+                self.topk,
+                mode=self.mode)
+            self.results.append(result)
 
     def compute_metrics(self, results: List):
         """Compute the metrics from processed results.
+
         Args:
             results (list): The processed results of each batch.
+
         Returns:
             Dict: The computed metrics. The keys are the names of the metrics,
             and the values are corresponding results.
         """
         result_metrics = dict()
-        if self.average is None:
-            result_metrics[f'AP_classwise@{self.topk}'] = deepcopy(
-                self.results)
-        else:
-            result_metrics[f'mAP@{self.topk}'] = np.mean(self.results).item()
+        result_metrics[f'mAP@{self.topk}'] = np.mean(self.results).item()
 
         return result_metrics
 
     @staticmethod
     def calculate(pred: Union[np.ndarray, torch.Tensor],
                   target: Union[np.ndarray, torch.Tensor],
+                  topk: Optional[int] = None,
                   pred_indices: (bool) = False,
                   target_indices: (bool) = False,
-                  topk: Optional[int] = None,
-                  average: Optional[str] = 'macro',
                   mode: str = 'IR') -> float:
         """Calculate the average precision.
+
         Args:
             pred (torch.Tensor | np.ndarray | Sequence): The prediction
                 results. A :obj:`torch.Tensor` or :obj:`np.ndarray` with
@@ -330,19 +327,15 @@ class RetrievalAveragePrecision(BaseMetric):
                 results. A :obj:`torch.Tensor` or :obj:`np.ndarray` with
                 shape ``(N, M)`` or a sequence of index/onehot
                 format labels.
+            topk (int, optional): Predictions with the k-th highest scores
+                 are considered as positive.
             pred_indices (bool): Whether the ``pred`` is a sequence of
                 category index labels. Defaults to False.
             target_indices (bool): Whether the ``target`` is a sequence of
                 category index labels. Defaults to False.
-            topk (int, optional): Predictions with the k-th highest scores are
-                considered as positive. Defaults to None.
-            average (str | None): The average method. It supports two modes:
-                - `"macro"`: Calculate metrics for each category, and calculate
-                  the mean value over all categories.
-                - `None`: Return scores of all categories.
-                Defaults to "macro".
             mode (Optional[str]): The mode to calculate AP, choose from
                 'IR'(information retrieval) and 'integrate'. Defaults to 'IR'.
+
         Note:
             If the ``mode`` set to 'IR', use the stanford AP calculation of
             information retrieval as in wikipedia page; if set to 'integrate',
@@ -350,8 +343,10 @@ class RetrievalAveragePrecision(BaseMetric):
             by averaging two adjacent precision points, then multiplying by the
             recall step like mAP in Detection task. This is the convention for
             the Revisited Oxford/Paris datasets.
+
         Returns:
             float: the average precision of the query image.
+
         References:
             [1] `Wikipedia entry for Average precision(information_retrieval)
             <https://en.wikipedia.org/wiki/Evaluation_measures_
@@ -359,9 +354,8 @@ class RetrievalAveragePrecision(BaseMetric):
             [2] `The Oxford Buildings Dataset <https://www.robots.ox.ac.uk/
             ~vgg/data/oxbuildings/`_
         """
-        average_options = ['macro', None]
-        assert average in average_options, 'Invalid `average` argument, ' \
-            f'please specicy from {average_options}.'
+        if topk is None or (isinstance(topk, int) and topk <= 0):
+            raise ValueError('`topk` must be a ingter larger than 0.')
 
         mode_options = ['IR', 'integrate']
         assert mode in mode_options, \
@@ -379,10 +373,8 @@ class RetrievalAveragePrecision(BaseMetric):
         for i, (sample_pred, sample_target) in enumerate(zip(pred, target)):
             aps[i] = _calculateAp_for_sample(sample_pred, sample_target, mode)
 
-        if average == 'macro':
-            return aps.mean()
-        else:
-            return aps
+        return aps.mean()
+
 
 def _calculateAp_for_sample(pred, target, mode):
     pred = np.array(to_tensor(pred).cpu())
