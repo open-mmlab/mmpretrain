@@ -29,7 +29,10 @@ if __name__ == '__main__':
     if args.imagenet_variant_name != 'c':
         # ImageNet variant A, R, S
         imagenet_variant_subfolders = os.listdir(args.imagenet_variant_root)
-        imagenet_variant_subfolders = [subfolder for subfolder in imagenet_variant_subfolders if not subfolder.endswith('.txt')]
+        imagenet_variant_subfolders = [
+            subfolder for subfolder in imagenet_variant_subfolders
+            if not subfolder.endswith('.txt')
+        ]
         for subfolder in imagenet_variant_subfolders:
             cur_label = imagenet1k_label_map[subfolder]
             cur_subfolder = os.path.join(args.imagenet_variant_root, subfolder)
