@@ -1,5 +1,5 @@
 _base_ = [
-    '../_base_/datasets/imagenet_cae.py',
+    '../_base_/datasets/imagenet_bs256_cae.py',
     '../_base_/default_runtime.py',
 ]
 
@@ -70,9 +70,8 @@ param_scheduler = [
 
 # runtime settings
 # pre-train for 300 epochs
-train_cfg = dict(max_epochs=300)
+train_cfg = dict(type='EpochBasedTrainLoop', max_epochs=300)
 default_hooks = dict(
-    logger=dict(type='LoggerHook', interval=100),
     # only keeps the latest 3 checkpoints
     checkpoint=dict(type='CheckpointHook', interval=10, max_keep_ckpts=3))
 

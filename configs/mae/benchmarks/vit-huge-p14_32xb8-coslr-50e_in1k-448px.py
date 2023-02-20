@@ -1,4 +1,4 @@
-_base_ = 'vit-huge-p16_8xb128-coslr-50e_in1k.py'
+_base_ = 'vit-huge-p14_8xb128-coslr-50e_in1k.py'
 # MAE fine-tuning setting
 
 # model settings

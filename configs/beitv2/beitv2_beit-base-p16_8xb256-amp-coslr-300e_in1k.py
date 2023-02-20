@@ -1,5 +1,5 @@
 _base_ = [
-    '../_base_/datasets/imagenet_beitv2.py',
+    '../_base_/datasets/imagenet_bs256_beitv2.py',
     '../_base_/default_runtime.py',
 ]
 
@@ -105,8 +105,8 @@ param_scheduler = [
 ]
 
 # runtime settings
+train_cfg = dict(type='EpochBasedTrainLoop', max_epochs=300)
 default_hooks = dict(
-    logger=dict(type='LoggerHook', interval=100),
     # only keeps the latest 3 checkpoints
     checkpoint=dict(type='CheckpointHook', interval=1, max_keep_ckpts=3))
 

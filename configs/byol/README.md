@@ -26,8 +26,8 @@ The **Best Layer** indicates that the best results are obtained from which layer
 
 Besides, k=1 to 96 indicates the hyper-parameter of Low-shot SVM.
 
-| Self-Supervised Config                                                                                                                                    | Best Layer | SVM   | k=1   | k=2   | k=4   | k=8   | k=16  | k=32  | k=64  | k=96  |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ----- | ----- | ----- | ----- | ----- | ----- | ----- | ----- | ----- |
+| Self-Supervised Config                                                                                                                            | Best Layer | SVM   | k=1   | k=2   | k=4   | k=8   | k=16  | k=32  | k=64  | k=96  |
+| ------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ----- | ----- | ----- | ----- | ----- | ----- | ----- | ----- | ----- |
 | [resnet50_8xb32-accum16-coslr-200e](https://github.com/open-mmlab/mmselfsup/blob/1.x/configs/selfsup/byol/byol_resnet50_8xb32-accum16-coslr-200e_in1k.py) | feature5   | 86.31 | 45.37 | 56.83 | 68.47 | 74.12 | 78.30 | 81.53 | 83.56 | 84.73 |
 
 #### ImageNet Linear Evaluation
@@ -106,8 +106,8 @@ Please refer to [config](https://github.com/open-mmlab/mmselfsup/blob/1.x/config
 
 Please refer to [config](https://github.com/open-mmlab/mmselfsup/blob/1.x/configs/benchmarks/mmdetection/coco/mask-rcnn_r50_fpn_ms-1x_coco.py) for details.
 
-| Self-Supervised Config                                                                                                                                    | mAP(Box) | AP50(Box) | AP75(Box) | mAP(Mask) | AP50(Mask) | AP75(Mask) |
-| --------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------- | --------- | --------- | ---------- | ---------- |
+| Self-Supervised Config                                                                                                                            | mAP(Box) | AP50(Box) | AP75(Box) | mAP(Mask) | AP50(Mask) | AP75(Mask) |
+| ------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------- | --------- | --------- | ---------- | ---------- |
 | [resnet50_8xb32-accum16-coslr-200e](https://github.com/open-mmlab/mmselfsup/blob/1.x/configs/selfsup/byol/byol_resnet50_8xb32-accum16-coslr-200e_in1k.py) | 40.9     | 61.0      | 44.6      | 36.8      | 58.1       | 39.5       |
 
 ### Segmentation

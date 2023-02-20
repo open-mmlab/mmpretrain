@@ -44,7 +44,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 83.1
     Config: configs/mae/benchmarks/vit-base-p16_8xb128-coslr-100e_in1k.py
-  
+
   - Name: mae_vit-base-p16_8xb512-coslr-400e_in1k
     In Collection: MAE
     Metadata:
@@ -76,7 +76,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 83.3
     Config: configs/mae/benchmarks/vit-base-p16_8xb128-coslr-100e_in1k.py
-  
+
   - Name: mae_vit-base-p16_8xb512-amp-coslr-800e_in1k
     In Collection: MAE
     Metadata:
@@ -108,7 +108,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 83.3
     Config: configs/mae/benchmarks/vit-base-p16_8xb128-coslr-100e_in1k.py
-  
+
   - Name: mae_vit-base-p16_8xb512-amp-coslr-1600e_in1k
     In Collection: MAE
     Metadata:
@@ -141,7 +141,7 @@ Models:
           Top 1 Accuracy: 83.5
     Config: configs/mae/benchmarks/vit-base-p16_8xb128-coslr-100e_in1k.py
     Weights: https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-1600e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k_20220825-cf70aa21.pth
-  
+
   - Name: mae_vit-large-p16_8xb512-amp-coslr-400e_in1k
     In Collection: MAE
     Metadata:
@@ -173,7 +173,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 85.2
     Config: configs/mae/benchmarks/vit-large-p16_8xb128-coslr-50e_in1k.py
-  
+
   - Name: mae_vit-large-p16_8xb512-amp-coslr-800e_in1k
     In Collection: MAE
     Metadata:
@@ -205,7 +205,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 85.4
     Config: configs/mae/benchmarks/vit-large-p16_ft-8xb128-coslr-50e_in1k.py
-  
+
   - Name: mae_vit-large-p16_8xb512-amp-coslr-1600e_in1k
     In Collection: MAE
     Metadata:
@@ -237,7 +237,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 85.7
     Config: configs/mae/benchmarks/vit-large-p16_ft-8xb128-coslr-50e_in1k.py
-  
+
   - Name: mae_vit-huge-p16_8xb512-amp-coslr-1600e_in1k.py
     In Collection: MAE
     Metadata:

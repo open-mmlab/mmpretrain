@@ -1,4 +1,4 @@
-_base_ = 'beitv2_vit-base-p16_8xb256-amp-coslr-300e_in1k.py'
+_base_ = 'beitv2_beit-base-p16_8xb256-amp-coslr-300e_in1k.py'
 
 # drop_path_rate: 0. for 300 epochs and 0.1 for 1600 epochs.
 model = dict(

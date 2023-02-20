@@ -1,0 +1,36 @@
+Collections:
+  - Name: MaskFeat
+    Metadata:
+      Training Data: ImageNet-1k
+      Training Techniques:
+        - AdamW
+      Training Resources: 8x A100-80G GPUs
+      Architecture:
+        - ViT
+    Paper:
+        URL: https://arxiv.org/abs/2112.09133v1
+        Title: "Masked Feature Prediction for Self-Supervised Visual Pre-Training"
+    README: configs/selfsup/maskfeat/README.md
+
+Models:
+  - Name: maskfeat_vit-base-p16_8xb256-amp-coslr-300e_in1k
+    In Collection: MaskFeat
+    Metadata:
+      Epochs: 300
+      Batch Size: 2048
+    Results: null
+    Config: configs/maskfeat/maskfeat_vit-base-p16_8xb256-amp-coslr-300e_in1k.py
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/maskfeat/maskfeat_vit-base-p16_8xb256-amp-coslr-300e_in1k/maskfeat_vit-base-p16_8xb256-amp-coslr-300e_in1k_20221101-6dfc8bf3.pth
+    Downstream:
+      - vit-base-p16_maskfeat-pre_8xb256-coslr-100e_in1k
+  - Name: vit-base-p16_maskfeat-pre_8xb256-coslr-100e_in1k
+    Metadata:
+      Epochs: 100
+      Batch Size: 2048
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 83.4
+    Config: configs/maskfeat/benchmarks/vit-base-p16_8xb256-coslr-100e_in1k.py
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/maskfeat/maskfeat_vit-base-p16_8xb256-amp-coslr-300e_in1k/vit-base-p16_ft-8xb256-coslr-100e_in1k/vit-base-p16_ft-8xb256-coslr-100e_in1k_20221028-5134431c.pth
