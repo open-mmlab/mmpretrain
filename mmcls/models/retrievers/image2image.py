@@ -16,15 +16,18 @@ from .base import BaseRetriever
 @MODELS.register_module()
 class ImageToImageRetriever(BaseRetriever):
     """Image To Image Retriever for supervised retrieval task.
+
     Args:
         image_encoder (Union[dict, List[dict]]): Encoder for extracting
             features.
         prototype (Union[DataLoader, dict, str, torch.Tensor]): Database to be
             retrieved. The following four types are supported.
+
             - DataLoader: The original dataloader serves as the prototype.
             - dict: The configuration to construct Dataloader.
             - str: The path of the saved vector.
             - torch.Tensor: The saved tensor whose dimension should be dim.
+
         head (dict, optional): The head module to calculate loss from
             processed features. See :mod:`mmcls.models.heads`. Notice
             that if the head is not set, `loss` method cannot be used.
@@ -36,13 +39,17 @@ class ImageToImageRetriever(BaseRetriever):
             greater the similarity. Defaults to "cosine_similarity".
         train_cfg (dict, optional): The training setting. The acceptable
             fields are:
+
             - augments (List[dict]): The batch augmentation methods to use.
               More details can be found in :mod:`mmcls.model.utils.augment`.
+
             Defaults to None.
         data_preprocessor (dict, optional): The config for preprocessing input
             data. If None or no specified type, it will use
             "ClsDataPreprocessor" as type. See :class:`ClsDataPreprocessor` for
             more details. Defaults to None.
+        topk (int): Return the topk of the retrieval result. `-1` means
+            return all. Defaults to -1.
         init_cfg (dict, optional): the config to control the initialization.
             Defaults to None.
     """
@@ -54,6 +61,7 @@ class ImageToImageRetriever(BaseRetriever):
                  similarity_fn: Union[str, Callable] = 'cosine_similarity',
                  train_cfg: Optional[dict] = None,
                  data_preprocessor: Optional[dict] = None,
+                 topk: int = -1,
                  init_cfg: Optional[dict] = None):
 
         if data_preprocessor is None:
@@ -83,6 +91,7 @@ class ImageToImageRetriever(BaseRetriever):
             'a torch.Tensor, a dataloader or a dataloader dict format config.')
         self.prototype = prototype
         self.prototype_inited = False
+        self.topk = topk
 
     @property
     def similarity_fn(self):
@@ -107,6 +116,7 @@ class ImageToImageRetriever(BaseRetriever):
                 data_samples: Optional[List[ClsDataSample]] = None,
                 mode: str = 'tensor'):
         """The unified entry for a forward process in both training and test.
+
         The method should accept three modes: "tensor", "predict" and "loss":
 
         - "tensor": Forward the whole network and return tensor without any
@@ -115,8 +125,10 @@ class ImageToImageRetriever(BaseRetriever):
           processed to a list of :obj:`ClsDataSample`.
         - "loss": Forward and return a dict of losses according to the given
           inputs and data samples.
+
         Note that this method doesn't handle neither back propagation nor
         optimizer updating, which are done in the :meth:`train_step`.
+
         Args:
             inputs (torch.Tensor, tuple): The input tensor with shape
                 (N, C, ...) in general.
@@ -124,8 +136,10 @@ class ImageToImageRetriever(BaseRetriever):
                 data of every samples. It's required if ``mode="loss"``.
                 Defaults to None.
             mode (str): Return what kind of value. Defaults to 'tensor'.
+
         Returns:
             The return type depends on ``mode``.
+
             - If ``mode="tensor"``, return a tensor.
             - If ``mode="predict"``, return a list of
               :obj:`mmcls.structures.ClsDataSample`.
@@ -162,6 +176,7 @@ class ImageToImageRetriever(BaseRetriever):
                 (N, C, ...) in general.
             data_samples (List[ClsDataSample]): The annotation data of
                 every samples.
+
         Returns:
             dict[str, Tensor]: a dictionary of loss components
         """
@@ -187,6 +202,7 @@ class ImageToImageRetriever(BaseRetriever):
                 data_samples: Optional[List[ClsDataSample]] = None,
                 **kwargs) -> List[ClsDataSample]:
         """Predict results from the extracted features.
+
         Args:
             inputs (tuple): The features extracted from the backbone.
             data_samples (List[ClsDataSample], optional): The annotation
@@ -205,13 +221,16 @@ class ImageToImageRetriever(BaseRetriever):
             feats = feats[-1]
 
         # Matching of similarity
-        similarity_result = self.matching(feats)
-        return self._get_predictions(similarity_result, data_samples)
+        result = self.matching(feats)
+        return self._get_predictions(result, data_samples)
 
     def _get_predictions(self, result, data_samples):
         """Post-process the output of retriever."""
         pred_scores = result['score']
         pred_labels = result['pred_label']
+        if self.topk != -1:
+            topk = min(self.topk, pred_scores.size()[-1])
+            pred_labels = pred_labels[:, :topk]
 
         if data_samples is not None:
             for data_sample, score, label in zip(data_samples, pred_scores,
@@ -222,7 +241,6 @@ class ImageToImageRetriever(BaseRetriever):
             for score, label in zip(pred_scores, pred_labels):
                 data_samples.append(ClsDataSample().set_pred_score(
                     score).set_pred_label(label))
-
         return data_samples
 
     def _get_prototype_vecs_from_dataloader(self, data_loader):
