@@ -23,8 +23,8 @@ Models:
     Config: configs/barlowtwins/barlowtwins_resnet50_8xb256-coslr-300e_in1k.py
     Weights: https://download.openmmlab.com/mmselfsup/1.x/barlowtwins/barlowtwins_resnet50_8xb256-coslr-300e_in1k/barlowtwins_resnet50_8xb256-coslr-300e_in1k_20220825-57307488.pth
     Downstream:
-      - resnet50_8xb32-linear-coslr-100e_in1k
-  - Name: resnet50_8xb32-linear-coslr-100e_in1k
+      - resnet50_barlowtwins-pre_8xb32-linear-coslr-100e_in1k
+  - Name: resnet50_barlowtwins-pre_8xb32-linear-coslr-100e_in1k
     Metadata:
       Epochs: 100
       Batch Size: 256
