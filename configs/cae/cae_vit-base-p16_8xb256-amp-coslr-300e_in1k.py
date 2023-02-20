@@ -1,6 +1,5 @@
 _base_ = [
     '../_base_/datasets/imagenet_cae.py',
-    '../_base_/schedules/adamw_coslr-200e_in1k.py',
     '../_base_/default_runtime.py',
 ]
 
@@ -42,19 +41,13 @@ model = dict(
     base_momentum=0.0)
 
 # optimizer wrapper
-optimizer = dict(type='AdamW', lr=1.5e-3, betas=(0.9, 0.999))
-
 optim_wrapper = dict(
     type='AmpOptimWrapper',
     loss_scale='dynamic',
-    optimizer=optimizer,
+    optimizer=dict(type='AdamW', lr=1.5e-3, betas=(0.9, 0.999)),
     clip_grad=dict(max_norm=3.0),
     paramwise_cfg=dict(
-        custom_keys={
-            'norm': dict(decay_mult=0.0),
-            'bias': dict(decay_mult=0.0),
-            'gamma': dict(decay_mult=0.0)
-        }))
+        bias_decay_mult=0.0, norm_decay_mult=0.0, flat_decay_mult=0.0))
 
 # learning rate scheduler
 param_scheduler = [

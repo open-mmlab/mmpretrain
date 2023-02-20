@@ -1,6 +1,5 @@
 _base_ = [
     '../_base_/datasets/imagenet_beitv2.py',
-    '../_base_/schedules/adamw_coslr-300e_in1k.py',
     '../_base_/default_runtime.py',
 ]
 
@@ -68,12 +67,12 @@ model = dict(
         )))
 
 # optimizer wrapper
-# betas: (0.9, 0.98) for 300 epochs and (0.9, 0.999) for 1600 epochs.
-optimizer = dict(type='AdamW', lr=1.5e-3, betas=(0.9, 0.98), weight_decay=0.05)
 optim_wrapper = dict(
     type='AmpOptimWrapper',
     loss_scale='dynamic',
-    optimizer=optimizer,
+    # betas: (0.9, 0.98) for 300 epochs and (0.9, 0.999) for 1600 epochs.
+    optimizer=dict(
+        type='AdamW', lr=1.5e-3, betas=(0.9, 0.98), weight_decay=0.05),
     clip_grad=dict(max_norm=3.0),
     paramwise_cfg=dict(
         custom_keys={

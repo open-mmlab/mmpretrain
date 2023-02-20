@@ -32,10 +32,9 @@ model = dict(
         loss=dict(type='CrossCorrelationLoss')))
 
 # optimizer
-optimizer = dict(type='LARS', lr=1.6, momentum=0.9, weight_decay=1e-6)
 optim_wrapper = dict(
     type='OptimWrapper',
-    optimizer=optimizer,
+    optimizer=dict(type='LARS', lr=1.6, momentum=0.9, weight_decay=1e-6),
     paramwise_cfg=dict(
         custom_keys={
             'bn': dict(decay_mult=0, lr_mult=0.024, lars_exclude=True),
