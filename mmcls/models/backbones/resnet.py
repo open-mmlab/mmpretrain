@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import numpy as np
+import torch
 import torch.nn as nn
 import torch.utils.checkpoint as cp
 from mmcv.cnn import (ConvModule, build_activation_layer, build_conv_layer,
@@ -334,7 +334,7 @@ class ResLayer(nn.Sequential):
             layer. Default: None
         norm_cfg (dict): dictionary to construct and config norm layer.
             Default: dict(type='BN')
-        drop_path_rate (float or np.ndarray): stochastic depth rate.
+        drop_path_rate (float or list): stochastic depth rate.
             Default: 0.
     """
 
@@ -354,8 +354,8 @@ class ResLayer(nn.Sequential):
         self.expansion = get_expansion(block, expansion)
 
         if isinstance(drop_path_rate, float):
-            drop_path_rate = np.array([drop_path_rate])
-            drop_path_rate = drop_path_rate.repeat(num_blocks)
+            drop_path_rate = [drop_path_rate]
+            drop_path_rate = drop_path_rate * num_blocks
 
         assert drop_path_rate.shape[
             0] == num_blocks, 'Please check the length of drop_path_rate'
@@ -532,9 +532,13 @@ class ResNet(BaseBackbone):
         _out_channels = base_channels * self.expansion
 
         # stochastic depth decay rule
-        net_num_blocks = sum(stage_blocks)
-        dpr = np.linspace(0, drop_path_rate, net_num_blocks)
-        block_id = 0
+        total_depth = sum(stage_blocks)
+        dpr = [
+            x.item() for x in torch.linspace(0, drop_path_rate, total_depth)
+        ]
+        # net_num_blocks = sum(stage_blocks)
+        # dpr = np.linspace(0, drop_path_rate, net_num_blocks)
+        # block_id = 0
 
         for i, num_blocks in enumerate(self.stage_blocks):
             stride = strides[i]
@@ -552,10 +556,10 @@ class ResNet(BaseBackbone):
                 with_cp=with_cp,
                 conv_cfg=conv_cfg,
                 norm_cfg=norm_cfg,
-                drop_path_rate=dpr[block_id:(block_id + num_blocks)])
+                drop_path_rate=dpr[:num_blocks])
             _in_channels = _out_channels
             _out_channels *= 2
-            block_id += num_blocks
+            dpr = dpr[num_blocks:]
             layer_name = f'layer{i + 1}'
             self.add_module(layer_name, res_layer)
             self.res_layers.append(layer_name)
