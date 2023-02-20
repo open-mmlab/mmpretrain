@@ -357,8 +357,8 @@ class ResLayer(nn.Sequential):
             drop_path_rate = [drop_path_rate]
             drop_path_rate = drop_path_rate * num_blocks
 
-        assert drop_path_rate.shape[
-            0] == num_blocks, 'Please check the length of drop_path_rate'
+        assert len(drop_path_rate
+                   ) == num_blocks, 'Please check the length of drop_path_rate'
 
         downsample = None
         if stride != 1 or in_channels != out_channels:
