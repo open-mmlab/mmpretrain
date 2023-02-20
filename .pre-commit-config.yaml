@@ -48,16 +48,17 @@ repos:
     hooks:
     -   id: check-copyright
         args: ["mmcls", "tests", "demo", "tools", "--excludes", "mmcls/.mim/", "--ignore-file-not-found-error"]
-  - repo: local
-    hooks:
-      - id: metafile
-        name: metafile
-        description: Check the format of metafile
-        entry: python .dev_scripts/check_metafile.py
-        language: python
-        files: (metafile)\.(yml)$
-        additional_dependencies:
-          - modelindex
+  # TODO: update check_metafile
+  # - repo: local
+  #   hooks:
+  #     - id: metafile
+  #       name: metafile
+  #       description: Check the format of metafile
+  #       entry: python .dev_scripts/check_metafile.py
+  #       language: python
+  #       files: (metafile)\.(yml)$
+  #       additional_dependencies:
+  #         - modelindex
   # - repo: local
   #   hooks:
   #     - id: clang-format

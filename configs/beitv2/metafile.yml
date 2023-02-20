@@ -50,6 +50,7 @@ Models:
     Downstream:
       - beit-base-p16_beitv2-pre_8xb128-coslr-100e_in1k
   - Name: beit-base-p16_beitv2-pre_8xb128-coslr-100e_in1k
+    In Collection: BEiTv2
     Metadata:
       Epochs: 100
       Batch Size: 1024

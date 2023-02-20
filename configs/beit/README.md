@@ -52,8 +52,8 @@ We introduce a self-supervised vision representation model BEiT, which stands fo
 
 ### ImageNet-1k
 
-|    Model    |   Pretrain   | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                 Config                  |                                                    Download                                                    |
-| :---------: | :----------: | :-------: | :------: | :-------: | :-------: | :-------------------------------------: | :------------------------------------------------------------------------------------------------------------: |
+|    Model    |   Pretrain   | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                 Config                  |                                                Download                                                 |
+| :---------: | :----------: | :-------: | :------: | :-------: | :-------: | :-------------------------------------: | :-----------------------------------------------------------------------------------------------------: |
 | BEiT-base\* | ImageNet-21k |   86.53   |  17.58   |   85.28   |   97.59   | [config](./beit-base-p16_8xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/beit/beit-base_3rdparty_in1k_20221114-c0a4df23.pth) |
 
 *Models with * are converted from the [official repo](https://github.com/microsoft/unilm/tree/master/beit). The config files of these models are only for inference.*
