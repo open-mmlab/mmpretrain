@@ -79,3 +79,7 @@ default_hooks = dict(
 randomness = dict(seed=0, diff_rank_seed=True)
 
 find_unused_parameters = True
+
+# NOTE: `auto_scale_lr` is for automatically scaling LR
+# based on the actual training batch size.
+auto_scale_lr = dict(base_batch_size=2048)

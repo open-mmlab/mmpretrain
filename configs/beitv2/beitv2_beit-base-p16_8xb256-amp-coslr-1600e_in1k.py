@@ -33,3 +33,7 @@ param_scheduler = [
 ]
 
 train_cfg = dict(type='EpochBasedTrainLoop', max_epochs=1600)
+
+# NOTE: `auto_scale_lr` is for automatically scaling LR
+# based on the actual training batch size.
+auto_scale_lr = dict(base_batch_size=2048)

@@ -55,3 +55,7 @@ optim_wrapper = dict(
 
 # runtime settings
 default_hooks = dict(checkpoint=dict(max_keep_ckpts=3))
+
+# NOTE: `auto_scale_lr` is for automatically scaling LR
+# based on the actual training batch size.
+auto_scale_lr = dict(base_batch_size=4096)

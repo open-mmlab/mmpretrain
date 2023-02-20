@@ -1,17 +1,16 @@
 _base_ = [
     '../../_base_/models/resnet50.py',
     '../../_base_/datasets/imagenet_bs32_pillow.py',
-    '../../_base_/schedules/lars_coslr-90e.py',
+    '../../_base_/schedules/sgd_steplr-100e.py',
     '../../_base_/default_runtime.py',
 ]
-# SimSiam linear evaluation setting
-# According to SimSiam paper, this setting can also be used to evaluate
-# other methods like SimCLR, MoCo, BYOL, SwAV
 
 model = dict(backbone=dict(frozen_stages=4))
 
-# dataset summary
-train_dataloader = dict(batch_size=512)
+# optimizer
+optim_wrapper = dict(
+    type='OptimWrapper',
+    optimizer=dict(type='SGD', lr=30., momentum=0.9, weight_decay=0.))
 
 # runtime settings
 default_hooks = dict(
