@@ -247,7 +247,7 @@ The OpenMMLab 2.0 Dataset Format Specification stipulates that the annotation fi
 
 The following is an example of a JSON annotation file (in this example each raw data contains only one train/test sample):
 
-```text
+```json
 {
     'metainfo':
         {
