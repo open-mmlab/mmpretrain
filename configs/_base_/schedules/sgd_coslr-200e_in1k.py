@@ -1,4 +1,4 @@
-# optimizer
+# optimizer wrapper
 optim_wrapper = dict(
     type='OptimWrapper',
     optimizer=dict(type='SGD', lr=0.03, weight_decay=1e-4, momentum=0.9))
