@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional, Union, Sequence
+from typing import Optional, Sequence, Union
 
 import torch
 import torch.nn as nn
@@ -7,8 +7,8 @@ import torch.nn.functional as F
 from mmengine.model import BaseModule
 from mmengine.utils import is_seq_of
 
-from mmcls.models.necks import GeneralizedMeanPooling
 from mmcls.registry import MODELS
+from .gem import GeneralizedMeanPooling
 
 
 class MultiAtrous(BaseModule):
@@ -23,14 +23,15 @@ class MultiAtrous(BaseModule):
             Defaults to None.
     """
 
-    def __init__(self, 
-                 in_channel: int, 
+    def __init__(self,
+                 in_channel: int,
                  out_channel: int,
                  dilation_rates: Sequence[int] = [3, 6, 9],
                  init_cfg: Optional[dict] = None):
         super(MultiAtrous, self).__init__(init_cfg)
-        assert is_seq_of(dilation_rates, int), (
-            "``dilation_rates`` must be a sequence of int.")
+        assert is_seq_of(
+            dilation_rates,
+            int), ('``dilation_rates`` must be a sequence of int.')
         assert out_channel % 4 == 0
 
         # multiple-atrous convolution
@@ -81,8 +82,9 @@ class ATT(BaseModule):
         init_cfg (dict, optional): dictionary to initialize weights.
             Defaults to None.
     """
-    def __init__(self, 
-                 in_channel: int, 
+
+    def __init__(self,
+                 in_channel: int,
                  out_channel: int,
                  init_cfg: Optional[dict] = None):
         super(ATT, self).__init__(init_cfg)
@@ -91,8 +93,8 @@ class ATT(BaseModule):
 
         self.relu = nn.ReLU()
         self.bn = nn.BatchNorm2d(out_channel)
-        self.softplus = nn.Softplus()  
-    
+        self.softplus = nn.Softplus()
+
     def forward(self, x):
         x = self.conv1(x)
         x = self.bn(x)
@@ -102,12 +104,13 @@ class ATT(BaseModule):
         attention_map = self.relu(x)
         attention_map = self.conv2(attention_map)
         attention_map = self.softplus(attention_map)
-        
+
         return attention_map * feature_map_norm
 
+
 class LocalBranch(BaseModule):
-    """The local branch in DOLG, which consists of a ``MultiAtrous`` module
-    and a ``ATT`` module.
+    """The local branch in DOLG, which consists of a ``MultiAtrous`` module and
+    a ``ATT`` module.
 
     Args:
         in_channel (int): Number of channels in the input.
@@ -118,13 +121,14 @@ class LocalBranch(BaseModule):
             Defaults to None.
     """
 
-    def __init__(self, 
-                 in_channel: int, 
+    def __init__(self,
+                 in_channel: int,
                  out_channel: int,
                  dilation_rates: Sequence[int] = [3, 6, 9],
                  init_cfg: Optional[dict] = None):
         super(LocalBranch, self).__init__(init_cfg)
-        self.multi_atrous = MultiAtrous(in_channel, in_channel, dilation_rates, init_cfg)
+        self.multi_atrous = MultiAtrous(in_channel, in_channel, dilation_rates,
+                                        init_cfg)
         self.att = ATT(in_channel, out_channel, init_cfg)
 
     def forward(self, x):
@@ -145,7 +149,8 @@ class OrthogonalFusion(nn.Module):
         proj = torch.bmm(
             global_feat.unsqueeze(1), torch.flatten(local_feat, start_dim=2))
 
-        proj = torch.bmm(global_feat.unsqueeze(2), proj).view(local_feat.size())
+        proj = torch.bmm(global_feat.unsqueeze(2),
+                         proj).view(local_feat.size())
 
         g_norm = global_feat_norm * global_feat_norm
         proj = proj / g_norm.view(-1, 1, 1, 1)
@@ -154,7 +159,8 @@ class OrthogonalFusion(nn.Module):
         global_feat = global_feat.unsqueeze(-1).unsqueeze(-1)
         # concat the orthogonal components and global features
         fused_feat = torch.cat(
-            [global_feat.expand(orthogonal_comp.size()), orthogonal_comp], dim=1)
+            [global_feat.expand(orthogonal_comp.size()), orthogonal_comp],
+            dim=1)
 
         return fused_feat
 
@@ -189,7 +195,7 @@ class DOLG(BaseModule):
         self.global_branch = nn.Sequential(GeneralizedMeanPooling(),
                                            nn.Flatten(),
                                            nn.Linear(global_dim, hidden_dim))
-        
+
         self.orthogonal_fusion = OrthogonalFusion()
         self.gap = nn.AdaptiveAvgPool2d(1)
 
