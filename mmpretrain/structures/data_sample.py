@@ -1,7 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-
 from multiprocessing.reduction import ForkingPickler
+from typing import Union
 
+import numpy as np
 import torch
 from mmengine.structures import BaseDataElement
 
@@ -35,35 +36,27 @@ class DataSample(BaseDataElement):
         >>> data_sample.set_gt_label(3)
         >>> print(data_sample)
         <DataSample(
-
         META INFORMATION
             num_classes: 5
             img_shape: (960, 720)
-
         DATA FIELDS
             gt_label: tensor([3])
-
         ) at 0x7ff64c1c1d30>
         >>> # For multi-label data
         >>> data_sample = DataSample().set_gt_label([0, 1, 4])
         >>> print(data_sample)
         <DataSample(
-
         DATA FIELDS
             gt_label: tensor([0, 1, 4])
-
         ) at 0x7ff5b490e100>
         >>> # Set one-hot format score
         >>> data_sample = DataSample().set_pred_score([0.1, 0.1, 0.6, 0.1])
         >>> print(data_sample)
         <DataSample(
-
         META INFORMATION
             num_classes: 4
-
         DATA FIELDS
             pred_score: tensor([0.1000, 0.1000, 0.6000, 0.1000])
-
         ) at 0x7ff5b48ef6a0>
     """
 
@@ -101,6 +94,14 @@ class DataSample(BaseDataElement):
         else:
             self.set_field(
                 name='num_classes', value=len(score), field_type='metainfo')
+        return self
+
+    def set_mask(self, value: Union[torch.Tensor, np.ndarray]):
+        if isinstance(value, np.ndarray):
+            value = torch.from_numpy(value)
+        elif not isinstance(value, torch.Tensor):
+            raise TypeError(f'Invalid mask type {type(value)}')
+        self.set_field(value, 'mask', dtype=torch.Tensor)
         return self
 
     def __repr__(self) -> str:
