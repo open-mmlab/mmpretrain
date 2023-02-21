@@ -47,7 +47,7 @@ Models:
         Metrics:
           Top 1 Accuracy: 83.5
     Config: configs/simmim/benchmarks/swin-base-w7_8xb256-coslr-100e_in1k.py
-  
+
   - Name: simmim_swin-base-w6_16xb128-amp-coslr-800e_in1k-192px
     In Collection: SimMIM
     Metadata:
@@ -70,7 +70,7 @@ Models:
           Top 1 Accuracy: 83.8
     Config: configs/simmim/benchmarks/swin-base-w6_8xb256-coslr-100e_in1k-192px.py
     Weights: https://download.openmmlab.com/mmselfsup/1.x/simmim/simmim_swin-base_8xb256-amp-coslr-100e_in1k-192/swin-base_ft-8xb256-coslr-100e_in1k/swin-base_ft-8xb256-coslr-100e_in1k_20220829-9cf23aa1.pth
-  
+
   - Name: simmim_swin-large_16xb128-amp-coslr-800e_in1k-192
     In Collection: SimMIM
     Metadata:
