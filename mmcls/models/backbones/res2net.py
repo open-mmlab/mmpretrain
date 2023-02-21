@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
 
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.utils.checkpoint as cp
@@ -164,8 +163,7 @@ class Res2Layer(Sequential):
         self.block = block
 
         if isinstance(drop_path_rate, float):
-            drop_path_rate = np.array([drop_path_rate])
-            drop_path_rate = drop_path_rate.repeat(num_blocks)
+            drop_path_rate = [drop_path_rate] * num_blocks
 
         assert len(drop_path_rate
                    ) == num_blocks, 'Please check the length of drop_path_rate'
