@@ -35,7 +35,7 @@ Models:
           Top 1 Accuracy: 66.9
     Config: configs/simclr/benchmarks/resnet50_8xb512-linear-coslr-90e_in1k.py
     Weights: https://download.openmmlab.com/mmselfsup/1.x/simclr/simclr_resnet50_16xb256-coslr-200e_in1k/resnet50_linear-8xb512-coslr-90e_in1k/resnet50_linear-8xb512-coslr-90e_in1k_20220825-f12c0457.pth
-  
+
   - Name: simclr_resnet50_16xb256-coslr-800e_in1k
     In Collection: SimCLR
     Metadata:

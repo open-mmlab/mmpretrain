@@ -26,16 +26,16 @@ The **Best Layer** indicates that the best results are obtained from which layer
 
 Besides, k=1 to 96 indicates the hyper-parameter of Low-shot SVM.
 
-| Self-Supervised Config                                                                                                                                                              | Best Layer | SVM   | k=1   | k=2   | k=4   | k=8   | k=16  | k=32  | k=64  | k=96  |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ----- | ----- | ----- | ----- | ----- | ----- | ----- | ----- | ----- |
+| Self-Supervised Config                                                                                                                            | Best Layer | SVM   | k=1   | k=2   | k=4   | k=8   | k=16  | k=32  | k=64  | k=96  |
+| ------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ----- | ----- | ----- | ----- | ----- | ----- | ----- | ----- | ----- |
 | [resnet50_8xb32-mcrop-2-6-coslr-200e_in1k-224-96](https://github.com/open-mmlab/mmselfsup/blob/master/configs/selfsup/swav/swav_resnet50_8xb32-mcrop-2-6-coslr-200e_in1k-224-96.py) | feature5   | 87.00 | 44.68 | 55.41 | 67.64 | 73.67 | 78.14 | 81.58 | 83.98 | 85.15 |
 
 #### ImageNet Linear Evaluation
 
 The **Feature1 - Feature5** don't have the GlobalAveragePooling, the feature map is pooled to the specific dimensions and then follows a Linear layer to do the classification. Please refer to [resnet50_mhead_linear-8xb32-steplr-90e_in1k](https://github.com/open-mmlab/mmselfsup/blob/master/configs/benchmarks/classification/imagenet/resnet50_mhead_linear-8xb32-steplr-90e_in1k.py) for details of config.
 
-| Self-Supervised Config                                                                                                                                                              | Feature1 | Feature2 | Feature3 | Feature4 | Feature5 |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------- | -------- | -------- | -------- |
+| Self-Supervised Config                                                                                                                                           | Feature1 | Feature2 | Feature3 | Feature4 | Feature5 |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------- | -------- | -------- | -------- |
 | [resnet50_8xb32-mcrop-2-6-coslr-200e_in1k-224-96](https://github.com/open-mmlab/mmselfsup/blob/master/configs/selfsup/swav/swav_resnet50_8xb32-mcrop-2-6-coslr-200e_in1k-224-96.py) | 16.98    | 34.96    | 49.26    | 65.98    | 70.74    |
 
 <table class="docutils">
@@ -75,8 +75,8 @@ The **Feature1 - Feature5** don't have the GlobalAveragePooling, the feature map
 
 The **Feature1 - Feature5** don't have the GlobalAveragePooling, the feature map is pooled to the specific dimensions and then follows a Linear layer to do the classification. Please refer to [resnet50_mhead_8xb32-steplr-28e_places205.py](https://github.com/open-mmlab/mmselfsup/blob/master/configs/benchmarks/classification/places205/resnet50_mhead_8xb32-steplr-28e_places205.py) for details of config.
 
-| Self-Supervised Config                                                                                                                                                              | Feature1 | Feature2 | Feature3 | Feature4 | Feature5 |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------- | -------- | -------- | -------- |
+| Self-Supervised Config                                                                                                                                           | Feature1 | Feature2 | Feature3 | Feature4 | Feature5 |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------- | -------- | -------- | -------- |
 | [resnet50_8xb32-mcrop-2-6-coslr-200e_in1k-224-96](https://github.com/open-mmlab/mmselfsup/blob/master/configs/selfsup/swav/swav_resnet50_8xb32-mcrop-2-6-coslr-200e_in1k-224-96.py) | 23.33    | 35.45    | 43.13    | 51.98    | 55.09    |
 
 #### ImageNet Nearest-Neighbor Classification
@@ -103,8 +103,8 @@ Please refer to [config](https://github.com/open-mmlab/mmselfsup/blob/1.x/config
 
 Please refer to [config](https://github.com/open-mmlab/mmselfsup/blob/1.x/configs/benchmarks/mmdetection/coco/mask-rcnn_r50_fpn_ms-1x_coco.py) for details.
 
-| Self-Supervised Config                                                                                                                                                              | mAP(Box) | AP50(Box) | AP75(Box) | mAP(Mask) | AP50(Mask) | AP75(Mask) |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------- | --------- | --------- | ---------- | ---------- |
+| Self-Supervised Config                                                                                                                            | mAP(Box) | AP50(Box) | AP75(Box) | mAP(Mask) | AP50(Mask) | AP75(Mask) |
+| ------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | --------- | --------- | --------- | ---------- | ---------- |
 | [resnet50_8xb32-mcrop-2-6-coslr-200e_in1k-224-96](https://github.com/open-mmlab/mmselfsup/blob/master/configs/selfsup/swav/swav_resnet50_8xb32-mcrop-2-6-coslr-200e_in1k-224-96.py) | 40.2     | 60.5      | 43.9      | 36.3      | 57.5       | 38.8       |
 
 ### Segmentation
