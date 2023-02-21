@@ -37,3 +37,25 @@ Models:
     Config: configs/mixmim/mixmim-base_8xb64_in1k.py
     Converted From:
       Code: https://github.com/Sense-X/MixMIM
+
+  - Name: mixmim_mixmim-base_16xb128-coslr-300e_in1k
+    In Collection: MixMIM
+    Metadata:
+      Epochs: 300
+      Batch Size: 2048
+    Results: null
+    Config: configs/mixmim/mixmim-base-p16_16xb128-coslr-300e_in1k.py
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/mixmim/mixmim-base-p16_16xb128-coslr-300e_in1k/mixmim-base-p16_16xb128-coslr-300e_in1k_20221208-44fe8d2c.pth
+    Downstream:
+      - mixmim-base_mixmim-pre_8xb128-coslr-100e_in1k
+  - Type: mixmim-base_mixmim-pre_8xb128-coslr-100e_in1k
+    Metadata:
+      Epochs: 100
+      Batch Size: 1024
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 84.63
+    Config: configs/mixmim/benchmarks/mixmim-base_8xb128-coslr-100e_in1k.py
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/mixmim/mixmim-base-p16_16xb128-coslr-300e_in1k/mixmim-base-p16_ft-8xb128-coslr-100e_in1k/mixmim-base-p16_ft-8xb128-coslr-100e_in1k_20221208-41ecada9.pth
