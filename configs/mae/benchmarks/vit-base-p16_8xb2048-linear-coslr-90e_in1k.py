@@ -4,6 +4,11 @@ _base_ = [
     '../../_base_/default_runtime.py'
 ]
 
+# dataset settings
+train_dataloader = dict(batch_size=2048, drop_last=True)
+val_dataloader = dict(drop_last=False)
+test_dataloader = dict(drop_last=False)
+
 # model settings
 model = dict(
     type='ImageClassifier',
@@ -22,17 +27,7 @@ model = dict(
         num_classes=1000,
         in_channels=768,
         loss=dict(type='CrossEntropyLoss'),
-        init_cfg=[dict(type='TruncNormal', layer='Linear', std=0.01)]),
-    data_preprocessor=dict(
-        num_classes=1000,
-        mean=[123.675, 116.28, 103.53],
-        std=[58.395, 57.12, 57.375],
-        to_rgb=True,
-    ))
-
-train_dataloader = dict(batch_size=2048, drop_last=True)
-val_dataloader = dict(drop_last=False)
-test_dataloader = dict(drop_last=False)
+        init_cfg=[dict(type='TruncNormal', layer='Linear', std=0.01)]))
 
 # optimizer
 optim_wrapper = dict(
@@ -66,5 +61,4 @@ default_hooks = dict(
     checkpoint=dict(type='CheckpointHook', interval=1, max_keep_ckpts=3),
     logger=dict(type='LoggerHook', interval=10))
 
-# randomness
 randomness = dict(seed=0, diff_rank_seed=True)

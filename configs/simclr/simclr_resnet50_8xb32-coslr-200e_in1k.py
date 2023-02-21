@@ -23,7 +23,7 @@ model = dict(
         with_avg_pool=True),
     head=dict(
         type='ContrastiveHead',
-        loss=dict(type='mmcls.CrossEntropyLoss'),
+        loss=dict(type='CrossEntropyLoss'),
         temperature=0.1),
 )
 
@@ -43,3 +43,7 @@ optim_wrapper = dict(
 default_hooks = dict(
     # only keeps the latest 3 checkpoints
     checkpoint=dict(type='CheckpointHook', interval=10, max_keep_ckpts=3))
+
+# NOTE: `auto_scale_lr` is for automatically scaling LR
+# based on the actual training batch size.
+auto_scale_lr = dict(base_batch_size=256)

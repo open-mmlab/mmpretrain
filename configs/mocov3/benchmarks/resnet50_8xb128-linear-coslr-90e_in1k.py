@@ -5,10 +5,10 @@ _base_ = [
     '../../_base_/default_runtime.py',
 ]
 
-model = dict(backbone=dict(frozen_stages=4, norm_eval=True))
-
-# dataset summary
+# dataset settings
 train_dataloader = dict(batch_size=128)
+
+model = dict(backbone=dict(frozen_stages=4, norm_eval=True))
 
 # optimizer
 optim_wrapper = dict(

@@ -1,6 +1,42 @@
-_base_ = 'vit-small-p16_8xb128-linear-coslr-90e_in1k.py'
-# MoCo v3 linear probing setting
+_base_ = [
+    '../../_base_/datasets/imagenet_bs32_pillow.py',
+    '../../_base_/default_runtime.py',
+]
 
+# dataset settings
+train_dataloader = dict(batch_size=128)
+
+# model settings
 model = dict(
-    backbone=dict(arch='base', frozen_stages=12, norm_eval=True),
-    head=dict(in_channels=768))
+    type='ImageClassifier',
+    backbone=dict(
+        type='MoCoV3ViT',
+        arch='base',  # embed_dim = 768
+        img_size=224,
+        patch_size=16,
+        stop_grad_conv1=True,
+        frozen_stages=12,
+        norm_eval=True),
+    head=dict(
+        type='VisionTransformerClsHead',
+        num_classes=1000,
+        in_channels=768,
+        loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
+        init_cfg=dict(type='Normal', std=0.01, layer='Linear'),
+    ))
+
+# optimizer
+optim_wrapper = dict(
+    type='OptimWrapper',
+    optimizer=dict(type='SGD', lr=12, momentum=0.9, weight_decay=0.))
+
+# learning rate scheduler
+param_scheduler = [
+    dict(type='CosineAnnealingLR', T_max=90, by_epoch=True, begin=0, end=90)
+]
+
+# runtime settings
+train_cfg = dict(type='EpochBasedTrainLoop', max_epochs=90)
+
+default_hooks = dict(
+    checkpoint=dict(type='CheckpointHook', interval=10, max_keep_ckpts=3))

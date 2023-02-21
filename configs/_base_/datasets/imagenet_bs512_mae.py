@@ -20,10 +20,9 @@ train_pipeline = [
 ]
 
 train_dataloader = dict(
-    batch_size=128,
-    num_workers=32,
+    batch_size=512,
+    num_workers=8,
     persistent_workers=True,
-    pin_memory=True,
     sampler=dict(type='DefaultSampler', shuffle=True),
     collate_fn=dict(type='default_collate'),
     dataset=dict(

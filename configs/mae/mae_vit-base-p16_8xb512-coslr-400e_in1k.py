@@ -1,34 +1,8 @@
 _base_ = [
-    '../_base_/datasets/imagenet_bs128_mae.py',
+    '../_base_/models/mae_vit-base-p16.py',
+    '../_base_/datasets/imagenet_bs512_mae.py',
     '../_base_/default_runtime.py',
 ]
-
-# dataset 8 x 512
-train_dataloader = dict(batch_size=512, num_workers=8)
-
-# model settings
-model = dict(
-    type='MAE',
-    backbone=dict(type='MAEViT', arch='b', patch_size=16, mask_ratio=0.75),
-    neck=dict(
-        type='MAEPretrainDecoder',
-        patch_size=16,
-        in_chans=3,
-        embed_dim=768,
-        decoder_embed_dim=512,
-        decoder_depth=8,
-        decoder_num_heads=16,
-        mlp_ratio=4.,
-    ),
-    head=dict(
-        type='MAEPretrainHead',
-        norm_pix=True,
-        patch_size=16,
-        loss=dict(type='MAEReconstructionLoss')),
-    init_cfg=[
-        dict(type='Xavier', distribution='uniform', layer='Linear'),
-        dict(type='Constant', layer='LayerNorm', val=1.0, bias=0.0)
-    ])
 
 # optimizer wrapper
 optim_wrapper = dict(
@@ -66,12 +40,16 @@ param_scheduler = [
 ]
 
 # runtime settings
-# pre-train for 400 epochs
 train_cfg = dict(type='EpochBasedTrainLoop', max_epochs=400)
 default_hooks = dict(
     # only keeps the latest 3 checkpoints
     checkpoint=dict(type='CheckpointHook', interval=1, max_keep_ckpts=3))
 
-# randomness
 randomness = dict(seed=0, diff_rank_seed=True)
+
+# auto resume
 resume = True
+
+# NOTE: `auto_scale_lr` is for automatically scaling LR
+# based on the actual training batch size.
+auto_scale_lr = dict(base_batch_size=4096)

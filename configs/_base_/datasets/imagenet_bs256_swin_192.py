@@ -52,27 +52,29 @@ test_pipeline = [
 train_dataloader = dict(
     batch_size=256,
     num_workers=8,
+    collate_fn=dict(type='default_collate'),
+    persistent_workers=True,
+    sampler=dict(type='DefaultSampler', shuffle=True),
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
         ann_file='meta/train.txt',
         data_prefix='train',
         pipeline=train_pipeline),
-    sampler=dict(type='DefaultSampler', shuffle=True),
-    persistent_workers=True,
 )
 
 val_dataloader = dict(
     batch_size=64,
     num_workers=5,
+    collate_fn=dict(type='default_collate'),
+    persistent_workers=True,
+    sampler=dict(type='DefaultSampler', shuffle=False),
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
         ann_file='meta/val.txt',
         data_prefix='val',
         pipeline=test_pipeline),
-    sampler=dict(type='DefaultSampler', shuffle=False),
-    persistent_workers=True,
 )
 val_evaluator = dict(type='Accuracy', topk=(1, 5))
 

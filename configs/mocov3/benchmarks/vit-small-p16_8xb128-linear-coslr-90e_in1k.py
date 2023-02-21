@@ -3,6 +3,9 @@ _base_ = [
     '../../_base_/default_runtime.py',
 ]
 
+# dataset settings
+train_dataloader = dict(batch_size=128)
+
 # model settings
 model = dict(
     type='ImageClassifier',
@@ -21,9 +24,6 @@ model = dict(
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
         init_cfg=dict(type='Normal', std=0.01, layer='Linear'),
     ))
-
-# dataset summary
-train_dataloader = dict(batch_size=128)
 
 # optimizer
 optim_wrapper = dict(

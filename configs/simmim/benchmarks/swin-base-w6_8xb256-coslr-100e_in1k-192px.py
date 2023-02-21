@@ -11,7 +11,7 @@ model = dict(
         drop_path_rate=0.1,
         stage_cfgs=dict(block_cfgs=dict(window_size=6))))
 
-# schedule settings
+# optimizer settings
 optim_wrapper = dict(
     type='AmpOptimWrapper',
     optimizer=dict(

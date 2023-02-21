@@ -1,10 +1,10 @@
 _base_ = [
-    '../_base_/datasets/imagenet_bs128_mae.py',
+    '../_base_/datasets/imagenet_bs512_mae.py',
     '../_base_/default_runtime.py',
 ]
 
 # dataset settings
-train_dataloader = dict(batch_size=256, num_workers=16)
+train_dataloader = dict(batch_size=256)
 
 # model settings
 model = dict(
@@ -73,12 +73,16 @@ param_scheduler = [
 ]
 
 # runtime settings
-# pre-train for 400 epochs
 train_cfg = dict(type='EpochBasedTrainLoop', max_epochs=400)
 default_hooks = dict(
     # only keeps the latest 3 checkpoints
     checkpoint=dict(type='CheckpointHook', interval=1, max_keep_ckpts=3))
 
-# randomness
 randomness = dict(seed=0, diff_rank_seed=True)
+
+# auto resume
 resume = True
+
+# NOTE: `auto_scale_lr` is for automatically scaling LR
+# based on the actual training batch size.
+auto_scale_lr = dict(base_batch_size=2048)

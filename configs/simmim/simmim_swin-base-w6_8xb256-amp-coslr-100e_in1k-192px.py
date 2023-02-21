@@ -52,7 +52,10 @@ param_scheduler = [
 
 # runtime
 train_cfg = dict(type='EpochBasedTrainLoop', max_epochs=100)
-
 default_hooks = dict(
     # only keeps the latest 3 checkpoints
     checkpoint=dict(type='CheckpointHook', interval=10, max_keep_ckpts=3))
+
+# NOTE: `auto_scale_lr` is for automatically scaling LR
+# based on the actual training batch size.
+auto_scale_lr = dict(base_batch_size=2048)

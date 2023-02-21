@@ -4,32 +4,6 @@ _base_ = [
     '../../_base_/default_runtime.py'
 ]
 
-# model settings
-model = dict(
-    type='ImageClassifier',
-    backbone=dict(
-        type='VisionTransformer',
-        arch='base',
-        img_size=224,
-        patch_size=16,
-        drop_path_rate=0.1,
-        avg_token=True,
-        output_cls_token=False,
-        final_norm=False,
-        init_cfg=dict(type='Pretrained', checkpoint='')),
-    neck=None,
-    head=dict(
-        type='LinearClsHead',
-        num_classes=1000,
-        in_channels=768,
-        loss=dict(
-            type='LabelSmoothLoss', label_smooth_val=0.1, mode='original'),
-        init_cfg=[dict(type='TruncNormal', layer='Linear', std=2e-5)]),
-    train_cfg=dict(augments=[
-        dict(type='Mixup', alpha=0.8),
-        dict(type='CutMix', alpha=1.0)
-    ]))
-
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
@@ -71,6 +45,32 @@ test_pipeline = [
 train_dataloader = dict(batch_size=128, dataset=dict(pipeline=train_pipeline))
 val_dataloader = dict(batch_size=128, dataset=dict(pipeline=test_pipeline))
 test_dataloader = val_dataloader
+
+# model settings
+model = dict(
+    type='ImageClassifier',
+    backbone=dict(
+        type='VisionTransformer',
+        arch='base',
+        img_size=224,
+        patch_size=16,
+        drop_path_rate=0.1,
+        avg_token=True,
+        output_cls_token=False,
+        final_norm=False,
+        init_cfg=dict(type='Pretrained', checkpoint='')),
+    neck=None,
+    head=dict(
+        type='LinearClsHead',
+        num_classes=1000,
+        in_channels=768,
+        loss=dict(
+            type='LabelSmoothLoss', label_smooth_val=0.1, mode='original'),
+        init_cfg=[dict(type='TruncNormal', layer='Linear', std=2e-5)]),
+    train_cfg=dict(augments=[
+        dict(type='Mixup', alpha=0.8),
+        dict(type='CutMix', alpha=1.0)
+    ]))
 
 # optimizer wrapper
 optim_wrapper = dict(

@@ -110,7 +110,6 @@ default_hooks = dict(
     # only keeps the latest 3 checkpoints
     checkpoint=dict(type='CheckpointHook', interval=1, max_keep_ckpts=3))
 
-# randomness
 randomness = dict(seed=0, diff_rank_seed=True)
 
 find_unused_parameters = True

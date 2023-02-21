@@ -1,7 +1,34 @@
-_base_ = [
-    '../_base_/datasets/imagenet_bs128_mixmim.py',
-    '../_base_/default_runtime.py',
+_base_ = '../_base_/default_runtime.py'
+
+# dataset settings
+dataset_type = 'ImageNet'
+data_root = 'data/imagenet/'
+
+train_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(
+        type='RandomResizedCrop',
+        size=224,
+        scale=(0.2, 1.0),
+        backend='pillow',
+        interpolation='bicubic'),
+    dict(type='RandomFlip', prob=0.5),
+    dict(type='PackSelfSupInputs', meta_keys=['img_path'])
 ]
+
+train_dataloader = dict(
+    batch_size=128,
+    num_workers=8,
+    persistent_workers=True,
+    pin_memory=True,
+    sampler=dict(type='DefaultSampler', shuffle=True),
+    collate_fn=dict(type='default_collate'),
+    dataset=dict(
+        type=dataset_type,
+        data_root=data_root,
+        ann_file='meta/train.txt',
+        data_prefix=dict(img_path='train/'),
+        pipeline=train_pipeline))
 
 # model settings
 model = dict(
@@ -30,7 +57,6 @@ model = dict(
         loss=dict(type='PixelReconstructionLoss', criterion='L2')))
 
 # optimizer wrapper
-
 optim_wrapper = dict(
     type='OptimWrapper',
     optimizer=dict(
@@ -64,5 +90,8 @@ train_cfg = dict(type='EpochBasedTrainLoop', max_epochs=300)
 default_hooks = dict(
     checkpoint=dict(type='CheckpointHook', interval=10, max_keep_ckpts=1))
 
-# randomness
 randomness = dict(seed=0, diff_rank_seed=True)
+
+# NOTE: `auto_scale_lr` is for automatically scaling LR
+# based on the actual training batch size.
+auto_scale_lr = dict(base_batch_size=2048)

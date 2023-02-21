@@ -67,5 +67,4 @@ default_hooks = dict(
     checkpoint=dict(type='CheckpointHook', interval=1, max_keep_ckpts=3),
     logger=dict(type='LoggerHook', interval=10))
 
-# randomness
 randomness = dict(seed=0, diff_rank_seed=True)

@@ -1,5 +1,5 @@
 _base_ = [
-    '../_base_/datasets/imagenet_bs256_mocov3.py',
+    '../_base_/datasets/imagenet_bs512_mocov3.py',
     '../_base_/default_runtime.py',
 ]
 
@@ -64,7 +64,7 @@ train_pipeline = [
     dict(type='PackSelfSupInputs', meta_keys=['img_path'])
 ]
 
-train_dataloader = dict(dataset=dict(pipeline=train_pipeline))
+train_dataloader = dict(batch_size=256, dataset=dict(pipeline=train_pipeline))
 
 # model settings
 temperature = 0.2
@@ -132,6 +132,9 @@ param_scheduler = [
 
 # runtime settings
 train_cfg = dict(type='EpochBasedTrainLoop', max_epochs=300)
-
 # only keeps the latest 3 checkpoints
 default_hooks = dict(checkpoint=dict(max_keep_ckpts=3))
+
+# NOTE: `auto_scale_lr` is for automatically scaling LR
+# based on the actual training batch size.
+auto_scale_lr = dict(base_batch_size=4096)

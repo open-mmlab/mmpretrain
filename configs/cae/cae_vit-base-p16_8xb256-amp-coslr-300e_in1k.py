@@ -1,10 +1,49 @@
-_base_ = [
-    '../_base_/datasets/imagenet_bs256_cae.py',
-    '../_base_/default_runtime.py',
+_base_ = '../_base_/default_runtime.py'
+
+# dataset settings
+dataset_type = 'ImageNet'
+data_root = 'data/imagenet/'
+file_client_args = dict(backend='disk')
+data_preprocessor = dict(
+    type='CAEDataPreprocessor',
+    mean=[124, 117, 104],
+    std=[59, 58, 58],
+    bgr_to_rgb=True)
+
+train_pipeline = [
+    dict(type='LoadImageFromFile', file_client_args=file_client_args),
+    dict(type='RandomFlip', prob=0.5),
+    dict(
+        type='RandomResizedCropAndInterpolationWithTwoPic',
+        size=224,
+        second_size=112,
+        interpolation='bicubic',
+        second_interpolation='lanczos',
+        scale=(0.08, 1.0)),
+    dict(
+        type='BEiTMaskGenerator',
+        input_size=(14, 14),
+        num_masking_patches=75,
+        max_num_patches=None,
+        min_num_patches=16),
+    dict(
+        type='PackSelfSupInputs',
+        algorithm_keys=['mask'],
+        meta_keys=['img_path'])
 ]
 
-# dataset 8GPUs x 256
-train_dataloader = dict(batch_size=256, num_workers=16)
+train_dataloader = dict(
+    batch_size=256,
+    num_workers=8,
+    persistent_workers=True,
+    sampler=dict(type='DefaultSampler', shuffle=True),
+    collate_fn=dict(type='default_collate'),
+    dataset=dict(
+        type=dataset_type,
+        data_root=data_root,
+        ann_file='meta/train.txt',
+        data_prefix=dict(img_path='train/'),
+        pipeline=train_pipeline))
 
 # model settings
 model = dict(
@@ -69,13 +108,11 @@ param_scheduler = [
 ]
 
 # runtime settings
-# pre-train for 300 epochs
 train_cfg = dict(type='EpochBasedTrainLoop', max_epochs=300)
 default_hooks = dict(
     # only keeps the latest 3 checkpoints
     checkpoint=dict(type='CheckpointHook', interval=10, max_keep_ckpts=3))
 
-# randomness
 randomness = dict(seed=0, diff_rank_seed=True)
 
 find_unused_parameters = True
