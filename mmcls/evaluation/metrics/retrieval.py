@@ -29,10 +29,6 @@ class RetrievalRecall(BaseMetric):
             If prefix is not provided in the argument, self.default_prefix
             will be used instead. Defaults to None.
 
-    References:
-        [1] `Wikipedia entry for the Average precision <https://en.wikipedia.
-        org/wiki/Evaluation_measures_(information_retrieval)#Average_precision>`_
-
     Examples:
         Use in the code:
 
@@ -69,7 +65,8 @@ class RetrievalRecall(BaseMetric):
 
         .. code:: python
 
-            val/test_evaluator = dict(type='RetrievalRecall', topk=(1, 5))
+            val_evaluator = dict(type='RetrievalRecall', topk=(1, 5))
+            test_evaluator = val_evaluator
     """
     default_prefix: Optional[str] = 'retrieval'
 
@@ -208,37 +205,41 @@ class RetrievalAveragePrecision(BaseMetric):
 
     Note:
         If the ``mode`` set to 'IR', use the stanford AP calculation of
-        information retrieval as in wikipedia page; if set to 'integrate',
+        information retrieval as in wikipedia page[1]; if set to 'integrate',
         the method implemented integrates over the precision-recall curve
         by averaging two adjacent precision points, then multiplying by the
         recall step like mAP in Detection task. This is the convention for
-        the Revisited Oxford/Paris datasets.
+        the Revisited Oxford/Paris datasets[2].
 
     References:
         [1] `Wikipedia entry for the Average precision <https://en.wikipedia.
         org/wiki/Evaluation_measures_(information_retrieval)#Average_precision>`_
-        [2] `The Oxford Buildings Dataset <https://www.robots.ox.ac.uk/~vgg/
-        data/oxbuildings/`_
+
+        [2] `The Oxford Buildings Dataset
+        <https://www.robots.ox.ac.uk/~vgg/data/oxbuildings/>`_
 
     Examples:
-        1. To use the `RetrievalAveragePrecision` in the code:
+        Use in code:
 
         >>> import torch
+        >>> import numpy as np
         >>> from mmcls.evaluation import RetrievalAveragePrecision
-        >>> index = [ torch.Tensor([idx for idx in range(100)]) ] * 3
-        >>> label = [[0, 3, 6, 8, 35], [1, 2, 54, 105], [2, 42, 205]]
-        >>>
-        >>> # calculate mean AP of all the classwise APs
-        >>> RetrievalAveragePrecision.calculate(index, label, 10)
-        23.51190476190476
-        >>> # calculate category-wise AP
-        >>> RetrievalAveragePrecision.calculate(index, label, 10, average=None)
-        [44.14682539682539, 20.833333333333332, 5.555555555555555]
+        >>> # using index format inputs
+        >>> pred = [ torch.Tensor([idx for idx in range(100)]) ] * 3
+        >>> target = [[0, 3, 6, 8, 35], [1, 2, 54, 105], [2, 42, 205]]
+        >>> RetrievalAveragePrecision.calculate(pred, target, 10, True, True)
+        29.246031746031747
+        >>> # using tensor format inputs
+        >>> pred = np.array([np.linspace(0.95, 0.05, 10)] * 2)
+        >>> target = torch.Tensor([[1, 0, 1, 0, 0, 1, 0, 0, 1, 1]] * 2)
+        >>> RetrievalAveragePrecision.calculate(pred, target, 10)
+        62.222222222222214
 
-        2. To use the `RetrievalAveragePrecision` in OpenMMLab config files:
+        Use in OpenMMLab config files:
 
         .. code:: python
-            val_evaluator = dict(type='RetrievalAveragePrecision', topk=10)
+
+            val_evaluator = dict(type='RetrievalAveragePrecision', topk=100)
             test_evaluator = val_evaluator
     """
 
