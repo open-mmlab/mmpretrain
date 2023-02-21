@@ -225,6 +225,7 @@ Models:
       - vit-base-p16_eva-mae-style-pre_8xb128-coslr-100e_in1k
       - vit-base-p16_eva-mae-style-pre_8xb2048-linear-coslr-100e_in1k
   - Name: vit-base-p16_eva-mae-style-pre_8xb128-coslr-100e_in1k
+    In Collection: EVA
     Metadata:
       Epochs: 100
       Batch Size: 1024
@@ -233,9 +234,10 @@ Models:
         Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 83.7
-    Config: configs/eva/classification/vit-base-p16_ft-8xb128-coslr-100e_in1k.py
+    Config: configs/eva/benchmarks/vit-base-p16_8xb128-coslr-100e_in1k.py
     Weights: https://download.openmmlab.com/mmselfsup/1.x/eva/eva-mae-style_vit-base-p16_16xb256-coslr-400e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k_20221226-f61cf992.pth
   - Name: vit-base-p16_eva-mae-style-pre_8xb2048-linear-coslr-100e_in1k
+    In Collection: EVA
     Metadata:
       Epochs: 100
       Batch Size: 16384
@@ -244,5 +246,5 @@ Models:
         Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 69.0
-    Config: configs/eva/classification/vit-base-p16_8xb2048-linear-coslr-100e_in1k.py
+    Config: configs/eva/benchmarks/vit-base-p16_8xb2048-linear-coslr-100e_in1k.py
     Weights: https://download.openmmlab.com/mmselfsup/1.x/eva/eva-mae-style_vit-base-p16_16xb256-coslr-400e_in1k/vit-base-p16_linear-8xb2048-coslr-100e_in1k/vit-base-p16_linear-8xb2048-coslr-100e_in1k_20221226-ef51bf09.pth

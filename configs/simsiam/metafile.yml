@@ -25,6 +25,7 @@ Models:
     Downstream:
       - resnet50_simsiam-100e-pre_8xb512-linear-coslr-90e_in1k
   - Name: resnet50_simsiam-100e-pre_8xb512-linear-coslr-90e_in1k
+    In Collection: SimSiam
     Metadata:
       Epochs: 90
       Batch Size: 4096
@@ -47,6 +48,7 @@ Models:
     Downstream:
       - resnet50_simsiam-200e-pre_8xb512-linear-coslr-90e_in1k
   - Name: resnet50_simsiam-200e-pre_8xb512-linear-coslr-90e_in1k
+    In Collection: SimSiam
     Metadata:
       Epochs: 90
       Batch Size: 4096

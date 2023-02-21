@@ -24,6 +24,7 @@ Models:
     Downstream:
       - vit-base-p16_maskfeat-pre_8xb256-coslr-100e_in1k
   - Name: vit-base-p16_maskfeat-pre_8xb256-coslr-100e_in1k
+    In Collection: MaskFeat
     Metadata:
       Epochs: 100
       Batch Size: 2048

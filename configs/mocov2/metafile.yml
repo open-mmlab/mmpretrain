@@ -26,6 +26,7 @@ Models:
     Downstream:
       - resnet50_mocov2-pre_8xb32-linear-steplr-100e_in1k
   - Name: resnet50_mocov2-pre_8xb32-linear-steplr-100e_in1k
+    In Collection: MoCov2
     Metadata:
       Epochs: 100
       Batch Size: 256

@@ -25,6 +25,7 @@ Models:
     Downstream:
       - resnet50_swav-pre_8xb32-linear-coslr-100e_in1k
   - Name: resnet50_swav-pre_8xb32-linear-coslr-100e_in1k
+    In Collection: SwAV
     Metadata:
       Epochs: 100
       Batch Size: 256

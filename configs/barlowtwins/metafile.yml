@@ -34,5 +34,5 @@ Models:
         Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 71.8
-    Config: configs/barlowtwins/classification/resnet50_8xb32-linear-coslr-100e_in1k.py
+    Config: configs/barlowtwins/benchmarks/resnet50_8xb32-linear-coslr-100e_in1k.py
     Weights: https://download.openmmlab.com/mmselfsup/1.x/barlowtwins/barlowtwins_resnet50_8xb256-coslr-300e_in1k/resnet50_linear-8xb32-coslr-100e_in1k/resnet50_linear-8xb32-coslr-100e_in1k_20220825-52fde35f.pth

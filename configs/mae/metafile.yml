@@ -25,6 +25,7 @@ Models:
       - vit-base-p16_mae-300e-pre_8xb2048-linear-coslr-90e_in1k
       - vit-base-p16_mae-300e-pre_8xb128-coslr-100e_in1k
   - Name: vit-base-p16_mae-300e-pre_8xb2048-linear-coslr-90e_in1k
+    In Collection: MAE
     Metadata:
       Epochs: 90
       Batch Size: 16384
@@ -35,6 +36,7 @@ Models:
           Top 1 Accuracy: 60.8
     Config: configs/mae/benchmarks/vit-base-p16_8xb2048-linear-coslr-90e_in1k.py
   - Name: vit-base-p16_mae-300e-pre_8xb128-coslr-100e_in1k
+    In Collection: MAE
     Metadata:
       Epochs: 100
       Batch Size: 1024
@@ -57,6 +59,7 @@ Models:
       - vit-base-p16_mae-400e-pre_8xb2048-linear-coslr-90e_in1k
       - vit-base-p16_mae-400e-pre_8xb128-coslr-100e_in1k
   - Name: vit-base-p16_mae-400e-pre_8xb2048-linear-coslr-90e_in1k
+    In Collection: MAE
     Metadata:
       Epochs: 90
       Batch Size: 16384
@@ -67,6 +70,7 @@ Models:
           Top 1 Accuracy: 62.5
     Config: configs/mae/benchmarks/vit-base-p16_8xb2048-linear-coslr-90e_in1k.py
   - Name: vit-base-p16_mae-400e-pre_8xb128-coslr-100e_in1k
+    In Collection: MAE
     Metadata:
       Epochs: 100
       Batch Size: 1024
@@ -89,6 +93,7 @@ Models:
       - vit-base-p16_mae-800e-pre_8xb2048-linear-coslr-90e_in1k
       - vit-base-p16_mae-800e-pre_8xb128-coslr-100e_in1k
   - Name: vit-base-p16_mae-800e-pre_8xb2048-linear-coslr-90e_in1k
+    In Collection: MAE
     Metadata:
       Epochs: 90
       Batch Size: 16384
@@ -99,6 +104,7 @@ Models:
           Top 1 Accuracy: 65.1
     Config: configs/mae/benchmarks/vit-base-p16_8xb2048-linear-coslr-90e_in1k.py
   - Name: vit-base-p16_mae-800e-pre_8xb128-coslr-100e_in1k
+    In Collection: MAE
     Metadata:
       Epochs: 100
       Batch Size: 1024
@@ -121,6 +127,7 @@ Models:
       - vit-base-p16_mae-1600e-pre_8xb2048-linear-coslr-90e_in1k
       - vit-base-p16_mae-1600e-pre_8xb128-coslr-100e_in1k
   - Name: vit-base-p16_mae-1600e-pre_8xb2048-linear-coslr-90e_in1k
+    In Collection: MAE
     Metadata:
       Epochs: 90
       Batch Size: 16384
@@ -131,6 +138,7 @@ Models:
           Top 1 Accuracy: 67.1
     Config: configs/mae/benchmarks/vit-base-p16_8xb2048-linear-coslr-90e_in1k.py
   - Name: vit-base-p16_mae-1600e-pre_8xb128-coslr-100e_in1k
+    In Collection: MAE
     Metadata:
       Epochs: 100
       Batch Size: 1024
@@ -154,6 +162,7 @@ Models:
       - vit-large-p16_mae-400e-pre_8xb2048-linear-coslr-90e_in1k
       - vit-large-p16_mae-400e-pre_8xb128-coslr-50e_in1k
   - Name: vit-large-p16_mae-400e-pre_8xb2048-linear-coslr-90e_in1k
+    In Collection: MAE
     Metadata:
       Epochs: 90
       Batch Size: 16384
@@ -164,6 +173,7 @@ Models:
           Top 1 Accuracy: 70.7
     Config: configs/mae/benchmarks/vit-large-p16_8xb2048-linear-coslr-90e_in1k.py
   - Name: vit-large-p16_mae-400e-pre_8xb128-coslr-50e_in1k
+    In Collection: MAE
     Metadata:
       Epochs: 50
       Batch Size: 1024
@@ -186,6 +196,7 @@ Models:
       - vit-large-p16_mae-800e-pre_8xb2048-linear-coslr-90e_in1k
       - vit-large-p16_mae-800e-pre_8xb128-coslr-50e_in1k
   - Name: vit-large-p16_mae-800e-pre_8xb2048-linear-coslr-90e_in1k
+    In Collection: MAE
     Metadata:
       Epochs: 90
       Batch Size: 16384
@@ -196,6 +207,7 @@ Models:
           Top 1 Accuracy: 73.7
     Config: configs/mae/benchmarks/vit-large-p16_8xb2048-linear-coslr-90e_in1k.py
   - Name: vit-large-p16_mae-800e-pre_8xb128-coslr-50e_in1k
+    In Collection: MAE
     Metadata:
       Epochs: 50
       Batch Size: 1024
@@ -218,6 +230,7 @@ Models:
       - vit-large-p16_mae-1600e-pre_8xb2048-linear-coslr-90e_in1k
       - vit-large-p16_mae-1600e-pre_8xb128-coslr-50e_in1k
   - Name: vit-large-p16_mae-1600e-pre_8xb2048-linear-coslr-90e_in1k
+    In Collection: MAE
     Metadata:
       Epochs: 90
       Batch Size: 16384
@@ -228,6 +241,7 @@ Models:
           Top 1 Accuracy: 75.5
     Config: configs/mae/benchmarks/vit-large-p16_8xb2048-linear-coslr-90e_in1k.py
   - Name: vit-large-p16_mae-1600e-pre_8xb128-coslr-50e_in1k
+    In Collection: MAE
     Metadata:
       Epochs: 50
       Batch Size: 1024
@@ -250,6 +264,7 @@ Models:
       - vit-huge-p14_mae-1600e-pre_8xb128-coslr-50e_in1k
       - vit-huge-p14_mae-1600e-pre_8xb128-coslr-50e_in1k-448px
   - Name: vit-huge-p14_mae-1600e-pre_8xb128-coslr-50e_in1k
+    In Collection: MAE
     Metadata:
       Epochs: 50
       Batch Size: 1024
@@ -261,6 +276,7 @@ Models:
     Config: configs/mae/benchmarks/vit-large-p14_8xb128-coslr-50e_in1k.py
     Weights: https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k/vit-huge-p16_ft-8xb128-coslr-50e_in1k/vit-huge-p16_ft-8xb128-coslr-50e_in1k_20220916-0bfc9bfd.pth
   - Name: vit-huge-p14_mae-1600e-pre_8xb128-coslr-50e_in1k-448px
+    In Collection: MAE
     Metadata:
       Epochs: 50
       Batch Size: 256

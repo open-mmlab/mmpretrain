@@ -26,6 +26,7 @@ Models:
       - vit-base-p16_milan-pre_8xb2048-linear-coslr-100e_in1k
 
   - Name: vit-base-p16_milan-pre_8xb128-coslr-100e_in1k
+    In Collection: MILAN
     Metadata:
       Epochs: 100
       Batch Size: 1024
@@ -37,6 +38,7 @@ Models:
     Config: configs/milan/benchmarks/vit-base-p16_8xb128-coslr-100e_in1k.py
     Weights: https://download.openmmlab.com/mmselfsup/1.x/milan/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k-milan_20221129-74ac94fa.pth
   - Name: vit-base-p16_milan-pre_8xb2048-linear-coslr-100e_in1k
+    In Collection: MILAN
     Metadata:
       Epochs: 100
       Batch Size: 16384

@@ -34,5 +34,5 @@ Models:
         Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 71.8
-    Config: configs/byol/classification/resnet50_8xb512-linear-coslr-90e_in1k.py
+    Config: configs/byol/benchmarks/resnet50_8xb512-linear-coslr-90e_in1k.py
     Weights: https://download.openmmlab.com/mmselfsup/1.x/byol/byol_resnet50_16xb256-coslr-200e_in1k/resnet50_linear-8xb512-coslr-90e_in1k/resnet50_linear-8xb512-coslr-90e_in1k_20220825-7596c6f5.pth
