@@ -3,7 +3,7 @@ import pytest
 import torch
 
 from mmcls.models.necks import (GeneralizedMeanPooling, GlobalAveragePooling,
-                                HRFuseScales, LinearReduction)
+                                HRFuseScales, LinearReduction, DolgNet)
 
 
 def test_gap_neck():
@@ -151,3 +151,24 @@ def test_linear_reduction():
 
     with pytest.raises(AssertionError):
         neck([])
+def test_dolg_neck():
+    neck = DolgNet(
+        local_dim=10, global_dim=20, hidden_dim=10, dilation_rates=(3, 6, 9))
+    neck.eval()
+    # test inputs
+    fake_input = torch.rand(1, 10)
+    with pytest.raises(TypeError):
+        neck(fake_input)
+    fake_input = (torch.rand(1, 10), )
+    with pytest.raises(AssertionError):
+        neck(fake_input)
+
+    fake_input = (torch.rand(1, 10, 5, 5), torch.rand(1, 20, 2, 2))
+    output = neck(fake_input)
+    assert output.shape == (1, 20)
+
+    fake_input = (torch.rand(1, 5, 10,
+                             10), torch.rand(1, 10, 5,
+                                             5), torch.rand(1, 20, 2, 2))
+    output = neck(fake_input)
+    assert output.shape == (1, 20)

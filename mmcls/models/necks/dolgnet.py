@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Optional, Union
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -9,11 +11,21 @@ from mmcls.registry import MODELS
 
 
 class MultiAtrous(nn.Module):
+    """Multiple atrous convolution layers.
 
-    def __init__(self, in_channel, out_channel, dilation_rates):
+    Args:
+        in_channel (int): Number of channels in the input.
+        out_channel (int): Number of channels in the output.
+        dilation_rates (Union[list, tuple]): The list of
+            the dilation rates of multiple atrous convolution.
+    """
+
+    def __init__(self, in_channel: int, out_channel: int,
+                 dilation_rates: Union[list, tuple]):
         super().__init__()
-        # hidden_channel 是 out_channel 的四分之一
-        hidden_channel = int(out_channel / 4)
+
+        # multiple atrous convolution
+        hidden_channel = out_channel // 4
         self.dilated_conv_list = nn.ModuleList([
             nn.Conv2d(
                 in_channel,
@@ -22,12 +34,14 @@ class MultiAtrous(nn.Module):
                 padding=rate,
                 dilation=rate) for rate in dilation_rates
         ])
+
+        # global convolution
         self.gap_conv = nn.Sequential(
             nn.AdaptiveAvgPool2d(1),
             nn.Conv2d(in_channel, hidden_channel, kernel_size=(1, 1)),
             nn.ReLU())
 
-        # 平滑
+        # convolution after concat for smoothing
         num = len(dilation_rates) + 1
         self.conv_after = nn.Sequential(
             nn.Conv2d(hidden_channel * num, out_channel, kernel_size=(1, 1)),
@@ -50,11 +64,22 @@ class MultiAtrous(nn.Module):
 
 
 class LocalBranch(nn.Module):
+    """The local branch in DOLG, which consists of multiple atrous convolution
+    layers and a self-attention module.
 
-    def __init__(self, in_channel, out_channel, dilation_rates):
+    Args:
+        in_channel (int): Number of channels in the input.
+        out_channel (int): Number of channels in the output.
+        dilation_rates (Union[list, tuple]): The list of
+            the dilation rates of multiple atrous convolution.
+    """
+
+    def __init__(self, in_channel: int, out_channel: int,
+                 dilation_rates: Union[list, tuple]):
         super().__init__()
-        # 多簇
         self.multi_atrous = MultiAtrous(in_channel, in_channel, dilation_rates)
+
+        # self-attention module
         self.conv1x1_1 = nn.Conv2d(in_channel, out_channel, kernel_size=(1, 1))
         self.conv1x1_2 = nn.Conv2d(
             out_channel, out_channel, kernel_size=(1, 1), bias=False)
@@ -66,7 +91,6 @@ class LocalBranch(nn.Module):
         self.softplus = nn.Softplus()
 
     def forward(self, x):
-        # 多簇
         local_feat = self.multi_atrous(x)
 
         local_feat = self.conv1x1_1(local_feat)
@@ -85,25 +109,26 @@ class LocalBranch(nn.Module):
 
 
 class OrthogonalFusion(nn.Module):
+    """Orthogonal Fusion Module."""
 
     def __init__(self):
         super().__init__()
 
     def forward(self, local_feat, global_feat):
         global_feat_norm = torch.norm(global_feat, p=2, dim=1)
-        # f_l * f_g 矩阵乘法
+
         projection = torch.bmm(
             global_feat.unsqueeze(1), torch.flatten(local_feat, start_dim=2))
-        # f_l * f_g * f_g
+
         projection = torch.bmm(global_feat.unsqueeze(2),
                                projection).view(local_feat.size())
-        # (f_l * f_g * f_g) / (f_g * f_g)
-        projection = projection / (global_feat_norm * global_feat_norm).view(
-            -1, 1, 1, 1)
 
+        g_norm = global_feat_norm * global_feat_norm
+        projection = projection / g_norm.view(-1, 1, 1, 1)
+        # Orthogonal component
         orthogonal_comp = local_feat - projection
         global_feat = global_feat.unsqueeze(-1).unsqueeze(-1)
-
+        # concat the orthogonal components and global features
         return torch.cat(
             [global_feat.expand(orthogonal_comp.size()), orthogonal_comp],
             dim=1)
@@ -111,26 +136,35 @@ class OrthogonalFusion(nn.Module):
 
 @MODELS.register_module()
 class DolgNet(BaseModule):
+    """Deep Orthogonal Local and Global.
+
+    Args:
+        local_dim (int): Dimension of local features
+        global_dim (int): Dimension of global features
+        hidden_dim (int): Dimension of the joint mapping of local
+            and global features
+        dilation_rates (Union[list, tuple]): The list of the dilation
+            rates of multiple atrous convolution in the local branch.
+        init_cfg (dict, optional): dictionary to initialize weights.
+            Defaults to None.
+    """
 
     def __init__(self,
-                 local_dim,
-                 global_dim,
-                 hidden_dim,
-                 output_dim,
-                 dilation_rates,
-                 init_cfg=None):
-        super().__init__(init_cfg)
-        # 正交融合
-        self.orthogonal_fusion = OrthogonalFusion()
-        # local 分支
+                 local_dim: int,
+                 global_dim: int,
+                 hidden_dim: int,
+                 dilation_rates: Union[list, tuple],
+                 init_cfg: Optional[dict] = None):
+        super(DolgNet, self).__init__(init_cfg)
+        # local branch
         self.local_branch = LocalBranch(local_dim, hidden_dim, dilation_rates)
-        # global 分支
+        # global branch
         self.global_branch = nn.Sequential(GeneralizedMeanPooling(),
                                            nn.Flatten(),
                                            nn.Linear(global_dim, hidden_dim))
-
+        # orthogonal fusion module
+        self.orthogonal_fusion = OrthogonalFusion()
         self.gap = nn.AdaptiveAvgPool2d(1)
-        # self.fc = nn.Linear(2 * hidden_dim, output_dim)
 
     def forward(self, inputs):
         if not (isinstance(inputs, tuple) or isinstance(inputs, list)):
@@ -140,12 +174,8 @@ class DolgNet(BaseModule):
             f'but got {len(inputs)}, {inputs[0].shape}'
 
         local_feat, global_feat = inputs[-2], inputs[-1]
-
-        # 局部特征
         local_feat = self.local_branch(local_feat)
         global_feat = self.global_branch(global_feat)
-
         feat = self.orthogonal_fusion(local_feat, global_feat)
-        feat = self.gap(feat).squeeze()
-        # feat = self.fc(feat)
+        feat = self.gap(feat).flatten(1)
         return feat
