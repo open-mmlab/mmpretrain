@@ -1,0 +1,38 @@
+Collections:
+  - Name: MoCov2
+    Metadata:
+      Training Data: ImageNet-1k
+      Training Techniques:
+        - SGD with Momentum
+        - Weight Decay
+      Training Resources: 8x V100 GPUs
+      Architecture:
+        - ResNet
+        - MoCo
+    Paper:
+        URL: https://arxiv.org/abs/2003.04297
+        Title: "Improved Baselines with Momentum Contrastive Learning"
+    README: configs/mocov2/README.md
+
+Models:
+  - Name: mocov2_resnet50_8xb32-coslr-200e_in1k
+    In Collection: MoCov2
+    Metadata:
+      Epochs: 200
+      Batch Size: 256
+    Results: null
+    Config: configs/mocov2/mocov2_resnet50_8xb32-coslr-200e_in1k.py
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/mocov2/mocov2_resnet50_8xb32-coslr-200e_in1k/mocov2_resnet50_8xb32-coslr-200e_in1k_20220825-b6d23c86.pth
+    Downstream:
+      - resnet50_mocov2-pre_8xb32-linear-steplr-100e_in1k
+  - Name: resnet50_mocov2-pre_8xb32-linear-steplr-100e_in1k
+    Metadata:
+      Epochs: 100
+      Batch Size: 256
+    Results:
+      - Task: Image Classification
+        Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy: 67.5
+    Config: configs/mocov2/benchmarks/resnet50_8xb32-linear-steplr-100e_in1k.py
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/mocov2/mocov2_resnet50_8xb32-coslr-200e_in1k/resnet50_linear-8xb32-steplr-100e_in1k/resnet50_linear-8xb32-steplr-100e_in1k_20220825-994c4128.pth
