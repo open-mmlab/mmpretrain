@@ -9,7 +9,7 @@ from mmengine.runner import EpochBasedTrainLoop, IterBasedTrainLoop
 
 from mmpretrain.engine import VisualizationHook
 from mmpretrain.registry import HOOKS
-from mmpretrain.structures import ClsDataSample
+from mmpretrain.structures import DataSample
 from mmpretrain.visualization import ClsVisualizer
 
 
@@ -18,7 +18,7 @@ class TestVisualizationHook(TestCase):
     def setUp(self) -> None:
         ClsVisualizer.get_instance('visualizer')
 
-        data_sample = ClsDataSample().set_gt_label(1).set_pred_label(2)
+        data_sample = DataSample().set_gt_label(1).set_pred_label(2)
         data_sample.set_metainfo({'img_path': 'tests/data/color.jpg'})
         self.data_batch = {
             'inputs': torch.randint(0, 256, (10, 3, 224, 224)),
@@ -53,7 +53,7 @@ class TestVisualizationHook(TestCase):
         cfg = dict(type='VisualizationHook', enable=True)
         hook: VisualizationHook = HOOKS.build(cfg)
         with patch.object(hook._visualizer, 'add_datasample') as mock:
-            outputs = [ClsDataSample()] * 10
+            outputs = [DataSample()] * 10
             hook._draw_samples(0, self.data_batch, outputs, step=0)
             mock.assert_called_once_with(
                 '0', image=ANY, data_sample=outputs[0], step=0, show=False)

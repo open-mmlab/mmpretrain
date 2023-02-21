@@ -11,7 +11,7 @@ from mmengine.utils import is_seq_of
 
 from mmpretrain.models.losses import convert_to_one_hot
 from mmpretrain.registry import MODELS
-from mmpretrain.structures import ClsDataSample
+from mmpretrain.structures import DataSample
 from .cls_head import ClsHead
 
 
@@ -264,8 +264,8 @@ class ArcFaceClsHead(ClsHead):
 
         return self.scale * logit
 
-    def loss(self, feats: Tuple[torch.Tensor],
-             data_samples: List[ClsDataSample], **kwargs) -> dict:
+    def loss(self, feats: Tuple[torch.Tensor], data_samples: List[DataSample],
+             **kwargs) -> dict:
         """Calculate losses from the classification score.
 
         Args:
@@ -273,7 +273,7 @@ class ArcFaceClsHead(ClsHead):
                 Multiple stage inputs are acceptable but only the last stage
                 will be used to classify. The shape of every item should be
                 ``(num_samples, num_classes)``.
-            data_samples (List[ClsDataSample]): The annotation data of
+            data_samples (List[DataSample]): The annotation data of
                 every samples.
             **kwargs: Other keyword arguments to forward the loss module.
 
@@ -281,12 +281,11 @@ class ArcFaceClsHead(ClsHead):
             dict[str, Tensor]: a dictionary of loss components
         """
         # Unpack data samples and pack targets
-        label_target = torch.cat([i.gt_label.label for i in data_samples])
-        if 'score' in data_samples[0].gt_label:
+        label_target = torch.cat([i.gt_label for i in data_samples])
+        if 'gt_score' in data_samples[0]:
             # Batch augmentation may convert labels to one-hot format scores.
-            target = torch.stack([i.gt_label.score for i in data_samples])
+            target = torch.stack([i.gt_score for i in data_samples])
         else:
-            # change the labels to to one-hot format scores.
             target = label_target
 
         # the index format target would be used

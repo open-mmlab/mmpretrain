@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 
 from mmpretrain.registry import MODELS
-from mmpretrain.structures import ClsDataSample
+from mmpretrain.structures import DataSample
 from .base import BaseClassifier
 
 
@@ -76,7 +76,7 @@ class ImageClassifier(BaseClassifier):
 
     def forward(self,
                 inputs: torch.Tensor,
-                data_samples: Optional[List[ClsDataSample]] = None,
+                data_samples: Optional[List[DataSample]] = None,
                 mode: str = 'tensor'):
         """The unified entry for a forward process in both training and test.
 
@@ -85,7 +85,7 @@ class ImageClassifier(BaseClassifier):
         - "tensor": Forward the whole network and return tensor or tuple of
           tensor without any post-processing, same as a common nn.Module.
         - "predict": Forward and return the predictions, which are fully
-          processed to a list of :obj:`ClsDataSample`.
+          processed to a list of :obj:`DataSample`.
         - "loss": Forward and return a dict of losses according to the given
           inputs and data samples.
 
@@ -95,7 +95,7 @@ class ImageClassifier(BaseClassifier):
         Args:
             inputs (torch.Tensor): The input tensor with shape
                 (N, C, ...) in general.
-            data_samples (List[ClsDataSample], optional): The annotation
+            data_samples (List[DataSample], optional): The annotation
                 data of every samples. It's required if ``mode="loss"``.
                 Defaults to None.
             mode (str): Return what kind of value. Defaults to 'tensor'.
@@ -105,7 +105,7 @@ class ImageClassifier(BaseClassifier):
 
             - If ``mode="tensor"``, return a tensor or a tuple of tensor.
             - If ``mode="predict"``, return a list of
-              :obj:`mmpretrain.structures.ClsDataSample`.
+              :obj:`mmpretrain.structures.DataSample`.
             - If ``mode="loss"``, return a dict of tensor.
         """
         if mode == 'tensor':
@@ -209,13 +209,13 @@ class ImageClassifier(BaseClassifier):
         return self.head.pre_logits(x)
 
     def loss(self, inputs: torch.Tensor,
-             data_samples: List[ClsDataSample]) -> dict:
+             data_samples: List[DataSample]) -> dict:
         """Calculate losses from a batch of inputs and data samples.
 
         Args:
             inputs (torch.Tensor): The input tensor with shape
                 (N, C, ...) in general.
-            data_samples (List[ClsDataSample]): The annotation data of
+            data_samples (List[DataSample]): The annotation data of
                 every samples.
 
         Returns:
@@ -226,14 +226,14 @@ class ImageClassifier(BaseClassifier):
 
     def predict(self,
                 inputs: torch.Tensor,
-                data_samples: Optional[List[ClsDataSample]] = None,
-                **kwargs) -> List[ClsDataSample]:
+                data_samples: Optional[List[DataSample]] = None,
+                **kwargs) -> List[DataSample]:
         """Predict results from a batch of inputs.
 
         Args:
             inputs (torch.Tensor): The input tensor with shape
                 (N, C, ...) in general.
-            data_samples (List[ClsDataSample], optional): The annotation
+            data_samples (List[DataSample], optional): The annotation
                 data of every samples. Defaults to None.
             **kwargs: Other keyword arguments accepted by the ``predict``
                 method of :attr:`head`.

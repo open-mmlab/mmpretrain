@@ -8,7 +8,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from mmpretrain.registry import MODELS
-from mmpretrain.structures import ClsDataSample
+from mmpretrain.structures import DataSample
 from .base import BaseClassifier
 
 
@@ -110,14 +110,14 @@ class TimmClassifier(BaseClassifier):
                 f"The model {type(self.model)} doesn't support extract "
                 "feature because it don't have `forward_features` method.")
 
-    def loss(self, inputs: torch.Tensor, data_samples: List[ClsDataSample],
+    def loss(self, inputs: torch.Tensor, data_samples: List[DataSample],
              **kwargs):
         """Calculate losses from a batch of inputs and data samples.
 
         Args:
             inputs (torch.Tensor): The input tensor with shape
                 (N, C, ...) in general.
-            data_samples (List[ClsDataSample]): The annotation data of
+            data_samples (List[DataSample]): The annotation data of
                 every samples.
             **kwargs: Other keyword arguments of the loss module.
 
@@ -132,14 +132,14 @@ class TimmClassifier(BaseClassifier):
         return losses
 
     def _get_loss(self, cls_score: torch.Tensor,
-                  data_samples: List[ClsDataSample], **kwargs):
+                  data_samples: List[DataSample], **kwargs):
         """Unpack data samples and compute loss."""
         # Unpack data samples and pack targets
-        if 'score' in data_samples[0].gt_label:
+        if 'gt_score' in data_samples[0]:
             # Batch augmentation may convert labels to one-hot format scores.
-            target = torch.stack([i.gt_label.score for i in data_samples])
+            target = torch.stack([i.gt_score for i in data_samples])
         else:
-            target = torch.cat([i.gt_label.label for i in data_samples])
+            target = torch.cat([i.gt_label for i in data_samples])
 
         # compute loss
         losses = dict()
@@ -150,17 +150,17 @@ class TimmClassifier(BaseClassifier):
 
     def predict(self,
                 inputs: torch.Tensor,
-                data_samples: Optional[List[ClsDataSample]] = None):
+                data_samples: Optional[List[DataSample]] = None):
         """Predict results from a batch of inputs.
 
         Args:
             inputs (torch.Tensor): The input tensor with shape
                 (N, C, ...) in general.
-            data_samples (List[ClsDataSample], optional): The annotation
+            data_samples (List[DataSample], optional): The annotation
                 data of every samples. Defaults to None.
 
         Returns:
-            List[ClsDataSample]: The prediction results.
+            List[DataSample]: The prediction results.
         """
         # The part can be traced by torch.fx
         cls_score = self(inputs)
@@ -184,8 +184,8 @@ class TimmClassifier(BaseClassifier):
         else:
             data_samples = []
             for score, label in zip(pred_scores, pred_labels):
-                data_samples.append(ClsDataSample().set_pred_score(
-                    score).set_pred_label(label))
+                data_samples.append(
+                    DataSample().set_pred_score(score).set_pred_label(label))
 
         return data_samples
 

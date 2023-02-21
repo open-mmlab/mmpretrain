@@ -14,7 +14,7 @@ from mmengine.runner import Runner
 from torch.utils.data import DataLoader, Dataset
 
 from mmpretrain.registry import HOOKS
-from mmpretrain.structures import ClsDataSample
+from mmpretrain.structures import DataSample
 
 
 class ExampleDataset(Dataset):
@@ -36,7 +36,7 @@ class MockDataPreprocessor(BaseDataPreprocessor):
 
     def forward(self, data, training):
 
-        return data['imgs'], ClsDataSample()
+        return data['imgs'], DataSample()
 
 
 class ExampleModel(BaseModel):

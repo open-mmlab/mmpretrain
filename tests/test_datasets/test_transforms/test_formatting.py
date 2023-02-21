@@ -6,11 +6,10 @@ import unittest
 import mmcv
 import numpy as np
 import torch
-from mmengine.structures import LabelData
 from PIL import Image
 
 from mmpretrain.registry import TRANSFORMS
-from mmpretrain.structures import ClsDataSample, MultiTaskDataSample
+from mmpretrain.structures import DataSample, MultiTaskDataSample
 
 
 class TestPackClsInputs(unittest.TestCase):
@@ -34,9 +33,9 @@ class TestPackClsInputs(unittest.TestCase):
         self.assertIn('inputs', results)
         self.assertIsInstance(results['inputs'], torch.Tensor)
         self.assertIn('data_samples', results)
-        self.assertIsInstance(results['data_samples'], ClsDataSample)
+        self.assertIsInstance(results['data_samples'], DataSample)
         self.assertIn('flip', results['data_samples'].metainfo_keys())
-        self.assertIsInstance(results['data_samples'].gt_label, LabelData)
+        self.assertIsInstance(results['data_samples'].gt_label, torch.Tensor)
 
         # Test grayscale image
         data['img'] = data['img'].mean(-1)
@@ -155,7 +154,7 @@ class TestPackMultiTaskInputs(unittest.TestCase):
         self.assertIsInstance(results['data_samples'], MultiTaskDataSample)
         self.assertIn('flip', results['data_samples'].task1.metainfo_keys())
         self.assertIsInstance(results['data_samples'].task1.gt_label,
-                              LabelData)
+                              torch.Tensor)
 
         # Test grayscale image
         data['img'] = data['img'].mean(-1)

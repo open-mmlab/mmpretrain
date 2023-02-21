@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 
 from mmpretrain.registry import MODELS
-from mmpretrain.structures import ClsDataSample
+from mmpretrain.structures import DataSample
 from .cls_head import ClsHead
 
 
@@ -65,8 +65,8 @@ class EfficientFormerClsHead(ClsHead):
         # after unpacking.
         return feats[-1]
 
-    def loss(self, feats: Tuple[torch.Tensor],
-             data_samples: List[ClsDataSample], **kwargs) -> dict:
+    def loss(self, feats: Tuple[torch.Tensor], data_samples: List[DataSample],
+             **kwargs) -> dict:
         """Calculate losses from the classification score.
 
         Args:
@@ -74,7 +74,7 @@ class EfficientFormerClsHead(ClsHead):
                 Multiple stage inputs are acceptable but only the last stage
                 will be used to classify. The shape of every item should be
                 ``(num_samples, num_classes)``.
-            data_samples (List[ClsDataSample]): The annotation data of
+            data_samples (List[DataSample]): The annotation data of
                 every samples.
             **kwargs: Other keyword arguments to forward the loss module.
 

@@ -1,10 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .cls_data_sample import ClsDataSample
+from .data_sample import DataSample
 from .multi_task_data_sample import MultiTaskDataSample
-from .utils import (batch_label_to_onehot, cat_batch_labels,
-                    stack_batch_scores, tensor_split)
+from .utils import (batch_label_to_onehot, cat_batch_labels, label_to_onehot,
+                    tensor_split)
 
 __all__ = [
-    'ClsDataSample', 'batch_label_to_onehot', 'cat_batch_labels',
-    'stack_batch_scores', 'tensor_split', 'MultiTaskDataSample'
+    'DataSample', 'batch_label_to_onehot', 'cat_batch_labels', 'tensor_split',
+    'MultiTaskDataSample', 'label_to_onehot'
 ]

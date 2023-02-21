@@ -8,7 +8,7 @@ from mmengine.runner import Runner
 from torch.utils.data import DataLoader
 
 from mmpretrain.registry import MODELS
-from mmpretrain.structures import ClsDataSample
+from mmpretrain.structures import DataSample
 from mmpretrain.utils import track_on_main_process
 from .base import BaseRetriever
 
@@ -114,7 +114,7 @@ class ImageToImageRetriever(BaseRetriever):
 
     def forward(self,
                 inputs: torch.Tensor,
-                data_samples: Optional[List[ClsDataSample]] = None,
+                data_samples: Optional[List[DataSample]] = None,
                 mode: str = 'tensor'):
         """The unified entry for a forward process in both training and test.
 
@@ -123,7 +123,7 @@ class ImageToImageRetriever(BaseRetriever):
         - "tensor": Forward the whole network and return tensor without any
           post-processing, same as a common nn.Module.
         - "predict": Forward and return the predictions, which are fully
-          processed to a list of :obj:`ClsDataSample`.
+          processed to a list of :obj:`DataSample`.
         - "loss": Forward and return a dict of losses according to the given
           inputs and data samples.
 
@@ -133,7 +133,7 @@ class ImageToImageRetriever(BaseRetriever):
         Args:
             inputs (torch.Tensor, tuple): The input tensor with shape
                 (N, C, ...) in general.
-            data_samples (List[ClsDataSample], optional): The annotation
+            data_samples (List[DataSample], optional): The annotation
                 data of every samples. It's required if ``mode="loss"``.
                 Defaults to None.
             mode (str): Return what kind of value. Defaults to 'tensor'.
@@ -143,7 +143,7 @@ class ImageToImageRetriever(BaseRetriever):
 
             - If ``mode="tensor"``, return a tensor.
             - If ``mode="predict"``, return a list of
-              :obj:`mmpretrain.structures.ClsDataSample`.
+              :obj:`mmpretrain.structures.DataSample`.
             - If ``mode="loss"``, return a dict of tensor.
         """
         if mode == 'tensor':
@@ -169,13 +169,13 @@ class ImageToImageRetriever(BaseRetriever):
         return feat
 
     def loss(self, inputs: torch.Tensor,
-             data_samples: List[ClsDataSample]) -> dict:
+             data_samples: List[DataSample]) -> dict:
         """Calculate losses from a batch of inputs and data samples.
 
         Args:
             inputs (torch.Tensor): The input tensor with shape
                 (N, C, ...) in general.
-            data_samples (List[ClsDataSample]): The annotation data of
+            data_samples (List[DataSample]): The annotation data of
                 every samples.
 
         Returns:
@@ -200,18 +200,18 @@ class ImageToImageRetriever(BaseRetriever):
 
     def predict(self,
                 inputs: tuple,
-                data_samples: Optional[List[ClsDataSample]] = None,
-                **kwargs) -> List[ClsDataSample]:
+                data_samples: Optional[List[DataSample]] = None,
+                **kwargs) -> List[DataSample]:
         """Predict results from the extracted features.
 
         Args:
             inputs (tuple): The features extracted from the backbone.
-            data_samples (List[ClsDataSample], optional): The annotation
+            data_samples (List[DataSample], optional): The annotation
                 data of every samples. Defaults to None.
             **kwargs: Other keyword arguments accepted by the ``predict``
                 method of :attr:`head`.
         Returns:
-            List[ClsDataSample]: the raw data_samples with
+            List[DataSample]: the raw data_samples with
                 the predicted results
         """
         if not self.prototype_inited:
@@ -240,8 +240,8 @@ class ImageToImageRetriever(BaseRetriever):
         else:
             data_samples = []
             for score, label in zip(pred_scores, pred_labels):
-                data_samples.append(ClsDataSample().set_pred_score(
-                    score).set_pred_label(label))
+                data_samples.append(
+                    DataSample().set_pred_score(score).set_pred_label(label))
         return data_samples
 
     def _get_prototype_vecs_from_dataloader(self, data_loader):

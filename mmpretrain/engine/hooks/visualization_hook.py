@@ -9,7 +9,7 @@ from mmengine.runner import EpochBasedTrainLoop, Runner
 from mmengine.visualization import Visualizer
 
 from mmpretrain.registry import HOOKS
-from mmpretrain.structures import ClsDataSample
+from mmpretrain.structures import DataSample
 
 
 @HOOKS.register_module()
@@ -51,14 +51,14 @@ class VisualizationHook(Hook):
     def _draw_samples(self,
                       batch_idx: int,
                       data_batch: dict,
-                      data_samples: Sequence[ClsDataSample],
+                      data_samples: Sequence[DataSample],
                       step: int = 0) -> None:
         """Visualize every ``self.interval`` samples from a data batch.
 
         Args:
             batch_idx (int): The index of the current batch in the val loop.
             data_batch (dict): Data from dataloader.
-            outputs (Sequence[:obj:`ClsDataSample`]): Outputs from model.
+            outputs (Sequence[:obj:`DataSample`]): Outputs from model.
             step (int): Global step value to record. Defaults to 0.
         """
         if self.enable is False:
@@ -97,14 +97,14 @@ class VisualizationHook(Hook):
             )
 
     def after_val_iter(self, runner: Runner, batch_idx: int, data_batch: dict,
-                       outputs: Sequence[ClsDataSample]) -> None:
+                       outputs: Sequence[DataSample]) -> None:
         """Visualize every ``self.interval`` samples during validation.
 
         Args:
             runner (:obj:`Runner`): The runner of the validation process.
             batch_idx (int): The index of the current batch in the val loop.
             data_batch (dict): Data from dataloader.
-            outputs (Sequence[:obj:`ClsDataSample`]): Outputs from model.
+            outputs (Sequence[:obj:`DataSample`]): Outputs from model.
         """
         if isinstance(runner.train_loop, EpochBasedTrainLoop):
             step = runner.epoch
@@ -114,7 +114,7 @@ class VisualizationHook(Hook):
         self._draw_samples(batch_idx, data_batch, outputs, step=step)
 
     def after_test_iter(self, runner: Runner, batch_idx: int, data_batch: dict,
-                        outputs: Sequence[ClsDataSample]) -> None:
+                        outputs: Sequence[DataSample]) -> None:
         """Visualize every ``self.interval`` samples during test.
 
         Args:

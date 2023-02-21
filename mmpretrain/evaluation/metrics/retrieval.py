@@ -5,10 +5,10 @@ import mmengine
 import numpy as np
 import torch
 from mmengine.evaluator import BaseMetric
-from mmengine.structures import LabelData
 from mmengine.utils import is_seq_of
 
 from mmpretrain.registry import METRICS
+from mmpretrain.structures import label_to_onehot
 from .single_label import to_tensor
 
 
@@ -48,10 +48,10 @@ class RetrievalRecall(BaseMetric):
         [tensor(9.3000), tensor(48.4000)]
         >>>
         >>> # ------------------- Use with Evalutor -------------------
-        >>> from mmpretrain.structures import ClsDataSample
+        >>> from mmpretrain.structures import DataSample
         >>> from mmengine.evaluator import Evaluator
         >>> data_samples = [
-        ...     ClsDataSample().set_gt_label([0, 1]).set_pred_score(
+        ...     DataSample().set_gt_label([0, 1]).set_pred_score(
         ...     torch.rand(10))
         ...     for i in range(1000)
         ... ]
@@ -95,23 +95,21 @@ class RetrievalRecall(BaseMetric):
             predictions (Sequence[dict]): A batch of outputs from the model.
         """
         for data_sample in data_samples:
-            pred_label = data_sample['pred_label']
+            pred_score = data_sample['pred_score'].clone()
             gt_label = data_sample['gt_label']
 
-            pred = pred_label['score'].clone()
-            if 'score' in gt_label:
-                target = gt_label['score'].clone()
+            if 'gt_score' in data_sample:
+                target = data_sample.get('gt_score').clone()
             else:
-                num_classes = pred_label['score'].size()[-1]
-                target = LabelData.label_to_onehot(gt_label['label'],
-                                                   num_classes)
+                num_classes = pred_score.size()[-1]
+                target = label_to_onehot(gt_label, num_classes)
 
             # Because the retrieval output logit vector will be much larger
             # compared to the normal classification, to save resources, the
             # evaluation results are computed each batch here and then reduce
             #  all results at the end.
             result = RetrievalRecall.calculate(
-                pred.unsqueeze(0), target.unsqueeze(0), topk=self.topk)
+                pred_score.unsqueeze(0), target.unsqueeze(0), topk=self.topk)
             self.results.append(result)
 
     def compute_metrics(self, results: List):
@@ -230,5 +228,5 @@ def _format_target(label, is_indices=False):
         raise TypeError(f'The pred must be type of torch.tensor, '
                         f'np.ndarray or Sequence but get {type(label)}.')
 
-    indices = [LabelData.onehot_to_label(sample_gt) for sample_gt in label]
+    indices = [sample_gt.nonzero().squeeze(-1) for sample_gt in label]
     return indices

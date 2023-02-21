@@ -4,7 +4,7 @@ from unittest import TestCase
 import torch
 
 from mmpretrain.evaluation.metrics import MultiTasksMetric
-from mmpretrain.structures import ClsDataSample
+from mmpretrain.structures import DataSample
 
 
 class MultiTaskMetric(TestCase):
@@ -24,7 +24,7 @@ class MultiTaskMetric(TestCase):
     for i, pred in enumerate(data_pred):
         sample = {}
         for task_name in pred:
-            task_sample = ClsDataSample().set_pred_score(pred[task_name])
+            task_sample = DataSample().set_pred_score(pred[task_name])
             if task_name in data_gt[i]:
                 task_sample.set_gt_label(data_gt[i][task_name])
                 task_sample.set_field(True, 'eval_mask', field_type='metainfo')
@@ -68,7 +68,7 @@ class MultiTaskMetric(TestCase):
         sample = {}
         for task_name in score:
             if type(score[task_name]) != dict:
-                task_sample = ClsDataSample().set_pred_score(score[task_name])
+                task_sample = DataSample().set_pred_score(score[task_name])
                 task_sample.set_gt_label(label[task_name])
                 sample[task_name] = task_sample.to_dict()
                 sample[task_name]['eval_mask'] = True
@@ -76,7 +76,7 @@ class MultiTaskMetric(TestCase):
                 sample[task_name] = {}
                 sample[task_name]['eval_mask'] = True
                 for task_name2 in score[task_name]:
-                    task_sample = ClsDataSample().set_pred_score(
+                    task_sample = DataSample().set_pred_score(
                         score[task_name][task_name2])
                     task_sample.set_gt_label(label[task_name][task_name2])
                     sample[task_name][task_name2] = task_sample.to_dict()

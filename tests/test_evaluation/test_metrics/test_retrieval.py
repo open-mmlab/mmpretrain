@@ -6,7 +6,7 @@ import torch
 
 from mmpretrain.evaluation.metrics import RetrievalRecall
 from mmpretrain.registry import METRICS
-from mmpretrain.structures import ClsDataSample
+from mmpretrain.structures import DataSample
 
 
 class TestRetrievalRecall(TestCase):
@@ -14,7 +14,7 @@ class TestRetrievalRecall(TestCase):
     def test_evaluate(self):
         """Test using the metric in the same way as Evalutor."""
         pred = [
-            ClsDataSample().set_pred_score(i).set_gt_label(k).to_dict()
+            DataSample().set_pred_score(i).set_gt_label(k).to_dict()
             for i, k in zip([
                 torch.tensor([0.7, 0.0, 0.3]),
                 torch.tensor([0.5, 0.2, 0.3]),

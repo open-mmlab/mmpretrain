@@ -8,6 +8,6 @@ mmcls.structures
 
 This package includes basic data structures for classification tasks.
 
-ClsDataSample
+DataSample
 -------------
-.. autoclass:: ClsDataSample
+.. autoclass:: DataSample

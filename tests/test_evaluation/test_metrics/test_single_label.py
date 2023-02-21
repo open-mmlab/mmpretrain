@@ -8,7 +8,7 @@ import torch
 from mmpretrain.evaluation.metrics import (Accuracy, ConfusionMatrix,
                                            SingleLabelMetric)
 from mmpretrain.registry import METRICS
-from mmpretrain.structures import ClsDataSample
+from mmpretrain.structures import DataSample
 
 
 class TestAccuracy(TestCase):
@@ -16,7 +16,7 @@ class TestAccuracy(TestCase):
     def test_evaluate(self):
         """Test using the metric in the same way as Evalutor."""
         pred = [
-            ClsDataSample().set_pred_score(i).set_pred_label(j).set_gt_label(
+            DataSample().set_pred_score(i).set_pred_label(j).set_gt_label(
                 k).to_dict() for i, j, k in zip([
                     torch.tensor([0.7, 0.0, 0.3]),
                     torch.tensor([0.5, 0.2, 0.3]),
@@ -52,7 +52,7 @@ class TestAccuracy(TestCase):
 
         # Test with label
         for sample in pred:
-            del sample['pred_label']['score']
+            del sample['pred_score']
         metric = METRICS.build(dict(type='Accuracy', thrs=(0., 0.6, None)))
         metric.process(None, pred)
         acc = metric.evaluate(6)
@@ -123,7 +123,7 @@ class TestSingleLabel(TestCase):
     def test_evaluate(self):
         """Test using the metric in the same way as Evalutor."""
         pred = [
-            ClsDataSample().set_pred_score(i).set_pred_label(j).set_gt_label(
+            DataSample().set_pred_score(i).set_pred_label(j).set_gt_label(
                 k).to_dict() for i, j, k in zip([
                     torch.tensor([0.7, 0.0, 0.3]),
                     torch.tensor([0.5, 0.2, 0.3]),
@@ -212,7 +212,7 @@ class TestSingleLabel(TestCase):
         # Test with label, the thrs will be ignored
         pred_no_score = copy.deepcopy(pred)
         for sample in pred_no_score:
-            del sample['pred_label']['score']
+            del sample['pred_score']
             del sample['num_classes']
         metric = METRICS.build(
             dict(type='SingleLabelMetric', thrs=(0., 0.6), num_classes=3))
@@ -304,7 +304,7 @@ class TestConfusionMatrix(TestCase):
     def test_evaluate(self):
         """Test using the metric in the same way as Evalutor."""
         pred = [
-            ClsDataSample().set_pred_score(i).set_pred_label(j).set_gt_label(
+            DataSample().set_pred_score(i).set_pred_label(j).set_gt_label(
                 k).to_dict() for i, j, k in zip([
                     torch.tensor([0.7, 0.0, 0.3]),
                     torch.tensor([0.5, 0.2, 0.3]),
@@ -330,7 +330,7 @@ class TestConfusionMatrix(TestCase):
 
         # Test with label
         for sample in pred:
-            del sample['pred_label']['score']
+            del sample['pred_score']
         metric = METRICS.build(dict(type='ConfusionMatrix'))
         metric.process(None, pred)
         with self.assertRaisesRegex(AssertionError,

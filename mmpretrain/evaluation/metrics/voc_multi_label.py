@@ -1,9 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Optional, Sequence
 
-from mmengine.structures import LabelData
-
 from mmpretrain.registry import METRICS
+from mmpretrain.structures import label_to_onehot
 from .multi_label import AveragePrecision, MultiLabelMetric
 
 
@@ -39,18 +38,16 @@ class VOCMetricMixin:
         """
         for data_sample in data_samples:
             result = dict()
-            pred_label = data_sample['pred_label']
             gt_label = data_sample['gt_label']
             gt_label_difficult = data_sample['gt_label_difficult']
 
-            result['pred_score'] = pred_label['score'].clone()
+            result['pred_score'] = data_sample['pred_score'].clone()
             num_classes = result['pred_score'].size()[-1]
 
-            if 'score' in gt_label:
-                result['gt_score'] = gt_label['score'].clone()
+            if 'gt_score' in data_sample:
+                result['gt_score'] = data_sample['gt_score'].clone()
             else:
-                result['gt_score'] = LabelData.label_to_onehot(
-                    gt_label['label'], num_classes)
+                result['gt_score'] = label_to_onehot(gt_label, num_classes)
 
             # VOC annotation labels all the objects in a single image
             # therefore, some categories are appeared both in
@@ -58,7 +55,7 @@ class VOCMetricMixin:
             # Here we reckon those labels which are only exists in difficult
             # objects as difficult labels.
             difficult_label = set(gt_label_difficult) - (
-                set(gt_label_difficult) & set(gt_label['label'].tolist()))
+                set(gt_label_difficult) & set(gt_label.tolist()))
 
             # set difficult label for better eval
             if self.difficult_as_positive is None:

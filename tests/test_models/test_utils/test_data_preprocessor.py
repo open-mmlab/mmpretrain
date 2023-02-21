@@ -5,7 +5,7 @@ import torch
 
 from mmpretrain.models import ClsDataPreprocessor, RandomBatchAugment
 from mmpretrain.registry import MODELS
-from mmpretrain.structures import ClsDataSample
+from mmpretrain.structures import DataSample
 
 
 class TestClsDataPreprocessor(TestCase):
@@ -16,15 +16,14 @@ class TestClsDataPreprocessor(TestCase):
 
         data = {
             'inputs': [torch.randint(0, 256, (3, 224, 224))],
-            'data_samples': [ClsDataSample().set_gt_label(1)]
+            'data_samples': [DataSample().set_gt_label(1)]
         }
         processed_data = processor(data)
         inputs = processed_data['inputs']
         data_samples = processed_data['data_samples']
         self.assertEqual(inputs.shape, (1, 3, 224, 224))
         self.assertEqual(len(data_samples), 1)
-        self.assertTrue(
-            (data_samples[0].gt_label.label == torch.tensor([1])).all())
+        self.assertTrue((data_samples[0].gt_label == torch.tensor([1])).all())
 
     def test_padding(self):
         cfg = dict(type='ClsDataPreprocessor', pad_size_divisor=16)
@@ -87,7 +86,7 @@ class TestClsDataPreprocessor(TestCase):
         self.assertIsInstance(processor.batch_augments, RandomBatchAugment)
         data = {
             'inputs': [torch.randint(0, 256, (3, 224, 224))],
-            'data_samples': [ClsDataSample().set_gt_label(1)]
+            'data_samples': [DataSample().set_gt_label(1)]
         }
         processed_data = processor(data, training=True)
         self.assertIn('inputs', processed_data)

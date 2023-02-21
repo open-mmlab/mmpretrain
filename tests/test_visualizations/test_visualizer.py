@@ -7,7 +7,7 @@ from unittest.mock import patch
 import numpy as np
 import torch
 
-from mmpretrain.structures import ClsDataSample
+from mmpretrain.structures import DataSample
 from mmpretrain.visualization import ClsVisualizer
 
 
@@ -24,7 +24,7 @@ class TestClsVisualizer(TestCase):
 
     def test_add_datasample(self):
         image = np.ones((10, 10, 3), np.uint8)
-        data_sample = ClsDataSample().set_gt_label(1).set_pred_label(1).\
+        data_sample = DataSample().set_gt_label(1).set_pred_label(1).\
             set_pred_score(torch.tensor([0.1, 0.8, 0.1]))
 
         # Test show
@@ -82,7 +82,7 @@ class TestClsVisualizer(TestCase):
                 'test', image=image, data_sample=data_sample, draw_gt=False)
 
         # Test without score
-        del data_sample.pred_label.score
+        del data_sample.pred_score
 
         def test_texts(text, *_, **__):
             self.assertEqual(

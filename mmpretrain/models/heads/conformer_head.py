@@ -6,7 +6,7 @@ import torch.nn as nn
 
 from mmpretrain.evaluation.metrics import Accuracy
 from mmpretrain.registry import MODELS
-from mmpretrain.structures import ClsDataSample
+from mmpretrain.structures import DataSample
 from .cls_head import ClsHead
 
 
@@ -64,10 +64,9 @@ class ConformerHead(ClsHead):
 
         return conv_cls_score, tran_cls_score
 
-    def predict(
-            self,
-            feats: Tuple[List[torch.Tensor]],
-            data_samples: List[ClsDataSample] = None) -> List[ClsDataSample]:
+    def predict(self,
+                feats: Tuple[List[torch.Tensor]],
+                data_samples: List[DataSample] = None) -> List[DataSample]:
         """Inference without augmentation.
 
         Args:
@@ -75,12 +74,12 @@ class ConformerHead(ClsHead):
                 Multiple stage inputs are acceptable but only the last stage
                 will be used to classify. The shape of every item should be
                 ``(num_samples, num_classes)``.
-            data_samples (List[ClsDataSample], optional): The annotation
+            data_samples (List[DataSample], optional): The annotation
                 data of every samples. If not None, set ``pred_label`` of
                 the input data samples. Defaults to None.
 
         Returns:
-            List[ClsDataSample]: A list of data samples which contains the
+            List[DataSample]: A list of data samples which contains the
             predicted results.
         """
         # The part can be traced by torch.fx
@@ -92,14 +91,14 @@ class ConformerHead(ClsHead):
         return predictions
 
     def _get_loss(self, cls_score: Tuple[torch.Tensor],
-                  data_samples: List[ClsDataSample], **kwargs) -> dict:
+                  data_samples: List[DataSample], **kwargs) -> dict:
         """Unpack data samples and compute loss."""
         # Unpack data samples and pack targets
-        if 'score' in data_samples[0].gt_label:
+        if 'gt_score' in data_samples[0]:
             # Batch augmentation may convert labels to one-hot format scores.
-            target = torch.stack([i.gt_label.score for i in data_samples])
+            target = torch.stack([i.gt_score for i in data_samples])
         else:
-            target = torch.cat([i.gt_label.label for i in data_samples])
+            target = torch.cat([i.gt_label for i in data_samples])
 
         # compute loss
         losses = dict()

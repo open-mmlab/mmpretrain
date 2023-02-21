@@ -4,7 +4,7 @@ from typing import List
 from mmengine.model import BaseTTAModel
 
 from mmpretrain.registry import MODELS
-from mmpretrain.structures import ClsDataSample
+from mmpretrain.structures import DataSample
 
 
 @MODELS.register_module()
@@ -12,16 +12,16 @@ class AverageClsScoreTTA(BaseTTAModel):
 
     def merge_preds(
         self,
-        data_samples_list: List[List[ClsDataSample]],
-    ) -> List[ClsDataSample]:
+        data_samples_list: List[List[DataSample]],
+    ) -> List[DataSample]:
         """Merge predictions of enhanced data to one prediction.
 
         Args:
-            data_samples_list (List[List[ClsDataSample]]): List of predictions
+            data_samples_list (List[List[DataSample]]): List of predictions
                 of all enhanced data.
 
         Returns:
-            List[ClsDataSample]: Merged prediction.
+            List[DataSample]: Merged prediction.
         """
         merged_data_samples = []
         for data_samples in data_samples_list:
@@ -29,8 +29,8 @@ class AverageClsScoreTTA(BaseTTAModel):
         return merged_data_samples
 
     def _merge_single_sample(self, data_samples):
-        merged_data_sample: ClsDataSample = data_samples[0].new()
-        merged_score = sum(data_sample.pred_label.score
+        merged_data_sample: DataSample = data_samples[0].new()
+        merged_score = sum(data_sample.pred_score
                            for data_sample in data_samples) / len(data_samples)
         merged_data_sample.set_pred_score(merged_score)
         return merged_data_sample
