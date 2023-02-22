@@ -201,12 +201,14 @@ class CustomDataset(BaseDataset):
                  extensions: Sequence[str] = ('.jpg', '.jpeg', '.png', '.ppm',
                                               '.bmp', '.pgm', '.tif'),
                  lazy_init: bool = False,
+                 with_label=True,
                  **kwargs):
         assert (ann_file or data_prefix or data_root), \
             'One of `ann_file`, `data_root` and `data_prefix` must '\
             'be specified.'
 
         self.extensions = tuple(set([i.lower() for i in extensions]))
+        self.with_label = with_label
 
         super().__init__(
             # The base class requires string ann_file but this class doesn't
@@ -266,9 +268,16 @@ class CustomDataset(BaseDataset):
         # Pre-build file backend to prevent verbose file backend inference.
         backend = get_file_backend(self.img_prefix, enable_singleton=True)
         data_list = []
-        for filename, gt_label in samples:
+        for sample in samples:
+            filename = sample[0]
+            if self.with_label:
+                gt_label = sample[1]
             img_path = backend.join_path(self.img_prefix, filename)
-            info = {'img_path': img_path, 'gt_label': int(gt_label)}
+
+            if self.with_label:
+                info = {'img_path': img_path, 'gt_label': int(gt_label)}
+            else:
+                info = {'img_path': img_path}
             data_list.append(info)
         return data_list
 
