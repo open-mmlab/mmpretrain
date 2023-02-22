@@ -156,7 +156,7 @@ def test_linear_reduction():
 
 def test_dolg_neck():
     neck = DOLG(
-        local_dim=10, global_dim=20, hidden_dim=10, dilation_rates=(3, 6, 9))
+        local_dim=10, global_dim=20, out_dim=20, dilation_rates=(3, 6, 9))
     neck.eval()
     # test inputs
     fake_input = torch.rand(1, 10)

@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional, Sequence, Union
+from typing import Optional, Sequence
 
 import torch
 import torch.nn as nn
@@ -173,12 +173,11 @@ class DOLG(BaseModule):
     """Deep Orthogonal Local and Global.
 
     Args:
-        local_dim (int): Dimension of local features
-        global_dim (int): Dimension of global features
-        hidden_dim (int): Dimension of the joint mapping of local
-            and global features
-        dilation_rates (Union[list, tuple]): The list of the dilation
-            rates of multiple atrous convolution in the local branch.
+        local_dim (int): Dimension of local features.
+        global_dim (int): Dimension of global features.
+        out_dim (int): Dimension of the output logits.
+        dilation_rates (Sequence[int]): The list of the dilation rates
+            of multiple atrous convolution. Defaults to `[3, 6, 9]`.
         init_cfg (dict, optional): dictionary to initialize weights.
             Defaults to None.
     """
@@ -186,18 +185,20 @@ class DOLG(BaseModule):
     def __init__(self,
                  local_dim: int,
                  global_dim: int,
-                 hidden_dim: int,
-                 dilation_rates: Union[list, tuple],
+                 out_dim: int,
+                 dilation_rates: Sequence[int] = [3, 6, 9],
                  init_cfg: Optional[dict] = None):
         super(DOLG, self).__init__(init_cfg)
         self.local_dim = local_dim
         self.global_dim = global_dim
-        self.hidden_dim = hidden_dim
+        self.out_dim = out_dim
+        self.hidden_dim = out_dim // 2
 
-        self.local_branch = LocalBranch(local_dim, hidden_dim, dilation_rates)
-        self.global_branch = nn.Sequential(GeneralizedMeanPooling(),
-                                           nn.Flatten(),
-                                           nn.Linear(global_dim, hidden_dim))
+        self.local_branch = LocalBranch(local_dim, self.hidden_dim,
+                                        dilation_rates)
+        self.global_branch = nn.Sequential(
+            GeneralizedMeanPooling(), nn.Flatten(),
+            nn.Linear(global_dim, self.hidden_dim))
 
         self.orthogonal_fusion = OrthogonalFusion()
         self.gap = nn.AdaptiveAvgPool2d(1)
