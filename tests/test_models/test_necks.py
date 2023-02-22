@@ -171,9 +171,9 @@ def test_dolg_neck():
     assert output.shape == (1, 20)
 
     fake_input = [
-        torch.rand(1, 5, 10, 10),
-        torch.rand(1, 10, 5, 5),
-        torch.rand(1, 20, 2, 2)
+        torch.rand(2, 5, 10, 10),
+        torch.rand(2, 10, 5, 5),
+        torch.rand(2, 20, 2, 2)
     ]
     output = neck(fake_input)
-    assert output.shape == (1, 20)
+    assert output.shape == (2, 20)

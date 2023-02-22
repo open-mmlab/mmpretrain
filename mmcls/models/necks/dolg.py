@@ -55,7 +55,7 @@ class MultiAtrous(BaseModule):
             nn.ReLU())
 
         # convolution after concat for smoothing
-        num = len(dilation_rates)
+        num = len(dilation_rates) + 1
         self.conv_after = nn.Sequential(
             nn.Conv2d(hidden_channel * num, out_channel, kernel_size=(1, 1)),
             nn.ReLU())
