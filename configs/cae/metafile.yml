@@ -10,7 +10,7 @@ Collections:
     Paper:
         URL: https://arxiv.org/abs/2202.03026
         Title: "Context Autoencoder for Self-Supervised Representation Learning"
-    README: configs/selfsup/cae/README.md
+    README: configs/cae/README.md
 
 Models:
   - Name: cae_vit-base-p16_8xb256-amp-coslr-300e_in1k

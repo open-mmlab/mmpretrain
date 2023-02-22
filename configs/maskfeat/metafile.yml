@@ -10,7 +10,7 @@ Collections:
     Paper:
         URL: https://arxiv.org/abs/2112.09133v1
         Title: "Masked Feature Prediction for Self-Supervised Visual Pre-Training"
-    README: configs/selfsup/maskfeat/README.md
+    README: configs/maskfeat/README.md
 
 Models:
   - Name: maskfeat_vit-base-p16_8xb256-amp-coslr-300e_in1k

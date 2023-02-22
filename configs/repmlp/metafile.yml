@@ -30,7 +30,7 @@ Models:
     Converted From:
       Weights: https://github.com/DingXiaoH/RepMLP
       Code: https://github.com/DingXiaoH/RepMLP/blob/072d8516beba83d75dfe6ebb12f625abad4b53d5/repmlpnet.py#L274
-  - Name: repmlp-base_3rdparty_8xb64_in1k-256px.py
+  - Name: repmlp-base_3rdparty_8xb64_in1k-256px
     In Collection: RepMLP
     Config: configs/repmlp/repmlp-base_8xb64_in1k-256px.py
     Metadata:

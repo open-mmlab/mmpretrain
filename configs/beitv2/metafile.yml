@@ -38,7 +38,7 @@ Models:
     Converted From:
       Weights: https://conversationhub.blob.core.windows.net/beit-share-public/beitv2/beitv2_base_patch16_224_pt1k_ft21kto1k.pth
       Code: https://github.com/microsoft/unilm/tree/master/beit2
-    Config: configs/beitv2/benchmarks/beitv2-base-p16_8xb64_in1k.py
+    Config: configs/beitv2/benchmarks/beit-base-p16_8xb64_in1k.py
 
   - Name: beitv2_beit-base-p16_8xb256-amp-coslr-300e_in1k
     In Collection: BEiTv2
@@ -60,5 +60,5 @@ Models:
         Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 85.0
-    Config: configs/selfsup/beitv2/benchmarks/beit-base-p16_8xb128-coslr-100e_in1k.py
+    Config: configs/beitv2/benchmarks/beit-base-p16_8xb128-coslr-100e_in1k.py
     Weights: https://download.openmmlab.com/mmselfsup/1.x/beitv2/beitv2_vit-base-p16_8xb256-amp-coslr-300e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k_20221212-d1c0789e.pth

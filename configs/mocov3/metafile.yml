@@ -81,7 +81,7 @@ Models:
         Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 74.4
-    Config: configs/mocov3/benchmarks/resnet50_linear-8xb128-coslr-90e_in1k.py
+    Config: configs/mocov3/benchmarks/resnet50_8xb128-linear-coslr-90e_in1k.py
     Weights: https://download.openmmlab.com/mmselfsup/1.x/mocov3/mocov3_resnet50_8xb512-amp-coslr-800e_in1k/resnet50_linear-8xb128-coslr-90e_in1k/resnet50_linear-8xb128-coslr-90e_in1k_20220927-0e97a483.pth
 
   - Name: mocov3_vit-small-p16_16xb256-amp-coslr-300e_in1k
@@ -149,7 +149,7 @@ Models:
       Epochs: 300
       Batch Size: 4096
     Results: null
-    Config: configs/mocov3/mocov3_vit-base-p16_64xb64-amp-coslr-300e_in1k.py
+    Config: configs/mocov3/mocov3_vit-large-p16_64xb64-amp-coslr-300e_in1k.py
     Weights: https://download.openmmlab.com/mmselfsup/1.x/mocov3/mocov3_vit-large-p16_64xb64-amp-coslr-300e_in1k/mocov3_vit-large-p16_64xb64-amp-coslr-300e_in1k-224_20220829-9b88a442.pth
     Downstream:
      - vit-large-p16_mocov3-pre_8xb64-coslr-100e_in1k

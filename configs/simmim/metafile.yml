@@ -19,7 +19,7 @@ Models:
       Epochs: 100
       Batch Size: 2048
     Results: null
-    Config: configs/simmim/simmim_swin-base_8xb256-amp-coslr-100e_in1k-192px.py
+    Config: configs/simmim/simmim_swin-base-w6_8xb256-amp-coslr-100e_in1k-192px.py
     Weights: https://download.openmmlab.com/mmselfsup/1.x/simmim/simmim_swin-base_8xb256-amp-coslr-100e_in1k-192/simmim_swin-base_8xb256-amp-coslr-100e_in1k-192_20220829-0e15782d.pth
     Downstream:
       - swin-base-w6_simmim-100e-pre_8xb256-coslr-100e_in1k-192px
@@ -54,7 +54,7 @@ Models:
       Epochs: 100
       Batch Size: 2048
     Results: null
-    Config: configs/simmim/simmim_swin-base_16xb128-amp-coslr-800e_in1k-192.py
+    Config: configs/simmim/simmim_swin-base-w6_16xb128-amp-coslr-800e_in1k-192px.py
     Weights: https://download.openmmlab.com/mmselfsup/1.x/simmim/simmim_swin-base_16xb128-amp-coslr-800e_in1k-192/simmim_swin-base_16xb128-amp-coslr-800e_in1k-192_20220916-a0e931ac.pth
     Downstream:
       - swin-base-w6_simmim-800e-pre_8xb256-coslr-100e_in1k-192px
@@ -71,13 +71,13 @@ Models:
     Config: configs/simmim/benchmarks/swin-base-w6_8xb256-coslr-100e_in1k-192px.py
     Weights: https://download.openmmlab.com/mmselfsup/1.x/simmim/simmim_swin-base_8xb256-amp-coslr-100e_in1k-192/swin-base_ft-8xb256-coslr-100e_in1k/swin-base_ft-8xb256-coslr-100e_in1k_20220829-9cf23aa1.pth
 
-  - Name: simmim_swin-large_16xb128-amp-coslr-800e_in1k-192
+  - Name: simmim_swin-large-w12_16xb128-amp-coslr-800e_in1k-192px
     In Collection: SimMIM
     Metadata:
       Epochs: 100
       Batch Size: 2048
     Results: null
-    Config: configs/simmim/simmim_swin-base_16xb128-amp-coslr-800e_in1k-192px.py
+    Config: configs/simmim/simmim_swin-large-w12_16xb128-amp-coslr-800e_in1k-192px.py
     Weights: https://download.openmmlab.com/mmselfsup/1.x/simmim/simmim_swin-large_16xb128-amp-coslr-800e_in1k-192/simmim_swin-large_16xb128-amp-coslr-800e_in1k-192_20220916-4ad216d3.pth
     Downstream:
       - swin-large-w14_simmim-800e-pre_8xb256-coslr-100e_in1k
