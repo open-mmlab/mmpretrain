@@ -32,10 +32,13 @@ class MultiAtrous(BaseModule):
         assert is_seq_of(
             dilation_rates,
             int), ('``dilation_rates`` must be a sequence of int.')
-        assert out_channel % 4 == 0
+        assert out_channel % 2 == 0
 
-        # multiple-atrous convolution
-        hidden_channel = out_channel // 4
+        # In the original implementation, here hidden-dim was set to a
+        # fixed 512 as it was designed for resnet101. We set it here to
+        # half of out_c for the sake of generality, which is consistent
+        #  when using resnet101.
+        hidden_channel = out_channel // 2
         self.dilated_conv_list = nn.ModuleList([
             nn.Conv2d(
                 in_channel,
@@ -52,7 +55,7 @@ class MultiAtrous(BaseModule):
             nn.ReLU())
 
         # convolution after concat for smoothing
-        num = len(dilation_rates) + 1
+        num = len(dilation_rates)
         self.conv_after = nn.Sequential(
             nn.Conv2d(hidden_channel * num, out_channel, kernel_size=(1, 1)),
             nn.ReLU())
