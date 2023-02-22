@@ -36,19 +36,18 @@ class MBConv(BaseModule):
         drop_path (float, optional): Dropout rate to be applied during training. Default 0.
     """
 
-    def __init__(
-            self,
-            in_channels: int,
-            out_channels: int,
-            stride=1,
-            expand_ratio=4.0,
-            act_cfg=dict(type='GELU'),
-            norm_cfg=dict(type='BN'),
-            drop_path: float = 0.,
-    ) -> None:
+    def __init__(self,
+                 in_channels: int,
+                 out_channels: int,
+                 stride=1,
+                 expand_ratio=4.0,
+                 drop_path: float = 0.,
+                 act_cfg=dict(type='GELU'),
+                 norm_cfg=dict(type='BN'),
+                 init_cfg=None):
         """ Constructor method """
         # Call super constructor
-        super(MBConv, self).__init__(in)
+        super(MBConv, self).__init__(init_cfg)
         # Save parameter
 
         self.drop_path = DropPath(drop_path) if drop_path>0. else nn.Identity()
@@ -139,8 +138,7 @@ def window_partition(input: torch.Tensor,
 def window_reverse(
         windows: torch.Tensor,
         original_size: Tuple[int, int],
-        window_size: Tuple[int, int] = (7, 7)
-) -> torch.Tensor:
+        window_size: Tuple[int, int] = (7, 7)) -> torch.Tensor:
     """ Reverses the window partition.
     Args:
         windows (torch.Tensor): Window tensor of the shape [B * windows, window_size[0], window_size[1], C].
@@ -161,8 +159,7 @@ def window_reverse(
 
 def grid_partition(
         input: torch.Tensor,
-        grid_size: Tuple[int, int] = (7, 7)
-) -> torch.Tensor:
+        grid_size: Tuple[int, int] = (7, 7)) -> torch.Tensor:
     """ Grid partition function.
     Args:
         input (torch.Tensor): Input tensor of the shape [B, C, H, W].
