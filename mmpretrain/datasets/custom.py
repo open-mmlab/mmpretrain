@@ -67,22 +67,34 @@ def get_samples(
     # Pre-build file backend to prevent verbose file backend inference.
     backend = backend or get_file_backend(root, enable_singleton=True)
 
-    for folder_name in sorted(list(folder_to_idx.keys())):
-        _dir = backend.join_path(root, folder_name)
+    if folder_to_idx is not None:
+        for folder_name in sorted(list(folder_to_idx.keys())):
+            _dir = backend.join_path(root, folder_name)
+            files = backend.list_dir_or_file(
+                _dir,
+                list_dir=False,
+                list_file=True,
+                recursive=True,
+            )
+            for file in sorted(list(files)):
+                if is_valid_file(file):
+                    path = backend.join_path(folder_name, file)
+                    item = (path, folder_to_idx[folder_name])
+                    samples.append(item)
+                    available_classes.add(folder_name)
+        empty_folders = set(folder_to_idx.keys()) - available_classes
+    else:
         files = backend.list_dir_or_file(
-            _dir,
+            root,
             list_dir=False,
             list_file=True,
             recursive=True,
         )
         for file in sorted(list(files)):
             if is_valid_file(file):
-                path = backend.join_path(folder_name, file)
-                item = (path, folder_to_idx[folder_name])
-                samples.append(item)
-                available_classes.add(folder_name)
-
-    empty_folders = set(folder_to_idx.keys()) - available_classes
+                path = backend.join_path(root, file)
+                samples.append((path, ))
+        empty_folders = None
 
     return samples, empty_folders
 
@@ -226,25 +238,34 @@ class CustomDataset(BaseDataset):
 
     def _find_samples(self):
         """find samples from ``data_prefix``."""
-        classes, folder_to_idx = find_folders(self.img_prefix)
-        samples, empty_classes = get_samples(
-            self.img_prefix,
-            folder_to_idx,
-            is_valid_file=self.is_valid_file,
-        )
+        if self.with_label:
+            classes, folder_to_idx = find_folders(self.img_prefix)
+            samples, empty_classes = get_samples(
+                self.img_prefix,
+                folder_to_idx,
+                is_valid_file=self.is_valid_file,
+            )
+
+            self.folder_to_idx = folder_to_idx
+
+            if self.CLASSES is not None:
+                assert len(self.CLASSES) == len(classes), \
+                    (f'The number of subfolders ({len(classes)}) does not '
+                     f'match the number of specified classes '
+                     f'({len(self.CLASSES)}). Please check the data folder.')
+            else:
+                self._metainfo['classes'] = tuple(classes)
+        else:
+            samples, empty_classes = get_samples(
+                self.img_prefix,
+                None,
+                is_valid_file=self.is_valid_file,
+            )
 
         if len(samples) == 0:
             raise RuntimeError(
                 f'Found 0 files in subfolders of: {self.data_prefix}. '
                 f'Supported extensions are: {",".join(self.extensions)}')
-
-        if self.CLASSES is not None:
-            assert len(self.CLASSES) == len(classes), \
-                f"The number of subfolders ({len(classes)}) doesn't match " \
-                f'the number of specified classes ({len(self.CLASSES)}). ' \
-                'Please check the data folder.'
-        else:
-            self._metainfo['classes'] = tuple(classes)
 
         if empty_classes:
             logger = MMLogger.get_current_instance()
@@ -252,8 +273,6 @@ class CustomDataset(BaseDataset):
                 'Found no valid file in the folder '
                 f'{", ".join(empty_classes)}. '
                 f"Supported extensions are: {', '.join(self.extensions)}")
-
-        self.folder_to_idx = folder_to_idx
 
         return samples
 
