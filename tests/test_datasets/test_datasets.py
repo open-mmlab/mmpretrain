@@ -201,6 +201,28 @@ class TestCustomDataset(TestBaseDataset):
                 'gt_label': 1
             }.items())
 
+        # test load with absolute ann_file
+        cfg = {
+            **self.DEFAULT_ARGS,
+            'data_root': '',
+            'data_prefix': '',
+            'ann_file': osp.join(ASSETS_ROOT, 'ann_without_labels.txt'),
+        }
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 3)
+        # custom dataset won't infer CLASSES from ann_file
+        self.assertIsNone(dataset.CLASSES, None)
+        self.assertGreaterEqual(
+            dataset.get_data_info(0).items(), {
+                'img_path': 'a/1.JPG',
+                'gt_label': 0,
+            }.items())
+        self.assertGreaterEqual(
+            dataset.get_data_info(2).items(), {
+                'img_path': 'b/subb/3.jpg',
+                'gt_label': 1
+            }.items())
+
         # test extensions filter
         cfg = {
             **self.DEFAULT_ARGS, 'data_prefix': dict(img_path=ASSETS_ROOT),
