@@ -4,14 +4,19 @@ from typing import Type, Callable, Tuple, Optional, Set, List, Union
 import torch
 import torch.nn as nn
 
-from timm.models.efficientnet_blocks import SqueezeExcite, DepthwiseSeparableConv
-from timm.models.layers import drop_path, trunc_normal_, Mlp
 from mmcv.cnn.bricks.transformer import FFN
 from mmcv.cnn.bricks import ConvModule, DropPath
-from mmcls.models.utils import InvertedResidual as MBConv
+from mmengine.model import BaseModule, Sequential
+from mmengine.model.weight_init import trunc_normal_
 
 
-class MBConv(nn.Module):
+from mmcls.models.backbones.base_backbone import BaseBackbone
+from mmcls.models.utils import SELayer, make_divisible
+from mmcls.registry import MODELS
+from ..utils import build_norm_layer, to_2tuple
+
+
+class MBConv(BaseModule):
     """ MBConv block as described in: https://arxiv.org/pdf/2204.01697.pdf.
         Without downsampling:
         x ← x + Proj(SE(DWConv(Conv(Norm(x)))))
@@ -21,6 +26,7 @@ class MBConv(nn.Module):
         SE is the Squeeze-Excitation layer.
         Proj is the shrink 1 X 1 convolution.
         Note: This implementation differs slightly from the original MobileNet implementation!
+              This implementation differs slightly from the original EfficientnetV2 implementation!
     Args:
         in_channels (int): Number of input channels.
         out_channels (int): Number of output channels.
@@ -34,52 +40,82 @@ class MBConv(nn.Module):
             self,
             in_channels: int,
             out_channels: int,
-            downscale: bool = False,
-            act_layer: Type[nn.Module] = nn.GELU,
-            norm_layer: Type[nn.Module] = nn.BatchNorm2d,
+            stride=1,
+            expand_ratio=4.0,
+            act_cfg=dict(type='GELU'),
+            norm_cfg=dict(type='BN'),
             drop_path: float = 0.,
     ) -> None:
         """ Constructor method """
         # Call super constructor
-        super(MBConv, self).__init__()
+        super(MBConv, self).__init__(in)
         # Save parameter
-        self.drop_path_rate: float = drop_path
-        # Check parameters for downscaling
-        if not downscale:
-            assert in_channels == out_channels, "If downscaling is utilized input and output channels must be equal."
-        # Ignore inplace parameter if GELU is used
-        if act_layer == nn.GELU:
-            act_layer = nn.GELU()
-        # Make main path
-        self.main_path = nn.Sequential(
-            norm_layer(in_channels),
-            nn.Conv2d(in_channels=in_channels, out_channels=in_channels, kernel_size=(1, 1)),
-            DepthwiseSeparableConv(in_chs=in_channels, out_chs=out_channels, stride=2 if downscale else 1,
-                                   act_layer=act_layer, norm_layer=norm_layer, drop_path_rate=drop_path),
-            SqueezeExcite(in_chs=out_channels, rd_ratio=0.25),
-            nn.Conv2d(in_channels=out_channels, out_channels=out_channels, kernel_size=(1, 1))
-        )
-        # Make skip path
-        self.skip_path = nn.Sequential(
-            nn.MaxPool2d(kernel_size=(2, 2), stride=(2, 2)),
-            nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=(1, 1))
-        ) if downscale else nn.Identity()
 
-    def forward(
-            self,
-            input: torch.Tensor
-    ) -> torch.Tensor:
+        self.drop_path = DropPath(drop_path) if drop_path>0. else nn.Identity()
+        # Check parameters for downscaling
+        if stride == 1:
+            assert in_channels == out_channels, \
+                "If stride is 1, input and output channels must be equal."
+        # Ignore inplace parameter if GELU is used
+        # Make main path
+
+        if stride == 2:
+            self.shortcut = Sequential(
+                nn.MaxPool2d(kernel_size=(2, 2), stride=(2, 2)),
+                ConvModule(in_channels=in_channels,
+                           out_channels=out_channels,
+                           kernel_size=1,
+                           norm_cfg=None,
+                           act_cfg=None)
+            )
+        else:
+            self.shortcut = nn.Identity()
+
+        mid_channels = make_divisible(out_channels * expand_ratio)
+
+        self.pre_norm = build_norm_layer(norm_cfg,in_channels)
+        self.layers = nn.ModuleList()
+        self.layers.append(ConvModule(in_channels=in_channels,
+                                      out_channels=mid_channels,
+                                      kernel_size=1,
+                                      stride=1,
+                                      conv_cfg=dict(type='conv2d'),
+                                      norm_cfg=norm_cfg,
+                                      act_cfg=act_cfg))
+
+        self.layers.append(ConvModule(in_channels=mid_channels,
+                                      out_channels=mid_channels,
+                                      kernel_size=3,
+                                      stride=stride,
+                                      groups=mid_channels,
+                                      conv_cfg=dict(type='Conv2dAdaptivePadding'),
+                                      norm_cfg=norm_cfg,
+                                      act_cfg=act_cfg))
+
+        self.layers.append(SELayer(channels=mid_channels,
+                                   ratio=4,
+                                   conv_cfg=None,
+                                   act_cfg=(dict(type='SiLU'),dict(type='Sigmoid'))))
+
+        self.layers.append(ConvModule(in_channels=mid_channels,
+                                      out_channels=out_channels,
+                                      kernel_size=1,
+                                      norm_cfg=None,
+                                      act_cfg=None))
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         """ Forward pass.
         Args:
             input (torch.Tensor): Input tensor of the shape [B, C_in, H, W].
         Returns:
             output (torch.Tensor): Output tensor of the shape [B, C_out, H (// 2), W (// 2)] (downscaling is optional).
         """
-        output = self.main_path(input)
-        if self.drop_path_rate > 0.:
-            output = drop_path(output, self.drop_path_rate, self.training)
-        output = output + self.skip_path(input)
-        return output
+        shortcut = x
+        x = self.pre_norm(x)
+        for i,layer in enumerate(self.layers):
+            x = layer(x)
+        x = self.drop_path(x) + shortcut
+        return x
 
 
 def window_partition(input: torch.Tensor,
@@ -165,10 +201,7 @@ def grid_reverse(
     return output
 
 
-def get_relative_position_index(
-        win_h: int,
-        win_w: int
-) -> torch.Tensor:
+def get_relative_position_index(win_h: int, win_w: int) -> torch.Tensor:
     """ Function to generate pair-wise relative position index for each token inside the window.
         Taken from Timms Swin V1 implementation.
     Args:
@@ -242,10 +275,7 @@ class RelativeSelfAttention(nn.Module):
         relative_position_bias = relative_position_bias.permute(2, 0, 1).contiguous()
         return relative_position_bias.unsqueeze(0)
 
-    def forward(
-            self,
-            input: torch.Tensor
-    ) -> torch.Tensor:
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
         """ Forward pass.
         Args:
             input (torch.Tensor): Input tensor of the shape [B_, N, C].
@@ -304,7 +334,7 @@ class MaxViTTransformerBlock(nn.Module):
             drop: float = 0.,
             drop_path: float = 0.,
             mlp_ratio: float = 4.,
-            act_layer: Type[nn.Module] = nn.GELU,
+            act_layer=dict(type='GELU'),
             norm_layer: Type[nn.Module] = nn.LayerNorm,
     ) -> None:
         """ Constructor method """
@@ -324,9 +354,9 @@ class MaxViTTransformerBlock(nn.Module):
         )
         self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
         self.norm_2 = norm_layer(in_channels)
-        self.mlp = Mlp(
-            in_features=in_channels,
-            hidden_features=int(mlp_ratio * in_channels),
+        self.mlp = FFN(
+            embed_dims=in_channels,
+            feedforward_channels=int(mlp_ratio * in_channels),
             act_layer=act_layer,
             drop=drop
         )
@@ -373,7 +403,7 @@ class MaxViTBlock(nn.Module):
             self,
             in_channels: int,
             out_channels: int,
-            downscale: bool = False,
+            stride=1,
             num_heads: int = 32,
             grid_window_size: Tuple[int, int] = (7, 7),
             attn_drop: float = 0.,
@@ -391,9 +421,7 @@ class MaxViTBlock(nn.Module):
         self.mb_conv = MBConv(
             in_channels=in_channels,
             out_channels=out_channels,
-            downscale=downscale,
-            act_layer=act_layer,
-            norm_layer=norm_layer,
+            stride=stride,
             drop_path=drop_path
         )
         # Init Block and Grid Transformer
@@ -475,7 +503,7 @@ class MaxViTStage(nn.Module):
             MaxViTBlock(
                 in_channels=in_channels if index == 0 else out_channels,
                 out_channels=out_channels,
-                downscale=index == 0,
+                stride=2 if index == 0 else 1,
                 num_heads=num_heads,
                 grid_window_size=grid_window_size,
                 attn_drop=attn_drop,
@@ -499,8 +527,8 @@ class MaxViTStage(nn.Module):
         output = self.blocks(input)
         return output
 
-
-class MaxViT(nn.Module):
+@MODELS.register_module()
+class MaxViT(BaseBackbone):
     """ Implementation of the MaxViT proposed in:
         https://arxiv.org/pdf/2204.01697.pdf
     Args:
