@@ -148,7 +148,8 @@ class TestCustomDataset(TestBaseDataset):
                 'gt_label': 1
             }.items())
 
-        # test load without ann_file and without labels (no folder structures)
+        # test load without ann_file and without labels
+        # (no specific folder structures)
         cfg = {
             **self.DEFAULT_ARGS,
             'data_prefix': ASSETS_ROOT,
@@ -156,14 +157,18 @@ class TestCustomDataset(TestBaseDataset):
             'with_label': False,
         }
         dataset = dataset_class(**cfg)
-        self.assertEqual(len(dataset), 3)
+        self.assertEqual(len(dataset), 4)
         self.assertIsNone(dataset.CLASSES, None)
         self.assertGreaterEqual(
             dataset.get_data_info(0).items(), {
+                'img_path': osp.join(ASSETS_ROOT, '3.jpeg'),
+            }.items())
+        self.assertGreaterEqual(
+            dataset.get_data_info(1).items(), {
                 'img_path': osp.join(ASSETS_ROOT, 'a', '1.JPG'),
             }.items())
         self.assertGreaterEqual(
-            dataset.get_data_info(2).items(), {
+            dataset.get_data_info(3).items(), {
                 'img_path': osp.join(ASSETS_ROOT, 'b', 'subb', '3.jpg'),
             }.items())
 
