@@ -12,7 +12,11 @@ from .utils import LABEL_TYPE, SCORE_TYPE, format_label, format_score
 class DataSample(BaseDataElement):
     """A general data structure interface.
 
-    It's used as interfaces between different components.
+    It's used as the interface between different components.
+
+    The following fields are convention names in MMPretrain, and we will set or
+    get these fields in data transforms, models, and metrics if needed. You can
+    also set any new fields for your need.
 
     Meta fields:
         img_shape (Tuple): The shape of the corresponding input image.
@@ -42,6 +46,7 @@ class DataSample(BaseDataElement):
         DATA FIELDS
             gt_label: tensor([3])
         ) at 0x7ff64c1c1d30>
+        >>>
         >>> # For multi-label data
         >>> data_sample = DataSample().set_gt_label([0, 1, 4])
         >>> print(data_sample)
@@ -49,6 +54,7 @@ class DataSample(BaseDataElement):
         DATA FIELDS
             gt_label: tensor([0, 1, 4])
         ) at 0x7ff5b490e100>
+        >>>
         >>> # Set one-hot format score
         >>> data_sample = DataSample().set_pred_score([0.1, 0.1, 0.6, 0.1])
         >>> print(data_sample)
@@ -58,6 +64,17 @@ class DataSample(BaseDataElement):
         DATA FIELDS
             pred_score: tensor([0.1000, 0.1000, 0.6000, 0.1000])
         ) at 0x7ff5b48ef6a0>
+        >>>
+        >>> # Set custom field
+        >>> data_sample = DataSample()
+        >>> data_sample.my_field = [1, 2, 3]
+        >>> print(data_sample)
+        <DataSample(
+        DATA FIELDS
+            my_field: [1, 2, 3]
+        ) at 0x7f8e9603d3a0>
+        >>> print(data_sample.my_field)
+        [1, 2, 3]
     """
 
     def set_gt_label(self, value: LABEL_TYPE) -> 'DataSample':
