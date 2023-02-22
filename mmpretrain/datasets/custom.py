@@ -250,9 +250,9 @@ class CustomDataset(BaseDataset):
 
             if self.CLASSES is not None:
                 assert len(self.CLASSES) == len(classes), \
-                    (f'The number of subfolders ({len(classes)}) does not '
-                     f'match the number of specified classes '
-                     f'({len(self.CLASSES)}). Please check the data folder.')
+                    f"The number of subfolders ({len(classes)}) doesn't " \
+                    f'match the number of specified classes ' \
+                    f'({len(self.CLASSES)}). Please check the data folder.'
             else:
                 self._metainfo['classes'] = tuple(classes)
         else:
