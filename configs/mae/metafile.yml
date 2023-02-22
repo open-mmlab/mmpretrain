@@ -285,5 +285,5 @@ Models:
         Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 87.3
-    Config: configs/benchmarks/vit-huge-p14_32xb8-coslr-50e_in1k-448px.py
+    Config: configs/mae/benchmarks/vit-huge-p14_32xb8-coslr-50e_in1k-448px.py
     Weights: https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k/vit-huge-p16_ft-32xb8-coslr-50e_in1k-448/vit-huge-p16_ft-32xb8-coslr-50e_in1k-448_20220916-95b6a0ce.pth

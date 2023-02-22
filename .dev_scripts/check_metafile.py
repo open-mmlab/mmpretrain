@@ -13,7 +13,7 @@ from modelindex.models.ModelIndex import ModelIndex
 class ContextFilter(logging.Filter):
     metafile = None
     name = None
-    failed = True
+    failed = False
 
     def filter(self, record: logging.LogRecord):
         record.color = {

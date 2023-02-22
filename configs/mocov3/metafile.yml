@@ -117,7 +117,7 @@ Models:
     Weights: https://download.openmmlab.com/mmselfsup/1.x/mocov3/mocov3_vit-base-p16_16xb256-amp-coslr-300e_in1k/mocov3_vit-base-p16_16xb256-amp-coslr-300e_in1k-224_20220826-25213343.pth
     Downstream:
       - vit-base-p16_mocov3-pre_8xb128-linear-coslr-90e_in1k
-      - vit-base-p16_mocov3-pre_8xb64-coslr-90e_in1k
+      - vit-base-p16_mocov3-pre_8xb64-coslr-150e_in1k
   - Name: vit-base-p16_mocov3-pre_8xb128-linear-coslr-90e_in1k
     In Collection: MoCoV3
     Metadata:
@@ -130,7 +130,7 @@ Models:
           Top 1 Accuracy: 76.9
     Config: configs/mocov3/benchmarks/vit-base-p16_8xb128-linear-coslr-90e_in1k.py
     Weights: https://download.openmmlab.com/mmselfsup/1.x/mocov3/mocov3_vit-base-p16_16xb256-amp-coslr-300e_in1k/vit-base-p16_linear-8xb128-coslr-90e_in1k/vit-base-p16_linear-8xb128-coslr-90e_in1k_20220826-83be7758.pth
-  - Name: vit-base-p16_mocov3-pre_8xb128-coslr-90e_in1k
+  - Name: vit-base-p16_mocov3-pre_8xb64-coslr-150e_in1k
     In Collection: MoCoV3
     Metadata:
       Epochs: 150
