@@ -25,7 +25,7 @@ class DataSample(BaseDataElement):
         gt_score (tensor): The ground truth score.
         pred_label (tensor): The predicted label.
         pred_score (tensor): The predicted score.
-        mask (tensor): The mask used in masks image modeling.
+        mask (tensor): The mask used in masked image modeling.
 
     Examples:
         >>> import torch
