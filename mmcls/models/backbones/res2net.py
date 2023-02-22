@@ -143,6 +143,8 @@ class Res2Layer(Sequential):
             Default: dict(type='BN')
         scales (int): Scales used in Res2Net. Default: 4
         base_width (int): Basic width of each scale. Default: 26
+        drop_path_rate (float or np.ndarray): stochastic depth rate.
+            Default: 0.
     """
 
     def __init__(self,
@@ -156,8 +158,15 @@ class Res2Layer(Sequential):
                  norm_cfg=dict(type='BN'),
                  scales=4,
                  base_width=26,
+                 drop_path_rate=0.0,
                  **kwargs):
         self.block = block
+
+        if isinstance(drop_path_rate, float):
+            drop_path_rate = [drop_path_rate] * num_blocks
+
+        assert len(drop_path_rate
+                   ) == num_blocks, 'Please check the length of drop_path_rate'
 
         downsample = None
         if stride != 1 or in_channels != out_channels:
@@ -201,9 +210,10 @@ class Res2Layer(Sequential):
                 scales=scales,
                 base_width=base_width,
                 stage_type='stage',
+                drop_path_rate=drop_path_rate[0],
                 **kwargs))
         in_channels = out_channels
-        for _ in range(1, num_blocks):
+        for i in range(1, num_blocks):
             layers.append(
                 block(
                     in_channels=in_channels,
@@ -213,6 +223,7 @@ class Res2Layer(Sequential):
                     norm_cfg=norm_cfg,
                     scales=scales,
                     base_width=base_width,
+                    drop_path_rate=drop_path_rate[i],
                     **kwargs))
         super(Res2Layer, self).__init__(*layers)
 
