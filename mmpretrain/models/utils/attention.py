@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import itertools
+from typing import List, Optional, Union
 
 import numpy as np
 import torch
@@ -683,6 +684,7 @@ class BEiTAttention(BaseModule):
         q, k, v = qkv[0], qkv[1], qkv[2]
         q = q * self.scale
         attn = (q @ k.transpose(-2, -1))
+
         if self.relative_position_bias_table is not None:
             Wh = self.window_size[0]
             Ww = self.window_size[1]
@@ -878,4 +880,193 @@ class LeAttention(BaseModule):
         attn = attn.softmax(dim=-1)
         x = (attn @ v).transpose(1, 2).reshape(B, N, self.dh)
         x = self.proj(x)
+        return x
+
+
+class CrossMultiheadAttention(BaseModule):
+    """Cross attention between queries and the union of keys and values.
+
+    This module is different from ``MultiheadAttention``, for the attention
+    is computed between queries and the union of keys and values.
+
+    Args:
+        embed_dims (int): The embedding dimension.
+        num_heads (int): Parallel attention heads.
+        qkv_bias (bool): If True, add a learnable bias to q, k, v.
+            Defaults to True.
+        qk_scale (float, optional): Override default qk scale of
+            ``head_dim ** -0.5`` if set. Defaults to None.
+        attn_drop (float): Dropout rate of the dropout layer after the
+            attention calculation of query and key. Defaults to 0.
+        proj_drop (float): Dropout rate of the dropout layer after the
+            output projection. Defaults to 0.
+    """
+
+    def __init__(self,
+                 embed_dims: int,
+                 num_heads: int = 8,
+                 qkv_bias: bool = False,
+                 qk_scale: float = None,
+                 attn_drop: float = 0.,
+                 proj_drop: float = 0.) -> None:
+        super().__init__()
+        self.num_heads = num_heads
+        head_dim = embed_dims // num_heads
+        self.scale = qk_scale or head_dim**-0.5
+
+        self.q = nn.Linear(embed_dims, embed_dims, bias=False)
+        self.k = nn.Linear(embed_dims, embed_dims, bias=False)
+        self.v = nn.Linear(embed_dims, embed_dims, bias=False)
+
+        if qkv_bias:
+            self.q_bias = nn.Parameter(torch.zeros(embed_dims))
+            self.v_bias = nn.Parameter(torch.zeros(embed_dims))
+        else:
+            self.q_bias = None
+            self.k_bias = None
+            self.v_bias = None
+
+        self.attn_drop = nn.Dropout(attn_drop)
+        self.proj = nn.Linear(embed_dims, embed_dims)
+        self.proj_drop = nn.Dropout(proj_drop)
+
+    def forward(self,
+                x: torch.Tensor,
+                k: torch.Tensor = None,
+                v: torch.Tensor = None) -> None:
+        """Forward function."""
+        B, N, _ = x.shape
+
+        N_k = k.shape[1]
+        N_v = v.shape[1]
+
+        q_bias, k_bias, v_bias = None, None, None
+        if self.q_bias is not None:
+            q_bias = self.q_bias
+            k_bias = torch.zeros_like(self.v_bias, requires_grad=False)
+            v_bias = self.v_bias
+
+        q = F.linear(
+            input=x, weight=self.q.weight, bias=q_bias)  # (B, N_q, dim)
+        k = F.linear(
+            input=k, weight=self.k.weight, bias=k_bias)  # (B, N_k, dim)
+        v = F.linear(input=v, weight=self.v.weight, bias=v_bias)
+
+        q = q.reshape(B, N, 1, self.num_heads,
+                      -1).permute(2, 0, 3, 1,
+                                  4).squeeze(0)  # (B, num_heads, N_q, dim)
+        k = k.reshape(B, N_k, 1, self.num_heads,
+                      -1).permute(2, 0, 3, 1,
+                                  4).squeeze(0)  # (B, num_heads, N_k, dim)
+        v = v.reshape(B, N_v, 1, self.num_heads,
+                      -1).permute(2, 0, 3, 1,
+                                  4).squeeze(0)  # (B, num_heads, N_v, dim)
+
+        q = q * self.scale
+        attn = (q @ k.transpose(-2, -1))  # (B, N_head, N_q, N_k)
+
+        attn = attn.softmax(dim=-1)
+        attn = self.attn_drop(attn)
+
+        x = (attn @ v).transpose(1, 2).reshape(B, N, -1)
+        x = self.proj(x)
+        x = self.proj_drop(x)
+
+        return x
+
+
+class PromptMultiheadAttention(MultiheadAttention):
+    """Prompt Multihead Attention for MILAN.
+
+    This module is specific for the prompt encoder in MILAN. It will not update
+    the visible tokens from the encoder.
+
+    Args:
+        embed_dims (int): The embedding dimension.
+        num_heads (int): Parallel attention heads.
+        input_dims (int, optional): The input dimension, and if None,
+            use ``embed_dims``. Defaults to None.
+        attn_drop (float): Dropout rate of the dropout layer after the
+            attention calculation of query and key. Defaults to 0.
+        proj_drop (float): Dropout rate of the dropout layer after the
+            output projection. Defaults to 0.
+        dropout_layer (dict): The dropout config before adding the shortcut.
+            Defaults to ``dict(type='Dropout', drop_prob=0.)``.
+        qkv_bias (bool): If True, add a learnable bias to q, k, v.
+            Defaults to True.
+        qk_scale (float, optional): Override default qk scale of
+            ``head_dim ** -0.5`` if set. Defaults to None.
+        proj_bias (bool) If True, add a learnable bias to output projection.
+            Defaults to True.
+        v_shortcut (bool): Add a shortcut from value to output. It's usually
+            used if ``input_dims`` is different from ``embed_dims``.
+            Defaults to False.
+        return_attention (bool): If True, return the attention map, computed by
+            the cross attention between the class token and all other tokens.
+            Defaults to False.
+        init_cfg (Union[List[dict], dict], optional): The Config for
+            initialization. Defaults to None.
+    """
+
+    def __init__(self,
+                 embed_dims: int,
+                 num_heads: int,
+                 input_dims: Optional[int] = None,
+                 attn_drop: float = 0,
+                 proj_drop: float = 0,
+                 dropout_layer: dict = dict(type='Dropout', drop_prob=0.),
+                 qkv_bias: bool = True,
+                 qk_scale: Optional[float] = None,
+                 proj_bias: bool = True,
+                 v_shortcut: bool = False,
+                 use_layer_scale: bool = False,
+                 init_cfg: Optional[Union[List[dict], dict]] = None) -> None:
+        super().__init__(embed_dims, num_heads, input_dims, attn_drop,
+                         proj_drop, dropout_layer, qkv_bias, qk_scale,
+                         proj_bias, v_shortcut, use_layer_scale, init_cfg)
+        # no longer need qkv
+        del self.qkv
+
+        # to project the mask tokens
+        self.q = nn.Linear(embed_dims, embed_dims, bias=qkv_bias)
+        # to project al the tokens
+        self.kv = nn.Linear(embed_dims, embed_dims * 2, bias=qkv_bias)
+
+    def forward(self, x: torch.Tensor, visible_tokens: torch.Tensor,
+                ids_restore: torch.Tensor) -> torch.Tensor:
+        """Forward function for `PromptMultiheadAttention`.
+
+        Args:
+            x (torch.Tensor): Mask token features with shape N x L_m x C.
+            visible_tokens (torch.Tensor): The visible tokens features from
+                encoder with shape N x L_v x C.
+            ids_restore (torch.Tensor): The ids of all tokens in the original
+                image with shape N x L.
+
+        Returns:
+            torch Tensor: Output features with shape N x L x C.
+        """
+        x_ = torch.cat([visible_tokens[:, 1:, :], x], dim=1)
+        assert x_.shape[1] == ids_restore.shape[1]
+        x_ = torch.gather(
+            x_,
+            dim=1,
+            index=ids_restore.unsqueeze(-1).repeat(1, 1, x.shape[-1]))
+        x_ = torch.cat([visible_tokens[:, :1, :], x_], dim=1)
+
+        # full sequence shape
+        B, _, _ = x_.shape
+        q = self.q(x).reshape(B, x.shape[1], self.num_heads,
+                              self.head_dims).permute(0, 2, 1, 3)
+        kv = self.kv(x_).reshape(B, x_.shape[1], 2, self.num_heads,
+                                 self.head_dims).permute(2, 0, 3, 1, 4)
+        k, v = kv[0], kv[1]
+
+        attn = (q @ k.transpose(-2, -1)) * self.scale
+        attn = attn.softmax(dim=-1)
+        attn = self.attn_drop(attn)
+
+        x = (attn @ v).transpose(1, 2).reshape(B, x.shape[1], self.embed_dims)
+        x = self.proj(x)
+        x = self.out_drop(self.gamma1(self.proj_drop(x)))
         return x
