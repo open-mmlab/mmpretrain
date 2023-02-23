@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional, Union, List
+from typing import List, Optional, Union
+
 import torch
 
 from mmpretrain.registry import MODELS

@@ -1,11 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from .beitv2_neck import BEiTV2Neck
+from .cae_neck import CAENeck
+from .densecl_neck import DenseCLNeck
 from .gap import GlobalAveragePooling
 from .gem import GeneralizedMeanPooling
 from .hr_fuse import HRFuseScales
 from .linear_neck import LinearNeck
-from .beitv2_neck import BEiTV2Neck
-from .cae_neck import CAENeck
-from .densecl_neck import DenseCLNeck
 from .mae_neck import MAEPretrainDecoder
 from .milan_neck import MILANPretrainDecoder
 from .mixmim_neck import MixMIMPretrainDecoder

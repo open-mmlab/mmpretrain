@@ -4,7 +4,7 @@ import torch
 
 from mmpretrain.models.necks import (GeneralizedMeanPooling,
                                      GlobalAveragePooling, HRFuseScales,
-                                     LinearReduction)
+                                     LinearNeck)
 
 
 def test_gap_neck():
@@ -107,8 +107,9 @@ def test_hr_fuse_scales():
 
 def test_linear_reduction():
     # test linear_reduction without `act_cfg` and `norm_cfg`
-    neck = LinearReduction(10, 5, None, None)
+    neck = LinearNeck(10, 5, 0, None, None)
     neck.eval()
+    assert isinstance(neck.gap, torch.nn.Identity)
     assert isinstance(neck.act, torch.nn.Identity)
     assert isinstance(neck.norm, torch.nn.Identity)
 
@@ -125,12 +126,36 @@ def test_linear_reduction():
     # batch_size, out_features
     assert output[-1].shape == (1, 5)
 
+    # batch_size, in_channels, out_channels, gap_dim
+    neck = LinearNeck(10, 5, 1, None, None)
+    fake_input = torch.rand(1, 10, 10)
+    output = neck(fake_input)
+    # batch_size, out_features
+    assert output[-1].shape == (1, 5)
+
+    # batch_size, in_channels, out_channels, gap_dim
+    neck = LinearNeck(10, 5, 2, None, None)
+    fake_input = torch.rand(1, 10, 10, 10)
+    output = neck(fake_input)
+    # batch_size, out_features
+    assert output[-1].shape == (1, 5)
+
+    # batch_size, in_channels, out_channels, gap_dim
+    neck = LinearNeck(10, 5, 3, None, None)
+    fake_input = torch.rand(1, 10, 10, 10, 10)
+    output = neck(fake_input)
+    # batch_size, out_features
+    assert output[-1].shape == (1, 5)
+
+    # batch_size, in_channels, out_channels, gap_dim
+    with pytest.raises(AssertionError):
+        neck = LinearNeck(10, 5, None, None, None)
+
     # test linear_reduction with `init_cfg`
-    neck = LinearReduction(
-        10, 5, init_cfg=dict(type='Xavier', layer=['Linear']))
+    neck = LinearNeck(10, 5, init_cfg=dict(type='Xavier', layer=['Linear']))
 
     # test linear_reduction with `act_cfg` and `norm_cfg`
-    neck = LinearReduction(
+    neck = LinearNeck(
         10, 5, act_cfg=dict(type='ReLU'), norm_cfg=dict(type='BN1d'))
     neck.eval()
 

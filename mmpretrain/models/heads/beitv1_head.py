@@ -7,6 +7,7 @@ import torch.nn as nn
 from mmpretrain.registry import MODELS
 from .base_head import BaseHead
 
+
 @MODELS.register_module()
 class BEiTV1Head(BaseHead):
     """Pretrain Head for BEiT v1.

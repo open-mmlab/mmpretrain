@@ -5,11 +5,87 @@ import numpy as np
 import torch
 import torch.distributed as dist
 import torch.nn as nn
+from mmengine.dist import all_reduce
 from mmengine.model import BaseModule
 
 from mmpretrain.registry import MODELS
-from mmpretrain.utils import distributed_sinkhorn
-from ..utils import MultiPrototypes
+
+
+@torch.no_grad()
+def distributed_sinkhorn(out: torch.Tensor, sinkhorn_iterations: int,
+                         world_size: int, epsilon: float) -> torch.Tensor:
+    """Apply the distributed sinknorn optimization on the scores matrix to find
+    the assignments.
+
+    This function is modified from
+    https://github.com/facebookresearch/swav/blob/main/main_swav.py
+
+    Args:
+        out (torch.Tensor): The scores matrix
+        sinkhorn_iterations (int): Number of iterations in Sinkhorn-Knopp
+            algorithm.
+        world_size (int): The world size of the process group.
+        epsilon (float): regularization parameter for Sinkhorn-Knopp algorithm.
+
+    Returns:
+        torch.Tensor: Output of sinkhorn algorithm.
+    """
+    eps_num_stab = 1e-12
+    Q = torch.exp(out / epsilon).t(
+    )  # Q is K-by-B for consistency with notations from our paper
+    B = Q.shape[1] * world_size  # number of samples to assign
+    K = Q.shape[0]  # how many prototypes
+
+    # make the matrix sums to 1
+    sum_Q = torch.sum(Q)
+    all_reduce(sum_Q)
+    Q /= sum_Q
+
+    for it in range(sinkhorn_iterations):
+        # normalize each row: total weight per prototype must be 1/K
+        u = torch.sum(Q, dim=1, keepdim=True)
+        if len(torch.nonzero(u == 0)) > 0:
+            Q += eps_num_stab
+            u = torch.sum(Q, dim=1, keepdim=True, dtype=Q.dtype)
+            all_reduce(u)
+        Q /= u
+        Q /= K
+
+        # normalize each column: total weight per sample must be 1/B
+        Q /= torch.sum(Q, dim=0, keepdim=True)
+        Q /= B
+
+    Q *= B  # the columns must sum to 1 so that Q is an assignment
+    return Q.t()
+
+
+class MultiPrototypes(BaseModule):
+    """Multi-prototypes for SwAV head.
+
+    Args:
+        output_dim (int): The output dim from SwAV neck.
+        num_prototypes (List[int]): The number of prototypes needed.
+        init_cfg (dict or List[dict], optional): Initialization config dict.
+            Defaults to None.
+    """
+
+    def __init__(self,
+                 output_dim: int,
+                 num_prototypes: List[int],
+                 init_cfg: Optional[Union[List[dict], dict]] = None) -> None:
+        super().__init__(init_cfg=init_cfg)
+        assert isinstance(num_prototypes, list)
+        self.num_heads = len(num_prototypes)
+        for i, k in enumerate(num_prototypes):
+            self.add_module('prototypes' + str(i),
+                            nn.Linear(output_dim, k, bias=False))
+
+    def forward(self, x: torch.Tensor) -> List[torch.Tensor]:
+        """Run forward for every prototype."""
+        out = []
+        for i in range(self.num_heads):
+            out.append(getattr(self, 'prototypes' + str(i))(x))
+        return out
 
 
 @MODELS.register_module()
@@ -46,7 +122,7 @@ class SwAVLoss(BaseModule):
                  num_crops: List[int] = [2],
                  num_prototypes: int = 3000,
                  init_cfg: Optional[Union[List[dict], dict]] = None):
-        super().__init__(init_cfg)
+        super().__init__(init_cfg=init_cfg)
         self.sinkhorn_iterations = sinkhorn_iterations
         self.epsilon = epsilon
         self.temperature = temperature

@@ -2,7 +2,6 @@
 import torch
 import torch.nn as nn
 from mmengine.dist import get_rank
-from mmengine.model import BaseModule
 
 from mmpretrain.registry import MODELS
 from mmpretrain.utils import concat_all_gather
