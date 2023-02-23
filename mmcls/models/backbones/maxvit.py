@@ -31,8 +31,8 @@ class MBConv(BaseModule):
         in_channels (int): Number of input channels.
         out_channels (int): Number of output channels.
         downscale (bool, optional): If true downscale by a factor of two is performed. Default: False
-        act_layer (Type[nn.Module], optional): Type of activation layer to be utilized. Default: nn.GELU
-        norm_layer (Type[nn.Module], optional): Type of normalization layer to be utilized. Default: nn.BatchNorm2d
+        act_cfg (Type[nn.Module], optional): Type of activation layer to be utilized. Default: nn.GELU
+        norm_cfg (Type[nn.Module], optional): Type of normalization layer to be utilized. Default: nn.BatchNorm2d
         drop_path (float, optional): Dropout rate to be applied during training. Default 0.
     """
 
@@ -314,24 +314,22 @@ class MaxViTTransformerBlock(BaseModule):
         drop (float, optional): Dropout ratio of output. Default: 0.0
         drop_path (float, optional): Dropout ratio of path. Default: 0.0
         mlp_ratio (float, optional): Ratio of mlp hidden dim to embedding dim. Default: 4.0
-        act_layer (Type[nn.Module], optional): Type of activation layer to be utilized. Default: nn.GELU
-        norm_layer (Type[nn.Module], optional): Type of normalization layer to be utilized. Default: nn.BatchNorm2d
+        act_cfg (Type[nn.Module], optional): Type of activation layer to be utilized. Default: nn.GELU
+        norm_cfg (Type[nn.Module], optional): Type of normalization layer to be utilized. Default: nn.BatchNorm2d
     """
 
-    def __init__(
-            self,
-            in_channels: int,
-            partition_function: Callable,
-            reverse_function: Callable,
-            num_heads: int = 32,
-            grid_window_size: Tuple[int, int] = (7, 7),
-            attn_drop: float = 0.,
-            drop: float = 0.,
-            drop_path: float = 0.,
-            mlp_ratio: float = 4.,
-            act_layer=dict(type='GELU'),
-            norm_layer: Type[nn.Module] = nn.LayerNorm,
-    ) -> None:
+    def __init__(self,
+                 in_channels: int,
+                 partition_function: Callable,
+                 reverse_function: Callable,
+                 num_heads: int = 32,
+                 grid_window_size: Tuple[int, int] = (7, 7),
+                 attn_drop: float = 0.,
+                 drop: float = 0.,
+                 drop_path: float = 0.,
+                 mlp_ratio: float = 4.,
+                 act_cfg=dict(type='GELU'),
+                 norm_cfg=dict(type='LN')) -> None:
         """ Constructor method """
         super(MaxViTTransformerBlock, self).__init__()
         # Save parameters
@@ -339,7 +337,7 @@ class MaxViTTransformerBlock(BaseModule):
         self.reverse_function: Callable = reverse_function
         self.grid_window_size: Tuple[int, int] = grid_window_size
         # Init layers
-        self.norm_1 = norm_layer(in_channels)
+        self.norm1 = build_norm_layer(norm_cfg, in_channels)
         self.attention = RelativeSelfAttention(
             in_channels=in_channels,
             num_heads=num_heads,
@@ -348,13 +346,12 @@ class MaxViTTransformerBlock(BaseModule):
             drop=drop
         )
         self.drop_path = DropPath(drop_path) if drop_path > 0. else nn.Identity()
-        self.norm_2 = norm_layer(in_channels)
-        self.mlp = FFN(
-            embed_dims=in_channels,
-            feedforward_channels=int(mlp_ratio * in_channels),
-            act_layer=act_layer,
-            drop=drop
-        )
+        self.norm2 = build_norm_layer(norm_cfg, in_channels)
+
+        self.mlp = FFN(embed_dims=in_channels,
+                       feedforward_channels=int(mlp_ratio * in_channels),
+                       act_cfg=act_cfg,
+                       ffn_drop=drop)
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         """ Forward pass.
@@ -369,9 +366,9 @@ class MaxViTTransformerBlock(BaseModule):
         input_partitioned = self.partition_function(input, self.grid_window_size)
         input_partitioned = input_partitioned.view(-1, self.grid_window_size[0] * self.grid_window_size[1], C)
         # Perform normalization, attention, and dropout
-        output = input_partitioned + self.drop_path(self.attention(self.norm_1(input_partitioned)))
+        output = input_partitioned + self.drop_path(self.attention(self.norm1(input_partitioned)))
         # Perform normalization, MLP, and dropout
-        output = output + self.drop_path(self.mlp(self.norm_2(output)))
+        output = output + self.drop_path(self.mlp(self.norm2(output)))
         # Reverse partition
         output = self.reverse_function(output, (H, W), self.grid_window_size)
         return output
@@ -389,9 +386,9 @@ class MaxViTBlock(BaseModule):
         drop (float, optional): Dropout ratio of output. Default: 0.0
         drop_path (float, optional): Dropout ratio of path. Default: 0.0
         mlp_ratio (float, optional): Ratio of mlp hidden dim to embedding dim. Default: 4.0
-        act_layer (Type[nn.Module], optional): Type of activation layer to be utilized. Default: nn.GELU
-        norm_layer (Type[nn.Module], optional): Type of normalization layer to be utilized. Default: nn.BatchNorm2d
-        norm_layer_transformer (Type[nn.Module], optional): Normalization layer in Transformer. Default: nn.LayerNorm
+        act_cfg (Type[nn.Module], optional): Type of activation layer to be utilized. Default: nn.GELU
+        norm_cfg (Type[nn.Module], optional): Type of normalization layer to be utilized. Default: nn.BatchNorm2d
+        norm_cfg_transformer (Type[nn.Module], optional): Normalization layer in Transformer. Default: nn.LayerNorm
     """
 
     def __init__(
@@ -405,9 +402,9 @@ class MaxViTBlock(BaseModule):
             drop: float = 0.,
             drop_path: float = 0.,
             mlp_ratio: float = 4.,
-            act_layer: Type[nn.Module] = nn.GELU,
-            norm_layer: Type[nn.Module] = nn.BatchNorm2d,
-            norm_layer_transformer: Type[nn.Module] = nn.LayerNorm
+            act_cfg=dict(type='GELU'),
+            norm_cfg=dict(type='BN'),
+            norm_cfg_transformer=dict(type='LN')
     ) -> None:
         """ Constructor method """
         # Call super constructor
@@ -417,7 +414,8 @@ class MaxViTBlock(BaseModule):
             in_channels=in_channels,
             out_channels=out_channels,
             stride=stride,
-            drop_path=drop_path
+            drop_path=drop_path,
+            norm_cfg=norm_cfg
         )
         # Init Block and Grid Transformer
         self.block_transformer = MaxViTTransformerBlock(
@@ -430,8 +428,8 @@ class MaxViTBlock(BaseModule):
             drop=drop,
             drop_path=drop_path,
             mlp_ratio=mlp_ratio,
-            act_layer=act_layer,
-            norm_layer=norm_layer_transformer
+            act_cfg=act_cfg,
+            norm_cfg=norm_cfg_transformer
         )
         self.grid_transformer = MaxViTTransformerBlock(
             in_channels=out_channels,
@@ -443,8 +441,8 @@ class MaxViTBlock(BaseModule):
             drop=drop,
             drop_path=drop_path,
             mlp_ratio=mlp_ratio,
-            act_layer=act_layer,
-            norm_layer=norm_layer_transformer
+            act_cfg=act_cfg,
+            norm_cfg=norm_cfg_transformer
         )
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
@@ -470,9 +468,9 @@ class MaxViTStage(BaseModule):
         drop (float, optional): Dropout ratio of output. Default: 0.0
         drop_path (float, optional): Dropout ratio of path. Default: 0.0
         mlp_ratio (float, optional): Ratio of mlp hidden dim to embedding dim. Default: 4.0
-        act_layer (Type[nn.Module], optional): Type of activation layer to be utilized. Default: nn.GELU
-        norm_layer (Type[nn.Module], optional): Type of normalization layer to be utilized. Default: nn.BatchNorm2d
-        norm_layer_transformer (Type[nn.Module], optional): Normalization layer in Transformer. Default: nn.LayerNorm
+        act_cfg (Type[nn.Module], optional): Type of activation layer to be utilized. Default: nn.GELU
+        norm_cfg (Type[nn.Module], optional): Type of normalization layer to be utilized. Default: nn.BatchNorm2d
+        norm_cfg_transformer (Type[nn.Module], optional): Normalization layer in Transformer. Default: nn.LayerNorm
     """
 
     def __init__(
@@ -486,9 +484,9 @@ class MaxViTStage(BaseModule):
             drop: float = 0.,
             drop_path: Union[List[float], float] = 0.,
             mlp_ratio: float = 4.,
-            act_layer: Type[nn.Module] = nn.GELU,
-            norm_layer: Type[nn.Module] = nn.BatchNorm2d,
-            norm_layer_transformer: Type[nn.Module] = nn.LayerNorm
+            act_cfg=dict(type='GELU'),
+            norm_cfg=dict(type='BN'),
+            norm_cfg_transformer=dict(type='LN')
     ) -> None:
         """ Constructor method """
         # Call super constructor
@@ -505,9 +503,9 @@ class MaxViTStage(BaseModule):
                 drop=drop,
                 drop_path=drop_path if isinstance(drop_path, float) else drop_path[index],
                 mlp_ratio=mlp_ratio,
-                act_layer=act_layer,
-                norm_layer=norm_layer,
-                norm_layer_transformer=norm_layer_transformer
+                act_cfg=act_cfg,
+                norm_cfg=norm_cfg,
+                norm_cfg_transformer=norm_cfg_transformer
             )
             for index in range(depth)
         ])
@@ -538,9 +536,9 @@ class MaxViT(BaseBackbone):
         drop (float, optional): Dropout ratio of output. Default: 0.0
         drop_path (float, optional): Dropout ratio of path. Default: 0.0
         mlp_ratio (float, optional): Ratio of mlp hidden dim to embedding dim. Default: 4.0
-        act_layer (Type[nn.Module], optional): Type of activation layer to be utilized. Default: nn.GELU
-        norm_layer (Type[nn.Module], optional): Type of normalization layer to be utilized. Default: nn.BatchNorm2d
-        norm_layer_transformer (Type[nn.Module], optional): Normalization layer in Transformer. Default: nn.LayerNorm
+        act_cfg (Type[nn.Module], optional): Type of activation layer to be utilized. Default: nn.GELU
+        norm_cfg (Type[nn.Module], optional): Type of normalization layer to be utilized. Default: nn.BatchNorm2d
+        norm_cfg_transformer (Type[nn.Module], optional): Normalization layer in Transformer. Default: nn.LayerNorm
         global_pool (str, optional): Global polling type to be utilized. Default "avg"
     """
 
@@ -557,9 +555,9 @@ class MaxViT(BaseBackbone):
             drop=0.,
             drop_path=0.,
             mlp_ratio=4.,
-            act_layer=nn.GELU,
-            norm_layer=nn.BatchNorm2d,
-            norm_layer_transformer=nn.LayerNorm,
+            act_cfg=dict(type='GELU'),
+            norm_cfg=dict(type='BN', eps=1e-5),
+            norm_cfg_transformer=dict(type='LN'),
             global_pool: str = "avg"
     ) -> None:
         """ Constructor method """
@@ -572,12 +570,20 @@ class MaxViT(BaseBackbone):
         self.num_classes: int = num_classes
         # Init convolutional stem
         self.stem = nn.Sequential(
-            nn.Conv2d(in_channels=in_channels, out_channels=embed_dim, kernel_size=(3, 3), stride=(2, 2),
-                      padding=(1, 1)),
-            act_layer(),
-            nn.Conv2d(in_channels=embed_dim, out_channels=embed_dim, kernel_size=(3, 3), stride=(1, 1),
-                      padding=(1, 1)),
-            act_layer(),
+            ConvModule(in_channels=in_channels,
+                       out_channels=embed_dim,
+                       kernel_size=3,
+                       stride=2,
+                       conv_cfg=dict(type='Conv2dAdaptivePadding'),
+                       norm_cfg=norm_cfg,
+                       act_cfg=act_cfg),
+            ConvModule(in_channels=embed_dim,
+                       out_channels=embed_dim,
+                       kernel_size=3,
+                       stride=1,
+                       conv_cfg=dict(type='Conv2d'),
+                       norm_cfg=None,
+                       act_cfg=None)
         )
         # Init blocks
         drop_path = torch.linspace(0.0, drop_path, sum(depths)).tolist()
@@ -594,9 +600,9 @@ class MaxViT(BaseBackbone):
                     drop=drop,
                     drop_path=drop_path[sum(depths[:index]):sum(depths[:index + 1])],
                     mlp_ratio=mlp_ratio,
-                    act_layer=act_layer,
-                    norm_layer=norm_layer,
-                    norm_layer_transformer=norm_layer_transformer
+                    act_cfg=act_cfg,
+                    norm_cfg=norm_cfg,
+                    norm_cfg_transformer=norm_cfg_transformer
                 )
             )
         self.stages = nn.ModuleList(stages)
