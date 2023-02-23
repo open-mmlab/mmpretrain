@@ -9,7 +9,7 @@ from .base_head import BaseHead
 
 @MODELS.register_module()
 class NaiveMIMHead(BaseHead):
-    """Naive pretrain head for Masked Image Modeling
+    """Naive pretrain head for Masked Image Modeling.
 
     Args:
         loss (dict): Config of loss.

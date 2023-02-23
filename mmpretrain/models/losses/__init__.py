@@ -12,11 +12,6 @@ from .seesaw_loss import SeesawLoss
 from .swav_loss import SwAVLoss
 from .utils import (convert_to_one_hot, reduce_loss, weight_reduce_loss,
                     weighted_loss)
-from .cae_loss import CAELoss
-from .cosine_similarity_loss import CosineSimilarityLoss
-from .cross_correlation_loss import CrossCorrelationLoss
-from .reconstruction_loss import PixelReconstructionLoss
-from .swav_loss import SwAVLoss
 
 __all__ = [
     'asymmetric_loss',

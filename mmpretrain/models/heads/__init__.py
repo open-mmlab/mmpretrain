@@ -17,19 +17,11 @@ from .multi_label_cls_head import MultiLabelClsHead
 from .multi_label_csra_head import CSRAClsHead
 from .multi_label_linear_head import MultiLabelLinearClsHead
 from .multi_task_head import MultiTaskHead
+from .naive_mim_head import NaiveMIMHead
 from .stacked_head import StackedLinearClsHead
 from .swav_head import SwAVHead
 from .vig_head import VigClsHead
 from .vision_transformer_head import VisionTransformerClsHead
-from .beitv1_head import BEiTV1Head
-from .beitv2_head import BEiTV2Head
-from .cae_head import CAEHead
-from .contrastive_head import ContrastiveHead
-from .latent_heads import LatentCrossCorrelationHead, LatentPredictHead
-from .mae_head import MAEPretrainHead
-from .mixmim_head import MixMIMPretrainHead
-from .naive_mim_head import NaiveMIMHead
-from .swav_head import SwAVHead
 
 __all__ = [
     'ClsHead',
