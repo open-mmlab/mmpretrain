@@ -289,7 +289,7 @@ def fill_model_by_prompt(model: dict, defaults: dict):
 def update_model_by_dict(model: dict, update_dict: dict, defaults: dict):
     # Name
     if 'name override' in update_dict:
-        model['Name'] = update_dict['name override']
+        model['Name'] = update_dict['name override'].strip()
 
     # In Collection
     model['In Collection'] = defaults.get('In Collection')
@@ -306,7 +306,7 @@ def update_model_by_dict(model: dict, update_dict: dict, defaults: dict):
     # Metadata.Flops, Metadata.Parameters
     flops = model.get('Metadata', {}).get('FLOPs')
     params = model.get('Metadata', {}).get('Parameters')
-    if config_updated and (flops is None or params is None):
+    if config_updated or (flops is None or params is None):
         print(f'Automatically compute FLOPs and Parameters of {model["Name"]}')
         flops, params = get_flops(str(MMCLS_ROOT / model['Config']))
 

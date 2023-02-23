@@ -51,6 +51,7 @@ repos:
   - repo: local
     hooks:
       - id: metafile
+        args: ['--skip', 'flops-param']
         name: metafile
         description: Check the format of metafile
         entry: python .dev_scripts/check_metafile.py

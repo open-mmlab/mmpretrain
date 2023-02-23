@@ -53,3 +53,16 @@ Import:
   - configs/vig/metafile.yml
   - configs/arcface/metafile.yml
   - configs/xcit/metafile.yml
+  - configs/byol/metafile.yml
+  - configs/densecl/metafile.yml
+  - configs/mocov2/metafile.yml
+  - configs/mocov3/metafile.yml
+  - configs/simclr/metafile.yml
+  - configs/simsiam/metafile.yml
+  - configs/swav/metafile.yml
+  - configs/mae/metafile.yml
+  - configs/simmim/metafile.yml
+  - configs/barlowtwins/metafile.yml
+  - configs/cae/metafile.yml
+  - configs/maskfeat/metafile.yml
+  - configs/milan/metafile.yml

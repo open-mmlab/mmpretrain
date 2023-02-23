@@ -10,7 +10,7 @@ Collections:
     README: configs/densenet/README.md
 
 Models:
-  - Name: densenet121_4xb256_in1k
+  - Name: densenet121_3rdparty_in1k
     Metadata:
       FLOPs: 2881695488
       Parameters: 7978856
@@ -26,7 +26,7 @@ Models:
     Converted From:
       Weights: https://download.pytorch.org/models/densenet121-a639ec97.pth
       Code: https://github.com/pytorch/vision/blob/main/torchvision/models/densenet.py
-  - Name: densenet169_4xb256_in1k
+  - Name: densenet169_3rdparty_in1k
     Metadata:
       FLOPs: 3416860160
       Parameters: 14149480
@@ -42,7 +42,7 @@ Models:
     Converted From:
       Weights: https://download.pytorch.org/models/densenet169-b2777c0a.pth
       Code: https://github.com/pytorch/vision/blob/main/torchvision/models/densenet.py
-  - Name: densenet201_4xb256_in1k
+  - Name: densenet201_3rdparty_in1k
     Metadata:
       FLOPs: 4365236736
       Parameters: 20013928
@@ -58,7 +58,7 @@ Models:
     Converted From:
       Weights: https://download.pytorch.org/models/densenet201-c1103571.pth
       Code: https://github.com/pytorch/vision/blob/main/torchvision/models/densenet.py
-  - Name: densenet161_4xb256_in1k
+  - Name: densenet161_3rdparty_in1k
     Metadata:
       FLOPs: 7816363968
       Parameters: 28681000
