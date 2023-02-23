@@ -1,6 +1,6 @@
 attrs
 einops
-importlib-metadata;python_version<'3.8'
+importlib-metadata
 matplotlib
 modelindex
 numpy

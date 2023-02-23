@@ -23,7 +23,7 @@ class TestImageClassificationInferencer(TestCase):
         # test input BaseModel
         model = get_model(MODEL)
         inferencer = ImageClassificationInferencer(model)
-        self.assertEqual(model.cfg, inferencer.cfg)
+        self.assertEqual(model.config, inferencer.config)
         self.assertIsInstance(inferencer.model.backbone, MobileNetV3)
 
         # test input model name
@@ -42,7 +42,7 @@ class TestImageClassificationInferencer(TestCase):
 
         # test specify weights
         with patch('mmengine.runner.load_checkpoint') as mock:
-            ImageClassificationInferencer(MODEL, weights='custom.pth')
+            ImageClassificationInferencer(MODEL, pretrained='custom.pth')
             mock.assert_called_once_with(ANY, 'custom.pth', map_location='cpu')
 
     def test_call(self):

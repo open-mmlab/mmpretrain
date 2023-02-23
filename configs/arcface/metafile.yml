@@ -22,6 +22,6 @@ Models:
       - Dataset: InShop
         Metrics:
           Recall@1: 90.18
-        Task: Metric Learning
+        Task: Image Retrieval
     Weights: https://download.openmmlab.com/mmclassification/v0/arcface/resnet50-arcface_inshop_20230202-b766fe7f.pth
     Config: configs/arcface/resnet50-arcface_8xb32_inshop.py

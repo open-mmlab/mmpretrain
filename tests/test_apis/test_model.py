@@ -57,7 +57,7 @@ class TestHubAPIs(TestCase):
         self.assertIsInstance(model, ImageClassifier)
         self.assertIsInstance(model.backbone, MobileNetV2)
 
-        with patch('mmpretrain.apis.model.init_model') as mock:
+        with patch('mmengine.runner.load_checkpoint') as mock:
             model = get_model('mobilenet-v2_8xb32_in1k', pretrained=True)
             model = get_model('mobilenet-v2_8xb32_in1k', pretrained='test.pth')
 
