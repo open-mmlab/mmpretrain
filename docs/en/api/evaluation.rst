@@ -44,3 +44,4 @@ Retrieval Metric
    :template: classtemplate.rst
 
    RetrievalRecall
+   RetrievalAveragePrecision
