@@ -34,7 +34,7 @@ class MAEPretrainDecoder(BaseModule):
             dict. Defaults to None.
 
     Example:
-        >>> from mmselfsup.models import MAEPretrainDecoder
+        >>> from mmpretrain.models import MAEPretrainDecoder
         >>> import torch
         >>> self = MAEPretrainDecoder()
         >>> self.eval()

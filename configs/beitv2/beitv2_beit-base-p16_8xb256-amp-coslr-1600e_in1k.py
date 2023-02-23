@@ -56,7 +56,7 @@ model = dict(
         type='BEiTV2Head',
         embed_dims=768,
         num_embed=8192,
-        loss=dict(type='BEiTLoss')),
+        loss=dict(type='CrossEntropyLoss')),
     target_generator=dict(
         type='VQKD',
         encoder_config=vqkd_encoder,

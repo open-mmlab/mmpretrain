@@ -17,7 +17,7 @@ model = dict(
     head=dict(
         type='SimMIMHead',
         patch_size=4,
-        loss=dict(type='SimMIMReconstructionLoss', encoder_in_channels=3)))
+        loss=dict(type='PixelReconstructionLoss', criterion='L1', channels=3)))
 
 # optimizer wrapper
 optim_wrapper = dict(

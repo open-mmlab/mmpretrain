@@ -14,8 +14,17 @@ from .nonlinear_neck import NonLinearNeck
 from .simmim_neck import SimMIMLinearDecoder
 
 __all__ = [
-    'GlobalAveragePooling', 'GeneralizedMeanPooling', 'HRFuseScales',
-    'LinearNeck', 'BEiTV2Neck', 'CAENeck', 'DenseCLNeck', 'MAEPretrainDecoder',
-    'MILANPretrainDecoder', 'MixMIMPretrainDecoder', 'MoCoV2Neck',
-    'NonLinearNeck', 'SimMIMLinearDecoder'
+    'GlobalAveragePooling',
+    'GeneralizedMeanPooling',
+    'HRFuseScales',
+    'LinearNeck',
+    'BEiTV2Neck',
+    'CAENeck',
+    'DenseCLNeck',
+    'MAEPretrainDecoder',
+    'MILANPretrainDecoder',
+    'MixMIMPretrainDecoder',
+    'MoCoV2Neck',
+    'NonLinearNeck',
+    'SimMIMLinearDecoder',
 ]

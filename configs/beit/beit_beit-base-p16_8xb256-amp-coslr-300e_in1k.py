@@ -71,7 +71,7 @@ model = dict(
         type='BEiTV1Head',
         embed_dims=768,
         num_embed=8192,
-        loss=dict(type='BEiTLoss')),
+        loss=dict(type='CrossEntropyLoss')),
     target_generator=dict(
         type='DALL-E',
         init_cfg=dict(
