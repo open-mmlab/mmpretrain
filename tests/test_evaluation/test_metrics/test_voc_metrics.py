@@ -7,7 +7,7 @@ import torch
 from mmengine.evaluator import Evaluator
 from mmengine.registry import init_default_scope
 
-from mmpretrain.structures import ClsDataSample
+from mmpretrain.structures import DataSample
 
 init_default_scope('mmpretrain')
 
@@ -27,7 +27,7 @@ class TestVOCMultiLabel(TestCase):
 
         # generate data samples
         pred = [
-            ClsDataSample(num_classes=4).set_pred_score(i).set_gt_label(j)
+            DataSample(num_classes=4).set_pred_score(i).set_gt_label(j)
             for i, j in zip(y_pred_score, y_true_label)
         ]
         for sample, difficult_label in zip(pred, y_true_difficult):
@@ -155,7 +155,7 @@ class TestVOCAveragePrecision(TestCase):
 
         # generate data samples
         pred = [
-            ClsDataSample(num_classes=4).set_pred_score(i).set_gt_score(
+            DataSample(num_classes=4).set_pred_score(i).set_gt_score(
                 j).set_gt_label(k)
             for i, j, k in zip(y_pred_score, y_true, y_true_label)
         ]

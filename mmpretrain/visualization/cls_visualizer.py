@@ -7,7 +7,7 @@ from mmengine.dist import master_only
 from mmengine.visualization import Visualizer
 
 from mmpretrain.registry import VISUALIZERS
-from mmpretrain.structures import ClsDataSample
+from mmpretrain.structures import DataSample
 
 
 def _get_adaptive_scale(img_shape: Tuple[int, int],
@@ -57,11 +57,11 @@ class ClsVisualizer(Visualizer):
         >>> import mmcv
         >>> from pathlib import Path
         >>> from mmpretrain.visualization import ClsVisualizer
-        >>> from mmpretrain.structures import ClsDataSample
+        >>> from mmpretrain.structures import DataSample
         >>> # Example image
         >>> img = mmcv.imread("./demo/bird.JPEG", channel_order='rgb')
         >>> # Example annotation
-        >>> data_sample = ClsDataSample().set_gt_label(1).set_pred_label(1).\
+        >>> data_sample = DataSample().set_gt_label(1).set_pred_label(1).\
         ...     set_pred_score(torch.tensor([0.1, 0.8, 0.1]))
         >>> # Setup the visualizer
         >>> vis = ClsVisualizer(
@@ -84,7 +84,7 @@ class ClsVisualizer(Visualizer):
     def add_datasample(self,
                        name: str,
                        image: np.ndarray,
-                       data_sample: Optional[ClsDataSample] = None,
+                       data_sample: Optional[DataSample] = None,
                        draw_gt: bool = True,
                        draw_pred: bool = True,
                        draw_score: bool = True,
@@ -104,7 +104,7 @@ class ClsVisualizer(Visualizer):
         Args:
             name (str): The image identifier.
             image (np.ndarray): The image to draw.
-            data_sample (:obj:`ClsDataSample`, optional): The annotation of the
+            data_sample (:obj:`DataSample`, optional): The annotation of the
                 image. Defaults to None.
             draw_gt (bool): Whether to draw ground truth labels.
                 Defaults to True.
@@ -137,8 +137,7 @@ class ClsVisualizer(Visualizer):
         self.set_image(image)
 
         if draw_gt and 'gt_label' in data_sample:
-            gt_label = data_sample.gt_label
-            idx = gt_label.label.tolist()
+            idx = data_sample.gt_label.tolist()
             class_labels = [''] * len(idx)
             if classes is not None:
                 class_labels = [f' ({classes[i]})' for i in idx]
@@ -147,13 +146,12 @@ class ClsVisualizer(Visualizer):
             texts.append(prefix + ('\n' + ' ' * len(prefix)).join(labels))
 
         if draw_pred and 'pred_label' in data_sample:
-            pred_label = data_sample.pred_label
-            idx = pred_label.label.tolist()
+            idx = data_sample.pred_label.tolist()
             score_labels = [''] * len(idx)
             class_labels = [''] * len(idx)
-            if draw_score and 'score' in pred_label:
+            if draw_score and 'pred_score' in data_sample:
                 score_labels = [
-                    f', {pred_label.score[i].item():.2f}' for i in idx
+                    f', {data_sample.pred_score[i].item():.2f}' for i in idx
                 ]
 
             if classes is not None:

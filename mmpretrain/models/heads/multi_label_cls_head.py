@@ -3,10 +3,9 @@ from typing import Dict, List, Optional, Tuple
 
 import torch
 import torch.nn as nn
-from mmengine.structures import LabelData
 
 from mmpretrain.registry import MODELS
-from mmpretrain.structures import ClsDataSample
+from mmpretrain.structures import DataSample, label_to_onehot
 from .base_head import BaseHead
 
 
@@ -65,8 +64,8 @@ class MultiLabelClsHead(BaseHead):
         # just return the unpacked inputs.
         return pre_logits
 
-    def loss(self, feats: Tuple[torch.Tensor],
-             data_samples: List[ClsDataSample], **kwargs) -> dict:
+    def loss(self, feats: Tuple[torch.Tensor], data_samples: List[DataSample],
+             **kwargs) -> dict:
         """Calculate losses from the classification score.
 
         Args:
@@ -74,7 +73,7 @@ class MultiLabelClsHead(BaseHead):
                 Multiple stage inputs are acceptable but only the last stage
                 will be used to classify. The shape of every item should be
                 ``(num_samples, num_classes)``.
-            data_samples (List[ClsDataSample]): The annotation data of
+            data_samples (List[DataSample]): The annotation data of
                 every samples.
             **kwargs: Other keyword arguments to forward the loss module.
 
@@ -89,19 +88,16 @@ class MultiLabelClsHead(BaseHead):
         return losses
 
     def _get_loss(self, cls_score: torch.Tensor,
-                  data_samples: List[ClsDataSample], **kwargs):
+                  data_samples: List[DataSample], **kwargs):
         """Unpack data samples and compute loss."""
         num_classes = cls_score.size()[-1]
         # Unpack data samples and pack targets
-        if 'score' in data_samples[0].gt_label:
-            target = torch.stack(
-                [i.gt_label.score.float() for i in data_samples])
+        if 'gt_score' in data_samples[0]:
+            target = torch.stack([i.gt_score for i in data_samples])
         else:
             target = torch.stack([
-                LabelData.label_to_onehot(i.gt_label.label,
-                                          num_classes).float()
-                for i in data_samples
-            ])
+                label_to_onehot(i.gt_label, num_classes) for i in data_samples
+            ]).float()
 
         # compute loss
         losses = dict()
@@ -111,10 +107,9 @@ class MultiLabelClsHead(BaseHead):
 
         return losses
 
-    def predict(
-            self,
-            feats: Tuple[torch.Tensor],
-            data_samples: List[ClsDataSample] = None) -> List[ClsDataSample]:
+    def predict(self,
+                feats: Tuple[torch.Tensor],
+                data_samples: List[DataSample] = None) -> List[DataSample]:
         """Inference without augmentation.
 
         Args:
@@ -122,12 +117,12 @@ class MultiLabelClsHead(BaseHead):
                 Multiple stage inputs are acceptable but only the last stage
                 will be used to classify. The shape of every item should be
                 ``(num_samples, num_classes)``.
-            data_samples (List[ClsDataSample], optional): The annotation
+            data_samples (List[DataSample], optional): The annotation
                 data of every samples. If not None, set ``pred_label`` of
                 the input data samples. Defaults to None.
 
         Returns:
-            List[ClsDataSample]: A list of data samples which contains the
+            List[DataSample]: A list of data samples which contains the
             predicted results.
         """
         # The part can be traced by torch.fx
@@ -138,7 +133,7 @@ class MultiLabelClsHead(BaseHead):
         return predictions
 
     def _get_predictions(self, cls_score: torch.Tensor,
-                         data_samples: List[ClsDataSample]):
+                         data_samples: List[DataSample]):
         """Post-process the output of head.
 
         Including softmax and set ``pred_label`` of data samples.
@@ -146,7 +141,7 @@ class MultiLabelClsHead(BaseHead):
         pred_scores = torch.sigmoid(cls_score)
 
         if data_samples is None:
-            data_samples = [ClsDataSample() for _ in range(cls_score.size(0))]
+            data_samples = [DataSample() for _ in range(cls_score.size(0))]
 
         for data_sample, score in zip(data_samples, pred_scores):
             if self.thr is not None:

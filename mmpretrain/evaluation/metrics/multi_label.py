@@ -5,9 +5,9 @@ import numpy as np
 import torch
 from mmengine.evaluator import BaseMetric
 from mmengine.logging import MMLogger
-from mmengine.structures import LabelData
 
 from mmpretrain.registry import METRICS
+from mmpretrain.structures import label_to_onehot
 from .single_label import _precision_recall_f1_support, to_tensor
 
 
@@ -114,10 +114,10 @@ class MultiLabelMetric(BaseMetric):
         (tensor(62.5000), tensor(31.2500), tensor(39.1667), tensor(8))
         >>>
         >>> # ------------------- Use with Evalutor -------------------
-        >>> from mmpretrain.structures import ClsDataSample
+        >>> from mmpretrain.structures import DataSample
         >>> from mmengine.evaluator import Evaluator
         >>> data_sampels = [
-        ...     ClsDataSample().set_pred_score(pred).set_gt_score(gt)
+        ...     DataSample().set_pred_score(pred).set_gt_score(gt)
         ...     for pred, gt in zip(torch.rand(1000, 5), torch.randint(0, 2, (1000, 5)))]
         >>> evaluator = Evaluator(metrics=MultiLabelMetric(thr=0.5))
         >>> evaluator.process(data_sampels)
@@ -181,17 +181,15 @@ class MultiLabelMetric(BaseMetric):
         """
         for data_sample in data_samples:
             result = dict()
-            pred_label = data_sample['pred_label']
-            gt_label = data_sample['gt_label']
 
-            result['pred_score'] = pred_label['score'].clone()
+            result['pred_score'] = data_sample['pred_score'].clone()
             num_classes = result['pred_score'].size()[-1]
 
-            if 'score' in gt_label:
-                result['gt_score'] = gt_label['score'].clone()
+            if 'gt_score' in data_sample:
+                result['gt_score'] = data_sample['gt_score'].clone()
             else:
-                result['gt_score'] = LabelData.label_to_onehot(
-                    gt_label['label'], num_classes)
+                result['gt_score'] = label_to_onehot(data_sample['gt_label'],
+                                                     num_classes)
 
             # Save the result to `self.results`.
             self.results.append(result)
@@ -331,8 +329,7 @@ class MultiLabelMetric(BaseMetric):
                     assert num_classes is not None, 'For index-type labels, ' \
                         'please specify `num_classes`.'
                     label = torch.stack([
-                        LabelData.label_to_onehot(
-                            to_tensor(indices), num_classes)
+                        label_to_onehot(indices, num_classes)
                         for indices in label
                     ])
                 else:
@@ -479,10 +476,10 @@ class AveragePrecision(BaseMetric):
         >>> AveragePrecision.calculate(y_pred, y_true)
         tensor(70.833)
         >>> # ------------------- Use with Evalutor -------------------
-        >>> from mmpretrain.structures import ClsDataSample
+        >>> from mmpretrain.structures import DataSample
         >>> from mmengine.evaluator import Evaluator
         >>> data_samples = [
-        ...     ClsDataSample().set_pred_score(i).set_gt_score(j)
+        ...     DataSample().set_pred_score(i).set_gt_score(j)
         ...     for i, j in zip(y_pred, y_true)
         ... ]
         >>> evaluator = Evaluator(metrics=AveragePrecision())
@@ -517,17 +514,15 @@ class AveragePrecision(BaseMetric):
 
         for data_sample in data_samples:
             result = dict()
-            pred_label = data_sample['pred_label']
-            gt_label = data_sample['gt_label']
 
-            result['pred_score'] = pred_label['score']
+            result['pred_score'] = data_sample['pred_score'].clone()
             num_classes = result['pred_score'].size()[-1]
 
-            if 'score' in gt_label:
-                result['gt_score'] = gt_label['score']
+            if 'gt_score' in data_sample:
+                result['gt_score'] = data_sample['gt_score'].clone()
             else:
-                result['gt_score'] = LabelData.label_to_onehot(
-                    gt_label['label'], num_classes)
+                result['gt_score'] = label_to_onehot(data_sample['gt_label'],
+                                                     num_classes)
 
             # Save the result to `self.results`.
             self.results.append(result)

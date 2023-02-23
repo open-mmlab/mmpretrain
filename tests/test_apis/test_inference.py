@@ -9,7 +9,7 @@ from mmcv.image import imread
 from mmpretrain.apis import (ImageClassificationInferencer, ModelHub,
                              get_model, inference_model)
 from mmpretrain.models import MobileNetV3
-from mmpretrain.structures import ClsDataSample
+from mmpretrain.structures import DataSample
 from mmpretrain.visualization import ClsVisualizer
 
 MODEL = 'mobilenet-v3-small-050_3rdparty_in1k'
@@ -58,7 +58,7 @@ class TestImageClassificationInferencer(TestCase):
 
         # test return_datasample=True
         results = inferencer(img, return_datasamples=True)[0]
-        self.assertIsInstance(results, ClsDataSample)
+        self.assertIsInstance(results, DataSample)
 
     def test_visualize(self):
         img_path = osp.join(osp.dirname(__file__), '../data/color.jpg')

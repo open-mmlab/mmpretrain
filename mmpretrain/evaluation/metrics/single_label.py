@@ -104,10 +104,10 @@ class Accuracy(BaseMetric):
         [[tensor([9.9000])], [tensor([51.5000])]]
         >>>
         >>> # ------------------- Use with Evalutor -------------------
-        >>> from mmpretrain.structures import ClsDataSample
+        >>> from mmpretrain.structures import DataSample
         >>> from mmengine.evaluator import Evaluator
         >>> data_samples = [
-        ...     ClsDataSample().set_gt_label(0).set_pred_score(torch.rand(10))
+        ...     DataSample().set_gt_label(0).set_pred_score(torch.rand(10))
         ...     for i in range(1000)
         ... ]
         >>> evaluator = Evaluator(metrics=Accuracy(topk=(1, 5)))
@@ -150,13 +150,11 @@ class Accuracy(BaseMetric):
 
         for data_sample in data_samples:
             result = dict()
-            pred_label = data_sample['pred_label']
-            gt_label = data_sample['gt_label']
-            if 'score' in pred_label:
-                result['pred_score'] = pred_label['score'].cpu()
+            if 'pred_score' in data_sample:
+                result['pred_score'] = data_sample['pred_score'].cpu()
             else:
-                result['pred_label'] = pred_label['label'].cpu()
-            result['gt_label'] = gt_label['label'].cpu()
+                result['pred_label'] = data_sample['pred_label'].cpu()
+            result['gt_label'] = data_sample['gt_label'].cpu()
             # Save the result to `self.results`.
             self.results.append(result)
 
@@ -358,10 +356,10 @@ class SingleLabelMetric(BaseMetric):
          (tensor(10.), tensor(0.5500), tensor(1.0427), tensor(1000))]
         >>>
         >>> # ------------------- Use with Evalutor -------------------
-        >>> from mmpretrain.structures import ClsDataSample
+        >>> from mmpretrain.structures import DataSample
         >>> from mmengine.evaluator import Evaluator
         >>> data_samples = [
-        ...     ClsDataSample().set_gt_label(i%5).set_pred_score(torch.rand(5))
+        ...     DataSample().set_gt_label(i%5).set_pred_score(torch.rand(5))
         ...     for i in range(1000)
         ... ]
         >>> evaluator = Evaluator(metrics=SingleLabelMetric())
@@ -418,19 +416,16 @@ class SingleLabelMetric(BaseMetric):
 
         for data_sample in data_samples:
             result = dict()
-            pred_label = data_sample['pred_label']
-            gt_label = data_sample['gt_label']
-            if 'score' in pred_label:
-                result['pred_score'] = pred_label['score'].cpu()
+            if 'pred_score' in data_sample:
+                result['pred_score'] = data_sample['pred_score'].cpu()
             else:
                 num_classes = self.num_classes or data_sample.get(
                     'num_classes')
                 assert num_classes is not None, \
-                    'The `num_classes` must be specified if `pred_label` has '\
-                    'only `label`.'
-                result['pred_label'] = pred_label['label'].cpu()
+                    'The `num_classes` must be specified if no `pred_score`.'
+                result['pred_label'] = data_sample['pred_label'].cpu()
                 result['num_classes'] = num_classes
-            result['gt_label'] = gt_label['label'].cpu()
+            result['gt_label'] = data_sample['gt_label'].cpu()
             # Save the result to `self.results`.
             self.results.append(result)
 
@@ -641,17 +636,16 @@ class ConfusionMatrix(BaseMetric):
 
     def process(self, data_batch, data_samples: Sequence[dict]) -> None:
         for data_sample in data_samples:
-            pred = data_sample['pred_label']
-            gt_label = data_sample['gt_label']['label']
-            if 'score' in pred:
-                pred_label = pred['score'].argmax(dim=0, keepdim=True)
-                self.num_classes = pred['score'].size(0)
+            if 'pred_score' in data_sample:
+                pred_score = data_sample['pred_score']
+                pred_label = pred_score.argmax(dim=0, keepdim=True)
+                self.num_classes = pred_score.size(0)
             else:
-                pred_label = pred['label']
+                pred_label = data_sample['pred_label']
 
             self.results.append({
                 'pred_label': pred_label,
-                'gt_label': gt_label
+                'gt_label': data_sample['gt_label'],
             })
 
     def compute_metrics(self, results: list) -> dict:

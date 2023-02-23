@@ -10,7 +10,7 @@ import torch
 from mmengine import is_seq_of
 
 from mmpretrain.registry import MODELS
-from mmpretrain.structures import ClsDataSample, MultiTaskDataSample
+from mmpretrain.structures import DataSample, MultiTaskDataSample
 
 
 def setup_seed(seed):
@@ -43,7 +43,7 @@ class TestClsHead(TestCase):
 
     def test_loss(self):
         feats = self.FAKE_FEATS
-        data_samples = [ClsDataSample().set_gt_label(1) for _ in range(4)]
+        data_samples = [DataSample().set_gt_label(1) for _ in range(4)]
 
         # with cal_acc = False
         head = MODELS.build(self.DEFAULT_ARGS)
@@ -75,23 +75,23 @@ class TestClsHead(TestCase):
 
     def test_predict(self):
         feats = (torch.rand(4, 10), )
-        data_samples = [ClsDataSample().set_gt_label(1) for _ in range(4)]
+        data_samples = [DataSample().set_gt_label(1) for _ in range(4)]
         head = MODELS.build(self.DEFAULT_ARGS)
 
         # with without data_samples
         predictions = head.predict(feats)
-        self.assertTrue(is_seq_of(predictions, ClsDataSample))
+        self.assertTrue(is_seq_of(predictions, DataSample))
         for pred in predictions:
-            self.assertIn('label', pred.pred_label)
-            self.assertIn('score', pred.pred_label)
+            self.assertIn('pred_label', pred)
+            self.assertIn('pred_score', pred)
 
         # with with data_samples
         predictions = head.predict(feats, data_samples)
-        self.assertTrue(is_seq_of(predictions, ClsDataSample))
+        self.assertTrue(is_seq_of(predictions, DataSample))
         for sample, pred in zip(data_samples, predictions):
             self.assertIs(sample, pred)
-            self.assertIn('label', pred.pred_label)
-            self.assertIn('score', pred.pred_label)
+            self.assertIn('pred_label', pred)
+            self.assertIn('pred_score', pred)
 
 
 class TestLinearClsHead(TestCase):
@@ -224,7 +224,7 @@ class TestConformerHead(TestCase):
         self.assertEqual(outs[1].shape, (4, 5))
 
     def test_loss(self):
-        data_samples = [ClsDataSample().set_gt_label(1) for _ in range(4)]
+        data_samples = [DataSample().set_gt_label(1) for _ in range(4)]
 
         # with cal_acc = False
         head = MODELS.build(self.DEFAULT_ARGS)
@@ -255,23 +255,23 @@ class TestConformerHead(TestCase):
             head.loss(self.fake_feats, data_samples)
 
     def test_predict(self):
-        data_samples = [ClsDataSample().set_gt_label(1) for _ in range(4)]
+        data_samples = [DataSample().set_gt_label(1) for _ in range(4)]
         head = MODELS.build(self.DEFAULT_ARGS)
 
         # with without data_samples
         predictions = head.predict(self.fake_feats)
-        self.assertTrue(is_seq_of(predictions, ClsDataSample))
+        self.assertTrue(is_seq_of(predictions, DataSample))
         for pred in predictions:
-            self.assertIn('label', pred.pred_label)
-            self.assertIn('score', pred.pred_label)
+            self.assertIn('pred_label', pred)
+            self.assertIn('pred_score', pred)
 
         # with with data_samples
         predictions = head.predict(self.fake_feats, data_samples)
-        self.assertTrue(is_seq_of(predictions, ClsDataSample))
+        self.assertTrue(is_seq_of(predictions, DataSample))
         for sample, pred in zip(data_samples, predictions):
             self.assertIs(sample, pred)
-            self.assertIn('label', pred.pred_label)
-            self.assertIn('score', pred.pred_label)
+            self.assertIn('pred_label', pred)
+            self.assertIn('pred_score', pred)
 
 
 class TestStackedLinearClsHead(TestCase):
@@ -338,7 +338,7 @@ class TestMultiLabelClsHead(TestCase):
 
     def test_loss(self):
         feats = (torch.rand(4, 10), )
-        data_samples = [ClsDataSample().set_gt_label([0, 3]) for _ in range(4)]
+        data_samples = [DataSample().set_gt_label([0, 3]) for _ in range(4)]
 
         # Test with thr and topk are all None
         head = MODELS.build(self.DEFAULT_ARGS)
@@ -383,7 +383,7 @@ class TestMultiLabelClsHead(TestCase):
 
         # Test with gt_lable with score
         data_samples = [
-            ClsDataSample().set_gt_score(torch.rand((10, ))) for _ in range(4)
+            DataSample().set_gt_score(torch.rand((10, ))) for _ in range(4)
         ]
 
         head = MODELS.build(self.DEFAULT_ARGS)
@@ -395,23 +395,23 @@ class TestMultiLabelClsHead(TestCase):
 
     def test_predict(self):
         feats = (torch.rand(4, 10), )
-        data_samples = [ClsDataSample().set_gt_label([1, 2]) for _ in range(4)]
+        data_samples = [DataSample().set_gt_label([1, 2]) for _ in range(4)]
         head = MODELS.build(self.DEFAULT_ARGS)
 
         # with without data_samples
         predictions = head.predict(feats)
-        self.assertTrue(is_seq_of(predictions, ClsDataSample))
+        self.assertTrue(is_seq_of(predictions, DataSample))
         for pred in predictions:
-            self.assertIn('label', pred.pred_label)
-            self.assertIn('score', pred.pred_label)
+            self.assertIn('pred_label', pred)
+            self.assertIn('pred_score', pred)
 
         # with with data_samples
         predictions = head.predict(feats, data_samples)
-        self.assertTrue(is_seq_of(predictions, ClsDataSample))
+        self.assertTrue(is_seq_of(predictions, DataSample))
         for sample, pred in zip(data_samples, predictions):
             self.assertIs(sample, pred)
-            self.assertIn('label', pred.pred_label)
-            self.assertIn('score', pred.pred_label)
+            self.assertIn('pred_label', pred)
+            self.assertIn('pred_score', pred)
 
         # Test with topk
         cfg = copy.deepcopy(self.DEFAULT_ARGS)
@@ -419,11 +419,11 @@ class TestMultiLabelClsHead(TestCase):
         head = MODELS.build(cfg)
         predictions = head.predict(feats, data_samples)
         self.assertEqual(head.thr, None)
-        self.assertTrue(is_seq_of(predictions, ClsDataSample))
+        self.assertTrue(is_seq_of(predictions, DataSample))
         for sample, pred in zip(data_samples, predictions):
             self.assertIs(sample, pred)
-            self.assertIn('label', pred.pred_label)
-            self.assertIn('score', pred.pred_label)
+            self.assertIn('pred_label', pred)
+            self.assertIn('pred_score', pred)
 
 
 class EfficientFormerClsHead(TestClsHead):
@@ -454,7 +454,7 @@ class EfficientFormerClsHead(TestClsHead):
 
     def test_loss(self):
         feats = (torch.rand(4, 10), )
-        data_samples = [ClsDataSample().set_gt_label(1) for _ in range(4)]
+        data_samples = [DataSample().set_gt_label(1) for _ in range(4)]
 
         # test with distillation head
         cfg = copy.deepcopy(self.DEFAULT_ARGS)
@@ -525,7 +525,7 @@ class TestMultiTaskHead(TestCase):
         for _ in range(4):
             data_sample = MultiTaskDataSample()
             for task_name in self.DEFAULT_ARGS['task_heads']:
-                task_sample = ClsDataSample().set_gt_label(1)
+                task_sample = DataSample().set_gt_label(1)
                 data_sample.set_field(task_sample, task_name)
             data_samples.append(data_sample)
         # with cal_acc = False
@@ -545,7 +545,7 @@ class TestMultiTaskHead(TestCase):
         for _ in range(4):
             data_sample = MultiTaskDataSample()
             for task_name in self.DEFAULT_ARGS['task_heads']:
-                task_sample = ClsDataSample().set_gt_label(1)
+                task_sample = DataSample().set_gt_label(1)
                 data_sample.set_field(task_sample, task_name)
             data_samples.append(data_sample)
         head = MODELS.build(self.DEFAULT_ARGS)
@@ -555,7 +555,7 @@ class TestMultiTaskHead(TestCase):
         for pred in predictions:
             self.assertIn('task0', pred)
         task0_sample = predictions[0].task0
-        self.assertTrue(type(task0_sample.pred_label.score), 'torch.tensor')
+        self.assertTrue(type(task0_sample.pred_score), 'torch.tensor')
 
         # with with data_samples
         predictions = head.predict(feats, data_samples)
@@ -596,7 +596,7 @@ class TestMultiTaskHead(TestCase):
         head = MODELS.build(self.DEFAULT_ARGS2)
         data_sample = MultiTaskDataSample()
         for task_name in gt_label:
-            task_sample = ClsDataSample().set_gt_label(gt_label[task_name])
+            task_sample = DataSample().set_gt_label(gt_label[task_name])
             data_sample.set_field(task_sample, task_name)
         with self.assertRaises(Exception):
             head.loss(feats, data_sample)
@@ -606,11 +606,11 @@ class TestMultiTaskHead(TestCase):
         gt_label = {'task0': {'task00': 1, 'task01': 1}, 'task1': 1}
         head = MODELS.build(self.DEFAULT_ARGS)
         data_sample = MultiTaskDataSample()
-        task_sample = ClsDataSample().set_gt_label(gt_label['task1'])
+        task_sample = DataSample().set_gt_label(gt_label['task1'])
         data_sample.set_field(task_sample, 'task1')
         data_sample.set_field(MultiTaskDataSample(), 'task0')
         for task_name in gt_label['task0']:
-            task_sample = ClsDataSample().set_gt_label(
+            task_sample = DataSample().set_gt_label(
                 gt_label['task0'][task_name])
             data_sample.task0.set_field(task_sample, task_name)
         with self.assertRaises(Exception):
@@ -694,7 +694,7 @@ class TestArcFaceClsHead(TestCase):
 
     def test_loss(self):
         feats = (torch.rand(4, 10), )
-        data_samples = [ClsDataSample().set_gt_label(1) for _ in range(4)]
+        data_samples = [DataSample().set_gt_label(1) for _ in range(4)]
 
         # test loss with used='before'
         head = MODELS.build(self.DEFAULT_ARGS)

@@ -2,10 +2,9 @@
 from unittest import TestCase
 
 import torch
-from mmengine.structures import LabelData
 
 from mmpretrain.structures import (batch_label_to_onehot, cat_batch_labels,
-                                   stack_batch_scores, tensor_split)
+                                   tensor_split)
 
 
 class TestStructureUtils(TestCase):
@@ -28,11 +27,11 @@ class TestStructureUtils(TestCase):
 
     def test_cat_batch_labels(self):
         labels = [
-            LabelData(label=torch.tensor([1])),
-            LabelData(label=torch.tensor([3, 2])),
-            LabelData(label=torch.tensor([0, 1, 4])),
-            LabelData(label=torch.tensor([], dtype=torch.int64)),
-            LabelData(label=torch.tensor([], dtype=torch.int64)),
+            torch.tensor([1]),
+            torch.tensor([3, 2]),
+            torch.tensor([0, 1, 4]),
+            torch.tensor([], dtype=torch.int64),
+            torch.tensor([], dtype=torch.int64),
         ]
 
         batch_label, split_indices = cat_batch_labels(labels)
@@ -45,42 +44,13 @@ class TestStructureUtils(TestCase):
         self.assertEqual(labels[3].tolist(), [])
         self.assertEqual(labels[4].tolist(), [])
 
-        labels = [
-            LabelData(score=torch.tensor([0, 1, 0, 0, 1])),
-            LabelData(score=torch.tensor([0, 0, 1, 0, 0])),
-            LabelData(score=torch.tensor([1, 0, 0, 1, 0])),
-        ]
-        batch_label, split_indices = cat_batch_labels(labels)
-        self.assertIsNone(batch_label)
-        self.assertIsNone(split_indices)
-
-    def test_stack_batch_scores(self):
-        labels = [
-            LabelData(score=torch.tensor([0, 1, 0, 0, 1])),
-            LabelData(score=torch.tensor([0, 0, 1, 0, 0])),
-            LabelData(score=torch.tensor([1, 0, 0, 1, 0])),
-        ]
-
-        batch_score = stack_batch_scores(labels)
-        self.assertEqual(batch_score.shape, (3, 5))
-
-        labels = [
-            LabelData(label=torch.tensor([1])),
-            LabelData(label=torch.tensor([3, 2])),
-            LabelData(label=torch.tensor([0, 1, 4])),
-            LabelData(label=torch.tensor([], dtype=torch.int64)),
-            LabelData(label=torch.tensor([], dtype=torch.int64)),
-        ]
-        batch_score = stack_batch_scores(labels)
-        self.assertIsNone(batch_score)
-
     def test_batch_label_to_onehot(self):
         labels = [
-            LabelData(label=torch.tensor([1])),
-            LabelData(label=torch.tensor([3, 2])),
-            LabelData(label=torch.tensor([0, 1, 4])),
-            LabelData(label=torch.tensor([], dtype=torch.int64)),
-            LabelData(label=torch.tensor([], dtype=torch.int64)),
+            torch.tensor([1]),
+            torch.tensor([3, 2]),
+            torch.tensor([0, 1, 4]),
+            torch.tensor([], dtype=torch.int64),
+            torch.tensor([], dtype=torch.int64),
         ]
 
         batch_label, split_indices = cat_batch_labels(labels)

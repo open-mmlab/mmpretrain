@@ -8,7 +8,7 @@ from mmengine.evaluator import Evaluator
 from mmengine.registry import init_default_scope
 
 from mmpretrain.evaluation.metrics import AveragePrecision, MultiLabelMetric
-from mmpretrain.structures import ClsDataSample
+from mmpretrain.structures import DataSample
 
 init_default_scope('mmpretrain')
 
@@ -152,7 +152,7 @@ class TestMultiLabel(TestCase):
         ])
 
         pred = [
-            ClsDataSample(num_classes=4).set_pred_score(i).set_gt_label(j)
+            DataSample(num_classes=4).set_pred_score(i).set_gt_label(j)
             for i, j in zip(y_pred_score, y_true)
         ]
 
@@ -261,7 +261,7 @@ class TestMultiLabel(TestCase):
 
         # Test with gt_score
         pred = [
-            ClsDataSample(num_classes=4).set_pred_score(i).set_gt_score(j)
+            DataSample(num_classes=4).set_pred_score(i).set_gt_score(j)
             for i, j in zip(y_pred_score, y_true_binary)
         ]
 
@@ -304,7 +304,7 @@ class TestAveragePrecision(TestCase):
         ])
 
         pred = [
-            ClsDataSample(num_classes=4).set_pred_score(i).set_gt_score(j)
+            DataSample(num_classes=4).set_pred_score(i).set_gt_score(j)
             for i, j in zip(y_pred, y_true)
         ]
 
@@ -328,7 +328,7 @@ class TestAveragePrecision(TestCase):
 
         # Test with gt_label without score
         pred = [
-            ClsDataSample(num_classes=4).set_pred_score(i).set_gt_label(j)
+            DataSample(num_classes=4).set_pred_score(i).set_gt_label(j)
             for i, j in zip(y_pred, [[0, 1], [1], [2], [0]])
         ]
         evaluator = Evaluator(dict(type='AveragePrecision'))

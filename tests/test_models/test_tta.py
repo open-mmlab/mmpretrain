@@ -8,7 +8,7 @@ from mmengine.registry import init_default_scope
 
 from mmpretrain.models import AverageClsScoreTTA, ImageClassifier
 from mmpretrain.registry import MODELS
-from mmpretrain.structures import ClsDataSample
+from mmpretrain.structures import DataSample
 
 init_default_scope('mmpretrain')
 
@@ -48,20 +48,20 @@ class TestAverageClsScoreTTA(TestCase):
         img2 = torch.randint(0, 256, (1, 3, 224, 224))
         data1 = {
             'inputs': img1,
-            'data_samples': [ClsDataSample().set_gt_label(1)]
+            'data_samples': [DataSample().set_gt_label(1)]
         }
         data2 = {
             'inputs': img2,
-            'data_samples': [ClsDataSample().set_gt_label(1)]
+            'data_samples': [DataSample().set_gt_label(1)]
         }
         data_tta = {
             'inputs': [img1, img2],
-            'data_samples': [[ClsDataSample().set_gt_label(1)],
-                             [ClsDataSample().set_gt_label(1)]]
+            'data_samples': [[DataSample().set_gt_label(1)],
+                             [DataSample().set_gt_label(1)]]
         }
 
-        score1 = model.module.test_step(data1)[0].pred_label.score
-        score2 = model.module.test_step(data2)[0].pred_label.score
-        score_tta = model.test_step(data_tta)[0].pred_label.score
+        score1 = model.module.test_step(data1)[0].pred_score
+        score2 = model.module.test_step(data2)[0].pred_score
+        score_tta = model.test_step(data_tta)[0].pred_score
 
         torch.testing.assert_allclose(score_tta, (score1 + score2) / 2)

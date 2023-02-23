@@ -63,7 +63,7 @@ class BaseRetriever(BaseModel, metaclass=ABCMeta):
         - "tensor": Forward the whole network and return tensor without any
           post-processing, same as a common nn.Module.
         - "predict": Forward and return the predictions, which are fully
-          processed to a list of :obj:`ClsDataSample`.
+          processed to a list of :obj:`DataSample`.
         - "loss": Forward and return a dict of losses according to the given
           inputs and data samples.
 
@@ -73,7 +73,7 @@ class BaseRetriever(BaseModel, metaclass=ABCMeta):
         Args:
             inputs (torch.Tensor, tuple): The input tensor with shape
                 (N, C, ...) in general.
-            data_samples (List[ClsDataSample], optional): The annotation
+            data_samples (List[DataSample], optional): The annotation
                 data of every samples. It's required if ``mode="loss"``.
                 Defaults to None.
             mode (str): Return what kind of value. Defaults to 'tensor'.
@@ -83,7 +83,7 @@ class BaseRetriever(BaseModel, metaclass=ABCMeta):
 
             - If ``mode="tensor"``, return a tensor.
             - If ``mode="predict"``, return a list of
-              :obj:`mmpretrain.structures.ClsDataSample`.
+              :obj:`mmpretrain.structures.DataSample`.
             - If ``mode="loss"``, return a dict of tensor.
         """
         pass
@@ -107,7 +107,7 @@ class BaseRetriever(BaseModel, metaclass=ABCMeta):
         Args:
             inputs (torch.Tensor): The input tensor with shape
                 (N, C, ...) in general.
-            data_samples (List[ClsDataSample]): The annotation data of
+            data_samples (List[DataSample]): The annotation data of
                 every samples.
 
         Returns:

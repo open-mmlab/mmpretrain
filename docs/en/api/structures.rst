@@ -1,13 +1,13 @@
 .. role:: hidden
     :class: hidden-section
 
-.. module:: mmcls.structures
+.. module:: mmpretrain.structures
 
-mmcls.structures
+mmpretrain.structures
 ===================================
 
-This package includes basic data structures for classification tasks.
+This package includes basic data structures.
 
-ClsDataSample
+DataSample
 -------------
-.. autoclass:: ClsDataSample
+.. autoclass:: DataSample

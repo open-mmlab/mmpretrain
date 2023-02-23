@@ -8,9 +8,9 @@ import torch.nn.functional as F
 from mmengine.model import BaseDataPreprocessor, stack_batch
 
 from mmpretrain.registry import MODELS
-from mmpretrain.structures import (ClsDataSample, MultiTaskDataSample,
+from mmpretrain.structures import (DataSample, MultiTaskDataSample,
                                    batch_label_to_onehot, cat_batch_labels,
-                                   stack_batch_scores, tensor_split)
+                                   tensor_split)
 from .batch_augments import RandomBatchAugment
 
 
@@ -153,23 +153,28 @@ class ClsDataPreprocessor(BaseDataPreprocessor):
 
         data_samples = data.get('data_samples', None)
         sample_item = data_samples[0] if data_samples is not None else None
-        if isinstance(sample_item,
-                      ClsDataSample) and 'gt_label' in sample_item:
-            gt_labels = [sample.gt_label for sample in data_samples]
-            batch_label, label_indices = cat_batch_labels(
-                gt_labels, device=self.device)
 
-            batch_score = stack_batch_scores(gt_labels, device=self.device)
-            if batch_score is None and self.to_onehot:
+        if isinstance(sample_item, DataSample):
+            batch_label = None
+            batch_score = None
+
+            if 'gt_label' in sample_item:
+                gt_labels = [sample.gt_label for sample in data_samples]
+                batch_label, label_indices = cat_batch_labels(gt_labels)
+                batch_label = batch_label.to(self.device)
+            if 'gt_score' in sample_item:
+                gt_scores = [sample.gt_score for sample in data_samples]
+                batch_score = torch.stack(gt_scores).to(self.device)
+            elif self.to_onehot:
                 assert batch_label is not None, \
                     'Cannot generate onehot format labels because no labels.'
-                num_classes = self.num_classes or data_samples[0].get(
+                num_classes = self.num_classes or sample_item.get(
                     'num_classes')
                 assert num_classes is not None, \
                     'Cannot generate one-hot format labels because not set ' \
                     '`num_classes` in `data_preprocessor`.'
-                batch_score = batch_label_to_onehot(batch_label, label_indices,
-                                                    num_classes)
+                batch_score = batch_label_to_onehot(
+                    batch_label, label_indices, num_classes).to(self.device)
 
             # ----- Batch Augmentations ----
             if training and self.batch_augments is not None:

@@ -10,7 +10,7 @@ from mmengine.utils import is_str
 from PIL import Image
 
 from mmpretrain.registry import TRANSFORMS
-from mmpretrain.structures import ClsDataSample, MultiTaskDataSample
+from mmpretrain.structures import DataSample, MultiTaskDataSample
 
 
 def to_tensor(data):
@@ -53,7 +53,7 @@ class PackClsInputs(BaseTransform):
     **Added Keys:**
 
     - inputs (:obj:`torch.Tensor`): The forward data of models.
-    - data_samples (:obj:`~mmpretrain.structures.ClsDataSample`): The
+    - data_samples (:obj:`~mmpretrain.structures.DataSample`): The
       annotation info of the sample.
 
     Args:
@@ -87,10 +87,11 @@ class PackClsInputs(BaseTransform):
             img = np.ascontiguousarray(img.transpose(2, 0, 1))
             packed_results['inputs'] = to_tensor(img)
 
-        data_sample = ClsDataSample()
+        data_sample = DataSample()
         if 'gt_label' in results:
-            gt_label = results['gt_label']
-            data_sample.set_gt_label(gt_label)
+            data_sample.set_gt_label(results['gt_label'])
+        if 'gt_score' in results:
+            data_sample.set_gt_score(results['gt_score'])
 
         img_meta = {k: results[k] for k in self.meta_keys if k in results}
         data_sample.set_metainfo(img_meta)

@@ -13,7 +13,7 @@ from torch.utils.data import DataLoader, Dataset
 
 from mmpretrain.datasets.transforms import PackClsInputs
 from mmpretrain.registry import MODELS
-from mmpretrain.structures import ClsDataSample
+from mmpretrain.structures import DataSample
 
 
 class ExampleDataset(Dataset):
@@ -125,7 +125,7 @@ class TestImageToImageRetriever(TestCase):
 
     def test_loss(self):
         inputs = torch.rand(1, 3, 64, 64)
-        data_samples = [ClsDataSample().set_gt_label(1)]
+        data_samples = [DataSample().set_gt_label(1)]
 
         model = MODELS.build(self.DEFAULT_ARGS)
         losses = model.loss(inputs, data_samples)
@@ -172,32 +172,32 @@ class TestImageToImageRetriever(TestCase):
 
     def test_predict(self):
         inputs = torch.rand(1, 3, 64, 64)
-        data_samples = [ClsDataSample().set_gt_label([1, 2, 6])]
+        data_samples = [DataSample().set_gt_label([1, 2, 6])]
         # default
         model = MODELS.build(self.DEFAULT_ARGS)
         predictions = model.predict(inputs)
-        self.assertEqual(predictions[0].pred_label.score.shape, (10, ))
+        self.assertEqual(predictions[0].pred_score.shape, (10, ))
 
         predictions = model.predict(inputs, data_samples)
-        self.assertEqual(predictions[0].pred_label.score.shape, (10, ))
-        self.assertEqual(data_samples[0].pred_label.score.shape, (10, ))
-        torch.testing.assert_allclose(data_samples[0].pred_label.score,
-                                      predictions[0].pred_label.score)
+        self.assertEqual(predictions[0].pred_score.shape, (10, ))
+        self.assertEqual(data_samples[0].pred_score.shape, (10, ))
+        torch.testing.assert_allclose(data_samples[0].pred_score,
+                                      predictions[0].pred_score)
 
         # k is not -1
         cfg = {**self.DEFAULT_ARGS, 'topk': 2}
         model = MODELS.build(cfg)
 
         predictions = model.predict(inputs)
-        self.assertEqual(predictions[0].pred_label.score.shape, (10, ))
+        self.assertEqual(predictions[0].pred_score.shape, (10, ))
 
         predictions = model.predict(inputs, data_samples)
         assert predictions is data_samples
-        self.assertEqual(data_samples[0].pred_label.score.shape, (10, ))
+        self.assertEqual(data_samples[0].pred_score.shape, (10, ))
 
     def test_forward(self):
         inputs = torch.rand(1, 3, 64, 64)
-        data_samples = [ClsDataSample().set_gt_label(1)]
+        data_samples = [DataSample().set_gt_label(1)]
         model = MODELS.build(self.DEFAULT_ARGS)
 
         # test pure forward
@@ -213,13 +213,13 @@ class TestImageToImageRetriever(TestCase):
 
         # test forward test
         predictions = model(inputs, mode='predict')
-        self.assertEqual(predictions[0].pred_label.score.shape, (10, ))
+        self.assertEqual(predictions[0].pred_score.shape, (10, ))
 
         predictions = model(inputs, data_samples, mode='predict')
-        self.assertEqual(predictions[0].pred_label.score.shape, (10, ))
-        self.assertEqual(data_samples[0].pred_label.score.shape, (10, ))
-        torch.testing.assert_allclose(data_samples[0].pred_label.score,
-                                      predictions[0].pred_label.score)
+        self.assertEqual(predictions[0].pred_score.shape, (10, ))
+        self.assertEqual(data_samples[0].pred_score.shape, (10, ))
+        torch.testing.assert_allclose(data_samples[0].pred_score,
+                                      predictions[0].pred_score)
 
         # test forward with invalid mode
         with self.assertRaisesRegex(RuntimeError, 'Invalid mode "unknown"'):
@@ -234,7 +234,7 @@ class TestImageToImageRetriever(TestCase):
 
         data = {
             'inputs': torch.randint(0, 256, (1, 3, 64, 64)),
-            'data_samples': [ClsDataSample().set_gt_label(1)]
+            'data_samples': [DataSample().set_gt_label(1)]
         }
 
         optim_wrapper = MagicMock()
@@ -251,11 +251,11 @@ class TestImageToImageRetriever(TestCase):
 
         data = {
             'inputs': torch.randint(0, 256, (1, 3, 64, 64)),
-            'data_samples': [ClsDataSample().set_gt_label(1)]
+            'data_samples': [DataSample().set_gt_label(1)]
         }
 
         predictions = model.val_step(data)
-        self.assertEqual(predictions[0].pred_label.score.shape, (10, ))
+        self.assertEqual(predictions[0].pred_score.shape, (10, ))
 
     def test_test_step(self):
         cfg = {
@@ -266,8 +266,8 @@ class TestImageToImageRetriever(TestCase):
 
         data = {
             'inputs': torch.randint(0, 256, (1, 3, 64, 64)),
-            'data_samples': [ClsDataSample().set_gt_label(1)]
+            'data_samples': [DataSample().set_gt_label(1)]
         }
 
         predictions = model.test_step(data)
-        self.assertEqual(predictions[0].pred_label.score.shape, (10, ))
+        self.assertEqual(predictions[0].pred_score.shape, (10, ))

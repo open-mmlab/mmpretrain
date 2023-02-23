@@ -12,7 +12,7 @@ from mmengine.model import BaseModel
 from mmengine.runner import load_checkpoint
 
 from mmpretrain.registry import TRANSFORMS
-from mmpretrain.structures import ClsDataSample
+from mmpretrain.structures import DataSample
 from .model import get_model, init_model, list_models
 
 ModelType = Union[BaseModel, str, Config]
@@ -176,7 +176,7 @@ class ImageClassificationInferencer(BaseInferencer):
 
     def visualize(self,
                   ori_inputs: List[InputType],
-                  preds: List[ClsDataSample],
+                  preds: List[DataSample],
                   show: bool = False,
                   rescale_factor: Optional[float] = None,
                   draw_score=True,
@@ -223,7 +223,7 @@ class ImageClassificationInferencer(BaseInferencer):
         return visualization
 
     def postprocess(self,
-                    preds: List[ClsDataSample],
+                    preds: List[DataSample],
                     visualization: List[np.ndarray],
                     return_datasamples=False) -> dict:
         if return_datasamples:
@@ -231,14 +231,13 @@ class ImageClassificationInferencer(BaseInferencer):
 
         results = []
         for data_sample in preds:
-            prediction = data_sample.pred_label
-            pred_scores = prediction.score.detach().cpu().numpy()
-            pred_score = torch.max(prediction.score).item()
-            pred_label = torch.argmax(prediction.score).item()
+            pred_scores = data_sample.pred_score
+            pred_score = float(torch.max(pred_scores).item())
+            pred_label = torch.argmax(pred_scores).item()
             result = {
-                'pred_scores': pred_scores,
+                'pred_scores': pred_scores.detach().cpu().numpy(),
                 'pred_label': pred_label,
-                'pred_score': float(pred_score),
+                'pred_score': pred_score,
             }
             if self.classes is not None:
                 result['pred_class'] = self.classes[pred_label]

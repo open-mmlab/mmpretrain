@@ -9,7 +9,7 @@ from mmengine import ConfigDict
 
 from mmpretrain.models import ImageClassifier
 from mmpretrain.registry import MODELS
-from mmpretrain.structures import ClsDataSample
+from mmpretrain.structures import DataSample
 
 
 def has_timm() -> bool:
@@ -134,7 +134,7 @@ class TestImageClassifier(TestCase):
 
     def test_loss(self):
         inputs = torch.rand(1, 3, 224, 224)
-        data_samples = [ClsDataSample().set_gt_label(1)]
+        data_samples = [DataSample().set_gt_label(1)]
 
         model: ImageClassifier = MODELS.build(self.DEFAULT_ARGS)
         losses = model.loss(inputs, data_samples)
@@ -142,21 +142,21 @@ class TestImageClassifier(TestCase):
 
     def test_predict(self):
         inputs = torch.rand(1, 3, 224, 224)
-        data_samples = [ClsDataSample().set_gt_label(1)]
+        data_samples = [DataSample().set_gt_label(1)]
 
         model: ImageClassifier = MODELS.build(self.DEFAULT_ARGS)
         predictions = model.predict(inputs)
-        self.assertEqual(predictions[0].pred_label.score.shape, (10, ))
+        self.assertEqual(predictions[0].pred_score.shape, (10, ))
 
         predictions = model.predict(inputs, data_samples)
-        self.assertEqual(predictions[0].pred_label.score.shape, (10, ))
-        self.assertEqual(data_samples[0].pred_label.score.shape, (10, ))
-        torch.testing.assert_allclose(data_samples[0].pred_label.score,
-                                      predictions[0].pred_label.score)
+        self.assertEqual(predictions[0].pred_score.shape, (10, ))
+        self.assertEqual(data_samples[0].pred_score.shape, (10, ))
+        torch.testing.assert_allclose(data_samples[0].pred_score,
+                                      predictions[0].pred_score)
 
     def test_forward(self):
         inputs = torch.rand(1, 3, 224, 224)
-        data_samples = [ClsDataSample().set_gt_label(1)]
+        data_samples = [DataSample().set_gt_label(1)]
         model: ImageClassifier = MODELS.build(self.DEFAULT_ARGS)
 
         # test pure forward
@@ -169,13 +169,13 @@ class TestImageClassifier(TestCase):
 
         # test forward test
         predictions = model(inputs, mode='predict')
-        self.assertEqual(predictions[0].pred_label.score.shape, (10, ))
+        self.assertEqual(predictions[0].pred_score.shape, (10, ))
 
         predictions = model(inputs, data_samples, mode='predict')
-        self.assertEqual(predictions[0].pred_label.score.shape, (10, ))
-        self.assertEqual(data_samples[0].pred_label.score.shape, (10, ))
-        torch.testing.assert_allclose(data_samples[0].pred_label.score,
-                                      predictions[0].pred_label.score)
+        self.assertEqual(predictions[0].pred_score.shape, (10, ))
+        self.assertEqual(data_samples[0].pred_score.shape, (10, ))
+        torch.testing.assert_allclose(data_samples[0].pred_score,
+                                      predictions[0].pred_score)
 
         # test forward with invalid mode
         with self.assertRaisesRegex(RuntimeError, 'Invalid mode "unknown"'):
@@ -190,7 +190,7 @@ class TestImageClassifier(TestCase):
 
         data = {
             'inputs': torch.randint(0, 256, (1, 3, 224, 224)),
-            'data_samples': [ClsDataSample().set_gt_label(1)]
+            'data_samples': [DataSample().set_gt_label(1)]
         }
 
         optim_wrapper = MagicMock()
@@ -207,11 +207,11 @@ class TestImageClassifier(TestCase):
 
         data = {
             'inputs': torch.randint(0, 256, (1, 3, 224, 224)),
-            'data_samples': [ClsDataSample().set_gt_label(1)]
+            'data_samples': [DataSample().set_gt_label(1)]
         }
 
         predictions = model.val_step(data)
-        self.assertEqual(predictions[0].pred_label.score.shape, (10, ))
+        self.assertEqual(predictions[0].pred_score.shape, (10, ))
 
     def test_test_step(self):
         cfg = {
@@ -222,11 +222,11 @@ class TestImageClassifier(TestCase):
 
         data = {
             'inputs': torch.randint(0, 256, (1, 3, 224, 224)),
-            'data_samples': [ClsDataSample().set_gt_label(1)]
+            'data_samples': [DataSample().set_gt_label(1)]
         }
 
         predictions = model.test_step(data)
-        self.assertEqual(predictions[0].pred_label.score.shape, (10, ))
+        self.assertEqual(predictions[0].pred_score.shape, (10, ))
 
 
 @unittest.skipIf(not has_timm(), 'timm is not installed.')
@@ -255,7 +255,7 @@ class TestTimmClassifier(TestCase):
 
     def test_loss(self):
         inputs = torch.rand(1, 3, 224, 224)
-        data_samples = [ClsDataSample().set_gt_label(1)]
+        data_samples = [DataSample().set_gt_label(1)]
 
         model: ImageClassifier = MODELS.build(self.DEFAULT_ARGS)
         losses = model.loss(inputs, data_samples)
@@ -263,21 +263,21 @@ class TestTimmClassifier(TestCase):
 
     def test_predict(self):
         inputs = torch.rand(1, 3, 224, 224)
-        data_samples = [ClsDataSample().set_gt_label(1)]
+        data_samples = [DataSample().set_gt_label(1)]
 
         model: ImageClassifier = MODELS.build(self.DEFAULT_ARGS)
         predictions = model.predict(inputs)
-        self.assertEqual(predictions[0].pred_label.score.shape, (1000, ))
+        self.assertEqual(predictions[0].pred_score.shape, (1000, ))
 
         predictions = model.predict(inputs, data_samples)
-        self.assertEqual(predictions[0].pred_label.score.shape, (1000, ))
-        self.assertEqual(data_samples[0].pred_label.score.shape, (1000, ))
-        torch.testing.assert_allclose(data_samples[0].pred_label.score,
-                                      predictions[0].pred_label.score)
+        self.assertEqual(predictions[0].pred_score.shape, (1000, ))
+        self.assertEqual(data_samples[0].pred_score.shape, (1000, ))
+        torch.testing.assert_allclose(data_samples[0].pred_score,
+                                      predictions[0].pred_score)
 
     def test_forward(self):
         inputs = torch.rand(1, 3, 224, 224)
-        data_samples = [ClsDataSample().set_gt_label(1)]
+        data_samples = [DataSample().set_gt_label(1)]
         model: ImageClassifier = MODELS.build(self.DEFAULT_ARGS)
 
         # test pure forward
@@ -290,13 +290,13 @@ class TestTimmClassifier(TestCase):
 
         # test forward test
         predictions = model(inputs, mode='predict')
-        self.assertEqual(predictions[0].pred_label.score.shape, (1000, ))
+        self.assertEqual(predictions[0].pred_score.shape, (1000, ))
 
         predictions = model(inputs, data_samples, mode='predict')
-        self.assertEqual(predictions[0].pred_label.score.shape, (1000, ))
-        self.assertEqual(data_samples[0].pred_label.score.shape, (1000, ))
-        torch.testing.assert_allclose(data_samples[0].pred_label.score,
-                                      predictions[0].pred_label.score)
+        self.assertEqual(predictions[0].pred_score.shape, (1000, ))
+        self.assertEqual(data_samples[0].pred_score.shape, (1000, ))
+        torch.testing.assert_allclose(data_samples[0].pred_score,
+                                      predictions[0].pred_score)
 
         # test forward with invalid mode
         with self.assertRaisesRegex(RuntimeError, 'Invalid mode "unknown"'):
@@ -311,7 +311,7 @@ class TestTimmClassifier(TestCase):
 
         data = {
             'inputs': torch.randint(0, 256, (1, 3, 224, 224)),
-            'data_samples': [ClsDataSample().set_gt_label(1)]
+            'data_samples': [DataSample().set_gt_label(1)]
         }
 
         optim_wrapper = MagicMock()
@@ -328,11 +328,11 @@ class TestTimmClassifier(TestCase):
 
         data = {
             'inputs': torch.randint(0, 256, (1, 3, 224, 224)),
-            'data_samples': [ClsDataSample().set_gt_label(1)]
+            'data_samples': [DataSample().set_gt_label(1)]
         }
 
         predictions = model.val_step(data)
-        self.assertEqual(predictions[0].pred_label.score.shape, (1000, ))
+        self.assertEqual(predictions[0].pred_score.shape, (1000, ))
 
     def test_test_step(self):
         cfg = {
@@ -343,11 +343,11 @@ class TestTimmClassifier(TestCase):
 
         data = {
             'inputs': torch.randint(0, 256, (1, 3, 224, 224)),
-            'data_samples': [ClsDataSample().set_gt_label(1)]
+            'data_samples': [DataSample().set_gt_label(1)]
         }
 
         predictions = model.test_step(data)
-        self.assertEqual(predictions[0].pred_label.score.shape, (1000, ))
+        self.assertEqual(predictions[0].pred_score.shape, (1000, ))
 
 
 @unittest.skipIf(not has_huggingface(), 'huggingface is not installed.')
@@ -376,7 +376,7 @@ class TestHuggingFaceClassifier(TestCase):
 
     def test_loss(self):
         inputs = torch.rand(1, 3, 224, 224)
-        data_samples = [ClsDataSample().set_gt_label(1)]
+        data_samples = [DataSample().set_gt_label(1)]
 
         model: ImageClassifier = MODELS.build(self.DEFAULT_ARGS)
         losses = model.loss(inputs, data_samples)
@@ -384,21 +384,21 @@ class TestHuggingFaceClassifier(TestCase):
 
     def test_predict(self):
         inputs = torch.rand(1, 3, 224, 224)
-        data_samples = [ClsDataSample().set_gt_label(1)]
+        data_samples = [DataSample().set_gt_label(1)]
 
         model: ImageClassifier = MODELS.build(self.DEFAULT_ARGS)
         predictions = model.predict(inputs)
-        self.assertEqual(predictions[0].pred_label.score.shape, (1000, ))
+        self.assertEqual(predictions[0].pred_score.shape, (1000, ))
 
         predictions = model.predict(inputs, data_samples)
-        self.assertEqual(predictions[0].pred_label.score.shape, (1000, ))
-        self.assertEqual(data_samples[0].pred_label.score.shape, (1000, ))
-        torch.testing.assert_allclose(data_samples[0].pred_label.score,
-                                      predictions[0].pred_label.score)
+        self.assertEqual(predictions[0].pred_score.shape, (1000, ))
+        self.assertEqual(data_samples[0].pred_score.shape, (1000, ))
+        torch.testing.assert_allclose(data_samples[0].pred_score,
+                                      predictions[0].pred_score)
 
     def test_forward(self):
         inputs = torch.rand(1, 3, 224, 224)
-        data_samples = [ClsDataSample().set_gt_label(1)]
+        data_samples = [DataSample().set_gt_label(1)]
         model: ImageClassifier = MODELS.build(self.DEFAULT_ARGS)
 
         # test pure forward
@@ -411,13 +411,13 @@ class TestHuggingFaceClassifier(TestCase):
 
         # test forward test
         predictions = model(inputs, mode='predict')
-        self.assertEqual(predictions[0].pred_label.score.shape, (1000, ))
+        self.assertEqual(predictions[0].pred_score.shape, (1000, ))
 
         predictions = model(inputs, data_samples, mode='predict')
-        self.assertEqual(predictions[0].pred_label.score.shape, (1000, ))
-        self.assertEqual(data_samples[0].pred_label.score.shape, (1000, ))
-        torch.testing.assert_allclose(data_samples[0].pred_label.score,
-                                      predictions[0].pred_label.score)
+        self.assertEqual(predictions[0].pred_score.shape, (1000, ))
+        self.assertEqual(data_samples[0].pred_score.shape, (1000, ))
+        torch.testing.assert_allclose(data_samples[0].pred_score,
+                                      predictions[0].pred_score)
 
         # test forward with invalid mode
         with self.assertRaisesRegex(RuntimeError, 'Invalid mode "unknown"'):
@@ -432,7 +432,7 @@ class TestHuggingFaceClassifier(TestCase):
 
         data = {
             'inputs': torch.randint(0, 256, (1, 3, 224, 224)),
-            'data_samples': [ClsDataSample().set_gt_label(1)]
+            'data_samples': [DataSample().set_gt_label(1)]
         }
 
         optim_wrapper = MagicMock()
@@ -449,11 +449,11 @@ class TestHuggingFaceClassifier(TestCase):
 
         data = {
             'inputs': torch.randint(0, 256, (1, 3, 224, 224)),
-            'data_samples': [ClsDataSample().set_gt_label(1)]
+            'data_samples': [DataSample().set_gt_label(1)]
         }
 
         predictions = model.val_step(data)
-        self.assertEqual(predictions[0].pred_label.score.shape, (1000, ))
+        self.assertEqual(predictions[0].pred_score.shape, (1000, ))
 
     def test_test_step(self):
         cfg = {
@@ -464,8 +464,8 @@ class TestHuggingFaceClassifier(TestCase):
 
         data = {
             'inputs': torch.randint(0, 256, (1, 3, 224, 224)),
-            'data_samples': [ClsDataSample().set_gt_label(1)]
+            'data_samples': [DataSample().set_gt_label(1)]
         }
 
         predictions = model.test_step(data)
-        self.assertEqual(predictions[0].pred_label.score.shape, (1000, ))
+        self.assertEqual(predictions[0].pred_score.shape, (1000, ))
