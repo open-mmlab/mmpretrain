@@ -1,5 +1,6 @@
 import argparse
 import logging
+import re
 import sys
 from pathlib import Path
 
@@ -79,13 +80,45 @@ def check_collection(modelindex: ModelIndex, skip=[]):
         logger.error("The collection's paper should have `Paper` field.")
 
 
-def check_model(model: Model, wall=True, skip=[]):
+def check_model_name(name):
+    fields = name.split('_')
+
+    if len(fields) > 5:
+        logger.warning('Too many fields.')
+        return
+    elif len(fields) < 3:
+        logger.warning('Too few fields.')
+        return
+    elif len(fields) == 5:
+        algo, model, pre, train, data = fields
+    elif len(fields) == 3:
+        model, train, data = fields
+        algo, pre = None, None
+    elif len(fields) == 4 and fields[1].endswith('-pre'):
+        model, pre, train, data = fields
+        algo = None
+    else:
+        algo, model, train, data = fields
+        pre = None
+
+    if pre is not None and not pre.endswith('-pre'):
+        logger.warning(f'The position of `{pre}` should be '
+                       'pre-training information, and ends with `-pre`.')
+
+    if '3rdparty' not in train and re.match(r'\d+xb\d+', train) is None:
+        logger.warning(f'The position of `{train}` should be training '
+                       'infomation, and starts with `3rdparty` or '
+                       '`{num_device}xb{batch_per_device}`')
+
+
+def check_model(model: Model, skip=[]):
 
     context.name = None
     if model.name is None:
         logger.error("A model doesn't have `Name` field.")
         return
     context.name = model.name
+    check_model_name(model.name)
 
     if model.name.endswith('.py'):
         logger.error("Don't add `.py` suffix in model name.")
@@ -115,12 +148,13 @@ def check_model(model: Model, wall=True, skip=[]):
     if model.in_collection is None:
         logger.error('No `In Collection` field.')
 
-    if wall and model.data.get(
-            'Converted From') is not None and '3rdparty' not in model.name:
+    if (model.data.get('Converted From') is not None
+            and '3rdparty' not in model.name):
         logger.warning("The model name should include '3rdparty' "
                        "since it's converted from other repository.")
 
-    if wall and model.weights is not None and model.weights.endswith('.pth'):
+    if (model.weights is not None and model.weights.endswith('.pth')
+            and 'ckpt-name' not in skip):
         basename = model.weights.rsplit('/', 1)[-1]
         if not basename.startswith(model.name):
             logger.warning(f'The checkpoint name {basename} is not the '
@@ -153,7 +187,7 @@ def main(metafile: Path, args):
     names = {model.name for model in modelindex.models}
 
     for model in modelindex.models:
-        check_model(model, args.Wall, args.skip)
+        check_model(model, args.skip)
 
         for downstream in model.data.get('Downstream', []):
             if downstream not in names:
@@ -164,6 +198,10 @@ def main(metafile: Path, args):
 
 if __name__ == '__main__':
     args = parse_args()
+    if args.Wall:
+        logger.setLevel(logging.WARNING)
+    else:
+        logger.setLevel(logging.ERROR)
     for metafile in args.metafile:
         main(metafile, args)
     sys.exit(int(context.failed))

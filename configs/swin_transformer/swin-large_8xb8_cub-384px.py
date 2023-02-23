@@ -1,7 +1,8 @@
 _base_ = [
     '../_base_/models/swin_transformer/large_384.py',
-    '../_base_/datasets/cub_bs8_384.py', '../_base_/schedules/cub_bs64.py',
-    '../_base_/default_runtime.py'
+    '../_base_/datasets/cub_bs8_384.py',
+    '../_base_/schedules/cub_bs64.py',
+    '../_base_/default_runtime.py',
 ]
 
 # model settings

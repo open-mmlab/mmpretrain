@@ -13,7 +13,7 @@ Collections:
       URL: https://github.com/open-mmlab/mmclassification/blob/v1.0.0rc3/mmcls/models/heads/margin_head.py
 
 Models:
-  - Name: resnet50-arcface_inshop
+  - Name: resnet50-arcface_8xb32_inshop
     Metadata:
       FLOPs: 16571226112
       Parameters: 31693888
