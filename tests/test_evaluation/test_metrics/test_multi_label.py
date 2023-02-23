@@ -6,7 +6,7 @@ import sklearn.metrics
 import torch
 from mmengine.evaluator import Evaluator
 
-from mmcls.evaluation.metrics import AveragePrecision, MultiLabelMetric
+from mmcls.evaluation.metrics import ROCAUC, AveragePrecision, MultiLabelMetric
 from mmcls.structures import ClsDataSample
 
 
@@ -369,6 +369,81 @@ class TestAveragePrecision(TestCase):
         # Test with invalid inputs
         with self.assertRaisesRegex(TypeError, "<class 'int'> is not an"):
             AveragePrecision.calculate(y_pred, 5)
+
+    def assertTensorEqual(self,
+                          tensor: torch.Tensor,
+                          value: float,
+                          msg=None,
+                          **kwarg):
+        tensor = tensor.to(torch.float32)
+        if tensor.dim() == 0:
+            tensor = tensor.unsqueeze(0)
+        value = torch.FloatTensor([value])
+        try:
+            torch.testing.assert_allclose(tensor, value, **kwarg)
+        except AssertionError as e:
+            self.fail(self._formatMessage(msg, str(e) + str(tensor)))
+
+
+class TestROCAUC(TestCase):
+
+    def test_evaluate(self):
+        """Test using the metric in the same way as Evalutor."""
+        y_pred = torch.tensor([
+            [0.9, 0.8, 0.3, 0.2],
+            [0.1, 0.2, 0.2, 0.1],
+            [0.7, 0.5, 0.9, 0.3],
+            [0.8, 0.1, 0.1, 0.2],
+        ])
+        y_true = torch.tensor([
+            [1, 1, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0],
+            [1, 0, 0, 1],
+        ])
+
+        pred = [
+            ClsDataSample(num_classes=4).set_pred_score(i).set_gt_score(j)
+            for i, j in zip(y_pred, y_true)
+        ]
+
+        # Test with default macro avergae
+        evaluator = Evaluator(dict(type='ROCAUC'))
+        evaluator.process(pred)
+        res = evaluator.evaluate(5)
+        self.assertIsInstance(res, dict)
+        self.assertAlmostEqual(res['multi-label/ROCAUC'], 81.25, places=4)
+
+        # Test with average mode None
+        evaluator = Evaluator(dict(type='ROCAUC', classwise=True))
+        evaluator.process(pred)
+        res = evaluator.evaluate(5)
+        self.assertIsInstance(res, dict)
+        aucs = res['multi-label/ROCAUC_classwise']
+        self.assertAlmostEqual(aucs[0], 100., places=4)
+        self.assertAlmostEqual(aucs[1], 75., places=4)
+        self.assertAlmostEqual(aucs[2], 100., places=4)
+        self.assertAlmostEqual(aucs[3], 50., places=4)
+
+    def test_calculate(self):
+        """Test using the metric from static method."""
+
+        y_true = np.array([
+            [1, 0, 0, 0],
+            [0, 1, 0, 1],
+            [1, 1, 1, 0],
+            [0, 0, 0, 1],
+        ])
+        y_pred = np.array([
+            [0.9, 0.8, 0.3, 0.2],
+            [0.1, 0.2, 0.2, 0.1],
+            [0.7, 0.5, 0.9, 0.3],
+            [0.8, 0.1, 0.1, 0.2],
+        ])
+
+        ap_score = ROCAUC.calculate(y_pred, y_true)
+        expect_ap = sklearn.metrics.roc_auc_score(y_true, y_pred) * 100
+        self.assertTensorEqual(ap_score, expect_ap)
 
     def assertTensorEqual(self,
                           tensor: torch.Tensor,

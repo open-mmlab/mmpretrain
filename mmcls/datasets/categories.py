@@ -6,6 +6,12 @@ VOC2007_CATEGORIES = ('aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus',
                       'horse', 'motorbike', 'person', 'pottedplant', 'sheep',
                       'sofa', 'train', 'tvmonitor')
 
+NIHChestXRays_CATEGORIES = ('Atelectasis', 'Cardiomegaly', 'Effusion',
+                            'Infiltration', 'Mass', 'Nodule', 'Pneumonia',
+                            'Pneumothorax', 'Consolidation', 'Edema',
+                            'Emphysema', 'Fibrosis', 'Pleural_Thickening',
+                            'Hernia')
+
 CUB_CATEGORIES = (
     'Black_footed_Albatross', 'Laysan_Albatross', 'Sooty_Albatross',
     'Groove_billed_Ani', 'Crested_Auklet', 'Least_Auklet', 'Parakeet_Auklet',

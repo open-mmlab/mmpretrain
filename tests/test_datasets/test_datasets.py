@@ -4,10 +4,12 @@ import os.path as osp
 import pickle
 import sys
 import tempfile
+from pathlib import Path
 from unittest import TestCase
 from unittest.mock import MagicMock, call, patch
 
 import numpy as np
+import pandas as pd
 from mmengine.logging import MMLogger
 
 from mmcls.registry import DATASETS, TRANSFORMS
@@ -1028,6 +1030,103 @@ class TestInShop(TestBaseDataset):
             data_info['img_path'],
             os.path.join(self.root, 'Img', 'img', '12_3_back.jpg'))
         self.assertEqual(data_info['sample_idx'], 0)
+
+    def test_extra_repr(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+        cfg = {**self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+
+        self.assertIn(f'Root of dataset: \t{dataset.data_root}', repr(dataset))
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.tmpdir.cleanup()
+
+
+class TestNIHChestXRays(TestBaseDataset):
+    DATASET_TYPE = 'NIHChestXRays'
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+
+        tmpdir = tempfile.TemporaryDirectory()
+        cls.tmpdir = tmpdir
+        cls.root = tmpdir.name
+        cls.ann_file = 'Data_Entry_2017.csv'
+        cls.image_folder = 'images'
+        cls.train_test_split_file = 'train_val_list.txt'
+        cls.train_test_split_file2 = 'test_list.txt'
+        cls.DEFAULT_ARGS = dict(
+            data_root=cls.root,
+            data_prefix=cls.image_folder,
+            pipeline=[],
+            ann_file=cls.ann_file,
+            train_test_split_file=cls.train_test_split_file)
+
+        pd.DataFrame({
+            'Image Index': ['1.jpg', '2.jpg', '3.jpg'],
+            'Finding Labels':
+            ['Cardiomegaly', 'Cardiomegaly|Emphysema', 'No Finding']
+        }).to_csv(
+            osp.join(cls.root, cls.ann_file), index=False)
+
+        with open(osp.join(cls.root, cls.train_test_split_file), 'w') as f:
+            f.write('\n'.join([
+                '1.jpg',
+                '2.jpg',
+                '3.jpg',
+            ]))
+
+        with open(osp.join(cls.root, cls.train_test_split_file2), 'w') as f:
+            f.write('\n'.join([
+                '2.jpg',
+                '1.jpg',
+            ]))
+
+    def test_load_data_list(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test default behavior
+        dataset = dataset_class(**self.DEFAULT_ARGS)
+        self.assertEqual(len(dataset), 3)
+
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         osp.join(self.root, self.image_folder, '1.jpg'))
+        self.assertEqual(data_info['gt_label'], [1])
+
+        # Test with test_mode=True
+        cfg = {
+            **self.DEFAULT_ARGS, 'train_test_split_file':
+            self.train_test_split_file2
+        }
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 2)
+
+        data_info = dataset[0]
+        self.assertEqual(data_info['img_path'],
+                         osp.join(self.root, self.image_folder, '2.jpg'))
+        self.assertEqual(data_info['gt_label'], [1, 10])
+
+    def test_initialize(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # Test with train_val_list.txt
+        cfg = {**self.DEFAULT_ARGS}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(
+            Path(dataset.train_test_split_file).name, 'train_val_list.txt')
+        self.assertEqual(dataset.data_root, self.root)
+        self.assertEqual(Path(dataset.ann_file).name, self.ann_file)
+
+        # Test with test_list.txt
+        cfg = {**self.DEFAULT_ARGS, 'train_test_split_file': 'test_list.txt'}
+        dataset = dataset_class(**cfg)
+        self.assertEqual(
+            Path(dataset.train_test_split_file).name, 'test_list.txt')
+        self.assertEqual(dataset.data_root, self.root)
+        self.assertEqual(Path(dataset.ann_file).name, self.ann_file)
 
     def test_extra_repr(self):
         dataset_class = DATASETS.get(self.DATASET_TYPE)

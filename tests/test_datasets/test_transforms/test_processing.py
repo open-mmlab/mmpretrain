@@ -799,3 +799,42 @@ class TestAlbumentations(TestCase):
         self.assertEqual(
             repr(transform), "Albumentations(transforms=[{'type': "
             "'ChannelShuffle', 'p': 1}])")
+
+
+class TestTenCropTestTimeAug(TestCase):
+
+    def test_transform(self):
+        # test resize short edge by default.
+        results = dict(img=np.random.randint(0, 256, (128, 256, 3), np.uint8))
+        cfg = dict(
+            type='TenCropTestTimeAug',
+            size=100,
+            transforms=dict(type='PackClsInputs'))
+        transform = TRANSFORMS.build(cfg)
+        results = transform(results)
+        assert len(results['inputs']) == 10
+        self.assertTupleEqual(results['inputs'][0].shape, (3, 100, 100))
+
+        # test resize height.
+        results = dict(img=np.random.randint(0, 256, (128, 256, 3), np.uint8))
+        cfg = dict(
+            type='TenCropTestTimeAug',
+            size=100,
+            transforms=dict(type='PackClsInputs'),
+            vertical_flip=True)
+        transform = TRANSFORMS.build(cfg)
+        results = transform(results)
+        assert len(results['inputs']) == 10
+        self.assertTupleEqual(results['inputs'][0].shape, (3, 100, 100))
+
+    def test_repr(self):
+        cfg = dict(
+            type='TenCropTestTimeAug',
+            size=100,
+            transforms=dict(type='PackClsInputs'))
+        transform = TRANSFORMS.build(cfg)
+        self.assertEqual(
+            repr(transform),
+            'TenCropTestTimeAug(size=100, vertical_flip=False,\ntransforms='
+            "PackClsInputs(meta_keys=('sample_idx', 'img_path', 'ori_shape', "
+            "'img_shape', 'scale_factor', 'flip', 'flip_direction')))")

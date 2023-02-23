@@ -7,7 +7,8 @@ from .formatting import (Collect, PackClsInputs, PackMultiTaskInputs, ToNumpy,
                          ToPIL, Transpose)
 from .processing import (Albumentations, ColorJitter, EfficientNetCenterCrop,
                          EfficientNetRandomCrop, Lighting, RandomCrop,
-                         RandomErasing, RandomResizedCrop, ResizeEdge)
+                         RandomErasing, RandomResizedCrop, ResizeEdge,
+                         TenCropTestTimeAug)
 
 __all__ = [
     'ToPIL', 'ToNumpy', 'Transpose', 'Collect', 'RandomCrop',
@@ -17,5 +18,5 @@ __all__ = [
     'Cutout', 'RandAugment', 'Lighting', 'ColorJitter', 'RandomErasing',
     'PackClsInputs', 'Albumentations', 'EfficientNetRandomCrop',
     'EfficientNetCenterCrop', 'ResizeEdge', 'BaseAugTransform',
-    'PackMultiTaskInputs'
+    'PackMultiTaskInputs', 'TenCropTestTimeAug'
 ]

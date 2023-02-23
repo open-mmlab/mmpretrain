@@ -602,3 +602,200 @@ class AveragePrecision(BaseMetric):
             return ap.mean() * 100.0
         else:
             return ap * 100
+
+
+def _binary_clf_curve(pred: torch.Tensor,
+                      target: torch.Tensor,
+                      pos_label: float = 1.0):
+    # make y_true a boolean vector
+    target = target == pos_label
+    assert target.sum() > 0, 'At least one label must be pos_label.'
+
+    # sort scores and corresponding truth values
+    desc_score_indices = torch.argsort(pred, descending=True)
+
+    pred = pred[desc_score_indices]
+    target = target[desc_score_indices]
+
+    # pred typically has many tied values. Here we extract
+    # the indices associated with the distinct values. We also
+    # concatenate a value for the end of the curve.
+    distinct_value_indices = torch.where(pred[1:] - pred[:-1])[0]
+    threshold_idxs = torch.cat(
+        (distinct_value_indices,
+         torch.tensor(target.size(0) - 1).unsqueeze(-1)))
+
+    tps = torch.cumsum(target, dim=0)[threshold_idxs]
+    fps = 1 + threshold_idxs - tps
+    thresholds = pred[threshold_idxs]
+
+    return tps, fps, thresholds
+
+
+def roc_curve(pred: torch.Tensor,
+              target: torch.Tensor,
+              pos_label: float = 1.0):
+
+    tps, fps, thresholds = _binary_clf_curve(pred, target, pos_label)
+
+    # Add an extra threshold position
+    # to make sure that the curve starts at (0, 0)
+    tps = torch.cat((torch.zeros(1), tps))
+    fps = torch.cat((torch.zeros(1), fps))
+    thresholds = torch.cat((thresholds[0:1] + 1, thresholds))
+
+    tpr = tps / tps[-1]
+    fpr = fps / fps[-1]
+
+    return tpr, fpr, thresholds
+
+
+def compute_auc(tpr: torch.Tensor, fpr: torch.Tensor):
+    return torch.trapz(tpr, fpr, axis=-1)
+
+
+@METRICS.register_module()
+class ROCAUC(BaseMetric):
+    r"""Calculate the roc auc with respect of classes.
+
+    Args:
+        collect_device (str): Device name used for collecting results from
+            different ranks during distributed training. Must be 'cpu' or
+            'gpu'. Defaults to 'cpu'.
+        prefix (str, optional): The prefix that will be added in the metric
+            names to disambiguate homonymous metrics of different evaluators.
+            If prefix is not provided in the argument, self.default_prefix
+            will be used instead. Defaults to None.
+        classwise (bool): Whether to evaluate the metric class-wise.
+            Defaults to False.
+
+    Examples:
+        >>> import torch
+        >>> from mmcls.evaluation import AveragePrecision
+        >>> # --------- The Basic Usage for one-hot pred scores ---------
+        >>> y_pred = torch.Tensor([[0.9, 0.8, 0.3, 0.2],
+        ...                        [0.1, 0.2, 0.2, 0.1],
+        ...                        [0.7, 0.5, 0.9, 0.3],
+        ...                        [0.8, 0.1, 0.1, 0.2]])
+        >>> y_true = torch.Tensor([[1, 1, 0, 0],
+        ...                        [0, 1, 0, 0],
+        ...                        [0, 0, 1, 0],
+        ...                        [1, 0, 0, 0]])
+        >>> ROCAUC.calculate(y_pred, y_true)
+        tensor(81.2500)
+        >>> # ------------------- Use with Evalutor -------------------
+        >>> from mmcls.structures import ClsDataSample
+        >>> from mmengine.evaluator import Evaluator
+        >>> data_samples = [
+        ...     ClsDataSample().set_pred_score(i).set_gt_score(j)
+        ...     for i, j in zip(y_pred, y_true)
+        ... ]
+        >>> evaluator = Evaluator(metrics=ROCAUC())
+        >>> evaluator.process(data_samples)
+        >>> evaluator.evaluate(5)
+        {'multi-label/ROCAUC': 81.25}
+        >>> # Evaluate on each class
+        >>> evaluator = Evaluator(metrics=ROCAUC(classwise=True))
+        >>> evaluator.process(data_samples)
+        >>> evaluator.evaluate(5)
+        {'multi-label/ROCAUC_classwise': [100.0, 75.0, 100.0, 50.0]}
+    """
+    default_prefix: Optional[str] = 'multi-label'
+
+    def __init__(self,
+                 classwise: bool = False,
+                 collect_device: str = 'cpu',
+                 prefix: Optional[str] = None) -> None:
+        super().__init__(collect_device=collect_device, prefix=prefix)
+        self.classwise = classwise
+
+    def process(self, data_batch, data_samples: Sequence[dict]):
+        """Process one batch of data samples.
+
+        The processed results should be stored in ``self.results``, which will
+        be used to computed the metrics when all batches have been processed.
+
+        Args:
+            data_batch: A batch of data from the dataloader.
+            data_samples (Sequence[dict]): A batch of outputs from the model.
+        """
+
+        for data_sample in data_samples:
+            result = dict()
+            pred_label = data_sample['pred_label']
+            gt_label = data_sample['gt_label']
+
+            result['pred_score'] = pred_label['score']
+            num_classes = result['pred_score'].size()[-1]
+
+            if 'score' in gt_label:
+                result['gt_score'] = gt_label['score']
+            else:
+                result['gt_score'] = LabelData.label_to_onehot(
+                    gt_label['label'], num_classes)
+
+            # Save the result to `self.results`.
+            self.results.append(result)
+
+    def compute_metrics(self, results: List):
+        """Compute the metrics from processed results.
+
+        Args:
+            results (list): The processed results of each batch.
+
+        Returns:
+            Dict: The computed metrics. The keys are the names of the metrics,
+            and the values are corresponding results.
+        """
+        # NOTICE: don't access `self.results` from the method. `self.results`
+        # are a list of results from multiple batch, while the input `results`
+        # are the collected results.
+
+        # concat
+        target = torch.stack([res['gt_score'] for res in results])
+        pred = torch.stack([res['pred_score'] for res in results])
+
+        rocauc = self.calculate(pred, target, self.classwise)
+
+        result_metrics = dict()
+
+        if self.classwise:
+            result_metrics['ROCAUC_classwise'] = rocauc.detach().cpu().tolist()
+        else:
+            result_metrics['ROCAUC'] = rocauc.item()
+
+        return result_metrics
+
+    @staticmethod
+    def calculate(pred: Union[torch.Tensor, np.ndarray],
+                  target: Union[torch.Tensor, np.ndarray],
+                  classwise: bool = False,
+                  pos_label: float = 1.0) -> torch.Tensor:
+        r"""Calculate the roc auc for a single class.
+
+        Args:
+            pred (torch.Tensor | np.ndarray): The model predictions with
+                shape ``(N, num_classes)``.
+            target (torch.Tensor | np.ndarray): The target of predictions
+                with shape ``(N, num_classes)``.
+            classwise (bool): Whether to evaluate the metric class-wise.
+                Defaults to False.
+            pos_label (float): The label of positive target.
+
+        Returns:
+            torch.Tensor: the average precision of all classes.
+        """
+        pred = to_tensor(pred)
+        target = to_tensor(target)
+        assert pred.ndim == 2 and pred.shape == target.shape, \
+            'Both `pred` and `target` should have shape `(N, num_classes)`.'
+
+        num_classes = pred.shape[1]
+        auc = pred.new_zeros(num_classes)
+        for k in range(num_classes):
+            tpr, fpr, _ = roc_curve(pred[:, k], target[:, k], pos_label)
+            auc[k] = compute_auc(tpr, fpr)
+        if classwise:
+            return auc * 100
+        else:
+            return auc.mean() * 100.0

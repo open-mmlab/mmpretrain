@@ -51,5 +51,6 @@ Import:
   - configs/convnext_v2/metafile.yml
   - configs/levit/metafile.yml
   - configs/vig/metafile.yml
+  - configs/chexnet/metafile.yml
   - configs/arcface/metafile.yml
   - configs/xcit/metafile.yml
