@@ -217,7 +217,7 @@ def get_relative_position_index(win_h: int, win_w: int) -> torch.Tensor:
     return relative_coords.sum(-1)
 
 
-class RelativeSelfAttention(nn.Module):
+class RelativeSelfAttention(BaseModule):
     """ Relative Self-Attention similar to Swin V1. Implementation inspired by Timms Swin V1 implementation.
     Args:
         in_channels (int): Number of input channels.
@@ -260,9 +260,7 @@ class RelativeSelfAttention(nn.Module):
         # Init relative positional bias
         trunc_normal_(self.relative_position_bias_table, std=.02)
 
-    def _get_relative_positional_bias(
-            self
-    ) -> torch.Tensor:
+    def _get_relative_positional_bias(self) -> torch.Tensor:
         """ Returns the relative positional bias.
         Returns:
             relative_position_bias (torch.Tensor): Relative positional bias.
@@ -296,7 +294,7 @@ class RelativeSelfAttention(nn.Module):
         return output
 
 
-class MaxViTTransformerBlock(nn.Module):
+class MaxViTTransformerBlock(BaseModule):
     """ MaxViT Transformer block.
         With block partition:
         x ← x + Unblock(RelAttention(Block(LN(x))))
@@ -379,7 +377,7 @@ class MaxViTTransformerBlock(nn.Module):
         return output
 
 
-class MaxViTBlock(nn.Module):
+class MaxViTBlock(BaseModule):
     """ MaxViT block composed of MBConv block, Block Attention, and Grid Attention.
     Args:
         in_channels (int): Number of input channels.
@@ -460,7 +458,7 @@ class MaxViTBlock(nn.Module):
         return output
 
 
-class MaxViTStage(nn.Module):
+class MaxViTStage(BaseModule):
     """ Stage of the MaxViT.
     Args:
         depth (int): Depth of the stage.
