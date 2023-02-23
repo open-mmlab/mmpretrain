@@ -12,7 +12,8 @@ model = dict(
         img_size=192,
         stage_cfgs=dict(block_cfgs=dict(window_size=12)),
         pad_small_map=True),
-    neck=dict(type='SimMIMNeck', in_channels=192 * 2**3, encoder_stride=32),
+    neck=dict(
+        type='SimMIMLinearDecoder', in_channels=192 * 2**3, encoder_stride=32),
     head=dict(
         type='SimMIMHead',
         patch_size=4,

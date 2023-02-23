@@ -7,8 +7,8 @@ from mmpretrain.registry import MODELS
 
 
 @MODELS.register_module()
-class SimMIMNeck(BaseModule):
-    """Pre-train Neck For SimMIM.
+class SimMIMLinearDecoder(BaseModule):
+    """Linear Decoder For SimMIM pretraining.
 
     This neck reconstructs the original image from the shrunk feature map.
 
