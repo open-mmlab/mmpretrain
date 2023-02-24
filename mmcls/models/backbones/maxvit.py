@@ -70,7 +70,7 @@ class MBConv(BaseModule):
         else:
             self.shortcut = nn.Identity()
 
-        mid_channels = make_divisible(out_channels * expand_ratio)
+        mid_channels = make_divisible(out_channels * expand_ratio, 8)
 
         self.pre_norm = build_norm_layer(norm_cfg,in_channels)
         self.layers = nn.ModuleList()
@@ -78,7 +78,7 @@ class MBConv(BaseModule):
                                       out_channels=mid_channels,
                                       kernel_size=1,
                                       stride=1,
-                                      conv_cfg=dict(type='conv2d'),
+                                      conv_cfg=dict(type='Conv2d'),
                                       norm_cfg=norm_cfg,
                                       act_cfg=act_cfg))
 
