@@ -201,7 +201,7 @@ class CAENeck(BaseModule):
                 num_heads=num_heads,
                 feedforward_channels=mlp_ratio * embed_dims,
                 layer_scale_init_value=layer_scale_init_value,
-                window_size=0,
+                window_size=None,
                 # setting `use_rel_pos_bias` to False ignores the `window_size`
                 use_rel_pos_bias=False,
                 drop_rate=drop_rate,
