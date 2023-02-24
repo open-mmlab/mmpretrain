@@ -8,8 +8,8 @@ from mmengine.model import BaseModule
 from mmengine.model.weight_init import trunc_normal_
 from torch import nn
 
-from mmpretrain.models import BEiTViT, resize_pos_embed
-from mmpretrain.models.utils import NormEMAVectorQuantizer
+from mmpretrain.models import BEiTViT
+from mmpretrain.models.utils import NormEMAVectorQuantizer, resize_pos_embed
 from mmpretrain.registry import MODELS
 
 
