@@ -3,9 +3,10 @@ from typing import List, Optional, Union
 
 import torch
 from mmengine.model import BaseModel
-from mmselfsup.registry import MODELS
-from mmselfsup.structures import SelfSupDataSample
 from torch import nn
+
+from mmpretrain.registry import MODELS
+from mmpretrain.structures import DataSample
 
 
 class BaseSelfSupervisor(BaseModel):
@@ -86,7 +87,7 @@ class BaseSelfSupervisor(BaseModel):
 
     def forward(self,
                 inputs: torch.Tensor,
-                data_samples: Optional[List[SelfSupDataSample]] = None,
+                data_samples: Optional[List[DataSample]] = None,
                 mode: str = 'tensor'):
         """Returns losses or predictions of training, validation, testing, and
         simple inference process.
@@ -96,7 +97,7 @@ class BaseSelfSupervisor(BaseModel):
         Args:
             inputs (torch.Tensor): batch input tensor collated by
                 :attr:`data_preprocessor`.
-            data_samples (List[BaseDataElement], optional):
+            data_samples (List[DataSample], optional):
                 data samples collated by :attr:`data_preprocessor`.
             mode (str): mode should be one of ``loss``, ``predict`` and
                 ``tensor``.
@@ -104,7 +105,7 @@ class BaseSelfSupervisor(BaseModel):
                 - ``loss``: Called by ``train_step`` and return loss ``dict``
                   used for logging
                 - ``predict``: Called by ``val_step`` and ``test_step``
-                  and return list of ``BaseDataElement`` results used for
+                  and return list of ``DataSample`` results used for
                   computing metric.
                 - ``tensor``: Called by custom use to get ``Tensor`` type
                   results.
@@ -114,7 +115,7 @@ class BaseSelfSupervisor(BaseModel):
               - If ``mode == loss``, return a ``dict`` of loss tensor used
                 for backward and logging.
               - If ``mode == predict``, return a ``list`` of
-                :obj:`BaseDataElement` for computing metric
+                :obj:`DataSample` for computing metric
                 and getting inference result.
               - If ``mode == tensor``, return a tensor or ``tuple`` of tensor
                 or ``dict of tensor for custom use.
@@ -146,7 +147,7 @@ class BaseSelfSupervisor(BaseModel):
         raise NotImplementedError
 
     def loss(self, inputs: torch.Tensor,
-             data_samples: List[SelfSupDataSample]) -> dict:
+             data_samples: List[DataSample]) -> dict:
         """Calculate losses from a batch of inputs and data samples.
 
         This is a abstract method, and subclass should overwrite this methods
@@ -155,7 +156,7 @@ class BaseSelfSupervisor(BaseModel):
         Args:
             inputs (torch.Tensor): The input tensor with shape
                 (N, C, ...) in general.
-            data_samples (List[SelfSupDataSample]): The annotation data of
+            data_samples (List[DataSample]): The annotation data of
                 every samples.
 
         Returns:
@@ -165,8 +166,8 @@ class BaseSelfSupervisor(BaseModel):
 
     def predict(self,
                 inputs: tuple,
-                data_samples: Optional[List[SelfSupDataSample]] = None,
-                **kwargs) -> List[SelfSupDataSample]:
+                data_samples: Optional[List[DataSample]] = None,
+                **kwargs) -> List[DataSample]:
         """Predict results from the extracted features.
 
         This module returns the logits before loss, which are used to compute
@@ -175,7 +176,7 @@ class BaseSelfSupervisor(BaseModel):
 
         Args:
             feats (tuple): The features extracted from the backbone.
-            data_samples (List[BaseDataElement], optional): The annotation
+            data_samples (List[DataSample], optional): The annotation
                 data of every samples. Defaults to None.
             **kwargs: Other keyword arguments accepted by the ``predict``
                 method of :attr:`head`.
