@@ -214,7 +214,7 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
 
 
 @MODELS.register_module()
-class BEiT(VisionTransformer):
+class BEiTViT(VisionTransformer):
     """Backbone for BEiT.
 
     A PyTorch implement of : `BEiT: BERT Pre-Training of Image Transformers
