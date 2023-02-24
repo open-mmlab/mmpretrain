@@ -233,11 +233,12 @@ class RelativeSelfAttention(BaseModule):
             num_heads: int = 32,
             grid_window_size: Tuple[int, int] = (7, 7),
             attn_drop: float = 0.,
-            drop: float = 0.
+            drop: float = 0.,
+            init_cfg=None
     ) -> None:
         """ Constructor method """
         # Call super constructor
-        super(RelativeSelfAttention, self).__init__()
+        super(RelativeSelfAttention, self).__init__(init_cfg=init_cfg)
         # Save parameters
         self.in_channels: int = in_channels
         self.num_heads: int = num_heads
@@ -329,9 +330,10 @@ class MaxViTTransformerBlock(BaseModule):
                  drop_path: float = 0.,
                  mlp_ratio: float = 4.,
                  act_cfg=dict(type='GELU'),
-                 norm_cfg=dict(type='LN')) -> None:
+                 norm_cfg=dict(type='LN'),
+                 init_cfg=None) -> None:
         """ Constructor method """
-        super(MaxViTTransformerBlock, self).__init__()
+        super(MaxViTTransformerBlock, self).__init__(init_cfg=init_cfg)
         # Save parameters
         self.partition_function: Callable = partition_function
         self.reverse_function: Callable = reverse_function
@@ -404,11 +406,11 @@ class MaxViTBlock(BaseModule):
             mlp_ratio: float = 4.,
             act_cfg=dict(type='GELU'),
             norm_cfg=dict(type='BN'),
-            norm_cfg_transformer=dict(type='LN')
-    ) -> None:
+            norm_cfg_transformer=dict(type='LN'),
+            init_cfg=None) -> None:
         """ Constructor method """
         # Call super constructor
-        super(MaxViTBlock, self).__init__()
+        super(MaxViTBlock, self).__init__(init_cfg=init_cfg)
         # Init MBConv block
         self.mb_conv = MBConv(
             in_channels=in_channels,
@@ -486,11 +488,11 @@ class MaxViTStage(BaseModule):
             mlp_ratio: float = 4.,
             act_cfg=dict(type='GELU'),
             norm_cfg=dict(type='BN'),
-            norm_cfg_transformer=dict(type='LN')
-    ) -> None:
+            norm_cfg_transformer=dict(type='LN'),
+            init_cfg=None) -> None:
         """ Constructor method """
         # Call super constructor
-        super(MaxViTStage, self).__init__()
+        super(MaxViTStage, self).__init__(init_cfg=init_cfg)
         # Init blocks
         self.blocks = nn.Sequential(*[
             MaxViTBlock(
@@ -558,11 +560,12 @@ class MaxViT(BaseBackbone):
             act_cfg=dict(type='GELU'),
             norm_cfg=dict(type='BN', eps=1e-5),
             norm_cfg_transformer=dict(type='LN'),
-            global_pool: str = "avg"
+            global_pool: str = "avg",
+            init_cfg=None
     ) -> None:
         """ Constructor method """
         # Call super constructor
-        super(MaxViT, self).__init__()
+        super(MaxViT, self).__init__(init_cfg=init_cfg)
         # Check parameters
         assert len(depths) == len(channels), "For each stage a channel dimension must be given."
         assert global_pool in ["avg", "max"], f"Only avg and max is supported but {global_pool} is given"
