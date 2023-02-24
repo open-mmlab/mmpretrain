@@ -47,7 +47,7 @@ repos:
     rev: v0.4.0
     hooks:
     -   id: check-copyright
-        args: ["mmcls", "tests", "demo", "tools", "--excludes", "mmcls/.mim/", "--ignore-file-not-found-error"]
+        args: ["mmpretrain", "tests", "demo", "tools", "--excludes", "mmpretrain/.mim/", "--ignore-file-not-found-error"]
   - repo: local
     hooks:
       - id: metafile

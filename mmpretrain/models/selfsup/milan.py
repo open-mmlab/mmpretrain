@@ -47,8 +47,8 @@ class MILANViT(MAEViT):
     """Vision Transformer for MILAN pre-training.
 
     Implementation of the encoder for `MILAN: Masked Image Pretraining on
-    Language Assisted Representation <https://arxiv.org/abs/2208.06049>`_. 
-    
+    Language Assisted Representation <https://arxiv.org/abs/2208.06049>`_.
+
     This module inherits from MAEViT and only overrides the forward function
     and replace random masking with attention masking.
     """

@@ -4,8 +4,8 @@ from .attention import (BEiTAttention, ChannelMultiheadAttention,
                         MultiheadAttention, PromptMultiheadAttention,
                         ShiftWindowMSA, WindowMSA, WindowMSAV2)
 from .batch_augments import CutMix, Mixup, RandomBatchAugment, ResizeMix
-from .clip_generator_helper import build_clip_model
 from .channel_shuffle import channel_shuffle
+from .clip_generator_helper import build_clip_model
 from .data_preprocessor import ClsDataPreprocessor
 from .embed import (HybridEmbed, PatchEmbed, PatchMerging, resize_pos_embed,
                     resize_relative_position_bias_table)

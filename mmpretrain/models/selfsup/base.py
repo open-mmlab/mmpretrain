@@ -3,10 +3,9 @@ from typing import List, Optional, Union
 
 import torch
 from mmengine.model import BaseModel
-from torch import nn
-
 from mmselfsup.registry import MODELS
 from mmselfsup.structures import SelfSupDataSample
+from torch import nn
 
 
 class BaseSelfSupervisor(BaseModel):

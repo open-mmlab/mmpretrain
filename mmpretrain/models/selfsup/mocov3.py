@@ -5,7 +5,6 @@ from operator import mul
 from typing import List, Optional, Union
 
 import torch.nn as nn
-
 from mmcv.cnn.bricks.transformer import PatchEmbed
 from torch.nn.modules.batchnorm import _BatchNorm
 

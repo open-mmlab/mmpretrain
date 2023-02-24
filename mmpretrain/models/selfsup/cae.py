@@ -13,7 +13,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from mmengine.model import BaseModule, ModuleList
 from mmengine.model.weight_init import trunc_normal_
-from torch import nn
 
 from mmpretrain.models import VisionTransformer
 from mmpretrain.models.backbones.beit import BEiTTransformerEncoderLayer

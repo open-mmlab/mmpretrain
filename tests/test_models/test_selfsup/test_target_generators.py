@@ -1,14 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import platform
+from unittest import TestCase
 
 import pytest
 import torch
-from unittest import TestCase
 
-from mmpretrain.models import Encoder, HOGGenerator, VQKD
+from mmpretrain.models import VQKD, Encoder, HOGGenerator
 
 
-class TestImageToImageRetriever(TestCase):
+class TestDALLE(TestCase):
 
     @pytest.mark.skipif(
         platform.system() == 'Windows', reason='Windows mem limit')
@@ -20,7 +20,7 @@ class TestImageToImageRetriever(TestCase):
         assert list(fake_outputs.shape) == [2, 8192, 14, 14]
 
 
-class TestImageToImageRetriever(TestCase):
+class TestHOGGenerator(TestCase):
 
     def test_hog_generator(self):
         hog_generator = HOGGenerator()
@@ -38,7 +38,7 @@ class TestImageToImageRetriever(TestCase):
                 hog_generator.out[0])
 
 
-class TestImageToImageRetriever(TestCase):
+class TestVQKD(TestCase):
 
     ENCODER_CFG = dict(
         arch='base',

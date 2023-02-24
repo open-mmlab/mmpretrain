@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from .base import BaseSelfSupervisor
 from .beit import VQKD, BEiTPretrainViT
 from .cae import CAEViT, Encoder
