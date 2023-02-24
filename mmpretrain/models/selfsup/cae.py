@@ -16,8 +16,9 @@ from mmengine.model.weight_init import trunc_normal_
 from torch import nn
 
 from mmpretrain.models import VisionTransformer
+from mmpretrain.models.backbones.beit import BEiTTransformerEncoderLayer
 from mmpretrain.registry import MODELS
-from ..utils import TransformerEncoderLayer, build_2d_sincos_position_embedding
+from ..utils import build_2d_sincos_position_embedding
 
 
 @attr.s(eq=False)
@@ -209,8 +210,8 @@ class CAEViT(VisionTransformer):
             `with_cls_token` must be True. Defaults to True.
         interpolate_mode (str): Select the interpolate mode for position
             embeding vector resize. Defaults to "bicubic".
-        init_values (float, optional): The init value of gamma in
-            TransformerEncoderLayer.
+        layer_scale_init_value (float, optional): The init value of gamma in
+            BEiTTransformerEncoderLayer.
         patch_cfg (dict): Configs of patch embeding. Defaults to an empty dict.
         layer_cfgs (Sequence | dict): Configs of each transformer layer in
             encoder. Defaults to an empty dict.
@@ -230,7 +231,7 @@ class CAEViT(VisionTransformer):
                  final_norm: bool = True,
                  output_cls_token: bool = True,
                  interpolate_mode: str = 'bicubic',
-                 init_values: float = None,
+                 layer_scale_init_value: float = None,
                  patch_cfg: dict = dict(),
                  layer_cfgs: dict = dict(),
                  init_cfg: dict = None) -> None:
@@ -252,8 +253,8 @@ class CAEViT(VisionTransformer):
         self.num_patches = self.patch_resolution[0] * self.patch_resolution[1]
         dpr = np.linspace(0, drop_path_rate, self.num_layers)
 
-        # Replace original TransformerEncoderLayer with customized
-        # TransformerEncoderLayer
+        # Replace original TransformerEncoderLayer with
+        # BEiTTransformerEncoderLayer
         self.layers = ModuleList()
         if isinstance(layer_cfgs, dict):
             layer_cfgs = [layer_cfgs] * self.num_layers
@@ -263,13 +264,16 @@ class CAEViT(VisionTransformer):
                 num_heads=self.arch_settings['num_heads'],
                 feedforward_channels=self.
                 arch_settings['feedforward_channels'],
+                layer_scale_init_value=layer_scale_init_value,
+                window_size=None,
+                # setting `use_rel_pos_bias` to False ignores the `window_size`
+                use_rel_pos_bias=False,
                 drop_rate=drop_rate,
                 drop_path_rate=dpr[i],
                 qkv_bias=qkv_bias,
-                init_values=init_values,
                 norm_cfg=norm_cfg)
             _layer_cfg.update(layer_cfgs[i])
-            self.layers.append(TransformerEncoderLayer(**_layer_cfg))
+            self.layers.append(BEiTTransformerEncoderLayer(**_layer_cfg))
 
     def init_weights(self) -> None:
         """Initialize position embedding, patch embedding and cls token."""
