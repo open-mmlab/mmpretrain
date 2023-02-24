@@ -567,7 +567,7 @@ class BEiTAttention(BaseModule):
     Args:
         embed_dims (int): Number of input channels.
         num_heads (int): Number of attention heads.
-        window_size (tuple[int]): The height and width of the window.
+        window_size (tuple[int, int]): The height and width of the window.
         use_rel_pos_bias (bool): Whether to use unique relative position bias,
             if False, use shared relative position bias defined in backbone.
         bias (str): The option to add leanable bias for q, k, v. If bias is
@@ -606,6 +606,10 @@ class BEiTAttention(BaseModule):
             self._init_qv_bias()
             qkv_bias = False
 
+        if window_size is None:
+            assert not use_rel_pos_bias
+        else:
+            assert isinstance(window_size, tuple)
         self.window_size = window_size
         self.use_rel_pos_bias = use_rel_pos_bias
         self._init_rel_pos_embedding()
