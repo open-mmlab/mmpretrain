@@ -458,7 +458,8 @@ class Stem(BaseModule):
         return x
 
 
-class MaxVit(BaseModule):
+@MODELS.register_module()
+class MaxViT(BaseBackbone):
     """ CoaTNet + MaxVit base model.
 
     Highly configurable for different block compositions, tensor layouts, pooling types.
