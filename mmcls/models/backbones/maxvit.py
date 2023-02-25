@@ -581,7 +581,7 @@ class MaxVit(BaseModule):
 
         if self.head_hidden_size:
             x = self.final_mlp(x)
-            if self.num_layers - 1 in self.out_indices:
+            if self.num_layers in self.out_indices:
                 outs.append(x)
 
         return tuple(outs)
