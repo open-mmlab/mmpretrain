@@ -90,7 +90,7 @@ class MBConv(BaseModule):
 
         if stride == 2:
             self.shortcut = Sequential(
-                AvgPool2dSame(kernel_size=(2, 2), stride=(2, 2), count_include_pad=False),
+                AvgPool2dSame(kernel_size=(2, 2), stride=(2, 2)),
                 ConvModule(in_channels=in_channels,
                            out_channels=out_channels,
                            kernel_size=1,
