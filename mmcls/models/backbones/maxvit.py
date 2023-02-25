@@ -16,33 +16,38 @@ from mmengine.model.weight_init import trunc_normal_
 from .base_backbone import BaseBackbone
 from mmcls.models.utils import SELayer, make_divisible
 from mmcls.registry import MODELS
-from ..utils import build_norm_layer, to_2tuple
+from ..utils import build_norm_layer, to_2tuple, LayerNorm2d
 
-
-# Calculate asymmetric TensorFlow-like 'SAME' padding for a convolution
-def get_same_padding(x: int, k: int, s: int, d: int):
-    return max((math.ceil(x / s) - 1) * s + (k - 1) * d + 1 - x, 0)
-
-# Dynamically pad input x with 'SAME' padding for conv with specified args
-def pad_same(x, k: List[int], s: List[int], d: List[int] = (1, 1), value: float = 0):
-    ih, iw = x.size()[-2:]
-    pad_h, pad_w = get_same_padding(ih, k[0], s[0], d[0]), get_same_padding(iw, k[1], s[1], d[1])
-    if pad_h > 0 or pad_w > 0:
-        x = F.pad(x, [pad_w // 2, pad_w - pad_w // 2, pad_h // 2, pad_h - pad_h // 2], value=value)
-    return x
-
-class AvgPool2dSame(nn.AvgPool2d):
-    """ Tensorflow like 'SAME' wrapper for 2D average pooling
-    """
-    def __init__(self, kernel_size: int, stride=None, padding=0, ceil_mode=False, count_include_pad=True):
-        kernel_size = to_2tuple(kernel_size)
-        stride = to_2tuple(stride)
-        super(AvgPool2dSame, self).__init__(kernel_size, stride, (0, 0), ceil_mode, count_include_pad)
-
-    def forward(self, x):
-        x = pad_same(x, self.kernel_size, self.stride)
-        return F.avg_pool2d(
-            x, self.kernel_size, self.stride, self.padding, self.ceil_mode, self.count_include_pad)
+#### TODO 1 : the nn.AvgPool2d(kernel_size=(2, 2), stride=(2, 2)) in MBConv
+####          should be changed by the following code?
+#### TODO 2 : the GELU active function in pytorch 1.12 and 1.13 version add a new
+####          parameter ————  approximate='none' , but mmcls and old version in pytorch
+####          isnot support this parameter. Details in 
+####          https://pytorch.org/docs/1.13/generated/torch.nn.GELU.html?highlight=nn+gelu#torch.nn.GELU
+# # Calculate asymmetric TensorFlow-like 'SAME' padding for a convolution
+# def get_same_padding(x: int, k: int, s: int, d: int):
+#     return max((math.ceil(x / s) - 1) * s + (k - 1) * d + 1 - x, 0)
+#
+# # Dynamically pad input x with 'SAME' padding for conv with specified args
+# def pad_same(x, k: List[int], s: List[int], d: List[int] = (1, 1), value: float = 0):
+#     ih, iw = x.size()[-2:]
+#     pad_h, pad_w = get_same_padding(ih, k[0], s[0], d[0]), get_same_padding(iw, k[1], s[1], d[1])
+#     if pad_h > 0 or pad_w > 0:
+#         x = F.pad(x, [pad_w // 2, pad_w - pad_w // 2, pad_h // 2, pad_h - pad_h // 2], value=value)
+#     return x
+#
+# class AvgPool2dSame(nn.AvgPool2d):
+#     """ Tensorflow like 'SAME' wrapper for 2D average pooling
+#     """
+#     def __init__(self, kernel_size: int, stride=None, padding=0, ceil_mode=False, count_include_pad=True):
+#         kernel_size = to_2tuple(kernel_size)
+#         stride = to_2tuple(stride)
+#         super(AvgPool2dSame, self).__init__(kernel_size, stride, (0, 0), ceil_mode, count_include_pad)
+#
+#     def forward(self, x):
+#         x = pad_same(x, self.kernel_size, self.stride)
+#         return F.avg_pool2d(
+#             x, self.kernel_size, self.stride, self.padding, self.ceil_mode, self.count_include_pad)
 
 
 class MBConv(BaseModule):
@@ -90,7 +95,7 @@ class MBConv(BaseModule):
 
         if stride == 2:
             self.shortcut = Sequential(
-                AvgPool2dSame(kernel_size=(2, 2), stride=(2, 2)),
+                nn.AvgPool2d(kernel_size=(2, 2), stride=(2, 2)),
                 ConvModule(in_channels=in_channels,
                            out_channels=out_channels,
                            kernel_size=1,
@@ -504,6 +509,7 @@ class Stem(BaseModule):
                                 out_channels=out_channels,
                                 kernel_size=kernel_size,
                                 stride=1,
+                                padding=1,
                                 conv_cfg=conv_cfg[0],
                                 norm_cfg=None,
                                 act_cfg=None)
@@ -600,7 +606,7 @@ class MaxViT(BaseBackbone):
                     ))
                 in_channels = out_channels
 
-        self.final_norm = build_norm_layer(norm_cfg_transformer, self.embed_dim)
+        self.final_norm = LayerNorm2d(self.embed_dim)
         if self.head_hidden_size:
             self.final_mlp = Sequential(nn.AdaptiveAvgPool2d(1),
                                         self.final_norm,
