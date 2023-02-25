@@ -10,7 +10,7 @@ from mmengine.model import BaseModule, Sequential
 from mmengine.model.weight_init import trunc_normal_
 
 
-from mmcls.models.backbones.base_backbone import BaseBackbone
+from .base_backbone import BaseBackbone
 from mmcls.models.utils import SELayer, make_divisible
 from mmcls.registry import MODELS
 from ..utils import build_norm_layer, to_2tuple
@@ -492,7 +492,7 @@ class MaxViT(BaseBackbone):
                  out_indices=(-1,),
                  frozen_stages=0,
                  init_cfg=dict(type='TruncNormal', layer='Linear')):
-        super(MaxVit, self).__init__(init_cfg=init_cfg)
+        super(MaxViT, self).__init__(init_cfg=init_cfg)
 
         img_size = to_2tuple(img_size)
         self.embed_dim = embed_dim[-1]

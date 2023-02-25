@@ -115,5 +115,5 @@ __all__ = [
     'Vig',
     'PyramidVig',
     'XCiT',
-    'MaxViT'
+    'MaxViT',
 ]
