@@ -109,12 +109,248 @@ class MBConv(BaseModule):
         Returns:
             output (torch.Tensor): Output tensor of the shape [B, C_out, H (// 2), W (// 2)] (downscaling is optional).
         """
-        shortcut = x
+        shortcut = self.shortcut(x)
         x = self.pre_norm(x)
         for i,layer in enumerate(self.layers):
             x = layer(x)
         x = self.drop_path(x) + shortcut
         return x
+
+
+class RelPosBias(nn.Module):
+    """ Relative Position Bias
+    Adapted from Swin-V1 relative position bias impl, modularized.
+    """
+
+    def __init__(self, window_size, num_heads, prefix_tokens=0):
+        super().__init__()
+        assert prefix_tokens <= 1
+        self.window_size = window_size
+        self.window_area = window_size[0] * window_size[1]
+        self.bias_shape = (self.window_area + prefix_tokens,) * 2 + (num_heads,)
+
+        num_relative_distance = (2 * window_size[0] - 1) * (2 * window_size[1] - 1) + 3 * prefix_tokens
+        self.relative_position_bias_table = nn.Parameter(torch.zeros(num_relative_distance, num_heads))
+        self.register_buffer(
+            "relative_position_index",
+            gen_relative_position_index(self.window_size, class_token=prefix_tokens > 0),
+            persistent=False,
+        )
+
+        self.init_weights()
+
+    def init_weights(self):
+        trunc_normal_(self.relative_position_bias_table, std=.02)
+
+    def get_bias(self) -> torch.Tensor:
+        relative_position_bias = self.relative_position_bias_table[self.relative_position_index.view(-1)]
+        # win_h * win_w, win_h * win_w, num_heads
+        relative_position_bias = relative_position_bias.view(self.bias_shape).permute(2, 0, 1)
+        return relative_position_bias.unsqueeze(0).contiguous()
+
+    def forward(self, attn, shared_rel_pos: Optional[torch.Tensor] = None):
+        return attn + self.get_bias()
+
+
+class AttentionCl(nn.Module):
+    """ Channels-last multi-head attention (B, ..., C) """
+    def __init__(
+            self,
+            dim: int,
+            dim_out: Optional[int] = None,
+            dim_head: int = 32,
+            bias: bool = True,
+            expand_first: bool = True,
+            head_first: bool = True,
+            rel_pos_cls: Callable = None,
+            attn_drop: float = 0.,
+            proj_drop: float = 0.
+    ):
+        super().__init__()
+        dim_out = dim_out or dim
+        dim_attn = dim_out if expand_first and dim_out > dim else dim
+        assert dim_attn % dim_head == 0, 'attn dim should be divisible by head_dim'
+        self.num_heads = dim_attn // dim_head
+        self.dim_head = dim_head
+        self.head_first = head_first
+        self.scale = dim_head ** -0.5
+
+        self.qkv = nn.Linear(dim, dim_attn * 3, bias=bias)
+        self.rel_pos = rel_pos_cls(num_heads=self.num_heads) if rel_pos_cls else None
+        self.attn_drop = nn.Dropout(attn_drop)
+        self.proj = nn.Linear(dim_attn, dim_out, bias=bias)
+        self.proj_drop = nn.Dropout(proj_drop)
+
+    def forward(self, x, shared_rel_pos: Optional[torch.Tensor] = None):
+        B = x.shape[0]
+        restore_shape = x.shape[:-1]
+
+        if self.head_first:
+            q, k, v = self.qkv(x).view(B, -1, self.num_heads, self.dim_head * 3).transpose(1, 2).chunk(3, dim=3)
+        else:
+            q, k, v = self.qkv(x).reshape(B, -1, 3, self.num_heads, self.dim_head).transpose(1, 3).unbind(2)
+
+        attn = (q @ k.transpose(-2, -1)) * self.scale
+        if self.rel_pos is not None:
+            attn = self.rel_pos(attn, shared_rel_pos=shared_rel_pos)
+        elif shared_rel_pos is not None:
+            attn = attn + shared_rel_pos
+        attn = attn.softmax(dim=-1)
+        attn = self.attn_drop(attn)
+
+        x = (attn @ v).transpose(1, 2).reshape(restore_shape + (-1,))
+        x = self.proj(x)
+        x = self.proj_drop(x)
+        return x
+
+
+def window_partition(x, window_size: List[int]):
+    B, H, W, C = x.shape
+    _assert(H % window_size[0] == 0, f'height ({H}) must be divisible by window ({window_size[0]})')
+    _assert(W % window_size[1] == 0, '')
+    x = x.view(B, H // window_size[0], window_size[0], W // window_size[1], window_size[1], C)
+    windows = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(-1, window_size[0], window_size[1], C)
+    return windows
+
+
+# @register_notrace_function  # reason: int argument is a Proxy
+def window_reverse(windows, window_size: List[int], img_size: List[int]):
+    H, W = img_size
+    C = windows.shape[-1]
+    x = windows.view(-1, H // window_size[0], W // window_size[1], window_size[0], window_size[1], C)
+    x = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(-1, H, W, C)
+    return x
+
+
+def grid_partition(x, grid_size: List[int]):
+    B, H, W, C = x.shape
+    _assert(H % grid_size[0] == 0, f'height {H} must be divisible by grid {grid_size[0]}')
+    _assert(W % grid_size[1] == 0, '')
+    x = x.view(B, grid_size[0], H // grid_size[0], grid_size[1], W // grid_size[1], C)
+    windows = x.permute(0, 2, 4, 1, 3, 5).contiguous().view(-1, grid_size[0], grid_size[1], C)
+    return windows
+
+
+# @register_notrace_function  # reason: int argument is a Proxy
+def grid_reverse(windows, grid_size: List[int], img_size: List[int]):
+    H, W = img_size
+    C = windows.shape[-1]
+    x = windows.view(-1, H // grid_size[0], W // grid_size[1], grid_size[0], grid_size[1], C)
+    x = x.permute(0, 3, 1, 4, 2, 5).contiguous().view(-1, H, W, C)
+    return x
+
+
+class PartitionAttentionCl(nn.Module):
+    """ Grid or Block partition + Attn + FFN.
+    NxC 'channels last' tensor layout.
+    """
+
+    def __init__(
+            self,
+            dim: int,
+            partition_type: str = 'block',
+            cfg: MaxxVitTransformerCfg = MaxxVitTransformerCfg(),
+            drop_path: float = 0.,
+    ):
+        super().__init__()
+        norm_layer = partial(get_norm_layer(cfg.norm_layer_cl), eps=cfg.norm_eps)  # NOTE this block is channels-last
+        act_layer = get_act_layer(cfg.act_layer)
+
+        self.partition_block = partition_type == 'block'
+        self.partition_size = to_2tuple(cfg.window_size if self.partition_block else cfg.grid_size)
+        rel_pos_cls = get_rel_pos_cls(cfg, self.partition_size)
+
+        self.norm1 = norm_layer(dim)
+        self.attn = AttentionCl(
+            dim,
+            dim,
+            dim_head=cfg.dim_head,
+            bias=cfg.attn_bias,
+            head_first=cfg.head_first,
+            rel_pos_cls=rel_pos_cls,
+            attn_drop=cfg.attn_drop,
+            proj_drop=cfg.proj_drop,
+        )
+        self.ls1 = LayerScale(dim, init_values=cfg.init_values) if cfg.init_values else nn.Identity()
+        self.drop_path1 = DropPath(drop_path) if drop_path > 0. else nn.Identity()
+
+        self.norm2 = norm_layer(dim)
+        self.mlp = Mlp(
+            in_features=dim,
+            hidden_features=int(dim * cfg.expand_ratio),
+            act_layer=act_layer,
+            drop=cfg.proj_drop)
+        self.ls2 = LayerScale(dim, init_values=cfg.init_values) if cfg.init_values else nn.Identity()
+        self.drop_path2 = DropPath(drop_path) if drop_path > 0. else nn.Identity()
+
+    def _partition_attn(self, x):
+        img_size = x.shape[1:3]
+        if self.partition_block:
+            partitioned = window_partition(x, self.partition_size)
+        else:
+            partitioned = grid_partition(x, self.partition_size)
+
+        partitioned = self.attn(partitioned)
+
+        if self.partition_block:
+            x = window_reverse(partitioned, self.partition_size, img_size)
+        else:
+            x = grid_reverse(partitioned, self.partition_size, img_size)
+        return x
+
+    def forward(self, x):
+        x = x + self.drop_path1(self.ls1(self._partition_attn(self.norm1(x))))
+        x = x + self.drop_path2(self.ls2(self.mlp(self.norm2(x))))
+        return x
+
+
+class MaxxVitBlock(nn.Module):
+    """ MaxVit conv, window partition + FFN , grid partition + FFN
+    """
+
+    def __init__(
+            self,
+            dim: int,
+            dim_out: int,
+            stride: int = 1,
+            conv_cfg: MaxxVitConvCfg = MaxxVitConvCfg(),
+            transformer_cfg: MaxxVitTransformerCfg = MaxxVitTransformerCfg(),
+            use_nchw_attn: bool = False,  # FIXME move to cfg? True is ~20-30% faster on TPU, 5-10% slower on GPU
+            use_block_attn: bool = True,  # FIXME for testing ConvNeXt conv w/o block attention
+            drop_path: float = 0.,
+    ):
+        super().__init__()
+
+        conv_cls = ConvNeXtBlock if conv_cfg.block_type == 'convnext' else MbConvBlock
+        self.conv = conv_cls(dim, dim_out, stride=stride, cfg=conv_cfg, drop_path=drop_path)
+
+        attn_kwargs = dict(dim=dim_out, cfg=transformer_cfg, drop_path=drop_path)
+        partition_layer = PartitionAttention2d if use_nchw_attn else PartitionAttentionCl
+        self.nchw_attn = use_nchw_attn
+        self.attn_block = partition_layer(**attn_kwargs) if use_block_attn else None
+        self.attn_grid = partition_layer(partition_type='grid', **attn_kwargs)
+
+    def init_weights(self, scheme=''):
+        if self.attn_block is not None:
+            named_apply(partial(_init_transformer, scheme=scheme), self.attn_block)
+        named_apply(partial(_init_transformer, scheme=scheme), self.attn_grid)
+        named_apply(partial(_init_conv, scheme=scheme), self.conv)
+
+    def forward(self, x):
+        # NCHW format
+        x = self.conv(x)
+
+        if not self.nchw_attn:
+            x = x.permute(0, 2, 3, 1)  # to NHWC (channels-last)
+        if self.attn_block is not None:
+            x = self.attn_block(x)
+        x = self.attn_grid(x)
+        if not self.nchw_attn:
+            x = x.permute(0, 3, 1, 2)  # back to NCHW
+        return x
+
+
+
 
 
 def window_partition(input: torch.Tensor,
