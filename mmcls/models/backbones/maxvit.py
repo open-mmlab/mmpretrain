@@ -405,7 +405,7 @@ class PartitionAttentionCl(BaseModule):
         return x
 
 
-class MaxVitBlock(BaseModule):
+class MaxViTBlock(BaseModule):
     """ MaxVit conv, window partition + FFN , grid partition + FFN
     """
 
@@ -431,7 +431,7 @@ class MaxVitBlock(BaseModule):
                  act_cfg_transformer=dict(type='GELU'),
                  init_cfg=None):
 
-        super(MaxVitBlock, self).__init__(init_cfg=init_cfg)
+        super(MaxViTBlock, self).__init__(init_cfg=init_cfg)
 
         self.conv = MBConv(in_channels=dim,
                            out_channels=dim_out,
@@ -577,7 +577,7 @@ class MaxViT(BaseBackbone):
                 stride = 2 if j == 0 else 1
                 out_channels = embed_dim[i]
                 self.layers.append(
-                    MaxVitBlock(
+                    MaxViTBlock(
                         dim=in_channels,
                         dim_out=out_channels,
                         stride=stride,
