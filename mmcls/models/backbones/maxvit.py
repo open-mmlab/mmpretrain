@@ -1,8 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Type, Callable, Tuple, Optional, Set, List, Union
+from functools import partial
+from typing import Callable, Tuple, Optional, Sequence, List, Union
+import math
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from mmcv.cnn.bricks.transformer import FFN
 from mmcv.cnn.bricks import ConvModule, DropPath, build_activation_layer
@@ -14,6 +17,32 @@ from .base_backbone import BaseBackbone
 from mmcls.models.utils import SELayer, make_divisible
 from mmcls.registry import MODELS
 from ..utils import build_norm_layer, to_2tuple
+
+
+# Calculate asymmetric TensorFlow-like 'SAME' padding for a convolution
+def get_same_padding(x: int, k: int, s: int, d: int):
+    return max((math.ceil(x / s) - 1) * s + (k - 1) * d + 1 - x, 0)
+
+# Dynamically pad input x with 'SAME' padding for conv with specified args
+def pad_same(x, k: List[int], s: List[int], d: List[int] = (1, 1), value: float = 0):
+    ih, iw = x.size()[-2:]
+    pad_h, pad_w = get_same_padding(ih, k[0], s[0], d[0]), get_same_padding(iw, k[1], s[1], d[1])
+    if pad_h > 0 or pad_w > 0:
+        x = F.pad(x, [pad_w // 2, pad_w - pad_w // 2, pad_h // 2, pad_h - pad_h // 2], value=value)
+    return x
+
+class AvgPool2dSame(nn.AvgPool2d):
+    """ Tensorflow like 'SAME' wrapper for 2D average pooling
+    """
+    def __init__(self, kernel_size: int, stride=None, padding=0, ceil_mode=False, count_include_pad=True):
+        kernel_size = to_2tuple(kernel_size)
+        stride = to_2tuple(stride)
+        super(AvgPool2dSame, self).__init__(kernel_size, stride, (0, 0), ceil_mode, count_include_pad)
+
+    def forward(self, x):
+        x = pad_same(x, self.kernel_size, self.stride)
+        return F.avg_pool2d(
+            x, self.kernel_size, self.stride, self.padding, self.ceil_mode, self.count_include_pad)
 
 
 class MBConv(BaseModule):
@@ -43,7 +72,7 @@ class MBConv(BaseModule):
                  expand_ratio=4.0,
                  drop_path: float = 0.,
                  conv_cfg=(dict(type='Conv2d'),dict(type='Conv2dAdaptivePadding')),
-                 act_cfg=dict(type='GELU', approximate='tanh'),
+                 act_cfg=dict(type='GELU'),
                  norm_cfg=dict(type='BN', eps=1e-3),
                  init_cfg=None):
         """ Constructor method """
@@ -61,7 +90,7 @@ class MBConv(BaseModule):
 
         if stride == 2:
             self.shortcut = Sequential(
-                nn.MaxPool2d(kernel_size=(2, 2), stride=(2, 2)),
+                AvgPool2dSame(kernel_size=(2, 2), stride=(2, 2), count_include_pad=False),
                 ConvModule(in_channels=in_channels,
                            out_channels=out_channels,
                            kernel_size=1,
@@ -145,6 +174,33 @@ def reindex_2d_einsum_lookup(relative_position_tensor,
     reindexed_tensor = torch.einsum('nixw,jyw->nijxy', reindexed_tensor, width_lookup)
     area = height * width
     return reindexed_tensor.reshape(relative_position_tensor.shape[0], area, area)
+
+
+def generate_lookup_tensor(length: int,
+                           max_relative_position: Optional[int] = None,):
+    """Generate a one_hot lookup tensor to reindex embeddings along one dimension.
+
+    Args:
+        length: the length to reindex to.
+        max_relative_position: the maximum relative position to consider.
+            Relative position embeddings for distances above this threshold
+            are zeroed out.
+    Returns:
+        a lookup Tensor of size [length, length, vocab_size] that satisfies
+            ret[n,m,v] = 1{m - n + max_relative_position = v}.
+    """
+    if max_relative_position is None:
+        max_relative_position = length - 1
+    # Return the cached lookup tensor, otherwise compute it and cache it.
+    vocab_size = 2 * max_relative_position + 1
+    ret = torch.zeros(length, length, vocab_size)
+    for i in range(length):
+        for x in range(length):
+            v = x - i + max_relative_position
+            if abs(x - i) > max_relative_position:
+                continue
+            ret[i, x, v] = 1
+    return ret
 
 
 class RelPosBiasTf(BaseModule):
@@ -292,7 +348,7 @@ class PartitionAttentionCl(BaseModule):
             ffn_drop=0.,
             drop_path: float = 0.,
             norm_cfg=dict(type='LN', eps=1e-5),
-            act_cfg=dict(type='GELU', approximate='tanh'),
+            act_cfg=dict(type='GELU'),
             init_cfg=None
     ):
         super(PartitionAttentionCl, self).__init__(init_cfg=init_cfg)
@@ -359,7 +415,7 @@ class MaxVitBlock(BaseModule):
                  stride=1,
                  expand_ratio_conv=4.0,
                  conv_cfg=(dict(type='Conv2d'), dict(type='Conv2dAdaptivePadding')),
-                 act_cfg_conv=dict(type='GELU', approximate='tanh'),
+                 act_cfg_conv=dict(type='GELU'),
                  norm_cfg_conv=dict(type='BN', eps=1e-3),
                  window_size=(7, 7),
                  grid_size=(7, 7),
@@ -372,7 +428,7 @@ class MaxVitBlock(BaseModule):
                  ffn_drop=0.,
                  drop_path: float = 0.,
                  norm_cfg_transformer=dict(type='LN', eps=1e-5),
-                 act_cfg_transformer=dict(type='GELU', approximate='tanh'),
+                 act_cfg_transformer=dict(type='GELU'),
                  init_cfg=None):
 
         super(MaxVitBlock, self).__init__(init_cfg=init_cfg)
@@ -433,7 +489,7 @@ class Stem(BaseModule):
                  stride=2,
                  conv_cfg=(dict(type='Conv2d'), dict(type='Conv2dAdaptivePadding')),
                  norm_cfg=dict(type='BN', eps=1e-3),
-                 act_cfg=dict(type='GELU', approximate='tanh'),
+                 act_cfg=dict(type='GELU'),
                  init_cfg=None):
         super(Stem,self).__init__(init_cfg=init_cfg)
 
@@ -477,7 +533,7 @@ class MaxViT(BaseBackbone):
                  expand_ratio_conv=4.,
                  conv_cfg=(dict(type='Conv2d'), dict(type='Conv2dAdaptivePadding')),
                  norm_cfg_conv=dict(type='BN', eps=1e-3),
-                 act_cfg_conv=dict(type='GELU', approximate='tanh'),
+                 act_cfg_conv=dict(type='GELU'),
                  partition_ratio=32,
                  dim_head=32,
                  attn_bias=True,
@@ -487,7 +543,7 @@ class MaxViT(BaseBackbone):
                  ffn_expand_ratio=4.,
                  ffn_drop=0.,
                  norm_cfg_transformer=dict(type='LN', eps=1e-5),
-                 act_cfg_transformer=dict(type='GELU', approximate='tanh'),
+                 act_cfg_transformer=dict(type='GELU'),
                  drop_path_rate: float = 0.,
                  out_indices=(-1,),
                  frozen_stages=0,
@@ -516,7 +572,7 @@ class MaxViT(BaseBackbone):
             for x in torch.linspace(0, drop_path_rate, self.num_layers).split(depths)
         ]  # stochastic depth decay rule
         in_channels = stem_width
-        for i in len(depths):
+        for i in range(len(depths)):
             for j in range(depths[i]):
                 stride = 2 if j == 0 else 1
                 out_channels = embed_dim[i]
@@ -542,6 +598,7 @@ class MaxViT(BaseBackbone):
                         act_cfg_transformer=act_cfg_transformer,
                         drop_path=dpr[i][j]
                     ))
+                in_channels = out_channels
 
         self.final_norm = build_norm_layer(norm_cfg_transformer, self.embed_dim)
         if self.head_hidden_size:
