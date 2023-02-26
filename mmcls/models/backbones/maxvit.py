@@ -94,15 +94,7 @@ class MBConv(BaseModule):
         # Make main path
 
         if stride == 2:
-            self.shortcut = Sequential(
-                nn.AvgPool2d(kernel_size=(2, 2), stride=(2, 2)),
-                ConvModule(in_channels=in_channels,
-                           out_channels=out_channels,
-                           kernel_size=1,
-                           conv_cfg=conv_cfg[0],
-                           norm_cfg=None,
-                           act_cfg=None)
-            )
+            self.shortcut = nn.AvgPool2d(kernel_size=(2, 2), stride=(2, 2))
         else:
             self.shortcut = nn.Identity()
 
@@ -128,7 +120,7 @@ class MBConv(BaseModule):
                                       act_cfg=act_cfg))
 
         self.layers.append(SELayer(channels=mid_channels,
-                                   ratio=4,
+                                   ratio=16,
                                    conv_cfg=None,
                                    act_cfg=(dict(type='SiLU'),dict(type='Sigmoid'))))
 
@@ -229,7 +221,7 @@ class RelPosBiasTf(BaseModule):
         self.init_weights()
 
     def init_weights(self):
-        nn.init.normal_(self.relative_position_bias_table, std=.02)
+        trunc_normal_(self.relative_position_bias_table, std=.02)
 
     def get_bias(self) -> torch.Tensor:
         # FIXME change to not use one-hot/einsum?
@@ -247,22 +239,21 @@ class RelPosBiasTf(BaseModule):
 
 class AttentionCl(nn.Module):
     """ Channels-last multi-head attention (B, ..., C) """
-    def __init__(
-            self,
-            dim: int,
-            dim_out: Optional[int] = None,
-            dim_head: int = 32,
-            bias: bool = True,
-            expand_first: bool = True,
-            head_first: bool = True,
-            rel_pos_cls: Callable = None,
-            attn_drop: float = 0.,
-            proj_drop: float = 0.
-    ):
+    def __init__(self,
+                 dim: int,
+                 dim_out: Optional[int] = None,
+                 dim_head: int = 32,
+                 bias: bool = True,
+                 expand_first: bool = True,
+                 head_first: bool = True,
+                 rel_pos_cls: Callable = None,
+                 attn_drop: float = 0.,
+                 proj_drop: float = 0.):
         super().__init__()
         dim_out = dim_out or dim
         dim_attn = dim_out if expand_first and dim_out > dim else dim
-        assert dim_attn % dim_head == 0, 'attn dim should be divisible by head_dim'
+        assert dim_attn % dim_head == 0, \
+            'attn dim should be divisible by head_dim'
         self.num_heads = dim_attn // dim_head
         self.dim_head = dim_head
         self.head_first = head_first
@@ -299,8 +290,10 @@ class AttentionCl(nn.Module):
 
 def window_partition(x, window_size: List[int]):
     B, H, W, C = x.shape
-    assert H % window_size[0] == 0, f'height ({H}) must be divisible by window ({window_size[0]})'
-    assert W % window_size[1] == 0, ''
+    assert H % window_size[0] == 0, \
+        f'height ({H}) must be divisible by window ({window_size[0]})'
+    assert W % window_size[1] == 0, \
+        f'height ({W}) must be divisible by window ({window_size[1]})'
     x = x.view(B, H // window_size[0], window_size[0], W // window_size[1], window_size[1], C)
     windows = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(-1, window_size[0], window_size[1], C)
     return windows
@@ -317,8 +310,10 @@ def window_reverse(windows, window_size: List[int], img_size: List[int]):
 
 def grid_partition(x, grid_size: List[int]):
     B, H, W, C = x.shape
-    assert H % grid_size[0] == 0, f'height {H} must be divisible by grid {grid_size[0]}'
-    assert W % grid_size[1] == 0, ''
+    assert H % grid_size[0] == 0, \
+        f'height {H} must be divisible by grid {grid_size[0]}'
+    assert W % grid_size[1] == 0, \
+        f'height {W} must be divisible by grid {grid_size[1]}'
     x = x.view(B, grid_size[0], H // grid_size[0], grid_size[1], W // grid_size[1], C)
     windows = x.permute(0, 2, 4, 1, 3, 5).contiguous().view(-1, grid_size[0], grid_size[1], C)
     return windows
@@ -338,42 +333,38 @@ class PartitionAttentionCl(BaseModule):
     NxC 'channels last' tensor layout.
     """
 
-    def __init__(
-            self,
-            dim: int,
-            partition_type: str = 'block',
-            window_size=(7, 7),
-            grid_size=(7, 7),
-            dim_head=32,
-            attn_bias=True,
-            head_first=False,
-            attn_drop=0.,
-            proj_drop=0.,
-            ffn_expand_ratio=4.0,
-            ffn_drop=0.,
-            drop_path: float = 0.,
-            norm_cfg=dict(type='LN', eps=1e-5),
-            act_cfg=dict(type='GELU'),
-            init_cfg=None
-    ):
+    def __init__(self,
+                 dim: int,
+                 partition_type: str = 'block',
+                 window_size=(7, 7),
+                 grid_size=(7, 7),
+                 dim_head=32,
+                 attn_bias=True,
+                 head_first=False,
+                 attn_drop=0.,
+                 proj_drop=0.,
+                 ffn_expand_ratio=4.0,
+                 ffn_drop=0.,
+                 drop_path: float = 0.,
+                 norm_cfg=dict(type='LN', eps=1e-5),
+                 act_cfg=dict(type='GELU'),
+                 init_cfg=None):
         super(PartitionAttentionCl, self).__init__(init_cfg=init_cfg)
 
         assert partition_type in {None, 'block', 'grid'}
-
         self.partition_block = partition_type == 'block'
         self.partition_size = to_2tuple(window_size if self.partition_block else grid_size)
         rel_pos_cls = partial(RelPosBiasTf, window_size=window_size)
 
         self.norm1 = build_norm_layer(norm_cfg, dim)
-        self.attn = AttentionCl(
-            dim,
-            dim,
-            dim_head=dim_head,
-            bias=attn_bias,
-            head_first=head_first,
-            rel_pos_cls=rel_pos_cls,
-            attn_drop=attn_drop,
-            proj_drop=proj_drop,
+        self.attn = AttentionCl(dim=dim,
+                                dim_out=dim,
+                                dim_head=dim_head,
+                                bias=attn_bias,
+                                head_first=head_first,
+                                rel_pos_cls=rel_pos_cls,
+                                attn_drop=attn_drop,
+                                proj_drop=proj_drop,
         )
 
         self.ls1 = nn.Identity()
@@ -438,14 +429,14 @@ class MaxViTBlock(BaseModule):
 
         super(MaxViTBlock, self).__init__(init_cfg=init_cfg)
 
-        self.conv = MBConv(in_channels=dim,
-                           out_channels=dim_out,
-                           stride=stride,
-                           expand_ratio=expand_ratio_conv,
-                           conv_cfg=conv_cfg,
-                           act_cfg=act_cfg_conv,
-                           norm_cfg=norm_cfg_conv,
-                           drop_path=drop_path)
+        self.mbconv = MBConv(in_channels=dim,
+                             out_channels=dim_out,
+                             stride=stride,
+                             expand_ratio=expand_ratio_conv,
+                             conv_cfg=conv_cfg,
+                             act_cfg=act_cfg_conv,
+                             norm_cfg=norm_cfg_conv,
+                             drop_path=drop_path)
 
         self.attn_block = PartitionAttentionCl(dim=dim_out,
                                                partition_type='block',
@@ -502,6 +493,7 @@ class Stem(BaseModule):
                                 out_channels=out_channels,
                                 kernel_size=kernel_size,
                                 stride=stride,
+                                bias=True,
                                 conv_cfg=conv_cfg[1],
                                 norm_cfg=norm_cfg,
                                 act_cfg=act_cfg)
