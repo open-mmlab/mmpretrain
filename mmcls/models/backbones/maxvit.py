@@ -8,7 +8,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from mmcv.cnn.bricks.transformer import FFN
-from mmcv.cnn.bricks import ConvModule, DropPath, build_activation_layer
+from mmcv.cnn.bricks import ConvModule, DropPath, build_activation_layer, build_conv_layer
 from mmengine.model import BaseModule, Sequential
 from mmengine.model.weight_init import trunc_normal_
 
@@ -93,8 +93,18 @@ class MBConv(BaseModule):
         # Ignore inplace parameter if GELU is used
         # Make main path
 
-        if stride == 2:
-            self.shortcut = nn.AvgPool2d(kernel_size=(2, 2), stride=(2, 2))
+        if stride == 2 and in_channels != out_channels:
+            self.shortcut = Sequential(
+                build_conv_layer(
+                    conv_cfg[0],
+                    in_channels=in_channels,
+                    out_channels=out_channels,
+                    kernel_size=1,
+                    stride=1,
+                ),
+                nn.AvgPool2d(kernel_size=(2, 2), stride=(2, 2)))
+        elif stride == 2 and in_channels == out_channels:
+            self.shortcut = Sequential(nn.AvgPool2d(kernel_size=(2, 2), stride=(2, 2)))
         else:
             self.shortcut = nn.Identity()
 
@@ -468,7 +478,7 @@ class MaxViTBlock(BaseModule):
 
     def forward(self, x):
         # NCHW format
-        x = self.conv(x)
+        x = self.mbconv(x)
         x = x.permute(0, 2, 3, 1)  # to NHWC (channels-last)
         x = self.attn_block(x)
         x = self.attn_grid(x)
