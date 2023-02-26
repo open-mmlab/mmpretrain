@@ -247,7 +247,7 @@ class RelPosBiasTf(BaseModule):
         return attn + self.get_bias()
 
 
-class AttentionCl(nn.Module):
+class AttentionCl(BaseModule):
     """ Channels-last multi-head attention (B, ..., C) """
     def __init__(self,
                  dim: int,
@@ -255,7 +255,7 @@ class AttentionCl(nn.Module):
                  dim_head: int = 32,
                  bias: bool = True,
                  expand_first: bool = True,
-                 head_first: bool = True,
+                 head_first: bool = False,
                  rel_pos_cls: Callable = None,
                  attn_drop: float = 0.,
                  proj_drop: float = 0.):
@@ -608,10 +608,10 @@ class MaxViT(BaseBackbone):
                     ))
                 in_channels = out_channels
 
-        self.final_norm = LayerNorm2d(self.embed_dim)
+        # self.final_norm = LayerNorm2d(self.embed_dim)
         if self.head_hidden_size:
             self.final_mlp = Sequential(nn.AdaptiveAvgPool2d(1),
-                                        self.final_norm,
+                                        LayerNorm2d(self.embed_dim),
                                         nn.Flatten(1),
                                         nn.Linear(self.embed_dim,self.head_hidden_size),
                                         build_activation_layer(dict(type='Tanh')))

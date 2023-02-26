@@ -11,6 +11,7 @@ model = dict(
         type='MaxViT',
         embed_dim=(64, 128, 256, 512),
         depths=(2, 2, 5, 2),
+        img_size=224,
         stem_width=64,
         head_hidden_size=512,  # is head in_channels
     ),
