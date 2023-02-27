@@ -17,7 +17,6 @@ model = dict(
             label_smooth_val=0.1,
             mode='original',
             use_sigmoid=True,
-            target_threshold=0.,
         )),
     train_cfg=dict(augments=[
         dict(type='Mixup', alpha=0.2),
