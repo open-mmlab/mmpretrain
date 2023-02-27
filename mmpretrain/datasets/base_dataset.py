@@ -198,8 +198,6 @@ class BaseDataset(_BaseDataset):
 
         if self.CLASSES is not None:
             body.append(f'Number of categories: \t{len(self.CLASSES)}')
-        else:
-            body.append('The `CLASSES` meta info is not set.')
 
         body.extend(self.extra_repr())
 

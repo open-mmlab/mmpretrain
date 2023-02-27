@@ -16,12 +16,12 @@ class ImageNet(CustomDataset):
     found in :class:`CustomDataset`.
 
     Args:
-        ann_file (str): Annotation file path. Defaults to ''.
-        metainfo (dict, optional): Meta information for dataset, such as class
-            information. Defaults to None.
         data_root (str): The root directory for ``data_prefix`` and
             ``ann_file``. Defaults to ''.
         data_prefix (str | dict): Prefix for training data. Defaults to ''.
+        ann_file (str): Annotation file path. Defaults to ''.
+        metainfo (dict, optional): Meta information for dataset, such as class
+            information. Defaults to None.
         **kwargs: Other keyword arguments in :class:`CustomDataset` and
             :class:`BaseDataset`.
     """  # noqa: E501
@@ -30,17 +30,17 @@ class ImageNet(CustomDataset):
     METAINFO = {'classes': IMAGENET_CATEGORIES}
 
     def __init__(self,
-                 ann_file: str = '',
-                 metainfo: Optional[dict] = None,
                  data_root: str = '',
                  data_prefix: Union[str, dict] = '',
+                 ann_file: str = '',
+                 metainfo: Optional[dict] = None,
                  **kwargs):
         kwargs = {'extensions': self.IMG_EXTENSIONS, **kwargs}
         super().__init__(
-            ann_file=ann_file,
-            metainfo=metainfo,
             data_root=data_root,
             data_prefix=data_prefix,
+            ann_file=ann_file,
+            metainfo=metainfo,
             **kwargs)
 
 
@@ -53,12 +53,12 @@ class ImageNet21k(CustomDataset):
     specify it from the ``classes`` argument.
 
     Args:
-        ann_file (str): Annotation file path. Defaults to ''.
-        metainfo (dict, optional): Meta information for dataset, such as class
-            information. Defaults to None.
         data_root (str): The root directory for ``data_prefix`` and
             ``ann_file``. Defaults to ''.
         data_prefix (str | dict): Prefix for training data. Defaults to ''.
+        ann_file (str): Annotation file path. Defaults to ''.
+        metainfo (dict, optional): Meta information for dataset, such as class
+            information. Defaults to None.
         multi_label (bool): Not implement by now. Use multi label or not.
             Defaults to False.
         **kwargs: Other keyword arguments in :class:`CustomDataset` and
@@ -68,10 +68,10 @@ class ImageNet21k(CustomDataset):
     IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif')
 
     def __init__(self,
-                 ann_file: str = '',
-                 metainfo: Optional[dict] = None,
                  data_root: str = '',
                  data_prefix: Union[str, dict] = '',
+                 ann_file: str = '',
+                 metainfo: Optional[dict] = None,
                  multi_label: bool = False,
                  **kwargs):
         if multi_label:
@@ -89,10 +89,10 @@ class ImageNet21k(CustomDataset):
 
         kwargs = {'extensions': self.IMG_EXTENSIONS, **kwargs}
         super().__init__(
-            ann_file=ann_file,
-            metainfo=metainfo,
             data_root=data_root,
             data_prefix=data_prefix,
+            ann_file=ann_file,
+            metainfo=metainfo,
             **kwargs)
 
         if self.CLASSES is None:

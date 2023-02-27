@@ -73,8 +73,6 @@ class TestBaseDataset(TestCase):
             num_classes = len(dataset.CLASSES)
             self.assertIn(f'Number of categories: \t{num_classes}',
                           repr(dataset))
-        else:
-            self.assertIn('The `CLASSES` meta info is not set.', repr(dataset))
 
         self.assertIn('Haven\'t been initialized', repr(dataset))
         dataset.full_init()
@@ -148,6 +146,30 @@ class TestCustomDataset(TestBaseDataset):
                 'gt_label': 1
             }.items())
 
+        # test load without ann_file and without labels
+        # (no specific folder structures)
+        cfg = {
+            **self.DEFAULT_ARGS,
+            'data_prefix': ASSETS_ROOT,
+            'ann_file': '',
+            'with_label': False,
+        }
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 4)
+        self.assertIsNone(dataset.CLASSES, None)
+        self.assertGreaterEqual(
+            dataset.get_data_info(0).items(), {
+                'img_path': osp.join(ASSETS_ROOT, '3.jpeg'),
+            }.items())
+        self.assertGreaterEqual(
+            dataset.get_data_info(1).items(), {
+                'img_path': osp.join(ASSETS_ROOT, 'a', '1.JPG'),
+            }.items())
+        self.assertGreaterEqual(
+            dataset.get_data_info(3).items(), {
+                'img_path': osp.join(ASSETS_ROOT, 'b', 'subb', '3.jpg'),
+            }.items())
+
         # test ann_file assertion
         cfg = {
             **self.DEFAULT_ARGS,
@@ -199,6 +221,27 @@ class TestCustomDataset(TestBaseDataset):
             dataset.get_data_info(2).items(), {
                 'img_path': 'b/subb/3.jpg',
                 'gt_label': 1
+            }.items())
+
+        # test load with absolute ann_file and without label
+        cfg = {
+            **self.DEFAULT_ARGS,
+            'data_root': '',
+            'data_prefix': '',
+            'ann_file': osp.join(ASSETS_ROOT, 'ann_without_labels.txt'),
+            'with_label': False,
+        }
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 3)
+        # custom dataset won't infer CLASSES from ann_file
+        self.assertIsNone(dataset.CLASSES, None)
+        self.assertGreaterEqual(
+            dataset.get_data_info(0).items(), {
+                'img_path': 'a/1.JPG',
+            }.items())
+        self.assertGreaterEqual(
+            dataset.get_data_info(2).items(), {
+                'img_path': 'b/subb/3.jpg',
             }.items())
 
         # test extensions filter
@@ -300,6 +343,36 @@ class TestImageNet21k(TestCustomDataset):
         with self.assertLogs(logger, 'WARN') as log:
             dataset_class(**cfg)
         self.assertIn('specify the `classes`', log.output[0])
+
+
+class TestPlaces205(TestCustomDataset):
+    DATASET_TYPE = 'Places205'
+
+    DEFAULT_ARGS = dict(data_root=ASSETS_ROOT, ann_file='ann.txt')
+
+    def test_load_data_list(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # test classes number
+        cfg = {
+            **self.DEFAULT_ARGS,
+            'data_prefix': ASSETS_ROOT,
+            'ann_file': '',
+        }
+        with self.assertRaisesRegex(AssertionError,
+                                    r"\(2\) doesn't match .* classes \(205\)"):
+            dataset_class(**cfg)
+
+        # test override classes
+        cfg = {
+            **self.DEFAULT_ARGS,
+            'data_prefix': ASSETS_ROOT,
+            'classes': ['cat', 'dog'],
+            'ann_file': '',
+        }
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 3)
+        self.assertEqual(dataset.CLASSES, ('cat', 'dog'))
 
 
 class TestCIFAR10(TestBaseDataset):
