@@ -856,11 +856,12 @@ class MaxViT(BaseBackbone):
 
         # self.final_norm = LayerNorm2d(self.embed_dim)
         if self.head_hidden_size:
-            self.final_mlp = Sequential(nn.AdaptiveAvgPool2d(1),
-                                        LayerNorm2d(self.embed_dim),
-                                        nn.Flatten(1),
-                                        nn.Linear(self.embed_dim,self.head_hidden_size),
-                                        build_activation_layer(dict(type='Tanh')))
+            self.final_mlp = Sequential(
+                nn.AdaptiveAvgPool2d(1),
+                LayerNorm2d(self.embed_dim),
+                nn.Flatten(1),
+                nn.Linear(self.embed_dim,self.head_hidden_size),
+                build_activation_layer(dict(type='Tanh')))
 
         # Transform out_indices
         if isinstance(out_indices, int):
