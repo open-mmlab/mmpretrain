@@ -24,76 +24,52 @@ from ..utils import build_norm_layer, to_2tuple, LayerNorm2d
 ####          isnot support this parameter. Details in 
 ####          https://pytorch.org/docs/1.13/generated/torch.nn.GELU.html?highlight=nn+gelu#torch.nn.GELU
 
-# # Calculate asymmetric TensorFlow-like 'SAME' padding for a convolution
-# def get_same_padding(x: int, k: int, s: int, d: int):
-#     return max((math.ceil(x / s) - 1) * s + (k - 1) * d + 1 - x, 0)
-#
-# # Dynamically pad input x with 'SAME' padding for conv with specified args
-# def pad_same(x, k: List[int], s: List[int], d: List[int] = (1, 1), value: float = 0):
-#     ih, iw = x.size()[-2:]
-#     pad_h, pad_w = get_same_padding(ih, k[0], s[0], d[0]), get_same_padding(iw, k[1], s[1], d[1])
-#     if pad_h > 0 or pad_w > 0:
-#         x = F.pad(x, [pad_w // 2, pad_w - pad_w // 2, pad_h // 2, pad_h - pad_h // 2], value=value)
-#     return x
-#
-# class AvgPool2dSame(nn.AvgPool2d):
-#     """ Tensorflow like 'SAME' wrapper for 2D average pooling
-#     """
-#     def __init__(self, kernel_size: int, stride=None, padding=0, ceil_mode=False, count_include_pad=True):
-#         kernel_size = to_2tuple(kernel_size)
-#         stride = to_2tuple(stride)
-#         super(AvgPool2dSame, self).__init__(kernel_size, stride, (0, 0), ceil_mode, count_include_pad)
-#
-#     def forward(self, x):
-#         x = pad_same(x, self.kernel_size, self.stride)
-#         return F.avg_pool2d(
-#             x, self.kernel_size, self.stride, self.padding, self.ceil_mode, self.count_include_pad)
-
-
-
 
 class MBConv(BaseModule):
-    """ MBConv block as described in: https://arxiv.org/pdf/2204.01697.pdf.
-        Without downsampling:
-        x ← x + Proj(SE(DWConv(Conv(Norm(x)))))
-        With downsampling:
-        x ← Proj(Pool2D(x)) + Proj(SE(DWConv ↓(Conv(Norm(x))))).
-        Conv is a 1 X 1 convolution followed by a Batch Normalization layer and a GELU activation.
-        SE is the Squeeze-Excitation layer.
-        Proj is the shrink 1 X 1 convolution.
-        Note: This implementation differs slightly from the original MobileNet implementation!
-              This implementation differs slightly from the original EfficientnetV2 implementation!
+    """ MBConv layer in MaxViT Backbone.
+
+    A PyTorch implementation of MBConv introduced by:
+    `MaxViT: Multi-Axis Vision Transformer
+    <https://arxiv.org/pdf/2204.01697.pdf>`_
+
+    Note: This implementation differs slightly from the original MobileNet implementation!
+          This implementation differs slightly from the original EfficientnetV2 implementation!
+
     Args:
-        in_channels (int): Number of input channels.
+        in_channels (int): Number of channels in the input feature map.
         out_channels (int): Number of output channels.
-        downscale (bool, optional): If true downscale by a factor of two is performed. Default: False
-        act_cfg (Type[nn.Module], optional): Type of activation layer to be utilized. Default: nn.GELUtanh
-        norm_cfg (Type[nn.Module], optional): Type of normalization layer to be utilized. Default: nn.BatchNorm2d
-        drop_path (float, optional): Dropout rate to be applied during training. Default 0.
+        stride (int) : Stride of the convolution layer.
+            Defaults to 1.
+        expand_ratio (float) : Expend ratio in mid_channels, the mid_channel will
+            be ``make_divisible(channels * ratio, divisor)``. Defaults to 4.0
+        drop_path (float): The ratio of the stochastic depth.
+            Defaults to 0.0.
+        conv_cfg (Tuple[dict]): Config dict for convolution layer.
+            Defaults to (dict(type='Conv2d'),dict(type='Conv2dAdaptivePadding')),
+            which means using two different conv modules.
+        norm_cfg (dict): Config dict for normalization layer.
+            Defaults to dict(type='BN', eps=1e-3).
+        act_cfg (dict): Config dict for activation layer.
+            Defaults to dict(type='GELU').
+        init_cfg (dict | list[dict], optional): Initialization config dict.
     """
 
     def __init__(self,
                  in_channels: int,
                  out_channels: int,
-                 stride=1,
-                 expand_ratio=4.0,
+                 stride: int = 1,
+                 expand_ratio: float = 4.0,
                  drop_path: float = 0.,
                  conv_cfg=(dict(type='Conv2d'),dict(type='Conv2dAdaptivePadding')),
-                 act_cfg=dict(type='GELU'),
                  norm_cfg=dict(type='BN', eps=1e-3),
+                 act_cfg=dict(type='GELU'),
                  init_cfg=None):
-        """ Constructor method """
-        # Call super constructor
         super(MBConv, self).__init__(init_cfg=init_cfg)
-        # Save parameter
 
         self.drop_path = DropPath(drop_path) if drop_path>0. else nn.Identity()
-        # Check parameters for downscaling
         if stride == 1:
             assert in_channels == out_channels, \
                 "If stride is 1, input and output channels must be equal."
-        # Ignore inplace parameter if GELU is used
-        # Make main path
 
         if stride == 2 and in_channels != out_channels:
             self.shortcut = Sequential(
@@ -134,7 +110,7 @@ class MBConv(BaseModule):
         self.layers.append(SELayer(channels=mid_channels,
                                    ratio=16,
                                    conv_cfg=None,
-                                   act_cfg=(dict(type='SiLU'),dict(type='Sigmoid'))))
+                                   act_cfg=(dict(type='SiLU'), dict(type='Sigmoid'))))
 
         self.layers.append(ConvModule(in_channels=mid_channels,
                                       out_channels=out_channels,
@@ -146,9 +122,11 @@ class MBConv(BaseModule):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """ Forward pass.
         Args:
-            input (torch.Tensor): Input tensor of the shape [B, C_in, H, W].
+            input (torch.Tensor): Input tensor of the shape
+            [B, C_in, H, W].
         Returns:
-            output (torch.Tensor): Output tensor of the shape [B, C_out, H (// 2), W (// 2)] (downscaling is optional).
+            output (torch.Tensor): Output tensor of the shape
+            [B, C_out, H (// 2), W (// 2)].
         """
         shortcut = self.shortcut(x)
         x = self.pre_norm(x)
@@ -158,18 +136,19 @@ class MBConv(BaseModule):
         return x
 
 
-def reindex_2d_einsum_lookup(relative_position_tensor,
-                             height: int,
-                             width: int,
-                             height_lookup: torch.Tensor,
-                             width_lookup: torch.Tensor,) -> torch.Tensor:
+def reindex_2d_einsum_lookup(
+        relative_position_tensor,
+        height: int,
+        width: int,
+        height_lookup: torch.Tensor,
+        width_lookup: torch.Tensor) -> torch.Tensor:
     """Reindex 2d relative position bias with 2 independent einsum lookups.
 
     Adapted from:
      https://github.com/google-research/maxvit/blob/2e06a7f1f70c76e64cd3dabe5cd1b8c1a23c9fb7/maxvit/models/attention_utils.py # noqa: E501
 
     Args:
-        relative_position_tensor: tensor of shape
+        relative_position_tensor: Tensor of shape
             [..., vocab_height, vocab_width, ...].
         height: height to reindex to.
         width: width to reindex to.
@@ -185,8 +164,9 @@ def reindex_2d_einsum_lookup(relative_position_tensor,
     return reindexed_tensor.reshape(relative_position_tensor.shape[0], area, area)
 
 
-def generate_lookup_tensor(length: int,
-                           max_relative_position: Optional[int] = None,):
+def generate_lookup_tensor(
+        length: int,
+        max_relative_position: Optional[int] = None):
     """Generate a one_hot lookup tensor to reindex embeddings along one dimension.
 
     Args:
@@ -200,7 +180,7 @@ def generate_lookup_tensor(length: int,
     """
     if max_relative_position is None:
         max_relative_position = length - 1
-    # Return the cached lookup tensor, otherwise compute it and cache it.
+
     vocab_size = 2 * max_relative_position + 1
     ret = torch.zeros(length, length, vocab_size)
     for i in range(length):
@@ -215,11 +195,24 @@ def generate_lookup_tensor(length: int,
 class RelPosBiasTf(BaseModule):
     """ Relative Position Bias Impl (Compatible with Tensorflow MaxViT models)
     Adapted from:
-     https://github.com/google-research/maxvit/blob/2e06a7f1f70c76e64cd3dabe5cd1b8c1a23c9fb7/maxvit/models/attention_utils.py # noqa: E501
+     https://github.com/google-research/maxvit/blob/main/maxvit/models/attention_utils.py # noqa: E501
+
+     Args:
+         window_size (tuple[int]): Grid/Window size to be utilized.
+         num_heads (int): Number of attention heads.
+         prefix_tokens (int): Useless parameter.
+            Defaults to 0.
+         init_cfg (dict | list[dict], optional): Initialization config dict.
     """
-    def __init__(self, window_size, num_heads, prefix_tokens=0):
-        super().__init__()
-        assert prefix_tokens <= 1
+    def __init__(self,
+                 window_size: Tuple[int],
+                 num_heads: int,
+                 prefix_tokens: int = 0,
+                 init_cfg=None):
+        super(RelPosBiasTf,self).__init__(init_cfg=init_cfg)
+
+        assert prefix_tokens <= 1, f'The prefix_tokens in RelPosBiasTf ' \
+                                   f'module should <= 1, but get {RelPosBiasTf}'
         self.window_size = window_size
         self.window_area = window_size[0] * window_size[1]
         self.num_heads = num_heads
@@ -236,7 +229,6 @@ class RelPosBiasTf(BaseModule):
         trunc_normal_(self.relative_position_bias_table, std=.02)
 
     def get_bias(self) -> torch.Tensor:
-        # FIXME change to not use one-hot/einsum?
         return reindex_2d_einsum_lookup(
             self.relative_position_bias_table,
             self.window_size[0],
@@ -245,27 +237,52 @@ class RelPosBiasTf(BaseModule):
             self.width_lookup
         )
 
-    def forward(self, attn, shared_rel_pos: Optional[torch.Tensor] = None):
+    def forward(self, attn, shared_rel_pos = None):
         return attn + self.get_bias()
 
 
 class AttentionCl(BaseModule):
-    """ Channels-last multi-head attention (B, ..., C) """
-    # fast_attn: Final[bool]
+    """ Channels-last multi-head attention (B, ..., C) layer in MaxViT Backbone.
 
-    def __init__(
-            self,
-            dim: int,
-            dim_out: Optional[int] = None,
-            dim_head: int = 32,
-            bias: bool = True,
-            expand_first: bool = True,
-            head_first: bool = True,
-            rel_pos_cls: Callable = None,
-            attn_drop: float = 0.,
-            proj_drop: float = 0.
-    ):
-        super().__init__()
+    A PyTorch implementation of Channels-last multi-head attention introduced by:
+    `MaxViT: Multi-Axis Vision Transformer
+    <https://arxiv.org/pdf/2204.01697.pdf>`_
+
+    Args:
+        dim (int): Number of input channels.
+        dim_out (Optional[int]): The output dimensions.
+            Defaults to None, means dim_out = dim.
+        dim_head (int): In order to compute the num_heads and scales.
+            Defaults to 32.
+        bias (bool): The bias in the Linear layer.
+            Defaults to True.
+        expand_first (bool): Whether to expend the dimensions
+            Defaults to True.
+        head_first (bool): Whether to put ``num_heads`` first.
+            Defaults to False.
+        rel_pos_cls (Callable): Relative Position Bias module.
+            Defaults to None,
+        attn_drop (float): The drop out rate for attention output weights.
+            Defaults to 0.
+        proj_drop (float): The drop out rate for Linear output weights.
+            Defaults to 0.
+        init_cfg (dict | list[dict], optional): Initialization config dict.
+    """
+
+
+    def __init__(self,
+                 dim: int,
+                 dim_out: Optional[int] = None,
+                 dim_head: int = 32,
+                 bias: bool = True,
+                 expand_first: bool = True,
+                 head_first: bool = False,
+                 rel_pos_cls: Callable = None,
+                 attn_drop: float = 0.,
+                 proj_drop: float = 0.,
+                 init_cfg=None):
+        super(AttentionCl,self).__init__(init_cfg=init_cfg)
+
         dim_out = dim_out or dim
         dim_attn = dim_out if expand_first and dim_out > dim else dim
         assert dim_attn % dim_head == 0, 'attn dim should be divisible by head_dim'
@@ -277,6 +294,7 @@ class AttentionCl(BaseModule):
 
         self.qkv = nn.Linear(dim, dim_attn * 3, bias=bias)
         self.rel_pos = rel_pos_cls(num_heads=self.num_heads) if rel_pos_cls else None
+        self.attn_drop_rate = attn_drop
         self.attn_drop = nn.Dropout(attn_drop)
         self.proj = nn.Linear(dim_attn, dim_out, bias=bias)
         self.proj_drop = nn.Dropout(proj_drop)
@@ -300,7 +318,7 @@ class AttentionCl(BaseModule):
             x = F.scaled_dot_product_attention(
                 q, k, v,
                 attn_mask=attn_bias,
-                dropout_p=self.attn_drop.p,
+                dropout_p=self.attn_drop_rate,
             )
         else:
             q = q * self.scale
@@ -319,7 +337,17 @@ class AttentionCl(BaseModule):
         return x
 
 
-def window_partition(x, window_size: List[int]):
+def window_partition(x, window_size: Tuple[int]) -> torch.Tensor:
+    """ Window partition function.
+
+    Args:
+        x (torch.Tensor): Input tensor of the shape [B, C, H, W].
+        window_size (Tuple[int]): Window size to be applied.
+    Returns:
+        windows (torch.Tensor): Unfolded input tensor of the shape
+            [B * windows, window_size[0], window_size[1], C].
+    """
+
     B, H, W, C = x.shape
     assert H % window_size[0] == 0, \
         f'height ({H}) must be divisible by window ({window_size[0]})'
@@ -330,8 +358,19 @@ def window_partition(x, window_size: List[int]):
     return windows
 
 
-# @register_notrace_function  # reason: int argument is a Proxy
-def window_reverse(windows, window_size: List[int], img_size: List[int]):
+def window_reverse(windows, window_size: Tuple[int], img_size: Tuple[int]):
+    """ Reverses the window partition.
+
+    Args:
+        windows (torch.Tensor): Window tensor of the shape
+            [B * windows, window_size[0], window_size[1], C].
+        window_size (Tuple[int]): Window size which have been applied.
+        img_size (Tuple[int]): Image shape.
+    Returns:
+        output (torch.Tensor): Folded output tensor of the shape
+            [B, C, original_size[0], original_size[1]].
+    """
+
     H, W = img_size
     C = windows.shape[-1]
     x = windows.view(-1, H // window_size[0], W // window_size[1], window_size[0], window_size[1], C)
@@ -339,7 +378,17 @@ def window_reverse(windows, window_size: List[int], img_size: List[int]):
     return x
 
 
-def grid_partition(x, grid_size: List[int]):
+def grid_partition(x, grid_size: Tuple[int]):
+    """ Grid partition function.
+
+    Args:
+        x (torch.Tensor): Input tensor of the shape [B, C, H, W].
+        grid_size (Tuple[int]): Grid size to be applied.
+    Returns:
+        grid (torch.Tensor): Unfolded input tensor of the shape
+            [B * grids, grid_size[0], grid_size[1], C].
+    """
+
     B, H, W, C = x.shape
     assert H % grid_size[0] == 0, \
         f'height {H} must be divisible by grid {grid_size[0]}'
@@ -350,8 +399,18 @@ def grid_partition(x, grid_size: List[int]):
     return windows
 
 
-# @register_notrace_function  # reason: int argument is a Proxy
-def grid_reverse(windows, grid_size: List[int], img_size: List[int]):
+def grid_reverse(windows, grid_size: Tuple[int], img_size: Tuple[int]):
+    """ Reverses the grid partition.
+    Args:
+        windows (torch.Tensor): Grid tensor of the shape
+            [B * grids, grid_size[0], grid_size[1], C].
+        grid_size (Tuple[int]): Grid size which have been applied.
+        img_size (Tuple[int]): Original shape.
+    Returns:
+        output (torch.Tensor): Folded output tensor of the shape
+            [B, C, original_size[0], original_size[1]].
+    """
+
     H, W = img_size
     C = windows.shape[-1]
     x = windows.view(-1, H // grid_size[0], W // grid_size[1], grid_size[0], grid_size[1], C)
@@ -360,22 +419,58 @@ def grid_reverse(windows, grid_size: List[int], img_size: List[int]):
 
 
 class PartitionAttentionCl(BaseModule):
-    """ Grid or Block partition + Attn + FFN.
+    """ Grid or Block partition Attention + FFN layer.
     NxC 'channels last' tensor layout.
+
+    A PyTorch implementation of
+    Grid or Block partition Attention + FFN layer
+    introduced by:
+    `MaxViT: Multi-Axis Vision Transformer
+    <https://arxiv.org/pdf/2204.01697.pdf>`_
+
+    Args:
+        dim (int): Number of input channels.
+        partition_type (str): Use Grid partition Attention or Block partition Attention.
+            Defaults to 'block'.
+        window_size (Tuple[int]): Window size to be applied.
+            Defaults to (7,7).
+        grid_size (Tuple[int]): Grid size to be applied.
+            Defaults to (7,7).
+        dim_head (int): In order to compute the num_heads and scales in
+            Channel-last Attention layer. Defaults to 32.
+        attn_bias (bool): The bias in the Linear layer in Channel-last Attention layer.
+            Defaults to True.
+        head_first (bool): Whether to put ``num_heads`` first in
+            Channel-last Attention layer. Defaults to False,
+        attn_drop (float): The drop out rate for attention output weights in
+            Channel-last Attention layer. Defaults to 0.
+        proj_drop (float): The drop out rate for Linear output weights in
+            Channel-last Attention layer. Defaults to 0.
+        ffn_expand_ratio (float) : Expend ratio in FFN layer, the mid_channel will
+            be ``dim * ffn_expand_ratio``. Defaults to 4.0
+        ffn_drop (float): The drop out rate for FFN output weights.
+            Defaults to 0.
+        drop_path (float): The ratio of the stochastic depth.
+            Defaults to 0.
+        norm_cfg (dict): Config dict for normalization layer.
+            Defaults to dict(type='LN', eps=1e-5),
+        act_cfg (dict): Config dict for activation layer.
+            Defaults to dict(type='GELU').
+        init_cfg (dict | list[dict], optional): Initialization config dict.
     """
 
     def __init__(self,
                  dim: int,
                  partition_type: str = 'block',
-                 window_size=(7, 7),
-                 grid_size=(7, 7),
-                 dim_head=32,
-                 attn_bias=True,
-                 head_first=False,
-                 attn_drop=0.,
-                 proj_drop=0.,
-                 ffn_expand_ratio=4.0,
-                 ffn_drop=0.,
+                 window_size: Tuple[int] = (7, 7),
+                 grid_size: Tuple[int] = (7, 7),
+                 dim_head: int = 32,
+                 attn_bias: bool = True,
+                 head_first: bool = False,
+                 attn_drop: float = 0.,
+                 proj_drop: float = 0.,
+                 ffn_expand_ratio: float = 4.0,
+                 ffn_drop: float = 0.,
                  drop_path: float = 0.,
                  norm_cfg=dict(type='LN', eps=1e-5),
                  act_cfg=dict(type='GELU'),
@@ -398,6 +493,7 @@ class PartitionAttentionCl(BaseModule):
                                 proj_drop=proj_drop,
         )
 
+        # self.ls1 and self.ls2 can be changed by LayerScale
         self.ls1 = nn.Identity()
 
         self.drop_path1 = DropPath(drop_path) if drop_path > 0. else nn.Identity()
@@ -408,7 +504,6 @@ class PartitionAttentionCl(BaseModule):
                        ffn_drop=ffn_drop)
 
         self.ls2 = nn.Identity()
-
         self.drop_path2 = DropPath(drop_path) if drop_path > 0. else nn.Identity()
 
     def _partition_attn(self, x):
@@ -427,37 +522,91 @@ class PartitionAttentionCl(BaseModule):
         return x
 
     def forward(self, x):
-        x = x + self.drop_path1(self.ls1(self._partition_attn(self.norm1(x))))
-        x = x + self.drop_path2(self.ls2(self.ffn(self.norm2(x),identity=0)))
+        shortcut = x
+        x = self.norm1(x)
+        x = self._partition_attn(x)
+        x = self.ls1(x)
+        x = shortcut + self.drop_path1(x)
+
+        shortcut = x
+        x = self.norm2(x)
+        x = self.ffn(x,identity=0)
+        x = self.ls2(x)
+        x = shortcut + self.drop_path2(x)
         return x
 
 
 class MaxViTBlock(BaseModule):
-    """ MaxVit conv, window partition + FFN , grid partition + FFN
+    """ A MaxViT layer including:
+    MaxVit conv, Window partition Attention + FFN, Grid partition Attention + FFN
+
+    A PyTorch implementation of MaxViT layer introduced by:
+    `MaxViT: Multi-Axis Vision Transformer
+    <https://arxiv.org/pdf/2204.01697.pdf>`_
+
+    Args:
+        dim (int): Number of input channels.
+        dim_out (int): Number of output channels in MBConv layer.
+        stride (int) : Stride of the convolution layer in MBConv layer.
+            Defaults to 1.
+        expand_ratio_conv (float) : Expend ratio in mid_channels in MBConv layer.
+            The mid_channel will be ``make_divisible(channels * ratio, divisor)``.
+            Defaults to 4.0
+        conv_cfg (Tuple[dict]): Config dict for convolution layer in MBConv layer.
+            Defaults to (dict(type='Conv2d'),dict(type='Conv2dAdaptivePadding')),
+            which means using two different conv modules.
+        norm_cfg_conv (dict): Config dict for normalization layer in MBConv layer.
+            Defaults to dict(type='BN', eps=1e-3).
+        act_cfg_conv (dict): Config dict for activation layer in MBConv layer.
+            Defaults to dict(type='GELU').
+        window_size (Tuple[int]): Window size to be applied in
+            Channel-last Attention layers. Defaults to (7,7).
+        grid_size (Tuple[int]): Grid size to be applied in Channel-last Attention layers.
+            Defaults to (7,7).
+        dim_head (int): In order to compute the num_heads and scales in
+            Channel-last Attention layers. Defaults to 32.
+        attn_bias (bool): The bias in the Linear layer in Channel-last Attention layer.
+            Defaults to True.
+        head_first (bool): Whether to put ``num_heads`` first in
+            Channel-last Attention layer. Defaults to False,
+        attn_drop (float): The drop out rate for attention output weights in
+            Channel-last Attention layer. Defaults to 0.
+        proj_drop (float): The drop out rate for Linear output weights in
+            Channel-last Attention layer. Defaults to 0.
+        ffn_expand_ratio (float) : Expend ratio in FFN layer in Channel-last Attention layer,
+            the mid_channel will be ``dim * ffn_expand_ratio``. Defaults to 4.0
+        ffn_drop (float): The drop out rate for FFN output weights in
+            Channel-last Attention layer. Defaults to 0.
+        drop_path (float): The ratio of the stochastic depth.
+            Defaults to 0.
+        norm_cfg_transformer (dict): Config dict for normalization layer in
+            Channel-last Attention layer. Defaults to dict(type='LN', eps=1e-5).
+        act_cfg_transformer (dict): Config dict for activation layer in
+            Channel-last Attention layer. Defaults to dict(type='GELU').
+        init_cfg (dict | list[dict], optional): Initialization config dict.
     """
 
     def __init__(self,
-                 dim,
-                 dim_out,
-                 stride=1,
-                 expand_ratio_conv=4.0,
+                 dim: int,
+                 dim_out: int,
+                 stride: int = 1,
+                 expand_ratio_conv: float = 4.0,
                  conv_cfg=(dict(type='Conv2d'), dict(type='Conv2dAdaptivePadding')),
-                 act_cfg_conv=dict(type='GELU'),
                  norm_cfg_conv=dict(type='BN', eps=1e-3),
-                 window_size=(7, 7),
-                 grid_size=(7, 7),
-                 dim_head=32,
-                 attn_bias=True,
-                 head_first=False,
-                 attn_drop=0.,
-                 proj_drop=0.,
-                 ffn_expand_ratio=4.,
-                 ffn_drop=0.,
+                 act_cfg_conv=dict(type='GELU'),
+                 window_size: Tuple[int] = (7, 7),
+                 grid_size: Tuple[int] = (7, 7),
+                 dim_head: int = 32,
+                 attn_bias: bool = True,
+                 head_first: bool = False,
+                 attn_drop: float = 0.,
+                 proj_drop: float = 0.,
+                 ffn_expand_ratio: float = 4.,
+                 ffn_drop: float = 0.,
                  drop_path: float = 0.,
                  norm_cfg_transformer=dict(type='LN', eps=1e-5),
                  act_cfg_transformer=dict(type='GELU'),
                  init_cfg=None):
-
         super(MaxViTBlock, self).__init__(init_cfg=init_cfg)
 
         self.mbconv = MBConv(in_channels=dim,
@@ -508,12 +657,33 @@ class MaxViTBlock(BaseModule):
 
 
 class Stem(BaseModule):
+    """ A Stem layer in MaxViT module.
 
+    A PyTorch implementation of Stem layer introduced by:
+    `MaxViT: Multi-Axis Vision Transformer
+    <https://arxiv.org/pdf/2204.01697.pdf>`_
+
+    Args:
+        in_channels (int): Number of channels in the input feature map.
+        out_channels (int): Number of output channels.
+        kernel_size (int): The kernel size of the convolution layer.
+            Defaults to 3.
+        stride (int): The stride of the first convolution layer.
+            Defaults to 2.
+        conv_cfg (Tuple[dict]): Config dict for convolution layer.
+            Defaults to (dict(type='Conv2d'),dict(type='Conv2dAdaptivePadding')),
+            which means using two different conv modules.
+        norm_cfg (dict): Config dict for normalization layer.
+            Defaults to dict(type='BN', eps=1e-3).
+        act_cfg (dict): Config dict for activation layer.
+            Defaults to dict(type='GELU').
+        init_cfg (dict | list[dict], optional): Initialization config dict.
+    """
     def __init__(self,
                  in_channels: int,
                  out_channels: int,
                  kernel_size: int = 3,
-                 stride=2,
+                 stride: int = 2,
                  conv_cfg=(dict(type='Conv2d'), dict(type='Conv2dAdaptivePadding')),
                  norm_cfg=dict(type='BN', eps=1e-3),
                  act_cfg=dict(type='GELU'),
@@ -545,37 +715,92 @@ class Stem(BaseModule):
 
 @MODELS.register_module()
 class MaxViT(BaseBackbone):
-    """ CoaTNet + MaxVit base model.
+    """ MaxViT Backbone.
 
-    Highly configurable for different block compositions, tensor layouts, pooling types.
+    A PyTorch implementation of MaxViT Backbone introduced by:
+    `MaxViT: Multi-Axis Vision Transformer
+    <https://arxiv.org/pdf/2204.01697.pdf>`_
+
+    Args:
+        embed_dim (Tuple[int]): The embedding dimensions in four stages.
+            Defaults to (64, 128, 256, 512). Means maxvit_tiny.
+        depths (Tuple[int]): The number of layers in for stages.
+            Defaults to (2, 2, 5, 2). Means maxvit_tiny.
+        img_size (Union[int, Tuple[int, int]]): The size of input image.
+            Defaults to 224.
+        in_channels (int): The channels of input image. Defaults to 3.
+        stem_width (int): The output channels in the stem layer. Defaults to 64,
+        head_hidden_size (int): The hidden channels in final MLP layer, is also the
+            output channels in MaxViT backbone. Defaults to 512. Means maxvit_tiny.
+        kernel_size (int): The kernel size of the convolution layer in stem layer.
+            Defaults to 3.
+        stride (int) : Stride of the convolution layer in MBConv layer.
+            Defaults to 1.
+        expand_ratio_conv (float) : Expend ratio in mid_channels in MBConv layer.
+            The mid_channel will be ``make_divisible(channels * ratio, divisor)``.
+            Defaults to 4.0
+        conv_cfg (Tuple[dict]): Config dict for convolution layer in MBConv layer.
+            Defaults to (dict(type='Conv2d'),dict(type='Conv2dAdaptivePadding')),
+            which means using two different conv modules.
+        norm_cfg_conv (dict): Config dict for normalization layer in MBConv layer.
+            Defaults to dict(type='BN', eps=1e-3).
+        act_cfg_conv (dict): Config dict for activation layer in MBConv layer.
+            Defaults to dict(type='GELU').
+        partition_ratio (int): In order to compute window_size and grid_size.
+            Defaults to 32.
+        dim_head (int): In order to compute the num_heads and scales in
+            Channel-last Attention layers. Defaults to 32.
+        attn_bias (bool): The bias in the Linear layer in Channel-last Attention layer.
+            Defaults to True.
+        head_first (bool): Whether to put ``num_heads`` first in
+            Channel-last Attention layer. Defaults to False,
+        attn_drop (float): The drop out rate for attention output weights in
+            Channel-last Attention layer. Defaults to 0.
+        proj_drop (float): The drop out rate for Linear output weights in
+            Channel-last Attention layer. Defaults to 0.
+        ffn_expand_ratio (float) : Expend ratio in FFN layer in Channel-last Attention layer,
+            the mid_channel will be ``dim * ffn_expand_ratio``. Defaults to 4.0
+        ffn_drop (float): The drop out rate for FFN output weights in
+            Channel-last Attention layer. Defaults to 0.
+        norm_cfg_transformer (dict): Config dict for normalization layer in
+            Channel-last Attention layer. Defaults to dict(type='LN', eps=1e-5).
+        act_cfg_transformer (dict): Config dict for activation layer in
+            Channel-last Attention layer. Defaults to dict(type='GELU').
+        drop_path_rate (float): The ratio of the stochastic depth.
+            Defaults to 0.
+        out_indices (Sequence[int]): Output from which stages.
+            Defaults to (-1, ).
+        frozen_stages (int): Stages to be frozen (all param fixed).
+            Defaults to 0, which means not freezing any parameters.
+        init_cfg (dict | list[dict], optional): Initialization config dict.
     """
 
     def __init__(self,
-                 embed_dim=(64, 128, 256, 512),
-                 depths=(2, 2, 5, 2),
+                 embed_dim: Tuple[int] = (64, 128, 256, 512),
+                 depths: Tuple[int] = (2, 2, 5, 2),
                  img_size: Union[int, Tuple[int, int]] = 224,
                  in_channels: int = 3,
-                 stem_width=64,
-                 head_hidden_size=512,
-                 kernel_size=3,
-                 stride=2,
-                 expand_ratio_conv=4.,
+                 stem_width: int = 64,
+                 head_hidden_size: int = 512,
+                 kernel_size: int = 3,
+                 stride: int = 2,
+                 expand_ratio_conv: float = 4.,
                  conv_cfg=(dict(type='Conv2d'), dict(type='Conv2dAdaptivePadding')),
                  norm_cfg_conv=dict(type='BN', eps=1e-3),
                  act_cfg_conv=dict(type='GELU'),
-                 partition_ratio=32,
-                 dim_head=32,
-                 attn_bias=True,
-                 head_first=False,
-                 attn_drop=0.,
-                 proj_drop=0.,
-                 ffn_expand_ratio=4.,
-                 ffn_drop=0.,
+                 partition_ratio: int = 32,
+                 dim_head: int = 32,
+                 attn_bias: bool = True,
+                 head_first: bool = False,
+                 attn_drop: float = 0.,
+                 proj_drop: float = 0.,
+                 ffn_expand_ratio: float = 4.,
+                 ffn_drop: float = 0.,
                  norm_cfg_transformer=dict(type='LN', eps=1e-5),
                  act_cfg_transformer=dict(type='GELU'),
                  drop_path_rate: float = 0.,
-                 out_indices=(-1,),
-                 frozen_stages=0,
+                 out_indices: Sequence[int] = (-1,),
+                 frozen_stages: int = 0,
                  init_cfg=dict(type='TruncNormal', layer='Linear')):
         super(MaxViT, self).__init__(init_cfg=init_cfg)
 
