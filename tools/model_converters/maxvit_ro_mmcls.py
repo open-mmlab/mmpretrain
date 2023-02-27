@@ -43,7 +43,7 @@ def convert_from_maxvit_timm(param):
             new_num = new_depth[int(name_s_lst[1])][int(name_s_lst[3])]
             name = name.replace(replace_str, 'backbone.layers.' + str(new_num))
             if 'conv.shortcut' in name:
-                name = name.replace('conv.shortcut.expand', 'mbconv.shortcut.0')
+                name = name.replace('conv.shortcut.expand', 'mbconv.shortcut.1')
             elif 'conv.pre_norm' in name:
                 name = name.replace('conv.pre_norm', 'mbconv.pre_norm')
             elif 'conv.conv1_1x1' in name:

@@ -99,14 +99,14 @@ class MBConv(BaseModule):
 
         if stride == 2 and in_channels != out_channels:
             self.shortcut = Sequential(
+                nn.AvgPool2d(kernel_size=(2, 2), stride=(2, 2)),
                 build_conv_layer(
                     conv_cfg[0],
                     in_channels=in_channels,
                     out_channels=out_channels,
                     kernel_size=1,
                     stride=1,
-                ),
-                nn.AvgPool2d(kernel_size=(2, 2), stride=(2, 2)))
+                ))
         elif stride == 2 and in_channels == out_channels:
             self.shortcut = Sequential(nn.AvgPool2d(kernel_size=(2, 2), stride=(2, 2)))
         else:
@@ -253,25 +253,29 @@ class RelPosBiasTf(BaseModule):
 
 class AttentionCl(BaseModule):
     """ Channels-last multi-head attention (B, ..., C) """
-    def __init__(self,
-                 dim: int,
-                 dim_out: Optional[int] = None,
-                 dim_head: int = 32,
-                 bias: bool = True,
-                 expand_first: bool = True,
-                 head_first: bool = False,
-                 rel_pos_cls: Callable = None,
-                 attn_drop: float = 0.,
-                 proj_drop: float = 0.):
+    # fast_attn: Final[bool]
+
+    def __init__(
+            self,
+            dim: int,
+            dim_out: Optional[int] = None,
+            dim_head: int = 32,
+            bias: bool = True,
+            expand_first: bool = True,
+            head_first: bool = True,
+            rel_pos_cls: Callable = None,
+            attn_drop: float = 0.,
+            proj_drop: float = 0.
+    ):
         super().__init__()
         dim_out = dim_out or dim
         dim_attn = dim_out if expand_first and dim_out > dim else dim
-        assert dim_attn % dim_head == 0, \
-            'attn dim should be divisible by head_dim'
+        assert dim_attn % dim_head == 0, 'attn dim should be divisible by head_dim'
         self.num_heads = dim_attn // dim_head
         self.dim_head = dim_head
         self.head_first = head_first
         self.scale = dim_head ** -0.5
+        self.fast_attn = hasattr(F, 'scaled_dot_product_attention')  # FIXME
 
         self.qkv = nn.Linear(dim, dim_attn * 3, bias=bias)
         self.rel_pos = rel_pos_cls(num_heads=self.num_heads) if rel_pos_cls else None
@@ -288,15 +292,30 @@ class AttentionCl(BaseModule):
         else:
             q, k, v = self.qkv(x).reshape(B, -1, 3, self.num_heads, self.dim_head).transpose(1, 3).unbind(2)
 
-        attn = (q @ k.transpose(-2, -1)) * self.scale
-        if self.rel_pos is not None:
-            attn = self.rel_pos(attn, shared_rel_pos=shared_rel_pos)
-        elif shared_rel_pos is not None:
-            attn = attn + shared_rel_pos
-        attn = attn.softmax(dim=-1)
-        attn = self.attn_drop(attn)
+        if self.fast_attn:
+            if self.rel_pos is not None:
+                attn_bias = self.rel_pos.get_bias()
+            elif shared_rel_pos is not None:
+                attn_bias = shared_rel_pos
+            else:
+                attn_bias = None
+            x = F.scaled_dot_product_attention(
+                q, k, v,
+                attn_mask=attn_bias,
+                dropout_p=self.attn_drop.p,
+            )
+        else:
+            q = q * self.scale
+            attn = q @ k.transpose(-2, -1)
+            if self.rel_pos is not None:
+                attn = self.rel_pos(attn, shared_rel_pos=shared_rel_pos)
+            elif shared_rel_pos is not None:
+                attn = attn + shared_rel_pos
+            attn = attn.softmax(dim=-1)
+            attn = self.attn_drop(attn)
+            x = attn @ v
 
-        x = (attn @ v).transpose(1, 2).reshape(restore_shape + (-1,))
+        x = x.transpose(1, 2).reshape(restore_shape + (-1,))
         x = self.proj(x)
         x = self.proj_drop(x)
         return x
@@ -411,7 +430,7 @@ class PartitionAttentionCl(BaseModule):
 
     def forward(self, x):
         x = x + self.drop_path1(self.ls1(self._partition_attn(self.norm1(x))))
-        x = x + self.drop_path2(self.ls2(self.ffn(self.norm2(x))))
+        x = x + self.drop_path2(self.ls2(self.ffn(self.norm2(x),identity=0)))
         return x
 
 
