@@ -657,7 +657,22 @@ class MaxViT(BaseBackbone):
         self.frozen_stages = frozen_stages
 
 
-    def forward(self, x):
+    def _freeze_stages(self):
+        for i in range(self.frozen_stages):
+            m = self.layers[i]
+            m.eval()
+            for param in m.parameters():
+                param.requires_grad = False
+
+
+    def init_weights(self):
+        super(MaxViT,self).init_weights()
+
+        if self.init_cfg is not None and self.init_cfg['type'] == 'Pretrained':
+            return
+
+
+    def forward(self, x: torch.Tensor):
         outs = []
 
         x = self.stem(x)
@@ -673,6 +688,6 @@ class MaxViT(BaseBackbone):
 
         return tuple(outs)
 
-    # def train(self, mode=True):
-    #     super().train(mode)
-    #     self._freeze_stages()
+    def train(self, mode=True):
+        super().train(mode)
+        self._freeze_stages()
