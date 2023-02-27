@@ -6,7 +6,7 @@ import torch
 
 from mmpretrain.models import CAEViT
 
-backbone = dict(arch='b', patch_size=16, init_values=0.1)
+backbone = dict(arch='b', patch_size=16, layer_scale_init_value=0.1)
 
 
 @pytest.mark.skipif(platform.system() == 'Windows', reason='Windows mem limit')
