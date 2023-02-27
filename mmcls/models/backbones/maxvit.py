@@ -18,16 +18,12 @@ from mmcls.models.utils import SELayer, make_divisible
 from mmcls.registry import MODELS
 from ..utils import build_norm_layer, to_2tuple, LayerNorm2d
 
-#### TODO 1 : the nn.AvgPool2d(kernel_size=(2, 2), stride=(2, 2)) in MBConv
-####          should be changed by the following code?
-#### TODO 2 : the GELU active function in pytorch 1.12 and 1.13 version add a new
+
+#### TODO 1 : the GELU active function in pytorch 1.12 and 1.13 version add a new
 ####          parameter ————  approximate='none' , but mmcls and old version in pytorch
 ####          isnot support this parameter. Details in 
 ####          https://pytorch.org/docs/1.13/generated/torch.nn.GELU.html?highlight=nn+gelu#torch.nn.GELU
-#### TODO 3 : The AttentionCl module output is different with AttentionCl in timm.
-####          but I copy from timm, why the output is difference with the same input in the AttentionCl module
-####          between mmcls and timm.
-####
+
 # # Calculate asymmetric TensorFlow-like 'SAME' padding for a convolution
 # def get_same_padding(x: int, k: int, s: int, d: int):
 #     return max((math.ceil(x / s) - 1) * s + (k - 1) * d + 1 - x, 0)
