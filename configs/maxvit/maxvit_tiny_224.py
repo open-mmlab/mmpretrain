@@ -1,6 +1,6 @@
 _base_ = [
-    '../_base_/datasets/imagenet_bs32.py',
-    '../_base_/schedules/imagenet_bs256.py',
+    '../_base_/datasets/imagenet_bs64_swin_224.py',
+    '../_base_/schedules/imagenet_bs1024_adamw_swin.py',
     '../_base_/default_runtime.py',
 ]
 
@@ -23,3 +23,17 @@ model = dict(
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
         topk=(1, 5),
     ))
+
+test_pipeline = [
+    dict(type='LoadImageFromFile'),
+    dict(
+        type='ResizeEdge',
+        scale=235,
+        edge='short',
+        backend='pillow',
+        interpolation='bicubic'),
+    dict(type='CenterCrop', crop_size=224),
+    dict(type='PackClsInputs'),
+]
+
+
