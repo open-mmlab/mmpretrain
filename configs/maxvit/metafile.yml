@@ -1,0 +1,30 @@
+Collections:
+  - Name: MaxViT
+    Metadata:
+      Architecture:
+        - Window Partition Attention
+        - Grid Partition Attention
+        - MBConv
+    Paper:
+      Title: 'MaxViT: Multi-Axis Vision Transformer'
+      URL: https://arxiv.org/abs/2204.01697
+    README: configs/maxvit/README.md
+
+Models:
+  - Name: maxvit-tiny_3rdparty_in1k-224px
+    Metadata:
+      FLOPs:
+      Parameters:
+      Training Data: ImageNet-1k
+    In Collection: MaxViT
+    Results:
+      - Dataset: ImageNet-1k
+        Metrics:
+          Top 1 Accuracy:
+          Top 5 Accuracy:
+          Task: Image Classification
+    Weights:
+    Config: configs/maxvit/maxvit-tiny_8xb128_in1k-224px.py
+    Converted From:
+      Code: https://github.com/google-research/maxvit
+      Weights:

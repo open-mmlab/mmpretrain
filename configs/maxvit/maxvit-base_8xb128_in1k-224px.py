@@ -9,17 +9,17 @@ model = dict(
     type='ImageClassifier',
     backbone=dict(
         type='MaxViT',
-        embed_dim=(64, 128, 256, 512),
-        depths=(2, 2, 5, 2),
+        embed_dim=(96, 192, 384, 768),
+        depths=(2, 6, 14, 2),
         img_size=224,
         stem_width=64,
-        head_hidden_size=512,  # is head in_channels
+        head_hidden_size=768,
     ),
     neck=None,
     head=dict(
         type='LinearClsHead',
         num_classes=1000,
-        in_channels=512,
+        in_channels=768,
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
         topk=(1, 5),
     ))
@@ -36,4 +36,5 @@ test_pipeline = [
     dict(type='PackClsInputs'),
 ]
 
-
+# dataset settings
+train_dataloader = dict(batch_size=128)
