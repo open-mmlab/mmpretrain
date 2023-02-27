@@ -122,7 +122,6 @@ class CAENeck(BaseModule):
     for the latent prediction and final prediction.
 
     Args:
-        patch_size (int): The patch size of each token. Defaults to 16.
         num_classes (int): The number of classes for final prediction. Defaults
             to 8192.
         embed_dims (int): The embed dims of latent feature in regressor and
@@ -149,7 +148,6 @@ class CAENeck(BaseModule):
     """
 
     def __init__(self,
-                 patch_size: int = 16,
                  num_classes: int = 8192,
                  embed_dims: int = 768,
                  regressor_depth: int = 6,
@@ -168,7 +166,6 @@ class CAENeck(BaseModule):
         super().__init__(init_cfg=init_cfg)
 
         self.num_features = self.embed_dim = embed_dims
-        self.patch_size = patch_size
         self.mask_token_num = mask_tokens_num
 
         # regressor
