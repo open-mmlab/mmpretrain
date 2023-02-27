@@ -75,7 +75,7 @@ def _generate_candidate_indices(ann_file: str = None) -> Optional[list]:
         with open(ann_file, 'r') as f:
             labels = [int(item.strip().split()[-1]) for item in f.readlines()]
         label_dict = {label: 1 for label in labels}
-        return label_dict
+        return list(label_dict.keys())
     else:
         return None
 
