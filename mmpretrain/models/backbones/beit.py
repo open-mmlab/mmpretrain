@@ -155,7 +155,6 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
             drop_path_rate=0.,
             drop_rate=0.,
             num_fcs=num_fcs,
-            qkv_bias=bias,
             act_cfg=act_cfg,
             norm_cfg=norm_cfg,
             init_cfg=init_cfg)
@@ -244,8 +243,10 @@ class BEiTViT(VisionTransformer):
         drop_rate (float): Probability of an element to be zeroed.
             Defaults to 0.
         drop_path_rate (float): stochastic depth rate. Defaults to 0.
-        qkv_bias (bool): Whether to add bias for qkv in attention modules.
-            Defaults to True.
+        bias (bool | str): The option to add leanable bias for q, k, v. If bias
+            is True, it will add leanable bias. If bias is 'qv_bias', it will
+            only add leanable bias for q, v. If bias is False, it will not add
+            bias for q, k, v. Default to 'qv_bias'.
         norm_cfg (dict): Config dict for normalization layer.
             Defaults to ``dict(type='LN')``.
         final_norm (bool): Whether to add a additional layer to normalize
@@ -285,6 +286,7 @@ class BEiTViT(VisionTransformer):
                  out_indices=-1,
                  drop_rate=0,
                  drop_path_rate=0,
+                 bias='qv_bias',
                  norm_cfg=dict(type='LN', eps=1e-6),
                  final_norm=False,
                  with_cls_token=True,
@@ -395,6 +397,7 @@ class BEiTViT(VisionTransformer):
                 use_rel_pos_bias=use_rel_pos_bias,
                 drop_rate=drop_rate,
                 drop_path_rate=dpr[i],
+                bias=bias,
                 norm_cfg=norm_cfg)
             _layer_cfg.update(layer_cfgs[i])
             self.layers.append(BEiTTransformerEncoderLayer(**_layer_cfg))

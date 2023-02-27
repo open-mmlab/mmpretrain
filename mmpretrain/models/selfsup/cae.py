@@ -201,6 +201,10 @@ class CAEViT(VisionTransformer):
         drop_rate (float): Probability of an element to be zeroed.
             Defaults to 0.
         drop_path_rate (float): stochastic depth rate. Defaults to 0.
+        bias (bool | str): The option to add leanable bias for q, k, v. If bias
+            is True, it will add leanable bias. If bias is 'qv_bias', it will
+            only add leanable bias for q, v. If bias is False, it will not add
+            bias for q, k, v. Default to 'qv_bias'.
         norm_cfg (dict): Config dict for normalization layer.
             Defaults to ``dict(type='LN')``.
         final_norm (bool): Whether to add a additional layer to normalize
@@ -225,7 +229,7 @@ class CAEViT(VisionTransformer):
                  out_indices: int = -1,
                  drop_rate: float = 0,
                  drop_path_rate: float = 0,
-                 qkv_bias: bool = True,
+                 bias: bool = 'qv_bias',
                  norm_cfg: dict = dict(type='LN', eps=1e-6),
                  final_norm: bool = True,
                  output_cls_token: bool = True,
@@ -269,7 +273,7 @@ class CAEViT(VisionTransformer):
                 use_rel_pos_bias=False,
                 drop_rate=drop_rate,
                 drop_path_rate=dpr[i],
-                qkv_bias=qkv_bias,
+                bias=bias,
                 norm_cfg=norm_cfg)
             _layer_cfg.update(layer_cfgs[i])
             self.layers.append(BEiTTransformerEncoderLayer(**_layer_cfg))
@@ -336,7 +340,7 @@ class CAEViT(VisionTransformer):
         x_unmasked = self.drop_after_pos(x_unmasked)
 
         for i, layer in enumerate(self.layers):
-            x_unmasked = layer(x_unmasked)
+            x_unmasked = layer(x=x_unmasked, rel_pos_bias=None)
 
             if i == len(self.layers) - 1 and self.final_norm:
                 x_unmasked = self.norm1(x_unmasked)
