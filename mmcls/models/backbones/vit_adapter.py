@@ -14,9 +14,187 @@ from mmengine.model import BaseModule, ModuleList
 from torch import nn
 
 from mmcls.registry import MODELS
-from ..utils import LayerScale, resize_pos_embed
+from ..utils import (BEiTAttention, LayerScale, MultiheadAttention,
+                     resize_pos_embed)
 from .beit import BEiT, BEiTTransformerEncoderLayer
 from .vision_transformer import TransformerEncoderLayer, VisionTransformer
+
+
+def _window_reverse(windows, H, W, window_size):
+    """the same with `mmcls.model.utils.ShiftWindowMSA.window_reverse`"""
+    B = int(windows.shape[0] / (H * W / window_size / window_size))
+    x = windows.view(B, H // window_size, W // window_size, window_size,
+                     window_size, -1)
+    x = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(B, H, W, -1)
+    return x
+
+
+def _window_partition(x, window_size):
+    """the same with `mmcls.model.utils.ShiftWindowMSA.window_partition`"""
+    B, H, W, C = x.shape
+    x = x.view(B, H // window_size, window_size, W // window_size, window_size,
+               C)
+    windows = x.permute(0, 1, 3, 2, 4, 5).contiguous()
+    windows = windows.view(-1, window_size, window_size, C)
+    return windows
+
+
+class AdapterWindowMHSA(MultiheadAttention):
+    """Multi-head Attention Module with Windows for ViT-Adapter.
+
+    Args:
+        embed_dims (int): The embedding dimension.
+        num_heads (int): Parallel attention heads.
+        input_dims (int, optional): The input dimension, and if None,
+            use ``embed_dims``. Defaults to None.
+        window_size (int): The window size for MultiheadAttention.
+            Defaults to 0, means using normal TransformerEncoderLayer
+        attn_drop (float): Dropout rate of the dropout layer after the
+            attention calculation of query and key. Defaults to 0.
+        proj_drop (float): Dropout rate of the dropout layer after the
+            output projection. Defaults to 0.
+        dropout_layer (dict): The dropout config before adding the shortcut.
+            Defaults to ``dict(type='Dropout', drop_prob=0.)``.
+        qkv_bias (bool): If True, add a learnable bias to q, k, v.
+            Defaults to True.
+        qk_scale (float, optional): Override default qk scale of
+            ``head_dim ** -0.5`` if set. Defaults to None.
+        proj_bias (bool) If True, add a learnable bias to output projection.
+            Defaults to True.
+        v_shortcut (bool): Add a shortcut from value to output. It's usually
+            used if ``input_dims`` is different from ``embed_dims``.
+            Defaults to False.
+        layer_scale_init_value (float): Initial value of scale factor in
+            ``LayerScale``. Defaults to 0.0, means not using ``LayerScale``.
+            Use an initial value greater than 0.0 to enable ``LayerScale``.
+        use_layer_scale (bool): Deprecated, Whether to use layer_scale.
+            Please use ``layer_scale_init_value`` as an alternative.
+            Defaults to False.
+        init_cfg (dict, optional): The Config for initialization.
+            Defaults to None.
+    """
+
+    def __init__(self, *args, window_size=0, **kwargs):
+        super(AdapterWindowMHSA, self).__init__(*args, **kwargs)
+        self.window_size = window_size
+
+    def forward(self, x, hw_shape=None):
+        if self.window_size > 0:
+            assert hw_shape is not None, \
+                'hw_shape is None is not supported when ' \
+                'TransformerEncoderLayer with window_size != 0'
+            B, L, C = x.shape
+            H, W = hw_shape
+            assert L == H * W, \
+                f"The query length {L} doesn't match the input " \
+                f'shape ({H}, {W}).'
+
+            x = x.view(B, H, W, C)
+
+            window_size = self.window_size
+            pad_r = (window_size - W % window_size) % window_size
+            pad_b = (window_size - H % window_size) % window_size
+            x = F.pad(x, (0, 0, 0, pad_r, 0, pad_b))
+
+            H_pad, W_pad = x.shape[1], x.shape[2]
+
+            # nW*B, window_size, window_size, C
+            x = _window_partition(x, window_size)
+            # nW*B, window_size*window_size, C
+            x = x.view(-1, window_size**2, C)
+
+        x = super(AdapterWindowMHSA, self).forward(x)
+
+        if self.window_size > 0:
+            # merge windows
+            x = x.view(-1, window_size, window_size, C)
+            # B H' W' C
+            x = _window_reverse(x, H_pad, W_pad, window_size)
+
+            if H != H_pad or W != W_pad:
+                x = x[:, :H, :W, :].contiguous()
+
+            x = x.view(B, H * W, C)
+
+        return x
+
+
+class AdapterWindowBEiTMHSA(BEiTAttention):
+    """Multi-head Attention Module with Windows for ViT-Adapter.
+
+    Args:
+        embed_dims (int): The embedding dimension.
+        num_heads (int): Parallel attention heads.
+        input_dims (int, optional): The input dimension, and if None,
+            use ``embed_dims``. Defaults to None.
+        window_size (int): The window size for MultiheadAttention.
+            Defaults to 0, means using normal TransformerEncoderLayer
+        attn_drop (float): Dropout rate of the dropout layer after the
+            attention calculation of query and key. Defaults to 0.
+        proj_drop (float): Dropout rate of the dropout layer after the
+            output projection. Defaults to 0.
+        dropout_layer (dict): The dropout config before adding the shortcut.
+            Defaults to ``dict(type='Dropout', drop_prob=0.)``.
+        qkv_bias (bool): If True, add a learnable bias to q, k, v.
+            Defaults to True.
+        qk_scale (float, optional): Override default qk scale of
+            ``head_dim ** -0.5`` if set. Defaults to None.
+        proj_bias (bool) If True, add a learnable bias to output projection.
+            Defaults to True.
+        v_shortcut (bool): Add a shortcut from value to output. It's usually
+            used if ``input_dims`` is different from ``embed_dims``.
+            Defaults to False.
+        layer_scale_init_value (float): Initial value of scale factor in
+            ``LayerScale``. Defaults to 0.0, means not using ``LayerScale``.
+            Use an initial value greater than 0.0 to enable ``LayerScale``.
+        use_layer_scale (bool): Deprecated, Whether to use layer_scale.
+            Please use ``layer_scale_init_value`` as an alternative.
+            Defaults to False.
+        init_cfg (dict, optional): The Config for initialization.
+            Defaults to None.
+    """
+
+    def forward(self,
+                x: torch.Tensor,
+                rel_pos_bias: torch.Tensor,
+                hw_shape=None) -> torch.Tensor:
+        assert hw_shape is not None, \
+            'hw_shape is None is not supported when ' \
+            'BEiTTransformerEncoderLayer with use_window_attention'
+
+        B, L, C = x.shape
+        H, W = hw_shape
+        assert L == H * W,\
+            f"The query length {L} doesn't match the input "\
+            f'shape ({H}, {W}).'
+
+        x = x.view(B, H, W, C)
+
+        assert self.window_size[0] == self.window_size[1]
+        window_size = self.window_size[0]
+        pad_r = (window_size - W % window_size) % window_size
+        pad_b = (window_size - H % window_size) % window_size
+        x = F.pad(x, (0, 0, 0, pad_r, 0, pad_b))
+
+        H_pad, W_pad = x.shape[1], x.shape[2]
+
+        # nW*B, window_size, window_size, C
+        x = _window_partition(x, window_size)
+        # nW*B, window_size*window_size, C
+        x = x.view(-1, window_size**2, C)
+
+        x = super(AdapterWindowBEiTMHSA, self).forward(x, rel_pos_bias)
+
+        # merge windows
+        x = x.view(-1, window_size, window_size, C)
+        # B H' W' C
+        x = _window_reverse(x, H_pad, W_pad, window_size)
+
+        if H != H_pad or W != W_pad:
+            x = x[:, :H, :W, :].contiguous()
+
+        x = x.view(B, H * W, C)
+        return x
 
 
 def get_reference_points(spatial_shapes, device):
@@ -593,69 +771,82 @@ class VitAdapter(VisionTransformer):
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
             memory while slowing down the training speed. Defaults to False.
     """
-    adapter_zoo = {
+    arch_zoo = {
+        # if window_size == 0, use global attention as original vit;
+        # elif window_size != 0, use window attention.
         **dict.fromkeys(
             ['b', 'base'],
             {
+                'embed_dims': 768,
+                'num_layers': 12,
+                'num_heads': 12,
+                'feedforward_channels': 3072,
                 'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 11]],
-                'window_size': 14,
-                # 2, 5, 8, 11 for global attention
-                'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10],
+                # block [2, 5, 8, 11] use global attention as original vit
+                'window_size': [14, 14, 0, 14, 14, 0, 14, 14, 0, 14, 14, 0],
                 'value_proj_ratio': 0.5
             }),
         **dict.fromkeys(
             ['l', 'large'],
             {
+                'embed_dims': 1024,
+                'num_layers': 24,
+                'num_heads': 16,
+                'feedforward_channels': 4096,
                 'interaction_indexes': [[0, 5], [6, 11], [12, 17], [18, 23]],
-                'window_size':
-                14,
-                # 5, 11, 17, 23 for global attention
-                'window_block_indexes': [
-                    0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 18, 19,
-                    20, 21, 22
-                ],
-                'value_proj_ratio':
-                0.5
+                # block [5, 11, 17, 23] use global attention as original vit
+                'window_size': [14, 14, 14, 14, 14, 0, 14, 14, 14, 14, 14, 0,
+                                14, 14, 14, 14, 14, 0, 14, 14, 14, 14, 14, 0],
+                'value_proj_ratio': 0.5
             }),
         **dict.fromkeys(
             ['h', 'huge'],
             {
+                'embed_dims': 1280,
+                'num_layers': 32,
+                'num_heads': 16,
+                'feedforward_channels': 5120,
                 'interaction_indexes': [[0, 7], [8, 15], [16, 23], [24, 31]],
-                'window_size':
-                14,
-                # 7, 15, 23, 31 for global attention
-                'window_block_indexes': [
-                    0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18,
-                    19, 20, 21, 22, 24, 25, 26, 27, 28, 29, 30
-                ],
-                'value_proj_ratio':
-                0.5
+                # block [7, 15, 23, 31] use global attention as original vit
+                'window_size': [14, 14, 14, 14, 14, 14, 0, 14, 14, 14, 14, 14,
+                                14, 14, 0, 14, 14, 14, 14, 14, 14, 14, 0, 14,
+                                14, 14, 14, 14, 14, 14, 0],
+                'value_proj_ratio': 0.5
             }),
         **dict.fromkeys(
             ['deit-t', 'deit-tiny'],
             {
+                'embed_dims': 192,
+                'num_layers': 12,
+                'num_heads': 3,
+                'feedforward_channels': 192 * 4,
                 'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 11]],
-                'window_size': 14,
-                # 2, 5, 8, 11 for global attention
-                'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10],
+                # block [2, 5, 8, 11] use global attention as original vit
+                'window_size': [14, 14, 0, 14, 14, 0, 14, 14, 0, 14, 14, 0],
                 'value_proj_ratio': 1.0
             }),
         **dict.fromkeys(
             ['deit-s', 'deit-small'],
             {
+                'embed_dims': 384,
+                'num_layers': 12,
+                'num_heads': 6,
+                'feedforward_channels': 384 * 4,
                 'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 11]],
-                'window_size': 14,
-                # 2, 5, 8, 11 for global attention
-                'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10],
+                # block [2, 5, 8, 11] use global attention as original vit
+                'window_size': [14, 14, 0, 14, 14, 0, 14, 14, 0, 14, 14, 0],
                 'value_proj_ratio': 1.0
             }),
         **dict.fromkeys(
             ['deit-b', 'deit-base'],
             {
+                'embed_dims': 768,
+                'num_layers': 12,
+                'num_heads': 12,
+                'feedforward_channels': 768 * 4,
                 'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 11]],
-                'window_size': 14,
-                # 2, 5, 8, 11 for global attention
-                'window_block_indexes': [0, 1, 3, 4, 6, 7, 9, 10],
+                # block [2, 5, 8, 11] use global attention as original vit
+                'window_size': [14, 14, 0, 14, 14, 0, 14, 14, 0, 14, 14, 0],
                 'value_proj_ratio': 0.5
             }),
     }  # yapf: disable
@@ -681,29 +872,33 @@ class VitAdapter(VisionTransformer):
 
         if isinstance(arch, str):
             arch = arch.lower()
-            assert arch in set(self.adapter_zoo), \
-                f'Arch {arch} is not in default archs {set(self.adapter_zoo)}'
-            self.adapter_settings = self.adapter_zoo[arch]
+            assert arch in set(self.arch_zoo), \
+                f'Arch {arch} is not in default archs {set(self.arch_zoo)}'
+            arch_settings = self.arch_zoo[arch]
         else:
             essential_keys = {
-                'interaction_indexes', 'window_size', 'window_block_indexes',
-                'value_proj_ratio'
+                'interaction_indexes', 'window_size', 'value_proj_ratio',
+                'embed_dims', 'num_layers', 'num_heads', 'feedforward_channels'
             }
-            assert isinstance(
-                arch, dict
-                ) and essential_keys <= set(arch), \
-                'Custom adapter_settings needs a dict with keys' \
-                f'{essential_keys}'
-            self.adapter_settings = arch
+            assert isinstance(arch, dict) and essential_keys <= set(arch), \
+                f'Custom arch settings needs a dict with keys {essential_keys}'
+            arch_settings = arch
 
-        self.window_size = self.adapter_settings['window_size']
-        self.window_block_indexes = self.adapter_settings[
-            'window_block_indexes']
-        self.value_proj_ratio = self.adapter_settings['value_proj_ratio']
+        self.window_size = arch_settings['window_size']
+        self.value_proj_ratio = arch_settings['value_proj_ratio']
+        self.interaction_indexes = arch_settings['interaction_indexes']
+
+        vit_keys = {
+            'embed_dims', 'num_layers', 'num_heads', 'feedforward_channels'
+        }
+        vit_arch = {
+            key: arch_settings[key]
+            for key in arch_settings.keys() & vit_keys
+        }
 
         super().__init__(
             *args,
-            arch=arch,
+            arch=vit_arch,
             patch_size=patch_size,
             in_channels=in_channels,
             with_cls_token=False,
@@ -714,7 +909,6 @@ class VitAdapter(VisionTransformer):
             final_norm=False,
             **kwargs)
 
-        self.interaction_indexes = self.adapter_settings['interaction_indexes']
         self.add_vit_feature = add_vit_feature
 
         self.level_embed = nn.Parameter(torch.zeros(3, self.embed_dims))
@@ -764,10 +958,12 @@ class VitAdapter(VisionTransformer):
                 drop_path_rate=dpr[i],
                 qkv_bias=qkv_bias,
                 norm_cfg=norm_cfg,
-                layer_scale_init_value=layer_scale_init_value,
-                window_size=0
-                if i not in self.window_block_indexes else self.window_size)
-            _layer_cfg.update(layer_cfgs[i])
+                layer_scale_init_value=layer_scale_init_value)
+
+            window_block_layer_cfgs = dict(
+                attn_module=AdapterWindowMHSA,
+                attn_cfg=dict(window_size=self.window_size[i]))
+            _layer_cfg.update(window_block_layer_cfgs)
             self.layers.append(TransformerEncoderLayer(**_layer_cfg))
 
     def forward(self, x):
@@ -905,15 +1101,18 @@ class BEiTAdapter(BEiT):
         with_cp (bool): Use checkpoint or not. Using checkpoint will save some
             memory while slowing down the training speed. Defaults to False.
     """
-    adapter_zoo = {
+    arch_zoo = {
         **dict.fromkeys(
             ['b', 'base'],
             {
+                'embed_dims': 768,
+                'num_layers': 12,
+                'num_heads': 12,
+                'feedforward_channels': 3072,
                 'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 11]],
-                'window_size': [14, 14, 14, 14, 14, 56,
-                                14, 14, 14, 14, 14, 56,
-                                14, 14, 14, 14, 14, 56,
-                                14, 14, 14, 14, 14, 56],
+                'window_size': [14, 14, 14, 14, 14, 56, 14, 14, 14, 14, 14,
+                                56, 14, 14, 14, 14, 14, 56, 14, 14, 14, 14,
+                                14, 56],
                 'value_proj_ratio': 0.5
             }),
     }  # yapf: disable
@@ -939,26 +1138,33 @@ class BEiTAdapter(BEiT):
 
         if isinstance(arch, str):
             arch = arch.lower()
-            assert arch in set(self.adapter_zoo), \
-                f'Arch {arch} is not in default archs {set(self.adapter_zoo)}'
-            self.adapter_settings = self.adapter_zoo[arch]
+            assert arch in set(self.arch_zoo), \
+                f'Arch {arch} is not in default archs {set(self.arch_zoo)}'
+            arch_settings = self.arch_zoo[arch]
         else:
             essential_keys = {
-                'interaction_indexes', 'window_size', 'value_proj_ratio'
+                'interaction_indexes', 'window_size', 'value_proj_ratio',
+                'embed_dims', 'num_layers', 'num_heads', 'feedforward_channels'
             }
-            assert isinstance(
-                arch, dict
-                ) and essential_keys <= set(arch), \
-                'Custom adapter_settings needs a dict with keys' \
-                f'{essential_keys}'
-            self.adapter_settings = arch
+            assert isinstance(arch, dict) and essential_keys <= set(arch), \
+                f'Custom arch settings needs a dict with keys {essential_keys}'
+            arch_settings = arch
 
-        self.window_size = self.adapter_settings['window_size']
-        self.value_proj_ratio = self.adapter_settings['value_proj_ratio']
+        self.window_size = arch_settings['window_size']
+        self.value_proj_ratio = arch_settings['value_proj_ratio']
+        self.interaction_indexes = arch_settings['interaction_indexes']
+
+        beit_keys = {
+            'embed_dims', 'num_layers', 'num_heads', 'feedforward_channels'
+        }
+        beit_arch = {
+            key: arch_settings[key]
+            for key in arch_settings.keys() & beit_keys
+        }
 
         super().__init__(
             *args,
-            arch=arch,
+            arch=beit_arch,
             patch_size=patch_size,
             in_channels=in_channels,
             with_cls_token=False,
@@ -970,7 +1176,6 @@ class BEiTAdapter(BEiT):
             avg_token=False,
             **kwargs)
 
-        self.interaction_indexes = self.adapter_settings['interaction_indexes']
         self.add_vit_feature = add_vit_feature
 
         self.level_embed = nn.Parameter(torch.zeros(3, self.embed_dims))
@@ -1028,7 +1233,7 @@ class BEiTAdapter(BEiT):
                 drop_rate=drop_rate,
                 drop_path_rate=dpr[i],
                 norm_cfg=norm_cfg,
-                use_window_attention=True,
+                attn_module=AdapterWindowBEiTMHSA,
                 window_size=(self.window_size[i], self.window_size[i]),
                 with_cls_token=self.with_cls_token)
             _layer_cfg.update(layer_cfgs[i])

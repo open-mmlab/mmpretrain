@@ -1,19 +1,19 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import itertools
+import warnings
 
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from mmcv.cnn.bricks.drop import build_dropout
-from mmcv.cnn.bricks.scale import LayerScale
 from mmengine.model import BaseModule
 from mmengine.model.weight_init import trunc_normal_
 from mmengine.utils import digit_version
 
 from mmcls.registry import MODELS
 from .helpers import to_2tuple
-from .layer_scale import LayerScale as MMCLSLayerScale
+from .layer_scale import LayerScale
 
 # After pytorch v1.10.0, use torch.meshgrid without indexing
 # will raise extra warning. For more details,
@@ -501,9 +501,11 @@ class MultiheadAttention(BaseModule):
             used if ``input_dims`` is different from ``embed_dims``.
             Defaults to False.
         layer_scale_init_value (float): Initial value of scale factor in
-            LayerScale. Defaults to 0.0.
-        use_layer_scale (bool): Whether to use layer_scale. This is a duplicate
-            of the mmcv LS and will be removed. Defaults to False.
+            ``LayerScale``. Defaults to 0.0, means not using ``LayerScale``.
+            Use an initial value greater than 0.0 to enable ``LayerScale``.
+        use_layer_scale (bool): Deprecated, Whether to use layer_scale.
+            Please use ``layer_scale_init_value`` as an alternative.
+            Defaults to False.
         init_cfg (dict, optional): The Config for initialization.
             Defaults to None.
     """
@@ -542,12 +544,14 @@ class MultiheadAttention(BaseModule):
         if layer_scale_init_value > 0:
             self.gamma1 = LayerScale(embed_dims, scale=layer_scale_init_value)
         elif use_layer_scale:
-            # todo: delete mmcls LS.
-            self.gamma1 = MMCLSLayerScale(embed_dims)
+            warnings.warn(
+                '`use_layer_scale` will be deprecated in future, Please use'
+                '`layer_scale_init_value={INIT_VLAUE}` as an alternative.')
+            self.gamma1 = LayerScale(embed_dims)
         else:
             self.gamma1 = nn.Identity()
 
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         B, N, _ = x.shape
         qkv = self.qkv(x).reshape(B, N, 3, self.num_heads,
                                   self.head_dims).permute(2, 0, 3, 1, 4)
@@ -687,7 +691,7 @@ class BEiTAttention(BaseModule):
         if self.use_rel_pos_bias:
             trunc_normal_(self.relative_position_bias_table, std=0.02)
 
-    def forward(self, x, rel_pos_bias=None):
+    def forward(self, x, rel_pos_bias=None, **kwargs):
         """
         Args:
             x (tensor): input features with shape of (num_windows*B, N, C).

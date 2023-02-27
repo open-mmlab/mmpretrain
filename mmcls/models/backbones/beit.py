@@ -4,7 +4,6 @@ from typing import List, Optional, Sequence, Tuple, Union
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.drop import build_dropout
 from mmcv.cnn.bricks.transformer import FFN, PatchEmbed
@@ -123,14 +122,12 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
             Defaults to ``dict(type='GELU')``.
         norm_cfg (dict): Config dict for normalization layer.
             Defaults to dict(type='LN').
-        attn_cfg (dict): The configuration for the attention layer.
-            Defaults to an empty dict.
+        attn_module (Callable): To build an attention module.
+            Defaults to :class:`BEiTAttention`.
+        attn_cfg (dict, optional): The extra config to build an attention
+            module. Defaults to ``dict()``.
         ffn_cfg (dict): The configuration for the ffn layer.
             Defaults to ``dict(add_identity=False)``.
-        use_window_attention (bool): Whether to use window attention in
-            BEiTTransformerEncoderLayer. This implementation is based on
-            `ViTDet <https://arxiv.org/abs/2203.16527>`_
-            Defaults to False.
         with_cls_token (bool): To indicate the backbone has cls_token or not.
             Defaults to True.
         init_cfg (dict or List[dict], optional): Initialization config dict.
@@ -151,9 +148,9 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
                  bias: Union[str, bool] = 'qv_bias',
                  act_cfg: dict = dict(type='GELU'),
                  norm_cfg: dict = dict(type='LN'),
+                 attn_module=BEiTAttention,
                  attn_cfg: dict = dict(),
                  ffn_cfg: dict = dict(add_identity=False),
-                 use_window_attention: bool = False,
                  with_cls_token: bool = True,
                  init_cfg: Optional[Union[dict, List[dict]]] = None) -> None:
         super().__init__(
@@ -169,9 +166,6 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
             norm_cfg=norm_cfg,
             init_cfg=init_cfg)
 
-        self.use_window_attention = use_window_attention
-        self.window_size = window_size
-
         attn_cfg = {
             'window_size': window_size,
             'use_rel_pos_bias': use_rel_pos_bias,
@@ -184,7 +178,8 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
             'with_cls_token': with_cls_token,
             **attn_cfg,
         }
-        self.attn = BEiTAttention(**attn_cfg)
+
+        self.attn = attn_module(**attn_cfg)
 
         ffn_cfg = {
             'embed_dims': embed_dims,
@@ -211,60 +206,13 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
                 layer_scale_init_value * torch.ones((embed_dims)),
                 requires_grad=True)
         else:
-            self.gamma_1, self.gamma_2 = None, None
+            self.gamma_1, self.gamma_2 = nn.Identity(), nn.Identity()
 
-    def forward(self,
-                x: torch.Tensor,
-                rel_pos_bias: torch.Tensor,
-                hw_shape=None) -> torch.Tensor:
-        shortcut = x
-        x = self.norm1(x)
-
-        if self.use_window_attention:
-            assert hw_shape is not None, \
-                'hw_shape is None is not supported when ' \
-                'BEiTTransformerEncoderLayer with use_window_attention'
-            B, L, C = x.shape
-            H, W = hw_shape
-            assert L == H * W,\
-                f"The query length {L} doesn't match the input "\
-                f'shape ({H}, {W}).'
-
-            x = x.view(B, H, W, C)
-
-            assert self.window_size[0] == self.window_size[1]
-            window_size = self.window_size[0]
-            pad_r = (window_size - W % window_size) % window_size
-            pad_b = (window_size - H % window_size) % window_size
-            x = F.pad(x, (0, 0, 0, pad_r, 0, pad_b))
-
-            H_pad, W_pad = x.shape[1], x.shape[2]
-
-            # nW*B, window_size, window_size, C
-            x = self.window_partition(x, window_size)
-            # nW*B, window_size*window_size, C
-            x = x.view(-1, window_size**2, C)
-
-        x = self.attn(x, rel_pos_bias=rel_pos_bias)
-
-        if self.use_window_attention:
-            # merge windows
-            x = x.view(-1, window_size, window_size, C)
-            # B H' W' C
-            x = self.window_reverse(x, H_pad, W_pad, window_size)
-
-            if H != H_pad or W != W_pad:
-                x = x[:, :H, :W, :].contiguous()
-
-            x = x.view(B, H * W, C)
-
-        if self.gamma_1 is not None:
-            x = shortcut + self.drop_path(self.gamma_1 * x)
-            x = x + self.drop_path(self.gamma_2 * self.ffn(self.norm2(x)))
-        else:
-            x = shortcut + self.drop_path(x)
-            x = x + self.drop_path(self.ffn(self.norm2(x)))
-
+    def forward(self, x: torch.Tensor, rel_pos_bias: torch.Tensor,
+                **kwargs) -> torch.Tensor:
+        x = x + self.drop_path(self.gamma_1 * self.attn(
+            self.norm1(x), rel_pos_bias=rel_pos_bias, **kwargs))
+        x = x + self.drop_path(self.gamma_2 * self.ffn(self.norm2(x)))
         return x
 
 

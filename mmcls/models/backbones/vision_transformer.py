@@ -4,7 +4,6 @@ from typing import Sequence
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from mmcv.cnn import build_norm_layer
 from mmcv.cnn.bricks.transformer import FFN, PatchEmbed
 from mmengine.model import BaseModule, ModuleList
@@ -30,17 +29,16 @@ class TransformerEncoderLayer(BaseModule):
         num_fcs (int): The number of fully-connected layers for FFNs.
             Defaults to 2.
         qkv_bias (bool): enable bias for qkv if True. Defaults to True.
-        layer_scale_init_value (float): Initial value of scale factor in
-            LayerScale. Defaults to 0.0.
-        window_size (int): The height and width of the window for
-            TransformerEncoderLayer. This implementation is based on
-            `ViTDet <https://arxiv.org/abs/2203.16527>`_
-            If window_size == 0, it use normal TransformerEncoderLayer.
-            Defaults to 0.
+        layer_scale_init_value (float, optional): Initial value of scale
+             factor in LayerScale. Defaults to 0.0.
         act_cfg (dict): The activation config for FFNs.
             Defaluts to ``dict(type='GELU')``.
         norm_cfg (dict): Config dict for normalization layer.
             Defaults to ``dict(type='LN')``.
+        attn_module (Callable): To build an attention module.
+            Defaults to :class:`MultiheadAttention`.
+        attn_cfg (dict, optional): The extra config to build an attention
+            module. Defaults to ``dict()``.
         init_cfg (dict, optional): Initialization config dict.
             Defaults to None.
     """
@@ -54,28 +52,29 @@ class TransformerEncoderLayer(BaseModule):
                  drop_path_rate=0.,
                  num_fcs=2,
                  qkv_bias=True,
-                 layer_scale_init_value=0.,
-                 window_size=0,
+                 layer_scale_init_value=0.0,
                  act_cfg=dict(type='GELU'),
                  norm_cfg=dict(type='LN'),
+                 attn_module=MultiheadAttention,
+                 attn_cfg=dict(),
                  init_cfg=None):
         super(TransformerEncoderLayer, self).__init__(init_cfg=init_cfg)
 
         self.embed_dims = embed_dims
-        self.window_size = window_size
 
         self.norm1_name, norm1 = build_norm_layer(
             norm_cfg, self.embed_dims, postfix=1)
         self.add_module(self.norm1_name, norm1)
 
-        self.attn = MultiheadAttention(
+        self.attn = attn_module(
             embed_dims=embed_dims,
             num_heads=num_heads,
             attn_drop=attn_drop_rate,
             proj_drop=drop_rate,
             dropout_layer=dict(type='DropPath', drop_prob=drop_path_rate),
             qkv_bias=qkv_bias,
-            layer_scale_init_value=layer_scale_init_value)
+            layer_scale_init_value=layer_scale_init_value,
+            **attn_cfg)
 
         self.norm2_name, norm2 = build_norm_layer(
             norm_cfg, self.embed_dims, postfix=2)
@@ -105,64 +104,8 @@ class TransformerEncoderLayer(BaseModule):
                 nn.init.xavier_uniform_(m.weight)
                 nn.init.normal_(m.bias, std=1e-6)
 
-    @staticmethod
-    def window_reverse(windows, H, W, window_size):
-        B = int(windows.shape[0] / (H * W / window_size / window_size))
-        x = windows.view(B, H // window_size, W // window_size, window_size,
-                         window_size, -1)
-        x = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(B, H, W, -1)
-        return x
-
-    @staticmethod
-    def window_partition(x, window_size):
-        B, H, W, C = x.shape
-        x = x.view(B, H // window_size, window_size, W // window_size,
-                   window_size, C)
-        windows = x.permute(0, 1, 3, 2, 4, 5).contiguous()
-        windows = windows.view(-1, window_size, window_size, C)
-        return windows
-
     def forward(self, x, hw_shape=None):
-        shortcut = x
-        x = self.norm1(x)
-        if self.window_size > 0:
-            assert hw_shape is not None, \
-                'hw_shape is None is not supported when ' \
-                'TransformerEncoderLayer with window_size != 0'
-            B, L, C = x.shape
-            H, W = hw_shape
-            assert L == H * W, \
-                f"The query length {L} doesn't match the input " \
-                f'shape ({H}, {W}).'
-
-            x = x.view(B, H, W, C)
-
-            window_size = self.window_size
-            pad_r = (window_size - W % window_size) % window_size
-            pad_b = (window_size - H % window_size) % window_size
-            x = F.pad(x, (0, 0, 0, pad_r, 0, pad_b))
-
-            H_pad, W_pad = x.shape[1], x.shape[2]
-
-            # nW*B, window_size, window_size, C
-            x = self.window_partition(x, window_size)
-            # nW*B, window_size*window_size, C
-            x = x.view(-1, window_size**2, C)
-
-        x = self.attn(x)
-
-        if self.window_size > 0:
-            # merge windows
-            x = x.view(-1, window_size, window_size, C)
-            # B H' W' C
-            x = self.window_reverse(x, H_pad, W_pad, window_size)
-
-            if H != H_pad or W != W_pad:
-                x = x[:, :H, :W, :].contiguous()
-
-            x = x.view(B, H * W, C)
-
-        x = shortcut + x
+        x = x + self.attn(self.norm1(x), hw_shape=hw_shape)
         x = self.ffn(self.norm2(x), identity=x)
         return x
 
@@ -373,14 +316,8 @@ class VisionTransformer(BaseBackbone):
                 f'Invalid out_indices {index}'
         self.out_indices = out_indices
 
-        self._build_layers(
-            drop_rate,
-            drop_path_rate,
-            qkv_bias,
-            norm_cfg,
-            layer_scale_init_value,
-            layer_cfgs,
-        )
+        self._build_layers(drop_rate, drop_path_rate, qkv_bias, norm_cfg,
+                           layer_scale_init_value, layer_cfgs)
 
         self.frozen_stages = frozen_stages
         if pre_norm:
@@ -405,15 +342,8 @@ class VisionTransformer(BaseBackbone):
         if self.frozen_stages > 0:
             self._freeze_stages()
 
-    def _build_layers(
-        self,
-        drop_rate,
-        drop_path_rate,
-        qkv_bias,
-        norm_cfg,
-        layer_scale_init_value,
-        layer_cfgs,
-    ):
+    def _build_layers(self, drop_rate, drop_path_rate, qkv_bias, norm_cfg,
+                      layer_scale_init_value, layer_cfgs):
         # stochastic depth decay rule
         dpr = np.linspace(0, drop_path_rate, self.num_layers)
 
