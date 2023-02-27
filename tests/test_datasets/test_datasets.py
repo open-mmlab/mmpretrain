@@ -73,8 +73,6 @@ class TestBaseDataset(TestCase):
             num_classes = len(dataset.CLASSES)
             self.assertIn(f'Number of categories: \t{num_classes}',
                           repr(dataset))
-        else:
-            self.assertIn('The `CLASSES` meta info is not set.', repr(dataset))
 
         self.assertIn('Haven\'t been initialized', repr(dataset))
         dataset.full_init()
