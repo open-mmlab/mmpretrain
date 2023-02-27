@@ -345,6 +345,36 @@ class TestImageNet21k(TestCustomDataset):
         self.assertIn('specify the `classes`', log.output[0])
 
 
+class TestPlaces205(TestCustomDataset):
+    DATASET_TYPE = 'Places205'
+
+    DEFAULT_ARGS = dict(data_root=ASSETS_ROOT, ann_file='ann.txt')
+
+    def test_load_data_list(self):
+        dataset_class = DATASETS.get(self.DATASET_TYPE)
+
+        # test classes number
+        cfg = {
+            **self.DEFAULT_ARGS,
+            'data_prefix': ASSETS_ROOT,
+            'ann_file': '',
+        }
+        with self.assertRaisesRegex(AssertionError,
+                                    r"\(2\) doesn't match .* classes \(205\)"):
+            dataset_class(**cfg)
+
+        # test override classes
+        cfg = {
+            **self.DEFAULT_ARGS,
+            'data_prefix': ASSETS_ROOT,
+            'classes': ['cat', 'dog'],
+            'ann_file': '',
+        }
+        dataset = dataset_class(**cfg)
+        self.assertEqual(len(dataset), 3)
+        self.assertEqual(dataset.CLASSES, ('cat', 'dog'))
+
+
 class TestCIFAR10(TestBaseDataset):
     DATASET_TYPE = 'CIFAR10'
 
