@@ -21,7 +21,7 @@ from ..utils import build_norm_layer, to_2tuple, LayerNorm2d
 
 #### TODO 1 : the GELU active function in pytorch 1.12 and 1.13 version add a new
 ####          parameter ————  approximate='none' , but mmcls and old version in pytorch
-####          isnot support this parameter. Details in 
+####          isnot support this parameter. The MaxViT backbone need this parameter. Details in
 ####          https://pytorch.org/docs/1.13/generated/torch.nn.GELU.html?highlight=nn+gelu#torch.nn.GELU
 
 
