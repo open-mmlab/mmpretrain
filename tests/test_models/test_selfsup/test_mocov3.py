@@ -81,7 +81,7 @@ class TestMoCoV3(TestCase):
             'inputs':
             [torch.randn((2, 3, 224, 224)),
              torch.randn((2, 3, 224, 224))],
-            'data_sample': [DataSample() for _ in range(2)]
+            'data_samples': [DataSample() for _ in range(2)]
         }
 
         fake_inputs = alg.data_preprocessor(fake_data)
