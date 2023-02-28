@@ -212,11 +212,11 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
                 **kwargs) -> torch.Tensor:
         if self.gamma_1 is None:
             x = x + self.drop_path(
-                self.attn(self.norm1(x), rel_pos_bias=rel_pos_bias))
+                self.attn(self.norm1(x), rel_pos_bias=rel_pos_bias, **kwargs))
             x = x + self.drop_path(self.ffn(self.norm2(x)))
         else:
             x = x + self.drop_path(self.gamma_1 * self.attn(
-                self.norm1(x), rel_pos_bias=rel_pos_bias))
+                self.norm1(x), rel_pos_bias=rel_pos_bias, **kwargs))
             x = x + self.drop_path(self.gamma_2 * self.ffn(self.norm2(x)))
         return
 
