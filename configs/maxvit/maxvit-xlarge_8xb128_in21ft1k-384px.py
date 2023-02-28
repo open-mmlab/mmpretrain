@@ -38,17 +38,5 @@ model = dict(
         topk=(1, 5),
     ))
 
-test_pipeline = [
-    dict(type='LoadImageFromFile'),
-    dict(
-        type='ResizeEdge',
-        scale=384,
-        edge='short',
-        backend='pillow',
-        interpolation='bicubic'),
-    dict(type='CenterCrop', crop_size=384),
-    dict(type='PackClsInputs'),
-]
-
 # dataset settings
 train_dataloader = dict(batch_size=128)

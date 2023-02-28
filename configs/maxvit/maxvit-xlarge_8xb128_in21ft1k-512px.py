@@ -1,5 +1,5 @@
 _base_ = [
-    '../_base_/datasets/imagenet_bs64_swin_384.py',
+    '../_base_/datasets/imagenet_bs64_maxvit_512.py',
     '../_base_/schedules/imagenet_bs1024_adamw_swin.py',
     '../_base_/default_runtime.py',
 ]
@@ -37,29 +37,6 @@ model = dict(
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
         topk=(1, 5),
     ))
-
-train_pipeline = [
-    dict(type='LoadImageFromFile'),
-    dict(
-        type='RandomResizedCrop',
-        scale=512,
-        backend='pillow',
-        interpolation='bicubic'),
-    dict(type='RandomFlip', prob=0.5, direction='horizontal'),
-    dict(type='PackClsInputs'),
-]
-
-test_pipeline = [
-    dict(type='LoadImageFromFile'),
-    dict(
-        type='ResizeEdge',
-        scale=512,
-        edge='short',
-        backend='pillow',
-        interpolation='bicubic'),
-    dict(type='CenterCrop', crop_size=512),
-    dict(type='PackClsInputs'),
-]
 
 # dataset settings
 train_dataloader = dict(batch_size=128)
