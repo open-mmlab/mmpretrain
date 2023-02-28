@@ -47,7 +47,7 @@ class CocoDataset(MultiLabelDataset):
         **kwargs: Other keyword arguments in :class:`BaseDataset`.
 
     Examples:
-        >>> mmcls.datasets import CocoDataset
+        >>> from mmcls.datasets import CocoDataset
         >>> coco_train_cfg = dict(data_root='./data/coco/',
         >>>                       ann_file='annotations/instances_train2017.json',
         >>>                       data_prefix='train2017/')
