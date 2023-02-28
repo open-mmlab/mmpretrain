@@ -7,43 +7,17 @@ import torch
 from mmcv.image import imread
 from mmengine.config import Config
 from mmengine.dataset import Compose, default_collate
+from mmengine.device import get_device
 from mmengine.infer import BaseInferencer
 from mmengine.model import BaseModel
 from mmengine.runner import load_checkpoint
 
 from mmpretrain.registry import TRANSFORMS
 from mmpretrain.structures import DataSample
-from .model import get_model, init_model, list_models
+from .model import get_model, list_models
 
 ModelType = Union[BaseModel, str, Config]
-InputType = Union[str, np.ndarray]
-
-
-def inference_model(model: ModelType, img: InputType, device=None):
-    """Inference an image with the classifier.
-
-    Args:
-        model (BaseModel | str | Config): The loaded classifier or the model
-            name or the config of the model.
-        img (str | ndarray): The image filename or loaded image.
-        device (str, optional): Device to run inference. If None, use CPU or
-            the device of the input model. Defaults to None.
-
-    Returns:
-        result (dict): The classification results that contains:
-
-        - ``pred_scores``: The classification scores of all categories.
-        - ``pred_class``: The predicted category.
-        - ``pred_label``: The predicted index of the category.
-        - ``pred_score``: The score of the predicted category.
-
-    Note:
-        This function is reserved for compatibility and demo on a single image.
-        We suggest to use :class:`ImageClassificationInferencer`, which is more
-        powerful and configurable.
-    """
-    inferencer = ImageClassificationInferencer(model, device=device)
-    return inferencer(img)[0]
+InputType = Union[str, np.ndarray, list]
 
 
 class ImageClassificationInferencer(BaseInferencer):
@@ -89,48 +63,44 @@ class ImageClassificationInferencer(BaseInferencer):
     def __init__(
         self,
         model: ModelType,
-        weights: Optional[str] = None,
+        pretrained: Union[bool, str] = True,
         device: Union[str, torch.device, None] = None,
         classes=None,
     ) -> None:
+        device = device or get_device()
+
         if isinstance(model, BaseModel):
-            if weights is not None:
-                load_checkpoint(model, weights, map_location='cpu')
+            if isinstance(pretrained, str):
+                load_checkpoint(model, pretrained, map_location='cpu')
             model = model.to(device)
-        elif isinstance(model, str) and not Path(model).is_file():
-            # Get model from model name
-            pretrained = weights if weights is not None else True
-            model = get_model(model, pretrained=pretrained, device=device)
-        elif isinstance(model, (Config, str)):
-            # Get model from config
-            model = init_model(model, checkpoint=weights, device=device)
         else:
-            raise TypeError(
-                'The `model` can be a name of model and you can use '
-                '`mmpretrain.list_models` to get an available name. It can '
-                'also be a Config object or a path to the config file.')
+            model = get_model(model, pretrained, device)
 
         model.eval()
 
-        self.cfg = model.cfg
+        self.config = model.config
         self.model = model
-        self.pipeline = self._init_pipeline(self.cfg)
+        self.pipeline = self._init_pipeline(self.config)
         self.collate_fn = default_collate
         self.visualizer = None
 
-        self.classes = classes or getattr(self.model, 'CLASSES', None)
+        if classes is not None:
+            self.classes = classes
+        else:
+            self.classes = getattr(model, 'dataset_meta', {}).get('classes')
 
     def __call__(self,
-                 inputs: List[InputType],
+                 inputs: InputType,
                  return_datasamples: bool = False,
                  batch_size: int = 1,
                  **kwargs) -> dict:
         """Call the inferencer.
 
         Args:
-            inputs (InputsType): Inputs for the inferencer.
+            inputs (str | array | list): The image path or array, or a list of
+                images.
             return_datasamples (bool): Whether to return results as
-                :obj:`BaseDataElement`. Defaults to False.
+                :obj:`DataSample`. Defaults to False.
             batch_size (int): Batch size. Defaults to 1.
             rescale_factor (float, optional): Rescale the image by the rescale
                 factor for visualization. This is helpful when the image is too
@@ -255,4 +225,4 @@ class ImageClassificationInferencer(BaseInferencer):
         Returns:
             List[str]: a list of model names.
         """
-        return list_models(pattern=pattern)
+        return list_models(pattern=pattern, task='Image Classification')

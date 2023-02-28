@@ -168,7 +168,7 @@ if __name__ == '__main__':
         long_description_content_type='text/markdown',
         keywords='computer vision, image classification, '
         'unsupervised learning, self-supervised learning',
-        packages=find_packages(exclude=('configs', 'tools', 'demo')),
+        packages=find_packages(exclude=('configs', 'tools', 'demo', 'tests')),
         include_package_data=True,
         python_requires='>=3.7',
         classifiers=[

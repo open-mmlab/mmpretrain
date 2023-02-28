@@ -59,6 +59,7 @@ class ImageToImageRetriever(BaseRetriever):
                  image_encoder: Union[dict, List[dict]],
                  prototype: Union[DataLoader, dict, str, torch.Tensor],
                  head: Optional[dict] = None,
+                 pretrained: Optional[str] = None,
                  similarity_fn: Union[str, Callable] = 'cosine_similarity',
                  train_cfg: Optional[dict] = None,
                  data_preprocessor: Optional[dict] = None,
@@ -250,7 +251,8 @@ class ImageToImageRetriever(BaseRetriever):
         num = len(data_loader.dataset)
 
         prototype_vecs = None
-        for data_batch in track_on_main_process(data_loader):
+        for data_batch in track_on_main_process(data_loader,
+                                                'Prepare prototype'):
             data = self.data_preprocessor(data_batch, False)
             feat = self(**data)
             if isinstance(feat, tuple):

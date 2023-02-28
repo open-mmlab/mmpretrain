@@ -24,7 +24,7 @@ model = dict(
         in_channels=192,
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
     ),
-    train_cfg=dict(arguments=[
+    train_cfg=dict(augments=[
         dict(type='Mixup', alpha=0.8),
         dict(type='CutMix', alpha=1.0),
     ]),

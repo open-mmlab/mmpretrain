@@ -165,7 +165,7 @@ class ClsDataPreprocessor(BaseDataPreprocessor):
             if 'gt_score' in sample_item:
                 gt_scores = [sample.gt_score for sample in data_samples]
                 batch_score = torch.stack(gt_scores).to(self.device)
-            elif self.to_onehot:
+            elif self.to_onehot and 'gt_label' in sample_item:
                 assert batch_label is not None, \
                     'Cannot generate onehot format labels because no labels.'
                 num_classes = self.num_classes or sample_item.get(
@@ -177,7 +177,8 @@ class ClsDataPreprocessor(BaseDataPreprocessor):
                     batch_label, label_indices, num_classes).to(self.device)
 
             # ----- Batch Augmentations ----
-            if training and self.batch_augments is not None:
+            if (training and self.batch_augments is not None
+                    and batch_score is not None):
                 inputs, batch_score = self.batch_augments(inputs, batch_score)
 
             # ----- scatter labels and scores to data samples ---
