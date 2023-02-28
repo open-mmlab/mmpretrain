@@ -126,10 +126,12 @@ class FeatureExtractor(BaseInferencer):
         yield from map(self.collate_fn, chunked_data)
 
     def visualize(self):
-        pass
+        raise NotImplementedError(
+            "The FeatureExtractor doesn't support visualization.")
 
     def postprocess(self):
-        pass
+        raise NotImplementedError(
+            "The FeatureExtractor doesn't need postprocessing.")
 
     @staticmethod
     def list_models(pattern: Optional[str] = None):
