@@ -15,17 +15,17 @@ from .utils import timm_resize_pos_embed
 class TestVitAdapter(TestCase):
     CUSTOM_ARCH = {
         'embed_dims': 64,
-        'num_layers': 17,
+        'num_layers': 10,
         'num_heads': 16,
         'feedforward_channels': 512,
         'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 15]],
-        'window_size': [14, 14, 0, 14, 14, 0, 14, 14, 0, 14, 14, 0] + [14] * 5,
+        'window_size': [14, 14, 0, 14, 0, 14, 0, 14, 14, 0],
         'value_proj_ratio': 1.0
     }
 
     def setUp(self):
         self.cfg = dict(
-            arch='b', img_size=224, patch_size=16, drop_path_rate=0.1)
+            arch='deit-t', img_size=224, patch_size=16, drop_path_rate=0.1)
 
     def test_structure(self):
         # Test invalid default arch
@@ -47,7 +47,7 @@ class TestVitAdapter(TestCase):
         cfg['deform_num_heads'] = 16
         model = VitAdapter(**cfg)
         self.assertEqual(model.embed_dims, 64)
-        self.assertEqual(model.num_layers, 17)
+        self.assertEqual(model.num_layers, 10)
         for layer in model.layers:
             self.assertEqual(layer.attn.num_heads, 16)
             self.assertEqual(layer.ffn.feedforward_channels, 512)
@@ -59,9 +59,9 @@ class TestVitAdapter(TestCase):
         dpr_inc = 0.1 / (12 - 1)
         dpr = 0
         for layer in model.layers:
-            self.assertEqual(layer.attn.embed_dims, 768)
-            self.assertEqual(layer.attn.num_heads, 12)
-            self.assertEqual(layer.ffn.feedforward_channels, 3072)
+            self.assertEqual(layer.attn.embed_dims, 192)
+            self.assertEqual(layer.attn.num_heads, 3)
+            self.assertEqual(layer.ffn.feedforward_channels, 768)
             self.assertAlmostEqual(layer.attn.out_drop.drop_prob, dpr)
             self.assertAlmostEqual(layer.ffn.dropout_layer.drop_prob, dpr)
             dpr += dpr_inc
@@ -117,30 +117,29 @@ class TestVitAdapter(TestCase):
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 4)
         for stride, out in zip([1, 2, 4, 8], outs):
-            self.assertEqual(out.shape, (1, 768, 16 // stride, 16 // stride))
+            self.assertEqual(out.shape, (1, 192, 16 // stride, 16 // stride))
 
         # Test forward with dynamic input size
-        imgs1 = torch.randn(1, 3, 224, 64)
-        imgs3 = torch.randn(1, 3, 256, 309)
+        imgs = torch.randn(1, 3, 256, 309)
         cfg = deepcopy(self.cfg)
         model = VitAdapter(**cfg)
-        for imgs in [imgs1, imgs3]:
+        for imgs in [imgs]:
             outs = model(imgs)
             self.assertIsInstance(outs, tuple)
             self.assertEqual(len(outs), 4)
             expect_feat_shape = (math.ceil(imgs.shape[2] / 32),
                                  math.ceil(imgs.shape[3] / 32))
-            self.assertEqual(outs[-1].shape, (1, 768, *expect_feat_shape))
+            self.assertEqual(outs[-1].shape, (1, 192, *expect_feat_shape))
 
 
 class TestBEiTAdapter(TestCase):
     CUSTOM_ARCH = {
         'embed_dims': 64,
-        'num_layers': 17,
+        'num_layers': 10,
         'num_heads': 16,
         'feedforward_channels': 512,
         'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 15]],
-        'window_size': [14 for _ in range(17)],
+        'window_size': [14, 14, 56, 14, 56, 14, 56, 14, 14, 56],
         'value_proj_ratio': 1.0
     }
 
@@ -182,7 +181,7 @@ class TestBEiTAdapter(TestCase):
         cfg['deform_num_heads'] = 16
         model = BEiTAdapter(**cfg)
         self.assertEqual(model.embed_dims, 64)
-        self.assertEqual(model.num_layers, 17)
+        self.assertEqual(model.num_layers, 10)
         for layer in model.layers:
             self.assertEqual(layer.attn.num_heads, 16)
             self.assertEqual(layer.ffn.feedforward_channels, 512)
@@ -197,6 +196,8 @@ class TestBEiTAdapter(TestCase):
                 mode='fan_in',
                 nonlinearity='linear')
         ]
+        cfg['arch'] = self.CUSTOM_ARCH
+        cfg['deform_num_heads'] = 16
         model = BEiTAdapter(**cfg)
         ori_weight = model.patch_embed.projection.weight.clone().detach()
 
@@ -211,6 +212,8 @@ class TestBEiTAdapter(TestCase):
         checkpoint = os.path.join(tmpdir, 'test.pth')
         save_checkpoint(model.state_dict(), checkpoint)
         cfg = deepcopy(self.cfg)
+        cfg['arch'] = self.CUSTOM_ARCH
+        cfg['deform_num_heads'] = 16
         model = BEiTAdapter(**cfg)
         load_checkpoint(model, checkpoint, strict=True)
         self.assertTrue(
@@ -242,14 +245,14 @@ class TestBEiTAdapter(TestCase):
             self.assertEqual(out.shape, (1, 768, 16 // stride, 16 // stride))
 
         # Test forward with dynamic input size
-        imgs1 = torch.randn(1, 3, 224, 224)
-        imgs3 = torch.randn(1, 3, 256, 309)
-        cfg = deepcopy(self.cfg)
+        imgs = torch.randn(1, 3, 256, 309)
+        cfg['arch'] = self.CUSTOM_ARCH
+        cfg['deform_num_heads'] = 16
         model = BEiTAdapter(**cfg)
-        for imgs in [imgs1, imgs3]:
+        for imgs in [imgs]:
             outs = model(imgs)
             self.assertIsInstance(outs, tuple)
             self.assertEqual(len(outs), 4)
             expect_feat_shape = (math.ceil(imgs.shape[2] / 32),
                                  math.ceil(imgs.shape[3] / 32))
-            self.assertEqual(outs[-1].shape, (1, 768, *expect_feat_shape))
+            self.assertEqual(outs[-1].shape, (1, 64, *expect_feat_shape))
