@@ -414,3 +414,4 @@ class PoolFormer(BaseBackbone):
     def train(self, mode=True):
         super(PoolFormer, self).train(mode)
         self._freeze_stages()
+        return self

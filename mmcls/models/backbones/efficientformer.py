@@ -71,6 +71,7 @@ class AttentionWithBias(BaseModule):
             del self.ab
         else:
             self.ab = self.attention_biases[:, self.attention_bias_idxs]
+        return self
 
     def forward(self, x):
         """forward function.
@@ -604,3 +605,4 @@ class EfficientFormer(BaseBackbone):
     def train(self, mode=True):
         super(EfficientFormer, self).train(mode)
         self._freeze_stages()
+        return self

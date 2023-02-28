@@ -392,6 +392,7 @@ class CSPNet(BaseModule):
             for m in self.modules():
                 if isinstance(m, _BatchNorm):
                     m.eval()
+        return self
 
     def forward(self, x):
         outs = []

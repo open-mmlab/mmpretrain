@@ -654,6 +654,7 @@ class ResNet(BaseBackbone):
                 # trick: eval have effect on BatchNorm only
                 if isinstance(m, _BatchNorm):
                     m.eval()
+        return self
 
 
 @MODELS.register_module()

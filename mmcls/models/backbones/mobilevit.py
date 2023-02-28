@@ -417,6 +417,7 @@ class MobileViT(BaseBackbone):
     def train(self, mode=True):
         super(MobileViT, self).train(mode)
         self._freeze_stages()
+        return self
 
     def forward(self, x):
         x = self.stem(x)

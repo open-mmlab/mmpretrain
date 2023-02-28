@@ -189,6 +189,7 @@ class Attention(BaseModule):
             del self.ab
         else:
             self.ab = self.attention_biases[:, self.attention_bias_idxs]
+        return self
 
     def forward(self, x):  # x (B,N,C)
         B, N, C = x.shape  # 2 196 128
@@ -302,6 +303,7 @@ class AttentionSubsample(nn.Sequential):
             del self.ab
         else:
             self.ab = self.attention_biases[:, self.attention_bias_idxs]
+        return self
 
     def forward(self, x):
         B, N, C = x.shape

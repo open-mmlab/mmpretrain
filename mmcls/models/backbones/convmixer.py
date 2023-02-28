@@ -167,6 +167,7 @@ class ConvMixer(BaseBackbone):
     def train(self, mode=True):
         super(ConvMixer, self).train(mode)
         self._freeze_stages()
+        return self
 
     def _freeze_stages(self):
         for i in range(self.frozen_stages):

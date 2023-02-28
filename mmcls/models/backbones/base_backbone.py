@@ -31,3 +31,4 @@ class BaseBackbone(BaseModule, metaclass=ABCMeta):
             mode (bool): Whether it is train_mode or test_mode
         """
         super(BaseBackbone, self).train(mode)
+        return self

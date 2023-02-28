@@ -797,6 +797,7 @@ class DaViT(BaseBackbone):
                 # trick: eval have effect on BatchNorm only
                 if isinstance(m, _BatchNorm):
                     m.eval()
+        return self
 
     def _freeze_stages(self):
         if self.frozen_stages >= 0:

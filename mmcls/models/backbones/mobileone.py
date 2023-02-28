@@ -505,6 +505,7 @@ class MobileOne(BaseBackbone):
             for m in self.modules():
                 if isinstance(m, _BatchNorm):
                     m.eval()
+        return self
 
     def switch_to_deploy(self):
         """switch the model to deploy mode, which has smaller amount of

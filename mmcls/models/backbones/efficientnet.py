@@ -408,3 +408,4 @@ class EfficientNet(BaseBackbone):
             for m in self.modules():
                 if isinstance(m, nn.BatchNorm2d):
                     m.eval()
+        return self

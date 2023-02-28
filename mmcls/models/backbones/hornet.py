@@ -457,6 +457,7 @@ class HorNet(BaseBackbone):
     def train(self, mode=True):
         super(HorNet, self).train(mode)
         self._freeze_stages()
+        return self
 
     def _freeze_stages(self):
         for i in range(0, self.frozen_stages + 1):

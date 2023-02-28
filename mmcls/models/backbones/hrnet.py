@@ -540,6 +540,7 @@ class HRNet(BaseModule):
                 # trick: eval have effect on BatchNorm only
                 if isinstance(m, _BatchNorm):
                     m.eval()
+        return self
 
     def parse_arch(self, arch, extra=None):
         if extra is not None:

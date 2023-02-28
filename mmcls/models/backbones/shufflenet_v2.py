@@ -303,3 +303,4 @@ class ShuffleNetV2(BaseBackbone):
             for m in self.modules():
                 if isinstance(m, nn.BatchNorm2d):
                     m.eval()
+        return self

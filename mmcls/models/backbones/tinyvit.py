@@ -767,3 +767,4 @@ class TinyViT(BaseBackbone):
     def train(self, mode=True):
         super(TinyViT, self).train(mode)
         self._freeze_stages()
+        return self

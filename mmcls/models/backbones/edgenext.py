@@ -396,3 +396,4 @@ class EdgeNeXt(BaseBackbone):
     def train(self, mode=True):
         super(EdgeNeXt, self).train(mode)
         self._freeze_stages()
+        return self

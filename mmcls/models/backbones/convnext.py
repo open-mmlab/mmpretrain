@@ -366,3 +366,4 @@ class ConvNeXt(BaseBackbone):
     def train(self, mode=True):
         super(ConvNeXt, self).train(mode)
         self._freeze_stages()
+        return self

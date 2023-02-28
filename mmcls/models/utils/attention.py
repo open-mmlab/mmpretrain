@@ -855,6 +855,7 @@ class LeAttention(BaseModule):
             del self.ab
         else:
             self.ab = self.attention_biases[:, self.attention_bias_idxs]
+        return self
 
     def forward(self, x):  # x (B,N,C)
         B, N, _ = x.shape

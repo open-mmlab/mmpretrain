@@ -614,6 +614,7 @@ class RepVGG(BaseBackbone):
             for m in self.modules():
                 if isinstance(m, _BatchNorm):
                     m.eval()
+        return self
 
     def switch_to_deploy(self):
         for m in self.modules():

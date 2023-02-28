@@ -330,3 +330,4 @@ class DenseNet(BaseBackbone):
     def train(self, mode=True):
         super(DenseNet, self).train(mode)
         self._freeze_stages()
+        return self
