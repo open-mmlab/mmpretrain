@@ -10,7 +10,7 @@ data_preprocessor = dict(
     type='SelfSupDataPreprocessor',
     mean=[123.675, 116.28, 103.53],
     std=[58.395, 57.12, 57.375],
-    bgr_to_rgb=True)
+    to_rgb=True)
 
 num_crops = [2, 6]
 color_distort_strength = 1.0
@@ -92,7 +92,7 @@ model = dict(
     data_preprocessor=dict(
         mean=(123.675, 116.28, 103.53),
         std=(58.395, 57.12, 57.375),
-        bgr_to_rgb=True),
+        to_rgb=True),
     backbone=dict(
         type='ResNet',
         depth=50,

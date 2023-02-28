@@ -4,9 +4,12 @@ from .attention import (BEiTAttention, ChannelMultiheadAttention,
                         MultiheadAttention, PromptMultiheadAttention,
                         ShiftWindowMSA, WindowMSA, WindowMSAV2)
 from .batch_augments import CutMix, Mixup, RandomBatchAugment, ResizeMix
+from .batch_shuffle import batch_shuffle_ddp, batch_unshuffle_ddp
 from .channel_shuffle import channel_shuffle
 from .clip_generator_helper import build_clip_model
-from .data_preprocessor import ClsDataPreprocessor
+from .data_preprocessor import (ClsDataPreprocessor, SelfSupDataPreprocessor,
+                                TwoNormDataPreprocessor, VideoDataPreprocessor)
+from .ema import CosineEMA
 from .embed import (HybridEmbed, PatchEmbed, PatchMerging, resize_pos_embed,
                     resize_relative_position_bias_table)
 from .helpers import is_tracing, to_2tuple, to_3tuple, to_4tuple, to_ntuple
@@ -31,5 +34,7 @@ __all__ = [
     'PositionEncodingFourier', 'LeAttention', 'GRN', 'LayerNorm2d',
     'build_norm_layer', 'CrossMultiheadAttention',
     'build_2d_sincos_position_embedding', 'PromptMultiheadAttention',
-    'NormEMAVectorQuantizer', 'build_clip_model'
+    'NormEMAVectorQuantizer', 'build_clip_model', 'batch_shuffle_ddp',
+    'batch_unshuffle_ddp', 'SelfSupDataPreprocessor',
+    'TwoNormDataPreprocessor', 'VideoDataPreprocessor', 'CosineEMA'
 ]

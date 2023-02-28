@@ -7,7 +7,7 @@ data_preprocessor = dict(
     std=[58.395, 57.12, 57.375],
     second_mean=[127.5, 127.5, 127.5],
     second_std=[127.5, 127.5, 127.5],
-    bgr_to_rgb=True)
+    to_rgb=True)
 
 train_pipeline = [
     dict(type='LoadImageFromFile'),

@@ -5,10 +5,12 @@ dataset_type = 'ImageNet'
 data_root = 'data/imagenet/'
 file_client_args = dict(backend='disk')
 data_preprocessor = dict(
-    type='CAEDataPreprocessor',
-    mean=[124, 117, 104],
-    std=[59, 58, 58],
-    bgr_to_rgb=True)
+    type='TwoNormDataPreprocessor',
+    mean=[123.675, 116.28, 103.53],
+    std=[58.395, 57.12, 57.375],
+    second_mean=[-31.875, -31.875, -31.875],
+    second_std=[318.75, 318.75, 318.75],
+    to_rgb=True)
 
 train_pipeline = [
     dict(type='LoadImageFromFile', file_client_args=file_client_args),
@@ -75,7 +77,7 @@ model = dict(
         type='mmselfsup.CAEDataPreprocessor',
         mean=[124, 117, 104],
         std=[59, 58, 58],
-        bgr_to_rgb=True),
+        to_rgb=True),
     base_momentum=0.0)
 
 # optimizer wrapper

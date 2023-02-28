@@ -7,9 +7,9 @@ data_preprocessor = dict(
     type='TwoNormDataPreprocessor',
     mean=[123.675, 116.28, 103.53],
     std=[58.395, 57.12, 57.375],
-    second_mean=[-20.4, -20.4, -20.4],
-    second_std=[204., 204., 204.],
-    bgr_to_rgb=True)
+    second_mean=[-31.875, -31.875, -31.875],
+    second_std=[318.75, 318.75, 318.75],
+    to_rgb=True)
 
 train_pipeline = [
     dict(type='LoadImageFromFile'),
