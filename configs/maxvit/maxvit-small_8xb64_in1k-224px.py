@@ -10,7 +10,7 @@ model = dict(
     backbone=dict(
         type='MaxViT',
         embed_dim=(96, 192, 384, 768),
-        depths=(2, 6, 14, 2),
+        depths=(2, 2, 5, 2),
         img_size=224,
         stem_width=64,
         head_hidden_size=768,
@@ -23,6 +23,3 @@ model = dict(
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
         topk=(1, 5),
     ))
-
-# dataset settings
-train_dataloader = dict(batch_size=128)
