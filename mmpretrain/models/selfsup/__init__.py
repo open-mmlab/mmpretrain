@@ -6,7 +6,8 @@ from .mae import MAEViT
 from .maskfeat import HOGGenerator, MaskFeatViT
 from .milan import CLIPGenerator, MILANViT
 from .mixmim import MixMIMPretrainTransformer
-from .mocov3 import MoCoV3ViT
+from .moco import MoCo
+from .mocov3 import MoCoV3ViT, MoCoV3
 from .simmim import SimMIMSwinTransformer
 
 __all__ = [
@@ -23,4 +24,6 @@ __all__ = [
     'MixMIMPretrainTransformer',
     'MoCoV3ViT',
     'SimMIMSwinTransformer',
+    'MoCo',
+    'MoCoV3',
 ]

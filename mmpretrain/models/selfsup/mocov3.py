@@ -2,16 +2,19 @@
 import math
 from functools import reduce
 from operator import mul
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Tuple, Union
 
+import torch
 import torch.nn as nn
-from mmcv.cnn.bricks.transformer import PatchEmbed
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from mmpretrain.models.backbones import VisionTransformer
 from mmpretrain.models.utils import (build_2d_sincos_position_embedding,
                                      to_2tuple)
 from mmpretrain.registry import MODELS
+from mmpretrain.structures import DataSample
+from ..utils import CosineEMA
+from .base import BaseSelfSupervisor
 
 
 @MODELS.register_module()
@@ -59,10 +62,9 @@ class MoCoV3ViT(VisionTransformer):
         self.norm_eval = norm_eval
         self.init_cfg = init_cfg
 
-        if isinstance(self.patch_embed, PatchEmbed):
-            if stop_grad_conv1:
-                self.patch_embed.projection.weight.requires_grad = False
-                self.patch_embed.projection.bias.requires_grad = False
+        if stop_grad_conv1:
+            self.patch_embed.projection.weight.requires_grad = False
+            self.patch_embed.projection.bias.requires_grad = False
 
         self._freeze_stages()
 
@@ -83,12 +85,11 @@ class MoCoV3ViT(VisionTransformer):
             self.pos_embed.requires_grad = False
 
             # xavier_uniform initialization for PatchEmbed
-            if isinstance(self.patch_embed, PatchEmbed):
-                val = math.sqrt(
-                    6. / float(3 * reduce(mul, to_2tuple(self.patch_size), 1) +
-                               self.embed_dims))
-                nn.init.uniform_(self.patch_embed.projection.weight, -val, val)
-                nn.init.zeros_(self.patch_embed.projection.bias)
+            val = math.sqrt(
+                6. / float(3 * reduce(mul, to_2tuple(self.patch_size), 1) +
+                           self.embed_dims))
+            nn.init.uniform_(self.patch_embed.projection.weight, -val, val)
+            nn.init.zeros_(self.patch_embed.projection.bias)
 
             # initialization for linear layers
             for name, m in self.named_modules():
@@ -132,3 +133,96 @@ class MoCoV3ViT(VisionTransformer):
                 # trick: eval have effect on BatchNorm only
                 if isinstance(m, _BatchNorm):
                     m.eval()
+
+
+@MODELS.register_module()
+class MoCoV3(BaseSelfSupervisor):
+    """MoCo v3.
+
+    Implementation of `An Empirical Study of Training Self-Supervised Vision
+    Transformers <https://arxiv.org/abs/2104.02057>`_.
+
+    Args:
+        backbone (dict): Config dict for module of backbone
+        neck (dict): Config dict for module of deep features to compact feature
+            vectors.
+        head (dict): Config dict for module of head functions.
+        base_momentum (float): Momentum coefficient for the momentum-updated
+            encoder. Defaults to 0.99.
+        pretrained (str, optional): The pretrained checkpoint path, support
+            local path and remote path. Defaults to None.
+        data_preprocessor (dict, optional): The config for preprocessing
+            input data. If None or no specified type, it will use
+            "SelfSupDataPreprocessor" as type.
+            See :class:`SelfSupDataPreprocessor` for more details.
+            Defaults to None.
+        init_cfg (Union[List[dict], dict], optional): Config dict for weight
+            initialization. Defaults to None.
+    """
+
+    def __init__(self,
+                 backbone: dict,
+                 neck: dict,
+                 head: dict,
+                 base_momentum: float = 0.99,
+                 pretrained: Optional[str] = None,
+                 data_preprocessor: Optional[dict] = None,
+                 init_cfg: Optional[Union[List[dict], dict]] = None) -> None:
+        super().__init__(
+            backbone=backbone,
+            neck=neck,
+            head=head,
+            pretrained=pretrained,
+            data_preprocessor=data_preprocessor,
+            init_cfg=init_cfg)
+
+        # create momentum model
+        self.momentum_encoder = CosineEMA(
+            nn.Sequential(self.backbone, self.neck), momentum=base_momentum)
+
+    def extract_feat(self, inputs: List[torch.Tensor],
+                     **kwarg) -> Tuple[torch.Tensor]:
+        """Function to extract features from backbone.
+
+        Args:
+            inputs (List[torch.Tensor]): The input images.
+            data_samples (List[DataSample]): All
+
+        Returns:
+            Tuple[torch.Tensor]: Backbone outputs.
+        """
+        x = self.backbone(inputs[0])
+        return x
+
+    def loss(self, inputs: List[torch.Tensor], data_samples: List[DataSample],
+             **kwargs) -> Dict[str, torch.Tensor]:
+        """The forward function in training.
+
+        Args:
+            inputs (List[torch.Tensor]): The input images.
+            data_samples (List[DataSample]): All elements required
+                during the forward function.
+
+        Returns:
+            Dict[str, torch.Tensor]: A dictionary of loss components.
+        """
+        view_1 = inputs[0]
+        view_2 = inputs[1]
+
+        # compute query features, [N, C] each
+        q1 = self.neck(self.backbone(view_1))[0]
+        q2 = self.neck(self.backbone(view_2))[0]
+
+        # compute key features, [N, C] each, no gradient
+        with torch.no_grad():
+            # update momentum encoder
+            self.momentum_encoder.update_parameters(
+                nn.Sequential(self.backbone, self.neck))
+
+            k1 = self.momentum_encoder(view_1)[0]
+            k2 = self.momentum_encoder(view_2)[0]
+
+        loss = self.head.loss(q1, k2) + self.head.loss(q2, k1)
+
+        losses = dict(loss=loss)
+        return losses
