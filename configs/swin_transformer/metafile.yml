@@ -11,7 +11,7 @@ Collections:
       Architecture:
         - Shift Window Multihead Self Attention
     Paper:
-      URL: https://arxiv.org/pdf/2103.14030.pdf
+      URL: https://arxiv.org/abs/2103.14030
       Title: "Swin Transformer: Hierarchical Vision Transformer using Shifted Windows"
     README: configs/swin_transformer/README.md
     Code:

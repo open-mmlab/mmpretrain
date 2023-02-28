@@ -8,7 +8,7 @@ Collections:
         - LayerScale
         - MetaFormer
     Paper:
-      URL: https://arxiv.org/pdf/2206.01191.pdf
+      URL: https://arxiv.org/abs/2206.01191
       Title: "EfficientFormer: Vision Transformers at MobileNet Speed"
     README: configs/efficientformer/README.md
     Code:

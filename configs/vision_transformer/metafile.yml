@@ -14,7 +14,7 @@ Collections:
     Paper:
       Title: 'An Image is Worth 16x16 Words: Transformers for Image Recognition at
         Scale'
-      URL: https://arxiv.org/pdf/2010.11929.pdf
+      URL: https://arxiv.org/abs/2010.11929
     README: configs/vision_transformer/README.md
     Code:
       URL: https://github.com/open-mmlab/mmclassification/blob/v0.17.0/mmcls/models/backbones/vision_transformer.py

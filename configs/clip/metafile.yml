@@ -13,14 +13,14 @@ Collections:
         - Tanh Activation
     Paper:
       Title: Learning Transferable Visual Models From Natural Language Supervision
-      URL: https://arxiv.org/abs/2201.09792
+      URL: https://arxiv.org/abs/2103.00020
     README: configs/clip/README.md
     Code:
       URL: https://github.com/open-mmlab/mmclassification/blob/dev-1.x/mmcls/models/backbones/vision_transformer.py
       Version: v1.0.0
 
 Models:
-  - Name: clip-vit-base-p32_laion2b-in12k-pre_3rdparty_in1k
+  - Name: vit-base-p32_clip-laion2b-in12k-pre_3rdparty_in1k
     Metadata:
       FLOPs: 4364335104
       Parameters: 88225000
@@ -40,7 +40,7 @@ Models:
     Converted From:
       Code: https://github.com/rwightman/pytorch-image-models
       Weights: https://huggingface.co/timm/vit_base_patch32_clip_224.laion2b_ft_in12k_in1k
-  - Name: clip-vit-base-p32_laion2b-pre_3rdparty_in1k
+  - Name: vit-base-p32_clip-laion2b-pre_3rdparty_in1k
     Metadata:
       FLOPs: 4364335104
       Parameters: 88225000
@@ -59,7 +59,7 @@ Models:
     Converted From:
       Code: https://github.com/rwightman/pytorch-image-models
       Weights: https://huggingface.co/timm/vit_base_patch32_clip_224.laion2b_ft_in1k
-  - Name: clip-vit-base-p32_openai-pre_3rdparty_in1k
+  - Name: vit-base-p32_clip-openai-pre_3rdparty_in1k
     Metadata:
       FLOPs: 4364335104
       Parameters: 88225000
@@ -78,7 +78,7 @@ Models:
     Converted From:
       Code: https://github.com/rwightman/pytorch-image-models
       Weights: https://huggingface.co/timm/vit_base_patch32_clip_224.openai_ft_in1k
-  - Name: clip-vit-base-p32_laion2b-in12k-pre_3rdparty_in1k-384px
+  - Name: vit-base-p32_clip-laion2b-in12k-pre_3rdparty_in1k-384px
     Metadata:
       FLOPs: 12661054464
       Parameters: 88225000
@@ -98,7 +98,7 @@ Models:
     Converted From:
       Code: https://github.com/rwightman/pytorch-image-models
       Weights: https://huggingface.co/timm/vit_base_patch32_clip_384.laion2b_ft_in12k_in1k
-  - Name: clip-vit-base-p32_openai-in12k-pre_3rdparty_in1k-384px
+  - Name: vit-base-p32_clip-openai-in12k-pre_3rdparty_in1k-384px
     Metadata:
       FLOPs: 12661054464
       Parameters: 88225000
@@ -118,7 +118,7 @@ Models:
     Converted From:
       Code: https://github.com/rwightman/pytorch-image-models
       Weights: https://huggingface.co/timm/vit_base_patch32_clip_384.openai_ft_in12k_in1k
-  - Name: clip-vit-base-p16_laion2b-in12k-pre_3rdparty_in1k
+  - Name: vit-base-p16_clip-laion2b-in12k-pre_3rdparty_in1k
     Metadata:
       FLOPs: 16855600128
       Parameters: 86568424
@@ -138,7 +138,7 @@ Models:
     Converted From:
       Code: https://github.com/rwightman/pytorch-image-models
       Weights: https://huggingface.co/timm/vit_base_patch16_clip_224.laion2b_ft_in12k_in1k
-  - Name: clip-vit-base-p16_laion2b-pre_3rdparty_in1k
+  - Name: vit-base-p16_clip-laion2b-pre_3rdparty_in1k
     Metadata:
       FLOPs: 16855600128
       Parameters: 86568424
@@ -157,7 +157,7 @@ Models:
     Converted From:
       Code: https://github.com/rwightman/pytorch-image-models
       Weights: https://huggingface.co/timm/vit_base_patch16_clip_224.laion2b_ft_in1k
-  - Name: clip-vit-base-p16_openai-in12k-pre_3rdparty_in1k
+  - Name: vit-base-p16_clip-openai-in12k-pre_3rdparty_in1k
     Metadata:
       FLOPs: 16855600128
       Parameters: 86568424
@@ -177,7 +177,7 @@ Models:
     Converted From:
       Code: https://github.com/rwightman/pytorch-image-models
       Weights: https://huggingface.co/timm/vit_base_patch16_clip_224.openai_ft_in12k_in1k
-  - Name: clip-vit-base-p16_openai-pre_3rdparty_in1k
+  - Name: vit-base-p16_clip-openai-pre_3rdparty_in1k
     Metadata:
       FLOPs: 16855600128
       Parameters: 86568424
@@ -196,7 +196,7 @@ Models:
     Converted From:
       Code: https://github.com/rwightman/pytorch-image-models
       Weights: https://huggingface.co/timm/vit_base_patch16_clip_224.openai_ft_in1k
-  - Name: clip-vit-base-p32_laion2b-in12k-pre_3rdparty_in1k-448px
+  - Name: vit-base-p32_clip-laion2b-in12k-pre_3rdparty_in1k-448px
     Metadata:
       FLOPs: 17202416640
       Parameters: 88225000
@@ -216,7 +216,7 @@ Models:
     Converted From:
       Code: https://github.com/rwightman/pytorch-image-models
       Weights: https://huggingface.co/timm/vit_base_patch32_clip_448.laion2b_ft_in12k_in1k
-  - Name: clip-vit-base-p16_laion2b-in12k-pre_3rdparty_in1k-384px
+  - Name: vit-base-p16_clip-laion2b-in12k-pre_3rdparty_in1k-384px
     Metadata:
       FLOPs: 49370078208
       Parameters: 86568424
@@ -236,7 +236,7 @@ Models:
     Converted From:
       Code: https://github.com/rwightman/pytorch-image-models
       Weights: https://huggingface.co/timm/vit_base_patch16_clip_384.laion2b_ft_in12k_in1k
-  - Name: clip-vit-base-p16_laion2b-pre_3rdparty_in1k-384px
+  - Name: vit-base-p16_clip-laion2b-pre_3rdparty_in1k-384px
     Metadata:
       FLOPs: 49370078208
       Parameters: 86568424
@@ -255,7 +255,7 @@ Models:
     Converted From:
       Code: https://github.com/rwightman/pytorch-image-models
       Weights: https://huggingface.co/timm/vit_base_patch16_clip_384.laion2b_ft_in1k
-  - Name: clip-vit-base-p16_openai-in12k-pre_3rdparty_in1k-384px
+  - Name: vit-base-p16_clip-openai-in12k-pre_3rdparty_in1k-384px
     Metadata:
       FLOPs: 49370078208
       Parameters: 86568424
@@ -275,7 +275,7 @@ Models:
     Converted From:
       Code: https://github.com/rwightman/pytorch-image-models
       Weights: https://huggingface.co/timm/vit_base_patch16_clip_384.openai_ft_in12k_in1k
-  - Name: clip-vit-base-p16_openai-pre_3rdparty_in1k-384px
+  - Name: vit-base-p16_clip-openai-pre_3rdparty_in1k-384px
     Metadata:
       FLOPs: 49370078208
       Parameters: 86568424

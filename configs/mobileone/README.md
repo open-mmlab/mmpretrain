@@ -27,64 +27,38 @@ Efficient neural network backbones for mobile devices are often optimized for me
 
 </details>
 
-## How to use
-
-The checkpoints provided are all `training-time` models. Use the reparameterize tool or `switch_to_deploy` interface to switch them to more efficient `inference-time` architecture, which not only has fewer parameters but also less calculations.
+## How to use it?
 
 <!-- [TABS-BEGIN] -->
 
 **Predict image**
 
-Use `classifier.backbone.switch_to_deploy()` interface to switch the MobileOne to a inference mode.
-
 ```python
->>> import torch
->>> from mmcls.apis import init_model, inference_model
->>>
->>> model = init_model('configs/mobileone/mobileone-s0_8xb32_in1k.py', 'https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s0_8xb32_in1k_20221110-0bc94952.pth')
->>> predict = inference_model(model, 'demo/demo.JPEG')
->>> print(predict['pred_class'])
-sea snake
->>> print(predict['pred_score'])
-0.4539405107498169
->>>
->>> # switch to deploy mode
->>> model.backbone.switch_to_deploy()
->>> predict_deploy = inference_model(model, 'demo/demo.JPEG')
->>> print(predict_deploy['pred_class'])
-sea snake
->>> print(predict_deploy['pred_score'])
-0.4539395272731781
+from mmpretrain import inference_model
+
+predict = inference_model('mobileone-s0_8xb32_in1k', 'demo/bird.JPEG')
+print(predict['pred_class'])
+print(predict['pred_score'])
 ```
 
 **Use the model**
 
 ```python
->>> import torch
->>> from mmcls.apis import init_model
->>>
->>> model = init_model('configs/mobileone/mobileone-s0_8xb32_in1k.py', 'https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s0_8xb32_in1k_20221110-0bc94952.pth')
->>> inputs = torch.rand(1, 3, 224, 224).to(model.data_preprocessor.device)
->>> # To get classification scores.
->>> out = model(inputs)
->>> print(out.shape)
-torch.Size([1, 1000])
->>> # To extract features.
->>> outs = model.extract_feat(inputs)
->>> print(outs[0].shape)
-torch.Size([1, 768])
->>>
->>> # switch to deploy mode
->>> model.backbone.switch_to_deploy()
->>> out_deploy = model(inputs)
->>> print(out.shape)
-torch.Size([1, 1000])
->>> assert torch.allclose(out, out_deploy) # pass without error
+import torch
+from mmpretrain import get_model
+
+model = get_model('mobileone-s0_8xb32_in1k', pretrained=True)
+inputs = torch.rand(1, 3, 224, 224)
+out = model(inputs)
+print(type(out))
+# To extract features.
+feats = model.extract_feat(inputs)
+print(type(feats))
 ```
 
 **Train/Test Command**
 
-Place the ImageNet dataset to the `data/imagenet/` directory, or prepare datasets according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
 
 Train:
 
@@ -92,74 +66,25 @@ Train:
 python tools/train.py configs/mobileone/mobileone-s0_8xb32_in1k.py
 ```
 
-Download Checkpoint:
+Test:
 
 ```shell
-wget https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s0_8xb32_in1k_20221110-0bc94952.pth
-```
-
-Test use unfused model:
-
-```shell
-python tools/test.py configs/mobileone/mobileone-s0_8xb32_in1k.py mobileone-s0_8xb32_in1k_20221110-0bc94952.pth
-```
-
-Reparameterize checkpoint:
-
-```shell
-python ./tools/convert_models/reparameterize_model.py ./configs/mobileone/mobileone-s0_8xb32_in1k.py mobileone-s0_8xb32_in1k_20221110-0bc94952.pth mobileone_s0_deploy.pth
-```
-
-Test use fused model:
-
-```shell
-python tools/test.py configs/mobileone/deploy/mobileone-s0_deploy_8xb32_in1k.py mobileone_s0_deploy.pth
+python tools/test.py configs/mobileone/mobileone-s0_8xb32_in1k.py https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s0_8xb32_in1k_20221110-0bc94952.pth
 ```
 
 <!-- [TABS-END] -->
 
-### Reparameterize Tool
+## Models and results
 
-Use provided tool to reparameterize the given model and save the checkpoint:
+### Image Classification on ImageNet-1k
 
-```bash
-python tools/convert_models/reparameterize_model.py ${CFG_PATH} ${SRC_CKPT_PATH} ${TARGET_CKPT_PATH}
-```
-
-`${CFG_PATH}` is the config file path, `${SRC_CKPT_PATH}` is the source chenpoint file path, `${TARGET_CKPT_PATH}` is the target deploy weight file path.
-
-For example:
-
-```shell
-wget https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s0_8xb32_in1k_20221110-0bc94952.pth
-python ./tools/convert_models/reparameterize_model.py ./configs/mobileone/mobileone-s0_8xb32_in1k.py mobileone-s0_8xb32_in1k_20221110-0bc94952.pth mobileone_s0_deploy.pth
-```
-
-To use reparameterized weights, the config file must switch to [**the deploy config files**](./deploy/).
-
-```bash
-python tools/test.py ${Deploy_CFG} ${Deploy_Checkpoint}
-```
-
-For example of using the reparameterized weights above:
-
-```shell
-python ./tools/test.py ./configs/mobileone/deploy/mobileone-s0_deploy_8xb32_in1k.py  mobileone_s0_deploy.pth
-```
-
-For more configurable parameters, please refer to the [API](https://mmclassification.readthedocs.io/en/1.x/api/generated/mmcls.models.backbones.MobileOne.html#mmcls.models.backbones.MobileOne).
-
-## Results and models
-
-### ImageNet-1k
-
-|    Model     |            Params(M)            |            Flops(G)            | Top-1 (%) | Top-5 (%) |                        Config                         |                         Download                         |
-| :----------: | :-----------------------------: | :----------------------------: | :-------: | :-------: | :---------------------------------------------------: | :------------------------------------------------------: |
-| MobileOne-s0 |  5.29（train) \| 2.08 (deploy)  | 1.09 (train) \| 0.28 (deploy)  |   71.34   |   89.87   | [config (train)](./mobileone-s0_8xb32_in1k.py) \| [config (deploy)](./deploy/mobileone-s0_deploy_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s0_8xb32_in1k_20221110-0bc94952.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s0_8xb32_in1k_20221110-0bc94952.json) |
-| MobileOne-s1 |  4.83 (train) \| 4.76 (deploy)  | 0.86 (train) \| 0.84 (deploy)  |   75.72   |   92.54   | [config (train)](./mobileone-s1_8xb32_in1k.py) \| [config (deploy)](./deploy/mobileone-s1_deploy_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s1_8xb32_in1k_20221110-ceeef467.pth)  \| [log](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s1_8xb32_in1k_20221110-ceeef467.json) |
-| MobileOne-s2 |  7.88 (train) \| 7.88 (deploy)  | 1.34 (train)  \| 1.31 (deploy) |   77.37   |   93.34   | [config (train)](./mobileone-s2_8xb32_in1k.py) \|[config (deploy)](./deploy/mobileone-s2_deploy_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s2_8xb32_in1k_20221110-9c7ecb97.pth)  \| [log](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s2_8xb32_in1k_20221110-9c7ecb97.json) |
-| MobileOne-s3 | 10.17 (train) \| 10.08 (deploy) | 1.95 (train)  \| 1.91 (deploy) |   78.06   |   93.83   | [config (train)](./mobileone-s3_8xb32_in1k.py) \|[config (deploy)](./deploy/mobileone-s3_deploy_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s3_8xb32_in1k_20221110-c95eb3bf.pth)  \| [log](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s3_8xb32_in1k_20221110-c95eb3bf.pth) |
-| MobileOne-s4 | 14.95 (train) \| 14.84 (deploy) | 3.05 (train) \| 3.00 (deploy)  |   79.69   |   94.46   | [config (train)](./mobileone-s4_8xb32_in1k.py) \|[config (deploy)](./deploy/mobileone-s4_deploy_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s4_8xb32_in1k_20221110-28d888cb.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s4_8xb32_in1k_20221110-28d888cb.pth) |
+| Model                     |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                Config                |                                          Download                                          |
+| :------------------------ | :----------: | :--------: | :-------: | :-------: | :-------: | :----------------------------------: | :----------------------------------------------------------------------------------------: |
+| `mobileone-s0_8xb32_in1k` | From scratch |    2.08    |   0.27    |   71.34   |   89.87   | [config](mobileone-s0_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s0_8xb32_in1k_20221110-0bc94952.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s0_8xb32_in1k_20221110-0bc94952.json) |
+| `mobileone-s1_8xb32_in1k` | From scratch |    4.76    |   0.82    |   75.72   |   92.54   | [config](mobileone-s1_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s1_8xb32_in1k_20221110-ceeef467.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s1_8xb32_in1k_20221110-ceeef467.json) |
+| `mobileone-s2_8xb32_in1k` | From scratch |    7.81    |   1.30    |   77.37   |   93.34   | [config](mobileone-s2_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s2_8xb32_in1k_20221110-9c7ecb97.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s2_8xb32_in1k_20221110-9c7ecb97.json) |
+| `mobileone-s3_8xb32_in1k` | From scratch |   10.08    |   1.89    |   78.06   |   93.83   | [config](mobileone-s3_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s3_8xb32_in1k_20221110-c95eb3bf.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s3_8xb32_in1k_20221110-c95eb3bf.json) |
+| `mobileone-s4_8xb32_in1k` | From scratch |   14.84    |   2.98    |   79.69   |   94.46   | [config](mobileone-s4_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s4_8xb32_in1k_20221110-28d888cb.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/mobileone/mobileone-s4_8xb32_in1k_20221110-28d888cb.json) |
 
 ## Citation
 

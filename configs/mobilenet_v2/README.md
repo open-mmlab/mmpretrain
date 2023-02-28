@@ -33,38 +33,31 @@ The MobileNetV2 architecture is based on an inverted residual structure where th
 **Predict image**
 
 ```python
->>> import torch
->>> from mmcls.apis import init_model, inference_model
->>>
->>> model = init_model('configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py', 'https://download.openmmlab.com/mmclassification/v0/mobilenet_v2/mobilenet_v2_batch256_imagenet_20200708-3b2dc3af.pth')
->>> predict = inference_model(model, 'demo/demo.JPEG')
->>> print(predict['pred_class'])
-leatherback turtle, leatherback, leathery turtle, Dermochelys coriacea
->>> print(predict['pred_score'])
-0.6252720952033997
+from mmpretrain import inference_model
+
+predict = inference_model('mobilenet-v2_8xb32_in1k', 'demo/bird.JPEG')
+print(predict['pred_class'])
+print(predict['pred_score'])
 ```
 
 **Use the model**
 
 ```python
->>> import torch
->>> from mmcls.apis import init_model
->>>
->>> model = init_model('configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py', 'https://download.openmmlab.com/mmclassification/v0/mobilenet_v2/mobilenet_v2_batch256_imagenet_20200708-3b2dc3af.pth')
->>> inputs = torch.rand(1, 3, 224, 224).to(model.data_preprocessor.device)
->>> # To get classification scores.
->>> out = model(inputs)
->>> print(out.shape)
-torch.Size([1, 1000])
->>> # To extract features.
->>> outs = model.extract_feat(inputs)
->>> print(outs[0].shape)
-torch.Size([1, 1280])
+import torch
+from mmpretrain import get_model
+
+model = get_model('mobilenet-v2_8xb32_in1k', pretrained=True)
+inputs = torch.rand(1, 3, 224, 224)
+out = model(inputs)
+print(type(out))
+# To extract features.
+feats = model.extract_feat(inputs)
+print(type(feats))
 ```
 
 **Train/Test Command**
 
-Place the ImageNet dataset to the `data/imagenet/` directory, or prepare datasets according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
 
 Train:
 
@@ -80,19 +73,17 @@ python tools/test.py configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py https://dow
 
 <!-- [TABS-END] -->
 
-For more configurable parameters, please refer to the [API](https://mmclassification.readthedocs.io/en/1.x/api/generated/mmcls.models.backbones.MobileNetV2.html#mmcls.models.backbones.MobileNetV2).
+## Models and results
 
-## Results and models
+### Image Classification on ImageNet-1k
 
-### ImageNet-1k
-
-|    Model     | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                 Config                 |                                                      Download                                                       |
-| :----------: | :-------: | :------: | :-------: | :-------: | :------------------------------------: | :-----------------------------------------------------------------------------------------------------------------: |
-| MobileNet V2 |    3.5    |  0.319   |   71.86   |   90.42   | [config](./mobilenet-v2_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v2/mobilenet_v2_batch256_imagenet_20200708-3b2dc3af.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/mobilenet_v2/mobilenet_v2_batch256_imagenet_20200708-3b2dc3af.log.json) |
+| Model                     |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                Config                |                                          Download                                          |
+| :------------------------ | :----------: | :--------: | :-------: | :-------: | :-------: | :----------------------------------: | :----------------------------------------------------------------------------------------: |
+| `mobilenet-v2_8xb32_in1k` | From scratch |    3.50    |   0.32    |   71.86   |   90.42   | [config](mobilenet-v2_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobilenet_v2/mobilenet_v2_batch256_imagenet_20200708-3b2dc3af.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/mobilenet_v2/mobilenet_v2_batch256_imagenet_20200708-3b2dc3af.json) |
 
 ## Citation
 
-```
+```bibtex
 @INPROCEEDINGS{8578572,
   author={M. {Sandler} and A. {Howard} and M. {Zhu} and A. {Zhmoginov} and L. {Chen}},
   booktitle={2018 IEEE/CVF Conference on Computer Vision and Pattern Recognition},

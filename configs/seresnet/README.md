@@ -1,4 +1,4 @@
-# SE-ResNet
+# SEResNet
 
 > [Squeeze-and-Excitation Networks](https://openaccess.thecvf.com/content_cvpr_2018/html/Hu_Squeeze-and-Excitation_Networks_CVPR_2018_paper.html)
 
@@ -12,18 +12,65 @@ The central building block of convolutional neural networks (CNNs) is the convol
 <img src="https://user-images.githubusercontent.com/26739999/142574668-3464d087-b962-48ba-ad1d-5d6b33c3ba0b.png" width="50%"/>
 </div>
 
-## Results and models
+## How to use it?
 
-### ImageNet-1k
+<!-- [TABS-BEGIN] -->
 
-|     Model     | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                Config                 |                                                      Download                                                       |
-| :-----------: | :-------: | :------: | :-------: | :-------: | :-----------------------------------: | :-----------------------------------------------------------------------------------------------------------------: |
-| SE-ResNet-50  |   28.09   |   4.13   |   77.74   |   93.84   | [config](./seresnet50_8xb32_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet50_batch256_imagenet_20200804-ae206104.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet50_batch256_imagenet_20200708-657b3c36.log.json) |
-| SE-ResNet-101 |   49.33   |   7.86   |   78.26   |   94.07   | [config](./seresnet101_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet101_batch256_imagenet_20200804-ba5b51d4.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet101_batch256_imagenet_20200708-038a4d04.log.json) |
+**Predict image**
+
+```python
+from mmpretrain import inference_model
+
+predict = inference_model('seresnet50_8xb32_in1k', 'demo/bird.JPEG')
+print(predict['pred_class'])
+print(predict['pred_score'])
+```
+
+**Use the model**
+
+```python
+import torch
+from mmpretrain import get_model
+
+model = get_model('seresnet50_8xb32_in1k', pretrained=True)
+inputs = torch.rand(1, 3, 224, 224)
+out = model(inputs)
+print(type(out))
+# To extract features.
+feats = model.extract_feat(inputs)
+print(type(feats))
+```
+
+**Train/Test Command**
+
+Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+
+Train:
+
+```shell
+python tools/train.py configs/seresnet/seresnet50_8xb32_in1k.py
+```
+
+Test:
+
+```shell
+python tools/test.py configs/seresnet/seresnet50_8xb32_in1k.py https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet50_batch256_imagenet_20200804-ae206104.pth
+```
+
+<!-- [TABS-END] -->
+
+## Models and results
+
+### Image Classification on ImageNet-1k
+
+| Model                    |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |               Config                |                                           Download                                           |
+| :----------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :---------------------------------: | :------------------------------------------------------------------------------------------: |
+| `seresnet50_8xb32_in1k`  | From scratch |   28.09    |   4.13    |   77.74   |   93.84   | [config](seresnet50_8xb32_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet50_batch256_imagenet_20200804-ae206104.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet50_batch256_imagenet_20200804-ae206104.json) |
+| `seresnet101_8xb32_in1k` | From scratch |   49.33    |   7.86    |   78.26   |   94.07   | [config](seresnet101_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet101_batch256_imagenet_20200804-ba5b51d4.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet101_batch256_imagenet_20200804-ba5b51d4.json) |
 
 ## Citation
 
-```
+```bibtex
 @inproceedings{hu2018squeeze,
   title={Squeeze-and-excitation networks},
   author={Hu, Jie and Shen, Li and Sun, Gang},

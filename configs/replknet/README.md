@@ -12,28 +12,50 @@ We revisit large kernel design in modern convolutional neural networks (CNNs). I
 <img src="https://user-images.githubusercontent.com/48375204/197546040-cdf078c3-7fbd-400f-8b27-01668c8dfebf.png" width="60%"/>
 </div>
 
-## Results and models
+## How to use it?
 
-### ImageNet-1k
+<!-- [TABS-BEGIN] -->
 
-|     Model      | Resolution | Pretrained Dataset |            Params(M)            |            Flops(G)             | Top-1 (%) | Top-5 (%) |                 Config                 |                 Download                 |
-| :------------: | :--------: | :----------------: | :-----------------------------: | :-----------------------------: | :-------: | :-------: | :------------------------------------: | :--------------------------------------: |
-| RepLKNet-31B\* |  224x224   |    From Scratch    |  79.9（train) \| 79.5 (deploy)  |  15.6 (train) \| 15.4 (deploy)  |   83.48   |   96.57   | [config (train)](./replknet-31B_32xb64_in1k.py) \| [config (deploy)](./deploy/replknet-31B-deploy_32xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31B_3rdparty_in1k_20221118-fd08e268.pth) |
-| RepLKNet-31B\* |  384x384   |    From Scratch    |  79.9（train) \| 79.5 (deploy)  |  46.0 (train) \| 45.3 (deploy)  |   84.84   |   97.34   | [config (train)](./replknet-31B_32xb64_in1k-384px.py) \| [config (deploy)](./deploy/replknet-31B-deploy_32xb64_in1k-384px.py) | [model](https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31B_3rdparty_in1k-384px_20221118-03a170ce.pth) |
-| RepLKNet-31B\* |  224x224   |    ImageNet-21K    |  79.9（train) \| 79.5 (deploy)  |  15.6 (train) \| 15.4 (deploy)  |   85.20   |   97.56   | [config (train)](./replknet-31B_32xb64_in1k.py) \| [config (deploy)](./deploy/replknet-31B-deploy_32xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31B_in21k-pre_3rdparty_in1k_20221118-54ed5c46.pth) |
-| RepLKNet-31B\* |  384x384   |    ImageNet-21K    |  79.9（train) \| 79.5 (deploy)  |  46.0 (train) \| 45.3 (deploy)  |   85.99   |   97.75   | [config (train)](./replknet-31B_32xb64_in1k-384px.py) \| [config (deploy)](./deploy/replknet-31B-deploy_32xb64_in1k-384px.py) | [model](https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31B_in21k-pre_3rdparty_in1k-384px_20221118-76c92b24.pth) |
-| RepLKNet-31L\* |  384x384   |    ImageNet-21K    | 172.7（train) \| 172.0 (deploy) |  97.2 (train) \| 97.0 (deploy)  |   86.63   |   98.00   | [config (train)](./replknet-31L_32xb64_in1k-384px.py) \| [config (deploy)](./deploy/replknet-31L-deploy_32xb64_in1k-384px.py) | [model](https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31L_in21k-pre_3rdparty_in1k-384px_20221118-dc3fc07c.pth) |
-| RepLKNet-XL\*  |  320x320   |    MegData-73M     | 335.4（train) \| 335.0 (deploy) | 129.6 (train) \| 129.0 (deploy) |   87.57   |   98.39   | [config (train)](./replknet-XL_32xb64_in1k-320px.py) \| [config (deploy)](./deploy/replknet-XL-deploy_32xb64_in1k-320px.py) | [model](https://download.openmmlab.com/mmclassification/v0/replknet/replknet-XL_meg73m-pre_3rdparty_in1k-320px_20221118-88259b1d.pth) |
+**Predict image**
 
-*Models with * are converted from the [official repo](https://github.com/DingXiaoH/RepVGG). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
+```python
+from mmpretrain import inference_model, get_model
 
-## How to use
+model = get_model('replknet-31B_3rdparty_in1k', pretrained=True)
+model.backbone.switch_to_deploy()
+predict = inference_model(model, 'demo/bird.JPEG')
+print(predict['pred_class'])
+print(predict['pred_score'])
+```
+
+**Use the model**
+
+```python
+import torch
+from mmpretrain import get_model
+
+model = get_model('replknet-31B_3rdparty_in1k', pretrained=True)
+inputs = torch.rand(1, 3, 224, 224)
+out = model(inputs)
+print(type(out))
+# To extract features.
+feats = model.extract_feat(inputs)
+print(type(feats))
+```
+
+**Test Command**
+
+Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+
+Test:
+
+```shell
+python tools/test.py configs/replknet/replknet-31B_32xb64_in1k.py https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31B_3rdparty_in1k_20221118-fd08e268.pth
+```
+
+**Reparameterization**
 
 The checkpoints provided are all `training-time` models. Use the reparameterize tool to switch them to more efficient `inference-time` architecture, which not only has fewer parameters but also less calculations.
-
-### Use tool
-
-Use provided tool to reparameterize the given model and save the checkpoint:
 
 ```bash
 python tools/convert_models/reparameterize_model.py ${CFG_PATH} ${SRC_CKPT_PATH} ${TARGET_CKPT_PATH}
@@ -44,47 +66,38 @@ python tools/convert_models/reparameterize_model.py ${CFG_PATH} ${SRC_CKPT_PATH}
 To use reparameterized weights, the config file must switch to the deploy config files.
 
 ```bash
-python tools/test.py ${Deploy_CFG} ${Deploy_Checkpoint} --metrics accuracy
+python tools/test.py ${deploy_cfg} ${deploy_checkpoint} --metrics accuracy
 ```
 
-### In the code
-
-Use `backbone.switch_to_deploy()` or `classificer.backbone.switch_to_deploy()` to switch to the deploy mode. For example:
+You can also use `backbone.switch_to_deploy()` to switch to the deploy mode in Python code. For example:
 
 ```python
-from mmcls.models import build_backbone
+from mmpretrain.models import RepLKNet
 
-backbone_cfg=dict(type='RepLKNet',arch='31B'),
-backbone = build_backbone(backbone_cfg)
+backbone = RepLKNet(arch='31B')
 backbone.switch_to_deploy()
 ```
 
-or
+<!-- [TABS-END] -->
 
-```python
-from mmcls.models import build_classifier
+## Models and results
 
-cfg = dict(
-    type='ImageClassifier',
-    backbone=dict(
-        type='RepLKNet',
-        arch='31B'),
-    neck=dict(type='GlobalAveragePooling'),
-    head=dict(
-        type='LinearClsHead',
-        num_classes=1000,
-        in_channels=1024,
-        loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
-        topk=(1, 5),
-    ))
+### Image Classification on ImageNet-1k
 
-classifier = build_classifier(cfg)
-classifier.backbone.switch_to_deploy()
-```
+| Model                                          |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                   Config                    |                            Download                            |
+| :--------------------------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :-----------------------------------------: | :------------------------------------------------------------: |
+| `replknet-31B_3rdparty_in1k`\*                 | From scratch |   79.86    |   15.64   |   83.48   |   96.57   |    [config](replknet-31B_32xb64_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31B_3rdparty_in1k_20221118-fd08e268.pth) |
+| `replknet-31B_3rdparty_in1k-384px`\*           | From scratch |   79.86    |   45.95   |   84.84   |   97.34   | [config](replknet-31B_32xb64_in1k-384px.py) | [model](https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31B_3rdparty_in1k-384px_20221118-03a170ce.pth) |
+| `replknet-31B_in21k-pre_3rdparty_in1k`\*       | ImageNet-21k |   79.86    |   15.64   |   85.20   |   97.56   |    [config](replknet-31B_32xb64_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31B_in21k-pre_3rdparty_in1k_20221118-54ed5c46.pth) |
+| `replknet-31B_in21k-pre_3rdparty_in1k-384px`\* | ImageNet-21k |   79.86    |   45.95   |   85.99   |   97.75   | [config](replknet-31B_32xb64_in1k-384px.py) | [model](https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31B_in21k-pre_3rdparty_in1k-384px_20221118-76c92b24.pth) |
+| `replknet-31L_in21k-pre_3rdparty_in1k-384px`\* | ImageNet-21k |   172.67   |   97.24   |   86.63   |   98.00   | [config](replknet-31L_32xb64_in1k-384px.py) | [model](https://download.openmmlab.com/mmclassification/v0/replknet/replknet-31L_in21k-pre_3rdparty_in1k-384px_20221118-dc3fc07c.pth) |
+| `replknet-XL_meg73m-pre_3rdparty_in1k-320px`\* |    MEG73M    |   335.44   |  129.57   |   87.57   |   98.39   | [config](replknet-XL_32xb64_in1k-320px.py)  | [model](https://download.openmmlab.com/mmclassification/v0/replknet/replknet-XL_meg73m-pre_3rdparty_in1k-320px_20221118-88259b1d.pth) |
+
+*Models with * are converted from the [official repo](https://github.com/DingXiaoH/RepLKNet-pytorch/blob/main/replknet.py). The config files of these models are only for inference. We haven't reprodcue the training results.*
 
 ## Citation
 
-```
+```bibtex
 @inproceedings{ding2022scaling,
   title={Scaling up your kernels to 31x31: Revisiting large kernel design in cnns},
   author={Ding, Xiaohan and Zhang, Xiangyu and Han, Jungong and Ding, Guiguang},

@@ -7,7 +7,7 @@ from pathlib import Path
 from modelindex.load_model_index import load
 from tabulate import tabulate
 
-MMCLS_ROOT = Path(__file__).absolute().parents[2]
+MMPT_ROOT = Path(__file__).absolute().parents[2]
 PAPERS_ROOT = Path('papers')  # Path to save generated paper pages.
 GITHUB_PREFIX = 'https://github.com/open-mmlab/mmpretrain/blob/1.x/'
 MODELZOO_TEMPLATE = """
@@ -28,7 +28,7 @@ And we also list [all checkpoints](#all-checkpoints) we provide. You can sort or
 ## All checkpoints
 """  # noqa: E501
 
-model_index = load(str(MMCLS_ROOT / 'model-index.yml'))
+model_index = load(str(MMPT_ROOT / 'model-index.yml'))
 
 
 def build_collections(model_index):
@@ -52,7 +52,7 @@ def count_papers(collections):
     paper_msgs = []
 
     for collection in collections:
-        with open(MMCLS_ROOT / collection.readme) as f:
+        with open(MMPT_ROOT / collection.readme) as f:
             readme = f.read()
         ckpts = set(x.lower().strip()
                     for x in re.findall(r'\[model\]\((https?.*)\)', readme))
@@ -88,7 +88,7 @@ def generate_paper_page(collection):
     PAPERS_ROOT.mkdir(exist_ok=True)
 
     # Write a copy of README
-    with open(MMCLS_ROOT / collection.readme) as f:
+    with open(MMPT_ROOT / collection.readme) as f:
         readme = f.read()
     folder = Path(collection.filepath).parent
     copy = PAPERS_ROOT / folder.with_suffix('.md').name
@@ -100,7 +100,7 @@ def generate_paper_page(collection):
         if not link.startswith('http'):
             assert (folder / link).exists(), \
                 f'Link not found:\n{collection.readme}: {link}'
-            rel_link = (folder / link).absolute().relative_to(MMCLS_ROOT)
+            rel_link = (folder / link).absolute().relative_to(MMPT_ROOT)
             link = GITHUB_PREFIX + str(rel_link)
         return f'[{name}]({link})'
 
@@ -145,8 +145,14 @@ def generate_summary_table(models):
         if model.results is None:
             continue
         name = model.name
-        params = model.metadata.parameters / 1e6
-        flops = model.metadata.flops / 1e9
+        if model.metadata.parameters is not None:
+            params = f'{model.metadata.parameters / 1e6:.2f}'  # Params
+        else:
+            params = ''
+        if model.metadata.flops is not None:
+            flops = f'{model.metadata.flops / 1e9:.2f}'  # Params
+        else:
+            flops = ''
         result = model.results[0]
         top1 = result.metrics.get('Top 1 Accuracy')
         top5 = result.metrics.get('Top 5 Accuracy')

@@ -1,6 +1,6 @@
 # HorNet
 
-> [HorNet: Efficient High-Order Spatial Interactions with Recursive Gated Convolutions](https://arxiv.org/pdf/2207.14284v2.pdf)
+> [HorNet: Efficient High-Order Spatial Interactions with Recursive Gated Convolutions](https://arxiv.org/abs/2207.14284)
 
 <!-- [ALGORITHM] -->
 
@@ -12,36 +12,65 @@ Recent progress in vision Transformers exhibits great success in various tasks d
 <img src="https://user-images.githubusercontent.com/24734142/188356236-b8e3db94-eaa6-48e9-b323-15e5ba7f2991.png" width="80%"/>
 </div>
 
-## Results and models
+## How to use it?
 
-### ImageNet-1k
+<!-- [TABS-BEGIN] -->
 
-|     Model     |   Pretrain   | resolution | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                              Config                              |                              Download                              |
-| :-----------: | :----------: | :--------: | :-------: | :------: | :-------: | :-------: | :--------------------------------------------------------------: | :----------------------------------------------------------------: |
-|  HorNet-T\*   | From scratch |  224x224   |   22.41   |   3.98   |   82.84   |   96.24   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-tiny_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hornet/hornet-tiny_3rdparty_in1k_20220915-0e8eedff.pth) |
-| HorNet-T-GF\* | From scratch |  224x224   |   22.99   |   3.9    |   82.98   |   96.38   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-tiny-gf_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hornet/hornet-tiny-gf_3rdparty_in1k_20220915-4c35a66b.pth) |
-|  HorNet-S\*   | From scratch |  224x224   |   49.53   |   8.83   |   83.79   |   96.75   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-small_8xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hornet/hornet-small_3rdparty_in1k_20220915-5935f60f.pth) |
-| HorNet-S-GF\* | From scratch |  224x224   |   50.4    |   8.71   |   83.98   |   96.77   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-small-gf_8xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hornet/hornet-small-gf_3rdparty_in1k_20220915-649ca492.pth) |
-|  HorNet-B\*   | From scratch |  224x224   |   87.26   |  15.59   |   84.24   |   96.94   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-base_8xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hornet/hornet-base_3rdparty_in1k_20220915-a06176bb.pth) |
-| HorNet-B-GF\* | From scratch |  224x224   |   88.42   |  15.42   |   84.32   |   96.95   | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/hornet/hornet-base-gf_8xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hornet/hornet-base-gf_3rdparty_in1k_20220915-82c06fa7.pth) |
+**Predict image**
 
-\*Models with * are converted from [the official repo](https://github.com/raoyongming/HorNet). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.
+```python
+from mmpretrain import inference_model
 
-### Pre-trained Models
+predict = inference_model('hornet-tiny_3rdparty_in1k', 'demo/bird.JPEG')
+print(predict['pred_class'])
+print(predict['pred_score'])
+```
 
-The pre-trained models on ImageNet-21k are used to fine-tune on the downstream tasks.
+**Use the model**
 
-|      Model       |   Pretrain   | resolution | Params(M) | Flops(G) |                                                          Download                                                          |
-| :--------------: | :----------: | :--------: | :-------: | :------: | :------------------------------------------------------------------------------------------------------------------------: |
-|    HorNet-L\*    | ImageNet-21k |  224x224   |  194.54   |  34.83   |    [model](https://download.openmmlab.com/mmclassification/v0/hornet/hornet-large_3rdparty_in21k_20220909-9ccef421.pth)    |
-|  HorNet-L-GF\*   | ImageNet-21k |  224x224   |  196.29   |  34.58   |  [model](https://download.openmmlab.com/mmclassification/v0/hornet/hornet-large-gf_3rdparty_in21k_20220909-3aea3b61.pth)   |
-| HorNet-L-GF384\* | ImageNet-21k |  384x384   |  201.23   |  101.63  | [model](https://download.openmmlab.com/mmclassification/v0/hornet/hornet-large-gf384_3rdparty_in21k_20220909-80894290.pth) |
+```python
+import torch
+from mmpretrain import get_model
 
-\*Models with * are converted from [the official repo](https://github.com/raoyongming/HorNet).
+model = get_model('hornet-tiny_3rdparty_in1k', pretrained=True)
+inputs = torch.rand(1, 3, 224, 224)
+out = model(inputs)
+print(type(out))
+# To extract features.
+feats = model.extract_feat(inputs)
+print(type(feats))
+```
+
+**Test Command**
+
+Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+
+Test:
+
+```shell
+python tools/test.py configs/hornet/hornet-tiny_8xb128_in1k.py https://download.openmmlab.com/mmclassification/v0/hornet/hornet-tiny_3rdparty_in1k_20220915-0e8eedff.pth
+```
+
+<!-- [TABS-END] -->
+
+## Models and results
+
+### Image Classification on ImageNet-1k
+
+| Model                             |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                 Config                  |                                    Download                                     |
+| :-------------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :-------------------------------------: | :-----------------------------------------------------------------------------: |
+| `hornet-tiny_3rdparty_in1k`\*     | From scratch |   22.41    |   3.98    |   82.84   |   96.24   |  [config](hornet-tiny_8xb128_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/hornet/hornet-tiny_3rdparty_in1k_20220915-0e8eedff.pth) |
+| `hornet-tiny-gf_3rdparty_in1k`\*  | From scratch |   22.99    |   3.90    |   82.98   |   96.38   | [config](hornet-tiny-gf_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hornet/hornet-tiny-gf_3rdparty_in1k_20220915-4c35a66b.pth) |
+| `hornet-small_3rdparty_in1k`\*    | From scratch |   49.53    |   8.83    |   83.79   |   96.75   |  [config](hornet-small_8xb64_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/hornet/hornet-small_3rdparty_in1k_20220915-5935f60f.pth) |
+| `hornet-small-gf_3rdparty_in1k`\* | From scratch |   50.40    |   8.71    |   83.98   |   96.77   | [config](hornet-small-gf_8xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/hornet/hornet-small-gf_3rdparty_in1k_20220915-649ca492.pth) |
+| `hornet-base_3rdparty_in1k`\*     | From scratch |   87.26    |   15.58   |   84.24   |   96.94   |   [config](hornet-base_8xb64_in1k.py)   | [model](https://download.openmmlab.com/mmclassification/v0/hornet/hornet-base_3rdparty_in1k_20220915-a06176bb.pth) |
+| `hornet-base-gf_3rdparty_in1k`\*  | From scratch |   88.42    |   15.42   |   84.32   |   96.95   | [config](hornet-base-gf_8xb64_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/hornet/hornet-base-gf_3rdparty_in1k_20220915-82c06fa7.pth) |
+
+*Models with * are converted from the [official repo](https://github.com/raoyongming/HorNet). The config files of these models are only for inference. We haven't reprodcue the training results.*
 
 ## Citation
 
-```
+```bibtex
 @article{rao2022hornet,
   title={HorNet: Efficient High-Order Spatial Interactions with Recursive Gated Convolutions},
   author={Rao, Yongming and Zhao, Wenliang and Tang, Yansong and Zhou, Jie and Lim, Ser-Lam and Lu, Jiwen},

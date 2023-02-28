@@ -12,7 +12,7 @@ Collections:
         - Scaled Dot-Product Attention
         - Tanh Activation
     Paper:
-      URL: https://arxiv.org/pdf/2204.07118.pdf
+      URL: https://arxiv.org/abs/2204.07118
       Title: 'DeiT III: Revenge of the ViT'
     README: configs/deit3/README.md
     Code:

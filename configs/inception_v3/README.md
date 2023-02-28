@@ -12,15 +12,56 @@ Convolutional networks are at the core of most state-of-the-art computer vision 
 <img src="https://user-images.githubusercontent.com/26739999/177241797-c103eff4-79bb-414d-aef6-eac323b65a50.png" width="40%"/>
 </div>
 
-## Results and models
+## How to use it?
 
-### ImageNet-1k
+<!-- [TABS-BEGIN] -->
 
-|     Model      | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                 Config                 |                                                     Download                                                      |
-| :------------: | :-------: | :------: | :-------: | :-------: | :------------------------------------: | :---------------------------------------------------------------------------------------------------------------: |
-| Inception V3\* |   23.83   |   5.75   |   77.57   |   93.58   | [config](./inception-v3_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/inception-v3/inception-v3_3rdparty_8xb32_in1k_20220615-dcd4d910.pth) |
+**Predict image**
 
-*Models with * are converted from the [official repo](https://github.com/pytorch/vision/blob/main/torchvision/models/inception.py#L28). The config files of these models are only for inference. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
+```python
+from mmpretrain import inference_model
+
+predict = inference_model('inception-v3_3rdparty_8xb32_in1k', 'demo/bird.JPEG')
+print(predict['pred_class'])
+print(predict['pred_score'])
+```
+
+**Use the model**
+
+```python
+import torch
+from mmpretrain import get_model
+
+model = get_model('inception-v3_3rdparty_8xb32_in1k', pretrained=True)
+inputs = torch.rand(1, 3, 224, 224)
+out = model(inputs)
+print(type(out))
+# To extract features.
+feats = model.extract_feat(inputs)
+print(type(feats))
+```
+
+**Test Command**
+
+Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+
+Test:
+
+```shell
+python tools/test.py configs/inception_v3/inception-v3_8xb32_in1k.py https://download.openmmlab.com/mmclassification/v0/inception-v3/inception-v3_3rdparty_8xb32_in1k_20220615-dcd4d910.pth
+```
+
+<!-- [TABS-END] -->
+
+## Models and results
+
+### Image Classification on ImageNet-1k
+
+| Model                                |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                Config                |                                    Download                                     |
+| :----------------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :----------------------------------: | :-----------------------------------------------------------------------------: |
+| `inception-v3_3rdparty_8xb32_in1k`\* | From scratch |   23.83    |   5.75    |   77.57   |   93.58   | [config](inception-v3_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/inception-v3/inception-v3_3rdparty_8xb32_in1k_20220615-dcd4d910.pth) |
+
+*Models with * are converted from the [official repo](https://github.com/pytorch/vision/blob/main/torchvision/models/inception.py#L28). The config files of these models are only for inference. We haven't reprodcue the training results.*
 
 ## Citation
 

@@ -1,6 +1,6 @@
 # Vision Transformer
 
-> [An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale](https://arxiv.org/pdf/2010.11929.pdf)
+> [An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale](https://arxiv.org/abs/2010.11929)
 
 <!-- [ALGORITHM] -->
 
@@ -34,94 +34,62 @@ While the Transformer architecture has become the de-facto standard for natural 
 **Predict image**
 
 ```python
->>> import torch
->>> from mmcls.apis import init_model, inference_model
->>>
->>> model = init_model('configs/vision_transformer/vit-base-p16_pt-32xb128-mae_in1k-224.py', 'https://download.openmmlab.com/mmclassification/v0/vit/vit-base-p16_pt-32xb128-mae_in1k_20220623-4c544545.pth')
->>> predict = inference_model(model, 'demo/demo.JPEG')
->>> print(predict['pred_class'])
-sea snake
->>> print(predict['pred_score'])
-0.9184340238571167
+from mmpretrain import inference_model
+
+predict = inference_model('vit-base-p32_in21k-pre_3rdparty_in1k-384px', 'demo/bird.JPEG')
+print(predict['pred_class'])
+print(predict['pred_score'])
 ```
 
 **Use the model**
 
 ```python
->>> import torch
->>> from mmcls.apis import init_model
->>>
->>> model = init_model('configs/vision_transformer/vit-base-p16_pt-32xb128-mae_in1k-224.py', 'https://download.openmmlab.com/mmclassification/v0/vit/vit-base-p16_pt-32xb128-mae_in1k_20220623-4c544545.pth')
->>> inputs = torch.rand(1, 3, 224, 224).to(model.data_preprocessor.device)
->>> # To get classification scores.
->>> out = model(inputs)
->>> print(out.shape)
-torch.Size([1, 1000])
->>> # To extract features.
->>> outs = model.extract_feat(inputs)
->>> # The patch token features
->>> print(outs[0][0].shape)
-torch.Size([1, 768, 14, 14])
->>> # The cls token features
->>> print(outs[0][1].shape)
-torch.Size([1, 768])
+import torch
+from mmpretrain import get_model
+
+model = get_model('vit-base-p32_in21k-pre_3rdparty_in1k-384px', pretrained=True)
+inputs = torch.rand(1, 3, 224, 224)
+out = model(inputs)
+print(type(out))
+# To extract features.
+feats = model.extract_feat(inputs)
+print(type(feats))
 ```
 
 **Train/Test Command**
 
-Place the ImageNet dataset to the `data/imagenet/` directory, or prepare datasets according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
 
 Train:
 
 ```shell
-python tools/train.py configs/vision_transformer/vit-base-p16_pt-32xb128-mae_in1k-224.py
+python tools/train.py configs/vision_transformer/vit-base-p16_32xb128-mae_in1k.py
 ```
 
 Test:
 
 ```shell
-python tools/test.py configs/vision_transformer/vit-base-p16_pt-32xb128-mae_in1k-224.py https://download.openmmlab.com/mmclassification/v0/vit/vit-base-p16_pt-32xb128-mae_in1k_20220623-4c544545.pth
+python tools/test.py configs/vision_transformer/vit-base-p32_64xb64_in1k-384px.py https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-base-p32_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-9cea8599.pth
 ```
 
 <!-- [TABS-END] -->
 
-For more configurable parameters, please refer to the [API](https://mmclassification.readthedocs.io/en/1.x/api/generated/mmcls.models.backbones.VisionTransformer.html#mmcls.models.backbones.VisionTransformer).
+## Models and results
 
-## Results and models
+### Image Classification on ImageNet-1k
 
-The training step of Vision Transformers is divided into two steps. The first
-step is training the model on a large dataset, like ImageNet-21k, and get the
-pre-trained model. And the second step is training the model on the target
-dataset, like ImageNet-1k, and get the fine-tuned model. Here, we provide both
-pre-trained models and fine-tuned models.
+| Model                                           |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                    Config                    |                           Download                           |
+| :---------------------------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :------------------------------------------: | :----------------------------------------------------------: |
+| `vit-base-p32_in21k-pre_3rdparty_in1k-384px`\*  | ImageNet-21k |   88.30    |   13.06   |   84.01   |   97.08   | [config](vit-base-p32_64xb64_in1k-384px.py)  | [model](https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-base-p32_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-9cea8599.pth) |
+| `vit-base-p16_32xb128-mae_in1k`                 | From scratch |   86.57    |   17.58   |   82.37   |   96.15   |  [config](vit-base-p16_32xb128-mae_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/vit/vit-base-p16_pt-32xb128-mae_in1k_20220623-4c544545.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/vit/vit-base-p16_pt-32xb128-mae_in1k_20220623-4c544545.json) |
+| `vit-base-p16_in21k-pre_3rdparty_in1k-384px`\*  | ImageNet-21k |   86.86    |   55.54   |   85.43   |   97.77   | [config](vit-base-p16_64xb64_in1k-384px.py)  | [model](https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-base-p16_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-98e8652b.pth) |
+| `vit-large-p16_in21k-pre_3rdparty_in1k-384px`\* | ImageNet-21k |   304.72   |  191.21   |   85.63   |   97.63   | [config](vit-large-p16_64xb64_in1k-384px.py) | [model](https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-large-p16_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-b20ba619.pth) |
 
-### ImageNet-21k
-
-The pre-trained models on ImageNet-21k are used to fine-tune, and therefore don't have evaluation results.
-
-|   Model   | resolution | Params(M) | Flops(G) |                                                                 Download                                                                 |
-| :-------: | :--------: | :-------: | :------: | :--------------------------------------------------------------------------------------------------------------------------------------: |
-| ViT-B16\* |  224x224   |   86.86   |  33.03   | [model](https://download.openmmlab.com/mmclassification/v0/vit/pretrain/vit-base-p16_3rdparty_pt-64xb64_in1k-224_20210928-02284250.pth)  |
-| ViT-B32\* |  224x224   |   88.30   |   8.56   | [model](https://download.openmmlab.com/mmclassification/v0/vit/pretrain/vit-base-p32_3rdparty_pt-64xb64_in1k-224_20210928-eee25dd4.pth)  |
-| ViT-L16\* |  224x224   |  304.72   |  116.68  | [model](https://download.openmmlab.com/mmclassification/v0/vit/pretrain/vit-large-p16_3rdparty_pt-64xb64_in1k-224_20210928-0001f9a1.pth) |
-
-*Models with * are converted from the [official repo](https://github.com/google-research/vision_transformer#available-vit-models).*
-
-### ImageNet-1k
-
-|     Model     |   Pretrain   | resolution | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                       Config                        |                                    Download                                     |
-| :-----------: | :----------: | :--------: | :-------: | :------: | :-------: | :-------: | :-------------------------------------------------: | :-----------------------------------------------------------------------------: |
-|    ViT-B16    | From scratch |  224x224   |   86.86   |  33.03   |   82.37   |   96.15   | [config](./vit-base-p16_pt-32xb128-mae_in1k-224.py) | [model](https://download.openmmlab.com/mmclassification/v0/vit/vit-base-p16_pt-32xb128-mae_in1k_20220623-4c544545.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/vit/vit-base-p16_pt-32xb128-mae_in1k_20220623-4c544545.log) |
-|   ViT-B16\*   | ImageNet-21k |  384x384   |   86.86   |  33.03   |   85.43   |   97.77   |   [config](./vit-base-p16_ft-64xb64_in1k-384.py)    | [model](https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-base-p16_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-98e8652b.pth) |
-| ViT-B16 (IPU) | ImageNet-21k |  224x224   |   86.86   |  33.03   |   81.22   |   95.56   |   [config](./vit-base-p16_ft-4xb544-ipu_in1k.py)    | [model](https://download.openmmlab.com/mmclassification/v0/vit/vit-base-p16_ft-4xb544-ipu_in1k_20220603-c215811a.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/vit/vit-base-p16_ft-4xb544-ipu_in1k.log) |
-|   ViT-B32\*   | ImageNet-21k |  384x384   |   88.30   |   8.56   |   84.01   |   97.08   |   [config](./vit-base-p32_ft-64xb64_in1k-384.py)    | [model](https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-base-p32_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-9cea8599.pth) |
-|   ViT-L16\*   | ImageNet-21k |  384x384   |  304.72   |  116.68  |   85.63   |   97.63   |   [config](./vit-large-p16_ft-64xb64_in1k-384.py)   | [model](https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-large-p16_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-b20ba619.pth) |
-
-*Models with * are converted from the [official repo](https://github.com/google-research/vision_transformer#available-vit-models). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
+*Models with * are converted from the [official repo](https://github.com/google-research/vision_transformer/blob/88a52f8892c80c10de99194990a517b4d80485fd/vit_jax/models.py#L208). The config files of these models are only for inference. We haven't reprodcue the training results.*
 
 ## Citation
 
-```
+```bibtex
 @inproceedings{
   dosovitskiy2021an,
   title={An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale},

@@ -8,55 +8,73 @@
 
 We introduce a self-supervised vision representation model BEiT, which stands for Bidirectional Encoder representation from Image Transformers. Following BERT developed in the natural language processing area, we propose a masked image modeling task to pretrain vision Transformers. Specifically, each image has two views in our pre-training, i.e, image patches (such as 16x16 pixels), and visual tokens (i.e., discrete tokens). We first "tokenize" the original image into visual tokens. Then we randomly mask some image patches and fed them into the backbone Transformer. The pre-training objective is to recover the original visual tokens based on the corrupted image patches. After pre-training BEiT, we directly fine-tune the model parameters on downstream tasks by appending task layers upon the pretrained encoder. Experimental results on image classification and semantic segmentation show that our model achieves competitive results with previous pre-training methods. For example, base-size BEiT achieves 83.2% top-1 accuracy on ImageNet-1K, significantly outperforming from-scratch DeiT training (81.8%) with the same setup. Moreover, large-size BEiT obtains 86.3% only using ImageNet-1K, even outperforming ViT-L with supervised pre-training on ImageNet-22K (85.2%).
 
-<div align="center">
+<div align=center>
 <img src="https://user-images.githubusercontent.com/36138628/203688351-adac7146-4e71-4ab6-8958-5cfe643a2dc5.png" width="70%"/>
 </div>
 
-## Self-supervised Learning
+## How to use it?
 
-### ImageNet-1k
+<!-- [TABS-BEGIN] -->
 
-<table class="docutils">
-<thead>
-  <tr>
-	    <th rowspan="2">Algorithm</th>
-	    <th rowspan="2">Backbone</th>
-	    <th rowspan="2">Epoch</th>
-      <th rowspan="2">Batch Size</th>
-      <th colspan="2" align="center">Results (Top-1 %)</th>
-      <th colspan="3" align="center">Links</th>
-	</tr>
-	<tr>
-      <th>Linear Eval</th>
-      <th>Fine-tuning</th>
-      <th>Pretrain</th>
-      <th>Linear Eval</th>
-      <th>Fine-tuning</th>
-	</tr>
-  </thead>
-  <tr>
-      <td>BEiT</td>
-	    <td>ViT-base</td>
-	    <td>300</td>
-      <td>2048</td>
-      <td>/</td>
-      <td>83.1</td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/selfsup/beit/beit_vit-base-p16_8xb256-amp-coslr-300e_in1k.py'>config</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/beit/beit_vit-base-p16_8xb256-amp-coslr-300e_in1k/beit_vit-base-p16_8xb256-amp-coslr-300e_in1k_20221128-ab79e626.pth'>model</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/beit/beit_vit-base-p16_8xb256-amp-coslr-300e_in1k/beit_vit-base-p16_8xb256-amp-coslr-300e_in1k_20221123_103802.json'>log</a></td>
-      <td>/</td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/selfsup/beit/classification/vit-base-p16_ft-8xb128-coslr-100e_in1k.py'>config</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/beit/beit_vit-base-p16_8xb256-amp-coslr-300e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k_20221128-0ca393e9.pth'>model</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/beit/beit_vit-base-p16_8xb256-amp-coslr-300e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k_20221127_162126.json'>log</a></td>
-	</tr>
-  </tbody>
-</table>
+**Predict image**
 
-## Classification
+```python
+from mmpretrain import inference_model
 
-### ImageNet-1k
+predict = inference_model('beit-base-p16_beit-pre_8xb128-coslr-100e_in1k', 'demo/bird.JPEG')
+print(predict['pred_class'])
+print(predict['pred_score'])
+```
 
-|    Model    |   Pretrain   | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                 Config                  |                                                Download                                                 |
-| :---------: | :----------: | :-------: | :------: | :-------: | :-------: | :-------------------------------------: | :-----------------------------------------------------------------------------------------------------: |
-| BEiT-base\* | ImageNet-21k |   86.53   |  17.58   |   85.28   |   97.59   | [config](./beit-base-p16_8xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/beit/beit-base_3rdparty_in1k_20221114-c0a4df23.pth) |
+**Use the model**
 
-*Models with * are converted from the [official repo](https://github.com/microsoft/unilm/tree/master/beit). The config files of these models are only for inference.*
+```python
+import torch
+from mmpretrain import get_model
+
+model = get_model('beit_beit-base-p16_8xb256-amp-coslr-300e_in1k', pretrained=True)
+inputs = torch.rand(1, 3, 224, 224)
+out = model(inputs)
+print(type(out))
+# To extract features.
+feats = model.extract_feat(inputs)
+print(type(feats))
+```
+
+**Train/Test Command**
+
+Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+
+Train:
+
+```shell
+python tools/train.py configs/beit/beit_beit-base-p16_8xb256-amp-coslr-300e_in1k.py
+```
+
+Test:
+
+```shell
+python tools/test.py configs/beit/benchmarks/beit-base-p16_8xb128-coslr-100e_in1k.py https://download.openmmlab.com/mmselfsup/1.x/beit/beit_vit-base-p16_8xb256-amp-coslr-300e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k_20221128-0ca393e9.pth
+```
+
+<!-- [TABS-END] -->
+
+## Models and results
+
+### Pretrained models
+
+| Model                                           | Params (M) | Flops (G) |                           Config                           |                                   Download                                   |
+| :---------------------------------------------- | :--------: | :-------: | :--------------------------------------------------------: | :--------------------------------------------------------------------------: |
+| `beit_beit-base-p16_8xb256-amp-coslr-300e_in1k` |   86.53    |   17.58   | [config](beit_beit-base-p16_8xb256-amp-coslr-300e_in1k.py) | [model](https://download.openmmlab.com/mmselfsup/1.x/beit/beit_vit-base-p16_8xb256-amp-coslr-300e_in1k/beit_vit-base-p16_8xb256-amp-coslr-300e_in1k_20221128-ab79e626.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/beit/beit_vit-base-p16_8xb256-amp-coslr-300e_in1k/beit_vit-base-p16_8xb256-amp-coslr-300e_in1k_20221128-ab79e626.json) |
+
+### Image Classification on ImageNet-1k
+
+| Model                                   |                  Pretrain                  | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                  Config                  |                  Download                  |
+| :-------------------------------------- | :----------------------------------------: | :--------: | :-------: | :-------: | :-------: | :--------------------------------------: | :----------------------------------------: |
+| `beit-base-p16_beit-pre_8xb128-coslr-100e_in1k` | [BEIT](https://download.openmmlab.com/mmselfsup/1.x/beit/beit_vit-base-p16_8xb256-amp-coslr-300e_in1k/beit_vit-base-p16_8xb256-amp-coslr-300e_in1k_20221128-ab79e626.pth) |   86.53    |   17.58   |   83.10   |    N/A    | [config](benchmarks/beit-base-p16_8xb128-coslr-100e_in1k.py) | [model](https://download.openmmlab.com/mmselfsup/1.x/beit/beit_vit-base-p16_8xb256-amp-coslr-300e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k_20221128-0ca393e9.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/beit/beit_vit-base-p16_8xb256-amp-coslr-300e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k_20221128-0ca393e9.json) |
+| `beit-base-p16_beit-in21k-pre_3rdparty_in1k`\* |             BEIT ImageNet-21k              |   86.53    |   17.58   |   85.28   |   97.59   | [config](benchmarks/beit-base-p16_8xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/beit/beit-base_3rdparty_in1k_20221114-c0a4df23.pth) |
+
+*Models with * are converted from the [official repo](https://github.com/microsoft/unilm/tree/master/beit). The config files of these models are only for inference. We haven't reprodcue the training results.*
 
 ## Citation
 

@@ -11,7 +11,7 @@ Collections:
       Architecture:
         - Shift Window Multihead Self Attention
     Paper:
-      URL: https://arxiv.org/abs/2111.09883.pdf
+      URL: https://arxiv.org/abs/2111.09883
       Title: "Swin Transformer V2: Scaling Up Capacity and Resolution"
     README: configs/swin_transformer_v2/README.md
 

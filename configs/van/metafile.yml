@@ -8,7 +8,7 @@ Collections:
       Architecture:
         - Visual Attention Network
     Paper:
-      URL: https://arxiv.org/pdf/2202.09741v2.pdf
+      URL: https://arxiv.org/abs/2202.09741
       Title: "Visual Attention Network"
     README: configs/van/README.md
     Code:

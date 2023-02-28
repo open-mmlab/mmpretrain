@@ -5,7 +5,7 @@ Collections:
       Architecture:
         - Class-specific Residual Attention
     Paper:
-      URL: https://arxiv.org/abs/1911.11929
+      URL: https://arxiv.org/abs/2108.02456
       Title: 'Residual Attention: A Simple but Effective Method for Multi-Label Recognition'
     README: configs/csra/README.md
     Code:

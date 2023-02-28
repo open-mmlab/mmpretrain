@@ -12,23 +12,62 @@ In this work, we introduce Dual Attention Vision Transformers (DaViT), a simple 
 <img src="https://user-images.githubusercontent.com/24734142/196125065-e232409b-f710-4729-b657-4e5f9158f2d1.png" width="90%"/>
 </div>
 
-## Results and models
+## How to use it?
 
-### ImageNet-1k
+<!-- [TABS-BEGIN] -->
 
-|   Model   |   Pretrain   | resolution | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                 Config                 |                                             Download                                             |
-| :-------: | :----------: | :--------: | :-------: | :------: | :-------: | :-------: | :------------------------------------: | :----------------------------------------------------------------------------------------------: |
-| DaViT-T\* | From scratch |  224x224   |   28.36   |   4.54   |   82.24   |   96.13   | [config](./davit-tiny_4xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/davit/davit-tiny_3rdparty_in1k_20221116-700fdf7d.pth) |
-| DaViT-S\* | From scratch |  224x224   |   49.74   |   8.79   |   83.61   |   96.75   | [config](./davit-small_4xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/davit/davit-small_3rdparty_in1k_20221116-51a849a6.pth) |
-| DaViT-B\* | From scratch |  224x224   |   87.95   |   15.5   |   84.09   |   96.82   | [config](./davit-base_4xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/davit/davit-base_3rdparty_in1k_20221116-19e0d956.pth) |
+**Predict image**
 
-*Models with * are converted from the [official repo](https://github.com/dingmyu/davit). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
+```python
+from mmpretrain import inference_model
 
-Note: Inference accuracy is a bit lower than paper result because of inference code for classification doesn't exist.
+predict = inference_model('davit-tiny_3rdparty_in1k', 'demo/bird.JPEG')
+print(predict['pred_class'])
+print(predict['pred_score'])
+```
+
+**Use the model**
+
+```python
+import torch
+from mmpretrain import get_model
+
+model = get_model('davit-tiny_3rdparty_in1k', pretrained=True)
+inputs = torch.rand(1, 3, 224, 224)
+out = model(inputs)
+print(type(out))
+# To extract features.
+feats = model.extract_feat(inputs)
+print(type(feats))
+```
+
+**Test Command**
+
+Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+
+Test:
+
+```shell
+python tools/test.py configs/davit/davit-tiny_4xb256_in1k.py https://download.openmmlab.com/mmclassification/v0/davit/davit-tiny_3rdparty_in1k_20221116-700fdf7d.pth
+```
+
+<!-- [TABS-END] -->
+
+## Models and results
+
+### Image Classification on ImageNet-1k
+
+| Model                         |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                Config                |                                        Download                                        |
+| :---------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :----------------------------------: | :------------------------------------------------------------------------------------: |
+| `davit-tiny_3rdparty_in1k`\*  | From scratch |   28.36    |   4.54    |   82.24   |   96.13   | [config](davit-tiny_4xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/davit/davit-tiny_3rdparty_in1k_20221116-700fdf7d.pth) |
+| `davit-small_3rdparty_in1k`\* | From scratch |   49.75    |   8.80    |   83.61   |   96.75   | [config](davit-small_4xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/davit/davit-small_3rdparty_in1k_20221116-51a849a6.pth) |
+| `davit-base_3rdparty_in1k`\*  | From scratch |   87.95    |   15.51   |   84.09   |   96.82   | [config](davit-base_4xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/davit/davit-base_3rdparty_in1k_20221116-19e0d956.pth) |
+
+*Models with * are converted from the [official repo](https://github.com/dingmyu/davit/blob/main/mmdet/mmdet/models/backbones/davit.py#L355). The config files of these models are only for inference. We haven't reprodcue the training results.*
 
 ## Citation
 
-```
+```bibtex
 @inproceedings{ding2022davit,
     title={DaViT: Dual Attention Vision Transformer},
     author={Ding, Mingyu and Xiao, Bin and Codella, Noel and Luo, Ping and Wang, Jingdong and Yuan, Lu},
