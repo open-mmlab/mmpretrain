@@ -81,7 +81,7 @@ class ClsDataPreprocessor(BaseDataPreprocessor):
         else:
             self._enable_normalize = False
 
-        if batch_augments is not None:
+        if batch_augments:
             self.batch_augments = RandomBatchAugment(**batch_augments)
             if not self.to_onehot:
                 from mmengine.logging import MMLogger
