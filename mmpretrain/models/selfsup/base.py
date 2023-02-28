@@ -93,12 +93,12 @@ class BaseSelfSupervisor(BaseModel, metaclass=ABCMeta):
             self, 'target_generator') and self.target_generator is not None
 
     def forward(self,
-                inputs: torch.Tensor,
+                inputs: List[torch.Tensor],
                 data_samples: Optional[List[DataSample]] = None,
                 mode: str = 'tensor'):
         """The unified entry for a forward process in both training and test.
 
-        The method should accept three modes: "tensor", "predict" and "loss":
+        The method currently accepts two modes: "tensor" and "loss":
 
         - "tensor": Forward the backbone network and return the feature
           tensor(s) tensor without any post-processing, same as a common
@@ -107,7 +107,7 @@ class BaseSelfSupervisor(BaseModel, metaclass=ABCMeta):
           inputs and data samples.
 
         Args:
-            inputs (torch.Tensor): The input tensor with shape
+            inputs (List[torch.Tensor]): The input tensor with shape
                 (N, C, ...) in general.
             data_samples (List[DataSample], optional): The other data of
                 every samples. It's required for some algorithms

@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from .base import BaseSelfSupervisor
-from .beit import VQKD, BEiTPretrainViT
+from .beit import VQKD, BEiTPretrainViT, BEiT
 from .byol import BYOL
 from .cae import CAEViT, Encoder
 from .mae import MAEViT
@@ -32,4 +32,5 @@ __all__ = [
     'BYOL',
     'SimCLR',
     'SimSiam',
+    'BEiT',
 ]
