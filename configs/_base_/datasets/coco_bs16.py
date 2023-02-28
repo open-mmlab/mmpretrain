@@ -1,5 +1,5 @@
 # dataset settings
-dataset_type = 'COCO'
+dataset_type = 'CocoDataset'
 data_root = 'data/coco/'
 
 data_preprocessor = dict(
@@ -15,16 +15,16 @@ data_preprocessor = dict(
 
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='RandomResizedCrop', scale=224),
+    dict(type='RandomResizedCrop', scale=448, crop_ratio_range=(0.7, 1.0)),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
-    dict(type='PackClsInputs'),
+    dict(type='PackClsInputs')
 ]
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='ResizeEdge', scale=256, edge='short'),
-    dict(type='CenterCrop', crop_size=224),
-    dict(type='PackClsInputs'),
+    dict(type='ResizeEdge', scale=512, edge='short'),
+    dict(type='CenterCrop', crop_size=448),
+    dict(type='PackClsInputs')
 ]
 
 train_dataloader = dict(
