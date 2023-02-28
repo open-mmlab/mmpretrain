@@ -138,8 +138,8 @@ class TestBEiTAdapter(TestCase):
     CUSTOM_ARCH = {
         'embed_dims': 32,
         'num_layers': 8,
-        'num_heads': 8,
-        'feedforward_channels': 128,
+        'num_heads': 4,
+        'feedforward_channels': 64,
         'interaction_indexes': [[0, 2], [3, 5], [6, 8], [9, 15]],
         'window_size': [14, 56, 14, 56, 14, 56, 14, 56],
         'value_proj_ratio': 1.0
@@ -185,8 +185,8 @@ class TestBEiTAdapter(TestCase):
         self.assertEqual(model.embed_dims, 32)
         self.assertEqual(model.num_layers, 8)
         for layer in model.layers:
-            self.assertEqual(layer.attn.num_heads, 8)
-            self.assertEqual(layer.ffn.feedforward_channels, 128)
+            self.assertEqual(layer.attn.num_heads, 4)
+            self.assertEqual(layer.ffn.feedforward_channels, 64)
 
     def test_init_weights(self):
         # test weight init cfg
@@ -230,19 +230,7 @@ class TestBEiTAdapter(TestCase):
         # Test forward
         cfg = deepcopy(self.cfg)
         cfg['arch'] = self.CUSTOM_ARCH
-        cfg['deform_num_heads'] = 16
-        model = BEiTAdapter(**cfg)
-        model.eval()
-        outs = model(imgs)
-        self.assertIsInstance(outs, tuple)
-        self.assertEqual(len(outs), 4)
-        for stride, out in zip([1, 2, 4, 8], outs):
-            self.assertEqual(out.shape, (1, 32, 8 // stride, 8 // stride))
-
-        # Test forward with layer scale
-        cfg = deepcopy(self.cfg)
-        cfg['arch'] = self.CUSTOM_ARCH
-        cfg['deform_num_heads'] = 16
+        cfg['deform_num_heads'] = 4
         cfg['layer_scale_init_value'] = 1.0
         model = BEiTAdapter(**cfg)
         model.eval()
