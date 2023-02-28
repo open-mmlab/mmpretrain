@@ -4,7 +4,7 @@ from unittest import TestCase
 
 import torch
 
-from mmpretrain.models.backbones import BEiT
+from mmpretrain.models.backbones import BEiTViT
 
 
 class TestBEiT(TestCase):
@@ -18,7 +18,7 @@ class TestBEiT(TestCase):
         with self.assertRaisesRegex(AssertionError, 'not in default archs'):
             cfg = deepcopy(self.cfg)
             cfg['arch'] = 'unknown'
-            BEiT(**cfg)
+            BEiTViT(**cfg)
 
         # Test invalid custom arch
         with self.assertRaisesRegex(AssertionError, 'Custom arch needs'):
@@ -28,7 +28,7 @@ class TestBEiT(TestCase):
                 'num_heads': 16,
                 'feedforward_channels': 4096
             }
-            BEiT(**cfg)
+            BEiTViT(**cfg)
 
         # Test custom arch
         cfg = deepcopy(self.cfg)
@@ -38,7 +38,7 @@ class TestBEiT(TestCase):
             'num_heads': 16,
             'feedforward_channels': 1024
         }
-        model = BEiT(**cfg)
+        model = BEiTViT(**cfg)
         self.assertEqual(model.embed_dims, 128)
         self.assertEqual(model.num_layers, 24)
         self.assertIsNone(model.pos_embed)
@@ -51,21 +51,21 @@ class TestBEiT(TestCase):
         cfg = deepcopy(self.cfg)
         cfg['out_indices'] = {1: 1}
         with self.assertRaisesRegex(AssertionError, "get <class 'dict'>"):
-            BEiT(**cfg)
+            BEiTViT(**cfg)
         cfg['out_indices'] = [0, 13]
         with self.assertRaisesRegex(AssertionError, 'Invalid out_indices 13'):
-            BEiT(**cfg)
+            BEiTViT(**cfg)
 
         # Test pos_embed
         cfg = deepcopy(self.cfg)
         cfg['use_abs_pos_emb'] = True
-        model = BEiT(**cfg)
+        model = BEiTViT(**cfg)
         self.assertEqual(model.pos_embed.shape, (1, 197, 768))
 
         # Test model structure
         cfg = deepcopy(self.cfg)
         cfg['drop_path_rate'] = 0.1
-        model = BEiT(**cfg)
+        model = BEiTViT(**cfg)
         self.assertEqual(len(model.layers), 12)
         dpr_inc = 0.1 / (12 - 1)
         dpr = 0
@@ -85,7 +85,7 @@ class TestBEiT(TestCase):
         # test with output_cls_token
         cfg = deepcopy(self.cfg)
         cfg['output_cls_token'] = True
-        model = BEiT(**cfg)
+        model = BEiTViT(**cfg)
         outs = model(imgs)
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 1)
@@ -95,7 +95,7 @@ class TestBEiT(TestCase):
 
         # test without output_cls_token
         cfg = deepcopy(self.cfg)
-        model = BEiT(**cfg)
+        model = BEiTViT(**cfg)
         outs = model(imgs)
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 1)
@@ -105,7 +105,7 @@ class TestBEiT(TestCase):
         # test without average
         cfg = deepcopy(self.cfg)
         cfg['avg_token'] = False
-        model = BEiT(**cfg)
+        model = BEiTViT(**cfg)
         outs = model(imgs)
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 1)
@@ -115,7 +115,7 @@ class TestBEiT(TestCase):
         # Test forward with multi out indices
         cfg = deepcopy(self.cfg)
         cfg['out_indices'] = [-3, -2, -1]
-        model = BEiT(**cfg)
+        model = BEiTViT(**cfg)
         outs = model(imgs)
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 3)

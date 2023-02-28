@@ -5,6 +5,7 @@ from .attention import (BEiTAttention, ChannelMultiheadAttention,
                         ShiftWindowMSA, WindowMSA, WindowMSAV2)
 from .batch_augments import CutMix, Mixup, RandomBatchAugment, ResizeMix
 from .channel_shuffle import channel_shuffle
+from .clip_generator_helper import build_clip_model
 from .data_preprocessor import ClsDataPreprocessor
 from .embed import (HybridEmbed, PatchEmbed, PatchMerging, resize_pos_embed,
                     resize_relative_position_bias_table)
@@ -17,6 +18,7 @@ from .position_encoding import (ConditionalPositionEncoding,
                                 PositionEncodingFourier,
                                 build_2d_sincos_position_embedding)
 from .se_layer import SELayer
+from .vector_quantizer import NormEMAVectorQuantizer
 
 __all__ = [
     'channel_shuffle', 'make_divisible', 'InvertedResidual', 'SELayer',
@@ -28,5 +30,6 @@ __all__ = [
     'LayerScale', 'WindowMSA', 'WindowMSAV2', 'ChannelMultiheadAttention',
     'PositionEncodingFourier', 'LeAttention', 'GRN', 'LayerNorm2d',
     'build_norm_layer', 'CrossMultiheadAttention',
-    'build_2d_sincos_position_embedding', 'PromptMultiheadAttention'
+    'build_2d_sincos_position_embedding', 'PromptMultiheadAttention',
+    'NormEMAVectorQuantizer', 'build_clip_model'
 ]

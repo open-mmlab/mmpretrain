@@ -30,6 +30,8 @@ class ImageClassifier(BaseClassifier):
             - augments (List[dict]): The batch augmentation methods to use.
               More details can be found in
               :mod:`mmpretrain.model.utils.augment`.
+            - probs (List[float], optional): The probability of every batch
+              augmentation methods. If None, choose evenly. Defaults to None.
 
             Defaults to None.
         data_preprocessor (dict, optional): The config for preprocessing input
@@ -51,14 +53,16 @@ class ImageClassifier(BaseClassifier):
         if pretrained is not None:
             init_cfg = dict(type='Pretrained', checkpoint=pretrained)
 
-        if data_preprocessor is None:
-            data_preprocessor = {}
-        # The build process is in MMEngine, so we need to add scope here.
-        data_preprocessor.setdefault('type', 'mmpretrain.ClsDataPreprocessor')
+        data_preprocessor = data_preprocessor or {}
 
-        if train_cfg is not None and 'augments' in train_cfg:
-            # Set batch augmentations by `train_cfg`
-            data_preprocessor['batch_augments'] = train_cfg
+        if isinstance(data_preprocessor, dict):
+            data_preprocessor.setdefault('type', 'ClsDataPreprocessor')
+            data_preprocessor.setdefault('batch_augments', train_cfg)
+            data_preprocessor = MODELS.build(data_preprocessor)
+        elif not isinstance(data_preprocessor, nn.Module):
+            raise TypeError('data_preprocessor should be a `dict` or '
+                            f'`nn.Module` instance, but got '
+                            f'{type(data_preprocessor)}')
 
         super(ImageClassifier, self).__init__(
             init_cfg=init_cfg, data_preprocessor=data_preprocessor)
@@ -82,15 +86,12 @@ class ImageClassifier(BaseClassifier):
 
         The method should accept three modes: "tensor", "predict" and "loss":
 
-        - "tensor": Forward the whole network and return tensor or tuple of
-          tensor without any post-processing, same as a common nn.Module.
+        - "tensor": Forward the whole network and return tensor(s) without any
+          post-processing, same as a common PyTorch Module.
         - "predict": Forward and return the predictions, which are fully
           processed to a list of :obj:`DataSample`.
         - "loss": Forward and return a dict of losses according to the given
           inputs and data samples.
-
-        Note that this method doesn't handle neither back propagation nor
-        optimizer updating, which are done in the :meth:`train_step`.
 
         Args:
             inputs (torch.Tensor): The input tensor with shape
