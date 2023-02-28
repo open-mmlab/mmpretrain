@@ -56,9 +56,7 @@ class ImageRetrievalInferencer(BaseInferencer):
            >>> inferencer(['demo/dog.jpg', 'demo/bird.JPEG'], show_dir="./visualize/")
     """  # noqa: E501
 
-    visualize_kwargs: set = {
-        'rescale_factor', 'draw_score', 'show', 'show_dir'
-    }
+    postprocess_kwargs: set = {'topk'}
 
     def __init__(
         self,
@@ -227,7 +225,9 @@ class ImageRetrievalInferencer(BaseInferencer):
             match_scores, indices = torch.topk(data_sample.pred_score, k=topk)
             matches = []
             for match_score, sample_idx in zip(match_scores, indices):
-                sample = self.prototype_dataset.get_data_info(sample_idx)
+                sample = self.prototype_dataset.get_data_info(
+                    sample_idx.item())
+                sample_idx = sample.pop('sample_idx')
                 matches.append({
                     'match_score': match_score,
                     'sample_idx': sample_idx,
