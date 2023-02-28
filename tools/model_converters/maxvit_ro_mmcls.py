@@ -38,9 +38,11 @@ def convert_from_maxvit_timm(param):
                 name = name.replace('head.pre_logits.fc', 'backbone.final_mlp.3')
             new_key[name] = data
         elif 'stages' in name:
-            replace_str = name[:17]
+            replace_str = name[:20]
             name_s_lst = replace_str.split('.')
+            replace_str = '.'.join(name_s_lst[:4])
             new_num = new_depth[int(name_s_lst[1])][int(name_s_lst[3])]
+
             name = name.replace(replace_str, 'backbone.layers.' + str(new_num))
             if 'conv.shortcut' in name:
                 name = name.replace('conv.shortcut.expand', 'mbconv.shortcut.1')
