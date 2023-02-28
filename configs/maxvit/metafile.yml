@@ -1,6 +1,9 @@
 Collections:
   - Name: MaxViT
     Metadata:
+      Training Data:
+        - ImageNet-1k
+        - ImageNet-21k
       Architecture:
         - Window Partition Attention
         - Grid Partition Attention
