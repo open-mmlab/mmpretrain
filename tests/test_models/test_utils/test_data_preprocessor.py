@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import pytest
 from unittest import TestCase
 
+import pytest
 import torch
 
 from mmpretrain.models import (ClsDataPreprocessor, RandomBatchAugment,
@@ -139,13 +139,13 @@ class TestTwoNormDataPreprocessor(TestCase):
 
     def test_assertion(self):
         with pytest.raises(AssertionError):
-            data_preprocessor = TwoNormDataPreprocessor(
+            _ = TwoNormDataPreprocessor(
                 to_rgb=True,
                 mean=(123.675, 116.28, 103.53),
                 std=(58.395, 57.12, 57.375),
             )
         with pytest.raises(AssertionError):
-            data_preprocessor = TwoNormDataPreprocessor(
+            _ = TwoNormDataPreprocessor(
                 to_rgb=True,
                 mean=(123.675, 116.28, 103.53),
                 std=(58.395, 57.12, 57.375),
@@ -153,7 +153,7 @@ class TestTwoNormDataPreprocessor(TestCase):
                 second_std=(127.5, 127.5, 127.5),
             )
         with pytest.raises(AssertionError):
-            data_preprocessor = TwoNormDataPreprocessor(
+            _ = TwoNormDataPreprocessor(
                 to_rgb=True,
                 mean=(123.675, 116.28, 103.53),
                 std=(58.395, 57.12, 57.375),

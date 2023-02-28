@@ -35,6 +35,6 @@ __all__ = [
     'build_norm_layer', 'CrossMultiheadAttention',
     'build_2d_sincos_position_embedding', 'PromptMultiheadAttention',
     'NormEMAVectorQuantizer', 'build_clip_model', 'batch_shuffle_ddp',
-    'batch_unshuffle_ddp', 'SelfSupDataPreprocessor', 'TwoNormDataPreprocessor',
-    'VideoDataPreprocessor', 'CosineEMA'
+    'batch_unshuffle_ddp', 'SelfSupDataPreprocessor',
+    'TwoNormDataPreprocessor', 'VideoDataPreprocessor', 'CosineEMA'
 ]

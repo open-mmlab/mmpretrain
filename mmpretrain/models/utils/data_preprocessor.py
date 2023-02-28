@@ -201,7 +201,7 @@ class SelfSupDataPreprocessor(ImgDataPreprocessor):
     """Image pre-processor for operations, like normalization and bgr to rgb.
 
     Compared with the :class:`mmengine.ImgDataPreprocessor`, this module treats
-    each item in `inputs` of input data as a list, instead of torch.Tensor. 
+    each item in `inputs` of input data as a list, instead of torch.Tensor.
     Besides, Add key ``to_rgb`` to align with :class:`ClsDataPreprocessor`.
     """
 
