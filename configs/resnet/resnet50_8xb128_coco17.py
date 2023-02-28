@@ -21,10 +21,7 @@ model = dict(
 
 # schedule settings
 optim_wrapper = dict(
-    optimizer=dict(type='SGD', lr=0.005, momentum=0.9, weight_decay=0.0001),
-    # update the final linear by 10 times learning rate.
-    # paramwise_cfg=dict(custom_keys={'.backbone.classifier': dict(lr_mult=10)}),
-)
+    optimizer=dict(type='SGD', lr=0.005, momentum=0.9, weight_decay=0.0001))
 
 # learning policy
 param_scheduler = [
