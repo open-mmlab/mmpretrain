@@ -11,11 +11,12 @@ model = dict(
         arch='base',
         img_size=192,
         stage_cfgs=dict(block_cfgs=dict(window_size=6))),
-    neck=dict(type='SimMIMNeck', in_channels=128 * 2**3, encoder_stride=32),
+    neck=dict(
+        type='SimMIMLinearDecoder', in_channels=128 * 2**3, encoder_stride=32),
     head=dict(
         type='SimMIMHead',
         patch_size=4,
-        loss=dict(type='SimMIMReconstructionLoss', encoder_in_channels=3)))
+        loss=dict(type='PixelReconstructionLoss', criterion='L1', channels=3)))
 
 # optimizer wrapper
 optim_wrapper = dict(

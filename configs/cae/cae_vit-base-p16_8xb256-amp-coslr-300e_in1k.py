@@ -56,7 +56,6 @@ model = dict(
         qkv_bias=False),
     neck=dict(
         type='CAENeck',
-        patch_size=16,
         embed_dims=768,
         num_heads=12,
         regressor_depth=4,

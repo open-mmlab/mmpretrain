@@ -56,7 +56,6 @@ model = dict(
         type='LinearNeck',
         in_channels=768,
         out_channels=108,
-        with_avg_pool=False,
         init_cfg=dict(type='TruncNormal', layer='Linear', std=0.02, bias=0)),
     head=dict(
         type='MaskFeatPretrainHead',

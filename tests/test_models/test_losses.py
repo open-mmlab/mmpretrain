@@ -371,3 +371,33 @@ def test_seesaw_loss():
     fake_label = torch.Tensor([0]).long()
     loss = loss_cls(fake_pred, fake_label)
     assert torch.allclose(loss, torch.tensor(200.) + torch.tensor(100.).log())
+
+
+def test_reconstruction_loss():
+
+    # test L2 loss
+    loss_config = dict(type='PixelReconstructionLoss', criterion='L2')
+    loss = build_loss(loss_config)
+
+    fake_pred = torch.rand((2, 196, 768))
+    fake_target = torch.rand((2, 196, 768))
+    fake_mask = torch.ones((2, 196))
+    loss_value = loss(fake_pred, fake_target, fake_mask)
+
+    assert isinstance(loss_value.item(), float)
+
+    # test L1 loss
+    loss_config = dict(
+        type='PixelReconstructionLoss', criterion='L1', channel=3)
+    loss = build_loss(loss_config)
+
+    fake_pred = torch.rand((2, 3, 192, 192))
+    fake_target = torch.rand((2, 3, 192, 192))
+    fake_mask = torch.ones((2, 1, 192, 192))
+    loss_value = loss(fake_pred, fake_target, fake_mask)
+
+    assert isinstance(loss_value.item(), float)
+
+    with pytest.raises(NotImplementedError):
+        loss_config = dict(type='PixelReconstructionLoss', criterion='L3')
+        loss = build_loss(loss_config)

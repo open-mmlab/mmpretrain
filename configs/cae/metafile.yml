@@ -4,7 +4,7 @@ Collections:
       Training Data: ImageNet-1k
       Training Techniques:
         - AdamW
-      Training Resources: 16x A100-80G GPUs
+      Training Resources: 8x A100-80G GPUs
       Architecture:
         - ViT
     Paper:
@@ -19,8 +19,8 @@ Models:
       Epochs: 300
       Batch Size: 2048
     Results: null
-    Config: configs/cae/cae_vit-base-p16_16xb128-amp-coslr-300e_in1k.py
-    Weights: https://download.openmmlab.com/mmselfsup/1.x/cae/cae_vit-base-p16_16xb128-fp16-coslr-300e_in1k/cae_vit-base-p16_16xb128-fp16-coslr-300e_in1k_20220825-404a1929.pth
+    Config: configs/cae/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k.py
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/cae/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k_20221230-808170f3.pth
     Downstream:
       - beit-base-p16_cae-pre_8xb128-coslr-100e_in1k
   - Name: beit-base-p16_cae-pre_8xb128-coslr-100e_in1k
