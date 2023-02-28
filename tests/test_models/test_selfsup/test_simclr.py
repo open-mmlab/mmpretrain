@@ -5,42 +5,37 @@ import platform
 import pytest
 import torch
 
-from mmpretrain.models import MoCo
+from mmpretrain.models import SimCLR
 from mmpretrain.structures import DataSample
 
-queue_len = 32
-feat_dim = 2
-momentum = 0.999
 backbone = dict(type='ResNet', depth=18, norm_cfg=dict(type='BN'))
 neck = dict(
-    type='MoCoV2Neck',
+    type='NonLinearNeck',  # SimCLR non-linear neck
     in_channels=512,
     hid_channels=2,
     out_channels=2,
-    with_avg_pool=True)
+    num_layers=2,
+    with_avg_pool=True,
+    norm_cfg=dict(type='BN1d'))
 head = dict(
     type='ContrastiveHead',
     loss=dict(type='CrossEntropyLoss'),
-    temperature=0.2)
+    temperature=0.1)
 
 
 @pytest.mark.skipif(platform.system() == 'Windows', reason='Windows mem limit')
-def test_moco():
+def test_simclr():
     data_preprocessor = {
         'mean': (123.675, 116.28, 103.53),
         'std': (58.395, 57.12, 57.375),
-        'to_rgb': True
+        'to_rgb': True,
     }
 
-    alg = MoCo(
+    alg = SimCLR(
         backbone=backbone,
         neck=neck,
         head=head,
-        queue_len=queue_len,
-        feat_dim=feat_dim,
-        momentum=momentum,
         data_preprocessor=copy.deepcopy(data_preprocessor))
-    assert alg.queue.size() == torch.Size([feat_dim, queue_len])
 
     fake_data = {
         'inputs':
@@ -51,9 +46,8 @@ def test_moco():
 
     fake_inputs = alg.data_preprocessor(fake_data)
     fake_loss = alg(**fake_inputs, mode='loss')
-    assert fake_loss['loss'] > 0
-    assert alg.queue_ptr.item() == 2
+    assert isinstance(fake_loss['loss'].item(), float)
 
     # test extract
-    fake_feats = alg(fake_inputs['inputs'], mode='tensor')
-    assert fake_feats[0].size() == torch.Size([2, 512, 7, 7])
+    fake_feat = alg(fake_inputs['inputs'], mode='tensor')
+    assert fake_feat[0].size() == torch.Size([2, 512, 7, 7])

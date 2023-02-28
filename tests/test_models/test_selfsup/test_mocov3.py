@@ -70,7 +70,7 @@ class TestMoCoV3(TestCase):
         data_preprocessor = dict(
             mean=(123.675, 116.28, 103.53),
             std=(58.395, 57.12, 57.375),
-            bgr_to_rgb=True)
+            to_rgb=True)
         alg = MoCoV3(
             backbone=self.backbone,
             neck=self.neck,
