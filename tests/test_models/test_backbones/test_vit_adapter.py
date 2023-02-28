@@ -113,6 +113,7 @@ class TestVitAdapter(TestCase):
         # Test forward
         cfg = deepcopy(self.cfg)
         model = VitAdapter(**cfg)
+        model.eval()
         outs = model(imgs)
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 4)
@@ -123,6 +124,7 @@ class TestVitAdapter(TestCase):
         imgs = torch.randn(1, 3, 256, 309)
         cfg = deepcopy(self.cfg)
         model = VitAdapter(**cfg)
+        model.eval()
         for imgs in [imgs]:
             outs = model(imgs)
             self.assertIsInstance(outs, tuple)
@@ -230,6 +232,7 @@ class TestBEiTAdapter(TestCase):
         cfg['arch'] = self.CUSTOM_ARCH
         cfg['deform_num_heads'] = 16
         model = BEiTAdapter(**cfg)
+        model.eval()
         outs = model(imgs)
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 4)
@@ -242,6 +245,7 @@ class TestBEiTAdapter(TestCase):
         cfg['deform_num_heads'] = 16
         cfg['layer_scale_init_value'] = 1.0
         model = BEiTAdapter(**cfg)
+        model.eval()
         outs = model(imgs)
         self.assertIsInstance(outs, tuple)
         self.assertEqual(len(outs), 4)
@@ -253,6 +257,7 @@ class TestBEiTAdapter(TestCase):
         cfg['arch'] = self.CUSTOM_ARCH
         cfg['deform_num_heads'] = 16
         model = BEiTAdapter(**cfg)
+        model.eval()
         for imgs in [imgs]:
             outs = model(imgs)
             self.assertIsInstance(outs, tuple)
