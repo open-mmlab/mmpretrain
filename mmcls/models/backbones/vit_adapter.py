@@ -42,13 +42,16 @@ def _window_partition(x, window_size):
 class AdapterWindowMHSA(MultiheadAttention):
     """Multi-head Attention Module with Windows for ViT-Adapter.
 
+    The differences between AdapterWindowMHSA & MultiheadAttention:
+        1. AdapterWindowMHSA use window attention calculation.
+
     Args:
         embed_dims (int): The embedding dimension.
         num_heads (int): Parallel attention heads.
         input_dims (int, optional): The input dimension, and if None,
             use ``embed_dims``. Defaults to None.
         window_size (int): The window size for MultiheadAttention.
-            Defaults to 0, means using normal TransformerEncoderLayer
+            Defaults to 0, means using normal MultiheadAttention as vit.
         attn_drop (float): Dropout rate of the dropout layer after the
             attention calculation of query and key. Defaults to 0.
         proj_drop (float): Dropout rate of the dropout layer after the
@@ -79,10 +82,10 @@ class AdapterWindowMHSA(MultiheadAttention):
         self.window_size = window_size
 
     def forward(self, x, hw_shape=None):
-        if self.window_size > 0:
+        if self.window_size > 1:
             assert hw_shape is not None, \
-                'hw_shape is None is not supported when ' \
-                'TransformerEncoderLayer with window_size != 0'
+                'None type of hw_shape is not supported when ' \
+                'AdapterWindowMHSA with window_size > 1'
             B, L, C = x.shape
             H, W = hw_shape
             assert L == H * W, \
@@ -105,7 +108,7 @@ class AdapterWindowMHSA(MultiheadAttention):
 
         x = super(AdapterWindowMHSA, self).forward(x)
 
-        if self.window_size > 0:
+        if self.window_size > 1:
             # merge windows
             x = x.view(-1, window_size, window_size, C)
             # B H' W' C
@@ -121,6 +124,9 @@ class AdapterWindowMHSA(MultiheadAttention):
 
 class AdapterWindowBEiTMHSA(BEiTAttention):
     """Multi-head Attention Module with Windows for ViT-Adapter.
+
+    The differences between AdapterWindowBEiTMHSA & BEiTAttention:
+        1. AdapterWindowBEiTMHSA use window attention calculation.
 
     Args:
         embed_dims (int): The embedding dimension.
@@ -159,8 +165,7 @@ class AdapterWindowBEiTMHSA(BEiTAttention):
                 rel_pos_bias: torch.Tensor,
                 hw_shape=None) -> torch.Tensor:
         assert hw_shape is not None, \
-            'hw_shape is None is not supported when ' \
-            'BEiTTransformerEncoderLayer with use_window_attention'
+            'None type of hw_shape is not supported in AdapterWindowBEiTMHSA'
 
         B, L, C = x.shape
         H, W = hw_shape

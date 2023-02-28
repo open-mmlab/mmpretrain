@@ -218,7 +218,7 @@ class BEiTTransformerEncoderLayer(TransformerEncoderLayer):
             x = x + self.drop_path(self.gamma_1 * self.attn(
                 self.norm1(x), rel_pos_bias=rel_pos_bias, **kwargs))
             x = x + self.drop_path(self.gamma_2 * self.ffn(self.norm2(x)))
-        return
+        return x
 
 
 @MODELS.register_module()
