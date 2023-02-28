@@ -4,13 +4,13 @@ from typing import List, Optional, Tuple, Union
 import torch
 import torch.nn as nn
 from mmengine.dist import all_reduce, get_world_size
+from mmengine.model import BaseModule
 
 from mmpretrain.registry import MODELS
-from .base_head import BaseHead
 
 
 @MODELS.register_module()
-class LatentPredictHead(BaseHead):
+class LatentPredictHead(BaseModule):
     """Head for latent feature prediction.
 
     This head builds a predictor, which can be any registered neck component.
@@ -52,7 +52,7 @@ class LatentPredictHead(BaseHead):
 
 
 @MODELS.register_module()
-class LatentCrossCorrelationHead(BaseHead):
+class LatentCrossCorrelationHead(BaseModule):
     """Head for latent feature cross correlation.
 
     Part of the code is borrowed from `script

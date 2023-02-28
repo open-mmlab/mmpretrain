@@ -13,6 +13,7 @@ from .linear_head import LinearClsHead
 from .mae_head import MAEPretrainHead
 from .margin_head import ArcFaceClsHead
 from .mixmim_head import MixMIMPretrainHead
+from .mocov3_head import MoCoV3Head
 from .multi_label_cls_head import MultiLabelClsHead
 from .multi_label_csra_head import CSRAClsHead
 from .multi_label_linear_head import MultiLabelLinearClsHead
@@ -46,4 +47,5 @@ __all__ = [
     'MAEPretrainHead',
     'MixMIMPretrainHead',
     'SwAVHead',
+    'MoCoV3Head',
 ]

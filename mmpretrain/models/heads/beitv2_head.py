@@ -3,13 +3,13 @@ from typing import List, Optional, Union
 
 import torch
 import torch.nn as nn
+from mmengine.model import BaseModule
 
 from mmpretrain.registry import MODELS
-from .base_head import BaseHead
 
 
 @MODELS.register_module()
-class BEiTV2Head(BaseHead):
+class BEiTV2Head(BaseModule):
     """Pretrain Head for BEiT.
 
     Compute the logits and the cross entropy loss.

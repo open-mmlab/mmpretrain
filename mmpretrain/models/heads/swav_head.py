@@ -1,12 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
+from mmengine.model import BaseModule
 
 from mmpretrain.registry import MODELS
-from .base_head import BaseHead
 
 
 @MODELS.register_module()
-class SwAVHead(BaseHead):
+class SwAVHead(BaseModule):
     """Head for SwAV.
 
     Args:

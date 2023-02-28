@@ -1,15 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
 import torch.nn as nn
-from mmengine.dist import get_rank
+from mmengine.dist import all_gather, get_rank
+from mmengine.model import BaseModule
 
 from mmpretrain.registry import MODELS
-from mmpretrain.utils import concat_all_gather
-from .base_head import BaseHead
 
 
 @MODELS.register_module()
-class MoCoV3Head(BaseHead):
+class MoCoV3Head(BaseModule):
     """Head for MoCo v3 algorithms.
 
     This head builds a predictor, which can be any registered neck component.
@@ -53,7 +52,7 @@ class MoCoV3Head(BaseHead):
         target = nn.functional.normalize(momentum_out, dim=1)
 
         # get negative samples
-        target = concat_all_gather(target)
+        target = torch.cat(all_gather(target), dim=0)
 
         # Einstein sum is more intuitive
         logits = torch.einsum('nc,mc->nm', [pred, target]) / self.temperature

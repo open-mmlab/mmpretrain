@@ -3,11 +3,10 @@ from typing import List, Sequence, Tuple
 
 import torch
 import torch.nn as nn
-from mmengine.model import ModuleDict
+from mmengine.model import BaseModule, ModuleDict
 
 from mmpretrain.registry import MODELS
 from mmpretrain.structures import MultiTaskDataSample
-from .base_head import BaseHead
 
 
 def loss_convertor(loss_func, task_name):
@@ -42,7 +41,7 @@ def loss_convertor(loss_func, task_name):
 
 
 @MODELS.register_module()
-class MultiTaskHead(BaseHead):
+class MultiTaskHead(BaseModule):
     """Multi task head.
 
     Args:

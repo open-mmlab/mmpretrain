@@ -3,14 +3,14 @@ from typing import Dict, List, Optional, Tuple
 
 import torch
 import torch.nn as nn
+from mmengine.model import BaseModule
 
 from mmpretrain.registry import MODELS
 from mmpretrain.structures import DataSample, label_to_onehot
-from .base_head import BaseHead
 
 
 @MODELS.register_module()
-class MultiLabelClsHead(BaseHead):
+class MultiLabelClsHead(BaseModule):
     """Classification head for multilabel task.
 
     Args:
