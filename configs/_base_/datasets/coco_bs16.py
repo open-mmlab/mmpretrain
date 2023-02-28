@@ -65,9 +65,9 @@ test_dataloader = dict(
 
 # calculate precision_recall_f1 and mAP
 val_evaluator = [
-    dict(type='VOCMultiLabelMetric'),
-    dict(type='VOCMultiLabelMetric', average='micro'),
-    dict(type='VOCAveragePrecision')
+    dict(type='MultiLabelMetric'),
+    dict(type='MultiLabelMetric', average='micro'),
+    dict(type='AveragePrecision')
 ]
 
 # If you want standard test, please manually configure the test dataset
