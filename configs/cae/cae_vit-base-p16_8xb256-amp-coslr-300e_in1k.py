@@ -3,7 +3,6 @@ _base_ = '../_base_/default_runtime.py'
 # dataset settings
 dataset_type = 'ImageNet'
 data_root = 'data/imagenet/'
-file_client_args = dict(backend='disk')
 data_preprocessor = dict(
     type='TwoNormDataPreprocessor',
     mean=[123.675, 116.28, 103.53],
@@ -13,7 +12,7 @@ data_preprocessor = dict(
     to_rgb=True)
 
 train_pipeline = [
-    dict(type='LoadImageFromFile', file_client_args=file_client_args),
+    dict(type='LoadImageFromFile'),
     dict(type='RandomFlip', prob=0.5),
     dict(
         type='RandomResizedCropAndInterpolationWithTwoPic',

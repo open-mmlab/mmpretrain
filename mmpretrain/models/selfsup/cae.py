@@ -4,7 +4,7 @@
 import math
 from collections import OrderedDict
 from functools import partial
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 import attr
 import numpy as np
@@ -17,7 +17,9 @@ from mmengine.model.weight_init import trunc_normal_
 from mmpretrain.models import VisionTransformer
 from mmpretrain.models.backbones.beit import BEiTTransformerEncoderLayer
 from mmpretrain.registry import MODELS
+from mmpretrain.structures import DataSample
 from ..utils import build_2d_sincos_position_embedding
+from .base import BaseSelfSupervisor
 
 
 @attr.s(eq=False)
@@ -178,7 +180,7 @@ class Encoder(BaseModule):
             raise ValueError(f'input shape {x.shape} is not 4d')
         if x.shape[1] != self.input_channels:
             raise ValueError(f'input has {x.shape[1]} channels but model \
-                    built for {self.input_channels}')
+                    built for {self.input_channels}'                                                    )
         if x.dtype != torch.float32:
             raise ValueError('input must have dtype torch.float32')
 
@@ -307,42 +309,166 @@ class CAEViT(VisionTransformer):
             if m.bias is not None:
                 nn.init.constant_(m.bias, 0)
 
-    def forward(self, img: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
+    def forward(self, img: torch.Tensor,
+                mask: Optional[torch.Tensor]) -> torch.Tensor:
         """Generate features for masked images.
 
         This function generates mask images and get the hidden features for
         visible patches.
 
+        The function supports two kind of forward behaviors. If the ``mask`` is
+        not ``None``, the forward function will be executed as masked image
+        modeling pre-training; if the ``mask`` is ``None``, the forward
+        function will call ``super().forward()``, which extract features from
+        images without mask.
+
         Args:
             x (torch.Tensor): Input images, which is of shape B x C x H x W.
-            mask (torch.Tensor): Mask for input, which is of shape B x L.
+            mask (torch.Tensor, optional): Mask for input, which is of shape
+                B x L.
 
         Returns:
             torch.Tensor: hidden features.
         """
-        x, _ = self.patch_embed(img)
-        batch_size, _, dim = x.size()
+        if mask is None:
+            return super().forward(x)
 
-        cls_tokens = self.cls_token.expand(batch_size, -1, -1)
+        else:
+            x, _ = self.patch_embed(img)
+            batch_size, _, dim = x.size()
 
-        # NOTE: unmasked embeddings
-        x_unmasked = x[~mask].reshape(batch_size, -1, dim)
-        x_unmasked = torch.cat((cls_tokens, x_unmasked), dim=1)
+            cls_tokens = self.cls_token.expand(batch_size, -1, -1)
 
-        pos_embed = self.pos_embed.expand(batch_size, self.num_patches + 1,
-                                          dim)
-        pos_embed_unmasked = pos_embed[:,
-                                       1:][~mask].reshape(batch_size, -1, dim)
-        pos_embed_unmasked = torch.cat((pos_embed[:, :1], pos_embed_unmasked),
-                                       dim=1)
-        x_unmasked = x_unmasked + pos_embed_unmasked
+            # NOTE: unmasked embeddings
+            x_unmasked = x[~mask].reshape(batch_size, -1, dim)
+            x_unmasked = torch.cat((cls_tokens, x_unmasked), dim=1)
 
-        x_unmasked = self.drop_after_pos(x_unmasked)
+            pos_embed = self.pos_embed.expand(batch_size, self.num_patches + 1,
+                                              dim)
+            pos_embed_unmasked = pos_embed[:, 1:][~mask].reshape(
+                batch_size, -1, dim)
+            pos_embed_unmasked = torch.cat(
+                (pos_embed[:, :1], pos_embed_unmasked), dim=1)
+            x_unmasked = x_unmasked + pos_embed_unmasked
 
-        for i, layer in enumerate(self.layers):
-            x_unmasked = layer(x=x_unmasked, rel_pos_bias=None)
+            x_unmasked = self.drop_after_pos(x_unmasked)
 
-            if i == len(self.layers) - 1 and self.final_norm:
-                x_unmasked = self.norm1(x_unmasked)
+            for i, layer in enumerate(self.layers):
+                x_unmasked = layer(x=x_unmasked, rel_pos_bias=None)
 
-        return x_unmasked
+                if i == len(self.layers) - 1 and self.final_norm:
+                    x_unmasked = self.norm1(x_unmasked)
+
+            return x_unmasked
+
+
+@MODELS.register_module()
+class CAE(BaseSelfSupervisor):
+    """CAE.
+
+    Implementation of `Context Autoencoder for Self-Supervised Representation
+    Learning <https://arxiv.org/abs/2202.03026>`_.
+
+    Args:
+        backbone (dict): Config dict for module of backbone.
+        neck (dict): Config dict for module of neck.
+        head (dict): Config dict for module of head functions.
+        target_generator: (dict, optional): The target_generator module to
+            generate targets for self-supervised learning optimization, such as
+            HOG, extracted features from other modules(DALL-E, CLIP), etc.
+        base_momentum (float): The base momentum coefficient for the target
+            network. Defaults to 0.0.
+        data_preprocessor (dict, optional): The config for preprocessing
+            input data. If None or no specified type, it will use
+            "SelfSupDataPreprocessor" as type.
+            See :class:`SelfSupDataPreprocessor` for more details.
+            Defaults to None.
+        init_cfg (Union[List[dict], dict], optional): Config dict for weight
+            initialization. Defaults to None.
+    """
+
+    def __init__(self,
+                 backbone: dict,
+                 neck: dict,
+                 head: dict,
+                 target_generator: Optional[dict] = None,
+                 base_momentum: float = 0.0,
+                 data_preprocessor: Optional[dict] = None,
+                 init_cfg: Optional[Union[List[dict], dict]] = None) -> None:
+        super().__init__(
+            backbone=backbone,
+            neck=neck,
+            head=head,
+            target_generator=target_generator,
+            data_preprocessor=data_preprocessor,
+            init_cfg=init_cfg)
+
+        self.momentum = base_momentum
+        self.teacher = MODELS.build(backbone)
+
+    def init_weights(self) -> None:
+        """Initialize weights."""
+        super().init_weights()
+        self._init_teacher()
+
+    def _init_teacher(self) -> None:
+        """Init the weights of teacher with those of backbone."""
+        for param_backbone, param_teacher in zip(self.backbone.parameters(),
+                                                 self.teacher.parameters()):
+            param_teacher.detach()
+            param_teacher.data.copy_(param_backbone.data)
+            param_teacher.requires_grad = False
+
+    def momentum_update(self) -> None:
+        """Momentum update of the teacher network."""
+        for param_bacbone, param_teacher in zip(self.backbone.parameters(),
+                                                self.teacher.parameters()):
+            param_teacher.data = param_teacher.data * self.momentum + \
+                param_bacbone.data * (1. - self.momentum)
+
+    def loss(self, inputs: List[torch.Tensor], data_samples: List[DataSample],
+             **kwargs) -> Dict[str, torch.Tensor]:
+        """The forward function in training.
+
+        Args:
+            inputs (List[torch.Tensor]): The input images.
+            data_samples (List[SelfSupDataSample]): All elements required
+                during the forward function.
+
+        Returns:
+            Dict[str, torch.Tensor]: A dictionary of loss components.
+        """
+        mask = torch.stack([data_sample.mask for data_sample in data_samples])
+        mask = mask.flatten(1).to(torch.bool)
+
+        unmasked = self.backbone(inputs[0], mask)
+
+        # get the latent prediction for the masked patches
+        with torch.no_grad():
+            # inputs[0] is the prediction image
+            latent_target = self.teacher(inputs[0], ~mask)
+            latent_target = latent_target[:, 1:, :]
+            self.momentum_update()
+
+        pos_embed = self.backbone.pos_embed.expand(inputs[0].shape[0], -1, -1)
+        pos_embed_masked = pos_embed[:,
+                                     1:][mask].reshape(inputs[0].shape[0], -1,
+                                                       pos_embed.shape[-1])
+        pos_embed_unmasked = pos_embed[:, 1:][~mask].reshape(
+            inputs[0].shape[0], -1, pos_embed.shape[-1])
+
+        # input the unmasked tokens and masked tokens to the decoder
+        logits, latent_pred = self.neck(unmasked[:, 1:], pos_embed_masked,
+                                        pos_embed_unmasked)
+
+        logits = logits.view(-1, logits.shape[-1])
+        # inputs[1] is the target image
+        logits_target = self.target_generator(inputs[1])
+        loss_main, loss_align = self.head(logits, logits_target, latent_pred,
+                                          latent_target, mask)
+        losses = dict()
+
+        losses['loss'] = loss_main + loss_align
+        losses['main'] = loss_main
+        losses['align'] = loss_align
+        return losses

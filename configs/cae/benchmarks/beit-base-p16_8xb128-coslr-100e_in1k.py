@@ -17,9 +17,8 @@ data_preprocessor = dict(
 bgr_mean = data_preprocessor['mean'][::-1]
 bgr_std = data_preprocessor['std'][::-1]
 
-file_client_args = dict(backend='disk')
 train_pipeline = [
-    dict(type='LoadImageFromFile', file_client_args=file_client_args),
+    dict(type='LoadImageFromFile'),
     dict(
         type='RandomResizedCrop',
         scale=224,
@@ -47,7 +46,7 @@ train_pipeline = [
 ]
 
 test_pipeline = [
-    dict(type='LoadImageFromFile', file_client_args=file_client_args),
+    dict(type='LoadImageFromFile'),
     dict(
         type='ResizeEdge',
         scale=256,

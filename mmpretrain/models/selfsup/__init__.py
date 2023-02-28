@@ -2,7 +2,7 @@
 from .base import BaseSelfSupervisor
 from .beit import VQKD, BEiTPretrainViT, BEiT
 from .byol import BYOL
-from .cae import CAEViT, Encoder
+from .cae import CAEViT, Encoder, CAE
 from .mae import MAEViT
 from .maskfeat import HOGGenerator, MaskFeatViT
 from .milan import CLIPGenerator, MILANViT
@@ -33,4 +33,5 @@ __all__ = [
     'SimCLR',
     'SimSiam',
     'BEiT',
+    'CAE',
 ]
