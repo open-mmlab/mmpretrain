@@ -10,7 +10,7 @@ def get_ori_model(model: nn.Module) -> nn.Module:
         model (nn.Module): A model may be a model wrapper.
 
     Returns:
-        BaseModel: The model without model wrapper.
+        nn.Module: The model without model wrapper.
     """
     if is_model_wrapper(model):
         return model.module
