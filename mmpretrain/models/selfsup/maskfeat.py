@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import math
-from typing import List, Optional, Sequence, Union
+from typing import Dict, List, Optional, Sequence, Union
 
 import cv2
 import numpy as np
@@ -11,6 +11,8 @@ from mmengine.model import BaseModule
 
 from mmpretrain.models import VisionTransformer
 from mmpretrain.registry import MODELS
+from mmpretrain.structures import DataSample
+from .base import BaseSelfSupervisor
 
 
 @MODELS.register_module()
@@ -241,35 +243,80 @@ class MaskFeatViT(VisionTransformer):
             nn.init.constant_(m.bias, 0)
             nn.init.constant_(m.weight, 1.0)
 
-    def forward(self, x: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor,
+                mask: Optional[torch.Tensor]) -> torch.Tensor:
         """Generate features for masked images.
+
+        The function supports two kind of forward behaviors. If the ``mask`` is
+        not ``None``, the forward function will be executed as masked image
+        modeling pre-training; if the ``mask`` is ``None``, the forward
+        function will call ``super().forward()``, which extract features from
+        images without mask.
 
         Args:
             x (torch.Tensor): Input images.
-            mask (torch.Tensor): Input masks.
+            mask (torch.Tensor, optional): Input masks.
 
         Returns:
             torch.Tensor: Features with cls_tokens.
         """
-        B = x.shape[0]
-        x = self.patch_embed(x)[0]
+        if mask is None:
+            return super().forward(x)
 
-        # masking: length -> length * mask_ratio
-        B, L, _ = x.shape
-        mask_tokens = self.mask_token.expand(B, L, -1)
-        mask = mask.flatten(1).unsqueeze(-1)
-        x = x * (1 - mask.int()) + mask_tokens * mask
+        else:
+            B = x.shape[0]
+            x = self.patch_embed(x)[0]
 
-        # append cls token
-        cls_tokens = self.cls_token.expand(B, -1, -1)
-        x = torch.cat((cls_tokens, x), dim=1)
-        x = x + self.pos_embed
-        x = self.drop_after_pos(x)
+            # masking: length -> length * mask_ratio
+            B, L, _ = x.shape
+            mask_tokens = self.mask_token.expand(B, L, -1)
+            mask = mask.flatten(1).unsqueeze(-1)
+            x = x * (1 - mask.int()) + mask_tokens * mask
 
-        for i, layer in enumerate(self.layers):
-            x = layer(x)
+            # append cls token
+            cls_tokens = self.cls_token.expand(B, -1, -1)
+            x = torch.cat((cls_tokens, x), dim=1)
+            x = x + self.pos_embed
+            x = self.drop_after_pos(x)
 
-            if i == len(self.layers) - 1 and self.final_norm:
-                x = self.norm1(x)
+            for i, layer in enumerate(self.layers):
+                x = layer(x)
 
-        return x
+                if i == len(self.layers) - 1 and self.final_norm:
+                    x = self.norm1(x)
+
+            return x
+
+
+@MODELS.register_module()
+class MaskFeat(BaseSelfSupervisor):
+    """MaskFeat.
+
+    Implementation of `Masked Feature Prediction for Self-Supervised Visual
+    Pre-Training <https://arxiv.org/abs/2112.09133>`_.
+    """
+
+    def loss(self, inputs: torch.Tensor, data_samples: List[DataSample],
+             **kwargs) -> Dict[str, torch.Tensor]:
+        """The forward function in training.
+
+        Args:
+            inputs (torch.Tensor): The input images.
+            data_samples (List[DataSample]): All elements required
+                during the forward function.
+
+        Returns:
+            Dict[str, torch.Tensor]: A dictionary of loss components.
+        """
+        mask = torch.stack([data_sample.mask for data_sample in data_samples])
+        mask = mask.to(torch.bool)
+
+        latent = self.backbone(inputs, mask)
+        B, L, C = latent.shape
+        pred = self.neck((latent.view(B * L, C), ))
+        pred = pred[0].view(B, L, -1)
+        hog = self.target_generator(inputs)
+
+        loss = self.head.loss(pred, hog, mask)
+        losses = dict(loss=loss)
+        return losses

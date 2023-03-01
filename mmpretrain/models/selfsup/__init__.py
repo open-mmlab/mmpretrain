@@ -4,7 +4,7 @@ from .beit import VQKD, BEiTPretrainViT, BEiT
 from .byol import BYOL
 from .cae import CAEPretrainViT, Encoder, CAE
 from .mae import MAEViT, MAE
-from .maskfeat import HOGGenerator, MaskFeatViT
+from .maskfeat import HOGGenerator, MaskFeatViT, MaskFeat
 from .milan import CLIPGenerator, MILANViT
 from .mixmim import MixMIMPretrainTransformer
 from .moco import MoCo
@@ -35,4 +35,5 @@ __all__ = [
     'BEiT',
     'CAE',
     'MAE',
+    'MaskFeat',
 ]
