@@ -14,12 +14,12 @@ As the input size of CIFAR is 32x32, which is much smaller than the default size
 
 The easiest way is to inherit from `ResNet` and only modify the stem layer.
 
-1. Create a new file `mmcls/models/backbones/resnet_cifar.py`.
+1. Create a new file `mmpretrain/models/backbones/resnet_cifar.py`.
 
    ```python
    import torch.nn as nn
 
-   from mmcls.registry import MODELS
+   from mmpretrain.registry import MODELS
    from .resnet import ResNet
 
 
@@ -89,7 +89,7 @@ The easiest way is to inherit from `ResNet` and only modify the stem layer.
 Replace original registry names from `BACKBONES`, `NECKS`, `HEADS` and `LOSSES` to `MODELS` in OpenMMLab 2.0 design.
 ```
 
-2. Import the new backbone module in `mmcls/models/backbones/__init__.py`.
+2. Import the new backbone module in `mmpretrain/models/backbones/__init__.py`.
 
    ```python
    ...
@@ -117,12 +117,12 @@ Replace original registry names from `BACKBONES`, `NECKS`, `HEADS` and `LOSSES` 
 Here we take `GlobalAveragePooling` as an example. It is a very simple neck without any arguments.
 To add a new neck, we mainly implement the `forward` function, which applies some operations on the output from the backbone and forwards the results to the head.
 
-1. Create a new file in `mmcls/models/necks/gap.py`.
+1. Create a new file in `mmpretrain/models/necks/gap.py`.
 
    ```python
    import torch.nn as nn
 
-   from mmcls.registry import MODELS
+   from mmpretrain.registry import MODELS
 
    @MODELS.register_module()
    class GlobalAveragePooling(nn.Module):
@@ -137,7 +137,7 @@ To add a new neck, we mainly implement the `forward` function, which applies som
            return outs
    ```
 
-2. Import the new neck module in `mmcls/models/necks/__init__.py`.
+2. Import the new neck module in `mmpretrain/models/necks/__init__.py`.
 
    ```python
    ...
@@ -168,12 +168,12 @@ In classification tasks, we usually use a linear layer to do the final classific
 to obtain the feature before the final classification, which is the output of the `pre_logits` method.
 :::
 
-1. Create a new file in `mmcls/models/heads/vit_head.py`.
+1. Create a new file in `mmpretrain/models/heads/vit_head.py`.
 
    ```python
    import torch.nn as nn
 
-   from mmcls.registry import MODELS
+   from mmpretrain.registry import MODELS
    from .cls_head import ClsHead
 
 
@@ -210,7 +210,7 @@ to obtain the feature before the final classification, which is the output of th
            return cls_score
    ```
 
-2. Import the module in `mmcls/models/heads/__init__.py`.
+2. Import the module in `mmpretrain/models/heads/__init__.py`.
 
    ```python
    ...
@@ -237,13 +237,13 @@ To add a new loss function, we mainly implement the `forward` function in the lo
 In addition, it is helpful to leverage the decorator `weighted_loss` to weight the loss for each element.
 Assuming that we want to mimic a probabilistic distribution generated from another classification model, we implement an L1Loss to fulfill the purpose as below.
 
-1. Create a new file in `mmcls/models/losses/l1_loss.py`.
+1. Create a new file in `mmpretrain/models/losses/l1_loss.py`.
 
    ```python
    import torch
    import torch.nn as nn
 
-   from mmcls.registry import MODELS
+   from mmpretrain.registry import MODELS
    from .utils import weighted_loss
 
    @weighted_loss
@@ -274,7 +274,7 @@ Assuming that we want to mimic a probabilistic distribution generated from anoth
            return loss
    ```
 
-2. Import the module in `mmcls/models/losses/__init__.py`.
+2. Import the module in `mmpretrain/models/losses/__init__.py`.
 
    ```python
    ...

@@ -1,9 +1,9 @@
 .. role:: hidden
     :class: hidden-section
 
-.. module:: mmcls.utils
+.. module:: mmpretrain.utils
 
-mmcls.utils
+mmpretrain.utils
 ===================================
 
 This package includes some useful helper functions for developing.

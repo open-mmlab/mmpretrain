@@ -1,9 +1,9 @@
 .. role:: hidden
     :class: hidden-section
 
-.. module:: mmcls.visualization
+.. module:: mmpretrain.visualization
 
-mmcls.visualization
+mmpretrain.visualization
 ===================================
 
 This package includes visualizer components for classification tasks.

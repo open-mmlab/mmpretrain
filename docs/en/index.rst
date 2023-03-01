@@ -1,4 +1,4 @@
-Welcome to MMClassification's documentation!
+Welcome to MMPretrain's documentation!
 ============================================
 
 .. toctree::
@@ -61,15 +61,15 @@ Welcome to MMClassification's documentation!
    :maxdepth: 1
    :caption: API Reference
 
-   mmcls.apis <api/apis>
-   mmcls.engine <api/engine>
-   mmcls.datasets <api/datasets>
+   mmpretrain.apis <api/apis>
+   mmpretrain.engine <api/engine>
+   mmpretrain.datasets <api/datasets>
    Data Process <api/data_process>
-   mmcls.models <api/models>
-   mmcls.structures <api/structures>
-   mmcls.visualization <api/visualization>
-   mmcls.evaluation <api/evaluation>
-   mmcls.utils <api/utils>
+   mmpretrain.models <api/models>
+   mmpretrain.structures <api/structures>
+   mmpretrain.visualization <api/visualization>
+   mmpretrain.evaluation <api/evaluation>
+   mmpretrain.utils <api/utils>
 
 .. toctree::
    :maxdepth: 1
@@ -79,12 +79,6 @@ Welcome to MMClassification's documentation!
    notes/projects.md
    notes/changelog.md
    notes/faq.md
-
-.. toctree::
-   :caption: Switch Language
-
-   English <https://mmclassification.readthedocs.io/en/1.x/>
-   简体中文 <https://mmclassification.readthedocs.io/zh_CN/1.x/>
 
 
 Indices and tables

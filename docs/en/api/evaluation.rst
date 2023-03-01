@@ -1,14 +1,14 @@
 .. role:: hidden
     :class: hidden-section
 
-.. module:: mmcls.evaluation
+.. module:: mmpretrain.evaluation
 
-mmcls.evaluation
+mmpretrain.evaluation
 ===================================
 
 This package includes metrics and evaluators for classification tasks.
 
-.. contents:: mmcls.evaluation
+.. contents:: mmpretrain.evaluation
    :depth: 1
    :local:
    :backlinks: top

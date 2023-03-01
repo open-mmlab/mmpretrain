@@ -157,7 +157,7 @@ In training, the optimzation parameters such as learing rate, momentum, are usua
 
 Learning rate schedulers are widely used to improve performance. We support most of the PyTorch schedulers, including `ExponentialLR`, `LinearLR`, `StepLR`, `MultiStepLR`, etc.
 
-All available learning rate scheduler can be found {external+mmengine:ref}`here <scheduler>`, and the
+All available learning rate scheduler can be found {external+mmengine:doc}`here <api/optim>`, and the
 names of learning rate schedulers end with `LR`.
 
 - **Single learning rate schedule**
@@ -235,7 +235,7 @@ names of learning rate schedulers end with `LR`.
 
 We support using momentum schedulers to modify the optimizer's momentum according to learning rate, which could make the loss converge in a faster way. The usage is the same as learning rate schedulers.
 
-All available learning rate scheduler can be found {external+mmengine:ref}`here <scheduler>`, and the
+All available learning rate scheduler can be found {external+mmengine:doc}`here <api/optim>`, and the
 names of momentum rate schedulers end with `Momentum`.
 
 Here is an example:
@@ -266,11 +266,11 @@ In academic research and industrial practice, it may be necessary to use optimiz
 #### 1. Implement a new optimizer
 
 Assume you want to add an optimizer named `MyOptimizer`, which has arguments `a`, `b`, and `c`.
-You need to create a new file under `mmcls/engine/optimizers`, and implement the new optimizer in the file, for example, in `mmcls/engine/optimizers/my_optimizer.py`:
+You need to create a new file under `mmpretrain/engine/optimizers`, and implement the new optimizer in the file, for example, in `mmpretrain/engine/optimizers/my_optimizer.py`:
 
 ```python
 from torch.optim import Optimizer
-from mmcls.registry import OPTIMIZERS
+from mmpretrain.registry import OPTIMIZERS
 
 
 @OPTIMIZERS.register_module()
@@ -287,29 +287,29 @@ class MyOptimizer(Optimizer):
 
 To find the above module defined above, this module should be imported during the running. There are two ways to achieve it.
 
-- Import it in the `mmcls/engine/optimizers/__init__.py` to add it into the `mmcls.engine` package.
+- Import it in the `mmpretrain/engine/optimizers/__init__.py` to add it into the `mmpretrain.engine` package.
 
   ```python
-  # In mmcls/engine/optimizers/__init__.py
+  # In mmpretrain/engine/optimizers/__init__.py
   ...
   from .my_optimizer import MyOptimizer # MyOptimizer maybe other class name
 
   __all__ = [..., 'MyOptimizer']
   ```
 
-  During running, we will automatically import the `mmcls.engine` package and register the `MyOptimizer` at the same time.
+  During running, we will automatically import the `mmpretrain.engine` package and register the `MyOptimizer` at the same time.
 
 - Use `custom_imports` in the config file to manually import it.
 
   ```python
   custom_imports = dict(
-      imports=['mmcls.engine.optimizers.my_optimizer'],
+      imports=['mmpretrain.engine.optimizers.my_optimizer'],
       allow_failed_imports=False,
   )
   ```
 
-  The module `mmcls.engine.optimizers.my_optimizer` will be imported at the beginning of the program and the class `MyOptimizer` is then automatically registered.
-  Note that only the package containing the class `MyOptimizer` should be imported. `mmcls.engine.optimizers.my_optimizer.MyOptimizer` **cannot** be imported directly.
+  The module `mmpretrain.engine.optimizers.my_optimizer` will be imported at the beginning of the program and the class `MyOptimizer` is then automatically registered.
+  Note that only the package containing the class `MyOptimizer` should be imported. `mmpretrain.engine.optimizers.my_optimizer.MyOptimizer` **cannot** be imported directly.
 
 #### 3. Specify the optimizer in the config file
 
@@ -334,9 +334,9 @@ different parameters according to the `paramwise_cfg`，which could also serve a
 You can overwrite these behaviors by add new optimizer constructors.
 
 ```python
-# In mmcls/engine/optimizers/my_optim_constructor.py
+# In mmpretrain/engine/optimizers/my_optim_constructor.py
 from mmengine.optim import DefaultOptimWrapperConstructor
-from mmcls.registry import OPTIM_WRAPPER_CONSTRUCTORS
+from mmpretrain.registry import OPTIM_WRAPPER_CONSTRUCTORS
 
 
 @OPTIM_WRAPPER_CONSTRUCTORS.register_module()
@@ -351,10 +351,10 @@ class MyOptimWrapperConstructor:
 
 And then, import it and use it almost like [the optimizer tutorial](#add-new-optimizers).
 
-1. Import it in the `mmcls/engine/optimizers/__init__.py` to add it into the `mmcls.engine` package.
+1. Import it in the `mmpretrain/engine/optimizers/__init__.py` to add it into the `mmpretrain.engine` package.
 
    ```python
-   # In mmcls/engine/optimizers/__init__.py
+   # In mmpretrain/engine/optimizers/__init__.py
    ...
    from .my_optim_constructor import MyOptimWrapperConstructor
 

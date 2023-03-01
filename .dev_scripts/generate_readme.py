@@ -108,6 +108,12 @@ def parse_args():
         '--table', action='store_true', help='Only generate summary tables')
     parser.add_argument(
         '--update', type=str, help='Update the specified readme file.')
+    parser.add_argument(
+        '--update-items',
+        type=str,
+        nargs='+',
+        default=['models'],
+        help='Update the specified readme file.')
     args = parser.parse_args()
     return args
 
@@ -363,29 +369,39 @@ def parse_readme(readme):
         elif section.startswith('Introduction'):
             content['intro'] = '## ' + section.strip() + '\n'
         elif section.startswith('Abstract'):
-            content['abstract'] = '## ' + section.strip() + '\n'
+            content['abs'] = '## ' + section.strip() + '\n'
         elif section.startswith('How to use it'):
             content['usage'] = '## ' + section.strip() + '\n'
         elif section.startswith('Models and results'):
             content['models'] = '## ' + section.strip() + '\n'
         elif section.startswith('Citation'):
             content['citation'] = '## ' + section.strip() + '\n'
+        else:
+            section_title = section.split('\n', maxsplit=1)[0]
+            content[section_title] = '## ' + section.strip() + '\n'
     return content
 
 
-def combine_readme(content):
-    readme = content['title']
+def combine_readme(content: dict):
+    content = content.copy()
+    readme = content.pop('title')
     if 'intro' in content:
-        readme += f"\n{content['intro']}"
-        readme += f"\n{content['image']}"
-        readme += f"\n{content['abstract']}"
+        readme += f"\n{content.pop('intro')}"
+        readme += f"\n{content.pop('image')}"
+        readme += f"\n{content.pop('abs')}"
     else:
-        readme += f"\n{content['abstract']}"
-        readme += f"\n{content['image']}"
+        readme += f"\n{content.pop('abs')}"
+        readme += f"\n{content.pop('image')}"
 
-    readme += f"\n{content['usage']}"
-    readme += f"\n{content['models']}"
-    readme += f"\n{content['citation']}"
+    readme += f"\n{content.pop('usage')}"
+    readme += f"\n{content.pop('models')}"
+
+    citation = content.pop('citation')
+    if content:
+        # Custom sections
+        for v in content.values():
+            readme += f'\n{v}'
+    readme += f'\n{citation}'
     return readme
 
 
@@ -401,14 +417,17 @@ def main():
     else:
         content = {}
 
-    content['title'] = add_title(metafile)
-    if 'abstract' not in content:
-        content['abstract'] = add_abstract(metafile)
-    if 'image' not in content:
-        content[
-            'image'] = '<div align=center>\n<img src="" width="50%"/>\n</div>\n'
-    content['usage'] = add_usage(metafile)
-    content['models'] = add_models(metafile)
+    if 'title' not in content or 'title' in args.update_items:
+        content['title'] = add_title(metafile)
+    if 'abs' not in content or 'abs' in args.update_items:
+        content['abs'] = add_abstract(metafile)
+    if 'image' not in content or 'image' in args.update_items:
+        img = '<div align=center>\n<img src="" width="50%"/>\n</div>\n'
+        content['image'] = img
+    if 'usage' not in content or 'usage' in args.update_items:
+        content['usage'] = add_usage(metafile)
+    if 'models' not in content or 'models' in args.update_items:
+        content['models'] = add_models(metafile)
     if 'citation' not in content:
         content['citation'] = '## Citation\n```bibtex\n```\n'
 

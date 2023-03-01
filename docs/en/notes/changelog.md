@@ -34,7 +34,7 @@
 
 - [Fix] Fix imports in transforms. ([#1255](https://github.com/open-mmlab/mmclassification/pull/1255))
 - [Fix] Fix CAM visualization. ([#1248](https://github.com/open-mmlab/mmclassification/pull/1248))
-- [Fix] Fix the requirements and lazy register mmcls models. ([#1275](https://github.com/open-mmlab/mmclassification/pull/1275))
+- [Fix] Fix the requirements and lazy register mmpretrain models. ([#1275](https://github.com/open-mmlab/mmclassification/pull/1275))
 
 ## v1.0.0rc4(06/12/2022)
 
@@ -102,7 +102,7 @@
 
 - Fix the torchserve. ([#1143](https://github.com/open-mmlab/mmclassification/pull/1143))
 - Fix configs due to api refactor of `num_classes`. ([#1184](https://github.com/open-mmlab/mmclassification/pull/1184))
-- Update mmcls2torchserve. ([#1189](https://github.com/open-mmlab/mmclassification/pull/1189))
+- Update mmpretrain2torchserve. ([#1189](https://github.com/open-mmlab/mmclassification/pull/1189))
 - Fix for `inference_model` cannot get classes information in checkpoint. ([#1093](https://github.com/open-mmlab/mmclassification/pull/1093))
 
 ### Docs Update
@@ -256,7 +256,7 @@ And there are some BC-breaking changes. Please check [the migration tutorial](ht
 ### Docs Update
 
 - [Docs] Add brief installation steps in README for copy&paste. ([#755](https://github.com/open-mmlab/mmclassification/pull/755))
-- [Docs] fix logo url link from mmocr to mmcls. ([#732](https://github.com/open-mmlab/mmclassification/pull/732))
+- [Docs] fix logo url link from mmocr to mmpretrain. ([#732](https://github.com/open-mmlab/mmclassification/pull/732))
 
 ## v0.21.0(04/03/2022)
 
@@ -538,12 +538,12 @@ And there are some BC-breaking changes. Please check [the migration tutorial](ht
 
 - Add transformer-in-transformer backbone and pretrain checkpoints, refers to [the paper](https://arxiv.org/abs/2103.00112).
 - Add Chinese colab tutorial.
-- Provide dockerfile to build mmcls dev docker image.
+- Provide dockerfile to build mmpretrain dev docker image.
 
 ### New Features
 
 - Add transformer in transformer backbone and pretrain checkpoints. ([#339](https://github.com/open-mmlab/mmclassification/pull/339))
-- Support mim, welcome to use mim to manage your mmcls project. ([#376](https://github.com/open-mmlab/mmclassification/pull/376))
+- Support mim, welcome to use mim to manage your mmpretrain project. ([#376](https://github.com/open-mmlab/mmclassification/pull/376))
 - Add Dockerfile. ([#365](https://github.com/open-mmlab/mmclassification/pull/365))
 - Add ResNeSt configs. ([#332](https://github.com/open-mmlab/mmclassification/pull/332))
 
@@ -552,7 +552,7 @@ And there are some BC-breaking changes. Please check [the migration tutorial](ht
 - Use the `presistent_works` option if available, to accelerate training. ([#349](https://github.com/open-mmlab/mmclassification/pull/349))
 - Add Chinese ipynb tutorial. ([#306](https://github.com/open-mmlab/mmclassification/pull/306))
 - Refactor unit tests. ([#321](https://github.com/open-mmlab/mmclassification/pull/321))
-- Support to test mmdet inference with mmcls backbone. ([#343](https://github.com/open-mmlab/mmclassification/pull/343))
+- Support to test mmdet inference with mmpretrain backbone. ([#343](https://github.com/open-mmlab/mmclassification/pull/343))
 - Use zero as default value of `thrs` in metrics. ([#341](https://github.com/open-mmlab/mmclassification/pull/341))
 
 ### Bug Fixes
@@ -671,7 +671,7 @@ And there are some BC-breaking changes. Please check [the migration tutorial](ht
 - Fix `LabelSmoothLoss` so that label smoothing and mixup could be enabled at the same time. (#203)
 - Add `cal_acc` option in `ClsHead`. (#206)
 - Check `CLASSES` in checkpoint to avoid unexpected key error. (#207)
-- Check mmcv version when importing mmcls to ensure compatibility. (#209)
+- Check mmcv version when importing mmpretrain to ensure compatibility. (#209)
 - Update `CONTRIBUTING.md` to align with that in MMCV. (#210)
 - Change tags to html comments in configs README.md. (#226)
 - Clean codes in ViT backbone. (#227)
@@ -723,7 +723,7 @@ And there are some BC-breaking changes. Please check [the migration tutorial](ht
 ### Improvements
 
 - Add `--eval-options` in `tools/test.py` to support eval options override, matching the behavior of other open-mmlab projects. (#158)
-- Support showing and saving painted results in `mmcls.apis.test` and `tools/test.py`, matching the behavior of other open-mmlab projects. (#162)
+- Support showing and saving painted results in `mmpretrain.apis.test` and `tools/test.py`, matching the behavior of other open-mmlab projects. (#162)
 
 ### Bug Fixes
 

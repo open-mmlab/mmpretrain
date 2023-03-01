@@ -25,7 +25,7 @@ train_pipeline = [
 ]
 ```
 
-All available data transforms in MMClassification can be found in the [data transforms docs](mmcls.datasets.transforms).
+All available data transforms in MMClassification can be found in the [data transforms docs](mmpretrain.datasets.transforms).
 
 ## Modify the training/test pipeline
 
@@ -68,8 +68,8 @@ train_pipeline = [
 
 Here is a heavy data augmentation recipe example used in [Swin-Transformer](../papers/swin_transformer.md)
 training. To align with the official implementation, it specified `pillow` as the resize backend and `bicubic`
-as the resize algorithm. Moreover, it added [`RandAugment`](mmcls.datasets.transforms.RandAugment) and
-[`RandomErasing`](mmcls.datasets.transforms.RandomErasing) as extra data augmentation method.
+as the resize algorithm. Moreover, it added [`RandAugment`](mmpretrain.datasets.transforms.RandAugment) and
+[`RandomErasing`](mmpretrain.datasets.transforms.RandomErasing) as extra data augmentation method.
 
 This configuration specified every detail of the data augmentation, and you can simply copy it to your own
 config file to apply the data augmentations of the Swin-Transformer.
@@ -107,7 +107,7 @@ train_pipeline = [
 Usually, the data augmentation part in the data pipeline handles only image-wise transforms, but not transforms
 like image normalization or mixup/cutmix. It's because we can do image normalization and mixup/cutmix on batch data
 to accelerate. To configure image normalization and mixup/cutmix, please use the [data preprocessor]
-(mmcls.models.utils.data_preprocessor).
+(mmpretrain.models.utils.data_preprocessor).
 ```
 
 ### Formatting
@@ -115,9 +115,9 @@ to accelerate. To configure image normalization and mixup/cutmix, please use the
 The formatting is to collect training data from the data information dict and convert these data to
 model-friendly format.
 
-In most cases, you can simply use [`PackClsInputs`](mmcls.datasets.transforms.PackClsInputs), and it will
+In most cases, you can simply use [`PackClsInputs`](mmpretrain.datasets.transforms.PackClsInputs), and it will
 convert the image in NumPy array format to PyTorch tensor, and pack the ground truth categories information and
-other meta information as a [`ClsDataSample`](mmcls.structures.ClsDataSample).
+other meta information as a [`DataSample`](mmpretrain.structures.DataSample).
 
 ```python
 train_pipeline = [
@@ -129,13 +129,13 @@ train_pipeline = [
 ## Add new data transforms
 
 1. Write a new data transform in any file, e.g., `my_transform.py`, and place it in
-   the folder `mmcls/datasets/transforms/`. The data transform class needs to inherit
+   the folder `mmpretrain/datasets/transforms/`. The data transform class needs to inherit
    the [`mmcv.transforms.BaseTransform`](mmcv.transforms.BaseTransform) class and override
    the `transform` method which takes a dict as input and returns a dict.
 
    ```python
    from mmcv.transforms import BaseTransform
-   from mmcls.datasets import TRANSFORMS
+   from mmpretrain.datasets import TRANSFORMS
 
    @TRANSFORMS.register_module()
    class MyTransform(BaseTransform):
@@ -145,7 +145,7 @@ train_pipeline = [
            return results
    ```
 
-2. Import the new class in the `mmcls/datasets/transforms/__init__.py`.
+2. Import the new class in the `mmpretrain/datasets/transforms/__init__.py`.
 
    ```python
    ...

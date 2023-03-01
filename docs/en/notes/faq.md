@@ -58,9 +58,9 @@ and make sure you fill in all required information in the template.
 
 ## Coding
 
-- Do I need to reinstall mmcls after some code modifications?
+- Do I need to reinstall mmpretrain after some code modifications?
 
-  If you follow [the best practice](../get_started.md#best-practices) and install mmcls from source,
+  If you follow [the best practice](../get_started.md#best-practices) and install mmpretrain from source,
   any local modifications made to the code will take effect without
   reinstallation.
 
@@ -69,8 +69,8 @@ and make sure you fill in all required information in the template.
   Generally speaking, we recommend to use different virtual environments to
   manage MMClassification in different working directories. However, you
   can also use the same environment to develop MMClassification in different
-  folders, like mmcls-0.21, mmcls-0.23. When you run the train or test shell script,
-  it will adopt the mmcls package in the current folder. And when you run other Python
+  folders, like mmpretrain-0.21, mmpretrain-0.23. When you run the train or test shell script,
+  it will adopt the mmpretrain package in the current folder. And when you run other Python
   script, you can also add `` PYTHONPATH=`pwd`  `` at the beginning of your command
   to use the package in the current folder.
 

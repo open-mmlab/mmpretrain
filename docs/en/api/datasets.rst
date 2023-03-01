@@ -1,14 +1,14 @@
 .. role:: hidden
     :class: hidden-section
 
-.. module:: mmcls.datasets
+.. module:: mmpretrain.datasets
 
-mmcls.datasets
+mmpretrain.datasets
 ===================================
 
 The ``datasets`` package contains several usual datasets for image classification tasks and some dataset wrappers.
 
-.. contents:: mmcls.datasets
+.. contents:: mmpretrain.datasets
    :depth: 2
    :local:
    :backlinks: top

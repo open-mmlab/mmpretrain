@@ -1,7 +1,7 @@
 # Adding New Dataset
 
 You can write a new dataset class inherited from `BaseDataset`, and overwrite `load_data_list(self)`,
-like [CIFAR10](https://github.com/open-mmlab/mmclassification/blob/1.x/mmcls/datasets/cifar.py) and [ImageNet](https://github.com/open-mmlab/mmclassification/blob/1.x/mmcls/datasets/imagenet.py).
+like [CIFAR10](https://github.com/open-mmlab/mmclassification/blob/1.x/mmpretrain/datasets/cifar.py) and [ImageNet](https://github.com/open-mmlab/mmclassification/blob/1.x/mmpretrain/datasets/imagenet.py).
 Typically, this function returns a list, where each sample is a dict, containing necessary data information, e.g., `img` and `gt_label`.
 
 Assume we are going to implement a `Filelist` dataset, which takes filelists for both training and testing. The format of annotation list is as follows:
@@ -13,10 +13,10 @@ Assume we are going to implement a `Filelist` dataset, which takes filelists for
 
 ## 1. Create Dataset Class
 
-We can create a new dataset in `mmcls/datasets/filelist.py` to load the data.
+We can create a new dataset in `mmpretrain/datasets/filelist.py` to load the data.
 
 ```python
-from mmcls.registry import DATASETS
+from mmpretrain.registry import DATASETS
 from .base_dataset import BaseDataset
 
 
@@ -38,7 +38,7 @@ class Filelist(BaseDataset):
 
 ## 2. Add to the package
 
-And add this dataset class in `mmcls/datasets/__init__.py`
+And add this dataset class in `mmpretrain/datasets/__init__.py`
 
 ```python
 from .base_dataset import BaseDataset
@@ -65,7 +65,7 @@ train_dataloader = dict(
 )
 ```
 
-All the dataset classes inherit from [`BaseDataset`](https://github.com/open-mmlab/mmclassification/blob/1.x/mmcls/datasets/base_dataset.py) have **lazy loading** and **memory saving** features, you can refer to related documents [mmengine.basedataset](https://github.com/open-mmlab/mmengine/blob/main/docs/zh_cn/tutorials/basedataset.md).
+All the dataset classes inherit from [`BaseDataset`](https://github.com/open-mmlab/mmclassification/blob/1.x/mmpretrain/datasets/base_dataset.py) have **lazy loading** and **memory saving** features, you can refer to related documents [mmengine.basedataset](https://github.com/open-mmlab/mmengine/blob/main/docs/zh_cn/tutorials/basedataset.md).
 
 ```{note}
 If the dictionary of the data sample contains 'img_path' but not 'img', then 'LoadImgFromFile' transform must be added in the pipeline.

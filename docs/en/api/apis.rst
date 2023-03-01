@@ -1,14 +1,14 @@
 .. role:: hidden
     :class: hidden-section
 
-.. module:: mmcls.apis
+.. module:: mmpretrain.apis
 
-mmcls.apis
+mmpretrain.apis
 ===================================
 
 These are some high-level APIs for classification tasks.
 
-.. contents:: mmcls.apis
+.. contents:: mmpretrain.apis
    :depth: 2
    :local:
    :backlinks: top

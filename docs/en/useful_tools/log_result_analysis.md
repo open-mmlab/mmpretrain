@@ -109,7 +109,7 @@ Description of all arguments:
 - `--metric`: The metric and options to evaluate the results. You need to specify at least one metric and you
   can also specify multiple `--metric` to use multiple metrics.
 
-Please refer the [Metric Documentation](mmcls.evaluation) to find the available metrics and options.
+Please refer the [Metric Documentation](mmpretrain.evaluation) to find the available metrics and options.
 
 ```{note}
 In `tools/test.py`, we support using `--out-item` option to select which kind of results will be saved.

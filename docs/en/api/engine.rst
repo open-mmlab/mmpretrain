@@ -1,9 +1,9 @@
 .. role:: hidden
     :class: hidden-section
 
-.. module:: mmcls.engine
+.. module:: mmpretrain.engine
 
-mmcls.engine
+mmpretrain.engine
 ===================================
 
 This package includes some runtime components, including hooks, runners, optimizers and loops. These components are useful in
@@ -13,12 +13,12 @@ classification tasks but not supported by MMEngine yet.
 
    Some components may be moved to MMEngine in the future.
 
-.. contents:: mmcls.engine
+.. contents:: mmpretrain.engine
    :depth: 2
    :local:
    :backlinks: top
 
-.. module:: mmcls.engine.hooks
+.. module:: mmpretrain.engine.hooks
 
 Hooks
 ------------------
@@ -34,7 +34,7 @@ Hooks
    SetAdaptiveMarginsHook
    EMAHook
 
-.. module:: mmcls.engine.optimizers
+.. module:: mmpretrain.engine.optimizers
 
 Optimizers
 ------------------
