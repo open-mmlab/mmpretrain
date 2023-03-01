@@ -39,6 +39,13 @@ class MultiAtrous(BaseModule):
         # half of out_c for the sake of generality, which is consistent
         #  when using resnet101.
         hidden_channel = out_channel // 2
+
+        # global convolution
+        self.gap_conv = nn.Sequential(
+            nn.AdaptiveAvgPool2d(1),
+            nn.Conv2d(in_channel, hidden_channel, kernel_size=(1, 1)),
+            nn.ReLU())
+
         self.dilated_conv_list = nn.ModuleList([
             nn.Conv2d(
                 in_channel,
@@ -47,12 +54,6 @@ class MultiAtrous(BaseModule):
                 padding=rate,
                 dilation=rate) for rate in dilation_rates
         ])
-
-        # global convolution
-        self.gap_conv = nn.Sequential(
-            nn.AdaptiveAvgPool2d(1),
-            nn.Conv2d(in_channel, hidden_channel, kernel_size=(1, 1)),
-            nn.ReLU())
 
         # convolution after concat for smoothing
         num = len(dilation_rates) + 1
