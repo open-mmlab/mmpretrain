@@ -2,7 +2,7 @@
 import argparse
 import re
 import warnings
-from collections import defaultdict
+from collections import OrderedDict
 from pathlib import Path
 
 from modelindex.load_model_index import load
@@ -106,47 +106,10 @@ def parse_args():
     parser.add_argument('metafile', type=Path, help='The path of metafile')
     parser.add_argument(
         '--table', action='store_true', help='Only generate summary tables')
+    parser.add_argument(
+        '--update', type=str, help='Update the specified readme file.')
     args = parser.parse_args()
     return args
-
-
-def add_title(metafile: ModelIndex, readme: list):
-    paper = metafile.collections[0].paper
-    title = paper['Title']
-    url = paper['URL']
-    abbr = metafile.collections[0].name
-    papertype = metafile.collections[0].data.get('type', 'Algorithm')
-
-    readme.append(f'# {abbr}\n')
-    readme.append(f'> [{title}]({url})\n')
-    readme.append(f'<!-- [{papertype.upper()}] -->\n')
-
-
-def add_abstract(metafile, readme):
-    paper = metafile.collections[0].paper
-    url = paper['URL']
-    if 'arxiv' in url:
-        try:
-            import arxiv
-            search = arxiv.Search(id_list=[url.split('/')[-1]])
-            info = next(search.results())
-            abstract = info.summary
-        except ImportError:
-            warnings.warn('Install arxiv parser by `pip install arxiv` '
-                          'to automatically generate abstract.')
-            abstract = None
-    else:
-        abstract = None
-
-    readme.append('## Abstract\n')
-    if abstract is not None:
-        readme.append(abstract.replace('\n', ' '))
-
-    readme.append('')
-    readme.append('<div align=center>\n'
-                  '<img src="" width="50%"/>\n'
-                  '</div>')
-    readme.append('')
 
 
 def filter_models_by_task(models, task):
@@ -161,28 +124,61 @@ def filter_models_by_task(models, task):
     return model_list
 
 
-def add_usage(metafile, readme):
+def add_title(metafile: ModelIndex):
+    paper = metafile.collections[0].paper
+    title = paper['Title']
+    url = paper['URL']
+    abbr = metafile.collections[0].name
+    papertype = metafile.collections[0].data.get('type', 'Algorithm')
+
+    return f'# {abbr}\n> [{title}]({url})\n<!-- [{papertype.upper()}] -->\n'
+
+
+def add_abstract(metafile: ModelIndex):
+    paper = metafile.collections[0].paper
+    url = paper['URL']
+    if 'arxiv' in url:
+        try:
+            import arxiv
+            search = arxiv.Search(id_list=[url.split('/')[-1]])
+            info = next(search.results())
+            abstract = info.summary.replace('\n', ' ')
+        except ImportError:
+            warnings.warn('Install arxiv parser by `pip install arxiv` '
+                          'to automatically generate abstract.')
+            abstract = None
+    else:
+        abstract = None
+
+    content = '## Abstract\n'
+    if abstract is not None:
+        content += f'\n{abstract}\n'
+    return content
+
+
+def add_usage(metafile):
     models = metafile.models
     if len(models) == 0:
         return
 
-    readme.append('## How to use it?\n\n<!-- [TABS-BEGIN] -->\n')
+    content = []
+    content.append('## How to use it?\n\n<!-- [TABS-BEGIN] -->\n')
 
     # Predict image
     cls_models = filter_models_by_task(models, 'Image Classification')
     if cls_models:
         model_name = cls_models[0].name
-        readme.append(PREDICT_TEMPLATE.format(model_name=model_name))
+        content.append(PREDICT_TEMPLATE.format(model_name=model_name))
 
     # Retrieve image
     retrieval_models = filter_models_by_task(models, 'Image Retrieval')
     if retrieval_models:
         model_name = retrieval_models[0].name
-        readme.append(RETRIEVE_TEMPLATE.format(model_name=model_name))
+        content.append(RETRIEVE_TEMPLATE.format(model_name=model_name))
 
     # Use the model
     model_name = models[0].name
-    readme.append(USAGE_TEMPLATE.format(model_name=model_name))
+    content.append(USAGE_TEMPLATE.format(model_name=model_name))
 
     # Train/Test Command
     inputs = {}
@@ -198,9 +194,10 @@ def add_usage(metafile, readme):
     test_model = filter_models_by_task(models, task='any')[0]
     inputs['test_config'] = test_model.config
     inputs['test_weights'] = test_model.weights
-    readme.append(template.format(**inputs))
+    content.append(template.format(**inputs))
 
-    readme.append('\n<!-- [TABS-END] -->\n')
+    content.append('\n<!-- [TABS-END] -->\n')
+    return '\n'.join(content)
 
 
 def format_pretrain(pretrain_field):
@@ -290,29 +287,29 @@ def generate_model_table(models,
         tablefmt='pipe',
         floatfmt='.2f',
         colalign=['left'] + ['center'] * (len(row) - 1))
-    table_string = tabulate(rows, header, **table_cfg)
+    table_string = tabulate(rows, header, **table_cfg) + '\n'
     if any('Converted From' in model.data for model in models):
         table_string += (
-            f"\n\n*Models with \* are converted from the [official repo]({converted_from['Code']}). "
+            f"\n*Models with \* are converted from the [official repo]({converted_from['Code']}). "
             "The config files of these models are only for inference. We haven't reprodcue the training results.*\n"
         )
 
-    return table_string + '\n'
+    return table_string
 
 
-def add_models(metafile, readme):
+def add_models(metafile):
     models = metafile.models
     if len(models) == 0:
-        return
+        return ''
 
-    readme.append('## Models and results\n')
-    algo_folder = Path(metafile.filepath).parent.absolute()
+    content = ['## Models and results\n']
+    algo_folder = Path(metafile.filepath).parent.absolute().resolve()
 
     # Pretrained models
     pretrain_models = filter_models_by_task(models, task=None)
     if pretrain_models:
-        readme.append('### Pretrained models\n')
-        readme.append(
+        content.append('### Pretrained models\n')
+        content.append(
             generate_model_table(
                 pretrain_models,
                 algo_folder,
@@ -333,31 +330,89 @@ def add_models(metafile, readme):
             datasets = sorted(
                 list(datasets), key=lambda x: DATASET_PRIORITY.get(x, 50))
             for dataset in datasets:
-                readme.append(f'### {task} on {dataset}\n')
+                content.append(f'### {task} on {dataset}\n')
                 dataset_models = [
                     model for model in task_models
                     if model.results[0].dataset == dataset
                 ]
-                readme.append(
+                content.append(
                     generate_model_table(
                         dataset_models,
                         algo_folder,
                         pretrained_models=pretrain_models))
+    return '\n'.join(content)
+
+
+def parse_readme(readme):
+    with open(readme, 'r') as f:
+        file = f.read()
+
+    content = {}
+
+    for img_match in re.finditer(
+            '^<div.*\n.*\n</div>\n', file, flags=re.MULTILINE):
+        content['image'] = img_match.group()
+        start, end = img_match.span()
+        file = file[:start] + file[end:]
+        break
+
+    sections = re.split('^## ', file, flags=re.MULTILINE)
+    for section in sections:
+        if section.startswith('# '):
+            content['title'] = section.strip() + '\n'
+        elif section.startswith('Introduction'):
+            content['intro'] = '## ' + section.strip() + '\n'
+        elif section.startswith('Abstract'):
+            content['abstract'] = '## ' + section.strip() + '\n'
+        elif section.startswith('How to use it'):
+            content['usage'] = '## ' + section.strip() + '\n'
+        elif section.startswith('Models and results'):
+            content['models'] = '## ' + section.strip() + '\n'
+        elif section.startswith('Citation'):
+            content['citation'] = '## ' + section.strip() + '\n'
+    return content
+
+
+def combine_readme(content):
+    readme = content['title']
+    if 'intro' in content:
+        readme += f"\n{content['intro']}"
+        readme += f"\n{content['image']}"
+        readme += f"\n{content['abstract']}"
+    else:
+        readme += f"\n{content['abstract']}"
+        readme += f"\n{content['image']}"
+
+    readme += f"\n{content['usage']}"
+    readme += f"\n{content['models']}"
+    readme += f"\n{content['citation']}"
+    return readme
 
 
 def main():
     args = parse_args()
     metafile = load(str(args.metafile))
-    readme_lines = []
-    if not args.table:
-        add_title(metafile, readme_lines)
-        add_abstract(metafile, readme_lines)
-        add_usage(metafile, readme_lines)
-    add_models(metafile, readme_lines)
-    if not args.table:
-        readme_lines.append('## Citation\n')
-        readme_lines.append('```bibtex\n```')
-    print('\n'.join(readme_lines))
+    if args.table:
+        print(add_models(metafile))
+        return
+
+    if args.update is not None:
+        content = parse_readme(args.update)
+    else:
+        content = {}
+
+    content['title'] = add_title(metafile)
+    if 'abstract' not in content:
+        content['abstract'] = add_abstract(metafile)
+    if 'image' not in content:
+        content[
+            'image'] = '<div align=center>\n<img src="" width="50%"/>\n</div>\n'
+    content['usage'] = add_usage(metafile)
+    content['models'] = add_models(metafile)
+    if 'citation' not in content:
+        content['citation'] = '## Citation\n```bibtex\n```\n'
+
+    print(combine_readme(content))
 
 
 if __name__ == '__main__':
