@@ -2,8 +2,8 @@
 from .base import BaseSelfSupervisor
 from .beit import VQKD, BEiTPretrainViT, BEiT
 from .byol import BYOL
-from .cae import CAEViT, Encoder, CAE
-from .mae import MAEViT
+from .cae import CAEPretrainViT, Encoder, CAE
+from .mae import MAEViT, MAE
 from .maskfeat import HOGGenerator, MaskFeatViT
 from .milan import CLIPGenerator, MILANViT
 from .mixmim import MixMIMPretrainTransformer
@@ -17,7 +17,7 @@ __all__ = [
     'BaseSelfSupervisor',
     'BEiTPretrainViT',
     'VQKD',
-    'CAEViT',
+    'CAEPretrainViT',
     'Encoder',
     'MAEViT',
     'HOGGenerator',
@@ -34,4 +34,5 @@ __all__ = [
     'SimSiam',
     'BEiT',
     'CAE',
+    'MAE',
 ]
