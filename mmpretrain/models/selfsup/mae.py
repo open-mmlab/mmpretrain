@@ -156,6 +156,8 @@ class MAEViT(VisionTransformer):
 
         Args:
             x (torch.Tensor): Input images, which is of shape B x C x H x W.
+            mask (bool, optional): To indicate whether the forward containing
+                ``mask`` or not.
 
         Returns:
             Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:

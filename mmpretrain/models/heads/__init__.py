@@ -12,7 +12,7 @@ from .levit_head import LeViTClsHead
 from .linear_head import LinearClsHead
 from .mae_head import MAEPretrainHead
 from .margin_head import ArcFaceClsHead
-from .maskfeat_head import MaskFeatPretrainHead
+from .mim_head import MIMHead
 from .mixmim_head import MixMIMPretrainHead
 from .mocov3_head import MoCoV3Head
 from .multi_label_cls_head import MultiLabelClsHead
@@ -50,6 +50,6 @@ __all__ = [
     'MixMIMPretrainHead',
     'SwAVHead',
     'MoCoV3Head',
-    'MaskFeatPretrainHead',
+    'MIMHead',
     'SimMIMHead',
 ]

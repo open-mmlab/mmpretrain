@@ -25,7 +25,7 @@ model = dict(
             dict(type='Constant', layer='LayerNorm', val=1.0, bias=0.0)
         ]),
     head=dict(
-        type='MILANPretrainHead',
+        type='MIMHead',
         loss=dict(
             type='CosineSimilarityLoss', shift_factor=2.0, scale_factor=2.0),
     ),

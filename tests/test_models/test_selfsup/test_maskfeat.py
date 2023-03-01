@@ -14,7 +14,7 @@ def test_maskfeat_vit():
     maskfeat_backbone = MaskFeatViT()
     maskfeat_backbone.init_weights()
     fake_inputs = torch.randn((2, 3, 224, 224))
-    fake_mask = torch.randn((2, 14, 14))
+    fake_mask = torch.randn((2, 14, 14)).flatten(1).bool()
 
     # test with mask
     fake_outputs = maskfeat_backbone(fake_inputs, fake_mask)
@@ -42,7 +42,7 @@ def test_maskfeat():
     neck = dict(
         type='LinearNeck', in_channels=768, out_channels=108, gap_dim=0)
     head = dict(
-        type='MaskFeatPretrainHead',
+        type='MIMHead',
         loss=dict(type='PixelReconstructionLoss', criterion='L2'))
     target_generator = dict(
         type='HOGGenerator', nbins=9, pool=8, gaussian_window=16)

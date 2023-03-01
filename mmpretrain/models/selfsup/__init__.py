@@ -5,7 +5,7 @@ from .byol import BYOL
 from .cae import CAEPretrainViT, Encoder, CAE
 from .mae import MAEViT, MAE
 from .maskfeat import HOGGenerator, MaskFeatViT, MaskFeat
-from .milan import CLIPGenerator, MILANViT
+from .milan import CLIPGenerator, MILANViT, MILAN
 from .mixmim import MixMIMPretrainTransformer
 from .moco import MoCo
 from .mocov3 import MoCoV3ViT, MoCoV3
@@ -36,4 +36,5 @@ __all__ = [
     'CAE',
     'MAE',
     'MaskFeat',
+    'MILAN',
 ]

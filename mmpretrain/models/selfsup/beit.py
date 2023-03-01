@@ -247,7 +247,7 @@ class BEiTPretrainViT(BEiTViT):
         Args:
             x (torch.Tensor): Input images, which is of shape (B x C x H x W).
             mask (torch.Tensor, optional): Mask for input, which is of shape
-                (B x patch_resolution[0] x patch_resolution[1]). 
+                (B x patch_resolution[0] x patch_resolution[1]).
 
         Returns:
             Tuple[torch.Tensor]: Hidden features.

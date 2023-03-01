@@ -270,7 +270,7 @@ class MaskFeatViT(VisionTransformer):
             # masking: length -> length * mask_ratio
             B, L, _ = x.shape
             mask_tokens = self.mask_token.expand(B, L, -1)
-            mask = mask.flatten(1).unsqueeze(-1)
+            mask = mask.unsqueeze(-1)
             x = x * (1 - mask.int()) + mask_tokens * mask
 
             # append cls token
@@ -309,7 +309,7 @@ class MaskFeat(BaseSelfSupervisor):
             Dict[str, torch.Tensor]: A dictionary of loss components.
         """
         mask = torch.stack([data_sample.mask for data_sample in data_samples])
-        mask = mask.to(torch.bool)
+        mask = mask.flatten(1).bool()
 
         latent = self.backbone(inputs, mask)
         B, L, C = latent.shape
@@ -317,6 +317,7 @@ class MaskFeat(BaseSelfSupervisor):
         pred = pred[0].view(B, L, -1)
         hog = self.target_generator(inputs)
 
-        loss = self.head.loss(pred, hog, mask)
+        # remove cls_token before compute loss
+        loss = self.head.loss(pred[:, 1:], hog, mask)
         losses = dict(loss=loss)
         return losses
