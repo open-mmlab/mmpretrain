@@ -89,6 +89,6 @@ class TestMoCoV3(TestCase):
         self.assertGreater(fake_loss['loss'], 0)
 
         # test extract
-        fake_feats = alg(fake_inputs['inputs'], mode='tensor')
+        fake_feats = alg(fake_inputs['inputs'][0], mode='tensor')
         self.assertEqual(fake_feats[0][0].size(), torch.Size([2, 384, 14, 14]))
         self.assertEqual(fake_feats[0][1].size(), torch.Size([2, 384]))

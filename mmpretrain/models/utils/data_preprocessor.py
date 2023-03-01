@@ -201,9 +201,8 @@ class ClsDataPreprocessor(BaseDataPreprocessor):
 class SelfSupDataPreprocessor(ImgDataPreprocessor):
     """Image pre-processor for operations, like normalization and bgr to rgb.
 
-    Compared with the :class:`mmengine.ImgDataPreprocessor`, this module treats
-    each item in `inputs` of input data as a list, instead of torch.Tensor.
-    Besides, Add key ``to_rgb`` to align with :class:`ClsDataPreprocessor`.
+    Compared with the :class:`mmengine.ImgDataPreprocessor`, this module
+    supports ``inputs`` as torch.Tensor or a list of torch.Tensor.
     """
 
     def __init__(self,
@@ -231,7 +230,7 @@ class SelfSupDataPreprocessor(ImgDataPreprocessor):
             data: dict,
             training: bool = False
     ) -> Tuple[List[torch.Tensor], Optional[list]]:
-        """Performs normalization、padding and bgr2rgb conversion based on
+        """Performs normalization and bgr2rgb conversion based on
         ``BaseDataPreprocessor``.
 
         Args:
@@ -250,23 +249,36 @@ class SelfSupDataPreprocessor(ImgDataPreprocessor):
 
         data = [val for _, val in data.items()]
         batch_inputs, batch_data_samples = self.cast_data(data)
-        # channel transform
-        if self._channel_conversion:
-            batch_inputs = [
-                _input[:, [2, 1, 0], ...] for _input in batch_inputs
-            ]
 
-        # Convert to float after channel conversion to ensure
-        # efficiency
-        batch_inputs = [input_.float() for input_ in batch_inputs]
+        # Here is what is different from :class:`mmengine.ImgDataPreprocessor`
+        # Since there are multiple views for an image for some algorithms,
+        # e.g. SimCLR, each item in inputs is a list, containing multi-views
+        # for an image.
+        if isinstance(batch_inputs, list):
+            # channel transform
+            if self._channel_conversion:
+                batch_inputs = [
+                    _input[:, [2, 1, 0], ...] for _input in batch_inputs
+                ]
 
-        # Normalization. Here is what is different from
-        # :class:`mmengine.ImgDataPreprocessor`. Since there are multiple views
-        # for an image for some  algorithms, e.g. SimCLR, each item in inputs
-        # is a list, containing multi-views for an image.
-        if self._enable_normalize:
-            batch_inputs = [(_input - self.mean) / self.std
-                            for _input in batch_inputs]
+            # convert to float after channel conversion to ensure efficiency
+            batch_inputs = [_input.float() for _input in batch_inputs]
+
+            # normalization.
+            if self._enable_normalize:
+                batch_inputs = [(_input - self.mean) / self.std
+                                for _input in batch_inputs]
+        else:
+            # channel transform
+            if self._channel_conversion:
+                batch_inputs = batch_inputs[:, [2, 1, 0], ...]
+
+            # convert to float after channel conversion to ensure efficiency
+            batch_inputs = batch_inputs.float()
+
+            # normalization.
+            if self._enable_normalize:
+                batch_inputs = (batch_inputs - self.mean) / self.std
 
         return {'inputs': batch_inputs, 'data_samples': batch_data_samples}
 
@@ -329,8 +341,8 @@ class TwoNormDataPreprocessor(SelfSupDataPreprocessor):
             '`mean` should have 1 or 3 values, to be compatible with '
             f'RGB or gray image, but got {len(second_mean)} values')
         assert len(second_std) == 3 or len(second_std) == 1, (
-            '`std` should have 1 or 3 values, to be compatible with RGB '  # type: ignore # noqa: E501
-            f'or gray image, but got {len(std)} values')  # type: ignore
+            '`std` should have 1 or 3 values, to be compatible with RGB '
+            f'or gray image, but got {len(std)} values')
 
         self.register_buffer('second_mean',
                              torch.tensor(second_mean).view(-1, 1, 1), False)
@@ -342,8 +354,9 @@ class TwoNormDataPreprocessor(SelfSupDataPreprocessor):
             data: dict,
             training: bool = False
     ) -> Tuple[List[torch.Tensor], Optional[list]]:
-        """Performs normalization、padding and bgr2rgb conversion based on
-        ``BaseDataPreprocessor``.
+        """Performs normalization and bgr2rgb conversion based on
+        ``BaseDataPreprocessor``. The ``batch_inputs`` in forward function is a
+        list.
 
         Args:
             data (dict): data sampled from dataloader.
@@ -363,9 +376,8 @@ class TwoNormDataPreprocessor(SelfSupDataPreprocessor):
                 _input[:, [2, 1, 0], ...] for _input in batch_inputs
             ]
 
-        # Convert to float after channel conversion to ensure
-        # efficiency
-        batch_inputs = [input_.float() for input_ in batch_inputs]
+        # convert to float after channel conversion to ensure efficiency
+        batch_inputs = [_input.float() for _input in batch_inputs]
 
         # Normalization. Here is what is different from
         # :class:`mmselfsup.SelfSupDataPreprocessor`. Normalize the target
@@ -385,8 +397,7 @@ class VideoDataPreprocessor(BaseDataPreprocessor):
     conversion .
 
     Compared with the :class:`mmaction.ActionDataPreprocessor`, this module
-    treats each item in `inputs` of input data as a list, instead of
-    torch.Tensor.
+    supports ``inputs`` as torch.Tensor or a list of torch.Tensor.
 
     Args:
         mean (Sequence[float or int, optional): The pixel mean of channels
@@ -461,28 +472,46 @@ class VideoDataPreprocessor(BaseDataPreprocessor):
         data = [val for _, val in data.items()]
         batch_inputs, batch_data_samples = self.cast_data(data)
 
-        # ------ To RGB ------
-        if self.to_rgb:
-            if self.format_shape == 'NCHW':
-                batch_inputs = [
-                    batch_input[..., [2, 1, 0], :, :]
-                    for batch_input in batch_inputs
-                ]
-            elif self.format_shape == 'NCTHW':
-                batch_inputs = [
-                    batch_input[..., [2, 1, 0], :, :, :]
-                    for batch_input in batch_inputs
-                ]
-            else:
-                raise ValueError(f'Invalid format shape: {self.format_shape}')
+        if isinstance(batch_inputs, list):
+            # channel transform
+            if self.bgr_to_rgb:
+                if self.format_shape == 'NCHW':
+                    batch_inputs = [
+                        _input[..., [2, 1, 0], :, :] for _input in batch_inputs
+                    ]
+                elif self.format_shape == 'NCTHW':
+                    batch_inputs = [
+                        _input[..., [2, 1, 0], :, :, :]
+                        for _input in batch_inputs
+                    ]
+                else:
+                    raise ValueError(
+                        f'Invalid format shape: {self.format_shape}')
 
-        # -- Normalization ---
-        if self._enable_normalize:
-            batch_inputs = [(batch_input - self.mean) / self.std
-                            for batch_input in batch_inputs]
+            # convert to float after channel conversion to ensure efficiency
+            batch_inputs = [_input.float() for _input in batch_inputs]
+
+            # normalization
+            if self._enable_normalize:
+                batch_inputs = [(_input - self.mean) / self.std
+                                for _input in batch_inputs]
+
         else:
-            batch_inputs = [
-                batch_input.to(torch.float32) for batch_input in batch_inputs
-            ]
+            # channel transform
+            if self.to_rgb:
+                if self.format_shape == 'NCHW':
+                    batch_inputs = batch_inputs[..., [2, 1, 0], :, :]
+                elif self.format_shape == 'NCTHW':
+                    batch_inputs = batch_inputs[..., [2, 1, 0], :, :, :]
+                else:
+                    raise ValueError(
+                        f'Invalid format shape: {self.format_shape}')
+
+            # convert to float after channel conversion to ensure efficiency
+            batch_inputs = batch_inputs.float()
+
+            # normalization
+            if self._enable_normalize:
+                batch_inputs = (batch_inputs - self.mean) / self.std
 
         return {'inputs': batch_inputs, 'data_samples': batch_data_samples}

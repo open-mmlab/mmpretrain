@@ -49,5 +49,5 @@ def test_simclr():
     assert isinstance(fake_loss['loss'].item(), float)
 
     # test extract
-    fake_feat = alg(fake_inputs['inputs'], mode='tensor')
+    fake_feat = alg(fake_inputs['inputs'][0], mode='tensor')
     assert fake_feat[0].size() == torch.Size([2, 512, 7, 7])

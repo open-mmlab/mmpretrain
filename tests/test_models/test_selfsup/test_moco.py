@@ -55,5 +55,5 @@ def test_moco():
     assert alg.queue_ptr.item() == 2
 
     # test extract
-    fake_feats = alg(fake_inputs['inputs'], mode='tensor')
+    fake_feats = alg(fake_inputs['inputs'][0], mode='tensor')
     assert fake_feats[0].size() == torch.Size([2, 512, 7, 7])

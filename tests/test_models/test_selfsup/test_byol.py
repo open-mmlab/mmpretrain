@@ -57,5 +57,5 @@ def test_byol():
     assert isinstance(fake_loss['loss'].item(), float)
     assert fake_loss['loss'].item() > -4
 
-    fake_feats = alg(fake_inputs['inputs'], mode='tensor')
+    fake_feats = alg(fake_inputs['inputs'][0], mode='tensor')
     assert list(fake_feats[0].shape) == [2, 512, 7, 7]

@@ -4,7 +4,7 @@ import platform
 import pytest
 import torch
 
-from mmpretrain.models import CAEViT, CAE
+from mmpretrain.models import CAEPretrainViT, CAE
 from mmpretrain.structures import DataSample
 
 
@@ -12,7 +12,7 @@ from mmpretrain.structures import DataSample
 def test_cae_vit():
     backbone = dict(arch='b', patch_size=16, layer_scale_init_value=0.1)
 
-    cae_backbone = CAEViT(**backbone)
+    cae_backbone = CAEPretrainViT(**backbone)
     cae_backbone.init_weights()
     fake_inputs = torch.randn((2, 3, 224, 224))
     fake_mask = torch.zeros((2, 196)).bool()
@@ -40,16 +40,19 @@ def test_cae():
         to_rgb=True)
 
     # model settings
-    backbone = dict(type='CAEViT', arch='b', patch_size=16, init_values=0.1)
+    backbone = dict(
+        type='CAEPretrainViT',
+        arch='b',
+        patch_size=16,
+        layer_scale_init_value=0.1)
     neck = dict(
         type='CAENeck',
-        patch_size=16,
         embed_dims=768,
         num_heads=12,
         regressor_depth=4,
         decoder_depth=4,
         mlp_ratio=4,
-        init_values=0.1)
+        layer_scale_init_value=0.1)
     head = dict(type='CAEHead', loss=dict(type='CAELoss', lambd=2))
     target_generator = dict(type='DALL-E')
 
@@ -59,7 +62,6 @@ def test_cae():
         head=head,
         target_generator=target_generator,
         data_preprocessor=data_preprocessor)
-    model.init_weights()
 
     fake_img = torch.rand((1, 3, 224, 224))
     fake_target_img = torch.rand((1, 3, 112, 112))
