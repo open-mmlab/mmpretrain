@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import copy
 import platform
 
 import pytest
@@ -39,7 +38,7 @@ def test_moco():
         queue_len=queue_len,
         feat_dim=feat_dim,
         momentum=momentum,
-        data_preprocessor=copy.deepcopy(data_preprocessor))
+        data_preprocessor=data_preprocessor)
     assert alg.queue.size() == torch.Size([feat_dim, queue_len])
 
     fake_data = {

@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import copy
 import platform
 from unittest import TestCase
 
@@ -75,7 +74,7 @@ class TestMoCoV3(TestCase):
             backbone=self.backbone,
             neck=self.neck,
             head=self.head,
-            data_preprocessor=copy.deepcopy(data_preprocessor))
+            data_preprocessor=data_preprocessor)
 
         fake_data = {
             'inputs':

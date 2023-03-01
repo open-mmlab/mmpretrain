@@ -6,11 +6,11 @@ from .cae import CAEPretrainViT, Encoder, CAE
 from .mae import MAEViT, MAE
 from .maskfeat import HOGGenerator, MaskFeatViT, MaskFeat
 from .milan import CLIPGenerator, MILANViT, MILAN
-from .mixmim import MixMIMPretrainTransformer
+from .mixmim import MixMIMPretrainTransformer, MixMIM
 from .moco import MoCo
 from .mocov3 import MoCoV3ViT, MoCoV3
 from .simclr import SimCLR
-from .simmim import SimMIMSwinTransformer
+from .simmim import SimMIMSwinTransformer, SimMIM
 from .simsiam import SimSiam
 
 __all__ = [
@@ -37,4 +37,6 @@ __all__ = [
     'MAE',
     'MaskFeat',
     'MILAN',
+    'MixMIM',
+    'SimMIM',
 ]

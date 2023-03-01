@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import copy
 import platform
 
 import pytest
@@ -43,7 +42,7 @@ def test_byol():
         backbone=backbone,
         neck=neck,
         head=head,
-        data_preprocessor=copy.deepcopy(data_preprocessor))
+        data_preprocessor=data_preprocessor)
 
     fake_data = {
         'inputs':
