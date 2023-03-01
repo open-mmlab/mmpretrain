@@ -16,7 +16,7 @@ Collections:
 
 Models:
   - Name: mocov2_resnet50_8xb32-coslr-200e_in1k
-    In Collection: MoCov2
+    In Collection: MoCoV2
     Metadata:
       Epochs: 200
       Batch Size: 256
@@ -26,7 +26,7 @@ Models:
     Downstream:
       - resnet50_mocov2-pre_8xb32-linear-steplr-100e_in1k
   - Name: resnet50_mocov2-pre_8xb32-linear-steplr-100e_in1k
-    In Collection: MoCov2
+    In Collection: MoCoV2
     Metadata:
       Epochs: 100
       Batch Size: 256
