@@ -93,7 +93,7 @@ class BaseSelfSupervisor(BaseModel, metaclass=ABCMeta):
             self, 'target_generator') and self.target_generator is not None
 
     def forward(self,
-                inputs: List[torch.Tensor],
+                inputs: Union[torch.Tensor, List[torch.Tensor]],
                 data_samples: Optional[List[DataSample]] = None,
                 mode: str = 'tensor'):
         """The unified entry for a forward process in both training and test.
@@ -107,8 +107,8 @@ class BaseSelfSupervisor(BaseModel, metaclass=ABCMeta):
           inputs and data samples.
 
         Args:
-            inputs (List[torch.Tensor]): The input tensor with shape
-                (N, C, ...) in general.
+            inputs (torch.Tensor or List[torch.Tensor]): The input tensor with
+                shape (N, C, ...) in general.
             data_samples (List[DataSample], optional): The other data of
                 every samples. It's required for some algorithms
                 if ``mode="loss"``. Defaults to None.
@@ -128,12 +128,10 @@ class BaseSelfSupervisor(BaseModel, metaclass=ABCMeta):
         else:
             raise RuntimeError(f'Invalid mode "{mode}".')
 
-    @abstractmethod
     def extract_feat(self, inputs: torch.Tensor):
         """Extract features from the input tensor with shape (N, C, ...).
 
-        The sub-classes are recommended to implement this method to extract
-        features from backbone and neck.
+        The default behavior is extracting features from backbone.
 
         Args:
             inputs (Tensor): A batch of inputs. The shape of it should be
@@ -142,7 +140,8 @@ class BaseSelfSupervisor(BaseModel, metaclass=ABCMeta):
         Returns:
             tuple | Tensor: The output feature tensor(s).
         """
-        raise NotImplementedError
+        x = self.backbone(inputs)
+        return x
 
     @abstractmethod
     def loss(self, inputs: torch.Tensor,

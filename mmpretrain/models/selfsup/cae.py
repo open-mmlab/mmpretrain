@@ -4,7 +4,7 @@
 import math
 from collections import OrderedDict
 from functools import partial
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import attr
 import numpy as np
@@ -180,7 +180,7 @@ class Encoder(BaseModule):
             raise ValueError(f'input shape {x.shape} is not 4d')
         if x.shape[1] != self.input_channels:
             raise ValueError(f'input has {x.shape[1]} channels but model \
-                    built for {self.input_channels}'                                                    )
+                    built for {self.input_channels}')
         if x.dtype != torch.float32:
             raise ValueError('input must have dtype torch.float32')
 
@@ -409,10 +409,8 @@ class CAE(BaseSelfSupervisor):
     def init_weights(self) -> None:
         """Initialize weights."""
         super().init_weights()
-        self._init_teacher()
 
-    def _init_teacher(self) -> None:
-        """Init the weights of teacher with those of backbone."""
+        # init the weights of teacher with those of backbone
         for param_backbone, param_teacher in zip(self.backbone.parameters(),
                                                  self.teacher.parameters()):
             param_teacher.detach()

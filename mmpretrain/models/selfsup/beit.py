@@ -302,18 +302,6 @@ class BEiT(BaseSelfSupervisor):
     <https://arxiv.org/abs/2208.06366>`_.
     """
 
-    def extract_feat(self, inputs: List[torch.Tensor]) -> Tuple[torch.Tensor]:
-        """Function to extract features from backbone.
-
-        Args:
-            batch_inputs (List[torch.Tensor]): The input images.
-
-        Returns:
-            Tuple[torch.Tensor]: Backbone outputs.
-        """
-        x = self.backbone(inputs[0])
-        return x
-
     def loss(self, inputs: List[torch.Tensor], data_samples: List[DataSample],
              **kwargs) -> Dict[str, torch.Tensor]:
         """The forward function in training.

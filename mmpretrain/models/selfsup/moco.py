@@ -88,21 +88,6 @@ class MoCo(BaseSelfSupervisor):
 
         self.queue_ptr[0] = ptr
 
-    def extract_feat(self, inputs: List[torch.Tensor],
-                     **kwarg) -> Tuple[torch.Tensor]:
-        """Function to extract features from backbone.
-
-        Args:
-            inputs (List[torch.Tensor]): The input images.
-            data_samples (List[DataSample]): All elements required
-                during the forward function.
-
-        Returns:
-            Tuple[torch.Tensor]: Backbone outputs.
-        """
-        x = self.backbone(inputs[0])
-        return x
-
     def loss(self, inputs: List[torch.Tensor], data_samples: List[DataSample],
              **kwargs) -> Dict[str, torch.Tensor]:
         """The forward function in training.

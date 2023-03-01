@@ -17,18 +17,6 @@ class SimSiam(BaseSelfSupervisor):
     of predictor is in `engine/hooks/simsiam_hook.py`.
     """
 
-    def extract_feat(self, inputs: List[torch.Tensor],
-                     **kwarg) -> Tuple[torch.Tensor]:
-        """Function to extract features from backbone.
-
-        Args:
-            inputs (List[torch.Tensor]): The input images.
-
-        Returns:
-            Tuple[torch.Tensor]: Backbone outputs.
-        """
-        return self.backbone(inputs[0])
-
     def loss(self, inputs: List[torch.Tensor], data_samples: List[DataSample],
              **kwargs) -> Dict[str, torch.Tensor]:
         """The forward function in training.

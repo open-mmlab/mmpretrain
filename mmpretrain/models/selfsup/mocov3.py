@@ -180,20 +180,6 @@ class MoCoV3(BaseSelfSupervisor):
         self.momentum_encoder = CosineEMA(
             nn.Sequential(self.backbone, self.neck), momentum=base_momentum)
 
-    def extract_feat(self, inputs: List[torch.Tensor],
-                     **kwarg) -> Tuple[torch.Tensor]:
-        """Function to extract features from backbone.
-
-        Args:
-            inputs (List[torch.Tensor]): The input images.
-            data_samples (List[DataSample]): All
-
-        Returns:
-            Tuple[torch.Tensor]: Backbone outputs.
-        """
-        x = self.backbone(inputs[0])
-        return x
-
     def loss(self, inputs: List[torch.Tensor], data_samples: List[DataSample],
              **kwargs) -> Dict[str, torch.Tensor]:
         """The forward function in training.
