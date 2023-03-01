@@ -83,7 +83,7 @@ class MAEPretrainHead(BaseModule):
 
     def loss(self, pred: torch.Tensor, target: torch.Tensor,
              mask: torch.Tensor) -> torch.Tensor:
-        """Forward function of MAE head.
+        """Generate loss.
 
         Args:
             pred (torch.Tensor): The reconstructed image.

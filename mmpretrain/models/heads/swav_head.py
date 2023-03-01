@@ -18,7 +18,7 @@ class SwAVHead(BaseModule):
         self.loss_module = MODELS.build(loss)
 
     def loss(self, pred: torch.Tensor) -> torch.Tensor:
-        """Forward function of SwAV head.
+        """Generate loss.
 
         Args:
             pred (torch.Tensor): NxC input features.

@@ -5,7 +5,6 @@ from mmengine.model import BaseModule
 from mmpretrain.registry import MODELS
 
 
-# TODO: delete and use NaiveMIMHead
 @MODELS.register_module()
 class MaskFeatPretrainHead(BaseModule):
     """Pre-training head for MaskFeat.
@@ -19,10 +18,10 @@ class MaskFeatPretrainHead(BaseModule):
 
     def __init__(self, loss: dict) -> None:
         super().__init__()
-        self.loss = MODELS.build(loss)
+        self.loss_module = MODELS.build(loss)
 
-    def forward(self, pred: torch.Tensor, target: torch.Tensor,
-                mask: torch.Tensor) -> torch.Tensor:
+    def loss(self, pred: torch.Tensor, target: torch.Tensor,
+             mask: torch.Tensor) -> torch.Tensor:
         """Forward head.
 
         Args:
@@ -36,6 +35,6 @@ class MaskFeatPretrainHead(BaseModule):
             torch.Tensor: The loss tensor.
         """
         mask = mask.flatten(1).bool()
-        loss = self.loss(pred[:, 1:], target, mask)
+        loss = self.loss_module(pred[:, 1:], target, mask)
 
         return loss

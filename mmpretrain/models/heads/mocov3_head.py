@@ -35,7 +35,7 @@ class MoCoV3Head(BaseModule):
 
     def loss(self, base_out: torch.Tensor,
              momentum_out: torch.Tensor) -> torch.Tensor:
-        """Forward head.
+        """Generate loss.
 
         Args:
             base_out (torch.Tensor): NxC features from base_encoder.

@@ -24,7 +24,7 @@ class MixMIMPretrainHead(MAEPretrainHead):
 
     def loss(self, x_rec: torch.Tensor, target: torch.Tensor,
              mask: torch.Tensor) -> torch.Tensor:
-        """Forward function of MixMIM head.
+        """Generate loss.
 
         Args:
             pred (torch.Tensor): The reconstructed image.
