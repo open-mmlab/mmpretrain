@@ -474,7 +474,7 @@ class VideoDataPreprocessor(BaseDataPreprocessor):
 
         if isinstance(batch_inputs, list):
             # channel transform
-            if self.bgr_to_rgb:
+            if self.to_rgb:
                 if self.format_shape == 'NCHW':
                     batch_inputs = [
                         _input[..., [2, 1, 0], :, :] for _input in batch_inputs
