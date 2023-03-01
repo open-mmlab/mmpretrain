@@ -68,8 +68,8 @@ Models:
         Dataset: ImageNet-1k
         Metrics:
           Top 1 Accuracy: 83.8
-    Config: configs/simmim/benchmarks/swin-base-w6_8xb256-coslr-100e_in1k-192px.py
-    Weights: https://download.openmmlab.com/mmselfsup/1.x/simmim/simmim_swin-base_8xb256-amp-coslr-100e_in1k-192/swin-base_ft-8xb256-coslr-100e_in1k/swin-base_ft-8xb256-coslr-100e_in1k_20220829-9cf23aa1.pth
+    Config: configs/simmim/benchmarks/swin-base-w7_8xb256-coslr-100e_in1k.py
+    Weights: https://download.openmmlab.com/mmselfsup/1.x/simmim/simmim_swin-base_16xb128-amp-coslr-800e_in1k-192/swin-base_ft-8xb256-coslr-100e_in1k-224/swin-base_ft-8xb256-coslr-100e_in1k-224_20221208-155cc6e6.pth
 
   - Name: simmim_swin-large-w12_16xb128-amp-coslr-800e_in1k-192px
     In Collection: SimMIM

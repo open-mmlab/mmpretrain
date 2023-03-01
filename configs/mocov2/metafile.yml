@@ -1,5 +1,5 @@
 Collections:
-  - Name: MoCov2
+  - Name: MoCoV2
     Metadata:
       Training Data: ImageNet-1k
       Training Techniques:
