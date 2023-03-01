@@ -4,7 +4,7 @@ import platform
 import pytest
 import torch
 
-from mmpretrain.models import SimMIMSwinTransformer, SimMIM
+from mmpretrain.models import SimMIM, SimMIMSwinTransformer
 from mmpretrain.structures import DataSample
 
 

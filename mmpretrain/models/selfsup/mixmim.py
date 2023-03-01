@@ -49,8 +49,10 @@ class MixMIMPretrainTransformer(MixMIMTransformer):
             Defaults to 0.
         drop_path_rate (float): Stochastic depth rate. Defaults to 0.
         attn_drop_rate (float): Attention drop rate. Defaults to 0.
-        use_checkpoint (bool): Whether use the checkpoint to
-        reduce GPU memory cost
+        use_checkpoint (bool): Whether use the checkpoint to reduce GPU memory
+            cost. Defaults to False.
+        mask_ratio (bool): The base ratio of total number of patches to be
+            masked. Defaults to 0.5.
         range_mask_ratio (float): The range of mask ratio.
             Defaults to 0.
         init_cfg (dict, optional): Initialization config dict.
@@ -71,6 +73,7 @@ class MixMIMPretrainTransformer(MixMIMTransformer):
                  drop_path_rate: float = 0.0,
                  attn_drop_rate: float = 0.0,
                  use_checkpoint: bool = False,
+                 mask_ratio: float = 0.5,
                  range_mask_ratio: float = 0.0,
                  init_cfg: Optional[dict] = None) -> None:
 
@@ -90,6 +93,7 @@ class MixMIMPretrainTransformer(MixMIMTransformer):
             use_checkpoint=use_checkpoint,
             init_cfg=init_cfg)
 
+        self.mask_ratio = mask_ratio
         self.range_mask_ratio = range_mask_ratio
 
     def init_weights(self):
@@ -167,7 +171,7 @@ class MixMIMPretrainTransformer(MixMIMTransformer):
 
     def forward(self,
                 x: torch.Tensor,
-                mask_ratio: Optional[float] = 0.5) -> Tuple[torch.Tensor]:
+                mask: Optional[bool] = True) -> Tuple[torch.Tensor]:
         """Generate features for masked images.
 
         This function generates mask and masks some patches randomly and get
@@ -175,8 +179,8 @@ class MixMIMPretrainTransformer(MixMIMTransformer):
 
         Args:
             x (torch.Tensor): Input images, which is of shape B x C x H x W.
-            mask_ratio (float, optional): The mask ratio of total patches.
-                Defaults to 0.5.
+            mask (bool, optional): To indicate whether the forward containing
+                ``mask`` or not.
 
         Returns:
             Tuple[torch.Tensor, torch.Tensor]:
@@ -184,12 +188,12 @@ class MixMIMPretrainTransformer(MixMIMTransformer):
                 B x L x C.
               - mask_s4 (torch.Tensor): the mask tensor for the last layer.
         """
-        if mask_ratio is None:
+        if mask is None or False:
             return super().forward(x)
 
         else:
             mask_s1, mask_s2, mask_s3, mask_s4 = self.random_masking(
-                x, mask_ratio)
+                x, self.mask_ratio)
 
             x, _ = self.patch_embed(x)
 

@@ -4,7 +4,7 @@ import platform
 import pytest
 import torch
 
-from mmpretrain.models import MAEViT, MAE
+from mmpretrain.models import MAE, MAEViT
 from mmpretrain.structures import DataSample
 
 

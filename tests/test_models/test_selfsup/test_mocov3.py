@@ -2,10 +2,10 @@
 import platform
 from unittest import TestCase
 
-import torch
 import pytest
+import torch
 
-from mmpretrain.models import MoCoV3ViT, MoCoV3
+from mmpretrain.models import MoCoV3, MoCoV3ViT
 from mmpretrain.structures import DataSample
 
 

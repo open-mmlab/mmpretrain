@@ -43,7 +43,7 @@ model = dict(
         arch='B',
         drop_rate=0.0,
         drop_path_rate=0.0,  # drop_path_rate=0.0 during pretraining
-    ),
+        mask_ratio=0.5),
     neck=dict(
         type='MixMIMPretrainDecoder',
         num_patches=49,

@@ -152,7 +152,7 @@ class MAEViT(VisionTransformer):
         if the ``mask`` is ``None`` or ``False``, the forward function will
         call ``super().forward()``, which extract features from images without
         mask.
-        
+
 
         Args:
             x (torch.Tensor): Input images, which is of shape B x C x H x W.

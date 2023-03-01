@@ -5,7 +5,7 @@ import pytest
 import torch
 from mmengine.utils import digit_version
 
-from mmpretrain.models import MaskFeatViT, MaskFeat
+from mmpretrain.models import MaskFeat, MaskFeatViT
 from mmpretrain.structures import DataSample
 
 

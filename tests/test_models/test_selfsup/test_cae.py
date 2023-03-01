@@ -4,7 +4,7 @@ import platform
 import pytest
 import torch
 
-from mmpretrain.models import CAEPretrainViT, CAE
+from mmpretrain.models import CAE, CAEPretrainViT
 from mmpretrain.structures import DataSample
 
 

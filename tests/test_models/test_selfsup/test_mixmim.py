@@ -4,23 +4,23 @@ import platform
 import pytest
 import torch
 
-from mmpretrain.models import MixMIMPretrainTransformer, MixMIM
+from mmpretrain.models import MixMIM, MixMIMPretrainTransformer
 from mmpretrain.structures import DataSample
 
 
 @pytest.mark.skipif(platform.system() == 'Windows', reason='Windows mem limit')
 def test_mixmmim_backbone():
-    simmim_backbone = MixMIMPretrainTransformer()
-    simmim_backbone.init_weights()
+    mixmmim_backbone = MixMIMPretrainTransformer()
+    mixmmim_backbone.init_weights()
     fake_inputs = torch.randn((2, 3, 224, 224))
 
     # test with mask
-    fake_outputs, fake_mask_s4 = simmim_backbone(fake_inputs, 0.5)
+    fake_outputs, fake_mask_s4 = mixmmim_backbone(fake_inputs)
     assert fake_outputs.shape == torch.Size([2, 49, 1024])
     assert fake_mask_s4.shape == torch.Size([1, 49, 1])
 
     # test without mask
-    fake_outputs = simmim_backbone(fake_inputs, None)
+    fake_outputs = mixmmim_backbone(fake_inputs, None)
     assert len(fake_outputs) == 1
     assert fake_outputs[0].shape == torch.Size([2, 1024])
 
