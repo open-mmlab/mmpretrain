@@ -265,7 +265,7 @@ class CAENeck(BaseModule):
         # decoder
         x_masked = x_masked + pos_embed_masked
         for decoder in self.decoders:
-            x_masked = decoder(x_masked)
+            x_masked = decoder(x_masked, rel_pos_bias=None)
         x_masked = self.norm_decoder(x_masked)
 
         logits = self.head(x_masked)

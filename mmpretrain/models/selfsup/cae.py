@@ -4,18 +4,16 @@
 import math
 from collections import OrderedDict
 from functools import partial
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Union
 
 import attr
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmengine.model import BaseModule, ModuleList
+from mmengine.model import BaseModule
 from mmengine.model.weight_init import trunc_normal_
 
-from mmpretrain.models import VisionTransformer
-from mmpretrain.models.backbones.beit import BEiTTransformerEncoderLayer
+from mmpretrain.models.backbones import BEiTViT
 from mmpretrain.registry import MODELS
 from mmpretrain.structures import DataSample
 from ..utils import build_2d_sincos_position_embedding
@@ -188,11 +186,9 @@ class Encoder(BaseModule):
 
 
 @MODELS.register_module()
-class CAEViT(VisionTransformer):
-    """Vision Transformer for CAE pre-training.
-
-    Rewritten version of: `An Image is Worth 16x16 Words: Transformers
-    for Image Recognition at Scale <https://arxiv.org/abs/2010.11929>`_
+class CAEPretrainViT(BEiTViT):
+    """Vision Transformer for CAE pre-training and the implementation is based
+    on BEiTViT.
 
     Args:
         arch (str | dict): Vision Transformer architecture. Default: 'b'
@@ -224,61 +220,60 @@ class CAEViT(VisionTransformer):
             Defaults to None.
     """
 
-    def __init__(self,
-                 arch: str = 'b',
-                 img_size: int = 224,
-                 patch_size: int = 16,
-                 out_indices: int = -1,
-                 drop_rate: float = 0,
-                 drop_path_rate: float = 0,
-                 bias: bool = 'qv_bias',
-                 norm_cfg: dict = dict(type='LN', eps=1e-6),
-                 final_norm: bool = True,
-                 output_cls_token: bool = True,
-                 interpolate_mode: str = 'bicubic',
-                 layer_scale_init_value: float = None,
-                 patch_cfg: dict = dict(),
-                 layer_cfgs: dict = dict(),
-                 init_cfg: dict = None) -> None:
+    def __init__(
+        self,
+        arch: str = 'b',
+        img_size: int = 224,
+        patch_size: int = 16,
+        in_channels: int = 3,
+        out_indices: int = -1,
+        drop_rate: float = 0,
+        drop_path_rate: float = 0,
+        bias: bool = 'qv_bias',
+        norm_cfg: dict = dict(type='LN', eps=1e-6),
+        final_norm: bool = True,
+        with_cls_token: bool = True,
+        avg_token: bool = False,
+        frozen_stages: int = -1,
+        output_cls_token: bool = True,
+        use_abs_pos_emb: bool = True,
+        use_rel_pos_bias: bool = False,
+        use_shared_rel_pos_bias: bool = False,
+        layer_scale_init_value: float = None,
+        interpolate_mode: str = 'bicubic',
+        patch_cfg: dict = dict(),
+        layer_cfgs: dict = dict(),
+        init_cfg: dict = [
+            dict(type='Constant', val=1, layer=['LayerNorm']),
+            dict(type='TruncNormal', std=0.02, layer=['Conv2d']),
+            dict(type='Xavier', distribution='uniform', layer=['Linear'])
+        ]
+    ) -> None:
         super().__init__(
             arch=arch,
             img_size=img_size,
             patch_size=patch_size,
+            in_channels=in_channels,
             out_indices=out_indices,
             drop_rate=drop_rate,
             drop_path_rate=drop_path_rate,
+            bias=bias,
             norm_cfg=norm_cfg,
             final_norm=final_norm,
+            with_cls_token=with_cls_token,
+            avg_token=avg_token,
+            frozen_stages=frozen_stages,
             output_cls_token=output_cls_token,
+            use_abs_pos_emb=use_abs_pos_emb,
+            use_rel_pos_bias=use_rel_pos_bias,
+            use_shared_rel_pos_bias=use_shared_rel_pos_bias,
+            layer_scale_init_value=layer_scale_init_value,
             interpolate_mode=interpolate_mode,
             patch_cfg=patch_cfg,
             layer_cfgs=layer_cfgs,
             init_cfg=init_cfg)
         self.pos_embed.requires_grad = False
         self.num_patches = self.patch_resolution[0] * self.patch_resolution[1]
-        dpr = np.linspace(0, drop_path_rate, self.num_layers)
-
-        # Replace original TransformerEncoderLayer with
-        # BEiTTransformerEncoderLayer
-        self.layers = ModuleList()
-        if isinstance(layer_cfgs, dict):
-            layer_cfgs = [layer_cfgs] * self.num_layers
-        for i in range(self.num_layers):
-            _layer_cfg = dict(
-                embed_dims=self.embed_dims,
-                num_heads=self.arch_settings['num_heads'],
-                feedforward_channels=self.
-                arch_settings['feedforward_channels'],
-                layer_scale_init_value=layer_scale_init_value,
-                window_size=None,
-                # setting `use_rel_pos_bias` to False ignores the `window_size`
-                use_rel_pos_bias=False,
-                drop_rate=drop_rate,
-                drop_path_rate=dpr[i],
-                bias=bias,
-                norm_cfg=norm_cfg)
-            _layer_cfg.update(layer_cfgs[i])
-            self.layers.append(BEiTTransformerEncoderLayer(**_layer_cfg))
 
     def init_weights(self) -> None:
         """Initialize position embedding, patch embedding and cls token."""
@@ -293,23 +288,8 @@ class CAEViT(VisionTransformer):
             self.pos_embed.data.copy_(pos_embed.float())
 
             trunc_normal_(self.cls_token, std=.02)
-            self.apply(self._init_weights)
 
-    def _init_weights(self, m) -> None:
-        """Initialize the weights."""
-        if isinstance(m, nn.Linear):
-            nn.init.xavier_uniform_(m.weight)
-            if isinstance(m, nn.Linear) and m.bias is not None:
-                nn.init.constant_(m.bias, 0)
-        elif isinstance(m, nn.LayerNorm):
-            nn.init.constant_(m.bias, 0)
-            nn.init.constant_(m.weight, 1.0)
-        elif isinstance(m, nn.Conv2d):
-            trunc_normal_(m.weight, std=0.02)
-            if m.bias is not None:
-                nn.init.constant_(m.bias, 0)
-
-    def forward(self, img: torch.Tensor,
+    def forward(self, x: torch.Tensor,
                 mask: Optional[torch.Tensor]) -> torch.Tensor:
         """Generate features for masked images.
 
@@ -334,7 +314,7 @@ class CAEViT(VisionTransformer):
             return super().forward(x)
 
         else:
-            x, _ = self.patch_embed(img)
+            x, _ = self.patch_embed(x)
             batch_size, _, dim = x.size()
 
             cls_tokens = self.cls_token.expand(batch_size, -1, -1)
@@ -462,8 +442,9 @@ class CAE(BaseSelfSupervisor):
         logits = logits.view(-1, logits.shape[-1])
         # inputs[1] is the target image
         logits_target = self.target_generator(inputs[1])
-        loss_main, loss_align = self.head(logits, logits_target, latent_pred,
-                                          latent_target, mask)
+        loss_main, loss_align = self.head.loss(logits, logits_target,
+                                               latent_pred, latent_target,
+                                               mask)
         losses = dict()
 
         losses['loss'] = loss_main + loss_align
