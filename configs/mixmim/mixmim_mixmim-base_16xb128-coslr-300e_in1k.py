@@ -3,6 +3,11 @@ _base_ = '../_base_/default_runtime.py'
 # dataset settings
 dataset_type = 'ImageNet'
 data_root = 'data/imagenet/'
+data_preprocessor = dict(
+    type='SelfSupDataPreprocessor',
+    mean=[123.675, 116.28, 103.53],
+    std=[58.395, 57.12, 57.375],
+    to_rgb=True)
 
 train_pipeline = [
     dict(type='LoadImageFromFile'),
@@ -33,12 +38,8 @@ train_dataloader = dict(
 # model settings
 model = dict(
     type='MixMIM',
-    data_preprocessor=dict(
-        mean=[123.675, 116.28, 103.53],
-        std=[58.395, 57.12, 57.375],
-        to_rgb=True),
     backbone=dict(
-        type='MixMIMTransformerPretrain',
+        type='MixMIMPretrainTransformer',
         arch='B',
         drop_rate=0.0,
         drop_path_rate=0.0,  # drop_path_rate=0.0 during pretraining

@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import random
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import torch
 from torch import nn
@@ -8,7 +8,9 @@ from torch.nn import functional as F
 
 from mmpretrain.models.backbones import MixMIMTransformer
 from mmpretrain.registry import MODELS
+from mmpretrain.structures import DataSample
 from ..utils import build_2d_sincos_position_embedding
+from .base import BaseSelfSupervisor
 
 
 @MODELS.register_module()
@@ -112,7 +114,9 @@ class MixMIMPretrainTransformer(MixMIMTransformer):
             nn.init.constant_(m.bias, 0)
             nn.init.constant_(m.weight, 1.0)
 
-    def random_masking(self, x: torch.Tensor, mask_ratio: float = 0.5):
+    def random_masking(self,
+                       x: torch.Tensor,
+                       mask_ratio: float = 0.5) -> Tuple[torch.Tensor]:
         """Generate the mask for MixMIM Pretraining.
 
         Args:
@@ -161,7 +165,9 @@ class MixMIMPretrainTransformer(MixMIMTransformer):
 
         return mask_s1, mask_s2, mask_s3, mask
 
-    def forward(self, x: torch.Tensor, mask_ratio=0.5):
+    def forward(self,
+                x: torch.Tensor,
+                mask_ratio: Optional[float] = 0.5) -> Tuple[torch.Tensor]:
         """Generate features for masked images.
 
         This function generates mask and masks some patches randomly and get
@@ -169,6 +175,8 @@ class MixMIMPretrainTransformer(MixMIMTransformer):
 
         Args:
             x (torch.Tensor): Input images, which is of shape B x C x H x W.
+            mask_ratio (float, optional): The mask ratio of total patches.
+                Defaults to 0.5.
 
         Returns:
             Tuple[torch.Tensor, torch.Tensor]:
@@ -176,25 +184,73 @@ class MixMIMPretrainTransformer(MixMIMTransformer):
                 B x L x C.
               - mask_s4 (torch.Tensor): the mask tensor for the last layer.
         """
+        if mask_ratio is None:
+            return super().forward(x)
 
-        mask_s1, mask_s2, mask_s3, mask_s4 = self.random_masking(x, mask_ratio)
+        else:
+            mask_s1, mask_s2, mask_s3, mask_s4 = self.random_masking(
+                x, mask_ratio)
 
-        x, _ = self.patch_embed(x)
+            x, _ = self.patch_embed(x)
 
-        x = x * (1. - mask_s1) + x.flip(0) * mask_s1
-        x = x + self.absolute_pos_embed
-        x = self.drop_after_pos(x)
+            x = x * (1. - mask_s1) + x.flip(0) * mask_s1
+            x = x + self.absolute_pos_embed
+            x = self.drop_after_pos(x)
 
-        for idx, layer in enumerate(self.layers):
-            if idx == 0:
-                x = layer(x, attn_mask=mask_s1)
-            elif idx == 1:
-                x = layer(x, attn_mask=mask_s2)
-            elif idx == 2:
-                x = layer(x, attn_mask=mask_s3)
-            elif idx == 3:
-                x = layer(x, attn_mask=mask_s4)
+            for idx, layer in enumerate(self.layers):
+                if idx == 0:
+                    x = layer(x, attn_mask=mask_s1)
+                elif idx == 1:
+                    x = layer(x, attn_mask=mask_s2)
+                elif idx == 2:
+                    x = layer(x, attn_mask=mask_s3)
+                elif idx == 3:
+                    x = layer(x, attn_mask=mask_s4)
 
-        x = self.norm(x)
+            x = self.norm(x)
 
-        return x, mask_s4
+            return x, mask_s4
+
+
+@MODELS.register_module()
+class MixMIM(BaseSelfSupervisor):
+    """MiXMIM.
+
+    Implementation of `MixMIM: Mixed and Masked Image Modeling for Efficient
+    Visual Representation Learning. <https://arxiv.org/abs/2205.13137>`_.
+    """
+
+    def __init__(self,
+                 backbone: dict,
+                 neck: Optional[dict] = None,
+                 head: Optional[dict] = None,
+                 pretrained: Optional[str] = None,
+                 data_preprocessor: Optional[Union[dict, nn.Module]] = None,
+                 init_cfg: Optional[dict] = None):
+
+        head.update(dict(patch_size=neck['encoder_stride']))
+        super().__init__(
+            backbone=backbone,
+            neck=neck,
+            head=head,
+            pretrained=pretrained,
+            data_preprocessor=data_preprocessor,
+            init_cfg=init_cfg)
+
+    def loss(self, inputs: torch.Tensor, data_samples: List[DataSample],
+             **kwargs) -> Dict[str, torch.Tensor]:
+        """The forward function in training.
+
+        Args:
+            inputs (torch.Tensor): The input images.
+            data_samples (List[DataSample]): All elements required
+                during the forward function.
+
+        Returns:
+            Dict[str, torch.Tensor]: A dictionary of loss components.
+        """
+        latent, mask = self.backbone(inputs)
+        x_rec = self.neck(latent, mask)
+        loss = self.head.loss(x_rec, inputs, mask)
+        losses = dict(loss=loss)
+        return losses
