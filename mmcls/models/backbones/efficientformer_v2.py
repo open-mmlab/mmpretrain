@@ -1,177 +1,188 @@
-# Copyright (c) OpenMMLab. All rights reserved.
-import math
-from functools import partial
-from typing import Dict
-
+"""
+EfficientFormer_v2
+"""
+import os
+import copy
 import torch
 import torch.nn as nn
-
-from ..utils import LayerScale
+import torch.nn.functional as F
+import math
+from typing import Dict
+import itertools
 
 from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
-from timm.layers import create_conv2d, create_norm_layer, get_act_layer, get_norm_layer, ConvNormAct
-from timm.layers import DropPath, trunc_normal_, to_2tuple, to_ntuple
-from ._builder import build_model_with_cfg
-from ._manipulate import checkpoint_seq
-from ._pretrained import generate_default_cfgs
-from ._registry import register_model
-
+from timm.models.layers import DropPath, trunc_normal_
+from timm.models.registry import register_model
+from timm.models.layers.helpers import to_2tuple
 
 EfficientFormer_width = {
-    'L': (40, 80, 192, 384),  # 26m 83.3% 6attn
-    'S2': (32, 64, 144, 288),  # 12m 81.6% 4attn dp0.02
-    'S1': (32, 48, 120, 224),  # 6.1m 79.0
-    'S0': (32, 48, 96, 176),  # 75.0 75.7
+    'L': [40, 80, 192, 384],  # 26m 83.3% 6attn
+    'S2': [32, 64, 144, 288],  # 12m 81.6% 4attn dp0.02
+    'S1': [32, 48, 120, 224],  # 6.1m 79.0
+    'S0': [32, 48, 96, 176],  # 75.0 75.7
 }
 
 EfficientFormer_depth = {
-    'L': (5, 5, 15, 10),  # 26m 83.3%
-    'S2': (4, 4, 12, 8),  # 12m
-    'S1': (3, 3, 9, 6),  # 79.0
-    'S0': (2, 2, 6, 4),  # 75.7
+    'L': [5, 5, 15, 10],  # 26m 83.3%
+    'S2': [4, 4, 12, 8],  # 12m
+    'S1': [3, 3, 9, 6],  # 79.0
+    'S0': [2, 2, 6, 4],  # 75.7
 }
 
-EfficientFormer_expansion_ratios = {
-    'L': (4, 4, (4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4), (4, 4, 4, 3, 3, 3, 3, 4, 4, 4)),
-    'S2': (4, 4, (4, 4, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4), (4, 4, 3, 3, 3, 3, 4, 4)),
-    'S1': (4, 4, (4, 4, 3, 3, 3, 3, 4, 4, 4), (4, 4, 3, 3, 4, 4)),
-    'S0': (4, 4, (4, 3, 3, 3, 4, 4), (4, 3, 3, 4)),
+# 26m
+expansion_ratios_L = {
+    '0': [4, 4, 4, 4, 4],
+    '1': [4, 4, 4, 4, 4],
+    '2': [4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4],
+    '3': [4, 4, 4, 3, 3, 3, 3, 4, 4, 4],
+}
+
+# 12m
+expansion_ratios_S2 = {
+    '0': [4, 4, 4, 4],
+    '1': [4, 4, 4, 4],
+    '2': [4, 4, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4],
+    '3': [4, 4, 3, 3, 3, 3, 4, 4],
+}
+
+# 6.1m
+expansion_ratios_S1 = {
+    '0': [4, 4, 4],
+    '1': [4, 4, 4],
+    '2': [4, 4, 3, 3, 3, 3, 4, 4, 4],
+    '3': [4, 4, 3, 3, 4, 4],
+}
+
+# 3.5m
+expansion_ratios_S0 = {
+    '0': [4, 4],
+    '1': [4, 4],
+    '2': [4, 3, 3, 3, 4, 4],
+    '3': [4, 3, 3, 4],
 }
 
 
-class ConvNorm(nn.Module):
-    def __init__(
-            self,
-            in_channels,
-            out_channels,
-            kernel_size=1,
-            stride=1,
-            padding='',
-            dilation=1,
-            groups=1,
-            bias=True,
-            norm_layer='batchnorm2d',
-            norm_kwargs=None,
-    ):
-        norm_kwargs = norm_kwargs or {}
-        super(ConvNorm, self).__init__()
-        self.conv = create_conv2d(
-            in_channels,
-            out_channels,
-            kernel_size,
-            stride=stride,
-            padding=padding,
-            dilation=dilation,
-            groups=groups,
-            bias=bias,
-        )
-        self.bn = create_norm_layer(norm_layer, out_channels, **norm_kwargs)
-
-    def forward(self, x):
-        x = self.conv(x)
-        x = self.bn(x)
-        return x
-
-
-class Attention2d(torch.nn.Module):
-    attention_bias_cache: Dict[str, torch.Tensor]
-
-    def __init__(
-            self,
-            dim=384,
-            key_dim=32,
-            num_heads=8,
-            attn_ratio=4,
-            resolution=7,
-            act_layer=nn.GELU,
-            stride=None,
-    ):
+class Attention4D(torch.nn.Module):
+    def __init__(self, dim=384, key_dim=32, num_heads=8,
+                 attn_ratio=4,
+                 resolution=7,
+                 act_layer=nn.ReLU,
+                 stride=None):
         super().__init__()
         self.num_heads = num_heads
         self.scale = key_dim ** -0.5
         self.key_dim = key_dim
+        self.nh_kd = nh_kd = key_dim * num_heads
 
-        resolution = to_2tuple(resolution)
         if stride is not None:
-            resolution = tuple([math.ceil(r / stride) for r in resolution])
-            self.stride_conv = ConvNorm(dim, dim, kernel_size=3, stride=stride, groups=dim)
+            self.resolution = math.ceil(resolution / stride)
+            self.stride_conv = nn.Sequential(nn.Conv2d(dim, dim, kernel_size=3, stride=stride, padding=1, groups=dim),
+                                             nn.BatchNorm2d(dim), )
             self.upsample = nn.Upsample(scale_factor=stride, mode='bilinear')
         else:
+            self.resolution = resolution
             self.stride_conv = None
             self.upsample = None
 
-        self.resolution = resolution
-        self.N = self.resolution[0] * self.resolution[1]
+        self.N = self.resolution ** 2
+        self.N2 = self.N
         self.d = int(attn_ratio * key_dim)
         self.dh = int(attn_ratio * key_dim) * num_heads
         self.attn_ratio = attn_ratio
-        kh = self.key_dim * self.num_heads
+        h = self.dh + nh_kd * 2
+        self.q = nn.Sequential(nn.Conv2d(dim, self.num_heads * self.key_dim, 1),
+                               nn.BatchNorm2d(self.num_heads * self.key_dim), )
+        self.k = nn.Sequential(nn.Conv2d(dim, self.num_heads * self.key_dim, 1),
+                               nn.BatchNorm2d(self.num_heads * self.key_dim), )
+        self.v = nn.Sequential(nn.Conv2d(dim, self.num_heads * self.d, 1),
+                               nn.BatchNorm2d(self.num_heads * self.d),
+                               )
+        self.v_local = nn.Sequential(nn.Conv2d(self.num_heads * self.d, self.num_heads * self.d,
+                                               kernel_size=3, stride=1, padding=1, groups=self.num_heads * self.d),
+                                     nn.BatchNorm2d(self.num_heads * self.d), )
+        self.talking_head1 = nn.Conv2d(self.num_heads, self.num_heads, kernel_size=1, stride=1, padding=0)
+        self.talking_head2 = nn.Conv2d(self.num_heads, self.num_heads, kernel_size=1, stride=1, padding=0)
 
-        self.q = ConvNorm(dim, kh)
-        self.k = ConvNorm(dim, kh)
-        self.v = ConvNorm(dim, self.dh)
-        self.v_local = ConvNorm(self.dh, self.dh, kernel_size=3, groups=self.dh)
-        self.talking_head1 = nn.Conv2d(self.num_heads, self.num_heads, kernel_size=1)
-        self.talking_head2 = nn.Conv2d(self.num_heads, self.num_heads, kernel_size=1)
+        self.proj = nn.Sequential(act_layer(),
+                                  nn.Conv2d(self.dh, dim, 1),
+                                  nn.BatchNorm2d(dim), )
 
-        self.act = act_layer()
-        self.proj = ConvNorm(self.dh, dim, 1)
-
-        pos = torch.stack(torch.meshgrid(torch.arange(self.resolution[0]), torch.arange(self.resolution[1]))).flatten(1)
-        rel_pos = (pos[..., :, None] - pos[..., None, :]).abs()
-        rel_pos = (rel_pos[0] * self.resolution[1]) + rel_pos[1]
-        self.attention_biases = torch.nn.Parameter(torch.zeros(num_heads, self.N))
-        self.register_buffer('attention_bias_idxs', torch.LongTensor(rel_pos), persistent=False)
-        self.attention_bias_cache = {}  # per-device attention_biases cache (data-parallel compat)
+        points = list(itertools.product(range(self.resolution), range(self.resolution)))
+        N = len(points)
+        attention_offsets = {}
+        idxs = []
+        for p1 in points:
+            for p2 in points:
+                offset = (abs(p1[0] - p2[0]), abs(p1[1] - p2[1]))
+                if offset not in attention_offsets:
+                    attention_offsets[offset] = len(attention_offsets)
+                idxs.append(attention_offsets[offset])
+        self.attention_biases = torch.nn.Parameter(
+            torch.zeros(num_heads, len(attention_offsets)))
+        self.register_buffer('attention_bias_idxs',
+                             torch.LongTensor(idxs).view(N, N))
 
     @torch.no_grad()
     def train(self, mode=True):
         super().train(mode)
-        if mode and self.attention_bias_cache:
-            self.attention_bias_cache = {}  # clear ab cache
-
-    def get_attention_biases(self, device: torch.device) -> torch.Tensor:
-        if torch.jit.is_tracing() or self.training:
-            return self.attention_biases[:, self.attention_bias_idxs]
+        if mode and hasattr(self, 'ab'):
+            del self.ab
         else:
-            device_key = str(device)
-            if device_key not in self.attention_bias_cache:
-                self.attention_bias_cache[device_key] = self.attention_biases[:, self.attention_bias_idxs]
-            return self.attention_bias_cache[device_key]
+            self.ab = self.attention_biases[:, self.attention_bias_idxs]
 
-    def forward(self, x):
+    def forward(self, x):  # x (B,N,C)
         B, C, H, W = x.shape
         if self.stride_conv is not None:
             x = self.stride_conv(x)
 
-        q = self.q(x).reshape(B, self.num_heads, -1, self.N).permute(0, 1, 3, 2)
-        k = self.k(x).reshape(B, self.num_heads, -1, self.N).permute(0, 1, 2, 3)
+        q = self.q(x).flatten(2).reshape(B, self.num_heads, -1, self.N).permute(0, 1, 3, 2)
+        k = self.k(x).flatten(2).reshape(B, self.num_heads, -1, self.N).permute(0, 1, 2, 3)
         v = self.v(x)
         v_local = self.v_local(v)
-        v = v.reshape(B, self.num_heads, -1, self.N).permute(0, 1, 3, 2)
+        v = v.flatten(2).reshape(B, self.num_heads, -1, self.N).permute(0, 1, 3, 2)
 
-        attn = (q @ k) * self.scale
-        attn = attn + self.get_attention_biases(x.device)
+        attn = (
+                (q @ k) * self.scale
+                +
+                (self.attention_biases[:, self.attention_bias_idxs]
+                 if self.training else self.ab)
+        )
+        # attn = (q @ k) * self.scale
         attn = self.talking_head1(attn)
         attn = attn.softmax(dim=-1)
         attn = self.talking_head2(attn)
 
-        x = (attn @ v).transpose(2, 3)
-        x = x.reshape(B, self.dh, self.resolution[0], self.resolution[1]) + v_local
+        x = (attn @ v)
+
+        out = x.transpose(2, 3).reshape(B, self.dh, self.resolution, self.resolution) + v_local
         if self.upsample is not None:
-            x = self.upsample(x)
+            out = self.upsample(out)
 
-        x = self.act(x)
-        x = self.proj(x)
-        return x
+        out = self.proj(out)
+        return out
 
 
-class LocalGlobalQuery(torch.nn.Module):
-    def __init__(self, in_dim, out_dim):
+def stem(in_chs, out_chs, act_layer=nn.ReLU):
+    return nn.Sequential(
+        nn.Conv2d(in_chs, out_chs // 2, kernel_size=3, stride=2, padding=1),
+        nn.BatchNorm2d(out_chs // 2),
+        act_layer(),
+        nn.Conv2d(out_chs // 2, out_chs, kernel_size=3, stride=2, padding=1),
+        nn.BatchNorm2d(out_chs),
+        act_layer(),
+    )
+
+
+class LGQuery(torch.nn.Module):
+    def __init__(self, in_dim, out_dim, resolution1, resolution2):
         super().__init__()
+        self.resolution1 = resolution1
+        self.resolution2 = resolution2
         self.pool = nn.AvgPool2d(1, 2, 0)
-        self.local = nn.Conv2d(in_dim, in_dim, kernel_size=3, stride=2, padding=1, groups=in_dim)
-        self.proj = ConvNorm(in_dim, out_dim, 1)
+        self.local = nn.Sequential(nn.Conv2d(in_dim, in_dim, kernel_size=3, stride=2, padding=1, groups=in_dim),
+                                   )
+        self.proj = nn.Sequential(nn.Conv2d(in_dim, out_dim, 1),
+                                  nn.BatchNorm2d(out_dim), )
 
     def forward(self, x):
         local_q = self.local(x)
@@ -181,539 +192,521 @@ class LocalGlobalQuery(torch.nn.Module):
         return q
 
 
-class Attention2dDownsample(torch.nn.Module):
-    attention_bias_cache: Dict[str, torch.Tensor]
-
-    def __init__(
-            self,
-            dim=384,
-            key_dim=16,
-            num_heads=8,
-            attn_ratio=4,
-            resolution=7,
-            out_dim=None,
-            act_layer=nn.GELU,
-    ):
+class Attention4DDownsample(torch.nn.Module):
+    def __init__(self, dim=384, key_dim=16, num_heads=8,
+                 attn_ratio=4,
+                 resolution=7,
+                 out_dim=None,
+                 act_layer=None,
+                 ):
         super().__init__()
 
         self.num_heads = num_heads
         self.scale = key_dim ** -0.5
         self.key_dim = key_dim
-        self.resolution = to_2tuple(resolution)
-        self.resolution2 = tuple([math.ceil(r / 2) for r in self.resolution])
-        self.N = self.resolution[0] * self.resolution[1]
-        self.N2 = self.resolution2[0] * self.resolution2[1]
+        self.nh_kd = nh_kd = key_dim * num_heads
+
+        self.resolution = resolution
 
         self.d = int(attn_ratio * key_dim)
         self.dh = int(attn_ratio * key_dim) * num_heads
         self.attn_ratio = attn_ratio
-        self.out_dim = out_dim or dim
-        kh = self.key_dim * self.num_heads
+        h = self.dh + nh_kd * 2
 
-        self.q = LocalGlobalQuery(dim, kh)
-        self.k = ConvNorm(dim, kh, 1)
-        self.v = ConvNorm(dim, self.dh, 1)
-        self.v_local = ConvNorm(self.dh, self.dh, kernel_size=3, stride=2, groups=self.dh)
+        if out_dim is not None:
+            self.out_dim = out_dim
+        else:
+            self.out_dim = dim
+        self.resolution2 = math.ceil(self.resolution / 2)
+        self.q = LGQuery(dim, self.num_heads * self.key_dim, self.resolution, self.resolution2)
 
-        self.act = act_layer()
-        self.proj = ConvNorm(self.dh, self.out_dim, 1)
+        self.N = self.resolution ** 2
+        self.N2 = self.resolution2 ** 2
 
-        self.attention_biases = nn.Parameter(torch.zeros(num_heads, self.N))
-        k_pos = torch.stack(torch.meshgrid(torch.arange(
-            self.resolution[1]),
-            torch.arange(self.resolution[1]))).flatten(1)
-        q_pos = torch.stack(torch.meshgrid(
-            torch.arange(0, self.resolution[0], step=2),
-            torch.arange(0, self.resolution[1], step=2))).flatten(1)
-        rel_pos = (q_pos[..., :, None] - k_pos[..., None, :]).abs()
-        rel_pos = (rel_pos[0] * self.resolution[1]) + rel_pos[1]
-        self.register_buffer('attention_bias_idxs', rel_pos, persistent=False)
-        self.attention_bias_cache = {}  # per-device attention_biases cache (data-parallel compat)
+        self.k = nn.Sequential(nn.Conv2d(dim, self.num_heads * self.key_dim, 1),
+                               nn.BatchNorm2d(self.num_heads * self.key_dim), )
+        self.v = nn.Sequential(nn.Conv2d(dim, self.num_heads * self.d, 1),
+                               nn.BatchNorm2d(self.num_heads * self.d),
+                               )
+        self.v_local = nn.Sequential(nn.Conv2d(self.num_heads * self.d, self.num_heads * self.d,
+                                               kernel_size=3, stride=2, padding=1, groups=self.num_heads * self.d),
+                                     nn.BatchNorm2d(self.num_heads * self.d), )
+
+        self.proj = nn.Sequential(
+            act_layer(),
+            nn.Conv2d(self.dh, self.out_dim, 1),
+            nn.BatchNorm2d(self.out_dim), )
+
+        points = list(itertools.product(range(self.resolution), range(self.resolution)))
+        points_ = list(itertools.product(
+            range(self.resolution2), range(self.resolution2)))
+        N = len(points)
+        N_ = len(points_)
+        attention_offsets = {}
+        idxs = []
+        for p1 in points_:
+            for p2 in points:
+                size = 1
+                offset = (
+                    abs(p1[0] * math.ceil(self.resolution / self.resolution2) - p2[0] + (size - 1) / 2),
+                    abs(p1[1] * math.ceil(self.resolution / self.resolution2) - p2[1] + (size - 1) / 2))
+                if offset not in attention_offsets:
+                    attention_offsets[offset] = len(attention_offsets)
+                idxs.append(attention_offsets[offset])
+        self.attention_biases = torch.nn.Parameter(
+            torch.zeros(num_heads, len(attention_offsets)))
+        self.register_buffer('attention_bias_idxs',
+                             torch.LongTensor(idxs).view(N_, N))
 
     @torch.no_grad()
     def train(self, mode=True):
         super().train(mode)
-        if mode and self.attention_bias_cache:
-            self.attention_bias_cache = {}  # clear ab cache
-
-    def get_attention_biases(self, device: torch.device) -> torch.Tensor:
-        if torch.jit.is_tracing() or self.training:
-            return self.attention_biases[:, self.attention_bias_idxs]
+        if mode and hasattr(self, 'ab'):
+            del self.ab
         else:
-            device_key = str(device)
-            if device_key not in self.attention_bias_cache:
-                self.attention_bias_cache[device_key] = self.attention_biases[:, self.attention_bias_idxs]
-            return self.attention_bias_cache[device_key]
+            self.ab = self.attention_biases[:, self.attention_bias_idxs]
 
-    def forward(self, x):
+    def forward(self, x):  # x (B,N,C)
         B, C, H, W = x.shape
 
-        q = self.q(x).reshape(B, self.num_heads, -1, self.N2).permute(0, 1, 3, 2)
-        k = self.k(x).reshape(B, self.num_heads, -1, self.N).permute(0, 1, 2, 3)
+        q = self.q(x).flatten(2).reshape(B, self.num_heads, -1, self.N2).permute(0, 1, 3, 2)
+        k = self.k(x).flatten(2).reshape(B, self.num_heads, -1, self.N).permute(0, 1, 2, 3)
         v = self.v(x)
         v_local = self.v_local(v)
-        v = v.reshape(B, self.num_heads, -1, self.N).permute(0, 1, 3, 2)
+        v = v.flatten(2).reshape(B, self.num_heads, -1, self.N).permute(0, 1, 3, 2)
 
-        attn = (q @ k) * self.scale
-        attn = attn + self.get_attention_biases(x.device)
-        attn = attn.softmax(dim=-1)
-
-        x = (attn @ v).transpose(2, 3)
-        x = x.reshape(B, self.dh, self.resolution2[0], self.resolution2[1]) + v_local
-        x = self.act(x)
-        x = self.proj(x)
-        return x
-
-
-class Downsample(nn.Module):
-    def __init__(
-            self,
-            in_chs,
-            out_chs,
-            kernel_size=3,
-            stride=2,
-            padding=1,
-            resolution=7,
-            use_attn=False,
-            act_layer=nn.GELU,
-            norm_layer=nn.BatchNorm2d,
-    ):
-        super().__init__()
-
-        kernel_size = to_2tuple(kernel_size)
-        stride = to_2tuple(stride)
-        padding = to_2tuple(padding)
-        norm_layer = norm_layer or nn.Identity()
-        self.conv = ConvNorm(
-            in_chs,
-            out_chs,
-            kernel_size=kernel_size,
-            stride=stride,
-            padding=padding,
-            norm_layer=norm_layer,
+        attn = (
+                (q @ k) * self.scale
+                +
+                (self.attention_biases[:, self.attention_bias_idxs]
+                 if self.training else self.ab)
         )
 
-        if use_attn:
-            self.attn = Attention2dDownsample(
-                dim=in_chs,
-                out_dim=out_chs,
-                resolution=resolution,
-                act_layer=act_layer,
-            )
-        else:
-            self.attn = None
+        # attn = (q @ k) * self.scale
+        attn = attn.softmax(dim=-1)
+        x = (attn @ v).transpose(2, 3)
+        out = x.reshape(B, self.dh, self.resolution2, self.resolution2) + v_local
 
-    def forward(self, x):
-        out = self.conv(x)
-        if self.attn is not None:
-            return self.attn(x) + out
+        out = self.proj(out)
         return out
 
 
-class ConvMlpWithNorm(nn.Module):
+class Embedding(nn.Module):
+    def __init__(self, patch_size=3, stride=2, padding=1,
+                 in_chans=3, embed_dim=768, norm_layer=nn.BatchNorm2d,
+                 light=False, asub=False, resolution=None, act_layer=nn.ReLU, attn_block=Attention4DDownsample):
+        super().__init__()
+        self.light = light
+        self.asub = asub
+
+        if self.light:
+            self.new_proj = nn.Sequential(
+                nn.Conv2d(in_chans, in_chans, kernel_size=3, stride=2, padding=1, groups=in_chans),
+                nn.BatchNorm2d(in_chans),
+                nn.Hardswish(),
+                nn.Conv2d(in_chans, embed_dim, kernel_size=1, stride=1, padding=0),
+                nn.BatchNorm2d(embed_dim),
+            )
+            self.skip = nn.Sequential(
+                nn.Conv2d(in_chans, embed_dim, kernel_size=1, stride=2, padding=0),
+                nn.BatchNorm2d(embed_dim)
+            )
+        elif self.asub:
+            self.attn = attn_block(dim=in_chans, out_dim=embed_dim,
+                                   resolution=resolution, act_layer=act_layer)
+            patch_size = to_2tuple(patch_size)
+            stride = to_2tuple(stride)
+            padding = to_2tuple(padding)
+            self.conv = nn.Conv2d(in_chans, embed_dim, kernel_size=patch_size,
+                                  stride=stride, padding=padding)
+            self.bn = norm_layer(embed_dim) if norm_layer else nn.Identity()
+        else:
+            patch_size = to_2tuple(patch_size)
+            stride = to_2tuple(stride)
+            padding = to_2tuple(padding)
+            self.proj = nn.Conv2d(in_chans, embed_dim, kernel_size=patch_size,
+                                  stride=stride, padding=padding)
+            self.norm = norm_layer(embed_dim) if norm_layer else nn.Identity()
+
+    def forward(self, x):
+        if self.light:
+            out = self.new_proj(x) + self.skip(x)
+        elif self.asub:
+            out_conv = self.conv(x)
+            out_conv = self.bn(out_conv)
+            out = self.attn(x) + out_conv
+        else:
+            x = self.proj(x)
+            out = self.norm(x)
+        return out
+
+
+class Mlp(nn.Module):
     """
     Implementation of MLP with 1*1 convolutions.
     Input: tensor with shape [B, C, H, W]
     """
 
-    def __init__(
-            self,
-            in_features,
-            hidden_features=None,
-            out_features=None,
-            act_layer=nn.GELU,
-            norm_layer=nn.BatchNorm2d,
-            drop=0.,
-            mid_conv=False,
-    ):
+    def __init__(self, in_features, hidden_features=None,
+                 out_features=None, act_layer=nn.GELU, drop=0., mid_conv=False):
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
-        self.fc1 = ConvNormAct(
-            in_features, hidden_features, 1, bias=True, norm_layer=norm_layer, act_layer=act_layer)
-        if mid_conv:
-            self.mid = ConvNormAct(
-                hidden_features, hidden_features, 3,
-                groups=hidden_features, bias=True, norm_layer=norm_layer, act_layer=act_layer)
-        else:
-            self.mid = nn.Identity()
-        self.drop1 = nn.Dropout(drop)
-        self.fc2 = ConvNorm(hidden_features, out_features, 1, norm_layer=norm_layer)
-        self.drop2 = nn.Dropout(drop)
+        self.mid_conv = mid_conv
+        self.fc1 = nn.Conv2d(in_features, hidden_features, 1)
+        self.act = act_layer()
+        self.fc2 = nn.Conv2d(hidden_features, out_features, 1)
+        self.drop = nn.Dropout(drop)
+        self.apply(self._init_weights)
 
-    def forward(self, x):
-        x = self.fc1(x)
-        x = self.mid(x)
-        x = self.drop1(x)
-        x = self.fc2(x)
-        x = self.drop2(x)
-        return x
+        if self.mid_conv:
+            self.mid = nn.Conv2d(hidden_features, hidden_features, kernel_size=3, stride=1, padding=1,
+                                 groups=hidden_features)
+            self.mid_norm = nn.BatchNorm2d(hidden_features)
 
+        self.norm1 = nn.BatchNorm2d(hidden_features)
+        self.norm2 = nn.BatchNorm2d(out_features)
 
-class LayerScale2d(nn.Module):
-    def __init__(self, dim, init_values=1e-5, inplace=False):
-        super().__init__()
-        self.inplace = inplace
-        self.gamma = nn.Parameter(init_values * torch.ones(dim))
-
-    def forward(self, x):
-        gamma = self.gamma.view(1, -1, 1, 1)
-        return x.mul_(gamma) if self.inplace else x * gamma
-
-
-class EfficientFormerV2Block(nn.Module):
-    def __init__(
-            self,
-            dim,
-            mlp_ratio=4.,
-            act_layer=nn.GELU,
-            norm_layer=nn.BatchNorm2d,
-            drop=0.,
-            drop_path=0.,
-            layer_scale_init_value=1e-5,
-            resolution=7,
-            stride=None,
-            use_attn=True,
-    ):
-        super().__init__()
-
-        if use_attn:
-            self.token_mixer = Attention2d(
-                dim,
-                resolution=resolution,
-                act_layer=act_layer,
-                stride=stride,
-            )
-            self.ls1 = LayerScale2d(
-                dim, layer_scale_init_value) if layer_scale_init_value is not None else nn.Identity()
-            self.drop_path1 = DropPath(drop_path) if drop_path > 0. else nn.Identity()
-        else:
-            self.token_mixer = None
-            self.ls1 = None
-            self.drop_path1 = None
-
-        self.mlp = ConvMlpWithNorm(
-            in_features=dim,
-            hidden_features=int(dim * mlp_ratio),
-            act_layer=act_layer,
-            norm_layer=norm_layer,
-            drop=drop,
-            mid_conv=True,
-        )
-        self.ls2 = LayerScale2d(
-            dim, layer_scale_init_value) if layer_scale_init_value is not None else nn.Identity()
-        self.drop_path2 = DropPath(drop_path) if drop_path > 0. else nn.Identity()
-
-    def forward(self, x):
-        if self.token_mixer is not None:
-            x = x + self.drop_path1(self.ls1(self.token_mixer(x)))
-        x = x + self.drop_path2(self.ls2(self.mlp(x)))
-        return x
-
-
-class Stem4(nn.Sequential):
-    def __init__(self, in_chs, out_chs, act_layer=nn.GELU, norm_layer=nn.BatchNorm2d):
-        super().__init__()
-        self.stride = 4
-        self.conv1 = ConvNormAct(
-            in_chs, out_chs // 2, kernel_size=3, stride=2, padding=1, bias=True,
-            norm_layer=norm_layer, act_layer=act_layer
-        )
-        self.conv2 = ConvNormAct(
-            out_chs // 2, out_chs, kernel_size=3, stride=2, padding=1, bias=True,
-            norm_layer=norm_layer, act_layer=act_layer
-        )
-
-
-class EfficientFormerV2Stage(nn.Module):
-
-    def __init__(
-            self,
-            dim,
-            dim_out,
-            depth,
-            resolution=7,
-            downsample=True,
-            block_stride=None,
-            downsample_use_attn=False,
-            block_use_attn=False,
-            num_vit=1,
-            mlp_ratio=4.,
-            drop=.0,
-            drop_path=0.,
-            layer_scale_init_value=1e-5,
-            act_layer=nn.GELU,
-            norm_layer=nn.BatchNorm2d,
-
-    ):
-        super().__init__()
-        self.grad_checkpointing = False
-        mlp_ratio = to_ntuple(depth)(mlp_ratio)
-        resolution = to_2tuple(resolution)
-
-        if downsample:
-            self.downsample = Downsample(
-                dim,
-                dim_out,
-                use_attn=downsample_use_attn,
-                resolution=resolution,
-                norm_layer=norm_layer,
-                act_layer=act_layer,
-            )
-            dim = dim_out
-            resolution = tuple([math.ceil(r / 2) for r in resolution])
-        else:
-            assert dim == dim_out
-            self.downsample = nn.Identity()
-
-        blocks = []
-        for block_idx in range(depth):
-            remain_idx = depth - num_vit - 1
-            b = EfficientFormerV2Block(
-                dim,
-                resolution=resolution,
-                stride=block_stride,
-                mlp_ratio=mlp_ratio[block_idx],
-                use_attn=block_use_attn and block_idx > remain_idx,
-                drop=drop,
-                drop_path=drop_path[block_idx],
-                layer_scale_init_value=layer_scale_init_value,
-                act_layer=act_layer,
-                norm_layer=norm_layer,
-            )
-            blocks += [b]
-        self.blocks = nn.Sequential(*blocks)
-
-    def forward(self, x):
-        x = self.downsample(x)
-        if self.grad_checkpointing and not torch.jit.is_scripting():
-            x = checkpoint_seq(self.blocks, x)
-        else:
-            x = self.blocks(x)
-        return x
-
-
-class EfficientFormerV2(nn.Module):
-    def __init__(
-            self,
-            depths,
-            in_chans=3,
-            img_size=224,
-            global_pool='avg',
-            embed_dims=None,
-            downsamples=None,
-            mlp_ratios=4,
-            norm_layer='batchnorm2d',
-            norm_eps=1e-5,
-            act_layer='gelu',
-            num_classes=1000,
-            drop_rate=0.,
-            drop_path_rate=0.,
-            layer_scale_init_value=1e-5,
-            num_vit=0,
-            distillation=True,
-    ):
-        super().__init__()
-        assert global_pool in ('avg', '')
-        self.num_classes = num_classes
-        self.global_pool = global_pool
-        self.feature_info = []
-        img_size = to_2tuple(img_size)
-        norm_layer = partial(get_norm_layer(norm_layer), eps=norm_eps)
-        act_layer = get_act_layer(act_layer)
-
-        self.stem = Stem4(in_chans, embed_dims[0], act_layer=act_layer, norm_layer=norm_layer)
-        prev_dim = embed_dims[0]
-        stride = 4
-
-        num_stages = len(depths)
-        dpr = [x.tolist() for x in torch.linspace(0, drop_path_rate, sum(depths)).split(depths)]
-        downsamples = downsamples or (False,) + (True,) * (len(depths) - 1)
-        mlp_ratios = to_ntuple(num_stages)(mlp_ratios)
-        stages = []
-        for i in range(num_stages):
-            curr_resolution = tuple([math.ceil(s / stride) for s in img_size])
-            stage = EfficientFormerV2Stage(
-                prev_dim,
-                embed_dims[i],
-                depth=depths[i],
-                resolution=curr_resolution,
-                downsample=downsamples[i],
-                block_stride=2 if i == 2 else None,
-                downsample_use_attn=i >= 3,
-                block_use_attn=i >= 2,
-                num_vit=num_vit,
-                mlp_ratio=mlp_ratios[i],
-                drop=drop_rate,
-                drop_path=dpr[i],
-                layer_scale_init_value=layer_scale_init_value,
-                act_layer=act_layer,
-                norm_layer=norm_layer,
-            )
-            if downsamples[i]:
-                stride *= 2
-            prev_dim = embed_dims[i]
-            self.feature_info += [dict(num_chs=prev_dim, reduction=stride, module=f'stages.{i}')]
-            stages.append(stage)
-        self.stages = nn.Sequential(*stages)
-
-        # Classifier head
-        self.num_features = embed_dims[-1]
-        self.norm = norm_layer(embed_dims[-1])
-        self.head = nn.Linear(embed_dims[-1], num_classes) if num_classes > 0 else nn.Identity()
-        self.dist = distillation
-        if self.dist:
-            self.head_dist = nn.Linear(embed_dims[-1], num_classes) if num_classes > 0 else nn.Identity()
-        else:
-            self.head_dist = None
-
-        self.apply(self.init_weights)
-        self.distilled_training = False
-
-    # init for classification
-    def init_weights(self, m):
-        if isinstance(m, nn.Linear):
+    def _init_weights(self, m):
+        if isinstance(m, nn.Conv2d):
             trunc_normal_(m.weight, std=.02)
             if m.bias is not None:
                 nn.init.constant_(m.bias, 0)
 
-    @torch.jit.ignore
-    def no_weight_decay(self):
-        return {k for k, _ in self.named_parameters() if 'attention_biases' in k}
+    def forward(self, x):
+        x = self.fc1(x)
+        x = self.norm1(x)
+        x = self.act(x)
 
-    @torch.jit.ignore
-    def group_matcher(self, coarse=False):
-        matcher = dict(
-            stem=r'^stem',  # stem and embed
-            blocks=[(r'^stages\.(\d+)', None), (r'^norm', (99999,))]
-        )
-        return matcher
+        if self.mid_conv:
+            x_mid = self.mid(x)
+            x_mid = self.mid_norm(x_mid)
+            x = self.act(x_mid)
+        x = self.drop(x)
 
-    @torch.jit.ignore
-    def set_grad_checkpointing(self, enable=True):
-        for s in self.stages:
-            s.grad_checkpointing = enable
+        x = self.fc2(x)
+        x = self.norm2(x)
 
-    @torch.jit.ignore
-    def get_classifier(self):
-        return self.head, self.head_dist
-
-    def reset_classifier(self, num_classes, global_pool=None):
-        self.num_classes = num_classes
-        if global_pool is not None:
-            self.global_pool = global_pool
-        self.head = nn.Linear(self.num_features, num_classes) if num_classes > 0 else nn.Identity()
-        self.head_dist = nn.Linear(self.num_features, num_classes) if num_classes > 0 else nn.Identity()
-
-    @torch.jit.ignore
-    def set_distilled_training(self, enable=True):
-        self.distilled_training = enable
-
-    def forward_features(self, x):
-        x = self.stem(x)
-        x = self.stages(x)
-        x = self.norm(x)
+        x = self.drop(x)
         return x
 
-    def forward_head(self, x, pre_logits: bool = False):
-        if self.global_pool == 'avg':
-            x = x.mean(dim=(2, 3))
-        if pre_logits:
-            return x
-        x, x_dist = self.head(x), self.head_dist(x)
-        if self.distilled_training and self.training and not torch.jit.is_scripting():
-            # only return separate classification predictions when training in distilled mode
-            return x, x_dist
-        else:
-            # during standard train/finetune, inference average the classifier predictions
-            return (x + x_dist) / 2
+
+class AttnFFN(nn.Module):
+    def __init__(self, dim, mlp_ratio=4.,
+                 act_layer=nn.ReLU, norm_layer=nn.LayerNorm,
+                 drop=0., drop_path=0.,
+                 use_layer_scale=True, layer_scale_init_value=1e-5,
+                 resolution=7, stride=None):
+
+        super().__init__()
+
+        self.token_mixer = Attention4D(dim, resolution=resolution, act_layer=act_layer, stride=stride)
+        mlp_hidden_dim = int(dim * mlp_ratio)
+        self.mlp = Mlp(in_features=dim, hidden_features=mlp_hidden_dim,
+                       act_layer=act_layer, drop=drop, mid_conv=True)
+
+        self.drop_path = DropPath(drop_path) if drop_path > 0. \
+            else nn.Identity()
+        self.use_layer_scale = use_layer_scale
+        if use_layer_scale:
+            self.layer_scale_1 = nn.Parameter(
+                layer_scale_init_value * torch.ones(dim).unsqueeze(-1).unsqueeze(-1), requires_grad=True)
+            self.layer_scale_2 = nn.Parameter(
+                layer_scale_init_value * torch.ones(dim).unsqueeze(-1).unsqueeze(-1), requires_grad=True)
 
     def forward(self, x):
-        x = self.forward_features(x)
-        x = self.forward_head(x)
+        if self.use_layer_scale:
+            x = x + self.drop_path(self.layer_scale_1 * self.token_mixer(x))
+            x = x + self.drop_path(self.layer_scale_2 * self.mlp(x))
+
+        else:
+            x = x + self.drop_path(self.token_mixer(x))
+            x = x + self.drop_path(self.mlp(x))
         return x
 
 
-# def _cfg(url='', **kwargs):
-#     return {
-#         'url': url,
-#         'num_classes': 1000, 'input_size': (3, 224, 224), 'pool_size': None, 'fixed_input_size': True,
-#         'crop_pct': .95, 'interpolation': 'bicubic',
-#         'mean': IMAGENET_DEFAULT_MEAN, 'std': IMAGENET_DEFAULT_STD,
-#         'classifier': ('head', 'head_dist'), 'first_conv': 'stem.conv1.conv',
-#         **kwargs
-#     }
+class FFN(nn.Module):
+    def __init__(self, dim, pool_size=3, mlp_ratio=4.,
+                 act_layer=nn.GELU,
+                 drop=0., drop_path=0.,
+                 use_layer_scale=True, layer_scale_init_value=1e-5):
+        super().__init__()
+
+        mlp_hidden_dim = int(dim * mlp_ratio)
+        self.mlp = Mlp(in_features=dim, hidden_features=mlp_hidden_dim,
+                       act_layer=act_layer, drop=drop, mid_conv=True)
+
+        self.drop_path = DropPath(drop_path) if drop_path > 0. \
+            else nn.Identity()
+        self.use_layer_scale = use_layer_scale
+        if use_layer_scale:
+            self.layer_scale_2 = nn.Parameter(
+                layer_scale_init_value * torch.ones(dim).unsqueeze(-1).unsqueeze(-1), requires_grad=True)
+
+    def forward(self, x):
+        if self.use_layer_scale:
+            x = x + self.drop_path(self.layer_scale_2 * self.mlp(x))
+        else:
+            x = x + self.drop_path(self.mlp(x))
+        return x
 
 
-default_cfgs = generate_default_cfgs({
-    'efficientformerv2_s0.snap_dist_in1k': _cfg(
-        hf_hub_id='timm/',
-    ),
-    'efficientformerv2_s1.snap_dist_in1k': _cfg(
-        hf_hub_id='timm/',
-    ),
-    'efficientformerv2_s2.snap_dist_in1k': _cfg(
-        hf_hub_id='timm/',
-    ),
-    'efficientformerv2_l.snap_dist_in1k': _cfg(
-        hf_hub_id='timm/',
-    ),
-})
+def eformer_block(dim, index, layers,
+                  pool_size=3, mlp_ratio=4.,
+                  act_layer=nn.GELU, norm_layer=nn.LayerNorm,
+                  drop_rate=.0, drop_path_rate=0.,
+                  use_layer_scale=True, layer_scale_init_value=1e-5, vit_num=1, resolution=7, e_ratios=None):
+    blocks = []
+    for block_idx in range(layers[index]):
+        block_dpr = drop_path_rate * (
+                block_idx + sum(layers[:index])) / (sum(layers) - 1)
+        mlp_ratio = e_ratios[str(index)][block_idx]
+        if index >= 2 and block_idx > layers[index] - 1 - vit_num:
+            if index == 2:
+                stride = 2
+            else:
+                stride = None
+            blocks.append(AttnFFN(
+                dim, mlp_ratio=mlp_ratio,
+                act_layer=act_layer, norm_layer=norm_layer,
+                drop=drop_rate, drop_path=block_dpr,
+                use_layer_scale=use_layer_scale,
+                layer_scale_init_value=layer_scale_init_value,
+                resolution=resolution,
+                stride=stride,
+            ))
+        else:
+            blocks.append(FFN(
+                dim, pool_size=pool_size, mlp_ratio=mlp_ratio,
+                act_layer=act_layer,
+                drop=drop_rate, drop_path=block_dpr,
+                use_layer_scale=use_layer_scale,
+                layer_scale_init_value=layer_scale_init_value,
+            ))
+    blocks = nn.Sequential(*blocks)
+    return blocks
 
 
-def _create_efficientformerv2(variant, pretrained=False, **kwargs):
-    out_indices = kwargs.pop('out_indices', (0, 1, 2, 3))
-    model = build_model_with_cfg(
-        EfficientFormerV2, variant, pretrained,
-        feature_cfg=dict(flatten_sequential=True, out_indices=out_indices),
-        **kwargs)
-    return model
+class EfficientFormerV2(nn.Module):
+    def __init__(self, layers, embed_dims=None,
+                 mlp_ratios=4, downsamples=None,
+                 pool_size=3,
+                 norm_layer=nn.BatchNorm2d, act_layer=nn.GELU,
+                 num_classes=1000,
+                 down_patch_size=3, down_stride=2, down_pad=1,
+                 drop_rate=0., drop_path_rate=0.,
+                 use_layer_scale=True, layer_scale_init_value=1e-5,
+                 fork_feat=False,
+                 init_cfg=None,
+                 pretrained=None,
+                 vit_num=0,
+                 distillation=True,
+                 resolution=224,
+                 e_ratios=expansion_ratios_L,
+                 **kwargs):
+        super().__init__()
+
+        if not fork_feat:
+            self.num_classes = num_classes
+        self.fork_feat = fork_feat
+
+        self.patch_embed = stem(3, embed_dims[0], act_layer=act_layer)
+
+        network = []
+        for i in range(len(layers)):
+            stage = eformer_block(embed_dims[i], i, layers,
+                                  pool_size=pool_size, mlp_ratio=mlp_ratios,
+                                  act_layer=act_layer, norm_layer=norm_layer,
+                                  drop_rate=drop_rate,
+                                  drop_path_rate=drop_path_rate,
+                                  use_layer_scale=use_layer_scale,
+                                  layer_scale_init_value=layer_scale_init_value,
+                                  resolution=math.ceil(resolution / (2 ** (i + 2))),
+                                  vit_num=vit_num,
+                                  e_ratios=e_ratios)
+            network.append(stage)
+            if i >= len(layers) - 1:
+                break
+            if downsamples[i] or embed_dims[i] != embed_dims[i + 1]:
+                # downsampling between two stages
+                if i >= 2:
+                    asub = True
+                else:
+                    asub = False
+                network.append(
+                    Embedding(
+                        patch_size=down_patch_size, stride=down_stride,
+                        padding=down_pad,
+                        in_chans=embed_dims[i], embed_dim=embed_dims[i + 1],
+                        resolution=math.ceil(resolution / (2 ** (i + 2))),
+                        asub=asub,
+                        act_layer=act_layer, norm_layer=norm_layer,
+                    )
+                )
+
+        self.network = nn.ModuleList(network)
+
+        if self.fork_feat:
+            # add a norm layer for each output
+            self.out_indices = [0, 2, 4, 6]
+            for i_emb, i_layer in enumerate(self.out_indices):
+                if i_emb == 0 and os.environ.get('FORK_LAST3', None):
+                    layer = nn.Identity()
+                else:
+                    layer = norm_layer(embed_dims[i_emb])
+                layer_name = f'norm{i_layer}'
+                self.add_module(layer_name, layer)
+        else:
+            # Classifier head
+            self.norm = norm_layer(embed_dims[-1])
+            self.head = nn.Linear(
+                embed_dims[-1], num_classes) if num_classes > 0 \
+                else nn.Identity()
+            self.dist = distillation
+            if self.dist:
+                self.dist_head = nn.Linear(
+                    embed_dims[-1], num_classes) if num_classes > 0 \
+                    else nn.Identity()
+
+        self.apply(self.cls_init_weights)
+
+        self.init_cfg = copy.deepcopy(init_cfg)
+        # load pre-trained model
+        if self.fork_feat and (
+                self.init_cfg is not None or pretrained is not None):
+            self.init_weights()
+
+    # init for classification
+    def cls_init_weights(self, m):
+        if isinstance(m, nn.Linear):
+            trunc_normal_(m.weight, std=.02)
+            if isinstance(m, nn.Linear) and m.bias is not None:
+                nn.init.constant_(m.bias, 0)
+
+    # init for mmdetection or mmsegmentation by loading
+    # imagenet pre-trained weights
+    def init_weights(self, pretrained=None):
+        logger = get_root_logger()
+        if self.init_cfg is None and pretrained is None:
+            logger.warn(f'No pre-trained weights for '
+                        f'{self.__class__.__name__}, '
+                        f'training start from scratch')
+            pass
+        else:
+            assert 'checkpoint' in self.init_cfg, f'Only support ' \
+                                                  f'specify `Pretrained` in ' \
+                                                  f'`init_cfg` in ' \
+                                                  f'{self.__class__.__name__} '
+            if self.init_cfg is not None:
+                ckpt_path = self.init_cfg['checkpoint']
+            elif pretrained is not None:
+                ckpt_path = pretrained
+
+            ckpt = _load_checkpoint(
+                ckpt_path, logger=logger, map_location='cpu')
+            if 'state_dict' in ckpt:
+                _state_dict = ckpt['state_dict']
+            elif 'model' in ckpt:
+                _state_dict = ckpt['model']
+            else:
+                _state_dict = ckpt
+
+            state_dict = _state_dict
+            missing_keys, unexpected_keys = \
+                self.load_state_dict(state_dict, False)
+
+    def forward_tokens(self, x):
+        outs = []
+        for idx, block in enumerate(self.network):
+            x = block(x)
+            if self.fork_feat and idx in self.out_indices:
+                norm_layer = getattr(self, f'norm{idx}')
+                x_out = norm_layer(x)
+                outs.append(x_out)
+        if self.fork_feat:
+            return outs
+        return x
+
+    def forward(self, x):
+        x = self.patch_embed(x)
+        x = self.forward_tokens(x)
+        if self.fork_feat:
+            # otuput features of four stages for dense prediction
+            return x
+        # print(x.size())
+        x = self.norm(x)
+        if self.dist:
+            cls_out = self.head(x.flatten(2).mean(-1)), self.dist_head(x.flatten(2).mean(-1))
+            if not self.training:
+                cls_out = (cls_out[0] + cls_out[1]) / 2
+        else:
+            cls_out = self.head(x.flatten(2).mean(-1))
+        # for image classification
+        return cls_out
+
+
+def _cfg(url='', **kwargs):
+    return {
+        'url': url,
+        'num_classes': 1000, 'input_size': (3, 224, 224), 'pool_size': None,
+        'crop_pct': .95, 'interpolation': 'bicubic',
+        'mean': IMAGENET_DEFAULT_MEAN, 'std': IMAGENET_DEFAULT_STD,
+        'classifier': 'head',
+        **kwargs
+    }
 
 
 @register_model
 def efficientformerv2_s0(pretrained=False, **kwargs):
-    model_args = dict(
-        depths=EfficientFormer_depth['S0'],
+    model = EfficientFormerV2(
+        layers=EfficientFormer_depth['S0'],
         embed_dims=EfficientFormer_width['S0'],
-        num_vit=2,
+        downsamples=[True, True, True, True, True],
+        vit_num=2,
         drop_path_rate=0.0,
-        mlp_ratios=EfficientFormer_expansion_ratios['S0'],
-    )
-    return _create_efficientformerv2('efficientformerv2_s0', pretrained=pretrained, **dict(model_args, **kwargs))
+        e_ratios=expansion_ratios_S0,
+        **kwargs)
+    model.default_cfg = _cfg(crop_pct=0.9)
+    return model
 
 
 @register_model
 def efficientformerv2_s1(pretrained=False, **kwargs):
-    model_args = dict(
-        depths=EfficientFormer_depth['S1'],
+    model = EfficientFormerV2(
+        layers=EfficientFormer_depth['S1'],
         embed_dims=EfficientFormer_width['S1'],
-        num_vit=2,
+        downsamples=[True, True, True, True],
+        vit_num=2,
         drop_path_rate=0.0,
-        mlp_ratios=EfficientFormer_expansion_ratios['S1'],
-    )
-    return _create_efficientformerv2('efficientformerv2_s1', pretrained=pretrained, **dict(model_args, **kwargs))
+        e_ratios=expansion_ratios_S1,
+        **kwargs)
+    model.default_cfg = _cfg(crop_pct=0.9)
+    return model
 
 
 @register_model
 def efficientformerv2_s2(pretrained=False, **kwargs):
-    model_args = dict(
-        depths=EfficientFormer_depth['S2'],
+    model = EfficientFormerV2(
+        layers=EfficientFormer_depth['S2'],
         embed_dims=EfficientFormer_width['S2'],
-        num_vit=4,
+        downsamples=[True, True, True, True],
+        vit_num=4,
         drop_path_rate=0.02,
-        mlp_ratios=EfficientFormer_expansion_ratios['S2'],
-    )
-    return _create_efficientformerv2('efficientformerv2_s2', pretrained=pretrained, **dict(model_args, **kwargs))
+        e_ratios=expansion_ratios_S2,
+        **kwargs)
+    model.default_cfg = _cfg(crop_pct=0.9)
+    return model
 
 
 @register_model
 def efficientformerv2_l(pretrained=False, **kwargs):
-    model_args = dict(
-        depths=EfficientFormer_depth['L'],
+    model = EfficientFormerV2(
+        layers=EfficientFormer_depth['L'],
         embed_dims=EfficientFormer_width['L'],
-        num_vit=6,
+        downsamples=[True, True, True, True],
+        vit_num=6,
         drop_path_rate=0.1,
-        mlp_ratios=EfficientFormer_expansion_ratios['L'],
-    )
-    return _create_efficientformerv2('efficientformerv2_l', pretrained=pretrained, **dict(model_args, **kwargs))
-
+        e_ratios=expansion_ratios_L,
+        **kwargs)
+    model.default_cfg = _cfg(crop_pct=0.9)
+    return model
