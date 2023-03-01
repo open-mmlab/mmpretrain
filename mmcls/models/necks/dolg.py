@@ -45,7 +45,6 @@ class MultiAtrous(BaseModule):
             nn.AdaptiveAvgPool2d(1),
             nn.Conv2d(in_channel, hidden_channel, kernel_size=(1, 1)),
             nn.ReLU())
-
         self.dilated_conv_list = nn.ModuleList([
             nn.Conv2d(
                 in_channel,
