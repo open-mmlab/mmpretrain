@@ -122,8 +122,8 @@ class MAEPretrainDecoder(BaseModule):
             ids_restore (torch.Tensor): ids to restore original image.
 
         Returns:
-            x (torch.Tensor): The reconstructed feature vectors, which is of
-                shape B x (num_patches) x C.
+            torch.Tensor: The reconstructed feature vectors, which is of
+            shape B x (num_patches) x C.
         """
         # embed tokens
         x = self.decoder_embed(x)

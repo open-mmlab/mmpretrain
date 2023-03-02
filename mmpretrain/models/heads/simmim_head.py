@@ -7,7 +7,7 @@ from mmpretrain.registry import MODELS
 
 @MODELS.register_module()
 class SimMIMHead(BaseModule):
-    """Pretrain Head for SimMIM.
+    """Head for SimMIM Pre-training.
 
     Args:
         patch_size (int): Patch size of each token.

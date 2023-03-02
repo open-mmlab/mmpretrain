@@ -9,6 +9,7 @@ mmpretrain.models
 The ``models`` package contains several sub-packages for addressing the different components of a model.
 
 - :mod:`~mmpretrain.models.classifiers`: The top-level module which defines the whole process of a classification model.
+- :mod:`~mmpretrain.models.selfsup`: The top-level module which defines the whole process of a self-supervised learning model.
 - :mod:`~mmpretrain.models.backbones`: Usually a feature extraction network, e.g., ResNet, MobileNet.
 - :mod:`~mmpretrain.models.necks`: The component between backbones and heads, e.g., GlobalAveragePooling.
 - :mod:`~mmpretrain.models.heads`: The component for specific tasks. In MMClassification, we provides heads for classification.
@@ -45,6 +46,70 @@ Classifiers
     ImageClassifier
     TimmClassifier
     HuggingFaceClassifier
+
+.. module:: mmpretrain.models.selfsup
+
+SelfSup
+------------------
+
+.. _selfsup_algorithms:
+
+Self-Supervised Learning
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+
+   BaseSelfSupervisor
+   MoCo
+   MoCoV3
+   BYOL
+   SimCLR
+   SimSiam
+   BEiT
+   CAE
+   MAE
+   MaskFeat
+   MILAN
+   MixMIM
+   SimMIM
+   EVA
+   DenseCL
+   BarlowTwins
+   SwAV
+
+.. _selfsup_backbones:
+
+SelfSup Backbones
+^^^^^^^^^^^^^^^^^
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+
+   BEiTPretrainViT
+   CAEPretrainViT
+   MAEViT
+   MaskFeatViT
+   MILANViT
+   MixMIMPretrainTransformer
+   MoCoV3ViT
+   SimMIMSwinTransformer
+
+.. _target_generators:
+
+Target Generators
+^^^^^^^^^^^^^^^^^
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+
+   VQKD
+   Encoder
+   HOGGenerator
+   CLIPGenerator
 
 .. module:: mmpretrain.models.backbones
 
@@ -126,6 +191,18 @@ Necks
    GlobalAveragePooling
    GeneralizedMeanPooling
    HRFuseScales
+   LinearNeck
+   BEiTV2Neck
+   CAENeck
+   DenseCLNeck
+   MAEPretrainDecoder
+   ClsBatchNormNeck
+   MILANPretrainDecoder
+   MixMIMPretrainDecoder
+   MoCoV2Neck
+   NonLinearNeck
+   SimMIMLinearDecoder
+   SwAVNeck
 
 .. module:: mmpretrain.models.heads
 
@@ -147,6 +224,21 @@ Heads
    MultiLabelClsHead
    MultiLabelLinearClsHead
    CSRAClsHead
+   MultiTaskHead
+   LeViTClsHead
+   VigClsHead
+   BEiTV1Head
+   BEiTV2Head
+   CAEHead
+   ContrastiveHead
+   LatentCrossCorrelationHead
+   LatentPredictHead
+   MAEPretrainHead
+   MixMIMPretrainHead
+   SwAVHead
+   MoCoV3Head
+   MIMHead
+   SimMIMHead
 
 .. module:: mmpretrain.models.losses
 
@@ -162,6 +254,11 @@ Losses
    FocalLoss
    AsymmetricLoss
    SeesawLoss
+   CAELoss
+   CosineSimilarityLoss
+   CrossCorrelationLoss
+   PixelReconstructionLoss
+   SwAVLoss
 
 .. module:: mmpretrain.models.utils
 

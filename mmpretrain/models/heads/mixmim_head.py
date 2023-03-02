@@ -7,7 +7,7 @@ from .mae_head import MAEPretrainHead
 
 @MODELS.register_module()
 class MixMIMPretrainHead(MAEPretrainHead):
-    """MixMIM pretrain head.
+    """Head for MixMIM Pre-training.
 
     Args:
         loss (dict): Config of loss.

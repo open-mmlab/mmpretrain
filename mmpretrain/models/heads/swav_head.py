@@ -7,7 +7,7 @@ from mmpretrain.registry import MODELS
 
 @MODELS.register_module()
 class SwAVHead(BaseModule):
-    """Head for SwAV.
+    """Head for SwAV Pre-training.
 
     Args:
         loss (dict): Config dict for module of loss functions.

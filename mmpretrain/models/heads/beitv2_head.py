@@ -10,7 +10,7 @@ from mmpretrain.registry import MODELS
 
 @MODELS.register_module()
 class BEiTV2Head(BaseModule):
-    """Pretrain Head for BEiT.
+    """Head for BEiT v2 Pre-training.
 
     Compute the logits and the cross entropy loss.
 

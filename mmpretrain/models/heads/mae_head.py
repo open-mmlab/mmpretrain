@@ -7,7 +7,7 @@ from mmpretrain.registry import MODELS
 
 @MODELS.register_module()
 class MAEPretrainHead(BaseModule):
-    """Pre-training head for MAE.
+    """Head for MAE Pre-training.
 
     Args:
         loss (dict): Config of loss.
@@ -47,9 +47,10 @@ class MAEPretrainHead(BaseModule):
         """Combine non-overlapped patches into images.
 
         Args:
-            x (torch.Tensor): The shape is (N, L, patch_size**2 *3)
+            x (torch.Tensor): The shape is (N, L, patch_size**2 *3).
+
         Returns:
-            imgs (torch.Tensor): The shape is (N, 3, H, W)
+            torch.Tensor: The shape is (N, 3, H, W).
         """
         p = self.patch_size
         h = w = int(x.shape[1]**.5)

@@ -9,7 +9,7 @@ from mmpretrain.registry import MODELS
 
 @MODELS.register_module()
 class MoCoV3Head(BaseModule):
-    """Head for MoCo v3 algorithms.
+    """Head for MoCo v3 Pre-training.
 
     This head builds a predictor, which can be any registered neck component.
     It also implements latent contrastive loss between two forward features.
