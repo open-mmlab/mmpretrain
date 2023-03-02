@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from .class_num_check_hook import ClassNumCheckHook
+from .densecl_hook import DenseCLHook
 from .ema_hook import EMAHook
 from .margin_head_hooks import SetAdaptiveMarginsHook
 from .precise_bn_hook import PreciseBNHook
@@ -11,5 +12,5 @@ from .visualization_hook import VisualizationHook
 __all__ = [
     'ClassNumCheckHook', 'PreciseBNHook', 'VisualizationHook',
     'SwitchRecipeHook', 'PrepareProtoBeforeValLoopHook',
-    'SetAdaptiveMarginsHook', 'EMAHook', 'SimSiamHook'
+    'SetAdaptiveMarginsHook', 'EMAHook', 'SimSiamHook', 'DenseCLHook'
 ]

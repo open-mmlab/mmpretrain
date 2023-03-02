@@ -29,6 +29,7 @@ class SimSiam(BaseSelfSupervisor):
         Returns:
             Dict[str, Tensor]: A dictionary of loss components.
         """
+        assert isinstance(inputs, list)
         img_v1 = inputs[0]
         img_v2 = inputs[1]
 

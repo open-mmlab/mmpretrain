@@ -3,6 +3,7 @@ from .base import BaseSelfSupervisor
 from .beit import VQKD, BEiT, BEiTPretrainViT
 from .byol import BYOL
 from .cae import CAE, CAEPretrainViT, Encoder
+from .densecl import DenseCL
 from .eva import EVA
 from .mae import MAE, MAEViT
 from .maskfeat import HOGGenerator, MaskFeat, MaskFeatViT
@@ -41,4 +42,5 @@ __all__ = [
     'MixMIM',
     'SimMIM',
     'EVA',
+    'DenseCL',
 ]

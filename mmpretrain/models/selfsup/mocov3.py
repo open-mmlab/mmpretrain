@@ -192,6 +192,7 @@ class MoCoV3(BaseSelfSupervisor):
         Returns:
             Dict[str, torch.Tensor]: A dictionary of loss components.
         """
+        assert isinstance(inputs, list)
         view_1 = inputs[0]
         view_2 = inputs[1]
 
