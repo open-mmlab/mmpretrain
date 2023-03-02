@@ -73,10 +73,10 @@ class MILANViT(MAEViT):
 
         Returns:
             Tuple[torch.Tensor, ...]:
-                - ``x_masked``: masked image
-                - ``ids_restore``: the ids to restore original image
-                - ``ids_keep``: ids of the kept patches
-                - ``ids_dump``: ids of the removed patches
+              - ``x_masked``: masked image
+              - ``ids_restore``: the ids to restore original image
+              - ``ids_keep``: ids of the kept patches
+              - ``ids_dump``: ids of the removed patches
         """
         N, L, D = x.shape  # batch, length, dim
         len_keep = int(L * (1 - mask_ratio))
@@ -128,11 +128,11 @@ class MILANViT(MAEViT):
         Returns:
             Tuple[torch.Tensor, ...]: masked image, the ids to restore original
             image, ids of the kept patches, ids of the removed patches.
-                - x (torch.Tensor): hidden features, which is of shape
-                  B x (L * mask_ratio) x C.
-                - ids_restore (torch.Tensor): ids to restore original image.
-                - ids_keep (torch.Tensor): ids of the kept patches.
-                - ids_dump (torch.Tensor): ids of the removed patches.
+              - ``x`` (torch.Tensor): hidden features, which is of shape
+                B x (L * mask_ratio) x C.
+              - ``ids_restore`` (torch.Tensor): ids to restore original image.
+              - ``ids_keep`` (torch.Tensor): ids of the kept patches.
+              - ``ids_dump`` (torch.Tensor): ids of the removed patches.
         """
         if importance is None:
             return super(MAEViT, self).forward(x)

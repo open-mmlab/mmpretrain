@@ -223,7 +223,7 @@ class BEiTViT(VisionTransformer):
 
     Args:
         arch (str | dict): BEiT architecture. If use string, choose from
-        'base', 'large'. If use dict, it should have below keys:
+            'base', 'large'. If use dict, it should have below keys:
 
             - **embed_dims** (int): The dimensions of embedding.
             - **num_layers** (int): The number of transformer encoder layers.
