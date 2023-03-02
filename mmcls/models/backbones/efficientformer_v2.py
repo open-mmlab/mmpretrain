@@ -462,7 +462,7 @@ class Embedding(BaseModule):
         return out
 
 
-class ConvMlp(nn.Module):
+class ConvMlp(BaseModule):
     """
     Implementation of MLP with 1*1 convolutions.
     Input: tensor with shape [B, C, H, W]
