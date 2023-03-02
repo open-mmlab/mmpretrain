@@ -132,6 +132,16 @@ MMCV transforms
 
 We also provides many transforms in MMCV. You can use them directly in the config files. Here are some frequently used transforms, and the whole transforms list can be found in :external+mmcv:doc:`api/transforms`.
 
+Transform Wrapper
+^^^^^^^^^^^^^^^^^
+
+.. autosummary::
+   :toctree: generated
+   :nosignatures:
+   :template: data_transform.rst
+
+   MultiView
+
 .. module:: mmpretrain.models.utils.data_preprocessor
 
 Data Preprocessors
