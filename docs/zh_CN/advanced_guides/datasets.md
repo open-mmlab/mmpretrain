@@ -1,6 +1,6 @@
 # 添加新数据集
 
-用户可以编写一个继承自 [`BasesDataset`](https://mmclassification.readthedocs.io/zh_CN/latest/_modules/mmcls/datasets/base_dataset.html#BaseDataset) 的新数据集类，并重载 `load_data_list(self)` 方法，类似 [CIFAR10](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/datasets/cifar.py) 和 [ImageNet](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/datasets/imagenet.py)。
+用户可以编写一个继承自 [`BasesDataset`](https://mmclassification.readthedocs.io/zh_CN/latest/_modules/mmpretrain/datasets/base_dataset.html#BaseDataset) 的新数据集类，并重载 `load_data_list(self)` 方法，类似 [CIFAR10](https://github.com/open-mmlab/mmclassification/blob/master/mmpretrain/datasets/cifar.py) 和 [ImageNet](https://github.com/open-mmlab/mmclassification/blob/master/mmpretrain/datasets/imagenet.py)。
 
 通常，此方法返回一个包含所有样本的列表，其中的每个样本都是一个字典。字典中包含了必要的数据信息，例如 `img` 和 `gt_label`。
 
@@ -14,10 +14,10 @@
 
 ## 1. 创建数据集类
 
-我们可以在 `mmcls/datasets/filelist.py` 中创建一个新的数据集类以加载数据。
+我们可以在 `mmpretrain/datasets/filelist.py` 中创建一个新的数据集类以加载数据。
 
 ```python
-from mmcls.registry import DATASETS
+from mmpretrain.registry import DATASETS
 from .base_dataset import BaseDataset
 
 
@@ -39,7 +39,7 @@ class Filelist(BaseDataset):
 
 ## 2. 添加进 MMCls 库
 
-将新的数据集类加入到 `mmcls/datasets/__init__.py` 中：
+将新的数据集类加入到 `mmpretrain/datasets/__init__.py` 中：
 
 ```python
 from .base_dataset import BaseDataset
@@ -66,7 +66,7 @@ train_dataloader = dict(
 )
 ```
 
-所有继承 [`BaseDataset`](https://github.com/open-mmlab/mmclassification/blob/master/mmcls/datasets/base_dataset.py) 的数据集类都具有**懒加载**以及**节省内存**的特性，可以参考相关文档 [mmengine.basedataset](https://github.com/open-mmlab/mmengine/blob/main/docs/zh_cn/tutorials/basedataset.md)。
+所有继承 [`BaseDataset`](https://github.com/open-mmlab/mmclassification/blob/master/mmpretrain/datasets/base_dataset.py) 的数据集类都具有**懒加载**以及**节省内存**的特性，可以参考相关文档 [mmengine.basedataset](https://github.com/open-mmlab/mmengine/blob/main/docs/zh_cn/tutorials/basedataset.md)。
 
 ```{note}
 如果数据样本时获取的字典中，只包含了 'img_path' 不包含 'img'， 则在 pipeline 中必须包含 'LoadImgFromFile'。

@@ -17,12 +17,12 @@
 
 最简单的方式就是继承自 `ResNet` 并只修改 stem 层。
 
-1. 创建一个新文件 `mmcls/models/backbones/resnet_cifar.py`。
+1. 创建一个新文件 `mmpretrain/models/backbones/resnet_cifar.py`。
 
    ```python
    import torch.nn as nn
 
-   from mmcls.registry import MODELS
+   from mmpretrain.registry import MODELS
    from .resnet import ResNet
 
 
@@ -93,7 +93,7 @@
 在 OpenMMLab 2.0 的设计中，将原有的`BACKBONES`、`NECKS`、`HEADS`、`LOSSES`等注册名统一为`MODELS`.
 ```
 
-2. 在 `mmcls/models/backbones/__init__.py` 中导入新模块
+2. 在 `mmpretrain/models/backbones/__init__.py` 中导入新模块
 
    ```python
    ...
@@ -123,12 +123,12 @@
 要添加新的颈部组件，我们主要需要实现 `forward` 函数，该函数对主干网络的输出进行
 一些操作并将结果传递到头部。
 
-1. 创建一个新文件 `mmcls/models/necks/gap.py`
+1. 创建一个新文件 `mmpretrain/models/necks/gap.py`
 
    ```python
    import torch.nn as nn
 
-   from mmcls.registry import MODELS
+   from mmpretrain.registry import MODELS
 
    @MODELS.register_module()
    class GlobalAveragePooling(nn.Module):
@@ -143,7 +143,7 @@
            return outs
    ```
 
-2. 在 `mmcls/models/necks/__init__.py` 中导入新模块
+2. 在 `mmpretrain/models/necks/__init__.py` 中导入新模块
 
    ```python
    ...
@@ -169,12 +169,12 @@
 要添加一个新的头部组件，基本上我们需要实现 `pre_logits` 函数用于进入最后的分类头之前需要的处理，
 以及 `forward` 函数。
 
-1. 创建一个文件 `mmcls/models/heads/vit_head.py`.
+1. 创建一个文件 `mmpretrain/models/heads/vit_head.py`.
 
    ```python
    import torch.nn as nn
 
-   from mmcls.registry import MODELS
+   from mmpretrain.registry import MODELS
    from .cls_head import ClsHead
 
 
@@ -211,7 +211,7 @@
            return cls_score
    ```
 
-2. 在 `mmcls/models/heads/__init__.py` 中导入这个模块
+2. 在 `mmpretrain/models/heads/__init__.py` 中导入这个模块
 
    ```python
    ...
@@ -238,13 +238,13 @@
 
 假设我们要模拟从另一个分类模型生成的概率分布，需要添加 `L1loss` 来实现该目的。
 
-1. 创建一个新文件 `mmcls/models/losses/l1_loss.py`
+1. 创建一个新文件 `mmpretrain/models/losses/l1_loss.py`
 
    ```python
    import torch
    import torch.nn as nn
 
-   from mmcls.registry import MODELS
+   from mmpretrain.registry import MODELS
    from .utils import weighted_loss
 
    @weighted_loss
@@ -275,7 +275,7 @@
            return loss
    ```
 
-2. 在文件 `mmcls/models/losses/__init__.py` 中导入这个模块
+2. 在文件 `mmpretrain/models/losses/__init__.py` 中导入这个模块
 
    ```python
    ...

@@ -9,9 +9,9 @@ MMClassification 在 [Model Zoo](../modelzoo_statistics.md) 中提供了用于�
 
 MMClassification 为图像推理提供高级 Python API：
 
-- [`get_model`](mmcls.apis.get_model): 根据名称获取一个模型。
-- [`init_model`](mmcls.apis.init_model): 根据配置文件和权重文件初始化一个模型。
-- [`inference_model`](mmcls.apis.inference_model)：对给定图片进行推理。
+- [`get_model`](mmpretrain.apis.get_model): 根据名称获取一个模型。
+- [`init_model`](mmpretrain.apis.init_model): 根据配置文件和权重文件初始化一个模型。
+- [`inference_model`](mmpretrain.apis.inference_model)：对给定图片进行推理。
 
 下面是一个示例，如何使用一个 ImageNet-1k 预训练权重初始化模型并推理给定图像。
 
@@ -20,7 +20,7 @@ MMClassification 为图像推理提供高级 Python API：
 ```
 
 ```python
-from mmcls import get_model, inference_model
+from mmpretrain import get_model, inference_model
 
 img_path = 'demo.JPEG'   # 可以指定自己的图片路径
 

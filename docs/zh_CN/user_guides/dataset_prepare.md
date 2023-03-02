@@ -14,7 +14,7 @@
 
 ## CustomDataset
 
-[`CustomDataset`](mmcls.datasets.CustomDataset) 是一个通用的数据集类，供您使用自己的数据集。目前 `CustomDataset` 支持以下两种方式组织你的数据集文件：
+[`CustomDataset`](mmpretrain.datasets.CustomDataset) 是一个通用的数据集类，供您使用自己的数据集。目前 `CustomDataset` 支持以下两种方式组织你的数据集文件：
 
 ### 子文件夹方式
 
@@ -136,7 +136,7 @@ ImageNet 有多个版本，但最常用的一个是 [ILSVRC 2012](http://www.ima
    │   ├── ...
 ```
 
-然后，您可以使用具有以下配置的 [`ImageNet`](mmcls.datasets.ImageNet) 数据集：
+然后，您可以使用具有以下配置的 [`ImageNet`](mmpretrain.datasets.ImageNet) 数据集：
 
 ```python
 train_dataloader = dict(
@@ -166,7 +166,7 @@ test_dataloader = val_dataloader
 
 ## CIFAR
 
-我们支持自动下载 [`CIFAR10`](mmcls.datasets.CIFAR10) 和 [`CIFAR100`](mmcls.datasets.CIFAR100) 数据集，您只需在 `data_root` 字段中指定下载文件夹即可。 并且通过指定 `test_mode=False` / `test_mode=True` 来使用训练数据集或测试数据集。
+我们支持自动下载 [`CIFAR10`](mmpretrain.datasets.CIFAR10) 和 [`CIFAR100`](mmpretrain.datasets.CIFAR100) 数据集，您只需在 `data_root` 字段中指定下载文件夹即可。 并且通过指定 `test_mode=False` / `test_mode=True` 来使用训练数据集或测试数据集。
 
 ```python
 train_dataloader = dict(
@@ -194,7 +194,7 @@ test_dataloader = val_dataloader
 
 ## MNIST
 
-我们支持自动下载 [MNIST](mmcls.datasets.MNIST) 和 [Fashion-MNIST](mmcls.datasets.FashionMNIST) 数据集，您只需指定 `data_root` 字段中的下载路径即可。 并且通过指定 `test_mode=False` / `test_mode=True` 来使用训练数据集或测试数据集。
+我们支持自动下载 [MNIST](mmpretrain.datasets.MNIST) 和 [Fashion-MNIST](mmpretrain.datasets.FashionMNIST) 数据集，您只需指定 `data_root` 字段中的下载路径即可。 并且通过指定 `test_mode=False` / `test_mode=True` 来使用训练数据集或测试数据集。
 
 ```python
 train_dataloader = dict(
@@ -278,7 +278,7 @@ dataset_cfg=dict(
 
 ## 其他数据集
 
-MMCLassification 还是支持更多其他的数据集，可以通过查阅[数据集文档](mmcls.datasets)获取它们的配置信息。
+MMCLassification 还是支持更多其他的数据集，可以通过查阅[数据集文档](mmpretrain.datasets)获取它们的配置信息。
 
 ## 数据集包装
 
@@ -288,4 +288,4 @@ MMEngine 中支持以下数据包装器，您可以参考 {external+mmengine:doc
 - {external:py:class}`~mmengine.dataset.RepeatDataset`
 - {external:py:class}`~mmengine.dataset.ClassBalancedDataset`
 
-除上述之外，MMClassification 还支持了[KFoldDataset](mmcls.datasets.KFoldDataset)，需用通过使用 `tools/kfold-cross-valid.py` 来使用它。
+除上述之外，MMClassification 还支持了[KFoldDataset](mmpretrain.datasets.KFoldDataset)，需用通过使用 `tools/kfold-cross-valid.py` 来使用它。

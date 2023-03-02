@@ -22,9 +22,9 @@ MMClassification 1.x 依赖一些新的包。你可以准备一个干净的新�
 
 **`model.train_cfg`** 字段的变化：
 
-- `BatchMixup` 被重命名为 [`Mixup`](mmcls.models.utils.batch_augments.Mixup)
-- `BatchCutMix` 被重命名为 [`CutMix`](mmcls.models.utils.batch_augments.CutMix)
-- `BatchResizeMix` 被重命名为 [`ResizeMix`](mmcls.models.utils.batch_augments.ResizeMix)
+- `BatchMixup` 被重命名为 [`Mixup`](mmpretrain.models.utils.batch_augments.Mixup)
+- `BatchCutMix` 被重命名为 [`CutMix`](mmpretrain.models.utils.batch_augments.CutMix)
+- `BatchResizeMix` 被重命名为 [`ResizeMix`](mmpretrain.models.utils.batch_augments.ResizeMix)
 - 以上增强中的 `prob` 参数均被移除，现在在 `train_cfg` 中使用一个统一的 `probs` 字段指定每个增强的概率。如果没
   有指定 `probs` 字段，现在将均匀地随机选择一种增强。
 
@@ -115,17 +115,17 @@ test_dataloader = val_dataloader
 
 **`pipeline`** 字段的变化：
 
-- 原先的 **`ToTensor`**、**`ImageToTensor`** 和 **`Collect`** 被合并为 [`PackClsInputs`](mmcls.datasets.transforms.PackClsInputs)
+- 原先的 **`ToTensor`**、**`ImageToTensor`** 和 **`Collect`** 被合并为 [`PackClsInputs`](mmpretrain.datasets.transforms.PackClsInputs)
 - 我们建议去除数据集流水线中的 **`Normalize`** 变换，转而使用 `data_preprocessor` 字段进行归一化预处理。
 - [**`RandomFlip`**](mmcv.transforms.RandomFlip) 中的 `flip_prob` 参数被重命名为 `flip`
-- [**`RandomCrop`**](mmcls.datasets.transforms.RandomCrop) 中的 `size` 参数被重命名为 `crop_size`
-- [**`RandomResizedCrop`**](mmcls.datasets.transforms.RandomResizedCrop) 中的 `size` 参数被重命名为 `scale`
-- [**`Resize`**](mmcv.transforms.Resize) 中的 `size` 参数被重命名为 `scale`。并且不再支持形如 `(256, -1)` 的尺寸，请使用 [`ResizeEdge`](mmcls.datasets.transforms.ResizeEdge)
-- [**`AutoAugment`**](mmcls.datasets.transforms.AutoAugment) 和 [**`RandAugment`**](mmcls.datasets.transforms.RandAugment) 中的 `policies` 参数现在支持使用字符串来指定某些预设的策略集，`AutoAugment` 支持 "imagenet"，`RandAugment` 支持 "timm_increasing"
-- **`RandomResizedCrop`** 和 **`CenterCrop`** 不再支持 `efficientnet_style` 参数，请使用 [`EfficientNetRandomCrop`](mmcls.datasets.transforms.EfficientNetRandomCrop) 和 [`EfficientNetCenterCrop`](mmcls.datasets.transforms.EfficientNetCenterCrop)
+- [**`RandomCrop`**](mmpretrain.datasets.transforms.RandomCrop) 中的 `size` 参数被重命名为 `crop_size`
+- [**`RandomResizedCrop`**](mmpretrain.datasets.transforms.RandomResizedCrop) 中的 `size` 参数被重命名为 `scale`
+- [**`Resize`**](mmcv.transforms.Resize) 中的 `size` 参数被重命名为 `scale`。并且不再支持形如 `(256, -1)` 的尺寸，请使用 [`ResizeEdge`](mmpretrain.datasets.transforms.ResizeEdge)
+- [**`AutoAugment`**](mmpretrain.datasets.transforms.AutoAugment) 和 [**`RandAugment`**](mmpretrain.datasets.transforms.RandAugment) 中的 `policies` 参数现在支持使用字符串来指定某些预设的策略集，`AutoAugment` 支持 "imagenet"，`RandAugment` 支持 "timm_increasing"
+- **`RandomResizedCrop`** 和 **`CenterCrop`** 不再支持 `efficientnet_style` 参数，请使用 [`EfficientNetRandomCrop`](mmpretrain.datasets.transforms.EfficientNetRandomCrop) 和 [`EfficientNetCenterCrop`](mmpretrain.datasets.transforms.EfficientNetCenterCrop)
 
 ```{note}
-我们将一些数据变换工作移至数据预处理器进行，如归一化，请参阅[文档](mmcls.models.utils.data_preprocessor)了解更多详细信息。
+我们将一些数据变换工作移至数据预处理器进行，如归一化，请参阅[文档](mmpretrain.models.utils.data_preprocessor)了解更多详细信息。
 ```
 
 <table class="docutils">
@@ -173,10 +173,10 @@ train_pipeline = [
 
 - 原先的 **`evaluation`** 字段被拆分为 `val_evaluator` 和 `test_evaluator`，并且不再支持 `interval` 和 `save_best`
   参数。`interval` 参数被移动至 `train_cfg.val_interval` 字段，详见[训练策略配置](./user_guides/config.md#训练策略)。而 `save_best` 参数被移动至 `default_hooks.checkpoint.save_best` 字段，详见 [运行设置](./user_guides/config.md#运行设置)。
-- 'accuracy' 指标被重命名为 [`Accuracy`](mmcls.evaluation.Accuracy)
-- 'precision'，'recall'，'f1-score' 和 'support' 指标被组合为 [`SingleLabelMetric`](mmcls.evaluation.SingleLabelMetric)，并使用 `items` 参数指定具体计算哪些指标。
-- 'mAP' 指标被重命名为 [`AveragePrecision`](mmcls.evaluation.AveragePrecision)
-- 'CP'，'CR'，'CF1'，'OP'，'OR' 和 'OF1' 指标被组合为 [`MultiLabelMetric`](mmcls.evaluation.MultiLabelMetric)，并使用 `items` 和 `average` 参数指定具体计算哪些指标。
+- 'accuracy' 指标被重命名为 [`Accuracy`](mmpretrain.evaluation.Accuracy)
+- 'precision'，'recall'，'f1-score' 和 'support' 指标被组合为 [`SingleLabelMetric`](mmpretrain.evaluation.SingleLabelMetric)，并使用 `items` 参数指定具体计算哪些指标。
+- 'mAP' 指标被重命名为 [`AveragePrecision`](mmpretrain.evaluation.AveragePrecision)
+- 'CP'，'CR'，'CF1'，'OP'，'OR' 和 'OF1' 指标被组合为 [`MultiLabelMetric`](mmpretrain.evaluation.MultiLabelMetric)，并使用 `items` 和 `average` 参数指定具体计算哪些指标。
 
 <table class="docutils">
 <tr>
@@ -468,97 +468,97 @@ visualizer = dict(
 )
 ```
 
-新字段 **`default_scope`**：指定所有注册器进行模块搜索默认的起点。MMClassification 中的 `default_scope` 字段为 `mmcls`，大部分情况下不需要修改。详见 MMengine 中的{external+mmengine:doc}`注册器教程 <advanced_tutorials/registry>`。
+新字段 **`default_scope`**：指定所有注册器进行模块搜索默认的起点。MMClassification 中的 `default_scope` 字段为 `mmpretrain`，大部分情况下不需要修改。详见 MMengine 中的{external+mmengine:doc}`注册器教程 <advanced_tutorials/registry>`。
 
 ## 模块变动
 
-### `mmcls.apis`
+### `mmpretrain.apis`
 
-详见[包文档](mmcls.apis)
+详见[包文档](mmpretrain.apis)
 
-|         函数         | 变动                                                                                                                    |
-| :------------------: | :---------------------------------------------------------------------------------------------------------------------- |
-|     `init_model`     | 无变动                                                                                                                  |
-|  `inference_model`   | 无变动，但我们推荐使用功能更强的 [`mmcls.ImageClassificationInferencer`](mmcls.apis.ImageClassificationInferencer)。    |
-|    `train_model`     | 移除，直接使用 `runner.train` 进行训练。                                                                                |
-|   `multi_gpu_test`   | 移除，直接使用 `runner.test` 进行测试。                                                                                 |
-|  `single_gpu_test`   | 移除，直接使用 `runner.test` 进行测试。                                                                                 |
-| `show_result_pyplot` | 移除，使用 [`mmcls.ImageClassificationInferencer`](mmcls.apis.ImageClassificationInferencer) 进行模型推理和结果可视化。 |
-|  `set_random_seed`   | 移除，使用 `mmengine.runner.set_random_seed`.                                                                           |
-|  `init_random_seed`  | 移除，使用 `mmengine.dist.sync_random_seed`.                                                                            |
+|         函数         | 变动                                                                                                                              |
+| :------------------: | :-------------------------------------------------------------------------------------------------------------------------------- |
+|     `init_model`     | 无变动                                                                                                                            |
+|  `inference_model`   | 无变动，但我们推荐使用功能更强的 [`mmpretrain.ImageClassificationInferencer`](mmpretrain.apis.ImageClassificationInferencer)。    |
+|    `train_model`     | 移除，直接使用 `runner.train` 进行训练。                                                                                          |
+|   `multi_gpu_test`   | 移除，直接使用 `runner.test` 进行测试。                                                                                           |
+|  `single_gpu_test`   | 移除，直接使用 `runner.test` 进行测试。                                                                                           |
+| `show_result_pyplot` | 移除，使用 [`mmpretrain.ImageClassificationInferencer`](mmpretrain.apis.ImageClassificationInferencer) 进行模型推理和结果可视化。 |
+|  `set_random_seed`   | 移除，使用 `mmengine.runner.set_random_seed`.                                                                                     |
+|  `init_random_seed`  | 移除，使用 `mmengine.dist.sync_random_seed`.                                                                                      |
 
-### `mmcls.core`
+### `mmpretrain.core`
 
-`mmcls.core` 包被重命名为 [`mmcls.engine`](mmcls.engine)
+`mmpretrain.core` 包被重命名为 [`mmpretrain.engine`](mmpretrain.engine)
 
-|      子包       | 变动                                                                                                        |
-| :-------------: | :---------------------------------------------------------------------------------------------------------- |
-|  `evaluation`   | 移除，使用 [`mmcls.evaluation`](mmcls.evaluation)                                                           |
-|     `hook`      | 移动至 [`mmcls.engine.hooks`](mmcls.engine.hooks)                                                           |
-|  `optimizers`   | 移动至 [`mmcls.engine.optimizers`](mmcls.engine.optimizers)                                                 |
-|     `utils`     | 移除，分布式环境相关的函数统一至 [`mmengine.dist`](mmengine.dist) 包                                        |
-| `visualization` | 移除，其中可视化相关的功能被移动至 [`mmcls.visualization.ClsVisualizer`](mmcls.visualization.ClsVisualizer) |
+|      子包       | 变动                                                                                                                  |
+| :-------------: | :-------------------------------------------------------------------------------------------------------------------- |
+|  `evaluation`   | 移除，使用 [`mmpretrain.evaluation`](mmpretrain.evaluation)                                                           |
+|     `hook`      | 移动至 [`mmpretrain.engine.hooks`](mmpretrain.engine.hooks)                                                           |
+|  `optimizers`   | 移动至 [`mmpretrain.engine.optimizers`](mmpretrain.engine.optimizers)                                                 |
+|     `utils`     | 移除，分布式环境相关的函数统一至 [`mmengine.dist`](mmengine.dist) 包                                                  |
+| `visualization` | 移除，其中可视化相关的功能被移动至 [`mmpretrain.visualization.ClsVisualizer`](mmpretrain.visualization.ClsVisualizer) |
 
 `hooks` 包中的 `MMClsWandbHook` 尚未实现。
 
 `hooks` 包中的 `CosineAnnealingCooldownLrUpdaterHook` 被移除。我们现在支持使用学习率规划器的组合实现该功能。详见[自定义训练优化策略](./advanced_guides/schedule.md)。
 
-### `mmcls.datasets`
+### `mmpretrain.datasets`
 
-详见[包文档](mmcls.datasets)
+详见[包文档](mmpretrain.datasets)
 
-|                                    数据集类                                     | 变动                                                                     |
-| :-----------------------------------------------------------------------------: | :----------------------------------------------------------------------- |
-|                 [`CustomDataset`](mmcls.datasets.CustomDataset)                 | 增加了 `data_root` 参数，作为 `data_prefix` 和 `ann_file` 的共同根路径。 |
-|                      [`ImageNet`](mmcls.datasets.ImageNet)                      | 与 `CustomDataset` 相同。                                                |
-|                   [`ImageNet21k`](mmcls.datasets.ImageNet21k)                   | 与 `CustomDataset` 相同。                                                |
-|   [`CIFAR10`](mmcls.datasets.CIFAR10) & [`CIFAR100`](mmcls.datasets.CIFAR100)   | `test_mode` 参数目前是必要参数。                                         |
-| [`MNIST`](mmcls.datasets.MNIST) & [`FashionMNIST`](mmcls.datasets.FashionMNIST) | `test_mode` 参数目前是必要参数。                                         |
-|                           [`VOC`](mmcls.datasets.VOC)                           | 现在需要指定 `data_root`，`image_set_path` 和 `test_mode` 参数。         |
-|                           [`CUB`](mmcls.datasets.CUB)                           | 现在需要指定 `data_root` 和 `test_mode` 参数。                           |
+|                                         数据集类                                          | 变动                                                                     |
+| :---------------------------------------------------------------------------------------: | :----------------------------------------------------------------------- |
+|                   [`CustomDataset`](mmpretrain.datasets.CustomDataset)                    | 增加了 `data_root` 参数，作为 `data_prefix` 和 `ann_file` 的共同根路径。 |
+|                        [`ImageNet`](mmpretrain.datasets.ImageNet)                         | 与 `CustomDataset` 相同。                                                |
+|                     [`ImageNet21k`](mmpretrain.datasets.ImageNet21k)                      | 与 `CustomDataset` 相同。                                                |
+|   [`CIFAR10`](mmpretrain.datasets.CIFAR10) & [`CIFAR100`](mmpretrain.datasets.CIFAR100)   | `test_mode` 参数目前是必要参数。                                         |
+| [`MNIST`](mmpretrain.datasets.MNIST) & [`FashionMNIST`](mmpretrain.datasets.FashionMNIST) | `test_mode` 参数目前是必要参数。                                         |
+|                             [`VOC`](mmpretrain.datasets.VOC)                              | 现在需要指定 `data_root`，`image_set_path` 和 `test_mode` 参数。         |
+|                             [`CUB`](mmpretrain.datasets.CUB)                              | 现在需要指定 `data_root` 和 `test_mode` 参数。                           |
 
-`mmcls.datasets.pipelines` 包被重命名为 `mmcls.datasets.transforms`
+`mmpretrain.datasets.pipelines` 包被重命名为 `mmpretrain.datasets.transforms`
 
 |           数据变换类            | 变动                                                                                                                                                                      |
 | :-----------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 |       `LoadImageFromFile`       | 移除，使用 [`mmcv.transforms.LoadImageFromFile`](mmcv.transforms.LoadImageFromFile)                                                                                       |
 |          `RandomFlip`           | 移除，使用 [`mmcv.transforms.RandomFlip`](mmcv.transforms.RandomFlip)，其中 `flip_prob` 参数被重命名为 `prob`                                                             |
 |          `RandomCrop`           | `size` 参数被重命名为 `crop_size`                                                                                                                                         |
-|       `RandomResizedCrop`       | `size` 参数被重命名为 `scale`；`scale` 参数被重命名为 `crop_ratio_range`；不再支持 `efficientnet_style`，请使用 [`EfficientNetRandomCrop`](mmcls.datasets.transforms.EfficientNetRandomCrop) |
-|          `CenterCrop`           | 移除，使用 [`mmcv.transforms.CenterCrop`](mmcv.transforms.CenterCrop)；不再支持 `efficientnet_style`，请使用 [`EfficientNetCenterCrop`](mmcls.datasets.transforms.EfficientNetCenterCrop) |
-|            `Resize`             | 移除，使用 [`mmcv.transforms.Resize`](mmcv.transforms.Resize)；`size` 参数被重命名为 `scale`，且不再支持形如 `(256, -1)` 参数，使用 [`ResizeEdge`](mmcls.datasets.transforms.ResizeEdge) |
+|       `RandomResizedCrop`       | `size` 参数被重命名为 `scale`；`scale` 参数被重命名为 `crop_ratio_range`；不再支持 `efficientnet_style`，请使用 [`EfficientNetRandomCrop`](mmpretrain.datasets.transforms.EfficientNetRandomCrop) |
+|          `CenterCrop`           | 移除，使用 [`mmcv.transforms.CenterCrop`](mmcv.transforms.CenterCrop)；不再支持 `efficientnet_style`，请使用 [`EfficientNetCenterCrop`](mmpretrain.datasets.transforms.EfficientNetCenterCrop) |
+|            `Resize`             | 移除，使用 [`mmcv.transforms.Resize`](mmcv.transforms.Resize)；`size` 参数被重命名为 `scale`，且不再支持形如 `(256, -1)` 参数，使用 [`ResizeEdge`](mmpretrain.datasets.transforms.ResizeEdge) |
 | `AutoAugment` & `RandomAugment` | `policies` 参数现在支持使用字符串指定预设的策略集。                                                                                                                       |
 |            `Compose`            | 移除，使用 [`mmcv.transforms.Compose`](mmcv.transforms.Compose)                                                                                                           |
 
-### `mmcls.models`
+### `mmpretrain.models`
 
-详见[包文档](mmcls.models)，**backbones**、**necks** 和 **losses** 的结构没有变动。
+详见[包文档](mmpretrain.models)，**backbones**、**necks** 和 **losses** 的结构没有变动。
 
-[`ImageClassifier`](mmcls.models.classifiers.ImageClassifier) 的变动：
+[`ImageClassifier`](mmpretrain.models.classifiers.ImageClassifier) 的变动：
 
-|  分类器的方法   | 变动                                                                                                               |
-| :-------------: | :----------------------------------------------------------------------------------------------------------------- |
-| `extract_feat`  | 无变动                                                                                                             |
-|    `forward`    | 现在需要三个输入：`inputs`、`data_samples` 和 `mode`。详见[文档](mmcls.models.classifiers.ImageClassifier.forward) |
-| `forward_train` | 变更为 `loss` 方法。                                                                                               |
-|  `simple_test`  | 变更为 `predict` 方法。                                                                                            |
-|  `train_step`   | `optimizer` 参数被修改为 `optim_wrapper`，接受 [`OptimWrapper`](mmengine.optim.OptimWrapper)                       |
-|   `val_step`    | 原先的 `val_step` 与 `train_step` 一致，现在该方法将会调用 `predict`                                               |
-|   `test_step`   | 新方法，与 `val_step` 一致。                                                                                       |
+|  分类器的方法   | 变动                                                                                                                    |
+| :-------------: | :---------------------------------------------------------------------------------------------------------------------- |
+| `extract_feat`  | 无变动                                                                                                                  |
+|    `forward`    | 现在需要三个输入：`inputs`、`data_samples` 和 `mode`。详见[文档](mmpretrain.models.classifiers.ImageClassifier.forward) |
+| `forward_train` | 变更为 `loss` 方法。                                                                                                    |
+|  `simple_test`  | 变更为 `predict` 方法。                                                                                                 |
+|  `train_step`   | `optimizer` 参数被修改为 `optim_wrapper`，接受 [`OptimWrapper`](mmengine.optim.OptimWrapper)                            |
+|   `val_step`    | 原先的 `val_step` 与 `train_step` 一致，现在该方法将会调用 `predict`                                                    |
+|   `test_step`   | 新方法，与 `val_step` 一致。                                                                                            |
 
-[heads](mmcls.models.heads) 中的变动：
+[heads](mmpretrain.models.heads) 中的变动：
 
-|  分类头的方法   | 变动                                                                                                                                   |
-| :-------------: | :------------------------------------------------------------------------------------------------------------------------------------- |
-|  `pre_logits`   | 无变动                                                                                                                                 |
-| `forward_train` | 变更为 `loss` 方法。                                                                                                                   |
-|  `simple_test`  | 变更为 `predict` 方法。                                                                                                                |
-|     `loss`      | 现在接受 `data_samples` 参数，而不是 `gt_labels`，`data_samples` 参数应当接受 [ClsDataSample](mmcls.structures.ClsDataSample) 的列表。 |
-|    `forward`    | 新方法，它将返回分类头的输出，不会进行任何后处理（包括 softmax 或 sigmoid）。                                                          |
+|  分类头的方法   | 变动                                                                                                                                        |
+| :-------------: | :------------------------------------------------------------------------------------------------------------------------------------------ |
+|  `pre_logits`   | 无变动                                                                                                                                      |
+| `forward_train` | 变更为 `loss` 方法。                                                                                                                        |
+|  `simple_test`  | 变更为 `predict` 方法。                                                                                                                     |
+|     `loss`      | 现在接受 `data_samples` 参数，而不是 `gt_labels`，`data_samples` 参数应当接受 [ClsDataSample](mmpretrain.structures.ClsDataSample) 的列表。 |
+|    `forward`    | 新方法，它将返回分类头的输出，不会进行任何后处理（包括 softmax 或 sigmoid）。                                                               |
 
-### `mmcls.utils`
+### `mmpretrain.utils`
 
-详见[包文档](mmcls.utils)
+详见[包文档](mmpretrain.utils)
 
 |             函数             | 变动                                                                                                          |
 | :--------------------------: | :------------------------------------------------------------------------------------------------------------ |
@@ -572,4 +572,4 @@ visualizer = dict(
 
 ### 其他变动
 
-- 我们将所有注册器的定义从各个包移动到了 `mmcls.registry` 包。
+- 我们将所有注册器的定义从各个包移动到了 `mmpretrain.registry` 包。

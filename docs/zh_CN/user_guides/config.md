@@ -51,13 +51,13 @@ _base_ = [                                    # 此配置文件将继承所有 `
 
 模型原始配置文件包含一个 `model` 字典数据结构，主要包括网络结构、损失函数等信息：
 
-- `type`： 分类器名称, 对于图像分类任务，通常为 `ImageClassifier`，更多细节请参考 [API 文档](mmcls.models.classifiers)。
-- `backbone`： 主干网设置，主干网络为主要的特征提取网络，比如 `ResNet`, `Swin Transformer`, `Vision Transformer` 等等。更多可用选项请参考 [API 文档](mmcls.models.backbones)。
-- `neck`： 颈网络设置，颈网络主要是连接主干网和分类的中间网络，比如 `GlobalAveragePooling` 等，更多可用选项请参考 [API 文档](mmcls.models.necks)。
-- `head`： 头网络设置，头网络主要是最后关联任务的分类部件，更多可用选项请参考 [API 文档](mmcls.models.heads)。
-  - `loss`： 损失函数设置， 支持 `CrossEntropyLoss`, `LabelSmoothLoss` 等，更多可用选项参考 [API 文档](mmcls.models.losses)。
-- `data_preprocessor`: 图像输入的预处理模块，输入在进入模型前的预处理操作，例如 `ClsDataPreprocessor`, 有关详细信息，请参阅 [API 文档](mmcls.models.utils.data_preprocessor)。
-- `train_cfg`：训练模型时的额外设置。在 MMCLS 中，我们主要使用它来配置批量增强，例如 `Mixup` 和 `CutMix`。有关详细信息，请参阅 [文档](mmcls.models.utils.batch_augments)。
+- `type`： 分类器名称, 对于图像分类任务，通常为 `ImageClassifier`，更多细节请参考 [API 文档](mmpretrain.models.classifiers)。
+- `backbone`： 主干网设置，主干网络为主要的特征提取网络，比如 `ResNet`, `Swin Transformer`, `Vision Transformer` 等等。更多可用选项请参考 [API 文档](mmpretrain.models.backbones)。
+- `neck`： 颈网络设置，颈网络主要是连接主干网和分类的中间网络，比如 `GlobalAveragePooling` 等，更多可用选项请参考 [API 文档](mmpretrain.models.necks)。
+- `head`： 头网络设置，头网络主要是最后关联任务的分类部件，更多可用选项请参考 [API 文档](mmpretrain.models.heads)。
+  - `loss`： 损失函数设置， 支持 `CrossEntropyLoss`, `LabelSmoothLoss` 等，更多可用选项参考 [API 文档](mmpretrain.models.losses)。
+- `data_preprocessor`: 图像输入的预处理模块，输入在进入模型前的预处理操作，例如 `ClsDataPreprocessor`, 有关详细信息，请参阅 [API 文档](mmpretrain.models.utils.data_preprocessor)。
+- `train_cfg`：训练模型时的额外设置。在 MMCLS 中，我们主要使用它来配置批量增强，例如 `Mixup` 和 `CutMix`。有关详细信息，请参阅 [文档](mmpretrain.models.utils.batch_augments)。
 
 ```{note}
 配置文件中的 'type' 不是构造时的参数，而是类名。
@@ -71,7 +71,7 @@ model = dict(
     backbone=dict(
         type='ResNet',          # 主干网络类型
         # 除了 `type` 之外的所有字段都来自 `ResNet` 类的 __init__ 方法
-        # 可查阅 https://mmclassification.readthedocs.io/zh_CN/1.x/api/generated/mmcls.models.ResNet.html
+        # 可查阅 https://mmclassification.readthedocs.io/zh_CN/1.x/api/generated/mmpretrain.models.ResNet.html
         depth=50,
         num_stages=4,           # 主干网络状态(stages)的数目，这些状态产生的特征图作为后续的 head 的输入。
         out_indices=(3, ),      # 输出的特征图输出索引。
@@ -81,7 +81,7 @@ model = dict(
     head=dict(
         type='LinearClsHead',         # 分类颈网络类型
         # 除了 `type` 之外的所有字段都来自 `LinearClsHead` 类的 __init__ 方法
-        # 可查阅 https://mmclassification.readthedocs.io/zh_CN/1.x/api/generated/mmcls.models.LinearClsHead.html
+        # 可查阅 https://mmclassification.readthedocs.io/zh_CN/1.x/api/generated/mmpretrain.models.LinearClsHead.html
         num_classes=1000,
         in_channels=2048,
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0), # 损失函数配置信息
@@ -94,13 +94,13 @@ model = dict(
 数据原始配置文件主要包括预处理设置、dataloader 以及 评估器等设置：
 
 - `data_preprocessor`: 模型输入预处理配置, 与 `model.data_preprocessor` 相同，但优先级更低。
-- `train_evaluator | val_evaluator | test_evaluator`: 构建评估器，参考 [API 文档](mmcls.evaluation)。
+- `train_evaluator | val_evaluator | test_evaluator`: 构建评估器，参考 [API 文档](mmpretrain.evaluation)。
 - `train_dataloader | val_dataloader | test_dataloader`: 构建 dataloader
   - `samples_per_gpu`: 每个 GPU 的 batch size
   - `workers_per_gpu`: 每个 GPU 的线程数
   - `sampler`: 采样器配置
   - `dataset`: 数据集配置
-    - `type`:  数据集类型， MMClassification 支持 `ImageNet`、 `Cifar` 等数据集 ，参考 [API 文档](mmcls.datasets)
+    - `type`:  数据集类型， MMClassification 支持 `ImageNet`、 `Cifar` 等数据集 ，参考 [API 文档](mmpretrain.datasets)
     - `pipeline`:  数据处理流水线，参考相关教程文档 [如何设计数据处理流水线](https://mmclassification.readthedocs.io/zh_CN/1.x/api/generated/tutorials/data_pipeline.html)
 
 以下是 ResNet50 的数据配置 ['configs/_base_/datasets/imagenet_bs32.py'](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/_base_/datasets/imagenet_bs32.py)：
@@ -212,7 +212,7 @@ auto_scale_lr = dict(base_batch_size=256)
 
 ```python
 # 默认所有注册器使用的域
-default_scope = 'mmcls'
+default_scope = 'mmpretrain'
 
 # 配置默认的hook
 default_hooks = dict(

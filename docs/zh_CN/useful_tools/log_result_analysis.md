@@ -107,7 +107,7 @@ python tools/analysis_tools/eval_metric.py \
 - `result`：`tools/test.py` 输出的结果文件。
 - `--metric`：用于评估结果的指标，请至少指定一个指标，并且你可以通过指定多个 `--metric` 来同时计算多个指标。
 
-请参考[评估文档](mmcls.evaluation)选择可用的评估指标和对应的选项。
+请参考[评估文档](mmpretrain.evaluation)选择可用的评估指标和对应的选项。
 
 ```{note}
 在 `tools/test.py` 中，我们支持使用 `--out-item` 选项来选择保存何种结果至输出文件。

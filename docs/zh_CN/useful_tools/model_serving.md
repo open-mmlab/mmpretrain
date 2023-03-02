@@ -5,7 +5,7 @@
 ## 1. 转换 MMClassification 模型至 TorchServe
 
 ```shell
-python tools/torchserve/mmcls2torchserve.py ${CONFIG_FILE} ${CHECKPOINT_FILE} \
+python tools/torchserve/mmpretrain2torchserve.py ${CONFIG_FILE} ${CHECKPOINT_FILE} \
 --output-folder ${MODEL_STORE} \
 --model-name ${MODEL_NAME}
 ```
@@ -17,20 +17,20 @@ ${MODEL_STORE} 需要是一个文件夹的绝对路径。
 示例：
 
 ```shell
-python tools/torchserve/mmcls2torchserve.py \
+python tools/torchserve/mmpretrain2torchserve.py \
   configs/resnet/resnet18_8xb32_in1k.py \
   checkpoints/resnet18_8xb32_in1k_20210831-fbbb1da6.pth \
   --output-folder ./checkpoints \
   --model-name resnet18_in1k
 ```
 
-## 2. 构建 `mmcls-serve` docker 镜像
+## 2. 构建 `mmpretrain-serve` docker 镜像
 
 ```shell
-docker build -t mmcls-serve:latest docker/serve/
+docker build -t mmpretrain-serve:latest docker/serve/
 ```
 
-## 3. 运行 `mmcls-serve` 镜像
+## 3. 运行 `mmpretrain-serve` 镜像
 
 请参考官方文档 [基于 docker 运行 TorchServe](https://github.com/pytorch/serve/blob/master/docker/README.md#running-torchserve-in-a-production-docker-environment).
 
@@ -44,7 +44,7 @@ docker run --rm \
 --gpus device=0 \
 -p8080:8080 -p8081:8081 -p8082:8082 \
 --mount type=bind,source=`realpath ./checkpoints`,target=/home/model-server/model-store \
-mmcls-serve:latest
+mmpretrain-serve:latest
 ```
 
 ```{note}

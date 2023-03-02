@@ -89,7 +89,7 @@ model = dict(
 
 ```{note}
 目前还不是所有的网络都支持 `frozen_stages` 参数，在使用之前，请先检查
-[文档](https://mmclassification.readthedocs.io/zh_CN/1.x/api.html#module-mmcls.models.backbones)
+[文档](https://mmclassification.readthedocs.io/zh_CN/1.x/api.html#module-mmpretrain.models.backbones)
 以确认你所使用的主干网络是否支持。
 ```
 
