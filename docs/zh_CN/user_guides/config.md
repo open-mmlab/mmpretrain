@@ -119,14 +119,14 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),     # 读取图像
     dict(type='RandomResizedCrop', scale=224),     # 随机放缩裁剪
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),   # 随机水平翻转
-    dict(type='PackClsInputs'),         # 准备图像以及标签
+    dict(type='PackInputs'),         # 准备图像以及标签
 ]
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),     # 读取图像
     dict(type='ResizeEdge', scale=256, edge='short'),  # 短边对其256进行放缩
     dict(type='CenterCrop', crop_size=224),     # 中心裁剪
-    dict(type='PackClsInputs'),                 # 准备图像以及标签
+    dict(type='PackInputs'),                 # 准备图像以及标签
 ]
 
 # 构造训练集 dataloader
@@ -320,14 +320,14 @@ train_pipeline = [
         magnitude_level=6,
         magnitude_std=0.5,
         hparams=dict(pad_val=[round(x) for x in bgr_mean], interpolation='bicubic')),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='ResizeEdge', scale=236, edge='short', backend='pillow', interpolation='bicubic'),
     dict(type='CenterCrop', crop_size=224),
-    dict(type='PackClsInputs')
+    dict(type='PackInputs')
 ]
 
 train_dataloader = dict(dataset=dict(pipeline=train_pipeline))
@@ -376,7 +376,7 @@ train_pipeline = [
         eigvec=EIGVEC,
         alphastd=0.1,
         to_rgb=False),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 
 train_dataloader = dict(dataset=dict(pipeline=train_pipeline))

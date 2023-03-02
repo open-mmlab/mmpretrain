@@ -11,7 +11,7 @@ from mmengine import ConfigDict
 from mmengine.dataset.utils import default_collate
 from torch.utils.data import DataLoader, Dataset
 
-from mmpretrain.datasets.transforms import PackClsInputs
+from mmpretrain.datasets.transforms import PackInputs
 from mmpretrain.registry import MODELS
 from mmpretrain.structures import DataSample
 
@@ -20,7 +20,7 @@ class ExampleDataset(Dataset):
 
     def __init__(self):
         self.metainfo = None
-        self.pipe = PackClsInputs()
+        self.pipe = PackInputs()
 
     def __getitem__(self, idx):
         results = dict(

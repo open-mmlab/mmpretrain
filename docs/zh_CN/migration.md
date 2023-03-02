@@ -115,7 +115,7 @@ test_dataloader = val_dataloader
 
 **`pipeline`** 字段的变化：
 
-- 原先的 **`ToTensor`**、**`ImageToTensor`** 和 **`Collect`** 被合并为 [`PackClsInputs`](mmpretrain.datasets.transforms.PackClsInputs)
+- 原先的 **`ToTensor`**、**`ImageToTensor`** 和 **`Collect`** 被合并为 [`PackInputs`](mmpretrain.datasets.transforms.PackInputs)
 - 我们建议去除数据集流水线中的 **`Normalize`** 变换，转而使用 `data_preprocessor` 字段进行归一化预处理。
 - [**`RandomFlip`**](mmcv.transforms.RandomFlip) 中的 `flip_prob` 参数被重命名为 `flip`
 - [**`RandomCrop`**](mmpretrain.datasets.transforms.RandomCrop) 中的 `size` 参数被重命名为 `crop_size`
@@ -161,7 +161,7 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='RandomResizedCrop', scale=224),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 ```
 

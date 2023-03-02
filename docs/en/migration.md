@@ -121,7 +121,7 @@ test_dataloader = val_dataloader
 
 Changes in **`pipeline`**:
 
-- The original formatting transforms **`ToTensor`**, **`ImageToTensor`** and **`Collect`** are combined as [`PackClsInputs`](mmpretrain.datasets.transforms.PackClsInputs).
+- The original formatting transforms **`ToTensor`**, **`ImageToTensor`** and **`Collect`** are combined as [`PackInputs`](mmpretrain.datasets.transforms.PackInputs).
 - We don't recommend to do **`Normalize`** in the dataset pipeline. Please remove it from pipelines and set it in the `data_preprocessor` field.
 - The argument `flip_prob` in [**`RandomFlip`**](mmcv.transforms.RandomFlip) is renamed to `flip`.
 - The argument `size` in [**`RandomCrop`**](mmpretrain.datasets.transforms.RandomCrop) is renamed to `crop_size`.
@@ -168,7 +168,7 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='RandomResizedCrop', scale=224),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 ```
 

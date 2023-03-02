@@ -37,7 +37,7 @@ train_pipeline = [
         max_area_ratio=1 / 3,
         fill_color=bgr_mean,
         fill_std=bgr_std),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 
 test_pipeline = [
@@ -49,7 +49,7 @@ test_pipeline = [
         backend='pillow',
         interpolation='bicubic'),
     dict(type='CenterCrop', crop_size=224),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 
 train_dataloader = dict(

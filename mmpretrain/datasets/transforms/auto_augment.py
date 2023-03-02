@@ -54,6 +54,13 @@ class AutoAugment(RandomChoice):
         hparams (dict): Configs of hyperparameters. Hyperparameters will be
             used in policies that require these arguments if these arguments
             are not set in policy dicts. Defaults to ``dict(pad_val=128)``.
+
+    .. admonition:: Available preset policies
+
+        - ``"imagenet"``: Policy for ImageNet, come from
+          `DeepVoltaire/AutoAugment`_
+
+    .. _DeepVoltaire/AutoAugment: https://github.com/DeepVoltaire/AutoAugment
     """
 
     def __init__(self,
@@ -119,6 +126,13 @@ class RandAugment(BaseTransform):
         hparams (dict): Configs of hyperparameters. Hyperparameters will be
             used in policies that require these arguments if these arguments
             are not set in policy dicts. Defaults to ``dict(pad_val=128)``.
+
+    .. admonition:: Available preset policies
+
+        - ``"timm_increasing"``: The ``_RAND_INCREASING_TRANSFORMS`` policy
+          from `timm`_
+
+    .. _timm: https://github.com/rwightman/pytorch-image-models
 
     Examples:
 

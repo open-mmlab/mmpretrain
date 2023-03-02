@@ -44,13 +44,13 @@ train_pipeline = [
         max_area_ratio=1 / 3,
         fill_color=bgr_mean,
         fill_std=bgr_std),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='EfficientNetCenterCrop', crop_size=224, crop_padding=0),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 
 train_dataloader = dict(dataset=dict(pipeline=train_pipeline))

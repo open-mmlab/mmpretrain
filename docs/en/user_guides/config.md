@@ -123,14 +123,14 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),     # read image
     dict(type='RandomResizedCrop', scale=224),     # Random scaling and cropping
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),   # random horizontal flip
-    dict(type='PackClsInputs'),         # prepare images and labels
+    dict(type='PackInputs'),         # prepare images and labels
 ]
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),     # read image
     dict(type='ResizeEdge', scale=256, edge='short'),  # Scale the short side to 256
     dict(type='CenterCrop', crop_size=224),     # center crop
-    dict(type='PackClsInputs'),                 # prepare images and labels
+    dict(type='PackInputs'),                 # prepare images and labels
 ]
 
 # Construct training set dataloader
@@ -331,14 +331,14 @@ train_pipeline = [
         magnitude_level=6,
         magnitude_std=0.5,
         hparams=dict(pad_val=[round(x) for x in bgr_mean], interpolation='bicubic')),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='ResizeEdge', scale=236, edge='short', backend='pillow', interpolation='bicubic'),
     dict(type='CenterCrop', crop_size=224),
-    dict(type='PackClsInputs')
+    dict(type='PackInputs')
 ]
 
 train_dataloader = dict(dataset=dict(pipeline=train_pipeline))
@@ -387,7 +387,7 @@ train_pipeline = [
         eigvec=EIGVEC,
         alphastd=0.1,
         to_rgb=False),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 
 train_dataloader = dict(dataset=dict(pipeline=train_pipeline))

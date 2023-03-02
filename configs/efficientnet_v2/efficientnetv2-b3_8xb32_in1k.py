@@ -7,13 +7,13 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='EfficientNetRandomCrop', scale=240),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='EfficientNetCenterCrop', crop_size=300, crop_padding=0),
-    dict(type='PackClsInputs'),
+    dict(type='PackInputs'),
 ]
 
 train_dataloader = dict(dataset=dict(pipeline=train_pipeline))
