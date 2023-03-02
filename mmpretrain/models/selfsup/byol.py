@@ -83,7 +83,7 @@ class BYOL(BaseSelfSupervisor):
             proj_target_v2 = self.target_net(img_v2)[0]
 
         loss_1 = self.head.loss(proj_online_v1, proj_target_v2)
-        loss_2 = self.head(proj_online_v2, proj_target_v1)
+        loss_2 = self.head.loss(proj_online_v2, proj_target_v1)
 
         losses = dict(loss=2. * (loss_1 + loss_2))
         return losses

@@ -29,11 +29,11 @@ class LatentPredictHead(BaseModule):
                  predictor: dict,
                  init_cfg: Optional[Union[dict, List[dict]]] = None) -> None:
         super().__init__(init_cfg=init_cfg)
-        self.loss = MODELS.build(loss)
+        self.loss_module = MODELS.build(loss)
         self.predictor = MODELS.build(predictor)
 
-    def forward(self, input: torch.Tensor,
-                target: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def loss(self, input: torch.Tensor,
+             target: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """Forward head.
 
         Args:
@@ -46,7 +46,7 @@ class LatentPredictHead(BaseModule):
         pred = self.predictor([input])[0]
         target = target.detach()
 
-        loss = self.loss(pred, target)
+        loss = self.loss_module(pred, target)
 
         return loss
 
@@ -72,9 +72,9 @@ class LatentCrossCorrelationHead(BaseModule):
         super().__init__(init_cfg=init_cfg)
         self.world_size = get_world_size()
         self.bn = nn.BatchNorm1d(in_channels, affine=False)
-        self.loss = MODELS.build(loss)
+        self.loss_module = MODELS.build(loss)
 
-    def forward(self, input: torch.Tensor,
+    def loss(self, input: torch.Tensor,
                 target: torch.Tensor) -> torch.Tensor:
         """Forward head.
 
@@ -91,5 +91,5 @@ class LatentCrossCorrelationHead(BaseModule):
 
         all_reduce(cross_correlation_matrix)
 
-        loss = self.loss(cross_correlation_matrix)
+        loss = self.loss_module(cross_correlation_matrix)
         return loss

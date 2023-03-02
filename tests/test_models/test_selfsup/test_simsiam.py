@@ -8,30 +8,6 @@ import torch
 from mmpretrain.models import SimSiam
 from mmpretrain.structures import DataSample
 
-backbone = dict(
-    type='ResNet', depth=18, norm_cfg=dict(type='BN'), zero_init_residual=True)
-neck = dict(
-    type='NonLinearNeck',
-    in_channels=512,
-    hid_channels=2,
-    out_channels=2,
-    num_layers=3,
-    with_last_bn_affine=False,
-    with_avg_pool=True,
-    norm_cfg=dict(type='BN1d'))
-head = dict(
-    type='LatentPredictHead',
-    loss=dict(type='CosineSimilarityLoss'),
-    predictor=dict(
-        type='NonLinearNeck',
-        in_channels=2,
-        hid_channels=2,
-        out_channels=2,
-        with_avg_pool=False,
-        with_last_bn=False,
-        with_last_bias=True,
-        norm_cfg=dict(type='BN1d')))
-
 
 @pytest.mark.skipif(platform.system() == 'Windows', reason='Windows mem limit')
 def test_simsiam():
@@ -40,6 +16,32 @@ def test_simsiam():
         'std': (58.395, 57.12, 57.375),
         'to_rgb': True,
     }
+    backbone = dict(
+        type='ResNet',
+        depth=18,
+        norm_cfg=dict(type='BN'),
+        zero_init_residual=True)
+    neck = dict(
+        type='NonLinearNeck',
+        in_channels=512,
+        hid_channels=2,
+        out_channels=2,
+        num_layers=3,
+        with_last_bn_affine=False,
+        with_avg_pool=True,
+        norm_cfg=dict(type='BN1d'))
+    head = dict(
+        type='LatentPredictHead',
+        loss=dict(type='CosineSimilarityLoss'),
+        predictor=dict(
+            type='NonLinearNeck',
+            in_channels=2,
+            hid_channels=2,
+            out_channels=2,
+            with_avg_pool=False,
+            with_last_bn=False,
+            with_last_bias=True,
+            norm_cfg=dict(type='BN1d')))
 
     alg = SimSiam(
         backbone=backbone,

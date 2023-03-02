@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from .barlowtwins import BarlowTwins
 from .base import BaseSelfSupervisor
 from .beit import VQKD, BEiT, BEiTPretrainViT
 from .byol import BYOL
@@ -43,4 +44,5 @@ __all__ = [
     'SimMIM',
     'EVA',
     'DenseCL',
+    'BarlowTwins',
 ]
