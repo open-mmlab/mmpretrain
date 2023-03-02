@@ -12,6 +12,7 @@ from .mixmim_neck import MixMIMPretrainDecoder
 from .mocov2_neck import MoCoV2Neck
 from .nonlinear_neck import NonLinearNeck
 from .simmim_neck import SimMIMLinearDecoder
+from .swav_neck import SwAVNeck
 
 __all__ = [
     'GlobalAveragePooling',
@@ -27,4 +28,5 @@ __all__ = [
     'MoCoV2Neck',
     'NonLinearNeck',
     'SimMIMLinearDecoder',
+    'SwAVNeck',
 ]

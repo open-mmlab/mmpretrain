@@ -175,7 +175,7 @@ class SimMIM(BaseSelfSupervisor):
 
         Args:
             inputs (List[torch.Tensor]): The input images.
-            data_samples (List[SelfSupDataSample]): All elements required
+            data_samples (List[DataSample]): All elements required
                 during the forward function.
 
         Returns:

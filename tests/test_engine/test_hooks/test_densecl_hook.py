@@ -55,12 +55,12 @@ class ToyModel(BaseSelfSupervisor):
         super().__init__(backbone=dict(type='DenseCLDummyLayer'))
         self.loss_lambda = 0.5
 
-    def loss(self, batch_inputs, data_samples):
+    def loss(self, inputs, data_samples):
         labels = []
         for x in data_samples:
             labels.append(x.gt_label.value)
             labels = torch.stack(labels)
-        outputs = self.backbone(batch_inputs[0])
+        outputs = self.backbone(inputs[0])
         loss = (labels - outputs).sum()
         outputs = dict(loss=loss)
         return outputs

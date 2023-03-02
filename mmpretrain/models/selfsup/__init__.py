@@ -15,6 +15,7 @@ from .mocov3 import MoCoV3, MoCoV3ViT
 from .simclr import SimCLR
 from .simmim import SimMIM, SimMIMSwinTransformer
 from .simsiam import SimSiam
+from .swav import SwAV
 
 __all__ = [
     'BaseSelfSupervisor',
@@ -45,4 +46,5 @@ __all__ = [
     'EVA',
     'DenseCL',
     'BarlowTwins',
+    'SwAV',
 ]
