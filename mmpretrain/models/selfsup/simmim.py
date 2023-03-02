@@ -179,7 +179,7 @@ class SimMIM(BaseSelfSupervisor):
                 during the forward function.
 
         Returns:
-            Dict[str, Tensor]: A dictionary of loss components.
+            Dict[str, torch.Tensor]: A dictionary of loss components.
         """
         mask = torch.stack([data_sample.mask for data_sample in data_samples])
 

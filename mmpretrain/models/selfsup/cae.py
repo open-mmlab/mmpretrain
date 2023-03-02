@@ -98,6 +98,8 @@ class EncoderBlock(nn.Module):
 @attr.s(eq=False, repr=False)
 @MODELS.register_module(name='DALL-E')
 class Encoder(BaseModule):
+    """DALL-E Encoder for feature extraction."""
+
     group_count: int = 4
     n_hid: int = attr.ib(default=256, validator=lambda i, a, x: x >= 64)
     n_blk_per_group: int = attr.ib(default=2, validator=lambda i, a, x: x >= 1)

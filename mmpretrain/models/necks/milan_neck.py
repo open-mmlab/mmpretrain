@@ -170,7 +170,7 @@ class MILANPretrainDecoder(MAEPretrainDecoder):
 
         Returns:
             torch.Tensor: The reconstructed features, which is of shape
-                (N, L, C).
+            (N, L, C).
         """
         # embed tokens
         x = self.decoder_embed(x)

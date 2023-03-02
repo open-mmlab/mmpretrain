@@ -131,14 +131,14 @@ class MixMIMPretrainTransformer(MixMIMTransformer):
 
         Returns:
             Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
-              - mask_s1 (torch.Tensor): mask with stride of
-                self.encoder_stride // 8.
-              - mask_s2 (torch.Tensor): mask with stride of
-                self.encoder_stride // 4.
-              - mask_s3 (torch.Tensor): mask with stride of
-                self.encoder_stride // 2.
-              - mask (torch.Tensor): mask with stride of
-                self.encoder_stride.
+                - mask_s1 (torch.Tensor): mask with stride of
+                  self.encoder_stride // 8.
+                - mask_s2 (torch.Tensor): mask with stride of
+                  self.encoder_stride // 4.
+                - mask_s3 (torch.Tensor): mask with stride of
+                  self.encoder_stride // 2.
+                - mask (torch.Tensor): mask with stride of
+                  self.encoder_stride.
         """
 
         B, C, H, W = x.shape

@@ -27,7 +27,7 @@ class SimSiam(BaseSelfSupervisor):
                 during the forward function.
 
         Returns:
-            Dict[str, Tensor]: A dictionary of loss components.
+            Dict[str, torch.Tensor]: A dictionary of loss components.
         """
         assert isinstance(inputs, list)
         img_v1 = inputs[0]
