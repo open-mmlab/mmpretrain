@@ -9,6 +9,21 @@ pre {
     white-space: pre;
 }
 
+@media screen and (min-width: 2000px) {
+  .pytorch-content-left {
+    width: 1200px;
+    margin-left: 30px;
+  }
+  article.pytorch-article {
+    max-width: 1200px;
+  }
+  .pytorch-right-menu.scrolling-fixed {
+    position: fixed;
+    top: 45px;
+    left: 1580px;
+  }
+}
+
 article.pytorch-article section code {
   padding: .2em .4em;
   background-color: #f3f4f7;
