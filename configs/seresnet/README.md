@@ -65,8 +65,8 @@ python tools/test.py configs/seresnet/seresnet50_8xb32_in1k.py https://download.
 
 | Model                    |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |               Config                |                                           Download                                           |
 | :----------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :---------------------------------: | :------------------------------------------------------------------------------------------: |
-| `seresnet50_8xb32_in1k`  | From scratch |   28.09    |   4.13    |   77.74   |   93.84   | [config](seresnet50_8xb32_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet50_batch256_imagenet_20200804-ae206104.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet50_batch256_imagenet_20200804-ae206104.json) |
-| `seresnet101_8xb32_in1k` | From scratch |   49.33    |   7.86    |   78.26   |   94.07   | [config](seresnet101_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet101_batch256_imagenet_20200804-ba5b51d4.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet101_batch256_imagenet_20200804-ba5b51d4.json) |
+| `seresnet50_8xb32_in1k`  | From scratch |   28.09    |   4.13    |   77.74   |   93.84   | [config](seresnet50_8xb32_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet50_batch256_imagenet_20200804-ae206104.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet50_batch256_imagenet_20200708-657b3c36.log.json) |
+| `seresnet101_8xb32_in1k` | From scratch |   49.33    |   7.86    |   78.26   |   94.07   | [config](seresnet101_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet101_batch256_imagenet_20200804-ba5b51d4.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/se-resnet/se-resnet101_batch256_imagenet_20200708-038a4d04.log.json) |
 
 ## Citation
 

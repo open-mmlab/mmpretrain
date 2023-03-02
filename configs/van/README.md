@@ -21,7 +21,7 @@ While originally designed for natural language processing (NLP) tasks, the self-
 ```python
 from mmpretrain import inference_model
 
-predict = inference_model('van-tiny_8xb128_in1k', 'demo/bird.JPEG')
+predict = inference_model('van-tiny_3rdparty_in1k', 'demo/bird.JPEG')
 print(predict['pred_class'])
 print(predict['pred_score'])
 ```
@@ -32,7 +32,7 @@ print(predict['pred_score'])
 import torch
 from mmpretrain import get_model
 
-model = get_model('van-tiny_8xb128_in1k', pretrained=True)
+model = get_model('van-tiny_3rdparty_in1k', pretrained=True)
 inputs = torch.rand(1, 3, 224, 224)
 out = model(inputs)
 print(type(out))
@@ -41,15 +41,9 @@ feats = model.extract_feat(inputs)
 print(type(feats))
 ```
 
-**Train/Test Command**
+**Test Command**
 
 Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
-
-Train:
-
-```shell
-python tools/train.py configs/van/van-tiny_8xb128_in1k.py
-```
 
 Test:
 
@@ -63,12 +57,14 @@ python tools/test.py configs/van/van-tiny_8xb128_in1k.py https://download.openmm
 
 ### Image Classification on ImageNet-1k
 
-| Model                   |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |               Config               |                                            Download                                            |
-| :---------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :--------------------------------: | :--------------------------------------------------------------------------------------------: |
-| `van-tiny_8xb128_in1k`  | From scratch |    4.11    |   0.88    |   75.41   |   93.02   | [config](van-tiny_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/van/van-tiny_8xb128_in1k_20220501-385941af.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/van/van-tiny_8xb128_in1k_20220501-385941af.json) |
-| `van-small_8xb128_in1k` | From scratch |   13.86    |   2.52    |   81.01   |   95.63   | [config](van-small_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/van/van-small_8xb128_in1k_20220501-17bc91aa.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/van/van-small_8xb128_in1k_20220501-17bc91aa.json) |
-| `van-base_8xb128_in1k`  | From scratch |   26.58    |   5.03    |   82.80   |   96.21   | [config](van-base_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/van/van-base_8xb128_in1k_20220501-6a4cc31b.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/van/van-base_8xb128_in1k_20220501-6a4cc31b.json) |
-| `van-large_8xb128_in1k` | From scratch |   44.77    |   8.99    |   83.86   |   96.73   | [config](van-large_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/van/van-large_8xb128_in1k_20220501-f212ba21.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/van/van-large_8xb128_in1k_20220501-f212ba21.json) |
+| Model                       |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |               Config               |                                          Download                                          |
+| :-------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :--------------------------------: | :----------------------------------------------------------------------------------------: |
+| `van-tiny_3rdparty_in1k`\*  | From scratch |    4.11    |   0.88    |   75.41   |   93.02   | [config](van-tiny_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/van/van-tiny_8xb128_in1k_20220501-385941af.pth) |
+| `van-small_3rdparty_in1k`\* | From scratch |   13.86    |   2.52    |   81.01   |   95.63   | [config](van-small_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/van/van-small_8xb128_in1k_20220501-17bc91aa.pth) |
+| `van-base_3rdparty_in1k`\*  | From scratch |   26.58    |   5.03    |   82.80   |   96.21   | [config](van-base_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/van/van-base_8xb128_in1k_20220501-6a4cc31b.pth) |
+| `van-large_3rdparty_in1k`\* | From scratch |   44.77    |   8.99    |   83.86   |   96.73   | [config](van-large_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/van/van-large_8xb128_in1k_20220501-f212ba21.pth) |
+
+*Models with * are converted from the [official repo](https://github.com/Visual-Attention-Network/VAN-Classification). The config files of these models are only for inference. We haven't reprodcue the training results.*
 
 ## Citation
 
