@@ -50,7 +50,7 @@ conda install pytorch torchvision cpuonly -c pytorch
 
 ### 从源码安装
 
-这种情况下，从源码按如下方式安装 mmcls：
+这种情况下，从源码按如下方式安装 mmpretrain：
 
 ```shell
 git clone -b 1.x https://github.com/open-mmlab/mmclassification.git
@@ -67,7 +67,7 @@ pip install -U openmim && mim install -e .
 直接使用 mim 安装即可。
 
 ```shell
-pip install -U openmim && mim install "mmcls>=1.0rc0"
+pip install -U openmim && mim install "mmpretrain>=1.0rc0"
 ```
 
 ```{note}
@@ -81,12 +81,12 @@ pip install -U openmim && mim install "mmcls>=1.0rc0"
 **第 1 步** 我们需要下载配置文件和模型权重文件
 
 ```shell
-mim download mmcls --config resnet50_8xb32_in1k --dest .
+mim download mmpretrain --config resnet50_8xb32_in1k --dest .
 ```
 
 **第 2 步** 验证示例的推理流程
 
-如果你是**从源码安装**的 mmcls，那么直接运行以下命令进行验证：
+如果你是**从源码安装**的 mmpretrain，那么直接运行以下命令进行验证：
 
 ```shell
 python demo/image_demo.py demo/demo.JPEG resnet50_8xb32_in1k.py resnet50_8xb32_in1k_20210831-ea4938fc.pth --device cpu
@@ -97,7 +97,7 @@ python demo/image_demo.py demo/demo.JPEG resnet50_8xb32_in1k.py resnet50_8xb32_i
 如果你是**作为 Python 包安装**，那么可以打开你的 Python 解释器，并粘贴如下代码：
 
 ```python
-from mmcls import get_model, inference_model
+from mmpretrain import get_model, inference_model
 
 model = get_model('resnet18_8xb32_in1k', device='cpu')  # 或者 device='cuda:0'
 inference_model(model, 'demo/demo.JPEG')
@@ -106,7 +106,7 @@ inference_model(model, 'demo/demo.JPEG')
 你会看到输出一个字典，包含预测的标签、得分及类别名。
 
 ```{note}
-以上示例中，`resnet18_8xb32_in1k` 是模型名称。你可以使用 [`mmcls.list_models`](mmcls.apis.list_models) 接口来
+以上示例中，`resnet18_8xb32_in1k` 是模型名称。你可以使用 [`mmpretrain.list_models`](mmpretrain.apis.list_models) 接口来
 浏览所有的模型，或者在[模型汇总](./modelzoo_statistics.md)页面进行查找。
 ```
 

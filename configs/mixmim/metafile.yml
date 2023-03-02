@@ -20,24 +20,6 @@ Collections:
       Version: v1.0.0rc4
 
 Models:
-  - Name: mixmim-base_3rdparty_in1k
-    Metadata:
-      FLOPs: 16352000000
-      Parameters: 88344000
-      Training Data:
-        - ImageNet-1k
-    In Collection: MixMIM
-    Results:
-      - Dataset: ImageNet-1k
-        Task: Image Classification
-        Metrics:
-          Top 1 Accuracy: 84.6
-          Top 5 Accuracy: 97.0
-    Weights: https://download.openmmlab.com/mmclassification/v0/mixmim/mixmim-base_3rdparty_in1k_20221206-e40e2c8c.pth
-    Config: configs/mixmim/benchmarks/mixmim-base_8xb64_in1k.py
-    Converted From:
-      Code: https://github.com/Sense-X/MixMIM
-
   - Name: mixmim_mixmim-base_16xb128-coslr-300e_in1k
     In Collection: MixMIM
     Metadata:
@@ -49,7 +31,7 @@ Models:
     Downstream:
       - mixmim-base_mixmim-pre_8xb128-coslr-100e_in1k
   - Name: mixmim-base_mixmim-pre_8xb128-coslr-100e_in1k
-    In Collection: MILAN
+    In Collection: MixMIM
     Metadata:
       Epochs: 100
       Batch Size: 1024

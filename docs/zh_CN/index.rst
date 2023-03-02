@@ -1,4 +1,4 @@
-欢迎来到 MMClassification 中文教程！
+欢迎来到 MMPretrain 中文教程！
 ==========================================
 
 .. toctree::
@@ -61,15 +61,15 @@
    :maxdepth: 1
    :caption: API 参考文档
 
-   mmcls.apis <api/apis>
-   mmcls.engine <api/engine>
-   mmcls.datasets <api/datasets>
+   mmpretrain.apis <api/apis>
+   mmpretrain.engine <api/engine>
+   mmpretrain.datasets <api/datasets>
    数据处理 <api/data_process>
-   mmcls.models <api/models>
-   mmcls.structures <api/structures>
-   mmcls.visualization <api/visualization>
-   mmcls.evaluation <api/evaluation>
-   mmcls.utils <api/utils>
+   mmpretrain.models <api/models>
+   mmpretrain.structures <api/structures>
+   mmpretrain.visualization <api/visualization>
+   mmpretrain.evaluation <api/evaluation>
+   mmpretrain.utils <api/utils>
 
 .. toctree::
    :maxdepth: 1

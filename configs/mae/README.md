@@ -23,137 +23,92 @@ for learning high-capacity models that generalize well: e.g., a vanilla
 ViT-Huge model achieves the best accuracy (87.8%) among
 methods that use only ImageNet-1K data. Transfer performance in downstream tasks outperforms supervised pretraining and shows promising scaling behavior.
 
-<div align="center">
-<img src="https://user-images.githubusercontent.com/30762564/150733959-2959852a-c7bd-4d3f-911f-3e8d8839fe67.png" width="40%"/>
+<div align=center>
+<img src="https://user-images.githubusercontent.com/30762564/150733959-2959852a-c7bd-4d3f-911f-3e8d8839fe67.png" width="80%"/>
 </div>
 
-## Models and Benchmarks
+## How to use it?
 
-<table class="docutils">
-<thead>
-  <tr>
-	    <th rowspan="2">Algorithm</th>
-	    <th rowspan="2">Backbone</th>
-	    <th rowspan="2">Epoch</th>
-      <th rowspan="2">Batch Size</th>
-      <th colspan="2" align="center">Results (Top-1 %)</th>
-      <th colspan="3" align="center">Links</th>
-	</tr>
-	<tr>
-      <th>Linear Eval</th>
-      <th>Fine-tuning</th>
-      <th>Pretrain</th>
-      <th>Linear Eval</th>
-      <th>Fine-tuning</th>
-	</tr>
-  </thead>
-  <tbody>
-  <tr>
-      <td rowspan="9">MAE</td>
-	    <td>ViT-base</td>
-	    <td>300</td>
-      <td>4096</td>
-      <td>60.8</td>
-      <td>83.1</td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/selfsup/mae/mae_vit-base-p16_8xb512-amp-coslr-300e_in1k.py'>config</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-300e_in1k/mae_vit-base-p16_8xb512-coslr-300e-fp16_in1k_20220829-c2cf66ba.pth'>model</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-300e_in1k/mae_vit-base-p16_8xb512-coslr-300e-fp16_in1k_20220718_152424.json'>log</a></td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/benchmarks/classification/imagenet/vit-base-p16_linear-8xb2048-coslr-90e_in1k.py'>config</a> | model | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-300e_in1k/vit-base-p16_linear-8xb2048-coslr-90e_in1k/vit-base-p16_linear-8xb2048-coslr-90e_in1k_20220720_104514.json'>log</a></td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/benchmarks/classification/imagenet/vit-base-p16_ft-8xb128-coslr-100e_in1k.py'>config</a> | model | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-300e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k_20220713_140138.json'>log</a></td>
-	</tr>
-  <tr>
-	    <td>ViT-base</td>
-	    <td>400</td>
-      <td>4096</td>
-      <td>62.5</td>
-      <td>83.3</td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/selfsup/mae/mae_vit-base-p16_8xb512-amp-coslr-400e_in1k.py'>config</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-400e_in1k/mae_vit-base-p16_8xb512-coslr-400e-fp16_in1k_20220825-bc79e40b.pth'>model</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-400e_in1k/mae_vit-base-p16_8xb512-coslr-400e-fp16_in1k_20220628_200815.json'>log</a></td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/benchmarks/classification/imagenet/vit-base-p16_linear-8xb2048-coslr-90e_in1k.py'>config</a> | model | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-400e_in1k/vit-base-p16_linear-8xb2048-coslr-90e_in1k/vit-base-p16_linear-8xb2048-coslr-90e_in1k_20220713_142534.json'>log</a></td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/benchmarks/classification/imagenet/vit-base-p16_ft-8xb128-coslr-100e_in1k.py'>config</a> | model | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-400e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k_20220708_183134.json'>log</a></td>
-	</tr>
-  <tr>
-	    <td>ViT-base</td>
-	    <td>800</td>
-      <td>4096</td>
-      <td>65.1</td>
-      <td>83.3</td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/selfsup/mae/mae_vit-base-p16_8xb512-amp-coslr-800e_in1k.py'>config</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-800e_in1k/mae_vit-base-p16_8xb512-coslr-800e-fp16_in1k_20220825-5d81fbc4.pth'>model</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-800e_in1k/mae_vit-base-p16_8xb512-coslr-800e-fp16_in1k_20220718_134405.json'>log</a></td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/benchmarks/classification/imagenet/vit-base-p16_linear-8xb2048-coslr-90e_in1k.py'>config</a> | model | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-800e_in1k/vit-base-p16_linear-8xb2048-coslr-90e_in1k/vit-base-p16_linear-8xb2048-coslr-90e_in1k20220721_203941.json'>log</a></td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/benchmarks/classification/imagenet/vit-base-p16_ft-8xb128-coslr-100e_in1k.py'>config</a> | model | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-800e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k_20220724_232940.json'>log</a></td>
-	</tr>
-  <tr>
-	    <td>ViT-base</td>
-	    <td>1600</td>
-      <td>4096</td>
-      <td>67.1</td>
-      <td>83.5</td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/selfsup/mae/mae_vit-base-p16_8xb512-amp-coslr-1600e_in1k.py'>config</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-1600e_in1k/mae_vit-base-p16_8xb512-fp16-coslr-1600e_in1k_20220825-f7569ca2.pth'>model</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-1600e_in1k/mae_vit-base-p16_8xb512-fp16-coslr-1600e_in1k_20220815_103458.json'>log</a></td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/benchmarks/classification/imagenet/vit-base-p16_linear-8xb2048-coslr-90e_in1k.py'>config</a> | model | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-1600e_in1k/vit-base-p16_linear-8xb2048-coslr-90e_in1k/vit-base-p16_linear-8xb2048-coslr-90e_in1k_20220724_232557.json'>log</a></td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/benchmarks/classification/imagenet/vit-base-p16_ft-8xb128-coslr-100e_in1k.py'>config</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-1600e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k_20220825-cf70aa21.pth'>model</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-1600e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k_20220721_202304.json'>log</a></td>
-	</tr>
-  <tr>
-	    <td>ViT-large</td>
-	    <td>400</td>
-      <td>4096</td>
-      <td>70.7</td>
-      <td>85.2</td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/selfsup/mae/mae_vit-large-p16_8xb512-amp-coslr-400e_in1k.py'>config</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-large-p16_8xb512-fp16-coslr-400e_in1k/mae_vit-large-p16_8xb512-fp16-coslr-400e_in1k_20220825-b11d0425.pth'>model</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-large-p16_8xb512-fp16-coslr-400e_in1k/mae_vit-large-p16_8xb512-fp16-coslr-400e_in1k_20220726_202204.json'>log</a></td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/benchmarks/classification/imagenet/vit-large-p16_linear-8xb2048-coslr-90e_in1k.py'>config</a> | model | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-large-p16_8xb512-fp16-coslr-400e_in1k/vit-large-p16_linear-8xb2048-coslr-90e_in1k/vit-large-p16_linear-8xb2048-coslr-90e_in1k_20220803_101331.json'>log</a></td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/benchmarks/classification/imagenet/vit-large-p16_ft-8xb128-coslr-50e_in1k.py'>config</a> | model | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-large-p16_8xb512-fp16-coslr-400e_in1k/vit-large-p16_ft-8xb128-coslr-50e_in1k/vit-large-p16_ft-8xb128-coslr-50e_in1k_20220729_122511.json'>log</a></td>
-	</tr>
-  <tr>
-	    <td>ViT-large</td>
-	    <td>800</td>
-      <td>4096</td>
-      <td>73.7</td>
-      <td>85.4</td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/selfsup/mae/mae_vit-large-p16_8xb512-amp-coslr-800e_in1k.py'>config</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-large-p16_8xb512-fp16-coslr-800e_in1k/mae_vit-large-p16_8xb512-fp16-coslr-800e_in1k_20220825-df72726a.pth'>model</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-large-p16_8xb512-fp16-coslr-800e_in1k/mae_vit-large-p16_8xb512-fp16-coslr-800e_in1k_20220804_104018.json'>log</a></td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/benchmarks/classification/imagenet/vit-large-p16_linear-8xb2048-coslr-90e_in1k.py'>config</a> | model | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-large-p16_8xb512-fp16-coslr-800e_in1k/vit-large-p16_linear-8xb2048-coslr-90e_in1k/vit-large-p16_linear-8xb2048-coslr-90e_in1k_20220808_092730.json'>log</a></td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/benchmarks/classification/imagenet/vit-large-p16_ft-8xb128-coslr-50e_in1k.py'>config</a> | model | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-large-p16_8xb512-fp16-coslr-800e_in1k/vit-large-p16_ft-8xb128-coslr-50e_in1k/vit-large-p16_ft-8xb128-coslr-50e_in1k_20220730_235819.json'>log</a></td>
-	</tr>
-  <tr>
-	    <td>ViT-large</td>
-	    <td>1600</td>
-      <td>4096</td>
-      <td>75.5</td>
-      <td>85.7</td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/selfsup/mae/mae_vit-large-p16_8xb512-amp-coslr-1600e_in1k.py'>config</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-large-p16_8xb512-fp16-coslr-1600e_in1k/mae_vit-large-p16_8xb512-fp16-coslr-1600e_in1k_20220825-cc7e98c9.pth'>model</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-large-p16_8xb512-fp16-coslr-1600e_in1k/mae_vit-large-p16_8xb512-fp16-coslr-1600e_in1k_20220806_210725.json'>log</a></td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/benchmarks/classification/imagenet/vit-large-p16_linear-8xb2048-coslr-90e_in1k.py'>config</a> | model | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-large-p16_8xb512-fp16-coslr-1600e_in1k/vit-large-p16_linear-8xb2048-coslr-90e_in1k/vit-large-p16_linear-8xb2048-coslr-90e_in1k_20220813_155615.json'>log</a></td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/benchmarks/classification/imagenet/vit-large-p16_ft-8xb128-coslr-50e_in1k.py'>config</a> | model | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-large-p16_8xb512-fp16-coslr-1600e_in1k/vit-large-p16_ft-8xb128-coslr-50e_in1k/vit-large-p16_ft-8xb128-coslr-50e_in1k_20220813_125305.json'>log</a></td>
-	</tr>
-  <tr>
-	    <td>ViT-huge-FT-224</td>
-	    <td>1600</td>
-      <td>4096</td>
-      <td>/</td>
-      <td>86.9</td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/selfsup/mae/mae_vit-huge-p16_8xb512-amp-coslr-1600e_in1k.py'>config</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k_20220916-ff848775.pth'>model</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k_20220814_135241.json'>log</a></td>
-      <td>/</td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/benchmarks/classification/imagenet/vit-huge-p16_ft-8xb128-coslr-50e_in1k.py'>config</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k/vit-huge-p16_ft-8xb128-coslr-50e_in1k/vit-huge-p16_ft-8xb128-coslr-50e_in1k_20220916-0bfc9bfd.pth'>model</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k/vit-huge-p16_ft-8xb128-coslr-50e_in1k/vit-huge-p16_ft-8xb128-coslr-50e_in1k_20220829_114027.json'>log</a></td>
-	</tr>
-  <tr>
-	    <td>ViT-huge-FT-448</td>
-	    <td>1600</td>
-      <td>4096</td>
-      <td>/</td>
-      <td>87.3</td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/selfsup/mae/mae_vit-huge-p16_8xb512-amp-coslr-1600e_in1k.py'>config</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k_20220916-ff848775.pth'>model</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k_20220814_135241.json'>log</a></td>
-      <td>/</td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/benchmarks/classification/imagenet/vit-huge-p16_ft-32xb8-coslr-50e_in1k-448.py'>config</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k/vit-huge-p16_ft-32xb8-coslr-50e_in1k-448/vit-huge-p16_ft-32xb8-coslr-50e_in1k-448_20220916-95b6a0ce.pth'>model</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k/vit-huge-p16_ft-32xb8-coslr-50e_in1k-448/vit-huge-p16_ft-32xb8-coslr-50e_in1k-448_20220913_113737.json'>log</a></td>
-	</tr>
-</tbody>
-</table>
+<!-- [TABS-BEGIN] -->
 
-## Evaluating MAE on Detection and Segmentation
+**Predict image**
 
-If you want to evaluate your model on detection or segmentation task, we provide a [script](https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/tools/model_converters/mmcls2timm.py) to convert the model keys from MMClassification style to timm style.
+```python
+from mmpretrain import inference_model
 
-```sh
-cd $MMSELFSUP
-python tools/model_converters/mmcls2timm.py $src_ckpt $dst_ckpt
+predict = inference_model('vit-base-p16_mae-300e-pre_8xb2048-linear-coslr-90e_in1k', 'demo/bird.JPEG')
+print(predict['pred_class'])
+print(predict['pred_score'])
 ```
 
-Then, using this converted ckpt, you can evaluate your model on detection task, following [Detectron2](https://github.com/facebookresearch/detectron2/tree/main/projects/ViTDet)，
-and on semantic segmentation task, following this [project](https://github.com/implus/mae_segmentation). Besides, using the unconverted ckpt, you can use
-[MMSegmentation](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/mae) to evaluate your model.
+**Use the model**
+
+```python
+import torch
+from mmpretrain import get_model
+
+model = get_model('mae_vit-base-p16_8xb512-amp-coslr-300e_in1k', pretrained=True)
+inputs = torch.rand(1, 3, 224, 224)
+out = model(inputs)
+print(type(out))
+# To extract features.
+feats = model.extract_feat(inputs)
+print(type(feats))
+```
+
+**Train/Test Command**
+
+Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+
+Train:
+
+```shell
+python tools/train.py configs/mae/mae_vit-base-p16_8xb512-amp-coslr-300e_in1k.py
+```
+
+Test:
+
+```shell
+python tools/test.py configs/mae/benchmarks/vit-base-p16_8xb2048-linear-coslr-90e_in1k.py None
+```
+
+<!-- [TABS-END] -->
+
+## Models and results
+
+### Pretrained models
+
+| Model                                           | Params (M) | Flops (G) |                           Config                           |                                   Download                                   |
+| :---------------------------------------------- | :--------: | :-------: | :--------------------------------------------------------: | :--------------------------------------------------------------------------: |
+| `mae_vit-base-p16_8xb512-amp-coslr-300e_in1k`   |    N/A     |    N/A    |  [config](mae_vit-base-p16_8xb512-amp-coslr-300e_in1k.py)  | [model](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-300e_in1k/mae_vit-base-p16_8xb512-coslr-300e-fp16_in1k_20220829-c2cf66ba.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-300e_in1k/mae_vit-base-p16_8xb512-coslr-300e-fp16_in1k_20220829-c2cf66ba.json) |
+| `mae_vit-base-p16_8xb512-amp-coslr-400e_in1k`   |    N/A     |    N/A    |  [config](mae_vit-base-p16_8xb512-amp-coslr-400e_in1k.py)  | [model](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-400e_in1k/mae_vit-base-p16_8xb512-coslr-400e-fp16_in1k_20220825-bc79e40b.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-400e_in1k/mae_vit-base-p16_8xb512-coslr-400e-fp16_in1k_20220825-bc79e40b.json) |
+| `mae_vit-base-p16_8xb512-amp-coslr-800e_in1k`   |    N/A     |    N/A    |  [config](mae_vit-base-p16_8xb512-amp-coslr-800e_in1k.py)  | [model](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-800e_in1k/mae_vit-base-p16_8xb512-coslr-800e-fp16_in1k_20220825-5d81fbc4.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-800e_in1k/mae_vit-base-p16_8xb512-coslr-800e-fp16_in1k_20220825-5d81fbc4.json) |
+| `mae_vit-base-p16_8xb512-amp-coslr-1600e_in1k`  |    N/A     |    N/A    | [config](mae_vit-base-p16_8xb512-amp-coslr-1600e_in1k.py)  | [model](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-1600e_in1k/mae_vit-base-p16_8xb512-fp16-coslr-1600e_in1k_20220825-f7569ca2.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-1600e_in1k/mae_vit-base-p16_8xb512-fp16-coslr-1600e_in1k_20220825-f7569ca2.json) |
+| `mae_vit-large-p16_8xb512-amp-coslr-400e_in1k`  |    N/A     |    N/A    | [config](mae_vit-large-p16_8xb512-amp-coslr-400e_in1k.py)  | [model](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-large-p16_8xb512-fp16-coslr-400e_in1k/mae_vit-large-p16_8xb512-fp16-coslr-400e_in1k_20220825-b11d0425.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-large-p16_8xb512-fp16-coslr-400e_in1k/mae_vit-large-p16_8xb512-fp16-coslr-400e_in1k_20220825-b11d0425.json) |
+| `mae_vit-large-p16_8xb512-amp-coslr-800e_in1k`  |    N/A     |    N/A    | [config](mae_vit-large-p16_8xb512-amp-coslr-800e_in1k.py)  | [model](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-large-p16_8xb512-fp16-coslr-800e_in1k/mae_vit-large-p16_8xb512-fp16-coslr-800e_in1k_20220825-df72726a.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-large-p16_8xb512-fp16-coslr-800e_in1k/mae_vit-large-p16_8xb512-fp16-coslr-800e_in1k_20220825-df72726a.json) |
+| `mae_vit-large-p16_8xb512-amp-coslr-1600e_in1k` |    N/A     |    N/A    | [config](mae_vit-large-p16_8xb512-amp-coslr-1600e_in1k.py) | [model](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-large-p16_8xb512-fp16-coslr-1600e_in1k/mae_vit-large-p16_8xb512-fp16-coslr-1600e_in1k_20220825-cc7e98c9.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-large-p16_8xb512-fp16-coslr-1600e_in1k/mae_vit-large-p16_8xb512-fp16-coslr-1600e_in1k_20220825-cc7e98c9.json) |
+| `mae_vit-huge-p16_8xb512-amp-coslr-1600e_in1k`  |    N/A     |    N/A    | [config](mae_vit-huge-p14_8xb512-amp-coslr-1600e_in1k.py)  | [model](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k_20220916-ff848775.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k_20220916-ff848775.json) |
+
+### Image Classification on ImageNet-1k
+
+| Model                                     |                   Pretrain                   | Params (M) | Flops (G) | Top-1 (%) |                   Config                   |                   Download                    |
+| :---------------------------------------- | :------------------------------------------: | :--------: | :-------: | :-------: | :----------------------------------------: | :-------------------------------------------: |
+| `vit-base-p16_mae-300e-pre_8xb2048-linear-coslr-90e_in1k` | [MAE 300-Epochs](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-300e_in1k/mae_vit-base-p16_8xb512-coslr-300e-fp16_in1k_20220829-c2cf66ba.pth) |    N/A     |    N/A    |   60.80   | [config](benchmarks/vit-base-p16_8xb2048-linear-coslr-90e_in1k.py) |                      N/A                      |
+| `vit-base-p16_mae-300e-pre_8xb128-coslr-100e_in1k` | [MAE 300-Epochs](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-300e_in1k/mae_vit-base-p16_8xb512-coslr-300e-fp16_in1k_20220829-c2cf66ba.pth) |    N/A     |    N/A    |   83.10   | [config](benchmarks/vit-base-p16_8xb128-coslr-100e_in1k.py) |                      N/A                      |
+| `vit-base-p16_mae-400e-pre_8xb2048-linear-coslr-90e_in1k` | [MAE 400-Epochs](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-400e_in1k/mae_vit-base-p16_8xb512-coslr-400e-fp16_in1k_20220825-bc79e40b.pth) |    N/A     |    N/A    |   62.50   | [config](benchmarks/vit-base-p16_8xb2048-linear-coslr-90e_in1k.py) |                      N/A                      |
+| `vit-base-p16_mae-400e-pre_8xb128-coslr-100e_in1k` | [MAE 400-Epochs](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-400e_in1k/mae_vit-base-p16_8xb512-coslr-400e-fp16_in1k_20220825-bc79e40b.pth) |    N/A     |    N/A    |   83.30   | [config](benchmarks/vit-base-p16_8xb128-coslr-100e_in1k.py) |                      N/A                      |
+| `vit-base-p16_mae-800e-pre_8xb2048-linear-coslr-90e_in1k` | [MAE 800-Epochs](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-800e_in1k/mae_vit-base-p16_8xb512-coslr-800e-fp16_in1k_20220825-5d81fbc4.pth) |    N/A     |    N/A    |   65.10   | [config](benchmarks/vit-base-p16_8xb2048-linear-coslr-90e_in1k.py) |                      N/A                      |
+| `vit-base-p16_mae-800e-pre_8xb128-coslr-100e_in1k` | [MAE 800-Epochs](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-800e_in1k/mae_vit-base-p16_8xb512-coslr-800e-fp16_in1k_20220825-5d81fbc4.pth) |    N/A     |    N/A    |   83.30   | [config](benchmarks/vit-base-p16_8xb128-coslr-100e_in1k.py) |                      N/A                      |
+| `vit-base-p16_mae-1600e-pre_8xb2048-linear-coslr-90e_in1k` | [MAE 1600-Epochs](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-1600e_in1k/mae_vit-base-p16_8xb512-fp16-coslr-1600e_in1k_20220825-f7569ca2.pth) |    N/A     |    N/A    |   67.10   | [config](benchmarks/vit-base-p16_8xb2048-linear-coslr-90e_in1k.py) |                      N/A                      |
+| `vit-base-p16_mae-1600e-pre_8xb128-coslr-100e_in1k` | [MAE 1600-Epochs](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-1600e_in1k/mae_vit-base-p16_8xb512-fp16-coslr-1600e_in1k_20220825-f7569ca2.pth) |    N/A     |    N/A    |   83.50   | [config](benchmarks/vit-base-p16_8xb128-coslr-100e_in1k.py) | [model](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-1600e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k_20220825-cf70aa21.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-base-p16_8xb512-fp16-coslr-1600e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k_20220825-cf70aa21.json) |
+| `vit-large-p16_mae-400e-pre_8xb2048-linear-coslr-90e_in1k` | [MAE 400-Epochs](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-large-p16_8xb512-fp16-coslr-400e_in1k/mae_vit-large-p16_8xb512-fp16-coslr-400e_in1k_20220825-b11d0425.pth) |    N/A     |    N/A    |   70.70   | [config](benchmarks/vit-large-p16_8xb2048-linear-coslr-90e_in1k.py) |                      N/A                      |
+| `vit-large-p16_mae-400e-pre_8xb128-coslr-50e_in1k` | [MAE 400-Epochs](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-large-p16_8xb512-fp16-coslr-400e_in1k/mae_vit-large-p16_8xb512-fp16-coslr-400e_in1k_20220825-b11d0425.pth) |    N/A     |    N/A    |   85.20   | [config](benchmarks/vit-large-p16_8xb128-coslr-50e_in1k.py) |                      N/A                      |
+| `vit-large-p16_mae-800e-pre_8xb2048-linear-coslr-90e_in1k` | [MAE 800-Epochs](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-large-p16_8xb512-fp16-coslr-800e_in1k/mae_vit-large-p16_8xb512-fp16-coslr-800e_in1k_20220825-df72726a.pth) |    N/A     |    N/A    |   73.70   | [config](benchmarks/vit-large-p16_8xb2048-linear-coslr-90e_in1k.py) |                      N/A                      |
+| `vit-large-p16_mae-800e-pre_8xb128-coslr-50e_in1k` | [MAE 800-Epochs](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-large-p16_8xb512-fp16-coslr-800e_in1k/mae_vit-large-p16_8xb512-fp16-coslr-800e_in1k_20220825-df72726a.pth) |    N/A     |    N/A    |   85.40   | [config](benchmarks/vit-large-p16_8xb128-coslr-50e_in1k.py) |                      N/A                      |
+| `vit-large-p16_mae-1600e-pre_8xb2048-linear-coslr-90e_in1k` | [MAE 1600-Epochs](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-large-p16_8xb512-fp16-coslr-1600e_in1k/mae_vit-large-p16_8xb512-fp16-coslr-1600e_in1k_20220825-cc7e98c9.pth) |    N/A     |    N/A    |   75.50   | [config](benchmarks/vit-large-p16_8xb2048-linear-coslr-90e_in1k.py) |                      N/A                      |
+| `vit-large-p16_mae-1600e-pre_8xb128-coslr-50e_in1k` | [MAE 1600-Epochs](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-large-p16_8xb512-fp16-coslr-1600e_in1k/mae_vit-large-p16_8xb512-fp16-coslr-1600e_in1k_20220825-cc7e98c9.pth) |    N/A     |    N/A    |   85.70   | [config](benchmarks/vit-large-p16_8xb128-coslr-50e_in1k.py) |                      N/A                      |
+| `vit-huge-p14_mae-1600e-pre_8xb128-coslr-50e_in1k` | [MAE 1600-Epochs](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k_20220916-ff848775.pth) |    N/A     |    N/A    |   86.90   | [config](benchmarks/vit-huge-p14_8xb128-coslr-50e_in1k.py) | [model](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k/vit-huge-p16_ft-8xb128-coslr-50e_in1k/vit-huge-p16_ft-8xb128-coslr-50e_in1k_20220916-0bfc9bfd.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k/vit-huge-p16_ft-8xb128-coslr-50e_in1k/vit-huge-p16_ft-8xb128-coslr-50e_in1k_20220916-0bfc9bfd.json) |
+| `vit-huge-p14_mae-1600e-pre_32xb8-coslr-50e_in1k-448px` | [MAE 1600-Epochs](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k_20220916-ff848775.pth) |    N/A     |    N/A    |   87.30   | [config](benchmarks/vit-huge-p14_32xb8-coslr-50e_in1k-448px.py) | [model](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k/vit-huge-p16_ft-32xb8-coslr-50e_in1k-448/vit-huge-p16_ft-32xb8-coslr-50e_in1k-448_20220916-95b6a0ce.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/mae/mae_vit-huge-p16_8xb512-fp16-coslr-1600e_in1k/vit-huge-p16_ft-32xb8-coslr-50e_in1k-448/vit-huge-p16_ft-32xb8-coslr-50e_in1k-448_20220916-95b6a0ce.json) |
 
 ## Citation
 

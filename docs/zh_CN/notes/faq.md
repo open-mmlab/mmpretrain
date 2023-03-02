@@ -56,13 +56,13 @@
 
 - 如果我对源码进行了改动，需要重新安装以使改动生效吗？
 
-  如果你遵照[最佳实践](../get_started.md#最佳实践)的指引，从源码安装 mmcls，那么任何本地修改都不需要重新安装即可生效。
+  如果你遵照[最佳实践](../get_started.md#最佳实践)的指引，从源码安装 mmpretrain，那么任何本地修改都不需要重新安装即可生效。
 
 - 如何在多个 MMClassification 版本下进行开发？
 
   通常来说，我们推荐通过不同虚拟环境来管理多个开发目录下的 MMClassification。
-  但如果你希望在不同目录（如 mmcls-0.21, mmcls-0.23 等）使用同一个环境进行开发，
-  我们提供的训练和测试 shell 脚本会自动使用当前目录的 mmcls，其他 Python 脚本
+  但如果你希望在不同目录（如 mmpretrain-0.21, mmpretrain-0.23 等）使用同一个环境进行开发，
+  我们提供的训练和测试 shell 脚本会自动使用当前目录的 mmpretrain，其他 Python 脚本
   则可以在命令前添加 `` PYTHONPATH=`pwd`  `` 来使用当前目录的代码。
 
   反过来，如果你希望 shell 脚本使用环境中安装的 MMClassification，而不是当前目录的，

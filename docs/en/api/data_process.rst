@@ -10,12 +10,12 @@ system. These basic information includes the ground-truth label and raw
 images data / the paths of images.The data process includes data transforms,
 data preprocessors and batch augmentations.
 
-- :mod:`Data Transforms <mmcls.datasets.transforms>`: Transforms includes loading, preprocessing, formatting and etc.
-- :mod:`Data Preprocessors <mmcls.models.utils.data_preprocessor>`: Processes includes collate, normalization, stacking, channel fliping and etc.
+- :mod:`Data Transforms <mmpretrain.datasets.transforms>`: Transforms includes loading, preprocessing, formatting and etc.
+- :mod:`Data Preprocessors <mmpretrain.models.utils.data_preprocessor>`: Processes includes collate, normalization, stacking, channel fliping and etc.
 
-  - :mod:`Batch Augmentations <mmcls.models.utils.batch_augments>`: Batch augmentation involves multiple samples, such as Mixup and CutMix.
+  - :mod:`Batch Augmentations <mmpretrain.models.utils.batch_augments>`: Batch augmentation involves multiple samples, such as Mixup and CutMix.
 
-.. module:: mmcls.datasets.transforms
+.. module:: mmpretrain.datasets.transforms
 
 Data Transforms
 --------------------
@@ -164,7 +164,7 @@ We also provides many transforms in MMCV. You can use them directly in the confi
    * - :external:class:`~mmcv.transforms.Compose`
      - Compose multiple transforms sequentially.
 
-.. module:: mmcls.models.utils.data_preprocessor
+.. module:: mmpretrain.models.utils.data_preprocessor
 
 Data Preprocessors
 ------------------
@@ -216,7 +216,7 @@ Note that the ``model.data_preprocessor`` has higher priority than ``data_prepro
 
    ClsDataPreprocessor
 
-.. module:: mmcls.models.utils.batch_augments
+.. module:: mmpretrain.models.utils.batch_augments
 
 Batch Augmentations
 ^^^^^^^^^^^^^^^^^^^^

@@ -7,14 +7,14 @@ classification:
 
 **Single-label Classification**:
 
-- [`Accuracy`](mmcls.evaluation.Accuracy)
-- [`SingleLabelMetric`](mmcls.evaluation.SingleLabelMetric), including precision, recall, f1-score and
+- [`Accuracy`](mmpretrain.evaluation.Accuracy)
+- [`SingleLabelMetric`](mmpretrain.evaluation.SingleLabelMetric), including precision, recall, f1-score and
   support.
 
 **Multi-label Classification**:
 
-- [`AveragePrecision`](mmcls.evaluation.AveragePrecision), or AP (mAP).
-- [`MultiLabelMetric`](mmcls.evaluation.MultiLabelMetric), including precision, recall, f1-score and
+- [`AveragePrecision`](mmpretrain.evaluation.AveragePrecision), or AP (mAP).
+- [`MultiLabelMetric`](mmpretrain.evaluation.MultiLabelMetric), including precision, recall, f1-score and
   support.
 
 To use these metrics during validation and testing, we need to modify the `val_evaluator` and `test_evaluator`
@@ -56,13 +56,13 @@ Here is several examples:
 
 MMClassification supports the implementation of customized evaluation metrics for users who pursue higher customization.
 
-You need to create a new file under `mmcls/evaluation/metrics`, and implement the new metric in the file, for example, in `mmcls/evaluation/metrics/my_metric.py`. And create a customized evaluation metric class `MyMetric` which inherits [`BaseMetric in MMEngine`](mmengine.evaluator.BaseMetric).
+You need to create a new file under `mmpretrain/evaluation/metrics`, and implement the new metric in the file, for example, in `mmpretrain/evaluation/metrics/my_metric.py`. And create a customized evaluation metric class `MyMetric` which inherits [`BaseMetric in MMEngine`](mmengine.evaluator.BaseMetric).
 
 The data format processing method `process` and the metric calculation method `compute_metrics` need to be overwritten respectively. Add it to the `METRICS` registry to implement any customized evaluation metric.
 
 ```python
 from mmengine.evaluator import BaseMetric
-from mmcls.registry import METRICS
+from mmpretrain.registry import METRICS
 
 @METRICS.register_module()
 class MyMetric(BaseMetric):
@@ -81,10 +81,10 @@ class MyMetric(BaseMetric):
         ...
 ```
 
-Then, import it in the `mmcls/evaluation/metrics/__init__.py` to add it into the `mmcls.evaluation` package.
+Then, import it in the `mmpretrain/evaluation/metrics/__init__.py` to add it into the `mmpretrain.evaluation` package.
 
 ```python
-# In mmcls/evaluation/metrics/__init__.py
+# In mmpretrain/evaluation/metrics/__init__.py
 ...
 from .my_metric import MyMetric
 

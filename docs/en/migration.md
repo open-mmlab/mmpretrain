@@ -29,9 +29,9 @@ No changes in `model.backbone`, `model.neck` and `model.head` fields.
 
 Changes in **`model.train_cfg`**:
 
-- `BatchMixup` is renamed to [`Mixup`](mmcls.models.utils.batch_augments.Mixup).
-- `BatchCutMix` is renamed to [`CutMix`](mmcls.models.utils.batch_augments.CutMix).
-- `BatchResizeMix` is renamed to [`ResizeMix`](mmcls.models.utils.batch_augments.ResizeMix).
+- `BatchMixup` is renamed to [`Mixup`](mmpretrain.models.utils.batch_augments.Mixup).
+- `BatchCutMix` is renamed to [`CutMix`](mmpretrain.models.utils.batch_augments.CutMix).
+- `BatchResizeMix` is renamed to [`ResizeMix`](mmpretrain.models.utils.batch_augments.ResizeMix).
 - The `prob` argument is removed from all augments settings, and you can use the `probs` field in `train_cfg` to
   specify probabilities of every augemnts. If no `probs` field, randomly choose one by the same probability.
 
@@ -121,17 +121,17 @@ test_dataloader = val_dataloader
 
 Changes in **`pipeline`**:
 
-- The original formatting transforms **`ToTensor`**, **`ImageToTensor`** and **`Collect`** are combined as [`PackClsInputs`](mmcls.datasets.transforms.PackClsInputs).
+- The original formatting transforms **`ToTensor`**, **`ImageToTensor`** and **`Collect`** are combined as [`PackClsInputs`](mmpretrain.datasets.transforms.PackClsInputs).
 - We don't recommend to do **`Normalize`** in the dataset pipeline. Please remove it from pipelines and set it in the `data_preprocessor` field.
 - The argument `flip_prob` in [**`RandomFlip`**](mmcv.transforms.RandomFlip) is renamed to `flip`.
-- The argument `size` in [**`RandomCrop`**](mmcls.datasets.transforms.RandomCrop) is renamed to `crop_size`.
-- The argument `size` in [**`RandomResizedCrop`**](mmcls.datasets.transforms.RandomResizedCrop) is renamed to `scale`.
-- The argument `size` in [**`Resize`**](mmcv.transforms.Resize) is renamed to `scale`. And `Resize` won't support size like `(256, -1)`, please use [`ResizeEdge`](mmcls.datasets.transforms.ResizeEdge) to replace it.
-- The argument `policies` in [**`AutoAugment`**](mmcls.datasets.transforms.AutoAugment) and [**`RandAugment`**](mmcls.datasets.transforms.RandAugment) supports using string to specify preset policies. `AutoAugment` supports "imagenet" and `RandAugment` supports "timm_increasing".
-- **`RandomResizedCrop`** and **`CenterCrop`** won't supports `efficientnet_style`, and please use [`EfficientNetRandomCrop`](mmcls.datasets.transforms.EfficientNetRandomCrop) and [`EfficientNetCenterCrop`](mmcls.datasets.transforms.EfficientNetCenterCrop) to replace them.
+- The argument `size` in [**`RandomCrop`**](mmpretrain.datasets.transforms.RandomCrop) is renamed to `crop_size`.
+- The argument `size` in [**`RandomResizedCrop`**](mmpretrain.datasets.transforms.RandomResizedCrop) is renamed to `scale`.
+- The argument `size` in [**`Resize`**](mmcv.transforms.Resize) is renamed to `scale`. And `Resize` won't support size like `(256, -1)`, please use [`ResizeEdge`](mmpretrain.datasets.transforms.ResizeEdge) to replace it.
+- The argument `policies` in [**`AutoAugment`**](mmpretrain.datasets.transforms.AutoAugment) and [**`RandAugment`**](mmpretrain.datasets.transforms.RandAugment) supports using string to specify preset policies. `AutoAugment` supports "imagenet" and `RandAugment` supports "timm_increasing".
+- **`RandomResizedCrop`** and **`CenterCrop`** won't supports `efficientnet_style`, and please use [`EfficientNetRandomCrop`](mmpretrain.datasets.transforms.EfficientNetRandomCrop) and [`EfficientNetCenterCrop`](mmpretrain.datasets.transforms.EfficientNetCenterCrop) to replace them.
 
 ```{note}
-We move some work of data transforms to the data preprocessor, like normalization, see [the documentation](mmcls.models.utils.data_preprocessor) for
+We move some work of data transforms to the data preprocessor, like normalization, see [the documentation](mmpretrain.models.utils.data_preprocessor) for
 more details.
 ```
 
@@ -181,10 +181,10 @@ Changes in **`evaluation`**:
 - The **`evaluation`** field is splited to `val_evaluator` and `test_evaluator`. And it won't supports `interval` and `save_best` arguments.
   The `interval` is moved to `train_cfg.val_interval`, see [the schedule settings](./user_guides/config.md#schedule-settings) and the `save_best`
   is moved to `default_hooks.checkpoint.save_best`, see [the runtime settings](./user_guides/config.md#runtime-settings).
-- The 'accuracy' metric is renamed to [`Accuracy`](mmcls.evaluation.Accuracy).
-- The 'precision', 'recall', 'f1-score' and 'support' are combined as [`SingleLabelMetric`](mmcls.evaluation.SingleLabelMetric), and use `items` argument to specify to calculate which metric.
-- The 'mAP' is renamed to [`AveragePrecision`](mmcls.evaluation.AveragePrecision).
-- The 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1' are combined as [`MultiLabelMetric`](mmcls.evaluation.MultiLabelMetric), and use `items` and `average` arguments to specify to calculate which metric.
+- The 'accuracy' metric is renamed to [`Accuracy`](mmpretrain.evaluation.Accuracy).
+- The 'precision', 'recall', 'f1-score' and 'support' are combined as [`SingleLabelMetric`](mmpretrain.evaluation.SingleLabelMetric), and use `items` argument to specify to calculate which metric.
+- The 'mAP' is renamed to [`AveragePrecision`](mmpretrain.evaluation.AveragePrecision).
+- The 'CP', 'CR', 'CF1', 'OP', 'OR', 'OF1' are combined as [`MultiLabelMetric`](mmpretrain.evaluation.MultiLabelMetric), and use `items` and `average` arguments to specify to calculate which metric.
 
 <table class="docutils">
 <tr>
@@ -481,34 +481,34 @@ visualizer = dict(
 )
 ```
 
-New field **`default_scope`**: The start point to search module for all registries. The `default_scope` in MMClassification is `mmcls`. See {external+mmengine:doc}`the registry tutorial <advanced_tutorials/registry>` for more details.
+New field **`default_scope`**: The start point to search module for all registries. The `default_scope` in MMClassification is `mmpretrain`. See {external+mmengine:doc}`the registry tutorial <advanced_tutorials/registry>` for more details.
 
 ## Packages
 
-### `mmcls.apis`
+### `mmpretrain.apis`
 
-The documentation can be found [here](mmcls.apis).
+The documentation can be found [here](mmpretrain.apis).
 
-|       Function       | Changes                                                                                                                                |
-| :------------------: | :------------------------------------------------------------------------------------------------------------------------------------- |
-|     `init_model`     | No changes                                                                                                                             |
-|  `inference_model`   | No changes. But we recommend to use [`mmcls.ImageClassificationInferencer`](mmcls.apis.ImageClassificationInferencer) instead.         |
-|    `train_model`     | Removed, use `runner.train` to train.                                                                                                  |
-|   `multi_gpu_test`   | Removed, use `runner.test` to test.                                                                                                    |
-|  `single_gpu_test`   | Removed, use `runner.test` to test.                                                                                                    |
-| `show_result_pyplot` | Removed, use [`mmcls.ImageClassificationInferencer`](mmcls.apis.ImageClassificationInferencer) to inference model and show the result. |
-|  `set_random_seed`   | Removed, use `mmengine.runner.set_random_seed`.                                                                                        |
-|  `init_random_seed`  | Removed, use `mmengine.dist.sync_random_seed`.                                                                                         |
+|       Function       | Changes                                                                                                                                          |
+| :------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------- |
+|     `init_model`     | No changes                                                                                                                                       |
+|  `inference_model`   | No changes. But we recommend to use [`mmpretrain.ImageClassificationInferencer`](mmpretrain.apis.ImageClassificationInferencer) instead.         |
+|    `train_model`     | Removed, use `runner.train` to train.                                                                                                            |
+|   `multi_gpu_test`   | Removed, use `runner.test` to test.                                                                                                              |
+|  `single_gpu_test`   | Removed, use `runner.test` to test.                                                                                                              |
+| `show_result_pyplot` | Removed, use [`mmpretrain.ImageClassificationInferencer`](mmpretrain.apis.ImageClassificationInferencer) to inference model and show the result. |
+|  `set_random_seed`   | Removed, use `mmengine.runner.set_random_seed`.                                                                                                  |
+|  `init_random_seed`  | Removed, use `mmengine.dist.sync_random_seed`.                                                                                                   |
 
-### `mmcls.core`
+### `mmpretrain.core`
 
-The `mmcls.core` package is renamed to [`mmcls.engine`](mmcls.engine).
+The `mmpretrain.core` package is renamed to [`mmpretrain.engine`](mmpretrain.engine).
 
 |   Sub package   | Changes                                                                                                                           |
 | :-------------: | :-------------------------------------------------------------------------------------------------------------------------------- |
-|  `evaluation`   | Removed, use the metrics in [`mmcls.evaluation`](mmcls.evaluation).                                                               |
-|     `hook`      | Moved to [`mmcls.engine.hooks`](mmcls.engine.hooks)                                                                               |
-|  `optimizers`   | Moved to [`mmcls.engine.optimizers`](mmcls.engine.optimizers)                                                                     |
+|  `evaluation`   | Removed, use the metrics in [`mmpretrain.evaluation`](mmpretrain.evaluation).                                                     |
+|     `hook`      | Moved to [`mmpretrain.engine.hooks`](mmpretrain.engine.hooks)                                                                     |
+|  `optimizers`   | Moved to [`mmpretrain.engine.optimizers`](mmpretrain.engine.optimizers)                                                           |
 |     `utils`     | Removed, the distributed environment related functions can be found in the [`mmengine.dist`](mmengine.dist) package.              |
 | `visualization` | Removed, the related functionalities are implemented in [`mmengine.visualization.Visualizer`](mmengine.visualization.Visualizer). |
 
@@ -517,60 +517,60 @@ The `MMClsWandbHook` in `hooks` package is waiting for implementation.
 The `CosineAnnealingCooldownLrUpdaterHook` in `hooks` package is removed, and we support this functionality by
 the combination of parameter schedulers, see [the tutorial](./advanced_guides/schedule.md).
 
-### `mmcls.datasets`
+### `mmpretrain.datasets`
 
-The documentation can be found [here](mmcls.datasets).
+The documentation can be found [here](mmpretrain.datasets).
 
-|                                  Dataset class                                  | Changes                                                                        |
-| :-----------------------------------------------------------------------------: | :----------------------------------------------------------------------------- |
-|                 [`CustomDataset`](mmcls.datasets.CustomDataset)                 | Add `data_root` argument as the common prefix of `data_prefix` and `ann_file`. |
-|                      [`ImageNet`](mmcls.datasets.ImageNet)                      | Same as `CustomDataset`.                                                       |
-|                   [`ImageNet21k`](mmcls.datasets.ImageNet21k)                   | Same as `CustomDataset`.                                                       |
-|   [`CIFAR10`](mmcls.datasets.CIFAR10) & [`CIFAR100`](mmcls.datasets.CIFAR100)   | The `test_mode` argument is a required argument now.                           |
-| [`MNIST`](mmcls.datasets.MNIST) & [`FashionMNIST`](mmcls.datasets.FashionMNIST) | The `test_mode` argument is a required argument now.                           |
-|                           [`VOC`](mmcls.datasets.VOC)                           | Requires `data_root`, `image_set_path` and `test_mode` now.                    |
-|                           [`CUB`](mmcls.datasets.CUB)                           | Requires `data_root` and `test_mode` now.                                      |
+|                                       Dataset class                                       | Changes                                                                        |
+| :---------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------- |
+|                   [`CustomDataset`](mmpretrain.datasets.CustomDataset)                    | Add `data_root` argument as the common prefix of `data_prefix` and `ann_file`. |
+|                        [`ImageNet`](mmpretrain.datasets.ImageNet)                         | Same as `CustomDataset`.                                                       |
+|                     [`ImageNet21k`](mmpretrain.datasets.ImageNet21k)                      | Same as `CustomDataset`.                                                       |
+|   [`CIFAR10`](mmpretrain.datasets.CIFAR10) & [`CIFAR100`](mmpretrain.datasets.CIFAR100)   | The `test_mode` argument is a required argument now.                           |
+| [`MNIST`](mmpretrain.datasets.MNIST) & [`FashionMNIST`](mmpretrain.datasets.FashionMNIST) | The `test_mode` argument is a required argument now.                           |
+|                             [`VOC`](mmpretrain.datasets.VOC)                              | Requires `data_root`, `image_set_path` and `test_mode` now.                    |
+|                             [`CUB`](mmpretrain.datasets.CUB)                              | Requires `data_root` and `test_mode` now.                                      |
 
-The `mmcls.datasets.pipelines` is renamed to `mmcls.datasets.transforms`.
+The `mmpretrain.datasets.pipelines` is renamed to `mmpretrain.datasets.transforms`.
 
 |         Transform class         | Changes                                                                                                                                                                   |
 | :-----------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 |       `LoadImageFromFile`       | Removed, use [`mmcv.transforms.LoadImageFromFile`](mmcv.transforms.LoadImageFromFile).                                                                                    |
 |          `RandomFlip`           | Removed, use [`mmcv.transforms.RandomFlip`](mmcv.transforms.RandomFlip). The argument `flip_prob` is renamed to `prob`.                                                   |
 |          `RandomCrop`           | The argument `size` is renamed to `crop_size`.                                                                                                                            |
-|       `RandomResizedCrop`       | The argument `size` is renamed to `scale`. The argument `scale` is renamed to `crop_ratio_range`. Won't support `efficientnet_style`, use [`EfficientNetRandomCrop`](mmcls.datasets.transforms.EfficientNetRandomCrop). |
-|          `CenterCrop`           | Removed, use [`mmcv.transforms.CenterCrop`](mmcv.transforms.CenterCrop). Won't support `efficientnet_style`, use [`EfficientNetCenterCrop`](mmcls.datasets.transforms.EfficientNetCenterCrop). |
-|            `Resize`             | Removed, use [`mmcv.transforms.Resize`](mmcv.transforms.Resize). The argument `size` is renamed to `scale`. Won't support size like `(256, -1)`, use [`ResizeEdge`](mmcls.datasets.transforms.ResizeEdge). |
+|       `RandomResizedCrop`       | The argument `size` is renamed to `scale`. The argument `scale` is renamed to `crop_ratio_range`. Won't support `efficientnet_style`, use [`EfficientNetRandomCrop`](mmpretrain.datasets.transforms.EfficientNetRandomCrop). |
+|          `CenterCrop`           | Removed, use [`mmcv.transforms.CenterCrop`](mmcv.transforms.CenterCrop). Won't support `efficientnet_style`, use [`EfficientNetCenterCrop`](mmpretrain.datasets.transforms.EfficientNetCenterCrop). |
+|            `Resize`             | Removed, use [`mmcv.transforms.Resize`](mmcv.transforms.Resize). The argument `size` is renamed to `scale`. Won't support size like `(256, -1)`, use [`ResizeEdge`](mmpretrain.datasets.transforms.ResizeEdge). |
 | `AutoAugment` & `RandomAugment` | The argument `policies` supports using string to specify preset policies.                                                                                                 |
 |            `Compose`            | Removed, use [`mmcv.transforms.Compose`](mmcv.transforms.Compose).                                                                                                        |
 
-### `mmcls.models`
+### `mmpretrain.models`
 
-The documentation can be found [here](mmcls.models). The interface of all **backbones**, **necks** and **losses** didn't change.
+The documentation can be found [here](mmpretrain.models). The interface of all **backbones**, **necks** and **losses** didn't change.
 
-Changes in [`ImageClassifier`](mmcls.models.classifiers.ImageClassifier):
+Changes in [`ImageClassifier`](mmpretrain.models.classifiers.ImageClassifier):
 
-| Method of classifiers | Changes                                                                                                                                                            |
-| :-------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-|    `extract_feat`     | No changes                                                                                                                                                         |
-|       `forward`       | Now only accepts three arguments: `inputs`, `data_samples` and `mode`. See [the documentation](mmcls.models.classifiers.ImageClassifier.forward) for more details. |
-|    `forward_train`    | Replaced by `loss`.                                                                                                                                                |
-|     `simple_test`     | Replaced by `predict`.                                                                                                                                             |
-|     `train_step`      | The `optimizer` argument is replaced by `optim_wrapper` and it accepts [`OptimWrapper`](mmengine.optim.OptimWrapper).                                              |
-|      `val_step`       | The original `val_step` is the same as `train_step`, now it calls `predict`.                                                                                       |
-|      `test_step`      | New method, and it's the same as `val_step`.                                                                                                                       |
+| Method of classifiers | Changes                                                                                                                                                                 |
+| :-------------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|    `extract_feat`     | No changes                                                                                                                                                              |
+|       `forward`       | Now only accepts three arguments: `inputs`, `data_samples` and `mode`. See [the documentation](mmpretrain.models.classifiers.ImageClassifier.forward) for more details. |
+|    `forward_train`    | Replaced by `loss`.                                                                                                                                                     |
+|     `simple_test`     | Replaced by `predict`.                                                                                                                                                  |
+|     `train_step`      | The `optimizer` argument is replaced by `optim_wrapper` and it accepts [`OptimWrapper`](mmengine.optim.OptimWrapper).                                                   |
+|      `val_step`       | The original `val_step` is the same as `train_step`, now it calls `predict`.                                                                                            |
+|      `test_step`      | New method, and it's the same as `val_step`.                                                                                                                            |
 
-Changes in [heads](mmcls.models.heads):
+Changes in [heads](mmpretrain.models.heads):
 
-| Method of heads | Changes                                                                                                                                              |
-| :-------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
-|  `pre_logits`   | No changes                                                                                                                                           |
-| `forward_train` | Replaced by `loss`.                                                                                                                                  |
-|  `simple_test`  | Replaced by `predict`.                                                                                                                               |
-|     `loss`      | It accepts `data_samples` instead of `gt_labels` to calculate loss. The `data_samples` is a list of [ClsDataSample](mmcls.structures.ClsDataSample). |
-|    `forward`    | New method, and it returns the output of the classification head without any post-processs like softmax or sigmoid.                                  |
+| Method of heads | Changes                                                                                                                                                   |
+| :-------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|  `pre_logits`   | No changes                                                                                                                                                |
+| `forward_train` | Replaced by `loss`.                                                                                                                                       |
+|  `simple_test`  | Replaced by `predict`.                                                                                                                                    |
+|     `loss`      | It accepts `data_samples` instead of `gt_labels` to calculate loss. The `data_samples` is a list of [ClsDataSample](mmpretrain.structures.ClsDataSample). |
+|    `forward`    | New method, and it returns the output of the classification head without any post-processs like softmax or sigmoid.                                       |
 
-### `mmcls.utils`
+### `mmpretrain.utils`
 
 |           Function           | Changes                                                                                                         |
 | :--------------------------: | :-------------------------------------------------------------------------------------------------------------- |
@@ -584,4 +584,4 @@ Changes in [heads](mmcls.models.heads):
 
 ### Other changes
 
-- We moved the definition of all registries in different packages to the `mmcls.registry` package.
+- We moved the definition of all registries in different packages to the `mmpretrain.registry` package.

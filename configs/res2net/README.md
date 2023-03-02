@@ -1,6 +1,6 @@
 # Res2Net
 
-> [Res2Net: A New Multi-scale Backbone Architecture](https://arxiv.org/pdf/1904.01169.pdf)
+> [Res2Net: A New Multi-scale Backbone Architecture](https://arxiv.org/abs/1904.01169)
 
 <!-- [ALGORITHM] -->
 
@@ -12,21 +12,62 @@ Representing features at multiple scales is of great importance for numerous vis
 <img src="https://user-images.githubusercontent.com/26739999/142573547-cde68abf-287b-46db-a848-5cffe3068faf.png" width="50%"/>
 </div>
 
-## Results and models
+## How to use it?
 
-### ImageNet-1k
+<!-- [TABS-BEGIN] -->
 
-|        Model         | resolution | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                   Config                    |                                           Download                                           |
-| :------------------: | :--------: | :-------: | :------: | :-------: | :-------: | :-----------------------------------------: | :------------------------------------------------------------------------------------------: |
-| Res2Net-50-14w-8s\*  |  224x224   |   25.06   |   4.22   |   78.14   |   93.85   | [config](./res2net50-w14-s8_8xb32_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/res2net/res2net50-w14-s8_3rdparty_8xb32_in1k_20210927-bc967bf1.pth) |
-| Res2Net-50-26w-8s\*  |  224x224   |   48.40   |   8.39   |   79.20   |   94.36   | [config](./res2net50-w26-s8_8xb32_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/res2net/res2net50-w26-s8_3rdparty_8xb32_in1k_20210927-f547a94b.pth) |
-| Res2Net-101-26w-4s\* |  224x224   |   45.21   |   8.12   |   79.19   |   94.44   | [config](./res2net101-w26-s4_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/res2net/res2net101-w26-s4_3rdparty_8xb32_in1k_20210927-870b6c36.pth) |
+**Predict image**
 
-*Models with * are converted from the [official repo](https://github.com/Res2Net/Res2Net-PretrainedModels). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
+```python
+from mmpretrain import inference_model
+
+predict = inference_model('res2net50-w14-s8_3rdparty_8xb32_in1k', 'demo/bird.JPEG')
+print(predict['pred_class'])
+print(predict['pred_score'])
+```
+
+**Use the model**
+
+```python
+import torch
+from mmpretrain import get_model
+
+model = get_model('res2net50-w14-s8_3rdparty_8xb32_in1k', pretrained=True)
+inputs = torch.rand(1, 3, 224, 224)
+out = model(inputs)
+print(type(out))
+# To extract features.
+feats = model.extract_feat(inputs)
+print(type(feats))
+```
+
+**Test Command**
+
+Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+
+Test:
+
+```shell
+python tools/test.py configs/res2net/res2net50-w14-s8_8xb32_in1k.py https://download.openmmlab.com/mmclassification/v0/res2net/res2net50-w14-s8_3rdparty_8xb32_in1k_20210927-bc967bf1.pth
+```
+
+<!-- [TABS-END] -->
+
+## Models and results
+
+### Image Classification on ImageNet-1k
+
+| Model                                     |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                  Config                   |                               Download                                |
+| :---------------------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :---------------------------------------: | :-------------------------------------------------------------------: |
+| `res2net50-w14-s8_3rdparty_8xb32_in1k`\*  | From scratch |   25.06    |   4.22    |   78.14   |   93.85   | [config](res2net50-w14-s8_8xb32_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/res2net/res2net50-w14-s8_3rdparty_8xb32_in1k_20210927-bc967bf1.pth) |
+| `res2net50-w26-s8_3rdparty_8xb32_in1k`\*  | From scratch |   48.40    |   8.39    |   79.20   |   94.36   | [config](res2net50-w26-s8_8xb32_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/res2net/res2net50-w26-s8_3rdparty_8xb32_in1k_20210927-f547a94b.pth) |
+| `res2net101-w26-s4_3rdparty_8xb32_in1k`\* | From scratch |   45.21    |   8.12    |   79.19   |   94.44   | [config](res2net101-w26-s4_8xb32_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/res2net/res2net101-w26-s4_3rdparty_8xb32_in1k_20210927-870b6c36.pth) |
+
+*Models with * are converted from the [official repo](https://github.com/Res2Net/Res2Net-PretrainedModels/blob/master/res2net.py#L181). The config files of these models are only for inference. We haven't reprodcue the training results.*
 
 ## Citation
 
-```
+```bibtex
 @article{gao2019res2net,
   title={Res2Net: A New Multi-scale Backbone Architecture},
   author={Gao, Shang-Hua and Cheng, Ming-Ming and Zhao, Kai and Zhang, Xin-Yu and Yang, Ming-Hsuan and Torr, Philip},

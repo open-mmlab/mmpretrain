@@ -1,6 +1,6 @@
-# MobileVit
+# MobileViT
 
-> [MobileViT: Light-weight, General-purpose, and Mobile-friendly Vision Transformer](https://arxiv.org/abs/2110.02178)
+> [MobileViT Light-weight, General-purpose, and Mobile-friendly Vision Transformer](https://arxiv.org/abs/2110.02178)
 
 <!-- [ALGORITHM] -->
 
@@ -38,44 +38,31 @@ Light-weight convolutional neural networks (CNNs) are the de-facto for mobile vi
 **Predict image**
 
 ```python
->>> import torch
->>> from mmcls.apis import init_model, inference_model
->>>
->>> model = init_model('configs/mobilevit/mobilevit-small_8xb128_in1k.py', 'https://download.openmmlab.com/mmclassification/v0/mobilevit/mobilevit-small_3rdparty_in1k_20221018-cb4f741c.pth')
->>> predict = inference_model(model, 'demo/demo.JPEG')
->>> print(predict['pred_class'])
-sea snake
->>> print(predict['pred_score'])
-0.9839211702346802
+from mmpretrain import inference_model
+
+predict = inference_model('mobilevit-small_3rdparty_in1k', 'demo/bird.JPEG')
+print(predict['pred_class'])
+print(predict['pred_score'])
 ```
 
 **Use the model**
 
 ```python
->>> import torch
->>> from mmcls.apis import init_model
->>>
->>> model = init_model('configs/mobilevit/mobilevit-small_8xb128_in1k.py', 'https://download.openmmlab.com/mmclassification/v0/mobilevit/mobilevit-small_3rdparty_in1k_20221018-cb4f741c.pth')
->>> inputs = torch.rand(1, 3, 224, 224).to(model.data_preprocessor.device)
->>> # To get classification scores.
->>> out = model(inputs)
->>> print(out.shape)
-torch.Size([1, 1000])
->>> # To extract features.
->>> outs = model.extract_feat(inputs)
->>> print(outs[0].shape)
-torch.Size([1, 640])
+import torch
+from mmpretrain import get_model
+
+model = get_model('mobilevit-small_3rdparty_in1k', pretrained=True)
+inputs = torch.rand(1, 3, 224, 224)
+out = model(inputs)
+print(type(out))
+# To extract features.
+feats = model.extract_feat(inputs)
+print(type(feats))
 ```
 
-**Train/Test Command**
+**Test Command**
 
-Place the ImageNet dataset to the `data/imagenet/` directory, or prepare datasets according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
-
-Train:
-
-```shell
-python tools/train.py configs/mobilevit/mobilevit-small_8xb128_in1k.py
-```
+Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
 
 Test:
 
@@ -85,23 +72,21 @@ python tools/test.py configs/mobilevit/mobilevit-small_8xb128_in1k.py https://do
 
 <!-- [TABS-END] -->
 
-For more configurable parameters, please refer to the [API](https://mmclassification.readthedocs.io/en/1.x/api/generated/mmcls.models.backbones.MobileViT.html#mmcls.models.backbones.MobileViT).
+## Models and results
 
-## Results and models
+### Image Classification on ImageNet-1k
 
-### ImageNet-1k
+| Model                               |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                   Config                   |                                  Download                                  |
+| :---------------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :----------------------------------------: | :------------------------------------------------------------------------: |
+| `mobilevit-small_3rdparty_in1k`\*   | From scratch |    5.58    |   2.03    |   78.25   |   94.09   |  [config](mobilevit-small_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/mobilevit/mobilevit-small_3rdparty_in1k_20221018-cb4f741c.pth) |
+| `mobilevit-xsmall_3rdparty_in1k`\*  | From scratch |    2.32    |   1.05    |   74.75   |   92.32   | [config](mobilevit-xsmall_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/mobilevit/mobilevit-xsmall_3rdparty_in1k_20221018-be39a6e7.pth) |
+| `mobilevit-xxsmall_3rdparty_in1k`\* | From scratch |    1.27    |   0.42    |   69.02   |   88.91   | [config](mobilevit-xxsmall_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobilevit/mobilevit-xxsmall_3rdparty_in1k_20221018-77835605.pth) |
 
-|        Model        | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                    Config                    |                                                Download                                                |
-| :-----------------: | :-------: | :------: | :-------: | :-------: | :------------------------------------------: | :----------------------------------------------------------------------------------------------------: |
-| MobileViT-XXSmall\* |   1.27    |   0.42   |   69.02   |   88.91   | [config](./mobilevit-xxsmall_8xb128_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mobilevit/mobilevit-xxsmall_3rdparty_in1k_20221018-77835605.pth) |
-| MobileViT-XSmall\*  |   2.32    |   1.05   |   74.75   |   92.32   | [config](./mobilevit-xsmall_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/mobilevit/mobilevit-xsmall_3rdparty_in1k_20221018-be39a6e7.pth) |
-|  MobileViT-Small\*  |   5.58    |   2.03   |   78.25   |   94.09   |  [config](./mobilevit-small_8xb128_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/mobilevit/mobilevit-small_3rdparty_in1k_20221018-cb4f741c.pth) |
-
-*Models with * are converted from [ml-cvnets](https://github.com/apple/ml-cvnets). The config files of these models are only for validation. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
+*Models with * are converted from the [official repo](https://github.com/apple/ml-cvnets). The config files of these models are only for inference. We haven't reprodcue the training results.*
 
 ## Citation
 
-```
+```bibtex
 @article{mehta2021mobilevit,
   title={MobileViT: Light-weight, General-purpose, and Mobile-friendly Vision Transformer},
   author={Mehta, Sachin and Rastegari, Mohammad},

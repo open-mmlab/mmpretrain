@@ -1,8 +1,6 @@
 # MILAN
 
-> [MILAN: Masked Image Pretraining on
-> Language Assisted Representation
-> ](https://arxiv.org/pdf/2208.06049)
+> [MILAN: Masked Image Pretraining on Language Assisted Representation](https://arxiv.org/pdf/2208.06049)
 
 <!-- [ALGORITHM] -->
 
@@ -28,47 +26,71 @@ resolution of 224×224, MILAN achieves a top-1 accuracy of 85.4% on ViTB/16, sur
 segmentation task, MILAN achieves 52.7 mIoU using ViT-B/16 backbone on
 ADE20K dataset, outperforming previous masked pretraining results by 4 points.
 
-<div align="center">
+<div align=center>
 <img src="https://user-images.githubusercontent.com/30762564/205210369-41a65c4c-bcd4-4147-91ea-c6c9061ab455.png" width="80%"/>
 </div>
 
-## Models and Benchmarks
+## How to use it?
 
-Here, we report the results of the model, which is pre-trained on ImageNet-1k
-for 400 epochs, the details are below:
+<!-- [TABS-BEGIN] -->
 
-<table class="docutils">
-<thead>
-  <tr>
-	    <th rowspan="2">Algorithm</th>
-	    <th rowspan="2">Backbone</th>
-	    <th rowspan="2">Epoch</th>
-      <th rowspan="2">Batch Size</th>
-      <th colspan="2" align="center">Results (Top-1 %)</th>
-      <th colspan="3" align="center">Links</th>
-	</tr>
-	<tr>
-      <th>Linear Eval</th>
-      <th>Fine-tuning</th>
-      <th>Pretrain</th>
-      <th>Linear Eval</th>
-      <th>Fine-tuning</th>
-	</tr>
-  </thead>
-  <tbody>
-  <tr>
-      <td rowspan="1">MILAN</td>
-	    <td>ViT-B/16</td>
-	    <td>400</td>
-      <td>4096</td>
-      <td>78.9</td>
-      <td>85.3</td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/selfsup/milan/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k.py'>config</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/milan/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k_20221129-180922e8.pth'>model</a> | <a href='https://download.openmmlab.com/mmselfsup/1.x/milan/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k_20221123_112721.json'>log</a></td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/selfsup/milan/classification/vit-base-p16_linear-8xb2048-coslr-100e_in1k.py'>config</a> |<a href='https://download.openmmlab.com/mmselfsup/1.x/milan/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k/vit-base-p16_linear-8xb2048-coslr-100e_in1k/vit-base-p16_linear-8xb2048-coslr-100e_in1k_20221129-03f26f85.pth'> model </a>| <a href='https://download.openmmlab.com/mmselfsup/1.x/milan/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k-milan_20221125_031826.json'>log</a></td>
-      <td><a href='https://github.com/open-mmlab/mmselfsup/blob/dev-1.x/configs/selfsup/milan/classification/vit-base-p16_ft-8xb128-coslr-100e_in1k-milan.py'>config</a> |<a href='https://download.openmmlab.com/mmselfsup/1.x/milan/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k-milan_20221129-74ac94fa.pth'> model </a>| <a href='https://download.openmmlab.com/mmselfsup/1.x/milan/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k-milan_20221125_031826.json'>log</a></td>
-	</tr>
-</tbody>
-</table>
+**Predict image**
+
+```python
+from mmpretrain import inference_model
+
+predict = inference_model('vit-base-p16_milan-pre_8xb128-coslr-100e_in1k', 'demo/bird.JPEG')
+print(predict['pred_class'])
+print(predict['pred_score'])
+```
+
+**Use the model**
+
+```python
+import torch
+from mmpretrain import get_model
+
+model = get_model('milan_vit-base-p16_16xb256-amp-coslr-400e_in1k', pretrained=True)
+inputs = torch.rand(1, 3, 224, 224)
+out = model(inputs)
+print(type(out))
+# To extract features.
+feats = model.extract_feat(inputs)
+print(type(feats))
+```
+
+**Train/Test Command**
+
+Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+
+Train:
+
+```shell
+python tools/train.py configs/milan/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k.py
+```
+
+Test:
+
+```shell
+python tools/test.py configs/milan/benchmarks/vit-base-p16_8xb128-coslr-100e_in1k.py https://download.openmmlab.com/mmselfsup/1.x/milan/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k-milan_20221129-74ac94fa.pth
+```
+
+<!-- [TABS-END] -->
+
+## Models and results
+
+### Pretrained models
+
+| Model                                            | Params (M) | Flops (G) |                           Config                            |                                  Download                                  |
+| :----------------------------------------------- | :--------: | :-------: | :---------------------------------------------------------: | :------------------------------------------------------------------------: |
+| `milan_vit-base-p16_16xb256-amp-coslr-400e_in1k` |    N/A     |    N/A    | [config](milan_vit-base-p16_16xb256-amp-coslr-400e_in1k.py) | [model](https://download.openmmlab.com/mmselfsup/1.x/milan/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k_20221129-180922e8.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/milan/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k_20221129-180922e8.json) |
+
+### Image Classification on ImageNet-1k
+
+| Model                                     |                   Pretrain                   | Params (M) | Flops (G) | Top-1 (%) |                   Config                   |                   Download                    |
+| :---------------------------------------- | :------------------------------------------: | :--------: | :-------: | :-------: | :----------------------------------------: | :-------------------------------------------: |
+| `vit-base-p16_milan-pre_8xb128-coslr-100e_in1k` | [MILAN](https://download.openmmlab.com/mmselfsup/1.x/milan/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k_20221129-180922e8.pth) |    N/A     |    N/A    |   85.30   | [config](benchmarks/vit-base-p16_8xb128-coslr-100e_in1k.py) | [model](https://download.openmmlab.com/mmselfsup/1.x/milan/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k-milan_20221129-74ac94fa.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/milan/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k/vit-base-p16_ft-8xb128-coslr-100e_in1k-milan_20221129-74ac94fa.json) |
+| `vit-base-p16_milan-pre_8xb2048-linear-coslr-100e_in1k` | [MILAN](https://download.openmmlab.com/mmselfsup/1.x/milan/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k_20221129-180922e8.pth) |    N/A     |    N/A    |   78.90   | [config](benchmarks/vit-base-p16_8xb2048-linear-coslr-100e_in1k.py) | [model](https://download.openmmlab.com/mmselfsup/1.x/milan/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k/vit-base-p16_linear-8xb2048-coslr-100e_in1k/vit-base-p16_linear-8xb2048-coslr-100e_in1k_20221129-03f26f85.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/milan/milan_vit-base-p16_16xb256-amp-coslr-400e_in1k/vit-base-p16_linear-8xb2048-coslr-100e_in1k/vit-base-p16_linear-8xb2048-coslr-100e_in1k_20221129-03f26f85.json) |
 
 ## Citation
 

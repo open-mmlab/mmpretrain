@@ -8,23 +8,70 @@
 
 We present a novel masked image modeling (MIM) approach, context autoencoder (CAE), for self-supervised learning. We randomly partition the image into two sets: visible patches and masked patches. The CAE architecture consists of: (i) an encoder that takes visible patches as input and outputs their latent representations, (ii) a latent context regressor that predicts the masked patch representations from the visible patch representations that are not updated in this regressor, (iii) a decoder that takes the estimated masked patch representations as input and makes predictions for the masked patches, and (iv) an alignment module that aligns the masked patch representation estimation with the masked patch representations computed from the encoder. In comparison to previous MIM methods that couple the encoding and decoding roles, e.g., using a single module in BEiT, our approach attempts to separate the encoding role (content understanding) from the decoding role (making predictions for masked patches) using different modules, improving the content understanding capability. In addition, our approach makes predictions from the visible patches to the masked patches in the latent representation space that is expected to take on semantics. In addition, we present the explanations about why contrastive pretraining and supervised pretraining perform similarly and why MIM potentially performs better. We demonstrate the effectiveness of our CAE through superior transfer performance in downstream tasks: semantic segmentation, and object detection and instance segmentation.
 
-<div align="center">
-<img src="https://user-images.githubusercontent.com/30762564/165459947-6c6ef13c-0593-4765-b44e-6da0a079802a.png" width="40%"/>
+<div align=center>
+<img src="https://user-images.githubusercontent.com/30762564/165459947-6c6ef13c-0593-4765-b44e-6da0a079802a.png" width="70%"/>
 </div>
 
-## Prerequisite
+## How to use it?
 
-Create a new folder `cae_ckpt` under the root directory and download the
-[weights](https://download.openmmlab.com/mmselfsup/cae/dalle_encoder.pth) for `dalle` encoder to that folder
+<!-- [TABS-BEGIN] -->
 
-## Models and Benchmarks
+**Predict image**
 
-Here, we report the results of the model, which is pre-trained on ImageNet-1k
-for 300 epochs, the details are below:
+```python
+from mmpretrain import inference_model
 
-| Backbone | Pre-train epoch | Fine-tuning Top-1 |                    Pre-train Config                     |                    Fine-tuning Config                     |                     Download                     |
-| :------: | :-------------: | :---------------: | :-----------------------------------------------------: | :-------------------------------------------------------: | :----------------------------------------------: |
-| ViT-B/16 |       300       |       83.2        | [config](https://github.com/open-mmlab/mmselfsup/blob/master/configs/selfsup/cae/cae_vit-base-p16_8xb256-fp16-coslr-300e_in1k.py) | [config](https://github.com/open-mmlab/mmselfsup/blob/master/configs/benchmarks/classification/imagenet/vit-base-p16_ft-8xb128-coslr-100e-rpe_in1k.py) | [model](https://download.openmmlab.com/mmselfsup/cae/cae_vit-base-p16_16xb256-coslr-300e_in1k-224_20220427-4c786349.pth) \| [log](https://download.openmmlab.com/mmselfsup/cae/cae_vit-base-p16_16xb256-coslr-300e_in1k-224_20220427-4c786349.log.json) |
+predict = inference_model('beit-base-p16_cae-pre_8xb128-coslr-100e_in1k', 'demo/bird.JPEG')
+print(predict['pred_class'])
+print(predict['pred_score'])
+```
+
+**Use the model**
+
+```python
+import torch
+from mmpretrain import get_model
+
+model = get_model('cae_vit-base-p16_8xb256-amp-coslr-300e_in1k', pretrained=True)
+inputs = torch.rand(1, 3, 224, 224)
+out = model(inputs)
+print(type(out))
+# To extract features.
+feats = model.extract_feat(inputs)
+print(type(feats))
+```
+
+**Train/Test Command**
+
+Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+
+Train:
+
+```shell
+python tools/train.py configs/cae/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k.py
+```
+
+Test:
+
+```shell
+python tools/test.py configs/cae/benchmarks/beit-base-p16_8xb128-coslr-100e_in1k.py https://download.openmmlab.com/mmselfsup/1.x/cae/cae_vit-base-p16_16xb128-fp16-coslr-300e_in1k/vit-base-p16_ft-8xb128-coslr-100e-rpe_in1k/vit-base-p16_ft-8xb128-coslr-100e-rpe_in1k_20220825-f3d234cd.pth
+```
+
+<!-- [TABS-END] -->
+
+## Models and results
+
+### Pretrained models
+
+| Model                                         | Params (M) | Flops (G) |                          Config                          |                                     Download                                     |
+| :-------------------------------------------- | :--------: | :-------: | :------------------------------------------------------: | :------------------------------------------------------------------------------: |
+| `cae_vit-base-p16_8xb256-amp-coslr-300e_in1k` |    N/A     |    N/A    | [config](cae_vit-base-p16_8xb256-amp-coslr-300e_in1k.py) | [model](https://download.openmmlab.com/mmselfsup/1.x/cae/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k_20221230-808170f3.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/cae/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k_20221230-808170f3.json) |
+
+### Image Classification on ImageNet-1k
+
+| Model                                     |                   Pretrain                   | Params (M) | Flops (G) | Top-1 (%) |                   Config                   |                   Download                    |
+| :---------------------------------------- | :------------------------------------------: | :--------: | :-------: | :-------: | :----------------------------------------: | :-------------------------------------------: |
+| `beit-base-p16_cae-pre_8xb128-coslr-100e_in1k` | [CAE](https://download.openmmlab.com/mmselfsup/1.x/cae/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k/cae_vit-base-p16_8xb256-amp-coslr-300e_in1k_20221230-808170f3.pth) |    N/A     |    N/A    |   83.20   | [config](benchmarks/beit-base-p16_8xb128-coslr-100e_in1k.py) | [model](https://download.openmmlab.com/mmselfsup/1.x/cae/cae_vit-base-p16_16xb128-fp16-coslr-300e_in1k/vit-base-p16_ft-8xb128-coslr-100e-rpe_in1k/vit-base-p16_ft-8xb128-coslr-100e-rpe_in1k_20220825-f3d234cd.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/cae/cae_vit-base-p16_16xb128-fp16-coslr-300e_in1k/vit-base-p16_ft-8xb128-coslr-100e-rpe_in1k/vit-base-p16_ft-8xb128-coslr-100e-rpe_in1k_20220825-f3d234cd.json) |
 
 ## Citation
 

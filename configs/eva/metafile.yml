@@ -20,7 +20,7 @@ Collections:
       Version:
 
 Models:
-  - Name: eva-g-p14_3rdparty_30m
+  - Name: beit-g-p14_3rdparty-eva_30m
     In Collection: EVA
     Metadata:
       FLOPs: 267174833024
@@ -33,8 +33,10 @@ Models:
       Weights: https://huggingface.co/BAAI/EVA/blob/main/eva_psz14.pt
       Code: https://github.com/baaivision/EVA
     Config: configs/eva/eva-g-p14_headless.py
+    Downstream:
+      - beit-g-p14_eva-30m-pre_3rdparty_in21k
 
-  - Name: eva-g-p16_3rdparty_30m
+  - Name: beit-g-p16_3rdparty-eva_30m
     In Collection: EVA
     Metadata:
       FLOPs: 203517463424
@@ -48,7 +50,7 @@ Models:
       Code: https://github.com/baaivision/EVA
     Config: configs/eva/eva-g-p16_headless.py
 
-  - Name: eva-g-p14_30m-pre_3rdparty_in21k
+  - Name: beit-g-p14_eva-30m-pre_3rdparty_in21k
     In Collection: EVA
     Metadata:
       FLOPs: 267174833024
@@ -62,8 +64,11 @@ Models:
       Weights: https://huggingface.co/BAAI/EVA/blob/main/eva_21k_224px_psz14.pt
       Code: https://github.com/baaivision/EVA
     Config: configs/eva/eva-g-p14_headless.py
+    Downstream:
+      - beit-g-p14_eva-30m-in21k-pre_3rdparty_in1k-336px
+      - beit-g-p14_eva-30m-in21k-pre_3rdparty_in1k-560px
 
-  - Name: eva-g-p14_30m-in21k-pre_3rdparty_in1k-336px
+  - Name: beit-g-p14_eva-30m-in21k-pre_3rdparty_in1k-336px
     In Collection: EVA
     Metadata:
       FLOPs: 620642757504
@@ -84,7 +89,7 @@ Models:
       Code: https://github.com/baaivision/EVA
     Config: configs/eva/eva-g-p14_8xb16_in1k-336px.py
 
-  - Name: eva-g-p14_30m-in21k-pre_3rdparty_in1k-560px
+  - Name: beit-g-p14_eva-30m-in21k-pre_3rdparty_in1k-560px
     In Collection: EVA
     Metadata:
       FLOPs: 1906761591680
@@ -105,7 +110,7 @@ Models:
       Code: https://github.com/baaivision/EVA
     Config: configs/eva/eva-g-p14_8xb16_in1k-560px.py
 
-  - Name: eva-l-p14_3rdparty-mim_in21k
+  - Name: beit-l-p14_3rdparty-eva_in21k
     In Collection: EVA
     Metadata:
       FLOPs: 81075147776
@@ -118,8 +123,12 @@ Models:
       Weights: https://huggingface.co/BAAI/EVA/blob/main/eva_l_psz14.pt
       Code: https://github.com/baaivision/EVA
     Config: configs/eva/eva-l-p14_headless.py
+    Downstream:
+      - beit-l-p14_eva-pre_3rdparty_in21k
+      - beit-l-p14_eva-pre_3rdparty_in1k-336px
+      - beit-l-p14_eva-pre_3rdparty_in1k-196px
 
-  - Name: eva-l-p14_mim-pre_3rdparty_in21k
+  - Name: beit-l-p14_eva-pre_3rdparty_in21k
     In Collection: EVA
     Metadata:
       FLOPs: 81075147776
@@ -133,7 +142,7 @@ Models:
       Code: https://github.com/baaivision/EVA
     Config: configs/eva/eva-l-p14_headless.py
 
-  - Name: eva-l-p14_mim-pre_3rdparty_in1k-336px
+  - Name: beit-l-p14_eva-pre_3rdparty_in1k-336px
     In Collection: EVA
     Metadata:
       FLOPs: 191100916736
@@ -152,8 +161,11 @@ Models:
       Weights: https://huggingface.co/BAAI/EVA/blob/main/eva_l_psz14_336px_1k_ft_88p65.pt
       Code: https://github.com/baaivision/EVA
     Config: configs/eva/eva-l-p14_8xb16_in1k-336px.py
+    Downstream:
+      - beit-l-p14_eva-in21k-pre_3rdparty_in1k-336px
+      - beit-l-p14_eva-in21k-pre_3rdparty_in1k-196px
 
-  - Name: eva-l-p14_mim-in21k-pre_3rdparty_in1k-336px
+  - Name: beit-l-p14_eva-in21k-pre_3rdparty_in1k-336px
     In Collection: EVA
     Metadata:
       FLOPs: 191100916736
@@ -173,7 +185,7 @@ Models:
       Code: https://github.com/baaivision/EVA
     Config: configs/eva/eva-l-p14_8xb16_in1k-336px.py
 
-  - Name: eva-l-p14_mim-pre_3rdparty_in1k-196px
+  - Name: beit-l-p14_eva-pre_3rdparty_in1k-196px
     In Collection: EVA
     Metadata:
       FLOPs: 61565981696
@@ -193,7 +205,7 @@ Models:
       Code: https://github.com/baaivision/EVA
     Config: configs/eva/eva-l-p14_8xb16_in1k-196px.py
 
-  - Name: eva-l-p14_mim-in21k-pre_3rdparty_in1k-196px
+  - Name: beit-l-p14_eva-in21k-pre_3rdparty_in1k-196px
     In Collection: EVA
     Metadata:
       FLOPs: 61565981696

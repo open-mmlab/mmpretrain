@@ -14,7 +14,7 @@ If your dataset is not in the abvove list, you could reorganize the format of yo
 
 ## CustomDataset
 
-[`CustomDataset`](mmcls.datasets.CustomDataset) is a general dataset class for you to use your own datasets. To use `CustomDataset`, you need to organize your dataset files according to the following two formats:
+[`CustomDataset`](mmpretrain.datasets.CustomDataset) is a general dataset class for you to use your own datasets. To use `CustomDataset`, you need to organize your dataset files according to the following two formats:
 
 ### Subfolder Format
 
@@ -145,7 +145,7 @@ ImageNet has multiple versions, but the most commonly used one is [ILSVRC 2012](
    │   ├── ...
 ```
 
-And then, you can use the [`ImageNet`](mmcls.datasets.ImageNet) dataset with the below configurations:
+And then, you can use the [`ImageNet`](mmpretrain.datasets.ImageNet) dataset with the below configurations:
 
 ```python
 train_dataloader = dict(
@@ -177,7 +177,7 @@ test_dataloader = val_dataloader
 
 ## CIFAR
 
-We support downloading the [`CIFAR10`](mmcls.datasets.CIFAR10) and [`CIFAR100`](mmcls.datasets.CIFAR100) datasets automatically, and you just need to specify the
+We support downloading the [`CIFAR10`](mmpretrain.datasets.CIFAR10) and [`CIFAR100`](mmpretrain.datasets.CIFAR100) datasets automatically, and you just need to specify the
 download folder in the `data_root` field. And please specify `test_mode=False` / `test_mode=True`
 to use training datasets or test datasets.
 
@@ -209,7 +209,7 @@ test_dataloader = val_dataloader
 
 ## MNIST
 
-We support downloading the [MNIST](mmcls.datasets.MNIST) and [Fashion-MNIST](mmcls.datasets.FashionMNIST) datasets automatically, and you just need to specify the
+We support downloading the [MNIST](mmpretrain.datasets.MNIST) and [Fashion-MNIST](mmpretrain.datasets.FashionMNIST) datasets automatically, and you just need to specify the
 download folder in the `data_root` field. And please specify `test_mode=False` / `test_mode=True`
 to use training datasets or test datasets.
 
@@ -300,7 +300,7 @@ train_dataloader = dict(
 
 ## Other Datasets
 
-To find more datasets supported by MMClassification, and get more configurations of the above datasets, please see the [dataset documentation](mmcls.datasets).
+To find more datasets supported by MMClassification, and get more configurations of the above datasets, please see the [dataset documentation](mmpretrain.datasets).
 
 ## Dataset Wrappers
 
@@ -310,4 +310,4 @@ The following datawrappers are supported in MMEngine, you can refer to {external
 - [RepeatDataset](https://github.com/open-mmlab/mmengine/blob/main/docs/en/tutorials/basedataset.md#repeatdataset)
 - [ClassBalanced](https://github.com/open-mmlab/mmengine/blob/main/docs/en/tutorials/basedataset.md#classbalanceddataset)
 
-The MMClassification also support [KFoldDataset](mmcls.datasets.KFoldDataset), please use it with `tools/kfold-cross-valid.py`.
+The MMClassification also support [KFoldDataset](mmpretrain.datasets.KFoldDataset), please use it with `tools/kfold-cross-valid.py`.

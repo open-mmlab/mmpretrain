@@ -12,13 +12,61 @@ Recently, a popular line of research in face recognition is adopting margins in 
 <img src="https://user-images.githubusercontent.com/24734142/212606212-8ffc3cd2-dbc1-4abf-8924-22167f3f6e34.png" width="80%"/>
 </div>
 
-## Results and models
+## How to use it?
 
-### InShop
+<!-- [TABS-BEGIN] -->
 
-|     Model      |                      Pretrain                      | Params(M) | Flops(G) |  Recall@1  |                      Config                       |                      Download                       |
-| :------------: | :------------------------------------------------: | :-------: | :------: | :---: | :-----: | :-----: | :-----------------------------------------------: | :-------------------------------------------------: |
-| Resnet50-ArcFace | [ImageNet-21k-mill](https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_3rdparty-mill_in21k_20220331-faac000b.pth) |   31.69   |   16.48   |  90.18  | [config](./resnet50-arcface_8xb32_inshop.py) | [model](https://download.openmmlab.com/mmclassification/v0/arcface/resnet50-arcface_inshop_20230202-b766fe7f.pth) | [log](https://download.openmmlab.com/mmclassification/v0/arcface/resnet50-arcface_inshop_20230202-b766fe7f.log) |
+**Retrieve image**
+
+```python
+from mmpretrain import ImageRetrievalInferencer
+
+inferencer = ImageRetrievalInferencer('resnet50-arcface_8xb32_inshop', prototype='demo/')
+predict = inferencer('demo/dog.jpg', topk=2)[0]
+print(predict[0])
+print(predict[1])
+```
+
+**Use the model**
+
+```python
+import torch
+from mmpretrain import get_model
+
+model = get_model('resnet50-arcface_8xb32_inshop', pretrained=True)
+inputs = torch.rand(1, 3, 224, 224)
+out = model(inputs)
+print(type(out))
+# To extract features.
+feats = model.extract_feat(inputs)
+print(type(feats))
+```
+
+**Train/Test Command**
+
+Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+
+Train:
+
+```shell
+python tools/train.py configs/arcface/resnet50-arcface_8xb32_inshop.py
+```
+
+Test:
+
+```shell
+python tools/test.py configs/arcface/resnet50-arcface_8xb32_inshop.py https://download.openmmlab.com/mmclassification/v0/arcface/resnet50-arcface_inshop_20230202-b766fe7f.pth
+```
+
+<!-- [TABS-END] -->
+
+## Models and results
+
+### Image Retrieval on InShop
+
+| Model                           |   Pretrain   | Params (M) | Flops (G) | Recall@1 |                   Config                   |                                         Download                                         |
+| :------------------------------ | :----------: | :--------: | :-------: | :------: | :----------------------------------------: | :--------------------------------------------------------------------------------------: |
+| `resnet50-arcface_8xb32_inshop` | From scratch |   31.69    |   16.57   |  90.18   | [config](resnet50-arcface_8xb32_inshop.py) | [model](https://download.openmmlab.com/mmclassification/v0/arcface/resnet50-arcface_inshop_20230202-b766fe7f.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/arcface/resnet50-arcface_inshop_20230202-b766fe7f.log) |
 
 ## Citation
 

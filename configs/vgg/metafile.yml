@@ -12,7 +12,7 @@ Collections:
         - VGG
     Paper:
       URL: https://arxiv.org/abs/1409.1556
-      Title: "Very Deep Convolutional Networks for Large-Scale Image"
+      Title: "Very Deep Convolutional Networks for Large-Scale Image Recognition"
     README: configs/vgg/README.md
     Code:
       URL: https://github.com/open-mmlab/mmclassification/blob/v0.15.0/mmcls/models/backbones/vgg.py#L39

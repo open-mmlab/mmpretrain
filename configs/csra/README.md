@@ -12,13 +12,50 @@ Multi-label image recognition is a challenging computer vision task of practical
 <img src="https://user-images.githubusercontent.com/84259897/176982245-3ffcff56-a4ea-4474-9967-bc2b612bbaa3.png" width="80%"/>
 </div>
 
-## Results and models
+## How to use it?
 
-### VOC2007
+<!-- [TABS-BEGIN] -->
 
-|     Model      |                      Pretrain                      | Params(M) | Flops(G) |  mAP  | OF1 (%) | CF1 (%) |                      Config                       |                      Download                       |
-| :------------: | :------------------------------------------------: | :-------: | :------: | :---: | :-----: | :-----: | :-----------------------------------------------: | :-------------------------------------------------: |
-| Resnet101-CSRA | [ImageNet-1k](https://download.openmmlab.com/mmclassification/v0/resnet/resnet101_8xb32_in1k_20210831-539c63f8.pth) |   23.55   |   4.12   | 94.98 |  90.80  |  89.16  | [config](https://github.com/open-mmlab/mmclassification/blob/master/configs/csra/resnet101-csra_1xb16_voc07-448px.py) | [model](https://download.openmmlab.com/mmclassification/v0/csra/resnet101-csra_1xb16_voc07-448px_20220722-29efb40a.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/csra/resnet101-csra_1xb16_voc07-448px_20220722-29efb40a.log.json) |
+**Use the model**
+
+```python
+import torch
+from mmpretrain import get_model
+
+model = get_model('resnet101-csra_1xb16_voc07-448px', pretrained=True)
+inputs = torch.rand(1, 3, 224, 224)
+out = model(inputs)
+print(type(out))
+# To extract features.
+feats = model.extract_feat(inputs)
+print(type(feats))
+```
+
+**Train/Test Command**
+
+Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+
+Train:
+
+```shell
+python tools/train.py configs/csra/resnet101-csra_1xb16_voc07-448px.py
+```
+
+Test:
+
+```shell
+python tools/test.py configs/csra/resnet101-csra_1xb16_voc07-448px.py https://download.openmmlab.com/mmclassification/v0/csra/resnet101-csra_1xb16_voc07-448px_20220722-29efb40a.pth
+```
+
+<!-- [TABS-END] -->
+
+## Models and results
+
+### Multi-Label Classification on PASCAL VOC 2007
+
+| Model                              |   Pretrain   | Params (M) | Flops (G) |  CF1  |  OF1  |  mAP  |                    Config                     |                                  Download                                   |
+| :--------------------------------- | :----------: | :--------: | :-------: | :---: | :---: | :---: | :-------------------------------------------: | :-------------------------------------------------------------------------: |
+| `resnet101-csra_1xb16_voc07-448px` | From scratch |   23.55    |   4.12    | 89.16 | 90.80 | 94.98 | [config](resnet101-csra_1xb16_voc07-448px.py) | [model](https://download.openmmlab.com/mmclassification/v0/csra/resnet101-csra_1xb16_voc07-448px_20220722-29efb40a.pth) \| [log](https://download.openmmlab.com/mmclassification/v0/csra/resnet101-csra_1xb16_voc07-448px_20220722-29efb40a.json) |
 
 ## Citation
 

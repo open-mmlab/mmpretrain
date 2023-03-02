@@ -122,10 +122,10 @@ and WandB. More details can be found in the [Visualizer section](#visualizer).
 Many above functionalities are implemented by hooks, and you can also plug-in other custom hooks by modifying
 `custom_hooks` field. Here are some hooks in MMEngine and MMClassification that you can use directly, such as:
 
-- [EMAHook](mmcls.engine.hooks.EMAHook)
+- [EMAHook](mmpretrain.engine.hooks.EMAHook)
 - [SyncBuffersHook](mmengine.hooks.SyncBuffersHook)
 - [EmptyCacheHook](mmengine.hooks.EmptyCacheHook)
-- [ClassNumCheckHook](mmcls.engine.hooks.ClassNumCheckHook)
+- [ClassNumCheckHook](mmpretrain.engine.hooks.ClassNumCheckHook)
 - ......
 
 For example, EMA (Exponential Moving Average) is widely used in the model training, and you can enable it as
@@ -143,7 +143,7 @@ The validation visualization functionality is a default hook during validation. 
 `default_hooks.visualization` field.
 
 By default, we disabled it, and you can enable it by specifying `enable=True`. And more arguments can be found in
-the [VisualizationHook docs](mmcls.engine.hooks.VisualizationHook).
+the [VisualizationHook docs](mmpretrain.engine.hooks.VisualizationHook).
 
 ```python
 default_hooks = dict(

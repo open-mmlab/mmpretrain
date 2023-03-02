@@ -19,18 +19,59 @@ well as 86.1% on Kinetics-400 video classification.
 <img src="https://user-images.githubusercontent.com/26739999/180376227-755243fa-158e-4068-940a-416036519665.png" width="50%"/>
 </div>
 
-## Results and models
+## How to use it?
 
-### ImageNet-1k
+<!-- [TABS-BEGIN] -->
 
-|     Model      |   Pretrain   | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                 Config                  |                                               Download                                               |
-| :------------: | :----------: | :-------: | :------: | :-------: | :-------: | :-------------------------------------: | :--------------------------------------------------------------------------------------------------: |
-| MViTv2-tiny\*  | From scratch |   24.17   |   4.70   |   82.33   |   96.15   | [config](./mvitv2-tiny_8xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/mvit/mvitv2-tiny_3rdparty_in1k_20220722-db7beeef.pth) |
-| MViTv2-small\* | From scratch |   34.87   |   7.00   |   83.63   |   96.51   | [config](./mvitv2-small_8xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mvit/mvitv2-small_3rdparty_in1k_20220722-986bd741.pth) |
-| MViTv2-base\*  | From scratch |   51.47   |  10.20   |   84.34   |   96.86   | [config](./mvitv2-base_8xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/mvit/mvitv2-base_3rdparty_in1k_20220722-9c4f0a17.pth) |
-| MViTv2-large\* | From scratch |  217.99   |  42.10   |   85.25   |   97.14   | [config](./mvitv2-large_8xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mvit/mvitv2-large_3rdparty_in1k_20220722-2b57b983.pth) |
+**Predict image**
 
-*Models with * are converted from the [official repo](https://github.com/facebookresearch/mvit). The config files of these models are only for inference. We don't ensure these config files' training accuracy and welcome you to contribute your reproduction results.*
+```python
+from mmpretrain import inference_model
+
+predict = inference_model('mvitv2-tiny_3rdparty_in1k', 'demo/bird.JPEG')
+print(predict['pred_class'])
+print(predict['pred_score'])
+```
+
+**Use the model**
+
+```python
+import torch
+from mmpretrain import get_model
+
+model = get_model('mvitv2-tiny_3rdparty_in1k', pretrained=True)
+inputs = torch.rand(1, 3, 224, 224)
+out = model(inputs)
+print(type(out))
+# To extract features.
+feats = model.extract_feat(inputs)
+print(type(feats))
+```
+
+**Test Command**
+
+Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+
+Test:
+
+```shell
+python tools/test.py configs/mvit/mvitv2-tiny_8xb256_in1k.py https://download.openmmlab.com/mmclassification/v0/mvit/mvitv2-tiny_3rdparty_in1k_20220722-db7beeef.pth
+```
+
+<!-- [TABS-END] -->
+
+## Models and results
+
+### Image Classification on ImageNet-1k
+
+| Model                          |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |                Config                 |                                       Download                                       |
+| :----------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :-----------------------------------: | :----------------------------------------------------------------------------------: |
+| `mvitv2-tiny_3rdparty_in1k`\*  | From scratch |   24.17    |   4.70    |   82.33   |   96.15   | [config](mvitv2-tiny_8xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/mvit/mvitv2-tiny_3rdparty_in1k_20220722-db7beeef.pth) |
+| `mvitv2-small_3rdparty_in1k`\* | From scratch |   34.87    |   7.00    |   83.63   |   96.51   | [config](mvitv2-small_8xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mvit/mvitv2-small_3rdparty_in1k_20220722-986bd741.pth) |
+| `mvitv2-base_3rdparty_in1k`\*  | From scratch |   51.47    |   10.16   |   84.34   |   96.86   | [config](mvitv2-base_8xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/mvit/mvitv2-base_3rdparty_in1k_20220722-9c4f0a17.pth) |
+| `mvitv2-large_3rdparty_in1k`\* | From scratch |   217.99   |   43.87   |   85.25   |   97.14   | [config](mvitv2-large_8xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mvit/mvitv2-large_3rdparty_in1k_20220722-2b57b983.pth) |
+
+*Models with * are converted from the [official repo](https://github.com/facebookresearch/mvit). The config files of these models are only for inference. We haven't reprodcue the training results.*
 
 ## Citation
 

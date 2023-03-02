@@ -117,10 +117,10 @@ log_processor = dict(window_size=10)
 上述许多功能是由钩子实现的，你也可以通过修改 `custom_hooks` 字段来插入其他的自定义钩子。
 下面是MMEngine和MMClassification中的一些钩子，你可以直接使用，例如：
 
-- [EMAHook](mmcls.engine.hooks.EMAHook)
+- [EMAHook](mmpretrain.engine.hooks.EMAHook)
 - [SyncBuffersHook](mmengine.hooks.SyncBuffersHook)
 - [EmptyCacheHook](mmengine.hooks.EmptyCacheHook)
-- [ClassNumCheckHook](mmcls.engine.hooks.ClassNumCheckHook)
+- [ClassNumCheckHook](mmpretrain.engine.hooks.ClassNumCheckHook)
 - ......
 
 例如，EMA（Exponential Moving Average）在模型训练中被广泛使用，你可以以下方式启用它：
@@ -137,7 +137,7 @@ custom_hooks = [
 你可以在 `default_hooks.visualization` 字段中来配置它。
 
 默认情况下，我们禁用这个钩子，你可以通过指定`enable=True`来启用它。而更多的参数可以在
-[可视化钩子文档](mmcls.engine.hooks.VisualizationHook)中找到。
+[可视化钩子文档](mmpretrain.engine.hooks.VisualizationHook)中找到。
 
 ```python
 default_hooks = dict(

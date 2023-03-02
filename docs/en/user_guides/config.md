@@ -53,14 +53,14 @@ We will explain the four primitive config files separately below.
 
 This primitive config file includes a dict variable `model`, which mainly includes information such as network structure and loss function:
 
-- `type`: The type of classifier to build. For image classification tasks, it's usually `'ImageClassifier'`. You can find more details in the [API documentation](mmcls.models.classifiers).
-- `backbone`: The settings of the backbone. The backbone is the main network to extract features of the inputs, like `ResNet`, `Swin Transformer`, `Vision Transformer` etc. All available backbones can be found in the [API documentation](mmcls.models.backbones).
-- `neck`: The settings of the neck. The neck is the intermediate module to connect the backbone and the classification head, like `GlobalAveragePooling`. All available necks can be found in the [API documentation](mmcls.models.necks).
+- `type`: The type of classifier to build. For image classification tasks, it's usually `'ImageClassifier'`. You can find more details in the [API documentation](mmpretrain.models.classifiers).
+- `backbone`: The settings of the backbone. The backbone is the main network to extract features of the inputs, like `ResNet`, `Swin Transformer`, `Vision Transformer` etc. All available backbones can be found in the [API documentation](mmpretrain.models.backbones).
+- `neck`: The settings of the neck. The neck is the intermediate module to connect the backbone and the classification head, like `GlobalAveragePooling`. All available necks can be found in the [API documentation](mmpretrain.models.necks).
 - `head`: The settings of the classification head. The head is the task-related component to do the final
-  classification. All available heads can be found in the [API documentation](mmcls.models.heads).
-  - `loss`: The loss function to optimize, like `CrossEntropyLoss`, `LabelSmoothLoss` and etc. All available losses can be found in the [API documentation](mmcls.models.losses).
-- `data_preprocessor`: The component before the model forwarding to preprocess the inputs. See the [documentation](mmcls.models.utils.data_preprocessor) for more details.
-- `train_cfg`: The extra settings of the model during training. In MMCLS, we mainly use it to specify batch augmentation settings, like `Mixup` and `CutMix`. See the [documentation](mmcls.models.utils.batch_augments) for more details.
+  classification. All available heads can be found in the [API documentation](mmpretrain.models.heads).
+  - `loss`: The loss function to optimize, like `CrossEntropyLoss`, `LabelSmoothLoss` and etc. All available losses can be found in the [API documentation](mmpretrain.models.losses).
+- `data_preprocessor`: The component before the model forwarding to preprocess the inputs. See the [documentation](mmpretrain.models.utils.data_preprocessor) for more details.
+- `train_cfg`: The extra settings of the model during training. In MMCLS, we mainly use it to specify batch augmentation settings, like `Mixup` and `CutMix`. See the [documentation](mmpretrain.models.utils.batch_augments) for more details.
 
 ```{note}
 Usually, we use the `type` field to specify the class of the component and use other fields to pass
@@ -75,7 +75,7 @@ model = dict(
     backbone=dict(
         type='ResNet',          # The type of the backbone module.
         # All fields except `type` come from the __init__ method of class `ResNet`
-        # and you can find them from https://mmclassification.readthedocs.io/en/1.x/api/generated/mmcls.models.ResNet.html
+        # and you can find them from https://mmclassification.readthedocs.io/en/1.x/api/generated/mmpretrain.models.ResNet.html
         depth=50,
         num_stages=4,
         out_indices=(3, ),
@@ -85,7 +85,7 @@ model = dict(
     head=dict(
         type='LinearClsHead',     # The type of the classification head module.
         # All fields except `type` come from the __init__ method of class `LinearClsHead`
-        # and you can find them from https://mmclassification.readthedocs.io/en/1.x/api/generated/mmcls.models.LinearClsHead.html
+        # and you can find them from https://mmclassification.readthedocs.io/en/1.x/api/generated/mmpretrain.models.LinearClsHead.html
         num_classes=1000,
         in_channels=2048,
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
@@ -97,14 +97,14 @@ model = dict(
 This primitive config file includes information to construct the dataloader and evaluator:
 
 - `data_preprocessor`: Model input preprocessing configuration, same as `model.data_preprocessor` but with lower priority.
-- `train_evaluator | val_evaluator | test_evaluator`: To build the evaluator or metrics, refer to the [tutorial](mmcls.evaluation).
+- `train_evaluator | val_evaluator | test_evaluator`: To build the evaluator or metrics, refer to the [tutorial](mmpretrain.evaluation).
 - `train_dataloader | val_dataloader | test_dataloader`: The settings of dataloaders
   - `batch_size`: The batch size of each GPU.
   - `num_workers`: The number of workers to fetch data of each GPU.
   - `sampler`: The settings of the sampler.
   - `persistent_workers`: Whether to persistent workers after finishing one epoch.
   - `dataset`: The settings of the dataset.
-    - `type`: The type of the dataset, we support `CustomDataset`, `ImageNet` and many other datasets, refer to [documentation](mmcls.datasets).
+    - `type`: The type of the dataset, we support `CustomDataset`, `ImageNet` and many other datasets, refer to [documentation](mmpretrain.datasets).
     - `pipeline`: The data transform pipeline. You can find how to design a pipeline in [this tutorial](https://mmclassification.readthedocs.io/en/1.x/tutorials/data_pipeline.html).
 
 Following is the data primitive config of the ResNet50 config in [`configs/_base_/datasets/imagenet_bs32.py`](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/_base_/datasets/imagenet_bs32.py)：
@@ -218,8 +218,8 @@ This part mainly includes saving the checkpoint strategy, log configuration, tra
 Here is the runtime primitive config file ['configs/_base_/default_runtime.py'](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/_base_/default_runtime.py) file used by almost all configs:
 
 ```python
-# defaults to use registries in mmcls
-default_scope = 'mmcls'
+# defaults to use registries in mmpretrain
+default_scope = 'mmpretrain'
 
 # configure default hooks
 default_hooks = dict(

@@ -267,10 +267,10 @@ param_scheduler = [
 一个自定义的优化器可根据如下规则进行定制：
 
 假设我们想添加一个名为 `MyOptimzer` 的优化器，其拥有参数 `a`, `b` 和 `c`。
-可以创建一个名为 `mmcls/engine/optimizer` 的文件夹，并在目录下的一个文件，如 `mmcls/engine/optimizer/my_optimizer.py` 中实现该自定义优化器：
+可以创建一个名为 `mmpretrain/engine/optimizer` 的文件夹，并在目录下的一个文件，如 `mmpretrain/engine/optimizer/my_optimizer.py` 中实现该自定义优化器：
 
 ```python
-from mmcls.registry import OPTIMIZERS
+from mmpretrain.registry import OPTIMIZERS
 from torch.optim import Optimizer
 
 
@@ -288,29 +288,29 @@ class MyOptimizer(Optimizer):
 
 要注册上面定义的上述模块，首先需要将此模块导入到主命名空间中。有两种方法可以实现它。
 
-- 修改 `mmcls/engine/optimizers/__init__.py`，将其导入至 `mmcls.engine` 包。
+- 修改 `mmpretrain/engine/optimizers/__init__.py`，将其导入至 `mmpretrain.engine` 包。
 
   ```python
-  # 在 mmcls/engine/optimizers/__init__.py 中
+  # 在 mmpretrain/engine/optimizers/__init__.py 中
   ...
   from .my_optimizer import MyOptimizer # MyOptimizer 是我们自定义的优化器的名字
 
   __all__ = [..., 'MyOptimizer']
   ```
 
-  在运行过程中，我们会自动导入 `mmcls.engine` 包并同时注册 `MyOptimizer`。
+  在运行过程中，我们会自动导入 `mmpretrain.engine` 包并同时注册 `MyOptimizer`。
 
 - 在配置中使用 `custom_imports` 手动导入
 
   ```python
   custom_imports = dict(
-      imports=['mmcls.engine.optimizers.my_optimizer'],
+      imports=['mmpretrain.engine.optimizers.my_optimizer'],
       allow_failed_imports=False,
   )
   ```
 
-  `mmcls.engine.optimizers.my_optimizer` 模块将会在程序开始阶段被导入，`MyOptimizer` 类会随之自动被注册。
-  注意，这里只需要导入包含 `MyOptmizer` 类的包。如果填写`mmcls.engine.optimizers.my_optimizer.MyOptimizer` 则 **不会** 被直接导入。
+  `mmpretrain.engine.optimizers.my_optimizer` 模块将会在程序开始阶段被导入，`MyOptimizer` 类会随之自动被注册。
+  注意，这里只需要导入包含 `MyOptmizer` 类的包。如果填写`mmpretrain.engine.optimizers.my_optimizer.MyOptimizer` 则 **不会** 被直接导入。
 
 #### 3. 在配置文件中指定优化器
 
@@ -332,9 +332,9 @@ optim_wrapper = dict(
 我们可以新增一个优化器构造器来覆盖这些行为。
 
 ```python
-# 在 mmcls/engine/optimizers/my_optim_constructor.py 中
+# 在 mmpretrain/engine/optimizers/my_optim_constructor.py 中
 from mmengine.optim import DefaultOptimWrapperConstructor
-from mmcls.registry import OPTIM_WRAPPER_CONSTRUCTORS
+from mmpretrain.registry import OPTIM_WRAPPER_CONSTRUCTORS
 
 
 @OPTIM_WRAPPER_CONSTRUCTORS.register_module()
@@ -349,10 +349,10 @@ class MyOptimWrapperConstructor:
 
 接下来类似 [新增优化器教程](#新增优化器) 来导入并使用新的优化器构造器。
 
-1. 修改 `mmcls/engine/optimizers/__init__.py`，将其导入至 `mmcls.engine` 包。
+1. 修改 `mmpretrain/engine/optimizers/__init__.py`，将其导入至 `mmpretrain.engine` 包。
 
    ```python
-   # 在 mmcls/engine/optimizers/__init__.py 中
+   # 在 mmpretrain/engine/optimizers/__init__.py 中
    ...
    from .my_optim_constructor import MyOptimWrapperConstructor
 

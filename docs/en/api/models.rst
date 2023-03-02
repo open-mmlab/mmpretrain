@@ -1,21 +1,21 @@
 .. role:: hidden
     :class: hidden-section
 
-.. module:: mmcls.models
+.. module:: mmpretrain.models
 
-mmcls.models
+mmpretrain.models
 ===================================
 
 The ``models`` package contains several sub-packages for addressing the different components of a model.
 
-- :mod:`~mmcls.models.classifiers`: The top-level module which defines the whole process of a classification model.
-- :mod:`~mmcls.models.backbones`: Usually a feature extraction network, e.g., ResNet, MobileNet.
-- :mod:`~mmcls.models.necks`: The component between backbones and heads, e.g., GlobalAveragePooling.
-- :mod:`~mmcls.models.heads`: The component for specific tasks. In MMClassification, we provides heads for classification.
-- :mod:`~mmcls.models.losses`: Loss functions.
-- :mod:`~mmcls.models.utils`: Some helper functions and common components used in various networks.
+- :mod:`~mmpretrain.models.classifiers`: The top-level module which defines the whole process of a classification model.
+- :mod:`~mmpretrain.models.backbones`: Usually a feature extraction network, e.g., ResNet, MobileNet.
+- :mod:`~mmpretrain.models.necks`: The component between backbones and heads, e.g., GlobalAveragePooling.
+- :mod:`~mmpretrain.models.heads`: The component for specific tasks. In MMClassification, we provides heads for classification.
+- :mod:`~mmpretrain.models.losses`: Loss functions.
+- :mod:`~mmpretrain.models.utils`: Some helper functions and common components used in various networks.
 
-  - :mod:`~mmcls.models.utils.data_preprocessor`: The component before model to preprocess the inputs, e.g., ClsDataPreprocessor.
+  - :mod:`~mmpretrain.models.utils.data_preprocessor`: The component before model to preprocess the inputs, e.g., ClsDataPreprocessor.
   - :ref:`components`: Common components used in various networks.
   - :ref:`helpers`: Helper functions.
 
@@ -32,7 +32,7 @@ Build Functions
     build_head
     build_loss
 
-.. module:: mmcls.models.classifiers
+.. module:: mmpretrain.models.classifiers
 
 Classifiers
 ------------------
@@ -46,7 +46,7 @@ Classifiers
     TimmClassifier
     HuggingFaceClassifier
 
-.. module:: mmcls.models.backbones
+.. module:: mmpretrain.models.backbones
 
 Backbones
 ------------------
@@ -56,7 +56,7 @@ Backbones
    :nosignatures:
 
    AlexNet
-   BEiT
+   BEiTViT
    CSPDarkNet
    CSPNet
    CSPResNeXt
@@ -114,7 +114,7 @@ Backbones
    VisionTransformer
    XCiT
 
-.. module:: mmcls.models.necks
+.. module:: mmpretrain.models.necks
 
 Necks
 ------------------
@@ -127,7 +127,7 @@ Necks
    GeneralizedMeanPooling
    HRFuseScales
 
-.. module:: mmcls.models.heads
+.. module:: mmpretrain.models.heads
 
 Heads
 ------------------
@@ -148,7 +148,7 @@ Heads
    MultiLabelLinearClsHead
    CSRAClsHead
 
-.. module:: mmcls.models.losses
+.. module:: mmpretrain.models.losses
 
 Losses
 ------------------
@@ -163,7 +163,7 @@ Losses
    AsymmetricLoss
    SeesawLoss
 
-.. module:: mmcls.models.utils
+.. module:: mmpretrain.models.utils
 
 models.utils
 ------------

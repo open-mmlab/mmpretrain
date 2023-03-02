@@ -1,6 +1,6 @@
 # LeViT
 
-> [LeViT: a Vision Transformer in ConvNet’s Clothing for Faster Inference](https://arxiv.org/pdf/2104.01136.pdf)
+> [LeViT: a Vision Transformer in ConvNet’s Clothing for Faster Inference](https://arxiv.org/abs/2104.01136)
 
 <!-- [ALGORITHM] -->
 
@@ -12,23 +12,64 @@ We design a family of image classification architectures that optimize the trade
 <img src="https://raw.githubusercontent.com/facebookresearch/LeViT/main/.github/levit.png" width="90%"/>
 </div>
 
-## Results and models
+## How to use it?
 
-### ImageNet-1k
+<!-- [TABS-BEGIN] -->
 
-|           Model            |   Pretrain   | Params(M) | Flops(G) | Top-1 (%) | Top-5 (%) |                             Config                             |                             Download                              |
-| :------------------------: | :----------: | :-------: | :------: | :-------: | :-------: | :------------------------------------------------------------: | :---------------------------------------------------------------: |
-| levit-128s_3rdparty_in1k\* | From scratch |   7.39    |   0.31   |   76.51   |   92.90   | [config](./levit-128s_8xb256_in1k.py) \| [deploy](./deploy/levit-128s_8xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/levit/levit-128s_3rdparty_in1k_20230117-e9fbd209.pth) |
-| levit-128_3rdparty_in1k\*  | From scratch |   8.83    |   0.41   |   78.58   |   93.95   | [config](./levit-128_8xb256_in1k.py) \| [deploy](./deploy/levit-128_8xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/levit/levit-128_3rdparty_in1k_20230117-3be02a02.pth) |
-| levit-192_3rdparty_in1k\*  | From scratch |   10.56   |   0.67   |   79.86   |   94.75   | [config](./levit-192_8xb256_in1k.py) \| [deploy](./deploy/levit-192_8xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/levit/levit-192_3rdparty_in1k_20230117-8217a0f9.pth) |
-| levit-256_3rdparty_in1k\*  | From scratch |   18.38   |   1.14   |   81.59   |   95.46   | [config](./levit-256_8xb256_in1k.py) \| [deploy](./deploy/levit-256_8xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/levit/levit-256_3rdparty_in1k_20230117-5ae2ce7d.pth) |
-| levit-384_3rdparty_in1k\*  | From scratch |   38.36   |   2.37   |   82.59   |   95.95   | [config](./levit-384_8xb256_in1k.py) \| [deploy](./deploy/levit-384_8xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/levit/levit-384_3rdparty_in1k_20230117-f3539cce.pth) |
+**Predict image**
 
-*Models with * are converted from the [official repo](https://github.com/facebookresearch/LeViT). The config files of these models are only for inference. All these models are trained by distillation on RegNet, and MMClassification doesn't support distillation by now. See [MMRazor](https://github.com/open-mmlab/mmrazor) for model distillation.*
+```python
+from mmpretrain import inference_model
+
+predict = inference_model('levit-128s_3rdparty_in1k', 'demo/bird.JPEG')
+print(predict['pred_class'])
+print(predict['pred_score'])
+```
+
+**Use the model**
+
+```python
+import torch
+from mmpretrain import get_model
+
+model = get_model('levit-128s_3rdparty_in1k', pretrained=True)
+inputs = torch.rand(1, 3, 224, 224)
+out = model(inputs)
+print(type(out))
+# To extract features.
+feats = model.extract_feat(inputs)
+print(type(feats))
+```
+
+**Test Command**
+
+Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+
+Test:
+
+```shell
+python tools/test.py configs/levit/levit-128s_8xb256_in1k.py https://download.openmmlab.com/mmclassification/v0/levit/levit-128s_3rdparty_in1k_20230117-e9fbd209.pth
+```
+
+<!-- [TABS-END] -->
+
+## Models and results
+
+### Image Classification on ImageNet-1k
+
+| Model                        |   Pretrain   | Params (M) | Flops (G) | Top-1 (%) | Top-5 (%) |               Config                |                                         Download                                         |
+| :--------------------------- | :----------: | :--------: | :-------: | :-------: | :-------: | :---------------------------------: | :--------------------------------------------------------------------------------------: |
+| `levit-128s_3rdparty_in1k`\* | From scratch |    7.39    |   0.31    |   76.51   |   92.90   | [config](levit-128s_8xb256_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/levit/levit-128s_3rdparty_in1k_20230117-e9fbd209.pth) |
+| `levit-128_3rdparty_in1k`\*  | From scratch |    8.83    |   0.41    |   78.58   |   93.95   | [config](levit-128_8xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/levit/levit-128_3rdparty_in1k_20230117-3be02a02.pth) |
+| `levit-192_3rdparty_in1k`\*  | From scratch |   10.56    |   0.67    |   79.86   |   94.75   | [config](levit-192_8xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/levit/levit-192_3rdparty_in1k_20230117-8217a0f9.pth) |
+| `levit-256_3rdparty_in1k`\*  | From scratch |   18.38    |   1.14    |   81.59   |   95.46   | [config](levit-256_8xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/levit/levit-256_3rdparty_in1k_20230117-5ae2ce7d.pth) |
+| `levit-384_3rdparty_in1k`\*  | From scratch |   38.36    |   2.37    |   82.59   |   95.95   | [config](levit-384_8xb256_in1k.py)  | [model](https://download.openmmlab.com/mmclassification/v0/levit/levit-384_3rdparty_in1k_20230117-f3539cce.pth) |
+
+*Models with * are converted from the [official repo](https://github.com/facebookresearch/LeViT). The config files of these models are only for inference. We haven't reprodcue the training results.*
 
 ## Citation
 
-```
+```bibtex
 @InProceedings{Graham_2021_ICCV,
     author    = {Graham, Benjamin and El-Nouby, Alaaeldin and Touvron, Hugo and Stock, Pierre and Joulin, Armand and Jegou, Herve and Douze, Matthijs},
     title     = {LeViT: A Vision Transformer in ConvNet's Clothing for Faster Inference},

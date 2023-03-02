@@ -9,9 +9,9 @@ As for how to test existing models on standard datasets, please see this [guide]
 
 MMClassification provides high-level Python APIs for inference on a given image:
 
-- [`get_model`](mmcls.apis.get_model): Get a model with the model name.
-- [`init_model`](mmcls.apis.init_model): Initialize a model with a config and checkpoint
-- [`inference_model`](mmcls.apis.inference_model): Inference on a given image
+- [`get_model`](mmpretrain.apis.get_model): Get a model with the model name.
+- [`init_model`](mmpretrain.apis.init_model): Initialize a model with a config and checkpoint
+- [`inference_model`](mmpretrain.apis.inference_model): Inference on a given image
 
 Here is an example of building the model and inference on a given image by using ImageNet-1k pre-trained checkpoint.
 
@@ -20,7 +20,7 @@ You can use `wget https://github.com/open-mmlab/mmclassification/raw/master/demo
 ```
 
 ```python
-from mmcls import get_model, inference_model
+from mmpretrain import get_model, inference_model
 
 img_path = 'demo.JPEG'   # you can specify your own picture path
 

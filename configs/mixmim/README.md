@@ -31,52 +31,64 @@ better FLOPs / performance tradeoff than previous MIM methods
 
 ## How to use it?
 
-### Inference
-
 <!-- [TABS-BEGIN] -->
 
 **Predict image**
 
 ```python
->>> import torch
->>> import mmcls
->>> model = mmcls.get_model('mixmim-base_3rdparty_in1k', pretrained=True)
->>> predict = mmcls.inference_model(model, 'demo/demo.JPEG')
->>> print(predict['pred_class'])
-sea snake
->>> print(predict['pred_score'])
-0.865431010723114
+from mmpretrain import inference_model
+
+predict = inference_model('mixmim-base_mixmim-pre_8xb128-coslr-100e_in1k', 'demo/bird.JPEG')
+print(predict['pred_class'])
+print(predict['pred_score'])
 ```
 
 **Use the model**
 
 ```python
->>> import torch
->>> import mmcls
->>>
->>> model = mmcls.get_model('mixmim-base_3rdparty_in1k', pretrained=True)
->>> inputs = torch.rand(1, 3, 224, 224)
->>> # To get classification scores.
->>> out = model(inputs)
->>> print(out.shape)
-torch.Size([1, 1000])
->>> # To extract features.
->>> outs = model.extract_feat(inputs)
->>> print(outs[0].shape)
-torch.Size([1, 1024])
+import torch
+from mmpretrain import get_model
+
+model = get_model('mixmim_mixmim-base_16xb128-coslr-300e_in1k', pretrained=True)
+inputs = torch.rand(1, 3, 224, 224)
+out = model(inputs)
+print(type(out))
+# To extract features.
+feats = model.extract_feat(inputs)
+print(type(feats))
+```
+
+**Train/Test Command**
+
+Prepare your dataset according to the [docs](https://mmclassification.readthedocs.io/en/1.x/user_guides/dataset_prepare.html#prepare-dataset).
+
+Train:
+
+```shell
+python tools/train.py configs/mixmim/mixmim_mixmim-base_16xb128-coslr-300e_in1k.py
+```
+
+Test:
+
+```shell
+python tools/test.py configs/mixmim/benchmarks/mixmim-base_8xb128-coslr-100e_in1k.py https://download.openmmlab.com/mmselfsup/1.x/mixmim/mixmim-base-p16_16xb128-coslr-300e_in1k/mixmim-base-p16_ft-8xb128-coslr-100e_in1k/mixmim-base-p16_ft-8xb128-coslr-100e_in1k_20221208-41ecada9.pth
 ```
 
 <!-- [TABS-END] -->
 
-## Models
+## Models and results
 
-|            Model            | Params(M) | Pretrain Epochs | Flops(G) | Top-1 (%) | Top-5 (%) |                Config                 |                                        Download                                        |
-| :-------------------------: | :-------: | :-------------: | :------: | :-------: | :-------: | :-----------------------------------: | :------------------------------------------------------------------------------------: |
-| mixmim-base_3rdparty_in1k\* |    88     |       300       |   16.3   |   84.6    |   97.0    | [config](./mixmim-base_8xb64_in1k.py) | [model](https://download.openmmlab.com/mmclassification/v0/mixmim/mixmim-base_3rdparty_in1k_20221206-e40e2c8c.pth) |
+### Pretrained models
 
-*Models with * are converted from the [official repo](https://github.com/Sense-X/MixMIM). The config files of these models are only for inference.*
+| Model                                        | Params (M) | Flops (G) |                         Config                          |                                      Download                                      |
+| :------------------------------------------- | :--------: | :-------: | :-----------------------------------------------------: | :--------------------------------------------------------------------------------: |
+| `mixmim_mixmim-base_16xb128-coslr-300e_in1k` |    N/A     |    N/A    | [config](mixmim_mixmim-base_16xb128-coslr-300e_in1k.py) | [model](https://download.openmmlab.com/mmselfsup/1.x/mixmim/mixmim-base-p16_16xb128-coslr-300e_in1k/mixmim-base-p16_16xb128-coslr-300e_in1k_20221208-44fe8d2c.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/mixmim/mixmim-base-p16_16xb128-coslr-300e_in1k/mixmim-base-p16_16xb128-coslr-300e_in1k_20221208-44fe8d2c.json) |
 
-For MixMIM self-supervised learning algorithm, welcome to [MMSelfSup page](https://github.com/open-mmlab/mmselfsup/tree/dev-1.x/configs/selfsup/mixmim) to get more information.
+### Image Classification on ImageNet-1k
+
+| Model                                     |                   Pretrain                   | Params (M) | Flops (G) | Top-1 (%) |                   Config                   |                   Download                    |
+| :---------------------------------------- | :------------------------------------------: | :--------: | :-------: | :-------: | :----------------------------------------: | :-------------------------------------------: |
+| `mixmim-base_mixmim-pre_8xb128-coslr-100e_in1k` | [MIXMIM](https://download.openmmlab.com/mmselfsup/1.x/mixmim/mixmim-base-p16_16xb128-coslr-300e_in1k/mixmim-base-p16_16xb128-coslr-300e_in1k_20221208-44fe8d2c.pth) |    N/A     |    N/A    |   84.63   | [config](benchmarks/mixmim-base_8xb128-coslr-100e_in1k.py) | [model](https://download.openmmlab.com/mmselfsup/1.x/mixmim/mixmim-base-p16_16xb128-coslr-300e_in1k/mixmim-base-p16_ft-8xb128-coslr-100e_in1k/mixmim-base-p16_ft-8xb128-coslr-100e_in1k_20221208-41ecada9.pth) \| [log](https://download.openmmlab.com/mmselfsup/1.x/mixmim/mixmim-base-p16_16xb128-coslr-300e_in1k/mixmim-base-p16_ft-8xb128-coslr-100e_in1k/mixmim-base-p16_ft-8xb128-coslr-100e_in1k_20221208-41ecada9.json) |
 
 ## Citation
 
