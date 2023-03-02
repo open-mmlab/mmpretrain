@@ -1270,3 +1270,60 @@ class TestCutout(TestCase):
         transform = TRANSFORMS.build(cfg)
         self.assertIn('Cutout(shape=None', repr(transform))
         self.assertIn('magnitude_range=(0, 41)', repr(transform))
+
+
+class TestGaussianBlur(TestCase):
+    DEFAULT_ARGS = dict(type='GaussianBlur')
+
+    def test_initialize(self):
+        with self.assertRaisesRegex(AssertionError, 'only one of'):
+            TRANSFORMS.build(self.DEFAULT_ARGS)
+
+        with self.assertRaisesRegex(AssertionError, 'only one of'):
+            cfg = {**self.DEFAULT_ARGS, 'radius': 1, 'magnitude_range': (1, 2)}
+            TRANSFORMS.build(cfg)
+
+    def test_transform(self):
+        transform_func = 'PIL.ImageFilter.GaussianBlur'
+
+        # test params inputs
+        with patch(transform_func, autospec=True) as mock:
+            cfg = {
+                **self.DEFAULT_ARGS,
+                'radius': 0.5,
+                'prob': 1.,
+            }
+            TRANSFORMS.build(cfg)(construct_toy_data())
+            mock.assert_called_once_with(radius=0.5)
+
+        # test prob
+        with patch(transform_func, autospec=True) as mock:
+            cfg = {
+                **self.DEFAULT_ARGS,
+                'radius': 0.5,
+                'prob': 0.,
+            }
+            TRANSFORMS.build(cfg)(construct_toy_data())
+            mock.assert_not_called()
+
+        # test magnitude_range
+        with patch(transform_func, autospec=True) as mock:
+            cfg = {
+                **self.DEFAULT_ARGS,
+                'magnitude_range': (0.1, 2),
+                'magnitude_std': 'inf',
+                'prob': 1.,
+            }
+            TRANSFORMS.build(cfg)(construct_toy_data())
+            self.assertTrue(0.1 < mock.call_args.kwargs['radius'] < 2)
+
+    def test_repr(self):
+        cfg = {**self.DEFAULT_ARGS, 'radius': 0.1}
+        transform = TRANSFORMS.build(cfg)
+        self.assertIn('GaussianBlur(radius=0.1, prob=0.5', repr(transform))
+        self.assertNotIn('magnitude_range', repr(transform))
+
+        cfg = {**self.DEFAULT_ARGS, 'magnitude_range': (0.1, 2)}
+        transform = TRANSFORMS.build(cfg)
+        self.assertIn('GaussianBlur(radius=None, prob=0.5', repr(transform))
+        self.assertIn('magnitude_range=(0.1, 2)', repr(transform))

@@ -3,7 +3,7 @@ from .auto_augment import (AutoAugment, AutoContrast, BaseAugTransform,
                            Brightness, ColorTransform, Contrast, Cutout,
                            Equalize, Invert, Posterize, RandAugment, Rotate,
                            Sharpness, Shear, Solarize, SolarizeAdd, Translate)
-from .formatting import (Collect, PackClsInputs, PackMultiTaskInputs, ToNumpy,
+from .formatting import (Collect, PackInputs, PackMultiTaskInputs, ToNumpy,
                          ToPIL, Transpose)
 from .processing import (Albumentations, ColorJitter, EfficientNetCenterCrop,
                          EfficientNetRandomCrop, Lighting, RandomCrop,
@@ -15,7 +15,7 @@ __all__ = [
     'ColorTransform', 'Solarize', 'Posterize', 'AutoContrast', 'Equalize',
     'Contrast', 'Brightness', 'Sharpness', 'AutoAugment', 'SolarizeAdd',
     'Cutout', 'RandAugment', 'Lighting', 'ColorJitter', 'RandomErasing',
-    'PackClsInputs', 'Albumentations', 'EfficientNetRandomCrop',
+    'PackInputs', 'Albumentations', 'EfficientNetRandomCrop',
     'EfficientNetCenterCrop', 'ResizeEdge', 'BaseAugTransform',
     'PackMultiTaskInputs'
 ]

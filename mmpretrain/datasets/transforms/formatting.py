@@ -1,10 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from collections import defaultdict
 from collections.abc import Sequence
-from functools import partial
 
 import numpy as np
 import torch
+import torchvision.transforms.functional as F
 from mmcv.transforms import BaseTransform
 from mmengine.utils import is_str
 from PIL import Image
@@ -37,18 +37,18 @@ def to_tensor(data):
 
 
 @TRANSFORMS.register_module()
-class PackClsInputs(BaseTransform):
-    """Pack the inputs data for the classification.
+class PackInputs(BaseTransform):
+    """Pack the inputs data.
 
     **Required Keys:**
 
-    - img
-    - gt_label (optional)
-    - ``*meta_keys`` (optional)
+    - ``input_key``
+    - ``*algorithm_keys``
+    - ``*meta_keys``
 
     **Deleted Keys:**
 
-    All keys in the dict.
+    All other keys in the dict.
 
     **Added Keys:**
 
@@ -57,50 +57,110 @@ class PackClsInputs(BaseTransform):
       annotation info of the sample.
 
     Args:
-        meta_keys (Sequence[str]): The meta keys to be saved in the
-            ``metainfo`` of the packed ``data_samples``.
-            Defaults to a tuple includes keys:
+        input_key (str): The key of element to feed into the model forwarding.
+            Defaults to 'img'.
+        algorithm_keys (Sequence[str]): The keys of custom elements to be used
+            in the algorithm. Defaults to an empty tuple.
+        meta_keys (Sequence[str]): The keys of meta information to be saved in
+            the data sample. Defaults to :attr:`PackInputs.DEFAULT_META_KEYS`.
 
-            - ``sample_idx``: The id of the image sample.
-            - ``img_path``: The path to the image file.
-            - ``ori_shape``: The original shape of the image as a tuple (H, W).
-            - ``img_shape``: The shape of the image after the pipeline as a
-              tuple (H, W).
-            - ``scale_factor``: The scale factor between the resized image and
-              the original image.
-            - ``flip``: A boolean indicating if image flip transform was used.
-            - ``flip_direction``: The flipping direction.
+    .. admonition:: Default algorithm keys
+
+        Besides the specified ``algorithm_keys``, we will set some default keys
+        into the output data sample and do some formatting. Therefore, you
+        don't need to set these keys in the ``algorithm_keys``.
+
+        - ``gt_label``: The ground-truth label. The value will be converted
+          into a 1-D tensor.
+        - ``gt_score``: The ground-truth score. The value will be converted
+          into a 1-D tensor.
+        - ``mask``: The mask for some self-supervise tasks. The value will
+          be converted into a tensor.
+
+    .. admonition:: Default meta keys
+
+        - ``sample_idx``: The id of the image sample.
+        - ``img_path``: The path to the image file.
+        - ``ori_shape``: The original shape of the image as a tuple (H, W).
+        - ``img_shape``: The shape of the image after the pipeline as a
+          tuple (H, W).
+        - ``scale_factor``: The scale factor between the resized image and
+          the original image.
+        - ``flip``: A boolean indicating if image flip transform was used.
+        - ``flip_direction``: The flipping direction.
     """
 
+    DEFAULT_META_KEYS = ('sample_idx', 'img_path', 'ori_shape', 'img_shape',
+                         'scale_factor', 'flip', 'flip_direction')
+
     def __init__(self,
-                 meta_keys=('sample_idx', 'img_path', 'ori_shape', 'img_shape',
-                            'scale_factor', 'flip', 'flip_direction')):
+                 input_key='img',
+                 algorithm_keys=(),
+                 meta_keys=DEFAULT_META_KEYS):
+        self.input_key = input_key
+        self.algorithm_keys = algorithm_keys
         self.meta_keys = meta_keys
+
+    @staticmethod
+    def format_input(input_):
+        if isinstance(input_, list):
+            return [PackInputs._format_input(item) for item in input_]
+        elif isinstance(input_, np.ndarray):
+            if input_.ndim == 2:  # For grayscale image.
+                input_ = np.expand_dims(input_, -1)
+            if input_.ndim == 3 and not input_.flags.c_contiguous:
+                input_ = np.ascontiguousarray(input_.transpose(2, 0, 1))
+                input_ = to_tensor(input_)
+            elif input_.ndim == 3:
+                # convert to tensor first to accelerate, see
+                # https://github.com/open-mmlab/mmdetection/pull/9533
+                input_ = to_tensor(input_).permute(2, 0, 1).contiguous()
+            else:
+                # convert input with other shape to tensor without permute,
+                # like video input (num_crops, C, T, H, W).
+                input_ = to_tensor(input_)
+        elif isinstance(input_, Image.Image):
+            input_ = F.pil_to_tensor(input_)
+        elif not isinstance(input_, torch.Tensor):
+            raise TypeError(f'Unsupported input type {type(input_)}.')
+
+        return input_
 
     def transform(self, results: dict) -> dict:
         """Method to pack the input data."""
         packed_results = dict()
-        if 'img' in results:
-            img = results['img']
-            if len(img.shape) < 3:
-                img = np.expand_dims(img, -1)
-            img = np.ascontiguousarray(img.transpose(2, 0, 1))
-            packed_results['inputs'] = to_tensor(img)
+        if self.input_key in results:
+            input_ = results[self.input_key]
+            packed_results['inputs'] = self.format_input(input_)
 
         data_sample = DataSample()
+
+        # Set default keys
         if 'gt_label' in results:
             data_sample.set_gt_label(results['gt_label'])
         if 'gt_score' in results:
             data_sample.set_gt_score(results['gt_score'])
+        if 'mask' in results:
+            data_sample.set_gt_score(results['mask'])
 
-        img_meta = {k: results[k] for k in self.meta_keys if k in results}
-        data_sample.set_metainfo(img_meta)
+        # Set custom algorithm keys
+        for key in self.algorithm_keys:
+            if key in results:
+                data_sample.set_field(results[key], key)
+
+        # Set meta keys
+        for key in self.meta_keys:
+            if key in results:
+                data_sample.set_field(results[key], key, field_type='metainfo')
+
         packed_results['data_samples'] = data_sample
         return packed_results
 
     def __repr__(self) -> str:
         repr_str = self.__class__.__name__
-        repr_str += f'(meta_keys={self.meta_keys})'
+        repr_str += f"(input_key='{self.input_key}', "
+        repr_str += f'algorithm_keys={self.algorithm_keys}, '
+        repr_str += f'meta_keys={self.meta_keys})'
         return repr_str
 
 
@@ -109,34 +169,20 @@ class PackMultiTaskInputs(BaseTransform):
     """Convert all image labels of multi-task dataset to a dict of tensor.
 
     Args:
-        tasks (List[str]): The task names defined in the dataset.
-        meta_keys(Sequence[str]): The meta keys to be saved in the
-            ``metainfo`` of the packed ``data_samples``.
-            Defaults to a tuple includes keys:
-
-            - ``sample_idx``: The id of the image sample.
-            - ``img_path``: The path to the image file.
-            - ``ori_shape``: The original shape of the image as a tuple (H, W).
-            - ``img_shape``: The shape of the image after the pipeline as a
-              tuple (H, W).
-            - ``scale_factor``: The scale factor between the resized image and
-              the original image.
-            - ``flip``: A boolean indicating if image flip transform was used.
-            - ``flip_direction``: The flipping direction.
+        multi_task_fields (Sequence[str]):
+        input_key (str):
+        task_handlers (dict):
     """
 
     def __init__(self,
-                 task_handlers=dict(),
-                 multi_task_fields=('gt_label', ),
-                 meta_keys=('sample_idx', 'img_path', 'ori_shape', 'img_shape',
-                            'scale_factor', 'flip', 'flip_direction')):
+                 multi_task_fields,
+                 input_key='img',
+                 task_handlers=dict()):
         self.multi_task_fields = multi_task_fields
-        self.meta_keys = meta_keys
-        self.task_handlers = defaultdict(
-            partial(PackClsInputs, meta_keys=meta_keys))
+        self.input_key = input_key
+        self.task_handlers = defaultdict(PackInputs)
         for task_name, task_handler in task_handlers.items():
-            self.task_handlers[task_name] = TRANSFORMS.build(
-                dict(type=task_handler, meta_keys=meta_keys))
+            self.task_handlers[task_name] = TRANSFORMS.build(task_handler)
 
     def transform(self, results: dict) -> dict:
         """Method to pack the input data.
@@ -147,12 +193,9 @@ class PackMultiTaskInputs(BaseTransform):
         packed_results = dict()
         results = results.copy()
 
-        if 'img' in results:
-            img = results.pop('img')
-            if len(img.shape) < 3:
-                img = np.expand_dims(img, -1)
-            img = np.ascontiguousarray(img.transpose(2, 0, 1))
-            packed_results['inputs'] = to_tensor(img)
+        if self.input_key in results:
+            input_ = results[self.input_key]
+            packed_results['inputs'] = PackInputs.format_input(input_)
 
         task_results = defaultdict(dict)
         for field in self.multi_task_fields:
@@ -172,13 +215,12 @@ class PackMultiTaskInputs(BaseTransform):
 
     def __repr__(self):
         repr = self.__class__.__name__
-        task_handlers = {
-            name: handler.__class__.__name__
-            for name, handler in self.task_handlers.items()
-        }
-        repr += f'(task_handlers={task_handlers}, '
-        repr += f'multi_task_fields={self.multi_task_fields}, '
-        repr += f'meta_keys={self.meta_keys})'
+        task_handlers = ', '.join(
+            f"'{name}': {handler.__class__.__name__}"
+            for name, handler in self.task_handlers.items())
+        repr += f'(multi_task_fields={self.multi_task_fields}, '
+        repr += f"input_key='{self.input_key}', "
+        repr += f'task_handlers={{{task_handlers}}})'
         return repr
 
 
