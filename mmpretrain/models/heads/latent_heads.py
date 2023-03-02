@@ -74,8 +74,7 @@ class LatentCrossCorrelationHead(BaseModule):
         self.bn = nn.BatchNorm1d(in_channels, affine=False)
         self.loss_module = MODELS.build(loss)
 
-    def loss(self, input: torch.Tensor,
-                target: torch.Tensor) -> torch.Tensor:
+    def loss(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         """Forward head.
 
         Args:

@@ -14,7 +14,7 @@ class SwAV(BaseSelfSupervisor):
 
     Implementation of `Unsupervised Learning of Visual Features by Contrasting
     Cluster Assignments <https://arxiv.org/abs/2006.09882>`_.
-    
+
     The queue is built in ``mmpretrain/engine/hooks/swav_hook.py``.
     """
 
