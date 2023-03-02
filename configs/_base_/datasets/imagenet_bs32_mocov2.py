@@ -10,7 +10,10 @@ data_preprocessor = dict(
 # The difference between mocov2 and mocov1 is the transforms in the pipeline
 view_pipeline = [
     dict(
-        type='RandomResizedCrop', size=224, scale=(0.2, 1.), backend='pillow'),
+        type='RandomResizedCrop',
+        scale=224,
+        crop_ratio_range=(0.2, 1.),
+        backend='pillow'),
     dict(
         type='RandomApply',
         transforms=[
@@ -34,7 +37,7 @@ view_pipeline = [
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='MultiView', num_views=2, transforms=[view_pipeline]),
-    dict(type='PackSelfSupInputs', meta_keys=['img_path'])
+    dict(type='PackInputs')
 ]
 
 train_dataloader = dict(

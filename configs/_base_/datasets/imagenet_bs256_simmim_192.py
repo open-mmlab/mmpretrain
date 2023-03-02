@@ -9,11 +9,7 @@ data_preprocessor = dict(
 
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(
-        type='RandomResizedCrop',
-        size=192,
-        scale=(0.67, 1.0),
-        ratio=(3. / 4., 4. / 3.)),
+    dict(type='RandomResizedCrop', scale=192, crop_ratio_range=(0.67, 1.0)),
     dict(type='RandomFlip', prob=0.5),
     dict(
         type='SimMIMMaskGenerator',
@@ -21,10 +17,7 @@ train_pipeline = [
         mask_patch_size=32,
         model_patch_size=4,
         mask_ratio=0.6),
-    dict(
-        type='PackSelfSupInputs',
-        algorithm_keys=['mask'],
-        meta_keys=['img_path'])
+    dict(type='PackInputs')
 ]
 
 train_dataloader = dict(
@@ -39,19 +32,3 @@ train_dataloader = dict(
         ann_file='meta/train.txt',
         data_prefix=dict(img_path='train/'),
         pipeline=train_pipeline))
-
-# for visualization
-vis_pipeline = [
-    dict(type='LoadImageFromFile'),
-    dict(type='Resize', scale=(192, 192), backend='pillow'),
-    dict(
-        type='SimMIMMaskGenerator',
-        input_size=192,
-        mask_patch_size=32,
-        model_patch_size=4,
-        mask_ratio=0.6),
-    dict(
-        type='PackSelfSupInputs',
-        algorithm_keys=['mask'],
-        meta_keys=['img_path'])
-]

@@ -13,9 +13,8 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='RandomResizedCrop',
-        size=224,
-        scale=(0.5, 1.0),
-        ratio=(0.75, 1.3333),
+        scale=224,
+        crop_ratio_range=(0.5, 1.0),
         interpolation='bicubic'),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
     dict(
@@ -24,10 +23,7 @@ train_pipeline = [
         num_masking_patches=78,
         min_num_patches=15,
     ),
-    dict(
-        type='PackSelfSupInputs',
-        algorithm_keys=['mask'],
-        meta_keys=['img_path'])
+    dict(type='PackInputs')
 ]
 
 train_dataloader = dict(

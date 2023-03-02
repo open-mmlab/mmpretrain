@@ -28,10 +28,7 @@ train_pipeline = [
         num_masking_patches=75,
         max_num_patches=None,
         min_num_patches=16),
-    dict(
-        type='PackSelfSupInputs',
-        algorithm_keys=['mask'],
-        meta_keys=['img_path'])
+    dict(type='PackInputs')
 ]
 
 train_dataloader = dict(
