@@ -169,17 +169,6 @@ class Attention4D(torch.nn.Module):
         return out
 
 
-def stem(in_chs, out_chs, act_layer=nn.ReLU):
-    return nn.Sequential(
-        nn.Conv2d(in_chs, out_chs // 2, kernel_size=3, stride=2, padding=1),
-        nn.BatchNorm2d(out_chs // 2),
-        act_layer(),
-        nn.Conv2d(out_chs // 2, out_chs, kernel_size=3, stride=2, padding=1),
-        nn.BatchNorm2d(out_chs),
-        act_layer(),
-    )
-
-
 class LGQuery(BaseModule):
     def __init__(self,
                  in_dim,
@@ -540,7 +529,7 @@ class EfficientFormerV2(nn.Module):
             self.num_classes = num_classes
         self.fork_feat = fork_feat
 
-        self.patch_embed = stem(3, embed_dims[0], act_layer=act_layer)
+        self._make_stem(3, embed_dims[0], act_cfg=act_layer)
 
         network = []
         for i in range(len(layers)):
@@ -605,6 +594,31 @@ class EfficientFormerV2(nn.Module):
         if self.fork_feat and (
                 self.init_cfg is not None or pretrained is not None):
             self.init_weights()
+
+    def _make_stem(self, in_channels, stem_channels, act_cfg=dict(type='ReLU')):
+        """make 2-ConvBNReLu stem layer."""
+        self.patch_embed = Sequential(
+            ConvModule(
+                in_channels,
+                stem_channels // 2,
+                kernel_size=3,
+                stride=2,
+                padding=1,
+                bias=True,
+                conv_cfg=dict(type='Conv2D'),
+                norm_cfg=dict(type='BN'),
+                act_cfg=act_cfg),
+            ConvModule(
+                stem_channels // 2,
+                stem_channels,
+                kernel_size=3,
+                stride=2,
+                padding=1,
+                bias=True,
+                conv_cfg=dict(type='Conv2D'),
+                norm_cfg=dict(type='BN'),
+                act_cfg=act_cfg))
+
 
     # init for classification
     def cls_init_weights(self, m):
