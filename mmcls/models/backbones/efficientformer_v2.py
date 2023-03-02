@@ -1,19 +1,25 @@
-"""
-EfficientFormer_v2
-"""
+# Copyright (c) OpenMMLab. All rights reserved.x
+import itertools
 import os
 import copy
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import math
-from typing import Dict
-import itertools
+from typing import Optional, Sequence, Union
 
-from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
-from timm.models.layers import DropPath, trunc_normal_
-from timm.models.registry import register_model
-from timm.models.layers.helpers import to_2tuple
+from mmcv.cnn.bricks import ConvModule, DropPath, build_upsample_layer
+from mmengine.model import BaseModule, Sequential
+from mmengine.model.weight_init import trunc_normal_
+
+from mmcls.registry import MODELS
+from ..utils import build_norm_layer, to_2tuple
+from .base_backbone import BaseBackbone
+
+# from timm.data import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
+# from timm.models.layers import DropPath, trunc_normal_
+# from timm.models.registry import register_model
+# from timm.models.layers.helpers import to_2tuple
 
 EfficientFormer_width = {
     'L': [40, 80, 192, 384],  # 26m 83.3% 6attn
@@ -67,7 +73,8 @@ class Attention4D(torch.nn.Module):
                  attn_ratio=4,
                  resolution=7,
                  act_layer=nn.ReLU,
-                 stride=None):
+                 stride=None,
+                 upsample_cfg=dict(type='bilinear')):
         super().__init__()
         self.num_heads = num_heads
         self.scale = key_dim ** -0.5
@@ -78,7 +85,7 @@ class Attention4D(torch.nn.Module):
             self.resolution = math.ceil(resolution / stride)
             self.stride_conv = nn.Sequential(nn.Conv2d(dim, dim, kernel_size=3, stride=stride, padding=1, groups=dim),
                                              nn.BatchNorm2d(dim), )
-            self.upsample = nn.Upsample(scale_factor=stride, mode='bilinear')
+            self.upsample = build_upsample_layer(upsample_cfg, scale_factor=stride)
         else:
             self.resolution = resolution
             self.stride_conv = None
@@ -173,16 +180,39 @@ def stem(in_chs, out_chs, act_layer=nn.ReLU):
     )
 
 
-class LGQuery(torch.nn.Module):
-    def __init__(self, in_dim, out_dim, resolution1, resolution2):
-        super().__init__()
+class LGQuery(BaseModule):
+    def __init__(self,
+                 in_dim,
+                 out_dim,
+                 resolution1,
+                 resolution2,
+                 conv_cfg=dict(type='Conv2D'),
+                 norm_cfg=dict(type='BN'),
+                 init_cfg=None):
+        super(LGQuery,self).__init__(init_cfg=init_cfg)
+
         self.resolution1 = resolution1
         self.resolution2 = resolution2
-        self.pool = nn.AvgPool2d(1, 2, 0)
-        self.local = nn.Sequential(nn.Conv2d(in_dim, in_dim, kernel_size=3, stride=2, padding=1, groups=in_dim),
-                                   )
-        self.proj = nn.Sequential(nn.Conv2d(in_dim, out_dim, 1),
-                                  nn.BatchNorm2d(out_dim), )
+        self.pool = nn.AvgPool2d(kernel_size=1, stride=2)
+
+        self.local = ConvModule(in_channels=in_dim,
+                                out_channels=out_dim,
+                                kernel_size=3,
+                                stride=2,
+                                padding=1,
+                                groups=in_dim,
+                                conv_cfg=conv_cfg,
+                                norm_cfg=None,
+                                act_cfg=None)
+
+        self.proj = ConvModule(in_channels=in_dim,
+                               out_channels=out_dim,
+                               kernel_size=1,
+                               padding=1,
+                               bias=True,
+                               conv_cfg=conv_cfg,
+                               norm_cfg=norm_cfg,
+                               act_cfg=None)
 
     def forward(self, x):
         local_q = self.local(x)
@@ -194,7 +224,7 @@ class LGQuery(torch.nn.Module):
 
 class Attention4DDownsample(torch.nn.Module):
     def __init__(self, dim=384, key_dim=16, num_heads=8,
-                 attn_ratio=4,
+                 attn_ratio=4.0,
                  resolution=7,
                  out_dim=None,
                  act_layer=None,
