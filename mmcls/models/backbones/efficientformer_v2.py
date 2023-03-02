@@ -216,7 +216,9 @@ class Attention4DDownsample(torch.nn.Module):
                  attn_ratio=4.0,
                  resolution=7,
                  out_dim=None,
-                 act_layer=None,
+                 conv_cfg=dict(type='Conv2D'),
+                 norm_cfg=dict(type='BN'),
+                 act_cfg=dict(type='GELU'),
                  ):
         super().__init__()
 
@@ -242,19 +244,41 @@ class Attention4DDownsample(torch.nn.Module):
         self.N = self.resolution ** 2
         self.N2 = self.resolution2 ** 2
 
-        self.k = nn.Sequential(nn.Conv2d(dim, self.num_heads * self.key_dim, 1),
-                               nn.BatchNorm2d(self.num_heads * self.key_dim), )
-        self.v = nn.Sequential(nn.Conv2d(dim, self.num_heads * self.d, 1),
-                               nn.BatchNorm2d(self.num_heads * self.d),
-                               )
-        self.v_local = nn.Sequential(nn.Conv2d(self.num_heads * self.d, self.num_heads * self.d,
-                                               kernel_size=3, stride=2, padding=1, groups=self.num_heads * self.d),
-                                     nn.BatchNorm2d(self.num_heads * self.d), )
+        self.k = ConvModule(in_channels=dim,
+                            out_channels=out_dim,
+                            kernel_size=1,
+                            bias=True,
+                            conv_cfg=conv_cfg,
+                            norm_cfg=norm_cfg,
+                            act_cfg=None)
 
-        self.proj = nn.Sequential(
-            act_layer(),
-            nn.Conv2d(self.dh, self.out_dim, 1),
-            nn.BatchNorm2d(self.out_dim), )
+        self.v = ConvModule(in_channels=dim,
+                            out_channels=self.num_heads * self.d,
+                            kernel_size=1,
+                            bias=True,
+                            conv_cfg=conv_cfg,
+                            norm_cfg=norm_cfg,
+                            act_cfg=None)
+
+        self.v_local = ConvModule(in_channels=self.num_heads * self.d,
+                                  out_channels=self.num_heads * self.d,
+                                  kernel_size=3,
+                                  stride=2,
+                                  padding=1,
+                                  groups=self.num_heads * self.d,
+                                  bias=True,
+                                  conv_cfg=conv_cfg,
+                                  norm_cfg=norm_cfg,
+                                  act_cfg=None)
+
+        self.proj = ConvModule(in_channels=self.dh,
+                               out_channels=self.out_dim,
+                               kernel_size=1,
+                               bias=True,
+                               conv_cfg=conv_cfg,
+                               norm_cfg=norm_cfg,
+                               act_cfg=act_cfg,
+                               order=('act', 'conv', 'norm'))
 
         points = list(itertools.product(range(self.resolution), range(self.resolution)))
         points_ = list(itertools.product(
@@ -313,7 +337,7 @@ class Attention4DDownsample(torch.nn.Module):
 class Embedding(nn.Module):
     def __init__(self, patch_size=3, stride=2, padding=1,
                  in_chans=3, embed_dim=768, norm_layer=nn.BatchNorm2d,
-                 light=False, asub=False, resolution=None, act_layer=nn.ReLU, attn_block=Attention4DDownsample):
+                 light=False, asub=False, resolution=None, act_cfg=dict(type='GELU'), attn_block=Attention4DDownsample):
         super().__init__()
         self.light = light
         self.asub = asub
@@ -332,7 +356,7 @@ class Embedding(nn.Module):
             )
         elif self.asub:
             self.attn = attn_block(dim=in_chans, out_dim=embed_dim,
-                                   resolution=resolution, act_layer=act_layer)
+                                   resolution=resolution, act_cfg=act_cfg)
             patch_size = to_2tuple(patch_size)
             stride = to_2tuple(stride)
             padding = to_2tuple(padding)
@@ -510,7 +534,7 @@ class EfficientFormerV2(nn.Module):
     def __init__(self, layers, embed_dims=None,
                  mlp_ratios=4, downsamples=None,
                  pool_size=3,
-                 norm_layer=nn.BatchNorm2d, act_layer=nn.GELU,
+                 norm_cfg=dict(type='BN'), act_cfg=dict(type='GELU'),
                  num_classes=1000,
                  down_patch_size=3, down_stride=2, down_pad=1,
                  drop_rate=0., drop_path_rate=0.,
@@ -529,13 +553,13 @@ class EfficientFormerV2(nn.Module):
             self.num_classes = num_classes
         self.fork_feat = fork_feat
 
-        self._make_stem(3, embed_dims[0], act_cfg=act_layer)
+        self._make_stem(3, embed_dims[0], norm_cfg=norm_cfg, act_cfg=act_cfg)
 
         network = []
         for i in range(len(layers)):
             stage = eformer_block(embed_dims[i], i, layers,
                                   pool_size=pool_size, mlp_ratio=mlp_ratios,
-                                  act_layer=act_layer, norm_layer=norm_layer,
+                                  act_layer=act_cfg, norm_layer=norm_cfg,
                                   drop_rate=drop_rate,
                                   drop_path_rate=drop_path_rate,
                                   use_layer_scale=use_layer_scale,
@@ -559,7 +583,7 @@ class EfficientFormerV2(nn.Module):
                         in_chans=embed_dims[i], embed_dim=embed_dims[i + 1],
                         resolution=math.ceil(resolution / (2 ** (i + 2))),
                         asub=asub,
-                        act_layer=act_layer, norm_layer=norm_layer,
+                        act_cfg=act_cfg, norm_layer=norm_cfg,
                     )
                 )
 
@@ -595,8 +619,8 @@ class EfficientFormerV2(nn.Module):
                 self.init_cfg is not None or pretrained is not None):
             self.init_weights()
 
-    def _make_stem(self, in_channels, stem_channels, act_cfg=dict(type='ReLU')):
-        """make 2-ConvBNReLu stem layer."""
+    def _make_stem(self, in_channels, stem_channels, norm_cfg=dict(type='BN'), act_cfg=dict(type='GELU')):
+        """make 2-ConvBNGELU stem layer."""
         self.patch_embed = Sequential(
             ConvModule(
                 in_channels,
@@ -606,7 +630,7 @@ class EfficientFormerV2(nn.Module):
                 padding=1,
                 bias=True,
                 conv_cfg=dict(type='Conv2D'),
-                norm_cfg=dict(type='BN'),
+                norm_cfg=norm_cfg,
                 act_cfg=act_cfg),
             ConvModule(
                 stem_channels // 2,
@@ -616,7 +640,7 @@ class EfficientFormerV2(nn.Module):
                 padding=1,
                 bias=True,
                 conv_cfg=dict(type='Conv2D'),
-                norm_cfg=dict(type='BN'),
+                norm_cfg=norm_cfg,
                 act_cfg=act_cfg))
 
 
