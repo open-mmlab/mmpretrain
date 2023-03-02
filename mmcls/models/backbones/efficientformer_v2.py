@@ -8,9 +8,11 @@ import torch.nn.functional as F
 import math
 from typing import Optional, Sequence, Union
 
-from mmcv.cnn.bricks import ConvModule, DropPath, build_upsample_layer
+from mmcv.cnn.bricks import ConvModule, DropPath, build_upsample_layer, build_conv_layer
 from mmengine.model import BaseModule, Sequential
 from mmengine.model.weight_init import trunc_normal_
+
+from ..utils import LayerScale
 
 from mmcls.registry import MODELS
 from ..utils import build_norm_layer, to_2tuple
@@ -68,51 +70,102 @@ expansion_ratios_S0 = {
 }
 
 
-class Attention4D(torch.nn.Module):
-    def __init__(self, dim=384, key_dim=32, num_heads=8,
+class Attention4D(BaseModule):
+    def __init__(self,
+                 dim=384,
+                 key_dim=32,
+                 num_heads=8,
                  attn_ratio=4,
                  resolution=7,
-                 act_layer=nn.ReLU,
                  stride=None,
-                 upsample_cfg=dict(type='bilinear')):
-        super().__init__()
+                 conv_cfg=dict(type='Conv2d'),
+                 norm_cfg=dict(type='BN'),
+                 act_cfg=dict(type='GELU'),
+                 upsample_cfg=dict(type='bilinear'),
+                 init_cfg=None):
+        super(Attention4D, self).__init__(init_cfg=init_cfg)
         self.num_heads = num_heads
         self.scale = key_dim ** -0.5
         self.key_dim = key_dim
-        self.nh_kd = nh_kd = key_dim * num_heads
+        self.nh_kd = key_dim * num_heads
+        self.N = self.resolution ** 2
+        self.N2 = self.N
+        self.d = int(attn_ratio * key_dim)
+        self.dh = int(attn_ratio * key_dim) * num_heads
+        self.attn_ratio = attn_ratio
 
         if stride is not None:
             self.resolution = math.ceil(resolution / stride)
-            self.stride_conv = nn.Sequential(nn.Conv2d(dim, dim, kernel_size=3, stride=stride, padding=1, groups=dim),
-                                             nn.BatchNorm2d(dim), )
+            self.stride_conv = ConvModule(in_channels=dim,
+                                          out_channels=dim,
+                                          kernel_size=3,
+                                          stride=stride,
+                                          padding=1,
+                                          groups=dim,
+                                          bias=True,
+                                          conv_cfg=conv_cfg,
+                                          norm_cfg=norm_cfg,
+                                          act_cfg=None)
             self.upsample = build_upsample_layer(upsample_cfg, scale_factor=stride)
         else:
             self.resolution = resolution
             self.stride_conv = None
             self.upsample = None
 
-        self.N = self.resolution ** 2
-        self.N2 = self.N
-        self.d = int(attn_ratio * key_dim)
-        self.dh = int(attn_ratio * key_dim) * num_heads
-        self.attn_ratio = attn_ratio
-        h = self.dh + nh_kd * 2
-        self.q = nn.Sequential(nn.Conv2d(dim, self.num_heads * self.key_dim, 1),
-                               nn.BatchNorm2d(self.num_heads * self.key_dim), )
-        self.k = nn.Sequential(nn.Conv2d(dim, self.num_heads * self.key_dim, 1),
-                               nn.BatchNorm2d(self.num_heads * self.key_dim), )
-        self.v = nn.Sequential(nn.Conv2d(dim, self.num_heads * self.d, 1),
-                               nn.BatchNorm2d(self.num_heads * self.d),
-                               )
-        self.v_local = nn.Sequential(nn.Conv2d(self.num_heads * self.d, self.num_heads * self.d,
-                                               kernel_size=3, stride=1, padding=1, groups=self.num_heads * self.d),
-                                     nn.BatchNorm2d(self.num_heads * self.d), )
-        self.talking_head1 = nn.Conv2d(self.num_heads, self.num_heads, kernel_size=1, stride=1, padding=0)
-        self.talking_head2 = nn.Conv2d(self.num_heads, self.num_heads, kernel_size=1, stride=1, padding=0)
+        self.q = ConvModule(in_channels=dim,
+                            out_channels=self.num_heads * self.key_dim,
+                            kernel_size=1,
+                            bias=True,
+                            conv_cfg=conv_cfg,
+                            norm_cfg=norm_cfg,
+                            act_cfg=None)
+        self.k = ConvModule(in_channels=dim,
+                            out_channels=self.num_heads * self.key_dim,
+                            kernel_size=1,
+                            bias=True,
+                            conv_cfg=conv_cfg,
+                            norm_cfg=norm_cfg,
+                            act_cfg=None)
+        self.v = ConvModule(in_channels=dim,
+                            out_channels=self.num_heads * self.d,
+                            kernel_size=1,
+                            bias=True,
+                            conv_cfg=conv_cfg,
+                            norm_cfg=norm_cfg,
+                            act_cfg=None)
 
-        self.proj = nn.Sequential(act_layer(),
-                                  nn.Conv2d(self.dh, dim, 1),
-                                  nn.BatchNorm2d(dim), )
+        self.v_local = ConvModule(in_channels=self.num_heads * self.d,
+                                  out_channels=self.num_heads * self.d,
+                                  kernel_size=3,
+                                  stride=1,
+                                  padding=1,
+                                  groups=self.num_heads * self.d,
+                                  bias=True,
+                                  conv_cfg=conv_cfg,
+                                  norm_cfg=norm_cfg,
+                                  act_cfg=None)
+
+        self.talking_head1 = build_conv_layer(conv_cfg,
+                                              self.num_heads,
+                                              self.num_heads,
+                                              kernel_size=1,
+                                              stride=1,
+                                              padding=0)
+        self.talking_head2 = build_conv_layer(conv_cfg,
+                                              self.num_heads,
+                                              self.num_heads,
+                                              kernel_size=1,
+                                              stride=1,
+                                              padding=0)
+
+        self.proj = ConvModule(in_channels=self.dh,
+                               out_channels=dim,
+                               kernel_size=1,
+                               bias=True,
+                               conv_cfg=conv_cfg,
+                               norm_cfg=norm_cfg,
+                               act_cfg=act_cfg,
+                               order=('act', 'conv', 'norm'))
 
         points = list(itertools.product(range(self.resolution), range(self.resolution)))
         N = len(points)
@@ -148,11 +201,8 @@ class Attention4D(torch.nn.Module):
         v_local = self.v_local(v)
         v = v.flatten(2).reshape(B, self.num_heads, -1, self.N).permute(0, 1, 3, 2)
 
-        attn = (
-                (q @ k) * self.scale
-                +
-                (self.attention_biases[:, self.attention_bias_idxs]
-                 if self.training else self.ab)
+        attn = ((q @ k) * self.scale + (self.attention_biases[:, self.attention_bias_idxs]
+                                        if self.training else self.ab)
         )
         # attn = (q @ k) * self.scale
         attn = self.talking_head1(attn)
@@ -175,7 +225,7 @@ class LGQuery(BaseModule):
                  out_dim,
                  resolution1,
                  resolution2,
-                 conv_cfg=dict(type='Conv2D'),
+                 conv_cfg=dict(type='Conv2d'),
                  norm_cfg=dict(type='BN'),
                  init_cfg=None):
         super(LGQuery,self).__init__(init_cfg=init_cfg)
@@ -211,16 +261,19 @@ class LGQuery(BaseModule):
         return q
 
 
-class Attention4DDownsample(torch.nn.Module):
-    def __init__(self, dim=384, key_dim=16, num_heads=8,
-                 attn_ratio=4.0,
-                 resolution=7,
+class Attention4DDownsample(BaseModule):
+    def __init__(self,
+                 dim=384,
                  out_dim=None,
-                 conv_cfg=dict(type='Conv2D'),
+                 resolution=7,
+                 key_dim=16,
+                 num_heads=8,
+                 attn_ratio=4.0,
+                 conv_cfg=dict(type='Conv2d'),
                  norm_cfg=dict(type='BN'),
                  act_cfg=dict(type='GELU'),
-                 ):
-        super().__init__()
+                 init_cfg=None):
+        super(Attention4DDownsample,self).__init__(init_cfg=init_cfg)
 
         self.num_heads = num_heads
         self.scale = key_dim ** -0.5
@@ -281,8 +334,7 @@ class Attention4DDownsample(torch.nn.Module):
                                order=('act', 'conv', 'norm'))
 
         points = list(itertools.product(range(self.resolution), range(self.resolution)))
-        points_ = list(itertools.product(
-            range(self.resolution2), range(self.resolution2)))
+        points_ = list(itertools.product(range(self.resolution2), range(self.resolution2)))
         N = len(points)
         N_ = len(points_)
         attention_offsets = {}
@@ -318,12 +370,8 @@ class Attention4DDownsample(torch.nn.Module):
         v_local = self.v_local(v)
         v = v.flatten(2).reshape(B, self.num_heads, -1, self.N).permute(0, 1, 3, 2)
 
-        attn = (
-                (q @ k) * self.scale
-                +
-                (self.attention_biases[:, self.attention_bias_idxs]
-                 if self.training else self.ab)
-        )
+        attn = ((q @ k) * self.scale + (self.attention_biases[:, self.attention_bias_idxs]
+                                        if self.training else self.ab))
 
         # attn = (q @ k) * self.scale
         attn = attn.softmax(dim=-1)
@@ -334,49 +382,79 @@ class Attention4DDownsample(torch.nn.Module):
         return out
 
 
-class Embedding(nn.Module):
-    def __init__(self, patch_size=3, stride=2, padding=1,
-                 in_chans=3, embed_dim=768, norm_layer=nn.BatchNorm2d,
-                 light=False, asub=False, resolution=None, act_cfg=dict(type='GELU'), attn_block=Attention4DDownsample):
-        super().__init__()
+class Embedding(BaseModule):
+    def __init__(self, kernel_size=3, stride=2, padding=1,
+                 in_chans=3, embed_dim=768, norm_cfg=dict(type='BN'),
+                 light=False, asub=False, resolution=None, conv_cfg=dict(type='Conv2d'),
+                 act_cfg=dict(type='GELU'), init_cfg=None):
+        super(Embedding, self).__init__(init_cfg=init_cfg)
         self.light = light
         self.asub = asub
 
         if self.light:
-            self.new_proj = nn.Sequential(
-                nn.Conv2d(in_chans, in_chans, kernel_size=3, stride=2, padding=1, groups=in_chans),
-                nn.BatchNorm2d(in_chans),
-                nn.Hardswish(),
-                nn.Conv2d(in_chans, embed_dim, kernel_size=1, stride=1, padding=0),
-                nn.BatchNorm2d(embed_dim),
-            )
-            self.skip = nn.Sequential(
-                nn.Conv2d(in_chans, embed_dim, kernel_size=1, stride=2, padding=0),
-                nn.BatchNorm2d(embed_dim)
-            )
+            self.new_proj = Sequential(
+                ConvModule(in_channels=in_chans,
+                           out_channels=in_chans,
+                           kernel_size=3,
+                           stride=2,
+                           padding=1,
+                           groups=in_chans,
+                           bias=True,
+                           conv_cfg=conv_cfg,
+                           norm_cfg=norm_cfg,
+                           act_cfg=dict(type='HSwish')),
+                ConvModule(in_channels=in_chans,
+                           out_channels=embed_dim,
+                           kernel_size=1,
+                           stride=1,
+                           padding=0,
+                           bias=True,
+                           conv_cfg=conv_cfg,
+                           norm_cfg=norm_cfg,
+                           act_cfg=None))
+
+            self.skip = ConvModule(in_channels=in_chans,
+                                   out_channels=embed_dim,
+                                   kernel_size=1,
+                                   stride=2,
+                                   padding=0,
+                                   bias=True,
+                                   conv_cfg=conv_cfg,
+                                   norm_cfg=norm_cfg,
+                                   act_cfg=None)
         elif self.asub:
-            self.attn = attn_block(dim=in_chans, out_dim=embed_dim,
-                                   resolution=resolution, act_cfg=act_cfg)
-            patch_size = to_2tuple(patch_size)
-            stride = to_2tuple(stride)
-            padding = to_2tuple(padding)
-            self.conv = nn.Conv2d(in_chans, embed_dim, kernel_size=patch_size,
-                                  stride=stride, padding=padding)
-            self.bn = norm_layer(embed_dim) if norm_layer else nn.Identity()
+            self.attn = Attention4DDownsample(
+                dim=in_chans,
+                out_dim=embed_dim,
+                resolution=resolution,
+                act_cfg=act_cfg)
+
+            self.conv = ConvModule(in_channels=in_chans,
+                                   out_channels=embed_dim,
+                                   kernel_size=kernel_size,
+                                   stride=stride,
+                                   padding=padding,
+                                   bias=True,
+                                   conv_cfg=conv_cfg,
+                                   norm_cfg=norm_cfg,
+                                   act_cfg=None)
+
         else:
-            patch_size = to_2tuple(patch_size)
-            stride = to_2tuple(stride)
-            padding = to_2tuple(padding)
-            self.proj = nn.Conv2d(in_chans, embed_dim, kernel_size=patch_size,
-                                  stride=stride, padding=padding)
-            self.norm = norm_layer(embed_dim) if norm_layer else nn.Identity()
+            self.proj = ConvModule(in_channels=in_chans,
+                                   out_channels=embed_dim,
+                                   kernel_size=kernel_size,
+                                   stride=stride,
+                                   padding=padding,
+                                   bias=True,
+                                   conv_cfg=conv_cfg,
+                                   norm_cfg=norm_cfg,
+                                   act_cfg=None)
 
     def forward(self, x):
         if self.light:
             out = self.new_proj(x) + self.skip(x)
         elif self.asub:
             out_conv = self.conv(x)
-            out_conv = self.bn(out_conv)
             out = self.attn(x) + out_conv
         else:
             x = self.proj(x)
@@ -384,121 +462,132 @@ class Embedding(nn.Module):
         return out
 
 
-class Mlp(nn.Module):
+class ConvMlp(nn.Module):
     """
     Implementation of MLP with 1*1 convolutions.
     Input: tensor with shape [B, C, H, W]
     """
 
-    def __init__(self, in_features, hidden_features=None,
-                 out_features=None, act_layer=nn.GELU, drop=0., mid_conv=False):
-        super().__init__()
+    def __init__(self,
+                 in_features,
+                 hidden_features=None,
+                 out_features=None,
+                 mid_conv=True,
+                 drop_rate=0.,
+                 conv_cfg=dict(type='Conv2d'),
+                 norm_cfg=dict(type='BN'),
+                 act_cfg=dict(type='GELU'),
+                 init_cfg=None):
+        super(ConvMlp, self).__init__(init_cfg=init_cfg)
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
         self.mid_conv = mid_conv
-        self.fc1 = nn.Conv2d(in_features, hidden_features, 1)
-        self.act = act_layer()
-        self.fc2 = nn.Conv2d(hidden_features, out_features, 1)
-        self.drop = nn.Dropout(drop)
-        self.apply(self._init_weights)
+
+        self.fc1 = ConvModule(in_channels=in_features,
+                              out_channels=hidden_features,
+                              kernel_size=1,
+                              bias=True,
+                              conv_cfg=conv_cfg,
+                              norm_cfg=norm_cfg,
+                              act_cfg=act_cfg)
+
+        self.drop = nn.Dropout(drop_rate)
 
         if self.mid_conv:
-            self.mid = nn.Conv2d(hidden_features, hidden_features, kernel_size=3, stride=1, padding=1,
-                                 groups=hidden_features)
-            self.mid_norm = nn.BatchNorm2d(hidden_features)
+            self.mid = ConvModule(in_channels=hidden_features,
+                                  out_channels=hidden_features,
+                                  kernel_size=3,
+                                  stride=1,
+                                  padding=1,
+                                  groups=hidden_features,
+                                  bias=True,
+                                  conv_cfg=conv_cfg,
+                                  norm_cfg=norm_cfg,
+                                  act_cfg=act_cfg)
 
-        self.norm1 = nn.BatchNorm2d(hidden_features)
-        self.norm2 = nn.BatchNorm2d(out_features)
-
-    def _init_weights(self, m):
-        if isinstance(m, nn.Conv2d):
-            trunc_normal_(m.weight, std=.02)
-            if m.bias is not None:
-                nn.init.constant_(m.bias, 0)
+        self.fc2 = ConvModule(in_channels=hidden_features,
+                              out_channels=out_features,
+                              kernel_size=1,
+                              bias=True,
+                              conv_cfg=conv_cfg,
+                              norm_cfg=norm_cfg,
+                              act_cfg=None)
 
     def forward(self, x):
         x = self.fc1(x)
-        x = self.norm1(x)
-        x = self.act(x)
-
         if self.mid_conv:
-            x_mid = self.mid(x)
-            x_mid = self.mid_norm(x_mid)
-            x = self.act(x_mid)
-        x = self.drop(x)
+            x = self.mid(x)
 
+        x = self.drop(x)
         x = self.fc2(x)
-        x = self.norm2(x)
-
         x = self.drop(x)
         return x
 
 
-class AttnFFN(nn.Module):
-    def __init__(self, dim, mlp_ratio=4.,
-                 act_layer=nn.ReLU, norm_layer=nn.LayerNorm,
-                 drop=0., drop_path=0.,
-                 use_layer_scale=True, layer_scale_init_value=1e-5,
-                 resolution=7, stride=None):
+class EfficientFormerBlock(BaseModule):
+    def __init__(self,
+                 dim,
+                 mlp_ratio=4.,
+                 drop=0.,
+                 drop_path=0.,
+                 ues_attn=True,
+                 resolution=7,
+                 stride=None,
+                 use_layer_scale=True,
+                 conv_cfg=dict(type='Conv2d'),
+                 norm_cfg=dict(type='BN'),
+                 act_cfg=dict(type='GELU'),
+                 init_cfg=[
+                     dict(
+                         type='TruncNormal',
+                         layer='Conv2d',
+                         std=.02,
+                         bias=0.),
+                     dict(type='Constant', layer=['LayerScale'], val=1e-5)
+                 ]):
 
-        super().__init__()
+        super(EfficientFormerBlock, self).__init__(init_cfg=init_cfg)
+        self.use_attn = ues_attn
+        if self.ues_attn:
+            self.token_mixer = Attention4D(dim=dim,
+                                           resolution=resolution,
+                                           stride=stride,
+                                           conv_cfg=conv_cfg,
+                                           norm_cfg=norm_cfg,
+                                           act_cfg=act_cfg)
 
-        self.token_mixer = Attention4D(dim, resolution=resolution, act_layer=act_layer, stride=stride)
         mlp_hidden_dim = int(dim * mlp_ratio)
-        self.mlp = Mlp(in_features=dim, hidden_features=mlp_hidden_dim,
-                       act_layer=act_layer, drop=drop, mid_conv=True)
+        self.mlp = ConvMlp(in_features=dim,
+                           hidden_features=mlp_hidden_dim,
+                           out_features=dim,
+                           mid_conv=True,
+                           drop_rate=drop,
+                           conv_cfg=conv_cfg,
+                           norm_cfg=norm_cfg,
+                           act_cfg=act_cfg)
 
         self.drop_path = DropPath(drop_path) if drop_path > 0. \
             else nn.Identity()
         self.use_layer_scale = use_layer_scale
         if use_layer_scale:
-            self.layer_scale_1 = nn.Parameter(
-                layer_scale_init_value * torch.ones(dim).unsqueeze(-1).unsqueeze(-1), requires_grad=True)
-            self.layer_scale_2 = nn.Parameter(
-                layer_scale_init_value * torch.ones(dim).unsqueeze(-1).unsqueeze(-1), requires_grad=True)
+            self.ls1 = LayerScale(dim, data_format='channels_first')
+            self.ls2 = LayerScale(dim, data_format='channels_first')
+        else:
+            self.ls1, self.ls2 = nn.Identity(), nn.Identity()
+
 
     def forward(self, x):
-        if self.use_layer_scale:
-            x = x + self.drop_path(self.layer_scale_1 * self.token_mixer(x))
-            x = x + self.drop_path(self.layer_scale_2 * self.mlp(x))
-
-        else:
-            x = x + self.drop_path(self.token_mixer(x))
-            x = x + self.drop_path(self.mlp(x))
+        if self.use_attn:
+            x = x + self.drop_path(self.ls1(self.token_mixer(x)))
+        x = x + self.drop_path(self.ls2(self.mlp(x)))
         return x
 
 
-class FFN(nn.Module):
-    def __init__(self, dim, pool_size=3, mlp_ratio=4.,
-                 act_layer=nn.GELU,
-                 drop=0., drop_path=0.,
-                 use_layer_scale=True, layer_scale_init_value=1e-5):
-        super().__init__()
-
-        mlp_hidden_dim = int(dim * mlp_ratio)
-        self.mlp = Mlp(in_features=dim, hidden_features=mlp_hidden_dim,
-                       act_layer=act_layer, drop=drop, mid_conv=True)
-
-        self.drop_path = DropPath(drop_path) if drop_path > 0. \
-            else nn.Identity()
-        self.use_layer_scale = use_layer_scale
-        if use_layer_scale:
-            self.layer_scale_2 = nn.Parameter(
-                layer_scale_init_value * torch.ones(dim).unsqueeze(-1).unsqueeze(-1), requires_grad=True)
-
-    def forward(self, x):
-        if self.use_layer_scale:
-            x = x + self.drop_path(self.layer_scale_2 * self.mlp(x))
-        else:
-            x = x + self.drop_path(self.mlp(x))
-        return x
-
-
-def eformer_block(dim, index, layers,
-                  pool_size=3, mlp_ratio=4.,
-                  act_layer=nn.GELU, norm_layer=nn.LayerNorm,
+def eformer_block(dim, index, layers, mlp_ratio=4.,
+                  act_cfg=dict(type='GELU'), conv_cfg=dict(type='Conv2d'),
+                  norm_cfg=dict(type='BN'),
                   drop_rate=.0, drop_path_rate=0.,
-                  use_layer_scale=True, layer_scale_init_value=1e-5, vit_num=1, resolution=7, e_ratios=None):
+                  use_layer_scale=True, vit_num=1, resolution=7, e_ratios=None):
     blocks = []
     for block_idx in range(layers[index]):
         block_dpr = drop_path_rate * (
@@ -509,27 +598,31 @@ def eformer_block(dim, index, layers,
                 stride = 2
             else:
                 stride = None
-            blocks.append(AttnFFN(
+            blocks.append(EfficientFormerBlock(
                 dim, mlp_ratio=mlp_ratio,
-                act_layer=act_layer, norm_layer=norm_layer,
+                ues_attn=True,
+                act_cfg=act_cfg, norm_cfg=norm_cfg,
                 drop=drop_rate, drop_path=block_dpr,
                 use_layer_scale=use_layer_scale,
-                layer_scale_init_value=layer_scale_init_value,
+                conv_cfg=conv_cfg,
                 resolution=resolution,
                 stride=stride,
             ))
         else:
-            blocks.append(FFN(
-                dim, pool_size=pool_size, mlp_ratio=mlp_ratio,
-                act_layer=act_layer,
+            blocks.append(EfficientFormerBlock(
+                dim, mlp_ratio=mlp_ratio,
+                ues_attn=False,
+                act_cfg=act_cfg,
+                norm_cfg=norm_cfg,
                 drop=drop_rate, drop_path=block_dpr,
                 use_layer_scale=use_layer_scale,
-                layer_scale_init_value=layer_scale_init_value,
+                conv_cfg=conv_cfg,
             ))
     blocks = nn.Sequential(*blocks)
     return blocks
 
 
+@MODELS.register_module()
 class EfficientFormerV2(nn.Module):
     def __init__(self, layers, embed_dims=None,
                  mlp_ratios=4, downsamples=None,
@@ -578,12 +671,12 @@ class EfficientFormerV2(nn.Module):
                     asub = False
                 network.append(
                     Embedding(
-                        patch_size=down_patch_size, stride=down_stride,
+                        kernel_size=down_patch_size, stride=down_stride,
                         padding=down_pad,
                         in_chans=embed_dims[i], embed_dim=embed_dims[i + 1],
                         resolution=math.ceil(resolution / (2 ** (i + 2))),
                         asub=asub,
-                        act_cfg=act_cfg, norm_layer=norm_cfg,
+                        act_cfg=act_cfg, norm_cfg=norm_cfg,
                     )
                 )
 
@@ -629,7 +722,7 @@ class EfficientFormerV2(nn.Module):
                 stride=2,
                 padding=1,
                 bias=True,
-                conv_cfg=dict(type='Conv2D'),
+                conv_cfg=dict(type='Conv2d'),
                 norm_cfg=norm_cfg,
                 act_cfg=act_cfg),
             ConvModule(
@@ -639,7 +732,7 @@ class EfficientFormerV2(nn.Module):
                 stride=2,
                 padding=1,
                 bias=True,
-                conv_cfg=dict(type='Conv2D'),
+                conv_cfg=dict(type='Conv2d'),
                 norm_cfg=norm_cfg,
                 act_cfg=act_cfg))
 
