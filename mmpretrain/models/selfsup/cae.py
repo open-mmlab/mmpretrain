@@ -6,7 +6,6 @@ from collections import OrderedDict
 from functools import partial
 from typing import Dict, List, Optional, Union
 
-import attr
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -20,30 +19,30 @@ from ..utils import build_2d_sincos_position_embedding
 from .base import BaseSelfSupervisor
 
 
-@attr.s(eq=False)
 class Conv2d(nn.Module):
-    n_in: int = attr.ib(validator=lambda i, a, x: x >= 1)
-    n_out: int = attr.ib(validator=lambda i, a, x: x >= 1)
-    kw: int = attr.ib(validator=lambda i, a, x: x >= 1 and x % 2 == 1)
+    """Rewrite Conv2d module according to DALL-E code."""
 
-    use_float16: bool = attr.ib(default=True)
-    device: torch.device = attr.ib(default=torch.device('cpu'))
-    requires_grad: bool = attr.ib(default=False)
-
-    def __attrs_post_init__(self) -> None:
+    def __init__(self,
+                 n_in: int,
+                 n_out: int,
+                 kw: int,
+                 use_float16: bool = True,
+                 device: torch.device = torch.device('cpu'),
+                 requires_grad: bool = False) -> None:
         super().__init__()
 
-        w = torch.empty((self.n_out, self.n_in, self.kw, self.kw),
+        w = torch.empty((n_out, n_in, kw, kw),
                         dtype=torch.float32,
-                        device=self.device,
-                        requires_grad=self.requires_grad)
-        w.normal_(std=1 / math.sqrt(self.n_in * self.kw**2))
+                        device=device,
+                        requires_grad=requires_grad)
+        w.normal_(std=1 / math.sqrt(n_in * kw**2))
 
-        b = torch.zeros((self.n_out, ),
+        b = torch.zeros((n_out, ),
                         dtype=torch.float32,
-                        device=self.device,
-                        requires_grad=self.requires_grad)
+                        device=device,
+                        requires_grad=requires_grad)
         self.w, self.b = nn.Parameter(w), nn.Parameter(b)
+        self.use_float16 = use_float16
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         if self.use_float16 and 'cuda' in self.w.device.type:
@@ -60,78 +59,83 @@ class Conv2d(nn.Module):
         return F.conv2d(x, w, b, padding=(self.kw - 1) // 2)
 
 
-@attr.s(eq=False, repr=False)
 class EncoderBlock(nn.Module):
-    n_in: int = attr.ib(validator=lambda i, a, x: x >= 1)
-    n_out: int = attr.ib(validator=lambda i, a, x: x >= 1 and x % 4 == 0)
-    n_layers: int = attr.ib(validator=lambda i, a, x: x >= 1)
+    """Rewrite EncoderBlock module according to DALL-E code."""
 
-    device: torch.device = attr.ib(default=None)
-    requires_grad: bool = attr.ib(default=False)
-
-    def __attrs_post_init__(self) -> None:
+    def __init__(self,
+                 n_in: int,
+                 n_out: int,
+                 n_layers: int,
+                 device: torch.device = None,
+                 requires_grad: bool = False) -> None:
         super().__init__()
-        self.n_hid = self.n_out // 4
-        self.post_gain = 1 / (self.n_layers**2)
+        self.n_hid = n_out // 4
+        self.post_gain = 1 / (n_layers**2)
 
-        make_conv = partial(
-            Conv2d, device=self.device, requires_grad=self.requires_grad)
-        self.id_path = make_conv(
-            self.n_in, self.n_out,
-            1) if self.n_in != self.n_out else nn.Identity()
+        make_conv = partial(Conv2d, device=device, requires_grad=requires_grad)
+        self.id_path = make_conv(n_in, n_out,
+                                 1) if n_in != n_out else nn.Identity()
         self.res_path = nn.Sequential(
             OrderedDict([
                 ('relu_1', nn.ReLU()),
-                ('conv_1', make_conv(self.n_in, self.n_hid, 3)),
+                ('conv_1', make_conv(n_in, self.n_hid, 3)),
                 ('relu_2', nn.ReLU()),
                 ('conv_2', make_conv(self.n_hid, self.n_hid, 3)),
                 ('relu_3', nn.ReLU()),
                 ('conv_3', make_conv(self.n_hid, self.n_hid, 3)),
                 ('relu_4', nn.ReLU()),
-                ('conv_4', make_conv(self.n_hid, self.n_out, 1)),
+                ('conv_4', make_conv(self.n_hid, n_out, 1)),
             ]))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.id_path(x) + self.post_gain * self.res_path(x)
 
 
-@attr.s(eq=False, repr=False)
 @MODELS.register_module(name='DALL-E')
 class DALLEEncoder(BaseModule):
-    """DALL-E Encoder for feature extraction."""
+    """DALL-E Encoder for feature extraction.
+    
+    Args:
+        group_count (int): Number of groups in DALL-E encoder. Defaults to 4.
+        n_hid (int): Dimension of hidden layers. Defaults to 256.
+        n_blk_per_group (int): Number of blocks per group. Defaults to 2.
+        input_channels: (int): The channels of input images. Defaults to 3.
+        vocab_size (int): Vocabulary size, indicating the number of classes.
+            Defaults to 8192.
+        device (torch.device): Device of parameters. Defauts to 
+            ``torch.device('cpu')``.
+        requires_grad (bool): Require gradient or not. Defaults to False.
+        init_cfg (Union[List[dict], dict], optional): Config dict for weight
+            initialization. Defaults to None.
+    """
 
-    group_count: int = 4
-    n_hid: int = attr.ib(default=256, validator=lambda i, a, x: x >= 64)
-    n_blk_per_group: int = attr.ib(default=2, validator=lambda i, a, x: x >= 1)
-    input_channels: int = attr.ib(default=3, validator=lambda i, a, x: x >= 1)
-    vocab_size: int = attr.ib(default=8192, validator=lambda i, a, x: x >= 512)
+    def __init__(self,
+                 group_count: int = 4,
+                 n_hid: int = 256,
+                 n_blk_per_group: int = 2,
+                 input_channels: int = 3,
+                 vocab_size: int = 8192,
+                 device: torch.device = torch.device('cpu'),
+                 requires_grad: bool = False,
+                 init_cfg: Union[dict, List[dict], None] = None):
+        super().__init__(init_cfg=init_cfg)
 
-    device: torch.device = attr.ib(default=torch.device('cpu'))
-    requires_grad: bool = attr.ib(default=False)
-    use_mixed_precision: bool = attr.ib(default=True)
-    init_cfg: Optional[Union[dict, List[dict]]] = attr.ib(default=None)
-
-    def __attrs_post_init__(self) -> None:
-        super().__init__(init_cfg=self.init_cfg)
-
-        blk_range = range(self.n_blk_per_group)
-        n_layers = self.group_count * self.n_blk_per_group
-        make_conv = partial(
-            Conv2d, device=self.device, requires_grad=self.requires_grad)
+        blk_range = range(n_blk_per_group)
+        n_layers = group_count * n_blk_per_group
+        make_conv = partial(Conv2d, device=device, requires_grad=requires_grad)
         make_blk = partial(
             EncoderBlock,
             n_layers=n_layers,
-            device=self.device,
-            requires_grad=self.requires_grad)
+            device=device,
+            requires_grad=requires_grad)
 
         self.blocks = nn.Sequential(
             OrderedDict([
-                ('input', make_conv(self.input_channels, 1 * self.n_hid, 7)),
+                ('input', make_conv(input_channels, 1 * n_hid, 7)),
                 ('group_1',
                  nn.Sequential(
                      OrderedDict([
-                         *[(f'block_{i + 1}',
-                            make_blk(1 * self.n_hid, 1 * self.n_hid))
+                         *[(f'block_{i + 1}', make_blk(1 * n_hid, 1 * n_hid))
                            for i in blk_range],
                          ('pool', nn.MaxPool2d(kernel_size=2)),
                      ]))),
@@ -139,27 +143,24 @@ class DALLEEncoder(BaseModule):
                  nn.Sequential(
                      OrderedDict([
                          *[(f'block_{i + 1}',
-                            make_blk(
-                                1 * self.n_hid if i == 0 else 2 * self.n_hid,
-                                2 * self.n_hid)) for i in blk_range],
+                            make_blk(1 * n_hid if i == 0 else 2 * n_hid,
+                                     2 * n_hid)) for i in blk_range],
                          ('pool', nn.MaxPool2d(kernel_size=2)),
                      ]))),
                 ('group_3',
                  nn.Sequential(
                      OrderedDict([
                          *[(f'block_{i + 1}',
-                            make_blk(
-                                2 * self.n_hid if i == 0 else 4 * self.n_hid,
-                                4 * self.n_hid)) for i in blk_range],
+                            make_blk(2 * n_hid if i == 0 else 4 * n_hid,
+                                     4 * n_hid)) for i in blk_range],
                          ('pool', nn.MaxPool2d(kernel_size=2)),
                      ]))),
                 ('group_4',
                  nn.Sequential(
                      OrderedDict([
                          *[(f'block_{i + 1}',
-                            make_blk(
-                                4 * self.n_hid if i == 0 else 8 * self.n_hid,
-                                8 * self.n_hid)) for i in blk_range],
+                            make_blk(4 * n_hid if i == 0 else 8 * n_hid,
+                                     8 * n_hid)) for i in blk_range],
                      ]))),
                 ('output',
                  nn.Sequential(
@@ -167,10 +168,7 @@ class DALLEEncoder(BaseModule):
                          ('relu', nn.ReLU()),
                          ('conv',
                           make_conv(
-                              8 * self.n_hid,
-                              self.vocab_size,
-                              1,
-                              use_float16=False)),
+                              8 * n_hid, vocab_size, 1, use_float16=False)),
                      ]))),
             ]))
 

@@ -1,4 +1,3 @@
-attrs
 einops
 importlib-metadata
 matplotlib
