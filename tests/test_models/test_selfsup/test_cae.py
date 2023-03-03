@@ -10,23 +10,24 @@ from mmpretrain.structures import DataSample
 
 @pytest.mark.skipif(platform.system() == 'Windows', reason='Windows mem limit')
 def test_cae_vit():
-    backbone = dict(arch='b', patch_size=16, layer_scale_init_value=0.1)
+    backbone = dict(
+        arch='deit-tiny', patch_size=16, layer_scale_init_value=0.1)
 
     cae_backbone = CAEPretrainViT(**backbone)
     cae_backbone.init_weights()
-    fake_inputs = torch.randn((2, 3, 224, 224))
-    fake_mask = torch.zeros((2, 196)).bool()
+    fake_inputs = torch.randn((1, 3, 224, 224))
+    fake_mask = torch.zeros((1, 196)).bool()
     fake_mask[:, 75:150] = 1
 
     # test with mask
     fake_outputs = cae_backbone(fake_inputs, fake_mask)
-    assert list(fake_outputs.shape) == [2, 122, 768]
+    assert list(fake_outputs.shape) == [1, 122, 192]
 
     # test without mask
     fake_outputs = cae_backbone(fake_inputs, None)
     assert len(fake_outputs[0]) == 2
-    assert fake_outputs[0][0].shape == torch.Size([2, 768, 14, 14])
-    assert fake_outputs[0][1].shape == torch.Size([2, 768])
+    assert fake_outputs[0][0].shape == torch.Size([1, 192, 14, 14])
+    assert fake_outputs[0][1].shape == torch.Size([1, 192])
 
 
 @pytest.mark.skipif(platform.system() == 'Windows', reason='Windows mem limit')
@@ -42,12 +43,12 @@ def test_cae():
     # model settings
     backbone = dict(
         type='CAEPretrainViT',
-        arch='b',
+        arch='deit-tiny',
         patch_size=16,
         layer_scale_init_value=0.1)
     neck = dict(
         type='CAENeck',
-        embed_dims=768,
+        embed_dims=192,
         num_heads=12,
         regressor_depth=4,
         decoder_depth=4,
