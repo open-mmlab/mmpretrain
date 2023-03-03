@@ -24,8 +24,13 @@ class CLIPGenerator(BaseModule):
 
     def __init__(self, tokenizer_path: str) -> None:
         super().__init__()
+        self.tokenizer_path = tokenizer_path
+        self.tokenizer = None
+
+    def init_weights(self):
+        super().init_weights()
         self.tokenizer = build_clip_model(
-            _load_checkpoint(tokenizer_path), False)
+            _load_checkpoint(self.tokenizer_path), False)
 
     @torch.no_grad()
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -40,6 +45,9 @@ class CLIPGenerator(BaseModule):
             respectively.
         """
         # use the visual branch of CLIP to get the features
+        assert self.tokenizer is not None, 'Please check whether the ' \
+        '`self.tokenizer` is initialized correctly.'
+
         clip_features = self.tokenizer.encode_image(x)
         return clip_features
 
@@ -123,8 +131,8 @@ class MILANViT(MAEViT):
 
         Args:
             x (torch.Tensor): Input images, which is of shape B x C x H x W.
-            importance (torch.Tensor): Importance of each patch, which is of
-                shape B x L.
+            importance (torch.Tensor, optional): Importance of each patch,
+                which is of shape B x L.
 
         Returns:
             Tuple[torch.Tensor, ...]: masked image, the ids to restore original
