@@ -73,7 +73,7 @@ train_pipeline = [
         type='MultiView',
         num_views=[1, 1],
         transforms=[view_pipeline1, view_pipeline2]),
-    dict(type='PackInputs', meta_keys=['img_path'])
+    dict(type='PackInputs')
 ]
 
 train_dataloader = dict(batch_size=256, dataset=dict(pipeline=train_pipeline))

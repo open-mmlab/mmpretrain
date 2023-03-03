@@ -13,7 +13,7 @@ train_pipeline = [
         backend='pillow',
         interpolation='bicubic'),
     dict(type='RandomFlip', prob=0.5),
-    dict(type='PackInputs', meta_keys=['img_path'])
+    dict(type='PackInputs')
 ]
 
 train_dataloader = dict(

@@ -37,7 +37,7 @@ view_pipeline1 = [
         keep_channels=True,
         channel_weights=(0.114, 0.587, 0.2989)),
     dict(
-        type='RandomGaussianBlur',
+        type='GaussianBlur',
         magnitude_range=(0.1, 2.0),
         magnitude_std='inf',
         prob=0.5),
@@ -66,7 +66,7 @@ view_pipeline2 = [
         keep_channels=True,
         channel_weights=(0.114, 0.587, 0.2989)),
     dict(
-        type='RandomGaussianBlur',
+        type='GaussianBlur',
         magnitude_range=(0.1, 2.0),
         magnitude_std='inf',
         prob=0.5),
@@ -78,7 +78,7 @@ train_pipeline = [
         type='MultiView',
         num_views=num_crops,
         transforms=[view_pipeline1, view_pipeline2]),
-    dict(type='PackInputs', meta_keys=['img_path'])
+    dict(type='PackInputs')
 ]
 
 batch_size = 32
