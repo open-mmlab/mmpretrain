@@ -46,7 +46,7 @@ class CLIPGenerator(BaseModule):
         """
         # use the visual branch of CLIP to get the features
         assert self.tokenizer is not None, 'Please check whether the ' \
-        '`self.tokenizer` is initialized correctly.'
+            '`self.tokenizer` is initialized correctly.'
 
         clip_features = self.tokenizer.encode_image(x)
         return clip_features
