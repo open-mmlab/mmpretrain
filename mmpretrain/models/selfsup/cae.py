@@ -94,7 +94,7 @@ class EncoderBlock(nn.Module):
 @MODELS.register_module(name='DALL-E')
 class DALLEEncoder(BaseModule):
     """DALL-E Encoder for feature extraction.
-    
+
     Args:
         group_count (int): Number of groups in DALL-E encoder. Defaults to 4.
         n_hid (int): Dimension of hidden layers. Defaults to 256.
@@ -102,7 +102,7 @@ class DALLEEncoder(BaseModule):
         input_channels: (int): The channels of input images. Defaults to 3.
         vocab_size (int): Vocabulary size, indicating the number of classes.
             Defaults to 8192.
-        device (torch.device): Device of parameters. Defauts to 
+        device (torch.device): Device of parameters. Defaults to
             ``torch.device('cpu')``.
         requires_grad (bool): Require gradient or not. Defaults to False.
         init_cfg (Union[List[dict], dict], optional): Config dict for weight
@@ -173,6 +173,14 @@ class DALLEEncoder(BaseModule):
             ]))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward function of DALL-E encoder.
+
+        Args:
+            x (torch.Tensor): The input images with shape (B, C, H, W).
+
+        Returns:
+            torch.Tensor: The output with shape (B, vocab_size, h, w).
+        """
         x = x.float()
         if len(x.shape) != 4:
             raise ValueError(f'input shape {x.shape} is not 4d')
