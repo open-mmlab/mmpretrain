@@ -547,7 +547,6 @@ class EfficientFormerV2(BaseBackbone):
         's0': {
             'layers': [2, 2, 6, 4],
             'embed_dims': [32, 48, 96, 176],
-            'downsamples': [True, True, True, True],
             'vit_num': 2,
             'expansion_ratios': {
                 '0': [4, 4],
@@ -559,7 +558,6 @@ class EfficientFormerV2(BaseBackbone):
         's1': {
             'layers': [3, 3, 9, 6],
             'embed_dims': [32, 48, 120, 224],
-            'downsamples': [True, True, True, True],
             'vit_num': 2,
             'expansion_ratios': {
                 '0': [4, 4, 4],
@@ -571,7 +569,6 @@ class EfficientFormerV2(BaseBackbone):
         's2': {
             'layers': [4, 4, 12, 8],
             'embed_dims': [32, 64, 144, 288],
-            'downsamples': [True, True, True, True],
             'vit_num': 4,
             'expansion_ratios': {
                 '0': [4, 4, 4, 4],
@@ -583,7 +580,6 @@ class EfficientFormerV2(BaseBackbone):
         'l': {
             'layers': [5, 5, 15, 10],
             'embed_dims': [40, 80, 192, 384],
-            'downsamples': [True, True, True, True],
             'vit_num': 6,
             'expansion_ratios': {
                 '0': [4, 4, 4, 4, 4],
@@ -781,69 +777,69 @@ class EfficientFormerV2(BaseBackbone):
         return tuple(outs)
 
 
-
-def _cfg(url='', **kwargs):
-    return {
-        'url': url,
-        'num_classes': 1000, 'input_size': (3, 224, 224), 'pool_size': None,
-        'crop_pct': .95, 'interpolation': 'bicubic',
-        'mean': IMAGENET_DEFAULT_MEAN, 'std': IMAGENET_DEFAULT_STD,
-        'classifier': 'head',
-        **kwargs
-    }
-
-
-@register_model
-def efficientformerv2_s0(pretrained=False, **kwargs):
-    model = EfficientFormerV2(
-        layers=EfficientFormer_depth['S0'],
-        embed_dims=EfficientFormer_width['S0'],
-        downsamples=[True, True, True, True, True],
-        vit_num=2,
-        drop_path_rate=0.0,
-        e_ratios=expansion_ratios_S0,
-        **kwargs)
-    model.default_cfg = _cfg(crop_pct=0.9)
-    return model
-
-
-@register_model
-def efficientformerv2_s1(pretrained=False, **kwargs):
-    model = EfficientFormerV2(
-        layers=EfficientFormer_depth['S1'],
-        embed_dims=EfficientFormer_width['S1'],
-        downsamples=[True, True, True, True],
-        vit_num=2,
-        drop_path_rate=0.0,
-        e_ratios=expansion_ratios_S1,
-        **kwargs)
-    model.default_cfg = _cfg(crop_pct=0.9)
-    return model
-
-
-@register_model
-def efficientformerv2_s2(pretrained=False, **kwargs):
-    model = EfficientFormerV2(
-        layers=EfficientFormer_depth['S2'],
-        embed_dims=EfficientFormer_width['S2'],
-        downsamples=[True, True, True, True],
-        vit_num=4,
-        drop_path_rate=0.02,
-        e_ratios=expansion_ratios_S2,
-        **kwargs)
-    model.default_cfg = _cfg(crop_pct=0.9)
-    return model
-
-
-@register_model
-def efficientformerv2_l(pretrained=False, **kwargs):
-    model = EfficientFormerV2(
-        layers=EfficientFormer_depth['L'],
-        embed_dims=EfficientFormer_width['L'],
-        downsamples=[True, True, True, True],
-        vit_num=6,
-        drop_path_rate=0.1,
-        e_ratios=expansion_ratios_L,
-        **kwargs)
-    model.default_cfg = _cfg(crop_pct=0.9)
-    return model
+#
+# def _cfg(url='', **kwargs):
+#     return {
+#         'url': url,
+#         'num_classes': 1000, 'input_size': (3, 224, 224), 'pool_size': None,
+#         'crop_pct': .95, 'interpolation': 'bicubic',
+#         'mean': IMAGENET_DEFAULT_MEAN, 'std': IMAGENET_DEFAULT_STD,
+#         'classifier': 'head',
+#         **kwargs
+#     }
+#
+#
+# @register_model
+# def efficientformerv2_s0(pretrained=False, **kwargs):
+#     model = EfficientFormerV2(
+#         layers=EfficientFormer_depth['S0'],
+#         embed_dims=EfficientFormer_width['S0'],
+#         downsamples=[True, True, True, True, True],
+#         vit_num=2,
+#         drop_path_rate=0.0,
+#         e_ratios=expansion_ratios_S0,
+#         **kwargs)
+#     model.default_cfg = _cfg(crop_pct=0.9)
+#     return model
+#
+#
+# @register_model
+# def efficientformerv2_s1(pretrained=False, **kwargs):
+#     model = EfficientFormerV2(
+#         layers=EfficientFormer_depth['S1'],
+#         embed_dims=EfficientFormer_width['S1'],
+#         downsamples=[True, True, True, True],
+#         vit_num=2,
+#         drop_path_rate=0.0,
+#         e_ratios=expansion_ratios_S1,
+#         **kwargs)
+#     model.default_cfg = _cfg(crop_pct=0.9)
+#     return model
+#
+#
+# @register_model
+# def efficientformerv2_s2(pretrained=False, **kwargs):
+#     model = EfficientFormerV2(
+#         layers=EfficientFormer_depth['S2'],
+#         embed_dims=EfficientFormer_width['S2'],
+#         downsamples=[True, True, True, True],
+#         vit_num=4,
+#         drop_path_rate=0.02,
+#         e_ratios=expansion_ratios_S2,
+#         **kwargs)
+#     model.default_cfg = _cfg(crop_pct=0.9)
+#     return model
+#
+#
+# @register_model
+# def efficientformerv2_l(pretrained=False, **kwargs):
+#     model = EfficientFormerV2(
+#         layers=EfficientFormer_depth['L'],
+#         embed_dims=EfficientFormer_width['L'],
+#         downsamples=[True, True, True, True],
+#         vit_num=6,
+#         drop_path_rate=0.1,
+#         e_ratios=expansion_ratios_L,
+#         **kwargs)
+#     model.default_cfg = _cfg(crop_pct=0.9)
+#     return model
