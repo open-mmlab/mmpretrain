@@ -3,7 +3,7 @@ from .barlowtwins import BarlowTwins
 from .base import BaseSelfSupervisor
 from .beit import VQKD, BEiT, BEiTPretrainViT
 from .byol import BYOL
-from .cae import CAE, CAEPretrainViT, Encoder
+from .cae import CAE, CAEPretrainViT, DALLEEncoder
 from .densecl import DenseCL
 from .eva import EVA
 from .mae import MAE, MAEViT
@@ -22,7 +22,7 @@ __all__ = [
     'BEiTPretrainViT',
     'VQKD',
     'CAEPretrainViT',
-    'Encoder',
+    'DALLEEncoder',
     'MAEViT',
     'HOGGenerator',
     'MaskFeatViT',

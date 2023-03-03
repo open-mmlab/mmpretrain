@@ -107,7 +107,7 @@ Target Generators
    :nosignatures:
 
    VQKD
-   Encoder
+   DALLEEncoder
    HOGGenerator
    CLIPGenerator
 

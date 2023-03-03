@@ -5,7 +5,7 @@ from unittest import TestCase
 import pytest
 import torch
 
-from mmpretrain.models import VQKD, Encoder, HOGGenerator
+from mmpretrain.models import VQKD, DALLEEncoder, HOGGenerator
 
 
 class TestDALLE(TestCase):
@@ -13,7 +13,7 @@ class TestDALLE(TestCase):
     @pytest.mark.skipif(
         platform.system() == 'Windows', reason='Windows mem limit')
     def test_dalle(self):
-        model = Encoder()
+        model = DALLEEncoder()
         fake_inputs = torch.rand((2, 3, 112, 112))
         fake_outputs = model(fake_inputs)
 

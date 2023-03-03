@@ -97,7 +97,7 @@ class EncoderBlock(nn.Module):
 
 @attr.s(eq=False, repr=False)
 @MODELS.register_module(name='DALL-E')
-class Encoder(BaseModule):
+class DALLEEncoder(BaseModule):
     """DALL-E Encoder for feature extraction."""
 
     group_count: int = 4
