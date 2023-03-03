@@ -14,8 +14,6 @@ class InShop(BaseDataset):
     (In-shop Clothes Retrieval Benchmark -> Img -> img.zip,
     Eval/list_eval_partition.txt), and organize them as follows way: ::
 
-    In-shop dataset directory: ::
-
         In-shop Clothes Retrieval Benchmark (data_root)/
            ├── Eval /
            │    └── list_eval_partition.txt (ann_file)

@@ -70,8 +70,8 @@ class LinearNeck(BaseModule):
 
         Args:
             inputs (Union[Tuple, torch.Tensor]): The features extracted from
-                 the backbone. Multiple stage inputs are acceptable but only
-                  the last stage will be used.
+                the backbone. Multiple stage inputs are acceptable but only
+                the last stage will be used.
 
         Returns:
             Tuple[torch.Tensor]: A tuple of output features.
