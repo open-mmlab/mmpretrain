@@ -414,6 +414,9 @@ class CAE(BaseSelfSupervisor):
             param_teacher.data = param_teacher.data * self.momentum + \
                 param_bacbone.data * (1. - self.momentum)
 
+    def extract_feat(self, inputs: torch.Tensor):
+        return self.backbone(inputs, mask=None)
+
     def loss(self, inputs: List[torch.Tensor], data_samples: List[DataSample],
              **kwargs) -> Dict[str, torch.Tensor]:
         """The forward function in training.

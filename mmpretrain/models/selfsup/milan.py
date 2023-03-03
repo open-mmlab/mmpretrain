@@ -113,7 +113,7 @@ class MILANViT(MAEViT):
     def forward(
         self,
         x: torch.Tensor,
-        importance: Optional[torch.Tensor] = None,
+        importance: Optional[torch.Tensor],
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         """Generate features for masked images.
 
@@ -177,6 +177,9 @@ class MILAN(BaseSelfSupervisor):
     Implementation of `MILAN: Masked Image Pretraining on Language Assisted
     Representation <https://arxiv.org/abs/2208.06049>`_.
     """
+
+    def extract_feat(self, inputs: torch.Tensor):
+        return self.backbone(inputs, importance=None)
 
     def loss(self, inputs: torch.Tensor, data_samples: List[DataSample],
              **kwargs) -> Dict[str, torch.Tensor]:

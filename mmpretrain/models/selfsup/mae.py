@@ -140,9 +140,7 @@ class MAEViT(VisionTransformer):
         return x_masked, mask, ids_restore
 
     def forward(
-        self,
-        x: torch.Tensor,
-        mask: Optional[bool] = True
+        self, x: torch.Tensor, mask: Optional[bool]
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """Generate features for masked images.
 
@@ -201,6 +199,9 @@ class MAE(BaseSelfSupervisor):
     Implementation of `Masked Autoencoders Are Scalable Vision Learners
     <https://arxiv.org/abs/2111.06377>`_.
     """
+
+    def extract_feat(self, inputs: torch.Tensor):
+        return self.backbone(inputs, mask=None)
 
     def loss(self, inputs: torch.Tensor, data_samples: List[DataSample],
              **kwargs) -> Dict[str, torch.Tensor]:

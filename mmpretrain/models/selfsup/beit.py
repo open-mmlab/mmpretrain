@@ -302,6 +302,9 @@ class BEiT(BaseSelfSupervisor):
     <https://arxiv.org/abs/2208.06366>`_.
     """
 
+    def extract_feat(self, inputs: torch.Tensor):
+        return self.backbone(inputs, mask=None)
+
     def loss(self, inputs: List[torch.Tensor], data_samples: List[DataSample],
              **kwargs) -> Dict[str, torch.Tensor]:
         """The forward function in training.
